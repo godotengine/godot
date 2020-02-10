@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -95,6 +95,10 @@ Rect2 CapsuleShape2D::get_rect() const {
 	rect.position = -he;
 	rect.size = he * 2.0;
 	return rect;
+}
+
+real_t CapsuleShape2D::get_enclosing_radius() const {
+	return radius + height * 0.5;
 }
 
 void CapsuleShape2D::_bind_methods() {

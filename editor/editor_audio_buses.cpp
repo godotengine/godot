@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "editor_node.h"
+#include "editor_scale.h"
 #include "filesystem_dock.h"
 #include "scene/resources/font.h"
 #include "servers/audio_server.h"
@@ -855,7 +856,6 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	HBoxContainer *audioprev_hbc = memnew(HBoxContainer);
 	audioprev_hbc->set_v_size_flags(SIZE_EXPAND_FILL);
 	audioprev_hbc->set_h_size_flags(SIZE_EXPAND_FILL);
-	audioprev_hbc->set_mouse_filter(MOUSE_FILTER_PASS);
 	audio_value_preview_box->add_child(audioprev_hbc);
 
 	audio_value_preview_label = memnew(Label);
@@ -1248,7 +1248,7 @@ void EditorAudioBuses::_load_default_layout() {
 
 	String layout_path = ProjectSettings::get_singleton()->get("audio/default_bus_layout");
 
-	Ref<AudioBusLayout> state = ResourceLoader::load(layout_path);
+	Ref<AudioBusLayout> state = ResourceLoader::load(layout_path, "", true);
 	if (state.is_null()) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("There is no '%s' file."), layout_path));
 		return;
@@ -1265,7 +1265,7 @@ void EditorAudioBuses::_load_default_layout() {
 void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 
 	if (file_dialog->get_mode() == EditorFileDialog::MODE_OPEN_FILE) {
-		Ref<AudioBusLayout> state = ResourceLoader::load(p_string);
+		Ref<AudioBusLayout> state = ResourceLoader::load(p_string, "", true);
 		if (state.is_null()) {
 			EditorNode::get_singleton()->show_warning(TTR("Invalid file, not an audio bus layout."));
 			return;
@@ -1289,7 +1289,7 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 		Error err = ResourceSaver::save(p_string, AudioServer::get_singleton()->generate_bus_layout());
 
 		if (err != OK) {
-			EditorNode::get_singleton()->show_warning("Error saving file: " + p_string);
+			EditorNode::get_singleton()->show_warning(vformat(TTR("Error saving file: %s"), p_string));
 			return;
 		}
 
@@ -1403,7 +1403,7 @@ void EditorAudioBuses::open_layout(const String &p_path) {
 
 	EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
 
-	Ref<AudioBusLayout> state = ResourceLoader::load(p_path);
+	Ref<AudioBusLayout> state = ResourceLoader::load(p_path, "", true);
 	if (state.is_null()) {
 		EditorNode::get_singleton()->show_warning(TTR("Invalid file, not an audio bus layout."));
 		return;

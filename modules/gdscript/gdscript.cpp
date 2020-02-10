@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -320,7 +320,7 @@ ScriptInstance *GDScript::instance_create(Object *p_this) {
 		if (!ClassDB::is_parent_class(p_this->get_class_name(), top->native->get_name())) {
 
 			if (ScriptDebugger::get_singleton()) {
-				GDScriptLanguage::get_singleton()->debug_break_parse(get_path(), 0, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be instanced in object of type: '" + p_this->get_class() + "'");
+				GDScriptLanguage::get_singleton()->debug_break_parse(get_path(), 1, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be instanced in object of type: '" + p_this->get_class() + "'");
 			}
 			ERR_FAIL_V_MSG(NULL, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be instanced in object of type '" + p_this->get_class() + "'" + ".");
 		}
@@ -915,14 +915,43 @@ GDScript::GDScript() :
 #endif
 }
 
+void GDScript::_save_orphaned_subclasses() {
+	struct ClassRefWithName {
+		ObjectID id;
+		String fully_qualified_name;
+	};
+	Vector<ClassRefWithName> weak_subclasses;
+	// collect subclasses ObjectID and name
+	for (Map<StringName, Ref<GDScript> >::Element *E = subclasses.front(); E; E = E->next()) {
+		E->get()->_owner = NULL; //bye, you are no longer owned cause I died
+		ClassRefWithName subclass;
+		subclass.id = E->get()->get_instance_id();
+		subclass.fully_qualified_name = E->get()->fully_qualified_name;
+		weak_subclasses.push_back(subclass);
+	}
+
+	// clear subclasses to allow unused subclasses to be deleted
+	subclasses.clear();
+	// subclasses are also held by constants, clear those as well
+	constants.clear();
+
+	// keep orphan subclass only for subclasses that are still in use
+	for (int i = 0; i < weak_subclasses.size(); i++) {
+		ClassRefWithName subclass = weak_subclasses[i];
+		Object *obj = ObjectDB::get_instance(subclass.id);
+		if (!obj)
+			continue;
+		// subclass is not released
+		GDScriptLanguage::get_singleton()->add_orphan_subclass(subclass.fully_qualified_name, subclass.id);
+	}
+}
+
 GDScript::~GDScript() {
 	for (Map<StringName, GDScriptFunction *>::Element *E = member_functions.front(); E; E = E->next()) {
 		memdelete(E->get());
 	}
 
-	for (Map<StringName, Ref<GDScript> >::Element *E = subclasses.front(); E; E = E->next()) {
-		E->get()->_owner = NULL; //bye, you are no longer owned cause I died
-	}
+	_save_orphaned_subclasses();
 
 #ifdef DEBUG_ENABLED
 	if (GDScriptLanguage::get_singleton()->lock) {
@@ -946,18 +975,29 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 	{
 		const Map<StringName, GDScript::MemberInfo>::Element *E = script->member_indices.find(p_name);
 		if (E) {
-			if (E->get().setter) {
+			const GDScript::MemberInfo *member = &E->get();
+			if (member->setter) {
 				const Variant *val = &p_value;
 				Variant::CallError err;
-				call(E->get().setter, &val, 1, err);
+				call(member->setter, &val, 1, err);
 				if (err.error == Variant::CallError::CALL_OK) {
 					return true; //function exists, call was successful
 				}
 			} else {
-				if (!E->get().data_type.is_type(p_value)) {
-					return false; // Type mismatch
+				if (!member->data_type.is_type(p_value)) {
+					// Try conversion
+					Variant::CallError ce;
+					const Variant *value = &p_value;
+					Variant converted = Variant::construct(member->data_type.builtin_type, &value, 1, ce);
+					if (ce.error == Variant::CallError::CALL_OK) {
+						members.write[member->index] = converted;
+						return true;
+					} else {
+						return false;
+					}
+				} else {
+					members.write[member->index] = p_value;
 				}
-				members.write[E->get().index] = p_value;
 			}
 			return true;
 		}
@@ -2040,6 +2080,9 @@ String GDScriptWarning::get_message() const {
 			CHECK_SYMBOLS(2);
 			return "The '" + symbols[0] + "' keyword is deprecated and will be removed in a future release, please replace its uses by '" + symbols[1] + "'.";
 		} break;
+		case STANDALONE_TERNARY: {
+			return "Standalone ternary conditional operator: the return value is being discarded.";
+		}
 		case WARNING_MAX: break; // Can't happen, but silences warning
 	}
 	ERR_FAIL_V_MSG(String(), "Invalid GDScript warning code: " + get_name_from_code(code) + ".");
@@ -2081,6 +2124,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"UNSAFE_CAST",
 		"UNSAFE_CALL_ARGUMENT",
 		"DEPRECATED_KEYWORD",
+		"STANDALONE_TERNARY",
 		NULL
 	};
 
@@ -2143,7 +2187,8 @@ GDScriptLanguage::GDScriptLanguage() {
 	GLOBAL_DEF("debug/gdscript/completion/autocomplete_setters_and_getters", false);
 	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
 		String warning = GDScriptWarning::get_name_from_code((GDScriptWarning::Code)i).to_lower();
-		GLOBAL_DEF("debug/gdscript/warnings/" + warning, !warning.begins_with("unsafe_"));
+		bool default_enabled = !warning.begins_with("unsafe_") && i != GDScriptWarning::UNUSED_CLASS_VARIABLE;
+		GLOBAL_DEF("debug/gdscript/warnings/" + warning, default_enabled);
 	}
 #endif // DEBUG_ENABLED
 }
@@ -2158,6 +2203,22 @@ GDScriptLanguage::~GDScriptLanguage() {
 		memdelete_arr(_call_stack);
 	}
 	singleton = NULL;
+}
+
+void GDScriptLanguage::add_orphan_subclass(const String &p_qualified_name, const ObjectID &p_subclass) {
+	orphan_subclasses[p_qualified_name] = p_subclass;
+}
+
+Ref<GDScript> GDScriptLanguage::get_orphan_subclass(const String &p_qualified_name) {
+	Map<String, ObjectID>::Element *orphan_subclass_element = orphan_subclasses.find(p_qualified_name);
+	if (!orphan_subclass_element)
+		return Ref<GDScript>();
+	ObjectID orphan_subclass = orphan_subclass_element->get();
+	Object *obj = ObjectDB::get_instance(orphan_subclass);
+	orphan_subclasses.erase(orphan_subclass_element);
+	if (!obj)
+		return Ref<GDScript>();
+	return Ref<GDScript>(Object::cast_to<GDScript>(obj));
 }
 
 /*************** RESOURCE ***************/

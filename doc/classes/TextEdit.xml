@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextEdit" inherits="Control" category="Core" version="3.2">
+<class name="TextEdit" inherits="Control" version="4.0">
 	<brief_description>
 		Multiline text editing control.
 	</brief_description>
@@ -315,7 +315,7 @@
 				[codeblock]
 				var result = search(key, flags, line, column)
 				if result.size() &gt; 0:
-				    # result found
+				    # Result found.
 				    var res_line = result[TextEdit.SEARCH_RESULT_LINE]
 				    var res_column = result[TextEdit.SEARCH_RESULT_COLUMN]
 				[/codeblock]
@@ -436,6 +436,12 @@
 		</member>
 		<member name="readonly" type="bool" setter="set_readonly" getter="is_readonly" default="false">
 			If [code]true[/code], read-only mode is enabled. Existing text cannot be modified and new text cannot be added.
+		</member>
+		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll" default="0">
+			The current horizontal scroll value.
+		</member>
+		<member name="scroll_vertical" type="float" setter="set_v_scroll" getter="get_v_scroll" default="0.0">
+			The current vertical scroll value.
 		</member>
 		<member name="selecting_enabled" type="bool" setter="set_selecting_enabled" getter="is_selecting_enabled" default="true">
 		</member>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OpenSimplexNoise" inherits="Resource" category="Core" version="3.2">
+<class name="OpenSimplexNoise" inherits="Resource" version="4.0">
 	<brief_description>
 		Noise generator based on Open Simplex.
 	</brief_description>
@@ -117,7 +117,8 @@
 			Difference in period between [member octaves].
 		</member>
 		<member name="octaves" type="int" setter="set_octaves" getter="get_octaves" default="3">
-			Number of OpenSimplex noise layers that are sampled to get the fractal noise.
+			Number of OpenSimplex noise layers that are sampled to get the fractal noise. Higher values result in more detailed noise but take more time to generate.
+			[b]Note:[/b] The maximum allowed value is 9.
 		</member>
 		<member name="period" type="float" setter="set_period" getter="get_period" default="64.0">
 			Period of the base octave. A lower period results in a higher-frequency noise (more value changes across the same distance).

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -233,15 +233,15 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 	if (result == noErr) {
 		for (unsigned int i = 0; i < inNumberFrames * ad->capture_channels; i++) {
 			int32_t sample = ad->input_buf[i] << 16;
-			ad->capture_buffer_write(sample);
+			ad->input_buffer_write(sample);
 
 			if (ad->capture_channels == 1) {
-				// In case capture device is single channel convert it to Stereo
-				ad->capture_buffer_write(sample);
+				// In case input device is single channel convert it to Stereo
+				ad->input_buffer_write(sample);
 			}
 		}
 	} else {
-		ERR_PRINTS("AudioUnitRender failed, code: " + itos(result));
+		ERR_PRINT("AudioUnitRender failed, code: " + itos(result));
 	}
 
 	ad->unlock();
@@ -253,7 +253,7 @@ void AudioDriverCoreAudio::start() {
 	if (!active) {
 		OSStatus result = AudioOutputUnitStart(audio_unit);
 		if (result != noErr) {
-			ERR_PRINTS("AudioOutputUnitStart failed, code: " + itos(result));
+			ERR_PRINT("AudioOutputUnitStart failed, code: " + itos(result));
 		} else {
 			active = true;
 		}
@@ -264,7 +264,7 @@ void AudioDriverCoreAudio::stop() {
 	if (active) {
 		OSStatus result = AudioOutputUnitStop(audio_unit);
 		if (result != noErr) {
-			ERR_PRINTS("AudioOutputUnitStop failed, code: " + itos(result));
+			ERR_PRINT("AudioOutputUnitStop failed, code: " + itos(result));
 		} else {
 			active = false;
 		}
@@ -487,11 +487,11 @@ void AudioDriverCoreAudio::capture_finish() {
 
 Error AudioDriverCoreAudio::capture_start() {
 
-	capture_buffer_init(buffer_frames);
+	input_buffer_init(buffer_frames);
 
 	OSStatus result = AudioOutputUnitStart(input_unit);
 	if (result != noErr) {
-		ERR_PRINTS("AudioOutputUnitStart failed, code: " + itos(result));
+		ERR_PRINT("AudioOutputUnitStart failed, code: " + itos(result));
 	}
 
 	return OK;
@@ -502,7 +502,7 @@ Error AudioDriverCoreAudio::capture_stop() {
 	if (input_unit) {
 		OSStatus result = AudioOutputUnitStop(input_unit);
 		if (result != noErr) {
-			ERR_PRINTS("AudioOutputUnitStop failed, code: " + itos(result));
+			ERR_PRINT("AudioOutputUnitStop failed, code: " + itos(result));
 		}
 	}
 
@@ -642,9 +642,9 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 		ERR_FAIL_COND(result != noErr);
 
 		if (capture) {
-			// Reset audio capture to keep synchronisation.
-			capture_position = 0;
-			capture_size = 0;
+			// Reset audio input to keep synchronisation.
+			input_position = 0;
+			input_size = 0;
 		}
 	}
 }

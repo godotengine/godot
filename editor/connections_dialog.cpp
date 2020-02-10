@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 
 #include "core/print_string.h"
 #include "editor_node.h"
+#include "editor_scale.h"
 #include "editor_settings.h"
 #include "plugins/script_editor_plugin.h"
 #include "scene/gui/label.h"
@@ -126,6 +127,7 @@ void ConnectDialog::ok_pressed() {
 		}
 	}
 	emit_signal("connected");
+	hide();
 }
 
 void ConnectDialog::_cancel_pressed() {
@@ -144,7 +146,17 @@ void ConnectDialog::_tree_node_selected() {
 		return;
 
 	dst_path = source->get_path_to(current);
-	get_ok()->set_disabled(false);
+	_update_ok_enabled();
+}
+
+/*
+ * Called each time a target node is activated within the target node tree.
+ */
+void ConnectDialog::_tree_item_activated() {
+
+	if (!get_ok()->is_disabled()) {
+		get_ok()->emit_signal("pressed");
+	}
 }
 
 /*
@@ -198,6 +210,27 @@ void ConnectDialog::_remove_bind() {
 	cdbinds->notify_changed();
 }
 
+/*
+ * Enables or disables the connect button. The connect button is enabled if a
+ * node is selected and valid in the selected mode.
+ */
+void ConnectDialog::_update_ok_enabled() {
+
+	Node *target = tree->get_selected();
+
+	if (target == nullptr) {
+		get_ok()->set_disabled(true);
+		return;
+	}
+
+	if (!advanced->is_pressed() && target->get_script().is_null()) {
+		get_ok()->set_disabled(true);
+		return;
+	}
+
+	get_ok()->set_disabled(false);
+}
+
 void ConnectDialog::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -210,8 +243,10 @@ void ConnectDialog::_bind_methods() {
 	ClassDB::bind_method("_advanced_pressed", &ConnectDialog::_advanced_pressed);
 	ClassDB::bind_method("_cancel", &ConnectDialog::_cancel_pressed);
 	ClassDB::bind_method("_tree_node_selected", &ConnectDialog::_tree_node_selected);
+	ClassDB::bind_method("_tree_item_activated", &ConnectDialog::_tree_item_activated);
 	ClassDB::bind_method("_add_bind", &ConnectDialog::_add_bind);
 	ClassDB::bind_method("_remove_bind", &ConnectDialog::_remove_bind);
+	ClassDB::bind_method("_update_ok_enabled", &ConnectDialog::_update_ok_enabled);
 
 	ADD_SIGNAL(MethodInfo("connected"));
 }
@@ -279,6 +314,8 @@ bool ConnectDialog::is_editing() const {
  */
 void ConnectDialog::init(Connection c, bool bEdit) {
 
+	set_hide_on_ok(false);
+
 	source = static_cast<Node *>(c.source);
 	signal = c.signal;
 
@@ -286,12 +323,11 @@ void ConnectDialog::init(Connection c, bool bEdit) {
 	tree->set_marked(source, true);
 
 	if (c.target) {
-		get_ok()->set_disabled(false);
 		set_dst_node(static_cast<Node *>(c.target));
 		set_dst_method(c.method);
-	} else {
-		get_ok()->set_disabled(true);
 	}
+
+	_update_ok_enabled();
 
 	bool bDeferred = (c.flags & CONNECT_DEFERRED) == CONNECT_DEFERRED;
 	bool bOneshot = (c.flags & CONNECT_ONESHOT) == CONNECT_ONESHOT;
@@ -335,6 +371,8 @@ void ConnectDialog::_advanced_pressed() {
 		error_label->set_visible(!_find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root()));
 	}
 
+	_update_ok_enabled();
+
 	set_position((get_viewport_rect().size - get_custom_minimum_size()) / 2);
 }
 
@@ -359,7 +397,7 @@ ConnectDialog::ConnectDialog() {
 
 	tree = memnew(SceneTreeEditor(false));
 	tree->set_connecting_signal(true);
-	tree->get_scene_tree()->connect("item_activated", this, "_ok");
+	tree->get_scene_tree()->connect("item_activated", this, "_tree_item_activated");
 	tree->connect("node_selected", this, "_tree_node_selected");
 	tree->set_connect_to_script_mode(true);
 
@@ -413,7 +451,7 @@ ConnectDialog::ConnectDialog() {
 	vbc_right->add_margin_child(TTR("Extra Call Arguments:"), bind_editor, true);
 
 	HBoxContainer *dstm_hb = memnew(HBoxContainer);
-	vbc_left->add_margin_child("Receiver Method:", dstm_hb);
+	vbc_left->add_margin_child(TTR("Receiver Method:"), dstm_hb);
 
 	dst_method = memnew(LineEdit);
 	dst_method->set_h_size_flags(SIZE_EXPAND_FILL);

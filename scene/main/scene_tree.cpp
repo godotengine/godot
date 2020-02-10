@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,6 +46,7 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
+#include "servers/navigation_server.h"
 #include "servers/physics_2d_server.h"
 #include "servers/physics_server.h"
 #include "viewport.h"
@@ -423,7 +424,8 @@ void SceneTree::input_event(const Ref<InputEvent> &p_event) {
 
 	input_handled = false;
 
-	const Ref<InputEvent> &ev = p_event;
+	// Don't make const ref unless you can find and fix what caused GH-34691.
+	Ref<InputEvent> ev = p_event;
 
 	MainLoop::input_event(ev);
 
@@ -458,10 +460,7 @@ void SceneTree::input_event(const Ref<InputEvent> &p_event) {
 }
 
 void SceneTree::init() {
-
-	//_quit=false;
 	initialized = true;
-
 	root->_set_tree(this);
 	MainLoop::init();
 }
@@ -631,7 +630,13 @@ void SceneTree::finish() {
 	timers.clear();
 }
 
-void SceneTree::quit() {
+void SceneTree::quit(int p_exit_code) {
+
+	if (p_exit_code >= 0) {
+		// Override the exit code if a positive argument is given (the default is `-1`).
+		// This is a shorthand for calling `set_exit_code()` on the OS singleton then quitting.
+		OS::get_singleton()->set_exit_code(p_exit_code);
+	}
 
 	_quit = true;
 }
@@ -892,6 +897,7 @@ void SceneTree::set_pause(bool p_enabled) {
 	if (p_enabled == pause)
 		return;
 	pause = p_enabled;
+	NavigationServer::get_singleton()->set_active(!p_enabled);
 	PhysicsServer::get_singleton()->set_active(!p_enabled);
 	Physics2DServer::get_singleton()->set_active(!p_enabled);
 	if (get_root())
@@ -1278,6 +1284,14 @@ void SceneTree::_change_scene(Node *p_to) {
 		current_scene = NULL;
 	}
 
+	// If we're quitting, abort.
+	if (unlikely(_quit)) {
+		if (p_to) { // Prevent memory leak.
+			memdelete(p_to);
+		}
+		return;
+	}
+
 	if (p_to) {
 		current_scene = p_to;
 		root->add_child(p_to);
@@ -1286,15 +1300,14 @@ void SceneTree::_change_scene(Node *p_to) {
 }
 
 Error SceneTree::change_scene(const String &p_path) {
-
 	Ref<PackedScene> new_scene = ResourceLoader::load(p_path);
 	if (new_scene.is_null())
 		return ERR_CANT_OPEN;
 
 	return change_scene_to(new_scene);
 }
-Error SceneTree::change_scene_to(const Ref<PackedScene> &p_scene) {
 
+Error SceneTree::change_scene_to(const Ref<PackedScene> &p_scene) {
 	Node *new_scene = NULL;
 	if (p_scene.is_valid()) {
 		new_scene = p_scene->instance();
@@ -1304,8 +1317,8 @@ Error SceneTree::change_scene_to(const Ref<PackedScene> &p_scene) {
 	call_deferred("_change_scene", new_scene);
 	return OK;
 }
-Error SceneTree::reload_current_scene() {
 
+Error SceneTree::reload_current_scene() {
 	ERR_FAIL_COND_V(!current_scene, ERR_UNCONFIGURED);
 	String fname = current_scene->get_filename();
 	return change_scene(fname);
@@ -1316,6 +1329,7 @@ void SceneTree::add_current_scene(Node *p_current) {
 	current_scene = p_current;
 	root->add_child(p_current);
 }
+
 #ifdef DEBUG_ENABLED
 
 static void _fill_array(Node *p_node, Array &array, int p_level) {
@@ -1813,8 +1827,6 @@ bool SceneTree::is_refusing_new_network_connections() const {
 
 void SceneTree::_bind_methods() {
 
-	//ClassDB::bind_method(D_METHOD("call_group","call_flags","group","method","arg1","arg2"),&SceneMainLoop::_call_group,DEFVAL(Variant()),DEFVAL(Variant()));
-
 	ClassDB::bind_method(D_METHOD("get_root"), &SceneTree::get_root);
 	ClassDB::bind_method(D_METHOD("has_group", "name"), &SceneTree::has_group);
 
@@ -1838,7 +1850,7 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_node_count"), &SceneTree::get_node_count);
 	ClassDB::bind_method(D_METHOD("get_frame"), &SceneTree::get_frame);
-	ClassDB::bind_method(D_METHOD("quit"), &SceneTree::quit);
+	ClassDB::bind_method(D_METHOD("quit", "exit_code"), &SceneTree::quit, DEFVAL(-1));
 
 	ClassDB::bind_method(D_METHOD("set_screen_stretch", "mode", "aspect", "minsize", "shrink"), &SceneTree::set_screen_stretch, DEFVAL(1));
 
@@ -2104,7 +2116,7 @@ SceneTree::SceneTree() {
 					ProjectSettings::get_singleton()->set("rendering/environment/default_environment", "");
 				} else {
 					//file was erased, notify user.
-					ERR_PRINTS(RTR("Default Environment as specified in Project Settings (Rendering -> Environment -> Default Environment) could not be loaded."));
+					ERR_PRINT(RTR("Default Environment as specified in Project Settings (Rendering -> Environment -> Default Environment) could not be loaded."));
 				}
 			}
 		}

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,21 +41,12 @@ void SkeletonIKEditorPlugin::_play() {
 		return;
 
 	if (play_btn->is_pressed()) {
-
-		initial_bone_poses.resize(skeleton_ik->get_parent_skeleton()->get_bone_count());
-		for (int i = 0; i < skeleton_ik->get_parent_skeleton()->get_bone_count(); ++i) {
-			initial_bone_poses.write[i] = skeleton_ik->get_parent_skeleton()->get_bone_pose(i);
-		}
-
 		skeleton_ik->start();
 	} else {
 		skeleton_ik->stop();
 
-		if (initial_bone_poses.size() != skeleton_ik->get_parent_skeleton()->get_bone_count())
-			return;
-
 		for (int i = 0; i < skeleton_ik->get_parent_skeleton()->get_bone_count(); ++i) {
-			skeleton_ik->get_parent_skeleton()->set_bone_pose(i, initial_bone_poses[i]);
+			skeleton_ik->get_parent_skeleton()->set_bone_global_pose_override(i, Transform(), 0);
 		}
 	}
 }

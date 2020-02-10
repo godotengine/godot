@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,6 +75,7 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 			continue;
 
 		Array a = surface_get_arrays(i);
+		ERR_FAIL_COND_V(a.empty(), Ref<TriangleMesh>());
 
 		int vc = surface_get_array_len(i);
 		PoolVector<Vector3> vertices = a[ARRAY_VERTEX];
@@ -234,6 +235,7 @@ Ref<Shape> Mesh::create_convex_shape() const {
 	for (int i = 0; i < get_surface_count(); i++) {
 
 		Array a = surface_get_arrays(i);
+		ERR_FAIL_COND_V(a.empty(), Ref<ConvexPolygonShape>());
 		PoolVector<Vector3> v = a[ARRAY_VERTEX];
 		vertices.append_array(v);
 	}
@@ -273,6 +275,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 			continue;
 
 		Array a = surface_get_arrays(i);
+		ERR_FAIL_COND_V(a.empty(), Ref<ArrayMesh>());
 
 		if (i == 0) {
 			arrays = a;
@@ -378,6 +381,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 		PoolVector<Vector3>::Write r = vertices.write();
 
 		if (indices.size()) {
+			ERR_FAIL_COND_V(indices.size() % 3 != 0, Ref<ArrayMesh>());
 			vc = indices.size();
 			ir = indices.write();
 			has_indices = true;
@@ -483,6 +487,7 @@ void Mesh::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_lightmap_size_hint", "size"), &Mesh::set_lightmap_size_hint);
 	ClassDB::bind_method(D_METHOD("get_lightmap_size_hint"), &Mesh::get_lightmap_size_hint);
+	ClassDB::bind_method(D_METHOD("get_aabb"), &Mesh::get_aabb);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "lightmap_size_hint"), "set_lightmap_size_hint", "get_lightmap_size_hint");
 
@@ -513,7 +518,6 @@ void Mesh::_bind_methods() {
 	BIND_ENUM_CONSTANT(ARRAY_FORMAT_WEIGHTS);
 	BIND_ENUM_CONSTANT(ARRAY_FORMAT_INDEX);
 
-	BIND_ENUM_CONSTANT(ARRAY_COMPRESS_BASE);
 	BIND_ENUM_CONSTANT(ARRAY_COMPRESS_VERTEX);
 	BIND_ENUM_CONSTANT(ARRAY_COMPRESS_NORMAL);
 	BIND_ENUM_CONSTANT(ARRAY_COMPRESS_TANGENT);

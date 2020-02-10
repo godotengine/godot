@@ -5,6 +5,7 @@ EnsureSConsVersion(0, 98, 1)
 # System
 import glob
 import os
+import pickle
 import sys
 
 # Local
@@ -68,8 +69,6 @@ env_base.AppendENVPath('PATH', os.getenv('PATH'))
 env_base.AppendENVPath('PKG_CONFIG_PATH', os.getenv('PKG_CONFIG_PATH'))
 env_base.disabled_modules = []
 env_base.use_ptrcall = False
-env_base.split_drivers = False
-env_base.split_modules = False
 env_base.module_version_string = ""
 env_base.msvc = False
 
@@ -79,7 +78,6 @@ env_base.__class__.add_module_version_string = methods.add_module_version_string
 
 env_base.__class__.add_source_files = methods.add_source_files
 env_base.__class__.use_windows_spawn_fix = methods.use_windows_spawn_fix
-env_base.__class__.split_lib = methods.split_lib
 
 env_base.__class__.add_shared_library = methods.add_shared_library
 env_base.__class__.add_library = methods.add_library
@@ -89,6 +87,9 @@ env_base.__class__.disable_warnings = methods.disable_warnings
 
 env_base["x86_libtheora_opt_gcc"] = False
 env_base["x86_libtheora_opt_vc"] = False
+
+# avoid issues when building with different versions of python out of the same directory
+env_base.SConsignFile(".sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL))
 
 # Build options
 
@@ -116,7 +117,6 @@ opts.Add(BoolVariable('use_precise_math_checks', 'Math checks use very precise e
 
 # Components
 opts.Add(BoolVariable('deprecated', "Enable deprecated features", True))
-opts.Add(BoolVariable('gdscript', "Enable GDScript support", True))
 opts.Add(BoolVariable('minizip', "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable('xaudio2', "Enable the XAudio2 audio driver", False))
 
@@ -152,6 +152,7 @@ opts.Add(BoolVariable('builtin_opus', "Use the built-in Opus library", True))
 opts.Add(BoolVariable('builtin_pcre2', "Use the built-in PCRE2 library", True))
 opts.Add(BoolVariable('builtin_pcre2_with_jit', "Use JIT compiler for the built-in PCRE2 library", True))
 opts.Add(BoolVariable('builtin_recast', "Use the built-in Recast library", True))
+opts.Add(BoolVariable('builtin_rvo2', "Use the built-in RVO2 library", True))
 opts.Add(BoolVariable('builtin_squish', "Use the built-in squish library", True))
 opts.Add(BoolVariable('builtin_xatlas', "Use the built-in xatlas library", True))
 opts.Add(BoolVariable('builtin_zlib', "Use the built-in zlib library", True))
@@ -407,7 +408,7 @@ if selected_platform in platform_list:
     env.module_icons_paths = []
     env.doc_class_path = {}
 
-    for x in module_list:
+    for x in sorted(module_list):
         if not env['module_' + x + '_enabled']:
             continue
         tmppath = "./modules/" + x
@@ -424,7 +425,7 @@ if selected_platform in platform_list:
                   "signature in its config.py file, it should be "
                   "`can_build(env, platform)`." % x)
             can_build = config.can_build(selected_platform)
-        if (can_build):
+        if can_build:
             config.configure(env)
             env.module_list.append(x)
 
@@ -474,8 +475,6 @@ if selected_platform in platform_list:
             sys.exit(255)
         else:
             env.Append(CPPDEFINES=['_3D_DISABLED'])
-    if env['gdscript']:
-        env.Append(CPPDEFINES=['GDSCRIPT_ENABLED'])
     if env['disable_advanced_gui']:
         if env['tools']:
             print("Build option 'disable_advanced_gui=yes' cannot be used with 'tools=yes' (editor), only with 'tools=no' (export template).")

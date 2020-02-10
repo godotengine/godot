@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -156,7 +156,7 @@ void GDScriptLanguageProtocol::poll() {
 	server->poll();
 }
 
-Error GDScriptLanguageProtocol::start(int p_port) {
+Error GDScriptLanguageProtocol::start(int p_port, const IP_Address &p_bind_ip) {
 	if (server == NULL) {
 		server = dynamic_cast<WebSocketServer *>(ClassDB::instance("WebSocketServer"));
 		ERR_FAIL_COND_V(!server, FAILED);
@@ -165,6 +165,7 @@ Error GDScriptLanguageProtocol::start(int p_port) {
 		server->connect("client_connected", this, "on_client_connected");
 		server->connect("client_disconnected", this, "on_client_disconnected");
 	}
+	server->set_bind_ip(p_bind_ip);
 	return server->listen(p_port);
 }
 

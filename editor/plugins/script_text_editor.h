@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -191,6 +191,7 @@ public:
 
 	virtual void add_syntax_highlighter(SyntaxHighlighter *p_highlighter);
 	virtual void set_syntax_highlighter(SyntaxHighlighter *p_highlighter);
+	void update_toggle_scripts_button();
 
 	virtual void apply_code();
 	virtual RES get_edited_resource() const;

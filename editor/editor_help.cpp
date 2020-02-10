@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 #include "doc_data_compressed.gen.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor_node.h"
+#include "editor_scale.h"
 #include "editor_settings.h"
 
 #define CONTRIBUTE_URL "https://docs.godotengine.org/en/latest/community/contributing/updating_the_class_reference.html"
@@ -185,11 +186,11 @@ void EditorHelp::_class_desc_resized() {
 void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 
 	String t = p_type;
-	if (t == "")
+	if (t.empty())
 		t = "void";
-	bool can_ref = (t != "int" && t != "real" && t != "bool" && t != "void") || p_enum != String();
+	bool can_ref = (t != "void") || !p_enum.empty();
 
-	if (p_enum != String()) {
+	if (!p_enum.empty()) {
 		if (p_enum.get_slice_count(".") > 1) {
 			t = p_enum.get_slice(".", 1);
 		} else {
@@ -200,7 +201,7 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 	const Color type_color = get_color("accent_color", "Editor").linear_interpolate(text_color, 0.5);
 	class_desc->push_color(type_color);
 	if (can_ref) {
-		if (p_enum == "") {
+		if (p_enum.empty()) {
 			class_desc->push_meta("#" + t); //class
 		} else {
 			class_desc->push_meta("$" + p_enum); //class
@@ -417,10 +418,10 @@ void EditorHelp::_update_doc() {
 			}
 		}
 
-		if (found)
+		if (found) {
 			class_desc->pop();
-
-		class_desc->add_newline();
+			class_desc->add_newline();
+		}
 	}
 
 	class_desc->add_newline();
@@ -429,9 +430,26 @@ void EditorHelp::_update_doc() {
 	// Brief description
 	if (cd.brief_description != "") {
 
+		class_desc->push_color(text_color);
+		class_desc->push_font(doc_bold_font);
+		class_desc->push_indent(1);
+		_add_text(cd.brief_description);
+		class_desc->pop();
+		class_desc->pop();
+		class_desc->pop();
+		class_desc->add_newline();
+		class_desc->add_newline();
+		class_desc->add_newline();
+	}
+
+	// Class description
+	if (cd.description != "") {
+
+		section_line.push_back(Pair<String, int>(TTR("Description"), class_desc->get_line_count() - 2));
+		description_line = class_desc->get_line_count() - 2;
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text(TTR("Brief Description"));
+		class_desc->add_text(TTR("Description"));
 		class_desc->pop();
 		class_desc->pop();
 
@@ -440,11 +458,43 @@ void EditorHelp::_update_doc() {
 		class_desc->push_color(text_color);
 		class_desc->push_font(doc_font);
 		class_desc->push_indent(1);
-		_add_text(cd.brief_description);
+		_add_text(cd.description);
 		class_desc->pop();
 		class_desc->pop();
 		class_desc->pop();
 		class_desc->add_newline();
+		class_desc->add_newline();
+		class_desc->add_newline();
+	}
+
+	// Online tutorials
+	if (cd.tutorials.size()) {
+		class_desc->push_color(title_color);
+		class_desc->push_font(doc_title_font);
+		class_desc->add_text(TTR("Online Tutorials"));
+		class_desc->pop();
+		class_desc->pop();
+
+		class_desc->push_indent(1);
+		class_desc->push_font(doc_code_font);
+		class_desc->add_newline();
+
+		for (int i = 0; i < cd.tutorials.size(); i++) {
+			const String link = cd.tutorials[i];
+			String linktxt = link;
+			const int seppos = linktxt.find("//");
+			if (seppos != -1) {
+				linktxt = link.right(seppos + 2);
+			}
+
+			class_desc->push_color(symbol_color);
+			class_desc->append_bbcode("[url=" + link + "]" + linktxt + "[/url]");
+			class_desc->pop();
+			class_desc->add_newline();
+		}
+
+		class_desc->pop();
+		class_desc->pop();
 		class_desc->add_newline();
 		class_desc->add_newline();
 	}
@@ -515,7 +565,7 @@ void EditorHelp::_update_doc() {
 
 			if (cd.properties[i].default_value != "") {
 				class_desc->push_color(symbol_color);
-				class_desc->add_text(cd.properties[i].overridden ? " [override: " : " [default: ");
+				class_desc->add_text(cd.properties[i].overridden ? " [" + TTR("override:") + " " : " [" + TTR("default:") + " ");
 				class_desc->pop();
 				class_desc->push_color(value_color);
 				_add_text(_fix_constant(cd.properties[i].default_value));
@@ -545,8 +595,11 @@ void EditorHelp::_update_doc() {
 	Vector<DocData::MethodDoc> methods;
 
 	for (int i = 0; i < cd.methods.size(); i++) {
-		if (skip_methods.has(cd.methods[i].name))
-			continue;
+		if (skip_methods.has(cd.methods[i].name)) {
+			if (cd.methods[i].arguments.size() == 0 /* getter */ || (cd.methods[i].arguments.size() == 1 && cd.methods[i].return_type == "void" /* setter */)) {
+				continue;
+			}
+		}
 		methods.push_back(cd.methods[i]);
 	}
 
@@ -657,7 +710,7 @@ void EditorHelp::_update_doc() {
 
 			if (cd.theme_properties[i].default_value != "") {
 				class_desc->push_color(symbol_color);
-				class_desc->add_text(" [default: ");
+				class_desc->add_text(" [" + TTR("default:") + " ");
 				class_desc->pop();
 				class_desc->push_color(value_color);
 				_add_text(_fix_constant(cd.theme_properties[i].default_value));
@@ -794,11 +847,11 @@ void EditorHelp::_update_doc() {
 				enum_line[E->key()] = class_desc->get_line_count() - 2;
 
 				class_desc->push_color(title_color);
-				class_desc->add_text(TTR("enum  "));
+				class_desc->add_text("enum  ");
 				class_desc->pop();
 				class_desc->push_font(doc_code_font);
 				String e = E->key();
-				if (e.get_slice_count(".")) {
+				if ((e.get_slice_count(".") > 1) && (e.get_slice(".", 0) == edited_class)) {
 					e = e.get_slice(".", 1);
 				}
 
@@ -921,71 +974,6 @@ void EditorHelp::_update_doc() {
 		}
 	}
 
-	// Class description
-	if (cd.description != "") {
-
-		section_line.push_back(Pair<String, int>(TTR("Class Description"), class_desc->get_line_count() - 2));
-		description_line = class_desc->get_line_count() - 2;
-		class_desc->push_color(title_color);
-		class_desc->push_font(doc_title_font);
-		class_desc->add_text(TTR("Class Description"));
-		class_desc->pop();
-		class_desc->pop();
-
-		class_desc->add_newline();
-		class_desc->add_newline();
-		class_desc->push_color(text_color);
-		class_desc->push_font(doc_font);
-		class_desc->push_indent(1);
-		_add_text(cd.description);
-		class_desc->pop();
-		class_desc->pop();
-		class_desc->pop();
-		class_desc->add_newline();
-		class_desc->add_newline();
-		class_desc->add_newline();
-	}
-
-	// Online tutorials
-	{
-		class_desc->push_color(title_color);
-		class_desc->push_font(doc_title_font);
-		class_desc->add_text(TTR("Online Tutorials"));
-		class_desc->pop();
-		class_desc->pop();
-		class_desc->push_indent(1);
-
-		class_desc->push_font(doc_code_font);
-
-		class_desc->add_newline();
-		//	class_desc->add_newline();
-
-		if (cd.tutorials.size() != 0) {
-
-			for (int i = 0; i < cd.tutorials.size(); i++) {
-				String link = cd.tutorials[i];
-				String linktxt = link;
-				int seppos = linktxt.find("//");
-				if (seppos != -1) {
-					linktxt = link.right(seppos + 2);
-				}
-
-				class_desc->push_color(symbol_color);
-				class_desc->append_bbcode("[url=" + link + "]" + linktxt + "[/url]");
-				class_desc->pop();
-				class_desc->add_newline();
-			}
-		} else {
-			class_desc->push_color(comment_color);
-			class_desc->append_bbcode(TTR("There are currently no tutorials for this class, you can [color=$color][url=$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/url][/color].").replace("$url2", REQUEST_URL).replace("$url", CONTRIBUTE2_URL).replace("$color", link_color_text));
-			class_desc->pop();
-		}
-		class_desc->pop();
-		class_desc->pop();
-		class_desc->add_newline();
-		class_desc->add_newline();
-	}
-
 	// Property descriptions
 	if (property_descr) {
 
@@ -1024,7 +1012,7 @@ void EditorHelp::_update_doc() {
 
 			if (cd.properties[i].default_value != "") {
 				class_desc->push_color(symbol_color);
-				class_desc->add_text(" [default: ");
+				class_desc->add_text(" [" + TTR("default:") + " ");
 				class_desc->pop(); // color
 
 				class_desc->push_color(value_color);
@@ -1047,7 +1035,7 @@ void EditorHelp::_update_doc() {
 				class_desc->push_cell();
 				class_desc->push_font(doc_code_font);
 				class_desc->push_color(text_color);
-				class_desc->add_text(cd.properties[i].setter + "(value)");
+				class_desc->add_text(cd.properties[i].setter + TTR("(value)"));
 				class_desc->pop(); // color
 				class_desc->push_color(comment_color);
 				class_desc->add_text(" setter");

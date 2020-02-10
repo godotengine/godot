@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -191,16 +191,20 @@ void PopupMenu::_submenu_timeout() {
 
 void PopupMenu::_scroll(float p_factor, const Point2 &p_over) {
 
-	const float global_y = get_global_position().y;
-
 	int vseparation = get_constant("vseparation");
 	Ref<Font> font = get_font("font");
 
 	float dy = (vseparation + font->get_height()) * 3 * p_factor * get_global_transform().get_scale().y;
-	if (dy > 0 && global_y < 0)
-		dy = MIN(dy, -global_y - 1);
-	else if (dy < 0 && global_y + get_size().y * get_global_transform().get_scale().y > get_viewport_rect().size.y)
-		dy = -MIN(-dy, global_y + get_size().y * get_global_transform().get_scale().y - get_viewport_rect().size.y - 1);
+	if (dy > 0) {
+		const float global_top = get_global_position().y;
+		const float limit = global_top < 0 ? -global_top : 0;
+		dy = MIN(dy, limit);
+	} else if (dy < 0) {
+		const float global_bottom = get_global_position().y + get_size().y * get_global_transform().get_scale().y;
+		const float viewport_height = get_viewport_rect().size.y;
+		const float limit = global_bottom > viewport_height ? global_bottom - viewport_height : 0;
+		dy = -MIN(-dy, limit);
+	}
 	set_position(get_position() + Vector2(0, dy));
 
 	Ref<InputEventMouseMotion> ie;
@@ -305,6 +309,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
 					bool was_during_grabbed_click = during_grabbed_click;
 					during_grabbed_click = false;
+					initial_button_mask = 0;
 
 					int over = _get_mouse_over(b->get_position());
 

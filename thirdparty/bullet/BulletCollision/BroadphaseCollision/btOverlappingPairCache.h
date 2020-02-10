@@ -68,7 +68,7 @@ public:
 
 	virtual void processAllOverlappingPairs(btOverlapCallback*, btDispatcher* dispatcher) = 0;
 
-	virtual void processAllOverlappingPairs(btOverlapCallback* callback, btDispatcher* dispatcher, const struct btDispatcherInfo& dispatchInfo)
+	virtual void processAllOverlappingPairs(btOverlapCallback* callback, btDispatcher* dispatcher, const struct btDispatcherInfo& /*dispatchInfo*/)
 	{
 		processAllOverlappingPairs(callback, dispatcher);
 	}

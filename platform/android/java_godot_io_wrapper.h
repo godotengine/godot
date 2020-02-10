@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -73,7 +73,7 @@ public:
 	int get_screen_dpi();
 	String get_unique_id();
 	bool has_vk();
-	void show_vk(const String &p_existing);
+	void show_vk(const String &p_existing, int p_max_input_length);
 	void hide_vk();
 	int get_vk_height();
 	void set_vk_height(int p_height);

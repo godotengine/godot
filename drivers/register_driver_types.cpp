@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,17 +30,8 @@
 
 #include "register_driver_types.h"
 
-#include "core/math/geometry.h"
 #include "drivers/png/image_loader_png.h"
 #include "drivers/png/resource_saver_png.h"
-
-#ifdef TOOLS_ENABLED
-#include "drivers/convex_decomp/b2d_decompose.h"
-#endif
-
-#ifdef TOOLS_ENABLED
-#include "platform/windows/export/export.h"
-#endif
 
 static ImageLoaderPNG *image_loader_png;
 static Ref<ResourceSaverPNG> resource_saver_png;
@@ -64,10 +55,6 @@ void unregister_core_driver_types() {
 }
 
 void register_driver_types() {
-
-#ifdef TOOLS_ENABLED
-	Geometry::_decompose_func = b2d_decompose;
-#endif
 }
 
 void unregister_driver_types() {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -113,6 +113,20 @@ static Vector2 get_mouse_pos(NSPoint locationInWindow, CGFloat backingScaleFacto
 	mouse_x = p.x * s;
 	mouse_y = (contentRect.size.height - p.y) * s;
 	return Vector2(mouse_x, mouse_y);
+}
+
+static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
+	if ([NSCursor respondsToSelector:selector]) {
+		id object = [NSCursor performSelector:selector];
+		if ([object isKindOfClass:[NSCursor class]]) {
+			return object;
+		}
+	}
+	if (fallback) {
+		// Fallback should be a reasonable default, no need to check.
+		return [NSCursor performSelector:fallback];
+	}
+	return [NSCursor arrowCursor];
 }
 
 @interface GodotApplication : NSApplication
@@ -393,9 +407,6 @@ static Vector2 get_mouse_pos(NSPoint locationInWindow, CGFloat backingScaleFacto
 }
 
 - (void)windowDidBecomeKey:(NSNotification *)notification {
-	//_GodotInputWindowFocus(window, GL_TRUE);
-	//_GodotPlatformSetCursorMode(window, window->cursorMode);
-
 	if (OS_OSX::singleton->get_main_loop()) {
 		get_mouse_pos(
 				[OS_OSX::singleton->window_object mouseLocationOutsideOfEventStream],
@@ -404,25 +415,31 @@ static Vector2 get_mouse_pos(NSPoint locationInWindow, CGFloat backingScaleFacto
 
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
 	}
+
+	OS_OSX::singleton->window_focused = true;
 }
 
 - (void)windowDidResignKey:(NSNotification *)notification {
-	//_GodotInputWindowFocus(window, GL_FALSE);
-	//_GodotPlatformSetCursorMode(window, Godot_CURSOR_NORMAL);
 	if (OS_OSX::singleton->get_main_loop())
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+
+	OS_OSX::singleton->window_focused = false;
 }
 
 - (void)windowDidMiniaturize:(NSNotification *)notification {
 	OS_OSX::singleton->wm_minimized(true);
 	if (OS_OSX::singleton->get_main_loop())
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+
+	OS_OSX::singleton->window_focused = false;
 };
 
 - (void)windowDidDeminiaturize:(NSNotification *)notification {
 	OS_OSX::singleton->wm_minimized(false);
 	if (OS_OSX::singleton->get_main_loop())
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
+
+	OS_OSX::singleton->window_focused = true;
 };
 
 @end
@@ -476,7 +493,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 }
 
 - (NSRange)markedRange {
-	return (markedText.length > 0) ? NSMakeRange(0, markedText.length - 1) : kEmptyRange;
+	return NSMakeRange(0, markedText.length);
 }
 
 - (NSRange)selectedRange {
@@ -488,6 +505,10 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 		[markedText initWithAttributedString:aString];
 	} else {
 		[markedText initWithString:aString];
+	}
+	if (markedText.length == 0) {
+		[self unmarkText];
+		return;
 	}
 	if (OS_OSX::singleton->im_active) {
 		imeInputEventInProgress = true;
@@ -1703,42 +1724,39 @@ public:
 			case ERR_WARNING:
 				if (NSAppKitVersionNumber >= NSAppKitVersionNumber10_12) {
 					os_log_info(OS_LOG_DEFAULT,
-							"WARNING: %{public}s: %{public}s\nAt: %{public}s:%i.",
-							p_function, err_details, p_file, p_line);
+							"WARNING: %{public}s\nat: %{public}s (%{public}s:%i)",
+							err_details, p_function, p_file, p_line);
 				}
-				logf_error("\E[1;33mWARNING: %s: \E[0m\E[1m%s\n", p_function,
-						err_details);
-				logf_error("\E[0;33m   At: %s:%i.\E[0m\n", p_file, p_line);
+				logf_error("\E[1;33mWARNING:\E[0;93m %s\n", err_details);
+				logf_error("\E[0;90m     at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
 				break;
 			case ERR_SCRIPT:
 				if (NSAppKitVersionNumber >= NSAppKitVersionNumber10_12) {
 					os_log_error(OS_LOG_DEFAULT,
-							"SCRIPT ERROR: %{public}s: %{public}s\nAt: %{public}s:%i.",
-							p_function, err_details, p_file, p_line);
+							"SCRIPT ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
+							err_details, p_function, p_file, p_line);
 				}
-				logf_error("\E[1;35mSCRIPT ERROR: %s: \E[0m\E[1m%s\n", p_function,
-						err_details);
-				logf_error("\E[0;35m   At: %s:%i.\E[0m\n", p_file, p_line);
+				logf_error("\E[1;35mSCRIPT ERROR:\E[0;95m %s\n", err_details);
+				logf_error("\E[0;90m          at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
 				break;
 			case ERR_SHADER:
 				if (NSAppKitVersionNumber >= NSAppKitVersionNumber10_12) {
 					os_log_error(OS_LOG_DEFAULT,
-							"SHADER ERROR: %{public}s: %{public}s\nAt: %{public}s:%i.",
-							p_function, err_details, p_file, p_line);
+							"SHADER ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
+							err_details, p_function, p_file, p_line);
 				}
-				logf_error("\E[1;36mSHADER ERROR: %s: \E[0m\E[1m%s\n", p_function,
-						err_details);
-				logf_error("\E[0;36m   At: %s:%i.\E[0m\n", p_file, p_line);
+				logf_error("\E[1;36mSHADER ERROR:\E[0;96m %s\n", err_details);
+				logf_error("\E[0;90m          at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
 				break;
 			case ERR_ERROR:
 			default:
 				if (NSAppKitVersionNumber >= NSAppKitVersionNumber10_12) {
 					os_log_error(OS_LOG_DEFAULT,
-							"ERROR: %{public}s: %{public}s\nAt: %{public}s:%i.",
-							p_function, err_details, p_file, p_line);
+							"ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
+							err_details, p_function, p_file, p_line);
 				}
-				logf_error("\E[1;31mERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
-				logf_error("\E[0;31m   At: %s:%i.\E[0m\n", p_file, p_line);
+				logf_error("\E[1;31mERROR:\E[0;91m %s\n", err_details);
+				logf_error("\E[0;90m   at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
 				break;
 		}
 	}
@@ -1806,15 +1824,15 @@ void OS_OSX::set_cursor_shape(CursorShape p_shape) {
 			case CURSOR_BUSY: [[NSCursor arrowCursor] set]; break;
 			case CURSOR_DRAG: [[NSCursor closedHandCursor] set]; break;
 			case CURSOR_CAN_DROP: [[NSCursor openHandCursor] set]; break;
-			case CURSOR_FORBIDDEN: [[NSCursor arrowCursor] set]; break;
-			case CURSOR_VSIZE: [[NSCursor resizeUpDownCursor] set]; break;
-			case CURSOR_HSIZE: [[NSCursor resizeLeftRightCursor] set]; break;
-			case CURSOR_BDIAGSIZE: [[NSCursor arrowCursor] set]; break;
-			case CURSOR_FDIAGSIZE: [[NSCursor arrowCursor] set]; break;
+			case CURSOR_FORBIDDEN: [[NSCursor operationNotAllowedCursor] set]; break;
+			case CURSOR_VSIZE: [cursorFromSelector(@selector(_windowResizeNorthSouthCursor), @selector(resizeUpDownCursor)) set]; break;
+			case CURSOR_HSIZE: [cursorFromSelector(@selector(_windowResizeEastWestCursor), @selector(resizeLeftRightCursor)) set]; break;
+			case CURSOR_BDIAGSIZE: [cursorFromSelector(@selector(_windowResizeNorthEastSouthWestCursor)) set]; break;
+			case CURSOR_FDIAGSIZE: [cursorFromSelector(@selector(_windowResizeNorthWestSouthEastCursor)) set]; break;
 			case CURSOR_MOVE: [[NSCursor arrowCursor] set]; break;
 			case CURSOR_VSPLIT: [[NSCursor resizeUpDownCursor] set]; break;
 			case CURSOR_HSPLIT: [[NSCursor resizeLeftRightCursor] set]; break;
-			case CURSOR_HELP: [[NSCursor arrowCursor] set]; break;
+			case CURSOR_HELP: [cursorFromSelector(@selector(_helpCursor)) set]; break;
 			default: {
 			};
 		}
@@ -2106,6 +2124,19 @@ String OS_OSX::get_cache_path() const {
 	} else {
 		return get_config_path();
 	}
+}
+
+String OS_OSX::get_bundle_resource_dir() const {
+
+	NSBundle *main = [NSBundle mainBundle];
+	NSString *resourcePath = [main resourcePath];
+
+	char *utfs = strdup([resourcePath UTF8String]);
+	String ret;
+	ret.parse_utf8(utfs);
+	free(utfs);
+
+	return ret;
 }
 
 // Get properly capitalized engine name for system paths
@@ -2607,6 +2638,10 @@ bool OS_OSX::is_window_always_on_top() const {
 	return [window_object level] == NSFloatingWindowLevel;
 }
 
+bool OS_OSX::is_window_focused() const {
+	return window_focused;
+}
+
 void OS_OSX::request_attention() {
 
 	[NSApp requestUserAttention:NSCriticalRequest];
@@ -2893,7 +2928,7 @@ void OS_OSX::run() {
 				quit = true;
 			}
 		} @catch (NSException *exception) {
-			ERR_PRINTS("NSException: " + String([exception reason].UTF8String));
+			ERR_PRINT("NSException: " + String([exception reason].UTF8String));
 		}
 	};
 
@@ -2949,7 +2984,7 @@ Error OS_OSX::move_to_trash(const String &p_path) {
 	NSError *err;
 
 	if (![fm trashItemAtURL:url resultingItemURL:nil error:&err]) {
-		ERR_PRINTS("trashItemAtURL error: " + String(err.localizedDescription.UTF8String));
+		ERR_PRINT("trashItemAtURL error: " + String(err.localizedDescription.UTF8String));
 		return FAILED;
 	}
 
@@ -3059,6 +3094,7 @@ OS_OSX::OS_OSX() {
 	window_size = Vector2(1024, 600);
 	zoomed = false;
 	resizable = false;
+	window_focused = true;
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(OSXTerminalLogger));

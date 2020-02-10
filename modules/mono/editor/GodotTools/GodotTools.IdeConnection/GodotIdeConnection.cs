@@ -149,7 +149,7 @@ namespace GodotTools.IdeConnection
         public bool WriteMessage(Message message)
         {
             Logger.LogDebug($"Sending message {message}");
-            
+
             var messageComposer = new MessageComposer();
 
             messageComposer.AddArgument(message.Id);
@@ -201,7 +201,7 @@ namespace GodotTools.IdeConnection
 
             clientReader?.Dispose();
             clientWriter?.Dispose();
-            ((IDisposable) tcpClient)?.Dispose();
+            ((IDisposable)tcpClient)?.Dispose();
         }
     }
 }

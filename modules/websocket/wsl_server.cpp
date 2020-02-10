@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -165,9 +165,7 @@ Error WSLServer::listen(int p_port, const Vector<String> p_protocols, bool gd_mp
 	for (int i = 0; i < p_protocols.size(); i++) {
 		pw[i] = p_protocols[i].strip_edges();
 	}
-	_server->listen(p_port);
-
-	return OK;
+	return _server->listen(p_port, bind_ip);
 }
 
 void WSLServer::poll() {
@@ -208,6 +206,7 @@ void WSLServer::poll() {
 
 		Ref<WSLPeer> ws_peer = memnew(WSLPeer);
 		ws_peer->make_context(data, _in_buf_size, _in_pkt_size, _out_buf_size, _out_pkt_size);
+		ws_peer->set_no_delay(true);
 
 		_peer_map[id] = ws_peer;
 		remove_peers.push_back(ppeer);

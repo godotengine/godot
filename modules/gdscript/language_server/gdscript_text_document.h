@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,6 +51,7 @@ protected:
 	Array native_member_completions;
 
 private:
+	Array find_symbols(const lsp::TextDocumentPositionParams &p_location, List<const lsp::DocumentSymbol *> &r_list);
 	lsp::TextDocumentItem load_document_item(const Variant &p_param);
 	void notify_client_show_symbol(const lsp::DocumentSymbol *symbol);
 
@@ -65,6 +66,8 @@ public:
 	Array colorPresentation(const Dictionary &p_params);
 	Variant hover(const Dictionary &p_params);
 	Array definition(const Dictionary &p_params);
+	Variant declaration(const Dictionary &p_params);
+	Variant signatureHelp(const Dictionary &p_params);
 
 	void initialize();
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CPUParticles2D" inherits="Node2D" category="Core" version="3.2">
+<class name="CPUParticles2D" inherits="Node2D" version="4.0">
 	<brief_description>
 		CPU-based 2D particle emitter.
 	</brief_description>
@@ -26,6 +26,7 @@
 			<argument index="0" name="param" type="int" enum="CPUParticles2D.Parameter">
 			</argument>
 			<description>
+				Returns the base value of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="get_param_curve" qualifiers="const">
@@ -34,6 +35,7 @@
 			<argument index="0" name="param" type="int" enum="CPUParticles2D.Parameter">
 			</argument>
 			<description>
+				Returns the [Curve] of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="get_param_randomness" qualifiers="const">
@@ -42,6 +44,7 @@
 			<argument index="0" name="param" type="int" enum="CPUParticles2D.Parameter">
 			</argument>
 			<description>
+				Returns the randomness factor of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="get_particle_flag" qualifiers="const">
@@ -50,6 +53,7 @@
 			<argument index="0" name="flag" type="int" enum="CPUParticles2D.Flags">
 			</argument>
 			<description>
+				Returns the enabled state of the given flag (see [enum Flags] for options).
 			</description>
 		</method>
 		<method name="restart">
@@ -67,6 +71,7 @@
 			<argument index="1" name="value" type="float">
 			</argument>
 			<description>
+				Sets the base value of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="set_param_curve">
@@ -77,6 +82,7 @@
 			<argument index="1" name="curve" type="Curve">
 			</argument>
 			<description>
+				Sets the [Curve] of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="set_param_randomness">
@@ -87,6 +93,7 @@
 			<argument index="1" name="randomness" type="float">
 			</argument>
 			<description>
+				Sets the randomness factor of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="set_particle_flag">
@@ -97,6 +104,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
+				Enables or disables the given flag (see [enum Flags] for options).
 			</description>
 		</method>
 	</methods>
@@ -162,10 +170,13 @@
 			Particle draw order. Uses [enum DrawOrder] values.
 		</member>
 		<member name="emission_colors" type="PoolColorArray" setter="set_emission_colors" getter="get_emission_colors">
+			Sets the [Color]s to modulate particles by when using [constant EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS].
 		</member>
 		<member name="emission_normals" type="PoolVector2Array" setter="set_emission_normals" getter="get_emission_normals">
+			Sets the direction the particles will be emitted in when using [constant EMISSION_SHAPE_DIRECTED_POINTS].
 		</member>
 		<member name="emission_points" type="PoolVector2Array" setter="set_emission_points" getter="get_emission_points">
+			Sets the initial positions to spawn particles when using [constant EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS].
 		</member>
 		<member name="emission_rect_extents" type="Vector2" setter="set_emission_rect_extents" getter="get_emission_rect_extents">
 			The rectangle's extents if [member emission_shape] is set to [constant EMISSION_SHAPE_RECTANGLE].
@@ -187,8 +198,6 @@
 		</member>
 		<member name="flag_align_y" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
 			Align Y axis of particle with the direction of its velocity.
-		</member>
-		<member name="flatness" type="float" setter="set_flatness" getter="get_flatness" default="0.0">
 		</member>
 		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta" default="true">
 			If [code]true[/code], results in fractional delta calculation which has a smoother particles display effect.
@@ -359,6 +368,9 @@
 		</constant>
 		<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="4" enum="EmissionShape">
 			Particles will be emitted at a position chosen randomly among [member emission_points]. Particle velocity and rotation will be set based on [member emission_normals]. Particle color will be modulated by [member emission_colors].
+		</constant>
+		<constant name="EMISSION_SHAPE_MAX" value="5" enum="EmissionShape">
+			Represents the size of the [enum EmissionShape] enum.
 		</constant>
 	</constants>
 </class>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1033,7 +1033,11 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 #ifdef GLES_OVER_GL
 				if (polygon->antialiased) {
 					glEnable(GL_LINE_SMOOTH);
-					_draw_generic_indices(GL_LINE_STRIP, polygon->indices.ptr(), polygon->count, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
+					if (polygon->antialiasing_use_indices) {
+						_draw_generic_indices(GL_LINE_STRIP, polygon->indices.ptr(), polygon->count, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
+					} else {
+						_draw_generic(GL_LINE_LOOP, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
+					}
 					glDisable(GL_LINE_SMOOTH);
 				}
 #endif
@@ -1890,7 +1894,7 @@ void RasterizerCanvasGLES2::canvas_light_shadow_buffer_update(RID p_buffer, cons
 
 		while (instance) {
 
-			RasterizerStorageGLES2::CanvasOccluder *cc = storage->canvas_occluder_owner.get(instance->polygon_buffer);
+			RasterizerStorageGLES2::CanvasOccluder *cc = storage->canvas_occluder_owner.getornull(instance->polygon_buffer);
 			if (!cc || cc->len == 0 || !(p_light_mask & instance->light_mask)) {
 
 				instance = instance->next;
@@ -1898,9 +1902,20 @@ void RasterizerCanvasGLES2::canvas_light_shadow_buffer_update(RID p_buffer, cons
 			}
 
 			state.canvas_shadow_shader.set_uniform(CanvasShadowShaderGLES2::WORLD_MATRIX, instance->xform_cache);
-			if (cull != instance->cull_cache) {
 
-				cull = instance->cull_cache;
+			VS::CanvasOccluderPolygonCullMode transformed_cull_cache = instance->cull_cache;
+
+			if (transformed_cull_cache != VS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED &&
+					(p_light_xform.basis_determinant() * instance->xform_cache.basis_determinant()) < 0) {
+				transformed_cull_cache =
+						transformed_cull_cache == VS::CANVAS_OCCLUDER_POLYGON_CULL_CLOCKWISE ?
+								VS::CANVAS_OCCLUDER_POLYGON_CULL_COUNTER_CLOCKWISE :
+								VS::CANVAS_OCCLUDER_POLYGON_CULL_CLOCKWISE;
+			}
+
+			if (cull != transformed_cull_cache) {
+
+				cull = transformed_cull_cache;
 				switch (cull) {
 					case VS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED: {
 

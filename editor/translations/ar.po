@@ -1,6 +1,6 @@
 # Arabic translation of the Godot Engine editor
-# Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # Adel <dragonhunter250@gmail.com>, 2018.
 # athomield <athomield@hotmail.com>, 2017.
@@ -30,12 +30,15 @@
 # PhoenixHO <oussamahaddouche0@gmail.com>, 2019.
 # orcstudio <orcstudio@orcstudio.org>, 2019.
 # Rachid Graphicos <graphicos1d@gmail.com>, 2019.
+# traveller010 <manar.bushnaq.001@gmail.com>, 2019.
+# Ahmed Shahwan <dev.ahmed.shahwan@gmail.com>, 2019.
+# hshw <shw@tutanota.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-10-04 03:15+0000\n"
-"Last-Translator: Omar Aglan <omar.aglan91@yahoo.com>\n"
+"PO-Revision-Date: 2020-01-16 22:23+0000\n"
+"Last-Translator: hshw <shw@tutanota.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -44,12 +47,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 3.9-dev\n"
+"X-Generator: Weblate 3.10.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "نوع معامل خاطئ للدالة convert()، إستخدم ثوابت TYPE_*."
+
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
+msgstr "كان يتوقع سلسلة من الطول 1 (حرف)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -182,29 +189,24 @@ msgid "Anim Change Call"
 msgstr "نداء تغيير التحريك"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "تغيير وقت الإطار الرئيسي للحركة"
+msgstr "وقت الإطار متعدد التغييرات للرسم المتحرك"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "تغيير المقطع الإنتقالي"
+msgstr "المراحل الانتقالية للرسم المتحرك متعدد التغييرات"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "تحويل تغيير التحريك"
+msgstr "التَحَوّل متعدد التغيير للرسوم المتحركة"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "تغيير قيمة الإطار الأساسي للحركة"
+msgstr "قيمة الإطار متعدد التغييرات للرسم المتحرك"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
-msgstr "نداء تغيير التحريك"
+msgstr "استدعاء الرسوم المتحركة متعددة التغيير"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
@@ -443,9 +445,12 @@ msgid "Not possible to add a new track without a root"
 msgstr "لا يمكن إضافة مقطع جديد بدون جذر"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
+msgid "Invalid track for Bezier (no suitable sub-properties)"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
-msgstr "إضافة مسار"
+msgstr "إضافة مسار لمنحنى بريزير"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
@@ -517,12 +522,11 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
-msgstr ""
+msgstr "تحذير: تعديل رسوم متحركة مستوردة"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select an AnimationPlayer node to create and edit animations."
-msgstr "حدد مشغل حركة من شجرة المشهد لكي تعدل الحركة."
+msgstr "اختر مشغل الرسم المتحرك من شجرة المشهد لكي تنشئ أو تعدل الحركة."
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -533,9 +537,8 @@ msgid "Group tracks by node or display them as plain list."
 msgstr "قم بتجميع المقاطع حسب العقد (Nodes) أو إظهارهم كقائمة بسيطة."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Snap:"
-msgstr "خطوة أو خطوات: "
+msgstr "إنطباق أو محاذاة:"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
@@ -553,8 +556,9 @@ msgstr "إطار خلال ثانية"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
 msgstr "تعديل"
 
@@ -655,9 +659,8 @@ msgid "Scale Ratio:"
 msgstr "نسبة التكبير:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select Tracks to Copy"
-msgstr "حدد مقاطع لنسخ:"
+msgstr "إختر المقاطع المراد نسخها"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
 #: editor/editor_properties.cpp
@@ -669,9 +672,8 @@ msgid "Copy"
 msgstr "أنسخ"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select All/None"
-msgstr "تحديد الوضع"
+msgstr "إختر الكل/لا شيء"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -711,12 +713,11 @@ msgstr "إستبُدل %d حادثة(حوادث)."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
-msgstr ""
+msgstr "تطابق %d."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
-#, fuzzy
 msgid "%d matches."
-msgstr "لا مطابقة"
+msgstr "%d تطابقات."
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
@@ -741,6 +742,10 @@ msgstr "المحدد فقط"
 #: editor/code_editor.cpp editor/plugins/script_text_editor.cpp
 #: editor/plugins/text_editor.cpp
 msgid "Standard"
+msgstr "معياري"
+
+#: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Toggle Scripts Panel"
 msgstr ""
 
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
@@ -768,21 +773,18 @@ msgid "Line and column numbers."
 msgstr "أرقام الخط و العمود."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method in target node must be specified."
-msgstr "الطريقة في العقدة المستهدفة يجب أن تكون محدّدة!"
+msgstr "يجب تحديد الدالة في العقدة المستهدفة."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
 msgstr ""
-"لم يتم العثور على الطريقة المستهدفة! حدّد طريقة سليمة أو أرفق كود لإستهداف "
-"العقدة."
+"لم يتم العثور على الدالة المستهدفة. حدّد دالة سليمة أو أرفق كود للعقدة "
+"المستهدفة."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect to Node:"
 msgstr "صلها بالعقدة:"
 
@@ -791,14 +793,12 @@ msgid "Connect to Script:"
 msgstr "الإتصال بالمخطوطة:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "From Signal:"
-msgstr "الإشارات:"
+msgstr "من إشارة:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Scene does not contain any script."
-msgstr "العقدة لا تحتوي على هندسة."
+msgstr "لا يحتوي المشهد علي اي برنامج نصي."
 
 #: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
 #: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
@@ -826,6 +826,11 @@ msgid "Extra Call Arguments:"
 msgstr "وسائط إستدعاء إضافية :"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Receiver Method:"
+msgstr "إختر طريقة"
+
+#: editor/connections_dialog.cpp
 msgid "Advanced"
 msgstr "إعدادات متقدمة"
 
@@ -836,7 +841,7 @@ msgstr "مؤجل"
 #: editor/connections_dialog.cpp
 msgid ""
 "Defers the signal, storing it in a queue and only firing it at idle time."
-msgstr ""
+msgstr "تأخير الإشارة وتخزينها في قائمة الانتظار و تشغيلها فقط في وقت الفراغ."
 
 #: editor/connections_dialog.cpp
 msgid "Oneshot"
@@ -844,12 +849,11 @@ msgstr "لقطة واحدة"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnects the signal after its first emission."
-msgstr ""
+msgstr "فصل الإشارة بعد انبعاثها الأول."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Cannot connect signal"
-msgstr "قم بوصل الإشارة: "
+msgstr "إشارة غير قادر على الاتصال"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
@@ -873,7 +877,7 @@ msgstr "وصل"
 #: editor/connections_dialog.cpp
 #, fuzzy
 msgid "Signal:"
-msgstr "الإشارات:"
+msgstr "إشارة:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
@@ -897,14 +901,12 @@ msgid "Disconnect"
 msgstr "قطع الاتصال"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect a Signal to a Method"
-msgstr "قم بوصل الإشارة: "
+msgstr "قم بوصل الإشارة إلى الدالة"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Edit Connection:"
-msgstr "قم بتعديل الإتصال: "
+msgstr "تعديل الإتصال:"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
@@ -980,22 +982,20 @@ msgid "Dependencies For:"
 msgstr "تابعة لـ:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
 "المشهد '%s' هو حالياً جاري تعديله.\n"
-"التغييرات لن تحصل حتي يتم إعادة التشغيل."
+"ستسري التغييرات فقط عند إعادة التحميل."
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Resource '%s' is in use.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
 "المورد '%s' قيد الإستخدام.\n"
-"التغييرات ستظهر بعد إعادة التشغيل."
+" ستسري التغييرات فقط عند إعادة التحميل."
 
 #: editor/dependency_editor.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
@@ -1042,9 +1042,8 @@ msgid "Owners Of:"
 msgstr "ملاك:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Remove selected files from the project? (Can't be restored)"
-msgstr "إمسح الملفات المحددة من المشروع؟ (لا رجعة)"
+msgstr "إمسح الملفات المختارة من المشروع؟ (لا يمكن استعادتها)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -1088,9 +1087,8 @@ msgid "Permanently delete %d item(s)? (No undo!)"
 msgstr "إمسح نهائيا  %d عنصر(عناصر)؟ (بلا رجعة!)"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Show Dependencies"
-msgstr "التبعيات"
+msgstr "إظهار التبعيات"
 
 #: editor/dependency_editor.cpp
 msgid "Orphan Resource Explorer"
@@ -1181,12 +1179,10 @@ msgid "License"
 msgstr "الرخصة"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Third-party Licenses"
-msgstr "ترخيص الطرف الثالث"
+msgstr "تراخيص الجهات الخارجية"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid ""
 "Godot Engine relies on a number of third-party free and open source "
 "libraries, all compatible with the terms of its MIT license. The following "
@@ -1211,13 +1207,26 @@ msgid "Licenses"
 msgstr "تراخيص"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "Error opening package file, not in ZIP format."
-msgstr "خطأ عندفتح ملف الحزمة بسبب أن الملف ليس في صيغة \"ZIP\"."
+msgstr "حدث خطأ عندفتح ملف الحزمة بسبب أن الملف ليس في صيغة \"ZIP\"."
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "التحميل التلقائي '%s' موجود اصلا!"
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "يفكك الضغط عن الأصول"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr "فشل استخراج الملفات التالية من الحزمة:"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "%d مزيد من الملفات"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1227,6 +1236,11 @@ msgstr "تم تتبيث الحزمة بنجاح!"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "تم بشكل ناجح!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "المحتويات:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1281,9 +1295,8 @@ msgid "Delete Bus Effect"
 msgstr "مسح تأثير البيوس"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Drag & drop to rearrange."
-msgstr "بيوس الصوت، سحب وإسقاط لإعادة الترتيب."
+msgstr "إسحب وأسقط لإعادة الترتيب."
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
@@ -1356,7 +1369,7 @@ msgstr "إفتح نسق بيوس الصوت"
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no '%s' file."
-msgstr ""
+msgstr "لا يوجد ملف 's%'."
 
 #: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Layout"
@@ -1365,6 +1378,11 @@ msgstr "المخطط"
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
 msgstr "ملف خطأ، ليس ملف نسق بيوس الصوت."
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "خطأ في حفظ مجموعة البلاط!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -1413,9 +1431,8 @@ msgid "Valid characters:"
 msgstr "الأحرف الصالحة:"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing engine class name."
-msgstr "إسم غير صالح، يجب أن لا يتصادم مع أسم فصل خاص بالمحرك."
+msgstr "إسم غير صالح، يجب أن لا يتصادم مع أسم فئة خاصة بالمحرك."
 
 #: editor/editor_autoload_settings.cpp
 #, fuzzy
@@ -1683,7 +1700,7 @@ msgstr "خصائص:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Enabled Features:"
-msgstr ""
+msgstr "الميزات المفعلة:"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -1723,7 +1740,7 @@ msgstr "الحالي:"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "New"
-msgstr ""
+msgstr "جديد"
 
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/project_manager.cpp
@@ -1753,6 +1770,11 @@ msgstr "إسم جديد:"
 #, fuzzy
 msgid "Erase Profile"
 msgstr "زر الفأرة الأيمن: مسح النقطة."
+
+#: editor/editor_feature_profile.cpp
+#, fuzzy
+msgid "Godot Feature Profile"
+msgstr "إدارة قوالب التصدير"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -1968,12 +1990,26 @@ msgstr "مورث بواسطة:"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Brief Description"
-msgstr "وصف مختصر:"
+msgid "Description"
+msgstr "الوصف:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Online Tutorials"
+msgstr "الدورس علي الإنترنت:"
 
 #: editor/editor_help.cpp
 msgid "Properties"
 msgstr "خصائص"
+
+#: editor/editor_help.cpp
+msgid "override:"
+msgstr ""
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "الإفتراضي"
 
 #: editor/editor_help.cpp
 msgid "Methods"
@@ -1988,36 +2024,18 @@ msgid "Enumerations"
 msgstr "التعدادات"
 
 #: editor/editor_help.cpp
-msgid "enum  "
-msgstr "التعداد  "
-
-#: editor/editor_help.cpp
 msgid "Constants"
 msgstr "الثوابت"
-
-#: editor/editor_help.cpp
-msgid "Class Description"
-msgstr "وصف الصف"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Online Tutorials"
-msgstr "الدورس علي الإنترنت:"
-
-#: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"ليس هناك دروس تعليمية في هذا الفصل، يمكنك [color=$color][url=$url] المساهمة "
-"في إحداها [/url][/color] أو [color=$color][url=$url2]أطلب أحداها [/url][/"
-"color]."
 
 #: editor/editor_help.cpp
 #, fuzzy
 msgid "Property Descriptions"
 msgstr "وصف الملكية:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "القيمة:"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -2044,6 +2062,15 @@ msgstr ""
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search Help"
 msgstr "إبحث في المساعدة"
+
+#: editor/editor_help_search.cpp
+msgid "Case Sensitive"
+msgstr "حساسة لحالة الأحرف"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Show Hierarchy"
+msgstr "أظهر المساعدات"
 
 #: editor/editor_help_search.cpp
 msgid "Display All"
@@ -2081,6 +2108,30 @@ msgstr "نوع العضو"
 #: editor/editor_help_search.cpp
 msgid "Class"
 msgstr "الصنف"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Method"
+msgstr "قائمة الطرق"
+
+#: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Signal"
+msgstr "إشارات"
+
+#: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Constant"
+msgstr "ثابت"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Property"
+msgstr "خصيصة:"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Theme Property"
+msgstr "خصائص الثمة"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -2139,7 +2190,7 @@ msgstr "تنزيل"
 
 #: editor/editor_network_profiler.cpp
 msgid "Up"
-msgstr ""
+msgstr "فوق"
 
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
 msgid "Node"
@@ -2163,11 +2214,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
-msgstr ""
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr "تصدير المشروع فشل, رمز الخطأ %d."
+msgstr "نافذة جديدة"
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -2612,7 +2659,7 @@ msgstr "اغلاق"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Close Other Tabs"
-msgstr ""
+msgstr "أغلق الألسنة الاخرى"
 
 #: editor/editor_node.cpp
 msgid "Close Tabs to the Right"
@@ -2739,7 +2786,8 @@ msgstr "إعادة المشهد"
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "ادوات لكل-المشهد او لمشاريع متنوعه."
 
-#: editor/editor_node.cpp editor/script_create_dialog.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 msgid "Project"
 msgstr "مشروع"
 
@@ -3087,9 +3135,10 @@ msgstr ""
 msgid "Import Templates From ZIP File"
 msgstr "إستيراد القوالب من ملف مضغوط بصيغة Zip"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "تصدير المشروع"
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Template Package"
+msgstr "‌تصدير مدير القوالب"
 
 #: editor/editor_node.cpp
 msgid "Export Library"
@@ -3098,10 +3147,6 @@ msgstr "تصدير المكتبة"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "دمج مع الموجود"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "كلمة السر:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -3142,6 +3187,11 @@ msgstr "فتح في المُعدل التالي"
 #: editor/editor_node.cpp
 msgid "Open the previous Editor"
 msgstr "إفتح المُعدل السابق"
+
+#: editor/editor_node.h
+#, fuzzy
+msgid "Warning!"
+msgstr "تحذيرات"
 
 #: editor/editor_path.cpp
 #, fuzzy
@@ -3464,6 +3514,14 @@ msgid "Importing:"
 msgstr "يستورد:"
 
 #: editor/export_template_manager.cpp
+msgid "Error getting the list of mirrors."
+msgstr ""
+
+#: editor/export_template_manager.cpp
+msgid "Error parsing JSON of mirror list. Please report this issue!"
+msgstr ""
+
+#: editor/export_template_manager.cpp
 msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
@@ -3590,6 +3648,11 @@ msgstr "مسح القالب"
 #, fuzzy
 msgid "Select Template File"
 msgstr "حدد ملف القالب"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Godot Export Templates"
+msgstr "إدارة قوالب التصدير"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
@@ -4611,7 +4674,6 @@ msgid "Animation Tools"
 msgstr "أدوات الحركة"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr "صورة متحركة"
 
@@ -4721,6 +4783,11 @@ msgstr "وضع التحريك"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
+msgid "Transition exists!"
+msgstr "تحول"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
 msgid "Add Transition"
 msgstr "تحول"
 
@@ -4806,6 +4873,11 @@ msgstr ""
 #, fuzzy
 msgid "Transition: "
 msgstr "تحول"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Play Mode:"
+msgstr "وضع السحب"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -5069,6 +5141,32 @@ msgid "Download for this asset is already in progress!"
 msgstr "تحميل هذا الأصل قيد التنفيذ أصلاً!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Least Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (A-Z)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (Z-A)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (A-Z)"
+msgstr "الرخصة"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (Z-A)"
+msgstr "الرخصة"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
 msgid "First"
 msgstr "الأول"
@@ -5278,6 +5376,85 @@ msgid ""
 "When active, moving Control nodes changes their anchors instead of their "
 "margins."
 msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Left"
+msgstr "وضع التدوير"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Right"
+msgstr "وضع التدوير"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Right"
+msgstr "وضع التدوير"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Left"
+msgstr "وضع التدوير"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Left"
+msgstr "نصف المُحدد"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Top"
+msgstr "نصف المُحدد"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Right"
+msgstr "وضع التدوير"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Bottom"
+msgstr "نصف المُحدد"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Left Wide"
+msgstr "الخط الشمالي"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Top Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Right Wide"
+msgstr "الخط اليميني"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Bottom Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "VCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "HCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Full Rect"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Keep Ratio"
+msgstr "نسبة التكبير:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -5623,6 +5800,11 @@ msgid "Auto Insert Key"
 msgstr "أضف مفتاح الحركة"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Animation Key and Pose Options"
+msgstr "مدة الحركة (seconds)"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
 msgstr "أدخل مفتاح (مسارات موجودة بالفعل)"
 
@@ -5732,6 +5914,22 @@ msgstr "عدد النقاط المولدة:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
 msgstr "قناع الانبعاث"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Solid Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "الوجهات والملفات:"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -5905,7 +6103,6 @@ msgid "No mesh to debug."
 msgstr "لا ميش لتصحيحة."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr "النموذج ليس لديه UV في هذا الطابق"
 
@@ -5970,9 +6167,25 @@ msgstr "إنشاء شبكة الخطوط العريضة"
 msgid "Outline Size:"
 msgstr "حجم الخطوط:"
 
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Channel Debug"
+msgstr ""
+
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "مسح العنصر %d؟"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Update from existing scene?:\n"
+"%s"
+msgstr "تحديث من المشهد"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh Library"
+msgstr "مكتبة الميش..."
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -6636,6 +6849,23 @@ msgid "Save File As..."
 msgstr "حفظ باسم..."
 
 #: editor/plugins/script_editor_plugin.cpp
+msgid "Can't obtain the script for running."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script failed reloading, check console for errors."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script is not in tool mode, will not be able to run."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid ""
+"To run this script, it must inherit EditorScript and be set to tool mode."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
 msgstr ""
 
@@ -6769,10 +6999,6 @@ msgstr ""
 msgid "Run"
 msgstr ""
 
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Scripts Panel"
-msgstr ""
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr ""
@@ -6869,11 +7095,6 @@ msgid "Source"
 msgstr "مورد"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Signal"
-msgstr "إشارات"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Target"
 msgstr ""
 
@@ -6899,6 +7120,11 @@ msgstr "مسح المهمة"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
@@ -7321,6 +7547,10 @@ msgid "Cinematic Preview"
 msgstr "يُنشئ مستعرضات الميش"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Not available when using the GLES2 renderer."
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
 msgstr ""
 
@@ -7561,8 +7791,17 @@ msgstr "إنشاء شبكة الخطوط العريضة"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "Mesh2D Preview"
+msgstr "يُنشئ مستعرضات الميش"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Create Polygon2D"
 msgstr "إنشاء بولي"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Polygon2D Preview"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
@@ -7571,7 +7810,17 @@ msgstr "إنشاء مُضلع التنقل"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "CollisionPolygon2D Preview"
+msgstr "إنشاء مُضلع التنقل"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Create LightOccluder2D"
+msgstr "أنشئ شكل مُطبق"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "LightOccluder2D Preview"
 msgstr "أنشئ شكل مُطبق"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -7657,6 +7906,11 @@ msgstr ""
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
 msgstr ""
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Unable to load images"
+msgstr "فشل تحميل المورد."
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -7948,6 +8202,7 @@ msgid "Data Type:"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon"
 msgstr ""
 
@@ -7964,8 +8219,9 @@ msgid "Color"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
-msgstr "ثابت"
+#, fuzzy
+msgid "Theme File"
+msgstr "إفتح ملف"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -8084,6 +8340,19 @@ msgid "Merge from Scene"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Single Tile"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Autotile"
+msgstr "إظهار الملفات"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Atlas"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
 msgstr ""
 
@@ -8099,6 +8368,41 @@ msgstr "التبويب السابق"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
 msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Region"
+msgstr "وضع التدوير"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Collision"
+msgstr "وضعية الأستيفاء"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Occlusion"
+msgstr "تعديل البولي"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Navigation"
+msgstr "أنشئ ميش التنقل"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Bitmask"
+msgstr "وضع التدوير"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Priority"
+msgstr "تصدير المشروع"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Z Index"
+msgstr "وضع السحب"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -8338,6 +8642,16 @@ msgstr "تعديل المصافي"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
 msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Convex"
+msgstr "إنشاء بولي"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Concave"
+msgstr "أنشئ عظام"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -9301,6 +9615,15 @@ msgid "Runnable"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Add initial export..."
+msgstr "أضف مدخله"
+
+#: editor/project_export.cpp
+msgid "Add previous patches..."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete patch '%s' from list?"
 msgstr ""
 
@@ -9403,6 +9726,11 @@ msgid "Make Patch"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Pack File"
+msgstr " ملفات"
+
+#: editor/project_export.cpp
 msgid "Features"
 msgstr ""
 
@@ -9449,6 +9777,10 @@ msgid "Export PCK/Zip"
 msgstr ""
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "تصدير المشروع"
+
+#: editor/project_export.cpp
 #, fuzzy
 msgid "Export mode?"
 msgstr "تصدير المشروع"
@@ -9457,6 +9789,15 @@ msgstr "تصدير المشروع"
 #, fuzzy
 msgid "Export All"
 msgstr "تصدير"
+
+#: editor/project_export.cpp editor/project_manager.cpp
+#, fuzzy
+msgid "ZIP File"
+msgstr " ملفات"
+
+#: editor/project_export.cpp
+msgid "Godot Game Pack"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -9531,10 +9872,6 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
-msgstr ""
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -10749,6 +11086,11 @@ msgstr "تحميل نسق بيوس موجود مسبقاً."
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
+msgid "Script file already exists."
+msgstr "التحميل التلقائي '%s' موجود اصلا!"
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
 msgid "Class Name:"
 msgstr "إسم صنف"
 
@@ -11079,10 +11421,6 @@ msgid "GDNative"
 msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "Expected a string of length 1 (a character)."
-msgstr ""
-
-#: modules/gdscript/gdscript_functions.cpp
 #, fuzzy
 msgid "Step argument is zero!"
 msgstr "الخطوة (المتغيرة المدخلة/argument) تساوي صفر !"
@@ -11227,6 +11565,11 @@ msgstr ""
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
 msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Selects"
+msgstr "كُل المُحدد"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
@@ -11374,6 +11717,16 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Add Input Port"
+msgstr "أضف مدخله"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Output Port"
+msgstr "أضف مدخله"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Override an existing built-in function."
 msgstr "إسم غير صالح، يجب أن لا يتصادم مع الأسماء المبنية تلقائياً الموجودة."
 
@@ -11439,16 +11792,6 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
-msgid "Add Input Port"
-msgstr "أضف مدخله"
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Add Output Port"
-msgstr "أضف مدخله"
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Input Port"
 msgstr "مسح النقطة"
 
@@ -11495,10 +11838,6 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Preload Node"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Can't drop nodes because script '%s' is not used in this scene."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -11624,6 +11963,21 @@ msgstr "أنشئ عظام"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Members:"
 msgstr "الأعضاء:"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Base Type:"
+msgstr "غير نوع %s"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Nodes..."
+msgstr "إضافة %s..."
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Function..."
+msgstr "مسح المهمة"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -11828,24 +12182,7 @@ msgid "Identifier is missing."
 msgstr ""
 
 #: platform/iphone/export/export.cpp
-msgid "Identifier segments must be of non-zero length."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
 msgid "The character '%s' is not allowed in Identifier."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid "A digit cannot be the first character in a Identifier segment."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid ""
-"The character '%s' cannot be the first character in a Identifier segment."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid "The Identifier must have at least one '.' separator."
 msgstr ""
 
 #: platform/iphone/export/export.cpp
@@ -12357,7 +12694,14 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Pick a color from the editor window."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
@@ -12460,7 +12804,32 @@ msgstr "يمكن تعيين المتغيرات فقط في الذروة ."
 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
-msgstr ""
+msgstr "لا يمكن تعديل الثوابت."
+
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "ليس هناك دروس تعليمية في هذا الفصل، يمكنك [color=$color][url=$url] "
+#~ "المساهمة في إحداها [/url][/color] أو [color=$color][url=$url2]أطلب أحداها "
+#~ "[/url][/color]."
+
+#~ msgid "enum  "
+#~ msgstr "التعداد  "
+
+#, fuzzy
+#~ msgid "Brief Description"
+#~ msgstr "وصف مختصر:"
+
+#~ msgid "Class Description"
+#~ msgstr "وصف الصف"
+
+#~ msgid "Project export failed with error code %d."
+#~ msgstr "تصدير المشروع فشل, رمز الخطأ %d."
+
+#~ msgid "Password:"
+#~ msgstr "كلمة السر:"
 
 #~ msgid "Pause the scene"
 #~ msgstr "إيقاف المشهد مؤقتاً"
@@ -12663,10 +13032,6 @@ msgstr ""
 #~ msgstr "العمود:"
 
 #, fuzzy
-#~ msgid "Split already exists."
-#~ msgstr "التحميل التلقائي '%s' موجود اصلا!"
-
-#, fuzzy
 #~ msgid "Add Split"
 #~ msgstr "إضافة نقطة"
 
@@ -12710,10 +13075,6 @@ msgstr ""
 
 #~ msgid "RMB: Erase Point."
 #~ msgstr "زر الفأرة الأيمن: مسح النقطة."
-
-#, fuzzy
-#~ msgid "New TextFile"
-#~ msgstr "إظهار الملفات"
 
 #, fuzzy
 #~ msgid "Zoom:"
@@ -12934,9 +13295,6 @@ msgstr ""
 
 #~ msgid "Replace By"
 #~ msgstr "إستبدلت بـ"
-
-#~ msgid "Case Sensitive"
-#~ msgstr "حساسة لحالة الأحرف"
 
 #~ msgid "Backwards"
 #~ msgstr "إلي الخلف"

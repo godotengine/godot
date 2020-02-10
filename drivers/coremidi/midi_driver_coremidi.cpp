@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,13 +51,13 @@ Error MIDIDriverCoreMidi::open() {
 	OSStatus result = MIDIClientCreate(name, NULL, NULL, &client);
 	CFRelease(name);
 	if (result != noErr) {
-		ERR_PRINTS("MIDIClientCreate failed, code: " + itos(result));
+		ERR_PRINT("MIDIClientCreate failed, code: " + itos(result));
 		return ERR_CANT_OPEN;
 	}
 
 	result = MIDIInputPortCreate(client, CFSTR("Godot Input"), MIDIDriverCoreMidi::read, (void *)this, &port_in);
 	if (result != noErr) {
-		ERR_PRINTS("MIDIInputPortCreate failed, code: " + itos(result));
+		ERR_PRINT("MIDIInputPortCreate failed, code: " + itos(result));
 		return ERR_CANT_OPEN;
 	}
 

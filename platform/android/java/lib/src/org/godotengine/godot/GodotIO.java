@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -491,9 +491,9 @@ public class GodotIO {
 		return (int)(metrics.density * 160f);
 	}
 
-	public void showKeyboard(String p_existing_text) {
+	public void showKeyboard(String p_existing_text, int p_max_input_length) {
 		if (edit != null)
-			edit.showKeyboard(p_existing_text);
+			edit.showKeyboard(p_existing_text, p_max_input_length);
 
 		//InputMethodManager inputMgr = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
 		//inputMgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);

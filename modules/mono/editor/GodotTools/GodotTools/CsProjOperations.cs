@@ -26,7 +26,7 @@ namespace GodotTools
 
         public static void AddItem(string projectPath, string itemType, string include)
         {
-            if (!(bool) GlobalDef("mono/project/auto_update_project", true))
+            if (!(bool)GlobalDef("mono/project/auto_update_project", true))
                 return;
 
             ProjectUtils.AddItemToProjectChecked(projectPath, itemType, include);
@@ -49,7 +49,7 @@ namespace GodotTools
         private static ulong ConvertToTimestamp(this DateTime value)
         {
             TimeSpan elapsedTime = value - Epoch;
-            return (ulong) elapsedTime.TotalSeconds;
+            return (ulong)elapsedTime.TotalSeconds;
         }
 
         public static void GenerateScriptsMetadata(string projectPath, string outputPath)
@@ -68,7 +68,7 @@ namespace GodotTools
 
                 if (oldDict.TryGetValue(projectIncludeFile, out var oldFileVar))
                 {
-                    var oldFileDict = (Dictionary) oldFileVar;
+                    var oldFileDict = (Dictionary)oldFileVar;
 
                     if (ulong.TryParse(oldFileDict["modified_time"] as string, out ulong storedModifiedTime))
                     {
@@ -81,7 +81,12 @@ namespace GodotTools
                     }
                 }
 
-                ScriptClassParser.ParseFileOrThrow(projectIncludeFile, out var classes);
+                Error parseError = ScriptClassParser.ParseFile(projectIncludeFile, out var classes, out string errorStr);
+                if (parseError != Error.Ok)
+                {
+                    GD.PushError($"Failed to determine namespace and class for script: {projectIncludeFile}. Parse error: {errorStr ?? parseError.ToString()}");
+                    continue;
+                }
 
                 string searchName = System.IO.Path.GetFileNameWithoutExtension(projectIncludeFile);
 
@@ -108,7 +113,7 @@ namespace GodotTools
                 if (classDict.Count == 0)
                     continue; // Not found
 
-                newDict[projectIncludeFile] = new Dictionary {["modified_time"] = $"{modifiedTime}", ["class"] = classDict};
+                newDict[projectIncludeFile] = new Dictionary { ["modified_time"] = $"{modifiedTime}", ["class"] = classDict };
             }
 
             if (newDict.Count > 0)

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,7 +63,7 @@ private:
 	CowData<T> _cowdata;
 
 public:
-	bool push_back(const T &p_elem);
+	bool push_back(T p_elem);
 
 	void remove(int p_index) { _cowdata.remove(p_index); }
 	void erase(const T &p_val) {
@@ -83,10 +83,10 @@ public:
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
 	Error resize(int p_size) { return _cowdata.resize(p_size); }
 	_FORCE_INLINE_ const T &operator[](int p_index) const { return _cowdata.get(p_index); }
-	Error insert(int p_pos, const T &p_val) { return _cowdata.insert(p_pos, p_val); }
+	Error insert(int p_pos, T p_val) { return _cowdata.insert(p_pos, p_val); }
 	int find(const T &p_val, int p_from = 0) const { return _cowdata.find(p_val, p_from); }
 
-	void append_array(const Vector<T> &p_other);
+	void append_array(Vector<T> p_other);
 
 	template <class C>
 	void sort_custom() {
@@ -136,7 +136,7 @@ void Vector<T>::invert() {
 }
 
 template <class T>
-void Vector<T>::append_array(const Vector<T> &p_other) {
+void Vector<T>::append_array(Vector<T> p_other) {
 	const int ds = p_other.size();
 	if (ds == 0)
 		return;
@@ -147,7 +147,7 @@ void Vector<T>::append_array(const Vector<T> &p_other) {
 }
 
 template <class T>
-bool Vector<T>::push_back(const T &p_elem) {
+bool Vector<T>::push_back(T p_elem) {
 
 	Error err = resize(size() + 1);
 	ERR_FAIL_COND_V(err, true);

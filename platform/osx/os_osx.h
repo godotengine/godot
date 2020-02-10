@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,8 +76,6 @@ public:
 	List<String> args;
 	MainLoop *main_loop;
 
-	IP_Unix *ip_unix;
-
 #ifdef COREAUDIO_ENABLED
 	AudioDriverCoreAudio audio_driver;
 #endif
@@ -121,6 +119,7 @@ public:
 	bool maximized;
 	bool zoomed;
 	bool resizable;
+	bool window_focused;
 
 	Size2 window_size;
 	Rect2 restore_rect;
@@ -222,6 +221,7 @@ public:
 	virtual String get_config_path() const;
 	virtual String get_data_path() const;
 	virtual String get_cache_path() const;
+	virtual String get_bundle_resource_dir() const;
 	virtual String get_godot_dir_name() const;
 
 	virtual String get_system_dir(SystemDir p_dir) const;
@@ -274,6 +274,7 @@ public:
 	virtual bool is_window_maximized() const;
 	virtual void set_window_always_on_top(bool p_enabled);
 	virtual bool is_window_always_on_top() const;
+	virtual bool is_window_focused() const;
 	virtual void request_attention();
 	virtual String get_joy_guid(int p_device) const;
 

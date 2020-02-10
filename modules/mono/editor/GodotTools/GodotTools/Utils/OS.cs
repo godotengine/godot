@@ -5,7 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Mono.Unix.Native;
 
 namespace GodotTools.Utils
 {
@@ -14,6 +13,9 @@ namespace GodotTools.Utils
     {
         [MethodImpl(MethodImplOptions.InternalCall)]
         static extern string GetPlatformName();
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        static extern bool UnixFileHasExecutableAccess(string filePath);
 
         public static class Names
         {
@@ -75,7 +77,7 @@ namespace GodotTools.Utils
         public static bool IsHTML5 => _isHTML5.Value;
 
         private static bool? _isUnixCache;
-        private static readonly string[] UnixLikePlatforms = {Names.OSX, Names.X11, Names.Server, Names.Haiku, Names.Android};
+        private static readonly string[] UnixLikePlatforms = { Names.OSX, Names.X11, Names.Server, Names.Haiku, Names.Android };
 
         public static bool IsUnixLike()
         {
@@ -105,7 +107,7 @@ namespace GodotTools.Utils
                 searchDirs.AddRange(pathDirs);
 
             string nameExt = Path.GetExtension(name);
-            bool hasPathExt = string.IsNullOrEmpty(nameExt) || windowsExts.Contains(nameExt, StringComparer.OrdinalIgnoreCase);
+            bool hasPathExt = !string.IsNullOrEmpty(nameExt) && windowsExts.Contains(nameExt, StringComparer.OrdinalIgnoreCase);
 
             searchDirs.Add(System.IO.Directory.GetCurrentDirectory()); // last in the list
 
@@ -113,10 +115,10 @@ namespace GodotTools.Utils
                 return searchDirs.Select(dir => Path.Combine(dir, name)).FirstOrDefault(File.Exists);
 
             return (from dir in searchDirs
-                select Path.Combine(dir, name)
+                    select Path.Combine(dir, name)
                 into path
-                from ext in windowsExts
-                select path + ext).FirstOrDefault(File.Exists);
+                    from ext in windowsExts
+                    select path + ext).FirstOrDefault(File.Exists);
         }
 
         private static string PathWhichUnix(string name)
@@ -131,7 +133,7 @@ namespace GodotTools.Utils
             searchDirs.Add(System.IO.Directory.GetCurrentDirectory()); // last in the list
 
             return searchDirs.Select(dir => Path.Combine(dir, name))
-                .FirstOrDefault(path => File.Exists(path) && Syscall.access(path, AccessModes.X_OK) == 0);
+                .FirstOrDefault(path => File.Exists(path) && UnixFileHasExecutableAccess(path));
         }
 
         public static void RunProcess(string command, IEnumerable<string> arguments)
@@ -157,6 +159,8 @@ namespace GodotTools.Utils
 
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
+                if (IsWindows && process.Id > 0)
+                    User32Dll.AllowSetForegroundWindow(process.Id); // allows application to focus itself
             }
         }
     }

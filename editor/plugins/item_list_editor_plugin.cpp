@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #include "item_list_editor_plugin.h"
 
 #include "core/io/resource_loader.h"
+#include "editor/editor_scale.h"
 
 bool ItemListPlugin::_set(const StringName &p_name, const Variant &p_value) {
 
@@ -301,7 +302,7 @@ void ItemListEditor::_delete_pressed() {
 
 void ItemListEditor::_edit_items() {
 
-	dialog->popup_centered(Vector2(300, 400) * EDSCALE);
+	dialog->popup_centered_clamped(Vector2(425, 1200) * EDSCALE, 0.8);
 }
 
 void ItemListEditor::edit(Node *p_item_list) {

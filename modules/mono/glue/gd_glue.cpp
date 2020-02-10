@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -71,48 +71,114 @@ MonoObject *godot_icall_GD_instance_from_id(uint64_t p_instance_id) {
 }
 
 void godot_icall_GD_print(MonoArray *p_what) {
-	Array what = GDMonoMarshal::mono_array_to_Array(p_what);
 	String str;
-	for (int i = 0; i < what.size(); i++)
-		str += what[i].operator String();
+	int length = mono_array_length(p_what);
+
+	for (int i = 0; i < length; i++) {
+		MonoObject *elem = mono_array_get(p_what, MonoObject *, i);
+
+		MonoException *exc = NULL;
+		String elem_str = GDMonoMarshal::mono_object_to_variant_string(elem, &exc);
+
+		if (exc) {
+			GDMonoUtils::set_pending_exception(exc);
+			return;
+		}
+
+		str += elem_str;
+	}
+
 	print_line(str);
 }
 
 void godot_icall_GD_printerr(MonoArray *p_what) {
-	Array what = GDMonoMarshal::mono_array_to_Array(p_what);
+
 	String str;
-	for (int i = 0; i < what.size(); i++)
-		str += what[i].operator String();
-	OS::get_singleton()->printerr("%s\n", str.utf8().get_data());
+	int length = mono_array_length(p_what);
+
+	for (int i = 0; i < length; i++) {
+		MonoObject *elem = mono_array_get(p_what, MonoObject *, i);
+
+		MonoException *exc = NULL;
+		String elem_str = GDMonoMarshal::mono_object_to_variant_string(elem, &exc);
+
+		if (exc) {
+			GDMonoUtils::set_pending_exception(exc);
+			return;
+		}
+
+		str += elem_str;
+	}
+
+	print_error(str);
 }
 
 void godot_icall_GD_printraw(MonoArray *p_what) {
-	Array what = GDMonoMarshal::mono_array_to_Array(p_what);
 	String str;
-	for (int i = 0; i < what.size(); i++)
-		str += what[i].operator String();
+	int length = mono_array_length(p_what);
+
+	for (int i = 0; i < length; i++) {
+		MonoObject *elem = mono_array_get(p_what, MonoObject *, i);
+
+		MonoException *exc = NULL;
+		String elem_str = GDMonoMarshal::mono_object_to_variant_string(elem, &exc);
+
+		if (exc) {
+			GDMonoUtils::set_pending_exception(exc);
+			return;
+		}
+
+		str += elem_str;
+	}
+
 	OS::get_singleton()->print("%s", str.utf8().get_data());
 }
 
 void godot_icall_GD_prints(MonoArray *p_what) {
-	Array what = GDMonoMarshal::mono_array_to_Array(p_what);
 	String str;
-	for (int i = 0; i < what.size(); i++) {
+	int length = mono_array_length(p_what);
+
+	for (int i = 0; i < length; i++) {
+		MonoObject *elem = mono_array_get(p_what, MonoObject *, i);
+
+		MonoException *exc = NULL;
+		String elem_str = GDMonoMarshal::mono_object_to_variant_string(elem, &exc);
+
+		if (exc) {
+			GDMonoUtils::set_pending_exception(exc);
+			return;
+		}
+
 		if (i)
 			str += " ";
-		str += what[i].operator String();
+
+		str += elem_str;
 	}
+
 	print_line(str);
 }
 
 void godot_icall_GD_printt(MonoArray *p_what) {
-	Array what = GDMonoMarshal::mono_array_to_Array(p_what);
 	String str;
-	for (int i = 0; i < what.size(); i++) {
+	int length = mono_array_length(p_what);
+
+	for (int i = 0; i < length; i++) {
+		MonoObject *elem = mono_array_get(p_what, MonoObject *, i);
+
+		MonoException *exc = NULL;
+		String elem_str = GDMonoMarshal::mono_object_to_variant_string(elem, &exc);
+
+		if (exc) {
+			GDMonoUtils::set_pending_exception(exc);
+			return;
+		}
+
 		if (i)
 			str += "\t";
-		str += what[i].operator String();
+
+		str += elem_str;
 	}
+
 	print_line(str);
 }
 
@@ -169,7 +235,7 @@ MonoObject *godot_icall_GD_str2var(MonoString *p_str) {
 	Error err = VariantParser::parse(&ss, ret, errs, line);
 	if (err != OK) {
 		String err_str = "Parse error at line " + itos(line) + ": " + errs + ".";
-		ERR_PRINTS(err_str);
+		ERR_PRINT(err_str);
 		ret = err_str;
 	}
 
@@ -181,11 +247,11 @@ MonoBoolean godot_icall_GD_type_exists(MonoString *p_type) {
 }
 
 void godot_icall_GD_pusherror(MonoString *p_str) {
-	ERR_PRINTS(GDMonoMarshal::mono_string_to_godot(p_str));
+	ERR_PRINT(GDMonoMarshal::mono_string_to_godot(p_str));
 }
 
 void godot_icall_GD_pushwarning(MonoString *p_str) {
-	WARN_PRINTS(GDMonoMarshal::mono_string_to_godot(p_str));
+	WARN_PRINT(GDMonoMarshal::mono_string_to_godot(p_str));
 }
 
 MonoArray *godot_icall_GD_var2bytes(MonoObject *p_var, MonoBoolean p_full_objects) {

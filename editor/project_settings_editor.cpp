@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,9 @@
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "core/translation.h"
+#include "editor/editor_export.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/tab_container.h"
 
@@ -717,9 +719,18 @@ void ProjectSettingsEditor::_update_actions() {
 		item->set_range(1, action["deadzone"]);
 		item->set_custom_bg_color(1, get_color("prop_subsection", "Editor"));
 
+		const bool is_builtin_input = ProjectSettings::get_singleton()->get_input_presets().find(pi.name) != NULL;
+		const String tooltip = is_builtin_input ? TTR("Built-in actions can't be removed as they're used for UI navigation.") : TTR("Remove");
 		item->add_button(2, get_icon("Add", "EditorIcons"), 1, false, TTR("Add Event"));
-		if (!ProjectSettings::get_singleton()->get_input_presets().find(pi.name)) {
-			item->add_button(2, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
+		item->add_button(2, get_icon("Remove", "EditorIcons"), 2, false, tooltip);
+
+		if (is_builtin_input) {
+			// Built-in action (like `ui_up`). Make the action not removable,
+			// but still display the button so the "Add" button is at the same
+			// horizontal position as for custom actions.
+			item->set_button_disabled(2, 1, true);
+		} else {
+			// Not a built-in action. Make the action name editable.
 			item->set_editable(0, true);
 		}
 
@@ -745,10 +756,9 @@ void ProjectSettingsEditor::_update_actions() {
 			if (jb.is_valid()) {
 
 				String str = _get_device_string(jb->get_device()) + ", " + TTR("Button") + " " + itos(jb->get_button_index());
-				if (jb->get_button_index() >= 0 && jb->get_button_index() < JOY_BUTTON_MAX)
-					str += String() + " (" + _button_names[jb->get_button_index()] + ").";
-				else
-					str += ".";
+				if (jb->get_button_index() >= 0 && jb->get_button_index() < JOY_BUTTON_MAX) {
+					str += String() + " (" + _button_names[jb->get_button_index()] + ")";
+				}
 
 				action2->set_text(0, str);
 				action2->set_icon(0, get_icon("JoyButton", "EditorIcons"));
@@ -759,12 +769,12 @@ void ProjectSettingsEditor::_update_actions() {
 			if (mb.is_valid()) {
 				String str = _get_device_string(mb->get_device()) + ", ";
 				switch (mb->get_button_index()) {
-					case BUTTON_LEFT: str += TTR("Left Button."); break;
-					case BUTTON_RIGHT: str += TTR("Right Button."); break;
-					case BUTTON_MIDDLE: str += TTR("Middle Button."); break;
-					case BUTTON_WHEEL_UP: str += TTR("Wheel Up."); break;
-					case BUTTON_WHEEL_DOWN: str += TTR("Wheel Down."); break;
-					default: str += TTR("Button") + " " + itos(mb->get_button_index()) + ".";
+					case BUTTON_LEFT: str += TTR("Left Button"); break;
+					case BUTTON_RIGHT: str += TTR("Right Button"); break;
+					case BUTTON_MIDDLE: str += TTR("Middle Button"); break;
+					case BUTTON_WHEEL_UP: str += TTR("Wheel Up"); break;
+					case BUTTON_WHEEL_DOWN: str += TTR("Wheel Down"); break;
+					default: str += vformat(TTR("%d Button"), mb->get_button_index());
 				}
 
 				action2->set_text(0, str);
@@ -778,7 +788,7 @@ void ProjectSettingsEditor::_update_actions() {
 				int ax = jm->get_axis();
 				int n = 2 * ax + (jm->get_axis_value() < 0 ? 0 : 1);
 				String desc = _axis_names[n];
-				String str = _get_device_string(jm->get_device()) + ", " + TTR("Axis") + " " + itos(ax) + " " + (jm->get_axis_value() < 0 ? "-" : "+") + desc + ".";
+				String str = _get_device_string(jm->get_device()) + ", " + TTR("Axis") + " " + itos(ax) + " " + (jm->get_axis_value() < 0 ? "-" : "+") + desc;
 				action2->set_text(0, str);
 				action2->set_icon(0, get_icon("JoyAxis", "EditorIcons"));
 			}
@@ -787,6 +797,10 @@ void ProjectSettingsEditor::_update_actions() {
 
 			action2->add_button(2, get_icon("Edit", "EditorIcons"), 3, false, TTR("Edit"));
 			action2->add_button(2, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
+			// Fade out the individual event buttons slightly to make the
+			// Add/Remove buttons stand out more.
+			action2->set_button_color(2, 0, Color(1, 1, 1, 0.75));
+			action2->set_button_color(2, 1, Color(1, 1, 1, 0.75));
 		}
 	}
 

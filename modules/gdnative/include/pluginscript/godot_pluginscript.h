@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,22 +44,18 @@ typedef void godot_pluginscript_language_data;
 
 // --- Instance ---
 
-// TODO: use godot_string_name for faster lookup ?
 typedef struct {
 	godot_pluginscript_instance_data *(*init)(godot_pluginscript_script_data *p_data, godot_object *p_owner);
 	void (*finish)(godot_pluginscript_instance_data *p_data);
 
-	godot_bool (*set_prop)(godot_pluginscript_instance_data *p_data, const godot_string *p_name, const godot_variant *p_value);
-	godot_bool (*get_prop)(godot_pluginscript_instance_data *p_data, const godot_string *p_name, godot_variant *r_ret);
+	godot_bool (*set_prop)(godot_pluginscript_instance_data *p_data, const godot_string_name *p_name, const godot_variant *p_value);
+	godot_bool (*get_prop)(godot_pluginscript_instance_data *p_data, const godot_string_name *p_name, godot_variant *r_ret);
 
 	godot_variant (*call_method)(godot_pluginscript_instance_data *p_data,
 			const godot_string_name *p_method, const godot_variant **p_args,
 			int p_argcount, godot_variant_call_error *r_error);
 
 	void (*notification)(godot_pluginscript_instance_data *p_data, int p_notification);
-	// TODO: could this rpc mode stuff be moved to the godot_pluginscript_script_manifest ?
-	godot_method_rpc_mode (*get_rpc_mode)(godot_pluginscript_instance_data *p_data, const godot_string *p_method);
-	godot_method_rpc_mode (*get_rset_mode)(godot_pluginscript_instance_data *p_data, const godot_string *p_variable);
 
 	//this is used by script languages that keep a reference counter of their own
 	//you can make make Ref<> not die when it reaches zero, so deleting the reference
@@ -139,7 +135,7 @@ typedef struct {
 	godot_error (*complete_code)(godot_pluginscript_language_data *p_data, const godot_string *p_code, const godot_string *p_path, godot_object *p_owner, godot_array *r_options, godot_bool *r_force, godot_string *r_call_hint);
 	void (*auto_indent_code)(godot_pluginscript_language_data *p_data, godot_string *p_code, int p_from_line, int p_to_line);
 
-	void (*add_global_constant)(godot_pluginscript_language_data *p_data, const godot_string *p_variable, const godot_variant *p_value);
+	void (*add_global_constant)(godot_pluginscript_language_data *p_data, const godot_string_name *p_variable, const godot_variant *p_value);
 	godot_string (*debug_get_error)(godot_pluginscript_language_data *p_data);
 	int (*debug_get_stack_level_count)(godot_pluginscript_language_data *p_data);
 	int (*debug_get_stack_level_line)(godot_pluginscript_language_data *p_data, int p_level);

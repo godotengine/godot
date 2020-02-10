@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,22 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "pluginscript_instance.h"
+
 // Godot imports
 #include "core/os/os.h"
 #include "core/variant.h"
+
 // PluginScript imports
-#include "pluginscript_instance.h"
 #include "pluginscript_language.h"
 #include "pluginscript_script.h"
 
 bool PluginScriptInstance::set(const StringName &p_name, const Variant &p_value) {
-	String name = String(p_name);
-	return _desc->set_prop(_data, (const godot_string *)&name, (const godot_variant *)&p_value);
+	return _desc->set_prop(_data, (const godot_string_name *)&p_name, (const godot_variant *)&p_value);
 }
 
 bool PluginScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
-	String name = String(p_name);
-	return _desc->get_prop(_data, (const godot_string *)&name, (godot_variant *)&r_ret);
+	return _desc->get_prop(_data, (const godot_string_name *)&p_name, (godot_variant *)&r_ret);
 }
 
 Ref<Script> PluginScriptInstance::get_script() const {
@@ -88,51 +88,6 @@ Variant PluginScriptInstance::call(const StringName &p_method, const Variant **p
 	godot_variant_destroy(&ret);
 	return var_ret;
 }
-
-#if 0 // TODO: Don't rely on default implementations provided by ScriptInstance ?
-void PluginScriptInstance::call_multilevel(const StringName& p_method,const Variant** p_args,int p_argcount) {
-
-#if 0
-    PluginScript *sptr=script.ptr();
-    Variant::CallError ce;
-
-    while(sptr) {
-        Map<StringName,GDFunction*>::Element *E = sptr->member_functions.find(p_method);
-        if (E) {
-            E->get()->call(this,p_args,p_argcount,ce);
-        }
-        sptr = sptr->_base;
-    }
-#endif
-
-}
-
-#if 0
-void PluginScriptInstance::_ml_call_reversed(PluginScript *sptr,const StringName& p_method,const Variant** p_args,int p_argcount) {
-
-    if (sptr->_base)
-        _ml_call_reversed(sptr->_base,p_method,p_args,p_argcount);
-
-    Variant::CallError ce;
-
-    Map<StringName,GDFunction*>::Element *E = sptr->member_functions.find(p_method);
-    if (E) {
-        E->get()->call(this,p_args,p_argcount,ce);
-    }
-
-}
-#endif
-
-
-void PluginScriptInstance::call_multilevel_reversed(const StringName& p_method,const Variant** p_args,int p_argcount) {
-
-#if 0
-    if (script.ptr()) {
-        _ml_call_reversed(script.ptr(),p_method,p_args,p_argcount);
-    }
-#endif
-}
-#endif // Multilevel stuff
 
 void PluginScriptInstance::notification(int p_notification) {
 	_desc->notification(_data, p_notification);

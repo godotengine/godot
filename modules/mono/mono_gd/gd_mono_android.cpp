@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -81,7 +81,8 @@ struct ScopedLocalRef {
 	ScopedLocalRef &operator=(const ScopedLocalRef &) = delete;
 
 	ScopedLocalRef(JNIEnv *p_env, T p_local_ref) :
-			env(p_env), local_ref(p_local_ref) {
+			env(p_env),
+			local_ref(p_local_ref) {
 	}
 
 	~ScopedLocalRef() {
@@ -314,7 +315,7 @@ MonoArray *_gd_mono_android_cert_store_lookup(MonoString *p_alias) {
 	char *alias_utf8 = mono_string_to_utf8_checked(p_alias, &mono_error);
 
 	if (!mono_error_ok(&mono_error)) {
-		ERR_PRINTS(String() + "Failed to convert MonoString* to UTF-8: '" + mono_error_get_message(&mono_error) + "'.");
+		ERR_PRINT(String() + "Failed to convert MonoString* to UTF-8: '" + mono_error_get_message(&mono_error) + "'.");
 		mono_error_cleanup(&mono_error);
 		return NULL;
 	}

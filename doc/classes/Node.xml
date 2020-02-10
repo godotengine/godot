@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Node" inherits="Object" category="Core" version="3.2">
+<class name="Node" inherits="Object" version="4.0">
 	<brief_description>
 		Base class for all [i]scene[/i] objects.
 	</brief_description>
@@ -33,7 +33,7 @@
 			</return>
 			<description>
 				Called when the node is about to leave the [SceneTree] (e.g. upon freeing, scene changing, or after calling [method remove_child] in a script). If the node has children, its [method _exit_tree] callback will be called last, after all its children have left the tree.
-				Corresponds to the [constant NOTIFICATION_EXIT_TREE] notification in [method Object._notification] and signal [signal tree_exiting]. To get notified when the node has already left the active tree, connect to the [signal tree_exited]
+				Corresponds to the [constant NOTIFICATION_EXIT_TREE] notification in [method Object._notification] and signal [signal tree_exiting]. To get notified when the node has already left the active tree, connect to the [signal tree_exited].
 			</description>
 		</method>
 		<method name="_get_configuration_warning" qualifiers="virtual">
@@ -129,6 +129,7 @@
 				    child_node.get_parent().remove_child(child_node)
 				add_child(child_node)
 				[/codeblock]
+				[b]Note:[/b] If you want a child to be persisted to a [PackedScene], you must set [member owner] in addition to calling [method add_child]. This is typically relevant for [url=https://godot.readthedocs.io/en/latest/tutorials/misc/running_code_in_the_editor.html]tool scripts[/url] and [url=https://godot.readthedocs.io/en/latest/tutorials/plugins/editor/index.html]editor plugins[/url]. If [method add_child] is called without setting [member owner], the newly added [Node] will not be visible in the scene tree, though it will be visible in the 2D/3D view.
 			</description>
 		</method>
 		<method name="add_child_below_node">
@@ -839,7 +840,7 @@
 			Pause mode. How the node will behave if the [SceneTree] is paused.
 		</member>
 		<member name="process_priority" type="int" setter="set_process_priority" getter="get_process_priority" default="0">
-			The node's priority in the execution order of the enabled processing callbacks (i.e. [constant NOTIFICATION_PROCESS], [constant NOTIFICATION_PHYSICS_PROCESS] and their internal counterparts). Nodes with a higher process priority will have their processing callbacks executed first.
+			The node's priority in the execution order of the enabled processing callbacks (i.e. [constant NOTIFICATION_PROCESS], [constant NOTIFICATION_PHYSICS_PROCESS] and their internal counterparts). Nodes whose process priority value is [i]lower[/i] will have their processing callbacks executed first.
 		</member>
 	</members>
 	<signals>
@@ -994,6 +995,7 @@
 		</constant>
 		<constant name="DUPLICATE_USE_INSTANCING" value="8" enum="DuplicateFlags">
 			Duplicate using instancing.
+			An instance stays linked to the original so when the original changes, the instance changes too.
 		</constant>
 	</constants>
 </class>

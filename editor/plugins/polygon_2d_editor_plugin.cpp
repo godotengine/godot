@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@
 #include "core/os/file_access.h"
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "scene/2d/skeleton_2d.h"
 
@@ -91,6 +92,9 @@ void Polygon2DEditor::_notification(int p_what) {
 			b_snap_grid->set_icon(get_icon("Grid", "EditorIcons"));
 			b_snap_enable->set_icon(get_icon("SnapGrid", "EditorIcons"));
 			uv_icon_zoom->set_texture(get_icon("Zoom", "EditorIcons"));
+
+			uv_vscroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
+			uv_hscroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
@@ -1195,7 +1199,9 @@ void Polygon2DEditor::_uv_draw() {
 
 	rect.position -= uv_edit_draw->get_size();
 	rect.size += uv_edit_draw->get_size() * 2.0;
+
 	updating_uv_scroll = true;
+
 	uv_hscroll->set_min(rect.position.x);
 	uv_hscroll->set_max(rect.position.x + rect.size.x);
 	if (ABS(rect.position.x - (rect.position.x + rect.size.x)) <= uv_edit_draw->get_size().x) {
@@ -1215,6 +1221,14 @@ void Polygon2DEditor::_uv_draw() {
 		uv_vscroll->set_page(uv_edit_draw->get_size().y);
 		uv_vscroll->set_value(uv_draw_ofs.y);
 	}
+
+	Size2 hmin = uv_hscroll->get_combined_minimum_size();
+	Size2 vmin = uv_vscroll->get_combined_minimum_size();
+
+	// Avoid scrollbar overlapping.
+	uv_hscroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, uv_vscroll->is_visible() ? -vmin.width : 0);
+	uv_vscroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, uv_hscroll->is_visible() ? -hmin.height : 0);
+
 	updating_uv_scroll = false;
 }
 
@@ -1444,7 +1458,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_mode_hb->add_child(uv_icon_zoom);
 	uv_zoom = memnew(HSlider);
 	uv_zoom->set_min(0.01);
-	uv_zoom->set_max(4);
+	uv_zoom->set_max(16);
 	uv_zoom->set_value(1);
 	uv_zoom->set_step(0.01);
 	uv_zoom->set_v_size_flags(SIZE_SHRINK_CENTER);
@@ -1460,13 +1474,10 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_vscroll = memnew(VScrollBar);
 	uv_vscroll->set_step(0.001);
 	uv_edit_draw->add_child(uv_vscroll);
-	uv_vscroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
 	uv_vscroll->connect("value_changed", this, "_uv_scroll_changed");
 	uv_hscroll = memnew(HScrollBar);
 	uv_hscroll->set_step(0.001);
 	uv_edit_draw->add_child(uv_hscroll);
-	uv_hscroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
-	uv_hscroll->set_margin(MARGIN_RIGHT, -uv_vscroll->get_size().x * EDSCALE);
 	uv_hscroll->connect("value_changed", this, "_uv_scroll_changed");
 
 	bone_scroll_main_vb = memnew(VBoxContainer);

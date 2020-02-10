@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SceneTree" inherits="MainLoop" category="Core" version="3.2">
+<class name="SceneTree" inherits="MainLoop" version="4.0">
 	<brief_description>
 		Manages the game loop via a hierarchy of nodes.
 	</brief_description>
@@ -185,8 +185,10 @@
 		<method name="quit">
 			<return type="void">
 			</return>
+			<argument index="0" name="exit_code" type="int" default="-1">
+			</argument>
 			<description>
-				Quits the application.
+				Quits the application. A process [code]exit_code[/code] can optionally be passed as an argument. If this argument is [code]0[/code] or greater, it will override the [member OS.exit_code] defined before quitting the application.
 			</description>
 		</method>
 		<method name="reload_current_scene">
@@ -327,9 +329,9 @@
 			</description>
 		</signal>
 		<signal name="global_menu_action">
-			<argument index="0" name="id" type="Nil">
+			<argument index="0" name="id" type="Variant">
 			</argument>
-			<argument index="1" name="meta" type="Nil">
+			<argument index="1" name="meta" type="Variant">
 			</argument>
 			<description>
 				Emitted whenever global menu item is clicked.

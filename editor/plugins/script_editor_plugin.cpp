@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,10 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "editor/editor_node.h"
+#include "editor/editor_run_script.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/filesystem_dock.h"
 #include "editor/find_in_files.h"
 #include "editor/node_dock.h"
 #include "editor/plugins/shader_editor_plugin.h"
@@ -987,12 +990,22 @@ Array ScriptEditor::_get_open_scripts() const {
 	return ret;
 }
 
+bool ScriptEditor::toggle_scripts_panel() {
+	list_split->set_visible(!list_split->is_visible());
+	return list_split->is_visible();
+}
+
+bool ScriptEditor::is_scripts_panel_toggled() {
+	return list_split->is_visible();
+}
+
 void ScriptEditor::_menu_option(int p_option) {
 
+	ScriptEditorBase *current = _get_current_editor();
 	switch (p_option) {
 		case FILE_NEW: {
-			script_create_dialog->config("Node", "new_script");
-			script_create_dialog->popup_centered(Size2(300, 300) * EDSCALE);
+			script_create_dialog->config("Node", "new_script", false, false);
+			script_create_dialog->popup_centered();
 		} break;
 		case FILE_NEW_TEXTFILE: {
 			file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
@@ -1127,11 +1140,18 @@ void ScriptEditor::_menu_option(int p_option) {
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(DEBUG_WITH_EXTERNAL_EDITOR), debug_with_external_editor);
 		} break;
 		case TOGGLE_SCRIPTS_PANEL: {
-			list_split->set_visible(!list_split->is_visible());
+			if (current) {
+				ScriptTextEditor *editor = Object::cast_to<ScriptTextEditor>(current);
+				toggle_scripts_panel();
+				if (editor) {
+					editor->update_toggle_scripts_button();
+				}
+			} else {
+				toggle_scripts_panel();
+			}
 		}
 	}
 
-	ScriptEditorBase *current = _get_current_editor();
 	if (current) {
 
 		switch (p_option) {
@@ -1208,7 +1228,7 @@ void ScriptEditor::_menu_option(int p_option) {
 
 				Ref<Script> scr = current->get_edited_resource();
 				if (scr == NULL || scr.is_null()) {
-					EditorNode::get_singleton()->show_warning("Can't obtain the script for running.");
+					EditorNode::get_singleton()->show_warning(TTR("Can't obtain the script for running."));
 					break;
 				}
 
@@ -1216,18 +1236,18 @@ void ScriptEditor::_menu_option(int p_option) {
 				Error err = scr->reload(false); //hard reload script before running always
 
 				if (err != OK) {
-					EditorNode::get_singleton()->show_warning("Script failed reloading, check console for errors.");
+					EditorNode::get_singleton()->show_warning(TTR("Script failed reloading, check console for errors."));
 					return;
 				}
 				if (!scr->is_tool()) {
 
-					EditorNode::get_singleton()->show_warning("Script is not in tool mode, will not be able to run.");
+					EditorNode::get_singleton()->show_warning(TTR("Script is not in tool mode, will not be able to run."));
 					return;
 				}
 
 				if (!ClassDB::is_parent_class(scr->get_instance_base_type(), "EditorScript")) {
 
-					EditorNode::get_singleton()->show_warning("To run this script, it must inherit EditorScript and be set to tool mode.");
+					EditorNode::get_singleton()->show_warning(TTR("To run this script, it must inherit EditorScript and be set to tool mode."));
 					return;
 				}
 
@@ -1250,12 +1270,15 @@ void ScriptEditor::_menu_option(int p_option) {
 				_copy_script_path();
 			} break;
 			case SHOW_IN_FILE_SYSTEM: {
-				RES script = current->get_edited_resource();
-				FileSystemDock *file_system_dock = EditorNode::get_singleton()->get_filesystem_dock();
-				file_system_dock->navigate_to_path(script->get_path());
-				// Ensure that the FileSystem dock is visible.
-				TabContainer *tab_container = (TabContainer *)file_system_dock->get_parent_control();
-				tab_container->set_current_tab(file_system_dock->get_position_in_parent());
+				const RES script = current->get_edited_resource();
+				const String path = script->get_path();
+				if (!path.empty()) {
+					FileSystemDock *file_system_dock = EditorNode::get_singleton()->get_filesystem_dock();
+					file_system_dock->navigate_to_path(path);
+					// Ensure that the FileSystem dock is visible.
+					TabContainer *tab_container = (TabContainer *)file_system_dock->get_parent_control();
+					tab_container->set_current_tab(file_system_dock->get_position_in_parent());
+				}
 			} break;
 			case CLOSE_DOCS: {
 				_close_docs_tab();
@@ -3186,7 +3209,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	script_list = memnew(ItemList);
 	scripts_vbox->add_child(script_list);
-	script_list->set_custom_minimum_size(Size2(150, 90) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
+	script_list->set_custom_minimum_size(Size2(150, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
 	script_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	script_split->set_split_offset(140);
 	_sort_list_on_update = true;
@@ -3231,14 +3254,14 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	overview_vbox->add_child(members_overview);
 
 	members_overview->set_allow_reselect(true);
-	members_overview->set_custom_minimum_size(Size2(0, 90) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
+	members_overview->set_custom_minimum_size(Size2(0, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
 	members_overview->set_v_size_flags(SIZE_EXPAND_FILL);
 	members_overview->set_allow_rmb_select(true);
 
 	help_overview = memnew(ItemList);
 	overview_vbox->add_child(help_overview);
 	help_overview->set_allow_reselect(true);
-	help_overview->set_custom_minimum_size(Size2(0, 90) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
+	help_overview->set_custom_minimum_size(Size2(0, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
 	help_overview->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	tab_container = memnew(TabContainer);

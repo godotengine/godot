@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "editor_scene_importer_gltf.h"
+
 #include "core/crypto/crypto_core.h"
 #include "core/io/json.h"
 #include "core/math/disjoint_set.h"
@@ -233,7 +234,7 @@ Error EditorSceneImporterGLTF::_parse_scenes(GLTFState &state) {
 	if (state.json.has("scene")) {
 		loaded_scene = state.json["scene"];
 	} else {
-		WARN_PRINT("The load-time scene is not defined in the glTF2 file. Picking the first scene.")
+		WARN_PRINT("The load-time scene is not defined in the glTF2 file. Picking the first scene.");
 	}
 
 	if (scenes.size()) {
@@ -855,25 +856,24 @@ PoolVector<Color> EditorSceneImporterGLTF::_decode_accessor_as_color(GLTFState &
 
 	const int type = state.accessors[p_accessor].type;
 	ERR_FAIL_COND_V(!(type == TYPE_VEC3 || type == TYPE_VEC4), ret);
-	int components;
-	if (type == TYPE_VEC3) {
-		components = 3;
-	} else { // TYPE_VEC4
-		components = 4;
+	int vec_len = 3;
+	if (type == TYPE_VEC4) {
+		vec_len = 4;
 	}
 
-	ERR_FAIL_COND_V(attribs.size() % components != 0, ret);
+	ERR_FAIL_COND_V(attribs.size() % vec_len != 0, ret);
 	const double *attribs_ptr = attribs.ptr();
-	const int ret_size = attribs.size() / components;
+	const int ret_size = attribs.size() / vec_len;
 	ret.resize(ret_size);
 	{
 		PoolVector<Color>::Write w = ret.write();
 		for (int i = 0; i < ret_size; i++) {
-			w[i] = Color(attribs_ptr[i * 4 + 0], attribs_ptr[i * 4 + 1], attribs_ptr[i * 4 + 2], components == 4 ? attribs_ptr[i * 4 + 3] : 1.0);
+			w[i] = Color(attribs_ptr[i * vec_len + 0], attribs_ptr[i * vec_len + 1], attribs_ptr[i * vec_len + 2], vec_len == 4 ? attribs_ptr[i * 4 + 3] : 1.0);
 		}
 	}
 	return ret;
 }
+
 Vector<Quat> EditorSceneImporterGLTF::_decode_accessor_as_quat(GLTFState &state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
 
 	const Vector<double> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
@@ -1303,6 +1303,8 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 
 		if (mimetype.findn("png") != -1) {
 			//is a png
+			ERR_FAIL_COND_V(Image::_png_mem_loader_func == NULL, ERR_UNAVAILABLE);
+
 			const Ref<Image> img = Image::_png_mem_loader_func(data_ptr, data_size);
 
 			ERR_FAIL_COND_V(img.is_null(), ERR_FILE_CORRUPT);
@@ -1317,6 +1319,8 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 
 		if (mimetype.findn("jpeg") != -1) {
 			//is a jpg
+			ERR_FAIL_COND_V(Image::_jpg_mem_loader_func == NULL, ERR_UNAVAILABLE);
+
 			const Ref<Image> img = Image::_jpg_mem_loader_func(data_ptr, data_size);
 
 			ERR_FAIL_COND_V(img.is_null(), ERR_FILE_CORRUPT);
@@ -1480,9 +1484,16 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 
 		if (d.has("alphaMode")) {
 			const String &am = d["alphaMode"];
-			if (am != "OPAQUE") {
+			if (am == "BLEND") {
 				material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 				material->set_depth_draw_mode(SpatialMaterial::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
+			} else if (am == "MASK") {
+				material->set_flag(SpatialMaterial::FLAG_USE_ALPHA_SCISSOR, true);
+				if (d.has("alphaCutoff")) {
+					material->set_alpha_scissor_threshold(d["alphaCutoff"]);
+				} else {
+					material->set_alpha_scissor_threshold(0.5f);
+				}
 			}
 		}
 
@@ -2323,7 +2334,11 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 		Array samplers = d["samplers"];
 
 		if (d.has("name")) {
-			animation.name = _sanitize_scene_name(d["name"]);
+			String name = d["name"];
+			if (name.begins_with("loop") || name.ends_with("loop") || name.begins_with("cycle") || name.ends_with("cycle")) {
+				animation.loop = true;
+			}
+			animation.name = _sanitize_scene_name(name);
 		}
 
 		for (int j = 0; j < channels.size(); j++) {
@@ -2424,7 +2439,7 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 					track->weight_tracks.write[k] = cf;
 				}
 			} else {
-				WARN_PRINTS("Invalid path '" + path + "'.");
+				WARN_PRINT("Invalid path '" + path + "'.");
 			}
 		}
 
@@ -2620,22 +2635,22 @@ template <>
 struct EditorSceneImporterGLTFInterpolate<Quat> {
 
 	Quat lerp(const Quat &a, const Quat &b, const float c) const {
-		ERR_FAIL_COND_V(!a.is_normalized(), Quat());
-		ERR_FAIL_COND_V(!b.is_normalized(), Quat());
+		ERR_FAIL_COND_V_MSG(!a.is_normalized(), Quat(), "The quaternion \"a\" must be normalized.");
+		ERR_FAIL_COND_V_MSG(!b.is_normalized(), Quat(), "The quaternion \"b\" must be normalized.");
 
 		return a.slerp(b, c).normalized();
 	}
 
 	Quat catmull_rom(const Quat &p0, const Quat &p1, const Quat &p2, const Quat &p3, const float c) {
-		ERR_FAIL_COND_V(!p1.is_normalized(), Quat());
-		ERR_FAIL_COND_V(!p2.is_normalized(), Quat());
+		ERR_FAIL_COND_V_MSG(!p1.is_normalized(), Quat(), "The quaternion \"p1\" must be normalized.");
+		ERR_FAIL_COND_V_MSG(!p2.is_normalized(), Quat(), "The quaternion \"p2\" must be normalized.");
 
 		return p1.slerp(p2, c).normalized();
 	}
 
 	Quat bezier(const Quat start, const Quat control_1, const Quat control_2, const Quat end, const float t) {
-		ERR_FAIL_COND_V(!start.is_normalized(), Quat());
-		ERR_FAIL_COND_V(!end.is_normalized(), Quat());
+		ERR_FAIL_COND_V_MSG(!start.is_normalized(), Quat(), "The start quaternion must be normalized.");
+		ERR_FAIL_COND_V_MSG(!end.is_normalized(), Quat(), "The end quaternion must be normalized.");
 
 		return start.slerp(end, t).normalized();
 	}
@@ -2728,6 +2743,10 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 	Ref<Animation> animation;
 	animation.instance();
 	animation->set_name(name);
+
+	if (anim.loop) {
+		animation->set_loop(true);
+	}
 
 	float length = 0;
 

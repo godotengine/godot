@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -337,6 +337,7 @@ void InspectorDock::_notification(int p_what) {
 			history_menu->set_icon(get_icon("History", "EditorIcons"));
 			object_menu->set_icon(get_icon("Tools", "EditorIcons"));
 			warning->set_icon(get_icon("NodeWarning", "EditorIcons"));
+			warning->add_color_override("font_color", get_color("warning_color", "Editor"));
 		} break;
 	}
 }
@@ -584,6 +585,8 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	add_child(warning);
 	warning->set_text(TTR("Changes may be lost!"));
 	warning->set_icon(get_icon("NodeWarning", "EditorIcons"));
+	warning->add_color_override("font_color", get_color("warning_color", "Editor"));
+	warning->set_clip_text(true);
 	warning->hide();
 	warning->connect("pressed", this, "_warning_pressed");
 

@@ -17,12 +17,59 @@ namespace GodotTools.Export
 {
     public class ExportPlugin : EditorExportPlugin
     {
+        [Flags]
+        enum I18NCodesets
+        {
+            None = 0,
+            CJK = 1,
+            MidEast = 2,
+            Other = 4,
+            Rare = 8,
+            West = 16,
+            All = CJK | MidEast | Other | Rare | West
+        }
+
+        private void AddI18NAssemblies(Godot.Collections.Dictionary<string, string> assemblies, string platform)
+        {
+            var codesets = (I18NCodesets) ProjectSettings.GetSetting("mono/export/i18n_codesets");
+
+            if (codesets == I18NCodesets.None)
+                return;
+
+            string bclDir = DeterminePlatformBclDir(platform) ?? typeof(object).Assembly.Location.GetBaseDir();
+
+            void AddI18NAssembly(string name) => assemblies.Add(name, Path.Combine(bclDir, $"{name}.dll"));
+
+            AddI18NAssembly("I18N");
+
+            if ((codesets & I18NCodesets.CJK) != 0)
+                AddI18NAssembly("I18N.CJK");
+            if ((codesets & I18NCodesets.MidEast) != 0)
+                AddI18NAssembly("I18N.MidEast");
+            if ((codesets & I18NCodesets.Other) != 0)
+                AddI18NAssembly("I18N.Other");
+            if ((codesets & I18NCodesets.Rare) != 0)
+                AddI18NAssembly("I18N.Rare");
+            if ((codesets & I18NCodesets.West) != 0)
+                AddI18NAssembly("I18N.West");
+        }
+
         public void RegisterExportSettings()
         {
             // TODO: These would be better as export preset options, but that doesn't seem to be supported yet
 
             GlobalDef("mono/export/include_scripts_content", false);
             GlobalDef("mono/export/export_assemblies_inside_pck", true);
+
+            GlobalDef("mono/export/i18n_codesets", I18NCodesets.All);
+
+            ProjectSettings.AddPropertyInfo(new Godot.Collections.Dictionary
+            {
+                ["type"] = Variant.Type.Int,
+                ["name"] = "mono/export/i18n_codesets",
+                ["hint"] = PropertyHint.Flags,
+                ["hint_string"] = "CJK,MidEast,Other,Rare,West"
+            });
 
             GlobalDef("mono/export/aot/enabled", false);
             GlobalDef("mono/export/aot/full_aot", false);
@@ -39,7 +86,7 @@ namespace GodotTools.Export
 
         private void AddFile(string srcPath, string dstPath, bool remap = false)
         {
-            AddFile(dstPath, File.ReadAllBytes(srcPath), remap);
+            AddFile(dstPath.Replace("\\", "/"), File.ReadAllBytes(srcPath), remap);
         }
 
         public override void _ExportFile(string path, string type, string[] features)
@@ -54,7 +101,7 @@ namespace GodotTools.Export
 
             // TODO What if the source file is not part of the game's C# project
 
-            bool includeScriptsContent = (bool) ProjectSettings.GetSetting("mono/export/include_scripts_content");
+            bool includeScriptsContent = (bool)ProjectSettings.GetSetting("mono/export/include_scripts_content");
 
             if (!includeScriptsContent)
             {
@@ -78,7 +125,13 @@ namespace GodotTools.Export
             catch (Exception e)
             {
                 maybeLastExportError = e.Message;
-                GD.PushError($"Failed to export project: {e.Message}");
+
+                // 'maybeLastExportError' cannot be null or empty if there was an error, so we
+                // must consider the possibility of exceptions being thrown without a message.
+                if (string.IsNullOrEmpty(maybeLastExportError))
+                    maybeLastExportError = $"Exception thrown: {e.GetType().Name}";
+
+                GD.PushError($"Failed to export project: {maybeLastExportError}");
                 Console.Error.WriteLine(e);
                 // TODO: Do something on error once _ExportBegin supports failing.
             }
@@ -114,7 +167,7 @@ namespace GodotTools.Export
 
             var dependencies = new Godot.Collections.Dictionary<string, string>();
 
-            var projectDllName = (string) ProjectSettings.GetSetting("application/config/name");
+            var projectDllName = (string)ProjectSettings.GetSetting("application/config/name");
             if (projectDllName.Empty())
             {
                 projectDllName = "UnnamedProject";
@@ -139,6 +192,8 @@ namespace GodotTools.Export
             var initialDependencies = dependencies.Duplicate();
             internal_GetExportedAssemblyDependencies(initialDependencies, buildConfig, DeterminePlatformBclDir(platform), dependencies);
 
+            AddI18NAssemblies(dependencies, platform);
+
             string outputDataDir = null;
 
             if (PlatformHasTemplateDir(platform))
@@ -147,7 +202,7 @@ namespace GodotTools.Export
             string apiConfig = isDebug ? "Debug" : "Release";
             string resAssembliesDir = Path.Combine(GodotSharpDirs.ResAssembliesBaseDir, apiConfig);
 
-            bool assembliesInsidePck = (bool) ProjectSettings.GetSetting("mono/export/export_assemblies_inside_pck") || outputDataDir == null;
+            bool assembliesInsidePck = (bool)ProjectSettings.GetSetting("mono/export/export_assemblies_inside_pck") || outputDataDir == null;
 
             if (!assembliesInsidePck)
             {
@@ -174,7 +229,7 @@ namespace GodotTools.Export
 
             // AOT
 
-            if ((bool) ProjectSettings.GetSetting("mono/export/aot/enabled"))
+            if ((bool)ProjectSettings.GetSetting("mono/export/aot/enabled"))
             {
                 AotCompileDependencies(features, platform, isDebug, outputDir, outputDataDir, dependencies);
             }
@@ -336,7 +391,7 @@ namespace GodotTools.Export
 
                         AotCompileAssembly(platform, isDebug, data, assemblyPath, outputFilePathForThisAbi);
 
-                        AddSharedObject(outputFilePathForThisAbi, tags: new[] {abi});
+                        AddSharedObject(outputFilePathForThisAbi, tags: new[] { abi });
                     }
                 }
                 else
@@ -377,7 +432,7 @@ namespace GodotTools.Export
 
             string compilerCommand = Path.Combine(monoCrossBin, $"{toolPrefix}{monoExeName}{exeExt}");
 
-            bool fullAot = (bool) ProjectSettings.GetSetting("mono/export/aot/full_aot");
+            bool fullAot = (bool)ProjectSettings.GetSetting("mono/export/aot/full_aot");
 
             string EscapeOption(string option) => option.Contains(',') ? $"\"{option}\"" : option;
             string OptionsToString(IEnumerable<string> options) => string.Join(",", options.Select(EscapeOption));
@@ -394,7 +449,7 @@ namespace GodotTools.Export
             {
                 string abi = data["abi"];
 
-                string androidToolchain = (string) ProjectSettings.GetSetting("mono/export/aot/android_toolchain_path");
+                string androidToolchain = (string)ProjectSettings.GetSetting("mono/export/aot/android_toolchain_path");
 
                 if (string.IsNullOrEmpty(androidToolchain))
                 {
@@ -419,13 +474,13 @@ namespace GodotTools.Export
                 aotOptions.Add("tool-prefix=" + Path.Combine(androidToolchain, "bin", androidToolPrefixes[abi]));
 
                 string triple = GetAndroidTriple(abi);
-                aotOptions.Add ($"mtriple={triple}");
+                aotOptions.Add($"mtriple={triple}");
             }
 
             aotOptions.Add($"outfile={outputFilePath}");
 
-            var extraAotOptions = (string[]) ProjectSettings.GetSetting("mono/export/aot/extra_aot_options");
-            var extraOptimizerOptions = (string[]) ProjectSettings.GetSetting("mono/export/aot/extra_optimizer_options");
+            var extraAotOptions = (string[])ProjectSettings.GetSetting("mono/export/aot/extra_aot_options");
+            var extraOptimizerOptions = (string[])ProjectSettings.GetSetting("mono/export/aot/extra_optimizer_options");
 
             if (extraAotOptions.Length > 0)
                 aotOptions.AddRange(extraAotOptions);
@@ -513,7 +568,7 @@ namespace GodotTools.Export
                 case OS.Platforms.HTML5:
                     return "wasm-wasm32";
                 default:
-                    throw new NotSupportedException();
+                    throw new NotSupportedException($"Platform not supported: {platform}");
             }
         }
 
@@ -575,7 +630,7 @@ namespace GodotTools.Export
         private static bool PlatformHasTemplateDir(string platform)
         {
             // OSX export templates are contained in a zip, so we place our custom template inside it and let Godot do the rest.
-            return !new[] {OS.Platforms.OSX, OS.Platforms.Android, OS.Platforms.HTML5}.Contains(platform);
+            return !new[] { OS.Platforms.OSX, OS.Platforms.Android, OS.Platforms.HTML5 }.Contains(platform);
         }
 
         private static string DeterminePlatformFromFeatures(IEnumerable<string> features)
@@ -623,7 +678,7 @@ namespace GodotTools.Export
         /// </summary>
         private static bool PlatformRequiresCustomBcl(string platform)
         {
-            if (new[] {OS.Platforms.Android, OS.Platforms.HTML5}.Contains(platform))
+            if (new[] { OS.Platforms.Android, OS.Platforms.HTML5 }.Contains(platform))
                 return true;
 
             // The 'net_4_x' BCL is not compatible between Windows and the other platforms.
@@ -655,7 +710,7 @@ namespace GodotTools.Export
                 case OS.Platforms.HTML5:
                     return "wasm";
                 default:
-                    throw new NotSupportedException();
+                    throw new NotSupportedException($"Platform not supported: {platform}");
             }
         }
 
@@ -663,7 +718,7 @@ namespace GodotTools.Export
         {
             get
             {
-                var appName = (string) ProjectSettings.GetSetting("application/config/name");
+                var appName = (string)ProjectSettings.GetSetting("application/config/name");
                 string appNameSafe = appName.ToSafeDirName(allowDirSeparator: false);
                 return $"data_{appNameSafe}";
             }

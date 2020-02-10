@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -198,6 +198,9 @@ void ParticlesMaterial::_update_shader() {
 				code += "uniform sampler2D emission_texture_color : hint_white;\n";
 			}
 		} break;
+		case EMISSION_SHAPE_MAX: { // Max value for validity check.
+			break;
+		}
 	}
 
 	code += "uniform vec4 color_value : hint_color;\n";
@@ -283,7 +286,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "	float degree_to_rad = pi / 180.0;\n";
 	code += "\n";
 
-	if (emission_shape >= EMISSION_SHAPE_POINTS) {
+	if (emission_shape == EMISSION_SHAPE_POINTS || emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
 		code += "	int point = min(emission_texture_point_count - 1, int(rand_from_seed(alt_seed) * float(emission_texture_point_count)));\n";
 		code += "	ivec2 emission_tex_size = textureSize(emission_texture_points, 0);\n";
 		code += "	ivec2 emission_tex_ofs = ivec2(point % emission_tex_size.x, point / emission_tex_size.x);\n";
@@ -313,14 +316,17 @@ void ParticlesMaterial::_update_shader() {
 
 	if (flags[FLAG_DISABLE_Z]) {
 
-		code += "		float angle1_rad = atan(direction.y, direction.x) + rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
+		code += "		float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
+		code += "		angle1_rad += direction.x != 0.0 ? atan(direction.y, direction.x) : sign(direction.y) * (pi / 2.0);\n";
 		code += "		vec3 rot = vec3(cos(angle1_rad), sin(angle1_rad), 0.0);\n";
 		code += "		VELOCITY = rot * initial_linear_velocity * mix(1.0, rand_from_seed(alt_seed), initial_linear_velocity_random);\n";
 
 	} else {
 		//initiate velocity spread in 3D
-		code += "		float angle1_rad = atan(direction.x, direction.z) + rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
-		code += "		float angle2_rad = atan(direction.y, abs(direction.z)) + rand_from_seed_m1_p1(alt_seed) * spread_rad * (1.0 - flatness);\n";
+		code += "		float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
+		code += "		float angle2_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad * (1.0 - flatness);\n";
+		code += "		angle1_rad += direction.z != 0.0 ? atan(direction.x, direction.z) : sign(direction.x) * (pi / 2.0);\n";
+		code += "		angle2_rad += direction.z != 0.0 ? atan(direction.y, abs(direction.z)) : (direction.x != 0.0 ? atan(direction.y, abs(direction.x)) : sign(direction.y) * (pi / 2.0));\n";
 		code += "		vec3 direction_xz = vec3(sin(angle1_rad), 0.0, cos(angle1_rad));\n";
 		code += "		vec3 direction_yz = vec3(0.0, sin(angle2_rad), cos(angle2_rad));\n";
 		code += "		direction_yz.z = direction_yz.z / max(0.0001,sqrt(abs(direction_yz.z))); // better uniform distribution\n";
@@ -368,6 +374,9 @@ void ParticlesMaterial::_update_shader() {
 				}
 			}
 		} break;
+		case EMISSION_SHAPE_MAX: { // Max value for validity check.
+			break;
+		}
 	}
 	code += "		VELOCITY = (EMISSION_TRANSFORM * vec4(VELOCITY, 0.0)).xyz;\n";
 	code += "		TRANSFORM = EMISSION_TRANSFORM * TRANSFORM;\n";
@@ -515,7 +524,7 @@ void ParticlesMaterial::_update_shader() {
 	} else {
 		code += "	COLOR = hue_rot_mat * color_value;\n";
 	}
-	if (emission_color_texture.is_valid() && emission_shape >= EMISSION_SHAPE_POINTS) {
+	if (emission_color_texture.is_valid() && (emission_shape == EMISSION_SHAPE_POINTS || emission_shape == EMISSION_SHAPE_DIRECTED_POINTS)) {
 		code += "	COLOR *= texelFetch(emission_texture_color, emission_tex_ofs, 0);\n";
 	}
 	if (trail_color_modifier.is_valid()) {
@@ -894,7 +903,7 @@ bool ParticlesMaterial::get_flag(Flags p_flag) const {
 }
 
 void ParticlesMaterial::set_emission_shape(EmissionShape p_shape) {
-
+	ERR_FAIL_INDEX(p_shape, EMISSION_SHAPE_MAX);
 	emission_shape = p_shape;
 	_change_notify();
 	_queue_shader_change();
@@ -1242,6 +1251,7 @@ void ParticlesMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_BOX);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINTS);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_DIRECTED_POINTS);
+	BIND_ENUM_CONSTANT(EMISSION_SHAPE_MAX);
 }
 
 ParticlesMaterial::ParticlesMaterial() :

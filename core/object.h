@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -465,8 +465,7 @@ private:
 
 		MethodInfo user;
 		VMap<Target, Slot> slot_map;
-		int lock;
-		Signal() { lock = 0; }
+		Signal() {}
 	};
 
 	HashMap<StringName, Signal> signal_map;
@@ -481,6 +480,7 @@ private:
 	bool _predelete();
 	void _postinitialize();
 	bool _can_translate;
+	bool _emitting;
 #ifdef TOOLS_ENABLED
 	bool _edited;
 	uint32_t _edited_version;

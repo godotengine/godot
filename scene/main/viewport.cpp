@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,7 @@
 
 #include "viewport.h"
 
+#include "core/core_string_names.h"
 #include "core/os/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
@@ -249,6 +250,27 @@ void Viewport::_collision_object_input_event(CollisionObject *p_object, Camera *
 	physics_last_object_transform = object_transform;
 	physics_last_camera_transform = camera_transform;
 	physics_last_id = id;
+}
+
+void Viewport::_own_world_changed() {
+	ERR_FAIL_COND(world.is_null());
+	ERR_FAIL_COND(own_world.is_null());
+
+	if (is_inside_tree()) {
+		_propagate_exit_world(this);
+	}
+
+	own_world = world->duplicate();
+
+	if (is_inside_tree()) {
+		_propagate_enter_world(this);
+	}
+
+	if (is_inside_tree()) {
+		VisualServer::get_singleton()->viewport_set_scenario(viewport, find_world()->get_scenario());
+	}
+
+	_update_listener();
 }
 
 void Viewport::_notification(int p_what) {
@@ -1105,7 +1127,20 @@ void Viewport::set_world(const Ref<World> &p_world) {
 	if (is_inside_tree())
 		_propagate_exit_world(this);
 
+	if (own_world.is_valid() && world.is_valid()) {
+		world->disconnect(CoreStringNames::get_singleton()->changed, this, "_own_world_changed");
+	}
+
 	world = p_world;
+
+	if (own_world.is_valid()) {
+		if (world.is_valid()) {
+			own_world = world->duplicate();
+			world->connect(CoreStringNames::get_singleton()->changed, this, "_own_world_changed");
+		} else {
+			own_world = Ref<World>(memnew(World));
+		}
+	}
 
 	if (is_inside_tree())
 		_propagate_enter_world(this);
@@ -1810,7 +1845,7 @@ bool Viewport::_gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_che
 
 void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
-	ERR_FAIL_COND(p_event.is_null())
+	ERR_FAIL_COND(p_event.is_null());
 
 	//?
 	/*
@@ -2407,12 +2442,12 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			Input *input = Input::get_singleton();
 
-			if (!mods && p_event->is_action_pressed("ui_focus_next") && input->is_action_just_pressed("ui_focus_next")) {
+			if (p_event->is_action_pressed("ui_focus_next") && input->is_action_just_pressed("ui_focus_next")) {
 
 				next = from->find_next_valid_focus();
 			}
 
-			if (!mods && p_event->is_action_pressed("ui_focus_prev") && input->is_action_just_pressed("ui_focus_prev")) {
+			if (p_event->is_action_pressed("ui_focus_prev") && input->is_action_just_pressed("ui_focus_prev")) {
 
 				next = from->find_prev_valid_focus();
 			}
@@ -2634,6 +2669,7 @@ void Viewport::_gui_control_grab_focus(Control *p_control) {
 		return;
 	get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, "_viewports", "_gui_remove_focus");
 	gui.key_focus = p_control;
+	emit_signal("gui_focus_changed", p_control);
 	p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
 	p_control->update();
 }
@@ -2825,10 +2861,19 @@ void Viewport::set_use_own_world(bool p_world) {
 	if (is_inside_tree())
 		_propagate_exit_world(this);
 
-	if (!p_world)
+	if (!p_world) {
 		own_world = Ref<World>();
-	else
-		own_world = Ref<World>(memnew(World));
+		if (world.is_valid()) {
+			world->disconnect(CoreStringNames::get_singleton()->changed, this, "_own_world_changed");
+		}
+	} else {
+		if (world.is_valid()) {
+			own_world = world->duplicate();
+			world->connect(CoreStringNames::get_singleton()->changed, this, "_own_world_changed");
+		} else {
+			own_world = Ref<World>(memnew(World));
+		}
+	}
 
 	if (is_inside_tree())
 		_propagate_enter_world(this);
@@ -3177,6 +3222,8 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_subwindow_visibility_changed"), &Viewport::_subwindow_visibility_changed);
 
+	ClassDB::bind_method(D_METHOD("_own_world_changed"), &Viewport::_own_world_changed);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "arvr"), "set_use_arvr", "use_arvr");
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
@@ -3216,6 +3263,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "global_canvas_transform", PROPERTY_HINT_NONE, "", 0), "set_global_canvas_transform", "get_global_canvas_transform");
 
 	ADD_SIGNAL(MethodInfo("size_changed"));
+	ADD_SIGNAL(MethodInfo("gui_focus_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
 
 	BIND_ENUM_CONSTANT(UPDATE_DISABLED);
 	BIND_ENUM_CONSTANT(UPDATE_ONCE);

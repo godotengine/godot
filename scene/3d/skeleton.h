@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -115,6 +115,7 @@ private:
 		}
 	};
 
+	bool animate_physical_bones;
 	Vector<Bone> bones;
 	Vector<int> process_order;
 	bool process_order_dirty;
@@ -198,6 +199,9 @@ public:
 
 #ifndef _3D_DISABLED
 	// Physical bone API
+
+	void set_animate_physical_bones(bool p_animate);
+	bool get_animate_physical_bones() const;
 
 	void bind_physical_bone_to_bone(int p_bone, PhysicalBone *p_physical_bone);
 	void unbind_physical_bone_from_bone(int p_bone);

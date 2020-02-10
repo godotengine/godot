@@ -1,9 +1,7 @@
 import os
 import os.path
-import sys
 import re
 import glob
-import string
 import subprocess
 from compat import iteritems, isbasestring, decode_utf8
 
@@ -69,8 +67,7 @@ def update_version(module_version_string=""):
     f.write("#define VERSION_NAME \"" + str(version.name) + "\"\n")
     f.write("#define VERSION_MAJOR " + str(version.major) + "\n")
     f.write("#define VERSION_MINOR " + str(version.minor) + "\n")
-    if hasattr(version, 'patch'):
-        f.write("#define VERSION_PATCH " + str(version.patch) + "\n")
+    f.write("#define VERSION_PATCH " + str(version.patch) + "\n")
     f.write("#define VERSION_STATUS \"" + str(version.status) + "\"\n")
     f.write("#define VERSION_BUILD \"" + str(build_name) + "\"\n")
     f.write("#define VERSION_MODULE_CONFIG \"" + str(version.module_config) + module_version_string + "\"\n")
@@ -163,20 +160,22 @@ def detect_modules():
         except IOError:
             pass
 
-    modules_cpp = """
-// modules.cpp - THIS FILE IS GENERATED, DO NOT EDIT!!!!!!!
+    modules_cpp = """// register_module_types.gen.cpp
+/* THIS FILE IS GENERATED DO NOT EDIT */
 #include "register_module_types.h"
 
-""" + includes_cpp + """
+#include "modules/modules_enabled.gen.h"
+
+%s
 
 void register_module_types() {
-""" + register_cpp + """
+%s
 }
 
 void unregister_module_types() {
-""" + unregister_cpp + """
+%s
 }
-"""
+""" % (includes_cpp, register_cpp, unregister_cpp)
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
     with open("modules/register_module_types.gen.cpp", "w") as f:
@@ -203,37 +202,10 @@ def win32_spawn(sh, escape, cmd, args, env):
         print("=====")
     return rv
 
-"""
-def win32_spawn(sh, escape, cmd, args, spawnenv):
-	import win32file
-	import win32event
-	import win32process
-	import win32security
-	for var in spawnenv:
-		spawnenv[var] = spawnenv[var].encode('ascii', 'replace')
-
-	sAttrs = win32security.SECURITY_ATTRIBUTES()
-	StartupInfo = win32process.STARTUPINFO()
-	newargs = ' '.join(map(escape, args[1:]))
-	cmdline = cmd + " " + newargs
-
-	# check for any special operating system commands
-	if cmd == 'del':
-		for arg in args[1:]:
-			win32file.DeleteFile(arg)
-		exit_code = 0
-	else:
-		# otherwise execute the command.
-		hProcess, hThread, dwPid, dwTid = win32process.CreateProcess(None, cmdline, None, None, 1, 0, spawnenv, None, StartupInfo)
-		win32event.WaitForSingleObject(hProcess, win32event.INFINITE)
-		exit_code = win32process.GetExitCodeProcess(hProcess)
-		win32file.CloseHandle(hProcess);
-		win32file.CloseHandle(hThread);
-	return exit_code
-"""
 
 def disable_module(self):
     self.disabled_modules.append(self.current_module)
+
 
 def use_windows_spawn_fix(self, platform=None):
 
@@ -283,55 +255,6 @@ def use_windows_spawn_fix(self, platform=None):
         return rv
 
     self['SPAWN'] = mySpawn
-
-
-def split_lib(self, libname, src_list = None, env_lib = None):
-    env = self
-
-    num = 0
-    cur_base = ""
-    max_src = 64
-    list = []
-    lib_list = []
-
-    if src_list is None:
-        src_list = getattr(env, libname + "_sources")
-
-    if type(env_lib) == type(None):
-        env_lib = env
-
-    for f in src_list:
-        fname = ""
-        if type(f) == type(""):
-            fname = env.File(f).path
-        else:
-            fname = env.File(f)[0].path
-        fname = fname.replace("\\", "/")
-        base = string.join(fname.split("/")[:2], "/")
-        if base != cur_base and len(list) > max_src:
-            if num > 0:
-                lib = env_lib.add_library(libname + str(num), list)
-                lib_list.append(lib)
-                list = []
-            num = num + 1
-        cur_base = base
-        list.append(f)
-
-    lib = env_lib.add_library(libname + str(num), list)
-    lib_list.append(lib)
-
-    if len(lib_list) > 0:
-        if os.name == 'posix' and sys.platform == 'msys':
-            env.Replace(ARFLAGS=['rcsT'])
-            lib = env_lib.add_library(libname + "_collated", lib_list)
-            lib_list = [lib]
-
-    lib_base = []
-    env_lib.add_source_files(lib_base, "*.cpp")
-    lib = env_lib.add_library(libname, lib_base)
-    lib_list.insert(0, lib)
-
-    env.Prepend(LIBS=lib_list)
 
 
 def save_active_platforms(apnames, ap):

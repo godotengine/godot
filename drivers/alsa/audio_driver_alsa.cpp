@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -204,7 +204,7 @@ void AudioDriverALSA::thread_func(void *p_udata) {
 			} else {
 				wrote = snd_pcm_recover(ad->pcm_handle, wrote, 0);
 				if (wrote < 0) {
-					ERR_PRINTS("ALSA: Failed and can't recover: " + String(snd_strerror(wrote)));
+					ERR_PRINT("ALSA: Failed and can't recover: " + String(snd_strerror(wrote)));
 					ad->active = false;
 					ad->exit_thread = true;
 				}

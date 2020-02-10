@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -245,15 +245,15 @@ void SectionedInspector::update_category_list() {
 		if (pi.name.find(":") != -1 || pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path" || pi.name == "resource_local_to_scene" || pi.name.begins_with("_global_script"))
 			continue;
 
+		if (!filter.empty() && !filter.is_subsequence_ofi(pi.name) && !filter.is_subsequence_ofi(pi.name.replace("/", " ").capitalize()))
+			continue;
+
 		int sp = pi.name.find("/");
 		if (sp == -1)
 			pi.name = "global/" + pi.name;
 
 		Vector<String> sectionarr = pi.name.split("/");
 		String metasection;
-
-		if (!filter.empty() && !filter.is_subsequence_ofi(sectionarr[sectionarr.size() - 1].capitalize()))
-			continue;
 
 		int sc = MIN(2, sectionarr.size() - 1);
 

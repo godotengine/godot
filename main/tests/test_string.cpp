@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,15 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/ustring.h"
-#include <wchar.h>
-//#include "core/math/math_funcs.h"
+#include "test_string.h"
+
 #include "core/io/ip_address.h"
 #include "core/os/os.h"
-#include "modules/regex/regex.h"
-#include <stdio.h>
+#include "core/ustring.h"
 
-#include "test_string.h"
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_REGEX_ENABLED
+#include "modules/regex/regex.h"
+#endif
+
+#include <stdio.h>
+#include <wchar.h>
 
 namespace TestString {
 

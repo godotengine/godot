@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,6 +41,7 @@
 class Camera;
 class SpatialEditor;
 class EditorSpatialGizmoPlugin;
+class ViewportContainer;
 
 class EditorSpatialGizmo : public SpatialGizmo {
 
@@ -101,11 +102,11 @@ protected:
 	static void _bind_methods();
 
 public:
-	void add_lines(const Vector<Vector3> &p_lines, const Ref<Material> &p_material, bool p_billboard = false);
+	void add_lines(const Vector<Vector3> &p_lines, const Ref<Material> &p_material, bool p_billboard = false, const Color &p_modulate = Color(1, 1, 1));
 	void add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard = false, const Ref<SkinReference> &p_skin_reference = Ref<SkinReference>(), const Ref<Material> &p_material = Ref<Material>());
 	void add_collision_segments(const Vector<Vector3> &p_lines);
 	void add_collision_triangles(const Ref<TriangleMesh> &p_tmesh);
-	void add_unscaled_billboard(const Ref<Material> &p_material, float p_scale = 1);
+	void add_unscaled_billboard(const Ref<Material> &p_material, float p_scale = 1, const Color &p_modulate = Color(1, 1, 1));
 	void add_handles(const Vector<Vector3> &p_handles, const Ref<Material> &p_material, bool p_billboard = false, bool p_secondary = false);
 	void add_solid_box(Ref<Material> &p_material, Vector3 p_size, Vector3 p_position = Vector3());
 
@@ -216,6 +217,7 @@ private:
 	bool freelook_active;
 	real_t freelook_speed;
 
+	TextureRect *crosshair;
 	Label *info_label;
 	Label *fps_label;
 	Label *cinema_label;
@@ -232,7 +234,7 @@ private:
 	void _update_name();
 	void _compute_edit(const Point2 &p_point);
 	void _clear_selected();
-	void _select_clicked(bool p_append, bool p_single);
+	void _select_clicked(bool p_append, bool p_single, bool p_allow_locked = false);
 	void _select(Node *p_node, bool p_append, bool p_single);
 	ObjectID _select_ray(const Point2 &p_pos, bool p_append, bool &r_includes_current, int *r_gizmo_handle = NULL, bool p_alt_select = false);
 	void _find_items_at_pos(const Point2 &p_pos, bool &r_includes_current, Vector<_RayResult> &results, bool p_alt_select = false);

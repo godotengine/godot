@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -72,6 +72,11 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 
 #ifndef WM_POINTERUPDATE
 #define WM_POINTERUPDATE 0x0245
+#endif
+
+#if defined(__GNUC__)
+// Workaround GCC warning from -Wcast-function-type.
+#define GetProcAddress (void *)GetProcAddress
 #endif
 
 typedef struct {
@@ -352,12 +357,14 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			if (LOWORD(wParam) == WA_ACTIVE || LOWORD(wParam) == WA_CLICKACTIVE) {
 
 				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
+				window_focused = true;
 				alt_mem = false;
 				control_mem = false;
 				shift_mem = false;
 			} else { // WM_INACTIVE
 				input->release_pressed_events();
 				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+				window_focused = false;
 				alt_mem = false;
 			};
 
@@ -2095,6 +2102,11 @@ bool OS_Windows::is_window_always_on_top() const {
 	return video_mode.always_on_top;
 }
 
+bool OS_Windows::is_window_focused() const {
+
+	return window_focused;
+}
+
 void OS_Windows::set_console_visible(bool p_enabled) {
 	if (console_visible == p_enabled)
 		return;
@@ -2842,7 +2854,7 @@ void OS_Windows::set_native_icon(const String &p_filename) {
 	ERR_FAIL_COND_MSG(big_icon_index == -1, "No valid icons found!");
 
 	if (small_icon_index == -1) {
-		WARN_PRINTS("No small icon found, reusing " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon!");
+		WARN_PRINT("No small icon found, reusing " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon!");
 		small_icon_index = big_icon_index;
 		small_icon_cc = big_icon_cc;
 	}
@@ -3351,7 +3363,7 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 	delete[] from;
 
 	if (ret) {
-		ERR_PRINTS("SHFileOperation error: " + itos(ret));
+		ERR_PRINT("SHFileOperation error: " + itos(ret));
 		return FAILED;
 	}
 
@@ -3372,6 +3384,7 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	meta_mem = false;
 	minimized = false;
 	was_maximized = false;
+	window_focused = true;
 	console_visible = IsWindowVisible(GetConsoleWindow());
 
 	//Note: Functions for pen input, available on Windows 8+

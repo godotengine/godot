@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -71,6 +71,8 @@ public:
 
 		Set<String> extensions;
 
+		bool texture_3d_supported;
+		bool texture_array_supported;
 		bool float_texture_supported;
 		bool s3tc_supported;
 		bool etc1_supported;
@@ -109,6 +111,8 @@ public:
 		GLuint black_tex;
 		GLuint normal_tex;
 		GLuint aniso_tex;
+		GLuint white_tex_3d;
+		GLuint white_tex_array;
 
 		GLuint mipmap_blur_fbo;
 		GLuint mipmap_blur_color;
@@ -414,6 +418,7 @@ public:
 
 		Map<StringName, RID> default_textures;
 
+		Vector<ShaderLanguage::DataType> texture_types;
 		Vector<ShaderLanguage::ShaderNode::Uniform::Hint> texture_hints;
 
 		bool valid;
@@ -1307,6 +1312,8 @@ public:
 	virtual int get_captured_render_info(VS::RenderInfo p_info);
 
 	virtual int get_render_info(VS::RenderInfo p_info);
+	virtual String get_video_adapter_name() const;
+	virtual String get_video_adapter_vendor() const;
 
 	RasterizerStorageGLES2();
 };

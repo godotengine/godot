@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,9 @@
 #define NAVIGATION_POLYGON_H
 
 #include "scene/2d/node_2d.h"
+#include "scene/resources/navigation_mesh.h"
+
+class Mutex;
 
 class NavigationPolygon : public Resource {
 
@@ -47,6 +50,10 @@ class NavigationPolygon : public Resource {
 	mutable Rect2 item_rect;
 	mutable bool rect_cache_dirty;
 
+	Mutex *navmesh_generation;
+	// Navigation mesh
+	Ref<NavigationMesh> navmesh;
+
 protected:
 	static void _bind_methods();
 
@@ -57,8 +64,10 @@ protected:
 	Array _get_outlines() const;
 
 public:
+#ifdef TOOLS_ENABLED
 	Rect2 _edit_get_rect() const;
 	bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+#endif
 
 	void set_vertices(const PoolVector<Vector2> &p_vertices);
 	PoolVector<Vector2> get_vertices() const;
@@ -79,6 +88,8 @@ public:
 	Vector<int> get_polygon(int p_idx);
 	void clear_polygons();
 
+	Ref<NavigationMesh> get_mesh();
+
 	NavigationPolygon();
 };
 
@@ -89,7 +100,7 @@ class NavigationPolygonInstance : public Node2D {
 	GDCLASS(NavigationPolygonInstance, Node2D);
 
 	bool enabled;
-	int nav_id;
+	RID region;
 	Navigation2D *navigation;
 	Ref<NavigationPolygon> navpoly;
 
@@ -100,8 +111,10 @@ protected:
 	static void _bind_methods();
 
 public:
+#ifdef TOOLS_ENABLED
 	virtual Rect2 _edit_get_rect() const;
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+#endif
 
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
@@ -112,6 +125,7 @@ public:
 	String get_configuration_warning() const;
 
 	NavigationPolygonInstance();
+	~NavigationPolygonInstance();
 };
 
 #endif // NAVIGATIONPOLYGON_H

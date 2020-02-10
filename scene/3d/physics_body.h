@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,7 +49,6 @@ class PhysicsBody : public CollisionObject {
 
 protected:
 	static void _bind_methods();
-	void _notification(int p_what);
 	PhysicsBody(PhysicsServer::BodyMode p_mode);
 
 public:
@@ -296,10 +295,14 @@ public:
 	};
 
 private:
+	Vector3 linear_velocity;
+	Vector3 angular_velocity;
+
 	uint16_t locked_axis;
 
 	float margin;
 
+	Vector3 floor_normal;
 	Vector3 floor_velocity;
 	RID on_floor_body;
 	bool on_floor;
@@ -318,7 +321,12 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual void _direct_state_changed(Object *p_state);
+
 public:
+	virtual Vector3 get_linear_velocity() const;
+	virtual Vector3 get_angular_velocity() const;
+
 	bool move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
 	bool test_move(const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia);
 
@@ -330,11 +338,12 @@ public:
 	void set_safe_margin(float p_margin);
 	float get_safe_margin() const;
 
-	Vector3 move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_floor_direction = Vector3(0, 0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45), bool p_infinite_inertia = true);
-	Vector3 move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_floor_direction = Vector3(0, 0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45), bool p_infinite_inertia = true);
+	Vector3 move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_up_direction = Vector3(0, 0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45), bool p_infinite_inertia = true);
+	Vector3 move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_up_direction = Vector3(0, 0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45), bool p_infinite_inertia = true);
 	bool is_on_floor() const;
 	bool is_on_wall() const;
 	bool is_on_ceiling() const;
+	Vector3 get_floor_normal() const;
 	Vector3 get_floor_velocity() const;
 
 	int get_slide_count() const;
@@ -560,8 +569,6 @@ private:
 	Skeleton *parent_skeleton;
 	Transform body_offset;
 	Transform body_offset_inverse;
-	bool static_body;
-	bool _internal_static_body;
 	bool simulate_physics;
 	bool _internal_simulate_physics;
 	int bone_id;
@@ -611,9 +618,6 @@ public:
 	void set_body_offset(const Transform &p_offset);
 	const Transform &get_body_offset() const;
 
-	void set_static_body(bool p_static);
-	bool is_static_body();
-
 	void set_simulate_physics(bool p_simulate);
 	bool get_simulate_physics();
 	bool is_simulating_physics();
@@ -636,16 +640,18 @@ public:
 	void set_gravity_scale(real_t p_gravity_scale);
 	real_t get_gravity_scale() const;
 
+	void apply_central_impulse(const Vector3 &p_impulse);
+	void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse);
+
+	void reset_physics_simulation_state();
+	void reset_to_rest_position();
+
 	PhysicalBone();
 	~PhysicalBone();
 
 private:
 	void update_bone_id();
 	void update_offset();
-	void reset_to_rest_position();
-
-	void _reset_physics_simulation_state();
-	void _reset_staticness_state();
 
 	void _start_physics_simulation();
 	void _stop_physics_simulation();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,6 +47,7 @@
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #endif
 
+#ifdef TOOLS_ENABLED
 Dictionary Control::_edit_get_state() const {
 
 	Dictionary s;
@@ -155,6 +156,11 @@ bool Control::_edit_use_pivot() const {
 	return true;
 }
 
+Size2 Control::_edit_get_minimum_size() const {
+	return get_combined_minimum_size();
+}
+#endif
+
 void Control::set_custom_minimum_size(const Size2 &p_custom) {
 
 	if (p_custom == data.custom_minimum_size)
@@ -191,11 +197,6 @@ Size2 Control::get_combined_minimum_size() const {
 		const_cast<Control *>(this)->_update_minimum_size_cache();
 	}
 	return data.minimum_size_cache;
-}
-
-Size2 Control::_edit_get_minimum_size() const {
-
-	return get_combined_minimum_size();
 }
 
 Transform2D Control::_get_internal_transform() const {
@@ -460,11 +461,6 @@ void Control::_update_canvas_item_transform() {
 
 	Transform2D xform = _get_internal_transform();
 	xform[2] += get_position();
-
-	// We use a little workaround to avoid flickering when moving the pivot with _edit_set_pivot()
-	if (is_inside_tree() && Math::abs(Math::sin(data.rotation * 4.0f)) < 0.00001f && get_viewport()->is_snap_controls_to_pixels_enabled()) {
-		xform[2] = xform[2].round();
-	}
 
 	VisualServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), xform);
 }
@@ -2012,14 +2008,15 @@ Control *Control::find_next_valid_focus() const {
 
 		if (!data.focus_next.is_empty()) {
 			Node *n = get_node(data.focus_next);
+			Control *c;
 			if (n) {
-				from = Object::cast_to<Control>(n);
-				ERR_FAIL_COND_V_MSG(!from, NULL, "Next focus node is not a control: " + n->get_name() + ".");
+				c = Object::cast_to<Control>(n);
+				ERR_FAIL_COND_V_MSG(!c, NULL, "Next focus node is not a control: " + n->get_name() + ".");
 			} else {
 				return NULL;
 			}
-			if (from->is_visible() && from->get_focus_mode() != FOCUS_NONE)
-				return from;
+			if (c->is_visible() && c->get_focus_mode() != FOCUS_NONE)
+				return c;
 		}
 
 		// find next child
@@ -2102,14 +2099,15 @@ Control *Control::find_prev_valid_focus() const {
 
 		if (!data.focus_prev.is_empty()) {
 			Node *n = get_node(data.focus_prev);
+			Control *c;
 			if (n) {
-				from = Object::cast_to<Control>(n);
-				ERR_FAIL_COND_V_MSG(!from, NULL, "Previous focus node is not a control: " + n->get_name() + ".");
+				c = Object::cast_to<Control>(n);
+				ERR_FAIL_COND_V_MSG(!c, NULL, "Previous focus node is not a control: " + n->get_name() + ".");
 			} else {
 				return NULL;
 			}
-			if (from->is_visible() && from->get_focus_mode() != FOCUS_NONE)
-				return from;
+			if (c->is_visible() && c->get_focus_mode() != FOCUS_NONE)
+				return c;
 		}
 
 		// find prev child
@@ -2284,7 +2282,7 @@ void Control::set_theme(const Ref<Theme> &p_theme) {
 	}
 
 	if (data.theme.is_valid()) {
-		data.theme->connect("changed", this, "_theme_changed");
+		data.theme->connect("changed", this, "_theme_changed", varray(), CONNECT_DEFERRED);
 	}
 }
 
@@ -2472,9 +2470,9 @@ void Control::_window_find_focus_neighbour(const Vector2 &p_dir, Node *p_at, con
 		Transform2D xform = c->get_global_transform();
 
 		points[0] = xform.xform(Point2());
-		points[1] = xform.xform(Point2(get_size().x, 0));
-		points[2] = xform.xform(get_size());
-		points[3] = xform.xform(Point2(0, get_size().y));
+		points[1] = xform.xform(Point2(c->get_size().x, 0));
+		points[2] = xform.xform(c->get_size());
+		points[3] = xform.xform(Point2(0, c->get_size().y));
 
 		float min = 1e7;
 
@@ -2679,6 +2677,11 @@ Vector2 Control::get_pivot_offset() const {
 void Control::set_scale(const Vector2 &p_scale) {
 
 	data.scale = p_scale;
+	// Avoid having 0 scale values, can lead to errors in physics and rendering.
+	if (data.scale.x == 0)
+		data.scale.x = CMP_EPSILON;
+	if (data.scale.y == 0)
+		data.scale.y = CMP_EPSILON;
 	update();
 	_notify_transform();
 }

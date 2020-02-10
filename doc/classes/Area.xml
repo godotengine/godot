@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Area" inherits="CollisionObject" category="Core" version="3.2">
+<class name="Area" inherits="CollisionObject" version="4.0">
 	<brief_description>
 		General-purpose area node for detection and 3D physics influence.
 	</brief_description>
@@ -166,7 +166,7 @@
 			<argument index="3" name="self_shape" type="int">
 			</argument>
 			<description>
-				Emitted when another area enters, reporting which areas overlapped.
+				Emitted when another area enters, reporting which areas overlapped. [code]shape_owner_get_owner(shape_find_owner(shape))[/code] returns the parent object of the owner of the [code]shape[/code].
 			</description>
 		</signal>
 		<signal name="area_shape_exited">

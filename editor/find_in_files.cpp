@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -235,8 +235,10 @@ void FindInFiles::_scan_dir(String path, PoolStringArray &out_folders) {
 		if (file == "")
 			break;
 
-		// Ignore special dirs and hidden dirs (such as .git and .import)
+		// Ignore special dirs (such as .git and .import)
 		if (file == "." || file == ".." || file.begins_with("."))
+			continue;
+		if (dir->current_is_hidden())
 			continue;
 
 		if (dir->current_is_dir())
@@ -828,8 +830,8 @@ void FindInFilesPanel::apply_replaces_in_file(String fpath, const Vector<Result>
 	// If there are unsaved changes, the user will be asked on focus,
 	// however that means either losing changes or losing replaces.
 
-	FileAccess *f = FileAccess::open(fpath, FileAccess::READ);
-	ERR_FAIL_COND_MSG(f == NULL, "Cannot open file from path '" + fpath + "'.");
+	FileAccessRef f = FileAccess::open(fpath, FileAccess::READ);
+	ERR_FAIL_COND_MSG(!f, "Cannot open file from path '" + fpath + "'.");
 
 	String buffer;
 	int current_line = 1;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,9 +31,13 @@
 #include "asset_library_editor_plugin.h"
 
 #include "core/io/json.h"
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/project_settings_editor.h"
 
 void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost) {
 
@@ -137,8 +141,6 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 
 	set_custom_minimum_size(Size2(250, 100) * EDSCALE);
 	set_h_size_flags(SIZE_EXPAND_FILL);
-
-	set_mouse_filter(MOUSE_FILTER_PASS);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -160,7 +162,7 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 						Ref<Image> overlay = get_icon("PlayOverlay", "EditorIcons")->get_data();
 						Ref<Image> thumbnail = p_image->get_data();
 						thumbnail = thumbnail->duplicate();
-						Point2 overlay_pos = Point2((thumbnail->get_width() - overlay->get_width() / 2) / 2, (thumbnail->get_height() - overlay->get_height() / 2) / 2);
+						Point2 overlay_pos = Point2((thumbnail->get_width() - overlay->get_width()) / 2, (thumbnail->get_height() - overlay->get_height()) / 2);
 
 						// Overlay and thumbnail need the same format for `blend_rect` to work.
 						thumbnail->convert(Image::FORMAT_RGBA8);
@@ -433,7 +435,10 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 							String::humanize_size(download->get_body_size())));
 				} else {
 					// Total file size is unknown, so it cannot be displayed.
-					status->set_text(TTR("Downloading..."));
+					progress->set_modulate(Color(0, 0, 0, 0));
+					status->set_text(vformat(
+							TTR("Downloading...") + " (%s)",
+							String::humanize_size(download->get_downloaded_bytes())));
 				}
 			}
 
@@ -617,6 +622,21 @@ void EditorAssetLibrary::_notification(int p_what) {
 	}
 }
 
+void EditorAssetLibrary::_unhandled_input(const Ref<InputEvent> &p_event) {
+
+	const Ref<InputEventKey> key = p_event;
+
+	if (key.is_valid() && key->is_pressed()) {
+
+		if (key->get_scancode_with_modifiers() == (KEY_MASK_CMD | KEY_F) && is_visible_in_tree()) {
+
+			filter->grab_focus();
+			filter->select_all();
+			accept_event();
+		}
+	}
+}
+
 void EditorAssetLibrary::_install_asset() {
 
 	ERR_FAIL_COND(!description);
@@ -652,12 +672,12 @@ const char *EditorAssetLibrary::sort_key[SORT_MAX] = {
 };
 
 const char *EditorAssetLibrary::sort_text[SORT_MAX] = {
-	"Recently Updated",
-	"Least Recently Updated",
-	"Name (A-Z)",
-	"Name (Z-A)",
-	"License (A-Z)", // "cost" stores the SPDX license name in the Godot Asset Library.
-	"License (Z-A)", // "cost" stores the SPDX license name in the Godot Asset Library.
+	TTRC("Recently Updated"),
+	TTRC("Least Recently Updated"),
+	TTRC("Name (A-Z)"),
+	TTRC("Name (Z-A)"),
+	TTRC("License (A-Z)"), // "cost" stores the SPDX license name in the Godot Asset Library.
+	TTRC("License (Z-A)"), // "cost" stores the SPDX license name in the Godot Asset Library.
 };
 
 const char *EditorAssetLibrary::support_key[SUPPORT_MAX] = {
@@ -724,9 +744,9 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 		uint8_t jpg_signature[3] = { 255, 216, 255 };
 
 		if (r.ptr()) {
-			if (memcmp(&r[0], &png_signature[0], 8) == 0) {
+			if ((memcmp(&r[0], &png_signature[0], 8) == 0) && Image::_png_mem_loader_func) {
 				image->copy_internals_from(Image::_png_mem_loader_func(r.ptr(), len));
-			} else if (memcmp(&r[0], &jpg_signature[0], 3) == 0) {
+			} else if ((memcmp(&r[0], &jpg_signature[0], 3) == 0) && Image::_jpg_mem_loader_func) {
 				image->copy_internals_from(Image::_jpg_mem_loader_func(r.ptr(), len));
 			}
 		}
@@ -807,7 +827,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		_image_update(p_code == HTTPClient::RESPONSE_NOT_MODIFIED, true, p_data, p_queue_id);
 
 	} else {
-		WARN_PRINTS("Error getting image file from URL: " + image_queue[p_queue_id].image_url);
+		WARN_PRINT("Error getting image file from URL: " + image_queue[p_queue_id].image_url);
 		Object *obj = ObjectDB::get_instance(image_queue[p_queue_id].target);
 		if (obj) {
 			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("FileBrokenBigThumb", "EditorIcons"));
@@ -1317,6 +1337,7 @@ void EditorAssetLibrary::disable_community_support() {
 
 void EditorAssetLibrary::_bind_methods() {
 
+	ClassDB::bind_method("_unhandled_input", &EditorAssetLibrary::_unhandled_input);
 	ClassDB::bind_method("_http_request_completed", &EditorAssetLibrary::_http_request_completed);
 	ClassDB::bind_method("_select_asset", &EditorAssetLibrary::_select_asset);
 	ClassDB::bind_method("_select_author", &EditorAssetLibrary::_select_author);
@@ -1383,7 +1404,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child(memnew(Label(TTR("Sort:") + " ")));
 	sort = memnew(OptionButton);
 	for (int i = 0; i < SORT_MAX; i++) {
-		sort->add_item(sort_text[i]);
+		sort->add_item(TTRGET(sort_text[i]));
 	}
 
 	search_hb2->add_child(sort);
@@ -1450,7 +1471,6 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_scroll->add_child(library_vb_border);
 	library_vb_border->add_style_override("panel", border2);
 	library_vb_border->set_h_size_flags(SIZE_EXPAND_FILL);
-	library_vb_border->set_mouse_filter(MOUSE_FILTER_PASS);
 
 	library_vb = memnew(VBoxContainer);
 	library_vb->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1494,11 +1514,13 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	error_label->add_color_override("color", get_color("error_color", "Editor"));
 	error_hb->add_child(error_label);
 	error_tr = memnew(TextureRect);
+	error_tr->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	error_hb->add_child(error_tr);
 
 	description = NULL;
 
 	set_process(true);
+	set_process_unhandled_input(true);
 
 	downloads_scroll = memnew(ScrollContainer);
 	downloads_scroll->set_enable_h_scroll(true);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1187,31 +1187,6 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 			default: return Variant();
 		}
 
-	} else if (p_argcount > 1) {
-
-		_VariantCall::ConstructFunc &c = _VariantCall::construct_funcs[p_type];
-
-		for (List<_VariantCall::ConstructData>::Element *E = c.constructors.front(); E; E = E->next()) {
-			const _VariantCall::ConstructData &cd = E->get();
-
-			if (cd.arg_count != p_argcount)
-				continue;
-
-			//validate parameters
-			for (int i = 0; i < cd.arg_count; i++) {
-				if (!Variant::can_convert(p_args[i]->type, cd.arg_types[i])) {
-					r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT; //no such constructor
-					r_error.argument = i;
-					r_error.expected = cd.arg_types[i];
-					return Variant();
-				}
-			}
-
-			Variant v;
-			cd.func(v, p_args);
-			return v;
-		}
-
 	} else if (p_argcount == 1 && p_args[0]->type == p_type) {
 		return *p_args[0]; //copy construct
 	} else if (p_argcount == 1 && (!p_strict || Variant::can_convert(p_args[0]->type, p_type))) {
@@ -1267,6 +1242,30 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 			case POOL_VECTOR3_ARRAY: return (PoolVector3Array(*p_args[0]));
 			case POOL_COLOR_ARRAY: return (PoolColorArray(*p_args[0]));
 			default: return Variant();
+		}
+	} else if (p_argcount >= 1) {
+
+		_VariantCall::ConstructFunc &c = _VariantCall::construct_funcs[p_type];
+
+		for (List<_VariantCall::ConstructData>::Element *E = c.constructors.front(); E; E = E->next()) {
+			const _VariantCall::ConstructData &cd = E->get();
+
+			if (cd.arg_count != p_argcount)
+				continue;
+
+			//validate parameters
+			for (int i = 0; i < cd.arg_count; i++) {
+				if (!Variant::can_convert(p_args[i]->type, cd.arg_types[i])) {
+					r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT; //no such constructor
+					r_error.argument = i;
+					r_error.expected = cd.arg_types[i];
+					return Variant();
+				}
+			}
+
+			Variant v;
+			cd.func(v, p_args);
+			return v;
 		}
 	}
 	r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD; //no such constructor
@@ -1951,7 +1950,7 @@ void register_variant_methods() {
 	ADDFUNC0R(TRANSFORM, TRANSFORM, Transform, orthonormalized, varray());
 	ADDFUNC2R(TRANSFORM, TRANSFORM, Transform, rotated, VECTOR3, "axis", REAL, "phi", varray());
 	ADDFUNC1R(TRANSFORM, TRANSFORM, Transform, scaled, VECTOR3, "scale", varray());
-	ADDFUNC1R(TRANSFORM, TRANSFORM, Transform, translated, VECTOR3, "ofs", varray());
+	ADDFUNC1R(TRANSFORM, TRANSFORM, Transform, translated, VECTOR3, "offset", varray());
 	ADDFUNC2R(TRANSFORM, TRANSFORM, Transform, looking_at, VECTOR3, "target", VECTOR3, "up", varray());
 	ADDFUNC2R(TRANSFORM, TRANSFORM, Transform, interpolate_with, TRANSFORM, "transform", REAL, "weight", varray());
 	ADDFUNC1R(TRANSFORM, BOOL, Transform, is_equal_approx, TRANSFORM, "transform", varray());

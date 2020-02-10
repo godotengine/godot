@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorSceneImporterAssimp" inherits="EditorSceneImporter" category="Core" version="3.2">
+<class name="EditorSceneImporterAssimp" inherits="EditorSceneImporter" version="4.0">
 	<brief_description>
-		Multi-format 3D asset importer based on [url=http://assimp.org/]Assimp[/url].
+		FBX 3D asset importer based on [url=http://assimp.org/]Assimp[/url].
 	</brief_description>
 	<description>
-		This is a multi-format 3D asset importer based on [url=http://assimp.org/]Assimp[/url]. See [url=https://assimp-docs.readthedocs.io/en/latest/about/intoduction.html#installation]this page[/url] for a full list of supported formats.
+		This is an FBX 3D asset importer based on [url=http://assimp.org/]Assimp[/url]. It currently has many known limitations and works best with static meshes. Most animated meshes won't import correctly.
 		If exporting a FBX scene from Autodesk Maya, use these FBX export settings:
 		[codeblock]
 		- Smoothing Groups

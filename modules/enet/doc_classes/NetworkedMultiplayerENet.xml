@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NetworkedMultiplayerENet" inherits="NetworkedMultiplayerPeer" category="Core" version="3.2">
+<class name="NetworkedMultiplayerENet" inherits="NetworkedMultiplayerPeer" version="4.0">
 	<brief_description>
 		PacketPeer implementation using the [url=http://enet.bespin.org/index.html]ENet[/url] library.
 	</brief_description>
@@ -49,7 +49,7 @@
 			<argument index="3" name="out_bandwidth" type="int" default="0">
 			</argument>
 			<description>
-				Create server that listens to connections via [code]port[/code]. The port needs to be an available, unused port between 0 and 65535. Note that ports below 1024 are privileged and may require elevated permissions depending on the platform. To change the interface the server listens on, use [method set_bind_ip]. The default IP is the wildcard [code]"*"[/code], which listens on all available interfaces. [code]max_clients[/code] is the maximum number of clients that are allowed at once, any number up to 4096 may be used, although the achievable number of simultaneous clients may be far lower and depends on the application. For additional details on the bandwidth parameters, see [method create_client]. Returns [constant OK] if a server was created, [constant ERR_ALREADY_IN_USE] if this NetworkedMultiplayerENet instance already has an open connection (in which case you need to call [method close_connection] first) or [constant ERR_CANT_CREATE] if the server could not be created.
+				Create server that listens to connections via [code]port[/code]. The port needs to be an available, unused port between 0 and 65535. Note that ports below 1024 are privileged and may require elevated permissions depending on the platform. To change the interface the server listens on, use [method set_bind_ip]. The default IP is the wildcard [code]"*"[/code], which listens on all available interfaces. [code]max_clients[/code] is the maximum number of clients that are allowed at once, any number up to 4095 may be used, although the achievable number of simultaneous clients may be far lower and depends on the application. For additional details on the bandwidth parameters, see [method create_client]. Returns [constant OK] if a server was created, [constant ERR_ALREADY_IN_USE] if this NetworkedMultiplayerENet instance already has an open connection (in which case you need to call [method close_connection] first) or [constant ERR_CANT_CREATE] if the server could not be created.
 			</description>
 		</method>
 		<method name="disconnect_peer">
@@ -67,14 +67,14 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the channel of the last packet fetched via [method PacketPeer.get_packet]
+				Returns the channel of the last packet fetched via [method PacketPeer.get_packet].
 			</description>
 		</method>
 		<method name="get_packet_channel" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the channel of the next packet that will be retrieved via [method PacketPeer.get_packet]
+				Returns the channel of the next packet that will be retrieved via [method PacketPeer.get_packet].
 			</description>
 		</method>
 		<method name="get_peer_address" qualifiers="const">

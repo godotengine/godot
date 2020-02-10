@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS // to disable build-time warning which suggested to use strcpy_s instead strcpy
+#endif
 
 #include "ustring.h"
 
@@ -3320,7 +3324,7 @@ String String::humanize_size(uint64_t p_size) {
 
 	int prefix_idx = 0;
 
-	while (prefix_idx < prefixes.size() && p_size > (_div * 1024)) {
+	while (prefix_idx < prefixes.size() - 1 && p_size > (_div * 1024)) {
 		_div *= 1024;
 		prefix_idx++;
 	}
@@ -3792,7 +3796,8 @@ bool String::is_valid_float() const {
 
 String String::path_to_file(const String &p_path) const {
 
-	String src = this->replace("\\", "/").get_base_dir();
+	// Don't get base dir for src, this is expected to be a dir already.
+	String src = this->replace("\\", "/");
 	String dst = p_path.replace("\\", "/").get_base_dir();
 	String rel = src.path_to(dst);
 	if (rel == dst) // failed
@@ -4052,6 +4057,19 @@ String String::percent_decode() const {
 	}
 
 	return String::utf8(pe.ptr());
+}
+
+String String::property_name_encode() const {
+	// Escape and quote strings with extended ASCII or further Unicode characters
+	// as well as '"', '=' or ' ' (32)
+	const CharType *cstr = c_str();
+	for (int i = 0; cstr[i]; i++) {
+		if (cstr[i] == '=' || cstr[i] == '"' || cstr[i] < 33 || cstr[i] > 126) {
+			return "\"" + c_escape_multiline() + "\"";
+		}
+	}
+	// Keep as is
+	return *this;
 }
 
 String String::get_basename() const {

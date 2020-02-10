@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,6 +37,16 @@
 #include "scene/animation/animation_player.h"
 #include "scene/main/viewport.h"
 #include "scene/scene_string_names.h"
+
+#ifdef TOOLS_ENABLED
+Rect2 VisibilityNotifier2D::_edit_get_rect() const {
+	return rect;
+}
+
+bool VisibilityNotifier2D::_edit_use_rect() const {
+	return true;
+}
+#endif
 
 void VisibilityNotifier2D::_enter_viewport(Viewport *p_viewport) {
 
@@ -82,15 +92,6 @@ void VisibilityNotifier2D::set_rect(const Rect2 &p_rect) {
 	}
 
 	_change_notify("rect");
-}
-
-Rect2 VisibilityNotifier2D::_edit_get_rect() const {
-
-	return rect;
-}
-
-bool VisibilityNotifier2D::_edit_use_rect() const {
-	return true;
 }
 
 Rect2 VisibilityNotifier2D::get_rect() const {
@@ -319,8 +320,6 @@ void VisibilityEnabler2D::_node_removed(Node *p_node) {
 
 	if (!visible)
 		_change_node_state(p_node, true);
-	//changed to one shot, not needed
-	//p_node->disconnect(SceneStringNames::get_singleton()->exit_scene,this,"_node_removed");
 	nodes.erase(p_node);
 }
 

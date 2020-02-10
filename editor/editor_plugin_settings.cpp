@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 #include "core/os/main_loop.h"
 #include "core/project_settings.h"
 #include "editor_node.h"
+#include "editor_scale.h"
 #include "scene/gui/margin_container.h"
 
 void EditorPluginSettings::_notification(int p_what) {
@@ -95,28 +96,28 @@ void EditorPluginSettings::update_plugins() {
 		Error err2 = cf->load(path);
 
 		if (err2 != OK) {
-			WARN_PRINTS("Can't load plugin config: " + path);
+			WARN_PRINT("Can't load plugin config: " + path);
 		} else {
 			bool key_missing = false;
 
 			if (!cf->has_section_key("plugin", "name")) {
-				WARN_PRINTS("Plugin config misses \"plugin/name\" key: " + path);
+				WARN_PRINT("Plugin config misses \"plugin/name\" key: " + path);
 				key_missing = true;
 			}
 			if (!cf->has_section_key("plugin", "author")) {
-				WARN_PRINTS("Plugin config misses \"plugin/author\" key: " + path);
+				WARN_PRINT("Plugin config misses \"plugin/author\" key: " + path);
 				key_missing = true;
 			}
 			if (!cf->has_section_key("plugin", "version")) {
-				WARN_PRINTS("Plugin config misses \"plugin/version\" key: " + path);
+				WARN_PRINT("Plugin config misses \"plugin/version\" key: " + path);
 				key_missing = true;
 			}
 			if (!cf->has_section_key("plugin", "description")) {
-				WARN_PRINTS("Plugin config misses \"plugin/description\" key: " + path);
+				WARN_PRINT("Plugin config misses \"plugin/description\" key: " + path);
 				key_missing = true;
 			}
 			if (!cf->has_section_key("plugin", "script")) {
-				WARN_PRINTS("Plugin config misses \"plugin/script\" key: " + path);
+				WARN_PRINT("Plugin config misses \"plugin/script\" key: " + path);
 				key_missing = true;
 			}
 

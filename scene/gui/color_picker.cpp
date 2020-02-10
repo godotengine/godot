@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -573,9 +573,7 @@ void ColorPicker::_preset_input(const Ref<InputEvent> &p_event) {
 		}
 		if (index < 0 || index >= presets.size())
 			return;
-		preset->set_tooltip("Color: #" + presets[index].to_html(presets[index].a < 1) + "\n"
-																						"LMB: Set color\n"
-																						"RMB: Remove preset");
+		preset->set_tooltip(vformat(RTR("Color: #%s\nLMB: Set color\nRMB: Remove preset"), presets[index].to_html(presets[index].a < 1)));
 	}
 }
 
@@ -737,20 +735,6 @@ ColorPicker::ColorPicker() :
 	presets_visible = true;
 	screen = NULL;
 
-	HBoxContainer *hb_smpl = memnew(HBoxContainer);
-	add_child(hb_smpl);
-
-	sample = memnew(TextureRect);
-	hb_smpl->add_child(sample);
-	sample->set_h_size_flags(SIZE_EXPAND_FILL);
-	sample->connect("draw", this, "_sample_draw");
-
-	btn_pick = memnew(ToolButton);
-	hb_smpl->add_child(btn_pick);
-	btn_pick->set_toggle_mode(true);
-	btn_pick->set_tooltip(TTR("Pick a color from the screen."));
-	btn_pick->connect("pressed", this, "_screen_pick_pressed");
-
 	HBoxContainer *hb_edit = memnew(HBoxContainer);
 	add_child(hb_edit);
 	hb_edit->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -771,6 +755,20 @@ ColorPicker::ColorPicker() :
 	w_edit->set_v_size_flags(SIZE_EXPAND_FILL);
 	w_edit->connect("gui_input", this, "_w_input");
 	w_edit->connect("draw", this, "_hsv_draw", make_binds(1, w_edit));
+
+	HBoxContainer *hb_smpl = memnew(HBoxContainer);
+	add_child(hb_smpl);
+
+	sample = memnew(TextureRect);
+	hb_smpl->add_child(sample);
+	sample->set_h_size_flags(SIZE_EXPAND_FILL);
+	sample->connect("draw", this, "_sample_draw");
+
+	btn_pick = memnew(ToolButton);
+	hb_smpl->add_child(btn_pick);
+	btn_pick->set_toggle_mode(true);
+	btn_pick->set_tooltip(TTR("Pick a color from the editor window."));
+	btn_pick->connect("pressed", this, "_screen_pick_pressed");
 
 	VBoxContainer *vbl = memnew(VBoxContainer);
 	add_child(vbl);

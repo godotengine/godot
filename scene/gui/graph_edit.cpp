@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -200,6 +200,13 @@ void GraphEdit::_update_scroll() {
 	else
 		v_scroll->show();
 
+	Size2 hmin = h_scroll->get_combined_minimum_size();
+	Size2 vmin = v_scroll->get_combined_minimum_size();
+
+	// Avoid scrollbar overlapping.
+	h_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, v_scroll->is_visible() ? -vmin.width : 0);
+	v_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, h_scroll->is_visible() ? -hmin.height : 0);
+
 	set_block_minimum_size_adjust(false);
 
 	if (!awaiting_scroll_offset_update) {
@@ -286,15 +293,15 @@ void GraphEdit::_notification(int p_what) {
 		Size2 hmin = h_scroll->get_combined_minimum_size();
 		Size2 vmin = v_scroll->get_combined_minimum_size();
 
-		v_scroll->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -vmin.width);
-		v_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
-		v_scroll->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 0);
-		v_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
-
 		h_scroll->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 0);
 		h_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
 		h_scroll->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -hmin.height);
 		h_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
+
+		v_scroll->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -vmin.width);
+		v_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
+		v_scroll->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 0);
+		v_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
 	}
 	if (p_what == NOTIFICATION_DRAW) {
 
@@ -777,14 +784,8 @@ void GraphEdit::_top_layer_draw() {
 	}
 
 	if (box_selecting) {
-		top_layer->draw_rect(
-				box_selecting_rect,
-				get_color("box_selection_fill_color", "Editor"));
-
-		top_layer->draw_rect(
-				box_selecting_rect,
-				get_color("box_selection_stroke_color", "Editor"),
-				false);
+		top_layer->draw_rect(box_selecting_rect, get_color("selection_fill"));
+		top_layer->draw_rect(box_selecting_rect, get_color("selection_stroke"), false);
 	}
 }
 
@@ -1341,7 +1342,6 @@ GraphEdit::GraphEdit() {
 	top_layer->set_mouse_filter(MOUSE_FILTER_PASS);
 	top_layer->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	top_layer->connect("draw", this, "_top_layer_draw");
-	top_layer->set_mouse_filter(MOUSE_FILTER_PASS);
 	top_layer->connect("gui_input", this, "_top_layer_input");
 
 	connections_layer = memnew(Control);
@@ -1358,6 +1358,7 @@ GraphEdit::GraphEdit() {
 	v_scroll = memnew(VScrollBar);
 	v_scroll->set_name("_v_scroll");
 	top_layer->add_child(v_scroll);
+
 	updating = false;
 	connecting = false;
 	right_disconnects = false;

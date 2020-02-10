@@ -64,7 +64,7 @@ namespace GodotTools.Ides
 
         private void LaunchIde()
         {
-            var editor = (ExternalEditorId) GodotSharpEditor.Instance.GetEditorInterface()
+            var editor = (ExternalEditorId)GodotSharpEditor.Instance.GetEditorInterface()
                 .GetEditorSettings().GetSetting("mono/editor/external_editor");
 
             switch (editor)
@@ -72,6 +72,7 @@ namespace GodotTools.Ides
                 case ExternalEditorId.None:
                 case ExternalEditorId.VisualStudio:
                 case ExternalEditorId.VsCode:
+                case ExternalEditorId.Rider:
                     throw new NotSupportedException();
                 case ExternalEditorId.VisualStudioForMac:
                     goto case ExternalEditorId.MonoDevelop;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,11 @@
 #include "editor_icons.gen.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
+
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_SVG_ENABLED
 #include "modules/svg/image_loader_svg.h"
+#endif
 
 static Ref<StyleBoxTexture> make_stylebox(Ref<Texture> p_texture, float p_left, float p_top, float p_right, float p_botton, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_botton = -1, bool p_draw_center = true) {
 	Ref<StyleBoxTexture> style(memnew(StyleBoxTexture));
@@ -89,7 +93,11 @@ Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color, float 
 	// dumb gizmo check
 	bool is_gizmo = String(editor_icons_names[p_index]).begins_with("Gizmo");
 
-	ImageLoaderSVG::create_image_from_string(img, editor_icons_sources[p_index], p_scale, true, p_convert_color);
+	// Upsample icon generation only if the editor scale isn't an integer multiplier.
+	// Generating upsampled icons is slower, and the benefit is hardly visible
+	// with integer editor scales.
+	const bool upsample = !Math::is_equal_approx(Math::round(p_scale), p_scale);
+	ImageLoaderSVG::create_image_from_string(img, editor_icons_sources[p_index], p_scale, upsample, p_convert_color);
 
 	if ((p_scale - (float)((int)p_scale)) > 0.0 || is_gizmo || p_force_filter)
 		icon->create_from_image(img); // in this case filter really helps
@@ -105,8 +113,16 @@ Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color, float 
 
 void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = true, int p_thumb_size = 32, bool p_only_thumbs = false) {
 
-#ifdef SVG_ENABLED
+#ifdef MODULE_SVG_ENABLED
+	// The default icon theme is designed to be used for a dark theme.
+	// This dictionary stores color codes to convert to other colors
+	// for better readability on a light theme.
 	Dictionary dark_icon_color_dictionary;
+
+	// The names of the icons to never convert, even if one of their colors
+	// are contained in the dictionary above.
+	Set<StringName> exceptions;
+
 	if (!p_dark_theme) {
 		// convert color:                             FROM       TO
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#e0e0e0", "#5a5a5a"); // common icon color
@@ -172,9 +188,31 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#69ec9a", "#2ce573"); // VS rid
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#79f3e8", "#12d5c3"); // VS object
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#77edb1", "#57e99f"); // VS dict
+
+		exceptions.insert("EditorPivot");
+		exceptions.insert("EditorHandle");
+		exceptions.insert("Editor3DHandle");
+		exceptions.insert("Godot");
+		exceptions.insert("PanoramaSky");
+		exceptions.insert("ProceduralSky");
+		exceptions.insert("EditorControlAnchor");
+		exceptions.insert("DefaultProjectIcon");
+		exceptions.insert("GuiCloseCustomizable");
+		exceptions.insert("GuiGraphNodePort");
+		exceptions.insert("GuiResizer");
+		exceptions.insert("ZoomMore");
+		exceptions.insert("ZoomLess");
+		exceptions.insert("ZoomReset");
+		exceptions.insert("LockViewport");
+		exceptions.insert("GroupViewport");
+		exceptions.insert("StatusError");
+		exceptions.insert("StatusSuccess");
+		exceptions.insert("StatusWarning");
+		exceptions.insert("NodeWarning");
+		exceptions.insert("OverbrightIndicator");
 	}
 
-	// these ones should be converted even if we are using a dark theme
+	// These ones should be converted even if we are using a dark theme.
 	const Color error_color = p_theme->get_color("error_color", "Editor");
 	const Color success_color = p_theme->get_color("success_color", "Editor");
 	const Color warning_color = p_theme->get_color("warning_color", "Editor");
@@ -182,65 +220,44 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	dark_icon_color_dictionary[Color::html("#45ff8b")] = success_color;
 	dark_icon_color_dictionary[Color::html("#dbab09")] = warning_color;
 
-	List<String> exceptions;
-	exceptions.push_back("EditorPivot");
-	exceptions.push_back("EditorHandle");
-	exceptions.push_back("Editor3DHandle");
-	exceptions.push_back("Godot");
-	exceptions.push_back("PanoramaSky");
-	exceptions.push_back("ProceduralSky");
-	exceptions.push_back("EditorControlAnchor");
-	exceptions.push_back("DefaultProjectIcon");
-	exceptions.push_back("GuiCloseCustomizable");
-	exceptions.push_back("GuiGraphNodePort");
-	exceptions.push_back("GuiResizer");
-	exceptions.push_back("ZoomMore");
-	exceptions.push_back("ZoomLess");
-	exceptions.push_back("ZoomReset");
-	exceptions.push_back("LockViewport");
-	exceptions.push_back("GroupViewport");
-	exceptions.push_back("StatusError");
-	exceptions.push_back("StatusSuccess");
-	exceptions.push_back("StatusWarning");
-	exceptions.push_back("NodeWarning");
-	exceptions.push_back("OverbrightIndicator");
-
 	ImageLoaderSVG::set_convert_colors(&dark_icon_color_dictionary);
 
-	// generate icons
-	if (!p_only_thumbs)
+	// Generate icons.
+	if (!p_only_thumbs) {
 		for (int i = 0; i < editor_icons_count; i++) {
-			List<String>::Element *is_exception = exceptions.find(editor_icons_names[i]);
-			if (is_exception) exceptions.erase(is_exception);
-			Ref<ImageTexture> icon = editor_generate_icon(i, !is_exception);
+			const int is_exception = exceptions.has(editor_icons_names[i]);
+			const Ref<ImageTexture> icon = editor_generate_icon(i, !is_exception);
+
 			p_theme->set_icon(editor_icons_names[i], "EditorIcons", icon);
 		}
+	}
 
-	// generate thumb files with the given thumb size
-	bool force_filter = p_thumb_size != 64 && p_thumb_size != 32; // we don't need filter with original resolution
+	// Generate thumbnail icons with the given thumbnail size.
+	// We don't need filtering when generating at one of the default resolutions.
+	const bool force_filter = p_thumb_size != 64 && p_thumb_size != 32;
 	if (p_thumb_size >= 64) {
-		float scale = (float)p_thumb_size / 64.0 * EDSCALE;
+		const float scale = (float)p_thumb_size / 64.0 * EDSCALE;
 		for (int i = 0; i < editor_bg_thumbs_count; i++) {
-			int index = editor_bg_thumbs_indices[i];
-			List<String>::Element *is_exception = exceptions.find(editor_icons_names[index]);
-			if (is_exception) exceptions.erase(is_exception);
-			Ref<ImageTexture> icon = editor_generate_icon(index, !p_dark_theme && !is_exception, scale, force_filter);
+			const int index = editor_bg_thumbs_indices[i];
+			const int is_exception = exceptions.has(editor_icons_names[index]);
+			const Ref<ImageTexture> icon = editor_generate_icon(index, !p_dark_theme && !is_exception, scale, force_filter);
+
 			p_theme->set_icon(editor_icons_names[index], "EditorIcons", icon);
 		}
 	} else {
-		float scale = (float)p_thumb_size / 32.0 * EDSCALE;
+		const float scale = (float)p_thumb_size / 32.0 * EDSCALE;
 		for (int i = 0; i < editor_md_thumbs_count; i++) {
-			int index = editor_md_thumbs_indices[i];
-			List<String>::Element *is_exception = exceptions.find(editor_icons_names[index]);
-			if (is_exception) exceptions.erase(is_exception);
-			Ref<ImageTexture> icon = editor_generate_icon(index, !p_dark_theme && !is_exception, scale, force_filter);
+			const int index = editor_md_thumbs_indices[i];
+			const bool is_exception = exceptions.has(editor_icons_names[index]);
+			const Ref<ImageTexture> icon = editor_generate_icon(index, !p_dark_theme && !is_exception, scale, force_filter);
+
 			p_theme->set_icon(editor_icons_names[index], "EditorIcons", icon);
 		}
 	}
 
 	ImageLoaderSVG::set_convert_colors(NULL);
 #else
-	print_line("SVG support disabled, editor icons won't be rendered.");
+	WARN_PRINT("SVG support disabled, editor icons won't be rendered.");
 #endif
 }
 
@@ -848,6 +865,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("normal", "LineEdit", style_widget);
 	theme->set_stylebox("focus", "LineEdit", style_widget_focus);
 	theme->set_stylebox("read_only", "LineEdit", style_widget_disabled);
+	theme->set_icon("clear", "LineEdit", theme->get_icon("GuiClose", "EditorIcons"));
 	theme->set_color("read_only", "LineEdit", font_color_disabled);
 	theme->set_color("font_color", "LineEdit", font_color);
 	theme->set_color("font_color_selected", "LineEdit", mono_color);
@@ -1011,6 +1029,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		theme->set_color("grid_major", "GraphEdit", Color(0.0, 0.0, 0.0, 0.15));
 		theme->set_color("grid_minor", "GraphEdit", Color(0.0, 0.0, 0.0, 0.07));
 	}
+	theme->set_color("selection_fill", "GraphEdit", theme->get_color("box_selection_fill_color", "Editor"));
+	theme->set_color("selection_stroke", "GraphEdit", theme->get_color("box_selection_stroke_color", "Editor"));
 	theme->set_color("activity", "GraphEdit", accent_color);
 	theme->set_icon("minus", "GraphEdit", theme->get_icon("ZoomLess", "EditorIcons"));
 	theme->set_icon("more", "GraphEdit", theme->get_icon("ZoomMore", "EditorIcons"));
@@ -1093,6 +1113,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// FileDialog
 	theme->set_icon("folder", "FileDialog", theme->get_icon("Folder", "EditorIcons"));
+	theme->set_icon("parent_folder", "FileDialog", theme->get_icon("ArrowUp", "EditorIcons"));
+	theme->set_icon("reload", "FileDialog", theme->get_icon("Reload", "EditorIcons"));
+	theme->set_icon("toggle_hidden", "FileDialog", theme->get_icon("GuiVisibilityVisible", "EditorIcons"));
 	// Use a different color for folder icons to make them easier to distinguish from files.
 	// On a light theme, the icon will be dark, so we need to lighten it before blending it with the accent color.
 	theme->set_color("folder_icon_modulate", "FileDialog", (dark_theme ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25)).linear_interpolate(accent_color, 0.7));
@@ -1212,7 +1235,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 Ref<Theme> create_custom_theme(const Ref<Theme> p_theme) {
 	Ref<Theme> theme;
 
-	String custom_theme = EditorSettings::get_singleton()->get("interface/theme/custom_theme");
+	const String custom_theme = EditorSettings::get_singleton()->get("interface/theme/custom_theme");
 	if (custom_theme != "") {
 		theme = ResourceLoader::load(custom_theme);
 	}

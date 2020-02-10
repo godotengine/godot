@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SpriteFrames" inherits="Resource" category="Core" version="3.2">
+<class name="SpriteFrames" inherits="Resource" version="4.0">
 	<brief_description>
 		Sprite frame library for AnimatedSprite.
 	</brief_description>
@@ -170,6 +170,7 @@
 	</methods>
 	<members>
 		<member name="frames" type="Array" setter="_set_frames" getter="_get_frames">
+			Compatibility property, always equals to an empty array.
 		</member>
 	</members>
 	<constants>

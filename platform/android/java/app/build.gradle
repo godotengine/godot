@@ -33,6 +33,8 @@ allprojects {
 }
 
 dependencies {
+    implementation libraries.supportCoreUtils
+
     if (rootProject.findProject(":lib")) {
         implementation project(":lib")
     } else {
@@ -51,7 +53,7 @@ android {
 
     defaultConfig {
         // Feel free to modify the application id to your own.
-        applicationId "com.godot.game"
+        applicationId getExportPackageName()
         minSdkVersion versions.minSdk
         targetSdkVersion versions.targetSdk
 //CHUNK_ANDROID_DEFAULTCONFIG_BEGIN

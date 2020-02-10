@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1727,7 +1727,7 @@ void AnimationTimelineEdit::update_values() {
 		time_icon->set_tooltip(TTR("Animation length (frames)"));
 	} else {
 		length->set_value(animation->get_length());
-		length->set_step(0.01);
+		length->set_step(0.001);
 		length->set_tooltip(TTR("Animation length (seconds)"));
 		time_icon->set_tooltip(TTR("Animation length (seconds)"));
 	}
@@ -1890,7 +1890,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	length = memnew(EditorSpinSlider);
 	length->set_min(0.001);
 	length->set_max(36000);
-	length->set_step(0.01);
+	length->set_step(0.001);
 	length->set_allow_greater(true);
 	length->set_custom_minimum_size(Vector2(70 * EDSCALE, 0));
 	length->set_hide_slider(true);
@@ -3790,8 +3790,9 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 				value = p_value; //all good
 			} else {
 				String tpath = animation->track_get_path(i);
-				if (NodePath(tpath.get_basename()) == np) {
-					String subindex = tpath.get_extension();
+				int index = tpath.find_last(":");
+				if (NodePath(tpath.substr(0, index + 1)) == np) {
+					String subindex = tpath.substr(index + 1, tpath.length() - index);
 					value = p_value.get(subindex);
 				} else {
 					continue;
@@ -4579,7 +4580,7 @@ void AnimationTrackEditor::_new_track_property_selected(String p_name) {
 			bool valid;
 			subindices = _get_bezier_subindices_for_type(h.type, &valid);
 			if (!valid) {
-				EditorNode::get_singleton()->show_warning("Invalid track for Bezier (no suitable sub-properties)");
+				EditorNode::get_singleton()->show_warning(TTR("Invalid track for Bezier (no suitable sub-properties)"));
 				return;
 			}
 		}
@@ -4837,40 +4838,23 @@ struct _AnimMoveRestore {
 
 void AnimationTrackEditor::_clear_key_edit() {
 	if (key_edit) {
-
-#if 0
-		// going back seems like the most comfortable thing to do, but it results
-		// in weird behaviors and crashes, because going back to animation editor
-		// triggers the editor setting up again itself
-
-		bool go_back = false;
-		if (EditorNode::get_singleton()->get_inspector()->get_edited_object() == key_edit) {
-			EditorNode::get_singleton()->push_item(NULL);
-			go_back = true;
-		}
-
-		memdelete(key_edit);
-		key_edit = NULL;
-
-		if (go_back) {
-			EditorNode::get_singleton()->get_inspector_dock()->go_back();
-		}
-#else
 		//if key edit is the object being inspected, remove it first
-		if (EditorNode::get_singleton()->get_inspector()->get_edited_object() == key_edit ||
-				EditorNode::get_singleton()->get_inspector()->get_edited_object() == multi_key_edit) {
+		if (EditorNode::get_singleton()->get_inspector()->get_edited_object() == key_edit) {
 			EditorNode::get_singleton()->push_item(NULL);
 		}
 
 		//then actually delete it
-		if (key_edit) {
-			memdelete(key_edit);
-			key_edit = NULL;
-		} else if (multi_key_edit) {
-			memdelete(multi_key_edit);
-			multi_key_edit = NULL;
+		memdelete(key_edit);
+		key_edit = NULL;
+	}
+
+	if (multi_key_edit) {
+		if (EditorNode::get_singleton()->get_inspector()->get_edited_object() == multi_key_edit) {
+			EditorNode::get_singleton()->push_item(NULL);
 		}
-#endif
+
+		memdelete(multi_key_edit);
+		multi_key_edit = NULL;
 	}
 }
 
@@ -4926,7 +4910,7 @@ void AnimationTrackEditor::_update_key_edit() {
 
 			if (!key_ofs_map.has(track)) {
 				key_ofs_map[track] = List<float>();
-				base_map[track] = *memnew(NodePath);
+				base_map[track] = NodePath();
 			}
 
 			key_ofs_map[track].push_back(animation->track_get_key_time(track, E->key().key));
@@ -5993,6 +5977,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	keying = false;
 	moving_selection = 0;
 	key_edit = NULL;
+	multi_key_edit = NULL;
 
 	box_selection = memnew(Control);
 	add_child(box_selection);
@@ -6103,5 +6088,8 @@ AnimationTrackEditor::AnimationTrackEditor() {
 AnimationTrackEditor::~AnimationTrackEditor() {
 	if (key_edit) {
 		memdelete(key_edit);
+	}
+	if (multi_key_edit) {
+		memdelete(multi_key_edit);
 	}
 }

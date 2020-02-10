@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -263,14 +263,14 @@ class EditorPropertyInteger : public EditorProperty {
 	GDCLASS(EditorPropertyInteger, EditorProperty);
 	EditorSpinSlider *spin;
 	bool setting;
-	void _value_changed(double p_val);
+	void _value_changed(int64_t p_val);
 
 protected:
 	static void _bind_methods();
 
 public:
 	virtual void update_property();
-	void setup(int p_min, int p_max, int p_step, bool p_allow_greater, bool p_allow_lesser);
+	void setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_allow_greater, bool p_allow_lesser);
 	EditorPropertyInteger();
 };
 

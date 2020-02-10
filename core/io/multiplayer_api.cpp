@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -111,6 +111,7 @@ void MultiplayerAPI::poll() {
 		Error err = network_peer->get_packet(&packet, len);
 		if (err != OK) {
 			ERR_PRINT("Error getting packet!");
+			break; // Something is wrong!
 		}
 
 		rpc_sender_id = sender;
@@ -139,6 +140,9 @@ void MultiplayerAPI::set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_pee
 
 	if (p_peer == network_peer) return; // Nothing to do
 
+	ERR_FAIL_COND_MSG(p_peer.is_valid() && p_peer->get_connection_status() == NetworkedMultiplayerPeer::CONNECTION_DISCONNECTED,
+			"Supplied NetworkedMultiplayerPeer must be connecting or connected.");
+
 	if (network_peer.is_valid()) {
 		network_peer->disconnect("peer_connected", this, "_add_peer");
 		network_peer->disconnect("peer_disconnected", this, "_del_peer");
@@ -149,8 +153,6 @@ void MultiplayerAPI::set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_pee
 	}
 
 	network_peer = p_peer;
-
-	ERR_FAIL_COND_MSG(p_peer.is_valid() && p_peer->get_connection_status() == NetworkedMultiplayerPeer::CONNECTION_DISCONNECTED, "Supplied NetworkedNetworkPeer must be connecting or connected.");
 
 	if (network_peer.is_valid()) {
 		network_peer->connect("peer_connected", this, "_add_peer");
@@ -251,7 +253,7 @@ Node *MultiplayerAPI::_process_get_node(int p_from, const uint8_t *p_packet, int
 		node = root_node->get_node(np);
 
 		if (!node)
-			ERR_PRINTS("Failed to get path from RPC: " + String(np) + ".");
+			ERR_PRINT("Failed to get path from RPC: " + String(np) + ".");
 	} else {
 		// Use cached path.
 		int id = target;
@@ -267,7 +269,7 @@ Node *MultiplayerAPI::_process_get_node(int p_from, const uint8_t *p_packet, int
 
 		node = root_node->get_node(ni->path);
 		if (!node)
-			ERR_PRINTS("Failed to get cached path from RPC: " + String(ni->path) + ".");
+			ERR_PRINT("Failed to get cached path from RPC: " + String(ni->path) + ".");
 	}
 	return node;
 }
@@ -322,7 +324,7 @@ void MultiplayerAPI::_process_rpc(Node *p_node, const StringName &p_name, int p_
 	if (ce.error != Variant::CallError::CALL_OK) {
 		String error = Variant::get_call_error_text(p_node, p_name, (const Variant **)argp.ptr(), argc, ce);
 		error = "RPC - " + error;
-		ERR_PRINTS(error);
+		ERR_PRINT(error);
 	}
 }
 
@@ -360,7 +362,7 @@ void MultiplayerAPI::_process_rset(Node *p_node, const StringName &p_name, int p
 	p_node->set(p_name, value, &valid);
 	if (!valid) {
 		String error = "Error setting remote property '" + String(p_name) + "', not found in object of type " + p_node->get_class() + ".";
-		ERR_PRINTS(error);
+		ERR_PRINT(error);
 	}
 }
 
@@ -681,7 +683,7 @@ void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const 
 		if (ce.error != Variant::CallError::CALL_OK) {
 			String error = Variant::get_call_error_text(p_node, p_method, p_arg, p_argcount, ce);
 			error = "rpc() aborted in local call:  - " + error + ".";
-			ERR_PRINTS(error);
+			ERR_PRINT(error);
 			return;
 		}
 	}
@@ -696,7 +698,7 @@ void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const 
 		if (ce.error != Variant::CallError::CALL_OK) {
 			String error = Variant::get_call_error_text(p_node, p_method, p_arg, p_argcount, ce);
 			error = "rpc() aborted in script local call:  - " + error + ".";
-			ERR_PRINTS(error);
+			ERR_PRINT(error);
 			return;
 		}
 	}
@@ -733,7 +735,7 @@ void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const
 
 			if (!valid) {
 				String error = "rset() aborted in local set, property not found:  - " + String(p_property) + ".";
-				ERR_PRINTS(error);
+				ERR_PRINT(error);
 				return;
 			}
 		} else if (p_node->get_script_instance()) {
@@ -751,7 +753,7 @@ void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const
 
 				if (!valid) {
 					String error = "rset() aborted in local script set, property not found:  - " + String(p_property) + ".";
-					ERR_PRINTS(error);
+					ERR_PRINT(error);
 					return;
 				}
 			}

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,7 @@
 #include "scene/resources/mesh_library.h"
 #include "scene/resources/surface_tool.h"
 #include "scene/scene_string_names.h"
+#include "servers/navigation_server.h"
 #include "servers/visual_server.h"
 
 bool GridMap::_set(const StringName &p_name, const Variant &p_value) {
@@ -122,7 +123,7 @@ bool GridMap::_get(const StringName &p_name, Variant &r_ret) const {
 		Array ret;
 		ret.resize(baked_meshes.size());
 		for (int i = 0; i < baked_meshes.size(); i++) {
-			ret.push_back(baked_meshes[i].mesh);
+			ret[i] = baked_meshes[i].mesh;
 		}
 		r_ret = ret;
 
@@ -418,12 +419,10 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 	}
 
 	//erase navigation
-	if (navigation) {
-		for (Map<IndexKey, Octant::NavMesh>::Element *E = g.navmesh_ids.front(); E; E = E->next()) {
-			navigation->navmesh_remove(E->get().id);
-		}
-		g.navmesh_ids.clear();
+	for (Map<IndexKey, Octant::NavMesh>::Element *E = g.navmesh_ids.front(); E; E = E->next()) {
+		NavigationServer::get_singleton()->free(E->get().region);
 	}
+	g.navmesh_ids.clear();
 
 	//erase multimeshes
 
@@ -498,9 +497,11 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 			nm.xform = xform * mesh_library->get_item_navmesh_transform(c.item);
 
 			if (navigation) {
-				nm.id = navigation->navmesh_add(navmesh, xform, this);
-			} else {
-				nm.id = -1;
+				RID region = NavigationServer::get_singleton()->region_create();
+				NavigationServer::get_singleton()->region_set_navmesh(region, navmesh);
+				NavigationServer::get_singleton()->region_set_transform(region, navigation->get_global_transform() * nm.xform);
+				NavigationServer::get_singleton()->region_set_map(region, navigation->get_rid());
+				nm.region = region;
 			}
 			g.navmesh_ids[E->get()] = nm;
 		}
@@ -591,10 +592,14 @@ void GridMap::_octant_enter_world(const OctantKey &p_key) {
 	if (navigation && mesh_library.is_valid()) {
 		for (Map<IndexKey, Octant::NavMesh>::Element *F = g.navmesh_ids.front(); F; F = F->next()) {
 
-			if (cell_map.has(F->key()) && F->get().id < 0) {
+			if (cell_map.has(F->key()) && F->get().region.is_valid() == false) {
 				Ref<NavigationMesh> nm = mesh_library->get_item_navmesh(cell_map[F->key()].item);
 				if (nm.is_valid()) {
-					F->get().id = navigation->navmesh_add(nm, F->get().xform, this);
+					RID region = NavigationServer::get_singleton()->region_create();
+					NavigationServer::get_singleton()->region_set_navmesh(region, nm);
+					NavigationServer::get_singleton()->region_set_transform(region, navigation->get_global_transform() * F->get().xform);
+					NavigationServer::get_singleton()->region_set_map(region, navigation->get_rid());
+					F->get().region = region;
 				}
 			}
 		}
@@ -620,9 +625,9 @@ void GridMap::_octant_exit_world(const OctantKey &p_key) {
 	if (navigation) {
 		for (Map<IndexKey, Octant::NavMesh>::Element *F = g.navmesh_ids.front(); F; F = F->next()) {
 
-			if (F->get().id >= 0) {
-				navigation->navmesh_remove(F->get().id);
-				F->get().id = -1;
+			if (F->get().region.is_valid()) {
+				NavigationServer::get_singleton()->free(F->get().region);
+				F->get().region = RID();
 			}
 		}
 	}
@@ -640,13 +645,11 @@ void GridMap::_octant_clean_up(const OctantKey &p_key) {
 
 	PhysicsServer::get_singleton()->free(g.static_body);
 
-	//erase navigation
-	if (navigation) {
-		for (Map<IndexKey, Octant::NavMesh>::Element *E = g.navmesh_ids.front(); E; E = E->next()) {
-			navigation->navmesh_remove(E->get().id);
-		}
-		g.navmesh_ids.clear();
+	// Erase navigation
+	for (Map<IndexKey, Octant::NavMesh>::Element *E = g.navmesh_ids.front(); E; E = E->next()) {
+		NavigationServer::get_singleton()->free(E->get().region);
 	}
+	g.navmesh_ids.clear();
 
 	//erase multimeshes
 

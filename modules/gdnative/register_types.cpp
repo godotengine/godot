@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,6 +47,7 @@
 #include "core/project_settings.h"
 
 #ifdef TOOLS_ENABLED
+#include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "gdnative_library_editor_plugin.h"
 #include "gdnative_library_singleton_editor.h"
@@ -277,7 +278,7 @@ void register_gdnative_types() {
 				proc_ptr);
 
 		if (err != OK) {
-			ERR_PRINTS("No " + lib->get_symbol_prefix() + "gdnative_singleton in \"" + singleton->get_library()->get_current_library_path() + "\" found");
+			ERR_PRINT("No " + lib->get_symbol_prefix() + "gdnative_singleton in \"" + singleton->get_library()->get_current_library_path() + "\" found");
 		} else {
 			singleton_gdnatives.push_back(singleton);
 			((void (*)())proc_ptr)();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1301,6 +1301,22 @@ class VisualShaderNodeScalarUniform : public VisualShaderNodeUniform {
 	GDCLASS(VisualShaderNodeScalarUniform, VisualShaderNodeUniform);
 
 public:
+	enum Hint {
+		HINT_NONE,
+		HINT_RANGE,
+		HINT_RANGE_STEP,
+	};
+
+private:
+	Hint hint;
+	float hint_range_min;
+	float hint_range_max;
+	float hint_range_step;
+
+protected:
+	static void _bind_methods();
+
+public:
 	virtual String get_caption() const;
 
 	virtual int get_input_port_count() const;
@@ -1314,8 +1330,24 @@ public:
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
+	void set_hint(Hint p_hint);
+	Hint get_hint() const;
+
+	void set_min(float p_value);
+	float get_min() const;
+
+	void set_max(float p_value);
+	float get_max() const;
+
+	void set_step(float p_value);
+	float get_step() const;
+
+	virtual Vector<StringName> get_editable_properties() const;
+
 	VisualShaderNodeScalarUniform();
 };
+
+VARIANT_ENUM_CAST(VisualShaderNodeScalarUniform::Hint)
 
 ///////////////////////////////////////
 
@@ -1579,6 +1611,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
+	virtual String get_input_port_default_hint(int p_port) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const;
 
 	VisualShaderNodeFresnel();
@@ -1634,7 +1667,7 @@ class VisualShaderNodeCompare : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeCompare, VisualShaderNode);
 
 public:
-	enum ComparsionType {
+	enum ComparisonType {
 		CTYPE_SCALAR,
 		CTYPE_VECTOR,
 		CTYPE_BOOLEAN,
@@ -1656,7 +1689,7 @@ public:
 	};
 
 protected:
-	ComparsionType ctype;
+	ComparisonType ctype;
 	Function func;
 	Condition condition;
 
@@ -1676,8 +1709,8 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
-	void set_comparsion_type(ComparsionType p_type);
-	ComparsionType get_comparsion_type() const;
+	void set_comparison_type(ComparisonType p_type);
+	ComparisonType get_comparison_type() const;
 
 	void set_function(Function p_func);
 	Function get_function() const;
@@ -1691,7 +1724,7 @@ public:
 	VisualShaderNodeCompare();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeCompare::ComparsionType)
+VARIANT_ENUM_CAST(VisualShaderNodeCompare::ComparisonType)
 VARIANT_ENUM_CAST(VisualShaderNodeCompare::Function)
 VARIANT_ENUM_CAST(VisualShaderNodeCompare::Condition)
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIOSTREAMSAMPLE_H
-#define AUDIOSTREAMSAMPLE_H
+#ifndef AUDIO_STREAM_SAMPLE_H
+#define AUDIO_STREAM_SAMPLE_H
 
 #include "servers/audio/audio_stream.h"
 
@@ -153,4 +153,4 @@ public:
 VARIANT_ENUM_CAST(AudioStreamSample::Format)
 VARIANT_ENUM_CAST(AudioStreamSample::LoopMode)
 
-#endif // AUDIOSTREAMSample_H
+#endif // AUDIO_STREAM_SAMPLE_H

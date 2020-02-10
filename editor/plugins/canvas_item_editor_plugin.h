@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -119,6 +119,7 @@ private:
 		SHOW_ORIGIN,
 		SHOW_VIEWPORT,
 		SHOW_EDIT_LOCKS,
+		SHOW_TRANSFORMATION_GIZMOS,
 		LOCK_SELECTED,
 		UNLOCK_SELECTED,
 		GROUP_SELECTED,
@@ -189,7 +190,6 @@ private:
 		SKELETON_SHOW_BONES,
 		SKELETON_SET_IK_CHAIN,
 		SKELETON_CLEAR_IK_CHAIN
-
 	};
 
 	enum DragType {
@@ -209,6 +209,8 @@ private:
 		DRAG_ANCHOR_BOTTOM_LEFT,
 		DRAG_ANCHOR_ALL,
 		DRAG_MOVE,
+		DRAG_MOVE_X,
+		DRAG_MOVE_Y,
 		DRAG_SCALE_X,
 		DRAG_SCALE_Y,
 		DRAG_SCALE_BOTH,
@@ -248,6 +250,8 @@ private:
 	bool show_viewport;
 	bool show_helpers;
 	bool show_edit_locks;
+	bool show_transformation_gizmos;
+
 	float zoom;
 	Point2 view_offset;
 	Point2 previous_update_view_offset;
@@ -414,7 +418,7 @@ private:
 	bool _is_node_locked(const Node *p_node);
 	bool _is_node_movable(const Node *p_node, bool p_popup_warning = false);
 	void _find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<_SelectResult> &r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
-	void _get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items);
+	void _get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items, bool p_ignore_groups = false);
 	void _get_bones_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items);
 
 	void _find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_node, List<CanvasItem *> *r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());

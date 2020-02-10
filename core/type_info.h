@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -277,7 +277,7 @@ struct GetTypeInfo<const T *, typename EnableIf<TypeInherits<Object, T>::value>:
 template <typename T>
 inline StringName __constant_get_enum_name(T param, const String &p_constant) {
 	if (GetTypeInfo<T>::VARIANT_TYPE == Variant::NIL)
-		ERR_PRINTS("Missing VARIANT_ENUM_CAST for constant's enum: " + p_constant);
+		ERR_PRINT("Missing VARIANT_ENUM_CAST for constant's enum: " + p_constant);
 	return GetTypeInfo<T>::get_class_info().class_name;
 }
 

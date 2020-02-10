@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,7 +63,7 @@ void AudioDriverJavaScript::mix_to_js() {
 void AudioDriverJavaScript::process_capture(float sample) {
 
 	int32_t sample32 = int32_t(sample * 32768.f) * (1U << 16);
-	capture_buffer_write(sample32);
+	input_buffer_write(sample32);
 }
 
 Error AudioDriverJavaScript::init() {
@@ -198,7 +198,7 @@ void AudioDriverJavaScript::finish() {
 
 Error AudioDriverJavaScript::capture_start() {
 
-	capture_buffer_init(buffer_length);
+	input_buffer_init(buffer_length);
 
 	/* clang-format off */
 	EM_ASM({
@@ -244,6 +244,8 @@ Error AudioDriverJavaScript::capture_stop() {
 
 	});
 	/* clang-format on */
+
+	input_buffer.clear();
 
 	return OK;
 }

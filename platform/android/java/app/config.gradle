@@ -4,9 +4,21 @@ ext.versions = [
         minSdk : 18,
         targetSdk : 28,
         buildTools : '28.0.3',
+        supportCoreUtils : '28.0.0'
 
 ]
 
 ext.libraries = [
-        androidGradlePlugin : "com.android.tools.build:gradle:$versions.androidGradlePlugin"
+        androidGradlePlugin : "com.android.tools.build:gradle:$versions.androidGradlePlugin",
+        supportCoreUtils : "com.android.support:support-core-utils:$versions.supportCoreUtils"
 ]
+
+ext.getExportPackageName = { ->
+	// Retrieve the app id from the project property set by the Godot build command.
+	String appId = project.hasProperty("export_package_name") ? project.property("export_package_name") : ""
+	// Check if the app id is valid, otherwise use the default.
+	if (appId == null || appId.isEmpty()) {
+		appId = "com.godot.game"
+	}
+	return appId
+}

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -142,7 +142,7 @@ int wsl_genmask_callback(wslay_event_context_ptr ctx, uint8_t *buf, size_t len, 
 
 void wsl_msg_recv_callback(wslay_event_context_ptr ctx, const struct wslay_event_on_msg_recv_arg *arg, void *user_data) {
 	struct WSLPeer::PeerData *peer_data = (struct WSLPeer::PeerData *)user_data;
-	if (!peer_data->valid) {
+	if (!peer_data->valid || peer_data->closing) {
 		return;
 	}
 	WSLPeer *peer = (WSLPeer *)peer_data->peer;
@@ -243,6 +243,10 @@ Error WSLPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 	msg.msg_length = p_buffer_size;
 
 	wslay_event_queue_msg(_data->ctx, &msg);
+	if (wslay_event_send(_data->ctx) < 0) {
+		close_now();
+		return FAILED;
+	}
 	return OK;
 }
 
@@ -293,6 +297,7 @@ void WSLPeer::close(int p_code, String p_reason) {
 		CharString cs = p_reason.utf8();
 		wslay_event_queue_close(_data->ctx, p_code, (uint8_t *)cs.ptr(), cs.size());
 		wslay_event_send(_data->ctx);
+		_data->closing = true;
 	}
 
 	_in_buffer.clear();
@@ -311,6 +316,12 @@ uint16_t WSLPeer::get_connected_port() const {
 	ERR_FAIL_COND_V(!is_connected_to_host() || _data->tcp.is_null(), 0);
 
 	return _data->tcp->get_connected_port();
+}
+
+void WSLPeer::set_no_delay(bool p_enabled) {
+
+	ERR_FAIL_COND(!is_connected_to_host() || _data->tcp.is_null());
+	_data->tcp->set_no_delay(p_enabled);
 }
 
 void WSLPeer::invalidate() {

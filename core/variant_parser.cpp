@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,10 +51,16 @@ bool VariantParser::StreamFile::is_eof() const {
 
 CharType VariantParser::StreamString::get_char() {
 
-	if (pos >= s.length())
+	if (pos > s.length()) {
 		return 0;
-	else
+	} else if (pos == s.length()) {
+		// You need to try to read again when you have reached the end for EOF to be reported,
+		// so this works the same as files (like StreamFile does)
+		pos++;
+		return 0;
+	} else {
 		return s[pos++];
+	}
 }
 
 bool VariantParser::StreamString::is_utf8() const {
@@ -1530,9 +1536,6 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 			} else if (c != '=') {
 				what += String::chr(c);
 			} else {
-				if (p_stream->is_utf8()) {
-					what.parse_utf8(what.ascii(true).get_data());
-				}
 				r_assign = what;
 				Token token;
 				get_token(p_stream, token, line, r_err_str);

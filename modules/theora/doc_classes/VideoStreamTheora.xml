@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VideoStreamTheora" inherits="VideoStream" category="Core" version="3.2">
+<class name="VideoStreamTheora" inherits="VideoStream" version="4.0">
 	<brief_description>
+		[VideoStream] resource for Ogg Theora videos.
 	</brief_description>
 	<description>
+		[VideoStream] resource handling the [url=https://www.theora.org/]Ogg Theora[/url] video format with [code].ogv[/code] extension.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -11,6 +13,7 @@
 			<return type="String">
 			</return>
 			<description>
+				Returns the Ogg Theora video file handled by this [VideoStreamTheora].
 			</description>
 		</method>
 		<method name="set_file">
@@ -19,6 +22,7 @@
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
+				Sets the Ogg Theora video file that this [VideoStreamTheora] resource handles. The [code]file[/code] name should have the [code].o[/code] extension.
 			</description>
 		</method>
 	</methods>

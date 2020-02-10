@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1185,13 +1185,11 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 
 		const Connection &c = slot_map.getv(i).conn;
 
-		Object *target;
-#ifdef DEBUG_ENABLED
-		target = ObjectDB::get_instance(slot_map.getk(i)._id);
-		ERR_CONTINUE(!target);
-#else
-		target = c.target;
-#endif
+		Object *target = ObjectDB::get_instance(slot_map.getk(i)._id);
+		if (!target) {
+			// Target might have been deleted during signal callback, this is expected and OK.
+			continue;
+		}
 
 		const Variant **args = p_args;
 		int argc = p_argcount;
@@ -1215,7 +1213,9 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 			MessageQueue::get_singleton()->push_call(target->get_instance_id(), c.method, args, argc, true);
 		} else {
 			Variant::CallError ce;
+			_emitting = true;
 			target->call(c.method, args, argc, ce);
+			_emitting = false;
 
 			if (ce.error != Variant::CallError::CALL_OK) {
 #ifdef DEBUG_ENABLED
@@ -1225,7 +1225,7 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 				if (ce.error == Variant::CallError::CALL_ERROR_INVALID_METHOD && !ClassDB::class_exists(target->get_class_name())) {
 					//most likely object is not initialized yet, do not throw error.
 				} else {
-					ERR_PRINTS("Error calling method from signal '" + String(p_name) + "': " + Variant::get_call_error_text(target, c.method, args, argc, ce) + ".");
+					ERR_PRINT("Error calling method from signal '" + String(p_name) + "': " + Variant::get_call_error_text(target, c.method, args, argc, ce) + ".");
 					err = ERR_METHOD_NOT_FOUND;
 				}
 			}
@@ -1515,9 +1515,7 @@ void Object::_disconnect(const StringName &p_signal, Object *p_to_object, const 
 
 	ERR_FAIL_NULL(p_to_object);
 	Signal *s = signal_map.getptr(p_signal);
-	ERR_FAIL_COND_MSG(!s, "Nonexistent signal: " + p_signal + ".");
-
-	ERR_FAIL_COND_MSG(s->lock > 0, "Attempt to disconnect signal '" + p_signal + "' while emitting (locks: " + itos(s->lock) + ").");
+	ERR_FAIL_COND_MSG(!s, vformat("Nonexistent signal '%s' in %s.", p_signal, to_string()));
 
 	Signal::Target target(p_to_object->get_instance_id(), p_to_method);
 
@@ -1684,7 +1682,7 @@ void Object::_bind_methods() {
 		mi.name = "emit_signal";
 		mi.arguments.push_back(PropertyInfo(Variant::STRING, "signal"));
 
-		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "emit_signal", &Object::_emit_signal, mi);
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "emit_signal", &Object::_emit_signal, mi, varray(), false);
 	}
 
 	{
@@ -1700,7 +1698,7 @@ void Object::_bind_methods() {
 		mi.name = "call_deferred";
 		mi.arguments.push_back(PropertyInfo(Variant::STRING, "method"));
 
-		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_deferred", &Object::_call_deferred_bind, mi);
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_deferred", &Object::_call_deferred_bind, mi, varray(), false);
 	}
 
 	ClassDB::bind_method(D_METHOD("set_deferred", "property", "value"), &Object::set_deferred);
@@ -1922,6 +1920,7 @@ Object::Object() {
 	_instance_id = ObjectDB::add_instance(this);
 	_can_translate = true;
 	_is_queued_for_deletion = false;
+	_emitting = false;
 	instance_binding_count = 0;
 	memset(_script_instance_bindings, 0, sizeof(void *) * MAX_SCRIPT_INSTANCE_BINDINGS);
 	script_instance = NULL;
@@ -1944,11 +1943,14 @@ Object::~Object() {
 
 	const StringName *S = NULL;
 
+	if (_emitting) {
+		//@todo this may need to actually reach the debugger prioritarily somehow because it may crash before
+		ERR_PRINT("Object " + to_string() + " was freed or unreferenced while a signal is being emitted from it. Try connecting to the signal using 'CONNECT_DEFERRED' flag, or use queue_free() to free the object (if this object is a Node) to avoid this error and potential crashes.");
+	}
+
 	while ((S = signal_map.next(NULL))) {
 
 		Signal *s = &signal_map[*S];
-
-		ERR_CONTINUE_MSG(s->lock > 0, "Attempt to delete an object in the middle of a signal emission from it.");
 
 		//brute force disconnect for performance
 		int slot_count = s->slot_map.size();

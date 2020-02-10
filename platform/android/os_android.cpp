@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,6 +43,7 @@
 
 #include "dir_access_jandroid.h"
 #include "file_access_jandroid.h"
+#include "net_socket_android.h"
 
 #include <dlfcn.h>
 
@@ -106,6 +107,8 @@ void OS_Android::initialize_core() {
 		DirAccess::make_default<DirAccessJAndroid>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
+
+	NetSocketAndroid::make_default();
 }
 
 void OS_Android::set_opengl_extensions(const char *p_gl_extensions) {
@@ -499,6 +502,25 @@ void OS_Android::process_hover(int p_type, Point2 p_pos) {
 	}
 }
 
+void OS_Android::process_double_tap(Point2 p_pos) {
+	Ref<InputEventMouseButton> ev;
+	ev.instance();
+	ev->set_position(p_pos);
+	ev->set_global_position(p_pos);
+	ev->set_pressed(false);
+	ev->set_doubleclick(true);
+	input->parse_input_event(ev);
+}
+
+void OS_Android::process_scroll(Point2 p_pos) {
+	Ref<InputEventPanGesture> ev;
+	ev.instance();
+	ev->set_position(p_pos);
+	ev->set_delta(p_pos - scroll_prev_pos);
+	input->parse_input_event(ev);
+	scroll_prev_pos = p_pos;
+}
+
 void OS_Android::process_accelerometer(const Vector3 &p_accelerometer) {
 
 	input->set_accelerometer(p_accelerometer);
@@ -536,10 +558,10 @@ int OS_Android::get_virtual_keyboard_height() const {
 	// return 0;
 }
 
-void OS_Android::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect) {
+void OS_Android::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_input_length) {
 
 	if (godot_io_java->has_vk()) {
-		godot_io_java->show_vk(p_existing_text);
+		godot_io_java->show_vk(p_existing_text, p_max_input_length);
 	} else {
 
 		ERR_PRINT("Virtual keyboard not available");

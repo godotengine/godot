@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -80,7 +80,7 @@ static String _opstr(SL::Operator p_op) {
 
 static String _mkid(const String &p_id) {
 
-	String id = "m_" + p_id;
+	String id = "m_" + p_id.replace("__", "_dus_");
 	return id.replace("__", "_dus_"); //doubleunderscore is reserved in glsl
 }
 
@@ -305,6 +305,7 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			r_gen_code.texture_uniforms.resize(max_texture_uniforms);
 			r_gen_code.texture_hints.resize(max_texture_uniforms);
+			r_gen_code.texture_types.resize(max_texture_uniforms);
 
 			r_gen_code.uniforms.resize(max_uniforms + max_texture_uniforms);
 
@@ -332,6 +333,7 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				if (SL::is_sampler_type(E->get().type)) {
 					r_gen_code.texture_uniforms.write[E->get().texture_order] = E->key();
 					r_gen_code.texture_hints.write[E->get().texture_order] = E->get().hint;
+					r_gen_code.texture_types.write[E->get().texture_order] = E->get().type;
 				} else {
 					r_gen_code.uniforms.write[E->get().order] = E->key();
 				}
@@ -522,9 +524,6 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			SL::ArrayDeclarationNode *arr_dec_node = (SL::ArrayDeclarationNode *)p_node;
 
 			StringBuffer<> declaration;
-			if (arr_dec_node->is_const) {
-				declaration += "const ";
-			}
 			declaration += _prestr(arr_dec_node->precision);
 			declaration += _typestr(arr_dec_node->datatype);
 
@@ -540,22 +539,6 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				declaration += "[";
 				declaration += itos(arr_dec_node->declarations[i].size);
 				declaration += "]";
-				int sz = arr_dec_node->declarations[i].initializer.size();
-				if (sz > 0) {
-					declaration += "=";
-					declaration += _typestr(arr_dec_node->datatype);
-					declaration += "[";
-					declaration += itos(sz);
-					declaration += "]";
-					declaration += "(";
-					for (int j = 0; j < sz; j++) {
-						declaration += _dump_node_code(arr_dec_node->declarations[i].initializer[j], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
-						if (j != sz - 1) {
-							declaration += ", ";
-						}
-					}
-					declaration += ")";
-				}
 			}
 
 			code += declaration.as_string();
@@ -679,6 +662,10 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 								code += "texture2D";
 							} else if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLERCUBE) {
 								code += "textureCube";
+							} else if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLER3D) {
+								code += "texture3D";
+							} else if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLER2DARRAY) {
+								code += "texture2DArray";
 							}
 
 						} else if (var_node->name == "textureLod") {
@@ -688,6 +675,10 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 								code += "texture2DLod";
 							} else if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLERCUBE) {
 								code += "textureCubeLod";
+							} else if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLER3D) {
+								code += "texture3DLod";
+							} else if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLER2DARRAY) {
+								code += "texture2DArrayLod";
 							}
 
 						} else if (var_node->name == "mix") {
@@ -888,6 +879,7 @@ Error ShaderCompilerGLES2::compile(VS::ShaderMode p_mode, const String &p_code, 
 	r_gen_code.uniforms.clear();
 	r_gen_code.texture_uniforms.clear();
 	r_gen_code.texture_hints.clear();
+	r_gen_code.texture_types.clear();
 	r_gen_code.vertex = String();
 	r_gen_code.vertex_global = String();
 	r_gen_code.fragment = String();
@@ -911,7 +903,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 
 	actions[VS::SHADER_CANVAS_ITEM].renames["VERTEX"] = "outvec.xy";
 	actions[VS::SHADER_CANVAS_ITEM].renames["UV"] = "uv";
-	actions[VS::SHADER_CANVAS_ITEM].renames["POINT_SIZE"] = "gl_PointSize";
+	actions[VS::SHADER_CANVAS_ITEM].renames["POINT_SIZE"] = "point_size";
 
 	actions[VS::SHADER_CANVAS_ITEM].renames["WORLD_MATRIX"] = "modelview_matrix";
 	actions[VS::SHADER_CANVAS_ITEM].renames["PROJECTION_MATRIX"] = "projection_matrix";
@@ -986,7 +978,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_SPATIAL].renames["UV"] = "uv_interp";
 	actions[VS::SHADER_SPATIAL].renames["UV2"] = "uv2_interp";
 	actions[VS::SHADER_SPATIAL].renames["COLOR"] = "color_interp";
-	actions[VS::SHADER_SPATIAL].renames["POINT_SIZE"] = "gl_PointSize";
+	actions[VS::SHADER_SPATIAL].renames["POINT_SIZE"] = "point_size";
 	// gl_InstanceID is not available in OpenGL ES 2.0
 	actions[VS::SHADER_SPATIAL].renames["INSTANCE_ID"] = "0";
 

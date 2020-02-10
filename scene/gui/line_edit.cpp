@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -128,7 +128,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			selection.doubleclick = false;
 
 			if (OS::get_singleton()->has_virtual_keyboard())
-				OS::get_singleton()->show_virtual_keyboard(text, get_global_rect());
+				OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length);
 		}
 
 		update();
@@ -183,6 +183,12 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				} break;
 				case KEY_H: {
 					remap_key = KEY_BACKSPACE;
+				} break;
+				case KEY_A: {
+					remap_key = KEY_HOME;
+				} break;
+				case KEY_E: {
+					remap_key = KEY_END;
 				} break;
 			}
 
@@ -240,15 +246,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 						deselect();
 						text = text.substr(cursor_pos, text.length() - cursor_pos);
-
-						Ref<Font> font = get_font("font");
-
-						cached_width = 0;
-						if (font != NULL) {
-							for (int i = 0; i < text.length(); i++)
-								cached_width += font->get_char_size(text[i]).width;
-						}
-
+						update_cached_width();
 						set_cursor_position(0);
 						_text_changed();
 					}
@@ -557,8 +555,11 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 					if (editable) {
 						selection_delete();
 						CharType ucodestr[2] = { (CharType)k->get_unicode(), 0 };
+						int prev_len = text.length();
 						append_at_cursor(ucodestr);
-						_text_changed();
+						if (text.length() != prev_len) {
+							_text_changed();
+						}
 						accept_event();
 					}
 
@@ -910,7 +911,7 @@ void LineEdit::_notification(int p_what) {
 			OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
 
 			if (OS::get_singleton()->has_virtual_keyboard())
-				OS::get_singleton()->show_virtual_keyboard(text, get_global_rect());
+				OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length);
 
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
@@ -961,11 +962,12 @@ void LineEdit::paste_text() {
 
 	if (paste_buffer != "") {
 
+		int prev_len = text.length();
 		if (selection.enabled) selection_delete();
 		append_at_cursor(paste_buffer);
 
 		if (!text_changed_dirty) {
-			if (is_inside_tree()) {
+			if (is_inside_tree() && text.length() != prev_len) {
 				MessageQueue::get_singleton()->push_call(this, "_text_changed");
 			}
 			text_changed_dirty = true;
@@ -1189,7 +1191,7 @@ void LineEdit::delete_char() {
 	set_cursor_position(get_cursor_position() - 1);
 
 	if (align == ALIGN_CENTER || align == ALIGN_RIGHT) {
-		window_pos = CLAMP(window_pos - 1, 0, text.length() - 1);
+		window_pos = CLAMP(window_pos - 1, 0, MAX(text.length() - 1, 0));
 	}
 
 	_text_changed();
@@ -1220,7 +1222,7 @@ void LineEdit::delete_text(int p_from_column, int p_to_column) {
 	}
 
 	if (align == ALIGN_CENTER || align == ALIGN_RIGHT) {
-		window_pos = CLAMP(window_pos - (p_to_column - p_from_column), 0, text.length() - 1);
+		window_pos = CLAMP(window_pos - (p_to_column - p_from_column), 0, MAX(text.length() - 1, 0));
 	}
 
 	if (!text_changed_dirty) {
@@ -1235,6 +1237,11 @@ void LineEdit::set_text(String p_text) {
 
 	clear_internal();
 	append_at_cursor(p_text);
+
+	if (expand_to_text_length) {
+		minimum_size_changed();
+	}
+
 	update();
 	cursor_pos = 0;
 	window_pos = 0;
@@ -1349,19 +1356,13 @@ void LineEdit::set_window_pos(int p_pos) {
 void LineEdit::append_at_cursor(String p_text) {
 
 	if ((max_length <= 0) || (text.length() + p_text.length() <= max_length)) {
-
-		Ref<Font> font = get_font("font");
-		if (font != NULL) {
-			for (int i = 0; i < p_text.length(); i++)
-				cached_width += font->get_char_size(p_text[i]).width;
-		} else {
-			cached_width = 0;
-		}
-
 		String pre = text.substr(0, cursor_pos);
 		String post = text.substr(cursor_pos, text.length() - cursor_pos);
 		text = pre + p_text + post;
+		update_cached_width();
 		set_cursor_position(cursor_pos + p_text.length());
+	} else {
+		emit_signal("text_change_rejected");
 	}
 }
 
@@ -1476,6 +1477,7 @@ void LineEdit::set_editable(bool p_editable) {
 	editable = p_editable;
 	_generate_context_menu();
 
+	minimum_size_changed();
 	update();
 }
 
@@ -1487,6 +1489,7 @@ bool LineEdit::is_editable() const {
 void LineEdit::set_secret(bool p_secret) {
 
 	pass = p_secret;
+	update_cached_width();
 	update();
 }
 
@@ -1502,6 +1505,7 @@ void LineEdit::set_secret_character(const String &p_string) {
 	ERR_FAIL_COND_MSG(p_string.length() != 1, "Secret character must be exactly one character long (" + itos(p_string.length()) + " characters given).");
 
 	secret_character = p_string;
+	update_cached_width();
 	update();
 }
 
@@ -1611,7 +1615,11 @@ bool LineEdit::get_expand_to_text_length() const {
 }
 
 void LineEdit::set_clear_button_enabled(bool p_enabled) {
+	if (clear_button_enabled == p_enabled) {
+		return;
+	}
 	clear_button_enabled = p_enabled;
+	minimum_size_changed();
 	update();
 }
 
@@ -1647,6 +1655,7 @@ void LineEdit::set_right_icon(const Ref<Texture> &p_icon) {
 		return;
 	}
 	right_icon = p_icon;
+	minimum_size_changed();
 	update();
 }
 
@@ -1666,6 +1675,17 @@ void LineEdit::_emit_text_change() {
 	emit_signal("text_changed", text);
 	_change_notify("text");
 	text_changed_dirty = false;
+}
+
+void LineEdit::update_cached_width() {
+	Ref<Font> font = get_font("font");
+	cached_width = 0;
+	if (font != NULL) {
+		String text = get_text();
+		for (int i = 0; i < text.length(); i++) {
+			cached_width += font->get_char_size(pass ? secret_character[0] : text[i]).width;
+		}
+	}
 }
 
 void LineEdit::update_placeholder_width() {
@@ -1781,6 +1801,7 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_right_icon"), &LineEdit::get_right_icon);
 
 	ADD_SIGNAL(MethodInfo("text_changed", PropertyInfo(Variant::STRING, "new_text")));
+	ADD_SIGNAL(MethodInfo("text_change_rejected"));
 	ADD_SIGNAL(MethodInfo("text_entered", PropertyInfo(Variant::STRING, "new_text")));
 
 	BIND_ENUM_CONSTANT(ALIGN_LEFT);

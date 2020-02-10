@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -454,7 +454,7 @@ void Vector3::zero() {
 // slide returns the component of the vector along the given plane, specified by its normal vector.
 Vector3 Vector3::slide(const Vector3 &p_normal) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(!p_normal.is_normalized(), Vector3());
+	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector3(), "The normal Vector3 must be normalized.");
 #endif
 	return *this - p_normal * this->dot(p_normal);
 }
@@ -465,7 +465,7 @@ Vector3 Vector3::bounce(const Vector3 &p_normal) const {
 
 Vector3 Vector3::reflect(const Vector3 &p_normal) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(!p_normal.is_normalized(), Vector3());
+	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector3(), "The normal Vector3 must be normalized.");
 #endif
 	return 2.0 * p_normal * this->dot(p_normal) - *this;
 }

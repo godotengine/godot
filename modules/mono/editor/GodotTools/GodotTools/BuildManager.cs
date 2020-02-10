@@ -172,7 +172,7 @@ namespace GodotTools
             }
 
             var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
-            var buildTool = (BuildTool) editorSettings.GetSetting("mono/builds/build_tool");
+            var buildTool = (BuildTool)editorSettings.GetSetting("mono/builds/build_tool");
 
             using (var pr = new EditorProgress("mono_project_debug_build", "Building project solution...", 1))
             {

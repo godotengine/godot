@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -420,6 +420,8 @@ void Image::convert(Format p_new_format) {
 
 	if (p_new_format == format)
 		return;
+
+	ERR_FAIL_COND_MSG(write_lock.ptr(), "Cannot convert image when it is locked.");
 
 	if (format > FORMAT_RGBE9995 || p_new_format > FORMAT_RGBE9995) {
 
@@ -880,8 +882,8 @@ void Image::resize_to_po2(bool p_square) {
 void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
 	ERR_FAIL_COND_MSG(data.size() == 0, "Cannot resize image before creating it, use create() or create_from_data() first.");
-
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot resize in compressed or custom image formats.");
+	ERR_FAIL_COND_MSG(write_lock.ptr(), "Cannot resize image when it is locked.");
 
 	bool mipmap_aware = p_interpolation == INTERPOLATE_TRILINEAR /* || p_interpolation == INTERPOLATE_TRICUBIC */;
 
@@ -1877,7 +1879,7 @@ Image::AlphaMode Image::detect_alpha() const {
 Error Image::load(const String &p_path) {
 #ifdef DEBUG_ENABLED
 	if (p_path.begins_with("res://") && ResourceLoader::exists(p_path)) {
-		WARN_PRINTS("Loaded resource as image file, this will not work on export: '" + p_path + "'. Instead, import the image file as an Image resource and load it normally as a resource.");
+		WARN_PRINT("Loaded resource as image file, this will not work on export: '" + p_path + "'. Instead, import the image file as an Image resource and load it normally as a resource.");
 	}
 #endif
 	return ImageLoader::load_image(p_path, this);
@@ -2027,8 +2029,7 @@ Rect2 Image::get_used_rect() const {
 	for (int j = 0; j < height; j++) {
 		for (int i = 0; i < width; i++) {
 
-			bool opaque = get_pixel(i, j).a > 0.99;
-			if (!opaque)
+			if (!(get_pixel(i, j).a > 0))
 				continue;
 			if (i > maxx)
 				maxx = i;
@@ -2064,6 +2065,7 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 	ERR_FAIL_COND(dsize == 0);
 	ERR_FAIL_COND(srcdsize == 0);
 	ERR_FAIL_COND(format != p_src->format);
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot blit_rect in compressed or custom image formats.");
 
 	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).clip(p_src_rect);
 
@@ -2284,6 +2286,7 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 }
 
 void Image::fill(const Color &c) {
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot fill in compressed or custom image formats.");
 
 	lock();
 
@@ -2432,19 +2435,19 @@ Color Image::get_pixel(int p_x, int p_y) const {
 		}
 		case FORMAT_RGBA4444: {
 			uint16_t u = ((uint16_t *)ptr)[ofs];
-			float r = (u & 0xF) / 15.0;
-			float g = ((u >> 4) & 0xF) / 15.0;
-			float b = ((u >> 8) & 0xF) / 15.0;
-			float a = ((u >> 12) & 0xF) / 15.0;
+			float r = ((u >> 12) & 0xF) / 15.0;
+			float g = ((u >> 8) & 0xF) / 15.0;
+			float b = ((u >> 4) & 0xF) / 15.0;
+			float a = (u & 0xF) / 15.0;
 			return Color(r, g, b, a);
 		}
 		case FORMAT_RGBA5551: {
 
 			uint16_t u = ((uint16_t *)ptr)[ofs];
-			float r = (u & 0x1F) / 15.0;
-			float g = ((u >> 5) & 0x1F) / 15.0;
-			float b = ((u >> 10) & 0x1F) / 15.0;
-			float a = ((u >> 15) & 0x1) / 1.0;
+			float r = ((u >> 11) & 0x1F) / 15.0;
+			float g = ((u >> 6) & 0x1F) / 15.0;
+			float b = ((u >> 1) & 0x1F) / 15.0;
+			float a = (u & 0x1) / 1.0;
 			return Color(r, g, b, a);
 		}
 		case FORMAT_RF: {
@@ -2558,10 +2561,10 @@ void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
 
 			uint16_t rgba = 0;
 
-			rgba = uint16_t(CLAMP(p_color.r * 15.0, 0, 15));
-			rgba |= uint16_t(CLAMP(p_color.g * 15.0, 0, 15)) << 4;
-			rgba |= uint16_t(CLAMP(p_color.b * 15.0, 0, 15)) << 8;
-			rgba |= uint16_t(CLAMP(p_color.a * 15.0, 0, 15)) << 12;
+			rgba = uint16_t(CLAMP(p_color.r * 15.0, 0, 15)) << 12;
+			rgba |= uint16_t(CLAMP(p_color.g * 15.0, 0, 15)) << 8;
+			rgba |= uint16_t(CLAMP(p_color.b * 15.0, 0, 15)) << 4;
+			rgba |= uint16_t(CLAMP(p_color.a * 15.0, 0, 15));
 
 			((uint16_t *)ptr)[ofs] = rgba;
 
@@ -2570,10 +2573,10 @@ void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
 
 			uint16_t rgba = 0;
 
-			rgba = uint16_t(CLAMP(p_color.r * 31.0, 0, 31));
-			rgba |= uint16_t(CLAMP(p_color.g * 31.0, 0, 31)) << 5;
-			rgba |= uint16_t(CLAMP(p_color.b * 31.0, 0, 31)) << 10;
-			rgba |= uint16_t(p_color.a > 0.5 ? 1 : 0) << 15;
+			rgba = uint16_t(CLAMP(p_color.r * 31.0, 0, 31)) << 11;
+			rgba |= uint16_t(CLAMP(p_color.g * 31.0, 0, 31)) << 6;
+			rgba |= uint16_t(CLAMP(p_color.b * 31.0, 0, 31)) << 1;
+			rgba |= uint16_t(p_color.a > 0.5 ? 1 : 0);
 
 			((uint16_t *)ptr)[ofs] = rgba;
 

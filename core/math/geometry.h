@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -851,15 +851,6 @@ public:
 		if (!Triangulate::triangulate(p_polygon, triangles))
 			return Vector<int>(); //fail
 		return triangles;
-	}
-
-	static Vector<Vector<Vector2> > (*_decompose_func)(const Vector<Vector2> &p_polygon);
-	static Vector<Vector<Vector2> > decompose_polygon(const Vector<Vector2> &p_polygon) {
-
-		if (_decompose_func)
-			return _decompose_func(p_polygon);
-
-		return Vector<Vector<Vector2> >();
 	}
 
 	static bool is_polygon_clockwise(const Vector<Vector2> &p_polygon) {

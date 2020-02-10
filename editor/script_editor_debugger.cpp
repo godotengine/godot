@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,9 +35,11 @@
 #include "core/ustring.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/spatial_editor_plugin.h"
+#include "editor_log.h"
 #include "editor_network_profiler.h"
 #include "editor_node.h"
 #include "editor_profiler.h"
+#include "editor_scale.h"
 #include "editor_settings.h"
 #include "main/performance.h"
 #include "property_editor.h"
@@ -336,7 +338,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 			FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
 			if (err != OK) {
-				ERR_PRINTS("Failed to open " + p_file);
+				ERR_PRINT("Failed to open " + p_file);
 				return;
 			}
 			Vector<String> line;
@@ -482,8 +484,10 @@ int ScriptEditorDebugger::_update_scene_tree(TreeItem *parent, const Array &node
 
 void ScriptEditorDebugger::_video_mem_request() {
 
-	ERR_FAIL_COND(connection.is_null());
-	ERR_FAIL_COND(!connection->is_connected_to_host());
+	if (connection.is_null() || !connection->is_connected_to_host()) {
+		// Video RAM usage is only available while a project is being debugged.
+		return;
+	}
 
 	Array msg;
 	msg.push_back("request_video_mem");
@@ -804,25 +808,25 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			p.write[i] = arr[i];
 			if (i < perf_items.size()) {
 
-				float v = p[i];
-				String vs = rtos(v);
-				String tt = vs;
+				const float value = p[i];
+				String label = rtos(value);
+				String tooltip = label;
 				switch (Performance::MonitorType((int)perf_items[i]->get_metadata(1))) {
 					case Performance::MONITOR_TYPE_MEMORY: {
-						vs = String::humanize_size(v);
-						tt = vs;
+						label = String::humanize_size(value);
+						tooltip = label;
 					} break;
 					case Performance::MONITOR_TYPE_TIME: {
-						tt += " seconds";
-						vs += " s";
+						label = rtos(value * 1000).pad_decimals(2) + " ms";
+						tooltip = label;
 					} break;
 					default: {
-						tt += " " + perf_items[i]->get_text(0);
+						tooltip += " " + perf_items[i]->get_text(0);
 					} break;
 				}
 
-				perf_items[i]->set_text(1, vs);
-				perf_items[i]->set_tooltip(1, tt);
+				perf_items[i]->set_text(1, label);
+				perf_items[i]->set_tooltip(1, tooltip);
 				if (p[i] > perf_max[i])
 					perf_max.write[i] = p[i];
 			}
@@ -1321,6 +1325,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					inspect_scene_tree->clear();
 					le_set->set_disabled(true);
 					le_clear->set_disabled(false);
+					vmem_refresh->set_disabled(false);
 					error_tree->clear();
 					error_count = 0;
 					warning_count = 0;
@@ -1521,6 +1526,7 @@ void ScriptEditorDebugger::stop() {
 	le_clear->set_disabled(false);
 	le_set->set_disabled(true);
 	profiler->set_enabled(true);
+	vmem_refresh->set_disabled(true);
 
 	inspect_scene_tree->clear();
 	inspector->edit(NULL);
@@ -1620,6 +1626,7 @@ void ScriptEditorDebugger::_output_clear() {
 void ScriptEditorDebugger::_export_csv() {
 
 	file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_dialog_mode = SAVE_CSV;
 	file_dialog->popup_centered_ratio();
 }
@@ -2185,6 +2192,13 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 	}
 }
 
+void ScriptEditorDebugger::_tab_changed(int p_tab) {
+	if (tabs->get_tab_title(p_tab) == TTR("Video RAM")) {
+		// "Video RAM" tab was clicked, refresh the data it's dislaying when entering the tab.
+		_video_mem_request();
+	}
+}
+
 void ScriptEditorDebugger::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_stack_dump_frame_selected"), &ScriptEditorDebugger::_stack_dump_frame_selected);
@@ -2216,6 +2230,7 @@ void ScriptEditorDebugger::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_error_tree_item_rmb_selected"), &ScriptEditorDebugger::_error_tree_item_rmb_selected);
 	ClassDB::bind_method(D_METHOD("_item_menu_id_pressed"), &ScriptEditorDebugger::_item_menu_id_pressed);
+	ClassDB::bind_method(D_METHOD("_tab_changed"), &ScriptEditorDebugger::_tab_changed);
 
 	ClassDB::bind_method(D_METHOD("_paused"), &ScriptEditorDebugger::_paused);
 
@@ -2247,7 +2262,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	add_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_RIGHT));
 
 	ppeer = Ref<PacketPeerStream>(memnew(PacketPeerStream));
-	ppeer->set_input_buffer_max_size(1024 * 1024 * 8); //8mb should be enough
+	ppeer->set_input_buffer_max_size((1024 * 1024 * 8) - 4); // 8 MiB should be enough, minus 4 bytes for separator.
 	editor = p_editor;
 	editor->get_inspector()->connect("object_id_selected", this, "_scene_tree_property_select_object");
 
@@ -2256,13 +2271,13 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	tabs->add_style_override("panel", editor->get_gui_base()->get_stylebox("DebuggerPanel", "EditorStyles"));
 	tabs->add_style_override("tab_fg", editor->get_gui_base()->get_stylebox("DebuggerTabFG", "EditorStyles"));
 	tabs->add_style_override("tab_bg", editor->get_gui_base()->get_stylebox("DebuggerTabBG", "EditorStyles"));
+	tabs->connect("tab_changed", this, "_tab_changed");
 
 	add_child(tabs);
 
 	{ //debugger
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		vbc->set_name(TTR("Debugger"));
-		//tabs->add_child(vbc);
 		Control *dbg = vbc;
 
 		HBoxContainer *hbc = memnew(HBoxContainer);
@@ -2520,6 +2535,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		vmem_total->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 		vmem_hb->add_child(vmem_total);
 		vmem_refresh = memnew(ToolButton);
+		vmem_refresh->set_disabled(true);
 		vmem_hb->add_child(vmem_refresh);
 		vmem_vb->add_child(vmem_hb);
 		vmem_refresh->connect("pressed", this, "_video_mem_request");
@@ -2532,20 +2548,20 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		vmmc->set_v_size_flags(SIZE_EXPAND_FILL);
 		vmem_vb->add_child(vmmc);
 
-		vmem_vb->set_name(TTR("Video Mem"));
+		vmem_vb->set_name(TTR("Video RAM"));
 		vmem_tree->set_columns(4);
 		vmem_tree->set_column_titles_visible(true);
 		vmem_tree->set_column_title(0, TTR("Resource Path"));
 		vmem_tree->set_column_expand(0, true);
 		vmem_tree->set_column_expand(1, false);
 		vmem_tree->set_column_title(1, TTR("Type"));
-		vmem_tree->set_column_min_width(1, 100);
+		vmem_tree->set_column_min_width(1, 100 * EDSCALE);
 		vmem_tree->set_column_expand(2, false);
 		vmem_tree->set_column_title(2, TTR("Format"));
-		vmem_tree->set_column_min_width(2, 150);
+		vmem_tree->set_column_min_width(2, 150 * EDSCALE);
 		vmem_tree->set_column_expand(3, false);
 		vmem_tree->set_column_title(3, TTR("Usage"));
-		vmem_tree->set_column_min_width(3, 80);
+		vmem_tree->set_column_min_width(3, 80 * EDSCALE);
 		vmem_tree->set_hide_root(true);
 
 		tabs->add_child(vmem_vb);

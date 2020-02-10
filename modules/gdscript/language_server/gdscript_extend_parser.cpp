@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -112,9 +112,10 @@ void ExtendGDScriptParser::update_document_links(const String &p_code) {
 	FileAccessRef fs = FileAccess::create(FileAccess::ACCESS_RESOURCES);
 	tokenizer.set_code(p_code);
 	while (true) {
-		if (tokenizer.get_token() == GDScriptTokenizer::TK_EOF) {
+		GDScriptTokenizerText::Token token = tokenizer.get_token();
+		if (token == GDScriptTokenizer::TK_EOF || token == GDScriptTokenizer::TK_ERROR) {
 			break;
-		} else if (tokenizer.get_token() == GDScriptTokenizer::TK_CONSTANT) {
+		} else if (token == GDScriptTokenizer::TK_CONSTANT) {
 			const Variant &const_val = tokenizer.get_token_constant();
 			if (const_val.get_type() == Variant::STRING) {
 				String path = const_val;
@@ -522,6 +523,51 @@ const lsp::DocumentSymbol *ExtendGDScriptParser::search_symbol_defined_at_line(i
 	return ret;
 }
 
+Error ExtendGDScriptParser::get_left_function_call(const lsp::Position &p_position, lsp::Position &r_func_pos, int &r_arg_index) const {
+
+	ERR_FAIL_INDEX_V(p_position.line, lines.size(), ERR_INVALID_PARAMETER);
+
+	int bracket_stack = 0;
+	int index = 0;
+
+	bool found = false;
+	for (int l = p_position.line; l >= 0; --l) {
+		String line = lines[l];
+		int c = line.length() - 1;
+		if (l == p_position.line) {
+			c = MIN(c, p_position.character - 1);
+		}
+
+		while (c >= 0) {
+			const CharType &character = line[c];
+			if (character == ')') {
+				++bracket_stack;
+			} else if (character == '(') {
+				--bracket_stack;
+				if (bracket_stack < 0) {
+					found = true;
+				}
+			}
+			if (bracket_stack <= 0 && character == ',') {
+				++index;
+			}
+			--c;
+			if (found) {
+				r_func_pos.character = c;
+				break;
+			}
+		}
+
+		if (found) {
+			r_func_pos.line = l;
+			r_arg_index = index;
+			return OK;
+		}
+	}
+
+	return ERR_METHOD_NOT_FOUND;
+}
+
 const lsp::DocumentSymbol *ExtendGDScriptParser::get_symbol_defined_at_line(int p_line) const {
 	if (p_line <= 0) {
 		return &class_symbol;
@@ -711,7 +757,7 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 
 	Array static_functions;
 	for (int i = 0; i < p_class->static_functions.size(); ++i) {
-		static_functions.append(dump_function_api(p_class->functions[i]));
+		static_functions.append(dump_function_api(p_class->static_functions[i]));
 	}
 	class_api["static_functions"] = static_functions;
 

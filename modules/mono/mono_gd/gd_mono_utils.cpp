@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -115,6 +115,7 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 		// but the managed instance is alive, the refcount will be 1 instead of 0.
 		// See: godot_icall_Reference_Dtor(MonoObject *p_obj, Object *p_ptr)
 		ref->reference();
+		CSharpLanguage::get_singleton()->post_unsafe_reference(ref);
 	}
 
 	return mono_object;
@@ -124,10 +125,12 @@ void set_main_thread(MonoThread *p_thread) {
 	mono_thread_set_main(p_thread);
 }
 
-void attach_current_thread() {
-	ERR_FAIL_COND(!GDMono::get_singleton()->is_runtime_initialized());
-	MonoThread *mono_thread = mono_thread_attach(mono_get_root_domain());
-	ERR_FAIL_NULL(mono_thread);
+MonoThread *attach_current_thread() {
+	ERR_FAIL_COND_V(!GDMono::get_singleton()->is_runtime_initialized(), NULL);
+	MonoDomain *scripts_domain = GDMono::get_singleton()->get_scripts_domain();
+	MonoThread *mono_thread = mono_thread_attach(scripts_domain ? scripts_domain : mono_get_root_domain());
+	ERR_FAIL_NULL_V(mono_thread, NULL);
+	return mono_thread;
 }
 
 void detach_current_thread() {
@@ -137,8 +140,18 @@ void detach_current_thread() {
 	mono_thread_detach(mono_thread);
 }
 
+void detach_current_thread(MonoThread *p_mono_thread) {
+	ERR_FAIL_COND(!GDMono::get_singleton()->is_runtime_initialized());
+	ERR_FAIL_NULL(p_mono_thread);
+	mono_thread_detach(p_mono_thread);
+}
+
 MonoThread *get_current_thread() {
 	return mono_thread_current();
+}
+
+bool is_thread_attached() {
+	return mono_domain_get() != NULL;
 }
 
 void runtime_object_init(MonoObject *p_this_obj, GDMonoClass *p_class, MonoException **r_exc) {
@@ -341,7 +354,7 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 	if (!ScriptDebugger::get_singleton()) {
 #ifdef TOOLS_ENABLED
 		if (Engine::get_singleton()->is_editor_hint()) {
-			ERR_PRINTS(GDMonoUtils::get_exception_name_and_message(p_exc));
+			ERR_PRINT(GDMonoUtils::get_exception_name_and_message(p_exc));
 		}
 #endif
 		return;
@@ -418,7 +431,7 @@ void set_pending_exception(MonoException *p_exc) {
 	}
 
 	if (!mono_runtime_set_pending_exception(p_exc, false)) {
-		ERR_PRINTS("Exception thrown from managed code, but it could not be set as pending:");
+		ERR_PRINT("Exception thrown from managed code, but it could not be set as pending:");
 		GDMonoUtils::debug_print_unhandled_exception(p_exc);
 	}
 #endif
@@ -615,5 +628,20 @@ GDMonoClass *make_generic_dictionary_type(MonoReflectionType *p_key_reftype, Mon
 }
 
 } // namespace Marshal
+
+ScopeThreadAttach::ScopeThreadAttach() :
+		mono_thread(NULL) {
+	if (likely(GDMono::get_singleton()->is_runtime_initialized()) && unlikely(!mono_domain_get())) {
+		mono_thread = GDMonoUtils::attach_current_thread();
+	}
+}
+
+ScopeThreadAttach::~ScopeThreadAttach() {
+	if (unlikely(mono_thread)) {
+		GDMonoUtils::detach_current_thread(mono_thread);
+	}
+}
+
+// namespace Marshal
 
 } // namespace GDMonoUtils

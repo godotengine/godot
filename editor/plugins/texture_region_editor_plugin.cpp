@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 #include "core/core_string_names.h"
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_scale.h"
 #include "scene/gui/check_box.h"
 
 /**
@@ -135,13 +136,19 @@ void TextureRegionEditor::_region_draw() {
 
 	Ref<Texture> select_handle = get_icon("EditorHandle", "EditorIcons");
 
-	Rect2 scroll_rect;
+	Rect2 scroll_rect(Point2(), base_tex->get_size());
 
-	Vector2 endpoints[4] = {
-		mtx.basis_xform(rect.position),
-		mtx.basis_xform(rect.position + Vector2(rect.size.x, 0)),
-		mtx.basis_xform(rect.position + rect.size),
-		mtx.basis_xform(rect.position + Vector2(0, rect.size.y))
+	const Vector2 raw_endpoints[4] = {
+		rect.position,
+		rect.position + Vector2(rect.size.x, 0),
+		rect.position + rect.size,
+		rect.position + Vector2(0, rect.size.y)
+	};
+	const Vector2 endpoints[4] = {
+		mtx.basis_xform(raw_endpoints[0]),
+		mtx.basis_xform(raw_endpoints[1]),
+		mtx.basis_xform(raw_endpoints[2]),
+		mtx.basis_xform(raw_endpoints[3])
 	};
 	Color color = get_color("mono_color", "Editor");
 	for (int i = 0; i < 4; i++) {
@@ -163,33 +170,43 @@ void TextureRegionEditor::_region_draw() {
 		if (snap_mode != SNAP_AUTOSLICE)
 			edit_draw->draw_texture(select_handle, (endpoints[i] + ofs - (select_handle->get_size() / 2)).floor() - draw_ofs * draw_zoom);
 
-		scroll_rect.expand_to(endpoints[i]);
+		scroll_rect.expand_to(raw_endpoints[i]);
 	}
 
-	scroll_rect.position -= edit_draw->get_size();
-	scroll_rect.size += edit_draw->get_size() * 2.0;
+	const Size2 scroll_margin = edit_draw->get_size() / draw_zoom;
+	scroll_rect.position -= scroll_margin;
+	scroll_rect.size += scroll_margin * 2;
 
 	updating_scroll = true;
+
 	hscroll->set_min(scroll_rect.position.x);
 	hscroll->set_max(scroll_rect.position.x + scroll_rect.size.x);
-	if (ABS(scroll_rect.position.x - (scroll_rect.position.x + scroll_rect.size.x)) <= edit_draw->get_size().x) {
+	if (ABS(scroll_rect.position.x - (scroll_rect.position.x + scroll_rect.size.x)) <= scroll_margin.x) {
 		hscroll->hide();
 	} else {
 		hscroll->show();
-		hscroll->set_page(edit_draw->get_size().x);
+		hscroll->set_page(scroll_margin.x);
 		hscroll->set_value(draw_ofs.x);
 	}
 
 	vscroll->set_min(scroll_rect.position.y);
 	vscroll->set_max(scroll_rect.position.y + scroll_rect.size.y);
-	if (ABS(scroll_rect.position.y - (scroll_rect.position.y + scroll_rect.size.y)) <= edit_draw->get_size().y) {
+	if (ABS(scroll_rect.position.y - (scroll_rect.position.y + scroll_rect.size.y)) <= scroll_margin.y) {
 		vscroll->hide();
 		draw_ofs.y = scroll_rect.position.y;
 	} else {
 		vscroll->show();
-		vscroll->set_page(edit_draw->get_size().y);
+		vscroll->set_page(scroll_margin.y);
 		vscroll->set_value(draw_ofs.y);
 	}
+
+	Size2 hmin = hscroll->get_combined_minimum_size();
+	Size2 vmin = vscroll->get_combined_minimum_size();
+
+	// Avoid scrollbar overlapping.
+	hscroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, vscroll->is_visible() ? -vmin.width : 0);
+	vscroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, hscroll->is_visible() ? -hmin.height : 0);
+
 	updating_scroll = false;
 
 	if (node_ninepatch || obj_styleBox.is_valid()) {
@@ -225,15 +242,19 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 	mtx.elements[2] = -draw_ofs * draw_zoom;
 	mtx.scale_basis(Vector2(draw_zoom, draw_zoom));
 
-	Vector2 endpoints[8] = {
-		mtx.xform(rect.position) + Vector2(-4, -4),
-		mtx.xform(rect.position + Vector2(rect.size.x / 2, 0)) + Vector2(0, -4),
-		mtx.xform(rect.position + Vector2(rect.size.x, 0)) + Vector2(4, -4),
-		mtx.xform(rect.position + Vector2(rect.size.x, rect.size.y / 2)) + Vector2(4, 0),
-		mtx.xform(rect.position + rect.size) + Vector2(4, 4),
-		mtx.xform(rect.position + Vector2(rect.size.x / 2, rect.size.y)) + Vector2(0, 4),
-		mtx.xform(rect.position + Vector2(0, rect.size.y)) + Vector2(-4, 4),
-		mtx.xform(rect.position + Vector2(0, rect.size.y / 2)) + Vector2(-4, 0)
+	const real_t handle_radius = 8 * EDSCALE;
+	const real_t handle_offset = 4 * EDSCALE;
+
+	// Position of selection handles.
+	const Vector2 endpoints[8] = {
+		mtx.xform(rect.position) + Vector2(-handle_offset, -handle_offset),
+		mtx.xform(rect.position + Vector2(rect.size.x / 2, 0)) + Vector2(0, -handle_offset),
+		mtx.xform(rect.position + Vector2(rect.size.x, 0)) + Vector2(handle_offset, -handle_offset),
+		mtx.xform(rect.position + Vector2(rect.size.x, rect.size.y / 2)) + Vector2(handle_offset, 0),
+		mtx.xform(rect.position + rect.size) + Vector2(handle_offset, handle_offset),
+		mtx.xform(rect.position + Vector2(rect.size.x / 2, rect.size.y)) + Vector2(0, handle_offset),
+		mtx.xform(rect.position + Vector2(0, rect.size.y)) + Vector2(-handle_offset, handle_offset),
+		mtx.xform(rect.position + Vector2(0, rect.size.y / 2)) + Vector2(-handle_offset, 0)
 	};
 
 	Ref<InputEventMouseButton> mb = p_input;
@@ -346,7 +367,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 
 					for (int i = 0; i < 8; i++) {
 						Vector2 tuv = endpoints[i];
-						if (tuv.distance_to(Vector2(mb->get_position().x, mb->get_position().y)) < 8) {
+						if (tuv.distance_to(Vector2(mb->get_position().x, mb->get_position().y)) < handle_radius) {
 							drag_index = i;
 						}
 					}
@@ -524,6 +545,17 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 			}
 			edit_draw->update();
 		}
+	}
+
+	Ref<InputEventMagnifyGesture> magnify_gesture = p_input;
+	if (magnify_gesture.is_valid()) {
+		_zoom_on_position(draw_zoom * magnify_gesture->get_factor(), magnify_gesture->get_position());
+	}
+
+	Ref<InputEventPanGesture> pan_gesture = p_input;
+	if (pan_gesture.is_valid()) {
+		hscroll->set_value(hscroll->get_value() + hscroll->get_page() * pan_gesture->get_delta().x / 8);
+		vscroll->set_value(vscroll->get_value() + vscroll->get_page() * pan_gesture->get_delta().y / 8);
 	}
 }
 
@@ -715,6 +747,9 @@ void TextureRegionEditor::_notification(int p_what) {
 			zoom_out->set_icon(get_icon("ZoomLess", "EditorIcons"));
 			zoom_reset->set_icon(get_icon("ZoomReset", "EditorIcons"));
 			zoom_in->set_icon(get_icon("ZoomMore", "EditorIcons"));
+
+			vscroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
+			hscroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (snap_mode == SNAP_AUTOSLICE && is_visible() && autoslice_is_dirty) {
@@ -989,25 +1024,22 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	zoom_hb->add_child(zoom_out);
 
 	zoom_reset = memnew(ToolButton);
-	zoom_out->set_tooltip(TTR("Zoom Reset"));
+	zoom_reset->set_tooltip(TTR("Zoom Reset"));
 	zoom_reset->connect("pressed", this, "_zoom_reset");
 	zoom_hb->add_child(zoom_reset);
 
 	zoom_in = memnew(ToolButton);
-	zoom_out->set_tooltip(TTR("Zoom In"));
+	zoom_in->set_tooltip(TTR("Zoom In"));
 	zoom_in->connect("pressed", this, "_zoom_in");
 	zoom_hb->add_child(zoom_in);
 
 	vscroll = memnew(VScrollBar);
 	vscroll->set_step(0.001);
 	edit_draw->add_child(vscroll);
-	vscroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
 	vscroll->connect("value_changed", this, "_scroll_changed");
 	hscroll = memnew(HScrollBar);
 	hscroll->set_step(0.001);
 	edit_draw->add_child(hscroll);
-	hscroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
-	hscroll->set_margin(MARGIN_RIGHT, -vscroll->get_size().x * EDSCALE);
 	hscroll->connect("value_changed", this, "_scroll_changed");
 
 	updating_scroll = false;

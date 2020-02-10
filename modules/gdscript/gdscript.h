@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -111,6 +111,7 @@ class GDScript : public Script {
 	String source;
 	String path;
 	String name;
+	String fully_qualified_name;
 	SelfList<GDScript> script_list;
 
 	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Variant::CallError &r_error);
@@ -130,6 +131,8 @@ class GDScript : public Script {
 #endif
 
 	bool _update_exports();
+
+	void _save_orphaned_subclasses();
 
 protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -297,6 +300,7 @@ struct GDScriptWarning {
 		UNSAFE_CAST, // Cast used in an unknown type
 		UNSAFE_CALL_ARGUMENT, // Function call argument is of a supertype of the require argument
 		DEPRECATED_KEYWORD, // The keyword is deprecated and should be replaced
+		STANDALONE_TERNARY, // Return value of ternary expression is discarded
 		WARNING_MAX,
 	} code;
 	Vector<String> symbols;
@@ -352,6 +356,8 @@ class GDScriptLanguage : public ScriptLanguage {
 	SelfList<GDScriptFunction>::List function_list;
 	bool profiling;
 	uint64_t script_frame_time;
+
+	Map<String, ObjectID> orphan_subclasses;
 
 public:
 	int calls;
@@ -503,6 +509,9 @@ public:
 
 	virtual bool handles_global_class_type(const String &p_type) const;
 	virtual String get_global_class_name(const String &p_path, String *r_base_type = NULL, String *r_icon_path = NULL) const;
+
+	void add_orphan_subclass(const String &p_qualified_name, const ObjectID &p_subclass);
+	Ref<GDScript> get_orphan_subclass(const String &p_qualified_name);
 
 	GDScriptLanguage();
 	~GDScriptLanguage();

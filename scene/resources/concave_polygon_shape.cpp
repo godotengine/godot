@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,6 +62,16 @@ Vector<Vector3> ConcavePolygonShape::get_debug_mesh_lines() {
 	}
 
 	return points;
+}
+
+real_t ConcavePolygonShape::get_enclosing_radius() const {
+	PoolVector<Vector3> data = get_faces();
+	PoolVector<Vector3>::Read read = data.read();
+	real_t r = 0;
+	for (int i(0); i < data.size(); i++) {
+		r = MAX(read[i].length_squared(), r);
+	}
+	return Math::sqrt(r);
 }
 
 void ConcavePolygonShape::_update_shape() {

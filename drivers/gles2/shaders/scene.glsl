@@ -10,6 +10,12 @@ precision highp float;
 precision highp int;
 #endif
 
+#ifndef USE_GLES_OVER_GL
+#extension GL_OES_texture_3D : enable
+#else
+#extension GL_EXT_texture_array : enable
+#endif
+
 /* clang-format on */
 #include "stdlib.glsl"
 /* clang-format off */
@@ -423,6 +429,8 @@ void main() {
 #define projection_matrix local_projection_matrix
 #define world_transform world_matrix
 
+	float point_size = 1.0;
+
 	{
 		/* clang-format off */
 
@@ -431,6 +439,7 @@ VERTEX_SHADER_CODE
 		/* clang-format on */
 	}
 
+	gl_PointSize = point_size;
 	vec4 outvec = vertex;
 
 	// use local coordinates
@@ -668,6 +677,12 @@ VERTEX_SHADER_CODE
 
 /* clang-format off */
 [fragment]
+
+#ifndef USE_GLES_OVER_GL
+#extension GL_OES_texture_3D : enable
+#else
+#extension GL_EXT_texture_array : enable
+#endif
 
 // texture2DLodEXT and textureCubeLodEXT are fragment shader specific.
 // Do not copy these defines in the vertex section.
@@ -1663,19 +1678,19 @@ FRAGMENT_SHADER_CODE
 
 #ifdef USE_LIGHTMAP_CAPTURE
 	{
-		vec3 cone_dirs[12] = vec3[](
-				vec3(0.0, 0.0, 1.0),
-				vec3(0.866025, 0.0, 0.5),
-				vec3(0.267617, 0.823639, 0.5),
-				vec3(-0.700629, 0.509037, 0.5),
-				vec3(-0.700629, -0.509037, 0.5),
-				vec3(0.267617, -0.823639, 0.5),
-				vec3(0.0, 0.0, -1.0),
-				vec3(0.866025, 0.0, -0.5),
-				vec3(0.267617, 0.823639, -0.5),
-				vec3(-0.700629, 0.509037, -0.5),
-				vec3(-0.700629, -0.509037, -0.5),
-				vec3(0.267617, -0.823639, -0.5));
+		vec3 cone_dirs[12];
+		cone_dirs[0] = vec3(0.0, 0.0, 1.0);
+		cone_dirs[1] = vec3(0.866025, 0.0, 0.5);
+		cone_dirs[2] = vec3(0.267617, 0.823639, 0.5);
+		cone_dirs[3] = vec3(-0.700629, 0.509037, 0.5);
+		cone_dirs[4] = vec3(-0.700629, -0.509037, 0.5);
+		cone_dirs[5] = vec3(0.267617, -0.823639, 0.5);
+		cone_dirs[6] = vec3(0.0, 0.0, -1.0);
+		cone_dirs[7] = vec3(0.866025, 0.0, -0.5);
+		cone_dirs[8] = vec3(0.267617, 0.823639, -0.5);
+		cone_dirs[9] = vec3(-0.700629, 0.509037, -0.5);
+		cone_dirs[10] = vec3(-0.700629, -0.509037, -0.5);
+		cone_dirs[11] = vec3(0.267617, -0.823639, -0.5);
 
 		vec3 local_normal = normalize(camera_matrix * vec4(normal, 0.0)).xyz;
 		vec4 captured = vec4(0.0);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -166,8 +166,8 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 
 #ifdef DEBUG_ENABLED
 			String fullname = method->get_ret_type_full_name() + " " + name + "(" + method->get_signature_desc(true) + ")";
-			WARN_PRINTS("Method '" + fullname + "' is hidden by Godot API method. Should be '" +
-						method->get_full_name_no_class() + "'. In class '" + namespace_name + "." + class_name + "'.");
+			WARN_PRINT("Method '" + fullname + "' is hidden by Godot API method. Should be '" +
+					   method->get_full_name_no_class() + "'. In class '" + namespace_name + "." + class_name + "'.");
 #endif
 			continue;
 		}
@@ -185,8 +185,8 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 				if (m && m->get_name() != name) {
 					// found
 					String fullname = m->get_ret_type_full_name() + " " + name + "(" + m->get_signature_desc(true) + ")";
-					WARN_PRINTS("Method '" + fullname + "' should be '" + m->get_full_name_no_class() +
-								"'. In class '" + namespace_name + "." + class_name + "'.");
+					WARN_PRINT("Method '" + fullname + "' should be '" + m->get_full_name_no_class() +
+							   "'. In class '" + namespace_name + "." + class_name + "'.");
 					break;
 				}
 

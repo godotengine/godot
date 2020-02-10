@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -105,7 +105,7 @@ void EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset>
 	}
 
 	if (!FileAccess::exists(rcedit_path)) {
-		ERR_PRINTS("Could not find rcedit executable at " + rcedit_path + ", no icon or app information data will be included.");
+		ERR_PRINT("Could not find rcedit executable at " + rcedit_path + ", no icon or app information data will be included.");
 		return;
 	}
 
@@ -114,7 +114,7 @@ void EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset>
 	String wine_path = EditorSettings::get_singleton()->get("export/windows/wine");
 
 	if (wine_path != String() && !FileAccess::exists(wine_path)) {
-		ERR_PRINTS("Could not find wine executable at " + wine_path + ", no icon or app information data will be included.");
+		ERR_PRINT("Could not find wine executable at " + wine_path + ", no icon or app information data will be included.");
 		return;
 	}
 
@@ -188,7 +188,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 #ifdef WINDOWS_ENABLED
 	String signtool_path = EditorSettings::get_singleton()->get("export/windows/signtool");
 	if (signtool_path != String() && !FileAccess::exists(signtool_path)) {
-		ERR_PRINTS("Could not find signtool executable at " + signtool_path + ", aborting.");
+		ERR_PRINT("Could not find signtool executable at " + signtool_path + ", aborting.");
 		return ERR_FILE_NOT_FOUND;
 	}
 	if (signtool_path == String()) {
@@ -197,7 +197,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 #else
 	String signtool_path = EditorSettings::get_singleton()->get("export/windows/osslsigncode");
 	if (signtool_path != String() && !FileAccess::exists(signtool_path)) {
-		ERR_PRINTS("Could not find osslsigncode executable at " + signtool_path + ", aborting.");
+		ERR_PRINT("Could not find osslsigncode executable at " + signtool_path + ", aborting.");
 		return ERR_FILE_NOT_FOUND;
 	}
 	if (signtool_path == String()) {

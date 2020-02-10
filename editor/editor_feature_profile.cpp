@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,7 +64,10 @@ void EditorFeatureProfile::set_disable_class(const StringName &p_class, bool p_d
 }
 
 bool EditorFeatureProfile::is_class_disabled(const StringName &p_class) const {
-	return disabled_classes.has(p_class);
+	if (p_class == StringName()) {
+		return false;
+	}
+	return disabled_classes.has(p_class) || is_class_disabled(ClassDB::get_parent_class_nocheck(p_class));
 }
 
 void EditorFeatureProfile::set_disable_class_editor(const StringName &p_class, bool p_disabled) {
@@ -76,7 +79,10 @@ void EditorFeatureProfile::set_disable_class_editor(const StringName &p_class, b
 }
 
 bool EditorFeatureProfile::is_class_editor_disabled(const StringName &p_class) const {
-	return disabled_editors.has(p_class);
+	if (p_class == StringName()) {
+		return false;
+	}
+	return disabled_editors.has(p_class) || is_class_editor_disabled(ClassDB::get_parent_class_nocheck(p_class));
 }
 
 void EditorFeatureProfile::set_disable_class_property(const StringName &p_class, const StringName &p_property, bool p_disabled) {
@@ -186,14 +192,14 @@ Error EditorFeatureProfile::load_from_file(const String &p_path) {
 	Variant v;
 	err = JSON::parse(text, v, err_str, err_line);
 	if (err != OK) {
-		ERR_PRINTS("Error parsing '" + p_path + "' on line " + itos(err_line) + ": " + err_str);
+		ERR_PRINT("Error parsing '" + p_path + "' on line " + itos(err_line) + ": " + err_str);
 		return ERR_PARSE_ERROR;
 	}
 
 	Dictionary json = v;
 
 	if (!json.has("type") || String(json["type"]) != "feature_profile") {
-		ERR_PRINTS("Error parsing '" + p_path + "', it's not a feature profile.");
+		ERR_PRINT("Error parsing '" + p_path + "', it's not a feature profile.");
 		return ERR_PARSE_ERROR;
 	}
 
@@ -292,7 +298,7 @@ void EditorFeatureProfileManager::_notification(int p_what) {
 			current.instance();
 			Error err = current->load_from_file(EditorSettings::get_singleton()->get_feature_profiles_dir().plus_file(current_profile + ".profile"));
 			if (err != OK) {
-				ERR_PRINTS("Error loading default feature profile: " + current_profile);
+				ERR_PRINT("Error loading default feature profile: " + current_profile);
 				current_profile = String();
 				current.unref();
 			}
@@ -896,7 +902,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	import_profiles = memnew(EditorFileDialog);
 	add_child(import_profiles);
 	import_profiles->set_mode(EditorFileDialog::MODE_OPEN_FILES);
-	import_profiles->add_filter("*.profile; Godot Feature Profile");
+	import_profiles->add_filter("*.profile; " + TTR("Godot Feature Profile"));
 	import_profiles->connect("files_selected", this, "_import_profiles");
 	import_profiles->set_title(TTR("Import Profile(s)"));
 	import_profiles->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
@@ -904,7 +910,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	export_profile = memnew(EditorFileDialog);
 	add_child(export_profile);
 	export_profile->set_mode(EditorFileDialog::MODE_SAVE_FILE);
-	export_profile->add_filter("*.profile; Godot Feature Profile");
+	export_profile->add_filter("*.profile; " + TTR("Godot Feature Profile"));
 	export_profile->connect("file_selected", this, "_export_profile");
 	export_profile->set_title(TTR("Export Profile"));
 	export_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);

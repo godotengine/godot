@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -664,14 +664,15 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 				input_action = INPUT_NONE;
 			} else if (mb->get_button_index() == BUTTON_LEFT) {
 
+				bool can_edit = (node && node->get_mesh_library().is_valid());
 				if (input_action == INPUT_PASTE) {
 					_do_paste();
 					input_action = INPUT_NONE;
 					_update_paste_indicator();
-				} else if (mb->get_shift()) {
+				} else if (mb->get_shift() && can_edit) {
 					input_action = INPUT_SELECT;
 					last_selection = selection;
-				} else if (mb->get_command()) {
+				} else if (mb->get_command() && can_edit) {
 					input_action = INPUT_PICK;
 				} else {
 					input_action = INPUT_PAINT;
@@ -839,12 +840,30 @@ void GridMapEditor::_text_changed(const String &p_text) {
 
 void GridMapEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
 
-	Ref<InputEventKey> k = p_ie;
+	const Ref<InputEventKey> k = p_ie;
 
 	if (k.is_valid() && (k->get_scancode() == KEY_UP || k->get_scancode() == KEY_DOWN || k->get_scancode() == KEY_PAGEUP || k->get_scancode() == KEY_PAGEDOWN)) {
 
+		// Forward the key input to the ItemList so it can be scrolled
 		mesh_library_palette->call("_gui_input", k);
 		search_box->accept_event();
+	}
+}
+
+void GridMapEditor::_mesh_library_palette_input(const Ref<InputEvent> &p_ie) {
+
+	const Ref<InputEventMouseButton> mb = p_ie;
+
+	// Zoom in/out using Ctrl + mouse wheel
+	if (mb.is_valid() && mb->is_pressed() && mb->get_command()) {
+
+		if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_UP) {
+			size_slider->set_value(size_slider->get_value() + 0.2);
+		}
+
+		if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+			size_slider->set_value(size_slider->get_value() - 0.2);
+		}
 	}
 }
 
@@ -1182,6 +1201,7 @@ void GridMapEditor::_bind_methods() {
 
 	ClassDB::bind_method("_text_changed", &GridMapEditor::_text_changed);
 	ClassDB::bind_method("_sbox_input", &GridMapEditor::_sbox_input);
+	ClassDB::bind_method("_mesh_library_palette_input", &GridMapEditor::_mesh_library_palette_input);
 	ClassDB::bind_method("_icon_size_changed", &GridMapEditor::_icon_size_changed);
 	ClassDB::bind_method("_menu_option", &GridMapEditor::_menu_option);
 	ClassDB::bind_method("_configure", &GridMapEditor::_configure);
@@ -1256,7 +1276,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	options->get_popup()->add_item(TTR("Cursor Back Rotate Z"), MENU_OPTION_CURSOR_BACK_ROTATE_Z, KEY_MASK_SHIFT + KEY_D);
 	options->get_popup()->add_item(TTR("Cursor Clear Rotation"), MENU_OPTION_CURSOR_CLEAR_ROTATION, KEY_W);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_check_item("Paste Selects", MENU_OPTION_PASTE_SELECTS);
+	options->get_popup()->add_check_item(TTR("Paste Selects"), MENU_OPTION_PASTE_SELECTS);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Duplicate Selection"), MENU_OPTION_SELECTION_DUPLICATE, KEY_MASK_CTRL + KEY_C);
 	options->get_popup()->add_item(TTR("Cut Selection"), MENU_OPTION_SELECTION_CUT, KEY_MASK_CTRL + KEY_X);
@@ -1310,7 +1330,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 	size_slider = memnew(HSlider);
 	size_slider->set_h_size_flags(SIZE_EXPAND_FILL);
-	size_slider->set_min(0.1f);
+	size_slider->set_min(0.2f);
 	size_slider->set_max(4.0f);
 	size_slider->set_step(0.1f);
 	size_slider->set_value(1.0f);
@@ -1324,6 +1344,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	mesh_library_palette = memnew(ItemList);
 	add_child(mesh_library_palette);
 	mesh_library_palette->set_v_size_flags(SIZE_EXPAND_FILL);
+	mesh_library_palette->connect("gui_input", this, "_mesh_library_palette_input");
 
 	info_message = memnew(Label);
 	info_message->set_text(TTR("Give a MeshLibrary resource to this GridMap to use its meshes."));

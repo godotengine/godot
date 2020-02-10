@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Control" inherits="CanvasItem" category="Core" version="3.2">
+<class name="Control" inherits="CanvasItem" version="4.0">
 	<brief_description>
 		All user interface nodes inherit from Control. A control's anchors and margins adapt its position and size relative to its parent.
 	</brief_description>
@@ -504,7 +504,7 @@
 			<description>
 				Virtual method to be implemented by the user. Returns whether the given [code]point[/code] is inside this control.
 				If not overridden, default behavior is checking if the point is within control's Rect.
-				[b]Node:[/b] If you want to check if a point is inside the control, you can use [code]get_rect().has_point(point)[/code].
+				[b]Note:[/b] If you want to check if a point is inside the control, you can use [code]get_rect().has_point(point)[/code].
 			</description>
 		</method>
 		<method name="has_shader_override" qualifiers="const">

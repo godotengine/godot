@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -110,8 +110,14 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 		} break;
 
 		case MONO_TYPE_STRING: {
-			MonoString *mono_string = GDMonoMarshal::mono_string_from_godot(p_value);
-			mono_field_set_value(p_object, mono_field, mono_string);
+			if (p_value.get_type() == Variant::NIL) {
+				// Otherwise, Variant -> String would return the string "Null"
+				MonoString *mono_string = NULL;
+				mono_field_set_value(p_object, mono_field, mono_string);
+			} else {
+				MonoString *mono_string = GDMonoMarshal::mono_string_from_godot(p_value);
+				mono_field_set_value(p_object, mono_field, mono_string);
+			}
 		} break;
 
 		case MONO_TYPE_VALUETYPE: {
@@ -506,7 +512,7 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 		} break;
 
 		default: {
-			ERR_PRINTS("Attempted to set the value of a field of unexpected type encoding: " + itos(type.type_encoding) + ".");
+			ERR_PRINT("Attempted to set the value of a field of unexpected type encoding: " + itos(type.type_encoding) + ".");
 		} break;
 	}
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,14 @@
 
 #include "editor_internal_calls.h"
 
+#ifdef UNIX_ENABLED
+#include <unistd.h> // access
+#endif
+
 #include "core/os/os.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/script_editor_debugger.h"
 #include "main/main.h"
@@ -196,7 +201,9 @@ uint32_t godot_icall_BindingsGenerator_CsGlueVersion() {
 	return CS_GLUE_VERSION;
 }
 
-int32_t godot_icall_ScriptClassParser_ParseFile(MonoString *p_filepath, MonoObject *p_classes) {
+int32_t godot_icall_ScriptClassParser_ParseFile(MonoString *p_filepath, MonoObject *p_classes, MonoString **r_error_str) {
+	*r_error_str = NULL;
+
 	String filepath = GDMonoMarshal::mono_string_to_godot(p_filepath);
 
 	ScriptClassParser scp;
@@ -214,6 +221,11 @@ int32_t godot_icall_ScriptClassParser_ParseFile(MonoString *p_filepath, MonoObje
 			classDeclDict["nested"] = classDecl.nested;
 			classDeclDict["base_count"] = classDecl.base.size();
 			classes.push_back(classDeclDict);
+		}
+	} else {
+		String error_str = scp.get_error();
+		if (!error_str.empty()) {
+			*r_error_str = GDMonoMarshal::mono_string_from_godot(error_str);
 		}
 	}
 	return err;
@@ -370,6 +382,15 @@ MonoString *godot_icall_Utils_OS_GetPlatformName() {
 	return GDMonoMarshal::mono_string_from_godot(os_name);
 }
 
+MonoBoolean godot_icall_Utils_OS_UnixFileHasExecutableAccess(MonoString *p_file_path) {
+#ifdef UNIX_ENABLED
+	String file_path = GDMonoMarshal::mono_string_to_godot(p_file_path);
+	return access(file_path.utf8().get_data(), X_OK) == 0;
+#else
+	ERR_FAIL_V(false);
+#endif
+}
+
 void register_editor_internal_calls() {
 
 	// GodotSharpDirs
@@ -442,4 +463,5 @@ void register_editor_internal_calls() {
 
 	// Utils.OS
 	mono_add_internal_call("GodotTools.Utils.OS::GetPlatformName", (void *)godot_icall_Utils_OS_GetPlatformName);
+	mono_add_internal_call("GodotTools.Utils.OS::UnixFileHasExecutableAccess", (void *)godot_icall_Utils_OS_UnixFileHasExecutableAccess);
 }

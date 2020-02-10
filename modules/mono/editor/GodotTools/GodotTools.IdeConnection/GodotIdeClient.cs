@@ -106,7 +106,7 @@ namespace GodotTools.IdeConnection
             try
             {
                 Logger.LogInfo("Connecting to Godot Ide Server");
-                
+
                 tcpClient.Connect(IPAddress.Loopback, GodotIdeMetadata.Port);
 
                 Logger.LogInfo("Connection open with Godot Ide Server");
@@ -130,7 +130,7 @@ namespace GodotTools.IdeConnection
         public void Start()
         {
             Logger.LogInfo("Starting Godot Ide Client");
-            
+
             fsWatcher.Changed += OnMetaFileChanged;
             fsWatcher.Deleted += OnMetaFileDeleted;
             fsWatcher.EnableRaisingEvents = true;

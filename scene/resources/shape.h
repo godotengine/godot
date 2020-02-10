@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 #define SHAPE_H
 
 #include "core/resource.h"
+
 class ArrayMesh;
 
 class Shape : public Resource {
@@ -57,6 +58,8 @@ public:
 
 	Ref<ArrayMesh> get_debug_mesh();
 	virtual Vector<Vector3> get_debug_mesh_lines() = 0; // { return Vector<Vector3>(); }
+	/// Returns the radius of a sphere that fully enclose this shape
+	virtual real_t get_enclosing_radius() const = 0;
 
 	void add_vertices_to_array(PoolVector<Vector3> &array, const Transform &p_xform);
 

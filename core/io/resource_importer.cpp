@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -74,7 +74,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 			memdelete(f);
 			return OK;
 		} else if (err != OK) {
-			ERR_PRINTS("ResourceFormatImporter::load - " + p_path + ".import:" + itos(lines) + " error: " + error_text);
+			ERR_PRINT("ResourceFormatImporter::load - " + p_path + ".import:" + itos(lines) + " error: " + error_text);
 			memdelete(f);
 			return err;
 		}
@@ -279,7 +279,7 @@ void ResourceFormatImporter::get_internal_resource_path_list(const String &p_pat
 			memdelete(f);
 			return;
 		} else if (err != OK) {
-			ERR_PRINTS("ResourceFormatImporter::get_internal_resource_path_list - " + p_path + ".import:" + itos(lines) + " error: " + error_text);
+			ERR_PRINT("ResourceFormatImporter::get_internal_resource_path_list - " + p_path + ".import:" + itos(lines) + " error: " + error_text);
 			memdelete(f);
 			return;
 		}

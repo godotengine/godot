@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,6 +53,7 @@ protected:
 	IP_Address peer_addr;
 	int peer_port;
 	bool blocking;
+	bool broadcast;
 	Ref<NetSocket> _sock;
 
 	static void _bind_methods();
@@ -77,6 +78,7 @@ public:
 	Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);
 	int get_available_packet_count() const;
 	int get_max_packet_size() const;
+	void set_broadcast_enabled(bool p_enabled);
 	Error join_multicast_group(IP_Address p_multi_address, String p_if_name);
 	Error leave_multicast_group(IP_Address p_multi_address, String p_if_name);
 

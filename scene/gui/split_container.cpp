@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -266,7 +266,7 @@ void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 Control::CursorShape SplitContainer::get_cursor_shape(const Point2 &p_pos) const {
 
 	if (dragging)
-		return (vertical ? CURSOR_VSIZE : CURSOR_HSIZE);
+		return (vertical ? CURSOR_VSPLIT : CURSOR_HSPLIT);
 
 	if (!collapsed && _getch(0) && _getch(1) && dragger_visibility == DRAGGER_VISIBLE) {
 
@@ -275,11 +275,11 @@ Control::CursorShape SplitContainer::get_cursor_shape(const Point2 &p_pos) const
 		if (vertical) {
 
 			if (p_pos.y > middle_sep && p_pos.y < middle_sep + sep)
-				return CURSOR_VSIZE;
+				return CURSOR_VSPLIT;
 		} else {
 
 			if (p_pos.x > middle_sep && p_pos.x < middle_sep + sep)
-				return CURSOR_HSIZE;
+				return CURSOR_HSPLIT;
 		}
 	}
 

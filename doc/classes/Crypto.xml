@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Crypto" inherits="Reference" category="Core" version="3.2">
+<class name="Crypto" inherits="Reference" version="4.0">
 	<brief_description>
 		Access to advanced cryptographic functionalities.
 	</brief_description>
@@ -22,6 +22,7 @@
 		    key.save("user://generated.key")
 		    cert.save("user://generated.crt")
 		[/codeblock]
+		[b]Note:[/b] Not available in HTML5 exports.
 	</description>
 	<tutorials>
 	</tutorials>

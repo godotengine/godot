@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GeometryInstance" inherits="VisualInstance" category="Core" version="3.2">
+<class name="GeometryInstance" inherits="VisualInstance" version="4.0">
 	<brief_description>
 		Base node for geometry-based visual instances.
 	</brief_description>
@@ -15,6 +15,7 @@
 			<argument index="0" name="flag" type="int" enum="GeometryInstance.Flags">
 			</argument>
 			<description>
+				Returns the [enum GeometryInstance.Flags] that have been set for this object.
 			</description>
 		</method>
 		<method name="set_custom_aabb">
@@ -34,6 +35,7 @@
 			<argument index="1" name="value" type="bool">
 			</argument>
 			<description>
+				Sets the [enum GeometryInstance.Flags] specified. See [enum GeometryInstance.Flags] for options.
 			</description>
 		</method>
 	</methods>

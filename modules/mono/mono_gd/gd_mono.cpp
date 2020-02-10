@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -102,32 +102,22 @@ void gd_mono_profiler_init() {
 	bool profiler_enabled = GLOBAL_DEF("mono/profiler/enabled", false);
 	if (profiler_enabled) {
 		mono_profiler_load(profiler_args.utf8());
+		return;
+	}
+
+	const String env_var_name = "MONO_ENV_OPTIONS";
+	if (OS::get_singleton()->has_environment(env_var_name)) {
+		const auto mono_env_ops = OS::get_singleton()->get_environment(env_var_name);
+		// Usually MONO_ENV_OPTIONS looks like:   --profile=jb:prof=timeline,ctl=remote,host=127.0.0.1:55467
+		const String prefix = "--profile=";
+		if (mono_env_ops.begins_with(prefix)) {
+			const auto ops = mono_env_ops.substr(prefix.length(), mono_env_ops.length());
+			mono_profiler_load(ops.utf8());
+		}
 	}
 }
 
 #if defined(DEBUG_ENABLED)
-
-bool gd_mono_wait_for_debugger_msecs(uint32_t p_msecs) {
-
-	do {
-		if (mono_is_debugger_attached())
-			return true;
-
-		int last_tick = OS::get_singleton()->get_ticks_msec();
-
-		OS::get_singleton()->delay_usec((p_msecs < 25 ? p_msecs : 25) * 1000);
-
-		uint32_t tdiff = OS::get_singleton()->get_ticks_msec() - last_tick;
-
-		if (tdiff > p_msecs) {
-			p_msecs = 0;
-		} else {
-			p_msecs -= tdiff;
-		}
-	} while (p_msecs > 0);
-
-	return mono_is_debugger_attached();
-}
 
 void gd_mono_debug_init() {
 
@@ -356,7 +346,7 @@ void GDMono::initialize() {
 	}
 #endif
 
-#if !defined(WINDOWS_ENABLED) && !defined(NO_MONO_THREADS_SUSPEND_WORKAROUND)
+#if !defined(NO_MONO_THREADS_SUSPEND_WORKAROUND)
 	// FIXME: Temporary workaround. See: https://github.com/godotengine/godot/issues/29812
 	if (!OS::get_singleton()->has_environment("MONO_THREADS_SUSPEND")) {
 		OS::get_singleton()->set_environment("MONO_THREADS_SUSPEND", "preemptive");
@@ -389,12 +379,6 @@ void GDMono::initialize() {
 
 	Error domain_load_err = _load_scripts_domain();
 	ERR_FAIL_COND_MSG(domain_load_err != OK, "Mono: Failed to load scripts domain.");
-
-#if defined(DEBUG_ENABLED) && !defined(JAVASCRIPT_ENABLED)
-	bool debugger_attached = gd_mono_wait_for_debugger_msecs(500);
-	if (!debugger_attached && OS::get_singleton()->is_stdout_verbose())
-		print_error("Mono: Debugger wait timeout");
-#endif
 
 	_register_internal_calls();
 
@@ -637,7 +621,7 @@ bool GDMono::copy_prebuilt_api_assembly(ApiAssemblyInfo::Type p_api_type, const 
 		memdelete(da);
 
 		if (err != OK) {
-			ERR_PRINTS("Failed to create destination directory for the API assemblies. Error: " + itos(err) + ".");
+			ERR_PRINT("Failed to create destination directory for the API assemblies. Error: " + itos(err) + ".");
 			return false;
 		}
 	}
@@ -646,15 +630,15 @@ bool GDMono::copy_prebuilt_api_assembly(ApiAssemblyInfo::Type p_api_type, const 
 
 	String xml_file = assembly_name + ".xml";
 	if (da->copy(src_dir.plus_file(xml_file), dst_dir.plus_file(xml_file)) != OK)
-		WARN_PRINTS("Failed to copy '" + xml_file + "'.");
+		WARN_PRINT("Failed to copy '" + xml_file + "'.");
 
 	String pdb_file = assembly_name + ".pdb";
 	if (da->copy(src_dir.plus_file(pdb_file), dst_dir.plus_file(pdb_file)) != OK)
-		WARN_PRINTS("Failed to copy '" + pdb_file + "'.");
+		WARN_PRINT("Failed to copy '" + pdb_file + "'.");
 
 	String assembly_file = assembly_name + ".dll";
 	if (da->copy(src_dir.plus_file(assembly_file), dst_dir.plus_file(assembly_file)) != OK) {
-		ERR_PRINTS("Failed to copy '" + assembly_file + "'.");
+		ERR_PRINT("Failed to copy '" + assembly_file + "'.");
 		return false;
 	}
 
@@ -1131,7 +1115,7 @@ Error GDMono::finalize_and_unload_domain(MonoDomain *p_domain) {
 	mono_domain_try_unload(p_domain, (MonoObject **)&exc);
 
 	if (exc) {
-		ERR_PRINTS("Exception thrown when unloading domain '" + domain_name + "'.");
+		ERR_PRINT("Exception thrown when unloading domain '" + domain_name + "'.");
 		GDMonoUtils::debug_print_unhandled_exception(exc);
 		return FAILED;
 	}

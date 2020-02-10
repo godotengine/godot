@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GDScriptFunctionState" inherits="Reference" category="Core" version="3.2">
+<class name="GDScriptFunctionState" inherits="Reference" version="4.0">
 	<brief_description>
 		State of a function call after yielding.
 	</brief_description>
@@ -33,7 +33,7 @@
 	</methods>
 	<signals>
 		<signal name="completed">
-			<argument index="0" name="result" type="Nil">
+			<argument index="0" name="result" type="Variant">
 			</argument>
 			<description>
 			</description>

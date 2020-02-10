@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1113,7 +1113,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		memdelete(da);
 		//use the old approach
 
-		WARN_PRINTS("This file is old, so it can't refactor dependencies, opening and resaving '" + p_path + "'.");
+		WARN_PRINT("This file is old, so it can't refactor dependencies, opening and resaving '" + p_path + "'.");
 
 		Error err;
 		f = FileAccess::open(p_path, FileAccess::READ, &err);
@@ -1635,7 +1635,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 
 			if (!p_main && (!bundle_resources) && res->get_path().length() && res->get_path().find("::") == -1) {
 				if (res->get_path() == path) {
-					ERR_PRINTS("Circular reference to resource being saved found: '" + local_path + "' will be null next time it's loaded.");
+					ERR_PRINT("Circular reference to resource being saved found: '" + local_path + "' will be null next time it's loaded.");
 					return;
 				}
 				int idx = external_resources.size();

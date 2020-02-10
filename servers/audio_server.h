@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,14 +53,14 @@ class AudioDriver {
 #endif
 
 protected:
-	PoolVector<int32_t> capture_buffer;
-	unsigned int capture_position;
-	unsigned int capture_size;
+	Vector<int32_t> input_buffer;
+	unsigned int input_position;
+	unsigned int input_size;
 
 	void audio_server_process(int p_frames, int32_t *p_buffer, bool p_update_mix_time = true);
 	void update_mix_time(int p_frames);
-	void capture_buffer_init(int driver_buffer_frames);
-	void capture_buffer_write(int32_t sample);
+	void input_buffer_init(int driver_buffer_frames);
+	void input_buffer_write(int32_t sample);
 
 #ifdef DEBUG_ENABLED
 	_FORCE_INLINE_ void start_counting_ticks() { prof_ticks = OS::get_singleton()->get_ticks_usec(); }
@@ -111,11 +111,9 @@ public:
 	SpeakerMode get_speaker_mode_by_total_channels(int p_channels) const;
 	int get_total_channels_by_speaker_mode(SpeakerMode) const;
 
-	PoolVector<int32_t> get_capture_buffer() { return capture_buffer; }
-	unsigned int get_capture_position() { return capture_position; }
-	unsigned int get_capture_size() { return capture_size; }
-
-	void clear_capture_buffer() { capture_buffer.resize(0); }
+	Vector<int32_t> get_input_buffer() { return input_buffer; }
+	unsigned int get_input_position() { return input_position; }
+	unsigned int get_input_size() { return input_size; }
 
 #ifdef DEBUG_ENABLED
 	uint64_t get_profiling_time() const { return prof_time; }
@@ -242,24 +240,9 @@ private:
 
 	Mutex *audio_data_lock;
 
-	float output_latency;
-	uint64_t output_latency_ticks;
-
 	void init_channels_and_buffers();
 
 	void _mix_step();
-
-#if 0
-	struct AudioInBlock {
-
-		Ref<AudioStreamSample> audio_stream;
-		int current_position;
-		bool loops;
-	};
-
-	Map<StringName, AudioInBlock *> audio_in_block_map;
-	Vector<AudioInBlock *> audio_in_blocks;
-#endif
 
 	struct CallbackItem {
 
@@ -386,16 +369,9 @@ public:
 	String get_device();
 	void set_device(String device);
 
-	Error capture_start();
-	Error capture_stop();
-
 	Array capture_get_device_list();
 	String capture_get_device();
 	void capture_set_device(const String &p_name);
-
-	PoolVector<int32_t> get_capture_buffer();
-	unsigned int get_capture_position();
-	unsigned int get_capture_size();
 
 	AudioServer();
 	virtual ~AudioServer();

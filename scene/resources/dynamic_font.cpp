@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,8 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef FREETYPE_ENABLED
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_FREETYPE_ENABLED
+
 #include "dynamic_font.h"
+
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 
@@ -130,7 +133,10 @@ Error DynamicFontAtSize::_load() {
 		} else {
 
 			FileAccess *f = FileAccess::open(font->font_path, FileAccess::READ);
-			ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot open font file '" + font->font_path + "'.");
+			if (!f) {
+				FT_Done_FreeType(library);
+				ERR_FAIL_V_MSG(ERR_CANT_OPEN, "Cannot open font file '" + font->font_path + "'.");
+			}
 
 			size_t len = f->get_len();
 			_fontdata[font->font_path] = Vector<uint8_t>();
@@ -145,7 +151,10 @@ Error DynamicFontAtSize::_load() {
 	if (font->font_mem == NULL && font->font_path != String()) {
 
 		FileAccess *f = FileAccess::open(font->font_path, FileAccess::READ);
-		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot open font file '" + font->font_path + "'.");
+		if (!f) {
+			FT_Done_FreeType(library);
+			ERR_FAIL_V_MSG(ERR_CANT_OPEN, "Cannot open font file '" + font->font_path + "'.");
+		}
 
 		memset(&stream, 0, sizeof(FT_StreamRec));
 		stream.base = NULL;
@@ -176,6 +185,7 @@ Error DynamicFontAtSize::_load() {
 		error = FT_Open_Face(library, &fargs, 0, &face);
 
 	} else {
+		FT_Done_FreeType(library);
 		ERR_FAIL_V_MSG(ERR_UNCONFIGURED, "DynamicFont uninitialized.");
 	}
 
@@ -195,13 +205,13 @@ Error DynamicFontAtSize::_load() {
 	if (FT_HAS_COLOR(face) && face->num_fixed_sizes > 0) {
 		int best_match = 0;
 		int diff = ABS(id.size - ((int64_t)face->available_sizes[0].width));
-		scale_color_font = float(id.size) / face->available_sizes[0].width;
+		scale_color_font = float(id.size * oversampling) / face->available_sizes[0].width;
 		for (int i = 1; i < face->num_fixed_sizes; i++) {
 			int ndiff = ABS(id.size - ((int64_t)face->available_sizes[i].width));
 			if (ndiff < diff) {
 				best_match = i;
 				diff = ndiff;
-				scale_color_font = float(id.size) / face->available_sizes[i].width;
+				scale_color_font = float(id.size * oversampling) / face->available_sizes[i].width;
 			}
 		}
 		FT_Select_Size(face, best_match);
@@ -299,7 +309,7 @@ void DynamicFontAtSize::set_texture_flags(uint32_t p_flags) {
 	}
 }
 
-float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks, bool p_advance_only) const {
+float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks, bool p_advance_only, bool p_outline) const {
 
 	if (!valid)
 		return 0;
@@ -313,6 +323,20 @@ float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharT
 	ERR_FAIL_COND_V(!ch, 0.0);
 
 	float advance = 0.0;
+
+	// use normal character size if there's no outline character
+	if (p_outline && !ch->found) {
+		FT_GlyphSlot slot = face->glyph;
+		int error = FT_Load_Char(face, p_char, FT_HAS_COLOR(face) ? FT_LOAD_COLOR : FT_LOAD_DEFAULT);
+		if (!error) {
+			error = FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
+			if (!error) {
+				Character character = Character::not_found();
+				character = const_cast<DynamicFontAtSize *>(this)->_bitmap_to_character(slot->bitmap, slot->bitmap_top, slot->bitmap_left, slot->advance.x / 64.0);
+				advance = character.advance;
+			}
+		}
+	}
 
 	if (ch->found) {
 		ERR_FAIL_COND_V(ch->texture_idx < -1 || ch->texture_idx >= font->textures.size(), 0);
@@ -657,6 +681,7 @@ void DynamicFont::_reload_cache() {
 	if (!data.is_valid()) {
 		data_at_size.unref();
 		outline_data_at_size.unref();
+		fallbacks.resize(0);
 		fallback_data_at_size.resize(0);
 		fallback_outline_data_at_size.resize(0);
 		return;
@@ -874,7 +899,7 @@ float DynamicFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_
 
 	// If requested outline draw, but no outline is present, simply return advance without drawing anything
 	bool advance_only = p_outline && outline_cache_id.outline_size == 0;
-	return font_at_size->draw_char(p_canvas_item, p_pos, p_char, p_next, color, fallbacks, advance_only) + spacing_char;
+	return font_at_size->draw_char(p_canvas_item, p_pos, p_char, p_next, color, fallbacks, advance_only, p_outline) + spacing_char;
 }
 
 void DynamicFont::set_fallback(int p_idx, const Ref<DynamicFontData> &p_data) {
@@ -996,8 +1021,8 @@ void DynamicFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fallback_count"), &DynamicFont::get_fallback_count);
 
 	ADD_GROUP("Settings", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "size", PROPERTY_HINT_RANGE, "1,255,1"), "set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "outline_size", PROPERTY_HINT_RANGE, "0,255,1"), "set_outline_size", "get_outline_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "size", PROPERTY_HINT_RANGE, "1,1024,1"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "outline_size", PROPERTY_HINT_RANGE, "0,1024,1"), "set_outline_size", "get_outline_size");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "outline_color"), "set_outline_color", "get_outline_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_mipmaps"), "set_use_mipmaps", "get_use_mipmaps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_filter"), "set_use_filter", "get_use_filter");

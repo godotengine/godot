@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisibilityEnabler" inherits="VisibilityNotifier" category="Core" version="3.2">
+<class name="VisibilityEnabler" inherits="VisibilityNotifier" version="4.0">
 	<brief_description>
 		Enables certain nodes only when visible.
 	</brief_description>
@@ -15,6 +15,7 @@
 			<argument index="0" name="enabler" type="int" enum="VisibilityEnabler.Enabler">
 			</argument>
 			<description>
+				Returns whether the enabler identified by given [enum Enabler] constant is active.
 			</description>
 		</method>
 		<method name="set_enabler">
@@ -25,6 +26,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
+				Sets active state of the enabler identified by given [enum Enabler] constant.
 			</description>
 		</method>
 	</methods>

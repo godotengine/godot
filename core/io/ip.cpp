@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -184,7 +184,7 @@ IP_Address IP::get_resolve_item_address(ResolverID p_id) const {
 	resolver->mutex->lock();
 
 	if (resolver->queue[p_id].status != IP::RESOLVER_STATUS_DONE) {
-		ERR_PRINTS("Resolve of '" + resolver->queue[p_id].hostname + "'' didn't complete yet.");
+		ERR_PRINT("Resolve of '" + resolver->queue[p_id].hostname + "'' didn't complete yet.");
 		resolver->mutex->unlock();
 		return IP_Address();
 	}

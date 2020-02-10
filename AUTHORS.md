@@ -29,6 +29,7 @@ name is available.
 
     Aaron Franke (aaronfranke)
     Alexander Holland (AlexHolly)
+    Alexey Khoroshavin (allkhor)
     Alket Rexhepi (alketii)
     Andrea Catania (AndreaCatania)
     Andreas Haas (Hinsbart)
@@ -45,6 +46,7 @@ name is available.
     Bernard Liebl (poke1024)
     Błażej Szczygieł (zaps166)
     Bojidar Marinov (bojidar-bg)
+    Bruno Lourenço (MadEqua)
     bruvzg
     Cameron Reikes (creikey)
     Camille Mohr-Daurat (pouleyKetchoupp)
@@ -55,13 +57,16 @@ name is available.
     Dana Olson (adolson)
     Daniel J. Ramirez (djrm)
     Daniel Rakos (aqnuep)
+    dankan1890
     David Sichma (DavidSichma)
     Dharkael (lupoDharkael)
     Dmitry Koteroff (Krakean)
     DualMatrix
     Emmanuel Barroga (codecustard)
     Emmanuel Leblond (touilleMan)
+    Eoin O'Neill (Eoin-ONeill-Yokai)
     Eric Lasota (elasota)
+    Eric Rybicki (ericrybick)
     Erik Selecký (rxlecky)
     est31
     Fabian Mathews (supagu)
@@ -76,6 +81,7 @@ name is available.
     Gordon MacPherson (RevoluPowered)
     Guilherme Felipe de C. G. da Silva (guilhermefelipecgs)
     Hanif Bin Ariffin (hbina)
+    Haoyu Qiu (timothyqiu)
     Hein-Pieter van Braam-Stewart (hpvb)
     Hiroshi Ogawa (hi-ogawa)
     homer666
@@ -101,6 +107,7 @@ name is available.
     Leon Krause (eska014)
     Lucien Menassol (Kanabenki)
     m4nu3lf
+    Marcel Admiraal (madmiraal)
     Marcelo Fernandez (marcelofg55)
     Marc Gilleron (Zylann)
     Marcin Zawiejski (dragmz)
@@ -164,5 +171,6 @@ name is available.
     Xavier Cho (mysticfall)
     yg2f (SuperUserNameMan)
     Yuri Roubinsky (Chaosus)
+    Zak Stam (zaksnet)
     Zher Huei Lee (leezh)
     ZuBsPaCe

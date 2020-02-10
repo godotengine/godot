@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,6 +40,7 @@
 #include "core/project_settings.h"
 #include "editor_data.h"
 #include "editor_node.h"
+#include "editor_scale.h"
 #include "editor_settings.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/margin_container.h"
@@ -253,9 +254,9 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	TreeItem *patch_add = patches->create_item(patch_root);
 	patch_add->set_metadata(0, patchlist.size());
 	if (patchlist.size() == 0)
-		patch_add->set_text(0, "Add initial export...");
+		patch_add->set_text(0, TTR("Add initial export..."));
 	else
-		patch_add->set_text(0, "Add previous patches...");
+		patch_add->set_text(0, TTR("Add previous patches..."));
 
 	patch_add->add_button(0, get_icon("folder", "FileDialog"), 1);
 
@@ -973,7 +974,7 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 			error_dialog->set_text(vformat(TTR("Failed to export the project for platform '%s'.\nThis might be due to a configuration issue in the export preset or your export settings."), platform->get_name()));
 		}
 
-		ERR_PRINTS(vformat("Failed to export the project for platform '%s'.", platform->get_name()));
+		ERR_PRINT(vformat("Failed to export the project for platform '%s'.", platform->get_name()));
 		error_dialog->show();
 		error_dialog->popup_centered_minsize(Size2(300, 80));
 	}
@@ -1071,6 +1072,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	main_vb->add_child(hbox);
 	hbox->set_v_size_flags(SIZE_EXPAND_FILL);
 
+	// Presets list.
+
 	VBoxContainer *preset_vb = memnew(VBoxContainer);
 	preset_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbox->add_child(preset_vb);
@@ -1098,6 +1101,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	preset_hb->add_child(delete_preset);
 	delete_preset->connect("pressed", this, "_delete_preset");
 
+	// Preset settings.
+
 	VBoxContainer *settings_vb = memnew(VBoxContainer);
 	settings_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbox->add_child(settings_vb);
@@ -1118,17 +1123,23 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_path->set_save_mode();
 	export_path->connect("property_changed", this, "_export_path_changed");
 
+	// Subsections.
+
 	sections = memnew(TabContainer);
 	sections->set_tab_align(TabContainer::ALIGN_LEFT);
 	sections->set_use_hidden_tabs_for_min_size(true);
 	settings_vb->add_child(sections);
 	sections->set_v_size_flags(SIZE_EXPAND_FILL);
 
+	// Main preset parameters.
+
 	parameters = memnew(EditorInspector);
 	sections->add_child(parameters);
 	parameters->set_name(TTR("Options"));
 	parameters->set_v_size_flags(SIZE_EXPAND_FILL);
 	parameters->connect("property_edited", this, "_update_parameters");
+
+	// Resources export parameters.
 
 	VBoxContainer *resources_vb = memnew(VBoxContainer);
 	sections->add_child(resources_vb);
@@ -1164,9 +1175,16 @@ ProjectExportDialog::ProjectExportDialog() {
 			exclude_filters);
 	exclude_filters->connect("text_changed", this, "_filter_changed");
 
+	// Patch packages.
+
 	VBoxContainer *patch_vb = memnew(VBoxContainer);
 	sections->add_child(patch_vb);
 	patch_vb->set_name(TTR("Patches"));
+
+	// FIXME: Patching support doesn't seem properly implemented yet, so we hide it.
+	// The rest of the code is still kept for now, in the hope that it will be made
+	// functional and reactivated.
+	patch_vb->hide();
 
 	patches = memnew(Tree);
 	patch_vb->add_child(patches);
@@ -1186,7 +1204,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	patches_hb->add_spacer();
 
 	patch_dialog = memnew(EditorFileDialog);
-	patch_dialog->add_filter("*.pck ; Pack File");
+	patch_dialog->add_filter("*.pck ; " + TTR("Pack File"));
 	patch_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	patch_dialog->connect("file_selected", this, "_patch_selected");
 	add_child(patch_dialog);
@@ -1195,6 +1213,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	patch_erase->get_ok()->set_text(TTR("Delete"));
 	patch_erase->connect("confirmed", this, "_patch_deleted");
 	add_child(patch_erase);
+
+	// Feature tags.
 
 	VBoxContainer *feature_vb = memnew(VBoxContainer);
 	feature_vb->set_name(TTR("Features"));
@@ -1208,6 +1228,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	custom_feature_display->set_v_size_flags(SIZE_EXPAND_FILL);
 	feature_vb->add_margin_child(TTR("Feature List:"), features_panel, true);
 	sections->add_child(feature_vb);
+
+	// Script export parameters.
 
 	updating_script_key = false;
 
@@ -1230,7 +1252,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	sections->connect("tab_changed", this, "_tab_changed");
 
-	//disable by default
+	// Disable by default.
 	name->set_editable(false);
 	export_path->hide();
 	runnable->set_disabled(true);
@@ -1240,10 +1262,14 @@ ProjectExportDialog::ProjectExportDialog() {
 	sections->hide();
 	parameters->edit(NULL);
 
+	// Deletion dialog.
+
 	delete_confirm = memnew(ConfirmationDialog);
 	add_child(delete_confirm);
 	delete_confirm->get_ok()->set_text(TTR("Delete"));
 	delete_confirm->connect("confirmed", this, "_delete_preset_confirm");
+
+	// Export buttons, dialogs and errors.
 
 	updating = false;
 
@@ -1269,8 +1295,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_all_button->set_disabled(true);
 
 	export_pck_zip = memnew(EditorFileDialog);
-	export_pck_zip->add_filter("*.zip ; ZIP File");
-	export_pck_zip->add_filter("*.pck ; Godot Game Pack");
+	export_pck_zip->add_filter("*.zip ; " + TTR("ZIP File"));
+	export_pck_zip->add_filter("*.pck ; " + TTR("Godot Game Pack"));
 	export_pck_zip->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	export_pck_zip->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 	add_child(export_pck_zip);

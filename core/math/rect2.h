@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,6 +55,19 @@ struct Rect2 {
 		if (position.y >= (p_rect.position.y + p_rect.size.height))
 			return false;
 		if ((position.y + size.height) <= p_rect.position.y)
+			return false;
+
+		return true;
+	}
+
+	inline bool intersects_touch(const Rect2 &p_rect) const {
+		if (position.x > (p_rect.position.x + p_rect.size.width))
+			return false;
+		if ((position.x + size.width) < p_rect.position.x)
+			return false;
+		if (position.y > (p_rect.position.y + p_rect.size.height))
+			return false;
+		if ((position.y + size.height) < p_rect.position.y)
 			return false;
 
 		return true;

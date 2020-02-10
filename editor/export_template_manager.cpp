@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,6 +38,8 @@
 #include "core/version.h"
 #include "editor_node.h"
 #include "editor_scale.h"
+#include "progress_dialog.h"
+#include "scene/gui/link_button.h"
 
 void ExportTemplateManager::_update_template_list() {
 
@@ -351,7 +353,7 @@ void ExportTemplateManager::ok_pressed() {
 void ExportTemplateManager::_http_download_mirror_completed(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data) {
 
 	if (p_status != HTTPRequest::RESULT_SUCCESS || p_code != 200) {
-		EditorNode::get_singleton()->show_warning("Error getting the list of mirrors.");
+		EditorNode::get_singleton()->show_warning(TTR("Error getting the list of mirrors."));
 		return;
 	}
 
@@ -369,7 +371,7 @@ void ExportTemplateManager::_http_download_mirror_completed(int p_status, int p_
 	int errline;
 	Error err = JSON::parse(mirror_str, r, errs, errline);
 	if (err != OK) {
-		EditorNode::get_singleton()->show_warning("Error parsing JSON of mirror list. Please report this issue!");
+		EditorNode::get_singleton()->show_warning(TTR("Error parsing JSON of mirror list. Please report this issue!"));
 		return;
 	}
 
@@ -636,7 +638,7 @@ Error ExportTemplateManager::install_android_template() {
 				FileAccess::set_unix_permissions(to_write, (info.external_fa >> 16) & 0x01FF);
 #endif
 			} else {
-				ERR_PRINTS("Can't uncompress file: " + to_write);
+				ERR_PRINT("Can't uncompress file: " + to_write);
 			}
 		}
 
@@ -691,7 +693,7 @@ ExportTemplateManager::ExportTemplateManager() {
 
 	template_open = memnew(FileDialog);
 	template_open->set_title(TTR("Select Template File"));
-	template_open->add_filter("*.tpz ; Godot Export Templates");
+	template_open->add_filter("*.tpz ; " + TTR("Godot Export Templates"));
 	template_open->set_access(FileDialog::ACCESS_FILESYSTEM);
 	template_open->set_mode(FileDialog::MODE_OPEN_FILE);
 	template_open->connect("file_selected", this, "_install_from_file", varray(true));

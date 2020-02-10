@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,6 +46,7 @@ class OS_JavaScript : public OS_Unix {
 	bool window_maximized;
 	bool entering_fullscreen;
 	bool just_exited_fullscreen;
+	bool transparency_enabled;
 
 	InputDefault *input;
 	Ref<InputEventKey> deferred_key_event;
@@ -55,7 +56,7 @@ class OS_JavaScript : public OS_Unix {
 	Point2 touches[32];
 
 	Point2i last_click_pos;
-	uint64_t last_click_ms;
+	double last_click_ms;
 	int last_click_button_index;
 
 	MainLoop *main_loop;
@@ -123,6 +124,9 @@ public:
 	virtual void set_mouse_mode(MouseMode p_mode);
 	virtual MouseMode get_mouse_mode() const;
 
+	virtual bool get_window_per_pixel_transparency_enabled() const;
+	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled);
+
 	virtual bool has_touchscreen_ui_hint() const;
 
 	virtual bool is_joy_known(int p_device);
@@ -141,7 +145,7 @@ public:
 	void run_async();
 	bool main_loop_iterate();
 
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false, Mutex *p_pipe_mutex = NULL);
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false, Mutex *p_pipe_mutex = NULL);
 	virtual Error kill(const ProcessID &p_pid);
 	virtual int get_process_id() const;
 

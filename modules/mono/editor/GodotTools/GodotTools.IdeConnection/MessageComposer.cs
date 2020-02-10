@@ -22,14 +22,14 @@ namespace GodotTools.IdeConnection
             if (quoted)
             {
                 stringBuilder.Append('"');
-                
+
                 foreach (char @char in argument)
                 {
                     if (CharsToEscape.Contains(@char))
                         stringBuilder.Append('\\');
                     stringBuilder.Append(@char);
                 }
-                
+
                 stringBuilder.Append('"');
             }
             else

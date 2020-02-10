@@ -363,6 +363,7 @@ modn:
         MBEDTLS_MPI_CHK( mbedtls_mpi_add_mpi( &e, &e, s ) );
         MBEDTLS_MPI_CHK( mbedtls_mpi_mul_mpi( &e, &e, &t ) );
         MBEDTLS_MPI_CHK( mbedtls_mpi_mul_mpi( pk, pk, &t ) );
+        MBEDTLS_MPI_CHK( mbedtls_mpi_mod_mpi( pk, pk, &grp->N ) );
         MBEDTLS_MPI_CHK( mbedtls_mpi_inv_mod( s, pk, &grp->N ) );
         MBEDTLS_MPI_CHK( mbedtls_mpi_mul_mpi( s, s, &e ) );
         MBEDTLS_MPI_CHK( mbedtls_mpi_mod_mpi( s, s, &grp->N ) );

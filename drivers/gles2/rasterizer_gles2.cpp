@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -130,7 +130,7 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 
 	String output = String() + "GL ERROR: Source: " + debSource + "\tType: " + debType + "\tID: " + itos(id) + "\tSeverity: " + debSev + "\tMessage: " + message;
 
-	ERR_PRINTS(output);
+	ERR_PRINT(output);
 }
 #endif // CAN_DEBUG
 
@@ -263,8 +263,7 @@ void RasterizerGLES2::initialize() {
 #endif // GLES_OVER_GL
 #endif // CAN_DEBUG
 
-	const GLubyte *renderer = glGetString(GL_RENDERER);
-	print_line("OpenGL ES 2.0 Renderer: " + String((const char *)renderer));
+	print_line("OpenGL ES 2.0 Renderer: " + VisualServer::get_singleton()->get_video_adapter_name());
 	storage->initialize();
 	canvas->initialize();
 	scene->initialize();

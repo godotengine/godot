@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -901,7 +901,11 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 #ifdef GLES_OVER_GL
 				if (polygon->antialiased) {
 					glEnable(GL_LINE_SMOOTH);
-					_draw_generic_indices(GL_LINE_STRIP, polygon->indices.ptr(), polygon->count, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
+					if (polygon->antialiasing_use_indices) {
+						_draw_generic_indices(GL_LINE_STRIP, polygon->indices.ptr(), polygon->count, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
+					} else {
+						_draw_generic(GL_LINE_LOOP, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
+					}
 					glDisable(GL_LINE_SMOOTH);
 				}
 #endif
@@ -1008,6 +1012,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 
 					switch (multi_mesh->color_format) {
 
+						case VS::MULTIMESH_COLOR_MAX:
 						case VS::MULTIMESH_COLOR_NONE: {
 							glDisableVertexAttribArray(11);
 							glVertexAttrib4f(11, 1, 1, 1, 1);
@@ -1029,6 +1034,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 
 					switch (multi_mesh->custom_data_format) {
 
+						case VS::MULTIMESH_CUSTOM_DATA_MAX:
 						case VS::MULTIMESH_CUSTOM_DATA_NONE: {
 							glDisableVertexAttribArray(12);
 							glVertexAttrib4f(12, 1, 1, 1, 1);
@@ -1413,11 +1419,9 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 			}
 
 			if (skeleton) {
-				glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
+				glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 4);
 				glBindTexture(GL_TEXTURE_2D, skeleton->texture);
 				state.using_skeleton = true;
-				state.canvas_shader.set_uniform(CanvasShaderGLES3::SKELETON_TRANSFORM, state.skeleton_transform);
-				state.canvas_shader.set_uniform(CanvasShaderGLES3::SKELETON_TRANSFORM_INVERSE, state.skeleton_transform_inverse);
 			} else {
 				state.using_skeleton = false;
 			}
@@ -1604,6 +1608,11 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 		state.final_transform = ci->final_transform;
 		state.extra_matrix = Transform2D();
 
+		if (state.using_skeleton) {
+			state.canvas_shader.set_uniform(CanvasShaderGLES3::SKELETON_TRANSFORM, state.skeleton_transform);
+			state.canvas_shader.set_uniform(CanvasShaderGLES3::SKELETON_TRANSFORM_INVERSE, state.skeleton_transform_inverse);
+		}
+
 		state.canvas_shader.set_uniform(CanvasShaderGLES3::FINAL_MODULATE, state.canvas_item_modulate);
 		state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX, state.final_transform);
 		state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX, state.extra_matrix);
@@ -1674,7 +1683,6 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 					bool light_rebind = state.canvas_shader.bind();
 
 					if (light_rebind) {
-
 						state.canvas_shader.set_uniform(CanvasShaderGLES3::FINAL_MODULATE, state.canvas_item_modulate);
 						state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX, state.final_transform);
 						state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX, Transform2D());
@@ -1682,6 +1690,10 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 							state.canvas_shader.set_uniform(CanvasShaderGLES3::SCREEN_PIXEL_SIZE, Vector2(1.0 / storage->frame.current_rt->width, 1.0 / storage->frame.current_rt->height));
 						} else {
 							state.canvas_shader.set_uniform(CanvasShaderGLES3::SCREEN_PIXEL_SIZE, Vector2(1.0, 1.0));
+						}
+						if (state.using_skeleton) {
+							state.canvas_shader.set_uniform(CanvasShaderGLES3::SKELETON_TRANSFORM, state.skeleton_transform);
+							state.canvas_shader.set_uniform(CanvasShaderGLES3::SKELETON_TRANSFORM_INVERSE, state.skeleton_transform_inverse);
 						}
 					}
 
@@ -1879,7 +1891,7 @@ void RasterizerCanvasGLES3::canvas_light_shadow_buffer_update(RID p_buffer, cons
 
 		while (instance) {
 
-			RasterizerStorageGLES3::CanvasOccluder *cc = storage->canvas_occluder_owner.get(instance->polygon_buffer);
+			RasterizerStorageGLES3::CanvasOccluder *cc = storage->canvas_occluder_owner.getornull(instance->polygon_buffer);
 			if (!cc || cc->len == 0 || !(p_light_mask & instance->light_mask)) {
 
 				instance = instance->next;
@@ -1887,9 +1899,20 @@ void RasterizerCanvasGLES3::canvas_light_shadow_buffer_update(RID p_buffer, cons
 			}
 
 			state.canvas_shadow_shader.set_uniform(CanvasShadowShaderGLES3::WORLD_MATRIX, instance->xform_cache);
-			if (cull != instance->cull_cache) {
 
-				cull = instance->cull_cache;
+			VS::CanvasOccluderPolygonCullMode transformed_cull_cache = instance->cull_cache;
+
+			if (transformed_cull_cache != VS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED &&
+					(p_light_xform.basis_determinant() * instance->xform_cache.basis_determinant()) < 0) {
+				transformed_cull_cache =
+						transformed_cull_cache == VS::CANVAS_OCCLUDER_POLYGON_CULL_CLOCKWISE ?
+								VS::CANVAS_OCCLUDER_POLYGON_CULL_COUNTER_CLOCKWISE :
+								VS::CANVAS_OCCLUDER_POLYGON_CULL_CLOCKWISE;
+			}
+
+			if (cull != transformed_cull_cache) {
+
+				cull = transformed_cull_cache;
 				switch (cull) {
 					case VS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED: {
 

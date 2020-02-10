@@ -171,7 +171,7 @@ def configure(env):
             else:
                 env.Append(CCFLAGS=['-flto'])
                 env.Append(LINKFLAGS=['-flto'])
-        
+
         if not env['use_llvm']:
             env['RANLIB'] = 'gcc-ranlib'
             env['AR'] = 'gcc-ar'
@@ -232,7 +232,7 @@ def configure(env):
     if not env['builtin_enet']:
         env.ParseConfig('pkg-config libenet --cflags --libs')
 
-    if not env['builtin_squish'] and env['tools']:
+    if not env['builtin_squish']:
         env.ParseConfig('pkg-config libsquish --cflags --libs')
 
     if not env['builtin_zstd']:
@@ -329,9 +329,19 @@ def configure(env):
 
     if env["execinfo"]:
         env.Append(LIBS=['execinfo'])
-        
+
     if not env['tools']:
-        env.Append(LINKFLAGS=['-T', 'platform/x11/pck_embed.ld'])
+        import subprocess
+        import re
+        linker_version_str = subprocess.check_output([env.subst(env["LINK"]), '-Wl,--version']).decode("utf-8")
+        gnu_ld_version = re.search('^GNU ld [^$]*(\d+\.\d+)$', linker_version_str, re.MULTILINE)
+        if not gnu_ld_version:
+            print("Warning: Creating template binaries enabled for PCK embedding is currently only supported with GNU ld")
+        else:
+            if float(gnu_ld_version.group(1)) >= 2.30:
+                env.Append(LINKFLAGS=['-T', 'platform/x11/pck_embed.ld'])
+            else:
+                env.Append(LINKFLAGS=['-T', 'platform/x11/pck_embed.legacy.ld'])
 
     ## Cross-compilation
 

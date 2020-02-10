@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -188,22 +188,22 @@ template <>
 struct EditorSceneImporterAssetImportInterpolate<Quat> {
 
 	Quat lerp(const Quat &a, const Quat &b, float c) const {
-		ERR_FAIL_COND_V(!a.is_normalized(), Quat());
-		ERR_FAIL_COND_V(!b.is_normalized(), Quat());
+		ERR_FAIL_COND_V_MSG(!a.is_normalized(), Quat(), "The quaternion \"a\" must be normalized.");
+		ERR_FAIL_COND_V_MSG(!b.is_normalized(), Quat(), "The quaternion \"b\" must be normalized.");
 
 		return a.slerp(b, c).normalized();
 	}
 
 	Quat catmull_rom(const Quat &p0, const Quat &p1, const Quat &p2, const Quat &p3, float c) {
-		ERR_FAIL_COND_V(!p1.is_normalized(), Quat());
-		ERR_FAIL_COND_V(!p2.is_normalized(), Quat());
+		ERR_FAIL_COND_V_MSG(!p1.is_normalized(), Quat(), "The quaternion \"p1\" must be normalized.");
+		ERR_FAIL_COND_V_MSG(!p2.is_normalized(), Quat(), "The quaternion \"p2\" must be normalized.");
 
 		return p1.slerp(p2, c).normalized();
 	}
 
 	Quat bezier(Quat start, Quat control_1, Quat control_2, Quat end, float t) {
-		ERR_FAIL_COND_V(!start.is_normalized(), Quat());
-		ERR_FAIL_COND_V(!end.is_normalized(), Quat());
+		ERR_FAIL_COND_V_MSG(!start.is_normalized(), Quat(), "The start quaternion must be normalized.");
+		ERR_FAIL_COND_V_MSG(!end.is_normalized(), Quat(), "The end quaternion must be normalized.");
 
 		return start.slerp(end, t).normalized();
 	}
@@ -389,7 +389,7 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 				Spatial *parent_node = parent_lookup->value();
 
 				ERR_FAIL_COND_V_MSG(parent_node == NULL, state.root,
-						"Parent node invalid even though lookup successful, out of ram?")
+						"Parent node invalid even though lookup successful, out of ram?");
 
 				if (spatial != state.root) {
 					parent_node->add_child(spatial);
@@ -731,6 +731,10 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 	animation.instance();
 	animation->set_name(name);
 	animation->set_length(anim->mDuration / ticks_per_second);
+
+	if (name.begins_with("loop") || name.ends_with("loop") || name.begins_with("cycle") || name.ends_with("cycle")) {
+		animation->set_loop(true);
+	}
 
 	// generate bone stack for animation import
 	RegenerateBoneStack(state);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,7 @@ Error ImageLoader::load_image(String p_file, Ref<Image> p_image, FileAccess *p_c
 		Error err;
 		f = FileAccess::open(p_file, FileAccess::READ, &err);
 		if (!f) {
-			ERR_PRINTS("Error opening file '" + p_file + "'.");
+			ERR_PRINT("Error opening file '" + p_file + "'.");
 			return err;
 		}
 	}
@@ -66,7 +66,7 @@ Error ImageLoader::load_image(String p_file, Ref<Image> p_image, FileAccess *p_c
 			continue;
 		Error err = loader[i]->load_image(p_image, f, p_force_linear, p_scale);
 		if (err != OK) {
-			ERR_PRINTS("Error loading image: " + p_file);
+			ERR_PRINT("Error loading image: " + p_file);
 		}
 
 		if (err != ERR_FILE_UNRECOGNIZED) {

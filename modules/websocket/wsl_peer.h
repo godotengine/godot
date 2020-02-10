@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,6 +53,7 @@ public:
 		bool destroy;
 		bool valid;
 		bool is_server;
+		bool closing;
 		void *obj;
 		void *peer;
 		Ref<StreamPeer> conn;
@@ -68,6 +69,7 @@ public:
 			id = 1;
 			ctx = NULL;
 			obj = NULL;
+			closing = false;
 			peer = NULL;
 		}
 	};
@@ -107,6 +109,7 @@ public:
 	virtual WriteMode get_write_mode() const;
 	virtual void set_write_mode(WriteMode p_mode);
 	virtual bool was_string_packet() const;
+	virtual void set_no_delay(bool p_enabled);
 
 	void make_context(PeerData *p_data, unsigned int p_in_buf_size, unsigned int p_in_pkt_size, unsigned int p_out_buf_size, unsigned int p_out_pkt_size);
 	Error parse_message(const wslay_event_on_msg_recv_arg *arg);

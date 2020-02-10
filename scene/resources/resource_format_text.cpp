@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1384,7 +1384,7 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 
 			if (!p_main && (!bundle_resources) && res->get_path().length() && res->get_path().find("::") == -1) {
 				if (res->get_path() == local_path) {
-					ERR_PRINTS("Circular reference to resource being saved found: '" + local_path + "' will be null next time it's loaded.");
+					ERR_PRINT("Circular reference to resource being saved found: '" + local_path + "' will be null next time it's loaded.");
 					return;
 				}
 				int index = external_resources.size();
@@ -1457,20 +1457,6 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 		default: {
 		}
 	}
-}
-
-static String _valprop(const String &p_name) {
-
-	// Escape and quote strings with extended ASCII or further Unicode characters
-	// as well as '"', '=' or ' ' (32)
-	const CharType *cstr = p_name.c_str();
-	for (int i = 0; cstr[i]; i++) {
-		if (cstr[i] == '=' || cstr[i] == '"' || cstr[i] < 33 || cstr[i] > 126) {
-			return "\"" + p_name.c_escape_multiline() + "\"";
-		}
-	}
-	// Keep as is
-	return p_name;
 }
 
 Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
@@ -1675,7 +1661,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 
 				String vars;
 				VariantWriter::write_to_string(value, vars, _write_resources, this);
-				f->store_string(_valprop(name) + " = " + vars + "\n");
+				f->store_string(name.property_name_encode() + " = " + vars + "\n");
 			}
 		}
 
@@ -1747,7 +1733,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 				String vars;
 				VariantWriter::write_to_string(state->get_node_property_value(i, j), vars, _write_resources, this);
 
-				f->store_string(_valprop(String(state->get_node_property_name(i, j))) + " = " + vars + "\n");
+				f->store_string(String(state->get_node_property_name(i, j)).property_name_encode() + " = " + vars + "\n");
 			}
 
 			if (i < state->get_node_count() - 1)

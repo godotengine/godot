@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -242,7 +242,7 @@ Vector2 Vector2::linear_interpolate(const Vector2 &p_b, real_t p_t) const {
 
 Vector2 Vector2::slerp(const Vector2 &p_b, real_t p_t) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(!is_normalized(), Vector2());
+	ERR_FAIL_COND_V_MSG(!is_normalized(), Vector2(), "The start Vector2 must be normalized.");
 #endif
 	real_t theta = angle_to(p_b);
 	return rotated(theta * p_t);

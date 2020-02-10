@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -188,7 +188,7 @@ int OS::get_process_id() const {
 
 void OS::vibrate_handheld(int p_duration_ms) {
 
-	WARN_PRINTS("vibrate_handheld() only works with Android and iOS");
+	WARN_PRINT("vibrate_handheld() only works with Android and iOS");
 }
 
 bool OS::is_stdout_verbose() const {
@@ -221,7 +221,7 @@ bool OS::has_virtual_keyboard() const {
 	return false;
 }
 
-void OS::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect) {
+void OS::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_input_length) {
 }
 
 void OS::hide_virtual_keyboard() {
@@ -342,6 +342,12 @@ String OS::get_cache_path() const {
 
 	return ".";
 }
+
+// Path to macOS .app bundle resources
+String OS::get_bundle_resource_dir() const {
+
+	return ".";
+};
 
 // OS specific path for user://
 String OS::get_user_data_dir() const {

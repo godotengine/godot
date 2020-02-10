@@ -23,6 +23,7 @@ precision highp int;
 
 #ifdef USE_SOURCE_PANORAMA
 uniform sampler2D source_panorama; //texunit:0
+uniform float source_resolution;
 #endif
 
 #ifdef USE_SOURCE_DUAL_PARABOLOID_ARRAY
@@ -44,7 +45,6 @@ uniform samplerCube source_cube; //texunit:0
 
 uniform int face_id;
 uniform float roughness;
-uniform float source_resolution;
 
 in highp vec2 uv_interp;
 
@@ -183,12 +183,12 @@ vec2 Hammersley(uint i, uint N) {
 #ifdef LOW_QUALITY
 
 #define SAMPLE_COUNT 64u
-#define SAMPLE_DELTA 0.05
+#define SAMPLE_DELTA 0.1
 
 #else
 
 #define SAMPLE_COUNT 512u
-#define SAMPLE_DELTA 0.01
+#define SAMPLE_DELTA 0.03
 
 #endif
 
@@ -309,7 +309,7 @@ void main() {
 			}
 			st /= vec2(M_PI * 2.0, M_PI);
 
-			irradiance += texture(source_panorama, st, source_mip_level).rgb * cos(theta) * sin(theta);
+			irradiance += textureLod(source_panorama, st, source_mip_level).rgb * cos(theta) * sin(theta);
 			num_samples++;
 		}
 	}
@@ -332,6 +332,7 @@ void main() {
 
 		if (ndotl > 0.0) {
 
+#ifdef USE_SOURCE_PANORAMA
 			float D = DistributionGGX(N, H, roughness);
 			float ndoth = max(dot(N, H), 0.0);
 			float hdotv = max(dot(H, V), 0.0);
@@ -342,17 +343,14 @@ void main() {
 
 			float mipLevel = roughness == 0.0 ? 0.0 : 0.5 * log2(saSample / saTexel);
 
-#ifdef USE_SOURCE_PANORAMA
 			sum.rgb += texturePanorama(L, source_panorama, mipLevel).rgb * ndotl;
 #endif
 
 #ifdef USE_SOURCE_DUAL_PARABOLOID_ARRAY
-
 			sum.rgb += textureDualParaboloidArray(L).rgb * ndotl;
 #endif
 
 #ifdef USE_SOURCE_DUAL_PARABOLOID
-
 			sum.rgb += textureDualParaboloid(L).rgb * ndotl;
 #endif
 

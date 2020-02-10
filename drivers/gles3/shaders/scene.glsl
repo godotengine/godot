@@ -432,6 +432,8 @@ void main() {
 	}
 #endif
 
+	float point_size = 1.0;
+
 	highp mat4 modelview = camera_inverse_matrix * world_matrix;
 	{
 		/* clang-format off */
@@ -440,6 +442,8 @@ VERTEX_SHADER_CODE
 
 		/* clang-format on */
 	}
+
+	gl_PointSize = point_size;
 
 // using local coordinates (default)
 #if !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
@@ -893,18 +897,22 @@ float contact_shadow_compute(vec3 pos, vec3 dir, float max_distance) {
 		bias += incr * 2.0;
 
 		vec3 uv_depth = (source.xyz / source.w) * 0.5 + 0.5;
-		float depth = texture(depth_buffer, uv_depth.xy).r;
+		if (uv_depth.x > 0.0 && uv_depth.x < 1.0 && uv_depth.y > 0.0 && uv_depth.y < 1.0) {
+			float depth = texture(depth_buffer, uv_depth.xy).r;
 
-		if (depth < uv_depth.z) {
-			if (depth > (bias.z / bias.w) * 0.5 + 0.5) {
-				return min(pow(ratio, 4.0), 1.0);
-			} else {
-				return 1.0;
+			if (depth < uv_depth.z) {
+				if (depth > (bias.z / bias.w) * 0.5 + 0.5) {
+					return min(pow(ratio, 4.0), 1.0);
+				} else {
+					return 1.0;
+				}
 			}
-		}
 
-		ratio += ratio_incr;
-		steps -= 1.0;
+			ratio += ratio_incr;
+			steps -= 1.0;
+		} else {
+			return 1.0;
+		}
 	}
 
 	return 1.0;
@@ -1216,41 +1224,17 @@ in highp float dp_clip;
 
 #endif
 
-#if 0
-// need to save texture depth for this
-vec3 light_transmittance(float translucency,vec3 light_vec, vec3 normal, vec3 pos, float distance) {
-
-	float scale = 8.25 * (1.0 - translucency) / subsurface_scatter_width;
-	float d = scale * distance;
-
-	/**
-	* Armed with the thickness, we can now calculate the color by means of the
-	* precalculated transmittance profile.
-	* (It can be precomputed into a texture, for maximum performance):
-	*/
-	float dd = -d * d;
-	vec3 profile =
-			vec3(0.233, 0.455, 0.649) * exp(dd / 0.0064) +
-			vec3(0.1,   0.336, 0.344) * exp(dd / 0.0484) +
-			vec3(0.118, 0.198, 0.0)   * exp(dd / 0.187)  +
-			vec3(0.113, 0.007, 0.007) * exp(dd / 0.567)  +
-			vec3(0.358, 0.004, 0.0)   * exp(dd / 1.99)   +
-			vec3(0.078, 0.0,   0.0)   * exp(dd / 7.41);
-
-	/**
-	* Using the profile, we finally approximate the transmitted lighting from
-	* the back of the object:
-	*/
-	return profile * clamp(0.3 + dot(light_vec, normal),0.0,1.0);
-}
-#endif
-
 void light_process_omni(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 binormal, vec3 tangent, vec3 albedo, vec3 transmission, float roughness, float metallic, float specular, float rim, float rim_tint, float clearcoat, float clearcoat_gloss, float anisotropy, float p_blob_intensity, inout vec3 diffuse_light, inout vec3 specular_light, inout float alpha) {
 
 	vec3 light_rel_vec = omni_lights[idx].light_pos_inv_radius.xyz - vertex;
 	float light_length = length(light_rel_vec);
 	float normalized_distance = light_length * omni_lights[idx].light_pos_inv_radius.w;
-	float omni_attenuation = pow(max(1.0 - normalized_distance, 0.0), omni_lights[idx].light_direction_attenuation.w);
+	float omni_attenuation;
+	if (normalized_distance < 1.0) {
+		omni_attenuation = pow(1.0 - normalized_distance, omni_lights[idx].light_direction_attenuation.w);
+	} else {
+		omni_attenuation = 0.0;
+	}
 	vec3 light_attenuation = vec3(omni_attenuation);
 
 #if !defined(SHADOWS_DISABLED)
@@ -1309,7 +1293,12 @@ void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 	vec3 light_rel_vec = spot_lights[idx].light_pos_inv_radius.xyz - vertex;
 	float light_length = length(light_rel_vec);
 	float normalized_distance = light_length * spot_lights[idx].light_pos_inv_radius.w;
-	float spot_attenuation = pow(max(1.0 - normalized_distance, 0.001), spot_lights[idx].light_direction_attenuation.w);
+	float spot_attenuation;
+	if (normalized_distance < 1.0) {
+		spot_attenuation = pow(1.0 - normalized_distance, spot_lights[idx].light_direction_attenuation.w);
+	} else {
+		spot_attenuation = 0.0;
+	}
 	vec3 spot_dir = spot_lights[idx].light_direction_attenuation.xyz;
 	float spot_cutoff = spot_lights[idx].light_params.y;
 	float scos = max(dot(-normalize(light_rel_vec), spot_dir), spot_cutoff);

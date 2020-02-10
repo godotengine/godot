@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -78,6 +78,8 @@ void AudioDriverPulseAudio::pa_source_info_cb(pa_context *c, const pa_source_inf
 }
 
 void AudioDriverPulseAudio::pa_server_info_cb(pa_context *c, const pa_server_info *i, void *userdata) {
+
+	ERR_FAIL_COND_MSG(!i, "PulseAudio server info is null.");
 	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
 
 	ad->capture_default_device = i->default_source_name;
@@ -174,7 +176,7 @@ Error AudioDriverPulseAudio::init_device() {
 			break;
 
 		default:
-			WARN_PRINTS("PulseAudio: Unsupported number of channels: " + itos(pa_map.channels));
+			WARN_PRINT("PulseAudio: Unsupported number of channels: " + itos(pa_map.channels));
 			pa_channel_map_init_stereo(&pa_map);
 			channels = 2;
 			break;
@@ -202,7 +204,7 @@ Error AudioDriverPulseAudio::init_device() {
 
 	pa_str = pa_stream_new(pa_ctx, "Sound", &spec, &pa_map);
 	if (pa_str == NULL) {
-		ERR_PRINTS("PulseAudio: pa_stream_new error: " + String(pa_strerror(pa_context_errno(pa_ctx))));
+		ERR_PRINT("PulseAudio: pa_stream_new error: " + String(pa_strerror(pa_context_errno(pa_ctx))));
 		ERR_FAIL_V(ERR_CANT_OPEN);
 	}
 
@@ -227,8 +229,8 @@ Error AudioDriverPulseAudio::init_device() {
 	samples_out.resize(pa_buffer_size);
 
 	// Reset audio input to keep synchronisation.
-	capture_position = 0;
-	capture_size = 0;
+	input_position = 0;
+	input_size = 0;
 
 	return OK;
 }
@@ -386,7 +388,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 				const void *ptr = ad->samples_out.ptr();
 				ret = pa_stream_write(ad->pa_str, (char *)ptr + write_ofs, bytes_to_write, NULL, 0LL, PA_SEEK_RELATIVE);
 				if (ret != 0) {
-					ERR_PRINTS("PulseAudio: pa_stream_write error: " + String(pa_strerror(ret)));
+					ERR_PRINT("PulseAudio: pa_stream_write error: " + String(pa_strerror(ret)));
 				} else {
 					avail_bytes -= bytes_to_write;
 					write_ofs += bytes_to_write;
@@ -463,7 +465,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 			size_t bytes = pa_stream_readable_size(ad->pa_rec_str);
 			if (bytes > 0) {
 				const void *ptr = NULL;
-				size_t maxbytes = ad->capture_buffer.size() * sizeof(int16_t);
+				size_t maxbytes = ad->input_buffer.size() * sizeof(int16_t);
 
 				bytes = MIN(bytes, maxbytes);
 				ret = pa_stream_peek(ad->pa_rec_str, &ptr, &bytes);
@@ -473,11 +475,11 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 					int16_t *srcptr = (int16_t *)ptr;
 					for (size_t i = bytes >> 1; i > 0; i--) {
 						int32_t sample = int32_t(*srcptr++) << 16;
-						ad->capture_buffer_write(sample);
+						ad->input_buffer_write(sample);
 
 						if (ad->pa_rec_map.channels == 1) {
-							// In case capture device is single channel convert it to Stereo
-							ad->capture_buffer_write(sample);
+							// In case input device is single channel convert it to Stereo
+							ad->input_buffer_write(sample);
 						}
 					}
 
@@ -664,7 +666,7 @@ Error AudioDriverPulseAudio::capture_init_device() {
 			break;
 
 		default:
-			WARN_PRINTS("PulseAudio: Unsupported number of capture channels: " + itos(pa_rec_map.channels));
+			WARN_PRINT("PulseAudio: Unsupported number of input channels: " + itos(pa_rec_map.channels));
 			pa_channel_map_init_stereo(&pa_rec_map);
 			break;
 	}
@@ -684,7 +686,7 @@ Error AudioDriverPulseAudio::capture_init_device() {
 
 	pa_rec_str = pa_stream_new(pa_ctx, "Record", &spec, &pa_rec_map);
 	if (pa_rec_str == NULL) {
-		ERR_PRINTS("PulseAudio: pa_stream_new error: " + String(pa_strerror(pa_context_errno(pa_ctx))));
+		ERR_PRINT("PulseAudio: pa_stream_new error: " + String(pa_strerror(pa_context_errno(pa_ctx))));
 		ERR_FAIL_V(ERR_CANT_OPEN);
 	}
 
@@ -692,14 +694,14 @@ Error AudioDriverPulseAudio::capture_init_device() {
 	pa_stream_flags flags = pa_stream_flags(PA_STREAM_INTERPOLATE_TIMING | PA_STREAM_ADJUST_LATENCY | PA_STREAM_AUTO_TIMING_UPDATE);
 	int error_code = pa_stream_connect_record(pa_rec_str, dev, &attr, flags);
 	if (error_code < 0) {
-		ERR_PRINTS("PulseAudio: pa_stream_connect_record error: " + String(pa_strerror(error_code)));
+		ERR_PRINT("PulseAudio: pa_stream_connect_record error: " + String(pa_strerror(error_code)));
 		ERR_FAIL_V(ERR_CANT_OPEN);
 	}
 
-	capture_buffer_init(input_buffer_frames);
+	input_buffer_init(input_buffer_frames);
 
-	print_verbose("PulseAudio: detected " + itos(pa_rec_map.channels) + " capture channels");
-	print_verbose("PulseAudio: capture buffer frames: " + itos(input_buffer_frames) + " calculated latency: " + itos(input_buffer_frames * 1000 / mix_rate) + "ms");
+	print_verbose("PulseAudio: detected " + itos(pa_rec_map.channels) + " input channels");
+	print_verbose("PulseAudio: input buffer frames: " + itos(input_buffer_frames) + " calculated latency: " + itos(input_buffer_frames * 1000 / mix_rate) + "ms");
 
 	return OK;
 }
@@ -709,7 +711,7 @@ void AudioDriverPulseAudio::capture_finish_device() {
 	if (pa_rec_str) {
 		int ret = pa_stream_disconnect(pa_rec_str);
 		if (ret != 0) {
-			ERR_PRINTS("PulseAudio: pa_stream_disconnect error: " + String(pa_strerror(ret)));
+			ERR_PRINT("PulseAudio: pa_stream_disconnect error: " + String(pa_strerror(ret)));
 		}
 		pa_stream_unref(pa_rec_str);
 		pa_rec_str = NULL;

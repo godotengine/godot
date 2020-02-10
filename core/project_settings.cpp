@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -107,6 +107,10 @@ String ProjectSettings::localize_path(const String &p_path) const {
 		if (plocal == "") {
 			return "";
 		};
+		// Only strip the starting '/' from 'path' if its parent ('plocal') ends with '/'
+		if (plocal[plocal.length() - 1] == '/') {
+			sep += 1;
+		}
 		return plocal + path.substr(sep, path.size() - sep);
 	};
 }
@@ -202,7 +206,7 @@ bool ProjectSettings::_get(const StringName &p_name, Variant &r_ret) const {
 		name = feature_overrides[name];
 	}
 	if (!props.has(name)) {
-		WARN_PRINTS("Property not found: " + String(name));
+		WARN_PRINT("Property not found: " + String(name));
 		return false;
 	}
 	r_ret = props[name].variant;
@@ -379,8 +383,16 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			}
 		}
 
-		// Attempt with PCK bundled into executable
+#ifdef OSX_ENABLED
+		// Attempt to load PCK from macOS .app bundle resources
+		if (!found) {
+			if (_load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().plus_file(exec_basename + ".pck"))) {
+				found = true;
+			}
+		}
+#endif
 
+		// Attempt with PCK bundled into executable
 		if (!found) {
 			if (_load_resource_pack(exec_path)) {
 				found = true;
@@ -567,7 +579,7 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 			_convert_to_last_version(config_version);
 			return OK;
 		} else if (err != OK) {
-			ERR_PRINTS("Error parsing " + p_path + " at line " + itos(lines) + ": " + error_text + " File might be corrupted.");
+			ERR_PRINT("Error parsing " + p_path + " at line " + itos(lines) + ": " + error_text + " File might be corrupted.");
 			memdelete(f);
 			return err;
 		}
@@ -600,7 +612,7 @@ Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, 
 		return OK;
 	} else if (err_text != ERR_FILE_NOT_FOUND) {
 		// If the text-based file exists but can't be loaded, we want to know it
-		ERR_PRINTS("Couldn't load file '" + p_text_path + "', error code " + itos(err_text) + ".");
+		ERR_PRINT("Couldn't load file '" + p_text_path + "', error code " + itos(err_text) + ".");
 		return err_text;
 	}
 
@@ -769,10 +781,7 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 
 			String vstr;
 			VariantWriter::write_to_string(value, vstr);
-			if (F->get().find(" ") != -1)
-				file->store_string(F->get().quote() + "=" + vstr + "\n");
-			else
-				file->store_string(F->get() + "=" + vstr + "\n");
+			file->store_string(F->get().property_name_encode() + "=" + vstr + "\n");
 		}
 	}
 

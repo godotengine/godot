@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,9 +35,11 @@
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "editor/editor_inspector.h"
+#include "editor/editor_scale.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
+#include "scene/gui/progress_bar.h"
 #include "scene/main/viewport.h"
 
 void AnimationNodeBlendTreeEditor::add_custom_type(const String &p_name, const Ref<Script> &p_script) {
@@ -145,7 +147,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			node->add_child(name);
 			node->set_slot(0, false, 0, Color(), true, 0, get_color("font_color", "Label"));
 			name->connect("text_entered", this, "_node_renamed", varray(agnode));
-			name->connect("focus_exited", this, "_node_renamed_focus_out", varray(name, agnode));
+			name->connect("focus_exited", this, "_node_renamed_focus_out", varray(name, agnode), CONNECT_DEFERRED);
 			base = 1;
 			node->set_show_close_button(true);
 			node->connect("close_request", this, "_delete_request", varray(E->get()), CONNECT_DEFERRED);

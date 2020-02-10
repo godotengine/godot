@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,8 @@
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 
-#ifdef GDSCRIPT_ENABLED
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_GDSCRIPT_ENABLED
 
 #include "modules/gdscript/gdscript.h"
 #include "modules/gdscript/gdscript_compiler.h"
@@ -671,6 +672,30 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 					incr += 2;
 
 				} break;
+				case GDScriptFunction::OPCODE_ASSIGN_TYPED_BUILTIN: {
+
+					txt += " assign typed builtin (";
+					txt += Variant::get_type_name((Variant::Type)code[ip + 1]);
+					txt += ") ";
+					txt += DADDR(2);
+					txt += " = ";
+					txt += DADDR(3);
+					incr += 4;
+
+				} break;
+				case GDScriptFunction::OPCODE_ASSIGN_TYPED_NATIVE: {
+					Variant className = func.get_constant(code[ip + 1]);
+					GDScriptNativeClass *nc = Object::cast_to<GDScriptNativeClass>(className.operator Object *());
+
+					txt += " assign typed native (";
+					txt += nc->get_name().operator String();
+					txt += ") ";
+					txt += DADDR(2);
+					txt += " = ";
+					txt += DADDR(3);
+					incr += 4;
+
+				} break;
 				case GDScriptFunction::OPCODE_CAST_TO_SCRIPT: {
 
 					txt += " cast ";
@@ -1067,7 +1092,7 @@ MainLoop *test(TestType p_type) {
 namespace TestGDScript {
 
 MainLoop *test(TestType p_type) {
-
+	ERR_PRINT("The GDScript module is disabled, therefore GDScript tests cannot be used.");
 	return NULL;
 }
 } // namespace TestGDScript

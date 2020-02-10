@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,10 +57,10 @@
 
 // <--------------- Joint creation asserts
 /// Assert the body is assigned to a space
-#define JointAssertSpace(body, bIndex, ret)                                                           \
-	if (!body->get_space()) {                                                                         \
-		ERR_PRINTS("Before create a joint the Body" + String(bIndex) + " must be added to a space!"); \
-		return ret;                                                                                   \
+#define JointAssertSpace(body, bIndex, ret)                                                          \
+	if (!body->get_space()) {                                                                        \
+		ERR_PRINT("Before create a joint the Body" + String(bIndex) + " must be added to a space!"); \
+		return ret;                                                                                  \
 	}
 
 /// Assert the two bodies of joint are in the same space

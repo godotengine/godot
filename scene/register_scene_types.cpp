@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,6 +50,8 @@
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/multimesh_instance_2d.h"
 #include "scene/2d/navigation_2d.h"
+#include "scene/2d/navigation_agent_2d.h"
+#include "scene/2d/navigation_obstacle_2d.h"
 #include "scene/2d/parallax_background.h"
 #include "scene/2d/parallax_layer.h"
 #include "scene/2d/particles_2d.h"
@@ -71,7 +73,6 @@
 #include "scene/animation/animation_node_state_machine.h"
 #include "scene/animation/animation_player.h"
 #include "scene/animation/animation_tree.h"
-#include "scene/animation/animation_tree_player.h"
 #include "scene/animation/root_motion_view.h"
 #include "scene/animation/tween.h"
 #include "scene/audio/audio_stream_player.h"
@@ -145,6 +146,7 @@
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/mesh_data_tool.h"
+#include "scene/resources/navigation_mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/particles_material.h"
 #include "scene/resources/physics_material.h"
@@ -168,9 +170,6 @@
 #include "scene/resources/world_2d.h"
 #include "scene/scene_string_names.h"
 
-#include "scene/3d/spatial.h"
-#include "scene/3d/world_environment.h"
-
 #ifndef _3D_DISABLED
 #include "scene/3d/area.h"
 #include "scene/3d/arvr_nodes.h"
@@ -189,24 +188,26 @@
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/multimesh_instance.h"
 #include "scene/3d/navigation.h"
-#include "scene/3d/navigation_mesh.h"
+#include "scene/3d/navigation_agent.h"
+#include "scene/3d/navigation_mesh_instance.h"
+#include "scene/3d/navigation_obstacle.h"
 #include "scene/3d/particles.h"
 #include "scene/3d/path.h"
 #include "scene/3d/physics_body.h"
 #include "scene/3d/physics_joint.h"
-#include "scene/3d/portal.h"
 #include "scene/3d/position_3d.h"
 #include "scene/3d/proximity_group.h"
 #include "scene/3d/ray_cast.h"
 #include "scene/3d/reflection_probe.h"
 #include "scene/3d/remote_transform.h"
-#include "scene/3d/room_instance.h"
 #include "scene/3d/skeleton.h"
 #include "scene/3d/soft_body.h"
+#include "scene/3d/spatial.h"
 #include "scene/3d/spring_arm.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/3d/vehicle_body.h"
 #include "scene/3d/visibility_notifier.h"
+#include "scene/3d/world_environment.h"
 #include "scene/animation/skeleton_ik.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/mesh_library.h"
@@ -372,6 +373,27 @@ void register_scene_types() {
 	ClassDB::register_class<AnimationPlayer>();
 	ClassDB::register_class<Tween>();
 
+	ClassDB::register_class<AnimationTree>();
+	ClassDB::register_class<AnimationNode>();
+	ClassDB::register_class<AnimationRootNode>();
+	ClassDB::register_class<AnimationNodeBlendTree>();
+	ClassDB::register_class<AnimationNodeBlendSpace1D>();
+	ClassDB::register_class<AnimationNodeBlendSpace2D>();
+	ClassDB::register_class<AnimationNodeStateMachine>();
+	ClassDB::register_class<AnimationNodeStateMachinePlayback>();
+
+	ClassDB::register_class<AnimationNodeStateMachineTransition>();
+	ClassDB::register_class<AnimationNodeOutput>();
+	ClassDB::register_class<AnimationNodeOneShot>();
+	ClassDB::register_class<AnimationNodeAnimation>();
+	ClassDB::register_class<AnimationNodeAdd2>();
+	ClassDB::register_class<AnimationNodeAdd3>();
+	ClassDB::register_class<AnimationNodeBlend2>();
+	ClassDB::register_class<AnimationNodeBlend3>();
+	ClassDB::register_class<AnimationNodeTimeScale>();
+	ClassDB::register_class<AnimationNodeTimeSeek>();
+	ClassDB::register_class<AnimationNodeTransition>();
+
 	OS::get_singleton()->yield(); //may take time to init
 
 #ifndef _3D_DISABLED
@@ -399,37 +421,12 @@ void register_scene_types() {
 	ClassDB::register_class<GIProbeData>();
 	ClassDB::register_class<BakedLightmap>();
 	ClassDB::register_class<BakedLightmapData>();
-	ClassDB::register_class<AnimationTreePlayer>();
 	ClassDB::register_class<Particles>();
 	ClassDB::register_class<CPUParticles>();
 	ClassDB::register_class<Position3D>();
-	ClassDB::register_class<NavigationMeshInstance>();
-	ClassDB::register_class<NavigationMesh>();
-	ClassDB::register_class<Navigation>();
 
 	ClassDB::register_class<RootMotionView>();
 	ClassDB::set_class_enabled("RootMotionView", false); //disabled by default, enabled by editor
-
-	ClassDB::register_class<AnimationTree>();
-	ClassDB::register_class<AnimationNode>();
-	ClassDB::register_class<AnimationRootNode>();
-	ClassDB::register_class<AnimationNodeBlendTree>();
-	ClassDB::register_class<AnimationNodeBlendSpace1D>();
-	ClassDB::register_class<AnimationNodeBlendSpace2D>();
-	ClassDB::register_class<AnimationNodeStateMachine>();
-	ClassDB::register_class<AnimationNodeStateMachinePlayback>();
-
-	ClassDB::register_class<AnimationNodeStateMachineTransition>();
-	ClassDB::register_class<AnimationNodeOutput>();
-	ClassDB::register_class<AnimationNodeOneShot>();
-	ClassDB::register_class<AnimationNodeAnimation>();
-	ClassDB::register_class<AnimationNodeAdd2>();
-	ClassDB::register_class<AnimationNodeAdd3>();
-	ClassDB::register_class<AnimationNodeBlend2>();
-	ClassDB::register_class<AnimationNodeBlend3>();
-	ClassDB::register_class<AnimationNodeTimeScale>();
-	ClassDB::register_class<AnimationNodeTimeSeek>();
-	ClassDB::register_class<AnimationNodeTransition>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -471,9 +468,15 @@ void register_scene_types() {
 	ClassDB::register_class<ConeTwistJoint>();
 	ClassDB::register_class<Generic6DOFJoint>();
 
+	ClassDB::register_class<Navigation>();
+	ClassDB::register_class<NavigationMeshInstance>();
+	ClassDB::register_class<NavigationAgent>();
+	ClassDB::register_class<NavigationObstacle>();
+
 	OS::get_singleton()->yield(); //may take time to init
 
 #endif
+	ClassDB::register_class<NavigationMesh>();
 
 	AcceptDialog::set_swap_ok_cancel(GLOBAL_DEF("gui/common/swap_ok_cancel", bool(OS::get_singleton()->get_swap_ok_cancel())));
 
@@ -715,6 +718,8 @@ void register_scene_types() {
 	ClassDB::register_class<Navigation2D>();
 	ClassDB::register_class<NavigationPolygon>();
 	ClassDB::register_class<NavigationPolygonInstance>();
+	ClassDB::register_class<NavigationAgent2D>();
+	ClassDB::register_class<NavigationObstacle2D>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -728,7 +733,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("ImageSkyBox", "PanoramaSky");
 	ClassDB::add_compatibility_class("FixedSpatialMaterial", "SpatialMaterial");
 	ClassDB::add_compatibility_class("Mesh", "ArrayMesh");
-
+	ClassDB::add_compatibility_class("AnimationTreePlayer", "AnimationTree");
 #endif
 
 	OS::get_singleton()->yield(); //may take time to init
@@ -751,7 +756,7 @@ void register_scene_types() {
 	if (font_path != String()) {
 		font = ResourceLoader::load(font_path);
 		if (!font.is_valid()) {
-			ERR_PRINTS("Error loading custom font '" + font_path + "'");
+			ERR_PRINT("Error loading custom font '" + font_path + "'");
 		}
 	}
 
@@ -766,7 +771,7 @@ void register_scene_types() {
 				Theme::set_default_font(font);
 			}
 		} else {
-			ERR_PRINTS("Error loading custom theme '" + theme_path + "'");
+			ERR_PRINT("Error loading custom theme '" + theme_path + "'");
 		}
 	}
 }

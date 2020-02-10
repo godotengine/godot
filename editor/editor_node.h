@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,66 +31,59 @@
 #ifndef EDITOR_NODE_H
 #define EDITOR_NODE_H
 
-#include "core/print_string.h"
-#include "editor/audio_stream_preview.h"
-#include "editor/connections_dialog.h"
-#include "editor/create_dialog.h"
-#include "editor/editor_about.h"
 #include "editor/editor_data.h"
-#include "editor/editor_export.h"
-#include "editor/editor_feature_profile.h"
 #include "editor/editor_folding.h"
-#include "editor/editor_inspector.h"
-#include "editor/editor_layouts_dialog.h"
-#include "editor/editor_log.h"
-#include "editor/editor_plugin.h"
-#include "editor/editor_resource_preview.h"
 #include "editor/editor_run.h"
-#include "editor/editor_run_native.h"
-#include "editor/editor_run_script.h"
-#include "editor/editor_scale.h"
-#include "editor/editor_sub_scene.h"
-#include "editor/export_template_manager.h"
-#include "editor/fileserver/editor_file_server.h"
-#include "editor/filesystem_dock.h"
-#include "editor/groups_editor.h"
-#include "editor/import_dock.h"
 #include "editor/inspector_dock.h"
-#include "editor/node_dock.h"
-#include "editor/pane_drag.h"
-#include "editor/plugin_config_dialog.h"
-#include "editor/progress_dialog.h"
-#include "editor/project_export.h"
-#include "editor/project_settings_editor.h"
 #include "editor/property_editor.h"
-#include "editor/quick_open.h"
-#include "editor/reparent_dialog.h"
-#include "editor/run_settings_dialog.h"
 #include "editor/scene_tree_dock.h"
-#include "editor/scene_tree_editor.h"
-#include "editor/script_create_dialog.h"
-#include "editor/settings_config_dialog.h"
-#include "scene/gui/center_container.h"
-#include "scene/gui/control.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/file_dialog.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/panel.h"
-#include "scene/gui/panel_container.h"
-#include "scene/gui/separator.h"
-#include "scene/gui/split_container.h"
-#include "scene/gui/tab_container.h"
-#include "scene/gui/tabs.h"
-#include "scene/gui/texture_progress.h"
-#include "scene/gui/tool_button.h"
-#include "scene/gui/tree.h"
-#include "scene/gui/viewport_container.h"
 
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
 typedef bool (*EditorBuildCallback)();
 
+class AcceptDialog;
+class AudioStreamPreviewGenerator;
+class BackgroundProgress;
+class CenterContainer;
+class ConfirmationDialog;
+class Control;
+class DependencyEditor;
+class DependencyErrorDialog;
+class EditorAbout;
+class EditorExport;
+class EditorFeatureProfileManager;
+class EditorFileServer;
+class EditorInspector;
+class EditorLayoutsDialog;
+class EditorLog;
+class EditorPlugin;
 class EditorPluginList;
+class EditorQuickOpen;
+class EditorResourcePreview;
+class EditorRunNative;
+class EditorSettingsDialog;
+class ExportTemplateManager;
+class FileSystemDock;
+class HSplitContainer;
+class ImportDock;
+class MenuButton;
+class NodeDock;
+class OrphanResourcesDialog;
+class PaneDrag;
+class Panel;
+class PanelContainer;
+class PluginConfigDialog;
+class ProgressDialog;
+class ProjectExportDialog;
+class ProjectSettingsEditor;
+class RunSettingsDialog;
+class ScriptCreateDialog;
+class TabContainer;
+class Tabs;
+class TextureProgress;
+class ToolButton;
+class VSplitContainer;
 
 class EditorNode : public Node {
 
@@ -332,18 +325,13 @@ private:
 	ExportTemplateManager *export_template_manager;
 	EditorFeatureProfileManager *feature_profile_manager;
 	EditorFileDialog *file_templates;
-	EditorFileDialog *file_export;
 	EditorFileDialog *file_export_lib;
 	EditorFileDialog *file_script;
 	CheckBox *file_export_lib_merge;
-	LineEdit *file_export_password;
 	String current_path;
 	MenuButton *update_spinner;
 
 	String defer_load_scene;
-	String defer_export;
-	String defer_export_platform;
-	bool defer_export_debug;
 	Node *_last_instanced_scene;
 
 	EditorLog *log;
@@ -570,11 +558,10 @@ private:
 		String preset;
 		String path;
 		bool debug;
-		String password;
-
+		bool pack_only;
 	} export_defer;
 
-	bool disable_progress_dialog;
+	bool cmdline_export_mode;
 
 	static EditorNode *singleton;
 
@@ -789,11 +776,11 @@ public:
 	Ref<Texture> get_class_icon(const String &p_class, const String &p_fallback = "Object") const;
 
 	void show_accept(const String &p_text, const String &p_title);
-	void show_warning(const String &p_text, const String &p_title = "Warning!");
+	void show_warning(const String &p_text, const String &p_title = TTR("Warning!"));
 
 	void _copy_warning(const String &p_str);
 
-	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, const String &p_password, bool p_quit_after = false);
+	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only);
 
 	static void register_editor_types();
 	static void unregister_editor_types();

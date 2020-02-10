@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -82,6 +82,10 @@ Rect2 SegmentShape2D::get_rect() const {
 	return rect;
 }
 
+real_t SegmentShape2D::get_enclosing_radius() const {
+	return (a + b).length();
+}
+
 void SegmentShape2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_a", "a"), &SegmentShape2D::set_a);
@@ -136,6 +140,10 @@ Rect2 RayShape2D::get_rect() const {
 	rect.expand_to(Vector2(0, length));
 	rect = rect.grow(Math_SQRT12 * 4);
 	return rect;
+}
+
+real_t RayShape2D::get_enclosing_radius() const {
+	return length;
 }
 
 void RayShape2D::_bind_methods() {

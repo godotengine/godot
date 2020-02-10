@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1834,7 +1834,7 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 		glGenFramebuffers(1, &tmp_fb);
 		glBindFramebuffer(GL_FRAMEBUFFER, tmp_fb);
 
-		int size = 64;
+		int size = 32;
 
 		bool use_float = config.framebuffer_half_float_supported;
 
@@ -1854,6 +1854,27 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sky->irradiance, 0);
 
+		int irradiance_size = GLOBAL_GET("rendering/quality/reflections/irradiance_max_size");
+		int upscale_size = MIN(int(previous_power_of_2(irradiance_size)), p_radiance_size);
+
+		GLuint tmp_fb2;
+		GLuint tmp_tex;
+		{
+			//generate another one for rendering, as can't read and write from a single texarray it seems
+			glGenFramebuffers(1, &tmp_fb2);
+			glBindFramebuffer(GL_FRAMEBUFFER, tmp_fb2);
+			glGenTextures(1, &tmp_tex);
+			glBindTexture(GL_TEXTURE_2D, tmp_tex);
+			glTexImage2D(GL_TEXTURE_2D, 0, internal_format, upscale_size, 2.0 * upscale_size, 0, format, type, NULL);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tmp_tex, 0);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+#ifdef DEBUG_ENABLED
+			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+			ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
+#endif
+		}
+
 		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DUAL_PARABOLOID, true);
 		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_PANORAMA, true);
 		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::COMPUTE_IRRADIANCE, true);
@@ -1863,8 +1884,9 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 		// level that corresponds to a panorama of 1024x512
 		shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::SOURCE_MIP_LEVEL, MAX(Math::floor(Math::log(float(texture->width)) / Math::log(2.0f)) - 10.0f, 0.0f));
 
+		// Compute Irradiance for a large texture, specified by radiance size and then pull out a low mipmap corresponding to 32x32
 		for (int i = 0; i < 2; i++) {
-			glViewport(0, i * size, size, size);
+			glViewport(0, i * upscale_size, upscale_size, upscale_size);
 			glBindVertexArray(resources.quadie_array);
 
 			shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::Z_FLIP, i > 0);
@@ -1872,13 +1894,32 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 			glBindVertexArray(0);
 		}
+		glGenerateMipmap(GL_TEXTURE_2D);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, tmp_tex);
+		glBindFramebuffer(GL_FRAMEBUFFER, tmp_fb);
 
 		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DUAL_PARABOLOID, false);
 		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_PANORAMA, false);
 		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::COMPUTE_IRRADIANCE, false);
 
+		shaders.copy.set_conditional(CopyShaderGLES3::USE_LOD, true);
+		shaders.copy.bind();
+		shaders.copy.set_uniform(CopyShaderGLES3::MIP_LEVEL, MAX(Math::floor(Math::log(float(upscale_size)) / Math::log(2.0f)) - 5.0f, 0.0f)); // Mip level that corresponds to a 32x32 texture
+
+		glViewport(0, 0, size, size * 2.0);
+		glBindVertexArray(resources.quadie_array);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		glBindVertexArray(0);
+
+		shaders.copy.set_conditional(CopyShaderGLES3::USE_LOD, false);
+
 		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(texture->target, texture->tex_id);
 		glDeleteFramebuffers(1, &tmp_fb);
+		glDeleteFramebuffers(1, &tmp_fb2);
+		glDeleteTextures(1, &tmp_tex);
 	}
 
 	// Now compute radiance
@@ -1955,7 +1996,6 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D_ARRAY, sky->radiance);
 				shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::SOURCE_ARRAY_INDEX, j - 1); //read from previous to ensure better blur
-				shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::SOURCE_RESOLUTION, float(size / 2));
 			}
 
 			for (int i = 0; i < 2; i++) {
@@ -2085,7 +2125,6 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, sky->radiance);
 				shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::SOURCE_MIP_LEVEL, float(lod - 1)); //read from previous to ensure better blur
-				shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::SOURCE_RESOLUTION, float(size));
 			}
 
 			for (int i = 0; i < 2; i++) {
@@ -4454,6 +4493,7 @@ void RasterizerStorageGLES3::multimesh_allocate(RID p_multimesh, int p_instances
 	if (multimesh->buffer) {
 		glDeleteBuffers(1, &multimesh->buffer);
 		multimesh->data.resize(0);
+		multimesh->buffer = 0;
 	}
 
 	multimesh->size = p_instances;
@@ -4469,20 +4509,20 @@ void RasterizerStorageGLES3::multimesh_allocate(RID p_multimesh, int p_instances
 			multimesh->xform_floats = 12;
 		}
 
-		if (multimesh->color_format == VS::MULTIMESH_COLOR_NONE) {
-			multimesh->color_floats = 0;
-		} else if (multimesh->color_format == VS::MULTIMESH_COLOR_8BIT) {
+		if (multimesh->color_format == VS::MULTIMESH_COLOR_8BIT) {
 			multimesh->color_floats = 1;
 		} else if (multimesh->color_format == VS::MULTIMESH_COLOR_FLOAT) {
 			multimesh->color_floats = 4;
+		} else {
+			multimesh->color_floats = 0;
 		}
 
-		if (multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_NONE) {
-			multimesh->custom_data_floats = 0;
-		} else if (multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_8BIT) {
+		if (multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_8BIT) {
 			multimesh->custom_data_floats = 1;
 		} else if (multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_FLOAT) {
 			multimesh->custom_data_floats = 4;
+		} else {
+			multimesh->custom_data_floats = 0;
 		}
 
 		int format_floats = multimesh->color_floats + multimesh->xform_floats + multimesh->custom_data_floats;
@@ -4678,6 +4718,7 @@ void RasterizerStorageGLES3::multimesh_instance_set_color(RID p_multimesh, int p
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->size);
 	ERR_FAIL_COND(multimesh->color_format == VS::MULTIMESH_COLOR_NONE);
+	ERR_FAIL_INDEX(multimesh->color_format, VS::MULTIMESH_COLOR_MAX);
 
 	int stride = multimesh->color_floats + multimesh->xform_floats + multimesh->custom_data_floats;
 	float *dataptr = &multimesh->data.write[stride * p_index + multimesh->xform_floats];
@@ -4711,6 +4752,7 @@ void RasterizerStorageGLES3::multimesh_instance_set_custom_data(RID p_multimesh,
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->size);
 	ERR_FAIL_COND(multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_NONE);
+	ERR_FAIL_INDEX(multimesh->custom_data_format, VS::MULTIMESH_CUSTOM_DATA_MAX);
 
 	int stride = multimesh->color_floats + multimesh->xform_floats + multimesh->custom_data_floats;
 	float *dataptr = &multimesh->data.write[stride * p_index + multimesh->xform_floats + multimesh->color_floats];
@@ -4799,6 +4841,7 @@ Color RasterizerStorageGLES3::multimesh_instance_get_color(RID p_multimesh, int 
 	ERR_FAIL_COND_V(!multimesh, Color());
 	ERR_FAIL_INDEX_V(p_index, multimesh->size, Color());
 	ERR_FAIL_COND_V(multimesh->color_format == VS::MULTIMESH_COLOR_NONE, Color());
+	ERR_FAIL_INDEX_V(multimesh->color_format, VS::MULTIMESH_COLOR_MAX, Color());
 
 	int stride = multimesh->color_floats + multimesh->xform_floats + multimesh->custom_data_floats;
 	float *dataptr = &multimesh->data.write[stride * p_index + multimesh->xform_floats];
@@ -4832,6 +4875,7 @@ Color RasterizerStorageGLES3::multimesh_instance_get_custom_data(RID p_multimesh
 	ERR_FAIL_COND_V(!multimesh, Color());
 	ERR_FAIL_INDEX_V(p_index, multimesh->size, Color());
 	ERR_FAIL_COND_V(multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_NONE, Color());
+	ERR_FAIL_INDEX_V(multimesh->custom_data_format, VS::MULTIMESH_CUSTOM_DATA_MAX, Color());
 
 	int stride = multimesh->color_floats + multimesh->xform_floats + multimesh->custom_data_floats;
 	float *dataptr = &multimesh->data.write[stride * p_index + multimesh->xform_floats + multimesh->color_floats];
@@ -7100,7 +7144,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 		int max_samples = 0;
 		glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
 		if (msaa > max_samples) {
-			WARN_PRINTS("MSAA must be <= GL_MAX_SAMPLES, falling-back to GL_MAX_SAMPLES = " + itos(max_samples));
+			WARN_PRINT("MSAA must be <= GL_MAX_SAMPLES, falling-back to GL_MAX_SAMPLES = " + itos(max_samples));
 			msaa = max_samples;
 		}
 
@@ -8092,6 +8136,16 @@ int RasterizerStorageGLES3::get_render_info(VS::RenderInfo p_info) {
 		default:
 			return 0; //no idea either
 	}
+}
+
+String RasterizerStorageGLES3::get_video_adapter_name() const {
+
+	return (const char *)glGetString(GL_RENDERER);
+}
+
+String RasterizerStorageGLES3::get_video_adapter_vendor() const {
+
+	return (const char *)glGetString(GL_VENDOR);
 }
 
 void RasterizerStorageGLES3::initialize() {

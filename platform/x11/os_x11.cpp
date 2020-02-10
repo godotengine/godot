@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -526,19 +526,73 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 			"watch",
 			"left_ptr_watch",
 			"fleur",
-			"hand1",
-			"X_cursor",
-			"sb_v_double_arrow",
-			"sb_h_double_arrow",
+			"dnd-move",
+			"crossed_circle",
+			"v_double_arrow",
+			"h_double_arrow",
 			"size_bdiag",
 			"size_fdiag",
-			"hand1",
-			"sb_v_double_arrow",
-			"sb_h_double_arrow",
+			"move",
+			"row_resize",
+			"col_resize",
 			"question_arrow"
 		};
 
 		img[i] = XcursorLibraryLoadImage(cursor_file[i], cursor_theme, cursor_size);
+		if (!img[i]) {
+			const char *fallback = NULL;
+
+			switch (i) {
+				case CURSOR_POINTING_HAND:
+					fallback = "pointer";
+					break;
+				case CURSOR_CROSS:
+					fallback = "crosshair";
+					break;
+				case CURSOR_WAIT:
+					fallback = "wait";
+					break;
+				case CURSOR_BUSY:
+					fallback = "progress";
+					break;
+				case CURSOR_DRAG:
+					fallback = "grabbing";
+					break;
+				case CURSOR_CAN_DROP:
+					fallback = "hand1";
+					break;
+				case CURSOR_FORBIDDEN:
+					fallback = "forbidden";
+					break;
+				case CURSOR_VSIZE:
+					fallback = "ns-resize";
+					break;
+				case CURSOR_HSIZE:
+					fallback = "ew-resize";
+					break;
+				case CURSOR_BDIAGSIZE:
+					fallback = "fd_double_arrow";
+					break;
+				case CURSOR_FDIAGSIZE:
+					fallback = "bd_double_arrow";
+					break;
+				case CURSOR_MOVE:
+					img[i] = img[CURSOR_DRAG];
+					break;
+				case CURSOR_VSPLIT:
+					fallback = "sb_v_double_arrow";
+					break;
+				case CURSOR_HSPLIT:
+					fallback = "sb_h_double_arrow";
+					break;
+				case CURSOR_HELP:
+					fallback = "help";
+					break;
+			}
+			if (fallback != NULL) {
+				img[i] = XcursorLibraryLoadImage(fallback, cursor_theme, cursor_size);
+			}
+		}
 		if (img[i]) {
 			cursors[i] = XcursorImageLoadCursor(x11_display, img[i]);
 		} else {
@@ -669,14 +723,8 @@ bool OS_X11::refresh_device_info() {
 		int range_max_x = 0;
 		int range_max_y = 0;
 		int pressure_resolution = 0;
-		int pressure_min = 0;
-		int pressure_max = 0;
 		int tilt_resolution_x = 0;
 		int tilt_resolution_y = 0;
-		int tilt_range_min_x = 0;
-		int tilt_range_min_y = 0;
-		int tilt_range_max_x = 0;
-		int tilt_range_max_y = 0;
 		for (int j = 0; j < dev->num_classes; j++) {
 #ifdef TOUCH_ENABLED
 			if (dev->classes[j]->type == XITouchClass && ((XITouchClassInfo *)dev->classes[j])->mode == XIDirectTouch) {
@@ -697,17 +745,14 @@ bool OS_X11::refresh_device_info() {
 					range_max_y = class_info->max;
 					absolute_mode = true;
 				} else if (class_info->number == VALUATOR_PRESSURE && class_info->mode == XIModeAbsolute) {
-					pressure_resolution = class_info->resolution;
-					pressure_min = class_info->min;
-					pressure_max = class_info->max;
+					pressure_resolution = (class_info->max - class_info->min);
+					if (pressure_resolution == 0) pressure_resolution = 1;
 				} else if (class_info->number == VALUATOR_TILTX && class_info->mode == XIModeAbsolute) {
-					tilt_resolution_x = class_info->resolution;
-					tilt_range_min_x = class_info->min;
-					tilt_range_max_x = class_info->max;
+					tilt_resolution_x = (class_info->max - class_info->min);
+					if (tilt_resolution_x == 0) tilt_resolution_x = 1;
 				} else if (class_info->number == VALUATOR_TILTY && class_info->mode == XIModeAbsolute) {
-					tilt_resolution_y = class_info->resolution;
-					tilt_range_min_y = class_info->min;
-					tilt_range_max_y = class_info->max;
+					tilt_resolution_y = (class_info->max - class_info->min);
+					if (tilt_resolution_y == 0) tilt_resolution_y = 1;
 				}
 			}
 		}
@@ -728,15 +773,6 @@ bool OS_X11::refresh_device_info() {
 			print_verbose("XInput: Absolute pointing device: " + String(dev->name));
 		}
 
-		if (pressure_resolution <= 0) {
-			pressure_resolution = (pressure_max - pressure_min);
-		}
-		if (tilt_resolution_x <= 0) {
-			tilt_resolution_x = (tilt_range_max_x - tilt_range_min_x);
-		}
-		if (tilt_resolution_y <= 0) {
-			tilt_resolution_y = (tilt_range_max_y - tilt_range_min_y);
-		}
 		xi.pressure = 0;
 		xi.pen_devices[dev->deviceid] = Vector3(pressure_resolution, tilt_resolution_x, tilt_resolution_y);
 	}
@@ -1429,11 +1465,15 @@ void OS_X11::set_window_fullscreen(bool p_enabled) {
 		set_window_maximized(true);
 	}
 	set_wm_fullscreen(p_enabled);
-	if (!p_enabled && !current_videomode.always_on_top) {
+	if (!p_enabled && current_videomode.always_on_top) {
 		// Restore
 		set_window_maximized(false);
 	}
-
+	if (!p_enabled) {
+		set_window_position(last_position_before_fs);
+	} else {
+		last_position_before_fs = get_window_position();
+	}
 	current_videomode.fullscreen = p_enabled;
 }
 
@@ -1682,6 +1722,10 @@ void OS_X11::set_window_always_on_top(bool p_enabled) {
 
 bool OS_X11::is_window_always_on_top() const {
 	return current_videomode.always_on_top;
+}
+
+bool OS_X11::is_window_focused() const {
+	return window_focused;
 }
 
 void OS_X11::set_borderless_window(bool p_borderless) {
@@ -1996,11 +2040,6 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 		if (last_is_pressed) {
 			k->set_echo(true);
 		}
-	} else {
-		//ignore
-		if (!last_is_pressed) {
-			return;
-		}
 	}
 
 	//printf("key: %x\n",k->get_scancode());
@@ -2276,6 +2315,8 @@ void OS_X11::process_xevents() {
 				minimized = false;
 				window_has_focus = true;
 				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
+				window_focused = true;
+
 				if (mouse_mode_grab) {
 					// Show and update the cursor if confined and the window regained focus.
 					if (mouse_mode == MOUSE_MODE_CONFINED)
@@ -2303,6 +2344,7 @@ void OS_X11::process_xevents() {
 				window_has_focus = false;
 				input->release_pressed_events();
 				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+				window_focused = false;
 
 				if (mouse_mode_grab) {
 					//dear X11, I try, I really try, but you never work, you do whathever you want.
@@ -3400,7 +3442,7 @@ Error OS_X11::move_to_trash(const String &p_path) {
 
 	// Issue an error if none of the previous locations is appropriate for the trash can.
 	if (trash_can == "") {
-		ERR_PRINTS("move_to_trash: Could not determine the trash can location");
+		ERR_PRINT("move_to_trash: Could not determine the trash can location");
 		return FAILED;
 	}
 
@@ -3411,7 +3453,7 @@ Error OS_X11::move_to_trash(const String &p_path) {
 
 	// Issue an error if trash can is not created proprely.
 	if (err != OK) {
-		ERR_PRINTS("move_to_trash: Could not create the trash can \"" + trash_can + "\"");
+		ERR_PRINT("move_to_trash: Could not create the trash can \"" + trash_can + "\"");
 		return err;
 	}
 
@@ -3425,7 +3467,7 @@ Error OS_X11::move_to_trash(const String &p_path) {
 
 	// Issue an error if "mv" failed to move the given resource to the trash can.
 	if (err != OK || retval != 0) {
-		ERR_PRINTS("move_to_trash: Could not move the resource \"" + p_path + "\" to the trash can \"" + trash_can + "\"");
+		ERR_PRINT("move_to_trash: Could not move the resource \"" + p_path + "\" to the trash can \"" + trash_can + "\"");
 		return FAILED;
 	}
 
@@ -3497,6 +3539,8 @@ OS_X11::OS_X11() {
 	xi.last_relative_time = 0;
 	layered_window = false;
 	minimized = false;
+	window_focused = true;
 	xim_style = 0L;
 	mouse_mode = MOUSE_MODE_VISIBLE;
+	last_position_before_fs = Vector2();
 }

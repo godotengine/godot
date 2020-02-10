@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HTTPClient" inherits="Reference" category="Core" version="3.2">
+<class name="HTTPClient" inherits="Reference" version="4.0">
 	<brief_description>
 		Hyper-text transfer protocol client.
 	</brief_description>
@@ -100,7 +100,7 @@
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				This needs to be called in order to have any request processed. Check results with [method get_status]
+				This needs to be called in order to have any request processed. Check results with [method get_status].
 			</description>
 		</method>
 		<method name="query_string_from_dict">
@@ -112,13 +112,13 @@
 				Generates a GET/POST application/x-www-form-urlencoded style query string from a provided dictionary, e.g.:
 				[codeblock]
 				var fields = {"username": "user", "password": "pass"}
-				String query_string = http_client.query_string_from_dict(fields)
+				var query_string = http_client.query_string_from_dict(fields)
 				# Returns "username=user&amp;password=pass"
 				[/codeblock]
 				Furthermore, if a key has a [code]null[/code] value, only the key itself is added, without equal sign and value. If the value is an array, for each value in it a pair with the same key is added.
 				[codeblock]
 				var fields = {"single": 123, "not_valued": null, "multiple": [22, 33, 44]}
-				String query_string = http_client.query_string_from_dict(fields)
+				var query_string = http_client.query_string_from_dict(fields)
 				# Returns "single=123&amp;not_valued&amp;multiple=22&amp;multiple=33&amp;multiple=44"
 				[/codeblock]
 			</description>

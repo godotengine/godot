@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,18 +32,15 @@
 
 #include "core/io/resource_saver.h"
 #include "editor/editor_node.h"
-#include "scene/resources/packed_scene.h"
-
 #include "scene/3d/collision_shape.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/navigation.h"
 #include "scene/3d/physics_body.h"
-#include "scene/3d/portal.h"
-#include "scene/3d/room_instance.h"
 #include "scene/3d/vehicle_body.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/box_shape.h"
+#include "scene/resources/packed_scene.h"
 #include "scene/resources/plane_shape.h"
 #include "scene/resources/ray_shape.h"
 #include "scene/resources/resource_format_text.h"

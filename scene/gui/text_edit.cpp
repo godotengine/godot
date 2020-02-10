@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1946,6 +1946,7 @@ void TextEdit::indent_right() {
 
 	// Ignore if the cursor is not past the first column.
 	if (is_selection_active() && get_selection_to_column() == 0) {
+		selection_offset = 0;
 		end_line--;
 	}
 
@@ -4479,7 +4480,7 @@ void TextEdit::cursor_set_line(int p_row, bool p_adjust_viewport, bool p_can_be_
 				if (p_row - move_up > 0 && !is_line_hidden(p_row - move_up)) {
 					p_row -= move_up;
 				} else {
-					WARN_PRINTS(("Cursor set to hidden line " + itos(p_row) + " and there are no nonhidden lines."));
+					WARN_PRINT(("Cursor set to hidden line " + itos(p_row) + " and there are no nonhidden lines."));
 				}
 			}
 		}
@@ -5177,11 +5178,16 @@ void TextEdit::cut() {
 		OS::get_singleton()->set_clipboard(clipboard);
 		cursor_set_line(cursor.line);
 		cursor_set_column(0);
-		_remove_text(cursor.line, 0, cursor.line, text[cursor.line].length());
 
-		backspace_at_cursor();
+		if (cursor.line == 0 && get_line_count() > 1) {
+			_remove_text(cursor.line, 0, cursor.line + 1, 0);
+		} else {
+			_remove_text(cursor.line, 0, cursor.line, text[cursor.line].length());
+			backspace_at_cursor();
+			cursor_set_line(cursor.line + 1);
+		}
+
 		update();
-		cursor_set_line(cursor.line + 1);
 		cut_copy_line = clipboard;
 
 	} else {
@@ -6524,6 +6530,10 @@ void TextEdit::_update_completion_candidates() {
 	Vector<float> sim_cache;
 	bool single_quote = s.begins_with("'");
 	Vector<ScriptCodeCompletionOption> completion_options_casei;
+	Vector<ScriptCodeCompletionOption> completion_options_subseq;
+	Vector<ScriptCodeCompletionOption> completion_options_subseq_casei;
+
+	String s_lower = s.to_lower();
 
 	for (List<ScriptCodeCompletionOption>::Element *E = completion_sources.front(); E; E = E->next()) {
 		ScriptCodeCompletionOption &option = E->get();
@@ -6538,30 +6548,67 @@ void TextEdit::_update_completion_candidates() {
 			option.insert_text = option.insert_text.quote(quote);
 		}
 
-		if (option.display.begins_with(s)) {
+		if (option.display.length() == 0) {
+			continue;
+		} else if (s.length() == 0) {
 			completion_options.push_back(option);
-		} else if (option.display.to_lower().begins_with(s.to_lower())) {
-			completion_options_casei.push_back(option);
+		} else {
+
+			// This code works the same as:
+			/*
+			if (option.display.begins_with(s)) {
+				completion_options.push_back(option);
+			} else if (option.display.to_lower().begins_with(s.to_lower())) {
+				completion_options_casei.push_back(option);
+			} else if (s.is_subsequence_of(option.display)) {
+				completion_options_subseq.push_back(option);
+			} else if (s.is_subsequence_ofi(option.display)) {
+				completion_options_subseq_casei.push_back(option);
+			}
+			*/
+			// But is more performant due to being inlined and looping over the characters only once
+
+			String display_lower = option.display.to_lower();
+
+			const CharType *ssq = &s[0];
+			const CharType *ssq_lower = &s_lower[0];
+
+			const CharType *tgt = &option.display[0];
+			const CharType *tgt_lower = &display_lower[0];
+
+			const CharType *ssq_last_tgt = NULL;
+			const CharType *ssq_lower_last_tgt = NULL;
+
+			for (; *tgt; tgt++, tgt_lower++) {
+				if (*ssq == *tgt) {
+					ssq++;
+					ssq_last_tgt = tgt;
+				}
+				if (*ssq_lower == *tgt_lower) {
+					ssq_lower++;
+					ssq_lower_last_tgt = tgt;
+				}
+			}
+
+			if (!*ssq) { // Matched the whole subsequence in s
+				if (ssq_last_tgt == &option.display[s.length() - 1]) { // Finished matching in the first s.length() characters
+					completion_options.push_back(option);
+				} else {
+					completion_options_subseq.push_back(option);
+				}
+			} else if (!*ssq_lower) { // Matched the whole subsequence in s_lower
+				if (ssq_lower_last_tgt == &option.display[s.length() - 1]) { // Finished matching in the first s.length() characters
+					completion_options_casei.push_back(option);
+				} else {
+					completion_options_subseq_casei.push_back(option);
+				}
+			}
 		}
 	}
 
 	completion_options.append_array(completion_options_casei);
-
-	if (completion_options.size() == 0) {
-		for (int i = 0; i < completion_sources.size(); i++) {
-			if (s.is_subsequence_of(completion_sources[i].display)) {
-				completion_options.push_back(completion_sources[i]);
-			}
-		}
-	}
-
-	if (completion_options.size() == 0) {
-		for (int i = 0; i < completion_sources.size(); i++) {
-			if (s.is_subsequence_ofi(completion_sources[i].display)) {
-				completion_options.push_back(completion_sources[i]);
-			}
-		}
-	}
+	completion_options.append_array(completion_options_subseq);
+	completion_options.append_array(completion_options_subseq_casei);
 
 	if (completion_options.size() == 0) {
 		// No options to complete, cancel.
@@ -7064,6 +7111,10 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_smooth_scroll_enabled"), &TextEdit::is_smooth_scroll_enabled);
 	ClassDB::bind_method(D_METHOD("set_v_scroll_speed", "speed"), &TextEdit::set_v_scroll_speed);
 	ClassDB::bind_method(D_METHOD("get_v_scroll_speed"), &TextEdit::get_v_scroll_speed);
+	ClassDB::bind_method(D_METHOD("set_v_scroll", "value"), &TextEdit::set_v_scroll);
+	ClassDB::bind_method(D_METHOD("get_v_scroll"), &TextEdit::get_v_scroll);
+	ClassDB::bind_method(D_METHOD("set_h_scroll", "value"), &TextEdit::set_h_scroll);
+	ClassDB::bind_method(D_METHOD("get_h_scroll"), &TextEdit::get_h_scroll);
 
 	ClassDB::bind_method(D_METHOD("add_keyword_color", "keyword", "color"), &TextEdit::add_keyword_color);
 	ClassDB::bind_method(D_METHOD("has_keyword_color", "keyword"), &TextEdit::has_keyword_color);
@@ -7099,6 +7150,8 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "v_scroll_speed"), "set_v_scroll_speed", "get_v_scroll_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hiding_enabled"), "set_hiding_enabled", "is_hiding_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "wrap_enabled"), "set_wrap_enabled", "is_wrap_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "scroll_vertical"), "set_v_scroll", "get_v_scroll");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_horizontal"), "set_h_scroll", "get_h_scroll");
 
 	ADD_GROUP("Minimap", "minimap_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_draw"), "draw_minimap", "is_drawing_minimap");
