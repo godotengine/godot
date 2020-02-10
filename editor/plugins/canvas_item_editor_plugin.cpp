@@ -606,7 +606,7 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 	}
 }
 
-void CanvasItemEditor::_get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items) {
+void CanvasItemEditor::_get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items, bool p_ignore_groups) {
 
 	Node *scene = editor->get_edited_scene();
 
@@ -621,14 +621,16 @@ void CanvasItemEditor::_get_canvas_items_at_pos(const Point2 &p_pos, Vector<_Sel
 			node = node->get_parent();
 		};
 
-		// Replace the node by the group if grouped
 		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(node);
-		while (node && node != scene->get_parent()) {
-			CanvasItem *canvas_item_tmp = Object::cast_to<CanvasItem>(node);
-			if (canvas_item_tmp && node->has_meta("_edit_group_")) {
-				canvas_item = canvas_item_tmp;
+		if (!p_ignore_groups) {
+			// Replace the node by the group if grouped
+			while (node && node != scene->get_parent()) {
+				CanvasItem *canvas_item_tmp = Object::cast_to<CanvasItem>(node);
+				if (canvas_item_tmp && node->has_meta("_edit_group_")) {
+					canvas_item = canvas_item_tmp;
+				}
+				node = node->get_parent();
 			}
-			node = node->get_parent();
 		}
 
 		// Check if the canvas item is already in the list (for groups or scenes)
@@ -641,7 +643,7 @@ void CanvasItemEditor::_get_canvas_items_at_pos(const Point2 &p_pos, Vector<_Sel
 		}
 
 		//Remove the item if invalid
-		if (!canvas_item || duplicate || (canvas_item != scene && canvas_item->get_owner() != scene && !scene->is_editable_instance(canvas_item->get_owner())) || _is_node_locked(canvas_item)) {
+		if (!canvas_item || duplicate || (canvas_item != scene && canvas_item->get_owner() != scene && !scene->is_editable_instance(canvas_item->get_owner())) || (tool == TOOL_LIST_SELECT && _is_node_locked(canvas_item))) {
 			r_items.remove(i);
 			i--;
 		} else {
@@ -2223,7 +2225,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			// Popup the selection menu list
 			Point2 click = transform.affine_inverse().xform(b->get_position());
 
-			_get_canvas_items_at_pos(click, selection_results);
+			_get_canvas_items_at_pos(click, selection_results, b->get_alt() && tool != TOOL_LIST_SELECT);
 
 			if (selection_results.size() == 1) {
 				CanvasItem *item = selection_results[0].item;
@@ -2245,7 +2247,29 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 					Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(item, "Node");
 					String node_path = "/" + root_name + "/" + root_path.rel_path_to(item->get_path());
 
-					selection_menu->add_item(item->get_name());
+					int locked = 0;
+					if (_is_node_locked(item)) {
+						locked = 1;
+					} else {
+						Node *scene = editor->get_edited_scene();
+						Node *node = item;
+
+						while (node && node != scene->get_parent()) {
+							CanvasItem *canvas_item_tmp = Object::cast_to<CanvasItem>(node);
+							if (canvas_item_tmp && node->has_meta("_edit_group_")) {
+								locked = 2;
+							}
+							node = node->get_parent();
+						}
+					}
+
+					String suffix = String();
+					if (locked == 1) {
+						suffix = " (" + TTR("Locked") + ")";
+					} else if (locked == 2) {
+						suffix = " (" + TTR("Grouped") + ")";
+					}
+					selection_menu->add_item((String)item->get_name() + suffix);
 					selection_menu->set_item_icon(i, icon);
 					selection_menu->set_item_metadata(i, node_path);
 					selection_menu->set_item_tooltip(i, String(item->get_name()) + "\nType: " + item->get_class() + "\nPath: " + node_path);
