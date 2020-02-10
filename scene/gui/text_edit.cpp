@@ -1844,6 +1844,42 @@ void TextEdit::_consume_pair_symbol(CharType ch) {
 		}
 	}
 
+	String line = text[cursor.line];
+
+	bool in_single_quote = false;
+	bool in_double_quote = false;
+
+	int c = 0;
+	while (c < line.length()) {
+		if (line[c] == '\\') {
+			c++; // Skip quoted anything.
+
+			if (cursor.column == c) {
+				break;
+			}
+		} else {
+			if (line[c] == '\'' && !in_double_quote) {
+				in_single_quote = !in_single_quote;
+			} else if (line[c] == '"' && !in_single_quote) {
+				in_double_quote = !in_double_quote;
+			}
+		}
+
+		c++;
+
+		if (cursor.column == c) {
+			break;
+		}
+	}
+
+	//	Disallow inserting duplicated quotes while already in string
+	if ((in_single_quote || in_double_quote) && (ch == '"' || ch == '\'')) {
+		insert_text_at_cursor(ch_single);
+		cursor_set_column(cursor_position_to_move);
+
+		return;
+	}
+
 	insert_text_at_cursor(ch_pair);
 	cursor_set_column(cursor_position_to_move);
 }
