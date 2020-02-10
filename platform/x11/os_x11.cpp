@@ -526,19 +526,73 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 			"watch",
 			"left_ptr_watch",
 			"fleur",
-			"hand1",
-			"X_cursor",
-			"sb_v_double_arrow",
-			"sb_h_double_arrow",
+			"dnd-move",
+			"crossed_circle",
+			"v_double_arrow",
+			"h_double_arrow",
 			"size_bdiag",
 			"size_fdiag",
-			"hand1",
-			"sb_v_double_arrow",
-			"sb_h_double_arrow",
+			"move",
+			"row_resize",
+			"col_resize",
 			"question_arrow"
 		};
 
 		img[i] = XcursorLibraryLoadImage(cursor_file[i], cursor_theme, cursor_size);
+		if (!img[i]) {
+			const char *fallback = NULL;
+
+			switch (i) {
+				case CURSOR_POINTING_HAND:
+					fallback = "pointer";
+					break;
+				case CURSOR_CROSS:
+					fallback = "crosshair";
+					break;
+				case CURSOR_WAIT:
+					fallback = "wait";
+					break;
+				case CURSOR_BUSY:
+					fallback = "progress";
+					break;
+				case CURSOR_DRAG:
+					fallback = "grabbing";
+					break;
+				case CURSOR_CAN_DROP:
+					fallback = "hand1";
+					break;
+				case CURSOR_FORBIDDEN:
+					fallback = "forbidden";
+					break;
+				case CURSOR_VSIZE:
+					fallback = "ns-resize";
+					break;
+				case CURSOR_HSIZE:
+					fallback = "ew-resize";
+					break;
+				case CURSOR_BDIAGSIZE:
+					fallback = "fd_double_arrow";
+					break;
+				case CURSOR_FDIAGSIZE:
+					fallback = "bd_double_arrow";
+					break;
+				case CURSOR_MOVE:
+					img[i] = img[CURSOR_DRAG];
+					break;
+				case CURSOR_VSPLIT:
+					fallback = "sb_v_double_arrow";
+					break;
+				case CURSOR_HSPLIT:
+					fallback = "sb_h_double_arrow";
+					break;
+				case CURSOR_HELP:
+					fallback = "help";
+					break;
+			}
+			if (fallback != NULL) {
+				img[i] = XcursorLibraryLoadImage(fallback, cursor_theme, cursor_size);
+			}
+		}
 		if (img[i]) {
 			cursors[i] = XcursorImageLoadCursor(x11_display, img[i]);
 		} else {
