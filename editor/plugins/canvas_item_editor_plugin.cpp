@@ -1989,7 +1989,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 				if (selection.size() > 0) {
 					drag_type = DRAG_MOVE;
 
-					CanvasItem *canvas_item = drag_selection[0];
+					CanvasItem *canvas_item = selection[0];
 					Transform2D parent_xform = canvas_item->get_global_transform_with_canvas() * canvas_item->get_transform().affine_inverse();
 					Transform2D unscaled_transform = (transform * parent_xform * canvas_item->_edit_get_transform()).orthonormalized();
 					Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
