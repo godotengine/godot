@@ -73,7 +73,6 @@
 #include "scene/animation/animation_node_state_machine.h"
 #include "scene/animation/animation_player.h"
 #include "scene/animation/animation_tree.h"
-#include "scene/animation/animation_tree_player.h"
 #include "scene/animation/root_motion_view.h"
 #include "scene/animation/tween.h"
 #include "scene/audio/audio_stream_player.h"
@@ -374,7 +373,6 @@ void register_scene_types() {
 	ClassDB::register_class<AnimationPlayer>();
 	ClassDB::register_class<Tween>();
 
-	ClassDB::register_class<AnimationTreePlayer>();
 	ClassDB::register_class<AnimationTree>();
 	ClassDB::register_class<AnimationNode>();
 	ClassDB::register_class<AnimationRootNode>();
@@ -735,7 +733,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("ImageSkyBox", "PanoramaSky");
 	ClassDB::add_compatibility_class("FixedSpatialMaterial", "SpatialMaterial");
 	ClassDB::add_compatibility_class("Mesh", "ArrayMesh");
-
+	ClassDB::add_compatibility_class("AnimationTreePlayer", "AnimationTree");
 #endif
 
 	OS::get_singleton()->yield(); //may take time to init
