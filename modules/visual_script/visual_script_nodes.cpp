@@ -1935,8 +1935,11 @@ PropertyInfo VisualScriptClassConstant::get_input_value_port_info(int p_idx) con
 }
 
 PropertyInfo VisualScriptClassConstant::get_output_value_port_info(int p_idx) const {
-
-	return PropertyInfo(Variant::INT, String(base_type) + "." + String(name));
+	if (name == "") {
+		return PropertyInfo(Variant::INT, String(base_type));
+	} else {
+		return PropertyInfo(Variant::INT, String(base_type) + "." + String(name));
+	}
 }
 
 String VisualScriptClassConstant::get_caption() const {
@@ -1958,6 +1961,22 @@ StringName VisualScriptClassConstant::get_class_constant() {
 void VisualScriptClassConstant::set_base_type(const StringName &p_which) {
 
 	base_type = p_which;
+	List<String> constants;
+	ClassDB::get_integer_constant_list(base_type, &constants, true);
+	if (constants.size() > 0) {
+		bool found_name = false;
+		for (List<String>::Element *E = constants.front(); E; E = E->next()) {
+			if (E->get() == name) {
+				found_name = true;
+				break;
+			}
+		}
+		if (!found_name) {
+			name = constants[0];
+		}
+	} else {
+		name = "";
+	}
 	_change_notify();
 	ports_changed_notify();
 }
