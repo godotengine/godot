@@ -960,7 +960,7 @@
 			If [code]true[/code], the window background is transparent and window frame is removed.
 			Use [code]get_tree().get_root().set_transparent_background(true)[/code] to disable main viewport background rendering.
 			[b]Note:[/b] This property has no effect if [b]Project &gt; Project Settings &gt; Display &gt; Window &gt; Per-pixel transparency &gt; Allowed[/b] setting is disabled.
-			[b]Note:[/b] This property is implemented on Linux, macOS and Windows.
+			[b]Note:[/b] This property is implemented on HTML5, Linux, macOS and Windows.
 		</member>
 		<member name="window_position" type="Vector2" setter="set_window_position" getter="get_window_position" default="Vector2( 0, 0 )">
 			The window position relative to the screen, the origin is the top left corner, +Y axis goes to the bottom and +X axis goes to the right.

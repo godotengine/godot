@@ -220,6 +220,20 @@ void OS_JavaScript::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_scre
 	p_list->push_back(OS::VideoMode(screen.width, screen.height, true));
 }
 
+bool OS_JavaScript::get_window_per_pixel_transparency_enabled() const {
+	if (!is_layered_allowed()) {
+		return false;
+	}
+	return transparency_enabled;
+}
+
+void OS_JavaScript::set_window_per_pixel_transparency_enabled(bool p_enabled) {
+	if (!is_layered_allowed()) {
+		return;
+	}
+	transparency_enabled = p_enabled;
+}
+
 // Keys
 
 template <typename T>
@@ -886,9 +900,13 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 
 	EmscriptenWebGLContextAttributes attributes;
 	emscripten_webgl_init_context_attributes(&attributes);
-	attributes.alpha = false;
+	attributes.alpha = GLOBAL_GET("display/window/per_pixel_transparency/allowed");
 	attributes.antialias = false;
 	ERR_FAIL_INDEX_V(p_video_driver, VIDEO_DRIVER_MAX, ERR_INVALID_PARAMETER);
+
+	if (p_desired.layered) {
+		set_window_per_pixel_transparency_enabled(true);
+	}
 
 	bool gles3 = true;
 	if (p_video_driver == VIDEO_DRIVER_GLES2) {
@@ -1315,6 +1333,7 @@ OS_JavaScript::OS_JavaScript(int p_argc, char *p_argv[]) {
 	window_maximized = false;
 	entering_fullscreen = false;
 	just_exited_fullscreen = false;
+	transparency_enabled = false;
 
 	main_loop = NULL;
 
