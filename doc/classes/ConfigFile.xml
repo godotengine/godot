@@ -129,6 +129,16 @@
 			<description>
 			</description>
 		</method>
+		<method name="parse">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="data" type="String">
+			</argument>
+			<description>
+				Parses the the passed string as the contents of a config file. The string is parsed and loaded in the ConfigFile object which the method was called on.
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
+			</description>
+		</method>
 		<method name="save">
 			<return type="int" enum="Error">
 			</return>
