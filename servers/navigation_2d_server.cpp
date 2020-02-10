@@ -146,7 +146,7 @@ void Navigation2DServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("agent_set_radius", "agent", "radius"), &Navigation2DServer::agent_set_radius);
 	ClassDB::bind_method(D_METHOD("agent_set_max_speed", "agent", "max_speed"), &Navigation2DServer::agent_set_max_speed);
 	ClassDB::bind_method(D_METHOD("agent_set_velocity", "agent", "velocity"), &Navigation2DServer::agent_set_velocity);
-	ClassDB::bind_method(D_METHOD("agent_set_velocity_target", "agent", "target_velocity"), &Navigation2DServer::agent_set_target_velocity);
+	ClassDB::bind_method(D_METHOD("agent_set_target_velocity", "agent", "target_velocity"), &Navigation2DServer::agent_set_target_velocity);
 	ClassDB::bind_method(D_METHOD("agent_set_position", "agent", "position"), &Navigation2DServer::agent_set_position);
 	ClassDB::bind_method(D_METHOD("agent_is_map_changed", "agent"), &Navigation2DServer::agent_is_map_changed);
 	ClassDB::bind_method(D_METHOD("agent_set_callback", "agent", "receiver", "method", "userdata"), &Navigation2DServer::agent_set_callback, DEFVAL(Variant()));

@@ -42,8 +42,8 @@ void NavigationAgent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &NavigationAgent::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &NavigationAgent::get_radius);
 
-	ClassDB::bind_method(D_METHOD("set_player_center_height", "player_center_height"), &NavigationAgent::set_player_center_height);
-	ClassDB::bind_method(D_METHOD("get_player_center_height"), &NavigationAgent::get_player_center_height);
+	ClassDB::bind_method(D_METHOD("set_agent_height_offset", "agent_height_offset"), &NavigationAgent::set_agent_height_offset);
+	ClassDB::bind_method(D_METHOD("get_agent_height_offset"), &NavigationAgent::get_agent_height_offset);
 
 	ClassDB::bind_method(D_METHOD("set_ignore_y", "ignore"), &NavigationAgent::set_ignore_y);
 	ClassDB::bind_method(D_METHOD("get_ignore_y"), &NavigationAgent::get_ignore_y);
@@ -82,7 +82,7 @@ void NavigationAgent::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "target_desired_distance", PROPERTY_HINT_RANGE, "0.1,100,0.01"), "set_target_desired_distance", "get_target_desired_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radius", PROPERTY_HINT_RANGE, "0.1,100,0.01"), "set_radius", "get_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "player_center_height", PROPERTY_HINT_RANGE, "-100.0,100,0.01"), "set_player_center_height", "get_player_center_height");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "agent_height_offset", PROPERTY_HINT_RANGE, "-100.0,100,0.01"), "set_agent_height_offset", "get_agent_height_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "neighbor_dist", PROPERTY_HINT_RANGE, "0.1,10000,0.01"), "set_neighbor_dist", "get_neighbor_dist");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_neighbors", PROPERTY_HINT_RANGE, "1,10000,1"), "set_max_neighbors", "get_max_neighbors");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "time_horizon", PROPERTY_HINT_RANGE, "0.01,100,0.01"), "set_time_horizon", "get_time_horizon");
@@ -192,7 +192,7 @@ void NavigationAgent::set_radius(real_t p_radius) {
 	NavigationServer::get_singleton()->agent_set_radius(agent, radius);
 }
 
-void NavigationAgent::set_player_center_height(real_t p_hh) {
+void NavigationAgent::set_agent_height_offset(real_t p_hh) {
 	navigation_height_offset = p_hh;
 }
 

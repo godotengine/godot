@@ -98,8 +98,8 @@ public:
 		return radius;
 	}
 
-	void set_player_center_height(real_t p_hh);
-	real_t get_player_center_height() const {
+	void set_agent_height_offset(real_t p_hh);
+	real_t get_agent_height_offset() const {
 		return navigation_height_offset;
 	}
 

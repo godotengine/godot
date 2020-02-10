@@ -432,7 +432,7 @@ Files extracted from upstream source:
 ## recastnavigation
 
 - Upstream: https://github.com/recastnavigation/recastnavigation
-- version: git (ef3ea40f, 2017)
+- Version: git (ef3ea40f, 2017)
 - License: zlib
 
 Files extracted from upstream source:
@@ -441,19 +441,21 @@ Files extracted from upstream source:
 - License.txt
 
 
-## Rvo2-3D
+## Rvo2
 
 - Upstream: http://gamma.cs.unc.edu/RVO2/
-- version: 1.0.1
+- Version: 3D - 1.0.1
 - License: Apache 2.0
 
 Files extracted from upstream source:
 
 - All .cpp and .h files in the `src/` folder except for RVOSimulator.cpp and RVOSimulator.h
 - LICENSE
-- README
 
-Important: Some files have Godot-made changes; so to enrich the features originally proposed by this library and better integrate this library with Godot. Please check the file to know what's new.
+Important: Some files have Godot-made changes; so to enrich the features
+originally proposed by this library and better integrate this library with
+Godot. Please check the file to know what's new.
+
 
 ## squish
 
