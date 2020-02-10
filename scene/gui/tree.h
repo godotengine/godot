@@ -228,6 +228,8 @@ public:
 	void set_custom_draw(int p_column, Object *p_object, const StringName &p_callback);
 
 	void set_collapsed(bool p_collapsed);
+	void set_collapsed_recursive(bool p_collapsed, bool p_ignore_active, bool p_skip_self);
+	void toggle_collapsed_all_descendants();
 	bool is_collapsed();
 
 	void set_custom_minimum_height(int p_height);
@@ -247,6 +249,7 @@ public:
 	bool is_selectable(int p_column) const;
 
 	bool is_selected(int p_column);
+	bool is_active();
 	void select(int p_column);
 	void deselect(int p_column);
 	void set_as_cursor(int p_column);
@@ -604,6 +607,8 @@ public:
 
 	void set_allow_reselect(bool p_allow);
 	bool get_allow_reselect() const;
+
+	void set_collapsed_all(bool p_collapsed, bool p_ignore_active);
 
 	Tree();
 	~Tree();

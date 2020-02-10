@@ -276,6 +276,7 @@ bool TreeItem::is_range_exponential(int p_column) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), false);
 	return cells[p_column].expr;
 }
+
 void TreeItem::set_range_config(int p_column, double p_min, double p_max, double p_step, bool p_exp) {
 
 	ERR_FAIL_INDEX(p_column, cells.size());
@@ -320,7 +321,9 @@ void TreeItem::set_collapsed(bool p_collapsed) {
 
 	if (collapsed == p_collapsed || !tree)
 		return;
+
 	collapsed = p_collapsed;
+
 	TreeItem *ci = tree->selected_item;
 	if (ci) {
 
@@ -345,6 +348,48 @@ void TreeItem::set_collapsed(bool p_collapsed) {
 
 	_changed_notify();
 	tree->emit_signal("item_collapsed", this);
+}
+
+void TreeItem::set_collapsed_recursive(bool p_collapsed, bool p_ignore_active, bool p_skip_self) {
+
+	if (!tree) {
+		return;
+	}
+
+	if (p_skip_self || (p_ignore_active && this->is_active())) {
+		// Ignore current item, collapse recursively all children.
+		TreeItem *c = get_children();
+		while (c) {
+			c->set_collapsed_recursive(p_collapsed, p_ignore_active, false);
+			c = c->get_next();
+		}
+	} else {
+		// Set collapsed state on self and all children recursively.
+		const Variant arg_collapsed[] = { Variant(p_collapsed) };
+		const Variant *args[] = { arg_collapsed };
+		Variant::CallError error;
+		call_recursive("set_collapsed", args, 1, error);
+	}
+}
+
+void TreeItem::toggle_collapsed_all_descendants() {
+	if (is_collapsed()) {
+		// Expand recursively.
+		set_collapsed_recursive(false, false, false);
+	} else {
+		// Collapse/Expand all children.
+		bool child_expanded = false;
+		TreeItem *c = get_children();
+		while (c) {
+			if (!c->is_collapsed()) {
+				child_expanded = true;
+				break;
+			}
+			c = c->get_next();
+		}
+
+		set_collapsed_recursive(child_expanded, false, true);
+	}
 }
 
 bool TreeItem::is_collapsed() {
@@ -498,6 +543,26 @@ bool TreeItem::is_selected(int p_column) {
 	return cells[p_column].selectable && cells[p_column].selected;
 }
 
+bool TreeItem::is_active() {
+
+	TreeItem *selected = tree->get_selected();
+	if (!selected) {
+		return false;
+	} else if (selected == this) {
+		return true;
+	}
+
+	TreeItem *c = this->get_children();
+	while (c) {
+		if (c->is_active()) {
+			return true;
+		}
+		c = c->get_next();
+	}
+
+	return false;
+}
+
 void TreeItem::set_as_cursor(int p_column) {
 
 	ERR_FAIL_INDEX(p_column, cells.size());
@@ -542,21 +607,25 @@ int TreeItem::get_button_count(int p_column) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), -1);
 	return cells[p_column].buttons.size();
 }
+
 Ref<Texture> TreeItem::get_button(int p_column, int p_idx) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), Ref<Texture>());
 	ERR_FAIL_INDEX_V(p_idx, cells[p_column].buttons.size(), Ref<Texture>());
 	return cells[p_column].buttons[p_idx].texture;
 }
+
 String TreeItem::get_button_tooltip(int p_column, int p_idx) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), String());
 	ERR_FAIL_INDEX_V(p_idx, cells[p_column].buttons.size(), String());
 	return cells[p_column].buttons[p_idx].tooltip;
 }
+
 int TreeItem::get_button_id(int p_column, int p_idx) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), -1);
 	ERR_FAIL_INDEX_V(p_idx, cells[p_column].buttons.size(), -1);
 	return cells[p_column].buttons[p_idx].id;
 }
+
 void TreeItem::erase_button(int p_column, int p_idx) {
 
 	ERR_FAIL_INDEX(p_column, cells.size());
@@ -631,6 +700,7 @@ void TreeItem::set_custom_color(int p_column, const Color &p_color) {
 	cells.write[p_column].color = p_color;
 	_changed_notify(p_column);
 }
+
 Color TreeItem::get_custom_color(int p_column) const {
 
 	ERR_FAIL_INDEX_V(p_column, cells.size(), Color());
@@ -638,6 +708,7 @@ Color TreeItem::get_custom_color(int p_column) const {
 		return Color();
 	return cells[p_column].color;
 }
+
 void TreeItem::clear_custom_color(int p_column) {
 
 	ERR_FAIL_INDEX(p_column, cells.size());
@@ -800,6 +871,8 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_draw", "column", "object", "callback"), &TreeItem::set_custom_draw);
 
 	ClassDB::bind_method(D_METHOD("set_collapsed", "enable"), &TreeItem::set_collapsed);
+	ClassDB::bind_method(D_METHOD("set_collapsed_recursive", "enable", "ignore_active", "ignore_self"), &TreeItem::set_collapsed_recursive);
+	ClassDB::bind_method(D_METHOD("toggle_collapsed_all_descendants"), &TreeItem::toggle_collapsed_all_descendants);
 	ClassDB::bind_method(D_METHOD("is_collapsed"), &TreeItem::is_collapsed);
 
 	ClassDB::bind_method(D_METHOD("set_custom_minimum_height", "height"), &TreeItem::set_custom_minimum_height);
@@ -819,6 +892,7 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_selectable", "column"), &TreeItem::is_selectable);
 
 	ClassDB::bind_method(D_METHOD("is_selected", "column"), &TreeItem::is_selected);
+	ClassDB::bind_method(D_METHOD("is_active"), &TreeItem::is_active);
 	ClassDB::bind_method(D_METHOD("select", "column"), &TreeItem::select);
 	ClassDB::bind_method(D_METHOD("deselect", "column"), &TreeItem::deselect);
 
@@ -1558,6 +1632,7 @@ int Tree::_count_selected_items(TreeItem *p_from) const {
 
 	return count;
 }
+
 void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev, bool *r_in_range, bool p_force_deselect) {
 
 	TreeItem::Cell &selected_cell = p_selected->cells.write[p_col];
@@ -1674,7 +1749,6 @@ void Tree::_range_click_timeout() {
 		click_handled = false;
 		Ref<InputEventMouseButton> mb;
 		mb.instance();
-		;
 
 		propagate_mouse_activated = false; // done from outside, so signal handler can't clear the tree in the middle of emit (which is a common case)
 		blocked++;
@@ -1713,10 +1787,17 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 			return -1;
 		}
 
+		// Clicked on folding arrow
 		if (!p_item->disable_folding && !hide_folding && (p_pos.x >= x_ofs && p_pos.x < (x_ofs + cache.item_margin))) {
-
-			if (p_item->children)
-				p_item->set_collapsed(!p_item->is_collapsed());
+			// No point in collapsing if there are no children.
+			if (p_item->get_children()) {
+				// ALT or equivalent is held, change collapse behavior.
+				if (Input::get_singleton()->is_key_pressed(KEY_ALT)) {
+					p_item->toggle_collapsed_all_descendants();
+				} else {
+					p_item->set_collapsed(!p_item->is_collapsed());
+				}
+			}
 
 			return -1; //handled!
 		}
@@ -1765,7 +1846,12 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 		}
 
 		if (!p_item->disable_folding && !hide_folding && !p_item->cells[col].editable && !p_item->cells[col].selectable && p_item->get_children()) {
-			p_item->set_collapsed(!p_item->is_collapsed());
+			// ALT or equivalent is held, change collapse behavior.
+			if (Input::get_singleton()->is_key_pressed(KEY_ALT)) {
+				p_item->toggle_collapsed_all_descendants();
+			} else {
+				p_item->set_collapsed(!p_item->is_collapsed());
+			}
 			return -1; //collapse/uncollapse because nothing can be done with item
 		}
 
@@ -3138,6 +3224,7 @@ TreeItem *Tree::get_root() {
 
 	return root;
 }
+
 TreeItem *Tree::get_last_item() {
 
 	TreeItem *last = root;
@@ -3272,6 +3359,7 @@ void Tree::set_column_min_width(int p_column, int p_min_width) {
 	columns.write[p_column].min_width = p_min_width;
 	update();
 }
+
 void Tree::set_column_expand(int p_column, bool p_expand) {
 
 	ERR_FAIL_INDEX(p_column, columns.size());
@@ -3771,6 +3859,7 @@ int Tree::get_drop_section_at_position(const Point2 &p_pos) const {
 
 	return -100;
 }
+
 TreeItem *Tree::get_item_at_position(const Point2 &p_pos) const {
 
 	if (root) {
@@ -3912,6 +4001,12 @@ bool Tree::get_allow_reselect() const {
 	return allow_reselect;
 }
 
+void Tree::set_collapsed_all(bool p_collapsed, bool p_ignore_active) {
+
+	get_root()->set_collapsed_recursive(p_collapsed, p_ignore_active, false);
+	ensure_cursor_is_visible();
+}
+
 void Tree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_range_click_timeout"), &Tree::_range_click_timeout);
@@ -3970,6 +4065,8 @@ void Tree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_allow_reselect", "allow"), &Tree::set_allow_reselect);
 	ClassDB::bind_method(D_METHOD("get_allow_reselect"), &Tree::get_allow_reselect);
+
+	ClassDB::bind_method(D_METHOD("set_collapsed_all", "collapsed", "ignore_active"), &Tree::set_collapsed_all);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "columns"), "set_columns", "get_columns");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
