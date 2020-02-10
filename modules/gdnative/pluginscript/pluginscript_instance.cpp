@@ -39,13 +39,11 @@
 #include "pluginscript_script.h"
 
 bool PluginScriptInstance::set(const StringName &p_name, const Variant &p_value) {
-	String name = String(p_name);
-	return _desc->set_prop(_data, (const godot_string *)&name, (const godot_variant *)&p_value);
+	return _desc->set_prop(_data, (const godot_string_name *)&p_name, (const godot_variant *)&p_value);
 }
 
 bool PluginScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
-	String name = String(p_name);
-	return _desc->get_prop(_data, (const godot_string *)&name, (godot_variant *)&r_ret);
+	return _desc->get_prop(_data, (const godot_string_name *)&p_name, (godot_variant *)&r_ret);
 }
 
 Ref<Script> PluginScriptInstance::get_script() const {
