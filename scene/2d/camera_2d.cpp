@@ -263,6 +263,7 @@ void Camera2D::_notification(int p_what) {
 			viewport = nullptr;
 
 		} break;
+#ifdef TOOLS_ENABLED
 		case NOTIFICATION_DRAW: {
 			if (!is_inside_tree() || !Engine::get_singleton()->is_editor_hint()) {
 				break;
@@ -339,8 +340,8 @@ void Camera2D::_notification(int p_what) {
 					draw_line(inv_transform.xform(margin_endpoints[i]), inv_transform.xform(margin_endpoints[(i + 1) % 4]), margin_drawing_color, margin_drawing_width);
 				}
 			}
-
 		} break;
+#endif
 	}
 }
 
@@ -610,7 +611,9 @@ Node *Camera2D::get_custom_viewport() const {
 
 void Camera2D::set_screen_drawing_enabled(bool enable) {
 	screen_drawing_enabled = enable;
+#ifdef TOOLS_ENABLED
 	update();
+#endif
 }
 
 bool Camera2D::is_screen_drawing_enabled() const {
@@ -619,7 +622,9 @@ bool Camera2D::is_screen_drawing_enabled() const {
 
 void Camera2D::set_limit_drawing_enabled(bool enable) {
 	limit_drawing_enabled = enable;
+#ifdef TOOLS_ENABLED
 	update();
+#endif
 }
 
 bool Camera2D::is_limit_drawing_enabled() const {
@@ -628,7 +633,9 @@ bool Camera2D::is_limit_drawing_enabled() const {
 
 void Camera2D::set_margin_drawing_enabled(bool enable) {
 	margin_drawing_enabled = enable;
+#ifdef TOOLS_ENABLED
 	update();
+#endif
 }
 
 bool Camera2D::is_margin_drawing_enabled() const {
