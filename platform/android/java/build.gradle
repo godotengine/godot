@@ -31,7 +31,7 @@ ext {
     // If building manually on the command line, it's recommended to use the
     // `./gradlew generateGodotTemplates` build command instead after running the `scons` command.
     // The defaultAbi must be one of the {supportedAbis} values.
-    defaultAbi = "arm64v8"
+    defaultAbi = "armv7"
 }
 
 def rootDir = "../../.."

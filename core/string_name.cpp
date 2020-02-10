@@ -95,7 +95,7 @@ void StringName::cleanup() {
 void StringName::unref() {
 
 	ERR_FAIL_COND(!configured);
-
+	bool do_delete = true;
 	if (_data && _data->refcount.unref()) {
 
 		lock->lock();
@@ -105,6 +105,7 @@ void StringName::unref() {
 		} else {
 			if (_table[_data->idx] != _data) {
 				ERR_PRINT("BUG!");
+				do_delete = false;
 			}
 			_table[_data->idx] = _data->next;
 		}
@@ -112,7 +113,9 @@ void StringName::unref() {
 		if (_data->next) {
 			_data->next->prev = _data->prev;
 		}
-		memdelete(_data);
+		if (do_delete) {
+			memdelete(_data);
+		}
 		lock->unlock();
 	}
 
