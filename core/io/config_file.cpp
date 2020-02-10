@@ -255,6 +255,22 @@ Error ConfigFile::_internal_load(const String &p_path, FileAccess *f) {
 	VariantParser::StreamFile stream;
 	stream.f = f;
 
+	Error err = _parse(p_path, &stream);
+
+	memdelete(f);
+
+	return err;
+}
+
+Error ConfigFile::parse(const String &p_data) {
+
+	VariantParser::StreamString stream;
+	stream.s = p_data;
+	return _parse("<string>", &stream);
+}
+
+Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream) {
+
 	String assign;
 	Variant value;
 	VariantParser::Tag next_tag;
@@ -270,13 +286,11 @@ Error ConfigFile::_internal_load(const String &p_path, FileAccess *f) {
 		next_tag.fields.clear();
 		next_tag.name = String();
 
-		Error err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, NULL, true);
+		Error err = VariantParser::parse_tag_assign_eof(p_stream, lines, error_text, next_tag, assign, value, NULL, true);
 		if (err == ERR_FILE_EOF) {
-			memdelete(f);
 			return OK;
 		} else if (err != OK) {
-			ERR_PRINTS("ConfgFile::load - " + p_path + ":" + itos(lines) + " error: " + error_text + ".");
-			memdelete(f);
+			ERR_PRINT("ConfgFile - " + p_path + ":" + itos(lines) + " error: " + error_text + ".");
 			return err;
 		}
 
@@ -286,6 +300,8 @@ Error ConfigFile::_internal_load(const String &p_path, FileAccess *f) {
 			section = next_tag.name;
 		}
 	}
+
+	return OK;
 }
 
 void ConfigFile::_bind_methods() {
@@ -303,6 +319,7 @@ void ConfigFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("erase_section_key", "section", "key"), &ConfigFile::erase_section_key);
 
 	ClassDB::bind_method(D_METHOD("load", "path"), &ConfigFile::load);
+	ClassDB::bind_method(D_METHOD("parse", "data"), &ConfigFile::parse);
 	ClassDB::bind_method(D_METHOD("save", "path"), &ConfigFile::save);
 
 	ClassDB::bind_method(D_METHOD("load_encrypted", "path", "key"), &ConfigFile::load_encrypted);
