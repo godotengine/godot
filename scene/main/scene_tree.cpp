@@ -46,6 +46,7 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
+#include "servers/navigation_server.h"
 #include "servers/physics_2d_server.h"
 #include "servers/physics_server.h"
 #include "viewport.h"
@@ -896,6 +897,7 @@ void SceneTree::set_pause(bool p_enabled) {
 	if (p_enabled == pause)
 		return;
 	pause = p_enabled;
+	NavigationServer::get_singleton()->set_active(!p_enabled);
 	PhysicsServer::get_singleton()->set_active(!p_enabled);
 	Physics2DServer::get_singleton()->set_active(!p_enabled);
 	if (get_root())

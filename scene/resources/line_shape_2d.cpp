@@ -100,6 +100,10 @@ Rect2 LineShape2D::get_rect() const {
 	return rect;
 }
 
+real_t LineShape2D::get_enclosing_radius() const {
+	return d;
+}
+
 void LineShape2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_normal", "normal"), &LineShape2D::set_normal);

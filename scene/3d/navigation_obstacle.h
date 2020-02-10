@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  register_types.h                                                     */
+/*  navigation_obstacle.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,5 +28,44 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-void register_recast_types();
-void unregister_recast_types();
+#ifndef NAVIGATION_OBSTACLE_H
+#define NAVIGATION_OBSTACLE_H
+
+#include "scene/main/node.h"
+
+class Navigation;
+
+class NavigationObstacle : public Node {
+	GDCLASS(NavigationObstacle, Node);
+
+	Navigation *navigation;
+
+	RID agent;
+
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
+
+public:
+	NavigationObstacle();
+	virtual ~NavigationObstacle();
+
+	void set_navigation(Navigation *p_nav);
+	const Navigation *get_navigation() const {
+		return navigation;
+	}
+
+	void set_navigation_node(Node *p_nav);
+	Node *get_navigation_node() const;
+
+	RID get_rid() const {
+		return agent;
+	}
+
+	virtual String get_configuration_warning() const;
+
+private:
+	void update_agent_shape();
+};
+
+#endif

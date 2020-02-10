@@ -94,6 +94,16 @@ Rect2 ConcavePolygonShape2D::get_rect() const {
 	return rect;
 }
 
+real_t ConcavePolygonShape2D::get_enclosing_radius() const {
+	PoolVector<Vector2> data = get_segments();
+	PoolVector<Vector2>::Read read = data.read();
+	real_t r = 0;
+	for (int i(0); i < data.size(); i++) {
+		r = MAX(read[i].length_squared(), r);
+	}
+	return Math::sqrt(r);
+}
+
 void ConcavePolygonShape2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_segments", "segments"), &ConcavePolygonShape2D::set_segments);

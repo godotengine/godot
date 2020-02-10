@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  navigation_mesh_editor_plugin.h                                      */
+/*  navigation_mesh.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,57 +28,48 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NAVIGATION_MESH_GENERATOR_PLUGIN_H
-#define NAVIGATION_MESH_GENERATOR_PLUGIN_H
+#ifndef NAVIGATION_MESH_INSTANCE_H
+#define NAVIGATION_MESH_INSTANCE_H
 
-#include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
-#include "navigation_mesh_generator.h"
+#include "scene/3d/spatial.h"
+#include "scene/resources/mesh.h"
+#include "scene/resources/navigation_mesh.h"
 
-class NavigationMeshEditor : public Control {
-	friend class NavigationMeshEditorPlugin;
+class Navigation;
 
-	GDCLASS(NavigationMeshEditor, Control);
+class NavigationMeshInstance : public Spatial {
 
-	AcceptDialog *err_dialog;
+	GDCLASS(NavigationMeshInstance, Spatial);
 
-	HBoxContainer *bake_hbox;
-	ToolButton *button_bake;
-	ToolButton *button_reset;
-	Label *bake_info;
+	bool enabled;
+	RID region;
+	Ref<NavigationMesh> navmesh;
 
-	NavigationMeshInstance *node;
-
-	void _bake_pressed();
-	void _clear_pressed();
+	Navigation *navigation;
+	Node *debug_view;
+	Thread *bake_thread;
 
 protected:
-	void _node_removed(Node *p_node);
+	void _notification(int p_what);
 	static void _bind_methods();
-	void _notification(int p_option);
+	void _changed_callback(Object *p_changed, const char *p_prop);
 
 public:
-	void edit(NavigationMeshInstance *p_nav_mesh_instance);
-	NavigationMeshEditor();
-	~NavigationMeshEditor();
+	void set_enabled(bool p_enabled);
+	bool is_enabled() const;
+
+	void set_navigation_mesh(const Ref<NavigationMesh> &p_navmesh);
+	Ref<NavigationMesh> get_navigation_mesh() const;
+
+	/// Bakes the navigation mesh in a dedicated thread; once done, automatically
+	/// sets the new navigation mesh and emits a signal
+	void bake_navigation_mesh();
+	void _bake_finished(Ref<NavigationMesh> p_nav_mesh);
+
+	String get_configuration_warning() const;
+
+	NavigationMeshInstance();
+	~NavigationMeshInstance();
 };
 
-class NavigationMeshEditorPlugin : public EditorPlugin {
-
-	GDCLASS(NavigationMeshEditorPlugin, EditorPlugin);
-
-	NavigationMeshEditor *navigation_mesh_editor;
-	EditorNode *editor;
-
-public:
-	virtual String get_name() const { return "NavigationMesh"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-
-	NavigationMeshEditorPlugin(EditorNode *p_node);
-	~NavigationMeshEditorPlugin();
-};
-
-#endif // NAVIGATION_MESH_GENERATOR_PLUGIN_H
+#endif // NAVIGATION_MESH_INSTANCE_H

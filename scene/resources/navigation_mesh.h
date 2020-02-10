@@ -31,7 +31,6 @@
 #ifndef NAVIGATION_MESH_H
 #define NAVIGATION_MESH_H
 
-#include "scene/3d/spatial.h"
 #include "scene/resources/mesh.h"
 
 class Mesh;
@@ -191,37 +190,6 @@ public:
 	Ref<Mesh> get_debug_mesh();
 
 	NavigationMesh();
-};
-
-class Navigation;
-
-class NavigationMeshInstance : public Spatial {
-
-	GDCLASS(NavigationMeshInstance, Spatial);
-
-	bool enabled;
-	int nav_id;
-	Navigation *navigation;
-	Ref<NavigationMesh> navmesh;
-
-	Node *debug_view;
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-	void _changed_callback(Object *p_changed, const char *p_prop);
-
-public:
-	void set_enabled(bool p_enabled);
-	bool is_enabled() const;
-
-	void set_navigation_mesh(const Ref<NavigationMesh> &p_navmesh);
-	Ref<NavigationMesh> get_navigation_mesh() const;
-
-	String get_configuration_warning() const;
-
-	NavigationMeshInstance();
-	~NavigationMeshInstance();
 };
 
 #endif // NAVIGATION_MESH_H
