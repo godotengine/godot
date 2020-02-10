@@ -377,7 +377,8 @@ struct _PaletteEntry {
 	String name;
 
 	bool operator<(const _PaletteEntry &p_rhs) const {
-		
+		// Natural no case comparison will compare strings based on CharType
+		// order (except digits) and on numbers that start on the same position
 		return name.naturalnocasecmp_to(p_rhs.name) < 0;
 	}
 };
