@@ -216,7 +216,7 @@ public:
 	virtual String get_drive(int p_drive);
 
 	virtual Error change_dir(String p_dir);
-	virtual String get_current_dir();
+	virtual String get_current_dir(bool p_include_drive = true);
 
 	virtual bool file_exists(String p_file);
 	virtual bool dir_exists(String p_dir);
