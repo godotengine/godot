@@ -34,7 +34,9 @@
 #include "editor/editor_sectioned_inspector.h"
 #include "editor_inspector.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
@@ -44,6 +46,34 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	GDCLASS(EditorSettingsDialog, AcceptDialog);
 
+	// Popup Menus
+	enum MenuOptions {
+		MENU_COLLAPSE_ALL,
+		MENU_COLLAPSE_UNSELECTED,
+		MENU_EXPAND_ALL,
+		MENU_RESTORE_DEFAULTS
+	};
+
+	MenuButton *general_menu_button;
+	MenuButton *shortcut_menu_button;
+	PopupMenu *general_menu_button_popup;
+	PopupMenu *general_context_menu;
+	PopupMenu *shortcut_menu_button_popup;
+	PopupMenu *shortcut_context_menu;
+	ConfirmationDialog *restore_default_settings_ask;
+	ConfirmationDialog *restore_default_shortcuts_ask;
+
+	bool autocollapsing = false;
+	void _general_menu_option(int p_option);
+	void _general_section_right_click(Vector2 p_position);
+	void _restore_default_settings();
+	void _shortcut_section_right_click(Vector2 p_position);
+	void _shortcut_menu_option(int p_option);
+	void _shortcut_section_collapsed(Object *p_item);
+	void _restore_default_shortcuts();
+	void _update_menus();
+
+	// Tabs and content
 	bool updating;
 
 	TabContainer *tabs;
@@ -81,9 +111,6 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	void _tabs_tab_changed(int p_tab);
 	void _focus_current_search_box();
-
-	void _clear_shortcut_search_box();
-	void _clear_search_box();
 
 	void _filter_shortcuts(const String &p_filter);
 

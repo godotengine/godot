@@ -40,6 +40,184 @@
 #include "scene/gui/margin_container.h"
 #include "script_editor_debugger.h"
 
+// Popup Menus
+void EditorSettingsDialog::_general_menu_option(int p_option) {
+	switch (p_option) {
+		case MENU_COLLAPSE_ALL: {
+			inspector->collapse_all_sections();
+		} break;
+		case MENU_EXPAND_ALL: {
+			inspector->expand_all_sections();
+		} break;
+		case MENU_COLLAPSE_UNSELECTED: {
+			inspector->collapse_unselected();
+		} break;
+		case MENU_RESTORE_DEFAULTS: {
+			restore_default_settings_ask->set_text(TTR("Restore all default settings? (No undo)"));
+			restore_default_settings_ask->popup_centered_minsize();
+		} break;
+	}
+}
+
+void EditorSettingsDialog::_restore_default_settings() {
+
+	List<PropertyInfo> plist;
+	EditorSettings *settings = EditorSettings::get_singleton();
+	settings->get_property_list(&plist);
+	bool requireRestart = false;
+
+	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
+
+		PropertyInfo propInfo = E->get();
+		if (settings->property_can_revert(propInfo.name)) {
+			Variant revert = settings->property_get_revert(propInfo.name);
+			settings->set_setting(propInfo.name, revert);
+		}
+
+		if (propInfo.usage & PROPERTY_USAGE_RESTART_IF_CHANGED) {
+			requireRestart = true;
+		}
+	}
+
+	if (requireRestart) {
+		_editor_restart_request();
+	}
+}
+
+void EditorSettingsDialog::_shortcut_menu_option(int p_option) {
+	switch (p_option) {
+		case MENU_COLLAPSE_ALL: {
+
+			if (shortcuts->get_root() && shortcuts->get_root()->get_children()) {
+				autocollapsing = true;
+				for (TreeItem *item = shortcuts->get_root()->get_children(); item; item = item->get_next()) {
+					item->set_collapsed(true);
+				}
+				autocollapsing = false;
+			}
+		} break;
+		case MENU_EXPAND_ALL: {
+
+			if (shortcuts->get_root() && shortcuts->get_root()->get_children()) {
+				autocollapsing = true;
+				for (TreeItem *item = shortcuts->get_root()->get_children(); item; item = item->get_next()) {
+					item->set_collapsed(false);
+				}
+				autocollapsing = false;
+			}
+		} break;
+		case MENU_COLLAPSE_UNSELECTED: {
+
+			if (shortcuts->get_root() && shortcuts->get_root()->get_children()) {
+				autocollapsing = true;
+				TreeItem *selected = shortcuts->get_selected();
+				if (shortcuts->get_root() && shortcuts->get_root()->get_children()) {
+					TreeItem *shortcutsSections = shortcuts->get_root()->get_children();
+					for (TreeItem *item = shortcutsSections; item; item = item->get_next()) {
+
+						if (item->is_collapsed())
+							continue;
+
+						if (!selected || item != selected) {
+							bool hasSelectedChildren = false;
+							for (TreeItem *shortcut = item->get_children(); shortcut; shortcut = shortcut->get_next()) {
+
+								if (shortcut->is_selected(0) || shortcut->is_selected(1))
+									hasSelectedChildren = true;
+							}
+
+							if (!hasSelectedChildren)
+								item->set_collapsed(true);
+						}
+					}
+				}
+				autocollapsing = false;
+			}
+		} break;
+		case MENU_RESTORE_DEFAULTS: {
+
+			restore_default_shortcuts_ask->set_text(TTR("Restore all default shortcuts? (No undo)"));
+			restore_default_shortcuts_ask->popup_centered_minsize();
+		} break;
+	}
+}
+
+void EditorSettingsDialog::_restore_default_shortcuts() {
+
+	List<String> slist;
+	EditorSettings::get_singleton()->get_shortcut_list(&slist);
+	for (List<String>::Element *E = slist.front(); E; E = E->next()) {
+
+		Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(E->get());
+		if (!sc->has_meta("original"))
+			continue;
+
+		Ref<InputEvent> original = sc->get_meta("original");
+		if (sc->get_shortcut() == original)
+			continue;
+
+		sc->set_shortcut(original);
+	}
+
+	_update_shortcuts();
+}
+
+void EditorSettingsDialog::_shortcut_section_collapsed(Object *p_item) {
+
+	if (!autocollapsing) {
+		TreeItem *item = Object::cast_to<TreeItem>(p_item);
+		item->select(0);
+	}
+}
+
+void EditorSettingsDialog::_update_menus() {
+
+	general_menu_button_popup = general_menu_button->get_popup();
+	general_menu_button_popup->clear();
+	general_menu_button_popup->add_icon_item(get_icon("AnimationTrackGroup", "EditorIcons"), TTR("Expand Sections"), MENU_EXPAND_ALL);
+	general_menu_button_popup->add_icon_item(get_icon("AnimationTrackList", "EditorIcons"), TTR("Collapse Sections"), MENU_COLLAPSE_ALL);
+	general_menu_button_popup->add_item(TTR("Collapse Unselected"), MENU_COLLAPSE_UNSELECTED);
+	general_menu_button_popup->add_separator();
+	general_menu_button_popup->add_icon_item(get_icon("Reload", "EditorIcons"), TTR("Restore Defaults"), MENU_RESTORE_DEFAULTS);
+
+	general_context_menu->clear();
+	general_context_menu->add_icon_item(get_icon("AnimationTrackGroup", "EditorIcons"), TTR("Expand Sections"), MENU_EXPAND_ALL);
+	general_context_menu->add_icon_item(get_icon("AnimationTrackList", "EditorIcons"), TTR("Collapse Sections"), MENU_COLLAPSE_ALL);
+	general_context_menu->add_item(TTR("Collapse Unselected"), MENU_COLLAPSE_UNSELECTED);
+	general_context_menu->add_separator();
+	general_context_menu->add_icon_item(get_icon("Reload", "EditorIcons"), TTR("Restore Defaults"), MENU_RESTORE_DEFAULTS);
+
+	shortcut_menu_button_popup = shortcut_menu_button->get_popup();
+	shortcut_menu_button_popup->clear();
+	shortcut_menu_button_popup->add_icon_item(get_icon("AnimationTrackGroup", "EditorIcons"), TTR("Expand Sections"), MENU_EXPAND_ALL);
+	shortcut_menu_button_popup->add_icon_item(get_icon("AnimationTrackList", "EditorIcons"), TTR("Collapse Sections"), MENU_COLLAPSE_ALL);
+	shortcut_menu_button_popup->add_item(TTR("Collapse Unselected"), MENU_COLLAPSE_UNSELECTED);
+	shortcut_menu_button_popup->add_separator();
+	shortcut_menu_button_popup->add_icon_item(get_icon("Reload", "EditorIcons"), TTR("Restore Defaults"), MENU_RESTORE_DEFAULTS);
+
+	shortcut_context_menu->clear();
+	shortcut_context_menu->add_icon_item(get_icon("AnimationTrackGroup", "EditorIcons"), TTR("Expand Sections"), MENU_EXPAND_ALL);
+	shortcut_context_menu->add_icon_item(get_icon("AnimationTrackList", "EditorIcons"), TTR("Collapse Sections"), MENU_COLLAPSE_ALL);
+	shortcut_context_menu->add_item(TTR("Collapse Unselected"), MENU_COLLAPSE_UNSELECTED);
+	shortcut_context_menu->add_separator();
+	shortcut_context_menu->add_icon_item(get_icon("Reload", "EditorIcons"), TTR("Restore Defaults"), MENU_RESTORE_DEFAULTS);
+}
+
+void EditorSettingsDialog::_shortcut_section_right_click(Vector2 p_position) {
+	shortcut_context_menu->set_position(get_global_transform().xform(get_local_mouse_position()));
+	shortcut_context_menu->set_size(Vector2(1, 1));
+	shortcut_context_menu->set_scale(get_global_transform().get_scale());
+	shortcut_context_menu->popup();
+}
+
+void EditorSettingsDialog::_general_section_right_click(Vector2 p_position) {
+	general_context_menu->set_position(get_global_transform().xform(get_local_mouse_position()));
+	general_context_menu->set_size(Vector2(1, 1));
+	general_context_menu->set_scale(get_global_transform().get_scale());
+	general_context_menu->popup();
+}
+
+// Tabs and content
 void EditorSettingsDialog::ok_pressed() {
 
 	if (!EditorSettings::get_singleton())
@@ -126,6 +304,7 @@ void EditorSettingsDialog::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			_update_icons();
+			_update_menus();
 		} break;
 		case NOTIFICATION_POPUP_HIDE: {
 			EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "editor_settings", get_rect());
@@ -133,6 +312,7 @@ void EditorSettingsDialog::_notification(int p_what) {
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_icons();
+			_update_menus();
 			// Update theme colors.
 			inspector->update_category_list();
 			_update_shortcuts();
@@ -177,6 +357,8 @@ void EditorSettingsDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 
 void EditorSettingsDialog::_update_icons() {
 
+	general_menu_button->set_icon(get_icon("Tools", "EditorIcons"));
+	shortcut_menu_button->set_icon(get_icon("Tools", "EditorIcons"));
 	search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 	search_box->set_clear_button_enabled(true);
 	shortcut_search_box->set_right_icon(get_icon("Search", "EditorIcons"));
@@ -388,17 +570,24 @@ void EditorSettingsDialog::_editor_restart_close() {
 
 void EditorSettingsDialog::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("_general_menu_option"), &EditorSettingsDialog::_general_menu_option);
+	ClassDB::bind_method(D_METHOD("_shortcut_menu_option"), &EditorSettingsDialog::_shortcut_menu_option);
+	ClassDB::bind_method(D_METHOD("_shortcut_section_collapsed"), &EditorSettingsDialog::_shortcut_section_collapsed);
+	ClassDB::bind_method(D_METHOD("_restore_default_shortcuts"), &EditorSettingsDialog::_restore_default_shortcuts);
+	ClassDB::bind_method(D_METHOD("_restore_default_settings"), &EditorSettingsDialog::_restore_default_settings);
 	ClassDB::bind_method(D_METHOD("_unhandled_input"), &EditorSettingsDialog::_unhandled_input);
 	ClassDB::bind_method(D_METHOD("_settings_save"), &EditorSettingsDialog::_settings_save);
 	ClassDB::bind_method(D_METHOD("_settings_changed"), &EditorSettingsDialog::_settings_changed);
 	ClassDB::bind_method(D_METHOD("_settings_property_edited"), &EditorSettingsDialog::_settings_property_edited);
 	ClassDB::bind_method(D_METHOD("_shortcut_button_pressed"), &EditorSettingsDialog::_shortcut_button_pressed);
+	ClassDB::bind_method(D_METHOD("_shortcut_section_right_click"), &EditorSettingsDialog::_shortcut_section_right_click);
+	ClassDB::bind_method(D_METHOD("_general_section_right_click"), &EditorSettingsDialog::_general_section_right_click);
 	ClassDB::bind_method(D_METHOD("_filter_shortcuts"), &EditorSettingsDialog::_filter_shortcuts);
 	ClassDB::bind_method(D_METHOD("_update_shortcuts"), &EditorSettingsDialog::_update_shortcuts);
+	ClassDB::bind_method(D_METHOD("_update_menus"), &EditorSettingsDialog::_update_menus);
 	ClassDB::bind_method(D_METHOD("_press_a_key_confirm"), &EditorSettingsDialog::_press_a_key_confirm);
 	ClassDB::bind_method(D_METHOD("_wait_for_key"), &EditorSettingsDialog::_wait_for_key);
 	ClassDB::bind_method(D_METHOD("_tabs_tab_changed"), &EditorSettingsDialog::_tabs_tab_changed);
-
 	ClassDB::bind_method(D_METHOD("_editor_restart_request"), &EditorSettingsDialog::_editor_restart_request);
 	ClassDB::bind_method(D_METHOD("_editor_restart"), &EditorSettingsDialog::_editor_restart);
 	ClassDB::bind_method(D_METHOD("_editor_restart_close"), &EditorSettingsDialog::_editor_restart_close);
@@ -415,8 +604,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	tabs->connect("tab_changed", this, "_tabs_tab_changed");
 	add_child(tabs);
 
-	// General Tab
-
+	// General Tab --------------------------------------------------------------------------------------
 	tab_general = memnew(VBoxContainer);
 	tabs->add_child(tab_general);
 	tab_general->set_name(TTR("General"));
@@ -425,19 +613,39 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tab_general->add_child(hbc);
 
+	/* menu */
+	general_menu_button = memnew(MenuButton);
+	general_menu_button->set_icon(get_icon("Tools", "EditorIcons"));
+	general_menu_button_popup = general_menu_button->get_popup();
+	general_menu_button_popup->set_anchors_preset(PRESET_TOP_RIGHT);
+	general_menu_button_popup->connect("id_pressed", this, "_general_menu_option");
+	general_context_menu = memnew(PopupMenu);
+	general_context_menu->hide();
+	general_context_menu->connect("id_pressed", this, "_general_menu_option");
+	add_child(general_context_menu);
+	restore_default_settings_ask = memnew(ConfirmationDialog);
+	add_child(restore_default_settings_ask);
+	restore_default_settings_ask->connect("confirmed", this, "_restore_default_settings");
+
+	/* search */
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->add_child(search_box);
+	hbc->add_child(general_menu_button);
 
+	/* inspector */
 	inspector = memnew(SectionedInspector);
 	inspector->get_inspector()->set_use_filter(true);
 	inspector->register_search_box(search_box);
 	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector->get_inspector()->set_undo_redo(undo_redo);
+	inspector->get_sections()->set_allow_rmb_select(true);
 	tab_general->add_child(inspector);
 	inspector->get_inspector()->connect("property_edited", this, "_settings_property_edited");
 	inspector->get_inspector()->connect("restart_requested", this, "_editor_restart_request");
+	inspector->get_sections()->connect("item_rmb_selected", this, "_general_section_right_click");
 
+	/* restart required container */
 	restart_container = memnew(PanelContainer);
 	tab_general->add_child(restart_container);
 	HBoxContainer *restart_hb = memnew(HBoxContainer);
@@ -458,8 +666,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	restart_hb->add_child(restart_close_button);
 	restart_container->hide();
 
-	// Shortcuts Tab
-
+	// Shortcuts Tab ------------------------------------------------------------------------------------
 	tab_shortcuts = memnew(VBoxContainer);
 	tabs->add_child(tab_shortcuts);
 	tab_shortcuts->set_name(TTR("Shortcuts"));
@@ -468,11 +675,28 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tab_shortcuts->add_child(hbc);
 
+	/* menu */
+	shortcut_menu_button = memnew(MenuButton);
+	shortcut_menu_button->set_icon(get_icon("Tools", "EditorIcons"));
+	shortcut_menu_button_popup = shortcut_menu_button->get_popup();
+	shortcut_menu_button_popup->set_anchors_preset(PRESET_TOP_RIGHT);
+	shortcut_menu_button_popup->connect("id_pressed", this, "_shortcut_menu_option");
+	shortcut_context_menu = memnew(PopupMenu);
+	shortcut_context_menu->hide();
+	shortcut_context_menu->connect("id_pressed", this, "_shortcut_menu_option");
+	add_child(shortcut_context_menu);
+	restore_default_shortcuts_ask = memnew(ConfirmationDialog);
+	add_child(restore_default_shortcuts_ask);
+	restore_default_shortcuts_ask->connect("confirmed", this, "_restore_default_shortcuts");
+
+	/* search */
 	shortcut_search_box = memnew(LineEdit);
 	shortcut_search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->add_child(shortcut_search_box);
+	hbc->add_child(shortcut_menu_button);
 	shortcut_search_box->connect("text_changed", this, "_filter_shortcuts");
 
+	/* shortcut tree */
 	shortcuts = memnew(Tree);
 	tab_shortcuts->add_child(shortcuts, true);
 	shortcuts->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -481,12 +705,16 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcuts->set_column_titles_visible(true);
 	shortcuts->set_column_title(0, TTR("Name"));
 	shortcuts->set_column_title(1, TTR("Binding"));
+	shortcuts->set_select_mode(Tree::SELECT_ROW);
+	shortcuts->set_allow_rmb_select(true);
+	shortcuts->connect("item_collapsed", this, "_shortcut_section_collapsed");
 	shortcuts->connect("button_pressed", this, "_shortcut_button_pressed");
+	shortcuts->connect("item_rmb_selected", this, "_shortcut_section_right_click");
 
+	/* keybind dialogue */
 	press_a_key = memnew(ConfirmationDialog);
 	press_a_key->set_focus_mode(FOCUS_ALL);
 	add_child(press_a_key);
-
 	Label *l = memnew(Label);
 	l->set_text(TTR("Press a Key..."));
 	l->set_anchors_and_margins_preset(Control::PRESET_WIDE);
@@ -497,9 +725,9 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	press_a_key->add_child(l);
 	press_a_key->connect("gui_input", this, "_wait_for_key");
 	press_a_key->connect("confirmed", this, "_press_a_key_confirm");
-
 	set_hide_on_ok(true);
 
+	/* timer */
 	timer = memnew(Timer);
 	timer->set_wait_time(1.5);
 	timer->connect("timeout", this, "_settings_save");
