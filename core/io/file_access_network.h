@@ -116,6 +116,7 @@ class FileAccessNetwork : public FileAccess {
 	mutable Error response;
 
 	uint64_t exists_modtime;
+	uint64_t exists_acctime;
 	friend class FileAccessNetworkClient;
 	void _queue_page(int p_page) const;
 	void _respond(size_t p_len, Error p_status);
@@ -128,6 +129,7 @@ public:
 		COMMAND_CLOSE,
 		COMMAND_FILE_EXISTS,
 		COMMAND_GET_MODTIME,
+		COMMAND_GET_ACCTIME,
 	};
 
 	enum Response {
@@ -135,6 +137,7 @@ public:
 		RESPONSE_DATA,
 		RESPONSE_FILE_EXISTS,
 		RESPONSE_GET_MODTIME,
+		RESPONSE_GET_ACCTIME,
 	};
 
 	virtual Error _open(const String &p_path, int p_mode_flags); ///< open a file
@@ -159,6 +162,7 @@ public:
 	virtual bool file_exists(const String &p_path); ///< return true if a file exists
 
 	virtual uint64_t _get_modified_time(const String &p_file);
+	virtual uint64_t _get_access_time(const String &p_file);
 	virtual uint32_t _get_unix_permissions(const String &p_file);
 	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions);
 

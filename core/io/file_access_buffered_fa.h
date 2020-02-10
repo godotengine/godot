@@ -143,6 +143,11 @@ public:
 		return f._get_modified_time(p_file);
 	}
 
+	virtual uint64_t _get_access_time(const String &p_file) {
+
+		return f._get_access_time(p_file);
+	}
+
 	virtual uint32_t _get_unix_permissions(const String &p_file) {
 		return f._get_unix_permissions(p_file);
 	}

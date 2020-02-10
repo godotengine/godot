@@ -374,6 +374,14 @@ uint64_t FileAccessCompressed::_get_modified_time(const String &p_file) {
 		return 0;
 }
 
+uint64_t FileAccessCompressed::_get_access_time(const String &p_file) {
+
+	if (f)
+		return f->get_access_time(p_file);
+	else
+		return 0;
+}
+
 uint32_t FileAccessCompressed::_get_unix_permissions(const String &p_file) {
 	if (f)
 		return f->_get_unix_permissions(p_file);

@@ -170,6 +170,13 @@ void FileAccessNetworkClient::_thread_func() {
 				fa->sem->post();
 
 			} break;
+			case FileAccessNetwork::RESPONSE_GET_ACCTIME: {
+
+				uint64_t status = get_64();
+				fa->exists_acctime = status;
+				fa->sem->post();
+
+			} break;
 		}
 
 		unlock_mutex();
@@ -499,6 +506,23 @@ uint64_t FileAccessNetwork::_get_modified_time(const String &p_file) {
 	return exists_modtime;
 }
 
+uint64_t FileAccessNetwork::_get_access_time(const String &p_file) {
+
+	FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
+	nc->lock_mutex();
+	nc->put_32(id);
+	nc->put_32(COMMAND_GET_ACCTIME);
+	CharString cs = p_file.utf8();
+	nc->put_32(cs.length());
+	nc->client->put_data((const uint8_t *)cs.ptr(), cs.length());
+	nc->unlock_mutex();
+	DEBUG_PRINT("ACCTIME POST");
+	nc->sem->post();
+	sem->wait();
+
+	return exists_acctime;
+}
+
 uint32_t FileAccessNetwork::_get_unix_permissions(const String &p_file) {
 	ERR_PRINT("Getting UNIX permissions from network drives is not implemented yet");
 	return 0;
@@ -535,6 +559,8 @@ FileAccessNetwork::FileAccessNetwork() {
 	last_activity_val = 0;
 	waiting_on_page = -1;
 	last_page = -1;
+	exists_modtime = 0;
+	exists_acctime = 0;
 }
 
 FileAccessNetwork::~FileAccessNetwork() {

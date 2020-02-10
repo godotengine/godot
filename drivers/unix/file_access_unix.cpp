@@ -322,6 +322,19 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	};
 }
 
+uint64_t FileAccessUnix::_get_access_time(const String &p_file) {
+
+	String file = fix_path(p_file);
+	struct stat flags;
+	int err = stat(file.utf8().get_data(), &flags);
+
+	if (!err) {
+		return flags.st_atime;
+	} else {
+		ERR_FAIL_V_MSG(0, "Failed to get access time for: " + p_file + ".");
+	};
+}
+
 uint32_t FileAccessUnix::_get_unix_permissions(const String &p_file) {
 
 	String file = fix_path(p_file);

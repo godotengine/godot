@@ -345,6 +345,23 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 	}
 }
 
+uint64_t FileAccessWindows::_get_access_time(const String &p_file) {
+
+	String file = fix_path(p_file);
+	if (file.ends_with("/") && file != "/")
+		file = file.substr(0, file.length() - 1);
+
+	struct _stat st;
+	int rv = _wstat(file.c_str(), &st);
+
+	if (rv == 0) {
+
+		return st.st_atime;
+	} else {
+		ERR_FAIL_V_MSG(0, "Failed to get access time for: " + file + ".");
+	}
+}
+
 uint32_t FileAccessWindows::_get_unix_permissions(const String &p_file) {
 	return 0;
 }

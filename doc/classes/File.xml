@@ -78,6 +78,18 @@
 				Returns the next 8 bits from the file as an integer.
 			</description>
 		</method>
+		<method name="get_access_time" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="file" type="String">
+			</argument>
+			<description>
+				Returns the last time the [code]file[/code] was accessed in unix timestamp format or returns a [String] "ERROR IN [code]file[/code]". This unix timestamp can be converted to datetime by using [method OS.get_datetime_from_unix_time].
+				Note that even operating systems supporting this are often configured by default in a way that they don't fully track this timestamp, as an optimization. They may return the modified time instead or only have the access time updated once a day.
+				If you really need real time accuracy, check the documentation of your OS on how to enable it.
+				If the underlying file system doesn't support this query at all, the result will be 0.
+			</description>
+		</method>
 		<method name="get_as_text" qualifiers="const">
 			<return type="String">
 			</return>
@@ -157,6 +169,7 @@
 			</argument>
 			<description>
 				Returns the last time the [code]file[/code] was modified in unix timestamp format or returns a [String] "ERROR IN [code]file[/code]". This unix timestamp can be converted to datetime by using [method OS.get_datetime_from_unix_time].
+				If the underlying file system doesn't support this query, the result will be 0.
 			</description>
 		</method>
 		<method name="get_pascal_string">

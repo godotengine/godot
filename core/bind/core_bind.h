@@ -546,6 +546,7 @@ public:
 	bool file_exists(const String &p_name) const; // Return true if a file exists.
 
 	uint64_t get_modified_time(const String &p_file) const;
+	uint64_t get_access_time(const String &p_file) const;
 
 	_File();
 	virtual ~_File();

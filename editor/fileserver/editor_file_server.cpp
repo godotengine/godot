@@ -128,6 +128,7 @@ void EditorFileServer::_subthread_start(void *s) {
 
 			case FileAccessNetwork::COMMAND_FILE_EXISTS:
 			case FileAccessNetwork::COMMAND_GET_MODTIME:
+			case FileAccessNetwork::COMMAND_GET_ACCTIME:
 			case FileAccessNetwork::COMMAND_OPEN_FILE: {
 
 				DEBUG_TIME("open_file")
@@ -154,6 +155,9 @@ void EditorFileServer::_subthread_start(void *s) {
 				}
 				if (cmd == FileAccessNetwork::COMMAND_GET_MODTIME) {
 					print_verbose("MOD TIME: " + s2);
+				}
+				if (cmd == FileAccessNetwork::COMMAND_GET_ACCTIME) {
+					print_verbose("ACC TIME: " + s2);
 				}
 				if (cmd == FileAccessNetwork::COMMAND_OPEN_FILE) {
 					print_verbose("OPEN: " + s2);
@@ -185,6 +189,18 @@ void EditorFileServer::_subthread_start(void *s) {
 					encode_uint32(FileAccessNetwork::RESPONSE_GET_MODTIME, buf4);
 					cd->connection->put_data(buf4, 4);
 					encode_uint64(FileAccess::get_modified_time(s2), buf4);
+					cd->connection->put_data(buf4, 8);
+					DEBUG_TIME("open_file_end")
+					break;
+				}
+
+				if (cmd == FileAccessNetwork::COMMAND_GET_ACCTIME) {
+
+					encode_uint32(id, buf4);
+					cd->connection->put_data(buf4, 4);
+					encode_uint32(FileAccessNetwork::RESPONSE_GET_ACCTIME, buf4);
+					cd->connection->put_data(buf4, 4);
+					encode_uint64(FileAccess::get_access_time(s2), buf4);
 					cd->connection->put_data(buf4, 8);
 					DEBUG_TIME("open_file_end")
 					break;

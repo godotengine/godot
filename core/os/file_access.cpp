@@ -505,6 +505,19 @@ uint64_t FileAccess::get_modified_time(const String &p_file) {
 	return mt;
 }
 
+uint64_t FileAccess::get_access_time(const String &p_file) {
+
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && PackedData::get_singleton()->has_path(p_file))
+		return 0;
+
+	FileAccess *fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(!fa, 0, "Cannot create FileAccess for path '" + p_file + "'.");
+
+	uint64_t mt = fa->_get_access_time(p_file);
+	memdelete(fa);
+	return mt;
+}
+
 uint32_t FileAccess::get_unix_permissions(const String &p_file) {
 
 	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && PackedData::get_singleton()->has_path(p_file))

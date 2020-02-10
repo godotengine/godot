@@ -307,6 +307,11 @@ uint64_t FileAccessEncrypted::_get_modified_time(const String &p_file) {
 	return 0;
 }
 
+uint64_t FileAccessEncrypted::_get_access_time(const String &p_file) {
+
+	return 0;
+}
+
 uint32_t FileAccessEncrypted::_get_unix_permissions(const String &p_file) {
 
 	return 0;
