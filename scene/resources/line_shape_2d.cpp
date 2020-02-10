@@ -115,7 +115,7 @@ void LineShape2D::_bind_methods() {
 LineShape2D::LineShape2D() :
 		Shape2D(Physics2DServer::get_singleton()->line_shape_create()) {
 
-	normal = Vector2(0, -1);
+	normal = Vector2(0, 1);
 	d = 0;
 	_update_shape();
 }
