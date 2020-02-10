@@ -144,7 +144,7 @@ Error DirAccessJAndroid::change_dir(String p_dir) {
 	return OK;
 }
 
-String DirAccessJAndroid::get_current_dir() {
+String DirAccessJAndroid::get_current_dir(bool p_include_drive) {
 
 	return "res://" + current_dir;
 }

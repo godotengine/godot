@@ -189,7 +189,7 @@ Error DirAccessWindows::make_dir(String p_dir) {
 	return ERR_CANT_CREATE;
 }
 
-String DirAccessWindows::get_current_dir() {
+String DirAccessWindows::get_current_dir(bool p_include_drive) {
 
 	String base = _get_root_path();
 	if (base != "") {
@@ -203,7 +203,11 @@ String DirAccessWindows::get_current_dir() {
 	} else {
 	}
 
-	return current_dir;
+	if (p_include_drive) {
+		return current_dir;
+	} else {
+		return current_dir.right(current_dir.find(":") + 1);
+	}
 }
 
 bool DirAccessWindows::file_exists(String p_file) {

@@ -76,6 +76,8 @@ private:
 	VBoxContainer *vbox;
 	Mode mode;
 	LineEdit *dir;
+	HBoxContainer *drives_container;
+	HBoxContainer *shortcuts_container;
 	OptionButton *drives;
 	Tree *tree;
 	HBoxContainer *file_box;

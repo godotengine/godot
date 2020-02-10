@@ -454,7 +454,7 @@ Error DirAccessPack::change_dir(String p_dir) {
 	return OK;
 }
 
-String DirAccessPack::get_current_dir() {
+String DirAccessPack::get_current_dir(bool p_include_drive) {
 
 	PackedData::PackedDir *pd = current;
 	String p = current->name;
