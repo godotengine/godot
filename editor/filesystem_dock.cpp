@@ -1782,6 +1782,14 @@ void FileSystemDock::_resource_created() const {
 	Resource *r = Object::cast_to<Resource>(c);
 	ERR_FAIL_COND(!r);
 
+	PackedScene *scene = Object::cast_to<PackedScene>(r);
+	if (scene) {
+		Node *node = memnew(Node);
+		node->set_name("Node");
+		scene->pack(node);
+		memdelete(node);
+	}
+
 	REF res(r);
 	editor->push_item(c);
 
