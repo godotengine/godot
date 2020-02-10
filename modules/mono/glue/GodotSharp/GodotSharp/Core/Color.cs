@@ -318,9 +318,9 @@ namespace Godot
             return res;
         }
 
-        public int ToAbgr32()
+        public uint ToAbgr32()
         {
-            int c = (byte)Math.Round(a * 255);
+            uint c = (byte)Math.Round(a * 255);
             c <<= 8;
             c |= (byte)Math.Round(b * 255);
             c <<= 8;
@@ -331,9 +331,9 @@ namespace Godot
             return c;
         }
 
-        public long ToAbgr64()
+        public ulong ToAbgr64()
         {
-            long c = (ushort)Math.Round(a * 65535);
+            ulong c = (ushort)Math.Round(a * 65535);
             c <<= 16;
             c |= (ushort)Math.Round(b * 65535);
             c <<= 16;
@@ -344,9 +344,9 @@ namespace Godot
             return c;
         }
 
-        public int ToArgb32()
+        public uint ToArgb32()
         {
-            int c = (byte)Math.Round(a * 255);
+            uint c = (byte)Math.Round(a * 255);
             c <<= 8;
             c |= (byte)Math.Round(r * 255);
             c <<= 8;
@@ -357,9 +357,9 @@ namespace Godot
             return c;
         }
 
-        public long ToArgb64()
+        public ulong ToArgb64()
         {
-            long c = (ushort)Math.Round(a * 65535);
+            ulong c = (ushort)Math.Round(a * 65535);
             c <<= 16;
             c |= (ushort)Math.Round(r * 65535);
             c <<= 16;
@@ -370,9 +370,9 @@ namespace Godot
             return c;
         }
 
-        public int ToRgba32()
+        public uint ToRgba32()
         {
-            int c = (byte)Math.Round(r * 255);
+            uint c = (byte)Math.Round(r * 255);
             c <<= 8;
             c |= (byte)Math.Round(g * 255);
             c <<= 8;
@@ -383,9 +383,9 @@ namespace Godot
             return c;
         }
 
-        public long ToRgba64()
+        public ulong ToRgba64()
         {
-            long c = (ushort)Math.Round(r * 65535);
+            ulong c = (ushort)Math.Round(r * 65535);
             c <<= 16;
             c |= (ushort)Math.Round(g * 65535);
             c <<= 16;
@@ -419,7 +419,7 @@ namespace Godot
             this.a = a;
         }
 
-        public Color(int rgba)
+        public Color(uint rgba)
         {
             a = (rgba & 0xFF) / 255.0f;
             rgba >>= 8;
@@ -430,7 +430,7 @@ namespace Godot
             r = (rgba & 0xFF) / 255.0f;
         }
 
-        public Color(long rgba)
+        public Color(ulong rgba)
         {
             a = (rgba & 0xFFFF) / 65535.0f;
             rgba >>= 16;

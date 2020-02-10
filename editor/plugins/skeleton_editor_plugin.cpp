@@ -103,8 +103,10 @@ void SkeletonEditor::create_physical_skeleton() {
 
 PhysicalBone *SkeletonEditor::create_physical_bone(int bone_id, int bone_child_id, const Vector<BoneInfo> &bones_infos) {
 
-	real_t half_height(skeleton->get_bone_rest(bone_child_id).origin.length() * 0.5);
-	real_t radius(half_height * 0.2);
+	const Transform child_rest = skeleton->get_bone_rest(bone_child_id);
+
+	const real_t half_height(child_rest.origin.length() * 0.5);
+	const real_t radius(half_height * 0.2);
 
 	CapsuleShape *bone_shape_capsule = memnew(CapsuleShape);
 	bone_shape_capsule->set_height((half_height - radius) * 2);
@@ -114,7 +116,8 @@ PhysicalBone *SkeletonEditor::create_physical_bone(int bone_id, int bone_child_i
 	bone_shape->set_shape(bone_shape_capsule);
 
 	Transform body_transform;
-	body_transform.origin = Vector3(0, 0, -half_height);
+	body_transform.set_look_at(Vector3(0, 0, 0), child_rest.origin, Vector3(0, 1, 0));
+	body_transform.origin = body_transform.basis.xform(Vector3(0, 0, -half_height));
 
 	Transform joint_transform;
 	joint_transform.origin = Vector3(0, 0, half_height);

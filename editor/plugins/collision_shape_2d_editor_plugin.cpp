@@ -448,8 +448,8 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 			float radius = shape->get_radius();
 			float height = shape->get_height() / 2;
 
-			handles.write[0] = Point2(radius, -height);
-			handles.write[1] = Point2(0, -(height + radius));
+			handles.write[0] = Point2(radius, height);
+			handles.write[1] = Point2(0, height + radius);
 
 			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
 			p_overlay->draw_texture(h, gt.xform(handles[1]) - size);
@@ -502,8 +502,8 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 			handles.resize(3);
 			Vector2 ext = shape->get_extents();
 			handles.write[0] = Point2(ext.x, 0);
-			handles.write[1] = Point2(0, -ext.y);
-			handles.write[2] = Point2(ext.x, -ext.y);
+			handles.write[1] = Point2(0, ext.y);
+			handles.write[2] = Point2(ext.x, ext.y);
 
 			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
 			p_overlay->draw_texture(h, gt.xform(handles[1]) - size);

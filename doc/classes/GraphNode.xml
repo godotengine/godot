@@ -184,6 +184,7 @@
 		<member name="comment" type="bool" setter="set_comment" getter="is_comment" default="false">
 			If [code]true[/code], the GraphNode is a comment node.
 		</member>
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" override="true" enum="Control.MouseFilter" default="0" />
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
 			The offset of the GraphNode, relative to the scroll offset of the [GraphEdit].
 			[b]Note:[/b] You cannot use position directly, as [GraphEdit] is a [Container].

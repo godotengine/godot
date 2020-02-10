@@ -119,6 +119,7 @@ private:
 		SHOW_ORIGIN,
 		SHOW_VIEWPORT,
 		SHOW_EDIT_LOCKS,
+		SHOW_TRANSFORMATION_GIZMOS,
 		LOCK_SELECTED,
 		UNLOCK_SELECTED,
 		GROUP_SELECTED,
@@ -189,7 +190,6 @@ private:
 		SKELETON_SHOW_BONES,
 		SKELETON_SET_IK_CHAIN,
 		SKELETON_CLEAR_IK_CHAIN
-
 	};
 
 	enum DragType {
@@ -209,6 +209,8 @@ private:
 		DRAG_ANCHOR_BOTTOM_LEFT,
 		DRAG_ANCHOR_ALL,
 		DRAG_MOVE,
+		DRAG_MOVE_X,
+		DRAG_MOVE_Y,
 		DRAG_SCALE_X,
 		DRAG_SCALE_Y,
 		DRAG_SCALE_BOTH,
@@ -248,6 +250,8 @@ private:
 	bool show_viewport;
 	bool show_helpers;
 	bool show_edit_locks;
+	bool show_transformation_gizmos;
+
 	float zoom;
 	Point2 view_offset;
 	Point2 previous_update_view_offset;

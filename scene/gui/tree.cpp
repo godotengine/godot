@@ -1121,7 +1121,7 @@ void Tree::draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, co
 	}
 
 	rect.position.y += Math::floor((rect.size.y - font->get_height()) / 2.0) + font->get_ascent();
-	font->draw(ci, rect.position, text, p_color, rect.size.x);
+	font->draw(ci, rect.position, text, p_color, MAX(0, rect.size.width));
 }
 
 int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item) {
@@ -3628,6 +3628,17 @@ TreeItem *Tree::search_item_text(const String &p_find, int *r_col, bool p_select
 		return NULL;
 
 	return _search_item_text(from->get_next_visible(true), p_find, r_col, p_selectable);
+}
+
+TreeItem *Tree::get_item_with_text(const String &p_find) const {
+	for (TreeItem *current = root; current; current = current->get_next_visible()) {
+		for (int i = 0; i < columns.size(); i++) {
+			if (current->get_text(i) == p_find) {
+				return current;
+			}
+		}
+	}
+	return NULL;
 }
 
 void Tree::_do_incr_search(const String &p_add) {

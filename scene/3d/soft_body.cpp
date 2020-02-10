@@ -247,7 +247,7 @@ bool SoftBody::_get_property_pinned_points(int p_item, const String &p_what, Var
 }
 
 void SoftBody::_changed_callback(Object *p_changed, const char *p_prop) {
-	update_physics_server();
+	prepare_physics_server();
 	_reset_points_offsets();
 #ifdef TOOLS_ENABLED
 	if (p_changed == this) {
@@ -267,7 +267,7 @@ void SoftBody::_notification(int p_what) {
 
 			RID space = get_world()->get_space();
 			PhysicsServer::get_singleton()->soft_body_set_space(physics_rid, space);
-			update_physics_server();
+			prepare_physics_server();
 		} break;
 		case NOTIFICATION_READY: {
 			if (!parent_collision_ignore.is_empty())
@@ -289,21 +289,6 @@ void SoftBody::_notification(int p_what) {
 			set_transform(Transform());
 			set_notify_transform(true);
 
-		} break;
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-
-			if (!simulation_started)
-				return;
-
-			_update_cache_pin_points_datas();
-			// Submit bone attachment
-			const int pinned_points_indices_size = pinned_points.size();
-			PoolVector<PinnedPoint>::Read r = pinned_points.read();
-			for (int i = 0; i < pinned_points_indices_size; ++i) {
-				if (r[i].spatial_attachment) {
-					PhysicsServer::get_singleton()->soft_body_move_point(physics_rid, r[i].point_index, r[i].spatial_attachment->get_global_transform().xform(r[i].offset));
-				}
-			}
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
@@ -421,6 +406,21 @@ String SoftBody::get_configuration_warning() const {
 	return warning;
 }
 
+void SoftBody::_update_physics_server() {
+	if (!simulation_started)
+		return;
+
+	_update_cache_pin_points_datas();
+	// Submit bone attachment
+	const int pinned_points_indices_size = pinned_points.size();
+	PoolVector<PinnedPoint>::Read r = pinned_points.read();
+	for (int i = 0; i < pinned_points_indices_size; ++i) {
+		if (r[i].spatial_attachment) {
+			PhysicsServer::get_singleton()->soft_body_move_point(physics_rid, r[i].point_index, r[i].spatial_attachment->get_global_transform().xform(r[i].offset));
+		}
+	}
+}
+
 void SoftBody::_draw_soft_mesh() {
 	if (get_mesh().is_null())
 		return;
@@ -435,6 +435,8 @@ void SoftBody::_draw_soft_mesh() {
 		call_deferred("set_transform", Transform());
 	}
 
+	_update_physics_server();
+
 	visual_server_handler.open();
 	PhysicsServer::get_singleton()->soft_body_update_visual_server(physics_rid, &visual_server_handler);
 	visual_server_handler.close();
@@ -442,7 +444,7 @@ void SoftBody::_draw_soft_mesh() {
 	visual_server_handler.commit_changes();
 }
 
-void SoftBody::update_physics_server() {
+void SoftBody::prepare_physics_server() {
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 
@@ -706,8 +708,6 @@ SoftBody::SoftBody() :
 		ray_pickable(true) {
 
 	PhysicsServer::get_singleton()->body_attach_object_instance_id(physics_rid, get_instance_id());
-	//set_notify_transform(true);
-	set_physics_process_internal(true);
 }
 
 SoftBody::~SoftBody() {
