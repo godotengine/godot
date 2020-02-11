@@ -477,7 +477,7 @@ Files extracted from upstream source:
 
 Files extracted from upstream source:
 
-- All .cpp and .h files in the `src/` folder except for RVOSimulator.cpp and RVOSimulator.h
+- All .cpp and .h files in the `src/` folder except for RVO.h, RVOSimulator.cpp and RVOSimulator.h
 - LICENSE
 
 Important: Some files have Godot-made changes; so to enrich the features
