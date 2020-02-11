@@ -206,7 +206,7 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 	};
 
 	void _make_token(Token p_type);
-	void _make_newline(int p_indentation = 0, int p_tabs = 0);
+	void _make_newline(int p_line, int p_column, int p_indentation = 0, int p_tabs = 0);
 	void _make_identifier(const StringName &p_identifier);
 	void _make_built_in_func(GDScriptFunctions::Function p_func);
 	void _make_constant(const Variant &p_constant);

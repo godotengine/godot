@@ -450,13 +450,13 @@ void GDScriptTokenizerText::_make_error(const String &p_error) {
 	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
 }
 
-void GDScriptTokenizerText::_make_newline(int p_indentation, int p_tabs) {
+void GDScriptTokenizerText::_make_newline(int p_line, int p_column, int p_indentation, int p_tabs) {
 
 	TokenData &tk = tk_rb[tk_rb_pos];
 	tk.type = TK_NEWLINE;
 	tk.constant = Vector2(p_indentation, p_tabs);
-	tk.line = line;
-	tk.col = column;
+	tk.line = p_line;
+	tk.col = p_column;
 	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
 }
 
@@ -541,6 +541,8 @@ void GDScriptTokenizerText::_advance() {
 				FALLTHROUGH;
 			}
 			case '\n': {
+				const int newline_line = line;
+				const int newline_column = column;
 				line++;
 				INCPOS(1);
 				bool used_spaces = false;
@@ -563,7 +565,7 @@ void GDScriptTokenizerText::_advance() {
 					}
 				}
 
-				_make_newline(i, tabs);
+				_make_newline(newline_line, newline_column, i, tabs);
 				return;
 			}
 			case '/': {
