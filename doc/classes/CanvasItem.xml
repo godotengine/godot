@@ -557,6 +557,9 @@
 		<member name="show_behind_parent" type="bool" setter="set_draw_behind_parent" getter="is_draw_behind_parent_enabled" default="false">
 			If [code]true[/code], the object draws behind its parent.
 		</member>
+		<member name="toplevel" type="bool" setter="set_as_toplevel" getter="is_set_as_toplevel">
+			If [code]true[/code], the node will not inherit its transform from parent [CanvasItem]s.
+		</member>
 		<member name="show_on_top" type="bool" setter="_set_on_top" getter="_is_on_top">
 			If [code]true[/code], the object draws on top of its parent.
 		</member>
