@@ -83,13 +83,6 @@
 				Returns whether this node uses a scale of [code](1, 1, 1)[/code] or its local transformation scale.
 			</description>
 		</method>
-		<method name="is_set_as_toplevel" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether this node is set as Toplevel, that is whether it ignores its parent nodes transformations.
-			</description>
-		</method>
 		<method name="is_transform_notification_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -193,15 +186,6 @@
 			</argument>
 			<description>
 				Scales the local transformation by given 3D scale factors in object-local coordinate system.
-			</description>
-		</method>
-		<method name="set_as_toplevel">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Makes the node ignore its parents transformations. Node transformations are only in global space.
 			</description>
 		</method>
 		<method name="set_disable_scale">
