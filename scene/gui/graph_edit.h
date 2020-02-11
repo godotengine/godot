@@ -31,6 +31,8 @@
 #ifndef GRAPH_EDIT_H
 #define GRAPH_EDIT_H
 
+#include "core/os/os.h"
+#include "editor/editor_themes.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/graph_node.h"
 #include "scene/gui/scroll_bar.h"
@@ -70,7 +72,9 @@ private:
 	ToolButton *zoom_minus;
 	ToolButton *zoom_reset;
 	ToolButton *zoom_plus;
-
+	Vector<Ref<Theme>> zoom_level;
+	Vector<float> zoom_level_index;
+	float zoom;
 	ToolButton *snap_button;
 	SpinBox *snap_amount;
 
@@ -101,7 +105,7 @@ private:
 	Vector2 drag_accum;
 	Point2 drag_origin; // Workaround for GH-5907
 
-	float zoom;
+	int32_t zoom_index;
 
 	bool box_selecting;
 	bool box_selection_mode_aditive;
@@ -182,6 +186,10 @@ protected:
 	virtual bool clips_input() const;
 
 public:
+	void add_zoom_level(const float p_zoom_level);
+	void remove_zoom_level(const int32_t p_index);
+	Ref<Theme> get_zoom_level_theme(const int32_t p_index);
+	float get_zoom_level(const int32_t p_index);
 	Error connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	bool is_node_connected(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	void disconnect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
@@ -193,8 +201,8 @@ public:
 	void remove_valid_connection_type(int p_type, int p_with_type);
 	bool is_valid_connection_type(int p_type, int p_with_type) const;
 
-	void set_zoom(float p_zoom);
-	void set_zoom_custom(float p_zoom, const Vector2 &p_center);
+	void set_zoom(int32_t p_zoom);
+	void set_zoom_custom(int32_t p_zoom, const Vector2 &p_center);
 	float get_zoom() const;
 
 	GraphEditFilter *get_top_layer() const { return top_layer; }

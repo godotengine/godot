@@ -32,16 +32,16 @@
 
 #include "core/input/input_filter.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_settings.h"
+#include "editor/editor_themes.h"
 #include "scene/gui/box_container.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #endif
 
-#define ZOOM_SCALE 1.2
-
-#define MIN_ZOOM (((1 / ZOOM_SCALE) / ZOOM_SCALE) / ZOOM_SCALE)
-#define MAX_ZOOM (1 * ZOOM_SCALE * ZOOM_SCALE * ZOOM_SCALE)
+#include "scene/main/viewport.h"
 
 bool GraphEditFilter::has_point(const Point2 &p_point) const {
 
@@ -69,6 +69,27 @@ Error GraphEdit::connect_node(const StringName &p_from, int p_from_port, const S
 	connections_layer->update();
 
 	return OK;
+}
+
+void GraphEdit::add_zoom_level(const float p_zoom_level) {
+	zoom_level.push_back(create_editor_theme(get_theme(), p_zoom_level));
+	zoom_level_index.push_back(p_zoom_level);
+}
+
+void GraphEdit::remove_zoom_level(const int32_t p_index) {
+	ERR_FAIL_COND(p_index > zoom_level.size() - 1);
+	zoom_level.remove(p_index);
+	zoom_level_index.remove(p_index);
+}
+
+Ref<Theme> GraphEdit::get_zoom_level_theme(const int32_t p_index) {
+	ERR_FAIL_COND_V(p_index > zoom_level.size() - 1, Ref<Theme>());
+	return zoom_level[p_index];
+}
+
+float GraphEdit::get_zoom_level(const int32_t p_index) {
+	ERR_FAIL_COND_V(p_index > zoom_level_index.size() - 1, 1.0f);
+	return zoom_level_index[p_index];
 }
 
 bool GraphEdit::is_node_connected(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port) {
@@ -145,11 +166,11 @@ void GraphEdit::_update_scroll_offset() {
 		if (!gn)
 			continue;
 
-		Point2 pos = gn->get_offset() * zoom;
+		Point2 pos = gn->get_offset() * get_zoom_level(zoom_index);
 		pos -= Point2(h_scroll->get_value(), v_scroll->get_value());
 		gn->set_position(pos);
-		if (gn->get_scale() != Vector2(zoom, zoom)) {
-			gn->set_scale(Vector2(zoom, zoom));
+		if (gn->get_scale() != Vector2(get_zoom_level(zoom_index), get_zoom_level(zoom_index))) {
+			gn->set_scale(Vector2(get_zoom_level(zoom_index), get_zoom_level(zoom_index)));
 		}
 	}
 
@@ -175,8 +196,8 @@ void GraphEdit::_update_scroll() {
 			continue;
 
 		Rect2 r;
-		r.position = gn->get_offset() * zoom;
-		r.size = gn->get_size() * zoom;
+		r.position = gn->get_offset() * get_zoom_level(zoom_index);
+		r.size = gn->get_size() * get_zoom_level(zoom_index);
 		screen = screen.merge(r);
 	}
 
@@ -257,9 +278,9 @@ void GraphEdit::add_child_notify(Node *p_child) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_child);
 	if (gn) {
 		gn->set_scale(Vector2(zoom, zoom));
-		gn->connect("offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved), varray(gn));
-		gn->connect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised), varray(gn));
-		gn->connect("item_rect_changed", callable_mp((CanvasItem *)connections_layer, &CanvasItem::update));
+		gn->connect_compat("offset_changed", this, "_graph_node_moved", varray(gn));
+		gn->connect_compat("raise_request", this, "_graph_node_raised", varray(gn));
+		gn->connect_compat("item_rect_changed", connections_layer, "update");
 		_graph_node_moved(gn);
 		gn->set_mouse_filter(MOUSE_FILTER_PASS);
 	}
@@ -312,8 +333,8 @@ void GraphEdit::_notification(int p_what) {
 
 			int snap = get_snap();
 
-			Vector2 offset = get_scroll_ofs() / zoom;
-			Size2 size = get_size() / zoom;
+			Vector2 offset = get_scroll_ofs() / get_zoom_level(zoom_index);
+			Size2 size = get_size() / get_zoom_level(zoom_index);
 
 			Point2i from = (offset / float(snap)).floor();
 			Point2i len = (size / float(snap)).floor() + Vector2(1, 1);
@@ -330,7 +351,7 @@ void GraphEdit::_notification(int p_what) {
 				else
 					color = grid_minor;
 
-				float base_ofs = i * snap * zoom - offset.x * zoom;
+				float base_ofs = i * snap * get_zoom_level(zoom_index) - offset.x * get_zoom_level(zoom_index);
 				draw_line(Vector2(base_ofs, 0), Vector2(base_ofs, get_size().height), color);
 			}
 
@@ -343,7 +364,7 @@ void GraphEdit::_notification(int p_what) {
 				else
 					color = grid_minor;
 
-				float base_ofs = i * snap * zoom - offset.y * zoom;
+				float base_ofs = i * snap * get_zoom_level(zoom_index) - offset.y * get_zoom_level(zoom_index);
 				draw_line(Vector2(0, base_ofs), Vector2(get_size().width, base_ofs), color);
 			}
 		}
@@ -675,8 +696,8 @@ void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const
 		cp_offset = MAX(MIN(cp_len - diff, cp_neg_len), -diff * 0.5);
 	}
 
-	Vector2 c1 = Vector2(cp_offset * zoom, 0);
-	Vector2 c2 = Vector2(-cp_offset * zoom, 0);
+	Vector2 c1 = Vector2(cp_offset * get_zoom_level(zoom_index), 0);
+	Vector2 c2 = Vector2(-cp_offset * get_zoom_level(zoom_index), 0);
 
 	int lines = 0;
 
@@ -689,7 +710,7 @@ void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const
 	colors.push_back(p_to_color);
 
 #ifdef TOOLS_ENABLED
-	p_where->draw_polyline_colors(points, colors, Math::floor(2 * EDSCALE));
+	p_where->draw_polyline_colors(points, colors, Math::floor(2 * EDSCALE * get_zoom_level(zoom_index)));
 #else
 	p_where->draw_polyline_colors(points, colors, 2);
 #endif
@@ -731,9 +752,9 @@ void GraphEdit::_connections_layer_draw() {
 			continue;
 		}
 
-		Vector2 frompos = gfrom->get_connection_output_position(E->get().from_port) + gfrom->get_offset() * zoom;
+		Vector2 frompos = gfrom->get_connection_output_position(E->get().from_port) + gfrom->get_offset() * get_zoom_level(zoom_index);
 		Color color = gfrom->get_connection_output_color(E->get().from_port);
-		Vector2 topos = gto->get_connection_input_position(E->get().to_port) + gto->get_offset() * zoom;
+		Vector2 topos = gto->get_connection_input_position(E->get().to_port) + gto->get_offset() * get_zoom_level(zoom_index);
 		Color tocolor = gto->get_connection_input_color(E->get().to_port);
 
 		if (E->get().activity > 0) {
@@ -819,7 +840,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 			GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
 			if (gn && gn->is_selected()) {
 
-				Vector2 pos = (gn->get_drag_from() * zoom + drag_accum) / zoom;
+				Vector2 pos = (gn->get_drag_from() * get_zoom_level(zoom_index) + drag_accum) / get_zoom_level(zoom_index);
 
 				// Snapping can be toggled temporarily by holding down Ctrl.
 				// This is done here as to not toggle the grid when holding down Ctrl.
@@ -848,7 +869,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 				continue;
 
 			Rect2 r = gn->get_rect();
-			r.size *= zoom;
+			r.size *= get_zoom_level(zoom_index);
 			bool in_box = r.intersects(box_selecting_rect);
 
 			if (in_box)
@@ -893,7 +914,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 
 					if (gn) {
 						Rect2 r = gn->get_rect();
-						r.size *= zoom;
+						r.size *= get_zoom_level(zoom_index);
 						if (r.has_point(get_local_mouse_position()))
 							gn->set_selected(false);
 					}
@@ -1017,25 +1038,11 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (b->get_button_index() == BUTTON_WHEEL_UP && b->is_pressed()) {
-			//too difficult to get right
-			//set_zoom(zoom*ZOOM_SCALE);
+			_zoom_minus();
 		}
 
 		if (b->get_button_index() == BUTTON_WHEEL_DOWN && b->is_pressed()) {
-			//too difficult to get right
-			//set_zoom(zoom/ZOOM_SCALE);
-		}
-		if (b->get_button_index() == BUTTON_WHEEL_UP && !InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT)) {
-			v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() * b->get_factor() / 8);
-		}
-		if (b->get_button_index() == BUTTON_WHEEL_DOWN && !InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT)) {
-			v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * b->get_factor() / 8);
-		}
-		if (b->get_button_index() == BUTTON_WHEEL_RIGHT || (b->get_button_index() == BUTTON_WHEEL_DOWN && InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT))) {
-			h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * b->get_factor() / 8);
-		}
-		if (b->get_button_index() == BUTTON_WHEEL_LEFT || (b->get_button_index() == BUTTON_WHEEL_UP && InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT))) {
-			h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page() * b->get_factor() / 8);
+			_zoom_plus();
 		}
 	}
 
@@ -1067,7 +1074,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMagnifyGesture> magnify_gesture = p_ev;
 	if (magnify_gesture.is_valid()) {
 
-		set_zoom_custom(zoom * magnify_gesture->get_factor(), magnify_gesture->get_position());
+		set_zoom_custom(get_zoom_level(zoom_index) * magnify_gesture->get_factor(), magnify_gesture->get_position());
 	}
 
 	Ref<InputEventPanGesture> pan_gesture = p_ev;
@@ -1102,35 +1109,37 @@ void GraphEdit::clear_connections() {
 	connections_layer->update();
 }
 
-void GraphEdit::set_zoom(float p_zoom) {
-
+void GraphEdit::set_zoom(int32_t p_zoom) {
 	set_zoom_custom(p_zoom, get_size() / 2);
 }
 
-void GraphEdit::set_zoom_custom(float p_zoom, const Vector2 &p_center) {
-
-	p_zoom = CLAMP(p_zoom, MIN_ZOOM, MAX_ZOOM);
-	if (zoom == p_zoom)
+void GraphEdit::set_zoom_custom(int32_t p_zoom, const Vector2 &p_center) {
+	int32_t current_zoom = CLAMP(p_zoom, 0, zoom_level.size() - 1);
+	if (zoom_index == current_zoom)
 		return;
+	zoom_index = current_zoom;
+	zoom = get_zoom_level(current_zoom);
 
-	zoom_minus->set_disabled(zoom == MIN_ZOOM);
-	zoom_plus->set_disabled(zoom == MAX_ZOOM);
+	zoom_minus->set_disabled(zoom_index == 0);
+	zoom_plus->set_disabled(zoom_index == zoom_level.size() - 1);
 
-	Vector2 sbofs = (Vector2(h_scroll->get_value(), v_scroll->get_value()) + p_center) / zoom;
+	Ref<Theme> theme = get_zoom_level_theme(zoom_index);
+	if (theme.is_null()) {
+		add_zoom_level(zoom_index);
+		theme = get_zoom_level_theme(zoom_index);
+	}
+	for (int i = 0; i < get_child_count(); i++) {
 
-	zoom = p_zoom;
-	top_layer->update();
+		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
+		if (!gn) {
 
-	_update_scroll();
-	connections_layer->update();
-
-	if (is_visible_in_tree()) {
-
-		Vector2 ofs = sbofs * zoom - p_center;
-		h_scroll->set_value(ofs.x);
-		v_scroll->set_value(ofs.y);
+			continue;
+		}
+		gn->set_theme(theme);
 	}
 
+	top_layer->update();
+	connections_layer->set_theme(theme);
 	update();
 }
 
@@ -1186,16 +1195,16 @@ Array GraphEdit::_get_connection_list() const {
 
 void GraphEdit::_zoom_minus() {
 
-	set_zoom(zoom / ZOOM_SCALE);
+	set_zoom(CLAMP(zoom_index - 1, 0, zoom_level.size() - 1));
 }
 void GraphEdit::_zoom_reset() {
 
-	set_zoom(1);
+	set_zoom(zoom_level.size() / 2);
 }
 
 void GraphEdit::_zoom_plus() {
 
-	set_zoom(zoom * ZOOM_SCALE);
+	set_zoom(CLAMP(zoom_index + 1, 0, zoom_level.size() - 1));
 }
 
 void GraphEdit::add_valid_connection_type(int p_type, int p_with_type) {
@@ -1363,7 +1372,7 @@ GraphEdit::GraphEdit() {
 	h_scroll->connect("value_changed", callable_mp(this, &GraphEdit::_scroll_moved));
 	v_scroll->connect("value_changed", callable_mp(this, &GraphEdit::_scroll_moved));
 
-	zoom = 1;
+	zoom_index = 0;
 
 	zoom_hb = memnew(HBoxContainer);
 	top_layer->add_child(zoom_hb);
@@ -1406,4 +1415,10 @@ GraphEdit::GraphEdit() {
 	setting_scroll_ofs = false;
 	just_disconnected = false;
 	set_clip_contents(true);
+	if (EditorSettings::get_singleton()) {
+		add_zoom_level(0.750);
+		add_zoom_level(0.875);
+		add_zoom_level(1.000);
+		add_zoom_level(1.250);
+	}
 }
