@@ -63,6 +63,12 @@
 		<member name="bus" type="StringName" setter="set_bus" getter="get_bus" default="@&quot;Master&quot;">
 			Bus on which this audio is playing.
 		</member>
+		<member name="editor_draw_attenuation" type="float" setter="set_attenuation_drawing_enabled" getter="get_attenuation_drawing_enabled" default="false">
+			If [code]true[/code], shows a visual representation of the player's [member attenuation]. Editor only, and [member editor_draw_distance] must also be enabled.
+		</member>
+		<member name="editor_draw_distance" type="float" setter="set_distance_drawing_enabled" getter="get_distance_drawing_enabled" default="true">
+			If [code]true[/code], shows a visual representation of the player's [member max_distance]. Editor only.
+		</member>
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" default="2000.0">
 			Maximum distance from which audio is still hearable.
 		</member>

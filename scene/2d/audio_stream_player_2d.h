@@ -89,6 +89,9 @@ private:
 	float max_distance = 2000.0;
 	float attenuation = 1.0;
 
+	bool distance_drawing_enabled = true;
+	bool attenuation_drawing_enabled = false;
+
 protected:
 	void _validate_property(PropertyInfo &property) const override;
 	void _notification(int p_what);
@@ -129,6 +132,12 @@ public:
 	bool get_stream_paused() const;
 
 	Ref<AudioStreamPlayback> get_stream_playback();
+
+	void set_distance_drawing_enabled(bool p_enable);
+	bool is_distance_drawing_enabled() const;
+
+	void set_attenuation_drawing_enabled(bool p_enable);
+	bool is_attenuation_drawing_enabled() const;
 
 	AudioStreamPlayer2D();
 	~AudioStreamPlayer2D();

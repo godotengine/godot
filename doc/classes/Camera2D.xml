@@ -142,13 +142,13 @@
 			[b]Note:[/b] Used to set the initial vertical drag offset; determine the current offset; or force the current offset. It's not automatically updated when the vertical drag margin is enabled or the drag margins are changed.
 		</member>
 		<member name="editor_draw_drag_margin" type="bool" setter="set_margin_drawing_enabled" getter="is_margin_drawing_enabled" default="false">
-			If [code]true[/code], draws the camera's drag margin rectangle in the editor.
+			If [code]true[/code], draws the camera's drag margin rectangle. Editor only.
 		</member>
 		<member name="editor_draw_limits" type="bool" setter="set_limit_drawing_enabled" getter="is_limit_drawing_enabled" default="false">
-			If [code]true[/code], draws the camera's limits rectangle in the editor.
+			If [code]true[/code], draws the camera's limits rectangle. Editor only.
 		</member>
 		<member name="editor_draw_screen" type="bool" setter="set_screen_drawing_enabled" getter="is_screen_drawing_enabled" default="true">
-			If [code]true[/code], draws the camera's screen rectangle in the editor.
+			If [code]true[/code], draws the camera's screen rectangle. Editor only.
 		</member>
 		<member name="limit_bottom" type="int" setter="set_limit" getter="get_limit" default="10000000">
 			Bottom scroll limit in pixels. The camera stops moving when reaching this value.

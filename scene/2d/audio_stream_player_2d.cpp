@@ -144,119 +144,130 @@ void AudioStreamPlayer2D::_mix_audio() {
 }
 
 void AudioStreamPlayer2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		AudioServer::get_singleton()->add_callback(_mix_audios, this);
-		if (autoplay && !Engine::get_singleton()->is_editor_hint()) {
-			play();
-		}
-	}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			AudioServer::get_singleton()->add_callback(_mix_audios, this);
+			if (autoplay && !Engine::get_singleton()->is_editor_hint()) {
+				play();
+			}
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			AudioServer::get_singleton()->remove_callback(_mix_audios, this);
+		} break;
+		case NOTIFICATION_PAUSED: {
+			if (!can_process()) {
+				// Node can't process so we start fading out to silence.
+				set_stream_paused(true);
+			}
+		} break;
+		case NOTIFICATION_UNPAUSED: {
+			set_stream_paused(false);
+		} break;
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			//update anything related to position first, if possible of course
+			if (!output_ready.is_set()) {
+				List<Viewport *> viewports;
+				Ref<World2D> world_2d = get_world_2d();
+				ERR_FAIL_COND(world_2d.is_null());
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		AudioServer::get_singleton()->remove_callback(_mix_audios, this);
-	}
+				int new_output_count = 0;
 
-	if (p_what == NOTIFICATION_PAUSED) {
-		if (!can_process()) {
-			// Node can't process so we start fading out to silence
-			set_stream_paused(true);
-		}
-	}
+				Vector2 global_pos = get_global_position();
 
-	if (p_what == NOTIFICATION_UNPAUSED) {
-		set_stream_paused(false);
-	}
+				int bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus);
 
-	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
-		//update anything related to position first, if possible of course
+				//check if any area is diverting sound into a bus
 
-		if (!output_ready.is_set()) {
-			List<Viewport *> viewports;
-			Ref<World2D> world_2d = get_world_2d();
-			ERR_FAIL_COND(world_2d.is_null());
+				PhysicsDirectSpaceState2D *space_state = PhysicsServer2D::get_singleton()->space_get_direct_state(world_2d->get_space());
 
-			int new_output_count = 0;
+				PhysicsDirectSpaceState2D::ShapeResult sr[MAX_INTERSECT_AREAS];
 
-			Vector2 global_pos = get_global_position();
+				int areas = space_state->intersect_point(global_pos, sr, MAX_INTERSECT_AREAS, Set<RID>(), area_mask, false, true);
+				for (int i = 0; i < areas; i++) {
+					Area2D *area2d = Object::cast_to<Area2D>(sr[i].collider);
+					if (!area2d) {
+						continue;
+					}
 
-			int bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus);
+					if (!area2d->is_overriding_audio_bus()) {
+						continue;
+					}
 
-			//check if any area is diverting sound into a bus
-
-			PhysicsDirectSpaceState2D *space_state = PhysicsServer2D::get_singleton()->space_get_direct_state(world_2d->get_space());
-
-			PhysicsDirectSpaceState2D::ShapeResult sr[MAX_INTERSECT_AREAS];
-
-			int areas = space_state->intersect_point(global_pos, sr, MAX_INTERSECT_AREAS, Set<RID>(), area_mask, false, true);
-
-			for (int i = 0; i < areas; i++) {
-				Area2D *area2d = Object::cast_to<Area2D>(sr[i].collider);
-				if (!area2d) {
-					continue;
+					StringName bus_name = area2d->get_audio_bus_name();
+					bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus_name);
+					break;
 				}
 
-				if (!area2d->is_overriding_audio_bus()) {
-					continue;
+				world_2d->get_viewport_list(&viewports);
+				for (List<Viewport *>::Element *E = viewports.front(); E; E = E->next()) {
+					Viewport *vp = E->get();
+					if (vp->is_audio_listener_2d()) {
+						//compute matrix to convert to screen
+						Transform2D to_screen = vp->get_global_canvas_transform() * vp->get_canvas_transform();
+						Vector2 screen_size = vp->get_visible_rect().size;
+
+						//screen in global is used for attenuation
+						Vector2 screen_in_global = to_screen.affine_inverse().xform(screen_size * 0.5);
+
+						float dist = global_pos.distance_to(screen_in_global); //distance to screen center
+						if (dist > max_distance) {
+							continue; //can't hear this sound in this viewport
+						}
+
+						float multiplier = Math::pow(1.0f - dist / max_distance, attenuation);
+						multiplier *= Math::db2linear(volume_db); //also apply player volume!
+
+						//point in screen is used for panning
+						Vector2 point_in_screen = to_screen.xform(global_pos);
+
+						float pan = CLAMP(point_in_screen.x / screen_size.width, 0.0, 1.0);
+
+						float l = 1.0 - pan;
+						float r = pan;
+
+						outputs[new_output_count].vol = AudioFrame(l, r) * multiplier;
+						outputs[new_output_count].bus_index = bus_index;
+						outputs[new_output_count].viewport = vp; //keep pointer only for reference
+						new_output_count++;
+						if (new_output_count == MAX_OUTPUTS) {
+							break;
+						}
+					}
 				}
 
-				StringName bus_name = area2d->get_audio_bus_name();
-				bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus_name);
+				output_count.set(new_output_count);
+				output_ready.set();
+			}
+
+			//start playing if requested
+			if (setplay.get() >= 0.0) {
+				setseek.set(setplay.get());
+				active.set();
+				setplay.set(-1);
+			}
+
+			//stop playing if no longer active
+			if (!active.is_set()) {
+				set_physics_process_internal(false);
+				emit_signal("finished");
+			}
+		} break;
+#ifdef TOOLS_ENABLED
+		case NOTIFICATION_DRAW: {
+			if (!distance_drawing_enabled || !is_inside_tree() || !Engine::get_singleton()->is_editor_hint()) {
 				break;
 			}
 
-			world_2d->get_viewport_list(&viewports);
-			for (List<Viewport *>::Element *E = viewports.front(); E; E = E->next()) {
-				Viewport *vp = E->get();
-				if (vp->is_audio_listener_2d()) {
-					//compute matrix to convert to screen
-					Transform2D to_screen = vp->get_global_canvas_transform() * vp->get_canvas_transform();
-					Vector2 screen_size = vp->get_visible_rect().size;
-
-					//screen in global is used for attenuation
-					Vector2 screen_in_global = to_screen.affine_inverse().xform(screen_size * 0.5);
-
-					float dist = global_pos.distance_to(screen_in_global); //distance to screen center
-
-					if (dist > max_distance) {
-						continue; //can't hear this sound in this viewport
-					}
-
-					float multiplier = Math::pow(1.0f - dist / max_distance, attenuation);
-					multiplier *= Math::db2linear(volume_db); //also apply player volume!
-
-					//point in screen is used for panning
-					Vector2 point_in_screen = to_screen.xform(global_pos);
-
-					float pan = CLAMP(point_in_screen.x / screen_size.width, 0.0, 1.0);
-
-					float l = 1.0 - pan;
-					float r = pan;
-
-					outputs[new_output_count].vol = AudioFrame(l, r) * multiplier;
-					outputs[new_output_count].bus_index = bus_index;
-					outputs[new_output_count].viewport = vp; //keep pointer only for reference
-					new_output_count++;
-					if (new_output_count == MAX_OUTPUTS) {
-						break;
-					}
-				}
+			int circles = attenuation_drawing_enabled ? 4 : 1;
+			int points = 48;
+			Color distance_far(0.4, 1, 0.4, 0.63);
+			Color distance_close(0.2, 0.6, 0.4, 0.63);
+			for (float i = 0; i < circles; i++) {
+				float attenuation_effect = pow((i + 1) / circles, attenuation);
+				draw_arc(Vector2(), max_distance * attenuation_effect, 0, Math_TAU, points, distance_far.lerp(distance_close, attenuation_effect));
 			}
-
-			output_count.set(new_output_count);
-			output_ready.set();
-		}
-
-		//start playing if requested
-		if (setplay.get() >= 0.0) {
-			setseek.set(setplay.get());
-			active.set();
-			setplay.set(-1);
-		}
-
-		//stop playing if no longer active
-		if (!active.is_set()) {
-			set_physics_process_internal(false);
-			emit_signal("finished");
-		}
+		} break;
+#endif
 	}
 }
 
@@ -401,6 +412,10 @@ void AudioStreamPlayer2D::_validate_property(PropertyInfo &property) const {
 
 		property.hint_string = options;
 	}
+
+	if (property.name == "editor_draw_attenuation" && !distance_drawing_enabled) {
+		property.usage = PROPERTY_USAGE_NOEDITOR;
+	}
 }
 
 void AudioStreamPlayer2D::_bus_layout_changed() {
@@ -410,6 +425,9 @@ void AudioStreamPlayer2D::_bus_layout_changed() {
 void AudioStreamPlayer2D::set_max_distance(float p_pixels) {
 	ERR_FAIL_COND(p_pixels <= 0.0);
 	max_distance = p_pixels;
+#ifdef TOOLS_ENABLED
+	update();
+#endif
 }
 
 float AudioStreamPlayer2D::get_max_distance() const {
@@ -418,6 +436,11 @@ float AudioStreamPlayer2D::get_max_distance() const {
 
 void AudioStreamPlayer2D::set_attenuation(float p_curve) {
 	attenuation = p_curve;
+#ifdef TOOLS_ENABLED
+	if (attenuation_drawing_enabled) {
+		update();
+	}
+#endif
 }
 
 float AudioStreamPlayer2D::get_attenuation() const {
@@ -446,6 +469,29 @@ bool AudioStreamPlayer2D::get_stream_paused() const {
 
 Ref<AudioStreamPlayback> AudioStreamPlayer2D::get_stream_playback() {
 	return stream_playback;
+}
+
+void AudioStreamPlayer2D::set_distance_drawing_enabled(bool p_enable) {
+	distance_drawing_enabled = p_enable;
+	notify_property_list_changed();
+#ifdef TOOLS_ENABLED
+	update();
+#endif
+}
+
+bool AudioStreamPlayer2D::is_distance_drawing_enabled() const {
+	return distance_drawing_enabled;
+}
+
+void AudioStreamPlayer2D::set_attenuation_drawing_enabled(bool p_enable) {
+	attenuation_drawing_enabled = p_enable;
+#ifdef TOOLS_ENABLED
+	update();
+#endif
+}
+
+bool AudioStreamPlayer2D::is_attenuation_drawing_enabled() const {
+	return attenuation_drawing_enabled;
 }
 
 void AudioStreamPlayer2D::_bind_methods() {
@@ -488,6 +534,12 @@ void AudioStreamPlayer2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_stream_playback"), &AudioStreamPlayer2D::get_stream_playback);
 
+	ClassDB::bind_method(D_METHOD("set_distance_drawing_enabled", "enable"), &AudioStreamPlayer2D::set_distance_drawing_enabled);
+	ClassDB::bind_method(D_METHOD("is_distance_drawing_enabled"), &AudioStreamPlayer2D::is_distance_drawing_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_attenuation_drawing_enabled", "enable"), &AudioStreamPlayer2D::set_attenuation_drawing_enabled);
+	ClassDB::bind_method(D_METHOD("is_attenuation_drawing_enabled"), &AudioStreamPlayer2D::is_attenuation_drawing_enabled);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24"), "set_volume_db", "get_volume_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,4,0.01,or_greater"), "set_pitch_scale", "get_pitch_scale");
@@ -498,6 +550,10 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attenuation", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_attenuation", "get_attenuation");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_area_mask", "get_area_mask");
+
+	ADD_GROUP("Editor", "editor_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_draw_distance"), "set_distance_drawing_enabled", "is_distance_drawing_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_draw_attenuation"), "set_attenuation_drawing_enabled", "is_attenuation_drawing_enabled");
 
 	ADD_SIGNAL(MethodInfo("finished"));
 }
