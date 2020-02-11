@@ -58,7 +58,8 @@ static bool is_supported_format(Image::Format p_format) {
 enum SrcPixelType {
 	SRC_FLOAT,
 	SRC_HALF,
-	SRC_BYTE
+	SRC_BYTE,
+	SRC_UNSUPPORTED
 };
 
 static SrcPixelType get_source_pixel_type(Image::Format p_format) {
@@ -79,7 +80,7 @@ static SrcPixelType get_source_pixel_type(Image::Format p_format) {
 		case Image::FORMAT_RGBA8:
 			return SRC_BYTE;
 		default:
-			CRASH_NOW();
+			return SRC_UNSUPPORTED;
 	}
 }
 
@@ -101,7 +102,7 @@ static int get_target_pixel_type(Image::Format p_format) {
 		case Image::FORMAT_RGBA8:
 			return TINYEXR_PIXELTYPE_HALF;
 		default:
-			CRASH_NOW();
+			return -1;
 	}
 }
 
@@ -112,7 +113,7 @@ static int get_pixel_type_size(int p_pixel_type) {
 		case TINYEXR_PIXELTYPE_FLOAT:
 			return 4;
 	}
-	CRASH_NOW();
+	return -1;
 }
 
 static int get_channel_count(Image::Format p_format) {
@@ -134,7 +135,7 @@ static int get_channel_count(Image::Format p_format) {
 		case Image::FORMAT_RGBA8:
 			return 4;
 		default:
-			CRASH_NOW();
+			return -1;
 	}
 }
 
@@ -173,11 +174,15 @@ Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) 
 	};
 
 	int channel_count = get_channel_count(format);
+	ERR_FAIL_COND_V(channel_count < 0, ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(p_grayscale && channel_count != 1, ERR_INVALID_PARAMETER);
 
 	int target_pixel_type = get_target_pixel_type(format);
+	ERR_FAIL_COND_V(target_pixel_type < 0, ERR_UNAVAILABLE);
 	int target_pixel_type_size = get_pixel_type_size(target_pixel_type);
+	ERR_FAIL_COND_V(target_pixel_type_size < 0, ERR_UNAVAILABLE);
 	SrcPixelType src_pixel_type = get_source_pixel_type(format);
+	ERR_FAIL_COND_V(src_pixel_type = SRC_UNSUPPORTED, ERR_UNAVAILABLE);
 	const int pixel_count = p_img->get_width() * p_img->get_height();
 
 	const int *channel_mapping = channel_mappings[channel_count - 1];
