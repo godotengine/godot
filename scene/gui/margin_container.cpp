@@ -32,6 +32,12 @@
 
 Size2 MarginContainer::get_minimum_size() const {
 
+	bool err = false;
+	Size2 oms = get_overriden_minimum_size(err);
+	if (!err) {
+		return oms;
+	}
+
 	int margin_left = get_constant("margin_left");
 	int margin_top = get_constant("margin_top");
 	int margin_right = get_constant("margin_right");

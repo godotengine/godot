@@ -261,6 +261,8 @@ protected:
 
 	//bind helpers
 
+	Size2 get_overriden_minimum_size(bool &err) const;
+
 public:
 	enum {
 

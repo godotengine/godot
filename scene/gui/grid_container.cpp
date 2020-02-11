@@ -197,6 +197,12 @@ void GridContainer::_bind_methods() {
 
 Size2 GridContainer::get_minimum_size() const {
 
+	bool err = false;
+	Size2 oms = get_overriden_minimum_size(err);
+	if (!err) {
+		return oms;
+	}
+
 	Map<int, int> col_minw;
 	Map<int, int> row_minh;
 

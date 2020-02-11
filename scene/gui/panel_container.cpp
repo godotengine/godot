@@ -32,6 +32,12 @@
 
 Size2 PanelContainer::get_minimum_size() const {
 
+	bool err = false;
+	Size2 oms = get_overriden_minimum_size(err);
+	if (!err) {
+		return oms;
+	}
+
 	Ref<StyleBox> style;
 
 	if (has_stylebox("panel"))

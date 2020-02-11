@@ -32,6 +32,12 @@
 
 Size2 CenterContainer::get_minimum_size() const {
 
+	bool err = false;
+	Size2 oms = get_overriden_minimum_size(err);
+	if (!err) {
+		return oms;
+	}
+
 	if (use_top_left)
 		return Size2();
 	Size2 ms;

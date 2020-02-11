@@ -918,6 +918,12 @@ void TabContainer::get_translatable_strings(List<String> *p_strings) const {
 
 Size2 TabContainer::get_minimum_size() const {
 
+	bool err = false;
+	Size2 oms = get_overriden_minimum_size(err);
+	if (!err) {
+		return oms;
+	}
+
 	Size2 ms;
 
 	Vector<Control *> tabs = _get_tabs();
