@@ -182,7 +182,7 @@ Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) 
 	int target_pixel_type_size = get_pixel_type_size(target_pixel_type);
 	ERR_FAIL_COND_V(target_pixel_type_size < 0, ERR_UNAVAILABLE);
 	SrcPixelType src_pixel_type = get_source_pixel_type(format);
-	ERR_FAIL_COND_V(src_pixel_type = SRC_UNSUPPORTED, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(src_pixel_type == SRC_UNSUPPORTED, ERR_UNAVAILABLE);
 	const int pixel_count = p_img->get_width() * p_img->get_height();
 
 	const int *channel_mapping = channel_mappings[channel_count - 1];
