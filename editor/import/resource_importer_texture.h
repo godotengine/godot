@@ -33,30 +33,57 @@
 
 #include "core/image.h"
 #include "core/io/resource_importer.h"
+#include "core/os/file_access.h"
+#include "scene/resources/texture.h"
+#include "servers/visual_server.h"
 
 class StreamTexture;
 
 class ResourceImporterTexture : public ResourceImporter {
 	GDCLASS(ResourceImporterTexture, ResourceImporter);
 
+public:
+	enum CompressMode {
+		COMPRESS_LOSSLESS,
+		COMPRESS_LOSSY,
+		COMPRESS_VRAM_COMPRESSED,
+		COMPRESS_VRAM_UNCOMPRESSED,
+		COMPRESS_BASIS_UNIVERSAL
+	};
+
 protected:
 	enum {
 		MAKE_3D_FLAG = 1,
-		MAKE_SRGB_FLAG = 2,
+		MAKE_ROUGHNESS_FLAG = 2,
 		MAKE_NORMAL_FLAG = 4
 	};
 
 	Mutex *mutex;
-	Map<StringName, int> make_flags;
+	struct MakeInfo {
 
-	static void _texture_reimport_srgb(const Ref<StreamTexture> &p_tex);
+		int flags;
+		String normal_path_for_roughness;
+		VS::TextureDetectRoughnessChannel channel_for_roughness;
+		MakeInfo() {
+			flags = 0;
+			channel_for_roughness = VS::TEXTURE_DETECT_ROUGNHESS_R;
+		}
+	};
+
+	Map<StringName, MakeInfo> make_flags;
+
+	static void _texture_reimport_roughness(const Ref<StreamTexture> &p_tex, const String &p_normal_path, VisualServer::TextureDetectRoughnessChannel p_channel);
 	static void _texture_reimport_3d(const Ref<StreamTexture> &p_tex);
 	static void _texture_reimport_normal(const Ref<StreamTexture> &p_tex);
 
 	static ResourceImporterTexture *singleton;
 	static const char *compression_formats[];
 
+	void _save_stex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_srgb, bool p_force_rgbe, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel);
+
 public:
+	void save_to_stex_format(FileAccess *f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality, bool p_force_rgbe);
+
 	static ResourceImporterTexture *get_singleton() { return singleton; }
 	virtual String get_importer_name() const;
 	virtual String get_visible_name() const;
@@ -71,20 +98,11 @@ public:
 		PRESET_3D,
 	};
 
-	enum CompressMode {
-		COMPRESS_LOSSLESS,
-		COMPRESS_LOSSY,
-		COMPRESS_VIDEO_RAM,
-		COMPRESS_UNCOMPRESSED
-	};
-
 	virtual int get_preset_count() const;
 	virtual String get_preset_name(int p_idx) const;
 
 	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const;
 	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const;
-
-	void _save_stex(const Ref<Image> &p_image, const String &p_to_path, int p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, int p_texture_flags, bool p_streamable, bool p_detect_3d, bool p_detect_srgb, bool p_force_rgbe, bool p_detect_normal, bool p_force_normal, bool p_force_po2_for_compressed);
 
 	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL, Variant *r_metadata = NULL);
 

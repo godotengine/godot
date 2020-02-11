@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  voxel_light_baker.h                                                  */
+/*  voxelizer.h                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -31,27 +31,11 @@
 #ifndef VOXEL_LIGHT_BAKER_H
 #define VOXEL_LIGHT_BAKER_H
 
+#include "core/math/vector3i.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/resources/multimesh.h"
 
-class VoxelLightBaker {
-public:
-	enum DebugMode {
-		DEBUG_ALBEDO,
-		DEBUG_LIGHT
-	};
-
-	enum BakeQuality {
-		BAKE_QUALITY_LOW,
-		BAKE_QUALITY_MEDIUM,
-		BAKE_QUALITY_HIGH
-	};
-
-	enum BakeMode {
-		BAKE_MODE_CONE_TRACE,
-		BAKE_MODE_RAY_TRACE,
-	};
-
+class Voxelizer {
 private:
 	enum {
 		CHILD_EMPTY = 0xFFFFFFFF
@@ -66,7 +50,10 @@ private:
 		float normal[3];
 		uint32_t used_sides;
 		float alpha; //used for upsampling
-		int level;
+		uint16_t x;
+		uint16_t y;
+		uint16_t z;
+		uint16_t level;
 
 		Cell() {
 			for (int i = 0; i < 8; i++) {
@@ -80,6 +67,7 @@ private:
 			}
 			alpha = 0;
 			used_sides = 0;
+			x = y = z = 0;
 			level = 0;
 		}
 	};
@@ -87,26 +75,23 @@ private:
 	Vector<Cell> bake_cells;
 	int cell_subdiv;
 
-	struct Light {
-		int x, y, z;
-		float accum[6][3]; //rgb anisotropic
-		float direct_accum[6][3]; //for direct bake
-		int next_leaf;
-		Light() {
-			x = y = z = 0;
-			for (int i = 0; i < 6; i++) {
-				for (int j = 0; j < 3; j++) {
-					accum[i][j] = 0;
-					direct_accum[i][j] = 0;
-				}
-			}
-			next_leaf = 0;
+	struct CellSort {
+		union {
+			struct {
+				uint64_t z : 16;
+				uint64_t y : 16;
+				uint64_t x : 16;
+				uint64_t level : 16;
+			};
+			uint64_t key;
+		};
+
+		int32_t index;
+
+		_FORCE_INLINE_ bool operator<(const CellSort &p_cell_sort) const {
+			return key < p_cell_sort.key;
 		}
 	};
-
-	int first_leaf;
-
-	Vector<Light> bake_light;
 
 	struct MaterialCache {
 		//128x128 textures
@@ -115,9 +100,6 @@ private:
 	};
 
 	Map<Ref<Material>, MaterialCache> material_cache;
-	int leaf_voxel_count;
-	bool direct_lights_baked;
-
 	AABB original_bounds;
 	AABB po2_bounds;
 	int axis_cell_size[3];
@@ -128,64 +110,37 @@ private:
 	int bake_texture_size;
 	float cell_size;
 	float propagation;
-	float energy;
-
-	BakeQuality bake_quality;
-	BakeMode bake_mode;
 
 	int max_original_cells;
-
-	void _init_light_plot(int p_idx, int p_level, int p_x, int p_y, int p_z, uint32_t p_parent);
+	int leaf_voxel_count;
 
 	Vector<Color> _get_bake_texture(Ref<Image> p_image, const Color &p_color_mul, const Color &p_color_add);
 	MaterialCache _get_material_cache(Ref<Material> p_material);
 
 	void _plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, const Vector3 *p_vtx, const Vector3 *p_normal, const Vector2 *p_uv, const MaterialCache &p_material, const AABB &p_aabb);
 	void _fixup_plot(int p_idx, int p_level);
-	void _debug_mesh(int p_idx, int p_level, const AABB &p_aabb, Ref<MultiMesh> &p_multimesh, int &idx, DebugMode p_mode);
-	void _check_init_light();
+	void _debug_mesh(int p_idx, int p_level, const AABB &p_aabb, Ref<MultiMesh> &p_multimesh, int &idx);
 
-	uint32_t _find_cell_at_pos(const Cell *cells, int x, int y, int z);
-
-	struct LightMap {
-		Vector3 light;
-		Vector3 pos;
-		Vector3 normal;
-	};
-
-	void _plot_triangle(Vector2 *vertices, Vector3 *positions, Vector3 *normals, LightMap *pixels, int width, int height);
-
-	_FORCE_INLINE_ void _sample_baked_octree_filtered_and_anisotropic(const Vector3 &p_posf, const Vector3 &p_direction, float p_level, Vector3 &r_color, float &r_alpha);
-	_FORCE_INLINE_ Vector3 _voxel_cone_trace(const Vector3 &p_pos, const Vector3 &p_normal, float p_aperture);
-	_FORCE_INLINE_ Vector3 _compute_pixel_light_at_pos(const Vector3 &p_pos, const Vector3 &p_normal);
-	_FORCE_INLINE_ Vector3 _compute_ray_trace_at_pos(const Vector3 &p_pos, const Vector3 &p_normal);
-
-	void _lightmap_bake_point(uint32_t p_x, LightMap *p_line);
+	bool sorted;
+	void _sort();
 
 public:
 	void begin_bake(int p_subdiv, const AABB &p_bounds);
 	void plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material> > &p_materials, const Ref<Material> &p_override_material);
-	void begin_bake_light(BakeQuality p_quality = BAKE_QUALITY_MEDIUM, BakeMode p_bake_mode = BAKE_MODE_CONE_TRACE, float p_propagation = 0.85, float p_energy = 1);
-	void plot_light_directional(const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_energy, bool p_direct);
-	void plot_light_omni(const Vector3 &p_pos, const Color &p_color, float p_energy, float p_indirect_energy, float p_radius, float p_attenutation, bool p_direct);
-	void plot_light_spot(const Vector3 &p_pos, const Vector3 &p_axis, const Color &p_color, float p_energy, float p_indirect_energy, float p_radius, float p_attenutation, float p_spot_angle, float p_spot_attenuation, bool p_direct);
 	void end_bake();
 
-	struct LightMapData {
-		int width;
-		int height;
-		PoolVector<float> light;
-	};
+	int get_gi_probe_octree_depth() const;
+	Vector3i get_giprobe_octree_size() const;
+	int get_giprobe_cell_count() const;
+	PoolVector<uint8_t> get_giprobe_octree_cells() const;
+	PoolVector<uint8_t> get_giprobe_data_cells() const;
+	PoolVector<int> get_giprobe_level_cell_count() const;
+	PoolVector<uint8_t> get_sdf_3d_image() const;
 
-	Error make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh, float default_texels_per_unit, LightMapData &r_lightmap, bool (*p_bake_time_func)(void *, float, float) = NULL, void *p_bake_time_ud = NULL);
+	Ref<MultiMesh> create_debug_multimesh();
 
-	PoolVector<int> create_gi_probe_data();
-	Ref<MultiMesh> create_debug_multimesh(DebugMode p_mode = DEBUG_ALBEDO);
-	PoolVector<uint8_t> create_capture_octree(int p_subdiv);
-
-	float get_cell_size() const;
 	Transform get_to_cell_space_xform() const;
-	VoxelLightBaker();
+	Voxelizer();
 };
 
 #endif // VOXEL_LIGHT_BAKER_H

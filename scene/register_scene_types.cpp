@@ -419,8 +419,8 @@ void register_scene_types() {
 	ClassDB::register_class<ReflectionProbe>();
 	ClassDB::register_class<GIProbe>();
 	ClassDB::register_class<GIProbeData>();
-	ClassDB::register_class<BakedLightmap>();
-	ClassDB::register_class<BakedLightmapData>();
+	//ClassDB::register_class<BakedLightmap>();
+	//ClassDB::register_class<BakedLightmapData>();
 	ClassDB::register_class<Particles>();
 	ClassDB::register_class<CPUParticles>();
 	ClassDB::register_class<Position3D>();
@@ -524,7 +524,7 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeVectorDecompose>();
 	ClassDB::register_class<VisualShaderNodeTransformDecompose>();
 	ClassDB::register_class<VisualShaderNodeTexture>();
-	ClassDB::register_class<VisualShaderNodeCubeMap>();
+	ClassDB::register_class<VisualShaderNodeCubemap>();
 	ClassDB::register_virtual_class<VisualShaderNodeUniform>();
 	ClassDB::register_class<VisualShaderNodeScalarUniform>();
 	ClassDB::register_class<VisualShaderNodeBooleanUniform>();
@@ -533,7 +533,7 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeTransformUniform>();
 	ClassDB::register_class<VisualShaderNodeTextureUniform>();
 	ClassDB::register_class<VisualShaderNodeTextureUniformTriplanar>();
-	ClassDB::register_class<VisualShaderNodeCubeMapUniform>();
+	ClassDB::register_class<VisualShaderNodeCubemapUniform>();
 	ClassDB::register_class<VisualShaderNodeIf>();
 	ClassDB::register_class<VisualShaderNodeSwitch>();
 	ClassDB::register_class<VisualShaderNodeScalarSwitch>();
@@ -621,9 +621,11 @@ void register_scene_types() {
 	ClassDB::register_class<SphereMesh>();
 	ClassDB::register_class<PointMesh>();
 	ClassDB::register_virtual_class<Material>();
-	ClassDB::register_class<SpatialMaterial>();
-	SceneTree::add_idle_callback(SpatialMaterial::flush_changes);
-	SpatialMaterial::init_shaders();
+	ClassDB::register_virtual_class<BaseMaterial3D>();
+	ClassDB::register_class<StandardMaterial3D>();
+	ClassDB::register_class<ORMMaterial3D>();
+	SceneTree::add_idle_callback(BaseMaterial3D::flush_changes);
+	BaseMaterial3D::init_shaders();
 
 	ClassDB::register_class<MeshLibrary>();
 
@@ -648,8 +650,10 @@ void register_scene_types() {
 	ClassDB::register_class<PhysicsMaterial>();
 	ClassDB::register_class<World>();
 	ClassDB::register_class<Environment>();
+	ClassDB::register_class<CameraEffects>();
 	ClassDB::register_class<World2D>();
 	ClassDB::register_virtual_class<Texture>();
+	ClassDB::register_virtual_class<Texture2D>();
 	ClassDB::register_virtual_class<Sky>();
 	ClassDB::register_class<PanoramaSky>();
 	ClassDB::register_class<ProceduralSky>();
@@ -663,10 +667,10 @@ void register_scene_types() {
 	ClassDB::register_class<ProxyTexture>();
 	ClassDB::register_class<AnimatedTexture>();
 	ClassDB::register_class<CameraTexture>();
-	ClassDB::register_class<CubeMap>();
 	ClassDB::register_virtual_class<TextureLayered>();
-	ClassDB::register_class<Texture3D>();
-	ClassDB::register_class<TextureArray>();
+	ClassDB::register_class<Cubemap>();
+	ClassDB::register_class<CubemapArray>();
+	ClassDB::register_class<Texture2DArray>();
 	ClassDB::register_class<Animation>();
 	ClassDB::register_virtual_class<Font>();
 	ClassDB::register_class<BitmapFont>();
@@ -731,7 +735,7 @@ void register_scene_types() {
 
 #ifndef DISABLE_DEPRECATED
 	ClassDB::add_compatibility_class("ImageSkyBox", "PanoramaSky");
-	ClassDB::add_compatibility_class("FixedSpatialMaterial", "SpatialMaterial");
+	ClassDB::add_compatibility_class("SpatialMaterial", "StandardMaterial3D");
 	ClassDB::add_compatibility_class("Mesh", "ArrayMesh");
 	ClassDB::add_compatibility_class("AnimationTreePlayer", "AnimationTree");
 #endif
@@ -806,9 +810,9 @@ void unregister_scene_types() {
 	ResourceLoader::remove_resource_format_loader(resource_loader_bmfont);
 	resource_loader_bmfont.unref();
 
-	//SpatialMaterial is not initialised when 3D is disabled, so it shouldn't be cleaned up either
+	//StandardMaterial3D is not initialised when 3D is disabled, so it shouldn't be cleaned up either
 #ifndef _3D_DISABLED
-	SpatialMaterial::finish_shaders();
+	BaseMaterial3D::finish_shaders();
 #endif // _3D_DISABLED
 
 	ParticlesMaterial::finish_shaders();

@@ -167,7 +167,7 @@ void SpriteEditor::_menu_option(int p_option) {
 
 void SpriteEditor::_update_mesh_data() {
 
-	Ref<Texture> texture = node->get_texture();
+	Ref<Texture2D> texture = node->get_texture();
 	if (texture.is_null()) {
 		err_dialog->set_text(TTR("Sprite is empty!"));
 		err_dialog->popup_centered_minsize();
@@ -330,7 +330,7 @@ void SpriteEditor::_convert_to_mesh_2d_node() {
 	a[Mesh::ARRAY_TEX_UV] = computed_uv;
 	a[Mesh::ARRAY_INDEX] = computed_indices;
 
-	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a, Array(), Mesh::ARRAY_FLAG_USE_2D_VERTICES);
+	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a, Array(), Dictionary(), Mesh::ARRAY_FLAG_USE_2D_VERTICES);
 
 	MeshInstance2D *mesh_instance = memnew(MeshInstance2D);
 	mesh_instance->set_mesh(mesh);
@@ -476,7 +476,7 @@ void SpriteEditor::_add_as_sibling_or_child(Node *p_own_node, Node *p_new_node) 
 
 void SpriteEditor::_debug_uv_draw() {
 
-	Ref<Texture> tex = node->get_texture();
+	Ref<Texture2D> tex = node->get_texture();
 	ERR_FAIL_COND(!tex.is_valid());
 
 	Point2 draw_pos_offset = Point2(1.0, 1.0);

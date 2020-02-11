@@ -34,6 +34,7 @@
 #include "scene/scene_string_names.h"
 
 #define NORMAL_SUFFIX "_normal"
+#define SPECULAR_SUFFIX "_specular"
 
 #ifdef TOOLS_ENABLED
 Dictionary AnimatedSprite::_edit_get_state() const {
@@ -68,7 +69,7 @@ bool AnimatedSprite::_edit_use_rect() const {
 	if (!frames.is_valid() || !frames->has_animation(animation) || frame < 0 || frame >= frames->get_frame_count(animation)) {
 		return false;
 	}
-	Ref<Texture> t;
+	Ref<Texture2D> t;
 	if (animation)
 		t = frames->get_frame(animation, frame);
 	return t.is_valid();
@@ -84,7 +85,7 @@ Rect2 AnimatedSprite::_get_rect() const {
 		return Rect2();
 	}
 
-	Ref<Texture> t;
+	Ref<Texture2D> t;
 	if (animation)
 		t = frames->get_frame(animation, frame);
 	if (t.is_null())
@@ -101,7 +102,7 @@ Rect2 AnimatedSprite::_get_rect() const {
 	return Rect2(ofs, s);
 }
 
-void SpriteFrames::add_frame(const StringName &p_anim, const Ref<Texture> &p_frame, int p_at_pos) {
+void SpriteFrames::add_frame(const StringName &p_anim, const Ref<Texture2D> &p_frame, int p_at_pos) {
 
 	Map<StringName, Anim>::Element *E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
@@ -150,6 +151,7 @@ void SpriteFrames::add_animation(const StringName &p_anim) {
 
 	animations[p_anim] = Anim();
 	animations[p_anim].normal_name = String(p_anim) + NORMAL_SUFFIX;
+	animations[p_anim].specular_name = String(p_anim) + SPECULAR_SUFFIX;
 }
 
 bool SpriteFrames::has_animation(const StringName &p_anim) const {
@@ -170,6 +172,7 @@ void SpriteFrames::rename_animation(const StringName &p_prev, const StringName &
 	animations.erase(p_prev);
 	animations[p_next] = anim;
 	animations[p_next].normal_name = String(p_next) + NORMAL_SUFFIX;
+	animations[p_next].specular_name = String(p_next) + SPECULAR_SUFFIX;
 }
 
 Vector<String> SpriteFrames::_get_animation_list() const {
@@ -438,11 +441,12 @@ void AnimatedSprite::_notification(int p_what) {
 			if (!frames->has_animation(animation))
 				return;
 
-			Ref<Texture> texture = frames->get_frame(animation, frame);
+			Ref<Texture2D> texture = frames->get_frame(animation, frame);
 			if (texture.is_null())
 				return;
 
-			Ref<Texture> normal = frames->get_normal_frame(animation, frame);
+			Ref<Texture2D> normal = frames->get_normal_frame(animation, frame);
+			Ref<Texture2D> specular = frames->get_specular_frame(animation, frame);
 
 			RID ci = get_canvas_item();
 
@@ -462,7 +466,7 @@ void AnimatedSprite::_notification(int p_what) {
 			if (vflip)
 				dst_rect.size.y = -dst_rect.size.y;
 
-			texture->draw_rect_region(ci, dst_rect, Rect2(Vector2(), texture->get_size()), Color(1, 1, 1), false, normal);
+			texture->draw_rect_region(ci, dst_rect, Rect2(Vector2(), texture->get_size()), Color(1, 1, 1), false, normal, specular, Color(specular_color.r, specular_color.g, specular_color.b, shininess));
 
 		} break;
 	}
@@ -674,6 +678,24 @@ String AnimatedSprite::get_configuration_warning() const {
 	return String();
 }
 
+void AnimatedSprite::set_specular_color(const Color &p_color) {
+	specular_color = p_color;
+	update();
+}
+
+Color AnimatedSprite::get_specular_color() const {
+	return specular_color;
+}
+
+void AnimatedSprite::set_shininess(float p_shininess) {
+	shininess = CLAMP(p_shininess, 0.0, 1.0);
+	update();
+}
+
+float AnimatedSprite::get_shininess() const {
+	return shininess;
+}
+
 void AnimatedSprite::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_sprite_frames", "sprite_frames"), &AnimatedSprite::set_sprite_frames);
@@ -707,16 +729,27 @@ void AnimatedSprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "speed_scale"), &AnimatedSprite::set_speed_scale);
 	ClassDB::bind_method(D_METHOD("get_speed_scale"), &AnimatedSprite::get_speed_scale);
 
+	ClassDB::bind_method(D_METHOD("set_specular_color", "color"), &AnimatedSprite::set_specular_color);
+	ClassDB::bind_method(D_METHOD("get_specular_color"), &AnimatedSprite::get_specular_color);
+
+	ClassDB::bind_method(D_METHOD("set_shininess", "shininess"), &AnimatedSprite::set_shininess);
+	ClassDB::bind_method(D_METHOD("get_shininess"), &AnimatedSprite::get_shininess);
+
 	ClassDB::bind_method(D_METHOD("_res_changed"), &AnimatedSprite::_res_changed);
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 	ADD_SIGNAL(MethodInfo("animation_finished"));
 
+	ADD_GROUP("Animation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation"), "set_animation", "get_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "speed_scale"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");
+	ADD_GROUP("Lighting", "");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "specular_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_specular_color", "get_specular_color");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "shininess", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_shininess", "get_shininess");
+	ADD_GROUP("Offset", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
@@ -736,4 +769,6 @@ AnimatedSprite::AnimatedSprite() {
 	animation = "default";
 	timeout = 0;
 	is_over = false;
+	specular_color = Color(1, 1, 1, 1);
+	shininess = 1.0;
 }

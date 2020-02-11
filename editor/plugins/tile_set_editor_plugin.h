@@ -114,7 +114,7 @@ class TileSetEditor : public HSplitContainer {
 	int option;
 	ToolButton *tileset_toolbar_buttons[TOOL_TILESET_MAX];
 	MenuButton *tileset_toolbar_tools;
-	Map<RID, Ref<Texture> > texture_map;
+	Map<RID, Ref<Texture2D> > texture_map;
 
 	bool creating_shape;
 	int dragging_point;
@@ -165,10 +165,10 @@ class TileSetEditor : public HSplitContainer {
 	void update_texture_list();
 	void update_texture_list_icon();
 
-	void add_texture(Ref<Texture> p_texture);
-	void remove_texture(Ref<Texture> p_texture);
+	void add_texture(Ref<Texture2D> p_texture);
+	void remove_texture(Ref<Texture2D> p_texture);
 
-	Ref<Texture> get_current_texture();
+	Ref<Texture2D> get_current_texture();
 
 	static void _import_node(Node *p_node, Ref<TileSet> p_library);
 	static void _import_scene(Node *p_scene, Ref<TileSet> p_library, bool p_merge);

@@ -58,8 +58,8 @@ void CPUParticles2D::set_amount(int p_amount) {
 		}
 	}
 
-	particle_data.resize((8 + 4 + 1) * p_amount);
-	VS::get_singleton()->multimesh_allocate(multimesh, p_amount, VS::MULTIMESH_TRANSFORM_2D, VS::MULTIMESH_COLOR_8BIT, VS::MULTIMESH_CUSTOM_DATA_FLOAT);
+	particle_data.resize((8 + 4 + 4) * p_amount);
+	VS::get_singleton()->multimesh_allocate(multimesh, p_amount, VS::MULTIMESH_TRANSFORM_2D, true, true);
 
 	particle_order.resize(p_amount);
 }
@@ -207,7 +207,7 @@ void CPUParticles2D::_update_mesh_texture() {
 	VS::get_singleton()->mesh_add_surface_from_arrays(mesh, VS::PRIMITIVE_TRIANGLES, arr);
 }
 
-void CPUParticles2D::set_texture(const Ref<Texture> &p_texture) {
+void CPUParticles2D::set_texture(const Ref<Texture2D> &p_texture) {
 	if (p_texture == texture)
 		return;
 
@@ -231,18 +231,18 @@ void CPUParticles2D::_texture_changed() {
 	}
 }
 
-Ref<Texture> CPUParticles2D::get_texture() const {
+Ref<Texture2D> CPUParticles2D::get_texture() const {
 
 	return texture;
 }
 
-void CPUParticles2D::set_normalmap(const Ref<Texture> &p_normalmap) {
+void CPUParticles2D::set_normalmap(const Ref<Texture2D> &p_normalmap) {
 
 	normalmap = p_normalmap;
 	update();
 }
 
-Ref<Texture> CPUParticles2D::get_normalmap() const {
+Ref<Texture2D> CPUParticles2D::get_normalmap() const {
 
 	return normalmap;
 }
@@ -1025,18 +1025,18 @@ void CPUParticles2D::_update_particle_data_buffer() {
 			}
 
 			Color c = r[idx].color;
-			uint8_t *data8 = (uint8_t *)&ptr[8];
-			data8[0] = CLAMP(c.r * 255.0, 0, 255);
-			data8[1] = CLAMP(c.g * 255.0, 0, 255);
-			data8[2] = CLAMP(c.b * 255.0, 0, 255);
-			data8[3] = CLAMP(c.a * 255.0, 0, 255);
 
-			ptr[9] = r[idx].custom[0];
-			ptr[10] = r[idx].custom[1];
-			ptr[11] = r[idx].custom[2];
-			ptr[12] = r[idx].custom[3];
+			ptr[8] = c.r;
+			ptr[9] = c.g;
+			ptr[10] = c.b;
+			ptr[11] = c.a;
 
-			ptr += 13;
+			ptr[12] = r[idx].custom[0];
+			ptr[13] = r[idx].custom[1];
+			ptr[14] = r[idx].custom[2];
+			ptr[15] = r[idx].custom[3];
+
+			ptr += 16;
 		}
 	}
 
@@ -1077,7 +1077,7 @@ void CPUParticles2D::_update_render_thread() {
 	update_mutex->lock();
 #endif
 
-	VS::get_singleton()->multimesh_set_as_bulk_array(multimesh, particle_data);
+	VS::get_singleton()->multimesh_set_buffer(multimesh, particle_data);
 
 #ifndef NO_THREADS
 	update_mutex->unlock();
@@ -1150,7 +1150,7 @@ void CPUParticles2D::_notification(int p_what) {
 					zeromem(ptr, sizeof(float) * 8);
 				}
 
-				ptr += 13;
+				ptr += 16;
 			}
 		}
 	}
@@ -1286,8 +1286,8 @@ void CPUParticles2D::_bind_methods() {
 	// No visibility_rect property contrarily to Particles2D, it's updated automatically.
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime"), "set_draw_order", "get_draw_order");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normalmap", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_normalmap", "get_normalmap");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normalmap", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_normalmap", "get_normalmap");
 
 	BIND_ENUM_CONSTANT(DRAW_ORDER_INDEX);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_LIFETIME);

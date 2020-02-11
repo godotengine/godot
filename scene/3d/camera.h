@@ -82,6 +82,7 @@ private:
 	uint32_t layers;
 
 	Ref<Environment> environment;
+	Ref<CameraEffects> effects;
 
 	virtual bool _can_gizmo_scale() const;
 
@@ -156,6 +157,9 @@ public:
 
 	void set_environment(const Ref<Environment> &p_environment);
 	Ref<Environment> get_environment() const;
+
+	void set_effects(const Ref<CameraEffects> &p_effects);
+	Ref<CameraEffects> get_effects() const;
 
 	void set_keep_aspect_mode(KeepAspect p_aspect);
 	KeepAspect get_keep_aspect_mode() const;

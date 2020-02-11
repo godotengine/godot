@@ -483,7 +483,7 @@ TreeItem *EditorHelpSearch::Runner::_create_class_hierarchy(const ClassMatch &p_
 
 TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray) {
 
-	Ref<Texture> icon = empty_icon;
+	Ref<Texture2D> icon = empty_icon;
 	if (ui_service->has_icon(p_doc->name, "EditorIcons"))
 		icon = ui_service->get_icon(p_doc->name, "EditorIcons");
 	else if (ClassDB::class_exists(p_doc->name) && ClassDB::is_parent_class(p_doc->name, "Object"))
@@ -559,7 +559,7 @@ TreeItem *EditorHelpSearch::Runner::_create_theme_property_item(TreeItem *p_pare
 
 TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_type, const String &p_metatype, const String &p_tooltip) {
 
-	Ref<Texture> icon;
+	Ref<Texture2D> icon;
 	String text;
 	if (search_flags & SEARCH_SHOW_HIERARCHY) {
 		icon = ui_service->get_icon(p_icon, "EditorIcons");

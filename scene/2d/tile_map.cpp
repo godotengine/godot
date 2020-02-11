@@ -399,7 +399,7 @@ void TileMap::update_dirty_quadrants() {
 			//moment of truth
 			if (!tile_set->has_tile(c.id))
 				continue;
-			Ref<Texture> tex = tile_set->tile_get_texture(c.id);
+			Ref<Texture2D> tex = tile_set->tile_get_texture(c.id);
 			Vector2 tile_ofs = tile_set->tile_get_texture_offset(c.id);
 
 			Vector2 wofs = _map_to_world(E->key().x, E->key().y);
@@ -542,7 +542,7 @@ void TileMap::update_dirty_quadrants() {
 				rect.position += tile_ofs;
 			}
 
-			Ref<Texture> normal_map = tile_set->tile_get_normal_map(c.id);
+			Ref<Texture2D> normal_map = tile_set->tile_get_normal_map(c.id);
 			Color modulate = tile_set->tile_get_modulate(c.id);
 			Color self_modulate = get_self_modulate();
 			modulate = Color(modulate.r * self_modulate.r, modulate.g * self_modulate.g,
@@ -550,7 +550,7 @@ void TileMap::update_dirty_quadrants() {
 			if (r == Rect2()) {
 				tex->draw_rect(canvas_item, rect, false, modulate, c.transpose, normal_map);
 			} else {
-				tex->draw_rect_region(canvas_item, rect, r, modulate, c.transpose, normal_map, clip_uv);
+				tex->draw_rect_region(canvas_item, rect, r, modulate, c.transpose, normal_map, Ref<Texture2D>(), Color(1, 1, 1, 1), VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, clip_uv);
 			}
 
 			Vector<TileSet::ShapeData> shapes = tile_set->tile_get_shapes(c.id);

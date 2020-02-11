@@ -83,21 +83,17 @@ public:
 		ARRAY_FORMAT_INDEX = 1 << ARRAY_INDEX,
 
 		ARRAY_COMPRESS_BASE = (ARRAY_INDEX + 1),
-		ARRAY_COMPRESS_VERTEX = 1 << (ARRAY_VERTEX + ARRAY_COMPRESS_BASE), // mandatory
 		ARRAY_COMPRESS_NORMAL = 1 << (ARRAY_NORMAL + ARRAY_COMPRESS_BASE),
 		ARRAY_COMPRESS_TANGENT = 1 << (ARRAY_TANGENT + ARRAY_COMPRESS_BASE),
 		ARRAY_COMPRESS_COLOR = 1 << (ARRAY_COLOR + ARRAY_COMPRESS_BASE),
 		ARRAY_COMPRESS_TEX_UV = 1 << (ARRAY_TEX_UV + ARRAY_COMPRESS_BASE),
 		ARRAY_COMPRESS_TEX_UV2 = 1 << (ARRAY_TEX_UV2 + ARRAY_COMPRESS_BASE),
-		ARRAY_COMPRESS_BONES = 1 << (ARRAY_BONES + ARRAY_COMPRESS_BASE),
-		ARRAY_COMPRESS_WEIGHTS = 1 << (ARRAY_WEIGHTS + ARRAY_COMPRESS_BASE),
 		ARRAY_COMPRESS_INDEX = 1 << (ARRAY_INDEX + ARRAY_COMPRESS_BASE),
 
 		ARRAY_FLAG_USE_2D_VERTICES = ARRAY_COMPRESS_INDEX << 1,
-		ARRAY_FLAG_USE_16_BIT_BONES = ARRAY_COMPRESS_INDEX << 2,
 		ARRAY_FLAG_USE_DYNAMIC_UPDATE = ARRAY_COMPRESS_INDEX << 3,
 
-		ARRAY_COMPRESS_DEFAULT = ARRAY_COMPRESS_NORMAL | ARRAY_COMPRESS_TANGENT | ARRAY_COMPRESS_COLOR | ARRAY_COMPRESS_TEX_UV | ARRAY_COMPRESS_TEX_UV2 | ARRAY_COMPRESS_WEIGHTS
+		ARRAY_COMPRESS_DEFAULT = ARRAY_COMPRESS_NORMAL | ARRAY_COMPRESS_TANGENT | ARRAY_COMPRESS_COLOR | ARRAY_COMPRESS_TEX_UV | ARRAY_COMPRESS_TEX_UV2
 
 	};
 
@@ -105,10 +101,9 @@ public:
 		PRIMITIVE_POINTS = VisualServer::PRIMITIVE_POINTS,
 		PRIMITIVE_LINES = VisualServer::PRIMITIVE_LINES,
 		PRIMITIVE_LINE_STRIP = VisualServer::PRIMITIVE_LINE_STRIP,
-		PRIMITIVE_LINE_LOOP = VisualServer::PRIMITIVE_LINE_LOOP,
 		PRIMITIVE_TRIANGLES = VisualServer::PRIMITIVE_TRIANGLES,
 		PRIMITIVE_TRIANGLE_STRIP = VisualServer::PRIMITIVE_TRIANGLE_STRIP,
-		PRIMITIVE_TRIANGLE_FAN = VisualServer::PRIMITIVE_TRIANGLE_FAN,
+		PRIMITIVE_MAX = VisualServer::PRIMITIVE_MAX,
 	};
 
 	enum BlendShapeMode {
@@ -123,6 +118,7 @@ public:
 	virtual bool surface_is_softbody_friendly(int p_idx) const;
 	virtual Array surface_get_arrays(int p_surface) const = 0;
 	virtual Array surface_get_blend_shape_arrays(int p_surface) const = 0;
+	virtual Dictionary surface_get_lods(int p_surface) const = 0;
 	virtual uint32_t surface_get_format(int p_idx) const = 0;
 	virtual PrimitiveType surface_get_primitive_type(int p_idx) const = 0;
 	virtual void surface_set_material(int p_idx, const Ref<Material> &p_material) = 0;
@@ -160,20 +156,29 @@ class ArrayMesh : public Mesh {
 	GDCLASS(ArrayMesh, Mesh);
 	RES_BASE_EXTENSION("mesh");
 
+	Array _get_surfaces() const;
+	void _set_surfaces(const Array &p_data);
+
 private:
 	struct Surface {
+		uint32_t format;
+		int array_length;
+		int index_array_length;
+		PrimitiveType primitive;
+
 		String name;
 		AABB aabb;
 		Ref<Material> material;
 		bool is_2d;
 	};
 	Vector<Surface> surfaces;
-	RID mesh;
+	mutable RID mesh;
 	AABB aabb;
 	BlendShapeMode blend_shape_mode;
 	Vector<StringName> blend_shapes;
 	AABB custom_aabb;
 
+	_FORCE_INLINE_ void _create_if_empty() const;
 	void _recompute_aabb();
 
 protected:
@@ -186,11 +191,13 @@ protected:
 	static void _bind_methods();
 
 public:
-	void add_surface_from_arrays(PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), uint32_t p_flags = ARRAY_COMPRESS_DEFAULT);
-	void add_surface(uint32_t p_format, PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes = Vector<PoolVector<uint8_t> >(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>());
+	void add_surface_from_arrays(PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint32_t p_flags = ARRAY_COMPRESS_DEFAULT);
+
+	void add_surface(uint32_t p_format, PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes = Vector<PoolVector<uint8_t> >(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>(), const Vector<VS::SurfaceData::LOD> &p_lods = Vector<VS::SurfaceData::LOD>());
 
 	Array surface_get_arrays(int p_surface) const;
 	Array surface_get_blend_shape_arrays(int p_surface) const;
+	Dictionary surface_get_lods(int p_surface) const;
 
 	void add_blend_shape(const StringName &p_name);
 	int get_blend_shape_count() const;
@@ -204,6 +211,8 @@ public:
 
 	int get_surface_count() const;
 	void surface_remove(int p_idx);
+
+	void clear_surfaces();
 
 	void surface_set_custom_aabb(int p_idx, const AABB &p_aabb); //only recognized by driver
 
@@ -219,8 +228,6 @@ public:
 	int surface_find_by_name(const String &p_name) const;
 	void surface_set_name(int p_idx, const String &p_name);
 	String surface_get_name(int p_idx) const;
-
-	void add_surface_from_mesh_data(const Geometry::MeshData &p_mesh_data);
 
 	void set_custom_aabb(const AABB &p_custom);
 	AABB get_custom_aabb() const;

@@ -61,12 +61,12 @@ Size2 EditorProperty::get_minimum_size() const {
 	}
 
 	if (keying) {
-		Ref<Texture> key = get_icon("Key", "EditorIcons");
+		Ref<Texture2D> key = get_icon("Key", "EditorIcons");
 		ms.width += key->get_width() + get_constant("hseparator", "Tree");
 	}
 
 	if (checkable) {
-		Ref<Texture> check = get_icon("checked", "CheckBox");
+		Ref<Texture2D> check = get_icon("checked", "CheckBox");
 		ms.width += check->get_width() + get_constant("hseparation", "CheckBox") + get_constant("hseparator", "Tree");
 	}
 
@@ -139,7 +139,7 @@ void EditorProperty::_notification(int p_what) {
 			}
 
 			if (keying) {
-				Ref<Texture> key;
+				Ref<Texture2D> key;
 
 				if (use_keying_next()) {
 					key = get_icon("KeyNext", "EditorIcons");
@@ -215,7 +215,7 @@ void EditorProperty::_notification(int p_what) {
 		int text_limit = text_size;
 
 		if (checkable) {
-			Ref<Texture> checkbox;
+			Ref<Texture2D> checkbox;
 			if (checked)
 				checkbox = get_icon("GuiChecked", "EditorIcons");
 			else
@@ -236,7 +236,7 @@ void EditorProperty::_notification(int p_what) {
 		}
 
 		if (can_revert) {
-			Ref<Texture> reload_icon = get_icon("ReloadSmall", "EditorIcons");
+			Ref<Texture2D> reload_icon = get_icon("ReloadSmall", "EditorIcons");
 			text_limit -= reload_icon->get_width() + get_constant("hseparator", "Tree") * 2;
 			revert_rect = Rect2(text_limit + get_constant("hseparator", "Tree"), (size.height - reload_icon->get_height()) / 2, reload_icon->get_width(), reload_icon->get_height());
 
@@ -256,7 +256,7 @@ void EditorProperty::_notification(int p_what) {
 		draw_string(font, Point2(ofs, v_ofs + font->get_ascent()), label, color, text_limit);
 
 		if (keying) {
-			Ref<Texture> key;
+			Ref<Texture2D> key;
 
 			if (use_keying_next()) {
 				key = get_icon("KeyNext", "EditorIcons");
@@ -1055,7 +1055,7 @@ void EditorInspectorSection::_notification(int p_what) {
 	if (p_what == NOTIFICATION_SORT_CHILDREN) {
 
 		Ref<Font> font = get_font("font", "Tree");
-		Ref<Texture> arrow;
+		Ref<Texture2D> arrow;
 
 		if (foldable) {
 			if (object->editor_is_section_unfolded(section)) {
@@ -1096,7 +1096,7 @@ void EditorInspectorSection::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 
-		Ref<Texture> arrow;
+		Ref<Texture2D> arrow;
 
 		if (foldable) {
 			if (object->editor_is_section_unfolded(section)) {

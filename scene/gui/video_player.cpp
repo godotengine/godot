@@ -375,12 +375,12 @@ void VideoPlayer::set_stream_position(float p_position) {
 		playback->seek(p_position);
 }
 
-Ref<Texture> VideoPlayer::get_video_texture() const {
+Ref<Texture2D> VideoPlayer::get_video_texture() const {
 
 	if (playback.is_valid())
 		return playback->get_texture();
 
-	return Ref<Texture>();
+	return Ref<Texture2D>();
 }
 
 void VideoPlayer::set_autoplay(bool p_enable) {

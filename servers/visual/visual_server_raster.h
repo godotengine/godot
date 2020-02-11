@@ -72,6 +72,9 @@ class VisualServerRaster : public VisualServer {
 	void _draw_margins();
 	static void _changes_changed() {}
 
+	uint64_t frame_profile_frame;
+	Vector<FrameProfileArea> frame_profile;
+
 public:
 	//if editor is redrawing when it shouldn't, enable this and put a breakpoint in _changes_changed()
 	//#define DEBUG_CHANGES
@@ -136,47 +139,55 @@ public:
 	void m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4, m_type5 arg5, m_type6 arg6, m_type7 arg7, m_type8 arg8, m_type9 arg9, m_type10 arg10, m_type11 arg11, m_type12 arg12) { DISPLAY_CHANGED BINDBASE->m_name(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12); }
 #define BIND13(m_name, m_type1, m_type2, m_type3, m_type4, m_type5, m_type6, m_type7, m_type8, m_type9, m_type10, m_type11, m_type12, m_type13) \
 	void m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4, m_type5 arg5, m_type6 arg6, m_type7 arg7, m_type8 arg8, m_type9 arg9, m_type10 arg10, m_type11 arg11, m_type12 arg12, m_type13 arg13) { DISPLAY_CHANGED BINDBASE->m_name(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13); }
+#define BIND14(m_name, m_type1, m_type2, m_type3, m_type4, m_type5, m_type6, m_type7, m_type8, m_type9, m_type10, m_type11, m_type12, m_type13, m_type14) \
+	void m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4, m_type5 arg5, m_type6 arg6, m_type7 arg7, m_type8 arg8, m_type9 arg9, m_type10 arg10, m_type11 arg11, m_type12 arg12, m_type13 arg13, m_type14 arg14) { DISPLAY_CHANGED BINDBASE->m_name(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14); }
+#define BIND15(m_name, m_type1, m_type2, m_type3, m_type4, m_type5, m_type6, m_type7, m_type8, m_type9, m_type10, m_type11, m_type12, m_type13, m_type14, m_type15) \
+	void m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4, m_type5 arg5, m_type6 arg6, m_type7 arg7, m_type8 arg8, m_type9 arg9, m_type10 arg10, m_type11 arg11, m_type12 arg12, m_type13 arg13, m_type14 arg14, m_type15 arg15) { DISPLAY_CHANGED BINDBASE->m_name(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15); }
 
 //from now on, calls forwarded to this singleton
 #define BINDBASE VSG::storage
 
 	/* TEXTURE API */
 
-	BIND0R(RID, texture_create)
-	BIND7(texture_allocate, RID, int, int, int, Image::Format, TextureType, uint32_t)
-	BIND3(texture_set_data, RID, const Ref<Image> &, int)
-	BIND10(texture_set_data_partial, RID, const Ref<Image> &, int, int, int, int, int, int, int, int)
-	BIND2RC(Ref<Image>, texture_get_data, RID, int)
-	BIND2(texture_set_flags, RID, uint32_t)
-	BIND1RC(uint32_t, texture_get_flags, RID)
-	BIND1RC(Image::Format, texture_get_format, RID)
-	BIND1RC(TextureType, texture_get_type, RID)
-	BIND1RC(uint32_t, texture_get_texid, RID)
-	BIND1RC(uint32_t, texture_get_width, RID)
-	BIND1RC(uint32_t, texture_get_height, RID)
-	BIND1RC(uint32_t, texture_get_depth, RID)
-	BIND4(texture_set_size_override, RID, int, int, int)
+	//these go pass-through, as they can be called from any thread
+	BIND1R(RID, texture_2d_create, const Ref<Image> &)
+	BIND2R(RID, texture_2d_layered_create, const Vector<Ref<Image> > &, TextureLayeredType)
+	BIND1R(RID, texture_3d_create, const Vector<Ref<Image> > &)
+	BIND1R(RID, texture_proxy_create, RID)
+
+	//goes pass-through
+	BIND3(texture_2d_update_immediate, RID, const Ref<Image> &, int)
+	//these go through command queue if they are in another thread
+	BIND3(texture_2d_update, RID, const Ref<Image> &, int)
+	BIND4(texture_3d_update, RID, const Ref<Image> &, int, int)
+	BIND2(texture_proxy_update, RID, RID)
+
+	//these also go pass-through
+	BIND0R(RID, texture_2d_placeholder_create)
+	BIND0R(RID, texture_2d_layered_placeholder_create)
+	BIND0R(RID, texture_3d_placeholder_create)
+
+	BIND1RC(Ref<Image>, texture_2d_get, RID)
+	BIND2RC(Ref<Image>, texture_2d_layer_get, RID, int)
+	BIND3RC(Ref<Image>, texture_3d_slice_get, RID, int, int)
+
+	BIND2(texture_replace, RID, RID)
+
+	BIND3(texture_set_size_override, RID, int, int)
+// FIXME: Disabled during Vulkan refactoring, should be ported.
+#if 0
 	BIND2(texture_bind, RID, uint32_t)
+#endif
 
 	BIND3(texture_set_detect_3d_callback, RID, TextureDetectCallback, void *)
-	BIND3(texture_set_detect_srgb_callback, RID, TextureDetectCallback, void *)
 	BIND3(texture_set_detect_normal_callback, RID, TextureDetectCallback, void *)
+	BIND3(texture_set_detect_roughness_callback, RID, TextureDetectRoughnessCallback, void *)
 
 	BIND2(texture_set_path, RID, const String &)
 	BIND1RC(String, texture_get_path, RID)
-	BIND1(texture_set_shrink_all_x2_on_set_data, bool)
 	BIND1(texture_debug_usage, List<TextureInfo> *)
 
-	BIND1(textures_keep_original, bool)
-
-	BIND2(texture_set_proxy, RID, RID)
-
 	BIND2(texture_set_force_redraw_if_visible, RID, bool)
-
-	/* SKY API */
-
-	BIND0R(RID, sky_create)
-	BIND3(sky_set_texture, RID, RID, int)
 
 	/* SHADER API */
 
@@ -189,29 +200,34 @@ public:
 
 	BIND3(shader_set_default_texture_param, RID, const StringName &, RID)
 	BIND2RC(RID, shader_get_default_texture_param, RID, const StringName &)
+	BIND2RC(Variant, shader_get_param_default, RID, const StringName &)
 
 	/* COMMON MATERIAL API */
 
 	BIND0R(RID, material_create)
 
 	BIND2(material_set_shader, RID, RID)
-	BIND1RC(RID, material_get_shader, RID)
 
 	BIND3(material_set_param, RID, const StringName &, const Variant &)
 	BIND2RC(Variant, material_get_param, RID, const StringName &)
-	BIND2RC(Variant, material_get_param_default, RID, const StringName &)
 
 	BIND2(material_set_render_priority, RID, int)
-	BIND2(material_set_line_width, RID, float)
 	BIND2(material_set_next_pass, RID, RID)
 
 	/* MESH API */
 
+	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces) {
+		RID mesh = mesh_create();
+		for (int i = 0; i < p_surfaces.size(); i++) {
+			mesh_add_surface(mesh, p_surfaces[i]);
+		}
+		return mesh;
+	}
+
 	BIND0R(RID, mesh_create)
 
-	BIND10(mesh_add_surface, RID, uint32_t, PrimitiveType, const PoolVector<uint8_t> &, int, const PoolVector<uint8_t> &, int, const AABB &, const Vector<PoolVector<uint8_t> > &, const Vector<AABB> &)
+	BIND2(mesh_add_surface, RID, const SurfaceData &)
 
-	BIND2(mesh_set_blend_shape_count, RID, int)
 	BIND1RC(int, mesh_get_blend_shape_count, RID)
 
 	BIND2(mesh_set_blend_shape_mode, RID, BlendShapeMode)
@@ -222,20 +238,8 @@ public:
 	BIND3(mesh_surface_set_material, RID, int, RID)
 	BIND2RC(RID, mesh_surface_get_material, RID, int)
 
-	BIND2RC(int, mesh_surface_get_array_len, RID, int)
-	BIND2RC(int, mesh_surface_get_array_index_len, RID, int)
+	BIND2RC(SurfaceData, mesh_get_surface, RID, int)
 
-	BIND2RC(PoolVector<uint8_t>, mesh_surface_get_array, RID, int)
-	BIND2RC(PoolVector<uint8_t>, mesh_surface_get_index_array, RID, int)
-
-	BIND2RC(uint32_t, mesh_surface_get_format, RID, int)
-	BIND2RC(PrimitiveType, mesh_surface_get_primitive_type, RID, int)
-
-	BIND2RC(AABB, mesh_surface_get_aabb, RID, int)
-	BIND2RC(Vector<PoolVector<uint8_t> >, mesh_surface_get_blend_shapes, RID, int)
-	BIND2RC(Vector<AABB>, mesh_surface_get_skeleton_aabb, RID, int)
-
-	BIND2(mesh_remove_surface, RID, int)
 	BIND1RC(int, mesh_get_surface_count, RID)
 
 	BIND2(mesh_set_custom_aabb, RID, const AABB &)
@@ -247,7 +251,7 @@ public:
 
 	BIND0R(RID, multimesh_create)
 
-	BIND5(multimesh_allocate, RID, int, MultimeshTransformFormat, MultimeshColorFormat, MultimeshCustomDataFormat)
+	BIND5(multimesh_allocate, RID, int, MultimeshTransformFormat, bool, bool)
 	BIND1RC(int, multimesh_get_instance_count, RID)
 
 	BIND2(multimesh_set_mesh, RID, RID)
@@ -264,7 +268,8 @@ public:
 	BIND2RC(Color, multimesh_instance_get_color, RID, int)
 	BIND2RC(Color, multimesh_instance_get_custom_data, RID, int)
 
-	BIND2(multimesh_set_as_bulk_array, RID, const PoolVector<float> &)
+	BIND2(multimesh_set_buffer, RID, const PoolVector<float> &)
+	BIND1RC(PoolVector<float>, multimesh_get_buffer, RID)
 
 	BIND2(multimesh_set_visible_instances, RID, int)
 	BIND1RC(int, multimesh_get_visible_instances, RID)
@@ -312,7 +317,6 @@ public:
 	BIND2(light_set_use_gi, RID, bool)
 
 	BIND2(light_omni_set_shadow_mode, RID, LightOmniShadowMode)
-	BIND2(light_omni_set_shadow_detail, RID, LightOmniShadowDetail)
 
 	BIND2(light_directional_set_shadow_mode, RID, LightDirectionalShadowMode)
 	BIND2(light_directional_set_blend_splits, RID, bool)
@@ -340,20 +344,30 @@ public:
 
 	BIND0R(RID, gi_probe_create)
 
-	BIND2(gi_probe_set_bounds, RID, const AABB &)
+	BIND8(gi_probe_allocate, RID, const Transform &, const AABB &, const Vector3i &, const PoolVector<uint8_t> &, const PoolVector<uint8_t> &, const PoolVector<uint8_t> &, const PoolVector<int> &)
+
 	BIND1RC(AABB, gi_probe_get_bounds, RID)
-
-	BIND2(gi_probe_set_cell_size, RID, float)
-	BIND1RC(float, gi_probe_get_cell_size, RID)
-
-	BIND2(gi_probe_set_to_cell_xform, RID, const Transform &)
+	BIND1RC(Vector3i, gi_probe_get_octree_size, RID)
+	BIND1RC(PoolVector<uint8_t>, gi_probe_get_octree_cells, RID)
+	BIND1RC(PoolVector<uint8_t>, gi_probe_get_data_cells, RID)
+	BIND1RC(PoolVector<uint8_t>, gi_probe_get_distance_field, RID)
+	BIND1RC(PoolVector<int>, gi_probe_get_level_counts, RID)
 	BIND1RC(Transform, gi_probe_get_to_cell_xform, RID)
 
-	BIND2(gi_probe_set_dynamic_range, RID, int)
-	BIND1RC(int, gi_probe_get_dynamic_range, RID)
+	BIND2(gi_probe_set_dynamic_range, RID, float)
+	BIND1RC(float, gi_probe_get_dynamic_range, RID)
+
+	BIND2(gi_probe_set_propagation, RID, float)
+	BIND1RC(float, gi_probe_get_propagation, RID)
 
 	BIND2(gi_probe_set_energy, RID, float)
 	BIND1RC(float, gi_probe_get_energy, RID)
+
+	BIND2(gi_probe_set_ao, RID, float)
+	BIND1RC(float, gi_probe_get_ao, RID)
+
+	BIND2(gi_probe_set_ao_size, RID, float)
+	BIND1RC(float, gi_probe_get_ao_size, RID)
 
 	BIND2(gi_probe_set_bias, RID, float)
 	BIND1RC(float, gi_probe_get_bias, RID)
@@ -361,17 +375,14 @@ public:
 	BIND2(gi_probe_set_normal_bias, RID, float)
 	BIND1RC(float, gi_probe_get_normal_bias, RID)
 
-	BIND2(gi_probe_set_propagation, RID, float)
-	BIND1RC(float, gi_probe_get_propagation, RID)
-
 	BIND2(gi_probe_set_interior, RID, bool)
 	BIND1RC(bool, gi_probe_is_interior, RID)
 
-	BIND2(gi_probe_set_compress, RID, bool)
-	BIND1RC(bool, gi_probe_is_compressed, RID)
+	BIND2(gi_probe_set_use_two_bounces, RID, bool)
+	BIND1RC(bool, gi_probe_is_using_two_bounces, RID)
 
-	BIND2(gi_probe_set_dynamic_data, RID, const PoolVector<int> &)
-	BIND1RC(PoolVector<int>, gi_probe_get_dynamic_data, RID)
+	BIND2(gi_probe_set_anisotropy_strength, RID, float)
+	BIND1RC(float, gi_probe_get_anisotropy_strength, RID)
 
 	/* LIGHTMAP CAPTURE */
 
@@ -434,6 +445,7 @@ public:
 	BIND2(camera_set_transform, RID, const Transform &)
 	BIND2(camera_set_cull_mask, RID, uint32_t)
 	BIND2(camera_set_environment, RID, RID)
+	BIND2(camera_set_camera_effects, RID, RID)
 	BIND2(camera_set_use_vertical_aspect, RID, bool)
 
 #undef BINDBASE
@@ -464,8 +476,6 @@ public:
 	BIND2(viewport_set_hide_scenario, RID, bool)
 	BIND2(viewport_set_hide_canvas, RID, bool)
 	BIND2(viewport_set_disable_environment, RID, bool)
-	BIND2(viewport_set_disable_3d, RID, bool)
-	BIND2(viewport_set_keep_3d_linear, RID, bool)
 
 	BIND2(viewport_attach_camera, RID, RID)
 	BIND2(viewport_set_scenario, RID, RID)
@@ -480,8 +490,6 @@ public:
 	BIND2(viewport_set_shadow_atlas_size, RID, int)
 	BIND3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
 	BIND2(viewport_set_msaa, RID, ViewportMSAA)
-	BIND2(viewport_set_hdr, RID, bool)
-	BIND2(viewport_set_usage, RID, ViewportUsage)
 
 	BIND2R(int, viewport_get_render_info, RID, ViewportRenderInfo)
 	BIND2(viewport_set_debug_draw, RID, ViewportDebugDraw)
@@ -492,6 +500,15 @@ public:
 //from now on, calls forwarded to this singleton
 #define BINDBASE VSG::scene_render
 
+	BIND1(directional_shadow_atlas_set_size, int)
+
+	/* SKY API */
+
+	BIND0R(RID, sky_create)
+	BIND2(sky_set_radiance_size, RID, int)
+	BIND2(sky_set_mode, RID, SkyMode)
+	BIND2(sky_set_texture, RID, RID)
+
 	BIND0R(RID, environment_create)
 
 	BIND2(environment_set_background, RID, EnvironmentBG)
@@ -501,14 +518,17 @@ public:
 	BIND2(environment_set_bg_color, RID, const Color &)
 	BIND2(environment_set_bg_energy, RID, float)
 	BIND2(environment_set_canvas_max_layer, RID, int)
-	BIND4(environment_set_ambient_light, RID, const Color &, float, float)
-	BIND2(environment_set_camera_feed_id, RID, int)
-	BIND7(environment_set_ssr, RID, bool, int, float, float, float, bool)
-	BIND13(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, const Color &, EnvironmentSSAOQuality, EnvironmentSSAOBlur, float)
+	BIND7(environment_set_ambient_light, RID, const Color &, EnvironmentAmbientSource, float, float, EnvironmentReflectionSource, const Color &)
 
-	BIND6(environment_set_dof_blur_near, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
-	BIND6(environment_set_dof_blur_far, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
-	BIND11(environment_set_glow, RID, bool, int, float, float, float, EnvironmentGlowBlendMode, float, float, float, bool)
+// FIXME: Disabled during Vulkan refactoring, should be ported.
+#if 0
+	BIND2(environment_set_camera_feed_id, RID, int)
+#endif
+	BIND7(environment_set_ssr, RID, bool, int, float, float, float, bool)
+	BIND9(environment_set_ssao, RID, bool, float, float, float, float, float, EnvironmentSSAOBlur, float)
+	BIND2(environment_set_ssao_quality, EnvironmentSSAOQuality, bool)
+
+	BIND12(environment_set_glow, RID, bool, int, float, float, float, float, EnvironmentGlowBlendMode, float, float, float, bool)
 
 	BIND9(environment_set_tonemap, RID, EnvironmentToneMapper, float, float, bool, float, float, float, float)
 
@@ -517,6 +537,18 @@ public:
 	BIND5(environment_set_fog, RID, bool, const Color &, const Color &, float)
 	BIND7(environment_set_fog_depth, RID, bool, float, float, float, bool, float)
 	BIND5(environment_set_fog_height, RID, bool, float, float, float)
+
+	BIND2(screen_space_roughness_limiter_set_active, bool, float)
+
+	/* CAMERA EFFECTS */
+
+	BIND0R(RID, camera_effects_create)
+
+	BIND2(camera_effects_set_dof_blur_quality, DOFBlurQuality, bool)
+	BIND1(camera_effects_set_dof_blur_bokeh_shape, DOFBokehShape)
+
+	BIND8(camera_effects_set_dof_blur, RID, bool, float, float, bool, float, float, float)
+	BIND3(camera_effects_set_custom_exposure, RID, bool, float)
 
 	/* SCENARIO API */
 
@@ -527,7 +559,7 @@ public:
 
 	BIND2(scenario_set_debug, RID, ScenarioDebugMode)
 	BIND2(scenario_set_environment, RID, RID)
-	BIND3(scenario_set_reflection_atlas_size, RID, int, int)
+	BIND2(scenario_set_camera_effects, RID, RID)
 	BIND2(scenario_set_fallback_environment, RID, RID)
 
 	/* INSTANCING API */
@@ -591,20 +623,23 @@ public:
 
 	BIND2(canvas_item_set_draw_behind_parent, RID, bool)
 
-	BIND6(canvas_item_add_line, RID, const Point2 &, const Point2 &, const Color &, float, bool)
-	BIND5(canvas_item_add_polyline, RID, const Vector<Point2> &, const Vector<Color> &, float, bool)
-	BIND5(canvas_item_add_multiline, RID, const Vector<Point2> &, const Vector<Color> &, float, bool)
+	BIND2(canvas_item_set_default_texture_filter, RID, CanvasItemTextureFilter)
+	BIND2(canvas_item_set_default_texture_repeat, RID, CanvasItemTextureRepeat)
+
+	BIND5(canvas_item_add_line, RID, const Point2 &, const Point2 &, const Color &, float)
+	BIND4(canvas_item_add_polyline, RID, const Vector<Point2> &, const Vector<Color> &, float)
+	BIND4(canvas_item_add_multiline, RID, const Vector<Point2> &, const Vector<Color> &, float)
 	BIND3(canvas_item_add_rect, RID, const Rect2 &, const Color &)
 	BIND4(canvas_item_add_circle, RID, const Point2 &, float, const Color &)
-	BIND7(canvas_item_add_texture_rect, RID, const Rect2 &, RID, bool, const Color &, bool, RID)
-	BIND8(canvas_item_add_texture_rect_region, RID, const Rect2 &, RID, const Rect2 &, const Color &, bool, RID, bool)
-	BIND11(canvas_item_add_nine_patch, RID, const Rect2 &, const Rect2 &, RID, const Vector2 &, const Vector2 &, NinePatchAxisMode, NinePatchAxisMode, bool, const Color &, RID)
-	BIND7(canvas_item_add_primitive, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, float, RID)
-	BIND7(canvas_item_add_polygon, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, RID, bool)
-	BIND12(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, const Vector<int> &, const Vector<float> &, RID, int, RID, bool, bool)
-	BIND6(canvas_item_add_mesh, RID, const RID &, const Transform2D &, const Color &, RID, RID)
-	BIND4(canvas_item_add_multimesh, RID, RID, RID, RID)
-	BIND4(canvas_item_add_particles, RID, RID, RID, RID)
+	BIND11(canvas_item_add_texture_rect, RID, const Rect2 &, RID, bool, const Color &, bool, RID, RID, const Color &, CanvasItemTextureFilter, CanvasItemTextureRepeat)
+	BIND12(canvas_item_add_texture_rect_region, RID, const Rect2 &, RID, const Rect2 &, const Color &, bool, RID, RID, const Color &, bool, CanvasItemTextureFilter, CanvasItemTextureRepeat)
+	BIND15(canvas_item_add_nine_patch, RID, const Rect2 &, const Rect2 &, RID, const Vector2 &, const Vector2 &, NinePatchAxisMode, NinePatchAxisMode, bool, const Color &, RID, RID, const Color &, CanvasItemTextureFilter, CanvasItemTextureRepeat)
+	BIND11(canvas_item_add_primitive, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, float, RID, RID, const Color &, CanvasItemTextureFilter, CanvasItemTextureRepeat)
+	BIND10(canvas_item_add_polygon, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, RID, RID, const Color &, CanvasItemTextureFilter, CanvasItemTextureRepeat)
+	BIND14(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, const Vector<int> &, const Vector<float> &, RID, int, RID, RID, const Color &, CanvasItemTextureFilter, CanvasItemTextureRepeat)
+	BIND10(canvas_item_add_mesh, RID, const RID &, const Transform2D &, const Color &, RID, RID, RID, const Color &, CanvasItemTextureFilter, CanvasItemTextureRepeat)
+	BIND8(canvas_item_add_multimesh, RID, RID, RID, RID, RID, const Color &, CanvasItemTextureFilter, CanvasItemTextureRepeat)
+	BIND8(canvas_item_add_particles, RID, RID, RID, RID, RID, const Color &, CanvasItemTextureFilter, CanvasItemTextureRepeat)
 	BIND2(canvas_item_add_set_transform, RID, const Transform2D &)
 	BIND2(canvas_item_add_clip_ignore, RID, bool)
 	BIND2(canvas_item_set_sort_children_by_y, RID, bool)
@@ -639,7 +674,6 @@ public:
 
 	BIND2(canvas_light_set_shadow_enabled, RID, bool)
 	BIND2(canvas_light_set_shadow_buffer_size, RID, int)
-	BIND2(canvas_light_set_shadow_gradient_length, RID, float)
 	BIND2(canvas_light_set_shadow_filter, RID, CanvasLightShadowFilter)
 	BIND2(canvas_light_set_shadow_color, RID, const Color &)
 	BIND2(canvas_light_set_shadow_smooth, RID, float)
@@ -681,6 +715,10 @@ public:
 	virtual int get_render_info(RenderInfo p_info);
 	virtual String get_video_adapter_name() const;
 	virtual String get_video_adapter_vendor() const;
+
+	virtual void set_frame_profiling_enabled(bool p_enable);
+	virtual Vector<FrameProfileArea> get_frame_profile();
+	virtual uint64_t get_frame_profile_frame();
 
 	virtual RID get_test_cube();
 

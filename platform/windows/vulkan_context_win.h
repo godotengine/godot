@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rid.cpp                                                              */
+/*  vulkan_context_win.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,14 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "rid.h"
+#ifndef VULKAN_DEVICE_WIN_H
+#define VULKAN_DEVICE_WIN_H
 
-RID_Data::~RID_Data() {
-}
+#include "drivers/vulkan/vulkan_context.h"
+#include <windows.h>
 
-SafeRefCount RID_OwnerBase::refcount;
+class VulkanContextWindows : public VulkanContext {
 
-void RID_OwnerBase::init_rid() {
+	virtual const char *_get_platform_surface_extension() const;
 
-	refcount.init();
-}
+public:
+	int window_create(HWND p_window, HINSTANCE p_instance, int p_width, int p_height);
+
+	VulkanContextWindows();
+	~VulkanContextWindows();
+};
+
+#endif // VULKAN_DEVICE_WIN_H

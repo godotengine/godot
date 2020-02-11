@@ -54,7 +54,7 @@ class EditorAudioBus : public PanelContainer {
 
 	GDCLASS(EditorAudioBus, PanelContainer);
 
-	Ref<Texture> disabled_vu;
+	Ref<Texture2D> disabled_vu;
 	LineEdit *track_name;
 	MenuButton *bus_options;
 	VSlider *slider;

@@ -49,17 +49,17 @@ class Timer;
 class Viewport;
 class CollisionObject;
 
-class ViewportTexture : public Texture {
+class ViewportTexture : public Texture2D {
 
-	GDCLASS(ViewportTexture, Texture);
+	GDCLASS(ViewportTexture, Texture2D);
 
 	NodePath path;
 
 	friend class Viewport;
 	Viewport *vp;
-	uint32_t flags;
 
-	RID proxy;
+	mutable RID proxy_ph;
+	mutable RID proxy;
 
 protected:
 	static void _bind_methods();
@@ -76,9 +76,6 @@ public:
 	virtual RID get_rid() const;
 
 	virtual bool has_alpha() const;
-
-	virtual void set_flags(uint32_t p_flags);
-	virtual uint32_t get_flags() const;
 
 	virtual Ref<Image> get_data() const;
 
@@ -107,7 +104,6 @@ public:
 		SHADOW_ATLAS_QUADRANT_SUBDIV_256,
 		SHADOW_ATLAS_QUADRANT_SUBDIV_1024,
 		SHADOW_ATLAS_QUADRANT_SUBDIV_MAX,
-
 	};
 
 	enum MSAA {
@@ -116,13 +112,6 @@ public:
 		MSAA_4X,
 		MSAA_8X,
 		MSAA_16X,
-	};
-
-	enum Usage {
-		USAGE_2D,
-		USAGE_2D_NO_SAMPLING,
-		USAGE_3D,
-		USAGE_3D_NO_EFFECTS,
 	};
 
 	enum RenderInfo {
@@ -139,8 +128,18 @@ public:
 	enum DebugDraw {
 		DEBUG_DRAW_DISABLED,
 		DEBUG_DRAW_UNSHADED,
+		DEBUG_DRAW_LIGHTING,
 		DEBUG_DRAW_OVERDRAW,
 		DEBUG_DRAW_WIREFRAME,
+		DEBUG_DRAW_NORMAL_BUFFER,
+		DEBUG_DRAW_GI_PROBE_ALBEDO,
+		DEBUG_DRAW_GI_PROBE_LIGHTING,
+		DEBUG_DRAW_GI_PROBE_EMISSION,
+		DEBUG_DRAW_SHADOW_ATLAS,
+		DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS,
+		DEBUG_DRAW_SCENE_LUMINANCE,
+		DEBUG_DRAW_SSAO,
+		DEBUG_DRAW_ROUGHNESS_LIMITER
 	};
 
 	enum ClearMode {
@@ -148,6 +147,21 @@ public:
 		CLEAR_MODE_ALWAYS,
 		CLEAR_MODE_NEVER,
 		CLEAR_MODE_ONLY_NEXT_FRAME
+	};
+
+	enum DefaultCanvasItemTextureFilter {
+		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST,
+		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR,
+		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS,
+		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS,
+		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_MAX
+	};
+
+	enum DefaultCanvasItemTextureRepeat {
+		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED,
+		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED,
+		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR,
+		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX,
 	};
 
 private:
@@ -214,7 +228,6 @@ private:
 	Rect2 last_vp_rect;
 
 	bool transparent_bg;
-	bool vflip;
 	ClearMode clear_mode;
 	bool filter;
 	bool gen_mipmaps;
@@ -266,22 +279,15 @@ private:
 	void _update_stretch_transform();
 	void _update_global_transform();
 
-	bool disable_3d;
-	bool keep_3d_linear;
 	UpdateMode update_mode;
 	RID texture_rid;
-	uint32_t texture_flags;
 
 	DebugDraw debug_draw;
-
-	Usage usage;
 
 	int shadow_atlas_size;
 	ShadowAtlasQuadrantSubdiv shadow_atlas_quadrant_subdiv[4];
 
 	MSAA msaa;
-	bool hdr;
-
 	Ref<ViewportTexture> default_texture;
 	Set<ViewportTexture *> viewport_textures;
 
@@ -319,6 +325,12 @@ private:
 
 		GUI();
 	} gui;
+
+	DefaultCanvasItemTextureFilter default_canvas_item_texture_filter;
+	DefaultCanvasItemTextureRepeat default_canvas_item_texture_repeat;
+
+	void _propagate_update_default_filter(Node *p_node);
+	void _propagate_update_default_repeat(Node *p_node);
 
 	bool disable_input;
 
@@ -474,9 +486,6 @@ public:
 	void set_size_override_stretch(bool p_enable);
 	bool is_size_override_stretch_enabled() const;
 
-	void set_vflip(bool p_enable);
-	bool get_vflip() const;
-
 	void set_clear_mode(ClearMode p_mode);
 	ClearMode get_clear_mode() const;
 
@@ -493,9 +502,6 @@ public:
 	void set_msaa(MSAA p_msaa);
 	MSAA get_msaa() const;
 
-	void set_hdr(bool p_hdr);
-	bool get_hdr() const;
-
 	Vector2 get_camera_coords(const Vector2 &p_viewport_coords) const;
 	Vector2 get_camera_rect_size() const;
 
@@ -507,12 +513,6 @@ public:
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;
-
-	void set_disable_3d(bool p_disable);
-	bool is_3d_disabled() const;
-
-	void set_keep_3d_linear(bool p_keep_3d_linear);
-	bool get_keep_3d_linear() const;
 
 	void set_attach_to_screen_rect(const Rect2 &p_rect);
 	Rect2 get_attach_to_screen_rect() const;
@@ -536,9 +536,6 @@ public:
 
 	virtual String get_configuration_warning() const;
 
-	void set_usage(Usage p_usage);
-	Usage get_usage() const;
-
 	void set_debug_draw(DebugDraw p_debug_draw);
 	DebugDraw get_debug_draw() const;
 
@@ -557,6 +554,12 @@ public:
 
 	bool gui_is_dragging() const;
 
+	void set_default_canvas_item_texture_filter(DefaultCanvasItemTextureFilter p_filter);
+	DefaultCanvasItemTextureFilter get_default_canvas_item_texture_filter() const;
+
+	void set_default_canvas_item_texture_repeat(DefaultCanvasItemTextureRepeat p_repeat);
+	DefaultCanvasItemTextureRepeat get_default_canvas_item_texture_repeat() const;
+
 	Viewport();
 	~Viewport();
 };
@@ -564,9 +567,10 @@ public:
 VARIANT_ENUM_CAST(Viewport::UpdateMode);
 VARIANT_ENUM_CAST(Viewport::ShadowAtlasQuadrantSubdiv);
 VARIANT_ENUM_CAST(Viewport::MSAA);
-VARIANT_ENUM_CAST(Viewport::Usage);
 VARIANT_ENUM_CAST(Viewport::DebugDraw);
 VARIANT_ENUM_CAST(Viewport::ClearMode);
 VARIANT_ENUM_CAST(Viewport::RenderInfo);
+VARIANT_ENUM_CAST(Viewport::DefaultCanvasItemTextureFilter);
+VARIANT_ENUM_CAST(Viewport::DefaultCanvasItemTextureRepeat);
 
 #endif

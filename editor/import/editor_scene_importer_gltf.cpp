@@ -984,11 +984,15 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 				static const Mesh::PrimitiveType primitives2[7] = {
 					Mesh::PRIMITIVE_POINTS,
 					Mesh::PRIMITIVE_LINES,
-					Mesh::PRIMITIVE_LINE_LOOP,
-					Mesh::PRIMITIVE_LINE_STRIP,
+					Mesh::PRIMITIVE_LINES, //loop not supported, should ce converted
+					Mesh::PRIMITIVE_LINES,
 					Mesh::PRIMITIVE_TRIANGLES,
 					Mesh::PRIMITIVE_TRIANGLE_STRIP,
-					Mesh::PRIMITIVE_TRIANGLE_FAN,
+					Mesh::PRIMITIVE_TRIANGLES, //fan not supported, should be converted
+#ifndef _MSC_VER
+#warning line loop and triangle fan are not supported and need to be converted to lines and triangles
+#endif
+
 				};
 
 				primitive = primitives2[mode];
@@ -1277,7 +1281,7 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 			} else {
 
 				uri = p_base_path.plus_file(uri).replace("\\", "/"); //fix for windows
-				Ref<Texture> texture = ResourceLoader::load(uri);
+				Ref<Texture2D> texture = ResourceLoader::load(uri);
 				state.images.push_back(texture);
 				continue;
 			}
@@ -1362,11 +1366,11 @@ Error EditorSceneImporterGLTF::_parse_textures(GLTFState &state) {
 	return OK;
 }
 
-Ref<Texture> EditorSceneImporterGLTF::_get_texture(GLTFState &state, const GLTFTextureIndex p_texture) {
-	ERR_FAIL_INDEX_V(p_texture, state.textures.size(), Ref<Texture>());
+Ref<Texture2D> EditorSceneImporterGLTF::_get_texture(GLTFState &state, const GLTFTextureIndex p_texture) {
+	ERR_FAIL_INDEX_V(p_texture, state.textures.size(), Ref<Texture2D>());
 	const GLTFImageIndex image = state.textures[p_texture].src_image;
 
-	ERR_FAIL_INDEX_V(image, state.images.size(), Ref<Texture>());
+	ERR_FAIL_INDEX_V(image, state.images.size(), Ref<Texture2D>());
 
 	return state.images[image];
 }
@@ -1381,7 +1385,7 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 
 		const Dictionary &d = materials[i];
 
-		Ref<SpatialMaterial> material;
+		Ref<StandardMaterial3D> material;
 		material.instance();
 		if (d.has("name")) {
 			material->set_name(d["name"]);
@@ -1401,7 +1405,7 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 			if (mr.has("baseColorTexture")) {
 				const Dictionary &bct = mr["baseColorTexture"];
 				if (bct.has("index")) {
-					material->set_texture(SpatialMaterial::TEXTURE_ALBEDO, _get_texture(state, bct["index"]));
+					material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, _get_texture(state, bct["index"]));
 				}
 				if (!mr.has("baseColorFactor")) {
 					material->set_albedo(Color(1, 1, 1));
@@ -1423,11 +1427,11 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 			if (mr.has("metallicRoughnessTexture")) {
 				const Dictionary &bct = mr["metallicRoughnessTexture"];
 				if (bct.has("index")) {
-					const Ref<Texture> t = _get_texture(state, bct["index"]);
-					material->set_texture(SpatialMaterial::TEXTURE_METALLIC, t);
-					material->set_metallic_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_BLUE);
-					material->set_texture(SpatialMaterial::TEXTURE_ROUGHNESS, t);
-					material->set_roughness_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_GREEN);
+					const Ref<Texture2D> t = _get_texture(state, bct["index"]);
+					material->set_texture(StandardMaterial3D::TEXTURE_METALLIC, t);
+					material->set_metallic_texture_channel(StandardMaterial3D::TEXTURE_CHANNEL_BLUE);
+					material->set_texture(StandardMaterial3D::TEXTURE_ROUGHNESS, t);
+					material->set_roughness_texture_channel(StandardMaterial3D::TEXTURE_CHANNEL_GREEN);
 					if (!mr.has("metallicFactor")) {
 						material->set_metallic(1);
 					}
@@ -1441,8 +1445,8 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 		if (d.has("normalTexture")) {
 			const Dictionary &bct = d["normalTexture"];
 			if (bct.has("index")) {
-				material->set_texture(SpatialMaterial::TEXTURE_NORMAL, _get_texture(state, bct["index"]));
-				material->set_feature(SpatialMaterial::FEATURE_NORMAL_MAPPING, true);
+				material->set_texture(StandardMaterial3D::TEXTURE_NORMAL, _get_texture(state, bct["index"]));
+				material->set_feature(StandardMaterial3D::FEATURE_NORMAL_MAPPING, true);
 			}
 			if (bct.has("scale")) {
 				material->set_normal_scale(bct["scale"]);
@@ -1451,9 +1455,9 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 		if (d.has("occlusionTexture")) {
 			const Dictionary &bct = d["occlusionTexture"];
 			if (bct.has("index")) {
-				material->set_texture(SpatialMaterial::TEXTURE_AMBIENT_OCCLUSION, _get_texture(state, bct["index"]));
-				material->set_ao_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_RED);
-				material->set_feature(SpatialMaterial::FEATURE_AMBIENT_OCCLUSION, true);
+				material->set_texture(StandardMaterial3D::TEXTURE_AMBIENT_OCCLUSION, _get_texture(state, bct["index"]));
+				material->set_ao_texture_channel(StandardMaterial3D::TEXTURE_CHANNEL_RED);
+				material->set_feature(StandardMaterial3D::FEATURE_AMBIENT_OCCLUSION, true);
 			}
 		}
 
@@ -1461,7 +1465,7 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 			const Array &arr = d["emissiveFactor"];
 			ERR_FAIL_COND_V(arr.size() != 3, ERR_PARSE_ERROR);
 			const Color c = Color(arr[0], arr[1], arr[2]).to_srgb();
-			material->set_feature(SpatialMaterial::FEATURE_EMISSION, true);
+			material->set_feature(StandardMaterial3D::FEATURE_EMISSION, true);
 
 			material->set_emission(c);
 		}
@@ -1469,8 +1473,8 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 		if (d.has("emissiveTexture")) {
 			const Dictionary &bct = d["emissiveTexture"];
 			if (bct.has("index")) {
-				material->set_texture(SpatialMaterial::TEXTURE_EMISSION, _get_texture(state, bct["index"]));
-				material->set_feature(SpatialMaterial::FEATURE_EMISSION, true);
+				material->set_texture(StandardMaterial3D::TEXTURE_EMISSION, _get_texture(state, bct["index"]));
+				material->set_feature(StandardMaterial3D::FEATURE_EMISSION, true);
 				material->set_emission(Color(0, 0, 0));
 			}
 		}
@@ -1478,17 +1482,16 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 		if (d.has("doubleSided")) {
 			const bool ds = d["doubleSided"];
 			if (ds) {
-				material->set_cull_mode(SpatialMaterial::CULL_DISABLED);
+				material->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
 			}
 		}
 
 		if (d.has("alphaMode")) {
 			const String &am = d["alphaMode"];
 			if (am == "BLEND") {
-				material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-				material->set_depth_draw_mode(SpatialMaterial::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
+				material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS);
 			} else if (am == "MASK") {
-				material->set_flag(SpatialMaterial::FLAG_USE_ALPHA_SCISSOR, true);
+				material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA_SCISSOR);
 				if (d.has("alphaCutoff")) {
 					material->set_alpha_scissor_threshold(d["alphaCutoff"]);
 				} else {
@@ -2615,7 +2618,7 @@ struct EditorSceneImporterGLTFInterpolate {
 		const float t2 = t * t;
 		const float t3 = t2 * t;
 
-		return 0.5f * ((2.0f * p1) + (-p0 + p2) * t + (2.0f * p0 - 5.0f * p1 + 4 * p2 - p3) * t2 + (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
+		return 0.5f * ((2.0f * p1) + (-p0 + p2) * t + (2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3) * t2 + (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
 	}
 
 	T bezier(T start, T control_1, T control_2, T end, float t) {

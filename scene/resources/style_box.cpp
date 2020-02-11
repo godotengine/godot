@@ -118,7 +118,7 @@ StyleBox::StyleBox() {
 	}
 }
 
-void StyleBoxTexture::set_texture(Ref<Texture> p_texture) {
+void StyleBoxTexture::set_texture(Ref<Texture2D> p_texture) {
 
 	if (texture == p_texture)
 		return;
@@ -133,12 +133,12 @@ void StyleBoxTexture::set_texture(Ref<Texture> p_texture) {
 	_change_notify("texture");
 }
 
-Ref<Texture> StyleBoxTexture::get_texture() const {
+Ref<Texture2D> StyleBoxTexture::get_texture() const {
 
 	return texture;
 }
 
-void StyleBoxTexture::set_normal_map(Ref<Texture> p_normal_map) {
+void StyleBoxTexture::set_normal_map(Ref<Texture2D> p_normal_map) {
 
 	if (normal_map == p_normal_map)
 		return;
@@ -146,7 +146,7 @@ void StyleBoxTexture::set_normal_map(Ref<Texture> p_normal_map) {
 	emit_changed();
 }
 
-Ref<Texture> StyleBoxTexture::get_normal_map() const {
+Ref<Texture2D> StyleBoxTexture::get_normal_map() const {
 
 	return normal_map;
 }
@@ -335,8 +335,8 @@ void StyleBoxTexture::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_normal_map", "get_normal_map");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_normal_map", "get_normal_map");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
 	ADD_GROUP("Margin", "margin_");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "margin_left", PROPERTY_HINT_RANGE, "0,2048,1"), "set_margin_size", "get_margin_size", MARGIN_LEFT);

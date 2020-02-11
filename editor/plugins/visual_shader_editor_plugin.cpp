@@ -2693,8 +2693,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	add_options.push_back(AddOption("CubeMap", "Textures", "Functions", "VisualShaderNodeCubeMap", TTR("Perform the cubic texture lookup."), -1, -1));
 	texture_node_option_idx = add_options.size();
-	add_options.push_back(AddOption("Texture", "Textures", "Functions", "VisualShaderNodeTexture", TTR("Perform the texture lookup."), -1, -1));
-
+	add_options.push_back(AddOption("Texture2D", "Textures", "Functions", "VisualShaderNodeTexture", TTR("Perform the texture lookup."), -1, -1));
 	add_options.push_back(AddOption("CubeMapUniform", "Textures", "Variables", "VisualShaderNodeCubeMapUniform", TTR("Cubic texture uniform lookup."), -1, -1));
 	add_options.push_back(AddOption("TextureUniform", "Textures", "Variables", "VisualShaderNodeTextureUniform", TTR("2D texture uniform lookup."), -1, -1));
 	add_options.push_back(AddOption("TextureUniformTriplanar", "Textures", "Variables", "VisualShaderNodeTextureUniformTriplanar", TTR("2D texture uniform lookup with triplanar."), -1, -1, VisualShader::TYPE_FRAGMENT | VisualShader::TYPE_LIGHT, Shader::MODE_SPATIAL));
@@ -2894,7 +2893,7 @@ public:
 
 	void setup(const Ref<VisualShaderNodeInput> &p_input) {
 		input = p_input;
-		Ref<Texture> type_icon[5] = {
+		Ref<Texture2D> type_icon[5] = {
 			EditorNode::get_singleton()->get_gui_base()->get_icon("float", "EditorIcons"),
 			EditorNode::get_singleton()->get_gui_base()->get_icon("Vector3", "EditorIcons"),
 			EditorNode::get_singleton()->get_gui_base()->get_icon("bool", "EditorIcons"),

@@ -304,6 +304,8 @@ void DocData::generate(bool p_basic_types) {
 				}
 			}
 
+			//used to track uninitialized values using valgrind
+			//print_line("getting default value for " + String(name) + "." + String(E->get().name));
 			if (default_value_valid && default_value.get_type() != Variant::OBJECT) {
 				prop.default_value = default_value.get_construct_string().replace("\n", "");
 			}
@@ -483,7 +485,7 @@ void DocData::generate(bool p_basic_types) {
 
 				PropertyDoc pd;
 				pd.name = E->get();
-				pd.type = "Texture";
+				pd.type = "Texture2D";
 				c.theme_properties.push_back(pd);
 			}
 			l.clear();

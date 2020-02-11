@@ -326,8 +326,8 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 		int id = E->key();
 		String pre = itos(id) + "/";
 		p_list->push_back(PropertyInfo(Variant::STRING, pre + "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture", PROPERTY_USAGE_NOEDITOR));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture", PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "tex_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::COLOR, pre + "modulate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
@@ -387,7 +387,7 @@ TileSet::BitmaskMode TileSet::autotile_get_bitmask_mode(int p_id) const {
 	return tile_map[p_id].autotile_data.bitmask_mode;
 }
 
-void TileSet::tile_set_texture(int p_id, const Ref<Texture> &p_texture) {
+void TileSet::tile_set_texture(int p_id, const Ref<Texture2D> &p_texture) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].texture = p_texture;
@@ -395,22 +395,22 @@ void TileSet::tile_set_texture(int p_id, const Ref<Texture> &p_texture) {
 	_change_notify("texture");
 }
 
-Ref<Texture> TileSet::tile_get_texture(int p_id) const {
+Ref<Texture2D> TileSet::tile_get_texture(int p_id) const {
 
-	ERR_FAIL_COND_V(!tile_map.has(p_id), Ref<Texture>());
+	ERR_FAIL_COND_V(!tile_map.has(p_id), Ref<Texture2D>());
 	return tile_map[p_id].texture;
 }
 
-void TileSet::tile_set_normal_map(int p_id, const Ref<Texture> &p_normal_map) {
+void TileSet::tile_set_normal_map(int p_id, const Ref<Texture2D> &p_normal_map) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].normal_map = p_normal_map;
 	emit_changed();
 }
 
-Ref<Texture> TileSet::tile_get_normal_map(int p_id) const {
+Ref<Texture2D> TileSet::tile_get_normal_map(int p_id) const {
 
-	ERR_FAIL_COND_V(!tile_map.has(p_id), Ref<Texture>());
+	ERR_FAIL_COND_V(!tile_map.has(p_id), Ref<Texture2D>());
 	return tile_map[p_id].normal_map;
 }
 

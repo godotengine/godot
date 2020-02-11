@@ -215,7 +215,7 @@ void InspectorDock::_prepare_history() {
 
 	history_menu->get_popup()->clear();
 
-	Ref<Texture> base_icon = get_icon("Object", "EditorIcons");
+	Ref<Texture2D> base_icon = get_icon("Object", "EditorIcons");
 	Set<ObjectID> already;
 	for (int i = editor_history->get_history_len() - 1; i >= history_to; i--) {
 
@@ -230,7 +230,7 @@ void InspectorDock::_prepare_history() {
 
 		already.insert(id);
 
-		Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(obj, "");
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(obj, "");
 		if (icon.is_null()) {
 			icon = base_icon;
 		}

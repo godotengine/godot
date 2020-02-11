@@ -35,8 +35,8 @@
 
 class AnimationTrackEditBool : public AnimationTrackEdit {
 	GDCLASS(AnimationTrackEditBool, AnimationTrackEdit);
-	Ref<Texture> icon_checked;
-	Ref<Texture> icon_unchecked;
+	Ref<Texture2D> icon_checked;
+	Ref<Texture2D> icon_unchecked;
 
 public:
 	virtual int get_key_height() const;

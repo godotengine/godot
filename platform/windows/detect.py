@@ -207,7 +207,7 @@ def configure_msvc(env, manual_msvc_config):
         else:
             print("Missing environment variable: WindowsSdkDir")
 
-    env.AppendUnique(CPPDEFINES = ['WINDOWS_ENABLED', 'OPENGL_ENABLED',
+    env.AppendUnique(CPPDEFINES = ['WINDOWS_ENABLED',
                                    'WASAPI_ENABLED', 'WINMIDI_ENABLED',
                                    'TYPED_METHOD_BIND',
                                    'WIN32', 'MSVC',
@@ -219,10 +219,20 @@ def configure_msvc(env, manual_msvc_config):
 
     ## Libs
 
-    LIBS = ['winmm', 'opengl32', 'dsound', 'kernel32', 'ole32', 'oleaut32',
+    LIBS = ['winmm', 'dsound', 'kernel32', 'ole32', 'oleaut32',
             'user32', 'gdi32', 'IPHLPAPI', 'Shlwapi', 'wsock32', 'Ws2_32',
-            'shell32', 'advapi32', 'dinput8', 'dxguid', 'imm32', 'bcrypt','Avrt',
+            'shell32', 'advapi32', 'dinput8', 'dxguid', 'imm32', 'bcrypt', 'Avrt',
             'dwmapi']
+
+    env.AppendUnique(CPPDEFINES=['VULKAN_ENABLED'])
+    if not env['builtin_vulkan']:
+        LIBS += ['vulkan']
+    else:
+        LIBS += ['cfgmgr32']
+
+    #env.AppendUnique(CPPDEFINES = ['OPENGL_ENABLED'])
+    LIBS += ['opengl32']
+
     env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
 
     if manual_msvc_config:
@@ -345,9 +355,20 @@ def configure_mingw(env):
     ## Compile flags
 
     env.Append(CCFLAGS=['-mwindows'])
-    env.Append(CPPDEFINES=['WINDOWS_ENABLED', 'OPENGL_ENABLED', 'WASAPI_ENABLED', 'WINMIDI_ENABLED'])
+
+    env.Append(CPPDEFINES=['WINDOWS_ENABLED', 'WASAPI_ENABLED', 'WINMIDI_ENABLED'])
     env.Append(CPPDEFINES=[('WINVER', env['target_win_version']), ('_WIN32_WINNT', env['target_win_version'])])
-    env.Append(LIBS=['mingw32', 'opengl32', 'dsound', 'ole32', 'd3d9', 'winmm', 'gdi32', 'iphlpapi', 'shlwapi', 'wsock32', 'ws2_32', 'kernel32', 'oleaut32', 'dinput8', 'dxguid', 'ksuser', 'imm32', 'bcrypt', 'avrt', 'uuid', 'dwmapi'])
+    env.Append(LIBS=['mingw32', 'dsound', 'ole32', 'd3d9', 'winmm', 'gdi32', 'iphlpapi', 'shlwapi', 'wsock32', 'ws2_32', 'kernel32', 'oleaut32', 'dinput8', 'dxguid', 'ksuser', 'imm32', 'bcrypt', 'avrt', 'uuid', 'dwmapi'])
+
+    env.Append(CPPDEFINES=['VULKAN_ENABLED'])
+    if not env['builtin_vulkan']:
+        env.Append(LIBS=['vulkan'])
+    else:
+        env.Append(LIBS=['cfgmgr32'])
+
+    ## TODO !!! Reenable when OpenGLES Rendering Device is implemented !!!
+    #env.Append(CPPDEFINES=['OPENGL_ENABLED'])
+    env.Append(LIBS=['opengl32'])
 
     env.Append(CPPDEFINES=['MINGW_ENABLED', ('MINGW_HAS_SECURE_API', 1)])
 

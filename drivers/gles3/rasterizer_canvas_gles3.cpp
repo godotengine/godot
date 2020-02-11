@@ -901,11 +901,12 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 #ifdef GLES_OVER_GL
 				if (polygon->antialiased) {
 					glEnable(GL_LINE_SMOOTH);
-					if (polygon->antialiasing_use_indices) {
-						_draw_generic_indices(GL_LINE_STRIP, polygon->indices.ptr(), polygon->count, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
-					} else {
-						_draw_generic(GL_LINE_LOOP, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
-					}
+					// FIXME: Removed during Vulkan rebase.
+					//if (polygon->antialiasing_use_indices) {
+					//	_draw_generic_indices(GL_LINE_STRIP, polygon->indices.ptr(), polygon->count, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
+					//} else
+					_draw_generic(GL_LINE_LOOP, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
+
 					glDisable(GL_LINE_SMOOTH);
 				}
 #endif
@@ -1402,7 +1403,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 		{
 			//skeleton handling
 			if (ci->skeleton.is_valid() && storage->skeleton_owner.owns(ci->skeleton)) {
-				skeleton = storage->skeleton_owner.get(ci->skeleton);
+				skeleton = storage->skeleton_owner.getornull(ci->skeleton);
 				if (!skeleton->use_2d) {
 					skeleton = NULL;
 				} else {
@@ -1697,11 +1698,13 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 						}
 					}
 
-					glBindBufferBase(GL_UNIFORM_BUFFER, 1, static_cast<LightInternal *>(light->light_internal.get_data())->ubo);
+					LightInternal *light_internal = light_internal_owner.getornull(light->light_internal);
+
+					glBindBufferBase(GL_UNIFORM_BUFFER, 1, light_internal->ubo);
 
 					if (has_shadow) {
 
-						RasterizerStorageGLES3::CanvasLightShadow *cls = storage->canvas_light_shadow_owner.get(light->shadow_buffer);
+						RasterizerStorageGLES3::CanvasLightShadow *cls = storage->canvas_light_shadow_owner.getornull(light->shadow_buffer);
 						glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 2);
 						glBindTexture(GL_TEXTURE_2D, cls->distance);
 
@@ -1807,7 +1810,7 @@ void RasterizerCanvasGLES3::canvas_debug_viewport_shadows(Light *p_lights_with_s
 	while (light) {
 		if (light->shadow_buffer.is_valid()) {
 
-			RasterizerStorageGLES3::CanvasLightShadow *sb = storage->canvas_light_shadow_owner.get(light->shadow_buffer);
+			RasterizerStorageGLES3::CanvasLightShadow *sb = storage->canvas_light_shadow_owner.getornull(light->shadow_buffer);
 			if (sb) {
 				glBindTexture(GL_TEXTURE_2D, sb->distance);
 				draw_generic_textured_rect(Rect2(h, ofs, w - h * 2, h), Rect2(0, 0, 1, 1));
@@ -1823,7 +1826,7 @@ void RasterizerCanvasGLES3::canvas_debug_viewport_shadows(Light *p_lights_with_s
 
 void RasterizerCanvasGLES3::canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, CameraMatrix *p_xform_cache) {
 
-	RasterizerStorageGLES3::CanvasLightShadow *cls = storage->canvas_light_shadow_owner.get(p_buffer);
+	RasterizerStorageGLES3::CanvasLightShadow *cls = storage->canvas_light_shadow_owner.getornull(p_buffer);
 	ERR_FAIL_COND(!cls);
 
 	glDisable(GL_BLEND);

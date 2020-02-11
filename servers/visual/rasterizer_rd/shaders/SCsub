@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+
+Import('env')
+
+if 'RD_GLSL' in env['BUILDERS']:
+    env.RD_GLSL('canvas.glsl');
+    env.RD_GLSL('canvas_occlusion.glsl');
+    env.RD_GLSL('blur.glsl');
+    env.RD_GLSL('cubemap_roughness.glsl');
+    env.RD_GLSL('scene_high_end.glsl');
+    env.RD_GLSL('sky.glsl');
+    env.RD_GLSL('tonemap.glsl');
+    env.RD_GLSL('copy.glsl');
+    env.RD_GLSL('giprobe.glsl');
+    env.RD_GLSL('giprobe_debug.glsl');
+    env.RD_GLSL('giprobe_sdf.glsl');
+    env.RD_GLSL('luminance_reduce.glsl');
+    env.RD_GLSL('bokeh_dof.glsl');
+    env.RD_GLSL('ssao.glsl');
+    env.RD_GLSL('ssao_minify.glsl');
+    env.RD_GLSL('ssao_blur.glsl');
+    env.RD_GLSL('roughness_limiter.glsl');

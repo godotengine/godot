@@ -49,15 +49,15 @@ bool EditorResourcePreviewGenerator::handles(const String &p_type) const {
 	ERR_FAIL_V_MSG(false, "EditorResourcePreviewGenerator::handles needs to be overridden.");
 }
 
-Ref<Texture> EditorResourcePreviewGenerator::generate(const RES &p_from, const Size2 &p_size) const {
+Ref<Texture2D> EditorResourcePreviewGenerator::generate(const RES &p_from, const Size2 &p_size) const {
 
 	if (get_script_instance() && get_script_instance()->has_method("generate")) {
 		return get_script_instance()->call("generate", p_from, p_size);
 	}
-	ERR_FAIL_V_MSG(Ref<Texture>(), "EditorResourcePreviewGenerator::generate needs to be overridden.");
+	ERR_FAIL_V_MSG(Ref<Texture2D>(), "EditorResourcePreviewGenerator::generate needs to be overridden.");
 }
 
-Ref<Texture> EditorResourcePreviewGenerator::generate_from_path(const String &p_path, const Size2 &p_size) const {
+Ref<Texture2D> EditorResourcePreviewGenerator::generate_from_path(const String &p_path, const Size2 &p_size) const {
 
 	if (get_script_instance() && get_script_instance()->has_method("generate_from_path")) {
 		return get_script_instance()->call("generate_from_path", p_path, p_size);
@@ -90,8 +90,8 @@ bool EditorResourcePreviewGenerator::can_generate_small_preview() const {
 void EditorResourcePreviewGenerator::_bind_methods() {
 
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "handles", PropertyInfo(Variant::STRING, "type")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(CLASS_INFO(Texture), "generate", PropertyInfo(Variant::OBJECT, "from", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), PropertyInfo(Variant::VECTOR2, "size")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(CLASS_INFO(Texture), "generate_from_path", PropertyInfo(Variant::STRING, "path", PROPERTY_HINT_FILE), PropertyInfo(Variant::VECTOR2, "size")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(CLASS_INFO(Texture2D), "generate", PropertyInfo(Variant::OBJECT, "from", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), PropertyInfo(Variant::VECTOR2, "size")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(CLASS_INFO(Texture2D), "generate_from_path", PropertyInfo(Variant::STRING, "path", PROPERTY_HINT_FILE), PropertyInfo(Variant::VECTOR2, "size")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "generate_small_preview_automatically"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "can_generate_small_preview"));
 }
@@ -107,7 +107,7 @@ void EditorResourcePreview::_thread_func(void *ud) {
 	erp->_thread();
 }
 
-void EditorResourcePreview::_preview_ready(const String &p_str, const Ref<Texture> &p_texture, const Ref<Texture> &p_small_texture, ObjectID id, const StringName &p_func, const Variant &p_ud) {
+void EditorResourcePreview::_preview_ready(const String &p_str, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_small_texture, ObjectID id, const StringName &p_func, const Variant &p_ud) {
 
 	preview_mutex->lock();
 
@@ -160,7 +160,7 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 		if (!preview_generators[i]->handles(type))
 			continue;
 
-		Ref<Texture> generated;
+		Ref<Texture2D> generated;
 		if (p_item.resource.is_valid()) {
 			generated = preview_generators[i]->generate(p_item.resource, Vector2(thumbnail_size, thumbnail_size));
 		} else {
@@ -172,7 +172,7 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 		small_thumbnail_size *= EDSCALE;
 
 		if (preview_generators[i]->can_generate_small_preview()) {
-			Ref<Texture> generated_small;
+			Ref<Texture2D> generated_small;
 			if (p_item.resource.is_valid()) {
 				generated_small = preview_generators[i]->generate(p_item.resource, Vector2(small_thumbnail_size, small_thumbnail_size));
 			} else {
@@ -322,14 +322,14 @@ void EditorResourcePreview::_thread() {
 							} else {
 
 								texture.instance();
-								texture->create_from_image(img, Texture::FLAG_FILTER);
+								texture->create_from_image(img);
 
 								if (has_small_texture) {
 									if (small_img->load(cache_base + "_small.png") != OK) {
 										cache_valid = false;
 									} else {
 										small_texture.instance();
-										small_texture->create_from_image(small_img, Texture::FLAG_FILTER);
+										small_texture->create_from_image(small_img);
 									}
 								}
 							}
@@ -476,7 +476,7 @@ EditorResourcePreview::EditorResourcePreview() {
 	thread = NULL;
 	singleton = this;
 	preview_mutex = Mutex::create();
-	preview_sem = Semaphore::create();
+	preview_sem = SemaphoreOld::create();
 	order = 0;
 	exit = false;
 	exited = false;

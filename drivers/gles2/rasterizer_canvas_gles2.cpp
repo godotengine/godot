@@ -88,7 +88,7 @@ void RasterizerCanvasGLES2::_set_uniforms() {
 		state.canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_OUTSIDE_ALPHA, light->mode == VS::CANVAS_LIGHT_MODE_MASK ? 1.0 : 0.0);
 
 		if (state.using_shadow) {
-			RasterizerStorageGLES2::CanvasLightShadow *cls = storage->canvas_light_shadow_owner.get(light->shadow_buffer);
+			RasterizerStorageGLES2::CanvasLightShadow *cls = storage->canvas_light_shadow_owner.getornull(light->shadow_buffer);
 			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 5);
 			glBindTexture(GL_TEXTURE_2D, cls->distance);
 			state.canvas_shader.set_uniform(CanvasShaderGLES2::SHADOW_MATRIX, light->shadow_matrix_cache);
@@ -1033,11 +1033,11 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 #ifdef GLES_OVER_GL
 				if (polygon->antialiased) {
 					glEnable(GL_LINE_SMOOTH);
-					if (polygon->antialiasing_use_indices) {
-						_draw_generic_indices(GL_LINE_STRIP, polygon->indices.ptr(), polygon->count, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
-					} else {
-						_draw_generic(GL_LINE_LOOP, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
-					}
+					// FIXME: Removed during Vulkan rebase.
+					//if (polygon->antialiasing_use_indices) {
+					//	_draw_generic_indices(GL_LINE_STRIP, polygon->indices.ptr(), polygon->count, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
+					//} else
+					_draw_generic(GL_LINE_LOOP, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
 					glDisable(GL_LINE_SMOOTH);
 				}
 #endif
@@ -1480,7 +1480,7 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 		{
 			//skeleton handling
 			if (ci->skeleton.is_valid() && storage->skeleton_owner.owns(ci->skeleton)) {
-				skeleton = storage->skeleton_owner.get(ci->skeleton);
+				skeleton = storage->skeleton_owner.getornull(ci->skeleton);
 				if (!skeleton->use_2d) {
 					skeleton = NULL;
 				} else {
@@ -1825,7 +1825,7 @@ void RasterizerCanvasGLES2::canvas_debug_viewport_shadows(Light *p_lights_with_s
 
 void RasterizerCanvasGLES2::canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, CameraMatrix *p_xform_cache) {
 
-	RasterizerStorageGLES2::CanvasLightShadow *cls = storage->canvas_light_shadow_owner.get(p_buffer);
+	RasterizerStorageGLES2::CanvasLightShadow *cls = storage->canvas_light_shadow_owner.getornull(p_buffer);
 	ERR_FAIL_COND(!cls);
 
 	glDisable(GL_BLEND);

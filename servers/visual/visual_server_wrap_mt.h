@@ -77,42 +77,45 @@ public:
 #define server_name visual_server
 #include "servers/server_wrap_mt_common.h"
 
-	/* EVENT QUEUING */
-	FUNCRID(texture)
-	FUNC7(texture_allocate, RID, int, int, int, Image::Format, TextureType, uint32_t)
-	FUNC3(texture_set_data, RID, const Ref<Image> &, int)
-	FUNC10(texture_set_data_partial, RID, const Ref<Image> &, int, int, int, int, int, int, int, int)
-	FUNC2RC(Ref<Image>, texture_get_data, RID, int)
-	FUNC2(texture_set_flags, RID, uint32_t)
-	FUNC1RC(uint32_t, texture_get_flags, RID)
-	FUNC1RC(Image::Format, texture_get_format, RID)
-	FUNC1RC(TextureType, texture_get_type, RID)
-	FUNC1RC(uint32_t, texture_get_texid, RID)
-	FUNC1RC(uint32_t, texture_get_width, RID)
-	FUNC1RC(uint32_t, texture_get_height, RID)
-	FUNC1RC(uint32_t, texture_get_depth, RID)
-	FUNC4(texture_set_size_override, RID, int, int, int)
+	//these go pass-through, as they can be called from any thread
+	virtual RID texture_2d_create(const Ref<Image> &p_image) { return visual_server->texture_2d_create(p_image); }
+	virtual RID texture_2d_layered_create(const Vector<Ref<Image> > &p_layers, TextureLayeredType p_layered_type) { return visual_server->texture_2d_layered_create(p_layers, p_layered_type); }
+	virtual RID texture_3d_create(const Vector<Ref<Image> > &p_slices) { return visual_server->texture_3d_create(p_slices); }
+	virtual RID texture_proxy_create(RID p_base) { return visual_server->texture_proxy_create(p_base); }
+
+	//goes pass-through
+	virtual void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) { visual_server->texture_2d_update_immediate(p_texture, p_image, p_layer); }
+	//these go through command queue if they are in another thread
+	FUNC3(texture_2d_update, RID, const Ref<Image> &, int)
+	FUNC4(texture_3d_update, RID, const Ref<Image> &, int, int)
+	FUNC2(texture_proxy_update, RID, RID)
+
+	//these also go pass-through
+	virtual RID texture_2d_placeholder_create() { return visual_server->texture_2d_placeholder_create(); }
+	virtual RID texture_2d_layered_placeholder_create() { return visual_server->texture_2d_layered_placeholder_create(); }
+	virtual RID texture_3d_placeholder_create() { return visual_server->texture_3d_placeholder_create(); }
+
+	FUNC1RC(Ref<Image>, texture_2d_get, RID)
+	FUNC2RC(Ref<Image>, texture_2d_layer_get, RID, int)
+	FUNC3RC(Ref<Image>, texture_3d_slice_get, RID, int, int)
+
+	FUNC2(texture_replace, RID, RID)
+
+	FUNC3(texture_set_size_override, RID, int, int)
+// FIXME: Disabled during Vulkan refactoring, should be ported.
+#if 0
 	FUNC2(texture_bind, RID, uint32_t)
+#endif
 
 	FUNC3(texture_set_detect_3d_callback, RID, TextureDetectCallback, void *)
-	FUNC3(texture_set_detect_srgb_callback, RID, TextureDetectCallback, void *)
 	FUNC3(texture_set_detect_normal_callback, RID, TextureDetectCallback, void *)
+	FUNC3(texture_set_detect_roughness_callback, RID, TextureDetectRoughnessCallback, void *)
 
 	FUNC2(texture_set_path, RID, const String &)
 	FUNC1RC(String, texture_get_path, RID)
-	FUNC1(texture_set_shrink_all_x2_on_set_data, bool)
 	FUNC1S(texture_debug_usage, List<TextureInfo> *)
 
-	FUNC1(textures_keep_original, bool)
-
-	FUNC2(texture_set_proxy, RID, RID)
-
 	FUNC2(texture_set_force_redraw_if_visible, RID, bool)
-
-	/* SKY API */
-
-	FUNCRID(sky)
-	FUNC3(sky_set_texture, RID, RID, int)
 
 	/* SHADER API */
 
@@ -125,29 +128,30 @@ public:
 
 	FUNC3(shader_set_default_texture_param, RID, const StringName &, RID)
 	FUNC2RC(RID, shader_get_default_texture_param, RID, const StringName &)
+	FUNC2RC(Variant, shader_get_param_default, RID, const StringName &)
 
 	/* COMMON MATERIAL API */
 
 	FUNCRID(material)
 
 	FUNC2(material_set_shader, RID, RID)
-	FUNC1RC(RID, material_get_shader, RID)
 
 	FUNC3(material_set_param, RID, const StringName &, const Variant &)
 	FUNC2RC(Variant, material_get_param, RID, const StringName &)
-	FUNC2RC(Variant, material_get_param_default, RID, const StringName &)
 
 	FUNC2(material_set_render_priority, RID, int)
-	FUNC2(material_set_line_width, RID, float)
 	FUNC2(material_set_next_pass, RID, RID)
 
 	/* MESH API */
 
+	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces) {
+		return visual_server->mesh_create_from_surfaces(p_surfaces);
+	}
+
 	FUNCRID(mesh)
 
-	FUNC10(mesh_add_surface, RID, uint32_t, PrimitiveType, const PoolVector<uint8_t> &, int, const PoolVector<uint8_t> &, int, const AABB &, const Vector<PoolVector<uint8_t> > &, const Vector<AABB> &)
+	FUNC2(mesh_add_surface, RID, const SurfaceData &)
 
-	FUNC2(mesh_set_blend_shape_count, RID, int)
 	FUNC1RC(int, mesh_get_blend_shape_count, RID)
 
 	FUNC2(mesh_set_blend_shape_mode, RID, BlendShapeMode)
@@ -158,20 +162,8 @@ public:
 	FUNC3(mesh_surface_set_material, RID, int, RID)
 	FUNC2RC(RID, mesh_surface_get_material, RID, int)
 
-	FUNC2RC(int, mesh_surface_get_array_len, RID, int)
-	FUNC2RC(int, mesh_surface_get_array_index_len, RID, int)
+	FUNC2RC(SurfaceData, mesh_get_surface, RID, int)
 
-	FUNC2RC(PoolVector<uint8_t>, mesh_surface_get_array, RID, int)
-	FUNC2RC(PoolVector<uint8_t>, mesh_surface_get_index_array, RID, int)
-
-	FUNC2RC(uint32_t, mesh_surface_get_format, RID, int)
-	FUNC2RC(PrimitiveType, mesh_surface_get_primitive_type, RID, int)
-
-	FUNC2RC(AABB, mesh_surface_get_aabb, RID, int)
-	FUNC2RC(Vector<PoolVector<uint8_t> >, mesh_surface_get_blend_shapes, RID, int)
-	FUNC2RC(Vector<AABB>, mesh_surface_get_skeleton_aabb, RID, int)
-
-	FUNC2(mesh_remove_surface, RID, int)
 	FUNC1RC(int, mesh_get_surface_count, RID)
 
 	FUNC2(mesh_set_custom_aabb, RID, const AABB &)
@@ -183,7 +175,7 @@ public:
 
 	FUNCRID(multimesh)
 
-	FUNC5(multimesh_allocate, RID, int, MultimeshTransformFormat, MultimeshColorFormat, MultimeshCustomDataFormat)
+	FUNC5(multimesh_allocate, RID, int, MultimeshTransformFormat, bool, bool)
 	FUNC1RC(int, multimesh_get_instance_count, RID)
 
 	FUNC2(multimesh_set_mesh, RID, RID)
@@ -200,7 +192,8 @@ public:
 	FUNC2RC(Color, multimesh_instance_get_color, RID, int)
 	FUNC2RC(Color, multimesh_instance_get_custom_data, RID, int)
 
-	FUNC2(multimesh_set_as_bulk_array, RID, const PoolVector<float> &)
+	FUNC2(multimesh_set_buffer, RID, const PoolVector<float> &)
+	FUNC1RC(PoolVector<float>, multimesh_get_buffer, RID)
 
 	FUNC2(multimesh_set_visible_instances, RID, int)
 	FUNC1RC(int, multimesh_get_visible_instances, RID)
@@ -248,7 +241,6 @@ public:
 	FUNC2(light_set_use_gi, RID, bool)
 
 	FUNC2(light_omni_set_shadow_mode, RID, LightOmniShadowMode)
-	FUNC2(light_omni_set_shadow_detail, RID, LightOmniShadowDetail)
 
 	FUNC2(light_directional_set_shadow_mode, RID, LightDirectionalShadowMode)
 	FUNC2(light_directional_set_blend_splits, RID, bool)
@@ -276,20 +268,30 @@ public:
 
 	FUNCRID(gi_probe)
 
-	FUNC2(gi_probe_set_bounds, RID, const AABB &)
+	FUNC8(gi_probe_allocate, RID, const Transform &, const AABB &, const Vector3i &, const PoolVector<uint8_t> &, const PoolVector<uint8_t> &, const PoolVector<uint8_t> &, const PoolVector<int> &)
+
 	FUNC1RC(AABB, gi_probe_get_bounds, RID)
-
-	FUNC2(gi_probe_set_cell_size, RID, float)
-	FUNC1RC(float, gi_probe_get_cell_size, RID)
-
-	FUNC2(gi_probe_set_to_cell_xform, RID, const Transform &)
+	FUNC1RC(Vector3i, gi_probe_get_octree_size, RID)
+	FUNC1RC(PoolVector<uint8_t>, gi_probe_get_octree_cells, RID)
+	FUNC1RC(PoolVector<uint8_t>, gi_probe_get_data_cells, RID)
+	FUNC1RC(PoolVector<uint8_t>, gi_probe_get_distance_field, RID)
+	FUNC1RC(PoolVector<int>, gi_probe_get_level_counts, RID)
 	FUNC1RC(Transform, gi_probe_get_to_cell_xform, RID)
 
-	FUNC2(gi_probe_set_dynamic_range, RID, int)
-	FUNC1RC(int, gi_probe_get_dynamic_range, RID)
+	FUNC2(gi_probe_set_dynamic_range, RID, float)
+	FUNC1RC(float, gi_probe_get_dynamic_range, RID)
+
+	FUNC2(gi_probe_set_propagation, RID, float)
+	FUNC1RC(float, gi_probe_get_propagation, RID)
 
 	FUNC2(gi_probe_set_energy, RID, float)
 	FUNC1RC(float, gi_probe_get_energy, RID)
+
+	FUNC2(gi_probe_set_ao, RID, float)
+	FUNC1RC(float, gi_probe_get_ao, RID)
+
+	FUNC2(gi_probe_set_ao_size, RID, float)
+	FUNC1RC(float, gi_probe_get_ao_size, RID)
 
 	FUNC2(gi_probe_set_bias, RID, float)
 	FUNC1RC(float, gi_probe_get_bias, RID)
@@ -297,17 +299,14 @@ public:
 	FUNC2(gi_probe_set_normal_bias, RID, float)
 	FUNC1RC(float, gi_probe_get_normal_bias, RID)
 
-	FUNC2(gi_probe_set_propagation, RID, float)
-	FUNC1RC(float, gi_probe_get_propagation, RID)
-
 	FUNC2(gi_probe_set_interior, RID, bool)
 	FUNC1RC(bool, gi_probe_is_interior, RID)
 
-	FUNC2(gi_probe_set_compress, RID, bool)
-	FUNC1RC(bool, gi_probe_is_compressed, RID)
+	FUNC2(gi_probe_set_use_two_bounces, RID, bool)
+	FUNC1RC(bool, gi_probe_is_using_two_bounces, RID)
 
-	FUNC2(gi_probe_set_dynamic_data, RID, const PoolVector<int> &)
-	FUNC1RC(PoolVector<int>, gi_probe_get_dynamic_data, RID)
+	FUNC2(gi_probe_set_anisotropy_strength, RID, float)
+	FUNC1RC(float, gi_probe_get_anisotropy_strength, RID)
 
 	/* LIGHTMAP CAPTURE */
 
@@ -364,6 +363,7 @@ public:
 	FUNC2(camera_set_transform, RID, const Transform &)
 	FUNC2(camera_set_cull_mask, RID, uint32_t)
 	FUNC2(camera_set_environment, RID, RID)
+	FUNC2(camera_set_camera_effects, RID, RID)
 	FUNC2(camera_set_use_vertical_aspect, RID, bool)
 
 	/* VIEWPORT TARGET API */
@@ -384,15 +384,12 @@ public:
 	FUNC1(viewport_detach, RID)
 
 	FUNC2(viewport_set_update_mode, RID, ViewportUpdateMode)
-	FUNC2(viewport_set_vflip, RID, bool)
 
 	FUNC1RC(RID, viewport_get_texture, RID)
 
 	FUNC2(viewport_set_hide_scenario, RID, bool)
 	FUNC2(viewport_set_hide_canvas, RID, bool)
 	FUNC2(viewport_set_disable_environment, RID, bool)
-	FUNC2(viewport_set_disable_3d, RID, bool)
-	FUNC2(viewport_set_keep_3d_linear, RID, bool)
 
 	FUNC2(viewport_attach_camera, RID, RID)
 	FUNC2(viewport_set_scenario, RID, RID)
@@ -407,8 +404,6 @@ public:
 	FUNC2(viewport_set_shadow_atlas_size, RID, int)
 	FUNC3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
 	FUNC2(viewport_set_msaa, RID, ViewportMSAA)
-	FUNC2(viewport_set_hdr, RID, bool)
-	FUNC2(viewport_set_usage, RID, ViewportUsage)
 
 	//this passes directly to avoid stalling, but it's pretty dangerous, so don't call after freeing a viewport
 	virtual int viewport_get_render_info(RID p_viewport, ViewportRenderInfo p_info) {
@@ -416,6 +411,15 @@ public:
 	}
 
 	FUNC2(viewport_set_debug_draw, RID, ViewportDebugDraw)
+
+	FUNC1(directional_shadow_atlas_set_size, int)
+
+	/* SKY API */
+
+	FUNCRID(sky)
+	FUNC2(sky_set_radiance_size, RID, int)
+	FUNC2(sky_set_mode, RID, SkyMode)
+	FUNC2(sky_set_texture, RID, RID)
 
 	/* ENVIRONMENT API */
 
@@ -428,14 +432,18 @@ public:
 	FUNC2(environment_set_bg_color, RID, const Color &)
 	FUNC2(environment_set_bg_energy, RID, float)
 	FUNC2(environment_set_canvas_max_layer, RID, int)
-	FUNC4(environment_set_ambient_light, RID, const Color &, float, float)
-	FUNC2(environment_set_camera_feed_id, RID, int)
-	FUNC7(environment_set_ssr, RID, bool, int, float, float, float, bool)
-	FUNC13(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, const Color &, EnvironmentSSAOQuality, EnvironmentSSAOBlur, float)
+	FUNC7(environment_set_ambient_light, RID, const Color &, EnvironmentAmbientSource, float, float, EnvironmentReflectionSource, const Color &)
 
-	FUNC6(environment_set_dof_blur_near, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
-	FUNC6(environment_set_dof_blur_far, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
-	FUNC11(environment_set_glow, RID, bool, int, float, float, float, EnvironmentGlowBlendMode, float, float, float, bool)
+// FIXME: Disabled during Vulkan refactoring, should be ported.
+#if 0
+	FUNC2(environment_set_camera_feed_id, RID, int)
+#endif
+	FUNC7(environment_set_ssr, RID, bool, int, float, float, float, bool)
+	FUNC9(environment_set_ssao, RID, bool, float, float, float, float, float, EnvironmentSSAOBlur, float)
+
+	FUNC2(environment_set_ssao_quality, EnvironmentSSAOQuality, bool)
+
+	FUNC12(environment_set_glow, RID, bool, int, float, float, float, float, EnvironmentGlowBlendMode, float, float, float, bool)
 
 	FUNC9(environment_set_tonemap, RID, EnvironmentToneMapper, float, float, bool, float, float, float, float)
 
@@ -445,11 +453,21 @@ public:
 	FUNC7(environment_set_fog_depth, RID, bool, float, float, float, bool, float)
 	FUNC5(environment_set_fog_height, RID, bool, float, float, float)
 
+	FUNC2(screen_space_roughness_limiter_set_active, bool, float)
+
+	FUNCRID(camera_effects)
+
+	FUNC2(camera_effects_set_dof_blur_quality, DOFBlurQuality, bool)
+	FUNC1(camera_effects_set_dof_blur_bokeh_shape, DOFBokehShape)
+
+	FUNC8(camera_effects_set_dof_blur, RID, bool, float, float, bool, float, float, float)
+	FUNC3(camera_effects_set_custom_exposure, RID, bool, float)
+
 	FUNCRID(scenario)
 
 	FUNC2(scenario_set_debug, RID, ScenarioDebugMode)
 	FUNC2(scenario_set_environment, RID, RID)
-	FUNC3(scenario_set_reflection_atlas_size, RID, int, int)
+	FUNC2(scenario_set_camera_effects, RID, RID)
 	FUNC2(scenario_set_fallback_environment, RID, RID)
 
 	/* INSTANCING API */
@@ -509,20 +527,23 @@ public:
 
 	FUNC2(canvas_item_set_draw_behind_parent, RID, bool)
 
-	FUNC6(canvas_item_add_line, RID, const Point2 &, const Point2 &, const Color &, float, bool)
-	FUNC5(canvas_item_add_polyline, RID, const Vector<Point2> &, const Vector<Color> &, float, bool)
-	FUNC5(canvas_item_add_multiline, RID, const Vector<Point2> &, const Vector<Color> &, float, bool)
+	FUNC2(canvas_item_set_default_texture_filter, RID, CanvasItemTextureFilter)
+	FUNC2(canvas_item_set_default_texture_repeat, RID, CanvasItemTextureRepeat)
+
+	FUNC5(canvas_item_add_line, RID, const Point2 &, const Point2 &, const Color &, float)
+	FUNC4(canvas_item_add_polyline, RID, const Vector<Point2> &, const Vector<Color> &, float)
+	FUNC4(canvas_item_add_multiline, RID, const Vector<Point2> &, const Vector<Color> &, float)
 	FUNC3(canvas_item_add_rect, RID, const Rect2 &, const Color &)
 	FUNC4(canvas_item_add_circle, RID, const Point2 &, float, const Color &)
-	FUNC7(canvas_item_add_texture_rect, RID, const Rect2 &, RID, bool, const Color &, bool, RID)
-	FUNC8(canvas_item_add_texture_rect_region, RID, const Rect2 &, RID, const Rect2 &, const Color &, bool, RID, bool)
-	FUNC11(canvas_item_add_nine_patch, RID, const Rect2 &, const Rect2 &, RID, const Vector2 &, const Vector2 &, NinePatchAxisMode, NinePatchAxisMode, bool, const Color &, RID)
-	FUNC7(canvas_item_add_primitive, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, float, RID)
-	FUNC7(canvas_item_add_polygon, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, RID, bool)
-	FUNC12(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, const Vector<int> &, const Vector<float> &, RID, int, RID, bool, bool)
-	FUNC6(canvas_item_add_mesh, RID, const RID &, const Transform2D &, const Color &, RID, RID)
-	FUNC4(canvas_item_add_multimesh, RID, RID, RID, RID)
-	FUNC4(canvas_item_add_particles, RID, RID, RID, RID)
+	FUNC11(canvas_item_add_texture_rect, RID, const Rect2 &, RID, bool, const Color &, bool, RID, RID, const Color &, CanvasItemTextureFilter, CanvasItemTextureRepeat)
+	FUNC12(canvas_item_add_texture_rect_region, RID, const Rect2 &, RID, const Rect2 &, const Color &, bool, RID, RID, const Color &, bool, CanvasItemTextureFilter, CanvasItemTextureRepeat)
+	FUNC15(canvas_item_add_nine_patch, RID, const Rect2 &, const Rect2 &, RID, const Vector2 &, const Vector2 &, NinePatchAxisMode, NinePatchAxisMode, bool, const Color &, RID, RID, const Color &, CanvasItemTextureFilter, CanvasItemTextureRepeat)
+	FUNC11(canvas_item_add_primitive, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, float, RID, RID, const Color &, CanvasItemTextureFilter, CanvasItemTextureRepeat)
+	FUNC10(canvas_item_add_polygon, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, RID, RID, const Color &, CanvasItemTextureFilter, CanvasItemTextureRepeat)
+	FUNC14(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, const Vector<int> &, const Vector<float> &, RID, int, RID, RID, const Color &, CanvasItemTextureFilter, CanvasItemTextureRepeat)
+	FUNC10(canvas_item_add_mesh, RID, const RID &, const Transform2D &, const Color &, RID, RID, RID, const Color &, CanvasItemTextureFilter, CanvasItemTextureRepeat)
+	FUNC8(canvas_item_add_multimesh, RID, RID, RID, RID, RID, const Color &, CanvasItemTextureFilter, CanvasItemTextureRepeat)
+	FUNC8(canvas_item_add_particles, RID, RID, RID, RID, RID, const Color &, CanvasItemTextureFilter, CanvasItemTextureRepeat)
 	FUNC2(canvas_item_add_set_transform, RID, const Transform2D &)
 	FUNC2(canvas_item_add_clip_ignore, RID, bool)
 	FUNC2(canvas_item_set_sort_children_by_y, RID, bool)
@@ -557,7 +578,6 @@ public:
 
 	FUNC2(canvas_light_set_shadow_enabled, RID, bool)
 	FUNC2(canvas_light_set_shadow_buffer_size, RID, int)
-	FUNC2(canvas_light_set_shadow_gradient_length, RID, float)
 	FUNC2(canvas_light_set_shadow_filter, RID, CanvasLightShadowFilter)
 	FUNC2(canvas_light_set_shadow_color, RID, const Color &)
 	FUNC2(canvas_light_set_shadow_smooth, RID, float)
@@ -616,8 +636,12 @@ public:
 
 	FUNC1(set_debug_generate_wireframes, bool)
 
-	virtual bool has_feature(Features p_feature) const { return visual_server->has_feature(p_feature); }
-	virtual bool has_os_feature(const String &p_feature) const { return visual_server->has_os_feature(p_feature); }
+	virtual bool has_feature(Features p_feature) const {
+		return visual_server->has_feature(p_feature);
+	}
+	virtual bool has_os_feature(const String &p_feature) const {
+		return visual_server->has_os_feature(p_feature);
+	}
 
 	FUNC1(call_set_use_vsync, bool)
 
@@ -625,6 +649,18 @@ public:
 
 	virtual bool is_low_end() const {
 		return visual_server->is_low_end();
+	}
+
+	virtual uint64_t get_frame_profile_frame() {
+		return visual_server->get_frame_profile_frame();
+	}
+
+	virtual void set_frame_profiling_enabled(bool p_enabled) {
+		visual_server->set_frame_profiling_enabled(p_enabled);
+	}
+
+	virtual Vector<FrameProfileArea> get_frame_profile() {
+		return visual_server->get_frame_profile();
 	}
 
 	VisualServerWrapMT(VisualServer *p_contained, bool p_create_thread);

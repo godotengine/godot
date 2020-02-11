@@ -276,6 +276,36 @@ Vector2 CameraMatrix::get_viewport_half_extents() const {
 	return Vector2(res.x, res.y);
 }
 
+void CameraMatrix::get_far_plane_size(real_t &r_width, real_t &r_height) const {
+
+	const real_t *matrix = (const real_t *)this->matrix;
+	///////--- Far Plane ---///////
+	Plane far_plane = Plane(matrix[3] - matrix[2],
+			matrix[7] - matrix[6],
+			matrix[11] - matrix[10],
+			-matrix[15] + matrix[14]);
+	far_plane.normalize();
+
+	///////--- Right Plane ---///////
+	Plane right_plane = Plane(matrix[3] - matrix[0],
+			matrix[7] - matrix[4],
+			matrix[11] - matrix[8],
+			-matrix[15] + matrix[12]);
+	right_plane.normalize();
+
+	Plane top_plane = Plane(matrix[3] - matrix[1],
+			matrix[7] - matrix[5],
+			matrix[11] - matrix[9],
+			-matrix[15] + matrix[13]);
+	top_plane.normalize();
+
+	Vector3 res;
+	far_plane.intersect_3(right_plane, top_plane, &res);
+
+	r_width = res.x;
+	r_height = res.y;
+}
+
 bool CameraMatrix::get_endpoints(const Transform &p_transform, Vector3 *p_8points) const {
 
 	Vector<Plane> planes = get_projection_planes(Transform());
@@ -485,6 +515,12 @@ void CameraMatrix::invert() {
 	}
 }
 
+void CameraMatrix::flip_y() {
+	for (int i = 0; i < 4; i++) {
+		matrix[1][i] = -matrix[1][i];
+	}
+}
+
 CameraMatrix::CameraMatrix() {
 
 	set_identity();
@@ -504,6 +540,28 @@ CameraMatrix CameraMatrix::operator*(const CameraMatrix &p_matrix) const {
 	}
 
 	return new_matrix;
+}
+
+void CameraMatrix::set_depth_correction(bool p_flip_y) {
+
+	real_t *m = &matrix[0][0];
+
+	m[0] = 1;
+	m[1] = 0.0;
+	m[2] = 0.0;
+	m[3] = 0.0;
+	m[4] = 0.0;
+	m[5] = p_flip_y ? -1 : 1;
+	m[6] = 0.0;
+	m[7] = 0.0;
+	m[8] = 0.0;
+	m[9] = 0.0;
+	m[10] = 0.5;
+	m[11] = 0.0;
+	m[12] = 0.0;
+	m[13] = 0.0;
+	m[14] = 0.5;
+	m[15] = 1.0;
 }
 
 void CameraMatrix::set_light_bias() {

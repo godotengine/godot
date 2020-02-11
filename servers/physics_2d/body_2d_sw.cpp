@@ -721,7 +721,7 @@ Variant Physics2DDirectBodyStateSW::get_contact_collider_shape_metadata(int p_co
 
 		return Variant();
 	}
-	Body2DSW *other = Physics2DServerSW::singletonsw->body_owner.get(body->contacts[p_contact_idx].collider);
+	Body2DSW *other = Physics2DServerSW::singletonsw->body_owner.getornull(body->contacts[p_contact_idx].collider);
 
 	int sidx = body->contacts[p_contact_idx].collider_shape;
 	if (sidx < 0 || sidx >= other->get_shape_count()) {

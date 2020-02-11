@@ -1,5 +1,6 @@
 import os
 import sys
+import subprocess
 from methods import detect_darwin_sdk_path
 
 
@@ -25,6 +26,7 @@ def get_opts():
     return [
         ('osxcross_sdk', 'OSXCross SDK version', 'darwin14'),
         ('MACOS_SDK_PATH', 'Path to the macOS SDK', ''),
+        BoolVariable('use_static_mvk', 'Link MoltenVK statically as Level-0 driver (better portability) or use Vulkan ICD loader (enables validation layers)', False),
         EnumVariable('debug_symbols', 'Add debugging symbols to release builds', 'yes', ('yes', 'no', 'full')),
         BoolVariable('separate_debug_symbols', 'Create a separate file containing debugging symbols', False),
         BoolVariable('use_ubsan', 'Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)', False),
@@ -148,9 +150,19 @@ def configure(env):
     ## Flags
 
     env.Prepend(CPPPATH=['#platform/osx'])
-    env.Append(CPPDEFINES=['OSX_ENABLED', 'UNIX_ENABLED', 'GLES_ENABLED', 'APPLE_STYLE_KEYS', 'COREAUDIO_ENABLED', 'COREMIDI_ENABLED'])
-    env.Append(LINKFLAGS=['-framework', 'Cocoa', '-framework', 'Carbon', '-framework', 'OpenGL', '-framework', 'AGL', '-framework', 'AudioUnit', '-framework', 'CoreAudio', '-framework', 'CoreMIDI', '-lz', '-framework', 'IOKit', '-framework', 'ForceFeedback', '-framework', 'AVFoundation', '-framework', 'CoreMedia', '-framework', 'CoreVideo'])
-    env.Append(LIBS=['pthread'])
+    env.Append(CPPDEFINES=['OSX_ENABLED', 'UNIX_ENABLED', 'APPLE_STYLE_KEYS', 'COREAUDIO_ENABLED', 'COREMIDI_ENABLED'])
+    env.Append(LINKFLAGS=['-framework', 'Cocoa', '-framework', 'Carbon', '-framework', 'AudioUnit', '-framework', 'CoreAudio', '-framework', 'CoreMIDI', '-framework', 'IOKit', '-framework', 'ForceFeedback', '-framework', 'CoreVideo', '-framework', 'AVFoundation', '-framework', 'CoreMedia'])
+    env.Append(LIBS=['pthread', 'z'])
 
-    env.Append(CCFLAGS=['-mmacosx-version-min=10.9'])
-    env.Append(LINKFLAGS=['-mmacosx-version-min=10.9'])
+    env.Append(CPPDEFINES=['VULKAN_ENABLED'])
+    env.Append(LINKFLAGS=['-framework', 'Metal', '-framework', 'QuartzCore', '-framework', 'IOSurface'])
+    if (env['use_static_mvk']):
+        env.Append(LINKFLAGS=['-framework', 'MoltenVK'])
+        env['builtin_vulkan'] = False
+    elif not env['builtin_vulkan']:
+        env.Append(LIBS=['vulkan'])
+
+    #env.Append(CPPDEFINES=['GLES_ENABLED', 'OPENGL_ENABLED'])
+
+    env.Append(CCFLAGS=['-mmacosx-version-min=10.11'])
+    env.Append(LINKFLAGS=['-mmacosx-version-min=10.11'])

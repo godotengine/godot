@@ -286,14 +286,14 @@ SpriteBase3D::AlphaCutMode SpriteBase3D::get_alpha_cut_mode() const {
 	return alpha_cut;
 }
 
-void SpriteBase3D::set_billboard_mode(SpatialMaterial::BillboardMode p_mode) {
+void SpriteBase3D::set_billboard_mode(StandardMaterial3D::BillboardMode p_mode) {
 
 	ERR_FAIL_INDEX(p_mode, 3);
 	billboard_mode = p_mode;
 	_queue_update();
 }
 
-SpatialMaterial::BillboardMode SpriteBase3D::get_billboard_mode() const {
+StandardMaterial3D::BillboardMode SpriteBase3D::get_billboard_mode() const {
 
 	return billboard_mode;
 }
@@ -377,7 +377,7 @@ SpriteBase3D::SpriteBase3D() {
 		flags[i] = i == FLAG_TRANSPARENT || i == FLAG_DOUBLE_SIDED;
 
 	alpha_cut = ALPHA_CUT_DISABLED;
-	billboard_mode = SpatialMaterial::BILLBOARD_DISABLED;
+	billboard_mode = StandardMaterial3D::BILLBOARD_DISABLED;
 	axis = Vector3::AXIS_Z;
 	pixel_size = 0.01;
 	modulate = Color(1, 1, 1, 1);
@@ -480,10 +480,10 @@ void Sprite3D::_draw() {
 		tangent = Plane(1, 0, 0, 1);
 	}
 
-	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == SpatialMaterial::BILLBOARD_ENABLED, get_billboard_mode() == SpatialMaterial::BILLBOARD_FIXED_Y);
+	RID mat = StandardMaterial3D::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y);
 	VS::get_singleton()->immediate_set_material(immediate, mat);
 
-	VS::get_singleton()->immediate_begin(immediate, VS::PRIMITIVE_TRIANGLE_FAN, texture->get_rid());
+	VS::get_singleton()->immediate_begin(immediate, VS::PRIMITIVE_TRIANGLES, texture->get_rid());
 
 	int x_axis = ((axis + 1) % 3);
 	int y_axis = ((axis + 2) % 3);
@@ -504,15 +504,18 @@ void Sprite3D::_draw() {
 
 	AABB aabb;
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 6; i++) {
+
+		static const int index[6] = { 0, 1, 2, 0, 2, 3 };
+
 		VS::get_singleton()->immediate_normal(immediate, normal);
 		VS::get_singleton()->immediate_tangent(immediate, tangent);
 		VS::get_singleton()->immediate_color(immediate, color);
 		VS::get_singleton()->immediate_uv(immediate, uvs[i]);
 
 		Vector3 vtx;
-		vtx[x_axis] = vertices[i][0];
-		vtx[y_axis] = vertices[i][1];
+		vtx[x_axis] = vertices[index[i]][0];
+		vtx[y_axis] = vertices[index[i]][1];
 		VS::get_singleton()->immediate_vertex(immediate, vtx);
 		if (i == 0) {
 			aabb.position = vtx;
@@ -525,7 +528,7 @@ void Sprite3D::_draw() {
 	VS::get_singleton()->immediate_end(immediate);
 }
 
-void Sprite3D::set_texture(const Ref<Texture> &p_texture) {
+void Sprite3D::set_texture(const Ref<Texture2D> &p_texture) {
 
 	if (p_texture == texture)
 		return;
@@ -534,13 +537,12 @@ void Sprite3D::set_texture(const Ref<Texture> &p_texture) {
 	}
 	texture = p_texture;
 	if (texture.is_valid()) {
-		texture->set_flags(texture->get_flags()); //remove repeat from texture, it looks bad in sprites
 		texture->connect(CoreStringNames::get_singleton()->changed, this, SceneStringNames::get_singleton()->_queue_update);
 	}
 	_queue_update();
 }
 
-Ref<Texture> Sprite3D::get_texture() const {
+Ref<Texture2D> Sprite3D::get_texture() const {
 
 	return texture;
 }
@@ -691,7 +693,7 @@ void Sprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hframes", "hframes"), &Sprite3D::set_hframes);
 	ClassDB::bind_method(D_METHOD("get_hframes"), &Sprite3D::get_hframes);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_GROUP("Animation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
@@ -731,7 +733,7 @@ void AnimatedSprite3D::_draw() {
 		return;
 	}
 
-	Ref<Texture> texture = frames->get_frame(animation, frame);
+	Ref<Texture2D> texture = frames->get_frame(animation, frame);
 	if (!texture.is_valid())
 		return; //no texuture no life
 	Vector2 tsize = texture->get_size();
@@ -808,11 +810,11 @@ void AnimatedSprite3D::_draw() {
 		tangent = Plane(1, 0, 0, -1);
 	}
 
-	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == SpatialMaterial::BILLBOARD_ENABLED, get_billboard_mode() == SpatialMaterial::BILLBOARD_FIXED_Y);
+	RID mat = StandardMaterial3D::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y);
 
 	VS::get_singleton()->immediate_set_material(immediate, mat);
 
-	VS::get_singleton()->immediate_begin(immediate, VS::PRIMITIVE_TRIANGLE_FAN, texture->get_rid());
+	VS::get_singleton()->immediate_begin(immediate, VS::PRIMITIVE_TRIANGLES, texture->get_rid());
 
 	int x_axis = ((axis + 1) % 3);
 	int y_axis = ((axis + 2) % 3);
@@ -833,15 +835,21 @@ void AnimatedSprite3D::_draw() {
 
 	AABB aabb;
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 6; i++) {
+
+		static const int indices[6] = {
+			0, 1, 2,
+			0, 2, 3
+		};
+
 		VS::get_singleton()->immediate_normal(immediate, normal);
 		VS::get_singleton()->immediate_tangent(immediate, tangent);
 		VS::get_singleton()->immediate_color(immediate, color);
 		VS::get_singleton()->immediate_uv(immediate, uvs[i]);
 
 		Vector3 vtx;
-		vtx[x_axis] = vertices[i][0];
-		vtx[y_axis] = vertices[i][1];
+		vtx[x_axis] = vertices[indices[i]][0];
+		vtx[y_axis] = vertices[indices[i]][1];
 		VS::get_singleton()->immediate_vertex(immediate, vtx);
 		if (i == 0) {
 			aabb.position = vtx;
@@ -1003,7 +1011,7 @@ Rect2 AnimatedSprite3D::get_item_rect() const {
 		return Rect2(0, 0, 1, 1);
 	}
 
-	Ref<Texture> t;
+	Ref<Texture2D> t;
 	if (animation)
 		t = frames->get_frame(animation, frame);
 	if (t.is_null())

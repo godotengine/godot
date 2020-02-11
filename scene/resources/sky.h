@@ -49,37 +49,47 @@ public:
 		RADIANCE_SIZE_MAX
 	};
 
+	enum ProcessMode {
+		PROCESS_MODE_QUALITY,
+		PROCESS_MODE_REALTIME
+	};
+
 private:
+	RID sky;
+	ProcessMode mode;
 	RadianceSize radiance_size;
 
 protected:
 	static void _bind_methods();
-	virtual void _radiance_changed() = 0;
 
 public:
 	void set_radiance_size(RadianceSize p_size);
 	RadianceSize get_radiance_size() const;
+
+	void set_process_mode(ProcessMode p_mode);
+	ProcessMode get_process_mode() const;
+
+	virtual RID get_rid() const;
+
 	Sky();
+	~Sky();
 };
 
 VARIANT_ENUM_CAST(Sky::RadianceSize)
+VARIANT_ENUM_CAST(Sky::ProcessMode)
 
 class PanoramaSky : public Sky {
 	GDCLASS(PanoramaSky, Sky);
 
 private:
-	RID sky;
-	Ref<Texture> panorama;
+	Ref<Texture2D> panorama;
 
 protected:
 	static void _bind_methods();
-	virtual void _radiance_changed();
 
 public:
-	void set_panorama(const Ref<Texture> &p_panorama);
-	Ref<Texture> get_panorama() const;
-
-	virtual RID get_rid() const;
+	void set_panorama(const Ref<Texture2D> &p_panorama);
+	Ref<Texture2D> get_panorama() const;
 
 	PanoramaSky();
 	~PanoramaSky();
@@ -120,7 +130,6 @@ private:
 
 	TextureSize texture_size;
 
-	RID sky;
 	RID texture;
 
 	bool update_queued;
@@ -133,7 +142,6 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual void _radiance_changed();
 
 	Ref<Image> _generate_sky();
 	void _update_sky();
@@ -188,8 +196,6 @@ public:
 
 	void set_texture_size(TextureSize p_size);
 	TextureSize get_texture_size() const;
-
-	virtual RID get_rid() const;
 
 	ProceduralSky(bool p_desaturate = false);
 	~ProceduralSky();

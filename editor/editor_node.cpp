@@ -183,11 +183,11 @@ void EditorNode::_update_scene_tabs() {
 	OS::get_singleton()->global_menu_clear("_dock");
 
 	scene_tabs->clear_tabs();
-	Ref<Texture> script_icon = gui_base->get_icon("Script", "EditorIcons");
+	Ref<Texture2D> script_icon = gui_base->get_icon("Script", "EditorIcons");
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 
 		Node *type_node = editor_data.get_edited_scene_root(i);
-		Ref<Texture> icon;
+		Ref<Texture2D> icon;
 		if (type_node) {
 			icon = EditorNode::get_singleton()->get_object_icon(type_node, "Node");
 		}
@@ -343,6 +343,27 @@ void EditorNode::_notification(int p_what) {
 
 			scene_root->set_size_override(true, Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height")));
 
+			{ //TODO should only happen on settings changed
+				int current_filter = GLOBAL_GET("rendering/canvas_textures/default_texture_filter");
+				if (current_filter != scene_root->get_default_canvas_item_texture_filter()) {
+					Viewport::DefaultCanvasItemTextureFilter tf = (Viewport::DefaultCanvasItemTextureFilter)current_filter;
+					scene_root->set_default_canvas_item_texture_filter(tf);
+				}
+				int current_repeat = GLOBAL_GET("rendering/canvas_textures/default_texture_repeat");
+				if (current_repeat != scene_root->get_default_canvas_item_texture_repeat()) {
+					Viewport::DefaultCanvasItemTextureRepeat tr = (Viewport::DefaultCanvasItemTextureRepeat)current_repeat;
+					scene_root->set_default_canvas_item_texture_repeat(tr);
+				}
+
+				VS::DOFBokehShape dof_shape = VS::DOFBokehShape(int(GLOBAL_GET("rendering/quality/filters/depth_of_field_bokeh_shape")));
+				VS::get_singleton()->camera_effects_set_dof_blur_bokeh_shape(dof_shape);
+				VS::DOFBlurQuality dof_quality = VS::DOFBlurQuality(int(GLOBAL_GET("rendering/quality/filters/depth_of_field_bokeh_quality")));
+				bool dof_jitter = GLOBAL_GET("rendering/quality/filters/depth_of_field_use_jitter");
+				VS::get_singleton()->camera_effects_set_dof_blur_quality(dof_quality, dof_jitter);
+				VS::get_singleton()->environment_set_ssao_quality(VS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/quality/ssao/quality"))), GLOBAL_GET("rendering/quality/ssao/half_size"));
+				VS::get_singleton()->screen_space_roughness_limiter_set_active(GLOBAL_GET("rendering/quality/filters/screen_space_roughness_limiter"), GLOBAL_GET("rendering/quality/filters/screen_space_roughness_limiter_curve"));
+			}
+
 			ResourceImporterTexture::get_singleton()->update_imports();
 		} break;
 
@@ -350,8 +371,6 @@ void EditorNode::_notification(int p_what) {
 			Engine::get_singleton()->set_editor_hint(true);
 
 			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
-			get_tree()->get_root()->set_usage(Viewport::USAGE_2D_NO_SAMPLING); //reduce memory usage
-			get_tree()->get_root()->set_disable_3d(true);
 			get_tree()->get_root()->set_as_audio_listener(false);
 			get_tree()->get_root()->set_as_audio_listener_2d(false);
 			get_tree()->set_auto_accept_quit(false);
@@ -461,7 +480,7 @@ void EditorNode::_notification(int p_what) {
 
 				ToolButton *tb = singleton->main_editor_buttons[i];
 				EditorPlugin *p_editor = singleton->editor_table[i];
-				Ref<Texture> icon = p_editor->get_icon();
+				Ref<Texture2D> icon = p_editor->get_icon();
 
 				if (icon.is_valid()) {
 					tb->set_icon(icon);
@@ -2942,7 +2961,7 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 		tb->set_toggle_mode(true);
 		tb->connect("pressed", singleton, "_editor_select", varray(singleton->main_editor_buttons.size()));
 		tb->set_text(p_editor->get_name());
-		Ref<Texture> icon = p_editor->get_icon();
+		Ref<Texture2D> icon = p_editor->get_icon();
 
 		if (icon.is_valid()) {
 			tb->set_icon(icon);
@@ -3767,7 +3786,7 @@ Ref<ImageTexture> EditorNode::_load_custom_class_icon(const String &p_path) cons
 	return NULL;
 }
 
-Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p_fallback) const {
+Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String &p_fallback) const {
 	ERR_FAIL_COND_V(!p_object || !gui_base, NULL);
 
 	Ref<Script> script = p_object->get_script();
@@ -3812,7 +3831,7 @@ Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p
 	return NULL;
 }
 
-Ref<Texture> EditorNode::get_class_icon(const String &p_class, const String &p_fallback) const {
+Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p_fallback) const {
 	ERR_FAIL_COND_V_MSG(p_class.empty(), NULL, "Class name cannot be empty.");
 
 	if (gui_base->has_icon(p_class, "EditorIcons")) {
@@ -3907,7 +3926,7 @@ void EditorNode::progress_end_task_bg(const String &p_task) {
 	singleton->progress_hb->end_task(p_task);
 }
 
-Ref<Texture> EditorNode::_file_dialog_get_icon(const String &p_path) {
+Ref<Texture2D> EditorNode::_file_dialog_get_icon(const String &p_path) {
 
 	EditorFileSystemDirectory *efsd = EditorFileSystem::get_singleton()->get_filesystem_path(p_path.get_base_dir());
 	if (efsd) {
@@ -4732,7 +4751,7 @@ void EditorNode::_reposition_active_tab(int idx_to) {
 	_update_scene_tabs();
 }
 
-void EditorNode::_thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata) {
+void EditorNode::_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
 	int p_tab = p_udata.operator signed int();
 	if (p_preview.is_valid()) {
 		Rect2 rect = scene_tabs->get_tab_rect(p_tab);
@@ -4972,7 +4991,7 @@ Variant EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from) {
 	TextureRect *drag_preview = memnew(TextureRect);
 	Label *label = memnew(Label);
 
-	Ref<Texture> preview;
+	Ref<Texture2D> preview;
 
 	{
 		//todo make proper previews
@@ -5337,6 +5356,8 @@ void EditorNode::_update_video_driver_color() {
 		video_driver->add_color_override("font_color", Color::hex(0x5586a4ff));
 	} else if (video_driver->get_text() == "GLES3") {
 		video_driver->add_color_override("font_color", Color::hex(0xa5557dff));
+	} else if (video_driver->get_text() == "Vulkan") {
+		video_driver->add_color_override("font_color", Color::hex(0xad1128ff));
 	}
 }
 
@@ -5582,7 +5603,6 @@ EditorNode::EditorNode() {
 	Input::get_singleton()->set_use_accumulated_input(true);
 	Resource::_get_local_scene_func = _resource_get_edited_scene;
 
-	VisualServer::get_singleton()->textures_keep_original(true);
 	VisualServer::get_singleton()->set_debug_generate_wireframes(true);
 
 	NavigationServer::get_singleton()->set_active(false); // no nav by default if editor
@@ -5682,16 +5702,21 @@ EditorNode::EditorNode() {
 		import_texture.instance();
 		ResourceFormatImporter::get_singleton()->add_importer(import_texture);
 
-		Ref<ResourceImporterLayeredTexture> import_3d;
-		import_3d.instance();
-		import_3d->set_3d(true);
-		ResourceFormatImporter::get_singleton()->add_importer(import_3d);
+		/*		Ref<ResourceImporterLayeredTexture> import_cubemap;
+		import_cubemap.instance();
+		import_cubemap->set_mode(ResourceImporterLayeredTexture::MODE_CUBEMAP);
+		ResourceFormatImporter::get_singleton()->add_importer(import_cubemap);
 
 		Ref<ResourceImporterLayeredTexture> import_array;
 		import_array.instance();
-		import_array->set_3d(false);
+		import_array->set_mode(ResourceImporterLayeredTexture::MODE_2D_ARRAY);
 		ResourceFormatImporter::get_singleton()->add_importer(import_array);
 
+		Ref<ResourceImporterLayeredTexture> import_cubemap_array;
+		import_cubemap_array.instance();
+		import_cubemap_array->set_mode(ResourceImporterLayeredTexture::MODE_CUBEMAP_ARRAY);
+		ResourceFormatImporter::get_singleton()->add_importer(import_cubemap_array);
+*/
 		Ref<ResourceImporterImage> import_image;
 		import_image.instance();
 		ResourceFormatImporter::get_singleton()->add_importer(import_image);
@@ -5807,7 +5832,7 @@ EditorNode::EditorNode() {
 	EDITOR_DEF("interface/inspector/horizontal_vector2_editing", false);
 	EDITOR_DEF("interface/inspector/horizontal_vector_types_editing", true);
 	EDITOR_DEF("interface/inspector/open_resources_in_current_inspector", true);
-	EDITOR_DEF("interface/inspector/resources_to_open_in_new_inspector", "SpatialMaterial,Script,MeshLibrary,TileSet");
+	EDITOR_DEF("interface/inspector/resources_to_open_in_new_inspector", "StandardMaterial3D,ORMMaterial3D,Script,MeshLibrary,TileSet");
 	EDITOR_DEF("interface/inspector/default_color_picker_mode", 0);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "interface/inspector/default_color_picker_mode", PROPERTY_HINT_ENUM, "RGB,HSV,RAW", PROPERTY_USAGE_DEFAULT));
 	EDITOR_DEF("run/auto_save/save_before_running", true);
@@ -6040,7 +6065,6 @@ EditorNode::EditorNode() {
 
 	scene_root = memnew(Viewport);
 	//scene_root->set_usage(Viewport::USAGE_2D); canvas BG mode prevents usage of this as 2D
-	scene_root->set_disable_3d(true);
 
 	VisualServer::get_singleton()->viewport_set_hide_scenario(scene_root->get_viewport_rid(), true);
 	scene_root->set_disable_input(true);
@@ -6666,7 +6690,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(TextureRegionEditorPlugin(this)));
 	add_editor_plugin(memnew(Particles2DEditorPlugin(this)));
 	add_editor_plugin(memnew(GIProbeEditorPlugin(this)));
-	add_editor_plugin(memnew(BakedLightmapEditorPlugin(this)));
+	//	add_editor_plugin(memnew(BakedLightmapEditorPlugin(this)));
 	add_editor_plugin(memnew(Path2DEditorPlugin(this)));
 	add_editor_plugin(memnew(PathEditorPlugin(this)));
 	add_editor_plugin(memnew(Line2DEditorPlugin(this)));
@@ -6702,7 +6726,7 @@ EditorNode::EditorNode() {
 	resource_preview->add_preview_generator(Ref<EditorFontPreviewPlugin>(memnew(EditorFontPreviewPlugin)));
 
 	{
-		Ref<SpatialMaterialConversionPlugin> spatial_mat_convert;
+		Ref<StandardMaterial3DConversionPlugin> spatial_mat_convert;
 		spatial_mat_convert.instance();
 		resource_conversion_plugins.push_back(spatial_mat_convert);
 

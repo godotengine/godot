@@ -129,7 +129,7 @@ void TextureRect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_stretch_mode"), &TextureRect::get_stretch_mode);
 	ClassDB::bind_method(D_METHOD("_texture_changed"), &TextureRect::_texture_changed);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_mode", PROPERTY_HINT_ENUM, "Scale On Expand (Compat),Scale,Tile,Keep,Keep Centered,Keep Aspect,Keep Aspect Centered,Keep Aspect Covered"), "set_stretch_mode", "get_stretch_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
@@ -153,7 +153,7 @@ void TextureRect::_texture_changed() {
 	}
 }
 
-void TextureRect::set_texture(const Ref<Texture> &p_tex) {
+void TextureRect::set_texture(const Ref<Texture2D> &p_tex) {
 
 	if (p_tex == texture) {
 		return;
@@ -173,7 +173,7 @@ void TextureRect::set_texture(const Ref<Texture> &p_tex) {
 	minimum_size_changed();
 }
 
-Ref<Texture> TextureRect::get_texture() const {
+Ref<Texture2D> TextureRect::get_texture() const {
 
 	return texture;
 }

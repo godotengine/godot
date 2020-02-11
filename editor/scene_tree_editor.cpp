@@ -205,7 +205,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			item->set_collapsed(true);
 	}
 
-	Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(p_node, "Node");
+	Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(p_node, "Node");
 	item->set_icon(0, icon);
 	item->set_metadata(0, p_node->get_path());
 
@@ -929,7 +929,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 		return Variant(); //not editable tree
 
 	Vector<Node *> selected;
-	Vector<Ref<Texture> > icons;
+	Vector<Ref<Texture2D> > icons;
 	TreeItem *next = tree->get_next_selected(NULL);
 	while (next) {
 

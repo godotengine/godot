@@ -80,7 +80,7 @@ private:
 
 	bool flags[FLAG_MAX];
 	AlphaCutMode alpha_cut;
-	SpatialMaterial::BillboardMode billboard_mode;
+	StandardMaterial3D::BillboardMode billboard_mode;
 	bool pending_update;
 	void _im_update();
 
@@ -131,8 +131,8 @@ public:
 
 	void set_alpha_cut_mode(AlphaCutMode p_mode);
 	AlphaCutMode get_alpha_cut_mode() const;
-	void set_billboard_mode(SpatialMaterial::BillboardMode p_mode);
-	SpatialMaterial::BillboardMode get_billboard_mode() const;
+	void set_billboard_mode(StandardMaterial3D::BillboardMode p_mode);
+	StandardMaterial3D::BillboardMode get_billboard_mode() const;
 
 	virtual Rect2 get_item_rect() const = 0;
 
@@ -147,7 +147,7 @@ public:
 class Sprite3D : public SpriteBase3D {
 
 	GDCLASS(Sprite3D, SpriteBase3D);
-	Ref<Texture> texture;
+	Ref<Texture2D> texture;
 
 	bool region;
 	Rect2 region_rect;
@@ -164,8 +164,8 @@ protected:
 	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
-	void set_texture(const Ref<Texture> &p_texture);
-	Ref<Texture> get_texture() const;
+	void set_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_texture() const;
 
 	void set_region(bool p_region);
 	bool is_region() const;

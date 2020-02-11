@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+
+Import('env')
+Import('env_modules')
+
+env_basisu = env_modules.Clone()
+
+# Thirdparty source files
+# Not unbundled so far since not widespread as shared library
+thirdparty_dir = "#thirdparty/basis_universal/"
+tool_sources = [
+	"basisu_astc_decomp.cpp",
+	"basisu_backend.cpp",
+	"basisu_basis_file.cpp",
+	"basisu_comp.cpp",
+	"basisu_enc.cpp",
+	"basisu_etc.cpp",
+	"basisu_frontend.cpp",
+	"basisu_global_selector_palette_helpers.cpp",
+	"basisu_gpu_texture.cpp",
+	"basisu_pvrtc1_4.cpp",
+	"basisu_resample_filters.cpp",
+	"basisu_resampler.cpp",
+	"basisu_ssim.cpp",
+	"basisu_tool.cpp",
+	"lodepng.cpp",
+]
+tool_sources = [thirdparty_dir + file for file in tool_sources]
+transcoder_sources = [thirdparty_dir + "transcoder/basisu_transcoder.cpp"]
+
+env_basisu.Append(CPPPATH=[thirdparty_dir, thirdparty_dir + "transcoder"])
+
+if env['target'] == "debug":
+	env_basisu.Append(CPPFLAGS=["-DBASISU_DEVEL_MESSAGES=1", "-DBASISD_ENABLE_DEBUG_FLAGS=1"])
+
+env_thirdparty = env_basisu.Clone()
+env_thirdparty.disable_warnings()
+if env['tools']:
+    env_thirdparty.add_source_files(env.modules_sources, tool_sources)
+env_thirdparty.add_source_files(env.modules_sources, transcoder_sources)
+
+# Godot source files
+env_basisu.add_source_files(env.modules_sources, "*.cpp")

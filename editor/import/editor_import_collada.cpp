@@ -363,7 +363,7 @@ Error ColladaImport::_create_material(const String &p_target) {
 	ERR_FAIL_COND_V(!collada.state.effect_map.has(src_mat.instance_effect), ERR_INVALID_PARAMETER);
 	Collada::Effect &effect = collada.state.effect_map[src_mat.instance_effect];
 
-	Ref<SpatialMaterial> material = memnew(SpatialMaterial);
+	Ref<StandardMaterial3D> material = memnew(StandardMaterial3D);
 
 	if (src_mat.name != "")
 		material->set_name(src_mat.name);
@@ -380,12 +380,12 @@ Error ColladaImport::_create_material(const String &p_target) {
 			if (texfile.begins_with("/")) {
 				texfile = texfile.replace_first("/", "res://");
 			}
-			Ref<Texture> texture = ResourceLoader::load(texfile, "Texture");
+			Ref<Texture2D> texture = ResourceLoader::load(texfile, "Texture2D");
 			if (texture.is_valid()) {
 
-				material->set_texture(SpatialMaterial::TEXTURE_ALBEDO, texture);
+				material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, texture);
 				material->set_albedo(Color(1, 1, 1, 1));
-				//material->set_parameter(SpatialMaterial::PARAM_DIFFUSE,Color(1,1,1,1));
+				//material->set_parameter(StandardMaterial3D::PARAM_DIFFUSE,Color(1,1,1,1));
 			} else {
 				missing_textures.push_back(texfile.get_file());
 			}
@@ -405,13 +405,13 @@ Error ColladaImport::_create_material(const String &p_target) {
 				texfile = texfile.replace_first("/", "res://");
 			}
 
-			Ref<Texture> texture = ResourceLoader::load(texfile, "Texture");
+			Ref<Texture2D> texture = ResourceLoader::load(texfile, "Texture2D");
 			if (texture.is_valid()) {
-				material->set_texture(SpatialMaterial::TEXTURE_METALLIC, texture);
+				material->set_texture(StandardMaterial3D::TEXTURE_METALLIC, texture);
 				material->set_specular(1.0);
 
-				//material->set_texture(SpatialMaterial::PARAM_SPECULAR,texture);
-				//material->set_parameter(SpatialMaterial::PARAM_SPECULAR,Color(1,1,1,1));
+				//material->set_texture(StandardMaterial3D::PARAM_SPECULAR,texture);
+				//material->set_parameter(StandardMaterial3D::PARAM_SPECULAR,Color(1,1,1,1));
 			} else {
 				missing_textures.push_back(texfile.get_file());
 			}
@@ -432,21 +432,21 @@ Error ColladaImport::_create_material(const String &p_target) {
 				texfile = texfile.replace_first("/", "res://");
 			}
 
-			Ref<Texture> texture = ResourceLoader::load(texfile, "Texture");
+			Ref<Texture2D> texture = ResourceLoader::load(texfile, "Texture2D");
 			if (texture.is_valid()) {
 
-				material->set_feature(SpatialMaterial::FEATURE_EMISSION, true);
-				material->set_texture(SpatialMaterial::TEXTURE_EMISSION, texture);
+				material->set_feature(StandardMaterial3D::FEATURE_EMISSION, true);
+				material->set_texture(StandardMaterial3D::TEXTURE_EMISSION, texture);
 				material->set_emission(Color(1, 1, 1, 1));
 
-				//material->set_parameter(SpatialMaterial::PARAM_EMISSION,Color(1,1,1,1));
+				//material->set_parameter(StandardMaterial3D::PARAM_EMISSION,Color(1,1,1,1));
 			} else {
 				missing_textures.push_back(texfile.get_file());
 			}
 		}
 	} else {
 		if (effect.emission.color != Color()) {
-			material->set_feature(SpatialMaterial::FEATURE_EMISSION, true);
+			material->set_feature(StandardMaterial3D::FEATURE_EMISSION, true);
 			material->set_emission(effect.emission.color);
 		}
 	}
@@ -462,13 +462,13 @@ Error ColladaImport::_create_material(const String &p_target) {
 				texfile = texfile.replace_first("/", "res://");
 			}
 
-			Ref<Texture> texture = ResourceLoader::load(texfile, "Texture");
+			Ref<Texture2D> texture = ResourceLoader::load(texfile, "Texture2D");
 			if (texture.is_valid()) {
-				material->set_feature(SpatialMaterial::FEATURE_NORMAL_MAPPING, true);
-				material->set_texture(SpatialMaterial::TEXTURE_NORMAL, texture);
+				material->set_feature(StandardMaterial3D::FEATURE_NORMAL_MAPPING, true);
+				material->set_texture(StandardMaterial3D::TEXTURE_NORMAL, texture);
 				//material->set_emission(Color(1,1,1,1));
 
-				//material->set_texture(SpatialMaterial::PARAM_NORMAL,texture);
+				//material->set_texture(StandardMaterial3D::PARAM_NORMAL,texture);
 			} else {
 				//missing_textures.push_back(texfile.get_file());
 			}
@@ -479,9 +479,11 @@ Error ColladaImport::_create_material(const String &p_target) {
 	material->set_roughness(roughness);
 
 	if (effect.double_sided) {
-		material->set_cull_mode(SpatialMaterial::CULL_DISABLED);
+		material->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
 	}
-	material->set_flag(SpatialMaterial::FLAG_UNSHADED, effect.unshaded);
+	if (effect.unshaded) {
+		material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	}
 
 	material_cache[p_target] = material;
 	return OK;
@@ -877,7 +879,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 
 		{
 
-			Ref<SpatialMaterial> material;
+			Ref<StandardMaterial3D> material;
 
 			{
 
@@ -984,7 +986,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 				mr.push_back(a);
 			}
 
-			p_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, d, mr, p_use_compression ? Mesh::ARRAY_COMPRESS_DEFAULT : 0);
+			p_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, d, mr, Dictionary(), p_use_compression ? Mesh::ARRAY_COMPRESS_DEFAULT : 0);
 
 			if (material.is_valid()) {
 				if (p_use_mesh_material) {

@@ -136,7 +136,6 @@ void VisualServerWrapMT::finish() {
 		visual_server->finish();
 	}
 
-	texture_free_cached_ids();
 	sky_free_cached_ids();
 	shader_free_cached_ids();
 	material_free_cached_ids();
@@ -154,6 +153,7 @@ void VisualServerWrapMT::finish() {
 	camera_free_cached_ids();
 	viewport_free_cached_ids();
 	environment_free_cached_ids();
+	camera_effects_free_cached_ids();
 	scenario_free_cached_ids();
 	instance_free_cached_ids();
 	canvas_free_cached_ids();

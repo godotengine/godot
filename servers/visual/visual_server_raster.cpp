@@ -103,10 +103,16 @@ void VisualServerRaster::draw(bool p_swap_buffers, double frame_step) {
 
 	VSG::rasterizer->begin_frame(frame_step);
 
+	TIMESTAMP_BEGIN()
+
+	VSG::scene_render->update(); //update scenes stuff before updating instances
+
 	VSG::scene->update_dirty_instances(); //update scene stuff
 
-	VSG::viewport->draw_viewports();
 	VSG::scene->render_probes();
+	VSG::viewport->draw_viewports();
+	VSG::canvas_render->update();
+
 	_draw_margins();
 	VSG::rasterizer->end_frame(p_swap_buffers);
 
@@ -126,6 +132,25 @@ void VisualServerRaster::draw(bool p_swap_buffers, double frame_step) {
 		frame_drawn_callbacks.pop_front();
 	}
 	VS::get_singleton()->emit_signal("frame_post_draw");
+
+	if (VSG::storage->get_captured_timestamps_count()) {
+		Vector<FrameProfileArea> new_profile;
+		new_profile.resize(VSG::storage->get_captured_timestamps_count());
+
+		uint64_t base_cpu = VSG::storage->get_captured_timestamp_cpu_time(0);
+		uint64_t base_gpu = VSG::storage->get_captured_timestamp_gpu_time(0);
+		for (int i = 0; i < VSG::storage->get_captured_timestamps_count(); i++) {
+			uint64_t time_cpu = VSG::storage->get_captured_timestamp_cpu_time(i) - base_cpu;
+			uint64_t time_gpu = VSG::storage->get_captured_timestamp_gpu_time(i) - base_gpu;
+			new_profile.write[i].gpu_msec = float(time_gpu / 1000) / 1000.0;
+			new_profile.write[i].cpu_msec = float(time_cpu) / 1000.0;
+			new_profile.write[i].name = VSG::storage->get_captured_timestamp_name(i);
+		}
+
+		frame_profile = new_profile;
+	}
+
+	frame_profile_frame = VSG::storage->get_captured_timestamps_frame();
 }
 void VisualServerRaster::sync() {
 }
@@ -161,6 +186,18 @@ String VisualServerRaster::get_video_adapter_name() const {
 String VisualServerRaster::get_video_adapter_vendor() const {
 
 	return VSG::storage->get_video_adapter_vendor();
+}
+
+void VisualServerRaster::set_frame_profiling_enabled(bool p_enable) {
+	VSG::storage->capturing_timestamps = p_enable;
+}
+
+uint64_t VisualServerRaster::get_frame_profile_frame() {
+	return frame_profile_frame;
+}
+
+Vector<VisualServer::FrameProfileArea> VisualServerRaster::get_frame_profile() {
+	return frame_profile;
 }
 
 /* TESTING */
@@ -201,7 +238,11 @@ void VisualServerRaster::call_set_use_vsync(bool p_enable) {
 }
 
 bool VisualServerRaster::is_low_end() const {
-	return VSG::rasterizer->is_low_end();
+	// FIXME: Commented out when rebasing vulkan branch on master,
+	// causes a crash, it seems rasterizer is not initialized yet the
+	// first time it's called.
+	//return VSG::rasterizer->is_low_end();
+	return false;
 }
 VisualServerRaster::VisualServerRaster() {
 
@@ -212,6 +253,8 @@ VisualServerRaster::VisualServerRaster() {
 	VSG::storage = VSG::rasterizer->get_storage();
 	VSG::canvas_render = VSG::rasterizer->get_canvas();
 	VSG::scene_render = VSG::rasterizer->get_scene();
+
+	frame_profile_frame = 0;
 
 	for (int i = 0; i < 4; i++) {
 		black_margin[i] = 0;

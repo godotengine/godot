@@ -147,8 +147,8 @@ private:
 
 	DrawOrder draw_order;
 
-	Ref<Texture> texture;
-	Ref<Texture> normalmap;
+	Ref<Texture2D> texture;
+	Ref<Texture2D> normalmap;
 
 	////////
 
@@ -230,11 +230,11 @@ public:
 	void set_draw_passes(int p_count);
 	int get_draw_passes() const;
 
-	void set_texture(const Ref<Texture> &p_texture);
-	Ref<Texture> get_texture() const;
+	void set_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_texture() const;
 
-	void set_normalmap(const Ref<Texture> &p_normalmap);
-	Ref<Texture> get_normalmap() const;
+	void set_normalmap(const Ref<Texture2D> &p_normalmap);
+	Ref<Texture2D> get_normalmap() const;
 
 	///////////////////
 

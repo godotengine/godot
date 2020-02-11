@@ -54,6 +54,7 @@ public:
 		PARAM_SHADOW_SPLIT_1_OFFSET = VS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET,
 		PARAM_SHADOW_SPLIT_2_OFFSET = VS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET,
 		PARAM_SHADOW_SPLIT_3_OFFSET = VS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET,
+		PARAM_SHADOW_FADE_START = VS::LIGHT_PARAM_SHADOW_FADE_START,
 		PARAM_SHADOW_NORMAL_BIAS = VS::LIGHT_PARAM_SHADOW_NORMAL_BIAS,
 		PARAM_SHADOW_BIAS = VS::LIGHT_PARAM_SHADOW_BIAS,
 		PARAM_SHADOW_BIAS_SPLIT_SCALE = VS::LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE,
@@ -183,15 +184,8 @@ public:
 		SHADOW_CUBE,
 	};
 
-	// omni light
-	enum ShadowDetail {
-		SHADOW_DETAIL_VERTICAL,
-		SHADOW_DETAIL_HORIZONTAL
-	};
-
 private:
 	ShadowMode shadow_mode;
-	ShadowDetail shadow_detail;
 
 protected:
 	static void _bind_methods();
@@ -200,14 +194,10 @@ public:
 	void set_shadow_mode(ShadowMode p_mode);
 	ShadowMode get_shadow_mode() const;
 
-	void set_shadow_detail(ShadowDetail p_detail);
-	ShadowDetail get_shadow_detail() const;
-
 	OmniLight();
 };
 
 VARIANT_ENUM_CAST(OmniLight::ShadowMode)
-VARIANT_ENUM_CAST(OmniLight::ShadowDetail)
 
 class SpotLight : public Light {
 

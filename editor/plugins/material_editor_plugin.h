@@ -100,8 +100,8 @@ public:
 	MaterialEditorPlugin(EditorNode *p_node);
 };
 
-class SpatialMaterialConversionPlugin : public EditorResourceConversionPlugin {
-	GDCLASS(SpatialMaterialConversionPlugin, EditorResourceConversionPlugin);
+class StandardMaterial3DConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(StandardMaterial3DConversionPlugin, EditorResourceConversionPlugin);
 
 public:
 	virtual String converts_to() const;

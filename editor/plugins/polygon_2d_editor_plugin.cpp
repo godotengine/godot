@@ -980,7 +980,7 @@ void Polygon2DEditor::_uv_draw() {
 	if (!uv_edit->is_visible() || !_get_node())
 		return;
 
-	Ref<Texture> base_tex = node->get_texture();
+	Ref<Texture2D> base_tex = node->get_texture();
 	if (base_tex.is_null())
 		return;
 
@@ -1050,7 +1050,7 @@ void Polygon2DEditor::_uv_draw() {
 	}
 
 	// All UV points are sharp, so use the sharp handle icon
-	Ref<Texture> handle = get_icon("EditorPathSharpHandle", "EditorIcons");
+	Ref<Texture2D> handle = get_icon("EditorPathSharpHandle", "EditorIcons");
 
 	Color poly_line_color = Color(0.9, 0.5, 0.5);
 	if (polygons.size() || polygon_create.size()) {
@@ -1078,7 +1078,7 @@ void Polygon2DEditor::_uv_draw() {
 		int next = uv_draw_max > 0 ? (i + 1) % uv_draw_max : 0;
 
 		if (i < uv_draw_max && uv_drag && uv_move_current == UV_MODE_EDIT_POINT && EDITOR_DEF("editors/poly_editor/show_previous_outline", true)) {
-			uv_edit_draw->draw_line(mtx.xform(points_prev[i]), mtx.xform(points_prev[next]), prev_color, Math::round(EDSCALE), true);
+			uv_edit_draw->draw_line(mtx.xform(points_prev[i]), mtx.xform(points_prev[next]), prev_color, Math::round(EDSCALE));
 		}
 
 		Vector2 next_point = uvs[next];
@@ -1086,7 +1086,7 @@ void Polygon2DEditor::_uv_draw() {
 			next_point = uv_create_to;
 		}
 		if (i < uv_draw_max /*&& polygons.size() == 0 &&  polygon_create.size() == 0*/) { //if using or creating polygons, do not show outline (will show polygons instead)
-			uv_edit_draw->draw_line(mtx.xform(uvs[i]), mtx.xform(next_point), poly_line_color, Math::round(EDSCALE), true);
+			uv_edit_draw->draw_line(mtx.xform(uvs[i]), mtx.xform(next_point), poly_line_color, Math::round(EDSCALE));
 		}
 
 		rect.expand_to(mtx.basis_xform(uvs[i]));
@@ -1107,7 +1107,7 @@ void Polygon2DEditor::_uv_draw() {
 
 			if (idx_next < 0 || idx_next >= uvs.size())
 				continue;
-			uv_edit_draw->draw_line(mtx.xform(uvs[idx]), mtx.xform(uvs[idx_next]), polygon_line_color, Math::round(EDSCALE), true);
+			uv_edit_draw->draw_line(mtx.xform(uvs[idx]), mtx.xform(uvs[idx_next]), polygon_line_color, Math::round(EDSCALE));
 		}
 		if (points.size() >= 3) {
 			uv_edit_draw->draw_polygon(polypoints, polygon_fill_color);
@@ -1134,7 +1134,7 @@ void Polygon2DEditor::_uv_draw() {
 		for (int i = 0; i < polygon_create.size(); i++) {
 			Vector2 from = uvs[polygon_create[i]];
 			Vector2 to = (i + 1) < polygon_create.size() ? uvs[polygon_create[i + 1]] : uv_create_to;
-			uv_edit_draw->draw_line(mtx.xform(from), mtx.xform(to), polygon_line_color, Math::round(EDSCALE), true);
+			uv_edit_draw->draw_line(mtx.xform(from), mtx.xform(to), polygon_line_color, Math::round(EDSCALE));
 		}
 	}
 

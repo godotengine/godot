@@ -182,7 +182,7 @@ void BitmapFont::_set_textures(const Vector<Variant> &p_textures) {
 
 	textures.clear();
 	for (int i = 0; i < p_textures.size(); i++) {
-		Ref<Texture> tex = p_textures[i];
+		Ref<Texture2D> tex = p_textures[i];
 		ERR_CONTINUE(!tex.is_valid());
 		add_texture(tex);
 	}
@@ -270,7 +270,7 @@ Error BitmapFont::create_from_fnt(const String &p_file) {
 
 				String base_dir = p_file.get_base_dir();
 				String file = base_dir.plus_file(keys["file"]);
-				Ref<Texture> tex = ResourceLoader::load(file);
+				Ref<Texture2D> tex = ResourceLoader::load(file);
 				if (tex.is_null()) {
 					ERR_PRINT("Can't load font texture!");
 				} else {
@@ -356,7 +356,7 @@ float BitmapFont::get_descent() const {
 	return height - ascent;
 }
 
-void BitmapFont::add_texture(const Ref<Texture> &p_texture) {
+void BitmapFont::add_texture(const Ref<Texture2D> &p_texture) {
 
 	ERR_FAIL_COND_MSG(p_texture.is_null(), "It's not a reference to a valid Texture object.");
 	textures.push_back(p_texture);
@@ -367,9 +367,9 @@ int BitmapFont::get_texture_count() const {
 	return textures.size();
 };
 
-Ref<Texture> BitmapFont::get_texture(int p_idx) const {
+Ref<Texture2D> BitmapFont::get_texture(int p_idx) const {
 
-	ERR_FAIL_INDEX_V(p_idx, textures.size(), Ref<Texture>());
+	ERR_FAIL_INDEX_V(p_idx, textures.size(), Ref<Texture2D>());
 	return textures[p_idx];
 };
 
@@ -556,7 +556,7 @@ float BitmapFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_c
 		cpos.x += c->h_align;
 		cpos.y -= ascent;
 		cpos.y += c->v_align;
-		VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx]->get_rid(), c->rect, p_modulate, false, RID(), false);
+		VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx]->get_rid(), c->rect, p_modulate, false, RID(), RID(), Color(1, 1, 1, 1), false);
 	}
 
 	return get_char_size(p_char, p_next).width;

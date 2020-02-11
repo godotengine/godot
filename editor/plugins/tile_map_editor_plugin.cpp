@@ -468,7 +468,7 @@ void TileMapEditor::_update_palette() {
 			palette->add_item(String());
 		}
 
-		Ref<Texture> tex = tileset->tile_get_texture(entries[i].id);
+		Ref<Texture2D> tex = tileset->tile_get_texture(entries[i].id);
 
 		if (tex.is_valid()) {
 			Rect2 region = tileset->tile_get_region(entries[i].id);
@@ -528,7 +528,7 @@ void TileMapEditor::_update_palette() {
 		};
 		entries2.sort_custom<SwapComparator>();
 
-		Ref<Texture> tex = tileset->tile_get_texture(sel_tile);
+		Ref<Texture2D> tex = tileset->tile_get_texture(sel_tile);
 
 		for (int i = 0; i < entries2.size(); i++) {
 
@@ -761,7 +761,7 @@ void TileMapEditor::_erase_selection() {
 
 void TileMapEditor::_draw_cell(Control *p_viewport, int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Point2i &p_autotile_coord, const Transform2D &p_xform) {
 
-	Ref<Texture> t = node->get_tileset()->tile_get_texture(p_cell);
+	Ref<Texture2D> t = node->get_tileset()->tile_get_texture(p_cell);
 
 	if (t.is_null())
 		return;

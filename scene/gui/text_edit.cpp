@@ -1216,7 +1216,7 @@ void TextEdit::_notification(int p_what) {
 							int horizontal_gap = (cache.info_gutter_width * 30) / 100;
 							int gutter_left = cache.style_normal->get_margin(MARGIN_LEFT) + cache.breakpoint_gutter_width;
 
-							Ref<Texture> info_icon = text.get_info_icon(line);
+							Ref<Texture2D> info_icon = text.get_info_icon(line);
 							// Ensure the icon fits the gutter size.
 							Size2i icon_size = info_icon->get_size();
 							if (icon_size.width > cache.info_gutter_width - horizontal_gap) {
@@ -1645,7 +1645,7 @@ void TextEdit::_notification(int p_what) {
 					Point2 title_pos(completion_rect.position.x, completion_rect.position.y + i * get_row_height() + cache.font->get_ascent() + yofs);
 
 					// Draw completion icon if it is valid.
-					Ref<Texture> icon = completion_options[l].icon;
+					Ref<Texture2D> icon = completion_options[l].icon;
 					Rect2 icon_area(completion_rect.position.x, completion_rect.position.y + i * get_row_height(), icon_area_size.width, icon_area_size.height);
 					if (icon.is_valid()) {
 						const real_t max_scale = 0.7f;
@@ -5690,7 +5690,7 @@ void TextEdit::remove_breakpoints() {
 	}
 }
 
-void TextEdit::set_line_info_icon(int p_line, Ref<Texture> p_icon, String p_info) {
+void TextEdit::set_line_info_icon(int p_line, Ref<Texture2D> p_icon, String p_info) {
 	ERR_FAIL_INDEX(p_line, text.size());
 	text.set_info_icon(p_line, p_icon, p_info);
 	update();

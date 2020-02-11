@@ -2244,7 +2244,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 				for (int i = 0; i < selection_results.size(); i++) {
 					CanvasItem *item = selection_results[i].item;
 
-					Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(item, "Node");
+					Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(item, "Node");
 					String node_path = "/" + root_name + "/" + root_path.rel_path_to(item->get_path());
 
 					int locked = 0;
@@ -2859,7 +2859,7 @@ void CanvasItemEditor::_draw_ruler_tool() {
 
 		bool draw_secondary_lines = !(Math::is_equal_approx(begin.y, corner.y) || Math::is_equal_approx(end.x, corner.x));
 
-		viewport->draw_line(begin, end, ruler_primary_color, Math::round(EDSCALE * 3), true);
+		viewport->draw_line(begin, end, ruler_primary_color, Math::round(EDSCALE * 3));
 		if (draw_secondary_lines) {
 			viewport->draw_line(begin, corner, ruler_secondary_color, Math::round(EDSCALE));
 			viewport->draw_line(corner, end, ruler_secondary_color, Math::round(EDSCALE));
@@ -2966,7 +2966,7 @@ void CanvasItemEditor::_draw_ruler_tool() {
 	} else {
 
 		if (grid_snap_active) {
-			Ref<Texture> position_icon = get_icon("EditorPosition", "EditorIcons");
+			Ref<Texture2D> position_icon = get_icon("EditorPosition", "EditorIcons");
 			viewport->draw_texture(get_icon("EditorPosition", "EditorIcons"), (ruler_tool_origin - view_offset) * zoom - position_icon->get_size() / 2);
 		}
 	}
@@ -3179,9 +3179,9 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 }
 
 void CanvasItemEditor::_draw_selection() {
-	Ref<Texture> pivot_icon = get_icon("EditorPivot", "EditorIcons");
-	Ref<Texture> position_icon = get_icon("EditorPosition", "EditorIcons");
-	Ref<Texture> previous_position_icon = get_icon("EditorPositionPrevious", "EditorIcons");
+	Ref<Texture2D> pivot_icon = get_icon("EditorPivot", "EditorIcons");
+	Ref<Texture2D> position_icon = get_icon("EditorPosition", "EditorIcons");
+	Ref<Texture2D> previous_position_icon = get_icon("EditorPositionPrevious", "EditorIcons");
 
 	RID ci = viewport->get_canvas_item();
 
@@ -3210,7 +3210,7 @@ void CanvasItemEditor::_draw_selection() {
 				};
 
 				for (int i = 0; i < 4; i++) {
-					viewport->draw_line(pre_drag_endpoints[i], pre_drag_endpoints[(i + 1) % 4], pre_drag_color, Math::round(2 * EDSCALE), true);
+					viewport->draw_line(pre_drag_endpoints[i], pre_drag_endpoints[(i + 1) % 4], pre_drag_color, Math::round(2 * EDSCALE));
 				}
 			} else {
 				viewport->draw_texture(previous_position_icon, (pre_drag_xform.xform(Point2()) - (previous_position_icon->get_size() / 2)).floor());
@@ -3232,7 +3232,7 @@ void CanvasItemEditor::_draw_selection() {
 			Color c = Color(1, 0.6, 0.4, 0.7);
 
 			for (int i = 0; i < 4; i++) {
-				viewport->draw_line(endpoints[i], endpoints[(i + 1) % 4], c, Math::round(2 * EDSCALE), true);
+				viewport->draw_line(endpoints[i], endpoints[(i + 1) % 4], c, Math::round(2 * EDSCALE));
 			}
 		} else {
 
@@ -3305,7 +3305,7 @@ void CanvasItemEditor::_draw_selection() {
 					points.push_back(Vector2((move_factor.x + 10) * EDSCALE, 0));
 
 					viewport->draw_colored_polygon(points, get_color("axis_x_color", "Editor"));
-					viewport->draw_line(Point2(), Point2(move_factor.x * EDSCALE, 0), get_color("axis_x_color", "Editor"), Math::round(EDSCALE), true);
+					viewport->draw_line(Point2(), Point2(move_factor.x * EDSCALE, 0), get_color("axis_x_color", "Editor"), Math::round(EDSCALE));
 
 					points.clear();
 					points.push_back(Vector2(5 * EDSCALE, move_factor.y * EDSCALE));
@@ -3313,7 +3313,7 @@ void CanvasItemEditor::_draw_selection() {
 					points.push_back(Vector2(0, (move_factor.y + 10) * EDSCALE));
 
 					viewport->draw_colored_polygon(points, get_color("axis_y_color", "Editor"));
-					viewport->draw_line(Point2(), Point2(0, move_factor.y * EDSCALE), get_color("axis_y_color", "Editor"), Math::round(EDSCALE), true);
+					viewport->draw_line(Point2(), Point2(0, move_factor.y * EDSCALE), get_color("axis_y_color", "Editor"), Math::round(EDSCALE));
 
 					viewport->draw_set_transform_matrix(viewport->get_transform());
 				}
@@ -3344,11 +3344,11 @@ void CanvasItemEditor::_draw_selection() {
 					viewport->draw_set_transform_matrix(simple_xform);
 					Rect2 x_handle_rect = Rect2(scale_factor.x * EDSCALE, -5 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
 					viewport->draw_rect(x_handle_rect, get_color("axis_x_color", "Editor"));
-					viewport->draw_line(Point2(), Point2(scale_factor.x * EDSCALE, 0), get_color("axis_x_color", "Editor"), Math::round(EDSCALE), true);
+					viewport->draw_line(Point2(), Point2(scale_factor.x * EDSCALE, 0), get_color("axis_x_color", "Editor"), Math::round(EDSCALE));
 
 					Rect2 y_handle_rect = Rect2(-5 * EDSCALE, scale_factor.y * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
 					viewport->draw_rect(y_handle_rect, get_color("axis_y_color", "Editor"));
-					viewport->draw_line(Point2(), Point2(0, scale_factor.y * EDSCALE), get_color("axis_y_color", "Editor"), Math::round(EDSCALE), true);
+					viewport->draw_line(Point2(), Point2(0, scale_factor.y * EDSCALE), get_color("axis_y_color", "Editor"), Math::round(EDSCALE));
 
 					viewport->draw_set_transform_matrix(viewport->get_transform());
 				}
@@ -3378,8 +3378,7 @@ void CanvasItemEditor::_draw_selection() {
 				transform.xform(drag_rotation_center),
 				transform.xform(drag_to),
 				get_color("accent_color", "Editor") * Color(1, 1, 1, 0.6),
-				Math::round(2 * EDSCALE),
-				true);
+				Math::round(2 * EDSCALE));
 	}
 }
 
@@ -3540,7 +3539,7 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 		Transform2D xform = transform * canvas_xform * parent_xform;
 
 		// Draw the node's position
-		Ref<Texture> position_icon = get_icon("EditorPositionUnselected", "EditorIcons");
+		Ref<Texture2D> position_icon = get_icon("EditorPositionUnselected", "EditorIcons");
 		Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * canvas_item->_edit_get_transform()).orthonormalized();
 		Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
 		viewport->draw_set_transform_matrix(simple_xform);
@@ -3554,7 +3553,7 @@ void CanvasItemEditor::_draw_hover() {
 
 	for (int i = 0; i < hovering_results.size(); i++) {
 
-		Ref<Texture> node_icon = hovering_results[i].icon;
+		Ref<Texture2D> node_icon = hovering_results[i].icon;
 		String node_name = hovering_results[i].name;
 
 		Ref<Font> font = get_font("font", "Label");
@@ -3608,13 +3607,13 @@ void CanvasItemEditor::_draw_locks_and_groups(Node *p_node, const Transform2D &p
 	if (canvas_item) {
 		float offset = 0;
 
-		Ref<Texture> lock = get_icon("LockViewport", "EditorIcons");
+		Ref<Texture2D> lock = get_icon("LockViewport", "EditorIcons");
 		if (p_node->has_meta("_edit_lock_") && show_edit_locks) {
 			lock->draw(viewport_canvas_item, (transform * canvas_xform * parent_xform).xform(Point2(0, 0)) + Point2(offset, 0));
 			offset += lock->get_size().x;
 		}
 
-		Ref<Texture> group = get_icon("GroupViewport", "EditorIcons");
+		Ref<Texture2D> group = get_icon("GroupViewport", "EditorIcons");
 		if (canvas_item->has_meta("_edit_group_") && show_edit_locks) {
 			group->draw(viewport_canvas_item, (transform * canvas_xform * parent_xform).xform(Point2(0, 0)) + Point2(offset, 0));
 			//offset += group->get_size().x;
@@ -5887,7 +5886,7 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 		String path = files[i];
 		RES res = ResourceLoader::load(path);
 		ERR_FAIL_COND(res.is_null());
-		Ref<Texture> texture = Ref<Texture>(Object::cast_to<Texture>(*res));
+		Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(*res));
 		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
 		if (texture != NULL || scene != NULL) {
 			if (texture != NULL) {
@@ -5944,7 +5943,7 @@ bool CanvasItemEditorViewport::_cyclical_dependency_exists(const String &p_targe
 
 void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &path, const Point2 &p_point) {
 	child->set_name(path.get_file().get_basename());
-	Ref<Texture> texture = Ref<Texture>(Object::cast_to<Texture>(ResourceCache::get(path)));
+	Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(ResourceCache::get(path)));
 	Size2 texture_size = texture->get_size();
 
 	if (parent) {
@@ -6081,7 +6080,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 				}
 			}
 		} else {
-			Ref<Texture> texture = Ref<Texture>(Object::cast_to<Texture>(*res));
+			Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(*res));
 			if (texture != NULL && texture.is_valid()) {
 				Node *child;
 				if (default_type == "Light2D")
@@ -6136,7 +6135,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 						continue;
 					}
 					memdelete(instanced_scene);
-				} else if (type == "Texture" ||
+				} else if (type == "Texture2D" ||
 						   type == "ImageTexture" ||
 						   type == "ViewportTexture" ||
 						   type == "CurveTexture" ||
@@ -6144,7 +6143,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 						   type == "StreamTexture" ||
 						   type == "AtlasTexture" ||
 						   type == "LargeTexture") {
-					Ref<Texture> texture = Ref<Texture>(Object::cast_to<Texture>(*res));
+					Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(*res));
 					if (!texture.is_valid()) {
 						continue;
 					}

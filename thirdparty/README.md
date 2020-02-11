@@ -1,11 +1,29 @@
 # Third party libraries
 
+Please keep categories (`##` level) listed alphabetically and matching their
+respective folder names. Use two empty lines to separate categories for
+readability.
+Subcategories (`###` level) where needed are separated by a single empty line.
+
 
 ## assimp
 
 - Upstream: http://github.com/assimp/assimp
 - Version: git (308db73d0b3c2d1870cd3e465eaa283692a4cf23)
 - License: BSD-3-Clause
+
+
+## basis_universal
+
+- Upstream: https://github.com/BinomialLLC/basis_universal
+- Version: git (6afb2fc, 2019)
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- `.cpp` and `.h` files in root folder
+- `.cpp`, `.h` and `.inc` files in `transcoder/`, keeping folder structure
+- `LICENSE`
 
 
 ## bullet
@@ -128,6 +146,16 @@ Files extracted from upstream source:
 The files we package are automatically generated.
 See the header of glad.c for instructions on how to generate them for
 the GLES version Godot targets.
+
+
+## glslang
+
+- Upstream: https://github.com/KhronosGroup/glslang
+- Version: rev.3226
+- License: glslang
+
+Important: File `glslang/glslang/Include/Common.h` has
+Godot-made change marked with `// -- GODOT --` comments.
 
 
 ## jpeg-compressor
@@ -498,6 +526,31 @@ Some downstream changes have been made and are identified by
 `// -- GODOT start --` and `// -- GODOT end --` comments.
 They can be reapplied using the patches included in the `vhacd`
 folder.
+
+
+## vulkan
+
+- Upstream: https://github.com/KhronosGroup/Vulkan-Loader
+- Version: 1.1.127
+- License: Apache 2.0
+
+Unless there is a specific reason to package a more recent version, please stick
+to Vulkan SDK releases (prefixed by `sdk-`) for all components.
+
+NOTE: Use `scripts/update_deps.py --ref <version>` in the Loader git repository
+to retrieve the `Vulkan-Headers` repository matching the loader version.
+
+Files extracted from upstream source:
+
+- `Vulkan-Headers/include/` as `include/`
+- All `.c` and `.h` files in `loader/` and `loader/generated/`, put in a common
+  `loader/` folder
+- `LICENSE.txt`
+
+`vk_enum_string_helper.h` is taken from the match `Vulkan-ValidationLayers` SDK
+release: https://github.com/KhronosGroup/Vulkan-Loader/tree/master/loader/generated
+
+`vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
 
 
 ## wslay

@@ -43,6 +43,8 @@
 #include "shaders/cubemap_filter.glsl.gen.h"
 #include "shaders/particles.glsl.gen.h"
 
+#include "core/rid_owner.h"
+
 // WebGL 2.0 has no MapBufferRange/UnmapBuffer, but offers a non-ES style BufferSubData API instead.
 #ifdef __EMSCRIPTEN__
 void glGetBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, GLvoid *data);
@@ -179,7 +181,7 @@ public:
 	//////////////////////////////////DATA///////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////
 
-	struct Instantiable : public RID_Data {
+	struct Instantiable {
 
 		SelfList<RasterizerScene::InstanceBase>::List instance_list;
 
@@ -242,7 +244,7 @@ public:
 
 	struct RenderTarget;
 
-	struct Texture : public RID_Data {
+	struct Texture {
 
 		Texture *proxy;
 		Set<Texture *> proxy_owners;
@@ -342,7 +344,7 @@ public:
 		}
 	};
 
-	mutable RID_Owner<Texture> texture_owner;
+	mutable RID_PtrOwner<Texture2D> texture_owner;
 
 	Ref<Image> _get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool &r_srgb, bool p_force_decompress) const;
 
@@ -384,7 +386,7 @@ public:
 
 	/* SKY API */
 
-	struct Sky : public RID_Data {
+	struct Sky {
 
 		RID panorama;
 		GLuint radiance;
@@ -392,7 +394,7 @@ public:
 		int radiance_size;
 	};
 
-	mutable RID_Owner<Sky> sky_owner;
+	mutable RID_PtrOwner<Sky> sky_owner;
 
 	virtual RID sky_create();
 	virtual void sky_set_texture(RID p_sky, RID p_panorama, int p_radiance_size);
@@ -401,7 +403,7 @@ public:
 
 	struct Material;
 
-	struct Shader : public RID_Data {
+	struct Shader {
 
 		RID self;
 
@@ -522,7 +524,7 @@ public:
 	mutable SelfList<Shader>::List _shader_dirty_list;
 	void _shader_make_dirty(Shader *p_shader);
 
-	mutable RID_Owner<Shader> shader_owner;
+	mutable RID_PtrOwner<Shader> shader_owner;
 
 	virtual RID shader_create();
 
@@ -539,7 +541,7 @@ public:
 
 	/* COMMON MATERIAL API */
 
-	struct Material : public RID_Data {
+	struct Material {
 
 		Shader *shader;
 		GLuint ubo_id;
@@ -582,7 +584,7 @@ public:
 	void _material_add_geometry(RID p_material, Geometry *p_geometry);
 	void _material_remove_geometry(RID p_material, Geometry *p_geometry);
 
-	mutable RID_Owner<Material> material_owner;
+	mutable RID_PtrOwner<Material> material_owner;
 
 	virtual RID material_create();
 
@@ -724,7 +726,7 @@ public:
 		}
 	};
 
-	mutable RID_Owner<Mesh> mesh_owner;
+	mutable RID_PtrOwner<Mesh> mesh_owner;
 
 	virtual RID mesh_create();
 
@@ -804,7 +806,7 @@ public:
 		}
 	};
 
-	mutable RID_Owner<MultiMesh> multimesh_owner;
+	mutable RID_PtrOwner<MultiMesh> multimesh_owner;
 
 	SelfList<MultiMesh>::List multimesh_update_list;
 
@@ -869,7 +871,7 @@ public:
 	Vector2 chunk_uv;
 	Vector2 chunk_uv2;
 
-	mutable RID_Owner<Immediate> immediate_owner;
+	mutable RID_PtrOwner<Immediate> immediate_owner;
 
 	virtual RID immediate_create();
 	virtual void immediate_begin(RID p_immediate, VS::PrimitiveType p_primitive, RID p_texture = RID());
@@ -887,7 +889,7 @@ public:
 
 	/* SKELETON API */
 
-	struct Skeleton : RID_Data {
+	struct Skeleton {
 		bool use_2d;
 		int size;
 		Vector<float> skel_texture;
@@ -904,7 +906,7 @@ public:
 		}
 	};
 
-	mutable RID_Owner<Skeleton> skeleton_owner;
+	mutable RID_PtrOwner<Skeleton> skeleton_owner;
 
 	SelfList<Skeleton>::List skeleton_update_list;
 
@@ -941,7 +943,7 @@ public:
 		uint64_t version;
 	};
 
-	mutable RID_Owner<Light> light_owner;
+	mutable RID_PtrOwner<Light> light_owner;
 
 	virtual RID light_create(VS::LightType p_type);
 
@@ -996,7 +998,7 @@ public:
 		uint32_t cull_mask;
 	};
 
-	mutable RID_Owner<ReflectionProbe> reflection_probe_owner;
+	mutable RID_PtrOwner<ReflectionProbe> reflection_probe_owner;
 
 	virtual RID reflection_probe_create();
 
@@ -1044,7 +1046,7 @@ public:
 		PoolVector<int> dynamic_data;
 	};
 
-	mutable RID_Owner<GIProbe> gi_probe_owner;
+	mutable RID_PtrOwner<GIProbe> gi_probe_owner;
 
 	virtual RID gi_probe_create();
 
@@ -1083,7 +1085,7 @@ public:
 
 	virtual uint32_t gi_probe_get_version(RID p_probe);
 
-	struct GIProbeData : public RID_Data {
+	struct GIProbeData {
 
 		int width;
 		int height;
@@ -1096,7 +1098,7 @@ public:
 		}
 	};
 
-	mutable RID_Owner<GIProbeData> gi_probe_data_owner;
+	mutable RID_PtrOwner<GIProbeData> gi_probe_data_owner;
 
 	virtual GIProbeCompression gi_probe_get_dynamic_data_get_preferred_compression() const;
 	virtual RID gi_probe_dynamic_data_create(int p_width, int p_height, int p_depth, GIProbeCompression p_compression);
@@ -1132,7 +1134,7 @@ public:
 		}
 	};
 
-	mutable RID_Owner<LightmapCapture> lightmap_capture_data_owner;
+	mutable RID_PtrOwner<LightmapCapture> lightmap_capture_data_owner;
 
 	/* PARTICLES */
 
@@ -1228,7 +1230,7 @@ public:
 
 	void update_particles();
 
-	mutable RID_Owner<Particles> particles_owner;
+	mutable RID_PtrOwner<Particles> particles_owner;
 
 	virtual RID particles_create();
 
@@ -1277,7 +1279,7 @@ public:
 
 	/* RENDER TARGET */
 
-	struct RenderTarget : public RID_Data {
+	struct RenderTarget {
 
 		GLuint fbo;
 		GLuint color;
@@ -1389,7 +1391,7 @@ public:
 		}
 	};
 
-	mutable RID_Owner<RenderTarget> render_target_owner;
+	mutable RID_PtrOwner<RenderTarget> render_target_owner;
 
 	void _render_target_clear(RenderTarget *rt);
 	void _render_target_allocate(RenderTarget *rt);
@@ -1402,12 +1404,12 @@ public:
 
 	virtual void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value);
 	virtual bool render_target_was_used(RID p_render_target);
-	virtual void render_target_clear_used(RID p_render_target);
+	virtual void render_target_set_as_unused(RID p_render_target);
 	virtual void render_target_set_msaa(RID p_render_target, VS::ViewportMSAA p_msaa);
 
 	/* CANVAS SHADOW */
 
-	struct CanvasLightShadow : public RID_Data {
+	struct CanvasLightShadow {
 
 		int size;
 		int height;
@@ -1416,13 +1418,13 @@ public:
 		GLuint distance; //for older devices
 	};
 
-	RID_Owner<CanvasLightShadow> canvas_light_shadow_owner;
+	RID_PtrOwner<CanvasLightShadow> canvas_light_shadow_owner;
 
 	virtual RID canvas_light_shadow_buffer_create(int p_width);
 
 	/* LIGHT SHADOW MAPPING */
 
-	struct CanvasOccluder : public RID_Data {
+	struct CanvasOccluder {
 
 		GLuint array_id; // 0 means, unconfigured
 		GLuint vertex_id; // 0 means, unconfigured
@@ -1431,7 +1433,7 @@ public:
 		int len;
 	};
 
-	RID_Owner<CanvasOccluder> canvas_occluder_owner;
+	RID_PtrOwner<CanvasOccluder> canvas_occluder_owner;
 
 	virtual RID canvas_light_occluder_create();
 	virtual void canvas_light_occluder_set_polylines(RID p_occluder, const PoolVector<Vector2> &p_lines);

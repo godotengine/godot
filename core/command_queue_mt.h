@@ -52,9 +52,17 @@
 #define _COMMA_11 ,
 #define _COMMA_12 ,
 #define _COMMA_13 ,
+#define _COMMA_14 ,
+#define _COMMA_15 ,
 
 // 1-based comma separated list of ITEMs
 #define COMMA_SEP_LIST(ITEM, LENGTH) _COMMA_SEP_LIST_##LENGTH(ITEM)
+#define _COMMA_SEP_LIST_15(ITEM) \
+	_COMMA_SEP_LIST_14(ITEM)     \
+	, ITEM(15)
+#define _COMMA_SEP_LIST_14(ITEM) \
+	_COMMA_SEP_LIST_13(ITEM)     \
+	, ITEM(14)
 #define _COMMA_SEP_LIST_13(ITEM) \
 	_COMMA_SEP_LIST_12(ITEM)     \
 	, ITEM(13)
@@ -98,6 +106,12 @@
 
 // 1-based semicolon separated list of ITEMs
 #define SEMIC_SEP_LIST(ITEM, LENGTH) _SEMIC_SEP_LIST_##LENGTH(ITEM)
+#define _SEMIC_SEP_LIST_15(ITEM) \
+	_SEMIC_SEP_LIST_14(ITEM);    \
+	ITEM(15)
+#define _SEMIC_SEP_LIST_14(ITEM) \
+	_SEMIC_SEP_LIST_13(ITEM);    \
+	ITEM(14)
 #define _SEMIC_SEP_LIST_13(ITEM) \
 	_SEMIC_SEP_LIST_12(ITEM);    \
 	ITEM(13)
@@ -141,6 +155,12 @@
 
 // 1-based space separated list of ITEMs
 #define SPACE_SEP_LIST(ITEM, LENGTH) _SPACE_SEP_LIST_##LENGTH(ITEM)
+#define _SPACE_SEP_LIST_15(ITEM) \
+	_SPACE_SEP_LIST_14(ITEM)     \
+	ITEM(15)
+#define _SPACE_SEP_LIST_14(ITEM) \
+	_SPACE_SEP_LIST_13(ITEM)     \
+	ITEM(14)
 #define _SPACE_SEP_LIST_13(ITEM) \
 	_SPACE_SEP_LIST_12(ITEM)     \
 	ITEM(13)
@@ -271,13 +291,13 @@
 		ss->in_use = false;                                                           \
 	}
 
-#define MAX_CMD_PARAMS 13
+#define MAX_CMD_PARAMS 15
 
 class CommandQueueMT {
 
 	struct SyncSemaphore {
 
-		Semaphore *sem;
+		SemaphoreOld *sem;
 		bool in_use;
 	};
 
@@ -298,15 +318,15 @@ class CommandQueueMT {
 	};
 
 	DECL_CMD(0)
-	SPACE_SEP_LIST(DECL_CMD, 13)
+	SPACE_SEP_LIST(DECL_CMD, 15)
 
 	/* comands that return */
 	DECL_CMD_RET(0)
-	SPACE_SEP_LIST(DECL_CMD_RET, 13)
+	SPACE_SEP_LIST(DECL_CMD_RET, 15)
 
 	/* commands that don't return but sync */
 	DECL_CMD_SYNC(0)
-	SPACE_SEP_LIST(DECL_CMD_SYNC, 13)
+	SPACE_SEP_LIST(DECL_CMD_SYNC, 15)
 
 	/***** BASE *******/
 
@@ -322,7 +342,7 @@ class CommandQueueMT {
 	uint32_t dealloc_ptr;
 	SyncSemaphore sync_sems[SYNC_SEMAPHORES];
 	Mutex *mutex;
-	Semaphore *sync;
+	SemaphoreOld *sync;
 
 	template <class T>
 	T *allocate() {
@@ -443,15 +463,15 @@ class CommandQueueMT {
 public:
 	/* NORMAL PUSH COMMANDS */
 	DECL_PUSH(0)
-	SPACE_SEP_LIST(DECL_PUSH, 13)
+	SPACE_SEP_LIST(DECL_PUSH, 15)
 
 	/* PUSH AND RET COMMANDS */
 	DECL_PUSH_AND_RET(0)
-	SPACE_SEP_LIST(DECL_PUSH_AND_RET, 13)
+	SPACE_SEP_LIST(DECL_PUSH_AND_RET, 15)
 
 	/* PUSH AND RET SYNC COMMANDS*/
 	DECL_PUSH_AND_SYNC(0)
-	SPACE_SEP_LIST(DECL_PUSH_AND_SYNC, 13)
+	SPACE_SEP_LIST(DECL_PUSH_AND_SYNC, 15)
 
 	void wait_and_flush_one() {
 		ERR_FAIL_COND(!sync);

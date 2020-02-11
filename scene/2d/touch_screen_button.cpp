@@ -34,24 +34,24 @@
 #include "core/os/input.h"
 #include "core/os/os.h"
 
-void TouchScreenButton::set_texture(const Ref<Texture> &p_texture) {
+void TouchScreenButton::set_texture(const Ref<Texture2D> &p_texture) {
 
 	texture = p_texture;
 	update();
 }
 
-Ref<Texture> TouchScreenButton::get_texture() const {
+Ref<Texture2D> TouchScreenButton::get_texture() const {
 
 	return texture;
 }
 
-void TouchScreenButton::set_texture_pressed(const Ref<Texture> &p_texture_pressed) {
+void TouchScreenButton::set_texture_pressed(const Ref<Texture2D> &p_texture_pressed) {
 
 	texture_pressed = p_texture_pressed;
 	update();
 }
 
-Ref<Texture> TouchScreenButton::get_texture_pressed() const {
+Ref<Texture2D> TouchScreenButton::get_texture_pressed() const {
 
 	return texture_pressed;
 }
@@ -397,8 +397,8 @@ void TouchScreenButton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_input"), &TouchScreenButton::_input);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "pressed", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture_pressed", "get_texture_pressed");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "pressed", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture_pressed", "get_texture_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "bitmask", PROPERTY_HINT_RESOURCE_TYPE, "BitMap"), "set_bitmask", "get_bitmask");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shape_centered"), "set_shape_centered", "is_shape_centered");

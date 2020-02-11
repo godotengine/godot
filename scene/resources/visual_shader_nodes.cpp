@@ -357,7 +357,7 @@ VisualShaderNodeTransformConstant::VisualShaderNodeTransformConstant() {
 ////////////// Texture
 
 String VisualShaderNodeTexture::get_caption() const {
-	return "Texture";
+	return "Texture2D";
 }
 
 int VisualShaderNodeTexture::get_input_port_count() const {
@@ -649,13 +649,13 @@ VisualShaderNodeTexture::Source VisualShaderNodeTexture::get_source() const {
 	return source;
 }
 
-void VisualShaderNodeTexture::set_texture(Ref<Texture> p_value) {
+void VisualShaderNodeTexture::set_texture(Ref<Texture2D> p_value) {
 
 	texture = p_value;
 	emit_changed();
 }
 
-Ref<Texture> VisualShaderNodeTexture::get_texture() const {
+Ref<Texture2D> VisualShaderNodeTexture::get_texture() const {
 
 	return texture;
 }
@@ -727,7 +727,7 @@ void VisualShaderNodeTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_texture_type"), &VisualShaderNodeTexture::get_texture_type);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "source", PROPERTY_HINT_ENUM, "Texture,Screen,Texture2D,NormalMap2D,Depth,SamplerPort"), "set_source", "get_source");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_type", PROPERTY_HINT_ENUM, "Data,Color,Normalmap"), "set_texture_type", "get_texture_type");
 
 	BIND_ENUM_CONSTANT(SOURCE_TEXTURE);
@@ -746,17 +746,17 @@ VisualShaderNodeTexture::VisualShaderNodeTexture() {
 	source = SOURCE_TEXTURE;
 }
 
-////////////// CubeMap
+////////////// Cubemap
 
-String VisualShaderNodeCubeMap::get_caption() const {
-	return "CubeMap";
+String VisualShaderNodeCubemap::get_caption() const {
+	return "Cubemap";
 }
 
-int VisualShaderNodeCubeMap::get_input_port_count() const {
+int VisualShaderNodeCubemap::get_input_port_count() const {
 	return 3;
 }
 
-VisualShaderNodeCubeMap::PortType VisualShaderNodeCubeMap::get_input_port_type(int p_port) const {
+VisualShaderNodeCubemap::PortType VisualShaderNodeCubemap::get_input_port_type(int p_port) const {
 	switch (p_port) {
 		case 0:
 			return PORT_TYPE_VECTOR;
@@ -769,7 +769,7 @@ VisualShaderNodeCubeMap::PortType VisualShaderNodeCubeMap::get_input_port_type(i
 	}
 }
 
-String VisualShaderNodeCubeMap::get_input_port_name(int p_port) const {
+String VisualShaderNodeCubemap::get_input_port_name(int p_port) const {
 	switch (p_port) {
 		case 0:
 			return "uv";
@@ -782,19 +782,19 @@ String VisualShaderNodeCubeMap::get_input_port_name(int p_port) const {
 	}
 }
 
-int VisualShaderNodeCubeMap::get_output_port_count() const {
+int VisualShaderNodeCubemap::get_output_port_count() const {
 	return 2;
 }
 
-VisualShaderNodeCubeMap::PortType VisualShaderNodeCubeMap::get_output_port_type(int p_port) const {
+VisualShaderNodeCubemap::PortType VisualShaderNodeCubemap::get_output_port_type(int p_port) const {
 	return p_port == 0 ? PORT_TYPE_VECTOR : PORT_TYPE_SCALAR;
 }
 
-String VisualShaderNodeCubeMap::get_output_port_name(int p_port) const {
+String VisualShaderNodeCubemap::get_output_port_name(int p_port) const {
 	return p_port == 0 ? "rgb" : "alpha";
 }
 
-Vector<VisualShader::DefaultTextureParam> VisualShaderNodeCubeMap::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
+Vector<VisualShader::DefaultTextureParam> VisualShaderNodeCubemap::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
 	VisualShader::DefaultTextureParam dtp;
 	dtp.name = make_unique_id(p_type, p_id, "cube");
 	dtp.param = cube_map;
@@ -803,7 +803,7 @@ Vector<VisualShader::DefaultTextureParam> VisualShaderNodeCubeMap::get_default_t
 	return ret;
 }
 
-String VisualShaderNodeCubeMap::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+String VisualShaderNodeCubemap::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 
 	if (source == SOURCE_TEXTURE) {
 		String u = "uniform samplerCube " + make_unique_id(p_type, p_id, "cube");
@@ -817,7 +817,7 @@ String VisualShaderNodeCubeMap::generate_global(Shader::Mode p_mode, VisualShade
 	return String();
 }
 
-String VisualShaderNodeCubeMap::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+String VisualShaderNodeCubemap::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 
 	String code;
 	String id;
@@ -860,44 +860,44 @@ String VisualShaderNodeCubeMap::generate_code(Shader::Mode p_mode, VisualShader:
 	return code;
 }
 
-String VisualShaderNodeCubeMap::get_input_port_default_hint(int p_port) const {
+String VisualShaderNodeCubemap::get_input_port_default_hint(int p_port) const {
 	if (p_port == 0) {
 		return "vec3(UV, 0.0)";
 	}
 	return "";
 }
 
-void VisualShaderNodeCubeMap::set_source(Source p_source) {
+void VisualShaderNodeCubemap::set_source(Source p_source) {
 	source = p_source;
 	emit_changed();
 	emit_signal("editor_refresh_request");
 }
 
-VisualShaderNodeCubeMap::Source VisualShaderNodeCubeMap::get_source() const {
+VisualShaderNodeCubemap::Source VisualShaderNodeCubemap::get_source() const {
 	return source;
 }
 
-void VisualShaderNodeCubeMap::set_cube_map(Ref<CubeMap> p_value) {
+void VisualShaderNodeCubemap::set_cube_map(Ref<Cubemap> p_value) {
 
 	cube_map = p_value;
 	emit_changed();
 }
 
-Ref<CubeMap> VisualShaderNodeCubeMap::get_cube_map() const {
+Ref<Cubemap> VisualShaderNodeCubemap::get_cube_map() const {
 
 	return cube_map;
 }
 
-void VisualShaderNodeCubeMap::set_texture_type(TextureType p_type) {
+void VisualShaderNodeCubemap::set_texture_type(TextureType p_type) {
 	texture_type = p_type;
 	emit_changed();
 }
 
-VisualShaderNodeCubeMap::TextureType VisualShaderNodeCubeMap::get_texture_type() const {
+VisualShaderNodeCubemap::TextureType VisualShaderNodeCubemap::get_texture_type() const {
 	return texture_type;
 }
 
-Vector<StringName> VisualShaderNodeCubeMap::get_editable_properties() const {
+Vector<StringName> VisualShaderNodeCubemap::get_editable_properties() const {
 	Vector<StringName> props;
 	props.push_back("source");
 	if (source == SOURCE_TEXTURE) {
@@ -907,19 +907,19 @@ Vector<StringName> VisualShaderNodeCubeMap::get_editable_properties() const {
 	return props;
 }
 
-void VisualShaderNodeCubeMap::_bind_methods() {
+void VisualShaderNodeCubemap::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_source", "value"), &VisualShaderNodeCubeMap::set_source);
-	ClassDB::bind_method(D_METHOD("get_source"), &VisualShaderNodeCubeMap::get_source);
+	ClassDB::bind_method(D_METHOD("set_source", "value"), &VisualShaderNodeCubemap::set_source);
+	ClassDB::bind_method(D_METHOD("get_source"), &VisualShaderNodeCubemap::get_source);
 
-	ClassDB::bind_method(D_METHOD("set_cube_map", "value"), &VisualShaderNodeCubeMap::set_cube_map);
-	ClassDB::bind_method(D_METHOD("get_cube_map"), &VisualShaderNodeCubeMap::get_cube_map);
+	ClassDB::bind_method(D_METHOD("set_cube_map", "value"), &VisualShaderNodeCubemap::set_cube_map);
+	ClassDB::bind_method(D_METHOD("get_cube_map"), &VisualShaderNodeCubemap::get_cube_map);
 
-	ClassDB::bind_method(D_METHOD("set_texture_type", "value"), &VisualShaderNodeCubeMap::set_texture_type);
-	ClassDB::bind_method(D_METHOD("get_texture_type"), &VisualShaderNodeCubeMap::get_texture_type);
+	ClassDB::bind_method(D_METHOD("set_texture_type", "value"), &VisualShaderNodeCubemap::set_texture_type);
+	ClassDB::bind_method(D_METHOD("get_texture_type"), &VisualShaderNodeCubemap::get_texture_type);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "source", PROPERTY_HINT_ENUM, "Texture,SamplerPort"), "set_source", "get_source");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "cube_map", PROPERTY_HINT_RESOURCE_TYPE, "CubeMap"), "set_cube_map", "get_cube_map");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "cube_map", PROPERTY_HINT_RESOURCE_TYPE, "Cubemap"), "set_cube_map", "get_cube_map");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_type", PROPERTY_HINT_ENUM, "Data,Color,Normalmap"), "set_texture_type", "get_texture_type");
 
 	BIND_ENUM_CONSTANT(SOURCE_TEXTURE);
@@ -930,7 +930,7 @@ void VisualShaderNodeCubeMap::_bind_methods() {
 	BIND_ENUM_CONSTANT(TYPE_NORMALMAP);
 }
 
-VisualShaderNodeCubeMap::VisualShaderNodeCubeMap() {
+VisualShaderNodeCubemap::VisualShaderNodeCubemap() {
 	texture_type = TYPE_DATA;
 	source = SOURCE_TEXTURE;
 	simple_decl = false;
@@ -3552,41 +3552,41 @@ String VisualShaderNodeTextureUniformTriplanar::get_input_port_default_hint(int 
 VisualShaderNodeTextureUniformTriplanar::VisualShaderNodeTextureUniformTriplanar() {
 }
 
-////////////// CubeMap Uniform
+////////////// Cubemap Uniform
 
-String VisualShaderNodeCubeMapUniform::get_caption() const {
-	return "CubeMapUniform";
+String VisualShaderNodeCubemapUniform::get_caption() const {
+	return "CubemapUniform";
 }
 
-int VisualShaderNodeCubeMapUniform::get_output_port_count() const {
+int VisualShaderNodeCubemapUniform::get_output_port_count() const {
 	return 1;
 }
 
-VisualShaderNodeCubeMapUniform::PortType VisualShaderNodeCubeMapUniform::get_output_port_type(int p_port) const {
+VisualShaderNodeCubemapUniform::PortType VisualShaderNodeCubemapUniform::get_output_port_type(int p_port) const {
 	return PORT_TYPE_SAMPLER;
 }
 
-String VisualShaderNodeCubeMapUniform::get_output_port_name(int p_port) const {
+String VisualShaderNodeCubemapUniform::get_output_port_name(int p_port) const {
 	return "samplerCube";
 }
 
-int VisualShaderNodeCubeMapUniform::get_input_port_count() const {
+int VisualShaderNodeCubemapUniform::get_input_port_count() const {
 	return 0;
 }
 
-VisualShaderNodeCubeMapUniform::PortType VisualShaderNodeCubeMapUniform::get_input_port_type(int p_port) const {
+VisualShaderNodeCubemapUniform::PortType VisualShaderNodeCubemapUniform::get_input_port_type(int p_port) const {
 	return PORT_TYPE_SCALAR;
 }
 
-String VisualShaderNodeCubeMapUniform::get_input_port_name(int p_port) const {
+String VisualShaderNodeCubemapUniform::get_input_port_name(int p_port) const {
 	return "";
 }
 
-String VisualShaderNodeCubeMapUniform::get_input_port_default_hint(int p_port) const {
+String VisualShaderNodeCubemapUniform::get_input_port_default_hint(int p_port) const {
 	return "";
 }
 
-String VisualShaderNodeCubeMapUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+String VisualShaderNodeCubemapUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code = "uniform samplerCube " + get_uniform_name();
 
 	switch (texture_type) {
@@ -3609,11 +3609,11 @@ String VisualShaderNodeCubeMapUniform::generate_global(Shader::Mode p_mode, Visu
 	return code;
 }
 
-String VisualShaderNodeCubeMapUniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+String VisualShaderNodeCubemapUniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	return String();
 }
 
-VisualShaderNodeCubeMapUniform::VisualShaderNodeCubeMapUniform() {
+VisualShaderNodeCubemapUniform::VisualShaderNodeCubemapUniform() {
 }
 
 ////////////// If

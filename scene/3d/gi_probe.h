@@ -40,42 +40,67 @@ class GIProbeData : public Resource {
 
 	RID probe;
 
+	void _set_data(const Dictionary &p_data);
+	Dictionary _get_data() const;
+
+	Transform to_cell_xform;
+	AABB bounds;
+	Vector3 octree_size;
+
+	float dynamic_range;
+	float energy;
+	float bias;
+	float normal_bias;
+	float propagation;
+	float anisotropy_strength;
+	float ao;
+	float ao_size;
+	bool interior;
+	bool use_two_bounces;
+
 protected:
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &property) const;
 
 public:
-	void set_bounds(const AABB &p_bounds);
+	void allocate(const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3 &p_octree_size, const PoolVector<uint8_t> &p_octree_cells, const PoolVector<uint8_t> &p_data_cells, const PoolVector<uint8_t> &p_distance_field, const PoolVector<int> &p_level_counts);
 	AABB get_bounds() const;
-
-	void set_cell_size(float p_size);
-	float get_cell_size() const;
-
-	void set_to_cell_xform(const Transform &p_xform);
+	Vector3 get_octree_size() const;
+	PoolVector<uint8_t> get_octree_cells() const;
+	PoolVector<uint8_t> get_data_cells() const;
+	PoolVector<uint8_t> get_distance_field() const;
+	PoolVector<int> get_level_counts() const;
 	Transform get_to_cell_xform() const;
 
-	void set_dynamic_data(const PoolVector<int> &p_data);
-	PoolVector<int> get_dynamic_data() const;
+	void set_dynamic_range(float p_range);
+	float get_dynamic_range() const;
 
-	void set_dynamic_range(int p_range);
-	int get_dynamic_range() const;
-
-	void set_propagation(float p_range);
+	void set_propagation(float p_propagation);
 	float get_propagation() const;
 
-	void set_energy(float p_range);
+	void set_anisotropy_strength(float p_anisotropy_strength);
+	float get_anisotropy_strength() const;
+
+	void set_ao(float p_ao);
+	float get_ao() const;
+
+	void set_ao_size(float p_ao_size);
+	float get_ao_size() const;
+
+	void set_energy(float p_energy);
 	float get_energy() const;
 
-	void set_bias(float p_range);
+	void set_bias(float p_bias);
 	float get_bias() const;
 
-	void set_normal_bias(float p_range);
+	void set_normal_bias(float p_normal_bias);
 	float get_normal_bias() const;
 
 	void set_interior(bool p_enable);
 	bool is_interior() const;
 
-	void set_compress(bool p_enable);
-	bool is_compressed() const;
+	void set_use_two_bounces(bool p_enable);
+	bool is_using_two_bounces() const;
 
 	virtual RID get_rid() const;
 
@@ -107,13 +132,6 @@ private:
 
 	Subdiv subdiv;
 	Vector3 extents;
-	int dynamic_range;
-	float energy;
-	float bias;
-	float normal_bias;
-	float propagation;
-	bool interior;
-	bool compress;
 
 	struct PlotMesh {
 		Ref<Material> override_material;
@@ -141,27 +159,7 @@ public:
 
 	void set_extents(const Vector3 &p_extents);
 	Vector3 get_extents() const;
-
-	void set_dynamic_range(int p_dynamic_range);
-	int get_dynamic_range() const;
-
-	void set_energy(float p_energy);
-	float get_energy() const;
-
-	void set_bias(float p_bias);
-	float get_bias() const;
-
-	void set_normal_bias(float p_normal_bias);
-	float get_normal_bias() const;
-
-	void set_propagation(float p_propagation);
-	float get_propagation() const;
-
-	void set_interior(bool p_enable);
-	bool is_interior() const;
-
-	void set_compress(bool p_enable);
-	bool is_compressed() const;
+	Vector3i get_estimated_cell_size() const;
 
 	void bake(Node *p_from_node = NULL, bool p_create_visual_debug = false);
 

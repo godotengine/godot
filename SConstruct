@@ -111,6 +111,7 @@ opts.Add('p', "Platform (alias for 'platform')", '')
 opts.Add('platform', "Target platform (%s)" % ('|'.join(platform_list), ), '')
 opts.Add(EnumVariable('target', "Compilation target", 'debug', ('debug', 'release_debug', 'release')))
 opts.Add(EnumVariable('optimize', "Optimization type", 'speed', ('speed', 'size')))
+
 opts.Add(BoolVariable('tools', "Build the tools (a.k.a. the Godot editor)", True))
 opts.Add(BoolVariable('use_lto', 'Use link-time optimization', False))
 opts.Add(BoolVariable('use_precise_math_checks', 'Math checks use very precise epsilon (useful to debug the engine)', False))
@@ -139,6 +140,7 @@ opts.Add(BoolVariable('builtin_bullet', "Use the built-in Bullet library", True)
 opts.Add(BoolVariable('builtin_certs', "Bundle default SSL certificates to be used if you don't specify an override in the project settings", True))
 opts.Add(BoolVariable('builtin_enet', "Use the built-in ENet library", True))
 opts.Add(BoolVariable('builtin_freetype', "Use the built-in FreeType library", True))
+opts.Add(BoolVariable('builtin_glslang', "Use the built-in glslang library", True))
 opts.Add(BoolVariable('builtin_libogg', "Use the built-in libogg library", True))
 opts.Add(BoolVariable('builtin_libpng', "Use the built-in libpng library", True))
 opts.Add(BoolVariable('builtin_libtheora', "Use the built-in libtheora library", True))
@@ -154,6 +156,7 @@ opts.Add(BoolVariable('builtin_pcre2_with_jit', "Use JIT compiler for the built-
 opts.Add(BoolVariable('builtin_recast', "Use the built-in Recast library", True))
 opts.Add(BoolVariable('builtin_rvo2', "Use the built-in RVO2 library", True))
 opts.Add(BoolVariable('builtin_squish', "Use the built-in squish library", True))
+opts.Add(BoolVariable('builtin_vulkan', "Use the built-in Vulkan loader library and headers", True))
 opts.Add(BoolVariable('builtin_xatlas', "Use the built-in xatlas library", True))
 opts.Add(BoolVariable('builtin_zlib', "Use the built-in zlib library", True))
 opts.Add(BoolVariable('builtin_zstd', "Use the built-in Zstd library", True))
@@ -497,6 +500,7 @@ if selected_platform in platform_list:
     if (not env["platform"] == "server"): # FIXME: detect GLES3
         env.Append(BUILDERS = { 'GLES3_GLSL' : env.Builder(action=run_in_subprocess(gles_builders.build_gles3_headers), suffix='glsl.gen.h', src_suffix='.glsl')})
         env.Append(BUILDERS = { 'GLES2_GLSL' : env.Builder(action=run_in_subprocess(gles_builders.build_gles2_headers), suffix='glsl.gen.h', src_suffix='.glsl')})
+        env.Append(BUILDERS = { 'RD_GLSL' : env.Builder(action=run_in_subprocess(gles_builders.build_rd_headers), suffix='glsl.gen.h', src_suffix='.glsl')})
 
     scons_cache_path = os.environ.get("SCONS_CACHE")
     if scons_cache_path != None:

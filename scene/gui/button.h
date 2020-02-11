@@ -48,7 +48,7 @@ private:
 	bool flat;
 	String text;
 	String xl_text;
-	Ref<Texture> icon;
+	Ref<Texture2D> icon;
 	bool expand_icon;
 	bool clip_text;
 	TextAlign align;
@@ -65,8 +65,8 @@ public:
 	void set_text(const String &p_text);
 	String get_text() const;
 
-	void set_icon(const Ref<Texture> &p_icon);
-	Ref<Texture> get_icon() const;
+	void set_icon(const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_icon() const;
 
 	void set_expand_icon(bool p_expand_icon);
 	bool is_expand_icon() const;

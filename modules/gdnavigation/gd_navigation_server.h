@@ -6,7 +6,7 @@
 /*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,8 @@
 #ifndef GD_NAVIGATION_SERVER_H
 #define GD_NAVIGATION_SERVER_H
 
+#include "core/rid.h"
+#include "core/rid_owner.h"
 #include "servers/navigation_server.h"
 
 #include "nav_map.h"
@@ -73,9 +75,9 @@ class GdNavigationServer : public NavigationServer {
 
 	std::vector<SetCommand *> commands;
 
-	mutable RID_Owner<NavMap> map_owner;
-	mutable RID_Owner<NavRegion> region_owner;
-	mutable RID_Owner<RvoAgent> agent_owner;
+	mutable RID_PtrOwner<NavMap> map_owner;
+	mutable RID_PtrOwner<NavRegion> region_owner;
+	mutable RID_PtrOwner<RvoAgent> agent_owner;
 
 	bool active;
 	Vector<NavMap *> active_maps;

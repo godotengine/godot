@@ -150,11 +150,25 @@ public:
 		TK_HINT_WHITE_TEXTURE,
 		TK_HINT_BLACK_TEXTURE,
 		TK_HINT_NORMAL_TEXTURE,
+		TK_HINT_ROUGHNESS_NORMAL_TEXTURE,
+		TK_HINT_ROUGHNESS_R,
+		TK_HINT_ROUGHNESS_G,
+		TK_HINT_ROUGHNESS_B,
+		TK_HINT_ROUGHNESS_A,
+		TK_HINT_ROUGHNESS_GRAY,
 		TK_HINT_ANISO_TEXTURE,
 		TK_HINT_ALBEDO_TEXTURE,
 		TK_HINT_BLACK_ALBEDO_TEXTURE,
 		TK_HINT_COLOR,
 		TK_HINT_RANGE,
+		TK_FILTER_NEAREST,
+		TK_FILTER_LINEAR,
+		TK_FILTER_NEAREST_MIPMAP,
+		TK_FILTER_LINEAR_MIPMAP,
+		TK_FILTER_NEAREST_MIPMAP_ANISO,
+		TK_FILTER_LINEAR_MIPMAP_ANISO,
+		TK_REPEAT_ENABLE,
+		TK_REPEAT_DISABLE,
 		TK_SHADER_TYPE,
 		TK_CURSOR,
 		TK_ERROR,
@@ -282,6 +296,22 @@ public:
 	enum SubClassTag {
 		TAG_GLOBAL,
 		TAG_ARRAY,
+	};
+
+	enum TextureFilter {
+		FILTER_NEAREST,
+		FILTER_LINEAR,
+		FILTER_NEAREST_MIPMAP,
+		FILTER_LINEAR_MIPMAP,
+		FILTER_NEAREST_MIPMAP_ANISO,
+		FILTER_LINEAR_MIPMAP_ANISO,
+		FILTER_DEFAULT,
+	};
+
+	enum TextureRepeat {
+		REPEAT_DISABLE,
+		REPEAT_ENABLE,
+		REPEAT_DEFAULT,
 	};
 
 	struct Node {
@@ -485,11 +515,20 @@ public:
 	};
 
 	struct FunctionNode : public Node {
+
 		struct Argument {
 			ArgumentQualifier qualifier;
 			StringName name;
 			DataType type;
 			DataPrecision precision;
+			//for passing textures as arguments
+			bool tex_argument_check;
+			TextureFilter tex_argument_filter;
+			TextureRepeat tex_argument_repeat;
+			bool tex_builtin_check;
+			StringName tex_builtin;
+
+			Map<StringName, Set<int> > tex_argument_connect;
 		};
 
 		StringName name;
@@ -543,6 +582,12 @@ public:
 				HINT_ALBEDO,
 				HINT_BLACK_ALBEDO,
 				HINT_NORMAL,
+				HINT_ROUGHNESS_NORMAL,
+				HINT_ROUGHNESS_R,
+				HINT_ROUGHNESS_G,
+				HINT_ROUGHNESS_B,
+				HINT_ROUGHNESS_A,
+				HINT_ROUGHNESS_GRAY,
 				HINT_BLACK,
 				HINT_WHITE,
 				HINT_ANISO,
@@ -555,6 +600,8 @@ public:
 			DataPrecision precision;
 			Vector<ConstantNode::Value> default_value;
 			Hint hint;
+			TextureFilter filter;
+			TextureRepeat repeat;
 			float hint_range[3];
 
 			Uniform() :
@@ -562,7 +609,9 @@ public:
 					texture_order(0),
 					type(TYPE_VOID),
 					precision(PRECISION_DEFAULT),
-					hint(HINT_NONE) {
+					hint(HINT_NONE),
+					filter(FILTER_DEFAULT),
+					repeat(REPEAT_DEFAULT) {
 				hint_range[0] = 0.0f;
 				hint_range[1] = 1.0f;
 				hint_range[2] = 0.001f;
@@ -631,6 +680,8 @@ public:
 	static bool is_scalar_type(DataType p_type);
 	static bool is_sampler_type(DataType p_type);
 	static Variant constant_value_to_variant(const Vector<ShaderLanguage::ConstantNode::Value> &p_value, DataType p_type, ShaderLanguage::ShaderNode::Uniform::Hint p_hint = ShaderLanguage::ShaderNode::Uniform::HINT_NONE);
+	static PropertyInfo uniform_to_property_info(const ShaderNode::Uniform &p_uniform);
+	static uint32_t get_type_size(DataType p_type);
 
 	static void get_keyword_list(List<String> *r_keywords);
 	static void get_builtin_funcs(List<String> *r_keywords);
@@ -750,6 +801,8 @@ private:
 
 	bool _validate_function_call(BlockNode *p_block, OperatorNode *p_func, DataType *r_ret_type);
 	bool _parse_function_arguments(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, OperatorNode *p_func, int *r_complete_arg = NULL);
+	bool _propagate_function_call_sampler_uniform_settings(StringName p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat);
+	bool _propagate_function_call_sampler_builtin_reference(StringName p_name, int p_argument, const StringName &p_builtin);
 
 	Node *_parse_expression(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types);
 	ShaderLanguage::Node *_reduce_expression(BlockNode *p_block, ShaderLanguage::Node *p_node);

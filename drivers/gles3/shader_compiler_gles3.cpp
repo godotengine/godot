@@ -354,8 +354,6 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			}
 
 			r_gen_code.texture_uniforms.resize(max_texture_uniforms);
-			r_gen_code.texture_hints.resize(max_texture_uniforms);
-			r_gen_code.texture_types.resize(max_texture_uniforms);
 
 			Vector<int> uniform_sizes;
 			Vector<int> uniform_alignments;
@@ -380,9 +378,15 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				if (SL::is_sampler_type(E->get().type)) {
 					r_gen_code.vertex_global += ucode;
 					r_gen_code.fragment_global += ucode;
-					r_gen_code.texture_uniforms.write[E->get().texture_order] = _mkid(E->key());
-					r_gen_code.texture_hints.write[E->get().texture_order] = E->get().hint;
-					r_gen_code.texture_types.write[E->get().texture_order] = E->get().type;
+
+					GeneratedCode::Texture texture;
+					texture.name = _mkid(E->key());
+					texture.hint = E->get().hint;
+					texture.type = E->get().type;
+					texture.filter = E->get().filter;
+					texture.repeat = E->get().repeat;
+
+					r_gen_code.texture_uniforms.write[E->get().texture_order] = texture;
 				} else {
 					if (!uses_uniforms) {
 

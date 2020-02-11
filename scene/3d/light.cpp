@@ -281,6 +281,7 @@ void Light::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_SPLIT_1_OFFSET);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_SPLIT_2_OFFSET);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_SPLIT_3_OFFSET);
+	BIND_ENUM_CONSTANT(PARAM_SHADOW_FADE_START);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_NORMAL_BIAS);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_BIAS);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_BIAS_SPLIT_SCALE);
@@ -325,8 +326,10 @@ Light::Light(VisualServer::LightType p_type) {
 	set_param(PARAM_SHADOW_SPLIT_1_OFFSET, 0.1);
 	set_param(PARAM_SHADOW_SPLIT_2_OFFSET, 0.2);
 	set_param(PARAM_SHADOW_SPLIT_3_OFFSET, 0.5);
+	set_param(PARAM_SHADOW_FADE_START, 0.8);
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 0.0);
 	set_param(PARAM_SHADOW_BIAS, 0.15);
+	set_param(PARAM_SHADOW_FADE_START, 1);
 	set_disable_scale(true);
 }
 
@@ -393,6 +396,7 @@ void DirectionalLight::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "directional_shadow_split_1", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param", "get_param", PARAM_SHADOW_SPLIT_1_OFFSET);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "directional_shadow_split_2", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param", "get_param", PARAM_SHADOW_SPLIT_2_OFFSET);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "directional_shadow_split_3", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param", "get_param", PARAM_SHADOW_SPLIT_3_OFFSET);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "directional_shadow_fade_start", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SHADOW_FADE_START);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "directional_shadow_blend_splits"), "set_blend_splits", "is_blend_splits_enabled");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "directional_shadow_normal_bias", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_param", "get_param", PARAM_SHADOW_NORMAL_BIAS);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "directional_shadow_bias_split_scale", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SHADOW_BIAS_SPLIT_SCALE);
@@ -413,6 +417,7 @@ DirectionalLight::DirectionalLight() :
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 0.8);
 	set_param(PARAM_SHADOW_BIAS, 0.1);
 	set_param(PARAM_SHADOW_MAX_DISTANCE, 100);
+	set_param(PARAM_SHADOW_FADE_START, 0.8);
 	set_param(PARAM_SHADOW_BIAS_SPLIT_SCALE, 0.25);
 	set_shadow_mode(SHADOW_PARALLEL_4_SPLITS);
 	set_shadow_depth_range(SHADOW_DEPTH_RANGE_STABLE);
@@ -431,42 +436,24 @@ OmniLight::ShadowMode OmniLight::get_shadow_mode() const {
 	return shadow_mode;
 }
 
-void OmniLight::set_shadow_detail(ShadowDetail p_detail) {
-
-	shadow_detail = p_detail;
-	VS::get_singleton()->light_omni_set_shadow_detail(light, VS::LightOmniShadowDetail(p_detail));
-}
-OmniLight::ShadowDetail OmniLight::get_shadow_detail() const {
-
-	return shadow_detail;
-}
-
 void OmniLight::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_shadow_mode", "mode"), &OmniLight::set_shadow_mode);
 	ClassDB::bind_method(D_METHOD("get_shadow_mode"), &OmniLight::get_shadow_mode);
 
-	ClassDB::bind_method(D_METHOD("set_shadow_detail", "detail"), &OmniLight::set_shadow_detail);
-	ClassDB::bind_method(D_METHOD("get_shadow_detail"), &OmniLight::get_shadow_detail);
-
 	ADD_GROUP("Omni", "omni_");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "omni_range", PROPERTY_HINT_EXP_RANGE, "0,4096,0.1,or_greater"), "set_param", "get_param", PARAM_RANGE);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "omni_attenuation", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_param", "get_param", PARAM_ATTENUATION);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "omni_shadow_mode", PROPERTY_HINT_ENUM, "Dual Paraboloid,Cube"), "set_shadow_mode", "get_shadow_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "omni_shadow_detail", PROPERTY_HINT_ENUM, "Vertical,Horizontal"), "set_shadow_detail", "get_shadow_detail");
 
 	BIND_ENUM_CONSTANT(SHADOW_DUAL_PARABOLOID);
 	BIND_ENUM_CONSTANT(SHADOW_CUBE);
-
-	BIND_ENUM_CONSTANT(SHADOW_DETAIL_VERTICAL);
-	BIND_ENUM_CONSTANT(SHADOW_DETAIL_HORIZONTAL);
 }
 
 OmniLight::OmniLight() :
 		Light(VisualServer::LIGHT_OMNI) {
 
 	set_shadow_mode(SHADOW_CUBE);
-	set_shadow_detail(SHADOW_DETAIL_HORIZONTAL);
 }
 
 String SpotLight::get_configuration_warning() const {

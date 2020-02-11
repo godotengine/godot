@@ -130,13 +130,13 @@ void Sprite::_notification(int p_what) {
 			Rect2 src_rect, dst_rect;
 			bool filter_clip;
 			_get_rects(src_rect, dst_rect, filter_clip);
-			texture->draw_rect_region(ci, dst_rect, src_rect, Color(1, 1, 1), false, normal_map, filter_clip);
+			texture->draw_rect_region(ci, dst_rect, src_rect, Color(1, 1, 1), false, normal_map, specular, Color(specular_color.r, specular_color.g, specular_color.b, shininess), VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, filter_clip);
 
 		} break;
 	}
 }
 
-void Sprite::set_texture(const Ref<Texture> &p_texture) {
+void Sprite::set_texture(const Ref<Texture2D> &p_texture) {
 
 	if (p_texture == texture)
 		return;
@@ -155,18 +155,47 @@ void Sprite::set_texture(const Ref<Texture> &p_texture) {
 	_change_notify("texture");
 }
 
-void Sprite::set_normal_map(const Ref<Texture> &p_texture) {
+void Sprite::set_normal_map(const Ref<Texture2D> &p_texture) {
 
 	normal_map = p_texture;
 	update();
 }
 
-Ref<Texture> Sprite::get_normal_map() const {
+Ref<Texture2D> Sprite::get_normal_map() const {
 
 	return normal_map;
 }
 
-Ref<Texture> Sprite::get_texture() const {
+void Sprite::set_specular_map(const Ref<Texture2D> &p_texture) {
+
+	specular = p_texture;
+	update();
+}
+
+Ref<Texture2D> Sprite::get_specular_map() const {
+
+	return specular;
+}
+
+void Sprite::set_specular_color(const Color &p_color) {
+	specular_color = p_color;
+	update();
+}
+
+Color Sprite::get_specular_color() const {
+	return specular_color;
+}
+
+void Sprite::set_shininess(float p_shininess) {
+	shininess = CLAMP(p_shininess, 0.0, 1.0);
+	update();
+}
+
+float Sprite::get_shininess() const {
+	return shininess;
+}
+
+Ref<Texture2D> Sprite::get_texture() const {
 
 	return texture;
 }
@@ -334,9 +363,11 @@ bool Sprite::is_pixel_opaque(const Point2 &p_point) const {
 	if (vflip)
 		q.y = 1.0f - q.y;
 	q = q * src_rect.size + src_rect.position;
-
-	bool is_repeat = texture->get_flags() & Texture::FLAG_REPEAT;
-	bool is_mirrored_repeat = texture->get_flags() & Texture::FLAG_MIRRORED_REPEAT;
+#ifndef _MSC_VER
+#warning this need to be obtained from CanvasItem new repeat mode (but it needs to guess it from hierarchy, need to add a function for that)
+#endif
+	bool is_repeat = false;
+	bool is_mirrored_repeat = false;
 	if (is_repeat) {
 		int mirror_x = 0;
 		int mirror_y = 0;
@@ -415,6 +446,15 @@ void Sprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_normal_map", "normal_map"), &Sprite::set_normal_map);
 	ClassDB::bind_method(D_METHOD("get_normal_map"), &Sprite::get_normal_map);
 
+	ClassDB::bind_method(D_METHOD("set_specular_map", "specular_map"), &Sprite::set_specular_map);
+	ClassDB::bind_method(D_METHOD("get_specular_map"), &Sprite::get_specular_map);
+
+	ClassDB::bind_method(D_METHOD("set_specular_color", "specular_color"), &Sprite::set_specular_color);
+	ClassDB::bind_method(D_METHOD("get_specular_color"), &Sprite::get_specular_color);
+
+	ClassDB::bind_method(D_METHOD("set_shininess", "shininess"), &Sprite::set_shininess);
+	ClassDB::bind_method(D_METHOD("get_shininess"), &Sprite::get_shininess);
+
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &Sprite::set_centered);
 	ClassDB::bind_method(D_METHOD("is_centered"), &Sprite::is_centered);
 
@@ -457,8 +497,12 @@ void Sprite::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_normal_map", "get_normal_map");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_GROUP("Lighting", "");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_normal_map", "get_normal_map");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "specular_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_specular_map", "get_specular_map");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "specular_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_specular_color", "get_specular_color");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "shininess", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_shininess", "get_shininess");
 	ADD_GROUP("Offset", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
@@ -483,6 +527,8 @@ Sprite::Sprite() {
 	vflip = false;
 	region = false;
 	region_filter_clip = false;
+	shininess = 1.0;
+	specular_color = Color(1, 1, 1, 1);
 
 	frame = 0;
 

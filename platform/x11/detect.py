@@ -318,8 +318,19 @@ def configure(env):
         env.ParseConfig('pkg-config zlib --cflags --libs')
 
     env.Prepend(CPPPATH=['#platform/x11'])
-    env.Append(CPPDEFINES=['X11_ENABLED', 'UNIX_ENABLED', 'OPENGL_ENABLED', 'GLES_ENABLED'])
-    env.Append(LIBS=['GL', 'pthread'])
+    env.Append(CPPDEFINES=['X11_ENABLED', 'UNIX_ENABLED'])
+
+    env.Append(CPPDEFINES=['VULKAN_ENABLED'])
+    if not env['builtin_vulkan']:
+        env.ParseConfig('pkg-config vulkan --cflags --libs')
+    if not env['builtin_glslang']:
+        # No pkgconfig file for glslang so far
+        env.Append(LIBS=['glslang', 'SPIRV'])
+
+    #env.Append(CPPDEFINES=['OPENGL_ENABLED'])
+    env.Append(LIBS=['GL'])
+
+    env.Append(LIBS=['pthread'])
 
     if (platform.system() == "Linux"):
         env.Append(LIBS=['dl'])

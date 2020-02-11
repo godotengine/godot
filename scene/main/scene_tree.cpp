@@ -792,11 +792,11 @@ Ref<Material> SceneTree::get_debug_navigation_material() {
 	if (navigation_material.is_valid())
 		return navigation_material;
 
-	Ref<SpatialMaterial> line_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
-	line_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-	line_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-	line_material->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
-	line_material->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	Ref<StandardMaterial3D> line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	line_material->set_albedo(get_debug_navigation_color());
 
 	navigation_material = line_material;
@@ -809,11 +809,11 @@ Ref<Material> SceneTree::get_debug_navigation_disabled_material() {
 	if (navigation_disabled_material.is_valid())
 		return navigation_disabled_material;
 
-	Ref<SpatialMaterial> line_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
-	line_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-	line_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-	line_material->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
-	line_material->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	Ref<StandardMaterial3D> line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	line_material->set_albedo(get_debug_navigation_disabled_color());
 
 	navigation_disabled_material = line_material;
@@ -825,11 +825,11 @@ Ref<Material> SceneTree::get_debug_collision_material() {
 	if (collision_material.is_valid())
 		return collision_material;
 
-	Ref<SpatialMaterial> line_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
-	line_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-	line_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-	line_material->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
-	line_material->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	Ref<StandardMaterial3D> line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	line_material->set_albedo(get_debug_collisions_color());
 
 	collision_material = line_material;
@@ -844,11 +844,11 @@ Ref<ArrayMesh> SceneTree::get_debug_contact_mesh() {
 
 	debug_contact_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
 
-	Ref<SpatialMaterial> mat = Ref<SpatialMaterial>(memnew(SpatialMaterial));
-	mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-	mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-	mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
-	mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	Ref<StandardMaterial3D> mat = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+	mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	mat->set_albedo(get_debug_collision_contact_color());
 
 	Vector3 diamond[6] = {
@@ -2075,19 +2075,9 @@ SceneTree::SceneTree() {
 
 	int ref_atlas_size = GLOBAL_DEF("rendering/quality/reflections/atlas_size", 2048);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/reflections/atlas_size", PropertyInfo(Variant::INT, "rendering/quality/reflections/atlas_size", PROPERTY_HINT_RANGE, "0,8192,or_greater")); //next_power_of_2 will return a 0 as min value
-	int ref_atlas_subdiv = GLOBAL_DEF("rendering/quality/reflections/atlas_subdiv", 8);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/reflections/atlas_subdiv", PropertyInfo(Variant::INT, "rendering/quality/reflections/atlas_subdiv", PROPERTY_HINT_RANGE, "0,32,or_greater")); //next_power_of_2 will return a 0 as min value
 	int msaa_mode = GLOBAL_DEF("rendering/quality/filters/msaa", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/msaa", PropertyInfo(Variant::INT, "rendering/quality/filters/msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x,AndroidVR 2x,AndroidVR 4x"));
 	root->set_msaa(Viewport::MSAA(msaa_mode));
-
-	GLOBAL_DEF("rendering/quality/depth/hdr", true);
-	GLOBAL_DEF("rendering/quality/depth/hdr.mobile", false);
-
-	bool hdr = GLOBAL_GET("rendering/quality/depth/hdr");
-	root->set_hdr(hdr);
-
-	VS::get_singleton()->scenario_set_reflection_atlas_size(root->get_world()->get_scenario(), ref_atlas_size, ref_atlas_subdiv);
 
 	{ //load default fallback environment
 		//get possible extensions

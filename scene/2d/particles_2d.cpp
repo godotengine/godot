@@ -268,22 +268,22 @@ Rect2 Particles2D::capture_rect() const {
 	return r;
 }
 
-void Particles2D::set_texture(const Ref<Texture> &p_texture) {
+void Particles2D::set_texture(const Ref<Texture2D> &p_texture) {
 	texture = p_texture;
 	update();
 }
 
-Ref<Texture> Particles2D::get_texture() const {
+Ref<Texture2D> Particles2D::get_texture() const {
 	return texture;
 }
 
-void Particles2D::set_normal_map(const Ref<Texture> &p_normal_map) {
+void Particles2D::set_normal_map(const Ref<Texture2D> &p_normal_map) {
 
 	normal_map = p_normal_map;
 	update();
 }
 
-Ref<Texture> Particles2D::get_normal_map() const {
+Ref<Texture2D> Particles2D::get_normal_map() const {
 	return normal_map;
 }
 
@@ -399,8 +399,8 @@ void Particles2D::_bind_methods() {
 	ADD_GROUP("Process Material", "process_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,ParticlesMaterial"), "set_process_material", "get_process_material");
 	ADD_GROUP("Textures", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_normal_map", "get_normal_map");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_normal_map", "get_normal_map");
 
 	BIND_ENUM_CONSTANT(DRAW_ORDER_INDEX);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_LIFETIME);

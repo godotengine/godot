@@ -384,7 +384,7 @@ void Polygon3DEditor::_polygon_draw() {
 
 	imgeom->clear();
 	imgeom->set_material_override(line_material);
-	imgeom->begin(Mesh::PRIMITIVE_LINES, Ref<Texture>());
+	imgeom->begin(Mesh::PRIMITIVE_LINES, Ref<Texture2D>());
 
 	Rect2 rect;
 
@@ -463,9 +463,7 @@ void Polygon3DEditor::_polygon_draw() {
 
 	imgeom->end();
 
-	while (m->get_surface_count()) {
-		m->surface_remove(0);
-	}
+	m->clear_surfaces();
 
 	if (poly.size() == 0)
 		return;
@@ -547,23 +545,22 @@ Polygon3DEditor::Polygon3DEditor(EditorNode *p_editor) {
 	imgeom = memnew(ImmediateGeometry);
 	imgeom->set_transform(Transform(Basis(), Vector3(0, 0, 0.00001)));
 
-	line_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
-	line_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-	line_material->set_line_width(3.0);
-	line_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-	line_material->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	line_material->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+	line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	line_material->set_albedo(Color(1, 1, 1));
 
-	handle_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
-	handle_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-	handle_material->set_flag(SpatialMaterial::FLAG_USE_POINT_SIZE, true);
-	handle_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-	handle_material->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	handle_material->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
-	Ref<Texture> handle = editor->get_gui_base()->get_icon("Editor3DHandle", "EditorIcons");
+	handle_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	handle_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	handle_material->set_flag(StandardMaterial3D::FLAG_USE_POINT_SIZE, true);
+	handle_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	handle_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	handle_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+	Ref<Texture2D> handle = editor->get_gui_base()->get_icon("Editor3DHandle", "EditorIcons");
 	handle_material->set_point_size(handle->get_width());
-	handle_material->set_texture(SpatialMaterial::TEXTURE_ALBEDO, handle);
+	handle_material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, handle);
 
 	pointsm = memnew(MeshInstance);
 	imgeom->add_child(pointsm);

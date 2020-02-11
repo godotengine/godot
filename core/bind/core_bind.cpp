@@ -2612,7 +2612,7 @@ void _Semaphore::_bind_methods() {
 
 _Semaphore::_Semaphore() {
 
-	semaphore = Semaphore::create();
+	semaphore = SemaphoreOld::create();
 }
 
 _Semaphore::~_Semaphore() {

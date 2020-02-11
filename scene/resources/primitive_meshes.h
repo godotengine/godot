@@ -50,6 +50,9 @@ private:
 	mutable AABB aabb;
 	AABB custom_aabb;
 
+	mutable int array_len;
+	mutable int index_array_len;
+
 	Ref<Material> material;
 	bool flip_faces;
 
@@ -70,6 +73,7 @@ public:
 	virtual int surface_get_array_index_len(int p_idx) const;
 	virtual Array surface_get_arrays(int p_surface) const;
 	virtual Array surface_get_blend_shape_arrays(int p_surface) const;
+	virtual Dictionary surface_get_lods(int p_surface) const;
 	virtual uint32_t surface_get_format(int p_idx) const;
 	virtual Mesh::PrimitiveType surface_get_primitive_type(int p_idx) const;
 	virtual void surface_set_material(int p_idx, const Ref<Material> &p_material);

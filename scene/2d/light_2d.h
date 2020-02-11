@@ -47,11 +47,9 @@ public:
 
 	enum ShadowFilter {
 		SHADOW_FILTER_NONE,
-		SHADOW_FILTER_PCF3,
 		SHADOW_FILTER_PCF5,
-		SHADOW_FILTER_PCF7,
-		SHADOW_FILTER_PCF9,
 		SHADOW_FILTER_PCF13,
+		SHADOW_FILTER_MAX
 	};
 
 private:
@@ -72,9 +70,8 @@ private:
 	int item_shadow_mask;
 	int shadow_buffer_size;
 	float shadow_smooth;
-	float shadow_gradient_length;
 	Mode mode;
-	Ref<Texture> texture;
+	Ref<Texture2D> texture;
 	Vector2 texture_offset;
 	ShadowFilter shadow_filter;
 
@@ -104,8 +101,8 @@ public:
 	void set_editor_only(bool p_editor_only);
 	bool is_editor_only() const;
 
-	void set_texture(const Ref<Texture> &p_texture);
-	Ref<Texture> get_texture() const;
+	void set_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_texture() const;
 
 	void set_texture_offset(const Vector2 &p_offset);
 	Vector2 get_texture_offset() const;
@@ -148,9 +145,6 @@ public:
 
 	void set_shadow_buffer_size(int p_size);
 	int get_shadow_buffer_size() const;
-
-	void set_shadow_gradient_length(float p_multiplier);
-	float get_shadow_gradient_length() const;
 
 	void set_shadow_filter(ShadowFilter p_filter);
 	ShadowFilter get_shadow_filter() const;

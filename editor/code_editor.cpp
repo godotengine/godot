@@ -819,8 +819,8 @@ void CodeTextEditor::_complete_request() {
 	text_editor->code_complete(entries, forced);
 }
 
-Ref<Texture> CodeTextEditor::_get_completion_icon(const ScriptCodeCompletionOption &p_option) {
-	Ref<Texture> tex;
+Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptCodeCompletionOption &p_option) {
+	Ref<Texture2D> tex;
 	switch (p_option.kind) {
 		case ScriptCodeCompletionOption::KIND_CLASS: {
 			if (has_icon(p_option.display, "EditorIcons")) {

@@ -514,7 +514,7 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 		accent.a *= 0.6;
 	}
 
-	Ref<Texture> icons[6] = {
+	Ref<Texture2D> icons[6] = {
 		get_icon("TransitionImmediateBig", "EditorIcons"),
 		get_icon("TransitionSyncBig", "EditorIcons"),
 		get_icon("TransitionEndBig", "EditorIcons"),
@@ -524,16 +524,16 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 	};
 
 	if (p_selected) {
-		state_machine_draw->draw_line(p_from, p_to, accent, 6, true);
+		state_machine_draw->draw_line(p_from, p_to, accent, 6);
 	}
 
 	if (p_travel) {
 		linecolor = accent;
 		linecolor.set_hsv(1.0, linecolor.get_s(), linecolor.get_v());
 	}
-	state_machine_draw->draw_line(p_from, p_to, linecolor, 2, true);
+	state_machine_draw->draw_line(p_from, p_to, linecolor, 2);
 
-	Ref<Texture> icon = icons[p_mode + (p_auto_advance ? 3 : 0)];
+	Ref<Texture2D> icon = icons[p_mode + (p_auto_advance ? 3 : 0)];
 
 	Transform2D xf;
 	xf.elements[0] = (p_to - p_from).normalized();
@@ -578,9 +578,9 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 
 	Ref<Font> font = get_font("title_font", "GraphNode");
 	Color font_color = get_color("title_color", "GraphNode");
-	Ref<Texture> play = get_icon("Play", "EditorIcons");
-	Ref<Texture> auto_play = get_icon("AutoPlay", "EditorIcons");
-	Ref<Texture> edit = get_icon("Edit", "EditorIcons");
+	Ref<Texture2D> play = get_icon("Play", "EditorIcons");
+	Ref<Texture2D> auto_play = get_icon("AutoPlay", "EditorIcons");
+	Ref<Texture2D> edit = get_icon("Edit", "EditorIcons");
 	Color accent = get_color("accent_color", "Editor");
 	Color linecolor = get_color("font_color", "Label");
 	linecolor.a *= 0.3;
@@ -686,7 +686,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		_connection_draw(from, to, AnimationNodeStateMachineTransition::SwitchMode(transition_mode->get_selected()), true, false, false, false);
 	}
 
-	Ref<Texture> tr_reference_icon = get_icon("TransitionImmediateBig", "EditorIcons");
+	Ref<Texture2D> tr_reference_icon = get_icon("TransitionImmediateBig", "EditorIcons");
 	float tr_bidi_offset = int(tr_reference_icon->get_height() * 0.8);
 
 	//draw transition lines
@@ -796,7 +796,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		nr.play.position = offset + Vector2(0, (h - play->get_height()) / 2).floor();
 		nr.play.size = play->get_size();
 
-		Ref<Texture> play_tex = onstart ? auto_play : play;
+		Ref<Texture2D> play_tex = onstart ? auto_play : play;
 
 		if (over_node == name && over_node_what == 0) {
 			state_machine_draw->draw_texture(play_tex, nr.play.position, accent);
@@ -917,14 +917,6 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 		transition_mode->add_icon_item(get_icon("TransitionImmediate", "EditorIcons"), TTR("Immediate"));
 		transition_mode->add_icon_item(get_icon("TransitionSync", "EditorIcons"), TTR("Sync"));
 		transition_mode->add_icon_item(get_icon("TransitionEnd", "EditorIcons"), TTR("At End"));
-
-		//force filter on those, so they deform better
-		get_icon("TransitionImmediateBig", "EditorIcons")->set_flags(Texture::FLAG_FILTER);
-		get_icon("TransitionEndBig", "EditorIcons")->set_flags(Texture::FLAG_FILTER);
-		get_icon("TransitionSyncBig", "EditorIcons")->set_flags(Texture::FLAG_FILTER);
-		get_icon("TransitionImmediateAutoBig", "EditorIcons")->set_flags(Texture::FLAG_FILTER);
-		get_icon("TransitionEndAutoBig", "EditorIcons")->set_flags(Texture::FLAG_FILTER);
-		get_icon("TransitionSyncAutoBig", "EditorIcons")->set_flags(Texture::FLAG_FILTER);
 
 		tool_erase->set_icon(get_icon("Remove", "EditorIcons"));
 		tool_autoplay->set_icon(get_icon("AutoPlay", "EditorIcons"));
