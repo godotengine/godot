@@ -163,6 +163,9 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 
 			//code+=dump_node_code(pnode->body,p_level);
 		} break;
+		case SL::Node::TYPE_STRUCT: {
+
+		} break;
 		case SL::Node::TYPE_FUNCTION: {
 
 		} break;
