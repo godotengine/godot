@@ -48,7 +48,8 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	float exposure;
 	float white;
 	float auto_exposure_grey;
-} params;
+}
+params;
 
 layout(location = 0) out vec4 frag_color;
 
@@ -270,8 +271,7 @@ void main() {
 	if (params.use_glow && params.glow_mode == GLOW_MODE_MIX) {
 
 		vec3 glow = gather_glow(source_glow, uv_interp);
-		color.rgb = mix(color.rgb,glow,params.glow_intensity);
-
+		color.rgb = mix(color.rgb, glow, params.glow_intensity);
 	}
 
 	color = apply_tonemapping(color, params.white);

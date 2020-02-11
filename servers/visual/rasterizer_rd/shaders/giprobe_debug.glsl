@@ -15,7 +15,8 @@ struct CellData {
 
 layout(set = 0, binding = 1, std140) buffer CellDataBuffer {
 	CellData data[];
-} cell_data;
+}
+cell_data;
 
 layout(set = 0, binding = 2) uniform texture3D color_tex;
 
@@ -35,7 +36,8 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	uint level;
 	ivec3 bounds;
 	uint pad;
-} params;
+}
+params;
 
 layout(location = 0) out vec4 color_interp;
 

@@ -125,14 +125,14 @@ void main() {
 
 	//Glow uses larger sigma 1 for a more rounded blur effect
 
-#define GLOW_ADD( m_ofs, m_mult )\
-	{\
-		vec2 ofs = uv_interp + m_ofs * pix_size;\
-		vec4 c = texture(source_color, ofs ) * m_mult; \
-		if (any(lessThan(ofs,vec2(0.0))) || any(greaterThan(ofs,vec2(1.0)))) {\
-			c*=0.0;\
-		}\
-		color+=c;\
+#define GLOW_ADD(m_ofs, m_mult)                                                  \
+	{                                                                            \
+		vec2 ofs = uv_interp + m_ofs * pix_size;                                 \
+		vec4 c = texture(source_color, ofs) * m_mult;                            \
+		if (any(lessThan(ofs, vec2(0.0))) || any(greaterThan(ofs, vec2(1.0)))) { \
+			c *= 0.0;                                                            \
+		}                                                                        \
+		color += c;                                                              \
 	}
 
 	if (bool(blur.flags & FLAG_HORIZONTAL)) {
@@ -140,22 +140,22 @@ void main() {
 		vec2 pix_size = blur.pixel_size;
 		pix_size *= 0.5; //reading from larger buffer, so use more samples
 		vec4 color = texture(source_color, uv_interp + vec2(0.0, 0.0) * pix_size) * 0.174938;
-		GLOW_ADD(vec2(1.0, 0.0),0.165569);
-		GLOW_ADD(vec2(2.0, 0.0),0.140367);
+		GLOW_ADD(vec2(1.0, 0.0), 0.165569);
+		GLOW_ADD(vec2(2.0, 0.0), 0.140367);
 		GLOW_ADD(vec2(3.0, 0.0), 0.106595);
-		GLOW_ADD(vec2(-1.0, 0.0),0.165569);
-		GLOW_ADD(vec2(-2.0, 0.0),0.140367);
-		GLOW_ADD(vec2(-3.0, 0.0),0.106595);
+		GLOW_ADD(vec2(-1.0, 0.0), 0.165569);
+		GLOW_ADD(vec2(-2.0, 0.0), 0.140367);
+		GLOW_ADD(vec2(-3.0, 0.0), 0.106595);
 		color *= blur.glow_strength;
 		frag_color = color;
 	} else {
 
 		vec2 pix_size = blur.pixel_size;
 		vec4 color = texture(source_color, uv_interp + vec2(0.0, 0.0) * pix_size) * 0.288713;
-		GLOW_ADD(vec2(0.0, 1.0),0.233062);
-		GLOW_ADD(vec2(0.0, 2.0),0.122581);
-		GLOW_ADD(vec2(0.0, -1.0),0.233062);
-		GLOW_ADD(vec2(0.0, -2.0),0.122581);
+		GLOW_ADD(vec2(0.0, 1.0), 0.233062);
+		GLOW_ADD(vec2(0.0, 2.0), 0.122581);
+		GLOW_ADD(vec2(0.0, -1.0), 0.233062);
+		GLOW_ADD(vec2(0.0, -2.0), 0.122581);
 		color *= blur.glow_strength;
 		frag_color = color;
 	}
@@ -280,7 +280,7 @@ void main() {
 #ifdef MODE_SIMPLE_COPY
 	vec4 color = texture(source_color, uv_interp, 0.0);
 	if (bool(blur.flags & FLAG_COPY_FORCE_LUMINANCE)) {
-		color.rgb = vec3(max(max(color.r,color.g),color.b));
+		color.rgb = vec3(max(max(color.r, color.g), color.b));
 	}
 	frag_color = color;
 #endif

@@ -50,7 +50,8 @@ layout(push_constant, binding = 0, std430) uniform DrawData {
 #endif
 	vec2 color_texture_pixel_size;
 	uint lights[4];
-} draw_data;
+}
+draw_data;
 
 // The values passed per draw primitives are cached within it
 
@@ -80,14 +81,16 @@ layout(set = 2, binding = 0, std140) uniform CanvasData {
 	float time;
 	float time_pad;
 	//uint light_count;
-} canvas_data;
+}
+canvas_data;
 
 layout(set = 2, binding = 1) uniform textureBuffer skeleton_buffer;
 
 layout(set = 2, binding = 2, std140) uniform SkeletonData {
 	mat4 skeleton_transform; //in world coordinates
 	mat4 skeleton_transform_inverse;
-} skeleton_data;
+}
+skeleton_data;
 
 #ifdef USE_LIGHTING
 
@@ -119,7 +122,8 @@ struct Light {
 
 layout(set = 2, binding = 3, std140) uniform LightData {
 	Light data[MAX_LIGHTS];
-} light_array;
+}
+light_array;
 
 layout(set = 2, binding = 4) uniform texture2D light_textures[MAX_LIGHT_TEXTURES];
 layout(set = 2, binding = 5) uniform texture2D shadow_textures[MAX_LIGHT_TEXTURES];

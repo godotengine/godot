@@ -35,7 +35,8 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	float z_far;
 	float z_near;
 	bool z_flip;
-} params;
+}
+params;
 
 layout(location = 0) out float depth_buffer;
 

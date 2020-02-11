@@ -7,7 +7,7 @@ env.add_source_files(env.drivers_sources, "*.cpp")
 if env['builtin_vulkan']:
     # Use bundled Vulkan headers
     thirdparty_dir = "#thirdparty/vulkan"
-    env.Prepend(CPPPATH=[thirdparty_dir + "/include", thirdparty_dir + "/loader"])
+    env.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "/include", thirdparty_dir + "/loader"])
 
     # Build Vulkan loader library
     env_thirdparty = env.Clone()
@@ -25,6 +25,7 @@ if env['builtin_vulkan']:
         "wsi.c",
         "extension_manual.c",
     ]
+    vma_sources = [thirdparty_dir + "/vk_mem_alloc.cpp"]
 
     if env['platform'] == "windows":
         loader_sources.append("dirent_on_windows.c")
@@ -59,3 +60,4 @@ if env['builtin_vulkan']:
 
     loader_sources = [thirdparty_dir + "/loader/" + file for file in loader_sources]
     env_thirdparty.add_source_files(env.drivers_sources, loader_sources)
+    env_thirdparty.add_source_files(env.drivers_sources, vma_sources)

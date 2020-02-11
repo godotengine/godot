@@ -1151,7 +1151,7 @@ void gi_probe_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3
 
 		ao = 1.0 - min(1.0, ao);
 
-		light = mix(scene_data.ao_color.rgb,light,mix(1.0, ao, gi_probes.data[index].ambient_occlusion));
+		light = mix(scene_data.ao_color.rgb, light, mix(1.0, ao, gi_probes.data[index].ambient_occlusion));
 	}
 
 	out_diff += vec4(light * blend, blend);
@@ -1272,7 +1272,6 @@ FRAGMENT_SHADER_CODE
 
 #endif // !USE_SHADOW_TO_OPACITY
 
-
 #if defined(NORMALMAP_USED)
 
 	normalmap.xy = normalmap.xy * 2.0 - 1.0;
@@ -1312,11 +1311,9 @@ FRAGMENT_SHADER_CODE
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
 	if (scene_data.roughness_limiter_enabled) {
-		float limit = texelFetch(sampler2D(roughness_buffer, material_samplers[SAMPLER_NEAREST_CLAMP]),ivec2(gl_FragCoord.xy),0).r;
-		roughness = max(roughness,limit);
-
+		float limit = texelFetch(sampler2D(roughness_buffer, material_samplers[SAMPLER_NEAREST_CLAMP]), ivec2(gl_FragCoord.xy), 0).r;
+		roughness = max(roughness, limit);
 	}
-
 
 	if (scene_data.use_reflection_cubemap) {
 
@@ -1407,7 +1404,7 @@ FRAGMENT_SHADER_CODE
 	}
 #endif
 
-	uvec4 cluster_cell = texture(usampler3D(cluster_texture, material_samplers[SAMPLER_NEAREST_CLAMP]),vec3(screen_uv,(abs(vertex.z)-scene_data.z_near)/(scene_data.z_far-scene_data.z_near)));
+	uvec4 cluster_cell = texture(usampler3D(cluster_texture, material_samplers[SAMPLER_NEAREST_CLAMP]), vec3(screen_uv, (abs(vertex.z) - scene_data.z_near) / (scene_data.z_far - scene_data.z_near)));
 
 	{ // process reflections
 
@@ -1544,7 +1541,7 @@ FRAGMENT_SHADER_CODE
 
 			uint light_index = cluster_data.indices[omni_light_pointer + i];
 
-			if (!bool(lights.data[light_index].mask&instances.data[instance_index].layer_mask)) {
+			if (!bool(lights.data[light_index].mask & instances.data[instance_index].layer_mask)) {
 				continue; //not masked
 			}
 
@@ -1577,7 +1574,7 @@ FRAGMENT_SHADER_CODE
 
 			uint light_index = cluster_data.indices[spot_light_pointer + i];
 
-			if (!bool(lights.data[light_index].mask&instances.data[instance_index].layer_mask)) {
+			if (!bool(lights.data[light_index].mask & instances.data[instance_index].layer_mask)) {
 				continue; //not masked
 			}
 
@@ -1648,7 +1645,7 @@ FRAGMENT_SHADER_CODE
 #endif
 
 #ifdef MODE_RENDER_NORMAL
-	normal_output_buffer = vec4(normal * 0.5 + 0.5,0.0);
+	normal_output_buffer = vec4(normal * 0.5 + 0.5, 0.0);
 #ifdef MODE_RENDER_ROUGHNESS
 	roughness_output_buffer = roughness;
 #endif //MODE_RENDER_ROUGHNESS
@@ -1664,24 +1661,24 @@ FRAGMENT_SHADER_CODE
 #if defined(AO_USED)
 
 	if (scene_data.ssao_enabled && scene_data.ssao_ao_affect > 0.0) {
-		float ssao = texture(sampler2D(ao_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]),screen_uv).r;
-		ao = mix(ao,min(ao,ssao),scene_data.ssao_ao_affect);
-		ao_light_affect = mix(ao_light_affect,max(ao_light_affect,scene_data.ssao_light_affect),scene_data.ssao_ao_affect);
+		float ssao = texture(sampler2D(ao_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), screen_uv).r;
+		ao = mix(ao, min(ao, ssao), scene_data.ssao_ao_affect);
+		ao_light_affect = mix(ao_light_affect, max(ao_light_affect, scene_data.ssao_light_affect), scene_data.ssao_ao_affect);
 	}
 
-	ambient_light = mix(scene_data.ao_color.rgb,ambient_light,ao);
+	ambient_light = mix(scene_data.ao_color.rgb, ambient_light, ao);
 	ao_light_affect = mix(1.0, ao, ao_light_affect);
-	specular_light = mix(scene_data.ao_color.rgb,specular_light,ao_light_affect);
-	diffuse_light = mix(scene_data.ao_color.rgb,diffuse_light,ao_light_affect);
+	specular_light = mix(scene_data.ao_color.rgb, specular_light, ao_light_affect);
+	diffuse_light = mix(scene_data.ao_color.rgb, diffuse_light, ao_light_affect);
 
 #else
 
 	if (scene_data.ssao_enabled) {
-		float ao = texture(sampler2D(ao_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]),screen_uv).r;
-		ambient_light = mix(scene_data.ao_color.rgb,ambient_light,ao);
-		float ao_light_affect = mix(1.0, ao,scene_data.ssao_light_affect);
-		specular_light = mix(scene_data.ao_color.rgb,specular_light,ao_light_affect);
-		diffuse_light = mix(scene_data.ao_color.rgb,diffuse_light,ao_light_affect);
+		float ao = texture(sampler2D(ao_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), screen_uv).r;
+		ambient_light = mix(scene_data.ao_color.rgb, ambient_light, ao);
+		float ao_light_affect = mix(1.0, ao, scene_data.ssao_light_affect);
+		specular_light = mix(scene_data.ao_color.rgb, specular_light, ao_light_affect);
+		diffuse_light = mix(scene_data.ao_color.rgb, diffuse_light, ao_light_affect);
 	}
 
 #endif // AO_USED

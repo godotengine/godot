@@ -36,7 +36,8 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	uint sample_count;
 	float roughness;
 	bool use_direct_write;
-} params;
+}
+params;
 
 layout(location = 0) in vec2 uv_interp;
 

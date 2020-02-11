@@ -367,10 +367,16 @@ License: BSD-3-clause
 
 Files: ./thirdparty/vulkan/
 Comment: Vulkan Ecosystem Components (Vulkan ICD loader and headers)
-Copyright: 2015-2016, The Khronos Group Inc.
-  2015-2016, Valve Corporation
-  2015-2016, LunarG, Inc.
+Copyright: 2014-2019, The Khronos Group Inc.
+  2014-2019, Valve Corporation
+  2014-2019, LunarG, Inc.
+  2015-2019, Google Inc.
 License: Apache-2.0
+
+Files: ./thirdparty/vulkan/vk_mem_alloc.h
+Comment: Vulkan Memory Allocator
+Copyright: 2017-2019, Advanced Micro Devices, Inc.
+License: Expat
 
 Files: ./thirdparty/wslay/
 Comment: Wslay
