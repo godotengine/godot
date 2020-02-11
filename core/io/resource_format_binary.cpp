@@ -836,15 +836,20 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 	uint8_t header[4];
 	f->get_buffer(header, 4);
 	if (header[0] == 'R' && header[1] == 'S' && header[2] == 'C' && header[3] == 'C') {
-		//compressed
+		// Compressed.
 		FileAccessCompressed *fac = memnew(FileAccessCompressed);
-		fac->open_after_magic(f);
+		error = fac->open_after_magic(f);
+		if (error != OK) {
+			memdelete(fac);
+			f->close();
+			ERR_FAIL_MSG("Failed to open binary resource file: " + local_path + ".");
+		}
 		f = fac;
 
 	} else if (header[0] != 'R' || header[1] != 'S' || header[2] != 'R' || header[3] != 'C') {
-		//not normal
-
+		// Not normal.
 		error = ERR_FILE_UNRECOGNIZED;
+		f->close();
 		ERR_FAIL_MSG("Unrecognized binary resource file: " + local_path + ".");
 	}
 
@@ -919,6 +924,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 	if (f->eof_reached()) {
 
 		error = ERR_FILE_CORRUPT;
+		f->close();
 		ERR_FAIL_MSG("Premature end of file (EOF): " + local_path + ".");
 	}
 }
@@ -931,14 +937,20 @@ String ResourceInteractiveLoaderBinary::recognize(FileAccess *p_f) {
 	uint8_t header[4];
 	f->get_buffer(header, 4);
 	if (header[0] == 'R' && header[1] == 'S' && header[2] == 'C' && header[3] == 'C') {
-		//compressed
+		// Compressed.
 		FileAccessCompressed *fac = memnew(FileAccessCompressed);
-		fac->open_after_magic(f);
+		error = fac->open_after_magic(f);
+		if (error != OK) {
+			memdelete(fac);
+			f->close();
+			return "";
+		}
 		f = fac;
 
 	} else if (header[0] != 'R' || header[1] != 'S' || header[2] != 'R' || header[3] != 'C') {
-		//not normal
+		// Not normal.
 		error = ERR_FILE_UNRECOGNIZED;
+		f->close();
 		return "";
 	}
 
@@ -1055,14 +1067,19 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 	uint8_t header[4];
 	f->get_buffer(header, 4);
 	if (header[0] == 'R' && header[1] == 'S' && header[2] == 'C' && header[3] == 'C') {
-		//compressed
+		// Compressed.
 		FileAccessCompressed *fac = memnew(FileAccessCompressed);
-		fac->open_after_magic(f);
+		Error err = fac->open_after_magic(f);
+		if (err != OK) {
+			memdelete(fac);
+			memdelete(f);
+			ERR_FAIL_V_MSG(err, "Cannot open file '" + p_path + "'.");
+		}
 		f = fac;
 
 		FileAccessCompressed *facw = memnew(FileAccessCompressed);
 		facw->configure("RSCC");
-		Error err = facw->_open(p_path + ".depren", FileAccess::WRITE);
+		err = facw->_open(p_path + ".depren", FileAccess::WRITE);
 		if (err) {
 			memdelete(fac);
 			memdelete(facw);
@@ -1072,9 +1089,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		fw = facw;
 
 	} else if (header[0] != 'R' || header[1] != 'S' || header[2] != 'R' || header[3] != 'C') {
-		//not normal
-
-		//error=ERR_FILE_UNRECOGNIZED;
+		// Not normal.
 		memdelete(f);
 		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unrecognized binary resource file '" + local_path + "'.");
 	} else {
