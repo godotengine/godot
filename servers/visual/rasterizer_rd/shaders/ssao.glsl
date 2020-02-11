@@ -1,11 +1,12 @@
 /* clang-format off */
 [compute]
-/* clang-format on */
+
 #version 450
 
 VERSION_DEFINES
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+/* clang-format on */
 
 #define TWO_PI 6.283185307179586476925286766559
 
@@ -76,9 +77,8 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	vec2 pixel_size;
 	float proj_scale;
 	uint pad;
-
-} params;
-
+}
+params;
 
 vec3 reconstructCSPosition(vec2 S, float z) {
 	if (params.orthogonal) {
@@ -157,7 +157,6 @@ vec3 getOffsetPosition(ivec2 ssP, float ssR) {
 	// Offset to pixel center
 	P = reconstructCSPosition(vec2(ssP) + vec2(0.5), P.z);
 
-
 	return P;
 }
 
@@ -178,7 +177,7 @@ float sampleAO(in ivec2 ssC, in vec3 C, in vec3 n_C, in float ssDiskRadius, in f
 
 	ivec2 ssP = ivec2(ssR * unitOffset) + ssC;
 
-	if (any(lessThan(ssP,ivec2(0))) || any(greaterThanEqual(ssP,params.screen_size))) {
+	if (any(lessThan(ssP, ivec2(0))) || any(greaterThanEqual(ssP, params.screen_size))) {
 		return 0.0;
 	}
 
@@ -213,24 +212,20 @@ float sampleAO(in ivec2 ssC, in vec3 C, in vec3 n_C, in float ssDiskRadius, in f
 void main() {
 	// Pixel being shaded
 	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
-	if (any(greaterThan(ssC,params.screen_size))) { //too large, do nothing
+	if (any(greaterThan(ssC, params.screen_size))) { //too large, do nothing
 		return;
 	}
 
 	// World space point being shaded
 	vec3 C = getPosition(ssC);
 
-
-
 #ifdef USE_HALF_SIZE
-	vec3 n_C = texelFetch(source_normal,ssC<<1,0).xyz * 2.0 - 1.0;
+	vec3 n_C = texelFetch(source_normal, ssC << 1, 0).xyz * 2.0 - 1.0;
 #else
-	vec3 n_C = texelFetch(source_normal,ssC,0).xyz * 2.0 - 1.0;
+	vec3 n_C = texelFetch(source_normal, ssC, 0).xyz * 2.0 - 1.0;
 #endif
 	n_C = normalize(n_C);
 	n_C.y = -n_C.y; //because this code reads flipped
-
-
 
 	// Hash function used in the HPG12 AlchemyAO paper
 	float randomPatternRotationAngle = mod(float((3 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 10), TWO_PI);
@@ -253,5 +248,5 @@ void main() {
 
 	float A = max(0.0, 1.0 - sum * params.intensity_div_r6 * (5.0 / float(NUM_SAMPLES)));
 
-	imageStore(dest_image,ssC,vec4(A));
+	imageStore(dest_image, ssC, vec4(A));
 }

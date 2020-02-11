@@ -547,6 +547,11 @@ Files extracted from upstream source:
   `loader/` folder
 - `LICENSE.txt`
 
+`vk_enum_string_helper.h` is taken from the match `Vulkan-ValidationLayers` SDK
+release: https://github.com/KhronosGroup/Vulkan-Loader/tree/master/loader/generated
+
+`vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
+
 
 ## wslay
 

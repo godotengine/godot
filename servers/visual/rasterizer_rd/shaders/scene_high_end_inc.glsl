@@ -4,7 +4,8 @@
 layout(push_constant, binding = 0, std430) uniform DrawCall {
 	uint instance_index;
 	uint pad[3]; //16 bits minimum size
-} draw_call;
+}
+draw_call;
 
 /* Set 0 Scene data that never changes, ever */
 
@@ -101,7 +102,8 @@ layout(set = 0, binding = 3, std140) uniform SceneData {
 	float fog_height_max;
 	float fog_height_curve;
 #endif
-} scene_data;
+}
+scene_data;
 
 #define INSTANCE_FLAGS_FORWARD_MASK 0x7
 #define INSTANCE_FLAGS_FORWARD_OMNI_LIGHT_SHIFT 3
@@ -129,7 +131,8 @@ struct InstanceData {
 
 layout(set = 0, binding = 4, std430) buffer Instances {
 	InstanceData data[];
-} instances;
+}
+instances;
 
 struct LightData { //this structure needs to be 128 bits
 	vec3 position;
@@ -146,7 +149,8 @@ struct LightData { //this structure needs to be 128 bits
 
 layout(set = 0, binding = 5, std140) uniform Lights {
 	LightData data[MAX_LIGHT_DATA_STRUCTS];
-} lights;
+}
+lights;
 
 struct ReflectionData {
 
@@ -162,7 +166,8 @@ struct ReflectionData {
 
 layout(set = 0, binding = 6, std140) uniform ReflectionProbeData {
 	ReflectionData data[MAX_REFLECTION_DATA_STRUCTS];
-} reflections;
+}
+reflections;
 
 struct DirectionalLightData {
 	vec3 direction;
@@ -184,7 +189,8 @@ struct DirectionalLightData {
 
 layout(set = 0, binding = 7, std140) uniform DirectionalLights {
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
-} directional_lights;
+}
+directional_lights;
 
 struct GIProbeData {
 	mat4 xform;
@@ -204,7 +210,8 @@ struct GIProbeData {
 
 layout(set = 0, binding = 8, std140) uniform GIProbes {
 	GIProbeData data[MAX_GI_PROBES];
-} gi_probes;
+}
+gi_probes;
 
 layout(set = 0, binding = 9) uniform texture3D gi_probe_textures[MAX_GI_PROBE_TEXTURES];
 
@@ -216,7 +223,8 @@ layout(set = 0, binding = 10) uniform utexture3D cluster_texture;
 
 layout(set = 0, binding = 11, std430) buffer ClusterData {
 	uint indices[];
-} cluster_data;
+}
+cluster_data;
 
 layout(set = 0, binding = 12) uniform texture2D directional_shadow_atlas;
 
@@ -233,7 +241,6 @@ layout(set = 1, binding = 0) uniform textureCubeArray radiance_cubemap;
 layout(set = 1, binding = 0) uniform textureCube radiance_cubemap;
 
 #endif
-
 
 /* Set 2, Reflection and Shadow Atlases (view dependant) */
 
@@ -253,6 +260,7 @@ layout(set = 3, binding = 4) uniform texture2D ao_buffer;
 
 layout(set = 4, binding = 0, std430) buffer Transforms {
 	vec4 data[];
-} transforms;
+}
+transforms;
 
 /* Set 5 User Material */

@@ -31,4 +31,5 @@ layout(push_constant, binding = 1, std430) uniform Blur {
 	float camera_z_near;
 
 	vec4 ssao_color;
-} blur;
+}
+blur;

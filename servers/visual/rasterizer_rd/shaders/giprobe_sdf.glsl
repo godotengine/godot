@@ -19,7 +19,8 @@ struct CellChildren {
 
 layout(set = 0, binding = 1, std430) buffer CellChildrenBuffer {
 	CellChildren data[];
-} cell_children;
+}
+cell_children;
 
 struct CellData {
 	uint position; // xyz 10 bits
@@ -30,7 +31,8 @@ struct CellData {
 
 layout(set = 0, binding = 2, std430) buffer CellDataBuffer {
 	CellData data[];
-} cell_data;
+}
+cell_data;
 
 layout(r8ui, set = 0, binding = 3) uniform restrict writeonly uimage3D sdf_tex;
 
@@ -39,7 +41,8 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	uint end;
 	uint pad0;
 	uint pad1;
-} params;
+}
+params;
 
 void main() {
 

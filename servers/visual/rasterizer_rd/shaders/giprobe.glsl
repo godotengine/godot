@@ -23,7 +23,8 @@ struct CellChildren {
 
 layout(set = 0, binding = 1, std430) buffer CellChildrenBuffer {
 	CellChildren data[];
-} cell_children;
+}
+cell_children;
 
 struct CellData {
 	uint position; // xyz 10 bits
@@ -34,7 +35,8 @@ struct CellData {
 
 layout(set = 0, binding = 2, std430) buffer CellDataBuffer {
 	CellData data[];
-} cell_data;
+}
+cell_data;
 
 #endif // MODE DYNAMIC
 
@@ -63,7 +65,8 @@ struct Light {
 
 layout(set = 0, binding = 3, std140) uniform Lights {
 	Light data[MAX_LIGHTS];
-} lights;
+}
+lights;
 
 #endif // MODE COMPUTE LIGHT
 
@@ -93,11 +96,13 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	uint cell_count;
 	float aniso_strength;
 	uint pad;
-} params;
+}
+params;
 
 layout(set = 0, binding = 4, std430) buffer Outputs {
 	vec4 data[];
-} outputs;
+}
+outputs;
 
 #endif // MODE DYNAMIC
 
@@ -138,7 +143,8 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	bool on_mipmap;
 	float propagation;
 	float pad[3];
-} params;
+}
+params;
 
 #ifdef MODE_DYNAMIC_LIGHTING
 

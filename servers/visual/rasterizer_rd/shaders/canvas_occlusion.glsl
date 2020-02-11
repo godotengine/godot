@@ -12,7 +12,8 @@ layout(push_constant, binding = 0, std430) uniform Constants {
 	mat2x4 modelview;
 	vec2 direction;
 	vec2 pad;
-} constants;
+}
+constants;
 
 layout(location = 0) out highp float depth;
 

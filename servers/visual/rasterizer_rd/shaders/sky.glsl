@@ -15,7 +15,8 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	float alpha;
 	float depth;
 	float pad;
-} params;
+}
+params;
 
 void main() {
 
@@ -45,7 +46,8 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	float alpha;
 	float depth;
 	float pad;
-} params;
+}
+params;
 
 vec4 texturePanorama(sampler2D pano, vec3 normal) {
 
