@@ -21,6 +21,8 @@
 		<member name="directional_shadow_depth_range" type="int" setter="set_shadow_depth_range" getter="get_shadow_depth_range" enum="DirectionalLight.ShadowDepthRange" default="0">
 			Optimizes shadow rendering for detail versus movement. See [enum ShadowDepthRange].
 		</member>
+		<member name="directional_shadow_fade_start" type="float" setter="set_param" getter="get_param" default="0.8">
+		</member>
 		<member name="directional_shadow_max_distance" type="float" setter="set_param" getter="get_param" default="100.0">
 			The maximum distance for shadow splits.
 		</member>

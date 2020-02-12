@@ -18,9 +18,6 @@
 		<member name="omni_range" type="float" setter="set_param" getter="get_param" default="5.0">
 			The light's radius.
 		</member>
-		<member name="omni_shadow_detail" type="int" setter="set_shadow_detail" getter="get_shadow_detail" enum="OmniLight.ShadowDetail" default="1">
-			See [enum ShadowDetail].
-		</member>
 		<member name="omni_shadow_mode" type="int" setter="set_shadow_mode" getter="get_shadow_mode" enum="OmniLight.ShadowMode" default="1">
 			See [enum ShadowMode].
 		</member>
@@ -31,12 +28,6 @@
 		</constant>
 		<constant name="SHADOW_CUBE" value="1" enum="ShadowMode">
 			Shadows are rendered to a cubemap. Slower than [constant SHADOW_DUAL_PARABOLOID], but higher-quality.
-		</constant>
-		<constant name="SHADOW_DETAIL_VERTICAL" value="0" enum="ShadowDetail">
-			Use more detail vertically when computing the shadow.
-		</constant>
-		<constant name="SHADOW_DETAIL_HORIZONTAL" value="1" enum="ShadowDetail">
-			Use more detail horizontally when computing the shadow.
 		</constant>
 	</constants>
 </class>

@@ -5,7 +5,6 @@
 	</brief_description>
 	<description>
 		A Polygon2D is defined by a set of points. Each point is connected to the next, with the final point being connected to the first, resulting in a closed polygon. Polygon2Ds can be filled with color (solid or gradient) or filled with a given texture.
-		[b]Note:[/b] By default, Godot can only draw up to 4,096 polygon points at a time. To increase this limit, open the Project Settings and increase [member ProjectSettings.rendering/limits/buffers/canvas_polygon_buffer_size_kb] and [member ProjectSettings.rendering/limits/buffers/canvas_polygon_index_buffer_size_kb].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -94,6 +93,8 @@
 		<member name="invert_enable" type="bool" setter="set_invert" getter="get_invert" default="false">
 			If [code]true[/code], polygon will be inverted, containing the area outside the defined points and extending to the [code]invert_border[/code].
 		</member>
+		<member name="normal_map" type="Texture2D" setter="set_normal_map" getter="get_normal_map">
+		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
 			The offset applied to each vertex.
 		</member>
@@ -103,9 +104,15 @@
 		</member>
 		<member name="polygons" type="Array" setter="set_polygons" getter="get_polygons" default="[  ]">
 		</member>
+		<member name="shininess" type="float" setter="set_shininess" getter="get_shininess" default="1.0">
+		</member>
 		<member name="skeleton" type="NodePath" setter="set_skeleton" getter="get_skeleton" default="NodePath(&quot;&quot;)">
 		</member>
-		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
+		<member name="specular_color" type="Color" setter="set_specular_color" getter="get_specular_color" default="Color( 1, 1, 1, 1 )">
+		</member>
+		<member name="specular_map" type="Texture2D" setter="set_specular_map" getter="get_specular_map">
+		</member>
+		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			The polygon's fill texture. Use [code]uv[/code] to set texture coordinates.
 		</member>
 		<member name="texture_offset" type="Vector2" setter="set_texture_offset" getter="get_texture_offset" default="Vector2( 0, 0 )">

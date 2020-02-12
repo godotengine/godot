@@ -79,13 +79,13 @@
 			</description>
 		</method>
 		<method name="get_item_preview" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
 				Returns a generated item preview (a 3D rendering in isometric perspective).
-				[b]Note:[/b] Since item previews are only generated in an editor context, this function will return an empty [Texture] in a running project.
+				[b]Note:[/b] Since item previews are only generated in an editor context, this function will return an empty [Texture2D] in a running project.
 			</description>
 		</method>
 		<method name="get_item_shapes" qualifiers="const">
@@ -164,7 +164,7 @@
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="texture" type="Texture">
+			<argument index="1" name="texture" type="Texture2D">
 			</argument>
 			<description>
 				Sets a texture to use as the item's preview icon in the editor.

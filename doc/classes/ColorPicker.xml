@@ -87,11 +87,11 @@
 	<constants>
 	</constants>
 	<theme_items>
-		<theme_item name="add_preset" type="Texture">
+		<theme_item name="add_preset" type="Texture2D">
 		</theme_item>
-		<theme_item name="color_hue" type="Texture">
+		<theme_item name="color_hue" type="Texture2D">
 		</theme_item>
-		<theme_item name="color_sample" type="Texture">
+		<theme_item name="color_sample" type="Texture2D">
 		</theme_item>
 		<theme_item name="h_width" type="int" default="30">
 		</theme_item>
@@ -99,11 +99,11 @@
 		</theme_item>
 		<theme_item name="margin" type="int" default="4">
 		</theme_item>
-		<theme_item name="overbright_indicator" type="Texture">
+		<theme_item name="overbright_indicator" type="Texture2D">
 		</theme_item>
-		<theme_item name="preset_bg" type="Texture">
+		<theme_item name="preset_bg" type="Texture2D">
 		</theme_item>
-		<theme_item name="screen_picker" type="Texture">
+		<theme_item name="screen_picker" type="Texture2D">
 		</theme_item>
 		<theme_item name="sv_height" type="int" default="256">
 		</theme_item>

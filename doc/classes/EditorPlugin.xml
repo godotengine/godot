@@ -67,11 +67,11 @@
 			</argument>
 			<argument index="2" name="script" type="Script">
 			</argument>
-			<argument index="3" name="icon" type="Texture">
+			<argument index="3" name="icon" type="Texture2D">
 			</argument>
 			<description>
 				Adds a custom type, which will appear in the list of nodes or resources. An icon can be optionally passed.
-				When given node or resource is selected, the base type will be instanced (ie, "Spatial", "Control", "Resource"), then the script will be loaded and set to this object.
+				When given node or resource is selected, the base type will be instanced (e.g. "Spatial", "Control", "Resource"), then the script will be loaded and set to this object.
 				You can use the virtual method [method handles] to check if your custom object is being edited by checking the script or using the [code]is[/code] keyword.
 				During run-time, this will be a simple object with a script so this function does not need to be called then.
 			</description>

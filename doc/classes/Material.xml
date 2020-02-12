@@ -13,7 +13,7 @@
 	<members>
 		<member name="next_pass" type="Material" setter="set_next_pass" getter="get_next_pass">
 			Sets the [Material] to be used for the next pass. This renders the object again using a different material.
-			[b]Note:[/b] only applies to [SpatialMaterial]s and [ShaderMaterial]s with type "Spatial".
+			[b]Note:[/b] only applies to [StandardMaterial3D]s and [ShaderMaterial]s with type "Spatial".
 		</member>
 		<member name="render_priority" type="int" setter="set_render_priority" getter="get_render_priority" default="0">
 			Sets the render priority for transparent objects in 3D scenes. Higher priority objects will be sorted in front of lower priority objects.

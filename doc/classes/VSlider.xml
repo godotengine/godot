@@ -17,17 +17,17 @@
 	<constants>
 	</constants>
 	<theme_items>
-		<theme_item name="grabber" type="Texture">
+		<theme_item name="grabber" type="Texture2D">
 		</theme_item>
 		<theme_item name="grabber_area" type="StyleBox">
 		</theme_item>
-		<theme_item name="grabber_disabled" type="Texture">
+		<theme_item name="grabber_disabled" type="Texture2D">
 		</theme_item>
-		<theme_item name="grabber_highlight" type="Texture">
+		<theme_item name="grabber_highlight" type="Texture2D">
 		</theme_item>
 		<theme_item name="slider" type="StyleBox">
 		</theme_item>
-		<theme_item name="tick" type="Texture">
+		<theme_item name="tick" type="Texture2D">
 		</theme_item>
 	</theme_items>
 </class>

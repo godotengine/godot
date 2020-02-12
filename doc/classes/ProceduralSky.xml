@@ -58,7 +58,7 @@
 			The direction of the sun using polar coordinates.
 		</member>
 		<member name="texture_size" type="int" setter="set_texture_size" getter="get_texture_size" enum="ProceduralSky.TextureSize" default="2">
-			Size of [Texture] that the ProceduralSky will generate. The size is set using [enum TextureSize].
+			Size of [Texture2D] that the ProceduralSky will generate. The size is set using [enum TextureSize].
 		</member>
 	</members>
 	<constants>

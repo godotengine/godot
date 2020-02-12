@@ -150,14 +150,14 @@
 			</description>
 		</method>
 		<method name="get_icon" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
 			<argument index="1" name="type" type="String">
 			</argument>
 			<description>
-				Returns the icon [Texture] at [code]name[/code] if the theme has [code]type[/code].
+				Returns the icon [Texture2D] at [code]name[/code] if the theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="get_icon_list" qualifiers="const">
@@ -166,7 +166,7 @@
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
-				Returns all the icons as a [PoolStringArray] filled with each [Texture]'s name, for use in [method get_icon], if the theme has [code]type[/code].
+				Returns all the icons as a [PoolStringArray] filled with each [Texture2D]'s name, for use in [method get_icon], if the theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="get_stylebox" qualifiers="const">
@@ -249,7 +249,7 @@
 			<argument index="1" name="type" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if icon [Texture] with [code]name[/code] is in [code]type[/code].
+				Returns [code]true[/code] if icon [Texture2D] with [code]name[/code] is in [code]type[/code].
 				Returns [code]false[/code] if the theme does not have [code]type[/code].
 			</description>
 		</method>
@@ -314,10 +314,10 @@
 			</argument>
 			<argument index="1" name="type" type="String">
 			</argument>
-			<argument index="2" name="texture" type="Texture">
+			<argument index="2" name="texture" type="Texture2D">
 			</argument>
 			<description>
-				Sets the theme's icon [Texture] to [code]texture[/code] at [code]name[/code] in [code]type[/code].
+				Sets the theme's icon [Texture2D] to [code]texture[/code] at [code]name[/code] in [code]type[/code].
 				Does nothing if the theme does not have [code]type[/code].
 			</description>
 		</method>

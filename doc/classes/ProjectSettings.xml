@@ -967,29 +967,8 @@
 		<member name="rendering/environment/default_environment" type="String" setter="" getter="" default="&quot;&quot;">
 			[Environment] that will be used as a fallback environment in case a scene does not specify its own environment. The default environment is loaded in at scene load time regardless of whether you have set an environment or not. If you do not rely on the fallback environment, it is best to delete [code]default_env.tres[/code], or to specify a different default environment here.
 		</member>
-		<member name="rendering/limits/buffers/blend_shape_max_buffer_size_kb" type="int" setter="" getter="" default="4096">
-			Max buffer size for blend shapes. Any blend shape bigger than this will not work.
-		</member>
-		<member name="rendering/limits/buffers/canvas_polygon_buffer_size_kb" type="int" setter="" getter="" default="128">
-			Max buffer size for drawing polygons. Any polygon bigger than this will not work.
-		</member>
-		<member name="rendering/limits/buffers/canvas_polygon_index_buffer_size_kb" type="int" setter="" getter="" default="128">
-			Max index buffer size for drawing polygons. Any polygon bigger than this will not work.
-		</member>
-		<member name="rendering/limits/buffers/immediate_buffer_size_kb" type="int" setter="" getter="" default="2048">
-			Max buffer size for drawing immediate objects (ImmediateGeometry nodes). Nodes using more than this size will not work.
-		</member>
-		<member name="rendering/limits/rendering/max_renderable_elements" type="int" setter="" getter="" default="65536">
+		<member name="rendering/limits/rendering/max_renderable_elements" type="int" setter="" getter="" default="128000">
 			Max amount of elements renderable in a frame. If more than this are visible per frame, they will be dropped. Keep in mind elements refer to mesh surfaces and not meshes themselves.
-		</member>
-		<member name="rendering/limits/rendering/max_renderable_lights" type="int" setter="" getter="" default="4096">
-			Max number of lights renderable in a frame. If more than this number are used, they will be ignored. On some systems (particularly web) setting this number as low as possible can increase the speed of shader compilation.
-		</member>
-		<member name="rendering/limits/rendering/max_renderable_reflections" type="int" setter="" getter="" default="1024">
-			Max number of reflection probes renderable in a frame. If more than this number are used, they will be ignored. On some systems (particularly web) setting this number as low as possible can increase the speed of shader compilation.
-		</member>
-		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="" default="3600">
-			Shaders have a time variable that constantly increases. At some point, it needs to be rolled back to zero to avoid precision errors on shader animations. This setting specifies when (in seconds).
 		</member>
 		<member name="rendering/quality/2d/gles2_use_nvidia_rect_flicker_workaround" type="bool" setter="" getter="" default="false">
 			Some NVIDIA GPU drivers have a bug which produces flickering issues for the [code]draw_rect[/code] method, especially as used in [TileMap]. Refer to [url=https://github.com/godotengine/godot/issues/9913]GitHub issue 9913[/url] for details.
@@ -997,13 +976,6 @@
 		</member>
 		<member name="rendering/quality/2d/use_pixel_snap" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], forces snapping of polygons to pixels in 2D rendering. May help in some pixel art styles.
-		</member>
-		<member name="rendering/quality/depth/hdr" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], allocates the main framebuffer with high dynamic range. High dynamic range allows the use of [Color] values greater than 1.
-			[b]Note:[/b] Only available on the GLES3 backend.
-		</member>
-		<member name="rendering/quality/depth/hdr.mobile" type="bool" setter="" getter="" default="false">
-			Lower-end override for [member rendering/quality/depth/hdr] on mobile devices, due to performance concerns or driver support.
 		</member>
 		<member name="rendering/quality/depth_prepass/disable_for_vendors" type="String" setter="" getter="" default="&quot;PowerVR,Mali,Adreno,Apple&quot;">
 			Disables depth pre-pass for some GPU vendors (usually mobile), as their architecture already does this.
@@ -1017,7 +989,7 @@
 		<member name="rendering/quality/directional_shadow/size.mobile" type="int" setter="" getter="" default="2048">
 			Lower-end override for [member rendering/quality/directional_shadow/size] on mobile devices, due to performance concerns or driver support.
 		</member>
-		<member name="rendering/quality/driver/driver_name" type="String" setter="" getter="" default="&quot;GLES3&quot;">
+		<member name="rendering/quality/driver/driver_name" type="String" setter="" getter="" default="&quot;Vulkan&quot;">
 			The video driver to use ("GLES2" or "GLES3").
 			[b]Note:[/b] The backend in use can be overridden at runtime via the [code]--video-driver[/code] command line argument, or by the [member rendering/quality/driver/fallback_to_gles2] option if the target system does not support GLES3 and falls back to GLES2. In such cases, this property is not updated, so use [method OS.get_current_video_driver] to query it at run-time.
 		</member>
@@ -1025,15 +997,28 @@
 			If [code]true[/code], allows falling back to the GLES2 driver if the GLES3 driver is not supported.
 			[b]Note:[/b] The two video drivers are not drop-in replacements for each other, so a game designed for GLES3 might not work properly when falling back to GLES2. In particular, some features of the GLES3 backend are not available in GLES2. Enabling this setting also means that both ETC and ETC2 VRAM-compressed textures will be exported on Android and iOS, increasing the data pack's size.
 		</member>
-		<member name="rendering/quality/filters/anisotropic_filter_level" type="int" setter="" getter="" default="4">
-			Maximum anisotropic filter level used for textures with anisotropy enabled. Higher values will result in sharper textures when viewed from oblique angles, at the cost of performance. Only power-of-two values are valid (2, 4, 8, 16).
+		<member name="rendering/quality/filters/depth_of_field_bokeh_quality" type="int" setter="" getter="" default="2">
+		</member>
+		<member name="rendering/quality/filters/depth_of_field_bokeh_shape" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="rendering/quality/filters/depth_of_field_use_jitter" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/quality/filters/max_anisotropy" type="int" setter="" getter="" default="4">
 		</member>
 		<member name="rendering/quality/filters/msaa" type="int" setter="" getter="" default="0">
 			Sets the number of MSAA samples to use. MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware.
 			[b]Note:[/b] MSAA is not available on HTML5 export using the GLES2 backend.
 		</member>
+		<member name="rendering/quality/filters/screen_space_roughness_limiter" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="rendering/quality/filters/screen_space_roughness_limiter_curve" type="float" setter="" getter="" default="1.0">
+		</member>
 		<member name="rendering/quality/filters/use_nearest_mipmap_filter" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If [code]false[/code], linear mipmap filtering (also called "trilinear filtering") is used.
+		</member>
+		<member name="rendering/quality/gi_probes/anisotropic" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/quality/gi_probes/quality" type="int" setter="" getter="" default="1">
 		</member>
 		<member name="rendering/quality/intended_usage/framebuffer_allocation" type="int" setter="" getter="" default="2">
 			Strategy used for framebuffer allocation. The simpler it is, the less resources it uses (but the less features it supports). If set to "2D Without Sampling" or "3D Without Effects", sample buffers will not be allocated. This means [code]SCREEN_TEXTURE[/code] and [code]DEPTH_TEXTURE[/code] will not be available in shaders and post-processing effects will not be available in the [Environment].
@@ -1041,21 +1026,24 @@
 		<member name="rendering/quality/intended_usage/framebuffer_allocation.mobile" type="int" setter="" getter="" default="3">
 			Lower-end override for [member rendering/quality/intended_usage/framebuffer_allocation] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/quality/reflection_atlas/reflection_count" type="int" setter="" getter="" default="64">
+		</member>
+		<member name="rendering/quality/reflection_atlas/reflection_size" type="int" setter="" getter="" default="256">
+		</member>
+		<member name="rendering/quality/reflection_atlas/reflection_size.mobile" type="int" setter="" getter="" default="128">
+		</member>
 		<member name="rendering/quality/reflections/atlas_size" type="int" setter="" getter="" default="2048">
 			Size of the atlas used by reflection probes. A larger size can result in higher visual quality, while a smaller size will be faster and take up less memory.
 		</member>
-		<member name="rendering/quality/reflections/atlas_subdiv" type="int" setter="" getter="" default="8">
-			Number of subdivisions to use for the reflection atlas. A higher number lowers the quality of each atlas, but allows you to use more.
+		<member name="rendering/quality/reflections/ggx_samples" type="int" setter="" getter="" default="1024">
 		</member>
-		<member name="rendering/quality/reflections/high_quality_ggx" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], uses a high amount of samples to create blurred variants of reflection probes and panorama backgrounds (sky). Those blurred variants are used by rough materials.
+		<member name="rendering/quality/reflections/ggx_samples.mobile" type="int" setter="" getter="" default="128">
 		</member>
-		<member name="rendering/quality/reflections/high_quality_ggx.mobile" type="bool" setter="" getter="" default="false">
-			Lower-end override for [member rendering/quality/reflections/high_quality_ggx] on mobile devices, due to performance concerns or driver support.
+		<member name="rendering/quality/reflections/ggx_samples_realtime" type="int" setter="" getter="" default="64">
 		</member>
-		<member name="rendering/quality/reflections/irradiance_max_size" type="int" setter="" getter="" default="128">
-			Limits the size of the irradiance map which is normally determined by [member Sky.radiance_size]. A higher size results in a higher quality irradiance map similarly to [member rendering/quality/reflections/high_quality_ggx]. Use a higher value when using high-frequency HDRI maps, otherwise keep this as low as possible.
-			[b]Note:[/b] Low and mid range hardware do not support complex irradiance maps well and may crash if this is set too high.
+		<member name="rendering/quality/reflections/ggx_samples_realtime.mobile" type="int" setter="" getter="" default="16">
+		</member>
+		<member name="rendering/quality/reflections/roughness_layers" type="int" setter="" getter="" default="6">
 		</member>
 		<member name="rendering/quality/reflections/texture_array_reflections" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], uses texture arrays instead of mipmaps for reflection probes and panorama backgrounds (sky). This reduces jitter noise on reflections, but costs more performance and memory.
@@ -1105,20 +1093,9 @@
 		<member name="rendering/quality/shadows/filter_mode.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/quality/shadows/filter_mode] on mobile devices, due to performance concerns or driver support.
 		</member>
-		<member name="rendering/quality/subsurface_scattering/follow_surface" type="bool" setter="" getter="" default="false">
-			Improves quality of subsurface scattering, but cost significantly increases.
+		<member name="rendering/quality/ssao/half_size" type="bool" setter="" getter="" default="false">
 		</member>
-		<member name="rendering/quality/subsurface_scattering/quality" type="int" setter="" getter="" default="1">
-			Quality setting for subsurface scattering (samples taken).
-		</member>
-		<member name="rendering/quality/subsurface_scattering/scale" type="int" setter="" getter="" default="1.0">
-			Max radius used for subsurface scattering samples.
-		</member>
-		<member name="rendering/quality/subsurface_scattering/weight_samples" type="bool" setter="" getter="" default="true">
-			Weight subsurface scattering samples. Helps to avoid reading samples from unrelated parts of the screen.
-		</member>
-		<member name="rendering/quality/voxel_cone_tracing/high_quality" type="bool" setter="" getter="" default="false">
-			Use high-quality voxel cone tracing. This results in better-looking reflections, but is much more expensive on the GPU.
+		<member name="rendering/quality/ssao/quality" type="int" setter="" getter="" default="1">
 		</member>
 		<member name="rendering/threads/thread_model" type="int" setter="" getter="" default="1">
 			Thread model for rendering. Rendering on a thread can vastly improve performance, but synchronizing to the main thread can cause a bit more jitter.
@@ -1137,6 +1114,14 @@
 		</member>
 		<member name="rendering/vram_compression/import_s3tc" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm. This algorithm is only supported on desktop platforms and consoles.
+		</member>
+		<member name="rendering/vulkan/descriptor_pools/max_descriptors_per_pool" type="int" setter="" getter="" default="64">
+		</member>
+		<member name="rendering/vulkan/staging_buffer/block_size_kb" type="int" setter="" getter="" default="256">
+		</member>
+		<member name="rendering/vulkan/staging_buffer/max_size_mb" type="int" setter="" getter="" default="128">
+		</member>
+		<member name="rendering/vulkan/staging_buffer/texture_upload_region_size_px" type="int" setter="" getter="" default="64">
 		</member>
 	</members>
 	<constants>

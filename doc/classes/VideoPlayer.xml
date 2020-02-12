@@ -18,10 +18,10 @@
 			</description>
 		</method>
 		<method name="get_video_texture" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<description>
-				Returns the current frame as a [Texture].
+				Returns the current frame as a [Texture2D].
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">

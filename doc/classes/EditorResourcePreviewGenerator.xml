@@ -18,7 +18,7 @@
 			</description>
 		</method>
 		<method name="generate" qualifiers="virtual">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="from" type="Resource">
 			</argument>
@@ -31,7 +31,7 @@
 			</description>
 		</method>
 		<method name="generate_from_path" qualifiers="virtual">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>

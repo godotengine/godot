@@ -103,7 +103,7 @@
 	</methods>
 	<members>
 		<member name="lightmap_size_hint" type="Vector2" setter="set_lightmap_size_hint" getter="get_lightmap_size_hint" default="Vector2( 0, 0 )">
-			Sets a hint to be used for lightmap resolution in [BakedLightmap]. Overrides [member BakedLightmap.bake_default_texels_per_unit].
+			Sets a hint to be used for lightmap resolution.
 		</member>
 	</members>
 	<constants>
@@ -116,17 +116,11 @@
 		<constant name="PRIMITIVE_LINE_STRIP" value="2" enum="PrimitiveType">
 			Render array as line strip.
 		</constant>
-		<constant name="PRIMITIVE_LINE_LOOP" value="3" enum="PrimitiveType">
-			Render array as line loop (like line strip, but closed).
-		</constant>
-		<constant name="PRIMITIVE_TRIANGLES" value="4" enum="PrimitiveType">
+		<constant name="PRIMITIVE_TRIANGLES" value="3" enum="PrimitiveType">
 			Render array as triangles (every three vertices a triangle is created).
 		</constant>
-		<constant name="PRIMITIVE_TRIANGLE_STRIP" value="5" enum="PrimitiveType">
+		<constant name="PRIMITIVE_TRIANGLE_STRIP" value="4" enum="PrimitiveType">
 			Render array as triangle strips.
-		</constant>
-		<constant name="PRIMITIVE_TRIANGLE_FAN" value="6" enum="PrimitiveType">
-			Render array as triangle fans.
 		</constant>
 		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0" enum="BlendShapeMode">
 			Blend shapes are normalized.
@@ -161,9 +155,6 @@
 		<constant name="ARRAY_FORMAT_INDEX" value="256" enum="ArrayFormat">
 			Mesh array uses indices.
 		</constant>
-		<constant name="ARRAY_COMPRESS_VERTEX" value="512" enum="ArrayFormat">
-			Flag used to mark a compressed (half float) vertex array.
-		</constant>
 		<constant name="ARRAY_COMPRESS_NORMAL" value="1024" enum="ArrayFormat">
 			Flag used to mark a compressed (half float) normal array.
 		</constant>
@@ -179,23 +170,14 @@
 		<constant name="ARRAY_COMPRESS_TEX_UV2" value="16384" enum="ArrayFormat">
 			Flag used to mark a compressed (half float) UV coordinates array for the second UV coordinates.
 		</constant>
-		<constant name="ARRAY_COMPRESS_BONES" value="32768" enum="ArrayFormat">
-			Flag used to mark a compressed bone array.
-		</constant>
-		<constant name="ARRAY_COMPRESS_WEIGHTS" value="65536" enum="ArrayFormat">
-			Flag used to mark a compressed (half float) weight array.
-		</constant>
 		<constant name="ARRAY_COMPRESS_INDEX" value="131072" enum="ArrayFormat">
 			Flag used to mark a compressed index array.
 		</constant>
 		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="262144" enum="ArrayFormat">
 			Flag used to mark that the array contains 2D vertices.
 		</constant>
-		<constant name="ARRAY_FLAG_USE_16_BIT_BONES" value="524288" enum="ArrayFormat">
-			Flag used to mark that the array uses 16-bit bones instead of 8-bit.
-		</constant>
-		<constant name="ARRAY_COMPRESS_DEFAULT" value="97280" enum="ArrayFormat">
-			Used to set flags [constant ARRAY_COMPRESS_VERTEX], [constant ARRAY_COMPRESS_NORMAL], [constant ARRAY_COMPRESS_TANGENT], [constant ARRAY_COMPRESS_COLOR], [constant ARRAY_COMPRESS_TEX_UV], [constant ARRAY_COMPRESS_TEX_UV2] and [constant ARRAY_COMPRESS_WEIGHTS] quickly.
+		<constant name="ARRAY_COMPRESS_DEFAULT" value="31744" enum="ArrayFormat">
+			Used to set flags [constant ARRAY_COMPRESS_NORMAL], [constant ARRAY_COMPRESS_TANGENT], [constant ARRAY_COMPRESS_COLOR], [constant ARRAY_COMPRESS_TEX_UV] and [constant ARRAY_COMPRESS_TEX_UV2] quickly.
 		</constant>
 		<constant name="ARRAY_VERTEX" value="0" enum="ArrayType">
 			Array of vertices.

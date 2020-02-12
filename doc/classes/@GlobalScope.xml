@@ -53,8 +53,14 @@
 		<member name="Marshalls" type="Reference" setter="" getter="">
 			The [Marshalls] singleton.
 		</member>
-		<member name="NavigationMeshGenerator" type="EditorNavigationMeshGenerator" setter="" getter="">
-			The [EditorNavigationMeshGenerator] singleton.
+		<member name="Navigation2DServer" type="Navigation2DServer" setter="" getter="">
+			The [Navigation2DServer] singleton.
+		</member>
+		<member name="NavigationMeshGenerator" type="NavigationMeshGenerator" setter="" getter="">
+			The [NavigationMeshGenerator] singleton.
+		</member>
+		<member name="NavigationServer" type="NavigationServer" setter="" getter="">
+			The [NavigationServer] singleton.
 		</member>
 		<member name="OS" type="OS" setter="" getter="">
 			The [OS] singleton.
@@ -1367,7 +1373,7 @@
 			Hints that a string property is an absolute path to a directory outside the project folder. Editing it will show a file dialog for picking the path.
 		</constant>
 		<constant name="PROPERTY_HINT_RESOURCE_TYPE" value="17" enum="PropertyHint">
-			Hints that a property is an instance of a [Resource]-derived type, optionally specified via the hint string (e.g. [code]"Texture"[/code]). Editing it will show a popup menu of valid resource types to instantiate.
+			Hints that a property is an instance of a [Resource]-derived type, optionally specified via the hint string (e.g. [code]"Texture2D"[/code]). Editing it will show a popup menu of valid resource types to instantiate.
 		</constant>
 		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="18" enum="PropertyHint">
 			Hints that a string property is text with line breaks. Editing it will show a text input field where line breaks can be typed.

@@ -53,7 +53,7 @@
 	<signals>
 		<signal name="editor_refresh_request">
 			<description>
-				Emitted when the node requests an editor refresh. Currently called only in setter of [member VisualShaderNodeTexture.source], [VisualShaderNodeTexture], and [VisualShaderNodeCubeMap] (and their derivatives).
+				Emitted when the node requests an editor refresh. Currently called only in setter of [member VisualShaderNodeTexture.source], [VisualShaderNodeTexture], and [VisualShaderNodeCubemap] (and their derivatives).
 			</description>
 		</signal>
 	</signals>
