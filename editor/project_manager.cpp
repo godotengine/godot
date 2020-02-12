@@ -891,17 +891,26 @@ public:
 
 		rshb->add_child(memnew(VSeparator));
 
+		const String gles2_unsupported_tooltip =
+				TTR("The GLES2 renderer is currently unavailable, as it needs to be reworked for Godot 4.0.\nUse Godot 3.2 if you need GLES2 support.");
+
 		rvb = memnew(VBoxContainer);
 		rvb->set_h_size_flags(SIZE_EXPAND_FILL);
 		rshb->add_child(rvb);
 		rs_button = memnew(CheckBox);
 		rs_button->set_button_group(rasterizer_button_group);
-		rs_button->set_text(TTR("OpenGL ES 2.0"));
+		rs_button->set_text(TTR("OpenGL ES 2.0 (currently unavailable)"));
 		rs_button->set_meta("driver_name", "GLES2");
+		rs_button->set_disabled(true);
+		rs_button->set_tooltip(gles2_unsupported_tooltip);
 		rvb->add_child(rs_button);
 		l = memnew(Label);
 		l->set_text(TTR("- Lower visual quality\n- Some features not available\n- Works on most hardware\n- Recommended for web and mobile games"));
 		l->set_modulate(Color(1, 1, 1, 0.7));
+		// Also set the tooltip on the label so it appears when hovering either the checkbox or label.
+		l->set_tooltip(gles2_unsupported_tooltip);
+		// Required for the tooltip to show.
+		l->set_mouse_filter(MOUSE_FILTER_STOP);
 		rvb->add_child(l);
 
 		l = memnew(Label);
