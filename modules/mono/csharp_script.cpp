@@ -166,7 +166,7 @@ void CSharpLanguage::finish() {
 		Object *obj = ObjectDB::get_instance(id);
 
 		if (obj) {
-			ERR_PRINT("Leaked unsafe reference to object: " + obj->to_string());
+			ERR_PRINTS("Leaked unsafe reference to object: " + obj->to_string());
 		} else {
 			ERR_PRINT("Leaked unsafe reference to deleted object: " + itos(id));
 		}
