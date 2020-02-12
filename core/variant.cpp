@@ -1248,6 +1248,14 @@ Variant::operator uint64_t() const {
 	}
 }
 
+Variant::operator ObjectID() const {
+	if (type == INT) {
+		return ObjectID(_data._int);
+	} else {
+		return ObjectID();
+	}
+}
+
 #ifdef NEED_LONG_INT
 Variant::operator signed long() const {
 
@@ -2191,6 +2199,11 @@ Variant::Variant(double p_double) {
 
 	type = REAL;
 	_data._real = p_double;
+}
+
+Variant::Variant(const ObjectID &p_id) {
+	type = INT;
+	_data._int = p_id;
 }
 
 Variant::Variant(const StringName &p_string) {

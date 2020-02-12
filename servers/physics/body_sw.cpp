@@ -709,7 +709,7 @@ void BodySW::call_queries() {
 		Object *obj = ObjectDB::get_instance(fi_callback->id);
 		if (!obj) {
 
-			set_force_integration_callback(0, StringName());
+			set_force_integration_callback(ObjectID(), StringName());
 		} else {
 			const Variant *vp[2] = { &v, &fi_callback->udata };
 
@@ -749,7 +749,7 @@ void BodySW::set_force_integration_callback(ObjectID p_id, const StringName &p_m
 		fi_callback = NULL;
 	}
 
-	if (p_id != 0) {
+	if (p_id.is_valid()) {
 
 		fi_callback = memnew(ForceIntegrationCallback);
 		fi_callback->id = p_id;

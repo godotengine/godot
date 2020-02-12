@@ -412,7 +412,7 @@ void Viewport::_notification(int p_what) {
 #ifndef _3D_DISABLED
 				Vector2 last_pos(1e20, 1e20);
 				CollisionObject *last_object = NULL;
-				ObjectID last_id = 0;
+				ObjectID last_id;
 #endif
 				PhysicsDirectSpaceState::RayResult result;
 				Physics2DDirectSpaceState *ss2d = Physics2DServer::get_singleton()->space_get_direct_state(find_world_2d()->get_space());
@@ -532,7 +532,7 @@ void Viewport::_notification(int p_what) {
 							} else {
 								// This Viewport's builtin canvas
 								canvas_transform = get_canvas_transform();
-								canvas_layer_id = 0;
+								canvas_layer_id = ObjectID();
 							}
 
 							Vector2 point = canvas_transform.affine_inverse().xform(pos);
@@ -540,7 +540,7 @@ void Viewport::_notification(int p_what) {
 							int rc = ss2d->intersect_point_on_canvas(point, canvas_layer_id, res, 64, Set<RID>(), 0xFFFFFFFF, true, true, true);
 							for (int i = 0; i < rc; i++) {
 
-								if (res[i].collider_id && res[i].collider) {
+								if (res[i].collider_id.is_valid() && res[i].collider) {
 									CollisionObject2D *co = Object::cast_to<CollisionObject2D>(res[i].collider);
 									if (co) {
 										bool send_event = true;
@@ -594,18 +594,18 @@ void Viewport::_notification(int p_what) {
 #ifndef _3D_DISABLED
 					bool captured = false;
 
-					if (physics_object_capture != 0) {
+					if (physics_object_capture.is_valid()) {
 
 						CollisionObject *co = Object::cast_to<CollisionObject>(ObjectDB::get_instance(physics_object_capture));
 						if (co && camera) {
 							_collision_object_input_event(co, camera, ev, Vector3(), Vector3(), 0);
 							captured = true;
 							if (mb.is_valid() && mb->get_button_index() == 1 && !mb->is_pressed()) {
-								physics_object_capture = 0;
+								physics_object_capture = ObjectID();
 							}
 
 						} else {
-							physics_object_capture = 0;
+							physics_object_capture = ObjectID();
 						}
 					}
 
@@ -613,7 +613,7 @@ void Viewport::_notification(int p_what) {
 						//none
 					} else if (pos == last_pos) {
 
-						if (last_id) {
+						if (last_id.is_valid()) {
 							if (ObjectDB::get_instance(last_id) && last_object) {
 								//good, exists
 								_collision_object_input_event(last_object, camera, ev, result.position, result.normal, result.shape);
@@ -633,7 +633,7 @@ void Viewport::_notification(int p_what) {
 							if (space) {
 
 								bool col = space->intersect_ray(from, from + dir * 10000, result, Set<RID>(), 0xFFFFFFFF, true, true, true);
-								ObjectID new_collider = 0;
+								ObjectID new_collider;
 								if (col) {
 
 									CollisionObject *co = Object::cast_to<CollisionObject>(result.collider);
@@ -651,7 +651,7 @@ void Viewport::_notification(int p_what) {
 
 								if (is_mouse && new_collider != physics_object_over) {
 
-									if (physics_object_over) {
+									if (physics_object_over.is_valid()) {
 
 										CollisionObject *co = Object::cast_to<CollisionObject>(ObjectDB::get_instance(physics_object_over));
 										if (co) {
@@ -659,7 +659,7 @@ void Viewport::_notification(int p_what) {
 										}
 									}
 
-									if (new_collider) {
+									if (new_collider.is_valid()) {
 
 										CollisionObject *co = Object::cast_to<CollisionObject>(ObjectDB::get_instance(new_collider));
 										if (co) {
@@ -2504,7 +2504,7 @@ void Viewport::_gui_remove_from_modal_stack(List<Control *>::Element *MI, Object
 
 	gui.modal_stack.erase(MI);
 
-	if (p_prev_focus_owner) {
+	if (p_prev_focus_owner.is_valid()) {
 
 		// for previous window in stack, pass the focus so it feels more
 		// natural
@@ -2701,14 +2701,15 @@ void Viewport::_drop_physics_mouseover() {
 	}
 
 #ifndef _3D_DISABLED
-	if (physics_object_over) {
+	if (physics_object_over.is_valid()) {
 		CollisionObject *co = Object::cast_to<CollisionObject>(ObjectDB::get_instance(physics_object_over));
 		if (co) {
 			co->_mouse_exit();
 		}
 	}
 
-	physics_object_over = physics_object_capture = 0;
+	physics_object_over = ObjectID();
+	physics_object_capture = ObjectID();
 #endif
 }
 
@@ -2718,7 +2719,7 @@ List<Control *>::Element *Viewport::_gui_show_modal(Control *p_control) {
 	if (gui.key_focus)
 		p_control->_modal_set_prev_focus_owner(gui.key_focus->get_instance_id());
 	else
-		p_control->_modal_set_prev_focus_owner(0);
+		p_control->_modal_set_prev_focus_owner(ObjectID());
 
 	if (gui.mouse_focus && !p_control->is_a_parent_of(gui.mouse_focus) && !gui.mouse_click_grabber) {
 
@@ -3334,8 +3335,6 @@ Viewport::Viewport() {
 	update_mode = UPDATE_WHEN_VISIBLE;
 
 	physics_object_picking = false;
-	physics_object_capture = 0;
-	physics_object_over = 0;
 	physics_has_last_mousepos = false;
 	physics_last_mousepos = Vector2(Math_INF, Math_INF);
 
@@ -3385,7 +3384,6 @@ Viewport::Viewport() {
 	physics_last_mouse_state.mouse_mask = 0;
 	local_input_handled = false;
 	handle_input_locally = true;
-	physics_last_id = 0; //ensures first time there will be a check
 
 	default_canvas_item_texture_filter = DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
 	default_canvas_item_texture_repeat = DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;

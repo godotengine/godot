@@ -404,7 +404,7 @@ void PropertySelector::select_method_from_base_type(const String &p_base, const 
 	base_type = p_base;
 	selected = p_current;
 	type = Variant::NIL;
-	script = 0;
+	script = ObjectID();
 	properties = false;
 	instance = NULL;
 	virtuals_only = p_virtuals_only;
@@ -437,7 +437,7 @@ void PropertySelector::select_method_from_basic_type(Variant::Type p_type, const
 	base_type = "";
 	selected = p_current;
 	type = p_type;
-	script = 0;
+	script = ObjectID();
 	properties = false;
 	instance = NULL;
 	virtuals_only = false;
@@ -453,7 +453,7 @@ void PropertySelector::select_method_from_instance(Object *p_instance, const Str
 	base_type = p_instance->get_class();
 	selected = p_current;
 	type = Variant::NIL;
-	script = 0;
+	script = ObjectID();
 	{
 		Ref<Script> scr = p_instance->get_script();
 		if (scr.is_valid())
@@ -474,7 +474,7 @@ void PropertySelector::select_property_from_base_type(const String &p_base, cons
 	base_type = p_base;
 	selected = p_current;
 	type = Variant::NIL;
-	script = 0;
+	script = ObjectID();
 	properties = true;
 	instance = NULL;
 	virtuals_only = false;
@@ -509,7 +509,7 @@ void PropertySelector::select_property_from_basic_type(Variant::Type p_type, con
 	base_type = "";
 	selected = p_current;
 	type = p_type;
-	script = 0;
+	script = ObjectID();
 	properties = true;
 	instance = NULL;
 	virtuals_only = false;
@@ -525,7 +525,7 @@ void PropertySelector::select_property_from_instance(Object *p_instance, const S
 	base_type = "";
 	selected = p_current;
 	type = Variant::NIL;
-	script = 0;
+	script = ObjectID();
 	properties = true;
 	instance = p_instance;
 	virtuals_only = false;

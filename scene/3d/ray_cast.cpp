@@ -80,7 +80,7 @@ bool RayCast::is_colliding() const {
 }
 Object *RayCast::get_collider() const {
 
-	if (against == 0)
+	if (against.is_null())
 		return NULL;
 
 	return ObjectDB::get_instance(against);
@@ -219,7 +219,7 @@ void RayCast::_update_raycast_state() {
 		against_shape = rr.shape;
 	} else {
 		collided = false;
-		against = 0;
+		against = ObjectID();
 		against_shape = 0;
 	}
 }
@@ -393,7 +393,7 @@ void RayCast::_clear_debug_shape() {
 RayCast::RayCast() {
 
 	enabled = false;
-	against = 0;
+
 	collided = false;
 	against_shape = 0;
 	collision_mask = 1;

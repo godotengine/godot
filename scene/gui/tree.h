@@ -112,7 +112,7 @@ private:
 
 		Cell() {
 
-			custom_draw_obj = 0;
+			custom_draw_obj = ObjectID();
 			custom_button = false;
 			mode = TreeItem::CELL_MODE_STRING;
 			min = 0;

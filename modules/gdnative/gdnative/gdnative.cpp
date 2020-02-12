@@ -171,7 +171,7 @@ bool GDAPI godot_is_instance_valid(const godot_object *p_object) {
 }
 
 godot_object GDAPI *godot_instance_from_id(godot_int p_instance_id) {
-	return (godot_object *)ObjectDB::get_instance((ObjectID)p_instance_id);
+	return (godot_object *)ObjectDB::get_instance(ObjectID(p_instance_id));
 }
 
 void *godot_get_class_tag(const godot_string_name *p_class) {

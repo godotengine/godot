@@ -1274,7 +1274,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				gdfs->state.script = Ref<GDScript>(_script);
 				gdfs->state.ip = ip + ipofs;
 				gdfs->state.line = line;
-				gdfs->state.instance_id = (p_instance && p_instance->get_owner()) ? p_instance->get_owner()->get_instance_id() : 0;
+				gdfs->state.instance_id = (p_instance && p_instance->get_owner()) ? p_instance->get_owner()->get_instance_id() : ObjectID();
 				//gdfs->state.result_pos=ip+ipofs-1;
 				gdfs->state.defarg = defarg;
 				gdfs->state.instance = p_instance;
@@ -1829,7 +1829,7 @@ bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 
 	if (p_extended_check) {
 		//class instance gone?
-		if (state.instance_id && !ObjectDB::get_instance(state.instance_id))
+		if (state.instance_id.is_valid() && !ObjectDB::get_instance(state.instance_id))
 			return false;
 	}
 
@@ -1839,7 +1839,7 @@ bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 
 	ERR_FAIL_COND_V(!function, Variant());
-	if (state.instance_id && !ObjectDB::get_instance(state.instance_id)) {
+	if (state.instance_id.is_valid() && !ObjectDB::get_instance(state.instance_id)) {
 #ifdef DEBUG_ENABLED
 		ERR_FAIL_V_MSG(Variant(), "Resumed function '" + String(function->get_name()) + "()' after yield, but class instance is gone. At script: " + state.script->get_path() + ":" + itos(state.line));
 #else

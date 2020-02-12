@@ -529,7 +529,6 @@ void VisualScriptPropertySelector::select_method_from_base_type(const String &p_
 	base_type = p_base;
 	selected = p_current;
 	type = Variant::NIL;
-	script = 0;
 	properties = false;
 	instance = NULL;
 	virtuals_only = p_virtuals_only;
@@ -554,7 +553,6 @@ void VisualScriptPropertySelector::select_from_base_type(const String &p_base, c
 	base_type = p_base;
 	selected = p_current;
 	type = Variant::NIL;
-	script = 0;
 	properties = true;
 	visual_script_generic = false;
 	instance = NULL;
@@ -601,7 +599,6 @@ void VisualScriptPropertySelector::select_from_basic_type(Variant::Type p_type, 
 	base_type = "";
 	selected = p_current;
 	type = p_type;
-	script = 0;
 	properties = true;
 	visual_script_generic = false;
 	instance = NULL;
@@ -623,7 +620,6 @@ void VisualScriptPropertySelector::select_from_action(const String &p_type, cons
 	base_type = p_type;
 	selected = p_current;
 	type = Variant::NIL;
-	script = 0;
 	properties = false;
 	visual_script_generic = false;
 	instance = NULL;
@@ -645,7 +641,6 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 	base_type = p_basetype;
 	selected = p_current;
 	type = Variant::NIL;
-	script = 0;
 	properties = true;
 	visual_script_generic = false;
 	instance = p_instance;
@@ -667,7 +662,6 @@ void VisualScriptPropertySelector::select_from_visual_script(const String &p_bas
 	base_type = p_base;
 	selected = "";
 	type = Variant::NIL;
-	script = 0;
 	properties = true;
 	visual_script_generic = true;
 	instance = NULL;

@@ -44,6 +44,7 @@
 #include "core/math/transform_2d.h"
 #include "core/math/vector3.h"
 #include "core/node_path.h"
+#include "core/object_id.h"
 #include "core/pool_vector.h"
 #include "core/ref_ptr.h"
 #include "core/rid.h"
@@ -177,6 +178,8 @@ public:
 	operator unsigned long() const;
 #endif
 
+	operator ObjectID() const;
+
 	operator CharType() const;
 	operator float() const;
 	operator double() const;
@@ -248,6 +251,7 @@ public:
 	Variant(uint64_t p_int);
 	Variant(float p_float);
 	Variant(double p_double);
+	Variant(const ObjectID &p_id);
 	Variant(const String &p_string);
 	Variant(const StringName &p_string);
 	Variant(const char *const p_cstring);

@@ -166,8 +166,8 @@ void InspectorDock::_resource_file_selected(String p_file) {
 }
 
 void InspectorDock::_save_resource(bool save_as) const {
-	uint32_t current = EditorNode::get_singleton()->get_editor_history()->get_current();
-	Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : NULL;
+	ObjectID current = EditorNode::get_singleton()->get_editor_history()->get_current();
+	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : NULL;
 
 	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
 
@@ -180,8 +180,8 @@ void InspectorDock::_save_resource(bool save_as) const {
 }
 
 void InspectorDock::_unref_resource() const {
-	uint32_t current = EditorNode::get_singleton()->get_editor_history()->get_current();
-	Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : NULL;
+	ObjectID current = EditorNode::get_singleton()->get_editor_history()->get_current();
+	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : NULL;
 
 	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
 
@@ -191,8 +191,8 @@ void InspectorDock::_unref_resource() const {
 }
 
 void InspectorDock::_copy_resource() const {
-	uint32_t current = EditorNode::get_singleton()->get_editor_history()->get_current();
-	Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : NULL;
+	ObjectID current = EditorNode::get_singleton()->get_editor_history()->get_current();
+	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : NULL;
 
 	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
 

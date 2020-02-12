@@ -32,6 +32,7 @@
 #define METHOD_PTRCALL_H
 
 #include "core/math/transform_2d.h"
+#include "core/object_id.h"
 #include "core/typedefs.h"
 #include "core/variant.h"
 
@@ -164,6 +165,21 @@ struct PtrToArg<const T *> {
 	_FORCE_INLINE_ static void encode(T *p_var, void *p_ptr) {
 
 		*((T **)p_ptr) = p_var;
+	}
+};
+
+//this is for ObjectID
+
+template <>
+struct PtrToArg<ObjectID> {
+	_FORCE_INLINE_ static const ObjectID convert(const void *p_ptr) {
+
+		return ObjectID(*reinterpret_cast<const uint64_t *>(p_ptr));
+	}
+
+	_FORCE_INLINE_ static void encode(const ObjectID &p_val, void *p_ptr) {
+
+		*((uint64_t *)p_ptr) = p_val;
 	}
 };
 

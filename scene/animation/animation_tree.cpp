@@ -767,7 +767,7 @@ void AnimationTree::_process_graph(float p_delta) {
 
 	AnimationPlayer *player = Object::cast_to<AnimationPlayer>(get_node(animation_player));
 
-	ObjectID current_animation_player = 0;
+	ObjectID current_animation_player;
 
 	if (player) {
 		current_animation_player = player->get_instance_id();
@@ -775,7 +775,7 @@ void AnimationTree::_process_graph(float p_delta) {
 
 	if (last_animation_player != current_animation_player) {
 
-		if (last_animation_player) {
+		if (last_animation_player.is_valid()) {
 			Object *old_player = ObjectDB::get_instance(last_animation_player);
 			if (old_player) {
 				old_player->disconnect("caches_cleared", this, "_clear_caches");
@@ -1296,7 +1296,7 @@ void AnimationTree::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 		_clear_caches();
-		if (last_animation_player) {
+		if (last_animation_player.is_valid()) {
 
 			Object *player = ObjectDB::get_instance(last_animation_player);
 			if (player) {
@@ -1304,7 +1304,7 @@ void AnimationTree::_notification(int p_what) {
 			}
 		}
 	} else if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (last_animation_player) {
+		if (last_animation_player.is_valid()) {
 
 			Object *player = ObjectDB::get_instance(last_animation_player);
 			if (player) {
@@ -1584,7 +1584,6 @@ AnimationTree::AnimationTree() {
 	process_pass = 1;
 	started = true;
 	properties_dirty = true;
-	last_animation_player = 0;
 }
 
 AnimationTree::~AnimationTree() {
