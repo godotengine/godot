@@ -56,7 +56,6 @@ struct Color {
 	uint64_t to_rgba64() const;
 	uint64_t to_argb64() const;
 	uint64_t to_abgr64() const;
-	float gray() const;
 	float get_h() const;
 	float get_s() const;
 	float get_v() const;
