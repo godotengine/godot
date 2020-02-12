@@ -256,15 +256,6 @@
 				Converts from decibels to linear energy (audio).
 			</description>
 		</method>
-		<method name="decimals">
-			<return type="int">
-			</return>
-			<argument index="0" name="step" type="float">
-			</argument>
-			<description>
-				Deprecated alias for [method step_decimals].
-			</description>
-		</method>
 		<method name="dectime">
 			<return type="float">
 			</return>

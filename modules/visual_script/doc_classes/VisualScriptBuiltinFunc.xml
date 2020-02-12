@@ -89,7 +89,7 @@
 		<constant name="MATH_EASE" value="23" enum="BuiltinFunc">
 			Easing function, based on exponent. 0 is constant, 1 is linear, 0 to 1 is ease-in, 1+ is ease out. Negative values are in-out/out in.
 		</constant>
-		<constant name="MATH_DECIMALS" value="24" enum="BuiltinFunc">
+		<constant name="MATH_STEP_DECIMALS" value="24" enum="BuiltinFunc">
 			Return the number of digit places after the decimal that the first non-zero digit occurs.
 		</constant>
 		<constant name="MATH_STEPIFY" value="25" enum="BuiltinFunc">
