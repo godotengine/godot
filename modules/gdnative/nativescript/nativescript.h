@@ -54,6 +54,7 @@ struct NativeScriptDesc {
 		godot_instance_method method;
 		MethodInfo info;
 		int rpc_mode;
+		uint16_t rpc_method_id;
 		String documentation;
 	};
 	struct Property {
@@ -62,6 +63,7 @@ struct NativeScriptDesc {
 		PropertyInfo info;
 		Variant default_value;
 		int rset_mode;
+		uint16_t rset_property_id;
 		String documentation;
 	};
 
@@ -70,7 +72,9 @@ struct NativeScriptDesc {
 		String documentation;
 	};
 
+	uint16_t rpc_count;
 	Map<StringName, Method> methods;
+	uint16_t rset_count;
 	OrderedHashMap<StringName, Property> properties;
 	Map<StringName, Signal> signals_; // QtCreator doesn't like the name signals
 	StringName base;
@@ -86,7 +90,9 @@ struct NativeScriptDesc {
 	bool is_tool;
 
 	inline NativeScriptDesc() :
+			rpc_count(0),
 			methods(),
+			rset_count(0),
 			properties(),
 			signals_(),
 			base(),
@@ -174,6 +180,18 @@ public:
 	virtual void get_script_method_list(List<MethodInfo> *p_list) const;
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
 
+	virtual Vector<ScriptNetData> get_rpc_methods() const;
+	virtual uint16_t get_rpc_method_id(const StringName &p_method) const;
+	virtual StringName get_rpc_method(uint16_t p_id) const;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(uint16_t p_id) const;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
+
+	virtual Vector<ScriptNetData> get_rset_properties() const;
+	virtual uint16_t get_rset_property_id(const StringName &p_variable) const;
+	virtual StringName get_rset_property(uint16_t p_id) const;
+	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(uint16_t p_id) const;
+	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
+
 	String get_class_documentation() const;
 	String get_method_documentation(const StringName &p_method) const;
 	String get_signal_documentation(const StringName &p_signal_name) const;
@@ -210,8 +228,19 @@ public:
 	virtual void notification(int p_notification);
 	String to_string(bool *r_valid);
 	virtual Ref<Script> get_script() const;
+
+	virtual Vector<ScriptNetData> get_rpc_methods() const;
+	virtual uint16_t get_rpc_method_id(const StringName &p_method) const;
+	virtual StringName get_rpc_method(uint16_t p_id) const;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(uint16_t p_id) const;
 	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
+
+	virtual Vector<ScriptNetData> get_rset_properties() const;
+	virtual uint16_t get_rset_property_id(const StringName &p_variable) const;
+	virtual StringName get_rset_property(uint16_t p_id) const;
+	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(uint16_t p_id) const;
 	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
+
 	virtual ScriptLanguage *get_language();
 
 	virtual void call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount);

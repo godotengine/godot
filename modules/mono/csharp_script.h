@@ -113,6 +113,9 @@ class CSharpScript : public Script {
 	Map<StringName, Vector<Argument> > _signals;
 	bool signals_invalidated;
 
+	Vector<ScriptNetData> rpc_functions;
+	Vector<ScriptNetData> rpc_variables;
+
 #ifdef TOOLS_ENABLED
 	List<PropertyInfo> exported_members_cache; // members_cache
 	Map<StringName, Variant> exported_members_defval_cache; // member_default_values_cache
@@ -145,6 +148,8 @@ class CSharpScript : public Script {
 	friend void GDMonoInternals::tie_managed_to_unmanaged(MonoObject *, Object *);
 	static Ref<CSharpScript> create_for_managed_type(GDMonoClass *p_class, GDMonoClass *p_native);
 	static void initialize_for_managed_type(Ref<CSharpScript> p_script, GDMonoClass *p_class, GDMonoClass *p_native);
+
+	MultiplayerAPI::RPCMode _member_get_rpc_mode(IMonoClassMember *p_member) const;
 
 protected:
 	static void _bind_methods();
@@ -186,6 +191,18 @@ public:
 	MethodInfo get_method_info(const StringName &p_method) const;
 
 	virtual int get_member_line(const StringName &p_member) const;
+
+	virtual Vector<ScriptNetData> get_rpc_methods() const;
+	virtual uint16_t get_rpc_method_id(const StringName &p_method) const;
+	virtual StringName get_rpc_method(const uint16_t p_rpc_method_id) const;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
+
+	virtual Vector<ScriptNetData> get_rset_properties() const;
+	virtual uint16_t get_rset_property_id(const StringName &p_variable) const;
+	virtual StringName get_rset_property(const uint16_t p_variable_id) const;
+	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(const uint16_t p_variable_id) const;
+	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
 
 #ifdef TOOLS_ENABLED
 	virtual bool is_placeholder_fallback_enabled() const { return placeholder_fallback_enabled; }
@@ -232,8 +249,6 @@ class CSharpInstance : public ScriptInstance {
 
 	void _call_multilevel(MonoObject *p_mono_object, const StringName &p_method, const Variant **p_args, int p_argcount);
 
-	MultiplayerAPI::RPCMode _member_get_rpc_mode(IMonoClassMember *p_member) const;
-
 	void get_properties_state_for_reloading(List<Pair<StringName, Variant> > &r_state);
 
 public:
@@ -265,7 +280,16 @@ public:
 	virtual void refcount_incremented();
 	virtual bool refcount_decremented();
 
+	virtual Vector<ScriptNetData> get_rpc_methods() const;
+	virtual uint16_t get_rpc_method_id(const StringName &p_method) const;
+	virtual StringName get_rpc_method(const uint16_t p_rpc_method_id) const;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const;
 	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
+
+	virtual Vector<ScriptNetData> get_rset_properties() const;
+	virtual uint16_t get_rset_property_id(const StringName &p_variable) const;
+	virtual StringName get_rset_property(const uint16_t p_variable_id) const;
+	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(const uint16_t p_variable_id) const;
 	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
 
 	virtual void notification(int p_notification);

@@ -31,6 +31,7 @@
 #include "csharp_script.h"
 
 #include <mono/metadata/threads.h>
+#include <stdint.h>
 
 #include "core/io/json.h"
 #include "core/os/file_access.h"
@@ -1979,67 +1980,44 @@ bool CSharpInstance::refcount_decremented() {
 	return ref_dying;
 }
 
-MultiplayerAPI::RPCMode CSharpInstance::_member_get_rpc_mode(IMonoClassMember *p_member) const {
+Vector<ScriptNetData> CSharpInstance::get_rpc_methods() const {
+	return script->get_rpc_methods();
+}
 
-	if (p_member->has_attribute(CACHED_CLASS(RemoteAttribute)))
-		return MultiplayerAPI::RPC_MODE_REMOTE;
-	if (p_member->has_attribute(CACHED_CLASS(MasterAttribute)))
-		return MultiplayerAPI::RPC_MODE_MASTER;
-	if (p_member->has_attribute(CACHED_CLASS(PuppetAttribute)))
-		return MultiplayerAPI::RPC_MODE_PUPPET;
-	if (p_member->has_attribute(CACHED_CLASS(SlaveAttribute)))
-		return MultiplayerAPI::RPC_MODE_PUPPET;
-	if (p_member->has_attribute(CACHED_CLASS(RemoteSyncAttribute)))
-		return MultiplayerAPI::RPC_MODE_REMOTESYNC;
-	if (p_member->has_attribute(CACHED_CLASS(SyncAttribute)))
-		return MultiplayerAPI::RPC_MODE_REMOTESYNC;
-	if (p_member->has_attribute(CACHED_CLASS(MasterSyncAttribute)))
-		return MultiplayerAPI::RPC_MODE_MASTERSYNC;
-	if (p_member->has_attribute(CACHED_CLASS(PuppetSyncAttribute)))
-		return MultiplayerAPI::RPC_MODE_PUPPETSYNC;
+uint16_t CSharpInstance::get_rpc_method_id(const StringName &p_method) const {
+	return script->get_rpc_method_id(p_method);
+}
 
-	return MultiplayerAPI::RPC_MODE_DISABLED;
+StringName CSharpInstance::get_rpc_method(const uint16_t p_rpc_method_id) const {
+	return script->get_rpc_method(p_rpc_method_id);
+}
+
+MultiplayerAPI::RPCMode CSharpInstance::get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const {
+	return script->get_rpc_mode_by_id(p_rpc_method_id);
 }
 
 MultiplayerAPI::RPCMode CSharpInstance::get_rpc_mode(const StringName &p_method) const {
+	return script->get_rpc_mode(p_method);
+}
 
-	GD_MONO_SCOPE_THREAD_ATTACH;
+Vector<ScriptNetData> CSharpInstance::get_rset_properties() const {
+	return script->get_rset_properties();
+}
 
-	GDMonoClass *top = script->script_class;
+uint16_t CSharpInstance::get_rset_property_id(const StringName &p_variable) const {
+	return script->get_rset_property_id(p_variable);
+}
 
-	while (top && top != script->native) {
-		GDMonoMethod *method = top->get_fetched_method_unknown_params(p_method);
+StringName CSharpInstance::get_rset_property(const uint16_t p_rset_member_id) const {
+	return script->get_rset_property(p_rset_member_id);
+}
 
-		if (method && !method->is_static())
-			return _member_get_rpc_mode(method);
-
-		top = top->get_parent_class();
-	}
-
-	return MultiplayerAPI::RPC_MODE_DISABLED;
+MultiplayerAPI::RPCMode CSharpInstance::get_rset_mode_by_id(const uint16_t p_rset_member_id) const {
+	return script->get_rset_mode_by_id(p_rset_member_id);
 }
 
 MultiplayerAPI::RPCMode CSharpInstance::get_rset_mode(const StringName &p_variable) const {
-
-	GD_MONO_SCOPE_THREAD_ATTACH;
-
-	GDMonoClass *top = script->script_class;
-
-	while (top && top != script->native) {
-		GDMonoField *field = top->get_field(p_variable);
-
-		if (field && !field->is_static())
-			return _member_get_rpc_mode(field);
-
-		GDMonoProperty *property = top->get_property(p_variable);
-
-		if (property && !property->is_static())
-			return _member_get_rpc_mode(property);
-
-		top = top->get_parent_class();
-	}
-
-	return MultiplayerAPI::RPC_MODE_DISABLED;
+	return script->get_rset_mode(p_variable);
 }
 
 void CSharpInstance::notification(int p_notification) {
@@ -3251,6 +3229,69 @@ Error CSharpScript::reload(bool p_keep_state) {
 			_update_exports();
 		}
 
+		rpc_functions.clear();
+		rpc_variables.clear();
+
+		GDMonoClass *top = script_class;
+		while (top && top != native) {
+			{
+				Vector<GDMonoMethod *> methods = top->get_all_methods();
+				for (int i = 0; i < methods.size(); i++) {
+					if (!methods[i]->is_static()) {
+						MultiplayerAPI::RPCMode mode = _member_get_rpc_mode(methods[i]);
+						if (MultiplayerAPI::RPC_MODE_DISABLED != mode) {
+							ScriptNetData nd;
+							nd.name = methods[i]->get_name();
+							nd.mode = mode;
+							if (-1 == rpc_functions.find(nd)) {
+								rpc_functions.push_back(nd);
+							}
+						}
+					}
+				}
+			}
+
+			{
+				Vector<GDMonoField *> fields = top->get_all_fields();
+				for (int i = 0; i < fields.size(); i++) {
+					if (!fields[i]->is_static()) {
+						MultiplayerAPI::RPCMode mode = _member_get_rpc_mode(fields[i]);
+						if (MultiplayerAPI::RPC_MODE_DISABLED != mode) {
+							ScriptNetData nd;
+							nd.name = fields[i]->get_name();
+							nd.mode = mode;
+							if (-1 == rpc_variables.find(nd)) {
+								rpc_variables.push_back(nd);
+							}
+						}
+					}
+				}
+			}
+
+			{
+				Vector<GDMonoProperty *> properties = top->get_all_properties();
+				for (int i = 0; i < properties.size(); i++) {
+					if (!properties[i]->is_static()) {
+						MultiplayerAPI::RPCMode mode = _member_get_rpc_mode(properties[i]);
+						if (MultiplayerAPI::RPC_MODE_DISABLED != mode) {
+							ScriptNetData nd;
+							nd.name = properties[i]->get_name();
+							nd.mode = mode;
+							if (-1 == rpc_variables.find(nd)) {
+								rpc_variables.push_back(nd);
+							}
+						}
+					}
+				}
+			}
+
+			top = top->get_parent_class();
+		}
+
+		// Sort so we are 100% that they are always the same.
+		rpc_functions.sort_custom<SortNetData>();
+		rpc_variables.sort_custom<SortNetData>();
+
 		return OK;
 	}
 
@@ -3322,6 +3363,82 @@ int CSharpScript::get_member_line(const StringName &p_member) const {
 
 	// TODO omnisharp
 	return -1;
+}
+
+MultiplayerAPI::RPCMode CSharpScript::_member_get_rpc_mode(IMonoClassMember *p_member) const {
+
+	if (p_member->has_attribute(CACHED_CLASS(RemoteAttribute)))
+		return MultiplayerAPI::RPC_MODE_REMOTE;
+	if (p_member->has_attribute(CACHED_CLASS(MasterAttribute)))
+		return MultiplayerAPI::RPC_MODE_MASTER;
+	if (p_member->has_attribute(CACHED_CLASS(PuppetAttribute)))
+		return MultiplayerAPI::RPC_MODE_PUPPET;
+	if (p_member->has_attribute(CACHED_CLASS(SlaveAttribute)))
+		return MultiplayerAPI::RPC_MODE_PUPPET;
+	if (p_member->has_attribute(CACHED_CLASS(RemoteSyncAttribute)))
+		return MultiplayerAPI::RPC_MODE_REMOTESYNC;
+	if (p_member->has_attribute(CACHED_CLASS(SyncAttribute)))
+		return MultiplayerAPI::RPC_MODE_REMOTESYNC;
+	if (p_member->has_attribute(CACHED_CLASS(MasterSyncAttribute)))
+		return MultiplayerAPI::RPC_MODE_MASTERSYNC;
+	if (p_member->has_attribute(CACHED_CLASS(PuppetSyncAttribute)))
+		return MultiplayerAPI::RPC_MODE_PUPPETSYNC;
+
+	return MultiplayerAPI::RPC_MODE_DISABLED;
+}
+
+Vector<ScriptNetData> CSharpScript::get_rpc_methods() const {
+	return rpc_functions;
+}
+
+uint16_t CSharpScript::get_rpc_method_id(const StringName &p_method) const {
+	for (int i = 0; i < rpc_functions.size(); i++) {
+		if (rpc_functions[i].name == p_method) {
+			return i;
+		}
+	}
+	return UINT16_MAX;
+}
+
+StringName CSharpScript::get_rpc_method(const uint16_t p_rpc_method_id) const {
+	ERR_FAIL_COND_V(p_rpc_method_id >= rpc_functions.size(), StringName());
+	return rpc_functions[p_rpc_method_id].name;
+}
+
+MultiplayerAPI::RPCMode CSharpScript::get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const {
+	ERR_FAIL_COND_V(p_rpc_method_id >= rpc_functions.size(), MultiplayerAPI::RPC_MODE_DISABLED);
+	return rpc_functions[p_rpc_method_id].mode;
+}
+
+MultiplayerAPI::RPCMode CSharpScript::get_rpc_mode(const StringName &p_method) const {
+	return get_rpc_mode_by_id(get_rpc_method_id(p_method));
+}
+
+Vector<ScriptNetData> CSharpScript::get_rset_properties() const {
+	return rpc_variables;
+}
+
+uint16_t CSharpScript::get_rset_property_id(const StringName &p_variable) const {
+	for (int i = 0; i < rpc_variables.size(); i++) {
+		if (rpc_variables[i].name == p_variable) {
+			return i;
+		}
+	}
+	return UINT16_MAX;
+}
+
+StringName CSharpScript::get_rset_property(const uint16_t p_rset_member_id) const {
+	ERR_FAIL_COND_V(p_rset_member_id >= rpc_variables.size(), StringName());
+	return rpc_variables[p_rset_member_id].name;
+}
+
+MultiplayerAPI::RPCMode CSharpScript::get_rset_mode_by_id(const uint16_t p_rset_member_id) const {
+	ERR_FAIL_COND_V(p_rset_member_id >= rpc_functions.size(), MultiplayerAPI::RPC_MODE_DISABLED);
+	return rpc_functions[p_rset_member_id].mode;
+}
+
+MultiplayerAPI::RPCMode CSharpScript::get_rset_mode(const StringName &p_variable) const {
+	return get_rset_mode_by_id(get_rset_property_id(p_variable));
 }
 
 Error CSharpScript::load_source_code(const String &p_path) {
