@@ -60,8 +60,8 @@ private:
 	Map<StringName, PropertyInfo> _properties_info;
 	Map<StringName, MethodInfo> _signals_info;
 	Map<StringName, MethodInfo> _methods_info;
-	Map<StringName, MultiplayerAPI::RPCMode> _variables_rset_mode;
-	Map<StringName, MultiplayerAPI::RPCMode> _methods_rpc_mode;
+	Vector<ScriptNetData> _rpc_methods;
+	Vector<ScriptNetData> _rpc_variables;
 
 	Set<Object *> _instances;
 	//exported members
@@ -118,8 +118,17 @@ public:
 
 	virtual int get_member_line(const StringName &p_member) const;
 
-	MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
-	MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
+	virtual Vector<ScriptNetData> get_rpc_methods() const;
+	virtual uint16_t get_rpc_method_id(const StringName &p_method) const;
+	virtual StringName get_rpc_method(const uint16_t p_rpc_method_id) const;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
+
+	virtual Vector<ScriptNetData> get_rset_properties() const;
+	virtual uint16_t get_rset_property_id(const StringName &p_property) const;
+	virtual StringName get_rset_property(const uint16_t p_rset_property_id) const;
+	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(const uint16_t p_rpc_method_id) const;
+	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
 
 	PluginScript();
 	void init(PluginScriptLanguage *language);
