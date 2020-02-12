@@ -88,7 +88,7 @@
 	</methods>
 	<members>
 		<member name="allow_object_decoding" type="bool" setter="set_allow_object_decoding" getter="is_object_decoding_allowed" default="false">
-			If [code]true[/code] (or if the [member network_peer] has [member PacketPeer.allow_object_decoding] set to [code]true[/code]), the MultiplayerAPI will allow encoding and decoding of object during RPCs/RSETs.
+			If [code]true[/code], the MultiplayerAPI will allow encoding and decoding of object during RPCs/RSETs.
 			[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 		</member>
 		<member name="network_peer" type="NetworkedMultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
