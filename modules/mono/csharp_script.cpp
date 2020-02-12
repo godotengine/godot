@@ -162,11 +162,11 @@ void CSharpLanguage::finish() {
 
 #ifdef DEBUG_ENABLED
 	for (Map<ObjectID, int>::Element *E = unsafe_object_references.front(); E; E = E->next()) {
-		const ObjectID &id = E->get();
+		const ObjectID &id = E->key();
 		Object *obj = ObjectDB::get_instance(id);
 
 		if (obj) {
-			ERR_PRINT("Leaked unsafe reference to object: " + obj->get_class() + ":" + itos(id));
+			ERR_PRINT("Leaked unsafe reference to object: " + obj->to_string());
 		} else {
 			ERR_PRINT("Leaked unsafe reference to deleted object: " + itos(id));
 		}
