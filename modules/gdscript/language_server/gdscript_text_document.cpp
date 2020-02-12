@@ -321,6 +321,8 @@ Variant GDScriptTextDocument::hover(const Dictionary &p_params) {
 
 		lsp::Hover hover;
 		hover.contents = symbol->render();
+		hover.range.start = params.position;
+		hover.range.end = params.position;
 		return hover.to_json();
 
 	} else if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
