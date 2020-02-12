@@ -113,7 +113,7 @@ public:
 		~InstanceDependency();
 
 	private:
-		friend class InstanceBase;
+		friend struct InstanceBase;
 		Map<InstanceBase *, uint32_t> instances;
 	};
 
