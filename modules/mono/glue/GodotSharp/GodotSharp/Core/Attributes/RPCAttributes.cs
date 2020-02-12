@@ -6,16 +6,10 @@ namespace Godot
     public class RemoteAttribute : Attribute {}
 
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Field | AttributeTargets.Property)]
-    public class SyncAttribute : Attribute {}
-
-    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Field | AttributeTargets.Property)]
     public class MasterAttribute : Attribute {}
 
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Field | AttributeTargets.Property)]
     public class PuppetAttribute : Attribute {}
-
-    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Field | AttributeTargets.Property)]
-    public class SlaveAttribute : Attribute {}
 
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Field | AttributeTargets.Property)]
     public class RemoteSyncAttribute : Attribute {}

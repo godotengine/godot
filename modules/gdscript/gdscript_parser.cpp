@@ -4596,10 +4596,10 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 #undef _ADVANCE_AND_CONSUME_NEWLINES
 				}
 
-				if (tokenizer->get_token() != GDScriptTokenizer::TK_PR_VAR && tokenizer->get_token() != GDScriptTokenizer::TK_PR_ONREADY && tokenizer->get_token() != GDScriptTokenizer::TK_PR_REMOTE && tokenizer->get_token() != GDScriptTokenizer::TK_PR_MASTER && tokenizer->get_token() != GDScriptTokenizer::TK_PR_PUPPET && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_REMOTESYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_MASTERSYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_PUPPETSYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SLAVE) {
+				if (tokenizer->get_token() != GDScriptTokenizer::TK_PR_VAR && tokenizer->get_token() != GDScriptTokenizer::TK_PR_ONREADY && tokenizer->get_token() != GDScriptTokenizer::TK_PR_REMOTE && tokenizer->get_token() != GDScriptTokenizer::TK_PR_MASTER && tokenizer->get_token() != GDScriptTokenizer::TK_PR_PUPPET && tokenizer->get_token() != GDScriptTokenizer::TK_PR_REMOTESYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_MASTERSYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_PUPPETSYNC) {
 
 					current_export = PropertyInfo();
-					_set_error("Expected \"var\", \"onready\", \"remote\", \"master\", \"puppet\", \"sync\", \"remotesync\", \"mastersync\", \"puppetsync\".");
+					_set_error("Expected \"var\", \"onready\", \"remote\", \"master\", \"puppet\", \"remotesync\", \"mastersync\", \"puppetsync\".");
 					return;
 				}
 
@@ -4656,11 +4656,6 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				rpc_mode = MultiplayerAPI::RPC_MODE_MASTER;
 				continue;
 			} break;
-			case GDScriptTokenizer::TK_PR_SLAVE:
-#ifdef DEBUG_ENABLED
-				_add_warning(GDScriptWarning::DEPRECATED_KEYWORD, tokenizer->get_token_line(), "slave", "puppet");
-#endif
-				FALLTHROUGH;
 			case GDScriptTokenizer::TK_PR_PUPPET: {
 
 				//may be fallthrough from export, ignore if so
@@ -4681,8 +4676,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				rpc_mode = MultiplayerAPI::RPC_MODE_PUPPET;
 				continue;
 			} break;
-			case GDScriptTokenizer::TK_PR_REMOTESYNC:
-			case GDScriptTokenizer::TK_PR_SYNC: {
+			case GDScriptTokenizer::TK_PR_REMOTESYNC: {
 
 				//may be fallthrough from export, ignore if so
 				tokenizer->advance();
