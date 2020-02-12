@@ -6475,7 +6475,7 @@
           "name": "godot_arvr_blit",
           "return_type": "void",
           "arguments": [
-            ["int", "p_eye"],
+            ["godot_int", "p_eye"],
             ["godot_rid *", "p_render_target"],
             ["godot_rect2 *", "p_screen_rect"]
           ]
