@@ -880,12 +880,12 @@ public:
 		rshb->add_child(rvb);
 		Button *rs_button = memnew(CheckBox);
 		rs_button->set_button_group(rasterizer_button_group);
-		rs_button->set_text(TTR("OpenGL ES 3.0"));
+		rs_button->set_text(TTR("Vulkan"));
 		rs_button->set_meta("driver_name", "GLES3");
 		rs_button->set_pressed(true);
 		rvb->add_child(rs_button);
 		l = memnew(Label);
-		l->set_text(TTR("- Higher visual quality\n- All features available\n- Incompatible with older hardware\n- Not recommended for web games"));
+		l->set_text(TTR("- Higher visual quality\n- More accurate API, which produces very fast code\n- Some features not implemented yet — work in progress\n- Incompatible with older hardware\n- Not recommended for web and mobile games"));
 		l->set_modulate(Color(1, 1, 1, 0.7));
 		rvb->add_child(l);
 
@@ -900,7 +900,7 @@ public:
 		rs_button->set_meta("driver_name", "GLES2");
 		rvb->add_child(rs_button);
 		l = memnew(Label);
-		l->set_text(TTR("- Lower visual quality\n- Some features not available\n- Works on most hardware\n- Recommended for web games"));
+		l->set_text(TTR("- Lower visual quality\n- Some features not available\n- Works on most hardware\n- Recommended for web and mobile games"));
 		l->set_modulate(Color(1, 1, 1, 0.7));
 		rvb->add_child(l);
 
