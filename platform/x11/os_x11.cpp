@@ -240,6 +240,11 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//TODO - do Vulkan and GLES2 support checks, driver selection and fallback
 	video_driver_index = p_video_driver;
+#ifndef _MSC_VER
+#warning Forcing vulkan video driver because OpenGL not implemented yet
+#endif
+	video_driver_index = VIDEO_DRIVER_VULKAN;
+
 	print_verbose("Driver: " + String(get_video_driver_name(video_driver_index)) + " [" + itos(video_driver_index) + "]");
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!
 
