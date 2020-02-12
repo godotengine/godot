@@ -88,14 +88,6 @@ protected:
 	static void _bind_methods();
 
 public:
-#ifndef DISABLE_DEPRECATED
-	void set_friction(real_t p_friction);
-	real_t get_friction() const;
-
-	void set_bounce(real_t p_bounce);
-	real_t get_bounce() const;
-#endif
-
 	void set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override);
 	Ref<PhysicsMaterial> get_physics_material_override() const;
 
@@ -203,14 +195,6 @@ public:
 
 	void set_weight(real_t p_weight);
 	real_t get_weight() const;
-
-#ifndef DISABLE_DEPRECATED
-	void set_friction(real_t p_friction);
-	real_t get_friction() const;
-
-	void set_bounce(real_t p_bounce);
-	real_t get_bounce() const;
-#endif
 
 	void set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override);
 	Ref<PhysicsMaterial> get_physics_material_override() const;
