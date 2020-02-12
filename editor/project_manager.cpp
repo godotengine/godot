@@ -992,7 +992,7 @@ public:
 		String path;
 		String icon;
 		String main_scene;
-		uint64_t last_modified;
+		uint64_t last_edited;
 		bool favorite;
 		bool grayed;
 		bool missing;
@@ -1008,7 +1008,7 @@ public:
 				const String &p_path,
 				const String &p_icon,
 				const String &p_main_scene,
-				uint64_t p_last_modified,
+				uint64_t p_last_edited,
 				bool p_favorite,
 				bool p_grayed,
 				bool p_missing,
@@ -1020,7 +1020,7 @@ public:
 			path = p_path;
 			icon = p_icon;
 			main_scene = p_main_scene;
-			last_modified = p_last_modified;
+			last_edited = p_last_edited;
 			favorite = p_favorite;
 			grayed = p_grayed;
 			missing = p_missing;
@@ -1095,8 +1095,8 @@ struct ProjectListComparator {
 		switch (order_option) {
 			case ProjectListFilter::FILTER_PATH:
 				return a.project_key < b.project_key;
-			case ProjectListFilter::FILTER_MODIFIED:
-				return a.last_modified > b.last_modified;
+			case ProjectListFilter::FILTER_EDIT_DATE:
+				return a.last_edited > b.last_edited;
 			default:
 				return a.project_name < b.project_name;
 		}
@@ -1104,7 +1104,7 @@ struct ProjectListComparator {
 };
 
 ProjectList::ProjectList() {
-	_order_option = ProjectListFilter::FILTER_MODIFIED;
+	_order_option = ProjectListFilter::FILTER_EDIT_DATE;
 
 	_scroll_children = memnew(VBoxContainer);
 	_scroll_children->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1191,15 +1191,18 @@ void ProjectList::load_project_data(const String &p_property_key, Item &p_item, 
 	String icon = cf->get_value("application", "config/icon", "");
 	String main_scene = cf->get_value("application", "run/main_scene", "");
 
-	uint64_t last_modified = 0;
+	uint64_t last_edited = 0;
 	if (FileAccess::exists(conf)) {
-		last_modified = FileAccess::get_modified_time(conf);
+		// The modification date marks the date the project was last edited.
+		// This is because the `project.godot` file will always be modified
+		// when editing a project (but not when running it).
+		last_edited = FileAccess::get_modified_time(conf);
 
 		String fscache = path.plus_file(".fscache");
 		if (FileAccess::exists(fscache)) {
 			uint64_t cache_modified = FileAccess::get_modified_time(fscache);
-			if (cache_modified > last_modified)
-				last_modified = cache_modified;
+			if (cache_modified > last_edited)
+				last_edited = cache_modified;
 		}
 	} else {
 		grayed = true;
@@ -1209,7 +1212,7 @@ void ProjectList::load_project_data(const String &p_property_key, Item &p_item, 
 
 	String project_key = p_property_key.get_slice("/", 1);
 
-	p_item = Item(project_key, project_name, description, path, icon, main_scene, last_modified, p_favorite, grayed, missing, config_version);
+	p_item = Item(project_key, project_name, description, path, icon, main_scene, last_edited, p_favorite, grayed, missing, config_version);
 }
 
 void ProjectList::load_projects() {
@@ -2506,7 +2509,7 @@ ProjectManager::ProjectManager() {
 	Vector<String> sort_filter_titles;
 	sort_filter_titles.push_back(TTR("Name"));
 	sort_filter_titles.push_back(TTR("Path"));
-	sort_filter_titles.push_back(TTR("Last Modified"));
+	sort_filter_titles.push_back(TTR("Last Edited"));
 	project_order_filter = memnew(ProjectListFilter);
 	project_order_filter->add_filter_option();
 	project_order_filter->_setup_filters(sort_filter_titles);
