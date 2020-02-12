@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationServer" inherits="Object" category="Core" version="3.2">
+<class name="NavigationServer" inherits="Object" version="4.0">
 	<brief_description>
 		Server interface for low-level 3D navigation access
 	</brief_description>
@@ -16,8 +16,8 @@
 				Creates the agent.
 			</description>
 		</method>
-		<method name="agent_is_map_changed">
-			<return type="bool" qualifiers="const">
+		<method name="agent_is_map_changed" qualifiers="const">
+			<return type="bool">
 			</return>
 			<argument index="0" name="agent" type="RID">
 			</argument>
@@ -155,7 +155,7 @@
 				Create a new map.
 			</description>
 		</method>
-		<method name="map_get_cell_size">
+		<method name="map_get_cell_size" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="map" type="RID">
@@ -200,7 +200,7 @@
 		<method name="map_is_active" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="map" type="RID">
+			<argument index="0" name="nap" type="RID">
 			</argument>
 			<description>
 				Returns true if the map is active.
@@ -320,4 +320,6 @@
 			</description>
 		</method>
 	</methods>
+	<constants>
+	</constants>
 </class>

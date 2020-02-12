@@ -381,7 +381,7 @@
 			</description>
 		</method>
 		<method name="tile_get_normal_map" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
@@ -480,7 +480,7 @@
 			</description>
 		</method>
 		<method name="tile_get_texture" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
@@ -586,7 +586,7 @@
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="normal_map" type="Texture">
+			<argument index="1" name="normal_map" type="Texture2D">
 			</argument>
 			<description>
 				Sets the tile's normal map texture.
@@ -694,7 +694,7 @@
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="texture" type="Texture">
+			<argument index="1" name="texture" type="Texture2D">
 			</argument>
 			<description>
 				Sets the tile's texture.

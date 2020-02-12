@@ -12,7 +12,7 @@
 		<method name="add_icon_item">
 			<return type="void">
 			</return>
-			<argument index="0" name="texture" type="Texture">
+			<argument index="0" name="texture" type="Texture2D">
 			</argument>
 			<argument index="1" name="label" type="String">
 			</argument>
@@ -55,7 +55,7 @@
 			</description>
 		</method>
 		<method name="get_item_icon" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -164,7 +164,7 @@
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="texture" type="Texture">
+			<argument index="1" name="texture" type="Texture2D">
 			</argument>
 			<description>
 				Sets the icon of the item at index [code]idx[/code].
@@ -231,7 +231,7 @@
 	<constants>
 	</constants>
 	<theme_items>
-		<theme_item name="arrow" type="Texture">
+		<theme_item name="arrow" type="Texture2D">
 			The arrow icon to be drawn on the right end of the button.
 		</theme_item>
 		<theme_item name="arrow_margin" type="int" default="2">

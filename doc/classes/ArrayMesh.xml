@@ -45,7 +45,11 @@
 			</argument>
 			<argument index="2" name="blend_shapes" type="Array" default="[  ]">
 			</argument>
-			<argument index="3" name="compress_flags" type="int" default="97280">
+			<argument index="3" name="lods" type="Dictionary" default="{
+
+}">
+			</argument>
+			<argument index="4" name="compress_flags" type="int" default="31744">
 			</argument>
 			<description>
 				Creates a new surface.
@@ -60,6 +64,12 @@
 			</return>
 			<description>
 				Removes all blend shapes from this [ArrayMesh].
+			</description>
+		</method>
+		<method name="clear_surfaces">
+			<return type="void">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_blend_shape_count" qualifiers="const">
@@ -148,15 +158,6 @@
 			</argument>
 			<description>
 				Returns the primitive type of the requested surface (see [method add_surface_from_arrays]).
-			</description>
-		</method>
-		<method name="surface_remove">
-			<return type="void">
-			</return>
-			<argument index="0" name="surf_idx" type="int">
-			</argument>
-			<description>
-				Removes a surface at position [code]surf_idx[/code], shifting greater surfaces one [code]surf_idx[/code] slot down.
 			</description>
 		</method>
 		<method name="surface_set_name">

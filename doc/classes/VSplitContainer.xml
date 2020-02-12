@@ -17,7 +17,7 @@
 		</theme_item>
 		<theme_item name="bg" type="StyleBox">
 		</theme_item>
-		<theme_item name="grabber" type="Texture">
+		<theme_item name="grabber" type="Texture2D">
 		</theme_item>
 		<theme_item name="separation" type="int" default="12">
 		</theme_item>

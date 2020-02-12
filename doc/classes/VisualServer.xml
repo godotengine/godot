@@ -155,287 +155,6 @@
 				Once finished with your RID, you will want to free the RID using the VisualServer's [method free_rid] static method.
 			</description>
 		</method>
-		<method name="canvas_item_add_circle">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="pos" type="Vector2">
-			</argument>
-			<argument index="2" name="radius" type="float">
-			</argument>
-			<argument index="3" name="color" type="Color">
-			</argument>
-			<description>
-				Adds a circle command to the [CanvasItem]'s draw commands.
-			</description>
-		</method>
-		<method name="canvas_item_add_clip_ignore">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="ignore" type="bool">
-			</argument>
-			<description>
-				If ignore is [code]true[/code], the VisualServer does not perform clipping.
-			</description>
-		</method>
-		<method name="canvas_item_add_line">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="from" type="Vector2">
-			</argument>
-			<argument index="2" name="to" type="Vector2">
-			</argument>
-			<argument index="3" name="color" type="Color">
-			</argument>
-			<argument index="4" name="width" type="float" default="1.0">
-			</argument>
-			<argument index="5" name="antialiased" type="bool" default="false">
-			</argument>
-			<description>
-				Adds a line command to the [CanvasItem]'s draw commands.
-			</description>
-		</method>
-		<method name="canvas_item_add_mesh">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="mesh" type="RID">
-			</argument>
-			<argument index="2" name="transform" type="Transform2D" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
-			</argument>
-			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="4" name="texture" type="RID">
-			</argument>
-			<argument index="5" name="normal_map" type="RID">
-			</argument>
-			<description>
-				Adds a mesh command to the [CanvasItem]'s draw commands.
-			</description>
-		</method>
-		<method name="canvas_item_add_multimesh">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="mesh" type="RID">
-			</argument>
-			<argument index="2" name="texture" type="RID">
-			</argument>
-			<argument index="3" name="normal_map" type="RID">
-			</argument>
-			<description>
-				Adds a [MultiMesh] to the [CanvasItem]'s draw commands. Only affects its aabb at the moment.
-			</description>
-		</method>
-		<method name="canvas_item_add_nine_patch">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="rect" type="Rect2">
-			</argument>
-			<argument index="2" name="source" type="Rect2">
-			</argument>
-			<argument index="3" name="texture" type="RID">
-			</argument>
-			<argument index="4" name="topleft" type="Vector2">
-			</argument>
-			<argument index="5" name="bottomright" type="Vector2">
-			</argument>
-			<argument index="6" name="x_axis_mode" type="int" enum="VisualServer.NinePatchAxisMode" default="0">
-			</argument>
-			<argument index="7" name="y_axis_mode" type="int" enum="VisualServer.NinePatchAxisMode" default="0">
-			</argument>
-			<argument index="8" name="draw_center" type="bool" default="true">
-			</argument>
-			<argument index="9" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="10" name="normal_map" type="RID">
-			</argument>
-			<description>
-				Adds a nine patch image to the [CanvasItem]'s draw commands.
-				See [NinePatchRect] for more explanation.
-			</description>
-		</method>
-		<method name="canvas_item_add_particles">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="particles" type="RID">
-			</argument>
-			<argument index="2" name="texture" type="RID">
-			</argument>
-			<argument index="3" name="normal_map" type="RID">
-			</argument>
-			<description>
-				Adds a particle system to the [CanvasItem]'s draw commands.
-			</description>
-		</method>
-		<method name="canvas_item_add_polygon">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="points" type="PoolVector2Array">
-			</argument>
-			<argument index="2" name="colors" type="PoolColorArray">
-			</argument>
-			<argument index="3" name="uvs" type="PoolVector2Array" default="PoolVector2Array(  )">
-			</argument>
-			<argument index="4" name="texture" type="RID">
-			</argument>
-			<argument index="5" name="normal_map" type="RID">
-			</argument>
-			<argument index="6" name="antialiased" type="bool" default="false">
-			</argument>
-			<description>
-				Adds a polygon to the [CanvasItem]'s draw commands.
-			</description>
-		</method>
-		<method name="canvas_item_add_polyline">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="points" type="PoolVector2Array">
-			</argument>
-			<argument index="2" name="colors" type="PoolColorArray">
-			</argument>
-			<argument index="3" name="width" type="float" default="1.0">
-			</argument>
-			<argument index="4" name="antialiased" type="bool" default="false">
-			</argument>
-			<description>
-				Adds a polyline, which is a line from multiple points with a width, to the [CanvasItem]'s draw commands.
-			</description>
-		</method>
-		<method name="canvas_item_add_primitive">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="points" type="PoolVector2Array">
-			</argument>
-			<argument index="2" name="colors" type="PoolColorArray">
-			</argument>
-			<argument index="3" name="uvs" type="PoolVector2Array">
-			</argument>
-			<argument index="4" name="texture" type="RID">
-			</argument>
-			<argument index="5" name="width" type="float" default="1.0">
-			</argument>
-			<argument index="6" name="normal_map" type="RID">
-			</argument>
-			<description>
-				Adds a primitive to the [CanvasItem]'s draw commands.
-			</description>
-		</method>
-		<method name="canvas_item_add_rect">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="rect" type="Rect2">
-			</argument>
-			<argument index="2" name="color" type="Color">
-			</argument>
-			<description>
-				Adds a rectangle to the [CanvasItem]'s draw commands.
-			</description>
-		</method>
-		<method name="canvas_item_add_set_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="transform" type="Transform2D">
-			</argument>
-			<description>
-				Adds a [Transform2D] command to the [CanvasItem]'s draw commands.
-				This sets the extra_matrix uniform when executed. This affects the later commands of the canvas item.
-			</description>
-		</method>
-		<method name="canvas_item_add_texture_rect">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="rect" type="Rect2">
-			</argument>
-			<argument index="2" name="texture" type="RID">
-			</argument>
-			<argument index="3" name="tile" type="bool" default="false">
-			</argument>
-			<argument index="4" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="5" name="transpose" type="bool" default="false">
-			</argument>
-			<argument index="6" name="normal_map" type="RID">
-			</argument>
-			<description>
-				Adds a textured rect to the [CanvasItem]'s draw commands.
-			</description>
-		</method>
-		<method name="canvas_item_add_texture_rect_region">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="rect" type="Rect2">
-			</argument>
-			<argument index="2" name="texture" type="RID">
-			</argument>
-			<argument index="3" name="src_rect" type="Rect2">
-			</argument>
-			<argument index="4" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="5" name="transpose" type="bool" default="false">
-			</argument>
-			<argument index="6" name="normal_map" type="RID">
-			</argument>
-			<argument index="7" name="clip_uv" type="bool" default="true">
-			</argument>
-			<description>
-				Adds a texture rect with region setting to the [CanvasItem]'s draw commands.
-			</description>
-		</method>
-		<method name="canvas_item_add_triangle_array">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="indices" type="PoolIntArray">
-			</argument>
-			<argument index="2" name="points" type="PoolVector2Array">
-			</argument>
-			<argument index="3" name="colors" type="PoolColorArray">
-			</argument>
-			<argument index="4" name="uvs" type="PoolVector2Array" default="PoolVector2Array(  )">
-			</argument>
-			<argument index="5" name="bones" type="PoolIntArray" default="PoolIntArray(  )">
-			</argument>
-			<argument index="6" name="weights" type="PoolRealArray" default="PoolRealArray(  )">
-			</argument>
-			<argument index="7" name="texture" type="RID">
-			</argument>
-			<argument index="8" name="count" type="int" default="-1">
-			</argument>
-			<argument index="9" name="normal_map" type="RID">
-			</argument>
-			<argument index="10" name="antialiased" type="bool" default="false">
-			</argument>
-			<description>
-				Adds a triangle array to the [CanvasItem]'s draw commands.
-			</description>
-		</method>
 		<method name="canvas_item_clear">
 			<return type="void">
 			</return>
@@ -443,25 +162,6 @@
 			</argument>
 			<description>
 				Clears the [CanvasItem] and removes all commands in it.
-			</description>
-		</method>
-		<method name="canvas_item_create">
-			<return type="RID">
-			</return>
-			<description>
-				Creates a new [CanvasItem] and returns its [RID]. It can be accessed with the RID that is returned. This RID will be used in all [code]canvas_item_*[/code] VisualServer functions.
-				Once finished with your RID, you will want to free the RID using the VisualServer's [method free_rid] static method.
-			</description>
-		</method>
-		<method name="canvas_item_set_clip">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="clip" type="bool">
-			</argument>
-			<description>
-				Sets clipping for the [CanvasItem].
 			</description>
 		</method>
 		<method name="canvas_item_set_copy_to_backbuffer">
@@ -477,41 +177,6 @@
 				Sets the [CanvasItem] to copy a rect to the backbuffer.
 			</description>
 		</method>
-		<method name="canvas_item_set_custom_rect">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="use_custom_rect" type="bool">
-			</argument>
-			<argument index="2" name="rect" type="Rect2" default="Rect2( 0, 0, 0, 0 )">
-			</argument>
-			<description>
-				Defines a custom drawing rectangle for the [CanvasItem].
-			</description>
-		</method>
-		<method name="canvas_item_set_distance_field_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="enabled" type="bool">
-			</argument>
-			<description>
-				Enables the use of distance fields for GUI elements that are rendering distance field based fonts.
-			</description>
-		</method>
-		<method name="canvas_item_set_draw_behind_parent">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="enabled" type="bool">
-			</argument>
-			<description>
-				Sets [CanvasItem] to be drawn behind its parent.
-			</description>
-		</method>
 		<method name="canvas_item_set_draw_index">
 			<return type="void">
 			</return>
@@ -521,17 +186,6 @@
 			</argument>
 			<description>
 				Sets the index for the [CanvasItem].
-			</description>
-		</method>
-		<method name="canvas_item_set_light_mask">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="mask" type="int">
-			</argument>
-			<description>
-				The light mask. See [LightOccluder2D] for more information on light masks.
 			</description>
 		</method>
 		<method name="canvas_item_set_material">
@@ -545,61 +199,6 @@
 				Sets a new material to the [CanvasItem].
 			</description>
 		</method>
-		<method name="canvas_item_set_modulate">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
-			<description>
-				Sets the color that modulates the [CanvasItem] and its children.
-			</description>
-		</method>
-		<method name="canvas_item_set_parent">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="parent" type="RID">
-			</argument>
-			<description>
-				Sets the parent for the [CanvasItem]. The parent can be another canvas item, or it can be the root canvas that is attached to the viewport.
-			</description>
-		</method>
-		<method name="canvas_item_set_self_modulate">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
-			<description>
-				Sets the color that modulates the [CanvasItem] without children.
-			</description>
-		</method>
-		<method name="canvas_item_set_sort_children_by_y">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="enabled" type="bool">
-			</argument>
-			<description>
-				Sets if [CanvasItem]'s children should be sorted by y-position.
-			</description>
-		</method>
-		<method name="canvas_item_set_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="transform" type="Transform2D">
-			</argument>
-			<description>
-				Sets the [CanvasItem]'s [Transform2D].
-			</description>
-		</method>
 		<method name="canvas_item_set_use_parent_material">
 			<return type="void">
 			</return>
@@ -609,17 +208,6 @@
 			</argument>
 			<description>
 				Sets if the [CanvasItem] uses its parent's material.
-			</description>
-		</method>
-		<method name="canvas_item_set_visible">
-			<return type="void">
-			</return>
-			<argument index="0" name="item" type="RID">
-			</argument>
-			<argument index="1" name="visible" type="bool">
-			</argument>
-			<description>
-				Sets if the canvas item (including its children) is visible.
 			</description>
 		</method>
 		<method name="canvas_item_set_z_as_relative_to_parent">
@@ -871,17 +459,6 @@
 				Sets the canvas light's shadow's filter, see [enum CanvasLightShadowFilter] constants.
 			</description>
 		</method>
-		<method name="canvas_light_set_shadow_gradient_length">
-			<return type="void">
-			</return>
-			<argument index="0" name="light" type="RID">
-			</argument>
-			<argument index="1" name="length" type="float">
-			</argument>
-			<description>
-				Sets the length of the shadow's gradient.
-			</description>
-		</method>
 		<method name="canvas_light_set_shadow_smooth">
 			<return type="void">
 			</return>
@@ -1060,12 +637,17 @@
 			</argument>
 			<argument index="1" name="color" type="Color">
 			</argument>
-			<argument index="2" name="energy" type="float" default="1.0">
+			<argument index="2" name="ambient" type="int" enum="VisualServer.EnvironmentAmbientSource" default="0">
 			</argument>
-			<argument index="3" name="sky_contibution" type="float" default="0.0">
+			<argument index="3" name="energy" type="float" default="1.0">
+			</argument>
+			<argument index="4" name="sky_contibution" type="float" default="0.0">
+			</argument>
+			<argument index="5" name="reflection_source" type="int" enum="VisualServer.EnvironmentReflectionSource" default="0">
+			</argument>
+			<argument index="6" name="ao_color" type="Color" default="Color( 0, 0, 0, 1 )">
 			</argument>
 			<description>
-				Sets the ambient light parameters. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_background">
@@ -1110,44 +692,6 @@
 			</argument>
 			<description>
 				Sets the maximum layer to use if using Canvas background mode.
-			</description>
-		</method>
-		<method name="environment_set_dof_blur_far">
-			<return type="void">
-			</return>
-			<argument index="0" name="env" type="RID">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
-			<argument index="2" name="distance" type="float">
-			</argument>
-			<argument index="3" name="transition" type="float">
-			</argument>
-			<argument index="4" name="far_amount" type="float">
-			</argument>
-			<argument index="5" name="quality" type="int" enum="VisualServer.EnvironmentDOFBlurQuality">
-			</argument>
-			<description>
-				Sets the values to be used with the "DoF Far Blur" post-process effect. See [Environment] for more details.
-			</description>
-		</method>
-		<method name="environment_set_dof_blur_near">
-			<return type="void">
-			</return>
-			<argument index="0" name="env" type="RID">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
-			<argument index="2" name="distance" type="float">
-			</argument>
-			<argument index="3" name="transition" type="float">
-			</argument>
-			<argument index="4" name="far_amount" type="float">
-			</argument>
-			<argument index="5" name="quality" type="int" enum="VisualServer.EnvironmentDOFBlurQuality">
-			</argument>
-			<description>
-				Sets the values to be used with the "DoF Near Blur" post-process effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_fog">
@@ -1218,20 +762,21 @@
 			</argument>
 			<argument index="4" name="strength" type="float">
 			</argument>
-			<argument index="5" name="bloom_threshold" type="float">
+			<argument index="5" name="mix" type="float">
 			</argument>
-			<argument index="6" name="blend_mode" type="int" enum="VisualServer.EnvironmentGlowBlendMode">
+			<argument index="6" name="bloom_threshold" type="float">
 			</argument>
-			<argument index="7" name="hdr_bleed_threshold" type="float">
+			<argument index="7" name="blend_mode" type="int" enum="VisualServer.EnvironmentGlowBlendMode">
 			</argument>
-			<argument index="8" name="hdr_bleed_scale" type="float">
+			<argument index="8" name="hdr_bleed_threshold" type="float">
 			</argument>
-			<argument index="9" name="hdr_luminance_cap" type="float">
+			<argument index="9" name="hdr_bleed_scale" type="float">
 			</argument>
-			<argument index="10" name="bicubic_upscale" type="bool">
+			<argument index="10" name="hdr_luminance_cap" type="float">
+			</argument>
+			<argument index="11" name="bicubic_upscale" type="bool">
 			</argument>
 			<description>
-				Sets the variables to be used with the "glow" post-process effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_sky">
@@ -1242,7 +787,7 @@
 			<argument index="1" name="sky" type="RID">
 			</argument>
 			<description>
-				Sets the [Sky] to be used as the environment's background when using [i]BGMode[/i] sky. Equivalent to [member Environment.background_sky].
+				Sets the [Sky] to be used as the environment's background when using [i]BGMode[/i] sky. Equivalent to [member Environment.sky].
 			</description>
 		</method>
 		<method name="environment_set_sky_custom_fov">
@@ -1253,7 +798,7 @@
 			<argument index="1" name="scale" type="float">
 			</argument>
 			<description>
-				Sets a custom field of view for the background [Sky]. Equivalent to [member Environment.background_sky_custom_fov].
+				Sets a custom field of view for the background [Sky]. Equivalent to [member Environment.sky_custom_fov].
 			</description>
 		</method>
 		<method name="environment_set_sky_orientation">
@@ -1264,40 +809,7 @@
 			<argument index="1" name="orientation" type="Basis">
 			</argument>
 			<description>
-				Sets the rotation of the background [Sky] expressed as a [Basis]. Equivalent to [member Environment.background_sky_orientation].
-			</description>
-		</method>
-		<method name="environment_set_ssao">
-			<return type="void">
-			</return>
-			<argument index="0" name="env" type="RID">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
-			<argument index="2" name="radius" type="float">
-			</argument>
-			<argument index="3" name="intensity" type="float">
-			</argument>
-			<argument index="4" name="radius2" type="float">
-			</argument>
-			<argument index="5" name="intensity2" type="float">
-			</argument>
-			<argument index="6" name="bias" type="float">
-			</argument>
-			<argument index="7" name="light_affect" type="float">
-			</argument>
-			<argument index="8" name="ao_channel_affect" type="float">
-			</argument>
-			<argument index="9" name="color" type="Color">
-			</argument>
-			<argument index="10" name="quality" type="int" enum="VisualServer.EnvironmentSSAOQuality">
-			</argument>
-			<argument index="11" name="blur" type="int" enum="VisualServer.EnvironmentSSAOBlur">
-			</argument>
-			<argument index="12" name="bilateral_sharpness" type="float">
-			</argument>
-			<description>
-				Sets the variables to be used with the "Screen Space Ambient Occlusion (SSAO)" post-process effect. See [Environment] for more details.
+				Sets the rotation of the background [Sky] expressed as a [Basis]. Equivalent to [member Environment.sky_rotation], where the rotation vector is used to construct the [Basis].
 			</description>
 		</method>
 		<method name="environment_set_ssr">
@@ -1424,235 +936,6 @@
 			</return>
 			<description>
 				Returns the id of a white texture. Creates one if none exists.
-			</description>
-		</method>
-		<method name="gi_probe_create">
-			<return type="RID">
-			</return>
-			<description>
-				Creates a GI probe and adds it to the VisualServer. It can be accessed with the RID that is returned. This RID will be used in all [code]gi_probe_*[/code] VisualServer functions.
-				Once finished with your RID, you will want to free the RID using the VisualServer's [method free_rid] static method.
-				To place in a scene, attach this GI probe to an instance using [method instance_set_base] using the returned RID.
-			</description>
-		</method>
-		<method name="gi_probe_get_bias" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<description>
-				Returns the bias value for the GI probe. Bias is used to avoid self occlusion. Equivalent to [member GIProbeData.bias].
-			</description>
-		</method>
-		<method name="gi_probe_get_bounds" qualifiers="const">
-			<return type="AABB">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<description>
-				Returns the axis-aligned bounding box that covers the full extent of the GI probe.
-			</description>
-		</method>
-		<method name="gi_probe_get_cell_size" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<description>
-				Returns the cell size set by [method gi_probe_set_cell_size].
-			</description>
-		</method>
-		<method name="gi_probe_get_dynamic_data" qualifiers="const">
-			<return type="PoolIntArray">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<description>
-				Returns the data used by the GI probe.
-			</description>
-		</method>
-		<method name="gi_probe_get_dynamic_range" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<description>
-				Returns the dynamic range set for this GI probe. Equivalent to [member GIProbe.dynamic_range].
-			</description>
-		</method>
-		<method name="gi_probe_get_energy" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<description>
-				Returns the energy multiplier for this GI probe. Equivalent to [member GIProbe.energy].
-			</description>
-		</method>
-		<method name="gi_probe_get_normal_bias" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<description>
-				Returns the normal bias for this GI probe. Equivalent to [member GIProbe.normal_bias].
-			</description>
-		</method>
-		<method name="gi_probe_get_propagation" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<description>
-				Returns the propagation value for this GI probe. Equivalent to [member GIProbe.propagation].
-			</description>
-		</method>
-		<method name="gi_probe_get_to_cell_xform" qualifiers="const">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<description>
-				Returns the Transform set by [method gi_probe_set_to_cell_xform].
-			</description>
-		</method>
-		<method name="gi_probe_is_compressed" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<description>
-				Returns [code]true[/code] if the GI probe data associated with this GI probe is compressed. Equivalent to [member GIProbe.compress].
-			</description>
-		</method>
-		<method name="gi_probe_is_interior" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<description>
-				Returns [code]true[/code] if the GI probe is set to interior, meaning it does not account for sky light. Equivalent to [member GIProbe.interior].
-			</description>
-		</method>
-		<method name="gi_probe_set_bias">
-			<return type="void">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<argument index="1" name="bias" type="float">
-			</argument>
-			<description>
-				Sets the bias value to avoid self-occlusion. Equivalent to [member GIProbe.bias].
-			</description>
-		</method>
-		<method name="gi_probe_set_bounds">
-			<return type="void">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<argument index="1" name="bounds" type="AABB">
-			</argument>
-			<description>
-				Sets the axis-aligned bounding box that covers the extent of the GI probe.
-			</description>
-		</method>
-		<method name="gi_probe_set_cell_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<argument index="1" name="range" type="float">
-			</argument>
-			<description>
-				Sets the size of individual cells within the GI probe.
-			</description>
-		</method>
-		<method name="gi_probe_set_compress">
-			<return type="void">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
-			<description>
-				Sets the compression setting for the GI probe data. Compressed data will take up less space but may look worse. Equivalent to [member GIProbe.compress].
-			</description>
-		</method>
-		<method name="gi_probe_set_dynamic_data">
-			<return type="void">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<argument index="1" name="data" type="PoolIntArray">
-			</argument>
-			<description>
-				Sets the data to be used in the GI probe for lighting calculations. Normally this is created and called internally within the [GIProbe] node. You should not try to set this yourself.
-			</description>
-		</method>
-		<method name="gi_probe_set_dynamic_range">
-			<return type="void">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<argument index="1" name="range" type="int">
-			</argument>
-			<description>
-				Sets the dynamic range of the GI probe. Dynamic range sets the limit for how bright lights can be. A smaller range captures greater detail but limits how bright lights can be. Equivalent to [member GIProbe.dynamic_range].
-			</description>
-		</method>
-		<method name="gi_probe_set_energy">
-			<return type="void">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<argument index="1" name="energy" type="float">
-			</argument>
-			<description>
-				Sets the energy multiplier for this GI probe. A higher energy makes the indirect light from the GI probe brighter. Equivalent to [member GIProbe.energy].
-			</description>
-		</method>
-		<method name="gi_probe_set_interior">
-			<return type="void">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
-			<description>
-				Sets the interior value of this GI probe. A GI probe set to interior does not include the sky when calculating lighting. Equivalent to [member GIProbe.interior].
-			</description>
-		</method>
-		<method name="gi_probe_set_normal_bias">
-			<return type="void">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<argument index="1" name="bias" type="float">
-			</argument>
-			<description>
-				Sets the normal bias for this GI probe. Normal bias behaves similar to the other form of bias and may help reduce self-occlusion. Equivalent to [member GIProbe.normal_bias].
-			</description>
-		</method>
-		<method name="gi_probe_set_propagation">
-			<return type="void">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<argument index="1" name="propagation" type="float">
-			</argument>
-			<description>
-				Sets the propagation of light within this GI probe. Equivalent to [member GIProbe.propagation].
-			</description>
-		</method>
-		<method name="gi_probe_set_to_cell_xform">
-			<return type="void">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<argument index="1" name="xform" type="Transform">
-			</argument>
-			<description>
-				Sets the to cell [Transform] for this GI probe.
 			</description>
 		</method>
 		<method name="has_changed" qualifiers="const">
@@ -2128,17 +1411,6 @@
 				Sets the shadow mode for this directional light. Equivalent to [member DirectionalLight.directional_shadow_mode]. See [enum LightDirectionalShadowMode] for options.
 			</description>
 		</method>
-		<method name="light_omni_set_shadow_detail">
-			<return type="void">
-			</return>
-			<argument index="0" name="light" type="RID">
-			</argument>
-			<argument index="1" name="detail" type="int" enum="VisualServer.LightOmniShadowDetail">
-			</argument>
-			<description>
-				Sets whether to use vertical or horizontal detail for this omni light. This can be used to alleviate artifacts in the shadow map. Equivalent to [member OmniLight.omni_shadow_detail].
-			</description>
-		</method>
 		<method name="light_omni_set_shadow_mode">
 			<return type="void">
 			</return>
@@ -2313,7 +1585,7 @@
 			<argument index="1" name="bounds" type="AABB">
 			</argument>
 			<description>
-				Sets the size of the area covered by the lightmap capture. Equivalent to [member BakedLightmapData.bounds].
+				Sets the size of the area covered by the lightmap capture.
 			</description>
 		</method>
 		<method name="lightmap_capture_set_energy">
@@ -2324,7 +1596,7 @@
 			<argument index="1" name="energy" type="float">
 			</argument>
 			<description>
-				Sets the energy multiplier for this lightmap capture. Equivalent to [member BakedLightmapData.energy].
+				Sets the energy multiplier for this lightmap capture.
 			</description>
 		</method>
 		<method name="lightmap_capture_set_octree">
@@ -2335,7 +1607,7 @@
 			<argument index="1" name="octree" type="PoolByteArray">
 			</argument>
 			<description>
-				Sets the octree to be used by this lightmap capture. This function is normally used by the [BakedLightmap] node. Equivalent to [member BakedLightmapData.octree].
+				Sets the octree to be used by this lightmap capture.
 			</description>
 		</method>
 		<method name="lightmap_capture_set_octree_cell_subdiv">
@@ -2346,7 +1618,7 @@
 			<argument index="1" name="subdiv" type="int">
 			</argument>
 			<description>
-				Sets the subdivision level of this lightmap capture's octree. Equivalent to [member BakedLightmapData.cell_subdiv].
+				Sets the subdivision level of this lightmap capture's octree.
 			</description>
 		</method>
 		<method name="lightmap_capture_set_octree_cell_transform">
@@ -2357,7 +1629,7 @@
 			<argument index="1" name="xform" type="Transform">
 			</argument>
 			<description>
-				Sets the octree cell transform for this lightmap capture's octree. Equivalent to [member BakedLightmapData.cell_space_transform].
+				Sets the octree cell transform for this lightmap capture's octree.
 			</description>
 		</method>
 		<method name="make_sphere_mesh">
@@ -2390,37 +1662,6 @@
 			</argument>
 			<description>
 				Returns the value of a certain material's parameter.
-			</description>
-		</method>
-		<method name="material_get_param_default" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="material" type="RID">
-			</argument>
-			<argument index="1" name="parameter" type="String">
-			</argument>
-			<description>
-				Returns the default value for the param if available. Otherwise returns an empty [Variant].
-			</description>
-		</method>
-		<method name="material_get_shader" qualifiers="const">
-			<return type="RID">
-			</return>
-			<argument index="0" name="shader_material" type="RID">
-			</argument>
-			<description>
-				Returns the shader of a certain material's shader. Returns an empty RID if the material doesn't have a shader.
-			</description>
-		</method>
-		<method name="material_set_line_width">
-			<return type="void">
-			</return>
-			<argument index="0" name="material" type="RID">
-			</argument>
-			<argument index="1" name="width" type="float">
-			</argument>
-			<description>
-				Sets a material's line width.
 			</description>
 		</method>
 		<method name="material_set_next_pass">
@@ -2480,10 +1721,13 @@
 			</argument>
 			<argument index="3" name="blend_shapes" type="Array" default="[  ]">
 			</argument>
-			<argument index="4" name="compress_format" type="int" default="97280">
+			<argument index="4" name="lods" type="Dictionary" default="{
+
+}">
+			</argument>
+			<argument index="5" name="compress_format" type="int" default="31744">
 			</argument>
 			<description>
-				Adds a surface generated from the Arrays to a mesh. See [enum PrimitiveType] constants for types.
 			</description>
 		</method>
 		<method name="mesh_clear">
@@ -2540,28 +1784,6 @@
 				Returns a mesh's number of surfaces.
 			</description>
 		</method>
-		<method name="mesh_remove_surface">
-			<return type="void">
-			</return>
-			<argument index="0" name="mesh" type="RID">
-			</argument>
-			<argument index="1" name="index" type="int">
-			</argument>
-			<description>
-				Removes a mesh's surface.
-			</description>
-		</method>
-		<method name="mesh_set_blend_shape_count">
-			<return type="void">
-			</return>
-			<argument index="0" name="mesh" type="RID">
-			</argument>
-			<argument index="1" name="amount" type="int">
-			</argument>
-			<description>
-				Sets a mesh's blend shape count.
-			</description>
-		</method>
 		<method name="mesh_set_blend_shape_mode">
 			<return type="void">
 			</return>
@@ -2584,50 +1806,6 @@
 				Sets a mesh's custom aabb.
 			</description>
 		</method>
-		<method name="mesh_surface_get_aabb" qualifiers="const">
-			<return type="AABB">
-			</return>
-			<argument index="0" name="mesh" type="RID">
-			</argument>
-			<argument index="1" name="surface" type="int">
-			</argument>
-			<description>
-				Returns a mesh's surface's aabb.
-			</description>
-		</method>
-		<method name="mesh_surface_get_array" qualifiers="const">
-			<return type="PoolByteArray">
-			</return>
-			<argument index="0" name="mesh" type="RID">
-			</argument>
-			<argument index="1" name="surface" type="int">
-			</argument>
-			<description>
-				Returns a mesh's surface's vertex buffer.
-			</description>
-		</method>
-		<method name="mesh_surface_get_array_index_len" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="mesh" type="RID">
-			</argument>
-			<argument index="1" name="surface" type="int">
-			</argument>
-			<description>
-				Returns a mesh's surface's amount of indices.
-			</description>
-		</method>
-		<method name="mesh_surface_get_array_len" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="mesh" type="RID">
-			</argument>
-			<argument index="1" name="surface" type="int">
-			</argument>
-			<description>
-				Returns a mesh's surface's amount of vertices.
-			</description>
-		</method>
 		<method name="mesh_surface_get_arrays" qualifiers="const">
 			<return type="Array">
 			</return>
@@ -2648,17 +1826,6 @@
 			</argument>
 			<description>
 				Returns a mesh's surface's arrays for blend shapes.
-			</description>
-		</method>
-		<method name="mesh_surface_get_format" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="mesh" type="RID">
-			</argument>
-			<argument index="1" name="surface" type="int">
-			</argument>
-			<description>
-				Returns the format of a mesh's surface.
 			</description>
 		</method>
 		<method name="mesh_surface_get_format_offset" qualifiers="const">
@@ -2689,17 +1856,6 @@
 				Function is unused in Godot 3.x.
 			</description>
 		</method>
-		<method name="mesh_surface_get_index_array" qualifiers="const">
-			<return type="PoolByteArray">
-			</return>
-			<argument index="0" name="mesh" type="RID">
-			</argument>
-			<argument index="1" name="surface" type="int">
-			</argument>
-			<description>
-				Returns a mesh's surface's index buffer.
-			</description>
-		</method>
 		<method name="mesh_surface_get_material" qualifiers="const">
 			<return type="RID">
 			</return>
@@ -2709,28 +1865,6 @@
 			</argument>
 			<description>
 				Returns a mesh's surface's material.
-			</description>
-		</method>
-		<method name="mesh_surface_get_primitive_type" qualifiers="const">
-			<return type="int" enum="VisualServer.PrimitiveType">
-			</return>
-			<argument index="0" name="mesh" type="RID">
-			</argument>
-			<argument index="1" name="surface" type="int">
-			</argument>
-			<description>
-				Returns the primitive type of a mesh's surface.
-			</description>
-		</method>
-		<method name="mesh_surface_get_skeleton_aabb" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="mesh" type="RID">
-			</argument>
-			<argument index="1" name="surface" type="int">
-			</argument>
-			<description>
-				Returns the aabb of a mesh's surface's skeleton.
 			</description>
 		</method>
 		<method name="mesh_surface_set_material">
@@ -2770,12 +1904,11 @@
 			</argument>
 			<argument index="2" name="transform_format" type="int" enum="VisualServer.MultimeshTransformFormat">
 			</argument>
-			<argument index="3" name="color_format" type="int" enum="VisualServer.MultimeshColorFormat">
+			<argument index="3" name="color_format" type="bool" default="false">
 			</argument>
-			<argument index="4" name="custom_data_format" type="int" enum="VisualServer.MultimeshCustomDataFormat" default="0">
+			<argument index="4" name="custom_data_format" type="bool" default="false">
 			</argument>
 			<description>
-				Allocates space for the multimesh data. Format parameters determine how the data will be stored by OpenGL. See [enum MultimeshTransformFormat], [enum MultimeshColorFormat], and [enum MultimeshCustomDataFormat] for usage. Equivalent to [member MultiMesh.instance_count].
 			</description>
 		</method>
 		<method name="multimesh_create">
@@ -2794,6 +1927,14 @@
 			</argument>
 			<description>
 				Calculates and returns the axis-aligned bounding box that encloses all instances within the multimesh.
+			</description>
+		</method>
+		<method name="multimesh_get_buffer" qualifiers="const">
+			<return type="PoolRealArray">
+			</return>
+			<argument index="0" name="multimesh" type="RID">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="multimesh_get_instance_count" qualifiers="const">
@@ -2919,19 +2060,14 @@
 				Sets the [Transform2D] for this instance. For use when multimesh is used in 2D. Equivalent to [method MultiMesh.set_instance_transform_2d].
 			</description>
 		</method>
-		<method name="multimesh_set_as_bulk_array">
+		<method name="multimesh_set_buffer">
 			<return type="void">
 			</return>
 			<argument index="0" name="multimesh" type="RID">
 			</argument>
-			<argument index="1" name="array" type="PoolRealArray">
+			<argument index="1" name="buffer" type="PoolRealArray">
 			</argument>
 			<description>
-				Sets all data related to the instances in one go. This is especially useful when loading the data from disk or preparing the data from GDNative.
-
-				All data is packed in one large float array. An array may look like this: Transform for instance 1, color data for instance 1, custom data for instance 1, transform for instance 2, color data for instance 2, etc.
-
-				[Transform] is stored as 12 floats, [Transform2D] is stored as 8 floats, [code]COLOR_8BIT[/code] / [code]CUSTOM_DATA_8BIT[/code] is stored as 1 float (4 bytes as is) and [code]COLOR_FLOAT[/code] / [code]CUSTOM_DATA_FLOAT[/code] is stored as 4 floats.
 			</description>
 		</method>
 		<method name="multimesh_set_mesh">
@@ -3405,19 +2541,6 @@
 				Sets the fallback environment to be used by this scenario. The fallback environment is used if no environment is set. Internally, this is used by the editor to provide a default environment.
 			</description>
 		</method>
-		<method name="scenario_set_reflection_atlas_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="scenario" type="RID">
-			</argument>
-			<argument index="1" name="size" type="int">
-			</argument>
-			<argument index="2" name="subdiv" type="int">
-			</argument>
-			<description>
-				Sets the size of the reflection atlas shared by all reflection probes in this scenario.
-			</description>
-		</method>
 		<method name="set_boot_image">
 			<return type="void">
 			</return>
@@ -3477,6 +2600,16 @@
 			</argument>
 			<description>
 				Returns a default texture from a shader searched by name.
+			</description>
+		</method>
+		<method name="shader_get_param_default" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="material" type="RID">
+			</argument>
+			<argument index="1" name="parameter" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="shader_get_param_list" qualifiers="const">
@@ -3603,12 +2736,9 @@
 			</return>
 			<argument index="0" name="sky" type="RID">
 			</argument>
-			<argument index="1" name="cube_map" type="RID">
-			</argument>
-			<argument index="2" name="radiance_size" type="int">
+			<argument index="1" name="panorama" type="RID">
 			</argument>
 			<description>
-				Sets a sky's texture.
 			</description>
 		</method>
 		<method name="spot_light_create">
@@ -3627,240 +2757,20 @@
 				Not implemented in Godot 3.x.
 			</description>
 		</method>
-		<method name="texture_allocate">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
-			<argument index="1" name="width" type="int">
-			</argument>
-			<argument index="2" name="height" type="int">
-			</argument>
-			<argument index="3" name="depth_3d" type="int">
-			</argument>
-			<argument index="4" name="format" type="int" enum="Image.Format">
-			</argument>
-			<argument index="5" name="type" type="int" enum="VisualServer.TextureType">
-			</argument>
-			<argument index="6" name="flags" type="int" default="7">
-			</argument>
-			<description>
-				Allocates the GPU memory for the texture.
-			</description>
-		</method>
-		<method name="texture_bind">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
-			<argument index="1" name="number" type="int">
-			</argument>
-			<description>
-				Binds the texture to a texture slot.
-			</description>
-		</method>
-		<method name="texture_create">
-			<return type="RID">
-			</return>
-			<description>
-				Creates an empty texture and adds it to the VisualServer. It can be accessed with the RID that is returned. This RID will be used in all [code]texture_*[/code] VisualServer functions.
-				Once finished with your RID, you will want to free the RID using the VisualServer's [method free_rid] static method.
-			</description>
-		</method>
-		<method name="texture_create_from_image">
+		<method name="texture_2d_create">
 			<return type="RID">
 			</return>
 			<argument index="0" name="image" type="Image">
 			</argument>
-			<argument index="1" name="flags" type="int" default="7">
-			</argument>
 			<description>
-				Creates a texture, allocates the space for an image, and fills in the image.
 			</description>
 		</method>
-		<method name="texture_debug_usage">
-			<return type="Array">
-			</return>
-			<description>
-				Returns a list of all the textures and their information.
-			</description>
-		</method>
-		<method name="texture_get_data" qualifiers="const">
+		<method name="texture_2d_get" qualifiers="const">
 			<return type="Image">
 			</return>
 			<argument index="0" name="texture" type="RID">
 			</argument>
-			<argument index="1" name="cube_side" type="int" default="0">
-			</argument>
 			<description>
-				Returns a copy of a texture's image unless it's a CubeMap, in which case it returns the [RID] of the image at one of the cubes sides.
-			</description>
-		</method>
-		<method name="texture_get_depth" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
-			<description>
-				Returns the depth of the texture.
-			</description>
-		</method>
-		<method name="texture_get_flags" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
-			<description>
-				Returns the flags of a texture.
-			</description>
-		</method>
-		<method name="texture_get_format" qualifiers="const">
-			<return type="int" enum="Image.Format">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
-			<description>
-				Returns the format of the texture's image.
-			</description>
-		</method>
-		<method name="texture_get_height" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
-			<description>
-				Returns the texture's height.
-			</description>
-		</method>
-		<method name="texture_get_path" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
-			<description>
-				Returns the texture's path.
-			</description>
-		</method>
-		<method name="texture_get_texid" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
-			<description>
-				Returns the opengl id of the texture's image.
-			</description>
-		</method>
-		<method name="texture_get_type" qualifiers="const">
-			<return type="int" enum="VisualServer.TextureType">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
-			<description>
-				Returns the type of the texture, can be any of the [enum TextureType].
-			</description>
-		</method>
-		<method name="texture_get_width" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
-			<description>
-				Returns the texture's width.
-			</description>
-		</method>
-		<method name="texture_set_data">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
-			<argument index="1" name="image" type="Image">
-			</argument>
-			<argument index="2" name="layer" type="int" default="0">
-			</argument>
-			<description>
-				Sets the texture's image data. If it's a CubeMap, it sets the image data at a cube side.
-			</description>
-		</method>
-		<method name="texture_set_data_partial">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
-			<argument index="1" name="image" type="Image">
-			</argument>
-			<argument index="2" name="src_x" type="int">
-			</argument>
-			<argument index="3" name="src_y" type="int">
-			</argument>
-			<argument index="4" name="src_w" type="int">
-			</argument>
-			<argument index="5" name="src_h" type="int">
-			</argument>
-			<argument index="6" name="dst_x" type="int">
-			</argument>
-			<argument index="7" name="dst_y" type="int">
-			</argument>
-			<argument index="8" name="dst_mip" type="int">
-			</argument>
-			<argument index="9" name="layer" type="int" default="0">
-			</argument>
-			<description>
-				Sets a part of the data for a texture. Warning: this function calls the underlying graphics API directly and may corrupt your texture if used improperly.
-			</description>
-		</method>
-		<method name="texture_set_flags">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
-			<argument index="1" name="flags" type="int">
-			</argument>
-			<description>
-				Sets the texture's flags. See [enum TextureFlags] for options.
-			</description>
-		</method>
-		<method name="texture_set_path">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
-			<argument index="1" name="path" type="String">
-			</argument>
-			<description>
-				Sets the texture's path.
-			</description>
-		</method>
-		<method name="texture_set_shrink_all_x2_on_set_data">
-			<return type="void">
-			</return>
-			<argument index="0" name="shrink" type="bool">
-			</argument>
-			<description>
-				If [code]true[/code], sets internal processes to shrink all image data to half the size.
-			</description>
-		</method>
-		<method name="texture_set_size_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
-			<argument index="1" name="width" type="int">
-			</argument>
-			<argument index="2" name="height" type="int">
-			</argument>
-			<argument index="3" name="depth" type="int">
-			</argument>
-			<description>
-				Resizes the texture to the specified dimensions.
-			</description>
-		</method>
-		<method name="textures_keep_original">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				If [code]true[/code], the image will be stored in the texture's images array if overwritten.
 			</description>
 		</method>
 		<method name="viewport_attach_camera">
@@ -4015,17 +2925,6 @@
 				Sets the debug draw mode of a viewport. See [enum ViewportDebugDraw] for options.
 			</description>
 		</method>
-		<method name="viewport_set_disable_3d">
-			<return type="void">
-			</return>
-			<argument index="0" name="viewport" type="RID">
-			</argument>
-			<argument index="1" name="disabled" type="bool">
-			</argument>
-			<description>
-				If [code]true[/code], a viewport's 3D rendering is disabled.
-			</description>
-		</method>
 		<method name="viewport_set_disable_environment">
 			<return type="void">
 			</return>
@@ -4046,17 +2945,6 @@
 			</argument>
 			<description>
 				Sets the viewport's global transformation matrix.
-			</description>
-		</method>
-		<method name="viewport_set_hdr">
-			<return type="void">
-			</return>
-			<argument index="0" name="viewport" type="RID">
-			</argument>
-			<argument index="1" name="enabled" type="bool">
-			</argument>
-			<description>
-				If [code]true[/code], the viewport renders to hdr.
 			</description>
 		</method>
 		<method name="viewport_set_hide_canvas">
@@ -4185,17 +3073,6 @@
 				Sets when the viewport should be updated. See [enum ViewportUpdateMode] constants for options.
 			</description>
 		</method>
-		<method name="viewport_set_usage">
-			<return type="void">
-			</return>
-			<argument index="0" name="viewport" type="RID">
-			</argument>
-			<argument index="1" name="usage" type="int" enum="VisualServer.ViewportUsage">
-			</argument>
-			<description>
-				Sets the viewport's 2D/3D mode. See [enum ViewportUsage] constants for options.
-			</description>
-		</method>
 		<method name="viewport_set_use_arvr">
 			<return type="void">
 			</return>
@@ -4205,17 +3082,6 @@
 			</argument>
 			<description>
 				If [code]true[/code], the viewport uses augmented or virtual reality technologies. See [ARVRInterface].
-			</description>
-		</method>
-		<method name="viewport_set_vflip">
-			<return type="void">
-			</return>
-			<argument index="0" name="viewport" type="RID">
-			</argument>
-			<argument index="1" name="enabled" type="bool">
-			</argument>
-			<description>
-				If [code]true[/code], the viewport's rendering is flipped vertically.
 			</description>
 		</method>
 	</methods>
@@ -4256,60 +3122,23 @@
 		<constant name="MATERIAL_RENDER_PRIORITY_MAX" value="127">
 			The maximum renderpriority of all materials.
 		</constant>
-		<constant name="CUBEMAP_LEFT" value="0" enum="CubeMapSide">
-			Marks the left side of a cubemap.
+		<constant name="TEXTURE_LAYERED_2D_ARRAY" value="0" enum="TextureLayeredType">
 		</constant>
-		<constant name="CUBEMAP_RIGHT" value="1" enum="CubeMapSide">
-			Marks the right side of a cubemap.
+		<constant name="TEXTURE_LAYERED_CUBEMAP" value="1" enum="TextureLayeredType">
 		</constant>
-		<constant name="CUBEMAP_BOTTOM" value="2" enum="CubeMapSide">
-			Marks the bottom side of a cubemap.
+		<constant name="TEXTURE_LAYERED_CUBEMAP_ARRAY" value="2" enum="TextureLayeredType">
 		</constant>
-		<constant name="CUBEMAP_TOP" value="3" enum="CubeMapSide">
-			Marks the top side of a cubemap.
+		<constant name="CUBEMAP_LAYER_LEFT" value="0" enum="CubeMapLayer">
 		</constant>
-		<constant name="CUBEMAP_FRONT" value="4" enum="CubeMapSide">
-			Marks the front side of a cubemap.
+		<constant name="CUBEMAP_LAYER_RIGHT" value="1" enum="CubeMapLayer">
 		</constant>
-		<constant name="CUBEMAP_BACK" value="5" enum="CubeMapSide">
-			Marks the back side of a cubemap.
+		<constant name="CUBEMAP_LAYER_BOTTOM" value="2" enum="CubeMapLayer">
 		</constant>
-		<constant name="TEXTURE_TYPE_2D" value="0" enum="TextureType">
-			Normal texture with 2 dimensions, width and height.
+		<constant name="CUBEMAP_LAYER_TOP" value="3" enum="CubeMapLayer">
 		</constant>
-		<constant name="TEXTURE_TYPE_CUBEMAP" value="1" enum="TextureType">
-			Texture made up of six faces, can be looked up with a [code]vec3[/code] in shader.
+		<constant name="CUBEMAP_LAYER_FRONT" value="4" enum="CubeMapLayer">
 		</constant>
-		<constant name="TEXTURE_TYPE_2D_ARRAY" value="2" enum="TextureType">
-			An array of 2-dimensional textures.
-		</constant>
-		<constant name="TEXTURE_TYPE_3D" value="3" enum="TextureType">
-			A 3-dimensional texture with width, height, and depth.
-		</constant>
-		<constant name="TEXTURE_FLAG_MIPMAPS" value="1" enum="TextureFlags">
-			Generates mipmaps, which are smaller versions of the same texture to use when zoomed out, keeping the aspect ratio.
-		</constant>
-		<constant name="TEXTURE_FLAG_REPEAT" value="2" enum="TextureFlags">
-			Repeats the texture (instead of clamp to edge).
-		</constant>
-		<constant name="TEXTURE_FLAG_FILTER" value="4" enum="TextureFlags">
-			Uses a magnifying filter, to enable smooth zooming in of the texture.
-		</constant>
-		<constant name="TEXTURE_FLAG_ANISOTROPIC_FILTER" value="8" enum="TextureFlags">
-			Uses anisotropic mipmap filtering. Generates smaller versions of the same texture with different aspect ratios.
-			This results in better-looking textures when viewed from oblique angles.
-		</constant>
-		<constant name="TEXTURE_FLAG_CONVERT_TO_LINEAR" value="16" enum="TextureFlags">
-			Converts the texture to the sRGB color space.
-		</constant>
-		<constant name="TEXTURE_FLAG_MIRRORED_REPEAT" value="32" enum="TextureFlags">
-			Repeats the texture with alternate sections mirrored.
-		</constant>
-		<constant name="TEXTURE_FLAG_USED_FOR_STREAMING" value="2048" enum="TextureFlags">
-			Texture is a video surface.
-		</constant>
-		<constant name="TEXTURE_FLAGS_DEFAULT" value="7" enum="TextureFlags">
-			Default flags. [constant TEXTURE_FLAG_MIPMAPS], [constant TEXTURE_FLAG_REPEAT] and [constant TEXTURE_FLAG_FILTER] are enabled.
+		<constant name="CUBEMAP_LAYER_BACK" value="5" enum="CubeMapLayer">
 		</constant>
 		<constant name="SHADER_SPATIAL" value="0" enum="ShaderMode">
 			Shader is a 3D shader.
@@ -4380,9 +3209,6 @@
 		<constant name="ARRAY_FORMAT_INDEX" value="256" enum="ArrayFormat">
 			Flag used to mark an index array.
 		</constant>
-		<constant name="ARRAY_COMPRESS_VERTEX" value="512" enum="ArrayFormat">
-			Flag used to mark a compressed (half float) vertex array.
-		</constant>
 		<constant name="ARRAY_COMPRESS_NORMAL" value="1024" enum="ArrayFormat">
 			Flag used to mark a compressed (half float) normal array.
 		</constant>
@@ -4398,23 +3224,16 @@
 		<constant name="ARRAY_COMPRESS_TEX_UV2" value="16384" enum="ArrayFormat">
 			Flag used to mark a compressed (half float) UV coordinates array for the second UV coordinates.
 		</constant>
-		<constant name="ARRAY_COMPRESS_BONES" value="32768" enum="ArrayFormat">
-			Flag used to mark a compressed bone array.
-		</constant>
-		<constant name="ARRAY_COMPRESS_WEIGHTS" value="65536" enum="ArrayFormat">
-			Flag used to mark a compressed (half float) weight array.
-		</constant>
 		<constant name="ARRAY_COMPRESS_INDEX" value="131072" enum="ArrayFormat">
 			Flag used to mark a compressed index array.
 		</constant>
 		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="262144" enum="ArrayFormat">
 			Flag used to mark that the array contains 2D vertices.
 		</constant>
-		<constant name="ARRAY_FLAG_USE_16_BIT_BONES" value="524288" enum="ArrayFormat">
-			Flag used to mark that the array uses 16-bit bones instead of 8-bit.
+		<constant name="ARRAY_FLAG_USE_DYNAMIC_UPDATE" value="1048576" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_DEFAULT" value="97280" enum="ArrayFormat">
-			Used to set flags [constant ARRAY_COMPRESS_VERTEX], [constant ARRAY_COMPRESS_NORMAL], [constant ARRAY_COMPRESS_TANGENT], [constant ARRAY_COMPRESS_COLOR], [constant ARRAY_COMPRESS_TEX_UV], [constant ARRAY_COMPRESS_TEX_UV2] and [constant ARRAY_COMPRESS_WEIGHTS] quickly.
+		<constant name="ARRAY_COMPRESS_DEFAULT" value="31744" enum="ArrayFormat">
+			Used to set flags [constant ARRAY_COMPRESS_NORMAL], [constant ARRAY_COMPRESS_TANGENT], [constant ARRAY_COMPRESS_COLOR], [constant ARRAY_COMPRESS_TEX_UV] and [constant ARRAY_COMPRESS_TEX_UV2] quickly.
 		</constant>
 		<constant name="PRIMITIVE_POINTS" value="0" enum="PrimitiveType">
 			Primitive to draw consists of points.
@@ -4425,19 +3244,13 @@
 		<constant name="PRIMITIVE_LINE_STRIP" value="2" enum="PrimitiveType">
 			Primitive to draw consists of a line strip from start to end.
 		</constant>
-		<constant name="PRIMITIVE_LINE_LOOP" value="3" enum="PrimitiveType">
-			Primitive to draw consists of a line loop (a line strip with a line between the last and the first vertex).
-		</constant>
-		<constant name="PRIMITIVE_TRIANGLES" value="4" enum="PrimitiveType">
+		<constant name="PRIMITIVE_TRIANGLES" value="3" enum="PrimitiveType">
 			Primitive to draw consists of triangles.
 		</constant>
-		<constant name="PRIMITIVE_TRIANGLE_STRIP" value="5" enum="PrimitiveType">
+		<constant name="PRIMITIVE_TRIANGLE_STRIP" value="4" enum="PrimitiveType">
 			Primitive to draw consists of a triangle strip (the last 3 vertices are always combined to make a triangle).
 		</constant>
-		<constant name="PRIMITIVE_TRIANGLE_FAN" value="6" enum="PrimitiveType">
-			Primitive to draw consists of a triangle strip (the last 2 vertices are always combined with the first to make a triangle).
-		</constant>
-		<constant name="PRIMITIVE_MAX" value="7" enum="PrimitiveType">
+		<constant name="PRIMITIVE_MAX" value="5" enum="PrimitiveType">
 			Represents the size of the [enum PrimitiveType] enum.
 		</constant>
 		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0" enum="BlendShapeMode">
@@ -4445,6 +3258,12 @@
 		</constant>
 		<constant name="BLEND_SHAPE_MODE_RELATIVE" value="1" enum="BlendShapeMode">
 			Blend shapes are relative to base weight.
+		</constant>
+		<constant name="MULTIMESH_TRANSFORM_2D" value="0" enum="MultimeshTransformFormat">
+			Use [Transform2D] to store MultiMesh transform.
+		</constant>
+		<constant name="MULTIMESH_TRANSFORM_3D" value="1" enum="MultimeshTransformFormat">
+			Use [Transform] to store MultiMesh transform.
 		</constant>
 		<constant name="LIGHT_DIRECTIONAL" value="0" enum="LightType">
 			Is a directional (sun) light.
@@ -4457,6 +3276,8 @@
 		</constant>
 		<constant name="LIGHT_PARAM_ENERGY" value="0" enum="LightParam">
 			The light's energy.
+		</constant>
+		<constant name="LIGHT_PARAM_INDIRECT_ENERGY" value="1" enum="LightParam">
 		</constant>
 		<constant name="LIGHT_PARAM_SPECULAR" value="2" enum="LightParam">
 			The light's influence on specularity.
@@ -4488,16 +3309,18 @@
 		<constant name="LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET" value="11" enum="LightParam">
 			Proportion of shadow atlas occupied by the third split. The fourth split occupies the rest.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_NORMAL_BIAS" value="12" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_FADE_START" value="12" enum="LightParam">
+		</constant>
+		<constant name="LIGHT_PARAM_SHADOW_NORMAL_BIAS" value="13" enum="LightParam">
 			Normal bias used to offset shadow lookup by object normal. Can be used to fix self-shadowing artifacts.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_BIAS" value="13" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_BIAS" value="14" enum="LightParam">
 			Bias the shadow lookup to fix self-shadowing artifacts.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE" value="14" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE" value="15" enum="LightParam">
 			Increases bias on further splits to fix self-shadowing that only occurs far away from the camera.
 		</constant>
-		<constant name="LIGHT_PARAM_MAX" value="15" enum="LightParam">
+		<constant name="LIGHT_PARAM_MAX" value="16" enum="LightParam">
 			Represents the size of the [enum LightParam] enum.
 		</constant>
 		<constant name="LIGHT_OMNI_SHADOW_DUAL_PARABOLOID" value="0" enum="LightOmniShadowMode">
@@ -4505,12 +3328,6 @@
 		</constant>
 		<constant name="LIGHT_OMNI_SHADOW_CUBE" value="1" enum="LightOmniShadowMode">
 			Use a cubemap shadow map for omni lights. Slower but better quality than dual paraboloid.
-		</constant>
-		<constant name="LIGHT_OMNI_SHADOW_DETAIL_VERTICAL" value="0" enum="LightOmniShadowDetail">
-			Use more detail vertically when computing shadow map.
-		</constant>
-		<constant name="LIGHT_OMNI_SHADOW_DETAIL_HORIZONTAL" value="1" enum="LightOmniShadowDetail">
-			Use more detail horizontally when computing shadow map.
 		</constant>
 		<constant name="LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL" value="0" enum="LightDirectionalShadowMode">
 			Use orthogonal shadow projection for directional light.
@@ -4526,6 +3343,21 @@
 		</constant>
 		<constant name="LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_OPTIMIZED" value="1" enum="LightDirectionalShadowDepthRangeMode">
 			Optimize use of shadow maps, increasing the effective resolution. But may result in shadows moving or flickering slightly.
+		</constant>
+		<constant name="REFLECTION_PROBE_UPDATE_ONCE" value="0" enum="ReflectionProbeUpdateMode">
+			Reflection probe will update reflections once and then stop.
+		</constant>
+		<constant name="REFLECTION_PROBE_UPDATE_ALWAYS" value="1" enum="ReflectionProbeUpdateMode">
+			Reflection probe will update each frame. This mode is necessary to capture moving objects.
+		</constant>
+		<constant name="PARTICLES_DRAW_ORDER_INDEX" value="0" enum="ParticlesDrawOrder">
+			Draw particles in the order that they appear in the particles array.
+		</constant>
+		<constant name="PARTICLES_DRAW_ORDER_LIFETIME" value="1" enum="ParticlesDrawOrder">
+			Sort particles based on their lifetime.
+		</constant>
+		<constant name="PARTICLES_DRAW_ORDER_VIEW_DEPTH" value="2" enum="ParticlesDrawOrder">
+			Sort particles based on their distance to the camera.
 		</constant>
 		<constant name="VIEWPORT_UPDATE_DISABLED" value="0" enum="ViewportUpdateMode">
 			Do not update the viewport.
@@ -4569,18 +3401,6 @@
 		<constant name="VIEWPORT_MSAA_EXT_4X" value="6" enum="ViewportMSAA">
 			Multisample antialiasing is set to 4× on external texture. Special mode for GLES2 Android VR (Oculus Quest and Go).
 		</constant>
-		<constant name="VIEWPORT_USAGE_2D" value="0" enum="ViewportUsage">
-			The Viewport does not render 3D but samples.
-		</constant>
-		<constant name="VIEWPORT_USAGE_2D_NO_SAMPLING" value="1" enum="ViewportUsage">
-			The Viewport does not render 3D and does not sample.
-		</constant>
-		<constant name="VIEWPORT_USAGE_3D" value="2" enum="ViewportUsage">
-			The Viewport renders 3D with effects.
-		</constant>
-		<constant name="VIEWPORT_USAGE_3D_NO_EFFECTS" value="3" enum="ViewportUsage">
-			The Viewport renders 3D but without effects.
-		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME" value="0" enum="ViewportRenderInfo">
 			Number of objects drawn in a single frame.
 		</constant>
@@ -4608,11 +3428,129 @@
 		<constant name="VIEWPORT_DEBUG_DRAW_UNSHADED" value="1" enum="ViewportDebugDraw">
 			Debug draw sets objects to unshaded.
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_OVERDRAW" value="2" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_LIGHTING" value="2" enum="ViewportDebugDraw">
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_OVERDRAW" value="3" enum="ViewportDebugDraw">
 			Overwrites clear color to [code](0,0,0,0)[/code].
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_WIREFRAME" value="3" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_WIREFRAME" value="4" enum="ViewportDebugDraw">
 			Debug draw draws objects in wireframe.
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER" value="5" enum="ViewportDebugDraw">
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_GI_PROBE_ALBEDO" value="6" enum="ViewportDebugDraw">
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING" value="7" enum="ViewportDebugDraw">
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION" value="8" enum="ViewportDebugDraw">
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS" value="9" enum="ViewportDebugDraw">
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS" value="10" enum="ViewportDebugDraw">
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE" value="11" enum="ViewportDebugDraw">
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_SSAO" value="12" enum="ViewportDebugDraw">
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_ROUGHNESS_LIMITER" value="13" enum="ViewportDebugDraw">
+		</constant>
+		<constant name="SKY_MODE_QUALITY" value="0" enum="SkyMode">
+		</constant>
+		<constant name="SKY_MODE_REALTIME" value="1" enum="SkyMode">
+		</constant>
+		<constant name="ENV_BG_CLEAR_COLOR" value="0" enum="EnvironmentBG">
+			Use the clear color as background.
+		</constant>
+		<constant name="ENV_BG_COLOR" value="1" enum="EnvironmentBG">
+			Use a specified color as the background.
+		</constant>
+		<constant name="ENV_BG_SKY" value="2" enum="EnvironmentBG">
+			Use a sky resource for the background.
+		</constant>
+		<constant name="ENV_BG_CANVAS" value="3" enum="EnvironmentBG">
+			Use a specified canvas layer as the background. This can be useful for instantiating a 2D scene in a 3D world.
+		</constant>
+		<constant name="ENV_BG_KEEP" value="4" enum="EnvironmentBG">
+			Do not clear the background, use whatever was rendered last frame as the background.
+		</constant>
+		<constant name="ENV_BG_CAMERA_FEED" value="5" enum="EnvironmentBG">
+			Displays a camera feed in the background.
+		</constant>
+		<constant name="ENV_BG_MAX" value="6" enum="EnvironmentBG">
+			Represents the size of the [enum EnvironmentBG] enum.
+		</constant>
+		<constant name="ENV_AMBIENT_SOURCE_BG" value="0" enum="EnvironmentAmbientSource">
+		</constant>
+		<constant name="ENV_AMBIENT_SOURCE_DISABLED" value="1" enum="EnvironmentAmbientSource">
+		</constant>
+		<constant name="ENV_AMBIENT_SOURCE_COLOR" value="2" enum="EnvironmentAmbientSource">
+		</constant>
+		<constant name="ENV_AMBIENT_SOURCE_SKY" value="3" enum="EnvironmentAmbientSource">
+		</constant>
+		<constant name="ENV_REFLECTION_SOURCE_BG" value="0" enum="EnvironmentReflectionSource">
+		</constant>
+		<constant name="ENV_REFLECTION_SOURCE_DISABLED" value="1" enum="EnvironmentReflectionSource">
+		</constant>
+		<constant name="ENV_REFLECTION_SOURCE_SKY" value="2" enum="EnvironmentReflectionSource">
+		</constant>
+		<constant name="ENV_GLOW_BLEND_MODE_ADDITIVE" value="0" enum="EnvironmentGlowBlendMode">
+		</constant>
+		<constant name="ENV_GLOW_BLEND_MODE_SCREEN" value="1" enum="EnvironmentGlowBlendMode">
+		</constant>
+		<constant name="ENV_GLOW_BLEND_MODE_SOFTLIGHT" value="2" enum="EnvironmentGlowBlendMode">
+		</constant>
+		<constant name="ENV_GLOW_BLEND_MODE_REPLACE" value="3" enum="EnvironmentGlowBlendMode">
+		</constant>
+		<constant name="ENV_GLOW_BLEND_MODE_MIX" value="4" enum="EnvironmentGlowBlendMode">
+		</constant>
+		<constant name="ENV_TONE_MAPPER_LINEAR" value="0" enum="EnvironmentToneMapper">
+			Output color as they came in.
+		</constant>
+		<constant name="ENV_TONE_MAPPER_REINHARD" value="1" enum="EnvironmentToneMapper">
+			Use the Reinhard tonemapper.
+		</constant>
+		<constant name="ENV_TONE_MAPPER_FILMIC" value="2" enum="EnvironmentToneMapper">
+			Use the filmic tonemapper.
+		</constant>
+		<constant name="ENV_TONE_MAPPER_ACES" value="3" enum="EnvironmentToneMapper">
+			Use the ACES tonemapper.
+		</constant>
+		<constant name="ENV_SSAO_QUALITY_LOW" value="0" enum="EnvironmentSSAOQuality">
+			Lowest quality of screen space ambient occlusion.
+		</constant>
+		<constant name="ENV_SSAO_QUALITY_MEDIUM" value="1" enum="EnvironmentSSAOQuality">
+			Medium quality screen space ambient occlusion.
+		</constant>
+		<constant name="ENV_SSAO_QUALITY_HIGH" value="2" enum="EnvironmentSSAOQuality">
+			Highest quality screen space ambient occlusion.
+		</constant>
+		<constant name="ENV_SSAO_BLUR_DISABLED" value="0" enum="EnvironmentSSAOBlur">
+			Disables the blur set for SSAO. Will make SSAO look noisier.
+		</constant>
+		<constant name="ENV_SSAO_BLUR_1x1" value="1" enum="EnvironmentSSAOBlur">
+			Perform a 1x1 blur on the SSAO output.
+		</constant>
+		<constant name="ENV_SSAO_BLUR_2x2" value="2" enum="EnvironmentSSAOBlur">
+			Performs a 2x2 blur on the SSAO output.
+		</constant>
+		<constant name="ENV_SSAO_BLUR_3x3" value="3" enum="EnvironmentSSAOBlur">
+			Performs a 3x3 blur on the SSAO output. Use this for smoothest SSAO.
+		</constant>
+		<constant name="ENV_SSAO_QUALITY_ULTRA" value="3" enum="EnvironmentSSAOQuality">
+		</constant>
+		<constant name="DOF_BLUR_QUALITY_VERY_LOW" value="0" enum="DOFBlurQuality">
+		</constant>
+		<constant name="DOF_BLUR_QUALITY_LOW" value="1" enum="DOFBlurQuality">
+		</constant>
+		<constant name="DOF_BLUR_QUALITY_MEDIUM" value="2" enum="DOFBlurQuality">
+		</constant>
+		<constant name="DOF_BLUR_QUALITY_HIGH" value="3" enum="DOFBlurQuality">
+		</constant>
+		<constant name="DOF_BOKEH_BOX" value="0" enum="DOFBokehShape">
+		</constant>
+		<constant name="DOF_BOKEH_HEXAGON" value="1" enum="DOFBokehShape">
+		</constant>
+		<constant name="DOF_BOKEH_CIRCLE" value="2" enum="DOFBokehShape">
 		</constant>
 		<constant name="SCENARIO_DEBUG_DISABLED" value="0" enum="ScenarioDebugMode">
 			Do not use a debug mode.
@@ -4662,10 +3600,12 @@
 		<constant name="INSTANCE_FLAG_USE_BAKED_LIGHT" value="0" enum="InstanceFlags">
 			Allows the instance to be used in baked lighting.
 		</constant>
-		<constant name="INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE" value="1" enum="InstanceFlags">
+		<constant name="INSTANCE_FLAG_USE_DYNAMIC_GI" value="1" enum="InstanceFlags">
+		</constant>
+		<constant name="INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE" value="2" enum="InstanceFlags">
 			When set, manually requests to draw geometry on next frame.
 		</constant>
-		<constant name="INSTANCE_FLAG_MAX" value="2" enum="InstanceFlags">
+		<constant name="INSTANCE_FLAG_MAX" value="3" enum="InstanceFlags">
 			Represents the size of the [enum InstanceFlags] enum.
 		</constant>
 		<constant name="SHADOW_CASTING_SETTING_OFF" value="0" enum="ShadowCastingSetting">
@@ -4689,6 +3629,32 @@
 		<constant name="NINE_PATCH_TILE_FIT" value="2" enum="NinePatchAxisMode">
 			The nine patch gets filled with tiles where needed and stretches them a bit if needed.
 		</constant>
+		<constant name="CANVAS_ITEM_TEXTURE_FILTER_DEFAULT" value="0" enum="CanvasItemTextureFilter">
+		</constant>
+		<constant name="CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="1" enum="CanvasItemTextureFilter">
+		</constant>
+		<constant name="CANVAS_ITEM_TEXTURE_FILTER_LINEAR" value="2" enum="CanvasItemTextureFilter">
+		</constant>
+		<constant name="CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS" value="3" enum="CanvasItemTextureFilter">
+		</constant>
+		<constant name="CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" value="4" enum="CanvasItemTextureFilter">
+		</constant>
+		<constant name="CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS_ANISOTROPIC" value="5" enum="CanvasItemTextureFilter">
+		</constant>
+		<constant name="CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC" value="6" enum="CanvasItemTextureFilter">
+		</constant>
+		<constant name="CANVAS_ITEM_TEXTURE_FILTER_MAX" value="7" enum="CanvasItemTextureFilter">
+		</constant>
+		<constant name="CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT" value="0" enum="CanvasItemTextureRepeat">
+		</constant>
+		<constant name="CANVAS_ITEM_TEXTURE_REPEAT_DISABLED" value="1" enum="CanvasItemTextureRepeat">
+		</constant>
+		<constant name="CANVAS_ITEM_TEXTURE_REPEAT_ENABLED" value="2" enum="CanvasItemTextureRepeat">
+		</constant>
+		<constant name="CANVAS_ITEM_TEXTURE_REPEAT_MIRROR" value="3" enum="CanvasItemTextureRepeat">
+		</constant>
+		<constant name="CANVAS_ITEM_TEXTURE_REPEAT_MAX" value="4" enum="CanvasItemTextureRepeat">
+		</constant>
 		<constant name="CANVAS_LIGHT_MODE_ADD" value="0" enum="CanvasLightMode">
 			Adds light color additive to the canvas.
 		</constant>
@@ -4704,20 +3670,13 @@
 		<constant name="CANVAS_LIGHT_FILTER_NONE" value="0" enum="CanvasLightShadowFilter">
 			Do not apply a filter to canvas light shadows.
 		</constant>
-		<constant name="CANVAS_LIGHT_FILTER_PCF3" value="1" enum="CanvasLightShadowFilter">
-			Use PCF3 filtering to filter canvas light shadows.
-		</constant>
-		<constant name="CANVAS_LIGHT_FILTER_PCF5" value="2" enum="CanvasLightShadowFilter">
+		<constant name="CANVAS_LIGHT_FILTER_PCF5" value="1" enum="CanvasLightShadowFilter">
 			Use PCF5 filtering to filter canvas light shadows.
 		</constant>
-		<constant name="CANVAS_LIGHT_FILTER_PCF7" value="3" enum="CanvasLightShadowFilter">
-			Use PCF7 filtering to filter canvas light shadows.
-		</constant>
-		<constant name="CANVAS_LIGHT_FILTER_PCF9" value="4" enum="CanvasLightShadowFilter">
-			Use PCF9 filtering to filter canvas light shadows.
-		</constant>
-		<constant name="CANVAS_LIGHT_FILTER_PCF13" value="5" enum="CanvasLightShadowFilter">
+		<constant name="CANVAS_LIGHT_FILTER_PCF13" value="2" enum="CanvasLightShadowFilter">
 			Use PCF13 filtering to filter canvas light shadows.
+		</constant>
+		<constant name="CANVAS_LIGHT_FILTER_MAX" value="3" enum="CanvasLightShadowFilter">
 		</constant>
 		<constant name="CANVAS_OCCLUDER_POLYGON_CULL_DISABLED" value="0" enum="CanvasOccluderPolygonCullMode">
 			Culling of the canvas occluder is disabled.
@@ -4763,120 +3722,6 @@
 		</constant>
 		<constant name="FEATURE_MULTITHREADED" value="1" enum="Features">
 			Hardware supports multithreading. This enum is currently unused in Godot 3.x.
-		</constant>
-		<constant name="MULTIMESH_TRANSFORM_2D" value="0" enum="MultimeshTransformFormat">
-			Use [Transform2D] to store MultiMesh transform.
-		</constant>
-		<constant name="MULTIMESH_TRANSFORM_3D" value="1" enum="MultimeshTransformFormat">
-			Use [Transform] to store MultiMesh transform.
-		</constant>
-		<constant name="MULTIMESH_COLOR_NONE" value="0" enum="MultimeshColorFormat">
-			MultiMesh does not use per-instance color.
-		</constant>
-		<constant name="MULTIMESH_COLOR_8BIT" value="1" enum="MultimeshColorFormat">
-			MultiMesh color uses 8 bits per component. This packs the color into a single float.
-		</constant>
-		<constant name="MULTIMESH_COLOR_FLOAT" value="2" enum="MultimeshColorFormat">
-			MultiMesh color uses a float per channel.
-		</constant>
-		<constant name="MULTIMESH_CUSTOM_DATA_NONE" value="0" enum="MultimeshCustomDataFormat">
-			MultiMesh does not use custom data.
-		</constant>
-		<constant name="MULTIMESH_CUSTOM_DATA_8BIT" value="1" enum="MultimeshCustomDataFormat">
-			MultiMesh custom data uses 8 bits per component. This packs the 4-component custom data into a single float.
-		</constant>
-		<constant name="MULTIMESH_CUSTOM_DATA_FLOAT" value="2" enum="MultimeshCustomDataFormat">
-			MultiMesh custom data uses a float per component.
-		</constant>
-		<constant name="REFLECTION_PROBE_UPDATE_ONCE" value="0" enum="ReflectionProbeUpdateMode">
-			Reflection probe will update reflections once and then stop.
-		</constant>
-		<constant name="REFLECTION_PROBE_UPDATE_ALWAYS" value="1" enum="ReflectionProbeUpdateMode">
-			Reflection probe will update each frame. This mode is necessary to capture moving objects.
-		</constant>
-		<constant name="PARTICLES_DRAW_ORDER_INDEX" value="0" enum="ParticlesDrawOrder">
-			Draw particles in the order that they appear in the particles array.
-		</constant>
-		<constant name="PARTICLES_DRAW_ORDER_LIFETIME" value="1" enum="ParticlesDrawOrder">
-			Sort particles based on their lifetime.
-		</constant>
-		<constant name="PARTICLES_DRAW_ORDER_VIEW_DEPTH" value="2" enum="ParticlesDrawOrder">
-			Sort particles based on their distance to the camera.
-		</constant>
-		<constant name="ENV_BG_CLEAR_COLOR" value="0" enum="EnvironmentBG">
-			Use the clear color as background.
-		</constant>
-		<constant name="ENV_BG_COLOR" value="1" enum="EnvironmentBG">
-			Use a specified color as the background.
-		</constant>
-		<constant name="ENV_BG_SKY" value="2" enum="EnvironmentBG">
-			Use a sky resource for the background.
-		</constant>
-		<constant name="ENV_BG_COLOR_SKY" value="3" enum="EnvironmentBG">
-			Use a custom color for background, but use a sky for shading and reflections.
-		</constant>
-		<constant name="ENV_BG_CANVAS" value="4" enum="EnvironmentBG">
-			Use a specified canvas layer as the background. This can be useful for instantiating a 2D scene in a 3D world.
-		</constant>
-		<constant name="ENV_BG_KEEP" value="5" enum="EnvironmentBG">
-			Do not clear the background, use whatever was rendered last frame as the background.
-		</constant>
-		<constant name="ENV_BG_MAX" value="7" enum="EnvironmentBG">
-			Represents the size of the [enum EnvironmentBG] enum.
-		</constant>
-		<constant name="ENV_DOF_BLUR_QUALITY_LOW" value="0" enum="EnvironmentDOFBlurQuality">
-			Use lowest blur quality. Fastest, but may look bad.
-		</constant>
-		<constant name="ENV_DOF_BLUR_QUALITY_MEDIUM" value="1" enum="EnvironmentDOFBlurQuality">
-			Use medium blur quality.
-		</constant>
-		<constant name="ENV_DOF_BLUR_QUALITY_HIGH" value="2" enum="EnvironmentDOFBlurQuality">
-			Used highest blur quality. Looks the best, but is the slowest.
-		</constant>
-		<constant name="GLOW_BLEND_MODE_ADDITIVE" value="0" enum="EnvironmentGlowBlendMode">
-			Add the effect of the glow on top of the scene.
-		</constant>
-		<constant name="GLOW_BLEND_MODE_SCREEN" value="1" enum="EnvironmentGlowBlendMode">
-			Blends the glow effect with the screen. Does not get as bright as additive.
-		</constant>
-		<constant name="GLOW_BLEND_MODE_SOFTLIGHT" value="2" enum="EnvironmentGlowBlendMode">
-			Produces a subtle color disturbance around objects.
-		</constant>
-		<constant name="GLOW_BLEND_MODE_REPLACE" value="3" enum="EnvironmentGlowBlendMode">
-			Shows the glow effect by itself without the underlying scene.
-		</constant>
-		<constant name="ENV_TONE_MAPPER_LINEAR" value="0" enum="EnvironmentToneMapper">
-			Output color as they came in.
-		</constant>
-		<constant name="ENV_TONE_MAPPER_REINHARD" value="1" enum="EnvironmentToneMapper">
-			Use the Reinhard tonemapper.
-		</constant>
-		<constant name="ENV_TONE_MAPPER_FILMIC" value="2" enum="EnvironmentToneMapper">
-			Use the filmic tonemapper.
-		</constant>
-		<constant name="ENV_TONE_MAPPER_ACES" value="3" enum="EnvironmentToneMapper">
-			Use the ACES tonemapper.
-		</constant>
-		<constant name="ENV_SSAO_QUALITY_LOW" value="0" enum="EnvironmentSSAOQuality">
-			Lowest quality of screen space ambient occlusion.
-		</constant>
-		<constant name="ENV_SSAO_QUALITY_MEDIUM" value="1" enum="EnvironmentSSAOQuality">
-			Medium quality screen space ambient occlusion.
-		</constant>
-		<constant name="ENV_SSAO_QUALITY_HIGH" value="2" enum="EnvironmentSSAOQuality">
-			Highest quality screen space ambient occlusion.
-		</constant>
-		<constant name="ENV_SSAO_BLUR_DISABLED" value="0" enum="EnvironmentSSAOBlur">
-			Disables the blur set for SSAO. Will make SSAO look noisier.
-		</constant>
-		<constant name="ENV_SSAO_BLUR_1x1" value="1" enum="EnvironmentSSAOBlur">
-			Perform a 1x1 blur on the SSAO output.
-		</constant>
-		<constant name="ENV_SSAO_BLUR_2x2" value="2" enum="EnvironmentSSAOBlur">
-			Performs a 2x2 blur on the SSAO output.
-		</constant>
-		<constant name="ENV_SSAO_BLUR_3x3" value="3" enum="EnvironmentSSAOBlur">
-			Performs a 3x3 blur on the SSAO output. Use this for smoothest SSAO.
 		</constant>
 	</constants>
 </class>

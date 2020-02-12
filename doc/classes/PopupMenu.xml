@@ -42,7 +42,7 @@
 		<method name="add_icon_check_item">
 			<return type="void">
 			</return>
-			<argument index="0" name="texture" type="Texture">
+			<argument index="0" name="texture" type="Texture2D">
 			</argument>
 			<argument index="1" name="label" type="String">
 			</argument>
@@ -59,7 +59,7 @@
 		<method name="add_icon_check_shortcut">
 			<return type="void">
 			</return>
-			<argument index="0" name="texture" type="Texture">
+			<argument index="0" name="texture" type="Texture2D">
 			</argument>
 			<argument index="1" name="shortcut" type="ShortCut">
 			</argument>
@@ -76,7 +76,7 @@
 		<method name="add_icon_item">
 			<return type="void">
 			</return>
-			<argument index="0" name="texture" type="Texture">
+			<argument index="0" name="texture" type="Texture2D">
 			</argument>
 			<argument index="1" name="label" type="String">
 			</argument>
@@ -92,7 +92,7 @@
 		<method name="add_icon_radio_check_item">
 			<return type="void">
 			</return>
-			<argument index="0" name="texture" type="Texture">
+			<argument index="0" name="texture" type="Texture2D">
 			</argument>
 			<argument index="1" name="label" type="String">
 			</argument>
@@ -107,7 +107,7 @@
 		<method name="add_icon_radio_check_shortcut">
 			<return type="void">
 			</return>
-			<argument index="0" name="texture" type="Texture">
+			<argument index="0" name="texture" type="Texture2D">
 			</argument>
 			<argument index="1" name="shortcut" type="ShortCut">
 			</argument>
@@ -122,7 +122,7 @@
 		<method name="add_icon_shortcut">
 			<return type="void">
 			</return>
-			<argument index="0" name="texture" type="Texture">
+			<argument index="0" name="texture" type="Texture2D">
 			</argument>
 			<argument index="1" name="shortcut" type="ShortCut">
 			</argument>
@@ -259,7 +259,7 @@
 			</description>
 		</method>
 		<method name="get_item_icon" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -485,10 +485,10 @@
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="icon" type="Texture">
+			<argument index="1" name="icon" type="Texture2D">
 			</argument>
 			<description>
-				Replaces the [Texture] icon of the specified [code]idx[/code].
+				Replaces the [Texture2D] icon of the specified [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_item_id">
@@ -644,8 +644,8 @@
 	<constants>
 	</constants>
 	<theme_items>
-		<theme_item name="checked" type="Texture">
-			[Texture] icon for the checked checkbox items.
+		<theme_item name="checked" type="Texture2D">
+			[Texture2D] icon for the checked checkbox items.
 		</theme_item>
 		<theme_item name="font" type="Font">
 			[Font] used for the menu items.
@@ -680,20 +680,20 @@
 		<theme_item name="panel_disabled" type="StyleBox">
 			[StyleBox] used when the [PopupMenu] item is disabled.
 		</theme_item>
-		<theme_item name="radio_checked" type="Texture">
-			[Texture] icon for the checked radio button items.
+		<theme_item name="radio_checked" type="Texture2D">
+			[Texture2D] icon for the checked radio button items.
 		</theme_item>
-		<theme_item name="radio_unchecked" type="Texture">
-			[Texture] icon for the unchecked radio button items.
+		<theme_item name="radio_unchecked" type="Texture2D">
+			[Texture2D] icon for the unchecked radio button items.
 		</theme_item>
 		<theme_item name="separator" type="StyleBox">
 			[StyleBox] used for the separators. See [method add_separator].
 		</theme_item>
-		<theme_item name="submenu" type="Texture">
-			[Texture] icon for the submenu arrow.
+		<theme_item name="submenu" type="Texture2D">
+			[Texture2D] icon for the submenu arrow.
 		</theme_item>
-		<theme_item name="unchecked" type="Texture">
-			[Texture] icon for the unchecked checkbox items.
+		<theme_item name="unchecked" type="Texture2D">
+			[Texture2D] icon for the unchecked checkbox items.
 		</theme_item>
 		<theme_item name="vseparation" type="int" default="4">
 			The vertical space between each menu item.
