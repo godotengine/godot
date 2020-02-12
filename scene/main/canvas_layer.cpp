@@ -200,7 +200,7 @@ void CanvasLayer::set_custom_viewport(Node *p_viewport) {
 	if (custom_viewport) {
 		custom_viewport_id = custom_viewport->get_instance_id();
 	} else {
-		custom_viewport_id = 0;
+		custom_viewport_id = ObjectID();
 	}
 
 	if (is_inside_tree()) {
@@ -327,7 +327,7 @@ CanvasLayer::CanvasLayer() {
 	layer = 1;
 	canvas = VS::get_singleton()->canvas_create();
 	custom_viewport = NULL;
-	custom_viewport_id = 0;
+
 	sort_index = 0;
 	follow_viewport = false;
 	follow_viewport_scale = 1.0;

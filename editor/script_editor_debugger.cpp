@@ -172,7 +172,7 @@ public:
 	}
 
 	String get_title() {
-		if (remote_object_id)
+		if (remote_object_id.is_valid())
 			return TTR("Remote ") + String(type_name) + ": " + itos(remote_object_id);
 		else
 			return "<null>";
@@ -197,7 +197,6 @@ public:
 	}
 
 	ScriptEditorDebuggerInspectedObject() {
-		remote_object_id = 0;
 	}
 };
 
@@ -302,7 +301,7 @@ void ScriptEditorDebugger::_scene_tree_selected() {
 		return;
 	}
 
-	inspected_object_id = item->get_metadata(0);
+	inspected_object_id = item->get_metadata(0).operator ObjectID();
 
 	Array msg;
 	msg.push_back("inspect_object");
@@ -434,7 +433,7 @@ int ScriptEditorDebugger::_update_scene_tree(TreeItem *parent, const Array &node
 	TreeItem *item = inspect_scene_tree->create_item(parent);
 	item->set_text(0, item_text);
 	item->set_tooltip(0, TTR("Type:") + " " + item_type);
-	ObjectID id = ObjectID(nodes[current_index + 3]);
+	ObjectID id = nodes[current_index + 3].operator ObjectID();
 	Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(nodes[current_index + 2], "");
 	if (icon.is_valid()) {
 		item->set_icon(0, icon);
@@ -1107,7 +1106,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		int frame_size = 6;
 		for (int i = 0; i < p_data.size(); i += frame_size) {
 			MultiplayerAPI::ProfilingInfo pi;
-			pi.node = p_data[i + 0];
+			pi.node = p_data[i + 0].operator ObjectID();
 			pi.node_path = p_data[i + 1];
 			pi.incoming_rpc = p_data[i + 2];
 			pi.incoming_rset = p_data[i + 3];
@@ -1253,7 +1252,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				inspect_edited_object_timeout -= get_process_delta_time();
 				if (inspect_edited_object_timeout < 0) {
 					inspect_edited_object_timeout = EditorSettings::get_singleton()->get("debugger/remote_inspect_refresh_interval");
-					if (inspected_object_id) {
+					if (inspected_object_id.is_valid()) {
 						if (ScriptEditorDebuggerInspectedObject *obj = Object::cast_to<ScriptEditorDebuggerInspectedObject>(ObjectDB::get_instance(editor->get_editor_history()->get_current()))) {
 							if (obj->remote_object_id == inspected_object_id) {
 								//take the chance and re-inspect selected object
@@ -2486,7 +2485,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		auto_switch_remote_scene_tree = EDITOR_DEF("debugger/auto_switch_to_remote_scene_tree", false);
 		inspect_scene_tree_timeout = EDITOR_DEF("debugger/remote_scene_tree_refresh_interval", 1.0);
 		inspect_edited_object_timeout = EDITOR_DEF("debugger/remote_inspect_refresh_interval", 0.2);
-		inspected_object_id = 0;
+		inspected_object_id = ObjectID();
 		updating_scene_tree = false;
 	}
 

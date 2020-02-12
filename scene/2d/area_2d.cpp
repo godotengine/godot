@@ -148,7 +148,7 @@ void Area2D::_body_exit_tree(ObjectID p_id) {
 	}
 }
 
-void Area2D::_body_inout(int p_status, const RID &p_body, int p_instance, int p_body_shape, int p_area_shape) {
+void Area2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_area_shape) {
 
 	bool body_in = p_status == Physics2DServer::AREA_BODY_ADDED;
 	ObjectID objid = p_instance;
@@ -251,7 +251,7 @@ void Area2D::_area_exit_tree(ObjectID p_id) {
 	}
 }
 
-void Area2D::_area_inout(int p_status, const RID &p_area, int p_instance, int p_area_shape, int p_self_shape) {
+void Area2D::_area_inout(int p_status, const RID &p_area, ObjectID p_instance, int p_area_shape, int p_self_shape) {
 
 	bool area_in = p_status == Physics2DServer::AREA_BODY_ADDED;
 	ObjectID objid = p_instance;

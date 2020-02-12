@@ -31,7 +31,7 @@
 #include "remote_transform.h"
 
 void RemoteTransform::_update_cache() {
-	cache = 0;
+	cache = ObjectID();
 	if (has_node(remote_node)) {
 		Node *node = get_node(remote_node);
 		if (!node || this == node || node->is_a_parent_of(this) || this->is_a_parent_of(node)) {
@@ -47,7 +47,7 @@ void RemoteTransform::_update_remote() {
 	if (!is_inside_tree())
 		return;
 
-	if (!cache)
+	if (cache.is_null())
 		return;
 
 	Spatial *n = Object::cast_to<Spatial>(ObjectDB::get_instance(cache));
@@ -114,7 +114,7 @@ void RemoteTransform::_notification(int p_what) {
 			if (!is_inside_tree())
 				break;
 
-			if (cache) {
+			if (cache.is_valid()) {
 
 				_update_remote();
 			}
@@ -219,6 +219,5 @@ RemoteTransform::RemoteTransform() {
 	update_remote_rotation = true;
 	update_remote_scale = true;
 
-	cache = 0;
 	set_notify_transform(true);
 }

@@ -374,7 +374,7 @@ COMMAND_4(agent_set_callback, RID, p_agent, Object *, p_receiver, StringName, p_
 	RvoAgent *agent = agent_owner.getornull(p_agent);
 	ERR_FAIL_COND(agent == NULL);
 
-	agent->set_callback(p_receiver == NULL ? 0 : p_receiver->get_instance_id(), p_method, p_udata);
+	agent->set_callback(p_receiver == NULL ? ObjectID() : p_receiver->get_instance_id(), p_method, p_udata);
 
 	if (agent->get_map()) {
 		if (p_receiver == NULL) {

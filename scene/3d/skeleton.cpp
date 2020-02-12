@@ -138,7 +138,7 @@ bool Skeleton::_get(const StringName &p_path, Variant &r_ret) const {
 	else if (what == "bound_children") {
 		Array children;
 
-		for (const List<uint32_t>::Element *E = bones[which].nodes_bound.front(); E; E = E->next()) {
+		for (const List<ObjectID>::Element *E = bones[which].nodes_bound.front(); E; E = E->next()) {
 
 			Object *obj = ObjectDB::get_instance(E->get());
 			ERR_CONTINUE(!obj);
@@ -302,7 +302,7 @@ void Skeleton::_notification(int p_what) {
 					b.global_pose_override_amount = 0.0;
 				}
 
-				for (List<uint32_t>::Element *E = b.nodes_bound.front(); E; E = E->next()) {
+				for (List<ObjectID>::Element *E = b.nodes_bound.front(); E; E = E->next()) {
 
 					Object *obj = ObjectDB::get_instance(E->get());
 					ERR_CONTINUE(!obj);
@@ -505,9 +505,9 @@ void Skeleton::bind_child_node_to_bone(int p_bone, Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	ERR_FAIL_INDEX(p_bone, bones.size());
 
-	uint32_t id = p_node->get_instance_id();
+	ObjectID id = p_node->get_instance_id();
 
-	for (const List<uint32_t>::Element *E = bones[p_bone].nodes_bound.front(); E; E = E->next()) {
+	for (const List<ObjectID>::Element *E = bones[p_bone].nodes_bound.front(); E; E = E->next()) {
 
 		if (E->get() == id)
 			return; // already here
@@ -520,14 +520,14 @@ void Skeleton::unbind_child_node_from_bone(int p_bone, Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	ERR_FAIL_INDEX(p_bone, bones.size());
 
-	uint32_t id = p_node->get_instance_id();
+	ObjectID id = p_node->get_instance_id();
 	bones.write[p_bone].nodes_bound.erase(id);
 }
 void Skeleton::get_bound_child_nodes_to_bone(int p_bone, List<Node *> *p_bound) const {
 
 	ERR_FAIL_INDEX(p_bone, bones.size());
 
-	for (const List<uint32_t>::Element *E = bones[p_bone].nodes_bound.front(); E; E = E->next()) {
+	for (const List<ObjectID>::Element *E = bones[p_bone].nodes_bound.front(); E; E = E->next()) {
 
 		Object *obj = ObjectDB::get_instance(E->get());
 		ERR_CONTINUE(!obj);

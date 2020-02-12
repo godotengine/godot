@@ -250,7 +250,12 @@ godot_int GDAPI godot_string_findmk_from_in_place(const godot_string *p_self, co
 		keys.write[i] = (*keys_proxy)[i];
 	}
 
-	return self->findmk(keys, p_from, r_key);
+	int key;
+	int ret = self->findmk(keys, p_from, &key);
+	if (r_key) {
+		*r_key = key;
+	}
+	return ret;
 }
 
 godot_int GDAPI godot_string_findn(const godot_string *p_self, godot_string p_what) {

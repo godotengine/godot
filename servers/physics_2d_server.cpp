@@ -523,7 +523,7 @@ void Physics2DTestMotionResult::_bind_methods() {
 Physics2DTestMotionResult::Physics2DTestMotionResult() {
 
 	colliding = false;
-	result.collider_id = 0;
+
 	result.collider_shape = 0;
 }
 
