@@ -94,6 +94,7 @@ class VisualShaderEditor : public VBoxContainer {
 	AcceptDialog *alert;
 	LineEdit *node_filter;
 	RichTextLabel *node_desc;
+	Label *highend_label;
 
 	void _tools_menu_option(int p_idx);
 	void _show_members_dialog(bool at_mouse_pos);

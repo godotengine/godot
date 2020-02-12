@@ -5356,7 +5356,7 @@ void EditorNode::_update_video_driver_color() {
 	} else if (video_driver->get_text() == "GLES3") {
 		video_driver->add_color_override("font_color", Color::hex(0xa5557dff));
 	} else if (video_driver->get_text() == "Vulkan") {
-		video_driver->add_color_override("font_color", Color::hex(0xad1128ff));
+		video_driver->add_color_override("font_color", theme_base->get_color("vulkan_color", "Editor"));
 	}
 }
 

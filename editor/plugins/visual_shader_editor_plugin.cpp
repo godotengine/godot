@@ -284,11 +284,7 @@ void VisualShaderEditor::update_custom_nodes() {
 }
 
 String VisualShaderEditor::_get_description(int p_idx) {
-	if (add_options[p_idx].highend) {
-		return TTR("(GLES3 only)") + " " + add_options[p_idx].description; // TODO: change it to (Vulkan Only) when its ready
-	} else {
-		return add_options[p_idx].description;
-	}
+	return add_options[p_idx].description;
 }
 
 void VisualShaderEditor::_update_options_menu() {
@@ -1680,6 +1676,8 @@ void VisualShaderEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 
+		highend_label->set_modulate(get_color("vulkan_color", "Editor"));
+
 		error_panel->add_style_override("panel", get_stylebox("bg", "Tree"));
 		error_label->add_color_override("font_color", get_color("error_color", "Editor"));
 
@@ -2037,8 +2035,10 @@ void VisualShaderEditor::_member_selected() {
 
 	if (item != NULL && item->has_meta("id")) {
 		members_dialog->get_ok()->set_disabled(false);
+		highend_label->set_visible(add_options[item->get_meta("id")].highend);
 		node_desc->set_text(_get_description(item->get_meta("id")));
 	} else {
+		highend_label->set_visible(false);
 		members_dialog->get_ok()->set_disabled(true);
 		node_desc->set_text("");
 	}
@@ -2425,9 +2425,21 @@ VisualShaderEditor::VisualShaderEditor() {
 	members->connect("item_selected", this, "_member_selected");
 	members->connect("nothing_selected", this, "_member_unselected");
 
+	HBoxContainer *desc_hbox = memnew(HBoxContainer);
+	members_vb->add_child(desc_hbox);
+
 	Label *desc_label = memnew(Label);
-	members_vb->add_child(desc_label);
+	desc_hbox->add_child(desc_label);
 	desc_label->set_text(TTR("Description:"));
+
+	desc_hbox->add_spacer();
+
+	highend_label = memnew(Label);
+	desc_hbox->add_child(highend_label);
+	highend_label->set_visible(false);
+	highend_label->set_text("Vulkan");
+	highend_label->set_mouse_filter(Control::MOUSE_FILTER_STOP);
+	highend_label->set_tooltip(TTR("High-end node"));
 
 	node_desc = memnew(RichTextLabel);
 	members_vb->add_child(node_desc);
