@@ -238,7 +238,7 @@
 		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates" default="true">
 			If [code]true[/code], particles use the parent node's coordinate space. If [code]false[/code], they use global coordinates.
 		</member>
-		<member name="normalmap" type="Texture" setter="set_normalmap" getter="get_normalmap">
+		<member name="normalmap" type="Texture2D" setter="set_normalmap" getter="get_normalmap">
 			Normal map to be used for the [member texture] property.
 		</member>
 		<member name="one_shot" type="bool" setter="set_one_shot" getter="get_one_shot" default="false">
@@ -292,7 +292,7 @@
 		<member name="tangential_accel_random" type="float" setter="set_param_randomness" getter="get_param_randomness" default="0.0">
 			Tangential acceleration randomness ratio.
 		</member>
-		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
+		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Particle texture. If [code]null[/code], particles will be squares.
 		</member>
 	</members>

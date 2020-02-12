@@ -46,18 +46,21 @@ Size2 Texture2D::get_size() const {
 bool Texture2D::is_pixel_opaque(int p_x, int p_y) const {
 	return true;
 }
+
 void Texture2D::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess, VS::CanvasItemTextureFilter p_texture_filter, VS::CanvasItemTextureRepeat p_texture_repeat) const {
 
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 	RID specular_rid = p_specular_map.is_valid() ? p_specular_map->get_rid() : RID();
 	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, get_size()), get_rid(), false, p_modulate, p_transpose, normal_rid, specular_rid, p_specular_color_shininess, p_texture_filter, p_texture_repeat);
 }
+
 void Texture2D::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess, VS::CanvasItemTextureFilter p_texture_filter, VS::CanvasItemTextureRepeat p_texture_repeat) const {
 
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 	RID specular_rid = p_specular_map.is_valid() ? p_specular_map->get_rid() : RID();
 	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, p_rect, get_rid(), p_tile, p_modulate, p_transpose, normal_rid, specular_rid, p_specular_color_shininess, p_texture_filter, p_texture_repeat);
 }
+
 void Texture2D::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess, VS::CanvasItemTextureFilter p_texture_filter, VS::CanvasItemTextureRepeat p_texture_repeat, bool p_clip_uv) const {
 
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
@@ -79,9 +82,9 @@ void Texture2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_height"), &Texture2D::get_height);
 	ClassDB::bind_method(D_METHOD("get_size"), &Texture2D::get_size);
 	ClassDB::bind_method(D_METHOD("has_alpha"), &Texture2D::has_alpha);
-	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "position", "modulate", "transpose", "normal_map", "specular_map", "specular_color_shininess"), &Texture2D::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Color(1, 1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("draw_rect", "canvas_item", "rect", "tile", "modulate", "transpose", "normal_map", "specular_map", "specular_color_shininess"), &Texture2D::draw_rect, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Color(1, 1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("draw_rect_region", "canvas_item", "rect", "src_rect", "modulate", "transpose", "normal_map", "clip_uv", "specular_map", "specular_color_shininess"), &Texture2D::draw_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Color(1, 1, 1, 1)), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "position", "modulate", "transpose", "normal_map", "specular_map", "specular_color_shininess", "texture_filter", "texture_repeat"), &Texture2D::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Color(1, 1, 1, 1)), DEFVAL(VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT), DEFVAL(VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT));
+	ClassDB::bind_method(D_METHOD("draw_rect", "canvas_item", "rect", "tile", "modulate", "transpose", "normal_map", "specular_map", "specular_color_shininess", "texture_filter", "texture_repeat"), &Texture2D::draw_rect, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Color(1, 1, 1, 1)), DEFVAL(VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT), DEFVAL(VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT));
+	ClassDB::bind_method(D_METHOD("draw_rect_region", "canvas_item", "rect", "src_rect", "modulate", "transpose", "normal_map", "specular_map", "specular_color_shininess", "texture_filter", "texture_repeat", "clip_uv"), &Texture2D::draw_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Color(1, 1, 1, 1)), DEFVAL(VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT), DEFVAL(VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_data"), &Texture2D::get_data);
 
 	ADD_GROUP("", "");

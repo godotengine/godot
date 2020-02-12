@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationObstacle" inherits="Node" category="Core" version="3.2">
+<class name="NavigationObstacle" inherits="Node" version="4.0">
 	<brief_description>
 		3D Obstacle used in navigation for collision avoidance.
 	</brief_description>
@@ -26,4 +26,6 @@
 			</description>
 		</method>
 	</methods>
+	<constants>
+	</constants>
 </class>

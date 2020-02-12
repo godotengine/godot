@@ -12,7 +12,7 @@
 	</tutorials>
 	<methods>
 		<method name="get_default_texture_param" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="param" type="String">
 			</argument>
@@ -43,7 +43,7 @@
 			</return>
 			<argument index="0" name="param" type="String">
 			</argument>
-			<argument index="1" name="texture" type="Texture">
+			<argument index="1" name="texture" type="Texture2D">
 			</argument>
 			<description>
 				Sets the default texture to be used with a texture uniform. The default is used if a texture is not set in the [ShaderMaterial].

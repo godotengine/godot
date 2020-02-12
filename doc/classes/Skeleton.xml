@@ -258,6 +258,10 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="animate_physical_bones" type="bool" setter="set_animate_physical_bones" getter="get_animate_physical_bones" default="true">
+		</member>
+	</members>
 	<constants>
 		<constant name="NOTIFICATION_UPDATE_SKELETON" value="50">
 		</constant>

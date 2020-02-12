@@ -1107,11 +1107,11 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "adjustment_saturation", PROPERTY_HINT_RANGE, "0.01,8,0.01"), "set_adjustment_saturation", "get_adjustment_saturation");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "adjustment_color_correction", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_adjustment_color_correction", "get_adjustment_color_correction");
 
-	BIND_ENUM_CONSTANT(BG_KEEP);
 	BIND_ENUM_CONSTANT(BG_CLEAR_COLOR);
 	BIND_ENUM_CONSTANT(BG_COLOR);
 	BIND_ENUM_CONSTANT(BG_SKY);
 	BIND_ENUM_CONSTANT(BG_CANVAS);
+	BIND_ENUM_CONSTANT(BG_KEEP);
 	BIND_ENUM_CONSTANT(BG_CAMERA_FEED);
 	BIND_ENUM_CONSTANT(BG_MAX);
 

@@ -15,7 +15,7 @@
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
-			<argument index="1" name="material" type="SpatialMaterial">
+			<argument index="1" name="material" type="StandardMaterial3D">
 			</argument>
 			<description>
 				Adds a new material to the internal material list for the plugin. It can then be accessed with [method get_material]. Should not be overridden.
@@ -68,7 +68,7 @@
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
-			<argument index="1" name="texture" type="Texture">
+			<argument index="1" name="texture" type="Texture2D">
 			</argument>
 			<argument index="2" name="on_top" type="bool" default="false">
 			</argument>
@@ -118,7 +118,7 @@
 			</description>
 		</method>
 		<method name="get_material">
-			<return type="SpatialMaterial">
+			<return type="StandardMaterial3D">
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>

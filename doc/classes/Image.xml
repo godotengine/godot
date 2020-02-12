@@ -4,7 +4,7 @@
 		Image datatype.
 	</brief_description>
 	<description>
-		Native image datatype. Contains image data, which can be converted to a [Texture], and several functions to interact with it. The maximum width and height for an [Image] are [constant MAX_WIDTH] and [constant MAX_HEIGHT].
+		Native image datatype. Contains image data, which can be converted to a [Texture2D], and several functions to interact with it. The maximum width and height for an [Image] are [constant MAX_WIDTH] and [constant MAX_HEIGHT].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -86,12 +86,24 @@
 			</return>
 			<argument index="0" name="mode" type="int" enum="Image.CompressMode">
 			</argument>
-			<argument index="1" name="source" type="int" enum="Image.CompressSource">
+			<argument index="1" name="source" type="int" enum="Image.CompressSource" default="0">
 			</argument>
-			<argument index="2" name="lossy_quality" type="float">
+			<argument index="2" name="lossy_quality" type="float" default="0.7">
 			</argument>
 			<description>
 				Compresses the image to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available. See [enum CompressMode] and [enum CompressSource] constants.
+			</description>
+		</method>
+		<method name="compress_from_channels">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="mode" type="int" enum="Image.CompressMode">
+			</argument>
+			<argument index="1" name="channels" type="int" enum="Image.CompressSource">
+			</argument>
+			<argument index="2" name="lossy_quality" type="float" default="0.7">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="convert">
@@ -167,6 +179,14 @@
 			</return>
 			<description>
 				Returns [constant ALPHA_BLEND] if the image has data for alpha values. Returns [constant ALPHA_BIT] if all the alpha values are stored in a single bit. Returns [constant ALPHA_NONE] if no data for alpha values is found.
+			</description>
+		</method>
+		<method name="detect_used_channels">
+			<return type="int" enum="Image.UsedChannels">
+			</return>
+			<argument index="0" name="source" type="int" enum="Image.CompressSource" default="0">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="expand_x2_hq2x">
@@ -497,10 +517,10 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="MAX_WIDTH" value="16384">
+		<constant name="MAX_WIDTH" value="16777216">
 			The maximal width allowed for [Image] resources.
 		</constant>
-		<constant name="MAX_HEIGHT" value="16384">
+		<constant name="MAX_HEIGHT" value="16777216">
 			The maximal height allowed for [Image] resources.
 		</constant>
 		<constant name="FORMAT_L8" value="0" enum="Format">
@@ -526,8 +546,7 @@
 		<constant name="FORMAT_RGBA4444" value="6" enum="Format">
 			OpenGL texture format [code]RGBA[/code] with four components, each with a bitdepth of 4.
 		</constant>
-		<constant name="FORMAT_RGBA5551" value="7" enum="Format">
-			OpenGL texture format [code]GL_RGB5_A1[/code] where 5 bits of depth for each component of RGB and one bit for alpha.
+		<constant name="FORMAT_RGB565" value="7" enum="Format">
 		</constant>
 		<constant name="FORMAT_RF" value="8" enum="Format">
 			OpenGL texture format [code]GL_R32F[/code] where there's one component, a 32-bit floating-point value.
@@ -624,7 +643,11 @@
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGB8_PUNCHTHROUGH_ALPHA1[/code] variant), which compresses RGBA data to make alpha either fully transparent or fully opaque.
 			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
-		<constant name="FORMAT_MAX" value="37" enum="Format">
+		<constant name="FORMAT_ETC2_RA_AS_RG" value="37" enum="Format">
+		</constant>
+		<constant name="FORMAT_DXT5_RA_AS_RG" value="38" enum="Format">
+		</constant>
+		<constant name="FORMAT_MAX" value="39" enum="Format">
 			Represents the size of the [enum Format] enum.
 		</constant>
 		<constant name="INTERPOLATE_NEAREST" value="0" enum="Interpolation">
@@ -669,6 +692,18 @@
 		</constant>
 		<constant name="COMPRESS_ETC2" value="4" enum="CompressMode">
 			Use ETC2 compression.
+		</constant>
+		<constant name="USED_CHANNELS_L" value="0" enum="UsedChannels">
+		</constant>
+		<constant name="USED_CHANNELS_LA" value="1" enum="UsedChannels">
+		</constant>
+		<constant name="USED_CHANNELS_R" value="2" enum="UsedChannels">
+		</constant>
+		<constant name="USED_CHANNELS_RG" value="3" enum="UsedChannels">
+		</constant>
+		<constant name="USED_CHANNELS_RGB" value="4" enum="UsedChannels">
+		</constant>
+		<constant name="USED_CHANNELS_RGBA" value="5" enum="UsedChannels">
 		</constant>
 		<constant name="COMPRESS_SOURCE_GENERIC" value="0" enum="CompressSource">
 			Source texture (before compression) is a regular texture. Default for all textures.

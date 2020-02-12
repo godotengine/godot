@@ -14,7 +14,7 @@
 			</return>
 			<argument index="0" name="column" type="int">
 			</argument>
-			<argument index="1" name="button" type="Texture">
+			<argument index="1" name="button" type="Texture2D">
 			</argument>
 			<argument index="2" name="button_idx" type="int" default="-1">
 			</argument>
@@ -23,7 +23,8 @@
 			<argument index="4" name="tooltip" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Adds a button with [Texture] [code]button[/code] at column [code]column[/code]. The [code]button_idx[/code] index is used to identify the button when calling other methods. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately after this method. Optionally, the button can be [code]disabled[/code] and have a [code]tooltip[/code].
+				Adds a button with [Texture2D] [code]button[/code] at column [code]column[/code]. The [code]button_idx[/code] index is used to identify the button when calling other methods. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately after this method. Optionally, the button can be [code]disabled[/code] and have a [code]tooltip
+				[/code].
 			</description>
 		</method>
 		<method name="call_recursive" qualifiers="vararg">
@@ -74,14 +75,14 @@
 			</description>
 		</method>
 		<method name="get_button" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="column" type="int">
 			</argument>
 			<argument index="1" name="button_idx" type="int">
 			</argument>
 			<description>
-				Returns the [Texture] of the button at index [code]button_idx[/code] in column [code]column[/code].
+				Returns the [Texture2D] of the button at index [code]button_idx[/code] in column [code]column[/code].
 			</description>
 		</method>
 		<method name="get_button_count" qualifiers="const">
@@ -148,12 +149,12 @@
 			</description>
 		</method>
 		<method name="get_icon" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
-				Returns the given column's icon [Texture]. Error if no icon is set.
+				Returns the given column's icon [Texture2D]. Error if no icon is set.
 			</description>
 		</method>
 		<method name="get_icon_max_width" qualifiers="const">
@@ -180,7 +181,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
-				Returns the icon [Texture] region as [Rect2].
+				Returns the icon [Texture2D] region as [Rect2].
 			</description>
 		</method>
 		<method name="get_metadata" qualifiers="const">
@@ -369,10 +370,10 @@
 			</argument>
 			<argument index="1" name="button_idx" type="int">
 			</argument>
-			<argument index="2" name="button" type="Texture">
+			<argument index="2" name="button" type="Texture2D">
 			</argument>
 			<description>
-				Sets the given column's button [Texture] at index [code]button_idx[/code] to [code]button[/code].
+				Sets the given column's button [Texture2D] at index [code]button_idx[/code] to [code]button[/code].
 			</description>
 		</method>
 		<method name="set_button_disabled">
@@ -485,10 +486,10 @@
 			</return>
 			<argument index="0" name="column" type="int">
 			</argument>
-			<argument index="1" name="texture" type="Texture">
+			<argument index="1" name="texture" type="Texture2D">
 			</argument>
 			<description>
-				Sets the given column's icon [Texture].
+				Sets the given column's icon [Texture2D].
 			</description>
 		</method>
 		<method name="set_icon_max_width">

@@ -23,7 +23,7 @@
 			</return>
 			<argument index="0" name="anim" type="String">
 			</argument>
-			<argument index="1" name="frame" type="Texture">
+			<argument index="1" name="frame" type="Texture2D">
 			</argument>
 			<argument index="2" name="at_position" type="int" default="-1">
 			</argument>
@@ -73,7 +73,7 @@
 			</description>
 		</method>
 		<method name="get_frame" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="anim" type="String">
 			</argument>
@@ -161,7 +161,7 @@
 			</argument>
 			<argument index="1" name="idx" type="int">
 			</argument>
-			<argument index="2" name="txt" type="Texture">
+			<argument index="2" name="txt" type="Texture2D">
 			</argument>
 			<description>
 				Sets the texture of the given frame.

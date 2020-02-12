@@ -308,21 +308,21 @@
 		</theme_item>
 		<theme_item name="grid_minor" type="Color" default="Color( 1, 1, 1, 0.05 )">
 		</theme_item>
-		<theme_item name="minus" type="Texture">
+		<theme_item name="minus" type="Texture2D">
 		</theme_item>
-		<theme_item name="more" type="Texture">
+		<theme_item name="more" type="Texture2D">
 		</theme_item>
 		<theme_item name="port_grab_distance_horizontal" type="int" default="48">
 		</theme_item>
 		<theme_item name="port_grab_distance_vertical" type="int" default="6">
 		</theme_item>
-		<theme_item name="reset" type="Texture">
+		<theme_item name="reset" type="Texture2D">
 		</theme_item>
 		<theme_item name="selection_fill" type="Color" default="Color( 1, 1, 1, 0.3 )">
 		</theme_item>
 		<theme_item name="selection_stroke" type="Color" default="Color( 1, 1, 1, 0.8 )">
 		</theme_item>
-		<theme_item name="snap" type="Texture">
+		<theme_item name="snap" type="Texture2D">
 		</theme_item>
 	</theme_items>
 </class>

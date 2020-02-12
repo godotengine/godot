@@ -14,7 +14,7 @@
 			</return>
 			<argument index="0" name="title" type="String" default="&quot;&quot;">
 			</argument>
-			<argument index="1" name="icon" type="Texture" default="null">
+			<argument index="1" name="icon" type="Texture2D" default="null">
 			</argument>
 			<description>
 				Adds a new tab.
@@ -60,12 +60,12 @@
 			</description>
 		</method>
 		<method name="get_tab_icon" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
 			<description>
-				Returns the [Texture] for the tab at index [code]tab_idx[/code] or [code]null[/code] if the tab has no [Texture].
+				Returns the [Texture2D] for the tab at index [code]tab_idx[/code] or [code]null[/code] if the tab has no [Texture2D].
 			</description>
 		</method>
 		<method name="get_tab_offset" qualifiers="const">
@@ -146,7 +146,7 @@
 			</return>
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
-			<argument index="1" name="icon" type="Texture">
+			<argument index="1" name="icon" type="Texture2D">
 			</argument>
 			<description>
 				Sets an [code]icon[/code] for the tab at index [code]tab_idx[/code].
@@ -265,11 +265,11 @@
 		</theme_item>
 		<theme_item name="button_pressed" type="StyleBox">
 		</theme_item>
-		<theme_item name="close" type="Texture">
+		<theme_item name="close" type="Texture2D">
 		</theme_item>
-		<theme_item name="decrement" type="Texture">
+		<theme_item name="decrement" type="Texture2D">
 		</theme_item>
-		<theme_item name="decrement_highlight" type="Texture">
+		<theme_item name="decrement_highlight" type="Texture2D">
 		</theme_item>
 		<theme_item name="font" type="Font">
 		</theme_item>
@@ -281,9 +281,9 @@
 		</theme_item>
 		<theme_item name="hseparation" type="int" default="4">
 		</theme_item>
-		<theme_item name="increment" type="Texture">
+		<theme_item name="increment" type="Texture2D">
 		</theme_item>
-		<theme_item name="increment_highlight" type="Texture">
+		<theme_item name="increment_highlight" type="Texture2D">
 		</theme_item>
 		<theme_item name="label_valign_bg" type="int" default="2">
 		</theme_item>

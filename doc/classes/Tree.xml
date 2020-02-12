@@ -386,10 +386,10 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="arrow" type="Texture">
+		<theme_item name="arrow" type="Texture2D">
 			The arrow icon used when a foldable item is not collapsed.
 		</theme_item>
-		<theme_item name="arrow_collapsed" type="Texture">
+		<theme_item name="arrow_collapsed" type="Texture2D">
 			The arrow icon used when a foldable item is collapsed.
 		</theme_item>
 		<theme_item name="bg" type="StyleBox">
@@ -404,7 +404,7 @@
 		<theme_item name="button_pressed" type="StyleBox">
 			[StyleBox] used when a button in the tree is pressed.
 		</theme_item>
-		<theme_item name="checked" type="Texture">
+		<theme_item name="checked" type="Texture2D">
 			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is checked.
 		</theme_item>
 		<theme_item name="cursor" type="StyleBox">
@@ -461,7 +461,7 @@
 		<theme_item name="scroll_speed" type="int" default="12">
 			The speed of border scrolling.
 		</theme_item>
-		<theme_item name="select_arrow" type="Texture">
+		<theme_item name="select_arrow" type="Texture2D">
 			The arrow icon to display for the [constant TreeItem.CELL_MODE_RANGE] mode cell.
 		</theme_item>
 		<theme_item name="selected" type="StyleBox">
@@ -485,10 +485,10 @@
 		<theme_item name="title_button_pressed" type="StyleBox">
 			[StyleBox] used when the title button is being pressed.
 		</theme_item>
-		<theme_item name="unchecked" type="Texture">
+		<theme_item name="unchecked" type="Texture2D">
 			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is unchecked.
 		</theme_item>
-		<theme_item name="updown" type="Texture">
+		<theme_item name="updown" type="Texture2D">
 			The updown arrow icon to display for the [constant TreeItem.CELL_MODE_RANGE] mode cell.
 		</theme_item>
 		<theme_item name="vseparation" type="int" default="4">

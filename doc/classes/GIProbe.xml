@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		[GIProbe]s are used to provide high-quality real-time indirect light to scenes. They precompute the effect of objects that emit light and the effect of static geometry to simulate the behavior of complex light in real-time. [GIProbe]s need to be baked before using, however, once baked, dynamic objects will receive light from them. Further, lights can be fully dynamic or baked.
-		Having [GIProbe]s in a scene can be expensive, the quality of the probe can be turned down in exchange for better performance in the [ProjectSettings] using [member ProjectSettings.rendering/quality/voxel_cone_tracing/high_quality].
+		Having [GIProbe]s in a scene can be expensive, the quality of the probe can be turned down in exchange for better performance in the [ProjectSettings] using [member ProjectSettings.rendering/quality/gi_probes/quality].
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/3d/gi_probes.html</link>
@@ -31,33 +31,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="bias" type="float" setter="set_bias" getter="get_bias" default="1.5">
-			Offsets the lookup of the light contribution from the [GIProbe]. This can be used to avoid self-shadowing, but may introduce light leaking at higher values. This and [member normal_bias] should be played around with to minimize self-shadowing and light leaking.
-			[b]Note:[/b] [code]bias[/code] should usually be above 1.0 as that is the size of the voxels.
-		</member>
-		<member name="compress" type="bool" setter="set_compress" getter="is_compressed" default="false">
-			If [code]true[/code], the data for this [GIProbe] will be compressed. Compression saves space, but results in far worse visual quality.
-		</member>
 		<member name="data" type="GIProbeData" setter="set_probe_data" getter="get_probe_data">
 			The [GIProbeData] resource that holds the data for this [GIProbe].
 		</member>
-		<member name="dynamic_range" type="int" setter="set_dynamic_range" getter="get_dynamic_range" default="4">
-			The maximum brightness that the [GIProbe] will recognize. Brightness will be scaled within this range.
-		</member>
-		<member name="energy" type="float" setter="set_energy" getter="get_energy" default="1.0">
-			Energy multiplier. Makes the lighting contribution from the [GIProbe] brighter.
-		</member>
 		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3( 10, 10, 10 )">
 			The size of the area covered by the [GIProbe]. If you make the extents larger without increasing the subdivisions with [member subdiv], the size of each cell will increase and result in lower detailed lighting.
-		</member>
-		<member name="interior" type="bool" setter="set_interior" getter="is_interior" default="false">
-			If [code]true[/code], ignores the sky contribution when calculating lighting.
-		</member>
-		<member name="normal_bias" type="float" setter="set_normal_bias" getter="get_normal_bias" default="0.0">
-			Offsets the lookup into the [GIProbe] based on the object's normal direction. Can be used to reduce some self-shadowing artifacts.
-		</member>
-		<member name="propagation" type="float" setter="set_propagation" getter="get_propagation" default="0.7">
-			How much light propagates through the probe internally. A higher value allows light to spread further.
 		</member>
 		<member name="subdiv" type="int" setter="set_subdiv" getter="get_subdiv" enum="GIProbe.Subdiv" default="1">
 			Number of times to subdivide the grid that the [GIProbe] operates on. A higher number results in finer detail and thus higher visual quality, while lower numbers result in better performance.

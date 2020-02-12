@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeCubeMap" inherits="VisualShaderNode" version="4.0">
+<class name="VisualShaderNodeCubemap" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
-		A [CubeMap] sampling node to be used within the visual shader graph.
+		A [Cubemap] sampling node to be used within the visual shader graph.
 	</brief_description>
 	<description>
 		Translated to [code]texture(cubemap, vec3)[/code] in the shader language. Returns a color vector and alpha channel as scalar.
@@ -11,22 +11,22 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="cube_map" type="CubeMap" setter="set_cube_map" getter="get_cube_map">
-			The [CubeMap] texture to sample when using [constant SOURCE_TEXTURE] as [member source].
+		<member name="cube_map" type="Cubemap" setter="set_cube_map" getter="get_cube_map">
+			The [Cubemap] texture to sample when using [constant SOURCE_TEXTURE] as [member source].
 		</member>
-		<member name="source" type="int" setter="set_source" getter="get_source" enum="VisualShaderNodeCubeMap.Source" default="0">
+		<member name="source" type="int" setter="set_source" getter="get_source" enum="VisualShaderNodeCubemap.Source" default="0">
 			Defines which source should be used for the sampling. See [enum Source] for options.
 		</member>
-		<member name="texture_type" type="int" setter="set_texture_type" getter="get_texture_type" enum="VisualShaderNodeCubeMap.TextureType" default="0">
+		<member name="texture_type" type="int" setter="set_texture_type" getter="get_texture_type" enum="VisualShaderNodeCubemap.TextureType" default="0">
 			Defines the type of data provided by the source texture. See [enum TextureType] for options.
 		</member>
 	</members>
 	<constants>
 		<constant name="SOURCE_TEXTURE" value="0" enum="Source">
-			Use the [CubeMap] set via [member cube_map]. If this is set to [member source], the [code]samplerCube[/code] port is ignored.
+			Use the [Cubemap] set via [member cube_map]. If this is set to [member source], the [code]samplerCube[/code] port is ignored.
 		</constant>
 		<constant name="SOURCE_PORT" value="1" enum="Source">
-			Use the [CubeMap] sampler reference passed via the [code]samplerCube[/code] port. If this is set to [member source], the [member cube_map] texture is ignored.
+			Use the [Cubemap] sampler reference passed via the [code]samplerCube[/code] port. If this is set to [member source], the [member cube_map] texture is ignored.
 		</constant>
 		<constant name="TYPE_DATA" value="0" enum="TextureType">
 			No hints are added to the uniform declaration.

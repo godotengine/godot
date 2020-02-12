@@ -43,7 +43,7 @@
 		<method name="add_texture">
 			<return type="void">
 			</return>
-			<argument index="0" name="texture" type="Texture">
+			<argument index="0" name="texture" type="Texture2D">
 			</argument>
 			<description>
 				Adds a texture to the [BitmapFont].
@@ -88,7 +88,7 @@
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>

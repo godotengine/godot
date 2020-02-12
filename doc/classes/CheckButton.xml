@@ -56,16 +56,16 @@
 		<theme_item name="normal" type="StyleBox">
 			The [StyleBox] to display as a background.
 		</theme_item>
-		<theme_item name="off" type="Texture">
+		<theme_item name="off" type="Texture2D">
 			The icon to display when the [CheckButton] is unchecked.
 		</theme_item>
-		<theme_item name="off_disabled" type="Texture">
+		<theme_item name="off_disabled" type="Texture2D">
 			The icon to display when the [CheckButton] is unchecked and disabled.
 		</theme_item>
-		<theme_item name="on" type="Texture">
+		<theme_item name="on" type="Texture2D">
 			The icon to display when the [CheckButton] is checked.
 		</theme_item>
-		<theme_item name="on_disabled" type="Texture">
+		<theme_item name="on_disabled" type="Texture2D">
 			The icon to display when the [CheckButton] is checked and disabled.
 		</theme_item>
 		<theme_item name="pressed" type="StyleBox">

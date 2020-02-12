@@ -166,9 +166,9 @@
 			</argument>
 			<argument index="6" name="color_right" type="Color">
 			</argument>
-			<argument index="7" name="custom_left" type="Texture" default="null">
+			<argument index="7" name="custom_left" type="Texture2D" default="null">
 			</argument>
-			<argument index="8" name="custom_right" type="Texture" default="null">
+			<argument index="8" name="custom_right" type="Texture2D" default="null">
 			</argument>
 			<description>
 				Sets properties of the slot with ID [code]idx[/code].
@@ -254,7 +254,7 @@
 	<theme_items>
 		<theme_item name="breakpoint" type="StyleBox">
 		</theme_item>
-		<theme_item name="close" type="Texture">
+		<theme_item name="close" type="Texture2D">
 		</theme_item>
 		<theme_item name="close_color" type="Color" default="Color( 0, 0, 0, 1 )">
 		</theme_item>
@@ -270,13 +270,13 @@
 		</theme_item>
 		<theme_item name="frame" type="StyleBox">
 		</theme_item>
-		<theme_item name="port" type="Texture">
+		<theme_item name="port" type="Texture2D">
 		</theme_item>
 		<theme_item name="port_offset" type="int" default="3">
 		</theme_item>
 		<theme_item name="position" type="StyleBox">
 		</theme_item>
-		<theme_item name="resizer" type="Texture">
+		<theme_item name="resizer" type="Texture2D">
 		</theme_item>
 		<theme_item name="resizer_color" type="Color" default="Color( 0, 0, 0, 1 )">
 		</theme_item>

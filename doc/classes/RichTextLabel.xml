@@ -14,7 +14,7 @@
 		<method name="add_image">
 			<return type="void">
 			</return>
-			<argument index="0" name="image" type="Texture">
+			<argument index="0" name="image" type="Texture2D">
 			</argument>
 			<argument index="1" name="width" type="int" default="0">
 			</argument>

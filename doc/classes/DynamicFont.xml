@@ -108,12 +108,6 @@
 		<member name="size" type="int" setter="set_size" getter="get_size" default="16">
 			The font size in pixels.
 		</member>
-		<member name="use_filter" type="bool" setter="set_use_filter" getter="get_use_filter" default="false">
-			If [code]true[/code], filtering is used. This makes the font blurry instead of pixelated when scaling it if font oversampling is disabled or ineffective. It's recommended to enable this when using the font in a control whose size changes over time, unless a pixel art aesthetic is desired.
-		</member>
-		<member name="use_mipmaps" type="bool" setter="set_use_mipmaps" getter="get_use_mipmaps" default="false">
-			If [code]true[/code], mipmapping is used. This improves the font's appearance when downscaling it if font oversampling is disabled or ineffective.
-		</member>
 	</members>
 	<constants>
 		<constant name="SPACING_TOP" value="0" enum="SpacingType">

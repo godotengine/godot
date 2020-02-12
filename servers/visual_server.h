@@ -68,13 +68,11 @@ public:
 	static VisualServer *create();
 
 	enum {
-
 		NO_INDEX_ARRAY = -1,
 		ARRAY_WEIGHTS_SIZE = 4,
 		CANVAS_ITEM_Z_MIN = -4096,
 		CANVAS_ITEM_Z_MAX = 4096,
 		MAX_GLOW_LEVELS = 7,
-
 		MAX_CURSORS = 8,
 	};
 
@@ -728,11 +726,11 @@ public:
 #endif
 
 	enum EnvironmentGlowBlendMode {
-		GLOW_BLEND_MODE_ADDITIVE,
-		GLOW_BLEND_MODE_SCREEN,
-		GLOW_BLEND_MODE_SOFTLIGHT,
-		GLOW_BLEND_MODE_REPLACE,
-		GLOW_BLEND_MODE_MIX,
+		ENV_GLOW_BLEND_MODE_ADDITIVE,
+		ENV_GLOW_BLEND_MODE_SCREEN,
+		ENV_GLOW_BLEND_MODE_SOFTLIGHT,
+		ENV_GLOW_BLEND_MODE_REPLACE,
+		ENV_GLOW_BLEND_MODE_MIX,
 	};
 	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale) = 0;
 
@@ -1116,27 +1114,20 @@ VARIANT_ENUM_CAST(VisualServer::ArrayType);
 VARIANT_ENUM_CAST(VisualServer::ArrayFormat);
 VARIANT_ENUM_CAST(VisualServer::PrimitiveType);
 VARIANT_ENUM_CAST(VisualServer::BlendShapeMode);
+VARIANT_ENUM_CAST(VisualServer::MultimeshTransformFormat);
 VARIANT_ENUM_CAST(VisualServer::LightType);
 VARIANT_ENUM_CAST(VisualServer::LightParam);
-VARIANT_ENUM_CAST(VisualServer::ViewportUpdateMode);
-VARIANT_ENUM_CAST(VisualServer::ViewportClearMode);
-VARIANT_ENUM_CAST(VisualServer::ViewportMSAA);
-VARIANT_ENUM_CAST(VisualServer::ViewportRenderInfo);
-VARIANT_ENUM_CAST(VisualServer::ViewportDebugDraw);
-VARIANT_ENUM_CAST(VisualServer::ScenarioDebugMode);
-VARIANT_ENUM_CAST(VisualServer::InstanceType);
-VARIANT_ENUM_CAST(VisualServer::NinePatchAxisMode);
-VARIANT_ENUM_CAST(VisualServer::CanvasLightMode);
-VARIANT_ENUM_CAST(VisualServer::CanvasLightShadowFilter);
-VARIANT_ENUM_CAST(VisualServer::CanvasOccluderPolygonCullMode);
-VARIANT_ENUM_CAST(VisualServer::RenderInfo);
-VARIANT_ENUM_CAST(VisualServer::Features);
-VARIANT_ENUM_CAST(VisualServer::MultimeshTransformFormat);
 VARIANT_ENUM_CAST(VisualServer::LightOmniShadowMode);
 VARIANT_ENUM_CAST(VisualServer::LightDirectionalShadowMode);
 VARIANT_ENUM_CAST(VisualServer::LightDirectionalShadowDepthRangeMode);
 VARIANT_ENUM_CAST(VisualServer::ReflectionProbeUpdateMode);
 VARIANT_ENUM_CAST(VisualServer::ParticlesDrawOrder);
+VARIANT_ENUM_CAST(VisualServer::ViewportUpdateMode);
+VARIANT_ENUM_CAST(VisualServer::ViewportClearMode);
+VARIANT_ENUM_CAST(VisualServer::ViewportMSAA);
+VARIANT_ENUM_CAST(VisualServer::ViewportRenderInfo);
+VARIANT_ENUM_CAST(VisualServer::ViewportDebugDraw);
+VARIANT_ENUM_CAST(VisualServer::SkyMode);
 VARIANT_ENUM_CAST(VisualServer::EnvironmentBG);
 VARIANT_ENUM_CAST(VisualServer::EnvironmentAmbientSource);
 VARIANT_ENUM_CAST(VisualServer::EnvironmentReflectionSource);
@@ -1145,10 +1136,19 @@ VARIANT_ENUM_CAST(VisualServer::EnvironmentToneMapper);
 VARIANT_ENUM_CAST(VisualServer::EnvironmentSSAOQuality);
 VARIANT_ENUM_CAST(VisualServer::EnvironmentSSAOBlur);
 VARIANT_ENUM_CAST(VisualServer::DOFBlurQuality);
+VARIANT_ENUM_CAST(VisualServer::DOFBokehShape);
+VARIANT_ENUM_CAST(VisualServer::ScenarioDebugMode);
+VARIANT_ENUM_CAST(VisualServer::InstanceType);
 VARIANT_ENUM_CAST(VisualServer::InstanceFlags);
 VARIANT_ENUM_CAST(VisualServer::ShadowCastingSetting);
+VARIANT_ENUM_CAST(VisualServer::NinePatchAxisMode);
 VARIANT_ENUM_CAST(VisualServer::CanvasItemTextureFilter);
 VARIANT_ENUM_CAST(VisualServer::CanvasItemTextureRepeat);
+VARIANT_ENUM_CAST(VisualServer::CanvasLightMode);
+VARIANT_ENUM_CAST(VisualServer::CanvasLightShadowFilter);
+VARIANT_ENUM_CAST(VisualServer::CanvasOccluderPolygonCullMode);
+VARIANT_ENUM_CAST(VisualServer::RenderInfo);
+VARIANT_ENUM_CAST(VisualServer::Features);
 
 //typedef VisualServer VS; // makes it easier to use
 #define VS VisualServer

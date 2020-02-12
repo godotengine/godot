@@ -226,8 +226,7 @@ void GIProbeData::_validate_property(PropertyInfo &property) const {
 }
 
 void GIProbeData::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("allocate", "to_cell_xform", "aabb", "octree_size", "octree_cells", "octree_data", "octree_level_count"), &GIProbeData::allocate);
+	ClassDB::bind_method(D_METHOD("allocate", "to_cell_xform", "aabb", "octree_size", "octree_cells", "data_cells", "distance_field", "level_counts"), &GIProbeData::allocate);
 
 	ClassDB::bind_method(D_METHOD("get_bounds"), &GIProbeData::get_bounds);
 	ClassDB::bind_method(D_METHOD("get_octree_size"), &GIProbeData::get_octree_size);
@@ -269,7 +268,7 @@ void GIProbeData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &GIProbeData::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &GIProbeData::_get_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_data", "_get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "dynamic_range", PROPERTY_HINT_RANGE, "0,8,0.01"), "set_dynamic_range", "get_dynamic_range");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_energy", "get_energy");

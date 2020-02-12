@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "rasterizer_scene_rd.h"
+
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "servers/visual/visual_server_raster.h"
@@ -2581,7 +2582,7 @@ void RasterizerSceneRD::_render_buffers_post_process_and_tonemap(RID p_render_bu
 		if (can_use_effects && env && env->glow_enabled) {
 			tonemap.use_glow = true;
 			tonemap.glow_mode = RasterizerEffectsRD::TonemapSettings::GlowMode(env->glow_blend_mode);
-			tonemap.glow_intensity = env->glow_blend_mode == VS::GLOW_BLEND_MODE_MIX ? env->glow_mix : env->glow_intensity;
+			tonemap.glow_intensity = env->glow_blend_mode == VS::ENV_GLOW_BLEND_MODE_MIX ? env->glow_mix : env->glow_intensity;
 			tonemap.glow_level_flags = glow_mask;
 			tonemap.glow_texture_size.x = rb->blur[1].mipmaps[0].width;
 			tonemap.glow_texture_size.y = rb->blur[1].mipmaps[0].height;

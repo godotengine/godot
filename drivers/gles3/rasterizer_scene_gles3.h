@@ -488,7 +488,7 @@ public:
 				glow_intensity(0.8),
 				glow_strength(1.0),
 				glow_bloom(0.0),
-				glow_blend_mode(VS::GLOW_BLEND_MODE_SOFTLIGHT),
+				glow_blend_mode(VS::ENV_GLOW_BLEND_MODE_SOFTLIGHT),
 				glow_hdr_bleed_threshold(1.0),
 				glow_hdr_bleed_scale(2.0),
 				glow_hdr_luminance_cap(12.0),

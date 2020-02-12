@@ -4016,9 +4016,9 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 			}
 		}
 
-		state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_SCREEN, env->glow_blend_mode == VS::GLOW_BLEND_MODE_SCREEN);
-		state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_SOFTLIGHT, env->glow_blend_mode == VS::GLOW_BLEND_MODE_SOFTLIGHT);
-		state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_REPLACE, env->glow_blend_mode == VS::GLOW_BLEND_MODE_REPLACE);
+		state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_SCREEN, env->glow_blend_mode == VS::ENV_GLOW_BLEND_MODE_SCREEN);
+		state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_SOFTLIGHT, env->glow_blend_mode == VS::ENV_GLOW_BLEND_MODE_SOFTLIGHT);
+		state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_REPLACE, env->glow_blend_mode == VS::ENV_GLOW_BLEND_MODE_REPLACE);
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->effects.mip_maps[0].color);
 	}

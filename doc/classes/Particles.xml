@@ -68,7 +68,7 @@
 		<member name="draw_passes" type="int" setter="set_draw_passes" getter="get_draw_passes" default="1">
 			The number of draw passes when rendering particles.
 		</member>
-		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting" default="true">
+		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting" default="false">
 			If [code]true[/code], particles are being emitted.
 		</member>
 		<member name="explosiveness" type="float" setter="set_explosiveness_ratio" getter="get_explosiveness_ratio" default="0.0">
