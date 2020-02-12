@@ -63,7 +63,7 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"is_nan",
 	"is_inf",
 	"ease",
-	"decimals",
+	"step_decimals",
 	"stepify",
 	"lerp",
 	"inverse_lerp",
@@ -171,7 +171,7 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 		case MATH_EXP:
 		case MATH_ISNAN:
 		case MATH_ISINF:
-		case MATH_DECIMALS:
+		case MATH_STEP_DECIMALS:
 		case MATH_SEED:
 		case MATH_RANDSEED:
 		case MATH_DEG2RAD:
@@ -312,7 +312,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 			else
 				return PropertyInfo(Variant::REAL, "curve");
 		} break;
-		case MATH_DECIMALS: {
+		case MATH_STEP_DECIMALS: {
 			return PropertyInfo(Variant::REAL, "step");
 		} break;
 		case MATH_STEPIFY: {
@@ -528,7 +528,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case MATH_EASE: {
 			t = Variant::REAL;
 		} break;
-		case MATH_DECIMALS: {
+		case MATH_STEP_DECIMALS: {
 			t = Variant::INT;
 		} break;
 		case MATH_STEPIFY:
@@ -841,7 +841,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			VALIDATE_ARG_NUM(1);
 			*r_return = Math::ease((double)*p_inputs[0], (double)*p_inputs[1]);
 		} break;
-		case VisualScriptBuiltinFunc::MATH_DECIMALS: {
+		case VisualScriptBuiltinFunc::MATH_STEP_DECIMALS: {
 
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::step_decimals((double)*p_inputs[0]);
@@ -1361,7 +1361,7 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(MATH_ISNAN);
 	BIND_ENUM_CONSTANT(MATH_ISINF);
 	BIND_ENUM_CONSTANT(MATH_EASE);
-	BIND_ENUM_CONSTANT(MATH_DECIMALS);
+	BIND_ENUM_CONSTANT(MATH_STEP_DECIMALS);
 	BIND_ENUM_CONSTANT(MATH_STEPIFY);
 	BIND_ENUM_CONSTANT(MATH_LERP);
 	BIND_ENUM_CONSTANT(MATH_INVERSE_LERP);
@@ -1455,7 +1455,7 @@ void register_visual_script_builtin_func_node() {
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/isinf", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_ISINF>);
 
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/ease", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_EASE>);
-	VisualScriptLanguage::singleton->add_register_func("functions/built_in/decimals", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_DECIMALS>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/step_decimals", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_STEP_DECIMALS>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/stepify", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_STEPIFY>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/lerp", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_LERP>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/lerp_angle", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_LERP_ANGLE>);
