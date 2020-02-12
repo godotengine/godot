@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EditorInspector" inherits="ScrollContainer" version="3.2">
 	<brief_description>
+		A tab used to edit properties of the selected node.
 	</brief_description>
 	<description>
+		The editor inspector is by default located on the right-hand side of the editor. It's used to edit the properties of the selected node. For example, you can select a node such as Sprite2D then edit its transform through the inspector tool. The editor inspector is an essential tool in the game development workflow.
 	</description>
 	<tutorials>
 	</tutorials>
