@@ -68,7 +68,7 @@ Error connect_signal_awaiter(Object *p_source, const String &p_signal, Object *p
 Variant SignalAwaiterHandle::_signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 
 #ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_V_MSG(conn_target_id && !ObjectDB::get_instance(conn_target_id), Variant(),
+	ERR_FAIL_COND_V_MSG(conn_target_id.is_valid() && !ObjectDB::get_instance(conn_target_id), Variant(),
 			"Resumed after await, but class instance is gone.");
 #endif
 
@@ -116,12 +116,7 @@ void SignalAwaiterHandle::_bind_methods() {
 }
 
 SignalAwaiterHandle::SignalAwaiterHandle(MonoObject *p_managed) :
-		MonoGCHandle(MonoGCHandle::new_strong_handle(p_managed), STRONG_HANDLE) {
-
-#ifdef DEBUG_ENABLED
-	conn_target_id = 0;
-#endif
-}
+		MonoGCHandle(MonoGCHandle::new_strong_handle(p_managed), STRONG_HANDLE) {}
 
 SignalAwaiterHandle::~SignalAwaiterHandle() {
 
