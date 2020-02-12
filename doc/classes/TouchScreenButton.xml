@@ -5,6 +5,8 @@
 	</brief_description>
 	<description>
 		Button for touch screen devices. You can set it to be visible on all screens, or only on touch devices.
+		[TouchScreenButton] is different from a [Control] like [TextureButton] because it does not capture the input. It just activates when you slide a finger over it or press it.
+		Make the [TouchScreenButton] a child of a [Control] if you want its position determined by layout containers such as [HBoxContainer].
 	</description>
 	<tutorials>
 	</tutorials>
