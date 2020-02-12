@@ -127,7 +127,7 @@ typedef bool godot_bool;
 
 /////// int
 
-typedef int64_t godot_int;
+typedef int godot_int;
 
 /////// real
 
