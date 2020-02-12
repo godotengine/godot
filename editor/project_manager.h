@@ -134,7 +134,7 @@ public:
 	enum FilterOption {
 		FILTER_NAME,
 		FILTER_PATH,
-		FILTER_MODIFIED,
+		FILTER_EDIT_DATE,
 	};
 
 private:
