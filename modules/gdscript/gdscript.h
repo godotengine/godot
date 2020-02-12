@@ -85,6 +85,8 @@ class GDScript : public Script {
 	Map<StringName, MemberInfo> member_indices; //members are just indices to the instanced script.
 	Map<StringName, Ref<GDScript> > subclasses;
 	Map<StringName, Vector<StringName> > _signals;
+	Vector<ScriptNetData> rpc_functions;
+	Vector<ScriptNetData> rpc_variables;
 
 #ifdef TOOLS_ENABLED
 
@@ -213,6 +215,18 @@ public:
 	virtual void get_constants(Map<StringName, Variant> *p_constants);
 	virtual void get_members(Set<StringName> *p_members);
 
+	virtual Vector<ScriptNetData> get_rpc_methods() const;
+	virtual uint16_t get_rpc_method_id(const StringName &p_method) const;
+	virtual StringName get_rpc_method(const uint16_t p_rpc_method_id) const;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
+
+	virtual Vector<ScriptNetData> get_rset_properties() const;
+	virtual uint16_t get_rset_property_id(const StringName &p_variable) const;
+	virtual StringName get_rset_property(const uint16_t p_variable_id) const;
+	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(const uint16_t p_variable_id) const;
+	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
+
 #ifdef TOOLS_ENABLED
 	virtual bool is_placeholder_fallback_enabled() const { return placeholder_fallback_enabled; }
 #endif
@@ -264,7 +278,16 @@ public:
 
 	void reload_members();
 
+	virtual Vector<ScriptNetData> get_rpc_methods() const;
+	virtual uint16_t get_rpc_method_id(const StringName &p_method) const;
+	virtual StringName get_rpc_method(const uint16_t p_rpc_method_id) const;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const;
 	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
+
+	virtual Vector<ScriptNetData> get_rset_properties() const;
+	virtual uint16_t get_rset_property_id(const StringName &p_variable) const;
+	virtual StringName get_rset_property(const uint16_t p_variable_id) const;
+	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(const uint16_t p_variable_id) const;
 	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
 
 	GDScriptInstance();

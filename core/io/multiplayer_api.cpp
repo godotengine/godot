@@ -32,6 +32,7 @@
 
 #include "core/io/marshalls.h"
 #include "scene/main/node.h"
+#include <stdint.h>
 
 #ifdef DEBUG_ENABLED
 #include "core/os/os.h"
@@ -180,7 +181,8 @@ void MultiplayerAPI::_process_packet(int p_from, const uint8_t *p_packet, int p_
 	}
 #endif
 
-	uint8_t packet_type = p_packet[0];
+	// Extract the `packet_type` from the LSB three bits:
+	uint8_t packet_type = p_packet[0] & 7;
 
 	switch (packet_type) {
 
@@ -197,31 +199,80 @@ void MultiplayerAPI::_process_packet(int p_from, const uint8_t *p_packet, int p_
 		case NETWORK_COMMAND_REMOTE_CALL:
 		case NETWORK_COMMAND_REMOTE_SET: {
 
-			ERR_FAIL_COND_MSG(p_packet_len < 6, "Invalid packet received. Size too small.");
+			// Extract packet meta
+			int packet_min_size = 1;
+			int name_id_offset = 1;
+			ERR_FAIL_COND_MSG(p_packet_len < packet_min_size, "Invalid packet received. Size too small.");
+			// Compute the meta size, which depends on the compression level.
+			int node_id_compression = (p_packet[0] & 24) >> 3;
+			int name_id_compression = (p_packet[0] & 32) >> 5;
 
-			Node *node = _process_get_node(p_from, p_packet, p_packet_len);
+			switch (node_id_compression) {
+				case NETWORK_NODE_ID_COMPRESSION_8:
+					packet_min_size += 1;
+					name_id_offset += 1;
+					break;
+				case NETWORK_NODE_ID_COMPRESSION_16:
+					packet_min_size += 2;
+					name_id_offset += 2;
+					break;
+				case NETWORK_NODE_ID_COMPRESSION_32:
+					packet_min_size += 4;
+					name_id_offset += 4;
+					break;
+				default:
+					ERR_FAIL_MSG("Was not possible to extract the node id compression mode.");
+			}
+			switch (name_id_compression) {
+				case NETWORK_NAME_ID_COMPRESSION_8:
+					packet_min_size += 1;
+					break;
+				case NETWORK_NAME_ID_COMPRESSION_16:
+					packet_min_size += 2;
+					break;
+				default:
+					ERR_FAIL_MSG("Was not possible to extract the name id compression mode.");
+			}
+			ERR_FAIL_COND_MSG(p_packet_len < packet_min_size, "Invalid packet received. Size too small.");
 
+			uint32_t node_target = 0;
+			switch (node_id_compression) {
+				case NETWORK_NODE_ID_COMPRESSION_8:
+					node_target = p_packet[1];
+					break;
+				case NETWORK_NODE_ID_COMPRESSION_16:
+					node_target = decode_uint16(p_packet + 1);
+					break;
+				case NETWORK_NODE_ID_COMPRESSION_32:
+					node_target = decode_uint32(p_packet + 1);
+					break;
+				default:
+					// Unreachable, checked before.
+					CRASH_NOW();
+			}
+			Node *node = _process_get_node(p_from, p_packet, node_target, p_packet_len);
 			ERR_FAIL_COND_MSG(node == NULL, "Invalid packet received. Requested node was not found.");
 
-			// Detect cstring end.
-			int len_end = 5;
-			for (; len_end < p_packet_len; len_end++) {
-				if (p_packet[len_end] == 0) {
+			uint16_t name_id = 0;
+			switch (name_id_compression) {
+				case NETWORK_NAME_ID_COMPRESSION_8:
+					name_id = p_packet[name_id_offset];
 					break;
-				}
+				case NETWORK_NAME_ID_COMPRESSION_16:
+					name_id = decode_uint16(p_packet + name_id_offset);
+					break;
+				default:
+					// Unreachable, checked before.
+					CRASH_NOW();
 			}
-
-			ERR_FAIL_COND_MSG(len_end >= p_packet_len, "Invalid packet received. Size too small.");
-
-			StringName name = String::utf8((const char *)&p_packet[5]);
 
 			if (packet_type == NETWORK_COMMAND_REMOTE_CALL) {
 
-				_process_rpc(node, name, p_from, p_packet, p_packet_len, len_end + 1);
+				_process_rpc(node, name_id, p_from, p_packet, p_packet_len, packet_min_size);
 
 			} else {
 
-				_process_rset(node, name, p_from, p_packet, p_packet_len, len_end + 1);
+				_process_rset(node, name_id, p_from, p_packet, p_packet_len, packet_min_size);
 			}
 
 		} break;
@@ -233,15 +284,14 @@ void MultiplayerAPI::_process_packet(int p_from, const uint8_t *p_packet, int p_
 	}
 }
 
-Node *MultiplayerAPI::_process_get_node(int p_from, const uint8_t *p_packet, int p_packet_len) {
+Node *MultiplayerAPI::_process_get_node(int p_from, const uint8_t *p_packet, uint32_t p_node_target, int p_packet_len) {
 
-	uint32_t target = decode_uint32(&p_packet[1]);
 	Node *node = NULL;
 
-	if (target & 0x80000000) {
+	if (p_node_target & 0x80000000) {
 		// Use full path (not cached yet).
 
-		int ofs = target & 0x7FFFFFFF;
+		int ofs = p_node_target & 0x7FFFFFFF;
 
 		ERR_FAIL_COND_V_MSG(ofs >= p_packet_len, NULL, "Invalid packet received. Size smaller than declared.");
 
@@ -256,7 +306,7 @@ Node *MultiplayerAPI::_process_get_node(int p_from, const uint8_t *p_packet, int
 			ERR_PRINT("Failed to get path from RPC: " + String(np) + ".");
 	} else {
 		// Use cached path.
-		int id = target;
+		int id = p_node_target;
 
 		Map<int, PathGetCache>::Element *E = path_get_cache.find(p_from);
 		ERR_FAIL_COND_V_MSG(!E, NULL, "Invalid packet received. Requests invalid peer cache.");
@@ -274,21 +324,21 @@ Node *MultiplayerAPI::_process_get_node(int p_from, const uint8_t *p_packet, int
 	return node;
 }
 
-void MultiplayerAPI::_process_rpc(Node *p_node, const StringName &p_name, int p_from, const uint8_t *p_packet, int p_packet_len, int p_offset) {
+void MultiplayerAPI::_process_rpc(Node *p_node, const uint16_t p_rpc_method_id, int p_from, const uint8_t *p_packet, int p_packet_len, int p_offset) {
 
 	ERR_FAIL_COND_MSG(p_offset >= p_packet_len, "Invalid packet received. Size too small.");
 
 	// Check that remote can call the RPC on this node.
-	RPCMode rpc_mode = RPC_MODE_DISABLED;
-	const Map<StringName, RPCMode>::Element *E = p_node->get_node_rpc_mode(p_name);
-	if (E) {
-		rpc_mode = E->get();
-	} else if (p_node->get_script_instance()) {
-		rpc_mode = p_node->get_script_instance()->get_rpc_mode(p_name);
+	StringName name = p_node->get_node_rpc_method(p_rpc_method_id);
+	RPCMode rpc_mode = p_node->get_node_rpc_mode_by_id(p_rpc_method_id);
+	if (name == StringName() && p_node->get_script_instance()) {
+		name = p_node->get_script_instance()->get_rpc_method(p_rpc_method_id);
+		rpc_mode = p_node->get_script_instance()->get_rpc_mode_by_id(p_rpc_method_id);
 	}
+	ERR_FAIL_COND(name == StringName());
 
 	bool can_call = _can_call_mode(p_node, rpc_mode, p_from);
-	ERR_FAIL_COND_MSG(!can_call, "RPC '" + String(p_name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)rpc_mode) + ", master is " + itos(p_node->get_network_master()) + ".");
+	ERR_FAIL_COND_MSG(!can_call, "RPC '" + String(name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)rpc_mode) + ", master is " + itos(p_node->get_network_master()) + ".");
 
 	int argc = p_packet[p_offset];
 	Vector<Variant> args;
@@ -311,7 +361,7 @@ void MultiplayerAPI::_process_rpc(Node *p_node, const StringName &p_name, int p_
 		ERR_FAIL_COND_MSG(p_offset >= p_packet_len, "Invalid packet received. Size too small.");
 
 		int vlen;
-		Error err = decode_variant(args.write[i], &p_packet[p_offset], p_packet_len - p_offset, &vlen, allow_object_decoding || network_peer->is_object_decoding_allowed());
+		Error err = _decode_and_decompress_variant(args.write[i], &p_packet[p_offset], p_packet_len - p_offset, &vlen);
 		ERR_FAIL_COND_MSG(err != OK, "Invalid packet received. Unable to decode RPC argument.");
 
 		argp.write[i] = &args[i];
@@ -320,29 +370,29 @@ void MultiplayerAPI::_process_rpc(Node *p_node, const StringName &p_name, int p_
 
 	Variant::CallError ce;
 
-	p_node->call(p_name, (const Variant **)argp.ptr(), argc, ce);
+	p_node->call(name, (const Variant **)argp.ptr(), argc, ce);
 	if (ce.error != Variant::CallError::CALL_OK) {
-		String error = Variant::get_call_error_text(p_node, p_name, (const Variant **)argp.ptr(), argc, ce);
+		String error = Variant::get_call_error_text(p_node, name, (const Variant **)argp.ptr(), argc, ce);
 		error = "RPC - " + error;
 		ERR_PRINT(error);
 	}
 }
 
-void MultiplayerAPI::_process_rset(Node *p_node, const StringName &p_name, int p_from, const uint8_t *p_packet, int p_packet_len, int p_offset) {
+void MultiplayerAPI::_process_rset(Node *p_node, const uint16_t p_rpc_property_id, int p_from, const uint8_t *p_packet, int p_packet_len, int p_offset) {
 
 	ERR_FAIL_COND_MSG(p_offset >= p_packet_len, "Invalid packet received. Size too small.");
 
 	// Check that remote can call the RSET on this node.
-	RPCMode rset_mode = RPC_MODE_DISABLED;
-	const Map<StringName, RPCMode>::Element *E = p_node->get_node_rset_mode(p_name);
-	if (E) {
-		rset_mode = E->get();
-	} else if (p_node->get_script_instance()) {
-		rset_mode = p_node->get_script_instance()->get_rset_mode(p_name);
+	StringName name = p_node->get_node_rset_property(p_rpc_property_id);
+	RPCMode rset_mode = p_node->get_node_rset_mode_by_id(p_rpc_property_id);
+	if (name == StringName() && p_node->get_script_instance()) {
+		name = p_node->get_script_instance()->get_rset_property(p_rpc_property_id);
+		rset_mode = p_node->get_script_instance()->get_rset_mode_by_id(p_rpc_property_id);
 	}
+	ERR_FAIL_COND(name == StringName());
 
 	bool can_call = _can_call_mode(p_node, rset_mode, p_from);
-	ERR_FAIL_COND_MSG(!can_call, "RSET '" + String(p_name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)rset_mode) + ", master is " + itos(p_node->get_network_master()) + ".");
+	ERR_FAIL_COND_MSG(!can_call, "RSET '" + String(name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)rset_mode) + ", master is " + itos(p_node->get_network_master()) + ".");
 
 #ifdef DEBUG_ENABLED
 	if (profiling) {
@@ -353,31 +403,45 @@ void MultiplayerAPI::_process_rset(Node *p_node, const StringName &p_name, int p
 #endif
 
 	Variant value;
-	Error err = decode_variant(value, &p_packet[p_offset], p_packet_len - p_offset, NULL, allow_object_decoding || network_peer->is_object_decoding_allowed());
+	Error err = _decode_and_decompress_variant(value, &p_packet[p_offset], p_packet_len - p_offset, NULL);
 
 	ERR_FAIL_COND_MSG(err != OK, "Invalid packet received. Unable to decode RSET value.");
 
 	bool valid;
 
-	p_node->set(p_name, value, &valid);
+	p_node->set(name, value, &valid);
 	if (!valid) {
-		String error = "Error setting remote property '" + String(p_name) + "', not found in object of type " + p_node->get_class() + ".";
+		String error = "Error setting remote property '" + String(name) + "', not found in object of type " + p_node->get_class() + ".";
 		ERR_PRINT(error);
 	}
 }
 
 void MultiplayerAPI::_process_simplify_path(int p_from, const uint8_t *p_packet, int p_packet_len) {
 
-	ERR_FAIL_COND_MSG(p_packet_len < 5, "Invalid packet received. Size too small.");
-	int id = decode_uint32(&p_packet[1]);
+	ERR_FAIL_COND_MSG(p_packet_len < 38, "Invalid packet received. Size too small.");
+	int ofs = 1;
+
+	String methods_md5;
+	methods_md5.parse_utf8((const char *)(p_packet + ofs), 32);
+	ofs += 33;
+
+	int id = decode_uint32(&p_packet[ofs]);
+	ofs += 4;
 
 	String paths;
-	paths.parse_utf8((const char *)&p_packet[5], p_packet_len - 5);
+	paths.parse_utf8((const char *)(p_packet + ofs), p_packet_len - ofs);
 
 	NodePath path = paths;
 
 	if (!path_get_cache.has(p_from)) {
 		path_get_cache[p_from] = PathGetCache();
+	}
+
+	Node *node = root_node->get_node(path);
+	ERR_FAIL_COND(node == NULL);
+	const bool valid_rpc_checksum = node->get_rpc_md5() == methods_md5;
+	if (valid_rpc_checksum == false) {
+		ERR_PRINT("The rpc node checksum failed. Make sure to have the same methods on both nodes. Node path: " + path);
 	}
 
 	PathGetCache::NodeInfo ni;
@@ -392,9 +456,10 @@ void MultiplayerAPI::_process_simplify_path(int p_from, const uint8_t *p_packet,
 
 	Vector<uint8_t> packet;
 
-	packet.resize(1 + len);
+	packet.resize(1 + 1 + len);
 	packet.write[0] = NETWORK_COMMAND_CONFIRM_PATH;
-	encode_cstring(pname.get_data(), &packet.write[1]);
+	packet.write[1] = valid_rpc_checksum;
+	encode_cstring(pname.get_data(), &packet.write[2]);
 
 	network_peer->set_transfer_mode(NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
 	network_peer->set_target_peer(p_from);
@@ -403,12 +468,18 @@ void MultiplayerAPI::_process_simplify_path(int p_from, const uint8_t *p_packet,
 
 void MultiplayerAPI::_process_confirm_path(int p_from, const uint8_t *p_packet, int p_packet_len) {
 
-	ERR_FAIL_COND_MSG(p_packet_len < 2, "Invalid packet received. Size too small.");
+	ERR_FAIL_COND_MSG(p_packet_len < 3, "Invalid packet received. Size too small.");
+
+	const bool valid_rpc_checksum = p_packet[1];
 
 	String paths;
-	paths.parse_utf8((const char *)&p_packet[1], p_packet_len - 1);
+	paths.parse_utf8((const char *)&p_packet[2], p_packet_len - 2);
 
 	NodePath path = paths;
+
+	if (valid_rpc_checksum == false) {
+		ERR_PRINT("The rpc node checksum failed. Make sure to have the same methods on both nodes. Node path: " + path);
+	}
 
 	PathSentCache *psc = path_send_cache.getptr(path);
 	ERR_FAIL_COND_MSG(!psc, "Invalid packet received. Tries to confirm a path which was not found in cache.");
@@ -418,7 +489,7 @@ void MultiplayerAPI::_process_confirm_path(int p_from, const uint8_t *p_packet, 
 	E->get() = true;
 }
 
-bool MultiplayerAPI::_send_confirm_path(NodePath p_path, PathSentCache *psc, int p_target) {
+bool MultiplayerAPI::_send_confirm_path(Node *p_node, NodePath p_path, PathSentCache *psc, int p_target) {
 	bool has_all_peers = true;
 	List<int> peers_to_add; // If one is missing, take note to add it.
 
@@ -443,29 +514,190 @@ bool MultiplayerAPI::_send_confirm_path(NodePath p_path, PathSentCache *psc, int
 		}
 	}
 
-	// Those that need to be added, send a message for this.
+	if (peers_to_add.size() > 0) {
 
-	for (List<int>::Element *E = peers_to_add.front(); E; E = E->next()) {
+		// Those that need to be added, send a message for this.
 
 		// Encode function name.
-		CharString pname = String(p_path).utf8();
-		int len = encode_cstring(pname.get_data(), NULL);
+		const CharString path = String(p_path).utf8();
+		const int path_len = encode_cstring(path.get_data(), NULL);
+
+		// Extract MD5 from rpc methods list.
+		const String methods_md5 = p_node->get_rpc_md5();
+		const int methods_md5_len = 33; // 32 + 1 for the `0` that is added by the encoder.
 
 		Vector<uint8_t> packet;
+		packet.resize(1 + 4 + path_len + methods_md5_len);
+		int ofs = 0;
 
-		packet.resize(1 + 4 + len);
-		packet.write[0] = NETWORK_COMMAND_SIMPLIFY_PATH;
-		encode_uint32(psc->id, &packet.write[1]);
-		encode_cstring(pname.get_data(), &packet.write[5]);
+		packet.write[ofs] = NETWORK_COMMAND_SIMPLIFY_PATH;
+		ofs += 1;
 
-		network_peer->set_target_peer(E->get()); // To all of you.
-		network_peer->set_transfer_mode(NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
-		network_peer->put_packet(packet.ptr(), packet.size());
+		ofs += encode_cstring(methods_md5.utf8().get_data(), &packet.write[ofs]);
 
-		psc->confirmed_peers.insert(E->get(), false); // Insert into confirmed, but as false since it was not confirmed.
+		ofs += encode_uint32(psc->id, &packet.write[ofs]);
+
+		ofs += encode_cstring(path.get_data(), &packet.write[ofs]);
+
+		for (List<int>::Element *E = peers_to_add.front(); E; E = E->next()) {
+
+			network_peer->set_target_peer(E->get()); // To all of you.
+			network_peer->set_transfer_mode(NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
+			network_peer->put_packet(packet.ptr(), packet.size());
+
+			psc->confirmed_peers.insert(E->get(), false); // Insert into confirmed, but as false since it was not confirmed.
+		}
 	}
 
 	return has_all_peers;
+}
+
+// The variant is compressed and encoded; The first byte contains all the meta
+// information and the format is:
+// - The first LSB 5 bits are used for the variant type.
+// - The next two bits are used to store the encoding mode.
+// - The most significant is used to store the boolean value.
+#define VARIANT_META_TYPE_MASK 0x1F
+#define VARIANT_META_EMODE_MASK 0x60
+#define VARIANT_META_BOOL_MASK 0x80
+#define ENCODE_8 0 << 5
+#define ENCODE_16 1 << 5
+#define ENCODE_32 2 << 5
+#define ENCODE_64 3 << 5
+Error MultiplayerAPI::_encode_and_compress_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len) {
+
+	// Unreachable because `VARIANT_MAX` == 27 and `ENCODE_VARIANT_MASK` == 31
+	CRASH_COND(p_variant.get_type() > VARIANT_META_TYPE_MASK);
+
+	uint8_t *buf = r_buffer;
+	r_len = 0;
+	uint8_t encode_mode = 0;
+
+	switch (p_variant.get_type()) {
+		case Variant::BOOL: {
+			if (buf) {
+				// We still have 1 free bit in the meta, so let's use it.
+				buf[0] = (p_variant.operator bool()) ? (1 << 7) : 0;
+				buf[0] |= encode_mode | p_variant.get_type();
+			}
+			r_len += 1;
+		} break;
+		case Variant::INT: {
+			if (buf) {
+				// Reserve the first byte for the meta.
+				buf += 1;
+			}
+			r_len += 1;
+			int64_t val = p_variant;
+			if (val <= (int64_t)INT8_MAX && val >= (int64_t)INT8_MIN) {
+				// Use 8 bit
+				encode_mode = ENCODE_8;
+				if (buf) {
+					buf[0] = val;
+				}
+				r_len += 1;
+			} else if (val <= (int64_t)INT16_MAX && val >= (int64_t)INT16_MIN) {
+				// Use 16 bit
+				encode_mode = ENCODE_16;
+				if (buf) {
+					encode_uint16(val, buf);
+				}
+				r_len += 2;
+			} else if (val <= (int64_t)INT32_MAX && val >= (int64_t)INT32_MIN) {
+				// Use 32 bit
+				encode_mode = ENCODE_32;
+				if (buf) {
+					encode_uint32(val, buf);
+				}
+				r_len += 4;
+			} else {
+				// Use 64 bit
+				encode_mode = ENCODE_64;
+				if (buf) {
+					encode_uint64(val, buf);
+				}
+				r_len += 8;
+			}
+			// Store the meta
+			if (buf) {
+				buf -= 1;
+				buf[0] = encode_mode | p_variant.get_type();
+			}
+		} break;
+		default:
+			// Any other case is not yet compressed.
+			Error err = encode_variant(p_variant, r_buffer, r_len, allow_object_decoding || network_peer->is_object_decoding_allowed());
+			if (err != OK)
+				return err;
+			if (r_buffer) {
+				// The first byte is not used by the marshaling, so store the type
+				// so we know how to decompress and decode this variant.
+				r_buffer[0] = p_variant.get_type();
+			}
+	}
+
+	return OK;
+}
+Error MultiplayerAPI::_decode_and_decompress_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len) {
+
+	const uint8_t *buf = p_buffer;
+	int len = p_len;
+
+	ERR_FAIL_COND_V(len < 1, ERR_INVALID_DATA);
+	uint8_t type = buf[0] & VARIANT_META_TYPE_MASK;
+	uint8_t encode_mode = buf[0] & VARIANT_META_EMODE_MASK;
+
+	ERR_FAIL_COND_V(type >= Variant::VARIANT_MAX, ERR_INVALID_DATA);
+
+	switch (type) {
+		case Variant::BOOL: {
+			bool val = (buf[0] & VARIANT_META_BOOL_MASK) > 0;
+			r_variant = val;
+			if (r_len)
+				*r_len = 1;
+		} break;
+		case Variant::INT: {
+			buf += 1;
+			len -= 1;
+			if (r_len)
+				*r_len = 1;
+			if (encode_mode == ENCODE_8) {
+				// 8 bits.
+				ERR_FAIL_COND_V(len < 1, ERR_INVALID_DATA);
+				int8_t val = buf[0];
+				r_variant = val;
+				if (r_len)
+					(*r_len) += 1;
+			} else if (encode_mode == ENCODE_16) {
+				// 16 bits.
+				ERR_FAIL_COND_V(len < 2, ERR_INVALID_DATA);
+				int16_t val = decode_uint16(buf);
+				r_variant = val;
+				if (r_len)
+					(*r_len) += 2;
+			} else if (encode_mode == ENCODE_32) {
+				// 32 bits.
+				ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
+				int32_t val = decode_uint32(buf);
+				r_variant = val;
+				if (r_len)
+					(*r_len) += 4;
+			} else {
+				// 64 bits.
+				ERR_FAIL_COND_V(len < 8, ERR_INVALID_DATA);
+				int64_t val = decode_uint64(buf);
+				r_variant = val;
+				if (r_len)
+					(*r_len) += 8;
+			}
+		} break;
+		default:
+			Error err = decode_variant(r_variant, p_buffer, p_len, r_len, allow_object_decoding || network_peer->is_object_decoding_allowed());
+			if (err != OK)
+				return err;
+	}
+
+	return OK;
 }
 
 void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p_set, const StringName &p_name, const Variant **p_arg, int p_argcount) {
@@ -496,6 +728,9 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 		psc->id = last_send_cache_id++;
 	}
 
+	// See if all peers have cached path (if so, call can be fast).
+	const bool has_all_peers = _send_confirm_path(p_from, from_path, psc, p_to);
+
 	// Create base packet, lots of hardcode because it must be tight.
 
 	int ofs = 0;
@@ -503,44 +738,124 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 #define MAKE_ROOM(m_amount) \
 	if (packet_cache.size() < m_amount) packet_cache.resize(m_amount);
 
-	// Encode type.
+	// Encode meta.
+	// The meta is composed by a single byte that contains (starting from the least segnificant bit):
+	// - `NetworkCommands` in the first three bits.
+	// - `NetworkNodeIdCompression` in the next 2 bits.
+	// - `NetworkNameIdCompression` in the next 1 bit.
+	// - So we still have the last two bits free!
+	uint8_t command_type = p_set ? NETWORK_COMMAND_REMOTE_SET : NETWORK_COMMAND_REMOTE_CALL;
+	uint8_t node_id_compression = UINT8_MAX;
+	uint8_t name_id_compression = UINT8_MAX;
+
 	MAKE_ROOM(1);
-	packet_cache.write[0] = p_set ? NETWORK_COMMAND_REMOTE_SET : NETWORK_COMMAND_REMOTE_CALL;
+	// The meta is composed along the way, so just set 0 for now.
+	packet_cache.write[0] = 0;
 	ofs += 1;
 
-	// Encode ID.
-	MAKE_ROOM(ofs + 4);
-	encode_uint32(psc->id, &(packet_cache.write[ofs]));
-	ofs += 4;
-
-	// Encode function name.
-	CharString name = String(p_name).utf8();
-	int len = encode_cstring(name.get_data(), NULL);
-	MAKE_ROOM(ofs + len);
-	encode_cstring(name.get_data(), &(packet_cache.write[ofs]));
-	ofs += len;
+	// Encode Node ID.
+	if (has_all_peers) {
+		// Compress the node ID only if all the target peers already know it.
+		if (psc->id >= 0 && psc->id <= 255) {
+			// We can encode the id in 1 byte
+			node_id_compression = NETWORK_NODE_ID_COMPRESSION_8;
+			MAKE_ROOM(ofs + 1);
+			packet_cache.write[ofs] = static_cast<uint8_t>(psc->id);
+			ofs += 1;
+		} else if (psc->id >= 0 && psc->id <= 65535) {
+			// We can encode the id in 2 bytes
+			node_id_compression = NETWORK_NODE_ID_COMPRESSION_16;
+			MAKE_ROOM(ofs + 2);
+			encode_uint16(static_cast<uint16_t>(psc->id), &(packet_cache.write[ofs]));
+			ofs += 2;
+		} else {
+			// Too big, let's use 4 bytes.
+			node_id_compression = NETWORK_NODE_ID_COMPRESSION_32;
+			MAKE_ROOM(ofs + 4);
+			encode_uint32(psc->id, &(packet_cache.write[ofs]));
+			ofs += 4;
+		}
+	} else {
+		// The targets doesn't know the node yet, so we need to use 32 bits int.
+		node_id_compression = NETWORK_NODE_ID_COMPRESSION_32;
+		MAKE_ROOM(ofs + 4);
+		encode_uint32(psc->id, &(packet_cache.write[ofs]));
+		ofs += 4;
+	}
 
 	if (p_set) {
+
+		// Take the rpc property ID
+		uint16_t property_id = p_from->get_node_rset_property_id(p_name);
+		if (property_id == UINT16_MAX && p_from->get_script_instance()) {
+			property_id = p_from->get_script_instance()->get_rset_property_id(p_name);
+		}
+		ERR_FAIL_COND_MSG(property_id == UINT16_MAX, "Unable to take the `property_id` for the property:" + p_name + ". this can happen only if this property is not marked as `remote`.");
+
+		if (property_id <= UINT8_MAX) {
+			// The ID fits in 1 byte
+			name_id_compression = NETWORK_NAME_ID_COMPRESSION_8;
+			MAKE_ROOM(ofs + 1);
+			packet_cache.write[ofs] = static_cast<uint8_t>(property_id);
+			ofs += 1;
+		} else {
+			// The ID is larger, let's use 2 bytes
+			name_id_compression = NETWORK_NAME_ID_COMPRESSION_16;
+			MAKE_ROOM(ofs + 2);
+			encode_uint16(property_id, &(packet_cache.write[ofs]));
+			ofs += 2;
+		}
+
 		// Set argument.
-		Error err = encode_variant(*p_arg[0], NULL, len, allow_object_decoding || network_peer->is_object_decoding_allowed());
+		int len(0);
+		Error err = _encode_and_compress_variant(*p_arg[0], NULL, len);
 		ERR_FAIL_COND_MSG(err != OK, "Unable to encode RSET value. THIS IS LIKELY A BUG IN THE ENGINE!");
 		MAKE_ROOM(ofs + len);
-		encode_variant(*p_arg[0], &(packet_cache.write[ofs]), len, allow_object_decoding || network_peer->is_object_decoding_allowed());
+		_encode_and_compress_variant(*p_arg[0], &(packet_cache.write[ofs]), len);
 		ofs += len;
 
 	} else {
+		// Take the rpc method ID
+		uint16_t method_id = p_from->get_node_rpc_method_id(p_name);
+		if (method_id == UINT16_MAX && p_from->get_script_instance()) {
+			method_id = p_from->get_script_instance()->get_rpc_method_id(p_name);
+		}
+		ERR_FAIL_COND_MSG(method_id == UINT16_MAX, "Unable to take the `method_id` for the function:" + p_name + ". this can happen only if this method is not marked as `remote`.");
+
+		if (method_id <= UINT8_MAX) {
+			// The ID fits in 1 byte
+			name_id_compression = NETWORK_NAME_ID_COMPRESSION_8;
+			MAKE_ROOM(ofs + 1);
+			packet_cache.write[ofs] = static_cast<uint8_t>(method_id);
+			ofs += 1;
+		} else {
+			// The ID is larger, let's use 2 bytes
+			name_id_compression = NETWORK_NAME_ID_COMPRESSION_16;
+			MAKE_ROOM(ofs + 2);
+			encode_uint16(method_id, &(packet_cache.write[ofs]));
+			ofs += 2;
+		}
+
 		// Call arguments.
 		MAKE_ROOM(ofs + 1);
 		packet_cache.write[ofs] = p_argcount;
 		ofs += 1;
 		for (int i = 0; i < p_argcount; i++) {
-			Error err = encode_variant(*p_arg[i], NULL, len, allow_object_decoding || network_peer->is_object_decoding_allowed());
+			int len(0);
+			Error err = _encode_and_compress_variant(*p_arg[i], NULL, len);
 			ERR_FAIL_COND_MSG(err != OK, "Unable to encode RPC argument. THIS IS LIKELY A BUG IN THE ENGINE!");
 			MAKE_ROOM(ofs + len);
-			encode_variant(*p_arg[i], &(packet_cache.write[ofs]), len, allow_object_decoding || network_peer->is_object_decoding_allowed());
+			_encode_and_compress_variant(*p_arg[i], &(packet_cache.write[ofs]), len);
 			ofs += len;
 		}
 	}
+
+	ERR_FAIL_COND(command_type > 7);
+	ERR_FAIL_COND(node_id_compression > 3);
+	ERR_FAIL_COND(name_id_compression > 1);
+
+	// We can now set the meta
+	packet_cache.write[0] = command_type + (node_id_compression << 3) + (name_id_compression << 5);
 
 #ifdef DEBUG_ENABLED
 	if (profiling) {
@@ -549,9 +864,6 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 		bandwidth_outgoing_pointer = (bandwidth_outgoing_pointer + 1) % bandwidth_outgoing_data.size();
 	}
 #endif
-
-	// See if all peers have cached path (is so, call can be fast).
-	bool has_all_peers = _send_confirm_path(from_path, psc, p_to);
 
 	// Take chance and set transfer mode, since all send methods will use it.
 	network_peer->set_transfer_mode(p_unreliable ? NetworkedMultiplayerPeer::TRANSFER_MODE_UNRELIABLE : NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
@@ -562,6 +874,9 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 		network_peer->set_target_peer(p_to); // To all of you.
 		network_peer->put_packet(packet_cache.ptr(), ofs); // A message with love.
 	} else {
+		// Unreachable because the node ID is never compressed if the peers doesn't know it.
+		CRASH_COND(node_id_compression != NETWORK_NODE_ID_COMPRESSION_32);
+
 		// Not all verified path, so send one by one.
 
 		// Append path at the end, since we will need it for some packets.
@@ -647,16 +962,14 @@ void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const 
 	if (p_peer_id == 0 || p_peer_id == node_id || (p_peer_id < 0 && p_peer_id != -node_id)) {
 		// Check that send mode can use local call.
 
-		const Map<StringName, RPCMode>::Element *E = p_node->get_node_rpc_mode(p_method);
-		if (E) {
-			call_local_native = _should_call_local(E->get(), is_master, skip_rpc);
-		}
+		RPCMode rpc_mode = p_node->get_node_rpc_mode(p_method);
+		call_local_native = _should_call_local(rpc_mode, is_master, skip_rpc);
 
 		if (call_local_native) {
 			// Done below.
 		} else if (p_node->get_script_instance()) {
 			// Attempt with script.
-			RPCMode rpc_mode = p_node->get_script_instance()->get_rpc_mode(p_method);
+			rpc_mode = p_node->get_script_instance()->get_rpc_mode(p_method);
 			call_local_script = _should_call_local(rpc_mode, is_master, skip_rpc);
 		}
 	}
@@ -719,11 +1032,8 @@ void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const
 
 	if (p_peer_id == 0 || p_peer_id == node_id || (p_peer_id < 0 && p_peer_id != -node_id)) {
 		// Check that send mode can use local call.
-		const Map<StringName, RPCMode>::Element *E = p_node->get_node_rset_mode(p_property);
-		if (E) {
-
-			set_local = _should_call_local(E->get(), is_master, skip_rset);
-		}
+		RPCMode rpc_mode = p_node->get_node_rset_mode(p_property);
+		set_local = _should_call_local(rpc_mode, is_master, skip_rset);
 
 		if (set_local) {
 			bool valid;
@@ -740,7 +1050,7 @@ void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const
 			}
 		} else if (p_node->get_script_instance()) {
 			// Attempt with script.
-			RPCMode rpc_mode = p_node->get_script_instance()->get_rset_mode(p_property);
+			rpc_mode = p_node->get_script_instance()->get_rset_mode(p_property);
 
 			set_local = _should_call_local(rpc_mode, is_master, skip_rset);
 
