@@ -135,9 +135,7 @@ public:
 		RPC_MODE_REMOTE, // Using rpc() on it will call method / set property in all remote peers
 		RPC_MODE_MASTER, // Using rpc() on it will call method on wherever the master is, be it local or remote
 		RPC_MODE_PUPPET, // Using rpc() on it will call method for all puppets
-		RPC_MODE_SLAVE = RPC_MODE_PUPPET, // Deprecated, same as puppet
 		RPC_MODE_REMOTESYNC, // Using rpc() on it will call method / set property in all remote peers and locally
-		RPC_MODE_SYNC = RPC_MODE_REMOTESYNC, // Deprecated. Same as RPC_MODE_REMOTESYNC
 		RPC_MODE_MASTERSYNC, // Using rpc() on it will call method / set property in the master peer and locally
 		RPC_MODE_PUPPETSYNC, // Using rpc() on it will call method / set property in all puppets peers and locally
 	};
