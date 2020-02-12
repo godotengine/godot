@@ -332,6 +332,7 @@ public:
 			TYPE_MEMBER,
 			TYPE_ARRAY,
 			TYPE_ARRAY_DECLARATION,
+			TYPE_ARRAY_CONSTRUCT,
 			TYPE_STRUCT,
 		};
 
@@ -427,6 +428,17 @@ public:
 				is_const(false) {}
 	};
 
+	struct ArrayConstructNode : public Node {
+		DataType datatype;
+		String struct_name;
+		Vector<Node *> initializer;
+
+		ArrayConstructNode() :
+				Node(TYPE_ARRAY_CONSTRUCT),
+				datatype(TYPE_VOID) {
+		}
+	};
+
 	struct ArrayDeclarationNode : public Node {
 		DataPrecision precision;
 		DataType datatype;
@@ -520,9 +532,11 @@ public:
 		StringName base_struct_name;
 		DataPrecision precision;
 		DataType datatype;
+		int array_size;
 		StringName struct_name;
 		StringName name;
 		Node *owner;
+		Node *index_expression;
 
 		virtual DataType get_datatype() const { return datatype; }
 		virtual String get_datatype_name() const { return String(struct_name); }
@@ -531,7 +545,9 @@ public:
 				Node(TYPE_MEMBER),
 				basetype(TYPE_VOID),
 				datatype(TYPE_VOID),
-				owner(NULL) {}
+				array_size(0),
+				owner(NULL),
+				index_expression(NULL) {}
 	};
 
 	struct StructNode : public Node {
