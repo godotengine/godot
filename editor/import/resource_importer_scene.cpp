@@ -1473,7 +1473,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		} else {
 
 			post_import_script = Ref<EditorScenePostImport>(memnew(EditorScenePostImport));
-			post_import_script->set_script(scr.get_ref_ptr());
+			post_import_script->set_script(scr);
 			if (!post_import_script->get_script_instance()) {
 				EditorNode::add_io_error(TTR("Invalid/broken script for post-import (check console):") + " " + post_import_script_path);
 				post_import_script.unref();

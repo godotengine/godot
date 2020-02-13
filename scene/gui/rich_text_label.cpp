@@ -2664,7 +2664,7 @@ void RichTextLabel::set_effects(const Vector<Variant> &effects) {
 Vector<Variant> RichTextLabel::get_effects() {
 	Vector<Variant> r;
 	for (int i = 0; i < custom_effects.size(); i++) {
-		r.push_back(custom_effects[i].get_ref_ptr());
+		r.push_back(custom_effects[i]);
 	}
 	return r;
 }

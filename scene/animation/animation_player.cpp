@@ -106,7 +106,7 @@ bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
 	} else if (name.begins_with("anims/")) {
 
 		String which = name.get_slicec('/', 1);
-		r_ret = get_animation(which).get_ref_ptr();
+		r_ret = get_animation(which);
 
 	} else if (name.begins_with("next/")) {
 

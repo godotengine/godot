@@ -37,6 +37,7 @@
 #include "core/object_id.h"
 #include "core/os/rw_lock.h"
 #include "core/set.h"
+#include "core/spin_lock.h"
 #include "core/variant.h"
 #include "core/vmap.h"
 
@@ -488,7 +489,7 @@ private:
 	Set<String> editor_section_folding;
 #endif
 	ScriptInstance *script_instance;
-	RefPtr script;
+	Variant script; //reference does not yet exist, store it in a
 	Dictionary metadata;
 	mutable StringName _class_name;
 	mutable const StringName *_class_ptr;
@@ -506,9 +507,13 @@ private:
 
 	void property_list_changed_notify();
 
+	_FORCE_INLINE_ void _construct_object(bool p_reference);
+
 	friend class Reference;
+	bool type_is_reference = false;
 	uint32_t instance_binding_count;
 	void *_script_instance_bindings[MAX_SCRIPT_INSTANCE_BINDINGS];
+	Object(bool p_reference);
 
 protected:
 	virtual void _initialize_classv() { initialize_class(); }
@@ -680,8 +685,8 @@ public:
 
 	/* SCRIPT */
 
-	void set_script(const RefPtr &p_script);
-	RefPtr get_script() const;
+	void set_script(const Variant &p_script);
+	Variant get_script() const;
 
 	/* SCRIPT */
 
@@ -700,7 +705,7 @@ public:
 	void set_script_instance(ScriptInstance *p_instance);
 	_FORCE_INLINE_ ScriptInstance *get_script_instance() const { return script_instance; }
 
-	void set_script_and_instance(const RefPtr &p_script, ScriptInstance *p_instance); //some script languages can't control instance creation, so this function eases the process
+	void set_script_and_instance(const Variant &p_script, ScriptInstance *p_instance); //some script languages can't control instance creation, so this function eases the process
 
 	void add_user_signal(const MethodInfo &p_signal);
 	Error emit_signal(const StringName &p_name, VARIANT_ARG_LIST);
@@ -751,6 +756,7 @@ public:
 
 	void clear_internal_resource_paths();
 
+	_ALWAYS_INLINE_ bool is_reference() const { return type_is_reference; }
 	Object();
 	virtual ~Object();
 };
@@ -760,49 +766,63 @@ void postinitialize_handler(Object *p_object);
 
 class ObjectDB {
 
-	struct ObjectPtrHash {
+//this needs to add up to 63, 1 bit is for reference
+#define OBJECTDB_VALIDATOR_BITS 39
+#define OBJECTDB_VALIDATOR_MASK ((uint64_t(1) << OBJECTDB_VALIDATOR_BITS) - 1)
+#define OBJECTDB_SLOT_MAX_COUNT_BITS 24
+#define OBJECTDB_SLOT_MAX_COUNT_MASK ((uint64_t(1) << OBJECTDB_SLOT_MAX_COUNT_BITS) - 1)
+#define OBJECTDB_REFERENCE_BIT (uint64_t(1) << (OBJECTDB_SLOT_MAX_COUNT_BITS + OBJECTDB_VALIDATOR_BITS))
 
-		static _FORCE_INLINE_ uint32_t hash(const Object *p_obj) {
-
-			union {
-				const Object *p;
-				unsigned long i;
-			} u;
-			u.p = p_obj;
-			return HashMapHasherDefault::hash((uint64_t)u.i);
-		}
+	struct ObjectSlot { //128 bits per slot
+		uint64_t validator : OBJECTDB_VALIDATOR_BITS;
+		uint64_t next_free : OBJECTDB_SLOT_MAX_COUNT_BITS;
+		uint64_t is_reference : 1;
+		Object *object;
 	};
 
-	static HashMap<ObjectID, Object *> instances;
-	static HashMap<Object *, ObjectID, ObjectPtrHash> instance_checks;
+	static SpinLock spin_lock;
+	static uint32_t slot_count;
+	static uint32_t slot_max;
+	static ObjectSlot *object_slots;
+	static uint64_t validator_counter;
 
-	static uint64_t instance_counter;
 	friend class Object;
 	friend void unregister_core_types();
-
-	static RWLock *rw_lock;
 	static void cleanup();
+
 	static ObjectID add_instance(Object *p_object);
 	static void remove_instance(Object *p_object);
+
 	friend void register_core_types();
 	static void setup();
 
 public:
 	typedef void (*DebugFunc)(Object *p_obj);
 
-	static Object *get_instance(ObjectID p_instance_id);
+	_ALWAYS_INLINE_ static Object *get_instance(ObjectID p_instance_id) {
+
+		uint64_t id = p_instance_id;
+		uint32_t slot = id & OBJECTDB_SLOT_MAX_COUNT_MASK;
+
+		ERR_FAIL_COND_V(slot >= slot_max, nullptr); //this should never happen unless RID is corrupted
+
+		spin_lock.lock();
+
+		uint64_t validator = (id >> OBJECTDB_SLOT_MAX_COUNT_BITS) & OBJECTDB_VALIDATOR_MASK;
+
+		if (unlikely(object_slots[slot].validator != validator)) {
+			spin_lock.unlock();
+			return nullptr;
+		}
+
+		Object *object = object_slots[slot].object;
+
+		spin_lock.unlock();
+
+		return object;
+	}
 	static void debug_objects(DebugFunc p_func);
 	static int get_object_count();
-
-	_FORCE_INLINE_ static bool instance_validate(Object *p_ptr) {
-		rw_lock->read_lock();
-
-		bool exists = instance_checks.has(p_ptr);
-
-		rw_lock->read_unlock();
-
-		return exists;
-	}
 };
 
 //needed by macros

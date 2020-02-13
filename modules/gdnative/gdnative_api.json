@@ -404,13 +404,6 @@
           ]
         },
         {
-          "name": "godot_is_instance_valid",
-          "return_type": "bool",
-          "arguments": [
-            ["const godot_object *", "p_object"]
-          ]
-        },
-        {
           "name": "godot_quat_new_with_basis",
           "return_type": "void",
           "arguments": [

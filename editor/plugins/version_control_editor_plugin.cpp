@@ -124,7 +124,7 @@ void VersionControlEditorPlugin::_initialize_vcs() {
 	ERR_FAIL_COND_MSG(!addon_script_instance, "Failed to create addon script instance.");
 
 	// The addon is attached as a script to the VCS interface as a proxy end-point
-	vcs_interface->set_script_and_instance(script.get_ref_ptr(), addon_script_instance);
+	vcs_interface->set_script_and_instance(script, addon_script_instance);
 
 	EditorVCSInterface::set_singleton(vcs_interface);
 	EditorFileSystem::get_singleton()->connect("filesystem_changed", this, "_refresh_stage_area");

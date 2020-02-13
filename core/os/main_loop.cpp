@@ -95,7 +95,7 @@ void MainLoop::input_event(const Ref<InputEvent> &p_event) {
 void MainLoop::init() {
 
 	if (init_script.is_valid())
-		set_script(init_script.get_ref_ptr());
+		set_script(init_script);
 
 	if (get_script_instance())
 		get_script_instance()->call("_initialize");
@@ -131,6 +131,6 @@ void MainLoop::finish() {
 
 	if (get_script_instance()) {
 		get_script_instance()->call("_finalize");
-		set_script(RefPtr()); //clear script
+		set_script(Variant()); //clear script
 	}
 }

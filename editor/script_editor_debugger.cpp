@@ -619,7 +619,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 					if (pinfo.hint_string == "Script") {
 						if (debugObj->get_script() != var) {
-							debugObj->set_script(RefPtr());
+							debugObj->set_script(REF());
 							Ref<Script> script(var);
 							if (!script.is_null()) {
 								ScriptInstance *script_instance = script->placeholder_instance_create(debugObj);

@@ -70,10 +70,9 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 			emit_signal("open", n->get_filename());
 		}
 	} else if (p_id == BUTTON_SCRIPT) {
-		RefPtr script = n->get_script();
-		Ref<Script> script_typed = script;
+		Ref<Script> script_typed = n->get_script();
 		if (!script_typed.is_null())
-			emit_signal("open_script", script);
+			emit_signal("open_script", script_typed);
 
 	} else if (p_id == BUTTON_VISIBILITY) {
 		undo_redo->create_action(TTR("Toggle Visible"));

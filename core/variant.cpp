@@ -908,6 +908,14 @@ bool Variant::is_one() const {
 	return false;
 }
 
+bool Variant::is_null() const {
+	if (type == OBJECT && _get_obj().obj) {
+		return false;
+	} else {
+		return true;
+	}
+}
+
 void Variant::reference(const Variant &p_variant) {
 
 	switch (type) {
@@ -999,7 +1007,20 @@ void Variant::reference(const Variant &p_variant) {
 		} break;
 		case OBJECT: {
 
-			memnew_placement(_data._mem, ObjData(p_variant._get_obj()));
+			memnew_placement(_data._mem, ObjData);
+
+			if (p_variant._get_obj().obj && p_variant._get_obj().id.is_reference()) {
+				Reference *reference = static_cast<Reference *>(p_variant._get_obj().obj);
+				if (!reference->reference()) {
+					_get_obj().obj = nullptr;
+					_get_obj().id = ObjectID();
+					break;
+				}
+			}
+
+			_get_obj().obj = const_cast<Object *>(p_variant._get_obj().obj);
+			_get_obj().id = p_variant._get_obj().id;
+
 		} break;
 		case NODE_PATH: {
 
@@ -1114,8 +1135,15 @@ void Variant::clear() {
 		} break;
 		case OBJECT: {
 
+			if (_get_obj().id.is_reference()) {
+				//we are safe that there is a reference here
+				Reference *reference = static_cast<Reference *>(_get_obj().obj);
+				if (reference->unreference()) {
+					memdelete(reference);
+				}
+			}
 			_get_obj().obj = NULL;
-			_get_obj().ref.unref();
+			_get_obj().id = ObjectID();
 		} break;
 		case _RID: {
 			// not much need probably
@@ -1589,14 +1617,11 @@ String Variant::stringify(List<const void *> &stack) const {
 		case OBJECT: {
 
 			if (_get_obj().obj) {
-#ifdef DEBUG_ENABLED
-				if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null()) {
-					//only if debugging!
-					if (!ObjectDB::instance_validate(_get_obj().obj)) {
-						return "[Deleted Object]";
-					};
+
+				if (!_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+					return "[Freed Object]";
 				};
-#endif
+
 				return _get_obj().obj->to_string();
 			} else
 				return "[Object:null]";
@@ -1739,24 +1764,16 @@ Variant::operator NodePath() const {
 		return NodePath();
 }
 
-Variant::operator RefPtr() const {
-
-	if (type == OBJECT)
-		return _get_obj().ref;
-	else
-		return RefPtr();
-}
-
 Variant::operator RID() const {
 
 	if (type == _RID)
 		return *reinterpret_cast<const RID *>(_data._mem);
-	else if (type == OBJECT && !_get_obj().ref.is_null()) {
-		return _get_obj().ref.get_rid();
+	else if (type == OBJECT && _get_obj().obj == nullptr) {
+		return RID();
 	} else if (type == OBJECT && _get_obj().obj) {
 #ifdef DEBUG_ENABLED
 		if (ScriptDebugger::get_singleton()) {
-			ERR_FAIL_COND_V_MSG(!ObjectDB::instance_validate(_get_obj().obj), RID(), "Invalid pointer (object was deleted).");
+			ERR_FAIL_COND_V_MSG(ObjectDB::get_instance(_get_obj().id) == nullptr, RID(), "Invalid pointer (object was freed).");
 		};
 #endif
 		Variant::CallError ce;
@@ -1777,6 +1794,25 @@ Variant::operator Object *() const {
 	else
 		return NULL;
 }
+
+Object *Variant::get_validated_object_with_check(bool &r_previously_freed) const {
+	if (type == OBJECT) {
+		Object *instance = ObjectDB::get_instance(_get_obj().id);
+		r_previously_freed = !instance && _get_obj().id != ObjectID();
+		return instance;
+	} else {
+		r_previously_freed = false;
+		return NULL;
+	}
+}
+
+Object *Variant::get_validated_object() const {
+	if (type == OBJECT)
+		return ObjectDB::get_instance(_get_obj().id);
+	else
+		return NULL;
+}
+
 Variant::operator Node *() const {
 
 	if (type == OBJECT)
@@ -2289,15 +2325,6 @@ Variant::Variant(const NodePath &p_node_path) {
 	memnew_placement(_data._mem, NodePath(p_node_path));
 }
 
-Variant::Variant(const RefPtr &p_resource) {
-
-	type = OBJECT;
-	memnew_placement(_data._mem, ObjData);
-	REF *ref = reinterpret_cast<REF *>(p_resource.get_data());
-	_get_obj().obj = ref->ptr();
-	_get_obj().ref = p_resource;
-}
-
 Variant::Variant(const RID &p_rid) {
 
 	type = _RID;
@@ -2309,7 +2336,24 @@ Variant::Variant(const Object *p_object) {
 	type = OBJECT;
 
 	memnew_placement(_data._mem, ObjData);
-	_get_obj().obj = const_cast<Object *>(p_object);
+
+	if (p_object) {
+
+		if (p_object->is_reference()) {
+			Reference *reference = const_cast<Reference *>(static_cast<const Reference *>(p_object));
+			if (!reference->init_ref()) {
+				_get_obj().obj = nullptr;
+				_get_obj().id = ObjectID();
+				return;
+			}
+		}
+
+		_get_obj().obj = const_cast<Object *>(p_object);
+		_get_obj().id = p_object->get_instance_id();
+	} else {
+		_get_obj().obj = nullptr;
+		_get_obj().id = ObjectID();
+	}
 }
 
 Variant::Variant(const Dictionary &p_dictionary) {
@@ -2620,7 +2664,26 @@ void Variant::operator=(const Variant &p_variant) {
 		} break;
 		case OBJECT: {
 
-			*reinterpret_cast<ObjData *>(_data._mem) = p_variant._get_obj();
+			if (_get_obj().id.is_reference()) {
+				//we are safe that there is a reference here
+				Reference *reference = static_cast<Reference *>(_get_obj().obj);
+				if (reference->unreference()) {
+					memdelete(reference);
+				}
+			}
+
+			if (p_variant._get_obj().obj && p_variant._get_obj().id.is_reference()) {
+				Reference *reference = static_cast<Reference *>(p_variant._get_obj().obj);
+				if (!reference->reference()) {
+					_get_obj().obj = nullptr;
+					_get_obj().id = ObjectID();
+					break;
+				}
+			}
+
+			_get_obj().obj = const_cast<Object *>(p_variant._get_obj().obj);
+			_get_obj().id = p_variant._get_obj().id;
+
 		} break;
 		case NODE_PATH: {
 
@@ -3131,7 +3194,7 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 
 bool Variant::is_ref() const {
 
-	return type == OBJECT && !_get_obj().ref.is_null();
+	return type == OBJECT && _get_obj().id.is_reference();
 }
 
 Vector<Variant> varray() {

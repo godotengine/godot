@@ -192,7 +192,7 @@ Vector<Variant> BitmapFont::_get_textures() const {
 
 	Vector<Variant> rtextures;
 	for (int i = 0; i < textures.size(); i++)
-		rtextures.push_back(textures[i].get_ref_ptr());
+		rtextures.push_back(textures[i]);
 	return rtextures;
 }
 

@@ -169,24 +169,6 @@ MAKE_TYPE_INFO(IP_Address, Variant::STRING)
 class BSP_Tree;
 MAKE_TYPE_INFO(BSP_Tree, Variant::DICTIONARY)
 
-//for RefPtr
-template <>
-struct GetTypeInfo<RefPtr> {
-	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
-	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
-	static inline PropertyInfo get_class_info() {
-		return PropertyInfo(Variant::OBJECT, String(), PROPERTY_HINT_RESOURCE_TYPE, "Reference");
-	}
-};
-template <>
-struct GetTypeInfo<const RefPtr &> {
-	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
-	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
-	static inline PropertyInfo get_class_info() {
-		return PropertyInfo(Variant::OBJECT, String(), PROPERTY_HINT_RESOURCE_TYPE, "Reference");
-	}
-};
-
 //objectID
 template <>
 struct GetTypeInfo<ObjectID> {
