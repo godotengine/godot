@@ -112,8 +112,8 @@ void LightClusterBuilder::bake_cluster() {
 
 			int sx = MAX(0, from_x);
 			int sy = MAX(0, from_y);
-			int dx = MIN(width - 1, to_x);
-			int dy = MIN(height - 1, to_y);
+			int dx = MIN((int)width - 1, to_x);
+			int dy = MIN((int)height - 1, to_y);
 
 			//print_line(itos(j) + " - " + Vector2i(sx, sy) + " -> " + Vector2i(dx, dy));
 

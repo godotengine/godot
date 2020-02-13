@@ -1958,7 +1958,7 @@ VS::BlendShapeMode RasterizerStorageRD::mesh_get_blend_shape_mode(RID p_mesh) co
 void RasterizerStorageRD::mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
-	ERR_FAIL_INDEX((uint32_t)p_surface, mesh->surface_count);
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
 	ERR_FAIL_COND(p_data.size() == 0);
 	uint64_t data_size = p_data.size();
 	PoolVector<uint8_t>::Read r = p_data.read();
@@ -1969,7 +1969,7 @@ void RasterizerStorageRD::mesh_surface_update_region(RID p_mesh, int p_surface, 
 void RasterizerStorageRD::mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
-	ERR_FAIL_INDEX((uint32_t)p_surface, mesh->surface_count);
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
 	mesh->surfaces[p_surface]->material = p_material;
 
 	mesh->instance_dependency.instance_notify_changed(false, true);
@@ -1978,7 +1978,7 @@ void RasterizerStorageRD::mesh_surface_set_material(RID p_mesh, int p_surface, R
 RID RasterizerStorageRD::mesh_surface_get_material(RID p_mesh, int p_surface) const {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND_V(!mesh, RID());
-	ERR_FAIL_INDEX_V((uint32_t)p_surface, mesh->surface_count, RID());
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_surface, mesh->surface_count, RID());
 
 	return mesh->surfaces[p_surface]->material;
 }
@@ -1987,7 +1987,7 @@ VS::SurfaceData RasterizerStorageRD::mesh_get_surface(RID p_mesh, int p_surface)
 
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND_V(!mesh, VS::SurfaceData());
-	ERR_FAIL_INDEX_V((uint32_t)p_surface, mesh->surface_count, VS::SurfaceData());
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_surface, mesh->surface_count, VS::SurfaceData());
 
 	Mesh::Surface &s = *mesh->surfaces[p_surface];
 
@@ -2468,7 +2468,7 @@ void RasterizerStorageRD::_multimesh_mark_dirty(MultiMesh *multimesh, int p_inde
 	uint32_t region_index = p_index / MULTIMESH_DIRTY_REGION_SIZE;
 #ifdef DEBUG_ENABLED
 	uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
-	ERR_FAIL_INDEX(region_index, data_cache_dirty_region_count); //bug
+	ERR_FAIL_UNSIGNED_INDEX(region_index, data_cache_dirty_region_count); //bug
 #endif
 	if (!multimesh->data_cache_dirty_regions[region_index]) {
 		multimesh->data_cache_dirty_regions[p_index] = true;
@@ -3581,7 +3581,7 @@ void RasterizerStorageRD::gi_probe_allocate(RID p_gi_probe, const Transform &p_t
 
 		uint32_t cell_count = p_octree_cells.size() / 32;
 
-		ERR_FAIL_COND(p_data_cells.size() != cell_count * 16); //see that data size matches
+		ERR_FAIL_COND(p_data_cells.size() != (int)cell_count * 16); //see that data size matches
 
 		gi_probe->cell_count = cell_count;
 		gi_probe->octree_buffer = RD::get_singleton()->storage_buffer_create(p_octree_cells.size(), p_octree_cells);

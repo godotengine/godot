@@ -1080,8 +1080,8 @@ public:
 						const Item::CommandTransform *transform = static_cast<const Item::CommandTransform *>(c);
 						xf = transform->xform;
 						found_xform = true;
-
-					} //passthrough
+						FALLTHROUGH;
+					}
 					default: {
 						c = c->next;
 						continue;

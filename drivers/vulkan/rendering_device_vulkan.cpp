@@ -1997,8 +1997,8 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 
 	//create view
 
-	ERR_FAIL_INDEX_V(p_mipmap, src_texture->mipmaps, RID());
-	ERR_FAIL_INDEX_V(p_layer, src_texture->layers, RID());
+	ERR_FAIL_UNSIGNED_INDEX_V(p_mipmap, src_texture->mipmaps, RID());
+	ERR_FAIL_UNSIGNED_INDEX_V(p_layer, src_texture->layers, RID());
 
 	Texture texture = *src_texture;
 	get_image_format_required_size(texture.format, texture.width, texture.height, texture.depth, p_mipmap + 1, &texture.width, &texture.height);
@@ -6940,15 +6940,15 @@ uint64_t RenderingDeviceVulkan::get_captured_timestamps_frame() const {
 }
 
 uint64_t RenderingDeviceVulkan::get_captured_timestamp_gpu_time(uint32_t p_index) const {
-	ERR_FAIL_INDEX_V(p_index, frames[frame].timestamp_result_count, 0);
+	ERR_FAIL_UNSIGNED_INDEX_V(p_index, frames[frame].timestamp_result_count, 0);
 	return frames[frame].timestamp_result_values[p_index] * limits.timestampPeriod;
 }
 uint64_t RenderingDeviceVulkan::get_captured_timestamp_cpu_time(uint32_t p_index) const {
-	ERR_FAIL_INDEX_V(p_index, frames[frame].timestamp_result_count, 0);
+	ERR_FAIL_UNSIGNED_INDEX_V(p_index, frames[frame].timestamp_result_count, 0);
 	return frames[frame].timestamp_cpu_result_values[p_index];
 }
 String RenderingDeviceVulkan::get_captured_timestamp_name(uint32_t p_index) const {
-	ERR_FAIL_INDEX_V(p_index, frames[frame].timestamp_result_count, String());
+	ERR_FAIL_UNSIGNED_INDEX_V(p_index, frames[frame].timestamp_result_count, String());
 	return frames[frame].timestamp_result_names[p_index];
 }
 

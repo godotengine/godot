@@ -320,10 +320,10 @@ public:
 	static void set_texture_mapping_mode(aiTextureMapMode *map_mode, Ref<ImageTexture> texture) {
 		ERR_FAIL_COND(texture.is_null());
 		ERR_FAIL_COND(map_mode == NULL);
-		aiTextureMapMode tex_mode = map_mode[0];
-
 		// FIXME: Commented out during Vulkan port.
 		/*
+		aiTextureMapMode tex_mode = map_mode[0];
+
 		int32_t flags = Texture2D::FLAGS_DEFAULT;
 		if (tex_mode == aiTextureMapMode_Wrap) {
 			//Default

@@ -1335,6 +1335,7 @@ Error VulkanContext::swap_buffers() {
 		/*swapchainCount*/ 0,
 		/*pSwapchain*/ NULL,
 		/*pImageIndices*/ NULL,
+		/*pResults*/ NULL,
 	};
 
 	VkSwapchainKHR *pSwapchains = (VkSwapchainKHR *)alloca(sizeof(VkSwapchainKHR *) * windows.size());

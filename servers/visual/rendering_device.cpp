@@ -60,9 +60,5 @@ PoolVector<uint8_t> RenderingDevice::shader_compile_from_source(ShaderStage p_st
 }
 
 RenderingDevice::RenderingDevice() {
-
-	ShaderCompileFunction compile_function;
-	ShaderCacheFunction cache_function;
-
 	singleton = this;
 }
