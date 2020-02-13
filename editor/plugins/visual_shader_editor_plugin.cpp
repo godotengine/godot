@@ -116,7 +116,7 @@ void VisualShaderEditor::clear_custom_types() {
 	}
 }
 
-void VisualShaderEditor::add_custom_type(const String &p_name, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, const String &p_subcategory) {
+void VisualShaderEditor::add_custom_type(const String &p_name, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, const String &p_subcategory, bool p_highend) {
 
 	ERR_FAIL_COND(!p_name.is_valid_identifier());
 	ERR_FAIL_COND(!p_script.is_valid());
@@ -135,6 +135,7 @@ void VisualShaderEditor::add_custom_type(const String &p_name, const Ref<Script>
 	ao.description = p_description;
 	ao.category = p_category;
 	ao.sub_category = p_subcategory;
+	ao.highend = p_highend;
 	ao.is_custom = true;
 
 	bool begin = false;
@@ -247,6 +248,11 @@ void VisualShaderEditor::update_custom_nodes() {
 				subcategory = (String)ref->call("_get_subcategory");
 			}
 
+			bool highend = false;
+			if (ref->has_method("_is_highend")) {
+				highend = (bool)ref->call("_is_highend");
+			}
+
 			Dictionary dict;
 			dict["name"] = name;
 			dict["script"] = script;
@@ -254,6 +260,7 @@ void VisualShaderEditor::update_custom_nodes() {
 			dict["return_icon_type"] = return_icon_type;
 			dict["category"] = category;
 			dict["subcategory"] = subcategory;
+			dict["highend"] = highend;
 
 			String key;
 			key = category;
@@ -277,7 +284,7 @@ void VisualShaderEditor::update_custom_nodes() {
 
 		const Dictionary &value = (Dictionary)added[key];
 
-		add_custom_type(value["name"], value["script"], value["description"], value["return_icon_type"], value["category"], value["subcategory"]);
+		add_custom_type(value["name"], value["script"], value["description"], value["return_icon_type"], value["category"], value["subcategory"], value["highend"]);
 	}
 
 	_update_options_menu();
