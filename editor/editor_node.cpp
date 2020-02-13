@@ -2788,11 +2788,13 @@ void EditorNode::_discard_changes(const String &p_str) {
 				}
 			}
 
-			_remove_scene(tab_closing);
+			if (!bool(EDITOR_GET("interface/scene_tabs/restore_scenes_on_load"))) {
+				_remove_scene(tab_closing);
+			}
 			_update_scene_tabs();
 
 			if (current_option == FILE_CLOSE_ALL_AND_QUIT || current_option == FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER) {
-				if (_next_unsaved_scene(false) == -1) {
+				if (_next_unsaved_scene((false) == -1) || bool(EDITOR_GET("interface/scene_tabs/restore_scenes_on_load"))) {
 					current_option = current_option == FILE_CLOSE_ALL_AND_QUIT ? FILE_QUIT : RUN_PROJECT_MANAGER;
 					_discard_changes();
 				} else {
