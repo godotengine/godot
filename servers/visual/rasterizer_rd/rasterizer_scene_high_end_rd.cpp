@@ -1409,7 +1409,7 @@ void RasterizerSceneHighEndRD::_setup_reflections(RID *p_reflection_probe_cull_r
 	}
 
 	if (p_reflection_probe_cull_count) {
-		RD::get_singleton()->buffer_update(scene_state.reflection_buffer, 0, MIN(scene_state.max_reflections, p_reflection_probe_cull_count) * sizeof(ReflectionData), scene_state.reflections, true);
+		RD::get_singleton()->buffer_update(scene_state.reflection_buffer, 0, MIN(scene_state.max_reflections, (unsigned int)p_reflection_probe_cull_count) * sizeof(ReflectionData), scene_state.reflections, true);
 	}
 }
 
@@ -1566,10 +1566,10 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 				light_data.attenuation_energy[0] = Math::make_half_float(storage->light_get_param(base, VS::LIGHT_PARAM_ATTENUATION));
 				light_data.attenuation_energy[1] = Math::make_half_float(sign * storage->light_get_param(base, VS::LIGHT_PARAM_ENERGY) * Math_PI);
 
-				light_data.color_specular[0] = CLAMP(uint32_t(linear_col.r * 255), 0, 255);
-				light_data.color_specular[1] = CLAMP(uint32_t(linear_col.g * 255), 0, 255);
-				light_data.color_specular[2] = CLAMP(uint32_t(linear_col.b * 255), 0, 255);
-				light_data.color_specular[3] = CLAMP(uint32_t(storage->light_get_param(base, VS::LIGHT_PARAM_SPECULAR) * 255), 0, 255);
+				light_data.color_specular[0] = MIN(uint32_t(linear_col.r * 255), 255);
+				light_data.color_specular[1] = MIN(uint32_t(linear_col.g * 255), 255);
+				light_data.color_specular[2] = MIN(uint32_t(linear_col.b * 255), 255);
+				light_data.color_specular[3] = MIN(uint32_t(storage->light_get_param(base, VS::LIGHT_PARAM_SPECULAR) * 255), 255);
 
 				float radius = MAX(0.001, storage->light_get_param(base, VS::LIGHT_PARAM_RANGE));
 				light_data.inv_radius = 1.0 / radius;
@@ -1595,9 +1595,9 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 				Color shadow_color = storage->light_get_shadow_color(base);
 
 				bool has_shadow = p_using_shadows && storage->light_has_shadow(base);
-				light_data.shadow_color_enabled[0] = CLAMP(uint32_t(shadow_color.r * 255), 0, 255);
-				light_data.shadow_color_enabled[1] = CLAMP(uint32_t(shadow_color.g * 255), 0, 255);
-				light_data.shadow_color_enabled[2] = CLAMP(uint32_t(shadow_color.b * 255), 0, 255);
+				light_data.shadow_color_enabled[0] = MIN(uint32_t(shadow_color.r * 255), 255);
+				light_data.shadow_color_enabled[1] = MIN(uint32_t(shadow_color.g * 255), 255);
+				light_data.shadow_color_enabled[2] = MIN(uint32_t(shadow_color.b * 255), 255);
 				light_data.shadow_color_enabled[3] = has_shadow ? 255 : 0;
 
 				light_data.atlas_rect[0] = 0;

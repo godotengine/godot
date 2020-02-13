@@ -139,7 +139,7 @@ void VisualServerRaster::draw(bool p_swap_buffers, double frame_step) {
 
 		uint64_t base_cpu = VSG::storage->get_captured_timestamp_cpu_time(0);
 		uint64_t base_gpu = VSG::storage->get_captured_timestamp_gpu_time(0);
-		for (int i = 0; i < VSG::storage->get_captured_timestamps_count(); i++) {
+		for (uint32_t i = 0; i < VSG::storage->get_captured_timestamps_count(); i++) {
 			uint64_t time_cpu = VSG::storage->get_captured_timestamp_cpu_time(i) - base_cpu;
 			uint64_t time_gpu = VSG::storage->get_captured_timestamp_gpu_time(i) - base_gpu;
 			new_profile.write[i].gpu_msec = float(time_gpu / 1000) / 1000.0;
