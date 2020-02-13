@@ -2179,7 +2179,7 @@ void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 							_add_custom_node(arr[i]);
 							j++;
 						}
-					} else if (ClassDB::get_parent_class(type) == "Texture") {
+					} else if (ClassDB::get_parent_class(type) == "Texture2D") {
 						saved_node_pos = p_point + Vector2(0, j * 210 * EDSCALE);
 						saved_node_pos_dirty = true;
 						_add_texture_node(arr[i]);
