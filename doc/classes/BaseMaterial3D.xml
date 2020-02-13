@@ -534,7 +534,7 @@
 			Set [code]ALBEDO[/code] to the per-vertex color specified in the mesh.
 		</constant>
 		<constant name="FLAG_SRGB_VERTEX_COLOR" value="2" enum="Flags">
-			Vertex color is in sRGB space and needs to be converted to linear. Only applies in the GLES3 renderer.
+			Vertex color is in sRGB space and needs to be converted to linear. Only applies in the Vulkan renderer.
 		</constant>
 		<constant name="FLAG_USE_POINT_SIZE" value="3" enum="Flags">
 			Uses point size to alter the size of primitive points. Also changes the albedo texture lookup to use [code]POINT_COORD[/code] instead of [code]UV[/code].

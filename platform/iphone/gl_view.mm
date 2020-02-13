@@ -47,7 +47,6 @@
 @end
 */
 
-bool gles3_available = true;
 int gl_view_base_fb;
 static String keyboard_text;
 static GLView *_instance = NULL;
@@ -284,20 +283,11 @@ static void clear_touches() {
 			kEAGLColorFormatRGBA8,
 			kEAGLDrawablePropertyColorFormat,
 			nil];
-	bool fallback_gl2 = false;
-	// Create a GL ES 3 context based on the gl driver from project settings
-	if (GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES3") {
-		context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3];
-		NSLog(@"Setting up an OpenGL ES 3.0 context. Based on Project Settings \"rendering/quality/driver/driver_name\"");
-		if (!context && GLOBAL_GET("rendering/quality/driver/fallback_to_gles2")) {
-			gles3_available = false;
-			fallback_gl2 = true;
-			NSLog(@"Failed to create OpenGL ES 3.0 context. Falling back to OpenGL ES 2.0");
-		}
-	}
+
+	// FIXME: Add Vulkan support via MoltenVK. Add fallback code back?
 
 	// Create GL ES 2 context
-	if (GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES2" || fallback_gl2) {
+	if (GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES2") {
 		context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
 		NSLog(@"Setting up an OpenGL ES 2.0 context.");
 		if (!context) {

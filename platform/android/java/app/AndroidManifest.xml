@@ -15,7 +15,6 @@
         android:largeScreens="true"
         android:xlargeScreens="true" />
 
-    <!-- glEsVersion is modified by the exporter, changing this value here has no effect. -->
     <uses-feature
         android:glEsVersion="0x00020000"
         android:required="true" />
