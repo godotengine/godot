@@ -664,7 +664,7 @@ static Vector<uint8_t> _parse_base64_uri(const String &uri) {
 	int start = uri.find(",");
 	ERR_FAIL_COND_V(start == -1, Vector<uint8_t>());
 
-	CharString substr = uri.right(start + 1).ascii();
+	CharString substr = uri.substr(start + 1).ascii();
 
 	int strlen = substr.length();
 

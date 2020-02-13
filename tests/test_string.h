@@ -299,6 +299,7 @@ TEST_CASE("[String] hex_encode_buffer") {
 TEST_CASE("[String] Substr") {
 	String s = "Killer Baby";
 	CHECK(s.substr(3, 4) == "ler ");
+	CHECK(s.substr(3) == "ler Baby");
 }
 
 TEST_CASE("[String] Find") {
@@ -1252,8 +1253,10 @@ TEST_CASE("[String] Trim") {
 TEST_CASE("[String] Right/Left") {
 	String s = "aaaTestbbb";
 	//                ^
-	CHECK(s.right(6) == "tbbb");
+	CHECK(s.right(6) == "estbbb");
+	CHECK(s.right(-6) == "tbbb");
 	CHECK(s.left(6) == "aaaTes");
+	CHECK(s.left(-6) == "aaaT");
 }
 
 TEST_CASE("[String] Repeat") {

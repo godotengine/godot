@@ -334,7 +334,7 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 				for (int i = 0; i < class_doc.methods.size(); i++) {
 					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.methods[i].name : class_doc.methods[i].name.to_lower();
 					if (method_name.find(term) > -1 ||
-							(term.begins_with(".") && method_name.begins_with(term.right(1))) ||
+							(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
 							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
 							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
 						match.methods.push_back(const_cast<DocData::MethodDoc *>(&class_doc.methods[i]));

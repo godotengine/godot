@@ -835,7 +835,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (what == "tile_mode") {
 			ctd->tile_mode = p_value;
 		} else if (what.left(9) == "autotile") {
-			what = what.right(9);
+			what = what.substr(9);
 			if (what == "bitmask_mode") {
 				ctd->autotile_bitmask_mode = p_value;
 			} else if (what == "icon_coordinate") {

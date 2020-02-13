@@ -1262,16 +1262,16 @@ void Input::parse_mapping(String p_mapping) {
 			} else if (output[0] == '-') {
 				output_range = NEGATIVE_HALF_AXIS;
 			}
-			output = output.right(1);
+			output = output.substr(1);
 		}
 
 		JoyAxisRange input_range = FULL_AXIS;
 		if (input[0] == '+') {
 			input_range = POSITIVE_HALF_AXIS;
-			input = input.right(1);
+			input = input.substr(1);
 		} else if (input[0] == '-') {
 			input_range = NEGATIVE_HALF_AXIS;
-			input = input.right(1);
+			input = input.substr(1);
 		}
 		bool invert_axis = false;
 		if (input[input.length() - 1] == '~') {
@@ -1299,11 +1299,11 @@ void Input::parse_mapping(String p_mapping) {
 		switch (input[0]) {
 			case 'b':
 				binding.inputType = TYPE_BUTTON;
-				binding.input.button = input.right(1).to_int();
+				binding.input.button = input.substr(1).to_int();
 				break;
 			case 'a':
 				binding.inputType = TYPE_AXIS;
-				binding.input.axis.axis = input.right(1).to_int();
+				binding.input.axis.axis = input.substr(1).to_int();
 				binding.input.axis.range = input_range;
 				binding.input.axis.invert = invert_axis;
 				break;
@@ -1312,7 +1312,7 @@ void Input::parse_mapping(String p_mapping) {
 						String(entry[idx] + "\nInvalid hat input: " + input));
 				binding.inputType = TYPE_HAT;
 				binding.input.hat.hat = input.substr(1, 1).to_int();
-				binding.input.hat.hat_mask = static_cast<HatMask>(input.right(3).to_int());
+				binding.input.hat.hat_mask = static_cast<HatMask>(input.substr(3).to_int());
 				break;
 			default:
 				ERR_CONTINUE_MSG(true, String(entry[idx] + "\nUnrecognised input string: " + input));

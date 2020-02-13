@@ -198,7 +198,7 @@ String DirAccessWindows::get_current_dir(bool p_include_drive) {
 		if (_get_root_string() == "") {
 			int p = current_dir.find(":");
 			if (p != -1) {
-				return current_dir.right(p + 1);
+				return current_dir.substr(p + 1);
 			}
 		}
 		return current_dir;
