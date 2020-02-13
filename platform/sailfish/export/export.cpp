@@ -56,7 +56,7 @@
 #define prop_custom_binary_x86_debug "custom_binary/x86_debug"
 #define prop_version_release "version/release"
 #define prop_version_string  "version/string"
-#define prop_name "package/name"
+#define prop_name          "package/name"
 #define prop_launcher_name "package/game_name"
 
 #ifdef WINDOWS_ENABLED
@@ -91,28 +91,32 @@ const String spec_file_tempalte =
 "%install\n"
 "rm -rf %{buildroot}\n"
 "mkdir -p %{buildroot}\n"
-"cp -r %{_topdir}/BUILD/usr %{buildroot}/\n"
+"mkdir -p %{buildroot}%{_bindir}\n"
+"mkdir -p %{buildroot}%{_datadir}/%{name}\n"
+"mkdir -p %{buildroot}/usr/share/applications\n"
+"cp -r %{_gd_shared_path}%{_gd_export_path}/usr/share/applications/* %{buildroot}/usr/share/applications/\n"
+"cp -r %{_gd_shared_path}%{_gd_export_path}%{_bindir}/* %{buildroot}%{_bindir}/\n"
+"cp -r %{_gd_shared_path}%{_gd_export_path}%{_datadir}/%{name}/* %{buildroot}%{_datadir}/%{name}/\n"
 "%files\n"
 "%defattr(644,root,root,-)\n"
 "%attr(755,root,root) %{_bindir}/%{name}\n"
 "%attr(644,root,root) %{_datadir}/%{name}/%{name}.png\n"
-"#%attr(644,root,root) %{_datadir}/%{name}/%{name}.pck\n"
-"%attr(666,root,root) /home/nemo/.local/share/%{name}/%{name}.pck\n"
-"%attr(644,root,root) %{_datadir}/applications/%{name}.desktop\n"
+"%attr(644,root,root) %{_datadir}/%{name}/%{name}.pck\n"
+"%attr(644,root,root) /usr/share/applications/%{name}.desktop\n"
 "%changelog\n"
 "* %{_gd_date} Godot Game Engine\n"
 "- application %{name} packed to RPM\n"
 "#$changelog$"
 ;
-
+// --define "_datadir  /home/nemo/.local/share" if need install to user folder
 const String desktop_file_template =
-"[Desktop Entry]"
-"Type=Application"
-"X-Nemo-Application-Type=Game"
-"Icon=/usr/share/appname/appname.png"
-"Exec=/usr/bin/appname --main-pack /home/nemo/.local/share/appname/appname.pck"
-"Name=AppName"
-"Name[en]=AppName"
+"[Desktop Entry]\n"
+"Type=Application\n"
+"X-Nemo-Application-Type=Game\n"
+"Icon=%{_datadir}/%{name}/%{name}.png\n"
+"Exec=%{_bindir}/%{name} --main-pack %{_datadir}/%{name}/%{name}.pck\n"
+"Name=%{_gd_launcher_name}\n"
+"Name[en]=%{_gd_launcher_name}\n"
 ;
 
 static void _execute_thread(void *p_ud) {
@@ -336,6 +340,7 @@ public:
 		String x86_template;
         Error err;
 		bool p_debug = false;
+        
 
 		if(p_debug) 
 			arm_template = String( p_preset->get(prop_custom_binary_arm_debug) );
@@ -447,7 +452,7 @@ public:
             //r_error = TTR("Wrong SailfishSDK path: cant find \"sdk-release\" file");
             return false;
         }
-            
+        
         DirAccessRef da = DirAccess::open(sfdk_path, &err);
 #ifdef WINDOWS_ENABLED
         sfdk_path += String("\\bin\\sfdk.exe");
@@ -499,17 +504,28 @@ public:
 		xml_parser->close();
 		memdelete(xml_parser);
         
+        String icon = ProjectSettings::get_singleton()->get("application/config/icon");
+        bool result = true;
+        String suffix = icon.right(icon.length() - 3).to_lower();
+        if( suffix != String("png") ) {
+            r_error += TTR("Icon file should be PNG. Set up custom icon for Sailfish, or change icon of project");
+            result = false;
+        }
+        
         String export_path = get_absolute_export_path( p_preset->get_export_path() );
         
         if( !shared_home.empty() && export_path.find(shared_home) >= 0 ) {
-            
-            return true;
+//            result = result;
+            return true && result;
         }
         else if( !shared_src.empty() && export_path.find(shared_src) >= 0 ) {
-            
-            return true;
+//            result = result;
+            return true && result;
         }
-        r_error = TTR("Export path is outside of Shared Home in SailfishSDK (choose export path inside shared home):\nSharedHome: ") + shared_home + String("\nShareedSource: ") + shared_src;
+//        else
+//            result = false;
+        r_error += TTR("Export path is outside of Shared Home in SailfishSDK (choose export path inside shared home):\nSharedHome: ") + shared_home + String("\nShareedSource: ") + shared_src;
+        
 		return false;
 	}
     
@@ -522,7 +538,7 @@ public:
 	Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override {
 		ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
         
-        EditorProgress ep("export", "Exporting for SailfishOS", 105, true);
+        EditorProgress ep("export", "Exporting for SailfishOS", 100, true);
         
 //        String src_binary;
 		String sdk_path = p_preset->get(prop_sailfish_sdk_path);
@@ -535,17 +551,36 @@ public:
         
         ep.step("checking export template binaries.",5);
 
-		if(p_debug) 
+        if(p_debug) {
 			arm_template = String( p_preset->get(prop_custom_binary_arm_debug) );
-		else
+            if(arm_template.empty()) {
+                print_error("Debug armv7hl template path is emty. Try use release template.");
+            }
+        }
+        if( arm_template.empty() ) {
 			arm_template = String( p_preset->get(prop_custom_binary_arm) );
+            if(arm_template.empty()) {
+                print_error("No arm template setuped");
+            }
+        }
 		
-		if(p_debug) 
-			x86_template = String( p_preset->get(prop_custom_binary_x86_debug) );
-		else
-			x86_template = String( p_preset->get(prop_custom_binary_x86) );
+        if(p_debug) {
+            x86_template = String( p_preset->get(prop_custom_binary_x86_debug) );
+            if(x86_template.empty()) {
+                print_error("Debug i486 template path is emty. Try use release template.");
+            }
+        }
+        if( x86_template.empty() ) {
+            x86_template = String( p_preset->get(prop_custom_binary_x86) );
+            if(x86_template.empty()) {
+                print_error("No i486 template setuped");
+            }
+        }
+        if( arm_template.empty() && x86_template.empty() ) {
+            return ERR_CANT_CREATE;
+        }
 
-        ep.step("found export template binaries.",20);
+        ep.step("found export template binaries.",10);
         List<String> args;
         List<String> output_list;
         args.push_back("tools");
@@ -567,7 +602,7 @@ public:
             // first create rpm root dir, if its exists create another
             NativePackage pack;
             pack.release = p_preset->get(prop_version_release);
-            pack.description = String("Default package description");
+            pack.description = ProjectSettings::get_singleton()->get("application/config/description");
             pack.launcher_name = p_preset->get(prop_launcher_name);
             pack.name = p_preset->get(prop_name);
             pack.version = p_preset->get(prop_version_string);
@@ -580,10 +615,30 @@ public:
             String target_string  = mertarget_to_text(pack.target);
             String export_path    = get_absolute_export_path(p_preset->get_export_path());
             String broot_path     = export_path + String("_buildroot");
+            String export_path_part;
+            String sdk_shared_path;
             String rpm_dir_path   = broot_path + separator + String("rpm");
             String pck_path       = broot_path + separator + pack.name + String(".pck");
+            String template_path  = broot_path + separator;
             String spec_file_path = rpm_dir_path + separator + pack.name + String(".spec");
+            String desktop_file_path = broot_path + String("/usr/share/applications/").replace("/", separator) + pack.name + String(".desktop");
+            String icon_file_path;
+            String data_dir = "/usr/share";
+            String bin_dir = "/usr/bin";
+#ifdef WINDOWS_ENABLED
+            String data_dir_native = data_dir.replace("/","\\");
+            String bin_dir_native = bin_dir.replace("/","\\");
+#else
+            String &data_dir_native = data_dir;
+            String &bin_dir_native = bin_dir;
+#endif
             Error err;
+            if( !shared_home.empty() ) {
+                if( export_path.find(shared_home) == 0 ) {
+                    export_path_part = export_path.substr(shared_home.length(), export_path.length() - shared_home.length()).replace(separator,"/") + String("_buildroot");
+                    sdk_shared_path = String("/home/mersdk/share");
+                }
+            }
 //            DirAccessRef broot = DirAccess::open(broot_path, err);
             DirAccessRef broot = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
             err = broot->make_dir_recursive(rpm_dir_path);
@@ -592,12 +647,56 @@ public:
                 return ERR_CANT_CREATE;
             }
             
-//            export_path += separator + String("name.pck");
+            err = broot->make_dir_recursive(broot_path + data_dir_native + separator + pack.name);
+            err = broot->make_dir_recursive(broot_path + bin_dir_native);
+            err = broot->make_dir_recursive(broot_path + String("/usr/share/applications/").replace("/", separator));
+
+            ep.step("copy export tempalte to buildroot",30);
+            if ( pack.target.arch == arch_armv7hl ) {
+                
+                if( !arm_template.empty() ) {
+                    
+                    if( broot->copy(arm_template,broot_path + bin_dir_native + separator + pack.name) != Error::OK ) {
+                        
+                        print_error( String("Cant copy armv7hl template binary to: ") + broot_path + bin_dir_native + separator + pack.name );
+                        return ERR_CANT_CREATE;
+                    }
+                }
+                else {
+                    
+                    String debugs = (p_debug == true)?String(" debug"):String("");
+                    print_error( String("armv7hl") + debugs + String(" template is emty") );
+                    return ERR_CANT_CREATE;
+                }
+            }
+            else if ( pack.target.arch == arch_x86 ) {
+                if( !x86_template.empty() ) {
+                    
+                    if( broot->copy(x86_template,broot_path + bin_dir_native + separator + pack.name) != Error::OK ) {
+                        
+                        print_error( String("Cant copy x86 template binary to: ") + broot_path + bin_dir_native + separator + pack.name );
+                        return ERR_CANT_CREATE;
+                    }
+                }
+                else {
+                    
+                    String debugs = (p_debug == true)?String(" debug"):String("");
+                    print_error( String("i486") + debugs + String(" template is emty") );
+                    return ERR_CANT_CREATE;
+                }
+            }
+            else {
+                
+                print_error("Wrong architecture of package");
+                return ERR_CANT_CREATE;
+            }
+                
             ep.step("create *.pck file.",35);
+            pck_path = broot_path + separator + data_dir_native + separator + pack.name + separator + pack.name + String(".pck");
             err = export_pack(p_preset, p_debug, pck_path);
             if( err != Error::OK ) {
                 print_error( String("Cant create *.pck: ") + pck_path );
-                return ERR_CANT_CREATE;
+                return err;
             }
             ep.step(String("generate ") + pack.name + String(".spec file"), 45);
             {
@@ -612,10 +711,38 @@ public:
                 spec_text = spec_text.replace("%{_gd_release}", pack.release);
                 spec_text = spec_text.replace("%{_gd_architecture}", arch_to_text(pack.target.arch) );
                 spec_text = spec_text.replace("%{_gd_description}", pack.description);
-                spec_text = spec_text.replace("%{_gd_date}", get_current_date() ;
-//                spec_text = spec_text.replace("%{_gd_release}", pack.release);
+                spec_text = spec_text.replace("%{_gd_shared_path}", sdk_shared_path);
+                spec_text = spec_text.replace("%{_gd_export_path}", export_path_part);
+                spec_text = spec_text.replace("%{_gd_date}", get_current_date() );
+                spec_text = spec_text.replace("%{_datadir}", data_dir);
+                spec_text = spec_text.replace("%{_bindir}", bin_dir);
                 
                 spec_file->store_string(spec_text);
+                spec_file->flush();
+                spec_file->close();
+            }
+            ep.step(String("generate ") + pack.name + String(".desktop file"), 50);
+            {
+                //desktop_file_path = broot_path + desktop_file_path;
+                FileAccessRef desktop_file = FileAccess::open(desktop_file_path, FileAccess::WRITE, &err);
+                if( err != Error::OK ) {
+                    print_error( String("Cant create *.desktop: ") + desktop_file_path );
+                    return ERR_CANT_CREATE;
+                }
+                String file_text = desktop_file_template.replace("%{_gd_launcher_name}", pack.launcher_name);
+                file_text = file_text.replace("%{name}", pack.name);
+                file_text = file_text.replace("%{_datadir}", data_dir);
+                file_text = file_text.replace("%{_bindir}", bin_dir);
+                desktop_file->store_string(file_text);
+                desktop_file->flush();
+                desktop_file->close();
+            }
+            ep.step(String("copy project icon"), 55);
+            String icon = ProjectSettings::get_singleton()->get("application/config/icon");
+            icon_file_path = broot_path + separator + data_dir_native + separator + pack.name + separator + pack.name + String(".png");
+            if( broot->copy(icon, icon_file_path) != Error::OK ) {
+                print_error( String("Cant copy icon file \"") + icon + String("\" to \"") + icon_file_path + String("\""));
+                return ERR_CANT_CREATE;
             }
         }
         
