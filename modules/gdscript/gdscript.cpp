@@ -93,6 +93,7 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 	instance->members.resize(member_indices.size());
 	instance->script = Ref<GDScript>(this);
 	instance->owner = p_owner;
+	instance->owner_id = p_owner->get_instance_id();
 #ifdef DEBUG_ENABLED
 	//needed for hot reloading
 	for (Map<StringName, MemberInfo>::Element *E = member_indices.front(); E; E = E->next()) {
@@ -1792,7 +1793,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 
 					obj->get_script_instance()->get_property_state(state);
 					map[obj->get_instance_id()] = state;
-					obj->set_script(RefPtr());
+					obj->set_script(Variant());
 				}
 			}
 
@@ -1808,7 +1809,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 					map.insert(obj->get_instance_id(), List<Pair<StringName, Variant> >());
 					List<Pair<StringName, Variant> > &state = map[obj->get_instance_id()];
 					obj->get_script_instance()->get_property_state(state);
-					obj->set_script(RefPtr());
+					obj->set_script(Variant());
 				} else {
 					// no instance found. Let's remove it so we don't loop forever
 					E->get()->placeholders.erase(E->get()->placeholders.front()->get());
@@ -1839,9 +1840,9 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 
 			if (!p_soft_reload) {
 				//clear it just in case (may be a pending reload state)
-				obj->set_script(RefPtr());
+				obj->set_script(Variant());
 			}
-			obj->set_script(scr.get_ref_ptr());
+			obj->set_script(scr);
 
 			ScriptInstance *script_instance = obj->get_script_instance();
 

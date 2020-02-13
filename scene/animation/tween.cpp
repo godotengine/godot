@@ -1227,7 +1227,6 @@ bool Tween::_build_interpolation(InterpolateType p_interpolation_type, Object *p
 
 	// Give it the object
 	ERR_FAIL_COND_V_MSG(p_object == NULL, false, "Invalid object provided to Tween.");
-	ERR_FAIL_COND_V_MSG(!ObjectDB::instance_validate(p_object), false, "Invalid object provided to Tween.");
 	data.id = p_object->get_instance_id();
 
 	// Validate the initial and final values
@@ -1328,7 +1327,6 @@ bool Tween::interpolate_callback(Object *p_object, real_t p_duration, String p_c
 
 	// Check that the target object is valid
 	ERR_FAIL_COND_V(p_object == NULL, false);
-	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_object), false);
 
 	// Duration cannot be negative
 	ERR_FAIL_COND_V(p_duration < 0, false);
@@ -1387,7 +1385,6 @@ bool Tween::interpolate_deferred_callback(Object *p_object, real_t p_duration, S
 
 	// Check that the target object is valid
 	ERR_FAIL_COND_V(p_object == NULL, false);
-	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_object), false);
 
 	// No negative durations allowed
 	ERR_FAIL_COND_V(p_duration < 0, false);
@@ -1457,9 +1454,7 @@ bool Tween::follow_property(Object *p_object, NodePath p_property, Variant p_ini
 
 	// Confirm the source and target objects are valid
 	ERR_FAIL_COND_V(p_object == NULL, false);
-	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_object), false);
 	ERR_FAIL_COND_V(p_target == NULL, false);
-	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_target), false);
 
 	// No negative durations
 	ERR_FAIL_COND_V(p_duration < 0, false);
@@ -1521,9 +1516,7 @@ bool Tween::follow_method(Object *p_object, StringName p_method, Variant p_initi
 
 	// Verify the source and target objects are valid
 	ERR_FAIL_COND_V(p_object == NULL, false);
-	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_object), false);
 	ERR_FAIL_COND_V(p_target == NULL, false);
-	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_target), false);
 
 	// No negative durations
 	ERR_FAIL_COND_V(p_duration < 0, false);
@@ -1587,9 +1580,7 @@ bool Tween::targeting_property(Object *p_object, NodePath p_property, Object *p_
 
 	// Verify both objects are valid
 	ERR_FAIL_COND_V(p_object == NULL, false);
-	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_object), false);
 	ERR_FAIL_COND_V(p_initial == NULL, false);
-	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_initial), false);
 
 	// No negative durations
 	ERR_FAIL_COND_V(p_duration < 0, false);
@@ -1655,9 +1646,7 @@ bool Tween::targeting_method(Object *p_object, StringName p_method, Object *p_in
 
 	// Make sure the given objects are valid
 	ERR_FAIL_COND_V(p_object == NULL, false);
-	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_object), false);
 	ERR_FAIL_COND_V(p_initial == NULL, false);
-	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_initial), false);
 
 	// No negative durations
 	ERR_FAIL_COND_V(p_duration < 0, false);

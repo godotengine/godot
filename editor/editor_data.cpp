@@ -506,7 +506,7 @@ Object *EditorData::instance_custom_type(const String &p_type, const String &p_i
 				if (ob->is_class("Node")) {
 					ob->call("set_name", p_type);
 				}
-				ob->set_script(script.get_ref_ptr());
+				ob->set_script(script);
 				return ob;
 			}
 		}
@@ -907,7 +907,7 @@ Object *EditorData::script_class_instance(const String &p_class) {
 		if (obj) {
 			Ref<Script> script = script_class_load_script(p_class);
 			if (script.is_valid())
-				obj->set_script(script.get_ref_ptr());
+				obj->set_script(script);
 			return obj;
 		}
 	}

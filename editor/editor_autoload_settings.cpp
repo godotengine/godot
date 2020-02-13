@@ -361,7 +361,7 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 		ERR_FAIL_COND_V_MSG(obj == NULL, NULL, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt) + ".");
 
 		n = Object::cast_to<Node>(obj);
-		n->set_script(s.get_ref_ptr());
+		n->set_script(s);
 	}
 
 	ERR_FAIL_COND_V_MSG(!n, NULL, "Path in autoload not a node or script: " + p_path + ".");

@@ -102,7 +102,8 @@ bool Reference::unreference() {
 	return die;
 }
 
-Reference::Reference() {
+Reference::Reference() :
+		Object(true) {
 
 	refcount.init();
 	refcount_init.init();

@@ -332,7 +332,7 @@ void ScriptCreateDialog::_load_exist() {
 		return;
 	}
 
-	emit_signal("script_created", p_script.get_ref_ptr());
+	emit_signal("script_created", p_script);
 	hide();
 }
 

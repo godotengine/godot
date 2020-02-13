@@ -341,7 +341,7 @@ protected:
 	static void _bind_methods();
 	static _VisualScriptEditor *singleton;
 
-	static Map<String, RefPtr> custom_nodes;
+	static Map<String, REF> custom_nodes;
 	static Ref<VisualScriptNode> create_node_custom(const String &p_name);
 
 public:

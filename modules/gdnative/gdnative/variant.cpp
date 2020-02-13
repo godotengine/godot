@@ -178,7 +178,7 @@ void GDAPI godot_variant_new_object(godot_variant *r_dest, const godot_object *p
 		ref = REF(reference);
 	}
 	if (!ref.is_null()) {
-		memnew_placement_custom(dest, Variant, Variant(ref.get_ref_ptr()));
+		memnew_placement_custom(dest, Variant, Variant(ref));
 	} else {
 #if defined(DEBUG_METHODS_ENABLED)
 		if (reference) {

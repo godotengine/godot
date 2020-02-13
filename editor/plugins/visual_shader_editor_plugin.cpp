@@ -216,7 +216,7 @@ void VisualShaderEditor::update_custom_nodes() {
 
 			Ref<VisualShaderNodeCustom> ref;
 			ref.instance();
-			ref->set_script(script.get_ref_ptr());
+			ref->set_script(script);
 
 			String name;
 			if (ref->has_method("_get_name")) {
@@ -1415,7 +1415,7 @@ VisualShaderNode *VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
 		VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instance(base_type));
 		ERR_FAIL_COND_V(!vsn, NULL);
 		vsnode = Ref<VisualShaderNode>(vsn);
-		vsnode->set_script(add_options[p_idx].script.get_ref_ptr());
+		vsnode->set_script(add_options[p_idx].script);
 	}
 
 	Point2 position = graph->get_scroll_ofs();

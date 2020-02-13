@@ -968,7 +968,7 @@ void Object::cancel_delete() {
 	_predelete_ok = true;
 }
 
-void Object::set_script_and_instance(const RefPtr &p_script, ScriptInstance *p_instance) {
+void Object::set_script_and_instance(const Variant &p_script, ScriptInstance *p_instance) {
 
 	//this function is not meant to be used in any of these ways
 	ERR_FAIL_COND(p_script.is_null());
@@ -979,7 +979,7 @@ void Object::set_script_and_instance(const RefPtr &p_script, ScriptInstance *p_i
 	script_instance = p_instance;
 }
 
-void Object::set_script(const RefPtr &p_script) {
+void Object::set_script(const Variant &p_script) {
 
 	if (script == p_script)
 		return;
@@ -990,7 +990,7 @@ void Object::set_script(const RefPtr &p_script) {
 	}
 
 	script = p_script;
-	Ref<Script> s(script);
+	Ref<Script> s = script;
 
 	if (!s.is_null()) {
 		if (s->can_instance()) {
@@ -1017,12 +1017,12 @@ void Object::set_script_instance(ScriptInstance *p_instance) {
 	script_instance = p_instance;
 
 	if (p_instance)
-		script = p_instance->get_script().get_ref_ptr();
+		script = p_instance->get_script();
 	else
-		script = RefPtr();
+		script = Variant();
 }
 
-RefPtr Object::get_script() const {
+Variant Object::get_script() const {
 
 	return script;
 }
@@ -1911,8 +1911,8 @@ void Object::set_script_instance_binding(int p_script_language_index, void *p_da
 	_script_instance_bindings[p_script_language_index] = p_data;
 }
 
-Object::Object() {
-
+void Object::_construct_object(bool p_reference) {
+	type_is_reference = p_reference;
 	_class_ptr = NULL;
 	_block_signals = false;
 	_predelete_ok = 0;
@@ -1932,6 +1932,14 @@ Object::Object() {
 #ifdef DEBUG_ENABLED
 	_lock_index.init(1);
 #endif
+}
+Object::Object(bool p_reference) {
+	_construct_object(p_reference);
+}
+
+Object::Object() {
+
+	_construct_object(false);
 }
 
 Object::~Object() {
@@ -1993,96 +2001,139 @@ void postinitialize_handler(Object *p_object) {
 	p_object->_postinitialize();
 }
 
-HashMap<ObjectID, Object *> ObjectDB::instances;
-uint64_t ObjectDB::instance_counter = 1;
-HashMap<Object *, ObjectID, ObjectDB::ObjectPtrHash> ObjectDB::instance_checks;
-ObjectID ObjectDB::add_instance(Object *p_object) {
-
-	ERR_FAIL_COND_V(p_object->get_instance_id().is_valid(), ObjectID());
-
-	rw_lock->write_lock();
-	ObjectID instance_id = ObjectID(++instance_counter);
-	instances[instance_id] = p_object;
-	instance_checks[p_object] = instance_id;
-
-	rw_lock->write_unlock();
-
-	return instance_id;
-}
-
-void ObjectDB::remove_instance(Object *p_object) {
-
-	rw_lock->write_lock();
-
-	instances.erase(p_object->get_instance_id());
-	instance_checks.erase(p_object);
-
-	rw_lock->write_unlock();
-}
-Object *ObjectDB::get_instance(ObjectID p_instance_id) {
-
-	rw_lock->read_lock();
-	Object **obj = instances.getptr(p_instance_id);
-	rw_lock->read_unlock();
-
-	if (!obj)
-		return NULL;
-	return *obj;
-}
-
 void ObjectDB::debug_objects(DebugFunc p_func) {
 
-	rw_lock->read_lock();
-
-	const ObjectID *K = NULL;
-	while ((K = instances.next(K))) {
-
-		p_func(instances[*K]);
+	spin_lock.lock();
+	for (uint32_t i = 0; i < slot_count; i++) {
+		uint32_t slot = object_slots[i].next_free;
+		p_func(object_slots[slot].object);
 	}
-
-	rw_lock->read_unlock();
+	spin_lock.unlock();
 }
 
 void Object::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 }
 
+SpinLock ObjectDB::spin_lock;
+uint32_t ObjectDB::slot_count = 0;
+uint32_t ObjectDB::slot_max = 0;
+ObjectDB::ObjectSlot *ObjectDB::object_slots = nullptr;
+uint64_t ObjectDB::validator_counter = 0;
+
 int ObjectDB::get_object_count() {
 
-	rw_lock->read_lock();
-	int count = instances.size();
-	rw_lock->read_unlock();
-
-	return count;
+	return slot_count;
 }
 
-RWLock *ObjectDB::rw_lock = NULL;
+ObjectID ObjectDB::add_instance(Object *p_object) {
+
+	spin_lock.lock();
+	if (unlikely(slot_count == slot_max)) {
+
+		CRASH_COND(slot_count == (1 << OBJECTDB_SLOT_MAX_COUNT_BITS));
+
+		uint32_t new_slot_max = slot_max > 0 ? slot_max * 2 : 1;
+		object_slots = (ObjectSlot *)memrealloc(object_slots, sizeof(ObjectSlot) * new_slot_max);
+		for (uint32_t i = slot_max; i < new_slot_max; i++) {
+			object_slots[i].object = nullptr;
+			object_slots[i].is_reference = false;
+			object_slots[i].next_free = i;
+			object_slots[i].validator = 0;
+		}
+		slot_max = new_slot_max;
+	}
+
+	uint32_t slot = object_slots[slot_count].next_free;
+	if (object_slots[slot].object != nullptr) {
+		spin_lock.unlock();
+		ERR_FAIL_COND_V(object_slots[slot].object != nullptr, ObjectID());
+	}
+	object_slots[slot].object = p_object;
+	object_slots[slot].is_reference = p_object->is_reference();
+	validator_counter = (validator_counter + 1) & OBJECTDB_VALIDATOR_MASK;
+	if (unlikely(validator_counter == 0)) {
+		validator_counter = 1;
+	}
+	object_slots[slot].validator = validator_counter;
+
+	uint64_t id = validator_counter;
+	id <<= OBJECTDB_SLOT_MAX_COUNT_BITS;
+	id |= uint64_t(slot);
+
+	if (p_object->is_reference()) {
+		id |= OBJECTDB_REFERENCE_BIT;
+	}
+
+	slot_count++;
+
+	spin_lock.unlock();
+
+	return ObjectID(id);
+}
+
+void ObjectDB::remove_instance(Object *p_object) {
+	uint64_t t = p_object->get_instance_id();
+	uint32_t slot = t & OBJECTDB_SLOT_MAX_COUNT_MASK; //slot is always valid on valid object
+
+	spin_lock.lock();
+
+#ifdef DEBUG_ENABLED
+
+	if (object_slots[slot].object != p_object) {
+		spin_lock.unlock();
+		ERR_FAIL_COND(object_slots[slot].object != p_object);
+	}
+	{
+		uint64_t validator = (t >> OBJECTDB_SLOT_MAX_COUNT_BITS) & OBJECTDB_VALIDATOR_MASK;
+		if (object_slots[slot].validator != validator) {
+			spin_lock.unlock();
+			ERR_FAIL_COND(object_slots[slot].validator != validator);
+		}
+	}
+
+#endif
+	//decrease slot count
+	slot_count--;
+	//set the free slot properly
+	object_slots[slot_count].next_free = slot;
+	//invalidate, so checks against it fail
+	object_slots[slot].validator = 0;
+	object_slots[slot].is_reference = false;
+	object_slots[slot].object = nullptr;
+
+	spin_lock.unlock();
+}
 
 void ObjectDB::setup() {
 
-	rw_lock = RWLock::create();
+	//nothing to do now
 }
 
 void ObjectDB::cleanup() {
 
-	rw_lock->write_lock();
-	if (instances.size()) {
+	if (slot_count > 0) {
+		spin_lock.lock();
 
 		WARN_PRINT("ObjectDB Instances still exist!");
 		if (OS::get_singleton()->is_stdout_verbose()) {
-			const ObjectID *K = NULL;
-			while ((K = instances.next(K))) {
+			for (uint32_t i = 0; i < slot_count; i++) {
+				uint32_t slot = object_slots[i].next_free;
+				Object *obj = object_slots[slot].object;
 
 				String node_name;
-				if (instances[*K]->is_class("Node"))
-					node_name = " - Node name: " + String(instances[*K]->call("get_name"));
-				if (instances[*K]->is_class("Resource"))
-					node_name = " - Resource name: " + String(instances[*K]->call("get_name")) + " Path: " + String(instances[*K]->call("get_path"));
-				print_line("Leaked instance: " + String(instances[*K]->get_class()) + ":" + itos(*K) + node_name);
+				if (obj->is_class("Node"))
+					node_name = " - Node name: " + String(obj->call("get_name"));
+				if (obj->is_class("Resource"))
+					node_name = " - Resource name: " + String(obj->call("get_name")) + " Path: " + String(obj->call("get_path"));
+
+				uint64_t id = uint64_t(slot) | (uint64_t(object_slots[slot].validator) << OBJECTDB_VALIDATOR_BITS) | (object_slots[slot].is_reference ? OBJECTDB_REFERENCE_BIT : 0);
+				print_line("Leaked instance: " + String(obj->get_class()) + ":" + itos(id) + node_name);
 			}
 		}
+		spin_lock.unlock();
 	}
-	instances.clear();
-	instance_checks.clear();
-	rw_lock->write_unlock();
-	memdelete(rw_lock);
+
+	if (object_slots) {
+		memfree(object_slots);
+	}
 }

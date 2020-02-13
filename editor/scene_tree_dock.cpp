@@ -972,7 +972,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					new_node = Object::cast_to<Node>(ClassDB::instance(ScriptServer::get_global_class_native_base(name)));
 					Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(name), "Script");
 					if (new_node && script.is_valid()) {
-						new_node->set_script(script.get_ref_ptr());
+						new_node->set_script(script);
 						new_node->set_name(name);
 					}
 				} else {
@@ -1725,7 +1725,7 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 	for (List<Node *>::Element *E = selected.front(); E; E = E->next()) {
 
 		Ref<Script> existing = E->get()->get_script();
-		editor_data->get_undo_redo().add_do_method(E->get(), "set_script", p_script.get_ref_ptr());
+		editor_data->get_undo_redo().add_do_method(E->get(), "set_script", p_script);
 		editor_data->get_undo_redo().add_undo_method(E->get(), "set_script", existing);
 		editor_data->get_undo_redo().add_do_method(this, "_update_script_button");
 		editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");

@@ -802,10 +802,10 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 		} break;
 		case Variant::OBJECT: {
-#ifdef DEBUG_ENABLED
+
 			// Test for potential wrong values sent by the debugger when it breaks.
-			Object *obj = p_variant;
-			if (!obj || !ObjectDB::instance_validate(obj)) {
+			Object *obj = p_variant.get_validated_object();
+			if (!obj) {
 				// Object is invalid, send a NULL instead.
 				if (buf) {
 					encode_uint32(Variant::NIL, buf);
@@ -813,7 +813,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				r_len += 4;
 				return OK;
 			}
-#endif // DEBUG_ENABLED
+
 			if (!p_full_objects) {
 				flags |= ENCODE_FLAG_OBJECT_AS_ID;
 			}
@@ -1127,9 +1127,9 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			} else {
 				if (buf) {
 
-					Object *obj = p_variant;
+					Object *obj = p_variant.get_validated_object();
 					ObjectID id;
-					if (obj && ObjectDB::instance_validate(obj)) {
+					if (obj) {
 						id = obj->get_instance_id();
 					}
 

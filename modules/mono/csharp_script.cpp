@@ -854,7 +854,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 		while (script->instances.front()) {
 			Object *obj = script->instances.front()->get();
-			obj->set_script(RefPtr()); // Remove script and existing script instances (placeholder are not removed before domain reload)
+			obj->set_script(REF()); // Remove script and existing script instances (placeholder are not removed before domain reload)
 		}
 
 		script->_clear();
@@ -877,7 +877,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 				// Use a placeholder for now to avoid losing the state when saving a scene
 
-				obj->set_script(scr.get_ref_ptr());
+				obj->set_script(scr);
 
 				PlaceHolderScriptInstance *placeholder = scr->placeholder_instance_create(obj);
 				obj->set_script_instance(placeholder);
@@ -1003,7 +1003,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 				CRASH_COND(si != NULL);
 #endif
 				// Re-create script instance
-				obj->set_script(script.get_ref_ptr()); // will create the script instance as well
+				obj->set_script(script); // will create the script instance as well
 			}
 		}
 
