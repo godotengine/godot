@@ -615,6 +615,7 @@ public:
             String target_string  = mertarget_to_text(pack.target);
             String export_path    = get_absolute_export_path(p_preset->get_export_path());
             String broot_path     = export_path + String("_buildroot");
+            String rpm_prefix_path = broot_path.left( broot_path.find_last(separator) );
             String export_path_part;
             String sdk_shared_path;
             String rpm_dir_path   = broot_path + separator + String("rpm");
@@ -744,9 +745,37 @@ public:
                 print_error( String("Cant copy icon file \"") + icon + String("\" to \"") + icon_file_path + String("\""));
                 return ERR_CANT_CREATE;
             }
+            ep.step( String("setup sfdk tool for ") + arch_to_text(pack.target.arch) + String(" package build"), 60 );
+            
+            {
+                args.clear();
+                args.push_back("-c");
+                args.push_back(String("target=") + target_string);
+                args.push_back("-c");
+                args.push_back(String("output-prefix=\"") + rpm_prefix_path + String("\""));
+                args.push_back("--specfile");
+                args.push_back(spec_file_path);
+                args.push_back("package");
+                int result = EditorNode::get_singleton()->execute_and_show_output(TTR("Run sfdk tool"), sfdk_tool, args, true, false);
+//                if( execute_task(sfdk_tool, args, result) != Error::OK )
+                if( result != 0 )
+                {
+                    return ERR_CANT_CREATE;
+                }
+            }
+            ep.step( String("remove temp directory"), 90 );
+            {
+                DirAccessRef rmdir = DirAccess::open(broot_path, &err);
+                if( err != Error::OK ) {
+                    print_error("cant open dir");
+                }
+                rmdir->erase_contents_recursive();//rmdir->remove(<#String p_name#>)
+                rmdir->remove(broot_path);
+            }
+            ep.step( String("build success"), 100 );
         }
         
-        return ERR_CANT_CREATE;
+        return Error::OK;
 /*
 #ifdef WINDOWS_ENABLED
 		sdk_configs_path +=  String("\\SailfishSDK\\");
