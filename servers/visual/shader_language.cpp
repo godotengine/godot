@@ -6273,6 +6273,13 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						return ERR_PARSE_ERROR;
 					}
 
+					if (qualifier == ARGUMENT_QUALIFIER_OUT || qualifier == ARGUMENT_QUALIFIER_INOUT) {
+						if (is_sampler_type(get_token_datatype(tk.type))) {
+							_set_error("Opaque types cannot be output parameters.");
+							return ERR_PARSE_ERROR;
+						}
+					}
+
 					if (is_struct) {
 						ptype = TYPE_STRUCT;
 					} else {
