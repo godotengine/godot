@@ -6406,6 +6406,8 @@ EditorNode::EditorNode() {
 	video_driver->set_focus_mode(Control::FOCUS_NONE);
 	video_driver->connect("item_selected", this, "_video_driver_selected");
 	video_driver->add_font_override("font", gui_base->get_font("bold", "EditorFonts"));
+	// TODO re-enable when GLES2 is ported
+	video_driver->set_disabled(true);
 	right_menu_hb->add_child(video_driver);
 
 	String video_drivers = ProjectSettings::get_singleton()->get_custom_property_info()["rendering/quality/driver/driver_name"].hint_string;
