@@ -138,10 +138,10 @@ Files extracted from upstream source:
   * License: OFL-1.1
   * Comment: Use UI font variant if available, because it has tight vertical metrics and
     good for UI.
-- `Hack_Regular.ttf`:
-  * Upstream: https://github.com/source-foundry/Hack
-  * Version: 3.003 (2018)
-  * License: MIT + Bitstream Vera License
+- `JetBrainsMono_Regular.ttf`:
+	* Upstream: https://github.com/JetBrains/JetBrainsMono
+  * Version: 2.242
+  * License: OFL-1.1
 - `DroidSans*.ttf`:
   * Upstream: https://android.googlesource.com/platform/frameworks/base/+/master/data/fonts/
   * Version: ? (pre-2014 commit when DroidSansJapanese.ttf was obsoleted)
@@ -150,6 +150,7 @@ Files extracted from upstream source:
   * Upstream: https://fonts.google.com/specimen/Open+Sans
   * Version: 1.10 (downloaded from Google Fonts in February 2021)
   * License: Apache 2.0
+
 
 
 ## freetype
@@ -349,7 +350,7 @@ Files extracted from upstream repository:
 - `LICENSE.md`.
 
 An [experimental upstream feature](https://github.com/zeux/meshoptimizer/tree/simplify-attr),
-has been backported. On top of that, it was modified to report only distance error metrics 
+has been backported. On top of that, it was modified to report only distance error metrics
 instead of a combination of distance and attribute errors. Patches for both changes can be
 found in the `patches` directory.
 
@@ -737,4 +738,3 @@ Files extracted from upstream source:
 
 - `lib/{common/,compress/,decompress/,zstd.h,zstd_errors.h}`
 - `LICENSE`
-

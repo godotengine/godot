@@ -269,7 +269,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	/* Hack */
 
-	Ref<FontData> dfmono = load_cached_internal_font(_font_Hack_Regular, _font_Hack_Regular_size, font_hinting, font_antialiased, true);
+	Ref<FontData> dfmono = load_cached_internal_font(_font_JetBrainsMono_Regular, _font_JetBrainsMono_Regular_size, font_hinting, font_antialiased, true);
 
 	// Default font
 	MAKE_DEFAULT_FONT(df, String());
