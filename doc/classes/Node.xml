@@ -619,7 +619,7 @@
 			</description>
 		</method>
 		<method name="rpc_config">
-			<return type="void">
+			<return type="int">
 			</return>
 			<argument index="0" name="method" type="String">
 			</argument>
@@ -672,7 +672,7 @@
 			</description>
 		</method>
 		<method name="rset_config">
-			<return type="void">
+			<return type="int">
 			</return>
 			<argument index="0" name="property" type="String">
 			</argument>

@@ -73,9 +73,8 @@ public class GodotView extends GLSurfaceView {
 	private final GestureDetector detector;
 	private final GodotRenderer godotRenderer;
 
-	public GodotView(Godot activity, XRMode xrMode, boolean p_use_gl3, boolean p_use_32_bits, boolean p_use_debug_opengl) {
+	public GodotView(Godot activity, XRMode xrMode, boolean p_use_32_bits, boolean p_use_debug_opengl) {
 		super(activity);
-		GLUtils.use_gl3 = p_use_gl3;
 		GLUtils.use_32 = p_use_32_bits;
 		GLUtils.use_debug_opengl = p_use_debug_opengl;
 

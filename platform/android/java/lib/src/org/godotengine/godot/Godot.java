@@ -287,8 +287,6 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 	 */
 	@Keep
 	private void onVideoInit() {
-		boolean use_gl3 = getGLESVersionCode() >= 0x00030000;
-
 		final FrameLayout layout = new FrameLayout(this);
 		layout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 		setContentView(layout);
@@ -299,7 +297,7 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 		// ...add to FrameLayout
 		layout.addView(edittext);
 
-		mView = new GodotView(this, xrMode, use_gl3, use_32_bits, use_debug_opengl);
+		mView = new GodotView(this, xrMode, use_32_bits, use_debug_opengl);
 		layout.addView(mView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 		edittext.setView(mView);
 		io.setEdit(edittext);

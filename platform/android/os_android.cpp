@@ -33,7 +33,6 @@
 #include "core/io/file_access_buffered_fa.h"
 #include "core/project_settings.h"
 #include "drivers/gles2/rasterizer_gles2.h"
-#include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "file_access_android.h"
@@ -67,8 +66,6 @@ int OS_Android::get_video_driver_count() const {
 const char *OS_Android::get_video_driver_name(int p_driver) const {
 
 	switch (p_driver) {
-		case VIDEO_DRIVER_GLES3:
-			return "GLES3";
 		case VIDEO_DRIVER_GLES2:
 			return "GLES2";
 	}
@@ -123,44 +120,21 @@ int OS_Android::get_current_video_driver() const {
 
 Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
-	bool use_gl3 = godot_java->get_gles_version_code() >= 0x00030000;
-	use_gl3 = use_gl3 && (GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES3");
 	bool gl_initialization_error = false;
 
-	while (true) {
-		if (use_gl3) {
-			if (RasterizerGLES3::is_viable() == OK) {
-				godot_java->gfx_init(false);
-				RasterizerGLES3::register_config();
-				RasterizerGLES3::make_current();
-				break;
-			} else {
-				if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2")) {
-					p_video_driver = VIDEO_DRIVER_GLES2;
-					use_gl3 = false;
-					continue;
-				} else {
-					gl_initialization_error = true;
-					break;
-				}
-			}
-		} else {
-			if (RasterizerGLES2::is_viable() == OK) {
-				godot_java->gfx_init(true);
-				RasterizerGLES2::register_config();
-				RasterizerGLES2::make_current();
-				break;
-			} else {
-				gl_initialization_error = true;
-				break;
-			}
-		}
+	// FIXME: Add Vulkan support. Readd fallback code from Vulkan to GLES2?
+
+	if (RasterizerGLES2::is_viable() == OK) {
+		RasterizerGLES2::register_config();
+		RasterizerGLES2::make_current();
+	} else {
+		gl_initialization_error = true;
 	}
 
 	if (gl_initialization_error) {
 		OS::get_singleton()->alert("Your device does not support any of the supported OpenGL versions.\n"
 								   "Please try updating your Android version.",
-				"Unable to initialize Video driver");
+				"Unable to initialize video driver");
 		return ERR_UNAVAILABLE;
 	}
 
@@ -750,7 +724,6 @@ void OS_Android::vibrate_handheld(int p_duration_ms) {
 
 bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "mobile") {
-		//TODO support etc2 only if GLES3 driver is selected
 		return true;
 	}
 #if defined(__aarch64__)

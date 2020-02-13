@@ -689,7 +689,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			editor = true;
 #ifdef DEBUG_METHODS_ENABLED
 		} else if (I->get() == "--gdnative-generate-json-api") {
-			// Register as an editor instance to use the GLES2 fallback automatically on hardware that doesn't support the GLES3 backend
+			// Register as an editor instance to use low-end fallback if relevant.
 			editor = true;
 
 			// We still pass it to the main arguments since the argument handling itself is not done in this function
@@ -999,8 +999,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (video_driver == "") {
 		video_driver = GLOBAL_GET("rendering/quality/driver/driver_name");
 	}
-
-	GLOBAL_DEF("rendering/quality/driver/fallback_to_gles2", false);
 
 	// Assigning here even though it's GLES2-specific, to be sure that it appears in docs
 	GLOBAL_DEF("rendering/quality/2d/gles2_use_nvidia_rect_flicker_workaround", false);

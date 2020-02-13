@@ -99,13 +99,6 @@ jobject GodotJavaWrapper::get_class_loader() {
 	}
 }
 
-void GodotJavaWrapper::gfx_init(bool gl2) {
-	// beats me what this once did, there was no code,
-	// but we're getting false if our GLES3 driver is initialised
-	// and true for our GLES2 driver
-	// Maybe we're supposed to communicate this back or store it?
-}
-
 void GodotJavaWrapper::on_video_init(JNIEnv *p_env) {
 	if (_on_video_init)
 		if (p_env == NULL)
