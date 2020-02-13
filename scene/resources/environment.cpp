@@ -815,12 +815,17 @@ float Environment::get_fog_height_curve() const {
 }
 
 #ifndef DISABLE_DEPRECATED
+// Kept for compatibility from 3.x to 4.0.
 bool Environment::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == "background_sky") {
 		set_sky(p_value);
 		return true;
 	} else if (p_name == "background_sky_custom_fov") {
 		set_sky_custom_fov(p_value);
+		return true;
+	} else if (p_name == "background_sky_orientation") {
+		Vector3 euler = p_value.operator Basis().get_euler();
+		set_sky_rotation(euler);
 		return true;
 	} else {
 		return false;

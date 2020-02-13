@@ -104,33 +104,6 @@ namespace Godot
             return this / Length;
         }
 
-        [Obsolete("Set is deprecated. Use the Quat(" + nameof(real_t) + ", " + nameof(real_t) + ", " + nameof(real_t) + ", " + nameof(real_t) + ") constructor instead.", error: true)]
-        public void Set(real_t x, real_t y, real_t z, real_t w)
-        {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
-        }
-
-        [Obsolete("Set is deprecated. Use the Quat(" + nameof(Quat) + ") constructor instead.", error: true)]
-        public void Set(Quat q)
-        {
-            this = q;
-        }
-
-        [Obsolete("SetAxisAngle is deprecated. Use the Quat(" + nameof(Vector3) + ", " + nameof(real_t) + ") constructor instead.", error: true)]
-        public void SetAxisAngle(Vector3 axis, real_t angle)
-        {
-            this = new Quat(axis, angle);
-        }
-
-        [Obsolete("SetEuler is deprecated. Use the Quat(" + nameof(Vector3) + ") constructor instead.", error: true)]
-        public void SetEuler(Vector3 eulerYXZ)
-        {
-            this = new Quat(eulerYXZ);
-        }
-
         public Quat Slerp(Quat b, real_t t)
         {
 #if DEBUG

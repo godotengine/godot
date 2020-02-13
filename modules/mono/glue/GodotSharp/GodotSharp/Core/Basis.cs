@@ -266,12 +266,6 @@ namespace Godot
             this[index] = value;
         }
 
-        [Obsolete("GetAxis is deprecated. Use GetColumn instead.")]
-        public Vector3 GetAxis(int axis)
-        {
-            return new Vector3(this.Row0[axis], this.Row1[axis], this.Row2[axis]);
-        }
-
         public int GetOrthogonalIndex()
         {
             var orth = this;

@@ -58,7 +58,7 @@ protected:
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED
-
+	// Kept for compatibility from 3.x to 4.0.
 	void _set_transform_array(const PoolVector<Vector3> &p_array);
 	PoolVector<Vector3> _get_transform_array() const;
 

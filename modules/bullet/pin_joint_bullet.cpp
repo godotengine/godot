@@ -84,10 +84,9 @@ real_t PinJointBullet::get_param(PhysicsServer::PinJointParam p_param) const {
 			return p2pConstraint->m_setting.m_damping;
 		case PhysicsServer::PIN_JOINT_IMPULSE_CLAMP:
 			return p2pConstraint->m_setting.m_impulseClamp;
-		default:
-			WARN_DEPRECATED_MSG("The parameter " + itos(p_param) + " is deprecated.");
-			return 0;
 	}
+	// Compiler doesn't seem to notice that all code paths are fulfilled...
+	return 0;
 }
 
 void PinJointBullet::setPivotInA(const Vector3 &p_pos) {

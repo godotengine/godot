@@ -187,19 +187,11 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	TreeItem *item = tree->create_item(p_parent);
 
 	item->set_text(0, p_node->get_name());
-	if (can_rename && !part_of_subscene /*(p_node->get_owner() == get_scene_node() || p_node==get_scene_node())*/)
+	if (can_rename && !part_of_subscene)
 		item->set_editable(0, true);
 
 	item->set_selectable(0, true);
 	if (can_rename) {
-#ifndef DISABLE_DEPRECATED
-		if (p_node->has_meta("_editor_collapsed")) {
-			//remove previous way of storing folding, which did not get along with scene inheritance and instancing
-			if ((bool)p_node->get_meta("_editor_collapsed"))
-				p_node->set_display_folded(true);
-			p_node->set_meta("_editor_collapsed", Variant());
-		}
-#endif
 		bool collapsed = p_node->is_displayed_folded();
 		if (collapsed)
 			item->set_collapsed(true);
@@ -497,21 +489,6 @@ void SceneTreeEditor::_node_script_changed(Node *p_node) {
 
 	MessageQueue::get_singleton()->push_call(this, "_update_tree");
 	tree_dirty = true;
-	/*
-	changes the order :|
-	TreeItem* item=p_node?_find(tree->get_root(),p_node->get_path()):NULL;
-	if (p_node->get_script().is_null()) {
-
-		int idx=item->get_button_by_id(0,2);
-		if (idx>=0)
-			item->erase_button(0,idx);
-	} else {
-
-		int idx=item->get_button_by_id(0,2);
-		if (idx<0)
-			item->add_button(0,get_icon("Script","EditorIcons"),2);
-
-	}*/
 }
 
 void SceneTreeEditor::_node_removed(Node *p_node) {

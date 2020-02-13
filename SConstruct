@@ -418,17 +418,7 @@ if selected_platform in platform_list:
         sys.path.insert(0, tmppath)
         env.current_module = x
         import config
-        # can_build changed number of arguments between 3.0 (1) and 3.1 (2),
-        # so try both to preserve compatibility for 3.0 modules
-        can_build = False
-        try:
-            can_build = config.can_build(env, selected_platform)
-        except TypeError:
-            print("Warning: module '%s' uses a deprecated `can_build` "
-                  "signature in its config.py file, it should be "
-                  "`can_build(env, platform)`." % x)
-            can_build = config.can_build(selected_platform)
-        if can_build:
+        if config.can_build(env, selected_platform):
             config.configure(env)
             env.module_list.append(x)
 
