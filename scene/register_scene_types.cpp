@@ -734,7 +734,6 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<SceneTreeTimer>(); //sorry, you can't create it
 
 #ifndef DISABLE_DEPRECATED
-	ClassDB::add_compatibility_class("ImageSkyBox", "PanoramaSky");
 	ClassDB::add_compatibility_class("SpatialMaterial", "StandardMaterial3D");
 	ClassDB::add_compatibility_class("Mesh", "ArrayMesh");
 	ClassDB::add_compatibility_class("AnimationTreePlayer", "AnimationTree");

@@ -73,13 +73,6 @@ enum {
 	VARIANT_VECTOR2_ARRAY = 37,
 	VARIANT_INT64 = 40,
 	VARIANT_DOUBLE = 41,
-#ifndef DISABLE_DEPRECATED
-	VARIANT_IMAGE = 21, // - no longer variant type
-	IMAGE_ENCODING_EMPTY = 0,
-	IMAGE_ENCODING_RAW = 1,
-	IMAGE_ENCODING_LOSSLESS = 2,
-	IMAGE_ENCODING_LOSSY = 3,
-#endif
 	OBJECT_EMPTY = 0,
 	OBJECT_EXTERNAL_RESOURCE = 1,
 	OBJECT_INTERNAL_RESOURCE = 2,
@@ -549,69 +542,6 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 			w.release();
 			r_v = array;
 		} break;
-#ifndef DISABLE_DEPRECATED
-		case VARIANT_IMAGE: {
-			uint32_t encoding = f->get_32();
-			if (encoding == IMAGE_ENCODING_EMPTY) {
-				r_v = Ref<Image>();
-				break;
-			} else if (encoding == IMAGE_ENCODING_RAW) {
-				uint32_t width = f->get_32();
-				uint32_t height = f->get_32();
-				uint32_t mipmaps = f->get_32();
-				uint32_t format = f->get_32();
-				const uint32_t format_version_shift = 24;
-				const uint32_t format_version_mask = format_version_shift - 1;
-
-				uint32_t format_version = format >> format_version_shift;
-
-				const uint32_t current_version = 0;
-				if (format_version > current_version) {
-
-					ERR_PRINT("Format version for encoded binary image is too new.");
-					return ERR_PARSE_ERROR;
-				}
-
-				Image::Format fmt = Image::Format(format & format_version_mask); //if format changes, we can add a compatibility bit on top
-
-				uint32_t datalen = f->get_32();
-
-				PoolVector<uint8_t> imgdata;
-				imgdata.resize(datalen);
-				PoolVector<uint8_t>::Write w = imgdata.write();
-				f->get_buffer(w.ptr(), datalen);
-				_advance_padding(datalen);
-				w.release();
-
-				Ref<Image> image;
-				image.instance();
-				image->create(width, height, mipmaps, fmt, imgdata);
-				r_v = image;
-
-			} else {
-				//compressed
-				PoolVector<uint8_t> data;
-				data.resize(f->get_32());
-				PoolVector<uint8_t>::Write w = data.write();
-				f->get_buffer(w.ptr(), data.size());
-				w.release();
-
-				Ref<Image> image;
-
-				if (encoding == IMAGE_ENCODING_LOSSY && Image::lossy_unpacker) {
-
-					image = Image::lossy_unpacker(data);
-				} else if (encoding == IMAGE_ENCODING_LOSSLESS && Image::lossless_unpacker) {
-
-					image = Image::lossless_unpacker(data);
-				}
-				_advance_padding(data.size());
-
-				r_v = image;
-			}
-
-		} break;
-#endif
 		default: {
 			ERR_FAIL_V(ERR_FILE_CORRUPT);
 		} break;

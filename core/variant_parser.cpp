@@ -235,8 +235,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 							case 'f': res = 12; break;
 							case 'r': res = 13; break;
 							case 'u': {
-								//hexnumbarh - oct is deprecated
-
+								//hex number
 								for (int j = 0; j < 4; j++) {
 									CharType c = p_stream->get_char();
 									if (c == 0) {
@@ -260,7 +259,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 										v = c - 'A';
 										v += 10;
 									} else {
-										ERR_PRINT("BUG");
+										ERR_PRINT("Bug parsing hex constant.");
 										v = 0;
 									}
 
@@ -269,13 +268,8 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 								}
 
 							} break;
-							//case '\"': res='\"'; break;
-							//case '\\': res='\\'; break;
-							//case '/': res='/'; break;
 							default: {
 								res = next;
-								//r_err_str="Invalid escape sequence";
-								//return ERR_PARSE_ERROR;
 							} break;
 						}
 
@@ -866,198 +860,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 			}
-#ifndef DISABLE_DEPRECATED
-		} else if (id == "InputEvent") {
 
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_PARENTHESIS_OPEN) {
-				r_err_str = "Expected '('";
-				return ERR_PARSE_ERROR;
-			}
-
-			get_token(p_stream, token, line, r_err_str);
-
-			if (token.type != TK_IDENTIFIER) {
-				r_err_str = "Expected identifier";
-				return ERR_PARSE_ERROR;
-			}
-
-			String id2 = token.value;
-
-			Ref<InputEvent> ie;
-
-			if (id2 == "NONE") {
-
-				get_token(p_stream, token, line, r_err_str);
-
-				if (token.type != TK_PARENTHESIS_CLOSE) {
-					r_err_str = "Expected ')'";
-					return ERR_PARSE_ERROR;
-				}
-
-			} else if (id2 == "KEY") {
-
-				Ref<InputEventKey> key;
-				key.instance();
-				ie = key;
-
-				get_token(p_stream, token, line, r_err_str);
-				if (token.type != TK_COMMA) {
-					r_err_str = "Expected ','";
-					return ERR_PARSE_ERROR;
-				}
-
-				get_token(p_stream, token, line, r_err_str);
-				if (token.type == TK_IDENTIFIER) {
-					String name = token.value;
-					key->set_scancode(find_keycode(name));
-				} else if (token.type == TK_NUMBER) {
-
-					key->set_scancode(token.value);
-				} else {
-
-					r_err_str = "Expected string or integer for keycode";
-					return ERR_PARSE_ERROR;
-				}
-
-				get_token(p_stream, token, line, r_err_str);
-
-				if (token.type == TK_COMMA) {
-
-					get_token(p_stream, token, line, r_err_str);
-
-					if (token.type != TK_IDENTIFIER) {
-						r_err_str = "Expected identifier with modifier flas";
-						return ERR_PARSE_ERROR;
-					}
-
-					String mods = token.value;
-
-					if (mods.findn("C") != -1)
-						key->set_control(true);
-					if (mods.findn("A") != -1)
-						key->set_alt(true);
-					if (mods.findn("S") != -1)
-						key->set_shift(true);
-					if (mods.findn("M") != -1)
-						key->set_metakey(true);
-
-					get_token(p_stream, token, line, r_err_str);
-					if (token.type != TK_PARENTHESIS_CLOSE) {
-						r_err_str = "Expected ')'";
-						return ERR_PARSE_ERROR;
-					}
-
-				} else if (token.type != TK_PARENTHESIS_CLOSE) {
-
-					r_err_str = "Expected ')' or modifier flags.";
-					return ERR_PARSE_ERROR;
-				}
-
-			} else if (id2 == "MBUTTON") {
-
-				Ref<InputEventMouseButton> mb;
-				mb.instance();
-				ie = mb;
-
-				get_token(p_stream, token, line, r_err_str);
-				if (token.type != TK_COMMA) {
-					r_err_str = "Expected ','";
-					return ERR_PARSE_ERROR;
-				}
-
-				get_token(p_stream, token, line, r_err_str);
-				if (token.type != TK_NUMBER) {
-					r_err_str = "Expected button index";
-					return ERR_PARSE_ERROR;
-				}
-
-				mb->set_button_index(token.value);
-
-				get_token(p_stream, token, line, r_err_str);
-				if (token.type != TK_PARENTHESIS_CLOSE) {
-					r_err_str = "Expected ')'";
-					return ERR_PARSE_ERROR;
-				}
-
-			} else if (id2 == "JBUTTON") {
-
-				Ref<InputEventJoypadButton> jb;
-				jb.instance();
-				ie = jb;
-
-				get_token(p_stream, token, line, r_err_str);
-				if (token.type != TK_COMMA) {
-					r_err_str = "Expected ','";
-					return ERR_PARSE_ERROR;
-				}
-
-				get_token(p_stream, token, line, r_err_str);
-				if (token.type != TK_NUMBER) {
-					r_err_str = "Expected button index";
-					return ERR_PARSE_ERROR;
-				}
-
-				jb->set_button_index(token.value);
-
-				get_token(p_stream, token, line, r_err_str);
-				if (token.type != TK_PARENTHESIS_CLOSE) {
-					r_err_str = "Expected ')'";
-					return ERR_PARSE_ERROR;
-				}
-
-			} else if (id2 == "JAXIS") {
-
-				Ref<InputEventJoypadMotion> jm;
-				jm.instance();
-				ie = jm;
-
-				get_token(p_stream, token, line, r_err_str);
-				if (token.type != TK_COMMA) {
-					r_err_str = "Expected ','";
-					return ERR_PARSE_ERROR;
-				}
-
-				get_token(p_stream, token, line, r_err_str);
-				if (token.type != TK_NUMBER) {
-					r_err_str = "Expected axis index";
-					return ERR_PARSE_ERROR;
-				}
-
-				jm->set_axis(token.value);
-
-				get_token(p_stream, token, line, r_err_str);
-
-				if (token.type != TK_COMMA) {
-					r_err_str = "Expected ',' after axis index";
-					return ERR_PARSE_ERROR;
-				}
-
-				get_token(p_stream, token, line, r_err_str);
-				if (token.type != TK_NUMBER) {
-					r_err_str = "Expected axis sign";
-					return ERR_PARSE_ERROR;
-				}
-
-				jm->set_axis_value(token.value);
-
-				get_token(p_stream, token, line, r_err_str);
-
-				if (token.type != TK_PARENTHESIS_CLOSE) {
-					r_err_str = "Expected ')' for jaxis";
-					return ERR_PARSE_ERROR;
-				}
-
-			} else {
-
-				r_err_str = "Invalid input event type.";
-				return ERR_PARSE_ERROR;
-			}
-
-			value = ie;
-
-			return OK;
-#endif
 		} else if (id == "PoolByteArray" || id == "ByteArray") {
 
 			Vector<uint8_t> args;

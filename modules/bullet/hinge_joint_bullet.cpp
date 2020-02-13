@@ -95,6 +95,9 @@ real_t HingeJointBullet::get_hinge_angle() {
 
 void HingeJointBullet::set_param(PhysicsServer::HingeJointParam p_param, real_t p_value) {
 	switch (p_param) {
+		case PhysicsServer::HINGE_JOINT_BIAS:
+			WARN_DEPRECATED_MSG("The HingeJoint parameter \"bias\" is deprecated.");
+			break;
 		case PhysicsServer::HINGE_JOINT_LIMIT_UPPER:
 			hingeConstraint->setLimit(hingeConstraint->getLowerLimit(), p_value, hingeConstraint->getLimitSoftness(), hingeConstraint->getLimitBiasFactor(), hingeConstraint->getLimitRelaxationFactor());
 			break;
@@ -116,8 +119,8 @@ void HingeJointBullet::set_param(PhysicsServer::HingeJointParam p_param, real_t 
 		case PhysicsServer::HINGE_JOINT_MOTOR_MAX_IMPULSE:
 			hingeConstraint->setMaxMotorImpulse(p_value);
 			break;
-		default:
-			WARN_DEPRECATED_MSG("The HingeJoint parameter " + itos(p_param) + " is deprecated.");
+		case PhysicsServer::HINGE_JOINT_MAX:
+			// Internal size value, nothing to do.
 			break;
 	}
 }
@@ -125,8 +128,8 @@ void HingeJointBullet::set_param(PhysicsServer::HingeJointParam p_param, real_t 
 real_t HingeJointBullet::get_param(PhysicsServer::HingeJointParam p_param) const {
 	switch (p_param) {
 		case PhysicsServer::HINGE_JOINT_BIAS:
+			WARN_DEPRECATED_MSG("The HingeJoint parameter \"bias\" is deprecated.");
 			return 0;
-			break;
 		case PhysicsServer::HINGE_JOINT_LIMIT_UPPER:
 			return hingeConstraint->getUpperLimit();
 		case PhysicsServer::HINGE_JOINT_LIMIT_LOWER:
@@ -141,10 +144,12 @@ real_t HingeJointBullet::get_param(PhysicsServer::HingeJointParam p_param) const
 			return hingeConstraint->getMotorTargetVelocity();
 		case PhysicsServer::HINGE_JOINT_MOTOR_MAX_IMPULSE:
 			return hingeConstraint->getMaxMotorImpulse();
-		default:
-			WARN_DEPRECATED_MSG("The HingeJoint parameter " + itos(p_param) + " is deprecated.");
+		case PhysicsServer::HINGE_JOINT_MAX:
+			// Internal size value, nothing to do.
 			return 0;
 	}
+	// Compiler doesn't seem to notice that all code paths are fulfilled...
+	return 0;
 }
 
 void HingeJointBullet::set_flag(PhysicsServer::HingeJointFlag p_flag, bool p_value) {
