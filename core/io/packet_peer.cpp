@@ -37,18 +37,7 @@
 
 PacketPeer::PacketPeer() :
 		last_get_error(OK),
-		allow_object_decoding(false),
 		encode_buffer_max_size(8 * 1024 * 1024) {
-}
-
-void PacketPeer::set_allow_object_decoding(bool p_enable) {
-
-	allow_object_decoding = p_enable;
-}
-
-bool PacketPeer::is_object_decoding_allowed() const {
-
-	return allow_object_decoding;
 }
 
 void PacketPeer::set_encode_buffer_max_size(int p_max_size) {
@@ -101,13 +90,13 @@ Error PacketPeer::get_var(Variant &r_variant, bool p_allow_objects) {
 	if (err)
 		return err;
 
-	return decode_variant(r_variant, buffer, buffer_size, NULL, p_allow_objects || allow_object_decoding);
+	return decode_variant(r_variant, buffer, buffer_size, NULL, p_allow_objects);
 }
 
 Error PacketPeer::put_var(const Variant &p_packet, bool p_full_objects) {
 
 	int len;
-	Error err = encode_variant(p_packet, NULL, len, p_full_objects || allow_object_decoding); // compute len first
+	Error err = encode_variant(p_packet, NULL, len, p_full_objects); // compute len first
 	if (err)
 		return err;
 
@@ -122,7 +111,7 @@ Error PacketPeer::put_var(const Variant &p_packet, bool p_full_objects) {
 	}
 
 	PoolVector<uint8_t>::Write w = encode_buffer.write();
-	err = encode_variant(p_packet, w.ptr(), len, p_full_objects || allow_object_decoding);
+	err = encode_variant(p_packet, w.ptr(), len, p_full_objects);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Error when trying to encode Variant.");
 
 	return put_packet(w.ptr(), len);
@@ -160,13 +149,10 @@ void PacketPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_packet_error"), &PacketPeer::_get_packet_error);
 	ClassDB::bind_method(D_METHOD("get_available_packet_count"), &PacketPeer::get_available_packet_count);
 
-	ClassDB::bind_method(D_METHOD("set_allow_object_decoding", "enable"), &PacketPeer::set_allow_object_decoding);
-	ClassDB::bind_method(D_METHOD("is_object_decoding_allowed"), &PacketPeer::is_object_decoding_allowed);
 	ClassDB::bind_method(D_METHOD("get_encode_buffer_max_size"), &PacketPeer::get_encode_buffer_max_size);
 	ClassDB::bind_method(D_METHOD("set_encode_buffer_max_size", "max_size"), &PacketPeer::set_encode_buffer_max_size);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "encode_buffer_max_size"), "set_encode_buffer_max_size", "get_encode_buffer_max_size");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_object_decoding"), "set_allow_object_decoding", "is_object_decoding_allowed");
 };
 
 /***************/

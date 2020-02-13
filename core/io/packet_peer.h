@@ -49,8 +49,6 @@ class PacketPeer : public Reference {
 
 	mutable Error last_get_error;
 
-	bool allow_object_decoding;
-
 	int encode_buffer_max_size;
 	PoolVector<uint8_t> encode_buffer;
 
@@ -68,9 +66,6 @@ public:
 
 	virtual Error get_var(Variant &r_variant, bool p_allow_objects = false);
 	virtual Error put_var(const Variant &p_packet, bool p_full_objects = false);
-
-	void set_allow_object_decoding(bool p_enable);
-	bool is_object_decoding_allowed() const;
 
 	void set_encode_buffer_max_size(int p_max_size);
 	int get_encode_buffer_max_size() const;
