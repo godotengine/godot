@@ -29,9 +29,11 @@
 /*************************************************************************/
 
 #include "multimesh.h"
+
 #include "servers/visual_server.h"
 
 #ifndef DISABLE_DEPRECATED
+// Kept for compatibility from 3.x to 4.0.
 
 void MultiMesh::_set_transform_array(const PoolVector<Vector3> &p_array) {
 	if (transform_format != TRANSFORM_3D)
@@ -193,8 +195,8 @@ PoolVector<Color> MultiMesh::_get_custom_data_array() const {
 
 	return custom_datas;
 }
+#endif // DISABLE_DEPRECATED
 
-#endif
 void MultiMesh::set_buffer(const PoolVector<float> &p_buffer) {
 	VS::get_singleton()->multimesh_set_buffer(multimesh, p_buffer);
 }
@@ -351,8 +353,7 @@ void MultiMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_REAL_ARRAY, "buffer", PROPERTY_HINT_NONE), "set_buffer", "get_buffer");
 
 #ifndef DISABLE_DEPRECATED
-	//kept for compatibility
-
+	// Kept for compatibility from 3.x to 4.0.
 	ClassDB::bind_method(D_METHOD("_set_transform_array"), &MultiMesh::_set_transform_array);
 	ClassDB::bind_method(D_METHOD("_get_transform_array"), &MultiMesh::_get_transform_array);
 	ClassDB::bind_method(D_METHOD("_set_transform_2d_array"), &MultiMesh::_set_transform_2d_array);
@@ -367,6 +368,7 @@ void MultiMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY, "color_array", PROPERTY_HINT_NONE, "", 0), "_set_color_array", "_get_color_array");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY, "custom_data_array", PROPERTY_HINT_NONE, "", 0), "_set_custom_data_array", "_get_custom_data_array");
 #endif
+
 	BIND_ENUM_CONSTANT(TRANSFORM_2D);
 	BIND_ENUM_CONSTANT(TRANSFORM_3D);
 }

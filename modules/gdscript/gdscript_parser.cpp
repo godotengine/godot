@@ -4099,10 +4099,6 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 										_ADVANCE_AND_CONSUME_NEWLINES;
 
-										if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
-											WARN_DEPRECATED_MSG("Exporting bit flags hint requires string constants.");
-											break;
-										}
 										if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
 											_set_error("Expected \",\" in the bit flags hint.");
 											return;

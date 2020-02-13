@@ -743,6 +743,7 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 	}
 
 #ifndef DISABLE_DEPRECATED
+	// Kept for compatibility from 3.x to 4.0.
 	if (!sname.begins_with("surfaces"))
 		return false;
 
@@ -841,8 +842,7 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 
 		return true;
 	}
-
-#endif
+#endif // DISABLE_DEPRECATED
 
 	return false;
 }

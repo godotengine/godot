@@ -51,7 +51,6 @@ class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
 	Vector<char> str_buf;
 	List<RES> resource_cache;
 
-	//Map<int,StringName> string_map;
 	Vector<StringName> string_map;
 
 	StringName _get_string();

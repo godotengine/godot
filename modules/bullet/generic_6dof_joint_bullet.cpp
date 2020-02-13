@@ -173,6 +173,9 @@ void Generic6DOFJointBullet::set_param(Vector3::Axis p_axis, PhysicsServer::G6DO
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT:
 			sixDOFConstraint->getRotationalLimitMotor(p_axis)->m_equilibriumPoint = p_value;
 			break;
+		case PhysicsServer::G6DOF_JOINT_MAX:
+			// Internal size value, nothing to do.
+			break;
 		default:
 			WARN_DEPRECATED_MSG("The parameter " + itos(p_param) + " is deprecated.");
 			break;
@@ -214,6 +217,9 @@ real_t Generic6DOFJointBullet::get_param(Vector3::Axis p_axis, PhysicsServer::G6
 			return sixDOFConstraint->getRotationalLimitMotor(p_axis)->m_springDamping;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT:
 			return sixDOFConstraint->getRotationalLimitMotor(p_axis)->m_equilibriumPoint;
+		case PhysicsServer::G6DOF_JOINT_MAX:
+			// Internal size value, nothing to do.
+			return 0;
 		default:
 			WARN_DEPRECATED_MSG("The parameter " + itos(p_param) + " is deprecated.");
 			return 0;
@@ -240,20 +246,20 @@ void Generic6DOFJointBullet::set_flag(Vector3::Axis p_axis, PhysicsServer::G6DOF
 				sixDOFConstraint->setLimit(p_axis + 3, 0, -1); // Free
 			}
 			break;
+		case PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_ANGULAR_SPRING:
+			sixDOFConstraint->getRotationalLimitMotor(p_axis)->m_enableSpring = p_value;
+			break;
+		case PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_LINEAR_SPRING:
+			sixDOFConstraint->getTranslationalLimitMotor()->m_enableSpring[p_axis] = p_value;
+			break;
 		case PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_MOTOR:
 			sixDOFConstraint->getRotationalLimitMotor(p_axis)->m_enableMotor = flags[p_axis][p_flag];
 			break;
 		case PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_LINEAR_MOTOR:
 			sixDOFConstraint->getTranslationalLimitMotor()->m_enableMotor[p_axis] = flags[p_axis][p_flag];
 			break;
-		case PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_LINEAR_SPRING:
-			sixDOFConstraint->getTranslationalLimitMotor()->m_enableSpring[p_axis] = p_value;
-			break;
-		case PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_ANGULAR_SPRING:
-			sixDOFConstraint->getRotationalLimitMotor(p_axis)->m_enableSpring = p_value;
-			break;
-		default:
-			WARN_DEPRECATED_MSG("The flag " + itos(p_flag) + " is deprecated.");
+		case PhysicsServer::G6DOF_JOINT_FLAG_MAX:
+			// Internal size value, nothing to do.
 			break;
 	}
 }

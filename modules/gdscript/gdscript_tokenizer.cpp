@@ -810,7 +810,7 @@ void GDScriptTokenizerText::_advance() {
 								break; //wtf
 
 							case 'u': {
-								//hexnumbarh - oct is deprecated
+								// hex number
 								i += 1;
 								for (int j = 0; j < 4; j++) {
 									CharType c = GETCHAR(i + j);

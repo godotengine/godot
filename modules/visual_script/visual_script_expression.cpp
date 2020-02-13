@@ -392,8 +392,7 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 							case 'f': res = 12; break;
 							case 'r': res = 13; break;
 							case 'u': {
-								//hexnumbarh - oct is deprecated
-
+								// hex number
 								for (int j = 0; j < 4; j++) {
 									CharType c = GET_CHAR();
 
@@ -418,7 +417,7 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 										v = c - 'A';
 										v += 10;
 									} else {
-										ERR_PRINT("BUG");
+										ERR_PRINT("Bug parsing hex constant.");
 										v = 0;
 									}
 
@@ -427,13 +426,8 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 								}
 
 							} break;
-							//case '\"': res='\"'; break;
-							//case '\\': res='\\'; break;
-							//case '/': res='/'; break;
 							default: {
 								res = next;
-								//r_err_str="Invalid escape sequence";
-								//return ERR_PARSE_ERROR;
 							} break;
 						}
 

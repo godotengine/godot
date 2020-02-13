@@ -41,15 +41,6 @@
 				Returns the list of recognized extensions for a resource type.
 			</description>
 		</method>
-		<method name="has">
-			<return type="bool">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<description>
-				[i]Deprecated method.[/i] Use [method has_cached] or [method exists] instead.
-			</description>
-		</method>
 		<method name="has_cached">
 			<return type="bool">
 			</return>
