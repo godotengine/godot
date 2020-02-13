@@ -483,7 +483,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 			}
 
 			r_gen_code.uniform_total_size = offset;
-			print_line("uniform total: " + itos(r_gen_code.uniform_total_size));
+
 			if (r_gen_code.uniform_total_size % 16 != 0) { //UBO sizes must be multiples of 16
 				r_gen_code.uniform_total_size += 16 - (r_gen_code.uniform_total_size % 16);
 			}
