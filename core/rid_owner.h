@@ -290,15 +290,21 @@ public:
 		elements_in_chunk = sizeof(T) > p_target_chunk_byte_size ? 1 : (p_target_chunk_byte_size / sizeof(T));
 		max_alloc = 0;
 		alloc_count = 0;
+
+#ifdef TOOLS_ENABLED
+		description = typeid(T).name();
+#else
 		description = NULL;
+#endif
 	}
 
 	~RID_Alloc() {
 		if (alloc_count) {
 			if (description) {
 				print_error("ERROR: " + itos(alloc_count) + " RID allocations of type '" + description + "' were leaked at exit.");
-			} else {
-				print_error("ERROR: " + itos(alloc_count) + " RID allocations of type '" + typeid(T).name() + "' were leaked at exit.");
+			}
+			else {
+				print_error("ERROR: " + itos(alloc_count) + " RID allocations were leaked at exit.");
 			}
 
 			for (size_t i = 0; i < max_alloc; i++) {
