@@ -597,7 +597,7 @@ namespace basisu
 			const uint32_t num_blocks_y = m_slices[slice_index].m_num_blocks_y;
 
 			gpu_image gi;
-			gi.init(cETC1, width, height);
+			gi.init(texture_format::cETC1, width, height);
 
 			for (uint32_t block_y = 0; block_y < num_blocks_y; block_y++)
 			{

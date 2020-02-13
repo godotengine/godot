@@ -207,7 +207,7 @@ namespace basisu
 			m_debug.clear();
 			m_debug_images.clear();
 			m_global_sel_pal.clear();
-			m_no_auto_global_sel_pal.clear();
+			m_auto_global_sel_pal.clear();
 			m_no_hybrid_sel_cb.clear();
 			m_perceptual.clear();
 			m_no_selector_rdo.clear();
@@ -279,7 +279,7 @@ namespace basisu
 		param<int> m_compression_level;
 
 		bool_param<false> m_global_sel_pal;
-		bool_param<false> m_no_auto_global_sel_pal;
+		bool_param<false> m_auto_global_sel_pal;
 
 		// Frontend/backend codec parameters
 		bool_param<false> m_no_hybrid_sel_cb;
