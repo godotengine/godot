@@ -301,7 +301,7 @@ namespace basisu
 
 	// GPU texture formats
 
-	enum texture_format
+	enum class texture_format
 	{
 		cInvalidTextureFormat = -1,
 		
@@ -321,6 +321,10 @@ namespace basisu
 		cPVRTC1_4_RGBA,
 		cATC_RGB,
 		cATC_RGBA_INTERPOLATED_ALPHA,
+		cFXT1_RGB,
+		cPVRTC2_4_RGBA,
+		cETC2_R11_EAC,
+		cETC2_RG11_EAC,
 		
 		// Uncompressed/raw pixels
 		cRGBA32,
@@ -334,17 +338,19 @@ namespace basisu
 	{
 		switch (fmt)
 		{
-		case cETC1:
-		case cETC1S:
-		case cETC2_RGB:
-		case cETC2_ALPHA:
-		case cBC1:
-		case cBC4:
-		case cPVRTC1_4_RGB:
-		case cPVRTC1_4_RGBA:
-		case cATC_RGB:
+		case texture_format::cETC1:
+		case texture_format::cETC1S:
+		case texture_format::cETC2_RGB:
+		case texture_format::cETC2_ALPHA:
+		case texture_format::cBC1:
+		case texture_format::cBC4:
+		case texture_format::cPVRTC1_4_RGB:
+		case texture_format::cPVRTC1_4_RGBA:
+		case texture_format::cATC_RGB:
+		case texture_format::cPVRTC2_4_RGBA:
+		case texture_format::cETC2_R11_EAC:
 			return 8;
-		case cRGBA32:
+		case texture_format::cRGBA32:
 			return sizeof(uint32_t) * 16;
 		default:
 			break;
@@ -360,6 +366,13 @@ namespace basisu
 	inline uint32_t get_block_width(texture_format fmt)
 	{
 		BASISU_NOTE_UNUSED(fmt);
+		switch (fmt)
+		{
+		case texture_format::cFXT1_RGB:
+			return 8;
+		default:
+			break;
+		}
 		return 4;
 	}
 

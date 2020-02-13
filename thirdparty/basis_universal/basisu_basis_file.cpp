@@ -32,7 +32,7 @@ namespace basisu
 		for (uint32_t i = 0; i < encoder_output.m_slice_desc.size(); i++)
 			m_header.m_total_images = maximum<uint32_t>(m_header.m_total_images, encoder_output.m_slice_desc[i].m_source_file_index + 1);
 				
-		m_header.m_format = basist::cETC1;
+		m_header.m_format = 0;// basist::block_format::cETC1;
 		m_header.m_flags = 0;
 		
 		if (encoder_output.m_etc1s)

@@ -193,21 +193,12 @@ namespace basisu
 		int block_x1 = block_x0 + 1;
 		int block_y0 = (static_cast<int>(y) - 2) >> 2;
 		int block_y1 = block_y0 + 1;
-		if (m_wrap_addressing)
-		{
-			block_x0 = posmod(block_x0, m_block_width);
-			block_x1 = posmod(block_x1, m_block_width);
-			block_y0 = posmod(block_y0, m_block_height);
-			block_y1 = posmod(block_y1, m_block_height);
-		}
-		else
-		{
-			block_x0 = clamp<int>(block_x0, 0, m_block_width - 1);
-			block_x1 = clamp<int>(block_x1, 0, m_block_width - 1);
-			block_y0 = clamp<int>(block_y0, 0, m_block_height - 1);
-			block_y1 = clamp<int>(block_y1, 0, m_block_height - 1);
-		}
-
+		
+		block_x0 = posmod(block_x0, m_block_width);
+		block_x1 = posmod(block_x1, m_block_width);
+		block_y0 = posmod(block_y0, m_block_height);
+		block_y1 = posmod(block_y1, m_block_height);
+		
 		pColors[0] = interpolate(x, y, m_blocks(block_x0, block_y0).get_endpoint_5554(0), m_blocks(block_x1, block_y0).get_endpoint_5554(0), m_blocks(block_x0, block_y1).get_endpoint_5554(0), m_blocks(block_x1, block_y1).get_endpoint_5554(0));
 		pColors[3] = interpolate(x, y, m_blocks(block_x0, block_y0).get_endpoint_5554(1), m_blocks(block_x1, block_y0).get_endpoint_5554(1), m_blocks(block_x0, block_y1).get_endpoint_5554(1), m_blocks(block_x1, block_y1).get_endpoint_5554(1));
 
@@ -240,21 +231,12 @@ namespace basisu
 		int block_x1 = block_x0 + 1;
 		int block_y0 = (static_cast<int>(y) - 2) >> 2;
 		int block_y1 = block_y0 + 1;
-		if (m_wrap_addressing)
-		{
-			block_x0 = posmod(block_x0, m_block_width);
-			block_x1 = posmod(block_x1, m_block_width);
-			block_y0 = posmod(block_y0, m_block_height);
-			block_y1 = posmod(block_y1, m_block_height);
-		}
-		else
-		{
-			block_x0 = clamp<int>(block_x0, 0, m_block_width - 1);
-			block_x1 = clamp<int>(block_x1, 0, m_block_width - 1);
-			block_y0 = clamp<int>(block_y0, 0, m_block_height - 1);
-			block_y1 = clamp<int>(block_y1, 0, m_block_height - 1);
-		}
-
+		
+		block_x0 = posmod(block_x0, m_block_width);
+		block_x1 = posmod(block_x1, m_block_width);
+		block_y0 = posmod(block_y0, m_block_height);
+		block_y1 = posmod(block_y1, m_block_height);
+		
 		if (get_block_uses_transparent_modulation(x >> 2, y >> 2))
 		{
 			if (m == 0)

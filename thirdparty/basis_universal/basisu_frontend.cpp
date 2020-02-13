@@ -343,6 +343,7 @@ namespace basisu
 				cur_blk.set_block_color5_etc1s(get_endpoint_cluster_unscaled_color(endpoint_cluster_index, false));
 				cur_blk.set_inten_tables_etc1s(get_endpoint_cluster_inten_table(endpoint_cluster_index, false));
 				cur_blk.set_raw_selector_bits(get_selector_cluster_selector_bits(old_selector_cluster_index).get_raw_selector_bits());
+				cur_blk.set_flip_bit(true);
 
 				const uint64_t cur_err = cur_blk.evaluate_etc1_error(get_source_pixel_block(block_index).get_ptr(), m_params.m_perceptual);
 
@@ -2385,7 +2386,7 @@ namespace basisu
 	void basisu_frontend::dump_debug_image(const char *pFilename, uint32_t first_block, uint32_t num_blocks_x, uint32_t num_blocks_y, bool output_blocks)
 	{
 		gpu_image g;
-		g.init(cETC1, num_blocks_x * 4, num_blocks_y * 4);
+		g.init(texture_format::cETC1, num_blocks_x * 4, num_blocks_y * 4);
 
 		for (uint32_t y = 0; y < num_blocks_y; y++)
 		{

@@ -42,7 +42,7 @@ namespace basist
 {
 	// Low-level formats directly supported by the transcoder (other supported texture formats are combinations of these low-level block formats).
 	// You probably don't care about these enum's unless you are going pretty low-level and calling the transcoder to decode individual slices.
-	enum block_format
+	enum class block_format
 	{
 		cETC1,								// ETC1S RGB 
 		cBC1,									// DXT1 RGB 
@@ -57,6 +57,7 @@ namespace basist
 												// data. If you use a sRGB ASTC format you'll get ~1 LSB of additional error, because of the different way ASTC decoders scale 8-bit endpoints to 16-bits during unpacking.
 		cATC_RGB,
 		cATC_RGBA_INTERPOLATED_ALPHA,
+		cFXT1_RGB,							// Opaque-only, has oddball 8x4 pixel block size
 												
 		cIndices,							// Used internally: Write 16-bit endpoint and selector indices directly to output (output block must be at least 32-bits)
 
@@ -71,6 +72,11 @@ namespace basist
 		cRGBA4444_ALPHA,
 		cRGBA4444_COLOR_OPAQUE,
 
+		cPVRTC2_4_RGB,
+		cPVRTC2_4_RGBA,
+
+		cETC2_EAC_R11,
+		
 		cTotalBlockFormats
 	};
 
@@ -624,6 +630,11 @@ namespace basist
 
 	struct decoder_etc_block;
 	
+	inline uint8_t clamp255(int32_t i)
+	{
+		return (uint8_t)((i & 0xFFFFFF00U) ? (~(i >> 31)) : i);
+	}
+
 	struct color32
 	{
 		union
@@ -646,6 +657,8 @@ namespace basist
 		color32(uint32_t vr, uint32_t vg, uint32_t vb, uint32_t va) { set(vr, vg, vb, va); }
 
 		void set(uint32_t vr, uint32_t vg, uint32_t vb, uint32_t va) { c[0] = static_cast<uint8_t>(vr); c[1] = static_cast<uint8_t>(vg); c[2] = static_cast<uint8_t>(vb); c[3] = static_cast<uint8_t>(va); }
+
+		void set_clamped(int vr, int vg, int vb, int va) { c[0] = clamp255(vr); c[1] = clamp255(vg);	c[2] = clamp255(vb); c[3] = clamp255(va); }
 
 		uint8_t operator[] (uint32_t idx) const { assert(idx < 4); return c[idx]; }
 		uint8_t &operator[] (uint32_t idx) { assert(idx < 4); return c[idx]; }
@@ -733,6 +746,8 @@ namespace basist
 		}
 	};
 
+	bool basis_block_format_is_uncompressed(block_format tex_type);
+	
 } // namespace basist
 
 
