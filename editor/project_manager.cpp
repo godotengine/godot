@@ -484,8 +484,8 @@ private:
 				if (mode == MODE_NEW) {
 
 					ProjectSettings::CustomMap initial_settings;
-					if (rasterizer_button_group->get_pressed_button()->get_meta("driver_name") == "GLES3") {
-						initial_settings["rendering/quality/driver/driver_name"] = "GLES3";
+					if (rasterizer_button_group->get_pressed_button()->get_meta("driver_name") == "Vulkan") {
+						initial_settings["rendering/quality/driver/driver_name"] = "Vulkan";
 					} else {
 						initial_settings["rendering/quality/driver/driver_name"] = "GLES2";
 						initial_settings["rendering/vram_compression/import_etc2"] = false;
@@ -881,7 +881,7 @@ public:
 		Button *rs_button = memnew(CheckBox);
 		rs_button->set_button_group(rasterizer_button_group);
 		rs_button->set_text(TTR("Vulkan"));
-		rs_button->set_meta("driver_name", "GLES3");
+		rs_button->set_meta("driver_name", "Vulkan");
 		rs_button->set_pressed(true);
 		rvb->add_child(rs_button);
 		l = memnew(Label);

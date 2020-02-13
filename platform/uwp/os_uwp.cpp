@@ -36,7 +36,6 @@
 #include "core/io/marshalls.h"
 #include "core/project_settings.h"
 #include "drivers/gles2/rasterizer_gles2.h"
-#include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/unix/ip_unix.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
@@ -186,71 +185,33 @@ Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	main_loop = NULL;
 	outside = true;
 
+	// FIXME: Hardcoded for now, add Vulkan support.
+	p_video_driver = VIDEO_DRIVER_GLES2;
 	ContextEGL_UWP::Driver opengl_api_type = ContextEGL_UWP::GLES_2_0;
-
-	if (p_video_driver == VIDEO_DRIVER_GLES2) {
-		opengl_api_type = ContextEGL_UWP::GLES_2_0;
-	}
 
 	bool gl_initialization_error = false;
 
-	gl_context = NULL;
-	while (!gl_context) {
-		gl_context = memnew(ContextEGL_UWP(window, opengl_api_type));
+	gl_context = memnew(ContextEGL_UWP(window, opengl_api_type));
 
-		if (gl_context->initialize() != OK) {
-			memdelete(gl_context);
-			gl_context = NULL;
-
-			if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2")) {
-				if (p_video_driver == VIDEO_DRIVER_GLES2) {
-					gl_initialization_error = true;
-					break;
-				}
-
-				p_video_driver = VIDEO_DRIVER_GLES2;
-				opengl_api_type = ContextEGL_UWP::GLES_2_0;
-			} else {
-				gl_initialization_error = true;
-				break;
-			}
-		}
+	if (gl_context->initialize() != OK) {
+		memdelete(gl_context);
+		gl_context = NULL;
+		gl_initialization_error = true;
 	}
 
-	while (true) {
-		if (opengl_api_type == ContextEGL_UWP::GLES_3_0) {
-			if (RasterizerGLES3::is_viable() == OK) {
-				RasterizerGLES3::register_config();
-				RasterizerGLES3::make_current();
-				break;
-			} else {
-				if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2")) {
-					p_video_driver = VIDEO_DRIVER_GLES2;
-					opengl_api_type = ContextEGL_UWP::GLES_2_0;
-					continue;
-				} else {
-					gl_initialization_error = true;
-					break;
-				}
-			}
-		}
-
-		if (opengl_api_type == ContextEGL_UWP::GLES_2_0) {
-			if (RasterizerGLES2::is_viable() == OK) {
-				RasterizerGLES2::register_config();
-				RasterizerGLES2::make_current();
-				break;
-			} else {
-				gl_initialization_error = true;
-				break;
-			}
+	if (opengl_api_type == ContextEGL_UWP::GLES_2_0) {
+		if (RasterizerGLES2::is_viable() == OK) {
+			RasterizerGLES2::register_config();
+			RasterizerGLES2::make_current();
+		} else {
+			gl_initialization_error = true;
 		}
 	}
 
 	if (gl_initialization_error) {
 		OS::get_singleton()->alert("Your video card driver does not support any of the supported OpenGL versions.\n"
 								   "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
-				"Unable to initialize Video driver");
+				"Unable to initialize video driver");
 		return ERR_UNAVAILABLE;
 	}
 

@@ -71,7 +71,6 @@ public:
 
 	jobject get_class_loader();
 
-	void gfx_init(bool gl2);
 	void on_video_init(JNIEnv *p_env = NULL);
 	void restart(JNIEnv *p_env = NULL);
 	void force_quit(JNIEnv *p_env = NULL);

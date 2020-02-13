@@ -99,4 +99,4 @@ public:
 	ShaderCompilerGLES2();
 };
 
-#endif // SHADERCOMPILERGLES3_H
+#endif // SHADERCOMPILERGLES2_H

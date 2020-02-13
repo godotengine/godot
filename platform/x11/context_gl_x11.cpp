@@ -166,28 +166,10 @@ Error ContextGL_X11::initialize() {
 	int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler(&ctxErrorHandler);
 
 	switch (context_type) {
-		case OLDSTYLE: {
-
-			p->glx_context = glXCreateContext(x11_display, vi, 0, GL_TRUE);
-			ERR_FAIL_COND_V(!p->glx_context, ERR_UNCONFIGURED);
-		} break;
 		case GLES_2_0_COMPATIBLE: {
 
 			p->glx_context = glXCreateNewContext(x11_display, fbconfig, GLX_RGBA_TYPE, 0, true);
 			ERR_FAIL_COND_V(!p->glx_context, ERR_UNCONFIGURED);
-		} break;
-		case GLES_3_0_COMPATIBLE: {
-
-			static int context_attribs[] = {
-				GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
-				GLX_CONTEXT_MINOR_VERSION_ARB, 3,
-				GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
-				GLX_CONTEXT_FLAGS_ARB, GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB /*|GLX_CONTEXT_DEBUG_BIT_ARB*/,
-				None
-			};
-
-			p->glx_context = glXCreateContextAttribsARB(x11_display, fbconfig, NULL, true, context_attribs);
-			ERR_FAIL_COND_V(ctxErrorOccurred || !p->glx_context, ERR_UNCONFIGURED);
 		} break;
 	}
 

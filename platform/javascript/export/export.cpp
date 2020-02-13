@@ -271,11 +271,9 @@ void EditorExportPlatformJavaScript::get_preset_features(const Ref<EditorExportP
 		String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
 		if (driver == "GLES2") {
 			r_features->push_back("etc");
-		} else if (driver == "GLES3") {
+		} else if (driver == "Vulkan") {
+			// FIXME: Review if this is correct.
 			r_features->push_back("etc2");
-			if (ProjectSettings::get_singleton()->get("rendering/quality/driver/fallback_to_gles2")) {
-				r_features->push_back("etc");
-			}
 		}
 	}
 }

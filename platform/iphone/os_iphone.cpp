@@ -33,7 +33,6 @@
 #include "os_iphone.h"
 
 #include "drivers/gles2/rasterizer_gles2.h"
-#include "drivers/gles3/rasterizer_gles3.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 
@@ -57,8 +56,6 @@ int OSIPhone::get_video_driver_count() const {
 const char *OSIPhone::get_video_driver_name(int p_driver) const {
 
 	switch (p_driver) {
-		case VIDEO_DRIVER_GLES3:
-			return "GLES3";
 		case VIDEO_DRIVER_GLES2:
 			return "GLES2";
 	}
@@ -103,44 +100,22 @@ int OSIPhone::get_current_video_driver() const {
 	return video_driver_index;
 }
 
-extern bool gles3_available; // from gl_view.mm
-
 Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
-	bool use_gl3 = GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES3";
 	bool gl_initialization_error = false;
 
-	while (true) {
-		if (use_gl3) {
-			if (RasterizerGLES3::is_viable() == OK && gles3_available) {
-				RasterizerGLES3::register_config();
-				RasterizerGLES3::make_current();
-				break;
-			} else {
-				if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2")) {
-					p_video_driver = VIDEO_DRIVER_GLES2;
-					use_gl3 = false;
-					continue;
-				} else {
-					gl_initialization_error = true;
-					break;
-				}
-			}
-		} else {
-			if (RasterizerGLES2::is_viable() == OK) {
-				RasterizerGLES2::register_config();
-				RasterizerGLES2::make_current();
-				break;
-			} else {
-				gl_initialization_error = true;
-				break;
-			}
-		}
+	// FIXME: Add Vulkan support via MoltenVK. Add fallback code back?
+
+	if (RasterizerGLES2::is_viable() == OK) {
+		RasterizerGLES2::register_config();
+		RasterizerGLES2::make_current();
+	} else {
+		gl_initialization_error = true;
 	}
 
 	if (gl_initialization_error) {
 		OS::get_singleton()->alert("Your device does not support any of the supported OpenGL versions.",
-				"Unable to initialize Video driver");
+				"Unable to initialize video driver");
 		return ERR_UNAVAILABLE;
 	}
 
@@ -155,10 +130,7 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	//visual_server->cursor_set_visible(false, 0);
 
 	// reset this to what it should be, it will have been set to 0 after visual_server->init() is called
-	if (use_gl3)
-		RasterizerStorageGLES3::system_fbo = gl_view_base_fb;
-	else
-		RasterizerStorageGLES2::system_fbo = gl_view_base_fb;
+	RasterizerStorageGLES2::system_fbo = gl_view_base_fb;
 
 	AudioDriverManager::initialize(p_audio_driver);
 
@@ -467,7 +439,7 @@ bool OSIPhone::can_draw() const {
 int OSIPhone::set_base_framebuffer(int p_fb) {
 
 	// gl_view_base_fb has not been updated yet
-	RasterizerStorageGLES3::system_fbo = p_fb;
+	RasterizerStorageGLES2::system_fbo = p_fb;
 
 	return 0;
 };

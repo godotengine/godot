@@ -89,7 +89,7 @@
 			The amount of vertex memory used.
 		</constant>
 		<constant name="RENDER_USAGE_VIDEO_MEM_TOTAL" value="21" enum="Monitor">
-			Unimplemented in the GLES2 and GLES3 rendering backends, always returns 0.
+			Unimplemented in the GLES2 rendering backend, always returns 0.
 		</constant>
 		<constant name="PHYSICS_2D_ACTIVE_OBJECTS" value="22" enum="Monitor">
 			Number of active [RigidBody2D] nodes in the game.

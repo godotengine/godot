@@ -28,10 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "drivers/gles3/rasterizer_gles3.h"
-
 #include "os_haiku.h"
 
+#include "drivers/gles2/rasterizer_gles2.h"
 #include "main/main.h"
 #include "servers/physics/physics_server_sw.h"
 #include "servers/visual/visual_server_raster.h"
@@ -78,7 +77,7 @@ int OS_Haiku::get_video_driver_count() const {
 }
 
 const char *OS_Haiku::get_video_driver_name(int p_driver) const {
-	return "GLES3";
+	return "GLES2";
 }
 
 int OS_Haiku::get_current_video_driver() const {
@@ -112,9 +111,9 @@ Error OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	context_gl->initialize();
 	context_gl->make_current();
 	context_gl->set_use_vsync(current_video_mode.use_vsync);
-	RasterizerGLES3::register_config();
-	RasterizerGLES3::make_current();
-
+	// FIXME: That's not how the rasterizer setup should happen.
+	RasterizerGLES2::register_config();
+	RasterizerGLES2::make_current();
 #endif
 
 	visual_server = memnew(VisualServerRaster);
