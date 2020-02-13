@@ -53,14 +53,17 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(VkDebugU
 	//This error needs to be ignored because the AMD allocator will mix up memory types on IGP processors
 	if (strstr(pCallbackData->pMessage, "Mapping an image with layout") != NULL &&
 			strstr(pCallbackData->pMessage, "can result in undefined behavior if this memory is used by the device") != NULL) {
+		free(message);
 		return VK_FALSE;
 	}
 	// This needs to be ignored because Validator is wrong here
 	if (strstr(pCallbackData->pMessage, "SPIR-V module not valid: Pointer operand") != NULL &&
 			strstr(pCallbackData->pMessage, "must be a memory object") != NULL) {
+		free(message);
 		return VK_FALSE;
 	}
 	if (strstr(pCallbackData->pMessageIdName, "UNASSIGNED-CoreValidation-DrawState-ClearCmdBeforeDraw") != NULL) {
+		free(message);
 		return VK_FALSE;
 	}
 
@@ -166,7 +169,10 @@ Error VulkanContext::_create_validation_layers() {
 	if (instance_layer_count > 0) {
 		VkLayerProperties *instance_layers = (VkLayerProperties *)malloc(sizeof(VkLayerProperties) * instance_layer_count);
 		err = vkEnumerateInstanceLayerProperties(&instance_layer_count, instance_layers);
-		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+		if (err) {
+			free(instance_layers);
+			ERR_FAIL_V(ERR_CANT_CREATE);
+		}
 
 		validation_found = _check_layers(ARRAY_SIZE(instance_validation_layers_alt1), instance_validation_layers,
 				instance_layer_count, instance_layers);
@@ -213,7 +219,10 @@ Error VulkanContext::_initialize_extensions() {
 	if (instance_extension_count > 0) {
 		VkExtensionProperties *instance_extensions = (VkExtensionProperties *)malloc(sizeof(VkExtensionProperties) * instance_extension_count);
 		err = vkEnumerateInstanceExtensionProperties(NULL, &instance_extension_count, instance_extensions);
-		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+		if (err) {
+			free(instance_extensions);
+			ERR_FAIL_V(ERR_CANT_CREATE);
+		}
 		for (uint32_t i = 0; i < instance_extension_count; i++) {
 			if (!strcmp(VK_KHR_SURFACE_EXTENSION_NAME, instance_extensions[i].extensionName)) {
 				surfaceExtFound = 1;
@@ -234,7 +243,10 @@ Error VulkanContext::_initialize_extensions() {
 					extension_names[enabled_extension_count++] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
 				}
 			}
-			ERR_FAIL_COND_V(enabled_extension_count >= MAX_EXTENSIONS, ERR_BUG); //??
+			if (enabled_extension_count >= MAX_EXTENSIONS) {
+				free(instance_extensions);
+				ERR_FAIL_V_MSG(ERR_BUG, "Enabled extension count reaches MAX_EXTENSIONS, BUG");
+			}
 		}
 
 		free(instance_extensions);
@@ -331,7 +343,10 @@ Error VulkanContext::_create_physical_device() {
 
 	VkPhysicalDevice *physical_devices = (VkPhysicalDevice *)malloc(sizeof(VkPhysicalDevice) * gpu_count);
 	err = vkEnumeratePhysicalDevices(inst, &gpu_count, physical_devices);
-	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+	if (err) {
+		free(physical_devices);
+		ERR_FAIL_V(ERR_CANT_CREATE);
+	}
 	/* for now, just grab the first physical device */
 	gpu = physical_devices[0];
 	free(physical_devices);
@@ -348,14 +363,20 @@ Error VulkanContext::_create_physical_device() {
 	if (device_extension_count > 0) {
 		VkExtensionProperties *device_extensions = (VkExtensionProperties *)malloc(sizeof(VkExtensionProperties) * device_extension_count);
 		err = vkEnumerateDeviceExtensionProperties(gpu, NULL, &device_extension_count, device_extensions);
-		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+		if (err) {
+			free(device_extensions);
+			ERR_FAIL_V(ERR_CANT_CREATE);
+		}
 
 		for (uint32_t i = 0; i < device_extension_count; i++) {
 			if (!strcmp(VK_KHR_SWAPCHAIN_EXTENSION_NAME, device_extensions[i].extensionName)) {
 				swapchainExtFound = 1;
 				extension_names[enabled_extension_count++] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
 			}
-			ERR_FAIL_COND_V(enabled_extension_count >= MAX_EXTENSIONS, ERR_BUG);
+			if (enabled_extension_count >= MAX_EXTENSIONS) {
+				free(device_extensions);
+				ERR_FAIL_V_MSG(ERR_BUG, "Enabled extension count reaches MAX_EXTENSIONS, BUG");
+			}
 		}
 
 		if (VK_KHR_incremental_present_enabled) {
@@ -370,7 +391,10 @@ Error VulkanContext::_create_physical_device() {
 					VK_KHR_incremental_present_enabled = true;
 					VULKAN_DEBUG("VK_KHR_incremental_present extension enabled\n");
 				}
-				ERR_FAIL_COND_V(enabled_extension_count >= MAX_EXTENSIONS, ERR_BUG);
+				if (enabled_extension_count >= MAX_EXTENSIONS) {
+					free(device_extensions);
+					ERR_FAIL_V_MSG(ERR_BUG, "Enabled extension count reaches MAX_EXTENSIONS, BUG");
+				}
 			}
 			if (!VK_KHR_incremental_present_enabled) {
 				VULKAN_DEBUG("VK_KHR_incremental_present extension NOT AVAILABLE\n");
@@ -389,7 +413,10 @@ Error VulkanContext::_create_physical_device() {
 					VK_GOOGLE_display_timing_enabled = true;
 					VULKAN_DEBUG("VK_GOOGLE_display_timing extension enabled\n");
 				}
-				ERR_FAIL_COND_V(enabled_extension_count >= MAX_EXTENSIONS, ERR_BUG);
+				if (enabled_extension_count >= MAX_EXTENSIONS) {
+					free(device_extensions);
+					ERR_FAIL_V_MSG(ERR_BUG, "Enabled extension count reaches MAX_EXTENSIONS, BUG");
+				}
 			}
 			if (!VK_GOOGLE_display_timing_enabled) {
 				VULKAN_DEBUG("VK_GOOGLE_display_timing extension NOT AVAILABLE\n");
@@ -553,6 +580,8 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR surface) {
 		}
 	}
 
+	free(supportsPresent);
+
 	// Generate error if could not find both a graphics and a present queue
 	ERR_FAIL_COND_V_MSG(graphicsQueueFamilyIndex == UINT32_MAX || presentQueueFamilyIndex == UINT32_MAX, ERR_CANT_CREATE,
 			"Could not find both graphics and present queues\n");
@@ -560,7 +589,6 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR surface) {
 	graphics_queue_family_index = graphicsQueueFamilyIndex;
 	present_queue_family_index = presentQueueFamilyIndex;
 	separate_present_queue = (graphics_queue_family_index != present_queue_family_index);
-	free(supportsPresent);
 
 	_create_device();
 
@@ -597,17 +625,25 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR surface) {
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 	VkSurfaceFormatKHR *surfFormats = (VkSurfaceFormatKHR *)malloc(formatCount * sizeof(VkSurfaceFormatKHR));
 	err = fpGetPhysicalDeviceSurfaceFormatsKHR(gpu, surface, &formatCount, surfFormats);
-	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+	if (err) {
+		free(surfFormats);
+		ERR_FAIL_V(ERR_CANT_CREATE);
+	}
 	// If the format list includes just one entry of VK_FORMAT_UNDEFINED,
 	// the surface has no preferred format.  Otherwise, at least one
 	// supported format will be returned.
 	if (true || (formatCount == 1 && surfFormats[0].format == VK_FORMAT_UNDEFINED)) {
 		format = VK_FORMAT_B8G8R8A8_UNORM;
 	} else {
-		ERR_FAIL_COND_V(formatCount < 1, ERR_CANT_CREATE);
+		if (formatCount < 1) {
+			free(surfFormats);
+			ERR_FAIL_V_MSG(ERR_CANT_CREATE, "formatCount less than 1");
+		}
 		format = surfFormats[0].format;
 	}
 	color_space = surfFormats[0].colorSpace;
+
+	free(surfFormats);
 
 	Error serr = _create_semaphores();
 	if (serr) {
@@ -764,7 +800,10 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	VkPresentModeKHR *presentModes = (VkPresentModeKHR *)malloc(presentModeCount * sizeof(VkPresentModeKHR));
 	ERR_FAIL_COND_V(!presentModes, ERR_CANT_CREATE);
 	err = fpGetPhysicalDeviceSurfacePresentModesKHR(gpu, window->surface, &presentModeCount, presentModes);
-	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+	if (err) {
+		free(presentModes);
+		ERR_FAIL_V(ERR_CANT_CREATE);
+	}
 
 	VkExtent2D swapchainExtent;
 	// width and height are either both 0xFFFFFFFF, or both not 0xFFFFFFFF.
@@ -794,6 +833,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	}
 
 	if (window->width == 0 || window->height == 0) {
+		free(presentModes);
 		//likely window minimized, no swapchain created
 		return OK;
 	}
@@ -836,6 +876,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 			}
 		}
 	}
+	free(presentModes);
 	ERR_FAIL_COND_V_MSG(swapchainPresentMode != window->presentMode, ERR_CANT_CREATE, "Present mode specified is not supported\n");
 
 	// Determine the number of VkImages to use in the swap chain.
@@ -915,11 +956,17 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	VkImage *swapchainImages = (VkImage *)malloc(swapchainImageCount * sizeof(VkImage));
 	ERR_FAIL_COND_V(!swapchainImages, ERR_CANT_CREATE);
 	err = fpGetSwapchainImagesKHR(device, window->swapchain, &swapchainImageCount, swapchainImages);
-	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+	if (err) {
+		free(swapchainImages);
+		ERR_FAIL_V(ERR_CANT_CREATE);
+	}
 
 	window->swapchain_image_resources =
 			(SwapchainImageResources *)malloc(sizeof(SwapchainImageResources) * swapchainImageCount);
-	ERR_FAIL_COND_V(!window->swapchain_image_resources, ERR_CANT_CREATE);
+	if (!window->swapchain_image_resources) {
+		free(swapchainImages);
+		ERR_FAIL_V(ERR_CANT_CREATE);
+	}
 
 	for (uint32_t i = 0; i < swapchainImageCount; i++) {
 		VkImageViewCreateInfo color_image_view = {
@@ -947,12 +994,13 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 		color_image_view.image = window->swapchain_image_resources[i].image;
 
 		err = vkCreateImageView(device, &color_image_view, NULL, &window->swapchain_image_resources[i].view);
-		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+		if (err) {
+			free(swapchainImages);
+			ERR_FAIL_V(ERR_CANT_CREATE);
+		}
 	}
 
-	if (NULL != presentModes) {
-		free(presentModes);
-	}
+	free(swapchainImages);
 
 	/******** FRAMEBUFFER ************/
 
@@ -1450,4 +1498,7 @@ VulkanContext::VulkanContext() {
 }
 
 VulkanContext::~VulkanContext() {
+	if (queue_props) {
+		free(queue_props);
+	}
 }

@@ -43,6 +43,7 @@ class ThreadWorkPool {
 		std::atomic<uint32_t> *index;
 		uint32_t max_elements;
 		virtual void work() = 0;
+		virtual ~BaseWork() = default;
 	};
 
 	template <class C, class M, class U>
@@ -98,6 +99,8 @@ public:
 			threads[i].completed.wait();
 			threads[i].work = nullptr;
 		}
+
+		memdelete(w);
 	}
 
 	void init(int p_thread_count = -1);
