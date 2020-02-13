@@ -445,6 +445,7 @@ public:
 	void rset_id(int p_peer_id, const StringName &p_property, const Variant &p_value); //remote set call, honors RPCMode
 	void rset_unreliable_id(int p_peer_id, const StringName &p_property, const Variant &p_value); //remote set call, honors RPCMode
 
+	void rpcp_send_bytes(int p_peer_id, bool p_unreliable, const StringName &p_method, const PoolByteArray p_bytes, int p_custom_data_size = 0);
 	void rpcp(int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount);
 	void rsetp(int p_peer_id, bool p_unreliable, const StringName &p_property, const Variant &p_value);
 

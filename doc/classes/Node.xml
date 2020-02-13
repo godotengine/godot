@@ -660,6 +660,24 @@
 				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] using an unreliable protocol (see [method NetworkedMultiplayerPeer.set_target_peer]). Returns an empty [Variant].
 			</description>
 		</method>
+		<method name="rpc_send_bytes" qualifiers="vararg">
+			<return type="void">
+			</return>
+			<argument index="0" name="peer_id" type="int">
+			</argument>
+			<argument index="1" name="unreliable" type="bool">
+			</argument>
+			<argument index="2" name="method" type="String">
+			</argument>
+			<argument index="3" name="bytes" type="PoolByteArray">
+			</argument>
+			<argument index="4" name="custom_data_size" type="int" default="0">
+			</argument>
+			<description>
+				Sends bytes to a [method rpc] to a specific peer identified by [code]peer_id[/code]. If [code]unreliable[/code] is [code]true[/code], the unreliable protocol will be used (see [method NetworkedMultiplayerPeer.set_target_peer]). This is a low-level function which doesn't guarantee that the bytes will arrive correctly. You must always check the received bytes on the receiving peer's side carefully.
+				If [code]custom_data_size[/code] is [code]0[/code], the full [PoolByteArray] will be sent to the target peer.
+			</description>
+		</method>
 		<method name="rset">
 			<return type="void">
 			</return>

@@ -700,6 +700,11 @@ Variant Node::_rpc_unreliable_id_bind(const Variant **p_args, int p_argcount, Va
 	return Variant();
 }
 
+void Node::rpcp_send_bytes(int p_peer_id, bool p_unreliable, const StringName &p_method, const PoolByteArray p_bytes, int p_custom_data_size) {
+	ERR_FAIL_COND(!is_inside_tree());
+	get_multiplayer()->rpcp_send_bytes(this, p_peer_id, p_unreliable, p_method, p_bytes, p_custom_data_size);
+}
+
 void Node::rpcp(int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount) {
 	ERR_FAIL_COND(!is_inside_tree());
 	get_multiplayer()->rpcp(this, p_peer_id, p_unreliable, p_method, p_arg, p_argcount);
@@ -2940,6 +2945,8 @@ void Node::_bind_methods() {
 		mi.name = "rpc_unreliable_id";
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc_unreliable_id", &Node::_rpc_unreliable_id_bind, mi);
 	}
+
+	ClassDB::bind_method(D_METHOD("rpc_send_bytes", "peer_id", "unreliable", "method", "bytes", "custom_data_size"), &Node::rpcp_send_bytes, DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("rset", "property", "value"), &Node::rset);
 	ClassDB::bind_method(D_METHOD("rset_id", "peer_id", "property", "value"), &Node::rset_id);

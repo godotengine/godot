@@ -48,6 +48,39 @@ public:
 		int outgoing_rset;
 	};
 
+	enum NetworkCommands {
+		NETWORK_COMMAND_REMOTE_CALL = 0,
+		NETWORK_COMMAND_REMOTE_CALL_RAW,
+		NETWORK_COMMAND_REMOTE_SET,
+		NETWORK_COMMAND_SIMPLIFY_PATH,
+		NETWORK_COMMAND_CONFIRM_PATH,
+		NETWORK_COMMAND_RAW,
+	};
+
+	enum NetworkNodeIdCompression {
+		NETWORK_NODE_ID_COMPRESSION_8 = 0,
+		NETWORK_NODE_ID_COMPRESSION_16,
+		NETWORK_NODE_ID_COMPRESSION_32,
+	};
+
+	enum NetworkNameIdCompression {
+		NETWORK_NAME_ID_COMPRESSION_8 = 0,
+		NETWORK_NAME_ID_COMPRESSION_16,
+	};
+
+	enum RPCMode {
+
+		RPC_MODE_DISABLED, // No rpc for this method, calls to this will be blocked (default)
+		RPC_MODE_REMOTE, // Using rpc() on it will call method / set property in all remote peers
+		RPC_MODE_MASTER, // Using rpc() on it will call method on wherever the master is, be it local or remote
+		RPC_MODE_PUPPET, // Using rpc() on it will call method for all puppets
+		RPC_MODE_SLAVE = RPC_MODE_PUPPET, // Deprecated, same as puppet
+		RPC_MODE_REMOTESYNC, // Using rpc() on it will call method / set property in all remote peers and locally
+		RPC_MODE_SYNC = RPC_MODE_REMOTESYNC, // Deprecated. Same as RPC_MODE_REMOTESYNC
+		RPC_MODE_MASTERSYNC, // Using rpc() on it will call method / set property in the master peer and locally
+		RPC_MODE_PUPPETSYNC, // Using rpc() on it will call method / set property in all puppets peers and locally
+	};
+
 private:
 	//path sent caches
 	struct PathSentCache {
@@ -99,49 +132,17 @@ protected:
 	void _process_simplify_path(int p_from, const uint8_t *p_packet, int p_packet_len);
 	void _process_confirm_path(int p_from, const uint8_t *p_packet, int p_packet_len);
 	Node *_process_get_node(int p_from, const uint8_t *p_packet, uint32_t p_node_target, int p_packet_len);
-	void _process_rpc(Node *p_node, const uint16_t p_rpc_method_id, int p_from, const uint8_t *p_packet, int p_packet_len, int p_offset);
+	void _process_rpc(Node *p_node, const uint16_t p_rpc_method_id, int p_from, const uint8_t *p_packet, int p_packet_len, int p_offset, bool p_raw);
 	void _process_rset(Node *p_node, const uint16_t p_rpc_property_id, int p_from, const uint8_t *p_packet, int p_packet_len, int p_offset);
 	void _process_raw(int p_from, const uint8_t *p_packet, int p_packet_len);
 
-	void _send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p_set, const StringName &p_name, const Variant **p_arg, int p_argcount);
+	void _send_rpc(Node *p_from, int p_to, bool p_unreliable, NetworkCommands p_remote_type, const StringName &p_name, const Variant **p_arg, int p_argcount, uint32_t p_raw_data_size = 0);
 	bool _send_confirm_path(Node *p_node, NodePath p_path, PathSentCache *psc, int p_target);
 
 	Error _encode_and_compress_variant(const Variant &p_variant, uint8_t *p_buffer, int &r_len);
 	Error _decode_and_decompress_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len);
 
 public:
-	enum NetworkCommands {
-		NETWORK_COMMAND_REMOTE_CALL = 0,
-		NETWORK_COMMAND_REMOTE_SET,
-		NETWORK_COMMAND_SIMPLIFY_PATH,
-		NETWORK_COMMAND_CONFIRM_PATH,
-		NETWORK_COMMAND_RAW,
-	};
-
-	enum NetworkNodeIdCompression {
-		NETWORK_NODE_ID_COMPRESSION_8 = 0,
-		NETWORK_NODE_ID_COMPRESSION_16,
-		NETWORK_NODE_ID_COMPRESSION_32,
-	};
-
-	enum NetworkNameIdCompression {
-		NETWORK_NAME_ID_COMPRESSION_8 = 0,
-		NETWORK_NAME_ID_COMPRESSION_16,
-	};
-
-	enum RPCMode {
-
-		RPC_MODE_DISABLED, // No rpc for this method, calls to this will be blocked (default)
-		RPC_MODE_REMOTE, // Using rpc() on it will call method / set property in all remote peers
-		RPC_MODE_MASTER, // Using rpc() on it will call method on wherever the master is, be it local or remote
-		RPC_MODE_PUPPET, // Using rpc() on it will call method for all puppets
-		RPC_MODE_SLAVE = RPC_MODE_PUPPET, // Deprecated, same as puppet
-		RPC_MODE_REMOTESYNC, // Using rpc() on it will call method / set property in all remote peers and locally
-		RPC_MODE_SYNC = RPC_MODE_REMOTESYNC, // Deprecated. Same as RPC_MODE_REMOTESYNC
-		RPC_MODE_MASTERSYNC, // Using rpc() on it will call method / set property in the master peer and locally
-		RPC_MODE_PUPPETSYNC, // Using rpc() on it will call method / set property in all puppets peers and locally
-	};
-
 	void poll();
 	void clear();
 	void set_root_node(Node *p_node);
@@ -149,6 +150,8 @@ public:
 	Ref<NetworkedMultiplayerPeer> get_network_peer() const;
 	Error send_bytes(PoolVector<uint8_t> p_data, int p_to = NetworkedMultiplayerPeer::TARGET_PEER_BROADCAST, NetworkedMultiplayerPeer::TransferMode p_mode = NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
 
+	// Called by Node.rpc_send_bytes
+	void rpcp_send_bytes(Node *p_node, int p_peer_id, bool p_unreliable, const StringName &p_method, const PoolByteArray p_bytes, uint32_t p_custom_data_size = 0);
 	// Called by Node.rpc
 	void rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount);
 	// Called by Node.rset
