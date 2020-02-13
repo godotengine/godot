@@ -286,7 +286,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	Ref<FontData> dfmono;
 	dfmono.instance();
-	dfmono->load_memory(_font_Hack_Regular, _font_Hack_Regular_size, "ttf", default_font_size);
+	dfmono->load_memory(_font_JetBrainsMono_Regular, _font_JetBrainsMono_Regular_size, "ttf", default_font_size);
 	dfmono->set_antialiased(font_antialiased);
 	dfmono->set_hinting(font_hinting);
 
