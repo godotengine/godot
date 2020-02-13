@@ -2690,6 +2690,8 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 }
 
 RasterizerSceneHighEndRD::~RasterizerSceneHighEndRD() {
+	directional_shadow_atlas_set_size(0);
+
 	//clear base uniform set if still valid
 	if (view_dependant_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(view_dependant_uniform_set)) {
 		RD::get_singleton()->free(view_dependant_uniform_set);
