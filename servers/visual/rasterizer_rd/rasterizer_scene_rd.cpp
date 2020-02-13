@@ -3125,8 +3125,6 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 }
 
 RasterizerSceneRD::~RasterizerSceneRD() {
-	directional_shadow_atlas_set_size(0);
-
 	for (Map<Vector2i, ShadowMap>::Element *E = shadow_maps.front(); E; E = E->next()) {
 		RD::get_singleton()->free(E->get().depth);
 	}
