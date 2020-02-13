@@ -530,7 +530,7 @@ void FindInFilesDialog::_on_replace_text_entered(String text) {
 void FindInFilesDialog::_on_folder_selected(String path) {
 	int i = path.find("://");
 	if (i != -1) {
-		path = path.right(i + 3);
+		path = path.substr(i + 3);
 	}
 	_folder_line_edit->set_text(path);
 }
@@ -932,7 +932,7 @@ void FindInFilesPanel::apply_replaces_in_file(String fpath, const Vector<Result>
 			continue;
 		}
 
-		line = line.left(repl_begin) + new_text + line.right(repl_end);
+		line = line.left(repl_begin) + new_text + line.substr(repl_end);
 		// keep an offset in case there are successive replaces in the same line
 		offset += new_text.length() - (repl_end - repl_begin);
 	}

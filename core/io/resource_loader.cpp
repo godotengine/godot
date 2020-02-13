@@ -867,7 +867,7 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 				continue;
 			}
 
-			String l = res_remaps[i].right(split + 1).strip_edges();
+			String l = res_remaps[i].substr(split + 1).strip_edges();
 			if (l == locale) { // Exact match.
 				new_path = res_remaps[i].left(split);
 				break;

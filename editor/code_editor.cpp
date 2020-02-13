@@ -1012,7 +1012,7 @@ void CodeTextEditor::convert_indent_to_spaces() {
 				if (cursor_line == i && cursor_column > j) {
 					cursor_column += indent_size - 1;
 				}
-				line = line.left(j) + indent + line.right(j + 1);
+				line = line.left(j) + indent + line.substr(j + 1);
 			}
 			j++;
 		}
@@ -1056,7 +1056,7 @@ void CodeTextEditor::convert_indent_to_tabs() {
 					if (cursor_line == i && cursor_column > j) {
 						cursor_column -= indent_size;
 					}
-					line = line.left(j - indent_size) + "\t" + line.right(j + 1);
+					line = line.left(j - indent_size) + "\t" + line.substr(j + 1);
 					j = 0;
 					space_count = -1;
 				}
@@ -1114,7 +1114,7 @@ void CodeTextEditor::convert_case(CaseStyle p_case) {
 			new_line = text_editor->get_line(i).left(begin_col) + new_line;
 		}
 		if (i == end) {
-			new_line = new_line + text_editor->get_line(i).right(end_col);
+			new_line = new_line + text_editor->get_line(i).substr(end_col);
 		}
 		text_editor->set_line(i, new_line);
 	}
