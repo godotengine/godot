@@ -538,6 +538,7 @@ public:
 		StringName name;
 		Node *owner;
 		Node *index_expression;
+		bool has_swizzling_duplicates;
 
 		virtual DataType get_datatype() const { return datatype; }
 		virtual String get_datatype_name() const { return String(struct_name); }
@@ -549,7 +550,8 @@ public:
 				datatype(TYPE_VOID),
 				array_size(0),
 				owner(NULL),
-				index_expression(NULL) {}
+				index_expression(NULL),
+				has_swizzling_duplicates(false) {}
 	};
 
 	struct StructNode : public Node {
