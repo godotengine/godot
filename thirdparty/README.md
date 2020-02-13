@@ -16,7 +16,7 @@ Subcategories (`###` level) where needed are separated by a single empty line.
 ## basis_universal
 
 - Upstream: https://github.com/BinomialLLC/basis_universal
-- Version: git (6afb2fc, 2019)
+- Version: git (895ee8e, 2020)
 - License: Apache 2.0
 
 Files extracted from upstream source:

@@ -27,7 +27,7 @@
 
 using namespace basisu;
 
-#define BASISU_TOOL_VERSION "1.09.00"
+#define BASISU_TOOL_VERSION "1.10.00"
 
 enum tool_mode
 {
@@ -35,7 +35,8 @@ enum tool_mode
 	cCompress,
 	cValidate,
 	cUnpack,
-	cCompare
+	cCompare,
+	cVersion,
 };
 
 static void print_usage()
@@ -47,6 +48,7 @@ static void print_usage()
 		" -unpack: Use transcoder to unpack .basis file to one or more .ktx/.png files\n"
 		" -validate: Validate and display information about a .basis file\n"
 		" -compare: Compare two PNG images specified with -file, output PSNR and SSIM statistics and RGB/A delta images\n"
+		" -version: Print basisu version and exit\n"
 		"Unless an explicit mode is specified, if one or more files have the .basis extension this tool defaults to unpack mode.\n"
 		"\n"
 		"Important: By default, the compressor assumes the input is in the sRGB colorspace (like photos/albedo textures).\n"
@@ -82,7 +84,7 @@ static void print_usage()
 		" -normal_map: Tunes codec parameters for better quality on normal maps (linear colorspace metrics, linear mipmap filtering, no selector RDO, no sRGB)\n"
 		" -no_alpha: Always output non-alpha basis files, even if one or more inputs has alpha\n"
 		" -force_alpha: Always output alpha basis files, even if no inputs has alpha\n"
-		" -seperate_rg_to_color_alpha: Seperate input R and G channels to RGB and A (for tangent space XY normal maps)\n"
+		" -separate_rg_to_color_alpha: Separate input R and G channels to RGB and A (for tangent space XY normal maps)\n"
 		" -no_multithreading: Disable multithreading\n"
 		" -no_ktx: Disable KTX writing when unpacking (faster)\n"
 		" -etc1_only: Only unpack to ETC1, skipping the other texture formats during -unpack\n"
@@ -108,7 +110,7 @@ static void print_usage()
 		"\n"
 		"Hierarchical virtual selector codebook options:\n"
 		" -global_sel_pal: Always use vitual selector palettes (instead of custom palettes), slightly smaller files, but lower quality, slower encoding\n"
-		" -no_auto_global_sel_pal: Don't automatically use virtual selector palettes on small images\n"
+		" -auto_global_sel_pal: Automatically use virtual selector palettes on small images for slightly smaller files (defaults to off for faster encoding time)\n"
 		" -no_hybrid_sel_cb: Don't automatically use hybrid virtual selector codebooks (for higher quality, only active when -global_sel_pal is specified)\n"
 		" -global_pal_bits X: Set virtual selector codebook palette bits, range is [0,12], default is 8, higher is slower/better quality\n"
 		" -global_mod_bits X: Set virtual selector codebook modifier bits, range is [0,15], defualt is 8, higher is slower/better quality\n"
@@ -216,6 +218,8 @@ static bool load_listing_file(const std::string &f, std::vector<std::string> &fi
 
 class command_line_params
 {
+	BASISU_NO_EQUALS_OR_COPY_CONSTRUCT(command_line_params);
+
 public:
 	command_line_params() :
 		m_mode(cDefault),
@@ -248,6 +252,8 @@ public:
 				m_mode = cUnpack;
 			else if (strcasecmp(pArg, "-validate") == 0)
 				m_mode = cValidate;
+			else if (strcasecmp(pArg, "-version") == 0)
+				m_mode = cVersion;
 			else if (strcasecmp(pArg, "-compare_ssim") == 0)
 				m_compare_ssim = true;
 			else if (strcasecmp(pArg, "-file") == 0)
@@ -347,7 +353,8 @@ public:
 				m_comp_params.m_check_for_alpha = false;
 			else if (strcasecmp(pArg, "-force_alpha") == 0)
 				m_comp_params.m_force_alpha = true;
-			else if (strcasecmp(pArg, "-seperate_rg_to_color_alpha") == 0)
+			else if ((strcasecmp(pArg, "-separate_rg_to_color_alpha") == 0) ||
+			        (strcasecmp(pArg, "-seperate_rg_to_color_alpha") == 0)) // was mispelled for a while - whoops!
 				m_comp_params.m_seperate_rg_to_color_alpha = true;
 			else if (strcasecmp(pArg, "-no_multithreading") == 0)
 			{
@@ -407,7 +414,9 @@ public:
 			else if (strcasecmp(pArg, "-global_sel_pal") == 0)
 				m_comp_params.m_global_sel_pal = true;
 			else if (strcasecmp(pArg, "-no_auto_global_sel_pal") == 0)
-				m_comp_params.m_no_auto_global_sel_pal = true;
+				m_comp_params.m_auto_global_sel_pal = false;
+			else if (strcasecmp(pArg, "-auto_global_sel_pal") == 0)
+				m_comp_params.m_auto_global_sel_pal = true;
 			else if (strcasecmp(pArg, "-global_pal_bits") == 0)
 			{
 				REMAINING_ARGS_CHECK(1);
@@ -942,14 +951,14 @@ static bool unpack_and_validate_mode(command_line_params &opts, bool validate_fl
 
 		printf("start_transcoding time: %3.3f ms\n", tm.get_elapsed_ms());
 				
-		std::vector< gpu_image_vec > gpu_images[basist::cTFTotalTextureFormats];
+		std::vector< gpu_image_vec > gpu_images[(int)basist::transcoder_texture_format::cTFTotalTextureFormats];
 		
 		int first_format = 0;
-		int last_format = basist::cTFTotalBlockTextureFormats;
+		int last_format = (int)basist::transcoder_texture_format::cTFTotalTextureFormats;
 
 		if (opts.m_etc1_only)
 		{
-			first_format = basist::cTFETC1;
+			first_format = (int)basist::transcoder_texture_format::cTFETC1_RGB;
 			last_format = first_format + 1;
 		}
 
@@ -957,15 +966,23 @@ static bool unpack_and_validate_mode(command_line_params &opts, bool validate_fl
 		{
 			basist::transcoder_texture_format tex_fmt = static_cast<basist::transcoder_texture_format>(format_iter);
 
-			gpu_images[tex_fmt].resize(fileinfo.m_total_images);
+			if (basist::basis_transcoder_format_is_uncompressed(tex_fmt))
+				continue;
+			
+			gpu_images[(int)tex_fmt].resize(fileinfo.m_total_images);
 
 			for (uint32_t image_index = 0; image_index < fileinfo.m_total_images; image_index++)
-				gpu_images[tex_fmt][image_index].resize(fileinfo.m_image_mipmap_levels[image_index]);
+				gpu_images[(int)tex_fmt][image_index].resize(fileinfo.m_image_mipmap_levels[image_index]);
 		}
 
 		// Now transcode the file to all supported texture formats and save mipmapped KTX files
 		for (int format_iter = first_format; format_iter < last_format; format_iter++)
 		{
+			const basist::transcoder_texture_format transcoder_tex_fmt = static_cast<basist::transcoder_texture_format>(format_iter);
+
+			if (basist::basis_transcoder_format_is_uncompressed(transcoder_tex_fmt))
+				continue;
+
 			for (uint32_t image_index = 0; image_index < fileinfo.m_total_images; image_index++)
 			{
 				for (uint32_t level_index = 0; level_index < fileinfo.m_image_mipmap_levels[image_index]; level_index++)
@@ -977,10 +994,8 @@ static bool unpack_and_validate_mode(command_line_params &opts, bool validate_fl
 						error_printf("Failed retrieving image level information (%u %u)!\n", image_index, level_index);
 						return false;
 					}
-
-					const basist::transcoder_texture_format transcoder_tex_fmt = static_cast<basist::transcoder_texture_format>(format_iter);
-
-					if ((transcoder_tex_fmt == basist::cTFPVRTC1_4_RGB) || (transcoder_tex_fmt == basist::cTFPVRTC1_4_RGBA))
+										
+					if ((transcoder_tex_fmt == basist::transcoder_texture_format::cTFPVRTC1_4_RGB) || (transcoder_tex_fmt == basist::transcoder_texture_format::cTFPVRTC1_4_RGBA))
 					{
 						if (!is_pow2(level_info.m_width) || !is_pow2(level_info.m_height))
 						{
@@ -995,51 +1010,23 @@ static bool unpack_and_validate_mode(command_line_params &opts, bool validate_fl
 
 					basisu::texture_format tex_fmt = basis_get_basisu_texture_format(transcoder_tex_fmt);
 
-					gpu_image& gi = gpu_images[transcoder_tex_fmt][image_index][level_index];
+					gpu_image& gi = gpu_images[(int)transcoder_tex_fmt][image_index][level_index];
 					gi.init(tex_fmt, level_info.m_orig_width, level_info.m_orig_height);
 
 					// Fill the buffer with psuedo-random bytes, to help more visibly detect cases where the transcoder fails to write to part of the output.
 					fill_buffer_with_random_bytes(gi.get_ptr(), gi.get_size_in_bytes());
 
+					uint32_t decode_flags = 0;
+
 					tm.start();
-#if 1
-					if (!dec.transcode_image_level(&basis_data[0], (uint32_t)basis_data.size(), image_index, level_index, gi.get_ptr(), gi.get_total_blocks(), transcoder_tex_fmt, 0))
+														
+					if (!dec.transcode_image_level(&basis_data[0], (uint32_t)basis_data.size(), image_index, level_index, gi.get_ptr(), gi.get_total_blocks(), transcoder_tex_fmt, decode_flags))
 					{
 						error_printf("Failed transcoding image level (%u %u %u)!\n", image_index, level_index, format_iter);
 						return false;
 					}
 					
 					double total_transcode_time = tm.get_elapsed_ms();
-#else
-					// quick and dirty row pitch parameter test, to be moved into a unit test
-					uint8_vec temp;
-					uint32_t block_pitch_to_test = level_info.m_num_blocks_x;
-					if ((transcoder_tex_fmt != basist::cTFPVRTC1_4_RGB) || (transcoder_tex_fmt != basist::cTFPVRTC1_4_RGBA))
-						block_pitch_to_test += 5;
-
-					temp.resize(level_info.m_num_blocks_y * block_pitch_to_test * gi.get_bytes_per_block());
-					fill_buffer_with_random_bytes(&temp[0], temp.size());
-
-					tm.start();
-
-					if (!dec.transcode_image_level(&basis_data[0], (uint32_t)basis_data.size(), image_index, level_index, &temp[0], (uint32_t)(temp.size() / gi.get_bytes_per_block()), transcoder_tex_fmt, 0, block_pitch_to_test))
-					{
-						error_printf("Failed transcoding image level (%u %u %u)!\n", image_index, level_index, format_iter);
-						return false;
-					}
-					double total_transcode_time = tm.get_elapsed_ms();
-
-					if ((transcoder_tex_fmt == basist::cTFPVRTC1_4_RGB) || (transcoder_tex_fmt == basist::cTFPVRTC1_4_RGBA))
-					{
-						assert(temp.size() == gi.get_size_in_bytes());
-						memcpy(gi.get_ptr(), &temp[0], gi.get_size_in_bytes());
-					}
-					else
-					{
-						for (uint32_t y = 0; y < level_info.m_num_blocks_y; y++)
-							memcpy(gi.get_block_ptr(0, y), &temp[y * block_pitch_to_test * gi.get_bytes_per_block()], gi.get_row_pitch_in_bytes());
-					}
-#endif
 
 					printf("Transcode of image %u level %u res %ux%u format %s succeeded in %3.3f ms\n", image_index, level_index, level_info.m_orig_width, level_info.m_orig_height, basist::basis_get_format_name(transcoder_tex_fmt), total_transcode_time);
 
@@ -1056,6 +1043,9 @@ static bool unpack_and_validate_mode(command_line_params &opts, bool validate_fl
 			for (int format_iter = first_format; format_iter < last_format; format_iter++)
 			{
 				const basist::transcoder_texture_format transcoder_tex_fmt = static_cast<basist::transcoder_texture_format>(format_iter);
+
+				if (basist::basis_transcoder_format_is_uncompressed(transcoder_tex_fmt))
+					continue;
 
 				if ((!opts.m_no_ktx) && (fileinfo.m_tex_type == basist::cBASISTexTypeCubemapArray))
 				{
@@ -1132,6 +1122,21 @@ static bool unpack_and_validate_mode(command_line_params &opts, bool validate_fl
 						}
 						printf("Wrote PNG file \"%s\"\n", rgb_filename.c_str());
 
+						if (transcoder_tex_fmt == basist::transcoder_texture_format::cTFFXT1_RGB)
+						{
+							std::string out_filename;
+							if (gi.size() > 1)
+								out_filename = base_filename + string_format("_unpacked_rgb_%s_%u_%04u.out", basist::basis_get_format_name(transcoder_tex_fmt), level_index, image_index);
+							else
+								out_filename = base_filename + string_format("_unpacked_rgb_%s_%04u.out", basist::basis_get_format_name(transcoder_tex_fmt), image_index);
+							if (!write_3dfx_out_file(out_filename.c_str(), gi[level_index]))
+							{
+								error_printf("Failed writing to OUT file \"%s\"\n", out_filename.c_str());
+								return false;
+							}
+							printf("Wrote .OUT file \"%s\"\n", out_filename.c_str());
+						}
+
 						if (basis_transcoder_format_has_alpha(transcoder_tex_fmt))
 						{
 							std::string a_filename;
@@ -1160,7 +1165,7 @@ static bool unpack_and_validate_mode(command_line_params &opts, bool validate_fl
 		{
 			for (uint32_t level_index = 0; level_index < fileinfo.m_image_mipmap_levels[image_index]; level_index++)
 			{
-				const basist::transcoder_texture_format transcoder_tex_fmt = basist::cTFRGBA32;
+				const basist::transcoder_texture_format transcoder_tex_fmt = basist::transcoder_texture_format::cTFRGBA32;
 
 				basist::basisu_image_level_info level_info;
 
@@ -1210,7 +1215,7 @@ static bool unpack_and_validate_mode(command_line_params &opts, bool validate_fl
 		{
 			for (uint32_t level_index = 0; level_index < fileinfo.m_image_mipmap_levels[image_index]; level_index++)
 			{
-				const basist::transcoder_texture_format transcoder_tex_fmt = basist::cTFRGB565;
+				const basist::transcoder_texture_format transcoder_tex_fmt = basist::transcoder_texture_format::cTFRGB565;
 
 				basist::basisu_image_level_info level_info;
 
@@ -1258,14 +1263,6 @@ static bool unpack_and_validate_mode(command_line_params &opts, bool validate_fl
 				}
 				printf("Wrote PNG file \"%s\"\n", rgb_filename.c_str());
 
-				std::string a_filename(base_filename + string_format("_unpacked_a_%s_%u_%04u.png", basist::basis_get_format_name(transcoder_tex_fmt), level_index, image_index));
-				if (!save_png(a_filename, img, cImageSaveGrayscale, 3))
-				{
-					error_printf("Failed writing to PNG file \"%s\"\n", a_filename.c_str());
-					return false;
-				}
-				printf("Wrote PNG file \"%s\"\n", a_filename.c_str());
-
 			} // level_index
 		} // image_index
 
@@ -1274,7 +1271,7 @@ static bool unpack_and_validate_mode(command_line_params &opts, bool validate_fl
 		{
 			for (uint32_t level_index = 0; level_index < fileinfo.m_image_mipmap_levels[image_index]; level_index++)
 			{
-				const basist::transcoder_texture_format transcoder_tex_fmt = basist::cTFRGBA4444;
+				const basist::transcoder_texture_format transcoder_tex_fmt = basist::transcoder_texture_format::cTFRGBA4444;
 
 				basist::basisu_image_level_info level_info;
 
@@ -1514,6 +1511,9 @@ static int main_internal(int argc, const char **argv)
 		break;
 	case cCompare:
 		status = compare_mode(opts);
+		break;
+	case cVersion:
+		status = true; // We printed the version at the beginning of main_internal
 		break;
 	default:
 		assert(0);

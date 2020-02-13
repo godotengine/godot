@@ -168,15 +168,14 @@ namespace basisu
 	{
 	public:
 		inline pvrtc4_image() :
-			m_width(0), m_height(0), m_block_width(0), m_block_height(0), m_wrap_addressing(false), m_uses_alpha(false)
+			m_width(0), m_height(0), m_block_width(0), m_block_height(0), m_uses_alpha(false)
 		{
 		}
 
-		inline pvrtc4_image(uint32_t width, uint32_t height, bool wrap_addressing = false) :
-			m_width(0), m_height(0), m_block_width(0), m_block_height(0), m_wrap_addressing(false), m_uses_alpha(false)
+		inline pvrtc4_image(uint32_t width, uint32_t height) :
+			m_width(0), m_height(0), m_block_width(0), m_block_height(0), m_uses_alpha(false)
 		{
 			resize(width, height);
-			set_wrap_addressing(wrap_addressing);
 		}
 
 		inline void clear()
@@ -187,7 +186,6 @@ namespace basisu
 			m_block_height = 0;
 			m_blocks.clear();
 			m_uses_alpha = false;
-			m_wrap_addressing = false;
 		}
 
 		inline void resize(uint32_t width, uint32_t height)
@@ -217,9 +215,6 @@ namespace basisu
 
 		inline bool get_uses_alpha() const { return m_uses_alpha; }
 		inline void set_uses_alpha(bool uses_alpha) { m_uses_alpha = uses_alpha; }
-
-		inline void set_wrap_addressing(bool wrapping) { m_wrap_addressing = wrapping; }
-		inline bool get_wrap_addressing() const { return m_wrap_addressing; }
 
 		inline bool are_blocks_equal(const pvrtc4_image& rhs) const
 		{
@@ -298,24 +293,24 @@ namespace basisu
 					dst(x, y) = get_pixel(block_x * 4 + x, block_y * 4 + y);
 		}
 
-		inline int wrap_or_clamp_x(int x) const
+		inline int wrap_x(int x) const
 		{
-			return m_wrap_addressing ? posmod(x, m_width) : clamp<int>(x, 0, m_width - 1);
+			return posmod(x, m_width);
 		}
 
-		inline int wrap_or_clamp_y(int y) const
+		inline int wrap_y(int y) const
 		{
-			return m_wrap_addressing ? posmod(y, m_height) : clamp<int>(y, 0, m_height - 1);
+			return posmod(y, m_height);
 		}
 
-		inline int wrap_or_clamp_block_x(int bx) const
+		inline int wrap_block_x(int bx) const
 		{
-			return m_wrap_addressing ? posmod(bx, m_block_width) : clamp<int>(bx, 0, m_block_width - 1);
+			return posmod(bx, m_block_width);
 		}
 
-		inline int wrap_or_clamp_block_y(int by) const
+		inline int wrap_block_y(int by) const
 		{
-			return m_wrap_addressing ? posmod(by, m_block_height) : clamp<int>(by, 0, m_block_height - 1);
+			return posmod(by, m_block_height);
 		}
 
 		inline vec2F get_interpolation_factors(uint32_t x, uint32_t y) const
@@ -362,7 +357,6 @@ namespace basisu
 		pvrtc4_block_vector2D m_blocks;
 		uint32_t m_block_width, m_block_height;
 						
-		bool m_wrap_addressing;
 		bool m_uses_alpha;
 	};
 

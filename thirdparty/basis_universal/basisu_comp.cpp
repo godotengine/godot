@@ -57,7 +57,7 @@ namespace basisu
 			PRINT_BOOL_VALUE(m_debug);
 			PRINT_BOOL_VALUE(m_debug_images);
 			PRINT_BOOL_VALUE(m_global_sel_pal);
-			PRINT_BOOL_VALUE(m_no_auto_global_sel_pal);
+			PRINT_BOOL_VALUE(m_auto_global_sel_pal);
 			PRINT_BOOL_VALUE(m_compression_level);
 			PRINT_BOOL_VALUE(m_no_hybrid_sel_cb);
 			PRINT_BOOL_VALUE(m_perceptual);
@@ -774,7 +774,7 @@ namespace basisu
 		}
 
 		m_auto_global_sel_pal = false;
-		if (!m_params.m_global_sel_pal && !m_params.m_no_auto_global_sel_pal)
+		if (!m_params.m_global_sel_pal && m_params.m_auto_global_sel_pal)
 		{
 			const float bits_per_selector_cluster = 31.0f;
 			double selector_codebook_bpp_est = (bits_per_selector_cluster * selector_clusters) / total_texels;
@@ -860,7 +860,7 @@ namespace basisu
 			const uint32_t width = num_blocks_x * 4;
 			const uint32_t height = num_blocks_y * 4;
 
-			m_frontend_output_textures[i].init(cETC1, width, height);
+			m_frontend_output_textures[i].init(texture_format::cETC1, width, height);
 
 			for (uint32_t block_y = 0; block_y < num_blocks_y; block_y++)
 				for (uint32_t block_x = 0; block_x < num_blocks_x; block_x++)
@@ -875,7 +875,7 @@ namespace basisu
 			}
 #endif
 
-			m_best_etc1s_images[i].init(cETC1, width, height);
+			m_best_etc1s_images[i].init(texture_format::cETC1, width, height);
 			for (uint32_t block_y = 0; block_y < num_blocks_y; block_y++)
 				for (uint32_t block_x = 0; block_x < num_blocks_x; block_x++)
 					memcpy(m_best_etc1s_images[i].get_block_ptr(block_x, block_y, 0), &m_frontend.get_etc1s_block(slice_desc.m_first_block_index + block_x + block_y * num_blocks_x), sizeof(etc_block));
@@ -970,12 +970,12 @@ namespace basisu
 		for (uint32_t i = 0; i < m_slice_descs.size(); i++)
 		{
 			gpu_image decoded_texture;
-			decoded_texture.init(cETC1, m_slice_descs[i].m_width, m_slice_descs[i].m_height);
+			decoded_texture.init(texture_format::cETC1, m_slice_descs[i].m_width, m_slice_descs[i].m_height);
 						
 			tm.start();
 						
 			if (!decoder.transcode_slice(&comp_data[0], (uint32_t)comp_data.size(), i,
-				reinterpret_cast<etc_block *>(decoded_texture.get_ptr()), m_slice_descs[i].m_num_blocks_x * m_slice_descs[i].m_num_blocks_y, basist::cETC1, 8))
+				reinterpret_cast<etc_block *>(decoded_texture.get_ptr()), m_slice_descs[i].m_num_blocks_x * m_slice_descs[i].m_num_blocks_y, basist::block_format::cETC1, 8))
 			{
 				error_printf("Transcoding failed to ETC1 on slice %u!\n", i);
 				return false;
@@ -1008,12 +1008,12 @@ namespace basisu
 		for (uint32_t i = 0; i < m_slice_descs.size(); i++)
 		{
 			gpu_image decoded_texture;
-			decoded_texture.init(cBC1, m_slice_descs[i].m_width, m_slice_descs[i].m_height);
+			decoded_texture.init(texture_format::cBC1, m_slice_descs[i].m_width, m_slice_descs[i].m_height);
 
 			tm.start();
 
 			if (!decoder.transcode_slice(&comp_data[0], (uint32_t)comp_data.size(), i,
-				reinterpret_cast<etc_block *>(decoded_texture.get_ptr()), m_slice_descs[i].m_num_blocks_x * m_slice_descs[i].m_num_blocks_y, basist::cBC1, 8))
+				reinterpret_cast<etc_block *>(decoded_texture.get_ptr()), m_slice_descs[i].m_num_blocks_x * m_slice_descs[i].m_num_blocks_y, basist::block_format::cBC1, 8))
 			{
 				error_printf("Transcoding failed to BC1 on slice %u!\n", i);
 				return false;
@@ -1066,9 +1066,7 @@ namespace basisu
 		{
 			const uint8_vec &comp_data = m_basis_file.get_compressed_data();
 
-			std::string basis_filename(m_params.m_out_filename);
-			string_remove_extension(basis_filename);
-			basis_filename += ".basis";
+			const std::string& basis_filename = m_params.m_out_filename;
 
 			if (!write_vec_to_file(basis_filename.c_str(), comp_data))
 			{
