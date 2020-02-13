@@ -143,6 +143,14 @@
 				Defining this method is [b]optional[/b]. If not overridden, the node will be filed under the root of the main category (see [method _get_category]).
 			</description>
 		</method>
+		<method name="_is_highend" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<description>
+				Override this method to enable high-end mark in the Visual Shader Editor's members dialog.
+				Defining this method is [b]optional[/b]. If not overridden, it's false.
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
