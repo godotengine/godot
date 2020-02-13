@@ -903,6 +903,9 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, const Map<String
 		if (r_data_type) {
 			*r_data_type = p_builtin_types[p_identifier].type;
 		}
+		if (r_is_const) {
+			*r_is_const = p_builtin_types[p_identifier].constant;
+		}
 		if (r_type) {
 			*r_type = IDENTIFIER_BUILTIN_VAR;
 		}
@@ -3066,6 +3069,8 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 		Token tk = _get_token();
 		TkPos pos = _get_tkpos();
 
+		bool is_const = false;
+
 		if (tk.type == TK_PARENTHESIS_OPEN) {
 			//handle subexpression
 
@@ -3457,40 +3462,82 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 							for (int i = 0; i < call_function->arguments.size(); i++) {
 								int argidx = i + 1;
-								if (argidx < func->arguments.size() && is_sampler_type(call_function->arguments[i].type)) {
-									//let's see where our argument comes from
-									Node *n = func->arguments[argidx];
-									ERR_CONTINUE(n->type != Node::TYPE_VARIABLE); //bug? this should always be a variable
-									VariableNode *vn = static_cast<VariableNode *>(n);
-									StringName varname = vn->name;
-									if (shader->uniforms.has(varname)) {
-										//being sampler, this either comes from a uniform
-										ShaderNode::Uniform *u = &shader->uniforms[varname];
-										ERR_CONTINUE(u->type != call_function->arguments[i].type); //this should have been validated previously
-										//propagate
-										if (!_propagate_function_call_sampler_uniform_settings(name, i, u->filter, u->repeat)) {
-											return NULL;
-										}
-									} else if (p_builtin_types.has(varname)) {
-										//a built-in
-										if (!_propagate_function_call_sampler_builtin_reference(name, i, varname)) {
-											return NULL;
-										}
-									} else {
-										//or this comes from an argument, but nothing else can be a sampler
-										bool found = false;
-										for (int j = 0; j < base_function->arguments.size(); j++) {
-											if (base_function->arguments[j].name == varname) {
-												if (!base_function->arguments[j].tex_argument_connect.has(call_function->name)) {
-													base_function->arguments.write[j].tex_argument_connect[call_function->name] = Set<int>();
+								if (argidx < func->arguments.size()) {
+									if (call_function->arguments[i].qualifier == ArgumentQualifier::ARGUMENT_QUALIFIER_OUT || call_function->arguments[i].qualifier == ArgumentQualifier::ARGUMENT_QUALIFIER_INOUT) {
+										bool error = false;
+										Node *n = func->arguments[argidx];
+										if (n->type == Node::TYPE_CONSTANT || n->type == Node::TYPE_OPERATOR) {
+											error = true;
+										} else if (n->type == Node::TYPE_ARRAY) {
+											ArrayNode *an = static_cast<ArrayNode *>(n);
+											if (an->call_expression != NULL) {
+												error = true;
+											}
+										} else if (n->type == Node::TYPE_VARIABLE) {
+											VariableNode *vn = static_cast<VariableNode *>(n);
+											if (vn->is_const) {
+												error = true;
+											} else {
+												StringName varname = vn->name;
+												if (shader->uniforms.has(varname)) {
+													error = true;
+												} else {
+													if (p_builtin_types.has(varname)) {
+														BuiltInInfo info = p_builtin_types[varname];
+														if (info.constant) {
+															error = true;
+														}
+													}
 												}
-												base_function->arguments.write[j].tex_argument_connect[call_function->name].insert(i);
-												found = true;
-												break;
+											}
+										} else if (n->type == Node::TYPE_MEMBER) {
+											MemberNode *mn = static_cast<MemberNode *>(n);
+											if (mn->basetype_const) {
+												error = true;
 											}
 										}
-										ERR_CONTINUE(!found);
+										if (error) {
+											_set_error(vformat("Constant value cannot be passed for '%s' parameter!", _get_qualifier_str(call_function->arguments[i].qualifier)));
+											return NULL;
+										}
 									}
+									if (is_sampler_type(call_function->arguments[i].type)) {
+										//let's see where our argument comes from
+										Node *n = func->arguments[argidx];
+										ERR_CONTINUE(n->type != Node::TYPE_VARIABLE); //bug? this should always be a variable
+										VariableNode *vn = static_cast<VariableNode *>(n);
+										StringName varname = vn->name;
+										if (shader->uniforms.has(varname)) {
+											//being sampler, this either comes from a uniform
+											ShaderNode::Uniform *u = &shader->uniforms[varname];
+											ERR_CONTINUE(u->type != call_function->arguments[i].type); //this should have been validated previously
+											//propagate
+											if (!_propagate_function_call_sampler_uniform_settings(name, i, u->filter, u->repeat)) {
+												return NULL;
+											}
+										} else if (p_builtin_types.has(varname)) {
+											//a built-in
+											if (!_propagate_function_call_sampler_builtin_reference(name, i, varname)) {
+												return NULL;
+											}
+										} else {
+											//or this comes from an argument, but nothing else can be a sampler
+											bool found = false;
+											for (int j = 0; j < base_function->arguments.size(); j++) {
+												if (base_function->arguments[j].name == varname) {
+													if (!base_function->arguments[j].tex_argument_connect.has(call_function->name)) {
+														base_function->arguments.write[j].tex_argument_connect[call_function->name] = Set<int>();
+													}
+													base_function->arguments.write[j].tex_argument_connect[call_function->name].insert(i);
+													found = true;
+													break;
+												}
+											}
+											ERR_CONTINUE(!found);
+										}
+									}
+								} else {
+									break;
 								}
 							}
 						}
@@ -3504,7 +3551,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 				DataType data_type;
 				IdentifierType ident_type;
-				bool is_const = false;
 				int array_size = 0;
 				StringName struct_name;
 
@@ -3812,6 +3858,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 				MemberNode *mn = alloc_node<MemberNode>();
 				mn->basetype = dt;
+				mn->basetype_const = is_const;
 				mn->datatype = member_type;
 				mn->base_struct_name = st;
 				mn->struct_name = member_struct_name;
@@ -5357,6 +5404,18 @@ String ShaderLanguage::_get_shader_type_list(const Set<String> &p_shader_types) 
 	}
 
 	return valid_types;
+}
+
+String ShaderLanguage::_get_qualifier_str(ArgumentQualifier p_qualifier) const {
+	switch (p_qualifier) {
+		case ArgumentQualifier::ARGUMENT_QUALIFIER_IN:
+			return "in";
+		case ArgumentQualifier::ARGUMENT_QUALIFIER_OUT:
+			return "out";
+		case ArgumentQualifier::ARGUMENT_QUALIFIER_INOUT:
+			return "inout";
+	}
+	return "";
 }
 
 Error ShaderLanguage::_validate_datatype(DataType p_type) {
