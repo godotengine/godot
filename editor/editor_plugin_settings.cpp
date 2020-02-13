@@ -137,19 +137,12 @@ void EditorPluginSettings::update_plugins() {
 				item->set_metadata(1, script);
 				item->set_text(2, author);
 				item->set_metadata(2, description);
-				item->set_cell_mode(3, TreeItem::CELL_MODE_RANGE);
-				item->set_range_config(3, 0, 1, 1);
-				item->set_text(3, "Inactive,Active");
+				item->set_cell_mode(3, TreeItem::CELL_MODE_CHECK);
+				item->set_text(3, TTR("Enable"));
+				bool is_active = EditorNode::get_singleton()->is_addon_plugin_enabled(d2);
+				item->set_checked(3, is_active);
 				item->set_editable(3, true);
 				item->add_button(4, get_icon("Edit", "EditorIcons"), BUTTON_PLUGIN_EDIT, false, TTR("Edit Plugin"));
-
-				if (EditorNode::get_singleton()->is_addon_plugin_enabled(d2)) {
-					item->set_custom_color(3, get_color("success_color", "Editor"));
-					item->set_range(3, 1);
-				} else {
-					item->set_custom_color(3, get_color("disabled_font_color", "Editor"));
-					item->set_range(3, 0);
-				}
 			}
 		}
 	}
@@ -164,7 +157,7 @@ void EditorPluginSettings::_plugin_activity_changed() {
 
 	TreeItem *ti = plugin_list->get_edited();
 	ERR_FAIL_COND(!ti);
-	bool active = ti->get_range(3);
+	bool active = ti->is_checked(3);
 	String name = ti->get_metadata(0);
 
 	EditorNode::get_singleton()->set_addon_plugin_enabled(name, active, true);
@@ -173,14 +166,9 @@ void EditorPluginSettings::_plugin_activity_changed() {
 
 	if (is_active != active) {
 		updating = true;
-		ti->set_range(3, is_active ? 1 : 0);
+		ti->set_checked(3, is_active);
 		updating = false;
 	}
-
-	if (is_active)
-		ti->set_custom_color(3, get_color("success_color", "Editor"));
-	else
-		ti->set_custom_color(3, get_color("disabled_font_color", "Editor"));
 }
 
 void EditorPluginSettings::_create_clicked() {
