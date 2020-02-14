@@ -83,7 +83,7 @@ void DocDump::dump(const String &p_file) {
 	FileAccess *f = FileAccess::open(p_file, FileAccess::WRITE);
 
 	_write_string(f, 0, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
-	_write_string(f, 0, String("<doc version=\"") + VERSION_NUMBER + "\" name=\"Engine Types\">");
+	_write_string(f, 0, String("<doc version=\"") + VERSION_BRANCH + "\" name=\"Engine Types\">");
 
 	while (class_list.size()) {
 

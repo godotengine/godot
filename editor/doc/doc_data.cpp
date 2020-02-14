@@ -1032,7 +1032,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 		String header = "<class name=\"" + c.name + "\"";
 		if (c.inherits != "")
 			header += " inherits=\"" + c.inherits + "\"";
-		header += String(" version=\"") + VERSION_NUMBER + "\"";
+		header += String(" version=\"") + VERSION_BRANCH + "\"";
 		header += ">";
 		_write_string(f, 0, header);
 
