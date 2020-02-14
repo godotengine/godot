@@ -2471,7 +2471,7 @@ void RasterizerStorageRD::_multimesh_mark_dirty(MultiMesh *multimesh, int p_inde
 	ERR_FAIL_UNSIGNED_INDEX(region_index, data_cache_dirty_region_count); //bug
 #endif
 	if (!multimesh->data_cache_dirty_regions[region_index]) {
-		multimesh->data_cache_dirty_regions[p_index] = true;
+		multimesh->data_cache_dirty_regions[region_index] = true;
 		multimesh->data_cache_used_dirty_regions++;
 	}
 
