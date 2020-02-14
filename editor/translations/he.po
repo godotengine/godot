@@ -721,8 +721,9 @@ msgid "Line Number:"
 msgstr "מספר השורה:"
 
 #: editor/code_editor.cpp
-msgid "Replaced %d occurrence(s)."
-msgstr ""
+#, fuzzy
+msgid "%d replaced."
+msgstr "החלפה…"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -5994,11 +5995,11 @@ msgid "Mesh is empty!"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Trimesh Body"
+msgid "Couldn't create a Trimesh collision shape."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Convex Body"
+msgid "Create Static Trimesh Body"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -6010,12 +6011,30 @@ msgid "Create Trimesh Static Shape"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Failed creating shapes!"
+msgid "Can't create a single convex collision shape for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Couldn't create a single convex collision shape."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Convex Shape(s)"
+msgid "Create Single Convex Shape"
+msgstr "יצירת %s חדש"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Can't create multiple convex collision shapes for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Couldn't create any collision shapes."
+msgstr "לא ניתן ליצור תיקייה."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Shapes"
 msgstr "יצירת %s חדש"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -6067,16 +6086,54 @@ msgid "Create Trimesh Static Body"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a StaticBody and assigns a polygon-based collision shape to it "
+"automatically.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Convex Collision Sibling(s)"
+msgid "Create Single Convex Collision Siblings"
 msgstr "יצירת מצולע"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a single convex collision shape.\n"
+"This is the fastest (but least accurate) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Collision Siblings"
+msgstr "יצירת מצולע"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is a performance middle-ground between the two above options."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the SpatialMaterial Grow property when using "
+"that property isn't possible."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -8593,7 +8650,7 @@ msgstr ""
 msgid "No VCS addons are available."
 msgstr ""
 
-#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
 msgstr ""
 
@@ -9725,11 +9782,18 @@ msgid "Export With Debug"
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "The path does not exist."
-msgstr ""
+#, fuzzy
+msgid "The path specified doesn't exist."
+msgstr "הקובץ לא קיים."
 
 #: editor/project_manager.cpp
-msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
+#, fuzzy
+msgid "Error opening package file (it's not in ZIP format)."
+msgstr "פתיחת קובץ החבילה נכשלה, המבנה אינו zip."
+
+#: editor/project_manager.cpp
+msgid ""
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -9737,11 +9801,11 @@ msgid "Please choose an empty folder."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Please choose a 'project.godot' or '.zip' file."
+msgid "Please choose a \"project.godot\" or \".zip\" file."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Directory already contains a Godot project."
+msgid "This directory already contains a Godot project."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -10407,6 +10471,11 @@ msgstr ""
 
 #: editor/rename_dialog.cpp
 #, fuzzy
+msgid "Use Regular Expressions"
+msgstr "גרסה נוכחית:"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
 msgid "Advanced Options"
 msgstr "הגדרות הצמדה"
 
@@ -10445,7 +10514,7 @@ msgid ""
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Per Level counter"
+msgid "Per-level Counter"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10476,10 +10545,6 @@ msgid ""
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expressions"
-msgstr ""
-
-#: editor/rename_dialog.cpp
 msgid "Post-Process"
 msgstr ""
 
@@ -10488,11 +10553,11 @@ msgid "Keep"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "CamelCase to under_scored"
+msgid "PascalCase to snake_case"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "under_scored to CamelCase"
+msgid "snake_case to PascalCase"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10513,6 +10578,15 @@ msgstr "אותיות גדולות"
 #, fuzzy
 msgid "Reset"
 msgstr "איפוס התקריב"
+
+#: editor/rename_dialog.cpp
+msgid "Regular Expression Error"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "At character %s"
+msgstr "תווים תקפים:"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10982,7 +11056,7 @@ msgid "Invalid inherited parent name or path."
 msgstr "שם מאפיין האינדקס שגוי."
 
 #: editor/script_create_dialog.cpp
-msgid "Script is valid."
+msgid "Script path/name is valid."
 msgstr ""
 
 #: editor/script_create_dialog.cpp
@@ -11088,6 +11162,10 @@ msgid "Copy Error"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
+msgid "Video RAM"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
 #, fuzzy
 msgid "Skip Breakpoints"
 msgstr "מחיקת נקודות"
@@ -11135,10 +11213,6 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
-msgstr ""
-
-#: editor/script_editor_debugger.cpp
-msgid "Video Mem"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp

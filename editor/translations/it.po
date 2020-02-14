@@ -726,8 +726,9 @@ msgid "Line Number:"
 msgstr "Numero linea:"
 
 #: editor/code_editor.cpp
-msgid "Replaced %d occurrence(s)."
-msgstr "Rimpiazzate %d occorrenze."
+#, fuzzy
+msgid "%d replaced."
+msgstr "Rimpiazza..."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -5905,12 +5906,13 @@ msgid "Mesh is empty!"
 msgstr "La mesh è vuota!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Trimesh Body"
-msgstr "Crea Corpo Trimesh Statico"
+#, fuzzy
+msgid "Couldn't create a Trimesh collision shape."
+msgstr "Crea Fratello di Collisione Trimesh"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Convex Body"
-msgstr "Crea Corpo Convesso Statico"
+msgid "Create Static Trimesh Body"
+msgstr "Crea Corpo Trimesh Statico"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
@@ -5921,11 +5923,30 @@ msgid "Create Trimesh Static Shape"
 msgstr "Crea Forma Statica Trimesh"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Failed creating shapes!"
-msgstr "Errore nella creazione delle forme!"
+msgid "Can't create a single convex collision shape for the scene root."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Convex Shape(s)"
+msgid "Couldn't create a single convex collision shape."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Single Convex Shape"
+msgstr "Crea una o più forme Convesse"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Can't create multiple convex collision shapes for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Couldn't create any collision shapes."
+msgstr "Impossibile creare la cartella."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Shapes"
 msgstr "Crea una o più forme Convesse"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -5978,16 +5999,55 @@ msgid "Create Trimesh Static Body"
 msgstr "Crea Corpo Statico Trimesh"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a StaticBody and assigns a polygon-based collision shape to it "
+"automatically.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
 msgstr "Crea Fratello di Collisione Trimesh"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Convex Collision Sibling(s)"
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Single Convex Collision Siblings"
 msgstr "Crea Fratello(i) di Collisione Convessa"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a single convex collision shape.\n"
+"This is the fastest (but least accurate) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Collision Siblings"
+msgstr "Crea Fratello(i) di Collisione Convessa"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is a performance middle-ground between the two above options."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
 msgstr "Crea Mesh di Outline..."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the SpatialMaterial Grow property when using "
+"that property isn't possible."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -8408,7 +8468,7 @@ msgstr "TileSet"
 msgid "No VCS addons are available."
 msgstr "Non sono disponibili addons VCS."
 
-#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
 msgstr "Errore"
 
@@ -9577,11 +9637,19 @@ msgid "Export With Debug"
 msgstr "Esporta Con Debug"
 
 #: editor/project_manager.cpp
-msgid "The path does not exist."
+#, fuzzy
+msgid "The path specified doesn't exist."
 msgstr "Percorso non esistente."
 
 #: editor/project_manager.cpp
-msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
+#, fuzzy
+msgid "Error opening package file (it's not in ZIP format)."
+msgstr "Errore nell'apertura del file package: non è in formato ZIP."
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid ""
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr ""
 "File di progetto '.zip' non valido, non contiene un file 'project.godot'."
 
@@ -9590,11 +9658,13 @@ msgid "Please choose an empty folder."
 msgstr "Si prega di scegliere una cartella vuota."
 
 #: editor/project_manager.cpp
-msgid "Please choose a 'project.godot' or '.zip' file."
+#, fuzzy
+msgid "Please choose a \"project.godot\" or \".zip\" file."
 msgstr "Si prega di scegliere un file 'project.godot' o '.zip'."
 
 #: editor/project_manager.cpp
-msgid "Directory already contains a Godot project."
+#, fuzzy
+msgid "This directory already contains a Godot project."
 msgstr "La Cartella contiene già un progetto di Godot."
 
 #: editor/project_manager.cpp
@@ -10294,6 +10364,11 @@ msgid "Suffix"
 msgstr "Suffisso"
 
 #: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Use Regular Expressions"
+msgstr "Espressioni Regolari"
+
+#: editor/rename_dialog.cpp
 msgid "Advanced Options"
 msgstr "Opzioni avanzate"
 
@@ -10330,7 +10405,8 @@ msgstr ""
 "Confronta le opzioni del contatore."
 
 #: editor/rename_dialog.cpp
-msgid "Per Level counter"
+#, fuzzy
+msgid "Per-level Counter"
 msgstr "Contatore per Livello"
 
 #: editor/rename_dialog.cpp
@@ -10362,10 +10438,6 @@ msgstr ""
 "La cifre mancanti vengono riempite con zeri iniziali."
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expressions"
-msgstr "Espressioni Regolari"
-
-#: editor/rename_dialog.cpp
 msgid "Post-Process"
 msgstr "Post-Processo"
 
@@ -10374,11 +10446,13 @@ msgid "Keep"
 msgstr "Mantieni"
 
 #: editor/rename_dialog.cpp
-msgid "CamelCase to under_scored"
+#, fuzzy
+msgid "PascalCase to snake_case"
 msgstr "CamelCase a under_score"
 
 #: editor/rename_dialog.cpp
-msgid "under_scored to CamelCase"
+#, fuzzy
+msgid "snake_case to PascalCase"
 msgstr "under_score a CamelCase"
 
 #: editor/rename_dialog.cpp
@@ -10396,6 +10470,16 @@ msgstr "In Maiuscolo"
 #: editor/rename_dialog.cpp
 msgid "Reset"
 msgstr "Reset"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Regular Expression Error"
+msgstr "Espressioni Regolari"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "At character %s"
+msgstr "Caratteri validi:"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10861,7 +10945,8 @@ msgid "Invalid inherited parent name or path."
 msgstr "Nome o percorso genitore ereditato non valido."
 
 #: editor/script_create_dialog.cpp
-msgid "Script is valid."
+#, fuzzy
+msgid "Script path/name is valid."
 msgstr "Lo script è valido."
 
 #: editor/script_create_dialog.cpp
@@ -10953,6 +11038,11 @@ msgid "Copy Error"
 msgstr "Errore di Copia"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Video RAM"
+msgstr "Mem Video"
+
+#: editor/script_editor_debugger.cpp
 msgid "Skip Breakpoints"
 msgstr "Salta Punti di rottura"
 
@@ -10999,10 +11089,6 @@ msgstr "Lista di Utilizzo Memoria Video per Risorsa:"
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "Totale:"
-
-#: editor/script_editor_debugger.cpp
-msgid "Video Mem"
-msgstr "Mem Video"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12706,6 +12792,15 @@ msgstr "Varyings può essere assegnato soltanto nella funzione del vertice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Le constanti non possono essere modificate."
+
+#~ msgid "Replaced %d occurrence(s)."
+#~ msgstr "Rimpiazzate %d occorrenze."
+
+#~ msgid "Create Static Convex Body"
+#~ msgstr "Crea Corpo Convesso Statico"
+
+#~ msgid "Failed creating shapes!"
+#~ msgstr "Errore nella creazione delle forme!"
 
 #~ msgid ""
 #~ "There are currently no tutorials for this class, you can [color=$color]"
