@@ -31,8 +31,10 @@
 #ifndef VECTOR3I_H
 #define VECTOR3I_H
 
-#include "core/typedefs.h"
+#include "core/math/math_funcs.h"
 #include "core/ustring.h"
+
+struct Vector3;
 
 struct Vector3i {
 
@@ -53,12 +55,10 @@ struct Vector3i {
 	};
 
 	_FORCE_INLINE_ const int32_t &operator[](int p_axis) const {
-
 		return coord[p_axis];
 	}
 
 	_FORCE_INLINE_ int32_t &operator[](int p_axis) {
-
 		return coord[p_axis];
 	}
 
@@ -69,9 +69,18 @@ struct Vector3i {
 	int max_axis() const;
 
 	_FORCE_INLINE_ void zero();
-
 	_FORCE_INLINE_ Vector3i abs() const;
 	_FORCE_INLINE_ Vector3i sign() const;
+
+	// Outputs can potentially be much bigger, so use int64_t instead of int32_t.
+	Vector3i cross(const Vector3i &p_b) const;
+	int64_t dot(const Vector3i &p_b) const;
+	real_t length() const;
+	int64_t length_squared() const;
+	real_t distance_to(const Vector3i &p_b) const;
+	int64_t distance_squared_to(const Vector3i &p_b) const;
+	Vector3i posmod(const int32_t p_mod) const;
+	Vector3i posmodv(const Vector3i &p_modv) const;
 
 	/* Operators */
 
@@ -99,6 +108,7 @@ struct Vector3i {
 	_FORCE_INLINE_ bool operator>=(const Vector3i &p_v) const;
 
 	operator String() const;
+	operator Vector3() const;
 
 	_FORCE_INLINE_ Vector3i(int32_t p_x, int32_t p_y, int32_t p_z) {
 		x = p_x;
@@ -109,19 +119,16 @@ struct Vector3i {
 };
 
 Vector3i Vector3i::abs() const {
-
 	return Vector3i(ABS(x), ABS(y), ABS(z));
 }
 
 Vector3i Vector3i::sign() const {
-
 	return Vector3i(SGN(x), SGN(y), SGN(z));
 }
 
 /* Operators */
 
 Vector3i &Vector3i::operator+=(const Vector3i &p_v) {
-
 	x += p_v.x;
 	y += p_v.y;
 	z += p_v.z;
@@ -129,19 +136,17 @@ Vector3i &Vector3i::operator+=(const Vector3i &p_v) {
 }
 
 Vector3i Vector3i::operator+(const Vector3i &p_v) const {
-
 	return Vector3i(x + p_v.x, y + p_v.y, z + p_v.z);
 }
 
 Vector3i &Vector3i::operator-=(const Vector3i &p_v) {
-
 	x -= p_v.x;
 	y -= p_v.y;
 	z -= p_v.z;
 	return *this;
 }
-Vector3i Vector3i::operator-(const Vector3i &p_v) const {
 
+Vector3i Vector3i::operator-(const Vector3i &p_v) const {
 	return Vector3i(x - p_v.x, y - p_v.y, z - p_v.z);
 }
 
@@ -152,13 +157,12 @@ Vector3i &Vector3i::operator*=(const Vector3i &p_v) {
 	z *= p_v.z;
 	return *this;
 }
-Vector3i Vector3i::operator*(const Vector3i &p_v) const {
 
+Vector3i Vector3i::operator*(const Vector3i &p_v) const {
 	return Vector3i(x * p_v.x, y * p_v.y, z * p_v.z);
 }
 
 Vector3i &Vector3i::operator/=(const Vector3i &p_v) {
-
 	x /= p_v.x;
 	y /= p_v.y;
 	z /= p_v.z;
@@ -166,12 +170,10 @@ Vector3i &Vector3i::operator/=(const Vector3i &p_v) {
 }
 
 Vector3i Vector3i::operator/(const Vector3i &p_v) const {
-
 	return Vector3i(x / p_v.x, y / p_v.y, z / p_v.z);
 }
 
 Vector3i &Vector3i::operator*=(int32_t p_scalar) {
-
 	x *= p_scalar;
 	y *= p_scalar;
 	z *= p_scalar;
@@ -179,17 +181,14 @@ Vector3i &Vector3i::operator*=(int32_t p_scalar) {
 }
 
 _FORCE_INLINE_ Vector3i operator*(int32_t p_scalar, const Vector3i &p_vec) {
-
 	return p_vec * p_scalar;
 }
 
 Vector3i Vector3i::operator*(int32_t p_scalar) const {
-
 	return Vector3i(x * p_scalar, y * p_scalar, z * p_scalar);
 }
 
 Vector3i &Vector3i::operator/=(int32_t p_scalar) {
-
 	x /= p_scalar;
 	y /= p_scalar;
 	z /= p_scalar;
@@ -197,27 +196,22 @@ Vector3i &Vector3i::operator/=(int32_t p_scalar) {
 }
 
 Vector3i Vector3i::operator/(int32_t p_scalar) const {
-
 	return Vector3i(x / p_scalar, y / p_scalar, z / p_scalar);
 }
 
 Vector3i Vector3i::operator-() const {
-
 	return Vector3i(-x, -y, -z);
 }
 
 bool Vector3i::operator==(const Vector3i &p_v) const {
-
 	return (x == p_v.x && y == p_v.y && z == p_v.z);
 }
 
 bool Vector3i::operator!=(const Vector3i &p_v) const {
-
 	return (x != p_v.x || y != p_v.y || z != p_v.z);
 }
 
 bool Vector3i::operator<(const Vector3i &p_v) const {
-
 	if (x == p_v.x) {
 		if (y == p_v.y)
 			return z < p_v.z;
@@ -229,7 +223,6 @@ bool Vector3i::operator<(const Vector3i &p_v) const {
 }
 
 bool Vector3i::operator>(const Vector3i &p_v) const {
-
 	if (x == p_v.x) {
 		if (y == p_v.y)
 			return z > p_v.z;
@@ -241,7 +234,6 @@ bool Vector3i::operator>(const Vector3i &p_v) const {
 }
 
 bool Vector3i::operator<=(const Vector3i &p_v) const {
-
 	if (x == p_v.x) {
 		if (y == p_v.y)
 			return z <= p_v.z;
@@ -253,7 +245,6 @@ bool Vector3i::operator<=(const Vector3i &p_v) const {
 }
 
 bool Vector3i::operator>=(const Vector3i &p_v) const {
-
 	if (x == p_v.x) {
 		if (y == p_v.y)
 			return z >= p_v.z;
@@ -265,7 +256,6 @@ bool Vector3i::operator>=(const Vector3i &p_v) const {
 }
 
 void Vector3i::zero() {
-
 	x = y = z = 0;
 }
 
