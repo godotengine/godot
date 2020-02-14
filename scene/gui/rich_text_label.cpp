@@ -1208,49 +1208,59 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 
 	if (k.is_valid()) {
 		if (k->is_pressed() && !k->get_alt() && !k->get_shift()) {
-			bool handled = true;
+			bool handled = false;
 			switch (k->get_scancode()) {
 				case KEY_PAGEUP: {
 
-					if (vscroll->is_visible_in_tree())
+					if (vscroll->is_visible_in_tree()) {
 						vscroll->set_value(vscroll->get_value() - vscroll->get_page());
+						handled = true;
+					}
 				} break;
 				case KEY_PAGEDOWN: {
 
-					if (vscroll->is_visible_in_tree())
+					if (vscroll->is_visible_in_tree()) {
 						vscroll->set_value(vscroll->get_value() + vscroll->get_page());
+						handled = true;
+					}
 				} break;
 				case KEY_UP: {
 
-					if (vscroll->is_visible_in_tree())
+					if (vscroll->is_visible_in_tree()) {
 						vscroll->set_value(vscroll->get_value() - get_font("normal_font")->get_height());
+						handled = true;
+					}
 				} break;
 				case KEY_DOWN: {
 
-					if (vscroll->is_visible_in_tree())
+					if (vscroll->is_visible_in_tree()) {
 						vscroll->set_value(vscroll->get_value() + get_font("normal_font")->get_height());
+						handled = true;
+					}
 				} break;
 				case KEY_HOME: {
 
-					if (vscroll->is_visible_in_tree())
+					if (vscroll->is_visible_in_tree()) {
 						vscroll->set_value(0);
+						handled = true;
+					}
 				} break;
 				case KEY_END: {
 
-					if (vscroll->is_visible_in_tree())
+					if (vscroll->is_visible_in_tree()) {
 						vscroll->set_value(vscroll->get_max());
+						handled = true;
+					}
 				} break;
 				case KEY_INSERT:
 				case KEY_C: {
 
 					if (k->get_command()) {
 						selection_copy();
-					} else {
-						handled = false;
+						handled = true;
 					}
 
 				} break;
-				default: handled = false;
 			}
 
 			if (handled)
