@@ -417,4 +417,24 @@ highp mat4 outerProduct(highp vec4 c, highp vec4 r) {
 
 #endif
 
+#if defined(FMA_USED)
+
+highp float fma(highp float a, highp float b, highp float c) {
+	return a * b + c;
+}
+
+highp vec2 fma(highp vec2 a, highp vec2 b, highp vec2 c) {
+	return a * b + c;
+}
+
+highp vec3 fma(highp vec3 a, highp vec3 b, highp vec3 c) {
+	return a * b + c;
+}
+
+highp vec4 fma(highp vec4 a, highp vec4 b, highp vec4 c) {
+	return a * b + c;
+}
+
+#endif
+
 #endif
