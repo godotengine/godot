@@ -687,8 +687,9 @@ msgid "Line Number:"
 msgstr "Rivinumero:"
 
 #: editor/code_editor.cpp
-msgid "Replaced %d occurrence(s)."
-msgstr "Korvattu %d osuvuutta."
+#, fuzzy
+msgid "%d replaced."
+msgstr "Korvaa..."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -5835,12 +5836,13 @@ msgid "Mesh is empty!"
 msgstr "Mesh on tyhjä!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Trimesh Body"
-msgstr "Luo konkaavi staattinen kappale"
+#, fuzzy
+msgid "Couldn't create a Trimesh collision shape."
+msgstr "Luo konkaavi törmäysmuoto sisareksi"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Convex Body"
-msgstr "Luo konveksi staattinen kappale"
+msgid "Create Static Trimesh Body"
+msgstr "Luo konkaavi staattinen kappale"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
@@ -5851,11 +5853,30 @@ msgid "Create Trimesh Static Shape"
 msgstr "Luo staattinen konkaavi muoto"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Failed creating shapes!"
-msgstr "Muotojen luonti epäonnistui!"
+msgid "Can't create a single convex collision shape for the scene root."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Convex Shape(s)"
+msgid "Couldn't create a single convex collision shape."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Single Convex Shape"
+msgstr "Luo konvekseja muotoja"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Can't create multiple convex collision shapes for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Couldn't create any collision shapes."
+msgstr "Kansiota ei voitu luoda."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Shapes"
 msgstr "Luo konvekseja muotoja"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -5907,16 +5928,55 @@ msgid "Create Trimesh Static Body"
 msgstr "Luo konkaavi staattinen kappale"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a StaticBody and assigns a polygon-based collision shape to it "
+"automatically.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
 msgstr "Luo konkaavi törmäysmuoto sisareksi"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Convex Collision Sibling(s)"
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Single Convex Collision Siblings"
 msgstr "Luo konvekseja törmäysmuotoja sisariksi"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a single convex collision shape.\n"
+"This is the fastest (but least accurate) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Collision Siblings"
+msgstr "Luo konvekseja törmäysmuotoja sisariksi"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is a performance middle-ground between the two above options."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
 msgstr "Luo ääriviivoista Mesh..."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the SpatialMaterial Grow property when using "
+"that property isn't possible."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -8331,7 +8391,7 @@ msgstr "Laattavalikoima"
 msgid "No VCS addons are available."
 msgstr "VCS-lisäosia ei ole saatavilla."
 
-#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
 msgstr "Virhe"
 
@@ -9496,11 +9556,19 @@ msgid "Export With Debug"
 msgstr "Vie debugaten"
 
 #: editor/project_manager.cpp
-msgid "The path does not exist."
+#, fuzzy
+msgid "The path specified doesn't exist."
 msgstr "Polkua ei ole olemassa."
 
 #: editor/project_manager.cpp
-msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
+#, fuzzy
+msgid "Error opening package file (it's not in ZIP format)."
+msgstr "Virhe avattaessa pakettitiedostoa, ei ZIP-muodossa."
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid ""
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr ""
 "Virheellinen '.zip' projektitiedosto; se ei sisällä 'project.godot' "
 "tiedostoa."
@@ -9510,11 +9578,13 @@ msgid "Please choose an empty folder."
 msgstr "Ole hyvä ja valitse tyhjä kansio."
 
 #: editor/project_manager.cpp
-msgid "Please choose a 'project.godot' or '.zip' file."
+#, fuzzy
+msgid "Please choose a \"project.godot\" or \".zip\" file."
 msgstr "Ole hyvä ja valitse 'project.godot' tai '.zip' tiedosto."
 
 #: editor/project_manager.cpp
-msgid "Directory already contains a Godot project."
+#, fuzzy
+msgid "This directory already contains a Godot project."
 msgstr "Hakemisto sisältää jo Godot-projektin."
 
 #: editor/project_manager.cpp
@@ -10210,6 +10280,11 @@ msgid "Suffix"
 msgstr "Pääte"
 
 #: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Use Regular Expressions"
+msgstr "Säännölliset lausekkeet"
+
+#: editor/rename_dialog.cpp
 msgid "Advanced Options"
 msgstr "Edistyneet asetukset"
 
@@ -10246,7 +10321,8 @@ msgstr ""
 "Vertaa laskurin valintoja."
 
 #: editor/rename_dialog.cpp
-msgid "Per Level counter"
+#, fuzzy
+msgid "Per-level Counter"
 msgstr "Per taso -laskuri"
 
 #: editor/rename_dialog.cpp
@@ -10278,10 +10354,6 @@ msgstr ""
 "Puuttuvat numeromerkit täytetään edeltävillä nollilla."
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expressions"
-msgstr "Säännölliset lausekkeet"
-
-#: editor/rename_dialog.cpp
 msgid "Post-Process"
 msgstr "Jälkikäsittely"
 
@@ -10290,11 +10362,13 @@ msgid "Keep"
 msgstr "Pidä"
 
 #: editor/rename_dialog.cpp
-msgid "CamelCase to under_scored"
+#, fuzzy
+msgid "PascalCase to snake_case"
 msgstr "CamelCase ala_viivoiksi"
 
 #: editor/rename_dialog.cpp
-msgid "under_scored to CamelCase"
+#, fuzzy
+msgid "snake_case to PascalCase"
 msgstr "ala_viivat CamelCaseksi"
 
 #: editor/rename_dialog.cpp
@@ -10312,6 +10386,16 @@ msgstr "Isoiksi kirjaimiksi"
 #: editor/rename_dialog.cpp
 msgid "Reset"
 msgstr "Palauta"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Regular Expression Error"
+msgstr "Säännölliset lausekkeet"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "At character %s"
+msgstr "Kelvolliset merkit:"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10779,7 +10863,8 @@ msgid "Invalid inherited parent name or path."
 msgstr "Virheellinen peritty isännän nimi tai polku."
 
 #: editor/script_create_dialog.cpp
-msgid "Script is valid."
+#, fuzzy
+msgid "Script path/name is valid."
 msgstr "Skripti kelpaa."
 
 #: editor/script_create_dialog.cpp
@@ -10871,6 +10956,11 @@ msgid "Copy Error"
 msgstr "Kopioi virhe"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Video RAM"
+msgstr "Näyttömuisti"
+
+#: editor/script_editor_debugger.cpp
 msgid "Skip Breakpoints"
 msgstr "Sivuuta keskeytyskohdat"
 
@@ -10917,10 +11007,6 @@ msgstr "Lista näyttömuistin käytöstä resurssikohtaisesti:"
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "Yhteensä:"
-
-#: editor/script_editor_debugger.cpp
-msgid "Video Mem"
-msgstr "Näyttömuisti"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12603,6 +12689,15 @@ msgstr "Varying tyypin voi sijoittaa vain vertex-funktiossa."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Vakioita ei voi muokata."
+
+#~ msgid "Replaced %d occurrence(s)."
+#~ msgstr "Korvattu %d osuvuutta."
+
+#~ msgid "Create Static Convex Body"
+#~ msgstr "Luo konveksi staattinen kappale"
+
+#~ msgid "Failed creating shapes!"
+#~ msgstr "Muotojen luonti epäonnistui!"
 
 #~ msgid ""
 #~ "There are currently no tutorials for this class, you can [color=$color]"
