@@ -423,6 +423,7 @@ void BaseMaterial3D::_update_shader() {
 		case TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: texfilter_str = "filter_linear_mipmap"; break;
 		case TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS_ANISOTROPIC: texfilter_str = "filter_nearest_mipmap_aniso"; break;
 		case TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: texfilter_str = "filter_linear_mipmap_aniso"; break;
+		case TEXTURE_FILTER_MAX: break; // Internal value, skip.
 	}
 
 	if (flags[FLAG_USE_TEXTURE_REPEAT]) {

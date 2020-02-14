@@ -90,9 +90,6 @@ Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color, float 
 	Ref<ImageTexture> icon = memnew(ImageTexture);
 	Ref<Image> img = memnew(Image);
 
-	// dumb gizmo check
-	bool is_gizmo = String(editor_icons_names[p_index]).begins_with("Gizmo");
-
 	// Upsample icon generation only if the editor scale isn't an integer multiplier.
 	// Generating upsampled icons is slower, and the benefit is hardly visible
 	// with integer editor scales.

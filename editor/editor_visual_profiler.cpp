@@ -113,12 +113,6 @@ void EditorVisualProfiler::clear() {
 	seeking = false;
 }
 
-static String _get_percent_txt(float p_value, float p_total) {
-	if (p_total == 0)
-		p_total = 0.00001;
-	return String::num((p_value / p_total) * 100, 1) + "%";
-}
-
 String EditorVisualProfiler::_get_time_as_text(float p_time) {
 
 	int dmode = display_mode->get_selected();
@@ -126,7 +120,7 @@ String EditorVisualProfiler::_get_time_as_text(float p_time) {
 	if (dmode == DISPLAY_FRAME_TIME) {
 		return rtos(p_time) + "ms";
 	} else if (dmode == DISPLAY_FRAME_PERCENT) {
-		return String::num(p_time * 100 / graph_limit, 2) + "%"; //_get_percent_txt(p_time, m.frame_time);
+		return String::num(p_time * 100 / graph_limit, 2) + "%";
 	}
 
 	return "err";

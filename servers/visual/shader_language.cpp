@@ -2708,31 +2708,43 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
 			pi.hint_string = "CubeMap";
 		} break;
+		case ShaderLanguage::TYPE_STRUCT: {
+			// FIXME: Implement this.
+		} break;
 	}
 	return pi;
 }
 
 uint32_t ShaderLanguage::get_type_size(DataType p_type) {
 	switch (p_type) {
+		case TYPE_VOID:
+			return 0;
 		case TYPE_BOOL:
 		case TYPE_INT:
 		case TYPE_UINT:
-		case TYPE_FLOAT: return 4;
+		case TYPE_FLOAT:
+			return 4;
 		case TYPE_BVEC2:
 		case TYPE_IVEC2:
 		case TYPE_UVEC2:
-		case TYPE_VEC2: return 8;
+		case TYPE_VEC2:
+			return 8;
 		case TYPE_BVEC3:
 		case TYPE_IVEC3:
 		case TYPE_UVEC3:
-		case TYPE_VEC3: return 12;
+		case TYPE_VEC3:
+			return 12;
 		case TYPE_BVEC4:
 		case TYPE_IVEC4:
 		case TYPE_UVEC4:
-		case TYPE_VEC4: return 16;
-		case TYPE_MAT2: return 8;
-		case TYPE_MAT3: return 12;
-		case TYPE_MAT4: return 16;
+		case TYPE_VEC4:
+			return 16;
+		case TYPE_MAT2:
+			return 8;
+		case TYPE_MAT3:
+			return 12;
+		case TYPE_MAT4:
+			return 16;
 		case TYPE_SAMPLER2D:
 		case TYPE_ISAMPLER2D:
 		case TYPE_USAMPLER2D:
@@ -2742,7 +2754,11 @@ uint32_t ShaderLanguage::get_type_size(DataType p_type) {
 		case TYPE_SAMPLER3D:
 		case TYPE_ISAMPLER3D:
 		case TYPE_USAMPLER3D:
-		case TYPE_SAMPLERCUBE: return 4; //not really, but useful for indices
+		case TYPE_SAMPLERCUBE:
+			return 4; //not really, but useful for indices
+		case TYPE_STRUCT:
+			// FIXME: Implement.
+			return 0;
 	}
 	return 0;
 }
