@@ -732,8 +732,9 @@ msgid "Line Number:"
 msgstr "行號:"
 
 #: editor/code_editor.cpp
-msgid "Replaced %d occurrence(s)."
-msgstr "取代了 %d 個。"
+#, fuzzy
+msgid "%d replaced."
+msgstr "替換…"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 #, fuzzy
@@ -6101,12 +6102,13 @@ msgid "Mesh is empty!"
 msgstr "網格是空的！"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Trimesh Body"
-msgstr ""
+#, fuzzy
+msgid "Couldn't create a Trimesh collision shape."
+msgstr "無法新增資料夾."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Convex Body"
-msgstr "創建靜態凸體"
+msgid "Create Static Trimesh Body"
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
@@ -6118,12 +6120,30 @@ msgid "Create Trimesh Static Shape"
 msgstr "創建凸形靜態體"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Failed creating shapes!"
+msgid "Can't create a single convex collision shape for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Couldn't create a single convex collision shape."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Convex Shape(s)"
+msgid "Create Single Convex Shape"
+msgstr "創建凸面形狀"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Can't create multiple convex collision shapes for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Couldn't create any collision shapes."
+msgstr "無法新增資料夾."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Shapes"
 msgstr "創建凸面形狀"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -6175,17 +6195,55 @@ msgid "Create Trimesh Static Body"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a StaticBody and assigns a polygon-based collision shape to it "
+"automatically.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Convex Collision Sibling(s)"
+msgid "Create Single Convex Collision Siblings"
 msgstr "創建碰撞多邊形"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a single convex collision shape.\n"
+"This is the fastest (but least accurate) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Collision Siblings"
+msgstr "創建碰撞多邊形"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is a performance middle-ground between the two above options."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
 msgstr "創建輪廓網格…"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the SpatialMaterial Grow property when using "
+"that property isn't possible."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
@@ -8713,7 +8771,7 @@ msgstr ""
 msgid "No VCS addons are available."
 msgstr ""
 
-#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
 msgstr ""
 
@@ -9845,11 +9903,19 @@ msgid "Export With Debug"
 msgstr "導出為調試"
 
 #: editor/project_manager.cpp
-msgid "The path does not exist."
+#, fuzzy
+msgid "The path specified doesn't exist."
 msgstr "路徑不存在."
 
 #: editor/project_manager.cpp
-msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
+#, fuzzy
+msgid "Error opening package file (it's not in ZIP format)."
+msgstr "開啟套件檔案出錯，非 zip 格式。"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid ""
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr "“.zip”項目檔案無效，不包含“project.godot”檔案。"
 
 #: editor/project_manager.cpp
@@ -9857,11 +9923,13 @@ msgid "Please choose an empty folder."
 msgstr "請選擇一個空資料夾。"
 
 #: editor/project_manager.cpp
-msgid "Please choose a 'project.godot' or '.zip' file."
+#, fuzzy
+msgid "Please choose a \"project.godot\" or \".zip\" file."
 msgstr "請選擇“project.godot”或“.zip”檔案。"
 
 #: editor/project_manager.cpp
-msgid "Directory already contains a Godot project."
+#, fuzzy
+msgid "This directory already contains a Godot project."
 msgstr "目錄已包含一個godot項目。"
 
 #: editor/project_manager.cpp
@@ -10545,6 +10613,11 @@ msgstr ""
 
 #: editor/rename_dialog.cpp
 #, fuzzy
+msgid "Use Regular Expressions"
+msgstr "設置磁貼區域"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
 msgid "Advanced Options"
 msgstr "吸附選項"
 
@@ -10582,7 +10655,7 @@ msgid ""
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Per Level counter"
+msgid "Per-level Counter"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10613,10 +10686,6 @@ msgid ""
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expressions"
-msgstr ""
-
-#: editor/rename_dialog.cpp
 msgid "Post-Process"
 msgstr ""
 
@@ -10625,11 +10694,11 @@ msgid "Keep"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "CamelCase to under_scored"
+msgid "PascalCase to snake_case"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "under_scored to CamelCase"
+msgid "snake_case to PascalCase"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10650,6 +10719,15 @@ msgstr "轉換成..."
 #, fuzzy
 msgid "Reset"
 msgstr "重設縮放大小"
+
+#: editor/rename_dialog.cpp
+msgid "Regular Expression Error"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "At character %s"
+msgstr "合法字元:"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -11122,7 +11200,7 @@ msgstr ""
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
-msgid "Script is valid."
+msgid "Script path/name is valid."
 msgstr "動畫樹有效。"
 
 #: editor/script_create_dialog.cpp
@@ -11232,6 +11310,11 @@ msgstr "連接..."
 
 #: editor/script_editor_debugger.cpp
 #, fuzzy
+msgid "Video RAM"
+msgstr "影片記憶體"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
 msgid "Skip Breakpoints"
 msgstr "刪除"
 
@@ -11281,10 +11364,6 @@ msgstr "影片記憶體使用容量列表(依資源別)："
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "總計："
-
-#: editor/script_editor_debugger.cpp
-msgid "Video Mem"
-msgstr "影片記憶體"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12900,6 +12979,12 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Replaced %d occurrence(s)."
+#~ msgstr "取代了 %d 個。"
+
+#~ msgid "Create Static Convex Body"
+#~ msgstr "創建靜態凸體"
 
 #~ msgid ""
 #~ "There are currently no tutorials for this class, you can [color=$color]"

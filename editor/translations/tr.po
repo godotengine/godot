@@ -726,8 +726,9 @@ msgid "Line Number:"
 msgstr "Satır Numarası:"
 
 #: editor/code_editor.cpp
-msgid "Replaced %d occurrence(s)."
-msgstr "%d değişiklik gerçekleştirildi."
+#, fuzzy
+msgid "%d replaced."
+msgstr "Değiştir..."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -5868,12 +5869,13 @@ msgid "Mesh is empty!"
 msgstr "Örüntü boş!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Trimesh Body"
-msgstr "Durağan Üçlü Örüntü Oluştur"
+#, fuzzy
+msgid "Couldn't create a Trimesh collision shape."
+msgstr "Üçlü Örüntü Çarpışma Kardeşi Oluştur"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Convex Body"
-msgstr "Durağan Dışbükey Gövde Oluştur"
+msgid "Create Static Trimesh Body"
+msgstr "Durağan Üçlü Örüntü Oluştur"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
@@ -5884,11 +5886,30 @@ msgid "Create Trimesh Static Shape"
 msgstr "Üçlü Örüntü Yüzeyi Oluştur"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Failed creating shapes!"
-msgstr "Şekil oluşturma başarısız!"
+msgid "Can't create a single convex collision shape for the scene root."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Convex Shape(s)"
+msgid "Couldn't create a single convex collision shape."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Single Convex Shape"
+msgstr "Dışbükey Şekil[ler] Oluştur"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Can't create multiple convex collision shapes for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Couldn't create any collision shapes."
+msgstr "Klasör oluşturulamadı."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Shapes"
 msgstr "Dışbükey Şekil[ler] Oluştur"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -5940,16 +5961,55 @@ msgid "Create Trimesh Static Body"
 msgstr "Üçlü Örüntü Durağan Gövdesi Oluştur"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a StaticBody and assigns a polygon-based collision shape to it "
+"automatically.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
 msgstr "Üçlü Örüntü Çarpışma Kardeşi Oluştur"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Convex Collision Sibling(s)"
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Single Convex Collision Siblings"
 msgstr "Dışbükey Çarpışma Komşusu Oluştur"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a single convex collision shape.\n"
+"This is the fastest (but least accurate) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Collision Siblings"
+msgstr "Dışbükey Çarpışma Komşusu Oluştur"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is a performance middle-ground between the two above options."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
 msgstr "Anahat Örüntüsü Oluştur..."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the SpatialMaterial Grow property when using "
+"that property isn't possible."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -8363,7 +8423,7 @@ msgstr "DöşemeTakımı"
 msgid "No VCS addons are available."
 msgstr "Hiçbir VCS eklentisi mevcut değil."
 
-#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
 msgstr "Hata"
 
@@ -9523,11 +9583,19 @@ msgid "Export With Debug"
 msgstr "Hata Ayıklama İle Dışa Aktar"
 
 #: editor/project_manager.cpp
-msgid "The path does not exist."
+#, fuzzy
+msgid "The path specified doesn't exist."
 msgstr "Yol mevcut değil."
 
 #: editor/project_manager.cpp
-msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
+#, fuzzy
+msgid "Error opening package file (it's not in ZIP format)."
+msgstr "Paket dosyası açılırken hata oluştu, zip formatında değil."
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid ""
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr "Geçersiz '.zip' proje dosyası, 'project.godot' dosyası içermiyor."
 
 #: editor/project_manager.cpp
@@ -9535,11 +9603,13 @@ msgid "Please choose an empty folder."
 msgstr "Lütfen boş bir klasör seçin."
 
 #: editor/project_manager.cpp
-msgid "Please choose a 'project.godot' or '.zip' file."
+#, fuzzy
+msgid "Please choose a \"project.godot\" or \".zip\" file."
 msgstr "Lütfen bir 'project.godot' veya '.zip' dosyası seçin."
 
 #: editor/project_manager.cpp
-msgid "Directory already contains a Godot project."
+#, fuzzy
+msgid "This directory already contains a Godot project."
 msgstr "Bu dizinde zaten bir Godot projesi var."
 
 #: editor/project_manager.cpp
@@ -10237,6 +10307,11 @@ msgid "Suffix"
 msgstr "Son Ek"
 
 #: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Use Regular Expressions"
+msgstr "Düzenli İfadeler"
+
+#: editor/rename_dialog.cpp
 msgid "Advanced Options"
 msgstr "Gelişmiş Ayarlar"
 
@@ -10273,7 +10348,8 @@ msgstr ""
 "Sayaç seçeneklerini karşılaştırın."
 
 #: editor/rename_dialog.cpp
-msgid "Per Level counter"
+#, fuzzy
+msgid "Per-level Counter"
 msgstr "Seviye Başına sayaç"
 
 #: editor/rename_dialog.cpp
@@ -10305,10 +10381,6 @@ msgstr ""
 "Eksik rakamları baştaki sıfırlarla doldurulur."
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expressions"
-msgstr "Düzenli İfadeler"
-
-#: editor/rename_dialog.cpp
 msgid "Post-Process"
 msgstr "Artçıl-İşlem"
 
@@ -10317,11 +10389,13 @@ msgid "Keep"
 msgstr "Tut"
 
 #: editor/rename_dialog.cpp
-msgid "CamelCase to under_scored"
+#, fuzzy
+msgid "PascalCase to snake_case"
 msgstr "DeveŞekilli'den alt_tireli'ye dönüştür"
 
 #: editor/rename_dialog.cpp
-msgid "under_scored to CamelCase"
+#, fuzzy
+msgid "snake_case to PascalCase"
 msgstr "alt_tireli'den DeveŞekilli'ye dönüştür"
 
 #: editor/rename_dialog.cpp
@@ -10339,6 +10413,16 @@ msgstr "Büyük Harfe Döndür"
 #: editor/rename_dialog.cpp
 msgid "Reset"
 msgstr "Sıfırla"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Regular Expression Error"
+msgstr "Düzenli İfadeler"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "At character %s"
+msgstr "Geçerli karakterler:"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10803,7 +10887,8 @@ msgid "Invalid inherited parent name or path."
 msgstr "Geçersiz devralınan üst ad veya yol."
 
 #: editor/script_create_dialog.cpp
-msgid "Script is valid."
+#, fuzzy
+msgid "Script path/name is valid."
 msgstr "Betik geçerli."
 
 #: editor/script_create_dialog.cpp
@@ -10895,6 +10980,11 @@ msgid "Copy Error"
 msgstr "Hatayı Kopyala"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Video RAM"
+msgstr "Görüntü Belleği"
+
+#: editor/script_editor_debugger.cpp
 msgid "Skip Breakpoints"
 msgstr "İşaret Noktalarını Atla"
 
@@ -10941,10 +11031,6 @@ msgstr "Kaynağa Göre İzleti Belleği Kullanımının Dizelgesi:"
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "Toplam:"
-
-#: editor/script_editor_debugger.cpp
-msgid "Video Mem"
-msgstr "Görüntü Belleği"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12619,6 +12705,15 @@ msgstr "varyings yalnızca vertex işlevinde atanabilir."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Sabit değerler değiştirilemez."
+
+#~ msgid "Replaced %d occurrence(s)."
+#~ msgstr "%d değişiklik gerçekleştirildi."
+
+#~ msgid "Create Static Convex Body"
+#~ msgstr "Durağan Dışbükey Gövde Oluştur"
+
+#~ msgid "Failed creating shapes!"
+#~ msgstr "Şekil oluşturma başarısız!"
 
 #~ msgid ""
 #~ "There are currently no tutorials for this class, you can [color=$color]"

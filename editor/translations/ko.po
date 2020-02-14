@@ -696,8 +696,9 @@ msgid "Line Number:"
 msgstr "행 번호:"
 
 #: editor/code_editor.cpp
-msgid "Replaced %d occurrence(s)."
-msgstr "%d개를 바꿨습니다."
+#, fuzzy
+msgid "%d replaced."
+msgstr "바꾸기..."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -5812,12 +5813,13 @@ msgid "Mesh is empty!"
 msgstr "메시가 없습니다!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Trimesh Body"
-msgstr "Static Trimesh Body 만들기"
+#, fuzzy
+msgid "Couldn't create a Trimesh collision shape."
+msgstr "Trimesh 충돌 형제 만들기"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Convex Body"
-msgstr "Static Convex Body 만들기"
+msgid "Create Static Trimesh Body"
+msgstr "Static Trimesh Body 만들기"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
@@ -5828,11 +5830,30 @@ msgid "Create Trimesh Static Shape"
 msgstr "Trimesh Static Shape 만들기"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Failed creating shapes!"
-msgstr "Shape 만들기 실패!"
+msgid "Can't create a single convex collision shape for the scene root."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Convex Shape(s)"
+msgid "Couldn't create a single convex collision shape."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Single Convex Shape"
+msgstr "Convex Shape 만들기"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Can't create multiple convex collision shapes for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Couldn't create any collision shapes."
+msgstr "폴더를 만들 수 없습니다."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Shapes"
 msgstr "Convex Shape 만들기"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -5884,16 +5905,55 @@ msgid "Create Trimesh Static Body"
 msgstr "Trimesh Static Body 만들기"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a StaticBody and assigns a polygon-based collision shape to it "
+"automatically.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
 msgstr "Trimesh 충돌 형제 만들기"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Convex Collision Sibling(s)"
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Single Convex Collision Siblings"
 msgstr "Convex 충돌 형제 만들기"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a single convex collision shape.\n"
+"This is the fastest (but least accurate) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Collision Siblings"
+msgstr "Convex 충돌 형제 만들기"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is a performance middle-ground between the two above options."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
 msgstr "윤곽 메시 만들기..."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the SpatialMaterial Grow property when using "
+"that property isn't possible."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -8302,7 +8362,7 @@ msgstr "타일셋"
 msgid "No VCS addons are available."
 msgstr "이용할 수 있는 버전 관리 시스템(VCS)이 없습니다."
 
-#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
 msgstr "오류"
 
@@ -9440,11 +9500,19 @@ msgid "Export With Debug"
 msgstr "디버그와 함께 내보내기"
 
 #: editor/project_manager.cpp
-msgid "The path does not exist."
+#, fuzzy
+msgid "The path specified doesn't exist."
 msgstr "경로가 없습니다."
 
 #: editor/project_manager.cpp
-msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
+#, fuzzy
+msgid "Error opening package file (it's not in ZIP format)."
+msgstr "패키지 파일을 여는 중 오류. ZIP 형식이 아닙니다."
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid ""
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr ""
 "잘못된 '.zip' 프로젝트 파일입니다. 'project.godot' 파일을 갖고 있지 않습니다."
 
@@ -9453,11 +9521,13 @@ msgid "Please choose an empty folder."
 msgstr "비어있는 폴더를 선택해주세요."
 
 #: editor/project_manager.cpp
-msgid "Please choose a 'project.godot' or '.zip' file."
+#, fuzzy
+msgid "Please choose a \"project.godot\" or \".zip\" file."
 msgstr "'project.godot' 파일 또는 '.zip' 파일을 선택해주세요."
 
 #: editor/project_manager.cpp
-msgid "Directory already contains a Godot project."
+#, fuzzy
+msgid "This directory already contains a Godot project."
 msgstr "디렉토리에 Godot 프로젝트가 이미 있습니다."
 
 #: editor/project_manager.cpp
@@ -10149,6 +10219,11 @@ msgid "Suffix"
 msgstr "접미사"
 
 #: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Use Regular Expressions"
+msgstr "정규 표현식"
+
+#: editor/rename_dialog.cpp
 msgid "Advanced Options"
 msgstr "고급 설정"
 
@@ -10185,7 +10260,8 @@ msgstr ""
 "카운터 설정과 비교합니다."
 
 #: editor/rename_dialog.cpp
-msgid "Per Level counter"
+#, fuzzy
+msgid "Per-level Counter"
 msgstr "단계 별 카운터"
 
 #: editor/rename_dialog.cpp
@@ -10217,10 +10293,6 @@ msgstr ""
 "빈 자리는 0으로 채웁니다."
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expressions"
-msgstr "정규 표현식"
-
-#: editor/rename_dialog.cpp
 msgid "Post-Process"
 msgstr "후처리"
 
@@ -10229,11 +10301,13 @@ msgid "Keep"
 msgstr "유지"
 
 #: editor/rename_dialog.cpp
-msgid "CamelCase to under_scored"
+#, fuzzy
+msgid "PascalCase to snake_case"
 msgstr "CamelCase를 under_scored로"
 
 #: editor/rename_dialog.cpp
-msgid "under_scored to CamelCase"
+#, fuzzy
+msgid "snake_case to PascalCase"
 msgstr "under_scored를 CamelCase로"
 
 #: editor/rename_dialog.cpp
@@ -10251,6 +10325,16 @@ msgstr "대문자화"
 #: editor/rename_dialog.cpp
 msgid "Reset"
 msgstr "되돌리기"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Regular Expression Error"
+msgstr "정규 표현식"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "At character %s"
+msgstr "올바른 문자:"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10710,7 +10794,8 @@ msgid "Invalid inherited parent name or path."
 msgstr "잘못된 상속된 부모 이름 또는 경로."
 
 #: editor/script_create_dialog.cpp
-msgid "Script is valid."
+#, fuzzy
+msgid "Script path/name is valid."
 msgstr "스크립트가 올바릅니다."
 
 #: editor/script_create_dialog.cpp
@@ -10802,6 +10887,11 @@ msgid "Copy Error"
 msgstr "복사 오류"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Video RAM"
+msgstr "비디오 메모리"
+
+#: editor/script_editor_debugger.cpp
 msgid "Skip Breakpoints"
 msgstr "중단점 넘기기"
 
@@ -10848,10 +10938,6 @@ msgstr "리소스 별 비디오 메모리 사용량 목록:"
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "전체:"
-
-#: editor/script_editor_debugger.cpp
-msgid "Video Mem"
-msgstr "비디오 메모리"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12502,6 +12588,15 @@ msgstr "Varying은 꼭짓점 함수에만 지정할 수 있습니다."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "상수는 수정할 수 없습니다."
+
+#~ msgid "Replaced %d occurrence(s)."
+#~ msgstr "%d개를 바꿨습니다."
+
+#~ msgid "Create Static Convex Body"
+#~ msgstr "Static Convex Body 만들기"
+
+#~ msgid "Failed creating shapes!"
+#~ msgstr "Shape 만들기 실패!"
 
 #~ msgid ""
 #~ "There are currently no tutorials for this class, you can [color=$color]"
