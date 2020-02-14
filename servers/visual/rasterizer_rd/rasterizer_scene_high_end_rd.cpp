@@ -1821,7 +1821,7 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 			case VS::ENV_BG_SKY: {
 				RID sky = environment_get_sky(p_environment);
 				if (sky.is_valid()) {
-					radiance_uniform_set = sky_get_radiance_uniform_set_rd(sky, radiance_uniform_set, RADIANCE_UNIFORM_SET);
+					radiance_uniform_set = sky_get_radiance_uniform_set_rd(sky, default_shader_rd, RADIANCE_UNIFORM_SET);
 					draw_sky = true;
 				}
 			} break;
