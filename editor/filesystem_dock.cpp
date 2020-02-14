@@ -1413,17 +1413,13 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool overw
 		if (!can_move) {
 			// Ask to do something.
 			overwrite_dialog->popup_centered_minsize();
-			overwrite_dialog->grab_focus();
 			return;
 		}
 	}
 
 	// Check groups.
 	for (int i = 0; i < to_move.size(); i++) {
-
-		print_line("is group: " + to_move[i].path + ": " + itos(EditorFileSystem::get_singleton()->is_group_file(to_move[i].path)));
 		if (to_move[i].is_file && EditorFileSystem::get_singleton()->is_group_file(to_move[i].path)) {
-			print_line("move to: " + p_to_path.plus_file(to_move[i].path.get_file()));
 			EditorFileSystem::get_singleton()->move_group_file(to_move[i].path, p_to_path.plus_file(to_move[i].path.get_file()));
 		}
 	}
@@ -1442,7 +1438,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool overw
 
 	if (is_moved) {
 		int current_tab = editor->get_current_tab();
-		_save_scenes_after_move(file_renames); //save scenes before updating
+		_save_scenes_after_move(file_renames); // Save scenes before updating.
 		_update_dependencies_after_move(file_renames);
 		_update_resource_paths_after_move(file_renames);
 		_update_project_settings_after_move(file_renames);
@@ -1786,6 +1782,14 @@ void FileSystemDock::_resource_created() const {
 	Resource *r = Object::cast_to<Resource>(c);
 	ERR_FAIL_COND(!r);
 
+	PackedScene *scene = Object::cast_to<PackedScene>(r);
+	if (scene) {
+		Node *node = memnew(Node);
+		node->set_name("Node");
+		scene->pack(node);
+		memdelete(node);
+	}
+
 	REF res(r);
 	editor->push_item(c);
 
@@ -1948,7 +1952,7 @@ bool FileSystemDock::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 			return false;
 
 		// Attempting to move a folder into itself will fail later,
-		// rather than bring up a message don't try to do it in the first place
+		// rather than bring up a message don't try to do it in the first place.
 		to_dir = to_dir.ends_with("/") ? to_dir : (to_dir + "/");
 		Vector<String> fnames = drag_data["files"];
 		for (int i = 0; i < fnames.size(); ++i) {
@@ -2050,11 +2054,15 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 			Vector<String> fnames = drag_data["files"];
 			to_move.clear();
 			for (int i = 0; i < fnames.size(); i++) {
-				to_move.push_back(FileOrFolder(fnames[i], !fnames[i].ends_with("/")));
+				if (fnames[i].get_base_dir() != to_dir) {
+					to_move.push_back(FileOrFolder(fnames[i], !fnames[i].ends_with("/")));
+				}
 			}
-			_move_operation_confirm(to_dir);
+			if (!to_move.empty()) {
+				_move_operation_confirm(to_dir);
+			}
 		} else if (favorite) {
-			// Add the files from favorites
+			// Add the files from favorites.
 			Vector<String> fnames = drag_data["files"];
 			Vector<String> favorites = EditorSettings::get_singleton()->get_favorites();
 			for (int i = 0; i < fnames.size(); i++) {
@@ -2102,6 +2110,10 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 					if (fpath.ends_with("/")) {
 						// We drop on a folder.
 						target = fpath;
+						return;
+					} else {
+						// We drop on the folder that the target file is in.
+						target = fpath.get_base_dir();
 						return;
 					}
 				} else {

@@ -84,7 +84,9 @@ void ScriptCreateDialog::_path_hbox_sorted() {
 		int filename_start_pos = initial_bp.find_last("/") + 1;
 		int filename_end_pos = initial_bp.length();
 
-		file_path->select(filename_start_pos, filename_end_pos);
+		if (!is_built_in) {
+			file_path->select(filename_start_pos, filename_end_pos);
+		}
 
 		// First set cursor to the end of line to scroll LineEdit view
 		// to the right and then set the actual cursor position.
@@ -574,6 +576,10 @@ void ScriptCreateDialog::_browse_class_in_tree() {
 }
 
 void ScriptCreateDialog::_path_changed(const String &p_path) {
+
+	if (is_built_in) {
+		return;
+	}
 
 	is_path_valid = false;
 	is_new_script_created = true;

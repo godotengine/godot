@@ -264,7 +264,8 @@ namespace Godot
                     instanceIndex++;
                     toIndex++;
                 }
-            } else
+            }
+            else
             {
                 while (true)
                 {
@@ -474,7 +475,7 @@ namespace Godot
             int source = 0;
             int target = 0;
 
-            while (instance[source] != 0 && text[target] != 0)
+            while (source < len && target < text.Length)
             {
                 bool match;
 
@@ -491,7 +492,7 @@ namespace Godot
                 if (match)
                 {
                     source++;
-                    if (instance[source] == 0)
+                    if (source >= len)
                         return true;
                 }
 

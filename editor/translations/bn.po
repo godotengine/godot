@@ -733,8 +733,9 @@ msgid "Line Number:"
 msgstr "লাইন নাম্বার:"
 
 #: editor/code_editor.cpp
-msgid "Replaced %d occurrence(s)."
-msgstr "%d সংখ্যক সংঘটন প্রতিস্থাপিত হয়েছে  ।"
+#, fuzzy
+msgid "%d replaced."
+msgstr "প্রতিস্থাপন..."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -6302,12 +6303,13 @@ msgid "Mesh is empty!"
 msgstr "মেসটি খালি!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Trimesh Body"
-msgstr "স্থিত-ট্রাইমেস বডি গঠন করুন"
+#, fuzzy
+msgid "Couldn't create a Trimesh collision shape."
+msgstr "ট্রাইমেস কলিশ়ন সহোদর তৈরি করুন"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Convex Body"
-msgstr "স্থিত-কনভেক্স বডি গঠন করুন"
+msgid "Create Static Trimesh Body"
+msgstr "স্থিত-ট্রাইমেস বডি গঠন করুন"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
@@ -6319,12 +6321,30 @@ msgid "Create Trimesh Static Shape"
 msgstr "ট্রাইমেস আকার তৈরি করুন"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Failed creating shapes!"
+msgid "Can't create a single convex collision shape for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Couldn't create a single convex collision shape."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Convex Shape(s)"
+msgid "Create Single Convex Shape"
+msgstr "কনভেক্স আকার তৈরি করুন"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Can't create multiple convex collision shapes for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Couldn't create any collision shapes."
+msgstr "ফোল্ডার তৈরী করা সম্ভব হয়নি।"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Shapes"
 msgstr "কনভেক্স আকার তৈরি করুন"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -6376,17 +6396,55 @@ msgid "Create Trimesh Static Body"
 msgstr "স্থিত-ট্রাইমেস বডি তৈরি করুন"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a StaticBody and assigns a polygon-based collision shape to it "
+"automatically.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
 msgstr "ট্রাইমেস কলিশ়ন সহোদর তৈরি করুন"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Convex Collision Sibling(s)"
+msgid "Create Single Convex Collision Siblings"
 msgstr "কনভেক্স কলিশ়ন সহোদর তৈরি করুন"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a single convex collision shape.\n"
+"This is the fastest (but least accurate) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Collision Siblings"
+msgstr "কনভেক্স কলিশ়ন সহোদর তৈরি করুন"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is a performance middle-ground between the two above options."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
 msgstr "প্রান্তরেখা মেস তৈরি করুন..."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the SpatialMaterial Grow property when using "
+"that property isn't possible."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
@@ -9005,7 +9063,7 @@ msgstr "TileSet (টাইল-সেট)..."
 msgid "No VCS addons are available."
 msgstr ""
 
-#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
 msgstr "সমস্যা/ভুল"
 
@@ -10180,12 +10238,18 @@ msgstr "Tile Set এক্সপোর্ট করুন"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "The path does not exist."
+msgid "The path specified doesn't exist."
 msgstr "ফাইলটি বিদ্যমান নয়।"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
+msgid "Error opening package file (it's not in ZIP format)."
+msgstr "জিপ ফরম্যাট খুঁজে পেতে ব্যার্থ, প্যাকেজ ফাইল ওপেন করা যায়নি।"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid ""
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr "এমন একটি ফোল্ডার বাছাই করুন যেখানে 'project.godot' নামে কোন ফাইল নেই।"
 
 #: editor/project_manager.cpp
@@ -10195,11 +10259,11 @@ msgstr "অনুগ্রহ করে প্রকল্পের ফোল্
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Please choose a 'project.godot' or '.zip' file."
+msgid "Please choose a \"project.godot\" or \".zip\" file."
 msgstr "অনুগ্রহ করে প্রকল্পের ফোল্ডারের বাইরে এক্সপোর্ট করুন!"
 
 #: editor/project_manager.cpp
-msgid "Directory already contains a Godot project."
+msgid "This directory already contains a Godot project."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -10905,6 +10969,11 @@ msgstr ""
 
 #: editor/rename_dialog.cpp
 #, fuzzy
+msgid "Use Regular Expressions"
+msgstr "অভিব্যক্তি (Expression) পরিবর্তন করুন"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
 msgid "Advanced Options"
 msgstr "অ্যানিমেশনের সিদ্ধান্তসমূহ"
 
@@ -10943,7 +11012,7 @@ msgid ""
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Per Level counter"
+msgid "Per-level Counter"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10975,11 +11044,6 @@ msgstr ""
 
 #: editor/rename_dialog.cpp
 #, fuzzy
-msgid "Regular Expressions"
-msgstr "অভিব্যক্তি (Expression) পরিবর্তন করুন"
-
-#: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Post-Process"
 msgstr "প্রক্রিয়া-পরবর্তী স্ক্রিপ্ট:"
 
@@ -10988,11 +11052,11 @@ msgid "Keep"
 msgstr "রাখুন"
 
 #: editor/rename_dialog.cpp
-msgid "CamelCase to under_scored"
+msgid "PascalCase to snake_case"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "under_scored to CamelCase"
+msgid "snake_case to PascalCase"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -11013,6 +11077,16 @@ msgstr "বড় হাতের অক্ষর"
 #, fuzzy
 msgid "Reset"
 msgstr "সম্প্রসারন/সংকোচন অপসারণ করুন (রিসেট জুম্)"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Regular Expression Error"
+msgstr "অভিব্যক্তি (Expression) পরিবর্তন করুন"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "At character %s"
+msgstr "গ্রহনযোগ্য অক্ষরসমূহ:"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -11517,7 +11591,7 @@ msgstr "সূচক/ইনডেক্স মানের অগ্রহনয
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
-msgid "Script is valid."
+msgid "Script path/name is valid."
 msgstr "স্ক্রিপ্ট"
 
 #: editor/script_create_dialog.cpp
@@ -11628,6 +11702,11 @@ msgstr "ভুল/সমস্যা-সমূহ লোড করুন"
 
 #: editor/script_editor_debugger.cpp
 #, fuzzy
+msgid "Video RAM"
+msgstr "ভিডিও মেমোরি"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
 msgid "Skip Breakpoints"
 msgstr "বিন্দু অপসারণ করুন"
 
@@ -11675,10 +11754,6 @@ msgstr "রিসোর্স অনুসারে ভিডিও মেমো
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "সর্বমোট:"
-
-#: editor/script_editor_debugger.cpp
-msgid "Video Mem"
-msgstr "ভিডিও মেমোরি"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -13383,6 +13458,12 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Replaced %d occurrence(s)."
+#~ msgstr "%d সংখ্যক সংঘটন প্রতিস্থাপিত হয়েছে  ।"
+
+#~ msgid "Create Static Convex Body"
+#~ msgstr "স্থিত-কনভেক্স বডি গঠন করুন"
 
 #, fuzzy
 #~ msgid ""

@@ -46,6 +46,7 @@ class OS_JavaScript : public OS_Unix {
 	bool window_maximized;
 	bool entering_fullscreen;
 	bool just_exited_fullscreen;
+	bool transparency_enabled;
 
 	InputDefault *input;
 	Ref<InputEventKey> deferred_key_event;
@@ -122,6 +123,9 @@ public:
 	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
 	virtual void set_mouse_mode(MouseMode p_mode);
 	virtual MouseMode get_mouse_mode() const;
+
+	virtual bool get_window_per_pixel_transparency_enabled() const;
+	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled);
 
 	virtual bool has_touchscreen_ui_hint() const;
 

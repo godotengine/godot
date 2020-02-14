@@ -2986,14 +2986,32 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				bool is_const = false;
 				int array_size = 0;
 
-				if (!_find_identifier(p_block, p_builtin_types, identifier, &data_type, &ident_type, &is_const, &array_size)) {
-					_set_error("Unknown identifier in expression: " + String(identifier));
-					return NULL;
-				}
+				if (p_block && p_block->block_tag != SubClassTag::TAG_GLOBAL) {
+					int idx = 0;
+					bool found = false;
 
-				if (ident_type == IDENTIFIER_FUNCTION) {
-					_set_error("Can't use function as identifier: " + String(identifier));
-					return NULL;
+					while (builtin_func_defs[idx].name) {
+						if (builtin_func_defs[idx].tag == p_block->block_tag && builtin_func_defs[idx].name == identifier) {
+							found = true;
+							break;
+						}
+						idx++;
+					}
+					if (!found) {
+						_set_error("Unknown identifier in expression: " + String(identifier));
+						return NULL;
+					}
+				} else {
+
+					if (!_find_identifier(p_block, p_builtin_types, identifier, &data_type, &ident_type, &is_const, &array_size)) {
+						_set_error("Unknown identifier in expression: " + String(identifier));
+						return NULL;
+					}
+
+					if (ident_type == IDENTIFIER_FUNCTION) {
+						_set_error("Can't use function as identifier: " + String(identifier));
+						return NULL;
+					}
 				}
 
 				Node *index_expression = NULL;
@@ -3009,7 +3027,9 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 					if (tk.type == TK_PERIOD) {
 						completion_class = TAG_ARRAY;
+						p_block->block_tag = SubClassTag::TAG_ARRAY;
 						call_expression = _parse_and_reduce_expression(p_block, p_builtin_types);
+						p_block->block_tag = SubClassTag::TAG_GLOBAL;
 						if (!call_expression)
 							return NULL;
 						data_type = call_expression->get_datatype();

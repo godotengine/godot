@@ -163,7 +163,7 @@ private:
 		}
 
 		if (valid_path == "") {
-			set_message(TTR("The path does not exist."), MESSAGE_ERROR);
+			set_message(TTR("The path specified doesn't exist."), MESSAGE_ERROR);
 			memdelete(d);
 			get_ok()->set_disabled(true);
 			return "";
@@ -177,7 +177,7 @@ private:
 			}
 
 			if (valid_install_path == "") {
-				set_message(TTR("The path does not exist."), MESSAGE_ERROR, INSTALL_PATH);
+				set_message(TTR("The path specified doesn't exist."), MESSAGE_ERROR, INSTALL_PATH);
 				memdelete(d);
 				get_ok()->set_disabled(true);
 				return "";
@@ -195,7 +195,7 @@ private:
 					unzFile pkg = unzOpen2(valid_path.utf8().get_data(), &io);
 					if (!pkg) {
 
-						set_message(TTR("Error opening package file, not in ZIP format."), MESSAGE_ERROR);
+						set_message(TTR("Error opening package file (it's not in ZIP format)."), MESSAGE_ERROR);
 						memdelete(d);
 						get_ok()->set_disabled(true);
 						unzClose(pkg);
@@ -216,7 +216,7 @@ private:
 					}
 
 					if (ret == UNZ_END_OF_LIST_OF_FILE) {
-						set_message(TTR("Invalid '.zip' project file, does not contain a 'project.godot' file."), MESSAGE_ERROR);
+						set_message(TTR("Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."), MESSAGE_ERROR);
 						memdelete(d);
 						get_ok()->set_disabled(true);
 						unzClose(pkg);
@@ -230,7 +230,11 @@ private:
 					bool is_empty = true;
 					String n = d->get_next();
 					while (n != String()) {
-						if (n != "." && n != "..") {
+						if (!n.begins_with(".")) {
+							// Allow `.`, `..` (reserved current/parent folder names)
+							// and hidden files/folders to be present.
+							// For instance, this lets users initialize a Git repository
+							// and still be able to create a project in the directory afterwards.
 							is_empty = false;
 							break;
 						}
@@ -247,7 +251,7 @@ private:
 					}
 
 				} else {
-					set_message(TTR("Please choose a 'project.godot' or '.zip' file."), MESSAGE_ERROR);
+					set_message(TTR("Please choose a \"project.godot\" or \".zip\" file."), MESSAGE_ERROR);
 					memdelete(d);
 					install_path_container->hide();
 					get_ok()->set_disabled(true);
@@ -256,7 +260,7 @@ private:
 
 			} else if (valid_path.ends_with("zip")) {
 
-				set_message(TTR("Directory already contains a Godot project."), MESSAGE_ERROR, INSTALL_PATH);
+				set_message(TTR("This directory already contains a Godot project."), MESSAGE_ERROR, INSTALL_PATH);
 				memdelete(d);
 				get_ok()->set_disabled(true);
 				return "";
@@ -269,7 +273,11 @@ private:
 			bool is_empty = true;
 			String n = d->get_next();
 			while (n != String()) {
-				if (n != "." && n != "..") { // i don't know if this is enough to guarantee an empty dir
+				if (!n.begins_with(".")) {
+					// Allow `.`, `..` (reserved current/parent folder names)
+					// and hidden files/folders to be present.
+					// For instance, this lets users initialize a Git repository
+					// and still be able to create a project in the directory afterwards.
 					is_empty = false;
 					break;
 				}
@@ -332,7 +340,7 @@ private:
 				install_path_container->show();
 				get_ok()->set_disabled(false);
 			} else {
-				set_message(TTR("Please choose a 'project.godot' or '.zip' file."), MESSAGE_ERROR);
+				set_message(TTR("Please choose a \"project.godot\" or \".zip\" file."), MESSAGE_ERROR);
 				get_ok()->set_disabled(true);
 				return;
 			}

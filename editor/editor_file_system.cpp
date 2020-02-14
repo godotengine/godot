@@ -675,9 +675,12 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 		if (f == "")
 			break;
 
+		if (da->current_is_hidden())
+			continue;
+
 		if (da->current_is_dir()) {
 
-			if (f.begins_with(".")) //ignore hidden and . / ..
+			if (f.begins_with(".")) // Ignore special and . / ..
 				continue;
 
 			if (FileAccess::exists(cd.plus_file(f).plus_file("project.godot"))) // skip if another project inside this
@@ -871,9 +874,12 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 			if (f == "")
 				break;
 
+			if (da->current_is_hidden())
+				continue;
+
 			if (da->current_is_dir()) {
 
-				if (f.begins_with(".")) //ignore hidden and . / ..
+				if (f.begins_with(".")) // Ignore special and . / ..
 					continue;
 
 				int idx = p_dir->find_dir_index(f);
@@ -1059,8 +1065,12 @@ void EditorFileSystem::get_changed_sources(List<String> *r_changed) {
 
 void EditorFileSystem::scan_changes() {
 
-	if (scanning || scanning_changes || thread)
+	if (first_scan || // Prevent a premature changes scan from inhibiting the first full scan
+			scanning || scanning_changes || thread) {
+		scan_changes_pending = true;
+		set_process(true);
 		return;
+	}
 
 	_update_extensions();
 	sources_changed.clear();
@@ -1105,16 +1115,18 @@ void EditorFileSystem::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			if (use_threads && thread) {
+			Thread *active_thread = thread ? thread : thread_sources;
+			if (use_threads && active_thread) {
 				//abort thread if in progress
 				abort_scan = true;
 				while (scanning) {
 					OS::get_singleton()->delay_usec(1000);
 				}
-				Thread::wait_to_finish(thread);
-				memdelete(thread);
+				Thread::wait_to_finish(active_thread);
+				memdelete(active_thread);
 				thread = NULL;
-				WARN_PRINTS("Scan thread aborted...");
+				thread_sources = NULL;
+				WARN_PRINT("Scan thread aborted...");
 				set_process(false);
 			}
 
@@ -1163,6 +1175,11 @@ void EditorFileSystem::_notification(int p_what) {
 					emit_signal("sources_changed", sources_changed.size() > 0);
 					_queue_update_script_classes();
 					first_scan = false;
+				}
+
+				if (!is_processing() && scan_changes_pending) {
+					scan_changes_pending = false;
+					scan_changes();
 				}
 			}
 		} break;
@@ -2138,6 +2155,7 @@ EditorFileSystem::EditorFileSystem() {
 	scan_total = 0;
 	update_script_classes_queued = false;
 	first_scan = true;
+	scan_changes_pending = false;
 	revalidate_import_files = false;
 }
 

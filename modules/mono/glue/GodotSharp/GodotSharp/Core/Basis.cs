@@ -93,11 +93,15 @@ namespace Godot
             }
         }
 
-        public Vector3 this[int columnIndex]
+        /// <summary>
+        /// Access whole columns in the form of Vector3.
+        /// </summary>
+        /// <param name="column">Which column vector.</param>
+        public Vector3 this[int column]
         {
             get
             {
-                switch (columnIndex)
+                switch (column)
                 {
                     case 0:
                         return Column0;
@@ -111,7 +115,7 @@ namespace Godot
             }
             set
             {
-                switch (columnIndex)
+                switch (column)
                 {
                     case 0:
                         Column0 = value;
@@ -128,50 +132,22 @@ namespace Godot
             }
         }
 
-        public real_t this[int columnIndex, int rowIndex]
+        /// <summary>
+        /// Access matrix elements in column-major order.
+        /// </summary>
+        /// <param name="column">Which column, the matrix horizontal position.</param>
+        /// <param name="row">Which row, the matrix vertical position.</param>
+        public real_t this[int column, int row]
         {
             get
             {
-                switch (columnIndex)
-                {
-                    case 0:
-                        return Column0[rowIndex];
-                    case 1:
-                        return Column1[rowIndex];
-                    case 2:
-                        return Column2[rowIndex];
-                    default:
-                        throw new IndexOutOfRangeException();
-                }
+                return this[column][row];
             }
             set
             {
-                switch (columnIndex)
-                {
-                    case 0:
-                    {
-                        var column0 = Column0;
-                        column0[rowIndex] = value;
-                        Column0 = column0;
-                        return;
-                    }
-                    case 1:
-                    {
-                        var column1 = Column1;
-                        column1[rowIndex] = value;
-                        Column1 = column1;
-                        return;
-                    }
-                    case 2:
-                    {
-                        var column2 = Column2;
-                        column2[rowIndex] = value;
-                        Column2 = column2;
-                        return;
-                    }
-                    default:
-                        throw new IndexOutOfRangeException();
-                }
+                Vector3 columnVector = this[column];
+                columnVector[row] = value;
+                this[column] = columnVector;
             }
         }
 

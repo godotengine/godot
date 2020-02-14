@@ -2026,13 +2026,13 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	toolbar->add_child(bucket_fill_button);
 
 	picker_button = memnew(ToolButton);
-	picker_button->set_shortcut(ED_SHORTCUT("tile_map_editor/pick_tile", TTR("Pick Tile"), KEY_CONTROL));
+	picker_button->set_shortcut(ED_SHORTCUT("tile_map_editor/pick_tile", TTR("Pick Tile"), KEY_I));
 	picker_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_PICKING));
 	picker_button->set_toggle_mode(true);
 	toolbar->add_child(picker_button);
 
 	select_button = memnew(ToolButton);
-	select_button->set_shortcut(ED_SHORTCUT("tile_map_editor/select", TTR("Select"), KEY_MASK_CMD + KEY_B));
+	select_button->set_shortcut(ED_SHORTCUT("tile_map_editor/select", TTR("Select"), KEY_M));
 	select_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_SELECTING));
 	select_button->set_toggle_mode(true);
 	toolbar->add_child(select_button);

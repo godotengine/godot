@@ -2077,7 +2077,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 	}
 
 	// Move the canvas items with the arrow keys
-	if (k.is_valid() && k->is_pressed() && tool == TOOL_SELECT &&
+	if (k.is_valid() && k->is_pressed() && (tool == TOOL_SELECT || tool == TOOL_MOVE) &&
 			(k->get_scancode() == KEY_UP || k->get_scancode() == KEY_DOWN || k->get_scancode() == KEY_LEFT || k->get_scancode() == KEY_RIGHT)) {
 		if (!k->is_echo()) {
 			// Start moving the canvas items with the keyboard
@@ -4967,6 +4967,7 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 			zoom = scale_x < scale_y ? scale_x : scale_y;
 			zoom *= 0.90;
 			viewport->update();
+			_update_zoom_label();
 			call_deferred("_popup_callback", VIEW_CENTER_TO_SELECTION);
 		}
 	}

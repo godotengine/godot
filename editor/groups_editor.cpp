@@ -197,7 +197,7 @@ void GroupDialog::_add_group(String p_name) {
 	}
 
 	String name = p_name.strip_edges();
-	if (name == "" || groups->search_item_text(name)) {
+	if (name.empty() || groups->get_item_with_text(name)) {
 		return;
 	}
 

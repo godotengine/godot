@@ -103,15 +103,17 @@ Error ImageLoaderSVG::_create_image(Ref<Image> p_image, const PoolVector<uint8_t
 		ERR_PRINT("SVG Corrupted");
 		return ERR_FILE_CORRUPT;
 	}
-	if (convert_colors)
+
+	if (convert_colors) {
 		_convert_colors(svg_image);
+	}
 
-	float upscale = upsample ? 2.0 : 1.0;
+	const float upscale = upsample ? 2.0 : 1.0;
 
-	int w = (int)(svg_image->width * p_scale * upscale);
+	const int w = (int)(svg_image->width * p_scale * upscale);
 	ERR_FAIL_COND_V_MSG(w > Image::MAX_WIDTH, ERR_PARAMETER_RANGE_ERROR, vformat("Can't create image from SVG with scale %s, the resulting image size exceeds max width.", rtos(p_scale)));
 
-	int h = (int)(svg_image->height * p_scale * upscale);
+	const int h = (int)(svg_image->height * p_scale * upscale);
 	ERR_FAIL_COND_V_MSG(h > Image::MAX_HEIGHT, ERR_PARAMETER_RANGE_ERROR, vformat("Can't create image from SVG with scale %s, the resulting image size exceeds max height.", rtos(p_scale)));
 
 	PoolVector<uint8_t> dst_image;
@@ -123,8 +125,9 @@ Error ImageLoaderSVG::_create_image(Ref<Image> p_image, const PoolVector<uint8_t
 
 	dw.release();
 	p_image->create(w, h, false, Image::FORMAT_RGBA8, dst_image);
-	if (upsample)
+	if (upsample) {
 		p_image->shrink_x2();
+	}
 
 	nsvgDelete(svg_image);
 
