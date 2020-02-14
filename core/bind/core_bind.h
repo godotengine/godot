@@ -105,14 +105,6 @@ public:
 		VIDEO_DRIVER_VULKAN,
 	};
 
-	enum PowerState {
-		POWERSTATE_UNKNOWN, // Cannot determine power status.
-		POWERSTATE_ON_BATTERY, // Not plugged in, running on the battery.
-		POWERSTATE_NO_BATTERY, // Plugged in, no battery available.
-		POWERSTATE_CHARGING, // Plugged in, charging battery.
-		POWERSTATE_CHARGED // Plugged in, battery charged.
-	};
-
 	enum Weekday {
 		DAY_SUNDAY,
 		DAY_MONDAY,
@@ -346,10 +338,6 @@ public:
 	void set_vsync_via_compositor(bool p_enable);
 	bool is_vsync_via_compositor_enabled() const;
 
-	PowerState get_power_state();
-	int get_power_seconds_left();
-	int get_power_percent_left();
-
 	bool has_feature(const String &p_feature) const;
 
 	bool request_permission(const String &p_name);
@@ -362,7 +350,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(_OS::VideoDriver);
-VARIANT_ENUM_CAST(_OS::PowerState);
 VARIANT_ENUM_CAST(_OS::Weekday);
 VARIANT_ENUM_CAST(_OS::Month);
 VARIANT_ENUM_CAST(_OS::SystemDir);

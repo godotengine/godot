@@ -280,30 +280,6 @@
 				Returns the name of the host OS. Possible values are: [code]"Android"[/code], [code]"Haiku"[/code], [code]"iOS"[/code], [code]"HTML5"[/code], [code]"OSX"[/code], [code]"Server"[/code], [code]"Windows"[/code], [code]"UWP"[/code], [code]"X11"[/code].
 			</description>
 		</method>
-		<method name="get_power_percent_left">
-			<return type="int">
-			</return>
-			<description>
-				Returns the amount of battery left in the device as a percentage. Returns [code]-1[/code] if power state is unknown.
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
-			</description>
-		</method>
-		<method name="get_power_seconds_left">
-			<return type="int">
-			</return>
-			<description>
-				Returns an estimate of the time left in seconds before the device runs out of battery. Returns [code]-1[/code] if power state is unknown.
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
-			</description>
-		</method>
-		<method name="get_power_state">
-			<return type="int" enum="OS.PowerState">
-			</return>
-			<description>
-				Returns the current state of the device regarding battery and power. See [enum PowerState] constants.
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
-			</description>
-		</method>
 		<method name="get_process_id" qualifiers="const">
 			<return type="int">
 			</return>
@@ -1080,21 +1056,6 @@
 		</constant>
 		<constant name="SYSTEM_DIR_RINGTONES" value="7" enum="SystemDir">
 			Ringtones directory path.
-		</constant>
-		<constant name="POWERSTATE_UNKNOWN" value="0" enum="PowerState">
-			Unknown powerstate.
-		</constant>
-		<constant name="POWERSTATE_ON_BATTERY" value="1" enum="PowerState">
-			Unplugged, running on battery.
-		</constant>
-		<constant name="POWERSTATE_NO_BATTERY" value="2" enum="PowerState">
-			Plugged in, no battery available.
-		</constant>
-		<constant name="POWERSTATE_CHARGING" value="3" enum="PowerState">
-			Plugged in, battery charging.
-		</constant>
-		<constant name="POWERSTATE_CHARGED" value="4" enum="PowerState">
-			Plugged in, battery fully charged.
 		</constant>
 	</constants>
 </class>

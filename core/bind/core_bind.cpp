@@ -587,18 +587,6 @@ bool _OS::is_vsync_via_compositor_enabled() const {
 	return OS::get_singleton()->is_vsync_via_compositor_enabled();
 }
 
-_OS::PowerState _OS::get_power_state() {
-	return _OS::PowerState(OS::get_singleton()->get_power_state());
-}
-
-int _OS::get_power_seconds_left() {
-	return OS::get_singleton()->get_power_seconds_left();
-}
-
-int _OS::get_power_percent_left() {
-	return OS::get_singleton()->get_power_percent_left();
-}
-
 bool _OS::has_feature(const String &p_feature) const {
 
 	return OS::get_singleton()->has_feature(p_feature);
@@ -1348,10 +1336,6 @@ void _OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("has_feature", "tag_name"), &_OS::has_feature);
 
-	ClassDB::bind_method(D_METHOD("get_power_state"), &_OS::get_power_state);
-	ClassDB::bind_method(D_METHOD("get_power_seconds_left"), &_OS::get_power_seconds_left);
-	ClassDB::bind_method(D_METHOD("get_power_percent_left"), &_OS::get_power_percent_left);
-
 	ClassDB::bind_method(D_METHOD("request_permission", "name"), &_OS::request_permission);
 	ClassDB::bind_method(D_METHOD("request_permissions"), &_OS::request_permissions);
 	ClassDB::bind_method(D_METHOD("get_granted_permissions"), &_OS::get_granted_permissions);
@@ -1439,12 +1423,6 @@ void _OS::_bind_methods() {
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_MUSIC);
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_PICTURES);
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_RINGTONES);
-
-	BIND_ENUM_CONSTANT(POWERSTATE_UNKNOWN);
-	BIND_ENUM_CONSTANT(POWERSTATE_ON_BATTERY);
-	BIND_ENUM_CONSTANT(POWERSTATE_NO_BATTERY);
-	BIND_ENUM_CONSTANT(POWERSTATE_CHARGING);
-	BIND_ENUM_CONSTANT(POWERSTATE_CHARGED);
 }
 
 _OS::_OS() {

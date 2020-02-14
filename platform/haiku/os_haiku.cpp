@@ -360,18 +360,3 @@ String OS_Haiku::get_cache_path() const {
 		return get_config_path();
 	}
 }
-
-OS::PowerState OS_Haiku::get_power_state() {
-	WARN_PRINT("Power management is not implemented on this platform, defaulting to POWERSTATE_UNKNOWN");
-	return OS::POWERSTATE_UNKNOWN;
-}
-
-int OS_Haiku::get_power_seconds_left() {
-	WARN_PRINT("Power management is not implemented on this platform, defaulting to -1");
-	return -1;
-}
-
-int OS_Haiku::get_power_percent_left() {
-	WARN_PRINT("Power management is not implemented on this platform, defaulting to -1");
-	return -1;
-}

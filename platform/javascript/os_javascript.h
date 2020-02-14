@@ -160,10 +160,6 @@ public:
 	virtual String get_resource_dir() const;
 	virtual String get_user_data_dir() const;
 
-	virtual OS::PowerState get_power_state();
-	virtual int get_power_seconds_left();
-	virtual int get_power_percent_left();
-
 	void set_idb_available(bool p_idb_available);
 	virtual bool is_userfs_persistent() const;
 

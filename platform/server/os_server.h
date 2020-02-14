@@ -36,11 +36,9 @@
 #include "main/input_default.h"
 #ifdef __APPLE__
 #include "platform/osx/crash_handler_osx.h"
-#include "platform/osx/power_osx.h"
 #include "platform/osx/semaphore_osx.h"
 #else
 #include "platform/x11/crash_handler_x11.h"
-#include "platform/x11/power_x11.h"
 #endif
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
@@ -62,12 +60,6 @@ class OS_Server : public OS_Unix {
 	bool force_quit;
 
 	InputDefault *input;
-
-#ifdef __APPLE__
-	PowerOSX *power_manager;
-#else
-	PowerX11 *power_manager;
-#endif
 
 	CrashHandler crash_handler;
 
@@ -112,9 +104,6 @@ public:
 
 	void run();
 
-	virtual OS::PowerState get_power_state();
-	virtual int get_power_seconds_left();
-	virtual int get_power_percent_left();
 	virtual bool _check_internal_feature_support(const String &p_feature);
 
 	virtual String get_config_path() const;

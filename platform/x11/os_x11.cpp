@@ -659,8 +659,6 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 #endif
 	_ensure_user_data_dir();
 
-	power_manager = memnew(PowerX11);
-
 	if (p_desired.layered) {
 		set_window_per_pixel_transparency_enabled(true);
 	}
@@ -869,8 +867,6 @@ void OS_X11::finalize() {
 	cursors_cache.clear();
 	visual_server->finish();
 	memdelete(visual_server);
-
-	memdelete(power_manager);
 
 #if defined(OPENGL_ENABLED)
 	if (video_driver_index == VIDEO_DRIVER_GLES2) {
@@ -3387,18 +3383,6 @@ void OS_X11::set_context(int p_context) {
 		XSetClassHint(x11_display, x11_window, classHint);
 		XFree(classHint);
 	}
-}
-
-OS::PowerState OS_X11::get_power_state() {
-	return power_manager->get_power_state();
-}
-
-int OS_X11::get_power_seconds_left() {
-	return power_manager->get_power_seconds_left();
-}
-
-int OS_X11::get_power_percent_left() {
-	return power_manager->get_power_percent_left();
 }
 
 void OS_X11::disable_crash_handler() {

@@ -271,8 +271,6 @@ Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	AudioDriverManager::initialize(p_audio_driver);
 
-	power_manager = memnew(PowerUWP);
-
 	managed_object->update_clipboard();
 
 	Clipboard::ContentChanged += ref new EventHandler<Platform::Object ^>(managed_object, &ManagedType::on_clipboard_changed);
@@ -852,18 +850,6 @@ String OS_UWP::get_user_data_dir() const {
 
 bool OS_UWP::_check_internal_feature_support(const String &p_feature) {
 	return p_feature == "pc";
-}
-
-OS::PowerState OS_UWP::get_power_state() {
-	return power_manager->get_power_state();
-}
-
-int OS_UWP::get_power_seconds_left() {
-	return power_manager->get_power_seconds_left();
-}
-
-int OS_UWP::get_power_percent_left() {
-	return power_manager->get_power_percent_left();
 }
 
 OS_UWP::OS_UWP() {

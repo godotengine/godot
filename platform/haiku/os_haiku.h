@@ -113,10 +113,6 @@ public:
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
 	virtual String get_executable_path() const;
 
-	virtual OS::PowerState get_power_state();
-	virtual int get_power_seconds_left();
-	virtual int get_power_percent_left();
-
 	virtual bool _check_internal_feature_support(const String &p_feature);
 
 	virtual String get_config_path() const;
