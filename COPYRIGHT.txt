@@ -71,16 +71,6 @@ Comment: The Android Open Source Project
 Copyright: 2002, Google Inc.
 License: Apache-2.0
 
-Files: ./platform/android/power_android.cpp
- ./platform/osx/power_osx.cpp
- ./platform/windows/power_windows.cpp
- ./platform/x11/power_x11.cpp
-Comment: Simple DirectMedia Layer
-Copyright: 1997-2017, Sam Lantinga
- 2007-2020, Juan Linietsky, Ariel Manzur.
- 2014-2020, Godot Engine contributors.
-License: Expat and Zlib
-
 Files: ./scene/animation/tween_interpolaters.cpp
 Comment: Penner Easing
 Copyright: 2001, Robert Penner

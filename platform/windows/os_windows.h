@@ -40,7 +40,6 @@
 #include "drivers/winmidi/midi_driver_winmidi.h"
 #include "key_mapping_windows.h"
 #include "main/input_default.h"
-#include "power_windows.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
@@ -239,8 +238,6 @@ class OS_Windows : public OS {
 	JoypadWindows *joypad;
 	Map<int, Vector2> touch_state;
 
-	PowerWindows *power_manager;
-
 	int video_driver_index;
 #ifdef WASAPI_ENABLED
 	AudioDriverWASAPI driver_wasapi;
@@ -432,10 +429,6 @@ public:
 
 	virtual void _set_use_vsync(bool p_enable);
 	//virtual bool is_vsync_enabled() const;
-
-	virtual OS::PowerState get_power_state();
-	virtual int get_power_seconds_left();
-	virtual int get_power_percent_left();
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
 

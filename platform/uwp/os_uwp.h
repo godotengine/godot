@@ -39,7 +39,6 @@
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #include "joypad_uwp.h"
 #include "main/input_default.h"
-#include "power_uwp.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
@@ -101,8 +100,6 @@ private:
 	MainLoop *main_loop;
 
 	AudioDriverXAudio2 audio_driver;
-
-	PowerUWP *power_manager;
 
 	MouseMode mouse_mode;
 	bool alt_mem;
@@ -253,10 +250,6 @@ public:
 	virtual bool get_swap_ok_cancel() { return true; }
 
 	void input_event(const Ref<InputEvent> &p_event);
-
-	virtual OS::PowerState get_power_state();
-	virtual int get_power_seconds_left();
-	virtual int get_power_percent_left();
 
 	void queue_key_event(KeyEvent &p_event);
 

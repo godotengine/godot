@@ -1492,8 +1492,6 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	input = memnew(InputDefault);
 	joypad = memnew(JoypadWindows(input, &hWnd));
 
-	power_manager = memnew(PowerWindows);
-
 	AudioDriverManager::initialize(p_audio_driver);
 
 	TRACKMOUSEEVENT tme;
@@ -3332,18 +3330,6 @@ void OS_Windows::_set_use_vsync(bool p_enable) {
 			context_gles2->set_use_vsync(p_enable);
 	}
 #endif
-}
-
-OS::PowerState OS_Windows::get_power_state() {
-	return power_manager->get_power_state();
-}
-
-int OS_Windows::get_power_seconds_left() {
-	return power_manager->get_power_seconds_left();
-}
-
-int OS_Windows::get_power_percent_left() {
-	return power_manager->get_power_percent_left();
 }
 
 bool OS_Windows::_check_internal_feature_support(const String &p_feature) {
