@@ -62,12 +62,14 @@
 # Rei <clxgamer12@gmail.com>, 2019.
 # Vitaly <arkology11@gmail.com>, 2019.
 # Andy <8ofproject@gmail.com>, 2020.
+# Андрей Беляков <andbelandantrus@gmail.com>, 2020.
+# Artur Tretiak <stikyt@protonmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-27 07:10+0000\n"
-"Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
+"PO-Revision-Date: 2020-02-14 03:18+0000\n"
+"Last-Translator: Artur Tretiak <stikyt@protonmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -223,9 +225,8 @@ msgid "Anim Multi Change Keyframe Time"
 msgstr "Время смены ключевых кадров анимации"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "Анимация Многократное изменение Переход"
+msgstr "Многократное изменение перехода"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -233,9 +234,8 @@ msgid "Anim Multi Change Transform"
 msgstr "Анимационное многосменное преобразование"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "Анимация многократное изменение ключевых кадров Значение"
+msgstr "Изменить значение ключевого кадра"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Call"
@@ -479,7 +479,6 @@ msgid "Not possible to add a new track without a root"
 msgstr "Нельзя добавить новый трек без корневого узла"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Invalid track for Bezier (no suitable sub-properties)"
 msgstr "Неверный трек для кривой Безье (нет подходящих подсвойств)"
 
@@ -2007,14 +2006,12 @@ msgid "Properties"
 msgstr "Свойства"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "override:"
-msgstr "Переопределить"
+msgstr "Переопределить:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "default:"
-msgstr "По умолчанию"
+msgstr "По умолчанию:"
 
 #: editor/editor_help.cpp
 msgid "Methods"
@@ -2037,9 +2034,8 @@ msgid "Property Descriptions"
 msgstr "Описание свойств"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "(value)"
-msgstr "Значение"
+msgstr "(значение)"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -5613,9 +5609,8 @@ msgid "Frame Selection"
 msgstr "Кадрировать выбранное"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Preview Canvas Scale"
-msgstr "Предпросмотр масштаба холста"
+msgstr "Масштаб при просмотре холста"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -5676,9 +5671,8 @@ msgid "Divide grid step by 2"
 msgstr "Разделить шаг сетки на 2"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Pan View"
-msgstr "Вид сзади"
+msgstr "Панорама"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Add %s"
@@ -5772,7 +5766,7 @@ msgstr "Твёрдые пиксели"
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Border Pixels"
-msgstr ""
+msgstr "Граничные пиксели"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -6167,7 +6161,6 @@ msgid "The geometry's faces don't contain any area."
 msgstr "Грани данной геометрии не содержат никакой области."
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "The geometry doesn't contain any faces."
 msgstr "Данная геометрия не содержит граней."
 
@@ -8453,9 +8446,8 @@ msgid "Deleted"
 msgstr "Удалён"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Typechange"
-msgstr "Изменить"
+msgstr "Изменить тип"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage Selected"
@@ -9534,7 +9526,7 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Script Encryption Key (256-bits as hex):"
-msgstr "Ключ шифрования скрипта (256-бит, а в шестнадцатеричном виде):"
+msgstr "Ключ шифрования скрипта (256-бит, в шестнадцатеричном виде):"
 
 #: editor/project_export.cpp
 msgid "Export PCK/Zip"
@@ -11332,9 +11324,8 @@ msgid "Cursor Clear Rotation"
 msgstr "Курсор очистить поворот"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Paste Selects"
-msgstr "Очистить выделенное"
+msgstr "Вставить выделение"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
@@ -11720,7 +11711,6 @@ msgid "Editing Signal:"
 msgstr "Редактирование сигнала:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Make Tool:"
 msgstr "Сделать инструментом:"
 
