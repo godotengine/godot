@@ -52,10 +52,9 @@ void ScriptCreateDialog::_notification(int p_what) {
 					language_menu->set_item_icon(i, lang_icon);
 				}
 			}
-			String last_lang = EditorSettings::get_singleton()->get_project_metadata("script_setup", "last_selected_language", "");
-			Ref<Texture> last_lang_icon;
-			if (!last_lang.empty()) {
 
+			String last_lang = EditorSettings::get_singleton()->get_project_metadata("script_setup", "last_selected_language", "");
+			if (!last_lang.empty()) {
 				for (int i = 0; i < language_menu->get_item_count(); i++) {
 					if (language_menu->get_item_text(i) == last_lang) {
 						language_menu->select(i);
@@ -63,14 +62,10 @@ void ScriptCreateDialog::_notification(int p_what) {
 						break;
 					}
 				}
-
-				last_lang_icon = get_icon(last_lang, "EditorIcons");
 			} else {
-				last_lang_icon = language_menu->get_item_icon(default_language);
+				language_menu->select(default_language);
 			}
-			if (last_lang_icon.is_valid()) {
-				language_menu->set_icon(last_lang_icon);
-			}
+
 			path_button->set_icon(get_icon("Folder", "EditorIcons"));
 			parent_browse_button->set_icon(get_icon("Folder", "EditorIcons"));
 			parent_search_button->set_icon(get_icon("ClassList", "EditorIcons"));
