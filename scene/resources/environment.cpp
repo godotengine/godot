@@ -1361,7 +1361,7 @@ void CameraEffects::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_dof_blur_amount", "intensity"), &CameraEffects::set_dof_blur_amount);
 	ClassDB::bind_method(D_METHOD("get_dof_blur_amount"), &CameraEffects::get_dof_blur_amount);
 
-	ClassDB::bind_method(D_METHOD("set_override_exposure_enabled", "enable"), &CameraEffects::set_override_exposure);
+	ClassDB::bind_method(D_METHOD("set_override_exposure_enabled", "enable"), &CameraEffects::set_override_exposure_enabled);
 	ClassDB::bind_method(D_METHOD("is_override_exposure_enabled"), &CameraEffects::is_override_exposure_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_override_exposure", "exposure"), &CameraEffects::set_override_exposure);
