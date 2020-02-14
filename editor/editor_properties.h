@@ -99,7 +99,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void setup(const Vector<String> &p_options, bool p_string_name = false);
+	void setup(const Vector<String> &p_options, bool p_string_name = false, bool p_sort = false);
 	virtual void update_property();
 	EditorPropertyTextEnum();
 };
@@ -207,7 +207,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void setup(const Vector<String> &p_options);
+	void setup(const Vector<String> &p_options, bool p_sort = false);
 	virtual void update_property();
 	void set_option_button_clip(bool p_enable);
 	EditorPropertyEnum();

@@ -4519,6 +4519,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						} else if (constant.get_type() == Variant::DICTIONARY) {
 							// Enumeration
 							bool is_flags = false;
+							bool is_sort = false;
 
 							if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
 								_ADVANCE_AND_CONSUME_NEWLINES;
@@ -4526,14 +4527,17 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 								if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "FLAGS") {
 									is_flags = true;
 									_ADVANCE_AND_CONSUME_NEWLINES;
+								} else if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "AUTOSORT") {
+									is_sort = true;
+									_ADVANCE_AND_CONSUME_NEWLINES;
 								} else {
 									current_export = PropertyInfo();
-									_set_error("Expected \"FLAGS\" after comma.");
+									_set_error("Expected \"FLAGS\" or \"AUTOSORT\" after comma.");
 								}
 							}
 
 							current_export.type = Variant::INT;
-							current_export.hint = is_flags ? PROPERTY_HINT_FLAGS : PROPERTY_HINT_ENUM;
+							current_export.hint = is_flags ? PROPERTY_HINT_FLAGS : is_sort ? PROPERTY_HINT_ENUM_AUTOSORT : PROPERTY_HINT_ENUM;
 							current_export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
 							Dictionary enum_values = constant;
 
@@ -4549,7 +4553,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 										first = false;
 
 									current_export.hint_string += E->get().operator String().camelcase_to_underscore(true).capitalize().xml_escape();
-									if (!is_flags) {
+									if (!is_flags && !is_sort) {
 										current_export.hint_string += ":";
 										current_export.hint_string += enum_values[E->get()].operator String().xml_escape();
 									}

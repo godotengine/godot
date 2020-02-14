@@ -139,9 +139,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 			}
 		} break;
 		case Variant::STRING: {
-
-			if (hint == PROPERTY_HINT_ENUM) {
-
+			if (hint == PROPERTY_HINT_ENUM || hint == PROPERTY_HINT_ENUM_AUTOSORT) {
 				v = hint_text.get_slice(",", p_which);
 				emit_signal("variant_changed");
 			}
@@ -443,6 +441,32 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 					menu->add_item(text_split[0]);
 					menu->set_item_metadata(i, current_val);
 					current_val += 1;
+				}
+				menu->set_position(get_position());
+				menu->popup();
+				hide();
+				updating = false;
+				return false;
+
+			} else if (hint == PROPERTY_HINT_ENUM_AUTOSORT) {
+
+				Vector<String> options = hint_text.split(",");
+				int current_val = 0;
+				Dictionary map;
+				for (int i = 0; i < options.size(); i++) {
+					Vector<String> text_split = options[i].split(":");
+					if (text_split.size() != 1)
+						current_val = text_split[1].to_int();
+					if (!map.has(options)) {
+						map[text_split[0]] = current_val;
+					}
+					current_val += 1;
+				}
+				Array sorted_list = map.keys().sort();
+				for (int i = 0; i < sorted_list.size(); i++) {
+					String key = sorted_list[i];
+					menu->add_item(key);
+					menu->set_item_metadata(i, map[key]);
 				}
 				menu->set_position(get_position());
 				menu->popup();

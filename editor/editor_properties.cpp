@@ -200,9 +200,20 @@ void EditorPropertyTextEnum::update_property() {
 	}
 }
 
-void EditorPropertyTextEnum::setup(const Vector<String> &p_options, bool p_string_name) {
-	for (int i = 0; i < p_options.size(); i++) {
-		options->add_item(p_options[i], i);
+void EditorPropertyTextEnum::setup(const Vector<String> &p_options, bool p_string_name, bool p_sort) {
+	if (p_sort) {
+		Dictionary map;
+		for (int i = 0; i < p_options.size(); i++) {
+			map[p_options[i]] = i;
+		}
+		Array sorted_list = map.keys().sort();
+		for (int i = 0; i < p_options.size(); i++) {
+			options->add_item(sorted_list[i], map[sorted_list[i]]);
+		}
+	} else {
+		for (int i = 0; i < p_options.size(); i++) {
+			options->add_item(p_options[i], i);
+		}
 	}
 	string_name = p_string_name;
 }
@@ -518,16 +529,34 @@ void EditorPropertyEnum::update_property() {
 	}
 }
 
-void EditorPropertyEnum::setup(const Vector<String> &p_options) {
+void EditorPropertyEnum::setup(const Vector<String> &p_options, bool p_sort) {
 
 	int64_t current_val = 0;
-	for (int i = 0; i < p_options.size(); i++) {
-		Vector<String> text_split = p_options[i].split(":");
-		if (text_split.size() != 1)
-			current_val = text_split[1].to_int64();
-		options->add_item(text_split[0]);
-		options->set_item_metadata(i, current_val);
-		current_val += 1;
+
+	if (p_sort) {
+		Dictionary map;
+		for (int i = 0; i < p_options.size(); i++) {
+			Vector<String> text_split = p_options[i].split(":");
+			if (text_split.size() != 1)
+				current_val = text_split[1].to_int64();
+			ERR_FAIL_COND(map.has(text_split[0]));
+			map[text_split[0]] = current_val;
+			current_val += 1;
+		}
+		Array sorted_list = map.keys().sort();
+		for (int i = 0; i < p_options.size(); i++) {
+			options->add_item(sorted_list[i]);
+			options->set_item_metadata(i, map[sorted_list[i]]);
+		}
+	} else {
+		for (int i = 0; i < p_options.size(); i++) {
+			Vector<String> text_split = p_options[i].split(":");
+			if (text_split.size() != 1)
+				current_val = text_split[1].to_int64();
+			options->add_item(text_split[0]);
+			options->set_item_metadata(i, current_val);
+			current_val += 1;
+		}
 	}
 }
 
@@ -2968,10 +2997,10 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 		} break;
 		case Variant::INT: {
 
-			if (p_hint == PROPERTY_HINT_ENUM) {
+			if (p_hint == PROPERTY_HINT_ENUM || p_hint == PROPERTY_HINT_ENUM_AUTOSORT) {
 				EditorPropertyEnum *editor = memnew(EditorPropertyEnum);
 				Vector<String> options = p_hint_text.split(",");
-				editor->setup(options);
+				editor->setup(options, p_hint == PROPERTY_HINT_ENUM_AUTOSORT);
 				add_property_editor(p_path, editor);
 
 			} else if (p_hint == PROPERTY_HINT_FLAGS) {
@@ -3094,10 +3123,10 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 		} break;
 		case Variant::STRING: {
 
-			if (p_hint == PROPERTY_HINT_ENUM) {
+			if (p_hint == PROPERTY_HINT_ENUM || p_hint == PROPERTY_HINT_ENUM_AUTOSORT) {
 				EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
 				Vector<String> options = p_hint_text.split(",");
-				editor->setup(options);
+				editor->setup(options, false, p_hint == PROPERTY_HINT_ENUM_AUTOSORT);
 				add_property_editor(p_path, editor);
 			} else if (p_hint == PROPERTY_HINT_MULTILINE_TEXT) {
 				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText);
