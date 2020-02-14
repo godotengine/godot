@@ -1016,6 +1016,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[RS::SHADER_CANVAS_ITEM].usage_defines["isinf"] = "#define IS_INF_USED\n";
 	actions[RS::SHADER_CANVAS_ITEM].usage_defines["isnan"] = "#define IS_NAN_USED\n";
 	actions[RS::SHADER_CANVAS_ITEM].usage_defines["trunc"] = "#define TRUNC_USED\n";
+	actions[RS::SHADER_CANVAS_ITEM].usage_defines["fma"] = "#define FMA_USED\n";
 
 	/** SPATIAL SHADER **/
 
@@ -1126,6 +1127,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[RS::SHADER_SPATIAL].usage_defines["isinf"] = "#define IS_INF_USED\n";
 	actions[RS::SHADER_SPATIAL].usage_defines["isnan"] = "#define IS_NAN_USED\n";
 	actions[RS::SHADER_SPATIAL].usage_defines["trunc"] = "#define TRUNC_USED\n";
+	actions[RS::SHADER_SPATIAL].usage_defines["fma"] = "#define FMA_USED\n";
 
 	actions[RS::SHADER_SPATIAL].render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 	actions[RS::SHADER_SPATIAL].render_mode_defines["world_vertex_coords"] = "#define VERTEX_WORLD_COORDS_USED\n";
