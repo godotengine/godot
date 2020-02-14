@@ -491,6 +491,12 @@ void TextEditor::_edit_option(int p_op) {
 			// So this will be delegated to the ScriptEditor.
 			emit_signal("search_in_files_requested", selected_text);
 		} break;
+		case REPLACE_IN_FILES: {
+
+			String selected_text = code_editor->get_text_edit()->get_selection_text();
+
+			emit_signal("replace_in_files_requested", selected_text);
+		} break;
 		case SEARCH_GOTO_LINE: {
 
 			goto_line_dialog->popup_find_line(tx);
@@ -655,6 +661,7 @@ TextEditor::TextEditor() {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
 	search_menu->get_popup()->add_separator();
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_in_files"), SEARCH_IN_FILES);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace_in_files"), REPLACE_IN_FILES);
 
 	edit_menu = memnew(MenuButton);
 	edit_hb->add_child(edit_menu);

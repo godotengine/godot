@@ -97,14 +97,23 @@ class FindInFilesDialog : public AcceptDialog {
 	GDCLASS(FindInFilesDialog, AcceptDialog);
 
 public:
+	enum FindInFilesMode {
+		SEARCH_MODE,
+		REPLACE_MODE
+	};
+
 	static const char *SIGNAL_FIND_REQUESTED;
 	static const char *SIGNAL_REPLACE_REQUESTED;
 
 	FindInFilesDialog();
 
 	void set_search_text(String text);
+	void set_replace_text(String text);
+
+	void set_find_in_files_mode(FindInFilesMode p_mode);
 
 	String get_search_text() const;
+	String get_replace_text() const;
 	bool is_match_case() const;
 	bool is_whole_words() const;
 	String get_folder() const;
@@ -121,8 +130,14 @@ private:
 	void _on_folder_selected(String path);
 	void _on_search_text_modified(String text);
 	void _on_search_text_entered(String text);
+	void _on_replace_text_entered(String text);
 
+	FindInFilesMode _mode;
 	LineEdit *_search_text_line_edit;
+
+	Label *_replace_label;
+	LineEdit *_replace_text_line_edit;
+
 	LineEdit *_folder_line_edit;
 	CheckBox *_match_case_checkbox;
 	CheckBox *_whole_words_checkbox;
@@ -151,6 +166,7 @@ public:
 	FindInFiles *get_finder() const { return _finder; }
 
 	void set_with_replace(bool with_replace);
+	void set_replace_text(String text);
 
 	void start_search();
 	void stop_search();
