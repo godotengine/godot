@@ -58,6 +58,7 @@
 #define prop_version_string  "version/string"
 #define prop_name          "package/name"
 #define prop_launcher_name "package/game_name"
+#define prop_package_prefix "package/assets_prefix"
 
 #ifdef WINDOWS_ENABLED
 const String separator("\\");
@@ -285,6 +286,9 @@ protected:
         return eta.exitcode;
     }
     
+    bool buil_package(const MerTarget &target, const Ref<EditorExportPreset> &p_preset) {
+        return true;
+    }
 public:
 	EditorExportPlatformSailfish() {
 		// Ref<Image> img = memnew(Image(_sailfish_logo));
@@ -327,6 +331,9 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_custom_binary_arm_debug, PROPERTY_HINT_GLOBAL_FILE), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_custom_binary_x86, PROPERTY_HINT_GLOBAL_FILE), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_custom_binary_x86_debug, PROPERTY_HINT_GLOBAL_FILE), ""));
+        r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_package_prefix, PROPERTY_HINT_ENUM, "/usr,/home/nemo/.local"), "/usr"));
+//                        PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED
+//        r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/assets_dir", PROPERTY_HINT_ENUM), "/usr,/home/nemo"));
 
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT,    prop_version_release, PROPERTY_HINT_RANGE, "1,40096,1,or_greater"), 1));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_version_string, PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0"), "1.0.0"));
@@ -604,6 +611,8 @@ public:
             pack.release = p_preset->get(prop_version_release);
             pack.description = ProjectSettings::get_singleton()->get("application/config/description");
             pack.launcher_name = p_preset->get(prop_launcher_name);
+            if( pack.launcher_name.empty() )
+                pack.launcher_name = ProjectSettings::get_singleton()->get("application/config/name");
             pack.name = p_preset->get(prop_name);
             pack.version = p_preset->get(prop_version_string);
             // TODO arch should be generated from current MerTarget
@@ -624,8 +633,9 @@ public:
             String spec_file_path = rpm_dir_path + separator + pack.name + String(".spec");
             String desktop_file_path = broot_path + String("/usr/share/applications/").replace("/", separator) + pack.name + String(".desktop");
             String icon_file_path;
-            String data_dir = "/usr/share";
-            String bin_dir = "/usr/bin";
+            String package_prefix = p_preset->get(prop_package_prefix);
+            String data_dir = package_prefix + String("/share");
+            String bin_dir = package_prefix + String("/bin");
 #ifdef WINDOWS_ENABLED
             String data_dir_native = data_dir.replace("/","\\");
             String bin_dir_native = bin_dir.replace("/","\\");
