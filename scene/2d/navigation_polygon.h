@@ -91,6 +91,7 @@ public:
 	Ref<NavigationMesh> get_mesh();
 
 	NavigationPolygon();
+	~NavigationPolygon();
 };
 
 class Navigation2D;

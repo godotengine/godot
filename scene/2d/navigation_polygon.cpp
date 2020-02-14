@@ -363,8 +363,11 @@ void NavigationPolygon::_bind_methods() {
 
 NavigationPolygon::NavigationPolygon() :
 		rect_cache_dirty(true),
-		navmesh_generation(NULL) {
-	navmesh_generation = Mutex::create();
+		navmesh_generation(Mutex::create()) {
+}
+
+NavigationPolygon::~NavigationPolygon() {
+	memdelete(navmesh_generation);
 }
 
 void NavigationPolygonInstance::set_enabled(bool p_enabled) {
