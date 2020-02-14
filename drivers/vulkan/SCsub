@@ -57,6 +57,10 @@ if env['builtin_vulkan']:
             'FALLBACK_DATA_DIRS=\\"%s\\"' % '/usr/local/share:/usr/share',
             'FALLBACK_CONFIG_DIRS=\\"%s\\"' % '/etc/xdg'
         ])
+        import platform
+        if (platform.system() == "Linux"):
+            # In glibc since 2.17 and musl libc since 1.1.24. Used by loader.c.
+            env_thirdparty.AppendUnique(CPPDEFINES=['HAVE_SECURE_GETENV'])
 
     loader_sources = [thirdparty_dir + "/loader/" + file for file in loader_sources]
     env_thirdparty.add_source_files(env.drivers_sources, loader_sources)
