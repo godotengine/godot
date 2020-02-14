@@ -116,8 +116,10 @@ MAKE_PTRARG(double);
 
 MAKE_PTRARG(String);
 MAKE_PTRARG(Vector2);
+MAKE_PTRARG(Vector2i);
 MAKE_PTRARG(Rect2);
 MAKE_PTRARG_BY_REFERENCE(Vector3);
+MAKE_PTRARG_BY_REFERENCE(Vector3i);
 MAKE_PTRARG(Transform2D);
 MAKE_PTRARG_BY_REFERENCE(Plane);
 MAKE_PTRARG(Quat);
@@ -134,7 +136,9 @@ MAKE_PTRARG(PoolIntArray);
 MAKE_PTRARG(PoolRealArray);
 MAKE_PTRARG(PoolStringArray);
 MAKE_PTRARG(PoolVector2Array);
+MAKE_PTRARG(PoolVector2iArray);
 MAKE_PTRARG(PoolVector3Array);
+MAKE_PTRARG(PoolVector3iArray);
 MAKE_PTRARG(PoolColorArray);
 MAKE_PTRARG_BY_REFERENCE(Variant);
 
@@ -279,7 +283,9 @@ MAKE_VECARG(uint8_t);
 MAKE_VECARG(int);
 MAKE_VECARG(float);
 MAKE_VECARG(Vector2);
+MAKE_VECARG(Vector2i);
 MAKE_VECARG(Vector3);
+MAKE_VECARG(Vector3i);
 MAKE_VECARG(Color);
 MAKE_VECARG_ALT(String, StringName);
 

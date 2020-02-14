@@ -59,6 +59,16 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 			return target;
 		}
 
+		case Variant::VECTOR2I: {
+
+			SETUP_TYPE(Vector2i)
+
+			/**/ TRY_TRANSFER_FIELD("x", x)
+			else TRY_TRANSFER_FIELD("y", y)
+
+			return target;
+		}
+
 		case Variant::RECT2: {
 
 			SETUP_TYPE(Rect2)
@@ -74,6 +84,17 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 		case Variant::VECTOR3: {
 
 			SETUP_TYPE(Vector3)
+
+			/**/ TRY_TRANSFER_FIELD("x", x)
+			else TRY_TRANSFER_FIELD("y", y)
+			else TRY_TRANSFER_FIELD("z", z)
+
+			return target;
+		}
+
+		case Variant::VECTOR3I: {
+
+			SETUP_TYPE(Vector3i)
 
 			/**/ TRY_TRANSFER_FIELD("x", x)
 			else TRY_TRANSFER_FIELD("y", y)

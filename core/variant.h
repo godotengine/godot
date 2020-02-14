@@ -63,7 +63,9 @@ typedef PoolVector<int> PoolIntArray;
 typedef PoolVector<real_t> PoolRealArray;
 typedef PoolVector<String> PoolStringArray;
 typedef PoolVector<Vector2> PoolVector2Array;
+typedef PoolVector<Vector2i> PoolVector2iArray;
 typedef PoolVector<Vector3> PoolVector3Array;
+typedef PoolVector<Vector3i> PoolVector3iArray;
 typedef PoolVector<Color> PoolColorArray;
 
 // Temporary workaround until c++11 alignas()
@@ -89,30 +91,34 @@ public:
 		// math types
 
 		VECTOR2, // 5
+		VECTOR2I,
 		RECT2,
 		VECTOR3,
-		TRANSFORM2D,
+		VECTOR3I,
+		TRANSFORM2D, // 10
 		PLANE,
-		QUAT, // 10
+		QUAT,
 		AABB,
 		BASIS,
-		TRANSFORM,
+		TRANSFORM, // 15
 
 		// misc types
 		COLOR,
-		NODE_PATH, // 15
+		NODE_PATH,
 		_RID,
 		OBJECT,
-		DICTIONARY,
+		DICTIONARY, // 20
 		ARRAY,
 
 		// arrays
-		POOL_BYTE_ARRAY, // 20
+		POOL_BYTE_ARRAY,
 		POOL_INT_ARRAY,
 		POOL_REAL_ARRAY,
-		POOL_STRING_ARRAY,
+		POOL_STRING_ARRAY, // 25
 		POOL_VECTOR2_ARRAY,
-		POOL_VECTOR3_ARRAY, // 25
+		POOL_VECTOR2I_ARRAY,
+		POOL_VECTOR3_ARRAY,
+		POOL_VECTOR3I_ARRAY,
 		POOL_COLOR_ARRAY,
 
 		VARIANT_MAX
@@ -186,8 +192,10 @@ public:
 	operator String() const;
 	operator StringName() const;
 	operator Vector2() const;
+	operator Vector2i() const;
 	operator Rect2() const;
 	operator Vector3() const;
+	operator Vector3i() const;
 	operator Plane() const;
 	operator ::AABB() const;
 	operator Quat() const;
@@ -211,7 +219,10 @@ public:
 	operator PoolVector<int>() const;
 	operator PoolVector<real_t>() const;
 	operator PoolVector<String>() const;
+	operator PoolVector<Vector2>() const;
+	operator PoolVector<Vector2i>() const;
 	operator PoolVector<Vector3>() const;
+	operator PoolVector<Vector3i>() const;
 	operator PoolVector<Color>() const;
 	operator PoolVector<Plane>() const;
 	operator PoolVector<Face3>() const;
@@ -222,11 +233,12 @@ public:
 	operator Vector<real_t>() const;
 	operator Vector<String>() const;
 	operator Vector<StringName>() const;
-	operator Vector<Vector3>() const;
 	operator Vector<Color>() const;
 	operator Vector<RID>() const;
 	operator Vector<Vector2>() const;
-	operator PoolVector<Vector2>() const;
+	operator Vector<Vector2i>() const;
+	operator Vector<Vector3>() const;
+	operator Vector<Vector3i>() const;
 	operator Vector<Plane>() const;
 
 	// some core type enums to convert to
@@ -257,8 +269,10 @@ public:
 	Variant(const char *const p_cstring);
 	Variant(const CharType *p_wstring);
 	Variant(const Vector2 &p_vector2);
+	Variant(const Vector2i &p_vector2i);
 	Variant(const Rect2 &p_rect2);
 	Variant(const Vector3 &p_vector3);
+	Variant(const Vector3i &p_vector3i);
 	Variant(const Plane &p_plane);
 	Variant(const ::AABB &p_aabb);
 	Variant(const Quat &p_quat);
@@ -273,27 +287,31 @@ public:
 	Variant(const Dictionary &p_dictionary);
 
 	Variant(const Array &p_array);
-	Variant(const PoolVector<Plane> &p_array); // helper
 	Variant(const PoolVector<uint8_t> &p_raw_array);
 	Variant(const PoolVector<int> &p_int_array);
 	Variant(const PoolVector<real_t> &p_real_array);
-	Variant(const PoolVector<String> &p_string_array);
-	Variant(const PoolVector<Vector3> &p_vector3_array);
 	Variant(const PoolVector<Color> &p_color_array);
 	Variant(const PoolVector<Face3> &p_face_array);
+	Variant(const PoolVector<Plane> &p_array);
+	Variant(const PoolVector<String> &p_string_array);
+	Variant(const PoolVector<Vector2> &p_vector2_array);
+	Variant(const PoolVector<Vector2i> &p_vector2i_array);
+	Variant(const PoolVector<Vector3> &p_vector3_array);
+	Variant(const PoolVector<Vector3i> &p_vector3i_array);
 
 	Variant(const Vector<Variant> &p_array);
 	Variant(const Vector<uint8_t> &p_array);
 	Variant(const Vector<int> &p_array);
 	Variant(const Vector<real_t> &p_array);
+	Variant(const Vector<Color> &p_array);
+	Variant(const Vector<Plane> &p_array);
+	Variant(const Vector<RID> &p_array);
 	Variant(const Vector<String> &p_array);
 	Variant(const Vector<StringName> &p_array);
+	Variant(const Vector<Vector2> &p_array);
+	Variant(const Vector<Vector2i> &p_array);
 	Variant(const Vector<Vector3> &p_array);
-	Variant(const Vector<Color> &p_array);
-	Variant(const Vector<Plane> &p_array); // helper
-	Variant(const Vector<RID> &p_array); // helper
-	Variant(const Vector<Vector2> &p_array); // helper
-	Variant(const PoolVector<Vector2> &p_vector2_array); // helper
+	Variant(const Vector<Vector3i> &p_array);
 
 	Variant(const IP_Address &p_address);
 
