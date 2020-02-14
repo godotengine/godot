@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-27 07:09+0000\n"
+"PO-Revision-Date: 2020-02-02 08:51+0000\n"
 "Last-Translator: George Tsiamasiotis <gtsiam@windowslive.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
@@ -5378,8 +5378,8 @@ msgid ""
 "Warning: Children of a container get their position and size determined only "
 "by their parent."
 msgstr ""
-"Προειδοποίηση: Τα παιδιά ενός δοχείου, παίρνουν τη θέση και το μέγεθος "
-"καθορισμένα μόνο από τον γονέα τους."
+"Προσοχή: Τα παιδιά ενός δοχείου λαμβάνουν θέση και μέγεθος μόνο από τον "
+"γονέα τους."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -6971,11 +6971,11 @@ msgstr "Διαγραφή γραμμής"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Indent Left"
-msgstr "στοιχειοθέτηση αριστερά"
+msgstr "Στοιχειοθέτηση Αριστερά"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Indent Right"
-msgstr "στοιχειοθέτηση δεξιά"
+msgstr "Στοιχειοθέτηση Δεξιά"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Toggle Comment"
@@ -7019,7 +7019,7 @@ msgstr "Μετατροπή Εσοχών σε Στηλοθέτες"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
-msgstr "Αυτόματη στοιχειοθέτηση"
+msgstr "Αυτόματη Στοιχειοθέτηση"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Find in Files..."
@@ -10374,7 +10374,7 @@ msgstr "Επαναφορά"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
-msgstr "Επαναπροσδιορισμός γονέα κόμβου"
+msgstr "Επαναπροσδιορισμός Γονέα Κόμβου"
 
 #: editor/reparent_dialog.cpp
 msgid "Reparent Location (Select new Parent):"
@@ -10386,7 +10386,7 @@ msgstr "Διατήρηση παγκόσμιου μετασχηματισμού"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent"
-msgstr "Επαναπροσδιορισμός γονέα"
+msgstr "Επαναπροσδιορισμός Γονέα"
 
 #: editor/run_settings_dialog.cpp
 msgid "Run Mode:"
@@ -10489,7 +10489,7 @@ msgstr "Διαγραφή κόμβου \"%s\" και των παιδιών του
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete node \"%s\"?"
-msgstr "Διαγραφή κόμβων \"%s\";"
+msgstr "Διαγραφή κόμβου «%s»;"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can not perform with the root node."
@@ -10622,7 +10622,7 @@ msgstr "Αλλαγή τύπου"
 
 #: editor/scene_tree_dock.cpp
 msgid "Reparent to New Node"
-msgstr "Επαναπροσδιορισμός Γονέα"
+msgstr "Επαναπροσδιορισμός Γονέα σε Νέο Κόμβο"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
@@ -10634,7 +10634,7 @@ msgstr "Συγχώνευση από σκηνή"
 
 #: editor/scene_tree_dock.cpp editor/script_editor_debugger.cpp
 msgid "Save Branch as Scene"
-msgstr "Αποθήκευσι κλαδιού ως σκηνή"
+msgstr "Αποθήκευση Κλάδου ως Σκηνή"
 
 #: editor/scene_tree_dock.cpp editor/script_editor_debugger.cpp
 msgid "Copy Node Path"
@@ -12056,13 +12056,12 @@ msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr "Άκυρες διαστάσεις εικόνας οθόνης εκκίνησης (πρέπει να είναι 620x300)."
 
 #: scene/2d/animated_sprite.cpp
-#, fuzzy
 msgid ""
 "A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
-"Ένας πόρος SpriteFrames πρέπει να έχει δημιουργηθεί ή ορισθεί στην ιδιότητα "
-"'Frames' για να μπορεί το AnimatedSprite να παρουσιάσει frames."
+"Απαιτείται ο ορισμός ενός πόρου SpriteFrames στην ιδιότητα «Frames» για την "
+"εμφάνιση καρέ από το AnimatedSprite."
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""
@@ -12074,16 +12073,15 @@ msgstr ""
 "θα αγνοηθούν."
 
 #: scene/2d/collision_object_2d.cpp
-#, fuzzy
 msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
 "Consider adding a CollisionShape2D or CollisionPolygon2D as a child to "
 "define its shape."
 msgstr ""
-"Αυτός ο κόμβος δεν έχει παιδιά κόμβους σχήματος, οπότε δεν μπορεί να "
-"αντιδράσει με το περιβάλλον.\n"
-"Σκεφτείτε να προσθέσετε CollisionShape2D ή CollisionPolygon2D για να ορίσετε "
-"το σχήμα του."
+"Αυτός ο κόμβος δεν έχει σχήμα, οπότε δεν μπορεί συγκρουσθεί ή να "
+"αλληλεπιδράσει με άλλα αντικείμενα.\n"
+"Εξετάστε την προσθήκη ενός παιδιού CollisionShape2D ή CollisionPolygon2D για "
+"να ορίσετε το σχήμα του."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -12128,11 +12126,10 @@ msgstr ""
 "«Particles Animation» ενεργό."
 
 #: scene/2d/light_2d.cpp
-#, fuzzy
 msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
 "property."
-msgstr "Μία υφή με το σχήμα του φωτός πρέπει να δοθεί στην ιδιότητα 'texture'."
+msgstr "Μία υφή με το σχήμα του φωτός πρέπει να τεθεί στην ιδιότητα «Texture»."
 
 #: scene/2d/light_occluder_2d.cpp
 msgid ""
@@ -12142,11 +12139,10 @@ msgstr ""
 "αυτό το εμπόδιο."
 
 #: scene/2d/light_occluder_2d.cpp
-#, fuzzy
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr ""
-"Το πολύγωνο εμποδίου για αυτό το εμπόδιο είναι άδειο. Ζωγραφίστε ένα "
-"πολύγονο!"
+"Το πολύγωνο εμποδίου για αυτό το εμπόδιο είναι άδειο. Παρακαλούμε ζωγραφίστε "
+"ένα πολύγωνο."
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
@@ -12235,63 +12231,55 @@ msgstr ""
 "ορίστε την."
 
 #: scene/2d/tile_map.cpp
-#, fuzzy
 msgid ""
 "TileMap with Use Parent on needs a parent CollisionObject2D to give shapes "
 "to. Please use it as a child of Area2D, StaticBody2D, RigidBody2D, "
 "KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"To CollisionShape2D υπάρχει μόνο για να δώσει ένα σχήμα σύγκρουσης σε έναν "
-"κόμβο που προέρχεται από το CollisionObject2D. Χρησιμοποιήστε το μόνο εάν "
-"κληρονομεί τα Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, κλπ, για "
-"να τους δώσετε ένα σχήμα."
+"Το TileMap με το «Use Parent» ενεργό χρειάζεται ένα γονικό CollisionObject2D "
+"στο οποίο θα δίνει σχήματα. Χρησιμοποιήστε το σαν παιδί των Area2D, "
+"StaticBody2D, RigidBody2D, KinematicBody2D, κλπ, για να τους δώσετε ένα "
+"σχήμα."
 
 #: scene/2d/visibility_notifier_2d.cpp
-#, fuzzy
 msgid ""
 "VisibilityEnabler2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
-"Το VisibilityEnable2D δουλεύει καλύτερα όταν χρησιμοποιείται μα την ρίζα της "
-"επεξεργασμένης σκηνές κατευθείαν ως γονέας."
+"Το VisibilityEnabler2D δουλεύει καλύτερα όταν η ρίζα της τρέχουσας σκηνής "
+"είναι ο άμεσος γονέας του."
 
 #: scene/3d/arvr_nodes.cpp
-#, fuzzy
 msgid "ARVRCamera must have an ARVROrigin node as its parent."
-msgstr "Η ARVRCamera πρέπει να έχει έναν κόμβο ARVROrigin ως γονέα"
+msgstr "Η ARVRCamera απαιτεί γονικό κόμβο ARVROrigin."
 
 #: scene/3d/arvr_nodes.cpp
-#, fuzzy
 msgid "ARVRController must have an ARVROrigin node as its parent."
-msgstr "Ο ARVRController πρέπει να έχει έναν κόμβο ARVROrigin ως γονέα"
+msgstr "Ο ARVRController απαιτεί γονικό κόμβο ARVROrigin."
 
 #: scene/3d/arvr_nodes.cpp
-#, fuzzy
 msgid ""
 "The controller ID must not be 0 or this controller won't be bound to an "
 "actual controller."
 msgstr ""
-"Ο δείκτης χειριστή δεν πρέπει να είναι 0 για να είναι συνδεδεμένος αυτός ο "
-"χειριστής με έναν υπαρκτό χειριστή"
+"Ο δείκτης χειριστηρίου πρέπει να είναι διάφορος του 0 για να αντιπροσωπεύει "
+"πραγματικό χειριστήριο."
 
 #: scene/3d/arvr_nodes.cpp
-#, fuzzy
 msgid "ARVRAnchor must have an ARVROrigin node as its parent."
-msgstr "Ο ARVRAnchor πρέπει να έχει έναν κόμβο ARVROrigin ως γονέα"
+msgstr "Η ARVRAnchor απαιτεί γονικό κόμβο ARVROrigin."
 
 #: scene/3d/arvr_nodes.cpp
-#, fuzzy
 msgid ""
 "The anchor ID must not be 0 or this anchor won't be bound to an actual "
 "anchor."
 msgstr ""
-"Ο δείκτης άγκυρας δεν πρέπει να είναι 0 για να είναι συνδεδεμένη αυτή η "
-"άγκυρα με μία υπαρκτή άγκυρα"
+"Ο δείκτης άγκυρας πρέπει να είναι διάφορος του 0 για να αντιπροσωπεύει "
+"πραγματική άγκυρα."
 
 #: scene/3d/arvr_nodes.cpp
-#, fuzzy
 msgid "ARVROrigin requires an ARVRCamera child node."
-msgstr "Το ARVROrigin απαιτεί έναν κόμβο ARVRCamera ως παιδί"
+msgstr "Το ARVROrigin απαιτεί γονικό κόμβο ARVRCamera."
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
@@ -12318,16 +12306,15 @@ msgid "Lighting Meshes: "
 msgstr "Φώτηση πλεγμάτων: "
 
 #: scene/3d/collision_object.cpp
-#, fuzzy
 msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
 "Consider adding a CollisionShape or CollisionPolygon as a child to define "
 "its shape."
 msgstr ""
-"Αυτός ο κόμβος δεν έχει παιδιά κόμβους σχήματος, οπότε δεν μπορεί να "
-"αντιδράσει με το περιβάλλον.\n"
-"Σκεφτείτε να προσθέσετε CollisionShape ή CollisionPolygon για να ορίσετε το "
-"σχήμα του."
+"Αυτός ο κόμβος δεν έχει σχήμα, οπότε δεν μπορεί συγκρουσθεί ή να "
+"αλληλεπιδράσει με άλλα αντικείμενα.\n"
+"Εξετάστε την προσθήκη ενός παιδιού CollisionShape ή CollisionPolygon για να "
+"ορίσετε το σχήμα του."
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -12356,13 +12343,12 @@ msgstr ""
 "δώσετε ένα σχήμα."
 
 #: scene/3d/collision_shape.cpp
-#, fuzzy
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
 "shape resource for it."
 msgstr ""
-"Ένα σχήμα πρέπει να δοθεί στο CollisionShape για να λειτουργήσει. "
-"Δημιουργήστε ένα πόρο σχήματος για αυτό!"
+"Απαιτείται ένα σχήμα για την λειτουργία του CollisionShape. Παρακαλούμε "
+"δημιουργήστε ένα πόρο σχήματος για αυτό."
 
 #: scene/3d/collision_shape.cpp
 msgid ""
@@ -12373,10 +12359,8 @@ msgstr ""
 "εκδόσεις. Παρακαλώ μην τα χρησιμοποιήσετε."
 
 #: scene/3d/cpu_particles.cpp
-#, fuzzy
 msgid "Nothing is visible because no mesh has been assigned."
-msgstr ""
-"Τίποτα δεν είναι ορατό, επειδή δεν έχουν οριστεί περάσματα για τα πλέγματα."
+msgstr "Τίποτα δεν είναι ορατό, επειδή δεν έχει οριστεί κανένα πλέγματα."
 
 #: scene/3d/cpu_particles.cpp
 msgid ""
@@ -12391,20 +12375,18 @@ msgid "Plotting Meshes"
 msgstr "Τοποθέτηση πλεγμάτων"
 
 #: scene/3d/gi_probe.cpp
-#, fuzzy
 msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
 msgstr ""
-"Ται GIProbes δεν υποστηρίζονται από το πρόγραμμα οδήγησης οθόνης GLES2.\n"
-"Χρησιμοποιήστε ένα BakedLightmap αντ 'αυτού."
+"Τα GIProbes δεν υποστηρίζονται από το πρόγραμμα οδήγησης οθόνης GLES2.\n"
+"Εναλλακτικά, χρησιμοποιήστε ένα BakedLightmap."
 
 #: scene/3d/light.cpp
-#, fuzzy
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
-"Ένα SpotLight (προβολέας) με γωνία ευρύτερη από 90 μοίρες δεν μπορεί να "
-"δημιουργεί σκιές."
+"Οι προβολείς (SpotLight) με γωνία ευρύτερη των 90 μοιρών δεν μπορούν να "
+"δημιουργήσουν σκιές."
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -12445,9 +12427,8 @@ msgstr ""
 "Mode ίσο με «Particle Billboard»."
 
 #: scene/3d/path.cpp
-#, fuzzy
 msgid "PathFollow only works when set as a child of a Path node."
-msgstr "Το PathFollow2D δουλεύει μόνο όταν κληρονομεί έναν κόμβο Path2D."
+msgstr "Το PathFollow δουλεύει μόνο ως παιδί ενός κόμβου Path."
 
 #: scene/3d/path.cpp
 msgid ""
@@ -12468,37 +12449,34 @@ msgstr ""
 "Αλλάξτε μέγεθος στα σχήματα σύγκρουσης των παιδιών."
 
 #: scene/3d/remote_transform.cpp
-#, fuzzy
 msgid ""
 "The \"Remote Path\" property must point to a valid Spatial or Spatial-"
 "derived node to work."
 msgstr ""
-"Η ιδιότητα Path πρέπει να δείχνει σε έναν έγκυρο κόμβο Spatial για να "
-"δουλέψει αυτός ο κόμβος."
+"Η ιδιότητα «Remote Path» πρέπει να δείχνει σε έγκυρο κόμβο Spatial, ή κόμβο "
+"που προκύπτει από Spatial."
 
 #: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh."
 msgstr "Το σώμα αυτό δε θα ληφθεί υπόψιν μέχρι να ορίσετε ένα πλέγμα (mesh)."
 
 #: scene/3d/soft_body.cpp
-#, fuzzy
 msgid ""
 "Size changes to SoftBody will be overridden by the physics engine when "
 "running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
-"Αλλαγές στο μέγεθος του RigidBody (στις λειτουργίες character ή rigid) θα "
-"αντικατασταθούνε από την μηχανή φυσικής κατά την εκτέλεση.\n"
+"Οι αλλαγές μεγέθους σε SoftBody θα παρακαμφθούν από την μηχανή φυσικής κατά "
+"την εκτέλεση.\n"
 "Αλλάξτε μέγεθος στα σχήματα σύγκρουσης των παιδιών."
 
 #: scene/3d/sprite_3d.cpp
-#, fuzzy
 msgid ""
 "A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
-"Ένας πόρος SpriteFrames πρέπει να δημιουργηθεί ή ορισθεί στην ιδιότητα "
-"'Frames' για να δείξει frames το AnimatedSprite3D."
+"Απαιτείται ο ορισμός ενός πόρου SpriteFrames στην ιδιότητα «Frames» για την "
+"εμφάνιση καρέ από το AnimatedSprite3D."
 
 #: scene/3d/vehicle_body.cpp
 msgid ""
@@ -12536,35 +12514,28 @@ msgid "On BlendTree node '%s', animation not found: '%s'"
 msgstr "Στον κόμβο BlendTree «%s», δεν βρέθηκε η κίνηση: «%s»"
 
 #: scene/animation/animation_blend_tree.cpp
-#, fuzzy
 msgid "Animation not found: '%s'"
-msgstr "Εργαλεία κινήσεων"
+msgstr "Δεν βρέθηκε η κίνηση: «%s»"
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "In node '%s', invalid animation: '%s'."
-msgstr "Στον κόμβο '%s', μη έγκυρο animation: '%s'."
+msgstr "Στον κόμβο «%s», άκυρη κίνηση: «%s»."
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "Invalid animation: '%s'."
-msgstr "ΣΦΑΛΜΑ: Μη έγκυρο όνομα κίνησης!"
+msgstr "Άκυρη κίνηση: «%s»."
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "Nothing connected to input '%s' of node '%s'."
-msgstr "Αποσύνδεση του '%s' απο το '%s'"
+msgstr "Τίποτα δεν είναι συνδεδεμένο στην είσοδο «%s» του κόμβου «%s»."
 
 #: scene/animation/animation_tree.cpp
 msgid "No root AnimationNode for the graph is set."
 msgstr "Δεν έχει οριστεί ριζικό AnimationNode για το γράφημα."
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "Path to an AnimationPlayer node containing animations is not set."
-msgstr ""
-"Επιλέξτε ένα AnimationPlayer από την ιεραρχία της σκηνής για να "
-"επεξεργαστείτε animations."
+msgstr "Δεν έχει οριστεί διαδρομή σε AnimationPlayer με κινήσεις."
 
 #: scene/animation/animation_tree.cpp
 msgid "Path set for AnimationPlayer does not lead to an AnimationPlayer node."
@@ -12572,9 +12543,8 @@ msgstr ""
 "Το όρισμα διαδρομής AnimationPlayer δεν οδηγεί σε κόμβο AnimationPlayer."
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "The AnimationPlayer root node is not a valid node."
-msgstr "Το δέντρο κίνησης δεν είναι έγκυρο."
+msgstr "Ο ριζικός κόμβος AnimationPlayer δεν είναι έγκυρος."
 
 #: scene/animation/animation_tree_player.cpp
 msgid "This node has been deprecated. Use AnimationTree instead."
@@ -12592,18 +12562,16 @@ msgstr ""
 "RMB: Κατάργηση διαμόρφωσης"
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid "Pick a color from the editor window."
-msgstr "Διαλέξτε ένα χρώμα από την οθόνη."
+msgstr "Επιλέξτε ένα χρώμα από το παράθυρο επεξεργασίας."
 
 #: scene/gui/color_picker.cpp
 msgid "HSV"
 msgstr "HSV"
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid "Raw"
-msgstr "Παρέκκλιση"
+msgstr "Ωμό"
 
 #: scene/gui/color_picker.cpp
 msgid "Switch between hexadecimal and code values."
@@ -12614,16 +12582,15 @@ msgid "Add current color as a preset."
 msgstr "Προσθήκη τρέχοντος χρώματος στα προκαθορισμένα."
 
 #: scene/gui/container.cpp
-#, fuzzy
 msgid ""
 "Container by itself serves no purpose unless a script configures its "
 "children placement behavior.\n"
 "If you don't intend to add a script, use a plain Control node instead."
 msgstr ""
-"Το Container από μόνο του δεν έχει κάποιο σκοπό αν κάποια δέσμη ενεργειών "
+"Ένα Container μόνο του δεν έχει κάποια λειτουργία αν κάποια δέσμη ενεργειών "
 "δεν ορίσει την τοποθέτηση των παιδιών του.\n"
-"Εάν δεν σκοπεύετε να  προσθέσετε κάποια δέσμη ενεργειών, χρησιμοποιήστε ένα "
-"απλό «Control»."
+"Εάν δεν σκοπεύετε να προσθέσετε κάποια δέσμη ενεργειών, χρησιμοποιήστε ένα "
+"απλό Control."
 
 #: scene/gui/control.cpp
 msgid ""
@@ -12643,15 +12610,14 @@ msgid "Please Confirm..."
 msgstr "Παρακαλώ επιβεβαιώστε..."
 
 #: scene/gui/popup.cpp
-#, fuzzy
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
 "functions. Making them visible for editing is fine, but they will hide upon "
 "running."
 msgstr ""
-"Οι κόμβοι τύπου Popup θα είναι κρυμμένοι από προεπιλογή, εκτός κι αν "
-"καλέσετε την popup() ή καμία από τις συναρτήσεις popup*(). Το να τους κάνετε "
-"ορατούς κατά την επεξεργασία, όμως, δεν είναι πρόβλημα."
+"Τα αναδυόμενα στοιχεία (Popup) θα είναι κρυμμένα μέχρι την κλήση μιας από "
+"τις συναρτήσεις popup*(). Η εμφάνιση τους για επεξεργασία είναι αποδεκτή, "
+"αλλά θα εξαφανιστούν κατά την εκτέλεση."
 
 #: scene/gui/range.cpp
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
@@ -12660,16 +12626,15 @@ msgstr ""
 "του 0."
 
 #: scene/gui/scroll_container.cpp
-#, fuzzy
 msgid ""
 "ScrollContainer is intended to work with a single child control.\n"
 "Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
-"Το ScrollContainer είναι φτιαγμένο για να δουλεύει με ένα μόνο υπο-στοιχείο "
-"control.\n"
-"Χρησιμοποιήστε ένα Container ως παιδί (VBox, HBox, κτλ), ή ένα Control και "
-"ορίστε το προσαρμοσμένο ελάχιστο μέγεθος χειροκίνητα."
+"Το ScrollContainer είναι σχεδιασμένο να λειτουργεί με μοναδικό παιδί τύπου "
+"Control.\n"
+"Χρησιμοποιήστε ένα Container ως παιδί (VBox, HBox, κτλ), ή ένα Control με "
+"προσαρμοσμένο ελάχιστο μέγεθος."
 
 #: scene/gui/tree.cpp
 msgid "(Other)"
@@ -12696,19 +12661,16 @@ msgstr ""
 "έναν κόμβο για απεικόνιση."
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid source for preview."
-msgstr "Μη έγκυρη πηγή!"
+msgstr "Άκυρη πηγή για προεπισκόπηση."
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid source for shader."
-msgstr "Μη έγκυρη πηγή!"
+msgstr "Άκυρη πηγή προγράμματος σκίασης."
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid comparison function for that type."
-msgstr "Μη έγκυρη πηγή!"
+msgstr "Άκυρη συνάρτηση σύγκρισης για αυτόν τον τύπο."
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."

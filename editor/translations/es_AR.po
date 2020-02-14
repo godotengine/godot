@@ -11,15 +11,15 @@
 # Javier Ocampos <xavier.ocampos@gmail.com>, 2018, 2019, 2020.
 # Andrés S <andres.segovia.dev@gmail.com>, 2019.
 # Florencia Menéndez <mariaflormz2@gmail.com>, 2019.
-# roger <616steam@gmail.com>, 2019.
+# roger <616steam@gmail.com>, 2019, 2020.
 # Francisco José Carllinni <panchopepe@protonmail.com>, 2019.
 # Nicolas Zirulnik <nicolaszirulnik@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-27 07:09+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2020-02-02 08:52+0000\n"
+"Last-Translator: roger <616steam@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -6646,7 +6646,7 @@ msgstr "El script falló al recargar, revisá errores en la consola."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script is not in tool mode, will not be able to run."
-msgstr "Es script no esta en modo tool, no sera posible ejecutarlo."
+msgstr "El script no esta en modo tool, no sera posible ejecutarlo."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""

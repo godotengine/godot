@@ -66,7 +66,7 @@
 # Gustavo da Silva Santos <gustavo94.rb@gmail.com>, 2019.
 # Rafael Roque <rafael.roquec@gmail.com>, 2019.
 # José Victor Dias Rodrigues <zoldyakopersonal@gmail.com>, 2019.
-# Fupi Brazil <fupicat@gmail.com>, 2019.
+# Fupi Brazil <fupicat@gmail.com>, 2019, 2020.
 # Julio Pinto Coelho <juliopcrj@gmail.com>, 2019.
 # Perrottacooking <perrottacooking@gmail.com>, 2019.
 # Wow Bitch <hahaj@itmailr.com>, 2019.
@@ -80,12 +80,14 @@
 # sribgui <sribgui@gmail.com>, 2020.
 # patrickvob <patrickvob@gmail.com>, 2020.
 # Michael Leocádio <aeronmike@gmail.com>, 2020.
+# Z <rainromes@gmail.com>, 2020.
+# Leonardo Dimano <leodimano@live.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2020-01-27 07:10+0000\n"
-"Last-Translator: Michael Leocádio <aeronmike@gmail.com>\n"
+"PO-Revision-Date: 2020-02-06 09:45+0000\n"
+"Last-Translator: Leonardo Dimano <leodimano@live.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -98,11 +100,11 @@ msgstr ""
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Argumento de tipo inválido para convert(), use constantes TYPE_*."
+msgstr "Argumento de tipo inválido para converter(), use TYPE_* constantes."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "Esperado string de comprimento 1 (a caractere)."
+msgstr "Esperado uma string de comprimento 1 (um caractere)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -346,7 +348,7 @@ msgstr "Tempo (s): "
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
-msgstr "Habilitar/Desabilitar Trilha"
+msgstr "Habilitar Trilha"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -10224,7 +10226,7 @@ msgstr "Idiomas:"
 
 #: editor/project_settings_editor.cpp
 msgid "AutoLoad"
-msgstr "Carregamento Automático"
+msgstr "O AutoLoad"
 
 #: editor/project_settings_editor.cpp
 msgid "Plugins"

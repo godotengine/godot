@@ -52,7 +52,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-20 11:39+0000\n"
+"PO-Revision-Date: 2020-01-28 07:51+0000\n"
 "Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
@@ -5667,9 +5667,8 @@ msgid "Auto Insert Key"
 msgstr "Schlüsselbild automatisch einfügen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Animation Key and Pose Options"
-msgstr "Animationsschlüsselbild eingefügt."
+msgstr "Schlüsselbild- und Posen-Optionen für Animationen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
