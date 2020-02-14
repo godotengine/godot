@@ -266,7 +266,6 @@ void VisualShaderNodeCustom::_bind_methods() {
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_name"));
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_description"));
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_category"));
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_subcategory"));
 	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_return_icon_type"));
 	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_input_port_count"));
 	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_input_port_type", PropertyInfo(Variant::INT, "port")));
