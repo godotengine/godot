@@ -152,8 +152,6 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 	input = memnew(InputDefault);
 	input->set_fallback_mapping(godot_java->get_input_fallback_mapping());
 
-	//power_manager = memnew(PowerAndroid);
-
 	return OK;
 }
 

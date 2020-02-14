@@ -1244,24 +1244,6 @@ String OS_JavaScript::get_resource_dir() const {
 	return "/";
 }
 
-OS::PowerState OS_JavaScript::get_power_state() {
-
-	WARN_PRINT("Power management is not supported for the HTML5 platform, defaulting to POWERSTATE_UNKNOWN");
-	return OS::POWERSTATE_UNKNOWN;
-}
-
-int OS_JavaScript::get_power_seconds_left() {
-
-	WARN_PRINT("Power management is not supported for the HTML5 platform, defaulting to -1");
-	return -1;
-}
-
-int OS_JavaScript::get_power_percent_left() {
-
-	WARN_PRINT("Power management is not supported for the HTML5 platform, defaulting to -1");
-	return -1;
-}
-
 void OS_JavaScript::file_access_close_callback(const String &p_file, int p_flags) {
 
 	OS_JavaScript *os = get_singleton();
