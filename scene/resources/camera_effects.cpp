@@ -120,6 +120,7 @@ void CameraEffects::_update_dof_blur() {
 void CameraEffects::set_override_exposure_enabled(bool p_enabled) {
 	override_exposure_enabled = p_enabled;
 	_update_override_exposure();
+	notify_property_list_changed();
 }
 
 bool CameraEffects::is_override_exposure_enabled() const {
@@ -143,6 +144,16 @@ void CameraEffects::_update_override_exposure() {
 }
 
 // Private methods, constructor and destructor
+
+#ifdef TOOLS_ENABLED
+void CameraEffects::_validate_property(PropertyInfo &property) const {
+	if ((!dof_blur_far_enabled && (property.name == "dof_blur_far_distance" || property.name == "dof_blur_far_transition")) ||
+			(!dof_blur_near_enabled && (property.name == "dof_blur_near_distance" || property.name == "dof_blur_near_transition")) ||
+			(!override_exposure_enabled && property.name == "override_exposure")) {
+		property.usage = PROPERTY_USAGE_NOEDITOR;
+	}
+}
+#endif
 
 void CameraEffects::_bind_methods() {
 	// DOF blur

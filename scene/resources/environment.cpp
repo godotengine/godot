@@ -441,6 +441,7 @@ void Environment::_update_ssao() {
 void Environment::set_sdfgi_enabled(bool p_enabled) {
 	sdfgi_enabled = p_enabled;
 	_update_sdfgi();
+	notify_property_list_changed();
 }
 
 bool Environment::is_sdfgi_enabled() const {
@@ -983,6 +984,7 @@ void Environment::_validate_property(PropertyInfo &property) const {
 		"auto_exposure_",
 		"ss_reflections_",
 		"ssao_",
+		"sdfgi_",
 		"glow_",
 		"adjustment_",
 		nullptr

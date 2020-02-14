@@ -57,6 +57,10 @@ private:
 	float override_exposure = 1.0;
 	void _update_override_exposure();
 
+#ifdef TOOLS_ENABLED
+	void _validate_property(PropertyInfo &property) const override;
+#endif
+
 protected:
 	static void _bind_methods();
 
