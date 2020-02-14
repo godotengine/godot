@@ -206,6 +206,7 @@ void Sprite2D::set_region(bool p_region) {
 
 	region = p_region;
 	update();
+	notify_property_list_changed();
 }
 
 bool Sprite2D::is_region() const {
@@ -382,6 +383,10 @@ void Sprite2D::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "frame_coords") {
 		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
+	}
+
+	if (!region && (property.name == "region_rect" || property.name == "region_filter_clip")) {
+		property.usage = PROPERTY_USAGE_NOEDITOR;
 	}
 }
 

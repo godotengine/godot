@@ -518,6 +518,7 @@ void Sprite3D::set_region(bool p_region) {
 
 	region = p_region;
 	_queue_update();
+	notify_property_list_changed();
 }
 
 bool Sprite3D::is_region() const {
@@ -623,6 +624,12 @@ void Sprite3D::_validate_property(PropertyInfo &property) const {
 	if (property.name == "frame_coords") {
 		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
+
+#ifdef TOOLS_ENABLED
+	if (!region && property.name == "region_rect") {
+		property.usage = PROPERTY_USAGE_NOEDITOR;
+	}
+#endif
 }
 
 void Sprite3D::_bind_methods() {

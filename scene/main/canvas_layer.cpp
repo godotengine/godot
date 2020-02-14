@@ -231,6 +231,7 @@ void CanvasLayer::set_follow_viewport(bool p_enable) {
 
 	follow_viewport = p_enable;
 	_update_follow_viewport();
+	notify_property_list_changed();
 }
 
 bool CanvasLayer::is_following_viewport() const {
@@ -256,6 +257,14 @@ void CanvasLayer::_update_follow_viewport(bool p_force_exit) {
 		RS::get_singleton()->canvas_set_parent(canvas, vp->get_world_2d()->get_canvas(), follow_viewport_scale);
 	}
 }
+
+#ifdef TOOLS_ENABLED
+void CanvasLayer::_validate_property(PropertyInfo &property) const {
+	if (!follow_viewport && property.name == "follow_viewport_scale") {
+		property.usage = PROPERTY_USAGE_NOEDITOR;
+	}
+}
+#endif
 
 void CanvasLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_layer", "layer"), &CanvasLayer::set_layer);
