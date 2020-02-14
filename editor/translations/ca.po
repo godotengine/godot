@@ -11183,8 +11183,12 @@ msgid "Invalid inherited parent name or path."
 msgstr "El nom o camí del pare heretat no és vàlid."
 
 #: editor/script_create_dialog.cpp
+<<<<<<< HEAD
 #, fuzzy
 msgid "Script path/name is valid."
+=======
+msgid "Script is valid."
+>>>>>>> i18n: Sync translations with Weblate
 msgstr "L' script és vàlid."
 
 #: editor/script_create_dialog.cpp

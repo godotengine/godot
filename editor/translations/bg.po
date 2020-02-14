@@ -675,9 +675,14 @@ msgid "Line Number:"
 msgstr "Номер на реда:"
 
 #: editor/code_editor.cpp
+<<<<<<< HEAD
 #, fuzzy
 msgid "%d replaced."
 msgstr "Замяна..."
+=======
+msgid "Replaced %d occurrence(s)."
+msgstr "Заменени съвпадения: %d ."
+>>>>>>> i18n: Sync translations with Weblate
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -3816,6 +3821,7 @@ msgid "Saving..."
 msgstr "Запазване..."
 
 #: editor/import_dock.cpp
+<<<<<<< HEAD
 msgid "%d Files"
 msgstr "%d Файлове"
 
@@ -3826,6 +3832,18 @@ msgstr "Задаване по подразбиране за „%s“"
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Изчистване на подразбирането за „%s“"
+=======
+msgid "Set as Default for '%s'"
+msgstr "Задаване по подразбиране за „%s“"
+
+#: editor/import_dock.cpp
+msgid "Clear Default for '%s'"
+msgstr "Изчистване на подразбирането за „%s“"
+
+#: editor/import_dock.cpp
+msgid " Files"
+msgstr " Файлове"
+>>>>>>> i18n: Sync translations with Weblate
 
 #: editor/import_dock.cpp
 msgid "Import As:"

@@ -22,7 +22,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
+<<<<<<< HEAD
 "PO-Revision-Date: 2020-02-19 08:56+0000\n"
+=======
+"PO-Revision-Date: 2020-02-14 03:19+0000\n"
+>>>>>>> i18n: Sync translations with Weblate
 "Last-Translator: Vojtěch Šamla <auzkok@seznam.cz>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
@@ -31,7 +35,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+<<<<<<< HEAD
 "X-Generator: Weblate 3.11\n"
+=======
+"X-Generator: Weblate 3.11-dev\n"
+>>>>>>> i18n: Sync translations with Weblate
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -9650,8 +9658,12 @@ msgid "Please choose a \"project.godot\" or \".zip\" file."
 msgstr "Zvolte prosím soubor 'project.godot' nebo '.zip'."
 
 #: editor/project_manager.cpp
+<<<<<<< HEAD
 #, fuzzy
 msgid "This directory already contains a Godot project."
+=======
+msgid "Directory already contains a Godot project."
+>>>>>>> i18n: Sync translations with Weblate
 msgstr "Složka již obsahuje projekt Godotu."
 
 #: editor/project_manager.cpp
@@ -10431,6 +10443,7 @@ msgid "Keep"
 msgstr ""
 
 #: editor/rename_dialog.cpp
+<<<<<<< HEAD
 #, fuzzy
 msgid "PascalCase to snake_case"
 msgstr "CamelCase na under_scored"
@@ -10438,6 +10451,13 @@ msgstr "CamelCase na under_scored"
 #: editor/rename_dialog.cpp
 #, fuzzy
 msgid "snake_case to PascalCase"
+=======
+msgid "CamelCase to under_scored"
+msgstr "CamelCase na under_scored"
+
+#: editor/rename_dialog.cpp
+msgid "under_scored to CamelCase"
+>>>>>>> i18n: Sync translations with Weblate
 msgstr "under_scored na CamelCase"
 
 #: editor/rename_dialog.cpp
@@ -10920,8 +10940,12 @@ msgid "Invalid inherited parent name or path."
 msgstr "Neplatné jméno vlastnosti."
 
 #: editor/script_create_dialog.cpp
+<<<<<<< HEAD
 #, fuzzy
 msgid "Script path/name is valid."
+=======
+msgid "Script is valid."
+>>>>>>> i18n: Sync translations with Weblate
 msgstr "Skript je validní."
 
 #: editor/script_create_dialog.cpp

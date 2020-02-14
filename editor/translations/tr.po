@@ -726,9 +726,14 @@ msgid "Line Number:"
 msgstr "Satır Numarası:"
 
 #: editor/code_editor.cpp
+<<<<<<< HEAD
 #, fuzzy
 msgid "%d replaced."
 msgstr "Değiştir..."
+=======
+msgid "Replaced %d occurrence(s)."
+msgstr "%d değişiklik gerçekleştirildi."
+>>>>>>> i18n: Sync translations with Weblate
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -9589,6 +9594,7 @@ msgid "The path specified doesn't exist."
 msgstr "Yol mevcut değil."
 
 #: editor/project_manager.cpp
+<<<<<<< HEAD
 #, fuzzy
 msgid "Error opening package file (it's not in ZIP format)."
 msgstr "Paket dosyası açılırken hata oluştu, zip formatında değil."
@@ -9597,6 +9603,9 @@ msgstr "Paket dosyası açılırken hata oluştu, zip formatında değil."
 #, fuzzy
 msgid ""
 "Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
+=======
+msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
+>>>>>>> i18n: Sync translations with Weblate
 msgstr "Geçersiz '.zip' proje dosyası, 'project.godot' dosyası içermiyor."
 
 #: editor/project_manager.cpp
@@ -9604,6 +9613,7 @@ msgid "Please choose an empty folder."
 msgstr "Lütfen boş bir klasör seçin."
 
 #: editor/project_manager.cpp
+<<<<<<< HEAD
 #, fuzzy
 msgid "Please choose a \"project.godot\" or \".zip\" file."
 msgstr "Lütfen bir 'project.godot' veya '.zip' dosyası seçin."
@@ -9611,6 +9621,13 @@ msgstr "Lütfen bir 'project.godot' veya '.zip' dosyası seçin."
 #: editor/project_manager.cpp
 #, fuzzy
 msgid "This directory already contains a Godot project."
+=======
+msgid "Please choose a 'project.godot' or '.zip' file."
+msgstr "Lütfen bir 'project.godot' veya '.zip' dosyası seçin."
+
+#: editor/project_manager.cpp
+msgid "Directory already contains a Godot project."
+>>>>>>> i18n: Sync translations with Weblate
 msgstr "Bu dizinde zaten bir Godot projesi var."
 
 #: editor/project_manager.cpp
@@ -10308,11 +10325,14 @@ msgid "Suffix"
 msgstr "Son Ek"
 
 #: editor/rename_dialog.cpp
+<<<<<<< HEAD
 #, fuzzy
 msgid "Use Regular Expressions"
 msgstr "Düzenli İfadeler"
 
 #: editor/rename_dialog.cpp
+=======
+>>>>>>> i18n: Sync translations with Weblate
 msgid "Advanced Options"
 msgstr "Gelişmiş Ayarlar"
 
@@ -10349,8 +10369,12 @@ msgstr ""
 "Sayaç seçeneklerini karşılaştırın."
 
 #: editor/rename_dialog.cpp
+<<<<<<< HEAD
 #, fuzzy
 msgid "Per-level Counter"
+=======
+msgid "Per Level counter"
+>>>>>>> i18n: Sync translations with Weblate
 msgstr "Seviye Başına sayaç"
 
 #: editor/rename_dialog.cpp
@@ -10382,6 +10406,13 @@ msgstr ""
 "Eksik rakamları baştaki sıfırlarla doldurulur."
 
 #: editor/rename_dialog.cpp
+<<<<<<< HEAD
+=======
+msgid "Regular Expressions"
+msgstr "Düzenli İfadeler"
+
+#: editor/rename_dialog.cpp
+>>>>>>> i18n: Sync translations with Weblate
 msgid "Post-Process"
 msgstr "Artçıl-İşlem"
 
@@ -10390,6 +10421,7 @@ msgid "Keep"
 msgstr "Tut"
 
 #: editor/rename_dialog.cpp
+<<<<<<< HEAD
 #, fuzzy
 msgid "PascalCase to snake_case"
 msgstr "DeveŞekilli'den alt_tireli'ye dönüştür"
@@ -10397,6 +10429,13 @@ msgstr "DeveŞekilli'den alt_tireli'ye dönüştür"
 #: editor/rename_dialog.cpp
 #, fuzzy
 msgid "snake_case to PascalCase"
+=======
+msgid "CamelCase to under_scored"
+msgstr "DeveŞekilli'den alt_tireli'ye dönüştür"
+
+#: editor/rename_dialog.cpp
+msgid "under_scored to CamelCase"
+>>>>>>> i18n: Sync translations with Weblate
 msgstr "alt_tireli'den DeveŞekilli'ye dönüştür"
 
 #: editor/rename_dialog.cpp
@@ -10414,6 +10453,7 @@ msgstr "Büyük Harfe Döndür"
 #: editor/rename_dialog.cpp
 msgid "Reset"
 msgstr "Sıfırla"
+<<<<<<< HEAD
 
 #: editor/rename_dialog.cpp
 #, fuzzy
@@ -10424,6 +10464,8 @@ msgstr "Düzenli İfadeler"
 #, fuzzy
 msgid "At character %s"
 msgstr "Geçerli karakterler:"
+=======
+>>>>>>> i18n: Sync translations with Weblate
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10888,8 +10930,12 @@ msgid "Invalid inherited parent name or path."
 msgstr "Geçersiz devralınan üst ad veya yol."
 
 #: editor/script_create_dialog.cpp
+<<<<<<< HEAD
 #, fuzzy
 msgid "Script path/name is valid."
+=======
+msgid "Script is valid."
+>>>>>>> i18n: Sync translations with Weblate
 msgstr "Betik geçerli."
 
 #: editor/script_create_dialog.cpp
@@ -10981,11 +11027,14 @@ msgid "Copy Error"
 msgstr "Hatayı Kopyala"
 
 #: editor/script_editor_debugger.cpp
+<<<<<<< HEAD
 #, fuzzy
 msgid "Video RAM"
 msgstr "Görüntü Belleği"
 
 #: editor/script_editor_debugger.cpp
+=======
+>>>>>>> i18n: Sync translations with Weblate
 msgid "Skip Breakpoints"
 msgstr "İşaret Noktalarını Atla"
 

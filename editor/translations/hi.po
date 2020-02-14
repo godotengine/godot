@@ -685,9 +685,14 @@ msgid "Line Number:"
 msgstr "लाइन नंबर:"
 
 #: editor/code_editor.cpp
+<<<<<<< HEAD
 #, fuzzy
 msgid "%d replaced."
 msgstr "बदलने के"
+=======
+msgid "Replaced %d occurrence(s)."
+msgstr "बदल दिया % डी घटना (एस) ।"
+>>>>>>> i18n: Sync translations with Weblate
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."

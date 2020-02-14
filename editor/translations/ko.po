@@ -696,9 +696,14 @@ msgid "Line Number:"
 msgstr "행 번호:"
 
 #: editor/code_editor.cpp
+<<<<<<< HEAD
 #, fuzzy
 msgid "%d replaced."
 msgstr "바꾸기..."
+=======
+msgid "Replaced %d occurrence(s)."
+msgstr "%d개를 바꿨습니다."
+>>>>>>> i18n: Sync translations with Weblate
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -9501,8 +9506,12 @@ msgid "Export With Debug"
 msgstr "디버그와 함께 내보내기"
 
 #: editor/project_manager.cpp
+<<<<<<< HEAD
 #, fuzzy
 msgid "The path specified doesn't exist."
+=======
+msgid "The path does not exist."
+>>>>>>> i18n: Sync translations with Weblate
 msgstr "경로가 없습니다."
 
 #: editor/project_manager.cpp
@@ -9527,8 +9536,12 @@ msgid "Please choose a \"project.godot\" or \".zip\" file."
 msgstr "'project.godot' 파일 또는 '.zip' 파일을 선택해주세요."
 
 #: editor/project_manager.cpp
+<<<<<<< HEAD
 #, fuzzy
 msgid "This directory already contains a Godot project."
+=======
+msgid "Directory already contains a Godot project."
+>>>>>>> i18n: Sync translations with Weblate
 msgstr "디렉토리에 Godot 프로젝트가 이미 있습니다."
 
 #: editor/project_manager.cpp
@@ -10292,6 +10305,13 @@ msgid ""
 msgstr ""
 "카운터의 최소 자릿수.\n"
 "빈 자리는 0으로 채웁니다."
+<<<<<<< HEAD
+=======
+
+#: editor/rename_dialog.cpp
+msgid "Regular Expressions"
+msgstr "정규 표현식"
+>>>>>>> i18n: Sync translations with Weblate
 
 #: editor/rename_dialog.cpp
 msgid "Post-Process"
@@ -10302,6 +10322,7 @@ msgid "Keep"
 msgstr "유지"
 
 #: editor/rename_dialog.cpp
+<<<<<<< HEAD
 #, fuzzy
 msgid "PascalCase to snake_case"
 msgstr "CamelCase를 under_scored로"
@@ -10309,6 +10330,13 @@ msgstr "CamelCase를 under_scored로"
 #: editor/rename_dialog.cpp
 #, fuzzy
 msgid "snake_case to PascalCase"
+=======
+msgid "CamelCase to under_scored"
+msgstr "CamelCase를 under_scored로"
+
+#: editor/rename_dialog.cpp
+msgid "under_scored to CamelCase"
+>>>>>>> i18n: Sync translations with Weblate
 msgstr "under_scored를 CamelCase로"
 
 #: editor/rename_dialog.cpp
@@ -10886,11 +10914,14 @@ msgstr "자식 프로세스 연결됨."
 #: editor/script_editor_debugger.cpp
 msgid "Copy Error"
 msgstr "복사 오류"
+<<<<<<< HEAD
 
 #: editor/script_editor_debugger.cpp
 #, fuzzy
 msgid "Video RAM"
 msgstr "비디오 메모리"
+=======
+>>>>>>> i18n: Sync translations with Weblate
 
 #: editor/script_editor_debugger.cpp
 msgid "Skip Breakpoints"
@@ -12589,6 +12620,7 @@ msgstr "Varying은 꼭짓점 함수에만 지정할 수 있습니다."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "상수는 수정할 수 없습니다."
+<<<<<<< HEAD
 
 #~ msgid "Replaced %d occurrence(s)."
 #~ msgstr "%d개를 바꿨습니다."
@@ -12598,6 +12630,8 @@ msgstr "상수는 수정할 수 없습니다."
 
 #~ msgid "Failed creating shapes!"
 #~ msgstr "Shape 만들기 실패!"
+=======
+>>>>>>> i18n: Sync translations with Weblate
 
 #~ msgid ""
 #~ "There are currently no tutorials for this class, you can [color=$color]"

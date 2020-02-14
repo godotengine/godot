@@ -86,8 +86,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
+<<<<<<< HEAD
 "PO-Revision-Date: 2020-02-18 15:09+0000\n"
 "Last-Translator: Douglas Fiedler <dognew@gmail.com>\n"
+=======
+"PO-Revision-Date: 2020-02-06 09:45+0000\n"
+"Last-Translator: Leonardo Dimano <leodimano@live.com>\n"
+>>>>>>> i18n: Sync translations with Weblate
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"

@@ -64,7 +64,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
+<<<<<<< HEAD
 "PO-Revision-Date: 2020-02-16 15:21+0000\n"
+=======
+"PO-Revision-Date: 2020-02-14 03:19+0000\n"
+>>>>>>> i18n: Sync translations with Weblate
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"

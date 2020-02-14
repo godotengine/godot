@@ -5880,6 +5880,7 @@ msgid "Can't create multiple convex collision shapes for the scene root."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+<<<<<<< HEAD
 #, fuzzy
 msgid "Couldn't create any collision shapes."
 msgstr "Không thể tạo folder."
@@ -5887,6 +5888,9 @@ msgstr "Không thể tạo folder."
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
 msgid "Create Multiple Convex Shapes"
+=======
+msgid "Create Convex Shape(s)"
+>>>>>>> i18n: Sync translations with Weblate
 msgstr "Tạo hình dạng lồi"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp

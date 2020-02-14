@@ -29,8 +29,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
+<<<<<<< HEAD
 "PO-Revision-Date: 2020-02-16 15:21+0000\n"
 "Last-Translator: Sofyan Sugianto <sofyanartem@gmail.com>\n"
+=======
+"PO-Revision-Date: 2020-02-14 03:19+0000\n"
+"Last-Translator: zephyroths <ridho.hikaru@gmail.com>\n"
+>>>>>>> i18n: Sync translations with Weblate
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -11042,6 +11047,13 @@ msgstr "Daftar Penggunaan Memori Video oleh Resource:"
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "Total:"
+<<<<<<< HEAD
+=======
+
+#: editor/script_editor_debugger.cpp
+msgid "Video Mem"
+msgstr "Memori Video"
+>>>>>>> i18n: Sync translations with Weblate
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
