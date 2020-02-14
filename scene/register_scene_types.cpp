@@ -562,6 +562,7 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeGlobalExpression>();
 	ClassDB::register_class<VisualShaderNodeIs>();
 	ClassDB::register_class<VisualShaderNodeCompare>();
+	ClassDB::register_class<VisualShaderNodeMultiplyAdd>();
 
 	ClassDB::register_class<ShaderMaterial>();
 	ClassDB::register_virtual_class<CanvasItem>();
