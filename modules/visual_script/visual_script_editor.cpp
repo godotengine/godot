@@ -4963,7 +4963,7 @@ Ref<VisualScriptNode> _VisualScriptEditor::create_node_custom(const String &p_na
 }
 
 _VisualScriptEditor *_VisualScriptEditor::singleton = NULL;
-Map<String, RefPtr> _VisualScriptEditor::custom_nodes;
+Map<String, REF> _VisualScriptEditor::custom_nodes;
 
 _VisualScriptEditor::_VisualScriptEditor() {
 	singleton = this;
@@ -4975,7 +4975,7 @@ _VisualScriptEditor::~_VisualScriptEditor() {
 
 void _VisualScriptEditor::add_custom_node(const String &p_name, const String &p_category, const Ref<Script> &p_script) {
 	String node_name = "custom/" + p_category + "/" + p_name;
-	custom_nodes.insert(node_name, p_script.get_ref_ptr());
+	custom_nodes.insert(node_name, p_script);
 	VisualScriptLanguage::singleton->add_register_func(node_name, &_VisualScriptEditor::create_node_custom);
 	emit_signal("custom_nodes_updated");
 }

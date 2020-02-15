@@ -282,9 +282,7 @@ void GDAPI godot_print_error(const char *p_description, const char *p_function, 
 void GDAPI godot_print_warning(const char *p_description, const char *p_function, const char *p_file, int p_line);
 void GDAPI godot_print(const godot_string *p_message);
 
-// GDNATIVE CORE 1.0.1
-
-bool GDAPI godot_is_instance_valid(const godot_object *p_object);
+// GDNATIVE CORE 1.0.2?
 
 //tags used for safe dynamic casting
 void GDAPI *godot_get_class_tag(const godot_string_name *p_class);

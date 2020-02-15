@@ -166,10 +166,6 @@ void _gdnative_report_loading_error(const godot_object *p_library, const char *p
 	_err_print_error("gdnative_init", library->get_current_library_path().utf8().ptr(), 0, message.utf8().ptr());
 }
 
-bool GDAPI godot_is_instance_valid(const godot_object *p_object) {
-	return ObjectDB::instance_validate((Object *)p_object);
-}
-
 godot_object GDAPI *godot_instance_from_id(godot_int p_instance_id) {
 	return (godot_object *)ObjectDB::get_instance(ObjectID(p_instance_id));
 }

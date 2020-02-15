@@ -33,7 +33,6 @@
 
 #include "core/class_db.h"
 #include "core/object.h"
-#include "core/ref_ptr.h"
 #include "core/safe_refcount.h"
 
 class Reference : public Object {
@@ -133,17 +132,9 @@ public:
 		return reference;
 	}
 
-	RefPtr get_ref_ptr() const {
-
-		RefPtr refptr;
-		Ref<Reference> *irr = reinterpret_cast<Ref<Reference> *>(refptr.get_data());
-		*irr = *this;
-		return refptr;
-	};
-
 	operator Variant() const {
 
-		return Variant(get_ref_ptr());
+		return Variant(reference);
 	}
 
 	void operator=(const Ref &p_from) {
@@ -165,33 +156,24 @@ public:
 		r.reference = NULL;
 	}
 
-	void operator=(const RefPtr &p_refptr) {
-
-		Ref<Reference> *irr = reinterpret_cast<Ref<Reference> *>(p_refptr.get_data());
-		Reference *refb = irr->ptr();
-		if (!refb) {
-			unref();
-			return;
-		}
-		Ref r;
-		r.reference = Object::cast_to<T>(refb);
-		ref(r);
-		r.reference = NULL;
-	}
-
 	void operator=(const Variant &p_variant) {
 
-		RefPtr refptr = p_variant;
-		Ref<Reference> *irr = reinterpret_cast<Ref<Reference> *>(refptr.get_data());
-		Reference *refb = irr->ptr();
-		if (!refb) {
-			unref();
+		Object *object = p_variant.get_validated_object();
+
+		if (object == reference) {
 			return;
 		}
-		Ref r;
-		r.reference = Object::cast_to<T>(refb);
-		ref(r);
-		r.reference = NULL;
+
+		unref();
+
+		if (!object) {
+			return;
+		}
+
+		Reference *r = Object::cast_to<Reference>(object);
+		if (r && r->reference()) {
+			reference = static_cast<T *>(r);
+		}
 	}
 
 	template <class T_Other>
@@ -237,33 +219,19 @@ public:
 
 	Ref(const Variant &p_variant) {
 
-		RefPtr refptr = p_variant;
-		Ref<Reference> *irr = reinterpret_cast<Ref<Reference> *>(refptr.get_data());
-		reference = NULL;
-		Reference *refb = irr->ptr();
-		if (!refb) {
-			unref();
+		Object *object = p_variant.get_validated_object();
+
+		if (!object) {
+			reference = nullptr;
 			return;
 		}
-		Ref r;
-		r.reference = Object::cast_to<T>(refb);
-		ref(r);
-		r.reference = NULL;
-	}
 
-	Ref(const RefPtr &p_refptr) {
-
-		Ref<Reference> *irr = reinterpret_cast<Ref<Reference> *>(p_refptr.get_data());
-		reference = NULL;
-		Reference *refb = irr->ptr();
-		if (!refb) {
-			unref();
-			return;
+		Reference *r = Object::cast_to<Reference>(object);
+		if (r && r->reference()) {
+			reference = static_cast<T *>(r);
+		} else {
+			reference = nullptr;
 		}
-		Ref r;
-		r.reference = Object::cast_to<T>(refb);
-		ref(r);
-		r.reference = NULL;
 	}
 
 	inline bool is_valid() const { return reference != NULL; }
@@ -337,32 +305,6 @@ struct PtrToArg<const Ref<T> &> {
 	_FORCE_INLINE_ static Ref<T> convert(const void *p_ptr) {
 
 		return Ref<T>((T *)p_ptr);
-	}
-};
-
-//this is for RefPtr
-
-template <>
-struct PtrToArg<RefPtr> {
-
-	_FORCE_INLINE_ static RefPtr convert(const void *p_ptr) {
-
-		return Ref<Reference>(const_cast<Reference *>(reinterpret_cast<const Reference *>(p_ptr))).get_ref_ptr();
-	}
-
-	_FORCE_INLINE_ static void encode(RefPtr p_val, const void *p_ptr) {
-
-		Ref<Reference> r = p_val;
-		*(Ref<Reference> *)p_ptr = r;
-	}
-};
-
-template <>
-struct PtrToArg<const RefPtr &> {
-
-	_FORCE_INLINE_ static RefPtr convert(const void *p_ptr) {
-
-		return Ref<Reference>(const_cast<Reference *>(reinterpret_cast<const Reference *>(p_ptr))).get_ref_ptr();
 	}
 };
 

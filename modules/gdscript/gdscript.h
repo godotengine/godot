@@ -241,6 +241,7 @@ class GDScriptInstance : public ScriptInstance {
 	friend class GDScriptFunctions;
 	friend class GDScriptCompiler;
 
+	ObjectID owner_id;
 	Object *owner;
 	Ref<GDScript> script;
 #ifdef DEBUG_ENABLED

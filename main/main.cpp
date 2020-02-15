@@ -1719,7 +1719,7 @@ bool Main::start() {
 						ERR_CONTINUE_MSG(obj == NULL, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt));
 
 						n = Object::cast_to<Node>(obj);
-						n->set_script(script_res.get_ref_ptr());
+						n->set_script(script_res);
 					}
 
 					ERR_CONTINUE_MSG(!n, "Path in autoload not a node or script: " + path);

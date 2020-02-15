@@ -1515,7 +1515,7 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 #ifdef DEBUG_ENABLED
 			if (!_get_obj().obj) {
 				break;
-			} else if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null() && !ObjectDB::instance_validate(_get_obj().obj)) {
+			} else if (ScriptDebugger::get_singleton() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
 				break;
 			}
 
@@ -1684,7 +1684,7 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 				return "Instance base is null.";
 			} else {
 
-				if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null() && !ObjectDB::instance_validate(_get_obj().obj)) {
+				if (ScriptDebugger::get_singleton() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
 					if (r_valid)
 						*r_valid = false;
 					return "Attempted use of stray pointer object.";
@@ -2172,13 +2172,11 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 
 			if (obj) {
 #ifdef DEBUG_ENABLED
-				if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null()) {
+				if (ScriptDebugger::get_singleton() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
 
-					if (!ObjectDB::instance_validate(obj)) {
-						WARN_PRINT("Attempted use of stray pointer object.");
-						valid = false;
-						return;
-					}
+					WARN_PRINT("Attempted use of previously freed pointer object.");
+					valid = false;
+					return;
 				}
 #endif
 
@@ -2546,12 +2544,10 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 			if (obj) {
 
 #ifdef DEBUG_ENABLED
-				if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null()) {
-					//only if debugging!
-					if (!ObjectDB::instance_validate(obj)) {
-						valid = false;
-						return "Attempted get on stray pointer.";
-					}
+
+				if (ScriptDebugger::get_singleton() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+					valid = false;
+					return "Attempted get on previously freed instance.";
 				}
 #endif
 
@@ -2611,15 +2607,14 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 
 				bool valid = false;
 #ifdef DEBUG_ENABLED
-				if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null()) {
-					//only if debugging!
-					if (!ObjectDB::instance_validate(obj)) {
-						if (r_valid) {
-							*r_valid = false;
-						}
-						return true; // Attempted get on stray pointer.
+
+				if (ScriptDebugger::get_singleton() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+					if (r_valid) {
+						*r_valid = false;
 					}
+					return true; // Attempted get on stray pointer.
 				}
+
 #endif
 
 				if (p_index.get_type() != Variant::STRING) {
@@ -2883,13 +2878,12 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 			Object *obj = _get_obj().obj;
 			if (obj) {
 #ifdef DEBUG_ENABLED
-				if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null()) {
-					//only if debugging!
-					if (!ObjectDB::instance_validate(obj)) {
-						WARN_PRINT("Attempted get_property list on stray pointer.");
-						return;
-					}
+
+				if (ScriptDebugger::get_singleton() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+					WARN_PRINT("Attempted get_property list on previously freed instance.");
+					return;
 				}
+
 #endif
 
 				obj->get_property_list(p_list);
@@ -2961,16 +2955,18 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 		} break;
 		case OBJECT: {
 
-#ifdef DEBUG_ENABLED
 			if (!_get_obj().obj) {
 				valid = false;
 				return false;
 			}
 
-			if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null() && !ObjectDB::instance_validate(_get_obj().obj)) {
+#ifdef DEBUG_ENABLED
+
+			if (ScriptDebugger::get_singleton() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
 				valid = false;
 				return false;
 			}
+
 #endif
 			Variant::CallError ce;
 			ce.error = Variant::CallError::CALL_OK;
@@ -3129,16 +3125,18 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 		} break;
 		case OBJECT: {
 
-#ifdef DEBUG_ENABLED
 			if (!_get_obj().obj) {
 				valid = false;
 				return false;
 			}
 
-			if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null() && !ObjectDB::instance_validate(_get_obj().obj)) {
+#ifdef DEBUG_ENABLED
+
+			if (ScriptDebugger::get_singleton() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
 				valid = false;
 				return false;
 			}
+
 #endif
 			Variant::CallError ce;
 			ce.error = Variant::CallError::CALL_OK;
@@ -3288,16 +3286,16 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 		} break;
 		case OBJECT: {
 
-#ifdef DEBUG_ENABLED
 			if (!_get_obj().obj) {
 				r_valid = false;
 				return Variant();
 			}
-
-			if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null() && !ObjectDB::instance_validate(_get_obj().obj)) {
+#ifdef DEBUG_ENABLED
+			if (ScriptDebugger::get_singleton() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
 				r_valid = false;
 				return Variant();
 			}
+
 #endif
 			Variant::CallError ce;
 			ce.error = Variant::CallError::CALL_OK;

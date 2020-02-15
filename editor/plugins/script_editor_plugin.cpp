@@ -1257,7 +1257,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				}
 
 				Ref<EditorScript> es = memnew(EditorScript);
-				es->set_script(scr.get_ref_ptr());
+				es->set_script(scr);
 				es->set_editor(EditorNode::get_singleton());
 
 				es->_run();

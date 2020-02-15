@@ -312,7 +312,7 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 		AnimationNode *an = Object::cast_to<AnimationNode>(ClassDB::instance(base_type));
 		ERR_FAIL_COND(!an);
 		anode = Ref<AnimationNode>(an);
-		anode->set_script(add_options[p_idx].script.get_ref_ptr());
+		anode->set_script(add_options[p_idx].script);
 		base_name = add_options[p_idx].name;
 	}
 

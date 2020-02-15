@@ -46,11 +46,9 @@
 #include "core/node_path.h"
 #include "core/object_id.h"
 #include "core/pool_vector.h"
-#include "core/ref_ptr.h"
 #include "core/rid.h"
 #include "core/ustring.h"
 
-class RefPtr;
 class Object;
 class Node; // helper
 class Control; // helper
@@ -128,12 +126,12 @@ private:
 
 	struct ObjData {
 
+		ObjectID id;
 		Object *obj;
-		RefPtr ref;
 	};
 
-	_FORCE_INLINE_ ObjData &_get_obj();
-	_FORCE_INLINE_ const ObjData &_get_obj() const;
+	_ALWAYS_INLINE_ ObjData &_get_obj();
+	_ALWAYS_INLINE_ const ObjData &_get_obj() const;
 
 	union {
 		bool _bool;
@@ -162,6 +160,7 @@ public:
 	bool is_shared() const;
 	bool is_zero() const;
 	bool is_one() const;
+	bool is_null() const;
 
 	operator bool() const;
 	operator signed int() const;
@@ -197,7 +196,6 @@ public:
 
 	operator Color() const;
 	operator NodePath() const;
-	operator RefPtr() const;
 	operator RID() const;
 
 	operator Object *() const;
@@ -235,6 +233,9 @@ public:
 
 	operator IP_Address() const;
 
+	Object *get_validated_object() const;
+	Object *get_validated_object_with_check(bool &r_previously_freed) const;
+
 	Variant(bool p_bool);
 	Variant(signed int p_int); // real one
 	Variant(unsigned int p_int);
@@ -267,7 +268,6 @@ public:
 	Variant(const Transform &p_transform);
 	Variant(const Color &p_color);
 	Variant(const NodePath &p_node_path);
-	Variant(const RefPtr &p_resource);
 	Variant(const RID &p_rid);
 	Variant(const Object *p_object);
 	Variant(const Dictionary &p_dictionary);

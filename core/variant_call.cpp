@@ -1099,12 +1099,9 @@ void Variant::call_ptr(const StringName &p_method, const Variant **p_args, int p
 			return;
 		}
 #ifdef DEBUG_ENABLED
-		if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null()) {
-			//only if debugging!
-			if (!ObjectDB::instance_validate(obj)) {
-				r_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
-				return;
-			}
+		if (ScriptDebugger::get_singleton() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+			r_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
+			return;
 		}
 
 #endif
@@ -1274,18 +1271,11 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 bool Variant::has_method(const StringName &p_method) const {
 
 	if (type == OBJECT) {
-		Object *obj = operator Object *();
+		Object *obj = get_validated_object();
 		if (!obj)
 			return false;
-#ifdef DEBUG_ENABLED
-		if (ScriptDebugger::get_singleton()) {
-			if (ObjectDB::instance_validate(obj)) {
-#endif
-				return obj->has_method(p_method);
-#ifdef DEBUG_ENABLED
-			}
-		}
-#endif
+
+		return obj->has_method(p_method);
 	}
 
 	const _VariantCall::TypeFunc &tf = _VariantCall::type_funcs[type];
