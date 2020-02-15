@@ -68,12 +68,17 @@ Error EMWSPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 			bytes_array[i] = getValue($1+i, 'i8');
 		}
 
-		if ($3) {
-			sock.send(bytes_array.buffer);
-		} else {
-			var string = new TextDecoder("utf-8").decode(bytes_array);
-			sock.send(string);
+		try {
+			if ($3) {
+				sock.send(bytes_array.buffer);
+			} else {
+				var string = new TextDecoder("utf-8").decode(bytes_array);
+				sock.send(string);
+			}
+		} catch (e) {
+			return 1;
 		}
+		return 0;
 	}, peer_sock, p_buffer, p_buffer_size, is_bin);
 	/* clang-format on */
 
