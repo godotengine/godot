@@ -2697,8 +2697,20 @@ RasterizerSceneHighEndRD::~RasterizerSceneHighEndRD() {
 		RD::get_singleton()->free(view_dependant_uniform_set);
 	}
 
+	storage->free(wireframe_material_shader);
+	storage->free(overdraw_material_shader);
+	storage->free(default_shader);
+
+	storage->free(wireframe_material);
+	storage->free(overdraw_material);
+	storage->free(default_material);
+
 	{
 		RD::get_singleton()->free(scene_state.reflection_buffer);
+		memdelete_arr(scene_state.instances);
+		memdelete_arr(scene_state.gi_probes);
+		memdelete_arr(scene_state.directional_lights);
+		memdelete_arr(scene_state.lights);
 		memdelete_arr(scene_state.reflections);
 	}
 }
