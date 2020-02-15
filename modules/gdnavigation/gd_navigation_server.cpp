@@ -115,12 +115,15 @@
 
 GdNavigationServer::GdNavigationServer() :
 		NavigationServer(),
+		commands_mutex(Mutex::create()),
+		operations_mutex(Mutex::create()),
 		active(true) {
-	commands_mutex = Mutex::create();
-	operations_mutex = Mutex::create();
 }
 
-GdNavigationServer::~GdNavigationServer() {}
+GdNavigationServer::~GdNavigationServer() {
+	memdelete(operations_mutex);
+	memdelete(commands_mutex);
+}
 
 void GdNavigationServer::add_command(SetCommand *command) const {
 	auto mut_this = const_cast<GdNavigationServer *>(this);
