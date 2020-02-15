@@ -76,7 +76,7 @@ void ConnectionInfoDialog::popup_connections(String p_method, Vector<Node *> p_n
 		}
 	}
 
-	popup_centered(Size2(400, 300) * EDSCALE);
+	popup_centered(Size2(600, 300) * EDSCALE);
 }
 
 ConnectionInfoDialog::ConnectionInfoDialog() {
