@@ -91,10 +91,14 @@ Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port,
 	int peer_sock = EM_ASM_INT({
 		var proto_str = UTF8ToString($2);
 		var socket = null;
-		if (proto_str) {
-			socket = new WebSocket(UTF8ToString($1), proto_str.split(","));
-		} else {
-			socket = new WebSocket(UTF8ToString($1));
+		try {
+			if (proto_str) {
+				socket = new WebSocket(UTF8ToString($1), proto_str.split(","));
+			} else {
+				socket = new WebSocket(UTF8ToString($1));
+			}
+		} catch (e) {
+			return -1;
 		}
 		var c_ptr = Module.IDHandler.get($0);
 		socket.binaryType = "arraybuffer";
@@ -174,6 +178,8 @@ Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port,
 		return Module.IDHandler.add(socket);
 	}, _js_id, str.utf8().get_data(), proto_string.utf8().get_data());
 	/* clang-format on */
+	if (peer_sock == -1)
+		return FAILED;
 
 	static_cast<Ref<EMWSPeer> >(_peer)->set_sock(peer_sock, _in_buf_size, _in_pkt_size);
 
@@ -190,11 +196,11 @@ Ref<WebSocketPeer> EMWSClient::get_peer(int p_peer_id) const {
 
 NetworkedMultiplayerPeer::ConnectionStatus EMWSClient::get_connection_status() const {
 
-	if (_peer->is_connected_to_host())
+	if (_peer->is_connected_to_host()) {
+		if (_is_connecting)
+			return CONNECTION_CONNECTING;
 		return CONNECTION_CONNECTED;
-
-	if (_is_connecting)
-		return CONNECTION_CONNECTING;
+	}
 
 	return CONNECTION_DISCONNECTED;
 };
