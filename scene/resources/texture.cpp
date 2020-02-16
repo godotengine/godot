@@ -588,6 +588,8 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 
 	image = load_image_from_file(f, p_size_limit);
 
+	memdelete(f);
+
 	if (image.is_null() || image->empty()) {
 		return ERR_CANT_OPEN;
 	}
