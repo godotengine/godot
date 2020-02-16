@@ -52,7 +52,7 @@ public:
 
 class Texture2D : public Texture {
 
-	GDCLASS(Texture2D, Resource);
+	GDCLASS(Texture2D, Texture);
 	OBJ_SAVE_TYPE(Texture2D); // Saves derived classes with common type so they can be interchanged.
 
 protected:
@@ -350,7 +350,7 @@ public:
 
 class TextureLayered : public Texture {
 
-	GDCLASS(TextureLayered, Resource);
+	GDCLASS(TextureLayered, Texture);
 
 	VS::TextureLayeredType layered_type;
 
