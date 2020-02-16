@@ -1053,10 +1053,6 @@ LIGHT_SHADER_CODE
 			diffuse_brdf_NL = cNdotL * (A + vec3(B) * s / t) * (1.0 / M_PI);
 		}
 
-#elif defined(DIFFUSE_TOON)
-
-		diffuse_brdf_NL = smoothstep(-roughness, max(roughness, 0.01), NdotL);
-
 #elif defined(DIFFUSE_BURLEY)
 
 		{
@@ -2143,6 +2139,14 @@ FRAGMENT_SHADER_CODE
 		specular_light *= rev_amount;
 		diffuse_light *= rev_amount;
 	}
+
+
+#ifdef DIFFUSE_TOON
+
+    diffuse_light *= step(0.1, max(diffuse_light.r, max(diffuse_light.g, diffuse_light.b)));
+
+
+# endif // DIFFUSE_TOON
 
 #ifdef USE_MULTIPLE_RENDER_TARGETS
 
