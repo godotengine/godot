@@ -691,6 +691,16 @@ void CodeTextEditor::_input(const Ref<InputEvent> &event) {
 		accept_event();
 		return;
 	}
+	if (ED_IS_SHORTCUT("script_text_editor/delete_line", key_event)) {
+		delete_lines();
+		accept_event();
+		return;
+	}
+	if (ED_IS_SHORTCUT("script_text_editor/clone_down", key_event)) {
+		clone_lines_down();
+		accept_event();
+		return;
+	}
 }
 
 void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
