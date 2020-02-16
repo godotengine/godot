@@ -801,6 +801,30 @@
 				Sets the rotation of the background [Sky] expressed as a [Basis]. Equivalent to [member Environment.sky_rotation], where the rotation vector is used to construct the [Basis].
 			</description>
 		</method>
+		<method name="environment_set_ssao">
+			<return type="void">
+			</return>
+			<argument index="0" name="env" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<argument index="2" name="radius" type="float">
+			</argument>
+			<argument index="3" name="intensity" type="float">
+			</argument>
+			<argument index="4" name="bias" type="float">
+			</argument>
+			<argument index="5" name="light_affect" type="float">
+			</argument>
+			<argument index="6" name="ao_channel_affect" type="float">
+			</argument>
+			<argument index="7" name="blur" type="int" enum="VisualServer.EnvironmentSSAOBlur">
+			</argument>
+			<argument index="8" name="bilateral_sharpness" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="environment_set_ssr">
 			<return type="void">
 			</return>
@@ -3497,15 +3521,6 @@
 		<constant name="ENV_TONE_MAPPER_ACES" value="3" enum="EnvironmentToneMapper">
 			Use the ACES tonemapper.
 		</constant>
-		<constant name="ENV_SSAO_QUALITY_LOW" value="0" enum="EnvironmentSSAOQuality">
-			Lowest quality of screen space ambient occlusion.
-		</constant>
-		<constant name="ENV_SSAO_QUALITY_MEDIUM" value="1" enum="EnvironmentSSAOQuality">
-			Medium quality screen space ambient occlusion.
-		</constant>
-		<constant name="ENV_SSAO_QUALITY_HIGH" value="2" enum="EnvironmentSSAOQuality">
-			Highest quality screen space ambient occlusion.
-		</constant>
 		<constant name="ENV_SSAO_BLUR_DISABLED" value="0" enum="EnvironmentSSAOBlur">
 			Disables the blur set for SSAO. Will make SSAO look noisier.
 		</constant>
@@ -3517,6 +3532,15 @@
 		</constant>
 		<constant name="ENV_SSAO_BLUR_3x3" value="3" enum="EnvironmentSSAOBlur">
 			Performs a 3x3 blur on the SSAO output. Use this for smoothest SSAO.
+		</constant>
+		<constant name="ENV_SSAO_QUALITY_LOW" value="0" enum="EnvironmentSSAOQuality">
+			Lowest quality of screen space ambient occlusion.
+		</constant>
+		<constant name="ENV_SSAO_QUALITY_MEDIUM" value="1" enum="EnvironmentSSAOQuality">
+			Medium quality screen space ambient occlusion.
+		</constant>
+		<constant name="ENV_SSAO_QUALITY_HIGH" value="2" enum="EnvironmentSSAOQuality">
+			Highest quality screen space ambient occlusion.
 		</constant>
 		<constant name="ENV_SSAO_QUALITY_ULTRA" value="3" enum="EnvironmentSSAOQuality">
 		</constant>

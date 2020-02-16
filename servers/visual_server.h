@@ -753,7 +753,7 @@ public:
 		ENV_SSAO_BLUR_3x3,
 	};
 
-	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity2, float p_bias, float p_light_affect, float p_ao_channel_affect, EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) = 0;
+	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_bias, float p_light_affect, float p_ao_channel_affect, EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) = 0;
 
 	enum EnvironmentSSAOQuality {
 		ENV_SSAO_QUALITY_LOW,
