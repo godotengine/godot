@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 #include "mesh_library.h"
-#include "core/engine.h"
 
 bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 
@@ -201,11 +200,6 @@ Transform MeshLibrary::get_item_navmesh_transform(int p_item) const {
 }
 
 Ref<Texture2D> MeshLibrary::get_item_preview(int p_item) const {
-
-	if (!Engine::get_singleton()->is_editor_hint()) {
-		ERR_PRINT("MeshLibrary item previews are only generated in an editor context, which means they aren't available in a running project.");
-		return Ref<Texture2D>();
-	}
 
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Ref<Texture2D>(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	return item_map[p_item].preview;
