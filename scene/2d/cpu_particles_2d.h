@@ -169,7 +169,7 @@ private:
 	Vector<Color> emission_colors;
 	int emission_point_count = 0;
 
-	Vector2 gravity = Vector2(0, 98);
+	Vector2 gravity = Vector2(0, 980);
 
 	void _update_internal();
 	void _particles_process(float p_delta);

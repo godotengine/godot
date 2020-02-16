@@ -199,7 +199,7 @@
 		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta" default="true">
 			If [code]true[/code], results in fractional delta calculation which has a smoother particles display effect.
 		</member>
-		<member name="gravity" type="Vector2" setter="set_gravity" getter="get_gravity" default="Vector2( 0, 98 )">
+		<member name="gravity" type="Vector2" setter="set_gravity" getter="get_gravity" default="Vector2( 0, 980 )">
 			Gravity applied to every particle.
 		</member>
 		<member name="hue_variation" type="float" setter="set_param" getter="get_param" default="0.0">

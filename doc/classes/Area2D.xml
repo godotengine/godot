@@ -60,7 +60,7 @@
 		<member name="audio_bus_override" type="bool" setter="set_audio_bus_override" getter="is_overriding_audio_bus" default="false">
 			If [code]true[/code], the area's audio bus overrides the default audio bus.
 		</member>
-		<member name="gravity" type="float" setter="set_gravity" getter="get_gravity" default="98.0">
+		<member name="gravity" type="float" setter="set_gravity" getter="get_gravity" default="980.0">
 			The area's gravity intensity (ranges from -1024 to 1024). This value multiplies the gravity vector. This is useful to alter the force of gravity without altering its direction.
 		</member>
 		<member name="gravity_distance_scale" type="float" setter="set_gravity_distance_scale" getter="get_gravity_distance_scale" default="0.0">
