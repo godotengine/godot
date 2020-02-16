@@ -1403,14 +1403,11 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 		}
 
 		Object *c = NULL;
-		bool cleanup_c = false;
 
 		if (Engine::get_singleton()->has_singleton(p_class)) {
 			c = Engine::get_singleton()->get_singleton_object(p_class);
-			cleanup_c = false;
 		} else if (ClassDB::can_instance(p_class)) {
 			c = ClassDB::instance(p_class);
-			cleanup_c = true;
 		}
 
 		if (c) {
@@ -1425,10 +1422,6 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 						default_values[p_class][E->get().name] = v;
 					}
 				}
-			}
-
-			if (cleanup_c) {
-				memdelete(c);
 			}
 		}
 
