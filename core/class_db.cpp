@@ -1410,7 +1410,10 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 			cleanup_c = false;
 		} else if (ClassDB::can_instance(p_class)) {
 			c = ClassDB::instance(p_class);
-			cleanup_c = true;
+#ifndef _MSC_VER
+#warning FIXME: ObjectID refactoring broke GDScript handling of reference pointers, this needs a proper fix.
+#endif
+			cleanup_c = (p_class != StringName("GDScript"));
 		}
 
 		if (c) {
