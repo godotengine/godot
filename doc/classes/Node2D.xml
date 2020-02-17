@@ -77,6 +77,15 @@
 				Applies a local translation on the node's Y axis based on the [method Node._process]'s [code]delta[/code]. If [code]scaled[/code] is [code]false[/code], normalizes the movement.
 			</description>
 		</method>
+		<method name="reparent_with_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="new_parent" type="Node">
+			</argument>
+			<description>
+				Changes parent of this [Node2D] to [code]new_parent[/code], while keeping the global transform (i.e. position, rotation and scale). The node needs to already have parent to use this.
+			</description>
+		</method>
 		<method name="rotate">
 			<return type="void">
 			</return>

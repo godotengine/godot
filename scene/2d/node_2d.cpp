@@ -310,6 +310,13 @@ void Node2D::set_global_scale(const Size2 &p_scale) {
 	}
 }
 
+void Node2D::reparent_with_transform(Node *p_parent) {
+
+	Transform2D temp = get_global_transform();
+	reparent(p_parent);
+	set_global_transform(temp);
+}
+
 void Node2D::set_transform(const Transform2D &p_transform) {
 
 	_mat = p_transform;
@@ -421,6 +428,7 @@ void Node2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_global_scale", "scale"), &Node2D::set_global_scale);
 	ClassDB::bind_method(D_METHOD("get_global_scale"), &Node2D::get_global_scale);
 
+	ClassDB::bind_method(D_METHOD("reparent_with_transform", "new_parent"), &Node2D::reparent_with_transform);
 	ClassDB::bind_method(D_METHOD("set_transform", "xform"), &Node2D::set_transform);
 	ClassDB::bind_method(D_METHOD("set_global_transform", "xform"), &Node2D::set_global_transform);
 
