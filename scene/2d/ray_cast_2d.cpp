@@ -325,8 +325,7 @@ void RayCast2D::_bind_methods() {
 }
 
 RayCast2D::RayCast2D() {
-	enabled = false;
-
+	enabled = true;
 	collided = false;
 	against_shape = 0;
 	collision_mask = 1;
