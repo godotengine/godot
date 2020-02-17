@@ -166,9 +166,8 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 
 						// Overlay and thumbnail need the same format for `blend_rect` to work.
 						thumbnail->convert(Image::FORMAT_RGBA8);
-						thumbnail->lock();
+
 						thumbnail->blend_rect(overlay, overlay->get_used_rect(), overlay_pos);
-						thumbnail->unlock();
 
 						Ref<ImageTexture> tex;
 						tex.instance();
@@ -322,7 +321,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 }
 ///////////////////////////////////////////////////////////////////////////////////
 
-void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data) {
+void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data) {
 
 	String error_text;
 
@@ -710,12 +709,12 @@ void EditorAssetLibrary::_select_asset(int p_id) {
 	_api_request("asset/" + itos(p_id), REQUESTING_ASSET);
 }
 
-void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByteArray &p_data, int p_queue_id) {
+void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedByteArray &p_data, int p_queue_id) {
 	Object *obj = ObjectDB::get_instance(image_queue[p_queue_id].target);
 
 	if (obj) {
 		bool image_set = false;
-		PoolByteArray image_data = p_data;
+		PackedByteArray image_data = p_data;
 
 		if (use_cache) {
 			String cache_filename_base = EditorSettings::get_singleton()->get_cache_dir().plus_file("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
@@ -723,12 +722,12 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 			FileAccess *file = FileAccess::open(cache_filename_base + ".data", FileAccess::READ);
 
 			if (file) {
-				PoolByteArray cached_data;
+				PackedByteArray cached_data;
 				int len = file->get_32();
 				cached_data.resize(len);
 
-				PoolByteArray::Write w = cached_data.write();
-				file->get_buffer(w.ptr(), len);
+				uint8_t *w = cached_data.ptrw();
+				file->get_buffer(w, len);
 
 				image_data = cached_data;
 				file->close();
@@ -737,17 +736,17 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 		}
 
 		int len = image_data.size();
-		PoolByteArray::Read r = image_data.read();
+		const uint8_t *r = image_data.ptr();
 		Ref<Image> image = Ref<Image>(memnew(Image));
 
 		uint8_t png_signature[8] = { 137, 80, 78, 71, 13, 10, 26, 10 };
 		uint8_t jpg_signature[3] = { 255, 216, 255 };
 
-		if (r.ptr()) {
+		if (r) {
 			if ((memcmp(&r[0], &png_signature[0], 8) == 0) && Image::_png_mem_loader_func) {
-				image->copy_internals_from(Image::_png_mem_loader_func(r.ptr(), len));
+				image->copy_internals_from(Image::_png_mem_loader_func(r, len));
 			} else if ((memcmp(&r[0], &jpg_signature[0], 3) == 0) && Image::_jpg_mem_loader_func) {
-				image->copy_internals_from(Image::_jpg_mem_loader_func(r.ptr(), len));
+				image->copy_internals_from(Image::_jpg_mem_loader_func(r, len));
 			}
 		}
 
@@ -790,7 +789,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 	}
 }
 
-void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data, int p_queue_id) {
+void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data, int p_queue_id) {
 
 	ERR_FAIL_COND(!image_queue.has(p_queue_id));
 
@@ -811,11 +810,11 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 					}
 
 					int len = p_data.size();
-					PoolByteArray::Read r = p_data.read();
+					const uint8_t *r = p_data.ptr();
 					file = FileAccess::open(cache_filename_base + ".data", FileAccess::WRITE);
 					if (file) {
 						file->store_32(len);
-						file->store_buffer(r.ptr(), len);
+						file->store_buffer(r, len);
 						file->close();
 						memdelete(file);
 					}
@@ -899,7 +898,7 @@ void EditorAssetLibrary::_request_image(ObjectID p_for, String p_image_url, Imag
 
 	add_child(iq.request);
 
-	_image_update(true, false, PoolByteArray(), iq.queue_id);
+	_image_update(true, false, PackedByteArray(), iq.queue_id);
 	_update_image_queue();
 }
 
@@ -1068,14 +1067,14 @@ void EditorAssetLibrary::_api_request(const String &p_request, RequestType p_req
 	request->request(host + "/" + p_request + p_arguments);
 }
 
-void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data) {
+void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data) {
 
 	String str;
 
 	{
 		int datalen = p_data.size();
-		PoolByteArray::Read r = p_data.read();
-		str.parse_utf8((const char *)r.ptr(), datalen);
+		const uint8_t *r = p_data.ptr();
+		str.parse_utf8((const char *)r, datalen);
 	}
 
 	bool error_abort = true;

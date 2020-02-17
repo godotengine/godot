@@ -1313,7 +1313,7 @@ void VisualServerScene::_update_instance_lightmap_captures(Instance *p_instance)
 
 	//this could use some sort of blending..
 	for (List<Instance *>::Element *E = geom->lightmap_captures.front(); E; E = E->next()) {
-		const PoolVector<RasterizerStorage::LightmapCaptureOctree> *octree = VSG::storage->lightmap_capture_get_octree_ptr(E->get()->base);
+		const Vector<RasterizerStorage::LightmapCaptureOctree> *octree = VSG::storage->lightmap_capture_get_octree_ptr(E->get()->base);
 		//print_line("octree size: " + itos(octree->size()));
 		if (octree->size() == 0)
 			continue;
@@ -1321,14 +1321,14 @@ void VisualServerScene::_update_instance_lightmap_captures(Instance *p_instance)
 		int cell_subdiv = VSG::storage->lightmap_capture_get_octree_cell_subdiv(E->get()->base);
 		to_cell_xform = to_cell_xform * E->get()->transform.affine_inverse();
 
-		PoolVector<RasterizerStorage::LightmapCaptureOctree>::Read octree_r = octree->read();
+		const RasterizerStorage::LightmapCaptureOctree *octree_r = octree->ptr();
 
 		Vector3 pos = to_cell_xform.xform(p_instance->transform.origin);
 
 		for (int i = 0; i < 12; i++) {
 
 			Vector3 dir = to_cell_xform.basis.xform(cone_traces[i]).normalized();
-			Color capture = _light_capture_voxel_cone_trace(octree_r.ptr(), pos, dir, cone_aperture, cell_subdiv);
+			Color capture = _light_capture_voxel_cone_trace(octree_r, pos, dir, cone_aperture, cell_subdiv);
 			p_instance->lightmap_capture_data.write[i] += capture;
 		}
 	}

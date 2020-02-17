@@ -54,8 +54,8 @@ class FileAccessBufferedFA : public FileAccessBuffered {
 			cache.offset = p_offset;
 			cache.buffer.resize(p_size);
 
-			// on PoolVector
-			//PoolVector<uint8_t>::Write write = cache.buffer.write();
+			// on Vector
+			//uint8_t* write = cache.buffer.ptrw();
 			//f.get_buffer(write.ptrw(), p_size);
 
 			// on vector

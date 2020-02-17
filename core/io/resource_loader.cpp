@@ -157,10 +157,10 @@ bool ResourceFormatLoader::exists(const String &p_path) const {
 void ResourceFormatLoader::get_recognized_extensions(List<String> *p_extensions) const {
 
 	if (get_script_instance() && get_script_instance()->has_method("get_recognized_extensions")) {
-		PoolStringArray exts = get_script_instance()->call("get_recognized_extensions");
+		PackedStringArray exts = get_script_instance()->call("get_recognized_extensions");
 
 		{
-			PoolStringArray::Read r = exts.read();
+			const String *r = exts.ptr();
 			for (int i = 0; i < exts.size(); ++i) {
 				p_extensions->push_back(r[i]);
 			}
@@ -212,10 +212,10 @@ RES ResourceFormatLoader::load(const String &p_path, const String &p_original_pa
 void ResourceFormatLoader::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
 
 	if (get_script_instance() && get_script_instance()->has_method("get_dependencies")) {
-		PoolStringArray deps = get_script_instance()->call("get_dependencies", p_path, p_add_types);
+		PackedStringArray deps = get_script_instance()->call("get_dependencies", p_path, p_add_types);
 
 		{
-			PoolStringArray::Read r = deps.read();
+			const String *r = deps.ptr();
 			for (int i = 0; i < deps.size(); ++i) {
 				p_dependencies->push_back(r[i]);
 			}
@@ -247,7 +247,7 @@ void ResourceFormatLoader::_bind_methods() {
 		ClassDB::add_virtual_method(get_class_static(), info);
 	}
 
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::POOL_STRING_ARRAY, "get_recognized_extensions"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::PACKED_STRING_ARRAY, "get_recognized_extensions"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "handles_type", PropertyInfo(Variant::STRING, "typename")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "get_resource_type", PropertyInfo(Variant::STRING, "path")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("get_dependencies", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::STRING, "add_types")));
@@ -743,7 +743,7 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 
 	if (translation_remaps.has(p_path)) {
 		// translation_remaps has the following format:
-		//   { "res://path.png": PoolStringArray( "res://path-ru.png:ru", "res://path-de.png:de" ) }
+		//   { "res://path.png": PackedStringArray( "res://path-ru.png:ru", "res://path-de.png:de" ) }
 
 		// To find the path of the remapped resource, we extract the locale name after
 		// the last ':' to match the project locale.
@@ -905,10 +905,10 @@ void ResourceLoader::load_path_remaps() {
 	if (!ProjectSettings::get_singleton()->has_setting("path_remap/remapped_paths"))
 		return;
 
-	PoolVector<String> remaps = ProjectSettings::get_singleton()->get("path_remap/remapped_paths");
+	Vector<String> remaps = ProjectSettings::get_singleton()->get("path_remap/remapped_paths");
 	int rc = remaps.size();
 	ERR_FAIL_COND(rc & 1); //must be even
-	PoolVector<String>::Read r = remaps.read();
+	const String *r = remaps.ptr();
 
 	for (int i = 0; i < rc; i += 2) {
 

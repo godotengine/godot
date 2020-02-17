@@ -1361,7 +1361,7 @@ bool NativeScriptLanguage::supports_builtin_mode() const {
 int NativeScriptLanguage::find_function(const String &p_function, const String &p_code) const {
 	return -1;
 }
-String NativeScriptLanguage::make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const {
+String NativeScriptLanguage::make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const {
 	return "";
 }
 void NativeScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int p_to_line) const {

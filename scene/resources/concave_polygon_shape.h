@@ -63,8 +63,8 @@ protected:
 	virtual void _update_shape();
 
 public:
-	void set_faces(const PoolVector<Vector3> &p_faces);
-	PoolVector<Vector3> get_faces() const;
+	void set_faces(const Vector<Vector3> &p_faces);
+	Vector<Vector3> get_faces() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines();
 	virtual real_t get_enclosing_radius() const;

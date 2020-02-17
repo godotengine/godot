@@ -168,7 +168,7 @@ void GDNativeLibraryEditor::_on_library_selected(const String &file) {
 	_set_target_value(file_dialog->get_meta("section"), file_dialog->get_meta("target"), file);
 }
 
-void GDNativeLibraryEditor::_on_dependencies_selected(const PoolStringArray &files) {
+void GDNativeLibraryEditor::_on_dependencies_selected(const PackedStringArray &files) {
 
 	_set_target_value(file_dialog->get_meta("section"), file_dialog->get_meta("target"), files);
 }

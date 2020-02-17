@@ -2567,7 +2567,6 @@ void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shap
 		// Create the BITMAP with alpha channel
 		COLORREF *buffer = (COLORREF *)memalloc(sizeof(COLORREF) * image_size);
 
-		image->lock();
 		for (UINT index = 0; index < image_size; index++) {
 			int row_index = floor(index / texture_size.width) + atlas_rect.position.y;
 			int column_index = (index % int(texture_size.width)) + atlas_rect.position.x;
@@ -2579,7 +2578,6 @@ void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shap
 
 			*(buffer + index) = image->get_pixel(column_index, row_index).to_argb32();
 		}
-		image->unlock();
 
 		// Using 4 channels, so 4 * 8 bits
 		HBITMAP bitmap = CreateBitmap(texture_size.width, texture_size.height, 1, 4 * 8, buffer);
@@ -2934,7 +2932,7 @@ void OS_Windows::set_icon(const Ref<Image> &p_icon) {
 	encode_uint32(0, &icon_bmp[36]);
 
 	uint8_t *wr = &icon_bmp[40];
-	PoolVector<uint8_t>::Read r = icon->get_data().read();
+	const uint8_t *r = icon->get_data().ptr();
 
 	for (int i = 0; i < h; i++) {
 

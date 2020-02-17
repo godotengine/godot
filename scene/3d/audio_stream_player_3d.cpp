@@ -45,12 +45,12 @@ private:
 		mutable real_t squared_gain; // temporary
 	};
 
-	PoolVector<Speaker> speakers;
+	Vector<Speaker> speakers;
 
 public:
 	Spcap(unsigned int speaker_count, const Vector3 *speaker_directions) {
 		this->speakers.resize(speaker_count);
-		PoolVector<Speaker>::Write w = this->speakers.write();
+		Speaker *w = this->speakers.ptrw();
 		for (unsigned int speaker_num = 0; speaker_num < speaker_count; speaker_num++) {
 			w[speaker_num].direction = speaker_directions[speaker_num];
 			w[speaker_num].squared_gain = 0.0;
@@ -66,11 +66,11 @@ public:
 	}
 
 	Vector3 get_speaker_direction(unsigned int index) const {
-		return this->speakers.read()[index].direction;
+		return this->speakers.ptr()[index].direction;
 	}
 
 	void calculate(const Vector3 &source_direction, real_t tightness, unsigned int volume_count, real_t *volumes) const {
-		PoolVector<Speaker>::Read r = this->speakers.read();
+		const Speaker *r = this->speakers.ptr();
 		real_t sum_squared_gains = 0.0;
 		for (unsigned int speaker_num = 0; speaker_num < (unsigned int)this->speakers.size(); speaker_num++) {
 			real_t initial_gain = 0.5 * powf(1.0 + r[speaker_num].direction.dot(source_direction), tightness) / r[speaker_num].effective_number_of_speakers;

@@ -90,7 +90,7 @@ Error EMWSPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 	if (_in_buffer.packets_left() == 0)
 		return ERR_UNAVAILABLE;
 
-	PoolVector<uint8_t>::Write rw = _packet_buffer.write();
+	uint8_t *rw = _packet_buffer.ptrw();
 	int read = 0;
 	Error err = _in_buffer.read_packet(rw.ptr(), _packet_buffer.size(), &_is_string, read);
 	ERR_FAIL_COND_V(err != OK, err);

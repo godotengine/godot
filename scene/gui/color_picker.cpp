@@ -59,7 +59,7 @@ void ColorPicker::_notification(int p_what) {
 
 #ifdef TOOLS_ENABLED
 			if (Engine::get_singleton()->is_editor_hint()) {
-				PoolColorArray saved_presets = EditorSettings::get_singleton()->get_project_metadata("color_picker", "presets", PoolColorArray());
+				PackedColorArray saved_presets = EditorSettings::get_singleton()->get_project_metadata("color_picker", "presets", PackedColorArray());
 
 				for (int i = 0; i < saved_presets.size(); i++) {
 					add_preset(saved_presets[i]);
@@ -295,7 +295,7 @@ void ColorPicker::add_preset(const Color &p_color) {
 
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		PoolColorArray arr_to_save = get_presets();
+		PackedColorArray arr_to_save = get_presets();
 		EditorSettings::get_singleton()->set_project_metadata("color_picker", "presets", arr_to_save);
 	}
 #endif
@@ -309,16 +309,16 @@ void ColorPicker::erase_preset(const Color &p_color) {
 
 #ifdef TOOLS_ENABLED
 		if (Engine::get_singleton()->is_editor_hint()) {
-			PoolColorArray arr_to_save = get_presets();
+			PackedColorArray arr_to_save = get_presets();
 			EditorSettings::get_singleton()->set_project_metadata("color_picker", "presets", arr_to_save);
 		}
 #endif
 	}
 }
 
-PoolColorArray ColorPicker::get_presets() const {
+PackedColorArray ColorPicker::get_presets() const {
 
-	PoolColorArray arr;
+	PackedColorArray arr;
 	arr.resize(presets.size());
 	for (int i = 0; i < presets.size(); i++) {
 		arr.set(i, presets[i]);
@@ -593,10 +593,10 @@ void ColorPicker::_screen_input(const Ref<InputEvent> &p_event) {
 
 		Ref<Image> img = r->get_texture()->get_data();
 		if (img.is_valid() && !img->empty()) {
-			img->lock();
+
 			Vector2 ofs = mev->get_global_position() - r->get_visible_rect().get_position();
 			Color c = img->get_pixel(ofs.x, r->get_visible_rect().size.height - ofs.y);
-			img->unlock();
+
 			set_pick_color(c);
 		}
 	}

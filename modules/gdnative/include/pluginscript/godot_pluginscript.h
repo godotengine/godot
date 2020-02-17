@@ -129,9 +129,9 @@ typedef struct {
 	godot_bool supports_builtin_mode;
 
 	godot_string (*get_template_source_code)(godot_pluginscript_language_data *p_data, const godot_string *p_class_name, const godot_string *p_base_class_name);
-	godot_bool (*validate)(godot_pluginscript_language_data *p_data, const godot_string *p_script, int *r_line_error, int *r_col_error, godot_string *r_test_error, const godot_string *p_path, godot_pool_string_array *r_functions);
+	godot_bool (*validate)(godot_pluginscript_language_data *p_data, const godot_string *p_script, int *r_line_error, int *r_col_error, godot_string *r_test_error, const godot_string *p_path, godot_packed_string_array *r_functions);
 	int (*find_function)(godot_pluginscript_language_data *p_data, const godot_string *p_function, const godot_string *p_code); // Can be NULL
-	godot_string (*make_function)(godot_pluginscript_language_data *p_data, const godot_string *p_class, const godot_string *p_name, const godot_pool_string_array *p_args);
+	godot_string (*make_function)(godot_pluginscript_language_data *p_data, const godot_string *p_class, const godot_string *p_name, const godot_packed_string_array *p_args);
 	godot_error (*complete_code)(godot_pluginscript_language_data *p_data, const godot_string *p_code, const godot_string *p_path, godot_object *p_owner, godot_array *r_options, godot_bool *r_force, godot_string *r_call_hint);
 	void (*auto_indent_code)(godot_pluginscript_language_data *p_data, godot_string *p_code, int p_from_line, int p_to_line);
 
@@ -141,9 +141,9 @@ typedef struct {
 	int (*debug_get_stack_level_line)(godot_pluginscript_language_data *p_data, int p_level);
 	godot_string (*debug_get_stack_level_function)(godot_pluginscript_language_data *p_data, int p_level);
 	godot_string (*debug_get_stack_level_source)(godot_pluginscript_language_data *p_data, int p_level);
-	void (*debug_get_stack_level_locals)(godot_pluginscript_language_data *p_data, int p_level, godot_pool_string_array *p_locals, godot_array *p_values, int p_max_subitems, int p_max_depth);
-	void (*debug_get_stack_level_members)(godot_pluginscript_language_data *p_data, int p_level, godot_pool_string_array *p_members, godot_array *p_values, int p_max_subitems, int p_max_depth);
-	void (*debug_get_globals)(godot_pluginscript_language_data *p_data, godot_pool_string_array *p_locals, godot_array *p_values, int p_max_subitems, int p_max_depth);
+	void (*debug_get_stack_level_locals)(godot_pluginscript_language_data *p_data, int p_level, godot_packed_string_array *p_locals, godot_array *p_values, int p_max_subitems, int p_max_depth);
+	void (*debug_get_stack_level_members)(godot_pluginscript_language_data *p_data, int p_level, godot_packed_string_array *p_members, godot_array *p_values, int p_max_subitems, int p_max_depth);
+	void (*debug_get_globals)(godot_pluginscript_language_data *p_data, godot_packed_string_array *p_locals, godot_array *p_values, int p_max_subitems, int p_max_depth);
 	godot_string (*debug_parse_stack_level_expression)(godot_pluginscript_language_data *p_data, int p_level, const godot_string *p_expression, int p_max_subitems, int p_max_depth);
 
 	// TODO: could this stuff be moved to the godot_pluginscript_language_desc ?

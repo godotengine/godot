@@ -188,7 +188,7 @@ private:
 
 	struct FeatureContainers {
 		Set<String> features;
-		PoolVector<String> features_pv;
+		Vector<String> features_pv;
 	};
 
 	void _export_find_resources(EditorFileSystemDirectory *p_dir, Set<String> &p_paths);
@@ -310,8 +310,8 @@ class EditorExportPlugin : public Reference {
 		ios_cpp_code = "";
 	}
 
-	void _export_file_script(const String &p_path, const String &p_type, const PoolVector<String> &p_features);
-	void _export_begin_script(const PoolVector<String> &p_features, bool p_debug, const String &p_path, int p_flags);
+	void _export_file_script(const String &p_path, const String &p_type, const Vector<String> &p_features);
+	void _export_begin_script(const Vector<String> &p_features, bool p_debug, const String &p_path, int p_flags);
 	void _export_end_script();
 
 protected:

@@ -49,7 +49,7 @@ public:
 	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const;
 	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const;
 
-	static void _compress_ima_adpcm(const Vector<float> &p_data, PoolVector<uint8_t> &dst_data) {
+	static void _compress_ima_adpcm(const Vector<float> &p_data, Vector<uint8_t> &dst_data) {
 		/*p_sample_data->data = (void*)malloc(len);
 		xm_s8 *dataptr=(xm_s8*)p_sample_data->data;*/
 
@@ -76,10 +76,10 @@ public:
 			datalen++;
 
 		dst_data.resize(datalen / 2 + 4);
-		PoolVector<uint8_t>::Write w = dst_data.write();
+		uint8_t *w = dst_data.ptrw();
 
 		int i, step_idx = 0, prev = 0;
-		uint8_t *out = w.ptr();
+		uint8_t *out = w;
 		//int16_t xm_prev=0;
 		const float *in = p_data.ptr();
 

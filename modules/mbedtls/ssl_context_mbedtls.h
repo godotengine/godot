@@ -34,7 +34,7 @@
 #include "crypto_mbedtls.h"
 
 #include "core/os/file_access.h"
-#include "core/pool_vector.h"
+
 #include "core/reference.h"
 
 #include <mbedtls/config.h>
@@ -48,7 +48,7 @@ class SSLContextMbedTLS : public Reference {
 protected:
 	bool inited;
 
-	static PoolByteArray _read_file(String p_path);
+	static PackedByteArray _read_file(String p_path);
 
 public:
 	Ref<X509CertificateMbedTLS> certs;

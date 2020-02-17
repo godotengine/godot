@@ -139,7 +139,7 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/timestamp"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/hardened_runtime"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/entitlements", PROPERTY_HINT_GLOBAL_FILE, "*.plist"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::POOL_STRING_ARRAY, "codesign/custom_options"), PoolStringArray()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "codesign/custom_options"), PackedStringArray()));
 #endif
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc"), true));
@@ -147,7 +147,7 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2"), false));
 }
 
-void _rgba8_to_packbits_encode(int p_ch, int p_size, PoolVector<uint8_t> &p_source, Vector<uint8_t> &p_dest) {
+void _rgba8_to_packbits_encode(int p_ch, int p_size, Vector<uint8_t> &p_source, Vector<uint8_t> &p_dest) {
 
 	int src_len = p_size * p_size;
 
@@ -160,11 +160,11 @@ void _rgba8_to_packbits_encode(int p_ch, int p_size, PoolVector<uint8_t> &p_sour
 
 	int i = 0;
 	while (i < src_len) {
-		uint8_t cur = p_source.read()[i * 4 + p_ch];
+		uint8_t cur = p_source.ptr()[i * 4 + p_ch];
 
 		if (i < src_len - 2) {
 
-			if ((p_source.read()[(i + 1) * 4 + p_ch] == cur) && (p_source.read()[(i + 2) * 4 + p_ch] == cur)) {
+			if ((p_source.ptr()[(i + 1) * 4 + p_ch] == cur) && (p_source.ptr()[(i + 2) * 4 + p_ch] == cur)) {
 				if (buf_size > 0) {
 					result.write[res_size++] = (uint8_t)(buf_size - 1);
 					copymem(&result.write[res_size], &buf, buf_size);
@@ -176,7 +176,7 @@ void _rgba8_to_packbits_encode(int p_ch, int p_size, PoolVector<uint8_t> &p_sour
 				bool hit_lim = true;
 
 				for (int j = 3; j <= lim; j++) {
-					if (p_source.read()[(i + j) * 4 + p_ch] != cur) {
+					if (p_source.ptr()[(i + j) * 4 + p_ch] != cur) {
 						hit_lim = false;
 						i = i + j - 1;
 						result.write[res_size++] = (uint8_t)(j - 3 + 0x80);
@@ -278,7 +278,7 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 			DirAccess::remove_file_or_error(path);
 
 		} else {
-			PoolVector<uint8_t> src_data = copy->get_data();
+			Vector<uint8_t> src_data = copy->get_data();
 
 			//encode 24bit RGB RLE icon
 			{
@@ -302,7 +302,7 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 				data.resize(data.size() + len + 8);
 
 				for (int j = 0; j < len; j++) {
-					data.write[ofs + 8 + j] = src_data.read()[j * 4 + 3];
+					data.write[ofs + 8 + j] = src_data.ptr()[j * 4 + 3];
 				}
 				len += 8;
 				len = BSWAP32(len);
@@ -386,7 +386,7 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 		args.push_back(p_preset->get("codesign/entitlements"));
 	}
 
-	PoolStringArray user_args = p_preset->get("codesign/custom_options");
+	PackedStringArray user_args = p_preset->get("codesign/custom_options");
 	for (int i = 0; i < user_args.size(); i++) {
 		String user_arg = user_args[i].strip_edges();
 		if (!user_arg.empty()) {

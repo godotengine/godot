@@ -44,7 +44,7 @@ void TextureBasisU::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_basisu_data"), &TextureBasisU::get_data);
 	ClassDB::bind_method(D_METHOD("import"), &TextureBasisU::import);
 
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY, "basisu_data"), "set_basisu_data", "get_basisu_data");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "basisu_data"), "set_basisu_data", "get_basisu_data");
 
 };
 
@@ -81,13 +81,13 @@ uint32_t TextureBasisU::get_flags() const {
 };
 
 
-void TextureBasisU::set_basisu_data(const PoolVector<uint8_t>& p_data) {
+void TextureBasisU::set_basisu_data(const Vector<uint8_t>& p_data) {
 
 #ifdef TOOLS_ENABLED
 	data = p_data;
 #endif
 
-	PoolVector<uint8_t>::Read r = p_data.read();
+	const uint8_t* r = p_data.ptr();
 	const void* ptr = r.ptr();
 	int size = p_data.size();
 
@@ -114,11 +114,11 @@ void TextureBasisU::set_basisu_data(const PoolVector<uint8_t>& p_data) {
 	tex_size = Size2(info.m_width, info.m_height);
 
 	int block_size = basist::basis_get_bytes_per_block(format);
-	PoolVector<uint8_t> gpudata;
+	Vector<uint8_t> gpudata;
 	gpudata.resize(info.m_total_blocks * block_size);
 
 	{
-		PoolVector<uint8_t>::Write w = gpudata.write();
+		uint8_t* w = gpudata.ptrw();
 		uint8_t* dst = w.ptr();
 		for (int i=0; i<gpudata.size(); i++)
 			dst[i] = 0x00;
@@ -152,7 +152,7 @@ Error TextureBasisU::import(const Ref<Image>& p_img) {
 
 #ifdef TOOLS_ENABLED
 
-	PoolVector<uint8_t> budata;
+	Vector<uint8_t> budata;
 
 	{
 		Image::Format format = p_img->get_format();
@@ -168,9 +168,9 @@ Error TextureBasisU::import(const Ref<Image>& p_img) {
 		basisu::image buimg(p_img->get_width(), p_img->get_height());
 		int size = p_img->get_width() * p_img->get_height() * 4;
 
-		PoolVector<uint8_t> vec = copy->get_data();
+		Vector<uint8_t> vec = copy->get_data();
 		{
-			PoolVector<uint8_t>::Read r = vec.read();
+			const uint8_t* r = vec.ptr();
 			memcpy(buimg.get_ptr(), r.ptr(), size);
 		};
 
@@ -198,7 +198,7 @@ Error TextureBasisU::import(const Ref<Image>& p_img) {
 		budata.resize(buvec.size());
 
 		{
-			PoolVector<uint8_t>::Write w = budata.write();
+			uint8_t* w = budata.ptrw();
 			memcpy(w.ptr(), &buvec[0], budata.size());
 		};
 	};
@@ -213,7 +213,7 @@ Error TextureBasisU::import(const Ref<Image>& p_img) {
 };
 
 
-PoolVector<uint8_t> TextureBasisU::get_basisu_data() const {
+Vector<uint8_t> TextureBasisU::get_basisu_data() const {
 
 	return data;
 };

@@ -110,7 +110,7 @@ Ref<StreamPeer> HTTPClient::get_connection() const {
 	return connection;
 }
 
-Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const PoolVector<uint8_t> &p_body) {
+Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const Vector<uint8_t> &p_body) {
 
 	ERR_FAIL_INDEX_V(p_method, METHOD_MAX, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(!p_url.begins_with("/"), ERR_INVALID_PARAMETER);
@@ -152,10 +152,10 @@ Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector
 	request += "\r\n";
 	CharString cs = request.utf8();
 
-	PoolVector<uint8_t> data;
+	Vector<uint8_t> data;
 	data.resize(cs.length());
 	{
-		PoolVector<uint8_t>::Write data_write = data.write();
+		uint8_t *data_write = data.ptrw();
 		for (int i = 0; i < cs.length(); i++) {
 			data_write[i] = cs[i];
 		}
@@ -163,7 +163,7 @@ Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector
 
 	data.append_array(p_body);
 
-	PoolVector<uint8_t>::Read r = data.read();
+	const uint8_t *r = data.ptr();
 	Error err = connection->put_data(&r[0], data.size());
 
 	if (err) {
@@ -517,11 +517,11 @@ int HTTPClient::get_response_body_length() const {
 	return body_size;
 }
 
-PoolByteArray HTTPClient::read_response_body_chunk() {
+PackedByteArray HTTPClient::read_response_body_chunk() {
 
-	ERR_FAIL_COND_V(status != STATUS_BODY, PoolByteArray());
+	ERR_FAIL_COND_V(status != STATUS_BODY, PackedByteArray());
 
-	PoolByteArray ret;
+	PackedByteArray ret;
 	Error err = OK;
 
 	if (chunked) {
@@ -622,8 +622,8 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 					}
 
 					ret.resize(chunk.size() - 2);
-					PoolByteArray::Write w = ret.write();
-					copymem(w.ptr(), chunk.ptr(), chunk.size() - 2);
+					uint8_t *w = ret.ptrw();
+					copymem(w, chunk.ptr(), chunk.size() - 2);
 					chunk.clear();
 				}
 
@@ -639,8 +639,8 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 		while (to_read > 0) {
 			int rec = 0;
 			{
-				PoolByteArray::Write w = ret.write();
-				err = _get_http_data(w.ptr() + _offset, to_read, rec);
+				uint8_t *w = ret.ptrw();
+				err = _get_http_data(w + _offset, to_read, rec);
 			}
 			if (rec <= 0) { // Ended up reading less
 				ret.resize(_offset);
@@ -801,11 +801,11 @@ Dictionary HTTPClient::_get_response_headers_as_dictionary() {
 	return ret;
 }
 
-PoolStringArray HTTPClient::_get_response_headers() {
+PackedStringArray HTTPClient::_get_response_headers() {
 
 	List<String> rh;
 	get_response_headers(&rh);
-	PoolStringArray ret;
+	PackedStringArray ret;
 	ret.resize(rh.size());
 	int idx = 0;
 	for (const List<String>::Element *E = rh.front(); E; E = E->next()) {

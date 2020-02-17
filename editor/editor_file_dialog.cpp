@@ -347,7 +347,7 @@ void EditorFileDialog::_action_pressed() {
 
 		String fbase = dir_access->get_current_dir();
 
-		PoolVector<String> files;
+		Vector<String> files;
 		for (int i = 0; i < item_list->get_item_count(); i++) {
 			if (item_list->is_selected(i))
 				files.push_back(fbase.plus_file(item_list->get_item_text(i)));
@@ -1419,7 +1419,7 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("invalidate"), &EditorFileDialog::invalidate);
 
 	ADD_SIGNAL(MethodInfo("file_selected", PropertyInfo(Variant::STRING, "path")));
-	ADD_SIGNAL(MethodInfo("files_selected", PropertyInfo(Variant::POOL_STRING_ARRAY, "paths")));
+	ADD_SIGNAL(MethodInfo("files_selected", PropertyInfo(Variant::PACKED_STRING_ARRAY, "paths")));
 	ADD_SIGNAL(MethodInfo("dir_selected", PropertyInfo(Variant::STRING, "dir")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User data,File system"), "set_access", "get_access");

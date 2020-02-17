@@ -1098,19 +1098,19 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 	ERR_FAIL_COND_MSG(version > PACKED_SCENE_VERSION, "Save format version too new.");
 
 	const int node_count = p_dictionary["node_count"];
-	const PoolVector<int> snodes = p_dictionary["nodes"];
+	const Vector<int> snodes = p_dictionary["nodes"];
 	ERR_FAIL_COND(snodes.size() < node_count);
 
 	const int conn_count = p_dictionary["conn_count"];
-	const PoolVector<int> sconns = p_dictionary["conns"];
+	const Vector<int> sconns = p_dictionary["conns"];
 	ERR_FAIL_COND(sconns.size() < conn_count);
 
-	PoolVector<String> snames = p_dictionary["names"];
+	Vector<String> snames = p_dictionary["names"];
 	if (snames.size()) {
 
 		int namecount = snames.size();
 		names.resize(namecount);
-		PoolVector<String>::Read r = snames.read();
+		const String *r = snames.ptr();
 		for (int i = 0; i < names.size(); i++)
 			names.write[i] = r[i];
 	}
@@ -1131,7 +1131,7 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 
 	nodes.resize(node_count);
 	if (node_count) {
-		PoolVector<int>::Read r = snodes.read();
+		const int *r = snodes.ptr();
 		int idx = 0;
 		for (int i = 0; i < node_count; i++) {
 			NodeData &nd = nodes.write[i];
@@ -1159,7 +1159,7 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 
 	connections.resize(conn_count);
 	if (conn_count) {
-		PoolVector<int>::Read r = sconns.read();
+		const int *r = sconns.ptr();
 		int idx = 0;
 		for (int i = 0; i < conn_count; i++) {
 			ConnectionData &cd = connections.write[i];
@@ -1205,12 +1205,12 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 
 Dictionary SceneState::get_bundled_scene() const {
 
-	PoolVector<String> rnames;
+	Vector<String> rnames;
 	rnames.resize(names.size());
 
 	if (names.size()) {
 
-		PoolVector<String>::Write r = rnames.write();
+		String *r = rnames.ptrw();
 
 		for (int i = 0; i < names.size(); i++)
 			r[i] = names[i];
@@ -1612,10 +1612,10 @@ void SceneState::add_editable_instance(const NodePath &p_path) {
 	editable_instances.push_back(p_path);
 }
 
-PoolVector<String> SceneState::_get_node_groups(int p_idx) const {
+Vector<String> SceneState::_get_node_groups(int p_idx) const {
 
 	Vector<StringName> groups = get_node_groups(p_idx);
-	PoolVector<String> ret;
+	Vector<String> ret;
 
 	for (int i = 0; i < groups.size(); i++)
 		ret.push_back(groups[i]);

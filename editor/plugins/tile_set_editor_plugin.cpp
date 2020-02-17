@@ -251,7 +251,7 @@ void TileSetEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 
 	if (String(d["type"]) == "files") {
 
-		PoolVector<String> files = d["files"];
+		Vector<String> files = d["files"];
 
 		_on_textures_added(files);
 	}
@@ -750,7 +750,7 @@ void TileSetEditor::_on_texture_list_selected(int p_index) {
 	workspace->update();
 }
 
-void TileSetEditor::_on_textures_added(const PoolStringArray &p_paths) {
+void TileSetEditor::_on_textures_added(const PackedStringArray &p_paths) {
 	int invalid_count = 0;
 	for (int i = 0; i < p_paths.size(); i++) {
 		Ref<Texture2D> t = Ref<Texture2D>(ResourceLoader::load(p_paths[i]));
@@ -1618,15 +1618,13 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 									if (dragging_point >= 0) {
 										dragging_point = -1;
 
-										PoolVector<Vector2> polygon;
+										Vector<Vector2> polygon;
 										polygon.resize(current_shape.size());
-										PoolVector<Vector2>::Write w = polygon.write();
+										Vector2 *w = polygon.ptrw();
 
 										for (int i = 0; i < current_shape.size(); i++) {
 											w[i] = current_shape[i] - shape_anchor;
 										}
-
-										w.release();
 
 										undo_redo->create_action(TTR("Edit Occlusion Polygon"));
 										undo_redo->add_do_method(edited_occlusion_shape.ptr(), "set_polygon", polygon);
@@ -1639,17 +1637,15 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 									if (dragging_point >= 0) {
 										dragging_point = -1;
 
-										PoolVector<Vector2> polygon;
+										Vector<Vector2> polygon;
 										Vector<int> indices;
 										polygon.resize(current_shape.size());
-										PoolVector<Vector2>::Write w = polygon.write();
+										Vector2 *w = polygon.ptrw();
 
 										for (int i = 0; i < current_shape.size(); i++) {
 											w[i] = current_shape[i] - shape_anchor;
 											indices.push_back(i);
 										}
-
-										w.release();
 
 										undo_redo->create_action(TTR("Edit Navigation Polygon"));
 										undo_redo->add_do_method(edited_navigation_shape.ptr(), "set_vertices", polygon);
@@ -1983,7 +1979,7 @@ void TileSetEditor::_set_edited_shape_points(const Vector<Vector2> &points) {
 		undo_redo->add_do_method(convex.ptr(), "set_points", points);
 		undo_redo->add_undo_method(convex.ptr(), "set_points", _get_edited_shape_points());
 	} else if (concave.is_valid()) {
-		PoolVector2Array segments;
+		PackedVector2Array segments;
 		for (int i = 0; i < points.size() - 1; i++) {
 			segments.push_back(points[i]);
 			segments.push_back(points[i + 1]);
@@ -2782,7 +2778,7 @@ void TileSetEditor::draw_polygon_shapes() {
 							colors.push_back(c_bg);
 						}
 					} else {
-						PoolVector<Vector2> vertices = shape->get_vertices();
+						Vector<Vector2> vertices = shape->get_vertices();
 						for (int j = 0; j < shape->get_polygon(0).size(); j++) {
 							polygon.push_back(vertices[shape->get_polygon(0)[j]] + anchor);
 							colors.push_back(c_bg);
@@ -2830,7 +2826,7 @@ void TileSetEditor::draw_polygon_shapes() {
 								colors.push_back(c_bg);
 							}
 						} else {
-							PoolVector<Vector2> vertices = shape->get_vertices();
+							Vector<Vector2> vertices = shape->get_vertices();
 							for (int j = 0; j < shape->get_polygon(0).size(); j++) {
 								polygon.push_back(vertices[shape->get_polygon(0)[j]] + anchor);
 								colors.push_back(c_bg);
@@ -2917,15 +2913,14 @@ void TileSetEditor::close_shape(const Vector2 &shape_anchor) {
 	} else if (edit_mode == EDITMODE_OCCLUSION) {
 		Ref<OccluderPolygon2D> shape = memnew(OccluderPolygon2D);
 
-		PoolVector<Vector2> polygon;
+		Vector<Vector2> polygon;
 		polygon.resize(current_shape.size());
-		PoolVector<Vector2>::Write w = polygon.write();
+		Vector2 *w = polygon.ptrw();
 
 		for (int i = 0; i < current_shape.size(); i++) {
 			w[i] = current_shape[i] - shape_anchor;
 		}
 
-		w.release();
 		shape->set_polygon(polygon);
 
 		undo_redo->create_action(TTR("Create Occlusion Polygon"));
@@ -2943,17 +2938,16 @@ void TileSetEditor::close_shape(const Vector2 &shape_anchor) {
 	} else if (edit_mode == EDITMODE_NAVIGATION) {
 		Ref<NavigationPolygon> shape = memnew(NavigationPolygon);
 
-		PoolVector<Vector2> polygon;
+		Vector<Vector2> polygon;
 		Vector<int> indices;
 		polygon.resize(current_shape.size());
-		PoolVector<Vector2>::Write w = polygon.write();
+		Vector2 *w = polygon.ptrw();
 
 		for (int i = 0; i < current_shape.size(); i++) {
 			w[i] = current_shape[i] - shape_anchor;
 			indices.push_back(i);
 		}
 
-		w.release();
 		shape->set_vertices(polygon);
 		shape->add_polygon(indices);
 
@@ -2975,7 +2969,7 @@ void TileSetEditor::close_shape(const Vector2 &shape_anchor) {
 
 void TileSetEditor::select_coord(const Vector2 &coord) {
 	_update_tile_data();
-	current_shape = PoolVector2Array();
+	current_shape = PackedVector2Array();
 	if (get_current_tile() == -1)
 		return;
 	Rect2 current_tile_region = tileset->tile_get_region(get_current_tile());
@@ -3006,7 +3000,7 @@ void TileSetEditor::select_coord(const Vector2 &coord) {
 			current_shape.resize(0);
 			if (edited_navigation_shape.is_valid()) {
 				if (edited_navigation_shape->get_polygon_count() > 0) {
-					PoolVector<Vector2> vertices = edited_navigation_shape->get_vertices();
+					Vector<Vector2> vertices = edited_navigation_shape->get_vertices();
 					for (int i = 0; i < edited_navigation_shape->get_polygon(0).size(); i++) {
 						current_shape.push_back(vertices[edited_navigation_shape->get_polygon(0)[i]] + current_tile_region.position);
 					}
@@ -3055,7 +3049,7 @@ void TileSetEditor::select_coord(const Vector2 &coord) {
 			current_shape.resize(0);
 			if (edited_navigation_shape.is_valid()) {
 				if (edited_navigation_shape->get_polygon_count() > 0) {
-					PoolVector<Vector2> vertices = edited_navigation_shape->get_vertices();
+					Vector<Vector2> vertices = edited_navigation_shape->get_vertices();
 					for (int i = 0; i < edited_navigation_shape->get_polygon(0).size(); i++) {
 						current_shape.push_back(vertices[edited_navigation_shape->get_polygon(0)[i]] + shape_anchor);
 					}

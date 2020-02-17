@@ -48,7 +48,7 @@ private:
 	int peer_sock;
 	WriteMode write_mode;
 
-	PoolVector<uint8_t> _packet_buffer;
+	Vector<uint8_t> _packet_buffer;
 	PacketBuffer<uint8_t> _in_buffer;
 	uint8_t _is_string;
 

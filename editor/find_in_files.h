@@ -69,7 +69,7 @@ protected:
 private:
 	void _process();
 	void _iterate();
-	void _scan_dir(String path, PoolStringArray &out_folders);
+	void _scan_dir(String path, PackedStringArray &out_folders);
 	void _scan_file(String fpath);
 
 	// Config
@@ -82,7 +82,7 @@ private:
 	// State
 	bool _searching;
 	String _current_dir;
-	Vector<PoolStringArray> _folders_stack;
+	Vector<PackedStringArray> _folders_stack;
 	Vector<String> _files_to_scan;
 	int _initial_files_count;
 };

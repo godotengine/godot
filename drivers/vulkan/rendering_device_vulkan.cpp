@@ -1557,7 +1557,7 @@ void RenderingDeviceVulkan::_buffer_memory_barrier(VkBuffer buffer, uint64_t p_f
 /**** TEXTURE ****/
 /*****************/
 
-RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<PoolVector<uint8_t> > &p_data) {
+RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t> > &p_data) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -2077,7 +2077,7 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 	return id;
 }
 
-Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, const PoolVector<uint8_t> &p_data, bool p_sync_with_draw) {
+Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, bool p_sync_with_draw) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -2121,7 +2121,7 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 
 	uint32_t region_size = texture_upload_region_size_px;
 
-	PoolVector<uint8_t>::Read r = p_data.read();
+	const uint8_t *r = p_data.ptr();
 
 	VkCommandBuffer command_buffer = p_sync_with_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer;
 
@@ -2153,7 +2153,7 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 		uint32_t depth;
 		uint32_t image_total = get_image_format_required_size(texture->format, texture->width, texture->height, texture->depth, mm_i + 1, &width, &height, &depth);
 
-		const uint8_t *read_ptr_mipmap = r.ptr() + mipmap_offset;
+		const uint8_t *read_ptr_mipmap = r + mipmap_offset;
 		image_size = image_total - mipmap_offset;
 
 		for (uint32_t z = 0; z < depth; z++) { //for 3D textures, depth may be > 0
@@ -2288,12 +2288,12 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 	return OK;
 }
 
-PoolVector<uint8_t> RenderingDeviceVulkan::_texture_get_data_from_image(Texture *tex, VkImage p_image, VmaAllocation p_allocation, uint32_t p_layer, bool p_2d) {
+Vector<uint8_t> RenderingDeviceVulkan::_texture_get_data_from_image(Texture *tex, VkImage p_image, VmaAllocation p_allocation, uint32_t p_layer, bool p_2d) {
 
 	uint32_t width, height, depth;
 	uint32_t image_size = get_image_format_required_size(tex->format, tex->width, tex->height, p_2d ? 1 : tex->depth, tex->mipmaps, &width, &height, &depth);
 
-	PoolVector<uint8_t> image_data;
+	Vector<uint8_t> image_data;
 	image_data.resize(image_size);
 
 	void *img_mem;
@@ -2305,14 +2305,14 @@ PoolVector<uint8_t> RenderingDeviceVulkan::_texture_get_data_from_image(Texture 
 	uint32_t pixel_size = get_image_format_pixel_size(tex->format);
 
 	{
-		PoolVector<uint8_t>::Write w = image_data.write();
+		uint8_t *w = image_data.ptrw();
 
 		uint32_t mipmap_offset = 0;
 		for (uint32_t mm_i = 0; mm_i < tex->mipmaps; mm_i++) {
 
 			uint32_t image_total = get_image_format_required_size(tex->format, tex->width, tex->height, p_2d ? 1 : tex->depth, mm_i + 1, &width, &height, &depth);
 
-			uint8_t *write_ptr_mipmap = w.ptr() + mipmap_offset;
+			uint8_t *write_ptr_mipmap = w + mipmap_offset;
 			image_size = image_total - mipmap_offset;
 
 			VkImageSubresource image_sub_resorce;
@@ -2355,23 +2355,23 @@ PoolVector<uint8_t> RenderingDeviceVulkan::_texture_get_data_from_image(Texture 
 	return image_data;
 }
 
-PoolVector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint32_t p_layer) {
+Vector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint32_t p_layer) {
 
 	_THREAD_SAFE_METHOD_
 
 	Texture *tex = texture_owner.getornull(p_texture);
-	ERR_FAIL_COND_V(!tex, PoolVector<uint8_t>());
+	ERR_FAIL_COND_V(!tex, Vector<uint8_t>());
 
-	ERR_FAIL_COND_V_MSG(tex->bound, PoolVector<uint8_t>(),
+	ERR_FAIL_COND_V_MSG(tex->bound, Vector<uint8_t>(),
 			"Texture can't be retrieved while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
-	ERR_FAIL_COND_V_MSG(!(tex->usage_flags & TEXTURE_USAGE_CAN_COPY_FROM_BIT), PoolVector<uint8_t>(),
+	ERR_FAIL_COND_V_MSG(!(tex->usage_flags & TEXTURE_USAGE_CAN_COPY_FROM_BIT), Vector<uint8_t>(),
 			"Texture requires the TEXTURE_USAGE_CAN_COPY_FROM_BIT in order to be retrieved.");
 
 	uint32_t layer_count = tex->layers;
 	if (tex->type == TEXTURE_TYPE_CUBE || tex->type == TEXTURE_TYPE_CUBE_ARRAY) {
 		layer_count *= 6;
 	}
-	ERR_FAIL_COND_V(p_layer >= layer_count, PoolVector<uint8_t>());
+	ERR_FAIL_COND_V(p_layer >= layer_count, Vector<uint8_t>());
 
 	if (tex->usage_flags & TEXTURE_USAGE_CPU_READ_BIT) {
 		//does not need anything fancy, map and read.
@@ -2469,15 +2469,15 @@ PoolVector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint3
 		void *buffer_mem;
 		VkResult vkerr = vmaMapMemory(allocator, tmp_buffer.allocation, &buffer_mem);
 		if (vkerr) {
-			ERR_FAIL_V(PoolVector<uint8_t>());
+			ERR_FAIL_V(Vector<uint8_t>());
 		}
 
-		PoolVector<uint8_t> buffer_data;
+		Vector<uint8_t> buffer_data;
 		{
 
 			buffer_data.resize(buffer_size);
-			PoolVector<uint8_t>::Write w = buffer_data.write();
-			copymem(w.ptr(), buffer_mem, buffer_size);
+			uint8_t *w = buffer_data.ptrw();
+			copymem(w, buffer_mem, buffer_size);
 		}
 
 		vmaUnmapMemory(allocator, tmp_buffer.allocation);
@@ -3135,7 +3135,7 @@ RID RenderingDeviceVulkan::sampler_create(const SamplerState &p_state) {
 /**** VERTEX ARRAY ****/
 /**********************/
 
-RID RenderingDeviceVulkan::vertex_buffer_create(uint32_t p_size_bytes, const PoolVector<uint8_t> &p_data) {
+RID RenderingDeviceVulkan::vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -3145,8 +3145,8 @@ RID RenderingDeviceVulkan::vertex_buffer_create(uint32_t p_size_bytes, const Poo
 	_buffer_allocate(&buffer, p_size_bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
-		PoolVector<uint8_t>::Read r = p_data.read();
-		_buffer_update(&buffer, 0, r.ptr(), data_size);
+		const uint8_t *r = p_data.ptr();
+		_buffer_update(&buffer, 0, r, data_size);
 		_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, false);
 	}
 
@@ -3263,7 +3263,7 @@ RID RenderingDeviceVulkan::vertex_array_create(uint32_t p_vertex_count, VertexFo
 	return id;
 }
 
-RID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_count, IndexBufferFormat p_format, const PoolVector<uint8_t> &p_data, bool p_use_restart_indices) {
+RID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_count, IndexBufferFormat p_format, const Vector<uint8_t> &p_data, bool p_use_restart_indices) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -3279,9 +3279,9 @@ RID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_count, IndexBuff
 		index_buffer.max_index = 0;
 		ERR_FAIL_COND_V_MSG((uint32_t)p_data.size() != size_bytes, RID(),
 				"Default index buffer initializer array size (" + itos(p_data.size()) + ") does not match format required size (" + itos(size_bytes) + ").");
-		PoolVector<uint8_t>::Read r = p_data.read();
+		const uint8_t *r = p_data.ptr();
 		if (p_format == INDEX_BUFFER_FORMAT_UINT16) {
-			const uint16_t *index16 = (const uint16_t *)r.ptr();
+			const uint16_t *index16 = (const uint16_t *)r;
 			for (uint32_t i = 0; i < p_index_count; i++) {
 				if (p_use_restart_indices && index16[i] == 0xFFFF) {
 					continue; //restart index, ingnore
@@ -3289,7 +3289,7 @@ RID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_count, IndexBuff
 				index_buffer.max_index = MAX(index16[i], index_buffer.max_index);
 			}
 		} else {
-			const uint32_t *index32 = (const uint32_t *)r.ptr();
+			const uint32_t *index32 = (const uint32_t *)r;
 			for (uint32_t i = 0; i < p_index_count; i++) {
 				if (p_use_restart_indices && index32[i] == 0xFFFFFFFF) {
 					continue; //restart index, ingnore
@@ -3306,8 +3306,8 @@ RID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_count, IndexBuff
 	_buffer_allocate(&index_buffer, size_bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
-		PoolVector<uint8_t>::Read r = p_data.read();
-		_buffer_update(&index_buffer, 0, r.ptr(), data_size);
+		const uint8_t *r = p_data.ptr();
+		_buffer_update(&index_buffer, 0, r, data_size);
 		_buffer_memory_barrier(index_buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_INDEX_READ_BIT, false);
 	}
 	return index_buffer_owner.make_rid(index_buffer);
@@ -3606,8 +3606,8 @@ RID RenderingDeviceVulkan::shader_create(const Vector<ShaderStageData> &p_stages
 
 		{
 			SpvReflectShaderModule module;
-			PoolVector<uint8_t>::Read spirv = p_stages[i].spir_v.read();
-			SpvReflectResult result = spvReflectCreateShaderModule(p_stages[i].spir_v.size(), spirv.ptr(), &module);
+			const uint8_t *spirv = p_stages[i].spir_v.ptr();
+			SpvReflectResult result = spvReflectCreateShaderModule(p_stages[i].spir_v.size(), spirv, &module);
 			ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, RID(),
 					"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_stages[i].shader_stage]) + "' failed parsing shader.");
 
@@ -3872,9 +3872,9 @@ RID RenderingDeviceVulkan::shader_create(const Vector<ShaderStageData> &p_stages
 		shader_module_create_info.pNext = NULL;
 		shader_module_create_info.flags = 0;
 		shader_module_create_info.codeSize = p_stages[i].spir_v.size();
-		PoolVector<uint8_t>::Read r = p_stages[i].spir_v.read();
+		const uint8_t *r = p_stages[i].spir_v.ptr();
 
-		shader_module_create_info.pCode = (const uint32_t *)r.ptr();
+		shader_module_create_info.pCode = (const uint32_t *)r;
 
 		VkShaderModule module;
 		VkResult res = vkCreateShaderModule(device, &shader_module_create_info, NULL, &module);
@@ -4016,7 +4016,7 @@ uint32_t RenderingDeviceVulkan::shader_get_vertex_input_attribute_mask(RID p_sha
 /**** UNIFORMS ****/
 /******************/
 
-RID RenderingDeviceVulkan::uniform_buffer_create(uint32_t p_size_bytes, const PoolVector<uint8_t> &p_data) {
+RID RenderingDeviceVulkan::uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -4027,14 +4027,14 @@ RID RenderingDeviceVulkan::uniform_buffer_create(uint32_t p_size_bytes, const Po
 	ERR_FAIL_COND_V(err != OK, RID());
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
-		PoolVector<uint8_t>::Read r = p_data.read();
-		_buffer_update(&buffer, 0, r.ptr(), data_size);
+		const uint8_t *r = p_data.ptr();
+		_buffer_update(&buffer, 0, r, data_size);
 		_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_UNIFORM_READ_BIT, false);
 	}
 	return uniform_buffer_owner.make_rid(buffer);
 }
 
-RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const PoolVector<uint8_t> &p_data) {
+RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -4046,14 +4046,14 @@ RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const Po
 
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
-		PoolVector<uint8_t>::Read r = p_data.read();
-		_buffer_update(&buffer, 0, r.ptr(), data_size);
+		const uint8_t *r = p_data.ptr();
+		_buffer_update(&buffer, 0, r, data_size);
 		_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT, false);
 	}
 	return storage_buffer_owner.make_rid(buffer);
 }
 
-RID RenderingDeviceVulkan::texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const PoolVector<uint8_t> &p_data) {
+RID RenderingDeviceVulkan::texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -4069,8 +4069,8 @@ RID RenderingDeviceVulkan::texture_buffer_create(uint32_t p_size_elements, DataF
 
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
-		PoolVector<uint8_t>::Read r = p_data.read();
-		_buffer_update(&texture_buffer.buffer, 0, r.ptr(), data_size);
+		const uint8_t *r = p_data.ptr();
+		_buffer_update(&texture_buffer.buffer, 0, r, data_size);
 		_buffer_memory_barrier(texture_buffer.buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, false);
 	}
 
@@ -4689,7 +4689,7 @@ Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint
 	return err;
 }
 
-PoolVector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
+Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -4703,7 +4703,7 @@ PoolVector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 	} else if (storage_buffer_owner.owns(p_buffer)) {
 		buffer = storage_buffer_owner.getornull(p_buffer);
 	} else {
-		ERR_FAIL_V_MSG(PoolVector<uint8_t>(), "Buffer is either invalid or this type of buffer can't be retrieved. Only Index and Vertex buffers allow retrieving.");
+		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Buffer is either invalid or this type of buffer can't be retrieved. Only Index and Vertex buffers allow retrieving.");
 	}
 
 	VkCommandBuffer command_buffer = frames[frame].setup_command_buffer;
@@ -4720,15 +4720,15 @@ PoolVector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 	void *buffer_mem;
 	VkResult vkerr = vmaMapMemory(allocator, tmp_buffer.allocation, &buffer_mem);
 	if (vkerr) {
-		ERR_FAIL_V(PoolVector<uint8_t>());
+		ERR_FAIL_V(Vector<uint8_t>());
 	}
 
-	PoolVector<uint8_t> buffer_data;
+	Vector<uint8_t> buffer_data;
 	{
 
 		buffer_data.resize(buffer->size);
-		PoolVector<uint8_t>::Write w = buffer_data.write();
-		copymem(w.ptr(), buffer_mem, buffer->size);
+		uint8_t *w = buffer_data.ptrw();
+		copymem(w, buffer_mem, buffer->size);
 	}
 
 	vmaUnmapMemory(allocator, tmp_buffer.allocation);

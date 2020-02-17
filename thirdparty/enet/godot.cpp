@@ -133,8 +133,8 @@ int enet_socket_send(ENetSocket socket, const ENetAddress *address, const ENetBu
 	dest.set_ipv6(address->host);
 
 	// Create a single packet.
-	PoolVector<uint8_t> out;
-	PoolVector<uint8_t>::Write w;
+	Vector<uint8_t> out;
+	uint8_t* w;
 	int size = 0;
 	int pos = 0;
 	for (i = 0; i < bufferCount; i++) {
@@ -142,7 +142,7 @@ int enet_socket_send(ENetSocket socket, const ENetAddress *address, const ENetBu
 	}
 
 	out.resize(size);
-	w = out.write();
+	w = out.ptrw();
 	for (i = 0; i < bufferCount; i++) {
 		memcpy(&w[pos], buffers[i].data, buffers[i].dataLength);
 		pos += buffers[i].dataLength;

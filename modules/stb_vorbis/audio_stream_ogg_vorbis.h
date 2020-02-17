@@ -102,8 +102,8 @@ public:
 	virtual Ref<AudioStreamPlayback> instance_playback();
 	virtual String get_stream_name() const;
 
-	void set_data(const PoolVector<uint8_t> &p_data);
-	PoolVector<uint8_t> get_data() const;
+	void set_data(const Vector<uint8_t> &p_data);
+	Vector<uint8_t> get_data() const;
 
 	virtual float get_length() const; //if supported, otherwise return 0
 

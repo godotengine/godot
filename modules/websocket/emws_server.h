@@ -53,7 +53,7 @@ public:
 	void disconnect_peer(int p_peer_id, int p_code = 1000, String p_reason = "");
 	int get_max_packet_size() const;
 	virtual void poll();
-	virtual PoolVector<String> get_protocols() const;
+	virtual Vector<String> get_protocols() const;
 
 	EMWSServer();
 	~EMWSServer();

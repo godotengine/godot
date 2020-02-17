@@ -47,7 +47,7 @@
 const char *FindInFiles::SIGNAL_RESULT_FOUND = "result_found";
 const char *FindInFiles::SIGNAL_FINISHED = "finished";
 
-// TODO Would be nice in Vector and PoolVectors
+// TODO Would be nice in Vector and Vectors
 template <typename T>
 inline void pop_back(T &container) {
 	container.resize(container.size() - 1);
@@ -132,8 +132,8 @@ void FindInFiles::start() {
 
 	// Init search
 	_current_dir = "";
-	PoolStringArray init_folder;
-	init_folder.append(_root_dir);
+	PackedStringArray init_folder;
+	init_folder.push_back(_root_dir);
 	_folders_stack.clear();
 	_folders_stack.push_back(init_folder);
 
@@ -168,7 +168,7 @@ void FindInFiles::_iterate() {
 
 		// Scan folders first so we can build a list of files and have progress info later
 
-		PoolStringArray &folders_to_scan = _folders_stack.write[_folders_stack.size() - 1];
+		PackedStringArray &folders_to_scan = _folders_stack.write[_folders_stack.size() - 1];
 
 		if (folders_to_scan.size() != 0) {
 			// Scan one folder below
@@ -178,7 +178,7 @@ void FindInFiles::_iterate() {
 
 			_current_dir = _current_dir.plus_file(folder_name);
 
-			PoolStringArray sub_dirs;
+			PackedStringArray sub_dirs;
 			_scan_dir("res://" + _current_dir, sub_dirs);
 
 			_folders_stack.push_back(sub_dirs);
@@ -219,7 +219,7 @@ float FindInFiles::get_progress() const {
 	return 0;
 }
 
-void FindInFiles::_scan_dir(String path, PoolStringArray &out_folders) {
+void FindInFiles::_scan_dir(String path, PackedStringArray &out_folders) {
 
 	DirAccessRef dir = DirAccess::open(path);
 	if (!dir) {
@@ -242,7 +242,7 @@ void FindInFiles::_scan_dir(String path, PoolStringArray &out_folders) {
 			continue;
 
 		if (dir->current_is_dir())
-			out_folders.append(file);
+			out_folders.push_back(file);
 
 		else {
 			String file_ext = file.get_extension();
@@ -823,7 +823,7 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 
 	String replace_text = get_replace_text();
 
-	PoolStringArray modified_files;
+	PackedStringArray modified_files;
 
 	for (Map<String, TreeItem *>::Element *E = _file_items.front(); E; E = E->next()) {
 
@@ -844,7 +844,7 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 		if (locations.size() != 0) {
 			// Results are sorted by file, so we can batch replaces
 			apply_replaces_in_file(fpath, locations, replace_text);
-			modified_files.append(fpath);
+			modified_files.push_back(fpath);
 		}
 	}
 

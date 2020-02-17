@@ -24,7 +24,7 @@ def generate_compressed_config(config_src, output_dir):
 #ifdef ANDROID_ENABLED
 
 #include "core/io/compression.h"
-#include "core/pool_vector.h"
+
 
 namespace {
 
@@ -36,9 +36,9 @@ static const unsigned char config_compressed_data[] = { %s };
 } // namespace
 
 String get_godot_android_mono_config() {
-	PoolVector<uint8_t> data;
+	Vector<uint8_t> data;
 	data.resize(config_uncompressed_size);
-	PoolVector<uint8_t>::Write w = data.write();
+	uint8_t* w = data.ptrw();
 	Compression::decompress(w.ptr(), config_uncompressed_size, config_compressed_data,
 			config_compressed_size, Compression::MODE_DEFLATE);
 	String s;

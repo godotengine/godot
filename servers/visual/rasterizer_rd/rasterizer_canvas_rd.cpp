@@ -271,7 +271,7 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 
 	uint32_t buffer_size = stride * p_points.size();
 
-	PoolVector<uint8_t> polygon_buffer;
+	Vector<uint8_t> polygon_buffer;
 	polygon_buffer.resize(buffer_size * sizeof(float));
 	Vector<RD::VertexDescription> descriptions;
 	descriptions.resize(4);
@@ -279,9 +279,9 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 	buffers.resize(4);
 
 	{
-		PoolVector<uint8_t>::Read r = polygon_buffer.read();
-		float *fptr = (float *)r.ptr();
-		uint32_t *uptr = (uint32_t *)r.ptr();
+		const uint8_t *r = polygon_buffer.ptr();
+		float *fptr = (float *)r;
+		uint32_t *uptr = (uint32_t *)r;
 		uint32_t base_offset = 0;
 		{ //vertices
 			RD::VertexDescription vd;
@@ -430,11 +430,11 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 
 	if (p_indices.size()) {
 		//create indices, as indices were requested
-		PoolVector<uint8_t> index_buffer;
+		Vector<uint8_t> index_buffer;
 		index_buffer.resize(p_indices.size() * sizeof(int32_t));
 		{
-			PoolVector<uint8_t>::Write w = index_buffer.write();
-			copymem(w.ptr(), p_indices.ptr(), sizeof(int32_t) * p_indices.size());
+			uint8_t *w = index_buffer.ptrw();
+			copymem(w, p_indices.ptr(), sizeof(int32_t) * p_indices.size());
 		}
 		pb.index_buffer = RD::get_singleton()->index_buffer_create(p_indices.size(), RD::INDEX_BUFFER_FORMAT_UINT32, index_buffer);
 		pb.indices = RD::get_singleton()->index_array_create(pb.index_buffer, 0, p_indices.size());
@@ -1707,7 +1707,7 @@ RID RasterizerCanvasRD::occluder_polygon_create() {
 	return occluder_polygon_owner.make_rid(occluder);
 }
 
-void RasterizerCanvasRD::occluder_polygon_set_shape_as_lines(RID p_occluder, const PoolVector<Vector2> &p_lines) {
+void RasterizerCanvasRD::occluder_polygon_set_shape_as_lines(RID p_occluder, const Vector<Vector2> &p_lines) {
 
 	OccluderPolygon *oc = occluder_polygon_owner.getornull(p_occluder);
 	ERR_FAIL_COND(!oc);
@@ -1727,20 +1727,20 @@ void RasterizerCanvasRD::occluder_polygon_set_shape_as_lines(RID p_occluder, con
 
 	if (p_lines.size()) {
 
-		PoolVector<uint8_t> geometry;
-		PoolVector<uint8_t> indices;
+		Vector<uint8_t> geometry;
+		Vector<uint8_t> indices;
 		int lc = p_lines.size();
 
 		geometry.resize(lc * 6 * sizeof(float));
 		indices.resize(lc * 3 * sizeof(uint16_t));
 
 		{
-			PoolVector<uint8_t>::Write vw = geometry.write();
-			float *vwptr = (float *)vw.ptr();
-			PoolVector<uint8_t>::Write iw = indices.write();
-			uint16_t *iwptr = (uint16_t *)iw.ptr();
+			uint8_t *vw = geometry.ptrw();
+			float *vwptr = (float *)vw;
+			uint8_t *iw = indices.ptrw();
+			uint16_t *iwptr = (uint16_t *)iw;
 
-			PoolVector<Vector2>::Read lr = p_lines.read();
+			const Vector2 *lr = p_lines.ptr();
 
 			const int POLY_HEIGHT = 16384;
 
@@ -1789,10 +1789,10 @@ void RasterizerCanvasRD::occluder_polygon_set_shape_as_lines(RID p_occluder, con
 
 		} else {
 			//update existing
-			PoolVector<uint8_t>::Read vr = geometry.read();
-			RD::get_singleton()->buffer_update(oc->vertex_buffer, 0, geometry.size(), vr.ptr());
-			PoolVector<uint8_t>::Read ir = indices.read();
-			RD::get_singleton()->buffer_update(oc->index_buffer, 0, indices.size(), ir.ptr());
+			const uint8_t *vr = geometry.ptr();
+			RD::get_singleton()->buffer_update(oc->vertex_buffer, 0, geometry.size(), vr);
+			const uint8_t *ir = indices.ptr();
+			RD::get_singleton()->buffer_update(oc->index_buffer, 0, indices.size(), ir);
 		}
 	}
 }
@@ -2431,11 +2431,11 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 
 	{ // default index buffer
 
-		PoolVector<uint8_t> pv;
+		Vector<uint8_t> pv;
 		pv.resize(6 * 4);
 		{
-			PoolVector<uint8_t>::Write w = pv.write();
-			int *p32 = (int *)w.ptr();
+			uint8_t *w = pv.ptrw();
+			int *p32 = (int *)w;
 			p32[0] = 0;
 			p32[1] = 1;
 			p32[2] = 2;
@@ -2482,7 +2482,7 @@ bool RasterizerCanvasRD::free(RID p_rid) {
 		light_set_use_shadow(p_rid, false, 64);
 		canvas_light_owner.free(p_rid);
 	} else if (occluder_polygon_owner.owns(p_rid)) {
-		occluder_polygon_set_shape_as_lines(p_rid, PoolVector<Vector2>());
+		occluder_polygon_set_shape_as_lines(p_rid, Vector<Vector2>());
 		occluder_polygon_owner.free(p_rid);
 	} else {
 		return false;

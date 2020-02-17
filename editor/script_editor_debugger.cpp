@@ -835,8 +835,8 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		perf_draw->update();
 	} else if (p_msg == "visual_profile") {
 		uint64_t frame = p_data[0];
-		PoolVector<String> names = p_data[1];
-		PoolVector<real_t> values = p_data[2];
+		Vector<String> names = p_data[1];
+		Vector<real_t> values = p_data[2];
 
 		EditorVisualProfiler::Metric metric;
 		metric.areas.resize(names.size());
@@ -847,8 +847,8 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			EditorVisualProfiler::Metric::Area *areas_ptr = metric.areas.ptrw();
 			int metric_count = names.size();
 
-			PoolVector<String>::Read rs = names.read();
-			PoolVector<real_t>::Read rr = values.read();
+			const String *rs = names.ptr();
+			const real_t *rr = values.ptr();
 
 			for (int i = 0; i < metric_count; i++) {
 

@@ -40,7 +40,7 @@ void PrimitiveMesh::_update() const {
 	arr.resize(VS::ARRAY_MAX);
 	_create_mesh_array(arr);
 
-	PoolVector<Vector3> points = arr[VS::ARRAY_VERTEX];
+	Vector<Vector3> points = arr[VS::ARRAY_VERTEX];
 
 	aabb = AABB();
 
@@ -48,7 +48,7 @@ void PrimitiveMesh::_update() const {
 	ERR_FAIL_COND(pc == 0);
 	{
 
-		PoolVector<Vector3>::Read r = points.read();
+		const Vector3 *r = points.ptr();
 		for (int i = 0; i < pc; i++) {
 			if (i == 0)
 				aabb.position = r[i];
@@ -57,16 +57,16 @@ void PrimitiveMesh::_update() const {
 		}
 	}
 
-	PoolVector<int> indices = arr[VS::ARRAY_INDEX];
+	Vector<int> indices = arr[VS::ARRAY_INDEX];
 
 	if (flip_faces) {
-		PoolVector<Vector3> normals = arr[VS::ARRAY_NORMAL];
+		Vector<Vector3> normals = arr[VS::ARRAY_NORMAL];
 
 		if (normals.size() && indices.size()) {
 
 			{
 				int nc = normals.size();
-				PoolVector<Vector3>::Write w = normals.write();
+				Vector3 *w = normals.ptrw();
 				for (int i = 0; i < nc; i++) {
 					w[i] = -w[i];
 				}
@@ -74,7 +74,7 @@ void PrimitiveMesh::_update() const {
 
 			{
 				int ic = indices.size();
-				PoolVector<int>::Write w = indices.write();
+				int *w = indices.ptrw();
 				for (int i = 0; i < ic; i += 3) {
 					SWAP(w[i + 0], w[i + 1]);
 				}
@@ -282,11 +282,11 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 
 	// note, this has been aligned with our collision shape but I've left the descriptions as top/middle/bottom
 
-	PoolVector<Vector3> points;
-	PoolVector<Vector3> normals;
-	PoolVector<float> tangents;
-	PoolVector<Vector2> uvs;
-	PoolVector<int> indices;
+	Vector<Vector3> points;
+	Vector<Vector3> normals;
+	Vector<float> tangents;
+	Vector<Vector2> uvs;
+	Vector<int> indices;
 	point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
@@ -495,11 +495,11 @@ void CubeMesh::_create_mesh_array(Array &p_arr) const {
 
 	// set our bounding box
 
-	PoolVector<Vector3> points;
-	PoolVector<Vector3> normals;
-	PoolVector<float> tangents;
-	PoolVector<Vector2> uvs;
-	PoolVector<int> indices;
+	Vector<Vector3> points;
+	Vector<Vector3> normals;
+	Vector<float> tangents;
+	Vector<Vector2> uvs;
+	Vector<int> indices;
 	point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
@@ -746,11 +746,11 @@ void CylinderMesh::_create_mesh_array(Array &p_arr) const {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z, u, v, radius;
 
-	PoolVector<Vector3> points;
-	PoolVector<Vector3> normals;
-	PoolVector<float> tangents;
-	PoolVector<Vector2> uvs;
-	PoolVector<int> indices;
+	Vector<Vector3> points;
+	Vector<Vector3> normals;
+	Vector<float> tangents;
+	Vector<Vector2> uvs;
+	Vector<int> indices;
 	point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
@@ -962,11 +962,11 @@ void PlaneMesh::_create_mesh_array(Array &p_arr) const {
 
 	Size2 start_pos = size * -0.5;
 
-	PoolVector<Vector3> points;
-	PoolVector<Vector3> normals;
-	PoolVector<float> tangents;
-	PoolVector<Vector2> uvs;
-	PoolVector<int> indices;
+	Vector<Vector3> points;
+	Vector<Vector3> normals;
+	Vector<float> tangents;
+	Vector<Vector2> uvs;
+	Vector<int> indices;
 	point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
@@ -1079,11 +1079,11 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 
 	// set our bounding box
 
-	PoolVector<Vector3> points;
-	PoolVector<Vector3> normals;
-	PoolVector<float> tangents;
-	PoolVector<Vector2> uvs;
-	PoolVector<int> indices;
+	Vector<Vector3> points;
+	Vector<Vector3> normals;
+	Vector<float> tangents;
+	Vector<Vector2> uvs;
+	Vector<int> indices;
 	point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
@@ -1357,10 +1357,10 @@ PrismMesh::PrismMesh() {
 */
 
 void QuadMesh::_create_mesh_array(Array &p_arr) const {
-	PoolVector<Vector3> faces;
-	PoolVector<Vector3> normals;
-	PoolVector<float> tangents;
-	PoolVector<Vector2> uvs;
+	Vector<Vector3> faces;
+	Vector<Vector3> normals;
+	Vector<float> tangents;
+	Vector<Vector2> uvs;
 
 	faces.resize(6);
 	normals.resize(6);
@@ -1437,11 +1437,11 @@ void SphereMesh::_create_mesh_array(Array &p_arr) const {
 
 	// set our bounding box
 
-	PoolVector<Vector3> points;
-	PoolVector<Vector3> normals;
-	PoolVector<float> tangents;
-	PoolVector<Vector2> uvs;
-	PoolVector<int> indices;
+	Vector<Vector3> points;
+	Vector<Vector3> normals;
+	Vector<float> tangents;
+	Vector<Vector2> uvs;
+	Vector<int> indices;
 	point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
@@ -1581,7 +1581,7 @@ SphereMesh::SphereMesh() {
 */
 
 void PointMesh::_create_mesh_array(Array &p_arr) const {
-	PoolVector<Vector3> faces;
+	Vector<Vector3> faces;
 	faces.resize(1);
 	faces.set(0, Vector3(0.0, 0.0, 0.0));
 

@@ -482,7 +482,7 @@ public:
 	void light_update_shadow(RID p_rid, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders);
 
 	RID occluder_polygon_create();
-	void occluder_polygon_set_shape_as_lines(RID p_occluder, const PoolVector<Vector2> &p_lines);
+	void occluder_polygon_set_shape_as_lines(RID p_occluder, const Vector<Vector2> &p_lines);
 	void occluder_polygon_set_cull_mode(RID p_occluder, VS::CanvasOccluderPolygonCullMode p_mode);
 
 	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, const Transform2D &p_canvas_transform);

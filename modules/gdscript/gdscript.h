@@ -487,7 +487,7 @@ public:
 	virtual bool supports_builtin_mode() const;
 	virtual bool can_inherit_from_file() { return true; }
 	virtual int find_function(const String &p_function, const String &p_code) const;
-	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const;
+	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const;
 	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptCodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint);
 #ifdef TOOLS_ENABLED
 	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result);

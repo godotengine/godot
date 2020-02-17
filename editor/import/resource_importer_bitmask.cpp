@@ -94,7 +94,6 @@ Error ResourceImporterBitMap::import(const String &p_source_file, const String &
 	Ref<BitMap> bitmap;
 	bitmap.instance();
 	bitmap->create(Size2(w, h));
-	image->lock();
 
 	for (int i = 0; i < h; i++) {
 		for (int j = 0; j < w; j++) {

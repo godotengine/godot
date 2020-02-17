@@ -62,7 +62,7 @@ private:
 	Ref<CameraFeed> feed;
 	int image_width[2];
 	int image_height[2];
-	PoolVector<uint8_t> img_data[2];
+	Vector<uint8_t> img_data[2];
 
 	struct anchor_map {
 		ARVRPositionalTracker *tracker;

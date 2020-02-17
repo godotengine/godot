@@ -47,7 +47,7 @@ class TextureBasisU : public Texture {
 
 	uint32_t flags;
 
-	PoolVector<uint8_t> data;
+	Vector<uint8_t> data;
 
 	static void _bind_methods();
 
@@ -64,9 +64,9 @@ public:
 
 	Error import(const Ref<Image> &p_img);
 
-	void set_basisu_data(const PoolVector<uint8_t>& p_data);
+	void set_basisu_data(const Vector<uint8_t>& p_data);
 
-	PoolVector<uint8_t> get_basisu_data() const;
+	Vector<uint8_t> get_basisu_data() const;
 	String get_img_path() const;
 
 	TextureBasisU();

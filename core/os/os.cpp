@@ -416,10 +416,6 @@ uint64_t OS::get_static_memory_usage() const {
 
 	return Memory::get_mem_usage();
 }
-uint64_t OS::get_dynamic_memory_usage() const {
-
-	return MemoryPool::total_memory;
-}
 
 uint64_t OS::get_static_memory_peak_usage() const {
 
@@ -712,12 +708,12 @@ List<String> OS::get_restart_on_exit_arguments() const {
 	return restart_commandline;
 }
 
-PoolStringArray OS::get_connected_midi_inputs() {
+PackedStringArray OS::get_connected_midi_inputs() {
 
 	if (MIDIDriver::get_singleton())
 		return MIDIDriver::get_singleton()->get_connected_inputs();
 
-	PoolStringArray list;
+	PackedStringArray list;
 	return list;
 }
 
