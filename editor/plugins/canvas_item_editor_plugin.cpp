@@ -5901,6 +5901,15 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 					Node *instance = scene->instance();
 					if (instance) {
 						preview_node->add_child(instance);
+
+						Node2D *n = Object::cast_to<Node2D>(instance);
+						if (n) {
+							n->set_position(Vector2());
+						}
+						Control *c = Object::cast_to<Control>(instance);
+						if (c) {
+							c->set_begin(Point2());
+						}
 					}
 				}
 			}
