@@ -229,14 +229,14 @@ void PathSpatialGizmo::redraw() {
 	if (c.is_null())
 		return;
 
-	PoolVector<Vector3> v3a = c->tessellate();
-	//PoolVector<Vector3> v3a=c->get_baked_points();
+	Vector<Vector3> v3a = c->tessellate();
+	//Vector<Vector3> v3a=c->get_baked_points();
 
 	int v3s = v3a.size();
 	if (v3s == 0)
 		return;
 	Vector<Vector3> v3p;
-	PoolVector<Vector3>::Read r = v3a.read();
+	const Vector3 *r = v3a.ptr();
 
 	// BUG: the following won't work when v3s, avoid drawing as a temporary workaround.
 	for (int i = 0; i < v3s - 1; i++) {
@@ -315,7 +315,7 @@ bool PathEditorPlugin::forward_spatial_gui_input(Camera *p_camera, const Ref<Inp
 
 		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && (curve_create->is_pressed() || (curve_edit->is_pressed() && mb->get_control()))) {
 			//click into curve, break it down
-			PoolVector<Vector3> v3a = c->tessellate();
+			Vector<Vector3> v3a = c->tessellate();
 			int idx = 0;
 			int rc = v3a.size();
 			int closest_seg = -1;
@@ -323,7 +323,7 @@ bool PathEditorPlugin::forward_spatial_gui_input(Camera *p_camera, const Ref<Inp
 			float closest_d = 1e20;
 
 			if (rc >= 2) {
-				PoolVector<Vector3>::Read r = v3a.read();
+				const Vector3 *r = v3a.ptr();
 
 				if (p_camera->unproject_position(gt.xform(c->get_point_position(0))).distance_to(mbpos) < click_dist)
 					return false; //nope, existing

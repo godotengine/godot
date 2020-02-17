@@ -358,13 +358,13 @@ void SpriteEditor::_convert_to_polygon_2d_node() {
 	for (int i = 0; i < computed_outline_lines.size(); i++)
 		total_point_count += computed_outline_lines[i].size();
 
-	PoolVector2Array polygon;
+	PackedVector2Array polygon;
 	polygon.resize(total_point_count);
-	PoolVector2Array::Write polygon_write = polygon.write();
+	Vector2 *polygon_write = polygon.ptrw();
 
-	PoolVector2Array uvs;
+	PackedVector2Array uvs;
 	uvs.resize(total_point_count);
-	PoolVector2Array::Write uvs_write = uvs.write();
+	Vector2 *uvs_write = uvs.ptrw();
 
 	int current_point_index = 0;
 
@@ -376,9 +376,9 @@ void SpriteEditor::_convert_to_polygon_2d_node() {
 		Vector<Vector2> outline = computed_outline_lines[i];
 		Vector<Vector2> uv_outline = outline_lines[i];
 
-		PoolIntArray pia;
+		PackedIntArray pia;
 		pia.resize(outline.size());
-		PoolIntArray::Write pia_write = pia.write();
+		int *pia_write = pia.ptrw();
 
 		for (int pi = 0; pi < outline.size(); pi++) {
 			polygon_write[current_point_index] = outline[pi];
@@ -442,9 +442,9 @@ void SpriteEditor::_create_light_occluder_2d_node() {
 		Ref<OccluderPolygon2D> polygon;
 		polygon.instance();
 
-		PoolVector2Array a;
+		PackedVector2Array a;
 		a.resize(outline.size());
-		PoolVector2Array::Write aw = a.write();
+		Vector2 *aw = a.ptrw();
 		for (int io = 0; io < outline.size(); io++) {
 			aw[io] = outline[io];
 		}

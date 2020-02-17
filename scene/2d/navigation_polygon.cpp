@@ -46,11 +46,11 @@ Rect2 NavigationPolygon::_edit_get_rect() const {
 		bool first = true;
 
 		for (int i = 0; i < outlines.size(); i++) {
-			const PoolVector<Vector2> &outline = outlines[i];
+			const Vector<Vector2> &outline = outlines[i];
 			const int outline_size = outline.size();
 			if (outline_size < 3)
 				continue;
-			PoolVector<Vector2>::Read p = outline.read();
+			const Vector2 *p = outline.ptr();
 			for (int j = 0; j < outline_size; j++) {
 				if (first) {
 					item_rect = Rect2(p[j], Vector2(0, 0));
@@ -69,7 +69,7 @@ Rect2 NavigationPolygon::_edit_get_rect() const {
 bool NavigationPolygon::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 
 	for (int i = 0; i < outlines.size(); i++) {
-		const PoolVector<Vector2> &outline = outlines[i];
+		const Vector<Vector2> &outline = outlines[i];
 		const int outline_size = outline.size();
 		if (outline_size < 3)
 			continue;
@@ -80,7 +80,7 @@ bool NavigationPolygon::_edit_is_selected_on_click(const Point2 &p_point, double
 }
 #endif
 
-void NavigationPolygon::set_vertices(const PoolVector<Vector2> &p_vertices) {
+void NavigationPolygon::set_vertices(const Vector<Vector2> &p_vertices) {
 
 	navmesh_generation->lock();
 	navmesh.unref();
@@ -89,7 +89,7 @@ void NavigationPolygon::set_vertices(const PoolVector<Vector2> &p_vertices) {
 	rect_cache_dirty = true;
 }
 
-PoolVector<Vector2> NavigationPolygon::get_vertices() const {
+Vector<Vector2> NavigationPolygon::get_vertices() const {
 
 	return vertices;
 }
@@ -146,7 +146,7 @@ void NavigationPolygon::add_polygon(const Vector<int> &p_polygon) {
 	navmesh_generation->unlock();
 }
 
-void NavigationPolygon::add_outline_at_index(const PoolVector<Vector2> &p_outline, int p_index) {
+void NavigationPolygon::add_outline_at_index(const Vector<Vector2> &p_outline, int p_index) {
 
 	outlines.insert(p_index, p_outline);
 	rect_cache_dirty = true;
@@ -173,12 +173,12 @@ Ref<NavigationMesh> NavigationPolygon::get_mesh() {
 	navmesh_generation->lock();
 	if (navmesh.is_null()) {
 		navmesh.instance();
-		PoolVector<Vector3> verts;
+		Vector<Vector3> verts;
 		{
 			verts.resize(get_vertices().size());
-			PoolVector<Vector3>::Write w = verts.write();
+			Vector3 *w = verts.ptrw();
 
-			PoolVector<Vector2>::Read r = get_vertices().read();
+			const Vector2 *r = get_vertices().ptr();
 
 			for (int i(0); i < get_vertices().size(); i++) {
 				w[i] = Vector3(r[i].x, 0.0, r[i].y);
@@ -194,7 +194,7 @@ Ref<NavigationMesh> NavigationPolygon::get_mesh() {
 	return navmesh;
 }
 
-void NavigationPolygon::add_outline(const PoolVector<Vector2> &p_outline) {
+void NavigationPolygon::add_outline(const Vector<Vector2> &p_outline) {
 
 	outlines.push_back(p_outline);
 	rect_cache_dirty = true;
@@ -205,7 +205,7 @@ int NavigationPolygon::get_outline_count() const {
 	return outlines.size();
 }
 
-void NavigationPolygon::set_outline(int p_idx, const PoolVector<Vector2> &p_outline) {
+void NavigationPolygon::set_outline(int p_idx, const Vector<Vector2> &p_outline) {
 	ERR_FAIL_INDEX(p_idx, outlines.size());
 	outlines.write[p_idx] = p_outline;
 	rect_cache_dirty = true;
@@ -218,8 +218,8 @@ void NavigationPolygon::remove_outline(int p_idx) {
 	rect_cache_dirty = true;
 }
 
-PoolVector<Vector2> NavigationPolygon::get_outline(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, outlines.size(), PoolVector<Vector2>());
+Vector<Vector2> NavigationPolygon::get_outline(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, outlines.size(), Vector<Vector2>());
 	return outlines[p_idx];
 }
 
@@ -239,11 +239,11 @@ void NavigationPolygon::make_polygons_from_outlines() {
 
 	for (int i = 0; i < outlines.size(); i++) {
 
-		PoolVector<Vector2> ol = outlines[i];
+		Vector<Vector2> ol = outlines[i];
 		int olsize = ol.size();
 		if (olsize < 3)
 			continue;
-		PoolVector<Vector2>::Read r = ol.read();
+		const Vector2 *r = ol.ptr();
 		for (int j = 0; j < olsize; j++) {
 			outside_point.x = MAX(r[j].x, outside_point.x);
 			outside_point.y = MAX(r[j].y, outside_point.y);
@@ -254,11 +254,11 @@ void NavigationPolygon::make_polygons_from_outlines() {
 
 	for (int i = 0; i < outlines.size(); i++) {
 
-		PoolVector<Vector2> ol = outlines[i];
+		Vector<Vector2> ol = outlines[i];
 		int olsize = ol.size();
 		if (olsize < 3)
 			continue;
-		PoolVector<Vector2>::Read r = ol.read();
+		const Vector2 *r = ol.ptr();
 
 		int interscount = 0;
 		//test if this is an outer outline
@@ -267,11 +267,11 @@ void NavigationPolygon::make_polygons_from_outlines() {
 			if (i == k)
 				continue; //no self intersect
 
-			PoolVector<Vector2> ol2 = outlines[k];
+			Vector<Vector2> ol2 = outlines[k];
 			int olsize2 = ol2.size();
 			if (olsize2 < 3)
 				continue;
-			PoolVector<Vector2>::Read r2 = ol2.read();
+			const Vector2 *r2 = ol2.ptr();
 
 			for (int l = 0; l < olsize2; l++) {
 
@@ -356,7 +356,7 @@ void NavigationPolygon::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_outlines", "outlines"), &NavigationPolygon::_set_outlines);
 	ClassDB::bind_method(D_METHOD("_get_outlines"), &NavigationPolygon::_get_outlines);
 
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "outlines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_outlines", "_get_outlines");
 }
@@ -451,7 +451,7 @@ void NavigationPolygonInstance::_notification(int p_what) {
 
 			if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) && navpoly.is_valid()) {
 
-				PoolVector<Vector2> verts = navpoly->get_vertices();
+				Vector<Vector2> verts = navpoly->get_vertices();
 				int vsize = verts.size();
 				if (vsize < 3)
 					return;
@@ -467,7 +467,7 @@ void NavigationPolygonInstance::_notification(int p_what) {
 				vertices.resize(vsize);
 				colors.resize(vsize);
 				{
-					PoolVector<Vector2>::Read vr = verts.read();
+					const Vector2 *vr = verts.ptr();
 					for (int i = 0; i < vsize; i++) {
 						vertices.write[i] = vr[i];
 						colors.write[i] = color;

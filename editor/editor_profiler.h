@@ -103,7 +103,7 @@ private:
 	Button *clear_button;
 	TextureRect *graph;
 	Ref<ImageTexture> graph_texture;
-	PoolVector<uint8_t> graph_image;
+	Vector<uint8_t> graph_image;
 	Tree *variables;
 	HSplitContainer *h_split;
 

@@ -185,7 +185,7 @@ void TextEditor::set_edited_resource(const RES &p_res) {
 	code_editor->update_line_and_column();
 }
 
-void TextEditor::add_callback(const String &p_function, PoolStringArray p_args) {
+void TextEditor::add_callback(const String &p_function, PackedStringArray p_args) {
 }
 
 void TextEditor::set_debugger_active(bool p_active) {

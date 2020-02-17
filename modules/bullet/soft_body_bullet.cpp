@@ -184,7 +184,7 @@ void SoftBodyBullet::get_node_offset(int p_node_index, Vector3 &r_offset) const 
 		return;
 
 	Array arrays = soft_mesh->surface_get_arrays(0);
-	PoolVector<Vector3> vertices(arrays[VS::ARRAY_VERTEX]);
+	Vector<Vector3> vertices(arrays[VS::ARRAY_VERTEX]);
 
 	if (0 <= p_node_index && vertices.size() > p_node_index) {
 		r_offset = vertices[p_node_index];
@@ -230,8 +230,8 @@ void SoftBodyBullet::reset_all_node_positions() {
 		return;
 
 	Array arrays = soft_mesh->surface_get_arrays(0);
-	PoolVector<Vector3> vs_vertices(arrays[VS::ARRAY_VERTEX]);
-	PoolVector<Vector3>::Read vs_vertices_read = vs_vertices.read();
+	Vector<Vector3> vs_vertices(arrays[VS::ARRAY_VERTEX]);
+	const Vector3 *vs_vertices_read = vs_vertices.ptr();
 
 	for (int vertex_index = bt_soft_body->m_nodes.size() - 1; 0 <= vertex_index; --vertex_index) {
 
@@ -320,7 +320,7 @@ void SoftBodyBullet::set_drag_coefficient(real_t p_val) {
 	}
 }
 
-void SoftBodyBullet::set_trimesh_body_shape(PoolVector<int> p_indices, PoolVector<Vector3> p_vertices) {
+void SoftBodyBullet::set_trimesh_body_shape(Vector<int> p_indices, Vector<Vector3> p_vertices) {
 	/// Assert the current soft body is destroyed
 	destroy_soft_body();
 
@@ -339,7 +339,7 @@ void SoftBodyBullet::set_trimesh_body_shape(PoolVector<int> p_indices, PoolVecto
 
 			const int vs_vertices_size(p_vertices.size());
 
-			PoolVector<Vector3>::Read p_vertices_read = p_vertices.read();
+			const Vector3 *p_vertices_read = p_vertices.ptr();
 
 			for (int vs_vertex_index = 0; vs_vertex_index < vs_vertices_size; ++vs_vertex_index) {
 
@@ -366,7 +366,7 @@ void SoftBodyBullet::set_trimesh_body_shape(PoolVector<int> p_indices, PoolVecto
 		{ // Parse vertices to bullet
 
 			bt_vertices.resize(indices_map_size * 3);
-			PoolVector<Vector3>::Read p_vertices_read = p_vertices.read();
+			const Vector3 *p_vertices_read = p_vertices.ptr();
 
 			for (int i = 0; i < indices_map_size; ++i) {
 				bt_vertices.write[3 * i + 0] = p_vertices_read[indices_table[i][0]].x;
@@ -382,7 +382,7 @@ void SoftBodyBullet::set_trimesh_body_shape(PoolVector<int> p_indices, PoolVecto
 
 			bt_triangles.resize(triangles_size * 3);
 
-			PoolVector<int>::Read p_indices_read = p_indices.read();
+			const int *p_indices_read = p_indices.ptr();
 
 			for (int i = 0; i < triangles_size; ++i) {
 				bt_triangles.write[3 * i + 0] = vs_indices_to_physics_table[p_indices_read[3 * i + 2]];

@@ -34,7 +34,7 @@
 
 Vector<Vector3> ConvexPolygonShape::get_debug_mesh_lines() {
 
-	PoolVector<Vector3> points = get_points();
+	Vector<Vector3> points = get_points();
 
 	if (points.size() > 3) {
 
@@ -56,8 +56,8 @@ Vector<Vector3> ConvexPolygonShape::get_debug_mesh_lines() {
 }
 
 real_t ConvexPolygonShape::get_enclosing_radius() const {
-	PoolVector<Vector3> data = get_points();
-	PoolVector<Vector3>::Read read = data.read();
+	Vector<Vector3> data = get_points();
+	const Vector3 *read = data.ptr();
 	real_t r = 0;
 	for (int i(0); i < data.size(); i++) {
 		r = MAX(read[i].length_squared(), r);
@@ -71,14 +71,14 @@ void ConvexPolygonShape::_update_shape() {
 	Shape::_update_shape();
 }
 
-void ConvexPolygonShape::set_points(const PoolVector<Vector3> &p_points) {
+void ConvexPolygonShape::set_points(const Vector<Vector3> &p_points) {
 
 	points = p_points;
 	_update_shape();
 	notify_change_to_owners();
 }
 
-PoolVector<Vector3> ConvexPolygonShape::get_points() const {
+Vector<Vector3> ConvexPolygonShape::get_points() const {
 
 	return points;
 }

@@ -60,7 +60,7 @@ class ImageLoaderSVG : public ImageFormatLoader {
 	} replace_colors;
 	static SVGRasterizer rasterizer;
 	static void _convert_colors(NSVGimage *p_svg_image);
-	static Error _create_image(Ref<Image> p_image, const PoolVector<uint8_t> *p_data, float p_scale, bool upsample, bool convert_colors = false);
+	static Error _create_image(Ref<Image> p_image, const Vector<uint8_t> *p_data, float p_scale, bool upsample, bool convert_colors = false);
 
 public:
 	static void set_convert_colors(Dictionary *p_replace_color = NULL);

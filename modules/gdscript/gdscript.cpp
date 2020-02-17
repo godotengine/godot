@@ -902,7 +902,7 @@ Error GDScript::load_byte_code(const String &p_path) {
 
 Error GDScript::load_source_code(const String &p_path) {
 
-	PoolVector<uint8_t> sourcef;
+	Vector<uint8_t> sourcef;
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 	if (err) {
@@ -912,15 +912,15 @@ Error GDScript::load_source_code(const String &p_path) {
 
 	int len = f->get_len();
 	sourcef.resize(len + 1);
-	PoolVector<uint8_t>::Write w = sourcef.write();
-	int r = f->get_buffer(w.ptr(), len);
+	uint8_t *w = sourcef.ptrw();
+	int r = f->get_buffer(w, len);
 	f->close();
 	memdelete(f);
 	ERR_FAIL_COND_V(r != len, ERR_CANT_OPEN);
 	w[len] = 0;
 
 	String s;
-	if (s.parse_utf8((const char *)w.ptr())) {
+	if (s.parse_utf8((const char *)w)) {
 
 		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Script '" + p_path + "' contains invalid unicode (UTF-8), so it was not loaded. Please ensure that scripts are saved in valid UTF-8 unicode.");
 	}
@@ -1986,7 +1986,7 @@ bool GDScriptLanguage::handles_global_class_type(const String &p_type) const {
 
 String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
 
-	PoolVector<uint8_t> sourcef;
+	Vector<uint8_t> sourcef;
 	Error err;
 	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ, &err);
 	if (err) {

@@ -3076,8 +3076,6 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 		// allocate memory to contain the whole file
 		cursor_image->pixels = (XcursorPixel *)memalloc(size);
 
-		image->lock();
-
 		for (XcursorPixel index = 0; index < image_size; index++) {
 			int row_index = floor(index / texture_size.width) + atlas_rect.position.y;
 			int column_index = (index % int(texture_size.width)) + atlas_rect.position.x;
@@ -3089,8 +3087,6 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 
 			*(cursor_image->pixels + index) = image->get_pixel(column_index, row_index).to_argb32();
 		}
-
-		image->unlock();
 
 		ERR_FAIL_COND(cursor_image->pixels == NULL);
 
@@ -3269,10 +3265,10 @@ void OS_X11::set_icon(const Ref<Image> &p_icon) {
 			pd.write[0] = w;
 			pd.write[1] = h;
 
-			PoolVector<uint8_t>::Read r = img->get_data().read();
+			const uint8_t *r = img->get_data().ptr();
 
 			long *wr = &pd.write[2];
-			uint8_t const *pr = r.ptr();
+			uint8_t const *pr = r;
 
 			for (int i = 0; i < w * h; i++) {
 				long v = 0;

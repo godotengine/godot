@@ -288,9 +288,9 @@ Array SurfaceTool::commit_to_arrays() {
 			case Mesh::ARRAY_VERTEX:
 			case Mesh::ARRAY_NORMAL: {
 
-				PoolVector<Vector3> array;
+				Vector<Vector3> array;
 				array.resize(varr_len);
-				PoolVector<Vector3>::Write w = array.write();
+				Vector3 *w = array.ptrw();
 
 				int idx = 0;
 				for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next(), idx++) {
@@ -307,7 +307,6 @@ Array SurfaceTool::commit_to_arrays() {
 					}
 				}
 
-				w.release();
 				a[i] = array;
 
 			} break;
@@ -315,9 +314,9 @@ Array SurfaceTool::commit_to_arrays() {
 			case Mesh::ARRAY_TEX_UV:
 			case Mesh::ARRAY_TEX_UV2: {
 
-				PoolVector<Vector2> array;
+				Vector<Vector2> array;
 				array.resize(varr_len);
-				PoolVector<Vector2>::Write w = array.write();
+				Vector2 *w = array.ptrw();
 
 				int idx = 0;
 				for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next(), idx++) {
@@ -335,14 +334,13 @@ Array SurfaceTool::commit_to_arrays() {
 					}
 				}
 
-				w.release();
 				a[i] = array;
 			} break;
 			case Mesh::ARRAY_TANGENT: {
 
-				PoolVector<float> array;
+				Vector<float> array;
 				array.resize(varr_len * 4);
-				PoolVector<float>::Write w = array.write();
+				float *w = array.ptrw();
 
 				int idx = 0;
 				for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next(), idx += 4) {
@@ -358,15 +356,14 @@ Array SurfaceTool::commit_to_arrays() {
 					w[idx + 3] = d < 0 ? -1 : 1;
 				}
 
-				w.release();
 				a[i] = array;
 
 			} break;
 			case Mesh::ARRAY_COLOR: {
 
-				PoolVector<Color> array;
+				Vector<Color> array;
 				array.resize(varr_len);
-				PoolVector<Color>::Write w = array.write();
+				Color *w = array.ptrw();
 
 				int idx = 0;
 				for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next(), idx++) {
@@ -375,14 +372,13 @@ Array SurfaceTool::commit_to_arrays() {
 					w[idx] = v.color;
 				}
 
-				w.release();
 				a[i] = array;
 			} break;
 			case Mesh::ARRAY_BONES: {
 
-				PoolVector<int> array;
+				Vector<int> array;
 				array.resize(varr_len * 4);
-				PoolVector<int>::Write w = array.write();
+				int *w = array.ptrw();
 
 				int idx = 0;
 				for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next(), idx += 4) {
@@ -396,15 +392,14 @@ Array SurfaceTool::commit_to_arrays() {
 					}
 				}
 
-				w.release();
 				a[i] = array;
 
 			} break;
 			case Mesh::ARRAY_WEIGHTS: {
 
-				PoolVector<float> array;
+				Vector<float> array;
 				array.resize(varr_len * 4);
-				PoolVector<float>::Write w = array.write();
+				float *w = array.ptrw();
 
 				int idx = 0;
 				for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next(), idx += 4) {
@@ -418,7 +413,6 @@ Array SurfaceTool::commit_to_arrays() {
 					}
 				}
 
-				w.release();
 				a[i] = array;
 
 			} break;
@@ -426,17 +420,15 @@ Array SurfaceTool::commit_to_arrays() {
 
 				ERR_CONTINUE(index_array.size() == 0);
 
-				PoolVector<int> array;
+				Vector<int> array;
 				array.resize(index_array.size());
-				PoolVector<int>::Write w = array.write();
+				int *w = array.ptrw();
 
 				int idx = 0;
 				for (List<int>::Element *E = index_array.front(); E; E = E->next(), idx++) {
 
 					w[idx] = E->get();
 				}
-
-				w.release();
 
 				a[i] = array;
 			} break;
@@ -535,14 +527,14 @@ Vector<SurfaceTool::Vertex> SurfaceTool::create_vertex_array_from_triangle_array
 
 	Vector<SurfaceTool::Vertex> ret;
 
-	PoolVector<Vector3> varr = p_arrays[VS::ARRAY_VERTEX];
-	PoolVector<Vector3> narr = p_arrays[VS::ARRAY_NORMAL];
-	PoolVector<float> tarr = p_arrays[VS::ARRAY_TANGENT];
-	PoolVector<Color> carr = p_arrays[VS::ARRAY_COLOR];
-	PoolVector<Vector2> uvarr = p_arrays[VS::ARRAY_TEX_UV];
-	PoolVector<Vector2> uv2arr = p_arrays[VS::ARRAY_TEX_UV2];
-	PoolVector<int> barr = p_arrays[VS::ARRAY_BONES];
-	PoolVector<float> warr = p_arrays[VS::ARRAY_WEIGHTS];
+	Vector<Vector3> varr = p_arrays[VS::ARRAY_VERTEX];
+	Vector<Vector3> narr = p_arrays[VS::ARRAY_NORMAL];
+	Vector<float> tarr = p_arrays[VS::ARRAY_TANGENT];
+	Vector<Color> carr = p_arrays[VS::ARRAY_COLOR];
+	Vector<Vector2> uvarr = p_arrays[VS::ARRAY_TEX_UV];
+	Vector<Vector2> uv2arr = p_arrays[VS::ARRAY_TEX_UV2];
+	Vector<int> barr = p_arrays[VS::ARRAY_BONES];
+	Vector<float> warr = p_arrays[VS::ARRAY_WEIGHTS];
 
 	int vc = varr.size();
 
@@ -550,49 +542,49 @@ Vector<SurfaceTool::Vertex> SurfaceTool::create_vertex_array_from_triangle_array
 		return ret;
 	int lformat = 0;
 
-	PoolVector<Vector3>::Read rv;
+	const Vector3 *rv;
 	if (varr.size()) {
 		lformat |= VS::ARRAY_FORMAT_VERTEX;
-		rv = varr.read();
+		rv = varr.ptr();
 	}
-	PoolVector<Vector3>::Read rn;
+	const Vector3 *rn;
 	if (narr.size()) {
 		lformat |= VS::ARRAY_FORMAT_NORMAL;
-		rn = narr.read();
+		rn = narr.ptr();
 	}
-	PoolVector<float>::Read rt;
+	const float *rt;
 	if (tarr.size()) {
 		lformat |= VS::ARRAY_FORMAT_TANGENT;
-		rt = tarr.read();
+		rt = tarr.ptr();
 	}
-	PoolVector<Color>::Read rc;
+	const Color *rc;
 	if (carr.size()) {
 		lformat |= VS::ARRAY_FORMAT_COLOR;
-		rc = carr.read();
+		rc = carr.ptr();
 	}
 
-	PoolVector<Vector2>::Read ruv;
+	const Vector2 *ruv;
 	if (uvarr.size()) {
 		lformat |= VS::ARRAY_FORMAT_TEX_UV;
-		ruv = uvarr.read();
+		ruv = uvarr.ptr();
 	}
 
-	PoolVector<Vector2>::Read ruv2;
+	const Vector2 *ruv2;
 	if (uv2arr.size()) {
 		lformat |= VS::ARRAY_FORMAT_TEX_UV2;
-		ruv2 = uv2arr.read();
+		ruv2 = uv2arr.ptr();
 	}
 
-	PoolVector<int>::Read rb;
+	const int *rb;
 	if (barr.size()) {
 		lformat |= VS::ARRAY_FORMAT_BONES;
-		rb = barr.read();
+		rb = barr.ptr();
 	}
 
-	PoolVector<float>::Read rw;
+	const float *rw;
 	if (warr.size()) {
 		lformat |= VS::ARRAY_FORMAT_WEIGHTS;
-		rw = warr.read();
+		rw = warr.ptr();
 	}
 
 	for (int i = 0; i < vc; i++) {
@@ -640,14 +632,14 @@ Vector<SurfaceTool::Vertex> SurfaceTool::create_vertex_array_from_triangle_array
 
 void SurfaceTool::_create_list_from_arrays(Array arr, List<Vertex> *r_vertex, List<int> *r_index, int &lformat) {
 
-	PoolVector<Vector3> varr = arr[VS::ARRAY_VERTEX];
-	PoolVector<Vector3> narr = arr[VS::ARRAY_NORMAL];
-	PoolVector<float> tarr = arr[VS::ARRAY_TANGENT];
-	PoolVector<Color> carr = arr[VS::ARRAY_COLOR];
-	PoolVector<Vector2> uvarr = arr[VS::ARRAY_TEX_UV];
-	PoolVector<Vector2> uv2arr = arr[VS::ARRAY_TEX_UV2];
-	PoolVector<int> barr = arr[VS::ARRAY_BONES];
-	PoolVector<float> warr = arr[VS::ARRAY_WEIGHTS];
+	Vector<Vector3> varr = arr[VS::ARRAY_VERTEX];
+	Vector<Vector3> narr = arr[VS::ARRAY_NORMAL];
+	Vector<float> tarr = arr[VS::ARRAY_TANGENT];
+	Vector<Color> carr = arr[VS::ARRAY_COLOR];
+	Vector<Vector2> uvarr = arr[VS::ARRAY_TEX_UV];
+	Vector<Vector2> uv2arr = arr[VS::ARRAY_TEX_UV2];
+	Vector<int> barr = arr[VS::ARRAY_BONES];
+	Vector<float> warr = arr[VS::ARRAY_WEIGHTS];
 
 	int vc = varr.size();
 
@@ -655,49 +647,49 @@ void SurfaceTool::_create_list_from_arrays(Array arr, List<Vertex> *r_vertex, Li
 		return;
 	lformat = 0;
 
-	PoolVector<Vector3>::Read rv;
+	const Vector3 *rv;
 	if (varr.size()) {
 		lformat |= VS::ARRAY_FORMAT_VERTEX;
-		rv = varr.read();
+		rv = varr.ptr();
 	}
-	PoolVector<Vector3>::Read rn;
+	const Vector3 *rn;
 	if (narr.size()) {
 		lformat |= VS::ARRAY_FORMAT_NORMAL;
-		rn = narr.read();
+		rn = narr.ptr();
 	}
-	PoolVector<float>::Read rt;
+	const float *rt;
 	if (tarr.size()) {
 		lformat |= VS::ARRAY_FORMAT_TANGENT;
-		rt = tarr.read();
+		rt = tarr.ptr();
 	}
-	PoolVector<Color>::Read rc;
+	const Color *rc;
 	if (carr.size()) {
 		lformat |= VS::ARRAY_FORMAT_COLOR;
-		rc = carr.read();
+		rc = carr.ptr();
 	}
 
-	PoolVector<Vector2>::Read ruv;
+	const Vector2 *ruv;
 	if (uvarr.size()) {
 		lformat |= VS::ARRAY_FORMAT_TEX_UV;
-		ruv = uvarr.read();
+		ruv = uvarr.ptr();
 	}
 
-	PoolVector<Vector2>::Read ruv2;
+	const Vector2 *ruv2;
 	if (uv2arr.size()) {
 		lformat |= VS::ARRAY_FORMAT_TEX_UV2;
-		ruv2 = uv2arr.read();
+		ruv2 = uv2arr.ptr();
 	}
 
-	PoolVector<int>::Read rb;
+	const int *rb;
 	if (barr.size()) {
 		lformat |= VS::ARRAY_FORMAT_BONES;
-		rb = barr.read();
+		rb = barr.ptr();
 	}
 
-	PoolVector<float>::Read rw;
+	const float *rw;
 	if (warr.size()) {
 		lformat |= VS::ARRAY_FORMAT_WEIGHTS;
-		rw = warr.read();
+		rw = warr.ptr();
 	}
 
 	for (int i = 0; i < vc; i++) {
@@ -742,12 +734,12 @@ void SurfaceTool::_create_list_from_arrays(Array arr, List<Vertex> *r_vertex, Li
 
 	//indices
 
-	PoolVector<int> idx = arr[VS::ARRAY_INDEX];
+	Vector<int> idx = arr[VS::ARRAY_INDEX];
 	int is = idx.size();
 	if (is) {
 
 		lformat |= VS::ARRAY_FORMAT_INDEX;
-		PoolVector<int>::Read iarr = idx.read();
+		const int *iarr = idx.ptr();
 		for (int i = 0; i < is; i++) {
 			r_index->push_back(iarr[i]);
 		}

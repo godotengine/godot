@@ -3353,39 +3353,39 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			editor->setup(Variant::ARRAY, p_hint_text);
 			add_property_editor(p_path, editor);
 		} break;
-		case Variant::POOL_BYTE_ARRAY: {
+		case Variant::PACKED_BYTE_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::POOL_BYTE_ARRAY);
+			editor->setup(Variant::PACKED_BYTE_ARRAY);
 			add_property_editor(p_path, editor);
 		} break; // 20
-		case Variant::POOL_INT_ARRAY: {
+		case Variant::PACKED_INT_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::POOL_INT_ARRAY);
+			editor->setup(Variant::PACKED_INT_ARRAY);
 			add_property_editor(p_path, editor);
 		} break;
-		case Variant::POOL_REAL_ARRAY: {
+		case Variant::PACKED_REAL_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::POOL_REAL_ARRAY);
+			editor->setup(Variant::PACKED_REAL_ARRAY);
 			add_property_editor(p_path, editor);
 		} break;
-		case Variant::POOL_STRING_ARRAY: {
+		case Variant::PACKED_STRING_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::POOL_STRING_ARRAY);
+			editor->setup(Variant::PACKED_STRING_ARRAY);
 			add_property_editor(p_path, editor);
 		} break;
-		case Variant::POOL_VECTOR2_ARRAY: {
+		case Variant::PACKED_VECTOR2_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::POOL_VECTOR2_ARRAY);
+			editor->setup(Variant::PACKED_VECTOR2_ARRAY);
 			add_property_editor(p_path, editor);
 		} break;
-		case Variant::POOL_VECTOR3_ARRAY: {
+		case Variant::PACKED_VECTOR3_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::POOL_VECTOR3_ARRAY);
+			editor->setup(Variant::PACKED_VECTOR3_ARRAY);
 			add_property_editor(p_path, editor);
 		} break; // 25
-		case Variant::POOL_COLOR_ARRAY: {
+		case Variant::PACKED_COLOR_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::POOL_COLOR_ARRAY);
+			editor->setup(Variant::PACKED_COLOR_ARRAY);
 			add_property_editor(p_path, editor);
 		} break;
 		default: {

@@ -1023,14 +1023,14 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("audio/default_bus_layout", "res://default_bus_layout.tres");
 	custom_prop_info["audio/default_bus_layout"] = PropertyInfo(Variant::STRING, "audio/default_bus_layout", PROPERTY_HINT_FILE, "*.tres");
 
-	PoolStringArray extensions = PoolStringArray();
+	PackedStringArray extensions = PackedStringArray();
 	extensions.push_back("gd");
 	if (Engine::get_singleton()->has_singleton("GodotSharp"))
 		extensions.push_back("cs");
 	extensions.push_back("shader");
 
 	GLOBAL_DEF("editor/search_in_file_extensions", extensions);
-	custom_prop_info["editor/search_in_file_extensions"] = PropertyInfo(Variant::POOL_STRING_ARRAY, "editor/search_in_file_extensions");
+	custom_prop_info["editor/search_in_file_extensions"] = PropertyInfo(Variant::PACKED_STRING_ARRAY, "editor/search_in_file_extensions");
 
 	GLOBAL_DEF("editor/script_templates_search_path", "res://script_templates");
 	custom_prop_info["editor/script_templates_search_path"] = PropertyInfo(Variant::STRING, "editor/script_templates_search_path", PROPERTY_HINT_DIR);

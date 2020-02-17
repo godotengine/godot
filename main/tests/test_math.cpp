@@ -451,33 +451,25 @@ MainLoop *test() {
 		print_line("RGBE: " + Color(rd, gd, bd));
 	}
 
-	print_line("Dvectors: " + itos(MemoryPool::allocs_used));
-	print_line("Mem used: " + itos(MemoryPool::total_memory));
-	print_line("MAx mem used: " + itos(MemoryPool::max_memory));
-
-	PoolVector<int> ints;
+	Vector<int> ints;
 	ints.resize(20);
 
 	{
-		PoolVector<int>::Write w;
-		w = ints.write();
+		int *w;
+		w = ints.ptrw();
 		for (int i = 0; i < ints.size(); i++) {
 			w[i] = i;
 		}
 	}
 
-	PoolVector<int> posho = ints;
+	Vector<int> posho = ints;
 
 	{
-		PoolVector<int>::Read r = posho.read();
+		const int *r = posho.ptr();
 		for (int i = 0; i < posho.size(); i++) {
 			print_line(itos(i) + " : " + itos(r[i]));
 		}
 	}
-
-	print_line("later Dvectors: " + itos(MemoryPool::allocs_used));
-	print_line("later Mem used: " + itos(MemoryPool::total_memory));
-	print_line("Mlater Ax mem used: " + itos(MemoryPool::max_memory));
 
 	List<String> cmdlargs = OS::get_singleton()->get_cmdline_args();
 

@@ -185,7 +185,7 @@ public:
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
-	virtual PoolStringArray get_connected_midi_inputs();
+	virtual PackedStringArray get_connected_midi_inputs();
 	virtual void open_midi_inputs();
 	virtual void close_midi_inputs();
 
@@ -390,7 +390,6 @@ public:
 
 	virtual uint64_t get_static_memory_usage() const;
 	virtual uint64_t get_static_memory_peak_usage() const;
-	virtual uint64_t get_dynamic_memory_usage() const;
 	virtual uint64_t get_free_static_memory() const;
 
 	RenderThreadMode get_render_thread_mode() const { return _render_thread_mode; }

@@ -204,13 +204,13 @@ AABB MeshInstance::get_aabb() const {
 	return AABB();
 }
 
-PoolVector<Face3> MeshInstance::get_faces(uint32_t p_usage_flags) const {
+Vector<Face3> MeshInstance::get_faces(uint32_t p_usage_flags) const {
 
 	if (!(p_usage_flags & (FACES_SOLID | FACES_ENCLOSING)))
-		return PoolVector<Face3>();
+		return Vector<Face3>();
 
 	if (mesh.is_null())
-		return PoolVector<Face3>();
+		return Vector<Face3>();
 
 	return mesh->get_faces();
 }

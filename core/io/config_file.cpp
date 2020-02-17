@@ -34,11 +34,11 @@
 #include "core/os/keyboard.h"
 #include "core/variant_parser.h"
 
-PoolStringArray ConfigFile::_get_sections() const {
+PackedStringArray ConfigFile::_get_sections() const {
 
 	List<String> s;
 	get_sections(&s);
-	PoolStringArray arr;
+	PackedStringArray arr;
 	arr.resize(s.size());
 	int idx = 0;
 	for (const List<String>::Element *E = s.front(); E; E = E->next()) {
@@ -49,11 +49,11 @@ PoolStringArray ConfigFile::_get_sections() const {
 	return arr;
 }
 
-PoolStringArray ConfigFile::_get_section_keys(const String &p_section) const {
+PackedStringArray ConfigFile::_get_section_keys(const String &p_section) const {
 
 	List<String> s;
 	get_section_keys(p_section, &s);
-	PoolStringArray arr;
+	PackedStringArray arr;
 	arr.resize(s.size());
 	int idx = 0;
 	for (const List<String>::Element *E = s.front(); E; E = E->next()) {

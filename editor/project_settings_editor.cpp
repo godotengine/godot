@@ -1188,7 +1188,7 @@ void ProjectSettingsEditor::add_translation(const String &p_translation) {
 
 void ProjectSettingsEditor::_translation_add(const String &p_path) {
 
-	PoolStringArray translations = ProjectSettings::get_singleton()->get("locale/translations");
+	PackedStringArray translations = ProjectSettings::get_singleton()->get("locale/translations");
 
 	for (int i = 0; i < translations.size(); i++) {
 
@@ -1219,7 +1219,7 @@ void ProjectSettingsEditor::_translation_delete(Object *p_item, int p_column, in
 
 	int idx = ti->get_metadata(0);
 
-	PoolStringArray translations = ProjectSettings::get_singleton()->get("locale/translations");
+	PackedStringArray translations = ProjectSettings::get_singleton()->get("locale/translations");
 
 	ERR_FAIL_INDEX(idx, translations.size());
 
@@ -1253,7 +1253,7 @@ void ProjectSettingsEditor::_translation_res_add(const String &p_path) {
 	if (remaps.has(p_path))
 		return; //pointless already has it
 
-	remaps[p_path] = PoolStringArray();
+	remaps[p_path] = PackedStringArray();
 
 	undo_redo->create_action(TTR("Add Remapped Path"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "locale/translation_remaps", remaps);
@@ -1281,7 +1281,7 @@ void ProjectSettingsEditor::_translation_res_option_add(const String &p_path) {
 	String key = k->get_metadata(0);
 
 	ERR_FAIL_COND(!remaps.has(key));
-	PoolStringArray r = remaps[key];
+	PackedStringArray r = remaps[key];
 	r.push_back(p_path + ":" + "en");
 	remaps[key] = r;
 
@@ -1328,7 +1328,7 @@ void ProjectSettingsEditor::_translation_res_option_changed() {
 	ERR_FAIL_INDEX(which, langs.size());
 
 	ERR_FAIL_COND(!remaps.has(key));
-	PoolStringArray r = remaps[key];
+	PackedStringArray r = remaps[key];
 	ERR_FAIL_INDEX(idx, r.size());
 	if (translation_locales_idxs_remap.size() > which) {
 		r.set(idx, path + ":" + langs[translation_locales_idxs_remap[which]]);
@@ -1395,7 +1395,7 @@ void ProjectSettingsEditor::_translation_res_option_delete(Object *p_item, int p
 	int idx = ed->get_metadata(0);
 
 	ERR_FAIL_COND(!remaps.has(key));
-	PoolStringArray r = remaps[key];
+	PackedStringArray r = remaps[key];
 	ERR_FAIL_INDEX(idx, r.size());
 	r.remove(idx);
 	remaps[key] = r;
@@ -1506,7 +1506,7 @@ void ProjectSettingsEditor::_update_translations() {
 	translation_list->set_hide_root(true);
 	if (ProjectSettings::get_singleton()->has_setting("locale/translations")) {
 
-		PoolStringArray translations = ProjectSettings::get_singleton()->get("locale/translations");
+		PackedStringArray translations = ProjectSettings::get_singleton()->get("locale/translations");
 		for (int i = 0; i < translations.size(); i++) {
 
 			TreeItem *t = translation_list->create_item(root);
@@ -1642,7 +1642,7 @@ void ProjectSettingsEditor::_update_translations() {
 				t->select(0);
 				translation_res_option_add_button->set_disabled(false);
 
-				PoolStringArray selected = remaps[keys[i]];
+				PackedStringArray selected = remaps[keys[i]];
 				for (int j = 0; j < selected.size(); j++) {
 
 					String s2 = selected[j];

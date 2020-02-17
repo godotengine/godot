@@ -43,14 +43,14 @@ class PacketPeer : public Reference {
 
 	static void _bind_methods();
 
-	Error _put_packet(const PoolVector<uint8_t> &p_buffer);
-	PoolVector<uint8_t> _get_packet();
+	Error _put_packet(const Vector<uint8_t> &p_buffer);
+	Vector<uint8_t> _get_packet();
 	Error _get_packet_error() const;
 
 	mutable Error last_get_error;
 
 	int encode_buffer_max_size;
-	PoolVector<uint8_t> encode_buffer;
+	Vector<uint8_t> encode_buffer;
 
 public:
 	virtual int get_available_packet_count() const = 0;
@@ -61,8 +61,8 @@ public:
 
 	/* helpers / binders */
 
-	virtual Error get_packet_buffer(PoolVector<uint8_t> &r_buffer);
-	virtual Error put_packet_buffer(const PoolVector<uint8_t> &p_buffer);
+	virtual Error get_packet_buffer(Vector<uint8_t> &r_buffer);
+	virtual Error put_packet_buffer(const Vector<uint8_t> &p_buffer);
 
 	virtual Error get_var(Variant &r_variant, bool p_allow_objects = false);
 	virtual Error put_var(const Variant &p_packet, bool p_full_objects = false);

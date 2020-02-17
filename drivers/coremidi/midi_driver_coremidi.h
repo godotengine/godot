@@ -52,7 +52,7 @@ public:
 	virtual Error open();
 	virtual void close();
 
-	PoolStringArray get_connected_inputs();
+	PackedStringArray get_connected_inputs();
 
 	MIDIDriverCoreMidi();
 	virtual ~MIDIDriverCoreMidi();

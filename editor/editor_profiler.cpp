@@ -175,7 +175,7 @@ void EditorProfiler::_update_plot() {
 		graph_image.resize(desired_len);
 	}
 
-	PoolVector<uint8_t>::Write wr = graph_image.write();
+	uint8_t *wr = graph_image.ptrw();
 	const Color background_color = get_color("dark_color_2", "Editor");
 
 	// Clear the previous frame and set the background color.
@@ -341,8 +341,6 @@ void EditorProfiler::_update_plot() {
 			}
 		}
 	}
-
-	wr.release();
 
 	Ref<Image> img;
 	img.instance();

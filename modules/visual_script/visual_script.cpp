@@ -2584,7 +2584,7 @@ int VisualScriptLanguage::find_function(const String &p_function, const String &
 
 	return -1;
 }
-String VisualScriptLanguage::make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const {
+String VisualScriptLanguage::make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const {
 
 	return String();
 }

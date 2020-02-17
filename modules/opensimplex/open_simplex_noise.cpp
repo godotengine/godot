@@ -98,10 +98,10 @@ void OpenSimplexNoise::set_lacunarity(float p_lacunarity) {
 
 Ref<Image> OpenSimplexNoise::get_image(int p_width, int p_height) {
 
-	PoolVector<uint8_t> data;
+	Vector<uint8_t> data;
 	data.resize(p_width * p_height * 4);
 
-	PoolVector<uint8_t>::Write wd8 = data.write();
+	uint8_t *wd8 = data.ptrw();
 
 	for (int i = 0; i < p_height; i++) {
 		for (int j = 0; j < p_width; j++) {
@@ -121,10 +121,10 @@ Ref<Image> OpenSimplexNoise::get_image(int p_width, int p_height) {
 
 Ref<Image> OpenSimplexNoise::get_seamless_image(int p_size) {
 
-	PoolVector<uint8_t> data;
+	Vector<uint8_t> data;
 	data.resize(p_size * p_size * 4);
 
-	PoolVector<uint8_t>::Write wd8 = data.write();
+	uint8_t *wd8 = data.ptrw();
 
 	for (int i = 0; i < p_size; i++) {
 		for (int j = 0; j < p_size; j++) {

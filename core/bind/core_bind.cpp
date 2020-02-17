@@ -77,11 +77,11 @@ RES _ResourceLoader::load(const String &p_path, const String &p_type_hint, bool 
 	return ret;
 }
 
-PoolVector<String> _ResourceLoader::get_recognized_extensions_for_type(const String &p_type) {
+Vector<String> _ResourceLoader::get_recognized_extensions_for_type(const String &p_type) {
 
 	List<String> exts;
 	ResourceLoader::get_recognized_extensions_for_type(p_type, &exts);
-	PoolVector<String> ret;
+	Vector<String> ret;
 	for (List<String>::Element *E = exts.front(); E; E = E->next()) {
 
 		ret.push_back(E->get());
@@ -95,12 +95,12 @@ void _ResourceLoader::set_abort_on_missing_resources(bool p_abort) {
 	ResourceLoader::set_abort_on_missing_resources(p_abort);
 }
 
-PoolStringArray _ResourceLoader::get_dependencies(const String &p_path) {
+PackedStringArray _ResourceLoader::get_dependencies(const String &p_path) {
 
 	List<String> deps;
 	ResourceLoader::get_dependencies(p_path, &deps);
 
-	PoolStringArray ret;
+	PackedStringArray ret;
 	for (List<String>::Element *E = deps.front(); E; E = E->next()) {
 		ret.push_back(E->get());
 	}
@@ -139,12 +139,12 @@ Error _ResourceSaver::save(const String &p_path, const RES &p_resource, SaverFla
 	return ResourceSaver::save(p_path, p_resource, p_flags);
 }
 
-PoolVector<String> _ResourceSaver::get_recognized_extensions(const RES &p_resource) {
+Vector<String> _ResourceSaver::get_recognized_extensions(const RES &p_resource) {
 
-	ERR_FAIL_COND_V_MSG(p_resource.is_null(), PoolVector<String>(), "It's not a reference to a valid Resource object.");
+	ERR_FAIL_COND_V_MSG(p_resource.is_null(), Vector<String>(), "It's not a reference to a valid Resource object.");
 	List<String> exts;
 	ResourceSaver::get_recognized_extensions(p_resource, &exts);
-	PoolVector<String> ret;
+	Vector<String> ret;
 	for (List<String>::Element *E = exts.front(); E; E = E->next()) {
 
 		ret.push_back(E->get());
@@ -249,7 +249,7 @@ String _OS::get_audio_driver_name(int p_driver) const {
 	return OS::get_singleton()->get_audio_driver_name(p_driver);
 }
 
-PoolStringArray _OS::get_connected_midi_inputs() {
+PackedStringArray _OS::get_connected_midi_inputs() {
 	return OS::get_singleton()->get_connected_midi_inputs();
 }
 
@@ -644,11 +644,6 @@ uint64_t _OS::get_static_memory_usage() const {
 uint64_t _OS::get_static_memory_peak_usage() const {
 
 	return OS::get_singleton()->get_static_memory_peak_usage();
-}
-
-uint64_t _OS::get_dynamic_memory_usage() const {
-
-	return OS::get_singleton()->get_dynamic_memory_usage();
 }
 
 void _OS::set_native_icon(const String &p_filename) {
@@ -1301,7 +1296,6 @@ void _OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_static_memory_usage"), &_OS::get_static_memory_usage);
 	ClassDB::bind_method(D_METHOD("get_static_memory_peak_usage"), &_OS::get_static_memory_peak_usage);
-	ClassDB::bind_method(D_METHOD("get_dynamic_memory_usage"), &_OS::get_dynamic_memory_usage);
 
 	ClassDB::bind_method(D_METHOD("get_user_data_dir"), &_OS::get_user_data_dir);
 	ClassDB::bind_method(D_METHOD("get_system_dir", "dir"), &_OS::get_system_dir);
@@ -1439,16 +1433,16 @@ _Geometry *_Geometry::get_singleton() {
 	return singleton;
 }
 
-PoolVector<Plane> _Geometry::build_box_planes(const Vector3 &p_extents) {
+Vector<Plane> _Geometry::build_box_planes(const Vector3 &p_extents) {
 
 	return Geometry::build_box_planes(p_extents);
 }
 
-PoolVector<Plane> _Geometry::build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis) {
+Vector<Plane> _Geometry::build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis) {
 
 	return Geometry::build_cylinder_planes(p_radius, p_height, p_sides, p_axis);
 }
-PoolVector<Plane> _Geometry::build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis) {
+Vector<Plane> _Geometry::build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis) {
 
 	return Geometry::build_capsule_planes(p_radius, p_height, p_sides, p_lats, p_axis);
 }
@@ -1484,22 +1478,22 @@ Variant _Geometry::line_intersects_line_2d(const Vector2 &p_from_a, const Vector
 	}
 }
 
-PoolVector<Vector2> _Geometry::get_closest_points_between_segments_2d(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2) {
+Vector<Vector2> _Geometry::get_closest_points_between_segments_2d(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2) {
 
 	Vector2 r1, r2;
 	Geometry::get_closest_points_between_segments(p1, q1, p2, q2, r1, r2);
-	PoolVector<Vector2> r;
+	Vector<Vector2> r;
 	r.resize(2);
 	r.set(0, r1);
 	r.set(1, r2);
 	return r;
 }
 
-PoolVector<Vector3> _Geometry::get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2) {
+Vector<Vector3> _Geometry::get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2) {
 
 	Vector3 r1, r2;
 	Geometry::get_closest_points_between_segments(p1, p2, q1, q2, r1, r2);
-	PoolVector<Vector3> r;
+	Vector<Vector3> r;
 	r.resize(2);
 	r.set(0, r1);
 	r.set(1, r2);
@@ -1547,9 +1541,9 @@ bool _Geometry::point_is_inside_triangle(const Vector2 &s, const Vector2 &a, con
 	return Geometry::is_point_in_triangle(s, a, b, c);
 }
 
-PoolVector<Vector3> _Geometry::segment_intersects_sphere(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_sphere_pos, real_t p_sphere_radius) {
+Vector<Vector3> _Geometry::segment_intersects_sphere(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_sphere_pos, real_t p_sphere_radius) {
 
-	PoolVector<Vector3> r;
+	Vector<Vector3> r;
 	Vector3 res, norm;
 	if (!Geometry::segment_intersects_sphere(p_from, p_to, p_sphere_pos, p_sphere_radius, &res, &norm))
 		return r;
@@ -1559,9 +1553,9 @@ PoolVector<Vector3> _Geometry::segment_intersects_sphere(const Vector3 &p_from, 
 	r.set(1, norm);
 	return r;
 }
-PoolVector<Vector3> _Geometry::segment_intersects_cylinder(const Vector3 &p_from, const Vector3 &p_to, float p_height, float p_radius) {
+Vector<Vector3> _Geometry::segment_intersects_cylinder(const Vector3 &p_from, const Vector3 &p_to, float p_height, float p_radius) {
 
-	PoolVector<Vector3> r;
+	Vector<Vector3> r;
 	Vector3 res, norm;
 	if (!Geometry::segment_intersects_cylinder(p_from, p_to, p_height, p_radius, &res, &norm))
 		return r;
@@ -1571,9 +1565,9 @@ PoolVector<Vector3> _Geometry::segment_intersects_cylinder(const Vector3 &p_from
 	r.set(1, norm);
 	return r;
 }
-PoolVector<Vector3> _Geometry::segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const Vector<Plane> &p_planes) {
+Vector<Vector3> _Geometry::segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const Vector<Plane> &p_planes) {
 
-	PoolVector<Vector3> r;
+	Vector<Vector3> r;
 	Vector3 res, norm;
 	if (!Geometry::segment_intersects_convex(p_from, p_to, p_planes.ptr(), p_planes.size(), &res, &norm))
 		return r;
@@ -1962,9 +1956,9 @@ real_t _File::get_real() const {
 	return f->get_real();
 }
 
-PoolVector<uint8_t> _File::get_buffer(int p_length) const {
+Vector<uint8_t> _File::get_buffer(int p_length) const {
 
-	PoolVector<uint8_t> data;
+	Vector<uint8_t> data;
 	ERR_FAIL_COND_V_MSG(!f, data, "File must be opened before use.");
 
 	ERR_FAIL_COND_V_MSG(p_length < 0, data, "Length of buffer cannot be smaller than 0.");
@@ -1974,11 +1968,9 @@ PoolVector<uint8_t> _File::get_buffer(int p_length) const {
 	Error err = data.resize(p_length);
 	ERR_FAIL_COND_V_MSG(err != OK, data, "Can't resize data to " + itos(p_length) + " elements.");
 
-	PoolVector<uint8_t>::Write w = data.write();
+	uint8_t *w = data.ptrw();
 	int len = f->get_buffer(&w[0], p_length);
-	ERR_FAIL_COND_V(len < 0, PoolVector<uint8_t>());
-
-	w.release();
+	ERR_FAIL_COND_V(len < 0, Vector<uint8_t>());
 
 	if (len < p_length)
 		data.resize(p_length);
@@ -2126,7 +2118,7 @@ void _File::store_csv_line(const Vector<String> &p_values, const String &p_delim
 	f->store_csv_line(p_values, p_delim);
 }
 
-void _File::store_buffer(const PoolVector<uint8_t> &p_buffer) {
+void _File::store_buffer(const Vector<uint8_t> &p_buffer) {
 
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
@@ -2134,7 +2126,7 @@ void _File::store_buffer(const PoolVector<uint8_t> &p_buffer) {
 	if (len == 0)
 		return;
 
-	PoolVector<uint8_t>::Read r = p_buffer.read();
+	const uint8_t *r = p_buffer.ptr();
 
 	f->store_buffer(&r[0], len);
 }
@@ -2151,13 +2143,12 @@ void _File::store_var(const Variant &p_var, bool p_full_objects) {
 	Error err = encode_variant(p_var, NULL, len, p_full_objects);
 	ERR_FAIL_COND_MSG(err != OK, "Error when trying to encode Variant.");
 
-	PoolVector<uint8_t> buff;
+	Vector<uint8_t> buff;
 	buff.resize(len);
 
-	PoolVector<uint8_t>::Write w = buff.write();
+	uint8_t *w = buff.ptrw();
 	err = encode_variant(p_var, &w[0], len, p_full_objects);
 	ERR_FAIL_COND_MSG(err != OK, "Error when trying to encode Variant.");
-	w.release();
 
 	store_32(len);
 	store_buffer(buff);
@@ -2167,10 +2158,10 @@ Variant _File::get_var(bool p_allow_objects) const {
 
 	ERR_FAIL_COND_V_MSG(!f, Variant(), "File must be opened before use.");
 	uint32_t len = get_32();
-	PoolVector<uint8_t> buff = get_buffer(len);
+	Vector<uint8_t> buff = get_buffer(len);
 	ERR_FAIL_COND_V((uint32_t)buff.size() != len, Variant());
 
-	PoolVector<uint8_t>::Read r = buff.read();
+	const uint8_t *r = buff.ptr();
 
 	Variant v;
 	Error err = decode_variant(v, &r[0], len, NULL, p_allow_objects);
@@ -2465,9 +2456,9 @@ String _Marshalls::variant_to_base64(const Variant &p_var, bool p_full_objects) 
 	Error err = encode_variant(p_var, NULL, len, p_full_objects);
 	ERR_FAIL_COND_V_MSG(err != OK, "", "Error when trying to encode Variant.");
 
-	PoolVector<uint8_t> buff;
+	Vector<uint8_t> buff;
 	buff.resize(len);
-	PoolVector<uint8_t>::Write w = buff.write();
+	uint8_t *w = buff.ptrw();
 
 	err = encode_variant(p_var, &w[0], len, p_full_objects);
 	ERR_FAIL_COND_V_MSG(err != OK, "", "Error when trying to encode Variant.");
@@ -2483,9 +2474,9 @@ Variant _Marshalls::base64_to_variant(const String &p_str, bool p_allow_objects)
 	int strlen = p_str.length();
 	CharString cstr = p_str.ascii();
 
-	PoolVector<uint8_t> buf;
+	Vector<uint8_t> buf;
 	buf.resize(strlen / 4 * 3 + 1);
-	PoolVector<uint8_t>::Write w = buf.write();
+	uint8_t *w = buf.ptrw();
 
 	size_t len = 0;
 	ERR_FAIL_COND_V(CryptoCore::b64_decode(&w[0], buf.size(), &len, (unsigned char *)cstr.get_data(), strlen) != OK, Variant());
@@ -2497,25 +2488,25 @@ Variant _Marshalls::base64_to_variant(const String &p_str, bool p_allow_objects)
 	return v;
 };
 
-String _Marshalls::raw_to_base64(const PoolVector<uint8_t> &p_arr) {
+String _Marshalls::raw_to_base64(const Vector<uint8_t> &p_arr) {
 
-	String ret = CryptoCore::b64_encode_str(p_arr.read().ptr(), p_arr.size());
+	String ret = CryptoCore::b64_encode_str(p_arr.ptr(), p_arr.size());
 	ERR_FAIL_COND_V(ret == "", ret);
 	return ret;
 };
 
-PoolVector<uint8_t> _Marshalls::base64_to_raw(const String &p_str) {
+Vector<uint8_t> _Marshalls::base64_to_raw(const String &p_str) {
 
 	int strlen = p_str.length();
 	CharString cstr = p_str.ascii();
 
 	size_t arr_len = 0;
-	PoolVector<uint8_t> buf;
+	Vector<uint8_t> buf;
 	{
 		buf.resize(strlen / 4 * 3 + 1);
-		PoolVector<uint8_t>::Write w = buf.write();
+		uint8_t *w = buf.ptrw();
 
-		ERR_FAIL_COND_V(CryptoCore::b64_decode(&w[0], buf.size(), &arr_len, (unsigned char *)cstr.get_data(), strlen) != OK, PoolVector<uint8_t>());
+		ERR_FAIL_COND_V(CryptoCore::b64_decode(&w[0], buf.size(), &arr_len, (unsigned char *)cstr.get_data(), strlen) != OK, Vector<uint8_t>());
 	}
 	buf.resize(arr_len);
 
@@ -2535,9 +2526,9 @@ String _Marshalls::base64_to_utf8(const String &p_str) {
 	int strlen = p_str.length();
 	CharString cstr = p_str.ascii();
 
-	PoolVector<uint8_t> buf;
+	Vector<uint8_t> buf;
 	buf.resize(strlen / 4 * 3 + 1 + 1);
-	PoolVector<uint8_t>::Write w = buf.write();
+	uint8_t *w = buf.ptrw();
 
 	size_t len = 0;
 	ERR_FAIL_COND_V(CryptoCore::b64_decode(&w[0], buf.size(), &len, (unsigned char *)cstr.get_data(), strlen) != OK, String());
@@ -2746,12 +2737,12 @@ _Thread::~_Thread() {
 
 /////////////////////////////////////
 
-PoolStringArray _ClassDB::get_class_list() const {
+PackedStringArray _ClassDB::get_class_list() const {
 
 	List<StringName> classes;
 	ClassDB::get_class_list(&classes);
 
-	PoolStringArray ret;
+	PackedStringArray ret;
 	ret.resize(classes.size());
 	int idx = 0;
 	for (List<StringName>::Element *E = classes.front(); E; E = E->next()) {
@@ -2760,12 +2751,12 @@ PoolStringArray _ClassDB::get_class_list() const {
 
 	return ret;
 }
-PoolStringArray _ClassDB::get_inheriters_from_class(const StringName &p_class) const {
+PackedStringArray _ClassDB::get_inheriters_from_class(const StringName &p_class) const {
 
 	List<StringName> classes;
 	ClassDB::get_inheriters_from_class(p_class, &classes);
 
-	PoolStringArray ret;
+	PackedStringArray ret;
 	ret.resize(classes.size());
 	int idx = 0;
 	for (List<StringName>::Element *E = classes.front(); E; E = E->next()) {
@@ -2883,12 +2874,12 @@ Array _ClassDB::get_method_list(StringName p_class, bool p_no_inheritance) const
 	return ret;
 }
 
-PoolStringArray _ClassDB::get_integer_constant_list(const StringName &p_class, bool p_no_inheritance) const {
+PackedStringArray _ClassDB::get_integer_constant_list(const StringName &p_class, bool p_no_inheritance) const {
 
 	List<String> constants;
 	ClassDB::get_integer_constant_list(p_class, &constants, p_no_inheritance);
 
-	PoolStringArray ret;
+	PackedStringArray ret;
 	ret.resize(constants.size());
 	int idx = 0;
 	for (List<String>::Element *E = constants.front(); E; E = E->next()) {

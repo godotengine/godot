@@ -873,11 +873,11 @@ Ref<ArrayMesh> SceneTree::get_debug_contact_mesh() {
 	};
 	/* clang-format on */
 
-	PoolVector<int> indices;
+	Vector<int> indices;
 	for (int i = 0; i < 8 * 3; i++)
 		indices.push_back(diamond_faces[i]);
 
-	PoolVector<Vector3> vertices;
+	Vector<Vector3> vertices;
 	for (int i = 0; i < 6; i++)
 		vertices.push_back(diamond[i] * 0.1);
 
@@ -1933,7 +1933,7 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("idle_frame"));
 	ADD_SIGNAL(MethodInfo("physics_frame"));
 
-	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::POOL_STRING_ARRAY, "files"), PropertyInfo(Variant::INT, "screen")));
+	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files"), PropertyInfo(Variant::INT, "screen")));
 	ADD_SIGNAL(MethodInfo("global_menu_action", PropertyInfo(Variant::NIL, "id"), PropertyInfo(Variant::NIL, "meta")));
 	ADD_SIGNAL(MethodInfo("network_peer_connected", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("network_peer_disconnected", PropertyInfo(Variant::INT, "id")));

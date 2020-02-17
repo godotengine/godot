@@ -497,7 +497,7 @@ Vector<Color> Voxelizer::_get_bake_texture(Ref<Image> p_image, const Color &p_co
 	p_image->convert(Image::FORMAT_RGBA8);
 	p_image->resize(bake_texture_size, bake_texture_size, Image::INTERPOLATE_CUBIC);
 
-	PoolVector<uint8_t>::Read r = p_image->get_data().read();
+	const uint8_t *r = p_image->get_data().ptr();
 	ret.resize(bake_texture_size * bake_texture_size);
 
 	for (int i = 0; i < bake_texture_size * bake_texture_size; i++) {
@@ -589,32 +589,32 @@ void Voxelizer::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vec
 
 		Array a = p_mesh->surface_get_arrays(i);
 
-		PoolVector<Vector3> vertices = a[Mesh::ARRAY_VERTEX];
-		PoolVector<Vector3>::Read vr = vertices.read();
-		PoolVector<Vector2> uv = a[Mesh::ARRAY_TEX_UV];
-		PoolVector<Vector2>::Read uvr;
-		PoolVector<Vector3> normals = a[Mesh::ARRAY_NORMAL];
-		PoolVector<Vector3>::Read nr;
-		PoolVector<int> index = a[Mesh::ARRAY_INDEX];
+		Vector<Vector3> vertices = a[Mesh::ARRAY_VERTEX];
+		const Vector3 *vr = vertices.ptr();
+		Vector<Vector2> uv = a[Mesh::ARRAY_TEX_UV];
+		const Vector2 *uvr;
+		Vector<Vector3> normals = a[Mesh::ARRAY_NORMAL];
+		const Vector3 *nr;
+		Vector<int> index = a[Mesh::ARRAY_INDEX];
 
 		bool read_uv = false;
 		bool read_normals = false;
 
 		if (uv.size()) {
 
-			uvr = uv.read();
+			uvr = uv.ptr();
 			read_uv = true;
 		}
 
 		if (normals.size()) {
 			read_normals = true;
-			nr = normals.read();
+			nr = normals.ptr();
 		}
 
 		if (index.size()) {
 
 			int facecount = index.size() / 3;
-			PoolVector<int>::Read ir = index.read();
+			const int *ir = index.ptr();
 
 			for (int j = 0; j < facecount; j++) {
 
@@ -886,12 +886,12 @@ int Voxelizer::get_giprobe_cell_count() const {
 	return bake_cells.size();
 }
 
-PoolVector<uint8_t> Voxelizer::get_giprobe_octree_cells() const {
-	PoolVector<uint8_t> data;
+Vector<uint8_t> Voxelizer::get_giprobe_octree_cells() const {
+	Vector<uint8_t> data;
 	data.resize((8 * 4) * bake_cells.size()); //8 uint32t values
 	{
-		PoolVector<uint8_t>::Write w = data.write();
-		uint32_t *children_cells = (uint32_t *)w.ptr();
+		uint8_t *w = data.ptrw();
+		uint32_t *children_cells = (uint32_t *)w;
 		const Cell *cells = bake_cells.ptr();
 
 		uint32_t cell_count = bake_cells.size();
@@ -906,12 +906,12 @@ PoolVector<uint8_t> Voxelizer::get_giprobe_octree_cells() const {
 
 	return data;
 }
-PoolVector<uint8_t> Voxelizer::get_giprobe_data_cells() const {
-	PoolVector<uint8_t> data;
+Vector<uint8_t> Voxelizer::get_giprobe_data_cells() const {
+	Vector<uint8_t> data;
 	data.resize((4 * 4) * bake_cells.size()); //8 uint32t values
 	{
-		PoolVector<uint8_t>::Write w = data.write();
-		uint32_t *dataptr = (uint32_t *)w.ptr();
+		uint8_t *w = data.ptrw();
+		uint32_t *dataptr = (uint32_t *)w;
 		const Cell *cells = bake_cells.ptr();
 
 		uint32_t cell_count = bake_cells.size();
@@ -962,13 +962,13 @@ PoolVector<uint8_t> Voxelizer::get_giprobe_data_cells() const {
 	return data;
 }
 
-PoolVector<int> Voxelizer::get_giprobe_level_cell_count() const {
+Vector<int> Voxelizer::get_giprobe_level_cell_count() const {
 	uint32_t cell_count = bake_cells.size();
 	const Cell *cells = bake_cells.ptr();
-	PoolVector<int> level_count;
+	Vector<int> level_count;
 	level_count.resize(cell_subdiv + 1); //remember, always x+1 levels for x subdivisions
 	{
-		PoolVector<int>::Write w = level_count.write();
+		int *w = level_count.ptrw();
 		for (int i = 0; i < cell_subdiv + 1; i++) {
 			w[i] = 0;
 		}
@@ -1025,7 +1025,7 @@ static void edt(float *f, int stride, int n) {
 
 #undef square
 
-PoolVector<uint8_t> Voxelizer::get_sdf_3d_image() const {
+Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
 
 	Vector3i octree_size = get_giprobe_octree_size();
 
@@ -1078,10 +1078,10 @@ PoolVector<uint8_t> Voxelizer::get_sdf_3d_image() const {
 		}
 	}
 
-	PoolVector<uint8_t> image3d;
+	Vector<uint8_t> image3d;
 	image3d.resize(float_count);
 	{
-		PoolVector<uint8_t>::Write w = image3d.write();
+		uint8_t *w = image3d.ptrw();
 		for (uint32_t i = 0; i < float_count; i++) {
 			uint32_t d = uint32_t(Math::sqrt(work_memory[i]));
 			if (d == 0) {
@@ -1154,8 +1154,8 @@ Ref<MultiMesh> Voxelizer::create_debug_multimesh() {
 		Array arr;
 		arr.resize(Mesh::ARRAY_MAX);
 
-		PoolVector<Vector3> vertices;
-		PoolVector<Color> colors;
+		Vector<Vector3> vertices;
+		Vector<Color> colors;
 #define ADD_VTX(m_idx)                      \
 	vertices.push_back(face_points[m_idx]); \
 	colors.push_back(Color(1, 1, 1, 1));

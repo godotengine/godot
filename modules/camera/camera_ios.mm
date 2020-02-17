@@ -44,7 +44,7 @@
 	Ref<CameraFeed> feed;
 	size_t width[2];
 	size_t height[2];
-	PoolVector<uint8_t> img_data[2];
+	Vector<uint8_t> img_data[2];
 
 	AVCaptureDeviceInput *input;
 	AVCaptureVideoDataOutput *output;
@@ -175,7 +175,7 @@
 				img_data[0].resize(new_width * new_height);
 			}
 
-			PoolVector<uint8_t>::Write w = img_data[0].write();
+			uint8_t *w = img_data[0].ptrw();
 			memcpy(w.ptr(), dataY, new_width * new_height);
 
 			img[0].instance();
@@ -196,7 +196,7 @@
 				img_data[1].resize(2 * new_width * new_height);
 			}
 
-			PoolVector<uint8_t>::Write w = img_data[1].write();
+			uint8_t *w = img_data[1].ptrw();
 			memcpy(w.ptr(), dataCbCr, 2 * new_width * new_height);
 
 			///TODO GLES2 doesn't support FORMAT_RG8, need to do some form of conversion

@@ -130,7 +130,7 @@ Ref<Image> ProceduralSky::_generate_sky() {
 
 	update_queued = false;
 
-	PoolVector<uint8_t> imgdata;
+	Vector<uint8_t> imgdata;
 
 	static const int size[TEXTURE_SIZE_MAX] = {
 		256, 512, 1024, 2048, 4096
@@ -142,9 +142,9 @@ Ref<Image> ProceduralSky::_generate_sky() {
 	imgdata.resize(w * h * 4); //RGBE
 
 	{
-		PoolVector<uint8_t>::Write dataw = imgdata.write();
+		uint8_t *dataw = imgdata.ptrw();
 
-		uint32_t *ptr = (uint32_t *)dataw.ptr();
+		uint32_t *ptr = (uint32_t *)dataw;
 
 		Color sky_top_linear = sky_top_color.to_linear();
 		Color sky_horizon_linear = sky_horizon_color.to_linear();

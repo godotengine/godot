@@ -242,12 +242,12 @@ void ResourceImporterTexture::save_to_stex_format(FileAccess *f, const Ref<Image
 
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
 
-				PoolVector<uint8_t> data = Image::lossless_packer(p_image->get_image_from_mipmap(i));
+				Vector<uint8_t> data = Image::lossless_packer(p_image->get_image_from_mipmap(i));
 				int data_len = data.size();
 				f->store_32(data_len);
 
-				PoolVector<uint8_t>::Read r = data.read();
-				f->store_buffer(r.ptr(), data_len);
+				const uint8_t *r = data.ptr();
+				f->store_buffer(r, data_len);
 			}
 
 		} break;
@@ -261,12 +261,12 @@ void ResourceImporterTexture::save_to_stex_format(FileAccess *f, const Ref<Image
 
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
 
-				PoolVector<uint8_t> data = Image::lossy_packer(p_image->get_image_from_mipmap(i), p_lossy_quality);
+				Vector<uint8_t> data = Image::lossy_packer(p_image->get_image_from_mipmap(i), p_lossy_quality);
 				int data_len = data.size();
 				f->store_32(data_len);
 
-				PoolVector<uint8_t>::Read r = data.read();
-				f->store_buffer(r.ptr(), data_len);
+				const uint8_t *r = data.ptr();
+				f->store_buffer(r, data_len);
 			}
 		} break;
 		case COMPRESS_VRAM_COMPRESSED: {
@@ -285,10 +285,10 @@ void ResourceImporterTexture::save_to_stex_format(FileAccess *f, const Ref<Image
 			f->store_32(image->get_mipmap_count());
 			f->store_32(image->get_format());
 
-			PoolVector<uint8_t> data = image->get_data();
+			Vector<uint8_t> data = image->get_data();
 			int dl = data.size();
-			PoolVector<uint8_t>::Read r = data.read();
-			f->store_buffer(r.ptr(), dl);
+			const uint8_t *r = data.ptr();
+			f->store_buffer(r, dl);
 		} break;
 		case COMPRESS_VRAM_UNCOMPRESSED: {
 
@@ -298,11 +298,11 @@ void ResourceImporterTexture::save_to_stex_format(FileAccess *f, const Ref<Image
 			f->store_32(p_image->get_mipmap_count());
 			f->store_32(p_image->get_format());
 
-			PoolVector<uint8_t> data = p_image->get_data();
+			Vector<uint8_t> data = p_image->get_data();
 			int dl = data.size();
-			PoolVector<uint8_t>::Read r = data.read();
+			const uint8_t *r = data.ptr();
 
-			f->store_buffer(r.ptr(), dl);
+			f->store_buffer(r, dl);
 
 		} break;
 		case COMPRESS_BASIS_UNIVERSAL: {
@@ -315,12 +315,12 @@ void ResourceImporterTexture::save_to_stex_format(FileAccess *f, const Ref<Image
 
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
 
-				PoolVector<uint8_t> data = Image::basis_universal_packer(p_image->get_image_from_mipmap(i), p_channels);
+				Vector<uint8_t> data = Image::basis_universal_packer(p_image->get_image_from_mipmap(i), p_channels);
 				int data_len = data.size();
 				f->store_32(data_len);
 
-				PoolVector<uint8_t>::Read r = data.read();
-				f->store_buffer(r.ptr(), data_len);
+				const uint8_t *r = data.ptr();
+				f->store_buffer(r, data_len);
 			}
 		} break;
 	}
@@ -476,13 +476,11 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		int height = image->get_height();
 		int width = image->get_width();
 
-		image->lock();
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
 				image->set_pixel(i, j, image->get_pixel(i, j).inverted());
 			}
 		}
-		image->unlock();
 	}
 
 	if (compress_mode == COMPRESS_BASIS_UNIVERSAL && image->get_format() >= Image::FORMAT_RF) {

@@ -32,16 +32,16 @@
 
 #include "core/io/marshalls.h"
 
-Error StreamPeer::_put_data(const PoolVector<uint8_t> &p_data) {
+Error StreamPeer::_put_data(const Vector<uint8_t> &p_data) {
 
 	int len = p_data.size();
 	if (len == 0)
 		return OK;
-	PoolVector<uint8_t>::Read r = p_data.read();
+	const uint8_t *r = p_data.ptr();
 	return put_data(&r[0], len);
 }
 
-Array StreamPeer::_put_partial_data(const PoolVector<uint8_t> &p_data) {
+Array StreamPeer::_put_partial_data(const Vector<uint8_t> &p_data) {
 
 	Array ret;
 
@@ -52,7 +52,7 @@ Array StreamPeer::_put_partial_data(const PoolVector<uint8_t> &p_data) {
 		return ret;
 	}
 
-	PoolVector<uint8_t>::Read r = p_data.read();
+	const uint8_t *r = p_data.ptr();
 	int sent;
 	Error err = put_partial_data(&r[0], len, sent);
 
@@ -68,18 +68,18 @@ Array StreamPeer::_get_data(int p_bytes) {
 
 	Array ret;
 
-	PoolVector<uint8_t> data;
+	Vector<uint8_t> data;
 	data.resize(p_bytes);
 	if (data.size() != p_bytes) {
 
 		ret.push_back(ERR_OUT_OF_MEMORY);
-		ret.push_back(PoolVector<uint8_t>());
+		ret.push_back(Vector<uint8_t>());
 		return ret;
 	}
 
-	PoolVector<uint8_t>::Write w = data.write();
+	uint8_t *w = data.ptrw();
 	Error err = get_data(&w[0], p_bytes);
-	w.release();
+
 	ret.push_back(err);
 	ret.push_back(data);
 	return ret;
@@ -89,19 +89,18 @@ Array StreamPeer::_get_partial_data(int p_bytes) {
 
 	Array ret;
 
-	PoolVector<uint8_t> data;
+	Vector<uint8_t> data;
 	data.resize(p_bytes);
 	if (data.size() != p_bytes) {
 
 		ret.push_back(ERR_OUT_OF_MEMORY);
-		ret.push_back(PoolVector<uint8_t>());
+		ret.push_back(Vector<uint8_t>());
 		return ret;
 	}
 
-	PoolVector<uint8_t>::Write w = data.write();
+	uint8_t *w = data.ptrw();
 	int received;
 	Error err = get_partial_data(&w[0], p_bytes, received);
-	w.release();
 
 	if (err != OK) {
 		data.resize(0);
@@ -431,7 +430,7 @@ void StreamPeerBuffer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &StreamPeerBuffer::clear);
 	ClassDB::bind_method(D_METHOD("duplicate"), &StreamPeerBuffer::duplicate);
 
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY, "data_array"), "set_data_array", "get_data_array");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data_array"), "set_data_array", "get_data_array");
 }
 
 Error StreamPeerBuffer::put_data(const uint8_t *p_data, int p_bytes) {
@@ -443,7 +442,7 @@ Error StreamPeerBuffer::put_data(const uint8_t *p_data, int p_bytes) {
 		data.resize(pointer + p_bytes);
 	}
 
-	PoolVector<uint8_t>::Write w = data.write();
+	uint8_t *w = data.ptrw();
 	copymem(&w[pointer], p_data, p_bytes);
 
 	pointer += p_bytes;
@@ -478,8 +477,8 @@ Error StreamPeerBuffer::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_
 		r_received = p_bytes;
 	}
 
-	PoolVector<uint8_t>::Read r = data.read();
-	copymem(p_buffer, r.ptr() + pointer, r_received);
+	const uint8_t *r = data.ptr();
+	copymem(p_buffer, r + pointer, r_received);
 
 	pointer += r_received;
 	// FIXME: return what? OK or ERR_*
@@ -513,13 +512,13 @@ void StreamPeerBuffer::resize(int p_size) {
 	data.resize(p_size);
 }
 
-void StreamPeerBuffer::set_data_array(const PoolVector<uint8_t> &p_data) {
+void StreamPeerBuffer::set_data_array(const Vector<uint8_t> &p_data) {
 
 	data = p_data;
 	pointer = 0;
 }
 
-PoolVector<uint8_t> StreamPeerBuffer::get_data_array() const {
+Vector<uint8_t> StreamPeerBuffer::get_data_array() const {
 
 	return data;
 }

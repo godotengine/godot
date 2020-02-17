@@ -87,11 +87,11 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 
 	size_t len = f->get_len();
 
-	PoolVector<uint8_t> data;
+	Vector<uint8_t> data;
 	data.resize(len);
-	PoolVector<uint8_t>::Write w = data.write();
+	uint8_t *w = data.ptrw();
 
-	f->get_buffer(w.ptr(), len);
+	f->get_buffer(w, len);
 
 	memdelete(f);
 

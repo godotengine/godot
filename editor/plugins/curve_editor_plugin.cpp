@@ -802,8 +802,6 @@ Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, cons
 
 	im.create(thumbnail_size, thumbnail_size / 2, 0, Image::FORMAT_RGBA8);
 
-	im.lock();
-
 	Color bg_color(0.1, 0.1, 0.1, 1.0);
 	for (int i = 0; i < thumbnail_size; i++) {
 		for (int j = 0; j < thumbnail_size / 2; j++) {
@@ -843,8 +841,6 @@ Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, cons
 
 		prev_y = y;
 	}
-
-	im.unlock();
 
 	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
 

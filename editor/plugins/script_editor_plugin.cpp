@@ -2309,7 +2309,7 @@ void ScriptEditor::_editor_stop() {
 	}
 }
 
-void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const PoolStringArray &p_args) {
+void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const PackedStringArray &p_args) {
 
 	ERR_FAIL_COND(!p_obj);
 	Ref<Script> script = p_obj->get_script();
@@ -3099,7 +3099,7 @@ void ScriptEditor::_start_find_in_files(bool with_replace) {
 	editor->make_bottom_panel_item_visible(find_in_files);
 }
 
-void ScriptEditor::_on_find_in_files_modified_files(PoolStringArray paths) {
+void ScriptEditor::_on_find_in_files_modified_files(PackedStringArray paths) {
 
 	_test_script_times_on_disk();
 	_update_modified_scripts_for_external_editor();

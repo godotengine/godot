@@ -64,8 +64,8 @@ public:
 
 	Line2D();
 
-	void set_points(const PoolVector<Vector2> &p_points);
-	PoolVector<Vector2> get_points() const;
+	void set_points(const Vector<Vector2> &p_points);
+	Vector<Vector2> get_points() const;
 
 	void set_point_position(int i, Vector2 pos);
 	Vector2 get_point_position(int i) const;
@@ -124,7 +124,7 @@ private:
 	void _curve_changed();
 
 private:
-	PoolVector<Vector2> _points;
+	Vector<Vector2> _points;
 	LineJointMode _joint_mode;
 	LineCapMode _begin_cap_mode;
 	LineCapMode _end_cap_mode;

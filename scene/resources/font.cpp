@@ -107,7 +107,7 @@ Font::Font() {
 
 /////////////////////////////////////////////////////////////////
 
-void BitmapFont::_set_chars(const PoolVector<int> &p_chars) {
+void BitmapFont::_set_chars(const Vector<int> &p_chars) {
 
 	int len = p_chars.size();
 	//char 1 charsize 1 texture, 4 rect, 2 align, advance 1
@@ -116,7 +116,7 @@ void BitmapFont::_set_chars(const PoolVector<int> &p_chars) {
 		return; //none to do
 	int chars = len / 9;
 
-	PoolVector<int>::Read r = p_chars.read();
+	const int *r = p_chars.ptr();
 	for (int i = 0; i < chars; i++) {
 
 		const int *data = &r[i * 9];
@@ -124,16 +124,16 @@ void BitmapFont::_set_chars(const PoolVector<int> &p_chars) {
 	}
 }
 
-PoolVector<int> BitmapFont::_get_chars() const {
+Vector<int> BitmapFont::_get_chars() const {
 
-	PoolVector<int> chars;
+	Vector<int> chars;
 
 	const CharType *key = NULL;
 
 	while ((key = char_map.next(key))) {
 
 		const Character *c = char_map.getptr(*key);
-		ERR_FAIL_COND_V(!c, PoolVector<int>());
+		ERR_FAIL_COND_V(!c, Vector<int>());
 		chars.push_back(*key);
 		chars.push_back(c->texture_idx);
 		chars.push_back(c->rect.position.x);
@@ -149,13 +149,13 @@ PoolVector<int> BitmapFont::_get_chars() const {
 	return chars;
 }
 
-void BitmapFont::_set_kernings(const PoolVector<int> &p_kernings) {
+void BitmapFont::_set_kernings(const Vector<int> &p_kernings) {
 
 	int len = p_kernings.size();
 	ERR_FAIL_COND(len % 3);
 	if (!len)
 		return;
-	PoolVector<int>::Read r = p_kernings.read();
+	const int *r = p_kernings.ptr();
 
 	for (int i = 0; i < len / 3; i++) {
 
@@ -164,9 +164,9 @@ void BitmapFont::_set_kernings(const PoolVector<int> &p_kernings) {
 	}
 }
 
-PoolVector<int> BitmapFont::_get_kernings() const {
+Vector<int> BitmapFont::_get_kernings() const {
 
-	PoolVector<int> kernings;
+	Vector<int> kernings;
 
 	for (Map<KerningPairKey, int>::Element *E = kerning_map.front(); E; E = E->next()) {
 
@@ -625,8 +625,8 @@ void BitmapFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fallback"), &BitmapFont::get_fallback);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "textures", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_textures", "_get_textures");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_INT_ARRAY, "chars", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_chars", "_get_chars");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_INT_ARRAY, "kernings", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_kernings", "_get_kernings");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT_ARRAY, "chars", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_chars", "_get_chars");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT_ARRAY, "kernings", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_kernings", "_get_kernings");
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "height", PROPERTY_HINT_RANGE, "1,1024,1"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ascent", PROPERTY_HINT_RANGE, "0,1024,1"), "set_ascent", "get_ascent");

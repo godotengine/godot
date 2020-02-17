@@ -5987,7 +5987,7 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	if (default_type == "NinePatchRect") {
 		editor_data->get_undo_redo().add_do_property(child, "rect/size", texture_size);
 	} else if (default_type == "Polygon2D") {
-		PoolVector<Vector2> list;
+		Vector<Vector2> list;
 		list.push_back(Vector2(0, 0));
 		list.push_back(Vector2(texture_size.width, 0));
 		list.push_back(Vector2(texture_size.width, texture_size.height));

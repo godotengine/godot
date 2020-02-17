@@ -159,7 +159,7 @@ Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) 
 
 	// Godot does not support more than 4 channels,
 	// so we can preallocate header infos on the stack and use only the subset we need
-	PoolByteArray channels[max_channels];
+	PackedByteArray channels[max_channels];
 	unsigned char *channels_ptrs[max_channels];
 	EXRChannelInfo channel_infos[max_channels];
 	int pixel_types[max_channels];
@@ -188,25 +188,25 @@ Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) 
 	const int *channel_mapping = channel_mappings[channel_count - 1];
 
 	{
-		PoolByteArray src_data = p_img->get_data();
-		PoolByteArray::Read src_r = src_data.read();
+		PackedByteArray src_data = p_img->get_data();
+		const uint8_t *src_r = src_data.ptr();
 
 		for (int channel_index = 0; channel_index < channel_count; ++channel_index) {
 
 			// De-interleave channels
 
-			PoolByteArray &dst = channels[channel_index];
+			PackedByteArray &dst = channels[channel_index];
 			dst.resize(pixel_count * target_pixel_type_size);
 
-			PoolByteArray::Write dst_w = dst.write();
+			uint8_t *dst_w = dst.ptrw();
 
 			if (src_pixel_type == SRC_FLOAT && target_pixel_type == TINYEXR_PIXELTYPE_FLOAT) {
 
 				// Note: we don't save mipmaps
 				CRASH_COND(src_data.size() < pixel_count * channel_count * target_pixel_type_size);
 
-				const float *src_rp = (float *)src_r.ptr();
-				float *dst_wp = (float *)dst_w.ptr();
+				const float *src_rp = (float *)src_r;
+				float *dst_wp = (float *)dst_w;
 
 				for (int i = 0; i < pixel_count; ++i) {
 					dst_wp[i] = src_rp[channel_index + i * channel_count];
@@ -216,8 +216,8 @@ Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) 
 
 				CRASH_COND(src_data.size() < pixel_count * channel_count * target_pixel_type_size);
 
-				const uint16_t *src_rp = (uint16_t *)src_r.ptr();
-				uint16_t *dst_wp = (uint16_t *)dst_w.ptr();
+				const uint16_t *src_rp = (uint16_t *)src_r;
+				uint16_t *dst_wp = (uint16_t *)dst_w;
 
 				for (int i = 0; i < pixel_count; ++i) {
 					dst_wp[i] = src_rp[channel_index + i * channel_count];
@@ -227,8 +227,8 @@ Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) 
 
 				CRASH_COND(src_data.size() < pixel_count * channel_count);
 
-				const uint8_t *src_rp = (uint8_t *)src_r.ptr();
-				uint16_t *dst_wp = (uint16_t *)dst_w.ptr();
+				const uint8_t *src_rp = (uint8_t *)src_r;
+				uint16_t *dst_wp = (uint16_t *)dst_w;
 
 				for (int i = 0; i < pixel_count; ++i) {
 					dst_wp[i] = Math::make_half_float(src_rp[channel_index + i * channel_count] / 255.f);
@@ -240,7 +240,7 @@ Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) 
 
 			int remapped_index = channel_mapping[channel_index];
 
-			channels_ptrs[remapped_index] = dst_w.ptr();
+			channels_ptrs[remapped_index] = dst_w;
 
 			// No conversion
 			pixel_types[remapped_index] = target_pixel_type;

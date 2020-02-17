@@ -52,7 +52,7 @@ void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_threshol
 
 	create(Size2(img->get_width(), img->get_height()));
 
-	PoolVector<uint8_t>::Read r = img->get_data().read();
+	const uint8_t *r = img->get_data().ptr();
 	uint8_t *w = bitmask.ptrw();
 
 	for (int i = 0; i < width * height; i++) {
@@ -426,7 +426,7 @@ struct FillBitsStackEntry {
 static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_pos, const Rect2i &rect) {
 
 	// Using a custom stack to work iteratively to avoid stack overflow on big bitmaps
-	PoolVector<FillBitsStackEntry> stack;
+	Vector<FillBitsStackEntry> stack;
 	// Tracking size since we won't be shrinking the stack vector
 	int stack_size = 0;
 
@@ -601,11 +601,11 @@ Array BitMap::_opaque_to_polygons_bind(const Rect2 &p_rect, float p_epsilon) con
 
 		const Vector<Vector2> &polygon = result[i];
 
-		PoolVector2Array polygon_array;
+		PackedVector2Array polygon_array;
 		polygon_array.resize(polygon.size());
 
 		{
-			PoolVector2Array::Write w = polygon_array.write();
+			Vector2 *w = polygon_array.ptrw();
 			for (int j = 0; j < polygon.size(); j++) {
 				w[j] = polygon[j];
 			}
@@ -640,14 +640,12 @@ Ref<Image> BitMap::convert_to_image() const {
 	Ref<Image> image;
 	image.instance();
 	image->create(width, height, false, Image::FORMAT_L8);
-	image->lock();
+
 	for (int i = 0; i < width; i++) {
 		for (int j = 0; j < height; j++) {
 			image->set_pixel(i, j, get_bit(Point2(i, j)) ? Color(1, 1, 1) : Color(0, 0, 0));
 		}
 	}
-
-	image->unlock();
 
 	return image;
 }

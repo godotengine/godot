@@ -121,9 +121,9 @@ void MIDIDriver::receive_input_packet(uint64_t timestamp, uint8_t *data, uint32_
 	id->parse_input_event(event);
 }
 
-PoolStringArray MIDIDriver::get_connected_inputs() {
+PackedStringArray MIDIDriver::get_connected_inputs() {
 
-	PoolStringArray list;
+	PackedStringArray list;
 	return list;
 }
 

@@ -1406,7 +1406,7 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 
 		if (octree_size != Vector3i()) {
 			//can create a 3D texture
-			PoolVector<int> levels = storage->gi_probe_get_level_counts(gi_probe->probe);
+			Vector<int> levels = storage->gi_probe_get_level_counts(gi_probe->probe);
 
 			RD::TextureFormat tf;
 			tf.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;

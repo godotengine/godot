@@ -477,7 +477,7 @@ float AudioStreamSample::get_length() const {
 	return float(len) / mix_rate;
 }
 
-void AudioStreamSample::set_data(const PoolVector<uint8_t> &p_data) {
+void AudioStreamSample::set_data(const Vector<uint8_t> &p_data) {
 
 	AudioServer::get_singleton()->lock();
 	if (data) {
@@ -489,28 +489,28 @@ void AudioStreamSample::set_data(const PoolVector<uint8_t> &p_data) {
 	int datalen = p_data.size();
 	if (datalen) {
 
-		PoolVector<uint8_t>::Read r = p_data.read();
+		const uint8_t *r = p_data.ptr();
 		int alloc_len = datalen + DATA_PAD * 2;
 		data = AudioServer::get_singleton()->audio_data_alloc(alloc_len); //alloc with some padding for interpolation
 		zeromem(data, alloc_len);
 		uint8_t *dataptr = (uint8_t *)data;
-		copymem(dataptr + DATA_PAD, r.ptr(), datalen);
+		copymem(dataptr + DATA_PAD, r, datalen);
 		data_bytes = datalen;
 	}
 
 	AudioServer::get_singleton()->unlock();
 }
-PoolVector<uint8_t> AudioStreamSample::get_data() const {
+Vector<uint8_t> AudioStreamSample::get_data() const {
 
-	PoolVector<uint8_t> pv;
+	Vector<uint8_t> pv;
 
 	if (data) {
 		pv.resize(data_bytes);
 		{
 
-			PoolVector<uint8_t>::Write w = pv.write();
+			uint8_t *w = pv.ptrw();
 			uint8_t *dataptr = (uint8_t *)data;
-			copymem(w.ptr(), dataptr + DATA_PAD, data_bytes);
+			copymem(w, dataptr + DATA_PAD, data_bytes);
 		}
 	}
 
@@ -566,8 +566,8 @@ Error AudioStreamSample::save_to_wav(const String &p_path) {
 	file->store_32(sub_chunk_2_size); //Subchunk2Size
 
 	// Add data
-	PoolVector<uint8_t> data = get_data();
-	PoolVector<uint8_t>::Read read_data = data.read();
+	Vector<uint8_t> data = get_data();
+	const uint8_t *read_data = data.ptr();
 	switch (format) {
 		case AudioStreamSample::FORMAT_8_BITS:
 			for (unsigned int i = 0; i < data_bytes; i++) {
@@ -629,7 +629,7 @@ void AudioStreamSample::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("save_to_wav", "path"), &AudioStreamSample::save_to_wav);
 
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_data", "get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "format", PROPERTY_HINT_ENUM, "8-Bit,16-Bit,IMA-ADPCM"), "set_format", "get_format");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_mode", PROPERTY_HINT_ENUM, "Disabled,Forward,Ping-Pong,Backward"), "set_loop_mode", "get_loop_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_begin"), "set_loop_begin", "get_loop_begin");

@@ -41,12 +41,12 @@ class SoftBodyVisualServerHandler {
 
 	RID mesh;
 	int surface;
-	PoolVector<uint8_t> buffer;
+	Vector<uint8_t> buffer;
 	uint32_t stride;
 	uint32_t offset_vertices;
 	uint32_t offset_normal;
 
-	PoolVector<uint8_t>::Write write_buffer;
+	uint8_t *write_buffer;
 
 private:
 	SoftBodyVisualServerHandler();
@@ -87,7 +87,7 @@ private:
 	uint32_t collision_mask;
 	uint32_t collision_layer;
 	NodePath parent_collision_ignore;
-	PoolVector<PinnedPoint> pinned_points;
+	Vector<PinnedPoint> pinned_points;
 	bool simulation_started;
 	bool pinned_points_cache_dirty;
 
@@ -138,8 +138,8 @@ public:
 	void set_parent_collision_ignore(const NodePath &p_parent_collision_ignore);
 	const NodePath &get_parent_collision_ignore() const;
 
-	void set_pinned_points_indices(PoolVector<PinnedPoint> p_pinned_points_indices);
-	PoolVector<PinnedPoint> get_pinned_points_indices();
+	void set_pinned_points_indices(Vector<PinnedPoint> p_pinned_points_indices);
+	Vector<PinnedPoint> get_pinned_points_indices();
 
 	void set_simulation_precision(int p_simulation_precision);
 	int get_simulation_precision();

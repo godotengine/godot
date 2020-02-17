@@ -315,12 +315,12 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 
 					if (err == VPXDecoder::NO_ERROR && image.w == webm->getWidth() && image.h == webm->getHeight()) {
 
-						PoolVector<uint8_t>::Write w = frame_data.write();
+						uint8_t *w = frame_data.ptrw();
 						bool converted = false;
 
 						if (image.chromaShiftW == 0 && image.chromaShiftH == 0 && image.cs == VPX_CS_SRGB) {
 
-							uint8_t *wp = w.ptr();
+							uint8_t *wp = w;
 							unsigned char *rRow = image.planes[2];
 							unsigned char *gRow = image.planes[0];
 							unsigned char *bRow = image.planes[1];
@@ -338,17 +338,17 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 							converted = true;
 						} else if (image.chromaShiftW == 1 && image.chromaShiftH == 1) {
 
-							yuv420_2_rgb8888(w.ptr(), image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
+							yuv420_2_rgb8888(w, image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
 							//libyuv::I420ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
 							converted = true;
 						} else if (image.chromaShiftW == 1 && image.chromaShiftH == 0) {
 
-							yuv422_2_rgb8888(w.ptr(), image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
+							yuv422_2_rgb8888(w, image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
 							//libyuv::I422ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
 							converted = true;
 						} else if (image.chromaShiftW == 0 && image.chromaShiftH == 0) {
 
-							yuv444_2_rgb8888(w.ptr(), image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
+							yuv444_2_rgb8888(w, image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
 							//libyuv::I444ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
 							converted = true;
 						} else if (image.chromaShiftW == 2 && image.chromaShiftH == 0) {

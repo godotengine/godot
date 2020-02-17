@@ -38,33 +38,33 @@
 	CASE_TYPE(PREFIX, OP, INT)    \
 	CASE_TYPE_ALL_BUT_INT(PREFIX, OP)
 
-#define CASE_TYPE_ALL_BUT_INT(PREFIX, OP)     \
-	CASE_TYPE(PREFIX, OP, NIL)                \
-	CASE_TYPE(PREFIX, OP, BOOL)               \
-	CASE_TYPE(PREFIX, OP, REAL)               \
-	CASE_TYPE(PREFIX, OP, STRING)             \
-	CASE_TYPE(PREFIX, OP, VECTOR2)            \
-	CASE_TYPE(PREFIX, OP, RECT2)              \
-	CASE_TYPE(PREFIX, OP, VECTOR3)            \
-	CASE_TYPE(PREFIX, OP, TRANSFORM2D)        \
-	CASE_TYPE(PREFIX, OP, PLANE)              \
-	CASE_TYPE(PREFIX, OP, QUAT)               \
-	CASE_TYPE(PREFIX, OP, AABB)               \
-	CASE_TYPE(PREFIX, OP, BASIS)              \
-	CASE_TYPE(PREFIX, OP, TRANSFORM)          \
-	CASE_TYPE(PREFIX, OP, COLOR)              \
-	CASE_TYPE(PREFIX, OP, NODE_PATH)          \
-	CASE_TYPE(PREFIX, OP, _RID)               \
-	CASE_TYPE(PREFIX, OP, OBJECT)             \
-	CASE_TYPE(PREFIX, OP, DICTIONARY)         \
-	CASE_TYPE(PREFIX, OP, ARRAY)              \
-	CASE_TYPE(PREFIX, OP, POOL_BYTE_ARRAY)    \
-	CASE_TYPE(PREFIX, OP, POOL_INT_ARRAY)     \
-	CASE_TYPE(PREFIX, OP, POOL_REAL_ARRAY)    \
-	CASE_TYPE(PREFIX, OP, POOL_STRING_ARRAY)  \
-	CASE_TYPE(PREFIX, OP, POOL_VECTOR2_ARRAY) \
-	CASE_TYPE(PREFIX, OP, POOL_VECTOR3_ARRAY) \
-	CASE_TYPE(PREFIX, OP, POOL_COLOR_ARRAY)
+#define CASE_TYPE_ALL_BUT_INT(PREFIX, OP)       \
+	CASE_TYPE(PREFIX, OP, NIL)                  \
+	CASE_TYPE(PREFIX, OP, BOOL)                 \
+	CASE_TYPE(PREFIX, OP, REAL)                 \
+	CASE_TYPE(PREFIX, OP, STRING)               \
+	CASE_TYPE(PREFIX, OP, VECTOR2)              \
+	CASE_TYPE(PREFIX, OP, RECT2)                \
+	CASE_TYPE(PREFIX, OP, VECTOR3)              \
+	CASE_TYPE(PREFIX, OP, TRANSFORM2D)          \
+	CASE_TYPE(PREFIX, OP, PLANE)                \
+	CASE_TYPE(PREFIX, OP, QUAT)                 \
+	CASE_TYPE(PREFIX, OP, AABB)                 \
+	CASE_TYPE(PREFIX, OP, BASIS)                \
+	CASE_TYPE(PREFIX, OP, TRANSFORM)            \
+	CASE_TYPE(PREFIX, OP, COLOR)                \
+	CASE_TYPE(PREFIX, OP, NODE_PATH)            \
+	CASE_TYPE(PREFIX, OP, _RID)                 \
+	CASE_TYPE(PREFIX, OP, OBJECT)               \
+	CASE_TYPE(PREFIX, OP, DICTIONARY)           \
+	CASE_TYPE(PREFIX, OP, ARRAY)                \
+	CASE_TYPE(PREFIX, OP, PACKED_BYTE_ARRAY)    \
+	CASE_TYPE(PREFIX, OP, PACKED_INT_ARRAY)     \
+	CASE_TYPE(PREFIX, OP, PACKED_REAL_ARRAY)    \
+	CASE_TYPE(PREFIX, OP, PACKED_STRING_ARRAY)  \
+	CASE_TYPE(PREFIX, OP, PACKED_VECTOR2_ARRAY) \
+	CASE_TYPE(PREFIX, OP, PACKED_VECTOR3_ARRAY) \
+	CASE_TYPE(PREFIX, OP, PACKED_COLOR_ARRAY)
 
 #ifdef __GNUC__
 #define TYPE(PREFIX, OP, TYPE) &&PREFIX##_##OP##_##TYPE
@@ -91,13 +91,13 @@
 		TYPE(PREFIX, OP, OBJECT),             \
 		TYPE(PREFIX, OP, DICTIONARY),         \
 		TYPE(PREFIX, OP, ARRAY),              \
-		TYPE(PREFIX, OP, POOL_BYTE_ARRAY),    \
-		TYPE(PREFIX, OP, POOL_INT_ARRAY),     \
-		TYPE(PREFIX, OP, POOL_REAL_ARRAY),    \
-		TYPE(PREFIX, OP, POOL_STRING_ARRAY),  \
-		TYPE(PREFIX, OP, POOL_VECTOR2_ARRAY), \
-		TYPE(PREFIX, OP, POOL_VECTOR3_ARRAY), \
-		TYPE(PREFIX, OP, POOL_COLOR_ARRAY),   \
+		TYPE(PREFIX, OP, PACKED_BYTE_ARRAY),    \
+		TYPE(PREFIX, OP, PACKED_INT_ARRAY),     \
+		TYPE(PREFIX, OP, PACKED_REAL_ARRAY),    \
+		TYPE(PREFIX, OP, PACKED_STRING_ARRAY),  \
+		TYPE(PREFIX, OP, PACKED_VECTOR2_ARRAY), \
+		TYPE(PREFIX, OP, PACKED_VECTOR3_ARRAY), \
+		TYPE(PREFIX, OP, PACKED_COLOR_ARRAY),   \
 }
 /* clang-format on */
 
@@ -357,16 +357,16 @@ bool Variant::booleanize() const {
 	if (p_a.type != p_b.type)                                                                                    \
 		_RETURN_FAIL                                                                                             \
                                                                                                                  \
-	const PoolVector<m_type> &array_a = *reinterpret_cast<const PoolVector<m_type> *>(p_a._data._mem);           \
-	const PoolVector<m_type> &array_b = *reinterpret_cast<const PoolVector<m_type> *>(p_b._data._mem);           \
+	const Vector<m_type> &array_a = *reinterpret_cast<const Vector<m_type> *>(p_a._data._mem);                   \
+	const Vector<m_type> &array_b = *reinterpret_cast<const Vector<m_type> *>(p_b._data._mem);                   \
                                                                                                                  \
 	int a_len = array_a.size();                                                                                  \
 	if (a_len m_opa array_b.size()) {                                                                            \
 		_RETURN(m_ret_s);                                                                                        \
 	} else {                                                                                                     \
                                                                                                                  \
-		PoolVector<m_type>::Read ra = array_a.read();                                                            \
-		PoolVector<m_type>::Read rb = array_b.read();                                                            \
+		const m_type *ra = array_a.ptr();                                                                        \
+		const m_type *rb = array_b.ptr();                                                                        \
                                                                                                                  \
 		for (int i = 0; i < a_len; i++) {                                                                        \
 			if (ra[i] m_opb rb[i])                                                                               \
@@ -376,16 +376,16 @@ bool Variant::booleanize() const {
 		_RETURN(m_ret_def);                                                                                      \
 	}
 
-#define DEFAULT_OP_ARRAY_ADD(m_prefix, m_op_name, m_name, m_type)                                          \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                               \
-		if (p_a.type != p_b.type)                                                                          \
-			_RETURN_FAIL;                                                                                  \
-                                                                                                           \
-		const PoolVector<m_type> &array_a = *reinterpret_cast<const PoolVector<m_type> *>(p_a._data._mem); \
-		const PoolVector<m_type> &array_b = *reinterpret_cast<const PoolVector<m_type> *>(p_b._data._mem); \
-		PoolVector<m_type> sum = array_a;                                                                  \
-		sum.append_array(array_b);                                                                         \
-		_RETURN(sum);                                                                                      \
+#define DEFAULT_OP_ARRAY_ADD(m_prefix, m_op_name, m_name, m_type)                                  \
+	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                       \
+		if (p_a.type != p_b.type)                                                                  \
+			_RETURN_FAIL;                                                                          \
+                                                                                                   \
+		const Vector<m_type> &array_a = *reinterpret_cast<const Vector<m_type> *>(p_a._data._mem); \
+		const Vector<m_type> &array_b = *reinterpret_cast<const Vector<m_type> *>(p_b._data._mem); \
+		Vector<m_type> sum = array_a;                                                              \
+		sum.append_array(array_b);                                                                 \
+		_RETURN(sum);                                                                              \
 	}
 
 void Variant::evaluate(const Operator &p_op, const Variant &p_a,
@@ -473,13 +473,13 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_STR_NULL(math, OP_EQUAL, NODE_PATH, ==, NodePath);
 			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, _RID, ==, RID);
 
-			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, POOL_BYTE_ARRAY, uint8_t);
-			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, POOL_INT_ARRAY, int);
-			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, POOL_REAL_ARRAY, real_t);
-			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, POOL_STRING_ARRAY, String);
-			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, POOL_VECTOR2_ARRAY, Vector2);
-			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, POOL_VECTOR3_ARRAY, Vector3);
-			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, POOL_COLOR_ARRAY, Color);
+			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_BYTE_ARRAY, uint8_t);
+			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_INT_ARRAY, int);
+			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_REAL_ARRAY, real_t);
+			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_STRING_ARRAY, String);
+			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_VECTOR2_ARRAY, Vector2);
+			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_VECTOR3_ARRAY, Vector3);
+			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_COLOR_ARRAY, Color);
 		}
 
 		SWITCH_OP(math, OP_NOT_EQUAL, p_a.type) {
@@ -563,13 +563,13 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_STR_NULL(math, OP_NOT_EQUAL, NODE_PATH, !=, NodePath);
 			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, _RID, !=, RID);
 
-			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, POOL_BYTE_ARRAY, uint8_t);
-			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, POOL_INT_ARRAY, int);
-			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, POOL_REAL_ARRAY, real_t);
-			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, POOL_STRING_ARRAY, String);
-			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, POOL_VECTOR2_ARRAY, Vector2);
-			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, POOL_VECTOR3_ARRAY, Vector3);
-			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, POOL_COLOR_ARRAY, Color);
+			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_BYTE_ARRAY, uint8_t);
+			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_INT_ARRAY, int);
+			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_REAL_ARRAY, real_t);
+			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_STRING_ARRAY, String);
+			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_VECTOR2_ARRAY, Vector2);
+			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_VECTOR3_ARRAY, Vector3);
+			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_COLOR_ARRAY, Color);
 		}
 
 		SWITCH_OP(math, OP_LESS, p_a.type) {
@@ -617,13 +617,13 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_LOCALMEM(math, OP_LESS, VECTOR2, <, Vector2);
 			DEFAULT_OP_LOCALMEM(math, OP_LESS, VECTOR3, <, Vector3);
 			DEFAULT_OP_LOCALMEM(math, OP_LESS, _RID, <, RID);
-			DEFAULT_OP_ARRAY_LT(math, OP_LESS, POOL_BYTE_ARRAY, uint8_t);
-			DEFAULT_OP_ARRAY_LT(math, OP_LESS, POOL_INT_ARRAY, int);
-			DEFAULT_OP_ARRAY_LT(math, OP_LESS, POOL_REAL_ARRAY, real_t);
-			DEFAULT_OP_ARRAY_LT(math, OP_LESS, POOL_STRING_ARRAY, String);
-			DEFAULT_OP_ARRAY_LT(math, OP_LESS, POOL_VECTOR2_ARRAY, Vector3);
-			DEFAULT_OP_ARRAY_LT(math, OP_LESS, POOL_VECTOR3_ARRAY, Vector3);
-			DEFAULT_OP_ARRAY_LT(math, OP_LESS, POOL_COLOR_ARRAY, Color);
+			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_BYTE_ARRAY, uint8_t);
+			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_INT_ARRAY, int);
+			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_REAL_ARRAY, real_t);
+			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_STRING_ARRAY, String);
+			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_VECTOR2_ARRAY, Vector3);
+			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_VECTOR3_ARRAY, Vector3);
+			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_COLOR_ARRAY, Color);
 
 			CASE_TYPE(math, OP_LESS, NIL)
 			CASE_TYPE(math, OP_LESS, RECT2)
@@ -666,13 +666,13 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_LESS_EQUAL, NODE_PATH)
 			CASE_TYPE(math, OP_LESS_EQUAL, DICTIONARY)
 			CASE_TYPE(math, OP_LESS_EQUAL, ARRAY)
-			CASE_TYPE(math, OP_LESS_EQUAL, POOL_BYTE_ARRAY);
-			CASE_TYPE(math, OP_LESS_EQUAL, POOL_INT_ARRAY);
-			CASE_TYPE(math, OP_LESS_EQUAL, POOL_REAL_ARRAY);
-			CASE_TYPE(math, OP_LESS_EQUAL, POOL_STRING_ARRAY);
-			CASE_TYPE(math, OP_LESS_EQUAL, POOL_VECTOR2_ARRAY);
-			CASE_TYPE(math, OP_LESS_EQUAL, POOL_VECTOR3_ARRAY);
-			CASE_TYPE(math, OP_LESS_EQUAL, POOL_COLOR_ARRAY);
+			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_BYTE_ARRAY);
+			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_INT_ARRAY);
+			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_REAL_ARRAY);
+			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_STRING_ARRAY);
+			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_VECTOR2_ARRAY);
+			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_VECTOR3_ARRAY);
+			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_COLOR_ARRAY);
 			_RETURN_FAIL;
 		}
 
@@ -721,13 +721,13 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, VECTOR2, <, Vector2);
 			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, VECTOR3, <, Vector3);
 			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, _RID, <, RID);
-			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, POOL_BYTE_ARRAY, uint8_t);
-			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, POOL_INT_ARRAY, int);
-			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, POOL_REAL_ARRAY, real_t);
-			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, POOL_STRING_ARRAY, String);
-			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, POOL_VECTOR2_ARRAY, Vector3);
-			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, POOL_VECTOR3_ARRAY, Vector3);
-			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, POOL_COLOR_ARRAY, Color);
+			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_BYTE_ARRAY, uint8_t);
+			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_INT_ARRAY, int);
+			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_REAL_ARRAY, real_t);
+			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_STRING_ARRAY, String);
+			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_VECTOR2_ARRAY, Vector3);
+			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_VECTOR3_ARRAY, Vector3);
+			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_COLOR_ARRAY, Color);
 
 			CASE_TYPE(math, OP_GREATER, NIL)
 			CASE_TYPE(math, OP_GREATER, RECT2)
@@ -770,13 +770,13 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_GREATER_EQUAL, NODE_PATH)
 			CASE_TYPE(math, OP_GREATER_EQUAL, DICTIONARY)
 			CASE_TYPE(math, OP_GREATER_EQUAL, ARRAY)
-			CASE_TYPE(math, OP_GREATER_EQUAL, POOL_BYTE_ARRAY);
-			CASE_TYPE(math, OP_GREATER_EQUAL, POOL_INT_ARRAY);
-			CASE_TYPE(math, OP_GREATER_EQUAL, POOL_REAL_ARRAY);
-			CASE_TYPE(math, OP_GREATER_EQUAL, POOL_STRING_ARRAY);
-			CASE_TYPE(math, OP_GREATER_EQUAL, POOL_VECTOR2_ARRAY);
-			CASE_TYPE(math, OP_GREATER_EQUAL, POOL_VECTOR3_ARRAY);
-			CASE_TYPE(math, OP_GREATER_EQUAL, POOL_COLOR_ARRAY);
+			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_BYTE_ARRAY);
+			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_INT_ARRAY);
+			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_REAL_ARRAY);
+			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_STRING_ARRAY);
+			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_VECTOR2_ARRAY);
+			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_VECTOR3_ARRAY);
+			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_COLOR_ARRAY);
 			_RETURN_FAIL;
 		}
 
@@ -806,13 +806,13 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_LOCALMEM(math, OP_ADD, QUAT, +, Quat);
 			DEFAULT_OP_LOCALMEM(math, OP_ADD, COLOR, +, Color);
 
-			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, POOL_BYTE_ARRAY, uint8_t);
-			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, POOL_INT_ARRAY, int);
-			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, POOL_REAL_ARRAY, real_t);
-			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, POOL_STRING_ARRAY, String);
-			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, POOL_VECTOR2_ARRAY, Vector2);
-			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, POOL_VECTOR3_ARRAY, Vector3);
-			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, POOL_COLOR_ARRAY, Color);
+			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_BYTE_ARRAY, uint8_t);
+			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_INT_ARRAY, int);
+			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_REAL_ARRAY, real_t);
+			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_STRING_ARRAY, String);
+			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_VECTOR2_ARRAY, Vector2);
+			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_VECTOR3_ARRAY, Vector3);
+			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_COLOR_ARRAY, Color);
 
 			CASE_TYPE(math, OP_ADD, NIL)
 			CASE_TYPE(math, OP_ADD, BOOL)
@@ -851,13 +851,13 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_SUBTRACT, OBJECT)
 			CASE_TYPE(math, OP_SUBTRACT, DICTIONARY)
 			CASE_TYPE(math, OP_SUBTRACT, ARRAY)
-			CASE_TYPE(math, OP_SUBTRACT, POOL_BYTE_ARRAY);
-			CASE_TYPE(math, OP_SUBTRACT, POOL_INT_ARRAY);
-			CASE_TYPE(math, OP_SUBTRACT, POOL_REAL_ARRAY);
-			CASE_TYPE(math, OP_SUBTRACT, POOL_STRING_ARRAY);
-			CASE_TYPE(math, OP_SUBTRACT, POOL_VECTOR2_ARRAY);
-			CASE_TYPE(math, OP_SUBTRACT, POOL_VECTOR3_ARRAY);
-			CASE_TYPE(math, OP_SUBTRACT, POOL_COLOR_ARRAY);
+			CASE_TYPE(math, OP_SUBTRACT, PACKED_BYTE_ARRAY);
+			CASE_TYPE(math, OP_SUBTRACT, PACKED_INT_ARRAY);
+			CASE_TYPE(math, OP_SUBTRACT, PACKED_REAL_ARRAY);
+			CASE_TYPE(math, OP_SUBTRACT, PACKED_STRING_ARRAY);
+			CASE_TYPE(math, OP_SUBTRACT, PACKED_VECTOR2_ARRAY);
+			CASE_TYPE(math, OP_SUBTRACT, PACKED_VECTOR3_ARRAY);
+			CASE_TYPE(math, OP_SUBTRACT, PACKED_COLOR_ARRAY);
 			_RETURN_FAIL;
 		}
 
@@ -930,13 +930,13 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_MULTIPLY, OBJECT)
 			CASE_TYPE(math, OP_MULTIPLY, DICTIONARY)
 			CASE_TYPE(math, OP_MULTIPLY, ARRAY)
-			CASE_TYPE(math, OP_MULTIPLY, POOL_BYTE_ARRAY);
-			CASE_TYPE(math, OP_MULTIPLY, POOL_INT_ARRAY);
-			CASE_TYPE(math, OP_MULTIPLY, POOL_REAL_ARRAY);
-			CASE_TYPE(math, OP_MULTIPLY, POOL_STRING_ARRAY);
-			CASE_TYPE(math, OP_MULTIPLY, POOL_VECTOR2_ARRAY);
-			CASE_TYPE(math, OP_MULTIPLY, POOL_VECTOR3_ARRAY);
-			CASE_TYPE(math, OP_MULTIPLY, POOL_COLOR_ARRAY);
+			CASE_TYPE(math, OP_MULTIPLY, PACKED_BYTE_ARRAY);
+			CASE_TYPE(math, OP_MULTIPLY, PACKED_INT_ARRAY);
+			CASE_TYPE(math, OP_MULTIPLY, PACKED_REAL_ARRAY);
+			CASE_TYPE(math, OP_MULTIPLY, PACKED_STRING_ARRAY);
+			CASE_TYPE(math, OP_MULTIPLY, PACKED_VECTOR2_ARRAY);
+			CASE_TYPE(math, OP_MULTIPLY, PACKED_VECTOR3_ARRAY);
+			CASE_TYPE(math, OP_MULTIPLY, PACKED_COLOR_ARRAY);
 			_RETURN_FAIL;
 		}
 
@@ -973,13 +973,13 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_DIVIDE, OBJECT)
 			CASE_TYPE(math, OP_DIVIDE, DICTIONARY)
 			CASE_TYPE(math, OP_DIVIDE, ARRAY)
-			CASE_TYPE(math, OP_DIVIDE, POOL_BYTE_ARRAY);
-			CASE_TYPE(math, OP_DIVIDE, POOL_INT_ARRAY);
-			CASE_TYPE(math, OP_DIVIDE, POOL_REAL_ARRAY);
-			CASE_TYPE(math, OP_DIVIDE, POOL_STRING_ARRAY);
-			CASE_TYPE(math, OP_DIVIDE, POOL_VECTOR2_ARRAY);
-			CASE_TYPE(math, OP_DIVIDE, POOL_VECTOR3_ARRAY);
-			CASE_TYPE(math, OP_DIVIDE, POOL_COLOR_ARRAY);
+			CASE_TYPE(math, OP_DIVIDE, PACKED_BYTE_ARRAY);
+			CASE_TYPE(math, OP_DIVIDE, PACKED_INT_ARRAY);
+			CASE_TYPE(math, OP_DIVIDE, PACKED_REAL_ARRAY);
+			CASE_TYPE(math, OP_DIVIDE, PACKED_STRING_ARRAY);
+			CASE_TYPE(math, OP_DIVIDE, PACKED_VECTOR2_ARRAY);
+			CASE_TYPE(math, OP_DIVIDE, PACKED_VECTOR3_ARRAY);
+			CASE_TYPE(math, OP_DIVIDE, PACKED_COLOR_ARRAY);
 			_RETURN_FAIL;
 		}
 
@@ -1005,13 +1005,13 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_POSITIVE, OBJECT)
 			CASE_TYPE(math, OP_POSITIVE, DICTIONARY)
 			CASE_TYPE(math, OP_POSITIVE, ARRAY)
-			CASE_TYPE(math, OP_POSITIVE, POOL_BYTE_ARRAY)
-			CASE_TYPE(math, OP_POSITIVE, POOL_INT_ARRAY)
-			CASE_TYPE(math, OP_POSITIVE, POOL_REAL_ARRAY)
-			CASE_TYPE(math, OP_POSITIVE, POOL_STRING_ARRAY)
-			CASE_TYPE(math, OP_POSITIVE, POOL_VECTOR2_ARRAY)
-			CASE_TYPE(math, OP_POSITIVE, POOL_VECTOR3_ARRAY)
-			CASE_TYPE(math, OP_POSITIVE, POOL_COLOR_ARRAY)
+			CASE_TYPE(math, OP_POSITIVE, PACKED_BYTE_ARRAY)
+			CASE_TYPE(math, OP_POSITIVE, PACKED_INT_ARRAY)
+			CASE_TYPE(math, OP_POSITIVE, PACKED_REAL_ARRAY)
+			CASE_TYPE(math, OP_POSITIVE, PACKED_STRING_ARRAY)
+			CASE_TYPE(math, OP_POSITIVE, PACKED_VECTOR2_ARRAY)
+			CASE_TYPE(math, OP_POSITIVE, PACKED_VECTOR3_ARRAY)
+			CASE_TYPE(math, OP_POSITIVE, PACKED_COLOR_ARRAY)
 			_RETURN_FAIL;
 		}
 
@@ -1038,13 +1038,13 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_NEGATE, OBJECT)
 			CASE_TYPE(math, OP_NEGATE, DICTIONARY)
 			CASE_TYPE(math, OP_NEGATE, ARRAY)
-			CASE_TYPE(math, OP_NEGATE, POOL_BYTE_ARRAY)
-			CASE_TYPE(math, OP_NEGATE, POOL_INT_ARRAY)
-			CASE_TYPE(math, OP_NEGATE, POOL_REAL_ARRAY)
-			CASE_TYPE(math, OP_NEGATE, POOL_STRING_ARRAY)
-			CASE_TYPE(math, OP_NEGATE, POOL_VECTOR2_ARRAY)
-			CASE_TYPE(math, OP_NEGATE, POOL_VECTOR3_ARRAY)
-			CASE_TYPE(math, OP_NEGATE, POOL_COLOR_ARRAY)
+			CASE_TYPE(math, OP_NEGATE, PACKED_BYTE_ARRAY)
+			CASE_TYPE(math, OP_NEGATE, PACKED_INT_ARRAY)
+			CASE_TYPE(math, OP_NEGATE, PACKED_REAL_ARRAY)
+			CASE_TYPE(math, OP_NEGATE, PACKED_STRING_ARRAY)
+			CASE_TYPE(math, OP_NEGATE, PACKED_VECTOR2_ARRAY)
+			CASE_TYPE(math, OP_NEGATE, PACKED_VECTOR3_ARRAY)
+			CASE_TYPE(math, OP_NEGATE, PACKED_COLOR_ARRAY)
 			_RETURN_FAIL;
 		}
 
@@ -1098,13 +1098,13 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_MODULE, OBJECT)
 			CASE_TYPE(math, OP_MODULE, DICTIONARY)
 			CASE_TYPE(math, OP_MODULE, ARRAY)
-			CASE_TYPE(math, OP_MODULE, POOL_BYTE_ARRAY)
-			CASE_TYPE(math, OP_MODULE, POOL_INT_ARRAY)
-			CASE_TYPE(math, OP_MODULE, POOL_REAL_ARRAY)
-			CASE_TYPE(math, OP_MODULE, POOL_STRING_ARRAY)
-			CASE_TYPE(math, OP_MODULE, POOL_VECTOR2_ARRAY)
-			CASE_TYPE(math, OP_MODULE, POOL_VECTOR3_ARRAY)
-			CASE_TYPE(math, OP_MODULE, POOL_COLOR_ARRAY)
+			CASE_TYPE(math, OP_MODULE, PACKED_BYTE_ARRAY)
+			CASE_TYPE(math, OP_MODULE, PACKED_INT_ARRAY)
+			CASE_TYPE(math, OP_MODULE, PACKED_REAL_ARRAY)
+			CASE_TYPE(math, OP_MODULE, PACKED_STRING_ARRAY)
+			CASE_TYPE(math, OP_MODULE, PACKED_VECTOR2_ARRAY)
+			CASE_TYPE(math, OP_MODULE, PACKED_VECTOR3_ARRAY)
+			CASE_TYPE(math, OP_MODULE, PACKED_COLOR_ARRAY)
 			_RETURN_FAIL;
 		}
 
@@ -1725,10 +1725,10 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 	} break;
 
 #define DEFAULT_OP_DVECTOR_SET(m_name, dv_type, skip_cond) \
-	DEFAULT_OP_ARRAY_CMD(m_name, PoolVector<dv_type>, if (skip_cond) return;, arr->set(index, p_value); return )
+	DEFAULT_OP_ARRAY_CMD(m_name, Vector<dv_type>, if (skip_cond) return;, arr->set(index, p_value); return )
 
 #define DEFAULT_OP_DVECTOR_GET(m_name, dv_type) \
-	DEFAULT_OP_ARRAY_CMD(m_name, const PoolVector<dv_type>, ;, return arr->get(index))
+	DEFAULT_OP_ARRAY_CMD(m_name, const Vector<dv_type>, ;, return arr->get(index))
 
 void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid) {
 
@@ -2197,13 +2197,13 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 			return;
 		} break;
 			DEFAULT_OP_ARRAY_CMD(ARRAY, Array, ;, (*arr)[index] = p_value; return ) // 20
-			DEFAULT_OP_DVECTOR_SET(POOL_BYTE_ARRAY, uint8_t, p_value.type != Variant::REAL && p_value.type != Variant::INT)
-			DEFAULT_OP_DVECTOR_SET(POOL_INT_ARRAY, int, p_value.type != Variant::REAL && p_value.type != Variant::INT)
-			DEFAULT_OP_DVECTOR_SET(POOL_REAL_ARRAY, real_t, p_value.type != Variant::REAL && p_value.type != Variant::INT)
-			DEFAULT_OP_DVECTOR_SET(POOL_STRING_ARRAY, String, p_value.type != Variant::STRING)
-			DEFAULT_OP_DVECTOR_SET(POOL_VECTOR2_ARRAY, Vector2, p_value.type != Variant::VECTOR2) // 25
-			DEFAULT_OP_DVECTOR_SET(POOL_VECTOR3_ARRAY, Vector3, p_value.type != Variant::VECTOR3)
-			DEFAULT_OP_DVECTOR_SET(POOL_COLOR_ARRAY, Color, p_value.type != Variant::COLOR)
+			DEFAULT_OP_DVECTOR_SET(PACKED_BYTE_ARRAY, uint8_t, p_value.type != Variant::REAL && p_value.type != Variant::INT)
+			DEFAULT_OP_DVECTOR_SET(PACKED_INT_ARRAY, int, p_value.type != Variant::REAL && p_value.type != Variant::INT)
+			DEFAULT_OP_DVECTOR_SET(PACKED_REAL_ARRAY, real_t, p_value.type != Variant::REAL && p_value.type != Variant::INT)
+			DEFAULT_OP_DVECTOR_SET(PACKED_STRING_ARRAY, String, p_value.type != Variant::STRING)
+			DEFAULT_OP_DVECTOR_SET(PACKED_VECTOR2_ARRAY, Vector2, p_value.type != Variant::VECTOR2) // 25
+			DEFAULT_OP_DVECTOR_SET(PACKED_VECTOR3_ARRAY, Vector3, p_value.type != Variant::VECTOR3)
+			DEFAULT_OP_DVECTOR_SET(PACKED_COLOR_ARRAY, Color, p_value.type != Variant::COLOR)
 		default:
 			return;
 	}
@@ -2569,13 +2569,13 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 			}
 		} break;
 			DEFAULT_OP_ARRAY_CMD(ARRAY, const Array, ;, return (*arr)[index]) // 20
-			DEFAULT_OP_DVECTOR_GET(POOL_BYTE_ARRAY, uint8_t)
-			DEFAULT_OP_DVECTOR_GET(POOL_INT_ARRAY, int)
-			DEFAULT_OP_DVECTOR_GET(POOL_REAL_ARRAY, real_t)
-			DEFAULT_OP_DVECTOR_GET(POOL_STRING_ARRAY, String)
-			DEFAULT_OP_DVECTOR_GET(POOL_VECTOR2_ARRAY, Vector2) // 25
-			DEFAULT_OP_DVECTOR_GET(POOL_VECTOR3_ARRAY, Vector3)
-			DEFAULT_OP_DVECTOR_GET(POOL_COLOR_ARRAY, Color)
+			DEFAULT_OP_DVECTOR_GET(PACKED_BYTE_ARRAY, uint8_t)
+			DEFAULT_OP_DVECTOR_GET(PACKED_INT_ARRAY, int)
+			DEFAULT_OP_DVECTOR_GET(PACKED_REAL_ARRAY, real_t)
+			DEFAULT_OP_DVECTOR_GET(PACKED_STRING_ARRAY, String)
+			DEFAULT_OP_DVECTOR_GET(PACKED_VECTOR2_ARRAY, Vector2) // 25
+			DEFAULT_OP_DVECTOR_GET(PACKED_VECTOR3_ARRAY, Vector3)
+			DEFAULT_OP_DVECTOR_GET(PACKED_COLOR_ARRAY, Color)
 		default:
 			return Variant();
 	}
@@ -2651,14 +2651,14 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 			return false;
 
 		} break;
-		case POOL_BYTE_ARRAY: {
+		case PACKED_BYTE_ARRAY: {
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
 
 				int index = p_index;
-				const PoolVector<uint8_t> *arr = reinterpret_cast<const PoolVector<uint8_t> *>(_data._mem);
+				const Vector<uint8_t> *arr = reinterpret_cast<const Vector<uint8_t> *>(_data._mem);
 				int l = arr->size();
 				if (l) {
-					PoolVector<uint8_t>::Read r = arr->read();
+					const uint8_t *r = arr->ptr();
 					for (int i = 0; i < l; i++) {
 						if (r[i] == index)
 							return true;
@@ -2669,14 +2669,14 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 			}
 
 		} break;
-		case POOL_INT_ARRAY: {
+		case PACKED_INT_ARRAY: {
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
 
 				int index = p_index;
-				const PoolVector<int> *arr = reinterpret_cast<const PoolVector<int> *>(_data._mem);
+				const Vector<int> *arr = reinterpret_cast<const Vector<int> *>(_data._mem);
 				int l = arr->size();
 				if (l) {
-					PoolVector<int>::Read r = arr->read();
+					const int *r = arr->ptr();
 					for (int i = 0; i < l; i++) {
 						if (r[i] == index)
 							return true;
@@ -2686,15 +2686,15 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 				return false;
 			}
 		} break;
-		case POOL_REAL_ARRAY: {
+		case PACKED_REAL_ARRAY: {
 
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
 
 				real_t index = p_index;
-				const PoolVector<real_t> *arr = reinterpret_cast<const PoolVector<real_t> *>(_data._mem);
+				const Vector<real_t> *arr = reinterpret_cast<const Vector<real_t> *>(_data._mem);
 				int l = arr->size();
 				if (l) {
-					PoolVector<real_t>::Read r = arr->read();
+					const real_t *r = arr->ptr();
 					for (int i = 0; i < l; i++) {
 						if (r[i] == index)
 							return true;
@@ -2705,15 +2705,15 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 			}
 
 		} break;
-		case POOL_STRING_ARRAY: {
+		case PACKED_STRING_ARRAY: {
 			if (p_index.get_type() == Variant::STRING) {
 
 				String index = p_index;
-				const PoolVector<String> *arr = reinterpret_cast<const PoolVector<String> *>(_data._mem);
+				const Vector<String> *arr = reinterpret_cast<const Vector<String> *>(_data._mem);
 
 				int l = arr->size();
 				if (l) {
-					PoolVector<String>::Read r = arr->read();
+					const String *r = arr->ptr();
 					for (int i = 0; i < l; i++) {
 						if (r[i] == index)
 							return true;
@@ -2724,15 +2724,15 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 			}
 
 		} break; //25
-		case POOL_VECTOR2_ARRAY: {
+		case PACKED_VECTOR2_ARRAY: {
 			if (p_index.get_type() == Variant::VECTOR2) {
 
 				Vector2 index = p_index;
-				const PoolVector<Vector2> *arr = reinterpret_cast<const PoolVector<Vector2> *>(_data._mem);
+				const Vector<Vector2> *arr = reinterpret_cast<const Vector<Vector2> *>(_data._mem);
 
 				int l = arr->size();
 				if (l) {
-					PoolVector<Vector2>::Read r = arr->read();
+					const Vector2 *r = arr->ptr();
 					for (int i = 0; i < l; i++) {
 						if (r[i] == index)
 							return true;
@@ -2743,15 +2743,15 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 			}
 
 		} break;
-		case POOL_VECTOR3_ARRAY: {
+		case PACKED_VECTOR3_ARRAY: {
 			if (p_index.get_type() == Variant::VECTOR3) {
 
 				Vector3 index = p_index;
-				const PoolVector<Vector3> *arr = reinterpret_cast<const PoolVector<Vector3> *>(_data._mem);
+				const Vector<Vector3> *arr = reinterpret_cast<const Vector<Vector3> *>(_data._mem);
 
 				int l = arr->size();
 				if (l) {
-					PoolVector<Vector3>::Read r = arr->read();
+					const Vector3 *r = arr->ptr();
 					for (int i = 0; i < l; i++) {
 						if (r[i] == index)
 							return true;
@@ -2762,16 +2762,16 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 			}
 
 		} break;
-		case POOL_COLOR_ARRAY: {
+		case PACKED_COLOR_ARRAY: {
 
 			if (p_index.get_type() == Variant::COLOR) {
 
 				Color index = p_index;
-				const PoolVector<Color> *arr = reinterpret_cast<const PoolVector<Color> *>(_data._mem);
+				const Vector<Color> *arr = reinterpret_cast<const Vector<Color> *>(_data._mem);
 
 				int l = arr->size();
 				if (l) {
-					PoolVector<Color>::Read r = arr->read();
+					const Color *r = arr->ptr();
 					for (int i = 0; i < l; i++) {
 						if (r[i] == index)
 							return true;
@@ -2902,13 +2902,13 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 			}
 		} break;
 		case ARRAY: // 20
-		case POOL_BYTE_ARRAY:
-		case POOL_INT_ARRAY:
-		case POOL_REAL_ARRAY:
-		case POOL_STRING_ARRAY:
-		case POOL_VECTOR2_ARRAY: // 25
-		case POOL_VECTOR3_ARRAY:
-		case POOL_COLOR_ARRAY: {
+		case PACKED_BYTE_ARRAY:
+		case PACKED_INT_ARRAY:
+		case PACKED_REAL_ARRAY:
+		case PACKED_STRING_ARRAY:
+		case PACKED_VECTOR2_ARRAY: // 25
+		case PACKED_VECTOR3_ARRAY:
+		case PACKED_COLOR_ARRAY: {
 
 			//nothing
 		} break;
@@ -3012,56 +3012,56 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			r_iter = 0;
 			return true;
 		} break;
-		case POOL_BYTE_ARRAY: {
-			const PoolVector<uint8_t> *arr = reinterpret_cast<const PoolVector<uint8_t> *>(_data._mem);
+		case PACKED_BYTE_ARRAY: {
+			const Vector<uint8_t> *arr = reinterpret_cast<const Vector<uint8_t> *>(_data._mem);
 			if (arr->size() == 0)
 				return false;
 			r_iter = 0;
 			return true;
 
 		} break;
-		case POOL_INT_ARRAY: {
-			const PoolVector<int> *arr = reinterpret_cast<const PoolVector<int> *>(_data._mem);
+		case PACKED_INT_ARRAY: {
+			const Vector<int> *arr = reinterpret_cast<const Vector<int> *>(_data._mem);
 			if (arr->size() == 0)
 				return false;
 			r_iter = 0;
 			return true;
 
 		} break;
-		case POOL_REAL_ARRAY: {
-			const PoolVector<real_t> *arr = reinterpret_cast<const PoolVector<real_t> *>(_data._mem);
+		case PACKED_REAL_ARRAY: {
+			const Vector<real_t> *arr = reinterpret_cast<const Vector<real_t> *>(_data._mem);
 			if (arr->size() == 0)
 				return false;
 			r_iter = 0;
 			return true;
 
 		} break;
-		case POOL_STRING_ARRAY: {
-			const PoolVector<String> *arr = reinterpret_cast<const PoolVector<String> *>(_data._mem);
+		case PACKED_STRING_ARRAY: {
+			const Vector<String> *arr = reinterpret_cast<const Vector<String> *>(_data._mem);
 			if (arr->size() == 0)
 				return false;
 			r_iter = 0;
 			return true;
 		} break;
-		case POOL_VECTOR2_ARRAY: {
+		case PACKED_VECTOR2_ARRAY: {
 
-			const PoolVector<Vector2> *arr = reinterpret_cast<const PoolVector<Vector2> *>(_data._mem);
+			const Vector<Vector2> *arr = reinterpret_cast<const Vector<Vector2> *>(_data._mem);
 			if (arr->size() == 0)
 				return false;
 			r_iter = 0;
 			return true;
 		} break;
-		case POOL_VECTOR3_ARRAY: {
+		case PACKED_VECTOR3_ARRAY: {
 
-			const PoolVector<Vector3> *arr = reinterpret_cast<const PoolVector<Vector3> *>(_data._mem);
+			const Vector<Vector3> *arr = reinterpret_cast<const Vector<Vector3> *>(_data._mem);
 			if (arr->size() == 0)
 				return false;
 			r_iter = 0;
 			return true;
 		} break;
-		case POOL_COLOR_ARRAY: {
+		case PACKED_COLOR_ARRAY: {
 
-			const PoolVector<Color> *arr = reinterpret_cast<const PoolVector<Color> *>(_data._mem);
+			const Vector<Color> *arr = reinterpret_cast<const Vector<Color> *>(_data._mem);
 			if (arr->size() == 0)
 				return false;
 			r_iter = 0;
@@ -3187,8 +3187,8 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			r_iter = idx;
 			return true;
 		} break;
-		case POOL_BYTE_ARRAY: {
-			const PoolVector<uint8_t> *arr = reinterpret_cast<const PoolVector<uint8_t> *>(_data._mem);
+		case PACKED_BYTE_ARRAY: {
+			const Vector<uint8_t> *arr = reinterpret_cast<const Vector<uint8_t> *>(_data._mem);
 			int idx = r_iter;
 			idx++;
 			if (idx >= arr->size())
@@ -3197,8 +3197,8 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			return true;
 
 		} break;
-		case POOL_INT_ARRAY: {
-			const PoolVector<int> *arr = reinterpret_cast<const PoolVector<int> *>(_data._mem);
+		case PACKED_INT_ARRAY: {
+			const Vector<int> *arr = reinterpret_cast<const Vector<int> *>(_data._mem);
 			int idx = r_iter;
 			idx++;
 			if (idx >= arr->size())
@@ -3207,8 +3207,8 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			return true;
 
 		} break;
-		case POOL_REAL_ARRAY: {
-			const PoolVector<real_t> *arr = reinterpret_cast<const PoolVector<real_t> *>(_data._mem);
+		case PACKED_REAL_ARRAY: {
+			const Vector<real_t> *arr = reinterpret_cast<const Vector<real_t> *>(_data._mem);
 			int idx = r_iter;
 			idx++;
 			if (idx >= arr->size())
@@ -3217,8 +3217,8 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			return true;
 
 		} break;
-		case POOL_STRING_ARRAY: {
-			const PoolVector<String> *arr = reinterpret_cast<const PoolVector<String> *>(_data._mem);
+		case PACKED_STRING_ARRAY: {
+			const Vector<String> *arr = reinterpret_cast<const Vector<String> *>(_data._mem);
 			int idx = r_iter;
 			idx++;
 			if (idx >= arr->size())
@@ -3226,9 +3226,9 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			r_iter = idx;
 			return true;
 		} break;
-		case POOL_VECTOR2_ARRAY: {
+		case PACKED_VECTOR2_ARRAY: {
 
-			const PoolVector<Vector2> *arr = reinterpret_cast<const PoolVector<Vector2> *>(_data._mem);
+			const Vector<Vector2> *arr = reinterpret_cast<const Vector<Vector2> *>(_data._mem);
 			int idx = r_iter;
 			idx++;
 			if (idx >= arr->size())
@@ -3236,9 +3236,9 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			r_iter = idx;
 			return true;
 		} break;
-		case POOL_VECTOR3_ARRAY: {
+		case PACKED_VECTOR3_ARRAY: {
 
-			const PoolVector<Vector3> *arr = reinterpret_cast<const PoolVector<Vector3> *>(_data._mem);
+			const Vector<Vector3> *arr = reinterpret_cast<const Vector<Vector3> *>(_data._mem);
 			int idx = r_iter;
 			idx++;
 			if (idx >= arr->size())
@@ -3246,9 +3246,9 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			r_iter = idx;
 			return true;
 		} break;
-		case POOL_COLOR_ARRAY: {
+		case PACKED_COLOR_ARRAY: {
 
-			const PoolVector<Color> *arr = reinterpret_cast<const PoolVector<Color> *>(_data._mem);
+			const Vector<Color> *arr = reinterpret_cast<const Vector<Color> *>(_data._mem);
 			int idx = r_iter;
 			idx++;
 			if (idx >= arr->size())
@@ -3334,8 +3334,8 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 #endif
 			return arr->get(idx);
 		} break;
-		case POOL_BYTE_ARRAY: {
-			const PoolVector<uint8_t> *arr = reinterpret_cast<const PoolVector<uint8_t> *>(_data._mem);
+		case PACKED_BYTE_ARRAY: {
+			const Vector<uint8_t> *arr = reinterpret_cast<const Vector<uint8_t> *>(_data._mem);
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
@@ -3345,8 +3345,8 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 #endif
 			return arr->get(idx);
 		} break;
-		case POOL_INT_ARRAY: {
-			const PoolVector<int> *arr = reinterpret_cast<const PoolVector<int> *>(_data._mem);
+		case PACKED_INT_ARRAY: {
+			const Vector<int> *arr = reinterpret_cast<const Vector<int> *>(_data._mem);
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
@@ -3356,8 +3356,8 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 #endif
 			return arr->get(idx);
 		} break;
-		case POOL_REAL_ARRAY: {
-			const PoolVector<real_t> *arr = reinterpret_cast<const PoolVector<real_t> *>(_data._mem);
+		case PACKED_REAL_ARRAY: {
+			const Vector<real_t> *arr = reinterpret_cast<const Vector<real_t> *>(_data._mem);
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
@@ -3367,8 +3367,8 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 #endif
 			return arr->get(idx);
 		} break;
-		case POOL_STRING_ARRAY: {
-			const PoolVector<String> *arr = reinterpret_cast<const PoolVector<String> *>(_data._mem);
+		case PACKED_STRING_ARRAY: {
+			const Vector<String> *arr = reinterpret_cast<const Vector<String> *>(_data._mem);
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
@@ -3378,9 +3378,9 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 #endif
 			return arr->get(idx);
 		} break;
-		case POOL_VECTOR2_ARRAY: {
+		case PACKED_VECTOR2_ARRAY: {
 
-			const PoolVector<Vector2> *arr = reinterpret_cast<const PoolVector<Vector2> *>(_data._mem);
+			const Vector<Vector2> *arr = reinterpret_cast<const Vector<Vector2> *>(_data._mem);
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
@@ -3390,9 +3390,9 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 #endif
 			return arr->get(idx);
 		} break;
-		case POOL_VECTOR3_ARRAY: {
+		case PACKED_VECTOR3_ARRAY: {
 
-			const PoolVector<Vector3> *arr = reinterpret_cast<const PoolVector<Vector3> *>(_data._mem);
+			const Vector<Vector3> *arr = reinterpret_cast<const Vector<Vector3> *>(_data._mem);
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
@@ -3402,9 +3402,9 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 #endif
 			return arr->get(idx);
 		} break;
-		case POOL_COLOR_ARRAY: {
+		case PACKED_COLOR_ARRAY: {
 
-			const PoolVector<Color> *arr = reinterpret_cast<const PoolVector<Color> *>(_data._mem);
+			const Vector<Color> *arr = reinterpret_cast<const Vector<Color> *>(_data._mem);
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
@@ -3658,25 +3658,25 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			r_dst = a;
 		}
 			return;
-		case POOL_BYTE_ARRAY: {
+		case PACKED_BYTE_ARRAY: {
 			r_dst = a;
 		}
 			return;
-		case POOL_INT_ARRAY: {
-			const PoolVector<int> *arr_a = reinterpret_cast<const PoolVector<int> *>(a._data._mem);
-			const PoolVector<int> *arr_b = reinterpret_cast<const PoolVector<int> *>(b._data._mem);
+		case PACKED_INT_ARRAY: {
+			const Vector<int> *arr_a = reinterpret_cast<const Vector<int> *>(a._data._mem);
+			const Vector<int> *arr_b = reinterpret_cast<const Vector<int> *>(b._data._mem);
 			int sz = arr_a->size();
 			if (sz == 0 || arr_b->size() != sz) {
 
 				r_dst = a;
 			} else {
 
-				PoolVector<int> v;
+				Vector<int> v;
 				v.resize(sz);
 				{
-					PoolVector<int>::Write vw = v.write();
-					PoolVector<int>::Read ar = arr_a->read();
-					PoolVector<int>::Read br = arr_b->read();
+					int *vw = v.ptrw();
+					const int *ar = arr_a->ptr();
+					const int *br = arr_b->ptr();
 
 					Variant va;
 					for (int i = 0; i < sz; i++) {
@@ -3688,21 +3688,21 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			}
 		}
 			return;
-		case POOL_REAL_ARRAY: {
-			const PoolVector<real_t> *arr_a = reinterpret_cast<const PoolVector<real_t> *>(a._data._mem);
-			const PoolVector<real_t> *arr_b = reinterpret_cast<const PoolVector<real_t> *>(b._data._mem);
+		case PACKED_REAL_ARRAY: {
+			const Vector<real_t> *arr_a = reinterpret_cast<const Vector<real_t> *>(a._data._mem);
+			const Vector<real_t> *arr_b = reinterpret_cast<const Vector<real_t> *>(b._data._mem);
 			int sz = arr_a->size();
 			if (sz == 0 || arr_b->size() != sz) {
 
 				r_dst = a;
 			} else {
 
-				PoolVector<real_t> v;
+				Vector<real_t> v;
 				v.resize(sz);
 				{
-					PoolVector<real_t>::Write vw = v.write();
-					PoolVector<real_t>::Read ar = arr_a->read();
-					PoolVector<real_t>::Read br = arr_b->read();
+					real_t *vw = v.ptrw();
+					const real_t *ar = arr_a->ptr();
+					const real_t *br = arr_b->ptr();
 
 					Variant va;
 					for (int i = 0; i < sz; i++) {
@@ -3714,25 +3714,25 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			}
 		}
 			return;
-		case POOL_STRING_ARRAY: {
+		case PACKED_STRING_ARRAY: {
 			r_dst = a;
 		}
 			return;
-		case POOL_VECTOR2_ARRAY: {
-			const PoolVector<Vector2> *arr_a = reinterpret_cast<const PoolVector<Vector2> *>(a._data._mem);
-			const PoolVector<Vector2> *arr_b = reinterpret_cast<const PoolVector<Vector2> *>(b._data._mem);
+		case PACKED_VECTOR2_ARRAY: {
+			const Vector<Vector2> *arr_a = reinterpret_cast<const Vector<Vector2> *>(a._data._mem);
+			const Vector<Vector2> *arr_b = reinterpret_cast<const Vector<Vector2> *>(b._data._mem);
 			int sz = arr_a->size();
 			if (sz == 0 || arr_b->size() != sz) {
 
 				r_dst = a;
 			} else {
 
-				PoolVector<Vector2> v;
+				Vector<Vector2> v;
 				v.resize(sz);
 				{
-					PoolVector<Vector2>::Write vw = v.write();
-					PoolVector<Vector2>::Read ar = arr_a->read();
-					PoolVector<Vector2>::Read br = arr_b->read();
+					Vector2 *vw = v.ptrw();
+					const Vector2 *ar = arr_a->ptr();
+					const Vector2 *br = arr_b->ptr();
 
 					for (int i = 0; i < sz; i++) {
 						vw[i] = ar[i].linear_interpolate(br[i], c);
@@ -3742,22 +3742,22 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			}
 		}
 			return;
-		case POOL_VECTOR3_ARRAY: {
+		case PACKED_VECTOR3_ARRAY: {
 
-			const PoolVector<Vector3> *arr_a = reinterpret_cast<const PoolVector<Vector3> *>(a._data._mem);
-			const PoolVector<Vector3> *arr_b = reinterpret_cast<const PoolVector<Vector3> *>(b._data._mem);
+			const Vector<Vector3> *arr_a = reinterpret_cast<const Vector<Vector3> *>(a._data._mem);
+			const Vector<Vector3> *arr_b = reinterpret_cast<const Vector<Vector3> *>(b._data._mem);
 			int sz = arr_a->size();
 			if (sz == 0 || arr_b->size() != sz) {
 
 				r_dst = a;
 			} else {
 
-				PoolVector<Vector3> v;
+				Vector<Vector3> v;
 				v.resize(sz);
 				{
-					PoolVector<Vector3>::Write vw = v.write();
-					PoolVector<Vector3>::Read ar = arr_a->read();
-					PoolVector<Vector3>::Read br = arr_b->read();
+					Vector3 *vw = v.ptrw();
+					const Vector3 *ar = arr_a->ptr();
+					const Vector3 *br = arr_b->ptr();
 
 					for (int i = 0; i < sz; i++) {
 						vw[i] = ar[i].linear_interpolate(br[i], c);
@@ -3767,21 +3767,21 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			}
 		}
 			return;
-		case POOL_COLOR_ARRAY: {
-			const PoolVector<Color> *arr_a = reinterpret_cast<const PoolVector<Color> *>(a._data._mem);
-			const PoolVector<Color> *arr_b = reinterpret_cast<const PoolVector<Color> *>(b._data._mem);
+		case PACKED_COLOR_ARRAY: {
+			const Vector<Color> *arr_a = reinterpret_cast<const Vector<Color> *>(a._data._mem);
+			const Vector<Color> *arr_b = reinterpret_cast<const Vector<Color> *>(b._data._mem);
 			int sz = arr_a->size();
 			if (sz == 0 || arr_b->size() != sz) {
 
 				r_dst = a;
 			} else {
 
-				PoolVector<Color> v;
+				Vector<Color> v;
 				v.resize(sz);
 				{
-					PoolVector<Color>::Write vw = v.write();
-					PoolVector<Color>::Read ar = arr_a->read();
-					PoolVector<Color>::Read br = arr_b->read();
+					Color *vw = v.ptrw();
+					const Color *ar = arr_a->ptr();
+					const Color *br = arr_b->ptr();
 
 					for (int i = 0; i < sz; i++) {
 						vw[i] = ar[i].linear_interpolate(br[i], c);

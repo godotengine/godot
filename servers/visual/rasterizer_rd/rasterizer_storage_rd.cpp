@@ -584,8 +584,8 @@ RID RasterizerStorageRD::texture_2d_create(const Ref<Image> &p_image) {
 		rd_view.swizzle_b = ret_format.swizzle_b;
 		rd_view.swizzle_a = ret_format.swizzle_a;
 	}
-	PoolVector<uint8_t> data = image->get_data(); //use image data
-	Vector<PoolVector<uint8_t> > data_slices;
+	Vector<uint8_t> data = image->get_data(); //use image data
+	Vector<Vector<uint8_t> > data_slices;
 	data_slices.push_back(data);
 	texture.rd_texture = RD::get_singleton()->texture_create(rd_format, rd_view, data_slices);
 	ERR_FAIL_COND_V(texture.rd_texture.is_null(), RID());
@@ -720,13 +720,12 @@ RID RasterizerStorageRD::texture_2d_placeholder_create() {
 	Ref<Image> image;
 	image.instance();
 	image->create(4, 4, false, Image::FORMAT_RGBA8);
-	image->lock();
+
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
 			image->set_pixel(i, j, Color(1, 0, 1, 1));
 		}
 	}
-	image->unlock();
 
 	return texture_2d_create(image);
 }
@@ -749,7 +748,7 @@ Ref<Image> RasterizerStorageRD::texture_2d_get(RID p_texture) const {
 		return tex->image_cache_2d;
 	}
 #endif
-	PoolVector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, 0);
+	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, 0);
 	ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
 	Ref<Image> image;
 	image.instance();
@@ -1195,11 +1194,11 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 		} break;
 		case ShaderLanguage::TYPE_IVEC2: {
 
-			PoolVector<int> iv = value;
+			Vector<int> iv = value;
 			int s = iv.size();
 			int32_t *gui = (int32_t *)data;
 
-			PoolVector<int>::Read r = iv.read();
+			const int *r = iv.ptr();
 
 			for (int i = 0; i < 2; i++) {
 				if (i < s)
@@ -1211,11 +1210,11 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 		} break;
 		case ShaderLanguage::TYPE_IVEC3: {
 
-			PoolVector<int> iv = value;
+			Vector<int> iv = value;
 			int s = iv.size();
 			int32_t *gui = (int32_t *)data;
 
-			PoolVector<int>::Read r = iv.read();
+			const int *r = iv.ptr();
 
 			for (int i = 0; i < 3; i++) {
 				if (i < s)
@@ -1226,11 +1225,11 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 		} break;
 		case ShaderLanguage::TYPE_IVEC4: {
 
-			PoolVector<int> iv = value;
+			Vector<int> iv = value;
 			int s = iv.size();
 			int32_t *gui = (int32_t *)data;
 
-			PoolVector<int>::Read r = iv.read();
+			const int *r = iv.ptr();
 
 			for (int i = 0; i < 4; i++) {
 				if (i < s)
@@ -1248,11 +1247,11 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 		} break;
 		case ShaderLanguage::TYPE_UVEC2: {
 
-			PoolVector<int> iv = value;
+			Vector<int> iv = value;
 			int s = iv.size();
 			uint32_t *gui = (uint32_t *)data;
 
-			PoolVector<int>::Read r = iv.read();
+			const int *r = iv.ptr();
 
 			for (int i = 0; i < 2; i++) {
 				if (i < s)
@@ -1262,11 +1261,11 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			}
 		} break;
 		case ShaderLanguage::TYPE_UVEC3: {
-			PoolVector<int> iv = value;
+			Vector<int> iv = value;
 			int s = iv.size();
 			uint32_t *gui = (uint32_t *)data;
 
-			PoolVector<int>::Read r = iv.read();
+			const int *r = iv.ptr();
 
 			for (int i = 0; i < 3; i++) {
 				if (i < s)
@@ -1277,11 +1276,11 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 
 		} break;
 		case ShaderLanguage::TYPE_UVEC4: {
-			PoolVector<int> iv = value;
+			Vector<int> iv = value;
 			int s = iv.size();
 			uint32_t *gui = (uint32_t *)data;
 
-			PoolVector<int>::Read r = iv.read();
+			const int *r = iv.ptr();
 
 			for (int i = 0; i < 4; i++) {
 				if (i < s)
@@ -1955,15 +1954,15 @@ VS::BlendShapeMode RasterizerStorageRD::mesh_get_blend_shape_mode(RID p_mesh) co
 	return mesh->blend_shape_mode;
 }
 
-void RasterizerStorageRD::mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) {
+void RasterizerStorageRD::mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
 	ERR_FAIL_COND(p_data.size() == 0);
 	uint64_t data_size = p_data.size();
-	PoolVector<uint8_t>::Read r = p_data.read();
+	const uint8_t *r = p_data.ptr();
 
-	RD::get_singleton()->buffer_update(mesh->surfaces[p_surface]->vertex_buffer, p_offset, data_size, r.ptr());
+	RD::get_singleton()->buffer_update(mesh->surfaces[p_surface]->vertex_buffer, p_offset, data_size, r);
 }
 
 void RasterizerStorageRD::mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) {
@@ -2012,7 +2011,7 @@ VS::SurfaceData RasterizerStorageRD::mesh_get_surface(RID p_mesh, int p_surface)
 	sd.bone_aabbs = s.bone_aabbs;
 
 	for (int i = 0; i < s.blend_shapes.size(); i++) {
-		PoolVector<uint8_t> bs = RD::get_singleton()->buffer_get_data(s.blend_shapes[i]);
+		Vector<uint8_t> bs = RD::get_singleton()->buffer_get_data(s.blend_shapes[i]);
 		sd.blend_shapes.push_back(bs);
 	}
 
@@ -2386,7 +2385,7 @@ void RasterizerStorageRD::multimesh_allocate(RID p_multimesh, int p_instances, V
 	multimesh->buffer_set = false;
 
 	//print_line("allocate, elements: " + itos(p_instances) + " 2D: " + itos(p_transform_format == VS::MULTIMESH_TRANSFORM_2D) + " colors " + itos(multimesh->uses_colors) + " data " + itos(multimesh->uses_custom_data) + " stride " + itos(multimesh->stride_cache) + " total size " + itos(multimesh->stride_cache * multimesh->instances));
-	multimesh->data_cache = PoolVector<float>();
+	multimesh->data_cache = Vector<float>();
 	multimesh->aabb = AABB();
 	multimesh->aabb_dirty = false;
 	multimesh->visible_instances = MIN(multimesh->visible_instances, multimesh->instances);
@@ -2421,9 +2420,9 @@ void RasterizerStorageRD::multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 	} else if (multimesh->instances) {
 		//need to re-create AABB unfortunately, calling this has a penalty
 		if (multimesh->buffer_set) {
-			PoolVector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(multimesh->buffer);
-			PoolVector<uint8_t>::Read r = buffer.read();
-			const float *data = (const float *)r.ptr();
+			Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(multimesh->buffer);
+			const uint8_t *r = buffer.ptr();
+			const float *data = (const float *)r;
 			_multimesh_re_create_aabb(multimesh, data, multimesh->instances);
 		}
 	}
@@ -2442,17 +2441,17 @@ void RasterizerStorageRD::_multimesh_make_local(MultiMesh *multimesh) const {
 	// for this, the data must reside on CPU, so just copy it there.
 	multimesh->data_cache.resize(multimesh->instances * multimesh->stride_cache);
 	{
-		PoolVector<float>::Write w = multimesh->data_cache.write();
+		float *w = multimesh->data_cache.ptrw();
 
 		if (multimesh->buffer_set) {
-			PoolVector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(multimesh->buffer);
+			Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(multimesh->buffer);
 			{
 
-				PoolVector<uint8_t>::Read r = buffer.read();
-				copymem(w.ptr(), r.ptr(), buffer.size());
+				const uint8_t *r = buffer.ptr();
+				copymem(w, r, buffer.size());
 			}
 		} else {
-			zeromem(w.ptr(), multimesh->instances * multimesh->stride_cache * sizeof(float));
+			zeromem(w, multimesh->instances * multimesh->stride_cache * sizeof(float));
 		}
 	}
 	uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
@@ -2564,9 +2563,9 @@ void RasterizerStorageRD::multimesh_instance_set_transform(RID p_multimesh, int 
 	_multimesh_make_local(multimesh);
 
 	{
-		PoolVector<float>::Write w = multimesh->data_cache.write();
+		float *w = multimesh->data_cache.ptrw();
 
-		float *dataptr = w.ptr() + p_index * multimesh->stride_cache;
+		float *dataptr = w + p_index * multimesh->stride_cache;
 
 		dataptr[0] = p_transform.basis.elements[0][0];
 		dataptr[1] = p_transform.basis.elements[0][1];
@@ -2595,9 +2594,9 @@ void RasterizerStorageRD::multimesh_instance_set_transform_2d(RID p_multimesh, i
 	_multimesh_make_local(multimesh);
 
 	{
-		PoolVector<float>::Write w = multimesh->data_cache.write();
+		float *w = multimesh->data_cache.ptrw();
 
-		float *dataptr = w.ptr() + p_index * multimesh->stride_cache;
+		float *dataptr = w + p_index * multimesh->stride_cache;
 
 		dataptr[0] = p_transform.elements[0][0];
 		dataptr[1] = p_transform.elements[1][0];
@@ -2621,9 +2620,9 @@ void RasterizerStorageRD::multimesh_instance_set_color(RID p_multimesh, int p_in
 	_multimesh_make_local(multimesh);
 
 	{
-		PoolVector<float>::Write w = multimesh->data_cache.write();
+		float *w = multimesh->data_cache.ptrw();
 
-		float *dataptr = w.ptr() + p_index * multimesh->stride_cache + multimesh->color_offset_cache;
+		float *dataptr = w + p_index * multimesh->stride_cache + multimesh->color_offset_cache;
 
 		dataptr[0] = p_color.r;
 		dataptr[1] = p_color.g;
@@ -2642,9 +2641,9 @@ void RasterizerStorageRD::multimesh_instance_set_custom_data(RID p_multimesh, in
 	_multimesh_make_local(multimesh);
 
 	{
-		PoolVector<float>::Write w = multimesh->data_cache.write();
+		float *w = multimesh->data_cache.ptrw();
 
-		float *dataptr = w.ptr() + p_index * multimesh->stride_cache + multimesh->custom_data_offset_cache;
+		float *dataptr = w + p_index * multimesh->stride_cache + multimesh->custom_data_offset_cache;
 
 		dataptr[0] = p_color.r;
 		dataptr[1] = p_color.g;
@@ -2674,9 +2673,9 @@ Transform RasterizerStorageRD::multimesh_instance_get_transform(RID p_multimesh,
 
 	Transform t;
 	{
-		PoolVector<float>::Read r = multimesh->data_cache.read();
+		const float *r = multimesh->data_cache.ptr();
 
-		const float *dataptr = r.ptr() + p_index * multimesh->stride_cache;
+		const float *dataptr = r + p_index * multimesh->stride_cache;
 
 		t.basis.elements[0][0] = dataptr[0];
 		t.basis.elements[0][1] = dataptr[1];
@@ -2705,9 +2704,9 @@ Transform2D RasterizerStorageRD::multimesh_instance_get_transform_2d(RID p_multi
 
 	Transform2D t;
 	{
-		PoolVector<float>::Read r = multimesh->data_cache.read();
+		const float *r = multimesh->data_cache.ptr();
 
-		const float *dataptr = r.ptr() + p_index * multimesh->stride_cache;
+		const float *dataptr = r + p_index * multimesh->stride_cache;
 
 		t.elements[0][0] = dataptr[0];
 		t.elements[1][0] = dataptr[1];
@@ -2730,9 +2729,9 @@ Color RasterizerStorageRD::multimesh_instance_get_color(RID p_multimesh, int p_i
 
 	Color c;
 	{
-		PoolVector<float>::Read r = multimesh->data_cache.read();
+		const float *r = multimesh->data_cache.ptr();
 
-		const float *dataptr = r.ptr() + p_index * multimesh->stride_cache + multimesh->color_offset_cache;
+		const float *dataptr = r + p_index * multimesh->stride_cache + multimesh->color_offset_cache;
 
 		c.r = dataptr[0];
 		c.g = dataptr[1];
@@ -2753,9 +2752,9 @@ Color RasterizerStorageRD::multimesh_instance_get_custom_data(RID p_multimesh, i
 
 	Color c;
 	{
-		PoolVector<float>::Read r = multimesh->data_cache.read();
+		const float *r = multimesh->data_cache.ptr();
 
-		const float *dataptr = r.ptr() + p_index * multimesh->stride_cache + multimesh->custom_data_offset_cache;
+		const float *dataptr = r + p_index * multimesh->stride_cache + multimesh->custom_data_offset_cache;
 
 		c.r = dataptr[0];
 		c.g = dataptr[1];
@@ -2766,14 +2765,14 @@ Color RasterizerStorageRD::multimesh_instance_get_custom_data(RID p_multimesh, i
 	return c;
 }
 
-void RasterizerStorageRD::multimesh_set_buffer(RID p_multimesh, const PoolVector<float> &p_buffer) {
+void RasterizerStorageRD::multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_COND(p_buffer.size() != (multimesh->instances * (int)multimesh->stride_cache));
 
 	{
-		PoolVector<float>::Read r = p_buffer.read();
-		RD::get_singleton()->buffer_update(multimesh->buffer, 0, p_buffer.size() * sizeof(float), r.ptr(), false);
+		const float *r = p_buffer.ptr();
+		RD::get_singleton()->buffer_update(multimesh->buffer, 0, p_buffer.size() * sizeof(float), r, false);
 		multimesh->buffer_set = true;
 	}
 
@@ -2792,30 +2791,30 @@ void RasterizerStorageRD::multimesh_set_buffer(RID p_multimesh, const PoolVector
 		_multimesh_mark_all_dirty(multimesh, false, true); //update AABB
 	} else if (multimesh->mesh.is_valid()) {
 		//if we have a mesh set, we need to re-generate the AABB from the new data
-		PoolVector<float>::Read r = p_buffer.read();
-		const float *data = r.ptr();
+		const float *data = p_buffer.ptr();
+
 		_multimesh_re_create_aabb(multimesh, data, multimesh->instances);
 		multimesh->instance_dependency.instance_notify_changed(true, false);
 	}
 }
 
-PoolVector<float> RasterizerStorageRD::multimesh_get_buffer(RID p_multimesh) const {
+Vector<float> RasterizerStorageRD::multimesh_get_buffer(RID p_multimesh) const {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
-	ERR_FAIL_COND_V(!multimesh, PoolVector<float>());
+	ERR_FAIL_COND_V(!multimesh, Vector<float>());
 	if (multimesh->buffer.is_null()) {
-		return PoolVector<float>();
+		return Vector<float>();
 	} else if (multimesh->data_cache.size()) {
 		return multimesh->data_cache;
 	} else {
 		//get from memory
 
-		PoolVector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(multimesh->buffer);
-		PoolVector<float> ret;
+		Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(multimesh->buffer);
+		Vector<float> ret;
 		ret.resize(multimesh->instances);
 		{
-			PoolVector<float>::Write w = multimesh->data_cache.write();
-			PoolVector<uint8_t>::Read r = buffer.read();
-			copymem(w.ptr(), r.ptr(), buffer.size());
+			float *w = multimesh->data_cache.ptrw();
+			const uint8_t *r = buffer.ptr();
+			copymem(w, r, buffer.size());
 		}
 
 		return ret;
@@ -2860,8 +2859,7 @@ void RasterizerStorageRD::_update_dirty_multimeshes() {
 		MultiMesh *multimesh = multimesh_dirty_list;
 
 		if (multimesh->data_cache.size()) { //may have been cleared, so only process if it exists
-			PoolVector<float>::Read r = multimesh->data_cache.read();
-			const float *data = r.ptr();
+			const float *data = multimesh->data_cache.ptr();
 
 			uint32_t visible_instances = multimesh->visible_instances >= 0 ? multimesh->visible_instances : multimesh->instances;
 
@@ -3552,7 +3550,7 @@ RID RasterizerStorageRD::gi_probe_create() {
 	return gi_probe_owner.make_rid(GIProbe());
 }
 
-void RasterizerStorageRD::gi_probe_allocate(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const PoolVector<uint8_t> &p_octree_cells, const PoolVector<uint8_t> &p_data_cells, const PoolVector<uint8_t> &p_distance_field, const PoolVector<int> &p_level_counts) {
+void RasterizerStorageRD::gi_probe_allocate(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND(!gi_probe);
 
@@ -3597,7 +3595,7 @@ void RasterizerStorageRD::gi_probe_allocate(RID p_gi_probe, const Transform &p_t
 			tf.depth = gi_probe->octree_size.z;
 			tf.type = RD::TEXTURE_TYPE_3D;
 			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
-			Vector<PoolVector<uint8_t> > s;
+			Vector<Vector<uint8_t> > s;
 			s.push_back(p_distance_field);
 			gi_probe->sdf_texture = RD::get_singleton()->texture_create(tf, RD::TextureView(), s);
 		}
@@ -3690,36 +3688,36 @@ Vector3i RasterizerStorageRD::gi_probe_get_octree_size(RID p_gi_probe) const {
 	ERR_FAIL_COND_V(!gi_probe, Vector3i());
 	return gi_probe->octree_size;
 }
-PoolVector<uint8_t> RasterizerStorageRD::gi_probe_get_octree_cells(RID p_gi_probe) const {
+Vector<uint8_t> RasterizerStorageRD::gi_probe_get_octree_cells(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, PoolVector<uint8_t>());
+	ERR_FAIL_COND_V(!gi_probe, Vector<uint8_t>());
 
 	if (gi_probe->octree_buffer.is_valid()) {
 		return RD::get_singleton()->buffer_get_data(gi_probe->octree_buffer);
 	}
-	return PoolVector<uint8_t>();
+	return Vector<uint8_t>();
 }
-PoolVector<uint8_t> RasterizerStorageRD::gi_probe_get_data_cells(RID p_gi_probe) const {
+Vector<uint8_t> RasterizerStorageRD::gi_probe_get_data_cells(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, PoolVector<uint8_t>());
+	ERR_FAIL_COND_V(!gi_probe, Vector<uint8_t>());
 
 	if (gi_probe->data_buffer.is_valid()) {
 		return RD::get_singleton()->buffer_get_data(gi_probe->data_buffer);
 	}
-	return PoolVector<uint8_t>();
+	return Vector<uint8_t>();
 }
-PoolVector<uint8_t> RasterizerStorageRD::gi_probe_get_distance_field(RID p_gi_probe) const {
+Vector<uint8_t> RasterizerStorageRD::gi_probe_get_distance_field(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, PoolVector<uint8_t>());
+	ERR_FAIL_COND_V(!gi_probe, Vector<uint8_t>());
 
 	if (gi_probe->data_buffer.is_valid()) {
 		return RD::get_singleton()->texture_get_data(gi_probe->sdf_texture, 0);
 	}
-	return PoolVector<uint8_t>();
+	return Vector<uint8_t>();
 }
-PoolVector<int> RasterizerStorageRD::gi_probe_get_level_counts(RID p_gi_probe) const {
+Vector<int> RasterizerStorageRD::gi_probe_get_level_counts(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, PoolVector<int>());
+	ERR_FAIL_COND_V(!gi_probe, Vector<int>());
 
 	return gi_probe->level_counts;
 }
@@ -4387,7 +4385,7 @@ bool RasterizerStorageRD::free(RID p_rid) {
 		reflection_probe->instance_dependency.instance_notify_deleted(p_rid);
 		reflection_probe_owner.free(p_rid);
 	} else if (gi_probe_owner.owns(p_rid)) {
-		gi_probe_allocate(p_rid, Transform(), AABB(), Vector3i(), PoolVector<uint8_t>(), PoolVector<uint8_t>(), PoolVector<uint8_t>(), PoolVector<int>()); //deallocate
+		gi_probe_allocate(p_rid, Transform(), AABB(), Vector3i(), Vector<uint8_t>(), Vector<uint8_t>(), Vector<uint8_t>(), Vector<int>()); //deallocate
 		GIProbe *gi_probe = gi_probe_owner.getornull(p_rid);
 		gi_probe->instance_dependency.instance_notify_deleted(p_rid);
 		gi_probe_owner.free(p_rid);
@@ -4463,7 +4461,7 @@ RasterizerStorageRD::RasterizerStorageRD() {
 		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
 		tformat.type = RD::TEXTURE_TYPE_2D;
 
-		PoolVector<uint8_t> pv;
+		Vector<uint8_t> pv;
 		pv.resize(16 * 4);
 		for (int i = 0; i < 16; i++) {
 			pv.set(i * 4 + 0, 255);
@@ -4473,7 +4471,7 @@ RasterizerStorageRD::RasterizerStorageRD() {
 		}
 
 		{
-			Vector<PoolVector<uint8_t> > vpv;
+			Vector<Vector<uint8_t> > vpv;
 			vpv.push_back(pv);
 			default_rd_textures[DEFAULT_RD_TEXTURE_WHITE] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
 		}
@@ -4486,7 +4484,7 @@ RasterizerStorageRD::RasterizerStorageRD() {
 		}
 
 		{
-			Vector<PoolVector<uint8_t> > vpv;
+			Vector<Vector<uint8_t> > vpv;
 			vpv.push_back(pv);
 			default_rd_textures[DEFAULT_RD_TEXTURE_BLACK] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
 		}
@@ -4499,7 +4497,7 @@ RasterizerStorageRD::RasterizerStorageRD() {
 		}
 
 		{
-			Vector<PoolVector<uint8_t> > vpv;
+			Vector<Vector<uint8_t> > vpv;
 			vpv.push_back(pv);
 			default_rd_textures[DEFAULT_RD_TEXTURE_NORMAL] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
 		}
@@ -4512,7 +4510,7 @@ RasterizerStorageRD::RasterizerStorageRD() {
 		}
 
 		{
-			Vector<PoolVector<uint8_t> > vpv;
+			Vector<Vector<uint8_t> > vpv;
 			vpv.push_back(pv);
 			default_rd_textures[DEFAULT_RD_TEXTURE_ANISO] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
 		}
@@ -4537,7 +4535,7 @@ RasterizerStorageRD::RasterizerStorageRD() {
 		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
 		tformat.type = RD::TEXTURE_TYPE_CUBE_ARRAY;
 
-		PoolVector<uint8_t> pv;
+		Vector<uint8_t> pv;
 		pv.resize(16 * 4);
 		for (int i = 0; i < 16; i++) {
 			pv.set(i * 4 + 0, 0);
@@ -4547,7 +4545,7 @@ RasterizerStorageRD::RasterizerStorageRD() {
 		}
 
 		{
-			Vector<PoolVector<uint8_t> > vpv;
+			Vector<Vector<uint8_t> > vpv;
 			for (int i = 0; i < 6; i++) {
 				vpv.push_back(pv);
 			}
@@ -4565,7 +4563,7 @@ RasterizerStorageRD::RasterizerStorageRD() {
 		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
 		tformat.type = RD::TEXTURE_TYPE_CUBE;
 
-		PoolVector<uint8_t> pv;
+		Vector<uint8_t> pv;
 		pv.resize(16 * 4);
 		for (int i = 0; i < 16; i++) {
 			pv.set(i * 4 + 0, 0);
@@ -4575,7 +4573,7 @@ RasterizerStorageRD::RasterizerStorageRD() {
 		}
 
 		{
-			Vector<PoolVector<uint8_t> > vpv;
+			Vector<Vector<uint8_t> > vpv;
 			for (int i = 0; i < 6; i++) {
 				vpv.push_back(pv);
 			}
@@ -4593,7 +4591,7 @@ RasterizerStorageRD::RasterizerStorageRD() {
 		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
 		tformat.type = RD::TEXTURE_TYPE_3D;
 
-		PoolVector<uint8_t> pv;
+		Vector<uint8_t> pv;
 		pv.resize(64 * 4);
 		for (int i = 0; i < 64; i++) {
 			pv.set(i * 4 + 0, 0);
@@ -4603,7 +4601,7 @@ RasterizerStorageRD::RasterizerStorageRD() {
 		}
 
 		{
-			Vector<PoolVector<uint8_t> > vpv;
+			Vector<Vector<uint8_t> > vpv;
 			vpv.push_back(pv);
 			default_rd_textures[DEFAULT_RD_TEXTURE_3D_WHITE] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
 		}
@@ -4682,11 +4680,11 @@ RasterizerStorageRD::RasterizerStorageRD() {
 
 		{ //vertex
 
-				PoolVector<uint8_t> buffer;
+				Vector<uint8_t> buffer;
 	buffer.resize(sizeof(float) * 3);
 	{
-		PoolVector<uint8_t>::Write w = buffer.write();
-		float *fptr = (float *)w.ptr();
+		uint8_t *w = buffer.ptrw();
+		float *fptr = (float *)w;
 		fptr[0] = 0.0;
 		fptr[1] = 0.0;
 		fptr[2] = 0.0;
@@ -4695,11 +4693,11 @@ RasterizerStorageRD::RasterizerStorageRD() {
 }
 
 { //normal
-	PoolVector<uint8_t> buffer;
+	Vector<uint8_t> buffer;
 	buffer.resize(sizeof(float) * 3);
 	{
-		PoolVector<uint8_t>::Write w = buffer.write();
-		float *fptr = (float *)w.ptr();
+		uint8_t *w = buffer.ptrw();
+		float *fptr = (float *)w;
 		fptr[0] = 1.0;
 		fptr[1] = 0.0;
 		fptr[2] = 0.0;
@@ -4708,11 +4706,11 @@ RasterizerStorageRD::RasterizerStorageRD() {
 }
 
 { //tangent
-	PoolVector<uint8_t> buffer;
+	Vector<uint8_t> buffer;
 	buffer.resize(sizeof(float) * 4);
 	{
-		PoolVector<uint8_t>::Write w = buffer.write();
-		float *fptr = (float *)w.ptr();
+		uint8_t *w = buffer.ptrw();
+		float *fptr = (float *)w;
 		fptr[0] = 1.0;
 		fptr[1] = 0.0;
 		fptr[2] = 0.0;
@@ -4722,11 +4720,11 @@ RasterizerStorageRD::RasterizerStorageRD() {
 }
 
 { //color
-	PoolVector<uint8_t> buffer;
+	Vector<uint8_t> buffer;
 	buffer.resize(sizeof(float) * 4);
 	{
-		PoolVector<uint8_t>::Write w = buffer.write();
-		float *fptr = (float *)w.ptr();
+		uint8_t *w = buffer.ptrw();
+		float *fptr = (float *)w;
 		fptr[0] = 1.0;
 		fptr[1] = 1.0;
 		fptr[2] = 1.0;
@@ -4736,22 +4734,22 @@ RasterizerStorageRD::RasterizerStorageRD() {
 }
 
 { //tex uv 1
-	PoolVector<uint8_t> buffer;
+	Vector<uint8_t> buffer;
 	buffer.resize(sizeof(float) * 2);
 	{
-		PoolVector<uint8_t>::Write w = buffer.write();
-		float *fptr = (float *)w.ptr();
+		uint8_t *w = buffer.ptrw();
+		float *fptr = (float *)w;
 		fptr[0] = 0.0;
 		fptr[1] = 0.0;
 	}
 	mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TEX_UV] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
 }
 { //tex uv 2
-	PoolVector<uint8_t> buffer;
+	Vector<uint8_t> buffer;
 	buffer.resize(sizeof(float) * 2);
 	{
-		PoolVector<uint8_t>::Write w = buffer.write();
-		float *fptr = (float *)w.ptr();
+		uint8_t *w = buffer.ptrw();
+		float *fptr = (float *)w;
 		fptr[0] = 0.0;
 		fptr[1] = 0.0;
 	}
@@ -4759,11 +4757,11 @@ RasterizerStorageRD::RasterizerStorageRD() {
 }
 
 { //bones
-	PoolVector<uint8_t> buffer;
+	Vector<uint8_t> buffer;
 	buffer.resize(sizeof(uint32_t) * 4);
 	{
-		PoolVector<uint8_t>::Write w = buffer.write();
-		uint32_t *fptr = (uint32_t *)w.ptr();
+		uint8_t *w = buffer.ptrw();
+		uint32_t *fptr = (uint32_t *)w;
 		fptr[0] = 0;
 		fptr[1] = 0;
 		fptr[2] = 0;
@@ -4773,11 +4771,11 @@ RasterizerStorageRD::RasterizerStorageRD() {
 }
 
 { //weights
-	PoolVector<uint8_t> buffer;
+	Vector<uint8_t> buffer;
 	buffer.resize(sizeof(float) * 4);
 	{
-		PoolVector<uint8_t>::Write w = buffer.write();
-		float *fptr = (float *)w.ptr();
+		uint8_t *w = buffer.ptrw();
+		float *fptr = (float *)w;
 		fptr[0] = 0.0;
 		fptr[1] = 0.0;
 		fptr[2] = 0.0;

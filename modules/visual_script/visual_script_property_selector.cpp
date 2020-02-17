@@ -119,13 +119,13 @@ void VisualScriptPropertySelector::_update_search() {
 			Control::get_icon("Object", "EditorIcons"),
 			Control::get_icon("Dictionary", "EditorIcons"),
 			Control::get_icon("Array", "EditorIcons"),
-			Control::get_icon("PoolByteArray", "EditorIcons"),
-			Control::get_icon("PoolIntArray", "EditorIcons"),
-			Control::get_icon("PoolRealArray", "EditorIcons"),
-			Control::get_icon("PoolStringArray", "EditorIcons"),
-			Control::get_icon("PoolVector2Array", "EditorIcons"),
-			Control::get_icon("PoolVector3Array", "EditorIcons"),
-			Control::get_icon("PoolColorArray", "EditorIcons")
+			Control::get_icon("PackedByteArray", "EditorIcons"),
+			Control::get_icon("PackedIntArray", "EditorIcons"),
+			Control::get_icon("PackedRealArray", "EditorIcons"),
+			Control::get_icon("PackedStringArray", "EditorIcons"),
+			Control::get_icon("PackedVector2Array", "EditorIcons"),
+			Control::get_icon("PackedVector3Array", "EditorIcons"),
+			Control::get_icon("PackedColorArray", "EditorIcons")
 		};
 		{
 			String b = String(E->get());

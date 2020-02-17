@@ -53,7 +53,7 @@ int PacketPeer::get_encode_buffer_max_size() const {
 	return encode_buffer_max_size;
 }
 
-Error PacketPeer::get_packet_buffer(PoolVector<uint8_t> &r_buffer) {
+Error PacketPeer::get_packet_buffer(Vector<uint8_t> &r_buffer) {
 
 	const uint8_t *buffer;
 	int buffer_size;
@@ -65,20 +65,20 @@ Error PacketPeer::get_packet_buffer(PoolVector<uint8_t> &r_buffer) {
 	if (buffer_size == 0)
 		return OK;
 
-	PoolVector<uint8_t>::Write w = r_buffer.write();
+	uint8_t *w = r_buffer.ptrw();
 	for (int i = 0; i < buffer_size; i++)
 		w[i] = buffer[i];
 
 	return OK;
 }
 
-Error PacketPeer::put_packet_buffer(const PoolVector<uint8_t> &p_buffer) {
+Error PacketPeer::put_packet_buffer(const Vector<uint8_t> &p_buffer) {
 
 	int len = p_buffer.size();
 	if (len == 0)
 		return OK;
 
-	PoolVector<uint8_t>::Read r = p_buffer.read();
+	const uint8_t *r = p_buffer.ptr();
 	return put_packet(&r[0], len);
 }
 
@@ -110,11 +110,11 @@ Error PacketPeer::put_var(const Variant &p_packet, bool p_full_objects) {
 		encode_buffer.resize(next_power_of_2(len));
 	}
 
-	PoolVector<uint8_t>::Write w = encode_buffer.write();
-	err = encode_variant(p_packet, w.ptr(), len, p_full_objects);
+	uint8_t *w = encode_buffer.ptrw();
+	err = encode_variant(p_packet, w, len, p_full_objects);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Error when trying to encode Variant.");
 
-	return put_packet(w.ptr(), len);
+	return put_packet(w, len);
 }
 
 Variant PacketPeer::_bnd_get_var(bool p_allow_objects) {
@@ -125,12 +125,12 @@ Variant PacketPeer::_bnd_get_var(bool p_allow_objects) {
 	return var;
 }
 
-Error PacketPeer::_put_packet(const PoolVector<uint8_t> &p_buffer) {
+Error PacketPeer::_put_packet(const Vector<uint8_t> &p_buffer) {
 	return put_packet_buffer(p_buffer);
 }
-PoolVector<uint8_t> PacketPeer::_get_packet() {
+Vector<uint8_t> PacketPeer::_get_packet() {
 
-	PoolVector<uint8_t> raw;
+	Vector<uint8_t> raw;
 	last_get_error = get_packet_buffer(raw);
 	return raw;
 }

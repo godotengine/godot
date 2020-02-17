@@ -32,7 +32,7 @@
 
 void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 
-	vertices = PoolVector<Vector3>();
+	vertices = Vector<Vector3>();
 	clear_polygons();
 
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
@@ -40,15 +40,15 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
 			continue;
 		Array arr = p_mesh->surface_get_arrays(i);
-		PoolVector<Vector3> varr = arr[Mesh::ARRAY_VERTEX];
-		PoolVector<int> iarr = arr[Mesh::ARRAY_INDEX];
+		Vector<Vector3> varr = arr[Mesh::ARRAY_VERTEX];
+		Vector<int> iarr = arr[Mesh::ARRAY_INDEX];
 		if (varr.size() == 0 || iarr.size() == 0)
 			continue;
 
 		int from = vertices.size();
 		vertices.append_array(varr);
 		int rlen = iarr.size();
-		PoolVector<int>::Read r = iarr.read();
+		const int *r = iarr.ptr();
 
 		for (int j = 0; j < rlen; j += 3) {
 			Vector<int> vi;
@@ -252,13 +252,13 @@ bool NavigationMesh::get_filter_walkable_low_height_spans() const {
 	return filter_walkable_low_height_spans;
 }
 
-void NavigationMesh::set_vertices(const PoolVector<Vector3> &p_vertices) {
+void NavigationMesh::set_vertices(const Vector<Vector3> &p_vertices) {
 
 	vertices = p_vertices;
 	_change_notify();
 }
 
-PoolVector<Vector3> NavigationMesh::get_vertices() const {
+Vector<Vector3> NavigationMesh::get_vertices() const {
 
 	return vertices;
 }
@@ -309,8 +309,8 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 	if (debug_mesh.is_valid())
 		return debug_mesh;
 
-	PoolVector<Vector3> vertices = get_vertices();
-	PoolVector<Vector3>::Read vr = vertices.read();
+	Vector<Vector3> vertices = get_vertices();
+	const Vector3 *vr = vertices.ptr();
 	List<Face3> faces;
 	for (int i = 0; i < get_polygon_count(); i++) {
 		Vector<int> p = get_polygon(i);
@@ -326,11 +326,11 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 	}
 
 	Map<_EdgeKey, bool> edge_map;
-	PoolVector<Vector3> tmeshfaces;
+	Vector<Vector3> tmeshfaces;
 	tmeshfaces.resize(faces.size() * 3);
 
 	{
-		PoolVector<Vector3>::Write tw = tmeshfaces.write();
+		Vector3 *tw = tmeshfaces.ptrw();
 		int tidx = 0;
 
 		for (List<Face3>::Element *E = faces.front(); E; E = E->next()) {
@@ -369,10 +369,10 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 		}
 	}
 
-	PoolVector<Vector3> varr;
+	Vector<Vector3> varr;
 	varr.resize(lines.size());
 	{
-		PoolVector<Vector3>::Write w = varr.write();
+		Vector3 *w = varr.ptrw();
 		int idx = 0;
 		for (List<Vector3>::Element *E = lines.front(); E; E = E->next()) {
 			w[idx++] = E->get();
@@ -478,7 +478,7 @@ void NavigationMesh::_bind_methods() {
 	BIND_CONSTANT(PARSED_GEOMETRY_STATIC_COLLIDERS);
 	BIND_CONSTANT(PARSED_GEOMETRY_BOTH);
 
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sample_partition_type/sample_partition_type", PROPERTY_HINT_ENUM, "Watershed,Monotone,Layers"), "set_sample_partition_type", "get_sample_partition_type");

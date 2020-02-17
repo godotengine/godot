@@ -152,7 +152,7 @@ public:
 	_FORCE_INLINE_ real_t get_drag_coefficient() const { return drag_coefficient; }
 
 private:
-	void set_trimesh_body_shape(PoolVector<int> p_indices, PoolVector<Vector3> p_vertices);
+	void set_trimesh_body_shape(Vector<int> p_indices, Vector<Vector3> p_vertices);
 	void setup_soft_body();
 
 	void pin_node(int p_node_index);

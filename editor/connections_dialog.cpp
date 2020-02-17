@@ -555,12 +555,12 @@ void ConnectionsDock::_make_or_edit_connection() {
 
 		add_script_function = !found_inherited_function;
 	}
-	PoolStringArray script_function_args;
+	PackedStringArray script_function_args;
 	if (add_script_function) {
 		// Pick up args here before "it" is deleted by update_tree.
 		script_function_args = it->get_metadata(0).operator Dictionary()["args"];
 		for (int i = 0; i < cToMake.binds.size(); i++) {
-			script_function_args.append("extra_arg_" + itos(i) + ":" + Variant::get_type_name(cToMake.binds[i].get_type()));
+			script_function_args.push_back("extra_arg_" + itos(i) + ":" + Variant::get_type_name(cToMake.binds[i].get_type()));
 		}
 	}
 
@@ -943,7 +943,7 @@ void ConnectionsDock::update_tree() {
 
 			StringName signal_name = mi.name;
 			String signaldesc = "(";
-			PoolStringArray argnames;
+			PackedStringArray argnames;
 			if (mi.arguments.size()) {
 				for (int i = 0; i < mi.arguments.size(); i++) {
 

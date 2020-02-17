@@ -61,7 +61,7 @@ bool Polygon2D::_edit_use_pivot() const {
 Rect2 Polygon2D::_edit_get_rect() const {
 	if (rect_cache_dirty) {
 		int l = polygon.size();
-		PoolVector<Vector2>::Read r = polygon.read();
+		const Vector2 *r = polygon.ptr();
 		item_rect = Rect2();
 		for (int i = 0; i < l; i++) {
 			Vector2 pos = r[i] + offset;
@@ -148,7 +148,7 @@ void Polygon2D::_notification(int p_what) {
 
 			{
 
-				PoolVector<Vector2>::Read polyr = polygon.read();
+				const Vector2 *polyr = polygon.ptr();
 				for (int i = 0; i < len; i++) {
 					points.write[i] = polyr[i] + offset;
 				}
@@ -217,7 +217,7 @@ void Polygon2D::_notification(int p_what) {
 
 				if (points.size() == uv.size()) {
 
-					PoolVector<Vector2>::Read uvr = uv.read();
+					const Vector2 *uvr = uv.ptr();
 
 					for (int i = 0; i < len; i++) {
 						uvs.write[i] = texmat.xform(uvr[i]) / tex_size;
@@ -257,7 +257,7 @@ void Polygon2D::_notification(int p_what) {
 					}
 
 					int bone_index = bone->get_index_in_skeleton();
-					PoolVector<float>::Read r = bone_weights[i].weights.read();
+					const float *r = bone_weights[i].weights.ptr();
 					for (int j = 0; j < vc; j++) {
 						if (r[j] == 0.0)
 							continue; //weight is unpainted, skip
@@ -296,7 +296,7 @@ void Polygon2D::_notification(int p_what) {
 			Vector<Color> colors;
 			if (vertex_colors.size() == points.size()) {
 				colors.resize(len);
-				PoolVector<Color>::Read color_r = vertex_colors.read();
+				const Color *color_r = vertex_colors.ptr();
 				for (int i = 0; i < len; i++) {
 					colors.write[i] = color_r[i];
 				}
@@ -313,11 +313,11 @@ void Polygon2D::_notification(int p_what) {
 				//draw individual polygons
 				Vector<int> total_indices;
 				for (int i = 0; i < polygons.size(); i++) {
-					PoolVector<int> src_indices = polygons[i];
+					Vector<int> src_indices = polygons[i];
 					int ic = src_indices.size();
 					if (ic < 3)
 						continue;
-					PoolVector<int>::Read r = src_indices.read();
+					const int *r = src_indices.ptr();
 
 					Vector<Vector2> tmp_points;
 					tmp_points.resize(ic);
@@ -349,13 +349,13 @@ void Polygon2D::_notification(int p_what) {
 	}
 }
 
-void Polygon2D::set_polygon(const PoolVector<Vector2> &p_polygon) {
+void Polygon2D::set_polygon(const Vector<Vector2> &p_polygon) {
 	polygon = p_polygon;
 	rect_cache_dirty = true;
 	update();
 }
 
-PoolVector<Vector2> Polygon2D::get_polygon() const {
+Vector<Vector2> Polygon2D::get_polygon() const {
 
 	return polygon;
 }
@@ -369,13 +369,13 @@ int Polygon2D::get_internal_vertex_count() const {
 	return internal_vertices;
 }
 
-void Polygon2D::set_uv(const PoolVector<Vector2> &p_uv) {
+void Polygon2D::set_uv(const Vector<Vector2> &p_uv) {
 
 	uv = p_uv;
 	update();
 }
 
-PoolVector<Vector2> Polygon2D::get_uv() const {
+Vector<Vector2> Polygon2D::get_uv() const {
 
 	return uv;
 }
@@ -401,12 +401,12 @@ Color Polygon2D::get_color() const {
 	return color;
 }
 
-void Polygon2D::set_vertex_colors(const PoolVector<Color> &p_colors) {
+void Polygon2D::set_vertex_colors(const Vector<Color> &p_colors) {
 
 	vertex_colors = p_colors;
 	update();
 }
-PoolVector<Color> Polygon2D::get_vertex_colors() const {
+Vector<Color> Polygon2D::get_vertex_colors() const {
 
 	return vertex_colors;
 }
@@ -548,7 +548,7 @@ Vector2 Polygon2D::get_offset() const {
 	return offset;
 }
 
-void Polygon2D::add_bone(const NodePath &p_path, const PoolVector<float> &p_weights) {
+void Polygon2D::add_bone(const NodePath &p_path, const Vector<float> &p_weights) {
 
 	Bone bone;
 	bone.path = p_path;
@@ -562,9 +562,9 @@ NodePath Polygon2D::get_bone_path(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, bone_weights.size(), NodePath());
 	return bone_weights[p_index].path;
 }
-PoolVector<float> Polygon2D::get_bone_weights(int p_index) const {
+Vector<float> Polygon2D::get_bone_weights(int p_index) const {
 
-	ERR_FAIL_INDEX_V(p_index, bone_weights.size(), PoolVector<float>());
+	ERR_FAIL_INDEX_V(p_index, bone_weights.size(), Vector<float>());
 	return bone_weights[p_index].weights;
 }
 void Polygon2D::erase_bone(int p_idx) {
@@ -577,7 +577,7 @@ void Polygon2D::clear_bones() {
 	bone_weights.clear();
 }
 
-void Polygon2D::set_bone_weights(int p_index, const PoolVector<float> &p_weights) {
+void Polygon2D::set_bone_weights(int p_index, const Vector<float> &p_weights) {
 	ERR_FAIL_INDEX(p_index, bone_weights.size());
 	bone_weights.write[p_index].weights = p_weights;
 	update();
@@ -715,9 +715,9 @@ void Polygon2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "invert_border", PROPERTY_HINT_RANGE, "0.1,16384,0.1"), "set_invert_border", "get_invert_border");
 
 	ADD_GROUP("Data", "");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "uv"), "set_uv", "get_uv");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY, "vertex_colors"), "set_vertex_colors", "get_vertex_colors");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "uv"), "set_uv", "get_uv");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_COLOR_ARRAY, "vertex_colors"), "set_vertex_colors", "get_vertex_colors");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons"), "set_polygons", "get_polygons");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bones", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_bones", "_get_bones");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "internal_vertex_count", PROPERTY_HINT_RANGE, "0,1000"), "set_internal_vertex_count", "get_internal_vertex_count");

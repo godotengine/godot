@@ -37,7 +37,7 @@
 #include "core/math/triangulate.h"
 #include "core/math/vector3.h"
 #include "core/object.h"
-#include "core/pool_vector.h"
+
 #include "core/print_string.h"
 #include "core/vector.h"
 
@@ -899,10 +899,10 @@ public:
 		return (intersections & 1);
 	}
 
-	static PoolVector<PoolVector<Face3> > separate_objects(PoolVector<Face3> p_array);
+	static Vector<Vector<Face3> > separate_objects(Vector<Face3> p_array);
 
 	// Create a "wrap" that encloses the given geometry.
-	static PoolVector<Face3> wrap_geometry(PoolVector<Face3> p_array, real_t *p_error = NULL);
+	static Vector<Face3> wrap_geometry(Vector<Face3> p_array, real_t *p_error = NULL);
 
 	struct MeshData {
 
@@ -1006,11 +1006,11 @@ public:
 	}
 	static Vector<Vector<Vector2> > decompose_polygon_in_convex(Vector<Point2> polygon);
 
-	static MeshData build_convex_mesh(const PoolVector<Plane> &p_planes);
-	static PoolVector<Plane> build_sphere_planes(real_t p_radius, int p_lats, int p_lons, Vector3::Axis p_axis = Vector3::AXIS_Z);
-	static PoolVector<Plane> build_box_planes(const Vector3 &p_extents);
-	static PoolVector<Plane> build_cylinder_planes(real_t p_radius, real_t p_height, int p_sides, Vector3::Axis p_axis = Vector3::AXIS_Z);
-	static PoolVector<Plane> build_capsule_planes(real_t p_radius, real_t p_height, int p_sides, int p_lats, Vector3::Axis p_axis = Vector3::AXIS_Z);
+	static MeshData build_convex_mesh(const Vector<Plane> &p_planes);
+	static Vector<Plane> build_sphere_planes(real_t p_radius, int p_lats, int p_lons, Vector3::Axis p_axis = Vector3::AXIS_Z);
+	static Vector<Plane> build_box_planes(const Vector3 &p_extents);
+	static Vector<Plane> build_cylinder_planes(real_t p_radius, real_t p_height, int p_sides, Vector3::Axis p_axis = Vector3::AXIS_Z);
+	static Vector<Plane> build_capsule_planes(real_t p_radius, real_t p_height, int p_sides, int p_lats, Vector3::Axis p_axis = Vector3::AXIS_Z);
 
 	static void make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size);
 

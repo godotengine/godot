@@ -72,7 +72,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 		{
 
-			PoolVector<uint8_t> pixels;
+			Vector<uint8_t> pixels;
 			pixels.resize(32 * 2 * 2);
 			for (int i = 0; i < 2; i++) {
 
@@ -97,7 +97,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 		{
 
-			PoolVector<uint8_t> pixels;
+			Vector<uint8_t> pixels;
 			pixels.resize(32 * 32 * 2);
 			for (int i = 0; i < 32; i++) {
 
@@ -124,7 +124,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 		{
 
-			PoolVector<uint8_t> pixels;
+			Vector<uint8_t> pixels;
 			pixels.resize(32 * 32 * 2);
 			for (int i = 0; i < 32; i++) {
 
@@ -151,7 +151,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 		{
 
-			PoolVector<uint8_t> pixels;
+			Vector<uint8_t> pixels;
 			pixels.resize(32 * 64 * 2);
 			for (int i = 0; i < 64; i++) {
 
@@ -185,7 +185,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 			RID convex_polygon_shape = ps->convex_polygon_shape_create();
 
-			PoolVector<Vector2> arr;
+			Vector<Vector2> arr;
 			Point2 sb(32, 32);
 			arr.push_back(Point2(20, 3) - sb);
 			arr.push_back(Point2(58, 23) - sb);

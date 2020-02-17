@@ -327,24 +327,24 @@ void MeshInstanceEditor::_create_uv_lines(int p_layer) {
 			continue;
 		Array a = mesh->surface_get_arrays(i);
 
-		PoolVector<Vector2> uv = a[p_layer == 0 ? Mesh::ARRAY_TEX_UV : Mesh::ARRAY_TEX_UV2];
+		Vector<Vector2> uv = a[p_layer == 0 ? Mesh::ARRAY_TEX_UV : Mesh::ARRAY_TEX_UV2];
 		if (uv.size() == 0) {
 			err_dialog->set_text(TTR("Model has no UV in this layer"));
 			err_dialog->popup_centered_minsize();
 			return;
 		}
 
-		PoolVector<Vector2>::Read r = uv.read();
+		const Vector2 *r = uv.ptr();
 
-		PoolVector<int> indices = a[Mesh::ARRAY_INDEX];
-		PoolVector<int>::Read ri;
+		Vector<int> indices = a[Mesh::ARRAY_INDEX];
+		const int *ri;
 
 		int ic;
 		bool use_indices;
 
 		if (indices.size()) {
 			ic = indices.size();
-			ri = indices.read();
+			ri = indices.ptr();
 			use_indices = true;
 		} else {
 			ic = uv.size();

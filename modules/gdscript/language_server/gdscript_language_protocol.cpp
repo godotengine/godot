@@ -39,10 +39,10 @@ GDScriptLanguageProtocol *GDScriptLanguageProtocol::singleton = NULL;
 void GDScriptLanguageProtocol::on_data_received(int p_id) {
 	lastest_client_id = p_id;
 	Ref<WebSocketPeer> peer = server->get_peer(p_id);
-	PoolByteArray data;
+	PackedByteArray data;
 	if (OK == peer->get_packet_buffer(data)) {
 		String message;
-		message.parse_utf8((const char *)data.read().ptr(), data.size());
+		message.parse_utf8((const char *)data.ptr(), data.size());
 		if (message.begins_with("Content-Length:")) return;
 		String output = process_message(message);
 		if (!output.empty()) {

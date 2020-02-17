@@ -71,13 +71,12 @@ RES ResourceFormatPKM::load(const String &p_path, const String &p_original_path,
 	h.origWidth = f->get_16();
 	h.origHeight = f->get_16();
 
-	PoolVector<uint8_t> src_data;
+	Vector<uint8_t> src_data;
 
 	uint32_t size = h.texWidth * h.texHeight / 2;
 	src_data.resize(size);
-	PoolVector<uint8_t>::Write wb = src_data.write();
-	f->get_buffer(wb.ptr(), size);
-	wb.release();
+	uint8_t *wb = src_data.ptrw();
+	f->get_buffer(wb, size);
 
 	int mipmaps = h.format;
 	int width = h.origWidth;

@@ -45,7 +45,7 @@
 #include "core/math/vector3.h"
 #include "core/node_path.h"
 #include "core/object_id.h"
-#include "core/pool_vector.h"
+
 #include "core/rid.h"
 #include "core/ustring.h"
 
@@ -56,13 +56,13 @@ class Control; // helper
 struct PropertyInfo;
 struct MethodInfo;
 
-typedef PoolVector<uint8_t> PoolByteArray;
-typedef PoolVector<int> PoolIntArray;
-typedef PoolVector<real_t> PoolRealArray;
-typedef PoolVector<String> PoolStringArray;
-typedef PoolVector<Vector2> PoolVector2Array;
-typedef PoolVector<Vector3> PoolVector3Array;
-typedef PoolVector<Color> PoolColorArray;
+typedef Vector<uint8_t> PackedByteArray;
+typedef Vector<int> PackedIntArray;
+typedef Vector<real_t> PackedRealArray;
+typedef Vector<String> PackedStringArray;
+typedef Vector<Vector2> PackedVector2Array;
+typedef Vector<Vector3> PackedVector3Array;
+typedef Vector<Color> PackedColorArray;
 
 // Temporary workaround until c++11 alignas()
 #ifdef __GNUC__
@@ -105,13 +105,13 @@ public:
 		ARRAY,
 
 		// arrays
-		POOL_BYTE_ARRAY, // 20
-		POOL_INT_ARRAY,
-		POOL_REAL_ARRAY,
-		POOL_STRING_ARRAY,
-		POOL_VECTOR2_ARRAY,
-		POOL_VECTOR3_ARRAY, // 25
-		POOL_COLOR_ARRAY,
+		PACKED_BYTE_ARRAY, // 20
+		PACKED_INT_ARRAY,
+		PACKED_REAL_ARRAY,
+		PACKED_STRING_ARRAY,
+		PACKED_VECTOR2_ARRAY,
+		PACKED_VECTOR3_ARRAY, // 25
+		PACKED_COLOR_ARRAY,
 
 		VARIANT_MAX
 
@@ -205,27 +205,19 @@ public:
 	operator Dictionary() const;
 	operator Array() const;
 
-	operator PoolVector<uint8_t>() const;
-	operator PoolVector<int>() const;
-	operator PoolVector<real_t>() const;
-	operator PoolVector<String>() const;
-	operator PoolVector<Vector3>() const;
-	operator PoolVector<Color>() const;
-	operator PoolVector<Plane>() const;
-	operator PoolVector<Face3>() const;
-
-	operator Vector<Variant>() const;
 	operator Vector<uint8_t>() const;
 	operator Vector<int>() const;
 	operator Vector<real_t>() const;
 	operator Vector<String>() const;
-	operator Vector<StringName>() const;
 	operator Vector<Vector3>() const;
 	operator Vector<Color>() const;
+	operator Vector<Plane>() const;
+	operator Vector<Face3>() const;
+
+	operator Vector<Variant>() const;
+	operator Vector<StringName>() const;
 	operator Vector<RID>() const;
 	operator Vector<Vector2>() const;
-	operator PoolVector<Vector2>() const;
-	operator Vector<Plane>() const;
 
 	// some core type enums to convert to
 	operator Margin() const;
@@ -273,27 +265,19 @@ public:
 	Variant(const Dictionary &p_dictionary);
 
 	Variant(const Array &p_array);
-	Variant(const PoolVector<Plane> &p_array); // helper
-	Variant(const PoolVector<uint8_t> &p_raw_array);
-	Variant(const PoolVector<int> &p_int_array);
-	Variant(const PoolVector<real_t> &p_real_array);
-	Variant(const PoolVector<String> &p_string_array);
-	Variant(const PoolVector<Vector3> &p_vector3_array);
-	Variant(const PoolVector<Color> &p_color_array);
-	Variant(const PoolVector<Face3> &p_face_array);
+	Variant(const Vector<Plane> &p_array); // helper
+	Variant(const Vector<uint8_t> &p_raw_array);
+	Variant(const Vector<int> &p_int_array);
+	Variant(const Vector<real_t> &p_real_array);
+	Variant(const Vector<String> &p_string_array);
+	Variant(const Vector<Vector3> &p_vector3_array);
+	Variant(const Vector<Color> &p_color_array);
+	Variant(const Vector<Face3> &p_face_array);
 
 	Variant(const Vector<Variant> &p_array);
-	Variant(const Vector<uint8_t> &p_array);
-	Variant(const Vector<int> &p_array);
-	Variant(const Vector<real_t> &p_array);
-	Variant(const Vector<String> &p_array);
 	Variant(const Vector<StringName> &p_array);
-	Variant(const Vector<Vector3> &p_array);
-	Variant(const Vector<Color> &p_array);
-	Variant(const Vector<Plane> &p_array); // helper
 	Variant(const Vector<RID> &p_array); // helper
 	Variant(const Vector<Vector2> &p_array); // helper
-	Variant(const PoolVector<Vector2> &p_vector2_array); // helper
 
 	Variant(const IP_Address &p_address);
 

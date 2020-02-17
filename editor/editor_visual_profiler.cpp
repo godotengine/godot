@@ -161,7 +161,7 @@ void EditorVisualProfiler::_update_plot() {
 		graph_image.resize(desired_len);
 	}
 
-	PoolVector<uint8_t>::Write wr = graph_image.write();
+	uint8_t *wr = graph_image.ptrw();
 
 	//clear
 	for (int i = 0; i < desired_len; i += 4) {
@@ -304,8 +304,6 @@ void EditorVisualProfiler::_update_plot() {
 			}
 		}
 	}
-
-	wr.release();
 
 	Ref<Image> img;
 	img.instance();

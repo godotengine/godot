@@ -86,7 +86,7 @@ class SpriteFramesEditor : public HSplitContainer {
 
 	void _load_pressed();
 	void _load_scene_pressed();
-	void _file_load_request(const PoolVector<String> &p_path, int p_at_pos = -1);
+	void _file_load_request(const Vector<String> &p_path, int p_at_pos = -1);
 	void _copy_pressed();
 	void _paste_pressed();
 	void _empty_pressed();

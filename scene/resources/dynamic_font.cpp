@@ -442,7 +442,7 @@ DynamicFontAtSize::TexturePosition DynamicFontAtSize::_find_texture_pos_for_glyp
 
 		{
 			//zero texture
-			PoolVector<uint8_t>::Write w = tex.imgdata.write();
+			uint8_t *w = tex.imgdata.ptrw();
 			ERR_FAIL_COND_V(texsize * texsize * p_color_size > tex.imgdata.size(), ret);
 			for (int i = 0; i < texsize * texsize * p_color_size; i++) {
 				w[i] = 0;
@@ -480,7 +480,7 @@ DynamicFontAtSize::Character DynamicFontAtSize::_bitmap_to_character(FT_Bitmap b
 	CharTexture &tex = textures.write[tex_pos.index];
 
 	{
-		PoolVector<uint8_t>::Write wr = tex.imgdata.write();
+		uint8_t *wr = tex.imgdata.ptrw();
 
 		for (int i = 0; i < h; i++) {
 			for (int j = 0; j < w; j++) {

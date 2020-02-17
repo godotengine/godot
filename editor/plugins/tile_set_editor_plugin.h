@@ -123,7 +123,7 @@ class TileSetEditor : public HSplitContainer {
 	Rect2 edited_region;
 	bool draw_edited_region;
 	Vector2 edited_shape_coord;
-	PoolVector2Array current_shape;
+	PackedVector2Array current_shape;
 	Map<Vector2i, SubtileData> current_tile_data;
 	Map<Vector2, uint32_t> bitmask_map_copy;
 
@@ -178,7 +178,7 @@ class TileSetEditor : public HSplitContainer {
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
-	void _file_load_request(const PoolVector<String> &p_path, int p_at_pos = -1);
+	void _file_load_request(const Vector<String> &p_path, int p_at_pos = -1);
 
 protected:
 	static void _bind_methods();
@@ -195,7 +195,7 @@ private:
 	void _on_tileset_toolbar_button_pressed(int p_index);
 	void _on_tileset_toolbar_confirm();
 	void _on_texture_list_selected(int p_index);
-	void _on_textures_added(const PoolStringArray &p_paths);
+	void _on_textures_added(const PackedStringArray &p_paths);
 	void _on_edit_mode_changed(int p_edit_mode);
 	void _on_workspace_mode_changed(int p_workspace_mode);
 	void _on_workspace_overlay_draw();

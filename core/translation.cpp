@@ -794,9 +794,9 @@ static const char *locale_renames[][2] = {
 
 ///////////////////////////////////////////////
 
-PoolVector<String> Translation::_get_messages() const {
+Vector<String> Translation::_get_messages() const {
 
-	PoolVector<String> msgs;
+	Vector<String> msgs;
 	msgs.resize(translation_map.size() * 2);
 	int idx = 0;
 	for (const Map<StringName, StringName>::Element *E = translation_map.front(); E; E = E->next()) {
@@ -809,9 +809,9 @@ PoolVector<String> Translation::_get_messages() const {
 	return msgs;
 }
 
-PoolVector<String> Translation::_get_message_list() const {
+Vector<String> Translation::_get_message_list() const {
 
-	PoolVector<String> msgs;
+	Vector<String> msgs;
 	msgs.resize(translation_map.size());
 	int idx = 0;
 	for (const Map<StringName, StringName>::Element *E = translation_map.front(); E; E = E->next()) {
@@ -823,12 +823,12 @@ PoolVector<String> Translation::_get_message_list() const {
 	return msgs;
 }
 
-void Translation::_set_messages(const PoolVector<String> &p_messages) {
+void Translation::_set_messages(const Vector<String> &p_messages) {
 
 	int msg_count = p_messages.size();
 	ERR_FAIL_COND(msg_count % 2);
 
-	PoolVector<String>::Read r = p_messages.read();
+	const String *r = p_messages.ptr();
 
 	for (int i = 0; i < msg_count; i += 2) {
 
@@ -898,7 +898,7 @@ void Translation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_messages"), &Translation::_set_messages);
 	ClassDB::bind_method(D_METHOD("_get_messages"), &Translation::_get_messages);
 
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_STRING_ARRAY, "messages", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_messages", "_get_messages");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "messages", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_messages", "_get_messages");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "locale"), "set_locale", "get_locale");
 }
 
@@ -1146,12 +1146,12 @@ TranslationServer *TranslationServer::singleton = NULL;
 bool TranslationServer::_load_translations(const String &p_from) {
 
 	if (ProjectSettings::get_singleton()->has_setting(p_from)) {
-		PoolVector<String> translations = ProjectSettings::get_singleton()->get(p_from);
+		Vector<String> translations = ProjectSettings::get_singleton()->get(p_from);
 
 		int tcount = translations.size();
 
 		if (tcount) {
-			PoolVector<String>::Read r = translations.read();
+			const String *r = translations.ptr();
 
 			for (int i = 0; i < tcount; i++) {
 

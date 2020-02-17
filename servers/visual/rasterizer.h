@@ -356,7 +356,7 @@ public:
 	virtual void mesh_set_blend_shape_mode(RID p_mesh, VS::BlendShapeMode p_mode) = 0;
 	virtual VS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const = 0;
 
-	virtual void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) = 0;
+	virtual void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
 
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) = 0;
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const = 0;
@@ -393,8 +393,8 @@ public:
 	virtual Color multimesh_instance_get_color(RID p_multimesh, int p_index) const = 0;
 	virtual Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const = 0;
 
-	virtual void multimesh_set_buffer(RID p_multimesh, const PoolVector<float> &p_buffer) = 0;
-	virtual PoolVector<float> multimesh_get_buffer(RID p_multimesh) const = 0;
+	virtual void multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) = 0;
+	virtual Vector<float> multimesh_get_buffer(RID p_multimesh) const = 0;
 
 	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible) = 0;
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const = 0;
@@ -499,15 +499,15 @@ public:
 
 	virtual RID gi_probe_create() = 0;
 
-	virtual void gi_probe_allocate(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const PoolVector<uint8_t> &p_octree_cells, const PoolVector<uint8_t> &p_data_cells, const PoolVector<uint8_t> &p_distance_field, const PoolVector<int> &p_level_counts) = 0;
+	virtual void gi_probe_allocate(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) = 0;
 
 	virtual AABB gi_probe_get_bounds(RID p_gi_probe) const = 0;
 	virtual Vector3i gi_probe_get_octree_size(RID p_gi_probe) const = 0;
-	virtual PoolVector<uint8_t> gi_probe_get_octree_cells(RID p_gi_probe) const = 0;
-	virtual PoolVector<uint8_t> gi_probe_get_data_cells(RID p_gi_probe) const = 0;
-	virtual PoolVector<uint8_t> gi_probe_get_distance_field(RID p_gi_probe) const = 0;
+	virtual Vector<uint8_t> gi_probe_get_octree_cells(RID p_gi_probe) const = 0;
+	virtual Vector<uint8_t> gi_probe_get_data_cells(RID p_gi_probe) const = 0;
+	virtual Vector<uint8_t> gi_probe_get_distance_field(RID p_gi_probe) const = 0;
 
-	virtual PoolVector<int> gi_probe_get_level_counts(RID p_gi_probe) const = 0;
+	virtual Vector<int> gi_probe_get_level_counts(RID p_gi_probe) const = 0;
 	virtual Transform gi_probe_get_to_cell_xform(RID p_gi_probe) const = 0;
 
 	virtual void gi_probe_set_dynamic_range(RID p_gi_probe, float p_range) = 0;
@@ -558,15 +558,15 @@ public:
 	virtual RID lightmap_capture_create() = 0;
 	virtual void lightmap_capture_set_bounds(RID p_capture, const AABB &p_bounds) = 0;
 	virtual AABB lightmap_capture_get_bounds(RID p_capture) const = 0;
-	virtual void lightmap_capture_set_octree(RID p_capture, const PoolVector<uint8_t> &p_octree) = 0;
-	virtual PoolVector<uint8_t> lightmap_capture_get_octree(RID p_capture) const = 0;
+	virtual void lightmap_capture_set_octree(RID p_capture, const Vector<uint8_t> &p_octree) = 0;
+	virtual Vector<uint8_t> lightmap_capture_get_octree(RID p_capture) const = 0;
 	virtual void lightmap_capture_set_octree_cell_transform(RID p_capture, const Transform &p_xform) = 0;
 	virtual Transform lightmap_capture_get_octree_cell_transform(RID p_capture) const = 0;
 	virtual void lightmap_capture_set_octree_cell_subdiv(RID p_capture, int p_subdiv) = 0;
 	virtual int lightmap_capture_get_octree_cell_subdiv(RID p_capture) const = 0;
 	virtual void lightmap_capture_set_energy(RID p_capture, float p_energy) = 0;
 	virtual float lightmap_capture_get_energy(RID p_capture) const = 0;
-	virtual const PoolVector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const = 0;
+	virtual const Vector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const = 0;
 
 	/* PARTICLES */
 
@@ -1258,7 +1258,7 @@ public:
 	virtual void light_update_shadow(RID p_rid, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) = 0;
 
 	virtual RID occluder_polygon_create() = 0;
-	virtual void occluder_polygon_set_shape_as_lines(RID p_occluder, const PoolVector<Vector2> &p_lines) = 0;
+	virtual void occluder_polygon_set_shape_as_lines(RID p_occluder, const Vector<Vector2> &p_lines) = 0;
 	virtual void occluder_polygon_set_cull_mode(RID p_occluder, VS::CanvasOccluderPolygonCullMode p_mode) = 0;
 
 	virtual void draw_window_margins(int *p_margins, RID *p_margin_textures) = 0;

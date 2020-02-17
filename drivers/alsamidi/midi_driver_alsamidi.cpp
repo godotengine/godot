@@ -189,9 +189,9 @@ void MIDIDriverALSAMidi::unlock() const {
 		mutex->unlock();
 }
 
-PoolStringArray MIDIDriverALSAMidi::get_connected_inputs() {
+PackedStringArray MIDIDriverALSAMidi::get_connected_inputs() {
 
-	PoolStringArray list;
+	PackedStringArray list;
 
 	lock();
 	for (int i = 0; i < connected_inputs.size(); i++) {

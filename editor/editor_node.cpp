@@ -547,7 +547,7 @@ void EditorNode::_on_plugin_ready(Object *p_script, const String &p_activate_nam
 	push_item(script.operator->());
 }
 
-void EditorNode::_resources_changed(const PoolVector<String> &p_resources) {
+void EditorNode::_resources_changed(const Vector<String> &p_resources) {
 
 	List<Ref<Resource> > changed;
 
@@ -3052,7 +3052,7 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 	String addon_path = String("res://addons").plus_file(p_addon).plus_file("plugin.cfg");
 	if (!DirAccess::exists(addon_path.get_base_dir())) {
 		ProjectSettings *ps = ProjectSettings::get_singleton();
-		PoolStringArray enabled_plugins = ps->get("editor_plugins/enabled");
+		PackedStringArray enabled_plugins = ps->get("editor_plugins/enabled");
 		for (int i = 0; i < enabled_plugins.size(); ++i) {
 			if (enabled_plugins.get(i) == p_addon) {
 				enabled_plugins.remove(i);
@@ -5519,7 +5519,7 @@ void EditorNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("pause_pressed"));
 	ADD_SIGNAL(MethodInfo("stop_pressed"));
 	ADD_SIGNAL(MethodInfo("request_help_search"));
-	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::POOL_STRING_ARRAY, "args")));
+	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "args")));
 	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "obj")));
 }
 

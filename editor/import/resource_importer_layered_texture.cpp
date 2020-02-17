@@ -187,11 +187,11 @@ void ResourceImporterLayeredTexture::_save_tex(const Vector<Ref<Image> > &p_imag
 						image->shrink_x2();
 					}
 
-					PoolVector<uint8_t> data = Image::lossless_packer(image);
+					Vector<uint8_t> data = Image::lossless_packer(image);
 					int data_len = data.size();
 					f->store_32(data_len);
 
-					PoolVector<uint8_t>::Read r = data.read();
+					const uint8_t* r = data.ptr();
 					f->store_buffer(r.ptr(), data_len);
 				}
 
@@ -210,10 +210,10 @@ void ResourceImporterLayeredTexture::_save_tex(const Vector<Ref<Image> > &p_imag
 					f->store_32(p_compress_mode); // 0 - lossless (PNG), 1 - vram, 2 - uncompressed
 				}
 
-				PoolVector<uint8_t> data = image->get_data();
+				Vector<uint8_t> data = image->get_data();
 				int dl = data.size();
 
-				PoolVector<uint8_t>::Read r = data.read();
+				const uint8_t* r = data.ptr();
 				f->store_buffer(r.ptr(), dl);
 			} break;
 			case COMPRESS_UNCOMPRESSED: {
@@ -226,10 +226,10 @@ void ResourceImporterLayeredTexture::_save_tex(const Vector<Ref<Image> > &p_imag
 					image->clear_mipmaps();
 				}
 
-				PoolVector<uint8_t> data = image->get_data();
+				Vector<uint8_t> data = image->get_data();
 				int dl = data.size();
 
-				PoolVector<uint8_t>::Read r = data.read();
+				const uint8_t* r = data.ptr();
 
 				f->store_buffer(r.ptr(), dl);
 

@@ -73,12 +73,12 @@ private:
 
 	bool request_sent;
 	Ref<HTTPClient> client;
-	PoolByteArray body;
+	PackedByteArray body;
 	volatile bool use_threads;
 
 	bool got_response;
 	int response_code;
-	PoolVector<String> response_headers;
+	Vector<String> response_headers;
 
 	String download_to_file;
 
@@ -108,7 +108,7 @@ private:
 
 	Thread *thread;
 
-	void _request_done(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data);
+	void _request_done(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data);
 	static void _thread_func(void *p_userdata);
 
 protected:

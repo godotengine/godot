@@ -350,7 +350,7 @@ void ExportTemplateManager::ok_pressed() {
 	template_open->popup_centered_ratio();
 }
 
-void ExportTemplateManager::_http_download_mirror_completed(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data) {
+void ExportTemplateManager::_http_download_mirror_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data) {
 
 	if (p_status != HTTPRequest::RESULT_SUCCESS || p_code != 200) {
 		EditorNode::get_singleton()->show_warning(TTR("Error getting the list of mirrors."));
@@ -359,8 +359,8 @@ void ExportTemplateManager::_http_download_mirror_completed(int p_status, int p_
 
 	String mirror_str;
 	{
-		PoolByteArray::Read r = p_data.read();
-		mirror_str.parse_utf8((const char *)r.ptr(), p_data.size());
+		const uint8_t *r = p_data.ptr();
+		mirror_str.parse_utf8((const char *)r, p_data.size());
 	}
 
 	template_list_state->hide();
@@ -396,7 +396,7 @@ void ExportTemplateManager::_http_download_mirror_completed(int p_status, int p_
 		return;
 	}
 }
-void ExportTemplateManager::_http_download_templates_completed(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data) {
+void ExportTemplateManager::_http_download_templates_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data) {
 
 	switch (p_status) {
 

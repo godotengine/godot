@@ -93,9 +93,9 @@ void MIDIDriverCoreMidi::close() {
 	}
 }
 
-PoolStringArray MIDIDriverCoreMidi::get_connected_inputs() {
+PackedStringArray MIDIDriverCoreMidi::get_connected_inputs() {
 
-	PoolStringArray list;
+	PackedStringArray list;
 
 	for (int i = 0; i < connected_sources.size(); i++) {
 		MIDIEndpointRef source = connected_sources[i];

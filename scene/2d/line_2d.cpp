@@ -71,7 +71,7 @@ bool Line2D::_edit_use_rect() const {
 bool Line2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 
 	const real_t d = _width / 2 + p_tolerance;
-	PoolVector<Vector2>::Read points = _points.read();
+	const Vector2 *points = _points.ptr();
 	for (int i = 0; i < _points.size() - 1; i++) {
 		Vector2 p = Geometry::get_closest_point_to_segment_2d(p_point, &points[i]);
 		if (p.distance_to(p_point) <= d)
@@ -82,7 +82,7 @@ bool Line2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 }
 #endif
 
-void Line2D::set_points(const PoolVector<Vector2> &p_points) {
+void Line2D::set_points(const Vector<Vector2> &p_points) {
 	_points = p_points;
 	update();
 }
@@ -118,7 +118,7 @@ Ref<Curve> Line2D::get_curve() const {
 	return _curve;
 }
 
-PoolVector<Vector2> Line2D::get_points() const {
+Vector<Vector2> Line2D::get_points() const {
 	return _points;
 }
 
@@ -146,7 +146,7 @@ void Line2D::clear_points() {
 
 void Line2D::add_point(Vector2 p_pos, int p_atpos) {
 	if (p_atpos < 0 || _points.size() < p_atpos) {
-		_points.append(p_pos);
+		_points.push_back(p_pos);
 	} else {
 		_points.insert(p_atpos, p_pos);
 	}
@@ -282,7 +282,7 @@ void Line2D::_draw() {
 	points.resize(_points.size());
 	int len = points.size();
 	{
-		PoolVector<Vector2>::Read points_read = _points.read();
+		const Vector2 *points_read = _points.ptr();
 		for (int i = 0; i < len; ++i) {
 			points.write[i] = points_read[i];
 		}
@@ -400,7 +400,7 @@ void Line2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_antialiased", "antialiased"), &Line2D::set_antialiased);
 	ClassDB::bind_method(D_METHOD("get_antialiased"), &Line2D::get_antialiased);
 
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "points"), "set_points", "get_points");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "points"), "set_points", "get_points");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "width"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "width_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "default_color"), "set_default_color", "get_default_color");

@@ -457,7 +457,7 @@ void GDScriptLanguage::get_public_constants(List<Pair<String, Variant> > *p_cons
 	p_constants->push_back(nan);
 }
 
-String GDScriptLanguage::make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const {
+String GDScriptLanguage::make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const {
 
 #ifdef TOOLS_ENABLED
 	bool th = EditorSettings::get_singleton()->get_setting("text_editor/completion/add_type_hints");
@@ -2173,8 +2173,8 @@ static void _find_identifiers(const GDScriptCompletionContext &p_context, bool p
 
 	static const char *_type_names[Variant::VARIANT_MAX] = {
 		"null", "bool", "int", "float", "String", "Vector2", "Rect2", "Vector3", "Transform2D", "Plane", "Quat", "AABB", "Basis", "Transform",
-		"Color", "NodePath", "RID", "Object", "Dictionary", "Array", "PoolByteArray", "PoolIntArray", "PoolRealArray", "PoolStringArray",
-		"PoolVector2Array", "PoolVector3Array", "PoolColorArray"
+		"Color", "NodePath", "RID", "Object", "Dictionary", "Array", "PackedByteArray", "PackedIntArray", "PackedRealArray", "PackedStringArray",
+		"PackedVector2Array", "PackedVector3Array", "PackedColorArray"
 	};
 
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {

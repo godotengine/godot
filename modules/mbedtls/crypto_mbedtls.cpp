@@ -53,22 +53,22 @@ CryptoKey *CryptoKeyMbedTLS::create() {
 Error CryptoKeyMbedTLS::load(String p_path) {
 	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Key is in use");
 
-	PoolByteArray out;
+	PackedByteArray out;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot open CryptoKeyMbedTLS file '" + p_path + "'.");
 
 	int flen = f->get_len();
 	out.resize(flen + 1);
 	{
-		PoolByteArray::Write w = out.write();
-		f->get_buffer(w.ptr(), flen);
+		uint8_t *w = out.ptrw();
+		f->get_buffer(w, flen);
 		w[flen] = 0; //end f string
 	}
 	memdelete(f);
 
-	int ret = mbedtls_pk_parse_key(&pkey, out.read().ptr(), out.size(), NULL, 0);
+	int ret = mbedtls_pk_parse_key(&pkey, out.ptr(), out.size(), NULL, 0);
 	// We MUST zeroize the memory for safety!
-	mbedtls_platform_zeroize(out.write().ptr(), out.size());
+	mbedtls_platform_zeroize(out.ptrw(), out.size());
 	ERR_FAIL_COND_V_MSG(ret, FAILED, "Error parsing private key '" + itos(ret) + "'.");
 
 	return OK;
@@ -102,20 +102,20 @@ X509Certificate *X509CertificateMbedTLS::create() {
 Error X509CertificateMbedTLS::load(String p_path) {
 	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Certificate is in use");
 
-	PoolByteArray out;
+	PackedByteArray out;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot open X509CertificateMbedTLS file '" + p_path + "'.");
 
 	int flen = f->get_len();
 	out.resize(flen + 1);
 	{
-		PoolByteArray::Write w = out.write();
-		f->get_buffer(w.ptr(), flen);
+		uint8_t *w = out.ptrw();
+		f->get_buffer(w, flen);
 		w[flen] = 0; //end f string
 	}
 	memdelete(f);
 
-	int ret = mbedtls_x509_crt_parse(&cert, out.read().ptr(), out.size());
+	int ret = mbedtls_x509_crt_parse(&cert, out.ptr(), out.size());
 	ERR_FAIL_COND_V_MSG(ret, FAILED, "Error parsing some certificates: " + itos(ret));
 
 	return OK;
@@ -210,15 +210,15 @@ void CryptoMbedTLS::load_default_certificates(String p_path) {
 #ifdef BUILTIN_CERTS_ENABLED
 	else {
 		// Use builtin certs only if user did not override it in project settings.
-		PoolByteArray out;
+		PackedByteArray out;
 		out.resize(_certs_uncompressed_size + 1);
-		PoolByteArray::Write w = out.write();
-		Compression::decompress(w.ptr(), _certs_uncompressed_size, _certs_compressed, _certs_compressed_size, Compression::MODE_DEFLATE);
+		uint8_t *w = out.ptrw();
+		Compression::decompress(w, _certs_uncompressed_size, _certs_compressed, _certs_compressed_size, Compression::MODE_DEFLATE);
 		w[_certs_uncompressed_size] = 0; // Make sure it ends with string terminator
 #ifdef DEBUG_ENABLED
 		print_verbose("Loaded builtin certs");
 #endif
-		default_certs->load_from_memory(out.read().ptr(), out.size());
+		default_certs->load_from_memory(out.ptr(), out.size());
 	}
 #endif
 }
@@ -276,9 +276,9 @@ Ref<X509Certificate> CryptoMbedTLS::generate_self_signed_certificate(Ref<CryptoK
 	return out;
 }
 
-PoolByteArray CryptoMbedTLS::generate_random_bytes(int p_bytes) {
-	PoolByteArray out;
+PackedByteArray CryptoMbedTLS::generate_random_bytes(int p_bytes) {
+	PackedByteArray out;
 	out.resize(p_bytes);
-	mbedtls_ctr_drbg_random(&ctr_drbg, out.write().ptr(), p_bytes);
+	mbedtls_ctr_drbg_random(&ctr_drbg, out.ptrw(), p_bytes);
 	return out;
 }

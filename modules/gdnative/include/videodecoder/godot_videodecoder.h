@@ -54,7 +54,7 @@ typedef struct
 	void (*seek)(void *, godot_real);
 	void (*set_audio_track)(void *, godot_int);
 	void (*update)(void *, godot_real);
-	godot_pool_byte_array *(*get_videoframe)(void *);
+	godot_packed_byte_array *(*get_videoframe)(void *);
 	godot_int (*get_audioframe)(void *, float *, int);
 	godot_int (*get_channels)(const void *);
 	godot_int (*get_mix_rate)(const void *);

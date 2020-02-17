@@ -36,12 +36,12 @@
 Error ImageLoaderTGA::decode_tga_rle(const uint8_t *p_compressed_buffer, size_t p_pixel_size, uint8_t *p_uncompressed_buffer, size_t p_output_size) {
 	Error error;
 
-	PoolVector<uint8_t> pixels;
+	Vector<uint8_t> pixels;
 	error = pixels.resize(p_pixel_size);
 	if (error != OK)
 		return error;
 
-	PoolVector<uint8_t>::Write pixels_w = pixels.write();
+	uint8_t *pixels_w = pixels.ptrw();
 
 	size_t compressed_pos = 0;
 	size_t output_pos = 0;
@@ -55,12 +55,12 @@ Error ImageLoaderTGA::decode_tga_rle(const uint8_t *p_compressed_buffer, size_t 
 
 		if (c & 0x80) {
 			for (size_t i = 0; i < p_pixel_size; i++) {
-				pixels_w.ptr()[i] = p_compressed_buffer[compressed_pos];
+				pixels_w[i] = p_compressed_buffer[compressed_pos];
 				compressed_pos += 1;
 			}
 			for (size_t i = 0; i < count; i++) {
 				for (size_t j = 0; j < p_pixel_size; j++) {
-					p_uncompressed_buffer[output_pos + j] = pixels_w.ptr()[j];
+					p_uncompressed_buffer[output_pos + j] = pixels_w[j];
 				}
 				output_pos += p_pixel_size;
 			}
@@ -116,9 +116,9 @@ Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buff
 		x_end = -1;
 	}
 
-	PoolVector<uint8_t> image_data;
+	Vector<uint8_t> image_data;
 	image_data.resize(width * height * sizeof(uint32_t));
-	PoolVector<uint8_t>::Write image_data_w = image_data.write();
+	uint8_t *image_data_w = image_data.ptrw();
 
 	size_t i = 0;
 	uint32_t x = x_start;
@@ -199,8 +199,6 @@ Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buff
 		}
 	}
 
-	image_data_w.release();
-
 	p_image->create(width, height, 0, Image::FORMAT_RGBA8, image_data);
 
 	return OK;
@@ -208,7 +206,7 @@ Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buff
 
 Error ImageLoaderTGA::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
 
-	PoolVector<uint8_t> src_image;
+	Vector<uint8_t> src_image;
 	int src_image_len = f->get_len();
 	ERR_FAIL_COND_V(src_image_len == 0, ERR_FILE_CORRUPT);
 	ERR_FAIL_COND_V(src_image_len < (int)sizeof(tga_header_s), ERR_FILE_CORRUPT);
@@ -259,49 +257,49 @@ Error ImageLoaderTGA::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 	if (err == OK) {
 		f->seek(f->get_position() + tga_header.id_length);
 
-		PoolVector<uint8_t> palette;
+		Vector<uint8_t> palette;
 
 		if (has_color_map) {
 			size_t color_map_size = tga_header.color_map_length * (tga_header.color_map_depth >> 3);
 			err = palette.resize(color_map_size);
 			if (err == OK) {
-				PoolVector<uint8_t>::Write palette_w = palette.write();
+				uint8_t *palette_w = palette.ptrw();
 				f->get_buffer(&palette_w[0], color_map_size);
 			} else {
 				return OK;
 			}
 		}
 
-		PoolVector<uint8_t>::Write src_image_w = src_image.write();
+		uint8_t *src_image_w = src_image.ptrw();
 		f->get_buffer(&src_image_w[0], src_image_len - f->get_position());
 
-		PoolVector<uint8_t>::Read src_image_r = src_image.read();
+		const uint8_t *src_image_r = src_image.ptr();
 
 		const size_t pixel_size = tga_header.pixel_depth >> 3;
 		const size_t buffer_size = (tga_header.image_width * tga_header.image_height) * pixel_size;
 
-		PoolVector<uint8_t> uncompressed_buffer;
+		Vector<uint8_t> uncompressed_buffer;
 		uncompressed_buffer.resize(buffer_size);
-		PoolVector<uint8_t>::Write uncompressed_buffer_w = uncompressed_buffer.write();
-		PoolVector<uint8_t>::Read uncompressed_buffer_r;
+		uint8_t *uncompressed_buffer_w = uncompressed_buffer.ptrw();
+		const uint8_t *uncompressed_buffer_r;
 
 		const uint8_t *buffer = NULL;
 
 		if (is_encoded) {
 
-			err = decode_tga_rle(src_image_r.ptr(), pixel_size, uncompressed_buffer_w.ptr(), buffer_size);
+			err = decode_tga_rle(src_image_r, pixel_size, uncompressed_buffer_w, buffer_size);
 
 			if (err == OK) {
-				uncompressed_buffer_r = uncompressed_buffer.read();
-				buffer = uncompressed_buffer_r.ptr();
+				uncompressed_buffer_r = uncompressed_buffer.ptr();
+				buffer = uncompressed_buffer_r;
 			}
 		} else {
-			buffer = src_image_r.ptr();
+			buffer = src_image_r;
 		};
 
 		if (err == OK) {
-			PoolVector<uint8_t>::Read palette_r = palette.read();
-			err = convert_to_image(p_image, buffer, tga_header, palette_r.ptr(), is_monochrome);
+			const uint8_t *palette_r = palette.ptr();
+			err = convert_to_image(p_image, buffer, tga_header, palette_r, is_monochrome);
 		}
 	}
 

@@ -233,7 +233,7 @@ public:
 	BIND2(mesh_set_blend_shape_mode, RID, BlendShapeMode)
 	BIND1RC(BlendShapeMode, mesh_get_blend_shape_mode, RID)
 
-	BIND4(mesh_surface_update_region, RID, int, int, const PoolVector<uint8_t> &)
+	BIND4(mesh_surface_update_region, RID, int, int, const Vector<uint8_t> &)
 
 	BIND3(mesh_surface_set_material, RID, int, RID)
 	BIND2RC(RID, mesh_surface_get_material, RID, int)
@@ -268,8 +268,8 @@ public:
 	BIND2RC(Color, multimesh_instance_get_color, RID, int)
 	BIND2RC(Color, multimesh_instance_get_custom_data, RID, int)
 
-	BIND2(multimesh_set_buffer, RID, const PoolVector<float> &)
-	BIND1RC(PoolVector<float>, multimesh_get_buffer, RID)
+	BIND2(multimesh_set_buffer, RID, const Vector<float> &)
+	BIND1RC(Vector<float>, multimesh_get_buffer, RID)
 
 	BIND2(multimesh_set_visible_instances, RID, int)
 	BIND1RC(int, multimesh_get_visible_instances, RID)
@@ -344,14 +344,14 @@ public:
 
 	BIND0R(RID, gi_probe_create)
 
-	BIND8(gi_probe_allocate, RID, const Transform &, const AABB &, const Vector3i &, const PoolVector<uint8_t> &, const PoolVector<uint8_t> &, const PoolVector<uint8_t> &, const PoolVector<int> &)
+	BIND8(gi_probe_allocate, RID, const Transform &, const AABB &, const Vector3i &, const Vector<uint8_t> &, const Vector<uint8_t> &, const Vector<uint8_t> &, const Vector<int> &)
 
 	BIND1RC(AABB, gi_probe_get_bounds, RID)
 	BIND1RC(Vector3i, gi_probe_get_octree_size, RID)
-	BIND1RC(PoolVector<uint8_t>, gi_probe_get_octree_cells, RID)
-	BIND1RC(PoolVector<uint8_t>, gi_probe_get_data_cells, RID)
-	BIND1RC(PoolVector<uint8_t>, gi_probe_get_distance_field, RID)
-	BIND1RC(PoolVector<int>, gi_probe_get_level_counts, RID)
+	BIND1RC(Vector<uint8_t>, gi_probe_get_octree_cells, RID)
+	BIND1RC(Vector<uint8_t>, gi_probe_get_data_cells, RID)
+	BIND1RC(Vector<uint8_t>, gi_probe_get_distance_field, RID)
+	BIND1RC(Vector<int>, gi_probe_get_level_counts, RID)
 	BIND1RC(Transform, gi_probe_get_to_cell_xform, RID)
 
 	BIND2(gi_probe_set_dynamic_range, RID, float)
@@ -391,8 +391,8 @@ public:
 	BIND2(lightmap_capture_set_bounds, RID, const AABB &)
 	BIND1RC(AABB, lightmap_capture_get_bounds, RID)
 
-	BIND2(lightmap_capture_set_octree, RID, const PoolVector<uint8_t> &)
-	BIND1RC(PoolVector<uint8_t>, lightmap_capture_get_octree, RID)
+	BIND2(lightmap_capture_set_octree, RID, const Vector<uint8_t> &)
+	BIND1RC(Vector<uint8_t>, lightmap_capture_get_octree, RID)
 
 	BIND2(lightmap_capture_set_octree_cell_transform, RID, const Transform &)
 	BIND1RC(Transform, lightmap_capture_get_octree_cell_transform, RID)
@@ -686,8 +686,8 @@ public:
 	BIND2(canvas_light_occluder_set_light_mask, RID, int)
 
 	BIND0R(RID, canvas_occluder_polygon_create)
-	BIND3(canvas_occluder_polygon_set_shape, RID, const PoolVector<Vector2> &, bool)
-	BIND2(canvas_occluder_polygon_set_shape_as_lines, RID, const PoolVector<Vector2> &)
+	BIND3(canvas_occluder_polygon_set_shape, RID, const Vector<Vector2> &, bool)
+	BIND2(canvas_occluder_polygon_set_shape_as_lines, RID, const Vector<Vector2> &)
 
 	BIND2(canvas_occluder_polygon_set_cull_mode, RID, CanvasOccluderPolygonCullMode)
 

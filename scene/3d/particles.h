@@ -78,7 +78,7 @@ protected:
 
 public:
 	AABB get_aabb() const;
-	PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
+	Vector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	void set_emitting(bool p_emitting);
 	void set_amount(int p_amount);

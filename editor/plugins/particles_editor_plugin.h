@@ -53,9 +53,9 @@ protected:
 	SpinBox *emission_amount;
 	OptionButton *emission_fill;
 
-	PoolVector<Face3> geometry;
+	Vector<Face3> geometry;
 
-	bool _generate(PoolVector<Vector3> &points, PoolVector<Vector3> &normals);
+	bool _generate(Vector<Vector3> &points, Vector<Vector3> &normals);
 	virtual void _generate_emission_points() = 0;
 	void _node_selected(const NodePath &p_path);
 

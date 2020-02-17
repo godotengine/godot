@@ -1045,22 +1045,22 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 		case Variant::DICTIONARY: {
 
 		} break;
-		case Variant::POOL_BYTE_ARRAY: {
+		case Variant::PACKED_BYTE_ARRAY: {
 
 		} break;
-		case Variant::POOL_INT_ARRAY: {
+		case Variant::PACKED_INT_ARRAY: {
 
 		} break;
-		case Variant::POOL_REAL_ARRAY: {
+		case Variant::PACKED_REAL_ARRAY: {
 
 		} break;
-		case Variant::POOL_STRING_ARRAY: {
+		case Variant::PACKED_STRING_ARRAY: {
 
 		} break;
-		case Variant::POOL_VECTOR3_ARRAY: {
+		case Variant::PACKED_VECTOR3_ARRAY: {
 
 		} break;
-		case Variant::POOL_COLOR_ARRAY: {
+		case Variant::PACKED_COLOR_ARRAY: {
 
 		} break;
 		default: {
@@ -1697,22 +1697,22 @@ void CustomPropertyEditor::_modified(String p_string) {
 		case Variant::DICTIONARY: {
 
 		} break;
-		case Variant::POOL_BYTE_ARRAY: {
+		case Variant::PACKED_BYTE_ARRAY: {
 
 		} break;
-		case Variant::POOL_INT_ARRAY: {
+		case Variant::PACKED_INT_ARRAY: {
 
 		} break;
-		case Variant::POOL_REAL_ARRAY: {
+		case Variant::PACKED_REAL_ARRAY: {
 
 		} break;
-		case Variant::POOL_STRING_ARRAY: {
+		case Variant::PACKED_STRING_ARRAY: {
 
 		} break;
-		case Variant::POOL_VECTOR3_ARRAY: {
+		case Variant::PACKED_VECTOR3_ARRAY: {
 
 		} break;
-		case Variant::POOL_COLOR_ARRAY: {
+		case Variant::PACKED_COLOR_ARRAY: {
 
 		} break;
 		default: {

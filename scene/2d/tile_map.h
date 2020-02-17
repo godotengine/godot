@@ -220,8 +220,8 @@ private:
 
 	_FORCE_INLINE_ int _get_quadrant_size() const;
 
-	void _set_tile_data(const PoolVector<int> &p_data);
-	PoolVector<int> _get_tile_data() const;
+	void _set_tile_data(const Vector<int> &p_data);
+	Vector<int> _get_tile_data() const;
 
 	void _set_old_cell_size(int p_size) { set_cell_size(Size2(p_size, p_size)); }
 	int _get_old_cell_size() const { return cell_size.x; }

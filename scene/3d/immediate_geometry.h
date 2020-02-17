@@ -64,7 +64,7 @@ public:
 	void add_sphere(int p_lats, int p_lons, float p_radius, bool p_add_uv = true);
 
 	virtual AABB get_aabb() const;
-	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	ImmediateGeometry();
 	~ImmediateGeometry();

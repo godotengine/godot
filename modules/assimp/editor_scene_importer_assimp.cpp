@@ -1217,17 +1217,17 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 			const size_t num_vertices = ai_mesh->mAnimMeshes[j]->mNumVertices;
 			array_copy[Mesh::ARRAY_INDEX] = Variant();
 			if (ai_mesh->mAnimMeshes[j]->HasPositions()) {
-				PoolVector3Array vertices;
+				PackedVector3Array vertices;
 				vertices.resize(num_vertices);
 				for (size_t l = 0; l < num_vertices; l++) {
 					const aiVector3D ai_pos = ai_mesh->mAnimMeshes[j]->mVertices[l];
 					Vector3 position = Vector3(ai_pos.x, ai_pos.y, ai_pos.z);
-					vertices.write()[l] = position;
+					vertices.ptrw()[l] = position;
 				}
-				PoolVector3Array new_vertices = array_copy[VisualServer::ARRAY_VERTEX].duplicate(true);
+				PackedVector3Array new_vertices = array_copy[VisualServer::ARRAY_VERTEX].duplicate(true);
 				ERR_CONTINUE(vertices.size() != new_vertices.size());
 				for (int32_t l = 0; l < new_vertices.size(); l++) {
-					PoolVector3Array::Write w = new_vertices.write();
+					Vector3 *w = new_vertices.ptrw();
 					w[l] = vertices[l];
 				}
 				array_copy[VisualServer::ARRAY_VERTEX] = new_vertices;
@@ -1235,53 +1235,53 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 
 			int32_t color_set = 0;
 			if (ai_mesh->mAnimMeshes[j]->HasVertexColors(color_set)) {
-				PoolColorArray colors;
+				PackedColorArray colors;
 				colors.resize(num_vertices);
 				for (size_t l = 0; l < num_vertices; l++) {
 					const aiColor4D ai_color = ai_mesh->mAnimMeshes[j]->mColors[color_set][l];
 					Color color = Color(ai_color.r, ai_color.g, ai_color.b, ai_color.a);
-					colors.write()[l] = color;
+					colors.ptrw()[l] = color;
 				}
-				PoolColorArray new_colors = array_copy[VisualServer::ARRAY_COLOR].duplicate(true);
+				PackedColorArray new_colors = array_copy[VisualServer::ARRAY_COLOR].duplicate(true);
 				ERR_CONTINUE(colors.size() != new_colors.size());
 				for (int32_t l = 0; l < colors.size(); l++) {
-					PoolColorArray::Write w = new_colors.write();
+					Color *w = new_colors.ptrw();
 					w[l] = colors[l];
 				}
 				array_copy[VisualServer::ARRAY_COLOR] = new_colors;
 			}
 
 			if (ai_mesh->mAnimMeshes[j]->HasNormals()) {
-				PoolVector3Array normals;
+				PackedVector3Array normals;
 				normals.resize(num_vertices);
 				for (size_t l = 0; l < num_vertices; l++) {
 					const aiVector3D ai_normal = ai_mesh->mAnimMeshes[j]->mNormals[l];
 					Vector3 normal = Vector3(ai_normal.x, ai_normal.y, ai_normal.z);
-					normals.write()[l] = normal;
+					normals.ptrw()[l] = normal;
 				}
-				PoolVector3Array new_normals = array_copy[VisualServer::ARRAY_NORMAL].duplicate(true);
+				PackedVector3Array new_normals = array_copy[VisualServer::ARRAY_NORMAL].duplicate(true);
 				ERR_CONTINUE(normals.size() != new_normals.size());
 				for (int l = 0; l < normals.size(); l++) {
-					PoolVector3Array::Write w = new_normals.write();
+					Vector3 *w = new_normals.ptrw();
 					w[l] = normals[l];
 				}
 				array_copy[VisualServer::ARRAY_NORMAL] = new_normals;
 			}
 
 			if (ai_mesh->mAnimMeshes[j]->HasTangentsAndBitangents()) {
-				PoolColorArray tangents;
+				PackedColorArray tangents;
 				tangents.resize(num_vertices);
-				PoolColorArray::Write w = tangents.write();
+				Color *w = tangents.ptrw();
 				for (size_t l = 0; l < num_vertices; l++) {
 					AssimpUtils::calc_tangent_from_mesh(ai_mesh, j, l, l, w);
 				}
-				PoolRealArray new_tangents = array_copy[VisualServer::ARRAY_TANGENT].duplicate(true);
+				PackedRealArray new_tangents = array_copy[VisualServer::ARRAY_TANGENT].duplicate(true);
 				ERR_CONTINUE(new_tangents.size() != tangents.size() * 4);
 				for (int32_t l = 0; l < tangents.size(); l++) {
-					new_tangents.write()[l + 0] = tangents[l].r;
-					new_tangents.write()[l + 1] = tangents[l].g;
-					new_tangents.write()[l + 2] = tangents[l].b;
-					new_tangents.write()[l + 3] = tangents[l].a;
+					new_tangents.ptrw()[l + 0] = tangents[l].r;
+					new_tangents.ptrw()[l + 1] = tangents[l].g;
+					new_tangents.ptrw()[l + 2] = tangents[l].b;
+					new_tangents.ptrw()[l + 3] = tangents[l].a;
 				}
 				array_copy[VisualServer::ARRAY_TANGENT] = new_tangents;
 			}

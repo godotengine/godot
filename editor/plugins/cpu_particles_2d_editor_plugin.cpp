@@ -118,8 +118,8 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 	int vpc = 0;
 
 	{
-		PoolVector<uint8_t> data = img->get_data();
-		PoolVector<uint8_t>::Read r = data.read();
+		Vector<uint8_t> data = img->get_data();
+		const uint8_t *r = data.ptr();
 
 		for (int i = 0; i < s.width; i++) {
 			for (int j = 0; j < s.height; j++) {
@@ -198,9 +198,9 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 	ERR_FAIL_COND_MSG(valid_positions.size() == 0, "No pixels with transparency > 128 in image...");
 
 	if (capture_colors) {
-		PoolColorArray pca;
+		PackedColorArray pca;
 		pca.resize(vpc);
-		PoolColorArray::Write pcaw = pca.write();
+		Color *pcaw = pca.ptrw();
 		for (int i = 0; i < vpc; i += 1) {
 			Color color;
 			color.r = valid_colors[i * 4 + 0] / 255.0f;
@@ -214,9 +214,9 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 
 	if (valid_normals.size()) {
 		particles->set_emission_shape(CPUParticles2D::EMISSION_SHAPE_DIRECTED_POINTS);
-		PoolVector2Array norms;
+		PackedVector2Array norms;
 		norms.resize(valid_normals.size());
-		PoolVector2Array::Write normsw = norms.write();
+		Vector2 *normsw = norms.ptrw();
 		for (int i = 0; i < valid_normals.size(); i += 1) {
 			normsw[i] = valid_normals[i];
 		}
@@ -226,9 +226,9 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 	}
 
 	{
-		PoolVector2Array points;
+		PackedVector2Array points;
 		points.resize(valid_positions.size());
-		PoolVector2Array::Write pointsw = points.write();
+		Vector2 *pointsw = points.ptrw();
 		for (int i = 0; i < valid_positions.size(); i += 1) {
 			pointsw[i] = valid_positions[i];
 		}

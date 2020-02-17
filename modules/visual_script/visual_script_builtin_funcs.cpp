@@ -467,7 +467,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 		case BYTES_TO_VAR: {
 
 			if (p_idx == 0)
-				return PropertyInfo(Variant::POOL_BYTE_ARRAY, "bytes");
+				return PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytes");
 			else
 				return PropertyInfo(Variant::BOOL, "allow_objects");
 		} break;
@@ -632,7 +632,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		} break;
 		case VAR_TO_BYTES: {
 			if (p_idx == 0)
-				t = Variant::POOL_BYTE_ARRAY;
+				t = Variant::PACKED_BYTE_ARRAY;
 			else
 				t = Variant::BOOL;
 
@@ -1228,7 +1228,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 				r_error.expected = Variant::BOOL;
 				return;
 			}
-			PoolByteArray barr;
+			PackedByteArray barr;
 			int len;
 			bool full_objects = *p_inputs[1];
 			Error err = encode_variant(*p_inputs[0], NULL, len, full_objects);
@@ -1242,17 +1242,17 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 
 			barr.resize(len);
 			{
-				PoolByteArray::Write w = barr.write();
-				encode_variant(*p_inputs[0], w.ptr(), len, full_objects);
+				uint8_t *w = barr.ptrw();
+				encode_variant(*p_inputs[0], w, len, full_objects);
 			}
 			*r_return = barr;
 		} break;
 		case VisualScriptBuiltinFunc::BYTES_TO_VAR: {
 
-			if (p_inputs[0]->get_type() != Variant::POOL_BYTE_ARRAY) {
+			if (p_inputs[0]->get_type() != Variant::PACKED_BYTE_ARRAY) {
 				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
-				r_error.expected = Variant::POOL_BYTE_ARRAY;
+				r_error.expected = Variant::PACKED_BYTE_ARRAY;
 				return;
 			}
 			if (p_inputs[1]->get_type() != Variant::BOOL) {
@@ -1262,17 +1262,17 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 				return;
 			}
 
-			PoolByteArray varr = *p_inputs[0];
+			PackedByteArray varr = *p_inputs[0];
 			bool allow_objects = *p_inputs[1];
 			Variant ret;
 			{
-				PoolByteArray::Read r = varr.read();
-				Error err = decode_variant(ret, r.ptr(), varr.size(), NULL, allow_objects);
+				const uint8_t *r = varr.ptr();
+				Error err = decode_variant(ret, r, varr.size(), NULL, allow_objects);
 				if (err != OK) {
 					r_error_str = RTR("Not enough bytes for decoding bytes, or invalid format.");
 					r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 					r_error.argument = 0;
-					r_error.expected = Variant::POOL_BYTE_ARRAY;
+					r_error.expected = Variant::PACKED_BYTE_ARRAY;
 					return;
 				}
 			}

@@ -147,7 +147,7 @@ public:
 	virtual bool can_lose_focus_on_node_selection() { return true; }
 	virtual void set_debugger_active(bool p_active);
 	virtual void set_tooltip_request_func(String p_method, Object *p_obj);
-	virtual void add_callback(const String &p_function, PoolStringArray p_args);
+	virtual void add_callback(const String &p_function, PackedStringArray p_args);
 
 	virtual Control *get_edit_menu();
 	virtual void clear_edit_menu();

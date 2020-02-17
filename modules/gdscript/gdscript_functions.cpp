@@ -856,7 +856,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				full_objects = *p_args[1];
 			}
 
-			PoolByteArray barr;
+			PackedByteArray barr;
 			int len;
 			Error err = encode_variant(*p_args[0], NULL, len, full_objects);
 			if (err) {
@@ -869,8 +869,8 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 
 			barr.resize(len);
 			{
-				PoolByteArray::Write w = barr.write();
-				encode_variant(*p_args[0], w.ptr(), len, full_objects);
+				uint8_t *w = barr.ptrw();
+				encode_variant(*p_args[0], w, len, full_objects);
 			}
 			r_ret = barr;
 		} break;
@@ -896,24 +896,24 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				allow_objects = *p_args[1];
 			}
 
-			if (p_args[0]->get_type() != Variant::POOL_BYTE_ARRAY) {
+			if (p_args[0]->get_type() != Variant::PACKED_BYTE_ARRAY) {
 				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 1;
-				r_error.expected = Variant::POOL_BYTE_ARRAY;
+				r_error.expected = Variant::PACKED_BYTE_ARRAY;
 				r_ret = Variant();
 				return;
 			}
 
-			PoolByteArray varr = *p_args[0];
+			PackedByteArray varr = *p_args[0];
 			Variant ret;
 			{
-				PoolByteArray::Read r = varr.read();
-				Error err = decode_variant(ret, r.ptr(), varr.size(), NULL, allow_objects);
+				const uint8_t *r = varr.ptr();
+				Error err = decode_variant(ret, r, varr.size(), NULL, allow_objects);
 				if (err != OK) {
 					r_ret = RTR("Not enough bytes for decoding bytes, or invalid format.");
 					r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 					r_error.argument = 0;
-					r_error.expected = Variant::POOL_BYTE_ARRAY;
+					r_error.expected = Variant::PACKED_BYTE_ARRAY;
 					return;
 				}
 			}
@@ -1390,39 +1390,39 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 					Array d = *p_args[0];
 					r_ret = d.size();
 				} break;
-				case Variant::POOL_BYTE_ARRAY: {
+				case Variant::PACKED_BYTE_ARRAY: {
 
-					PoolVector<uint8_t> d = *p_args[0];
+					Vector<uint8_t> d = *p_args[0];
 					r_ret = d.size();
 				} break;
-				case Variant::POOL_INT_ARRAY: {
+				case Variant::PACKED_INT_ARRAY: {
 
-					PoolVector<int> d = *p_args[0];
+					Vector<int> d = *p_args[0];
 					r_ret = d.size();
 				} break;
-				case Variant::POOL_REAL_ARRAY: {
+				case Variant::PACKED_REAL_ARRAY: {
 
-					PoolVector<real_t> d = *p_args[0];
+					Vector<real_t> d = *p_args[0];
 					r_ret = d.size();
 				} break;
-				case Variant::POOL_STRING_ARRAY: {
+				case Variant::PACKED_STRING_ARRAY: {
 
-					PoolVector<String> d = *p_args[0];
+					Vector<String> d = *p_args[0];
 					r_ret = d.size();
 				} break;
-				case Variant::POOL_VECTOR2_ARRAY: {
+				case Variant::PACKED_VECTOR2_ARRAY: {
 
-					PoolVector<Vector2> d = *p_args[0];
+					Vector<Vector2> d = *p_args[0];
 					r_ret = d.size();
 				} break;
-				case Variant::POOL_VECTOR3_ARRAY: {
+				case Variant::PACKED_VECTOR3_ARRAY: {
 
-					PoolVector<Vector3> d = *p_args[0];
+					Vector<Vector3> d = *p_args[0];
 					r_ret = d.size();
 				} break;
-				case Variant::POOL_COLOR_ARRAY: {
+				case Variant::PACKED_COLOR_ARRAY: {
 
-					PoolVector<Color> d = *p_args[0];
+					Vector<Color> d = *p_args[0];
 					r_ret = d.size();
 				} break;
 				default: {
@@ -1941,12 +1941,12 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 
 			MethodInfo mi("var2bytes", PropertyInfo(Variant::NIL, "var", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT), PropertyInfo(Variant::BOOL, "full_objects"));
 			mi.default_arguments.push_back(false);
-			mi.return_val.type = Variant::POOL_BYTE_ARRAY;
+			mi.return_val.type = Variant::PACKED_BYTE_ARRAY;
 			return mi;
 		} break;
 		case BYTES_TO_VAR: {
 
-			MethodInfo mi(Variant::NIL, "bytes2var", PropertyInfo(Variant::POOL_BYTE_ARRAY, "bytes"), PropertyInfo(Variant::BOOL, "allow_objects"));
+			MethodInfo mi(Variant::NIL, "bytes2var", PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytes"), PropertyInfo(Variant::BOOL, "allow_objects"));
 			mi.default_arguments.push_back(false);
 			mi.return_val.type = Variant::NIL;
 			mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
