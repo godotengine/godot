@@ -31,14 +31,14 @@
 #ifndef ZIP_READER_H
 #define ZIP_READER_H
 
-#include "core/reference.h"
+#include "core/object/reference.h"
 
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "thirdparty/minizip/unzip.h"
 
-class ZipReader : public Reference {
-	GDCLASS(ZipReader, Reference)
+class ZIPReader : public Reference {
+	GDCLASS(ZIPReader, Reference)
 
 	FileAccess *f;
 	unzFile uzf;
@@ -50,11 +50,11 @@ public:
 	Error open(String path);
 	Error close();
 
-	PoolStringArray get_files();
-	PoolByteArray read_file(String path, bool case_sensitive);
+	PackedStringArray get_files();
+	PackedByteArray read_file(String path, bool case_sensitive);
 
-	ZipReader();
-	~ZipReader();
+	ZIPReader();
+	~ZIPReader();
 };
 
 #endif // ZIP_READER_H

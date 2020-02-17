@@ -30,10 +30,10 @@
 
 #include "zip_reader.h"
 
-#include "core/error_macros.h"
+#include "core/error/error_macros.h"
 #include "core/io/zip_io.h"
 
-Error ZipReader::open(String path) {
+Error ZIPReader::open(String path) {
 	if (f) {
 		close();
 	}
@@ -43,19 +43,19 @@ Error ZipReader::open(String path) {
 	return uzf != NULL ? OK : FAILED;
 }
 
-Error ZipReader::close() {
-	ERR_FAIL_COND_V_MSG(!f, FAILED, "ZipReader cannot be closed because it is not open.")
+Error ZIPReader::close() {
+	ERR_FAIL_COND_V_MSG(!f, FAILED, "ZIPReader cannot be closed because it is not open.");
 
 	return unzClose(uzf) == UNZ_OK ? OK : FAILED;
 }
 
-PoolStringArray ZipReader::get_files() {
-	ERR_FAIL_COND_V_MSG(!f, PoolStringArray(), "ZipReader must be opened before use.")
+PackedStringArray ZIPReader::get_files() {
+	ERR_FAIL_COND_V_MSG(!f, PackedStringArray(), "ZIPReader must be opened before use.");
 
 	List<String> s;
 
 	if (unzGoToFirstFile(uzf) != UNZ_OK) {
-		return PoolStringArray();
+		return PackedStringArray();
 	}
 
 	do {
@@ -64,7 +64,7 @@ PoolStringArray ZipReader::get_files() {
 		s.push_back(filename);
 	} while (unzGoToNextFile(uzf) == UNZ_OK);
 
-	PoolStringArray arr;
+	PackedStringArray arr;
 	arr.resize(s.size());
 	int idx = 0;
 	for (const List<String>::Element *E = s.front(); E; E = E->next()) {
@@ -73,43 +73,42 @@ PoolStringArray ZipReader::get_files() {
 	return arr;
 }
 
-PoolByteArray ZipReader::read_file(String path, bool case_sensitive) {
-	ERR_FAIL_COND_V_MSG(!f, PoolByteArray(), "ZipReader must be opened before use.")
+PackedByteArray ZIPReader::read_file(String path, bool case_sensitive) {
+	ERR_FAIL_COND_V_MSG(!f, PackedByteArray(), "ZIPReader must be opened before use.");
 
 	int cs = case_sensitive ? 1 : 2;
 	if (unzLocateFile(uzf, path.utf8().get_data(), cs) != UNZ_OK) {
-		ERR_FAIL_V_MSG(PoolByteArray(), "File does not exist in zip archive: " + path)
+		ERR_FAIL_V_MSG(PackedByteArray(), "File does not exist in zip archive: " + path);
 	}
 	if (unzOpenCurrentFile(uzf) != UNZ_OK) {
-		ERR_FAIL_V_MSG(PoolByteArray(), "Could not open file within zip archive.")
+		ERR_FAIL_V_MSG(PackedByteArray(), "Could not open file within zip archive.");
 	}
 
 	unz_file_info info;
 	unzGetCurrentFileInfo(uzf, &info, NULL, 0, NULL, 0, NULL, 0);
-	PoolByteArray data;
+	PackedByteArray data;
 	data.resize(info.uncompressed_size);
 
-	PoolByteArray::Write w = data.write();
+	uint8_t *w = data.ptrw();
 	unzReadCurrentFile(uzf, &w[0], info.uncompressed_size);
-	w.release();
 
 	unzCloseCurrentFile(uzf);
 	return data;
 }
 
-ZipReader::ZipReader() {
+ZIPReader::ZIPReader() {
 	f = NULL;
 }
 
-ZipReader::~ZipReader() {
+ZIPReader::~ZIPReader() {
 	if (f) {
 		close();
 	}
 }
 
-void ZipReader::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("open", "path"), &ZipReader::open);
-	ClassDB::bind_method(D_METHOD("close"), &ZipReader::close);
-	ClassDB::bind_method(D_METHOD("get_files"), &ZipReader::get_files);
-	ClassDB::bind_method(D_METHOD("read_file", "path", "case_sensitive"), &ZipReader::read_file, DEFVAL(Variant(true)));
+void ZIPReader::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("open", "path"), &ZIPReader::open);
+	ClassDB::bind_method(D_METHOD("close"), &ZIPReader::close);
+	ClassDB::bind_method(D_METHOD("get_files"), &ZIPReader::get_files);
+	ClassDB::bind_method(D_METHOD("read_file", "path", "case_sensitive"), &ZIPReader::read_file, DEFVAL(Variant(true)));
 }

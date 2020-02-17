@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  zip_writer.cpp                                                       */
+/*  zip_packer.cpp                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -30,9 +30,9 @@
 
 #include "core/io/zip_io.h"
 
-#include "zip_writer.h"
+#include "zip_packer.h"
 
-Error ZipWriter::open(String path, ZipAppend append) {
+Error ZIPPacker::open(String path, ZipAppend append) {
 	if (f) {
 		close();
 	}
@@ -42,14 +42,14 @@ Error ZipWriter::open(String path, ZipAppend append) {
 	return zf != NULL ? OK : FAILED;
 }
 
-Error ZipWriter::close() {
-	ERR_FAIL_COND_V_MSG(!f, FAILED, "ZipWriter cannot be closed because it is not open.")
+Error ZIPPacker::close() {
+	ERR_FAIL_COND_V_MSG(!f, FAILED, "ZIPPacker cannot be closed because it is not open.");
 
 	return zipClose(zf, NULL) == ZIP_OK ? OK : FAILED;
 }
 
-Error ZipWriter::start_file(String path) {
-	ERR_FAIL_COND_V_MSG(!f, FAILED, "ZipWriter must be opened before use.")
+Error ZIPPacker::start_file(String path) {
+	ERR_FAIL_COND_V_MSG(!f, FAILED, "ZIPPacker must be opened before use.");
 
 	zip_fileinfo zipfi;
 
@@ -70,35 +70,35 @@ Error ZipWriter::start_file(String path) {
 	return ret == ZIP_OK ? OK : FAILED;
 }
 
-Error ZipWriter::write_file(Vector<uint8_t> data) {
-	ERR_FAIL_COND_V_MSG(!f, FAILED, "ZipWriter must be opened before use.")
+Error ZIPPacker::write_file(Vector<uint8_t> data) {
+	ERR_FAIL_COND_V_MSG(!f, FAILED, "ZIPPacker must be opened before use.");
 
 	return zipWriteInFileInZip(zf, data.ptr(), data.size()) == ZIP_OK ? OK : FAILED;
 }
 
-Error ZipWriter::close_file() {
-	ERR_FAIL_COND_V_MSG(!f, FAILED, "ZipWriter must be opened before use.")
+Error ZIPPacker::close_file() {
+	ERR_FAIL_COND_V_MSG(!f, FAILED, "ZIPPacker must be opened before use.");
 
 	return zipCloseFileInZip(zf) == ZIP_OK ? OK : FAILED;
 }
 
-void ZipWriter::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("open", "path", "append"), &ZipWriter::open, DEFVAL(Variant(APPEND_CREATE)));
-	ClassDB::bind_method(D_METHOD("start_file", "path"), &ZipWriter::start_file);
-	ClassDB::bind_method(D_METHOD("write_file", "data"), &ZipWriter::write_file);
-	ClassDB::bind_method(D_METHOD("close_file"), &ZipWriter::close_file);
-	ClassDB::bind_method(D_METHOD("close"), &ZipWriter::close);
+void ZIPPacker::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("open", "path", "append"), &ZIPPacker::open, DEFVAL(Variant(APPEND_CREATE)));
+	ClassDB::bind_method(D_METHOD("start_file", "path"), &ZIPPacker::start_file);
+	ClassDB::bind_method(D_METHOD("write_file", "data"), &ZIPPacker::write_file);
+	ClassDB::bind_method(D_METHOD("close_file"), &ZIPPacker::close_file);
+	ClassDB::bind_method(D_METHOD("close"), &ZIPPacker::close);
 
 	BIND_ENUM_CONSTANT(APPEND_CREATE);
 	BIND_ENUM_CONSTANT(APPEND_CREATEAFTER);
 	BIND_ENUM_CONSTANT(APPEND_ADDINZIP);
 }
 
-ZipWriter::ZipWriter() {
+ZIPPacker::ZIPPacker() {
 	f = NULL;
 }
 
-ZipWriter::~ZipWriter() {
+ZIPPacker::~ZIPPacker() {
 	if (f) {
 		close();
 	}
