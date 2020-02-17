@@ -383,8 +383,7 @@ void RayCast3D::_clear_debug_shape() {
 }
 
 RayCast3D::RayCast3D() {
-	enabled = false;
-
+	enabled = true;
 	collided = false;
 	against_shape = 0;
 	collision_mask = 1;
