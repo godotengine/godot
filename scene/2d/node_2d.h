@@ -70,6 +70,7 @@ public:
 
 	virtual void _edit_set_rect(const Rect2 &p_edit_rect) override;
 #endif
+	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true) override;
 
 	void set_position(const Point2 &p_pos);
 	void set_rotation(real_t p_radians);

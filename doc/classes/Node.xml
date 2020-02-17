@@ -612,6 +612,15 @@
 				Removes a node from the [param group]. Does nothing if the node is not in the [param group]. See notes in the description, and the group methods in [SceneTree].
 			</description>
 		</method>
+		<method name="reparent">
+			<return type="void" />
+			<param index="0" name="new_parent" type="Node" />
+			<param index="1" name="keep_global_transform" type="bool" default="true" />
+			<description>
+				Changes the parent of this [Node] to the [param new_parent]. The node needs to already have a parent.
+				If [param keep_global_transform] is [code]true[/code], the node's global transform will be preserved if supported. [Node2D], [Node3D] and [Control] support this argument (but [Control] keeps only position).
+			</description>
+		</method>
 		<method name="replace_by">
 			<return type="void" />
 			<param index="0" name="node" type="Node" />
