@@ -81,7 +81,7 @@ public:
 	virtual Error connect_to_host(IP_Address p_host, uint16_t p_port);
 	virtual Error poll(PollType p_type, int timeout) const;
 	virtual Error recv(uint8_t *p_buffer, int p_len, int &r_read);
-	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port);
+	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port, bool p_peek = false);
 	virtual Error send(const uint8_t *p_buffer, int p_len, int &r_sent);
 	virtual Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port);
 	virtual Ref<NetSocket> accept(IP_Address &r_ip, uint16_t &r_port);

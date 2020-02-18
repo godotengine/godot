@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  net_socket.h                                                         */
+/*  packet_peer_dtls.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,54 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NET_SOCKET_H
-#define NET_SOCKET_H
+#ifndef PACKET_PEER_DTLS_H
+#define PACKET_PEER_DTLS_H
 
-#include "core/io/ip.h"
-#include "core/reference.h"
+#include "core/crypto/crypto.h"
+#include "core/io/packet_peer_udp.h"
 
-class NetSocket : public Reference {
+class PacketPeerDTLS : public PacketPeer {
+	GDCLASS(PacketPeerDTLS, PacketPeer);
 
 protected:
-	static NetSocket *(*_create)();
+	static PacketPeerDTLS *(*_create)();
+	static void _bind_methods();
+
+	static bool available;
 
 public:
-	static NetSocket *create();
-
-	enum PollType {
-		POLL_TYPE_IN,
-		POLL_TYPE_OUT,
-		POLL_TYPE_IN_OUT
+	enum Status {
+		STATUS_DISCONNECTED,
+		STATUS_HANDSHAKING,
+		STATUS_CONNECTED,
+		STATUS_ERROR,
+		STATUS_ERROR_HOSTNAME_MISMATCH
 	};
 
-	enum Type {
-		TYPE_NONE,
-		TYPE_TCP,
-		TYPE_UDP,
-	};
+	virtual void poll() = 0;
+	virtual Error connect_to_peer(Ref<PacketPeerUDP> p_base, bool p_validate_certs = true, const String &p_for_hostname = String(), Ref<X509Certificate> p_ca_certs = Ref<X509Certificate>()) = 0;
+	virtual void disconnect_from_peer() = 0;
+	virtual Status get_status() const = 0;
 
-	virtual Error open(Type p_type, IP::Type &ip_type) = 0;
-	virtual void close() = 0;
-	virtual Error bind(IP_Address p_addr, uint16_t p_port) = 0;
-	virtual Error listen(int p_max_pending) = 0;
-	virtual Error connect_to_host(IP_Address p_addr, uint16_t p_port) = 0;
-	virtual Error poll(PollType p_type, int timeout) const = 0;
-	virtual Error recv(uint8_t *p_buffer, int p_len, int &r_read) = 0;
-	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port, bool p_peek = false) = 0;
-	virtual Error send(const uint8_t *p_buffer, int p_len, int &r_sent) = 0;
-	virtual Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) = 0;
-	virtual Ref<NetSocket> accept(IP_Address &r_ip, uint16_t &r_port) = 0;
+	static PacketPeerDTLS *create();
+	static bool is_available();
 
-	virtual bool is_open() const = 0;
-	virtual int get_available_bytes() const = 0;
-
-	virtual Error set_broadcasting_enabled(bool p_enabled) = 0; // Returns OK if the socket option has been set successfully.
-	virtual void set_blocking_enabled(bool p_enabled) = 0;
-	virtual void set_ipv6_only_enabled(bool p_enabled) = 0;
-	virtual void set_tcp_no_delay_enabled(bool p_enabled) = 0;
-	virtual void set_reuse_address_enabled(bool p_enabled) = 0;
-	virtual Error join_multicast_group(const IP_Address &p_multi_address, String p_if_name) = 0;
-	virtual Error leave_multicast_group(const IP_Address &p_multi_address, String p_if_name) = 0;
+	PacketPeerDTLS();
 };
 
-#endif // NET_SOCKET_H
+VARIANT_ENUM_CAST(PacketPeerDTLS::Status);
+
+#endif // PACKET_PEER_DTLS_H

@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  net_socket.h                                                         */
+/*  packet_peer_mbed_dtls.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,54 +28,61 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NET_SOCKET_H
-#define NET_SOCKET_H
+#ifndef PACKET_PEER_MBED_DTLS_H
+#define PACKET_PEER_MBED_DTLS_H
 
-#include "core/io/ip.h"
-#include "core/reference.h"
+#include "core/io/packet_peer_dtls.h"
+#include "ssl_context_mbedtls.h"
 
-class NetSocket : public Reference {
+#include <mbedtls/timing.h>
+
+class PacketPeerMbedDTLS : public PacketPeerDTLS {
+private:
+	enum {
+		PACKET_BUFFER_SIZE = 65536
+	};
+
+	uint8_t packet_buffer[PACKET_BUFFER_SIZE];
+
+	Status status;
+	String hostname;
+
+	Ref<PacketPeerUDP> base;
+
+	static PacketPeerDTLS *_create_func();
+
+	static int bio_recv(void *ctx, unsigned char *buf, size_t len);
+	static int bio_send(void *ctx, const unsigned char *buf, size_t len);
+	void _cleanup();
 
 protected:
-	static NetSocket *(*_create)();
+	Ref<SSLContextMbedTLS> ssl_ctx;
+	mbedtls_timing_delay_context timer;
+
+	static void _bind_methods();
+
+	Error _do_handshake();
+	int _set_cookie();
 
 public:
-	static NetSocket *create();
+	virtual void poll();
+	virtual Error accept_peer(Ref<PacketPeerUDP> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert = Ref<X509Certificate>(), Ref<X509Certificate> p_ca_chain = Ref<X509Certificate>(), Ref<CookieContextMbedTLS> p_cookies = Ref<CookieContextMbedTLS>());
+	virtual Error connect_to_peer(Ref<PacketPeerUDP> p_base, bool p_validate_certs = false, const String &p_for_hostname = String(), Ref<X509Certificate> p_ca_certs = Ref<X509Certificate>());
+	virtual Status get_status() const;
 
-	enum PollType {
-		POLL_TYPE_IN,
-		POLL_TYPE_OUT,
-		POLL_TYPE_IN_OUT
-	};
+	virtual void disconnect_from_peer();
 
-	enum Type {
-		TYPE_NONE,
-		TYPE_TCP,
-		TYPE_UDP,
-	};
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
 
-	virtual Error open(Type p_type, IP::Type &ip_type) = 0;
-	virtual void close() = 0;
-	virtual Error bind(IP_Address p_addr, uint16_t p_port) = 0;
-	virtual Error listen(int p_max_pending) = 0;
-	virtual Error connect_to_host(IP_Address p_addr, uint16_t p_port) = 0;
-	virtual Error poll(PollType p_type, int timeout) const = 0;
-	virtual Error recv(uint8_t *p_buffer, int p_len, int &r_read) = 0;
-	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port, bool p_peek = false) = 0;
-	virtual Error send(const uint8_t *p_buffer, int p_len, int &r_sent) = 0;
-	virtual Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) = 0;
-	virtual Ref<NetSocket> accept(IP_Address &r_ip, uint16_t &r_port) = 0;
+	virtual int get_available_packet_count() const;
+	virtual int get_max_packet_size() const;
 
-	virtual bool is_open() const = 0;
-	virtual int get_available_bytes() const = 0;
+	static void initialize_dtls();
+	static void finalize_dtls();
 
-	virtual Error set_broadcasting_enabled(bool p_enabled) = 0; // Returns OK if the socket option has been set successfully.
-	virtual void set_blocking_enabled(bool p_enabled) = 0;
-	virtual void set_ipv6_only_enabled(bool p_enabled) = 0;
-	virtual void set_tcp_no_delay_enabled(bool p_enabled) = 0;
-	virtual void set_reuse_address_enabled(bool p_enabled) = 0;
-	virtual Error join_multicast_group(const IP_Address &p_multi_address, String p_if_name) = 0;
-	virtual Error leave_multicast_group(const IP_Address &p_multi_address, String p_if_name) = 0;
+	PacketPeerMbedDTLS();
+	~PacketPeerMbedDTLS();
 };
 
-#endif // NET_SOCKET_H
+#endif // PACKET_PEER_MBED_DTLS_H

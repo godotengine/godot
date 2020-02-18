@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  packet_peer_udp.h                                                    */
+/*  dtls_server_mbedtls.cpp                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,68 +28,51 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PACKET_PEER_UDP_H
-#define PACKET_PEER_UDP_H
+#include "dtls_server_mbedtls.h"
+#include "packet_peer_mbed_dtls.h"
 
-#include "core/io/ip.h"
-#include "core/io/net_socket.h"
-#include "core/io/packet_peer.h"
+Error DTLSServerMbedTLS::setup(Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain) {
+	ERR_FAIL_COND_V(_cookies->setup() != OK, ERR_ALREADY_IN_USE);
+	_key = p_key;
+	_cert = p_cert;
+	_ca_chain = p_ca_chain;
+	return OK;
+}
 
-class PacketPeerUDP : public PacketPeer {
-	GDCLASS(PacketPeerUDP, PacketPeer);
+void DTLSServerMbedTLS::stop() {
+	_cookies->clear();
+}
 
-protected:
-	enum {
-		PACKET_BUFFER_SIZE = 65536
-	};
+Ref<PacketPeerDTLS> DTLSServerMbedTLS::take_connection(Ref<PacketPeerUDP> p_udp_peer) {
+	Ref<PacketPeerMbedDTLS> out;
+	out.instance();
 
-	RingBuffer<uint8_t> rb;
-	uint8_t recv_buffer[PACKET_BUFFER_SIZE];
-	uint8_t packet_buffer[PACKET_BUFFER_SIZE];
-	IP_Address packet_ip;
-	int packet_port;
-	int queue_count;
+	ERR_FAIL_COND_V(!out.is_valid(), out);
+	ERR_FAIL_COND_V(!p_udp_peer.is_valid(), out);
+	out->accept_peer(p_udp_peer, _key, _cert, _ca_chain, _cookies);
+	return out;
+}
 
-	IP_Address peer_addr;
-	int peer_port;
-	bool connected;
-	bool blocking;
-	bool broadcast;
-	Ref<NetSocket> _sock;
+DTLSServer *DTLSServerMbedTLS::_create_func() {
 
-	static void _bind_methods();
+	return memnew(DTLSServerMbedTLS);
+}
 
-	String _get_packet_ip() const;
+void DTLSServerMbedTLS::initialize() {
 
-	Error _set_dest_address(const String &p_address, int p_port);
-	Error _poll();
+	_create = _create_func;
+	available = true;
+}
 
-public:
-	void set_blocking_mode(bool p_enable);
+void DTLSServerMbedTLS::finalize() {
+	_create = NULL;
+	available = false;
+}
 
-	Error listen(int p_port, const IP_Address &p_bind_address = IP_Address("*"), int p_recv_buffer_size = 65536);
-	void close();
-	Error wait();
-	bool is_listening() const;
+DTLSServerMbedTLS::DTLSServerMbedTLS() {
+	_cookies.instance();
+}
 
-	Error connect_socket(Ref<NetSocket> p_sock); // Used by UDPServer
-	Error connect_to_host(const IP_Address &p_host, int p_port);
-	bool is_connected_to_host() const;
-
-	IP_Address get_packet_address() const;
-	int get_packet_port() const;
-	void set_dest_address(const IP_Address &p_address, int p_port);
-
-	Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
-	Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);
-	int get_available_packet_count() const;
-	int get_max_packet_size() const;
-	void set_broadcast_enabled(bool p_enabled);
-	Error join_multicast_group(IP_Address p_multi_address, String p_if_name);
-	Error leave_multicast_group(IP_Address p_multi_address, String p_if_name);
-
-	PacketPeerUDP();
-	~PacketPeerUDP();
-};
-
-#endif // PACKET_PEER_UDP_H
+DTLSServerMbedTLS::~DTLSServerMbedTLS() {
+	stop();
+}
