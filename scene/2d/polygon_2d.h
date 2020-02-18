@@ -37,15 +37,15 @@ class Polygon2D : public Node2D {
 
 	GDCLASS(Polygon2D, Node2D);
 
-	PoolVector<Vector2> polygon;
-	PoolVector<Vector2> uv;
-	PoolVector<Color> vertex_colors;
+	Vector<Vector2> polygon;
+	Vector<Vector2> uv;
+	Vector<Color> vertex_colors;
 	Array polygons;
 	int internal_vertices;
 
 	struct Bone {
 		NodePath path;
-		PoolVector<float> weights;
+		Vector<float> weights;
 	};
 
 	Vector<Bone> bone_weights;
@@ -95,14 +95,14 @@ public:
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
 #endif
 
-	void set_polygon(const PoolVector<Vector2> &p_polygon);
-	PoolVector<Vector2> get_polygon() const;
+	void set_polygon(const Vector<Vector2> &p_polygon);
+	Vector<Vector2> get_polygon() const;
 
 	void set_internal_vertex_count(int p_count);
 	int get_internal_vertex_count() const;
 
-	void set_uv(const PoolVector<Vector2> &p_uv);
-	PoolVector<Vector2> get_uv() const;
+	void set_uv(const Vector<Vector2> &p_uv);
+	Vector<Vector2> get_uv() const;
 
 	void set_polygons(const Array &p_polygons);
 	Array get_polygons() const;
@@ -110,8 +110,8 @@ public:
 	void set_color(const Color &p_color);
 	Color get_color() const;
 
-	void set_vertex_colors(const PoolVector<Color> &p_colors);
-	PoolVector<Color> get_vertex_colors() const;
+	void set_vertex_colors(const Vector<Color> &p_colors);
+	Vector<Color> get_vertex_colors() const;
 
 	void set_texture(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture() const;
@@ -152,13 +152,13 @@ public:
 	void set_offset(const Vector2 &p_offset);
 	Vector2 get_offset() const;
 
-	void add_bone(const NodePath &p_path = NodePath(), const PoolVector<float> &p_weights = PoolVector<float>());
+	void add_bone(const NodePath &p_path = NodePath(), const Vector<float> &p_weights = Vector<float>());
 	int get_bone_count() const;
 	NodePath get_bone_path(int p_index) const;
-	PoolVector<float> get_bone_weights(int p_index) const;
+	Vector<float> get_bone_weights(int p_index) const;
 	void erase_bone(int p_idx);
 	void clear_bones();
-	void set_bone_weights(int p_index, const PoolVector<float> &p_weights);
+	void set_bone_weights(int p_index, const Vector<float> &p_weights);
 	void set_bone_path(int p_index, const NodePath &p_path);
 
 	void set_skeleton(const NodePath &p_skeleton);

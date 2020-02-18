@@ -306,7 +306,7 @@ private:
 		uint32_t color_offset_cache = 0;
 		uint32_t custom_data_offset_cache = 0;
 
-		PoolVector<float> data_cache; //used if individual setting is used
+		Vector<float> data_cache; //used if individual setting is used
 		bool *data_cache_dirty_regions = nullptr;
 		uint32_t data_cache_used_dirty_regions = 0;
 
@@ -413,7 +413,7 @@ private:
 		uint32_t octree_buffer_size = 0;
 		uint32_t data_buffer_size = 0;
 
-		PoolVector<int> level_counts;
+		Vector<int> level_counts;
 
 		int cell_count = 0;
 
@@ -621,7 +621,7 @@ public:
 	virtual void mesh_set_blend_shape_mode(RID p_mesh, VS::BlendShapeMode p_mode);
 	virtual VS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const;
 
-	virtual void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data);
+	virtual void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data);
 
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material);
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const;
@@ -747,8 +747,8 @@ public:
 	Color multimesh_instance_get_color(RID p_multimesh, int p_index) const;
 	Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const;
 
-	void multimesh_set_buffer(RID p_multimesh, const PoolVector<float> &p_buffer);
-	PoolVector<float> multimesh_get_buffer(RID p_multimesh) const;
+	void multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer);
+	Vector<float> multimesh_get_buffer(RID p_multimesh) const;
 
 	void multimesh_set_visible_instances(RID p_multimesh, int p_visible);
 	int multimesh_get_visible_instances(RID p_multimesh) const;
@@ -969,15 +969,15 @@ public:
 
 	RID gi_probe_create();
 
-	void gi_probe_allocate(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const PoolVector<uint8_t> &p_octree_cells, const PoolVector<uint8_t> &p_data_cells, const PoolVector<uint8_t> &p_distance_field, const PoolVector<int> &p_level_counts);
+	void gi_probe_allocate(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts);
 
 	AABB gi_probe_get_bounds(RID p_gi_probe) const;
 	Vector3i gi_probe_get_octree_size(RID p_gi_probe) const;
-	PoolVector<uint8_t> gi_probe_get_octree_cells(RID p_gi_probe) const;
-	PoolVector<uint8_t> gi_probe_get_data_cells(RID p_gi_probe) const;
-	PoolVector<uint8_t> gi_probe_get_distance_field(RID p_gi_probe) const;
+	Vector<uint8_t> gi_probe_get_octree_cells(RID p_gi_probe) const;
+	Vector<uint8_t> gi_probe_get_data_cells(RID p_gi_probe) const;
+	Vector<uint8_t> gi_probe_get_distance_field(RID p_gi_probe) const;
 
-	PoolVector<int> gi_probe_get_level_counts(RID p_gi_probe) const;
+	Vector<int> gi_probe_get_level_counts(RID p_gi_probe) const;
 	Transform gi_probe_get_to_cell_xform(RID p_gi_probe) const;
 
 	void gi_probe_set_dynamic_range(RID p_gi_probe, float p_range);
@@ -1022,12 +1022,12 @@ public:
 
 	void lightmap_capture_set_bounds(RID p_capture, const AABB &p_bounds) {}
 	AABB lightmap_capture_get_bounds(RID p_capture) const { return AABB(); }
-	void lightmap_capture_set_octree(RID p_capture, const PoolVector<uint8_t> &p_octree) {}
+	void lightmap_capture_set_octree(RID p_capture, const Vector<uint8_t> &p_octree) {}
 	RID lightmap_capture_create() {
 		return RID();
 	}
-	PoolVector<uint8_t> lightmap_capture_get_octree(RID p_capture) const {
-		return PoolVector<uint8_t>();
+	Vector<uint8_t> lightmap_capture_get_octree(RID p_capture) const {
+		return Vector<uint8_t>();
 	}
 	void lightmap_capture_set_octree_cell_transform(RID p_capture, const Transform &p_xform) {}
 	Transform lightmap_capture_get_octree_cell_transform(RID p_capture) const { return Transform(); }
@@ -1035,7 +1035,7 @@ public:
 	int lightmap_capture_get_octree_cell_subdiv(RID p_capture) const { return 0; }
 	void lightmap_capture_set_energy(RID p_capture, float p_energy) {}
 	float lightmap_capture_get_energy(RID p_capture) const { return 0.0; }
-	const PoolVector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const {
+	const Vector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const {
 		return NULL;
 	}
 

@@ -44,8 +44,8 @@ class TriangleMesh : public Reference {
 		int indices[3];
 	};
 
-	PoolVector<Triangle> triangles;
-	PoolVector<Vector3> vertices;
+	Vector<Triangle> triangles;
+	Vector<Vector3> vertices;
 
 	struct BVH {
 
@@ -82,7 +82,7 @@ class TriangleMesh : public Reference {
 
 	int _create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, int p_depth, int &max_depth, int &max_alloc);
 
-	PoolVector<BVH> bvh;
+	Vector<BVH> bvh;
 	int max_depth;
 	bool valid;
 
@@ -93,13 +93,13 @@ public:
 	bool intersect_convex_shape(const Plane *p_planes, int p_plane_count) const;
 	bool inside_convex_shape(const Plane *p_planes, int p_plane_count, Vector3 p_scale = Vector3(1, 1, 1)) const;
 	Vector3 get_area_normal(const AABB &p_aabb) const;
-	PoolVector<Face3> get_faces() const;
+	Vector<Face3> get_faces() const;
 
-	PoolVector<Triangle> get_triangles() const { return triangles; }
-	PoolVector<Vector3> get_vertices() const { return vertices; }
-	void get_indices(PoolVector<int> *r_triangles_indices) const;
+	Vector<Triangle> get_triangles() const { return triangles; }
+	Vector<Vector3> get_vertices() const { return vertices; }
+	void get_indices(Vector<int> *r_triangles_indices) const;
 
-	void create(const PoolVector<Vector3> &p_faces);
+	void create(const Vector<Vector3> &p_faces);
 	TriangleMesh();
 };
 

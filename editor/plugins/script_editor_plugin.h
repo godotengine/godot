@@ -107,7 +107,7 @@ public:
 	virtual void tag_saved_version() = 0;
 	virtual void reload(bool p_soft) {}
 	virtual void get_breakpoints(List<int> *p_breakpoints) = 0;
-	virtual void add_callback(const String &p_function, PoolStringArray p_args) = 0;
+	virtual void add_callback(const String &p_function, PackedStringArray p_args) = 0;
 	virtual void update_settings() = 0;
 	virtual void set_debugger_active(bool p_active) = 0;
 	virtual bool can_lose_focus_on_node_selection() { return true; }
@@ -321,7 +321,7 @@ class ScriptEditor : public PanelContainer {
 
 	int edit_pass;
 
-	void _add_callback(Object *p_obj, const String &p_function, const PoolStringArray &p_args);
+	void _add_callback(Object *p_obj, const String &p_function, const PackedStringArray &p_args);
 	void _res_saved_callback(const Ref<Resource> &p_res);
 
 	bool trim_trailing_whitespace_on_save;
@@ -408,7 +408,7 @@ class ScriptEditor : public PanelContainer {
 	void _on_replace_in_files_requested(String text);
 	void _on_find_in_files_result_selected(String fpath, int line_number, int begin, int end);
 	void _start_find_in_files(bool with_replace);
-	void _on_find_in_files_modified_files(PoolStringArray paths);
+	void _on_find_in_files_modified_files(PackedStringArray paths);
 
 	static void _open_script_request(const String &p_path);
 

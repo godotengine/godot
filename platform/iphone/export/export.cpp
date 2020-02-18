@@ -447,9 +447,6 @@ void EditorExportPlatformIOS::_blend_and_rotate(Ref<Image> &p_dst, Ref<Image> &p
 	ERR_FAIL_COND(p_dst.is_null());
 	ERR_FAIL_COND(p_src.is_null());
 
-	p_dst->lock();
-	p_src->lock();
-
 	int sw = p_rot ? p_src->get_height() : p_src->get_width();
 	int sh = p_rot ? p_src->get_width() : p_src->get_height();
 
@@ -473,9 +470,6 @@ void EditorExportPlatformIOS::_blend_and_rotate(Ref<Image> &p_dst, Ref<Image> &p
 			p_dst->set_pixel(x_pos + x, y_pos + y, dc);
 		}
 	}
-
-	p_dst->unlock();
-	p_src->unlock();
 }
 
 struct IconInfo {

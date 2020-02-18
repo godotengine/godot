@@ -49,9 +49,7 @@ void Performance::_bind_methods() {
 	BIND_ENUM_CONSTANT(TIME_PROCESS);
 	BIND_ENUM_CONSTANT(TIME_PHYSICS_PROCESS);
 	BIND_ENUM_CONSTANT(MEMORY_STATIC);
-	BIND_ENUM_CONSTANT(MEMORY_DYNAMIC);
 	BIND_ENUM_CONSTANT(MEMORY_STATIC_MAX);
-	BIND_ENUM_CONSTANT(MEMORY_DYNAMIC_MAX);
 	BIND_ENUM_CONSTANT(MEMORY_MESSAGE_BUFFER_MAX);
 	BIND_ENUM_CONSTANT(OBJECT_COUNT);
 	BIND_ENUM_CONSTANT(OBJECT_RESOURCE_COUNT);
@@ -95,9 +93,7 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 		"time/process",
 		"time/physics_process",
 		"memory/static",
-		"memory/dynamic",
 		"memory/static_max",
-		"memory/dynamic_max",
 		"memory/msg_buf_max",
 		"object/objects",
 		"object/resources",
@@ -133,9 +129,7 @@ float Performance::get_monitor(Monitor p_monitor) const {
 		case TIME_PROCESS: return _process_time;
 		case TIME_PHYSICS_PROCESS: return _physics_process_time;
 		case MEMORY_STATIC: return Memory::get_mem_usage();
-		case MEMORY_DYNAMIC: return MemoryPool::total_memory;
 		case MEMORY_STATIC_MAX: return Memory::get_mem_max_usage();
-		case MEMORY_DYNAMIC_MAX: return MemoryPool::max_memory;
 		case MEMORY_MESSAGE_BUFFER_MAX: return MessageQueue::get_singleton()->get_max_buffer_usage();
 		case OBJECT_COUNT: return ObjectDB::get_object_count();
 		case OBJECT_RESOURCE_COUNT: return ResourceCache::get_cached_resource_count();
@@ -174,8 +168,6 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_TIME,
 		MONITOR_TYPE_TIME,
-		MONITOR_TYPE_MEMORY,
-		MONITOR_TYPE_MEMORY,
 		MONITOR_TYPE_MEMORY,
 		MONITOR_TYPE_MEMORY,
 		MONITOR_TYPE_MEMORY,

@@ -39,7 +39,7 @@ Rect2 OccluderPolygon2D::_edit_get_rect() const {
 
 	if (rect_cache_dirty) {
 		if (closed) {
-			PoolVector<Vector2>::Read r = polygon.read();
+			const Vector2 *r = polygon.ptr();
 			item_rect = Rect2();
 			for (int i = 0; i < polygon.size(); i++) {
 				Vector2 pos = r[i];
@@ -72,7 +72,7 @@ bool OccluderPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, double
 		return Geometry::is_point_in_polygon(p_point, Variant(polygon));
 	} else {
 		const real_t d = LINE_GRAB_WIDTH / 2 + p_tolerance;
-		PoolVector<Vector2>::Read points = polygon.read();
+		const Vector2 *points = polygon.ptr();
 		for (int i = 0; i < polygon.size() - 1; i++) {
 			Vector2 p = Geometry::get_closest_point_to_segment_2d(p_point, &points[i]);
 			if (p.distance_to(p_point) <= d)
@@ -84,7 +84,7 @@ bool OccluderPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, double
 }
 #endif
 
-void OccluderPolygon2D::set_polygon(const PoolVector<Vector2> &p_polygon) {
+void OccluderPolygon2D::set_polygon(const Vector<Vector2> &p_polygon) {
 
 	polygon = p_polygon;
 	rect_cache_dirty = true;
@@ -92,7 +92,7 @@ void OccluderPolygon2D::set_polygon(const PoolVector<Vector2> &p_polygon) {
 	emit_changed();
 }
 
-PoolVector<Vector2> OccluderPolygon2D::get_polygon() const {
+Vector<Vector2> OccluderPolygon2D::get_polygon() const {
 
 	return polygon;
 }
@@ -141,7 +141,7 @@ void OccluderPolygon2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "closed"), "set_closed", "is_closed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mode", PROPERTY_HINT_ENUM, "Disabled,ClockWise,CounterClockWise"), "set_cull_mode", "get_cull_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
 
 	BIND_ENUM_CONSTANT(CULL_DISABLED);
 	BIND_ENUM_CONSTANT(CULL_CLOCKWISE);
@@ -191,7 +191,7 @@ void LightOccluder2D::_notification(int p_what) {
 
 			if (occluder_polygon.is_valid()) {
 
-				PoolVector<Vector2> poly = occluder_polygon->get_polygon();
+				Vector<Vector2> poly = occluder_polygon->get_polygon();
 
 				if (poly.size()) {
 					if (occluder_polygon->is_closed()) {
@@ -201,7 +201,7 @@ void LightOccluder2D::_notification(int p_what) {
 					} else {
 
 						int ps = poly.size();
-						PoolVector<Vector2>::Read r = poly.read();
+						const Vector2 *r = poly.ptr();
 						for (int i = 0; i < ps - 1; i++) {
 
 							draw_line(r[i], r[i + 1], Color(0, 0, 0, 0.6), 3);

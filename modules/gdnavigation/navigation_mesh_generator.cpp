@@ -90,13 +90,13 @@ void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform
 
 		Array a = p_mesh->surface_get_arrays(i);
 
-		PoolVector<Vector3> mesh_vertices = a[Mesh::ARRAY_VERTEX];
-		PoolVector<Vector3>::Read vr = mesh_vertices.read();
+		Vector<Vector3> mesh_vertices = a[Mesh::ARRAY_VERTEX];
+		const Vector3 *vr = mesh_vertices.ptr();
 
 		if (p_mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX) {
 
-			PoolVector<int> mesh_indices = a[Mesh::ARRAY_INDEX];
-			PoolVector<int>::Read ir = mesh_indices.read();
+			Vector<int> mesh_indices = a[Mesh::ARRAY_INDEX];
+			const int *ir = mesh_indices.ptr();
 
 			for (int j = 0; j < mesh_vertices.size(); j++) {
 				_add_vertex(p_xform.xform(vr[j]), p_verticies);
@@ -123,7 +123,7 @@ void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform
 	}
 }
 
-void NavigationMeshGenerator::_add_faces(const PoolVector3Array &p_faces, const Transform &p_xform, Vector<float> &p_verticies, Vector<int> &p_indices) {
+void NavigationMeshGenerator::_add_faces(const PackedVector3Array &p_faces, const Transform &p_xform, Vector<float> &p_verticies, Vector<int> &p_indices) {
 	int face_count = p_faces.size() / 3;
 	int current_vertex_count = p_verticies.size() / 3;
 
@@ -227,7 +227,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 						Error err = QuickHull::build(varr, md);
 
 						if (err == OK) {
-							PoolVector3Array faces;
+							PackedVector3Array faces;
 
 							for (int j = 0; j < md.faces.size(); ++j) {
 								Geometry::MeshData::Face face = md.faces[j];
@@ -279,11 +279,11 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 
 void NavigationMeshGenerator::_convert_detail_mesh_to_native_navigation_mesh(const rcPolyMeshDetail *p_detail_mesh, Ref<NavigationMesh> p_nav_mesh) {
 
-	PoolVector<Vector3> nav_vertices;
+	Vector<Vector3> nav_vertices;
 
 	for (int i = 0; i < p_detail_mesh->nverts; i++) {
 		const float *v = &p_detail_mesh->verts[i * 3];
-		nav_vertices.append(Vector3(v[0], v[1], v[2]));
+		nav_vertices.push_back(Vector3(v[0], v[1], v[2]));
 	}
 	p_nav_mesh->set_vertices(nav_vertices);
 
@@ -562,7 +562,7 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 void NavigationMeshGenerator::clear(Ref<NavigationMesh> p_nav_mesh) {
 	if (p_nav_mesh.is_valid()) {
 		p_nav_mesh->clear_polygons();
-		p_nav_mesh->set_vertices(PoolVector<Vector3>());
+		p_nav_mesh->set_vertices(Vector<Vector3>());
 	}
 }
 

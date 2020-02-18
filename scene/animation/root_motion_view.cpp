@@ -164,8 +164,8 @@ AABB RootMotionView::get_aabb() const {
 
 	return AABB(Vector3(-radius, 0, -radius), Vector3(radius * 2, 0.001, radius * 2));
 }
-PoolVector<Face3> RootMotionView::get_faces(uint32_t p_usage_flags) const {
-	return PoolVector<Face3>();
+Vector<Face3> RootMotionView::get_faces(uint32_t p_usage_flags) const {
+	return Vector<Face3>();
 }
 
 void RootMotionView::_bind_methods() {

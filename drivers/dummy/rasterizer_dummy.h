@@ -134,12 +134,12 @@ public:
 	struct DummySurface {
 		uint32_t format;
 		VS::PrimitiveType primitive;
-		PoolVector<uint8_t> array;
+		Vector<uint8_t> array;
 		int vertex_count;
-		PoolVector<uint8_t> index_array;
+		Vector<uint8_t> index_array;
 		int index_count;
 		AABB aabb;
-		Vector<PoolVector<uint8_t> > blend_shapes;
+		Vector<Vector<uint8_t> > blend_shapes;
 		Vector<AABB> bone_aabbs;
 	};
 
@@ -295,7 +295,7 @@ public:
 		return mesh_owner.make_rid(mesh);
 	}
 
-	void mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes = Vector<PoolVector<uint8_t> >(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>()) {
+	void mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const Vector<uint8_t> &p_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<Vector<uint8_t> > &p_blend_shapes = Vector<Vector<uint8_t> >(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>()) {
 		DummyMesh *m = mesh_owner.getornull(p_mesh);
 		ERR_FAIL_COND(!m);
 
@@ -334,7 +334,7 @@ public:
 		return m->blend_shape_mode;
 	}
 
-	void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) {}
+	void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {}
 
 	void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) {}
 	RID mesh_surface_get_material(RID p_mesh, int p_surface) const { return RID(); }
@@ -352,15 +352,15 @@ public:
 		return m->surfaces[p_surface].index_count;
 	}
 
-	PoolVector<uint8_t> mesh_surface_get_array(RID p_mesh, int p_surface) const {
+	Vector<uint8_t> mesh_surface_get_array(RID p_mesh, int p_surface) const {
 		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, PoolVector<uint8_t>());
+		ERR_FAIL_COND_V(!m, Vector<uint8_t>());
 
 		return m->surfaces[p_surface].array;
 	}
-	PoolVector<uint8_t> mesh_surface_get_index_array(RID p_mesh, int p_surface) const {
+	Vector<uint8_t> mesh_surface_get_index_array(RID p_mesh, int p_surface) const {
 		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, PoolVector<uint8_t>());
+		ERR_FAIL_COND_V(!m, Vector<uint8_t>());
 
 		return m->surfaces[p_surface].index_array;
 	}
@@ -384,9 +384,9 @@ public:
 
 		return m->surfaces[p_surface].aabb;
 	}
-	Vector<PoolVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const {
+	Vector<Vector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const {
 		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, Vector<PoolVector<uint8_t> >());
+		ERR_FAIL_COND_V(!m, Vector<Vector<uint8_t> >());
 
 		return m->surfaces[p_surface].blend_shapes;
 	}
@@ -436,7 +436,7 @@ public:
 	Color multimesh_instance_get_color(RID p_multimesh, int p_index) const { return Color(); }
 	Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const { return Color(); }
 
-	void multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array) {}
+	void multimesh_set_as_bulk_array(RID p_multimesh, const Vector<float> &p_array) {}
 
 	void multimesh_set_visible_instances(RID p_multimesh, int p_visible) {}
 	int multimesh_get_visible_instances(RID p_multimesh) const { return 0; }
@@ -555,9 +555,9 @@ public:
 	void gi_probe_set_to_cell_xform(RID p_probe, const Transform &p_xform) {}
 	Transform gi_probe_get_to_cell_xform(RID p_probe) const { return Transform(); }
 
-	void gi_probe_set_dynamic_data(RID p_probe, const PoolVector<int> &p_data) {}
-	PoolVector<int> gi_probe_get_dynamic_data(RID p_probe) const {
-		PoolVector<int> p;
+	void gi_probe_set_dynamic_data(RID p_probe, const Vector<int> &p_data) {}
+	Vector<int> gi_probe_get_dynamic_data(RID p_probe) const {
+		Vector<int> p;
 		return p;
 	}
 
@@ -620,7 +620,7 @@ public:
 
 	struct LightmapCapture : public Instantiable {
 
-		PoolVector<LightmapCaptureOctree> octree;
+		Vector<LightmapCaptureOctree> octree;
 		AABB bounds;
 		Transform cell_xform;
 		int cell_subdiv;
@@ -634,15 +634,15 @@ public:
 	mutable RID_PtrOwner<LightmapCapture> lightmap_capture_data_owner;
 	void lightmap_capture_set_bounds(RID p_capture, const AABB &p_bounds) {}
 	AABB lightmap_capture_get_bounds(RID p_capture) const { return AABB(); }
-	void lightmap_capture_set_octree(RID p_capture, const PoolVector<uint8_t> &p_octree) {}
+	void lightmap_capture_set_octree(RID p_capture, const Vector<uint8_t> &p_octree) {}
 	RID lightmap_capture_create() {
 		LightmapCapture *capture = memnew(LightmapCapture);
 		return lightmap_capture_data_owner.make_rid(capture);
 	}
-	PoolVector<uint8_t> lightmap_capture_get_octree(RID p_capture) const {
+	Vector<uint8_t> lightmap_capture_get_octree(RID p_capture) const {
 		const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
-		ERR_FAIL_COND_V(!capture, PoolVector<uint8_t>());
-		return PoolVector<uint8_t>();
+		ERR_FAIL_COND_V(!capture, Vector<uint8_t>());
+		return Vector<uint8_t>();
 	}
 	void lightmap_capture_set_octree_cell_transform(RID p_capture, const Transform &p_xform) {}
 	Transform lightmap_capture_get_octree_cell_transform(RID p_capture) const { return Transform(); }
@@ -650,7 +650,7 @@ public:
 	int lightmap_capture_get_octree_cell_subdiv(RID p_capture) const { return 0; }
 	void lightmap_capture_set_energy(RID p_capture, float p_energy) {}
 	float lightmap_capture_get_energy(RID p_capture) const { return 0.0; }
-	const PoolVector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const {
+	const Vector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const {
 		const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
 		ERR_FAIL_COND_V(!capture, NULL);
 		return &capture->octree;
@@ -711,7 +711,7 @@ public:
 	/* LIGHT SHADOW MAPPING */
 
 	RID canvas_light_occluder_create() { return RID(); }
-	void canvas_light_occluder_set_polylines(RID p_occluder, const PoolVector<Vector2> &p_lines) {}
+	void canvas_light_occluder_set_polylines(RID p_occluder, const Vector<Vector2> &p_lines) {}
 
 	VS::InstanceType get_base_type(RID p_rid) const {
 		if (mesh_owner.owns(p_rid)) {

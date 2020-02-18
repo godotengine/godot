@@ -2657,7 +2657,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_UVEC3:
 		case ShaderLanguage::TYPE_UVEC4: {
 
-			pi.type = Variant::POOL_INT_ARRAY;
+			pi.type = Variant::PACKED_INT_ARRAY;
 		} break;
 		case ShaderLanguage::TYPE_FLOAT: {
 			pi.type = Variant::REAL;

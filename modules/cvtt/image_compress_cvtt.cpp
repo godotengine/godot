@@ -179,7 +179,7 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 			p_image->convert(Image::FORMAT_RGBH);
 		}
 
-		PoolVector<uint8_t>::Read rb = p_image->get_data().read();
+		const uint8_t *rb = p_image->get_data().ptr();
 
 		const uint16_t *source_data = reinterpret_cast<const uint16_t *>(&rb[0]);
 		int pixel_element_count = w * h * 3;
@@ -195,15 +195,15 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 		p_image->convert(Image::FORMAT_RGBA8); //still uses RGBA to convert
 	}
 
-	PoolVector<uint8_t>::Read rb = p_image->get_data().read();
+	const uint8_t *rb = p_image->get_data().ptr();
 
-	PoolVector<uint8_t> data;
+	Vector<uint8_t> data;
 	int target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
 	int mm_count = p_image->has_mipmaps() ? Image::get_image_required_mipmaps(w, h, target_format) : 0;
 	data.resize(target_size);
 	int shift = Image::get_format_pixel_rshift(target_format);
 
-	PoolVector<uint8_t>::Write wb = data.write();
+	uint8_t *wb = data.ptrw();
 
 	int dst_ofs = 0;
 
@@ -219,7 +219,7 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 	int num_job_threads = OS::get_singleton()->can_use_threads() ? (OS::get_singleton()->get_processor_count() - 1) : 0;
 #endif
 
-	PoolVector<CVTTCompressionRowTask> tasks;
+	Vector<CVTTCompressionRowTask> tasks;
 
 	for (int i = 0; i <= mm_count; i++) {
 
@@ -254,12 +254,12 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 	}
 
 	if (num_job_threads > 0) {
-		PoolVector<Thread *> threads;
+		Vector<Thread *> threads;
 		threads.resize(num_job_threads);
 
-		PoolVector<Thread *>::Write threads_wb = threads.write();
+		Thread **threads_wb = threads.ptrw();
 
-		PoolVector<CVTTCompressionRowTask>::Read tasks_rb = tasks.read();
+		const CVTTCompressionRowTask *tasks_rb = tasks.ptr();
 
 		job_queue.job_tasks = &tasks_rb[0];
 		job_queue.current_task = 0;
@@ -304,14 +304,14 @@ void image_decompress_cvtt(Image *p_image) {
 	int w = p_image->get_width();
 	int h = p_image->get_height();
 
-	PoolVector<uint8_t>::Read rb = p_image->get_data().read();
+	const uint8_t *rb = p_image->get_data().ptr();
 
-	PoolVector<uint8_t> data;
+	Vector<uint8_t> data;
 	int target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
 	int mm_count = p_image->get_mipmap_count();
 	data.resize(target_size);
 
-	PoolVector<uint8_t>::Write wb = data.write();
+	uint8_t *wb = data.ptrw();
 
 	int bytes_per_pixel = is_hdr ? 6 : 4;
 
@@ -387,9 +387,6 @@ void image_decompress_cvtt(Image *p_image) {
 		w >>= 1;
 		h >>= 1;
 	}
-
-	rb.release();
-	wb.release();
 
 	p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 }

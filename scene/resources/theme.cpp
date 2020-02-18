@@ -37,112 +37,112 @@ void Theme::_emit_theme_changed() {
 	emit_changed();
 }
 
-PoolVector<String> Theme::_get_icon_list(const String &p_type) const {
+Vector<String> Theme::_get_icon_list(const String &p_type) const {
 
-	PoolVector<String> ilret;
+	Vector<String> ilret;
 	List<StringName> il;
 
 	get_icon_list(p_type, &il);
 	ilret.resize(il.size());
 
 	int i = 0;
-	PoolVector<String>::Write w = ilret.write();
+	String *w = ilret.ptrw();
 	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
 		w[i] = E->get();
 	}
 	return ilret;
 }
 
-PoolVector<String> Theme::_get_stylebox_list(const String &p_type) const {
+Vector<String> Theme::_get_stylebox_list(const String &p_type) const {
 
-	PoolVector<String> ilret;
+	Vector<String> ilret;
 	List<StringName> il;
 
 	get_stylebox_list(p_type, &il);
 	ilret.resize(il.size());
 
 	int i = 0;
-	PoolVector<String>::Write w = ilret.write();
+	String *w = ilret.ptrw();
 	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
 		w[i] = E->get();
 	}
 	return ilret;
 }
 
-PoolVector<String> Theme::_get_stylebox_types(void) const {
+Vector<String> Theme::_get_stylebox_types(void) const {
 
-	PoolVector<String> ilret;
+	Vector<String> ilret;
 	List<StringName> il;
 
 	get_stylebox_types(&il);
 	ilret.resize(il.size());
 
 	int i = 0;
-	PoolVector<String>::Write w = ilret.write();
+	String *w = ilret.ptrw();
 	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
 		w[i] = E->get();
 	}
 	return ilret;
 }
 
-PoolVector<String> Theme::_get_font_list(const String &p_type) const {
+Vector<String> Theme::_get_font_list(const String &p_type) const {
 
-	PoolVector<String> ilret;
+	Vector<String> ilret;
 	List<StringName> il;
 
 	get_font_list(p_type, &il);
 	ilret.resize(il.size());
 
 	int i = 0;
-	PoolVector<String>::Write w = ilret.write();
+	String *w = ilret.ptrw();
 	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
 		w[i] = E->get();
 	}
 	return ilret;
 }
 
-PoolVector<String> Theme::_get_color_list(const String &p_type) const {
+Vector<String> Theme::_get_color_list(const String &p_type) const {
 
-	PoolVector<String> ilret;
+	Vector<String> ilret;
 	List<StringName> il;
 
 	get_color_list(p_type, &il);
 	ilret.resize(il.size());
 
 	int i = 0;
-	PoolVector<String>::Write w = ilret.write();
+	String *w = ilret.ptrw();
 	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
 		w[i] = E->get();
 	}
 	return ilret;
 }
 
-PoolVector<String> Theme::_get_constant_list(const String &p_type) const {
+Vector<String> Theme::_get_constant_list(const String &p_type) const {
 
-	PoolVector<String> ilret;
+	Vector<String> ilret;
 	List<StringName> il;
 
 	get_constant_list(p_type, &il);
 	ilret.resize(il.size());
 
 	int i = 0;
-	PoolVector<String>::Write w = ilret.write();
+	String *w = ilret.ptrw();
 	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
 		w[i] = E->get();
 	}
 	return ilret;
 }
 
-PoolVector<String> Theme::_get_type_list(const String &p_type) const {
+Vector<String> Theme::_get_type_list(const String &p_type) const {
 
-	PoolVector<String> ilret;
+	Vector<String> ilret;
 	List<StringName> il;
 
 	get_type_list(&il);
 	ilret.resize(il.size());
 
 	int i = 0;
-	PoolVector<String>::Write w = ilret.write();
+	String *w = ilret.ptrw();
 	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
 		w[i] = E->get();
 	}

@@ -1030,14 +1030,14 @@ uint32_t GDAPI godot_string_hash_utf8_chars_with_len(const wchar_t *p_str, godot
 	return String::hash(p_str, p_len);
 }
 
-godot_pool_byte_array GDAPI godot_string_md5_buffer(const godot_string *p_self) {
+godot_packed_byte_array GDAPI godot_string_md5_buffer(const godot_string *p_self) {
 	const String *self = (const String *)p_self;
 	Vector<uint8_t> tmp_result = self->md5_buffer();
 
-	godot_pool_byte_array result;
-	memnew_placement(&result, PoolByteArray);
-	PoolByteArray *proxy = (PoolByteArray *)&result;
-	PoolByteArray::Write proxy_writer = proxy->write();
+	godot_packed_byte_array result;
+	memnew_placement(&result, PackedByteArray);
+	PackedByteArray *proxy = (PackedByteArray *)&result;
+	uint8_t *proxy_writer = proxy->ptrw();
 	proxy->resize(tmp_result.size());
 
 	for (int i = 0; i < tmp_result.size(); i++) {
@@ -1055,14 +1055,14 @@ godot_string GDAPI godot_string_md5_text(const godot_string *p_self) {
 	return result;
 }
 
-godot_pool_byte_array GDAPI godot_string_sha256_buffer(const godot_string *p_self) {
+godot_packed_byte_array GDAPI godot_string_sha256_buffer(const godot_string *p_self) {
 	const String *self = (const String *)p_self;
 	Vector<uint8_t> tmp_result = self->sha256_buffer();
 
-	godot_pool_byte_array result;
-	memnew_placement(&result, PoolByteArray);
-	PoolByteArray *proxy = (PoolByteArray *)&result;
-	PoolByteArray::Write proxy_writer = proxy->write();
+	godot_packed_byte_array result;
+	memnew_placement(&result, PackedByteArray);
+	PackedByteArray *proxy = (PackedByteArray *)&result;
+	uint8_t *proxy_writer = proxy->ptrw();
 	proxy->resize(tmp_result.size());
 
 	for (int i = 0; i < tmp_result.size(); i++) {
@@ -1343,15 +1343,15 @@ godot_string GDAPI godot_string_rstrip(const godot_string *p_self, const godot_s
 	return result;
 }
 
-godot_pool_string_array GDAPI godot_string_rsplit(const godot_string *p_self, const godot_string *p_divisor,
+godot_packed_string_array GDAPI godot_string_rsplit(const godot_string *p_self, const godot_string *p_divisor,
 		const godot_bool p_allow_empty, const godot_int p_maxsplit) {
 	const String *self = (const String *)p_self;
 	String *divisor = (String *)p_divisor;
 
-	godot_pool_string_array result;
-	memnew_placement(&result, PoolStringArray);
-	PoolStringArray *proxy = (PoolStringArray *)&result;
-	PoolStringArray::Write proxy_writer = proxy->write();
+	godot_packed_string_array result;
+	memnew_placement(&result, PackedStringArray);
+	PackedStringArray *proxy = (PackedStringArray *)&result;
+	String *proxy_writer = proxy->ptrw();
 	Vector<String> tmp_result = self->rsplit(*divisor, p_allow_empty, p_maxsplit);
 	proxy->resize(tmp_result.size());
 

@@ -148,9 +148,9 @@ Error CryptoCore::AESContext::decrypt_ecb(const uint8_t p_src[16], uint8_t r_dst
 // CryptoCore
 String CryptoCore::b64_encode_str(const uint8_t *p_src, int p_src_len) {
 	int b64len = p_src_len / 3 * 4 + 4 + 1;
-	PoolVector<uint8_t> b64buff;
+	Vector<uint8_t> b64buff;
 	b64buff.resize(b64len);
-	PoolVector<uint8_t>::Write w64 = b64buff.write();
+	uint8_t *w64 = b64buff.ptrw();
 	size_t strlen = 0;
 	int ret = b64_encode(&w64[0], b64len, &strlen, p_src, p_src_len);
 	w64[strlen] = 0;

@@ -132,10 +132,10 @@ public:
 	int get_gi_probe_octree_depth() const;
 	Vector3i get_giprobe_octree_size() const;
 	int get_giprobe_cell_count() const;
-	PoolVector<uint8_t> get_giprobe_octree_cells() const;
-	PoolVector<uint8_t> get_giprobe_data_cells() const;
-	PoolVector<int> get_giprobe_level_cell_count() const;
-	PoolVector<uint8_t> get_sdf_3d_image() const;
+	Vector<uint8_t> get_giprobe_octree_cells() const;
+	Vector<uint8_t> get_giprobe_data_cells() const;
+	Vector<int> get_giprobe_level_cell_count() const;
+	Vector<uint8_t> get_sdf_3d_image() const;
 
 	Ref<MultiMesh> create_debug_multimesh();
 

@@ -428,24 +428,24 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 	if (p_var_type_name == Variant::get_type_name(Variant::ARRAY))
 		return "Collections.Array";
 
-	if (p_var_type_name == Variant::get_type_name(Variant::POOL_BYTE_ARRAY))
+	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_BYTE_ARRAY))
 		return "byte[]";
-	if (p_var_type_name == Variant::get_type_name(Variant::POOL_INT_ARRAY))
+	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_INT_ARRAY))
 		return "int[]";
-	if (p_var_type_name == Variant::get_type_name(Variant::POOL_REAL_ARRAY)) {
+	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_REAL_ARRAY)) {
 #ifdef REAL_T_IS_DOUBLE
 		return "double[]";
 #else
 		return "float[]";
 #endif
 	}
-	if (p_var_type_name == Variant::get_type_name(Variant::POOL_STRING_ARRAY))
+	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_STRING_ARRAY))
 		return "string[]";
-	if (p_var_type_name == Variant::get_type_name(Variant::POOL_VECTOR2_ARRAY))
+	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_VECTOR2_ARRAY))
 		return "Vector2[]";
-	if (p_var_type_name == Variant::get_type_name(Variant::POOL_VECTOR3_ARRAY))
+	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_VECTOR3_ARRAY))
 		return "Vector3[]";
-	if (p_var_type_name == Variant::get_type_name(Variant::POOL_COLOR_ARRAY))
+	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_COLOR_ARRAY))
 		return "Color[]";
 
 	Variant::Type var_types[] = {
@@ -473,7 +473,7 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 	return "object";
 }
 
-String CSharpLanguage::make_function(const String &, const String &p_name, const PoolStringArray &p_args) const {
+String CSharpLanguage::make_function(const String &, const String &p_name, const PackedStringArray &p_args) const {
 	// FIXME
 	// - Due to Godot's API limitation this just appends the function to the end of the file
 	// - Use fully qualified name if there is ambiguity
@@ -491,7 +491,7 @@ String CSharpLanguage::make_function(const String &, const String &p_name, const
 	return s;
 }
 #else
-String CSharpLanguage::make_function(const String &, const String &, const PoolStringArray &) const {
+String CSharpLanguage::make_function(const String &, const String &, const PackedStringArray &) const {
 	return String();
 }
 #endif

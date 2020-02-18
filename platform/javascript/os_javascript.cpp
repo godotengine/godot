@@ -536,17 +536,17 @@ void OS_JavaScript::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_s
 		png_meta.height = texture_size.height;
 		png_meta.format = PNG_FORMAT_RGBA;
 
-		PoolByteArray png;
+		PackedByteArray png;
 		size_t len;
-		PoolByteArray::Read r = image->get_data().read();
+		const uint8_t *r = image->get_data().ptr();
 		ERR_FAIL_COND(!png_image_write_get_memory_size(png_meta, len, 0, r.ptr(), 0, NULL));
 
 		png.resize(len);
-		PoolByteArray::Write w = png.write();
+		uint8_t *w = png.ptrw();
 		ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, w.ptr(), &len, 0, r.ptr(), 0, NULL));
-		w = PoolByteArray::Write();
+		w = uint8_t * ();
 
-		r = png.read();
+		r = png.ptr();
 
 		char *object_url;
 		/* clang-format off */
@@ -563,7 +563,7 @@ void OS_JavaScript::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_s
 			stringToUTF8(url, string_on_wasm_heap, length_bytes);
 		}, r.ptr(), len, &object_url);
 		/* clang-format on */
-		r = PoolByteArray::Read();
+		r = const uint8_t * ();
 
 		String url = String::utf8(object_url) + "?" + itos(p_hotspot.x) + " " + itos(p_hotspot.y);
 
@@ -1178,17 +1178,17 @@ void OS_JavaScript::set_icon(const Ref<Image> &p_icon) {
 	png_meta.height = icon->get_height();
 	png_meta.format = PNG_FORMAT_RGBA;
 
-	PoolByteArray png;
+	PackedByteArray png;
 	size_t len;
-	PoolByteArray::Read r = icon->get_data().read();
+	const uint8_t *r = icon->get_data().ptr();
 	ERR_FAIL_COND(!png_image_write_get_memory_size(png_meta, len, 0, r.ptr(), 0, NULL));
 
 	png.resize(len);
-	PoolByteArray::Write w = png.write();
+	uint8_t *w = png.ptrw();
 	ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, w.ptr(), &len, 0, r.ptr(), 0, NULL));
-	w = PoolByteArray::Write();
+	w = uint8_t * ();
 
-	r = png.read();
+	r = png.ptr();
 	/* clang-format off */
 	EM_ASM_ARGS({
 		var PNG_PTR = $0;

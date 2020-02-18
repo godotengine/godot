@@ -366,13 +366,13 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 			case Variant::DICTIONARY: color = Color(0.47, 0.93, 0.69); break;
 
 			case Variant::ARRAY: color = Color(0.88, 0.88, 0.88); break;
-			case Variant::POOL_BYTE_ARRAY: color = Color(0.67, 0.96, 0.78); break;
-			case Variant::POOL_INT_ARRAY: color = Color(0.69, 0.86, 0.96); break;
-			case Variant::POOL_REAL_ARRAY: color = Color(0.59, 0.91, 0.97); break;
-			case Variant::POOL_STRING_ARRAY: color = Color(0.62, 0.77, 0.95); break;
-			case Variant::POOL_VECTOR2_ARRAY: color = Color(0.82, 0.7, 0.96); break;
-			case Variant::POOL_VECTOR3_ARRAY: color = Color(0.87, 0.61, 0.95); break;
-			case Variant::POOL_COLOR_ARRAY: color = Color(0.91, 1.0, 0.59); break;
+			case Variant::PACKED_BYTE_ARRAY: color = Color(0.67, 0.96, 0.78); break;
+			case Variant::PACKED_INT_ARRAY: color = Color(0.69, 0.86, 0.96); break;
+			case Variant::PACKED_REAL_ARRAY: color = Color(0.59, 0.91, 0.97); break;
+			case Variant::PACKED_STRING_ARRAY: color = Color(0.62, 0.77, 0.95); break;
+			case Variant::PACKED_VECTOR2_ARRAY: color = Color(0.82, 0.7, 0.96); break;
+			case Variant::PACKED_VECTOR3_ARRAY: color = Color(0.87, 0.61, 0.95); break;
+			case Variant::PACKED_COLOR_ARRAY: color = Color(0.91, 1.0, 0.59); break;
 
 			default:
 				color.set_hsv(p_type / float(Variant::VARIANT_MAX), 0.7, 0.7);
@@ -403,13 +403,13 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 			case Variant::DICTIONARY: color = Color(0.34, 0.91, 0.62); break;
 
 			case Variant::ARRAY: color = Color(0.45, 0.45, 0.45); break;
-			case Variant::POOL_BYTE_ARRAY: color = Color(0.38, 0.92, 0.6); break;
-			case Variant::POOL_INT_ARRAY: color = Color(0.38, 0.73, 0.92); break;
-			case Variant::POOL_REAL_ARRAY: color = Color(0.25, 0.83, 0.95); break;
-			case Variant::POOL_STRING_ARRAY: color = Color(0.38, 0.62, 0.92); break;
-			case Variant::POOL_VECTOR2_ARRAY: color = Color(0.62, 0.36, 0.92); break;
-			case Variant::POOL_VECTOR3_ARRAY: color = Color(0.79, 0.35, 0.92); break;
-			case Variant::POOL_COLOR_ARRAY: color = Color(0.57, 0.73, 0.0); break;
+			case Variant::PACKED_BYTE_ARRAY: color = Color(0.38, 0.92, 0.6); break;
+			case Variant::PACKED_INT_ARRAY: color = Color(0.38, 0.73, 0.92); break;
+			case Variant::PACKED_REAL_ARRAY: color = Color(0.25, 0.83, 0.95); break;
+			case Variant::PACKED_STRING_ARRAY: color = Color(0.38, 0.62, 0.92); break;
+			case Variant::PACKED_VECTOR2_ARRAY: color = Color(0.62, 0.36, 0.92); break;
+			case Variant::PACKED_VECTOR3_ARRAY: color = Color(0.79, 0.35, 0.92); break;
+			case Variant::PACKED_COLOR_ARRAY: color = Color(0.57, 0.73, 0.0); break;
 
 			default:
 				color.set_hsv(p_type / float(Variant::VARIANT_MAX), 0.3, 0.3);
@@ -520,13 +520,13 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		Control::get_icon("MiniObject", "EditorIcons"),
 		Control::get_icon("Dictionary", "EditorIcons"),
 		Control::get_icon("Array", "EditorIcons"),
-		Control::get_icon("PoolByteArray", "EditorIcons"),
-		Control::get_icon("PoolIntArray", "EditorIcons"),
-		Control::get_icon("PoolRealArray", "EditorIcons"),
-		Control::get_icon("PoolStringArray", "EditorIcons"),
-		Control::get_icon("PoolVector2Array", "EditorIcons"),
-		Control::get_icon("PoolVector3Array", "EditorIcons"),
-		Control::get_icon("PoolColorArray", "EditorIcons")
+		Control::get_icon("PackedByteArray", "EditorIcons"),
+		Control::get_icon("PackedIntArray", "EditorIcons"),
+		Control::get_icon("PackedRealArray", "EditorIcons"),
+		Control::get_icon("PackedStringArray", "EditorIcons"),
+		Control::get_icon("PackedVector2Array", "EditorIcons"),
+		Control::get_icon("PackedVector3Array", "EditorIcons"),
+		Control::get_icon("PackedColorArray", "EditorIcons")
 	};
 
 	Ref<Texture2D> seq_port = Control::get_icon("VisualShaderPort", "EditorIcons");
@@ -976,13 +976,13 @@ void VisualScriptEditor::_update_members() {
 		Control::get_icon("MiniObject", "EditorIcons"),
 		Control::get_icon("Dictionary", "EditorIcons"),
 		Control::get_icon("Array", "EditorIcons"),
-		Control::get_icon("PoolByteArray", "EditorIcons"),
-		Control::get_icon("PoolIntArray", "EditorIcons"),
-		Control::get_icon("PoolRealArray", "EditorIcons"),
-		Control::get_icon("PoolStringArray", "EditorIcons"),
-		Control::get_icon("PoolVector2Array", "EditorIcons"),
-		Control::get_icon("PoolVector3Array", "EditorIcons"),
-		Control::get_icon("PoolColorArray", "EditorIcons")
+		Control::get_icon("PackedByteArray", "EditorIcons"),
+		Control::get_icon("PackedIntArray", "EditorIcons"),
+		Control::get_icon("PackedRealArray", "EditorIcons"),
+		Control::get_icon("PackedStringArray", "EditorIcons"),
+		Control::get_icon("PackedVector2Array", "EditorIcons"),
+		Control::get_icon("PackedVector3Array", "EditorIcons"),
+		Control::get_icon("PackedColorArray", "EditorIcons")
 	};
 
 	List<StringName> var_names;
@@ -2585,7 +2585,7 @@ void VisualScriptEditor::get_breakpoints(List<int> *p_breakpoints) {
 	}
 }
 
-void VisualScriptEditor::add_callback(const String &p_function, PoolStringArray p_args) {
+void VisualScriptEditor::add_callback(const String &p_function, PackedStringArray p_args) {
 
 	if (script->has_function(p_function)) {
 		_update_members();

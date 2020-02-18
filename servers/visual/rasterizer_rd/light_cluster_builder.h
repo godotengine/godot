@@ -104,7 +104,7 @@ private:
 		uint32_t item_pointers[ITEM_TYPE_MAX];
 	};
 
-	PoolVector<uint8_t> cluster_data;
+	Vector<uint8_t> cluster_data;
 	RID cluster_texture;
 
 	struct SortID {
@@ -114,7 +114,7 @@ private:
 	};
 
 	SortID *sort_ids = nullptr;
-	PoolVector<uint32_t> ids;
+	Vector<uint32_t> ids;
 	uint32_t sort_id_count = 0;
 	uint32_t sort_id_max = 0;
 	RID items_buffer;

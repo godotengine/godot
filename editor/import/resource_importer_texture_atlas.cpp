@@ -286,12 +286,10 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 	new_atlas.instance();
 	new_atlas->create(atlas_width, atlas_height, false, Image::FORMAT_RGBA8);
 
-	new_atlas->lock();
-
 	for (int i = 0; i < pack_data_files.size(); i++) {
 
 		PackData &pack_data = pack_data_files.write[i];
-		pack_data.image->lock();
+
 		for (int j = 0; j < pack_data.chart_pieces.size(); j++) {
 			const EditorAtlasPacker::Chart &chart = charts[pack_data.chart_pieces[j]];
 			for (int k = 0; k < chart.faces.size(); k++) {
@@ -304,9 +302,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 				_plot_triangle(positions, chart.final_offset, chart.transposed, new_atlas, pack_data.image);
 			}
 		}
-		pack_data.image->unlock();
 	}
-	new_atlas->unlock();
 
 	//save the atlas
 
@@ -350,9 +346,9 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 
 			for (int i = 0; i < pack_data.chart_pieces.size(); i++) {
 				const EditorAtlasPacker::Chart &chart = charts[pack_data.chart_pieces[i]];
-				PoolVector<Vector2> vertices;
-				PoolVector<int> indices;
-				PoolVector<Vector2> uvs;
+				Vector<Vector2> vertices;
+				Vector<int> indices;
+				Vector<Vector2> uvs;
 				int vc = chart.vertices.size();
 				int fc = chart.faces.size();
 				vertices.resize(vc);
@@ -360,9 +356,9 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 				indices.resize(fc * 3);
 
 				{
-					PoolVector<Vector2>::Write vw = vertices.write();
-					PoolVector<int>::Write iw = indices.write();
-					PoolVector<Vector2>::Write uvw = uvs.write();
+					Vector2 *vw = vertices.ptrw();
+					int *iw = indices.ptrw();
+					Vector2 *uvw = uvs.ptrw();
 
 					for (int j = 0; j < vc; j++) {
 						vw[j] = chart.vertices[j];

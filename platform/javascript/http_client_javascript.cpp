@@ -103,12 +103,12 @@ Error HTTPClient::prepare_request(Method p_method, const String &p_url, const Ve
 	return OK;
 }
 
-Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const PoolVector<uint8_t> &p_body) {
+Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const Vector<uint8_t> &p_body) {
 
 	Error err = prepare_request(p_method, p_url, p_headers);
 	if (err != OK)
 		return err;
-	PoolByteArray::Read read = p_body.read();
+	const uint8_t *read = p_body.ptr();
 	godot_xhr_send_data(xhr_id, read.ptr(), p_body.size());
 	return OK;
 }
@@ -173,18 +173,18 @@ int HTTPClient::get_response_body_length() const {
 	return polled_response.size();
 }
 
-PoolByteArray HTTPClient::read_response_body_chunk() {
+PackedByteArray HTTPClient::read_response_body_chunk() {
 
-	ERR_FAIL_COND_V(status != STATUS_BODY, PoolByteArray());
+	ERR_FAIL_COND_V(status != STATUS_BODY, PackedByteArray());
 
 	int to_read = MIN(read_limit, polled_response.size() - response_read_offset);
-	PoolByteArray chunk;
+	PackedByteArray chunk;
 	chunk.resize(to_read);
-	PoolByteArray::Write write = chunk.write();
-	PoolByteArray::Read read = polled_response.read();
+	uint8_t *write = chunk.ptrw();
+	const uint8_t *read = polled_response.ptr();
 	memcpy(write.ptr(), read.ptr() + response_read_offset, to_read);
-	write = PoolByteArray::Write();
-	read = PoolByteArray::Read();
+	write = uint8_t * ();
+	read = const uint8_t * ();
 	response_read_offset += to_read;
 
 	if (response_read_offset == polled_response.size()) {
@@ -263,23 +263,23 @@ Error HTTPClient::poll() {
 
 			status = STATUS_BODY;
 
-			PoolByteArray bytes;
+			PackedByteArray bytes;
 			int len = godot_xhr_get_response_headers_length(xhr_id);
 			bytes.resize(len + 1);
 
-			PoolByteArray::Write write = bytes.write();
+			uint8_t *write = bytes.ptrw();
 			godot_xhr_get_response_headers(xhr_id, reinterpret_cast<char *>(write.ptr()), len);
 			write[len] = 0;
-			write = PoolByteArray::Write();
+			write = uint8_t * ();
 
-			PoolByteArray::Read read = bytes.read();
+			const uint8_t *read = bytes.ptr();
 			polled_response_header = String::utf8(reinterpret_cast<const char *>(read.ptr()));
-			read = PoolByteArray::Read();
+			read = const uint8_t * ();
 
 			polled_response.resize(godot_xhr_get_response_length(xhr_id));
-			write = polled_response.write();
+			write = polled_response.ptrw();
 			godot_xhr_get_response(xhr_id, write.ptr(), polled_response.size());
-			write = PoolByteArray::Write();
+			write = uint8_t * ();
 			break;
 		}
 

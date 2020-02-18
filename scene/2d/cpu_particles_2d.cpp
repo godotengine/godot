@@ -51,7 +51,7 @@ void CPUParticles2D::set_amount(int p_amount) {
 
 	particles.resize(p_amount);
 	{
-		PoolVector<Particle>::Write w = particles.write();
+		Particle *w = particles.ptrw();
 
 		for (int i = 0; i < p_amount; i++) {
 			w[i].active = false;
@@ -163,12 +163,12 @@ void CPUParticles2D::_update_mesh_texture() {
 	} else {
 		tex_size = Size2(1, 1);
 	}
-	PoolVector<Vector2> vertices;
+	Vector<Vector2> vertices;
 	vertices.push_back(-tex_size * 0.5);
 	vertices.push_back(-tex_size * 0.5 + Vector2(tex_size.x, 0));
 	vertices.push_back(-tex_size * 0.5 + Vector2(tex_size.x, tex_size.y));
 	vertices.push_back(-tex_size * 0.5 + Vector2(0, tex_size.y));
-	PoolVector<Vector2> uvs;
+	Vector<Vector2> uvs;
 	AtlasTexture *atlas_texure = Object::cast_to<AtlasTexture>(*texture);
 	if (atlas_texure && atlas_texure->get_atlas().is_valid()) {
 		Rect2 region_rect = atlas_texure->get_region();
@@ -183,12 +183,12 @@ void CPUParticles2D::_update_mesh_texture() {
 		uvs.push_back(Vector2(1, 1));
 		uvs.push_back(Vector2(0, 1));
 	}
-	PoolVector<Color> colors;
+	Vector<Color> colors;
 	colors.push_back(Color(1, 1, 1, 1));
 	colors.push_back(Color(1, 1, 1, 1));
 	colors.push_back(Color(1, 1, 1, 1));
 	colors.push_back(Color(1, 1, 1, 1));
-	PoolVector<int> indices;
+	Vector<int> indices;
 	indices.push_back(0);
 	indices.push_back(1);
 	indices.push_back(2);
@@ -291,7 +291,7 @@ void CPUParticles2D::restart() {
 
 	{
 		int pc = particles.size();
-		PoolVector<Particle>::Write w = particles.write();
+		Particle *w = particles.ptrw();
 
 		for (int i = 0; i < pc; i++) {
 			w[i].active = false;
@@ -455,17 +455,17 @@ void CPUParticles2D::set_emission_rect_extents(Vector2 p_extents) {
 	emission_rect_extents = p_extents;
 }
 
-void CPUParticles2D::set_emission_points(const PoolVector<Vector2> &p_points) {
+void CPUParticles2D::set_emission_points(const Vector<Vector2> &p_points) {
 
 	emission_points = p_points;
 }
 
-void CPUParticles2D::set_emission_normals(const PoolVector<Vector2> &p_normals) {
+void CPUParticles2D::set_emission_normals(const Vector<Vector2> &p_normals) {
 
 	emission_normals = p_normals;
 }
 
-void CPUParticles2D::set_emission_colors(const PoolVector<Color> &p_colors) {
+void CPUParticles2D::set_emission_colors(const Vector<Color> &p_colors) {
 
 	emission_colors = p_colors;
 }
@@ -478,16 +478,16 @@ Vector2 CPUParticles2D::get_emission_rect_extents() const {
 
 	return emission_rect_extents;
 }
-PoolVector<Vector2> CPUParticles2D::get_emission_points() const {
+Vector<Vector2> CPUParticles2D::get_emission_points() const {
 
 	return emission_points;
 }
-PoolVector<Vector2> CPUParticles2D::get_emission_normals() const {
+Vector<Vector2> CPUParticles2D::get_emission_normals() const {
 
 	return emission_normals;
 }
 
-PoolVector<Color> CPUParticles2D::get_emission_colors() const {
+Vector<Color> CPUParticles2D::get_emission_colors() const {
 
 	return emission_colors;
 }
@@ -630,9 +630,9 @@ void CPUParticles2D::_particles_process(float p_delta) {
 	p_delta *= speed_scale;
 
 	int pcount = particles.size();
-	PoolVector<Particle>::Write w = particles.write();
+	Particle *w = particles.ptrw();
 
-	Particle *parray = w.ptr();
+	Particle *parray = w;
 
 	float prev_time = time;
 	time += p_delta;
@@ -978,23 +978,23 @@ void CPUParticles2D::_update_particle_data_buffer() {
 
 		int pc = particles.size();
 
-		PoolVector<int>::Write ow;
+		int *ow;
 		int *order = NULL;
 
-		PoolVector<float>::Write w = particle_data.write();
-		PoolVector<Particle>::Read r = particles.read();
-		float *ptr = w.ptr();
+		float *w = particle_data.ptrw();
+		const Particle *r = particles.ptr();
+		float *ptr = w;
 
 		if (draw_order != DRAW_ORDER_INDEX) {
-			ow = particle_order.write();
-			order = ow.ptr();
+			ow = particle_order.ptrw();
+			order = ow;
 
 			for (int i = 0; i < pc; i++) {
 				order[i] = i;
 			}
 			if (draw_order == DRAW_ORDER_LIFETIME) {
 				SortArray<int, SortLifetime> sorter;
-				sorter.compare.particles = r.ptr();
+				sorter.compare.particles = r;
 				sorter.sort(order, pc);
 			}
 		}
@@ -1127,9 +1127,9 @@ void CPUParticles2D::_notification(int p_what) {
 
 			int pc = particles.size();
 
-			PoolVector<float>::Write w = particle_data.write();
-			PoolVector<Particle>::Read r = particles.read();
-			float *ptr = w.ptr();
+			float *w = particle_data.ptrw();
+			const Particle *r = particles.ptr();
+			float *ptr = w;
 
 			for (int i = 0; i < pc; i++) {
 
@@ -1348,9 +1348,9 @@ void CPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points"), "set_emission_shape", "get_emission_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_sphere_radius", PROPERTY_HINT_RANGE, "0.01,128,0.01"), "set_emission_sphere_radius", "get_emission_sphere_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "emission_rect_extents"), "set_emission_rect_extents", "get_emission_rect_extents");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "emission_points"), "set_emission_points", "get_emission_points");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "emission_normals"), "set_emission_normals", "get_emission_normals");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY, "emission_colors"), "set_emission_colors", "get_emission_colors");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "emission_points"), "set_emission_points", "get_emission_points");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "emission_normals"), "set_emission_normals", "get_emission_normals");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_COLOR_ARRAY, "emission_colors"), "set_emission_colors", "get_emission_colors");
 	ADD_GROUP("Flags", "flag_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_align_y"), "set_particle_flag", "get_particle_flag", FLAG_ALIGN_Y_TO_VELOCITY);
 	ADD_GROUP("Direction", "");

@@ -39,9 +39,9 @@ AABB CPUParticles::get_aabb() const {
 
 	return AABB();
 }
-PoolVector<Face3> CPUParticles::get_faces(uint32_t p_usage_flags) const {
+Vector<Face3> CPUParticles::get_faces(uint32_t p_usage_flags) const {
 
-	return PoolVector<Face3>();
+	return Vector<Face3>();
 }
 
 void CPUParticles::set_emitting(bool p_emitting) {
@@ -65,7 +65,7 @@ void CPUParticles::set_amount(int p_amount) {
 
 	particles.resize(p_amount);
 	{
-		PoolVector<Particle>::Write w = particles.write();
+		Particle *w = particles.ptrw();
 
 		for (int i = 0; i < p_amount; i++) {
 			w[i].active = false;
@@ -244,7 +244,7 @@ void CPUParticles::restart() {
 
 	{
 		int pc = particles.size();
-		PoolVector<Particle>::Write w = particles.write();
+		Particle *w = particles.ptrw();
 
 		for (int i = 0; i < pc; i++) {
 			w[i].active = false;
@@ -419,17 +419,17 @@ void CPUParticles::set_emission_box_extents(Vector3 p_extents) {
 	emission_box_extents = p_extents;
 }
 
-void CPUParticles::set_emission_points(const PoolVector<Vector3> &p_points) {
+void CPUParticles::set_emission_points(const Vector<Vector3> &p_points) {
 
 	emission_points = p_points;
 }
 
-void CPUParticles::set_emission_normals(const PoolVector<Vector3> &p_normals) {
+void CPUParticles::set_emission_normals(const Vector<Vector3> &p_normals) {
 
 	emission_normals = p_normals;
 }
 
-void CPUParticles::set_emission_colors(const PoolVector<Color> &p_colors) {
+void CPUParticles::set_emission_colors(const Vector<Color> &p_colors) {
 
 	emission_colors = p_colors;
 }
@@ -442,16 +442,16 @@ Vector3 CPUParticles::get_emission_box_extents() const {
 
 	return emission_box_extents;
 }
-PoolVector<Vector3> CPUParticles::get_emission_points() const {
+Vector<Vector3> CPUParticles::get_emission_points() const {
 
 	return emission_points;
 }
-PoolVector<Vector3> CPUParticles::get_emission_normals() const {
+Vector<Vector3> CPUParticles::get_emission_normals() const {
 
 	return emission_normals;
 }
 
-PoolVector<Color> CPUParticles::get_emission_colors() const {
+Vector<Color> CPUParticles::get_emission_colors() const {
 
 	return emission_colors;
 }
@@ -597,9 +597,9 @@ void CPUParticles::_particles_process(float p_delta) {
 	p_delta *= speed_scale;
 
 	int pcount = particles.size();
-	PoolVector<Particle>::Write w = particles.write();
+	Particle *w = particles.ptrw();
 
-	Particle *parray = w.ptr();
+	Particle *parray = w;
 
 	float prev_time = time;
 	time += p_delta;
@@ -1025,23 +1025,23 @@ void CPUParticles::_update_particle_data_buffer() {
 
 		int pc = particles.size();
 
-		PoolVector<int>::Write ow;
+		int *ow;
 		int *order = NULL;
 
-		PoolVector<float>::Write w = particle_data.write();
-		PoolVector<Particle>::Read r = particles.read();
-		float *ptr = w.ptr();
+		float *w = particle_data.ptrw();
+		const Particle *r = particles.ptr();
+		float *ptr = w;
 
 		if (draw_order != DRAW_ORDER_INDEX) {
-			ow = particle_order.write();
-			order = ow.ptr();
+			ow = particle_order.ptrw();
+			order = ow;
 
 			for (int i = 0; i < pc; i++) {
 				order[i] = i;
 			}
 			if (draw_order == DRAW_ORDER_LIFETIME) {
 				SortArray<int, SortLifetime> sorter;
-				sorter.compare.particles = r.ptr();
+				sorter.compare.particles = r;
 				sorter.sort(order, pc);
 			} else if (draw_order == DRAW_ORDER_VIEW_DEPTH) {
 				Camera *c = get_viewport()->get_camera();
@@ -1058,7 +1058,7 @@ void CPUParticles::_update_particle_data_buffer() {
 					}
 
 					SortArray<int, SortAxis> sorter;
-					sorter.compare.particles = r.ptr();
+					sorter.compare.particles = r;
 					sorter.compare.axis = dir;
 					sorter.sort(order, pc);
 				}
@@ -1185,9 +1185,9 @@ void CPUParticles::_notification(int p_what) {
 
 			int pc = particles.size();
 
-			PoolVector<float>::Write w = particle_data.write();
-			PoolVector<Particle>::Read r = particles.read();
-			float *ptr = w.ptr();
+			float *w = particle_data.ptrw();
+			const Particle *r = particles.ptr();
+			float *ptr = w;
 
 			for (int i = 0; i < pc; i++) {
 
@@ -1403,9 +1403,9 @@ void CPUParticles::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points"), "set_emission_shape", "get_emission_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_sphere_radius", PROPERTY_HINT_RANGE, "0.01,128,0.01"), "set_emission_sphere_radius", "get_emission_sphere_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_box_extents"), "set_emission_box_extents", "get_emission_box_extents");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY, "emission_points"), "set_emission_points", "get_emission_points");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY, "emission_normals"), "set_emission_normals", "get_emission_normals");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY, "emission_colors"), "set_emission_colors", "get_emission_colors");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "emission_points"), "set_emission_points", "get_emission_points");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "emission_normals"), "set_emission_normals", "get_emission_normals");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_COLOR_ARRAY, "emission_colors"), "set_emission_colors", "get_emission_colors");
 	ADD_GROUP("Flags", "flag_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_align_y"), "set_particle_flag", "get_particle_flag", FLAG_ALIGN_Y_TO_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_rotate_y"), "set_particle_flag", "get_particle_flag", FLAG_ROTATE_Y);

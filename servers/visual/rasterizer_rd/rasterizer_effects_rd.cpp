@@ -955,11 +955,11 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 	default_mipmap_sampler = RD::get_singleton()->sampler_create(sampler);
 
 	{ //create index array for copy shaders
-		PoolVector<uint8_t> pv;
+		Vector<uint8_t> pv;
 		pv.resize(6 * 4);
 		{
-			PoolVector<uint8_t>::Write w = pv.write();
-			int *p32 = (int *)w.ptr();
+			uint8_t *w = pv.ptrw();
+			int *p32 = (int *)w;
 			p32[0] = 0;
 			p32[1] = 1;
 			p32[2] = 2;

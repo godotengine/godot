@@ -98,7 +98,7 @@ public:
 	/**
 	 * calculate tangents for mesh data from assimp data
 	 */
-	static void calc_tangent_from_mesh(const aiMesh *ai_mesh, int i, int tri_index, int index, PoolColorArray::Write &w) {
+	static void calc_tangent_from_mesh(const aiMesh *ai_mesh, int i, int tri_index, int index, Color *w) {
 		const aiVector3D normals = ai_mesh->mAnimMeshes[i]->mNormals[tri_index];
 		const Vector3 godot_normal = Vector3(normals.x, normals.y, normals.z);
 		const aiVector3D tangent = ai_mesh->mAnimMeshes[i]->mTangents[tri_index];
@@ -375,17 +375,17 @@ public:
 			} else {
 				Ref<Image> img;
 				img.instance();
-				PoolByteArray arr;
+				PackedByteArray arr;
 				uint32_t size = tex->mWidth * tex->mHeight;
 				arr.resize(size);
-				memcpy(arr.write().ptr(), tex->pcData, size);
+				memcpy(arr.ptrw(), tex->pcData, size);
 				ERR_FAIL_COND_V(arr.size() % 4 != 0, Ref<Image>());
 				//ARGB8888 to RGBA8888
 				for (int32_t i = 0; i < arr.size() / 4; i++) {
-					arr.write().ptr()[(4 * i) + 3] = arr[(4 * i) + 0];
-					arr.write().ptr()[(4 * i) + 0] = arr[(4 * i) + 1];
-					arr.write().ptr()[(4 * i) + 1] = arr[(4 * i) + 2];
-					arr.write().ptr()[(4 * i) + 2] = arr[(4 * i) + 3];
+					arr.ptrw()[(4 * i) + 3] = arr[(4 * i) + 0];
+					arr.ptrw()[(4 * i) + 0] = arr[(4 * i) + 1];
+					arr.ptrw()[(4 * i) + 1] = arr[(4 * i) + 2];
+					arr.ptrw()[(4 * i) + 2] = arr[(4 * i) + 3];
 				}
 				img->create(tex->mWidth, tex->mHeight, true, Image::FORMAT_RGBA8, arr);
 				ERR_FAIL_COND_V(img.is_null(), Ref<Image>());

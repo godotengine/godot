@@ -996,13 +996,13 @@ void ScriptDebuggerRemote::idle_poll() {
 	if (visual_profiling) {
 		Vector<VS::FrameProfileArea> profile_areas = VS::get_singleton()->get_frame_profile();
 		if (profile_areas.size()) {
-			PoolVector<String> area_names;
-			PoolVector<real_t> area_times;
+			Vector<String> area_names;
+			Vector<real_t> area_times;
 			area_names.resize(profile_areas.size());
 			area_times.resize(profile_areas.size() * 2);
 			{
-				PoolVector<String>::Write area_namesw = area_names.write();
-				PoolVector<real_t>::Write area_timesw = area_times.write();
+				String *area_namesw = area_names.ptrw();
+				real_t *area_timesw = area_times.ptrw();
 
 				for (int i = 0; i < profile_areas.size(); i++) {
 					area_namesw[i] = profile_areas[i].name;

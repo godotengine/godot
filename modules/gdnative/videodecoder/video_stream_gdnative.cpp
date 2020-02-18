@@ -187,7 +187,7 @@ void VideoStreamPlaybackGDNative::update(float p_delta) {
 }
 
 void VideoStreamPlaybackGDNative::update_texture() {
-	PoolByteArray *pba = (PoolByteArray *)interface->get_videoframe(data_struct);
+	PackedByteArray *pba = (PackedByteArray *)interface->get_videoframe(data_struct);
 
 	if (pba == NULL) {
 		playing = false;

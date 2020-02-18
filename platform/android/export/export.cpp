@@ -701,7 +701,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			aperms++;
 		}
 
-		PoolStringArray user_perms = p_preset->get("permissions/custom_permissions");
+		PackedStringArray user_perms = p_preset->get("permissions/custom_permissions");
 
 		for (int i = 0; i < user_perms.size(); i++) {
 			String user_perm = user_perms[i].strip_edges();
@@ -1310,11 +1310,11 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 				working_image->resize(p_icon.dimensions, p_icon.dimensions, Image::Interpolation::INTERPOLATE_LANCZOS);
 			}
 
-			PoolVector<uint8_t> png_buffer;
+			Vector<uint8_t> png_buffer;
 			Error err = PNGDriverCommon::image_to_png(working_image, png_buffer);
 			if (err == OK) {
 				p_data.resize(png_buffer.size());
-				memcpy(p_data.ptrw(), png_buffer.read().ptr(), p_data.size());
+				memcpy(p_data.ptrw(), png_buffer.ptr(), p_data.size());
 			} else {
 				String err_str = String("Failed to convert resized icon (") + p_processing_file_name + ") to png.";
 				WARN_PRINT(err_str.utf8().get_data());
@@ -1398,7 +1398,7 @@ public:
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "architectures/" + abi), is_default));
 		}
 
-		r_options->push_back(ExportOption(PropertyInfo(Variant::POOL_STRING_ARRAY, "permissions/custom_permissions"), PoolStringArray()));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "permissions/custom_permissions"), PackedStringArray()));
 
 		const char **perms = android_perms;
 		while (*perms) {

@@ -220,7 +220,7 @@ public:
 	virtual void reload(bool p_soft);
 	virtual void get_breakpoints(List<int> *p_breakpoints);
 
-	virtual void add_callback(const String &p_function, PoolStringArray p_args);
+	virtual void add_callback(const String &p_function, PackedStringArray p_args);
 	virtual void update_settings();
 
 	virtual bool show_members_overview();

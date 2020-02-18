@@ -66,9 +66,9 @@ Error MIDIDriverWinMidi::open() {
 	return OK;
 }
 
-PoolStringArray MIDIDriverWinMidi::get_connected_inputs() {
+PackedStringArray MIDIDriverWinMidi::get_connected_inputs() {
 
-	PoolStringArray list;
+	PackedStringArray list;
 
 	for (int i = 0; i < connected_sources.size(); i++) {
 		HMIDIIN midi_in = connected_sources[i];

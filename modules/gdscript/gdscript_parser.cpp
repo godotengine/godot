@@ -6596,13 +6596,13 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 							if (!error) {
 								switch (base_type.builtin_type) {
 									// Expect int or real as index
-									case Variant::POOL_BYTE_ARRAY:
-									case Variant::POOL_COLOR_ARRAY:
-									case Variant::POOL_INT_ARRAY:
-									case Variant::POOL_REAL_ARRAY:
-									case Variant::POOL_STRING_ARRAY:
-									case Variant::POOL_VECTOR2_ARRAY:
-									case Variant::POOL_VECTOR3_ARRAY:
+									case Variant::PACKED_BYTE_ARRAY:
+									case Variant::PACKED_COLOR_ARRAY:
+									case Variant::PACKED_INT_ARRAY:
+									case Variant::PACKED_REAL_ARRAY:
+									case Variant::PACKED_STRING_ARRAY:
+									case Variant::PACKED_VECTOR2_ARRAY:
+									case Variant::PACKED_VECTOR3_ARRAY:
 									case Variant::ARRAY:
 									case Variant::STRING: {
 										error = index_type.builtin_type != Variant::INT && index_type.builtin_type != Variant::REAL;
@@ -6646,13 +6646,13 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 									case Variant::STRING:
 									case Variant::ARRAY:
 									case Variant::DICTIONARY:
-									case Variant::POOL_BYTE_ARRAY:
-									case Variant::POOL_COLOR_ARRAY:
-									case Variant::POOL_INT_ARRAY:
-									case Variant::POOL_REAL_ARRAY:
-									case Variant::POOL_STRING_ARRAY:
-									case Variant::POOL_VECTOR2_ARRAY:
-									case Variant::POOL_VECTOR3_ARRAY: {
+									case Variant::PACKED_BYTE_ARRAY:
+									case Variant::PACKED_COLOR_ARRAY:
+									case Variant::PACKED_INT_ARRAY:
+									case Variant::PACKED_REAL_ARRAY:
+									case Variant::PACKED_STRING_ARRAY:
+									case Variant::PACKED_VECTOR2_ARRAY:
+									case Variant::PACKED_VECTOR3_ARRAY: {
 										break;
 									}
 									default: {
@@ -6698,34 +6698,34 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 								return DataType();
 							} break;
 								// Return int
-							case Variant::POOL_BYTE_ARRAY:
-							case Variant::POOL_INT_ARRAY: {
+							case Variant::PACKED_BYTE_ARRAY:
+							case Variant::PACKED_INT_ARRAY: {
 								result.builtin_type = Variant::INT;
 							} break;
 								// Return real
-							case Variant::POOL_REAL_ARRAY:
+							case Variant::PACKED_REAL_ARRAY:
 							case Variant::VECTOR2:
 							case Variant::VECTOR3:
 							case Variant::QUAT: {
 								result.builtin_type = Variant::REAL;
 							} break;
 								// Return color
-							case Variant::POOL_COLOR_ARRAY: {
+							case Variant::PACKED_COLOR_ARRAY: {
 								result.builtin_type = Variant::COLOR;
 							} break;
 								// Return string
-							case Variant::POOL_STRING_ARRAY:
+							case Variant::PACKED_STRING_ARRAY:
 							case Variant::STRING: {
 								result.builtin_type = Variant::STRING;
 							} break;
 								// Return Vector2
-							case Variant::POOL_VECTOR2_ARRAY:
+							case Variant::PACKED_VECTOR2_ARRAY:
 							case Variant::TRANSFORM2D:
 							case Variant::RECT2: {
 								result.builtin_type = Variant::VECTOR2;
 							} break;
 								// Return Vector3
-							case Variant::POOL_VECTOR3_ARRAY:
+							case Variant::PACKED_VECTOR3_ARRAY:
 							case Variant::AABB:
 							case Variant::BASIS: {
 								result.builtin_type = Variant::VECTOR3;

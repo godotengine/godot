@@ -143,16 +143,16 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 		}
 	}
 
-	PoolVector<uint8_t>::Read r = img->get_data().read();
-	ERR_FAIL_COND(!r.ptr());
+	const uint8_t *r = img->get_data().ptr();
+	ERR_FAIL_COND(!r);
 
 	unsigned int target_size = Image::get_image_data_size(imgw, imgh, etc_format, p_img->has_mipmaps());
 	int mmc = 1 + (p_img->has_mipmaps() ? Image::get_image_required_mipmaps(imgw, imgh, etc_format) : 0);
 
-	PoolVector<uint8_t> dst_data;
+	Vector<uint8_t> dst_data;
 	dst_data.resize(target_size);
 
-	PoolVector<uint8_t>::Write w = dst_data.write();
+	uint8_t *w = dst_data.ptrw();
 
 	// prepare parameters to be passed to etc2comp
 	int num_cpus = OS::get_singleton()->get_processor_count();

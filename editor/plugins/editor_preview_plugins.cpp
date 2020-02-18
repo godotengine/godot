@@ -47,8 +47,6 @@ void post_process_preview(Ref<Image> p_image) {
 	if (p_image->get_format() != Image::FORMAT_RGBA8)
 		p_image->convert(Image::FORMAT_RGBA8);
 
-	p_image->lock();
-
 	const int w = p_image->get_width();
 	const int h = p_image->get_height();
 
@@ -70,8 +68,6 @@ void post_process_preview(Ref<Image> p_image) {
 			}
 		}
 	}
-
-	p_image->unlock();
 }
 
 bool EditorTexturePreviewPlugin::handles(const String &p_type) const {
@@ -207,19 +203,19 @@ Ref<Texture2D> EditorBitmapPreviewPlugin::generate(const RES &p_from, const Size
 		return Ref<Texture2D>();
 	}
 
-	PoolVector<uint8_t> data;
+	Vector<uint8_t> data;
 
 	data.resize(bm->get_size().width * bm->get_size().height);
 
 	{
-		PoolVector<uint8_t>::Write w = data.write();
+		uint8_t *w = data.ptrw();
 
 		for (int i = 0; i < bm->get_size().width; i++) {
 			for (int j = 0; j < bm->get_size().height; j++) {
 				if (bm->get_bit(Point2i(i, j))) {
-					w[j * bm->get_size().width + i] = 255;
+					w[j * (int)bm->get_size().width + i] = 255;
 				} else {
-					w[j * bm->get_size().width + i] = 0;
+					w[j * (int)bm->get_size().width + i] = 0;
 				}
 			}
 		}
@@ -396,10 +392,10 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 	int lons = 32;
 	float radius = 1.0;
 
-	PoolVector<Vector3> vertices;
-	PoolVector<Vector3> normals;
-	PoolVector<Vector2> uvs;
-	PoolVector<float> tangents;
+	Vector<Vector3> vertices;
+	Vector<Vector3> normals;
+	Vector<Vector2> uvs;
+	Vector<float> tangents;
 	Basis tt = Basis(Vector3(0, 1, 0), Math_PI * 0.5);
 
 	for (int i = 1; i <= lats; i++) {
@@ -522,8 +518,6 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 	Color text_color = EditorSettings::get_singleton()->get("text_editor/highlighting/text_color");
 	Color symbol_color = EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color");
 
-	img->lock();
-
 	if (bg_color.a == 0)
 		bg_color = Color(0, 0, 0, 0);
 	bg_color.a = MAX(bg_color.a, 0.2); // some background
@@ -593,8 +587,6 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 		col++;
 	}
 
-	img->unlock();
-
 	post_process_preview(img);
 
 	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
@@ -617,14 +609,14 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const RES &p_from, const
 	Ref<AudioStream> stream = p_from;
 	ERR_FAIL_COND_V(stream.is_null(), Ref<Texture2D>());
 
-	PoolVector<uint8_t> img;
+	Vector<uint8_t> img;
 
 	int w = p_size.x;
 	int h = p_size.y;
 	img.resize(w * h * 3);
 
-	PoolVector<uint8_t>::Write imgdata = img.write();
-	uint8_t *imgw = imgdata.ptr();
+	uint8_t *imgdata = img.ptrw();
+	uint8_t *imgw = imgdata;
 
 	Ref<AudioStreamPlayback> playback = stream->instance_playback();
 	ERR_FAIL_COND_V(playback.is_null(), Ref<Texture2D>());
@@ -680,7 +672,6 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const RES &p_from, const
 		}
 	}
 
-	imgdata.release();
 	//post_process_preview(img);
 
 	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));

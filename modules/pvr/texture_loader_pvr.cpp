@@ -96,12 +96,12 @@ RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path,
 	print_line("surfcount: "+itos(surfcount));
 	*/
 
-	PoolVector<uint8_t> data;
+	Vector<uint8_t> data;
 	data.resize(surfsize);
 
 	ERR_FAIL_COND_V(data.size() == 0, RES());
 
-	PoolVector<uint8_t>::Write w = data.write();
+	uint8_t *w = data.ptrw();
 	f->get_buffer(&w[0], surfsize);
 	err = f->get_error();
 	ERR_FAIL_COND_V(err != OK, RES());
@@ -152,8 +152,6 @@ RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path,
 			ERR_FAIL_V_MSG(RES(), "Unsupported format in PVR texture: " + itos(flags & 0xFF) + ".");
 	}
 
-	w.release();
-
 	Ref<Image> image = memnew(Image(width, height, mipmaps, format, data));
 	ERR_FAIL_COND_V(image->empty(), RES());
 
@@ -200,10 +198,10 @@ static void _compress_pvrtc4(Image *p_img) {
 	new_img.instance();
 	new_img->create(img->get_width(), img->get_height(), img->has_mipmaps(), use_alpha ? Image::FORMAT_PVRTC4A : Image::FORMAT_PVRTC4);
 
-	PoolVector<uint8_t> data = new_img->get_data();
+	Vector<uint8_t> data = new_img->get_data();
 	{
-		PoolVector<uint8_t>::Write wr = data.write();
-		PoolVector<uint8_t>::Read r = img->get_data().read();
+		uint8_t *wr = data.ptrw();
+		const uint8_t *r = img->get_data().ptr();
 
 		for (int i = 0; i <= new_img->get_mipmap_count(); i++) {
 
@@ -640,17 +638,14 @@ static void _pvrtc_decompress(Image *p_img) {
 
 	bool _2bit = (p_img->get_format() == Image::FORMAT_PVRTC2 || p_img->get_format() == Image::FORMAT_PVRTC2A);
 
-	PoolVector<uint8_t> data = p_img->get_data();
-	PoolVector<uint8_t>::Read r = data.read();
+	Vector<uint8_t> data = p_img->get_data();
+	const uint8_t *r = data.ptr();
 
-	PoolVector<uint8_t> newdata;
+	Vector<uint8_t> newdata;
 	newdata.resize(p_img->get_width() * p_img->get_height() * 4);
-	PoolVector<uint8_t>::Write w = newdata.write();
+	uint8_t *w = newdata.ptrw();
 
-	decompress_pvrtc((PVRTCBlock *)r.ptr(), _2bit, p_img->get_width(), p_img->get_height(), 0, (unsigned char *)w.ptr());
-
-	w.release();
-	r.release();
+	decompress_pvrtc((PVRTCBlock *)r, _2bit, p_img->get_width(), p_img->get_height(), 0, (unsigned char *)w);
 
 	bool make_mipmaps = p_img->has_mipmaps();
 	p_img->create(p_img->get_width(), p_img->get_height(), false, Image::FORMAT_RGBA8, newdata);

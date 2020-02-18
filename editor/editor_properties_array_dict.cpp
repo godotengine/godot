@@ -229,32 +229,32 @@ void EditorPropertyArray::update_property() {
 		} break;
 
 		// arrays
-		case Variant::POOL_BYTE_ARRAY: {
-			arrtype = "PoolByteArray";
+		case Variant::PACKED_BYTE_ARRAY: {
+			arrtype = "PackedByteArray";
 
 		} break;
-		case Variant::POOL_INT_ARRAY: {
-			arrtype = "PoolIntArray";
+		case Variant::PACKED_INT_ARRAY: {
+			arrtype = "PackedIntArray";
 
 		} break;
-		case Variant::POOL_REAL_ARRAY: {
+		case Variant::PACKED_REAL_ARRAY: {
 
 			arrtype = "PoolFloatArray";
 		} break;
-		case Variant::POOL_STRING_ARRAY: {
+		case Variant::PACKED_STRING_ARRAY: {
 
-			arrtype = "PoolStringArray";
+			arrtype = "PackedStringArray";
 		} break;
-		case Variant::POOL_VECTOR2_ARRAY: {
+		case Variant::PACKED_VECTOR2_ARRAY: {
 
-			arrtype = "PoolVector2Array";
+			arrtype = "PackedVector2Array";
 		} break;
-		case Variant::POOL_VECTOR3_ARRAY: {
-			arrtype = "PoolVector3Array";
+		case Variant::PACKED_VECTOR3_ARRAY: {
+			arrtype = "PackedVector3Array";
 
 		} break;
-		case Variant::POOL_COLOR_ARRAY: {
-			arrtype = "PoolColorArray";
+		case Variant::PACKED_COLOR_ARRAY: {
+			arrtype = "PackedColorArray";
 		} break;
 		default: {
 		}
@@ -846,46 +846,46 @@ void EditorPropertyDictionary::update_property() {
 				} break;
 
 				// arrays
-				case Variant::POOL_BYTE_ARRAY: {
+				case Variant::PACKED_BYTE_ARRAY: {
 
 					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::POOL_BYTE_ARRAY);
+					editor->setup(Variant::PACKED_BYTE_ARRAY);
 					prop = editor;
 				} break;
-				case Variant::POOL_INT_ARRAY: {
+				case Variant::PACKED_INT_ARRAY: {
 
 					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::POOL_INT_ARRAY);
+					editor->setup(Variant::PACKED_INT_ARRAY);
 					prop = editor;
 				} break;
-				case Variant::POOL_REAL_ARRAY: {
+				case Variant::PACKED_REAL_ARRAY: {
 
 					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::POOL_REAL_ARRAY);
+					editor->setup(Variant::PACKED_REAL_ARRAY);
 					prop = editor;
 				} break;
-				case Variant::POOL_STRING_ARRAY: {
+				case Variant::PACKED_STRING_ARRAY: {
 
 					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::POOL_STRING_ARRAY);
+					editor->setup(Variant::PACKED_STRING_ARRAY);
 					prop = editor;
 				} break;
-				case Variant::POOL_VECTOR2_ARRAY: {
+				case Variant::PACKED_VECTOR2_ARRAY: {
 
 					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::POOL_VECTOR2_ARRAY);
+					editor->setup(Variant::PACKED_VECTOR2_ARRAY);
 					prop = editor;
 				} break;
-				case Variant::POOL_VECTOR3_ARRAY: {
+				case Variant::PACKED_VECTOR3_ARRAY: {
 
 					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::POOL_VECTOR3_ARRAY);
+					editor->setup(Variant::PACKED_VECTOR3_ARRAY);
 					prop = editor;
 				} break;
-				case Variant::POOL_COLOR_ARRAY: {
+				case Variant::PACKED_COLOR_ARRAY: {
 
 					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::POOL_COLOR_ARRAY);
+					editor->setup(Variant::PACKED_COLOR_ARRAY);
 					prop = editor;
 				} break;
 				default: {

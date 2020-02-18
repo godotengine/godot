@@ -639,7 +639,7 @@ private:
 	static void _resource_saved(RES p_resource, const String &p_path);
 	static void _resource_loaded(RES p_resource, const String &p_path);
 
-	void _resources_changed(const PoolVector<String> &p_resources);
+	void _resources_changed(const Vector<String> &p_resources);
 
 	void _feature_profile_changed();
 	bool _is_class_editor_disabled_by_feature_profile(const StringName &p_class);

@@ -41,7 +41,7 @@ class ResourcePreloader : public Node {
 
 	void _set_resources(const Array &p_data);
 	Array _get_resources() const;
-	PoolVector<String> _get_resource_list() const;
+	Vector<String> _get_resource_list() const;
 
 protected:
 	static void _bind_methods();

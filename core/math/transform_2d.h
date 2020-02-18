@@ -32,7 +32,6 @@
 #define TRANSFORM_2D_H
 
 #include "core/math/rect2.h" // also includes vector2, math_funcs, and ustring
-#include "core/pool_vector.h"
 
 struct Transform2D {
 	// Warning #1: basis of Transform2D is stored differently from Basis. In terms of elements array, the basis matrix looks like "on paper":
@@ -112,8 +111,8 @@ struct Transform2D {
 	_FORCE_INLINE_ Vector2 xform_inv(const Vector2 &p_vec) const;
 	_FORCE_INLINE_ Rect2 xform(const Rect2 &p_rect) const;
 	_FORCE_INLINE_ Rect2 xform_inv(const Rect2 &p_rect) const;
-	_FORCE_INLINE_ PoolVector<Vector2> xform(const PoolVector<Vector2> &p_array) const;
-	_FORCE_INLINE_ PoolVector<Vector2> xform_inv(const PoolVector<Vector2> &p_array) const;
+	_FORCE_INLINE_ Vector<Vector2> xform(const Vector<Vector2> &p_array) const;
+	_FORCE_INLINE_ Vector<Vector2> xform_inv(const Vector<Vector2> &p_array) const;
 
 	operator String() const;
 
@@ -203,13 +202,13 @@ Rect2 Transform2D::xform_inv(const Rect2 &p_rect) const {
 	return new_rect;
 }
 
-PoolVector<Vector2> Transform2D::xform(const PoolVector<Vector2> &p_array) const {
+Vector<Vector2> Transform2D::xform(const Vector<Vector2> &p_array) const {
 
-	PoolVector<Vector2> array;
+	Vector<Vector2> array;
 	array.resize(p_array.size());
 
-	PoolVector<Vector2>::Read r = p_array.read();
-	PoolVector<Vector2>::Write w = array.write();
+	const Vector2 *r = p_array.ptr();
+	Vector2 *w = array.ptrw();
 
 	for (int i = 0; i < p_array.size(); ++i) {
 		w[i] = xform(r[i]);
@@ -217,13 +216,13 @@ PoolVector<Vector2> Transform2D::xform(const PoolVector<Vector2> &p_array) const
 	return array;
 }
 
-PoolVector<Vector2> Transform2D::xform_inv(const PoolVector<Vector2> &p_array) const {
+Vector<Vector2> Transform2D::xform_inv(const Vector<Vector2> &p_array) const {
 
-	PoolVector<Vector2> array;
+	Vector<Vector2> array;
 	array.resize(p_array.size());
 
-	PoolVector<Vector2>::Read r = p_array.read();
-	PoolVector<Vector2>::Write w = array.write();
+	const Vector2 *r = p_array.ptr();
+	Vector2 *w = array.ptrw();
 
 	for (int i = 0; i < p_array.size(); ++i) {
 		w[i] = xform_inv(r[i]);

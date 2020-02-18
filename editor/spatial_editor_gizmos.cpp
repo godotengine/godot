@@ -214,10 +214,10 @@ void EditorSpatialGizmo::add_lines(const Vector<Vector3> &p_lines, const Ref<Mat
 
 	a[Mesh::ARRAY_VERTEX] = p_lines;
 
-	PoolVector<Color> color;
+	Vector<Color> color;
 	color.resize(p_lines.size());
 	{
-		PoolVector<Color>::Write w = color.write();
+		Color *w = color.ptrw();
 		for (int i = 0; i < p_lines.size(); i++) {
 			if (is_selected())
 				w[i] = Color(1, 1, 1, 0.8) * p_modulate;
@@ -348,10 +348,10 @@ void EditorSpatialGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref
 	Array a;
 	a.resize(VS::ARRAY_MAX);
 	a[VS::ARRAY_VERTEX] = p_handles;
-	PoolVector<Color> colors;
+	Vector<Color> colors;
 	{
 		colors.resize(p_handles.size());
-		PoolVector<Color>::Write w = colors.write();
+		Color *w = colors.ptrw();
 		for (int i = 0; i < p_handles.size(); i++) {
 
 			Color col(1, 1, 1, 1);
@@ -410,8 +410,8 @@ void EditorSpatialGizmo::add_solid_box(Ref<Material> &p_material, Vector3 p_size
 	cubem.set_size(p_size);
 
 	Array arrays = cubem.surface_get_arrays(0);
-	PoolVector3Array vertex = arrays[VS::ARRAY_VERTEX];
-	PoolVector3Array::Write w = vertex.write();
+	PackedVector3Array vertex = arrays[VS::ARRAY_VERTEX];
+	Vector3 *w = vertex.ptrw();
 
 	for (int i = 0; i < vertex.size(); ++i) {
 		w[i] += p_position;
@@ -1566,7 +1566,7 @@ Position3DSpatialGizmoPlugin::Position3DSpatialGizmoPlugin() {
 	pos3d_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
 	cursor_points = Vector<Vector3>();
 
-	PoolVector<Color> cursor_colors;
+	Vector<Color> cursor_colors;
 	float cs = 0.25;
 	cursor_points.push_back(Vector3(+cs, 0, 0));
 	cursor_points.push_back(Vector3(-cs, 0, 0));
@@ -3611,7 +3611,7 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 	if (Object::cast_to<ConvexPolygonShape>(*s)) {
 
-		PoolVector<Vector3> points = Object::cast_to<ConvexPolygonShape>(*s)->get_points();
+		Vector<Vector3> points = Object::cast_to<ConvexPolygonShape>(*s)->get_points();
 
 		if (points.size() > 3) {
 
@@ -3748,8 +3748,8 @@ void NavigationMeshSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	if (navmeshie.is_null())
 		return;
 
-	PoolVector<Vector3> vertices = navmeshie->get_vertices();
-	PoolVector<Vector3>::Read vr = vertices.read();
+	Vector<Vector3> vertices = navmeshie->get_vertices();
+	const Vector3 *vr = vertices.ptr();
 	List<Face3> faces;
 	for (int i = 0; i < navmeshie->get_polygon_count(); i++) {
 		Vector<int> p = navmeshie->get_polygon(i);
@@ -3768,11 +3768,11 @@ void NavigationMeshSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 		return;
 
 	Map<_EdgeKey, bool> edge_map;
-	PoolVector<Vector3> tmeshfaces;
+	Vector<Vector3> tmeshfaces;
 	tmeshfaces.resize(faces.size() * 3);
 
 	{
-		PoolVector<Vector3>::Write tw = tmeshfaces.write();
+		Vector3 *tw = tmeshfaces.ptrw();
 		int tidx = 0;
 
 		for (List<Face3>::Element *E = faces.front(); E; E = E->next()) {
