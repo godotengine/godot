@@ -24,7 +24,7 @@
 			</description>
 		</method>
 		<method name="get_nav_path" qualifiers="const">
-			<return type="PoolVector3Array">
+			<return type="PackedVector3Array">
 			</return>
 			<description>
 				Returns the path from start to finish in global coordinates.
@@ -34,7 +34,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns which index the agent is currently on in the navigation path's [PoolVector3Array].
+				Returns which index the agent is currently on in the navigation path's [PackedVector3Array].
 			</description>
 		</method>
 		<method name="get_navigation" qualifiers="const">

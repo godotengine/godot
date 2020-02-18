@@ -12,7 +12,7 @@
 		<method name="add_collision_segments">
 			<return type="void">
 			</return>
-			<argument index="0" name="segments" type="PoolVector3Array">
+			<argument index="0" name="segments" type="PackedVector3Array">
 			</argument>
 			<description>
 			</description>
@@ -29,7 +29,7 @@
 		<method name="add_handles">
 			<return type="void">
 			</return>
-			<argument index="0" name="handles" type="PoolVector3Array">
+			<argument index="0" name="handles" type="PackedVector3Array">
 			</argument>
 			<argument index="1" name="material" type="Material">
 			</argument>
@@ -45,7 +45,7 @@
 		<method name="add_lines">
 			<return type="void">
 			</return>
-			<argument index="0" name="lines" type="PoolVector3Array">
+			<argument index="0" name="lines" type="PackedVector3Array">
 			</argument>
 			<argument index="1" name="material" type="Material">
 			</argument>

@@ -12,7 +12,7 @@
 	</tutorials>
 	<methods>
 		<method name="get_current_dependencies" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				Returns paths to all dependency libraries for the current platform and architecture.

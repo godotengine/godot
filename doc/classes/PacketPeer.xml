@@ -17,7 +17,7 @@
 			</description>
 		</method>
 		<method name="get_packet">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<description>
 				Gets a raw packet.
@@ -43,7 +43,7 @@
 		<method name="put_packet">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="buffer" type="PoolByteArray">
+			<argument index="0" name="buffer" type="PackedByteArray">
 			</argument>
 			<description>
 				Sends a raw packet.

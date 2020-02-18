@@ -93,7 +93,7 @@
 	</members>
 	<signals>
 		<signal name="multiple_properties_changed">
-			<argument index="0" name="properties" type="PoolStringArray">
+			<argument index="0" name="properties" type="PackedStringArray">
 			</argument>
 			<argument index="1" name="value" type="Array">
 			</argument>

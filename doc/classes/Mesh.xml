@@ -49,7 +49,7 @@
 			</description>
 		</method>
 		<method name="get_faces" qualifiers="const">
-			<return type="PoolVector3Array">
+			<return type="PackedVector3Array">
 			</return>
 			<description>
 				Returns all the vertices that make up the faces of the mesh. Each three vertices represent one triangle.

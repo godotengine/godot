@@ -105,11 +105,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="buffer" type="PoolRealArray" setter="set_buffer" getter="get_buffer" default="PoolRealArray(  )">
+		<member name="buffer" type="PackedRealArray" setter="set_buffer" getter="get_buffer" default="PackedRealArray(  )">
 		</member>
-		<member name="color_array" type="PoolColorArray" setter="_set_color_array" getter="_get_color_array">
+		<member name="color_array" type="PackedColorArray" setter="_set_color_array" getter="_get_color_array">
 		</member>
-		<member name="custom_data_array" type="PoolColorArray" setter="_set_custom_data_array" getter="_get_custom_data_array">
+		<member name="custom_data_array" type="PackedColorArray" setter="_set_custom_data_array" getter="_get_custom_data_array">
 		</member>
 		<member name="instance_count" type="int" setter="set_instance_count" getter="get_instance_count" default="0">
 			Number of instances that will get drawn. This clears and (re)sizes the buffers. By default, all instances are drawn but you can limit this with [member visible_instance_count].
@@ -117,9 +117,9 @@
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
 			Mesh to be drawn.
 		</member>
-		<member name="transform_2d_array" type="PoolVector2Array" setter="_set_transform_2d_array" getter="_get_transform_2d_array">
+		<member name="transform_2d_array" type="PackedVector2Array" setter="_set_transform_2d_array" getter="_get_transform_2d_array">
 		</member>
-		<member name="transform_array" type="PoolVector3Array" setter="_set_transform_array" getter="_get_transform_array">
+		<member name="transform_array" type="PackedVector3Array" setter="_set_transform_array" getter="_get_transform_array">
 		</member>
 		<member name="transform_format" type="int" setter="set_transform_format" getter="get_transform_format" enum="MultiMesh.TransformFormat" default="0">
 			Format of transform used to transform mesh, either 2D or 3D.

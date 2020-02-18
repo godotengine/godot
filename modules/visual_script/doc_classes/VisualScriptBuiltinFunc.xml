@@ -197,10 +197,10 @@
 			Deserialize a [Variant] from a string serialized using [constant VAR_TO_STR].
 		</constant>
 		<constant name="VAR_TO_BYTES" value="61" enum="BuiltinFunc">
-			Serialize a [Variant] to a [PoolByteArray].
+			Serialize a [Variant] to a [PackedByteArray].
 		</constant>
 		<constant name="BYTES_TO_VAR" value="62" enum="BuiltinFunc">
-			Deserialize a [Variant] from a [PoolByteArray] serialized using [constant VAR_TO_BYTES].
+			Deserialize a [Variant] from a [PackedByteArray] serialized using [constant VAR_TO_BYTES].
 		</constant>
 		<constant name="COLORN" value="63" enum="BuiltinFunc">
 			Return the [Color] with the given name and alpha ranging from 0 to 1.

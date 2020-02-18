@@ -29,7 +29,7 @@
 			</description>
 		</method>
 		<method name="get_presets" qualifiers="const">
-			<return type="PoolColorArray">
+			<return type="PackedColorArray">
 			</return>
 			<description>
 				Returns the list of colors in the presets of the color picker.

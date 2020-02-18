@@ -81,7 +81,7 @@
 			</description>
 		</method>
 		<method name="get_node_groups" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>

@@ -22,64 +22,64 @@
 		<method name="Array">
 			<return type="Array">
 			</return>
-			<argument index="0" name="from" type="PoolColorArray">
+			<argument index="0" name="from" type="PackedColorArray">
 			</argument>
 			<description>
-				Constructs an array from a [PoolColorArray].
+				Constructs an array from a [PackedColorArray].
 			</description>
 		</method>
 		<method name="Array">
 			<return type="Array">
 			</return>
-			<argument index="0" name="from" type="PoolVector3Array">
+			<argument index="0" name="from" type="PackedVector3Array">
 			</argument>
 			<description>
-				Constructs an array from a [PoolVector3Array].
+				Constructs an array from a [PackedVector3Array].
 			</description>
 		</method>
 		<method name="Array">
 			<return type="Array">
 			</return>
-			<argument index="0" name="from" type="PoolVector2Array">
+			<argument index="0" name="from" type="PackedVector2Array">
 			</argument>
 			<description>
-				Constructs an array from a [PoolVector2Array].
+				Constructs an array from a [PackedVector2Array].
 			</description>
 		</method>
 		<method name="Array">
 			<return type="Array">
 			</return>
-			<argument index="0" name="from" type="PoolStringArray">
+			<argument index="0" name="from" type="PackedStringArray">
 			</argument>
 			<description>
-				Constructs an array from a [PoolStringArray].
+				Constructs an array from a [PackedStringArray].
 			</description>
 		</method>
 		<method name="Array">
 			<return type="Array">
 			</return>
-			<argument index="0" name="from" type="PoolRealArray">
+			<argument index="0" name="from" type="PackedRealArray">
 			</argument>
 			<description>
-				Constructs an array from a [PoolRealArray].
+				Constructs an array from a [PackedRealArray].
 			</description>
 		</method>
 		<method name="Array">
 			<return type="Array">
 			</return>
-			<argument index="0" name="from" type="PoolIntArray">
+			<argument index="0" name="from" type="PackedIntArray">
 			</argument>
 			<description>
-				Constructs an array from a [PoolIntArray].
+				Constructs an array from a [PackedIntArray].
 			</description>
 		</method>
 		<method name="Array">
 			<return type="Array">
 			</return>
-			<argument index="0" name="from" type="PoolByteArray">
+			<argument index="0" name="from" type="PackedByteArray">
 			</argument>
 			<description>
-				Constructs an array from a [PoolByteArray].
+				Constructs an array from a [PackedByteArray].
 			</description>
 		</method>
 		<method name="append">

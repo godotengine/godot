@@ -1,36 +1,36 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PoolRealArray" version="4.0">
+<class name="PackedVector3Array" version="4.0">
 	<brief_description>
-		A pooled [Array] of reals ([float]).
+		A packed [Array] of [Vector3]s.
 	</brief_description>
 	<description>
-		An [Array] specifically designed to hold floating-point values ([float]). Optimized for memory usage, does not fragment the memory.
+		An [Array] specifically designed to hold [Vector3]. Packs data tightly, so it saves memory for large array sizes.
 		[b]Note:[/b] This type is passed by value and not by reference.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="PoolRealArray">
-			<return type="PoolRealArray">
+		<method name="PackedVector3Array">
+			<return type="PackedVector3Array">
 			</return>
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>
-				Constructs a new [PoolRealArray]. Optionally, you can pass in a generic [Array] that will be converted.
+				Constructs a new [PackedVector3Array]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
 		</method>
 		<method name="append">
-			<argument index="0" name="value" type="float">
+			<argument index="0" name="vector3" type="Vector3">
 			</argument>
 			<description>
 				Appends an element at the end of the array (alias of [method push_back]).
 			</description>
 		</method>
 		<method name="append_array">
-			<argument index="0" name="array" type="PoolRealArray">
+			<argument index="0" name="array" type="PackedVector3Array">
 			</argument>
 			<description>
-				Appends a [PoolRealArray] at the end of this array.
+				Appends a [PackedVector3Array] at the end of this array.
 			</description>
 		</method>
 		<method name="empty">
@@ -45,7 +45,7 @@
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="value" type="float">
+			<argument index="1" name="vector3" type="Vector3">
 			</argument>
 			<description>
 				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
@@ -57,10 +57,10 @@
 			</description>
 		</method>
 		<method name="push_back">
-			<argument index="0" name="value" type="float">
+			<argument index="0" name="vector3" type="Vector3">
 			</argument>
 			<description>
-				Appends an element at the end of the array.
+				Inserts a [Vector3] at the end.
 			</description>
 		</method>
 		<method name="remove">
@@ -80,10 +80,10 @@
 		<method name="set">
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="value" type="float">
+			<argument index="1" name="vector3" type="Vector3">
 			</argument>
 			<description>
-				Changes the float at the given index.
+				Changes the [Vector3] at the given index.
 			</description>
 		</method>
 		<method name="size">

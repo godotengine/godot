@@ -1,37 +1,36 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PoolIntArray" version="4.0">
+<class name="PackedColorArray" version="4.0">
 	<brief_description>
-		A pooled [Array] of integers ([int]).
+		A packed [Array] of [Color]s.
 	</brief_description>
 	<description>
-		An [Array] specifically designed to hold integer values ([int]). Optimized for memory usage, does not fragment the memory.
+		An [Array] specifically designed to hold [Color]. Packs data tightly, so it saves memory for large array sizes.
 		[b]Note:[/b] This type is passed by value and not by reference.
-		[b]Note:[/b] This type is limited to signed 32-bit integers, which means it can only take values in the interval [code][-2^31, 2^31 - 1][/code], i.e. [code][-2147483648, 2147483647][/code]. Exceeding those bounds will wrap around. In comparison, [int] uses signed 64-bit integers which can hold much larger values.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="PoolIntArray">
-			<return type="PoolIntArray">
+		<method name="PackedColorArray">
+			<return type="PackedColorArray">
 			</return>
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>
-				Constructs a new [PoolIntArray]. Optionally, you can pass in a generic [Array] that will be converted.
+				Constructs a new [PackedColorArray]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
 		</method>
 		<method name="append">
-			<argument index="0" name="integer" type="int">
+			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
 				Appends an element at the end of the array (alias of [method push_back]).
 			</description>
 		</method>
 		<method name="append_array">
-			<argument index="0" name="array" type="PoolIntArray">
+			<argument index="0" name="array" type="PackedColorArray">
 			</argument>
 			<description>
-				Appends a [PoolIntArray] at the end of this array.
+				Appends a [PackedColorArray] at the end of this array.
 			</description>
 		</method>
 		<method name="empty">
@@ -46,10 +45,10 @@
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="integer" type="int">
+			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
-				Inserts a new int at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
+				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
 			</description>
 		</method>
 		<method name="invert">
@@ -58,7 +57,7 @@
 			</description>
 		</method>
 		<method name="push_back">
-			<argument index="0" name="integer" type="int">
+			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
 				Appends a value to the array.
@@ -81,17 +80,17 @@
 		<method name="set">
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="integer" type="int">
+			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
-				Changes the int at the given index.
+				Changes the [Color] at the given index.
 			</description>
 		</method>
 		<method name="size">
 			<return type="int">
 			</return>
 			<description>
-				Returns the array size.
+				Returns the size of the array.
 			</description>
 		</method>
 	</methods>

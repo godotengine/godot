@@ -101,12 +101,12 @@
 			</description>
 		</method>
 		<method name="get_color_list" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
-				Returns all the [Color]s as a [PoolStringArray] filled with each [Color]'s name, for use in [method get_color], if the theme has [code]type[/code].
+				Returns all the [Color]s as a [PackedStringArray] filled with each [Color]'s name, for use in [method get_color], if the theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="get_constant" qualifiers="const">
@@ -121,12 +121,12 @@
 			</description>
 		</method>
 		<method name="get_constant_list" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
-				Returns all the constants as a [PoolStringArray] filled with each constant's name, for use in [method get_constant], if the theme has [code]type[/code].
+				Returns all the constants as a [PackedStringArray] filled with each constant's name, for use in [method get_constant], if the theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="get_font" qualifiers="const">
@@ -141,12 +141,12 @@
 			</description>
 		</method>
 		<method name="get_font_list" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
-				Returns all the [Font]s as a [PoolStringArray] filled with each [Font]'s name, for use in [method get_font], if the theme has [code]type[/code].
+				Returns all the [Font]s as a [PackedStringArray] filled with each [Font]'s name, for use in [method get_font], if the theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="get_icon" qualifiers="const">
@@ -161,12 +161,12 @@
 			</description>
 		</method>
 		<method name="get_icon_list" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
-				Returns all the icons as a [PoolStringArray] filled with each [Texture2D]'s name, for use in [method get_icon], if the theme has [code]type[/code].
+				Returns all the icons as a [PackedStringArray] filled with each [Texture2D]'s name, for use in [method get_icon], if the theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="get_stylebox" qualifiers="const">
@@ -181,28 +181,28 @@
 			</description>
 		</method>
 		<method name="get_stylebox_list" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
-				Returns all the [StyleBox]s as a [PoolStringArray] filled with each [StyleBox]'s name, for use in [method get_stylebox], if the theme has [code]type[/code].
+				Returns all the [StyleBox]s as a [PackedStringArray] filled with each [StyleBox]'s name, for use in [method get_stylebox], if the theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="get_stylebox_types" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
-				Returns all the [StyleBox] types as a [PoolStringArray] filled with each [StyleBox]'s type, for use in [method get_stylebox] and/or [method get_stylebox_list], if the theme has [code]type[/code].
+				Returns all the [StyleBox] types as a [PackedStringArray] filled with each [StyleBox]'s type, for use in [method get_stylebox] and/or [method get_stylebox_list], if the theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="get_type_list" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
-				Returns all the types in [code]type[/code] as a [PoolStringArray] for use in any of the [code]get_*[/code] functions, if the theme has [code]type[/code].
+				Returns all the types in [code]type[/code] as a [PackedStringArray] for use in any of the [code]get_*[/code] functions, if the theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="has_color" qualifiers="const">

@@ -169,13 +169,13 @@
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="CPUParticles2D.DrawOrder" default="0">
 			Particle draw order. Uses [enum DrawOrder] values.
 		</member>
-		<member name="emission_colors" type="PoolColorArray" setter="set_emission_colors" getter="get_emission_colors">
+		<member name="emission_colors" type="PackedColorArray" setter="set_emission_colors" getter="get_emission_colors">
 			Sets the [Color]s to modulate particles by when using [constant EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS].
 		</member>
-		<member name="emission_normals" type="PoolVector2Array" setter="set_emission_normals" getter="get_emission_normals">
+		<member name="emission_normals" type="PackedVector2Array" setter="set_emission_normals" getter="get_emission_normals">
 			Sets the direction the particles will be emitted in when using [constant EMISSION_SHAPE_DIRECTED_POINTS].
 		</member>
-		<member name="emission_points" type="PoolVector2Array" setter="set_emission_points" getter="get_emission_points">
+		<member name="emission_points" type="PackedVector2Array" setter="set_emission_points" getter="get_emission_points">
 			Sets the initial positions to spawn particles when using [constant EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS].
 		</member>
 		<member name="emission_rect_extents" type="Vector2" setter="set_emission_rect_extents" getter="get_emission_rect_extents">

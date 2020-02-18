@@ -11,7 +11,7 @@
 	</tutorials>
 	<methods>
 		<method name="get_recognized_extensions">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="type" type="Resource">
 			</argument>

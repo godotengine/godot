@@ -33,7 +33,7 @@
 	</tutorials>
 	<methods>
 		<method name="finish">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<description>
 				Closes the current context, and return the computed hash.
@@ -51,7 +51,7 @@
 		<method name="update">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="chunk" type="PoolByteArray">
+			<argument index="0" name="chunk" type="PackedByteArray">
 			</argument>
 			<description>
 				Updates the computation with the given [code]chunk[/code] of data.

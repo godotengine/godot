@@ -41,10 +41,10 @@
 			</description>
 		</method>
 		<method name="get_baked_points" qualifiers="const">
-			<return type="PoolVector2Array">
+			<return type="PackedVector2Array">
 			</return>
 			<description>
-				Returns the cache of points as a [PoolVector2Array].
+				Returns the cache of points as a [PackedVector2Array].
 			</description>
 		</method>
 		<method name="get_closest_offset" qualifiers="const">
@@ -178,7 +178,7 @@
 			</description>
 		</method>
 		<method name="tessellate" qualifiers="const">
-			<return type="PoolVector2Array">
+			<return type="PackedVector2Array">
 			</return>
 			<argument index="0" name="max_stages" type="int" default="5">
 			</argument>

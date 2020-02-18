@@ -19,7 +19,7 @@
 			</description>
 		</method>
 		<method name="get_network_connected_peers" qualifiers="const">
-			<return type="PoolIntArray">
+			<return type="PackedIntArray">
 			</return>
 			<description>
 				Returns the peer IDs of all connected peers of this MultiplayerAPI's [member network_peer].
@@ -65,7 +65,7 @@
 		<method name="send_bytes">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="bytes" type="PoolByteArray">
+			<argument index="0" name="bytes" type="PackedByteArray">
 			</argument>
 			<argument index="1" name="id" type="int" default="0">
 			</argument>
@@ -126,7 +126,7 @@
 		<signal name="network_peer_packet">
 			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="packet" type="PoolByteArray">
+			<argument index="1" name="packet" type="PackedByteArray">
 			</argument>
 			<description>
 				Emitted when this MultiplayerAPI's [member network_peer] receive a [code]packet[/code] with custom data (see [method send_bytes]). ID is the peer ID of the peer that sent the packet.

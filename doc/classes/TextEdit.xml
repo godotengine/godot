@@ -299,7 +299,7 @@
 			</description>
 		</method>
 		<method name="search" qualifiers="const">
-			<return type="PoolIntArray">
+			<return type="PackedIntArray">
 			</return>
 			<argument index="0" name="key" type="String">
 			</argument>
@@ -311,7 +311,7 @@
 			</argument>
 			<description>
 				Perform a search inside the text. Search flags can be specified in the [enum SearchFlags] enum.
-				Returns an empty [code]PoolIntArray[/code] if no result was found. Otherwise, the result line and column can be accessed at indices specified in the [enum SearchResult] enum, e.g:
+				Returns an empty [code]PackedIntArray[/code] if no result was found. Otherwise, the result line and column can be accessed at indices specified in the [enum SearchResult] enum, e.g:
 				[codeblock]
 				var result = search(key, flags, line, column)
 				if result.size() &gt; 0:

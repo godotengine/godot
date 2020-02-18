@@ -41,24 +41,24 @@
 			</description>
 		</method>
 		<method name="get_baked_points" qualifiers="const">
-			<return type="PoolVector3Array">
+			<return type="PackedVector3Array">
 			</return>
 			<description>
-				Returns the cache of points as a [PoolVector3Array].
+				Returns the cache of points as a [PackedVector3Array].
 			</description>
 		</method>
 		<method name="get_baked_tilts" qualifiers="const">
-			<return type="PoolRealArray">
+			<return type="PackedRealArray">
 			</return>
 			<description>
-				Returns the cache of tilts as a [PoolRealArray].
+				Returns the cache of tilts as a [PackedRealArray].
 			</description>
 		</method>
 		<method name="get_baked_up_vectors" qualifiers="const">
-			<return type="PoolVector3Array">
+			<return type="PackedVector3Array">
 			</return>
 			<description>
-				Returns the cache of up vectors as a [PoolVector3Array].
+				Returns the cache of up vectors as a [PackedVector3Array].
 				If [member up_vector_enabled] is [code]false[/code], the cache will be empty.
 			</description>
 		</method>
@@ -227,7 +227,7 @@
 			</description>
 		</method>
 		<method name="tessellate" qualifiers="const">
-			<return type="PoolVector3Array">
+			<return type="PackedVector3Array">
 			</return>
 			<argument index="0" name="max_stages" type="int" default="5">
 			</argument>

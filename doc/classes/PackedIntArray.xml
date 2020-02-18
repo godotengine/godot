@@ -1,36 +1,37 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PoolStringArray" version="4.0">
+<class name="PackedIntArray" version="4.0">
 	<brief_description>
-		A pooled [Array] of [String].
+		A packed [Array] of integers ([int]).
 	</brief_description>
 	<description>
-		An [Array] specifically designed to hold [String]s. Optimized for memory usage, does not fragment the memory.
+		An [Array] specifically designed to hold integer values ([int]). Packs data tightly, so it saves memory for large array sizes.
 		[b]Note:[/b] This type is passed by value and not by reference.
+		[b]Note:[/b] This type is limited to signed 32-bit integers, which means it can only take values in the interval [code][-2^31, 2^31 - 1][/code], i.e. [code][-2147483648, 2147483647][/code]. Exceeding those bounds will wrap around. In comparison, [int] uses signed 64-bit integers which can hold much larger values.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="PoolStringArray">
-			<return type="PoolStringArray">
+		<method name="PackedIntArray">
+			<return type="PackedIntArray">
 			</return>
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>
-				Constructs a new [PoolStringArray]. Optionally, you can pass in a generic [Array] that will be converted.
+				Constructs a new [PackedIntArray]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
 		</method>
 		<method name="append">
-			<argument index="0" name="string" type="String">
+			<argument index="0" name="integer" type="int">
 			</argument>
 			<description>
 				Appends an element at the end of the array (alias of [method push_back]).
 			</description>
 		</method>
 		<method name="append_array">
-			<argument index="0" name="array" type="PoolStringArray">
+			<argument index="0" name="array" type="PackedIntArray">
 			</argument>
 			<description>
-				Appends a [PoolStringArray] at the end of this array.
+				Appends a [PackedIntArray] at the end of this array.
 			</description>
 		</method>
 		<method name="empty">
@@ -45,10 +46,10 @@
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="string" type="String">
+			<argument index="1" name="integer" type="int">
 			</argument>
 			<description>
-				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
+				Inserts a new integer at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
 			</description>
 		</method>
 		<method name="invert">
@@ -56,20 +57,11 @@
 				Reverses the order of the elements in the array.
 			</description>
 		</method>
-		<method name="join">
-			<return type="String">
-			</return>
-			<argument index="0" name="delimiter" type="String">
-			</argument>
-			<description>
-				Returns a [String] with each element of the array joined with the given [code]delimiter[/code].
-			</description>
-		</method>
 		<method name="push_back">
-			<argument index="0" name="string" type="String">
+			<argument index="0" name="integer" type="int">
 			</argument>
 			<description>
-				Appends a string element at end of the array.
+				Appends a value to the array.
 			</description>
 		</method>
 		<method name="remove">
@@ -89,17 +81,17 @@
 		<method name="set">
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="string" type="String">
+			<argument index="1" name="integer" type="int">
 			</argument>
 			<description>
-				Changes the [String] at the given index.
+				Changes the integer at the given index.
 			</description>
 		</method>
 		<method name="size">
 			<return type="int">
 			</return>
 			<description>
-				Returns the size of the array.
+				Returns the array size.
 			</description>
 		</method>
 	</methods>

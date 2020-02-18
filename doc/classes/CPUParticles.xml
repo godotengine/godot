@@ -171,13 +171,13 @@
 		<member name="emission_box_extents" type="Vector3" setter="set_emission_box_extents" getter="get_emission_box_extents">
 			The rectangle's extents if [member emission_shape] is set to [constant EMISSION_SHAPE_BOX].
 		</member>
-		<member name="emission_colors" type="PoolColorArray" setter="set_emission_colors" getter="get_emission_colors" default="PoolColorArray(  )">
+		<member name="emission_colors" type="PackedColorArray" setter="set_emission_colors" getter="get_emission_colors" default="PackedColorArray(  )">
 			Sets the [Color]s to modulate particles by when using [constant EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS].
 		</member>
-		<member name="emission_normals" type="PoolVector3Array" setter="set_emission_normals" getter="get_emission_normals">
+		<member name="emission_normals" type="PackedVector3Array" setter="set_emission_normals" getter="get_emission_normals">
 			Sets the direction the particles will be emitted in when using [constant EMISSION_SHAPE_DIRECTED_POINTS].
 		</member>
-		<member name="emission_points" type="PoolVector3Array" setter="set_emission_points" getter="get_emission_points" default="PoolVector3Array(  )">
+		<member name="emission_points" type="PackedVector3Array" setter="set_emission_points" getter="get_emission_points" default="PackedVector3Array(  )">
 			Sets the initial positions to spawn particles when using [constant EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS].
 		</member>
 		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" enum="CPUParticles.EmissionShape" default="0">

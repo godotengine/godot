@@ -24,7 +24,7 @@
 			</description>
 		</method>
 		<method name="get_dependencies">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
@@ -33,7 +33,7 @@
 			</description>
 		</method>
 		<method name="get_recognized_extensions_for_type">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="type" type="String">
 			</argument>

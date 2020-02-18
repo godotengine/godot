@@ -31,7 +31,7 @@
 			</description>
 		</method>
 		<method name="get_resource_list" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				Returns the list of resources inside the preloader.

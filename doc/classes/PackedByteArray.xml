@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PoolByteArray" version="4.0">
+<class name="PackedByteArray" version="4.0">
 	<brief_description>
-		A pooled [Array] of bytes.
+		A packed [Array] of bytes.
 	</brief_description>
 	<description>
-		An [Array] specifically designed to hold bytes. Optimized for memory usage, does not fragment the memory.
+		An [Array] specifically designed to hold bytes. Packs data tightly, so it saves memory for large array sizes.
 		[b]Note:[/b] This type is passed by value and not by reference.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="PoolByteArray">
-			<return type="PoolByteArray">
+		<method name="PackedByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>
-				Constructs a new [PoolByteArray]. Optionally, you can pass in a generic [Array] that will be converted.
+				Constructs a new [PackedByteArray]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
 		</method>
 		<method name="append">
@@ -27,30 +27,30 @@
 			</description>
 		</method>
 		<method name="append_array">
-			<argument index="0" name="array" type="PoolByteArray">
+			<argument index="0" name="array" type="PackedByteArray">
 			</argument>
 			<description>
-				Appends a [PoolByteArray] at the end of this array.
+				Appends a [PackedByteArray] at the end of this array.
 			</description>
 		</method>
 		<method name="compress">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<argument index="0" name="compression_mode" type="int" default="0">
 			</argument>
 			<description>
-				Returns a new [PoolByteArray] with the data compressed. Set the compression mode using one of [enum File.CompressionMode]'s constants.
+				Returns a new [PackedByteArray] with the data compressed. Set the compression mode using one of [enum File.CompressionMode]'s constants.
 			</description>
 		</method>
 		<method name="decompress">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<argument index="0" name="buffer_size" type="int">
 			</argument>
 			<argument index="1" name="compression_mode" type="int" default="0">
 			</argument>
 			<description>
-				Returns a new [PoolByteArray] with the data decompressed. Set [code]buffer_size[/code] to the size of the uncompressed data. Set the compression mode using one of [enum File.CompressionMode]'s constants.
+				Returns a new [PackedByteArray] with the data decompressed. Set [code]buffer_size[/code] to the size of the uncompressed data. Set the compression mode using one of [enum File.CompressionMode]'s constants.
 			</description>
 		</method>
 		<method name="empty">
@@ -80,7 +80,7 @@
 			<description>
 				Returns a hexadecimal representation of this array as a [String].
 				[codeblock]
-				var array = PoolByteArray([11, 46, 255])
+				var array = PackedByteArray([11, 46, 255])
 				print(array.hex_encode()) # Prints: 0b2eff
 				[/codeblock]
 			</description>
@@ -139,14 +139,14 @@
 			</description>
 		</method>
 		<method name="subarray">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<argument index="0" name="from" type="int">
 			</argument>
 			<argument index="1" name="to" type="int">
 			</argument>
 			<description>
-				Returns the slice of the [PoolByteArray] between indices (inclusive) as a new [PoolByteArray]. Any negative index is considered to be from the end of the array.
+				Returns the slice of the [PackedByteArray] between indices (inclusive) as a new [PackedByteArray]. Any negative index is considered to be from the end of the array.
 			</description>
 		</method>
 	</methods>

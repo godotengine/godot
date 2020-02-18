@@ -12,7 +12,7 @@
 	</tutorials>
 	<methods>
 		<method name="get_as_byte_code" qualifiers="const">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<description>
 				Returns byte code for the script source code.

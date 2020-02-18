@@ -131,7 +131,7 @@
 		<method name="bytes2var">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="bytes" type="PoolByteArray">
+			<argument index="0" name="bytes" type="PackedByteArray">
 			</argument>
 			<argument index="1" name="allow_objects" type="bool" default="false">
 			</argument>
@@ -1245,7 +1245,7 @@
 			</description>
 		</method>
 		<method name="var2bytes">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<argument index="0" name="var" type="Variant">
 			</argument>
