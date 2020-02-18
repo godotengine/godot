@@ -781,6 +781,183 @@ VisualShaderNodeTexture::VisualShaderNodeTexture() {
 	source = SOURCE_TEXTURE;
 }
 
+////////////// Sample3D
+
+int VisualShaderNodeSample3D::get_input_port_count() const {
+	return 3;
+}
+
+VisualShaderNodeSample3D::PortType VisualShaderNodeSample3D::get_input_port_type(int p_port) const {
+	switch (p_port) {
+		case 0:
+			return PORT_TYPE_VECTOR;
+		case 1:
+			return PORT_TYPE_SCALAR;
+		case 2:
+			return PORT_TYPE_SAMPLER;
+		default:
+			return PORT_TYPE_SCALAR;
+	}
+}
+
+String VisualShaderNodeSample3D::get_input_port_name(int p_port) const {
+	switch (p_port) {
+		case 0:
+			return "uvw";
+		case 1:
+			return "lod";
+		default:
+			return "";
+	}
+}
+
+int VisualShaderNodeSample3D::get_output_port_count() const {
+	return 2;
+}
+
+VisualShaderNodeSample3D::PortType VisualShaderNodeSample3D::get_output_port_type(int p_port) const {
+	return p_port == 0 ? PORT_TYPE_VECTOR : PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeSample3D::get_output_port_name(int p_port) const {
+	return p_port == 0 ? "rgb" : "alpha";
+}
+
+String VisualShaderNodeSample3D::get_input_port_default_hint(int p_port) const {
+	if (p_port == 0) {
+		return "vec3(UV.xy, 0.0)";
+	}
+	return "";
+}
+
+String VisualShaderNodeSample3D::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	String code;
+	if (source == SOURCE_TEXTURE || source == SOURCE_PORT) {
+		String id;
+		code += "\t{\n";
+		if (source == SOURCE_TEXTURE) {
+			id = make_unique_id(p_type, p_id, "tex3d");
+		} else {
+			id = p_input_vars[2];
+		}
+		if (id != String()) {
+			if (p_input_vars[0] == String()) { // Use UV by default.
+				if (p_input_vars[1] == String()) {
+					code += "\t\tvec4 " + id + "_tex_read = texture(" + id + ", vec3(UV.xy, 0.0));\n";
+				} else {
+					code += "\t\tvec4 " + id + "_tex_read = textureLod(" + id + ", vec3(UV.xy, 0.0), " + p_input_vars[1] + ");\n";
+				}
+			} else if (p_input_vars[1] == String()) {
+				//no lod
+				code += "\t\tvec4 " + id + "_tex_read = texture(" + id + ", " + p_input_vars[0] + ");\n";
+			} else {
+				code += "\t\tvec4 " + id + "_tex_read = textureLod(" + id + ", " + p_input_vars[0] + ", " + p_input_vars[1] + ");\n";
+			}
+		} else {
+			code += "\t\tvec4 " + id + "_tex_read = vec4(0.0);\n";
+		}
+
+		code += "\t\t" + p_output_vars[0] + " = " + id + "_tex_read.rgb;\n";
+		code += "\t\t" + p_output_vars[1] + " = " + id + "_tex_read.a;\n";
+		code += "\t}\n";
+		return code;
+	}
+	code += "\t" + p_output_vars[0] + " = vec3(0.0);\n";
+	code += "\t" + p_output_vars[1] + " = 1.0;\n";
+	return code;
+}
+
+void VisualShaderNodeSample3D::set_source(Source p_source) {
+	source = p_source;
+	emit_changed();
+	emit_signal("editor_refresh_request");
+}
+
+VisualShaderNodeSample3D::Source VisualShaderNodeSample3D::get_source() const {
+	return source;
+}
+
+void VisualShaderNodeSample3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_source", "value"), &VisualShaderNodeSample3D::set_source);
+	ClassDB::bind_method(D_METHOD("get_source"), &VisualShaderNodeSample3D::get_source);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "source", PROPERTY_HINT_ENUM, "Texture,SamplerPort"), "set_source", "get_source");
+
+	BIND_ENUM_CONSTANT(SOURCE_TEXTURE);
+	BIND_ENUM_CONSTANT(SOURCE_PORT);
+}
+
+String VisualShaderNodeSample3D::get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const {
+	if (source == SOURCE_TEXTURE) {
+		return String(); // all good
+	}
+	if (source == SOURCE_PORT) {
+		return String(); // all good
+	}
+	return TTR("Invalid source for shader.");
+}
+
+VisualShaderNodeSample3D::VisualShaderNodeSample3D() {
+	source = SOURCE_TEXTURE;
+	simple_decl = false;
+}
+
+////////////// Texture2DArray
+
+String VisualShaderNodeTexture2DArray::get_caption() const {
+	return "Texture2DArray";
+}
+
+String VisualShaderNodeTexture2DArray::get_input_port_name(int p_port) const {
+	if (p_port == 2) {
+		return "sampler2DArray";
+	}
+	return VisualShaderNodeSample3D::get_input_port_name(p_port);
+}
+
+Vector<VisualShader::DefaultTextureParam> VisualShaderNodeTexture2DArray::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
+	VisualShader::DefaultTextureParam dtp;
+	dtp.name = make_unique_id(p_type, p_id, "tex3d");
+	dtp.param = texture;
+	Vector<VisualShader::DefaultTextureParam> ret;
+	ret.push_back(dtp);
+	return ret;
+}
+
+String VisualShaderNodeTexture2DArray::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	if (source == SOURCE_TEXTURE) {
+		return "uniform sampler2DArray " + make_unique_id(p_type, p_id, "tex3d") + ";\n";
+	}
+	return String();
+}
+
+void VisualShaderNodeTexture2DArray::set_texture_array(Ref<Texture2DArray> p_value) {
+	texture = p_value;
+	emit_changed();
+}
+
+Ref<Texture2DArray> VisualShaderNodeTexture2DArray::get_texture_array() const {
+	return texture;
+}
+
+Vector<StringName> VisualShaderNodeTexture2DArray::get_editable_properties() const {
+	Vector<StringName> props;
+	props.push_back("source");
+	if (source == SOURCE_TEXTURE) {
+		props.push_back("texture_array");
+	}
+	return props;
+}
+
+void VisualShaderNodeTexture2DArray::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_texture_array", "value"), &VisualShaderNodeTexture2DArray::set_texture_array);
+	ClassDB::bind_method(D_METHOD("get_texture_array"), &VisualShaderNodeTexture2DArray::get_texture_array);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_array", PROPERTY_HINT_RESOURCE_TYPE, "Texture2DArray"), "set_texture_array", "get_texture_array");
+}
+
+VisualShaderNodeTexture2DArray::VisualShaderNodeTexture2DArray() {
+}
 ////////////// Cubemap
 
 String VisualShaderNodeCubemap::get_caption() const {
@@ -3924,6 +4101,74 @@ String VisualShaderNodeTextureUniformTriplanar::get_input_port_default_hint(int 
 }
 
 VisualShaderNodeTextureUniformTriplanar::VisualShaderNodeTextureUniformTriplanar() {
+}
+
+////////////// Texture2DArray Uniform
+
+String VisualShaderNodeTexture2DArrayUniform::get_caption() const {
+	return "Texture2DArrayUniform";
+}
+
+int VisualShaderNodeTexture2DArrayUniform::get_output_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeTexture2DArrayUniform::PortType VisualShaderNodeTexture2DArrayUniform::get_output_port_type(int p_port) const {
+	return PORT_TYPE_SAMPLER;
+}
+
+String VisualShaderNodeTexture2DArrayUniform::get_output_port_name(int p_port) const {
+	return "sampler2DArray";
+}
+
+int VisualShaderNodeTexture2DArrayUniform::get_input_port_count() const {
+	return 0;
+}
+
+VisualShaderNodeTexture2DArrayUniform::PortType VisualShaderNodeTexture2DArrayUniform::get_input_port_type(int p_port) const {
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeTexture2DArrayUniform::get_input_port_name(int p_port) const {
+	return "";
+}
+
+String VisualShaderNodeTexture2DArrayUniform::get_input_port_default_hint(int p_port) const {
+	return "";
+}
+
+String VisualShaderNodeTexture2DArrayUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	String code = _get_qual_str() + "uniform sampler2DArray " + get_uniform_name();
+
+	switch (texture_type) {
+		case TYPE_DATA:
+			if (color_default == COLOR_DEFAULT_BLACK)
+				code += " : hint_black;\n";
+			else
+				code += ";\n";
+			break;
+		case TYPE_COLOR:
+			if (color_default == COLOR_DEFAULT_BLACK)
+				code += " : hint_black_albedo;\n";
+			else
+				code += " : hint_albedo;\n";
+			break;
+		case TYPE_NORMALMAP:
+			code += " : hint_normal;\n";
+			break;
+		case TYPE_ANISO:
+			code += " : hint_aniso;\n";
+			break;
+	}
+
+	return code;
+}
+
+String VisualShaderNodeTexture2DArrayUniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	return String();
+}
+
+VisualShaderNodeTexture2DArrayUniform::VisualShaderNodeTexture2DArrayUniform() {
 }
 
 ////////////// Cubemap Uniform

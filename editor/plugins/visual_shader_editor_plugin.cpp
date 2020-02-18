@@ -2750,8 +2750,10 @@ VisualShaderEditor::VisualShaderEditor() {
 	texture_node_option_idx = add_options.size();
 	add_options.push_back(AddOption("Texture2D", "Textures", "Functions", "VisualShaderNodeTexture", TTR("Perform the texture lookup."), -1, -1));
 	add_options.push_back(AddOption("CubeMapUniform", "Textures", "Variables", "VisualShaderNodeCubemapUniform", TTR("Cubic texture uniform lookup."), -1, -1));
+	add_options.push_back(AddOption("Texture2DArray", "Textures", "Functions", "VisualShaderNodeTexture2DArray", TTR("Perform the 2D-array texture lookup."), -1, -1, -1, -1, -1));
 	add_options.push_back(AddOption("TextureUniform", "Textures", "Variables", "VisualShaderNodeTextureUniform", TTR("2D texture uniform lookup."), -1, -1));
 	add_options.push_back(AddOption("TextureUniformTriplanar", "Textures", "Variables", "VisualShaderNodeTextureUniformTriplanar", TTR("2D texture uniform lookup with triplanar."), -1, -1, VisualShader::TYPE_FRAGMENT | VisualShader::TYPE_LIGHT, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("Texture2DArrayUniform", "Textures", "Variables", "VisualShaderNodeTexture2DArrayUniform", TTR("2D array of textures uniform lookup."), -1, -1, -1, -1, -1));
 
 	// TRANSFORM
 
