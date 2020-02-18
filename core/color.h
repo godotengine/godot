@@ -217,7 +217,7 @@ struct Color {
 	/**
 	 * RGB / RGBA construct parameters. Alpha is optional, but defaults to 1.0
 	 */
-	_FORCE_INLINE_ Color(float p_r, float p_g, float p_b, float p_a = 1.0) {
+	_FORCE_INLINE_ Color(float p_r, float p_g, float p_b, float p_a = 1.0) noexcept {
 		r = p_r;
 		g = p_g;
 		b = p_b;

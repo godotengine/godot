@@ -158,7 +158,7 @@ struct Vector3 {
 		z = p_ivec.z;
 	}
 
-	_FORCE_INLINE_ Vector3(real_t p_x, real_t p_y, real_t p_z) {
+	_FORCE_INLINE_ Vector3(real_t p_x, real_t p_y, real_t p_z) noexcept {
 		x = p_x;
 		y = p_y;
 		z = p_z;
