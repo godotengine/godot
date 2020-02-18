@@ -45,8 +45,7 @@
 MonoObject *godot_icall_GD_bytes2var(MonoArray *p_bytes, MonoBoolean p_allow_objects) {
 	Variant ret;
 	PackedByteArray varr = GDMonoMarshal::mono_array_to_PackedByteArray(p_bytes);
-	const uint8_t *r = varr.ptr();
-	Error err = decode_variant(ret, r.ptr(), varr.size(), NULL, p_allow_objects);
+	Error err = decode_variant(ret, varr.ptr(), varr.size(), NULL, p_allow_objects);
 	if (err != OK) {
 		ret = RTR("Not enough bytes for decoding bytes, or invalid format.");
 	}
@@ -67,7 +66,7 @@ int godot_icall_GD_hash(MonoObject *p_var) {
 }
 
 MonoObject *godot_icall_GD_instance_from_id(uint64_t p_instance_id) {
-	return GDMonoUtils::unmanaged_get_managed(ObjectDB::get_instance(p_instance_id));
+	return GDMonoUtils::unmanaged_get_managed(ObjectDB::get_instance(ObjectID(p_instance_id)));
 }
 
 void godot_icall_GD_print(MonoArray *p_what) {
@@ -263,10 +262,7 @@ MonoArray *godot_icall_GD_var2bytes(MonoObject *p_var, MonoBoolean p_full_object
 	ERR_FAIL_COND_V_MSG(err != OK, NULL, "Unexpected error encoding variable to bytes, likely unserializable type found (Object or RID).");
 
 	barr.resize(len);
-	{
-		uint8_t *w = barr.ptrw();
-		encode_variant(var, w.ptr(), len, p_full_objects);
-	}
+	encode_variant(var, barr.ptrw(), len, p_full_objects);
 
 	return GDMonoMarshal::PackedByteArray_to_mono_array(barr);
 }

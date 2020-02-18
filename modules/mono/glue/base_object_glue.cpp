@@ -224,14 +224,9 @@ MonoString *godot_icall_Object_ToString(Object *p_ptr) {
 #ifdef DEBUG_ENABLED
 	// Cannot happen in C#; would get an ObjectDisposedException instead.
 	CRASH_COND(p_ptr == NULL);
-
-	if (ScriptDebugger::get_singleton() && !Object::cast_to<Reference>(p_ptr)) { // Only if debugging!
-		// Cannot happen either in C#; the handle is nullified when the object is destroyed
-		CRASH_COND(!ObjectDB::instance_validate(p_ptr));
-	}
 #endif
 
-	String result = "[" + p_ptr->get_class() + ":" + itos(p_ptr->get_instance_id()) + "]";
+	String result = p_ptr->to_string();
 	return GDMonoMarshal::mono_string_from_godot(result);
 }
 
