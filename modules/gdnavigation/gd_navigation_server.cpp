@@ -170,7 +170,7 @@ COMMAND_2(map_set_up, RID, p_map, Vector3, p_up) {
 }
 
 Vector3 GdNavigationServer::map_get_up(RID p_map) const {
-	NavMap *map = map_owner.getornull(p_map);
+	const NavMap *map = map_owner.getornull(p_map);
 	ERR_FAIL_COND_V(map == NULL, Vector3());
 
 	return map->get_up();
@@ -184,7 +184,7 @@ COMMAND_2(map_set_cell_size, RID, p_map, real_t, p_cell_size) {
 }
 
 real_t GdNavigationServer::map_get_cell_size(RID p_map) const {
-	NavMap *map = map_owner.getornull(p_map);
+	const NavMap *map = map_owner.getornull(p_map);
 	ERR_FAIL_COND_V(map == NULL, 0);
 
 	return map->get_cell_size();
@@ -198,17 +198,45 @@ COMMAND_2(map_set_edge_connection_margin, RID, p_map, real_t, p_connection_margi
 }
 
 real_t GdNavigationServer::map_get_edge_connection_margin(RID p_map) const {
-	NavMap *map = map_owner.getornull(p_map);
+	const NavMap *map = map_owner.getornull(p_map);
 	ERR_FAIL_COND_V(map == NULL, 0);
 
 	return map->get_edge_connection_margin();
 }
 
 Vector<Vector3> GdNavigationServer::map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize) const {
-	NavMap *map = map_owner.getornull(p_map);
+	const NavMap *map = map_owner.getornull(p_map);
 	ERR_FAIL_COND_V(map == NULL, Vector<Vector3>());
 
 	return map->get_path(p_origin, p_destination, p_optimize);
+}
+
+Vector3 GdNavigationServer::map_get_closest_point_to_segment(RID p_map, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const {
+	const NavMap *map = map_owner.getornull(p_map);
+	ERR_FAIL_COND_V(map == NULL, Vector3());
+
+	return map->get_closest_point_to_segment(p_from, p_to, p_use_collision);
+}
+
+Vector3 GdNavigationServer::map_get_closest_point(RID p_map, const Vector3 &p_point) const {
+	const NavMap *map = map_owner.getornull(p_map);
+	ERR_FAIL_COND_V(map == NULL, Vector3());
+
+	return map->get_closest_point(p_point);
+}
+
+Vector3 GdNavigationServer::map_get_closest_point_normal(RID p_map, const Vector3 &p_point) const {
+	const NavMap *map = map_owner.getornull(p_map);
+	ERR_FAIL_COND_V(map == NULL, Vector3());
+
+	return map->get_closest_point_normal(p_point);
+}
+
+RID GdNavigationServer::map_get_closest_point_owner(RID p_map, const Vector3 &p_point) const {
+	const NavMap *map = map_owner.getornull(p_map);
+	ERR_FAIL_COND_V(map == NULL, RID());
+
+	return map->get_closest_point_owner(p_point);
 }
 
 RID GdNavigationServer::region_create() const {

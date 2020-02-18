@@ -104,6 +104,10 @@ public:
 	gd::PointKey get_point_key(const Vector3 &p_pos) const;
 
 	Vector<Vector3> get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize) const;
+	Vector3 get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const;
+	Vector3 get_closest_point(const Vector3 &p_point) const;
+	Vector3 get_closest_point_normal(const Vector3 &p_point) const;
+	RID get_closest_point_owner(const Vector3 &p_point) const;
 
 	void add_region(NavRegion *p_region);
 	void remove_region(NavRegion *p_region);
