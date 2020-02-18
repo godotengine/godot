@@ -30,8 +30,8 @@
 
 #include "vulkan_context.h"
 #include "core/engine.h"
-#include "core/print_string.h"
 #include "core/project_settings.h"
+#include "core/ustring.h"
 #include "core/version.h"
 #include "vk_enum_string_helper.h"
 #include <stdio.h>
@@ -46,94 +46,99 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(VkDebugU
 		VkDebugUtilsMessageTypeFlagsEXT messageType,
 		const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
 		void *pUserData) {
-	char prefix[64] = "";
-	char *message = (char *)malloc(strlen(pCallbackData->pMessage) + 5000);
-	ERR_FAIL_COND_V(!message, false);
 
 	//This error needs to be ignored because the AMD allocator will mix up memory types on IGP processors
 	if (strstr(pCallbackData->pMessage, "Mapping an image with layout") != NULL &&
 			strstr(pCallbackData->pMessage, "can result in undefined behavior if this memory is used by the device") != NULL) {
-		free(message);
 		return VK_FALSE;
 	}
 	// This needs to be ignored because Validator is wrong here
 	if (strstr(pCallbackData->pMessage, "SPIR-V module not valid: Pointer operand") != NULL &&
 			strstr(pCallbackData->pMessage, "must be a memory object") != NULL) {
-		free(message);
 		return VK_FALSE;
 	}
 	if (strstr(pCallbackData->pMessageIdName, "UNASSIGNED-CoreValidation-DrawState-ClearCmdBeforeDraw") != NULL) {
-		free(message);
 		return VK_FALSE;
 	}
 
-	if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) {
-		strcat(prefix, "VERBOSE : ");
-	} else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
-		strcat(prefix, "INFO : ");
-	} else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
-		strcat(prefix, "WARNING : ");
-	} else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
-		strcat(prefix, "ERROR : ");
+	String severity_string;
+	switch (messageSeverity) {
+		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+			severity_string = "VERBOSE : ";
+			break;
+		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+			severity_string = "INFO : ";
+			break;
+		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+			severity_string = "WARNING : ";
+			break;
+		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+			severity_string = "ERROR : ";
+			break;
+		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT:
+			break;
 	}
 
-	if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT) {
-		strcat(prefix, "GENERAL");
-	} else {
-		if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) {
-			strcat(prefix, "VALIDATION");
-			//validation_error = 1;
-		}
-		if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT) {
-			if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) {
-				strcat(prefix, "|");
-			}
-			strcat(prefix, "PERFORMANCE");
-		}
+	String type_string;
+	switch (messageType) {
+		case (VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT):
+			type_string = "GENERAL";
+			break;
+		case (VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT):
+			type_string = "VALIDATION";
+			break;
+		case (VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT):
+			type_string = "PERFORMANCE";
+			break;
+		case (VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT):
+			type_string = "VALIDATION|PERFORMANCE";
+			break;
 	}
 
-	sprintf(message, "%s - Message Id Number: %d | Message Id Name: %s\n\t%s\n", prefix, pCallbackData->messageIdNumber,
-			pCallbackData->pMessageIdName, pCallbackData->pMessage);
-
+	String objects_string;
 	if (pCallbackData->objectCount > 0) {
-		char tmp_message[500];
-		sprintf(tmp_message, "\n\tObjects - %d\n", pCallbackData->objectCount);
-		strcat(message, tmp_message);
+		objects_string = "\n\tObjects - " + String::num_int64(pCallbackData->objectCount);
 		for (uint32_t object = 0; object < pCallbackData->objectCount; ++object) {
+			objects_string +=
+					"\n\t\tObject[" + String::num_int64(object) + "]" +
+					" - " + string_VkObjectType(pCallbackData->pObjects[object].objectType) +
+					", Handle " + String::num_int64(pCallbackData->pObjects[object].objectHandle);
 			if (NULL != pCallbackData->pObjects[object].pObjectName && strlen(pCallbackData->pObjects[object].pObjectName) > 0) {
-				sprintf(tmp_message, "\t\tObject[%d] - %s, Handle %p, Name \"%s\"\n", object,
-						string_VkObjectType(pCallbackData->pObjects[object].objectType),
-						(void *)(pCallbackData->pObjects[object].objectHandle), pCallbackData->pObjects[object].pObjectName);
-			} else {
-				sprintf(tmp_message, "\t\tObject[%d] - %s, Handle %p\n", object,
-						string_VkObjectType(pCallbackData->pObjects[object].objectType),
-						(void *)(pCallbackData->pObjects[object].objectHandle));
+				objects_string += ", Name \"" + String(pCallbackData->pObjects[object].pObjectName) + "\"";
 			}
-			strcat(message, tmp_message);
 		}
 	}
+
+	String labels_string;
 	if (pCallbackData->cmdBufLabelCount > 0) {
-		char tmp_message[500];
-		sprintf(tmp_message, "\n\tCommand Buffer Labels - %d\n", pCallbackData->cmdBufLabelCount);
-		strcat(message, tmp_message);
+		labels_string = "\n\tCommand Buffer Labels - " + String::num_int64(pCallbackData->cmdBufLabelCount);
 		for (uint32_t cmd_buf_label = 0; cmd_buf_label < pCallbackData->cmdBufLabelCount; ++cmd_buf_label) {
-			sprintf(tmp_message, "\t\tLabel[%d] - %s { %f, %f, %f, %f}\n", cmd_buf_label,
-					pCallbackData->pCmdBufLabels[cmd_buf_label].pLabelName, pCallbackData->pCmdBufLabels[cmd_buf_label].color[0],
-					pCallbackData->pCmdBufLabels[cmd_buf_label].color[1], pCallbackData->pCmdBufLabels[cmd_buf_label].color[2],
-					pCallbackData->pCmdBufLabels[cmd_buf_label].color[3]);
-			strcat(message, tmp_message);
+			labels_string +=
+					"\n\t\tLabel[" + String::num_int64(cmd_buf_label) + "]" +
+					" - " + pCallbackData->pCmdBufLabels[cmd_buf_label].pLabelName +
+					"{ ";
+			for (int color_idx = 0; color_idx < 4; ++color_idx) {
+				labels_string += String::num(pCallbackData->pCmdBufLabels[cmd_buf_label].color[color_idx]);
+				if (color_idx < 3) {
+					labels_string += ", ";
+				}
+			}
+			labels_string += " }";
 		}
 	}
 
-	ERR_PRINT(message);
+	String error_message(severity_string + type_string +
+						 " - Message Id Number: " + String::num_int64(pCallbackData->messageIdNumber) +
+						 " | Message Id Name: " + pCallbackData->pMessageIdName +
+						 "\n\t" + pCallbackData->pMessage +
+						 objects_string + labels_string);
 
-	free(message);
+	ERR_PRINT(error_message);
 
-	if (Engine::get_singleton()->is_abort_on_gpu_errors_enabled()) {
-		abort();
-	}
-	// Don't bail out, but keep going.
-	return false;
+	CRASH_COND_MSG(Engine::get_singleton()->is_abort_on_gpu_errors_enabled(),
+			"Crashing, because abort on GPU errors is enabled.");
+
+	return VK_FALSE;
 }
 
 VkBool32 VulkanContext::_check_layers(uint32_t check_count, const char **check_names, uint32_t layer_count, VkLayerProperties *layers) {
