@@ -225,33 +225,26 @@ void EditorPropertyArray::update_property() {
 	switch (array_type) {
 		case Variant::ARRAY: {
 			arrtype = "Array";
-
 		} break;
 
 		// arrays
 		case Variant::PACKED_BYTE_ARRAY: {
 			arrtype = "PackedByteArray";
-
 		} break;
 		case Variant::PACKED_INT_ARRAY: {
 			arrtype = "PackedIntArray";
-
 		} break;
 		case Variant::PACKED_REAL_ARRAY: {
-
-			arrtype = "PoolFloatArray";
+			arrtype = "PackedRealArray";
 		} break;
 		case Variant::PACKED_STRING_ARRAY: {
-
 			arrtype = "PackedStringArray";
 		} break;
 		case Variant::PACKED_VECTOR2_ARRAY: {
-
 			arrtype = "PackedVector2Array";
 		} break;
 		case Variant::PACKED_VECTOR3_ARRAY: {
 			arrtype = "PackedVector3Array";
-
 		} break;
 		case Variant::PACKED_COLOR_ARRAY: {
 			arrtype = "PackedColorArray";
