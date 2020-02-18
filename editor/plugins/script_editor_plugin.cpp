@@ -3211,7 +3211,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	scripts_vbox->add_child(script_list);
 	script_list->set_custom_minimum_size(Size2(150, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
 	script_list->set_v_size_flags(SIZE_EXPAND_FILL);
-	script_split->set_split_offset(140);
+	script_split->set_split_offset(70 * EDSCALE);
 	_sort_list_on_update = true;
 	script_list->connect("gui_input", this, "_script_list_gui_input", varray(), CONNECT_DEFERRED);
 	script_list->set_allow_rmb_select(true);
