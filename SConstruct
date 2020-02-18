@@ -357,7 +357,8 @@ if selected_platform in platform_list:
                 env.Append(CCFLAGS=['-Walloc-zero',
                     '-Wduplicated-branches', '-Wduplicated-cond',
                     '-Wstringop-overflow=4', '-Wlogical-op'])
-                env.Append(CXXFLAGS=['-Wnoexcept', '-Wplacement-new=1'])
+                # -Wnoexcept was removed temporarily due to GH-36325.
+                env.Append(CXXFLAGS=['-Wplacement-new=1'])
                 version = methods.get_compiler_version(env)
                 if version != None and version[0] >= '9':
                     env.Append(CCFLAGS=['-Wattribute-alias=2'])
@@ -369,6 +370,11 @@ if selected_platform in platform_list:
             env.Append(CCFLAGS=['-w'])
         if (env["werror"]):
             env.Append(CCFLAGS=['-Werror'])
+            # FIXME: Temporary workaround after the Vulkan merge, remove once warnings are fixed.
+            if methods.using_gcc(env):
+                env.Append(CXXFLAGS=['-Wno-error=cpp'])
+            else:
+                env.Append(CXXFLAGS=['-Wno-error=#warnings'])
         else: # always enable those errors
             env.Append(CCFLAGS=['-Werror=return-type'])
 

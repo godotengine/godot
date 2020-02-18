@@ -52,11 +52,10 @@ enum BasisDecompressFormat {
 
 basist::etc1_global_selector_codebook *sel_codebook = nullptr;
 
+#ifdef TOOLS_ENABLED
 static Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedChannels p_channels) {
 
 	Vector<uint8_t> budata;
-
-#ifdef TOOLS_ENABLED
 
 	{
 		Ref<Image> image = p_image->duplicate();
@@ -117,14 +116,10 @@ static Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::
 #ifdef USE_RG_AS_RGBA
 				image->convert_rg_to_ra_rgba8();
 				decompress_format = BASIS_DECOMPRESS_RG_AS_RA;
-
 #else
-
 				params.m_seperate_rg_to_color_alpha = true;
 				decompress_format = BASIS_DECOMPRESS_RG;
-
 #endif
-
 			} break;
 			case Image::USED_CHANNELS_RGB: {
 				decompress_format = BASIS_DECOMPRESS_RGB;
@@ -152,9 +147,9 @@ static Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::
 		}
 	}
 
-#endif
 	return budata;
 }
+#endif // TOOLS_ENABLED
 
 static Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer) {
 	Ref<Image> image;
@@ -286,7 +281,7 @@ void unregister_basis_universal_types() {
 
 #ifdef TOOLS_ENABLED
 	delete sel_codebook;
-#endif
 	Image::basis_universal_packer = NULL;
+#endif
 	Image::basis_universal_unpacker = NULL;
 }

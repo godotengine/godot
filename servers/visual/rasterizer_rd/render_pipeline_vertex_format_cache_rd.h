@@ -41,7 +41,6 @@ class RenderPipelineVertexFormatCacheRD {
 	RID shader;
 	uint32_t input_mask;
 
-	RD::FramebufferFormatID framebuffer_format;
 	RD::RenderPrimitive render_primitive;
 	RD::PipelineRasterizationState rasterization_state;
 	RD::PipelineMultisampleState multisample_state;
