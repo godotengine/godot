@@ -83,7 +83,7 @@
 			</description>
 		</method>
 		<method name="get_network_connected_peers" qualifiers="const">
-			<return type="PoolIntArray">
+			<return type="PackedIntArray">
 			</return>
 			<description>
 				Returns the peer IDs of all connected peers of this [SceneTree]'s [member network_peer].
@@ -320,7 +320,7 @@
 			</description>
 		</signal>
 		<signal name="files_dropped">
-			<argument index="0" name="files" type="PoolStringArray">
+			<argument index="0" name="files" type="PackedStringArray">
 			</argument>
 			<argument index="1" name="screen" type="int">
 			</argument>

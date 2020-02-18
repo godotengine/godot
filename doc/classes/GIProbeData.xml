@@ -16,13 +16,13 @@
 			</argument>
 			<argument index="2" name="octree_size" type="Vector3">
 			</argument>
-			<argument index="3" name="octree_cells" type="PoolByteArray">
+			<argument index="3" name="octree_cells" type="PackedByteArray">
 			</argument>
-			<argument index="4" name="data_cells" type="PoolByteArray">
+			<argument index="4" name="data_cells" type="PackedByteArray">
 			</argument>
-			<argument index="5" name="distance_field" type="PoolByteArray">
+			<argument index="5" name="distance_field" type="PackedByteArray">
 			</argument>
-			<argument index="6" name="level_counts" type="PoolIntArray">
+			<argument index="6" name="level_counts" type="PackedIntArray">
 			</argument>
 			<description>
 			</description>
@@ -34,19 +34,19 @@
 			</description>
 		</method>
 		<method name="get_data_cells" qualifiers="const">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="get_level_counts" qualifiers="const">
-			<return type="PoolIntArray">
+			<return type="PackedIntArray">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="get_octree_cells" qualifiers="const">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<description>
 			</description>

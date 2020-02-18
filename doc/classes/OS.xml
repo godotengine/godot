@@ -93,7 +93,7 @@
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="arguments" type="PoolStringArray">
+			<argument index="1" name="arguments" type="PackedStringArray">
 			</argument>
 			<argument index="2" name="blocking" type="bool" default="true">
 			</argument>
@@ -150,14 +150,14 @@
 			</description>
 		</method>
 		<method name="get_cmdline_args">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				Returns the command line arguments passed to the engine.
 			</description>
 		</method>
 		<method name="get_connected_midi_inputs">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				Returns an array of MIDI device names.
@@ -200,13 +200,6 @@
 				The returned Dictionary's values will be the same as [method get_datetime], with the exception of Daylight Savings Time as it cannot be determined from the epoch.
 			</description>
 		</method>
-		<method name="get_dynamic_memory_usage" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the total amount of dynamic memory used (only works in debug).
-			</description>
-		</method>
 		<method name="get_environment" qualifiers="const">
 			<return type="String">
 			</return>
@@ -224,7 +217,7 @@
 			</description>
 		</method>
 		<method name="get_granted_permissions" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				With this function you can get the list of dangerous permissions that have been granted to the Android application.
@@ -734,7 +727,7 @@
 		<method name="print_resources_by_type">
 			<return type="void">
 			</return>
-			<argument index="0" name="types" type="PoolStringArray">
+			<argument index="0" name="types" type="PackedStringArray">
 			</argument>
 			<description>
 				Shows the number of resources loaded by the game of the given types.

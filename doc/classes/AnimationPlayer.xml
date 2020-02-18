@@ -86,7 +86,7 @@
 			</description>
 		</method>
 		<method name="get_animation_list" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				Returns the list of stored animation names.
@@ -111,7 +111,7 @@
 			</description>
 		</method>
 		<method name="get_queue">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				Returns a list of the animation names that are currently queued to play.

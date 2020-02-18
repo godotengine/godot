@@ -36,7 +36,7 @@
 			</description>
 		</method>
 		<method name="get_item_list" qualifiers="const">
-			<return type="PoolIntArray">
+			<return type="PackedIntArray">
 			</return>
 			<description>
 				Returns the list of item IDs in use.

@@ -107,7 +107,7 @@
 			</description>
 		</method>
 		<method name="get_node_list" qualifiers="const">
-			<return type="PoolIntArray">
+			<return type="PackedIntArray">
 			</return>
 			<argument index="0" name="type" type="int" enum="VisualShader.Type">
 			</argument>

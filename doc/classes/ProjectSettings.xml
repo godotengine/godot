@@ -469,7 +469,7 @@
 		<member name="editor/script_templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
 			Search path for project-specific script templates. Script templates will be search both in the editor-specific path and in this project-specific path.
 		</member>
-		<member name="editor/search_in_file_extensions" type="PoolStringArray" setter="" getter="" default="PoolStringArray( &quot;gd&quot;, &quot;shader&quot; )">
+		<member name="editor/search_in_file_extensions" type="PackedStringArray" setter="" getter="" default="PackedStringArray( &quot;gd&quot;, &quot;shader&quot; )">
 			Text-based file extensions to include in the script editor's "Find in Files" feature. You can add e.g. [code]tscn[/code] if you wish to also parse your scene files, especially if you use built-in scripts which are serialized in the scene files.
 		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
@@ -814,6 +814,18 @@
 		</member>
 		<member name="memory/limits/multithreaded_server/rid_pool_prealloc" type="int" setter="" getter="" default="60">
 			This is used by servers when used in multi-threading mode (servers and visual). RIDs are preallocated to avoid stalling the server requesting them on threads. If servers get stalled too often when loading resources in a thread, increase this number.
+		</member>
+		<member name="mono/debugger_agent/port" type="int" setter="" getter="" default="23685">
+		</member>
+		<member name="mono/debugger_agent/wait_for_debugger" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="mono/debugger_agent/wait_timeout" type="int" setter="" getter="" default="3000">
+		</member>
+		<member name="mono/profiler/args" type="String" setter="" getter="" default="&quot;log:calls,alloc,sample,output=output.mlpd&quot;">
+		</member>
+		<member name="mono/profiler/enabled" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="mono/unhandled_exception_policy" type="int" setter="" getter="" default="0">
 		</member>
 		<member name="network/limits/debugger_stdout/max_chars_per_second" type="int" setter="" getter="" default="2048">
 			Maximum amount of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.

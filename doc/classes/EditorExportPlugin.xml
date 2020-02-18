@@ -10,7 +10,7 @@
 		<method name="_export_begin" qualifiers="virtual">
 			<return type="void">
 			</return>
-			<argument index="0" name="features" type="PoolStringArray">
+			<argument index="0" name="features" type="PackedStringArray">
 			</argument>
 			<argument index="1" name="is_debug" type="bool">
 			</argument>
@@ -34,7 +34,7 @@
 			</argument>
 			<argument index="1" name="type" type="String">
 			</argument>
-			<argument index="2" name="features" type="PoolStringArray">
+			<argument index="2" name="features" type="PackedStringArray">
 			</argument>
 			<description>
 			</description>
@@ -44,7 +44,7 @@
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="file" type="PoolByteArray">
+			<argument index="1" name="file" type="PackedByteArray">
 			</argument>
 			<argument index="2" name="remap" type="bool">
 			</argument>
@@ -96,7 +96,7 @@
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="tags" type="PoolStringArray">
+			<argument index="1" name="tags" type="PackedStringArray">
 			</argument>
 			<description>
 			</description>

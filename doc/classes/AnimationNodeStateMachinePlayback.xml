@@ -23,7 +23,7 @@
 			</description>
 		</method>
 		<method name="get_travel_path" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				Returns the current travel path as computed internally by the A* algorithm.

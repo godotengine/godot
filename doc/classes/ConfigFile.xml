@@ -51,7 +51,7 @@
 			</description>
 		</method>
 		<method name="get_section_keys" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="section" type="String">
 			</argument>
@@ -60,7 +60,7 @@
 			</description>
 		</method>
 		<method name="get_sections" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				Returns an array of all defined section identifiers.
@@ -114,7 +114,7 @@
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="key" type="PoolByteArray">
+			<argument index="1" name="key" type="PackedByteArray">
 			</argument>
 			<description>
 			</description>
@@ -154,7 +154,7 @@
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="key" type="PoolByteArray">
+			<argument index="1" name="key" type="PackedByteArray">
 			</argument>
 			<description>
 			</description>

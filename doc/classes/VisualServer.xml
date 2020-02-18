@@ -540,7 +540,7 @@
 			</return>
 			<argument index="0" name="occluder_polygon" type="RID">
 			</argument>
-			<argument index="1" name="shape" type="PoolVector2Array">
+			<argument index="1" name="shape" type="PackedVector2Array">
 			</argument>
 			<argument index="2" name="closed" type="bool">
 			</argument>
@@ -553,7 +553,7 @@
 			</return>
 			<argument index="0" name="occluder_polygon" type="RID">
 			</argument>
-			<argument index="1" name="shape" type="PoolVector2Array">
+			<argument index="1" name="shape" type="PackedVector2Array">
 			</argument>
 			<description>
 				Sets the shape of the occluder polygon as lines.
@@ -1564,7 +1564,7 @@
 			</description>
 		</method>
 		<method name="lightmap_capture_get_octree" qualifiers="const">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<argument index="0" name="capture" type="RID">
 			</argument>
@@ -1617,7 +1617,7 @@
 			</return>
 			<argument index="0" name="capture" type="RID">
 			</argument>
-			<argument index="1" name="octree" type="PoolByteArray">
+			<argument index="1" name="octree" type="PackedByteArray">
 			</argument>
 			<description>
 				Sets the octree to be used by this lightmap capture.
@@ -1902,7 +1902,7 @@
 			</argument>
 			<argument index="2" name="offset" type="int">
 			</argument>
-			<argument index="3" name="data" type="PoolByteArray">
+			<argument index="3" name="data" type="PackedByteArray">
 			</argument>
 			<description>
 				Updates a specific region of a vertex buffer for the specified surface. Warning: this function alters the vertex buffer directly with no safety mechanisms, you can easily corrupt your mesh.
@@ -1943,7 +1943,7 @@
 			</description>
 		</method>
 		<method name="multimesh_get_buffer" qualifiers="const">
-			<return type="PoolRealArray">
+			<return type="PackedRealArray">
 			</return>
 			<argument index="0" name="multimesh" type="RID">
 			</argument>
@@ -2078,7 +2078,7 @@
 			</return>
 			<argument index="0" name="multimesh" type="RID">
 			</argument>
-			<argument index="1" name="buffer" type="PoolRealArray">
+			<argument index="1" name="buffer" type="PackedRealArray">
 			</argument>
 			<description>
 			</description>

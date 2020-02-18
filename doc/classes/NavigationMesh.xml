@@ -10,7 +10,7 @@
 		<method name="add_polygon">
 			<return type="void">
 			</return>
-			<argument index="0" name="polygon" type="PoolIntArray">
+			<argument index="0" name="polygon" type="PackedIntArray">
 			</argument>
 			<description>
 			</description>
@@ -38,7 +38,7 @@
 			</description>
 		</method>
 		<method name="get_polygon">
-			<return type="PoolIntArray">
+			<return type="PackedIntArray">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -52,7 +52,7 @@
 			</description>
 		</method>
 		<method name="get_vertices" qualifiers="const">
-			<return type="PoolVector3Array">
+			<return type="PackedVector3Array">
 			</return>
 			<description>
 			</description>
@@ -70,7 +70,7 @@
 		<method name="set_vertices">
 			<return type="void">
 			</return>
-			<argument index="0" name="vertices" type="PoolVector3Array">
+			<argument index="0" name="vertices" type="PackedVector3Array">
 			</argument>
 			<description>
 			</description>

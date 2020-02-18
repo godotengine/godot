@@ -113,7 +113,7 @@
 		<method name="parse_expressions_for_values">
 			<return type="Dictionary">
 			</return>
-			<argument index="0" name="expressions" type="PoolStringArray">
+			<argument index="0" name="expressions" type="PackedStringArray">
 			</argument>
 			<description>
 				Parses BBCode parameter [code]expressions[/code] into a dictionary.

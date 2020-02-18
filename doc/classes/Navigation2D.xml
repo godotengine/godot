@@ -16,7 +16,7 @@
 			</description>
 		</method>
 		<method name="get_simple_path">
-			<return type="PoolVector2Array">
+			<return type="PackedVector2Array">
 			</return>
 			<argument index="0" name="start" type="Vector2">
 			</argument>

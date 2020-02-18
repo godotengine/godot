@@ -40,7 +40,7 @@
 			</return>
 			<argument index="0" name="label" type="String">
 			</argument>
-			<argument index="1" name="properties" type="PoolStringArray">
+			<argument index="1" name="properties" type="PackedStringArray">
 			</argument>
 			<argument index="2" name="editor" type="Control">
 			</argument>

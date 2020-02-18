@@ -274,7 +274,7 @@
 			</description>
 		</method>
 		<method name="method_track_get_key_indices" qualifiers="const">
-			<return type="PoolIntArray">
+			<return type="PackedIntArray">
 			</return>
 			<argument index="0" name="track_idx" type="int">
 			</argument>
@@ -627,7 +627,7 @@
 			</description>
 		</method>
 		<method name="value_track_get_key_indices" qualifiers="const">
-			<return type="PoolIntArray">
+			<return type="PackedIntArray">
 			</return>
 			<argument index="0" name="track_idx" type="int">
 			</argument>

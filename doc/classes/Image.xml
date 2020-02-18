@@ -150,7 +150,7 @@
 			</argument>
 			<argument index="3" name="format" type="int" enum="Image.Format">
 			</argument>
-			<argument index="4" name="data" type="PoolByteArray">
+			<argument index="4" name="data" type="PackedByteArray">
 			</argument>
 			<description>
 				Creates a new image of given size and format. See [enum Format] constants. Fills the image with the given raw data. If [code]use_mipmaps[/code] is [code]true[/code] then generate mipmaps for this image. See the [method generate_mipmaps].
@@ -236,7 +236,7 @@
 			</description>
 		</method>
 		<method name="get_data" qualifiers="const">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<description>
 				Returns the image's raw data.
@@ -273,7 +273,7 @@
 			<argument index="1" name="y" type="int">
 			</argument>
 			<description>
-				Returns the color of the pixel at [code](x, y)[/code] if the image is locked. If the image is unlocked, it always returns a [Color] with the value [code](0, 0, 0, 1.0)[/code]. This is the same as [method get_pixelv], but two integer arguments instead of a Vector2 argument.
+				Returns the color of the pixel at [code](x, y)[/code]. This is the same as [method get_pixelv], but with two integer arguments instead of a [Vector2] argument.
 			</description>
 		</method>
 		<method name="get_pixelv" qualifiers="const">
@@ -282,7 +282,7 @@
 			<argument index="0" name="src" type="Vector2">
 			</argument>
 			<description>
-				Returns the color of the pixel at [code]src[/code] if the image is locked. If the image is unlocked, it always returns a [Color] with the value [code](0, 0, 0, 1.0)[/code]. This is the same as [method get_pixel], but with a Vector2 argument instead of two integer arguments.
+				Returns the color of the pixel at [code]src[/code]. This is the same as [method get_pixel], but with a [Vector2] argument instead of two integer arguments.
 			</description>
 		</method>
 		<method name="get_rect" qualifiers="const">
@@ -355,7 +355,7 @@
 		<method name="load_jpg_from_buffer">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="buffer" type="PoolByteArray">
+			<argument index="0" name="buffer" type="PackedByteArray">
 			</argument>
 			<description>
 				Loads an image from the binary contents of a JPEG file.
@@ -364,7 +364,7 @@
 		<method name="load_png_from_buffer">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="buffer" type="PoolByteArray">
+			<argument index="0" name="buffer" type="PackedByteArray">
 			</argument>
 			<description>
 				Loads an image from the binary contents of a PNG file.
@@ -373,17 +373,10 @@
 		<method name="load_webp_from_buffer">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="buffer" type="PoolByteArray">
+			<argument index="0" name="buffer" type="PackedByteArray">
 			</argument>
 			<description>
 				Loads an image from the binary contents of a WebP file.
-			</description>
-		</method>
-		<method name="lock">
-			<return type="void">
-			</return>
-			<description>
-				Locks the data for reading and writing access. Sends an error to the console if the image is not locked when reading or writing a pixel.
 			</description>
 		</method>
 		<method name="normalmap_to_xy">
@@ -459,14 +452,11 @@
 			<argument index="2" name="color" type="Color">
 			</argument>
 			<description>
-				Sets the [Color] of the pixel at [code](x, y)[/code] if the image is locked. Example:
+				Sets the [Color] of the pixel at [code](x, y)[/code]. Example:
 				[codeblock]
 				var img = Image.new()
 				img.create(img_width, img_height, false, Image.FORMAT_RGBA8)
-				img.lock()
-				img.set_pixel(x, y, color) # Works
-				img.unlock()
-				img.set_pixel(x, y, color) # Does not have an effect
+				img.set_pixel(x, y, color)
 				[/codeblock]
 			</description>
 		</method>
@@ -478,14 +468,11 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
-				Sets the [Color] of the pixel at [code](dst.x, dst.y)[/code] if the image is locked. Note that the [code]dst[/code] values must be integers. Example:
+				Sets the [Color] of the pixel at [code](dst.x, dst.y)[/code]. Note that the [code]dst[/code] values must be integers. Example:
 				[codeblock]
 				var img = Image.new()
 				img.create(img_width, img_height, false, Image.FORMAT_RGBA8)
-				img.lock()
-				img.set_pixelv(Vector2(x, y), color) # Works
-				img.unlock()
-				img.set_pixelv(Vector2(x, y), color) # Does not have an effect
+				img.set_pixelv(Vector2(x, y), color)
 				[/codeblock]
 			</description>
 		</method>
@@ -503,16 +490,9 @@
 				Converts the raw data from the sRGB colorspace to a linear scale.
 			</description>
 		</method>
-		<method name="unlock">
-			<return type="void">
-			</return>
-			<description>
-				Unlocks the data and prevents changes.
-			</description>
-		</method>
 	</methods>
 	<members>
-		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data" default="{&quot;data&quot;: PoolByteArray(  ),&quot;format&quot;: &quot;Lum8&quot;,&quot;height&quot;: 0,&quot;mipmaps&quot;: false,&quot;width&quot;: 0}">
+		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data" default="{&quot;data&quot;: PackedByteArray(  ),&quot;format&quot;: &quot;Lum8&quot;,&quot;height&quot;: 0,&quot;mipmaps&quot;: false,&quot;width&quot;: 0}">
 			Holds all of the image's color data in a given format. See [enum Format] constants.
 		</member>
 	</members>

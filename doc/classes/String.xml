@@ -166,64 +166,64 @@
 		<method name="String">
 			<return type="String">
 			</return>
-			<argument index="0" name="from" type="PoolByteArray">
+			<argument index="0" name="from" type="PackedByteArray">
 			</argument>
 			<description>
-				Constructs a new String from the given [PoolByteArray].
+				Constructs a new String from the given [PackedByteArray].
 			</description>
 		</method>
 		<method name="String">
 			<return type="String">
 			</return>
-			<argument index="0" name="from" type="PoolIntArray">
+			<argument index="0" name="from" type="PackedIntArray">
 			</argument>
 			<description>
-				Constructs a new String from the given [PoolIntArray].
+				Constructs a new String from the given [PackedIntArray].
 			</description>
 		</method>
 		<method name="String">
 			<return type="String">
 			</return>
-			<argument index="0" name="from" type="PoolRealArray">
+			<argument index="0" name="from" type="PackedRealArray">
 			</argument>
 			<description>
-				Constructs a new String from the given [PoolRealArray].
+				Constructs a new String from the given [PackedRealArray].
 			</description>
 		</method>
 		<method name="String">
 			<return type="String">
 			</return>
-			<argument index="0" name="from" type="PoolStringArray">
+			<argument index="0" name="from" type="PackedStringArray">
 			</argument>
 			<description>
-				Constructs a new String from the given [PoolStringArray].
+				Constructs a new String from the given [PackedStringArray].
 			</description>
 		</method>
 		<method name="String">
 			<return type="String">
 			</return>
-			<argument index="0" name="from" type="PoolVector2Array">
+			<argument index="0" name="from" type="PackedVector2Array">
 			</argument>
 			<description>
-				Constructs a new String from the given [PoolVector2Array].
+				Constructs a new String from the given [PackedVector2Array].
 			</description>
 		</method>
 		<method name="String">
 			<return type="String">
 			</return>
-			<argument index="0" name="from" type="PoolVector3Array">
+			<argument index="0" name="from" type="PackedVector3Array">
 			</argument>
 			<description>
-				Constructs a new String from the given [PoolVector3Array].
+				Constructs a new String from the given [PackedVector3Array].
 			</description>
 		</method>
 		<method name="String">
 			<return type="String">
 			</return>
-			<argument index="0" name="from" type="PoolColorArray">
+			<argument index="0" name="from" type="PackedColorArray">
 			</argument>
 			<description>
-				Constructs a new String from the given [PoolColorArray].
+				Constructs a new String from the given [PackedColorArray].
 			</description>
 		</method>
 		<method name="begins_with">
@@ -236,7 +236,7 @@
 			</description>
 		</method>
 		<method name="bigrams">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				Returns the bigrams (pairs of consecutive letters) of this string.
@@ -597,7 +597,7 @@
 			</description>
 		</method>
 		<method name="md5_buffer">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<description>
 				Returns the MD5 hash of the string as an array of bytes.
@@ -732,7 +732,7 @@
 			</description>
 		</method>
 		<method name="rsplit">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="delimiter" type="String">
 			</argument>
@@ -764,7 +764,7 @@
 			</description>
 		</method>
 		<method name="sha1_buffer">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<description>
 				Returns the SHA-1 hash of the string as an array of bytes.
@@ -778,7 +778,7 @@
 			</description>
 		</method>
 		<method name="sha256_buffer">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<description>
 				Returns the SHA-256 hash of the string as an array of bytes.
@@ -801,7 +801,7 @@
 			</description>
 		</method>
 		<method name="split">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="delimiter" type="String">
 			</argument>
@@ -823,7 +823,7 @@
 			</description>
 		</method>
 		<method name="split_floats">
-			<return type="PoolRealArray">
+			<return type="PackedRealArray">
 			</return>
 			<argument index="0" name="delimiter" type="String">
 			</argument>
@@ -864,10 +864,10 @@
 			</description>
 		</method>
 		<method name="to_ascii">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<description>
-				Converts the String (which is a character array) to [PoolByteArray] (which is an array of bytes). The conversion is faster compared to [method to_utf8], as this method assumes that all the characters in the String are ASCII characters.
+				Converts the String (which is a character array) to [PackedByteArray] (which is an array of bytes). The conversion is faster compared to [method to_utf8], as this method assumes that all the characters in the String are ASCII characters.
 			</description>
 		</method>
 		<method name="to_float">
@@ -899,10 +899,10 @@
 			</description>
 		</method>
 		<method name="to_utf8">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<description>
-				Converts the String (which is an array of characters) to [PoolByteArray] (which is an array of bytes). The conversion is a bit slower than [method to_ascii], but supports all UTF-8 characters. Therefore, you should prefer this function over [method to_ascii].
+				Converts the String (which is an array of characters) to [PackedByteArray] (which is an array of bytes). The conversion is a bit slower than [method to_ascii], but supports all UTF-8 characters. Therefore, you should prefer this function over [method to_ascii].
 			</description>
 		</method>
 		<method name="trim_prefix">

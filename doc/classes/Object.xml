@@ -251,10 +251,10 @@
 			</description>
 		</method>
 		<method name="get_meta_list" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
-				Returns the object's metadata as a [PoolStringArray].
+				Returns the object's metadata as a [PackedStringArray].
 			</description>
 		</method>
 		<method name="get_method_list" qualifiers="const">
@@ -273,7 +273,7 @@
 			</description>
 		</method>
 		<method name="get_script" qualifiers="const">
-			<return type="Reference">
+			<return type="Variant">
 			</return>
 			<description>
 				Returns the object's [Script] instance, or [code]null[/code] if none is assigned.
@@ -456,7 +456,7 @@
 		<method name="set_script">
 			<return type="void">
 			</return>
-			<argument index="0" name="script" type="Reference">
+			<argument index="0" name="script" type="Variant">
 			</argument>
 			<description>
 				Assigns a script to the object. Each object can have a single script assigned to it, which are used to extend its functionality.

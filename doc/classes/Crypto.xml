@@ -28,12 +28,12 @@
 	</tutorials>
 	<methods>
 		<method name="generate_random_bytes">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<argument index="0" name="size" type="int">
 			</argument>
 			<description>
-				Generates a [PoolByteArray] of cryptographically secure random bytes with given [code]size[/code].
+				Generates a [PackedByteArray] of cryptographically secure random bytes with given [code]size[/code].
 			</description>
 		</method>
 		<method name="generate_rsa">

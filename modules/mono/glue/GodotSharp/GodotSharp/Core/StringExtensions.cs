@@ -981,7 +981,7 @@ namespace Godot
         }
 
         // <summary>
-        // Convert the String (which is a character array) to PoolByteArray (which is an array of bytes). The conversion is speeded up in comparison to to_utf8() with the assumption that all the characters the String contains are only ASCII characters.
+        // Convert the String (which is a character array) to PackedByteArray (which is an array of bytes). The conversion is speeded up in comparison to to_utf8() with the assumption that all the characters the String contains are only ASCII characters.
         // </summary>
         public static byte[] ToAscii(this string instance)
         {
@@ -1021,7 +1021,7 @@ namespace Godot
         }
 
         // <summary>
-        // Convert the String (which is an array of characters) to PoolByteArray (which is an array of bytes). The conversion is a bit slower than to_ascii(), but supports all UTF-8 characters. Therefore, you should prefer this function over to_ascii().
+        // Convert the String (which is an array of characters) to PackedByteArray (which is an array of bytes). The conversion is a bit slower than to_ascii(), but supports all UTF-8 characters. Therefore, you should prefer this function over to_ascii().
         // </summary>
         public static byte[] ToUTF8(this string instance)
         {

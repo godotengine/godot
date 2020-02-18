@@ -46,7 +46,7 @@
 		<method name="_drop_files" qualifiers="virtual">
 			<return type="void">
 			</return>
-			<argument index="0" name="files" type="PoolStringArray">
+			<argument index="0" name="files" type="PackedStringArray">
 			</argument>
 			<argument index="1" name="from_screen" type="int">
 			</argument>

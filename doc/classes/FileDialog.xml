@@ -68,8 +68,8 @@
 			The currently selected file path of the file dialog.
 		</member>
 		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" override="true" default="false" />
-		<member name="filters" type="PoolStringArray" setter="set_filters" getter="get_filters" default="PoolStringArray(  )">
-			The available file type filters. For example, this shows only [code].png[/code] and [code].gd[/code] files: [code]set_filters(PoolStringArray(["*.png ; PNG Images","*.gd ; GDScript Files"]))[/code].
+		<member name="filters" type="PackedStringArray" setter="set_filters" getter="get_filters" default="PackedStringArray(  )">
+			The available file type filters. For example, this shows only [code].png[/code] and [code].gd[/code] files: [code]set_filters(PackedStringArray(["*.png ; PNG Images","*.gd ; GDScript Files"]))[/code].
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="FileDialog.Mode" default="4">
 			The dialog's open or save mode, which affects the selection behavior. See enum [code]Mode[/code] constants.
@@ -98,7 +98,7 @@
 			</description>
 		</signal>
 		<signal name="files_selected">
-			<argument index="0" name="paths" type="PoolStringArray">
+			<argument index="0" name="paths" type="PackedStringArray">
 			</argument>
 			<description>
 				Emitted when the user selects multiple files.

@@ -84,7 +84,7 @@
 			</description>
 		</signal>
 		<signal name="files_selected">
-			<argument index="0" name="paths" type="PoolStringArray">
+			<argument index="0" name="paths" type="PackedStringArray">
 			</argument>
 			<description>
 				Emitted when multiple files are selected.

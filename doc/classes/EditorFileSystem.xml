@@ -85,14 +85,14 @@
 			</description>
 		</signal>
 		<signal name="resources_reimported">
-			<argument index="0" name="resources" type="PoolStringArray">
+			<argument index="0" name="resources" type="PackedStringArray">
 			</argument>
 			<description>
 				Remitted if a resource is reimported.
 			</description>
 		</signal>
 		<signal name="resources_reload">
-			<argument index="0" name="resources" type="PoolStringArray">
+			<argument index="0" name="resources" type="PackedStringArray">
 			</argument>
 			<description>
 			</description>

@@ -76,11 +76,11 @@
 		<method name="draw_colored_polygon">
 			<return type="void">
 			</return>
-			<argument index="0" name="points" type="PoolVector2Array">
+			<argument index="0" name="points" type="PackedVector2Array">
 			</argument>
 			<argument index="1" name="color" type="Color">
 			</argument>
-			<argument index="2" name="uvs" type="PoolVector2Array" default="PoolVector2Array(  )">
+			<argument index="2" name="uvs" type="PackedVector2Array" default="PackedVector2Array(  )">
 			</argument>
 			<argument index="3" name="texture" type="Texture2D" default="null">
 			</argument>
@@ -88,7 +88,7 @@
 			</argument>
 			<argument index="5" name="specular_map" type="Texture2D" default="null">
 			</argument>
-			<argument index="6" name="specular_shinness" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="6" name="specular_shininess" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
 			<argument index="7" name="texture_filter" type="int" enum="CanvasItem.TextureFilter" default="0">
 			</argument>
@@ -118,17 +118,17 @@
 			</return>
 			<argument index="0" name="mesh" type="Mesh">
 			</argument>
-			<argument index="1" name="texture" type="Texture2D" default="null">
+			<argument index="1" name="texture" type="Texture2D">
 			</argument>
 			<argument index="2" name="normal_map" type="Texture2D" default="null">
 			</argument>
-			<argument index="3" name="specular_map" type="Texture2D" default="Color( 1, 1, 1, 1 )">
+			<argument index="3" name="specular_map" type="Texture2D" default="null">
 			</argument>
-			<argument index="4" name="transform" type="Color" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
+			<argument index="4" name="specular_shininess" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
-			<argument index="5" name="modulate" type="Transform2D" default="Color( 1, 1, 1, 1 )">
+			<argument index="5" name="transform" type="Transform2D" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
 			</argument>
-			<argument index="6" name="specular_shinness" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="6" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
 			<argument index="7" name="texture_filter" type="int" enum="CanvasItem.TextureFilter" default="0">
 			</argument>
@@ -141,7 +141,7 @@
 		<method name="draw_multiline">
 			<return type="void">
 			</return>
-			<argument index="0" name="points" type="PoolVector2Array">
+			<argument index="0" name="points" type="PackedVector2Array">
 			</argument>
 			<argument index="1" name="color" type="Color">
 			</argument>
@@ -154,9 +154,9 @@
 		<method name="draw_multiline_colors">
 			<return type="void">
 			</return>
-			<argument index="0" name="points" type="PoolVector2Array">
+			<argument index="0" name="points" type="PackedVector2Array">
 			</argument>
-			<argument index="1" name="colors" type="PoolColorArray">
+			<argument index="1" name="colors" type="PackedColorArray">
 			</argument>
 			<argument index="2" name="width" type="float" default="1.0">
 			</argument>
@@ -169,13 +169,13 @@
 			</return>
 			<argument index="0" name="multimesh" type="MultiMesh">
 			</argument>
-			<argument index="1" name="texture" type="Texture2D" default="null">
+			<argument index="1" name="texture" type="Texture2D">
 			</argument>
 			<argument index="2" name="normal_map" type="Texture2D" default="null">
 			</argument>
 			<argument index="3" name="specular_map" type="Texture2D" default="null">
 			</argument>
-			<argument index="4" name="specular_shinness" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="4" name="specular_shininess" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
 			<argument index="5" name="texture_filter" type="int" enum="CanvasItem.TextureFilter" default="0">
 			</argument>
@@ -188,11 +188,11 @@
 		<method name="draw_polygon">
 			<return type="void">
 			</return>
-			<argument index="0" name="points" type="PoolVector2Array">
+			<argument index="0" name="points" type="PackedVector2Array">
 			</argument>
-			<argument index="1" name="colors" type="PoolColorArray">
+			<argument index="1" name="colors" type="PackedColorArray">
 			</argument>
-			<argument index="2" name="uvs" type="PoolVector2Array" default="PoolVector2Array(  )">
+			<argument index="2" name="uvs" type="PackedVector2Array" default="PackedVector2Array(  )">
 			</argument>
 			<argument index="3" name="texture" type="Texture2D" default="null">
 			</argument>
@@ -200,7 +200,7 @@
 			</argument>
 			<argument index="5" name="specular_map" type="Texture2D" default="null">
 			</argument>
-			<argument index="6" name="specular_shinness" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="6" name="specular_shininess" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
 			<argument index="7" name="texture_filter" type="int" enum="CanvasItem.TextureFilter" default="0">
 			</argument>
@@ -213,7 +213,7 @@
 		<method name="draw_polyline">
 			<return type="void">
 			</return>
-			<argument index="0" name="points" type="PoolVector2Array">
+			<argument index="0" name="points" type="PackedVector2Array">
 			</argument>
 			<argument index="1" name="color" type="Color">
 			</argument>
@@ -226,9 +226,9 @@
 		<method name="draw_polyline_colors">
 			<return type="void">
 			</return>
-			<argument index="0" name="points" type="PoolVector2Array">
+			<argument index="0" name="points" type="PackedVector2Array">
 			</argument>
-			<argument index="1" name="colors" type="PoolColorArray">
+			<argument index="1" name="colors" type="PackedColorArray">
 			</argument>
 			<argument index="2" name="width" type="float" default="1.0">
 			</argument>
@@ -239,11 +239,11 @@
 		<method name="draw_primitive">
 			<return type="void">
 			</return>
-			<argument index="0" name="points" type="PoolVector2Array">
+			<argument index="0" name="points" type="PackedVector2Array">
 			</argument>
-			<argument index="1" name="colors" type="PoolColorArray">
+			<argument index="1" name="colors" type="PackedColorArray">
 			</argument>
-			<argument index="2" name="uvs" type="PoolVector2Array">
+			<argument index="2" name="uvs" type="PackedVector2Array">
 			</argument>
 			<argument index="3" name="texture" type="Texture2D" default="null">
 			</argument>
@@ -253,7 +253,7 @@
 			</argument>
 			<argument index="6" name="specular_map" type="Texture2D" default="null">
 			</argument>
-			<argument index="7" name="specular_shinness" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="7" name="specular_shininess" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
 			<argument index="8" name="texture_filter" type="int" enum="CanvasItem.TextureFilter" default="0">
 			</argument>
@@ -342,7 +342,7 @@
 			</argument>
 			<argument index="4" name="specular_map" type="Texture2D" default="null">
 			</argument>
-			<argument index="5" name="specular_shinness" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="5" name="specular_shininess" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
 			<argument index="6" name="texture_filter" type="int" enum="CanvasItem.TextureFilter" default="0">
 			</argument>
@@ -369,7 +369,7 @@
 			</argument>
 			<argument index="6" name="specular_map" type="Texture2D" default="null">
 			</argument>
-			<argument index="7" name="specular_shinness" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="7" name="specular_shininess" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
 			<argument index="8" name="texture_filter" type="int" enum="CanvasItem.TextureFilter" default="0">
 			</argument>
@@ -396,9 +396,9 @@
 			</argument>
 			<argument index="6" name="specular_map" type="Texture2D" default="null">
 			</argument>
-			<argument index="7" name="clip_uv" type="Color" default="true">
+			<argument index="7" name="specular_shininess" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
-			<argument index="8" name="specular_shinness" type="bool" default="Color( 1, 1, 1, 1 )">
+			<argument index="8" name="clip_uv" type="bool" default="true">
 			</argument>
 			<argument index="9" name="texture_filter" type="int" enum="CanvasItem.TextureFilter" default="0">
 			</argument>

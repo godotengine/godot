@@ -48,7 +48,7 @@
 			</description>
 		</method>
 		<method name="get_message_list" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				Returns all the messages (keys).

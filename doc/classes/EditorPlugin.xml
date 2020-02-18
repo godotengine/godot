@@ -253,7 +253,7 @@
 			</description>
 		</method>
 		<method name="get_breakpoints" qualifiers="virtual">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				This is for editors that edit script-based objects. You can return a list of breakpoints in the format ([code]script:line[/code]), for example: [code]res://path_to_script.gd:25[/code].

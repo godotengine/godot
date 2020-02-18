@@ -48,7 +48,7 @@
 			</description>
 		</method>
 		<method name="class_get_integer_constant_list" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="class" type="String">
 			</argument>
@@ -162,14 +162,14 @@
 			</description>
 		</method>
 		<method name="get_class_list" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				Returns the names of all the classes available.
 			</description>
 		</method>
 		<method name="get_inheriters_from_class" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="class" type="String">
 			</argument>

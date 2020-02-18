@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CSharpScript" inherits="Script" version="4.0">
+<class name="MonoGCHandle" inherits="Reference" version="4.0">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -7,12 +7,6 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="new" qualifiers="vararg">
-			<return type="Variant">
-			</return>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<constants>
 	</constants>
