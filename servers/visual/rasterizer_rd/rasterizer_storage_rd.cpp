@@ -1944,7 +1944,7 @@ int RasterizerStorageRD::mesh_get_blend_shape_count(RID p_mesh) const {
 void RasterizerStorageRD::mesh_set_blend_shape_mode(RID p_mesh, VS::BlendShapeMode p_mode) {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
-	ERR_FAIL_INDEX(p_mode, 2);
+	ERR_FAIL_INDEX((int)p_mode, 2);
 
 	mesh->blend_shape_mode = p_mode;
 }
@@ -2636,7 +2636,7 @@ void RasterizerStorageRD::multimesh_instance_set_custom_data(RID p_multimesh, in
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->instances);
-	ERR_FAIL_INDEX(p_index, !multimesh->uses_custom_data);
+	ERR_FAIL_COND(!multimesh->uses_custom_data);
 
 	_multimesh_make_local(multimesh);
 
@@ -2723,7 +2723,7 @@ Color RasterizerStorageRD::multimesh_instance_get_color(RID p_multimesh, int p_i
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, Color());
 	ERR_FAIL_INDEX_V(p_index, multimesh->instances, Color());
-	ERR_FAIL_INDEX_V(p_index, !multimesh->uses_colors, Color());
+	ERR_FAIL_COND_V(!multimesh->uses_colors, Color());
 
 	_multimesh_make_local(multimesh);
 
@@ -2746,7 +2746,7 @@ Color RasterizerStorageRD::multimesh_instance_get_custom_data(RID p_multimesh, i
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, Color());
 	ERR_FAIL_INDEX_V(p_index, multimesh->instances, Color());
-	ERR_FAIL_INDEX_V(p_index, !multimesh->uses_custom_data, Color());
+	ERR_FAIL_COND_V(!multimesh->uses_custom_data, Color());
 
 	_multimesh_make_local(multimesh);
 

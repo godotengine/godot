@@ -991,6 +991,15 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 				}
 
 			} break;
+			case Item::Command::TYPE_MESH:
+			case Item::Command::TYPE_MULTIMESH:
+			case Item::Command::TYPE_PARTICLES: {
+				ERR_PRINT("FIXME: Mesh, MultiMesh and Particles render commands are unimplemented currently, they need to be ported to the 4.0 rendering architecture.");
+#ifndef _MSC_VER
+#warning Item::Command types for Mesh, MultiMesh and Particles need to be implemented.
+#endif
+				// See #if 0'ed code below to port from GLES3.
+			} break;
 
 #if 0
 			case Item::Command::TYPE_MESH: {

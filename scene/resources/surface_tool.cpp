@@ -537,58 +537,36 @@ Vector<SurfaceTool::Vertex> SurfaceTool::create_vertex_array_from_triangle_array
 	Vector<float> warr = p_arrays[VS::ARRAY_WEIGHTS];
 
 	int vc = varr.size();
-
 	if (vc == 0)
 		return ret;
-	int lformat = 0;
 
-	const Vector3 *rv;
+	int lformat = 0;
 	if (varr.size()) {
 		lformat |= VS::ARRAY_FORMAT_VERTEX;
-		rv = varr.ptr();
 	}
-	const Vector3 *rn;
 	if (narr.size()) {
 		lformat |= VS::ARRAY_FORMAT_NORMAL;
-		rn = narr.ptr();
 	}
-	const float *rt;
 	if (tarr.size()) {
 		lformat |= VS::ARRAY_FORMAT_TANGENT;
-		rt = tarr.ptr();
 	}
-	const Color *rc;
 	if (carr.size()) {
 		lformat |= VS::ARRAY_FORMAT_COLOR;
-		rc = carr.ptr();
 	}
-
-	const Vector2 *ruv;
 	if (uvarr.size()) {
 		lformat |= VS::ARRAY_FORMAT_TEX_UV;
-		ruv = uvarr.ptr();
 	}
-
-	const Vector2 *ruv2;
 	if (uv2arr.size()) {
 		lformat |= VS::ARRAY_FORMAT_TEX_UV2;
-		ruv2 = uv2arr.ptr();
 	}
-
-	const int *rb;
 	if (barr.size()) {
 		lformat |= VS::ARRAY_FORMAT_BONES;
-		rb = barr.ptr();
 	}
-
-	const float *rw;
 	if (warr.size()) {
 		lformat |= VS::ARRAY_FORMAT_WEIGHTS;
-		rw = warr.ptr();
 	}
 
 	for (int i = 0; i < vc; i++) {
-
 		Vertex v;
 		if (lformat & VS::ARRAY_FORMAT_VERTEX)
 			v.vertex = varr[i];
@@ -642,58 +620,36 @@ void SurfaceTool::_create_list_from_arrays(Array arr, List<Vertex> *r_vertex, Li
 	Vector<float> warr = arr[VS::ARRAY_WEIGHTS];
 
 	int vc = varr.size();
-
 	if (vc == 0)
 		return;
-	lformat = 0;
 
-	const Vector3 *rv;
+	lformat = 0;
 	if (varr.size()) {
 		lformat |= VS::ARRAY_FORMAT_VERTEX;
-		rv = varr.ptr();
 	}
-	const Vector3 *rn;
 	if (narr.size()) {
 		lformat |= VS::ARRAY_FORMAT_NORMAL;
-		rn = narr.ptr();
 	}
-	const float *rt;
 	if (tarr.size()) {
 		lformat |= VS::ARRAY_FORMAT_TANGENT;
-		rt = tarr.ptr();
 	}
-	const Color *rc;
 	if (carr.size()) {
 		lformat |= VS::ARRAY_FORMAT_COLOR;
-		rc = carr.ptr();
 	}
-
-	const Vector2 *ruv;
 	if (uvarr.size()) {
 		lformat |= VS::ARRAY_FORMAT_TEX_UV;
-		ruv = uvarr.ptr();
 	}
-
-	const Vector2 *ruv2;
 	if (uv2arr.size()) {
 		lformat |= VS::ARRAY_FORMAT_TEX_UV2;
-		ruv2 = uv2arr.ptr();
 	}
-
-	const int *rb;
 	if (barr.size()) {
 		lformat |= VS::ARRAY_FORMAT_BONES;
-		rb = barr.ptr();
 	}
-
-	const float *rw;
 	if (warr.size()) {
 		lformat |= VS::ARRAY_FORMAT_WEIGHTS;
-		rw = warr.ptr();
 	}
 
 	for (int i = 0; i < vc; i++) {
-
 		Vertex v;
 		if (lformat & VS::ARRAY_FORMAT_VERTEX)
 			v.vertex = varr[i];
