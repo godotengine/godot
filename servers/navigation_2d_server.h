@@ -79,6 +79,9 @@ public:
 	/// Returns the navigation path to reach the destination from the origin.
 	virtual Vector<Vector2> map_get_path(RID p_map, Vector2 p_origin, Vector2 p_destination, bool p_optimize) const;
 
+	virtual Vector2 map_get_closest_point(RID p_map, const Vector2 &p_point) const;
+	virtual RID map_get_closest_point_owner(RID p_map, const Vector2 &p_point) const;
+
 	/// Creates a new region.
 	virtual RID region_create() const;
 

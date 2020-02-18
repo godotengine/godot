@@ -61,7 +61,9 @@ public:
 		return edge_connection_margin;
 	}
 
-	Vector<Vector2> get_simple_path(const Vector2 &p_start, const Vector2 &p_end, bool p_optimize = true);
+	Vector<Vector2> get_simple_path(const Vector2 &p_start, const Vector2 &p_end, bool p_optimize = true) const;
+	Vector2 get_closest_point(const Vector2 &p_point) const;
+	RID get_closest_point_owner(const Vector2 &p_point) const;
 
 	Navigation2D();
 };
