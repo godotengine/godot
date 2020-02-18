@@ -58,7 +58,11 @@ if env['builtin_glslang']:
 
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_glslang.Prepend(CPPPATH=[thirdparty_dir])
+    # Treat glslang headers as system headers to avoid raising warnings. Not supported on MSVC.
+    if not env.msvc:
+        env_glslang.Append(CPPFLAGS=['-isystem', Dir(thirdparty_dir).path])
+    else:
+        env_glslang.Prepend(CPPPATH=[thirdparty_dir])
 
     env_thirdparty = env_glslang.Clone()
     env_thirdparty.disable_warnings()

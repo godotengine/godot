@@ -109,7 +109,6 @@ private:
 	int color_scan_cell_width;
 	int bake_texture_size;
 	float cell_size;
-	float propagation;
 
 	int max_original_cells;
 	int leaf_voxel_count;

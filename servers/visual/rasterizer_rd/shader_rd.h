@@ -35,6 +35,7 @@
 #include "core/map.h"
 #include "core/rid_owner.h"
 #include "core/variant.h"
+
 #include <stdio.h>
 #include <mutex>
 /**
@@ -47,11 +48,7 @@ class ShaderRD {
 	CharString general_defines;
 	Vector<CharString> variant_defines;
 
-	int vertex_code_start;
-	int fragment_code_start;
-
 	struct Version {
-
 		CharString uniforms;
 		CharString vertex_globals;
 		CharString vertex_code;

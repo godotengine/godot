@@ -2745,7 +2745,6 @@ void RasterizerSceneRD::render_shadow(RID p_light, RID p_shadow_atlas, int p_pas
 
 	Rect2i atlas_rect;
 	RID atlas_fb;
-	int atlas_fb_size;
 
 	bool using_dual_paraboloid = false;
 	bool using_dual_paraboloid_flip = false;
@@ -2816,7 +2815,6 @@ void RasterizerSceneRD::render_shadow(RID p_light, RID p_shadow_atlas, int p_pas
 		render_fb = shadow_map->fb;
 		render_texture = shadow_map->depth;
 		atlas_fb = directional_shadow.fb;
-		atlas_fb_size = directional_shadow.size;
 
 	} else {
 		//set from shadow atlas
@@ -2844,7 +2842,6 @@ void RasterizerSceneRD::render_shadow(RID p_light, RID p_shadow_atlas, int p_pas
 		atlas_rect.size.width = shadow_size;
 		atlas_rect.size.height = shadow_size;
 		atlas_fb = shadow_atlas->fb;
-		atlas_fb_size = shadow_atlas->size;
 
 		zfar = storage->light_get_param(light_instance->light, VS::LIGHT_PARAM_RANGE);
 		bias = storage->light_get_param(light_instance->light, VS::LIGHT_PARAM_SHADOW_BIAS);

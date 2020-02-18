@@ -1040,9 +1040,6 @@
 		</member>
 		<member name="rendering/quality/reflection_atlas/reflection_size.mobile" type="int" setter="" getter="" default="128">
 		</member>
-		<member name="rendering/quality/reflections/atlas_size" type="int" setter="" getter="" default="2048">
-			Size of the atlas used by reflection probes. A larger size can result in higher visual quality, while a smaller size will be faster and take up less memory.
-		</member>
 		<member name="rendering/quality/reflections/ggx_samples" type="int" setter="" getter="" default="1024">
 		</member>
 		<member name="rendering/quality/reflections/ggx_samples.mobile" type="int" setter="" getter="" default="128">
