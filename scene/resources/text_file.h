@@ -36,6 +36,8 @@
 
 class TextFile : public Resource {
 
+	GDCLASS(TextFile, Resource);
+
 private:
 	String text;
 	String path;
