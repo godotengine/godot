@@ -31,15 +31,20 @@
 #ifndef GROUPS_EDITOR_H
 #define GROUPS_EDITOR_H
 
-#include "core/undo_redo.h"
-#include "editor/scene_tree_editor.h"
-#include "scene/gui/button.h"
+#include "core/object.h"
+#include "core/ustring.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/popup.h"
-#include "scene/gui/tool_button.h"
-#include "scene/gui/tree.h"
+
+class Button;
+class Label;
+class LineEdit;
+class Node;
+class SceneTree;
+class ToolButton;
+class Tree;
+class TreeItem;
+class UndoRedo;
 
 class GroupDialog : public WindowDialog {
 
@@ -50,6 +55,7 @@ class GroupDialog : public WindowDialog {
 	SceneTree *scene_tree;
 	TreeItem *groups_root;
 
+	Button *add_group_button;
 	LineEdit *add_group_text;
 
 	Tree *groups;
@@ -79,6 +85,7 @@ class GroupDialog : public WindowDialog {
 	void _add_pressed();
 	void _removed_pressed();
 	void _add_group_pressed(const String &p_name);
+	void _group_name_changed(const String &p_name);
 
 	void _group_renamed();
 	void _rename_group_item(const String &p_old_name, const String &p_new_name);
@@ -120,7 +127,7 @@ class GroupsEditor : public VBoxContainer {
 	void update_tree();
 	void _add_group(const String &p_group = "");
 	void _remove_group(Object *p_item, int p_column, int p_id);
-	void _close();
+	void _group_name_changed(const String &p_name);
 
 	void _show_group_dialog();
 
