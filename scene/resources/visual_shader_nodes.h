@@ -236,7 +236,7 @@ public:
 	enum TextureType {
 		TYPE_DATA,
 		TYPE_COLOR,
-		TYPE_NORMALMAP
+		TYPE_NORMALMAP,
 	};
 
 private:
@@ -283,6 +283,68 @@ VARIANT_ENUM_CAST(VisualShaderNodeTexture::TextureType)
 VARIANT_ENUM_CAST(VisualShaderNodeTexture::Source)
 
 ///////////////////////////////////////
+
+class VisualShaderNodeSample3D : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeSample3D, VisualShaderNode);
+
+public:
+	enum Source {
+		SOURCE_TEXTURE,
+		SOURCE_PORT,
+	};
+
+protected:
+	Source source;
+
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const = 0;
+
+	virtual int get_input_port_count() const;
+	virtual PortType get_input_port_type(int p_port) const;
+	virtual String get_input_port_name(int p_port) const;
+	virtual String get_input_port_default_hint(int p_port) const;
+
+	virtual int get_output_port_count() const;
+	virtual PortType get_output_port_type(int p_port) const;
+	virtual String get_output_port_name(int p_port) const;
+
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const = 0;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+
+	void set_source(Source p_source);
+	Source get_source() const;
+
+	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const;
+
+	VisualShaderNodeSample3D();
+};
+
+VARIANT_ENUM_CAST(VisualShaderNodeSample3D::Source)
+
+class VisualShaderNodeTexture2DArray : public VisualShaderNodeSample3D {
+	GDCLASS(VisualShaderNodeTexture2DArray, VisualShaderNodeSample3D);
+	Ref<Texture2DArray> texture;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const;
+
+	virtual String get_input_port_name(int p_port) const;
+
+	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const;
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
+
+	void set_texture_array(Ref<Texture2DArray> p_value);
+	Ref<Texture2DArray> get_texture_array() const;
+
+	virtual Vector<StringName> get_editable_properties() const;
+
+	VisualShaderNodeTexture2DArray();
+};
 
 class VisualShaderNodeCubemap : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeCubemap, VisualShaderNode);
@@ -1691,6 +1753,29 @@ public:
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	VisualShaderNodeTextureUniformTriplanar();
+};
+
+///////////////////////////////////////
+
+class VisualShaderNodeTexture2DArrayUniform : public VisualShaderNodeTextureUniform {
+	GDCLASS(VisualShaderNodeTexture2DArrayUniform, VisualShaderNodeTextureUniform);
+
+public:
+	virtual String get_caption() const;
+
+	virtual int get_input_port_count() const;
+	virtual PortType get_input_port_type(int p_port) const;
+	virtual String get_input_port_name(int p_port) const;
+
+	virtual int get_output_port_count() const;
+	virtual PortType get_output_port_type(int p_port) const;
+	virtual String get_output_port_name(int p_port) const;
+
+	virtual String get_input_port_default_hint(int p_port) const;
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+
+	VisualShaderNodeTexture2DArrayUniform();
 };
 
 ///////////////////////////////////////
