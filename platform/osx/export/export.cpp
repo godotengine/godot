@@ -45,6 +45,9 @@
 #include "string.h"
 #include <sys/stat.h>
 
+#define EXPORT_TEMPLATE_OSX_RELEASE "osx_release.zip"
+#define EXPORT_TEMPLATE_OSX_DEBUG "osx_debug.zip"
+
 class EditorExportPlatformOSX : public EditorExportPlatform {
 
 	GDCLASS(EditorExportPlatformOSX, EditorExportPlatform);
@@ -465,7 +468,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 	if (src_pkg_name == "") {
 		String err;
-		src_pkg_name = find_export_template("osx.zip", &err);
+		src_pkg_name = find_export_template(p_debug ? EXPORT_TEMPLATE_OSX_DEBUG : EXPORT_TEMPLATE_OSX_RELEASE, &err);
 		if (src_pkg_name == "") {
 			EditorNode::add_io_error(err);
 			return ERR_FILE_NOT_FOUND;
@@ -491,8 +494,6 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	}
 
 	int ret = unzGoToFirstFile(src_pkg_zip);
-
-	String binary_to_use = "godot_osx_" + String(p_debug ? "debug" : "release") + ".64";
 
 	String pkg_name;
 	if (p_preset->get("application/name") != "")
@@ -575,8 +576,8 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			_fix_plist(p_preset, data, pkg_name);
 		}
 
-		if (file.begins_with("Contents/MacOS/godot_")) {
-			if (file != "Contents/MacOS/" + binary_to_use) {
+		if (file.begins_with("Contents/MacOS/godot")) {
+			if (file != "Contents/MacOS/godot") {
 				ret = unzGoToNextFile(src_pkg_zip);
 				continue; //ignore!
 			}
@@ -692,7 +693,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	unzClose(src_pkg_zip);
 
 	if (!found_binary) {
-		ERR_PRINT("Requested template binary '" + binary_to_use + "' not found. It might be missing from your template archive.");
+		ERR_PRINT("Requested template binary \"godot\" not found. It might be missing from your template archive.");
 		err = ERR_FILE_NOT_FOUND;
 	}
 
@@ -824,8 +825,8 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 
 	// Look for export templates (first official, and if defined custom templates).
 
-	bool dvalid = exists_export_template("osx.zip", &err);
-	bool rvalid = dvalid; // Both in the same ZIP.
+	bool dvalid = exists_export_template(EXPORT_TEMPLATE_OSX_DEBUG, &err);
+	bool rvalid = exists_export_template(EXPORT_TEMPLATE_OSX_RELEASE, &err);
 
 	if (p_preset->get("custom_template/debug") != "") {
 		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));

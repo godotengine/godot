@@ -21,3 +21,17 @@ prog = env.add_program('#bin/godot', files)
 if (env["debug_symbols"] == "full" or env["debug_symbols"] == "yes") and env["separate_debug_symbols"]:
     env.AddPostAction(prog, run_in_subprocess(platform_osx_builders.make_debug_osx))
 
+# Create a ZIP archive so the export template can be used directly in Godot.
+zip_dir = env.Dir('#bin/.osx_zip')
+zip_files = env.InstallAs([
+    zip_dir.File('osx_template.app/Contents/Info.plist'),
+    zip_dir.File('osx_template.app/Contents/PkgInfo'),
+    zip_dir.File('osx_template.app/Contents/Resources/icon.icns'),
+    zip_dir.File('osx_template.app/Contents/MacOS/godot'),
+], [
+    '#misc/dist/osx_template.app/Contents/Info.plist',
+    '#misc/dist/osx_template.app/Contents/PkgInfo',
+    '#misc/dist/osx_template.app/Contents/Resources/icon.icns',
+    prog,
+])
+env.Zip('#bin/godot', zip_files, ZIPROOT=zip_dir, ZIPSUFFIX='${PROGSUFFIX}${ZIPSUFFIX}', ZIPCOMSTR='Archving $SOURCES as $TARGET')
