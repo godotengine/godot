@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeSample3D" inherits="VisualShaderNode" version="4.0">
+	<brief_description>
+		A base node for nodes which samples 3D textures in the visual shader graph.
+	</brief_description>
+	<description>
+		A virtual class, use the descendants instead.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="source" type="int" setter="set_source" getter="get_source" enum="VisualShaderNodeSample3D.Source" default="0">
+			An input source type.
+		</member>
+	</members>
+	<constants>
+		<constant name="SOURCE_TEXTURE" value="0" enum="Source">
+			Creates internal uniform and provides a way to assign it within node.
+		</constant>
+		<constant name="SOURCE_PORT" value="1" enum="Source">
+			Use the uniform texture from sampler port.
+		</constant>
+	</constants>
+</class>
