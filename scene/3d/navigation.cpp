@@ -32,9 +32,25 @@
 
 #include "servers/navigation_server.h"
 
-Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector3 &p_end, bool p_optimize) {
+Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector3 &p_end, bool p_optimize) const {
 
 	return NavigationServer::get_singleton()->map_get_path(map, p_start, p_end, p_optimize);
+}
+
+Vector3 Navigation::get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision) const {
+	return NavigationServer::get_singleton()->map_get_closest_point_to_segment(map, p_from, p_to, p_use_collision);
+}
+
+Vector3 Navigation::get_closest_point(const Vector3 &p_point) const {
+	return NavigationServer::get_singleton()->map_get_closest_point(map, p_point);
+}
+
+Vector3 Navigation::get_closest_point_normal(const Vector3 &p_point) const {
+	return NavigationServer::get_singleton()->map_get_closest_point_normal(map, p_point);
+}
+
+RID Navigation::get_closest_point_owner(const Vector3 &p_point) const {
+	return NavigationServer::get_singleton()->map_get_closest_point_owner(map, p_point);
 }
 
 void Navigation::set_up_vector(const Vector3 &p_up) {
@@ -63,6 +79,10 @@ void Navigation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &Navigation::get_rid);
 
 	ClassDB::bind_method(D_METHOD("get_simple_path", "start", "end", "optimize"), &Navigation::get_simple_path, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment", "start", "end", "use_collision"), &Navigation::get_closest_point_to_segment, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_closest_point", "to_point"), &Navigation::get_closest_point);
+	ClassDB::bind_method(D_METHOD("get_closest_point_normal", "to_point"), &Navigation::get_closest_point_normal);
+	ClassDB::bind_method(D_METHOD("get_closest_point_owner", "to_point"), &Navigation::get_closest_point_owner);
 
 	ClassDB::bind_method(D_METHOD("set_up_vector", "up"), &Navigation::set_up_vector);
 	ClassDB::bind_method(D_METHOD("get_up_vector"), &Navigation::get_up_vector);

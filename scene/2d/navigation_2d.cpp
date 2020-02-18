@@ -35,6 +35,8 @@ void Navigation2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &Navigation2D::get_rid);
 
 	ClassDB::bind_method(D_METHOD("get_simple_path", "start", "end", "optimize"), &Navigation2D::get_simple_path, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_closest_point", "to_point"), &Navigation2D::get_closest_point);
+	ClassDB::bind_method(D_METHOD("get_closest_point_owner", "to_point"), &Navigation2D::get_closest_point_owner);
 
 	ClassDB::bind_method(D_METHOD("set_cell_size", "cell_size"), &Navigation2D::set_cell_size);
 	ClassDB::bind_method(D_METHOD("get_cell_size"), &Navigation2D::get_cell_size);
@@ -68,8 +70,16 @@ void Navigation2D::set_edge_connection_margin(float p_edge_connection_margin) {
 	Navigation2DServer::get_singleton()->map_set_edge_connection_margin(map, edge_connection_margin);
 }
 
-Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vector2 &p_end, bool p_optimize) {
+Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vector2 &p_end, bool p_optimize) const {
 	return Navigation2DServer::get_singleton()->map_get_path(map, p_start, p_end, p_optimize);
+}
+
+Vector2 Navigation2D::get_closest_point(const Vector2 &p_point) const {
+	return Navigation2DServer::get_singleton()->map_get_closest_point(map, p_point);
+}
+
+RID Navigation2D::get_closest_point_owner(const Vector2 &p_point) const {
+	return Navigation2DServer::get_singleton()->map_get_closest_point_owner(map, p_point);
 }
 
 Navigation2D::Navigation2D() {
