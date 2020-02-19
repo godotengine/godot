@@ -34,7 +34,7 @@
 #include "gdscript.h"
 #include "gdscript_functions.h"
 
-Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_instance, GDScript *p_script, Variant &self, Variant *p_stack, String &r_error) const {
+Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_instance, GDScript *p_script, Variant &self, Variant &static_ref, Variant *p_stack, String &r_error) const {
 
 	int address = p_address & ADDR_MASK;
 
@@ -52,7 +52,7 @@ Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_insta
 		} break;
 		case ADDR_TYPE_CLASS: {
 
-			return &p_script->_static_ref;
+			return &static_ref;
 		} break;
 		case ADDR_TYPE_MEMBER: {
 #ifdef DEBUG_ENABLED
@@ -269,6 +269,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	r_err.error = Variant::CallError::CALL_OK;
 
 	Variant self;
+	Variant static_ref;
 	Variant retvalue;
 	Variant *stack = NULL;
 	Variant **call_args;
@@ -403,10 +404,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #define CHECK_SPACE(m_space) \
 	GD_ERR_BREAK((ip + m_space) > _code_size)
 
-#define GET_VARIANT_PTR(m_v, m_code_ofs)                                                       \
-	Variant *m_v;                                                                              \
-	m_v = _get_variant(_code_ptr[ip + m_code_ofs], p_instance, script, self, stack, err_text); \
-	if (unlikely(!m_v))                                                                        \
+#define GET_VARIANT_PTR(m_v, m_code_ofs)                                                                   \
+	Variant *m_v;                                                                                          \
+	m_v = _get_variant(_code_ptr[ip + m_code_ofs], p_instance, script, self, static_ref, stack, err_text); \
+	if (unlikely(!m_v))                                                                                    \
 		OPCODE_BREAK;
 
 #else
@@ -414,7 +415,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #define CHECK_SPACE(m_space)
 #define GET_VARIANT_PTR(m_v, m_code_ofs) \
 	Variant *m_v;                        \
-	m_v = _get_variant(_code_ptr[ip + m_code_ofs], p_instance, script, self, stack, err_text);
+	m_v = _get_variant(_code_ptr[ip + m_code_ofs], p_instance, script, self, static_ref, stack, err_text);
 
 #endif
 
