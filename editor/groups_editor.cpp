@@ -435,9 +435,9 @@ GroupDialog::GroupDialog() {
 	groups->set_allow_rmb_select(true);
 	groups->set_v_size_flags(SIZE_EXPAND_FILL);
 	groups->add_constant_override("draw_guides", 1);
-	groups->connect("item_selected", this, "_group_selected");
-	groups->connect("button_pressed", this, "_delete_group_pressed");
-	groups->connect("item_edited", this, "_group_renamed");
+	groups->connect_compat("item_selected", this, "_group_selected");
+	groups->connect_compat("button_pressed", this, "_delete_group_pressed");
+	groups->connect_compat("item_edited", this, "_group_renamed");
 
 	HBoxContainer *chbc = memnew(HBoxContainer);
 	vbc_left->add_child(chbc);
@@ -446,12 +446,12 @@ GroupDialog::GroupDialog() {
 	add_group_text = memnew(LineEdit);
 	chbc->add_child(add_group_text);
 	add_group_text->set_h_size_flags(SIZE_EXPAND_FILL);
-	add_group_text->connect("text_entered", this, "_add_group_pressed");
+	add_group_text->connect_compat("text_entered", this, "_add_group_pressed");
 
 	Button *add_group_button = memnew(Button);
 	add_group_button->set_text(TTR("Add"));
 	chbc->add_child(add_group_button);
-	add_group_button->connect("pressed", this, "_add_group_pressed", varray(String()));
+	add_group_button->connect_compat("pressed", this, "_add_group_pressed", varray(String()));
 
 	VBoxContainer *vbc_add = memnew(VBoxContainer);
 	hbc->add_child(vbc_add);
@@ -468,7 +468,7 @@ GroupDialog::GroupDialog() {
 	nodes_to_add->set_select_mode(Tree::SELECT_MULTI);
 	nodes_to_add->set_v_size_flags(SIZE_EXPAND_FILL);
 	nodes_to_add->add_constant_override("draw_guides", 1);
-	nodes_to_add->connect("item_selected", this, "_nodes_to_add_selected");
+	nodes_to_add->connect_compat("item_selected", this, "_nodes_to_add_selected");
 
 	HBoxContainer *add_filter_hbc = memnew(HBoxContainer);
 	add_filter_hbc->add_constant_override("separate", 0);
@@ -478,7 +478,7 @@ GroupDialog::GroupDialog() {
 	add_filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_filter->set_placeholder(TTR("Filter nodes"));
 	add_filter_hbc->add_child(add_filter);
-	add_filter->connect("text_changed", this, "_add_filter_changed");
+	add_filter->connect_compat("text_changed", this, "_add_filter_changed");
 
 	VBoxContainer *vbc_buttons = memnew(VBoxContainer);
 	hbc->add_child(vbc_buttons);
@@ -487,7 +487,7 @@ GroupDialog::GroupDialog() {
 
 	add_button = memnew(ToolButton);
 	add_button->set_text(TTR("Add"));
-	add_button->connect("pressed", this, "_add_pressed");
+	add_button->connect_compat("pressed", this, "_add_pressed");
 
 	vbc_buttons->add_child(add_button);
 	vbc_buttons->add_spacer();
@@ -496,7 +496,7 @@ GroupDialog::GroupDialog() {
 
 	remove_button = memnew(ToolButton);
 	remove_button->set_text(TTR("Remove"));
-	remove_button->connect("pressed", this, "_removed_pressed");
+	remove_button->connect_compat("pressed", this, "_removed_pressed");
 
 	vbc_buttons->add_child(remove_button);
 
@@ -515,7 +515,7 @@ GroupDialog::GroupDialog() {
 	nodes_to_remove->set_hide_folding(true);
 	nodes_to_remove->set_select_mode(Tree::SELECT_MULTI);
 	nodes_to_remove->add_constant_override("draw_guides", 1);
-	nodes_to_remove->connect("item_selected", this, "_node_to_remove_selected");
+	nodes_to_remove->connect_compat("item_selected", this, "_node_to_remove_selected");
 
 	HBoxContainer *remove_filter_hbc = memnew(HBoxContainer);
 	remove_filter_hbc->add_constant_override("separate", 0);
@@ -525,7 +525,7 @@ GroupDialog::GroupDialog() {
 	remove_filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	remove_filter->set_placeholder(TTR("Filter nodes"));
 	remove_filter_hbc->add_child(remove_filter);
-	remove_filter->connect("text_changed", this, "_remove_filter_changed");
+	remove_filter->connect_compat("text_changed", this, "_remove_filter_changed");
 
 	group_empty = memnew(Label());
 	group_empty->set_text(TTR("Empty groups will be automatically removed."));
@@ -686,12 +686,12 @@ GroupsEditor::GroupsEditor() {
 	group_dialog = memnew(GroupDialog);
 	group_dialog->set_as_toplevel(true);
 	add_child(group_dialog);
-	group_dialog->connect("group_edited", this, "update_tree");
+	group_dialog->connect_compat("group_edited", this, "update_tree");
 
 	Button *group_dialog_button = memnew(Button);
 	group_dialog_button->set_text(TTR("Manage Groups"));
 	vbc->add_child(group_dialog_button);
-	group_dialog_button->connect("pressed", this, "_show_group_dialog");
+	group_dialog_button->connect_compat("pressed", this, "_show_group_dialog");
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	vbc->add_child(hbc);
@@ -699,18 +699,18 @@ GroupsEditor::GroupsEditor() {
 	group_name = memnew(LineEdit);
 	group_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	hbc->add_child(group_name);
-	group_name->connect("text_entered", this, "_add_group");
+	group_name->connect_compat("text_entered", this, "_add_group");
 
 	add = memnew(Button);
 	add->set_text(TTR("Add"));
 	hbc->add_child(add);
-	add->connect("pressed", this, "_add_group", varray(String()));
+	add->connect_compat("pressed", this, "_add_group", varray(String()));
 
 	tree = memnew(Tree);
 	tree->set_hide_root(true);
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	vbc->add_child(tree);
-	tree->connect("button_pressed", this, "_remove_group");
+	tree->connect_compat("button_pressed", this, "_remove_group");
 	tree->add_constant_override("draw_guides", 1);
 	add_constant_override("separation", 3 * EDSCALE);
 }

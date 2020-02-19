@@ -132,8 +132,8 @@ void PluginConfigDialog::_on_required_text_changed(const String &) {
 void PluginConfigDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			connect("confirmed", this, "_on_confirmed");
-			get_cancel()->connect("pressed", this, "_on_cancelled");
+			connect_compat("confirmed", this, "_on_confirmed");
+			get_cancel()->connect_compat("pressed", this, "_on_cancelled");
 		} break;
 
 		case NOTIFICATION_POST_POPUP: {
@@ -194,7 +194,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	grid->add_child(name_lb);
 
 	name_edit = memnew(LineEdit);
-	name_edit->connect("text_changed", this, "_on_required_text_changed");
+	name_edit->connect_compat("text_changed", this, "_on_required_text_changed");
 	name_edit->set_placeholder("MyPlugin");
 	grid->add_child(name_edit);
 
@@ -253,7 +253,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	grid->add_child(script_lb);
 
 	script_edit = memnew(LineEdit);
-	script_edit->connect("text_changed", this, "_on_required_text_changed");
+	script_edit->connect_compat("text_changed", this, "_on_required_text_changed");
 	script_edit->set_placeholder("\"plugin.gd\" -> res://addons/my_plugin/plugin.gd");
 	grid->add_child(script_edit);
 

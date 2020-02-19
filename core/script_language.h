@@ -197,7 +197,7 @@ public:
 	virtual void get_method_list(List<MethodInfo> *p_list) const = 0;
 	virtual bool has_method(const StringName &p_method) const = 0;
 	virtual Variant call(const StringName &p_method, VARIANT_ARG_LIST);
-	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) = 0;
+	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) = 0;
 	virtual void call_multilevel(const StringName &p_method, VARIANT_ARG_LIST);
 	virtual void call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount);
 	virtual void call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount);
@@ -424,12 +424,12 @@ public:
 	virtual void get_method_list(List<MethodInfo> *p_list) const;
 	virtual bool has_method(const StringName &p_method) const;
 	virtual Variant call(const StringName &p_method, VARIANT_ARG_LIST) { return Variant(); }
-	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
-		r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		return Variant();
 	}
 	//virtual void call_multilevel(const StringName& p_method,VARIANT_ARG_LIST) { return Variant(); }
-	//virtual void call_multilevel(const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error) { return Variant(); }
+	//virtual void call_multilevel(const StringName& p_method,const Variant** p_args,int p_argcount,Callable::CallError &r_error) { return Variant(); }
 	virtual void notification(int p_notification) {}
 
 	virtual Ref<Script> get_script() const { return script; }

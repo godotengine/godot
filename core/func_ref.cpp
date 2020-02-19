@@ -30,16 +30,16 @@
 
 #include "func_ref.h"
 
-Variant FuncRef::call_func(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+Variant FuncRef::call_func(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 
 	if (id.is_null()) {
-		r_error.error = Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		return Variant();
 	}
 	Object *obj = ObjectDB::get_instance(id);
 
 	if (!obj) {
-		r_error.error = Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		return Variant();
 	}
 

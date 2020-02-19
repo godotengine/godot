@@ -905,19 +905,19 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	new_anim = memnew(ToolButton);
 	new_anim->set_tooltip(TTR("New Animation"));
 	hbc_animlist->add_child(new_anim);
-	new_anim->connect("pressed", this, "_animation_add");
+	new_anim->connect_compat("pressed", this, "_animation_add");
 
 	remove_anim = memnew(ToolButton);
 	remove_anim->set_tooltip(TTR("Remove Animation"));
 	hbc_animlist->add_child(remove_anim);
-	remove_anim->connect("pressed", this, "_animation_remove");
+	remove_anim->connect_compat("pressed", this, "_animation_remove");
 
 	animations = memnew(Tree);
 	sub_vb->add_child(animations);
 	animations->set_v_size_flags(SIZE_EXPAND_FILL);
 	animations->set_hide_root(true);
-	animations->connect("cell_selected", this, "_animation_select");
-	animations->connect("item_edited", this, "_animation_name_edited");
+	animations->connect_compat("cell_selected", this, "_animation_select");
+	animations->connect_compat("item_edited", this, "_animation_name_edited");
 	animations->set_allow_reselect(true);
 
 	anim_speed = memnew(SpinBox);
@@ -925,12 +925,12 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	anim_speed->set_min(0);
 	anim_speed->set_max(100);
 	anim_speed->set_step(0.01);
-	anim_speed->connect("value_changed", this, "_animation_fps_changed");
+	anim_speed->connect_compat("value_changed", this, "_animation_fps_changed");
 
 	anim_loop = memnew(CheckButton);
 	anim_loop->set_text(TTR("Loop"));
 	vbc_animlist->add_child(anim_loop);
-	anim_loop->connect("pressed", this, "_animation_loop_changed");
+	anim_loop->connect_compat("pressed", this, "_animation_loop_changed");
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
@@ -1004,16 +1004,16 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	dialog = memnew(AcceptDialog);
 	add_child(dialog);
 
-	load->connect("pressed", this, "_load_pressed");
-	load_sheet->connect("pressed", this, "_open_sprite_sheet");
-	_delete->connect("pressed", this, "_delete_pressed");
-	copy->connect("pressed", this, "_copy_pressed");
-	paste->connect("pressed", this, "_paste_pressed");
-	empty->connect("pressed", this, "_empty_pressed");
-	empty2->connect("pressed", this, "_empty2_pressed");
-	move_up->connect("pressed", this, "_up_pressed");
-	move_down->connect("pressed", this, "_down_pressed");
-	file->connect("files_selected", this, "_file_load_request");
+	load->connect_compat("pressed", this, "_load_pressed");
+	load_sheet->connect_compat("pressed", this, "_open_sprite_sheet");
+	_delete->connect_compat("pressed", this, "_delete_pressed");
+	copy->connect_compat("pressed", this, "_copy_pressed");
+	paste->connect_compat("pressed", this, "_paste_pressed");
+	empty->connect_compat("pressed", this, "_empty_pressed");
+	empty2->connect_compat("pressed", this, "_empty2_pressed");
+	move_up->connect_compat("pressed", this, "_up_pressed");
+	move_down->connect_compat("pressed", this, "_down_pressed");
+	file->connect_compat("files_selected", this, "_file_load_request");
 	loading_scene = false;
 	sel = -1;
 
@@ -1023,14 +1023,14 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	delete_dialog = memnew(ConfirmationDialog);
 	add_child(delete_dialog);
-	delete_dialog->connect("confirmed", this, "_animation_remove_confirmed");
+	delete_dialog->connect_compat("confirmed", this, "_animation_remove_confirmed");
 
 	split_sheet_dialog = memnew(ConfirmationDialog);
 	add_child(split_sheet_dialog);
 	VBoxContainer *split_sheet_vb = memnew(VBoxContainer);
 	split_sheet_dialog->add_child(split_sheet_vb);
 	split_sheet_dialog->set_title(TTR("Select Frames"));
-	split_sheet_dialog->connect("confirmed", this, "_sheet_add_frames");
+	split_sheet_dialog->connect_compat("confirmed", this, "_sheet_add_frames");
 
 	HBoxContainer *split_sheet_hb = memnew(HBoxContainer);
 
@@ -1041,7 +1041,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_h->set_max(128);
 	split_sheet_h->set_step(1);
 	split_sheet_hb->add_child(split_sheet_h);
-	split_sheet_h->connect("value_changed", this, "_sheet_spin_changed");
+	split_sheet_h->connect_compat("value_changed", this, "_sheet_spin_changed");
 
 	ss_label = memnew(Label(TTR("Vertical:")));
 	split_sheet_hb->add_child(ss_label);
@@ -1050,13 +1050,13 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_v->set_max(128);
 	split_sheet_v->set_step(1);
 	split_sheet_hb->add_child(split_sheet_v);
-	split_sheet_v->connect("value_changed", this, "_sheet_spin_changed");
+	split_sheet_v->connect_compat("value_changed", this, "_sheet_spin_changed");
 
 	split_sheet_hb->add_spacer();
 
 	Button *select_clear_all = memnew(Button);
 	select_clear_all->set_text(TTR("Select/Clear All Frames"));
-	select_clear_all->connect("pressed", this, "_sheet_select_clear_all_frames");
+	select_clear_all->connect_compat("pressed", this, "_sheet_select_clear_all_frames");
 	split_sheet_hb->add_child(select_clear_all);
 
 	split_sheet_vb->add_child(split_sheet_hb);
@@ -1064,8 +1064,8 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_preview = memnew(TextureRect);
 	split_sheet_preview->set_expand(false);
 	split_sheet_preview->set_mouse_filter(MOUSE_FILTER_PASS);
-	split_sheet_preview->connect("draw", this, "_sheet_preview_draw");
-	split_sheet_preview->connect("gui_input", this, "_sheet_preview_input");
+	split_sheet_preview->connect_compat("draw", this, "_sheet_preview_draw");
+	split_sheet_preview->connect_compat("gui_input", this, "_sheet_preview_input");
 
 	splite_sheet_scroll = memnew(ScrollContainer);
 	splite_sheet_scroll->set_enable_h_scroll(true);
@@ -1083,7 +1083,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	file_split_sheet->set_title(TTR("Create Frames from Sprite Sheet"));
 	file_split_sheet->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	add_child(file_split_sheet);
-	file_split_sheet->connect("file_selected", this, "_prepare_sprite_sheet");
+	file_split_sheet->connect_compat("file_selected", this, "_prepare_sprite_sheet");
 }
 
 void SpriteFramesEditorPlugin::edit(Object *p_object) {

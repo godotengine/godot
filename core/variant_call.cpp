@@ -61,7 +61,7 @@ struct _VariantCall {
 
 		VariantFunc func;
 
-		_FORCE_INLINE_ bool verify_arguments(const Variant **p_args, Variant::CallError &r_error) {
+		_FORCE_INLINE_ bool verify_arguments(const Variant **p_args, Callable::CallError &r_error) {
 
 			if (arg_count == 0)
 				return true;
@@ -73,7 +73,7 @@ struct _VariantCall {
 				if (tptr[i] == Variant::NIL || tptr[i] == p_args[i]->type)
 					continue; // all good
 				if (!Variant::can_convert(p_args[i]->type, tptr[i])) {
-					r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 					r_error.argument = i;
 					r_error.expected = tptr[i];
 					return false;
@@ -82,10 +82,10 @@ struct _VariantCall {
 			return true;
 		}
 
-		_FORCE_INLINE_ void call(Variant &r_ret, Variant &p_self, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+		_FORCE_INLINE_ void call(Variant &r_ret, Variant &p_self, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 #ifdef DEBUG_ENABLED
 			if (p_argcount > arg_count) {
-				r_error.error = Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+				r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 				r_error.argument = arg_count;
 				return;
 			} else
@@ -94,7 +94,7 @@ struct _VariantCall {
 				int def_argcount = default_args.size();
 #ifdef DEBUG_ENABLED
 				if (p_argcount < (arg_count - def_argcount)) {
-					r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+					r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 					r_error.argument = arg_count - def_argcount;
 					return;
 				}
@@ -518,6 +518,23 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Dictionary, values);
 	VCALL_LOCALMEM1R(Dictionary, duplicate);
 	VCALL_LOCALMEM2R(Dictionary, get);
+
+	VCALL_LOCALMEM0R(Callable, is_null);
+	VCALL_LOCALMEM0R(Callable, is_custom);
+	VCALL_LOCALMEM0(Callable, is_standard);
+	VCALL_LOCALMEM0(Callable, get_object);
+	VCALL_LOCALMEM0(Callable, get_object_id);
+	VCALL_LOCALMEM0(Callable, get_method);
+	VCALL_LOCALMEM0(Callable, hash);
+
+	VCALL_LOCALMEM0R(Signal, is_null);
+	VCALL_LOCALMEM0R(Signal, get_object);
+	VCALL_LOCALMEM0R(Signal, get_object_id);
+	VCALL_LOCALMEM0R(Signal, get_name);
+	VCALL_LOCALMEM3R(Signal, connect);
+	VCALL_LOCALMEM1(Signal, disconnect);
+	VCALL_LOCALMEM1R(Signal, is_connected);
+	VCALL_LOCALMEM0R(Signal, get_connections);
 
 	VCALL_LOCALMEM2(Array, set);
 	VCALL_LOCALMEM1R(Array, get);
@@ -1010,6 +1027,16 @@ struct _VariantCall {
 		r_ret = Transform(p_args[0]->operator Basis(), p_args[1]->operator Vector3());
 	}
 
+	static void Callable_init2(Variant &r_ret, const Variant **p_args) {
+
+		r_ret = Callable(p_args[0]->operator ObjectID(), p_args[1]->operator String());
+	}
+
+	static void Signal_init2(Variant &r_ret, const Variant **p_args) {
+
+		r_ret = Signal(p_args[0]->operator ObjectID(), p_args[1]->operator String());
+	}
+
 	static void add_constructor(VariantConstructFunc p_func, const Variant::Type p_type,
 			const String &p_name1 = "", const Variant::Type p_type1 = Variant::NIL,
 			const String &p_name2 = "", const Variant::Type p_type2 = Variant::NIL,
@@ -1078,26 +1105,26 @@ _VariantCall::TypeFunc *_VariantCall::type_funcs = NULL;
 _VariantCall::ConstructFunc *_VariantCall::construct_funcs = NULL;
 _VariantCall::ConstantData *_VariantCall::constant_data = NULL;
 
-Variant Variant::call(const StringName &p_method, const Variant **p_args, int p_argcount, CallError &r_error) {
+Variant Variant::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 
 	Variant ret;
 	call_ptr(p_method, p_args, p_argcount, &ret, r_error);
 	return ret;
 }
 
-void Variant::call_ptr(const StringName &p_method, const Variant **p_args, int p_argcount, Variant *r_ret, CallError &r_error) {
+void Variant::call_ptr(const StringName &p_method, const Variant **p_args, int p_argcount, Variant *r_ret, Callable::CallError &r_error) {
 	Variant ret;
 
 	if (type == Variant::OBJECT) {
 		//call object
 		Object *obj = _get_obj().obj;
 		if (!obj) {
-			r_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
+			r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 			return;
 		}
 #ifdef DEBUG_ENABLED
 		if (ScriptDebugger::get_singleton() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
-			r_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
+			r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 			return;
 		}
 
@@ -1108,31 +1135,57 @@ void Variant::call_ptr(const StringName &p_method, const Variant **p_args, int p
 
 	} else {
 
-		r_error.error = Variant::CallError::CALL_OK;
+		r_error.error = Callable::CallError::CALL_OK;
 
 		Map<StringName, _VariantCall::FuncData>::Element *E = _VariantCall::type_funcs[type].functions.find(p_method);
-#ifdef DEBUG_ENABLED
-		if (!E) {
-			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
-			return;
+
+		if (E) {
+
+			_VariantCall::FuncData &funcdata = E->get();
+			funcdata.call(ret, *this, p_args, p_argcount, r_error);
+
+		} else {
+			//handle vararg functions manually
+			bool valid = false;
+			if (type == CALLABLE) {
+				if (p_method == CoreStringNames::get_singleton()->call) {
+
+					reinterpret_cast<const Callable *>(_data._mem)->call(p_args, p_argcount, ret, r_error);
+					valid = true;
+				}
+				if (p_method == CoreStringNames::get_singleton()->call_deferred) {
+					reinterpret_cast<const Callable *>(_data._mem)->call_deferred(p_args, p_argcount);
+					valid = true;
+				}
+			} else if (type == SIGNAL) {
+				if (p_method == CoreStringNames::get_singleton()->emit) {
+					if (r_ret) {
+						*r_ret = Variant();
+					}
+					reinterpret_cast<const Signal *>(_data._mem)->emit(p_args, p_argcount);
+					valid = true;
+				}
+			}
+			if (!valid) {
+				//ok fail because not found
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+				return;
+			}
 		}
-#endif
-		_VariantCall::FuncData &funcdata = E->get();
-		funcdata.call(ret, *this, p_args, p_argcount, r_error);
 	}
 
-	if (r_error.error == Variant::CallError::CALL_OK && r_ret)
+	if (r_error.error == Callable::CallError::CALL_OK && r_ret)
 		*r_ret = ret;
 }
 
 #define VCALL(m_type, m_method) _VariantCall::_call_##m_type##_##m_method
 
-Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, int p_argcount, CallError &r_error, bool p_strict) {
+Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, int p_argcount, Callable::CallError &r_error, bool p_strict) {
 
-	r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+	r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 	ERR_FAIL_INDEX_V(p_type, VARIANT_MAX, Variant());
 
-	r_error.error = Variant::CallError::CALL_OK;
+	r_error.error = Callable::CallError::CALL_OK;
 	if (p_argcount == 0) { //generic construct
 
 		switch (p_type) {
@@ -1166,6 +1219,8 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 				return NodePath(); // 15
 			case _RID: return RID();
 			case OBJECT: return (Object *)NULL;
+			case CALLABLE: return Callable();
+			case SIGNAL: return Signal();
 			case DICTIONARY: return Dictionary();
 			case ARRAY:
 				return Array(); // 20
@@ -1249,7 +1304,7 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 			//validate parameters
 			for (int i = 0; i < cd.arg_count; i++) {
 				if (!Variant::can_convert(p_args[i]->type, cd.arg_types[i])) {
-					r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT; //no such constructor
+					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT; //no such constructor
 					r_error.argument = i;
 					r_error.expected = cd.arg_types[i];
 					return Variant();
@@ -1261,7 +1316,7 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 			return v;
 		}
 	}
-	r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD; //no such constructor
+	r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD; //no such constructor
 	return Variant();
 }
 
@@ -1370,6 +1425,30 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 			ret.name = "ret";
 		mi.return_val = ret;
 #endif
+
+		p_list->push_back(mi);
+	}
+
+	if (type == CALLABLE) {
+
+		MethodInfo mi;
+		mi.name = "call";
+		mi.return_val.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
+		mi.flags |= METHOD_FLAG_VARARG;
+
+		p_list->push_back(mi);
+
+		mi.name = "call_deferred";
+		mi.return_val.usage = 0;
+
+		p_list->push_back(mi);
+	}
+
+	if (type == SIGNAL) {
+
+		MethodInfo mi;
+		mi.name = "emit";
+		mi.flags |= METHOD_FLAG_VARARG;
 
 		p_list->push_back(mi);
 	}
@@ -1756,6 +1835,25 @@ void register_variant_methods() {
 	ADDFUNC1R(DICTIONARY, DICTIONARY, Dictionary, duplicate, BOOL, "deep", varray(false));
 	ADDFUNC2R(DICTIONARY, NIL, Dictionary, get, NIL, "key", NIL, "default", varray(Variant()));
 
+	ADDFUNC0R(CALLABLE, BOOL, Callable, is_null, varray());
+	ADDFUNC0R(CALLABLE, BOOL, Callable, is_custom, varray());
+	ADDFUNC0R(CALLABLE, BOOL, Callable, is_standard, varray());
+	ADDFUNC0R(CALLABLE, OBJECT, Callable, get_object, varray());
+	ADDFUNC0R(CALLABLE, INT, Callable, get_object_id, varray());
+	ADDFUNC0R(CALLABLE, STRING, Callable, get_method, varray());
+	ADDFUNC0R(CALLABLE, INT, Callable, hash, varray());
+
+	ADDFUNC0R(SIGNAL, BOOL, Signal, is_null, varray());
+	ADDFUNC0R(SIGNAL, OBJECT, Signal, get_object, varray());
+	ADDFUNC0R(SIGNAL, INT, Signal, get_object_id, varray());
+	ADDFUNC0R(SIGNAL, STRING, Signal, get_name, varray());
+
+	ADDFUNC3R(SIGNAL, INT, Signal, connect, CALLABLE, "callable", ARRAY, "binds", INT, "flags", varray(Array(), 0));
+
+	ADDFUNC1R(SIGNAL, NIL, Signal, disconnect, CALLABLE, "callable", varray());
+	ADDFUNC1R(SIGNAL, BOOL, Signal, is_connected, CALLABLE, "callable", varray());
+	ADDFUNC0R(SIGNAL, ARRAY, Signal, get_connections, varray());
+
 	ADDFUNC0R(ARRAY, INT, Array, size, varray());
 	ADDFUNC0R(ARRAY, BOOL, Array, empty, varray());
 	ADDFUNC0NC(ARRAY, NIL, Array, clear, varray());
@@ -1971,6 +2069,9 @@ void register_variant_methods() {
 
 	_VariantCall::add_constructor(_VariantCall::Transform_init1, Variant::TRANSFORM, "x_axis", Variant::VECTOR3, "y_axis", Variant::VECTOR3, "z_axis", Variant::VECTOR3, "origin", Variant::VECTOR3);
 	_VariantCall::add_constructor(_VariantCall::Transform_init2, Variant::TRANSFORM, "basis", Variant::BASIS, "origin", Variant::VECTOR3);
+
+	_VariantCall::add_constructor(_VariantCall::Callable_init2, Variant::CALLABLE, "object", Variant::OBJECT, "method_name", Variant::STRING);
+	_VariantCall::add_constructor(_VariantCall::Signal_init2, Variant::SIGNAL, "object", Variant::OBJECT, "signal_name", Variant::STRING);
 
 	/* REGISTER CONSTANTS */
 

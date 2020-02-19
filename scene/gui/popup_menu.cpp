@@ -1233,7 +1233,7 @@ void PopupMenu::_ref_shortcut(Ref<ShortCut> p_sc) {
 
 	if (!shortcut_refcount.has(p_sc)) {
 		shortcut_refcount[p_sc] = 1;
-		p_sc->connect("changed", this, "update");
+		p_sc->connect_compat("changed", this, "update");
 	} else {
 		shortcut_refcount[p_sc] += 1;
 	}
@@ -1244,7 +1244,7 @@ void PopupMenu::_unref_shortcut(Ref<ShortCut> p_sc) {
 	ERR_FAIL_COND(!shortcut_refcount.has(p_sc));
 	shortcut_refcount[p_sc]--;
 	if (shortcut_refcount[p_sc] == 0) {
-		p_sc->disconnect("changed", this, "update");
+		p_sc->disconnect_compat("changed", this, "update");
 		shortcut_refcount.erase(p_sc);
 	}
 }
@@ -1514,7 +1514,7 @@ PopupMenu::PopupMenu() {
 	submenu_timer = memnew(Timer);
 	submenu_timer->set_wait_time(0.3);
 	submenu_timer->set_one_shot(true);
-	submenu_timer->connect("timeout", this, "_submenu_timeout");
+	submenu_timer->connect_compat("timeout", this, "_submenu_timeout");
 	add_child(submenu_timer);
 }
 

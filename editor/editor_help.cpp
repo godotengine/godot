@@ -1551,9 +1551,9 @@ EditorHelp::EditorHelp() {
 	class_desc->set_v_size_flags(SIZE_EXPAND_FILL);
 	class_desc->add_color_override("selection_color", get_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 
-	class_desc->connect("meta_clicked", this, "_class_desc_select");
-	class_desc->connect("gui_input", this, "_class_desc_input");
-	class_desc->connect("resized", this, "_class_desc_resized");
+	class_desc->connect_compat("meta_clicked", this, "_class_desc_select");
+	class_desc->connect_compat("gui_input", this, "_class_desc_input");
+	class_desc->connect_compat("resized", this, "_class_desc_resized");
 	_class_desc_resized();
 
 	// Added second so it opens at the bottom so it won't offset the entire widget.
@@ -1633,7 +1633,7 @@ EditorHelpBit::EditorHelpBit() {
 
 	rich_text = memnew(RichTextLabel);
 	add_child(rich_text);
-	rich_text->connect("meta_clicked", this, "_meta_clicked");
+	rich_text->connect_compat("meta_clicked", this, "_meta_clicked");
 	rich_text->add_color_override("selection_color", get_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 	rich_text->set_override_selected_font_color(false);
 	set_custom_minimum_size(Size2(0, 70 * EDSCALE));
@@ -1645,8 +1645,8 @@ FindBar::FindBar() {
 	add_child(search_text);
 	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	search_text->set_h_size_flags(SIZE_EXPAND_FILL);
-	search_text->connect("text_changed", this, "_search_text_changed");
-	search_text->connect("text_entered", this, "_search_text_entered");
+	search_text->connect_compat("text_changed", this, "_search_text_changed");
+	search_text->connect_compat("text_entered", this, "_search_text_entered");
 
 	matches_label = memnew(Label);
 	add_child(matches_label);
@@ -1655,12 +1655,12 @@ FindBar::FindBar() {
 	find_prev = memnew(ToolButton);
 	add_child(find_prev);
 	find_prev->set_focus_mode(FOCUS_NONE);
-	find_prev->connect("pressed", this, "_search_prev");
+	find_prev->connect_compat("pressed", this, "_search_prev");
 
 	find_next = memnew(ToolButton);
 	add_child(find_next);
 	find_next->set_focus_mode(FOCUS_NONE);
-	find_next->connect("pressed", this, "_search_next");
+	find_next->connect_compat("pressed", this, "_search_next");
 
 	Control *space = memnew(Control);
 	add_child(space);
@@ -1671,7 +1671,7 @@ FindBar::FindBar() {
 	hide_button->set_focus_mode(FOCUS_NONE);
 	hide_button->set_expand(true);
 	hide_button->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);
-	hide_button->connect("pressed", this, "_hide_pressed");
+	hide_button->connect_compat("pressed", this, "_hide_pressed");
 }
 
 void FindBar::popup_search() {

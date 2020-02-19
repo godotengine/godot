@@ -463,13 +463,13 @@ AnimationNode::AnimationNode() {
 void AnimationTree::set_tree_root(const Ref<AnimationNode> &p_root) {
 
 	if (root.is_valid()) {
-		root->disconnect("tree_changed", this, "_tree_changed");
+		root->disconnect_compat("tree_changed", this, "_tree_changed");
 	}
 
 	root = p_root;
 
 	if (root.is_valid()) {
-		root->connect("tree_changed", this, "_tree_changed");
+		root->connect_compat("tree_changed", this, "_tree_changed");
 	}
 
 	properties_dirty = true;
@@ -582,8 +582,8 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 					continue;
 				}
 
-				if (!child->is_connected("tree_exited", this, "_node_removed")) {
-					child->connect("tree_exited", this, "_node_removed", varray(child));
+				if (!child->is_connected_compat("tree_exited", this, "_node_removed")) {
+					child->connect_compat("tree_exited", this, "_node_removed", varray(child));
 				}
 
 				switch (track_type) {
@@ -778,12 +778,12 @@ void AnimationTree::_process_graph(float p_delta) {
 		if (last_animation_player.is_valid()) {
 			Object *old_player = ObjectDB::get_instance(last_animation_player);
 			if (old_player) {
-				old_player->disconnect("caches_cleared", this, "_clear_caches");
+				old_player->disconnect_compat("caches_cleared", this, "_clear_caches");
 			}
 		}
 
 		if (player) {
-			player->connect("caches_cleared", this, "_clear_caches");
+			player->connect_compat("caches_cleared", this, "_clear_caches");
 		}
 
 		last_animation_player = current_animation_player;
@@ -1300,7 +1300,7 @@ void AnimationTree::_notification(int p_what) {
 
 			Object *player = ObjectDB::get_instance(last_animation_player);
 			if (player) {
-				player->disconnect("caches_cleared", this, "_clear_caches");
+				player->disconnect_compat("caches_cleared", this, "_clear_caches");
 			}
 		}
 	} else if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -1308,7 +1308,7 @@ void AnimationTree::_notification(int p_what) {
 
 			Object *player = ObjectDB::get_instance(last_animation_player);
 			if (player) {
-				player->connect("caches_cleared", this, "_clear_caches");
+				player->connect_compat("caches_cleared", this, "_clear_caches");
 			}
 		}
 	}

@@ -307,17 +307,17 @@ Variant ScriptInstance::call(const StringName &p_method, VARIANT_ARG_DECLARE) {
 		argc++;
 	}
 
-	Variant::CallError error;
+	Callable::CallError error;
 	return call(p_method, argptr, argc, error);
 }
 
 void ScriptInstance::call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount) {
-	Variant::CallError ce;
+	Callable::CallError ce;
 	call(p_method, p_args, p_argcount, ce); // script may not support multilevel calls
 }
 
 void ScriptInstance::call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount) {
-	Variant::CallError ce;
+	Callable::CallError ce;
 	call(p_method, p_args, p_argcount, ce); // script may not support multilevel calls
 }
 

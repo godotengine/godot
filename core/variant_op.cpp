@@ -56,6 +56,8 @@
 	CASE_TYPE(PREFIX, OP, NODE_PATH)            \
 	CASE_TYPE(PREFIX, OP, _RID)                 \
 	CASE_TYPE(PREFIX, OP, OBJECT)               \
+	CASE_TYPE(PREFIX, OP, CALLABLE)             \
+	CASE_TYPE(PREFIX, OP, SIGNAL)               \
 	CASE_TYPE(PREFIX, OP, DICTIONARY)           \
 	CASE_TYPE(PREFIX, OP, ARRAY)                \
 	CASE_TYPE(PREFIX, OP, PACKED_BYTE_ARRAY)    \
@@ -89,6 +91,8 @@
 		TYPE(PREFIX, OP, NODE_PATH),          \
 		TYPE(PREFIX, OP, _RID),               \
 		TYPE(PREFIX, OP, OBJECT),             \
+		TYPE(PREFIX, OP, CALLABLE),             \
+		TYPE(PREFIX, OP, SIGNAL),             \
 		TYPE(PREFIX, OP, DICTIONARY),         \
 		TYPE(PREFIX, OP, ARRAY),              \
 		TYPE(PREFIX, OP, PACKED_BYTE_ARRAY),    \
@@ -101,32 +105,32 @@
 }
 /* clang-format on */
 
-#define CASES(PREFIX) static const void *switch_table_##PREFIX[25][27] = { \
-	TYPES(PREFIX, OP_EQUAL),                                               \
-	TYPES(PREFIX, OP_NOT_EQUAL),                                           \
-	TYPES(PREFIX, OP_LESS),                                                \
-	TYPES(PREFIX, OP_LESS_EQUAL),                                          \
-	TYPES(PREFIX, OP_GREATER),                                             \
-	TYPES(PREFIX, OP_GREATER_EQUAL),                                       \
-	TYPES(PREFIX, OP_ADD),                                                 \
-	TYPES(PREFIX, OP_SUBTRACT),                                            \
-	TYPES(PREFIX, OP_MULTIPLY),                                            \
-	TYPES(PREFIX, OP_DIVIDE),                                              \
-	TYPES(PREFIX, OP_NEGATE),                                              \
-	TYPES(PREFIX, OP_POSITIVE),                                            \
-	TYPES(PREFIX, OP_MODULE),                                              \
-	TYPES(PREFIX, OP_STRING_CONCAT),                                       \
-	TYPES(PREFIX, OP_SHIFT_LEFT),                                          \
-	TYPES(PREFIX, OP_SHIFT_RIGHT),                                         \
-	TYPES(PREFIX, OP_BIT_AND),                                             \
-	TYPES(PREFIX, OP_BIT_OR),                                              \
-	TYPES(PREFIX, OP_BIT_XOR),                                             \
-	TYPES(PREFIX, OP_BIT_NEGATE),                                          \
-	TYPES(PREFIX, OP_AND),                                                 \
-	TYPES(PREFIX, OP_OR),                                                  \
-	TYPES(PREFIX, OP_XOR),                                                 \
-	TYPES(PREFIX, OP_NOT),                                                 \
-	TYPES(PREFIX, OP_IN),                                                  \
+#define CASES(PREFIX) static const void *switch_table_##PREFIX[25][Variant::VARIANT_MAX] = { \
+	TYPES(PREFIX, OP_EQUAL),                                                                 \
+	TYPES(PREFIX, OP_NOT_EQUAL),                                                             \
+	TYPES(PREFIX, OP_LESS),                                                                  \
+	TYPES(PREFIX, OP_LESS_EQUAL),                                                            \
+	TYPES(PREFIX, OP_GREATER),                                                               \
+	TYPES(PREFIX, OP_GREATER_EQUAL),                                                         \
+	TYPES(PREFIX, OP_ADD),                                                                   \
+	TYPES(PREFIX, OP_SUBTRACT),                                                              \
+	TYPES(PREFIX, OP_MULTIPLY),                                                              \
+	TYPES(PREFIX, OP_DIVIDE),                                                                \
+	TYPES(PREFIX, OP_NEGATE),                                                                \
+	TYPES(PREFIX, OP_POSITIVE),                                                              \
+	TYPES(PREFIX, OP_MODULE),                                                                \
+	TYPES(PREFIX, OP_STRING_CONCAT),                                                         \
+	TYPES(PREFIX, OP_SHIFT_LEFT),                                                            \
+	TYPES(PREFIX, OP_SHIFT_RIGHT),                                                           \
+	TYPES(PREFIX, OP_BIT_AND),                                                               \
+	TYPES(PREFIX, OP_BIT_OR),                                                                \
+	TYPES(PREFIX, OP_BIT_XOR),                                                               \
+	TYPES(PREFIX, OP_BIT_NEGATE),                                                            \
+	TYPES(PREFIX, OP_AND),                                                                   \
+	TYPES(PREFIX, OP_OR),                                                                    \
+	TYPES(PREFIX, OP_XOR),                                                                   \
+	TYPES(PREFIX, OP_NOT),                                                                   \
+	TYPES(PREFIX, OP_IN),                                                                    \
 }
 
 #define SWITCH(PREFIX, op, val) goto *switch_table_##PREFIX[op][val];
@@ -423,6 +427,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				_RETURN_FAIL;
 			}
 
+			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, CALLABLE, ==, Callable);
+			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, SIGNAL, ==, Signal);
+
 			CASE_TYPE(math, OP_EQUAL, DICTIONARY) {
 				if (p_b.type != DICTIONARY) {
 					if (p_b.type == NIL)
@@ -511,6 +518,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				_RETURN_FAIL;
 			}
 
+			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, CALLABLE, !=, Callable);
+			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, SIGNAL, !=, Signal);
+
 			CASE_TYPE(math, OP_NOT_EQUAL, DICTIONARY) {
 				if (p_b.type != DICTIONARY) {
 					if (p_b.type == NIL)
@@ -592,6 +602,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				_RETURN((p_a._get_obj().obj < p_b._get_obj().obj));
 			}
 
+			DEFAULT_OP_LOCALMEM_NULL(math, OP_LESS, CALLABLE, <, Callable);
+			DEFAULT_OP_LOCALMEM_NULL(math, OP_LESS, SIGNAL, <, Signal);
+
 			CASE_TYPE(math, OP_LESS, ARRAY) {
 				if (p_b.type != ARRAY)
 					_RETURN_FAIL;
@@ -664,6 +677,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_LESS_EQUAL, TRANSFORM)
 			CASE_TYPE(math, OP_LESS_EQUAL, COLOR)
 			CASE_TYPE(math, OP_LESS_EQUAL, NODE_PATH)
+			CASE_TYPE(math, OP_LESS_EQUAL, CALLABLE)
+			CASE_TYPE(math, OP_LESS_EQUAL, SIGNAL)
+
 			CASE_TYPE(math, OP_LESS_EQUAL, DICTIONARY)
 			CASE_TYPE(math, OP_LESS_EQUAL, ARRAY)
 			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_BYTE_ARRAY);
@@ -740,6 +756,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_GREATER, COLOR)
 			CASE_TYPE(math, OP_GREATER, NODE_PATH)
 			CASE_TYPE(math, OP_GREATER, DICTIONARY)
+			CASE_TYPE(math, OP_GREATER, CALLABLE)
+			CASE_TYPE(math, OP_GREATER, SIGNAL)
+
 			_RETURN_FAIL;
 		}
 
@@ -768,6 +787,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_GREATER_EQUAL, TRANSFORM)
 			CASE_TYPE(math, OP_GREATER_EQUAL, COLOR)
 			CASE_TYPE(math, OP_GREATER_EQUAL, NODE_PATH)
+			CASE_TYPE(math, OP_GREATER_EQUAL, CALLABLE)
+			CASE_TYPE(math, OP_GREATER_EQUAL, SIGNAL)
+
 			CASE_TYPE(math, OP_GREATER_EQUAL, DICTIONARY)
 			CASE_TYPE(math, OP_GREATER_EQUAL, ARRAY)
 			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_BYTE_ARRAY);
@@ -825,6 +847,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_ADD, NODE_PATH)
 			CASE_TYPE(math, OP_ADD, _RID)
 			CASE_TYPE(math, OP_ADD, OBJECT)
+			CASE_TYPE(math, OP_ADD, CALLABLE)
+			CASE_TYPE(math, OP_ADD, SIGNAL)
+
 			CASE_TYPE(math, OP_ADD, DICTIONARY)
 			_RETURN_FAIL;
 		}
@@ -849,6 +874,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_SUBTRACT, NODE_PATH)
 			CASE_TYPE(math, OP_SUBTRACT, _RID)
 			CASE_TYPE(math, OP_SUBTRACT, OBJECT)
+			CASE_TYPE(math, OP_SUBTRACT, CALLABLE)
+			CASE_TYPE(math, OP_SUBTRACT, SIGNAL)
+
 			CASE_TYPE(math, OP_SUBTRACT, DICTIONARY)
 			CASE_TYPE(math, OP_SUBTRACT, ARRAY)
 			CASE_TYPE(math, OP_SUBTRACT, PACKED_BYTE_ARRAY);
@@ -928,6 +956,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_MULTIPLY, NODE_PATH)
 			CASE_TYPE(math, OP_MULTIPLY, _RID)
 			CASE_TYPE(math, OP_MULTIPLY, OBJECT)
+			CASE_TYPE(math, OP_MULTIPLY, CALLABLE)
+			CASE_TYPE(math, OP_MULTIPLY, SIGNAL)
+
 			CASE_TYPE(math, OP_MULTIPLY, DICTIONARY)
 			CASE_TYPE(math, OP_MULTIPLY, ARRAY)
 			CASE_TYPE(math, OP_MULTIPLY, PACKED_BYTE_ARRAY);
@@ -971,6 +1002,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_DIVIDE, NODE_PATH)
 			CASE_TYPE(math, OP_DIVIDE, _RID)
 			CASE_TYPE(math, OP_DIVIDE, OBJECT)
+			CASE_TYPE(math, OP_DIVIDE, CALLABLE)
+			CASE_TYPE(math, OP_DIVIDE, SIGNAL)
+
 			CASE_TYPE(math, OP_DIVIDE, DICTIONARY)
 			CASE_TYPE(math, OP_DIVIDE, ARRAY)
 			CASE_TYPE(math, OP_DIVIDE, PACKED_BYTE_ARRAY);
@@ -1003,6 +1037,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_POSITIVE, NODE_PATH)
 			CASE_TYPE(math, OP_POSITIVE, _RID)
 			CASE_TYPE(math, OP_POSITIVE, OBJECT)
+			CASE_TYPE(math, OP_POSITIVE, CALLABLE)
+			CASE_TYPE(math, OP_POSITIVE, SIGNAL)
+
 			CASE_TYPE(math, OP_POSITIVE, DICTIONARY)
 			CASE_TYPE(math, OP_POSITIVE, ARRAY)
 			CASE_TYPE(math, OP_POSITIVE, PACKED_BYTE_ARRAY)
@@ -1036,6 +1073,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_NEGATE, NODE_PATH)
 			CASE_TYPE(math, OP_NEGATE, _RID)
 			CASE_TYPE(math, OP_NEGATE, OBJECT)
+			CASE_TYPE(math, OP_NEGATE, CALLABLE)
+			CASE_TYPE(math, OP_NEGATE, SIGNAL)
+
 			CASE_TYPE(math, OP_NEGATE, DICTIONARY)
 			CASE_TYPE(math, OP_NEGATE, ARRAY)
 			CASE_TYPE(math, OP_NEGATE, PACKED_BYTE_ARRAY)
@@ -1096,6 +1136,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_MODULE, NODE_PATH)
 			CASE_TYPE(math, OP_MODULE, _RID)
 			CASE_TYPE(math, OP_MODULE, OBJECT)
+			CASE_TYPE(math, OP_MODULE, CALLABLE)
+			CASE_TYPE(math, OP_MODULE, SIGNAL)
+
 			CASE_TYPE(math, OP_MODULE, DICTIONARY)
 			CASE_TYPE(math, OP_MODULE, ARRAY)
 			CASE_TYPE(math, OP_MODULE, PACKED_BYTE_ARRAY)
@@ -2968,15 +3011,15 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			}
 
 #endif
-			Variant::CallError ce;
-			ce.error = Variant::CallError::CALL_OK;
+			Callable::CallError ce;
+			ce.error = Callable::CallError::CALL_OK;
 			Array ref;
 			ref.push_back(r_iter);
 			Variant vref = ref;
 			const Variant *refp[] = { &vref };
 			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_init, refp, 1, ce);
 
-			if (ref.size() != 1 || ce.error != Variant::CallError::CALL_OK) {
+			if (ref.size() != 1 || ce.error != Callable::CallError::CALL_OK) {
 				valid = false;
 				return false;
 			}
@@ -3138,15 +3181,15 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			}
 
 #endif
-			Variant::CallError ce;
-			ce.error = Variant::CallError::CALL_OK;
+			Callable::CallError ce;
+			ce.error = Callable::CallError::CALL_OK;
 			Array ref;
 			ref.push_back(r_iter);
 			Variant vref = ref;
 			const Variant *refp[] = { &vref };
 			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_next, refp, 1, ce);
 
-			if (ref.size() != 1 || ce.error != Variant::CallError::CALL_OK) {
+			if (ref.size() != 1 || ce.error != Callable::CallError::CALL_OK) {
 				valid = false;
 				return false;
 			}
@@ -3297,12 +3340,12 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			}
 
 #endif
-			Variant::CallError ce;
-			ce.error = Variant::CallError::CALL_OK;
+			Callable::CallError ce;
+			ce.error = Callable::CallError::CALL_OK;
 			const Variant *refp[] = { &r_iter };
 			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_get, refp, 1, ce);
 
-			if (ce.error != Variant::CallError::CALL_OK) {
+			if (ce.error != Callable::CallError::CALL_OK) {
 				r_valid = false;
 				return Variant();
 			}

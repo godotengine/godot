@@ -69,12 +69,12 @@ Ref<BitMap> TouchScreenButton::get_bitmask() const {
 void TouchScreenButton::set_shape(const Ref<Shape2D> &p_shape) {
 
 	if (shape.is_valid())
-		shape->disconnect("changed", this, "update");
+		shape->disconnect_compat("changed", this, "update");
 
 	shape = p_shape;
 
 	if (shape.is_valid())
-		shape->connect("changed", this, "update");
+		shape->connect_compat("changed", this, "update");
 
 	update();
 }

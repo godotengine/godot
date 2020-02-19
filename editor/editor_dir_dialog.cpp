@@ -82,21 +82,21 @@ void EditorDirDialog::reload(const String &p_path) {
 void EditorDirDialog::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		EditorFileSystem::get_singleton()->connect("filesystem_changed", this, "reload");
+		EditorFileSystem::get_singleton()->connect_compat("filesystem_changed", this, "reload");
 		reload();
 
-		if (!tree->is_connected("item_collapsed", this, "_item_collapsed")) {
-			tree->connect("item_collapsed", this, "_item_collapsed", varray(), CONNECT_DEFERRED);
+		if (!tree->is_connected_compat("item_collapsed", this, "_item_collapsed")) {
+			tree->connect_compat("item_collapsed", this, "_item_collapsed", varray(), CONNECT_DEFERRED);
 		}
 
-		if (!EditorFileSystem::get_singleton()->is_connected("filesystem_changed", this, "reload")) {
-			EditorFileSystem::get_singleton()->connect("filesystem_changed", this, "reload");
+		if (!EditorFileSystem::get_singleton()->is_connected_compat("filesystem_changed", this, "reload")) {
+			EditorFileSystem::get_singleton()->connect_compat("filesystem_changed", this, "reload");
 		}
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (EditorFileSystem::get_singleton()->is_connected("filesystem_changed", this, "reload")) {
-			EditorFileSystem::get_singleton()->disconnect("filesystem_changed", this, "reload");
+		if (EditorFileSystem::get_singleton()->is_connected_compat("filesystem_changed", this, "reload")) {
+			EditorFileSystem::get_singleton()->disconnect_compat("filesystem_changed", this, "reload");
 		}
 	}
 
@@ -186,10 +186,10 @@ EditorDirDialog::EditorDirDialog() {
 	tree = memnew(Tree);
 	add_child(tree);
 
-	tree->connect("item_activated", this, "_ok");
+	tree->connect_compat("item_activated", this, "_ok");
 
 	makedir = add_button(TTR("Create Folder"), OS::get_singleton()->get_swap_ok_cancel(), "makedir");
-	makedir->connect("pressed", this, "_make_dir");
+	makedir->connect_compat("pressed", this, "_make_dir");
 
 	makedialog = memnew(ConfirmationDialog);
 	makedialog->set_title(TTR("Create Folder"));
@@ -202,7 +202,7 @@ EditorDirDialog::EditorDirDialog() {
 	makedirname = memnew(LineEdit);
 	makevb->add_margin_child(TTR("Name:"), makedirname);
 	makedialog->register_text_enter(makedirname);
-	makedialog->connect("confirmed", this, "_make_dir_confirm");
+	makedialog->connect_compat("confirmed", this, "_make_dir_confirm");
 
 	mkdirerr = memnew(AcceptDialog);
 	mkdirerr->set_text(TTR("Could not create folder."));

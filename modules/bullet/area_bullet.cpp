@@ -117,7 +117,7 @@ void AreaBullet::call_event(CollisionObjectBullet *p_otherObject, PhysicsServer:
 	call_event_res[3] = 0; // other_body_shape ID
 	call_event_res[4] = 0; // self_shape ID
 
-	Variant::CallError outResp;
+	Callable::CallError outResp;
 	areaGodoObject->call(event.event_callback_method, (const Variant **)call_event_res_ptr, 5, outResp);
 }
 

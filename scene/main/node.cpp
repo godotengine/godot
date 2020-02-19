@@ -592,16 +592,16 @@ void Node::rpc_unreliable_id(int p_peer_id, const StringName &p_method, VARIANT_
 	rpcp(p_peer_id, true, p_method, argptr, argc);
 }
 
-Variant Node::_rpc_bind(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+Variant Node::_rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 
 	if (p_argcount < 1) {
-		r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.argument = 1;
 		return Variant();
 	}
 
 	if (p_args[0]->get_type() != Variant::STRING) {
-		r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING;
 		return Variant();
@@ -611,27 +611,27 @@ Variant Node::_rpc_bind(const Variant **p_args, int p_argcount, Variant::CallErr
 
 	rpcp(0, false, method, &p_args[1], p_argcount - 1);
 
-	r_error.error = Variant::CallError::CALL_OK;
+	r_error.error = Callable::CallError::CALL_OK;
 	return Variant();
 }
 
-Variant Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+Variant Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 
 	if (p_argcount < 2) {
-		r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.argument = 2;
 		return Variant();
 	}
 
 	if (p_args[0]->get_type() != Variant::INT) {
-		r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::INT;
 		return Variant();
 	}
 
 	if (p_args[1]->get_type() != Variant::STRING) {
-		r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
 		r_error.expected = Variant::STRING;
 		return Variant();
@@ -642,20 +642,20 @@ Variant Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Variant::Call
 
 	rpcp(peer_id, false, method, &p_args[2], p_argcount - 2);
 
-	r_error.error = Variant::CallError::CALL_OK;
+	r_error.error = Callable::CallError::CALL_OK;
 	return Variant();
 }
 
-Variant Node::_rpc_unreliable_bind(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+Variant Node::_rpc_unreliable_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 
 	if (p_argcount < 1) {
-		r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.argument = 1;
 		return Variant();
 	}
 
 	if (p_args[0]->get_type() != Variant::STRING) {
-		r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING;
 		return Variant();
@@ -665,27 +665,27 @@ Variant Node::_rpc_unreliable_bind(const Variant **p_args, int p_argcount, Varia
 
 	rpcp(0, true, method, &p_args[1], p_argcount - 1);
 
-	r_error.error = Variant::CallError::CALL_OK;
+	r_error.error = Callable::CallError::CALL_OK;
 	return Variant();
 }
 
-Variant Node::_rpc_unreliable_id_bind(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+Variant Node::_rpc_unreliable_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 
 	if (p_argcount < 2) {
-		r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.argument = 2;
 		return Variant();
 	}
 
 	if (p_args[0]->get_type() != Variant::INT) {
-		r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::INT;
 		return Variant();
 	}
 
 	if (p_args[1]->get_type() != Variant::STRING) {
-		r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
 		r_error.expected = Variant::STRING;
 		return Variant();
@@ -696,7 +696,7 @@ Variant Node::_rpc_unreliable_id_bind(const Variant **p_args, int p_argcount, Va
 
 	rpcp(peer_id, true, method, &p_args[2], p_argcount - 2);
 
-	r_error.error = Variant::CallError::CALL_OK;
+	r_error.error = Callable::CallError::CALL_OK;
 	return Variant();
 }
 
@@ -2360,7 +2360,7 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 			NodePath p = p_original->get_path_to(this);
 			Node *copy = p_copy->get_node(p);
 
-			Node *target = Object::cast_to<Node>(E->get().target);
+			Node *target = Object::cast_to<Node>(E->get().callable.get_object());
 			if (!target) {
 				continue;
 			}
@@ -2375,8 +2375,8 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 			if (p_copy->has_node(ptarget))
 				copytarget = p_copy->get_node(ptarget);
 
-			if (copy && copytarget && !copy->is_connected(E->get().signal, copytarget, E->get().method)) {
-				copy->connect(E->get().signal, copytarget, E->get().method, E->get().binds, E->get().flags);
+			if (copy && copytarget && !copy->is_connected_compat(E->get().signal.get_name(), copytarget, E->get().callable.get_method())) {
+				copy->connect_compat(E->get().signal.get_name(), copytarget, E->get().callable.get_method(), E->get().binds, E->get().flags);
 			}
 		}
 	}
@@ -2531,10 +2531,10 @@ void Node::_replace_connections_target(Node *p_new_target) {
 		Connection &c = E->get();
 
 		if (c.flags & CONNECT_PERSIST) {
-			c.source->disconnect(c.signal, this, c.method);
-			bool valid = p_new_target->has_method(c.method) || Ref<Script>(p_new_target->get_script()).is_null() || Ref<Script>(p_new_target->get_script())->has_method(c.method);
-			ERR_CONTINUE_MSG(!valid, "Attempt to connect signal '" + c.source->get_class() + "." + c.signal + "' to nonexistent method '" + c.target->get_class() + "." + c.method + "'.");
-			c.source->connect(c.signal, p_new_target, c.method, c.binds, c.flags);
+			c.signal.get_object()->disconnect_compat(c.signal.get_name(), this, c.callable.get_method());
+			bool valid = p_new_target->has_method(c.callable.get_method()) || Ref<Script>(p_new_target->get_script()).is_null() || Ref<Script>(p_new_target->get_script())->has_method(c.callable.get_method());
+			ERR_CONTINUE_MSG(!valid, "Attempt to connect signal '" + c.signal.get_object()->get_class() + "." + c.signal.get_name() + "' to nonexistent method '" + c.callable.get_object()->get_class() + "." + c.callable.get_method() + "'.");
+			c.signal.get_object()->connect_compat(c.signal.get_name(), p_new_target, c.callable.get_method(), c.binds, c.flags);
 		}
 	}
 }

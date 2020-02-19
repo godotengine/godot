@@ -116,7 +116,7 @@ CPUParticlesEditor::CPUParticlesEditor() {
 	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Restart"), MENU_OPTION_RESTART);
-	options->get_popup()->connect("id_pressed", this, "_menu_option");
+	options->get_popup()->connect_compat("id_pressed", this, "_menu_option");
 }
 
 void CPUParticlesEditorPlugin::edit(Object *p_object) {

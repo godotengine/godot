@@ -2620,29 +2620,29 @@ void _Thread::_start_func(void *ud) {
 	Ref<_Thread> *tud = (Ref<_Thread> *)ud;
 	Ref<_Thread> t = *tud;
 	memdelete(tud);
-	Variant::CallError ce;
+	Callable::CallError ce;
 	const Variant *arg[1] = { &t->userdata };
 
 	Thread::set_name(t->target_method);
 
 	t->ret = t->target_instance->call(t->target_method, arg, 1, ce);
-	if (ce.error != Variant::CallError::CALL_OK) {
+	if (ce.error != Callable::CallError::CALL_OK) {
 
 		String reason;
 		switch (ce.error) {
-			case Variant::CallError::CALL_ERROR_INVALID_ARGUMENT: {
+			case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT: {
 
 				reason = "Invalid Argument #" + itos(ce.argument);
 			} break;
-			case Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS: {
+			case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS: {
 
 				reason = "Too Many Arguments";
 			} break;
-			case Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS: {
+			case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS: {
 
 				reason = "Too Few Arguments";
 			} break;
-			case Variant::CallError::CALL_ERROR_INVALID_METHOD: {
+			case Callable::CallError::CALL_ERROR_INVALID_METHOD: {
 
 				reason = "Method Not Found";
 			} break;

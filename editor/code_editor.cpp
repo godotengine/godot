@@ -200,7 +200,7 @@ void FindReplaceBar::_replace() {
 
 void FindReplaceBar::_replace_all() {
 
-	text_edit->disconnect("text_changed", this, "_editor_text_changed");
+	text_edit->disconnect_compat("text_changed", this, "_editor_text_changed");
 	// Line as x so it gets priority in comparison, column as y.
 	Point2i orig_cursor(text_edit->cursor_get_line(), text_edit->cursor_get_column());
 	Point2i prev_match = Point2(-1, -1);
@@ -280,7 +280,7 @@ void FindReplaceBar::_replace_all() {
 	matches_label->add_color_override("font_color", rc > 0 ? get_color("font_color", "Label") : get_color("error_color", "Editor"));
 	matches_label->set_text(vformat(TTR("%d replaced."), rc));
 
-	text_edit->call_deferred("connect", "text_changed", this, "_editor_text_changed");
+	text_edit->call_deferred("connect", "text_changed", Callable(this, "_editor_text_changed"));
 	results_count = -1;
 }
 
@@ -559,7 +559,7 @@ void FindReplaceBar::set_text_edit(TextEdit *p_text_edit) {
 
 	results_count = -1;
 	text_edit = p_text_edit;
-	text_edit->connect("text_changed", this, "_editor_text_changed");
+	text_edit->connect_compat("text_changed", this, "_editor_text_changed");
 }
 
 void FindReplaceBar::_bind_methods() {
@@ -613,8 +613,8 @@ FindReplaceBar::FindReplaceBar() {
 	search_text = memnew(LineEdit);
 	vbc_lineedit->add_child(search_text);
 	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-	search_text->connect("text_changed", this, "_search_text_changed");
-	search_text->connect("text_entered", this, "_search_text_entered");
+	search_text->connect_compat("text_changed", this, "_search_text_changed");
+	search_text->connect_compat("text_entered", this, "_search_text_entered");
 
 	matches_label = memnew(Label);
 	hbc_button_search->add_child(matches_label);
@@ -623,51 +623,51 @@ FindReplaceBar::FindReplaceBar() {
 	find_prev = memnew(ToolButton);
 	hbc_button_search->add_child(find_prev);
 	find_prev->set_focus_mode(FOCUS_NONE);
-	find_prev->connect("pressed", this, "_search_prev");
+	find_prev->connect_compat("pressed", this, "_search_prev");
 
 	find_next = memnew(ToolButton);
 	hbc_button_search->add_child(find_next);
 	find_next->set_focus_mode(FOCUS_NONE);
-	find_next->connect("pressed", this, "_search_next");
+	find_next->connect_compat("pressed", this, "_search_next");
 
 	case_sensitive = memnew(CheckBox);
 	hbc_option_search->add_child(case_sensitive);
 	case_sensitive->set_text(TTR("Match Case"));
 	case_sensitive->set_focus_mode(FOCUS_NONE);
-	case_sensitive->connect("toggled", this, "_search_options_changed");
+	case_sensitive->connect_compat("toggled", this, "_search_options_changed");
 
 	whole_words = memnew(CheckBox);
 	hbc_option_search->add_child(whole_words);
 	whole_words->set_text(TTR("Whole Words"));
 	whole_words->set_focus_mode(FOCUS_NONE);
-	whole_words->connect("toggled", this, "_search_options_changed");
+	whole_words->connect_compat("toggled", this, "_search_options_changed");
 
 	// replace toolbar
 	replace_text = memnew(LineEdit);
 	vbc_lineedit->add_child(replace_text);
 	replace_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-	replace_text->connect("text_entered", this, "_replace_text_entered");
+	replace_text->connect_compat("text_entered", this, "_replace_text_entered");
 
 	replace = memnew(Button);
 	hbc_button_replace->add_child(replace);
 	replace->set_text(TTR("Replace"));
-	replace->connect("pressed", this, "_replace_pressed");
+	replace->connect_compat("pressed", this, "_replace_pressed");
 
 	replace_all = memnew(Button);
 	hbc_button_replace->add_child(replace_all);
 	replace_all->set_text(TTR("Replace All"));
-	replace_all->connect("pressed", this, "_replace_all_pressed");
+	replace_all->connect_compat("pressed", this, "_replace_all_pressed");
 
 	selection_only = memnew(CheckBox);
 	hbc_option_replace->add_child(selection_only);
 	selection_only->set_text(TTR("Selection Only"));
 	selection_only->set_focus_mode(FOCUS_NONE);
-	selection_only->connect("toggled", this, "_search_options_changed");
+	selection_only->connect_compat("toggled", this, "_search_options_changed");
 
 	hide_button = memnew(TextureButton);
 	add_child(hide_button);
 	hide_button->set_focus_mode(FOCUS_NONE);
-	hide_button->connect("pressed", this, "_hide_pressed");
+	hide_button->connect_compat("pressed", this, "_hide_pressed");
 	hide_button->set_v_size_flags(SIZE_SHRINK_CENTER);
 }
 
@@ -1717,7 +1717,7 @@ CodeTextEditor::CodeTextEditor() {
 	error_column = 0;
 
 	toggle_scripts_button = memnew(ToolButton);
-	toggle_scripts_button->connect("pressed", this, "_toggle_scripts_pressed");
+	toggle_scripts_button->connect_compat("pressed", this, "_toggle_scripts_pressed");
 	status_bar->add_child(toggle_scripts_button);
 	toggle_scripts_button->hide();
 
@@ -1732,15 +1732,15 @@ CodeTextEditor::CodeTextEditor() {
 	scroll->add_child(error);
 	error->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	error->set_mouse_filter(MOUSE_FILTER_STOP);
-	error->connect("gui_input", this, "_error_pressed");
-	find_replace_bar->connect("error", error, "set_text");
+	error->connect_compat("gui_input", this, "_error_pressed");
+	find_replace_bar->connect_compat("error", error, "set_text");
 
 	// Warnings
 	warning_button = memnew(ToolButton);
 	status_bar->add_child(warning_button);
 	warning_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	warning_button->set_default_cursor_shape(CURSOR_POINTING_HAND);
-	warning_button->connect("pressed", this, "_warning_button_pressed");
+	warning_button->connect_compat("pressed", this, "_warning_button_pressed");
 	warning_button->set_tooltip(TTR("Warnings"));
 
 	warning_count_label = memnew(Label);
@@ -1752,7 +1752,7 @@ CodeTextEditor::CodeTextEditor() {
 	warning_count_label->set_tooltip(TTR("Warnings"));
 	warning_count_label->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("warning_color", "Editor"));
 	warning_count_label->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
-	warning_count_label->connect("gui_input", this, "_warning_label_gui_input");
+	warning_count_label->connect_compat("gui_input", this, "_warning_label_gui_input");
 
 	is_warnings_panel_opened = false;
 	set_warning_nb(0);
@@ -1765,10 +1765,10 @@ CodeTextEditor::CodeTextEditor() {
 	line_and_col_txt->set_tooltip(TTR("Line and column numbers."));
 	line_and_col_txt->set_mouse_filter(MOUSE_FILTER_STOP);
 
-	text_editor->connect("gui_input", this, "_text_editor_gui_input");
-	text_editor->connect("cursor_changed", this, "_line_col_changed");
-	text_editor->connect("text_changed", this, "_text_changed");
-	text_editor->connect("request_completion", this, "_complete_request");
+	text_editor->connect_compat("gui_input", this, "_text_editor_gui_input");
+	text_editor->connect_compat("cursor_changed", this, "_line_col_changed");
+	text_editor->connect_compat("text_changed", this, "_text_changed");
+	text_editor->connect_compat("request_completion", this, "_complete_request");
 	Vector<String> cs;
 	cs.push_back(".");
 	cs.push_back(",");
@@ -1776,9 +1776,9 @@ CodeTextEditor::CodeTextEditor() {
 	cs.push_back("=");
 	cs.push_back("$");
 	text_editor->set_completion(true, cs);
-	idle->connect("timeout", this, "_text_changed_idle_timeout");
+	idle->connect_compat("timeout", this, "_text_changed_idle_timeout");
 
-	code_complete_timer->connect("timeout", this, "_code_complete_timer_timeout");
+	code_complete_timer->connect_compat("timeout", this, "_code_complete_timer_timeout");
 
 	font_resize_val = 0;
 	font_size = EditorSettings::get_singleton()->get("interface/editor/code_font_size");
@@ -1786,7 +1786,7 @@ CodeTextEditor::CodeTextEditor() {
 	add_child(font_resize_timer);
 	font_resize_timer->set_one_shot(true);
 	font_resize_timer->set_wait_time(0.07);
-	font_resize_timer->connect("timeout", this, "_font_resize_timeout");
+	font_resize_timer->connect_compat("timeout", this, "_font_resize_timeout");
 
-	EditorSettings::get_singleton()->connect("settings_changed", this, "_on_settings_change");
+	EditorSettings::get_singleton()->connect_compat("settings_changed", this, "_on_settings_change");
 }

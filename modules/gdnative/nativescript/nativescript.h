@@ -197,7 +197,7 @@ public:
 	String get_signal_documentation(const StringName &p_signal_name) const;
 	String get_property_documentation(const StringName &p_path) const;
 
-	Variant _new(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	Variant _new(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	NativeScript();
 	~NativeScript();
@@ -224,7 +224,7 @@ public:
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid) const;
 	virtual void get_method_list(List<MethodInfo> *p_list) const;
 	virtual bool has_method(const StringName &p_method) const;
-	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	virtual void notification(int p_notification);
 	String to_string(bool *r_valid);
 	virtual Ref<Script> get_script() const;

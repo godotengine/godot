@@ -1068,7 +1068,7 @@ AudioStreamPlayer3D::AudioStreamPlayer3D() {
 	stream_paused_fade_out = false;
 
 	velocity_tracker.instance();
-	AudioServer::get_singleton()->connect("bus_layout_changed", this, "_bus_layout_changed");
+	AudioServer::get_singleton()->connect_compat("bus_layout_changed", this, "_bus_layout_changed");
 	set_disable_scale(true);
 }
 AudioStreamPlayer3D::~AudioStreamPlayer3D() {

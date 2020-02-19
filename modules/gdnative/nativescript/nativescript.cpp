@@ -725,21 +725,21 @@ String NativeScript::get_property_documentation(const StringName &p_path) const 
 	ERR_FAIL_V_MSG("", "Attempt to get property documentation for non-existent signal.");
 }
 
-Variant NativeScript::_new(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+Variant NativeScript::_new(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 
 	if (lib_path.empty() || class_name.empty() || library.is_null()) {
-		r_error.error = Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		return Variant();
 	}
 
 	NativeScriptDesc *script_data = get_script_desc();
 
 	if (!script_data) {
-		r_error.error = Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		return Variant();
 	}
 
-	r_error.error = Variant::CallError::CALL_OK;
+	r_error.error = Callable::CallError::CALL_OK;
 
 	REF ref;
 	Object *owner = NULL;
@@ -751,7 +751,7 @@ Variant NativeScript::_new(const Variant **p_args, int p_argcount, Variant::Call
 	}
 
 	if (!owner) {
-		r_error.error = Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		return Variant();
 	}
 
@@ -964,7 +964,7 @@ bool NativeScriptInstance::has_method(const StringName &p_method) const {
 	return script->has_method(p_method);
 }
 
-Variant NativeScriptInstance::call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+Variant NativeScriptInstance::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 
 	NativeScriptDesc *script_data = GET_SCRIPT_DESC();
 
@@ -989,14 +989,14 @@ Variant NativeScriptInstance::call(const StringName &p_method, const Variant **p
 
 			Variant res = *(Variant *)&result;
 			godot_variant_destroy(&result);
-			r_error.error = Variant::CallError::CALL_OK;
+			r_error.error = Callable::CallError::CALL_OK;
 			return res;
 		}
 
 		script_data = script_data->base_data;
 	}
 
-	r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+	r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 	return Variant();
 }
 
@@ -1017,9 +1017,9 @@ void NativeScriptInstance::notification(int p_notification) {
 
 String NativeScriptInstance::to_string(bool *r_valid) {
 	if (has_method(CoreStringNames::get_singleton()->_to_string)) {
-		Variant::CallError ce;
+		Callable::CallError ce;
 		Variant ret = call(CoreStringNames::get_singleton()->_to_string, NULL, 0, ce);
-		if (ce.error == Variant::CallError::CALL_OK) {
+		if (ce.error == Callable::CallError::CALL_OK) {
 			if (ret.get_type() != Variant::STRING) {
 				if (r_valid)
 					*r_valid = false;
@@ -1036,21 +1036,21 @@ String NativeScriptInstance::to_string(bool *r_valid) {
 }
 
 void NativeScriptInstance::refcount_incremented() {
-	Variant::CallError err;
+	Callable::CallError err;
 	call("_refcount_incremented", NULL, 0, err);
-	if (err.error != Variant::CallError::CALL_OK && err.error != Variant::CallError::CALL_ERROR_INVALID_METHOD) {
+	if (err.error != Callable::CallError::CALL_OK && err.error != Callable::CallError::CALL_ERROR_INVALID_METHOD) {
 		ERR_PRINT("Failed to invoke _refcount_incremented - should not happen");
 	}
 }
 
 bool NativeScriptInstance::refcount_decremented() {
-	Variant::CallError err;
+	Callable::CallError err;
 	Variant ret = call("_refcount_decremented", NULL, 0, err);
-	if (err.error != Variant::CallError::CALL_OK && err.error != Variant::CallError::CALL_ERROR_INVALID_METHOD) {
+	if (err.error != Callable::CallError::CALL_OK && err.error != Callable::CallError::CALL_ERROR_INVALID_METHOD) {
 		ERR_PRINT("Failed to invoke _refcount_decremented - should not happen");
 		return true; // assume we can destroy the object
 	}
-	if (err.error == Variant::CallError::CALL_ERROR_INVALID_METHOD) {
+	if (err.error == Callable::CallError::CALL_ERROR_INVALID_METHOD) {
 		// the method does not exist, default is true
 		return true;
 	}

@@ -112,7 +112,7 @@ void MeshInstance::set_mesh(const Ref<Mesh> &p_mesh) {
 		return;
 
 	if (mesh.is_valid()) {
-		mesh->disconnect(CoreStringNames::get_singleton()->changed, this, SceneStringNames::get_singleton()->_mesh_changed);
+		mesh->disconnect_compat(CoreStringNames::get_singleton()->changed, this, SceneStringNames::get_singleton()->_mesh_changed);
 		materials.clear();
 	}
 
@@ -129,7 +129,7 @@ void MeshInstance::set_mesh(const Ref<Mesh> &p_mesh) {
 			blend_shape_tracks["blend_shapes/" + String(mesh->get_blend_shape_name(i))] = mt;
 		}
 
-		mesh->connect(CoreStringNames::get_singleton()->changed, this, SceneStringNames::get_singleton()->_mesh_changed);
+		mesh->connect_compat(CoreStringNames::get_singleton()->changed, this, SceneStringNames::get_singleton()->_mesh_changed);
 		materials.resize(mesh->get_surface_count());
 
 		set_base(mesh->get_rid());

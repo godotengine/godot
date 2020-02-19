@@ -62,14 +62,14 @@ void JavaClassWrapper::_bind_methods() {
 
 #if !defined(ANDROID_ENABLED)
 
-Variant JavaClass::call(const StringName &, const Variant **, int, Variant::CallError &) {
+Variant JavaClass::call(const StringName &, const Variant **, int, Callable::CallError &) {
 	return Variant();
 }
 
 JavaClass::JavaClass() {
 }
 
-Variant JavaObject::call(const StringName &, const Variant **, int, Variant::CallError &) {
+Variant JavaObject::call(const StringName &, const Variant **, int, Callable::CallError &) {
 	return Variant();
 }
 

@@ -819,7 +819,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	profile_actions[PROFILE_CLEAR] = memnew(Button(TTR("Unset")));
 	name_hbc->add_child(profile_actions[PROFILE_CLEAR]);
 	profile_actions[PROFILE_CLEAR]->set_disabled(true);
-	profile_actions[PROFILE_CLEAR]->connect("pressed", this, "_profile_action", varray(PROFILE_CLEAR));
+	profile_actions[PROFILE_CLEAR]->connect_compat("pressed", this, "_profile_action", varray(PROFILE_CLEAR));
 
 	main_vbc->add_margin_child(TTR("Current Profile:"), name_hbc);
 
@@ -827,34 +827,34 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	profile_list = memnew(OptionButton);
 	profile_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	profiles_hbc->add_child(profile_list);
-	profile_list->connect("item_selected", this, "_profile_selected");
+	profile_list->connect_compat("item_selected", this, "_profile_selected");
 
 	profile_actions[PROFILE_SET] = memnew(Button(TTR("Make Current")));
 	profiles_hbc->add_child(profile_actions[PROFILE_SET]);
 	profile_actions[PROFILE_SET]->set_disabled(true);
-	profile_actions[PROFILE_SET]->connect("pressed", this, "_profile_action", varray(PROFILE_SET));
+	profile_actions[PROFILE_SET]->connect_compat("pressed", this, "_profile_action", varray(PROFILE_SET));
 
 	profile_actions[PROFILE_ERASE] = memnew(Button(TTR("Remove")));
 	profiles_hbc->add_child(profile_actions[PROFILE_ERASE]);
 	profile_actions[PROFILE_ERASE]->set_disabled(true);
-	profile_actions[PROFILE_ERASE]->connect("pressed", this, "_profile_action", varray(PROFILE_ERASE));
+	profile_actions[PROFILE_ERASE]->connect_compat("pressed", this, "_profile_action", varray(PROFILE_ERASE));
 
 	profiles_hbc->add_child(memnew(VSeparator));
 
 	profile_actions[PROFILE_NEW] = memnew(Button(TTR("New")));
 	profiles_hbc->add_child(profile_actions[PROFILE_NEW]);
-	profile_actions[PROFILE_NEW]->connect("pressed", this, "_profile_action", varray(PROFILE_NEW));
+	profile_actions[PROFILE_NEW]->connect_compat("pressed", this, "_profile_action", varray(PROFILE_NEW));
 
 	profiles_hbc->add_child(memnew(VSeparator));
 
 	profile_actions[PROFILE_IMPORT] = memnew(Button(TTR("Import")));
 	profiles_hbc->add_child(profile_actions[PROFILE_IMPORT]);
-	profile_actions[PROFILE_IMPORT]->connect("pressed", this, "_profile_action", varray(PROFILE_IMPORT));
+	profile_actions[PROFILE_IMPORT]->connect_compat("pressed", this, "_profile_action", varray(PROFILE_IMPORT));
 
 	profile_actions[PROFILE_EXPORT] = memnew(Button(TTR("Export")));
 	profiles_hbc->add_child(profile_actions[PROFILE_EXPORT]);
 	profile_actions[PROFILE_EXPORT]->set_disabled(true);
-	profile_actions[PROFILE_EXPORT]->connect("pressed", this, "_profile_action", varray(PROFILE_EXPORT));
+	profile_actions[PROFILE_EXPORT]->connect_compat("pressed", this, "_profile_action", varray(PROFILE_EXPORT));
 
 	main_vbc->add_margin_child(TTR("Available Profiles:"), profiles_hbc);
 
@@ -870,8 +870,8 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	class_list_vbc->add_margin_child(TTR("Enabled Classes:"), class_list, true);
 	class_list->set_hide_root(true);
 	class_list->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
-	class_list->connect("cell_selected", this, "_class_list_item_selected");
-	class_list->connect("item_edited", this, "_class_list_item_edited", varray(), CONNECT_DEFERRED);
+	class_list->connect_compat("cell_selected", this, "_class_list_item_selected");
+	class_list->connect_compat("item_edited", this, "_class_list_item_edited", varray(), CONNECT_DEFERRED);
 
 	VBoxContainer *property_list_vbc = memnew(VBoxContainer);
 	h_split->add_child(property_list_vbc);
@@ -882,7 +882,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	property_list->set_hide_root(true);
 	property_list->set_hide_folding(true);
 	property_list->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
-	property_list->connect("item_edited", this, "_property_item_edited", varray(), CONNECT_DEFERRED);
+	property_list->connect_compat("item_edited", this, "_property_item_edited", varray(), CONNECT_DEFERRED);
 
 	new_profile_dialog = memnew(ConfirmationDialog);
 	new_profile_dialog->set_title(TTR("New profile name:"));
@@ -890,20 +890,20 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	new_profile_dialog->add_child(new_profile_name);
 	new_profile_name->set_custom_minimum_size(Size2(300 * EDSCALE, 1));
 	add_child(new_profile_dialog);
-	new_profile_dialog->connect("confirmed", this, "_create_new_profile");
+	new_profile_dialog->connect_compat("confirmed", this, "_create_new_profile");
 	new_profile_dialog->register_text_enter(new_profile_name);
 	new_profile_dialog->get_ok()->set_text(TTR("Create"));
 
 	erase_profile_dialog = memnew(ConfirmationDialog);
 	add_child(erase_profile_dialog);
 	erase_profile_dialog->set_title(TTR("Erase Profile"));
-	erase_profile_dialog->connect("confirmed", this, "_erase_selected_profile");
+	erase_profile_dialog->connect_compat("confirmed", this, "_erase_selected_profile");
 
 	import_profiles = memnew(EditorFileDialog);
 	add_child(import_profiles);
 	import_profiles->set_mode(EditorFileDialog::MODE_OPEN_FILES);
 	import_profiles->add_filter("*.profile; " + TTR("Godot Feature Profile"));
-	import_profiles->connect("files_selected", this, "_import_profiles");
+	import_profiles->connect_compat("files_selected", this, "_import_profiles");
 	import_profiles->set_title(TTR("Import Profile(s)"));
 	import_profiles->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 
@@ -911,7 +911,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	add_child(export_profile);
 	export_profile->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 	export_profile->add_filter("*.profile; " + TTR("Godot Feature Profile"));
-	export_profile->connect("file_selected", this, "_export_profile");
+	export_profile->connect_compat("file_selected", this, "_export_profile");
 	export_profile->set_title(TTR("Export Profile"));
 	export_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 
@@ -921,7 +921,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	update_timer = memnew(Timer);
 	update_timer->set_wait_time(1); //wait a second before updating editor
 	add_child(update_timer);
-	update_timer->connect("timeout", this, "_emit_current_profile_changed");
+	update_timer->connect_compat("timeout", this, "_emit_current_profile_changed");
 	update_timer->set_one_shot(true);
 
 	updating_features = false;

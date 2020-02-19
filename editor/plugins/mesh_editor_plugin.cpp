@@ -157,12 +157,12 @@ MeshEditor::MeshEditor() {
 	light_1_switch = memnew(TextureButton);
 	light_1_switch->set_toggle_mode(true);
 	vb_light->add_child(light_1_switch);
-	light_1_switch->connect("pressed", this, "_button_pressed", varray(light_1_switch));
+	light_1_switch->connect_compat("pressed", this, "_button_pressed", varray(light_1_switch));
 
 	light_2_switch = memnew(TextureButton);
 	light_2_switch->set_toggle_mode(true);
 	vb_light->add_child(light_2_switch);
-	light_2_switch->connect("pressed", this, "_button_pressed", varray(light_2_switch));
+	light_2_switch->connect_compat("pressed", this, "_button_pressed", varray(light_2_switch));
 
 	first_enter = true;
 
