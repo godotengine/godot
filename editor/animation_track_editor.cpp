@@ -3199,7 +3199,7 @@ void AnimationTrackEditor::update_keying() {
 	}
 
 	keying = keying_enabled;
-	//_update_menu();
+
 	emit_signal("keying_changed");
 }
 
