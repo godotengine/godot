@@ -342,6 +342,10 @@ public:
 
 	String get_configuration_warning() const override;
 
+	virtual void set_texture_filter(CanvasItem::TextureFilter p_texture_filter) override;
+
+	virtual void set_texture_repeat(CanvasItem::TextureRepeat p_texture_repeat) override;
+
 	void fix_invalid_tiles();
 	void clear();
 
