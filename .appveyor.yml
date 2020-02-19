@@ -13,10 +13,9 @@ environment:
   - GD_PLATFORM: windows
     TARGET: release_debug
     TOOLS: yes
-# Disabled for performance reasons until master is more stable.
-#  - GD_PLATFORM: windows
-#    TARGET: release
-#    TOOLS: no
+  - GD_PLATFORM: windows
+    TARGET: release
+    TOOLS: no
 
 matrix:
   fast_finish: true
