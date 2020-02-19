@@ -44,18 +44,21 @@ Error MessageQueue::push_call(ObjectID p_id, const StringName &p_method, const V
 
 	_THREAD_SAFE_METHOD_
 
-	int room_needed = sizeof(Message) + sizeof(Variant) * p_argcount;
+	uint32_t room_needed = sizeof(Message) + sizeof(Variant) * p_argcount;
 
-	if ((buffer_end + room_needed) >= buffer_size) {
+	if (room_needed > buffer_size) {
 		String type;
 		if (ObjectDB::get_instance(p_id))
 			type = ObjectDB::get_instance(p_id)->get_class();
 		print_line("Failed method: " + type + ":" + p_method + " target ID: " + itos(p_id));
 		statistics();
 		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
+	} else if ((buffers[buffers.size() - 1].buffer_end + room_needed) >= buffer_size) {
+		buffers.push_back({ memnew_arr(uint8_t, buffer_size), 0 });
 	}
+	Buffer &buf = buffers.write[buffers.size() - 1];
 
-	Message *msg = memnew_placement(&buffer[buffer_end], Message);
+	Message *msg = memnew_placement(&buf.buffer[buf.buffer_end], Message);
 	msg->args = p_argcount;
 	msg->instance_id = p_id;
 	msg->target = p_method;
@@ -63,12 +66,12 @@ Error MessageQueue::push_call(ObjectID p_id, const StringName &p_method, const V
 	if (p_show_error)
 		msg->type |= FLAG_SHOW_ERROR;
 
-	buffer_end += sizeof(Message);
+	buf.buffer_end += sizeof(Message);
 
 	for (int i = 0; i < p_argcount; i++) {
 
-		Variant *v = memnew_placement(&buffer[buffer_end], Variant);
-		buffer_end += sizeof(Variant);
+		Variant *v = memnew_placement(&buf.buffer[buf.buffer_end], Variant);
+		buf.buffer_end += sizeof(Variant);
 		*v = *p_args[i];
 	}
 
@@ -96,25 +99,28 @@ Error MessageQueue::push_set(ObjectID p_id, const StringName &p_prop, const Vari
 
 	uint8_t room_needed = sizeof(Message) + sizeof(Variant);
 
-	if ((buffer_end + room_needed) >= buffer_size) {
+	if (room_needed > buffer_size) {
 		String type;
 		if (ObjectDB::get_instance(p_id))
 			type = ObjectDB::get_instance(p_id)->get_class();
 		print_line("Failed set: " + type + ":" + p_prop + " target ID: " + itos(p_id));
 		statistics();
 		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
+	} else if ((buffers[buffers.size() - 1].buffer_end + room_needed) >= buffer_size) {
+		buffers.push_back({ memnew_arr(uint8_t, buffer_size), 0 });
 	}
+	Buffer &buf = buffers.write[buffers.size() - 1];
 
-	Message *msg = memnew_placement(&buffer[buffer_end], Message);
+	Message *msg = memnew_placement(&buf.buffer[buf.buffer_end], Message);
 	msg->args = 1;
 	msg->instance_id = p_id;
 	msg->target = p_prop;
 	msg->type = TYPE_SET;
 
-	buffer_end += sizeof(Message);
+	buf.buffer_end += sizeof(Message);
 
-	Variant *v = memnew_placement(&buffer[buffer_end], Variant);
-	buffer_end += sizeof(Variant);
+	Variant *v = memnew_placement(&buf.buffer[buf.buffer_end], Variant);
+	buf.buffer_end += sizeof(Variant);
 	*v = p_value;
 
 	return OK;
@@ -128,20 +134,23 @@ Error MessageQueue::push_notification(ObjectID p_id, int p_notification) {
 
 	uint8_t room_needed = sizeof(Message);
 
-	if ((buffer_end + room_needed) >= buffer_size) {
+	if (room_needed > buffer_size) {
 		print_line("Failed notification: " + itos(p_notification) + " target ID: " + itos(p_id));
 		statistics();
 		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
+	} else if ((buffers[buffers.size() - 1].buffer_end + room_needed) >= buffer_size) {
+		buffers.push_back({ memnew_arr(uint8_t, buffer_size), 0 });
 	}
+	Buffer &buf = buffers.write[buffers.size() - 1];
 
-	Message *msg = memnew_placement(&buffer[buffer_end], Message);
+	Message *msg = memnew_placement(&buf.buffer[buf.buffer_end], Message);
 
 	msg->type = TYPE_NOTIFICATION;
 	msg->instance_id = p_id;
 	//msg->target;
 	msg->notification = p_notification;
 
-	buffer_end += sizeof(Message);
+	buf.buffer_end += sizeof(Message);
 
 	return OK;
 }
@@ -167,55 +176,60 @@ void MessageQueue::statistics() {
 	Map<StringName, int> call_count;
 	int null_count = 0;
 
-	uint32_t read_pos = 0;
-	while (read_pos < buffer_end) {
-		Message *message = (Message *)&buffer[read_pos];
+	uint32_t total_bytes = 0;
+	for (int i = 0; i < buffers.size(); ++i) {
+		const Buffer &buf = buffers[i];
+		total_bytes += buf.buffer_end;
+		uint32_t read_pos = 0;
+		while (read_pos < buf.buffer_end) {
+			Message *message = (Message *)&buf.buffer[read_pos];
 
-		Object *target = ObjectDB::get_instance(message->instance_id);
+			Object *target = ObjectDB::get_instance(message->instance_id);
 
-		if (target != NULL) {
+			if (target != NULL) {
 
-			switch (message->type & FLAG_MASK) {
+				switch (message->type & FLAG_MASK) {
 
-				case TYPE_CALL: {
+					case TYPE_CALL: {
 
-					if (!call_count.has(message->target))
-						call_count[message->target] = 0;
+						if (!call_count.has(message->target))
+							call_count[message->target] = 0;
 
-					call_count[message->target]++;
+						call_count[message->target]++;
 
-				} break;
-				case TYPE_NOTIFICATION: {
+					} break;
+					case TYPE_NOTIFICATION: {
 
-					if (!notify_count.has(message->notification))
-						notify_count[message->notification] = 0;
+						if (!notify_count.has(message->notification))
+							notify_count[message->notification] = 0;
 
-					notify_count[message->notification]++;
+						notify_count[message->notification]++;
 
-				} break;
-				case TYPE_SET: {
+					} break;
+					case TYPE_SET: {
 
-					if (!set_count.has(message->target))
-						set_count[message->target] = 0;
+						if (!set_count.has(message->target))
+							set_count[message->target] = 0;
 
-					set_count[message->target]++;
+						set_count[message->target]++;
 
-				} break;
+					} break;
+				}
+
+			} else {
+				//object was deleted
+				print_line("Object was deleted while awaiting a callback");
+
+				null_count++;
 			}
 
-		} else {
-			//object was deleted
-			print_line("Object was deleted while awaiting a callback");
-
-			null_count++;
+			read_pos += sizeof(Message);
+			if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION)
+				read_pos += sizeof(Variant) * message->args;
 		}
-
-		read_pos += sizeof(Message);
-		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION)
-			read_pos += sizeof(Variant) * message->args;
 	}
 
-	print_line("TOTAL BYTES: " + itos(buffer_end));
+	print_line("TOTAL BYTES: " + itos(total_bytes));
 	print_line("NULL count: " + itos(null_count));
 
 	for (Map<StringName, int>::Element *E = set_count.front(); E; E = E->next()) {
@@ -256,11 +270,10 @@ void MessageQueue::_call_function(Object *p_target, const StringName &p_func, co
 
 void MessageQueue::flush() {
 
-	if (buffer_end > buffer_max_used) {
-		buffer_max_used = buffer_end;
+	uint32_t used = (buffers.size() - 1) * buffer_size + buffers[buffers.size() - 1].buffer_end;
+	if (used > buffer_max_used) {
+		buffer_max_used = used;
 	}
-
-	uint32_t read_pos = 0;
 
 	//using reverse locking strategy
 	_THREAD_SAFE_LOCK_
@@ -268,64 +281,72 @@ void MessageQueue::flush() {
 	ERR_FAIL_COND(flushing); //already flushing, you did something odd
 	flushing = true;
 
-	while (read_pos < buffer_end) {
+	for (int j = 0; j < buffers.size(); ++j) {
+		const Buffer &buf = buffers[j];
+		uint32_t read_pos = 0;
+		while (read_pos < buf.buffer_end) {
 
-		//lock on each iteration, so a call can re-add itself to the message queue
+			//lock on each iteration, so a call can re-add itself to the message queue
 
-		Message *message = (Message *)&buffer[read_pos];
+			Message *message = (Message *)&buf.buffer[read_pos];
 
-		uint32_t advance = sizeof(Message);
-		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION)
-			advance += sizeof(Variant) * message->args;
+			uint32_t advance = sizeof(Message);
+			if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION)
+				advance += sizeof(Variant) * message->args;
 
-		//pre-advance so this function is reentrant
-		read_pos += advance;
+			//pre-advance so this function is reentrant
+			read_pos += advance;
 
-		_THREAD_SAFE_UNLOCK_
+			_THREAD_SAFE_UNLOCK_
 
-		Object *target = ObjectDB::get_instance(message->instance_id);
+			Object *target = ObjectDB::get_instance(message->instance_id);
 
-		if (target != NULL) {
+			if (target != NULL) {
 
-			switch (message->type & FLAG_MASK) {
-				case TYPE_CALL: {
+				switch (message->type & FLAG_MASK) {
+					case TYPE_CALL: {
 
-					Variant *args = (Variant *)(message + 1);
+						Variant *args = (Variant *)(message + 1);
 
-					// messages don't expect a return value
+						// messages don't expect a return value
 
-					_call_function(target, message->target, args, message->args, message->type & FLAG_SHOW_ERROR);
+						_call_function(target, message->target, args, message->args, message->type & FLAG_SHOW_ERROR);
 
-				} break;
-				case TYPE_NOTIFICATION: {
+					} break;
+					case TYPE_NOTIFICATION: {
 
-					// messages don't expect a return value
-					target->notification(message->notification);
+						// messages don't expect a return value
+						target->notification(message->notification);
 
-				} break;
-				case TYPE_SET: {
+					} break;
+					case TYPE_SET: {
 
-					Variant *arg = (Variant *)(message + 1);
-					// messages don't expect a return value
-					target->set(message->target, *arg);
+						Variant *arg = (Variant *)(message + 1);
+						// messages don't expect a return value
+						target->set(message->target, *arg);
 
-				} break;
+					} break;
+				}
 			}
-		}
 
-		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
-			Variant *args = (Variant *)(message + 1);
-			for (int i = 0; i < message->args; i++) {
-				args[i].~Variant();
+			if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
+				Variant *args = (Variant *)(message + 1);
+				for (int i = 0; i < message->args; i++) {
+					args[i].~Variant();
+				}
 			}
+
+			message->~Message();
+
+			_THREAD_SAFE_LOCK_
 		}
-
-		message->~Message();
-
-		_THREAD_SAFE_LOCK_
+		if (j) {
+			memdelete_arr(buf.buffer);
+		}
 	}
 
-	buffer_end = 0; // reset buffer
+	buffers.resize(1);
+	buffers.write[0].buffer_end = 0; // reset buffer
 	flushing = false;
 	_THREAD_SAFE_UNLOCK_
 }
@@ -341,34 +362,35 @@ MessageQueue::MessageQueue() {
 	singleton = this;
 	flushing = false;
 
-	buffer_end = 0;
 	buffer_max_used = 0;
 	buffer_size = GLOBAL_DEF_RST("memory/limits/message_queue/max_size_kb", DEFAULT_QUEUE_SIZE_KB);
 	ProjectSettings::get_singleton()->set_custom_property_info("memory/limits/message_queue/max_size_kb", PropertyInfo(Variant::INT, "memory/limits/message_queue/max_size_kb", PROPERTY_HINT_RANGE, "0,2048,1,or_greater"));
 	buffer_size *= 1024;
-	buffer = memnew_arr(uint8_t, buffer_size);
+	buffers.push_back({ memnew_arr(uint8_t, buffer_size), 0 });
 }
 
 MessageQueue::~MessageQueue() {
 
-	uint32_t read_pos = 0;
+	for (int j = 0; j < buffers.size(); ++j) {
+		const Buffer &buf = buffers[j];
+		uint32_t read_pos = 0;
+		while (read_pos < buf.buffer_end) {
 
-	while (read_pos < buffer_end) {
+			Message *message = (Message *)&buf.buffer[read_pos];
+			Variant *args = (Variant *)(message + 1);
+			int argc = message->args;
+			if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
+				for (int i = 0; i < argc; i++)
+					args[i].~Variant();
+			}
+			message->~Message();
 
-		Message *message = (Message *)&buffer[read_pos];
-		Variant *args = (Variant *)(message + 1);
-		int argc = message->args;
-		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
-			for (int i = 0; i < argc; i++)
-				args[i].~Variant();
+			read_pos += sizeof(Message);
+			if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION)
+				read_pos += sizeof(Variant) * message->args;
 		}
-		message->~Message();
-
-		read_pos += sizeof(Message);
-		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION)
-			read_pos += sizeof(Variant) * message->args;
+		memdelete_arr(buf.buffer);
 	}
 
 	singleton = NULL;
-	memdelete_arr(buffer);
 }
