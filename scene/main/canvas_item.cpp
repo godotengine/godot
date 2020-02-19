@@ -1369,6 +1369,7 @@ void CanvasItem::set_texture_filter(TextureFilter p_texture_filter) {
 	}
 	texture_filter = p_texture_filter;
 	_update_texture_filter_changed(true);
+	_change_notify();
 }
 
 CanvasItem::TextureFilter CanvasItem::get_texture_filter() const {
@@ -1421,6 +1422,7 @@ void CanvasItem::set_texture_repeat(TextureRepeat p_texture_repeat) {
 	}
 	texture_repeat = p_texture_repeat;
 	_update_texture_repeat_changed(true);
+	_change_notify();
 }
 
 CanvasItem::TextureRepeat CanvasItem::get_texture_repeat() const {
