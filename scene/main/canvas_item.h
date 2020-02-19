@@ -405,10 +405,10 @@ public:
 
 	void force_update_transform();
 
-	void set_texture_filter(TextureFilter p_texture_filter);
+	virtual void set_texture_filter(TextureFilter p_texture_filter);
 	TextureFilter get_texture_filter() const;
 
-	void set_texture_repeat(TextureRepeat p_texture_repeat);
+	virtual void set_texture_repeat(TextureRepeat p_texture_repeat);
 	TextureRepeat get_texture_repeat() const;
 
 	// Used by control nodes to retrieve the parent's anchorable area
