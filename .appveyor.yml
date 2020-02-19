@@ -22,7 +22,7 @@ matrix:
   fast_finish: true
 
 init:
-  - ps: if ($env:APPVEYOR_REPO_BRANCH -ne "master") { $env:APPVEYOR_CACHE_SKIP_SAVE = "true" }
+  - ps: if ($env:APPVEYOR_REPO_BRANCH -ne "3.2") { $env:APPVEYOR_CACHE_SKIP_SAVE = "true" }
 
 cache:
   - "%SCONS_CACHE_ROOT%"
