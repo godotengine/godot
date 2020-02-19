@@ -588,8 +588,7 @@ void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 
 			if (activate->is_pressed()) {
 				if (!seeking) {
-					//probably not need to break request, can just stop profiling
-					//emit_signal("break_request");
+					// Break request is not required, just stop profiling
 				}
 			}
 
@@ -679,7 +678,6 @@ void EditorVisualProfiler::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_item_selected"), &EditorVisualProfiler::_item_selected);
 	ADD_SIGNAL(MethodInfo("enable_profiling", PropertyInfo(Variant::BOOL, "enable")));
-	ADD_SIGNAL(MethodInfo("break_request"));
 }
 
 void EditorVisualProfiler::set_enabled(bool p_enable) {
