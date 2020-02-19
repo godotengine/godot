@@ -1128,27 +1128,34 @@ Vector<Vector<Point2> > Geometry::_polypaths_do_operation(PolyBooleanOperation p
 	return polypaths;
 }
 
-Vector<Vector<Point2> > Geometry::_polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
+Vector<Vector<Point2> > Geometry::_polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyConnection p_con_type) {
 
 	using namespace ClipperLib;
 
 	JoinType jt = jtSquare;
 
-	switch (p_join_type) {
-		case JOIN_SQUARE: jt = jtSquare; break;
-		case JOIN_ROUND: jt = jtRound; break;
-		case JOIN_MITER: jt = jtMiter; break;
+	if (p_con_type & JOIN_SQUARE) {
+		jt = jtSquare;
+	} else if (p_con_type & JOIN_ROUND) {
+		jt = jtRound;
+	} else if (p_con_type & JOIN_MITER) {
+		jt = jtMiter;
 	}
 
 	EndType et = etClosedPolygon;
 
-	switch (p_end_type) {
-		case END_POLYGON: et = etClosedPolygon; break;
-		case END_JOINED: et = etClosedLine; break;
-		case END_BUTT: et = etOpenButt; break;
-		case END_SQUARE: et = etOpenSquare; break;
-		case END_ROUND: et = etOpenRound; break;
+	if (p_con_type & END_POLYGON) {
+		et = etClosedPolygon;
+	} else if (p_con_type & END_JOINED) {
+		et = etClosedLine;
+	} else if (p_con_type & END_BUTT) {
+		et = etOpenButt;
+	} else if (p_con_type & END_SQUARE) {
+		et = etOpenSquare;
+	} else if (p_con_type & END_ROUND) {
+		et = etOpenRound;
 	}
+
 	ClipperOffset co(2.0, 0.25 * SCALE_FACTOR); // Defaults from ClipperOffset.
 	Path path;
 

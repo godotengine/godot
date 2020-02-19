@@ -1680,9 +1680,9 @@ Array _Geometry::intersect_polyline_with_polygon_2d(const Vector<Vector2> &p_pol
 	return ret;
 }
 
-Array _Geometry::offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type) {
+Array _Geometry::offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyConnection p_con_type) {
 
-	Vector<Vector<Point2> > polys = Geometry::offset_polygon_2d(p_polygon, p_delta, Geometry::PolyJoinType(p_join_type));
+	Vector<Vector<Point2> > polys = Geometry::offset_polygon_2d(p_polygon, p_delta, Geometry::PolyConnection(p_con_type));
 
 	Array ret;
 
@@ -1692,9 +1692,9 @@ Array _Geometry::offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_de
 	return ret;
 }
 
-Array _Geometry::offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
+Array _Geometry::offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyConnection p_con_type) {
 
-	Vector<Vector<Point2> > polys = Geometry::offset_polyline_2d(p_polygon, p_delta, Geometry::PolyJoinType(p_join_type), Geometry::PolyEndType(p_end_type));
+	Vector<Vector<Point2> > polys = Geometry::offset_polyline_2d(p_polygon, p_delta, Geometry::PolyConnection(p_con_type));
 
 	Array ret;
 
@@ -1780,8 +1780,8 @@ void _Geometry::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clip_polyline_with_polygon_2d", "polyline", "polygon"), &_Geometry::clip_polyline_with_polygon_2d);
 	ClassDB::bind_method(D_METHOD("intersect_polyline_with_polygon_2d", "polyline", "polygon"), &_Geometry::intersect_polyline_with_polygon_2d);
 
-	ClassDB::bind_method(D_METHOD("offset_polygon_2d", "polygon", "delta", "join_type"), &_Geometry::offset_polygon_2d, DEFVAL(JOIN_SQUARE));
-	ClassDB::bind_method(D_METHOD("offset_polyline_2d", "polyline", "delta", "join_type", "end_type"), &_Geometry::offset_polyline_2d, DEFVAL(JOIN_SQUARE), DEFVAL(END_SQUARE));
+	ClassDB::bind_method(D_METHOD("offset_polygon_2d", "polygon", "delta", "connection_type"), &_Geometry::offset_polygon_2d, DEFVAL(JOIN_SQUARE));
+	ClassDB::bind_method(D_METHOD("offset_polyline_2d", "polyline", "delta", "connection_type"), &_Geometry::offset_polyline_2d, DEFVAL(JOIN_SQUARE | END_SQUARE));
 
 	ClassDB::bind_method(D_METHOD("make_atlas", "sizes"), &_Geometry::make_atlas);
 
@@ -1793,7 +1793,6 @@ void _Geometry::_bind_methods() {
 	BIND_ENUM_CONSTANT(JOIN_SQUARE);
 	BIND_ENUM_CONSTANT(JOIN_ROUND);
 	BIND_ENUM_CONSTANT(JOIN_MITER);
-
 	BIND_ENUM_CONSTANT(END_POLYGON);
 	BIND_ENUM_CONSTANT(END_JOINED);
 	BIND_ENUM_CONSTANT(END_BUTT);

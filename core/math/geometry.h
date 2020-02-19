@@ -777,17 +777,15 @@ public:
 		OPERATION_INTERSECTION,
 		OPERATION_XOR
 	};
-	enum PolyJoinType {
-		JOIN_SQUARE,
-		JOIN_ROUND,
-		JOIN_MITER
-	};
-	enum PolyEndType {
-		END_POLYGON,
-		END_JOINED,
-		END_BUTT,
-		END_SQUARE,
-		END_ROUND
+	enum PolyConnection {
+		JOIN_SQUARE = 1 << 0,
+		JOIN_ROUND = 1 << 1,
+		JOIN_MITER = 1 << 2,
+		END_POLYGON = 1 << 3,
+		END_JOINED = 1 << 4,
+		END_BUTT = 1 << 5,
+		END_SQUARE = 1 << 6,
+		END_ROUND = 1 << 7
 	};
 
 	static Vector<Vector<Point2> > merge_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
@@ -820,16 +818,16 @@ public:
 		return _polypaths_do_operation(OPERATION_INTERSECTION, p_polyline, p_polygon, true);
 	}
 
-	static Vector<Vector<Point2> > offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type) {
+	static Vector<Vector<Point2> > offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyConnection p_con_type) {
 
-		return _polypath_offset(p_polygon, p_delta, p_join_type, END_POLYGON);
+		return _polypath_offset(p_polygon, p_delta, PolyConnection(p_con_type | END_POLYGON));
 	}
 
-	static Vector<Vector<Point2> > offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
+	static Vector<Vector<Point2> > offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyConnection p_con_type) {
 
-		ERR_FAIL_COND_V_MSG(p_end_type == END_POLYGON, Vector<Vector<Point2> >(), "Attempt to offset a polyline like a polygon (use offset_polygon_2d instead).");
+		ERR_FAIL_COND_V_MSG(p_con_type & END_POLYGON, Vector<Vector<Point2> >(), "Attempt to offset a polyline like a polygon (use offset_polygon_2d instead).");
 
-		return _polypath_offset(p_polygon, p_delta, p_join_type, p_end_type);
+		return _polypath_offset(p_polygon, p_delta, p_con_type);
 	}
 
 	static Vector<int> triangulate_delaunay_2d(const Vector<Vector2> &p_points) {
@@ -1016,7 +1014,7 @@ public:
 
 private:
 	static Vector<Vector<Point2> > _polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open = false);
-	static Vector<Vector<Point2> > _polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type);
+	static Vector<Vector<Point2> > _polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyConnection p_con_type);
 };
 
 #endif

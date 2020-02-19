@@ -296,11 +296,11 @@
 			</argument>
 			<argument index="1" name="delta" type="float">
 			</argument>
-			<argument index="2" name="join_type" type="int" enum="Geometry.PolyJoinType" default="0">
+			<argument index="2" name="connection_type" type="int" enum="Geometry.PolyConnection" default="1">
 			</argument>
 			<description>
 				Inflates or deflates [code]polygon[/code] by [code]delta[/code] units (pixels). If [code]delta[/code] is positive, makes the polygon grow outward. If [code]delta[/code] is negative, shrinks the polygon inward. Returns an array of polygons because inflating/deflating may result in multiple discrete polygons. Returns an empty array if [code]delta[/code] is negative and the absolute value of it approximately exceeds the minimum bounding rectangle dimensions of the polygon.
-				Each polygon's vertices will be rounded as determined by [code]join_type[/code], see [enum PolyJoinType].
+				Each polygon's vertices will be rounded as determined by [code]connection_type[/code] from one of the [code]JOIN_*[/code] types, see [enum PolyConnection].
 				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
@@ -311,14 +311,16 @@
 			</argument>
 			<argument index="1" name="delta" type="float">
 			</argument>
-			<argument index="2" name="join_type" type="int" enum="Geometry.PolyJoinType" default="0">
-			</argument>
-			<argument index="3" name="end_type" type="int" enum="Geometry.PolyEndType" default="3">
+			<argument index="2" name="connection_type" type="int" enum="Geometry.PolyConnection" default="65">
 			</argument>
 			<description>
 				Inflates or deflates [code]polyline[/code] by [code]delta[/code] units (pixels), producing polygons. If [code]delta[/code] is positive, makes the polyline grow outward. Returns an array of polygons because inflating/deflating may result in multiple discrete polygons. If [code]delta[/code] is negative, returns an empty array.
-				Each polygon's vertices will be rounded as determined by [code]join_type[/code], see [enum PolyJoinType].
-				Each polygon's endpoints will be rounded as determined by [code]end_type[/code], see [enum PolyEndType].
+				Each polygon's intermediate vertices and endpoints will be rounded as determined by [code]connection_type[/code] from a combination of [code]JOIN_*[/code] and [code]END_*[/code] types respectively, see [enum PolyConnection]. For instance:
+				[codeblock]
+				# Produces a thin corridor with round corner passages and dead-ends.
+				var polyline = [Vector2(0, 0), Vector2(100, 0), Vector2(100, 100), Vector2(0, 100)]
+				var polygons = Geometry.offset_polyline_2d(polyline, 20.0, Geometry.JOIN_ROUND | Geometry.END_BUTT)
+				[/codeblock]
 				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
@@ -476,28 +478,28 @@
 		<constant name="OPERATION_XOR" value="3" enum="PolyBooleanOperation">
 			Create regions where either subject or clip polygons are filled but not where both are filled.
 		</constant>
-		<constant name="JOIN_SQUARE" value="0" enum="PolyJoinType">
-			Squaring is applied uniformally at all convex edge joins at [code]1 * delta[/code].
+		<constant name="JOIN_SQUARE" value="1" enum="PolyConnection">
+			Squaring is applied uniformly at all convex edge joins at [code]1 * delta[/code].
 		</constant>
-		<constant name="JOIN_ROUND" value="1" enum="PolyJoinType">
+		<constant name="JOIN_ROUND" value="2" enum="PolyConnection">
 			While flattened paths can never perfectly trace an arc, they are approximated by a series of arc chords.
 		</constant>
-		<constant name="JOIN_MITER" value="2" enum="PolyJoinType">
+		<constant name="JOIN_MITER" value="4" enum="PolyConnection">
 			There's a necessary limit to mitered joins since offsetting edges that join at very acute angles will produce excessively long and narrow "spikes". For any given edge join, when miter offsetting would exceed that maximum distance, "square" joining is applied.
 		</constant>
-		<constant name="END_POLYGON" value="0" enum="PolyEndType">
-			Endpoints are joined using the [enum PolyJoinType] value and the path filled as a polygon.
+		<constant name="END_POLYGON" value="8" enum="PolyConnection">
+			Endpoints are joined using one of the [code]JOIN_*[/code] values and the path filled as a polygon.
 		</constant>
-		<constant name="END_JOINED" value="1" enum="PolyEndType">
-			Endpoints are joined using the [enum PolyJoinType] value and the path filled as a polyline.
+		<constant name="END_JOINED" value="16" enum="PolyConnection">
+			Endpoints are joined using one of the [code]JOIN_*[/code] values and the path filled as a polyline.
 		</constant>
-		<constant name="END_BUTT" value="2" enum="PolyEndType">
+		<constant name="END_BUTT" value="32" enum="PolyConnection">
 			Endpoints are squared off with no extension.
 		</constant>
-		<constant name="END_SQUARE" value="3" enum="PolyEndType">
+		<constant name="END_SQUARE" value="64" enum="PolyConnection">
 			Endpoints are squared off and extended by [code]delta[/code] units.
 		</constant>
-		<constant name="END_ROUND" value="4" enum="PolyEndType">
+		<constant name="END_ROUND" value="128" enum="PolyConnection">
 			Endpoints are rounded off and extended by [code]delta[/code] units.
 		</constant>
 	</constants>

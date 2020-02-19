@@ -411,20 +411,18 @@ public:
 	Array intersect_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon); // Chop.
 
 	// 2D offset polygons/polylines.
-	enum PolyJoinType {
-		JOIN_SQUARE,
-		JOIN_ROUND,
-		JOIN_MITER
+	enum PolyConnection {
+		JOIN_SQUARE = 1 << 0,
+		JOIN_ROUND = 1 << 1,
+		JOIN_MITER = 1 << 2,
+		END_POLYGON = 1 << 3,
+		END_JOINED = 1 << 4,
+		END_BUTT = 1 << 5,
+		END_SQUARE = 1 << 6,
+		END_ROUND = 1 << 7
 	};
-	enum PolyEndType {
-		END_POLYGON,
-		END_JOINED,
-		END_BUTT,
-		END_SQUARE,
-		END_ROUND
-	};
-	Array offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type = JOIN_SQUARE);
-	Array offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type = JOIN_SQUARE, PolyEndType p_end_type = END_SQUARE);
+	Array offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyConnection p_con_type = JOIN_SQUARE);
+	Array offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyConnection p_con_type = PolyConnection(JOIN_SQUARE | END_SQUARE));
 
 	Dictionary make_atlas(const Vector<Size2> &p_rects);
 
@@ -432,8 +430,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(_Geometry::PolyBooleanOperation);
-VARIANT_ENUM_CAST(_Geometry::PolyJoinType);
-VARIANT_ENUM_CAST(_Geometry::PolyEndType);
+VARIANT_ENUM_CAST(_Geometry::PolyConnection);
 
 class _File : public Reference {
 
