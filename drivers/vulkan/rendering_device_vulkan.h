@@ -354,7 +354,9 @@ class RenderingDeviceVulkan : public RenderingDevice {
 					if (a.stride != b.stride) {
 						return false;
 					}
-					return a.frequency != b.frequency;
+					if (a.frequency != b.frequency) {
+						return false;
+					}
 				}
 				return true; //they are equal
 			}
