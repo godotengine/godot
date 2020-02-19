@@ -9,6 +9,24 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_closest_point" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="to_point" type="Vector2">
+			</argument>
+			<description>
+				Returns the point closest to the provided [code]to_point[/code] on the navigation mesh surface.
+			</description>
+		</method>
+		<method name="get_closest_point_owner" qualifiers="const">
+			<return type="RID">
+			</return>
+			<argument index="0" name="to_point" type="Vector2">
+			</argument>
+			<description>
+				Returns the owner region RID for the point returned by [method get_closest_point].
+			</description>
+		</method>
 		<method name="get_rid" qualifiers="const">
 			<return type="RID">
 			</return>
@@ -26,24 +44,6 @@
 			</argument>
 			<description>
 				Returns the path between two given points. Points are in local coordinate space. If [code]optimize[/code] is [code]true[/code] (the default), the path is smoothed by merging path segments where possible.
-			</description>
-		</method>
-		<method name="get_closest_point" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="point" type="Vector2">
-			</argument>
-			<description>
-				Returns the point closest to the provided [code]point[/code] on the navigation mesh surface.
-			</description>
-		</method>
-		<method name="get_closest_point_owner" qualifiers="const">
-			<return type="RID">
-			</return>
-			<argument index="0" name="point" type="Vector2">
-			</argument>
-			<description>
-				Returns the owner region RID for the point returned by [method get_closest_point].
 			</description>
 		</method>
 	</methods>

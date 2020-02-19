@@ -31,7 +31,7 @@
 		    for p in peers:
 		        p.poll() # Must poll to update the state.
 		        if p.get_status() == PacketPeerDTLS.STATUS_CONNECTED:
-		            while p.get_available_packet_count() > 0:
+		            while p.get_available_packet_count() &gt; 0:
 		                print("Received message from client: %s" % p.get_packet().get_string_from_utf8())
 		                p.put_packet("Hello DTLS client".to_utf8())
 		[/codeblock]
@@ -53,7 +53,7 @@
 		        if !connected:
 		            # Try to contact server
 		            dtls.put_packet("The answer is... 42!".to_utf8())
-		        while dtls.get_available_packet_count() > 0:
+		        while dtls.get_available_packet_count() &gt; 0:
 		            print("Connected: %s" % dtls.get_packet().get_string_from_utf8())
 		            connected = true
 		[/codeblock]
@@ -68,7 +68,7 @@
 			</argument>
 			<argument index="1" name="certificate" type="X509Certificate">
 			</argument>
-			<argument index="2" name="ca_chain" type="X509Certificate">
+			<argument index="2" name="chain" type="X509Certificate" default="null">
 			</argument>
 			<description>
 				Setup the DTLS server to use the given [code]private_key[/code] and provide the given [code]certificate[/code] to clients. You can pass the optional [code]chain[/code] parameter to provide additional CA chain information along with the certificate.
