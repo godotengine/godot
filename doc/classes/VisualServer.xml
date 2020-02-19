@@ -3641,11 +3641,11 @@
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_LINEAR" value="2" enum="CanvasItemTextureFilter">
 		</constant>
-		<constant name="CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS" value="3" enum="CanvasItemTextureFilter">
+		<constant name="CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="3" enum="CanvasItemTextureFilter">
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" value="4" enum="CanvasItemTextureFilter">
 		</constant>
-		<constant name="CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS_ANISOTROPIC" value="5" enum="CanvasItemTextureFilter">
+		<constant name="CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC" value="5" enum="CanvasItemTextureFilter">
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC" value="6" enum="CanvasItemTextureFilter">
 		</constant>

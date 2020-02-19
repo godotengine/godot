@@ -419,9 +419,9 @@ void BaseMaterial3D::_update_shader() {
 	switch (texture_filter) {
 		case TEXTURE_FILTER_NEAREST: texfilter_str = "filter_nearest"; break;
 		case TEXTURE_FILTER_LINEAR: texfilter_str = "filter_linear"; break;
-		case TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS: texfilter_str = "filter_nearest_mipmap"; break;
+		case TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: texfilter_str = "filter_nearest_mipmap"; break;
 		case TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: texfilter_str = "filter_linear_mipmap"; break;
-		case TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS_ANISOTROPIC: texfilter_str = "filter_nearest_mipmap_aniso"; break;
+		case TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC: texfilter_str = "filter_nearest_mipmap_aniso"; break;
 		case TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: texfilter_str = "filter_linear_mipmap_aniso"; break;
 		case TEXTURE_FILTER_MAX: break; // Internal value, skip.
 	}
@@ -2397,9 +2397,9 @@ void BaseMaterial3D::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(TEXTURE_FILTER_NEAREST);
 	BIND_ENUM_CONSTANT(TEXTURE_FILTER_LINEAR);
-	BIND_ENUM_CONSTANT(TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS);
+	BIND_ENUM_CONSTANT(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
 	BIND_ENUM_CONSTANT(TEXTURE_FILTER_LINEAR_WITH_MIPMAPS);
-	BIND_ENUM_CONSTANT(TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS_ANISOTROPIC);
+	BIND_ENUM_CONSTANT(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC);
 	BIND_ENUM_CONSTANT(TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC);
 	BIND_ENUM_CONSTANT(TEXTURE_FILTER_MAX);
 
