@@ -1680,9 +1680,9 @@ Array _Geometry::intersect_polyline_with_polygon_2d(const Vector<Vector2> &p_pol
 	return ret;
 }
 
-Array _Geometry::offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyConnection p_con_type) {
+Array _Geometry::offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyConnection p_con_type, real_t p_miter_limit, real_t p_arc_tolerance) {
 
-	Vector<Vector<Point2> > polys = Geometry::offset_polygon_2d(p_polygon, p_delta, Geometry::PolyConnection(p_con_type));
+	Vector<Vector<Point2> > polys = Geometry::offset_polygon_2d(p_polygon, p_delta, Geometry::PolyConnection(p_con_type), p_miter_limit, p_arc_tolerance);
 
 	Array ret;
 
@@ -1692,9 +1692,9 @@ Array _Geometry::offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_de
 	return ret;
 }
 
-Array _Geometry::offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyConnection p_con_type) {
+Array _Geometry::offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyConnection p_con_type, real_t p_miter_limit, real_t p_arc_tolerance) {
 
-	Vector<Vector<Point2> > polys = Geometry::offset_polyline_2d(p_polygon, p_delta, Geometry::PolyConnection(p_con_type));
+	Vector<Vector<Point2> > polys = Geometry::offset_polyline_2d(p_polygon, p_delta, Geometry::PolyConnection(p_con_type), p_miter_limit, p_arc_tolerance);
 
 	Array ret;
 
@@ -1780,8 +1780,8 @@ void _Geometry::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clip_polyline_with_polygon_2d", "polyline", "polygon"), &_Geometry::clip_polyline_with_polygon_2d);
 	ClassDB::bind_method(D_METHOD("intersect_polyline_with_polygon_2d", "polyline", "polygon"), &_Geometry::intersect_polyline_with_polygon_2d);
 
-	ClassDB::bind_method(D_METHOD("offset_polygon_2d", "polygon", "delta", "connection_type"), &_Geometry::offset_polygon_2d, DEFVAL(JOIN_SQUARE));
-	ClassDB::bind_method(D_METHOD("offset_polyline_2d", "polyline", "delta", "connection_type"), &_Geometry::offset_polyline_2d, DEFVAL(JOIN_SQUARE | END_SQUARE));
+	ClassDB::bind_method(D_METHOD("offset_polygon_2d", "polygon", "delta", "connection_type", "miter_limit", "arc_tolerance"), &_Geometry::offset_polygon_2d, DEFVAL(JOIN_SQUARE), DEFVAL(2.0), DEFVAL(0.25));
+	ClassDB::bind_method(D_METHOD("offset_polyline_2d", "polyline", "delta", "connection_type", "miter_limit", "arc_tolerance"), &_Geometry::offset_polyline_2d, DEFVAL(JOIN_SQUARE | END_SQUARE), DEFVAL(2.0), DEFVAL(0.25));
 
 	ClassDB::bind_method(D_METHOD("make_atlas", "sizes"), &_Geometry::make_atlas);
 

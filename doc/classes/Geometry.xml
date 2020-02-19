@@ -298,9 +298,15 @@
 			</argument>
 			<argument index="2" name="connection_type" type="int" enum="Geometry.PolyConnection" default="1">
 			</argument>
+			<argument index="3" name="miter_limit" type="float" default="2.0">
+			</argument>
+			<argument index="4" name="arc_tolerance" type="float" default="0.25">
+			</argument>
 			<description>
 				Inflates or deflates [code]polygon[/code] by [code]delta[/code] units (pixels). If [code]delta[/code] is positive, makes the polygon grow outward. If [code]delta[/code] is negative, shrinks the polygon inward. Returns an array of polygons because inflating/deflating may result in multiple discrete polygons. Returns an empty array if [code]delta[/code] is negative and the absolute value of it approximately exceeds the minimum bounding rectangle dimensions of the polygon.
 				Each polygon's vertices will be rounded as determined by [code]connection_type[/code] from one of the [code]JOIN_*[/code] types, see [enum PolyConnection].
+				[code]miter_limit[/code] sets the maximum distance in multiples of [code]delta[/code] that vertices can be offset from their original positions before squaring is applied. The default value is 2.0 (twice delta) which is the smallest value that's allowed to avoid generating unacceptably long 'spikes' at very acute angles.
+				[code]arc_tolerance[/code] sets the maximum distance the flattened path will deviate from the mathematical representation of an arc. Smaller values will increase smoothness at a cost of performance. Only relevant when [code]connection_type[/code] is set to [code]JOIN_ROUND[/code].
 				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
@@ -313,6 +319,10 @@
 			</argument>
 			<argument index="2" name="connection_type" type="int" enum="Geometry.PolyConnection" default="65">
 			</argument>
+			<argument index="3" name="miter_limit" type="float" default="2.0">
+			</argument>
+			<argument index="4" name="arc_tolerance" type="float" default="0.25">
+			</argument>
 			<description>
 				Inflates or deflates [code]polyline[/code] by [code]delta[/code] units (pixels), producing polygons. If [code]delta[/code] is positive, makes the polyline grow outward. Returns an array of polygons because inflating/deflating may result in multiple discrete polygons. If [code]delta[/code] is negative, returns an empty array.
 				Each polygon's intermediate vertices and endpoints will be rounded as determined by [code]connection_type[/code] from a combination of [code]JOIN_*[/code] and [code]END_*[/code] types respectively, see [enum PolyConnection]. For instance:
@@ -321,6 +331,8 @@
 				var polyline = [Vector2(0, 0), Vector2(100, 0), Vector2(100, 100), Vector2(0, 100)]
 				var polygons = Geometry.offset_polyline_2d(polyline, 20.0, Geometry.JOIN_ROUND | Geometry.END_BUTT)
 				[/codeblock]
+				[code]miter_limit[/code] sets the maximum distance in multiples of [code]delta[/code] that vertices can be offset from their original positions before squaring is applied. The default value is 2.0 (twice delta) which is the smallest value that's allowed to avoid generating unacceptably long 'spikes' at very acute angles.
+				[code]arc_tolerance[/code] sets the maximum distance the flattened path will deviate from the mathematical representation of an arc. Smaller values will increase smoothness at a cost of performance. Only relevant when [code]connection_type[/code] is set to [code]JOIN_ROUND[/code].
 				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>

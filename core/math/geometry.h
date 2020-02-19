@@ -818,16 +818,16 @@ public:
 		return _polypaths_do_operation(OPERATION_INTERSECTION, p_polyline, p_polygon, true);
 	}
 
-	static Vector<Vector<Point2> > offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyConnection p_con_type) {
+	static Vector<Vector<Point2> > offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyConnection p_con_type, real_t p_miter_limit, real_t p_arc_tolerance) {
 
-		return _polypath_offset(p_polygon, p_delta, PolyConnection(p_con_type | END_POLYGON));
+		return _polypath_offset(p_polygon, p_delta, PolyConnection(p_con_type | END_POLYGON), p_miter_limit, p_arc_tolerance);
 	}
 
-	static Vector<Vector<Point2> > offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyConnection p_con_type) {
+	static Vector<Vector<Point2> > offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyConnection p_con_type, real_t p_miter_limit, real_t p_arc_tolerance) {
 
 		ERR_FAIL_COND_V_MSG(p_con_type & END_POLYGON, Vector<Vector<Point2> >(), "Attempt to offset a polyline like a polygon (use offset_polygon_2d instead).");
 
-		return _polypath_offset(p_polygon, p_delta, p_con_type);
+		return _polypath_offset(p_polygon, p_delta, p_con_type, p_miter_limit, p_arc_tolerance);
 	}
 
 	static Vector<int> triangulate_delaunay_2d(const Vector<Vector2> &p_points) {
@@ -1014,7 +1014,7 @@ public:
 
 private:
 	static Vector<Vector<Point2> > _polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open = false);
-	static Vector<Vector<Point2> > _polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyConnection p_con_type);
+	static Vector<Vector<Point2> > _polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyConnection p_con_type, real_t p_miter_limit = 2.0, real_t p_arc_tolerance = 0.25); // Defaults from ClipperOffset.
 };
 
 #endif

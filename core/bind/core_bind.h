@@ -421,8 +421,8 @@ public:
 		END_SQUARE = 1 << 6,
 		END_ROUND = 1 << 7
 	};
-	Array offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyConnection p_con_type = JOIN_SQUARE);
-	Array offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyConnection p_con_type = PolyConnection(JOIN_SQUARE | END_SQUARE));
+	Array offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyConnection p_con_type = JOIN_SQUARE, real_t p_miter_limit = 2.0, real_t p_arc_tolerance = 0.25);
+	Array offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyConnection p_con_type = PolyConnection(JOIN_SQUARE | END_SQUARE), real_t p_miter_limit = 2.0, real_t p_arc_tolerance = 0.25);
 
 	Dictionary make_atlas(const Vector<Size2> &p_rects);
 
