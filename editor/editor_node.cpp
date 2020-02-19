@@ -2258,6 +2258,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			if (!p_confirmed) {
 				tab_closing = p_option == FILE_CLOSE ? editor_data.get_edited_scene() : _next_unsaved_scene(false);
+				_scene_tab_changed(tab_closing);
 
 				if (unsaved_cache || p_option == FILE_CLOSE_ALL_AND_QUIT || p_option == FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER) {
 					String scene_filename = editor_data.get_edited_scene_root(tab_closing)->get_filename();
@@ -2902,6 +2903,10 @@ void EditorNode::_discard_changes(const String &p_str) {
 			_update_scene_tabs();
 
 			if (current_option == FILE_CLOSE_ALL_AND_QUIT || current_option == FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER) {
+				// If restore tabs is enabled, reopen the scene that has just been closed, so it's remembered properly.
+				if (bool(EDITOR_GET("interface/scene_tabs/restore_scenes_on_load"))) {
+					_menu_option_confirm(FILE_OPEN_PREV, true);
+				}
 				if (_next_unsaved_scene(false) == -1) {
 					current_option = current_option == FILE_CLOSE_ALL_AND_QUIT ? FILE_QUIT : RUN_PROJECT_MANAGER;
 					_discard_changes();
