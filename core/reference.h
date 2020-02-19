@@ -170,9 +170,9 @@ public:
 			return;
 		}
 
-		Reference *r = Object::cast_to<Reference>(object);
+		T *r = Object::cast_to<T>(object);
 		if (r && r->reference()) {
-			reference = static_cast<T *>(r);
+			reference = r;
 		}
 	}
 
@@ -226,9 +226,9 @@ public:
 			return;
 		}
 
-		Reference *r = Object::cast_to<Reference>(object);
+		T *r = Object::cast_to<T>(object);
 		if (r && r->reference()) {
-			reference = static_cast<T *>(r);
+			reference = r;
 		} else {
 			reference = nullptr;
 		}
