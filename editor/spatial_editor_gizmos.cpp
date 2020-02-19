@@ -1177,7 +1177,6 @@ CameraSpatialGizmoPlugin::CameraSpatialGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/camera", Color(0.8, 0.4, 0.8));
 
 	create_material("camera_material", gizmo_color);
-	create_icon_material("camera_icon", SpatialEditor::get_singleton()->get_icon("GizmoCamera", "EditorIcons"));
 	create_handle_material("handles");
 }
 
@@ -1278,7 +1277,6 @@ void CameraSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	Vector<Vector3> handles;
 
 	Ref<Material> material = get_material("camera_material", p_gizmo);
-	Ref<Material> icon = get_material("camera_icon", p_gizmo);
 
 #define ADD_TRIANGLE(m_a, m_b, m_c) \
 	{                               \
@@ -1370,7 +1368,6 @@ void CameraSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 #undef ADD_QUAD
 
 	p_gizmo->add_lines(lines, material);
-	p_gizmo->add_unscaled_billboard(icon, 0.05);
 	p_gizmo->add_handles(handles, get_material("handles"));
 
 	ClippedCamera *clipcam = Object::cast_to<ClippedCamera>(camera);
