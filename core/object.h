@@ -413,18 +413,15 @@ public:
 
 	struct Connection {
 
-		Object *source;
-		StringName signal;
-		Object *target;
-		StringName method;
+		::Signal signal;
+		Callable callable;
+
 		uint32_t flags;
 		Vector<Variant> binds;
 		bool operator<(const Connection &p_conn) const;
 
 		operator Variant() const;
 		Connection() {
-			source = NULL;
-			target = NULL;
 			flags = 0;
 		}
 		Connection(const Variant &p_variant);
@@ -441,21 +438,7 @@ private:
 	friend bool predelete_handler(Object *);
 	friend void postinitialize_handler(Object *);
 
-	struct Signal {
-
-		struct Target {
-
-			ObjectID _id;
-			StringName method;
-
-			_FORCE_INLINE_ bool operator<(const Target &p_target) const { return (_id == p_target._id) ? (method < p_target.method) : (_id < p_target._id); }
-
-			Target(const ObjectID &p_id, const StringName &p_method) :
-					_id(p_id),
-					method(p_method) {
-			}
-			Target() { _id = ObjectID(); }
-		};
+	struct SignalData {
 
 		struct Slot {
 
@@ -466,11 +449,11 @@ private:
 		};
 
 		MethodInfo user;
-		VMap<Target, Slot> slot_map;
-		Signal() {}
+		VMap<Callable, Slot> slot_map;
+		SignalData() {}
 	};
 
-	HashMap<StringName, Signal> signal_map;
+	HashMap<StringName, SignalData> signal_map;
 	List<Connection> connections;
 #ifdef DEBUG_ENABLED
 	SafeRefCount _lock_index;
@@ -496,7 +479,7 @@ private:
 
 	void _add_user_signal(const String &p_name, const Array &p_args = Array());
 	bool _has_user_signal(const StringName &p_name) const;
-	Variant _emit_signal(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	Variant _emit_signal(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Array _get_signal_list() const;
 	Array _get_signal_connection_list(const String &p_signal) const;
 	Array _get_incoming_connections() const;
@@ -554,8 +537,8 @@ protected:
 	//Variant _call_bind(const StringName& p_name, const Variant& p_arg1 = Variant(), const Variant& p_arg2 = Variant(), const Variant& p_arg3 = Variant(), const Variant& p_arg4 = Variant());
 	//void _call_deferred_bind(const StringName& p_name, const Variant& p_arg1 = Variant(), const Variant& p_arg2 = Variant(), const Variant& p_arg3 = Variant(), const Variant& p_arg4 = Variant());
 
-	Variant _call_bind(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
-	Variant _call_deferred_bind(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	Variant _call_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	Variant _call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	virtual const StringName *_get_class_namev() const {
 		if (!_class_name)
@@ -572,7 +555,7 @@ protected:
 	friend class ClassDB;
 	virtual void _validate_property(PropertyInfo &property) const;
 
-	void _disconnect(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method, bool p_force = false);
+	void _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
 
 public: //should be protected, but bug in clang++
 	static void initialize_class();
@@ -670,7 +653,7 @@ public:
 	bool has_method(const StringName &p_method) const;
 	void get_method_list(List<MethodInfo> *p_list) const;
 	Variant callv(const StringName &p_method, const Array &p_args);
-	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	virtual void call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount);
 	virtual void call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount);
 	Variant call(const StringName &p_name, VARIANT_ARG_LIST); // C++ helper
@@ -716,9 +699,13 @@ public:
 	int get_persistent_signal_connection_count() const;
 	void get_signals_connected_to_this(List<Connection> *p_connections) const;
 
-	Error connect(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method, const Vector<Variant> &p_binds = Vector<Variant>(), uint32_t p_flags = 0);
-	void disconnect(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method);
-	bool is_connected(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method) const;
+	Error connect_compat(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method, const Vector<Variant> &p_binds = Vector<Variant>(), uint32_t p_flags = 0);
+	void disconnect_compat(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method);
+	bool is_connected_compat(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method) const;
+
+	Error connect(const StringName &p_signal, const Callable &p_callable, const Vector<Variant> &p_binds = Vector<Variant>(), uint32_t p_flags = 0);
+	void disconnect(const StringName &p_signal, const Callable &p_callable);
+	bool is_connected(const StringName &p_signal, const Callable &p_callable) const;
 
 	void call_deferred(const StringName &p_method, VARIANT_ARG_LIST);
 	void set_deferred(const StringName &p_property, const Variant &p_value);

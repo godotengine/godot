@@ -615,9 +615,9 @@ void ColorPicker::_screen_pick_pressed() {
 		screen->set_as_toplevel(true);
 		screen->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 		screen->set_default_cursor_shape(CURSOR_POINTING_HAND);
-		screen->connect("gui_input", this, "_screen_input");
+		screen->connect_compat("gui_input", this, "_screen_input");
 		// It immediately toggles off in the first press otherwise.
-		screen->call_deferred("connect", "hide", btn_pick, "set_pressed", varray(false));
+		screen->call_deferred("connect", "hide", Callable(btn_pick, "set_pressed"), varray(false));
 	}
 	screen->raise();
 	screen->show_modal();
@@ -742,20 +742,20 @@ ColorPicker::ColorPicker() :
 
 	uv_edit = memnew(Control);
 	hb_edit->add_child(uv_edit);
-	uv_edit->connect("gui_input", this, "_uv_input");
+	uv_edit->connect_compat("gui_input", this, "_uv_input");
 	uv_edit->set_mouse_filter(MOUSE_FILTER_PASS);
 	uv_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	uv_edit->set_v_size_flags(SIZE_EXPAND_FILL);
 	uv_edit->set_custom_minimum_size(Size2(get_constant("sv_width"), get_constant("sv_height")));
-	uv_edit->connect("draw", this, "_hsv_draw", make_binds(0, uv_edit));
+	uv_edit->connect_compat("draw", this, "_hsv_draw", make_binds(0, uv_edit));
 
 	w_edit = memnew(Control);
 	hb_edit->add_child(w_edit);
 	w_edit->set_custom_minimum_size(Size2(get_constant("h_width"), 0));
 	w_edit->set_h_size_flags(SIZE_FILL);
 	w_edit->set_v_size_flags(SIZE_EXPAND_FILL);
-	w_edit->connect("gui_input", this, "_w_input");
-	w_edit->connect("draw", this, "_hsv_draw", make_binds(1, w_edit));
+	w_edit->connect_compat("gui_input", this, "_w_input");
+	w_edit->connect_compat("draw", this, "_hsv_draw", make_binds(1, w_edit));
 
 	HBoxContainer *hb_smpl = memnew(HBoxContainer);
 	add_child(hb_smpl);
@@ -763,13 +763,13 @@ ColorPicker::ColorPicker() :
 	sample = memnew(TextureRect);
 	hb_smpl->add_child(sample);
 	sample->set_h_size_flags(SIZE_EXPAND_FILL);
-	sample->connect("draw", this, "_sample_draw");
+	sample->connect_compat("draw", this, "_sample_draw");
 
 	btn_pick = memnew(ToolButton);
 	hb_smpl->add_child(btn_pick);
 	btn_pick->set_toggle_mode(true);
 	btn_pick->set_tooltip(TTR("Pick a color from the editor window."));
-	btn_pick->connect("pressed", this, "_screen_pick_pressed");
+	btn_pick->connect_compat("pressed", this, "_screen_pick_pressed");
 
 	VBoxContainer *vbl = memnew(VBoxContainer);
 	add_child(vbl);
@@ -797,14 +797,14 @@ ColorPicker::ColorPicker() :
 		values[i] = memnew(SpinBox);
 		scroll[i]->share(values[i]);
 		hbc->add_child(values[i]);
-		values[i]->get_line_edit()->connect("focus_entered", this, "_focus_enter");
-		values[i]->get_line_edit()->connect("focus_exited", this, "_focus_exit");
+		values[i]->get_line_edit()->connect_compat("focus_entered", this, "_focus_enter");
+		values[i]->get_line_edit()->connect_compat("focus_exited", this, "_focus_exit");
 
 		scroll[i]->set_min(0);
 		scroll[i]->set_page(0);
 		scroll[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 
-		scroll[i]->connect("value_changed", this, "_value_changed");
+		scroll[i]->connect_compat("value_changed", this, "_value_changed");
 
 		vbr->add_child(hbc);
 	}
@@ -816,12 +816,12 @@ ColorPicker::ColorPicker() :
 	btn_hsv = memnew(CheckButton);
 	hhb->add_child(btn_hsv);
 	btn_hsv->set_text(TTR("HSV"));
-	btn_hsv->connect("toggled", this, "set_hsv_mode");
+	btn_hsv->connect_compat("toggled", this, "set_hsv_mode");
 
 	btn_raw = memnew(CheckButton);
 	hhb->add_child(btn_raw);
 	btn_raw->set_text(TTR("Raw"));
-	btn_raw->connect("toggled", this, "set_raw_mode");
+	btn_raw->connect_compat("toggled", this, "set_raw_mode");
 
 	text_type = memnew(Button);
 	hhb->add_child(text_type);
@@ -832,7 +832,7 @@ ColorPicker::ColorPicker() :
 #ifdef TOOLS_ENABLED
 		text_type->set_custom_minimum_size(Size2(28 * EDSCALE, 0)); // Adjust for the width of the "Script" icon.
 #endif
-		text_type->connect("pressed", this, "_text_type_toggled");
+		text_type->connect_compat("pressed", this, "_text_type_toggled");
 	} else {
 
 		text_type->set_flat(true);
@@ -842,9 +842,9 @@ ColorPicker::ColorPicker() :
 	c_text = memnew(LineEdit);
 	hhb->add_child(c_text);
 	c_text->set_h_size_flags(SIZE_EXPAND_FILL);
-	c_text->connect("text_entered", this, "_html_entered");
-	c_text->connect("focus_entered", this, "_focus_enter");
-	c_text->connect("focus_exited", this, "_html_focus_exit");
+	c_text->connect_compat("text_entered", this, "_html_entered");
+	c_text->connect_compat("focus_entered", this, "_focus_enter");
+	c_text->connect_compat("focus_exited", this, "_html_focus_exit");
 
 	_update_controls();
 	updating = false;
@@ -860,8 +860,8 @@ ColorPicker::ColorPicker() :
 
 	preset = memnew(TextureRect);
 	preset_container->add_child(preset);
-	preset->connect("gui_input", this, "_preset_input");
-	preset->connect("draw", this, "_update_presets");
+	preset->connect_compat("gui_input", this, "_preset_input");
+	preset->connect_compat("draw", this, "_update_presets");
 
 	preset_container2 = memnew(HBoxContainer);
 	preset_container2->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -869,7 +869,7 @@ ColorPicker::ColorPicker() :
 	bt_add_preset = memnew(Button);
 	preset_container2->add_child(bt_add_preset);
 	bt_add_preset->set_tooltip(TTR("Add current color as a preset."));
-	bt_add_preset->connect("pressed", this, "_add_preset_pressed");
+	bt_add_preset->connect_compat("pressed", this, "_add_preset_pressed");
 }
 
 /////////////////
@@ -969,10 +969,10 @@ void ColorPickerButton::_update_picker() {
 		picker = memnew(ColorPicker);
 		popup->add_child(picker);
 		add_child(popup);
-		picker->connect("color_changed", this, "_color_changed");
-		popup->connect("modal_closed", this, "_modal_closed");
-		popup->connect("about_to_show", this, "set_pressed", varray(true));
-		popup->connect("popup_hide", this, "set_pressed", varray(false));
+		picker->connect_compat("color_changed", this, "_color_changed");
+		popup->connect_compat("modal_closed", this, "_modal_closed");
+		popup->connect_compat("about_to_show", this, "set_pressed", varray(true));
+		popup->connect_compat("popup_hide", this, "set_pressed", varray(false));
 		picker->set_pick_color(color);
 		picker->set_edit_alpha(edit_alpha);
 		emit_signal("picker_created");

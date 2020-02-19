@@ -172,7 +172,7 @@ protected:
 		remove_child(Object::cast_to<TreeItem>(p_child));
 	}
 
-	Variant _call_recursive_bind(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	Variant _call_recursive_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 public:
 	/* cell mode */
@@ -282,7 +282,7 @@ public:
 	void set_disable_folding(bool p_disable);
 	bool is_folding_disabled() const;
 
-	void call_recursive(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	void call_recursive(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	~TreeItem();
 };

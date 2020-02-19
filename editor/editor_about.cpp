@@ -255,7 +255,7 @@ EditorAbout::EditorAbout() {
 	_tpl_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tpl_hbc->add_child(_tpl_text);
 
-	_tpl_tree->connect("item_selected", this, "_license_tree_selected");
+	_tpl_tree->connect_compat("item_selected", this, "_license_tree_selected");
 	tpl_ti_all->select(0);
 	_tpl_text->set_text(tpl_ti_all->get_metadata(0));
 }

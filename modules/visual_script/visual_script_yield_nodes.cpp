@@ -99,7 +99,7 @@ public:
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return false; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		if (p_start_mode == START_MODE_RESUME_YIELD) {
 			return 0; //resuming yield
@@ -109,7 +109,7 @@ public:
 			SceneTree *tree = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
 			if (!tree) {
 				r_error_str = "Main Loop is not SceneTree";
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 				return 0;
 			}
 
@@ -509,7 +509,7 @@ public:
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		if (p_start_mode == START_MODE_RESUME_YIELD) {
 			return 0; //resuming yield
@@ -529,14 +529,14 @@ public:
 
 					Node *node = Object::cast_to<Node>(instance->get_owner_ptr());
 					if (!node) {
-						r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+						r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 						r_error_str = "Base object is not a Node!";
 						return 0;
 					}
 
 					Node *another = node->get_node(node_path);
 					if (!another) {
-						r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+						r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 						r_error_str = "Path does not lead Node!";
 						return 0;
 					}
@@ -548,7 +548,7 @@ public:
 
 					object = *p_inputs[0];
 					if (!object) {
-						r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+						r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 						r_error_str = "Supplied instance input is null.";
 						return 0;
 					}

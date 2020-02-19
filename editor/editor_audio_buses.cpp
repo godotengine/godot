@@ -799,8 +799,8 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	set_v_size_flags(SIZE_EXPAND_FILL);
 
 	track_name = memnew(LineEdit);
-	track_name->connect("text_entered", this, "_name_changed");
-	track_name->connect("focus_exited", this, "_name_focus_exit");
+	track_name->connect_compat("text_entered", this, "_name_changed");
+	track_name->connect_compat("focus_exited", this, "_name_focus_exit");
 	vb->add_child(track_name);
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
@@ -809,19 +809,19 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	solo->set_toggle_mode(true);
 	solo->set_tooltip(TTR("Solo"));
 	solo->set_focus_mode(FOCUS_NONE);
-	solo->connect("pressed", this, "_solo_toggled");
+	solo->connect_compat("pressed", this, "_solo_toggled");
 	hbc->add_child(solo);
 	mute = memnew(ToolButton);
 	mute->set_toggle_mode(true);
 	mute->set_tooltip(TTR("Mute"));
 	mute->set_focus_mode(FOCUS_NONE);
-	mute->connect("pressed", this, "_mute_toggled");
+	mute->connect_compat("pressed", this, "_mute_toggled");
 	hbc->add_child(mute);
 	bypass = memnew(ToolButton);
 	bypass->set_toggle_mode(true);
 	bypass->set_tooltip(TTR("Bypass"));
 	bypass->set_focus_mode(FOCUS_NONE);
-	bypass->connect("pressed", this, "_bypass_toggled");
+	bypass->connect_compat("pressed", this, "_bypass_toggled");
 	hbc->add_child(bypass);
 	hbc->add_spacer();
 
@@ -878,9 +878,9 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	preview_timer->set_one_shot(true);
 	add_child(preview_timer);
 
-	slider->connect("value_changed", this, "_volume_changed");
-	slider->connect("value_changed", this, "_show_value");
-	preview_timer->connect("timeout", this, "_hide_value_preview");
+	slider->connect_compat("value_changed", this, "_volume_changed");
+	slider->connect_compat("value_changed", this, "_show_value");
+	preview_timer->connect_compat("timeout", this, "_hide_value_preview");
 	hb->add_child(slider);
 
 	cc = 0;
@@ -918,24 +918,24 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	effects->set_hide_folding(true);
 	effects->set_v_size_flags(SIZE_EXPAND_FILL);
 	vb->add_child(effects);
-	effects->connect("item_edited", this, "_effect_edited");
-	effects->connect("cell_selected", this, "_effect_selected");
+	effects->connect_compat("item_edited", this, "_effect_edited");
+	effects->connect_compat("cell_selected", this, "_effect_selected");
 	effects->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 	effects->set_drag_forwarding(this);
-	effects->connect("item_rmb_selected", this, "_effect_rmb");
+	effects->connect_compat("item_rmb_selected", this, "_effect_rmb");
 	effects->set_allow_rmb_select(true);
 	effects->set_focus_mode(FOCUS_CLICK);
 	effects->set_allow_reselect(true);
 
 	send = memnew(OptionButton);
 	send->set_clip_text(true);
-	send->connect("item_selected", this, "_send_selected");
+	send->connect_compat("item_selected", this, "_send_selected");
 	vb->add_child(send);
 
 	set_focus_mode(FOCUS_CLICK);
 
 	effect_options = memnew(PopupMenu);
-	effect_options->connect("index_pressed", this, "_effect_add");
+	effect_options->connect_compat("index_pressed", this, "_effect_add");
 	add_child(effect_options);
 	List<StringName> effects;
 	ClassDB::get_inheriters_from_class("AudioEffect", &effects);
@@ -956,12 +956,12 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	bus_popup->add_item(TTR("Delete"));
 	bus_popup->set_item_disabled(1, is_master);
 	bus_popup->add_item(TTR("Reset Volume"));
-	bus_popup->connect("index_pressed", this, "_bus_popup_pressed");
+	bus_popup->connect_compat("index_pressed", this, "_bus_popup_pressed");
 
 	delete_effect_popup = memnew(PopupMenu);
 	delete_effect_popup->add_item(TTR("Delete Effect"));
 	add_child(delete_effect_popup);
-	delete_effect_popup->connect("index_pressed", this, "_delete_effect_pressed");
+	delete_effect_popup->connect_compat("index_pressed", this, "_delete_effect_pressed");
 }
 
 void EditorAudioBusDrop::_notification(int p_what) {
@@ -1029,11 +1029,11 @@ void EditorAudioBuses::_update_buses() {
 		bool is_master = (i == 0);
 		EditorAudioBus *audio_bus = memnew(EditorAudioBus(this, is_master));
 		bus_hb->add_child(audio_bus);
-		audio_bus->connect("delete_request", this, "_delete_bus", varray(audio_bus), CONNECT_DEFERRED);
-		audio_bus->connect("duplicate_request", this, "_duplicate_bus", varray(), CONNECT_DEFERRED);
-		audio_bus->connect("vol_reset_request", this, "_reset_bus_volume", varray(audio_bus), CONNECT_DEFERRED);
-		audio_bus->connect("drop_end_request", this, "_request_drop_end");
-		audio_bus->connect("dropped", this, "_drop_at_index", varray(), CONNECT_DEFERRED);
+		audio_bus->connect_compat("delete_request", this, "_delete_bus", varray(audio_bus), CONNECT_DEFERRED);
+		audio_bus->connect_compat("duplicate_request", this, "_duplicate_bus", varray(), CONNECT_DEFERRED);
+		audio_bus->connect_compat("vol_reset_request", this, "_reset_bus_volume", varray(audio_bus), CONNECT_DEFERRED);
+		audio_bus->connect_compat("drop_end_request", this, "_request_drop_end");
+		audio_bus->connect_compat("dropped", this, "_drop_at_index", varray(), CONNECT_DEFERRED);
 	}
 }
 
@@ -1187,7 +1187,7 @@ void EditorAudioBuses::_request_drop_end() {
 
 		bus_hb->add_child(drop_end);
 		drop_end->set_custom_minimum_size(Object::cast_to<Control>(bus_hb->get_child(0))->get_size());
-		drop_end->connect("dropped", this, "_drop_at_index", varray(), CONNECT_DEFERRED);
+		drop_end->connect_compat("dropped", this, "_drop_at_index", varray(), CONNECT_DEFERRED);
 	}
 }
 
@@ -1339,7 +1339,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	top_hb->add_child(add);
 	add->set_text(TTR("Add Bus"));
 	add->set_tooltip(TTR("Add a new Audio Bus to this layout."));
-	add->connect("pressed", this, "_add_bus");
+	add->connect_compat("pressed", this, "_add_bus");
 
 	VSeparator *separator = memnew(VSeparator);
 	top_hb->add_child(separator);
@@ -1348,25 +1348,25 @@ EditorAudioBuses::EditorAudioBuses() {
 	load->set_text(TTR("Load"));
 	load->set_tooltip(TTR("Load an existing Bus Layout."));
 	top_hb->add_child(load);
-	load->connect("pressed", this, "_load_layout");
+	load->connect_compat("pressed", this, "_load_layout");
 
 	save_as = memnew(Button);
 	save_as->set_text(TTR("Save As"));
 	save_as->set_tooltip(TTR("Save this Bus Layout to a file."));
 	top_hb->add_child(save_as);
-	save_as->connect("pressed", this, "_save_as_layout");
+	save_as->connect_compat("pressed", this, "_save_as_layout");
 
 	_default = memnew(Button);
 	_default->set_text(TTR("Load Default"));
 	_default->set_tooltip(TTR("Load the default Bus Layout."));
 	top_hb->add_child(_default);
-	_default->connect("pressed", this, "_load_default_layout");
+	_default->connect_compat("pressed", this, "_load_default_layout");
 
 	_new = memnew(Button);
 	_new->set_text(TTR("Create"));
 	_new->set_tooltip(TTR("Create a new Bus Layout."));
 	top_hb->add_child(_new);
-	_new->connect("pressed", this, "_new_layout");
+	_new->connect_compat("pressed", this, "_new_layout");
 
 	bus_scroll = memnew(ScrollContainer);
 	bus_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1381,7 +1381,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	save_timer->set_wait_time(0.8);
 	save_timer->set_one_shot(true);
 	add_child(save_timer);
-	save_timer->connect("timeout", this, "_server_save");
+	save_timer->connect_compat("timeout", this, "_server_save");
 
 	set_v_size_flags(SIZE_EXPAND_FILL);
 
@@ -1394,7 +1394,7 @@ EditorAudioBuses::EditorAudioBuses() {
 		file_dialog->add_filter("*." + E->get() + "; Audio Bus Layout");
 	}
 	add_child(file_dialog);
-	file_dialog->connect("file_selected", this, "_file_dialog_callback");
+	file_dialog->connect_compat("file_selected", this, "_file_dialog_callback");
 
 	set_process(true);
 }

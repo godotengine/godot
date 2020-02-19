@@ -475,10 +475,10 @@ void AnimatedSprite::_notification(int p_what) {
 void AnimatedSprite::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 
 	if (frames.is_valid())
-		frames->disconnect("changed", this, "_res_changed");
+		frames->disconnect_compat("changed", this, "_res_changed");
 	frames = p_frames;
 	if (frames.is_valid())
-		frames->connect("changed", this, "_res_changed");
+		frames->connect_compat("changed", this, "_res_changed");
 
 	if (!frames.is_valid()) {
 		frame = 0;

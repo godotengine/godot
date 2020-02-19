@@ -1537,9 +1537,9 @@ EditorFileDialog::EditorFileDialog() {
 	pathhb->add_child(dir_next);
 	pathhb->add_child(dir_up);
 
-	dir_prev->connect("pressed", this, "_go_back");
-	dir_next->connect("pressed", this, "_go_forward");
-	dir_up->connect("pressed", this, "_go_up");
+	dir_prev->connect_compat("pressed", this, "_go_back");
+	dir_next->connect_compat("pressed", this, "_go_forward");
+	dir_up->connect_compat("pressed", this, "_go_up");
 
 	pathhb->add_child(memnew(Label(TTR("Path:"))));
 
@@ -1549,20 +1549,20 @@ EditorFileDialog::EditorFileDialog() {
 
 	refresh = memnew(ToolButton);
 	refresh->set_tooltip(TTR("Refresh files."));
-	refresh->connect("pressed", this, "_update_file_list");
+	refresh->connect_compat("pressed", this, "_update_file_list");
 	pathhb->add_child(refresh);
 
 	favorite = memnew(ToolButton);
 	favorite->set_toggle_mode(true);
 	favorite->set_tooltip(TTR("(Un)favorite current folder."));
-	favorite->connect("pressed", this, "_favorite_pressed");
+	favorite->connect_compat("pressed", this, "_favorite_pressed");
 	pathhb->add_child(favorite);
 
 	show_hidden = memnew(ToolButton);
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
 	show_hidden->set_tooltip(TTR("Toggle the visibility of hidden files."));
-	show_hidden->connect("toggled", this, "set_show_hidden_files");
+	show_hidden->connect_compat("toggled", this, "set_show_hidden_files");
 	pathhb->add_child(show_hidden);
 
 	pathhb->add_child(memnew(VSeparator));
@@ -1571,7 +1571,7 @@ EditorFileDialog::EditorFileDialog() {
 	view_mode_group.instance();
 
 	mode_thumbnails = memnew(ToolButton);
-	mode_thumbnails->connect("pressed", this, "set_display_mode", varray(DISPLAY_THUMBNAILS));
+	mode_thumbnails->connect_compat("pressed", this, "set_display_mode", varray(DISPLAY_THUMBNAILS));
 	mode_thumbnails->set_toggle_mode(true);
 	mode_thumbnails->set_pressed(display_mode == DISPLAY_THUMBNAILS);
 	mode_thumbnails->set_button_group(view_mode_group);
@@ -1579,7 +1579,7 @@ EditorFileDialog::EditorFileDialog() {
 	pathhb->add_child(mode_thumbnails);
 
 	mode_list = memnew(ToolButton);
-	mode_list->connect("pressed", this, "set_display_mode", varray(DISPLAY_LIST));
+	mode_list->connect_compat("pressed", this, "set_display_mode", varray(DISPLAY_LIST));
 	mode_list->set_toggle_mode(true);
 	mode_list->set_pressed(display_mode == DISPLAY_LIST);
 	mode_list->set_button_group(view_mode_group);
@@ -1588,11 +1588,11 @@ EditorFileDialog::EditorFileDialog() {
 
 	drives = memnew(OptionButton);
 	pathhb->add_child(drives);
-	drives->connect("item_selected", this, "_select_drive");
+	drives->connect_compat("item_selected", this, "_select_drive");
 
 	makedir = memnew(Button);
 	makedir->set_text(TTR("Create Folder"));
-	makedir->connect("pressed", this, "_make_dir");
+	makedir->connect_compat("pressed", this, "_make_dir");
 	pathhb->add_child(makedir);
 
 	list_hb = memnew(HSplitContainer);
@@ -1614,15 +1614,15 @@ EditorFileDialog::EditorFileDialog() {
 	fav_hb->add_spacer();
 	fav_up = memnew(ToolButton);
 	fav_hb->add_child(fav_up);
-	fav_up->connect("pressed", this, "_favorite_move_up");
+	fav_up->connect_compat("pressed", this, "_favorite_move_up");
 	fav_down = memnew(ToolButton);
 	fav_hb->add_child(fav_down);
-	fav_down->connect("pressed", this, "_favorite_move_down");
+	fav_down->connect_compat("pressed", this, "_favorite_move_down");
 
 	favorites = memnew(ItemList);
 	fav_vb->add_child(favorites);
 	favorites->set_v_size_flags(SIZE_EXPAND_FILL);
-	favorites->connect("item_selected", this, "_favorite_selected");
+	favorites->connect_compat("item_selected", this, "_favorite_selected");
 
 	VBoxContainer *rec_vb = memnew(VBoxContainer);
 	vsc->add_child(rec_vb);
@@ -1631,7 +1631,7 @@ EditorFileDialog::EditorFileDialog() {
 	recent = memnew(ItemList);
 	recent->set_allow_reselect(true);
 	rec_vb->add_margin_child(TTR("Recent:"), recent, true);
-	recent->connect("item_selected", this, "_recent_selected");
+	recent->connect_compat("item_selected", this, "_recent_selected");
 
 	VBoxContainer *item_vb = memnew(VBoxContainer);
 	list_hb->add_child(item_vb);
@@ -1650,13 +1650,13 @@ EditorFileDialog::EditorFileDialog() {
 
 	item_list = memnew(ItemList);
 	item_list->set_v_size_flags(SIZE_EXPAND_FILL);
-	item_list->connect("item_rmb_selected", this, "_item_list_item_rmb_selected");
-	item_list->connect("rmb_clicked", this, "_item_list_rmb_clicked");
+	item_list->connect_compat("item_rmb_selected", this, "_item_list_item_rmb_selected");
+	item_list->connect_compat("rmb_clicked", this, "_item_list_rmb_clicked");
 	item_list->set_allow_rmb_select(true);
 	list_vb->add_child(item_list);
 
 	item_menu = memnew(PopupMenu);
-	item_menu->connect("id_pressed", this, "_item_menu_id_pressed");
+	item_menu->connect_compat("id_pressed", this, "_item_menu_id_pressed");
 	add_child(item_menu);
 
 	// Other stuff.
@@ -1687,19 +1687,19 @@ EditorFileDialog::EditorFileDialog() {
 	access = ACCESS_RESOURCES;
 	_update_drives();
 
-	connect("confirmed", this, "_action_pressed");
-	item_list->connect("item_selected", this, "_item_selected", varray(), CONNECT_DEFERRED);
-	item_list->connect("multi_selected", this, "_multi_selected", varray(), CONNECT_DEFERRED);
-	item_list->connect("item_activated", this, "_item_db_selected", varray());
-	item_list->connect("nothing_selected", this, "_items_clear_selection");
-	dir->connect("text_entered", this, "_dir_entered");
-	file->connect("text_entered", this, "_file_entered");
-	filter->connect("item_selected", this, "_filter_selected");
+	connect_compat("confirmed", this, "_action_pressed");
+	item_list->connect_compat("item_selected", this, "_item_selected", varray(), CONNECT_DEFERRED);
+	item_list->connect_compat("multi_selected", this, "_multi_selected", varray(), CONNECT_DEFERRED);
+	item_list->connect_compat("item_activated", this, "_item_db_selected", varray());
+	item_list->connect_compat("nothing_selected", this, "_items_clear_selection");
+	dir->connect_compat("text_entered", this, "_dir_entered");
+	file->connect_compat("text_entered", this, "_file_entered");
+	filter->connect_compat("item_selected", this, "_filter_selected");
 
 	confirm_save = memnew(ConfirmationDialog);
 	confirm_save->set_as_toplevel(true);
 	add_child(confirm_save);
-	confirm_save->connect("confirmed", this, "_save_confirm_pressed");
+	confirm_save->connect_compat("confirmed", this, "_save_confirm_pressed");
 
 	remove_dialog = memnew(DependencyRemoveDialog);
 	add_child(remove_dialog);
@@ -1713,7 +1713,7 @@ EditorFileDialog::EditorFileDialog() {
 	makevb->add_margin_child(TTR("Name:"), makedirname);
 	add_child(makedialog);
 	makedialog->register_text_enter(makedirname);
-	makedialog->connect("confirmed", this, "_make_dir_confirm");
+	makedialog->connect_compat("confirmed", this, "_make_dir_confirm");
 	mkdirerr = memnew(AcceptDialog);
 	mkdirerr->set_text(TTR("Could not create folder."));
 	add_child(mkdirerr);
@@ -1777,10 +1777,10 @@ EditorLineEditFileChooser::EditorLineEditFileChooser() {
 	line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	button = memnew(Button);
 	add_child(button);
-	button->connect("pressed", this, "_browse");
+	button->connect_compat("pressed", this, "_browse");
 	dialog = memnew(EditorFileDialog);
 	add_child(dialog);
-	dialog->connect("file_selected", this, "_chosen");
-	dialog->connect("dir_selected", this, "_chosen");
-	dialog->connect("files_selected", this, "_chosen");
+	dialog->connect_compat("file_selected", this, "_chosen");
+	dialog->connect_compat("dir_selected", this, "_chosen");
+	dialog->connect_compat("files_selected", this, "_chosen");
 }

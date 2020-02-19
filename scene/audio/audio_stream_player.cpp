@@ -441,7 +441,7 @@ AudioStreamPlayer::AudioStreamPlayer() {
 	setstop = false;
 	use_fadeout = false;
 
-	AudioServer::get_singleton()->connect("bus_layout_changed", this, "_bus_layout_changed");
+	AudioServer::get_singleton()->connect_compat("bus_layout_changed", this, "_bus_layout_changed");
 }
 
 AudioStreamPlayer::~AudioStreamPlayer() {

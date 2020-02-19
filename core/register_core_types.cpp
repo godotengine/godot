@@ -99,6 +99,9 @@ extern void unregister_variant_methods();
 
 void register_core_types() {
 
+	//consistency check
+	ERR_FAIL_COND(sizeof(Callable) > 16);
+
 	ObjectDB::setup();
 	ResourceCache::setup();
 

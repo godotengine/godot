@@ -170,7 +170,7 @@ void VisibilityEnabler::_find_nodes(Node *p_node) {
 
 	if (add) {
 
-		p_node->connect(SceneStringNames::get_singleton()->tree_exiting, this, "_node_removed", varray(p_node), CONNECT_ONESHOT);
+		p_node->connect_compat(SceneStringNames::get_singleton()->tree_exiting, this, "_node_removed", varray(p_node), CONNECT_ONESHOT);
 		nodes[p_node] = meta;
 		_change_node_state(p_node, false);
 	}
@@ -208,7 +208,7 @@ void VisibilityEnabler::_notification(int p_what) {
 
 			if (!visible)
 				_change_node_state(E->key(), true);
-			E->key()->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, "_node_removed");
+			E->key()->disconnect_compat(SceneStringNames::get_singleton()->tree_exiting, this, "_node_removed");
 		}
 
 		nodes.clear();

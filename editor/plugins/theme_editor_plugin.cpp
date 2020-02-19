@@ -629,7 +629,7 @@ ThemeEditor::ThemeEditor() {
 	theme_menu->get_popup()->add_item(TTR("Create Empty Editor Template"), POPUP_CREATE_EDITOR_EMPTY);
 	theme_menu->get_popup()->add_item(TTR("Create From Current Editor Theme"), POPUP_IMPORT_EDITOR_THEME);
 	top_menu->add_child(theme_menu);
-	theme_menu->get_popup()->connect("id_pressed", this, "_theme_menu_cbk");
+	theme_menu->get_popup()->connect_compat("id_pressed", this, "_theme_menu_cbk");
 
 	ScrollContainer *scroll = memnew(ScrollContainer);
 	add_child(scroll);
@@ -835,7 +835,7 @@ ThemeEditor::ThemeEditor() {
 	type_menu->set_text("..");
 	type_hbc->add_child(type_menu);
 
-	type_menu->get_popup()->connect("id_pressed", this, "_type_menu_cbk");
+	type_menu->get_popup()->connect_compat("id_pressed", this, "_type_menu_cbk");
 
 	l = memnew(Label);
 	l->set_text(TTR("Name:"));
@@ -853,8 +853,8 @@ ThemeEditor::ThemeEditor() {
 	name_menu->set_text("..");
 	name_hbc->add_child(name_menu);
 
-	name_menu->get_popup()->connect("about_to_show", this, "_name_menu_about_to_show");
-	name_menu->get_popup()->connect("id_pressed", this, "_name_menu_cbk");
+	name_menu->get_popup()->connect_compat("about_to_show", this, "_name_menu_about_to_show");
+	name_menu->get_popup()->connect_compat("id_pressed", this, "_name_menu_cbk");
 
 	type_select_label = memnew(Label);
 	type_select_label->set_text(TTR("Data Type:"));
@@ -869,12 +869,12 @@ ThemeEditor::ThemeEditor() {
 
 	dialog_vbc->add_child(type_select);
 
-	add_del_dialog->get_ok()->connect("pressed", this, "_dialog_cbk");
+	add_del_dialog->get_ok()->connect_compat("pressed", this, "_dialog_cbk");
 
 	file_dialog = memnew(EditorFileDialog);
 	file_dialog->add_filter("*.theme ; " + TTR("Theme File"));
 	add_child(file_dialog);
-	file_dialog->connect("file_selected", this, "_save_template_cbk");
+	file_dialog->connect_compat("file_selected", this, "_save_template_cbk");
 }
 
 void ThemeEditorPlugin::edit(Object *p_node) {

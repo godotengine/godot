@@ -2076,10 +2076,10 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 
 					/* STEP 2, INITIALIZE AND CONSTRUCT */
 
-					Variant::CallError ce;
+					Callable::CallError ce;
 					p_script->initializer->call(instance, NULL, 0, ce);
 
-					if (ce.error != Variant::CallError::CALL_OK) {
+					if (ce.error != Callable::CallError::CALL_OK) {
 						//well, tough luck, not goinna do anything here
 					}
 				}

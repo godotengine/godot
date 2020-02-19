@@ -145,22 +145,22 @@ void MultiplayerAPI::set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_pee
 			"Supplied NetworkedMultiplayerPeer must be connecting or connected.");
 
 	if (network_peer.is_valid()) {
-		network_peer->disconnect("peer_connected", this, "_add_peer");
-		network_peer->disconnect("peer_disconnected", this, "_del_peer");
-		network_peer->disconnect("connection_succeeded", this, "_connected_to_server");
-		network_peer->disconnect("connection_failed", this, "_connection_failed");
-		network_peer->disconnect("server_disconnected", this, "_server_disconnected");
+		network_peer->disconnect_compat("peer_connected", this, "_add_peer");
+		network_peer->disconnect_compat("peer_disconnected", this, "_del_peer");
+		network_peer->disconnect_compat("connection_succeeded", this, "_connected_to_server");
+		network_peer->disconnect_compat("connection_failed", this, "_connection_failed");
+		network_peer->disconnect_compat("server_disconnected", this, "_server_disconnected");
 		clear();
 	}
 
 	network_peer = p_peer;
 
 	if (network_peer.is_valid()) {
-		network_peer->connect("peer_connected", this, "_add_peer");
-		network_peer->connect("peer_disconnected", this, "_del_peer");
-		network_peer->connect("connection_succeeded", this, "_connected_to_server");
-		network_peer->connect("connection_failed", this, "_connection_failed");
-		network_peer->connect("server_disconnected", this, "_server_disconnected");
+		network_peer->connect_compat("peer_connected", this, "_add_peer");
+		network_peer->connect_compat("peer_disconnected", this, "_del_peer");
+		network_peer->connect_compat("connection_succeeded", this, "_connected_to_server");
+		network_peer->connect_compat("connection_failed", this, "_connection_failed");
+		network_peer->connect_compat("server_disconnected", this, "_server_disconnected");
 	}
 }
 
@@ -368,10 +368,10 @@ void MultiplayerAPI::_process_rpc(Node *p_node, const uint16_t p_rpc_method_id, 
 		p_offset += vlen;
 	}
 
-	Variant::CallError ce;
+	Callable::CallError ce;
 
 	p_node->call(name, (const Variant **)argp.ptr(), argc, ce);
-	if (ce.error != Variant::CallError::CALL_OK) {
+	if (ce.error != Callable::CallError::CALL_OK) {
 		String error = Variant::get_call_error_text(p_node, name, (const Variant **)argp.ptr(), argc, ce);
 		error = "RPC - " + error;
 		ERR_PRINT(error);
@@ -989,10 +989,10 @@ void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const 
 	if (call_local_native) {
 		int temp_id = rpc_sender_id;
 		rpc_sender_id = get_network_unique_id();
-		Variant::CallError ce;
+		Callable::CallError ce;
 		p_node->call(p_method, p_arg, p_argcount, ce);
 		rpc_sender_id = temp_id;
-		if (ce.error != Variant::CallError::CALL_OK) {
+		if (ce.error != Callable::CallError::CALL_OK) {
 			String error = Variant::get_call_error_text(p_node, p_method, p_arg, p_argcount, ce);
 			error = "rpc() aborted in local call:  - " + error + ".";
 			ERR_PRINT(error);
@@ -1003,11 +1003,11 @@ void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const 
 	if (call_local_script) {
 		int temp_id = rpc_sender_id;
 		rpc_sender_id = get_network_unique_id();
-		Variant::CallError ce;
-		ce.error = Variant::CallError::CALL_OK;
+		Callable::CallError ce;
+		ce.error = Callable::CallError::CALL_OK;
 		p_node->get_script_instance()->call(p_method, p_arg, p_argcount, ce);
 		rpc_sender_id = temp_id;
-		if (ce.error != Variant::CallError::CALL_OK) {
+		if (ce.error != Callable::CallError::CALL_OK) {
 			String error = Variant::get_call_error_text(p_node, p_method, p_arg, p_argcount, ce);
 			error = "rpc() aborted in script local call:  - " + error + ".";
 			ERR_PRINT(error);

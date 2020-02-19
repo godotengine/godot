@@ -73,6 +73,8 @@ enum {
 	VARIANT_VECTOR2_ARRAY = 37,
 	VARIANT_INT64 = 40,
 	VARIANT_DOUBLE = 41,
+	VARIANT_CALLABLE = 42,
+	VARIANT_SIGNAL = 43,
 	OBJECT_EMPTY = 0,
 	OBJECT_EXTERNAL_RESOURCE = 1,
 	OBJECT_INTERNAL_RESOURCE = 2,
@@ -363,6 +365,15 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 			}
 
 		} break;
+		case VARIANT_CALLABLE: {
+
+			r_v = Callable();
+		} break;
+		case VARIANT_SIGNAL: {
+
+			r_v = Signal();
+		} break;
+
 		case VARIANT_DICTIONARY: {
 
 			uint32_t len = f->get_32();
@@ -1440,6 +1451,17 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 			}
 
 		} break;
+		case Variant::CALLABLE: {
+
+			f->store_32(VARIANT_CALLABLE);
+			WARN_PRINT("Can't save Callables.");
+		} break;
+		case Variant::SIGNAL: {
+
+			f->store_32(VARIANT_SIGNAL);
+			WARN_PRINT("Can't save Signals.");
+		} break;
+
 		case Variant::DICTIONARY: {
 
 			f->store_32(VARIANT_DICTIONARY);

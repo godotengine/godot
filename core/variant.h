@@ -32,6 +32,7 @@
 #define VARIANT_H
 
 #include "core/array.h"
+#include "core/callable.h"
 #include "core/color.h"
 #include "core/dictionary.h"
 #include "core/io/ip_address.h"
@@ -101,9 +102,10 @@ public:
 		NODE_PATH, // 15
 		_RID,
 		OBJECT,
+		CALLABLE,
+		SIGNAL,
 		DICTIONARY,
 		ARRAY,
-
 		// arrays
 		PACKED_BYTE_ARRAY, // 20
 		PACKED_INT_ARRAY,
@@ -202,6 +204,9 @@ public:
 	operator Node *() const;
 	operator Control *() const;
 
+	operator Callable() const;
+	operator Signal() const;
+
 	operator Dictionary() const;
 	operator Array() const;
 
@@ -262,6 +267,8 @@ public:
 	Variant(const NodePath &p_node_path);
 	Variant(const RID &p_rid);
 	Variant(const Object *p_object);
+	Variant(const Callable &p_callable);
+	Variant(const Signal &p_signal);
 	Variant(const Dictionary &p_dictionary);
 
 	Variant(const Array &p_array);
@@ -333,27 +340,14 @@ public:
 	static void blend(const Variant &a, const Variant &b, float c, Variant &r_dst);
 	static void interpolate(const Variant &a, const Variant &b, float c, Variant &r_dst);
 
-	struct CallError {
-		enum Error {
-			CALL_OK,
-			CALL_ERROR_INVALID_METHOD,
-			CALL_ERROR_INVALID_ARGUMENT,
-			CALL_ERROR_TOO_MANY_ARGUMENTS,
-			CALL_ERROR_TOO_FEW_ARGUMENTS,
-			CALL_ERROR_INSTANCE_IS_NULL,
-		};
-		Error error;
-		int argument;
-		Type expected;
-	};
-
-	void call_ptr(const StringName &p_method, const Variant **p_args, int p_argcount, Variant *r_ret, CallError &r_error);
-	Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, CallError &r_error);
+	void call_ptr(const StringName &p_method, const Variant **p_args, int p_argcount, Variant *r_ret, Callable::CallError &r_error);
+	Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Variant call(const StringName &p_method, const Variant &p_arg1 = Variant(), const Variant &p_arg2 = Variant(), const Variant &p_arg3 = Variant(), const Variant &p_arg4 = Variant(), const Variant &p_arg5 = Variant());
 
-	static String get_call_error_text(Object *p_base, const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Variant::CallError &ce);
+	static String get_call_error_text(Object *p_base, const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce);
+	static String get_callable_error_text(const Callable &p_callable, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce);
 
-	static Variant construct(const Variant::Type, const Variant **p_args, int p_argcount, CallError &r_error, bool p_strict = true);
+	static Variant construct(const Variant::Type, const Variant **p_args, int p_argcount, Callable::CallError &r_error, bool p_strict = true);
 
 	void get_method_list(List<MethodInfo> *p_list) const;
 	bool has_method(const StringName &p_method) const;

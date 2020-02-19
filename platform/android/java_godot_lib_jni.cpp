@@ -411,30 +411,30 @@ class JNISingleton : public Object {
 	Map<StringName, MethodData> method_map;
 
 public:
-	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 
 		ERR_FAIL_COND_V(!instance, Variant());
 
-		r_error.error = Variant::CallError::CALL_OK;
+		r_error.error = Callable::CallError::CALL_OK;
 
 		Map<StringName, MethodData>::Element *E = method_map.find(p_method);
 		if (!E) {
 
-			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			return Variant();
 		}
 
 		int ac = E->get().argtypes.size();
 		if (ac < p_argcount) {
 
-			r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 			r_error.argument = ac;
 			return Variant();
 		}
 
 		if (ac > p_argcount) {
 
-			r_error.error = Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+			r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 			r_error.argument = ac;
 			return Variant();
 		}
@@ -443,7 +443,7 @@ public:
 
 			if (!Variant::can_convert(p_args[i]->get_type(), E->get().argtypes[i])) {
 
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = i;
 				r_error.expected = E->get().argtypes[i];
 			}
@@ -1370,7 +1370,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_callobject(JNIEnv *en
 		env->DeleteLocalRef(obj);
 	};
 
-	Variant::CallError err;
+	Callable::CallError err;
 	obj->call(str_method, (const Variant **)vptr, count, err);
 	// something
 

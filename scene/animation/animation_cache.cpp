@@ -56,7 +56,7 @@ void AnimationCache::_clear_cache() {
 
 	while (connected_nodes.size()) {
 
-		connected_nodes.front()->get()->disconnect("tree_exiting", this, "_node_exit_tree");
+		connected_nodes.front()->get()->disconnect_compat("tree_exiting", this, "_node_exit_tree");
 		connected_nodes.erase(connected_nodes.front());
 	}
 	path_cache.clear();
@@ -174,7 +174,7 @@ void AnimationCache::_update_cache() {
 
 		if (!connected_nodes.has(path.node)) {
 			connected_nodes.insert(path.node);
-			path.node->connect("tree_exiting", this, "_node_exit_tree", Node::make_binds(path.node), CONNECT_ONESHOT);
+			path.node->connect_compat("tree_exiting", this, "_node_exit_tree", Node::make_binds(path.node), CONNECT_ONESHOT);
 		}
 	}
 
@@ -218,7 +218,7 @@ void AnimationCache::set_track_value(int p_idx, const Variant &p_value) {
 	p.object->set_indexed(p.subpath, p_value);
 }
 
-void AnimationCache::call_track(int p_idx, const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+void AnimationCache::call_track(int p_idx, const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 
 	if (cache_dirty)
 		_update_cache();
@@ -283,7 +283,7 @@ void AnimationCache::set_all(float p_time, float p_delta) {
 
 					Vector<Variant> args = animation->method_track_get_params(i, E->get());
 					StringName name = animation->method_track_get_name(i, E->get());
-					Variant::CallError err;
+					Callable::CallError err;
 
 					if (!args.size()) {
 
@@ -313,12 +313,12 @@ void AnimationCache::set_animation(const Ref<Animation> &p_animation) {
 	_clear_cache();
 
 	if (animation.is_valid())
-		animation->disconnect("changed", this, "_animation_changed");
+		animation->disconnect_compat("changed", this, "_animation_changed");
 
 	animation = p_animation;
 
 	if (animation.is_valid())
-		animation->connect("changed", this, "_animation_changed");
+		animation->connect_compat("changed", this, "_animation_changed");
 }
 
 void AnimationCache::_bind_methods() {

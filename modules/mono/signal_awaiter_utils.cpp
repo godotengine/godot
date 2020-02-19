@@ -51,7 +51,7 @@ Error connect_signal_awaiter(Object *p_source, const String &p_signal, Object *p
 	Vector<Variant> binds;
 	binds.push_back(sa_con);
 
-	Error err = p_source->connect(p_signal, sa_con.ptr(),
+	Error err = p_source->connect_compat(p_signal, sa_con.ptr(),
 			CSharpLanguage::get_singleton()->get_string_names()._signal_callback,
 			binds, Object::CONNECT_ONESHOT);
 
@@ -65,7 +65,7 @@ Error connect_signal_awaiter(Object *p_source, const String &p_signal, Object *p
 }
 } // namespace SignalAwaiterUtils
 
-Variant SignalAwaiterHandle::_signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+Variant SignalAwaiterHandle::_signal_callback(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_V_MSG(conn_target_id.is_valid() && !ObjectDB::get_instance(conn_target_id), Variant(),
@@ -73,7 +73,7 @@ Variant SignalAwaiterHandle::_signal_callback(const Variant **p_args, int p_argc
 #endif
 
 	if (p_argcount < 1) {
-		r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.argument = 1;
 		return Variant();
 	}
@@ -81,7 +81,7 @@ Variant SignalAwaiterHandle::_signal_callback(const Variant **p_args, int p_argc
 	Ref<SignalAwaiterHandle> self = *p_args[p_argcount - 1];
 
 	if (self.is_null()) {
-		r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = p_argcount - 1;
 		r_error.expected = Variant::OBJECT;
 		return Variant();

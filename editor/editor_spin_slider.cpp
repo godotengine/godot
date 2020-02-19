@@ -490,9 +490,9 @@ EditorSpinSlider::EditorSpinSlider() {
 	grabber->hide();
 	grabber->set_as_toplevel(true);
 	grabber->set_mouse_filter(MOUSE_FILTER_STOP);
-	grabber->connect("mouse_entered", this, "_grabber_mouse_entered");
-	grabber->connect("mouse_exited", this, "_grabber_mouse_exited");
-	grabber->connect("gui_input", this, "_grabber_gui_input");
+	grabber->connect_compat("mouse_entered", this, "_grabber_mouse_entered");
+	grabber->connect_compat("mouse_exited", this, "_grabber_mouse_exited");
+	grabber->connect_compat("gui_input", this, "_grabber_gui_input");
 	mouse_over_spin = false;
 	mouse_over_grabber = false;
 	mousewheel_over_grabber = false;
@@ -502,9 +502,9 @@ EditorSpinSlider::EditorSpinSlider() {
 	add_child(value_input);
 	value_input->set_as_toplevel(true);
 	value_input->hide();
-	value_input->connect("modal_closed", this, "_value_input_closed");
-	value_input->connect("text_entered", this, "_value_input_entered");
-	value_input->connect("focus_exited", this, "_value_focus_exited");
+	value_input->connect_compat("modal_closed", this, "_value_input_closed");
+	value_input->connect_compat("text_entered", this, "_value_input_entered");
+	value_input->connect_compat("focus_exited", this, "_value_focus_exited");
 	value_input_just_closed = false;
 	hide_slider = false;
 	read_only = false;

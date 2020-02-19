@@ -753,12 +753,12 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	activate = memnew(Button);
 	activate->set_toggle_mode(true);
 	activate->set_text(TTR("Start"));
-	activate->connect("pressed", this, "_activate_pressed");
+	activate->connect_compat("pressed", this, "_activate_pressed");
 	hb->add_child(activate);
 
 	clear_button = memnew(Button);
 	clear_button->set_text(TTR("Clear"));
-	clear_button->connect("pressed", this, "_clear_pressed");
+	clear_button->connect_compat("pressed", this, "_clear_pressed");
 	hb->add_child(clear_button);
 
 	hb->add_child(memnew(Label(TTR("Measure:"))));
@@ -766,18 +766,18 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	display_mode = memnew(OptionButton);
 	display_mode->add_item(TTR("Frame Time (msec)"));
 	display_mode->add_item(TTR("Frame %"));
-	display_mode->connect("item_selected", this, "_combo_changed");
+	display_mode->connect_compat("item_selected", this, "_combo_changed");
 
 	hb->add_child(display_mode);
 
 	frame_relative = memnew(CheckBox(TTR("Fit to Frame")));
 	frame_relative->set_pressed(true);
 	hb->add_child(frame_relative);
-	frame_relative->connect("pressed", this, "_update_plot");
+	frame_relative->connect_compat("pressed", this, "_update_plot");
 	linked = memnew(CheckBox(TTR("Linked")));
 	linked->set_pressed(true);
 	hb->add_child(linked);
-	linked->connect("pressed", this, "_update_plot");
+	linked->connect_compat("pressed", this, "_update_plot");
 
 	hb->add_spacer();
 
@@ -786,7 +786,7 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	cursor_metric_edit = memnew(SpinBox);
 	cursor_metric_edit->set_h_size_flags(SIZE_FILL);
 	hb->add_child(cursor_metric_edit);
-	cursor_metric_edit->connect("value_changed", this, "_cursor_metric_changed");
+	cursor_metric_edit->connect_compat("value_changed", this, "_cursor_metric_changed");
 
 	hb->add_constant_override("separation", 8 * EDSCALE);
 
@@ -810,15 +810,15 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	variables->set_column_title(2, TTR("GPU"));
 	variables->set_column_expand(2, false);
 	variables->set_column_min_width(2, 60 * EDSCALE);
-	variables->connect("cell_selected", this, "_item_selected");
+	variables->connect_compat("cell_selected", this, "_item_selected");
 
 	graph = memnew(TextureRect);
 	graph->set_expand(true);
 	graph->set_mouse_filter(MOUSE_FILTER_STOP);
 	//graph->set_ignore_mouse(false);
-	graph->connect("draw", this, "_graph_tex_draw");
-	graph->connect("gui_input", this, "_graph_tex_input");
-	graph->connect("mouse_exited", this, "_graph_tex_mouse_exit");
+	graph->connect_compat("draw", this, "_graph_tex_draw");
+	graph->connect_compat("gui_input", this, "_graph_tex_input");
+	graph->connect_compat("mouse_exited", this, "_graph_tex_mouse_exit");
 
 	h_split->add_child(graph);
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -835,13 +835,13 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	frame_delay->set_wait_time(0.1);
 	frame_delay->set_one_shot(true);
 	add_child(frame_delay);
-	frame_delay->connect("timeout", this, "_update_frame");
+	frame_delay->connect_compat("timeout", this, "_update_frame");
 
 	plot_delay = memnew(Timer);
 	plot_delay->set_wait_time(0.1);
 	plot_delay->set_one_shot(true);
 	add_child(plot_delay);
-	plot_delay->connect("timeout", this, "_update_plot");
+	plot_delay->connect_compat("timeout", this, "_update_plot");
 
 	seeking = false;
 	graph_height_cpu = 1;

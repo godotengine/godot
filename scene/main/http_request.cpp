@@ -589,7 +589,7 @@ HTTPRequest::HTTPRequest() {
 
 	timer = memnew(Timer);
 	timer->set_one_shot(true);
-	timer->connect("timeout", this, "_timeout");
+	timer->connect_compat("timeout", this, "_timeout");
 	add_child(timer);
 	timeout = 0;
 }

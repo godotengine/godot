@@ -905,10 +905,10 @@ static bool _guess_expression_type(GDScriptCompletionContext &p_context, const G
 											argptr.push_back(&args[i]);
 										}
 
-										Variant::CallError ce;
+										Callable::CallError ce;
 										Variant ret = mb->call(baseptr, (const Variant **)argptr.ptr(), argptr.size(), ce);
 
-										if (ce.error == Variant::CallError::CALL_OK && ret.get_type() != Variant::NIL) {
+										if (ce.error == Callable::CallError::CALL_OK && ret.get_type() != Variant::NIL) {
 											if (ret.get_type() != Variant::OBJECT || ret.operator Object *() != NULL) {
 												r_type = _type_from_variant(ret);
 												found = true;
@@ -1060,7 +1060,7 @@ static bool _guess_expression_type(GDScriptCompletionContext &p_context, const G
 						StringName id = index.value;
 						found = _guess_identifier_type_from_base(c, base, id, r_type);
 					} else if (!found && index.type.kind == GDScriptParser::DataType::BUILTIN) {
-						Variant::CallError err;
+						Callable::CallError err;
 						Variant base_val = Variant::construct(base.type.builtin_type, NULL, 0, err);
 						bool valid = false;
 						Variant res = base_val.get(index.value, &valid);
@@ -1114,7 +1114,7 @@ static bool _guess_expression_type(GDScriptCompletionContext &p_context, const G
 						break;
 					}
 
-					Variant::CallError ce;
+					Callable::CallError ce;
 					bool v1_use_value = p1.value.get_type() != Variant::NIL && p1.value.get_type() != Variant::OBJECT;
 					Variant v1 = (v1_use_value) ? p1.value : Variant::construct(p1.type.builtin_type, NULL, 0, ce);
 					bool v2_use_value = p2.value.get_type() != Variant::NIL && p2.value.get_type() != Variant::OBJECT;
@@ -1533,10 +1533,10 @@ static bool _guess_identifier_type_from_base(GDScriptCompletionContext &p_contex
 				return false;
 			} break;
 			case GDScriptParser::DataType::BUILTIN: {
-				Variant::CallError err;
+				Callable::CallError err;
 				Variant tmp = Variant::construct(base_type.builtin_type, NULL, 0, err);
 
-				if (err.error != Variant::CallError::CALL_OK) {
+				if (err.error != Callable::CallError::CALL_OK) {
 					return false;
 				}
 				bool valid = false;
@@ -1703,9 +1703,9 @@ static bool _guess_method_return_type_from_base(GDScriptCompletionContext &p_con
 				return false;
 			} break;
 			case GDScriptParser::DataType::BUILTIN: {
-				Variant::CallError err;
+				Callable::CallError err;
 				Variant tmp = Variant::construct(base_type.builtin_type, NULL, 0, err);
-				if (err.error != Variant::CallError::CALL_OK) {
+				if (err.error != Callable::CallError::CALL_OK) {
 					return false;
 				}
 
@@ -2088,9 +2088,9 @@ static void _find_identifiers_in_base(const GDScriptCompletionContext &p_context
 				return;
 			} break;
 			case GDScriptParser::DataType::BUILTIN: {
-				Variant::CallError err;
+				Callable::CallError err;
 				Variant tmp = Variant::construct(base_type.builtin_type, NULL, 0, err);
-				if (err.error != Variant::CallError::CALL_OK) {
+				if (err.error != Callable::CallError::CALL_OK) {
 					return;
 				}
 
@@ -2372,9 +2372,9 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 			} break;
 			case GDScriptParser::DataType::BUILTIN: {
 				if (base.get_type() == Variant::NIL) {
-					Variant::CallError err;
+					Callable::CallError err;
 					base = Variant::construct(base_type.builtin_type, NULL, 0, err);
-					if (err.error != Variant::CallError::CALL_OK) {
+					if (err.error != Callable::CallError::CALL_OK) {
 						return;
 					}
 				}
@@ -3219,9 +3219,9 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 					v_ref.instance();
 					v = v_ref;
 				} else {
-					Variant::CallError err;
+					Callable::CallError err;
 					v = Variant::construct(base_type.builtin_type, NULL, 0, err);
-					if (err.error != Variant::CallError::CALL_OK) {
+					if (err.error != Callable::CallError::CALL_OK) {
 						break;
 					}
 				}

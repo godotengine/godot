@@ -267,7 +267,7 @@ void ScrollContainer::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_READY) {
 
-		get_viewport()->connect("gui_focus_changed", this, "_ensure_focused_visible");
+		get_viewport()->connect_compat("gui_focus_changed", this, "_ensure_focused_visible");
 	}
 
 	if (p_what == NOTIFICATION_SORT_CHILDREN) {
@@ -610,12 +610,12 @@ ScrollContainer::ScrollContainer() {
 	h_scroll = memnew(HScrollBar);
 	h_scroll->set_name("_h_scroll");
 	add_child(h_scroll);
-	h_scroll->connect("value_changed", this, "_scroll_moved");
+	h_scroll->connect_compat("value_changed", this, "_scroll_moved");
 
 	v_scroll = memnew(VScrollBar);
 	v_scroll->set_name("_v_scroll");
 	add_child(v_scroll);
-	v_scroll->connect("value_changed", this, "_scroll_moved");
+	v_scroll->connect_compat("value_changed", this, "_scroll_moved");
 
 	drag_speed = Vector2();
 	drag_touching = false;

@@ -334,7 +334,7 @@ void AnimationTrackEditAudio::_bind_methods() {
 }
 
 AnimationTrackEditAudio::AnimationTrackEditAudio() {
-	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", this, "_preview_changed");
+	AudioStreamPreviewGenerator::get_singleton()->connect_compat("preview_updated", this, "_preview_changed");
 }
 
 /// SPRITE FRAME / FRAME_COORDS ///
@@ -949,7 +949,7 @@ void AnimationTrackEditTypeAudio::_bind_methods() {
 }
 
 AnimationTrackEditTypeAudio::AnimationTrackEditTypeAudio() {
-	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", this, "_preview_changed");
+	AudioStreamPreviewGenerator::get_singleton()->connect_compat("preview_updated", this, "_preview_changed");
 	len_resizing = false;
 }
 

@@ -47,8 +47,8 @@ public:
 	};
 
 	typedef void (*CommitNotifyCallback)(void *p_ud, const String &p_name);
-	Variant _add_do_method(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
-	Variant _add_undo_method(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	Variant _add_do_method(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	Variant _add_undo_method(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	typedef void (*MethodNotifyCallback)(void *p_ud, Object *p_base, const StringName &p_name, VARIANT_ARG_DECLARE);
 	typedef void (*PropertyNotifyCallback)(void *p_ud, Object *p_base, const StringName &p_property, const Variant &p_value);

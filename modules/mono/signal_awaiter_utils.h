@@ -49,7 +49,7 @@ class SignalAwaiterHandle : public MonoGCHandle {
 	ObjectID conn_target_id;
 #endif
 
-	Variant _signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	Variant _signal_callback(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 protected:
 	static void _bind_methods();

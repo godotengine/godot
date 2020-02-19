@@ -221,28 +221,28 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 		if (name.begins_with("custom_icons/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.icon_override.has(dname)) {
-				data.icon_override[dname]->disconnect("changed", this, "_override_changed");
+				data.icon_override[dname]->disconnect_compat("changed", this, "_override_changed");
 			}
 			data.icon_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_shaders/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.shader_override.has(dname)) {
-				data.shader_override[dname]->disconnect("changed", this, "_override_changed");
+				data.shader_override[dname]->disconnect_compat("changed", this, "_override_changed");
 			}
 			data.shader_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_styles/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.style_override.has(dname)) {
-				data.style_override[dname]->disconnect("changed", this, "_override_changed");
+				data.style_override[dname]->disconnect_compat("changed", this, "_override_changed");
 			}
 			data.style_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_fonts/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.font_override.has(dname)) {
-				data.font_override[dname]->disconnect("changed", this, "_override_changed");
+				data.font_override[dname]->disconnect_compat("changed", this, "_override_changed");
 			}
 			data.font_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
@@ -542,10 +542,10 @@ void Control::_notification(int p_notification) {
 
 				if (data.parent_canvas_item) {
 
-					data.parent_canvas_item->connect("item_rect_changed", this, "_size_changed");
+					data.parent_canvas_item->connect_compat("item_rect_changed", this, "_size_changed");
 				} else {
 					//connect viewport
-					get_viewport()->connect("size_changed", this, "_size_changed");
+					get_viewport()->connect_compat("size_changed", this, "_size_changed");
 				}
 			}
 
@@ -561,11 +561,11 @@ void Control::_notification(int p_notification) {
 
 			if (data.parent_canvas_item) {
 
-				data.parent_canvas_item->disconnect("item_rect_changed", this, "_size_changed");
+				data.parent_canvas_item->disconnect_compat("item_rect_changed", this, "_size_changed");
 				data.parent_canvas_item = NULL;
 			} else if (!is_set_as_toplevel()) {
 				//disconnect viewport
-				get_viewport()->disconnect("size_changed", this, "_size_changed");
+				get_viewport()->disconnect_compat("size_changed", this, "_size_changed");
 			}
 
 			if (data.MI) {
@@ -687,9 +687,9 @@ bool Control::has_point(const Point2 &p_point) const {
 	if (get_script_instance()) {
 		Variant v = p_point;
 		const Variant *p = &v;
-		Variant::CallError ce;
+		Callable::CallError ce;
 		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->has_point, &p, 1, ce);
-		if (ce.error == Variant::CallError::CALL_OK) {
+		if (ce.error == Callable::CallError::CALL_OK) {
 			return ret;
 		}
 	}
@@ -721,9 +721,9 @@ Variant Control::get_drag_data(const Point2 &p_point) {
 	if (get_script_instance()) {
 		Variant v = p_point;
 		const Variant *p = &v;
-		Variant::CallError ce;
+		Callable::CallError ce;
 		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->get_drag_data, &p, 1, ce);
-		if (ce.error == Variant::CallError::CALL_OK)
+		if (ce.error == Callable::CallError::CALL_OK)
 			return ret;
 	}
 
@@ -743,9 +743,9 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 	if (get_script_instance()) {
 		Variant v = p_point;
 		const Variant *p[2] = { &v, &p_data };
-		Variant::CallError ce;
+		Callable::CallError ce;
 		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->can_drop_data, p, 2, ce);
-		if (ce.error == Variant::CallError::CALL_OK)
+		if (ce.error == Callable::CallError::CALL_OK)
 			return ret;
 	}
 
@@ -765,9 +765,9 @@ void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
 	if (get_script_instance()) {
 		Variant v = p_point;
 		const Variant *p[2] = { &v, &p_data };
-		Variant::CallError ce;
+		Callable::CallError ce;
 		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->drop_data, p, 2, ce);
-		if (ce.error == Variant::CallError::CALL_OK)
+		if (ce.error == Callable::CallError::CALL_OK)
 			return;
 	}
 }
@@ -805,9 +805,9 @@ Size2 Control::get_minimum_size() const {
 	ScriptInstance *si = const_cast<Control *>(this)->get_script_instance();
 	if (si) {
 
-		Variant::CallError ce;
+		Callable::CallError ce;
 		Variant s = si->call(SceneStringNames::get_singleton()->_get_minimum_size, NULL, 0, ce);
-		if (ce.error == Variant::CallError::CALL_OK)
+		if (ce.error == Callable::CallError::CALL_OK)
 			return s;
 	}
 	return Size2();
@@ -1883,7 +1883,7 @@ Rect2 Control::get_anchorable_rect() const {
 void Control::add_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon) {
 
 	if (data.icon_override.has(p_name)) {
-		data.icon_override[p_name]->disconnect("changed", this, "_override_changed");
+		data.icon_override[p_name]->disconnect_compat("changed", this, "_override_changed");
 	}
 
 	// clear if "null" is passed instead of a icon
@@ -1892,7 +1892,7 @@ void Control::add_icon_override(const StringName &p_name, const Ref<Texture2D> &
 	} else {
 		data.icon_override[p_name] = p_icon;
 		if (data.icon_override[p_name].is_valid()) {
-			data.icon_override[p_name]->connect("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+			data.icon_override[p_name]->connect_compat("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
 		}
 	}
 	notification(NOTIFICATION_THEME_CHANGED);
@@ -1901,7 +1901,7 @@ void Control::add_icon_override(const StringName &p_name, const Ref<Texture2D> &
 void Control::add_shader_override(const StringName &p_name, const Ref<Shader> &p_shader) {
 
 	if (data.shader_override.has(p_name)) {
-		data.shader_override[p_name]->disconnect("changed", this, "_override_changed");
+		data.shader_override[p_name]->disconnect_compat("changed", this, "_override_changed");
 	}
 
 	// clear if "null" is passed instead of a shader
@@ -1910,7 +1910,7 @@ void Control::add_shader_override(const StringName &p_name, const Ref<Shader> &p
 	} else {
 		data.shader_override[p_name] = p_shader;
 		if (data.shader_override[p_name].is_valid()) {
-			data.shader_override[p_name]->connect("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+			data.shader_override[p_name]->connect_compat("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
 		}
 	}
 	notification(NOTIFICATION_THEME_CHANGED);
@@ -1918,7 +1918,7 @@ void Control::add_shader_override(const StringName &p_name, const Ref<Shader> &p
 void Control::add_style_override(const StringName &p_name, const Ref<StyleBox> &p_style) {
 
 	if (data.style_override.has(p_name)) {
-		data.style_override[p_name]->disconnect("changed", this, "_override_changed");
+		data.style_override[p_name]->disconnect_compat("changed", this, "_override_changed");
 	}
 
 	// clear if "null" is passed instead of a style
@@ -1927,7 +1927,7 @@ void Control::add_style_override(const StringName &p_name, const Ref<StyleBox> &
 	} else {
 		data.style_override[p_name] = p_style;
 		if (data.style_override[p_name].is_valid()) {
-			data.style_override[p_name]->connect("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+			data.style_override[p_name]->connect_compat("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
 		}
 	}
 	notification(NOTIFICATION_THEME_CHANGED);
@@ -1936,7 +1936,7 @@ void Control::add_style_override(const StringName &p_name, const Ref<StyleBox> &
 void Control::add_font_override(const StringName &p_name, const Ref<Font> &p_font) {
 
 	if (data.font_override.has(p_name)) {
-		data.font_override[p_name]->disconnect("changed", this, "_override_changed");
+		data.font_override[p_name]->disconnect_compat("changed", this, "_override_changed");
 	}
 
 	// clear if "null" is passed instead of a font
@@ -1945,7 +1945,7 @@ void Control::add_font_override(const StringName &p_name, const Ref<Font> &p_fon
 	} else {
 		data.font_override[p_name] = p_font;
 		if (data.font_override[p_name].is_valid()) {
-			data.font_override[p_name]->connect("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+			data.font_override[p_name]->connect_compat("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
 		}
 	}
 	notification(NOTIFICATION_THEME_CHANGED);
@@ -2262,7 +2262,7 @@ void Control::set_theme(const Ref<Theme> &p_theme) {
 		return;
 
 	if (data.theme.is_valid()) {
-		data.theme->disconnect("changed", this, "_theme_changed");
+		data.theme->disconnect_compat("changed", this, "_theme_changed");
 	}
 
 	data.theme = p_theme;
@@ -2282,7 +2282,7 @@ void Control::set_theme(const Ref<Theme> &p_theme) {
 	}
 
 	if (data.theme.is_valid()) {
-		data.theme->connect("changed", this, "_theme_changed", varray(), CONNECT_DEFERRED);
+		data.theme->connect_compat("changed", this, "_theme_changed", varray(), CONNECT_DEFERRED);
 	}
 }
 
@@ -2625,9 +2625,9 @@ bool Control::is_text_field() const {
     if (get_script_instance()) {
         Variant v=p_point;
         const Variant *p[2]={&v,&p_data};
-        Variant::CallError ce;
+        Callable::CallError ce;
         Variant ret = get_script_instance()->call("is_text_field",p,2,ce);
-        if (ce.error==Variant::CallError::CALL_OK)
+        if (ce.error==Callable::CallError::CALL_OK)
             return ret;
     }
   */

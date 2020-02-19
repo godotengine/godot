@@ -32,22 +32,22 @@ public:
 		return T::get_class_static();
 	}
 
-	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Variant::CallError& r_error) {
+	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Callable::CallError& r_error) {
 
 		T *instance=Object::cast_to<T>(p_object);
-		r_error.error=Variant::CallError::CALL_OK;
+		r_error.error=Callable::CallError::CALL_OK;
 #ifdef DEBUG_METHODS_ENABLED
 
 		ERR_FAIL_COND_V(!instance,Variant());
 		if (p_arg_count>get_argument_count()) {
-			r_error.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+			r_error.error=Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 			r_error.argument=get_argument_count();
 			return Variant();
 
 		}
 		if (p_arg_count<(get_argument_count()-get_default_argument_count())) {
 
-			r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+			r_error.error=Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 			r_error.argument=get_argument_count()-get_default_argument_count();
 			return Variant();
 		}
@@ -126,23 +126,23 @@ public:
 		return type_name;
 	}
 
-	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Variant::CallError& r_error) {
+	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Callable::CallError& r_error) {
 
 		__UnexistingClass *instance = (__UnexistingClass*)p_object;
 
-		r_error.error=Variant::CallError::CALL_OK;
+		r_error.error=Callable::CallError::CALL_OK;
 #ifdef DEBUG_METHODS_ENABLED
 
 		ERR_FAIL_COND_V(!instance,Variant());
 		if (p_arg_count>get_argument_count()) {
-			r_error.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+			r_error.error=Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 			r_error.argument=get_argument_count();
 			return Variant();
 		}
 
 		if (p_arg_count<(get_argument_count()-get_default_argument_count())) {
 
-			r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+			r_error.error=Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 			r_error.argument=get_argument_count()-get_default_argument_count();
 			return Variant();
 		}
@@ -223,22 +223,22 @@ public:
 		return T::get_class_static();
 	}
 
-	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Variant::CallError& r_error) {
+	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Callable::CallError& r_error) {
 
 		T *instance=Object::cast_to<T>(p_object);
-		r_error.error=Variant::CallError::CALL_OK;
+		r_error.error=Callable::CallError::CALL_OK;
 #ifdef DEBUG_METHODS_ENABLED
 
 		ERR_FAIL_COND_V(!instance,Variant());
 		if (p_arg_count>get_argument_count()) {
-			r_error.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+			r_error.error=Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 			r_error.argument=get_argument_count();
 			return Variant();
 
 		}
 		if (p_arg_count<(get_argument_count()-get_default_argument_count())) {
 
-			r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+			r_error.error=Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 			r_error.argument=get_argument_count()-get_default_argument_count();
 			return Variant();
 		}

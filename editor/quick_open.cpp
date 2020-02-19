@@ -257,7 +257,7 @@ void EditorQuickOpen::_notification(int p_what) {
 
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			connect("confirmed", this, "_confirmed");
+			connect_compat("confirmed", this, "_confirmed");
 
 			search_box->set_clear_button_enabled(true);
 			FALLTHROUGH;
@@ -266,7 +266,7 @@ void EditorQuickOpen::_notification(int p_what) {
 			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			disconnect("confirmed", this, "_confirmed");
+			disconnect_compat("confirmed", this, "_confirmed");
 		} break;
 	}
 }
@@ -291,15 +291,15 @@ EditorQuickOpen::EditorQuickOpen() {
 	add_child(vbc);
 	search_box = memnew(LineEdit);
 	vbc->add_margin_child(TTR("Search:"), search_box);
-	search_box->connect("text_changed", this, "_text_changed");
-	search_box->connect("gui_input", this, "_sbox_input");
+	search_box->connect_compat("text_changed", this, "_text_changed");
+	search_box->connect_compat("gui_input", this, "_sbox_input");
 	search_options = memnew(Tree);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 	get_ok()->set_text(TTR("Open"));
 	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
-	search_options->connect("item_activated", this, "_confirmed");
+	search_options->connect_compat("item_activated", this, "_confirmed");
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
 	search_options->add_constant_override("draw_guides", 1);

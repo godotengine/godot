@@ -266,7 +266,7 @@ private:
 	List<StackDebug> stack_debug;
 
 	_FORCE_INLINE_ Variant *_get_variant(int p_address, GDScriptInstance *p_instance, GDScript *p_script, Variant &self, Variant &static_ref, Variant *p_stack, String &r_error) const;
-	_FORCE_INLINE_ String _get_call_error(const Variant::CallError &p_err, const String &p_where, const Variant **argptrs) const;
+	_FORCE_INLINE_ String _get_call_error(const Callable::CallError &p_err, const String &p_where, const Variant **argptrs) const;
 
 	friend class GDScriptLanguage;
 
@@ -339,7 +339,7 @@ public:
 		return default_arguments[p_idx];
 	}
 
-	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Variant::CallError &r_err, CallState *p_state = NULL);
+	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, CallState *p_state = NULL);
 
 	_FORCE_INLINE_ MultiplayerAPI::RPCMode get_rpc_mode() const { return rpc_mode; }
 	GDScriptFunction();
@@ -352,7 +352,7 @@ class GDScriptFunctionState : public Reference {
 	friend class GDScriptFunction;
 	GDScriptFunction *function;
 	GDScriptFunction::CallState state;
-	Variant _signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	Variant _signal_callback(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Ref<GDScriptFunctionState> first_state;
 
 protected:

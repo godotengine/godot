@@ -149,7 +149,7 @@ void CollisionShape2D::_notification(int p_what) {
 void CollisionShape2D::set_shape(const Ref<Shape2D> &p_shape) {
 
 	if (shape.is_valid())
-		shape->disconnect("changed", this, "_shape_changed");
+		shape->disconnect_compat("changed", this, "_shape_changed");
 	shape = p_shape;
 	update();
 	if (parent) {
@@ -160,7 +160,7 @@ void CollisionShape2D::set_shape(const Ref<Shape2D> &p_shape) {
 	}
 
 	if (shape.is_valid())
-		shape->connect("changed", this, "_shape_changed");
+		shape->connect_compat("changed", this, "_shape_changed");
 
 	update_configuration_warning();
 }

@@ -347,7 +347,7 @@ WindowDialog::WindowDialog() {
 	resizable = false;
 	close_button = memnew(TextureButton);
 	add_child(close_button);
-	close_button->connect("pressed", this, "_closed");
+	close_button->connect_compat("pressed", this, "_closed");
 
 #ifdef TOOLS_ENABLED
 	was_editor_dimmed = false;
@@ -446,7 +446,7 @@ void AcceptDialog::register_text_enter(Node *p_line_edit) {
 	ERR_FAIL_NULL(p_line_edit);
 	LineEdit *line_edit = Object::cast_to<LineEdit>(p_line_edit);
 	if (line_edit)
-		line_edit->connect("text_entered", this, "_builtin_text_entered");
+		line_edit->connect_compat("text_entered", this, "_builtin_text_entered");
 }
 
 void AcceptDialog::_update_child_rects() {
@@ -531,7 +531,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 	}
 
 	if (p_action != "") {
-		button->connect("pressed", this, "_custom_action", varray(p_action));
+		button->connect_compat("pressed", this, "_custom_action", varray(p_action));
 	}
 
 	return button;
@@ -543,7 +543,7 @@ Button *AcceptDialog::add_cancel(const String &p_cancel) {
 	if (p_cancel == "")
 		c = RTR("Cancel");
 	Button *b = swap_ok_cancel ? add_button(c, true) : add_button(c);
-	b->connect("pressed", this, "_closed");
+	b->connect_compat("pressed", this, "_closed");
 	return b;
 }
 
@@ -600,7 +600,7 @@ AcceptDialog::AcceptDialog() {
 	hbc->add_child(ok);
 	hbc->add_spacer();
 
-	ok->connect("pressed", this, "_ok");
+	ok->connect_compat("pressed", this, "_ok");
 	set_as_toplevel(true);
 
 	hide_on_ok = true;

@@ -72,8 +72,8 @@ private:
 protected:
 	static void _bind_methods();
 
-	PluginScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, Variant::CallError &r_error);
-	Variant _new(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	PluginScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, Callable::CallError &r_error);
+	Variant _new(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 #ifdef TOOLS_ENABLED
 	Set<PlaceHolderScriptInstance *> placeholders;

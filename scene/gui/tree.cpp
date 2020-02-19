@@ -729,16 +729,16 @@ bool TreeItem::is_folding_disabled() const {
 	return disable_folding;
 }
 
-Variant TreeItem::_call_recursive_bind(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+Variant TreeItem::_call_recursive_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 
 	if (p_argcount < 1) {
-		r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.argument = 0;
 		return Variant();
 	}
 
 	if (p_args[0]->get_type() != Variant::STRING) {
-		r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING;
 		return Variant();
@@ -750,7 +750,7 @@ Variant TreeItem::_call_recursive_bind(const Variant **p_args, int p_argcount, V
 	return Variant();
 }
 
-void recursive_call_aux(TreeItem *p_item, const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+void recursive_call_aux(TreeItem *p_item, const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (!p_item) {
 		return;
 	}
@@ -762,7 +762,7 @@ void recursive_call_aux(TreeItem *p_item, const StringName &p_method, const Vari
 	}
 }
 
-void TreeItem::call_recursive(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+void TreeItem::call_recursive(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	recursive_call_aux(this, p_method, p_args, p_argcount, r_error);
 }
 
@@ -4043,15 +4043,15 @@ Tree::Tree() {
 	add_child(v_scroll);
 
 	range_click_timer = memnew(Timer);
-	range_click_timer->connect("timeout", this, "_range_click_timeout");
+	range_click_timer->connect_compat("timeout", this, "_range_click_timeout");
 	add_child(range_click_timer);
 
-	h_scroll->connect("value_changed", this, "_scroll_moved");
-	v_scroll->connect("value_changed", this, "_scroll_moved");
-	text_editor->connect("text_entered", this, "_text_editor_enter");
-	text_editor->connect("modal_closed", this, "_text_editor_modal_close");
-	popup_menu->connect("id_pressed", this, "_popup_select");
-	value_editor->connect("value_changed", this, "_value_editor_changed");
+	h_scroll->connect_compat("value_changed", this, "_scroll_moved");
+	v_scroll->connect_compat("value_changed", this, "_scroll_moved");
+	text_editor->connect_compat("text_entered", this, "_text_editor_enter");
+	text_editor->connect_compat("modal_closed", this, "_text_editor_modal_close");
+	popup_menu->connect_compat("id_pressed", this, "_popup_select");
+	value_editor->connect_compat("value_changed", this, "_value_editor_changed");
 
 	value_editor->set_as_toplevel(true);
 	text_editor->set_as_toplevel(true);

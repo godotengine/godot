@@ -556,8 +556,8 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 			gnode->set_meta("__vnode", node);
 			gnode->set_name(itos(E->get()));
-			gnode->connect("dragged", this, "_node_moved", varray(E->get()));
-			gnode->connect("close_request", this, "_remove_node", varray(E->get()), CONNECT_DEFERRED);
+			gnode->connect_compat("dragged", this, "_node_moved", varray(E->get()));
+			gnode->connect_compat("close_request", this, "_remove_node", varray(E->get()), CONNECT_DEFERRED);
 
 			if (E->get() != script->get_function_node_id(F->get())) {
 				//function can't be erased
@@ -575,7 +575,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 					Button *btn = memnew(Button);
 					btn->set_text(TTR("Add Input Port"));
 					hbnc->add_child(btn);
-					btn->connect("pressed", this, "_add_input_port", varray(E->get()), CONNECT_DEFERRED);
+					btn->connect_compat("pressed", this, "_add_input_port", varray(E->get()), CONNECT_DEFERRED);
 				}
 				if (nd_list->is_output_port_editable()) {
 					if (nd_list->is_input_port_editable())
@@ -584,7 +584,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 					Button *btn = memnew(Button);
 					btn->set_text(TTR("Add Output Port"));
 					hbnc->add_child(btn);
-					btn->connect("pressed", this, "_add_output_port", varray(E->get()), CONNECT_DEFERRED);
+					btn->connect_compat("pressed", this, "_add_output_port", varray(E->get()), CONNECT_DEFERRED);
 				}
 				gnode->add_child(hbnc);
 			} else if (Object::cast_to<VisualScriptExpression>(node.ptr())) {
@@ -594,7 +594,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 				line_edit->set_expand_to_text_length(true);
 				line_edit->add_font_override("font", get_font("source", "EditorFonts"));
 				gnode->add_child(line_edit);
-				line_edit->connect("text_changed", this, "_expression_text_changed", varray(E->get()));
+				line_edit->connect_compat("text_changed", this, "_expression_text_changed", varray(E->get()));
 			} else {
 				String text = node->get_text();
 				if (!text.empty()) {
@@ -610,7 +610,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 				gnode->set_comment(true);
 				gnode->set_resizable(true);
 				gnode->set_custom_minimum_size(vsc->get_size() * EDSCALE);
-				gnode->connect("resize_request", this, "_comment_node_resized", varray(E->get()));
+				gnode->connect_compat("resize_request", this, "_comment_node_resized", varray(E->get()));
 			}
 
 			if (node_styles.has(node->get_category())) {
@@ -720,8 +720,8 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 							name_box->set_custom_minimum_size(Size2(60 * EDSCALE, 0));
 							name_box->set_text(left_name);
 							name_box->set_expand_to_text_length(true);
-							name_box->connect("resized", this, "_update_node_size", varray(E->get()));
-							name_box->connect("focus_exited", this, "_port_name_focus_out", varray(name_box, E->get(), i, true));
+							name_box->connect_compat("resized", this, "_update_node_size", varray(E->get()));
+							name_box->connect_compat("focus_exited", this, "_port_name_focus_out", varray(name_box, E->get(), i, true));
 						} else {
 							hbc->add_child(memnew(Label(left_name)));
 						}
@@ -734,13 +734,13 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 							opbtn->select(left_type);
 							opbtn->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 							hbc->add_child(opbtn);
-							opbtn->connect("item_selected", this, "_change_port_type", varray(E->get(), i, true), CONNECT_DEFERRED);
+							opbtn->connect_compat("item_selected", this, "_change_port_type", varray(E->get(), i, true), CONNECT_DEFERRED);
 						}
 
 						Button *rmbtn = memnew(Button);
 						rmbtn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Remove", "EditorIcons"));
 						hbc->add_child(rmbtn);
-						rmbtn->connect("pressed", this, "_remove_input_port", varray(E->get(), i), CONNECT_DEFERRED);
+						rmbtn->connect_compat("pressed", this, "_remove_input_port", varray(E->get(), i), CONNECT_DEFERRED);
 					} else {
 						hbc->add_child(memnew(Label(left_name)));
 					}
@@ -753,14 +753,14 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 						if (value.get_type() != left_type) {
 							//different type? for now convert
 							//not the same, reconvert
-							Variant::CallError ce;
+							Callable::CallError ce;
 							const Variant *existingp = &value;
 							value = Variant::construct(left_type, &existingp, 1, ce, false);
 						}
 
 						if (left_type == Variant::COLOR) {
 							button->set_custom_minimum_size(Size2(30, 0) * EDSCALE);
-							button->connect("draw", this, "_draw_color_over_button", varray(button, value));
+							button->connect_compat("draw", this, "_draw_color_over_button", varray(button, value));
 						} else if (left_type == Variant::OBJECT && Ref<Resource>(value).is_valid()) {
 
 							Ref<Resource> res = value;
@@ -776,7 +776,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 							button->set_text(value);
 						}
-						button->connect("pressed", this, "_default_value_edited", varray(button, E->get(), i));
+						button->connect_compat("pressed", this, "_default_value_edited", varray(button, E->get(), i));
 						hbc2->add_child(button);
 					}
 				} else {
@@ -802,7 +802,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 						Button *rmbtn = memnew(Button);
 						rmbtn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Remove", "EditorIcons"));
 						hbc->add_child(rmbtn);
-						rmbtn->connect("pressed", this, "_remove_output_port", varray(E->get(), i), CONNECT_DEFERRED);
+						rmbtn->connect_compat("pressed", this, "_remove_output_port", varray(E->get(), i), CONNECT_DEFERRED);
 
 						if (nd_list->is_output_port_type_editable()) {
 							OptionButton *opbtn = memnew(OptionButton);
@@ -812,7 +812,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 							opbtn->select(right_type);
 							opbtn->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 							hbc->add_child(opbtn);
-							opbtn->connect("item_selected", this, "_change_port_type", varray(E->get(), i, false), CONNECT_DEFERRED);
+							opbtn->connect_compat("item_selected", this, "_change_port_type", varray(E->get(), i, false), CONNECT_DEFERRED);
 						}
 
 						if (nd_list->is_output_port_name_editable()) {
@@ -821,8 +821,8 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 							name_box->set_custom_minimum_size(Size2(60 * EDSCALE, 0));
 							name_box->set_text(right_name);
 							name_box->set_expand_to_text_length(true);
-							name_box->connect("resized", this, "_update_node_size", varray(E->get()));
-							name_box->connect("focus_exited", this, "_port_name_focus_out", varray(name_box, E->get(), i, false));
+							name_box->connect_compat("resized", this, "_update_node_size", varray(E->get()));
+							name_box->connect_compat("focus_exited", this, "_port_name_focus_out", varray(name_box, E->get(), i, false));
 						} else {
 							hbc->add_child(memnew(Label(right_name)));
 						}
@@ -1225,7 +1225,7 @@ void VisualScriptEditor::_add_func_input() {
 	LineEdit *name_box = memnew(LineEdit);
 	name_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	name_box->set_text("input");
-	name_box->connect("focus_entered", this, "_deselect_input_names");
+	name_box->connect_compat("focus_entered", this, "_deselect_input_names");
 	hbox->add_child(name_box);
 
 	Label *type_label = memnew(Label);
@@ -1252,7 +1252,7 @@ void VisualScriptEditor::_add_func_input() {
 	func_input_vbox->add_child(hbox);
 	hbox->set_meta("id", hbox->get_position_in_parent());
 
-	delete_button->connect("pressed", this, "_remove_func_input", varray(hbox));
+	delete_button->connect_compat("pressed", this, "_remove_func_input", varray(hbox));
 
 	name_box->select_all();
 	name_box->grab_focus();
@@ -2408,7 +2408,7 @@ void VisualScriptEditor::set_edited_resource(const RES &p_res) {
 	variable_editor->script = script;
 	variable_editor->undo_redo = undo_redo;
 
-	script->connect("node_ports_changed", this, "_node_ports_changed");
+	script->connect_compat("node_ports_changed", this, "_node_ports_changed");
 
 	default_func = script->get_default_func();
 
@@ -3851,7 +3851,7 @@ void VisualScriptEditor::_default_value_edited(Node *p_button, int p_id, int p_i
 	Variant existing = vsn->get_default_input_value(p_input_port);
 	if (pinfo.type != Variant::NIL && existing.get_type() != pinfo.type) {
 
-		Variant::CallError ce;
+		Callable::CallError ce;
 		const Variant *existingp = &existing;
 		existing = Variant::construct(pinfo.type, &existingp, 1, ce, false);
 	}
@@ -3904,8 +3904,8 @@ void VisualScriptEditor::_notification(int p_what) {
 
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			variable_editor->connect("changed", this, "_update_members");
-			signal_editor->connect("changed", this, "_update_members");
+			variable_editor->connect_compat("changed", this, "_update_members");
+			signal_editor->connect_compat("changed", this, "_update_members");
 			FALLTHROUGH;
 		}
 		case NOTIFICATION_THEME_CHANGED: {
@@ -4697,7 +4697,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/create_function"), EDIT_CREATE_FUNCTION);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/refresh_nodes"), REFRESH_GRAPH);
-	edit_menu->get_popup()->connect("id_pressed", this, "_menu_option");
+	edit_menu->get_popup()->connect_compat("id_pressed", this, "_menu_option");
 
 	members_section = memnew(VBoxContainer);
 	// Add but wait until done setting up this.
@@ -4707,7 +4707,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	CheckButton *tool_script_check = memnew(CheckButton);
 	tool_script_check->set_text(TTR("Make Tool:"));
 	members_section->add_child(tool_script_check);
-	tool_script_check->connect("pressed", this, "_toggle_tool_script");
+	tool_script_check->connect_compat("pressed", this, "_toggle_tool_script");
 
 	///       Members        ///
 
@@ -4715,11 +4715,11 @@ VisualScriptEditor::VisualScriptEditor() {
 	members_section->add_margin_child(TTR("Members:"), members, true);
 	members->set_custom_minimum_size(Size2(0, 50 * EDSCALE));
 	members->set_hide_root(true);
-	members->connect("button_pressed", this, "_member_button");
-	members->connect("item_edited", this, "_member_edited");
-	members->connect("cell_selected", this, "_member_selected", varray(), CONNECT_DEFERRED);
-	members->connect("gui_input", this, "_members_gui_input");
-	members->connect("item_rmb_selected", this, "_member_rmb_selected");
+	members->connect_compat("button_pressed", this, "_member_button");
+	members->connect_compat("item_edited", this, "_member_edited");
+	members->connect_compat("cell_selected", this, "_member_selected", varray(), CONNECT_DEFERRED);
+	members->connect_compat("gui_input", this, "_members_gui_input");
+	members->connect_compat("item_rmb_selected", this, "_member_rmb_selected");
 	members->set_allow_rmb_select(true);
 	members->set_allow_reselect(true);
 	members->set_hide_folding(true);
@@ -4727,13 +4727,13 @@ VisualScriptEditor::VisualScriptEditor() {
 
 	member_popup = memnew(PopupMenu);
 	add_child(member_popup);
-	member_popup->connect("id_pressed", this, "_member_option");
+	member_popup->connect_compat("id_pressed", this, "_member_option");
 
 	function_name_edit = memnew(PopupDialog);
 	function_name_box = memnew(LineEdit);
 	function_name_edit->add_child(function_name_box);
 	function_name_edit->set_h_size_flags(SIZE_EXPAND);
-	function_name_box->connect("gui_input", this, "_fn_name_box_input");
+	function_name_box->connect_compat("gui_input", this, "_fn_name_box_input");
 	function_name_box->set_expand_to_text_length(true);
 	add_child(function_name_edit);
 
@@ -4743,15 +4743,15 @@ VisualScriptEditor::VisualScriptEditor() {
 	add_child(graph);
 	graph->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	graph->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	graph->connect("node_selected", this, "_node_selected");
-	graph->connect("_begin_node_move", this, "_begin_node_move");
-	graph->connect("_end_node_move", this, "_end_node_move");
-	graph->connect("delete_nodes_request", this, "_on_nodes_delete");
-	graph->connect("duplicate_nodes_request", this, "_on_nodes_duplicate");
-	graph->connect("gui_input", this, "_graph_gui_input");
+	graph->connect_compat("node_selected", this, "_node_selected");
+	graph->connect_compat("_begin_node_move", this, "_begin_node_move");
+	graph->connect_compat("_end_node_move", this, "_end_node_move");
+	graph->connect_compat("delete_nodes_request", this, "_on_nodes_delete");
+	graph->connect_compat("duplicate_nodes_request", this, "_on_nodes_duplicate");
+	graph->connect_compat("gui_input", this, "_graph_gui_input");
 	graph->set_drag_forwarding(this);
 	graph->hide();
-	graph->connect("scroll_offset_changed", this, "_graph_ofs_changed");
+	graph->connect_compat("scroll_offset_changed", this, "_graph_ofs_changed");
 
 	/// Add Buttons to Top Bar/Zoom bar.
 	HBoxContainer *graph_hbc = graph->get_zoom_hbox();
@@ -4761,18 +4761,18 @@ VisualScriptEditor::VisualScriptEditor() {
 	graph_hbc->add_child(base_lbl);
 
 	base_type_select = memnew(Button);
-	base_type_select->connect("pressed", this, "_change_base_type");
+	base_type_select->connect_compat("pressed", this, "_change_base_type");
 	graph_hbc->add_child(base_type_select);
 
 	Button *add_nds = memnew(Button);
 	add_nds->set_text(TTR("Add Nodes..."));
 	graph_hbc->add_child(add_nds);
-	add_nds->connect("pressed", this, "_add_node_dialog");
+	add_nds->connect_compat("pressed", this, "_add_node_dialog");
 
 	Button *fn_btn = memnew(Button);
 	fn_btn->set_text(TTR("Add Function..."));
 	graph_hbc->add_child(fn_btn);
-	fn_btn->connect("pressed", this, "_create_function_dialog");
+	fn_btn->connect_compat("pressed", this, "_create_function_dialog");
 
 	// Add Function Dialog.
 	VBoxContainer *function_vb = memnew(VBoxContainer);
@@ -4790,7 +4790,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	func_name_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	func_name_box->set_placeholder(TTR("function_name"));
 	func_name_box->set_text("");
-	func_name_box->connect("focus_entered", this, "_deselect_input_names");
+	func_name_box->connect_compat("focus_entered", this, "_deselect_input_names");
 	func_name_hbox->add_child(func_name_box);
 
 	// Add minor setting for function if needed, here!
@@ -4800,7 +4800,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	Button *add_input_button = memnew(Button);
 	add_input_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_input_button->set_text(TTR("Add Input"));
-	add_input_button->connect("pressed", this, "_add_func_input");
+	add_input_button->connect_compat("pressed", this, "_add_func_input");
 	function_vb->add_child(add_input_button);
 
 	func_input_scroll = memnew(ScrollContainer);
@@ -4816,7 +4816,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	function_create_dialog->set_title(TTR("Create Function"));
 	function_create_dialog->add_child(function_vb);
 	function_create_dialog->get_ok()->set_text(TTR("Create"));
-	function_create_dialog->get_ok()->connect("pressed", this, "_create_function");
+	function_create_dialog->get_ok()->connect_compat("pressed", this, "_create_function");
 	add_child(function_create_dialog);
 
 	select_func_text = memnew(Label);
@@ -4836,7 +4836,7 @@ VisualScriptEditor::VisualScriptEditor() {
 
 	hint_text_timer = memnew(Timer);
 	hint_text_timer->set_wait_time(4);
-	hint_text_timer->connect("timeout", this, "_hide_timer");
+	hint_text_timer->connect_compat("timeout", this, "_hide_timer");
 	add_child(hint_text_timer);
 
 	// Allowed casts (connections).
@@ -4854,9 +4854,9 @@ VisualScriptEditor::VisualScriptEditor() {
 
 	graph->add_valid_left_disconnect_type(TYPE_SEQUENCE);
 
-	graph->connect("connection_request", this, "_graph_connected");
-	graph->connect("disconnection_request", this, "_graph_disconnected");
-	graph->connect("connection_to_empty", this, "_graph_connect_to_empty");
+	graph->connect_compat("connection_request", this, "_graph_connected");
+	graph->connect_compat("disconnection_request", this, "_graph_disconnected");
+	graph->connect_compat("connection_to_empty", this, "_graph_connect_to_empty");
 
 	edit_signal_dialog = memnew(AcceptDialog);
 	edit_signal_dialog->get_ok()->set_text(TTR("Close"));
@@ -4880,7 +4880,7 @@ VisualScriptEditor::VisualScriptEditor() {
 
 	select_base_type = memnew(CreateDialog);
 	select_base_type->set_base_type("Object"); // Anything goes.
-	select_base_type->connect("create", this, "_change_base_type_callback");
+	select_base_type->connect_compat("create", this, "_change_base_type_callback");
 	add_child(select_base_type);
 
 	undo_redo = EditorNode::get_singleton()->get_undo_redo();
@@ -4892,22 +4892,22 @@ VisualScriptEditor::VisualScriptEditor() {
 
 	default_value_edit = memnew(CustomPropertyEditor);
 	add_child(default_value_edit);
-	default_value_edit->connect("variant_changed", this, "_default_value_changed");
+	default_value_edit->connect_compat("variant_changed", this, "_default_value_changed");
 
 	method_select = memnew(VisualScriptPropertySelector);
 	add_child(method_select);
-	method_select->connect("selected", this, "_selected_method");
+	method_select->connect_compat("selected", this, "_selected_method");
 	error_line = -1;
 
 	new_connect_node_select = memnew(VisualScriptPropertySelector);
 	add_child(new_connect_node_select);
 	new_connect_node_select->set_resizable(true);
-	new_connect_node_select->connect("selected", this, "_selected_connect_node");
-	new_connect_node_select->get_cancel()->connect("pressed", this, "_cancel_connect_node");
+	new_connect_node_select->connect_compat("selected", this, "_selected_connect_node");
+	new_connect_node_select->get_cancel()->connect_compat("pressed", this, "_cancel_connect_node");
 
 	new_virtual_method_select = memnew(VisualScriptPropertySelector);
 	add_child(new_virtual_method_select);
-	new_virtual_method_select->connect("selected", this, "_selected_new_virtual_method");
+	new_virtual_method_select->connect_compat("selected", this, "_selected_new_virtual_method");
 }
 
 VisualScriptEditor::~VisualScriptEditor() {

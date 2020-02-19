@@ -2963,7 +2963,7 @@ RichTextLabel::RichTextLabel() {
 	vscroll->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 0);
 	vscroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
 	vscroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
-	vscroll->connect("value_changed", this, "_scroll_changed");
+	vscroll->connect_compat("value_changed", this, "_scroll_changed");
 	vscroll->set_step(1);
 	vscroll->hide();
 	current_idx = 1;

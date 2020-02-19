@@ -177,7 +177,7 @@ void TileMap::_update_quadrant_transform() {
 void TileMap::set_tileset(const Ref<TileSet> &p_tileset) {
 
 	if (tile_set.is_valid()) {
-		tile_set->disconnect("changed", this, "_recreate_quadrants");
+		tile_set->disconnect_compat("changed", this, "_recreate_quadrants");
 		tile_set->remove_change_receptor(this);
 	}
 
@@ -185,7 +185,7 @@ void TileMap::set_tileset(const Ref<TileSet> &p_tileset) {
 	tile_set = p_tileset;
 
 	if (tile_set.is_valid()) {
-		tile_set->connect("changed", this, "_recreate_quadrants");
+		tile_set->connect_compat("changed", this, "_recreate_quadrants");
 		tile_set->add_change_receptor(this);
 	} else {
 		clear();
@@ -853,7 +853,7 @@ void TileMap::_set_celld(const Vector2 &p_pos, const Dictionary &p_data) {
 
 	Variant v_pos_x = p_pos.x, v_pos_y = p_pos.y, v_tile = p_data["id"], v_flip_h = p_data["flip_h"], v_flip_v = p_data["flip_y"], v_transpose = p_data["transpose"], v_autotile_coord = p_data["auto_coord"];
 	const Variant *args[7] = { &v_pos_x, &v_pos_y, &v_tile, &v_flip_h, &v_flip_v, &v_transpose, &v_autotile_coord };
-	Variant::CallError ce;
+	Callable::CallError ce;
 	call("set_cell", args, 7, ce);
 }
 

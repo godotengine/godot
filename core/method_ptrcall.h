@@ -128,6 +128,8 @@ MAKE_PTRARG_BY_REFERENCE(Color);
 MAKE_PTRARG(NodePath);
 MAKE_PTRARG(RID);
 MAKE_PTRARG(Dictionary);
+MAKE_PTRARG(Callable);
+MAKE_PTRARG(Signal);
 MAKE_PTRARG(Array);
 MAKE_PTRARG(PackedByteArray);
 MAKE_PTRARG(PackedIntArray);

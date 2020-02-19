@@ -79,7 +79,7 @@ godot_variant GDAPI godot_method_bind_call(godot_method_bind *p_method_bind, god
 
 	Variant *ret_val = (Variant *)&ret;
 
-	Variant::CallError r_error;
+	Callable::CallError r_error;
 	*ret_val = mb->call(o, args, p_arg_count, r_error);
 
 	if (p_call_error) {

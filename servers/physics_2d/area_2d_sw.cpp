@@ -200,7 +200,7 @@ void Area2DSW::call_queries() {
 			res[3] = E->key().body_shape;
 			res[4] = E->key().area_shape;
 
-			Variant::CallError ce;
+			Callable::CallError ce;
 			obj->call(monitor_callback_method, (const Variant **)resptr, 5, ce);
 		}
 	}
@@ -232,7 +232,7 @@ void Area2DSW::call_queries() {
 			res[3] = E->key().body_shape;
 			res[4] = E->key().area_shape;
 
-			Variant::CallError ce;
+			Callable::CallError ce;
 			obj->call(area_monitor_callback_method, (const Variant **)resptr, 5, ce);
 		}
 	}

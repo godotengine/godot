@@ -159,13 +159,13 @@ EditorLog::EditorLog() {
 	hb->add_child(copybutton);
 	copybutton->set_text(TTR("Copy"));
 	copybutton->set_shortcut(ED_SHORTCUT("editor/copy_output", TTR("Copy Selection"), KEY_MASK_CMD | KEY_C));
-	copybutton->connect("pressed", this, "_copy_request");
+	copybutton->connect_compat("pressed", this, "_copy_request");
 
 	clearbutton = memnew(Button);
 	hb->add_child(clearbutton);
 	clearbutton->set_text(TTR("Clear"));
 	clearbutton->set_shortcut(ED_SHORTCUT("editor/clear_output", TTR("Clear Output"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_K));
-	clearbutton->connect("pressed", this, "_clear_request");
+	clearbutton->connect_compat("pressed", this, "_clear_request");
 
 	log = memnew(RichTextLabel);
 	log->set_scroll_follow(true);

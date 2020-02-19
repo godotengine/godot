@@ -713,7 +713,7 @@ void BodySW::call_queries() {
 		} else {
 			const Variant *vp[2] = { &v, &fi_callback->udata };
 
-			Variant::CallError ce;
+			Callable::CallError ce;
 			int argc = (fi_callback->udata.get_type() == Variant::NIL) ? 1 : 2;
 			obj->call(fi_callback->method, vp, argc, ce);
 		}

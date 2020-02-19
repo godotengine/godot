@@ -455,6 +455,15 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 		} break;
+		case Variant::CALLABLE: {
+
+			r_variant = Callable();
+		} break;
+		case Variant::SIGNAL: {
+
+			r_variant = Signal();
+		} break;
+
 		case Variant::DICTIONARY: {
 
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
@@ -1073,6 +1082,12 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 		} break;
 		case Variant::_RID: {
+
+		} break;
+		case Variant::CALLABLE: {
+
+		} break;
+		case Variant::SIGNAL: {
 
 		} break;
 		case Variant::OBJECT: {

@@ -162,6 +162,8 @@ static const _bit _type_list[] = {
 	{ Variant::OBJECT, "Object" },
 	{ Variant::NODE_PATH, "NodePath" },
 	{ Variant::DICTIONARY, "Dictionary" },
+	{ Variant::CALLABLE, "Callable" },
+	{ Variant::SIGNAL, "Signal" },
 	{ Variant::ARRAY, "Array" },
 	{ Variant::PACKED_BYTE_ARRAY, "PackedByteArray" },
 	{ Variant::PACKED_INT_ARRAY, "PackedIntArray" },
