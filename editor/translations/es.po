@@ -4024,16 +4024,16 @@ msgid "Saving..."
 msgstr "Guardando..."
 
 #: editor/import_dock.cpp
+msgid "%d Files"
+msgstr "%d archivos"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "Establecer como predeterminado para '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Restablecer Predeterminado para '%s'"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " Archivos"
 
 #: editor/import_dock.cpp
 msgid "Import As:"

@@ -64,7 +64,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2020-02-14 03:19+0000\n"
+"PO-Revision-Date: 2020-02-16 15:21+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -733,9 +733,8 @@ msgid "Line Number:"
 msgstr "行号:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "%d replaced."
-msgstr "替换..."
+msgstr "已替换%d处。"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -3930,16 +3929,17 @@ msgid "Saving..."
 msgstr "保存中..."
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr " 文件"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "设置为“%s”的默认值"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "清除默认'%s'"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " 文件"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -5789,9 +5789,8 @@ msgid "Mesh is empty!"
 msgstr "网格为空！"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create a Trimesh collision shape."
-msgstr "创建三角网格碰撞同级"
+msgstr "无法创建Trimesh碰撞形状。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
@@ -5807,30 +5806,27 @@ msgstr "创建三维网格静态形状"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create a single convex collision shape for the scene root."
-msgstr ""
+msgstr "无法为场景根节点创建单一凸碰撞形状。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Couldn't create a single convex collision shape."
-msgstr ""
+msgstr "无法创建单一凸碰撞形状。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Shape"
-msgstr "创建凸形"
+msgstr "创建单一凸形状"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create multiple convex collision shapes for the scene root."
-msgstr ""
+msgstr "无法为场景根节点创建多个凸碰撞形状。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create any collision shapes."
-msgstr "无法创建文件夹。"
+msgstr "无法创建碰撞形状。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Multiple Convex Shapes"
-msgstr "创建凸形"
+msgstr "创建多个凸形状"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
@@ -5886,6 +5882,8 @@ msgid ""
 "automatically.\n"
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
+"创建StaticBody并自动为其分配基于多边形的碰撞形状。\n"
+"这是最准确（但是最慢）的碰撞检测手段。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
@@ -5896,28 +5894,32 @@ msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
+"创建基于多边形的碰撞形状。\n"
+"这是最准确（但是最慢）的碰撞检测手段。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Collision Siblings"
-msgstr "创建凸型碰撞同级"
+msgstr "创建单一凸碰撞同级"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
 "Creates a single convex collision shape.\n"
 "This is the fastest (but least accurate) option for collision detection."
 msgstr ""
+"创建单一凸碰撞形状。\n"
+"这是最快（但是最不精确）的碰撞检测手段。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Multiple Convex Collision Siblings"
-msgstr "创建凸型碰撞同级"
+msgstr "创建多个凸碰撞同级"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is a performance middle-ground between the two above options."
 msgstr ""
+"创建基于多边形的碰撞形状。\n"
+"这是性能位于上述两种之间的碰撞检测手段。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
@@ -5930,6 +5932,8 @@ msgid ""
 "This can be used instead of the SpatialMaterial Grow property when using "
 "that property isn't possible."
 msgstr ""
+"创建一个静态轮廓网格。轮廓网格会自动翻转法线。\n"
+"可以用来在必要时代替SpatialMaterial的Grow属性。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -9446,34 +9450,29 @@ msgid "Export With Debug"
 msgstr "使用调试导出"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "The path specified doesn't exist."
-msgstr "该路径不存在。"
+msgstr "指定的路径不存在。"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Error opening package file (it's not in ZIP format)."
-msgstr "打开压缩文件时出错，非zip格式。"
+msgstr "打开包文件时出错（非ZIP格式）。"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
-msgstr "无效的“.zip”项目文件，没有包含一个“project.godot”文件。"
+msgstr "无效的“.zip”项目文件；没有包含“project.godot”文件。"
 
 #: editor/project_manager.cpp
 msgid "Please choose an empty folder."
 msgstr "请选择空文件夹。"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "请选择一个“project.godot”或者“.zip”文件。"
+msgstr "请选择“project.godot”或“.zip”文件。"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "This directory already contains a Godot project."
-msgstr "文件夹已经包含了一个Godot项目。"
+msgstr "该目录已经包含Godot项目。"
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
@@ -10154,9 +10153,8 @@ msgid "Suffix"
 msgstr "后缀"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Use Regular Expressions"
-msgstr "正则表达式"
+msgstr "使用正则表达式"
 
 #: editor/rename_dialog.cpp
 msgid "Advanced Options"
@@ -10195,7 +10193,6 @@ msgstr ""
 "比较计数器的选项。"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Per-level Counter"
 msgstr "各级单独计数"
 
@@ -10236,12 +10233,10 @@ msgid "Keep"
 msgstr "保持"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "PascalCase to snake_case"
 msgstr "驼峰式转为下划线式"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "snake_case to PascalCase"
 msgstr "下划线式转为驼峰式"
 
@@ -10262,14 +10257,12 @@ msgid "Reset"
 msgstr "重置"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Regular Expression Error"
-msgstr "正则表达式"
+msgstr "正则表达式出错"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "At character %s"
-msgstr "有效字符："
+msgstr "位于字符%s"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10723,9 +10716,8 @@ msgid "Invalid inherited parent name or path."
 msgstr "所继承父类的名称或路径无效。"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Script path/name is valid."
-msgstr "脚本有效。"
+msgstr "脚本路径/名称有效。"
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
@@ -10816,7 +10808,6 @@ msgid "Copy Error"
 msgstr "复制错误信息"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Video RAM"
 msgstr "显存"
 

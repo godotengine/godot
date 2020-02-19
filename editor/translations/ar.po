@@ -4070,16 +4070,17 @@ msgid "Saving..."
 msgstr "جاري الحفظ..."
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr " ملفات"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "حدد كإفتراضي من أجل '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "إخلاء الإفتراضي لـ '%s'"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " ملفات"
 
 #: editor/import_dock.cpp
 msgid "Import As:"

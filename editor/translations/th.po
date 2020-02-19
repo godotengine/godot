@@ -4080,16 +4080,17 @@ msgid "Saving..."
 msgstr "กำลังบันทึก..."
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr " ไฟล์"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "กำหนดเป็นค่าเริ่มต้นของ '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "ลบค่าเริ่มต้นของ '%s'"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " ไฟล์"
 
 #: editor/import_dock.cpp
 msgid "Import As:"

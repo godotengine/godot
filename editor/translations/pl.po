@@ -42,7 +42,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-27 07:10+0000\n"
+"PO-Revision-Date: 2020-02-18 15:09+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -52,7 +52,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 3.11\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -721,9 +721,8 @@ msgid "Line Number:"
 msgstr "Numer linii:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "%d replaced."
-msgstr "Zamień..."
+msgstr "%d zamieniono."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -3981,16 +3980,17 @@ msgid "Saving..."
 msgstr "Zapisywanie..."
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr " Pliki"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "Ustaw jako domyślne dla \"%s\""
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Usuń domyślne dla \"%s\""
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " Pliki"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -5869,9 +5869,8 @@ msgid "Mesh is empty!"
 msgstr "Siatka jest pusta!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create a Trimesh collision shape."
-msgstr "Utwórz sąsiadującą trójsiatkę kolizji"
+msgstr "Nie udało się utworzyć kształtu trójsiatki."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
@@ -5888,29 +5887,29 @@ msgstr "Utwórz statyczny kształt trójsiatki"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create a single convex collision shape for the scene root."
 msgstr ""
+"Nie można utworzyć pojedynczego wypukłego kształtu kolizji dla korzenia "
+"sceny."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Couldn't create a single convex collision shape."
-msgstr ""
+msgstr "Nie udało się utworzyć pojedynczego wypukłego kształtu kolizji."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Shape"
-msgstr "Utwórz kształt wypukły"
+msgstr "Utwórz pojedynczy wypukły kształt"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create multiple convex collision shapes for the scene root."
 msgstr ""
+"Nie można utworzyć wielu wypukłych kształtów kolizji dla korzenia sceny."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create any collision shapes."
-msgstr "Nie można utworzyć katalogu."
+msgstr "Nie udało się utworzyć żadnego kształtu kolizji."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Multiple Convex Shapes"
-msgstr "Utwórz kształt wypukły"
+msgstr "Utwórz wiele wypukłych kształtów"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
@@ -10394,14 +10393,12 @@ msgid "Keep"
 msgstr "Bez zmian"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "PascalCase to snake_case"
-msgstr "CamelCase na under_scored"
+msgstr "PascalCase na snake_case"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "snake_case to PascalCase"
-msgstr "under_scored na CamelCase"
+msgstr "snake_case na PascalCase"
 
 #: editor/rename_dialog.cpp
 msgid "Case"
@@ -10420,14 +10417,12 @@ msgid "Reset"
 msgstr "Resetuj"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Regular Expression Error"
-msgstr "Wyrażenia regularne"
+msgstr "Błąd wyrażenia regularnego"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "At character %s"
-msgstr "Dopuszczalne znaki:"
+msgstr "Przy znaku %s"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10892,9 +10887,8 @@ msgid "Invalid inherited parent name or path."
 msgstr "Nieprawidłowa nazwa lub ścieżka klasy bazowej."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Script path/name is valid."
-msgstr "Skrypt jest prawidłowy."
+msgstr "Ścieżka/nazwa skryptu jest prawidłowa."
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
@@ -10985,9 +10979,8 @@ msgid "Copy Error"
 msgstr "Kopiuj błąd"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Video RAM"
-msgstr "Pamięć wideo"
+msgstr "Wideo RAM"
 
 #: editor/script_editor_debugger.cpp
 msgid "Skip Breakpoints"

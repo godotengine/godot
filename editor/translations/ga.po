@@ -3807,15 +3807,16 @@ msgid "Saving..."
 msgstr ""
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr "Amharc ar Chomhaid"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr ""
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
-msgstr ""
-
-#: editor/import_dock.cpp
-msgid " Files"
 msgstr ""
 
 #: editor/import_dock.cpp

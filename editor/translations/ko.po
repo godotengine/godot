@@ -3943,16 +3943,17 @@ msgid "Saving..."
 msgstr "저장 중..."
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr " 파일"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "'%s'을(를) 기본으로 설정"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "'%s'을(를) 기본에서 지우기"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " 파일"
 
 #: editor/import_dock.cpp
 msgid "Import As:"

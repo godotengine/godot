@@ -4259,17 +4259,17 @@ msgid "Saving..."
 msgstr "সংরক্ষিত হচ্ছে..."
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr "ফাইল"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "'%s' এর জন্য ডিফল্ট হিসাবে সেট করুন"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "'%s' এর জন্য ডিফল্ট ক্লিয়ার  করুন"
-
-#: editor/import_dock.cpp
-#, fuzzy
-msgid " Files"
-msgstr "ফাইল"
 
 #: editor/import_dock.cpp
 #, fuzzy

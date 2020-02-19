@@ -3996,16 +3996,17 @@ msgid "Saving..."
 msgstr "Se Salvează..."
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr " Fișiere"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "Setează ca Implicit pentru '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Curăță setarea Implicită pentru '%s'"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " Fișiere"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
