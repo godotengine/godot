@@ -2508,7 +2508,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		visual_profiler->set_name(TTR("Visual Profiler"));
 		tabs->add_child(visual_profiler);
 		visual_profiler->connect("enable_profiling", this, "_visual_profiler_activate");
-		visual_profiler->connect("break_request", this, "_profiler_seeked");
 	}
 
 	{ //network profiler
@@ -2516,7 +2515,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		network_profiler->set_name(TTR("Network Profiler"));
 		tabs->add_child(network_profiler);
 		network_profiler->connect("enable_profiling", this, "_network_profiler_activate");
-		network_profiler->connect("break_request", this, "_profiler_seeked");
 	}
 
 	{ //monitors

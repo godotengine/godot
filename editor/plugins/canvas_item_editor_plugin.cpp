@@ -5413,8 +5413,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	editor_selection->connect("selection_changed", this, "update");
 	editor_selection->connect("selection_changed", this, "_selection_changed");
 
-	editor->call_deferred("connect", "play_pressed", this, "_update_override_camera_button", make_binds(true));
-	editor->call_deferred("connect", "stop_pressed", this, "_update_override_camera_button", make_binds(false));
+	editor->call_deferred("connect", make_binds("play_pressed", this, "_update_override_camera_button", true));
+	editor->call_deferred("connect", make_binds("stop_pressed", this, "_update_override_camera_button", false));
 
 	hb = memnew(HBoxContainer);
 	add_child(hb);
