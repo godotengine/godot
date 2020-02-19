@@ -31,7 +31,6 @@
 #include "os_server.h"
 
 #include "core/print_string.h"
-#include "drivers/dummy/audio_driver_dummy.h"
 #include "drivers/dummy/rasterizer_dummy.h"
 #include "drivers/dummy/texture_loader_dummy.h"
 #include "servers/visual/visual_server_raster.h"
