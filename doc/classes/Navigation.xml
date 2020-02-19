@@ -9,6 +9,46 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_closest_point" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="to_point" type="Vector3">
+			</argument>
+			<description>
+				Returns the point closest to the provided [code]to_point[/code] on the navigation mesh surface.
+			</description>
+		</method>
+		<method name="get_closest_point_normal" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="to_point" type="Vector3">
+			</argument>
+			<description>
+				Returns the normal for the point returned by [method get_closest_point].
+			</description>
+		</method>
+		<method name="get_closest_point_owner" qualifiers="const">
+			<return type="RID">
+			</return>
+			<argument index="0" name="to_point" type="Vector3">
+			</argument>
+			<description>
+				Returns the owner region RID for the point returned by [method get_closest_point].
+			</description>
+		</method>
+		<method name="get_closest_point_to_segment" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="start" type="Vector3">
+			</argument>
+			<argument index="1" name="end" type="Vector3">
+			</argument>
+			<argument index="2" name="use_collision" type="bool" default="false">
+			</argument>
+			<description>
+				Returns the closest point between the navigation surface and the segment.
+			</description>
+		</method>
 		<method name="get_rid" qualifiers="const">
 			<return type="RID">
 			</return>
@@ -26,46 +66,6 @@
 			</argument>
 			<description>
 				Returns the path between two given points. Points are in local coordinate space. If [code]optimize[/code] is [code]true[/code] (the default), the agent properties associated with each [NavigationMesh] (radius, height, etc.) are considered in the path calculation, otherwise they are ignored.
-			</description>
-		</method>
-		<method name="get_closest_point_to_segment" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="from" type="Vector3">
-			</argument>
-			<argument index="1" name="to" type="Vector3">
-			</argument>
-			<argument index="2" name="use_collision" type="bool" default="false">
-			</argument>
-			<description>
-				Returns the closest point between the navigation surface and the segment.
-			</description>
-		</method>
-		<method name="get_closest_point" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="point" type="Vector3">
-			</argument>
-			<description>
-				Returns the point closest to the provided [code]point[/code] on the navigation mesh surface.
-			</description>
-		</method>
-		<method name="get_closest_point_normal" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="point" type="Vector3">
-			</argument>
-			<description>
-				Returns the normal for the point returned by [method get_closest_point].
-			</description>
-		</method>
-		<method name="get_closest_point_owner" qualifiers="const">
-			<return type="RID">
-			</return>
-			<argument index="0" name="point" type="Vector3">
-			</argument>
-			<description>
-				Returns the owner region RID for the point returned by [method get_closest_point].
 			</description>
 		</method>
 	</methods>

@@ -14,7 +14,7 @@
 			</return>
 			<argument index="0" name="packet_peer" type="PacketPeerUDP">
 			</argument>
-			<argument index="1" name="validate_certs" type="bool" default="false">
+			<argument index="1" name="validate_certs" type="bool" default="true">
 			</argument>
 			<argument index="2" name="for_hostname" type="String" default="&quot;&quot;">
 			</argument>

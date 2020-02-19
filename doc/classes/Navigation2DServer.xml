@@ -164,6 +164,28 @@
 				Returns the map cell size.
 			</description>
 		</method>
+		<method name="map_get_closest_point" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="map" type="RID">
+			</argument>
+			<argument index="1" name="to_point" type="Vector2">
+			</argument>
+			<description>
+				Returns the point closest to the provided [code]to_point[/code] on the navigation mesh surface.
+			</description>
+		</method>
+		<method name="map_get_closest_point_owner" qualifiers="const">
+			<return type="RID">
+			</return>
+			<argument index="0" name="map" type="RID">
+			</argument>
+			<argument index="1" name="to_point" type="Vector2">
+			</argument>
+			<description>
+				Returns the owner region RID for the point returned by [method map_get_closest_point].
+			</description>
+		</method>
 		<method name="map_get_edge_connection_margin" qualifiers="const">
 			<return type="float">
 			</return>
@@ -186,28 +208,6 @@
 			</argument>
 			<description>
 				Returns the navigation path to reach the destination from the origin, while avoiding static obstacles.
-			</description>
-		</method>
-		<method name="map_get_closest_point" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="map" type="RID">
-			</argument>
-			<argument index="1" name="point" type="Vector2">
-			</argument>
-			<description>
-				Returns the point closest to the provided [code]point[/code] on the navigation mesh surface.
-			</description>
-		</method>
-		<method name="map_get_closest_point_owner" qualifiers="const">
-			<return type="RID">
-			</return>
-			<argument index="0" name="map" type="RID">
-			</argument>
-			<argument index="1" name="point" type="Vector2">
-			</argument>
-			<description>
-				Returns the owner region RID for the point returned by [method map_get_closest_point].
 			</description>
 		</method>
 		<method name="map_is_active" qualifiers="const">
