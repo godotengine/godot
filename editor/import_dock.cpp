@@ -266,7 +266,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	import_as->set_disabled(false);
 	preset->set_disabled(false);
 
-	imported->set_text(itos(p_paths.size()) + TTR(" Files"));
+	imported->set_text(vformat(TTR("%d Files"), p_paths.size()));
 }
 
 void ImportDock::_update_preset_menu() {

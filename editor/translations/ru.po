@@ -4013,16 +4013,17 @@ msgid "Saving..."
 msgstr "Сохранение..."
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr " Файлы"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "Установить по умолчанию для '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Очистить по умолчанию для '%s'"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " Файлы"
 
 #: editor/import_dock.cpp
 msgid "Import As:"

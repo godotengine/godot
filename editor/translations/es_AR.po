@@ -18,8 +18,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-02-02 08:52+0000\n"
-"Last-Translator: roger <616steam@gmail.com>\n"
+"PO-Revision-Date: 2020-02-18 15:09+0000\n"
+"Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 3.11\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -681,7 +681,7 @@ msgstr "Cambiar Offset Final de Clip de Pista de Audio"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
-msgstr "Redimencionar Array"
+msgstr "Redimensionar Array"
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value Type"
@@ -700,9 +700,8 @@ msgid "Line Number:"
 msgstr "Numero de Línea:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "%d replaced."
-msgstr "Reemplazar..."
+msgstr "%d reemplazadas."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -3988,16 +3987,16 @@ msgid "Saving..."
 msgstr "Guardando..."
 
 #: editor/import_dock.cpp
+msgid "%d Files"
+msgstr "%d Archivos"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "Asignar como Predeterminado para '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Restablecer Predeterminados para '%s'"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " Archivos"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -5879,9 +5878,8 @@ msgid "Mesh is empty!"
 msgstr "¡El Mesh está vacío!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create a Trimesh collision shape."
-msgstr "Crear Collider Triangular Hermano"
+msgstr "No se pudo crear una forma de colisión Trimersh."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
@@ -5898,29 +5896,29 @@ msgstr "Crear Trimesh Static Shape"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create a single convex collision shape for the scene root."
 msgstr ""
+"No se pudo crear una única forma de colisión convexa para la raíz de escena."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Couldn't create a single convex collision shape."
-msgstr ""
+msgstr "No se pudo crear una forma de colisión única."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Shape"
-msgstr "Crear Shape(s) Convexo(s)"
+msgstr "Crear Forma Convexa Unica"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create multiple convex collision shapes for the scene root."
 msgstr ""
+"No se pudo crear múltiples formas de colisión convexas para la raíz de "
+"escena."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create any collision shapes."
-msgstr "No se pudo crear la carpeta."
+msgstr "No se pudo crear ninguna forma de colisión."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Multiple Convex Shapes"
-msgstr "Crear Shape(s) Convexo(s)"
+msgstr "Crear Múltiples Formas Convexas"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
@@ -5976,6 +5974,9 @@ msgid ""
 "automatically.\n"
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
+"Crea un StaticBody y le asigna automáticamente una forma de colisión basada "
+"en polígonos .\n"
+"Esta es la opción mas exacta (pero más lenta) de detección de colisiones."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
@@ -5986,28 +5987,32 @@ msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
+"Crea una forma de colisión basada en polígonos.\n"
+"Esta es la opción mas exacta (pero más lenta) de detección de colisiones."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Collision Siblings"
-msgstr "Crear Collider Convexo Hermano(s)"
+msgstr "Crear Colisión Convexa Unica como Nodo Hermano"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
 "Creates a single convex collision shape.\n"
 "This is the fastest (but least accurate) option for collision detection."
 msgstr ""
+"Crear forma de colisión convexa única.\n"
+"Esta es la opción mas rápida (pero menos exacta) para detectar colisiones."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Multiple Convex Collision Siblings"
-msgstr "Crear Collider Convexo Hermano(s)"
+msgstr "Crear Múltiples Colisiones Convexas como Nodos Hermanos"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is a performance middle-ground between the two above options."
 msgstr ""
+"Crea una forma de colisión basada en polígonos.\n"
+"Esto está en un punto medio de rendimiento entre las dos opciones de arriba."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
@@ -6020,6 +6025,10 @@ msgid ""
 "This can be used instead of the SpatialMaterial Grow property when using "
 "that property isn't possible."
 msgstr ""
+"Crea un mesh de contorno estático. Este mesh de contorno tendrá sus normales "
+"invertidas automáticamente.\n"
+"Esto puede ser usado en vez de la propiedad Grow del SpatialMaterial cuando "
+"no sea posible usar dicha propiedad."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -9603,33 +9612,29 @@ msgid "Export With Debug"
 msgstr "Exportar Con Depuración"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "The path specified doesn't exist."
-msgstr "La ruta no existe."
+msgstr "La ruta especificada no existe."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Error opening package file (it's not in ZIP format)."
-msgstr "Error al abrir el archivo comprimido, no está en formato ZIP."
+msgstr "Error al abrir el archivo de paquete (no esta en formato ZIP)."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr ""
-"Archivo de projecto '.zip' inválido, no contiene un archivo 'project.godot'."
+"Archivo de projecto \".zip\" inválido; no contiene un archivo \"project.godot"
+"\"."
 
 #: editor/project_manager.cpp
 msgid "Please choose an empty folder."
 msgstr "Por favor elegí una carpeta vacía."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "Por favor elegí un archivo 'project.godot' o '.zip'."
+msgstr "Por favor elegí un archivo \"project.godot\" o \".zip\"."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "This directory already contains a Godot project."
 msgstr "El directorio ya contiene un proyecto de Godot."
 
@@ -10331,9 +10336,8 @@ msgid "Suffix"
 msgstr "Sufijo"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Use Regular Expressions"
-msgstr "Expresiones Regulares"
+msgstr "Usar Expresiones Regulares"
 
 #: editor/rename_dialog.cpp
 msgid "Advanced Options"
@@ -10372,9 +10376,8 @@ msgstr ""
 "Comparar opciones de contador."
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Per-level Counter"
-msgstr "Contador por nivel"
+msgstr "Contador Por Nivel"
 
 #: editor/rename_dialog.cpp
 msgid "If set the counter restarts for each group of child nodes"
@@ -10413,14 +10416,12 @@ msgid "Keep"
 msgstr "Conservar"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "PascalCase to snake_case"
-msgstr "CamelCase a under_scored"
+msgstr "PascalCase a snake_case"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "snake_case to PascalCase"
-msgstr "under_scored a CamelCase"
+msgstr "snake_case a PascalCase"
 
 #: editor/rename_dialog.cpp
 msgid "Case"
@@ -10439,14 +10440,12 @@ msgid "Reset"
 msgstr "Resetear"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Regular Expression Error"
-msgstr "Expresiones Regulares"
+msgstr "Error de Expresión Regular"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "At character %s"
-msgstr "Caracteres válidos:"
+msgstr "En el caracter %s"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10914,9 +10913,8 @@ msgid "Invalid inherited parent name or path."
 msgstr "Ruta o nombre del padre heredado inválido."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Script path/name is valid."
-msgstr "El script es válido."
+msgstr "La ruta/nombre del script es inválida."
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
@@ -11007,7 +11005,6 @@ msgid "Copy Error"
 msgstr "Copiar Error"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Video RAM"
 msgstr "Mem. de Video"
 

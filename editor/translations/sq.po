@@ -4036,16 +4036,17 @@ msgid "Saving..."
 msgstr "Duke Ruajtur..."
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr " Skedarët"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "Vendos si të Parazgjedhur për '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Pastro të Parazgjedhurat për '%s'"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " Skedarët"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
