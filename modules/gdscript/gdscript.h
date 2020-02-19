@@ -73,7 +73,6 @@ class GDScript : public Script {
 	friend class GDScriptFunctions;
 	friend class GDScriptLanguage;
 
-	Variant _static_ref; //used for static call
 	Ref<GDScriptNativeClass> native;
 	Ref<GDScript> base;
 	GDScript *_base; //fast pointer access
