@@ -35,11 +35,97 @@
 #include "editor/editor_plugin.h"
 #include "scene/3d/skeleton_3d.h"
 
+class EditorInspectorPluginSkeleton;
+class Joint;
 class PhysicalBone3D;
-class Joint3D;
+class Skeleton3DEditorPlugin;
+class Button;
+class CheckBox;
 
-class Skeleton3DEditor : public Node {
-	GDCLASS(Skeleton3DEditor, Node);
+class BoneTransformEditor : public VBoxContainer {
+	GDCLASS(BoneTransformEditor, VBoxContainer);
+
+	static const int32_t TRANSLATION_COMPONENTS = 3;
+	static const int32_t ROTATION_DEGREES_COMPONENTS = 3;
+	static const int32_t SCALE_COMPONENTS = 3;
+	static const int32_t BASIS_COMPONENTS = 9;
+	static const int32_t BASIS_SPLIT_COMPONENTS = 3;
+	static const int32_t TRANSFORM_COMPONENTS = 12;
+	static const int32_t TRANSFORM_SPLIT_COMPONENTS = 3;
+	static const int32_t TRANSFORM_CONTROL_COMPONENTS = 3;
+
+	EditorInspectorSection *section;
+
+	GridContainer *translation_grid;
+	GridContainer *rotation_grid;
+	GridContainer *scale_grid;
+	GridContainer *transform_grid;
+
+	EditorSpinSlider *translation_slider[TRANSLATION_COMPONENTS];
+	EditorSpinSlider *rotation_slider[ROTATION_DEGREES_COMPONENTS];
+	EditorSpinSlider *scale_slider[SCALE_COMPONENTS];
+	EditorSpinSlider *transform_slider[TRANSFORM_COMPONENTS];
+
+	Rect2 background_rects[5];
+
+	Skeleton3D *skeleton;
+	String property;
+
+	UndoRedo *undo_redo;
+
+	Button *key_button;
+	CheckBox *enabled_checkbox;
+
+	bool keyable;
+	bool toggle_enabled;
+	bool updating;
+
+	String label;
+
+	void create_editors();
+	void setup_spinner(EditorSpinSlider *spinner, const bool is_transform_spinner);
+
+	void _value_changed(const double p_value, const bool p_from_transform);
+
+	Transform compute_transform(const bool p_from_transform) const;
+
+	void update_enabled_checkbox();
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	BoneTransformEditor(Skeleton3D *p_skeleton);
+
+	// Which transform target to modify
+	void set_target(const String &p_prop);
+	void set_label(const String &p_label) { label = p_label; }
+
+	void _update_properties();
+	void _update_custom_pose_properties();
+	void _update_transform_properties(Transform p_transform);
+
+	// Can/cannot modify the spinner values for the Transform
+	void set_read_only(const bool p_read_only);
+
+	// Transform can be keyed, whether or not to show the button
+	void set_keyable(const bool p_keyable);
+
+	// Bone can be toggled enabled or disabled, whether or not to show the checkbox
+	void set_toggle_enabled(const bool p_enabled);
+
+	// Key Transform Button pressed
+	void _key_button_pressed();
+
+	// Bone Enabled Checkbox toggled
+	void _checkbox_toggled(const bool p_toggled);
+};
+
+class Skeleton3DEditor : public VBoxContainer {
+	GDCLASS(Skeleton3DEditor, VBoxContainer);
+
+	friend class Skeleton3DEditorPlugin;
 
 	enum Menu {
 		MENU_OPTION_CREATE_PHYSICAL_SKELETON
@@ -51,44 +137,78 @@ class Skeleton3DEditor : public Node {
 		BoneInfo() {}
 	};
 
+	EditorNode *editor;
+	EditorInspectorPluginSkeleton *editor_plugin;
+
 	Skeleton3D *skeleton;
 
+	Tree *joint_tree;
+	BoneTransformEditor *rest_editor;
+	BoneTransformEditor *pose_editor;
+	BoneTransformEditor *custom_pose_editor;
+
 	MenuButton *options;
+	EditorFileDialog *file_dialog;
+
+	UndoRedo *undo_redo;
 
 	void _on_click_option(int p_option);
+	void _file_selected(const String &p_file);
 
-	friend class Skeleton3DEditorPlugin;
+	EditorFileDialog *file_export_lib;
+
+	void update_joint_tree();
+	void update_editors();
+
+	void create_editors();
+
+	void create_physical_skeleton();
+	PhysicalBone3D *create_physical_bone(int bone_id, int bone_child_id, const Vector<BoneInfo> &bones_infos);
+
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
 
-	void create_physical_skeleton();
-	PhysicalBone3D *create_physical_bone(int bone_id, int bone_child_id, const Vector<BoneInfo> &bones_infos);
+public:
+	void move_skeleton_bone(NodePath p_skeleton_path, int32_t p_selected_boneidx, int32_t p_target_boneidx);
+
+	Skeleton3D *get_skeleton() const { return skeleton; };
+
+	void _joint_tree_selection_changed();
+	void _joint_tree_rmb_select(const Vector2 &p_pos);
+
+	void _update_properties();
+
+	Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, EditorNode *p_editor, Skeleton3D *skeleton);
+	~Skeleton3DEditor();
+};
+
+class EditorInspectorPluginSkeleton : public EditorInspectorPlugin {
+	GDCLASS(EditorInspectorPluginSkeleton, EditorInspectorPlugin);
+
+	friend class Skeleton3DEditorPlugin;
+
+	EditorNode *editor;
 
 public:
-	void edit(Skeleton3D *p_node);
-
-	Skeleton3DEditor();
-	~Skeleton3DEditor();
+	virtual bool can_handle(Object *p_object);
+	virtual void parse_begin(Object *p_object);
 };
 
 class Skeleton3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Skeleton3DEditorPlugin, EditorPlugin);
 
 	EditorNode *editor;
-	Skeleton3DEditor *skeleton_editor;
 
 public:
-	virtual String get_name() const { return "Skeleton3D"; }
-	virtual bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-
 	Skeleton3DEditorPlugin(EditorNode *p_node);
-	~Skeleton3DEditorPlugin();
+
+	virtual String get_name() const { return "Skeleton3D"; }
 };
 
 #endif // SKELETON_3D_EDITOR_PLUGIN_H
