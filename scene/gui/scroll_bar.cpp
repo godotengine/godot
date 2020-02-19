@@ -506,6 +506,10 @@ void ScrollBar::_drag_node_exit() {
 }
 
 void ScrollBar::_drag_node_input(const Ref<InputEvent> &p_input) {
+	if (!drag_node_enabled) {
+		return;
+	}
+
 	Ref<InputEventMouseButton> mb = p_input;
 
 	if (mb.is_valid()) {
@@ -590,6 +594,10 @@ NodePath ScrollBar::get_drag_node() const {
 	return drag_node_path;
 }
 
+void ScrollBar::set_drag_node_enabled(bool p_enable) {
+	drag_node_enabled = p_enable;
+}
+
 void ScrollBar::set_smooth_scroll_enabled(bool p_enable) {
 	smooth_scroll_enabled = p_enable;
 }
@@ -610,19 +618,6 @@ void ScrollBar::_bind_methods() {
 
 ScrollBar::ScrollBar(Orientation p_orientation) {
 	orientation = p_orientation;
-	highlight = HIGHLIGHT_NONE;
-	custom_step = -1;
-	drag_node = nullptr;
-
-	drag.active = false;
-
-	drag_node_speed = Vector2();
-	drag_node_touching = false;
-	drag_node_touching_deaccel = false;
-
-	scrolling = false;
-	target_scroll = 0;
-	smooth_scroll_enabled = false;
 
 	if (focus_by_default) {
 		set_focus_mode(FOCUS_ALL);

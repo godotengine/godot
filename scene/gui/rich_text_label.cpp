@@ -873,7 +873,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 }
 
 void RichTextLabel::_scroll_changed(double) {
-	if (updating_scroll || !scroll_active) {
+	if (updating_scroll) {
 		return;
 	}
 
@@ -2008,6 +2008,7 @@ void RichTextLabel::set_scroll_active(bool p_active) {
 	}
 
 	scroll_active = p_active;
+	vscroll->set_drag_node_enabled(p_active);
 	update();
 }
 
