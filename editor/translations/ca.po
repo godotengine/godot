@@ -3999,16 +3999,16 @@ msgid "Saving..."
 msgstr "Desant..."
 
 #: editor/import_dock.cpp
+msgid "%d Files"
+msgstr "%d Fitxers"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "Establir com a valor Predeterminat per a '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Neteja el valor Predeterminat de '%s'"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " Fitxers"
 
 #: editor/import_dock.cpp
 msgid "Import As:"

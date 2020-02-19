@@ -3985,16 +3985,17 @@ msgid "Saving..."
 msgstr "Kaydediliyor..."
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr " Dosyalar"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "'%s' için Varsayılanı Ayarla"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "'%s' İçin Varsayılanı Temizle"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " Dosyalar"
 
 #: editor/import_dock.cpp
 msgid "Import As:"

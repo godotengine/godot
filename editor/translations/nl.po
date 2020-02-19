@@ -3997,16 +3997,16 @@ msgid "Saving..."
 msgstr "Opslaan..."
 
 #: editor/import_dock.cpp
+msgid "%d Files"
+msgstr "%d Bestanden"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "Stel in als Standaard voor '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Wis Standaard voor '%s'"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " Bestanden"
 
 #: editor/import_dock.cpp
 msgid "Import As:"

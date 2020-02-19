@@ -29,8 +29,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-02-14 03:19+0000\n"
-"Last-Translator: zephyroths <ridho.hikaru@gmail.com>\n"
+"PO-Revision-Date: 2020-02-16 15:21+0000\n"
+"Last-Translator: Sofyan Sugianto <sofyanartem@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -3973,16 +3973,17 @@ msgid "Saving..."
 msgstr "Menyimpan..."
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr " Berkas"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "Jadikan Baku untuk '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Bersihkan Baku untuk '%s'"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " Berkas"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -5869,11 +5870,11 @@ msgstr "Buat Bentuk Trimesh Statis"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create a single convex collision shape for the scene root."
-msgstr ""
+msgstr "Tidak dapat membuat convex collision shape tunggal untuk skena root."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Couldn't create a single convex collision shape."
-msgstr ""
+msgstr "Tidak dapat membuat convex collision shape tunggal."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
@@ -5882,7 +5883,7 @@ msgstr "Buat Bentuk Cembung"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create multiple convex collision shapes for the scene root."
-msgstr ""
+msgstr "Tidak dapat membuat beberapa convex collision shape untuk skena root."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
@@ -5948,6 +5949,10 @@ msgid ""
 "automatically.\n"
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
+"Buat StaticBody dan tetapkan collision shape berbasis poligon untuknya "
+"secara otomatis.\n"
+"Opsi ini merupakan yang paling akurat (tapi paling lambat) untuk deteksi "
+"collision."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
@@ -5958,6 +5963,9 @@ msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
+"Buat collision shape berbasis poligon.\n"
+"Opsi ini merupakan yang paling akurat (tapi paling lambat) untuk deteksi "
+"collision."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
@@ -5969,6 +5977,9 @@ msgid ""
 "Creates a single convex collision shape.\n"
 "This is the fastest (but least accurate) option for collision detection."
 msgstr ""
+"Buat convex collision shape tunggal.\n"
+"Opsi ini merupakan yang paling cepat (tapi paling tidak akurat) untuk "
+"deteksi collision."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
@@ -5980,6 +5991,8 @@ msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is a performance middle-ground between the two above options."
 msgstr ""
+"Buat collision shape berbasis poligon.\n"
+"Opsi ini kinerjanya berada di antara dua opsi di atas."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
@@ -10598,7 +10611,7 @@ msgstr "Node Lainnya"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes from a foreign scene!"
-msgstr ""
+msgstr "Tidak dapat bekerja pada node dari skena luar!"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes the current scene inherits from!"

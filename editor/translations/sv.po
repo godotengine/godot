@@ -4110,16 +4110,16 @@ msgid "Saving..."
 msgstr "Sparar..."
 
 #: editor/import_dock.cpp
+msgid "%d Files"
+msgstr "%d Filer"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "Ange som Standard för '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Rensa Standarden för '%s'"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr ""
 
 #: editor/import_dock.cpp
 msgid "Import As:"

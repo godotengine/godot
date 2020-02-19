@@ -4137,16 +4137,17 @@ msgid "Saving..."
 msgstr "Mentés..."
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr " Fájlok"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "Beállítás Alapértelmezettként '%s'-hez"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Alapértelmezett Törlése '%s'-nél"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " Fájlok"
 
 #: editor/import_dock.cpp
 msgid "Import As:"

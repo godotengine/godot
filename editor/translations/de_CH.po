@@ -3961,17 +3961,16 @@ msgid "Saving..."
 msgstr ""
 
 #: editor/import_dock.cpp
+msgid "%d Files"
+msgstr "%d Dateien"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr ""
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr ""
-
-#: editor/import_dock.cpp
-#, fuzzy
-msgid " Files"
-msgstr "Datei(en) öffnen"
 
 #: editor/import_dock.cpp
 msgid "Import As:"

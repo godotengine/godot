@@ -43,12 +43,13 @@
 # Katia Piazza <gydey@ridiculousglitch.com>, 2019.
 # nickfla1 <lanterniniflavio@gmail.com>, 2019.
 # Fabio Iotti <fabiogiopla@gmail.com>, 2020.
+# Douglas Fiedler <dognew@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-27 07:09+0000\n"
-"Last-Translator: Micila Micillotto <micillotto@gmail.com>\n"
+"PO-Revision-Date: 2020-02-18 15:09+0000\n"
+"Last-Translator: Douglas Fiedler <dognew@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -56,7 +57,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 3.11\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -726,9 +727,8 @@ msgid "Line Number:"
 msgstr "Numero linea:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "%d replaced."
-msgstr "Rimpiazza..."
+msgstr "%d rimpiazzato."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -4015,16 +4015,16 @@ msgid "Saving..."
 msgstr "Salvataggio..."
 
 #: editor/import_dock.cpp
+msgid "%d Files"
+msgstr "%d File"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "Imposta come Default per '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Elimina Default per '%s'"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " Files"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -5906,9 +5906,8 @@ msgid "Mesh is empty!"
 msgstr "La mesh è vuota!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create a Trimesh collision shape."
-msgstr "Crea Fratello di Collisione Trimesh"
+msgstr "Non poteva creare una forma di collisione Trimesh."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
@@ -7238,7 +7237,7 @@ msgstr "Scalatura: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Translating: "
-msgstr "Traducendo: "
+msgstr "Spostamento: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotating %s degrees."

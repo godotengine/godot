@@ -4034,16 +4034,17 @@ msgid "Saving..."
 msgstr "שמירה…"
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr " קבצים"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "הגדרה כבררת מחדל עבור ‚%s’"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "מחיקת בררת מחדל עבור ‚%s’"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " קבצים"
 
 #: editor/import_dock.cpp
 msgid "Import As:"

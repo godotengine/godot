@@ -4125,16 +4125,17 @@ msgid "Saving..."
 msgstr "Shranjevanje..."
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr " Datoteke"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "Nastavi kot Privzeto za '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Počisti privzeto za '%s'"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " Datoteke"
 
 #: editor/import_dock.cpp
 msgid "Import As:"

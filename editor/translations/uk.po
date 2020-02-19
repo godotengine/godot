@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-27 07:10+0000\n"
+"PO-Revision-Date: 2020-02-16 15:20+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -702,9 +702,8 @@ msgid "Line Number:"
 msgstr "Номер рядка:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "%d replaced."
-msgstr "Замінити..."
+msgstr "%d замінено."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -3974,16 +3973,17 @@ msgid "Saving..."
 msgstr "Збереження..."
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr " Файли"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "Встановити як типове для '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Очистити типове для '%s'"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " Файли"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -5865,9 +5865,8 @@ msgid "Mesh is empty!"
 msgstr "Сітка порожня!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create a Trimesh collision shape."
-msgstr "Створити увігнуту область зіткнення"
+msgstr "Не вдалося створити форму зіткнення Trimesh."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
@@ -5883,30 +5882,27 @@ msgstr "Створити трисіткову статичну форму"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create a single convex collision shape for the scene root."
-msgstr ""
+msgstr "Не вдалося створити єдину опуклу форму зіткнення для кореня сцени."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Couldn't create a single convex collision shape."
-msgstr ""
+msgstr "Не вдалося створити єдину опуклу форму зіткнення."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Shape"
-msgstr "Створити вигнуті форми"
+msgstr "Створити єдину опуклу форму"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create multiple convex collision shapes for the scene root."
-msgstr ""
+msgstr "Не вдалося створити декілька опуклих форм зіткнення для кореня сцени."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create any collision shapes."
-msgstr "Неможливо створити теку."
+msgstr "Не вдалося створити жодних форм зіткнення."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Multiple Convex Shapes"
-msgstr "Створити вигнуті форми"
+msgstr "Створити декілька опуклих форм"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
@@ -5962,6 +5958,9 @@ msgid ""
 "automatically.\n"
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
+"Створює StaticBody і автоматично пов'язує з ним засновану на багатокутниках "
+"форму зіткнення.\n"
+"Це найточніший (але найповільніший) варіант для виявлення зіткнення."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
@@ -5972,28 +5971,32 @@ msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
+"Створює засновану на багатокутниках форму зіткнення.\n"
+"Цей найточніший (але найповільніший) варіант для виявлення зіткнень."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Collision Siblings"
-msgstr "Створити опуклу області зіткнення"
+msgstr "Створити єдині опуклі області зіткнення"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
 "Creates a single convex collision shape.\n"
 "This is the fastest (but least accurate) option for collision detection."
 msgstr ""
+"Створює єдину опуклу форму зіткнення.\n"
+"Цей найшвидший (але найменш точний) варіант для виявлення зіткнень."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Multiple Convex Collision Siblings"
-msgstr "Створити опуклу області зіткнення"
+msgstr "Створити декілька опуклих областей зіткнення"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is a performance middle-ground between the two above options."
 msgstr ""
+"Створює засновану на багатокутниках форму зіткнення.\n"
+"Цей проміжний за швидкістю варіант між наведеними вище двома варіантами."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
@@ -6006,6 +6009,10 @@ msgid ""
 "This can be used instead of the SpatialMaterial Grow property when using "
 "that property isn't possible."
 msgstr ""
+"Створює статичну контурну сітку. Нормалі контурної сітки "
+"віддзеркалюватимуться автоматично.\n"
+"Цим можна скористатися замість властивості Grow SpatialMaterial, якщо "
+"використання цієї властивості є неможливим."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -9594,17 +9601,14 @@ msgid "Export With Debug"
 msgstr "Експортувати із діагностикою"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "The path specified doesn't exist."
-msgstr "Шляху не існує."
+msgstr "Вказаного шляху не існує."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Error opening package file (it's not in ZIP format)."
-msgstr "Помилка під час спроби відкрити файл пакунка — дані не у форматі zip."
+msgstr "Помилка під час спроби відкрити файл пакунка (дані не у форматі ZIP)."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr "Некоректний файл проєкту «.zip»: у ньому немає файла «project.godot»."
@@ -9614,14 +9618,12 @@ msgid "Please choose an empty folder."
 msgstr "Будь ласка, виберіть порожню теку."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Please choose a \"project.godot\" or \".zip\" file."
 msgstr "Будь ласка, виберіть файл «project.godot» або «.zip»."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "This directory already contains a Godot project."
-msgstr "У каталозі вже міститься проєкт Godot."
+msgstr "У цьому каталозі вже міститься проєкт Godot."
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
@@ -10319,9 +10321,8 @@ msgid "Suffix"
 msgstr "Суфікс"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Use Regular Expressions"
-msgstr "Формальні вирази"
+msgstr "Використовувати формальні вирази"
 
 #: editor/rename_dialog.cpp
 msgid "Advanced Options"
@@ -10360,7 +10361,6 @@ msgstr ""
 "Порівняйте параметри лічильника."
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Per-level Counter"
 msgstr "Лічильник на рівень"
 
@@ -10403,12 +10403,10 @@ msgid "Keep"
 msgstr "Не змінювати"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "PascalCase to snake_case"
 msgstr "ГорбатийРегістр у під_креслювання"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "snake_case to PascalCase"
 msgstr "під_креслювання у ГорбатийРегістр"
 
@@ -10429,14 +10427,12 @@ msgid "Reset"
 msgstr "Скинути"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Regular Expression Error"
-msgstr "Формальні вирази"
+msgstr "Помилка у формальному виразі"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "At character %s"
-msgstr "Припустимі символи:"
+msgstr "На символі %s"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10901,9 +10897,8 @@ msgid "Invalid inherited parent name or path."
 msgstr "Некоректна назва або шлях до успадкованого батьківського елемента."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Script path/name is valid."
-msgstr "Скрипт є коректним."
+msgstr "Шлях до скрипту і назва скрипту є коректними."
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
@@ -10994,7 +10989,6 @@ msgid "Copy Error"
 msgstr "Помилка копіювання"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Video RAM"
 msgstr "Відеопам'ять"
 

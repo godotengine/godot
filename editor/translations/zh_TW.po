@@ -4124,16 +4124,17 @@ msgid "Saving..."
 msgstr "儲存中……"
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr " 資料夾"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "設定為“%s”的預設值"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "清除“%s”的預設值"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " 資料夾"
 
 #: editor/import_dock.cpp
 msgid "Import As:"

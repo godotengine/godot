@@ -4149,17 +4149,17 @@ msgid "Saving..."
 msgstr "儲存中..."
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr "檔案"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr ""
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr ""
-
-#: editor/import_dock.cpp
-#, fuzzy
-msgid " Files"
-msgstr "檔案"
 
 #: editor/import_dock.cpp
 #, fuzzy

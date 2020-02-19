@@ -19,7 +19,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-27 07:10+0000\n"
+"PO-Revision-Date: 2020-02-18 15:09+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
@@ -28,7 +28,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 3.11\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -37,7 +37,7 @@ msgstr "Tipo de argumento inválido para convert(), use constantes TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "Esperado um string de comprimento 1 (um caráter)."
+msgstr "Esperado um string de comprimento 1 (um carácter)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -428,7 +428,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
-msgstr "Não é possível adicionar nova pista sem uma raíz"
+msgstr "Não é possível adicionar nova pista sem uma raiz"
 
 #: editor/animation_track_editor.cpp
 msgid "Invalid track for Bezier (no suitable sub-properties)"
@@ -444,7 +444,7 @@ msgstr "Caminho da pista é inválido, não se consegue adicionar uma chave."
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
-msgstr "Pista não do tipo Spatial, impossível inserir chave"
+msgstr "Pista não é do tipo Spatial, não consigo inserir chave"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Transform Track Key"
@@ -456,7 +456,7 @@ msgstr "Adicionar Chave da Pista"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
-msgstr "Caminho da pista é inválido, impossível adicionar uma chave método."
+msgstr "Caminho da pista é inválido, não consigo adicionar uma chave método."
 
 #: editor/animation_track_editor.cpp
 msgid "Add Method Track Key"
@@ -698,9 +698,8 @@ msgid "Line Number:"
 msgstr "Numero da linha:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "%d replaced."
-msgstr "Substituir..."
+msgstr "%d substituído."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -765,7 +764,7 @@ msgstr "Números de Linha e Coluna."
 
 #: editor/connections_dialog.cpp
 msgid "Method in target node must be specified."
-msgstr "Método no Nó alvo deve ser especificado."
+msgstr "Método no nó alvo deve ser especificado."
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -773,7 +772,7 @@ msgid ""
 "target node."
 msgstr ""
 "Método alvo não encontrado. Especifique um método válido ou anexe um script "
-"ao Nó de destino."
+"ao nó de destino."
 
 #: editor/connections_dialog.cpp
 msgid "Connect to Node:"
@@ -789,7 +788,7 @@ msgstr "Do Sinal:"
 
 #: editor/connections_dialog.cpp
 msgid "Scene does not contain any script."
-msgstr "A Cena não contém qualquer script."
+msgstr "A cena não contém qualquer script."
 
 #: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
 #: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
@@ -845,7 +844,7 @@ msgstr "Desconecta o sinal após a primeira emissão."
 
 #: editor/connections_dialog.cpp
 msgid "Cannot connect signal"
-msgstr "Impossível conectar sinal"
+msgstr "Não consigo conectar sinal"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
@@ -977,7 +976,7 @@ msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
-"A Cena '%s' está a ser editada.\n"
+"A cena '%s' está a ser editada.\n"
 "As alterações só terão efeito quando recarregar."
 
 #: editor/dependency_editor.cpp
@@ -1048,7 +1047,7 @@ msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
-msgstr "Impossível remover:"
+msgstr "Não consigo remover:"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -1208,7 +1207,7 @@ msgstr "%s (Já Existe)"
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
-msgstr "A descompactar Ativos"
+msgstr "A Descomprimir Ativos"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
@@ -1416,7 +1415,7 @@ msgstr "Nome inválido."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
-msgstr "Carateres válidos:"
+msgstr "Caracteres válidos:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Must not collide with an existing engine class name."
@@ -1502,7 +1501,7 @@ msgstr "Instância única"
 
 #: editor/editor_data.cpp
 msgid "Updating Scene"
-msgstr "Atualizando a Cena"
+msgstr "A atualizar Cena"
 
 #: editor/editor_data.cpp
 msgid "Storing local changes..."
@@ -1510,7 +1509,7 @@ msgstr "Armazenando alterações locais..."
 
 #: editor/editor_data.cpp
 msgid "Updating scene..."
-msgstr "Atualizando a Cena..."
+msgstr "A atualizar cena..."
 
 #: editor/editor_data.cpp editor/editor_properties.cpp
 msgid "[empty]"
@@ -1544,7 +1543,7 @@ msgstr "Nome:"
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp scene/gui/file_dialog.cpp
 msgid "Could not create folder."
-msgstr "Não foi possível criar pasta."
+msgstr "Não consegui criar pasta."
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose"
@@ -1633,7 +1632,7 @@ msgstr "Importar Doca"
 
 #: editor/editor_feature_profile.cpp
 msgid "Node Dock"
-msgstr "Nó Doca"
+msgstr "Doca de Nó"
 
 #: editor/editor_feature_profile.cpp
 msgid "FileSystem and Import Docks"
@@ -2185,7 +2184,7 @@ msgstr "Guardar Recurso Como..."
 
 #: editor/editor_node.cpp
 msgid "Can't open file for writing:"
-msgstr "Impossível abrir o Ficheiro para escrita:"
+msgstr "Não consigo abrir o ficheiro para escrita:"
 
 #: editor/editor_node.cpp
 msgid "Requested file format unknown:"
@@ -2197,7 +2196,7 @@ msgstr "Erro ao guardar."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Can't open '%s'. The file could have been moved or deleted."
-msgstr "Impossível abrir '%s'. O ficheiro pode ter sido movido ou apagado."
+msgstr "Não consigo abrir '%s'. O ficheiro pode ter sido movido ou apagado."
 
 #: editor/editor_node.cpp
 msgid "Error while parsing '%s'."
@@ -2217,7 +2216,7 @@ msgstr "Erro ao carregar '%s'."
 
 #: editor/editor_node.cpp
 msgid "Saving Scene"
-msgstr "A guardar a Cena"
+msgstr "A guardar Cena"
 
 #: editor/editor_node.cpp
 msgid "Analyzing"
@@ -2245,7 +2244,7 @@ msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr ""
-"Impossível guardar Cena. Provavelmente, as dependências (instâncias ou "
+"Não consigo guardar cena. Provavelmente, as dependências (instâncias ou "
 "heranças) não puderam ser satisfeitas."
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
@@ -2254,7 +2253,7 @@ msgstr "Não se consegue sobrescrever cena ainda aberta!"
 
 #: editor/editor_node.cpp
 msgid "Can't load MeshLibrary for merging!"
-msgstr "Impossível carregar MeshLibrary para fundir!"
+msgstr "Não consigo carregar MeshLibrary para combinar!"
 
 #: editor/editor_node.cpp
 msgid "Error saving MeshLibrary!"
@@ -2262,7 +2261,7 @@ msgstr "Erro ao guardar MeshLibrary!"
 
 #: editor/editor_node.cpp
 msgid "Can't load TileSet for merging!"
-msgstr "Impossível carregar TileSet para fundir!"
+msgstr "Não consigo carregar TileSet para combinar!"
 
 #: editor/editor_node.cpp
 msgid "Error saving TileSet!"
@@ -2290,9 +2289,8 @@ msgid ""
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
-"Este recurso pertence a uma Cena que foi importado, portanto, não é "
-"editável.\n"
-"Por favor, leia a documentação relevante sobre importação de Cenas, para um "
+"Este recurso pertence a uma cena que foi importado, não sendo editável.\n"
+"Por favor, leia a documentação relevante sobre importação de cenas, para um "
 "melhor entendimento deste fluxo de trabalho."
 
 #: editor/editor_node.cpp
@@ -2337,15 +2335,15 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
-msgstr "Não existe nenhuma Cena definida para executar."
+msgstr "Não existe cena definida para execução."
 
 #: editor/editor_node.cpp
 msgid "Current scene was never saved, please save it prior to running."
-msgstr "A Cena atual nunca foi guardada, por favor guarde-a antes de executar."
+msgstr "A cena atual nunca foi guardada, por favor guarde-a antes de executar."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
-msgstr "Não foi possível iniciar o subprocesso!"
+msgstr "Não consegui iniciar o subprocesso!"
 
 #: editor/editor_node.cpp editor/filesystem_dock.cpp
 msgid "Open Scene"
@@ -2361,7 +2359,7 @@ msgstr "Abertura rápida..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Scene..."
-msgstr "Abrir Cena de forma rápida..."
+msgstr "Abrir Cena Rapidamente..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Script..."
@@ -2381,11 +2379,11 @@ msgstr "Guardado(s) %s recurso(s) modificado(s)."
 
 #: editor/editor_node.cpp
 msgid "A root node is required to save the scene."
-msgstr "É necessário um Nó Raiz para guardar a cena."
+msgstr "É necessário um nó raiz para guardar a cena."
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
-msgstr "Guardar Cena como..."
+msgstr "Guardar Cena Como..."
 
 #: editor/editor_node.cpp
 msgid "No"
@@ -2397,11 +2395,11 @@ msgstr "Sim"
 
 #: editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
-msgstr "Esta Cena nunca foi guardada. Guardar antes de executar?"
+msgstr "Esta cena nunca foi guardada. Guardar antes de executar?"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
-msgstr "Esta operação não pode ser efetuada sem uma Cena."
+msgstr "Esta operação não pode ser efetuada sem uma cena."
 
 #: editor/editor_node.cpp
 msgid "Export Mesh Library"
@@ -2409,7 +2407,7 @@ msgstr "Exportar Biblioteca de Malhas"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a root node."
-msgstr "Esta operação não pode ser efetuada sem um Nó raiz."
+msgstr "Esta operação não pode ser efetuada sem um nó raiz."
 
 #: editor/editor_node.cpp
 msgid "Export Tile Set"
@@ -2417,15 +2415,15 @@ msgstr "Exportar conjunto de Tiles"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a selected node."
-msgstr "Esta operação não pode ser efetuada sem um Nó selecionado."
+msgstr "Esta operação não pode ser efetuada sem um nó selecionado."
 
 #: editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
-msgstr "A Cena atual não foi guardada. Abrir na mesma?"
+msgstr "A cena atual não foi guardada. Abrir na mesma?"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
-msgstr "Impossível recarregar uma Cena que nunca foi guardada."
+msgstr "Não consigo recarregar uma cena que nunca foi guardada."
 
 #: editor/editor_node.cpp
 msgid "Revert"
@@ -2437,7 +2435,7 @@ msgstr "Esta acção não pode ser desfeita. Reverter na mesma?"
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
-msgstr "Executar Cena de forma rápida..."
+msgstr "Executar Cena Rapidamente..."
 
 #: editor/editor_node.cpp
 msgid "Quit"
@@ -2457,12 +2455,12 @@ msgstr "Guardar & Sair"
 
 #: editor/editor_node.cpp
 msgid "Save changes to the following scene(s) before quitting?"
-msgstr "Guardar alterações da(s) seguinte(s) Cena(s) antes de sair?"
+msgstr "Guardar alterações da(s) seguinte(s) cena(s) antes de sair?"
 
 #: editor/editor_node.cpp
 msgid "Save changes the following scene(s) before opening Project Manager?"
 msgstr ""
-"Guardar alterações da(s) seguinte(s) Cena(s) antes de abrir o Gestor de "
+"Guardar alterações da(s) seguinte(s) cena(s) antes de abrir o Gestor de "
 "Projeto?"
 
 #: editor/editor_node.cpp
@@ -2524,19 +2522,19 @@ msgid ""
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
 "Cena '%s' foi importada automaticamente, não podendo ser alterada.\n"
-"Para fazer alterações, pode ser criada uma nova Cena herdada."
+"Para fazer alterações, pode ser criada uma nova cena herdada."
 
 #: editor/editor_node.cpp
 msgid ""
 "Error loading scene, it must be inside the project path. Use 'Import' to "
 "open the scene, then save it inside the project path."
 msgstr ""
-"Erro ao carregar a Cena, tem de estar no Caminho do Projeto. Use 'Importar' "
-"para abrir a Cena, e guarde-a dentro do Caminho do Projeto."
+"Erro ao carregar cena, tem de estar no caminho do projeto. Use 'Importar' "
+"para abrir a cena, e guarde-a dentro do caminho do projeto."
 
 #: editor/editor_node.cpp
 msgid "Scene '%s' has broken dependencies:"
-msgstr "A Cena '%s' tem dependências não satisfeitas:"
+msgstr "Cena '%s' tem dependências não satisfeitas:"
 
 #: editor/editor_node.cpp
 msgid "Clear Recent Scenes"
@@ -2548,7 +2546,7 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"Não foi definida nenhuma Cena principal. Selecionar uma?\n"
+"Não foi definida nenhuma cena principal. Selecionar uma?\n"
 "Poderá alterá-la depois nas \"Definições do Projeto\", na categoria "
 "'aplicação'."
 
@@ -2558,8 +2556,8 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"A Cena selecionada '%s' não existe, selecionar uma válida?\n"
-"Poderá alterá-la depois em \"Configurações de Projeto\", na categoria de "
+"A cena selecionada '%s' não existe, selecionar uma válida?\n"
+"Poderá alterá-la depois em \"Configurações de Projeto\", na categoria "
 "'aplicação'."
 
 #: editor/editor_node.cpp
@@ -2568,7 +2566,7 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"A Cena selecionada '%s' não é um Ficheiro de Cena, selecione um Ficheiro "
+"A cena selecionada '%s' não é um ficheiro de cena, selecione um ficheiro "
 "válido?\n"
 "Poderá alterá-la depois em \"Configurações de Projeto\", na categoria "
 "'aplicação'."
@@ -2593,7 +2591,7 @@ msgstr "Mostrar no Sistema de Ficheiros"
 
 #: editor/editor_node.cpp
 msgid "Play This Scene"
-msgstr "Executar esta Cena"
+msgstr "Executar Esta Cena"
 
 #: editor/editor_node.cpp
 msgid "Close Tab"
@@ -2617,7 +2615,7 @@ msgstr "Fechar Todos os Separadores"
 
 #: editor/editor_node.cpp
 msgid "Switch Scene Tab"
-msgstr "Trocar Tab de Cena"
+msgstr "Trocar Aba de Cena"
 
 #: editor/editor_node.cpp
 msgid "%d more files or folders"
@@ -2645,7 +2643,7 @@ msgstr "Alternar modo livre de distrações."
 
 #: editor/editor_node.cpp
 msgid "Add a new scene."
-msgstr "Adicionar nova Cena."
+msgstr "Adicionar nova cena."
 
 #: editor/editor_node.cpp
 msgid "Scene"
@@ -2653,7 +2651,7 @@ msgstr "Cena"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
-msgstr "Ir para Cena aberta anteriormente."
+msgstr "Ir para cena aberta anteriormente."
 
 #: editor/editor_node.cpp
 msgid "Copy Text"
@@ -2673,7 +2671,7 @@ msgstr "Filtrar Ficheiro..."
 
 #: editor/editor_node.cpp
 msgid "Operations with scene files."
-msgstr "Operações com Ficheiros de Cena."
+msgstr "Operações com ficheiros de cena."
 
 #: editor/editor_node.cpp
 msgid "New Scene"
@@ -2727,7 +2725,7 @@ msgstr "Reverter Cena"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
-msgstr "Ferramentas diversas de Projeto ou Cena."
+msgstr "Ferramentas diversas de projeto ou cena."
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp
@@ -2819,7 +2817,7 @@ msgid ""
 "Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
 "running game if this option is turned on."
 msgstr ""
-"Com esta opção ativa, formas de colisão e Nós raycast (para 2D e 3D) serão "
+"Com esta opção ativa, formas de colisão e nós raycast (para 2D e 3D) serão "
 "visíveis no jogo em execução."
 
 #: editor/editor_node.cpp
@@ -2844,10 +2842,10 @@ msgid ""
 "When used remotely on a device, this is more efficient with network "
 "filesystem."
 msgstr ""
-"Com esta opção ativa, alterações da Cena no Editor serão replicadas no jogo "
+"Com esta opção ativa, alterações da cena no editor serão replicadas no jogo "
 "em execução.\n"
-"Quando usada num dispositivo remoto, é mais eficiente com um Sistema de "
-"Ficheiros em rede."
+"Quando usada num dispositivo remoto, é mais eficiente com um sistema de "
+"ficheiros em rede."
 
 #: editor/editor_node.cpp
 msgid "Sync Script Changes"
@@ -2962,11 +2960,11 @@ msgstr "Pausar a execução da cena para depuração."
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
-msgstr "Pausar a Cena"
+msgstr "Pausar Cena"
 
 #: editor/editor_node.cpp
 msgid "Stop the scene."
-msgstr "Para a Cena."
+msgstr "Para a cena."
 
 #: editor/editor_node.cpp
 msgid "Play the edited scene."
@@ -2974,11 +2972,11 @@ msgstr "Executa a cena editada."
 
 #: editor/editor_node.cpp
 msgid "Play Scene"
-msgstr "Executar a Cena"
+msgstr "Executar Cena"
 
 #: editor/editor_node.cpp
 msgid "Play custom scene"
-msgstr "Executa a cena personalizada"
+msgstr "Executa cena personalizada"
 
 #: editor/editor_node.cpp
 msgid "Play Custom Scene"
@@ -3081,7 +3079,7 @@ msgstr "Exportar Biblioteca"
 
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
-msgstr "Fundir com o Existente"
+msgstr "Combinar com o Existente"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -3266,7 +3264,7 @@ msgstr ""
 "Não se consegue criar Textura Viewport neste recurso porque não está "
 "definido na cena como local.\n"
 "Ative a sua propriedade 'local to scene' (e em todos os recursos que o "
-"contêm até a um Nó)."
+"contêm até a um nó)."
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Pick a Viewport"
@@ -3349,11 +3347,11 @@ msgstr "Escreva a sua lógica no Método _run()."
 
 #: editor/editor_run_script.cpp
 msgid "There is an edited scene already."
-msgstr "Já existe uma Cena editada."
+msgstr "Já existe uma cena editada."
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't instance script:"
-msgstr "Não foi possível instanciar o Script:"
+msgstr "Não consegui instanciar o script:"
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the 'tool' keyword?"
@@ -3361,7 +3359,7 @@ msgstr "Esqueceu-se da palavra chave 'tool'?"
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't run script:"
-msgstr "Não foi possível executar o Script:"
+msgstr "Não consegui executar o script:"
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
@@ -3369,7 +3367,7 @@ msgstr "Esqueceu-se do médodo '_run'?"
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
-msgstr "Selecionar Nó(s) para importar"
+msgstr "Selecionar Nó(s) para Importar"
 
 #: editor/editor_sub_scene.cpp editor/project_manager.cpp
 msgid "Browse"
@@ -3424,7 +3422,7 @@ msgstr "Remover versão '%s' do Modelo?"
 
 #: editor/export_template_manager.cpp
 msgid "Can't open export templates zip."
-msgstr "Impossível abrir o zip de Modelos."
+msgstr "Não consigo abrir zip de modelos de exportação."
 
 #: editor/export_template_manager.cpp
 msgid "Invalid version.txt format inside templates: %s."
@@ -3466,12 +3464,12 @@ msgstr ""
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't resolve."
-msgstr "Impossível resolver."
+msgstr "Não consigo resolver."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't connect."
-msgstr "Impossível conectar."
+msgstr "Não consigo conectar."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3497,7 +3495,7 @@ msgstr "Download Completo."
 
 #: editor/export_template_manager.cpp
 msgid "Cannot remove temporary file:"
-msgstr "Impossível remover ficheiro temporário:"
+msgstr "Não consigo remover ficheiro temporário:"
 
 #: editor/export_template_manager.cpp
 msgid ""
@@ -3525,7 +3523,7 @@ msgstr "A resolver"
 
 #: editor/export_template_manager.cpp
 msgid "Can't Resolve"
-msgstr "Impossível resolver"
+msgstr "Não consigo Resolver"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3534,7 +3532,7 @@ msgstr "A ligar..."
 
 #: editor/export_template_manager.cpp
 msgid "Can't Connect"
-msgstr "Impossível conetar"
+msgstr "Não consigo Conectar"
 
 #: editor/export_template_manager.cpp
 msgid "Connected"
@@ -3609,7 +3607,7 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
-msgstr "Não foi possível mover/renomear raíz dos recursos."
+msgstr "Não consegui mover/renomear raiz dos recursos."
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move a folder into itself."
@@ -3633,7 +3631,7 @@ msgstr "Nome não fornecido."
 
 #: editor/filesystem_dock.cpp
 msgid "Provided name contains invalid characters."
-msgstr "O nome fornecido contém carateres inválidos."
+msgstr "O nome fornecido contém caracteres inválidos."
 
 #: editor/filesystem_dock.cpp
 msgid "A file or folder with this name already exists."
@@ -3641,7 +3639,7 @@ msgstr "Um Ficheiro ou diretoria já existe com este nome."
 
 #: editor/filesystem_dock.cpp
 msgid "Name contains invalid characters."
-msgstr "O nome contém carateres inválidos."
+msgstr "O nome contém caracteres inválidos."
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3872,7 +3870,7 @@ msgstr "Nós fora do Grupo"
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
 #: editor/scene_tree_editor.cpp
 msgid "Filter nodes"
-msgstr "Filtrar Nós"
+msgstr "Filtrar nós"
 
 #: editor/groups_editor.cpp
 msgid "Nodes in Group"
@@ -3892,7 +3890,7 @@ msgstr "Gerir Grupos"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Single Scene"
-msgstr "Importar como Cena única"
+msgstr "Importar como Cena Única"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Animations"
@@ -3928,7 +3926,7 @@ msgstr "Importar como Cenas Múltiplas"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes+Materials"
-msgstr "Importar como Cenas e Materiais Múltiplos"
+msgstr "Importar como Cenas Múltiplas + Materiais"
 
 #: editor/import/resource_importer_scene.cpp
 #: editor/plugins/mesh_library_editor_plugin.cpp
@@ -3968,16 +3966,16 @@ msgid "Saving..."
 msgstr "A guardar..."
 
 #: editor/import_dock.cpp
+msgid "%d Files"
+msgstr "%d Ficheiros"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "Definir como Padrão para '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Limpar Padrão para '%s'"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " Ficheiros"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -4089,7 +4087,7 @@ msgstr "As alterações podem ser perdidas!"
 
 #: editor/multi_node_edit.cpp
 msgid "MultiNode Set"
-msgstr "Conjunto MultiNode"
+msgstr "Conjunto MultiNó"
 
 #: editor/node_dock.cpp
 msgid "Select a single node to edit its signals and groups."
@@ -4527,7 +4525,7 @@ msgstr "Posição da Animação (em segundos)."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Scale animation playback globally for the node."
-msgstr "Escalar globalmente  a reprodução da Animação para o Nó."
+msgstr "Escalar globalmente a reprodução da animação para o nó."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Tools"
@@ -4671,7 +4669,7 @@ msgstr "Viagem"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Start and end nodes are needed for a sub-transition."
-msgstr "Nodos de início e fim são necessários para uma sub-transição."
+msgstr "Nós de início e fim são necessários para uma sub-transição."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "No playback resource set at path: %s."
@@ -4863,7 +4861,7 @@ msgstr "Importar Animações..."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Edit Node Filters"
-msgstr "Editar filtros de Nó"
+msgstr "Editar Filtros de Nó"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Filters..."
@@ -4883,7 +4881,7 @@ msgstr "Erro de ligação, tente novamente."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't connect to host:"
-msgstr "Impossível ligar ao host:"
+msgstr "Não consigo ligar ao host:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No response from host:"
@@ -4891,7 +4889,7 @@ msgstr "Sem resposta do host:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't resolve hostname:"
-msgstr "Impossível resolver hostname:"
+msgstr "Não consigo resolver hostname:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, return code:"
@@ -4903,7 +4901,7 @@ msgstr "Pedido falhado."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Cannot save response to:"
-msgstr "Impossível guardar resposta para:"
+msgstr "Não consigo guardar resposta para:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Write error."
@@ -5076,8 +5074,8 @@ msgid ""
 "Save your scene (for images to be saved in the same dir), or pick a save "
 "path from the BakedLightmap properties."
 msgstr ""
-"Impossível determinar um caminho para guardar imagens lightmap.\n"
-"Guarde a sua Cena (para as imagens serem guardadas na mesma diretoria), ou "
+"Não consigo determinar um caminho para guardar imagens lightmap.\n"
+"Guarde a sua cena (para as imagens serem guardadas na mesma diretoria), ou "
 "escolha um caminho nas propriedades BakedLightmap."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
@@ -5195,7 +5193,7 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Presets for the anchors and margins values of a Control node."
-msgstr "Pré-definições para âncoras e margens de um Nó Control."
+msgstr "Pré-definições para âncoras e margens de um nó Control."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -5491,7 +5489,7 @@ msgstr "Ajustar às Guias"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock the selected object in place (can't be moved)."
-msgstr "Bloquear a posição do Objeto selecionado (não pode ser movido)."
+msgstr "Bloquear a posição do objeto selecionado (não pode ser movido)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5640,7 +5638,7 @@ msgstr "A adicionar %s..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Cannot instantiate multiple nodes without root."
-msgstr "Impossível instanciar nós múltiplos sem raiz."
+msgstr "Não consigo instanciar nós múltiplos sem raiz."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -5650,7 +5648,7 @@ msgstr "Criar Nó"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
-msgstr "Erro a instanciar Cena de %s"
+msgstr "Erro a instanciar cena de %s"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Default Type"
@@ -5661,8 +5659,8 @@ msgid ""
 "Drag & drop + Shift : Add node as sibling\n"
 "Drag & drop + Alt : Change node type"
 msgstr ""
-"Arrastar & largar + Shift : Adiciona Nó como irmão\n"
-"Arrastar & largar + Alt : Altera o tipo de Nó"
+"Arrastar & largar + Shift : Adiciona nó como irmão\n"
+"Arrastar & largar + Alt : Altera o tipo de nó"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 msgid "Create Polygon3D"
@@ -5849,9 +5847,8 @@ msgid "Mesh is empty!"
 msgstr "A Malha está vazia!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create a Trimesh collision shape."
-msgstr "Criar irmão de colisão Trimesh"
+msgstr "Não consegui criar uma forma de colisão Trimesh."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
@@ -5859,7 +5856,7 @@ msgstr "Criar corpo estático Trimesh"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
-msgstr "Não funciona na raiz da Cena!"
+msgstr "Isto não funciona na raiz da cena!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Shape"
@@ -5867,30 +5864,28 @@ msgstr "Criar Forma Estática Trimesh"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create a single convex collision shape for the scene root."
-msgstr ""
+msgstr "Não consigo criar uma única forma convexa para a raiz da cena."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Couldn't create a single convex collision shape."
-msgstr ""
+msgstr "Não consegui criar uma forma única de colisão convexa."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Shape"
-msgstr "Criar Forma(s) Convexa(s)"
+msgstr "Criar Forma Convexa Simples"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create multiple convex collision shapes for the scene root."
 msgstr ""
+"Não consigo criar múltiplas formas de colisão convexas para a raiz da cena."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create any collision shapes."
-msgstr "Impossível criar pasta."
+msgstr "Não consegui criar qualquer forma de colisão."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Multiple Convex Shapes"
-msgstr "Criar Forma(s) Convexa(s)"
+msgstr "Criar Múltiplas Formas Convexas"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
@@ -5946,38 +5941,45 @@ msgid ""
 "automatically.\n"
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
+"Cria um StaticBody e atribui-lhe automaticamente uma forma de colisão "
+"baseada em polígonos.\n"
+"Esta é a mais precisa (mas mais lenta) opção para deteção de colisão."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
-msgstr "Criar irmão de colisão Trimesh"
+msgstr "Criar Irmão de Colisão Trimesh"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
+"Cria uma forma de colisão baseada em polígonos.\n"
+"Esta é a mais precisa (mas mais lenta) opção para deteção de colisão."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Collision Siblings"
-msgstr "Criar Irmão(s) de Colisão Convexa"
+msgstr "Criar Irmãos Únicos de Colisão Convexa"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
 "Creates a single convex collision shape.\n"
 "This is the fastest (but least accurate) option for collision detection."
 msgstr ""
+"Cria uma única forma de colisão convexa.\n"
+"Esta é a mais rápida (mas menos precisa) opção para deteção de colisão."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Multiple Convex Collision Siblings"
-msgstr "Criar Irmão(s) de Colisão Convexa"
+msgstr "Criar Vários Irmãos de Colisão Convexa"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is a performance middle-ground between the two above options."
 msgstr ""
+"Cria uma forma de colisão baseada em polígonos.\n"
+"Esta uma opção de desempenho intermédio entre as duas opções acima."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
@@ -5990,6 +5992,10 @@ msgid ""
 "This can be used instead of the SpatialMaterial Grow property when using "
 "that property isn't possible."
 msgstr ""
+"Cria uma malha de contorno estática. A malha de contorno terá as suas "
+"normais automaticamente invertidas.\n"
+"Pode ser usada no lugar da propriedade Aumentar de SpatialMaterial quando "
+"não é possível usar essa propriedade."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -6046,11 +6052,11 @@ msgstr "Importar da Cena"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Update from Scene"
-msgstr "Atualizar da Cena"
+msgstr "Atualizar a partir da Cena"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
-msgstr "Fonte da Malha não especificada (nem MultiMesh no Nó)."
+msgstr "Fonte da Malha não especificada (nem MultiMesh no nó)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and MultiMesh contains no Mesh)."
@@ -6558,7 +6564,7 @@ msgstr "Sincronizar Ossos com Polígono"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
-msgstr "ERRO: Não foi possível carregar recurso!"
+msgstr "ERRO: Não consegui carregar recurso!"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Add Resource"
@@ -6628,7 +6634,7 @@ msgstr "Erro ao escrever TextFile:"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Could not load file at:"
-msgstr "Impossível carregar ficheiro em:"
+msgstr "Não consigo carregar ficheiro em:"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error saving file!"
@@ -6664,7 +6670,7 @@ msgstr "Guardar Ficheiro Como..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Can't obtain the script for running."
-msgstr "Não é possível obter o script para executar."
+msgstr "Não consigo obter o script para executar."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script failed reloading, check console for errors."
@@ -6927,7 +6933,7 @@ msgstr "Só podem ser largados recursos do Sistema de Ficheiros ."
 #: editor/plugins/script_text_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't drop nodes because script '%s' is not used in this scene."
-msgstr "Impossível largar nós porque o script '%s' não é usado neste cena."
+msgstr "Não consigo largar nós porque o script '%s' não é usado neste cena."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Lookup Symbol"
@@ -7100,7 +7106,7 @@ msgstr "Shader"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "This skeleton has no bones, create some children Bone2D nodes."
-msgstr "Este esqueleto não tem ossos, crie alguns nós Bone2D filhos."
+msgstr "Este esqueleto não tem ossos, crie alguns nós filhos Bone2D."
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Create Rest Pose from Bones"
@@ -7276,7 +7282,7 @@ msgstr "Sem parente para criar instância de filho."
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "This operation requires a single selected node."
-msgstr "Esta operação requer um único Nó selecionado."
+msgstr "Esta operação requer um único nó selecionado."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
@@ -7608,7 +7614,7 @@ msgstr "Sprite está vazia!"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Can't convert a sprite using animation frames to mesh."
-msgstr "Impossível converter sprite com frames de animação para malha."
+msgstr "Não consigo converter sprite com frames de animação para malha."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't replace by mesh."
@@ -7620,7 +7626,7 @@ msgstr "Converter para Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create polygon."
-msgstr "Geometria inválida, impossível criar polígono."
+msgstr "Geometria inválida, não consigo criar polígono."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Convert to Polygon2D"
@@ -7628,19 +7634,19 @@ msgstr "Converter para Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create collision polygon."
-msgstr "Geometria inválida, impossível criar polígono de colisão."
+msgstr "Geometria inválida, não consigo criar polígono de colisão."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D Sibling"
-msgstr "Criar irmão de CollisionPolygon2D"
+msgstr "Criar Irmão de CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create light occluder."
-msgstr "Geometria inválida, impossível criar oclusor de luz."
+msgstr "Geometria inválida, não consigo criar oclusor de luz."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D Sibling"
-msgstr "Criar irmão de LightOccluder2D"
+msgstr "Criar Irmão de LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
@@ -8083,7 +8089,7 @@ msgstr "Criar a partir da Cena"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from Scene"
-msgstr "Fundir a partir da Cena"
+msgstr "Combinar a partir da Cena"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "New Single Tile"
@@ -8223,11 +8229,11 @@ msgstr "Não selecionou uma textura para remover."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from scene? This will overwrite all current tiles."
-msgstr "Criar a partir de cena? Irá substituir todos os Tiles atuais."
+msgstr "Criar a partir de cena? Irá substituir todos os tiles atuais."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
-msgstr "Fundir a partir da Cena?"
+msgstr "Combinar a partir da cena?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Texture"
@@ -9437,7 +9443,7 @@ msgstr "Exportar todos os recursos do Projeto"
 
 #: editor/project_export.cpp
 msgid "Export selected scenes (and dependencies)"
-msgstr "Exportar Cenas (e dependências) selecionadas"
+msgstr "Exportar cenas (e dependências) selecionadas"
 
 #: editor/project_export.cpp
 msgid "Export selected resources (and dependencies)"
@@ -9489,7 +9495,7 @@ msgstr "Personalizado (separados por vírgula):"
 
 #: editor/project_export.cpp
 msgid "Feature List:"
-msgstr "Lista de características:"
+msgstr "Lista de Características:"
 
 #: editor/project_export.cpp
 msgid "Script"
@@ -9556,35 +9562,31 @@ msgid "Export With Debug"
 msgstr "Exportar com Depuração"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "The path specified doesn't exist."
-msgstr "O Caminho não existe."
+msgstr "O caminho especificado não existe."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Error opening package file (it's not in ZIP format)."
-msgstr "Erro ao abrir ficheiro comprimido, não está no formato ZIP."
+msgstr "Erro ao abrir ficheiro comprimido (não está no formato ZIP)."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr ""
-"Ficheiro de projeto '.zip' inválido, não contém um ficheiro 'project.godot'."
+"Ficheiro de projeto \".zip\" inválido, não contém um ficheiro \"project.godot"
+"\"."
 
 #: editor/project_manager.cpp
 msgid "Please choose an empty folder."
 msgstr "Por favor escolha uma pasta vazia."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "Escolha um ficheiro 'project.godot' ou '.zip'."
+msgstr "Escolha um ficheiro \"project.godot\" ou \".zip\"."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "This directory already contains a Godot project."
-msgstr "A pasta já contém um projeto Godot."
+msgstr "Esta diretoria já contém um projeto Godot."
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
@@ -9600,7 +9602,7 @@ msgstr "Nome do Projeto Inválido."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
-msgstr "Impossível criar pasta."
+msgstr "Não consigo criar pasta."
 
 #: editor/project_manager.cpp
 msgid "There is already a folder in this path with the specified name."
@@ -9619,16 +9621,16 @@ msgid ""
 "Couldn't load project.godot in project path (error %d). It may be missing or "
 "corrupted."
 msgstr ""
-"Não foi possível carregar o project.godot no caminho do projeto (erro %d). "
+"Não consegui carregar o project.godot no caminho do projeto (erro %d). "
 "Poderá estar em falta ou corrompido."
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
-msgstr "Impossível editar project.godot no Caminho do Projeto."
+msgstr "Não consigo editar project.godot no caminho do projeto."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
-msgstr "Impossível criar project.godot no Caminho do Projeto."
+msgstr "Não consigo criar project.godot no caminho do projeto."
 
 #: editor/project_manager.cpp
 msgid "Rename Project"
@@ -9709,7 +9711,7 @@ msgstr ""
 #: editor/project_manager.cpp
 msgid "Renderer can be changed later, but scenes may need to be adjusted."
 msgstr ""
-"O Renderizador pode ser alterado mais tarde, mas as cenas poderão ter de ser "
+"O renderizador pode ser alterado mais tarde, mas as cenas poderão ter de ser "
 "ajustadas."
 
 #: editor/project_manager.cpp
@@ -9726,7 +9728,7 @@ msgstr "Erro: Projeto inexistente no sistema de ficheiros."
 
 #: editor/project_manager.cpp
 msgid "Can't open project at '%s'."
-msgstr "Impossível abrir Projeto em '%s'."
+msgstr "Não consigo abrir projeto em '%s'."
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
@@ -9788,8 +9790,8 @@ msgid ""
 "Please edit the project and set the main scene in the Project Settings under "
 "the \"Application\" category."
 msgstr ""
-"Impossível executar o Projeto: Cena principal não definida.\n"
-"Edite o Projeto e defina a Cena principal em Definições do Projeto dentro da "
+"Não consigo executar o projeto: cena principal não definida.\n"
+"Edite o projeto e defina a cena principal em Definições do Projeto dentro da "
 "categoria \"Aplicação\"."
 
 #: editor/project_manager.cpp
@@ -9797,8 +9799,8 @@ msgid ""
 "Can't run project: Assets need to be imported.\n"
 "Please edit the project to trigger the initial import."
 msgstr ""
-"Impossível executar o Projeto: Ativos têm de ser importados.\n"
-"Edite o Projeto para desencadear a importação inicial."
+"Não consigo executar o projeto: Ativos têm de ser importados.\n"
+"Edite o projeto para desencadear a importação inicial."
 
 #: editor/project_manager.cpp
 msgid "Are you sure to run %d projects at once?"
@@ -9883,7 +9885,7 @@ msgstr "Reiniciar agora"
 
 #: editor/project_manager.cpp
 msgid "Can't run project"
-msgstr "Impossível executar o Projeto"
+msgstr "Não consigo executar o Projeto"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -10282,9 +10284,8 @@ msgid "Suffix"
 msgstr "Sufixo"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Use Regular Expressions"
-msgstr "Expressões Regulares"
+msgstr "Usar Expressões Regulares"
 
 #: editor/rename_dialog.cpp
 msgid "Advanced Options"
@@ -10296,15 +10297,15 @@ msgstr "Substituto"
 
 #: editor/rename_dialog.cpp
 msgid "Node name"
-msgstr "Nome do Nó"
+msgstr "Nome do nó"
 
 #: editor/rename_dialog.cpp
 msgid "Node's parent name, if available"
-msgstr "Nome do parente do Nó, se disponível"
+msgstr "Nome do parente do nó, se disponível"
 
 #: editor/rename_dialog.cpp
 msgid "Node type"
-msgstr "Tipo de Nó"
+msgstr "Tipo de nó"
 
 #: editor/rename_dialog.cpp
 msgid "Current scene name"
@@ -10312,7 +10313,7 @@ msgstr "Nome da cena atual"
 
 #: editor/rename_dialog.cpp
 msgid "Root node name"
-msgstr "Nome do Nó raiz"
+msgstr "Nome do nó raiz"
 
 #: editor/rename_dialog.cpp
 msgid ""
@@ -10323,7 +10324,6 @@ msgstr ""
 "Comparar opções do contador."
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Per-level Counter"
 msgstr "Contador por nível"
 
@@ -10364,14 +10364,12 @@ msgid "Keep"
 msgstr "Manter"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "PascalCase to snake_case"
-msgstr "CamelCase para under_scored"
+msgstr "PascalCase para snake_case"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "snake_case to PascalCase"
-msgstr "under_scored para CamelCase"
+msgstr "snake_case para PascalCase"
 
 #: editor/rename_dialog.cpp
 msgid "Case"
@@ -10390,14 +10388,12 @@ msgid "Reset"
 msgstr "Repor"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Regular Expression Error"
-msgstr "Expressões Regulares"
+msgstr "Erro em Expressão Regular"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "At character %s"
-msgstr "Carateres válidos:"
+msgstr "No carácter %s"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10421,35 +10417,35 @@ msgstr "Modo Execução:"
 
 #: editor/run_settings_dialog.cpp
 msgid "Current Scene"
-msgstr "Cena atual"
+msgstr "Cena Atual"
 
 #: editor/run_settings_dialog.cpp
 msgid "Main Scene"
-msgstr "Cena principal"
+msgstr "Cena Principal"
 
 #: editor/run_settings_dialog.cpp
 msgid "Main Scene Arguments:"
-msgstr "Argumentos da Cena principal:"
+msgstr "Argumentos da Cena Principal:"
 
 #: editor/run_settings_dialog.cpp
 msgid "Scene Run Settings"
-msgstr "Configurações de execução da Cena"
+msgstr "Configurações de Execução da Cena"
 
 #: editor/scene_tree_dock.cpp
 msgid "No parent to instance the scenes at."
-msgstr "Nenhum parente para instanciar a Cena."
+msgstr "Nenhum parente para instância das cenas."
 
 #: editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
-msgstr "Erro ao carregar a Cena de %s"
+msgstr "Erro ao carregar a cena de %s"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
 "Cannot instance the scene '%s' because the current scene exists within one "
 "of its nodes."
 msgstr ""
-"Impossível instanciar a Cena '%s' porque a Cena atual existe dentro de um "
-"dos seus Nós."
+"Não consigo instanciar a cena '%s' porque a cena atual existe dentro de um "
+"dos seus nós."
 
 #: editor/scene_tree_dock.cpp
 msgid "Instance Scene(s)"
@@ -10461,7 +10457,7 @@ msgstr "Substituir com Cena-Ramo"
 
 #: editor/scene_tree_dock.cpp
 msgid "Instance Child Scene"
-msgstr "Instanciar Cena filha"
+msgstr "Instanciar Cena Filha"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Script"
@@ -10485,15 +10481,16 @@ msgstr "Duplicar Nó(s)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't reparent nodes in inherited scenes, order of nodes can't change."
-msgstr "Impossível mudar nó em cenas herdadas, a ordem dos nós não pode mudar."
+msgstr ""
+"Não consigo mudar nó em cenas herdadas, a ordem dos nós não pode mudar."
 
 #: editor/scene_tree_dock.cpp
 msgid "Node must belong to the edited scene to become root."
-msgstr "O nó deve pertencer à cena editada para se tornar root."
+msgstr "O nó deve pertencer à cena editada para se tornar raiz."
 
 #: editor/scene_tree_dock.cpp
 msgid "Instantiated scenes can't become root"
-msgstr "Cenas instantâneas não se podem tornar root"
+msgstr "Cenas instanciadas não se podem tornar raízes"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make node as Root"
@@ -10501,38 +10498,38 @@ msgstr "Tornar Nó Raiz"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
-msgstr "Apagar %d Nós?"
+msgstr "Apagar %d nós?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete the root node \"%s\"?"
-msgstr "Apagar Nó raiz \"%s\"?"
+msgstr "Apagar nó raiz \"%s\"?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete node \"%s\" and its children?"
-msgstr "Apagar Nó \"%s\" e filhos?"
+msgstr "Apagar nó \"%s\" e filhos?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete node \"%s\"?"
-msgstr "Apagar Nó \"%s\"?"
+msgstr "Apagar nó \"%s\"?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can not perform with the root node."
-msgstr "Impossível executar com o Nó raiz."
+msgstr "Não consigo executar com o nó raiz."
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
-msgstr "Esta operação não pode ser feita numa Cena instanciada."
+msgstr "Esta operação não pode ser feita numa cena instanciada."
 
 #: editor/scene_tree_dock.cpp
 msgid "Save New Scene As..."
-msgstr "Guardar nova Cena como..."
+msgstr "Guardar Nova Cena Como..."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
 "Disabling \"editable_instance\" will cause all properties of the node to be "
 "reverted to their default."
 msgstr ""
-"Desativar \"editable_instance\" irá reverter todas as propriedades do Nó "
+"Desativar \"editable_instance\" irá reverter todas as propriedades do nó "
 "para os seus valores padrão."
 
 #: editor/scene_tree_dock.cpp
@@ -10549,7 +10546,7 @@ msgstr "Tornar Local"
 
 #: editor/scene_tree_dock.cpp
 msgid "New Scene Root"
-msgstr "Nova Raiz de Cena"
+msgstr "Nova Raiz da Cena"
 
 #: editor/scene_tree_dock.cpp
 msgid "Create Root Node:"
@@ -10573,11 +10570,11 @@ msgstr "Outro Nó"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes from a foreign scene!"
-msgstr "Impossível operar em Nós de uma Cena externa!"
+msgstr "Não consigo operar em nós de uma cena externa!"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes the current scene inherits from!"
-msgstr "Impossível operar em Nós herdados pela Cena atual!"
+msgstr "Não consigo operar em nós herdados pela cena atual!"
 
 #: editor/scene_tree_dock.cpp
 msgid "Attach Script"
@@ -10596,16 +10593,16 @@ msgid ""
 "Couldn't save new scene. Likely dependencies (instances) couldn't be "
 "satisfied."
 msgstr ""
-"Impossível guardar nova Cena. Provavelmente dependências (instâncias) não "
+"Não consigo guardar nova cena. Provavelmente dependências (instâncias) não "
 "foram satisfeitas."
 
 #: editor/scene_tree_dock.cpp
 msgid "Error saving scene."
-msgstr "Erro ao guardar Cena."
+msgstr "Erro ao guardar cena."
 
 #: editor/scene_tree_dock.cpp
 msgid "Error duplicating scene to save it."
-msgstr "Erro ao duplicar Cena para guardar."
+msgstr "Erro ao duplicar cena para guardar."
 
 #: editor/scene_tree_dock.cpp
 msgid "Sub-Resources"
@@ -10629,7 +10626,7 @@ msgstr "Abrir documentação"
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
-msgstr "Adicionar Nó filho"
+msgstr "Adicionar Nó Filho"
 
 #: editor/scene_tree_dock.cpp
 msgid "Expand/Collapse All"
@@ -10645,15 +10642,15 @@ msgstr "Recolocar o Novo Nó"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
-msgstr "Tornar Nó Raiz"
+msgstr "Tornar Raiz da Cena"
 
 #: editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
-msgstr "Fundir a partir da Cena"
+msgstr "Combinar a partir da Cena"
 
 #: editor/scene_tree_dock.cpp editor/script_editor_debugger.cpp
 msgid "Save Branch as Scene"
-msgstr "Guardar ramo como Cena"
+msgstr "Guardar Ramo como Cena"
 
 #: editor/scene_tree_dock.cpp editor/script_editor_debugger.cpp
 msgid "Copy Node Path"
@@ -10672,16 +10669,16 @@ msgid ""
 "Instance a scene file as a Node. Creates an inherited scene if no root node "
 "exists."
 msgstr ""
-"Instanciar Ficheiro de Cena como Nó. Cria uma Cena herdada se não existir Nó "
-"raiz."
+"Instanciar um ficheiro de cena como um Nó. Cria uma cena herdada se não "
+"existir nó raiz."
 
 #: editor/scene_tree_dock.cpp
 msgid "Attach a new or existing script for the selected node."
-msgstr "Anexar Script novo ou existente ao Nó selecionado."
+msgstr "Anexar script novo ou existente ao nó selecionado."
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear a script for the selected node."
-msgstr "Limpar Script do Nó selecionado."
+msgstr "Limpar script do nó selecionado."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -10713,7 +10710,7 @@ msgstr "(A Ligar de)"
 
 #: editor/scene_tree_editor.cpp
 msgid "Node configuration warning:"
-msgstr "Aviso de configuração do Nó:"
+msgstr "Aviso de configuração do nó:"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -10773,7 +10770,7 @@ msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
-msgstr "Nome de Nó inválido, os carateres seguintes não são permitidos:"
+msgstr "Nome de nó inválido, os caracteres seguintes não são permitidos:"
 
 #: editor/scene_tree_editor.cpp
 msgid "Rename Node"
@@ -10785,7 +10782,7 @@ msgstr "Árvore de Cena (Nós):"
 
 #: editor/scene_tree_editor.cpp
 msgid "Node Configuration Warning!"
-msgstr "Aviso de configuração de Nó!"
+msgstr "Aviso de Configuração de Nó!"
 
 #: editor/scene_tree_editor.cpp
 msgid "Select a Node"
@@ -10825,7 +10822,7 @@ msgstr "Erro ao carregar Modelo '%s'"
 
 #: editor/script_create_dialog.cpp
 msgid "Error - Could not create script in filesystem."
-msgstr "Erro - Impossível criar Script no Sistema de Ficheiros."
+msgstr "Erro - Não consigo criar script no sistema de ficheiros."
 
 #: editor/script_create_dialog.cpp
 msgid "Error loading script from %s"
@@ -10860,9 +10857,8 @@ msgid "Invalid inherited parent name or path."
 msgstr "Nome ou Caminho de parente herdado inválido."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Script path/name is valid."
-msgstr "Script é válido."
+msgstr "Caminho/nome de Script é válido."
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
@@ -10953,7 +10949,6 @@ msgid "Copy Error"
 msgstr "Copiar Erro"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Video RAM"
 msgstr "Memória Vídeo"
 
@@ -11035,7 +11030,7 @@ msgstr "Tipo de controlo clicado:"
 
 #: editor/script_editor_debugger.cpp
 msgid "Live Edit Root:"
-msgstr "Raiz de edição ao vivo:"
+msgstr "Raiz de Edição ao Vivo:"
 
 #: editor/script_editor_debugger.cpp
 msgid "Set From Tree"
@@ -11220,8 +11215,8 @@ msgstr "Formato de dicionário de instância inválido (falta @path)"
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary format (can't load script at @path)"
 msgstr ""
-"Formato de dicionário de instância inválido (não foi possível carregar o "
-"Script em @path)"
+"Formato de dicionário de instância inválido (não consigo carregar o script "
+"em @path)"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary format (invalid script at @path)"
@@ -11436,7 +11431,7 @@ msgid ""
 "A node yielded without working memory, please read the docs on how to yield "
 "properly!"
 msgstr ""
-"Um Nó fez yield sem memória para usar, por favor leia os documentos para "
+"Um nó fez yield sem memória para usar, por favor leia os documentos para "
 "saber como fazer yield corretamente!"
 
 #: modules/visual_script/visual_script.cpp
@@ -11444,7 +11439,7 @@ msgid ""
 "Node yielded, but did not return a function state in the first working "
 "memory."
 msgstr ""
-"O Nó fez yield, mas não retornou um estado de Função na primeira memória de "
+"O nó fez yield, mas não retornou um estado de função na primeira memória de "
 "trabalho."
 
 #: modules/visual_script/visual_script.cpp
@@ -11453,15 +11448,15 @@ msgid ""
 "your node please."
 msgstr ""
 "O valor de retorno deve ser atribuído ao primeiro elemento da memória de "
-"trabalho de Nós! Corrija o seu Nó por favor."
+"trabalho de nós! Corrija o seu nó por favor."
 
 #: modules/visual_script/visual_script.cpp
 msgid "Node returned an invalid sequence output: "
-msgstr "O Nó retornou uma sequência de saída (output) incorreta: "
+msgstr "O nó retornou uma sequência de saída (output) incorreta: "
 
 #: modules/visual_script/visual_script.cpp
 msgid "Found sequence bit but not the node in the stack, report bug!"
-msgstr "Foi encontrada o bit da sequência mas não o Nó na pilha, relate o bug!"
+msgstr "Foi encontrada o bit da sequência mas não o nó na pilha, relate o bug!"
 
 #: modules/visual_script/visual_script.cpp
 msgid "Stack overflow with stack depth: "
@@ -11589,11 +11584,11 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold %s to drop a simple reference to the node."
-msgstr "Pressione %s para largar uma referência simples no Nó."
+msgstr "Pressione %s para largar uma referência simples no nó."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a simple reference to the node."
-msgstr "Pressione Ctrl para largar uma referência simples no Nó."
+msgstr "Pressione Ctrl para largar uma referência simples no nó."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold %s to drop a Variable Setter."
@@ -11601,7 +11596,7 @@ msgstr "Pressione %s para largar um Setter variável."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a Variable Setter."
-msgstr "Pressione Ctrl para largar um Setter variável."
+msgstr "Pressione Ctrl para largar um Setter Variável."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Preload Node"
@@ -11609,14 +11604,15 @@ msgstr "Adicionar Nó de Pré-carregamento"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
-msgstr "Adicionar Nó da Árvore"
+msgstr "Adicionar Nó(s) da Árvore"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid ""
 "Can't drop properties because script '%s' is not used in this scene.\n"
 "Drop holding 'Shift' to just copy the signature."
 msgstr ""
-"Impossível largar propriedades porque o script '%s' não é usado neste cena.\n"
+"Não consigo largar propriedades porque o script '%s' não é usado neste "
+"cena.\n"
 "Largue com 'Shift' para copiar apenas a assinatura."
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -11649,11 +11645,11 @@ msgstr "Desconectar Nós"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Connect Node Data"
-msgstr "Conectar Dados de Nó"
+msgstr "Conectar Dados do Nó"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Connect Node Sequence"
-msgstr "Conectar Sequência de Nós"
+msgstr "Conectar Sequência do Nó"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Script already has function '%s'"
@@ -11669,7 +11665,7 @@ msgstr "Redimensionar Comentário"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't copy the function node."
-msgstr "Impossível copiar o Nó Função."
+msgstr "Não consigo copiar o nó função."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Clipboard is empty!"
@@ -11681,11 +11677,11 @@ msgstr "Colar Nós VisualScript"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't create function with a function node."
-msgstr "Impossível criar função com um nó função."
+msgstr "Não consigo criar função com um nó função."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't create function of nodes from nodes of multiple functions."
-msgstr "Impossível criar função de nós com nós de várias funções."
+msgstr "Não consigo criar função de nós a partir de nós de várias funções."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select at least one node with sequence port."
@@ -11801,7 +11797,7 @@ msgstr "Caminho não conduz Nó!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
-msgstr "Nome de Propriedade índice '%s' inválido em Nó %s."
+msgstr "Nome de propriedade índice '%s' inválido no nó %s."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
@@ -11821,15 +11817,16 @@ msgstr "VariableSet não encontrado no script: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
-msgstr "Impossível processar gráfico, Nó personalizado sem método _step()."
+msgstr ""
+"Nó personalizado não tem método _step(), não podendo processar um gráfico."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ""
 "Invalid return value from _step(), must be integer (seq out), or string "
 "(error)."
 msgstr ""
-"Valor de retorno de _step() inválido, tem de ser inteiro (seq out), ou "
-"string (error)."
+"Retorno de valor inválido a partir do _step(), tem de ser inteiro (seq out), "
+"ou string (error)."
 
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search VisualScript"
@@ -11854,15 +11851,16 @@ msgstr "Os segmentos de pacote devem ser de comprimento diferente de zero."
 #: platform/android/export/export.cpp
 msgid "The character '%s' is not allowed in Android application package names."
 msgstr ""
-"O caráter '%s' não é permitido em nomes de pacotes de aplicações Android."
+"O carácter '%s' não é permitido em nomes de pacotes de aplicações Android."
 
 #: platform/android/export/export.cpp
 msgid "A digit cannot be the first character in a package segment."
-msgstr "Um dígito não pode ser o primeiro caráter num segmento de pacote."
+msgstr "Um dígito não pode ser o primeiro carácter num segmento de pacote."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' cannot be the first character in a package segment."
-msgstr "O caráter '%s' não pode ser o primeiro caráter num segmento de pacote."
+msgstr ""
+"O carácter '%s' não pode ser o primeiro carácter num segmento de pacote."
 
 #: platform/android/export/export.cpp
 msgid "The package must have at least one '.' separator."
@@ -11957,13 +11955,13 @@ msgstr "Falta o identificador."
 
 #: platform/iphone/export/export.cpp
 msgid "The character '%s' is not allowed in Identifier."
-msgstr "O caráter \"%s\" não é permitido no Identificador."
+msgstr "O carácter \"%s\" não é permitido no Identificador."
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
 msgstr ""
-"ID da equipa da App Store não especificado - não é possível configurar o "
-"projecto."
+"ID da equipa da App Store não especificado - não consigo configurar o "
+"projeto."
 
 #: platform/iphone/export/export.cpp
 msgid "Invalid Identifier:"
@@ -11987,11 +11985,11 @@ msgstr "Executar HTML exportado no Navegador padrão do sistema."
 
 #: platform/javascript/export/export.cpp
 msgid "Could not write file:"
-msgstr "Impossível escrever Ficheiro:"
+msgstr "Não consigo escrever ficheiro:"
 
 #: platform/javascript/export/export.cpp
 msgid "Could not open template for export:"
-msgstr "Impossível abrir Modelo para exportar:"
+msgstr "Não consigo abrir modelo para exportação:"
 
 #: platform/javascript/export/export.cpp
 msgid "Invalid export template:"
@@ -11999,11 +11997,11 @@ msgstr "Modelo de exportação inválido:"
 
 #: platform/javascript/export/export.cpp
 msgid "Could not read custom HTML shell:"
-msgstr "Impossível ler Shell HTML personalizado:"
+msgstr "Não consigo ler shell HTML personalizado:"
 
 #: platform/javascript/export/export.cpp
 msgid "Could not read boot splash image file:"
-msgstr "Impossível ler Ficheiro de imagem do ecrã de inicialização:"
+msgstr "Não consigo ler ficheiro de imagem do ecrã de inicialização:"
 
 #: platform/javascript/export/export.cpp
 msgid "Using default boot splash image."
@@ -12090,8 +12088,7 @@ msgid ""
 "Consider adding a CollisionShape2D or CollisionPolygon2D as a child to "
 "define its shape."
 msgstr ""
-"Este nó não tem forma, não conseguindo assim colidir ou interagir com outros "
-"objetos.\n"
+"Este nó não tem forma, não podendo colidir ou interagir com outros objetos.\n"
 "Considere adicionar nós CollisionShape2D ou CollisionPolygon2D como filhos "
 "para definir a sua forma."
 
@@ -12101,7 +12098,7 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionPolygon2D serve apenas para  fornecer uma forma de colisão a um Nó "
+"CollisionPolygon2D serve apenas para fornecer uma forma de colisão a um nó "
 "derivado de CollisionObject2D. Use-o apenas como um filho de Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. para lhes dar uma forma."
 
@@ -12115,7 +12112,7 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionShape2D serve apenas para  fornecer uma forma de colisão a um Nó "
+"CollisionShape2D serve apenas para fornecer uma forma de colisão a um nó "
 "derivado de CollisionObject2D. Use-o apenas como um filho de Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. para lhes dar uma forma."
 
@@ -12159,22 +12156,22 @@ msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
 "Please set a property or draw a polygon."
 msgstr ""
-"Um recurso NavigationPolygon tem de ser definido ou criado para este Nó "
-"funcionar. Defina a Propriedade ou desenhe o Polígono."
+"Um recurso NavigationPolygon tem de ser definido ou criado para este nó "
+"funcionar. Defina a propriedade ou desenhe o polígono."
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
 "node. It only provides navigation data."
 msgstr ""
-"NavigationPolygonInstance tem de ser filho ou neto de um Nó Navigation2D. "
+"NavigationPolygonInstance tem de ser filho ou neto de um nó Navigation2D. "
 "Apenas fornece dados de navegação."
 
 #: scene/2d/parallax_layer.cpp
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
 msgstr ""
-"O Nó ParallaxLayer só funciona quando definido como filho de um Nó "
+"O nó ParallaxLayer só funciona quando definido como filho de um nó "
 "ParallaxBackground."
 
 #: scene/2d/particles_2d.cpp
@@ -12184,7 +12181,7 @@ msgid ""
 "CPUParticles\" option for this purpose."
 msgstr ""
 "Partículas baseadas em GPU não são suportadas pelo driver de vídeo GLES2.\n"
-"Use o Nó CPUParticles2D. Pode usar a opção \"Converter em CPUParticles\" "
+"Use o nó CPUParticles2D. Pode usar a opção \"Converter em CPUParticles\" "
 "para este efeito."
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
@@ -12206,7 +12203,7 @@ msgstr ""
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
 msgstr ""
-"PathFollow2D apenas funciona quando definido como filho de um Nó Path2D."
+"PathFollow2D apenas funciona quando definido como filho de um nó Path2D."
 
 #: scene/2d/physics_body_2d.cpp
 msgid ""
@@ -12214,14 +12211,14 @@ msgid ""
 "by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
-"Mudanças no tamanho do RigidBody2D (em modos caráter ou rígido) serão "
+"Mudanças no tamanho do RigidBody2D (em modos carácter ou rígido) serão "
 "reescritas pelo motor de física na execução.\n"
 "Mude antes o tamanho das formas de colisão filhas."
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
 msgstr ""
-"Para funcionar, a Propriedade Caminho tem de apontar para um Nó Node2D "
+"Para funcionar, a Propriedade Caminho tem de apontar para um nó Node2D "
 "válido."
 
 #: scene/2d/skeleton_2d.cpp
@@ -12253,15 +12250,15 @@ msgid ""
 "as parent."
 msgstr ""
 "VisibilityEnabler2D funciona melhor quando usado diretamente como parente na "
-"Cena raiz editada."
+"cena raiz editada."
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRCamera must have an ARVROrigin node as its parent."
-msgstr "ARVRCamera precisa de um Nó ARVROrigin como parente."
+msgstr "ARVRCamera precisa de um nó ARVROrigin como parente."
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRController must have an ARVROrigin node as its parent."
-msgstr "ARVRController precisa de um Nó ARVROrigin como parente."
+msgstr "ARVRController precisa de um nó ARVROrigin como parente."
 
 #: scene/3d/arvr_nodes.cpp
 msgid ""
@@ -12273,7 +12270,7 @@ msgstr ""
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRAnchor must have an ARVROrigin node as its parent."
-msgstr "ARVRAnchor precisa de um Nó ARVROrigin como parente."
+msgstr "ARVRAnchor precisa de um nó ARVROrigin como parente."
 
 #: scene/3d/arvr_nodes.cpp
 msgid ""
@@ -12285,7 +12282,7 @@ msgstr ""
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVROrigin requires an ARVRCamera child node."
-msgstr "ARVROrigin exige um Nó filho ARVRCamera."
+msgstr "ARVROrigin exige um nó filho ARVRCamera."
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
@@ -12317,8 +12314,7 @@ msgid ""
 "Consider adding a CollisionShape or CollisionPolygon as a child to define "
 "its shape."
 msgstr ""
-"Este nó não tem forma, não conseguindo assim colidir ou interagir com outros "
-"objetos.\n"
+"Este nó não tem forma, não podendo colidir ou interagir com outros objetos.\n"
 "Considere adicionar nós CollisionShape ou CollisionPolygon como filhos para "
 "definir a sua forma."
 
@@ -12328,7 +12324,7 @@ msgid ""
 "CollisionObject derived node. Please only use it as a child of Area, "
 "StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
 msgstr ""
-"CollisionPolygon serve apenas para  fornecer uma forma de colisão a um Nó "
+"CollisionPolygon serve apenas para fornecer uma forma de colisão a um nó "
 "derivado de CollisionObject. Use-o apenas como um filho de Area, StaticBody, "
 "RigidBody, KinematicBody, etc. para lhes dar uma forma."
 
@@ -12342,7 +12338,7 @@ msgid ""
 "derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
 "KinematicBody, etc. to give them a shape."
 msgstr ""
-"CollisionShape serve apenas para  fornecer uma forma de colisão a um Nó "
+"CollisionShape serve apenas para fornecer uma forma de colisão a um nó "
 "derivado de CollisionObject. Use-o apenas como um filho de Area, StaticBody, "
 "RigidBody, KinematicBody, etc. para lhes dar uma forma."
 
@@ -12393,7 +12389,7 @@ msgstr "Uma SpotLight com ângulo superior a 90 graus não cria sombras."
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
-"Um recurso NavigationMesh tem de ser definido ou criado para este Nó "
+"Um recurso NavigationMesh tem de ser definido ou criado para este nó "
 "funcionar."
 
 #: scene/3d/navigation_mesh.cpp
@@ -12401,7 +12397,7 @@ msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. "
 "It only provides navigation data."
 msgstr ""
-"NavigationMeshInstance tem de ser filho ou neto de um Nó Navigation. Apenas "
+"NavigationMeshInstance tem de ser filho ou neto de um nó Navigation. Apenas "
 "fornece dados de navegação."
 
 #: scene/3d/particles.cpp
@@ -12411,7 +12407,7 @@ msgid ""
 "\" option for this purpose."
 msgstr ""
 "Partículas baseadas em GPU não são suportadas pelo driver de vídeo GLES2.\n"
-"Use o Nó CPUParticles. Pode usar a opção \"Converter em CPUParticles\" para "
+"Use o nó CPUParticles. Pode usar a opção \"Converter em CPUParticles\" para "
 "este efeito."
 
 #: scene/3d/particles.cpp
@@ -12430,7 +12426,7 @@ msgstr ""
 
 #: scene/3d/path.cpp
 msgid "PathFollow only works when set as a child of a Path node."
-msgstr "PathFollow apenas funciona quando definido como filho de um Nó Path."
+msgstr "PathFollow apenas funciona quando definido como filho de um nó Path."
 
 #: scene/3d/path.cpp
 msgid ""
@@ -12446,7 +12442,7 @@ msgid ""
 "by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
-"Mudanças no tamanho do RigidBody (em modos caráter ou rígido) serão "
+"Mudanças no tamanho do RigidBody (em modos carácter ou rígido) serão "
 "reescritas pelo motor de física na execução.\n"
 "Mude antes o tamanho das formas de colisão filhas."
 
@@ -12455,7 +12451,7 @@ msgid ""
 "The \"Remote Path\" property must point to a valid Spatial or Spatial-"
 "derived node to work."
 msgstr ""
-"Para funcionar, a Propriedade \"Caminho Remoto\" tem de apontar para um Nó "
+"Para funcionar, a Propriedade \"Caminho Remoto\" tem de apontar para um nó "
 "Spatial válido ou seu derivado."
 
 #: scene/3d/soft_body.cpp
@@ -12500,7 +12496,7 @@ msgstr ""
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
 msgstr ""
-"Apenas um WorldEnvironment é permitido por Cena (ou grupo de cenas "
+"Apenas um WorldEnvironment é permitido por cena (ou grupo de cenas "
 "instanciadas)."
 
 #: scene/3d/world_environment.cpp
@@ -12533,7 +12529,7 @@ msgstr "Nada conectado à entrada '%s' do nó '%s'."
 
 #: scene/animation/animation_tree.cpp
 msgid "No root AnimationNode for the graph is set."
-msgstr "Não foi definida uma raíz AnimationNode para o gráfico."
+msgstr "Não foi definida uma raiz AnimationNode para o gráfico."
 
 #: scene/animation/animation_tree.cpp
 msgid "Path to an AnimationPlayer node containing animations is not set."
@@ -12547,11 +12543,11 @@ msgstr ""
 
 #: scene/animation/animation_tree.cpp
 msgid "The AnimationPlayer root node is not a valid node."
-msgstr "O Nó raiz de AnimationPlayer não é um Nó válido."
+msgstr "O nó raiz de AnimationPlayer não é um nó válido."
 
 #: scene/animation/animation_tree_player.cpp
 msgid "This node has been deprecated. Use AnimationTree instead."
-msgstr "Este nó foi depreciado. Use AnimationTree em vez disso."
+msgstr "Este nó foi descontinuado. Use antes AnimationTree."
 
 #: scene/gui/color_picker.cpp
 msgid ""
@@ -12591,7 +12587,7 @@ msgid ""
 msgstr ""
 "Por si só um Contentor não tem utilidade, a não ser que um script configure "
 "a disposição dos seu filhos.\n"
-"Se não pretende adicionar um script, use antes um simples Nó Control."
+"Se não pretende adicionar um script, use antes um simples nó Control."
 
 #: scene/gui/control.cpp
 msgid ""
@@ -12656,7 +12652,7 @@ msgstr ""
 "Esta vista não está definida como alvo de Renderização. Se pretende "
 "apresentar o seu conteúdo diretamente no ecrã, torne-a um filho de um "
 "Control de modo a que obtenha um tamanho. Caso contrário, torne-a um "
-"RenderTarget e atribua a sua textura interna a outro Nó para visualizar."
+"RenderTarget e atribua a sua textura interna a outro nó para visualizar."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
