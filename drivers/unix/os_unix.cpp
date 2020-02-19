@@ -310,7 +310,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 			if (p_pipe_mutex) {
 				p_pipe_mutex->lock();
 			}
-			(*r_pipe) += buf;
+			(*r_pipe) += String::utf8(buf);
 			if (p_pipe_mutex) {
 				p_pipe_mutex->unlock();
 			}
