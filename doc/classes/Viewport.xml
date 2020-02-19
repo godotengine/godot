@@ -425,7 +425,7 @@
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" value="2" enum="DefaultCanvasItemTextureFilter">
 		</constant>
-		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS" value="3" enum="DefaultCanvasItemTextureFilter">
+		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="3" enum="DefaultCanvasItemTextureFilter">
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_MAX" value="4" enum="DefaultCanvasItemTextureFilter">
 		</constant>

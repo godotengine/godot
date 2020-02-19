@@ -428,11 +428,11 @@
 		</constant>
 		<constant name="TEXTURE_FILTER_LINEAR" value="1" enum="TextureFilter">
 		</constant>
-		<constant name="TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS" value="2" enum="TextureFilter">
+		<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="2" enum="TextureFilter">
 		</constant>
 		<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" value="3" enum="TextureFilter">
 		</constant>
-		<constant name="TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS_ANISOTROPIC" value="4" enum="TextureFilter">
+		<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC" value="4" enum="TextureFilter">
 		</constant>
 		<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC" value="5" enum="TextureFilter">
 		</constant>
