@@ -53,7 +53,6 @@ class ScrollBar : public Range {
 	HighlightStatus highlight;
 
 	struct Drag {
-
 		bool active;
 		float pos_at_click;
 		float value_at_click;
@@ -70,6 +69,7 @@ class ScrollBar : public Range {
 
 	Node *drag_node;
 	NodePath drag_node_path;
+	bool drag_node_enabled;
 
 	Vector2 drag_node_speed;
 	Vector2 drag_node_accum;
@@ -101,6 +101,7 @@ public:
 
 	void set_drag_node(const NodePath &p_path);
 	NodePath get_drag_node() const;
+	void set_drag_node_enabled(bool p_enable);
 
 	void set_smooth_scroll_enabled(bool p_enable);
 	bool is_smooth_scroll_enabled() const;
