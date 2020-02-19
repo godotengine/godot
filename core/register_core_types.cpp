@@ -83,7 +83,7 @@ static _ResourceSaver *_resource_saver = NULL;
 static _OS *_os = NULL;
 static _Engine *_engine = NULL;
 static _ClassDB *_classdb = NULL;
-static _Marshalls *_marshalls = NULL;
+static Ref<_Marshalls> _marshalls;
 static _JSON *_json = NULL;
 
 static IP *ip = NULL;
@@ -222,7 +222,7 @@ void register_core_types() {
 	_os = memnew(_OS);
 	_engine = memnew(_Engine);
 	_classdb = memnew(_ClassDB);
-	_marshalls = memnew(_Marshalls);
+	_marshalls.instance();
 	_json = memnew(_JSON);
 }
 
@@ -276,7 +276,7 @@ void unregister_core_types() {
 	memdelete(_os);
 	memdelete(_engine);
 	memdelete(_classdb);
-	memdelete(_marshalls);
+	_marshalls.unref();
 	memdelete(_json);
 
 	memdelete(_geometry);
