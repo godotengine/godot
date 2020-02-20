@@ -559,7 +559,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 
 		Ref<ArrayMesh> mesh = mi->get_mesh();
 		ERR_FAIL_COND_V(mesh.is_null(), NULL);
-		NavigationMeshInstance *nmi = memnew(NavigationMeshInstance);
+		NavigationRegion *nmi = memnew(NavigationRegion);
 
 		nmi->set_name(_fixstr(name, "navmesh"));
 		Ref<NavigationMesh> nmesh = memnew(NavigationMesh);

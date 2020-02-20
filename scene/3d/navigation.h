@@ -31,7 +31,7 @@
 #ifndef NAVIGATION_H
 #define NAVIGATION_H
 
-#include "scene/3d/navigation_mesh_instance.h"
+#include "scene/3d/navigation_region.h"
 #include "scene/3d/spatial.h"
 
 class Navigation : public Spatial {

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  navigation_mesh_instance.h                                           */
+/*  navigation_region.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NAVIGATION_MESH_INSTANCE_H
-#define NAVIGATION_MESH_INSTANCE_H
+#ifndef navigation_region_H
+#define navigation_region_H
 
 #include "scene/3d/spatial.h"
 #include "scene/resources/mesh.h"
@@ -37,9 +37,9 @@
 
 class Navigation;
 
-class NavigationMeshInstance : public Spatial {
+class NavigationRegion : public Spatial {
 
-	GDCLASS(NavigationMeshInstance, Spatial);
+	GDCLASS(NavigationRegion, Spatial);
 
 	bool enabled;
 	RID region;
@@ -68,8 +68,8 @@ public:
 
 	String get_configuration_warning() const;
 
-	NavigationMeshInstance();
-	~NavigationMeshInstance();
+	NavigationRegion();
+	~NavigationRegion();
 };
 
-#endif // NAVIGATION_MESH_INSTANCE_H
+#endif // navigation_region_H
