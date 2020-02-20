@@ -85,15 +85,28 @@ private:
 				RID views[6];
 				Size2i size;
 			};
+			Vector<Mipmap> mipmaps; //per-face view
+			Vector<RID> views; // per-cubemap view
+		};
+
+		struct DownsampleLayer {
+			struct Mipmap {
+				RID view;
+				Size2i size;
+			};
 			Vector<Mipmap> mipmaps;
 		};
+
 		RID radiance_base_cubemap; //cubemap for first layer, first cubemap
+		RID downsampled_radiance_cubemap;
+		DownsampleLayer downsampled_layer;
+		RID coefficient_buffer;
 
 		Vector<Layer> layers;
 	};
 
 	void _clear_reflection_data(ReflectionData &rd);
-	void _update_reflection_data(ReflectionData &rd, int p_size, int p_mipmaps, bool p_use_array, RID p_base_cube, int p_base_layer);
+	void _update_reflection_data(ReflectionData &rd, int p_size, int p_mipmaps, bool p_use_array, RID p_base_cube, int p_base_layer, bool p_low_quality);
 	void _create_reflection_from_panorama(ReflectionData &rd, RID p_panorama, bool p_quality);
 	void _create_reflection_from_base_mipmap(ReflectionData &rd, bool p_use_arrays, bool p_quality, int p_cube_side);
 	void _update_reflection_mipmaps(ReflectionData &rd, bool p_quality);
@@ -102,7 +115,7 @@ private:
 	struct Sky {
 		RID radiance;
 		RID uniform_set;
-		int radiance_size = 256;
+		int radiance_size = 128;
 		VS::SkyMode mode = VS::SKY_MODE_QUALITY;
 		RID panorama;
 		ReflectionData reflection;
@@ -116,7 +129,6 @@ private:
 	void _update_dirty_skys();
 
 	uint32_t sky_ggx_samples_quality;
-	uint32_t sky_ggx_samples_realtime;
 	bool sky_use_cubemap_array;
 
 	mutable RID_Owner<Sky> sky_owner;
