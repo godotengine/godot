@@ -2105,7 +2105,7 @@ Variant::operator Vector<Variant>() const {
 	variants.resize(va_size);
 	Variant *w = variants.ptrw();
 	for (int i = 0; i < va_size; i++)
-		w[i] = variants[i];
+		w[i] = va[i];
 
 	return variants;
 }
