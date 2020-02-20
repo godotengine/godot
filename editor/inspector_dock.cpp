@@ -349,7 +349,6 @@ void InspectorDock::_bind_methods() {
 	ClassDB::bind_method("_property_keyed", &InspectorDock::_property_keyed);
 	ClassDB::bind_method("_transform_keyed", &InspectorDock::_transform_keyed);
 
-	ClassDB::bind_method("_new_resource", &InspectorDock::_new_resource);
 	ClassDB::bind_method("_resource_file_selected", &InspectorDock::_resource_file_selected);
 	ClassDB::bind_method("_open_resource_selector", &InspectorDock::_open_resource_selector);
 	ClassDB::bind_method("_unref_resource", &InspectorDock::_unref_resource);
@@ -511,7 +510,7 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	resource_new_button->set_tooltip(TTR("Create a new resource in memory and edit it."));
 	resource_new_button->set_icon(get_icon("New", "EditorIcons"));
 	general_options_hb->add_child(resource_new_button);
-	resource_new_button->connect_compat("pressed", this, "_new_resource");
+	resource_new_button->connect("pressed", callable_mp(this, &InspectorDock::_new_resource));
 	resource_new_button->set_focus_mode(Control::FOCUS_NONE);
 
 	resource_load_button = memnew(ToolButton);
