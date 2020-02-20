@@ -193,7 +193,7 @@ void VisualScriptPropertySelector::_update_search() {
 		{
 			if (type != Variant::NIL) {
 				Variant v;
-				Variant::CallError ce;
+				Callable::CallError ce;
 				v = Variant::construct(type, NULL, 0, ce);
 				v.get_method_list(&methods);
 			} else {
@@ -520,7 +520,7 @@ void VisualScriptPropertySelector::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		connect("confirmed", this, "_confirmed");
+		connect_compat("confirmed", this, "_confirmed");
 	}
 }
 
@@ -703,23 +703,23 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	//set_child_rect(vbc);
 	search_box = memnew(LineEdit);
 	vbc->add_margin_child(TTR("Search:"), search_box);
-	search_box->connect("text_changed", this, "_text_changed");
-	search_box->connect("gui_input", this, "_sbox_input");
+	search_box->connect_compat("text_changed", this, "_text_changed");
+	search_box->connect_compat("gui_input", this, "_sbox_input");
 	search_options = memnew(Tree);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 	get_ok()->set_text(TTR("Open"));
 	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
-	search_options->connect("item_activated", this, "_confirmed");
-	search_options->connect("cell_selected", this, "_item_selected");
+	search_options->connect_compat("item_activated", this, "_confirmed");
+	search_options->connect_compat("cell_selected", this, "_item_selected");
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
 	virtuals_only = false;
 	seq_connect = false;
 	help_bit = memnew(EditorHelpBit);
 	vbc->add_margin_child(TTR("Description:"), help_bit);
-	help_bit->connect("request_hide", this, "_closed");
+	help_bit->connect_compat("request_hide", this, "_closed");
 	search_options->set_columns(3);
 	search_options->set_column_expand(1, false);
 	search_options->set_column_expand(2, false);

@@ -43,8 +43,8 @@ void EditorPluginSettings::_notification(int p_what) {
 	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN) {
 		update_plugins();
 	} else if (p_what == Node::NOTIFICATION_READY) {
-		plugin_config_dialog->connect("plugin_ready", EditorNode::get_singleton(), "_on_plugin_ready");
-		plugin_list->connect("button_pressed", this, "_cell_button_pressed");
+		plugin_config_dialog->connect_compat("plugin_ready", EditorNode::get_singleton(), "_on_plugin_ready");
+		plugin_list->connect_compat("button_pressed", this, "_cell_button_pressed");
 	}
 }
 
@@ -219,10 +219,10 @@ EditorPluginSettings::EditorPluginSettings() {
 	title_hb->add_child(memnew(Label(TTR("Installed Plugins:"))));
 	title_hb->add_spacer();
 	create_plugin = memnew(Button(TTR("Create")));
-	create_plugin->connect("pressed", this, "_create_clicked");
+	create_plugin->connect_compat("pressed", this, "_create_clicked");
 	title_hb->add_child(create_plugin);
 	update_list = memnew(Button(TTR("Update")));
-	update_list->connect("pressed", this, "update_plugins");
+	update_list->connect_compat("pressed", this, "update_plugins");
 	title_hb->add_child(update_list);
 	add_child(title_hb);
 
@@ -245,7 +245,7 @@ EditorPluginSettings::EditorPluginSettings() {
 	plugin_list->set_column_min_width(3, 80 * EDSCALE);
 	plugin_list->set_column_min_width(4, 40 * EDSCALE);
 	plugin_list->set_hide_root(true);
-	plugin_list->connect("item_edited", this, "_plugin_activity_changed");
+	plugin_list->connect_compat("item_edited", this, "_plugin_activity_changed");
 
 	VBoxContainer *mc = memnew(VBoxContainer);
 	mc->add_child(plugin_list);

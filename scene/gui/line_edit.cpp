@@ -648,8 +648,8 @@ void LineEdit::_notification(int p_what) {
 				cursor_set_blink_enabled(EDITOR_DEF("text_editor/cursor/caret_blink", false));
 				cursor_set_blink_speed(EDITOR_DEF("text_editor/cursor/caret_blink_speed", 0.65));
 
-				if (!EditorSettings::get_singleton()->is_connected("settings_changed", this, "_editor_settings_changed")) {
-					EditorSettings::get_singleton()->connect("settings_changed", this, "_editor_settings_changed");
+				if (!EditorSettings::get_singleton()->is_connected_compat("settings_changed", this, "_editor_settings_changed")) {
+					EditorSettings::get_singleton()->connect_compat("settings_changed", this, "_editor_settings_changed");
 				}
 			}
 		} break;
@@ -1870,7 +1870,7 @@ LineEdit::LineEdit() {
 	caret_blink_timer = memnew(Timer);
 	add_child(caret_blink_timer);
 	caret_blink_timer->set_wait_time(0.65);
-	caret_blink_timer->connect("timeout", this, "_toggle_draw_caret");
+	caret_blink_timer->connect_compat("timeout", this, "_toggle_draw_caret");
 	cursor_set_blink_enabled(false);
 
 	context_menu_enabled = true;
@@ -1878,7 +1878,7 @@ LineEdit::LineEdit() {
 	add_child(menu);
 	editable = false; // Initialise to opposite first, so we get past the early-out in set_editable.
 	set_editable(true);
-	menu->connect("id_pressed", this, "menu_option");
+	menu->connect_compat("id_pressed", this, "menu_option");
 	expand_to_text_length = false;
 }
 

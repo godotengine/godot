@@ -502,12 +502,12 @@ void AnimationBezierTrackEdit::set_animation_and_track(const Ref<Animation> &p_a
 
 	animation = p_animation;
 	track = p_track;
-	if (is_connected("select_key", editor, "_key_selected"))
-		disconnect("select_key", editor, "_key_selected");
-	if (is_connected("deselect_key", editor, "_key_deselected"))
-		disconnect("deselect_key", editor, "_key_deselected");
-	connect("select_key", editor, "_key_selected", varray(p_track), CONNECT_DEFERRED);
-	connect("deselect_key", editor, "_key_deselected", varray(p_track), CONNECT_DEFERRED);
+	if (is_connected_compat("select_key", editor, "_key_selected"))
+		disconnect_compat("select_key", editor, "_key_selected");
+	if (is_connected_compat("deselect_key", editor, "_key_deselected"))
+		disconnect_compat("deselect_key", editor, "_key_deselected");
+	connect_compat("select_key", editor, "_key_selected", varray(p_track), CONNECT_DEFERRED);
+	connect_compat("deselect_key", editor, "_key_deselected", varray(p_track), CONNECT_DEFERRED);
 	update();
 }
 
@@ -522,11 +522,11 @@ void AnimationBezierTrackEdit::set_undo_redo(UndoRedo *p_undo_redo) {
 
 void AnimationBezierTrackEdit::set_timeline(AnimationTimelineEdit *p_timeline) {
 	timeline = p_timeline;
-	timeline->connect("zoom_changed", this, "_zoom_changed");
+	timeline->connect_compat("zoom_changed", this, "_zoom_changed");
 }
 void AnimationBezierTrackEdit::set_editor(AnimationTrackEditor *p_editor) {
 	editor = p_editor;
-	connect("clear_selection", editor, "_clear_selection", varray(false));
+	connect_compat("clear_selection", editor, "_clear_selection", varray(false));
 }
 
 void AnimationBezierTrackEdit::_play_position_draw() {
@@ -1184,7 +1184,7 @@ AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 	play_position->set_mouse_filter(MOUSE_FILTER_PASS);
 	add_child(play_position);
 	play_position->set_anchors_and_margins_preset(PRESET_WIDE);
-	play_position->connect("draw", this, "_play_position_draw");
+	play_position->connect_compat("draw", this, "_play_position_draw");
 	set_focus_mode(FOCUS_CLICK);
 
 	v_scroll = 0;
@@ -1198,7 +1198,7 @@ AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
-	menu->connect("id_pressed", this, "_menu_selected");
+	menu->connect_compat("id_pressed", this, "_menu_selected");
 
 	//set_mouse_filter(MOUSE_FILTER_PASS); //scroll has to work too for selection
 }

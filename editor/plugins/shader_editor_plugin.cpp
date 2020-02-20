@@ -607,8 +607,8 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	shader_editor->add_constant_override("separation", 0);
 	shader_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 
-	shader_editor->connect("script_changed", this, "apply_shaders");
-	EditorSettings::get_singleton()->connect("settings_changed", this, "_editor_settings_changed");
+	shader_editor->connect_compat("script_changed", this, "apply_shaders");
+	EditorSettings::get_singleton()->connect_compat("settings_changed", this, "_editor_settings_changed");
 
 	shader_editor->get_text_edit()->set_callhint_settings(
 			EditorSettings::get_singleton()->get("text_editor/completion/put_callhint_tooltip_below_current_line"),
@@ -616,13 +616,13 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 
 	shader_editor->get_text_edit()->set_select_identifiers_on_hover(true);
 	shader_editor->get_text_edit()->set_context_menu_enabled(false);
-	shader_editor->get_text_edit()->connect("gui_input", this, "_text_edit_gui_input");
+	shader_editor->get_text_edit()->connect_compat("gui_input", this, "_text_edit_gui_input");
 
 	shader_editor->update_editor_settings();
 
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
-	context_menu->connect("id_pressed", this, "_menu_option");
+	context_menu->connect_compat("id_pressed", this, "_menu_option");
 	context_menu->set_hide_on_window_lose_focus(true);
 
 	VBoxContainer *main_container = memnew(VBoxContainer);
@@ -650,7 +650,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/clone_down"), EDIT_CLONE_DOWN);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/complete_symbol"), EDIT_COMPLETE);
-	edit_menu->get_popup()->connect("id_pressed", this, "_menu_option");
+	edit_menu->get_popup()->connect_compat("id_pressed", this, "_menu_option");
 
 	search_menu = memnew(MenuButton);
 	search_menu->set_text(TTR("Search"));
@@ -660,12 +660,12 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
-	search_menu->get_popup()->connect("id_pressed", this, "_menu_option");
+	search_menu->get_popup()->connect_compat("id_pressed", this, "_menu_option");
 
 	MenuButton *goto_menu = memnew(MenuButton);
 	goto_menu->set_text(TTR("Go To"));
 	goto_menu->set_switch_on_hover(true);
-	goto_menu->get_popup()->connect("id_pressed", this, "_menu_option");
+	goto_menu->get_popup()->connect_compat("id_pressed", this, "_menu_option");
 
 	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"), SEARCH_GOTO_LINE);
 	goto_menu->get_popup()->add_separator();
@@ -675,14 +675,14 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	goto_menu->get_popup()->add_child(bookmarks_menu);
 	goto_menu->get_popup()->add_submenu_item(TTR("Bookmarks"), "Bookmarks");
 	_update_bookmark_list();
-	bookmarks_menu->connect("about_to_show", this, "_update_bookmark_list");
-	bookmarks_menu->connect("index_pressed", this, "_bookmark_item_pressed");
+	bookmarks_menu->connect_compat("about_to_show", this, "_update_bookmark_list");
+	bookmarks_menu->connect_compat("index_pressed", this, "_bookmark_item_pressed");
 
 	help_menu = memnew(MenuButton);
 	help_menu->set_text(TTR("Help"));
 	help_menu->set_switch_on_hover(true);
 	help_menu->get_popup()->add_icon_item(p_node->get_gui_base()->get_icon("Instance", "EditorIcons"), TTR("Online Docs"), HELP_DOCS);
-	help_menu->get_popup()->connect("id_pressed", this, "_menu_option");
+	help_menu->get_popup()->connect_compat("id_pressed", this, "_menu_option");
 
 	add_child(main_container);
 	main_container->add_child(hbc);
@@ -705,11 +705,11 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	dl->set_text(TTR("This shader has been modified on on disk.\nWhat action should be taken?"));
 	vbc->add_child(dl);
 
-	disk_changed->connect("confirmed", this, "_reload_shader_from_disk");
+	disk_changed->connect_compat("confirmed", this, "_reload_shader_from_disk");
 	disk_changed->get_ok()->set_text(TTR("Reload"));
 
 	disk_changed->add_button(TTR("Resave"), !OS::get_singleton()->get_swap_ok_cancel(), "resave");
-	disk_changed->connect("custom_action", this, "save_external_data");
+	disk_changed->connect_compat("custom_action", this, "save_external_data");
 
 	add_child(disk_changed);
 

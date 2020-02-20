@@ -144,7 +144,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	but_insert_name->set_text("NAME");
 	but_insert_name->set_tooltip(String("${NAME}\n") + TTR("Node name"));
 	but_insert_name->set_focus_mode(FOCUS_NONE);
-	but_insert_name->connect("pressed", this, "_insert_text", make_binds("${NAME}"));
+	but_insert_name->connect_compat("pressed", this, "_insert_text", make_binds("${NAME}"));
 	but_insert_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	grd_substitute->add_child(but_insert_name);
 
@@ -154,7 +154,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	but_insert_parent->set_text("PARENT");
 	but_insert_parent->set_tooltip(String("${PARENT}\n") + TTR("Node's parent name, if available"));
 	but_insert_parent->set_focus_mode(FOCUS_NONE);
-	but_insert_parent->connect("pressed", this, "_insert_text", make_binds("${PARENT}"));
+	but_insert_parent->connect_compat("pressed", this, "_insert_text", make_binds("${PARENT}"));
 	but_insert_parent->set_h_size_flags(SIZE_EXPAND_FILL);
 	grd_substitute->add_child(but_insert_parent);
 
@@ -164,7 +164,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	but_insert_type->set_text("TYPE");
 	but_insert_type->set_tooltip(String("${TYPE}\n") + TTR("Node type"));
 	but_insert_type->set_focus_mode(FOCUS_NONE);
-	but_insert_type->connect("pressed", this, "_insert_text", make_binds("${TYPE}"));
+	but_insert_type->connect_compat("pressed", this, "_insert_text", make_binds("${TYPE}"));
 	but_insert_type->set_h_size_flags(SIZE_EXPAND_FILL);
 	grd_substitute->add_child(but_insert_type);
 
@@ -174,7 +174,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	but_insert_scene->set_text("SCENE");
 	but_insert_scene->set_tooltip(String("${SCENE}\n") + TTR("Current scene name"));
 	but_insert_scene->set_focus_mode(FOCUS_NONE);
-	but_insert_scene->connect("pressed", this, "_insert_text", make_binds("${SCENE}"));
+	but_insert_scene->connect_compat("pressed", this, "_insert_text", make_binds("${SCENE}"));
 	but_insert_scene->set_h_size_flags(SIZE_EXPAND_FILL);
 	grd_substitute->add_child(but_insert_scene);
 
@@ -184,7 +184,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	but_insert_root->set_text("ROOT");
 	but_insert_root->set_tooltip(String("${ROOT}\n") + TTR("Root node name"));
 	but_insert_root->set_focus_mode(FOCUS_NONE);
-	but_insert_root->connect("pressed", this, "_insert_text", make_binds("${ROOT}"));
+	but_insert_root->connect_compat("pressed", this, "_insert_text", make_binds("${ROOT}"));
 	but_insert_root->set_h_size_flags(SIZE_EXPAND_FILL);
 	grd_substitute->add_child(but_insert_root);
 
@@ -194,7 +194,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	but_insert_count->set_text("COUNTER");
 	but_insert_count->set_tooltip(String("${COUNTER}\n") + TTR("Sequential integer counter.\nCompare counter options."));
 	but_insert_count->set_focus_mode(FOCUS_NONE);
-	but_insert_count->connect("pressed", this, "_insert_text", make_binds("${COUNTER}"));
+	but_insert_count->connect_compat("pressed", this, "_insert_text", make_binds("${COUNTER}"));
 	but_insert_count->set_h_size_flags(SIZE_EXPAND_FILL);
 	grd_substitute->add_child(but_insert_count);
 
@@ -306,35 +306,35 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 
 	// ---- Connections
 
-	cbut_collapse_features->connect("toggled", this, "_features_toggled");
+	cbut_collapse_features->connect_compat("toggled", this, "_features_toggled");
 
 	// Substitite Buttons
 
-	lne_search->connect("focus_entered", this, "_update_substitute");
-	lne_search->connect("focus_exited", this, "_update_substitute");
-	lne_replace->connect("focus_entered", this, "_update_substitute");
-	lne_replace->connect("focus_exited", this, "_update_substitute");
-	lne_prefix->connect("focus_entered", this, "_update_substitute");
-	lne_prefix->connect("focus_exited", this, "_update_substitute");
-	lne_suffix->connect("focus_entered", this, "_update_substitute");
-	lne_suffix->connect("focus_exited", this, "_update_substitute");
+	lne_search->connect_compat("focus_entered", this, "_update_substitute");
+	lne_search->connect_compat("focus_exited", this, "_update_substitute");
+	lne_replace->connect_compat("focus_entered", this, "_update_substitute");
+	lne_replace->connect_compat("focus_exited", this, "_update_substitute");
+	lne_prefix->connect_compat("focus_entered", this, "_update_substitute");
+	lne_prefix->connect_compat("focus_exited", this, "_update_substitute");
+	lne_suffix->connect_compat("focus_entered", this, "_update_substitute");
+	lne_suffix->connect_compat("focus_exited", this, "_update_substitute");
 
 	// Preview
 
-	lne_prefix->connect("text_changed", this, "_update_preview");
-	lne_suffix->connect("text_changed", this, "_update_preview");
-	lne_search->connect("text_changed", this, "_update_preview");
-	lne_replace->connect("text_changed", this, "_update_preview");
-	spn_count_start->connect("value_changed", this, "_update_preview_int");
-	spn_count_step->connect("value_changed", this, "_update_preview_int");
-	spn_count_padding->connect("value_changed", this, "_update_preview_int");
-	opt_style->connect("item_selected", this, "_update_preview_int");
-	opt_case->connect("item_selected", this, "_update_preview_int");
-	cbut_substitute->connect("pressed", this, "_update_preview", varray(""));
-	cbut_regex->connect("pressed", this, "_update_preview", varray(""));
-	cbut_process->connect("pressed", this, "_update_preview", varray(""));
+	lne_prefix->connect_compat("text_changed", this, "_update_preview");
+	lne_suffix->connect_compat("text_changed", this, "_update_preview");
+	lne_search->connect_compat("text_changed", this, "_update_preview");
+	lne_replace->connect_compat("text_changed", this, "_update_preview");
+	spn_count_start->connect_compat("value_changed", this, "_update_preview_int");
+	spn_count_step->connect_compat("value_changed", this, "_update_preview_int");
+	spn_count_padding->connect_compat("value_changed", this, "_update_preview_int");
+	opt_style->connect_compat("item_selected", this, "_update_preview_int");
+	opt_case->connect_compat("item_selected", this, "_update_preview_int");
+	cbut_substitute->connect_compat("pressed", this, "_update_preview", varray(""));
+	cbut_regex->connect_compat("pressed", this, "_update_preview", varray(""));
+	cbut_process->connect_compat("pressed", this, "_update_preview", varray(""));
 
-	but_reset->connect("pressed", this, "reset");
+	but_reset->connect_compat("pressed", this, "reset");
 
 	reset();
 	_features_toggled(false);

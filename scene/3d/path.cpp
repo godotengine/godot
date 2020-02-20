@@ -59,13 +59,13 @@ void Path::_curve_changed() {
 void Path::set_curve(const Ref<Curve3D> &p_curve) {
 
 	if (curve.is_valid()) {
-		curve->disconnect("changed", this, "_curve_changed");
+		curve->disconnect_compat("changed", this, "_curve_changed");
 	}
 
 	curve = p_curve;
 
 	if (curve.is_valid()) {
-		curve->connect("changed", this, "_curve_changed");
+		curve->connect_compat("changed", this, "_curve_changed");
 	}
 	_curve_changed();
 }

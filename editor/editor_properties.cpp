@@ -89,8 +89,8 @@ EditorPropertyText::EditorPropertyText() {
 	text = memnew(LineEdit);
 	add_child(text);
 	add_focusable(text);
-	text->connect("text_changed", this, "_text_changed");
-	text->connect("text_entered", this, "_text_entered");
+	text->connect_compat("text_changed", this, "_text_changed");
+	text->connect_compat("text_entered", this, "_text_entered");
 
 	updating = false;
 }
@@ -110,7 +110,7 @@ void EditorPropertyMultilineText::_open_big_text() {
 
 	if (!big_text_dialog) {
 		big_text = memnew(TextEdit);
-		big_text->connect("text_changed", this, "_big_text_changed");
+		big_text->connect_compat("text_changed", this, "_big_text_changed");
 		big_text->set_wrap_enabled(true);
 		big_text_dialog = memnew(AcceptDialog);
 		big_text_dialog->add_child(big_text);
@@ -156,13 +156,13 @@ EditorPropertyMultilineText::EditorPropertyMultilineText() {
 	add_child(hb);
 	set_bottom_editor(hb);
 	text = memnew(TextEdit);
-	text->connect("text_changed", this, "_text_changed");
+	text->connect_compat("text_changed", this, "_text_changed");
 	text->set_wrap_enabled(true);
 	add_focusable(text);
 	hb->add_child(text);
 	text->set_h_size_flags(SIZE_EXPAND_FILL);
 	open_big_text = memnew(ToolButton);
-	open_big_text->connect("pressed", this, "_open_big_text");
+	open_big_text->connect_compat("pressed", this, "_open_big_text");
 	hb->add_child(open_big_text);
 	big_text_dialog = NULL;
 	big_text = NULL;
@@ -205,7 +205,7 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 
 	add_child(options);
 	add_focusable(options);
-	options->connect("item_selected", this, "_option_selected");
+	options->connect_compat("item_selected", this, "_option_selected");
 }
 ///////////////////// PATH /////////////////////////
 
@@ -218,8 +218,8 @@ void EditorPropertyPath::_path_pressed() {
 
 	if (!dialog) {
 		dialog = memnew(EditorFileDialog);
-		dialog->connect("file_selected", this, "_path_selected");
-		dialog->connect("dir_selected", this, "_path_selected");
+		dialog->connect_compat("file_selected", this, "_path_selected");
+		dialog->connect_compat("dir_selected", this, "_path_selected");
 		add_child(dialog);
 	}
 
@@ -293,8 +293,8 @@ EditorPropertyPath::EditorPropertyPath() {
 	add_child(path_hb);
 	path = memnew(LineEdit);
 	path_hb->add_child(path);
-	path->connect("text_entered", this, "_path_selected");
-	path->connect("focus_exited", this, "_path_focus_exited");
+	path->connect_compat("text_entered", this, "_path_selected");
+	path->connect_compat("focus_exited", this, "_path_focus_exited");
 	path->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	path_edit = memnew(Button);
@@ -302,7 +302,7 @@ EditorPropertyPath::EditorPropertyPath() {
 	path_hb->add_child(path_edit);
 	add_focusable(path);
 	dialog = NULL;
-	path_edit->connect("pressed", this, "_path_pressed");
+	path_edit->connect_compat("pressed", this, "_path_pressed");
 	folder = false;
 	global = false;
 	save_mode = false;
@@ -346,10 +346,10 @@ EditorPropertyClassName::EditorPropertyClassName() {
 	add_child(property);
 	add_focusable(property);
 	property->set_text(selected_type);
-	property->connect("pressed", this, "_property_selected");
+	property->connect_compat("pressed", this, "_property_selected");
 	dialog = memnew(CreateDialog);
 	dialog->set_base_type(base_type);
-	dialog->connect("create", this, "_dialog_created");
+	dialog->connect_compat("create", this, "_dialog_created");
 	add_child(dialog);
 }
 
@@ -365,7 +365,7 @@ void EditorPropertyMember::_property_select() {
 
 	if (!selector) {
 		selector = memnew(PropertySelector);
-		selector->connect("selected", this, "_property_selected");
+		selector->connect_compat("selected", this, "_property_selected");
 		add_child(selector);
 	}
 
@@ -455,7 +455,7 @@ EditorPropertyMember::EditorPropertyMember() {
 	property->set_clip_text(true);
 	add_child(property);
 	add_focusable(property);
-	property->connect("pressed", this, "_property_select");
+	property->connect_compat("pressed", this, "_property_select");
 }
 
 ///////////////////// CHECK /////////////////////////
@@ -480,7 +480,7 @@ EditorPropertyCheck::EditorPropertyCheck() {
 	checkbox->set_text(TTR("On"));
 	add_child(checkbox);
 	add_focusable(checkbox);
-	checkbox->connect("pressed", this, "_checkbox_pressed");
+	checkbox->connect_compat("pressed", this, "_checkbox_pressed");
 }
 
 ///////////////////// ENUM /////////////////////////
@@ -531,7 +531,7 @@ EditorPropertyEnum::EditorPropertyEnum() {
 	options->set_flat(true);
 	add_child(options);
 	add_focusable(options);
-	options->connect("item_selected", this, "_option_selected");
+	options->connect_compat("item_selected", this, "_option_selected");
 }
 
 ///////////////////// FLAGS /////////////////////////
@@ -576,7 +576,7 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 			CheckBox *cb = memnew(CheckBox);
 			cb->set_text(option);
 			cb->set_clip_text(true);
-			cb->connect("pressed", this, "_flag_toggled");
+			cb->connect_compat("pressed", this, "_flag_toggled");
 			add_focusable(cb);
 			vbox->add_child(cb);
 			flags.push_back(cb);
@@ -787,20 +787,20 @@ EditorPropertyLayers::EditorPropertyLayers() {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
 	grid = memnew(EditorPropertyLayersGrid);
-	grid->connect("flag_changed", this, "_grid_changed");
+	grid->connect_compat("flag_changed", this, "_grid_changed");
 	grid->set_h_size_flags(SIZE_EXPAND_FILL);
 	hb->add_child(grid);
 	button = memnew(Button);
 	button->set_toggle_mode(true);
 	button->set_text("..");
-	button->connect("pressed", this, "_button_pressed");
+	button->connect_compat("pressed", this, "_button_pressed");
 	hb->add_child(button);
 	set_bottom_editor(hb);
 	layers = memnew(PopupMenu);
 	add_child(layers);
 	layers->set_hide_on_checkable_item_selection(false);
-	layers->connect("id_pressed", this, "_menu_pressed");
-	layers->connect("popup_hide", button, "set_pressed", varray(false));
+	layers->connect_compat("id_pressed", this, "_menu_pressed");
+	layers->connect_compat("popup_hide", button, "set_pressed", varray(false));
 }
 
 ///////////////////// INT /////////////////////////
@@ -841,7 +841,7 @@ EditorPropertyInteger::EditorPropertyInteger() {
 	spin->set_flat(true);
 	add_child(spin);
 	add_focusable(spin);
-	spin->connect("value_changed", this, "_value_changed");
+	spin->connect_compat("value_changed", this, "_value_changed");
 	setting = false;
 }
 
@@ -881,7 +881,7 @@ EditorPropertyObjectID::EditorPropertyObjectID() {
 	edit = memnew(Button);
 	add_child(edit);
 	add_focusable(edit);
-	edit->connect("pressed", this, "_edit_pressed");
+	edit->connect_compat("pressed", this, "_edit_pressed");
 }
 
 ///////////////////// FLOAT /////////////////////////
@@ -921,7 +921,7 @@ EditorPropertyFloat::EditorPropertyFloat() {
 	spin->set_flat(true);
 	add_child(spin);
 	add_focusable(spin);
-	spin->connect("value_changed", this, "_value_changed");
+	spin->connect_compat("value_changed", this, "_value_changed");
 	setting = false;
 }
 
@@ -1100,14 +1100,14 @@ void EditorPropertyEasing::_bind_methods() {
 EditorPropertyEasing::EditorPropertyEasing() {
 
 	easing_draw = memnew(Control);
-	easing_draw->connect("draw", this, "_draw_easing");
-	easing_draw->connect("gui_input", this, "_drag_easing");
+	easing_draw->connect_compat("draw", this, "_draw_easing");
+	easing_draw->connect_compat("gui_input", this, "_drag_easing");
 	easing_draw->set_default_cursor_shape(Control::CURSOR_MOVE);
 	add_child(easing_draw);
 
 	preset = memnew(PopupMenu);
 	add_child(preset);
-	preset->connect("id_pressed", this, "_set_preset");
+	preset->connect_compat("id_pressed", this, "_set_preset");
 
 	spin = memnew(EditorSpinSlider);
 	spin->set_flat(true);
@@ -1117,8 +1117,8 @@ EditorPropertyEasing::EditorPropertyEasing() {
 	spin->set_hide_slider(true);
 	spin->set_allow_lesser(true);
 	spin->set_allow_greater(true);
-	spin->connect("value_changed", this, "_spin_value_changed");
-	spin->get_line_edit()->connect("focus_exited", this, "_spin_focus_exited");
+	spin->connect_compat("value_changed", this, "_spin_value_changed");
+	spin->get_line_edit()->connect_compat("focus_exited", this, "_spin_focus_exited");
 	spin->hide();
 	add_child(spin);
 
@@ -1196,7 +1196,7 @@ EditorPropertyVector2::EditorPropertyVector2() {
 		spin[i]->set_label(desc[i]);
 		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", this, "_value_changed", varray(desc[i]));
+		spin[i]->connect_compat("value_changed", this, "_value_changed", varray(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -1280,7 +1280,7 @@ EditorPropertyRect2::EditorPropertyRect2() {
 		spin[i]->set_flat(true);
 		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", this, "_value_changed", varray(desc[i]));
+		spin[i]->connect_compat("value_changed", this, "_value_changed", varray(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -1361,7 +1361,7 @@ EditorPropertyVector3::EditorPropertyVector3() {
 		spin[i]->set_label(desc[i]);
 		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", this, "_value_changed", varray(desc[i]));
+		spin[i]->connect_compat("value_changed", this, "_value_changed", varray(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -1444,7 +1444,7 @@ EditorPropertyPlane::EditorPropertyPlane() {
 		spin[i]->set_label(desc[i]);
 		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", this, "_value_changed", varray(desc[i]));
+		spin[i]->connect_compat("value_changed", this, "_value_changed", varray(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -1527,7 +1527,7 @@ EditorPropertyQuat::EditorPropertyQuat() {
 		spin[i]->set_label(desc[i]);
 		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", this, "_value_changed", varray(desc[i]));
+		spin[i]->connect_compat("value_changed", this, "_value_changed", varray(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -1609,7 +1609,7 @@ EditorPropertyAABB::EditorPropertyAABB() {
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", this, "_value_changed", varray(desc[i]));
+		spin[i]->connect_compat("value_changed", this, "_value_changed", varray(desc[i]));
 	}
 	set_bottom_editor(g);
 	setting = false;
@@ -1684,7 +1684,7 @@ EditorPropertyTransform2D::EditorPropertyTransform2D() {
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", this, "_value_changed", varray(desc[i]));
+		spin[i]->connect_compat("value_changed", this, "_value_changed", varray(desc[i]));
 	}
 	set_bottom_editor(g);
 	setting = false;
@@ -1765,7 +1765,7 @@ EditorPropertyBasis::EditorPropertyBasis() {
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", this, "_value_changed", varray(desc[i]));
+		spin[i]->connect_compat("value_changed", this, "_value_changed", varray(desc[i]));
 	}
 	set_bottom_editor(g);
 	setting = false;
@@ -1852,7 +1852,7 @@ EditorPropertyTransform::EditorPropertyTransform() {
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", this, "_value_changed", varray(desc[i]));
+		spin[i]->connect_compat("value_changed", this, "_value_changed", varray(desc[i]));
 	}
 	set_bottom_editor(g);
 	setting = false;
@@ -1917,9 +1917,9 @@ EditorPropertyColor::EditorPropertyColor() {
 	picker = memnew(ColorPickerButton);
 	add_child(picker);
 	picker->set_flat(true);
-	picker->connect("color_changed", this, "_color_changed");
-	picker->connect("popup_closed", this, "_popup_closed");
-	picker->connect("picker_created", this, "_picker_created");
+	picker->connect_compat("color_changed", this, "_color_changed");
+	picker->connect_compat("popup_closed", this, "_popup_closed");
+	picker->connect_compat("picker_created", this, "_picker_created");
 }
 
 ////////////// NODE PATH //////////////////////
@@ -1966,7 +1966,7 @@ void EditorPropertyNodePath::_node_assign() {
 		scene_tree->get_scene_tree()->set_show_enabled_subscene(true);
 		scene_tree->get_scene_tree()->set_valid_types(valid_types);
 		add_child(scene_tree);
-		scene_tree->connect("selected", this, "_node_selected");
+		scene_tree->connect_compat("selected", this, "_node_selected");
 	}
 	scene_tree->popup_centered_ratio();
 }
@@ -2048,12 +2048,12 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	assign->set_flat(true);
 	assign->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
-	assign->connect("pressed", this, "_node_assign");
+	assign->connect_compat("pressed", this, "_node_assign");
 	hbc->add_child(assign);
 
 	clear = memnew(Button);
 	clear->set_flat(true);
-	clear->connect("pressed", this, "_node_clear");
+	clear->connect_compat("pressed", this, "_node_clear");
 	hbc->add_child(clear);
 	use_path_from_scene_root = false;
 
@@ -2120,7 +2120,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 
 			if (!file) {
 				file = memnew(EditorFileDialog);
-				file->connect("file_selected", this, "_file_selected");
+				file->connect_compat("file_selected", this, "_file_selected");
 				add_child(file);
 			}
 			file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
@@ -2289,7 +2289,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 					scene_tree->get_scene_tree()->set_valid_types(valid_types);
 					scene_tree->get_scene_tree()->set_show_enabled_subscene(true);
 					add_child(scene_tree);
-					scene_tree->connect("selected", this, "_viewport_selected");
+					scene_tree->connect_compat("selected", this, "_viewport_selected");
 					scene_tree->set_title(TTR("Pick a Viewport"));
 				}
 				scene_tree->popup_centered_ratio();
@@ -2607,9 +2607,9 @@ void EditorPropertyResource::update_property() {
 				sub_inspector->set_sub_inspector(true);
 				sub_inspector->set_enable_capitalize_paths(true);
 
-				sub_inspector->connect("property_keyed", this, "_sub_inspector_property_keyed");
-				sub_inspector->connect("resource_selected", this, "_sub_inspector_resource_selected");
-				sub_inspector->connect("object_id_selected", this, "_sub_inspector_object_id_selected");
+				sub_inspector->connect_compat("property_keyed", this, "_sub_inspector_property_keyed");
+				sub_inspector->connect_compat("resource_selected", this, "_sub_inspector_resource_selected");
+				sub_inspector->connect_compat("object_id_selected", this, "_sub_inspector_object_id_selected");
 				sub_inspector->set_keying(is_keying());
 				sub_inspector->set_read_only(is_read_only());
 				sub_inspector->set_use_folding(is_using_folding());
@@ -2892,9 +2892,9 @@ EditorPropertyResource::EditorPropertyResource() {
 	assign->set_flat(true);
 	assign->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
-	assign->connect("pressed", this, "_resource_selected");
+	assign->connect_compat("pressed", this, "_resource_selected");
 	assign->set_drag_forwarding(this);
-	assign->connect("draw", this, "_button_draw");
+	assign->connect_compat("draw", this, "_button_draw");
 	hbc->add_child(assign);
 	add_focusable(assign);
 
@@ -2905,18 +2905,18 @@ EditorPropertyResource::EditorPropertyResource() {
 	preview->set_margin(MARGIN_BOTTOM, -1);
 	preview->set_margin(MARGIN_RIGHT, -1);
 	assign->add_child(preview);
-	assign->connect("gui_input", this, "_button_input");
+	assign->connect_compat("gui_input", this, "_button_input");
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
 	edit = memnew(Button);
 	edit->set_flat(true);
 	edit->set_toggle_mode(true);
-	menu->connect("id_pressed", this, "_menu_option");
-	menu->connect("popup_hide", edit, "set_pressed", varray(false));
-	edit->connect("pressed", this, "_update_menu");
+	menu->connect_compat("id_pressed", this, "_menu_option");
+	menu->connect_compat("popup_hide", edit, "set_pressed", varray(false));
+	edit->connect_compat("pressed", this, "_update_menu");
 	hbc->add_child(edit);
-	edit->connect("gui_input", this, "_button_input");
+	edit->connect_compat("gui_input", this, "_button_input");
 	add_focusable(edit);
 
 	file = NULL;

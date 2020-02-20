@@ -53,7 +53,7 @@ void ProjectExportDialog::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			duplicate_preset->set_icon(get_icon("Duplicate", "EditorIcons"));
 			delete_preset->set_icon(get_icon("Remove", "EditorIcons"));
-			connect("confirmed", this, "_export_pck_zip");
+			connect_compat("confirmed", this, "_export_pck_zip");
 			custom_feature_display->get_parent_control()->add_style_override("panel", get_stylebox("bg", "Tree"));
 		} break;
 		case NOTIFICATION_POPUP_HIDE: {
@@ -913,10 +913,10 @@ void ProjectExportDialog::_validate_export_path(const String &p_path) {
 
 	if (invalid_path) {
 		export_project->get_ok()->set_disabled(true);
-		export_project->get_line_edit()->disconnect("text_entered", export_project, "_file_entered");
+		export_project->get_line_edit()->disconnect_compat("text_entered", export_project, "_file_entered");
 	} else {
 		export_project->get_ok()->set_disabled(false);
-		export_project->get_line_edit()->connect("text_entered", export_project, "_file_entered");
+		export_project->get_line_edit()->connect_compat("text_entered", export_project, "_file_entered");
 	}
 }
 
@@ -946,9 +946,9 @@ void ProjectExportDialog::_export_project() {
 	}
 
 	// Ensure that signal is connected if previous attempt left it disconnected with _validate_export_path
-	if (!export_project->get_line_edit()->is_connected("text_entered", export_project, "_file_entered")) {
+	if (!export_project->get_line_edit()->is_connected_compat("text_entered", export_project, "_file_entered")) {
 		export_project->get_ok()->set_disabled(false);
-		export_project->get_line_edit()->connect("text_entered", export_project, "_file_entered");
+		export_project->get_line_edit()->connect_compat("text_entered", export_project, "_file_entered");
 	}
 
 	export_project->set_mode(EditorFileDialog::MODE_SAVE_FILE);
@@ -1085,7 +1085,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	add_preset = memnew(MenuButton);
 	add_preset->set_text(TTR("Add..."));
-	add_preset->get_popup()->connect("index_pressed", this, "_add_preset");
+	add_preset->get_popup()->connect_compat("index_pressed", this, "_add_preset");
 	preset_hb->add_child(add_preset);
 	MarginContainer *mc = memnew(MarginContainer);
 	preset_vb->add_child(mc);
@@ -1093,13 +1093,13 @@ ProjectExportDialog::ProjectExportDialog() {
 	presets = memnew(ItemList);
 	presets->set_drag_forwarding(this);
 	mc->add_child(presets);
-	presets->connect("item_selected", this, "_edit_preset");
+	presets->connect_compat("item_selected", this, "_edit_preset");
 	duplicate_preset = memnew(ToolButton);
 	preset_hb->add_child(duplicate_preset);
-	duplicate_preset->connect("pressed", this, "_duplicate_preset");
+	duplicate_preset->connect_compat("pressed", this, "_duplicate_preset");
 	delete_preset = memnew(ToolButton);
 	preset_hb->add_child(delete_preset);
-	delete_preset->connect("pressed", this, "_delete_preset");
+	delete_preset->connect_compat("pressed", this, "_delete_preset");
 
 	// Preset settings.
 
@@ -1109,11 +1109,11 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	name = memnew(LineEdit);
 	settings_vb->add_margin_child(TTR("Name:"), name);
-	name->connect("text_changed", this, "_name_changed");
+	name->connect_compat("text_changed", this, "_name_changed");
 	runnable = memnew(CheckButton);
 	runnable->set_text(TTR("Runnable"));
 	runnable->set_tooltip(TTR("If checked, the preset will be available for use in one-click deploy.\nOnly one preset per platform may be marked as runnable."));
-	runnable->connect("pressed", this, "_runnable_pressed");
+	runnable->connect_compat("pressed", this, "_runnable_pressed");
 	settings_vb->add_child(runnable);
 
 	export_path = memnew(EditorPropertyPath);
@@ -1121,7 +1121,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_path->set_label(TTR("Export Path"));
 	export_path->set_object_and_property(this, "export_path");
 	export_path->set_save_mode();
-	export_path->connect("property_changed", this, "_export_path_changed");
+	export_path->connect_compat("property_changed", this, "_export_path_changed");
 
 	// Subsections.
 
@@ -1137,7 +1137,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	sections->add_child(parameters);
 	parameters->set_name(TTR("Options"));
 	parameters->set_v_size_flags(SIZE_EXPAND_FILL);
-	parameters->connect("property_edited", this, "_update_parameters");
+	parameters->connect_compat("property_edited", this, "_update_parameters");
 
 	// Resources export parameters.
 
@@ -1150,7 +1150,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_filter->add_item(TTR("Export selected scenes (and dependencies)"));
 	export_filter->add_item(TTR("Export selected resources (and dependencies)"));
 	resources_vb->add_margin_child(TTR("Export Mode:"), export_filter);
-	export_filter->connect("item_selected", this, "_export_type_changed");
+	export_filter->connect_compat("item_selected", this, "_export_type_changed");
 
 	include_label = memnew(Label);
 	include_label->set_text(TTR("Resources to export:"));
@@ -1161,19 +1161,19 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	include_files = memnew(Tree);
 	include_margin->add_child(include_files);
-	include_files->connect("item_edited", this, "_tree_changed");
+	include_files->connect_compat("item_edited", this, "_tree_changed");
 
 	include_filters = memnew(LineEdit);
 	resources_vb->add_margin_child(
 			TTR("Filters to export non-resource files/folders\n(comma-separated, e.g: *.json, *.txt, docs/*)"),
 			include_filters);
-	include_filters->connect("text_changed", this, "_filter_changed");
+	include_filters->connect_compat("text_changed", this, "_filter_changed");
 
 	exclude_filters = memnew(LineEdit);
 	resources_vb->add_margin_child(
 			TTR("Filters to exclude files/folders from project\n(comma-separated, e.g: *.json, *.txt, docs/*)"),
 			exclude_filters);
-	exclude_filters->connect("text_changed", this, "_filter_changed");
+	exclude_filters->connect_compat("text_changed", this, "_filter_changed");
 
 	// Patch packages.
 
@@ -1190,8 +1190,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	patch_vb->add_child(patches);
 	patches->set_v_size_flags(SIZE_EXPAND_FILL);
 	patches->set_hide_root(true);
-	patches->connect("button_pressed", this, "_patch_button_pressed");
-	patches->connect("item_edited", this, "_patch_edited");
+	patches->connect_compat("button_pressed", this, "_patch_button_pressed");
+	patches->connect_compat("item_edited", this, "_patch_edited");
 	patches->set_drag_forwarding(this);
 	patches->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 
@@ -1206,12 +1206,12 @@ ProjectExportDialog::ProjectExportDialog() {
 	patch_dialog = memnew(EditorFileDialog);
 	patch_dialog->add_filter("*.pck ; " + TTR("Pack File"));
 	patch_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
-	patch_dialog->connect("file_selected", this, "_patch_selected");
+	patch_dialog->connect_compat("file_selected", this, "_patch_selected");
 	add_child(patch_dialog);
 
 	patch_erase = memnew(ConfirmationDialog);
 	patch_erase->get_ok()->set_text(TTR("Delete"));
-	patch_erase->connect("confirmed", this, "_patch_deleted");
+	patch_erase->connect_compat("confirmed", this, "_patch_deleted");
 	add_child(patch_erase);
 
 	// Feature tags.
@@ -1219,7 +1219,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	VBoxContainer *feature_vb = memnew(VBoxContainer);
 	feature_vb->set_name(TTR("Features"));
 	custom_features = memnew(LineEdit);
-	custom_features->connect("text_changed", this, "_custom_features_changed");
+	custom_features->connect_compat("text_changed", this, "_custom_features_changed");
 	feature_vb->add_margin_child(TTR("Custom (comma-separated):"), custom_features);
 	Panel *features_panel = memnew(Panel);
 	custom_feature_display = memnew(RichTextLabel);
@@ -1240,9 +1240,9 @@ ProjectExportDialog::ProjectExportDialog() {
 	script_mode->add_item(TTR("Text"), (int)EditorExportPreset::MODE_SCRIPT_TEXT);
 	script_mode->add_item(TTR("Compiled"), (int)EditorExportPreset::MODE_SCRIPT_COMPILED);
 	script_mode->add_item(TTR("Encrypted (Provide Key Below)"), (int)EditorExportPreset::MODE_SCRIPT_ENCRYPTED);
-	script_mode->connect("item_selected", this, "_script_export_mode_changed");
+	script_mode->connect_compat("item_selected", this, "_script_export_mode_changed");
 	script_key = memnew(LineEdit);
-	script_key->connect("text_changed", this, "_script_encryption_key_changed");
+	script_key->connect_compat("text_changed", this, "_script_encryption_key_changed");
 	script_key_error = memnew(Label);
 	script_key_error->set_text("- " + TTR("Invalid Encryption Key (must be 64 characters long)"));
 	script_key_error->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
@@ -1250,7 +1250,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	script_vb->add_child(script_key_error);
 	sections->add_child(script_vb);
 
-	sections->connect("tab_changed", this, "_tab_changed");
+	sections->connect_compat("tab_changed", this, "_tab_changed");
 
 	// Disable by default.
 	name->set_editable(false);
@@ -1267,7 +1267,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	delete_confirm = memnew(ConfirmationDialog);
 	add_child(delete_confirm);
 	delete_confirm->get_ok()->set_text(TTR("Delete"));
-	delete_confirm->connect("confirmed", this, "_delete_preset_confirm");
+	delete_confirm->connect_compat("confirmed", this, "_delete_preset_confirm");
 
 	// Export buttons, dialogs and errors.
 
@@ -1276,7 +1276,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	get_cancel()->set_text(TTR("Close"));
 	get_ok()->set_text(TTR("Export PCK/Zip"));
 	export_button = add_button(TTR("Export Project"), !OS::get_singleton()->get_swap_ok_cancel(), "export");
-	export_button->connect("pressed", this, "_export_project");
+	export_button->connect_compat("pressed", this, "_export_project");
 	// Disable initially before we select a valid preset
 	export_button->set_disabled(true);
 	get_ok()->set_disabled(true);
@@ -1288,10 +1288,10 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_all_dialog->get_ok()->hide();
 	export_all_dialog->add_button(TTR("Debug"), true, "debug");
 	export_all_dialog->add_button(TTR("Release"), true, "release");
-	export_all_dialog->connect("custom_action", this, "_export_all_dialog_action");
+	export_all_dialog->connect_compat("custom_action", this, "_export_all_dialog_action");
 
 	export_all_button = add_button(TTR("Export All"), !OS::get_singleton()->get_swap_ok_cancel(), "export");
-	export_all_button->connect("pressed", this, "_export_all_dialog");
+	export_all_button->connect_compat("pressed", this, "_export_all_dialog");
 	export_all_button->set_disabled(true);
 
 	export_pck_zip = memnew(EditorFileDialog);
@@ -1300,7 +1300,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_pck_zip->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	export_pck_zip->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 	add_child(export_pck_zip);
-	export_pck_zip->connect("file_selected", this, "_export_pck_zip_selected");
+	export_pck_zip->connect_compat("file_selected", this, "_export_pck_zip_selected");
 
 	export_error = memnew(Label);
 	main_vb->add_child(export_error);
@@ -1326,13 +1326,13 @@ ProjectExportDialog::ProjectExportDialog() {
 	download_templates->set_text(TTR("Manage Export Templates"));
 	download_templates->set_v_size_flags(SIZE_SHRINK_CENTER);
 	export_templates_error->add_child(download_templates);
-	download_templates->connect("pressed", this, "_open_export_template_manager");
+	download_templates->connect_compat("pressed", this, "_open_export_template_manager");
 
 	export_project = memnew(EditorFileDialog);
 	export_project->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	add_child(export_project);
-	export_project->connect("file_selected", this, "_export_project_to_path");
-	export_project->get_line_edit()->connect("text_changed", this, "_validate_export_path");
+	export_project->connect_compat("file_selected", this, "_export_project_to_path");
+	export_project->get_line_edit()->connect_compat("text_changed", this, "_validate_export_path");
 
 	export_debug = memnew(CheckBox);
 	export_debug->set_text(TTR("Export With Debug"));

@@ -2054,7 +2054,7 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 		}
 
 		if (p_imethod.is_vararg) {
-			p_output.append("\tVariant::CallError vcall_error;\n\t");
+			p_output.append("\tCallable::CallError vcall_error;\n\t");
 
 			if (!ret_void) {
 				// See the comment on the C_LOCAL_VARARG_RET declaration

@@ -147,7 +147,7 @@ GIProbeEditorPlugin::GIProbeEditorPlugin(EditorNode *p_node) {
 	bake = memnew(ToolButton);
 	bake->set_icon(editor->get_gui_base()->get_icon("Bake", "EditorIcons"));
 	bake->set_text(TTR("Bake GI Probe"));
-	bake->connect("pressed", this, "_bake");
+	bake->connect_compat("pressed", this, "_bake");
 	bake_hb->add_child(bake);
 	bake_info = memnew(Label);
 	bake_info->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -159,7 +159,7 @@ GIProbeEditorPlugin::GIProbeEditorPlugin(EditorNode *p_node) {
 	probe_file = memnew(EditorFileDialog);
 	probe_file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 	probe_file->add_filter("*.res");
-	probe_file->connect("file_selected", this, "_giprobe_save_path_and_bake");
+	probe_file->connect_compat("file_selected", this, "_giprobe_save_path_and_bake");
 	get_editor_interface()->get_base_control()->add_child(probe_file);
 	probe_file->set_title(TTR("Select path for GIProbe Data File"));
 

@@ -374,8 +374,8 @@ void EditorNode::_notification(int p_what) {
 			get_tree()->get_root()->set_as_audio_listener(false);
 			get_tree()->get_root()->set_as_audio_listener_2d(false);
 			get_tree()->set_auto_accept_quit(false);
-			get_tree()->connect("files_dropped", this, "_dropped_files");
-			get_tree()->connect("global_menu_action", this, "_global_menu_action");
+			get_tree()->connect_compat("files_dropped", this, "_dropped_files");
+			get_tree()->connect_compat("global_menu_action", this, "_global_menu_action");
 
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
@@ -2746,10 +2746,10 @@ void EditorNode::_tool_menu_option(int p_idx) {
 				Object *handler = ObjectDB::get_instance(params[0]);
 				String callback = params[1];
 				Variant *ud = &params[2];
-				Variant::CallError ce;
+				Callable::CallError ce;
 
 				handler->call(callback, (const Variant **)&ud, 1, ce);
-				if (ce.error != Variant::CallError::CALL_OK) {
+				if (ce.error != Callable::CallError::CALL_OK) {
 					String err = Variant::get_call_error_text(handler, callback, (const Variant **)&ud, 1, ce);
 					ERR_PRINT("Error calling function from tool menu: " + err);
 				}
@@ -2958,7 +2958,7 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 
 		ToolButton *tb = memnew(ToolButton);
 		tb->set_toggle_mode(true);
-		tb->connect("pressed", singleton, "_editor_select", varray(singleton->main_editor_buttons.size()));
+		tb->connect_compat("pressed", singleton, "_editor_select", varray(singleton->main_editor_buttons.size()));
 		tb->set_text(p_editor->get_name());
 		Ref<Texture2D> icon = p_editor->get_icon();
 
@@ -4785,7 +4785,7 @@ void EditorNode::_scene_tab_changed(int p_tab) {
 ToolButton *EditorNode::add_bottom_panel_item(String p_text, Control *p_item) {
 
 	ToolButton *tb = memnew(ToolButton);
-	tb->connect("toggled", this, "_bottom_panel_switch", varray(bottom_panel_items.size()));
+	tb->connect_compat("toggled", this, "_bottom_panel_switch", varray(bottom_panel_items.size()));
 	tb->set_text(p_text);
 	tb->set_toggle_mode(true);
 	tb->set_focus_mode(Control::FOCUS_NONE);
@@ -4847,8 +4847,8 @@ void EditorNode::raise_bottom_panel_item(Control *p_item) {
 	}
 
 	for (int i = 0; i < bottom_panel_items.size(); i++) {
-		bottom_panel_items[i].button->disconnect("toggled", this, "_bottom_panel_switch");
-		bottom_panel_items[i].button->connect("toggled", this, "_bottom_panel_switch", varray(i));
+		bottom_panel_items[i].button->disconnect_compat("toggled", this, "_bottom_panel_switch");
+		bottom_panel_items[i].button->connect_compat("toggled", this, "_bottom_panel_switch", varray(i));
 	}
 }
 
@@ -4869,8 +4869,8 @@ void EditorNode::remove_bottom_panel_item(Control *p_item) {
 	}
 
 	for (int i = 0; i < bottom_panel_items.size(); i++) {
-		bottom_panel_items[i].button->disconnect("toggled", this, "_bottom_panel_switch");
-		bottom_panel_items[i].button->connect("toggled", this, "_bottom_panel_switch", varray(i));
+		bottom_panel_items[i].button->disconnect_compat("toggled", this, "_bottom_panel_switch");
+		bottom_panel_items[i].button->connect_compat("toggled", this, "_bottom_panel_switch", varray(i));
 	}
 }
 
@@ -5925,8 +5925,8 @@ EditorNode::EditorNode() {
 	hsplits.push_back(right_hsplit);
 
 	for (int i = 0; i < vsplits.size(); i++) {
-		vsplits[i]->connect("dragged", this, "_dock_split_dragged");
-		hsplits[i]->connect("dragged", this, "_dock_split_dragged");
+		vsplits[i]->connect_compat("dragged", this, "_dock_split_dragged");
+		hsplits[i]->connect_compat("dragged", this, "_dock_split_dragged");
 	}
 
 	dock_select_popup = memnew(PopupPanel);
@@ -5938,7 +5938,7 @@ EditorNode::EditorNode() {
 	dock_tab_move_left = memnew(ToolButton);
 	dock_tab_move_left->set_icon(theme->get_icon("Back", "EditorIcons"));
 	dock_tab_move_left->set_focus_mode(Control::FOCUS_NONE);
-	dock_tab_move_left->connect("pressed", this, "_dock_move_left");
+	dock_tab_move_left->connect_compat("pressed", this, "_dock_move_left");
 	dock_hb->add_child(dock_tab_move_left);
 
 	Label *dock_label = memnew(Label);
@@ -5950,16 +5950,16 @@ EditorNode::EditorNode() {
 	dock_tab_move_right = memnew(ToolButton);
 	dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
 	dock_tab_move_right->set_focus_mode(Control::FOCUS_NONE);
-	dock_tab_move_right->connect("pressed", this, "_dock_move_right");
+	dock_tab_move_right->connect_compat("pressed", this, "_dock_move_right");
 
 	dock_hb->add_child(dock_tab_move_right);
 	dock_vb->add_child(dock_hb);
 
 	dock_select = memnew(Control);
 	dock_select->set_custom_minimum_size(Size2(128, 64) * EDSCALE);
-	dock_select->connect("gui_input", this, "_dock_select_input");
-	dock_select->connect("draw", this, "_dock_select_draw");
-	dock_select->connect("mouse_exited", this, "_dock_popup_exit");
+	dock_select->connect_compat("gui_input", this, "_dock_select_input");
+	dock_select->connect_compat("draw", this, "_dock_select_draw");
+	dock_select->connect_compat("mouse_exited", this, "_dock_popup_exit");
 	dock_select->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	dock_vb->add_child(dock_select);
 
@@ -5970,11 +5970,11 @@ EditorNode::EditorNode() {
 		dock_slot[i]->set_custom_minimum_size(Size2(170, 0) * EDSCALE);
 		dock_slot[i]->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		dock_slot[i]->set_popup(dock_select_popup);
-		dock_slot[i]->connect("pre_popup_pressed", this, "_dock_pre_popup", varray(i));
+		dock_slot[i]->connect_compat("pre_popup_pressed", this, "_dock_pre_popup", varray(i));
 		dock_slot[i]->set_tab_align(TabContainer::ALIGN_LEFT);
 		dock_slot[i]->set_drag_to_rearrange_enabled(true);
 		dock_slot[i]->set_tabs_rearrange_group(1);
-		dock_slot[i]->connect("tab_changed", this, "_dock_tab_changed");
+		dock_slot[i]->connect_compat("tab_changed", this, "_dock_tab_changed");
 		dock_slot[i]->set_use_hidden_tabs_for_min_size(true);
 	}
 
@@ -5982,7 +5982,7 @@ EditorNode::EditorNode() {
 	add_child(dock_drag_timer);
 	dock_drag_timer->set_wait_time(0.5);
 	dock_drag_timer->set_one_shot(true);
-	dock_drag_timer->connect("timeout", this, "_save_docks");
+	dock_drag_timer->connect_compat("timeout", this, "_save_docks");
 
 	top_split = memnew(VSplitContainer);
 	center_split->add_child(top_split);
@@ -6015,21 +6015,21 @@ EditorNode::EditorNode() {
 	scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEF("interface/scene_tabs/always_show_close_button", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
 	scene_tabs->set_min_width(int(EDITOR_DEF("interface/scene_tabs/minimum_width", 50)) * EDSCALE);
 	scene_tabs->set_drag_to_rearrange_enabled(true);
-	scene_tabs->connect("tab_changed", this, "_scene_tab_changed");
-	scene_tabs->connect("right_button_pressed", this, "_scene_tab_script_edited");
-	scene_tabs->connect("tab_close", this, "_scene_tab_closed", varray(SCENE_TAB_CLOSE));
-	scene_tabs->connect("tab_hover", this, "_scene_tab_hover");
-	scene_tabs->connect("mouse_exited", this, "_scene_tab_exit");
-	scene_tabs->connect("gui_input", this, "_scene_tab_input");
-	scene_tabs->connect("reposition_active_tab_request", this, "_reposition_active_tab");
-	scene_tabs->connect("resized", this, "_update_scene_tabs");
+	scene_tabs->connect_compat("tab_changed", this, "_scene_tab_changed");
+	scene_tabs->connect_compat("right_button_pressed", this, "_scene_tab_script_edited");
+	scene_tabs->connect_compat("tab_close", this, "_scene_tab_closed", varray(SCENE_TAB_CLOSE));
+	scene_tabs->connect_compat("tab_hover", this, "_scene_tab_hover");
+	scene_tabs->connect_compat("mouse_exited", this, "_scene_tab_exit");
+	scene_tabs->connect_compat("gui_input", this, "_scene_tab_input");
+	scene_tabs->connect_compat("reposition_active_tab_request", this, "_reposition_active_tab");
+	scene_tabs->connect_compat("resized", this, "_update_scene_tabs");
 
 	tabbar_container = memnew(HBoxContainer);
 	scene_tabs->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	scene_tabs_context_menu = memnew(PopupMenu);
 	tabbar_container->add_child(scene_tabs_context_menu);
-	scene_tabs_context_menu->connect("id_pressed", this, "_menu_option");
+	scene_tabs_context_menu->connect_compat("id_pressed", this, "_menu_option");
 	scene_tabs_context_menu->set_hide_on_window_lose_focus(true);
 
 	srt->add_child(tabbar_container);
@@ -6041,7 +6041,7 @@ EditorNode::EditorNode() {
 	distraction_free->set_shortcut(ED_SHORTCUT("editor/distraction_free_mode", TTR("Distraction Free Mode"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F11));
 #endif
 	distraction_free->set_tooltip(TTR("Toggle distraction-free mode."));
-	distraction_free->connect("pressed", this, "_toggle_distraction_free_mode");
+	distraction_free->connect_compat("pressed", this, "_toggle_distraction_free_mode");
 	distraction_free->set_icon(gui_base->get_icon("DistractionFree", "EditorIcons"));
 	distraction_free->set_toggle_mode(true);
 
@@ -6051,7 +6051,7 @@ EditorNode::EditorNode() {
 	scene_tab_add->set_tooltip(TTR("Add a new scene."));
 	scene_tab_add->set_icon(gui_base->get_icon("Add", "EditorIcons"));
 	scene_tab_add->add_color_override("icon_color_normal", Color(0.6f, 0.6f, 0.6f, 0.8f));
-	scene_tab_add->connect("pressed", this, "_menu_option", make_binds(FILE_NEW_SCENE));
+	scene_tab_add->connect_compat("pressed", this, "_menu_option", make_binds(FILE_NEW_SCENE));
 
 	scene_root_parent = memnew(PanelContainer);
 	scene_root_parent->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
@@ -6086,14 +6086,14 @@ EditorNode::EditorNode() {
 	prev_scene->set_icon(gui_base->get_icon("PrevScene", "EditorIcons"));
 	prev_scene->set_tooltip(TTR("Go to previously opened scene."));
 	prev_scene->set_disabled(true);
-	prev_scene->connect("pressed", this, "_menu_option", make_binds(FILE_OPEN_PREV));
+	prev_scene->connect_compat("pressed", this, "_menu_option", make_binds(FILE_OPEN_PREV));
 	gui_base->add_child(prev_scene);
 	prev_scene->set_position(Point2(3, 24));
 	prev_scene->hide();
 
 	accept = memnew(AcceptDialog);
 	gui_base->add_child(accept);
-	accept->connect("confirmed", this, "_menu_confirm_current");
+	accept->connect_compat("confirmed", this, "_menu_confirm_current");
 
 	project_export = memnew(ProjectExportDialog);
 	gui_base->add_child(project_export);
@@ -6120,12 +6120,12 @@ EditorNode::EditorNode() {
 	gui_base->add_child(feature_profile_manager);
 	about = memnew(EditorAbout);
 	gui_base->add_child(about);
-	feature_profile_manager->connect("current_feature_profile_changed", this, "_feature_profile_changed");
+	feature_profile_manager->connect_compat("current_feature_profile_changed", this, "_feature_profile_changed");
 
 	warning = memnew(AcceptDialog);
 	warning->add_button(TTR("Copy Text"), true, "copy");
 	gui_base->add_child(warning);
-	warning->connect("custom_action", this, "_copy_warning");
+	warning->connect_compat("custom_action", this, "_copy_warning");
 
 	ED_SHORTCUT("editor/next_tab", TTR("Next tab"), KEY_MASK_CMD + KEY_TAB);
 	ED_SHORTCUT("editor/prev_tab", TTR("Previous tab"), KEY_MASK_CMD + KEY_MASK_SHIFT + KEY_TAB);
@@ -6159,7 +6159,7 @@ EditorNode::EditorNode() {
 	p->add_submenu_item(TTR("Convert To..."), "Export");
 	pm_export->add_shortcut(ED_SHORTCUT("editor/convert_to_MeshLibrary", TTR("MeshLibrary...")), FILE_EXPORT_MESH_LIBRARY);
 	pm_export->add_shortcut(ED_SHORTCUT("editor/convert_to_TileSet", TTR("TileSet...")), FILE_EXPORT_TILESET);
-	pm_export->connect("id_pressed", this, "_menu_option");
+	pm_export->connect_compat("id_pressed", this, "_menu_option");
 
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("editor/undo", TTR("Undo"), KEY_MASK_CMD + KEY_Z), EDIT_UNDO, true);
@@ -6172,7 +6172,7 @@ EditorNode::EditorNode() {
 	recent_scenes = memnew(PopupMenu);
 	recent_scenes->set_name("RecentScenes");
 	p->add_child(recent_scenes);
-	recent_scenes->connect("id_pressed", this, "_open_recent_scene");
+	recent_scenes->connect_compat("id_pressed", this, "_open_recent_scene");
 
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("editor/file_quit", TTR("Quit"), KEY_MASK_CMD + KEY_Q), FILE_QUIT, true);
@@ -6188,11 +6188,11 @@ EditorNode::EditorNode() {
 	p = project_menu->get_popup();
 	p->set_hide_on_window_lose_focus(true);
 	p->add_shortcut(ED_SHORTCUT("editor/project_settings", TTR("Project Settings...")), RUN_SETTINGS);
-	p->connect("id_pressed", this, "_menu_option");
+	p->connect_compat("id_pressed", this, "_menu_option");
 
 	vcs_actions_menu = VersionControlEditorPlugin::get_singleton()->get_version_control_actions_panel();
 	vcs_actions_menu->set_name("Version Control");
-	vcs_actions_menu->connect("index_pressed", this, "_version_control_menu_option");
+	vcs_actions_menu->connect_compat("index_pressed", this, "_version_control_menu_option");
 	p->add_separator();
 	p->add_child(vcs_actions_menu);
 	p->add_submenu_item(TTR("Version Control"), "Version Control");
@@ -6205,12 +6205,12 @@ EditorNode::EditorNode() {
 	p->add_item(TTR("Open Project Data Folder"), RUN_PROJECT_DATA_FOLDER);
 
 	plugin_config_dialog = memnew(PluginConfigDialog);
-	plugin_config_dialog->connect("plugin_ready", this, "_on_plugin_ready");
+	plugin_config_dialog->connect_compat("plugin_ready", this, "_on_plugin_ready");
 	gui_base->add_child(plugin_config_dialog);
 
 	tool_menu = memnew(PopupMenu);
 	tool_menu->set_name("Tools");
-	tool_menu->connect("index_pressed", this, "_tool_menu_option");
+	tool_menu->connect_compat("index_pressed", this, "_tool_menu_option");
 	p->add_child(tool_menu);
 	p->add_submenu_item(TTR("Tools"), "Tools");
 	tool_menu->add_item(TTR("Orphan Resource Explorer..."), TOOLS_ORPHAN_RESOURCES);
@@ -6254,7 +6254,7 @@ EditorNode::EditorNode() {
 	p->add_check_shortcut(ED_SHORTCUT("editor/sync_script_changes", TTR("Sync Script Changes")), RUN_RELOAD_SCRIPTS);
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("When this option is turned on, any script that is saved will be reloaded on the running game.\nWhen used remotely on a device, this is more efficient with network filesystem."));
 	p->set_item_checked(p->get_item_count() - 1, true);
-	p->connect("id_pressed", this, "_menu_option");
+	p->connect_compat("id_pressed", this, "_menu_option");
 
 	menu_hb->add_spacer();
 
@@ -6273,7 +6273,7 @@ EditorNode::EditorNode() {
 	editor_layouts = memnew(PopupMenu);
 	editor_layouts->set_name("Layouts");
 	p->add_child(editor_layouts);
-	editor_layouts->connect("id_pressed", this, "_layout_menu_option");
+	editor_layouts->connect_compat("id_pressed", this, "_layout_menu_option");
 	p->add_submenu_item(TTR("Editor Layout"), "Layouts");
 	p->add_separator();
 #ifdef OSX_ENABLED
@@ -6315,7 +6315,7 @@ EditorNode::EditorNode() {
 
 	p = help_menu->get_popup();
 	p->set_hide_on_window_lose_focus(true);
-	p->connect("id_pressed", this, "_menu_option");
+	p->connect_compat("id_pressed", this, "_menu_option");
 	p->add_icon_shortcut(gui_base->get_icon("HelpSearch", "EditorIcons"), ED_SHORTCUT("editor/editor_help", TTR("Search"), KEY_MASK_SHIFT | KEY_F1), HELP_SEARCH);
 	p->add_separator();
 	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/online_docs", TTR("Online Docs")), HELP_DOCS);
@@ -6333,7 +6333,7 @@ EditorNode::EditorNode() {
 	play_button->set_toggle_mode(true);
 	play_button->set_icon(gui_base->get_icon("MainPlay", "EditorIcons"));
 	play_button->set_focus_mode(Control::FOCUS_NONE);
-	play_button->connect("pressed", this, "_menu_option", make_binds(RUN_PLAY));
+	play_button->connect_compat("pressed", this, "_menu_option", make_binds(RUN_PLAY));
 	play_button->set_tooltip(TTR("Play the project."));
 #ifdef OSX_ENABLED
 	play_button->set_shortcut(ED_SHORTCUT("editor/play", TTR("Play"), KEY_MASK_CMD | KEY_B));
@@ -6358,7 +6358,7 @@ EditorNode::EditorNode() {
 	play_hb->add_child(stop_button);
 	stop_button->set_focus_mode(Control::FOCUS_NONE);
 	stop_button->set_icon(gui_base->get_icon("Stop", "EditorIcons"));
-	stop_button->connect("pressed", this, "_menu_option", make_binds(RUN_STOP));
+	stop_button->connect_compat("pressed", this, "_menu_option", make_binds(RUN_STOP));
 	stop_button->set_tooltip(TTR("Stop the scene."));
 	stop_button->set_disabled(true);
 #ifdef OSX_ENABLED
@@ -6369,14 +6369,14 @@ EditorNode::EditorNode() {
 
 	run_native = memnew(EditorRunNative);
 	play_hb->add_child(run_native);
-	run_native->connect("native_run", this, "_menu_option", varray(RUN_PLAY_NATIVE));
+	run_native->connect_compat("native_run", this, "_menu_option", varray(RUN_PLAY_NATIVE));
 
 	play_scene_button = memnew(ToolButton);
 	play_hb->add_child(play_scene_button);
 	play_scene_button->set_toggle_mode(true);
 	play_scene_button->set_focus_mode(Control::FOCUS_NONE);
 	play_scene_button->set_icon(gui_base->get_icon("PlayScene", "EditorIcons"));
-	play_scene_button->connect("pressed", this, "_menu_option", make_binds(RUN_PLAY_SCENE));
+	play_scene_button->connect_compat("pressed", this, "_menu_option", make_binds(RUN_PLAY_SCENE));
 	play_scene_button->set_tooltip(TTR("Play the edited scene."));
 #ifdef OSX_ENABLED
 	play_scene_button->set_shortcut(ED_SHORTCUT("editor/play_scene", TTR("Play Scene"), KEY_MASK_CMD | KEY_R));
@@ -6389,7 +6389,7 @@ EditorNode::EditorNode() {
 	play_custom_scene_button->set_toggle_mode(true);
 	play_custom_scene_button->set_focus_mode(Control::FOCUS_NONE);
 	play_custom_scene_button->set_icon(gui_base->get_icon("PlayCustom", "EditorIcons"));
-	play_custom_scene_button->connect("pressed", this, "_menu_option", make_binds(RUN_PLAY_CUSTOM_SCENE));
+	play_custom_scene_button->connect_compat("pressed", this, "_menu_option", make_binds(RUN_PLAY_CUSTOM_SCENE));
 	play_custom_scene_button->set_tooltip(TTR("Play custom scene"));
 #ifdef OSX_ENABLED
 	play_custom_scene_button->set_shortcut(ED_SHORTCUT("editor/play_custom_scene", TTR("Play Custom Scene"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_R));
@@ -6404,7 +6404,7 @@ EditorNode::EditorNode() {
 	video_driver = memnew(OptionButton);
 	video_driver->set_flat(true);
 	video_driver->set_focus_mode(Control::FOCUS_NONE);
-	video_driver->connect("item_selected", this, "_video_driver_selected");
+	video_driver->connect_compat("item_selected", this, "_video_driver_selected");
 	video_driver->add_font_override("font", gui_base->get_font("bold", "EditorFonts"));
 	// TODO re-enable when GLES2 is ported
 	video_driver->set_disabled(true);
@@ -6429,7 +6429,7 @@ EditorNode::EditorNode() {
 	video_restart_dialog = memnew(ConfirmationDialog);
 	video_restart_dialog->set_text(TTR("Changing the video driver requires restarting the editor."));
 	video_restart_dialog->get_ok()->set_text(TTR("Save & Restart"));
-	video_restart_dialog->connect("confirmed", this, "_menu_option", varray(SET_VIDEO_DRIVER_SAVE_AND_RESTART));
+	video_restart_dialog->connect_compat("confirmed", this, "_menu_option", varray(SET_VIDEO_DRIVER_SAVE_AND_RESTART));
 	gui_base->add_child(video_restart_dialog);
 
 	progress_hb = memnew(BackgroundProgress);
@@ -6438,13 +6438,13 @@ EditorNode::EditorNode() {
 	gui_base->add_child(layout_dialog);
 	layout_dialog->set_hide_on_ok(false);
 	layout_dialog->set_size(Size2(225, 270) * EDSCALE);
-	layout_dialog->connect("name_confirmed", this, "_dialog_action");
+	layout_dialog->connect_compat("name_confirmed", this, "_dialog_action");
 
 	update_spinner = memnew(MenuButton);
 	update_spinner->set_tooltip(TTR("Spins when the editor window redraws."));
 	right_menu_hb->add_child(update_spinner);
 	update_spinner->set_icon(gui_base->get_icon("Progress1", "EditorIcons"));
-	update_spinner->get_popup()->connect("id_pressed", this, "_menu_option");
+	update_spinner->get_popup()->connect_compat("id_pressed", this, "_menu_option");
 	p = update_spinner->get_popup();
 	p->add_radio_check_item(TTR("Update Continuously"), SETTINGS_UPDATE_CONTINUOUSLY);
 	p->add_radio_check_item(TTR("Update When Changed"), SETTINGS_UPDATE_WHEN_CHANGED);
@@ -6460,9 +6460,9 @@ EditorNode::EditorNode() {
 	node_dock = memnew(NodeDock);
 
 	filesystem_dock = memnew(FileSystemDock(this));
-	filesystem_dock->connect("inherit", this, "_inherit_request");
-	filesystem_dock->connect("instance", this, "_instance_request");
-	filesystem_dock->connect("display_mode_changed", this, "_save_docks");
+	filesystem_dock->connect_compat("inherit", this, "_inherit_request");
+	filesystem_dock->connect_compat("instance", this, "_instance_request");
+	filesystem_dock->connect_compat("display_mode_changed", this, "_save_docks");
 
 	// Scene: Top left
 	dock_slot[DOCK_SLOT_LEFT_UR]->add_child(scene_tree_dock);
@@ -6548,7 +6548,7 @@ EditorNode::EditorNode() {
 	bottom_panel_hb->add_child(bottom_panel_raise);
 	bottom_panel_raise->hide();
 	bottom_panel_raise->set_toggle_mode(true);
-	bottom_panel_raise->connect("toggled", this, "_bottom_panel_raise_toggled");
+	bottom_panel_raise->connect_compat("toggled", this, "_bottom_panel_raise_toggled");
 
 	log = memnew(EditorLog);
 	ToolButton *output_button = add_bottom_panel_item(TTR("Output"), log);
@@ -6556,37 +6556,37 @@ EditorNode::EditorNode() {
 
 	old_split_ofs = 0;
 
-	center_split->connect("resized", this, "_vp_resized");
+	center_split->connect_compat("resized", this, "_vp_resized");
 
 	orphan_resources = memnew(OrphanResourcesDialog);
 	gui_base->add_child(orphan_resources);
 
 	confirmation = memnew(ConfirmationDialog);
 	gui_base->add_child(confirmation);
-	confirmation->connect("confirmed", this, "_menu_confirm_current");
+	confirmation->connect_compat("confirmed", this, "_menu_confirm_current");
 
 	save_confirmation = memnew(ConfirmationDialog);
 	save_confirmation->add_button(TTR("Don't Save"), OS::get_singleton()->get_swap_ok_cancel(), "discard");
 	gui_base->add_child(save_confirmation);
-	save_confirmation->connect("confirmed", this, "_menu_confirm_current");
-	save_confirmation->connect("custom_action", this, "_discard_changes");
+	save_confirmation->connect_compat("confirmed", this, "_menu_confirm_current");
+	save_confirmation->connect_compat("custom_action", this, "_discard_changes");
 
 	custom_build_manage_templates = memnew(ConfirmationDialog);
 	custom_build_manage_templates->set_text(TTR("Android build template is missing, please install relevant templates."));
 	custom_build_manage_templates->get_ok()->set_text(TTR("Manage Templates"));
-	custom_build_manage_templates->connect("confirmed", this, "_menu_option", varray(SETTINGS_MANAGE_EXPORT_TEMPLATES));
+	custom_build_manage_templates->connect_compat("confirmed", this, "_menu_option", varray(SETTINGS_MANAGE_EXPORT_TEMPLATES));
 	gui_base->add_child(custom_build_manage_templates);
 
 	install_android_build_template = memnew(ConfirmationDialog);
 	install_android_build_template->set_text(TTR("This will set up your project for custom Android builds by installing the source template to \"res://android/build\".\nYou can then apply modifications and build your own custom APK on export (adding modules, changing the AndroidManifest.xml, etc.).\nNote that in order to make custom builds instead of using pre-built APKs, the \"Use Custom Build\" option should be enabled in the Android export preset."));
 	install_android_build_template->get_ok()->set_text(TTR("Install"));
-	install_android_build_template->connect("confirmed", this, "_menu_confirm_current");
+	install_android_build_template->connect_compat("confirmed", this, "_menu_confirm_current");
 	gui_base->add_child(install_android_build_template);
 
 	remove_android_build_template = memnew(ConfirmationDialog);
 	remove_android_build_template->set_text(TTR("The Android build template is already installed in this project and it won't be overwritten.\nRemove the \"res://android/build\" directory manually before attempting this operation again."));
 	remove_android_build_template->get_ok()->set_text(TTR("Show in File Manager"));
-	remove_android_build_template->connect("confirmed", this, "_menu_option", varray(FILE_EXPLORE_ANDROID_BUILD_TEMPLATES));
+	remove_android_build_template->connect_compat("confirmed", this, "_menu_option", varray(FILE_EXPLORE_ANDROID_BUILD_TEMPLATES));
 	gui_base->add_child(remove_android_build_template);
 
 	file_templates = memnew(EditorFileDialog);
@@ -6605,7 +6605,7 @@ EditorNode::EditorNode() {
 	file_export_lib = memnew(EditorFileDialog);
 	file_export_lib->set_title(TTR("Export Library"));
 	file_export_lib->set_mode(EditorFileDialog::MODE_SAVE_FILE);
-	file_export_lib->connect("file_selected", this, "_dialog_action");
+	file_export_lib->connect_compat("file_selected", this, "_dialog_action");
 	file_export_lib_merge = memnew(CheckBox);
 	file_export_lib_merge->set_text(TTR("Merge With Existing"));
 	file_export_lib_merge->set_pressed(true);
@@ -6622,16 +6622,16 @@ EditorNode::EditorNode() {
 		file_script->add_filter("*." + E->get());
 	}
 	gui_base->add_child(file_script);
-	file_script->connect("file_selected", this, "_dialog_action");
+	file_script->connect_compat("file_selected", this, "_dialog_action");
 
-	file_menu->get_popup()->connect("id_pressed", this, "_menu_option");
-	file_menu->connect("about_to_show", this, "_update_file_menu_opened");
-	file_menu->get_popup()->connect("popup_hide", this, "_update_file_menu_closed");
+	file_menu->get_popup()->connect_compat("id_pressed", this, "_menu_option");
+	file_menu->connect_compat("about_to_show", this, "_update_file_menu_opened");
+	file_menu->get_popup()->connect_compat("popup_hide", this, "_update_file_menu_closed");
 
-	settings_menu->get_popup()->connect("id_pressed", this, "_menu_option");
+	settings_menu->get_popup()->connect_compat("id_pressed", this, "_menu_option");
 
-	file->connect("file_selected", this, "_dialog_action");
-	file_templates->connect("file_selected", this, "_dialog_action");
+	file->connect_compat("file_selected", this, "_dialog_action");
+	file_templates->connect_compat("file_selected", this, "_dialog_action");
 
 	preview_gen = memnew(AudioStreamPreviewGenerator);
 	add_child(preview_gen);
@@ -6767,8 +6767,8 @@ EditorNode::EditorNode() {
 	open_imported = memnew(ConfirmationDialog);
 	open_imported->get_ok()->set_text(TTR("Open Anyway"));
 	new_inherited_button = open_imported->add_button(TTR("New Inherited"), !OS::get_singleton()->get_swap_ok_cancel(), "inherit");
-	open_imported->connect("confirmed", this, "_open_imported");
-	open_imported->connect("custom_action", this, "_inherit_imported");
+	open_imported->connect_compat("confirmed", this, "_open_imported");
+	open_imported->connect_compat("custom_action", this, "_inherit_imported");
 	gui_base->add_child(open_imported);
 
 	saved_version = 1;
@@ -6777,11 +6777,11 @@ EditorNode::EditorNode() {
 
 	quick_open = memnew(EditorQuickOpen);
 	gui_base->add_child(quick_open);
-	quick_open->connect("quick_open", this, "_quick_opened");
+	quick_open->connect_compat("quick_open", this, "_quick_opened");
 
 	quick_run = memnew(EditorQuickOpen);
 	gui_base->add_child(quick_run);
-	quick_run->connect("quick_open", this, "_quick_run");
+	quick_run->connect_compat("quick_open", this, "_quick_run");
 
 	_update_recent_scenes();
 
@@ -6803,10 +6803,10 @@ EditorNode::EditorNode() {
 	execute_output_dialog->set_title("");
 	gui_base->add_child(execute_output_dialog);
 
-	EditorFileSystem::get_singleton()->connect("sources_changed", this, "_sources_changed");
-	EditorFileSystem::get_singleton()->connect("filesystem_changed", this, "_fs_changed");
-	EditorFileSystem::get_singleton()->connect("resources_reimported", this, "_resources_reimported");
-	EditorFileSystem::get_singleton()->connect("resources_reload", this, "_resources_changed");
+	EditorFileSystem::get_singleton()->connect_compat("sources_changed", this, "_sources_changed");
+	EditorFileSystem::get_singleton()->connect_compat("filesystem_changed", this, "_fs_changed");
+	EditorFileSystem::get_singleton()->connect_compat("resources_reimported", this, "_resources_reimported");
+	EditorFileSystem::get_singleton()->connect_compat("resources_reload", this, "_resources_changed");
 
 	_build_icon_type_cache();
 
@@ -6815,7 +6815,7 @@ EditorNode::EditorNode() {
 	pick_main_scene = memnew(ConfirmationDialog);
 	gui_base->add_child(pick_main_scene);
 	pick_main_scene->get_ok()->set_text(TTR("Select"));
-	pick_main_scene->connect("confirmed", this, "_menu_option", varray(SETTINGS_PICK_MAIN_SCENE));
+	pick_main_scene->connect_compat("confirmed", this, "_menu_option", varray(SETTINGS_PICK_MAIN_SCENE));
 
 	for (int i = 0; i < _init_callbacks.size(); i++)
 		_init_callbacks[i]();
@@ -6855,7 +6855,7 @@ EditorNode::EditorNode() {
 	screenshot_timer = memnew(Timer);
 	screenshot_timer->set_one_shot(true);
 	screenshot_timer->set_wait_time(settings_menu->get_popup()->get_submenu_popup_delay() + 0.1f);
-	screenshot_timer->connect("timeout", this, "_request_screenshot");
+	screenshot_timer->connect_compat("timeout", this, "_request_screenshot");
 	add_child(screenshot_timer);
 	screenshot_timer->set_owner(get_owner());
 }

@@ -441,14 +441,14 @@ void Path2DEditor::edit(Node *p_path2d) {
 	if (p_path2d) {
 
 		node = Object::cast_to<Path2D>(p_path2d);
-		if (!node->is_connected("visibility_changed", this, "_node_visibility_changed"))
-			node->connect("visibility_changed", this, "_node_visibility_changed");
+		if (!node->is_connected_compat("visibility_changed", this, "_node_visibility_changed"))
+			node->connect_compat("visibility_changed", this, "_node_visibility_changed");
 
 	} else {
 
 		// node may have been deleted at this point
-		if (node && node->is_connected("visibility_changed", this, "_node_visibility_changed"))
-			node->disconnect("visibility_changed", this, "_node_visibility_changed");
+		if (node && node->is_connected_compat("visibility_changed", this, "_node_visibility_changed"))
+			node->disconnect_compat("visibility_changed", this, "_node_visibility_changed");
 		node = NULL;
 	}
 }
@@ -555,34 +555,34 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	curve_edit->set_toggle_mode(true);
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit->set_tooltip(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string(KEY_MASK_CMD) + TTR("Click: Add Point") + "\n" + TTR("Left Click: Split Segment (in curve)") + "\n" + TTR("Right Click: Delete Point"));
-	curve_edit->connect("pressed", this, "_mode_selected", varray(MODE_EDIT));
+	curve_edit->connect_compat("pressed", this, "_mode_selected", varray(MODE_EDIT));
 	base_hb->add_child(curve_edit);
 	curve_edit_curve = memnew(ToolButton);
 	curve_edit_curve->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("CurveCurve", "EditorIcons"));
 	curve_edit_curve->set_toggle_mode(true);
 	curve_edit_curve->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit_curve->set_tooltip(TTR("Select Control Points (Shift+Drag)"));
-	curve_edit_curve->connect("pressed", this, "_mode_selected", varray(MODE_EDIT_CURVE));
+	curve_edit_curve->connect_compat("pressed", this, "_mode_selected", varray(MODE_EDIT_CURVE));
 	base_hb->add_child(curve_edit_curve);
 	curve_create = memnew(ToolButton);
 	curve_create->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("CurveCreate", "EditorIcons"));
 	curve_create->set_toggle_mode(true);
 	curve_create->set_focus_mode(Control::FOCUS_NONE);
 	curve_create->set_tooltip(TTR("Add Point (in empty space)"));
-	curve_create->connect("pressed", this, "_mode_selected", varray(MODE_CREATE));
+	curve_create->connect_compat("pressed", this, "_mode_selected", varray(MODE_CREATE));
 	base_hb->add_child(curve_create);
 	curve_del = memnew(ToolButton);
 	curve_del->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("CurveDelete", "EditorIcons"));
 	curve_del->set_toggle_mode(true);
 	curve_del->set_focus_mode(Control::FOCUS_NONE);
 	curve_del->set_tooltip(TTR("Delete Point"));
-	curve_del->connect("pressed", this, "_mode_selected", varray(MODE_DELETE));
+	curve_del->connect_compat("pressed", this, "_mode_selected", varray(MODE_DELETE));
 	base_hb->add_child(curve_del);
 	curve_close = memnew(ToolButton);
 	curve_close->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("CurveClose", "EditorIcons"));
 	curve_close->set_focus_mode(Control::FOCUS_NONE);
 	curve_close->set_tooltip(TTR("Close Curve"));
-	curve_close->connect("pressed", this, "_mode_selected", varray(ACTION_CLOSE));
+	curve_close->connect_compat("pressed", this, "_mode_selected", varray(ACTION_CLOSE));
 	base_hb->add_child(curve_close);
 
 	PopupMenu *menu;
@@ -596,7 +596,7 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	menu->set_item_checked(HANDLE_OPTION_ANGLE, mirror_handle_angle);
 	menu->add_check_item(TTR("Mirror Handle Lengths"));
 	menu->set_item_checked(HANDLE_OPTION_LENGTH, mirror_handle_length);
-	menu->connect("id_pressed", this, "_handle_option_pressed");
+	menu->connect_compat("id_pressed", this, "_handle_option_pressed");
 
 	base_hb->hide();
 
