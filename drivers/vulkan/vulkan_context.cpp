@@ -277,16 +277,22 @@ Error VulkanContext::_create_physical_device() {
 		}
 	}
 
+	//VkApplicationInfo
 	CharString cs = ProjectSettings::get_singleton()->get("application/config/name").operator String().utf8();
+
 	String name = "GodotEngine " + String(VERSION_FULL_NAME);
 	CharString namecs = name.utf8();
+
+	uint32_t enginev = String(VERSION_NUMBER).hash();
+
+
 	const VkApplicationInfo app = {
 		/*sType*/ VK_STRUCTURE_TYPE_APPLICATION_INFO,
 		/*pNext*/ NULL,
 		/*pApplicationName*/ cs.get_data(),
 		/*applicationVersion*/ 0,
 		/*pEngineName*/ namecs.get_data(),
-		/*engineVersion*/ 0,
+		/*engineVersion*/ enginev,
 		/*apiVersion*/ VK_API_VERSION_1_0,
 	};
 	VkInstanceCreateInfo inst_info = {
