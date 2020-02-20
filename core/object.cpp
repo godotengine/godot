@@ -917,7 +917,6 @@ Variant Object::call(const StringName &p_method, const Variant **p_args, int p_a
 	MethodBind *method = ClassDB::get_method(get_class_name(), p_method);
 
 	if (method) {
-
 		ret = method->call(this, p_args, p_argcount, r_error);
 	} else {
 		r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
