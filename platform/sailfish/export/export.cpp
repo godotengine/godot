@@ -474,6 +474,11 @@ protected:
             args.push_back("--specfile");
             args.push_back(String("\"") + spec_file_path + String("\""));
             args.push_back("package");
+            String result_string;
+            for(List<String>::Element *a = args.front(); a != nullptr; a = a->next() ) {
+                result_string += String(" ") + a->get();
+            }
+            print_verbose(String("sfdk") + result_string);
             int result = EditorNode::get_singleton()->execute_and_show_output(TTR("Run sfdk tool: build rpm package"), sfdk_tool, args, true, false);
 //                if( execute_task(sfdk_tool, args, result) != Error::OK )
             if( result != 0 )
@@ -543,6 +548,7 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT,    prop_version_release, PROPERTY_HINT_RANGE, "1,40096,1,or_greater"), 1));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_version_string, PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0"), "1.0.0"));
 
+        // String gename = 
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_package_name, PROPERTY_HINT_PLACEHOLDER_TEXT, "harbour-$genname"), "harbour-$genname"));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_package_launcher_name, PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name [default if blank]"), ""));
         
@@ -727,6 +733,30 @@ public:
             r_error += TTR("Icon file should be PNG. Set up custom icon for Sailfish, or change icon of project");
             result = false;
         }
+
+        String packname = p_preset->get(prop_package_name);
+        // check packagename (if its set by user)
+        if( packname.find("$genname") >= 0 ) {
+            packname = packname.replace("$genname","");
+        }
+        // check name by regex
+        {
+            String name;// = packname;
+            RegEx regex("([a-z_\\-0-9\\.]+)");
+            Array matches = regex.search_all(packname);
+            // name.clear();
+            for( int mi = 0; mi <  matches.size(); mi++ ) {
+                Ref<RegExMatch> rem = ((Ref<RegExMatch>)matches[mi]);
+                Array names = rem->get_strings();
+                for( int n = 1; n < names.size(); n++ ) {
+                    name += String(names[n]);
+                }
+            }
+            if( packname != name ) {
+                r_error += TTR("Package name should be in lowercase, only 'a-z,_,-,0-9' symbols");
+                return false;
+            }
+        }
         
         String export_path = get_absolute_export_path( p_preset->get_export_path() );
         
@@ -905,7 +935,18 @@ public:
                 pack.name = p_preset->get(prop_package_name);
                 if( pack.name.find("$genname") >= 0 ) {
                     String name = ProjectSettings::get_singleton()->get("application/config/name");
-                    name = name.replace(" ","").to_lower();
+                    name = name.to_lower();
+                    RegEx regex("([a-z_\\-0-9\\.]+)");
+                    Array matches = regex.search_all(name);
+                    // print_verbose( String("Matches size: ") + Variant(matches.size()) );
+                    name.clear();
+                    for( int mi = 0; mi <  matches.size(); mi++ ) {
+                        Ref<RegExMatch> rem = ((Ref<RegExMatch>)matches[mi]);
+                        Array names = rem->get_strings();
+                        for( int n = 1; n < names.size(); n++ ) {
+                            name += String(names[n]);
+                        }
+                    }
                     pack.name = pack.name.replace("$genname",name);
                 }
                 pack.version = p_preset->get(prop_version_string);
