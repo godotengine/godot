@@ -35,13 +35,15 @@
 #include "core/object.h"
 #include "core/print_string.h"
 
-/**	To bind more then 6 parameters include this:
+/** To bind more then 6 parameters include this:
  *  #include "core/method_bind_ext.gen.inc"
  */
 
-#define DEFVAL(m_defval) (m_defval)
+// Makes callable_mp readily available in all classes connecting signals.
+// Needs to come after method_bind and object have been included.
+#include "core/callable_method_pointer.h"
 
-//#define SIMPLE_METHODDEF
+#define DEFVAL(m_defval) (m_defval)
 
 #ifdef DEBUG_METHODS_ENABLED
 
