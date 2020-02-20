@@ -441,20 +441,20 @@
 		<member name="display/window/size/fullscreen" type="bool" setter="" getter="" default="false">
 			Sets the window to full screen when it starts.
 		</member>
-		<member name="display/window/size/height" type="int" setter="" getter="" default="600">
-			Sets the game's main viewport height. On desktop platforms, this is the default window size. Stretch mode settings also use this as a reference when enabled.
-		</member>
 		<member name="display/window/size/resizable" type="bool" setter="" getter="" default="true">
 			Allows the window to be resizable by default.
 		</member>
-		<member name="display/window/size/test_height" type="int" setter="" getter="" default="0">
-			If greater than zero, overrides the window height when running the game. Useful for testing stretch modes.
+		<member name="display/window/size/viewport_height" type="int" setter="" getter="" default="600">
+			Sets the game's main viewport height. On desktop platforms, this is the default window size. Stretch mode settings also use this as a reference when enabled.
 		</member>
-		<member name="display/window/size/test_width" type="int" setter="" getter="" default="0">
-			If greater than zero, overrides the window width when running the game. Useful for testing stretch modes.
-		</member>
-		<member name="display/window/size/width" type="int" setter="" getter="" default="1024">
+		<member name="display/window/size/viewport_width" type="int" setter="" getter="" default="1024">
 			Sets the game's main viewport width. On desktop platforms, this is the default window size. Stretch mode settings also use this as a reference when enabled.
+		</member>
+		<member name="display/window/size/window_height" type="int" setter="" getter="" default="0">
+			If greater than zero, overrides the window height and [member display/window/size/viewport_height] of running game. Useful for testing stretch modes.
+		</member>
+		<member name="display/window/size/window_width" type="int" setter="" getter="" default="0">
+			If greater than zero, overrides the window width and [member display/window/size/viewport_width] of running game. Useful for testing stretch modes.
 		</member>
 		<member name="display/window/vsync/use_vsync" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables vertical synchronization. This eliminates tearing that may appear in moving scenes, at the cost of higher input latency and stuttering at lower framerates. If [code]false[/code], vertical synchronization will be disabled, however, many platforms will enforce it regardless (such as mobile platforms and HTML5).

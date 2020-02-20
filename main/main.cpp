@@ -1006,32 +1006,32 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// Assigning here even though it's GLES2-specific, to be sure that it appears in docs
 	GLOBAL_DEF("rendering/quality/2d/gles2_use_nvidia_rect_flicker_workaround", false);
 
-	GLOBAL_DEF("display/window/size/width", 1024);
-	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/width", PropertyInfo(Variant::INT, "display/window/size/width", PROPERTY_HINT_RANGE, "0,7680,or_greater")); // 8K resolution
-	GLOBAL_DEF("display/window/size/height", 600);
-	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/height", PropertyInfo(Variant::INT, "display/window/size/height", PROPERTY_HINT_RANGE, "0,4320,or_greater")); // 8K resolution
+	GLOBAL_DEF("display/window/size/viewport_width", 1024);
+	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/viewport_width", PropertyInfo(Variant::INT, "display/window/size/viewport_width", PROPERTY_HINT_RANGE, "0,7680,or_greater")); // 8K resolution
+	GLOBAL_DEF("display/window/size/viewport_height", 600);
+	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/viewport_height", PropertyInfo(Variant::INT, "display/window/size/viewport_height", PROPERTY_HINT_RANGE, "0,4320,or_greater")); // 8K resolution
 	GLOBAL_DEF("display/window/size/resizable", true);
 	GLOBAL_DEF("display/window/size/borderless", false);
 	GLOBAL_DEF("display/window/size/fullscreen", false);
 	GLOBAL_DEF("display/window/size/always_on_top", false);
-	GLOBAL_DEF("display/window/size/test_width", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/test_width", PropertyInfo(Variant::INT, "display/window/size/test_width", PROPERTY_HINT_RANGE, "0,7680,or_greater")); // 8K resolution
-	GLOBAL_DEF("display/window/size/test_height", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/test_height", PropertyInfo(Variant::INT, "display/window/size/test_height", PROPERTY_HINT_RANGE, "0,4320,or_greater")); // 8K resolution
+	GLOBAL_DEF("display/window/size/window_width", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/window_width", PropertyInfo(Variant::INT, "display/window/size/window_width", PROPERTY_HINT_RANGE, "0,7680,or_greater")); // 8K resolution
+	GLOBAL_DEF("display/window/size/window_height", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/window_height", PropertyInfo(Variant::INT, "display/window/size/window_height", PROPERTY_HINT_RANGE, "0,4320,or_greater")); // 8K resolution
 
 	if (use_custom_res) {
 
 		if (!force_res) {
-			window_size.width = GLOBAL_GET("display/window/size/width");
-			window_size.height = GLOBAL_GET("display/window/size/height");
+			window_size.width = GLOBAL_GET("display/window/size/viewport_width");
+			window_size.height = GLOBAL_GET("display/window/size/viewport_height");
 
-			if (globals->has_setting("display/window/size/test_width") && globals->has_setting("display/window/size/test_height")) {
+			if (globals->has_setting("display/window/size/window_width") && globals->has_setting("display/window/size/window_height")) {
 
-				int tw = globals->get("display/window/size/test_width");
+				int tw = globals->get("display/window/size/window_width");
 				if (tw > 0) {
 					window_size.width = tw;
 				}
-				int th = globals->get("display/window/size/test_height");
+				int th = globals->get("display/window/size/window_height");
 				if (th > 0) {
 					window_size.height = th;
 				}
@@ -1834,7 +1834,7 @@ bool Main::start() {
 
 			String stretch_mode = GLOBAL_DEF("display/window/stretch/mode", "disabled");
 			String stretch_aspect = GLOBAL_DEF("display/window/stretch/aspect", "ignore");
-			Size2i stretch_size = Size2(GLOBAL_DEF("display/window/size/width", 0), GLOBAL_DEF("display/window/size/height", 0));
+			Size2i stretch_size = Size2(GLOBAL_DEF("display/window/size/viewport_width", 0), GLOBAL_DEF("display/window/size/viewport_height", 0));
 
 			Window::ContentScaleMode cs_sm = Window::CONTENT_SCALE_MODE_DISABLED;
 			if (stretch_mode == "objects")

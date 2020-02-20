@@ -99,12 +99,12 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 	screen_rect.size = DisplayServer::get_singleton()->screen_get_size(screen);
 
 	Size2 desired_size;
-	desired_size.x = ProjectSettings::get_singleton()->get("display/window/size/width");
-	desired_size.y = ProjectSettings::get_singleton()->get("display/window/size/height");
+	desired_size.x = ProjectSettings::get_singleton()->get("display/window/size/viewport_width");
+	desired_size.y = ProjectSettings::get_singleton()->get("display/window/size/viewport_height");
 
 	Size2 test_size;
-	test_size.x = ProjectSettings::get_singleton()->get("display/window/size/test_width");
-	test_size.y = ProjectSettings::get_singleton()->get("display/window/size/test_height");
+	test_size.x = ProjectSettings::get_singleton()->get("display/window/size/window_width");
+	test_size.y = ProjectSettings::get_singleton()->get("display/window/size/window_height");
 	if (test_size.x > 0 && test_size.y > 0) {
 
 		desired_size = test_size;
