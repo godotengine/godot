@@ -2904,7 +2904,7 @@ void Node::_bind_methods() {
 	{
 		MethodInfo mi;
 
-		mi.arguments.push_back(PropertyInfo(Variant::STRING, "method"));
+		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
 
 		mi.name = "rpc";
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc", &Node::_rpc_bind, mi);
@@ -2976,7 +2976,7 @@ void Node::_bind_methods() {
 	ADD_GROUP("Pause", "pause_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "pause_mode", PROPERTY_HINT_ENUM, "Inherit,Stop,Process"), "set_pause_mode", "get_pause_mode");
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "name", PROPERTY_HINT_NONE, "", 0), "set_name", "get_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", 0), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "filename", PROPERTY_HINT_NONE, "", 0), "set_filename", "get_filename");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_owner", "get_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "", "get_multiplayer");

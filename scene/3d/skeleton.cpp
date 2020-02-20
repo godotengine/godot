@@ -774,7 +774,8 @@ void Skeleton::physical_bones_start_simulation_on(const Array &p_bones) {
 		sim_bones.resize(p_bones.size());
 		int c = 0;
 		for (int i = sim_bones.size() - 1; 0 <= i; --i) {
-			if (Variant::STRING == p_bones.get(i).get_type()) {
+			Variant::Type type = p_bones.get(i).get_type();
+			if (Variant::STRING == type || Variant::STRING_NAME == type) {
 				int bone_id = find_bone(p_bones.get(i));
 				if (bone_id != -1)
 					sim_bones.write[c++] = bone_id;

@@ -75,6 +75,7 @@ enum {
 	VARIANT_DOUBLE = 41,
 	VARIANT_CALLABLE = 42,
 	VARIANT_SIGNAL = 43,
+	VARIANT_STRING_NAME = 44,
 	OBJECT_EMPTY = 0,
 	OBJECT_EXTERNAL_RESOURCE = 1,
 	OBJECT_INTERNAL_RESOURCE = 2,
@@ -259,6 +260,10 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 			v.a = f->get_real();
 			r_v = v;
 
+		} break;
+		case VARIANT_STRING_NAME: {
+
+			r_v = StringName(get_unicode_string());
 		} break;
 
 		case VARIANT_NODE_PATH: {
@@ -1392,6 +1397,13 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 			f->store_real(val.g);
 			f->store_real(val.b);
 			f->store_real(val.a);
+
+		} break;
+		case Variant::STRING_NAME: {
+
+			f->store_32(VARIANT_STRING_NAME);
+			String val = p_property;
+			save_unicode_string(f, val);
 
 		} break;
 

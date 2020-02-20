@@ -1013,7 +1013,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max_distance", PROPERTY_HINT_EXP_RANGE, "0,4096,1,or_greater"), "set_max_distance", "get_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "out_of_range_mode", PROPERTY_HINT_ENUM, "Mix,Pause"), "set_out_of_range_mode", "get_out_of_range_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_area_mask", "get_area_mask");
 	ADD_GROUP("Emission Angle", "emission_angle");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emission_angle_enabled"), "set_emission_angle_enabled", "is_emission_angle_enabled");

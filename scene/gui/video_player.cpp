@@ -481,7 +481,7 @@ void VideoPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "buffering_msec", PROPERTY_HINT_RANGE, "10,1000"), "set_buffering_msec", "get_buffering_msec");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "stream_position", PROPERTY_HINT_RANGE, "0,1280000,0.1", 0), "set_stream_position", "get_stream_position");
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 }
 
 VideoPlayer::VideoPlayer() {

@@ -136,6 +136,11 @@ String Variant::get_type_name(Variant::Type p_type) {
 
 			return "Signal";
 		} break;
+		case STRING_NAME: {
+
+			return "StringName";
+
+		} break;
 		case NODE_PATH: {
 
 			return "NodePath";
@@ -325,6 +330,15 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 
 			valid_types = valid;
 		} break;
+		case STRING_NAME: {
+
+			static const Type valid[] = {
+				STRING,
+				NIL
+			};
+
+			valid_types = valid;
+		} break;
 		case NODE_PATH: {
 
 			static const Type valid[] = {
@@ -495,6 +509,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 
 			static const Type valid[] = {
 				NODE_PATH,
+				STRING_NAME,
 				NIL
 			};
 
@@ -567,6 +582,15 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 		case OBJECT: {
 
 			static const Type valid[] = {
+				NIL
+			};
+
+			valid_types = valid;
+		} break;
+		case STRING_NAME: {
+
+			static const Type valid[] = {
+				STRING,
 				NIL
 			};
 
@@ -808,6 +832,11 @@ bool Variant::is_zero() const {
 
 			return reinterpret_cast<const Signal *>(_data._mem)->is_null();
 		} break;
+		case STRING_NAME: {
+
+			return *reinterpret_cast<const StringName *>(_data._mem) != StringName();
+
+		} break;
 		case NODE_PATH: {
 
 			return reinterpret_cast<const NodePath *>(_data._mem)->is_empty();
@@ -1046,6 +1075,11 @@ void Variant::reference(const Variant &p_variant) {
 
 			memnew_placement(_data._mem, Signal(*reinterpret_cast<const Signal *>(p_variant._data._mem)));
 		} break;
+		case STRING_NAME: {
+
+			memnew_placement(_data._mem, StringName(*reinterpret_cast<const StringName *>(p_variant._data._mem)));
+
+		} break;
 		case NODE_PATH: {
 
 			memnew_placement(_data._mem, NodePath(*reinterpret_cast<const NodePath *>(p_variant._data._mem)));
@@ -1152,7 +1186,11 @@ void Variant::clear() {
 			memdelete(_data._transform);
 		} break;
 
-		// misc types
+			// misc types
+		case STRING_NAME: {
+
+			reinterpret_cast<StringName *>(_data._mem)->~StringName();
+		} break;
 		case NODE_PATH: {
 
 			reinterpret_cast<NodePath *>(_data._mem)->~NodePath();
@@ -1453,10 +1491,13 @@ Variant::operator double() const {
 
 Variant::operator StringName() const {
 
-	if (type == NODE_PATH) {
-		return reinterpret_cast<const NodePath *>(_data._mem)->get_sname();
+	if (type == STRING_NAME) {
+		return *reinterpret_cast<const StringName *>(_data._mem);
+	} else if (type == STRING) {
+		return *reinterpret_cast<const String *>(_data._mem);
 	}
-	return StringName(operator String());
+
+	return StringName();
 }
 
 struct _VariantStrPair {
@@ -1523,6 +1564,7 @@ String Variant::stringify(List<const void *> &stack) const {
 			return mtx + ")";
 		} break;
 		case TRANSFORM: return operator Transform();
+		case STRING_NAME: return operator StringName();
 		case NODE_PATH: return operator NodePath();
 		case COLOR: return String::num(operator Color().r) + "," + String::num(operator Color().g) + "," + String::num(operator Color().b) + "," + String::num(operator Color().a);
 		case DICTIONARY: {
@@ -2191,8 +2233,8 @@ Variant::Variant(const ObjectID &p_id) {
 
 Variant::Variant(const StringName &p_string) {
 
-	type = STRING;
-	memnew_placement(_data._mem, String(p_string.operator String()));
+	type = STRING_NAME;
+	memnew_placement(_data._mem, StringName(p_string));
 }
 Variant::Variant(const String &p_string) {
 
@@ -2549,6 +2591,10 @@ void Variant::operator=(const Variant &p_variant) {
 			*reinterpret_cast<Signal *>(_data._mem) = *reinterpret_cast<const Signal *>(p_variant._data._mem);
 		} break;
 
+		case STRING_NAME: {
+
+			*reinterpret_cast<StringName *>(_data._mem) = *reinterpret_cast<const StringName *>(p_variant._data._mem);
+		} break;
 		case NODE_PATH: {
 
 			*reinterpret_cast<NodePath *>(_data._mem) = *reinterpret_cast<const NodePath *>(p_variant._data._mem);
@@ -2746,6 +2792,10 @@ uint32_t Variant::hash() const {
 		case OBJECT: {
 
 			return hash_djb2_one_64(make_uint64_t(_get_obj().obj));
+		} break;
+		case STRING_NAME: {
+
+			return reinterpret_cast<const StringName *>(_data._mem)->hash();
 		} break;
 		case NODE_PATH: {
 

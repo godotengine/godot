@@ -270,10 +270,10 @@ void VisualShaderNodeCustom::_bind_methods() {
 	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_return_icon_type"));
 	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_input_port_count"));
 	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_input_port_type", PropertyInfo(Variant::INT, "port")));
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_input_port_name", PropertyInfo(Variant::INT, "port")));
+	BIND_VMETHOD(MethodInfo(Variant::STRING_NAME, "_get_input_port_name", PropertyInfo(Variant::INT, "port")));
 	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_output_port_count"));
 	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_output_port_type", PropertyInfo(Variant::INT, "port")));
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_output_port_name", PropertyInfo(Variant::INT, "port")));
+	BIND_VMETHOD(MethodInfo(Variant::STRING_NAME, "_get_output_port_name", PropertyInfo(Variant::INT, "port")));
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_code", PropertyInfo(Variant::ARRAY, "input_vars"), PropertyInfo(Variant::ARRAY, "output_vars"), PropertyInfo(Variant::INT, "mode"), PropertyInfo(Variant::INT, "type")));
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_global_code", PropertyInfo(Variant::INT, "mode")));
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_is_highend"));
@@ -1847,7 +1847,7 @@ void VisualShaderNodeInput::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_input_name"), &VisualShaderNodeInput::get_input_name);
 	ClassDB::bind_method(D_METHOD("get_input_real_name"), &VisualShaderNodeInput::get_input_real_name);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "input_name", PROPERTY_HINT_ENUM, ""), "set_input_name", "get_input_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "input_name", PROPERTY_HINT_ENUM, ""), "set_input_name", "get_input_name");
 	ADD_SIGNAL(MethodInfo("input_type_changed"));
 }
 VisualShaderNodeInput::VisualShaderNodeInput() {
@@ -2047,7 +2047,7 @@ void VisualShaderNodeUniform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uniform_name", "name"), &VisualShaderNodeUniform::set_uniform_name);
 	ClassDB::bind_method(D_METHOD("get_uniform_name"), &VisualShaderNodeUniform::get_uniform_name);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "uniform_name"), "set_uniform_name", "get_uniform_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "uniform_name"), "set_uniform_name", "get_uniform_name");
 }
 
 VisualShaderNodeUniform::VisualShaderNodeUniform() {

@@ -151,6 +151,7 @@ MAKE_TYPE_INFO(AABB, Variant::AABB)
 MAKE_TYPE_INFO(Basis, Variant::BASIS)
 MAKE_TYPE_INFO(Transform, Variant::TRANSFORM)
 MAKE_TYPE_INFO(Color, Variant::COLOR)
+MAKE_TYPE_INFO(StringName, Variant::STRING_NAME)
 MAKE_TYPE_INFO(NodePath, Variant::NODE_PATH)
 MAKE_TYPE_INFO(RID, Variant::_RID)
 MAKE_TYPE_INFO(Callable, Variant::CALLABLE)
@@ -165,7 +166,6 @@ MAKE_TYPE_INFO(PackedVector2Array, Variant::PACKED_VECTOR2_ARRAY)
 MAKE_TYPE_INFO(PackedVector3Array, Variant::PACKED_VECTOR3_ARRAY)
 MAKE_TYPE_INFO(PackedColorArray, Variant::PACKED_COLOR_ARRAY)
 
-MAKE_TYPE_INFO(StringName, Variant::STRING)
 MAKE_TYPE_INFO(IP_Address, Variant::STRING)
 
 //objectID

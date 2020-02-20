@@ -126,7 +126,7 @@ void AnimationNodeAnimation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animation", "name"), &AnimationNodeAnimation::set_animation);
 	ClassDB::bind_method(D_METHOD("get_animation"), &AnimationNodeAnimation::get_animation);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation"), "set_animation", "get_animation");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation"), "set_animation", "get_animation");
 }
 
 AnimationNodeAnimation::AnimationNodeAnimation() {

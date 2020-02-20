@@ -65,7 +65,7 @@ private:
 		Type type;
 		Ref<Resource> resref;
 		ObjectID object;
-		String name;
+		StringName name;
 		Variant args[VARIANT_ARG_MAX];
 	};
 
@@ -103,10 +103,10 @@ protected:
 public:
 	void create_action(const String &p_name = "", MergeMode p_mode = MERGE_DISABLE);
 
-	void add_do_method(Object *p_object, const String &p_method, VARIANT_ARG_LIST);
-	void add_undo_method(Object *p_object, const String &p_method, VARIANT_ARG_LIST);
-	void add_do_property(Object *p_object, const String &p_property, const Variant &p_value);
-	void add_undo_property(Object *p_object, const String &p_property, const Variant &p_value);
+	void add_do_method(Object *p_object, const StringName &p_method, VARIANT_ARG_LIST);
+	void add_undo_method(Object *p_object, const StringName &p_method, VARIANT_ARG_LIST);
+	void add_do_property(Object *p_object, const StringName &p_property, const Variant &p_value);
+	void add_undo_property(Object *p_object, const StringName &p_property, const Variant &p_value);
 	void add_do_reference(Object *p_object);
 	void add_undo_reference(Object *p_object);
 
