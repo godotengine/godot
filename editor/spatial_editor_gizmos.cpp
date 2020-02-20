@@ -41,7 +41,7 @@
 #include "scene/3d/light.h"
 #include "scene/3d/listener.h"
 #include "scene/3d/mesh_instance.h"
-#include "scene/3d/navigation_mesh_instance.h"
+#include "scene/3d/navigation_region.h"
 #include "scene/3d/particles.h"
 #include "scene/3d/physics_joint.h"
 #include "scene/3d/position_3d.h"
@@ -3720,11 +3720,11 @@ NavigationMeshSpatialGizmoPlugin::NavigationMeshSpatialGizmoPlugin() {
 }
 
 bool NavigationMeshSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<NavigationMeshInstance>(p_spatial) != NULL;
+	return Object::cast_to<NavigationRegion>(p_spatial) != NULL;
 }
 
 String NavigationMeshSpatialGizmoPlugin::get_name() const {
-	return "NavigationMeshInstance";
+	return "NavigationRegion";
 }
 
 int NavigationMeshSpatialGizmoPlugin::get_priority() const {
@@ -3733,7 +3733,7 @@ int NavigationMeshSpatialGizmoPlugin::get_priority() const {
 
 void NavigationMeshSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
-	NavigationMeshInstance *navmesh = Object::cast_to<NavigationMeshInstance>(p_gizmo->get_spatial_node());
+	NavigationRegion *navmesh = Object::cast_to<NavigationRegion>(p_gizmo->get_spatial_node());
 
 	Ref<Material> edge_material = get_material("navigation_edge_material", p_gizmo);
 	Ref<Material> edge_material_disabled = get_material("navigation_edge_material_disabled", p_gizmo);

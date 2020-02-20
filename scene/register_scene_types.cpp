@@ -190,7 +190,7 @@
 #include "scene/3d/multimesh_instance.h"
 #include "scene/3d/navigation.h"
 #include "scene/3d/navigation_agent.h"
-#include "scene/3d/navigation_mesh_instance.h"
+#include "scene/3d/navigation_region.h"
 #include "scene/3d/navigation_obstacle.h"
 #include "scene/3d/particles.h"
 #include "scene/3d/path.h"
@@ -470,7 +470,7 @@ void register_scene_types() {
 	ClassDB::register_class<Generic6DOFJoint>();
 
 	ClassDB::register_class<Navigation>();
-	ClassDB::register_class<NavigationMeshInstance>();
+	ClassDB::register_class<NavigationRegion>();
 	ClassDB::register_class<NavigationAgent>();
 	ClassDB::register_class<NavigationObstacle>();
 

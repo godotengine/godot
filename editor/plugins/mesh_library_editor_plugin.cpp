@@ -34,7 +34,7 @@
 #include "editor/editor_settings.h"
 #include "main/main.h"
 #include "scene/3d/mesh_instance.h"
-#include "scene/3d/navigation_mesh_instance.h"
+#include "scene/3d/navigation_region.h"
 #include "scene/3d/physics_body.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"
@@ -152,9 +152,9 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 		Transform navmesh_transform;
 		for (int j = 0; j < mi->get_child_count(); j++) {
 			Node *child2 = mi->get_child(j);
-			if (!Object::cast_to<NavigationMeshInstance>(child2))
+			if (!Object::cast_to<NavigationRegion>(child2))
 				continue;
-			NavigationMeshInstance *sb = Object::cast_to<NavigationMeshInstance>(child2);
+			NavigationRegion *sb = Object::cast_to<NavigationRegion>(child2);
 			navmesh = sb->get_navigation_mesh();
 			navmesh_transform = sb->get_transform();
 			if (!navmesh.is_null())
