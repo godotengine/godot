@@ -286,7 +286,7 @@ private:
 			uint64_t distance_fade : 2;
 			uint64_t emission_op : 1;
 			uint64_t texture_filter : 3;
-			uint64_t transparency : 2;
+			uint64_t transparency : 3;
 			uint64_t shading_mode : 2;
 			uint64_t roughness_channel : 3;
 		};

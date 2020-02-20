@@ -79,7 +79,7 @@ private:
 			uint32_t texture_mask : 16;
 			uint32_t texture_color : 1;
 			uint32_t flags : 4;
-			uint32_t emission_shape : 2;
+			uint32_t emission_shape : 3;
 			uint32_t trail_size_texture : 1;
 			uint32_t trail_color_texture : 1;
 			uint32_t invalid_key : 1;
