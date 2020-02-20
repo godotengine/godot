@@ -81,6 +81,7 @@ const char *VariantParser::tk_name[TK_MAX] = {
 	"')'",
 	"identifier",
 	"string",
+	"string_name",
 	"number",
 	"color",
 	"':'",
@@ -92,6 +93,8 @@ const char *VariantParser::tk_name[TK_MAX] = {
 };
 
 Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, String &r_err_str) {
+
+	bool string_name = false;
 
 	while (true) {
 
@@ -204,6 +207,17 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 				r_token.type = TK_COLOR;
 				return OK;
 			};
+			case '@': {
+				cchar = p_stream->get_char();
+				if (cchar != '"') {
+					r_err_str = "Expected '\"' after '@'";
+					r_token.type = TK_ERROR;
+					return ERR_PARSE_ERROR;
+				}
+
+				string_name = true;
+				FALLTHROUGH;
+			}
 			case '"': {
 
 				String str;
@@ -285,8 +299,14 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 				if (p_stream->is_utf8()) {
 					str.parse_utf8(str.ascii(true).get_data());
 				}
-				r_token.type = TK_STRING;
-				r_token.value = str;
+				if (string_name) {
+					r_token.type = TK_STRING_NAME;
+					r_token.value = StringName(str);
+					string_name = false; //reset
+				} else {
+					r_token.type = TK_STRING;
+					r_token.value = str;
+				}
 				return OK;
 
 			} break;
@@ -1496,6 +1516,14 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 
 			Color c = p_variant;
 			p_store_string_func(p_store_string_ud, "Color( " + rtosfix(c.r) + ", " + rtosfix(c.g) + ", " + rtosfix(c.b) + ", " + rtosfix(c.a) + " )");
+
+		} break;
+		case Variant::STRING_NAME: {
+
+			String str = p_variant;
+
+			str = "@\"" + str.c_escape() + "\"";
+			p_store_string_func(p_store_string_ud, str);
 
 		} break;
 		case Variant::NODE_PATH: {

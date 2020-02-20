@@ -804,6 +804,12 @@ void EditorPropertyDictionary::update_property() {
 					prop = memnew(EditorPropertyColor);
 
 				} break;
+				case Variant::STRING_NAME: {
+					EditorPropertyText *ept = memnew(EditorPropertyText);
+					ept->set_string_name(true);
+					prop = ept;
+
+				} break;
 				case Variant::NODE_PATH: {
 					prop = memnew(EditorPropertyNodePath);
 

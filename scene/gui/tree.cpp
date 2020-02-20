@@ -737,10 +737,10 @@ Variant TreeItem::_call_recursive_bind(const Variant **p_args, int p_argcount, C
 		return Variant();
 	}
 
-	if (p_args[0]->get_type() != Variant::STRING) {
+	if (p_args[0]->get_type() != Variant::STRING && p_args[0]->get_type() != Variant::STRING_NAME) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
-		r_error.expected = Variant::STRING;
+		r_error.expected = Variant::STRING_NAME;
 		return Variant();
 	}
 
@@ -861,7 +861,7 @@ void TreeItem::_bind_methods() {
 	{
 		MethodInfo mi;
 		mi.name = "call_recursive";
-		mi.arguments.push_back(PropertyInfo(Variant::STRING, "method"));
+		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
 
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_recursive", &TreeItem::_call_recursive_bind, mi);
 	}

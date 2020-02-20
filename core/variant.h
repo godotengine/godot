@@ -99,6 +99,7 @@ public:
 
 		// misc types
 		COLOR,
+		STRING_NAME,
 		NODE_PATH, // 15
 		_RID,
 		OBJECT,

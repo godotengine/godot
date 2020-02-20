@@ -1048,7 +1048,7 @@ void Animation::track_insert_key(int p_track, float p_time, const Variant &p_key
 			ERR_FAIL_COND(p_key.get_type() != Variant::DICTIONARY);
 
 			Dictionary d = p_key;
-			ERR_FAIL_COND(!d.has("method") || d["method"].get_type() != Variant::STRING);
+			ERR_FAIL_COND(!d.has("method") || (d["method"].get_type() != Variant::STRING_NAME && d["method"].get_type() != Variant::STRING));
 			ERR_FAIL_COND(!d.has("args") || !d["args"].is_array());
 
 			MethodKey k;
