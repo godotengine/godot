@@ -1172,7 +1172,7 @@ MainLoop *test() {
 
 	/** A character length != wchar_t may be forced, so the tests won't work */
 
-	ERR_FAIL_COND_V(sizeof(CharType) != sizeof(wchar_t), NULL);
+	static_assert(sizeof(CharType) == sizeof(wchar_t));
 
 	int count = 0;
 	int passed = 0;
