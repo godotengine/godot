@@ -405,7 +405,6 @@ Ref<Image> StreamTexture::load_image_from_file(FileAccess *f, int p_size_limit) 
 			}
 
 			if (img.is_null() || img->empty()) {
-				memdelete(f);
 				ERR_FAIL_COND_V(img.is_null() || img->empty(), Ref<Image>());
 			}
 
