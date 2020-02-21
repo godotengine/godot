@@ -104,7 +104,6 @@ class VisualShaderEditor : public VBoxContainer {
 	struct AddOption {
 		String name;
 		String category;
-		String sub_category;
 		String type;
 		String description;
 		int sub_func;
@@ -116,12 +115,12 @@ class VisualShaderEditor : public VBoxContainer {
 		float value;
 		bool highend;
 		bool is_custom;
+		int temp_idx;
 
 		AddOption(const String &p_name = String(), const String &p_category = String(), const String &p_sub_category = String(), const String &p_type = String(), const String &p_description = String(), int p_sub_func = -1, int p_return_type = -1, int p_mode = -1, int p_func = -1, float p_value = -1, bool p_highend = false) {
 			name = p_name;
 			type = p_type;
-			category = p_category;
-			sub_category = p_sub_category;
+			category = p_category + "/" + p_sub_category;
 			description = p_description;
 			sub_func = p_sub_func;
 			return_type = p_return_type;
@@ -135,8 +134,7 @@ class VisualShaderEditor : public VBoxContainer {
 		AddOption(const String &p_name, const String &p_category, const String &p_sub_category, const String &p_type, const String &p_description, const String &p_sub_func, int p_return_type = -1, int p_mode = -1, int p_func = -1, float p_value = -1, bool p_highend = false) {
 			name = p_name;
 			type = p_type;
-			category = p_category;
-			sub_category = p_sub_category;
+			category = p_category + "/" + p_sub_category;
 			description = p_description;
 			sub_func = 0;
 			sub_func_str = p_sub_func;
@@ -146,6 +144,12 @@ class VisualShaderEditor : public VBoxContainer {
 			value = p_value;
 			highend = p_highend;
 			is_custom = false;
+		}
+	};
+	struct _OptionComparator {
+
+		_FORCE_INLINE_ bool operator()(const AddOption &a, const AddOption &b) const {
+			return a.category.count("/") > b.category.count("/") || (a.category + "/" + a.name).naturalnocasecmp_to(b.category + "/" + b.name) < 0;
 		}
 	};
 
@@ -265,7 +269,7 @@ public:
 	static VisualShaderEditor *get_singleton() { return singleton; }
 
 	void clear_custom_types();
-	void add_custom_type(const String &p_name, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, const String &p_subcategory, bool p_highend);
+	void add_custom_type(const String &p_name, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, bool p_highend);
 
 	virtual Size2 get_minimum_size() const;
 	void edit(VisualShader *p_visual_shader);
