@@ -79,6 +79,7 @@ matrix:
             - scons
           update: true
 
+<<<<<<< HEAD
 # TODO: iOS MoltenVK support
 
 #    - name: iOS export template (debug, Clang)
@@ -108,6 +109,33 @@ matrix:
 #            - *linux_deps
 
     - name: Linux export template (release_debug, GCC 7, without 3D support)
+=======
+    - name: iOS export template (debug, Clang)
+      stage: build
+      env: PLATFORM=iphone TOOLS=no TARGET=debug CACHE_NAME=${PLATFORM}-clang
+      os: osx
+      compiler: clang
+      addons:
+        homebrew:
+          packages:
+            - scons
+          update: true
+
+    - name: Linux headless editor (release_debug, GCC 9, testing project exporting and script running)
+      stage: build
+      env: PLATFORM=server TOOLS=yes TARGET=release_debug CACHE_NAME=${PLATFORM}-tools-gcc-9 MATRIX_EVAL="CC=gcc-9 && CXX=g++-9" EXTRA_ARGS="warnings=extra werror=yes" TEST_PROJECT=yes
+      os: linux
+      compiler: gcc-9
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - *gcc9_deps
+            - *linux_deps
+
+    - name: Linux export template (release_debug, GCC 5, without 3D support)
+>>>>>>> Travis: Force updating homebrew on macOS
       stage: build
       env: PLATFORM=x11 TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-gcc-7 EXTRA_ARGS="disable_3d=yes"
       os: linux
