@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "option_button.h"
+
 #include "core/print_string.h"
 
 Size2 OptionButton::get_minimum_size() const {
@@ -362,7 +363,7 @@ OptionButton::OptionButton() {
 	popup->set_allow_search(true);
 	popup->connect("index_pressed", callable_mp(this, &OptionButton::_selected));
 	popup->connect("id_focused", callable_mp(this, &OptionButton::_focused));
-	popup->connect_compat("popup_hide", this, "set_pressed", varray(false));
+	popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(false));
 }
 
 OptionButton::~OptionButton() {

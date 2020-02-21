@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "sprite_3d.h"
+
 #include "core/core_string_names.h"
 #include "scene/scene_string_names.h"
 
@@ -177,8 +178,6 @@ void SpriteBase3D::_im_update() {
 	_draw();
 
 	pending_update = false;
-
-	//texture->draw_rect_region(ci,dst_rect,src_rect,modulate);
 }
 
 void SpriteBase3D::_queue_update() {

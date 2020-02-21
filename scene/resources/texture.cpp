@@ -1409,11 +1409,11 @@ void CurveTexture::ensure_default_setup(float p_min, float p_max) {
 void CurveTexture::set_curve(Ref<Curve> p_curve) {
 	if (_curve != p_curve) {
 		if (_curve.is_valid()) {
-			_curve->disconnect_compat(CoreStringNames::get_singleton()->changed, this, "_update");
+			_curve->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveTexture::_update));
 		}
 		_curve = p_curve;
 		if (_curve.is_valid()) {
-			_curve->connect_compat(CoreStringNames::get_singleton()->changed, this, "_update");
+			_curve->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveTexture::_update));
 		}
 		_update();
 	}
@@ -1514,11 +1514,11 @@ void GradientTexture::set_gradient(Ref<Gradient> p_gradient) {
 	if (p_gradient == gradient)
 		return;
 	if (gradient.is_valid()) {
-		gradient->disconnect_compat(CoreStringNames::get_singleton()->changed, this, "_update");
+		gradient->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GradientTexture::_update));
 	}
 	gradient = p_gradient;
 	if (gradient.is_valid()) {
-		gradient->connect_compat(CoreStringNames::get_singleton()->changed, this, "_update");
+		gradient->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GradientTexture::_update));
 	}
 	_update();
 	emit_changed();

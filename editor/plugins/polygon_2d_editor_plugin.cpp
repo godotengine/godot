@@ -1259,7 +1259,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	button_uv = memnew(ToolButton);
 	add_child(button_uv);
 	button_uv->set_tooltip(TTR("Open Polygon 2D UV editor."));
-	button_uv->connect_compat("pressed", this, "_menu_option", varray(MODE_EDIT_UV));
+	button_uv->connect("pressed", callable_mp(this, &Polygon2DEditor::_menu_option), varray(MODE_EDIT_UV));
 
 	uv_mode = UV_MODE_EDIT_POINT;
 	uv_edit = memnew(AcceptDialog);
@@ -1374,7 +1374,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_menu->get_popup()->add_item(TTR("Clear UV"), UVEDIT_UV_CLEAR);
 	uv_menu->get_popup()->add_separator();
 	uv_menu->get_popup()->add_item(TTR("Grid Settings"), UVEDIT_GRID_SETTINGS);
-	uv_menu->get_popup()->connect_compat("id_pressed", this, "_menu_option");
+	uv_menu->get_popup()->connect("id_pressed", callable_mp(this, &Polygon2DEditor::_menu_option));
 
 	uv_mode_hb->add_child(memnew(VSeparator));
 

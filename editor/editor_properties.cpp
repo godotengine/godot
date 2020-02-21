@@ -788,7 +788,7 @@ EditorPropertyLayers::EditorPropertyLayers() {
 	add_child(layers);
 	layers->set_hide_on_checkable_item_selection(false);
 	layers->connect("id_pressed", callable_mp(this, &EditorPropertyLayers::_menu_pressed));
-	layers->connect_compat("popup_hide", button, "set_pressed", varray(false));
+	layers->connect("popup_hide", callable_mp((BaseButton *)button, &BaseButton::set_pressed), varray(false));
 }
 
 ///////////////////// INT /////////////////////////
@@ -2854,7 +2854,7 @@ EditorPropertyResource::EditorPropertyResource() {
 	edit->set_flat(true);
 	edit->set_toggle_mode(true);
 	menu->connect("id_pressed", callable_mp(this, &EditorPropertyResource::_menu_option));
-	menu->connect_compat("popup_hide", edit, "set_pressed", varray(false));
+	menu->connect("popup_hide", callable_mp((BaseButton *)edit, &BaseButton::set_pressed), varray(false));
 	edit->connect("pressed", callable_mp(this, &EditorPropertyResource::_update_menu));
 	hbc->add_child(edit);
 	edit->connect("gui_input", callable_mp(this, &EditorPropertyResource::_button_input));

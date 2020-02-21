@@ -85,7 +85,7 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 		visual_shader->set_graph_offset(graph->get_scroll_ofs() / EDSCALE);
 	} else {
 		if (visual_shader.is_valid()) {
-			if (visual_shader->is_connected_compat("changed", this, "")) {
+			if (visual_shader->is_connected("changed", callable_mp(this, &VisualShaderEditor::_update_preview))) {
 				visual_shader->disconnect("changed", callable_mp(this, &VisualShaderEditor::_update_preview));
 			}
 		}
@@ -523,10 +523,6 @@ void VisualShaderEditor::_update_graph() {
 			expression = expression_node->get_expression();
 		}
 
-		/*if (!vsnode->is_connected("changed", this, "_node_changed")) {
-			vsnode->connect("changed", this, "_node_changed", varray(vsnode->get_instance_id()), CONNECT_DEFERRED);
-		}*/
-
 		node->set_offset(position);
 
 		node->set_title(vsnode->get_caption());
@@ -662,7 +658,7 @@ void VisualShaderEditor::_update_graph() {
 
 					case Variant::COLOR: {
 						button->set_custom_minimum_size(Size2(30, 0) * EDSCALE);
-						button->connect_compat("draw", this, "_draw_color_over_button", varray(button, default_value));
+						button->connect("draw", callable_mp(this, &VisualShaderEditor::_draw_color_over_button), varray(button, default_value));
 					} break;
 					case Variant::BOOL: {
 						button->set_text(((bool)default_value) ? "true" : "false");
@@ -2940,15 +2936,10 @@ class VisualShaderNodePluginInputEditor : public OptionButton {
 
 	Ref<VisualShaderNodeInput> input;
 
-protected:
-	static void _bind_methods() {
-		ClassDB::bind_method("_item_selected", &VisualShaderNodePluginInputEditor::_item_selected);
-	}
-
 public:
 	void _notification(int p_what) {
 		if (p_what == NOTIFICATION_READY) {
-			connect_compat("item_selected", this, "_item_selected");
+			connect("item_selected", callable_mp(this, &VisualShaderNodePluginInputEditor::_item_selected));
 		}
 	}
 
@@ -3078,25 +3069,22 @@ public:
 
 			bool res_prop = Object::cast_to<EditorPropertyResource>(p_properties[i]);
 			if (res_prop) {
-				p_properties[i]->connect_compat("resource_selected", this, "_resource_selected");
+				p_properties[i]->connect("resource_selected", callable_mp(this, &VisualShaderNodePluginDefaultEditor::_resource_selected));
 			}
 
-			properties[i]->connect_compat("property_changed", this, "_property_changed");
+			properties[i]->connect("property_changed", callable_mp(this, &VisualShaderNodePluginDefaultEditor::_property_changed));
 			properties[i]->set_object_and_property(node.ptr(), p_names[i]);
 			properties[i]->update_property();
 			properties[i]->set_name_split_ratio(0);
 		}
-		node->connect_compat("changed", this, "_node_changed");
-		node->connect_compat("editor_refresh_request", this, "_refresh_request", varray(), CONNECT_DEFERRED);
+		node->connect("changed", callable_mp(this, &VisualShaderNodePluginDefaultEditor::_node_changed));
+		node->connect("editor_refresh_request", callable_mp(this, &VisualShaderNodePluginDefaultEditor::_refresh_request), varray(), CONNECT_DEFERRED);
 	}
 
 	static void _bind_methods() {
-		ClassDB::bind_method("_property_changed", &VisualShaderNodePluginDefaultEditor::_property_changed, DEFVAL(String()), DEFVAL(false));
-		ClassDB::bind_method("_node_changed", &VisualShaderNodePluginDefaultEditor::_node_changed);
-		ClassDB::bind_method("_refresh_request", &VisualShaderNodePluginDefaultEditor::_refresh_request);
-		ClassDB::bind_method("_resource_selected", &VisualShaderNodePluginDefaultEditor::_resource_selected);
-		ClassDB::bind_method("_open_inspector", &VisualShaderNodePluginDefaultEditor::_open_inspector);
-		ClassDB::bind_method("_show_prop_names", &VisualShaderNodePluginDefaultEditor::_show_prop_names);
+		ClassDB::bind_method("_refresh_request", &VisualShaderNodePluginDefaultEditor::_refresh_request); // Used by UndoRedo.
+		ClassDB::bind_method("_open_inspector", &VisualShaderNodePluginDefaultEditor::_open_inspector); // Used by UndoRedo.
+		ClassDB::bind_method("_show_prop_names", &VisualShaderNodePluginDefaultEditor::_show_prop_names); // Used with call_deferred.
 	}
 };
 

@@ -30,13 +30,13 @@
 
 #include "visual_script.h"
 
-#include <stdint.h>
-
 #include "core/core_string_names.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "scene/main/node.h"
 #include "visual_script_nodes.h"
+
+#include <stdint.h>
 
 //used by editor, this is not really saved
 void VisualScriptNode::set_breakpoint(bool p_breakpoint) {

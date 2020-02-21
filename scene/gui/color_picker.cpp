@@ -956,8 +956,8 @@ void ColorPickerButton::_update_picker() {
 		add_child(popup);
 		picker->connect("color_changed", callable_mp(this, &ColorPickerButton::_color_changed));
 		popup->connect("modal_closed", callable_mp(this, &ColorPickerButton::_modal_closed));
-		popup->connect_compat("about_to_show", this, "set_pressed", varray(true));
-		popup->connect_compat("popup_hide", this, "set_pressed", varray(false));
+		popup->connect("about_to_show", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(true));
+		popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(false));
 		picker->set_pick_color(color);
 		picker->set_edit_alpha(edit_alpha);
 		emit_signal("picker_created");

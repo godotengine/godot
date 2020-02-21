@@ -1712,7 +1712,7 @@ CodeTextEditor::CodeTextEditor() {
 	error->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	error->set_mouse_filter(MOUSE_FILTER_STOP);
 	error->connect("gui_input", callable_mp(this, &CodeTextEditor::_error_pressed));
-	find_replace_bar->connect_compat("error", error, "set_text");
+	find_replace_bar->connect("error", callable_mp(error, &Label::set_text));
 
 	// Warnings
 	warning_button = memnew(ToolButton);

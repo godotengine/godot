@@ -345,7 +345,7 @@ void InspectorDock::_notification(int p_what) {
 void InspectorDock::_bind_methods() {
 
 	ClassDB::bind_method("update_keying", &InspectorDock::update_keying);
-	ClassDB::bind_method("_transform_keyed", &InspectorDock::_transform_keyed);
+	ClassDB::bind_method("_transform_keyed", &InspectorDock::_transform_keyed); // Still used by some connect_compat.
 
 	ClassDB::bind_method("_unref_resource", &InspectorDock::_unref_resource);
 	ClassDB::bind_method("_paste_resource", &InspectorDock::_paste_resource);

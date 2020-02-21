@@ -1501,16 +1501,16 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 void AnimationPlayerEditor::_start_onion_skinning() {
 
 	// FIXME: Using "idle_frame" makes onion layers update one frame behind the current.
-	if (!get_tree()->is_connected_compat("idle_frame", this, "call_deferred")) {
-		get_tree()->connect_compat("idle_frame", this, "call_deferred", varray("_prepare_onion_layers_1"));
+	if (!get_tree()->is_connected("idle_frame", callable_mp((Object *)this, &Object::call_deferred))) {
+		get_tree()->connect("idle_frame", callable_mp((Object *)this, &Object::call_deferred), varray("_prepare_onion_layers_1"));
 	}
 }
 
 void AnimationPlayerEditor::_stop_onion_skinning() {
 
-	if (get_tree()->is_connected_compat("idle_frame", this, "call_deferred")) {
+	if (get_tree()->is_connected("idle_frame", callable_mp((Object *)this, &Object::call_deferred))) {
 
-		get_tree()->disconnect_compat("idle_frame", this, "call_deferred");
+		get_tree()->disconnect("idle_frame", callable_mp((Object *)this, &Object::call_deferred));
 
 		_free_onion_layers();
 

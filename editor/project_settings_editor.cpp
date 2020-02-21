@@ -2098,7 +2098,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	timer = memnew(Timer);
 	timer->set_wait_time(1.5);
-	timer->connect_compat("timeout", ProjectSettings::get_singleton(), "save");
+	timer->connect("timeout", callable_mp(ProjectSettings::get_singleton(), &ProjectSettings::save));
 	timer->set_one_shot(true);
 	add_child(timer);
 

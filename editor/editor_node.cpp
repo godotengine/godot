@@ -2972,7 +2972,7 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 
 		ToolButton *tb = memnew(ToolButton);
 		tb->set_toggle_mode(true);
-		tb->connect_compat("pressed", singleton, "_editor_select", varray(singleton->main_editor_buttons.size()));
+		tb->connect("pressed", callable_mp(singleton, &EditorNode::_editor_select), varray(singleton->main_editor_buttons.size()));
 		tb->set_text(p_editor->get_name());
 		Ref<Texture2D> icon = p_editor->get_icon();
 
@@ -5472,6 +5472,8 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("edit_item_resource", &EditorNode::edit_item_resource);
 
 	ClassDB::bind_method(D_METHOD("get_gui_base"), &EditorNode::get_gui_base);
+
+	ClassDB::bind_method(D_METHOD("_on_plugin_ready"), &EditorNode::_on_plugin_ready); // Still used by some connect_compat.
 
 	ClassDB::bind_method("_screenshot", &EditorNode::_screenshot);
 	ClassDB::bind_method("_save_screenshot", &EditorNode::_save_screenshot);

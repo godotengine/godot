@@ -247,7 +247,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	results_tree->set_hide_root(true);
 	results_tree->set_select_mode(Tree::SELECT_ROW);
 	results_tree->connect("item_activated", callable_mp(this, &EditorHelpSearch::_confirmed));
-	results_tree->connect_compat("item_selected", get_ok(), "set_disabled", varray(false));
+	results_tree->connect("item_selected", callable_mp((BaseButton *)get_ok(), &BaseButton::set_disabled), varray(false));
 	vbox->add_child(results_tree, true);
 }
 

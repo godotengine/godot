@@ -811,7 +811,7 @@ public:
 		create_dir = memnew(Button);
 		pnhb->add_child(create_dir);
 		create_dir->set_text(TTR("Create Folder"));
-		create_dir->connect_compat("pressed", this, "_create_folder");
+		create_dir->connect("pressed", callable_mp(this, &ProjectDialog::_create_folder));
 
 		path_container = memnew(VBoxContainer);
 		vb->add_child(path_container);
@@ -848,7 +848,7 @@ public:
 
 		browse = memnew(Button);
 		browse->set_text(TTR("Browse"));
-		browse->connect_compat("pressed", this, "_browse_path");
+		browse->connect("pressed", callable_mp(this, &ProjectDialog::_browse_path));
 		pphb->add_child(browse);
 
 		// install status icon
@@ -858,7 +858,7 @@ public:
 
 		install_browse = memnew(Button);
 		install_browse->set_text(TTR("Browse"));
-		install_browse->connect_compat("pressed", this, "_browse_install_path");
+		install_browse->connect("pressed", callable_mp(this, &ProjectDialog::_browse_install_path));
 		iphb->add_child(install_browse);
 
 		msg = memnew(Label);
@@ -928,13 +928,13 @@ public:
 		fdialog_install->set_access(FileDialog::ACCESS_FILESYSTEM);
 		add_child(fdialog);
 		add_child(fdialog_install);
-		project_name->connect_compat("text_changed", this, "_text_changed");
-		project_path->connect_compat("text_changed", this, "_path_text_changed");
-		install_path->connect_compat("text_changed", this, "_path_text_changed");
-		fdialog->connect_compat("dir_selected", this, "_path_selected");
-		fdialog->connect_compat("file_selected", this, "_file_selected");
-		fdialog_install->connect_compat("dir_selected", this, "_install_path_selected");
-		fdialog_install->connect_compat("file_selected", this, "_install_path_selected");
+		project_name->connect("text_changed", callable_mp(this, &ProjectDialog::_text_changed));
+		project_path->connect("text_changed", callable_mp(this, &ProjectDialog::_path_text_changed));
+		install_path->connect("text_changed", callable_mp(this, &ProjectDialog::_path_text_changed));
+		fdialog->connect("dir_selected", callable_mp(this, &ProjectDialog::_path_selected));
+		fdialog->connect("file_selected", callable_mp(this, &ProjectDialog::_file_selected));
+		fdialog_install->connect("dir_selected", callable_mp(this, &ProjectDialog::_install_path_selected));
+		fdialog_install->connect("file_selected", callable_mp(this, &ProjectDialog::_install_path_selected));
 
 		set_hide_on_ok(false);
 		mode = MODE_NEW;
@@ -2516,8 +2516,8 @@ ProjectManager::ProjectManager() {
 	pc->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	_project_list = memnew(ProjectList);
-	_project_list->connect_compat(ProjectList::SIGNAL_SELECTION_CHANGED, this, "_update_project_buttons");
-	_project_list->connect_compat(ProjectList::SIGNAL_PROJECT_ASK_OPEN, this, "_open_selected_projects_ask");
+	_project_list->connect(ProjectList::SIGNAL_SELECTION_CHANGED, callable_mp(this, &ProjectManager::_update_project_buttons));
+	_project_list->connect(ProjectList::SIGNAL_PROJECT_ASK_OPEN, callable_mp(this, &ProjectManager::_open_selected_projects_ask));
 	pc->add_child(_project_list);
 	_project_list->set_enable_h_scroll(false);
 

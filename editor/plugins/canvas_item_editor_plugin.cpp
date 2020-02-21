@@ -5390,7 +5390,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	editor = p_editor;
 	editor_selection = p_editor->get_editor_selection();
 	editor_selection->add_editor_plugin(this);
-	editor_selection->connect_compat("selection_changed", this, "update");
+	editor_selection->connect("selection_changed", callable_mp((CanvasItem *)this, &CanvasItem::update));
 	editor_selection->connect("selection_changed", callable_mp(this, &CanvasItemEditor::_selection_changed));
 
 	editor->call_deferred("connect", make_binds("play_pressed", Callable(this, "_update_override_camera_button"), true));
