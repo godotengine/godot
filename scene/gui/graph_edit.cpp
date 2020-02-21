@@ -259,7 +259,7 @@ void GraphEdit::add_child_notify(Node *p_child) {
 		gn->set_scale(Vector2(zoom, zoom));
 		gn->connect("offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved), varray(gn));
 		gn->connect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised), varray(gn));
-		gn->connect_compat("item_rect_changed", connections_layer, "update");
+		gn->connect("item_rect_changed", callable_mp((CanvasItem *)connections_layer, &CanvasItem::update));
 		_graph_node_moved(gn);
 		gn->set_mouse_filter(MOUSE_FILTER_PASS);
 	}

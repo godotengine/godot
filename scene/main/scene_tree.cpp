@@ -88,7 +88,7 @@ void SceneTreeTimer::release_connections() {
 
 	for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
 		Connection const &connection = E->get();
-		disconnect_compat(connection.signal.get_name(), connection.callable.get_object(), connection.callable.get_method());
+		disconnect(connection.signal.get_name(), connection.callable);
 	}
 }
 

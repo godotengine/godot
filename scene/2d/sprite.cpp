@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "sprite.h"
+
 #include "core/core_string_names.h"
 #include "core/os/os.h"
 #include "scene/main/viewport.h"
@@ -142,12 +143,12 @@ void Sprite::set_texture(const Ref<Texture2D> &p_texture) {
 		return;
 
 	if (texture.is_valid())
-		texture->disconnect_compat(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
+		texture->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Sprite::_texture_changed));
 
 	texture = p_texture;
 
 	if (texture.is_valid())
-		texture->connect_compat(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
+		texture->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Sprite::_texture_changed));
 
 	update();
 	emit_signal("texture_changed");
@@ -491,8 +492,6 @@ void Sprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_hframes"), &Sprite::get_hframes);
 
 	ClassDB::bind_method(D_METHOD("get_rect"), &Sprite::get_rect);
-
-	ClassDB::bind_method(D_METHOD("_texture_changed"), &Sprite::_texture_changed);
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 	ADD_SIGNAL(MethodInfo("texture_changed"));

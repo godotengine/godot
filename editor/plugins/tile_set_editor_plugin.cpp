@@ -260,7 +260,7 @@ void TileSetEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 void TileSetEditor::_bind_methods() {
 
 	ClassDB::bind_method("_undo_redo_import_scene", &TileSetEditor::_undo_redo_import_scene);
-	ClassDB::bind_method("_on_workspace_process", &TileSetEditor::_on_workspace_process);
+	ClassDB::bind_method("_on_workspace_process", &TileSetEditor::_on_workspace_process); // Still used by some connect_compat.
 	ClassDB::bind_method("_set_snap_step", &TileSetEditor::_set_snap_step);
 	ClassDB::bind_method("_set_snap_off", &TileSetEditor::_set_snap_off);
 	ClassDB::bind_method("_set_snap_sep", &TileSetEditor::_set_snap_sep);

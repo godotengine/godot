@@ -34,7 +34,6 @@
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
-
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_node.h"
@@ -1052,7 +1051,7 @@ void SceneTreeDock::_notification(int p_what) {
 			if (canvas_item_plugin) {
 				canvas_item_plugin->get_canvas_item_editor()->connect_compat("item_lock_status_changed", scene_tree, "_update_tree");
 				canvas_item_plugin->get_canvas_item_editor()->connect_compat("item_group_status_changed", scene_tree, "_update_tree");
-				scene_tree->connect_compat("node_changed", canvas_item_plugin->get_canvas_item_editor()->get_viewport_control(), "update");
+				scene_tree->connect("node_changed", callable_mp((CanvasItem *)canvas_item_plugin->get_canvas_item_editor()->get_viewport_control(), &CanvasItem::update));
 			}
 
 			SpatialEditorPlugin *spatial_editor_plugin = Object::cast_to<SpatialEditorPlugin>(editor_data->get_editor("3D"));
@@ -2113,7 +2112,7 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node, bool p_keep_prop
 			Object::Connection &c = F->get();
 			if (!(c.flags & Object::CONNECT_PERSIST))
 				continue;
-			newnode->connect_compat(c.signal.get_name(), c.callable.get_object(), c.callable.get_method(), c.binds, Object::CONNECT_PERSIST);
+			newnode->connect(c.signal.get_name(), c.callable, c.binds, Object::CONNECT_PERSIST);
 		}
 	}
 

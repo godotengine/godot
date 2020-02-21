@@ -338,6 +338,8 @@ void WindowDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_resizable"), &WindowDialog::get_resizable);
 	ClassDB::bind_method(D_METHOD("get_close_button"), &WindowDialog::get_close_button);
 
+	ClassDB::bind_method(D_METHOD("_closed"), &WindowDialog::_closed); // Still used by some connect_compat.
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "window_title", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT_INTL), "set_title", "get_title");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resizable", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT_INTL), "set_resizable", "get_resizable");
 }
@@ -561,6 +563,9 @@ void AcceptDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text"), &AcceptDialog::get_text);
 	ClassDB::bind_method(D_METHOD("set_autowrap", "autowrap"), &AcceptDialog::set_autowrap);
 	ClassDB::bind_method(D_METHOD("has_autowrap"), &AcceptDialog::has_autowrap);
+
+	ClassDB::bind_method(D_METHOD("_ok"), &AcceptDialog::_ok_pressed); // Still used by some connect_compat.
+	ClassDB::bind_method(D_METHOD("_builtin_text_entered"), &AcceptDialog::_builtin_text_entered); // Still used by some connect_compat.
 
 	ADD_SIGNAL(MethodInfo("confirmed"));
 	ADD_SIGNAL(MethodInfo("custom_action", PropertyInfo(Variant::STRING_NAME, "action")));

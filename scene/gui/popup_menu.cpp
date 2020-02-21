@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "popup_menu.h"
+
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -1233,7 +1234,7 @@ void PopupMenu::_ref_shortcut(Ref<ShortCut> p_sc) {
 
 	if (!shortcut_refcount.has(p_sc)) {
 		shortcut_refcount[p_sc] = 1;
-		p_sc->connect_compat("changed", this, "update");
+		p_sc->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::update));
 	} else {
 		shortcut_refcount[p_sc] += 1;
 	}
@@ -1244,7 +1245,7 @@ void PopupMenu::_unref_shortcut(Ref<ShortCut> p_sc) {
 	ERR_FAIL_COND(!shortcut_refcount.has(p_sc));
 	shortcut_refcount[p_sc]--;
 	if (shortcut_refcount[p_sc] == 0) {
-		p_sc->disconnect_compat("changed", this, "update");
+		p_sc->disconnect("changed", callable_mp((CanvasItem *)this, &CanvasItem::update));
 		shortcut_refcount.erase(p_sc);
 	}
 }

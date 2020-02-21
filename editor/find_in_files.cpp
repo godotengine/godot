@@ -557,8 +557,8 @@ const char *FindInFilesPanel::SIGNAL_FILES_MODIFIED = "files_modified";
 FindInFilesPanel::FindInFilesPanel() {
 
 	_finder = memnew(FindInFiles);
-	_finder->connect_compat(FindInFiles::SIGNAL_RESULT_FOUND, this, "_on_result_found");
-	_finder->connect_compat(FindInFiles::SIGNAL_FINISHED, this, "_on_finished");
+	_finder->connect(FindInFiles::SIGNAL_RESULT_FOUND, callable_mp(this, &FindInFilesPanel::_on_result_found));
+	_finder->connect(FindInFiles::SIGNAL_FINISHED, callable_mp(this, &FindInFilesPanel::_on_finished));
 	add_child(_finder);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);

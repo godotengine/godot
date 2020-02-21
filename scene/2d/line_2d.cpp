@@ -29,9 +29,9 @@
 /*************************************************************************/
 
 #include "line_2d.h"
-#include "line_builder.h"
 
 #include "core/core_string_names.h"
+#include "line_builder.h"
 
 // Needed so we can bind functions
 VARIANT_ENUM_CAST(Line2D::LineJointMode)
@@ -101,14 +101,14 @@ float Line2D::get_width() const {
 void Line2D::set_curve(const Ref<Curve> &p_curve) {
 	// Cleanup previous connection if any
 	if (_curve.is_valid()) {
-		_curve->disconnect_compat(CoreStringNames::get_singleton()->changed, this, "_curve_changed");
+		_curve->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Line2D::_curve_changed));
 	}
 
 	_curve = p_curve;
 
 	// Connect to the curve so the line will update when it is changed
 	if (_curve.is_valid()) {
-		_curve->connect_compat(CoreStringNames::get_singleton()->changed, this, "_curve_changed");
+		_curve->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Line2D::_curve_changed));
 	}
 
 	update();
@@ -171,14 +171,14 @@ void Line2D::set_gradient(const Ref<Gradient> &p_gradient) {
 
 	// Cleanup previous connection if any
 	if (_gradient.is_valid()) {
-		_gradient->disconnect_compat(CoreStringNames::get_singleton()->changed, this, "_gradient_changed");
+		_gradient->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Line2D::_gradient_changed));
 	}
 
 	_gradient = p_gradient;
 
 	// Connect to the gradient so the line will update when the ColorRamp is changed
 	if (_gradient.is_valid()) {
-		_gradient->connect_compat(CoreStringNames::get_singleton()->changed, this, "_gradient_changed");
+		_gradient->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Line2D::_gradient_changed));
 	}
 
 	update();
@@ -428,7 +428,4 @@ void Line2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(LINE_TEXTURE_NONE);
 	BIND_ENUM_CONSTANT(LINE_TEXTURE_TILE);
 	BIND_ENUM_CONSTANT(LINE_TEXTURE_STRETCH);
-
-	ClassDB::bind_method(D_METHOD("_gradient_changed"), &Line2D::_gradient_changed);
-	ClassDB::bind_method(D_METHOD("_curve_changed"), &Line2D::_curve_changed);
 }
