@@ -1215,6 +1215,8 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 
 			// misc types
 			case COLOR: return Color();
+			case STRING_NAME:
+				return StringName(); // 15
 			case NODE_PATH:
 				return NodePath(); // 15
 			case _RID: return RID();
@@ -1272,10 +1274,14 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 
 			// misc types
 			case COLOR: return p_args[0]->type == Variant::STRING ? Color::html(*p_args[0]) : Color::hex(*p_args[0]);
+			case STRING_NAME:
+				return (StringName(p_args[0]->operator StringName())); // 15
 			case NODE_PATH:
 				return (NodePath(p_args[0]->operator NodePath())); // 15
 			case _RID: return (RID(*p_args[0]));
 			case OBJECT: return ((Object *)(p_args[0]->operator Object *()));
+			case CALLABLE: return ((Callable)(p_args[0]->operator Callable()));
+			case SIGNAL: return ((Signal)(p_args[0]->operator Signal()));
 			case DICTIONARY: return p_args[0]->operator Dictionary();
 			case ARRAY:
 				return p_args[0]->operator Array(); // 20
@@ -1840,13 +1846,13 @@ void register_variant_methods() {
 	ADDFUNC0R(CALLABLE, BOOL, Callable, is_standard, varray());
 	ADDFUNC0R(CALLABLE, OBJECT, Callable, get_object, varray());
 	ADDFUNC0R(CALLABLE, INT, Callable, get_object_id, varray());
-	ADDFUNC0R(CALLABLE, STRING, Callable, get_method, varray());
+	ADDFUNC0R(CALLABLE, STRING_NAME, Callable, get_method, varray());
 	ADDFUNC0R(CALLABLE, INT, Callable, hash, varray());
 
 	ADDFUNC0R(SIGNAL, BOOL, Signal, is_null, varray());
 	ADDFUNC0R(SIGNAL, OBJECT, Signal, get_object, varray());
 	ADDFUNC0R(SIGNAL, INT, Signal, get_object_id, varray());
-	ADDFUNC0R(SIGNAL, STRING, Signal, get_name, varray());
+	ADDFUNC0R(SIGNAL, STRING_NAME, Signal, get_name, varray());
 
 	ADDFUNC3R(SIGNAL, INT, Signal, connect, CALLABLE, "callable", ARRAY, "binds", INT, "flags", varray(Array(), 0));
 
@@ -2070,8 +2076,8 @@ void register_variant_methods() {
 	_VariantCall::add_constructor(_VariantCall::Transform_init1, Variant::TRANSFORM, "x_axis", Variant::VECTOR3, "y_axis", Variant::VECTOR3, "z_axis", Variant::VECTOR3, "origin", Variant::VECTOR3);
 	_VariantCall::add_constructor(_VariantCall::Transform_init2, Variant::TRANSFORM, "basis", Variant::BASIS, "origin", Variant::VECTOR3);
 
-	_VariantCall::add_constructor(_VariantCall::Callable_init2, Variant::CALLABLE, "object", Variant::OBJECT, "method_name", Variant::STRING);
-	_VariantCall::add_constructor(_VariantCall::Signal_init2, Variant::SIGNAL, "object", Variant::OBJECT, "signal_name", Variant::STRING);
+	_VariantCall::add_constructor(_VariantCall::Callable_init2, Variant::CALLABLE, "object", Variant::OBJECT, "method_name", Variant::STRING_NAME);
+	_VariantCall::add_constructor(_VariantCall::Signal_init2, Variant::SIGNAL, "object", Variant::OBJECT, "signal_name", Variant::STRING_NAME);
 
 	/* REGISTER CONSTANTS */
 

@@ -1011,8 +1011,8 @@ Variant SceneTree::_call_group_flags(const Variant **p_args, int p_argcount, Cal
 
 	ERR_FAIL_COND_V(p_argcount < 3, Variant());
 	ERR_FAIL_COND_V(!p_args[0]->is_num(), Variant());
-	ERR_FAIL_COND_V(p_args[1]->get_type() != Variant::STRING, Variant());
-	ERR_FAIL_COND_V(p_args[2]->get_type() != Variant::STRING, Variant());
+	ERR_FAIL_COND_V(p_args[1]->get_type() != Variant::STRING_NAME && p_args[1]->get_type() != Variant::STRING, Variant());
+	ERR_FAIL_COND_V(p_args[2]->get_type() != Variant::STRING_NAME && p_args[2]->get_type() != Variant::STRING, Variant());
 
 	int flags = *p_args[0];
 	StringName group = *p_args[1];
@@ -1033,8 +1033,8 @@ Variant SceneTree::_call_group(const Variant **p_args, int p_argcount, Callable:
 	r_error.error = Callable::CallError::CALL_OK;
 
 	ERR_FAIL_COND_V(p_argcount < 2, Variant());
-	ERR_FAIL_COND_V(p_args[0]->get_type() != Variant::STRING, Variant());
-	ERR_FAIL_COND_V(p_args[1]->get_type() != Variant::STRING, Variant());
+	ERR_FAIL_COND_V(p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING, Variant());
+	ERR_FAIL_COND_V(p_args[1]->get_type() != Variant::STRING_NAME && p_args[1]->get_type() != Variant::STRING, Variant());
 
 	StringName group = *p_args[0];
 	StringName method = *p_args[1];
@@ -1485,8 +1485,8 @@ void SceneTree::_bind_methods() {
 	MethodInfo mi;
 	mi.name = "call_group_flags";
 	mi.arguments.push_back(PropertyInfo(Variant::INT, "flags"));
-	mi.arguments.push_back(PropertyInfo(Variant::STRING, "group"));
-	mi.arguments.push_back(PropertyInfo(Variant::STRING, "method"));
+	mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "group"));
+	mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
 
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_group_flags", &SceneTree::_call_group_flags, mi);
 
@@ -1495,8 +1495,8 @@ void SceneTree::_bind_methods() {
 
 	MethodInfo mi2;
 	mi2.name = "call_group";
-	mi2.arguments.push_back(PropertyInfo(Variant::STRING, "group"));
-	mi2.arguments.push_back(PropertyInfo(Variant::STRING, "method"));
+	mi2.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "group"));
+	mi2.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
 
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_group", &SceneTree::_call_group, mi2);
 

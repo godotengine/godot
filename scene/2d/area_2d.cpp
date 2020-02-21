@@ -674,7 +674,7 @@ void Area2D::_bind_methods() {
 
 	ADD_GROUP("Audio Bus", "audio_bus_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_bus_override"), "set_audio_bus_override", "is_overriding_audio_bus");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "audio_bus_name", PROPERTY_HINT_ENUM, ""), "set_audio_bus_name", "get_audio_bus_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "audio_bus_name", PROPERTY_HINT_ENUM, ""), "set_audio_bus_name", "get_audio_bus_name");
 
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_DISABLED);
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_COMBINE);

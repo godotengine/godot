@@ -534,7 +534,7 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 	}
 
 	Variant md = item->get_metadata(0);
-	if (md.get_type() != Variant::STRING) {
+	if (md.get_type() != Variant::STRING && md.get_type() != Variant::STRING_NAME) {
 		return;
 	}
 
@@ -598,7 +598,7 @@ void EditorFeatureProfileManager::_class_list_item_edited() {
 	bool checked = item->is_checked(0);
 
 	Variant md = item->get_metadata(0);
-	if (md.get_type() == Variant::STRING) {
+	if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
 		String class_selected = md;
 		edited->set_disable_class(class_selected, !checked);
 		_save_and_update();
@@ -620,7 +620,7 @@ void EditorFeatureProfileManager::_property_item_edited() {
 	}
 
 	Variant md = class_item->get_metadata(0);
-	if (md.get_type() != Variant::STRING) {
+	if (md.get_type() != Variant::STRING && md.get_type() != Variant::STRING_NAME) {
 		return;
 	}
 
@@ -633,7 +633,7 @@ void EditorFeatureProfileManager::_property_item_edited() {
 	bool checked = item->is_checked(0);
 
 	md = item->get_metadata(0);
-	if (md.get_type() == Variant::STRING) {
+	if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
 		String property_selected = md;
 		edited->set_disable_class_property(class_name, property_selected, !checked);
 		_save_and_update();
@@ -657,7 +657,7 @@ void EditorFeatureProfileManager::_update_selected_profile() {
 
 	if (class_list->get_selected()) {
 		Variant md = class_list->get_selected()->get_metadata(0);
-		if (md.get_type() == Variant::STRING) {
+		if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
 			class_selected = md;
 		} else if (md.get_type() == Variant::INT) {
 			feature_selected = md;
