@@ -58,11 +58,11 @@
 #include "scene/resources/convex_polygon_shape.h"
 #include "scene/resources/cylinder_shape.h"
 #include "scene/resources/height_map_shape.h"
-#include "scene/resources/plane_shape.h"
 #include "scene/resources/primitive_meshes.h"
 #include "scene/resources/ray_shape.h"
 #include "scene/resources/sphere_shape.h"
 #include "scene/resources/surface_tool.h"
+#include "scene/resources/world_margin_shape.h"
 
 #define HANDLE_HALF_SIZE 9.5
 
@@ -3575,9 +3575,9 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 		p_gizmo->add_handles(handles, handles_material);
 	}
 
-	if (Object::cast_to<PlaneShape>(*s)) {
+	if (Object::cast_to<WorldMarginShape>(*s)) {
 
-		Ref<PlaneShape> ps = s;
+		Ref<WorldMarginShape> ps = s;
 		Plane p = ps->get_plane();
 		Vector<Vector3> points;
 
