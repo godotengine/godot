@@ -1541,6 +1541,10 @@ EditorFileDialog::EditorFileDialog() {
 	dir_next->connect_compat("pressed", this, "_go_forward");
 	dir_up->connect_compat("pressed", this, "_go_up");
 
+	drives = memnew(OptionButton);
+	pathhb->add_child(drives);
+	drives->connect_compat("item_selected", this, "_select_drive");
+
 	pathhb->add_child(memnew(Label(TTR("Path:"))));
 
 	dir = memnew(LineEdit);
@@ -1585,10 +1589,6 @@ EditorFileDialog::EditorFileDialog() {
 	mode_list->set_button_group(view_mode_group);
 	mode_list->set_tooltip(TTR("View items as a list."));
 	pathhb->add_child(mode_list);
-
-	drives = memnew(OptionButton);
-	pathhb->add_child(drives);
-	drives->connect_compat("item_selected", this, "_select_drive");
 
 	makedir = memnew(Button);
 	makedir->set_text(TTR("Create Folder"));
