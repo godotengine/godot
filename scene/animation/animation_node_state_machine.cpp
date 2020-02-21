@@ -68,6 +68,14 @@ StringName AnimationNodeStateMachineTransition::get_advance_condition_name() con
 	return advance_condition_name;
 }
 
+void AnimationNodeStateMachineTransition::set_invert_condition(bool p_enable) {
+	invert_condition = p_enable;
+}
+
+bool AnimationNodeStateMachineTransition::get_invert_condition() const {
+	return invert_condition;
+}
+
 void AnimationNodeStateMachineTransition::set_xfade_time(float p_xfade) {
 	ERR_FAIL_COND(p_xfade < 0);
 	xfade = p_xfade;
@@ -106,6 +114,9 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_advance_condition", "name"), &AnimationNodeStateMachineTransition::set_advance_condition);
 	ClassDB::bind_method(D_METHOD("get_advance_condition"), &AnimationNodeStateMachineTransition::get_advance_condition);
 
+	ClassDB::bind_method(D_METHOD("set_invert_condition", "invert"), &AnimationNodeStateMachineTransition::set_invert_condition);
+	ClassDB::bind_method(D_METHOD("get_invert_condition"), &AnimationNodeStateMachineTransition::get_invert_condition);
+
 	ClassDB::bind_method(D_METHOD("set_xfade_time", "secs"), &AnimationNodeStateMachineTransition::set_xfade_time);
 	ClassDB::bind_method(D_METHOD("get_xfade_time"), &AnimationNodeStateMachineTransition::get_xfade_time);
 
@@ -118,6 +129,7 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "switch_mode", PROPERTY_HINT_ENUM, "Immediate,Sync,AtEnd"), "set_switch_mode", "get_switch_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_advance"), "set_auto_advance", "has_auto_advance");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "advance_condition"), "set_advance_condition", "get_advance_condition");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert_condition"), "set_invert_condition", "get_invert_condition");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "xfade_time", PROPERTY_HINT_RANGE, "0,240,0.01"), "set_xfade_time", "get_xfade_time");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "priority", PROPERTY_HINT_RANGE, "0,32,1"), "set_priority", "get_priority");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
@@ -132,6 +144,7 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 AnimationNodeStateMachineTransition::AnimationNodeStateMachineTransition() {
 	switch_mode = SWITCH_MODE_IMMEDIATE;
 	auto_advance = false;
+	invert_condition = false;
 	xfade = 0;
 	disabled = false;
 	priority = 1;
@@ -418,8 +431,14 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 				auto_advance = true;
 			}
 			StringName advance_condition_name = p_state_machine->transitions[i].transition->get_advance_condition_name();
-			if (advance_condition_name != StringName() && bool(p_state_machine->get_parameter(advance_condition_name))) {
-				auto_advance = true;
+			if (advance_condition_name != StringName()) {
+				if (bool(p_state_machine->get_parameter(advance_condition_name))) {
+					auto_advance = true;
+				}
+
+				if (p_state_machine->transitions[i].transition->get_invert_condition()) {
+					auto_advance = !auto_advance;
+				}
 			}
 
 			if (p_state_machine->transitions[i].from == current && auto_advance) {

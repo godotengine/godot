@@ -48,6 +48,7 @@ private:
 	bool auto_advance;
 	StringName advance_condition;
 	StringName advance_condition_name;
+	bool invert_condition;
 	float xfade;
 	bool disabled;
 	int priority;
@@ -66,6 +67,9 @@ public:
 	StringName get_advance_condition() const;
 
 	StringName get_advance_condition_name() const;
+
+	void set_invert_condition(bool p_enable);
+	bool get_invert_condition() const;
 
 	void set_xfade_time(float p_xfade);
 	float get_xfade_time() const;
