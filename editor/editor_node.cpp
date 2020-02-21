@@ -123,6 +123,7 @@
 #include "editor/plugins/cpu_particles_2d_editor_plugin.h"
 #include "editor/plugins/cpu_particles_editor_plugin.h"
 #include "editor/plugins/curve_editor_plugin.h"
+#include "editor/plugins/debugger_editor_plugin.h"
 #include "editor/plugins/editor_preview_plugins.h"
 #include "editor/plugins/gi_probe_editor_plugin.h"
 #include "editor/plugins/gradient_editor_plugin.h"
@@ -168,7 +169,6 @@
 #include "editor/quick_open.h"
 #include "editor/register_exporters.h"
 #include "editor/run_settings_dialog.h"
-#include "editor/script_editor_debugger.h"
 #include "editor/settings_config_dialog.h"
 
 #include <stdio.h>
@@ -472,7 +472,7 @@ void EditorNode::_notification(int p_what) {
 			recent_scenes->set_as_minsize();
 
 			// debugger area
-			if (ScriptEditor::get_singleton()->get_debugger()->is_visible())
+			if (EditorDebuggerNode::get_singleton()->is_visible())
 				bottom_panel->add_style_override("panel", gui_base->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles"));
 
 			// update_icons
@@ -1846,7 +1846,7 @@ void EditorNode::_edit_current() {
 
 		Node *selected_node = NULL;
 
-		if (current_obj->is_class("ScriptEditorDebuggerInspectedObject")) {
+		if (current_obj->is_class("EditorDebuggerRemoteObject")) {
 			editable_warning = TTR("This is a remote object, so changes to it won't be kept.\nPlease read the documentation relevant to debugging to better understand this workflow.");
 			capitalize = false;
 			disable_folding = true;
@@ -2048,9 +2048,13 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	editor_data.get_editor_breakpoints(&breakpoints);
 
 	args = ProjectSettings::get_singleton()->get("editor/main_run_args");
-	skip_breakpoints = ScriptEditor::get_singleton()->get_debugger()->is_skip_breakpoints();
+	skip_breakpoints = EditorDebuggerNode::get_singleton()->is_skip_breakpoints();
 
-	Error error = editor_run.run(run_filename, args, breakpoints, skip_breakpoints);
+	int instances = 1;
+	if (debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_TWO)))
+		instances = 2;
+
+	Error error = editor_run.run(run_filename, args, breakpoints, skip_breakpoints, instances);
 
 	if (error != OK) {
 
@@ -2481,6 +2485,16 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			run_settings_dialog->popup_run_settings();
 		} break;
+		case RUN_DEBUG_ONE: {
+			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_ONE), true);
+			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_TWO), false);
+
+		} break;
+		case RUN_DEBUG_TWO: {
+			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_TWO), true);
+			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_ONE), false);
+
+		} break;
 		case RUN_SETTINGS: {
 
 			project_settings->popup_project_settings();
@@ -2571,7 +2585,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_LIVE_DEBUG));
 
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_LIVE_DEBUG), !ischecked);
-			ScriptEditor::get_singleton()->get_debugger()->set_live_debugging(!ischecked);
+			EditorDebuggerNode::get_singleton()->set_live_debugging(!ischecked);
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_live_debug", !ischecked);
 
 		} break;
@@ -3242,7 +3256,7 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 
 	//this should only happen at the very end
 
-	ScriptEditor::get_singleton()->get_debugger()->update_live_edit_root();
+	EditorDebuggerNode::get_singleton()->update_live_edit_root();
 	ScriptEditor::get_singleton()->set_scene_root_script(editor_data.get_scene_root_script(editor_data.get_edited_scene()));
 	editor_data.notify_edited_scene_changed();
 }
@@ -3477,7 +3491,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	opening_prev = false;
 	scene_tree_dock->set_selected(new_scene);
 
-	ScriptEditor::get_singleton()->get_debugger()->update_live_edit_root();
+	EditorDebuggerNode::get_singleton()->update_live_edit_root();
 
 	push_item(new_scene);
 
@@ -3619,7 +3633,7 @@ void EditorNode::_quick_run() {
 	_run(false, quick_run->get_selected());
 }
 
-void EditorNode::notify_child_process_exited() {
+void EditorNode::notify_all_debug_sessions_exited() {
 
 	_menu_option_confirm(RUN_STOP, false);
 	stop_button->set_pressed(false);
@@ -3703,9 +3717,13 @@ void EditorNode::unregister_editor_types() {
 	_init_callbacks.clear();
 }
 
-void EditorNode::stop_child_process() {
+void EditorNode::stop_child_process(OS::ProcessID p_pid) {
 
-	_menu_option_confirm(RUN_STOP, false);
+	if (has_child_process(p_pid)) {
+		editor_run.stop_child_process(p_pid);
+		if (!editor_run.get_child_process_count()) // All children stopped. Closing.
+			_menu_option_confirm(RUN_STOP, false);
+	}
 }
 
 Ref<Script> EditorNode::get_object_custom_type_base(const Object *p_object) const {
@@ -4888,7 +4906,7 @@ void EditorNode::_bottom_panel_switch(bool p_enable, int p_idx) {
 			bottom_panel_items[i].button->set_pressed(i == p_idx);
 			bottom_panel_items[i].control->set_visible(i == p_idx);
 		}
-		if (ScriptEditor::get_singleton()->get_debugger() == bottom_panel_items[p_idx].control) { // this is the debug panel which uses tabs, so the top section should be smaller
+		if (EditorDebuggerNode::get_singleton() == bottom_panel_items[p_idx].control) { // this is the debug panel which uses tabs, so the top section should be smaller
 			bottom_panel->add_style_override("panel", gui_base->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles"));
 		} else {
 			bottom_panel->add_style_override("panel", gui_base->get_stylebox("panel", "TabContainer"));
@@ -6254,6 +6272,13 @@ EditorNode::EditorNode() {
 	p->add_check_shortcut(ED_SHORTCUT("editor/sync_script_changes", TTR("Sync Script Changes")), RUN_RELOAD_SCRIPTS);
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("When this option is turned on, any script that is saved will be reloaded on the running game.\nWhen used remotely on a device, this is more efficient with network filesystem."));
 	p->set_item_checked(p->get_item_count() - 1, true);
+
+	// Multi-instance, start/stop
+	p->add_separator();
+	p->add_radio_check_item(TTR("Debug 1 instance"), RUN_DEBUG_ONE);
+	p->add_radio_check_item(TTR("Debug 2 instances"), RUN_DEBUG_TWO);
+	p->set_item_checked(p->get_item_index(RUN_DEBUG_ONE), true);
+
 	p->connect_compat("id_pressed", this, "_menu_option");
 
 	menu_hb->add_spacer();
@@ -6639,6 +6664,7 @@ EditorNode::EditorNode() {
 
 	file_server = memnew(EditorFileServer);
 
+	add_editor_plugin(memnew(DebuggerEditorPlugin(this)));
 	add_editor_plugin(memnew(AnimationPlayerEditorPlugin(this)));
 	add_editor_plugin(memnew(CanvasItemEditorPlugin(this)));
 	add_editor_plugin(memnew(SpatialEditorPlugin(this)));

@@ -38,7 +38,7 @@ EditorRun::Status EditorRun::get_status() const {
 	return status;
 }
 
-Error EditorRun::run(const String &p_scene, const String &p_custom_args, const List<String> &p_breakpoints, const bool &p_skip_breakpoints) {
+Error EditorRun::run(const String &p_scene, const String &p_custom_args, const List<String> &p_breakpoints, const bool &p_skip_breakpoints, const int &p_instances) {
 
 	List<String> args;
 
@@ -187,20 +187,40 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 	};
 	printf("\n");
 
-	pid = 0;
-	Error err = OS::get_singleton()->execute(exec, args, false, &pid);
-	ERR_FAIL_COND_V(err, err);
+	for (int i = 0; i < p_instances; i++) {
+		OS::ProcessID pid = 0;
+		Error err = OS::get_singleton()->execute(exec, args, false, &pid);
+		ERR_FAIL_COND_V(err, err);
+		pids.push_back(pid);
+	}
 
 	status = STATUS_PLAY;
 
 	return OK;
 }
 
+bool EditorRun::has_child_process(OS::ProcessID p_pid) const {
+	for (const List<OS::ProcessID>::Element *E = pids.front(); E; E = E->next()) {
+		if (E->get() == p_pid)
+			return true;
+	}
+	return false;
+}
+
+void EditorRun::stop_child_process(OS::ProcessID p_pid) {
+	if (has_child_process(p_pid)) {
+		OS::get_singleton()->kill(p_pid);
+		pids.erase(p_pid);
+	}
+}
+
 void EditorRun::stop() {
 
-	if (status != STATUS_STOP && pid != 0) {
+	if (status != STATUS_STOP && pids.size() > 0) {
 
-		OS::get_singleton()->kill(pid);
+		for (List<OS::ProcessID>::Element *E = pids.front(); E; E = E->next()) {
+			OS::get_singleton()->kill(E->get());
+		}
 	}
 
 	status = STATUS_STOP;

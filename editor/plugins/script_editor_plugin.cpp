@@ -36,6 +36,8 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "editor/debugger/editor_debugger_node.h"
+#include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_node.h"
 #include "editor/editor_run_script.h"
 #include "editor/editor_scale.h"
@@ -44,7 +46,6 @@
 #include "editor/find_in_files.h"
 #include "editor/node_dock.h"
 #include "editor/plugins/shader_editor_plugin.h"
-#include "editor/script_editor_debugger.h"
 #include "scene/main/viewport.h"
 #include "scene/scene_string_names.h"
 #include "script_text_editor.h"
@@ -261,7 +262,7 @@ ScriptEditor *ScriptEditor::script_editor = NULL;
 
 String ScriptEditor::_get_debug_tooltip(const String &p_text, Node *_se) {
 
-	String val = debugger->get_var_value(p_text);
+	String val = EditorDebuggerNode::get_singleton()->get_var_value(p_text);
 	if (val != String()) {
 		return p_text + ": " + val;
 	} else {
@@ -276,11 +277,6 @@ void ScriptEditor::_breaked(bool p_breaked, bool p_can_debug) {
 		return;
 	}
 
-	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_NEXT), !(p_breaked && p_can_debug));
-	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_STEP), !(p_breaked && p_can_debug));
-	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_BREAK), p_breaked);
-	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_CONTINUE), !p_breaked);
-
 	for (int i = 0; i < tab_container->get_child_count(); i++) {
 
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
@@ -290,11 +286,6 @@ void ScriptEditor::_breaked(bool p_breaked, bool p_can_debug) {
 
 		se->set_debugger_active(p_breaked);
 	}
-}
-
-void ScriptEditor::_show_debugger(bool p_show) {
-
-	//debug_menu->get_popup()->set_item_checked( debug_menu->get_popup()->get_item_index(DEBUG_SHOW), p_show);
 }
 
 void ScriptEditor::_script_created(Ref<Script> p_script) {
@@ -843,7 +834,7 @@ void ScriptEditor::_res_saved_callback(const Ref<Resource> &p_res) {
 
 void ScriptEditor::_live_auto_reload_running_scripts() {
 	pending_auto_reload = false;
-	debugger->reload_scripts();
+	EditorDebuggerNode::get_singleton()->reload_scripts();
 }
 
 bool ScriptEditor::_test_script_times_on_disk(RES p_for_script) {
@@ -1123,27 +1114,6 @@ void ScriptEditor::_menu_option(int p_option) {
 			_sort_list_on_update = true;
 			_update_script_names();
 		} break;
-		case DEBUG_SHOW: {
-			if (debugger) {
-				bool visible = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(DEBUG_SHOW));
-				debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(DEBUG_SHOW), !visible);
-				if (visible)
-					debugger->hide();
-				else
-					debugger->show();
-			}
-		} break;
-		case DEBUG_SHOW_KEEP_OPEN: {
-			bool visible = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(DEBUG_SHOW_KEEP_OPEN));
-			if (debugger)
-				debugger->set_hide_on_stop(visible);
-			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(DEBUG_SHOW_KEEP_OPEN), !visible);
-		} break;
-		case DEBUG_WITH_EXTERNAL_EDITOR: {
-			bool debug_with_external_editor = !debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(DEBUG_WITH_EXTERNAL_EDITOR));
-			debugger->set_debug_with_external_editor(debug_with_external_editor);
-			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(DEBUG_WITH_EXTERNAL_EDITOR), debug_with_external_editor);
-		} break;
 		case TOGGLE_SCRIPTS_PANEL: {
 			if (current) {
 				ScriptTextEditor *editor = Object::cast_to<ScriptTextEditor>(current);
@@ -1294,29 +1264,6 @@ void ScriptEditor::_menu_option(int p_option) {
 			case CLOSE_ALL: {
 				_close_all_tabs();
 			} break;
-			case DEBUG_NEXT: {
-
-				if (debugger)
-					debugger->debug_next();
-			} break;
-			case DEBUG_STEP: {
-
-				if (debugger)
-					debugger->debug_step();
-
-			} break;
-			case DEBUG_BREAK: {
-
-				if (debugger)
-					debugger->debug_break();
-
-			} break;
-			case DEBUG_CONTINUE: {
-
-				if (debugger)
-					debugger->debug_continue();
-
-			} break;
 			case WINDOW_MOVE_UP: {
 
 				if (tab_container->get_current_tab() > 0) {
@@ -1439,8 +1386,6 @@ void ScriptEditor::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-			editor->connect_compat("play_pressed", this, "_editor_play");
-			editor->connect_compat("pause_pressed", this, "_editor_pause");
 			editor->connect_compat("stop_pressed", this, "_editor_stop");
 			editor->connect_compat("script_add_function_request", this, "_add_callback");
 			editor->connect_compat("resource_saved", this, "_res_saved_callback");
@@ -1481,8 +1426,6 @@ void ScriptEditor::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 
-			editor->disconnect_compat("play_pressed", this, "_editor_play");
-			editor->disconnect_compat("pause_pressed", this, "_editor_pause");
 			editor->disconnect_compat("stop_pressed", this, "_editor_stop");
 		} break;
 
@@ -2062,7 +2005,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 		return false;
 	}
 
-	if ((debugger->get_dump_stack_script() != p_resource || debugger->get_debug_with_external_editor()) &&
+	if ((EditorDebuggerNode::get_singleton()->get_dump_stack_script() != p_resource || EditorDebuggerNode::get_singleton()->get_debug_with_external_editor()) &&
 			p_resource->get_path().is_resource_file() &&
 			p_resource->get_class_name() != StringName("VisualScript") &&
 			bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor"))) {
@@ -2277,26 +2220,7 @@ void ScriptEditor::open_script_create_dialog(const String &p_base_name, const St
 	script_create_dialog->config(p_base_name, p_base_path);
 }
 
-void ScriptEditor::_editor_play() {
-
-	debugger->start();
-	debug_menu->get_popup()->grab_focus();
-	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_NEXT), true);
-	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_STEP), true);
-	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_BREAK), false);
-	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_CONTINUE), true);
-}
-
-void ScriptEditor::_editor_pause() {
-}
 void ScriptEditor::_editor_stop() {
-
-	debugger->stop();
-	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_NEXT), true);
-	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_STEP), true);
-	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_BREAK), true);
-	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_CONTINUE), true);
-
 	for (int i = 0; i < tab_container->get_child_count(); i++) {
 
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
@@ -3125,8 +3049,6 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_close_other_tabs", &ScriptEditor::_close_other_tabs);
 	ClassDB::bind_method("_open_recent_script", &ScriptEditor::_open_recent_script);
 	ClassDB::bind_method("_theme_option", &ScriptEditor::_theme_option);
-	ClassDB::bind_method("_editor_play", &ScriptEditor::_editor_play);
-	ClassDB::bind_method("_editor_pause", &ScriptEditor::_editor_pause);
 	ClassDB::bind_method("_editor_stop", &ScriptEditor::_editor_stop);
 	ClassDB::bind_method("_add_callback", &ScriptEditor::_add_callback);
 	ClassDB::bind_method("_reload_scripts", &ScriptEditor::_reload_scripts);
@@ -3141,7 +3063,6 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_copy_script_path", &ScriptEditor::_copy_script_path);
 
 	ClassDB::bind_method("_breaked", &ScriptEditor::_breaked);
-	ClassDB::bind_method("_show_debugger", &ScriptEditor::_show_debugger);
 	ClassDB::bind_method("_get_debug_tooltip", &ScriptEditor::_get_debug_tooltip);
 	ClassDB::bind_method("_autosave_scripts", &ScriptEditor::_autosave_scripts);
 	ClassDB::bind_method("_update_autosave_timer", &ScriptEditor::_update_autosave_timer);
@@ -3358,26 +3279,16 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	script_search_menu->get_popup()->set_hide_on_window_lose_focus(true);
 	script_search_menu->get_popup()->connect_compat("id_pressed", this, "_menu_option");
 
-	debug_menu = memnew(MenuButton);
+	MenuButton *debug_menu = memnew(MenuButton);
 	menu_hb->add_child(debug_menu);
-	debug_menu->set_text(TTR("Debug"));
-	debug_menu->set_switch_on_hover(true);
-	debug_menu->get_popup()->set_hide_on_window_lose_focus(true);
-	debug_menu->get_popup()->add_shortcut(ED_SHORTCUT("debugger/step_into", TTR("Step Into"), KEY_F11), DEBUG_STEP);
-	debug_menu->get_popup()->add_shortcut(ED_SHORTCUT("debugger/step_over", TTR("Step Over"), KEY_F10), DEBUG_NEXT);
-	debug_menu->get_popup()->add_separator();
-	debug_menu->get_popup()->add_shortcut(ED_SHORTCUT("debugger/break", TTR("Break")), DEBUG_BREAK);
-	debug_menu->get_popup()->add_shortcut(ED_SHORTCUT("debugger/continue", TTR("Continue"), KEY_F12), DEBUG_CONTINUE);
-	debug_menu->get_popup()->add_separator();
-	//debug_menu->get_popup()->add_check_item("Show Debugger",DEBUG_SHOW);
-	debug_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("debugger/keep_debugger_open", TTR("Keep Debugger Open")), DEBUG_SHOW_KEEP_OPEN);
-	debug_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("debugger/debug_with_external_editor", TTR("Debug with External Editor")), DEBUG_WITH_EXTERNAL_EDITOR);
-	debug_menu->get_popup()->connect_compat("id_pressed", this, "_menu_option");
+	debug_menu->hide(); // Handled by EditorDebuggerNode below.
 
-	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_NEXT), true);
-	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_STEP), true);
-	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_BREAK), true);
-	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_CONTINUE), true);
+	EditorDebuggerNode *debugger = EditorDebuggerNode::get_singleton();
+	debugger->set_script_debug_button(debug_menu);
+	debugger->connect_compat("goto_script_line", this, "_goto_script_line");
+	debugger->connect_compat("set_execution", this, "_set_execution");
+	debugger->connect_compat("clear_execution", this, "_clear_execution");
+	debugger->connect_compat("breaked", this, "_breaked");
 
 	menu_hb->add_spacer();
 
@@ -3445,12 +3356,6 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	error_dialog = memnew(AcceptDialog);
 	add_child(error_dialog);
 
-	debugger = memnew(ScriptEditorDebugger(editor));
-	debugger->connect_compat("goto_script_line", this, "_goto_script_line");
-	debugger->connect_compat("set_execution", this, "_set_execution");
-	debugger->connect_compat("clear_execution", this, "_clear_execution");
-	debugger->connect_compat("show_debugger", this, "_show_debugger");
-
 	disk_changed = memnew(ConfirmationDialog);
 	{
 		VBoxContainer *vbc = memnew(VBoxContainer);
@@ -3474,11 +3379,6 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	add_child(disk_changed);
 
 	script_editor = this;
-
-	Button *db = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Debugger"), debugger);
-	debugger->set_tool_button(db);
-
-	debugger->connect_compat("breaked", this, "_breaked");
 
 	autosave_timer = memnew(Timer);
 	autosave_timer->set_one_shot(false);
@@ -3505,7 +3405,6 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	find_in_files_button->hide();
 
 	history_pos = -1;
-	//debugger_gui->hide();
 
 	edit_pass = 0;
 	trim_trailing_whitespace_on_save = EditorSettings::get_singleton()->get("text_editor/files/trim_trailing_whitespace_on_save");

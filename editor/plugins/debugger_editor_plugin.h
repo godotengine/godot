@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  editor_run.h                                                         */
+/*  debugger_editor_plugin.h                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,44 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_RUN_H
-#define EDITOR_RUN_H
+#ifndef DEBUGGER_EDITOR_PLUGIN_H
+#define DEBUGGER_EDITOR_PLUGIN_H
 
-#include "core/os/os.h"
-#include "scene/main/node.h"
-class EditorRun {
-public:
-	enum Status {
+#include "editor/debugger/editor_debugger_node.h"
+#include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 
-		STATUS_PLAY,
-		STATUS_PAUSED,
-		STATUS_STOP
-	};
+class DebuggerEditorPlugin : public EditorPlugin {
 
-	List<OS::ProcessID> pids;
-
-private:
-	bool debug_collisions;
-	bool debug_navigation;
-	Status status;
+	GDCLASS(DebuggerEditorPlugin, EditorPlugin);
 
 public:
-	Status get_status() const;
-	Error run(const String &p_scene, const String &p_custom_args, const List<String> &p_breakpoints, const bool &p_skip_breakpoints = false, const int &p_instances = 1);
-	void run_native_notify() { status = STATUS_PLAY; }
-	void stop();
+	virtual String get_name() const { return "Debugger"; }
+	bool has_main_screen() const { return false; }
 
-	void stop_child_process(OS::ProcessID p_pid);
-	bool has_child_process(OS::ProcessID p_pid) const;
-	int get_child_process_count() const { return pids.size(); }
-
-	void set_debug_collisions(bool p_debug);
-	bool get_debug_collisions() const;
-
-	void set_debug_navigation(bool p_debug);
-	bool get_debug_navigation() const;
-
-	EditorRun();
+	DebuggerEditorPlugin(EditorNode *p_node);
+	~DebuggerEditorPlugin();
 };
 
-#endif // EDITOR_RUN_H
+#endif // DEBUGGER_EDITOR_PLUGIN_H
