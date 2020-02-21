@@ -1894,8 +1894,16 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 
 	if (draw_sky) {
 		RENDER_TIMESTAMP("Render Sky");
+
+		CameraMatrix projection = p_cam_projection;
+		if (p_reflection_probe.is_valid()) {
+			CameraMatrix correction;
+			correction.set_depth_correction(true);
+			projection = correction * p_cam_projection;
+		}
+
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(opaque_framebuffer, RD::INITIAL_ACTION_CONTINUE, can_continue ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, can_continue ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ);
-		_draw_sky(draw_list, RD::get_singleton()->framebuffer_get_format(opaque_framebuffer), p_environment, p_cam_projection, p_cam_transform, 1.0);
+		_draw_sky(draw_list, RD::get_singleton()->framebuffer_get_format(opaque_framebuffer), p_environment, projection, p_cam_transform, 1.0);
 		RD::get_singleton()->draw_list_end();
 
 		if (using_separate_specular && !can_continue) {
