@@ -46,7 +46,6 @@
 #include "core/math/vector3.h"
 #include "core/node_path.h"
 #include "core/object_id.h"
-
 #include "core/rid.h"
 #include "core/ustring.h"
 

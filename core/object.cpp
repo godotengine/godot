@@ -1207,7 +1207,7 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 				if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD && !ClassDB::class_exists(target->get_class_name())) {
 					//most likely object is not initialized yet, do not throw error.
 				} else {
-					ERR_PRINT("Error calling from signal '" + String(p_name) + "': " + Variant::get_callable_error_text(c.callable, args, argc, ce) + ".");
+					ERR_PRINT("Error calling from signal '" + String(p_name) + "' to callable: " + Variant::get_callable_error_text(c.callable, args, argc, ce) + ".");
 					err = ERR_METHOD_NOT_FOUND;
 				}
 			}
