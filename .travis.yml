@@ -76,6 +76,7 @@ matrix:
         homebrew:
           packages:
             - scons
+          update: true
 
     - name: iOS export template (debug, Clang)
       stage: build
@@ -86,6 +87,7 @@ matrix:
         homebrew:
           packages:
             - scons
+          update: true
 
     - name: Linux headless editor (release_debug, GCC 9, testing project exporting and script running)
       stage: build
