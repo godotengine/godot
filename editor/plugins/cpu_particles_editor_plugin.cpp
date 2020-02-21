@@ -92,8 +92,6 @@ void CPUParticlesEditor::_generate_emission_points() {
 }
 
 void CPUParticlesEditor::_bind_methods() {
-
-	ClassDB::bind_method("_menu_option", &CPUParticlesEditor::_menu_option);
 }
 
 CPUParticlesEditor::CPUParticlesEditor() {
@@ -109,7 +107,7 @@ CPUParticlesEditor::CPUParticlesEditor() {
 	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Restart"), MENU_OPTION_RESTART);
-	options->get_popup()->connect_compat("id_pressed", this, "_menu_option");
+	options->get_popup()->connect("id_pressed", callable_mp(this, &CPUParticlesEditor::_menu_option));
 }
 
 void CPUParticlesEditorPlugin::edit(Object *p_object) {

@@ -63,7 +63,6 @@ void EditorLayoutsDialog::_line_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorLayoutsDialog::_bind_methods() {
-	ClassDB::bind_method("_line_gui_input", &EditorLayoutsDialog::_line_gui_input);
 
 	ADD_SIGNAL(MethodInfo("name_confirmed", PropertyInfo(Variant::STRING, "name")));
 }
@@ -128,7 +127,7 @@ EditorLayoutsDialog::EditorLayoutsDialog() {
 	name->set_margin(MARGIN_TOP, 5);
 	name->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 5);
 	name->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -5);
-	name->connect_compat("gui_input", this, "_line_gui_input");
+	name->connect("gui_input", callable_mp(this, &EditorLayoutsDialog::_line_gui_input));
 	name->connect_compat("focus_entered", layout_names, "unselect_all");
 }
 

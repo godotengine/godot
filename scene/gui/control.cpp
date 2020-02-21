@@ -221,28 +221,28 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 		if (name.begins_with("custom_icons/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.icon_override.has(dname)) {
-				data.icon_override[dname]->disconnect_compat("changed", this, "_override_changed");
+				data.icon_override[dname]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 			}
 			data.icon_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_shaders/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.shader_override.has(dname)) {
-				data.shader_override[dname]->disconnect_compat("changed", this, "_override_changed");
+				data.shader_override[dname]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 			}
 			data.shader_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_styles/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.style_override.has(dname)) {
-				data.style_override[dname]->disconnect_compat("changed", this, "_override_changed");
+				data.style_override[dname]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 			}
 			data.style_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_fonts/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.font_override.has(dname)) {
-				data.font_override[dname]->disconnect_compat("changed", this, "_override_changed");
+				data.font_override[dname]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 			}
 			data.font_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
@@ -542,10 +542,10 @@ void Control::_notification(int p_notification) {
 
 				if (data.parent_canvas_item) {
 
-					data.parent_canvas_item->connect_compat("item_rect_changed", this, "_size_changed");
+					data.parent_canvas_item->connect("item_rect_changed", callable_mp(this, &Control::_size_changed));
 				} else {
 					//connect viewport
-					get_viewport()->connect_compat("size_changed", this, "_size_changed");
+					get_viewport()->connect("size_changed", callable_mp(this, &Control::_size_changed));
 				}
 			}
 
@@ -561,11 +561,11 @@ void Control::_notification(int p_notification) {
 
 			if (data.parent_canvas_item) {
 
-				data.parent_canvas_item->disconnect_compat("item_rect_changed", this, "_size_changed");
+				data.parent_canvas_item->disconnect("item_rect_changed", callable_mp(this, &Control::_size_changed));
 				data.parent_canvas_item = NULL;
 			} else if (!is_set_as_toplevel()) {
 				//disconnect viewport
-				get_viewport()->disconnect_compat("size_changed", this, "_size_changed");
+				get_viewport()->disconnect("size_changed", callable_mp(this, &Control::_size_changed));
 			}
 
 			if (data.MI) {
@@ -1883,7 +1883,7 @@ Rect2 Control::get_anchorable_rect() const {
 void Control::add_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon) {
 
 	if (data.icon_override.has(p_name)) {
-		data.icon_override[p_name]->disconnect_compat("changed", this, "_override_changed");
+		data.icon_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 	}
 
 	// clear if "null" is passed instead of a icon
@@ -1892,7 +1892,7 @@ void Control::add_icon_override(const StringName &p_name, const Ref<Texture2D> &
 	} else {
 		data.icon_override[p_name] = p_icon;
 		if (data.icon_override[p_name].is_valid()) {
-			data.icon_override[p_name]->connect_compat("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+			data.icon_override[p_name]->connect("changed", callable_mp(this, &Control::_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
 		}
 	}
 	notification(NOTIFICATION_THEME_CHANGED);
@@ -1901,7 +1901,7 @@ void Control::add_icon_override(const StringName &p_name, const Ref<Texture2D> &
 void Control::add_shader_override(const StringName &p_name, const Ref<Shader> &p_shader) {
 
 	if (data.shader_override.has(p_name)) {
-		data.shader_override[p_name]->disconnect_compat("changed", this, "_override_changed");
+		data.shader_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 	}
 
 	// clear if "null" is passed instead of a shader
@@ -1910,7 +1910,7 @@ void Control::add_shader_override(const StringName &p_name, const Ref<Shader> &p
 	} else {
 		data.shader_override[p_name] = p_shader;
 		if (data.shader_override[p_name].is_valid()) {
-			data.shader_override[p_name]->connect_compat("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+			data.shader_override[p_name]->connect("changed", callable_mp(this, &Control::_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
 		}
 	}
 	notification(NOTIFICATION_THEME_CHANGED);
@@ -1918,7 +1918,7 @@ void Control::add_shader_override(const StringName &p_name, const Ref<Shader> &p
 void Control::add_style_override(const StringName &p_name, const Ref<StyleBox> &p_style) {
 
 	if (data.style_override.has(p_name)) {
-		data.style_override[p_name]->disconnect_compat("changed", this, "_override_changed");
+		data.style_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 	}
 
 	// clear if "null" is passed instead of a style
@@ -1927,7 +1927,7 @@ void Control::add_style_override(const StringName &p_name, const Ref<StyleBox> &
 	} else {
 		data.style_override[p_name] = p_style;
 		if (data.style_override[p_name].is_valid()) {
-			data.style_override[p_name]->connect_compat("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+			data.style_override[p_name]->connect("changed", callable_mp(this, &Control::_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
 		}
 	}
 	notification(NOTIFICATION_THEME_CHANGED);
@@ -1936,7 +1936,7 @@ void Control::add_style_override(const StringName &p_name, const Ref<StyleBox> &
 void Control::add_font_override(const StringName &p_name, const Ref<Font> &p_font) {
 
 	if (data.font_override.has(p_name)) {
-		data.font_override[p_name]->disconnect_compat("changed", this, "_override_changed");
+		data.font_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 	}
 
 	// clear if "null" is passed instead of a font
@@ -1945,7 +1945,7 @@ void Control::add_font_override(const StringName &p_name, const Ref<Font> &p_fon
 	} else {
 		data.font_override[p_name] = p_font;
 		if (data.font_override[p_name].is_valid()) {
-			data.font_override[p_name]->connect_compat("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+			data.font_override[p_name]->connect("changed", callable_mp(this, &Control::_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
 		}
 	}
 	notification(NOTIFICATION_THEME_CHANGED);
@@ -2262,7 +2262,7 @@ void Control::set_theme(const Ref<Theme> &p_theme) {
 		return;
 
 	if (data.theme.is_valid()) {
-		data.theme->disconnect_compat("changed", this, "_theme_changed");
+		data.theme->disconnect("changed", callable_mp(this, &Control::_theme_changed));
 	}
 
 	data.theme = p_theme;
@@ -2282,7 +2282,7 @@ void Control::set_theme(const Ref<Theme> &p_theme) {
 	}
 
 	if (data.theme.is_valid()) {
-		data.theme->connect_compat("changed", this, "_theme_changed", varray(), CONNECT_DEFERRED);
+		data.theme->connect("changed", callable_mp(this, &Control::_theme_changed), varray(), CONNECT_DEFERRED);
 	}
 }
 
@@ -2813,7 +2813,6 @@ Control::GrowDirection Control::get_v_grow_direction() const {
 void Control::_bind_methods() {
 
 	//ClassDB::bind_method(D_METHOD("_window_resize_event"),&Control::_window_resize_event);
-	ClassDB::bind_method(D_METHOD("_size_changed"), &Control::_size_changed);
 	ClassDB::bind_method(D_METHOD("_update_minimum_size"), &Control::_update_minimum_size);
 
 	ClassDB::bind_method(D_METHOD("accept_event"), &Control::accept_event);
@@ -2941,10 +2940,6 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("warp_mouse", "to_position"), &Control::warp_mouse);
 
 	ClassDB::bind_method(D_METHOD("minimum_size_changed"), &Control::minimum_size_changed);
-
-	ClassDB::bind_method(D_METHOD("_theme_changed"), &Control::_theme_changed);
-
-	ClassDB::bind_method(D_METHOD("_override_changed"), &Control::_override_changed);
 
 	BIND_VMETHOD(MethodInfo("_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo(Variant::VECTOR2, "_get_minimum_size"));

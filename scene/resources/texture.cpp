@@ -1843,8 +1843,6 @@ void AnimatedTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_frame_delay", "frame", "delay"), &AnimatedTexture::set_frame_delay);
 	ClassDB::bind_method(D_METHOD("get_frame_delay", "frame"), &AnimatedTexture::get_frame_delay);
 
-	ClassDB::bind_method(D_METHOD("_update_proxy"), &AnimatedTexture::_update_proxy);
-
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frames", PROPERTY_HINT_RANGE, "1," + itos(MAX_FRAMES), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_frames", "get_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fps", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_fps", "get_fps");
 
@@ -1867,7 +1865,7 @@ AnimatedTexture::AnimatedTexture() {
 	fps = 4;
 	prev_ticks = 0;
 	current_frame = 0;
-	VisualServer::get_singleton()->connect_compat("frame_pre_draw", this, "_update_proxy");
+	VisualServer::get_singleton()->connect("frame_pre_draw", callable_mp(this, &AnimatedTexture::_update_proxy));
 
 #ifndef NO_THREADS
 	rw_lock = RWLock::create();

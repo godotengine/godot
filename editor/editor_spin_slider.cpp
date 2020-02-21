@@ -463,12 +463,6 @@ void EditorSpinSlider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_flat"), &EditorSpinSlider::is_flat);
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &EditorSpinSlider::_gui_input);
-	ClassDB::bind_method(D_METHOD("_grabber_mouse_entered"), &EditorSpinSlider::_grabber_mouse_entered);
-	ClassDB::bind_method(D_METHOD("_grabber_mouse_exited"), &EditorSpinSlider::_grabber_mouse_exited);
-	ClassDB::bind_method(D_METHOD("_grabber_gui_input"), &EditorSpinSlider::_grabber_gui_input);
-	ClassDB::bind_method(D_METHOD("_value_input_closed"), &EditorSpinSlider::_value_input_closed);
-	ClassDB::bind_method(D_METHOD("_value_input_entered"), &EditorSpinSlider::_value_input_entered);
-	ClassDB::bind_method(D_METHOD("_value_focus_exited"), &EditorSpinSlider::_value_focus_exited);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
@@ -490,9 +484,9 @@ EditorSpinSlider::EditorSpinSlider() {
 	grabber->hide();
 	grabber->set_as_toplevel(true);
 	grabber->set_mouse_filter(MOUSE_FILTER_STOP);
-	grabber->connect_compat("mouse_entered", this, "_grabber_mouse_entered");
-	grabber->connect_compat("mouse_exited", this, "_grabber_mouse_exited");
-	grabber->connect_compat("gui_input", this, "_grabber_gui_input");
+	grabber->connect("mouse_entered", callable_mp(this, &EditorSpinSlider::_grabber_mouse_entered));
+	grabber->connect("mouse_exited", callable_mp(this, &EditorSpinSlider::_grabber_mouse_exited));
+	grabber->connect("gui_input", callable_mp(this, &EditorSpinSlider::_grabber_gui_input));
 	mouse_over_spin = false;
 	mouse_over_grabber = false;
 	mousewheel_over_grabber = false;
@@ -502,9 +496,9 @@ EditorSpinSlider::EditorSpinSlider() {
 	add_child(value_input);
 	value_input->set_as_toplevel(true);
 	value_input->hide();
-	value_input->connect_compat("modal_closed", this, "_value_input_closed");
-	value_input->connect_compat("text_entered", this, "_value_input_entered");
-	value_input->connect_compat("focus_exited", this, "_value_focus_exited");
+	value_input->connect("modal_closed", callable_mp(this, &EditorSpinSlider::_value_input_closed));
+	value_input->connect("text_entered", callable_mp(this, &EditorSpinSlider::_value_input_entered));
+	value_input->connect("focus_exited", callable_mp(this, &EditorSpinSlider::_value_focus_exited));
 	value_input_just_closed = false;
 	hide_slider = false;
 	read_only = false;

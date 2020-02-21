@@ -512,8 +512,6 @@ void AudioStreamPlayer2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_stream_playback"), &AudioStreamPlayer2D::get_stream_playback);
 
-	ClassDB::bind_method(D_METHOD("_bus_layout_changed"), &AudioStreamPlayer2D::_bus_layout_changed);
-
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24"), "set_volume_db", "get_volume_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,4,0.01,or_greater"), "set_pitch_scale", "get_pitch_scale");
@@ -545,7 +543,7 @@ AudioStreamPlayer2D::AudioStreamPlayer2D() {
 	stream_paused = false;
 	stream_paused_fade_in = false;
 	stream_paused_fade_out = false;
-	AudioServer::get_singleton()->connect_compat("bus_layout_changed", this, "_bus_layout_changed");
+	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &AudioStreamPlayer2D::_bus_layout_changed));
 }
 
 AudioStreamPlayer2D::~AudioStreamPlayer2D() {

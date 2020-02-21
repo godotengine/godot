@@ -149,22 +149,22 @@ void MultiplayerAPI::set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_pee
 			"Supplied NetworkedMultiplayerPeer must be connecting or connected.");
 
 	if (network_peer.is_valid()) {
-		network_peer->disconnect_compat("peer_connected", this, "_add_peer");
-		network_peer->disconnect_compat("peer_disconnected", this, "_del_peer");
-		network_peer->disconnect_compat("connection_succeeded", this, "_connected_to_server");
-		network_peer->disconnect_compat("connection_failed", this, "_connection_failed");
-		network_peer->disconnect_compat("server_disconnected", this, "_server_disconnected");
+		network_peer->disconnect("peer_connected", callable_mp(this, &MultiplayerAPI::_add_peer));
+		network_peer->disconnect("peer_disconnected", callable_mp(this, &MultiplayerAPI::_del_peer));
+		network_peer->disconnect("connection_succeeded", callable_mp(this, &MultiplayerAPI::_connected_to_server));
+		network_peer->disconnect("connection_failed", callable_mp(this, &MultiplayerAPI::_connection_failed));
+		network_peer->disconnect("server_disconnected", callable_mp(this, &MultiplayerAPI::_server_disconnected));
 		clear();
 	}
 
 	network_peer = p_peer;
 
 	if (network_peer.is_valid()) {
-		network_peer->connect_compat("peer_connected", this, "_add_peer");
-		network_peer->connect_compat("peer_disconnected", this, "_del_peer");
-		network_peer->connect_compat("connection_succeeded", this, "_connected_to_server");
-		network_peer->connect_compat("connection_failed", this, "_connection_failed");
-		network_peer->connect_compat("server_disconnected", this, "_server_disconnected");
+		network_peer->connect("peer_connected", callable_mp(this, &MultiplayerAPI::_add_peer));
+		network_peer->connect("peer_disconnected", callable_mp(this, &MultiplayerAPI::_del_peer));
+		network_peer->connect("connection_succeeded", callable_mp(this, &MultiplayerAPI::_connected_to_server));
+		network_peer->connect("connection_failed", callable_mp(this, &MultiplayerAPI::_connection_failed));
+		network_peer->connect("server_disconnected", callable_mp(this, &MultiplayerAPI::_server_disconnected));
 	}
 }
 
@@ -1317,15 +1317,10 @@ void MultiplayerAPI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_network_unique_id"), &MultiplayerAPI::get_network_unique_id);
 	ClassDB::bind_method(D_METHOD("is_network_server"), &MultiplayerAPI::is_network_server);
 	ClassDB::bind_method(D_METHOD("get_rpc_sender_id"), &MultiplayerAPI::get_rpc_sender_id);
-	ClassDB::bind_method(D_METHOD("_add_peer", "id"), &MultiplayerAPI::_add_peer);
-	ClassDB::bind_method(D_METHOD("_del_peer", "id"), &MultiplayerAPI::_del_peer);
 	ClassDB::bind_method(D_METHOD("set_network_peer", "peer"), &MultiplayerAPI::set_network_peer);
 	ClassDB::bind_method(D_METHOD("poll"), &MultiplayerAPI::poll);
 	ClassDB::bind_method(D_METHOD("clear"), &MultiplayerAPI::clear);
 
-	ClassDB::bind_method(D_METHOD("_connected_to_server"), &MultiplayerAPI::_connected_to_server);
-	ClassDB::bind_method(D_METHOD("_connection_failed"), &MultiplayerAPI::_connection_failed);
-	ClassDB::bind_method(D_METHOD("_server_disconnected"), &MultiplayerAPI::_server_disconnected);
 	ClassDB::bind_method(D_METHOD("get_network_connected_peers"), &MultiplayerAPI::get_network_connected_peers);
 	ClassDB::bind_method(D_METHOD("set_refuse_new_network_connections", "refuse"), &MultiplayerAPI::set_refuse_new_network_connections);
 	ClassDB::bind_method(D_METHOD("is_refusing_new_network_connections"), &MultiplayerAPI::is_refusing_new_network_connections);

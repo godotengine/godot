@@ -1436,24 +1436,7 @@ void ScriptTextEditor::_change_syntax_highlighter(int p_idx) {
 
 void ScriptTextEditor::_bind_methods() {
 
-	ClassDB::bind_method("_validate_script", &ScriptTextEditor::_validate_script);
-	ClassDB::bind_method("_update_bookmark_list", &ScriptTextEditor::_update_bookmark_list);
-	ClassDB::bind_method("_bookmark_item_pressed", &ScriptTextEditor::_bookmark_item_pressed);
-	ClassDB::bind_method("_load_theme_settings", &ScriptTextEditor::_load_theme_settings);
-	ClassDB::bind_method("_update_breakpoint_list", &ScriptTextEditor::_update_breakpoint_list);
-	ClassDB::bind_method("_breakpoint_item_pressed", &ScriptTextEditor::_breakpoint_item_pressed);
-	ClassDB::bind_method("_breakpoint_toggled", &ScriptTextEditor::_breakpoint_toggled);
-	ClassDB::bind_method("_lookup_connections", &ScriptTextEditor::_lookup_connections);
 	ClassDB::bind_method("_update_connected_methods", &ScriptTextEditor::_update_connected_methods);
-	ClassDB::bind_method("_change_syntax_highlighter", &ScriptTextEditor::_change_syntax_highlighter);
-	ClassDB::bind_method("_edit_option", &ScriptTextEditor::_edit_option);
-	ClassDB::bind_method("_goto_line", &ScriptTextEditor::_goto_line);
-	ClassDB::bind_method("_lookup_symbol", &ScriptTextEditor::_lookup_symbol);
-	ClassDB::bind_method("_text_edit_gui_input", &ScriptTextEditor::_text_edit_gui_input);
-	ClassDB::bind_method("_show_warnings_panel", &ScriptTextEditor::_show_warnings_panel);
-	ClassDB::bind_method("_error_pressed", &ScriptTextEditor::_error_pressed);
-	ClassDB::bind_method("_warning_clicked", &ScriptTextEditor::_warning_clicked);
-	ClassDB::bind_method("_color_changed", &ScriptTextEditor::_color_changed);
 
 	ClassDB::bind_method("get_drag_data_fw", &ScriptTextEditor::get_drag_data_fw);
 	ClassDB::bind_method("can_drop_data_fw", &ScriptTextEditor::can_drop_data_fw);
@@ -1781,12 +1764,12 @@ ScriptTextEditor::ScriptTextEditor() {
 	editor_box->add_child(code_editor);
 	code_editor->add_constant_override("separation", 2);
 	code_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	code_editor->connect_compat("validate_script", this, "_validate_script");
-	code_editor->connect_compat("load_theme_settings", this, "_load_theme_settings");
+	code_editor->connect("validate_script", callable_mp(this, &ScriptTextEditor::_validate_script));
+	code_editor->connect("load_theme_settings", callable_mp(this, &ScriptTextEditor::_load_theme_settings));
 	code_editor->set_code_complete_func(_code_complete_scripts, this);
-	code_editor->get_text_edit()->connect_compat("breakpoint_toggled", this, "_breakpoint_toggled");
-	code_editor->get_text_edit()->connect_compat("symbol_lookup", this, "_lookup_symbol");
-	code_editor->get_text_edit()->connect_compat("info_clicked", this, "_lookup_connections");
+	code_editor->get_text_edit()->connect("breakpoint_toggled", callable_mp(this, &ScriptTextEditor::_breakpoint_toggled));
+	code_editor->get_text_edit()->connect("symbol_lookup", callable_mp(this, &ScriptTextEditor::_lookup_symbol));
+	code_editor->get_text_edit()->connect("info_clicked", callable_mp(this, &ScriptTextEditor::_lookup_connections));
 	code_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	code_editor->show_toggle_scripts_button();
 
@@ -1799,9 +1782,9 @@ ScriptTextEditor::ScriptTextEditor() {
 	warnings_panel->set_focus_mode(FOCUS_CLICK);
 	warnings_panel->hide();
 
-	code_editor->connect_compat("error_pressed", this, "_error_pressed");
-	code_editor->connect_compat("show_warnings_panel", this, "_show_warnings_panel");
-	warnings_panel->connect_compat("meta_clicked", this, "_warning_clicked");
+	code_editor->connect("error_pressed", callable_mp(this, &ScriptTextEditor::_error_pressed));
+	code_editor->connect("show_warnings_panel", callable_mp(this, &ScriptTextEditor::_show_warnings_panel));
+	warnings_panel->connect("meta_clicked", callable_mp(this, &ScriptTextEditor::_warning_clicked));
 
 	update_settings();
 
@@ -1811,11 +1794,11 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	code_editor->get_text_edit()->set_select_identifiers_on_hover(true);
 	code_editor->get_text_edit()->set_context_menu_enabled(false);
-	code_editor->get_text_edit()->connect_compat("gui_input", this, "_text_edit_gui_input");
+	code_editor->get_text_edit()->connect("gui_input", callable_mp(this, &ScriptTextEditor::_text_edit_gui_input));
 
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
-	context_menu->connect_compat("id_pressed", this, "_edit_option");
+	context_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
 	context_menu->set_hide_on_window_lose_focus(true);
 
 	color_panel = memnew(PopupPanel);
@@ -1823,7 +1806,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	color_picker = memnew(ColorPicker);
 	color_picker->set_deferred_mode(true);
 	color_panel->add_child(color_picker);
-	color_picker->connect_compat("color_changed", this, "_color_changed");
+	color_picker->connect("color_changed", callable_mp(this, &ScriptTextEditor::_color_changed));
 
 	// get default color picker mode from editor settings
 	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
@@ -1864,7 +1847,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_spaces"), EDIT_CONVERT_INDENT_TO_SPACES);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_tabs"), EDIT_CONVERT_INDENT_TO_TABS);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/auto_indent"), EDIT_AUTO_INDENT);
-	edit_menu->get_popup()->connect_compat("id_pressed", this, "_edit_option");
+	edit_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
 	edit_menu->get_popup()->add_separator();
 
 	PopupMenu *convert_case = memnew(PopupMenu);
@@ -1874,7 +1857,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_uppercase", TTR("Uppercase"), KEY_MASK_SHIFT | KEY_F4), EDIT_TO_UPPERCASE);
 	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTR("Lowercase"), KEY_MASK_SHIFT | KEY_F5), EDIT_TO_LOWERCASE);
 	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize"), KEY_MASK_SHIFT | KEY_F6), EDIT_CAPITALIZE);
-	convert_case->connect_compat("id_pressed", this, "_edit_option");
+	convert_case->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
 
 	highlighters[TTR("Standard")] = NULL;
 	highlighter_menu = memnew(PopupMenu);
@@ -1882,7 +1865,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	edit_menu->get_popup()->add_child(highlighter_menu);
 	edit_menu->get_popup()->add_submenu_item(TTR("Syntax Highlighter"), "highlighter_menu");
 	highlighter_menu->add_radio_check_item(TTR("Standard"));
-	highlighter_menu->connect_compat("id_pressed", this, "_change_syntax_highlighter");
+	highlighter_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_change_syntax_highlighter));
 
 	search_menu = memnew(MenuButton);
 	edit_hb->add_child(search_menu);
@@ -1898,7 +1881,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace_in_files"), REPLACE_IN_FILES);
 	search_menu->get_popup()->add_separator();
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/contextual_help"), HELP_CONTEXTUAL);
-	search_menu->get_popup()->connect_compat("id_pressed", this, "_edit_option");
+	search_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
 
 	edit_hb->add_child(edit_menu);
 
@@ -1906,7 +1889,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	edit_hb->add_child(goto_menu);
 	goto_menu->set_text(TTR("Go To"));
 	goto_menu->set_switch_on_hover(true);
-	goto_menu->get_popup()->connect_compat("id_pressed", this, "_edit_option");
+	goto_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
 
 	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_function"), SEARCH_LOCATE_FUNCTION);
 	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"), SEARCH_GOTO_LINE);
@@ -1917,20 +1900,20 @@ ScriptTextEditor::ScriptTextEditor() {
 	goto_menu->get_popup()->add_child(bookmarks_menu);
 	goto_menu->get_popup()->add_submenu_item(TTR("Bookmarks"), "Bookmarks");
 	_update_bookmark_list();
-	bookmarks_menu->connect_compat("about_to_show", this, "_update_bookmark_list");
-	bookmarks_menu->connect_compat("index_pressed", this, "_bookmark_item_pressed");
+	bookmarks_menu->connect("about_to_show", callable_mp(this, &ScriptTextEditor::_update_bookmark_list));
+	bookmarks_menu->connect("index_pressed", callable_mp(this, &ScriptTextEditor::_bookmark_item_pressed));
 
 	breakpoints_menu = memnew(PopupMenu);
 	breakpoints_menu->set_name("Breakpoints");
 	goto_menu->get_popup()->add_child(breakpoints_menu);
 	goto_menu->get_popup()->add_submenu_item(TTR("Breakpoints"), "Breakpoints");
 	_update_breakpoint_list();
-	breakpoints_menu->connect_compat("about_to_show", this, "_update_breakpoint_list");
-	breakpoints_menu->connect_compat("index_pressed", this, "_breakpoint_item_pressed");
+	breakpoints_menu->connect("about_to_show", callable_mp(this, &ScriptTextEditor::_update_breakpoint_list));
+	breakpoints_menu->connect("index_pressed", callable_mp(this, &ScriptTextEditor::_breakpoint_item_pressed));
 
 	quick_open = memnew(ScriptEditorQuickOpen);
 	add_child(quick_open);
-	quick_open->connect_compat("goto_line", this, "_goto_line");
+	quick_open->connect("goto_line", callable_mp(this, &ScriptTextEditor::_goto_line));
 
 	goto_line_dialog = memnew(GotoLineDialog);
 	add_child(goto_line_dialog);

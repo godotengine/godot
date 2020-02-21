@@ -267,7 +267,7 @@ void ScrollContainer::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_READY) {
 
-		get_viewport()->connect_compat("gui_focus_changed", this, "_ensure_focused_visible");
+		get_viewport()->connect("gui_focus_changed", callable_mp(this, &ScrollContainer::_ensure_focused_visible));
 	}
 
 	if (p_what == NOTIFICATION_SORT_CHILDREN) {
@@ -570,14 +570,12 @@ VScrollBar *ScrollContainer::get_v_scrollbar() {
 
 void ScrollContainer::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_scroll_moved"), &ScrollContainer::_scroll_moved);
 	ClassDB::bind_method(D_METHOD("_gui_input"), &ScrollContainer::_gui_input);
 	ClassDB::bind_method(D_METHOD("set_enable_h_scroll", "enable"), &ScrollContainer::set_enable_h_scroll);
 	ClassDB::bind_method(D_METHOD("is_h_scroll_enabled"), &ScrollContainer::is_h_scroll_enabled);
 	ClassDB::bind_method(D_METHOD("set_enable_v_scroll", "enable"), &ScrollContainer::set_enable_v_scroll);
 	ClassDB::bind_method(D_METHOD("is_v_scroll_enabled"), &ScrollContainer::is_v_scroll_enabled);
 	ClassDB::bind_method(D_METHOD("_update_scrollbar_position"), &ScrollContainer::_update_scrollbar_position);
-	ClassDB::bind_method(D_METHOD("_ensure_focused_visible"), &ScrollContainer::_ensure_focused_visible);
 	ClassDB::bind_method(D_METHOD("set_h_scroll", "value"), &ScrollContainer::set_h_scroll);
 	ClassDB::bind_method(D_METHOD("get_h_scroll"), &ScrollContainer::get_h_scroll);
 	ClassDB::bind_method(D_METHOD("set_v_scroll", "value"), &ScrollContainer::set_v_scroll);
@@ -610,12 +608,12 @@ ScrollContainer::ScrollContainer() {
 	h_scroll = memnew(HScrollBar);
 	h_scroll->set_name("_h_scroll");
 	add_child(h_scroll);
-	h_scroll->connect_compat("value_changed", this, "_scroll_moved");
+	h_scroll->connect("value_changed", callable_mp(this, &ScrollContainer::_scroll_moved));
 
 	v_scroll = memnew(VScrollBar);
 	v_scroll->set_name("_v_scroll");
 	add_child(v_scroll);
-	v_scroll->connect_compat("value_changed", this, "_scroll_moved");
+	v_scroll->connect("value_changed", callable_mp(this, &ScrollContainer::_scroll_moved));
 
 	drag_speed = Vector2();
 	drag_touching = false;

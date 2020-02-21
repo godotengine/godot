@@ -952,10 +952,10 @@ void AnimatedSprite3D::_notification(int p_what) {
 void AnimatedSprite3D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 
 	if (frames.is_valid())
-		frames->disconnect_compat("changed", this, "_res_changed");
+		frames->disconnect("changed", callable_mp(this, &AnimatedSprite3D::_res_changed));
 	frames = p_frames;
 	if (frames.is_valid())
-		frames->connect_compat("changed", this, "_res_changed");
+		frames->connect("changed", callable_mp(this, &AnimatedSprite3D::_res_changed));
 
 	if (!frames.is_valid()) {
 		frame = 0;
@@ -1124,8 +1124,6 @@ void AnimatedSprite3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_frame", "frame"), &AnimatedSprite3D::set_frame);
 	ClassDB::bind_method(D_METHOD("get_frame"), &AnimatedSprite3D::get_frame);
-
-	ClassDB::bind_method(D_METHOD("_res_changed"), &AnimatedSprite3D::_res_changed);
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 

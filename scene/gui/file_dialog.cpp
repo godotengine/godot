@@ -805,15 +805,7 @@ void FileDialog::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_unhandled_input"), &FileDialog::_unhandled_input);
 
-	ClassDB::bind_method(D_METHOD("_tree_multi_selected"), &FileDialog::_tree_multi_selected);
-	ClassDB::bind_method(D_METHOD("_tree_selected"), &FileDialog::_tree_selected);
-	ClassDB::bind_method(D_METHOD("_tree_item_activated"), &FileDialog::_tree_item_activated);
-	ClassDB::bind_method(D_METHOD("_dir_entered"), &FileDialog::_dir_entered);
-	ClassDB::bind_method(D_METHOD("_file_entered"), &FileDialog::_file_entered);
-	ClassDB::bind_method(D_METHOD("_action_pressed"), &FileDialog::_action_pressed);
 	ClassDB::bind_method(D_METHOD("_cancel_pressed"), &FileDialog::_cancel_pressed);
-	ClassDB::bind_method(D_METHOD("_filter_selected"), &FileDialog::_filter_selected);
-	ClassDB::bind_method(D_METHOD("_save_confirm_pressed"), &FileDialog::_save_confirm_pressed);
 
 	ClassDB::bind_method(D_METHOD("clear_filters"), &FileDialog::clear_filters);
 	ClassDB::bind_method(D_METHOD("add_filter", "filter"), &FileDialog::add_filter);
@@ -835,13 +827,8 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_access"), &FileDialog::get_access);
 	ClassDB::bind_method(D_METHOD("set_show_hidden_files", "show"), &FileDialog::set_show_hidden_files);
 	ClassDB::bind_method(D_METHOD("is_showing_hidden_files"), &FileDialog::is_showing_hidden_files);
-	ClassDB::bind_method(D_METHOD("_select_drive"), &FileDialog::_select_drive);
-	ClassDB::bind_method(D_METHOD("_make_dir"), &FileDialog::_make_dir);
-	ClassDB::bind_method(D_METHOD("_make_dir_confirm"), &FileDialog::_make_dir_confirm);
 	ClassDB::bind_method(D_METHOD("_update_file_name"), &FileDialog::update_file_name);
-	ClassDB::bind_method(D_METHOD("_update_file_list"), &FileDialog::update_file_list);
 	ClassDB::bind_method(D_METHOD("_update_dir"), &FileDialog::update_dir);
-	ClassDB::bind_method(D_METHOD("_go_up"), &FileDialog::_go_up);
 	ClassDB::bind_method(D_METHOD("deselect_items"), &FileDialog::deselect_items);
 
 	ClassDB::bind_method(D_METHOD("invalidate"), &FileDialog::invalidate);
@@ -900,11 +887,11 @@ FileDialog::FileDialog() {
 	dir_up = memnew(ToolButton);
 	dir_up->set_tooltip(RTR("Go to parent folder."));
 	hbc->add_child(dir_up);
-	dir_up->connect_compat("pressed", this, "_go_up");
+	dir_up->connect("pressed", callable_mp(this, &FileDialog::_go_up));
 
 	drives = memnew(OptionButton);
 	hbc->add_child(drives);
-	drives->connect_compat("item_selected", this, "_select_drive");
+	drives->connect("item_selected", callable_mp(this, &FileDialog::_select_drive));
 
 	hbc->add_child(memnew(Label(RTR("Path:"))));
 	dir = memnew(LineEdit);
@@ -913,19 +900,19 @@ FileDialog::FileDialog() {
 
 	refresh = memnew(ToolButton);
 	refresh->set_tooltip(RTR("Refresh files."));
-	refresh->connect_compat("pressed", this, "_update_file_list");
+	refresh->connect("pressed", callable_mp(this, &FileDialog::update_file_list));
 	hbc->add_child(refresh);
 
 	show_hidden = memnew(ToolButton);
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
 	show_hidden->set_tooltip(RTR("Toggle the visibility of hidden files."));
-	show_hidden->connect_compat("toggled", this, "set_show_hidden_files");
+	show_hidden->connect("toggled", callable_mp(this, &FileDialog::set_show_hidden_files));
 	hbc->add_child(show_hidden);
 
 	makedir = memnew(Button);
 	makedir->set_text(RTR("Create Folder"));
-	makedir->connect_compat("pressed", this, "_make_dir");
+	makedir->connect("pressed", callable_mp(this, &FileDialog::_make_dir));
 	hbc->add_child(makedir);
 	vbc->add_child(hbc);
 
@@ -950,20 +937,20 @@ FileDialog::FileDialog() {
 	access = ACCESS_RESOURCES;
 	_update_drives();
 
-	connect_compat("confirmed", this, "_action_pressed");
-	tree->connect_compat("multi_selected", this, "_tree_multi_selected", varray(), CONNECT_DEFERRED);
-	tree->connect_compat("cell_selected", this, "_tree_selected", varray(), CONNECT_DEFERRED);
-	tree->connect_compat("item_activated", this, "_tree_item_activated", varray());
-	tree->connect_compat("nothing_selected", this, "deselect_items");
-	dir->connect_compat("text_entered", this, "_dir_entered");
-	file->connect_compat("text_entered", this, "_file_entered");
-	filter->connect_compat("item_selected", this, "_filter_selected");
+	connect("confirmed", callable_mp(this, &FileDialog::_action_pressed));
+	tree->connect("multi_selected", callable_mp(this, &FileDialog::_tree_multi_selected), varray(), CONNECT_DEFERRED);
+	tree->connect("cell_selected", callable_mp(this, &FileDialog::_tree_selected), varray(), CONNECT_DEFERRED);
+	tree->connect("item_activated", callable_mp(this, &FileDialog::_tree_item_activated), varray());
+	tree->connect("nothing_selected", callable_mp(this, &FileDialog::deselect_items));
+	dir->connect("text_entered", callable_mp(this, &FileDialog::_dir_entered));
+	file->connect("text_entered", callable_mp(this, &FileDialog::_file_entered));
+	filter->connect("item_selected", callable_mp(this, &FileDialog::_filter_selected));
 
 	confirm_save = memnew(ConfirmationDialog);
 	confirm_save->set_as_toplevel(true);
 	add_child(confirm_save);
 
-	confirm_save->connect_compat("confirmed", this, "_save_confirm_pressed");
+	confirm_save->connect("confirmed", callable_mp(this, &FileDialog::_save_confirm_pressed));
 
 	makedialog = memnew(ConfirmationDialog);
 	makedialog->set_title(RTR("Create Folder"));
@@ -974,7 +961,7 @@ FileDialog::FileDialog() {
 	makevb->add_margin_child(RTR("Name:"), makedirname);
 	add_child(makedialog);
 	makedialog->register_text_enter(makedirname);
-	makedialog->connect_compat("confirmed", this, "_make_dir_confirm");
+	makedialog->connect("confirmed", callable_mp(this, &FileDialog::_make_dir_confirm));
 	mkdirerr = memnew(AcceptDialog);
 	mkdirerr->set_text(RTR("Could not create folder."));
 	add_child(mkdirerr);
@@ -1003,8 +990,6 @@ FileDialog::~FileDialog() {
 
 void LineEditFileChooser::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_browse"), &LineEditFileChooser::_browse);
-	ClassDB::bind_method(D_METHOD("_chosen"), &LineEditFileChooser::_chosen);
 	ClassDB::bind_method(D_METHOD("get_button"), &LineEditFileChooser::get_button);
 	ClassDB::bind_method(D_METHOD("get_line_edit"), &LineEditFileChooser::get_line_edit);
 	ClassDB::bind_method(D_METHOD("get_file_dialog"), &LineEditFileChooser::get_file_dialog);
@@ -1029,10 +1014,10 @@ LineEditFileChooser::LineEditFileChooser() {
 	button = memnew(Button);
 	button->set_text(" .. ");
 	add_child(button);
-	button->connect_compat("pressed", this, "_browse");
+	button->connect("pressed", callable_mp(this, &LineEditFileChooser::_browse));
 	dialog = memnew(FileDialog);
 	add_child(dialog);
-	dialog->connect_compat("file_selected", this, "_chosen");
-	dialog->connect_compat("dir_selected", this, "_chosen");
-	dialog->connect_compat("files_selected", this, "_chosen");
+	dialog->connect("file_selected", callable_mp(this, &LineEditFileChooser::_chosen));
+	dialog->connect("dir_selected", callable_mp(this, &LineEditFileChooser::_chosen));
+	dialog->connect("files_selected", callable_mp(this, &LineEditFileChooser::_chosen));
 }

@@ -263,8 +263,8 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 		}
 
 		{
-			if (!child->is_connected_compat("tree_exiting", this, "_node_removed"))
-				child->connect_compat("tree_exiting", this, "_node_removed", make_binds(child), CONNECT_ONESHOT);
+			if (!child->is_connected("tree_exiting", callable_mp(this, &AnimationPlayer::_node_removed)))
+				child->connect("tree_exiting", callable_mp(this, &AnimationPlayer::_node_removed), make_binds(child), CONNECT_ONESHOT);
 		}
 
 		TrackNodeCacheKey key;
@@ -1620,7 +1620,6 @@ void AnimationPlayer::restore_animated_values(const AnimatedValuesBackup &p_back
 
 void AnimationPlayer::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_node_removed"), &AnimationPlayer::_node_removed);
 	ClassDB::bind_method(D_METHOD("_animation_changed"), &AnimationPlayer::_animation_changed);
 
 	ClassDB::bind_method(D_METHOD("add_animation", "name", "animation"), &AnimationPlayer::add_animation);
