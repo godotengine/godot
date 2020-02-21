@@ -314,7 +314,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	OptionButton *snap_mode;
 
 	Button *imported_anim_warning;
-	void _show_imported_anim_warning() const;
+	void _show_imported_anim_warning();
 
 	void _snap_mode_changed(int p_mode);
 	Vector<AnimationTrackEdit *> track_edits;

@@ -1775,7 +1775,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 	}
 }
 
-void FileSystemDock::_resource_created() const {
+void FileSystemDock::_resource_created() {
 	Object *c = new_resource_dialog->instance_selected();
 
 	ERR_FAIL_COND(!c);

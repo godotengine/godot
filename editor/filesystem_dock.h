@@ -215,7 +215,7 @@ private:
 	void _files_moved(String p_old_file, String p_new_file);
 	void _folder_moved(String p_old_folder, String p_new_folder);
 
-	void _resource_created() const;
+	void _resource_created();
 	void _make_dir_confirm();
 	void _make_scene_confirm();
 	void _rename_operation_confirm();
