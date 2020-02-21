@@ -78,6 +78,15 @@
 				Returns a copy of the array's contents as [String]. Slower than [method get_string_from_ascii] but supports UTF-8 encoded data. Use this function if you are unsure about the source of the data. For user input this function should always be preferred.
 			</description>
 		</method>
+		<method name="has">
+			<return type="bool">
+			</return>
+			<argument index="0" name="value" type="int">
+			</argument>
+			<description>
+				Returns [code]true[/code] if the array contains [code]value[/code].
+			</description>
+		</method>
 		<method name="hex_encode">
 			<return type="String">
 			</return>
@@ -150,6 +159,13 @@
 			</return>
 			<description>
 				Returns the size of the array.
+			</description>
+		</method>
+		<method name="sort">
+			<return type="void">
+			</return>
+			<description>
+				Sorts the elements of the array in ascending order.
 			</description>
 		</method>
 		<method name="subarray">
