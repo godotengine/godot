@@ -918,42 +918,42 @@
           ["const godot_variant **", "p_arguments"],
           ["godot_int", "p_argcount"]
         ]
-      },  
+      },
       {
         "name": "godot_callable_is_null",
         "return_type": "godot_bool",
         "arguments": [
           ["const godot_callable *", "p_self"]
         ]
-      },  
+      },
       {
         "name": "godot_callable_is_custom",
         "return_type": "godot_bool",
         "arguments": [
           ["const godot_callable *", "p_self"]
         ]
-      },  
+      },
       {
         "name": "godot_callable_is_standard",
         "return_type": "godot_bool",
         "arguments": [
           ["const godot_callable *", "p_self"]
         ]
-      },    
+      },
       {
         "name": "godot_callable_get_object",
         "return_type": "godot_object *",
         "arguments": [
           ["const godot_callable *", "p_self"]
         ]
-      },    
+      },
       {
         "name": "godot_callable_get_object_id",
         "return_type": "uint64_t",
         "arguments": [
           ["const godot_callable *", "p_self"]
         ]
-      },    
+      },
       {
         "name": "godot_callable_get_method",
         "return_type": "godot_string_name",
@@ -1093,14 +1093,14 @@
         "arguments": [
           ["const godot_signal *", "p_self"]
         ]
-      },  
+      },
       {
         "name": "godot_signal_as_string",
         "return_type": "godot_string",
         "arguments": [
           ["const godot_signal *", "p_self"]
         ]
-      },  
+      },
       {
         "name": "godot_signal_operator_equal",
         "return_type": "godot_bool",
@@ -1108,7 +1108,7 @@
           ["const godot_signal *", "p_self"],
           ["const godot_signal *", "p_other"]
         ]
-      },  
+      },
       {
         "name": "godot_signal_operator_less",
         "return_type": "godot_bool",
@@ -1671,6 +1671,21 @@
         ]
       },
       {
+        "name": "godot_packed_byte_array_has",
+        "return_type": "godot_bool",
+        "arguments": [
+          ["godot_packed_byte_array *", "p_self"],
+          ["const uint8_t", "p_value"]
+        ]
+      },
+      {
+        "name": "godot_packed_byte_array_sort",
+        "return_type": "void",
+        "arguments": [
+          ["godot_packed_byte_array *", "p_self"]
+        ]
+      },
+      {
         "name": "godot_packed_byte_array_invert",
         "return_type": "void",
         "arguments": [
@@ -1799,6 +1814,21 @@
           ["godot_packed_int32_array *", "p_self"],
           ["const godot_int", "p_idx"],
           ["const int32_t", "p_data"]
+        ]
+      },
+      {
+        "name": "godot_packed_int32_array_has",
+        "return_type": "godot_bool",
+        "arguments": [
+          ["godot_packed_int32_array *", "p_self"],
+          ["const int32_t", "p_value"]
+        ]
+      },
+      {
+        "name": "godot_packed_int32_array_sort",
+        "return_type": "void",
+        "arguments": [
+          ["godot_packed_int32_array *", "p_self"]
         ]
       },
       {
@@ -1933,6 +1963,21 @@
         ]
       },
       {
+        "name": "godot_packed_int64_array_has",
+        "return_type": "godot_bool",
+        "arguments": [
+          ["godot_packed_int64_array *", "p_self"],
+          ["const int64_t", "p_value"]
+        ]
+      },
+      {
+        "name": "godot_packed_int64_array_sort",
+        "return_type": "void",
+        "arguments": [
+          ["godot_packed_int64_array *", "p_self"]
+        ]
+      },
+      {
         "name": "godot_packed_int64_array_invert",
         "return_type": "void",
         "arguments": [
@@ -2061,6 +2106,21 @@
           ["godot_packed_float32_array *", "p_self"],
           ["const godot_int", "p_idx"],
           ["const float", "p_data"]
+        ]
+      },
+      {
+        "name": "godot_packed_float32_array_has",
+        "return_type": "godot_bool",
+        "arguments": [
+          ["godot_packed_float32_array *", "p_self"],
+          ["const float", "p_value"]
+        ]
+      },
+      {
+        "name": "godot_packed_float32_array_sort",
+        "return_type": "void",
+        "arguments": [
+          ["godot_packed_float32_array *", "p_self"]
         ]
       },
       {
@@ -2195,6 +2255,21 @@
         ]
       },
       {
+        "name": "godot_packed_float64_array_has",
+        "return_type": "godot_bool",
+        "arguments": [
+          ["godot_packed_float64_array *", "p_self"],
+          ["const double", "p_value"]
+        ]
+      },
+      {
+        "name": "godot_packed_float64_array_sort",
+        "return_type": "void",
+        "arguments": [
+          ["godot_packed_float64_array *", "p_self"]
+        ]
+      },
+      {
         "name": "godot_packed_float64_array_invert",
         "return_type": "void",
         "arguments": [
@@ -2323,6 +2398,21 @@
           ["godot_packed_string_array *", "p_self"],
           ["const godot_int", "p_idx"],
           ["const godot_string *", "p_data"]
+        ]
+      },
+      {
+        "name": "godot_packed_string_array_has",
+        "return_type": "godot_bool",
+        "arguments": [
+          ["godot_packed_string_array *", "p_self"],
+          ["const godot_string *", "p_value"]
+        ]
+      },
+      {
+        "name": "godot_packed_string_array_sort",
+        "return_type": "void",
+        "arguments": [
+          ["godot_packed_string_array *", "p_self"]
         ]
       },
       {
@@ -2457,6 +2547,21 @@
         ]
       },
       {
+        "name": "godot_packed_vector2_array_has",
+        "return_type": "godot_bool",
+        "arguments": [
+          ["godot_packed_vector2_array *", "p_self"],
+          ["const godot_vector2 *", "p_value"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector2_array_sort",
+        "return_type": "void",
+        "arguments": [
+          ["godot_packed_vector2_array *", "p_self"]
+        ]
+      },
+      {
         "name": "godot_packed_vector2_array_invert",
         "return_type": "void",
         "arguments": [
@@ -2585,6 +2690,21 @@
           ["godot_packed_vector3_array *", "p_self"],
           ["const godot_int", "p_idx"],
           ["const godot_vector3 *", "p_data"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector3_array_has",
+        "return_type": "godot_bool",
+        "arguments": [
+          ["godot_packed_vector3_array *", "p_self"],
+          ["const godot_vector3 *", "p_value"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector3_array_sort",
+        "return_type": "void",
+        "arguments": [
+          ["godot_packed_vector3_array *", "p_self"]
         ]
       },
       {
@@ -2719,6 +2839,21 @@
         ]
       },
       {
+        "name": "godot_packed_color_array_has",
+        "return_type": "godot_bool",
+        "arguments": [
+          ["godot_packed_color_array *", "p_self"],
+          ["const godot_color *", "p_value"]
+        ]
+      },
+      {
+        "name": "godot_packed_color_array_sort",
+        "return_type": "void",
+        "arguments": [
+          ["godot_packed_color_array *", "p_self"]
+        ]
+      },
+      {
         "name": "godot_packed_color_array_invert",
         "return_type": "void",
         "arguments": [
@@ -2748,7 +2883,7 @@
           ["godot_packed_color_array *", "p_self"],
           ["const godot_int", "p_size"]
         ]
-      },    
+      },
       {
         "name": "godot_packed_color_array_ptr",
         "return_type": "const godot_color *",
@@ -5463,7 +5598,7 @@
           ["godot_variant *", "r_dest"],
           ["const godot_packed_int64_array *", "p_pia"]
         ]
-      },    
+      },
       {
         "name": "godot_variant_new_packed_float32_array",
         "return_type": "void",
