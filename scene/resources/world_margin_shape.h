@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  plane_shape.h                                                        */
+/*  world_margin_shape.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PLANE_SHAPE_H
-#define PLANE_SHAPE_H
+#ifndef world_margin_shape_H
+#define world_margin_shape_H
 
 #include "scene/resources/shape.h"
 
-class PlaneShape : public Shape {
+class WorldMarginShape : public Shape {
 
-	GDCLASS(PlaneShape, Shape);
+	GDCLASS(WorldMarginShape, Shape);
 	Plane plane;
 
 protected:
@@ -52,6 +52,6 @@ public:
 		return 0;
 	}
 
-	PlaneShape();
+	WorldMarginShape();
 };
-#endif // PLANE_SHAPE_H
+#endif // world_margin_shape_H

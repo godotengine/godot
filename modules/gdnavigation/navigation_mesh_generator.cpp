@@ -42,10 +42,10 @@
 #include "scene/resources/concave_polygon_shape.h"
 #include "scene/resources/convex_polygon_shape.h"
 #include "scene/resources/cylinder_shape.h"
-#include "scene/resources/plane_shape.h"
 #include "scene/resources/primitive_meshes.h"
 #include "scene/resources/shape.h"
 #include "scene/resources/sphere_shape.h"
+#include "scene/resources/world_margin_shape.h"
 
 #include "modules/modules_enabled.gen.h"
 #ifdef TOOLS_ENABLED

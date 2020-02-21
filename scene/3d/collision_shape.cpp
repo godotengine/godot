@@ -33,9 +33,9 @@
 #include "scene/resources/capsule_shape.h"
 #include "scene/resources/concave_polygon_shape.h"
 #include "scene/resources/convex_polygon_shape.h"
-#include "scene/resources/plane_shape.h"
 #include "scene/resources/ray_shape.h"
 #include "scene/resources/sphere_shape.h"
+#include "scene/resources/world_margin_shape.h"
 #include "servers/visual_server.h"
 //TODO: Implement CylinderShape and HeightMapShape?
 #include "core/math/quick_hull.h"
@@ -121,10 +121,6 @@ String CollisionShape::get_configuration_warning() const {
 
 	if (!shape.is_valid()) {
 		return TTR("A shape must be provided for CollisionShape to function. Please create a shape resource for it.");
-	}
-
-	if (shape->is_class("PlaneShape")) {
-		return TTR("Plane shapes don't work well and will be removed in future versions. Please don't use them.");
 	}
 
 	return String();

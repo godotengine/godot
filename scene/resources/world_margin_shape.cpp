@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  plane_shape.cpp                                                      */
+/*  world_margin_shape.cpp                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "plane_shape.h"
+#include "world_margin_shape.h"
 
 #include "servers/physics_server.h"
 
-Vector<Vector3> PlaneShape::get_debug_mesh_lines() {
+Vector<Vector3> WorldMarginShape::get_debug_mesh_lines() {
 
 	Plane p = get_plane();
 	Vector<Vector3> points;
@@ -61,13 +61,13 @@ Vector<Vector3> PlaneShape::get_debug_mesh_lines() {
 	return points;
 }
 
-void PlaneShape::_update_shape() {
+void WorldMarginShape::_update_shape() {
 
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(), plane);
 	Shape::_update_shape();
 }
 
-void PlaneShape::set_plane(Plane p_plane) {
+void WorldMarginShape::set_plane(Plane p_plane) {
 
 	plane = p_plane;
 	_update_shape();
@@ -75,20 +75,20 @@ void PlaneShape::set_plane(Plane p_plane) {
 	_change_notify("plane");
 }
 
-Plane PlaneShape::get_plane() const {
+Plane WorldMarginShape::get_plane() const {
 
 	return plane;
 }
 
-void PlaneShape::_bind_methods() {
+void WorldMarginShape::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_plane", "plane"), &PlaneShape::set_plane);
-	ClassDB::bind_method(D_METHOD("get_plane"), &PlaneShape::get_plane);
+	ClassDB::bind_method(D_METHOD("set_plane", "plane"), &WorldMarginShape::set_plane);
+	ClassDB::bind_method(D_METHOD("get_plane"), &WorldMarginShape::get_plane);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PLANE, "plane"), "set_plane", "get_plane");
 }
 
-PlaneShape::PlaneShape() :
+WorldMarginShape::WorldMarginShape() :
 		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_PLANE)) {
 
 	set_plane(Plane(0, 1, 0, 0));

@@ -151,7 +151,6 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/particles_material.h"
 #include "scene/resources/physics_material.h"
-#include "scene/resources/plane_shape.h"
 #include "scene/resources/polygon_path_finder.h"
 #include "scene/resources/primitive_meshes.h"
 #include "scene/resources/ray_shape.h"
@@ -169,6 +168,7 @@
 #include "scene/resources/visual_shader_nodes.h"
 #include "scene/resources/world.h"
 #include "scene/resources/world_2d.h"
+#include "scene/resources/world_margin_shape.h"
 #include "scene/scene_string_names.h"
 
 #ifndef _3D_DISABLED
@@ -190,8 +190,8 @@
 #include "scene/3d/multimesh_instance.h"
 #include "scene/3d/navigation.h"
 #include "scene/3d/navigation_agent.h"
-#include "scene/3d/navigation_region.h"
 #include "scene/3d/navigation_obstacle.h"
+#include "scene/3d/navigation_region.h"
 #include "scene/3d/particles.h"
 #include "scene/3d/path.h"
 #include "scene/3d/physics_body.h"
@@ -643,7 +643,7 @@ void register_scene_types() {
 	ClassDB::register_class<CapsuleShape>();
 	ClassDB::register_class<CylinderShape>();
 	ClassDB::register_class<HeightMapShape>();
-	ClassDB::register_class<PlaneShape>();
+	ClassDB::register_class<WorldMarginShape>();
 	ClassDB::register_class<ConvexPolygonShape>();
 	ClassDB::register_class<ConcavePolygonShape>();
 
