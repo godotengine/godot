@@ -278,11 +278,6 @@ void MultiMeshEditor::_browse(bool p_source) {
 }
 
 void MultiMeshEditor::_bind_methods() {
-
-	ClassDB::bind_method("_menu_option", &MultiMeshEditor::_menu_option);
-	ClassDB::bind_method("_populate", &MultiMeshEditor::_populate);
-	ClassDB::bind_method("_browsed", &MultiMeshEditor::_browsed);
-	ClassDB::bind_method("_browse", &MultiMeshEditor::_browse);
 }
 
 MultiMeshEditor::MultiMeshEditor() {
@@ -295,7 +290,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("MultiMeshInstance", "EditorIcons"));
 
 	options->get_popup()->add_item(TTR("Populate Surface"));
-	options->get_popup()->connect_compat("id_pressed", this, "_menu_option");
+	options->get_popup()->connect("id_pressed", callable_mp(this, &MultiMeshEditor::_menu_option));
 
 	populate_dialog = memnew(ConfirmationDialog);
 	populate_dialog->set_title(TTR("Populate MultiMesh"));
@@ -313,7 +308,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	Button *b = memnew(Button);
 	hbc->add_child(b);
 	b->set_text("..");
-	b->connect_compat("pressed", this, "_browse", make_binds(false));
+	b->connect("pressed", callable_mp(this, &MultiMeshEditor::_browse), make_binds(false));
 
 	vbc->add_margin_child(TTR("Target Surface:"), hbc);
 
@@ -325,7 +320,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	hbc->add_child(b);
 	b->set_text("..");
 	vbc->add_margin_child(TTR("Source Mesh:"), hbc);
-	b->connect_compat("pressed", this, "_browse", make_binds(true));
+	b->connect("pressed", callable_mp(this, &MultiMeshEditor::_browse), make_binds(true));
 
 	populate_axis = memnew(OptionButton);
 	populate_axis->add_item(TTR("X-Axis"));
@@ -371,10 +366,10 @@ MultiMeshEditor::MultiMeshEditor() {
 
 	populate_dialog->get_ok()->set_text(TTR("Populate"));
 
-	populate_dialog->get_ok()->connect_compat("pressed", this, "_populate");
+	populate_dialog->get_ok()->connect("pressed", callable_mp(this, &MultiMeshEditor::_populate));
 	std = memnew(SceneTreeDialog);
 	populate_dialog->add_child(std);
-	std->connect_compat("selected", this, "_browsed");
+	std->connect("selected", callable_mp(this, &MultiMeshEditor::_browsed));
 
 	_last_pp_node = NULL;
 

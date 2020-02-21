@@ -669,8 +669,8 @@ void LineEdit::_notification(int p_what) {
 				cursor_set_blink_enabled(EDITOR_DEF("text_editor/cursor/caret_blink", false));
 				cursor_set_blink_speed(EDITOR_DEF("text_editor/cursor/caret_blink_speed", 0.65));
 
-				if (!EditorSettings::get_singleton()->is_connected_compat("settings_changed", this, "_editor_settings_changed")) {
-					EditorSettings::get_singleton()->connect_compat("settings_changed", this, "_editor_settings_changed");
+				if (!EditorSettings::get_singleton()->is_connected("settings_changed", callable_mp(this, &LineEdit::_editor_settings_changed))) {
+					EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &LineEdit::_editor_settings_changed));
 				}
 			}
 		} break;
@@ -1773,9 +1773,6 @@ void LineEdit::_generate_context_menu() {
 void LineEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_text_changed"), &LineEdit::_text_changed);
-	ClassDB::bind_method(D_METHOD("_toggle_draw_caret"), &LineEdit::_toggle_draw_caret);
-
-	ClassDB::bind_method("_editor_settings_changed", &LineEdit::_editor_settings_changed);
 
 	ClassDB::bind_method(D_METHOD("set_align", "align"), &LineEdit::set_align);
 	ClassDB::bind_method(D_METHOD("get_align"), &LineEdit::get_align);
@@ -1891,7 +1888,7 @@ LineEdit::LineEdit() {
 	caret_blink_timer = memnew(Timer);
 	add_child(caret_blink_timer);
 	caret_blink_timer->set_wait_time(0.65);
-	caret_blink_timer->connect_compat("timeout", this, "_toggle_draw_caret");
+	caret_blink_timer->connect("timeout", callable_mp(this, &LineEdit::_toggle_draw_caret));
 	cursor_set_blink_enabled(false);
 
 	context_menu_enabled = true;
@@ -1899,7 +1896,7 @@ LineEdit::LineEdit() {
 	add_child(menu);
 	editable = false; // Initialise to opposite first, so we get past the early-out in set_editable.
 	set_editable(true);
-	menu->connect_compat("id_pressed", this, "menu_option");
+	menu->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
 	expand_to_text_length = false;
 }
 

@@ -336,7 +336,6 @@ void WindowDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_title"), &WindowDialog::get_title);
 	ClassDB::bind_method(D_METHOD("set_resizable", "resizable"), &WindowDialog::set_resizable);
 	ClassDB::bind_method(D_METHOD("get_resizable"), &WindowDialog::get_resizable);
-	ClassDB::bind_method(D_METHOD("_closed"), &WindowDialog::_closed);
 	ClassDB::bind_method(D_METHOD("get_close_button"), &WindowDialog::get_close_button);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "window_title", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT_INTL), "set_title", "get_title");
@@ -349,7 +348,7 @@ WindowDialog::WindowDialog() {
 	resizable = false;
 	close_button = memnew(TextureButton);
 	add_child(close_button);
-	close_button->connect_compat("pressed", this, "_closed");
+	close_button->connect("pressed", callable_mp(this, &WindowDialog::_closed));
 
 #ifdef TOOLS_ENABLED
 	was_editor_dimmed = false;
@@ -448,7 +447,7 @@ void AcceptDialog::register_text_enter(Node *p_line_edit) {
 	ERR_FAIL_NULL(p_line_edit);
 	LineEdit *line_edit = Object::cast_to<LineEdit>(p_line_edit);
 	if (line_edit)
-		line_edit->connect_compat("text_entered", this, "_builtin_text_entered");
+		line_edit->connect("text_entered", callable_mp(this, &AcceptDialog::_builtin_text_entered));
 }
 
 void AcceptDialog::_update_child_rects() {
@@ -533,7 +532,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 	}
 
 	if (p_action != "") {
-		button->connect_compat("pressed", this, "_custom_action", varray(p_action));
+		button->connect("pressed", callable_mp(this, &AcceptDialog::_custom_action), varray(p_action));
 	}
 
 	return button;
@@ -551,16 +550,13 @@ Button *AcceptDialog::add_cancel(const String &p_cancel) {
 
 void AcceptDialog::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_ok"), &AcceptDialog::_ok_pressed);
 	ClassDB::bind_method(D_METHOD("get_ok"), &AcceptDialog::get_ok);
 	ClassDB::bind_method(D_METHOD("get_label"), &AcceptDialog::get_label);
 	ClassDB::bind_method(D_METHOD("set_hide_on_ok", "enabled"), &AcceptDialog::set_hide_on_ok);
 	ClassDB::bind_method(D_METHOD("get_hide_on_ok"), &AcceptDialog::get_hide_on_ok);
 	ClassDB::bind_method(D_METHOD("add_button", "text", "right", "action"), &AcceptDialog::add_button, DEFVAL(false), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("add_cancel", "name"), &AcceptDialog::add_cancel);
-	ClassDB::bind_method(D_METHOD("_builtin_text_entered"), &AcceptDialog::_builtin_text_entered);
 	ClassDB::bind_method(D_METHOD("register_text_enter", "line_edit"), &AcceptDialog::register_text_enter);
-	ClassDB::bind_method(D_METHOD("_custom_action"), &AcceptDialog::_custom_action);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &AcceptDialog::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &AcceptDialog::get_text);
 	ClassDB::bind_method(D_METHOD("set_autowrap", "autowrap"), &AcceptDialog::set_autowrap);
@@ -602,7 +598,7 @@ AcceptDialog::AcceptDialog() {
 	hbc->add_child(ok);
 	hbc->add_spacer();
 
-	ok->connect_compat("pressed", this, "_ok");
+	ok->connect("pressed", callable_mp(this, &AcceptDialog::_ok_pressed));
 	set_as_toplevel(true);
 
 	hide_on_ok = true;

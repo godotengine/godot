@@ -137,7 +137,7 @@ void SkeletonEditor::edit(Skeleton *p_node) {
 
 void SkeletonEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		get_tree()->connect_compat("node_removed", this, "_node_removed");
+		get_tree()->connect("node_removed", callable_mp(this, &SkeletonEditor::_node_removed));
 	}
 }
 
@@ -150,8 +150,6 @@ void SkeletonEditor::_node_removed(Node *p_node) {
 }
 
 void SkeletonEditor::_bind_methods() {
-	ClassDB::bind_method("_on_click_option", &SkeletonEditor::_on_click_option);
-	ClassDB::bind_method("_node_removed", &SkeletonEditor::_node_removed);
 }
 
 SkeletonEditor::SkeletonEditor() {
@@ -164,7 +162,7 @@ SkeletonEditor::SkeletonEditor() {
 
 	options->get_popup()->add_item(TTR("Create physical skeleton"), MENU_OPTION_CREATE_PHYSICAL_SKELETON);
 
-	options->get_popup()->connect_compat("id_pressed", this, "_on_click_option");
+	options->get_popup()->connect("id_pressed", callable_mp(this, &SkeletonEditor::_on_click_option));
 	options->hide();
 }
 

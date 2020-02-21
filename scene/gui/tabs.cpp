@@ -956,7 +956,6 @@ void Tabs::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &Tabs::_gui_input);
 	ClassDB::bind_method(D_METHOD("_update_hover"), &Tabs::_update_hover);
-	ClassDB::bind_method(D_METHOD("_on_mouse_exited"), &Tabs::_on_mouse_exited);
 	ClassDB::bind_method(D_METHOD("get_tab_count"), &Tabs::get_tab_count);
 	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &Tabs::set_current_tab);
 	ClassDB::bind_method(D_METHOD("get_current_tab"), &Tabs::get_current_tab);
@@ -1034,5 +1033,5 @@ Tabs::Tabs() {
 	drag_to_rearrange_enabled = false;
 	tabs_rearrange_group = -1;
 
-	connect_compat("mouse_exited", this, "_on_mouse_exited");
+	connect("mouse_exited", callable_mp(this, &Tabs::_on_mouse_exited));
 }

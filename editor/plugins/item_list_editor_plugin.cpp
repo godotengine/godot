@@ -268,7 +268,7 @@ void ItemListEditor::_notification(int p_notification) {
 		del_button->set_icon(get_icon("Remove", "EditorIcons"));
 	} else if (p_notification == NOTIFICATION_READY) {
 
-		get_tree()->connect_compat("node_removed", this, "_node_removed");
+		get_tree()->connect("node_removed", callable_mp(this, &ItemListEditor::_node_removed));
 	}
 }
 
@@ -344,11 +344,6 @@ bool ItemListEditor::handles(Object *p_object) const {
 }
 
 void ItemListEditor::_bind_methods() {
-
-	ClassDB::bind_method("_node_removed", &ItemListEditor::_node_removed);
-	ClassDB::bind_method("_edit_items", &ItemListEditor::_edit_items);
-	ClassDB::bind_method("_add_button", &ItemListEditor::_add_pressed);
-	ClassDB::bind_method("_delete_button", &ItemListEditor::_delete_pressed);
 }
 
 ItemListEditor::ItemListEditor() {
@@ -359,7 +354,7 @@ ItemListEditor::ItemListEditor() {
 	toolbar_button = memnew(ToolButton);
 	toolbar_button->set_text(TTR("Items"));
 	add_child(toolbar_button);
-	toolbar_button->connect_compat("pressed", this, "_edit_items");
+	toolbar_button->connect("pressed", callable_mp(this, &ItemListEditor::_edit_items));
 
 	dialog = memnew(AcceptDialog);
 	dialog->set_title(TTR("Item List Editor"));
@@ -376,14 +371,14 @@ ItemListEditor::ItemListEditor() {
 	add_button = memnew(Button);
 	add_button->set_text(TTR("Add"));
 	hbc->add_child(add_button);
-	add_button->connect_compat("pressed", this, "_add_button");
+	add_button->connect("pressed", callable_mp(this, &ItemListEditor::_add_pressed));
 
 	hbc->add_spacer();
 
 	del_button = memnew(Button);
 	del_button->set_text(TTR("Delete"));
 	hbc->add_child(del_button);
-	del_button->connect_compat("pressed", this, "_delete_button");
+	del_button->connect("pressed", callable_mp(this, &ItemListEditor::_delete_pressed));
 
 	property_editor = memnew(EditorInspector);
 	vbc->add_child(property_editor);

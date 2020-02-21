@@ -1542,7 +1542,6 @@ void ItemList::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_v_scroll"), &ItemList::get_v_scroll);
 
-	ClassDB::bind_method(D_METHOD("_scroll_changed"), &ItemList::_scroll_changed);
 	ClassDB::bind_method(D_METHOD("_gui_input"), &ItemList::_gui_input);
 
 	ClassDB::bind_method(D_METHOD("_set_items"), &ItemList::_set_items);
@@ -1599,7 +1598,7 @@ ItemList::ItemList() {
 	add_child(scroll_bar);
 
 	shape_changed = true;
-	scroll_bar->connect_compat("value_changed", this, "_scroll_changed");
+	scroll_bar->connect("value_changed", callable_mp(this, &ItemList::_scroll_changed));
 
 	set_focus_mode(FOCUS_ALL);
 	current_columns = 1;

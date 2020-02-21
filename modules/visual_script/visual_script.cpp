@@ -198,7 +198,7 @@ void VisualScript::remove_function(const StringName &p_name) {
 
 	for (Map<int, Function::NodeData>::Element *E = functions[p_name].nodes.front(); E; E = E->next()) {
 
-		E->get().node->disconnect_compat("ports_changed", this, "_node_ports_changed");
+		E->get().node->disconnect("ports_changed", callable_mp(this, &VisualScript::_node_ports_changed));
 		E->get().node->scripts_used.erase(this);
 	}
 
@@ -340,7 +340,7 @@ void VisualScript::add_node(const StringName &p_func, int p_id, const Ref<Visual
 	nd.pos = p_pos;
 
 	Ref<VisualScriptNode> vsn = p_node;
-	vsn->connect_compat("ports_changed", this, "_node_ports_changed", varray(p_id));
+	vsn->connect("ports_changed", callable_mp(this, &VisualScript::_node_ports_changed), varray(p_id));
 	vsn->scripts_used.insert(this);
 	vsn->validate_input_default_values(); // Validate when fully loaded
 
@@ -389,7 +389,7 @@ void VisualScript::remove_node(const StringName &p_func, int p_id) {
 		func.function_id = -1; //revert to invalid
 	}
 
-	func.nodes[p_id].node->disconnect_compat("ports_changed", this, "_node_ports_changed");
+	func.nodes[p_id].node->disconnect("ports_changed", callable_mp(this, &VisualScript::_node_ports_changed));
 	func.nodes[p_id].node->scripts_used.erase(this);
 
 	func.nodes.erase(p_id);
@@ -1372,8 +1372,6 @@ Dictionary VisualScript::_get_data() const {
 }
 
 void VisualScript::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_node_ports_changed"), &VisualScript::_node_ports_changed);
 
 	ClassDB::bind_method(D_METHOD("add_function", "name"), &VisualScript::add_function);
 	ClassDB::bind_method(D_METHOD("has_function", "name"), &VisualScript::has_function);

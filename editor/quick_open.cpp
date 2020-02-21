@@ -257,7 +257,7 @@ void EditorQuickOpen::_notification(int p_what) {
 
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			connect_compat("confirmed", this, "_confirmed");
+			connect("confirmed", callable_mp(this, &EditorQuickOpen::_confirmed));
 
 			search_box->set_clear_button_enabled(true);
 			[[fallthrough]];
@@ -266,7 +266,7 @@ void EditorQuickOpen::_notification(int p_what) {
 			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			disconnect_compat("confirmed", this, "_confirmed");
+			disconnect("confirmed", callable_mp(this, &EditorQuickOpen::_confirmed));
 		} break;
 	}
 }
@@ -278,10 +278,6 @@ StringName EditorQuickOpen::get_base_type() const {
 
 void EditorQuickOpen::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_text_changed"), &EditorQuickOpen::_text_changed);
-	ClassDB::bind_method(D_METHOD("_confirmed"), &EditorQuickOpen::_confirmed);
-	ClassDB::bind_method(D_METHOD("_sbox_input"), &EditorQuickOpen::_sbox_input);
-
 	ADD_SIGNAL(MethodInfo("quick_open"));
 }
 
@@ -291,15 +287,15 @@ EditorQuickOpen::EditorQuickOpen() {
 	add_child(vbc);
 	search_box = memnew(LineEdit);
 	vbc->add_margin_child(TTR("Search:"), search_box);
-	search_box->connect_compat("text_changed", this, "_text_changed");
-	search_box->connect_compat("gui_input", this, "_sbox_input");
+	search_box->connect("text_changed", callable_mp(this, &EditorQuickOpen::_text_changed));
+	search_box->connect("gui_input", callable_mp(this, &EditorQuickOpen::_sbox_input));
 	search_options = memnew(Tree);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 	get_ok()->set_text(TTR("Open"));
 	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
-	search_options->connect_compat("item_activated", this, "_confirmed");
+	search_options->connect("item_activated", callable_mp(this, &EditorQuickOpen::_confirmed));
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
 	search_options->add_constant_override("draw_guides", 1);

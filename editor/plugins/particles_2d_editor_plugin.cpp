@@ -349,18 +349,13 @@ void Particles2DEditorPlugin::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		menu->get_popup()->connect_compat("id_pressed", this, "_menu_callback");
+		menu->get_popup()->connect("id_pressed", callable_mp(this, &Particles2DEditorPlugin::_menu_callback));
 		menu->set_icon(menu->get_popup()->get_icon("Particles2D", "EditorIcons"));
-		file->connect_compat("file_selected", this, "_file_selected");
+		file->connect("file_selected", callable_mp(this, &Particles2DEditorPlugin::_file_selected));
 	}
 }
 
 void Particles2DEditorPlugin::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_menu_callback"), &Particles2DEditorPlugin::_menu_callback);
-	ClassDB::bind_method(D_METHOD("_file_selected"), &Particles2DEditorPlugin::_file_selected);
-	ClassDB::bind_method(D_METHOD("_generate_visibility_rect"), &Particles2DEditorPlugin::_generate_visibility_rect);
-	ClassDB::bind_method(D_METHOD("_generate_emission_mask"), &Particles2DEditorPlugin::_generate_emission_mask);
 }
 
 Particles2DEditorPlugin::Particles2DEditorPlugin(EditorNode *p_node) {
@@ -416,7 +411,7 @@ Particles2DEditorPlugin::Particles2DEditorPlugin(EditorNode *p_node) {
 
 	toolbar->add_child(generate_visibility_rect);
 
-	generate_visibility_rect->connect_compat("confirmed", this, "_generate_visibility_rect");
+	generate_visibility_rect->connect("confirmed", callable_mp(this, &Particles2DEditorPlugin::_generate_visibility_rect));
 
 	emission_mask = memnew(ConfirmationDialog);
 	emission_mask->set_title(TTR("Load Emission Mask"));
@@ -433,7 +428,7 @@ Particles2DEditorPlugin::Particles2DEditorPlugin(EditorNode *p_node) {
 
 	toolbar->add_child(emission_mask);
 
-	emission_mask->connect_compat("confirmed", this, "_generate_emission_mask");
+	emission_mask->connect("confirmed", callable_mp(this, &Particles2DEditorPlugin::_generate_emission_mask));
 }
 
 Particles2DEditorPlugin::~Particles2DEditorPlugin() {

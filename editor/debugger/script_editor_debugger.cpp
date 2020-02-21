@@ -763,10 +763,10 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			next->set_icon(get_icon("DebugNext", "EditorIcons"));
 			dobreak->set_icon(get_icon("Pause", "EditorIcons"));
 			docontinue->set_icon(get_icon("DebugContinue", "EditorIcons"));
-			le_set->connect_compat("pressed", this, "_live_edit_set");
-			le_clear->connect_compat("pressed", this, "_live_edit_clear");
-			error_tree->connect_compat("item_selected", this, "_error_selected");
-			error_tree->connect_compat("item_activated", this, "_error_activated");
+			le_set->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_live_edit_set));
+			le_clear->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_live_edit_clear));
+			error_tree->connect("item_selected", callable_mp(this, &ScriptEditorDebugger::_error_selected));
+			error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_activated));
 			vmem_refresh->set_icon(get_icon("Reload", "EditorIcons"));
 
 			reason->add_color_override("font_color", get_color("error_color", "Editor"));
@@ -1477,40 +1477,6 @@ void ScriptEditorDebugger::_tab_changed(int p_tab) {
 
 void ScriptEditorDebugger::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_stack_dump_frame_selected"), &ScriptEditorDebugger::_stack_dump_frame_selected);
-
-	ClassDB::bind_method(D_METHOD("debug_skip_breakpoints"), &ScriptEditorDebugger::debug_skip_breakpoints);
-	ClassDB::bind_method(D_METHOD("debug_copy"), &ScriptEditorDebugger::debug_copy);
-
-	ClassDB::bind_method(D_METHOD("debug_next"), &ScriptEditorDebugger::debug_next);
-	ClassDB::bind_method(D_METHOD("debug_step"), &ScriptEditorDebugger::debug_step);
-	ClassDB::bind_method(D_METHOD("debug_break"), &ScriptEditorDebugger::debug_break);
-	ClassDB::bind_method(D_METHOD("debug_continue"), &ScriptEditorDebugger::debug_continue);
-	ClassDB::bind_method(D_METHOD("_export_csv"), &ScriptEditorDebugger::_export_csv);
-	ClassDB::bind_method(D_METHOD("_performance_draw"), &ScriptEditorDebugger::_performance_draw);
-	ClassDB::bind_method(D_METHOD("_performance_select"), &ScriptEditorDebugger::_performance_select);
-	ClassDB::bind_method(D_METHOD("_video_mem_request"), &ScriptEditorDebugger::_video_mem_request);
-	ClassDB::bind_method(D_METHOD("_live_edit_set"), &ScriptEditorDebugger::_live_edit_set);
-	ClassDB::bind_method(D_METHOD("_live_edit_clear"), &ScriptEditorDebugger::_live_edit_clear);
-
-	ClassDB::bind_method(D_METHOD("_error_selected"), &ScriptEditorDebugger::_error_selected);
-	ClassDB::bind_method(D_METHOD("_error_activated"), &ScriptEditorDebugger::_error_activated);
-	ClassDB::bind_method(D_METHOD("_expand_errors_list"), &ScriptEditorDebugger::_expand_errors_list);
-	ClassDB::bind_method(D_METHOD("_collapse_errors_list"), &ScriptEditorDebugger::_collapse_errors_list);
-	ClassDB::bind_method(D_METHOD("_profiler_activate"), &ScriptEditorDebugger::_profiler_activate);
-	ClassDB::bind_method(D_METHOD("_visual_profiler_activate"), &ScriptEditorDebugger::_visual_profiler_activate);
-	ClassDB::bind_method(D_METHOD("_network_profiler_activate"), &ScriptEditorDebugger::_network_profiler_activate);
-	ClassDB::bind_method(D_METHOD("_profiler_seeked"), &ScriptEditorDebugger::_profiler_seeked);
-	ClassDB::bind_method(D_METHOD("_clear_errors_list"), &ScriptEditorDebugger::_clear_errors_list);
-
-	ClassDB::bind_method(D_METHOD("_error_tree_item_rmb_selected"), &ScriptEditorDebugger::_error_tree_item_rmb_selected);
-	ClassDB::bind_method(D_METHOD("_item_menu_id_pressed"), &ScriptEditorDebugger::_item_menu_id_pressed);
-	ClassDB::bind_method(D_METHOD("_tab_changed"), &ScriptEditorDebugger::_tab_changed);
-	ClassDB::bind_method(D_METHOD("_file_selected"), &ScriptEditorDebugger::_file_selected);
-	ClassDB::bind_method(D_METHOD("_remote_object_selected", "id"), &ScriptEditorDebugger::_remote_object_selected);
-	ClassDB::bind_method(D_METHOD("_remote_object_edited", "id", "property", "value"), &ScriptEditorDebugger::_remote_object_edited);
-	ClassDB::bind_method(D_METHOD("_remote_object_property_updated", "id", "property"), &ScriptEditorDebugger::_remote_object_property_updated);
-
 	ClassDB::bind_method(D_METHOD("live_debug_create_node"), &ScriptEditorDebugger::live_debug_create_node);
 	ClassDB::bind_method(D_METHOD("live_debug_instance_node"), &ScriptEditorDebugger::live_debug_instance_node);
 	ClassDB::bind_method(D_METHOD("live_debug_remove_node"), &ScriptEditorDebugger::live_debug_remove_node);
@@ -1543,7 +1509,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	tabs = memnew(TabContainer);
 	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
 	tabs->add_style_override("panel", editor->get_gui_base()->get_stylebox("DebuggerPanel", "EditorStyles"));
-	tabs->connect_compat("tab_changed", this, "_tab_changed");
+	tabs->connect("tab_changed", callable_mp(this, &ScriptEditorDebugger::_tab_changed));
 
 	add_child(tabs);
 
@@ -1568,14 +1534,14 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		skip_breakpoints = memnew(ToolButton);
 		hbc->add_child(skip_breakpoints);
 		skip_breakpoints->set_tooltip(TTR("Skip Breakpoints"));
-		skip_breakpoints->connect_compat("pressed", this, "debug_skip_breakpoints");
+		skip_breakpoints->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_skip_breakpoints));
 
 		hbc->add_child(memnew(VSeparator));
 
 		copy = memnew(ToolButton);
 		hbc->add_child(copy);
 		copy->set_tooltip(TTR("Copy Error"));
-		copy->connect_compat("pressed", this, "debug_copy");
+		copy->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_copy));
 
 		hbc->add_child(memnew(VSeparator));
 
@@ -1583,13 +1549,13 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		hbc->add_child(step);
 		step->set_tooltip(TTR("Step Into"));
 		step->set_shortcut(ED_GET_SHORTCUT("debugger/step_into"));
-		step->connect_compat("pressed", this, "debug_step");
+		step->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_step));
 
 		next = memnew(ToolButton);
 		hbc->add_child(next);
 		next->set_tooltip(TTR("Step Over"));
 		next->set_shortcut(ED_GET_SHORTCUT("debugger/step_over"));
-		next->connect_compat("pressed", this, "debug_next");
+		next->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_next));
 
 		hbc->add_child(memnew(VSeparator));
 
@@ -1597,13 +1563,13 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		hbc->add_child(dobreak);
 		dobreak->set_tooltip(TTR("Break"));
 		dobreak->set_shortcut(ED_GET_SHORTCUT("debugger/break"));
-		dobreak->connect_compat("pressed", this, "debug_break");
+		dobreak->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_break));
 
 		docontinue = memnew(ToolButton);
 		hbc->add_child(docontinue);
 		docontinue->set_tooltip(TTR("Continue"));
 		docontinue->set_shortcut(ED_GET_SHORTCUT("debugger/continue"));
-		docontinue->connect_compat("pressed", this, "debug_continue");
+		docontinue->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_continue));
 
 		HSplitContainer *sc = memnew(HSplitContainer);
 		vbc->add_child(sc);
@@ -1616,16 +1582,16 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		stack_dump->set_column_title(0, TTR("Stack Frames"));
 		stack_dump->set_h_size_flags(SIZE_EXPAND_FILL);
 		stack_dump->set_hide_root(true);
-		stack_dump->connect_compat("cell_selected", this, "_stack_dump_frame_selected");
+		stack_dump->connect("cell_selected", callable_mp(this, &ScriptEditorDebugger::_stack_dump_frame_selected));
 		sc->add_child(stack_dump);
 
 		inspector = memnew(EditorDebuggerInspector);
 		inspector->set_h_size_flags(SIZE_EXPAND_FILL);
 		inspector->set_enable_capitalize_paths(false);
 		inspector->set_read_only(true);
-		inspector->connect_compat("object_selected", this, "_remote_object_selected");
-		inspector->connect_compat("object_edited", this, "_remote_object_edited");
-		inspector->connect_compat("object_property_updated", this, "_remote_object_property_updated");
+		inspector->connect("object_selected", callable_mp(this, &ScriptEditorDebugger::_remote_object_selected));
+		inspector->connect("object_edited", callable_mp(this, &ScriptEditorDebugger::_remote_object_edited));
+		inspector->connect("object_property_updated", callable_mp(this, &ScriptEditorDebugger::_remote_object_property_updated));
 		sc->add_child(inspector);
 		tabs->add_child(dbg);
 	}
@@ -1639,12 +1605,12 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 
 		Button *expand_all = memnew(Button);
 		expand_all->set_text(TTR("Expand All"));
-		expand_all->connect_compat("pressed", this, "_expand_errors_list");
+		expand_all->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_expand_errors_list));
 		errhb->add_child(expand_all);
 
 		Button *collapse_all = memnew(Button);
 		collapse_all->set_text(TTR("Collapse All"));
-		collapse_all->connect_compat("pressed", this, "_collapse_errors_list");
+		collapse_all->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_collapse_errors_list));
 		errhb->add_child(collapse_all);
 
 		Control *space = memnew(Control);
@@ -1654,7 +1620,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		clearbutton = memnew(Button);
 		clearbutton->set_text(TTR("Clear"));
 		clearbutton->set_h_size_flags(0);
-		clearbutton->connect_compat("pressed", this, "_clear_errors_list");
+		clearbutton->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_clear_errors_list));
 		errhb->add_child(clearbutton);
 
 		error_tree = memnew(Tree);
@@ -1669,11 +1635,11 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		error_tree->set_hide_root(true);
 		error_tree->set_v_size_flags(SIZE_EXPAND_FILL);
 		error_tree->set_allow_rmb_select(true);
-		error_tree->connect_compat("item_rmb_selected", this, "_error_tree_item_rmb_selected");
+		error_tree->connect("item_rmb_selected", callable_mp(this, &ScriptEditorDebugger::_error_tree_item_rmb_selected));
 		errors_tab->add_child(error_tree);
 
 		item_menu = memnew(PopupMenu);
-		item_menu->connect_compat("id_pressed", this, "_item_menu_id_pressed");
+		item_menu->connect("id_pressed", callable_mp(this, &ScriptEditorDebugger::_item_menu_id_pressed));
 		error_tree->add_child(item_menu);
 
 		tabs->add_child(errors_tab);
@@ -1681,7 +1647,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 
 	{ // File dialog
 		file_dialog = memnew(EditorFileDialog);
-		file_dialog->connect_compat("file_selected", this, "_file_selected");
+		file_dialog->connect("file_selected", callable_mp(this, &ScriptEditorDebugger::_file_selected));
 		add_child(file_dialog);
 	}
 
@@ -1689,22 +1655,22 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		profiler = memnew(EditorProfiler);
 		profiler->set_name(TTR("Profiler"));
 		tabs->add_child(profiler);
-		profiler->connect_compat("enable_profiling", this, "_profiler_activate");
-		profiler->connect_compat("break_request", this, "_profiler_seeked");
+		profiler->connect("enable_profiling", callable_mp(this, &ScriptEditorDebugger::_profiler_activate));
+		profiler->connect("break_request", callable_mp(this, &ScriptEditorDebugger::_profiler_seeked));
 	}
 
 	{ //frame profiler
 		visual_profiler = memnew(EditorVisualProfiler);
 		visual_profiler->set_name(TTR("Visual Profiler"));
 		tabs->add_child(visual_profiler);
-		visual_profiler->connect_compat("enable_profiling", this, "_visual_profiler_activate");
+		visual_profiler->connect("enable_profiling", callable_mp(this, &ScriptEditorDebugger::_visual_profiler_activate));
 	}
 
 	{ //network profiler
 		network_profiler = memnew(EditorNetworkProfiler);
 		network_profiler->set_name(TTR("Network Profiler"));
 		tabs->add_child(network_profiler);
-		network_profiler->connect_compat("enable_profiling", this, "_network_profiler_activate");
+		network_profiler->connect("enable_profiling", callable_mp(this, &ScriptEditorDebugger::_network_profiler_activate));
 	}
 
 	{ //monitors
@@ -1716,12 +1682,12 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		perf_monitors->set_column_title(0, TTR("Monitor"));
 		perf_monitors->set_column_title(1, TTR("Value"));
 		perf_monitors->set_column_titles_visible(true);
-		perf_monitors->connect_compat("item_edited", this, "_performance_select");
+		perf_monitors->connect("item_edited", callable_mp(this, &ScriptEditorDebugger::_performance_select));
 		hsp->add_child(perf_monitors);
 
 		perf_draw = memnew(Control);
 		perf_draw->set_clip_contents(true);
-		perf_draw->connect_compat("draw", this, "_performance_draw");
+		perf_draw->connect("draw", callable_mp(this, &ScriptEditorDebugger::_performance_draw));
 		hsp->add_child(perf_draw);
 
 		hsp->set_name(TTR("Monitors"));
@@ -1782,7 +1748,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		vmem_refresh = memnew(ToolButton);
 		vmem_hb->add_child(vmem_refresh);
 		vmem_vb->add_child(vmem_hb);
-		vmem_refresh->connect_compat("pressed", this, "_video_mem_request");
+		vmem_refresh->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_video_mem_request));
 
 		VBoxContainer *vmmc = memnew(VBoxContainer);
 		vmem_tree = memnew(Tree);
@@ -1848,7 +1814,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		HBoxContainer *buttons = memnew(HBoxContainer);
 
 		export_csv = memnew(Button(TTR("Export measures as CSV")));
-		export_csv->connect_compat("pressed", this, "_export_csv");
+		export_csv->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_export_csv));
 		buttons->add_child(export_csv);
 
 		misc->add_child(buttons);

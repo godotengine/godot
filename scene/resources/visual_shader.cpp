@@ -349,10 +349,10 @@ void VisualShader::add_node(Type p_type, const Ref<VisualShaderNode> &p_node, co
 	if (input.is_valid()) {
 		input->shader_mode = shader_mode;
 		input->shader_type = p_type;
-		input->connect_compat("input_type_changed", this, "_input_type_changed", varray(p_type, p_id));
+		input->connect("input_type_changed", callable_mp(this, &VisualShader::_input_type_changed), varray(p_type, p_id));
 	}
 
-	n.node->connect_compat("changed", this, "_queue_update");
+	n.node->connect("changed", callable_mp(this, &VisualShader::_queue_update));
 
 	Ref<VisualShaderNodeCustom> custom = n.node;
 	if (custom.is_valid()) {
@@ -419,10 +419,10 @@ void VisualShader::remove_node(Type p_type, int p_id) {
 
 	Ref<VisualShaderNodeInput> input = g->nodes[p_id].node;
 	if (input.is_valid()) {
-		input->disconnect_compat("input_type_changed", this, "_input_type_changed");
+		input->disconnect("input_type_changed", callable_mp(this, &VisualShader::_input_type_changed));
 	}
 
-	g->nodes[p_id].node->disconnect_compat("changed", this, "_queue_update");
+	g->nodes[p_id].node->disconnect("changed", callable_mp(this, &VisualShader::_queue_update));
 
 	g->nodes.erase(p_id);
 
@@ -1480,10 +1480,7 @@ void VisualShader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_graph_offset", "offset"), &VisualShader::set_graph_offset);
 	ClassDB::bind_method(D_METHOD("get_graph_offset"), &VisualShader::get_graph_offset);
 
-	ClassDB::bind_method(D_METHOD("_queue_update"), &VisualShader::_queue_update);
 	ClassDB::bind_method(D_METHOD("_update_shader"), &VisualShader::_update_shader);
-
-	ClassDB::bind_method(D_METHOD("_input_type_changed"), &VisualShader::_input_type_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_graph_offset", "get_graph_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "version", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_version", "get_version");

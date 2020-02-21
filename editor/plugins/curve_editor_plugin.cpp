@@ -49,7 +49,7 @@ CurveEditor::CurveEditor() {
 	set_clip_contents(true);
 
 	_context_menu = memnew(PopupMenu);
-	_context_menu->connect_compat("id_pressed", this, "_on_context_menu_item_selected");
+	_context_menu->connect("id_pressed", callable_mp(this, &CurveEditor::on_context_menu_item_selected));
 	add_child(_context_menu);
 
 	_presets_menu = memnew(PopupMenu);
@@ -60,7 +60,7 @@ CurveEditor::CurveEditor() {
 	_presets_menu->add_item(TTR("Ease In"), PRESET_EASE_IN);
 	_presets_menu->add_item(TTR("Ease Out"), PRESET_EASE_OUT);
 	_presets_menu->add_item(TTR("Smoothstep"), PRESET_SMOOTHSTEP);
-	_presets_menu->connect_compat("id_pressed", this, "_on_preset_item_selected");
+	_presets_menu->connect("id_pressed", callable_mp(this, &CurveEditor::on_preset_item_selected));
 	_context_menu->add_child(_presets_menu);
 }
 
@@ -749,9 +749,7 @@ void CurveEditor::_draw() {
 
 void CurveEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_gui_input"), &CurveEditor::on_gui_input);
-	ClassDB::bind_method(D_METHOD("_on_preset_item_selected"), &CurveEditor::on_preset_item_selected);
 	ClassDB::bind_method(D_METHOD("_curve_changed"), &CurveEditor::_curve_changed);
-	ClassDB::bind_method(D_METHOD("_on_context_menu_item_selected"), &CurveEditor::on_context_menu_item_selected);
 }
 
 //---------------

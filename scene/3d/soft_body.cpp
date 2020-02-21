@@ -319,8 +319,6 @@ void SoftBody::_notification(int p_what) {
 
 void SoftBody::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_draw_soft_mesh"), &SoftBody::_draw_soft_mesh);
-
 	ClassDB::bind_method(D_METHOD("set_collision_mask", "collision_mask"), &SoftBody::set_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_collision_mask"), &SoftBody::get_collision_mask);
 
@@ -464,12 +462,12 @@ void SoftBody::prepare_physics_server() {
 
 		become_mesh_owner();
 		PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
-		VS::get_singleton()->connect_compat("frame_pre_draw", this, "_draw_soft_mesh");
+		VS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &SoftBody::_draw_soft_mesh));
 	} else {
 
 		PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, NULL);
-		if (VS::get_singleton()->is_connected_compat("frame_pre_draw", this, "_draw_soft_mesh")) {
-			VS::get_singleton()->disconnect_compat("frame_pre_draw", this, "_draw_soft_mesh");
+		if (VS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &SoftBody::_draw_soft_mesh))) {
+			VS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &SoftBody::_draw_soft_mesh));
 		}
 	}
 }

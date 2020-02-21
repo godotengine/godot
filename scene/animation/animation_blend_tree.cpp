@@ -884,8 +884,8 @@ void AnimationNodeBlendTree::add_node(const StringName &p_name, Ref<AnimationNod
 	emit_changed();
 	emit_signal("tree_changed");
 
-	p_node->connect_compat("tree_changed", this, "_tree_changed", varray(), CONNECT_REFERENCE_COUNTED);
-	p_node->connect_compat("changed", this, "_node_changed", varray(p_name), CONNECT_REFERENCE_COUNTED);
+	p_node->connect("tree_changed", callable_mp(this, &AnimationNodeBlendTree::_tree_changed), varray(), CONNECT_REFERENCE_COUNTED);
+	p_node->connect("changed", callable_mp(this, &AnimationNodeBlendTree::_node_changed), varray(p_name), CONNECT_REFERENCE_COUNTED);
 }
 
 Ref<AnimationNode> AnimationNodeBlendTree::get_node(const StringName &p_name) const {
@@ -947,8 +947,8 @@ void AnimationNodeBlendTree::remove_node(const StringName &p_name) {
 
 	{
 		Ref<AnimationNode> node = nodes[p_name].node;
-		node->disconnect_compat("tree_changed", this, "_tree_changed");
-		node->disconnect_compat("changed", this, "_node_changed");
+		node->disconnect("tree_changed", callable_mp(this, &AnimationNodeBlendTree::_tree_changed));
+		node->disconnect("changed", callable_mp(this, &AnimationNodeBlendTree::_node_changed));
 	}
 
 	nodes.erase(p_name);
@@ -973,7 +973,7 @@ void AnimationNodeBlendTree::rename_node(const StringName &p_name, const StringN
 	ERR_FAIL_COND(p_name == SceneStringNames::get_singleton()->output);
 	ERR_FAIL_COND(p_new_name == SceneStringNames::get_singleton()->output);
 
-	nodes[p_name].node->disconnect_compat("changed", this, "_node_changed");
+	nodes[p_name].node->disconnect("changed", callable_mp(this, &AnimationNodeBlendTree::_node_changed));
 
 	nodes[p_new_name] = nodes[p_name];
 	nodes.erase(p_name);
@@ -988,7 +988,7 @@ void AnimationNodeBlendTree::rename_node(const StringName &p_name, const StringN
 		}
 	}
 	//connection must be done with new name
-	nodes[p_new_name].node->connect_compat("changed", this, "_node_changed", varray(p_new_name), CONNECT_REFERENCE_COUNTED);
+	nodes[p_new_name].node->connect("changed", callable_mp(this, &AnimationNodeBlendTree::_node_changed), varray(p_new_name), CONNECT_REFERENCE_COUNTED);
 
 	emit_signal("tree_changed");
 }
@@ -1229,9 +1229,6 @@ void AnimationNodeBlendTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_graph_offset", "offset"), &AnimationNodeBlendTree::set_graph_offset);
 	ClassDB::bind_method(D_METHOD("get_graph_offset"), &AnimationNodeBlendTree::get_graph_offset);
-
-	ClassDB::bind_method(D_METHOD("_tree_changed"), &AnimationNodeBlendTree::_tree_changed);
-	ClassDB::bind_method(D_METHOD("_node_changed", "node"), &AnimationNodeBlendTree::_node_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_graph_offset", "get_graph_offset");
 

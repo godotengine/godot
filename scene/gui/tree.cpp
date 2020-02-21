@@ -3914,13 +3914,7 @@ bool Tree::get_allow_reselect() const {
 
 void Tree::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_range_click_timeout"), &Tree::_range_click_timeout);
 	ClassDB::bind_method(D_METHOD("_gui_input"), &Tree::_gui_input);
-	ClassDB::bind_method(D_METHOD("_popup_select"), &Tree::popup_select);
-	ClassDB::bind_method(D_METHOD("_text_editor_enter"), &Tree::text_editor_enter);
-	ClassDB::bind_method(D_METHOD("_text_editor_modal_close"), &Tree::_text_editor_modal_close);
-	ClassDB::bind_method(D_METHOD("_value_editor_changed"), &Tree::value_editor_changed);
-	ClassDB::bind_method(D_METHOD("_scroll_moved"), &Tree::_scroll_moved);
 
 	ClassDB::bind_method(D_METHOD("clear"), &Tree::clear);
 	ClassDB::bind_method(D_METHOD("create_item", "parent", "idx"), &Tree::_create_item, DEFVAL(Variant()), DEFVAL(-1));
@@ -4043,15 +4037,15 @@ Tree::Tree() {
 	add_child(v_scroll);
 
 	range_click_timer = memnew(Timer);
-	range_click_timer->connect_compat("timeout", this, "_range_click_timeout");
+	range_click_timer->connect("timeout", callable_mp(this, &Tree::_range_click_timeout));
 	add_child(range_click_timer);
 
-	h_scroll->connect_compat("value_changed", this, "_scroll_moved");
-	v_scroll->connect_compat("value_changed", this, "_scroll_moved");
-	text_editor->connect_compat("text_entered", this, "_text_editor_enter");
-	text_editor->connect_compat("modal_closed", this, "_text_editor_modal_close");
-	popup_menu->connect_compat("id_pressed", this, "_popup_select");
-	value_editor->connect_compat("value_changed", this, "_value_editor_changed");
+	h_scroll->connect("value_changed", callable_mp(this, &Tree::_scroll_moved));
+	v_scroll->connect("value_changed", callable_mp(this, &Tree::_scroll_moved));
+	text_editor->connect("text_entered", callable_mp(this, &Tree::text_editor_enter));
+	text_editor->connect("modal_closed", callable_mp(this, &Tree::_text_editor_modal_close));
+	popup_menu->connect("id_pressed", callable_mp(this, &Tree::popup_select));
+	value_editor->connect("value_changed", callable_mp(this, &Tree::value_editor_changed));
 
 	value_editor->set_as_toplevel(true);
 	text_editor->set_as_toplevel(true);

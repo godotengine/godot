@@ -296,15 +296,15 @@ void ScrollBar::_notification(int p_what) {
 		}
 
 		if (drag_node) {
-			drag_node->connect_compat("gui_input", this, "_drag_node_input");
-			drag_node->connect_compat("tree_exiting", this, "_drag_node_exit", varray(), CONNECT_ONESHOT);
+			drag_node->connect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
+			drag_node->connect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit), varray(), CONNECT_ONESHOT);
 		}
 	}
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 
 		if (drag_node) {
-			drag_node->disconnect_compat("gui_input", this, "_drag_node_input");
-			drag_node->disconnect_compat("tree_exiting", this, "_drag_node_exit");
+			drag_node->disconnect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
+			drag_node->disconnect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit));
 		}
 
 		drag_node = NULL;
@@ -539,7 +539,7 @@ float ScrollBar::get_custom_step() const {
 void ScrollBar::_drag_node_exit() {
 
 	if (drag_node) {
-		drag_node->disconnect_compat("gui_input", this, "_drag_node_input");
+		drag_node->disconnect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
 	}
 	drag_node = NULL;
 }
@@ -611,8 +611,8 @@ void ScrollBar::set_drag_node(const NodePath &p_path) {
 	if (is_inside_tree()) {
 
 		if (drag_node) {
-			drag_node->disconnect_compat("gui_input", this, "_drag_node_input");
-			drag_node->disconnect_compat("tree_exiting", this, "_drag_node_exit");
+			drag_node->disconnect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
+			drag_node->disconnect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit));
 		}
 	}
 
@@ -627,8 +627,8 @@ void ScrollBar::set_drag_node(const NodePath &p_path) {
 		}
 
 		if (drag_node) {
-			drag_node->connect_compat("gui_input", this, "_drag_node_input");
-			drag_node->connect_compat("tree_exiting", this, "_drag_node_exit", varray(), CONNECT_ONESHOT);
+			drag_node->connect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
+			drag_node->connect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit), varray(), CONNECT_ONESHOT);
 		}
 	}
 }
@@ -651,8 +651,6 @@ void ScrollBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_gui_input"), &ScrollBar::_gui_input);
 	ClassDB::bind_method(D_METHOD("set_custom_step", "step"), &ScrollBar::set_custom_step);
 	ClassDB::bind_method(D_METHOD("get_custom_step"), &ScrollBar::get_custom_step);
-	ClassDB::bind_method(D_METHOD("_drag_node_input"), &ScrollBar::_drag_node_input);
-	ClassDB::bind_method(D_METHOD("_drag_node_exit"), &ScrollBar::_drag_node_exit);
 
 	ADD_SIGNAL(MethodInfo("scrolling"));
 

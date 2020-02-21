@@ -267,7 +267,6 @@ void SpinBox::_bind_methods() {
 
 	//ClassDB::bind_method(D_METHOD("_value_changed"),&SpinBox::_value_changed);
 	ClassDB::bind_method(D_METHOD("_gui_input"), &SpinBox::_gui_input);
-	ClassDB::bind_method(D_METHOD("_text_entered"), &SpinBox::_text_entered);
 	ClassDB::bind_method(D_METHOD("set_align", "align"), &SpinBox::set_align);
 	ClassDB::bind_method(D_METHOD("get_align"), &SpinBox::get_align);
 	ClassDB::bind_method(D_METHOD("set_suffix", "suffix"), &SpinBox::set_suffix);
@@ -277,10 +276,7 @@ void SpinBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_editable", "editable"), &SpinBox::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &SpinBox::is_editable);
 	ClassDB::bind_method(D_METHOD("apply"), &SpinBox::apply);
-	ClassDB::bind_method(D_METHOD("_line_edit_focus_exit"), &SpinBox::_line_edit_focus_exit);
 	ClassDB::bind_method(D_METHOD("get_line_edit"), &SpinBox::get_line_edit);
-	ClassDB::bind_method(D_METHOD("_line_edit_input"), &SpinBox::_line_edit_input);
-	ClassDB::bind_method(D_METHOD("_range_click_timeout"), &SpinBox::_range_click_timeout);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_align", "get_align");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
@@ -297,12 +293,12 @@ SpinBox::SpinBox() {
 	line_edit->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	line_edit->set_mouse_filter(MOUSE_FILTER_PASS);
 	//connect("value_changed",this,"_value_changed");
-	line_edit->connect_compat("text_entered", this, "_text_entered", Vector<Variant>(), CONNECT_DEFERRED);
-	line_edit->connect_compat("focus_exited", this, "_line_edit_focus_exit", Vector<Variant>(), CONNECT_DEFERRED);
-	line_edit->connect_compat("gui_input", this, "_line_edit_input");
+	line_edit->connect("text_entered", callable_mp(this, &SpinBox::_text_entered), Vector<Variant>(), CONNECT_DEFERRED);
+	line_edit->connect("focus_exited", callable_mp(this, &SpinBox::_line_edit_focus_exit), Vector<Variant>(), CONNECT_DEFERRED);
+	line_edit->connect("gui_input", callable_mp(this, &SpinBox::_line_edit_input));
 	drag.enabled = false;
 
 	range_click_timer = memnew(Timer);
-	range_click_timer->connect_compat("timeout", this, "_range_click_timeout");
+	range_click_timer->connect("timeout", callable_mp(this, &SpinBox::_range_click_timeout));
 	add_child(range_click_timer);
 }

@@ -120,11 +120,11 @@ void Polygon2D::_notification(int p_what) {
 			if (new_skeleton_id != current_skeleton_id) {
 				Object *old_skeleton = ObjectDB::get_instance(current_skeleton_id);
 				if (old_skeleton) {
-					old_skeleton->disconnect_compat("bone_setup_changed", this, "_skeleton_bone_setup_changed");
+					old_skeleton->disconnect("bone_setup_changed", callable_mp(this, &Polygon2D::_skeleton_bone_setup_changed));
 				}
 
 				if (skeleton_node) {
-					skeleton_node->connect_compat("bone_setup_changed", this, "_skeleton_bone_setup_changed");
+					skeleton_node->connect("bone_setup_changed", callable_mp(this, &Polygon2D::_skeleton_bone_setup_changed));
 				}
 
 				current_skeleton_id = new_skeleton_id;
@@ -689,8 +689,6 @@ void Polygon2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_set_bones", "bones"), &Polygon2D::_set_bones);
 	ClassDB::bind_method(D_METHOD("_get_bones"), &Polygon2D::_get_bones);
-
-	ClassDB::bind_method(D_METHOD("_skeleton_bone_setup_changed"), &Polygon2D::_skeleton_bone_setup_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");

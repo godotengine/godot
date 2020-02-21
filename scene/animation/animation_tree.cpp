@@ -463,13 +463,13 @@ AnimationNode::AnimationNode() {
 void AnimationTree::set_tree_root(const Ref<AnimationNode> &p_root) {
 
 	if (root.is_valid()) {
-		root->disconnect_compat("tree_changed", this, "_tree_changed");
+		root->disconnect("tree_changed", callable_mp(this, &AnimationTree::_tree_changed));
 	}
 
 	root = p_root;
 
 	if (root.is_valid()) {
-		root->connect_compat("tree_changed", this, "_tree_changed");
+		root->connect("tree_changed", callable_mp(this, &AnimationTree::_tree_changed));
 	}
 
 	properties_dirty = true;
@@ -582,8 +582,8 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 					continue;
 				}
 
-				if (!child->is_connected_compat("tree_exited", this, "_node_removed")) {
-					child->connect_compat("tree_exited", this, "_node_removed", varray(child));
+				if (!child->is_connected("tree_exited", callable_mp(this, &AnimationTree::_node_removed))) {
+					child->connect("tree_exited", callable_mp(this, &AnimationTree::_node_removed), varray(child));
 				}
 
 				switch (track_type) {
@@ -778,12 +778,12 @@ void AnimationTree::_process_graph(float p_delta) {
 		if (last_animation_player.is_valid()) {
 			Object *old_player = ObjectDB::get_instance(last_animation_player);
 			if (old_player) {
-				old_player->disconnect_compat("caches_cleared", this, "_clear_caches");
+				old_player->disconnect("caches_cleared", callable_mp(this, &AnimationTree::_clear_caches));
 			}
 		}
 
 		if (player) {
-			player->connect_compat("caches_cleared", this, "_clear_caches");
+			player->connect("caches_cleared", callable_mp(this, &AnimationTree::_clear_caches));
 		}
 
 		last_animation_player = current_animation_player;
@@ -1300,7 +1300,7 @@ void AnimationTree::_notification(int p_what) {
 
 			Object *player = ObjectDB::get_instance(last_animation_player);
 			if (player) {
-				player->disconnect_compat("caches_cleared", this, "_clear_caches");
+				player->disconnect("caches_cleared", callable_mp(this, &AnimationTree::_clear_caches));
 			}
 		}
 	} else if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -1308,7 +1308,7 @@ void AnimationTree::_notification(int p_what) {
 
 			Object *player = ObjectDB::get_instance(last_animation_player);
 			if (player) {
-				player->connect_compat("caches_cleared", this, "_clear_caches");
+				player->connect("caches_cleared", callable_mp(this, &AnimationTree::_clear_caches));
 			}
 		}
 	}
@@ -1553,15 +1553,11 @@ void AnimationTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_root_motion_transform"), &AnimationTree::get_root_motion_transform);
 
-	ClassDB::bind_method(D_METHOD("_tree_changed"), &AnimationTree::_tree_changed);
 	ClassDB::bind_method(D_METHOD("_update_properties"), &AnimationTree::_update_properties);
 
 	ClassDB::bind_method(D_METHOD("rename_parameter", "old_name", "new_name"), &AnimationTree::rename_parameter);
 
 	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationTree::advance);
-
-	ClassDB::bind_method(D_METHOD("_node_removed"), &AnimationTree::_node_removed);
-	ClassDB::bind_method(D_METHOD("_clear_caches"), &AnimationTree::_clear_caches);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode"), "set_tree_root", "get_tree_root");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");

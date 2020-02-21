@@ -134,13 +134,13 @@ void Path2D::_curve_changed() {
 void Path2D::set_curve(const Ref<Curve2D> &p_curve) {
 
 	if (curve.is_valid()) {
-		curve->disconnect_compat("changed", this, "_curve_changed");
+		curve->disconnect("changed", callable_mp(this, &Path2D::_curve_changed));
 	}
 
 	curve = p_curve;
 
 	if (curve.is_valid()) {
-		curve->connect_compat("changed", this, "_curve_changed");
+		curve->connect("changed", callable_mp(this, &Path2D::_curve_changed));
 	}
 
 	_curve_changed();
@@ -155,7 +155,6 @@ void Path2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &Path2D::set_curve);
 	ClassDB::bind_method(D_METHOD("get_curve"), &Path2D::get_curve);
-	ClassDB::bind_method(D_METHOD("_curve_changed"), &Path2D::_curve_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve2D"), "set_curve", "get_curve");
 }

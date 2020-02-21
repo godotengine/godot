@@ -954,7 +954,7 @@ void GridMapEditor::update_palette() {
 
 void GridMapEditor::edit(GridMap *p_gridmap) {
 	if (!p_gridmap && node)
-		node->disconnect_compat("cell_size_changed", this, "_draw_grids");
+		node->disconnect("cell_size_changed", callable_mp(this, &GridMapEditor::_draw_grids));
 
 	node = p_gridmap;
 
@@ -988,7 +988,7 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 	update_grid();
 	_update_clip();
 
-	node->connect_compat("cell_size_changed", this, "_draw_grids");
+	node->connect("cell_size_changed", callable_mp(this, &GridMapEditor::_draw_grids));
 }
 
 void GridMapEditor::_update_clip() {
@@ -1077,8 +1077,8 @@ void GridMapEditor::_notification(int p_what) {
 	switch (p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
-			get_tree()->connect_compat("node_removed", this, "_node_removed");
-			mesh_library_palette->connect_compat("item_selected", this, "_item_selected_cbk");
+			get_tree()->connect("node_removed", callable_mp(this, &GridMapEditor::_node_removed));
+			mesh_library_palette->connect("item_selected", callable_mp(this, &GridMapEditor::_item_selected_cbk));
 			for (int i = 0; i < 3; i++) {
 
 				grid[i] = VS::get_singleton()->mesh_create();
@@ -1094,7 +1094,7 @@ void GridMapEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			get_tree()->disconnect_compat("node_removed", this, "_node_removed");
+			get_tree()->disconnect("node_removed", callable_mp(this, &GridMapEditor::_node_removed));
 			_clear_clipboard_data();
 
 			for (int i = 0; i < 3; i++) {
@@ -1198,20 +1198,8 @@ void GridMapEditor::_floor_mouse_exited() {
 
 void GridMapEditor::_bind_methods() {
 
-	ClassDB::bind_method("_text_changed", &GridMapEditor::_text_changed);
-	ClassDB::bind_method("_sbox_input", &GridMapEditor::_sbox_input);
-	ClassDB::bind_method("_mesh_library_palette_input", &GridMapEditor::_mesh_library_palette_input);
-	ClassDB::bind_method("_icon_size_changed", &GridMapEditor::_icon_size_changed);
-	ClassDB::bind_method("_menu_option", &GridMapEditor::_menu_option);
 	ClassDB::bind_method("_configure", &GridMapEditor::_configure);
-	ClassDB::bind_method("_item_selected_cbk", &GridMapEditor::_item_selected_cbk);
-	ClassDB::bind_method("_floor_changed", &GridMapEditor::_floor_changed);
-	ClassDB::bind_method("_floor_mouse_exited", &GridMapEditor::_floor_mouse_exited);
 	ClassDB::bind_method("_set_selection", &GridMapEditor::_set_selection);
-	ClassDB::bind_method("_node_removed", &GridMapEditor::_node_removed);
-
-	ClassDB::bind_method(D_METHOD("_set_display_mode", "mode"), &GridMapEditor::_set_display_mode);
-	ClassDB::bind_method("_draw_grids", &GridMapEditor::_draw_grids);
 }
 
 GridMapEditor::GridMapEditor(EditorNode *p_editor) {
@@ -1241,9 +1229,9 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	floor->get_line_edit()->add_constant_override("minimum_spaces", 16);
 
 	spatial_editor_hb->add_child(floor);
-	floor->connect_compat("value_changed", this, "_floor_changed");
-	floor->connect_compat("mouse_exited", this, "_floor_mouse_exited");
-	floor->get_line_edit()->connect_compat("mouse_exited", this, "_floor_mouse_exited");
+	floor->connect("value_changed", callable_mp(this, &GridMapEditor::_floor_changed));
+	floor->connect("mouse_exited", callable_mp(this, &GridMapEditor::_floor_mouse_exited));
+	floor->get_line_edit()->connect("mouse_exited", callable_mp(this, &GridMapEditor::_floor_mouse_exited));
 
 	spatial_editor_hb->add_child(memnew(VSeparator));
 
@@ -1300,7 +1288,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	settings_vbc->add_margin_child(TTR("Pick Distance:"), settings_pick_distance);
 
 	clip_mode = CLIP_DISABLED;
-	options->get_popup()->connect_compat("id_pressed", this, "_menu_option");
+	options->get_popup()->connect("id_pressed", callable_mp(this, &GridMapEditor::_menu_option));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
@@ -1310,22 +1298,22 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	search_box->set_placeholder(TTR("Filter meshes"));
 	hb->add_child(search_box);
-	search_box->connect_compat("text_changed", this, "_text_changed");
-	search_box->connect_compat("gui_input", this, "_sbox_input");
+	search_box->connect("text_changed", callable_mp(this, &GridMapEditor::_text_changed));
+	search_box->connect("gui_input", callable_mp(this, &GridMapEditor::_sbox_input));
 
 	mode_thumbnail = memnew(ToolButton);
 	mode_thumbnail->set_toggle_mode(true);
 	mode_thumbnail->set_pressed(true);
 	mode_thumbnail->set_icon(p_editor->get_gui_base()->get_icon("FileThumbnail", "EditorIcons"));
 	hb->add_child(mode_thumbnail);
-	mode_thumbnail->connect_compat("pressed", this, "_set_display_mode", varray(DISPLAY_THUMBNAIL));
+	mode_thumbnail->connect("pressed", callable_mp(this, &GridMapEditor::_set_display_mode), varray(DISPLAY_THUMBNAIL));
 
 	mode_list = memnew(ToolButton);
 	mode_list->set_toggle_mode(true);
 	mode_list->set_pressed(false);
 	mode_list->set_icon(p_editor->get_gui_base()->get_icon("FileList", "EditorIcons"));
 	hb->add_child(mode_list);
-	mode_list->connect_compat("pressed", this, "_set_display_mode", varray(DISPLAY_LIST));
+	mode_list->connect("pressed", callable_mp(this, &GridMapEditor::_set_display_mode), varray(DISPLAY_LIST));
 
 	size_slider = memnew(HSlider);
 	size_slider->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1333,7 +1321,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	size_slider->set_max(4.0f);
 	size_slider->set_step(0.1f);
 	size_slider->set_value(1.0f);
-	size_slider->connect_compat("value_changed", this, "_icon_size_changed");
+	size_slider->connect("value_changed", callable_mp(this, &GridMapEditor::_icon_size_changed));
 	add_child(size_slider);
 
 	EDITOR_DEF("editors/grid_map/preview_size", 64);
@@ -1343,7 +1331,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	mesh_library_palette = memnew(ItemList);
 	add_child(mesh_library_palette);
 	mesh_library_palette->set_v_size_flags(SIZE_EXPAND_FILL);
-	mesh_library_palette->connect_compat("gui_input", this, "_mesh_library_palette_input");
+	mesh_library_palette->connect("gui_input", callable_mp(this, &GridMapEditor::_mesh_library_palette_input));
 
 	info_message = memnew(Label);
 	info_message->set_text(TTR("Give a MeshLibrary resource to this GridMap to use its meshes."));

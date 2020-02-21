@@ -137,7 +137,6 @@ void CollisionShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_convex_from_brothers"), &CollisionShape::make_convex_from_brothers);
 	ClassDB::set_method_flags("CollisionShape", "make_convex_from_brothers", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
-	ClassDB::bind_method(D_METHOD("_shape_changed"), &CollisionShape::_shape_changed);
 	ClassDB::bind_method(D_METHOD("_update_debug_shape"), &CollisionShape::_update_debug_shape);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape"), "set_shape", "get_shape");
@@ -148,12 +147,12 @@ void CollisionShape::set_shape(const Ref<Shape> &p_shape) {
 
 	if (!shape.is_null()) {
 		shape->unregister_owner(this);
-		shape->disconnect_compat("changed", this, "_shape_changed");
+		shape->disconnect("changed", callable_mp(this, &CollisionShape::_shape_changed));
 	}
 	shape = p_shape;
 	if (!shape.is_null()) {
 		shape->register_owner(this);
-		shape->connect_compat("changed", this, "_shape_changed");
+		shape->connect("changed", callable_mp(this, &CollisionShape::_shape_changed));
 	}
 	update_gizmo();
 	if (parent) {

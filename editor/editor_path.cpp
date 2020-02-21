@@ -142,9 +142,6 @@ void EditorPath::_notification(int p_what) {
 }
 
 void EditorPath::_bind_methods() {
-
-	ClassDB::bind_method("_about_to_show", &EditorPath::_about_to_show);
-	ClassDB::bind_method("_id_pressed", &EditorPath::_id_pressed);
 }
 
 EditorPath::EditorPath(EditorHistory *p_history) {
@@ -152,6 +149,6 @@ EditorPath::EditorPath(EditorHistory *p_history) {
 	history = p_history;
 	set_clip_text(true);
 	set_text_align(ALIGN_LEFT);
-	get_popup()->connect_compat("about_to_show", this, "_about_to_show");
-	get_popup()->connect_compat("id_pressed", this, "_id_pressed");
+	get_popup()->connect("about_to_show", callable_mp(this, &EditorPath::_about_to_show));
+	get_popup()->connect("id_pressed", callable_mp(this, &EditorPath::_id_pressed));
 }

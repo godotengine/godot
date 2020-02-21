@@ -248,10 +248,6 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 }
 
 void MeshLibraryEditor::_bind_methods() {
-
-	ClassDB::bind_method("_menu_cbk", &MeshLibraryEditor::_menu_cbk);
-	ClassDB::bind_method("_menu_confirm", &MeshLibraryEditor::_menu_confirm);
-	ClassDB::bind_method("_import_scene_cbk", &MeshLibraryEditor::_import_scene_cbk);
 }
 
 MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
@@ -268,7 +264,7 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 		file->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
 	}
 	add_child(file);
-	file->connect_compat("file_selected", this, "_import_scene_cbk");
+	file->connect("file_selected", callable_mp(this, &MeshLibraryEditor::_import_scene_cbk));
 
 	menu = memnew(MenuButton);
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(menu);
@@ -281,13 +277,13 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 	menu->get_popup()->add_item(TTR("Import from Scene"), MENU_OPTION_IMPORT_FROM_SCENE);
 	menu->get_popup()->add_item(TTR("Update from Scene"), MENU_OPTION_UPDATE_FROM_SCENE);
 	menu->get_popup()->set_item_disabled(menu->get_popup()->get_item_index(MENU_OPTION_UPDATE_FROM_SCENE), true);
-	menu->get_popup()->connect_compat("id_pressed", this, "_menu_cbk");
+	menu->get_popup()->connect("id_pressed", callable_mp(this, &MeshLibraryEditor::_menu_cbk));
 	menu->hide();
 
 	editor = p_editor;
 	cd = memnew(ConfirmationDialog);
 	add_child(cd);
-	cd->get_ok()->connect_compat("pressed", this, "_menu_confirm");
+	cd->get_ok()->connect("pressed", callable_mp(this, &MeshLibraryEditor::_menu_confirm));
 }
 
 void MeshLibraryEditorPlugin::edit(Object *p_node) {

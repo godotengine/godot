@@ -209,8 +209,8 @@ void AbstractPolygon2DEditor::_notification(int p_what) {
 			button_delete->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("CurveDelete", "EditorIcons"));
 			button_edit->set_pressed(true);
 
-			get_tree()->connect_compat("node_removed", this, "_node_removed");
-			create_resource->connect_compat("confirmed", this, "_create_resource");
+			get_tree()->connect("node_removed", callable_mp(this, &AbstractPolygon2DEditor::_node_removed));
+			create_resource->connect("confirmed", callable_mp(this, &AbstractPolygon2DEditor::_create_resource));
 		} break;
 	}
 }
@@ -695,10 +695,6 @@ void AbstractPolygon2DEditor::edit(Node *p_polygon) {
 }
 
 void AbstractPolygon2DEditor::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_node_removed"), &AbstractPolygon2DEditor::_node_removed);
-	ClassDB::bind_method(D_METHOD("_menu_option"), &AbstractPolygon2DEditor::_menu_option);
-	ClassDB::bind_method(D_METHOD("_create_resource"), &AbstractPolygon2DEditor::_create_resource);
 }
 
 void AbstractPolygon2DEditor::remove_point(const Vertex &p_vertex) {
@@ -820,17 +816,17 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wi
 	add_child(memnew(VSeparator));
 	button_create = memnew(ToolButton);
 	add_child(button_create);
-	button_create->connect_compat("pressed", this, "_menu_option", varray(MODE_CREATE));
+	button_create->connect("pressed", callable_mp(this, &AbstractPolygon2DEditor::_menu_option), varray(MODE_CREATE));
 	button_create->set_toggle_mode(true);
 
 	button_edit = memnew(ToolButton);
 	add_child(button_edit);
-	button_edit->connect_compat("pressed", this, "_menu_option", varray(MODE_EDIT));
+	button_edit->connect("pressed", callable_mp(this, &AbstractPolygon2DEditor::_menu_option), varray(MODE_EDIT));
 	button_edit->set_toggle_mode(true);
 
 	button_delete = memnew(ToolButton);
 	add_child(button_delete);
-	button_delete->connect_compat("pressed", this, "_menu_option", varray(MODE_DELETE));
+	button_delete->connect("pressed", callable_mp(this, &AbstractPolygon2DEditor::_menu_option), varray(MODE_DELETE));
 	button_delete->set_toggle_mode(true);
 
 	create_resource = memnew(ConfirmationDialog);

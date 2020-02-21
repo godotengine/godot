@@ -884,8 +884,6 @@ void CSGMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &CSGMesh::set_mesh);
 	ClassDB::bind_method(D_METHOD("get_mesh"), &CSGMesh::get_mesh);
 
-	ClassDB::bind_method(D_METHOD("_mesh_changed"), &CSGMesh::_mesh_changed);
-
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGMesh::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &CSGMesh::get_material);
 
@@ -898,12 +896,12 @@ void CSGMesh::set_mesh(const Ref<Mesh> &p_mesh) {
 	if (mesh == p_mesh)
 		return;
 	if (mesh.is_valid()) {
-		mesh->disconnect_compat("changed", this, "_mesh_changed");
+		mesh->disconnect("changed", callable_mp(this, &CSGMesh::_mesh_changed));
 	}
 	mesh = p_mesh;
 
 	if (mesh.is_valid()) {
-		mesh->connect_compat("changed", this, "_mesh_changed");
+		mesh->connect("changed", callable_mp(this, &CSGMesh::_mesh_changed));
 	}
 
 	_make_dirty();
@@ -1812,15 +1810,15 @@ CSGBrush *CSGPolygon::_build_brush() {
 
 		if (path != path_cache) {
 			if (path_cache) {
-				path_cache->disconnect_compat("tree_exited", this, "_path_exited");
-				path_cache->disconnect_compat("curve_changed", this, "_path_changed");
+				path_cache->disconnect("tree_exited", callable_mp(this, &CSGPolygon::_path_exited));
+				path_cache->disconnect("curve_changed", callable_mp(this, &CSGPolygon::_path_changed));
 				path_cache = NULL;
 			}
 
 			path_cache = path;
 
-			path_cache->connect_compat("tree_exited", this, "_path_exited");
-			path_cache->connect_compat("curve_changed", this, "_path_changed");
+			path_cache->connect("tree_exited", callable_mp(this, &CSGPolygon::_path_exited));
+			path_cache->connect("curve_changed", callable_mp(this, &CSGPolygon::_path_changed));
 			path_cache = NULL;
 		}
 		curve = path->get_curve();
@@ -2236,8 +2234,8 @@ CSGBrush *CSGPolygon::_build_brush() {
 void CSGPolygon::_notification(int p_what) {
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 		if (path_cache) {
-			path_cache->disconnect_compat("tree_exited", this, "_path_exited");
-			path_cache->disconnect_compat("curve_changed", this, "_path_changed");
+			path_cache->disconnect("tree_exited", callable_mp(this, &CSGPolygon::_path_exited));
+			path_cache->disconnect("curve_changed", callable_mp(this, &CSGPolygon::_path_changed));
 			path_cache = NULL;
 		}
 	}
@@ -2308,9 +2306,6 @@ void CSGPolygon::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_is_editable_3d_polygon"), &CSGPolygon::_is_editable_3d_polygon);
 	ClassDB::bind_method(D_METHOD("_has_editable_3d_polygon_no_depth"), &CSGPolygon::_has_editable_3d_polygon_no_depth);
-
-	ClassDB::bind_method(D_METHOD("_path_exited"), &CSGPolygon::_path_exited);
-	ClassDB::bind_method(D_METHOD("_path_changed"), &CSGPolygon::_path_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Depth,Spin,Path"), "set_mode", "get_mode");

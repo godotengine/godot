@@ -300,19 +300,19 @@ void FileSystemDock::_notification(int p_what) {
 			if (initialized)
 				return;
 			initialized = true;
-			EditorFeatureProfileManager::get_singleton()->connect_compat("current_feature_profile_changed", this, "_feature_profile_changed");
+			EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &FileSystemDock::_feature_profile_changed));
 
-			EditorFileSystem::get_singleton()->connect_compat("filesystem_changed", this, "_fs_changed");
-			EditorResourcePreview::get_singleton()->connect_compat("preview_invalidated", this, "_preview_invalidated");
+			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &FileSystemDock::_fs_changed));
+			EditorResourcePreview::get_singleton()->connect("preview_invalidated", callable_mp(this, &FileSystemDock::_preview_invalidated));
 
 			String ei = "EditorIcons";
 			button_reload->set_icon(get_icon("Reload", ei));
 			button_toggle_display_mode->set_icon(get_icon("Panels2", ei));
-			button_file_list_display_mode->connect_compat("pressed", this, "_toggle_file_display");
+			button_file_list_display_mode->connect("pressed", callable_mp(this, &FileSystemDock::_toggle_file_display));
 
-			files->connect_compat("item_activated", this, "_file_list_activate_file");
-			button_hist_next->connect_compat("pressed", this, "_fw_history");
-			button_hist_prev->connect_compat("pressed", this, "_bw_history");
+			files->connect("item_activated", callable_mp(this, &FileSystemDock::_file_list_activate_file));
+			button_hist_next->connect("pressed", callable_mp(this, &FileSystemDock::_fw_history));
+			button_hist_prev->connect("pressed", callable_mp(this, &FileSystemDock::_bw_history));
 			tree_search_box->set_right_icon(get_icon("Search", ei));
 			tree_search_box->set_clear_button_enabled(true);
 			file_list_search_box->set_right_icon(get_icon("Search", ei));
@@ -320,10 +320,10 @@ void FileSystemDock::_notification(int p_what) {
 
 			button_hist_next->set_icon(get_icon("Forward", ei));
 			button_hist_prev->set_icon(get_icon("Back", ei));
-			file_list_popup->connect_compat("id_pressed", this, "_file_list_rmb_option");
-			tree_popup->connect_compat("id_pressed", this, "_tree_rmb_option");
+			file_list_popup->connect("id_pressed", callable_mp(this, &FileSystemDock::_file_list_rmb_option));
+			tree_popup->connect("id_pressed", callable_mp(this, &FileSystemDock::_tree_rmb_option));
 
-			current_path->connect_compat("text_entered", this, "_navigate_to_path");
+			current_path->connect("text_entered", callable_mp(this, &FileSystemDock::_navigate_to_path));
 
 			always_show_folders = bool(EditorSettings::get_singleton()->get("docks/filesystem/always_show_folders"));
 
@@ -2453,57 +2453,19 @@ void FileSystemDock::_feature_profile_changed() {
 }
 
 void FileSystemDock::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_file_list_gui_input"), &FileSystemDock::_file_list_gui_input);
-	ClassDB::bind_method(D_METHOD("_tree_gui_input"), &FileSystemDock::_tree_gui_input);
 
 	ClassDB::bind_method(D_METHOD("_update_tree"), &FileSystemDock::_update_tree);
-	ClassDB::bind_method(D_METHOD("_rescan"), &FileSystemDock::_rescan);
-
-	ClassDB::bind_method(D_METHOD("_toggle_split_mode"), &FileSystemDock::_toggle_split_mode);
-
-	ClassDB::bind_method(D_METHOD("_tree_rmb_option", "option"), &FileSystemDock::_tree_rmb_option);
-	ClassDB::bind_method(D_METHOD("_tree_rmb_select"), &FileSystemDock::_tree_rmb_select);
-	ClassDB::bind_method(D_METHOD("_tree_empty_selected"), &FileSystemDock::_tree_empty_selected);
-
-	ClassDB::bind_method(D_METHOD("_file_list_rmb_option", "option"), &FileSystemDock::_file_list_rmb_option);
-	ClassDB::bind_method(D_METHOD("_file_list_rmb_select"), &FileSystemDock::_file_list_rmb_select);
-	ClassDB::bind_method(D_METHOD("_file_list_rmb_pressed"), &FileSystemDock::_file_list_rmb_pressed);
-	ClassDB::bind_method(D_METHOD("_tree_rmb_empty"), &FileSystemDock::_tree_rmb_empty);
-
-	ClassDB::bind_method(D_METHOD("_file_deleted"), &FileSystemDock::_file_deleted);
-	ClassDB::bind_method(D_METHOD("_folder_deleted"), &FileSystemDock::_folder_deleted);
 
 	ClassDB::bind_method(D_METHOD("_file_list_thumbnail_done"), &FileSystemDock::_file_list_thumbnail_done);
 	ClassDB::bind_method(D_METHOD("_tree_thumbnail_done"), &FileSystemDock::_tree_thumbnail_done);
-	ClassDB::bind_method(D_METHOD("_file_list_activate_file"), &FileSystemDock::_file_list_activate_file);
-	ClassDB::bind_method(D_METHOD("_tree_activate_file"), &FileSystemDock::_tree_activate_file);
 	ClassDB::bind_method(D_METHOD("_select_file"), &FileSystemDock::_select_file);
-	ClassDB::bind_method(D_METHOD("_navigate_to_path"), &FileSystemDock::_navigate_to_path, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("_toggle_file_display"), &FileSystemDock::_toggle_file_display);
-	ClassDB::bind_method(D_METHOD("_fw_history"), &FileSystemDock::_fw_history);
-	ClassDB::bind_method(D_METHOD("_bw_history"), &FileSystemDock::_bw_history);
-	ClassDB::bind_method(D_METHOD("_fs_changed"), &FileSystemDock::_fs_changed);
-	ClassDB::bind_method(D_METHOD("_tree_multi_selected"), &FileSystemDock::_tree_multi_selected);
-	ClassDB::bind_method(D_METHOD("_make_dir_confirm"), &FileSystemDock::_make_dir_confirm);
-	ClassDB::bind_method(D_METHOD("_make_scene_confirm"), &FileSystemDock::_make_scene_confirm);
-	ClassDB::bind_method(D_METHOD("_resource_created"), &FileSystemDock::_resource_created);
-	ClassDB::bind_method(D_METHOD("_move_operation_confirm", "to_path", "overwrite"), &FileSystemDock::_move_operation_confirm, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("_move_with_overwrite"), &FileSystemDock::_move_with_overwrite);
-	ClassDB::bind_method(D_METHOD("_rename_operation_confirm"), &FileSystemDock::_rename_operation_confirm);
-	ClassDB::bind_method(D_METHOD("_duplicate_operation_confirm"), &FileSystemDock::_duplicate_operation_confirm);
-
-	ClassDB::bind_method(D_METHOD("_search_changed"), &FileSystemDock::_search_changed);
 
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &FileSystemDock::get_drag_data_fw);
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &FileSystemDock::can_drop_data_fw);
 	ClassDB::bind_method(D_METHOD("drop_data_fw"), &FileSystemDock::drop_data_fw);
 	ClassDB::bind_method(D_METHOD("navigate_to_path"), &FileSystemDock::navigate_to_path);
 
-	ClassDB::bind_method(D_METHOD("_preview_invalidated"), &FileSystemDock::_preview_invalidated);
-	ClassDB::bind_method(D_METHOD("_file_multi_selected"), &FileSystemDock::_file_multi_selected);
 	ClassDB::bind_method(D_METHOD("_update_import_dock"), &FileSystemDock::_update_import_dock);
-
-	ClassDB::bind_method(D_METHOD("_feature_profile_changed"), &FileSystemDock::_feature_profile_changed);
 
 	ADD_SIGNAL(MethodInfo("inherit", PropertyInfo(Variant::STRING, "file")));
 	ADD_SIGNAL(MethodInfo("instance", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
@@ -2552,7 +2514,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 
 	button_reload = memnew(Button);
 	button_reload->set_flat(true);
-	button_reload->connect_compat("pressed", this, "_rescan");
+	button_reload->connect("pressed", callable_mp(this, &FileSystemDock::_rescan));
 	button_reload->set_focus_mode(FOCUS_NONE);
 	button_reload->set_tooltip(TTR("Re-Scan Filesystem"));
 	button_reload->hide();
@@ -2561,7 +2523,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	button_toggle_display_mode = memnew(Button);
 	button_toggle_display_mode->set_flat(true);
 	button_toggle_display_mode->set_toggle_mode(true);
-	button_toggle_display_mode->connect_compat("toggled", this, "_toggle_split_mode");
+	button_toggle_display_mode->connect("toggled", callable_mp(this, &FileSystemDock::_toggle_split_mode));
 	button_toggle_display_mode->set_focus_mode(FOCUS_NONE);
 	button_toggle_display_mode->set_tooltip(TTR("Toggle Split Mode"));
 	toolbar_hbc->add_child(button_toggle_display_mode);
@@ -2573,7 +2535,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	tree_search_box = memnew(LineEdit);
 	tree_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	tree_search_box->set_placeholder(TTR("Search files"));
-	tree_search_box->connect_compat("text_changed", this, "_search_changed", varray(tree_search_box));
+	tree_search_box->connect("text_changed", callable_mp(this, &FileSystemDock::_search_changed), varray(tree_search_box));
 	toolbar2_hbc->add_child(tree_search_box);
 
 	file_list_popup = memnew(PopupMenu);
@@ -2597,12 +2559,12 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	tree->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
 	split_box->add_child(tree);
 
-	tree->connect_compat("item_activated", this, "_tree_activate_file");
-	tree->connect_compat("multi_selected", this, "_tree_multi_selected");
-	tree->connect_compat("item_rmb_selected", this, "_tree_rmb_select");
-	tree->connect_compat("empty_rmb", this, "_tree_rmb_empty");
-	tree->connect_compat("nothing_selected", this, "_tree_empty_selected");
-	tree->connect_compat("gui_input", this, "_tree_gui_input");
+	tree->connect("item_activated", callable_mp(this, &FileSystemDock::_tree_activate_file));
+	tree->connect("multi_selected", callable_mp(this, &FileSystemDock::_tree_multi_selected));
+	tree->connect("item_rmb_selected", callable_mp(this, &FileSystemDock::_tree_rmb_select));
+	tree->connect("empty_rmb", callable_mp(this, &FileSystemDock::_tree_rmb_empty));
+	tree->connect("nothing_selected", callable_mp(this, &FileSystemDock::_tree_empty_selected));
+	tree->connect("gui_input", callable_mp(this, &FileSystemDock::_tree_gui_input));
 
 	file_list_vb = memnew(VBoxContainer);
 	file_list_vb->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -2614,7 +2576,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	file_list_search_box = memnew(LineEdit);
 	file_list_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	file_list_search_box->set_placeholder(TTR("Search files"));
-	file_list_search_box->connect_compat("text_changed", this, "_search_changed", varray(file_list_search_box));
+	file_list_search_box->connect("text_changed", callable_mp(this, &FileSystemDock::_search_changed), varray(file_list_search_box));
 	path_hb->add_child(file_list_search_box);
 
 	button_file_list_display_mode = memnew(ToolButton);
@@ -2624,10 +2586,10 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	files->set_v_size_flags(SIZE_EXPAND_FILL);
 	files->set_select_mode(ItemList::SELECT_MULTI);
 	files->set_drag_forwarding(this);
-	files->connect_compat("item_rmb_selected", this, "_file_list_rmb_select");
-	files->connect_compat("gui_input", this, "_file_list_gui_input");
-	files->connect_compat("multi_selected", this, "_file_multi_selected");
-	files->connect_compat("rmb_clicked", this, "_file_list_rmb_pressed");
+	files->connect("item_rmb_selected", callable_mp(this, &FileSystemDock::_file_list_rmb_select));
+	files->connect("gui_input", callable_mp(this, &FileSystemDock::_file_list_gui_input));
+	files->connect("multi_selected", callable_mp(this, &FileSystemDock::_file_multi_selected));
+	files->connect("rmb_clicked", callable_mp(this, &FileSystemDock::_file_list_rmb_pressed));
 	files->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
 	files->set_allow_rmb_select(true);
 	file_list_vb->add_child(files);
@@ -2651,14 +2613,14 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	add_child(owners_editor);
 
 	remove_dialog = memnew(DependencyRemoveDialog);
-	remove_dialog->connect_compat("file_removed", this, "_file_deleted");
-	remove_dialog->connect_compat("folder_removed", this, "_folder_deleted");
+	remove_dialog->connect("file_removed", callable_mp(this, &FileSystemDock::_file_deleted));
+	remove_dialog->connect("folder_removed", callable_mp(this, &FileSystemDock::_folder_deleted));
 	add_child(remove_dialog);
 
 	move_dialog = memnew(EditorDirDialog);
 	move_dialog->get_ok()->set_text(TTR("Move"));
 	add_child(move_dialog);
-	move_dialog->connect_compat("dir_selected", this, "_move_operation_confirm");
+	move_dialog->connect("dir_selected", callable_mp(this, &FileSystemDock::_move_operation_confirm));
 
 	rename_dialog = memnew(ConfirmationDialog);
 	VBoxContainer *rename_dialog_vb = memnew(VBoxContainer);
@@ -2669,13 +2631,13 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	rename_dialog->get_ok()->set_text(TTR("Rename"));
 	add_child(rename_dialog);
 	rename_dialog->register_text_enter(rename_dialog_text);
-	rename_dialog->connect_compat("confirmed", this, "_rename_operation_confirm");
+	rename_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_rename_operation_confirm));
 
 	overwrite_dialog = memnew(ConfirmationDialog);
 	overwrite_dialog->set_text(TTR("There is already file or folder with the same name in this location."));
 	overwrite_dialog->get_ok()->set_text(TTR("Overwrite"));
 	add_child(overwrite_dialog);
-	overwrite_dialog->connect_compat("confirmed", this, "_move_with_overwrite");
+	overwrite_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_move_with_overwrite));
 
 	duplicate_dialog = memnew(ConfirmationDialog);
 	VBoxContainer *duplicate_dialog_vb = memnew(VBoxContainer);
@@ -2686,7 +2648,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	duplicate_dialog->get_ok()->set_text(TTR("Duplicate"));
 	add_child(duplicate_dialog);
 	duplicate_dialog->register_text_enter(duplicate_dialog_text);
-	duplicate_dialog->connect_compat("confirmed", this, "_duplicate_operation_confirm");
+	duplicate_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_duplicate_operation_confirm));
 
 	make_dir_dialog = memnew(ConfirmationDialog);
 	make_dir_dialog->set_title(TTR("Create Folder"));
@@ -2697,7 +2659,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	make_folder_dialog_vb->add_margin_child(TTR("Name:"), make_dir_dialog_text);
 	add_child(make_dir_dialog);
 	make_dir_dialog->register_text_enter(make_dir_dialog_text);
-	make_dir_dialog->connect_compat("confirmed", this, "_make_dir_confirm");
+	make_dir_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_make_dir_confirm));
 
 	make_scene_dialog = memnew(ConfirmationDialog);
 	make_scene_dialog->set_title(TTR("Create Scene"));
@@ -2708,7 +2670,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	make_scene_dialog_vb->add_margin_child(TTR("Name:"), make_scene_dialog_text);
 	add_child(make_scene_dialog);
 	make_scene_dialog->register_text_enter(make_scene_dialog_text);
-	make_scene_dialog->connect_compat("confirmed", this, "_make_scene_confirm");
+	make_scene_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_make_scene_confirm));
 
 	make_script_dialog = memnew(ScriptCreateDialog);
 	make_script_dialog->set_title(TTR("Create Script"));
@@ -2717,7 +2679,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	new_resource_dialog = memnew(CreateDialog);
 	add_child(new_resource_dialog);
 	new_resource_dialog->set_base_type("Resource");
-	new_resource_dialog->connect_compat("create", this, "_resource_created");
+	new_resource_dialog->connect("create", callable_mp(this, &FileSystemDock::_resource_created));
 
 	searched_string = String();
 	uncollapsed_paths_before_search = Vector<String>();

@@ -2187,10 +2187,10 @@ void SpatialEditorViewport::_notification(int p_what) {
 			if (cam != NULL && cam != previewing) {
 				//then switch the viewport's camera to the scene's viewport camera
 				if (previewing != NULL) {
-					previewing->disconnect_compat("tree_exited", this, "_preview_exited_scene");
+					previewing->disconnect("tree_exited", callable_mp(this, &SpatialEditorViewport::_preview_exited_scene));
 				}
 				previewing = cam;
-				previewing->connect_compat("tree_exited", this, "_preview_exited_scene");
+				previewing->connect("tree_exited", callable_mp(this, &SpatialEditorViewport::_preview_exited_scene));
 				VS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), cam->get_camera());
 				surface->update();
 			}
@@ -2331,12 +2331,12 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		surface->connect_compat("draw", this, "_draw");
-		surface->connect_compat("gui_input", this, "_sinput");
-		surface->connect_compat("mouse_entered", this, "_surface_mouse_enter");
-		surface->connect_compat("mouse_exited", this, "_surface_mouse_exit");
-		surface->connect_compat("focus_entered", this, "_surface_focus_enter");
-		surface->connect_compat("focus_exited", this, "_surface_focus_exit");
+		surface->connect("draw", callable_mp(this, &SpatialEditorViewport::_draw));
+		surface->connect("gui_input", callable_mp(this, &SpatialEditorViewport::_sinput));
+		surface->connect("mouse_entered", callable_mp(this, &SpatialEditorViewport::_surface_mouse_enter));
+		surface->connect("mouse_exited", callable_mp(this, &SpatialEditorViewport::_surface_mouse_exit));
+		surface->connect("focus_entered", callable_mp(this, &SpatialEditorViewport::_surface_focus_enter));
+		surface->connect("focus_exited", callable_mp(this, &SpatialEditorViewport::_surface_focus_exit));
 
 		_init_gizmo_instance(index);
 	}
@@ -2837,10 +2837,10 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 
 void SpatialEditorViewport::_preview_exited_scene() {
 
-	preview_camera->disconnect_compat("toggled", this, "_toggle_camera_preview");
+	preview_camera->disconnect("toggled", callable_mp(this, &SpatialEditorViewport::_toggle_camera_preview));
 	preview_camera->set_pressed(false);
 	_toggle_camera_preview(false);
-	preview_camera->connect_compat("toggled", this, "_toggle_camera_preview");
+	preview_camera->connect("toggled", callable_mp(this, &SpatialEditorViewport::_toggle_camera_preview));
 	view_menu->show();
 }
 
@@ -2903,7 +2903,7 @@ void SpatialEditorViewport::_toggle_camera_preview(bool p_activate) {
 
 	if (!p_activate) {
 
-		previewing->disconnect_compat("tree_exiting", this, "_preview_exited_scene");
+		previewing->disconnect("tree_exiting", callable_mp(this, &SpatialEditorViewport::_preview_exited_scene));
 		previewing = NULL;
 		VS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), camera->get_camera()); //restore
 		if (!preview)
@@ -2914,7 +2914,7 @@ void SpatialEditorViewport::_toggle_camera_preview(bool p_activate) {
 	} else {
 
 		previewing = preview;
-		previewing->connect_compat("tree_exiting", this, "_preview_exited_scene");
+		previewing->connect("tree_exiting", callable_mp(this, &SpatialEditorViewport::_preview_exited_scene));
 		VS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), preview->get_camera()); //replace
 		view_menu->set_disabled(true);
 		surface->update();
@@ -2925,7 +2925,7 @@ void SpatialEditorViewport::_toggle_cinema_preview(bool p_activate) {
 	previewing_cinema = p_activate;
 	if (!previewing_cinema) {
 		if (previewing != NULL)
-			previewing->disconnect_compat("tree_exited", this, "_preview_exited_scene");
+			previewing->disconnect("tree_exited", callable_mp(this, &SpatialEditorViewport::_preview_exited_scene));
 
 		previewing = NULL;
 		VS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), camera->get_camera()); //restore
@@ -3110,14 +3110,14 @@ void SpatialEditorViewport::set_state(const Dictionary &p_state) {
 		view_menu->get_popup()->set_item_checked(idx, previewing_cinema);
 	}
 
-	if (preview_camera->is_connected_compat("toggled", this, "_toggle_camera_preview")) {
-		preview_camera->disconnect_compat("toggled", this, "_toggle_camera_preview");
+	if (preview_camera->is_connected("toggled", callable_mp(this, &SpatialEditorViewport::_toggle_camera_preview))) {
+		preview_camera->disconnect("toggled", callable_mp(this, &SpatialEditorViewport::_toggle_camera_preview));
 	}
 	if (p_state.has("previewing")) {
 		Node *pv = EditorNode::get_singleton()->get_edited_scene()->get_node(p_state["previewing"]);
 		if (Object::cast_to<Camera>(pv)) {
 			previewing = Object::cast_to<Camera>(pv);
-			previewing->connect_compat("tree_exiting", this, "_preview_exited_scene");
+			previewing->connect("tree_exiting", callable_mp(this, &SpatialEditorViewport::_preview_exited_scene));
 			VS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), previewing->get_camera()); //replace
 			view_menu->set_disabled(true);
 			surface->update();
@@ -3125,7 +3125,7 @@ void SpatialEditorViewport::set_state(const Dictionary &p_state) {
 			preview_camera->show();
 		}
 	}
-	preview_camera->connect_compat("toggled", this, "_toggle_camera_preview");
+	preview_camera->connect("toggled", callable_mp(this, &SpatialEditorViewport::_toggle_camera_preview));
 }
 
 Dictionary SpatialEditorViewport::get_state() const {
@@ -3162,19 +3162,7 @@ Dictionary SpatialEditorViewport::get_state() const {
 
 void SpatialEditorViewport::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_draw"), &SpatialEditorViewport::_draw);
-
-	ClassDB::bind_method(D_METHOD("_surface_mouse_enter"), &SpatialEditorViewport::_surface_mouse_enter);
-	ClassDB::bind_method(D_METHOD("_surface_mouse_exit"), &SpatialEditorViewport::_surface_mouse_exit);
-	ClassDB::bind_method(D_METHOD("_surface_focus_enter"), &SpatialEditorViewport::_surface_focus_enter);
-	ClassDB::bind_method(D_METHOD("_surface_focus_exit"), &SpatialEditorViewport::_surface_focus_exit);
-	ClassDB::bind_method(D_METHOD("_sinput"), &SpatialEditorViewport::_sinput);
-	ClassDB::bind_method(D_METHOD("_menu_option"), &SpatialEditorViewport::_menu_option);
-	ClassDB::bind_method(D_METHOD("_toggle_camera_preview"), &SpatialEditorViewport::_toggle_camera_preview);
-	ClassDB::bind_method(D_METHOD("_preview_exited_scene"), &SpatialEditorViewport::_preview_exited_scene);
-	ClassDB::bind_method(D_METHOD("update_transform_gizmo_view"), &SpatialEditorViewport::update_transform_gizmo_view);
-	ClassDB::bind_method(D_METHOD("_selection_result_pressed"), &SpatialEditorViewport::_selection_result_pressed);
-	ClassDB::bind_method(D_METHOD("_selection_menu_hide"), &SpatialEditorViewport::_selection_menu_hide);
+	ClassDB::bind_method(D_METHOD("update_transform_gizmo_view"), &SpatialEditorViewport::update_transform_gizmo_view); // Used by call_deferred.
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &SpatialEditorViewport::can_drop_data_fw);
 	ClassDB::bind_method(D_METHOD("drop_data_fw"), &SpatialEditorViewport::drop_data_fw);
 
@@ -3684,8 +3672,8 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_selection"), VIEW_CENTER_TO_SELECTION);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_transform_with_view"), VIEW_ALIGN_TRANSFORM_WITH_VIEW);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_rotation_with_view"), VIEW_ALIGN_ROTATION_WITH_VIEW);
-	view_menu->get_popup()->connect_compat("id_pressed", this, "_menu_option");
-	display_submenu->connect_compat("id_pressed", this, "_menu_option");
+	view_menu->get_popup()->connect("id_pressed", callable_mp(this, &SpatialEditorViewport::_menu_option));
+	display_submenu->connect("id_pressed", callable_mp(this, &SpatialEditorViewport::_menu_option));
 	view_menu->set_disable_shortcuts(true);
 
 	if (OS::get_singleton()->get_current_video_driver() == OS::VIDEO_DRIVER_GLES2) {
@@ -3720,7 +3708,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	vbox->add_child(preview_camera);
 	preview_camera->set_h_size_flags(0);
 	preview_camera->hide();
-	preview_camera->connect_compat("toggled", this, "_toggle_camera_preview");
+	preview_camera->connect("toggled", callable_mp(this, &SpatialEditorViewport::_toggle_camera_preview));
 	previewing = NULL;
 	gizmo_scale = 1.0;
 
@@ -3773,8 +3761,8 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	selection_menu = memnew(PopupMenu);
 	add_child(selection_menu);
 	selection_menu->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
-	selection_menu->connect_compat("id_pressed", this, "_selection_result_pressed");
-	selection_menu->connect_compat("popup_hide", this, "_selection_menu_hide");
+	selection_menu->connect("id_pressed", callable_mp(this, &SpatialEditorViewport::_selection_result_pressed));
+	selection_menu->connect("popup_hide", callable_mp(this, &SpatialEditorViewport::_selection_menu_hide));
 
 	if (p_index == 0) {
 		view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_AUDIO_LISTENER), true);
@@ -3784,7 +3772,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	name = "";
 	_update_name();
 
-	EditorSettings::get_singleton()->connect_compat("settings_changed", this, "update_transform_gizmo_view");
+	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &SpatialEditorViewport::update_transform_gizmo_view));
 }
 
 //////////////////////////////////////////////////////////////
@@ -5471,12 +5459,12 @@ void SpatialEditor::_notification(int p_what) {
 
 		_refresh_menu_icons();
 
-		get_tree()->connect_compat("node_removed", this, "_node_removed");
-		EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor()->connect_compat("node_changed", this, "_refresh_menu_icons");
-		editor_selection->connect_compat("selection_changed", this, "_refresh_menu_icons");
+		get_tree()->connect("node_removed", callable_mp(this, &SpatialEditor::_node_removed));
+		EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor()->connect("node_changed", callable_mp(this, &SpatialEditor::_refresh_menu_icons));
+		editor_selection->connect("selection_changed", callable_mp(this, &SpatialEditor::_refresh_menu_icons));
 
-		editor->connect_compat("stop_pressed", this, "_update_camera_override_button", make_binds(false));
-		editor->connect_compat("play_pressed", this, "_update_camera_override_button", make_binds(true));
+		editor->connect("stop_pressed", callable_mp(this, &SpatialEditor::_update_camera_override_button), make_binds(false));
+		editor->connect("play_pressed", callable_mp(this, &SpatialEditor::_update_camera_override_button), make_binds(true));
 	} else if (p_what == NOTIFICATION_ENTER_TREE) {
 
 		_register_all_gizmos();
@@ -5653,17 +5641,8 @@ void SpatialEditor::_register_all_gizmos() {
 void SpatialEditor::_bind_methods() {
 
 	ClassDB::bind_method("_unhandled_key_input", &SpatialEditor::_unhandled_key_input);
-	ClassDB::bind_method("_node_removed", &SpatialEditor::_node_removed);
-	ClassDB::bind_method("_menu_item_pressed", &SpatialEditor::_menu_item_pressed);
-	ClassDB::bind_method("_menu_gizmo_toggled", &SpatialEditor::_menu_gizmo_toggled);
-	ClassDB::bind_method("_menu_item_toggled", &SpatialEditor::_menu_item_toggled);
-	ClassDB::bind_method("_xform_dialog_action", &SpatialEditor::_xform_dialog_action);
 	ClassDB::bind_method("_get_editor_data", &SpatialEditor::_get_editor_data);
 	ClassDB::bind_method("_request_gizmo", &SpatialEditor::_request_gizmo);
-	ClassDB::bind_method("_toggle_maximize_view", &SpatialEditor::_toggle_maximize_view);
-	ClassDB::bind_method("_refresh_menu_icons", &SpatialEditor::_refresh_menu_icons);
-	ClassDB::bind_method("_update_camera_override_button", &SpatialEditor::_update_camera_override_button);
-	ClassDB::bind_method("_update_camera_override_viewport", &SpatialEditor::_update_camera_override_viewport);
 
 	ADD_SIGNAL(MethodInfo("transform_key_request"));
 	ADD_SIGNAL(MethodInfo("item_lock_status_changed"));
@@ -5732,7 +5711,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_SELECT]->set_flat(true);
 	tool_button[TOOL_MODE_SELECT]->set_pressed(true);
 	button_binds.write[0] = MENU_TOOL_SELECT;
-	tool_button[TOOL_MODE_SELECT]->connect_compat("pressed", this, "_menu_item_pressed", button_binds);
+	tool_button[TOOL_MODE_SELECT]->connect("pressed", callable_mp(this, &SpatialEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_MODE_SELECT]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_select", TTR("Select Mode"), KEY_Q));
 	tool_button[TOOL_MODE_SELECT]->set_tooltip(keycode_get_string(KEY_MASK_CMD) + TTR("Drag: Rotate\nAlt+Drag: Move\nAlt+RMB: Depth list selection"));
 
@@ -5743,7 +5722,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_MOVE]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_MOVE]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_MOVE;
-	tool_button[TOOL_MODE_MOVE]->connect_compat("pressed", this, "_menu_item_pressed", button_binds);
+	tool_button[TOOL_MODE_MOVE]->connect("pressed", callable_mp(this, &SpatialEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_MODE_MOVE]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_move", TTR("Move Mode"), KEY_W));
 
 	tool_button[TOOL_MODE_ROTATE] = memnew(ToolButton);
@@ -5751,7 +5730,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_ROTATE]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_ROTATE]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_ROTATE;
-	tool_button[TOOL_MODE_ROTATE]->connect_compat("pressed", this, "_menu_item_pressed", button_binds);
+	tool_button[TOOL_MODE_ROTATE]->connect("pressed", callable_mp(this, &SpatialEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_MODE_ROTATE]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_rotate", TTR("Rotate Mode"), KEY_E));
 
 	tool_button[TOOL_MODE_SCALE] = memnew(ToolButton);
@@ -5759,7 +5738,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_SCALE]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_SCALE]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_SCALE;
-	tool_button[TOOL_MODE_SCALE]->connect_compat("pressed", this, "_menu_item_pressed", button_binds);
+	tool_button[TOOL_MODE_SCALE]->connect("pressed", callable_mp(this, &SpatialEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_MODE_SCALE]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_scale", TTR("Scale Mode"), KEY_R));
 
 	hbc_menu->add_child(memnew(VSeparator));
@@ -5769,31 +5748,31 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_LIST_SELECT]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_LIST_SELECT]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_LIST_SELECT;
-	tool_button[TOOL_MODE_LIST_SELECT]->connect_compat("pressed", this, "_menu_item_pressed", button_binds);
+	tool_button[TOOL_MODE_LIST_SELECT]->connect("pressed", callable_mp(this, &SpatialEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip(TTR("Show a list of all objects at the position clicked\n(same as Alt+RMB in select mode)."));
 
 	tool_button[TOOL_LOCK_SELECTED] = memnew(ToolButton);
 	hbc_menu->add_child(tool_button[TOOL_LOCK_SELECTED]);
 	button_binds.write[0] = MENU_LOCK_SELECTED;
-	tool_button[TOOL_LOCK_SELECTED]->connect_compat("pressed", this, "_menu_item_pressed", button_binds);
+	tool_button[TOOL_LOCK_SELECTED]->connect("pressed", callable_mp(this, &SpatialEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_LOCK_SELECTED]->set_tooltip(TTR("Lock the selected object in place (can't be moved)."));
 
 	tool_button[TOOL_UNLOCK_SELECTED] = memnew(ToolButton);
 	hbc_menu->add_child(tool_button[TOOL_UNLOCK_SELECTED]);
 	button_binds.write[0] = MENU_UNLOCK_SELECTED;
-	tool_button[TOOL_UNLOCK_SELECTED]->connect_compat("pressed", this, "_menu_item_pressed", button_binds);
+	tool_button[TOOL_UNLOCK_SELECTED]->connect("pressed", callable_mp(this, &SpatialEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_UNLOCK_SELECTED]->set_tooltip(TTR("Unlock the selected object (can be moved)."));
 
 	tool_button[TOOL_GROUP_SELECTED] = memnew(ToolButton);
 	hbc_menu->add_child(tool_button[TOOL_GROUP_SELECTED]);
 	button_binds.write[0] = MENU_GROUP_SELECTED;
-	tool_button[TOOL_GROUP_SELECTED]->connect_compat("pressed", this, "_menu_item_pressed", button_binds);
+	tool_button[TOOL_GROUP_SELECTED]->connect("pressed", callable_mp(this, &SpatialEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_GROUP_SELECTED]->set_tooltip(TTR("Makes sure the object's children are not selectable."));
 
 	tool_button[TOOL_UNGROUP_SELECTED] = memnew(ToolButton);
 	hbc_menu->add_child(tool_button[TOOL_UNGROUP_SELECTED]);
 	button_binds.write[0] = MENU_UNGROUP_SELECTED;
-	tool_button[TOOL_UNGROUP_SELECTED]->connect_compat("pressed", this, "_menu_item_pressed", button_binds);
+	tool_button[TOOL_UNGROUP_SELECTED]->connect("pressed", callable_mp(this, &SpatialEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_UNGROUP_SELECTED]->set_tooltip(TTR("Restores the object's children's ability to be selected."));
 
 	hbc_menu->add_child(memnew(VSeparator));
@@ -5803,7 +5782,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_toggle_mode(true);
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_LOCAL_COORDS;
-	tool_option_button[TOOL_OPT_LOCAL_COORDS]->connect_compat("toggled", this, "_menu_item_toggled", button_binds);
+	tool_option_button[TOOL_OPT_LOCAL_COORDS]->connect("toggled", callable_mp(this, &SpatialEditor::_menu_item_toggled), button_binds);
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_shortcut(ED_SHORTCUT("spatial_editor/local_coords", TTR("Use Local Space"), KEY_T));
 
 	tool_option_button[TOOL_OPT_USE_SNAP] = memnew(ToolButton);
@@ -5811,7 +5790,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_toggle_mode(true);
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_USE_SNAP;
-	tool_option_button[TOOL_OPT_USE_SNAP]->connect_compat("toggled", this, "_menu_item_toggled", button_binds);
+	tool_option_button[TOOL_OPT_USE_SNAP]->connect("toggled", callable_mp(this, &SpatialEditor::_menu_item_toggled), button_binds);
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_shortcut(ED_SHORTCUT("spatial_editor/snap", TTR("Use Snap"), KEY_Y));
 
 	hbc_menu->add_child(memnew(VSeparator));
@@ -5822,7 +5801,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->set_flat(true);
 	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->set_disabled(true);
 	button_binds.write[0] = MENU_TOOL_OVERRIDE_CAMERA;
-	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->connect_compat("toggled", this, "_menu_item_toggled", button_binds);
+	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->connect("toggled", callable_mp(this, &SpatialEditor::_menu_item_toggled), button_binds);
 	_update_camera_override_button(false);
 
 	hbc_menu->add_child(memnew(VSeparator));
@@ -5859,7 +5838,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/configure_snap", TTR("Configure Snap...")), MENU_TRANSFORM_CONFIGURE_SNAP);
 
-	p->connect_compat("id_pressed", this, "_menu_item_pressed");
+	p->connect("id_pressed", callable_mp(this, &SpatialEditor::_menu_item_pressed));
 
 	view_menu = memnew(MenuButton);
 	view_menu->set_text(TTR("View"));
@@ -5891,13 +5870,13 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->set_item_checked(p->get_item_index(MENU_VIEW_ORIGIN), true);
 	p->set_item_checked(p->get_item_index(MENU_VIEW_GRID), true);
 
-	p->connect_compat("id_pressed", this, "_menu_item_pressed");
+	p->connect("id_pressed", callable_mp(this, &SpatialEditor::_menu_item_pressed));
 
 	gizmos_menu = memnew(PopupMenu);
 	p->add_child(gizmos_menu);
 	gizmos_menu->set_name("GizmosMenu");
 	gizmos_menu->set_hide_on_checkable_item_selection(false);
-	gizmos_menu->connect_compat("id_pressed", this, "_menu_gizmo_toggled");
+	gizmos_menu->connect("id_pressed", callable_mp(this, &SpatialEditor::_menu_gizmo_toggled));
 
 	/* REST OF MENU */
 
@@ -5914,8 +5893,8 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
 
 		viewports[i] = memnew(SpatialEditorViewport(this, editor, i));
-		viewports[i]->connect_compat("toggle_maximize_view", this, "_toggle_maximize_view");
-		viewports[i]->connect_compat("clicked", this, "_update_camera_override_viewport");
+		viewports[i]->connect("toggle_maximize_view", callable_mp(this, &SpatialEditor::_toggle_maximize_view));
+		viewports[i]->connect("clicked", callable_mp(this, &SpatialEditor::_update_camera_override_viewport));
 		viewports[i]->assign_pending_data_pointers(preview_node, &preview_bounds, accept);
 		viewport_base->add_child(viewports[i]);
 	}
@@ -6030,7 +6009,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	xform_type->add_item(TTR("Post"));
 	xform_vbc->add_child(xform_type);
 
-	xform_dialog->connect_compat("confirmed", this, "_xform_dialog_action");
+	xform_dialog->connect("confirmed", callable_mp(this, &SpatialEditor::_xform_dialog_action));
 
 	scenario_debug = VisualServer::SCENARIO_DEBUG_DISABLED;
 
