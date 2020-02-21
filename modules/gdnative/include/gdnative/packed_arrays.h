@@ -167,6 +167,10 @@ void GDAPI godot_packed_byte_array_append_array(godot_packed_byte_array *p_self,
 
 godot_error GDAPI godot_packed_byte_array_insert(godot_packed_byte_array *p_self, const godot_int p_idx, const uint8_t p_data);
 
+godot_bool GDAPI godot_packed_byte_array_has(godot_packed_byte_array *p_self, const uint8_t p_value);
+
+void GDAPI godot_packed_byte_array_sort(godot_packed_byte_array *p_self);
+
 void GDAPI godot_packed_byte_array_invert(godot_packed_byte_array *p_self);
 
 void GDAPI godot_packed_byte_array_push_back(godot_packed_byte_array *p_self, const uint8_t p_data);
@@ -198,6 +202,10 @@ void GDAPI godot_packed_int32_array_append(godot_packed_int32_array *p_self, con
 void GDAPI godot_packed_int32_array_append_array(godot_packed_int32_array *p_self, const godot_packed_int32_array *p_array);
 
 godot_error GDAPI godot_packed_int32_array_insert(godot_packed_int32_array *p_self, const godot_int p_idx, const int32_t p_data);
+
+godot_bool GDAPI godot_packed_int32_array_has(godot_packed_int32_array *p_self, const int32_t p_value);
+
+void GDAPI godot_packed_int32_array_sort(godot_packed_int32_array *p_self);
 
 void GDAPI godot_packed_int32_array_invert(godot_packed_int32_array *p_self);
 
@@ -231,6 +239,10 @@ void GDAPI godot_packed_int64_array_append_array(godot_packed_int64_array *p_sel
 
 godot_error GDAPI godot_packed_int64_array_insert(godot_packed_int64_array *p_self, const godot_int p_idx, const int64_t p_data);
 
+godot_bool GDAPI godot_packed_int64_array_has(godot_packed_int64_array *p_self, const int64_t p_value);
+
+void GDAPI godot_packed_int64_array_sort(godot_packed_int64_array *p_self);
+
 void GDAPI godot_packed_int64_array_invert(godot_packed_int64_array *p_self);
 
 void GDAPI godot_packed_int64_array_push_back(godot_packed_int64_array *p_self, const int64_t p_data);
@@ -262,6 +274,10 @@ void GDAPI godot_packed_float32_array_append(godot_packed_float32_array *p_self,
 void GDAPI godot_packed_float32_array_append_array(godot_packed_float32_array *p_self, const godot_packed_float32_array *p_array);
 
 godot_error GDAPI godot_packed_float32_array_insert(godot_packed_float32_array *p_self, const godot_int p_idx, const float p_data);
+
+godot_bool GDAPI godot_packed_float32_array_has(godot_packed_float32_array *p_self, const float p_value);
+
+void GDAPI godot_packed_float32_array_sort(godot_packed_float32_array *p_self);
 
 void GDAPI godot_packed_float32_array_invert(godot_packed_float32_array *p_self);
 
@@ -295,6 +311,10 @@ void GDAPI godot_packed_float64_array_append_array(godot_packed_float64_array *p
 
 godot_error GDAPI godot_packed_float64_array_insert(godot_packed_float64_array *p_self, const godot_int p_idx, const double p_data);
 
+godot_bool GDAPI godot_packed_float64_array_has(godot_packed_float64_array *p_self, const double p_value);
+
+void GDAPI godot_packed_float64_array_sort(godot_packed_float64_array *p_self);
+
 void GDAPI godot_packed_float64_array_invert(godot_packed_float64_array *p_self);
 
 void GDAPI godot_packed_float64_array_push_back(godot_packed_float64_array *p_self, const double p_data);
@@ -326,6 +346,10 @@ void GDAPI godot_packed_string_array_append(godot_packed_string_array *p_self, c
 void GDAPI godot_packed_string_array_append_array(godot_packed_string_array *p_self, const godot_packed_string_array *p_array);
 
 godot_error GDAPI godot_packed_string_array_insert(godot_packed_string_array *p_self, const godot_int p_idx, const godot_string *p_data);
+
+godot_bool GDAPI godot_packed_string_array_has(godot_packed_string_array *p_self, const godot_string *p_value);
+
+void GDAPI godot_packed_string_array_sort(godot_packed_string_array *p_self);
 
 void GDAPI godot_packed_string_array_invert(godot_packed_string_array *p_self);
 
@@ -359,6 +383,10 @@ void GDAPI godot_packed_vector2_array_append_array(godot_packed_vector2_array *p
 
 godot_error GDAPI godot_packed_vector2_array_insert(godot_packed_vector2_array *p_self, const godot_int p_idx, const godot_vector2 *p_data);
 
+godot_bool GDAPI godot_packed_vector2_array_has(godot_packed_vector2_array *p_self, const godot_vector2 *p_value);
+
+void GDAPI godot_packed_vector2_array_sort(godot_packed_vector2_array *p_self);
+
 void GDAPI godot_packed_vector2_array_invert(godot_packed_vector2_array *p_self);
 
 void GDAPI godot_packed_vector2_array_push_back(godot_packed_vector2_array *p_self, const godot_vector2 *p_data);
@@ -391,6 +419,10 @@ void GDAPI godot_packed_vector3_array_append_array(godot_packed_vector3_array *p
 
 godot_error GDAPI godot_packed_vector3_array_insert(godot_packed_vector3_array *p_self, const godot_int p_idx, const godot_vector3 *p_data);
 
+godot_bool GDAPI godot_packed_vector3_array_has(godot_packed_vector3_array *p_self, const godot_vector3 *p_value);
+
+void GDAPI godot_packed_vector3_array_sort(godot_packed_vector3_array *p_self);
+
 void GDAPI godot_packed_vector3_array_invert(godot_packed_vector3_array *p_self);
 
 void GDAPI godot_packed_vector3_array_push_back(godot_packed_vector3_array *p_self, const godot_vector3 *p_data);
@@ -422,6 +454,10 @@ void GDAPI godot_packed_color_array_append(godot_packed_color_array *p_self, con
 void GDAPI godot_packed_color_array_append_array(godot_packed_color_array *p_self, const godot_packed_color_array *p_array);
 
 godot_error GDAPI godot_packed_color_array_insert(godot_packed_color_array *p_self, const godot_int p_idx, const godot_color *p_data);
+
+godot_bool GDAPI godot_packed_color_array_has(godot_packed_color_array *p_self, const godot_color *p_value);
+
+void GDAPI godot_packed_color_array_sort(godot_packed_color_array *p_self);
 
 void GDAPI godot_packed_color_array_invert(godot_packed_color_array *p_self);
 

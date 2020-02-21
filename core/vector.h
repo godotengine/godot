@@ -92,6 +92,10 @@ public:
 
 	void append_array(Vector<T> p_other);
 
+	bool has(const T &p_val) {
+		return find(p_val, 0) != -1;
+	}
+
 	template <class C>
 	void sort_custom() {
 		int len = _cowdata.size();
