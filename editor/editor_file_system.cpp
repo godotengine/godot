@@ -1831,7 +1831,9 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 		} else {
 			String path = base_path + "." + importer->get_save_extension();
 			f->store_line("path=\"" + path + "\"");
-			dest_paths.push_back(path);
+			if (!importer->is_dummy()) {
+				dest_paths.push_back(path);
+			}
 		}
 
 	} else {
@@ -1886,16 +1888,18 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 	f->close();
 	memdelete(f);
 
-	// Store the md5's of the various files. These are stored separately so that the .import files can be version controlled.
-	FileAccess *md5s = FileAccess::open(base_path + ".md5", FileAccess::WRITE);
-	ERR_FAIL_COND_MSG(!md5s, "Cannot open MD5 file '" + base_path + ".md5'.");
+	if (!importer->is_dummy()) {
+		// Store the md5's of the various files. These are stored separately so that the .import files can be version controlled.
+		FileAccess *md5s = FileAccess::open(base_path + ".md5", FileAccess::WRITE);
+		ERR_FAIL_COND_MSG(!md5s, "Cannot open MD5 file '" + base_path + ".md5'.");
 
-	md5s->store_line("source_md5=\"" + FileAccess::get_md5(p_file) + "\"");
-	if (dest_paths.size()) {
-		md5s->store_line("dest_md5=\"" + FileAccess::get_multiple_md5(dest_paths) + "\"\n");
+		md5s->store_line("source_md5=\"" + FileAccess::get_md5(p_file) + "\"");
+		if (dest_paths.size()) {
+			md5s->store_line("dest_md5=\"" + FileAccess::get_multiple_md5(dest_paths) + "\"\n");
+		}
+		md5s->close();
+		memdelete(md5s);
 	}
-	md5s->close();
-	memdelete(md5s);
 
 	//update modified times, to avoid reimport
 	fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);

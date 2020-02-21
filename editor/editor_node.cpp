@@ -97,6 +97,7 @@
 #include "editor/import/resource_importer_image.h"
 #include "editor/import/resource_importer_layered_texture.h"
 #include "editor/import/resource_importer_obj.h"
+#include "editor/import/resource_importer_plugin_ui_texture.h"
 #include "editor/import/resource_importer_scene.h"
 #include "editor/import/resource_importer_texture.h"
 #include "editor/import/resource_importer_texture_atlas.h"
@@ -5739,6 +5740,10 @@ EditorNode::EditorNode() {
 		Ref<ResourceImporterTextureAtlas> import_texture_atlas;
 		import_texture_atlas.instance();
 		ResourceFormatImporter::get_singleton()->add_importer(import_texture_atlas);
+
+		Ref<ResourceImporterPluginUITexture> import_plugin_ui_texture;
+		import_plugin_ui_texture.instance();
+		ResourceFormatImporter::get_singleton()->add_importer(import_plugin_ui_texture);
 
 		Ref<ResourceImporterCSVTranslation> import_csv_translation;
 		import_csv_translation.instance();

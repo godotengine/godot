@@ -2316,3 +2316,37 @@ CameraTexture::CameraTexture() {
 CameraTexture::~CameraTexture() {
 	// nothing to do here yet
 }
+
+///////////////////////////////
+
+#ifdef TOOLS_ENABLED
+RES ResourceFormatLoaderPluginUITexture::load(const String &p_path, const String &p_original_path, Error *r_error) {
+	Ref<Image> img = memnew(Image);
+	Error err = ImageLoader::load_image(p_original_path, img);
+	if (err) {
+		if (r_error)
+			*r_error = err;
+		return RES();
+	}
+
+	Ref<ImageTexture> texture = memnew(ImageTexture);
+	texture->create_from_image(img, ImageTexture::FLAG_FILTER | ImageTexture::FLAG_MIPMAPS);
+
+	if (r_error)
+		*r_error = OK;
+
+	return texture;
+}
+
+void ResourceFormatLoaderPluginUITexture::get_recognized_extensions(List<String> *p_extensions) const {
+	p_extensions->push_back("uitex");
+}
+
+bool ResourceFormatLoaderPluginUITexture::handles_type(const String &p_type) const {
+	return ClassDB::is_parent_class(p_type, "ImageTexture");
+}
+
+String ResourceFormatLoaderPluginUITexture::get_resource_type(const String &p_path) const {
+	return "ImageTexture";
+}
+#endif

@@ -1,0 +1,88 @@
+/*************************************************************************/
+/*  resource_importer_plugin_ui_texture.cpp                              */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
+#include "resource_importer_plugin_ui_texture.h"
+
+#include "core/io/image_loader.h"
+#include "core/os/file_access.h"
+#include "scene/resources/texture.h"
+
+String ResourceImporterPluginUITexture::get_importer_name() const {
+
+	return "plugin_ui_texture";
+}
+
+String ResourceImporterPluginUITexture::get_visible_name() const {
+
+	return "PluginUITexture";
+}
+
+void ResourceImporterPluginUITexture::get_recognized_extensions(List<String> *p_extensions) const {
+
+	ImageLoader::get_recognized_extensions(p_extensions);
+}
+
+String ResourceImporterPluginUITexture::get_save_extension() const {
+
+	return "uitex";
+}
+
+String ResourceImporterPluginUITexture::get_resource_type() const {
+
+	return "ImageTexture";
+}
+
+bool ResourceImporterPluginUITexture::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+
+	return true;
+}
+
+int ResourceImporterPluginUITexture::get_preset_count() const {
+	return 0;
+}
+String ResourceImporterPluginUITexture::get_preset_name(int p_idx) const {
+
+	return String();
+}
+
+void ResourceImporterPluginUITexture::get_import_options(List<ImportOption> *r_options, int p_preset) const {
+}
+
+Error ResourceImporterPluginUITexture::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+
+	if (FileAccess::exists(p_source_file)) {
+		return OK;
+	} else {
+		return ERR_DOES_NOT_EXIST;
+	}
+}
+
+ResourceImporterPluginUITexture::ResourceImporterPluginUITexture() {
+}

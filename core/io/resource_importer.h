@@ -101,6 +101,7 @@ public:
 	virtual String get_visible_name() const = 0;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const = 0;
 	virtual String get_save_extension() const = 0;
+	virtual bool is_dummy() const { return false; }
 	virtual String get_resource_type() const = 0;
 	virtual float get_priority() const { return 1.0; }
 	virtual int get_import_order() const { return 0; }
