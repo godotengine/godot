@@ -7,6 +7,7 @@ iphone_lib = [
     'os_iphone.cpp',
     'semaphore_iphone.cpp',
     'gl_view.mm',
+    'vulkan_view.mm',
     'main.m',
     'app_delegate.mm',
     'view_controller.mm',
