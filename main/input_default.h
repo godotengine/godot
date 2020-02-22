@@ -65,15 +65,6 @@ class InputDefault : public Input {
 
 	int mouse_from_touch_index;
 
-	struct VibrationInfo {
-		float weak_magnitude;
-		float strong_magnitude;
-		float duration; // Duration in seconds
-		uint64_t timestamp;
-	};
-
-	Map<int, VibrationInfo> joy_vibration;
-
 	struct SpeedTrack {
 
 		uint64_t last_tick;
@@ -122,6 +113,16 @@ class InputDefault : public Input {
 	int fallback_mapping;
 
 	CursorShape default_shape;
+
+protected:
+	struct VibrationInfo {
+		float weak_magnitude;
+		float strong_magnitude;
+		float duration; // Duration in seconds
+		uint64_t timestamp;
+	};
+
+	Map<int, VibrationInfo> joy_vibration;
 
 public:
 	enum HatMask {
