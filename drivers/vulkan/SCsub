@@ -49,6 +49,14 @@ if env['builtin_vulkan']:
             'FALLBACK_DATA_DIRS=\\"%s\\"' % '/usr/local/share:/usr/share',
             'FALLBACK_CONFIG_DIRS=\\"%s\\"' % '/etc/xdg'
         ])
+    elif env['platform'] == "iphone":
+        env_thirdparty.AppendUnique(CPPDEFINES=[
+            'VK_USE_PLATFORM_IOS_MVK',
+            'VULKAN_NON_CMAKE_BUILD',
+            'SYSCONFDIR=\\"%s\\"' % '/etc',
+            'FALLBACK_DATA_DIRS=\\"%s\\"' % '/usr/local/share:/usr/share',
+            'FALLBACK_CONFIG_DIRS=\\"%s\\"' % '/etc/xdg'
+        ])
     elif env['platform'] == "x11":
         env_thirdparty.AppendUnique(CPPDEFINES=[
             'VK_USE_PLATFORM_XLIB_KHR',
