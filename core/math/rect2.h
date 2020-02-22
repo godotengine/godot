@@ -387,6 +387,11 @@ struct Rect2i {
 		size = end - begin;
 	}
 
+	_FORCE_INLINE_ Rect2i abs() const {
+
+		return Rect2i(Point2i(position.x + MIN(size.x, 0), position.y + MIN(size.y, 0)), size.abs());
+	}
+
 	operator String() const { return String(position) + ", " + String(size); }
 
 	operator Rect2() const { return Rect2(position, size); }

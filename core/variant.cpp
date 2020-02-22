@@ -72,9 +72,17 @@ String Variant::get_type_name(Variant::Type p_type) {
 
 			return "Vector2";
 		} break;
+		case VECTOR2I: {
+
+			return "Vector2i";
+		} break;
 		case RECT2: {
 
 			return "Rect2";
+		} break;
+		case RECT2I: {
+
+			return "Rect2i";
 		} break;
 		case TRANSFORM2D: {
 
@@ -83,6 +91,10 @@ String Variant::get_type_name(Variant::Type p_type) {
 		case VECTOR3: {
 
 			return "Vector3";
+		} break;
+		case VECTOR3I: {
+
+			return "Vector3i";
 		} break;
 		case PLANE: {
 
@@ -258,6 +270,46 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 
 			invalid_types = invalid;
 		} break;
+		case VECTOR2: {
+
+			static const Type valid[] = {
+				VECTOR2I,
+				NIL,
+			};
+
+			valid_types = valid;
+
+		} break;
+		case VECTOR2I: {
+
+			static const Type valid[] = {
+				VECTOR2,
+				NIL,
+			};
+
+			valid_types = valid;
+
+		} break;
+		case RECT2: {
+
+			static const Type valid[] = {
+				RECT2I,
+				NIL,
+			};
+
+			valid_types = valid;
+
+		} break;
+		case RECT2I: {
+
+			static const Type valid[] = {
+				RECT2,
+				NIL,
+			};
+
+			valid_types = valid;
+
+		} break;
 		case TRANSFORM2D: {
 
 			static const Type valid[] = {
@@ -267,6 +319,27 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 
 			valid_types = valid;
 		} break;
+		case VECTOR3: {
+
+			static const Type valid[] = {
+				VECTOR3I,
+				NIL,
+			};
+
+			valid_types = valid;
+
+		} break;
+		case VECTOR3I: {
+
+			static const Type valid[] = {
+				VECTOR3,
+				NIL,
+			};
+
+			valid_types = valid;
+
+		} break;
+
 		case QUAT: {
 
 			static const Type valid[] = {
@@ -515,6 +588,46 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 
 			valid_types = valid;
 		} break;
+		case VECTOR2: {
+
+			static const Type valid[] = {
+				VECTOR2I,
+				NIL,
+			};
+
+			valid_types = valid;
+
+		} break;
+		case VECTOR2I: {
+
+			static const Type valid[] = {
+				VECTOR2,
+				NIL,
+			};
+
+			valid_types = valid;
+
+		} break;
+		case RECT2: {
+
+			static const Type valid[] = {
+				RECT2I,
+				NIL,
+			};
+
+			valid_types = valid;
+
+		} break;
+		case RECT2I: {
+
+			static const Type valid[] = {
+				RECT2,
+				NIL,
+			};
+
+			valid_types = valid;
+
+		} break;
 		case TRANSFORM2D: {
 
 			static const Type valid[] = {
@@ -524,6 +637,27 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 
 			valid_types = valid;
 		} break;
+		case VECTOR3: {
+
+			static const Type valid[] = {
+				VECTOR3I,
+				NIL,
+			};
+
+			valid_types = valid;
+
+		} break;
+		case VECTOR3I: {
+
+			static const Type valid[] = {
+				VECTOR3,
+				NIL,
+			};
+
+			valid_types = valid;
+
+		} break;
+
 		case QUAT: {
 
 			static const Type valid[] = {
@@ -765,9 +899,19 @@ bool Variant::is_zero() const {
 			return *reinterpret_cast<const Vector2 *>(_data._mem) == Vector2();
 
 		} break;
+		case VECTOR2I: {
+
+			return *reinterpret_cast<const Vector2i *>(_data._mem) == Vector2i();
+
+		} break;
 		case RECT2: {
 
 			return *reinterpret_cast<const Rect2 *>(_data._mem) == Rect2();
+
+		} break;
+		case RECT2I: {
+
+			return *reinterpret_cast<const Rect2i *>(_data._mem) == Rect2i();
 
 		} break;
 		case TRANSFORM2D: {
@@ -778,6 +922,11 @@ bool Variant::is_zero() const {
 		case VECTOR3: {
 
 			return *reinterpret_cast<const Vector3 *>(_data._mem) == Vector3();
+
+		} break;
+		case VECTOR3I: {
+
+			return *reinterpret_cast<const Vector3i *>(_data._mem) == Vector3i();
 
 		} break;
 		case PLANE: {
@@ -924,14 +1073,29 @@ bool Variant::is_one() const {
 			return *reinterpret_cast<const Vector2 *>(_data._mem) == Vector2(1, 1);
 
 		} break;
+		case VECTOR2I: {
+
+			return *reinterpret_cast<const Vector2i *>(_data._mem) == Vector2i(1, 1);
+
+		} break;
 		case RECT2: {
 
 			return *reinterpret_cast<const Rect2 *>(_data._mem) == Rect2(1, 1, 1, 1);
 
 		} break;
+		case RECT2I: {
+
+			return *reinterpret_cast<const Rect2i *>(_data._mem) == Rect2i(1, 1, 1, 1);
+
+		} break;
 		case VECTOR3: {
 
 			return *reinterpret_cast<const Vector3 *>(_data._mem) == Vector3(1, 1, 1);
+
+		} break;
+		case VECTOR3I: {
+
+			return *reinterpret_cast<const Vector3i *>(_data._mem) == Vector3i(1, 1, 1);
 
 		} break;
 		case PLANE: {
@@ -1004,9 +1168,17 @@ void Variant::reference(const Variant &p_variant) {
 
 			memnew_placement(_data._mem, Vector2(*reinterpret_cast<const Vector2 *>(p_variant._data._mem)));
 		} break;
+		case VECTOR2I: {
+
+			memnew_placement(_data._mem, Vector2i(*reinterpret_cast<const Vector2i *>(p_variant._data._mem)));
+		} break;
 		case RECT2: {
 
 			memnew_placement(_data._mem, Rect2(*reinterpret_cast<const Rect2 *>(p_variant._data._mem)));
+		} break;
+		case RECT2I: {
+
+			memnew_placement(_data._mem, Rect2i(*reinterpret_cast<const Rect2i *>(p_variant._data._mem)));
 		} break;
 		case TRANSFORM2D: {
 
@@ -1015,6 +1187,10 @@ void Variant::reference(const Variant &p_variant) {
 		case VECTOR3: {
 
 			memnew_placement(_data._mem, Vector3(*reinterpret_cast<const Vector3 *>(p_variant._data._mem)));
+		} break;
+		case VECTOR3I: {
+
+			memnew_placement(_data._mem, Vector3i(*reinterpret_cast<const Vector3i *>(p_variant._data._mem)));
 		} break;
 		case PLANE: {
 
@@ -1144,8 +1320,11 @@ void Variant::zero() {
 		case INT: this->_data._int = 0; break;
 		case REAL: this->_data._real = 0; break;
 		case VECTOR2: *reinterpret_cast<Vector2 *>(this->_data._mem) = Vector2(); break;
+		case VECTOR2I: *reinterpret_cast<Vector2i *>(this->_data._mem) = Vector2i(); break;
 		case RECT2: *reinterpret_cast<Rect2 *>(this->_data._mem) = Rect2(); break;
+		case RECT2I: *reinterpret_cast<Rect2i *>(this->_data._mem) = Rect2i(); break;
 		case VECTOR3: *reinterpret_cast<Vector3 *>(this->_data._mem) = Vector3(); break;
+		case VECTOR3I: *reinterpret_cast<Vector3i *>(this->_data._mem) = Vector3i(); break;
 		case PLANE: *reinterpret_cast<Plane *>(this->_data._mem) = Plane(); break;
 		case QUAT: *reinterpret_cast<Quat *>(this->_data._mem) = Quat(); break;
 		case COLOR: *reinterpret_cast<Color *>(this->_data._mem) = Color(); break;
@@ -1526,13 +1705,16 @@ String Variant::stringify(List<const void *> &stack) const {
 		case REAL: return rtos(_data._real);
 		case STRING: return *reinterpret_cast<const String *>(_data._mem);
 		case VECTOR2: return "(" + operator Vector2() + ")";
+		case VECTOR2I: return "(" + operator Vector2i() + ")";
 		case RECT2: return "(" + operator Rect2() + ")";
+		case RECT2I: return "(" + operator Rect2i() + ")";
 		case TRANSFORM2D: {
 
 			Transform2D mat32 = operator Transform2D();
 			return "(" + Variant(mat32.elements[0]).operator String() + ", " + Variant(mat32.elements[1]).operator String() + ", " + Variant(mat32.elements[2]).operator String() + ")";
 		} break;
 		case VECTOR3: return "(" + operator Vector3() + ")";
+		case VECTOR3I: return "(" + operator Vector3i() + ")";
 		case PLANE:
 			return operator Plane();
 		//case QUAT:
@@ -1725,28 +1907,78 @@ Variant::operator Vector2() const {
 
 	if (type == VECTOR2)
 		return *reinterpret_cast<const Vector2 *>(_data._mem);
+	else if (type == VECTOR2I)
+		return *reinterpret_cast<const Vector2i *>(_data._mem);
 	else if (type == VECTOR3)
 		return Vector2(reinterpret_cast<const Vector3 *>(_data._mem)->x, reinterpret_cast<const Vector3 *>(_data._mem)->y);
+	else if (type == VECTOR3I)
+		return Vector2(reinterpret_cast<const Vector3i *>(_data._mem)->x, reinterpret_cast<const Vector3i *>(_data._mem)->y);
 	else
 		return Vector2();
 }
+
+Variant::operator Vector2i() const {
+
+	if (type == VECTOR2I)
+		return *reinterpret_cast<const Vector2i *>(_data._mem);
+	else if (type == VECTOR2)
+		return *reinterpret_cast<const Vector2 *>(_data._mem);
+	else if (type == VECTOR3)
+		return Vector2(reinterpret_cast<const Vector3 *>(_data._mem)->x, reinterpret_cast<const Vector3 *>(_data._mem)->y);
+	else if (type == VECTOR3I)
+		return Vector2(reinterpret_cast<const Vector3i *>(_data._mem)->x, reinterpret_cast<const Vector3i *>(_data._mem)->y);
+	else
+		return Vector2i();
+}
+
 Variant::operator Rect2() const {
 
 	if (type == RECT2)
 		return *reinterpret_cast<const Rect2 *>(_data._mem);
+	else if (type == RECT2I)
+		return *reinterpret_cast<const Rect2i *>(_data._mem);
 	else
 		return Rect2();
+}
+
+Variant::operator Rect2i() const {
+
+	if (type == RECT2I)
+		return *reinterpret_cast<const Rect2i *>(_data._mem);
+	else if (type == RECT2)
+		return *reinterpret_cast<const Rect2 *>(_data._mem);
+	else
+		return Rect2i();
 }
 
 Variant::operator Vector3() const {
 
 	if (type == VECTOR3)
 		return *reinterpret_cast<const Vector3 *>(_data._mem);
+	else if (type == VECTOR3I)
+		return *reinterpret_cast<const Vector3i *>(_data._mem);
 	else if (type == VECTOR2)
 		return Vector3(reinterpret_cast<const Vector2 *>(_data._mem)->x, reinterpret_cast<const Vector2 *>(_data._mem)->y, 0.0);
+	else if (type == VECTOR2I)
+		return Vector3(reinterpret_cast<const Vector2i *>(_data._mem)->x, reinterpret_cast<const Vector2i *>(_data._mem)->y, 0.0);
 	else
 		return Vector3();
 }
+
+Variant::operator Vector3i() const {
+
+	if (type == VECTOR3I)
+		return *reinterpret_cast<const Vector3i *>(_data._mem);
+	else if (type == VECTOR3)
+		return *reinterpret_cast<const Vector3 *>(_data._mem);
+	else if (type == VECTOR2)
+		return Vector3i(reinterpret_cast<const Vector2 *>(_data._mem)->x, reinterpret_cast<const Vector2 *>(_data._mem)->y, 0.0);
+	else if (type == VECTOR2I)
+		return Vector3i(reinterpret_cast<const Vector2i *>(_data._mem)->x, reinterpret_cast<const Vector2i *>(_data._mem)->y, 0.0);
+	else
+		return Vector3i();
+}
+
 Variant::operator Plane() const {
 
 	if (type == PLANE)
@@ -2258,15 +2490,34 @@ Variant::Variant(const Vector3 &p_vector3) {
 	type = VECTOR3;
 	memnew_placement(_data._mem, Vector3(p_vector3));
 }
+Variant::Variant(const Vector3i &p_vector3i) {
+
+	type = VECTOR3I;
+	memnew_placement(_data._mem, Vector3i(p_vector3i));
+}
+
 Variant::Variant(const Vector2 &p_vector2) {
 
 	type = VECTOR2;
 	memnew_placement(_data._mem, Vector2(p_vector2));
 }
+
+Variant::Variant(const Vector2i &p_vector2i) {
+
+	type = VECTOR2I;
+	memnew_placement(_data._mem, Vector2i(p_vector2i));
+}
+
 Variant::Variant(const Rect2 &p_rect2) {
 
 	type = RECT2;
 	memnew_placement(_data._mem, Rect2(p_rect2));
+}
+
+Variant::Variant(const Rect2i &p_rect2i) {
+
+	type = RECT2I;
+	memnew_placement(_data._mem, Rect2i(p_rect2i));
 }
 
 Variant::Variant(const Plane &p_plane) {
@@ -2516,9 +2767,17 @@ void Variant::operator=(const Variant &p_variant) {
 
 			*reinterpret_cast<Vector2 *>(_data._mem) = *reinterpret_cast<const Vector2 *>(p_variant._data._mem);
 		} break;
+		case VECTOR2I: {
+
+			*reinterpret_cast<Vector2i *>(_data._mem) = *reinterpret_cast<const Vector2i *>(p_variant._data._mem);
+		} break;
 		case RECT2: {
 
 			*reinterpret_cast<Rect2 *>(_data._mem) = *reinterpret_cast<const Rect2 *>(p_variant._data._mem);
+		} break;
+		case RECT2I: {
+
+			*reinterpret_cast<Rect2i *>(_data._mem) = *reinterpret_cast<const Rect2i *>(p_variant._data._mem);
 		} break;
 		case TRANSFORM2D: {
 
@@ -2527,6 +2786,10 @@ void Variant::operator=(const Variant &p_variant) {
 		case VECTOR3: {
 
 			*reinterpret_cast<Vector3 *>(_data._mem) = *reinterpret_cast<const Vector3 *>(p_variant._data._mem);
+		} break;
+		case VECTOR3I: {
+
+			*reinterpret_cast<Vector3i *>(_data._mem) = *reinterpret_cast<const Vector3i *>(p_variant._data._mem);
 		} break;
 		case PLANE: {
 
@@ -2690,12 +2953,24 @@ uint32_t Variant::hash() const {
 			uint32_t hash = hash_djb2_one_float(reinterpret_cast<const Vector2 *>(_data._mem)->x);
 			return hash_djb2_one_float(reinterpret_cast<const Vector2 *>(_data._mem)->y, hash);
 		} break;
+		case VECTOR2I: {
+
+			uint32_t hash = hash_djb2_one_32(reinterpret_cast<const Vector2i *>(_data._mem)->x);
+			return hash_djb2_one_32(reinterpret_cast<const Vector2i *>(_data._mem)->y, hash);
+		} break;
 		case RECT2: {
 
 			uint32_t hash = hash_djb2_one_float(reinterpret_cast<const Rect2 *>(_data._mem)->position.x);
 			hash = hash_djb2_one_float(reinterpret_cast<const Rect2 *>(_data._mem)->position.y, hash);
 			hash = hash_djb2_one_float(reinterpret_cast<const Rect2 *>(_data._mem)->size.x, hash);
 			return hash_djb2_one_float(reinterpret_cast<const Rect2 *>(_data._mem)->size.y, hash);
+		} break;
+		case RECT2I: {
+
+			uint32_t hash = hash_djb2_one_32(reinterpret_cast<const Rect2i *>(_data._mem)->position.x);
+			hash = hash_djb2_one_32(reinterpret_cast<const Rect2i *>(_data._mem)->position.y, hash);
+			hash = hash_djb2_one_32(reinterpret_cast<const Rect2i *>(_data._mem)->size.x, hash);
+			return hash_djb2_one_32(reinterpret_cast<const Rect2i *>(_data._mem)->size.y, hash);
 		} break;
 		case TRANSFORM2D: {
 
@@ -2714,6 +2989,12 @@ uint32_t Variant::hash() const {
 			uint32_t hash = hash_djb2_one_float(reinterpret_cast<const Vector3 *>(_data._mem)->x);
 			hash = hash_djb2_one_float(reinterpret_cast<const Vector3 *>(_data._mem)->y, hash);
 			return hash_djb2_one_float(reinterpret_cast<const Vector3 *>(_data._mem)->z, hash);
+		} break;
+		case VECTOR3I: {
+
+			uint32_t hash = hash_djb2_one_32(reinterpret_cast<const Vector3i *>(_data._mem)->x);
+			hash = hash_djb2_one_32(reinterpret_cast<const Vector3i *>(_data._mem)->y, hash);
+			return hash_djb2_one_32(reinterpret_cast<const Vector3i *>(_data._mem)->z, hash);
 		} break;
 		case PLANE: {
 
@@ -2993,6 +3274,11 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 
 			return hash_compare_vector2(*l, *r);
 		} break;
+		case VECTOR2I: {
+			const Vector2i *l = reinterpret_cast<const Vector2i *>(_data._mem);
+			const Vector2i *r = reinterpret_cast<const Vector2i *>(p_variant._data._mem);
+			return *l == *r;
+		} break;
 
 		case RECT2: {
 			const Rect2 *l = reinterpret_cast<const Rect2 *>(_data._mem);
@@ -3000,6 +3286,12 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 
 			return (hash_compare_vector2(l->position, r->position)) &&
 				   (hash_compare_vector2(l->size, r->size));
+		} break;
+		case RECT2I: {
+			const Rect2i *l = reinterpret_cast<const Rect2i *>(_data._mem);
+			const Rect2i *r = reinterpret_cast<const Rect2i *>(p_variant._data._mem);
+
+			return *l == *r;
 		} break;
 
 		case TRANSFORM2D: {
@@ -3019,6 +3311,12 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 			const Vector3 *r = reinterpret_cast<const Vector3 *>(p_variant._data._mem);
 
 			return hash_compare_vector3(*l, *r);
+		} break;
+		case VECTOR3I: {
+			const Vector3i *l = reinterpret_cast<const Vector3i *>(_data._mem);
+			const Vector3i *r = reinterpret_cast<const Vector3i *>(p_variant._data._mem);
+
+			return *l == *r;
 		} break;
 
 		case PLANE: {

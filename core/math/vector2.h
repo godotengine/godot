@@ -311,10 +311,15 @@ struct Vector2i {
 	bool operator<(const Vector2i &p_vec2) const { return (x == p_vec2.x) ? (y < p_vec2.y) : (x < p_vec2.x); }
 	bool operator>(const Vector2i &p_vec2) const { return (x == p_vec2.x) ? (y > p_vec2.y) : (x > p_vec2.x); }
 
+	bool operator<=(const Vector2i &p_vec2) const { return x == p_vec2.x ? (y <= p_vec2.y) : (x < p_vec2.x); }
+	bool operator>=(const Vector2i &p_vec2) const { return x == p_vec2.x ? (y >= p_vec2.y) : (x > p_vec2.x); }
+
 	bool operator==(const Vector2i &p_vec2) const;
 	bool operator!=(const Vector2i &p_vec2) const;
 
-	real_t get_aspect() const { return width / (real_t)height; }
+	real_t aspect() const { return width / (real_t)height; }
+	Vector2i sign() const { return Vector2i(SGN(x), SGN(y)); }
+	Vector2i abs() const { return Vector2i(ABS(x), ABS(y)); }
 
 	operator String() const { return String::num(x) + ", " + String::num(y); }
 
