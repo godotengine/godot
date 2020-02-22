@@ -15,7 +15,7 @@
 		<method name="add_custom_signal">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Add a custom signal with the specified name to the VisualScript.
@@ -24,7 +24,7 @@
 		<method name="add_function">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Add a function with the specified name to the VisualScript.
@@ -33,7 +33,7 @@
 		<method name="add_node">
 			<return type="void">
 			</return>
-			<argument index="0" name="func" type="String">
+			<argument index="0" name="func" type="StringName">
 			</argument>
 			<argument index="1" name="id" type="int">
 			</argument>
@@ -48,7 +48,7 @@
 		<method name="add_variable">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="default_value" type="Variant" default="null">
 			</argument>
@@ -61,7 +61,7 @@
 		<method name="custom_signal_add_argument">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="type" type="int" enum="Variant.Type">
 			</argument>
@@ -76,7 +76,7 @@
 		<method name="custom_signal_get_argument_count" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Get the count of a custom signal's arguments.
@@ -85,7 +85,7 @@
 		<method name="custom_signal_get_argument_name" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="argidx" type="int">
 			</argument>
@@ -96,7 +96,7 @@
 		<method name="custom_signal_get_argument_type" qualifiers="const">
 			<return type="int" enum="Variant.Type">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="argidx" type="int">
 			</argument>
@@ -107,7 +107,7 @@
 		<method name="custom_signal_remove_argument">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="argidx" type="int">
 			</argument>
@@ -118,7 +118,7 @@
 		<method name="custom_signal_set_argument_name">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="argidx" type="int">
 			</argument>
@@ -131,7 +131,7 @@
 		<method name="custom_signal_set_argument_type">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="argidx" type="int">
 			</argument>
@@ -144,7 +144,7 @@
 		<method name="custom_signal_swap_argument">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="argidx" type="int">
 			</argument>
@@ -157,7 +157,7 @@
 		<method name="data_connect">
 			<return type="void">
 			</return>
-			<argument index="0" name="func" type="String">
+			<argument index="0" name="func" type="StringName">
 			</argument>
 			<argument index="1" name="from_node" type="int">
 			</argument>
@@ -174,7 +174,7 @@
 		<method name="data_disconnect">
 			<return type="void">
 			</return>
-			<argument index="0" name="func" type="String">
+			<argument index="0" name="func" type="StringName">
 			</argument>
 			<argument index="1" name="from_node" type="int">
 			</argument>
@@ -191,7 +191,7 @@
 		<method name="get_function_node_id" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns the id of a function's entry point node.
@@ -200,7 +200,7 @@
 		<method name="get_function_scroll" qualifiers="const">
 			<return type="Vector2">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns the position of the center of the screen for a given function.
@@ -209,7 +209,7 @@
 		<method name="get_node" qualifiers="const">
 			<return type="VisualScriptNode">
 			</return>
-			<argument index="0" name="func" type="String">
+			<argument index="0" name="func" type="StringName">
 			</argument>
 			<argument index="1" name="id" type="int">
 			</argument>
@@ -220,7 +220,7 @@
 		<method name="get_node_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
-			<argument index="0" name="func" type="String">
+			<argument index="0" name="func" type="StringName">
 			</argument>
 			<argument index="1" name="id" type="int">
 			</argument>
@@ -231,7 +231,7 @@
 		<method name="get_variable_default_value" qualifiers="const">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns the default (initial) value of a variable.
@@ -240,7 +240,7 @@
 		<method name="get_variable_export" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns whether a variable is exported.
@@ -249,7 +249,7 @@
 		<method name="get_variable_info" qualifiers="const">
 			<return type="Dictionary">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns the information for a given variable as a dictionary. The information includes its name, type, hint and usage.
@@ -258,7 +258,7 @@
 		<method name="has_custom_signal" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns whether a signal exists with the specified name.
@@ -267,7 +267,7 @@
 		<method name="has_data_connection" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="func" type="String">
+			<argument index="0" name="func" type="StringName">
 			</argument>
 			<argument index="1" name="from_node" type="int">
 			</argument>
@@ -284,7 +284,7 @@
 		<method name="has_function" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns whether a function exists with the specified name.
@@ -293,7 +293,7 @@
 		<method name="has_node" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="func" type="String">
+			<argument index="0" name="func" type="StringName">
 			</argument>
 			<argument index="1" name="id" type="int">
 			</argument>
@@ -304,7 +304,7 @@
 		<method name="has_sequence_connection" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="func" type="String">
+			<argument index="0" name="func" type="StringName">
 			</argument>
 			<argument index="1" name="from_node" type="int">
 			</argument>
@@ -319,7 +319,7 @@
 		<method name="has_variable" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns whether a variable exists with the specified name.
@@ -328,7 +328,7 @@
 		<method name="remove_custom_signal">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Remove a custom signal with the given name.
@@ -337,7 +337,7 @@
 		<method name="remove_function">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Remove a specific function and its nodes from the script.
@@ -346,7 +346,7 @@
 		<method name="remove_node">
 			<return type="void">
 			</return>
-			<argument index="0" name="func" type="String">
+			<argument index="0" name="func" type="StringName">
 			</argument>
 			<argument index="1" name="id" type="int">
 			</argument>
@@ -357,7 +357,7 @@
 		<method name="remove_variable">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Remove a variable with the given name.
@@ -366,9 +366,9 @@
 		<method name="rename_custom_signal">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="new_name" type="String">
+			<argument index="1" name="new_name" type="StringName">
 			</argument>
 			<description>
 				Change the name of a custom signal.
@@ -377,9 +377,9 @@
 		<method name="rename_function">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="new_name" type="String">
+			<argument index="1" name="new_name" type="StringName">
 			</argument>
 			<description>
 				Change the name of a function.
@@ -388,9 +388,9 @@
 		<method name="rename_variable">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="new_name" type="String">
+			<argument index="1" name="new_name" type="StringName">
 			</argument>
 			<description>
 				Change the name of a variable.
@@ -399,7 +399,7 @@
 		<method name="sequence_connect">
 			<return type="void">
 			</return>
-			<argument index="0" name="func" type="String">
+			<argument index="0" name="func" type="StringName">
 			</argument>
 			<argument index="1" name="from_node" type="int">
 			</argument>
@@ -415,7 +415,7 @@
 		<method name="sequence_disconnect">
 			<return type="void">
 			</return>
-			<argument index="0" name="func" type="String">
+			<argument index="0" name="func" type="StringName">
 			</argument>
 			<argument index="1" name="from_node" type="int">
 			</argument>
@@ -430,7 +430,7 @@
 		<method name="set_function_scroll">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="ofs" type="Vector2">
 			</argument>
@@ -441,7 +441,7 @@
 		<method name="set_instance_base_type">
 			<return type="void">
 			</return>
-			<argument index="0" name="type" type="String">
+			<argument index="0" name="type" type="StringName">
 			</argument>
 			<description>
 				Set the base type of the script.
@@ -450,7 +450,7 @@
 		<method name="set_node_position">
 			<return type="void">
 			</return>
-			<argument index="0" name="func" type="String">
+			<argument index="0" name="func" type="StringName">
 			</argument>
 			<argument index="1" name="id" type="int">
 			</argument>
@@ -463,7 +463,7 @@
 		<method name="set_variable_default_value">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="value" type="Variant">
 			</argument>
@@ -474,7 +474,7 @@
 		<method name="set_variable_export">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="enable" type="bool">
 			</argument>
@@ -485,7 +485,7 @@
 		<method name="set_variable_info">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="value" type="Dictionary">
 			</argument>

@@ -13,7 +13,7 @@
 		<method name="add_resource">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="resource" type="Resource">
 			</argument>
@@ -24,7 +24,7 @@
 		<method name="get_resource" qualifiers="const">
 			<return type="Resource">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns the resource associated to [code]name[/code].
@@ -40,7 +40,7 @@
 		<method name="has_resource" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if the preloader contains a resource associated to [code]name[/code].
@@ -49,7 +49,7 @@
 		<method name="remove_resource">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Removes the resource associated to [code]name[/code] from the preloader.
@@ -58,9 +58,9 @@
 		<method name="rename_resource">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="newname" type="String">
+			<argument index="1" name="newname" type="StringName">
 			</argument>
 			<description>
 				Renames a resource inside the preloader from [code]name[/code] to [code]newname[/code].

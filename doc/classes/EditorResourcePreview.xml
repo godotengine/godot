@@ -34,7 +34,7 @@
 			</argument>
 			<argument index="1" name="receiver" type="Object">
 			</argument>
-			<argument index="2" name="receiver_func" type="String">
+			<argument index="2" name="receiver_func" type="StringName">
 			</argument>
 			<argument index="3" name="userdata" type="Variant">
 			</argument>
@@ -49,7 +49,7 @@
 			</argument>
 			<argument index="1" name="receiver" type="Object">
 			</argument>
-			<argument index="2" name="receiver_func" type="String">
+			<argument index="2" name="receiver_func" type="StringName">
 			</argument>
 			<argument index="3" name="userdata" type="Variant">
 			</argument>

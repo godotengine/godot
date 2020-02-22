@@ -10,9 +10,9 @@
 		<method name="call_native">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="calling_type" type="String">
+			<argument index="0" name="calling_type" type="StringName">
 			</argument>
-			<argument index="1" name="procedure_name" type="String">
+			<argument index="1" name="procedure_name" type="StringName">
 			</argument>
 			<argument index="2" name="arguments" type="Array">
 			</argument>

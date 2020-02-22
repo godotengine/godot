@@ -14,9 +14,9 @@
 		<method name="add_message">
 			<return type="void">
 			</return>
-			<argument index="0" name="src_message" type="String">
+			<argument index="0" name="src_message" type="StringName">
 			</argument>
-			<argument index="1" name="xlated_message" type="String">
+			<argument index="1" name="xlated_message" type="StringName">
 			</argument>
 			<description>
 				Adds a message if nonexistent, followed by its translation.
@@ -25,16 +25,16 @@
 		<method name="erase_message">
 			<return type="void">
 			</return>
-			<argument index="0" name="src_message" type="String">
+			<argument index="0" name="src_message" type="StringName">
 			</argument>
 			<description>
 				Erases a message.
 			</description>
 		</method>
 		<method name="get_message" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
-			<argument index="0" name="src_message" type="String">
+			<argument index="0" name="src_message" type="StringName">
 			</argument>
 			<description>
 				Returns a message's translation.

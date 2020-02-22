@@ -90,7 +90,7 @@
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="1.0">
 			The rate at which objects stop spinning in this area. Represents the angular velocity lost per second. Values range from [code]0[/code] (no damping) to [code]1[/code] (full damping).
 		</member>
-		<member name="audio_bus_name" type="String" setter="set_audio_bus_name" getter="get_audio_bus_name" default="&quot;Master&quot;">
+		<member name="audio_bus_name" type="StringName" setter="set_audio_bus_name" getter="get_audio_bus_name" default="@&quot;Master&quot;">
 			The name of the area's audio bus.
 		</member>
 		<member name="audio_bus_override" type="bool" setter="set_audio_bus_override" getter="is_overriding_audio_bus" default="false">

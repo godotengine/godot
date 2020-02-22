@@ -21,9 +21,9 @@
 		<method name="clear_color">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String">
+			<argument index="1" name="type" type="StringName">
 			</argument>
 			<description>
 				Clears the [Color] at [code]name[/code] if the theme has [code]type[/code].
@@ -32,9 +32,9 @@
 		<method name="clear_constant">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String">
+			<argument index="1" name="type" type="StringName">
 			</argument>
 			<description>
 				Clears the constant at [code]name[/code] if the theme has [code]type[/code].
@@ -43,9 +43,9 @@
 		<method name="clear_font">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String">
+			<argument index="1" name="type" type="StringName">
 			</argument>
 			<description>
 				Clears the [Font] at [code]name[/code] if the theme has [code]type[/code].
@@ -54,9 +54,9 @@
 		<method name="clear_icon">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String">
+			<argument index="1" name="type" type="StringName">
 			</argument>
 			<description>
 				Clears the icon at [code]name[/code] if the theme has [code]type[/code].
@@ -65,9 +65,9 @@
 		<method name="clear_stylebox">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String">
+			<argument index="1" name="type" type="StringName">
 			</argument>
 			<description>
 				Clears [StyleBox] at [code]name[/code] if the theme has [code]type[/code].
@@ -92,9 +92,9 @@
 		<method name="get_color" qualifiers="const">
 			<return type="Color">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String">
+			<argument index="1" name="type" type="StringName">
 			</argument>
 			<description>
 				Returns the [Color] at [code]name[/code] if the theme has [code]type[/code].
@@ -112,9 +112,9 @@
 		<method name="get_constant" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String">
+			<argument index="1" name="type" type="StringName">
 			</argument>
 			<description>
 				Returns the constant at [code]name[/code] if the theme has [code]type[/code].
@@ -132,9 +132,9 @@
 		<method name="get_font" qualifiers="const">
 			<return type="Font">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String">
+			<argument index="1" name="type" type="StringName">
 			</argument>
 			<description>
 				Returns the [Font] at [code]name[/code] if the theme has [code]type[/code].
@@ -152,9 +152,9 @@
 		<method name="get_icon" qualifiers="const">
 			<return type="Texture2D">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String">
+			<argument index="1" name="type" type="StringName">
 			</argument>
 			<description>
 				Returns the icon [Texture2D] at [code]name[/code] if the theme has [code]type[/code].
@@ -172,9 +172,9 @@
 		<method name="get_stylebox" qualifiers="const">
 			<return type="StyleBox">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String">
+			<argument index="1" name="type" type="StringName">
 			</argument>
 			<description>
 				Returns the icon [StyleBox] at [code]name[/code] if the theme has [code]type[/code].
@@ -208,9 +208,9 @@
 		<method name="has_color" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String">
+			<argument index="1" name="type" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if [Color] with [code]name[/code] is in [code]type[/code].
@@ -220,9 +220,9 @@
 		<method name="has_constant" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String">
+			<argument index="1" name="type" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if constant with [code]name[/code] is in [code]type[/code].
@@ -232,9 +232,9 @@
 		<method name="has_font" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String">
+			<argument index="1" name="type" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if [Font] with [code]name[/code] is in [code]type[/code].
@@ -244,9 +244,9 @@
 		<method name="has_icon" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String">
+			<argument index="1" name="type" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if icon [Texture2D] with [code]name[/code] is in [code]type[/code].
@@ -256,9 +256,9 @@
 		<method name="has_stylebox" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String">
+			<argument index="1" name="type" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if [StyleBox] with [code]name[/code] is in [code]type[/code].
@@ -268,9 +268,9 @@
 		<method name="set_color">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String">
+			<argument index="1" name="type" type="StringName">
 			</argument>
 			<argument index="2" name="color" type="Color">
 			</argument>
@@ -282,9 +282,9 @@
 		<method name="set_constant">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String">
+			<argument index="1" name="type" type="StringName">
 			</argument>
 			<argument index="2" name="constant" type="int">
 			</argument>
@@ -296,9 +296,9 @@
 		<method name="set_font">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String">
+			<argument index="1" name="type" type="StringName">
 			</argument>
 			<argument index="2" name="font" type="Font">
 			</argument>
@@ -310,9 +310,9 @@
 		<method name="set_icon">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String">
+			<argument index="1" name="type" type="StringName">
 			</argument>
 			<argument index="2" name="texture" type="Texture2D">
 			</argument>
@@ -324,9 +324,9 @@
 		<method name="set_stylebox">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String">
+			<argument index="1" name="type" type="StringName">
 			</argument>
 			<argument index="2" name="texture" type="StyleBox">
 			</argument>

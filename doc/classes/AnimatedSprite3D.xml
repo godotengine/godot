@@ -19,7 +19,7 @@
 		<method name="play">
 			<return type="void">
 			</return>
-			<argument index="0" name="anim" type="String" default="&quot;&quot;">
+			<argument index="0" name="anim" type="StringName" default="@&quot;&quot;">
 			</argument>
 			<description>
 				Plays the animation named [code]anim[/code]. If no [code]anim[/code] is provided, the current animation is played.
@@ -34,7 +34,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="animation" type="String" setter="set_animation" getter="get_animation" default="&quot;default&quot;">
+		<member name="animation" type="StringName" setter="set_animation" getter="get_animation" default="@&quot;default&quot;">
 			The current animation from the [code]frames[/code] resource. If this value changes, the [code]frame[/code] counter is reset.
 		</member>
 		<member name="frame" type="int" setter="set_frame" getter="get_frame" default="0">

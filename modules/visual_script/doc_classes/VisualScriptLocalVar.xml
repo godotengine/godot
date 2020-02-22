@@ -18,7 +18,7 @@
 		<member name="type" type="int" setter="set_var_type" getter="get_var_type" enum="Variant.Type" default="0">
 			The local variable's type.
 		</member>
-		<member name="var_name" type="String" setter="set_var_name" getter="get_var_name" default="&quot;new_local&quot;">
+		<member name="var_name" type="StringName" setter="set_var_name" getter="get_var_name" default="@&quot;new_local&quot;">
 			The local variable's name.
 		</member>
 	</members>

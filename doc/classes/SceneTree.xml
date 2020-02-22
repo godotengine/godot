@@ -16,9 +16,9 @@
 		<method name="call_group" qualifiers="vararg">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="group" type="String">
+			<argument index="0" name="group" type="StringName">
 			</argument>
-			<argument index="1" name="method" type="String">
+			<argument index="1" name="method" type="StringName">
 			</argument>
 			<description>
 				Calls [code]method[/code] on each member of the given group.
@@ -29,9 +29,9 @@
 			</return>
 			<argument index="0" name="flags" type="int">
 			</argument>
-			<argument index="1" name="group" type="String">
+			<argument index="1" name="group" type="StringName">
 			</argument>
-			<argument index="2" name="method" type="String">
+			<argument index="2" name="method" type="StringName">
 			</argument>
 			<description>
 				Calls [code]method[/code] on each member of the given group, respecting the given [enum GroupCallFlags].
@@ -106,7 +106,7 @@
 		<method name="get_nodes_in_group">
 			<return type="Array">
 			</return>
-			<argument index="0" name="group" type="String">
+			<argument index="0" name="group" type="StringName">
 			</argument>
 			<description>
 				Returns a list of all nodes assigned to the given group.
@@ -122,7 +122,7 @@
 		<method name="has_group" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if the given group exists.
@@ -152,7 +152,7 @@
 		<method name="notify_group">
 			<return type="void">
 			</return>
-			<argument index="0" name="group" type="String">
+			<argument index="0" name="group" type="StringName">
 			</argument>
 			<argument index="1" name="notification" type="int">
 			</argument>
@@ -165,7 +165,7 @@
 			</return>
 			<argument index="0" name="call_flags" type="int">
 			</argument>
-			<argument index="1" name="group" type="String">
+			<argument index="1" name="group" type="StringName">
 			</argument>
 			<argument index="2" name="notification" type="int">
 			</argument>
@@ -212,7 +212,7 @@
 		<method name="set_group">
 			<return type="void">
 			</return>
-			<argument index="0" name="group" type="String">
+			<argument index="0" name="group" type="StringName">
 			</argument>
 			<argument index="1" name="property" type="String">
 			</argument>
@@ -227,7 +227,7 @@
 			</return>
 			<argument index="0" name="call_flags" type="int">
 			</argument>
-			<argument index="1" name="group" type="String">
+			<argument index="1" name="group" type="StringName">
 			</argument>
 			<argument index="2" name="property" type="String">
 			</argument>

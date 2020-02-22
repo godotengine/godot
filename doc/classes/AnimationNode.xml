@@ -23,7 +23,7 @@
 		<method name="blend_animation">
 			<return type="void">
 			</return>
-			<argument index="0" name="animation" type="String">
+			<argument index="0" name="animation" type="StringName">
 			</argument>
 			<argument index="1" name="time" type="float">
 			</argument>
@@ -59,7 +59,7 @@
 		<method name="blend_node">
 			<return type="float">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="node" type="AnimationNode">
 			</argument>
@@ -119,7 +119,7 @@
 		<method name="get_parameter" qualifiers="const">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Gets the value of a parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
@@ -128,7 +128,7 @@
 		<method name="get_parameter_default_value" qualifiers="virtual">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Gets the default value of a parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
@@ -142,7 +142,7 @@
 			</description>
 		</method>
 		<method name="has_filter" qualifiers="virtual">
-			<return type="String">
+			<return type="bool">
 			</return>
 			<description>
 				Returns [code]true[/code] whether you want the blend tree editor to display filter editing on this node.
@@ -193,7 +193,7 @@
 		<method name="set_parameter">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="value" type="Variant">
 			</argument>

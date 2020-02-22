@@ -37,7 +37,7 @@
 			</description>
 		</method>
 		<method name="get_connection_method" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -46,7 +46,7 @@
 			</description>
 		</method>
 		<method name="get_connection_signal" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -117,7 +117,7 @@
 			</description>
 		</method>
 		<method name="get_node_name" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -157,7 +157,7 @@
 			</description>
 		</method>
 		<method name="get_node_property_name" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -179,7 +179,7 @@
 			</description>
 		</method>
 		<method name="get_node_type" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>

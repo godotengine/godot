@@ -72,7 +72,7 @@
 			</description>
 		</method>
 		<method name="_get_input_port_name" qualifiers="virtual">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>
@@ -108,7 +108,7 @@
 			</description>
 		</method>
 		<method name="_get_output_port_name" qualifiers="virtual">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>

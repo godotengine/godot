@@ -26,7 +26,7 @@
 			</description>
 		</method>
 		<method name="get_instance_base_type" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<description>
 				Returns the script's base type.
@@ -35,7 +35,7 @@
 		<method name="get_property_default_value">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="property" type="String">
+			<argument index="0" name="property" type="StringName">
 			</argument>
 			<description>
 			</description>
@@ -67,7 +67,7 @@
 		<method name="has_script_signal" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="signal_name" type="String">
+			<argument index="0" name="signal_name" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if the script, or a base class, defines a signal with the given name.

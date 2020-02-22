@@ -58,7 +58,7 @@
 		<member name="buffering_msec" type="int" setter="set_buffering_msec" getter="get_buffering_msec" default="500">
 			Amount of time in milliseconds to store in buffer while playing.
 		</member>
-		<member name="bus" type="String" setter="set_bus" getter="get_bus" default="&quot;Master&quot;">
+		<member name="bus" type="StringName" setter="set_bus" getter="get_bus" default="@&quot;Master&quot;">
 			Audio bus to use for sound playback.
 		</member>
 		<member name="expand" type="bool" setter="set_expand" getter="has_expand" default="true">

@@ -76,7 +76,7 @@
 			</description>
 		</signal>
 		<signal name="custom_action">
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<description>
 				Emitted when a custom button is pressed. See [method add_button].

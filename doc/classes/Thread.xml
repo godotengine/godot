@@ -29,7 +29,7 @@
 			</return>
 			<argument index="0" name="instance" type="Object">
 			</argument>
-			<argument index="1" name="method" type="String">
+			<argument index="1" name="method" type="StringName">
 			</argument>
 			<argument index="2" name="userdata" type="Variant" default="null">
 			</argument>

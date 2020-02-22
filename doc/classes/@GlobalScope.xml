@@ -1507,43 +1507,49 @@
 		<constant name="TYPE_COLOR" value="14" enum="Variant.Type">
 			Variable is of type [Color].
 		</constant>
-		<constant name="TYPE_NODE_PATH" value="15" enum="Variant.Type">
+		<constant name="TYPE_STRING_NAME" value="15" enum="Variant.Type">
+		</constant>
+		<constant name="TYPE_NODE_PATH" value="16" enum="Variant.Type">
 			Variable is of type [NodePath].
 		</constant>
-		<constant name="TYPE_RID" value="16" enum="Variant.Type">
+		<constant name="TYPE_RID" value="17" enum="Variant.Type">
 			Variable is of type [RID].
 		</constant>
-		<constant name="TYPE_OBJECT" value="17" enum="Variant.Type">
+		<constant name="TYPE_OBJECT" value="18" enum="Variant.Type">
 			Variable is of type [Object].
 		</constant>
-		<constant name="TYPE_DICTIONARY" value="18" enum="Variant.Type">
+		<constant name="TYPE_CALLABLE" value="19" enum="Variant.Type">
+		</constant>
+		<constant name="TYPE_SIGNAL" value="20" enum="Variant.Type">
+		</constant>
+		<constant name="TYPE_DICTIONARY" value="21" enum="Variant.Type">
 			Variable is of type [Dictionary].
 		</constant>
-		<constant name="TYPE_ARRAY" value="19" enum="Variant.Type">
+		<constant name="TYPE_ARRAY" value="22" enum="Variant.Type">
 			Variable is of type [Array].
 		</constant>
-		<constant name="TYPE_RAW_ARRAY" value="20" enum="Variant.Type">
+		<constant name="TYPE_RAW_ARRAY" value="23" enum="Variant.Type">
 			Variable is of type [PackedByteArray].
 		</constant>
-		<constant name="TYPE_INT_ARRAY" value="21" enum="Variant.Type">
+		<constant name="TYPE_INT_ARRAY" value="24" enum="Variant.Type">
 			Variable is of type [PackedIntArray].
 		</constant>
-		<constant name="TYPE_REAL_ARRAY" value="22" enum="Variant.Type">
+		<constant name="TYPE_REAL_ARRAY" value="25" enum="Variant.Type">
 			Variable is of type [PackedRealArray].
 		</constant>
-		<constant name="TYPE_STRING_ARRAY" value="23" enum="Variant.Type">
+		<constant name="TYPE_STRING_ARRAY" value="26" enum="Variant.Type">
 			Variable is of type [PackedStringArray].
 		</constant>
-		<constant name="TYPE_VECTOR2_ARRAY" value="24" enum="Variant.Type">
+		<constant name="TYPE_VECTOR2_ARRAY" value="27" enum="Variant.Type">
 			Variable is of type [PackedVector2Array].
 		</constant>
-		<constant name="TYPE_VECTOR3_ARRAY" value="25" enum="Variant.Type">
+		<constant name="TYPE_VECTOR3_ARRAY" value="28" enum="Variant.Type">
 			Variable is of type [PackedVector3Array].
 		</constant>
-		<constant name="TYPE_COLOR_ARRAY" value="26" enum="Variant.Type">
+		<constant name="TYPE_COLOR_ARRAY" value="29" enum="Variant.Type">
 			Variable is of type [PackedColorArray].
 		</constant>
-		<constant name="TYPE_MAX" value="27" enum="Variant.Type">
+		<constant name="TYPE_MAX" value="30" enum="Variant.Type">
 			Represents the size of the [enum Variant.Type] enum.
 		</constant>
 		<constant name="OP_EQUAL" value="0" enum="Variant.Operator">
