@@ -706,9 +706,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color_disabled", "TabContainer", control_font_color_disabled);
 
 	theme->set_constant("side_margin", "TabContainer", 8 * scale);
-	theme->set_constant("top_margin", "TabContainer", 24 * scale);
-	theme->set_constant("label_valign_fg", "TabContainer", 0 * scale);
-	theme->set_constant("label_valign_bg", "TabContainer", 2 * scale);
 	theme->set_constant("hseparation", "TabContainer", 4 * scale);
 
 	// Tabs
@@ -732,9 +729,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color_bg", "Tabs", control_font_color_low);
 	theme->set_color("font_color_disabled", "Tabs", control_font_color_disabled);
 
-	theme->set_constant("top_margin", "Tabs", 24 * scale);
-	theme->set_constant("label_valign_fg", "Tabs", 0 * scale);
-	theme->set_constant("label_valign_bg", "Tabs", 2 * scale);
 	theme->set_constant("hseparation", "Tabs", 4 * scale);
 
 	// Separators
