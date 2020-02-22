@@ -310,17 +310,17 @@ if selected_platform in platform_list:
     env.Append(LINKFLAGS=str(LINKFLAGS).split())
 
     # Set our C and C++ standard requirements.
-    # Prepending to make it possible to override
+    # C++17 is required as we need guaranteed copy elision as per GH-36436.
+    # Prepending to make it possible to override.
     if not env.msvc:
         # Specifying GNU extensions support explicitly, which are supported by
-        # both GCC and Clang. This mirrors GCC and Clang's current default
-        # compile flags if no -std is specified.
+        # both GCC and Clang. Both currently default to gnu11 and gnu++14.
         env.Prepend(CFLAGS=['-std=gnu11'])
-        env.Prepend(CXXFLAGS=['-std=gnu++14'])
+        env.Prepend(CXXFLAGS=['-std=gnu++17'])
     else:
         # MSVC doesn't have clear C standard support, /std only covers C++.
         # We apply it to CCFLAGS (both C and C++ code) in case it impacts C features.
-        env.Prepend(CCFLAGS=['/std:c++14', '/permissive-'])
+        env.Prepend(CCFLAGS=['/std:c++17', '/permissive-'])
 
     # Platform specific flags
     flag_list = platform_flags[selected_platform]
