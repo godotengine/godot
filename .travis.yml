@@ -71,6 +71,7 @@ matrix:
       stage: build
       env: PLATFORM=osx TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-clang EXTRA_ARGS="warnings=extra werror=yes"
       os: osx
+      osx_image: xcode11.3
       compiler: clang
       addons:
         homebrew:
@@ -84,6 +85,7 @@ matrix:
 #      stage: build
 #      env: PLATFORM=iphone TOOLS=no TARGET=debug CACHE_NAME=${PLATFORM}-clang
 #      os: osx
+#      osx_image: xcode11.3
 #      compiler: clang
 #      addons:
 #        homebrew:
