@@ -793,7 +793,6 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 						float owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);
 						cbk.valid_depth = MAX(owc_margin, p_margin); //user specified, but never less than actual margin or it won't work
-						cbk.invalid_by_dir = 0;
 
 						if (col_obj->get_type() == CollisionObject2DSW::TYPE_BODY) {
 							const Body2DSW *b = static_cast<const Body2DSW *>(col_obj);
@@ -801,16 +800,19 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 								//fix for moving platforms (kinematic and dynamic), margin is increased by how much it moved in the given direction
 								Vector2 lv = b->get_linear_velocity();
 								//compute displacement from linear velocity
-								Vector2 motion = lv * Physics2DDirectBodyStateSW::singleton->step;
-								float motion_len = motion.length();
-								motion.normalize();
-								cbk.valid_depth += motion_len * MAX(motion.dot(-cbk.valid_dir), 0.0);
+								Vector2 b_motion = lv * Physics2DDirectBodyStateSW::singleton->step;
+								float b_depth = b_motion.dot(-cbk.valid_dir);
+								cbk.valid_depth += MAX(b_depth, 0.0);
+
+								//we need take out own movement into account
+								Vector2 a_motion = p_motion;
+								float a_depth = MAX(a_motion.dot(-cbk.valid_dir), 0.0);
+								cbk.valid_depth += a_depth;
 							}
 						}
 					} else {
 						cbk.valid_dir = Vector2();
 						cbk.valid_depth = 0;
-						cbk.invalid_by_dir = 0;
 					}
 
 					int current_passed = cbk.passed; //save how many points passed collision
@@ -848,7 +850,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 				Vector2 a = sr[i * 2 + 0];
 				Vector2 b = sr[i * 2 + 1];
-				recover_motion += (b - a) * 0.4;
+				recover_motion += (b - a) / cbk.amount;
 			}
 
 			if (recover_motion == Vector2()) {
