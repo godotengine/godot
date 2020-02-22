@@ -67,6 +67,8 @@ const char *OSIPhone::get_video_driver_name(int p_driver) const {
 	switch (p_driver) {
 		case VIDEO_DRIVER_GLES2:
 			return "GLES2";
+		case VIDEO_DRIVER_VULKAN:
+			return "Vulkan";
 	}
 	ERR_FAIL_V_MSG(NULL, "Invalid video driver index: " + itos(p_driver) + ".");
 };
@@ -151,7 +153,7 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 
 		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
 		rendering_device_vulkan->initialize(context_vulkan);
-		
+
 		RasterizerRD::make_current();
 	}
 #endif
@@ -388,6 +390,21 @@ void OSIPhone::finalize() {
 	memdelete(visual_server);
 	//	memdelete(rasterizer);
 
+#if defined(VULKAN_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_VULKAN) {
+		if (rendering_device_vulkan) {
+			rendering_device_vulkan->finalize();
+			memdelete(rendering_device_vulkan);
+			rendering_device_vulkan = NULL;
+		}
+
+		if (context_vulkan) {
+			memdelete(context_vulkan);
+			context_vulkan = NULL;
+		}
+	}
+#endif
+
 	// Free unhandled events before close
 	for (int i = 0; i < MAX_EVENTS; i++) {
 		event_queue[i].unref();
@@ -456,6 +473,12 @@ Error OSIPhone::get_dynamic_library_symbol_handle(void *p_library_handle, const 
 void OSIPhone::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 
 	video_mode = p_video_mode;
+
+#if defined(VULKAN_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_VULKAN && context_vulkan) {
+		context_vulkan->window_resize(0, video_mode.width, video_mode.height);
+	}
+#endif
 };
 
 OS::VideoMode OSIPhone::get_video_mode(int p_screen) const {
