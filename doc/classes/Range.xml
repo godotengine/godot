@@ -60,6 +60,8 @@
 	</members>
 	<signals>
 		<signal name="changed">
+			<argument index="0" name="value" type="float">
+			</argument>
 			<description>
 				Emitted when [member min_value], [member max_value], [member page], or [member step] change.
 			</description>
