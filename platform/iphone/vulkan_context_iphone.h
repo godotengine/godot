@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  vulkan_context_osx.h                                                 */
+/*  vulkan_context_iphone.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -32,7 +32,6 @@
 #define VULKAN_CONTEXT_IPHONE_H
 
 #include "drivers/vulkan/vulkan_context.h"
-// #import <UIKit/UIKit.h>
 
 class VulkanContextIPhone : public VulkanContext {
 
