@@ -343,7 +343,7 @@ StringName GDScriptTokenizer::get_token_literal(int p_offset) const {
 				default: {
 				}
 			}
-		}
+		} break;
 		case TK_OP_AND:
 		case TK_OP_OR:
 			break; // Don't get into default, since they can be non-literal
@@ -539,7 +539,7 @@ void GDScriptTokenizerText::_advance() {
 					ignore_warnings = true;
 				}
 #endif // DEBUG_ENABLED
-				FALLTHROUGH;
+				[[fallthrough]];
 			}
 			case '\n': {
 				line++;
@@ -756,7 +756,7 @@ void GDScriptTokenizerText::_advance() {
 				}
 				INCPOS(1);
 				is_string_name = true;
-				FALLTHROUGH;
+				[[fallthrough]];
 			case '\'':
 			case '"': {
 

@@ -106,7 +106,7 @@ void Button::_notification(int p_what) {
 
 						break;
 					}
-					FALLTHROUGH;
+					[[fallthrough]];
 				}
 				case DRAW_PRESSED: {
 

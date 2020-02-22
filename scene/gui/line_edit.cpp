@@ -355,7 +355,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 						handled = false;
 						break;
 					}
-					FALLTHROUGH;
+					[[fallthrough]];
 				}
 				case KEY_LEFT: {
 #ifndef APPLE_STYLE_KEYS
@@ -411,7 +411,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 						handled = false;
 						break;
 					}
-					FALLTHROUGH;
+					[[fallthrough]];
 				}
 				case KEY_RIGHT: {
 #ifndef APPLE_STYLE_KEYS
@@ -530,7 +530,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 						handled = false;
 						break;
 					}
-					FALLTHROUGH;
+					[[fallthrough]];
 				}
 				case KEY_HOME: {
 
@@ -543,7 +543,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 						handled = false;
 						break;
 					}
-					FALLTHROUGH;
+					[[fallthrough]];
 				}
 				case KEY_END: {
 

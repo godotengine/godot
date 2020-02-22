@@ -216,7 +216,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 				}
 
 				string_name = true;
-				FALLTHROUGH;
+				[[fallthrough]];
 			}
 			case '"': {
 
