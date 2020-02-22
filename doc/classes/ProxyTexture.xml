@@ -1,15 +1,61 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ProxyTexture" inherits="Texture2D" version="4.0">
 	<brief_description>
+		Represents and references a [Texture2D], which can be changed anytime, and has its own [RID].
 	</brief_description>
 	<description>
+		A [ProxyTexture] is a representative for any [Texture2D] with its own [RID]. It will take the [Texture2D] as a reference, but it will not copy the data, ie. they share the same texture data. You can keep the same [ProxyTexture], but change the referenced [Texture2D] whenever you like.
+		By default, the [ProxyTexture] will not be a render target.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_width" qualifiers="const">
+			<return type="int" default="1">
+			</return>
+			<description>
+				Returns the width of its referenced [Texture2D].
+				If [member base] is [code]NULL[/code], it will return [code]1[/code].
+				If this [ProxyTexture] has a placeholder [Texture2D], it will return [code]4[/code].
+			</description>
+		</method>
+		<method name="get_height" qualifiers="const">
+			<return type="int" default="1">
+			</return>
+			<description>
+				Returns the height of its referenced [Texture2D].
+				If [member base] is [code]NULL[/code], it will return [code]1[/code].
+				If this [ProxyTexture] has a placeholder [Texture2D], it will return [code]4[/code].
+			</description>
+		</method>
+		<method name="get_rid" qualifiers="const">
+			<return type="RID">
+			</return>
+			<description>
+				If [member proxy] is [code]0[/code] (ie. [member base] is [code]NULL[/code]), it will create a new [Texture2D] placeholder and reference it in its member [member proxy_ph]. This placeholder has the size of 4x4 pixels in color [code]Color(1, 0, 1, 1)[/code] and [code]Image::FORMAT_RGBA8[/code]. Thereafter, a proxy will be created and set to member [member proxy], therefore we get a valid [RID] for our [ProxyTexture] object.
+				This also means: If this object has a valid [Texture2D] reference and you set a new invalid reference: As soon as [method get_rid] is called, this object will receive a new [RID].
+			</description>
+		</method>
+		<method name="has_alpha" qualifiers="const">
+			<return type="bool" default="false">
+			</return>
+			<description>
+				Returns the referenced [Texture2D]'s alpha value.
+				If member [member base] is [code]NULL[/code], it will always return [code]false[/code].
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="base" type="Texture2D" setter="set_base" getter="get_base">
+			The first time the setter method is called and passed a valid [Texture2D] reference, this [ProxyTexture] gets its [RID] written to member [member proxy].
+			Every subsequent call of the setter method (while passing a valid [Texture2D] reference) will overwrite its referenced [Texture2D], but keep its original [RID]. If it had a placeholder [Texture2D], the allocated memory will be freed.
+			If the given texture is [code]NULL[/code] the member [member base] will be set to [code]NULL[/code].
+			Passing this [ProxyTexture] as a texture reference will fail.
+		</member>
+		<member name="proxy" type="RID" getter="get_rid">
+		</member>
+		<member name="proxy_ph" type="RID">
+			[Texture2D] placeholder. Is generated when [method get_rid] is called, but [member proxy] has the [RID] value [code]0[/code].
 		</member>
 	</members>
 	<constants>
