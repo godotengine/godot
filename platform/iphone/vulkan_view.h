@@ -93,7 +93,7 @@
 - (BOOL)hasText;
 - (void)insertText:(NSString *)p_text;
 
-- (id)initGLES;
+- (id)initVulkan;
 - (BOOL)createFramebuffer;
 - (void)destroyFramebuffer;
 

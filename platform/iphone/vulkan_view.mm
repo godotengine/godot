@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "gl_view.h"
+#import "vulkan_view.h"
 
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
@@ -148,7 +148,7 @@
 		OS::get_singleton()->set_video_mode(vm);
 		OSIPhone::get_singleton()->set_base_framebuffer(viewFramebuffer);
 	};
-	gl_view_base_fb = viewFramebuffer;
+	// gl_view_base_fb = viewFramebuffer;
 
 	return YES;
 }
@@ -233,14 +233,14 @@
 	[EAGLContext setCurrentContext:context];
 
 	// If our drawing delegate needs to have the view setup, then call -setupView: and flag that it won't need to be called again.
-	if (!delegateSetup) {
-		[delegate setupView:self];
-		delegateSetup = YES;
-	}
+	// if (!delegateSetup) {
+	// 	[delegate setupView:self];
+	// 	delegateSetup = YES;
+	// }
 
 	glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
 
-	[delegate drawView:self];
+	// [delegate drawView:self];
 
 	glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
 	[context presentRenderbuffer:GL_RENDERBUFFER_OES];
@@ -255,13 +255,13 @@
 // When created via code however, we get initWithFrame
 - (id)initWithFrame:(CGRect)frame {
 	self = [super initWithFrame:frame];
-	_instance = self;
+	// _instance = self;
 	printf("after init super %p\n", self);
 	if (self != nil) {
-		self = [self initGLES];
+		self = [self initVulkan];
 		printf("after init gles %p\n", self);
 	}
-	init_touches();
+	// init_touches();
 	self.multipleTouchEnabled = YES;
 	self.autocorrectionType = UITextAutocorrectionTypeNo;
 
