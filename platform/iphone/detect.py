@@ -149,7 +149,7 @@ def configure(env):
                           '-framework', 'Foundation',
                           '-framework', 'GameController',
                           '-framework', 'MediaPlayer',
-                          '-framework', 'OpenGLES',
+                          '-framework', 'Metal',
                           '-framework', 'QuartzCore',
                           '-framework', 'Security',
                           '-framework', 'SystemConfiguration',
@@ -170,11 +170,18 @@ def configure(env):
         env.Append(CPPDEFINES=['ICLOUD_ENABLED'])
 
     env.Prepend(CPPPATH=['$IPHONESDK/usr/include',
-                         '$IPHONESDK/System/Library/Frameworks/OpenGLES.framework/Headers',
                          '$IPHONESDK/System/Library/Frameworks/AudioUnit.framework/Headers',
                          ])
 
     env['ENV']['CODESIGN_ALLOCATE'] = '/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/codesign_allocate'
 
     env.Prepend(CPPPATH=['#platform/iphone'])
-    env.Append(CPPDEFINES=['IPHONE_ENABLED', 'UNIX_ENABLED', 'GLES_ENABLED', 'COREAUDIO_ENABLED'])
+    env.Append(CPPDEFINES=['IPHONE_ENABLED', 'UNIX_ENABLED', 'COREAUDIO_ENABLED'])
+
+    env.Append(CPPDEFINES=['VULKAN_ENABLED'])
+    env.Append(LINKFLAGS=['-framework', 'IOSurface'])
+    if (env['use_static_mvk']):
+        env.Append(LINKFLAGS=['-framework', 'MoltenVK'])
+        env['builtin_vulkan'] = False
+    elif not env['builtin_vulkan']:
+        env.Append(LIBS=['vulkan'])
