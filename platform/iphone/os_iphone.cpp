@@ -111,30 +111,50 @@ int OSIPhone::get_current_video_driver() const {
 
 Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 	video_driver_index = p_video_driver;
-
-#if defined(OPENGL_ENABLED)
-	bool gl_initialization_error = false;
-
+	
 	// FIXME: Add Vulkan support via MoltenVK. Add fallback code back?
 
-	if (RasterizerGLES2::is_viable() == OK) {
-		RasterizerGLES2::register_config();
-		RasterizerGLES2::make_current();
-	} else {
-		gl_initialization_error = true;
-	}
+#if defined(OPENGL_ENABLED)
+	if (p_video_driver == VIDEO_DRIVER_GLES2) {
+		bool gl_initialization_error = false;
 
-	if (gl_initialization_error) {
-		OS::get_singleton()->alert("Your device does not support any of the supported OpenGL versions.",
-				"Unable to initialize video driver");
-		return ERR_UNAVAILABLE;
+		if (RasterizerGLES2::is_viable() == OK) {
+			RasterizerGLES2::register_config();
+			RasterizerGLES2::make_current();
+		} else {
+			gl_initialization_error = true;
+		}
+
+		if (gl_initialization_error) {
+			OS::get_singleton()->alert("Your device does not support any of the supported OpenGL versions.",
+					"Unable to initialize video driver");
+			return ERR_UNAVAILABLE;
+		}
 	}
 #endif
 
 #if defined(VULKAN_ENABLED)
-	RasterizerRD::make_current();
-#endif
+	if (p_video_driver == VIDEO_DRIVER_VULKAN) {
 
+		context_vulkan = memnew(VulkanContextIPhone);
+		if (context_vulkan->initialize() != OK) {
+			memdelete(context_vulkan);
+			context_vulkan = NULL;
+			ERR_FAIL_V(ERR_UNAVAILABLE);
+		}
+
+		if (context_vulkan->window_create(NULL, p_desired.width, p_desired.height) == -1) {
+			memdelete(context_vulkan);
+			context_vulkan = NULL;
+			ERR_FAIL_V(ERR_UNAVAILABLE);
+		}
+
+		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
+		rendering_device_vulkan->initialize(context_vulkan);
+		
+		RasterizerRD::make_current();
+	}
+#endif
 	
 	visual_server = memnew(VisualServerRaster);
 	// FIXME: Reimplement threaded rendering
@@ -145,8 +165,10 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	//visual_server->cursor_set_visible(false, 0);
 
 #if defined(OPENGL_ENABLED)
-	// reset this to what it should be, it will have been set to 0 after visual_server->init() is called
-	RasterizerStorageGLES2::system_fbo = gl_view_base_fb;
+	if (p_video_driver == VIDEO_DRIVER_GLES2) {
+		// reset this to what it should be, it will have been set to 0 after visual_server->init() is called
+		RasterizerStorageGLES2::system_fbo = gl_view_base_fb;	
+	}
 #endif
 
 	AudioDriverManager::initialize(p_audio_driver);
