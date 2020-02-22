@@ -1598,8 +1598,13 @@ void ProxyTexture::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_base", "base"), &ProxyTexture::set_base);
 	ClassDB::bind_method(D_METHOD("get_base"), &ProxyTexture::get_base);
+	ClassDB::bind_method(D_METHOD("get_width"), &ProxyTexture::get_width);
+	ClassDB::bind_method(D_METHOD("get_height"), &ProxyTexture::get_height);
+	ClassDB::bind_method(D_METHOD("get_rid"), &ProxyTexture::get_rid);
+	ClassDB::bind_method(D_METHOD("has_alpha"), &ProxyTexture::has_alpha);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "base", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_base", "get_base");
+	ADD_PROPERTY(PropertyInfo(Variant::_RID, "proxy", PROPERTY_HINT_NONE, "", 0), "", "get_rid");
 }
 
 void ProxyTexture::set_base(const Ref<Texture2D> &p_texture) {
