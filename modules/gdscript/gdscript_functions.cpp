@@ -365,7 +365,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 					r_ret = ((Vector2)*p_args[0]).linear_interpolate((Vector2)*p_args[1], t);
 				} break;
 				case Variant::VECTOR3: {
-					r_ret = ((Vector3)*p_args[0]).linear_interpolate((Vector3)*p_args[1], t);
+					r_ret = (p_args[0]->operator Vector3()).linear_interpolate(p_args[1]->operator Vector3(), t);
 				} break;
 				case Variant::COLOR: {
 					r_ret = ((Color)*p_args[0]).linear_interpolate((Color)*p_args[1], t);
