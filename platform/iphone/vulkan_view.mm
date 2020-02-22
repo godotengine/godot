@@ -58,33 +58,15 @@
 
 - (id)initVulkan {
 	// Get our backing layer
-	CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
-
-	// Configure it so that it is opaque, does not retain the contents of the backbuffer when displayed, and uses RGBA8888 color.
-	eaglLayer.opaque = YES;
-	eaglLayer.drawableProperties = [NSDictionary
-			dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:FALSE],
-			kEAGLDrawablePropertyRetainedBacking,
-			kEAGLColorFormatRGBA8,
-			kEAGLDrawablePropertyColorFormat,
-			nil];
+	CAMetalLayer *metalLayer = (CAMetalLayer *)self.layer;
 
 	// FIXME: Add Vulkan support via MoltenVK. Add fallback code back?
 
 	// Create GL ES 2 context
-	if (GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES2") {
-		context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-		NSLog(@"Setting up an OpenGL ES 2.0 context.");
-		if (!context) {
-			NSLog(@"Failed to create OpenGL ES 2.0 context!");
-			return nil;
-		}
+	if (GLOBAL_GET("rendering/quality/driver/driver_name") == "Vulkan") {
+		NSLog(@"Setting up an Vulkan context.");
 	}
 
-	if (![EAGLContext setCurrentContext:context]) {
-		NSLog(@"Failed to set EAGLContext!");
-		return nil;
-	}
 	if (![self createFramebuffer]) {
 		NSLog(@"Failed to create frame buffer!");
 		return nil;
@@ -103,7 +85,6 @@
 // the same size as our display area.
 
 - (void)layoutSubviews {
-	[EAGLContext setCurrentContext:context];
 	[self destroyFramebuffer];
 	[self createFramebuffer];
 	[self drawView];
@@ -114,30 +95,6 @@
 	UIScreen *mainscr = [UIScreen mainScreen];
 	printf("******** screen size %i, %i\n", (int)mainscr.currentMode.size.width, (int)mainscr.currentMode.size.height);
 	self.contentScaleFactor = mainscr.nativeScale;
-
-	glGenFramebuffersOES(1, &viewFramebuffer);
-	glGenRenderbuffersOES(1, &viewRenderbuffer);
-
-	glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
-	glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-	// This call associates the storage for the current render buffer with the EAGLDrawable (our CAEAGLLayer)
-	// allowing us to draw into a buffer that will later be rendered to screen wherever the layer is (which corresponds with our view).
-	[context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(id<EAGLDrawable>)self.layer];
-	glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, viewRenderbuffer);
-
-	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
-
-	// For this sample, we also need a depth buffer, so we'll create and attach one via another renderbuffer.
-	glGenRenderbuffersOES(1, &depthRenderbuffer);
-	glBindRenderbufferOES(GL_RENDERBUFFER_OES, depthRenderbuffer);
-	glRenderbufferStorageOES(GL_RENDERBUFFER_OES, GL_DEPTH_COMPONENT16_OES, backingWidth, backingHeight);
-	glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_DEPTH_ATTACHMENT_OES, GL_RENDERBUFFER_OES, depthRenderbuffer);
-
-	if (glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
-		NSLog(@"failed to make complete framebuffer object %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
-		return NO;
-	}
 
 	if (OS::get_singleton()) {
 		OS::VideoMode vm;
@@ -155,15 +112,7 @@
 
 // Clean up any buffers we have allocated.
 - (void)destroyFramebuffer {
-	glDeleteFramebuffersOES(1, &viewFramebuffer);
-	viewFramebuffer = 0;
-	glDeleteRenderbuffersOES(1, &viewRenderbuffer);
-	viewRenderbuffer = 0;
 
-	if (depthRenderbuffer) {
-		glDeleteRenderbuffersOES(1, &depthRenderbuffer);
-		depthRenderbuffer = 0;
-	}
 }
 
 - (void)startAnimation {
@@ -230,7 +179,6 @@
 	}
 
 	// Make sure that you are drawing to the current context
-	[EAGLContext setCurrentContext:context];
 
 	// If our drawing delegate needs to have the view setup, then call -setupView: and flag that it won't need to be called again.
 	// if (!delegateSetup) {
@@ -238,18 +186,7 @@
 	// 	delegateSetup = YES;
 	// }
 
-	glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
-
 	// [delegate drawView:self];
-
-	glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-	[context presentRenderbuffer:GL_RENDERBUFFER_OES];
-
-#ifdef DEBUG_ENABLED
-	GLenum err = glGetError();
-	if (err)
-		NSLog(@"DrawView: %x error", err);
-#endif
 }
 
 // When created via code however, we get initWithFrame
@@ -259,30 +196,8 @@
 	printf("after init super %p\n", self);
 	if (self != nil) {
 		self = [self initVulkan];
-		printf("after init gles %p\n", self);
+		printf("after init vulkan %p\n", self);
 	}
-	// init_touches();
-	self.multipleTouchEnabled = YES;
-	self.autocorrectionType = UITextAutocorrectionTypeNo;
-
-	printf("******** adding observer for sound routing changes\n");
-	[[NSNotificationCenter defaultCenter]
-			addObserver:self
-			   selector:@selector(audioRouteChangeListenerCallback:)
-				   name:AVAudioSessionRouteChangeNotification
-				 object:nil];
-
-	printf("******** adding observer for keyboard show/hide\n");
-	[[NSNotificationCenter defaultCenter]
-			addObserver:self
-			   selector:@selector(keyboardOnScreen:)
-				   name:UIKeyboardDidShowNotification
-				 object:nil];
-	[[NSNotificationCenter defaultCenter]
-			addObserver:self
-			   selector:@selector(keyboardHidden:)
-				   name:UIKeyboardDidHideNotification
-				 object:nil];
 
 	return self;
 }
@@ -290,13 +205,6 @@
 // Stop animating and release resources when they are no longer needed.
 - (void)dealloc {
 	[self stopAnimation];
-
-	if ([EAGLContext currentContext] == context) {
-		[EAGLContext setCurrentContext:nil];
-	}
-
-	[context release];
-	context = nil;
 
 	[super dealloc];
 }
