@@ -108,7 +108,7 @@ void LineShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_distance"), &LineShape2D::get_distance);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "normal"), "set_normal", "get_normal");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance"), "set_distance", "get_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance", PROPERTY_HINT_RANGE, "0.01,1024,0.5,or_greater"), "set_distance", "get_distance");
 }
 
 LineShape2D::LineShape2D() :
