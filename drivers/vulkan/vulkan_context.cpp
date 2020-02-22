@@ -29,11 +29,14 @@
 /*************************************************************************/
 
 #include "vulkan_context.h"
+
 #include "core/engine.h"
 #include "core/project_settings.h"
 #include "core/ustring.h"
 #include "core/version.h"
+
 #include "vk_enum_string_helper.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -47,14 +50,18 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(VkDebugU
 		const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
 		void *pUserData) {
 
-	//This error needs to be ignored because the AMD allocator will mix up memory types on IGP processors
+	// This error needs to be ignored because the AMD allocator will mix up memory types on IGP processors.
 	if (strstr(pCallbackData->pMessage, "Mapping an image with layout") != NULL &&
 			strstr(pCallbackData->pMessage, "can result in undefined behavior if this memory is used by the device") != NULL) {
 		return VK_FALSE;
 	}
-	// This needs to be ignored because Validator is wrong here
+	// This needs to be ignored because Validator is wrong here.
 	if (strstr(pCallbackData->pMessage, "SPIR-V module not valid: Pointer operand") != NULL &&
 			strstr(pCallbackData->pMessage, "must be a memory object") != NULL) {
+		return VK_FALSE;
+	}
+	// Workaround for Vulkan-Loader usability bug: https://github.com/KhronosGroup/Vulkan-Loader/issues/262.
+	if (strstr(pCallbackData->pMessage, "wrong ELF class: ELFCLASS32") != NULL) {
 		return VK_FALSE;
 	}
 	if (strstr(pCallbackData->pMessageIdName, "UNASSIGNED-CoreValidation-DrawState-ClearCmdBeforeDraw") != NULL) {
