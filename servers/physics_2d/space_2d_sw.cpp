@@ -799,6 +799,11 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 						float owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);
 						cbk.valid_depth = MAX(owc_margin, p_margin); //user specified, but never less than actual margin or it won't work
 
+						//we need take out own movement into account
+						Vector2 a_motion = p_motion;
+						float a_depth = a_motion.dot(cbk.valid_dir);
+						cbk.valid_depth += a_depth;
+
 						if (col_obj->get_type() == CollisionObject2DSW::TYPE_BODY) {
 							const Body2DSW *b = static_cast<const Body2DSW *>(col_obj);
 							if (b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_RIGID) {
@@ -807,12 +812,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 								//compute displacement from linear velocity
 								Vector2 b_motion = lv * PhysicsDirectBodyState2DSW::singleton->step;
 								float b_depth = b_motion.dot(-cbk.valid_dir);
-								cbk.valid_depth += MAX(b_depth, 0.0);
-
-								//we need take out own movement into account
-								Vector2 a_motion = p_motion;
-								float a_depth = MAX(a_motion.dot(-cbk.valid_dir), 0.0);
-								cbk.valid_depth += a_depth;
+								cbk.valid_depth += b_depth;
 							}
 						}
 					} else {
