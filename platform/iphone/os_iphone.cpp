@@ -38,7 +38,7 @@
 
 #if defined(VULKAN_ENABLED)
 #include "servers/visual/rasterizer_rd/rasterizer_rd.h"
-#import <QuartzCore/CAMetalLayer.h>
+// #import <QuartzCore/CAMetalLayer.h>
 #include <vulkan/vulkan_metal.h>
 #endif
 
@@ -110,6 +110,7 @@ int OSIPhone::get_current_video_driver() const {
 }
 
 Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+	video_driver_index = p_video_driver;
 
 #if defined(OPENGL_ENABLED)
 	bool gl_initialization_error = false;
@@ -130,15 +131,19 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	}
 #endif
 
-	video_driver_index = p_video_driver;
+#if defined(VULKAN_ENABLED)
+	RasterizerRD::make_current();
+#endif
+
+	
 	visual_server = memnew(VisualServerRaster);
 	// FIXME: Reimplement threaded rendering
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 		visual_server = memnew(VisualServerWrapMT(visual_server, false));
 	}
-
 	visual_server->init();
 	//visual_server->cursor_set_visible(false, 0);
+
 #if defined(OPENGL_ENABLED)
 	// reset this to what it should be, it will have been set to 0 after visual_server->init() is called
 	RasterizerStorageGLES2::system_fbo = gl_view_base_fb;

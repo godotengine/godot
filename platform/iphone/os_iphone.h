@@ -46,6 +46,11 @@
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 
+#if defined(VULKAN_ENABLED)
+#include "drivers/vulkan/rendering_device_vulkan.h"
+#include "platform/iphone/vulkan_context_iphone.h"
+#endif
+
 class OSIPhone : public OS_Unix {
 
 private:
