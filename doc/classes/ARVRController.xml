@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ARVRController" inherits="Spatial" category="Core" version="3.2">
+<class name="ARVRController" inherits="Spatial" version="3.2">
 	<brief_description>
 		A spatial node representing a spatially-tracked controller.
 	</brief_description>
@@ -9,6 +9,7 @@
 		The position of the controller node is automatically updated by the [ARVRServer]. This makes this node ideal to add child nodes to visualize the controller.
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/vr/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_controller_name" qualifiers="const">

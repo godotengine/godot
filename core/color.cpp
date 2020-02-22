@@ -511,7 +511,7 @@ Color Color::from_hsv(float p_h, float p_s, float p_v, float p_a) const {
 // FIXME: Remove once Godot 3.1 has been released
 float Color::gray() const {
 
-	WARN_DEPRECATED_MSG("Color.gray() is deprecated and will be removed in a future version. Use Color.get_v() for a better grayscale approximation.");
+	WARN_DEPRECATED_MSG("'Color.gray()' is deprecated and will be removed in a future version. Use 'Color.v' for a better grayscale approximation.");
 	return (r + g + b) / 3.0;
 }
 

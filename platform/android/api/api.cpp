@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  room_instance.h                                                      */
+/*  api.cpp                                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,54 +28,59 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ROOM_INSTANCE_H
-#define ROOM_INSTANCE_H
+#include "api.h"
 
-#include "scene/3d/visual_instance.h"
-#include "scene/resources/room.h"
+#include "core/engine.h"
+#include "java_class_wrapper.h"
 
-/* RoomInstance Logic:
-   a) Instances that belong to the room are drawn only if the room is visible (seen through portal, or player inside)
-   b) Instances that don't belong to any room are considered to belong to the root room (RID empty)
-   c) "dynamic" Instances are assigned to the rooms their AABB touch
-
-*/
-
-// FIXME: this will be removed, left for reference
-#if 0
-
-class Room : public VisualInstance {
-
-	GDCLASS(Room, VisualInstance);
-
-public:
-private:
-	Ref<RoomBounds> room;
-
-	int level;
-	void _parse_node_faces(PoolVector<Face3> &all_faces, const Node *p_node) const;
-
-	void _bounds_changed();
-
-protected:
-	void _notification(int p_what);
-
-	static void _bind_methods();
-
-public:
-	enum {
-		// used to notify portals that the room in which they are has changed.
-		NOTIFICATION_AREA_CHANGED = 60
-	};
-
-	virtual AABB get_aabb() const;
-	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
-
-	void set_room(const Ref<RoomBounds> &p_room);
-	Ref<RoomBounds> get_room() const;
-
-	Room();
-	~Room();
-};
+#if !defined(ANDROID_ENABLED)
+static JavaClassWrapper *java_class_wrapper = NULL;
 #endif
-#endif // ROOM_INSTANCE_H
+
+void register_android_api() {
+
+#if !defined(ANDROID_ENABLED)
+	java_class_wrapper = memnew(JavaClassWrapper); // Dummy
+#endif
+
+	ClassDB::register_class<JavaClass>();
+	ClassDB::register_class<JavaClassWrapper>();
+	Engine::get_singleton()->add_singleton(Engine::Singleton("JavaClassWrapper", JavaClassWrapper::get_singleton()));
+}
+
+void unregister_android_api() {
+
+#if !defined(ANDROID_ENABLED)
+	memdelete(java_class_wrapper);
+#endif
+}
+
+void JavaClassWrapper::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("wrap", "name"), &JavaClassWrapper::wrap);
+}
+
+#if !defined(ANDROID_ENABLED)
+
+Variant JavaClass::call(const StringName &, const Variant **, int, Variant::CallError &) {
+	return Variant();
+}
+
+JavaClass::JavaClass() {
+}
+
+Variant JavaObject::call(const StringName &, const Variant **, int, Variant::CallError &) {
+	return Variant();
+}
+
+JavaClassWrapper *JavaClassWrapper::singleton = NULL;
+
+Ref<JavaClass> JavaClassWrapper::wrap(const String &) {
+	return Ref<JavaClass>();
+}
+
+JavaClassWrapper::JavaClassWrapper() {
+	singleton = this;
+}
+
+#endif

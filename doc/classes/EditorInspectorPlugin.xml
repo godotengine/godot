@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorInspectorPlugin" inherits="Reference" category="Core" version="3.2">
+<class name="EditorInspectorPlugin" inherits="Reference" version="3.2">
 	<brief_description>
 		Plugin for adding custom property editors on inspector.
 	</brief_description>
@@ -100,7 +100,7 @@
 			<argument index="5" name="usage" type="int">
 			</argument>
 			<description>
-				Called to allow adding property specific editors to the inspector. Usually these inherit [EditorProperty]
+				Called to allow adding property specific editors to the inspector. Usually these inherit [EditorProperty]. Returning [code]true[/code] removes the built-in editor for this property, otherwise allows to insert a custom editor before the built-in one.
 			</description>
 		</method>
 	</methods>

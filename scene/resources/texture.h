@@ -45,7 +45,8 @@
 class Texture : public Resource {
 
 	GDCLASS(Texture, Resource);
-	OBJ_SAVE_TYPE(Texture); //children are all saved as Texture, so they can be exchanged
+	OBJ_SAVE_TYPE(Texture); // Saves derived classes with common type so they can be interchanged.
+
 protected:
 	static void _bind_methods();
 

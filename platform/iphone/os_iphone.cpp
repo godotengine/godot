@@ -356,14 +356,32 @@ void OSIPhone::delete_main_loop() {
 
 void OSIPhone::finalize() {
 
-	if (main_loop) // should not happen?
-		memdelete(main_loop);
+	delete_main_loop();
+
+	memdelete(input);
+	memdelete(ios);
+
+#ifdef GAME_CENTER_ENABLED
+	memdelete(game_center);
+#endif
+
+#ifdef STOREKIT_ENABLED
+	memdelete(store_kit);
+#endif
+
+#ifdef ICLOUD_ENABLED
+	memdelete(icloud);
+#endif
 
 	visual_server->finish();
 	memdelete(visual_server);
 	//	memdelete(rasterizer);
 
-	memdelete(input);
+	// Free unhandled events before close
+	for (int i = 0; i < MAX_EVENTS; i++) {
+		event_queue[i].unref();
+	};
+	event_count = 0;
 };
 
 void OSIPhone::set_mouse_show(bool p_show){};
@@ -464,7 +482,7 @@ extern Error _shell_open(String p_uri);
 extern void _set_keep_screen_on(bool p_enabled);
 extern void _vibrate();
 
-void OSIPhone::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect) {
+void OSIPhone::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_input_length) {
 	_show_keyboard(p_existing_text);
 };
 

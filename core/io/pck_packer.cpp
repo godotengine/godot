@@ -63,6 +63,10 @@ void PCKPacker::_bind_methods() {
 
 Error PCKPacker::pck_start(const String &p_file, int p_alignment) {
 
+	if (file != NULL) {
+		memdelete(file);
+	}
+
 	file = FileAccess::open(p_file, FileAccess::WRITE);
 
 	ERR_FAIL_COND_V_MSG(!file, ERR_CANT_CREATE, "Can't open file to write: " + String(p_file) + ".");

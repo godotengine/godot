@@ -106,7 +106,7 @@ Error CSharpLanguage::execute_file(const String &p_path) {
 void CSharpLanguage::init() {
 
 #ifdef DEBUG_METHODS_ENABLED
-	if (OS::get_singleton()->get_cmdline_args().find("--class_db_to_json")) {
+	if (OS::get_singleton()->get_cmdline_args().find("--class-db-json")) {
 		class_db_api_to_json("user://class_db_api.json", ClassDB::API_CORE);
 #ifdef TOOLS_ENABLED
 		class_db_api_to_json("user://class_db_api_editor.json", ClassDB::API_EDITOR);
@@ -160,12 +160,12 @@ void CSharpLanguage::finish() {
 	script_bindings.clear();
 
 #ifdef DEBUG_ENABLED
-	for (List<ObjectID>::Element *E = unsafely_referenced_objects.front(); E; E = E->next()) {
-		const ObjectID &id = E->get();
+	for (Map<ObjectID, int>::Element *E = unsafe_object_references.front(); E; E = E->next()) {
+		const ObjectID &id = E->key();
 		Object *obj = ObjectDB::get_instance(id);
 
 		if (obj) {
-			ERR_PRINTS("Leaked unsafe reference to object: " + obj->get_class() + ":" + itos(id));
+			ERR_PRINTS("Leaked unsafe reference to object: " + obj->to_string());
 		} else {
 			ERR_PRINTS("Leaked unsafe reference to deleted object: " + itos(id));
 		}
@@ -632,18 +632,20 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::stack_trace_get_info(MonoObjec
 
 void CSharpLanguage::post_unsafe_reference(Object *p_obj) {
 #ifdef DEBUG_ENABLED
+	SCOPED_MUTEX_LOCK(unsafe_object_references_lock);
 	ObjectID id = p_obj->get_instance_id();
-	ERR_FAIL_COND_MSG(unsafely_referenced_objects.find(id), "Multiple unsafe references for object: " + p_obj->get_class() + ":" + itos(id));
-	unsafely_referenced_objects.push_back(id);
+	unsafe_object_references[id]++;
 #endif
 }
 
 void CSharpLanguage::pre_unsafe_unreference(Object *p_obj) {
 #ifdef DEBUG_ENABLED
+	SCOPED_MUTEX_LOCK(unsafe_object_references_lock);
 	ObjectID id = p_obj->get_instance_id();
-	List<ObjectID>::Element *elem = unsafely_referenced_objects.find(id);
+	Map<ObjectID, int>::Element *elem = unsafe_object_references.find(id);
 	ERR_FAIL_NULL(elem);
-	unsafely_referenced_objects.erase(elem);
+	if (--elem->value() == 0)
+		unsafe_object_references.erase(elem);
 #endif
 }
 
@@ -1246,6 +1248,14 @@ CSharpLanguage::CSharpLanguage() {
 	language_bind_mutex = Mutex::create();
 #endif
 
+#ifdef DEBUG_ENABLED
+#ifdef NO_THREADS
+	unsafe_object_references_lock = NULL;
+#else
+	unsafe_object_references_lock = Mutex::create();
+#endif
+#endif
+
 	lang_idx = -1;
 
 	scripts_metadata_invalidated = true;
@@ -1273,6 +1283,13 @@ CSharpLanguage::~CSharpLanguage() {
 		memdelete(script_gchandle_release_mutex);
 		script_gchandle_release_mutex = NULL;
 	}
+
+#ifdef DEBUG_ENABLED
+	if (unsafe_object_references_lock) {
+		memdelete(unsafe_object_references_lock);
+		unsafe_object_references_lock = NULL;
+	}
+#endif
 
 	singleton = NULL;
 }
@@ -2408,6 +2425,9 @@ bool CSharpScript::_update_exports() {
 			top = top->get_parent_class();
 		}
 
+		// Need to check this here, before disposal
+		bool base_ref = Object::cast_to<Reference>(tmp_native) != NULL;
+
 		// Dispose the temporary managed instance
 
 		MonoException *exc = NULL;
@@ -2421,7 +2441,7 @@ bool CSharpScript::_update_exports() {
 		MonoGCHandle::free_handle(tmp_pinned_gchandle);
 		tmp_object = NULL;
 
-		if (tmp_native && !Object::cast_to<Reference>(tmp_native)) {
+		if (tmp_native && !base_ref) {
 			Node *node = Object::cast_to<Node>(tmp_native);
 			if (node && node->is_inside_tree()) {
 				ERR_PRINTS("Temporary instance was added to the scene tree.");

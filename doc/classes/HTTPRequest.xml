@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HTTPRequest" inherits="Node" category="Core" version="3.2">
+<class name="HTTPRequest" inherits="Node" version="3.2">
 	<brief_description>
 		A node with the ability to send HTTP(S) requests.
 	</brief_description>
@@ -170,7 +170,7 @@
 			Request exceeded its maximum size limit, see [member body_size_limit].
 		</constant>
 		<constant name="RESULT_REQUEST_FAILED" value="8" enum="Result">
-			Request failed. (Unused)
+			Request failed (currently unused).
 		</constant>
 		<constant name="RESULT_DOWNLOAD_FILE_CANT_OPEN" value="9" enum="Result">
 			HTTPRequest couldn't open the download file.

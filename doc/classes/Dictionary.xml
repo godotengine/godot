@@ -1,19 +1,64 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Dictionary" category="Built-In Types" version="3.2">
+<class name="Dictionary" version="3.2">
 	<brief_description>
 		Dictionary type.
 	</brief_description>
 	<description>
-		Dictionary type. Associative container which contains values referenced by unique keys. Dictionaries are always passed by reference.
+		Dictionary type. Associative container which contains values referenced by unique keys. Dictionary are composed of pairs of keys (which must be unique) and values. You can define a dictionary by placing a comma separated list of [code]key: value[/code] pairs in curly braces [code]{}[/code].
 		Erasing elements while iterating over them [b]is not supported[/b].
 		Creating a dictionary:
 		[codeblock]
-		var d = {4: 5, "A key": "A value", 28: [1, 2, 3]}
+		var my_dir = {} # Creates an empty dictionary.
+		var points_dir = {"White": 50, "Yellow": 75, "Orange": 100}
+		var my_dir = {
+		    key1: value1,
+		    key2: value2,
+		    key3: value3,
+		}
+		[/codeblock]
+		You can access values of a dictionary by referencing appropriate key in above example [code]points_dir["White"][/code] would return value of 50.
+		[codeblock]
+		export(String, "White", "Yellow", "Orange") var my_color
+		var points_dir = {"White": 50, "Yellow": 75, "Orange": 100}
+
+		func _ready():
+		    var points = points_dir[my_color]
+		[/codeblock]
+		In the above code [code]points[/code] will be assigned the value that is paired with the appropriate color selected in [code]my_color[/code].
+		Dictionaries can contain more complex data:
+		[codeblock]
+		my_dir = {"First Array": [1, 2, 3, 4]} # Assigns an Array to a String key.
 		[/codeblock]
 		To add a key to an existing dictionary, access it like an existing key and assign to it:
 		[codeblock]
-		d[4] = "hello"  # Add integer 4 as a key and assign the String "hello" as its value.
-		d["Godot"] = 3.01  # Add String "Godot" as a key and assign the value 3.01 to it.
+		var points_dir = {"White": 50, "Yellow": 75, "Orange": 100}
+		var points_dir["Blue"] = 150 # Add "Blue" as a key and assign 150 as its value.
+		[/codeblock]
+		Finally, dictionaries can contain different types of keys and values in the same dictionary:
+		[codeblock]
+		var my_dir = {"String Key": 5, 4: [1, 2, 3], 7: "Hello"} # This is a valid dictionary.
+		[/codeblock]
+		[b]Note:[/b] Unlike [Array]s you can't compare dictionaries directly:
+		[codeblock]
+		array1 = [1, 2, 3]
+		array2 = [1, 2, 3]
+
+		func compare_arrays():
+		    print(array1 == array2) # Will print true.
+
+		dir1 = {"a": 1, "b": 2, "c": 3}
+		dir2 = {"a": 1, "b": 2, "c": 3}
+
+		func compare_dictionaries():
+		    print(dir1 == dir2) # Will NOT print true.
+		[/codeblock]
+		You need to first calculate the dictionary's hash with [method hash] before you can compare them:
+		[codeblock]
+		dir1 = {"a": 1, "b": 2, "c": 3}
+		dir2 = {"a": 1, "b": 2, "c": 3}
+
+		func compare_dictionaries():
+		    print(dir1.hash() == dir2.hash()) # Will print true.
 		[/codeblock]
 	</description>
 	<tutorials>

@@ -131,6 +131,11 @@ def configure(env):
 
     env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])
 
+    # Only include the JavaScript support code for the web environment
+    # (i.e. exclude Node.js and other unused environments).
+    # This makes the JavaScript support code about 4 KB smaller.
+    env.Append(LINKFLAGS=['-s', 'ENVIRONMENT=web'])
+
     # This needs to be defined for Emscripten using 'fastcomp' (default pre-1.39.0)
     # and undefined if using 'upstream'. And to make things simple, earlier
     # Emscripten versions didn't include 'fastcomp' in their path, so we check

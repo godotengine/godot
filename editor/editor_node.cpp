@@ -1765,6 +1765,8 @@ void EditorNode::_edit_current() {
 		return;
 	}
 
+	Object *prev_inspected_object = get_inspector()->get_edited_object();
+
 	bool capitalize = bool(EDITOR_GET("interface/inspector/capitalize_properties"));
 	bool disable_folding = bool(EDITOR_GET("interface/inspector/disable_folding"));
 	bool is_resource = current_obj->is_class("Resource");
@@ -1854,6 +1856,11 @@ void EditorNode::_edit_current() {
 		node_dock->set_node(NULL);
 		scene_tree_dock->set_selected(selected_node);
 		inspector_dock->update(NULL);
+	}
+
+	if (current_obj == prev_inspected_object) {
+		// Make sure inspected properties are restored.
+		get_inspector()->update_tree();
 	}
 
 	inspector_dock->set_warning(editable_warning);
@@ -5791,7 +5798,7 @@ EditorNode::EditorNode() {
 	EDITOR_DEF_RST("interface/scene_tabs/show_thumbnail_on_hover", true);
 	EDITOR_DEF_RST("interface/inspector/capitalize_properties", true);
 	EDITOR_DEF_RST("interface/inspector/default_float_step", 0.001);
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::REAL, "interface/inspector/default_float_step", PROPERTY_HINT_EXP_RANGE, "0,1,0"));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::REAL, "interface/inspector/default_float_step", PROPERTY_HINT_RANGE, "0,1,0"));
 	EDITOR_DEF_RST("interface/inspector/disable_folding", false);
 	EDITOR_DEF_RST("interface/inspector/auto_unfold_foreign_scenes", true);
 	EDITOR_DEF("interface/inspector/horizontal_vector2_editing", false);

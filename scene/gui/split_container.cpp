@@ -266,7 +266,7 @@ void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 Control::CursorShape SplitContainer::get_cursor_shape(const Point2 &p_pos) const {
 
 	if (dragging)
-		return (vertical ? CURSOR_VSIZE : CURSOR_HSIZE);
+		return (vertical ? CURSOR_VSPLIT : CURSOR_HSPLIT);
 
 	if (!collapsed && _getch(0) && _getch(1) && dragger_visibility == DRAGGER_VISIBLE) {
 
@@ -275,11 +275,11 @@ Control::CursorShape SplitContainer::get_cursor_shape(const Point2 &p_pos) const
 		if (vertical) {
 
 			if (p_pos.y > middle_sep && p_pos.y < middle_sep + sep)
-				return CURSOR_VSIZE;
+				return CURSOR_VSPLIT;
 		} else {
 
 			if (p_pos.x > middle_sep && p_pos.x < middle_sep + sep)
-				return CURSOR_HSIZE;
+				return CURSOR_HSPLIT;
 		}
 	}
 

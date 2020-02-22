@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RichTextLabel" inherits="Control" category="Core" version="3.2">
+<class name="RichTextLabel" inherits="Control" version="3.2">
 	<brief_description>
 		Label that displays rich text.
 	</brief_description>
@@ -325,21 +325,21 @@
 	</members>
 	<signals>
 		<signal name="meta_clicked">
-			<argument index="0" name="meta" type="Nil">
+			<argument index="0" name="meta" type="Variant">
 			</argument>
 			<description>
 				Triggered when the user clicks on content between meta tags. If the meta is defined in text, e.g. [code][url={"data"="hi"}]hi[/url][/code], then the parameter for this signal will be a [String] type. If a particular type or an object is desired, the [method push_meta] method must be used to manually insert the data into the tag stack.
 			</description>
 		</signal>
 		<signal name="meta_hover_ended">
-			<argument index="0" name="meta" type="Nil">
+			<argument index="0" name="meta" type="Variant">
 			</argument>
 			<description>
 				Triggers when the mouse exits a meta tag.
 			</description>
 		</signal>
 		<signal name="meta_hover_started">
-			<argument index="0" name="meta" type="Nil">
+			<argument index="0" name="meta" type="Variant">
 			</argument>
 			<description>
 				Triggers when the mouse enters a meta tag.

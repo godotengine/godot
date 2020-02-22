@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextureArray" inherits="TextureLayered" category="Core" version="3.2">
+<class name="TextureArray" inherits="TextureLayered" version="3.2">
 	<brief_description>
+		Array of textures stored in a single primitive.
 	</brief_description>
 	<description>
+		[TextureArray]s store an array of images in a single [Texture] primitive. Each layer of the texture array has its own mipmap chain. This makes it is a good alternative to texture atlases.
 	</description>
 	<tutorials>
 	</tutorials>

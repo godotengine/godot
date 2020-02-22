@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Spatial" inherits="Node" category="Core" version="3.2">
+<class name="Spatial" inherits="Node" version="3.2">
 	<brief_description>
 		Most basic 3D game object, parent of all 3D-related nodes.
 	</brief_description>
@@ -277,7 +277,7 @@
 			<argument index="0" name="offset" type="Vector3">
 			</argument>
 			<description>
-				Changes the node's position by given offset [Vector3].
+				Changes the node's position by the given offset [Vector3].
 				Note that the translation [code]offset[/code] is affected by the node's scale, so if scaled by e.g. [code](10, 1, 1)[/code], a translation by an offset of [code](2, 0, 0)[/code] would actually add 20 ([code]2 * 10[/code]) to the X coordinate.
 			</description>
 		</method>
@@ -287,6 +287,7 @@
 			<argument index="0" name="offset" type="Vector3">
 			</argument>
 			<description>
+				Changes the node's position by the given offset [Vector3] in local space.
 			</description>
 		</method>
 		<method name="update_gizmo">

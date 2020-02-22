@@ -546,6 +546,17 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 			edit_draw->update();
 		}
 	}
+
+	Ref<InputEventMagnifyGesture> magnify_gesture = p_input;
+	if (magnify_gesture.is_valid()) {
+		_zoom_on_position(draw_zoom * magnify_gesture->get_factor(), magnify_gesture->get_position());
+	}
+
+	Ref<InputEventPanGesture> pan_gesture = p_input;
+	if (pan_gesture.is_valid()) {
+		hscroll->set_value(hscroll->get_value() + hscroll->get_page() * pan_gesture->get_delta().x / 8);
+		vscroll->set_value(vscroll->get_value() + vscroll->get_page() * pan_gesture->get_delta().y / 8);
+	}
 }
 
 void TextureRegionEditor::_scroll_changed(float) {
@@ -736,6 +747,9 @@ void TextureRegionEditor::_notification(int p_what) {
 			zoom_out->set_icon(get_icon("ZoomLess", "EditorIcons"));
 			zoom_reset->set_icon(get_icon("ZoomReset", "EditorIcons"));
 			zoom_in->set_icon(get_icon("ZoomMore", "EditorIcons"));
+
+			vscroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
+			hscroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (snap_mode == SNAP_AUTOSLICE && is_visible() && autoslice_is_dirty) {
@@ -1010,24 +1024,22 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	zoom_hb->add_child(zoom_out);
 
 	zoom_reset = memnew(ToolButton);
-	zoom_out->set_tooltip(TTR("Zoom Reset"));
+	zoom_reset->set_tooltip(TTR("Zoom Reset"));
 	zoom_reset->connect("pressed", this, "_zoom_reset");
 	zoom_hb->add_child(zoom_reset);
 
 	zoom_in = memnew(ToolButton);
-	zoom_out->set_tooltip(TTR("Zoom In"));
+	zoom_in->set_tooltip(TTR("Zoom In"));
 	zoom_in->connect("pressed", this, "_zoom_in");
 	zoom_hb->add_child(zoom_in);
 
 	vscroll = memnew(VScrollBar);
 	vscroll->set_step(0.001);
 	edit_draw->add_child(vscroll);
-	vscroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
 	vscroll->connect("value_changed", this, "_scroll_changed");
 	hscroll = memnew(HScrollBar);
 	hscroll->set_step(0.001);
 	edit_draw->add_child(hscroll);
-	hscroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
 	hscroll->connect("value_changed", this, "_scroll_changed");
 
 	updating_scroll = false;

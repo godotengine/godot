@@ -53,7 +53,7 @@ GodotIOJavaWrapper::GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instanc
 		_get_model = p_env->GetMethodID(cls, "getModel", "()Ljava/lang/String;");
 		_get_screen_DPI = p_env->GetMethodID(cls, "getScreenDPI", "()I");
 		_get_unique_id = p_env->GetMethodID(cls, "getUniqueID", "()Ljava/lang/String;");
-		_show_keyboard = p_env->GetMethodID(cls, "showKeyboard", "(Ljava/lang/String;)V");
+		_show_keyboard = p_env->GetMethodID(cls, "showKeyboard", "(Ljava/lang/String;I)V");
 		_hide_keyboard = p_env->GetMethodID(cls, "hideKeyboard", "()V");
 		_set_screen_orientation = p_env->GetMethodID(cls, "setScreenOrientation", "(I)V");
 		_get_system_dir = p_env->GetMethodID(cls, "getSystemDir", "(I)Ljava/lang/String;");
@@ -135,11 +135,11 @@ bool GodotIOJavaWrapper::has_vk() {
 	return (_show_keyboard != 0) && (_hide_keyboard != 0);
 }
 
-void GodotIOJavaWrapper::show_vk(const String &p_existing) {
+void GodotIOJavaWrapper::show_vk(const String &p_existing, int p_max_input_length) {
 	if (_show_keyboard) {
 		JNIEnv *env = ThreadAndroid::get_env();
 		jstring jStr = env->NewStringUTF(p_existing.utf8().get_data());
-		env->CallVoidMethod(godot_io_instance, _show_keyboard, jStr);
+		env->CallVoidMethod(godot_io_instance, _show_keyboard, jStr, p_max_input_length);
 	}
 }
 

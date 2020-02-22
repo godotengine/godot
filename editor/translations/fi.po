@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-16 22:24+0000\n"
+"PO-Revision-Date: 2020-02-16 15:21+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -23,7 +23,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.10.2-dev\n"
+"X-Generator: Weblate 3.11-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -687,8 +687,8 @@ msgid "Line Number:"
 msgstr "Rivinumero:"
 
 #: editor/code_editor.cpp
-msgid "Replaced %d occurrence(s)."
-msgstr "Korvattu %d osuvuutta."
+msgid "%d replaced."
+msgstr "%d korvattu."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -806,7 +806,7 @@ msgstr "Ylimääräiset argumentit:"
 
 #: editor/connections_dialog.cpp
 msgid "Receiver Method:"
-msgstr "Valitse metodi:"
+msgstr "Vastaanottava metodi:"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -1734,7 +1734,7 @@ msgstr "Tyhjennä profiili"
 
 #: editor/editor_feature_profile.cpp
 msgid "Godot Feature Profile"
-msgstr "Hallinnoi editorin ominaisuusprofiilit"
+msgstr "Godotin ominaisuusprofiili"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
@@ -1936,37 +1936,24 @@ msgid "Inherited by:"
 msgstr "Perivät:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Description"
-msgstr "Kuvaus:"
+msgstr "Kuvaus"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
 msgstr "Online-oppaat"
 
 #: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"Tälle luokalle ei vielä löydy kuvausta. Voit [color=$color][url=$url]auttaa "
-"luomalla sellaisen[/url][/color] tai [color=$color][url=$url2]pyytää "
-"sellaisen[/url][/color]."
-
-#: editor/editor_help.cpp
 msgid "Properties"
 msgstr "Ominaisuudet"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "override:"
-msgstr "Ylikirjoittaa"
+msgstr "ylikirjoita:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "default:"
-msgstr "Oletus"
+msgstr "oletus:"
 
 #: editor/editor_help.cpp
 msgid "Methods"
@@ -1989,9 +1976,8 @@ msgid "Property Descriptions"
 msgstr "Ominaisuuksien kuvaukset"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "(value)"
-msgstr "Arvo"
+msgstr "(arvo)"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -2266,11 +2252,11 @@ msgstr "Virhe tallennettaessa MeshLibrary resurssia!"
 
 #: editor/editor_node.cpp
 msgid "Can't load TileSet for merging!"
-msgstr "Ei voida ladata ruutuvalikoimaa yhdistämistä varten!"
+msgstr "Ei voida ladata laattavalikoimaa yhdistämistä varten!"
 
 #: editor/editor_node.cpp
 msgid "Error saving TileSet!"
-msgstr "Virhe tallennettaessa ruutuvalikoimaa!"
+msgstr "Virhe tallennettaessa laattavalikoimaa!"
 
 #: editor/editor_node.cpp
 msgid "Error trying to save layout!"
@@ -2415,7 +2401,7 @@ msgstr "Tätä toimintoa ei voida suorittaa ilman juurisolmua."
 
 #: editor/editor_node.cpp
 msgid "Export Tile Set"
-msgstr "Vie ruutuvalikoima"
+msgstr "Vie laattavalikoima"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a selected node."
@@ -2704,7 +2690,7 @@ msgstr "Mesh-kirjastoksi..."
 
 #: editor/editor_node.cpp
 msgid "TileSet..."
-msgstr "Ruutuvalikoimaksi..."
+msgstr "Laattavalikoimaksi..."
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
@@ -3962,16 +3948,17 @@ msgid "Saving..."
 msgstr "Tallennetaan..."
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr " Tiedostot"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "Aseta oletus valinnalle '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Poista oletus valinnalta '%s'"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " Tiedostot"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -4529,7 +4516,6 @@ msgid "Animation Tools"
 msgstr "Animaatiotyökalut"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr "Animaatio"
 
@@ -5207,11 +5193,11 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Top Left"
-msgstr "Vasemmassa yläkulmassa"
+msgstr "Ylävasen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Top Right"
-msgstr "Oikeassa yläkulmassa"
+msgstr "Yläoikea"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Bottom Right"
@@ -5243,27 +5229,27 @@ msgstr "Keskitä"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Left Wide"
-msgstr "Vasen näkymä"
+msgstr "Laaja vasemmalla"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Top Wide"
-msgstr "Ylänäkymä"
+msgstr "Laaja ylhäällä"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Right Wide"
-msgstr "Oikea näkymä"
+msgstr "Laaja oikealla"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Bottom Wide"
-msgstr "Alanäkymä"
+msgstr "Laaja alhaalla"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "VCenter Wide"
-msgstr "Pystykeskitetty laaja"
+msgstr "Vaakakeskitetty laaja"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "HCenter Wide"
-msgstr "Vaakakeskitetty laaja"
+msgstr "Pystykeskitetty laaja"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Full Rect"
@@ -5271,7 +5257,7 @@ msgstr "Täysi ruutu"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Keep Ratio"
-msgstr "Skaalaussuhde"
+msgstr "Säilytä suhde"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -5604,6 +5590,10 @@ msgid "Auto Insert Key"
 msgstr "Lisää avainruutuja automaattisesti"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Animation Key and Pose Options"
+msgstr "Animaatioavaimen ja asennon valinnat"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
 msgstr "Lisää avainruutu (olemassa olevat raidat)"
 
@@ -5846,12 +5836,12 @@ msgid "Mesh is empty!"
 msgstr "Mesh on tyhjä!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Trimesh Body"
-msgstr "Luo konkaavi staattinen kappale"
+msgid "Couldn't create a Trimesh collision shape."
+msgstr "Ei voitu luoda konkaavia törmäysmuotoa."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Convex Body"
-msgstr "Luo konveksi staattinen kappale"
+msgid "Create Static Trimesh Body"
+msgstr "Luo konkaavi staattinen kappale"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
@@ -5862,12 +5852,28 @@ msgid "Create Trimesh Static Shape"
 msgstr "Luo staattinen konkaavi muoto"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Failed creating shapes!"
-msgstr "Muotojen luonti epäonnistui!"
+msgid "Can't create a single convex collision shape for the scene root."
+msgstr "Ei voida luoda yksittäistä konveksia törmäysmuotoa skenen juurelle."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Convex Shape(s)"
-msgstr "Luo konvekseja muotoja"
+msgid "Couldn't create a single convex collision shape."
+msgstr "Ei voitu luoda yksittäistä konveksia törmäysmuotoa."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Create Single Convex Shape"
+msgstr "Luo yksittäinen konveksi muoto"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Can't create multiple convex collision shapes for the scene root."
+msgstr "Ei voi luoda useata konveksia törmäysmuotoa skenen juurelle."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Couldn't create any collision shapes."
+msgstr "Yhtään törmäysmuotoa ei voitu luoda."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Create Multiple Convex Shapes"
+msgstr "Luo useita konvekseja muotoja"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
@@ -5886,7 +5892,6 @@ msgid "No mesh to debug."
 msgstr "Ei meshiä debugattavaksi."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr "Mallilla ei ole UV-kanavaa tällä kerroksella"
 
@@ -5919,16 +5924,66 @@ msgid "Create Trimesh Static Body"
 msgstr "Luo konkaavi staattinen kappale"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a StaticBody and assigns a polygon-based collision shape to it "
+"automatically.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+"Luo StaticBody solmun ja asettaa sille automaattisesti polygonipohjaisen "
+"törmäysmuodon.\n"
+"Tämä on tarkin (mutta hitain) vaihtoehto törmäystunnistukselle."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
 msgstr "Luo konkaavi törmäysmuoto sisareksi"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Convex Collision Sibling(s)"
-msgstr "Luo konvekseja törmäysmuotoja sisariksi"
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+"Luo polygonipohjaisen törmäysmuodon.\n"
+"Tämä on tarkin (mutta hitain) vaihtoehto törmäystunnistukselle."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Create Single Convex Collision Siblings"
+msgstr "Luo yksittäisen konveksin törmäysmuodon sisaret"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a single convex collision shape.\n"
+"This is the fastest (but least accurate) option for collision detection."
+msgstr ""
+"Luo yksittäisen konveksin törmäysmuodon.\n"
+"Tämä on nopein (mutta epätarkin) vaihtoehto törmäystunnistukselle."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Create Multiple Convex Collision Siblings"
+msgstr "Luo useita konvekseja törmäysmuotojen sisaria"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is a performance middle-ground between the two above options."
+msgstr ""
+"Luo polygonipohjaisen törmäysmuodon.\n"
+"Tämä on suorituskyvyltään välimaastoa kahdelle yllä olevalle vaihtoehdolle."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
 msgstr "Luo ääriviivoista Mesh..."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the SpatialMaterial Grow property when using "
+"that property isn't possible."
+msgstr ""
+"Luo staattisen ääriviiva-meshin. Ääriviiva-meshin normaalit on käännetty "
+"automaattisesti.\n"
+"Tätä voidaan käyttää SpatialMaterial Grow ominaisuuden sijaan silloin, kun "
+"tuon ominaisuuden käyttäminen ei ole mahdollista."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -6611,7 +6666,8 @@ msgstr "Skriptiä ei voi saada suorittamista varten."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script failed reloading, check console for errors."
-msgstr "Skriptin lataus epäonnistui. Tarkista konsolissa virheiden varalta."
+msgstr ""
+"Skriptin uudelleenlataus epäonnistui, tarkista konsoli virheiden varalta."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script is not in tool mode, will not be able to run."
@@ -6621,8 +6677,8 @@ msgstr "Skripti ei ole työkalutilassa, sitä ei voi suorittaa."
 msgid ""
 "To run this script, it must inherit EditorScript and be set to tool mode."
 msgstr ""
-"Tämän skriptin suorittamiseksi sen on perittävä EditorScript ja asetettava "
-"se työkalutilaan."
+"Tämän skriptin suorittamiseksi sen on perittävä EditorScript ja olla "
+"asetettu työkalutilaan."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -7276,6 +7332,10 @@ msgid "Cinematic Preview"
 msgstr "Elokuvallinen esikatselu"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Not available when using the GLES2 renderer."
+msgstr "Ei käytettävissä GLES2-renderöijää käytettäessä."
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
 msgstr "Liiku vasemmalle"
 
@@ -7923,7 +7983,7 @@ msgstr "Tyhjennä valittu alue"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Fix Invalid Tiles"
-msgstr "Korjaa virheelliset ruudut"
+msgstr "Korjaa virheelliset laatat"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
@@ -7932,7 +7992,7 @@ msgstr "Leikkaa valinta"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint TileMap"
-msgstr "Täytä ruudukko"
+msgstr "Täytä laattakartta"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Line Draw"
@@ -7948,11 +8008,11 @@ msgstr "Täyttö"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase TileMap"
-msgstr "Tyhjennä ruudukko"
+msgstr "Tyhjennä laattakartta"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Find Tile"
-msgstr "Etsi ruutu"
+msgstr "Etsi laatta"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Transpose"
@@ -7960,7 +8020,7 @@ msgstr "Transponoi"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Disable Autotile"
-msgstr "Poista automaattiruudutus käytöstä"
+msgstr "Poista automaattilaatoitus käytöstä"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Enable Priority"
@@ -7968,17 +8028,17 @@ msgstr "Ota prioriteetti käyttöön"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Filter tiles"
-msgstr "Suodata ruutuja"
+msgstr "Suodata laattoja"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Give a TileSet resource to this TileMap to use its tiles."
 msgstr ""
-"Anna tälle ruutukartalle (TileMap) ruutuvalikoimaresurssi (TileSet) "
-"käyttääksesi sen ruutuja."
+"Anna tälle laattakartalle (TileMap) laattavalikoimaresurssi (TileSet) "
+"käyttääksesi sen laattoja."
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
-msgstr "Maalaa ruutu"
+msgstr "Maalaa laatta"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
@@ -7990,7 +8050,7 @@ msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Pick Tile"
-msgstr "Poimi ruutu"
+msgstr "Poimi laatta"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Rotate Left"
@@ -8014,11 +8074,11 @@ msgstr "Tyhjennä muunnos"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Add Texture(s) to TileSet."
-msgstr "Lisää tekstuurit ruutuvalikoimaan."
+msgstr "Lisää tekstuurit laattavalikoimaan."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove selected Texture from TileSet."
-msgstr "Poista valittu tekstuuri ruutuvalikoimasta."
+msgstr "Poista valittu tekstuuri laattavalikoimasta."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from Scene"
@@ -8046,7 +8106,7 @@ msgstr "Seuraava koordinaatti"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the next shape, subtile, or Tile."
-msgstr "Valitse seuraava muoto, aliruutu tai ruutu."
+msgstr "Valitse seuraava muoto, alilaatta tai laatta."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Previous Coordinate"
@@ -8054,7 +8114,7 @@ msgstr "Edellinen koordinaatti"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
-msgstr "Valitse edellinen muoto, aliruutu tai ruutu."
+msgstr "Valitse edellinen muoto, alilaatta tai laatta."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region"
@@ -8066,11 +8126,11 @@ msgstr "Törmäys"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Occlusion"
-msgstr "Peittotila"
+msgstr "Peitto"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Navigation"
-msgstr "Siirtymistila"
+msgstr "Siirtyminen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Bitmask"
@@ -8146,19 +8206,19 @@ msgstr "Aseta tarttuminen ja näytä ruudukko (muokattavissa Tarkastelussa)."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Display Tile Names (Hold Alt Key)"
-msgstr "Näytä ruutujen nimet (pidä Alt-näppäin pohjassa)"
+msgstr "Näytä laattojen nimet (pidä Alt-näppäin pohjassa)"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
 "Add or select a texture on the left panel to edit the tiles bound to it."
 msgstr ""
 "Lisää tai valitse tekstuuri vasemmasta paneelista muokataksesi siihen "
-"sidottuja ruutuja."
+"sidottuja laattoja."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove selected texture? This will remove all tiles which use it."
 msgstr ""
-"Poista valittu tekstuuri? Tämä poistaa kaikki ruudut, jotka käyttävät sitä."
+"Poista valittu tekstuuri? Tämä poistaa kaikki laatat, jotka käyttävät sitä."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "You haven't selected a texture to remove."
@@ -8166,7 +8226,7 @@ msgstr "Et ole valinnut poistettavaa tekstuuria."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from scene? This will overwrite all current tiles."
-msgstr "Luo skenestä? Tämä ylikirjoittaa kaikki nykyiset ruudut."
+msgstr "Luo skenestä? Tämä ylikirjoittaa kaikki nykyiset laatat."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
@@ -8186,7 +8246,7 @@ msgid ""
 "Click on another Tile to edit it."
 msgstr ""
 "Vedä kahvoja muokataksesi suorakulmiota.\n"
-"Napsauta toista ruutua muokataksesi sitä."
+"Napsauta toista laattaa muokataksesi sitä."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Delete selected Rect."
@@ -8197,8 +8257,8 @@ msgid ""
 "Select current edited sub-tile.\n"
 "Click on another Tile to edit it."
 msgstr ""
-"Valitse muokattavana oleva aliruutu.\n"
-"Napsauta toista ruutua muokataksesi sitä."
+"Valitse muokattavana oleva alilaatta.\n"
+"Napsauta toista laattaa muokataksesi sitä."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Delete polygon."
@@ -8214,7 +8274,7 @@ msgstr ""
 "Hiiren vasen: aseta bitti päälle.\n"
 "Hiiren oikea: aseta bitti pois päältä.\n"
 "Shift+Hiiren vasen: aseta jokeribitti.\n"
-"Napsauta toista ruutua muokataksesi sitä."
+"Napsauta toista laattaa muokataksesi sitä."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
@@ -8222,41 +8282,41 @@ msgid ""
 "bindings.\n"
 "Click on another Tile to edit it."
 msgstr ""
-"Valitse aliruutu, jota käytetään ikonina ja myös virheellisten "
-"automaattiruudutusten ilmaisemiseen.\n"
-"Napsauta toista ruutua muokataksesi sitä."
+"Valitse alilaatta, jota käytetään ikonina ja myös virheellisten "
+"automaattilaatoitusten ilmaisemiseen.\n"
+"Napsauta toista laattaa muokataksesi sitä."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
 "Select sub-tile to change its priority.\n"
 "Click on another Tile to edit it."
 msgstr ""
-"Valitse aliruutu muuttaaksesi sen tärkeyttä.\n"
-"Napsauta toista ruutua muokataksesi sitä."
+"Valitse alilaatta muuttaaksesi sen tärkeyttä.\n"
+"Napsauta toista laattaa muokataksesi sitä."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
 "Select sub-tile to change its z index.\n"
 "Click on another Tile to edit it."
 msgstr ""
-"Valitse aliruutu muuttaaksesi sen z-järjestystä.\n"
-"Napsauta toista ruutua muokataksesi sitä."
+"Valitse alilaatta muuttaaksesi sen z-järjestystä.\n"
+"Napsauta toista laattaa muokataksesi sitä."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Set Tile Region"
-msgstr "Aseta ruudun alue"
+msgstr "Aseta laatan alue"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Tile"
-msgstr "Luo ruutu"
+msgstr "Luo laatta"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Set Tile Icon"
-msgstr "Aseta ruudun ikoni"
+msgstr "Aseta laatan ikoni"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Bitmask"
-msgstr "Muokkaa ruudun bittimaskia"
+msgstr "Muokkaa laatan bittimaskia"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Collision Polygon"
@@ -8272,11 +8332,11 @@ msgstr "Muokkaa navigointipolygonia"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Paste Tile Bitmask"
-msgstr "Liitä ruudun bittimaski"
+msgstr "Liitä laatan bittimaski"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Clear Tile Bitmask"
-msgstr "Tyhjennä ruudun bittimaski"
+msgstr "Tyhjennä laatan bittimaski"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Make Polygon Concave"
@@ -8288,7 +8348,7 @@ msgstr "Tee polygonista konveksi"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Tile"
-msgstr "Poista ruutu"
+msgstr "Poista laatta"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Collision Polygon"
@@ -8304,11 +8364,11 @@ msgstr "Poista navigointipolygoni"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Priority"
-msgstr "Muokkaa ruudun prioriteettia"
+msgstr "Muokkaa laatan prioriteettia"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
-msgstr "Muokkaa ruudun Z-indeksiä"
+msgstr "Muokkaa laatan Z-indeksiä"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Make Convex"
@@ -8332,13 +8392,13 @@ msgstr "Tätä ominaisuutta ei voi muuttaa."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "TileSet"
-msgstr "Ruutuvalikoima"
+msgstr "Laattavalikoima"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "No VCS addons are available."
 msgstr "VCS-lisäosia ei ole saatavilla."
 
-#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
 msgstr "Virhe"
 
@@ -9488,7 +9548,7 @@ msgstr "ZIP-tiedosto"
 
 #: editor/project_export.cpp
 msgid "Godot Game Pack"
-msgstr "Godot-peli paketti"
+msgstr "Godot-pelipaketti"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -9503,13 +9563,18 @@ msgid "Export With Debug"
 msgstr "Vie debugaten"
 
 #: editor/project_manager.cpp
-msgid "The path does not exist."
-msgstr "Polkua ei ole olemassa."
+msgid "The path specified doesn't exist."
+msgstr "Määritelty polku ei ole olemassa."
 
 #: editor/project_manager.cpp
-msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
+msgid "Error opening package file (it's not in ZIP format)."
+msgstr "Virhe avattaessa pakettitiedostoa (se ei ole ZIP-muodossa)."
+
+#: editor/project_manager.cpp
+msgid ""
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr ""
-"Virheellinen '.zip' projektitiedosto; se ei sisällä 'project.godot' "
+"Virheellinen \".zip\" projektitiedosto; se ei sisällä \"project.godot\" "
 "tiedostoa."
 
 #: editor/project_manager.cpp
@@ -9517,12 +9582,12 @@ msgid "Please choose an empty folder."
 msgstr "Ole hyvä ja valitse tyhjä kansio."
 
 #: editor/project_manager.cpp
-msgid "Please choose a 'project.godot' or '.zip' file."
-msgstr "Ole hyvä ja valitse 'project.godot' tai '.zip' tiedosto."
+msgid "Please choose a \"project.godot\" or \".zip\" file."
+msgstr "Ole hyvä ja valitse \"project.godot\"- tai \".zip\"-tiedosto."
 
 #: editor/project_manager.cpp
-msgid "Directory already contains a Godot project."
-msgstr "Hakemisto sisältää jo Godot-projektin."
+msgid "This directory already contains a Godot project."
+msgstr "Tämä hakemisto sisältää jo Godot-projektin."
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
@@ -10217,6 +10282,10 @@ msgid "Suffix"
 msgstr "Pääte"
 
 #: editor/rename_dialog.cpp
+msgid "Use Regular Expressions"
+msgstr "Käytä säännöllisiä lausekkeita"
+
+#: editor/rename_dialog.cpp
 msgid "Advanced Options"
 msgstr "Edistyneet asetukset"
 
@@ -10253,7 +10322,7 @@ msgstr ""
 "Vertaa laskurin valintoja."
 
 #: editor/rename_dialog.cpp
-msgid "Per Level counter"
+msgid "Per-level Counter"
 msgstr "Per taso -laskuri"
 
 #: editor/rename_dialog.cpp
@@ -10285,10 +10354,6 @@ msgstr ""
 "Puuttuvat numeromerkit täytetään edeltävillä nollilla."
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expressions"
-msgstr "Säännölliset lausekkeet"
-
-#: editor/rename_dialog.cpp
 msgid "Post-Process"
 msgstr "Jälkikäsittely"
 
@@ -10297,12 +10362,12 @@ msgid "Keep"
 msgstr "Pidä"
 
 #: editor/rename_dialog.cpp
-msgid "CamelCase to under_scored"
-msgstr "CamelCase ala_viivoiksi"
+msgid "PascalCase to snake_case"
+msgstr "PascalCase ala_viivoiksi"
 
 #: editor/rename_dialog.cpp
-msgid "under_scored to CamelCase"
-msgstr "ala_viivat CamelCaseksi"
+msgid "snake_case to PascalCase"
+msgstr "ala_viivat PascalCaseksi"
 
 #: editor/rename_dialog.cpp
 msgid "Case"
@@ -10319,6 +10384,14 @@ msgstr "Isoiksi kirjaimiksi"
 #: editor/rename_dialog.cpp
 msgid "Reset"
 msgstr "Palauta"
+
+#: editor/rename_dialog.cpp
+msgid "Regular Expression Error"
+msgstr "Säännöllisen lausekkeen virhe"
+
+#: editor/rename_dialog.cpp
+msgid "At character %s"
+msgstr "Merkissä %s"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10786,8 +10859,8 @@ msgid "Invalid inherited parent name or path."
 msgstr "Virheellinen peritty isännän nimi tai polku."
 
 #: editor/script_create_dialog.cpp
-msgid "Script is valid."
-msgstr "Skripti kelpaa."
+msgid "Script path/name is valid."
+msgstr "Skriptin polku/nimi kelpaa."
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
@@ -10878,6 +10951,10 @@ msgid "Copy Error"
 msgstr "Kopioi virhe"
 
 #: editor/script_editor_debugger.cpp
+msgid "Video RAM"
+msgstr "Näyttömuisti"
+
+#: editor/script_editor_debugger.cpp
 msgid "Skip Breakpoints"
 msgstr "Sivuuta keskeytyskohdat"
 
@@ -10924,10 +11001,6 @@ msgstr "Lista näyttömuistin käytöstä resurssikohtaisesti:"
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "Yhteensä:"
-
-#: editor/script_editor_debugger.cpp
-msgid "Video Mem"
-msgstr "Näyttömuisti"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12165,7 +12238,7 @@ msgid ""
 "to. Please use it as a child of Area2D, StaticBody2D, RigidBody2D, "
 "KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"TileMap, jolla on \"Use Parent on\", tarvitsee CollisionObject2D "
+"Laattakartta, jolla on \"Use Parent\" käytössä, tarvitsee CollisionObject2D "
 "isäntäsolmun, jolle voi antaa muotoja. Käytä sitä ainoastaan Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, jne. alla antaaksesi niille "
 "muodon."
@@ -12610,6 +12683,24 @@ msgstr "Varying tyypin voi sijoittaa vain vertex-funktiossa."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Vakioita ei voi muokata."
+
+#~ msgid "Replaced %d occurrence(s)."
+#~ msgstr "Korvattu %d osuvuutta."
+
+#~ msgid "Create Static Convex Body"
+#~ msgstr "Luo konveksi staattinen kappale"
+
+#~ msgid "Failed creating shapes!"
+#~ msgstr "Muotojen luonti epäonnistui!"
+
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "Tälle luokalle ei vielä löydy kuvausta. Voit [color=$color][url="
+#~ "$url]auttaa luomalla sellaisen[/url][/color] tai [color=$color][url="
+#~ "$url2]pyytää sellaisen[/url][/color]."
 
 #~ msgid "enum  "
 #~ msgstr "enum  "

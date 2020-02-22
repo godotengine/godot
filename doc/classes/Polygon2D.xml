@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Polygon2D" inherits="Node2D" category="Core" version="3.2">
+<class name="Polygon2D" inherits="Node2D" version="3.2">
 	<brief_description>
 		A 2D polygon.
 	</brief_description>
 	<description>
 		A Polygon2D is defined by a set of points. Each point is connected to the next, with the final point being connected to the first, resulting in a closed polygon. Polygon2Ds can be filled with color (solid or gradient) or filled with a given texture.
+		[b]Note:[/b] By default, Godot can only draw up to 4,096 polygon points at a time. To increase this limit, open the Project Settings and increase [member ProjectSettings.rendering/limits/buffers/canvas_polygon_buffer_size_kb] and [member ProjectSettings.rendering/limits/buffers/canvas_polygon_index_buffer_size_kb].
 	</description>
 	<tutorials>
 	</tutorials>

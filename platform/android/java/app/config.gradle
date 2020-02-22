@@ -4,11 +4,13 @@ ext.versions = [
         minSdk : 18,
         targetSdk : 28,
         buildTools : '28.0.3',
+        supportCoreUtils : '28.0.0'
 
 ]
 
 ext.libraries = [
-        androidGradlePlugin : "com.android.tools.build:gradle:$versions.androidGradlePlugin"
+        androidGradlePlugin : "com.android.tools.build:gradle:$versions.androidGradlePlugin",
+        supportCoreUtils : "com.android.support:support-core-utils:$versions.supportCoreUtils"
 ]
 
 ext.getExportPackageName = { ->

@@ -44,11 +44,9 @@
 #include "scene/3d/navigation_mesh.h"
 #include "scene/3d/particles.h"
 #include "scene/3d/physics_joint.h"
-#include "scene/3d/portal.h"
 #include "scene/3d/position_3d.h"
 #include "scene/3d/ray_cast.h"
 #include "scene/3d/reflection_probe.h"
-#include "scene/3d/room_instance.h"
 #include "scene/3d/soft_body.h"
 #include "scene/3d/spring_arm.h"
 #include "scene/3d/sprite_3d.h"
@@ -885,7 +883,7 @@ void LightSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, int p_idx,
 				d = Math::stepify(d, SpatialEditor::get_singleton()->get_translate_snap());
 			}
 
-			if (d < 0)
+			if (d <= 0) // Equal is here for negative zero.
 				d = 0;
 
 			light->set_param(Light::PARAM_RANGE, d);
@@ -1951,112 +1949,6 @@ void PhysicalBoneSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	p_gizmo->add_lines(points, material);
 }
 
-// FIXME: Kept as reference for reimplementation in 3.1+
-#if 0
-
-void RoomSpatialGizmo::redraw() {
-
-	clear();
-	Ref<RoomBounds> roomie = room->get_room();
-	if (roomie.is_null())
-		return;
-	PoolVector<Face3> faces = roomie->get_geometry_hint();
-
-	Vector<Vector3> lines;
-	int fc = faces.size();
-	PoolVector<Face3>::Read r = faces.read();
-
-	Map<_EdgeKey, Vector3> edge_map;
-
-	for (int i = 0; i < fc; i++) {
-
-			Vector3 fn = r[i].get_plane().normal;
-
-			for (int j = 0; j < 3; j++) {
-
-					_EdgeKey ek;
-					ek.from = r[i].vertex[j].snapped(Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON));
-					ek.to = r[i].vertex[(j + 1) % 3].snapped(Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON));
-					if (ek.from < ek.to)
-						SWAP(ek.from, ek.to);
-
-					Map<_EdgeKey, Vector3>::Element *E = edge_map.find(ek);
-
-					if (E) {
-
-							if (E->get().dot(fn) > 0.9) {
-
-									E->get() = Vector3();
-								}
-
-						} else {
-
-							edge_map[ek] = fn;
-						}
-				}
-		}
-
-	for (Map<_EdgeKey, Vector3>::Element *E = edge_map.front(); E; E = E->next()) {
-
-			if (E->get() != Vector3()) {
-					lines.push_back(E->key().from);
-					lines.push_back(E->key().to);
-				}
-		}
-
-	add_lines(lines, EditorSpatialGizmos::singleton->room_material);
-	add_collision_segments(lines);
-}
-
-RoomSpatialGizmo::RoomSpatialGizmo(Room *p_room) {
-
-	set_spatial_node(p_room);
-	room = p_room;
-}
-
-/////
-
-void PortalSpatialGizmo::redraw() {
-
-	clear();
-
-	Vector<Point2> points = portal->get_shape();
-	if (points.size() == 0) {
-			return;
-		}
-
-	Vector<Vector3> lines;
-
-	Vector3 center;
-	for (int i = 0; i < points.size(); i++) {
-
-			Vector3 f;
-			f.x = points[i].x;
-			f.y = points[i].y;
-			Vector3 fn;
-			fn.x = points[(i + 1) % points.size()].x;
-			fn.y = points[(i + 1) % points.size()].y;
-			center += f;
-
-			lines.push_back(f);
-			lines.push_back(fn);
-		}
-
-	center /= points.size();
-	lines.push_back(center);
-	lines.push_back(center + Vector3(0, 0, 1));
-
-	add_lines(lines, EditorSpatialGizmos::singleton->portal_material);
-	add_collision_segments(lines);
-}
-
-PortalSpatialGizmo::PortalSpatialGizmo(Portal *p_portal) {
-
-	set_spatial_node(p_portal);
-	portal = p_portal;
-}
-
-#endif
 /////
 
 RayCastSpatialGizmoPlugin::RayCastSpatialGizmoPlugin() {

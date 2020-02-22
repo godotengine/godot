@@ -279,6 +279,11 @@ public:
 		ARGUMENT_QUALIFIER_INOUT,
 	};
 
+	enum SubClassTag {
+		TAG_GLOBAL,
+		TAG_ARRAY,
+	};
+
 	struct Node {
 		Node *next;
 
@@ -431,6 +436,7 @@ public:
 		};
 
 		int block_type;
+		SubClassTag block_tag;
 
 		struct Variable {
 			DataType type;
@@ -449,6 +455,7 @@ public:
 				parent_function(NULL),
 				parent_block(NULL),
 				block_type(BLOCK_TYPE_STANDART),
+				block_tag(SubClassTag::TAG_GLOBAL),
 				single_statement(false) {}
 	};
 
@@ -712,11 +719,6 @@ private:
 	bool _is_operator_assign(Operator p_op) const;
 	bool _validate_assign(Node *p_node, const Map<StringName, BuiltInInfo> &p_builtin_types, String *r_message = NULL);
 	bool _validate_operator(OperatorNode *p_op, DataType *r_ret_type = NULL);
-
-	enum SubClassTag {
-		TAG_GLOBAL,
-		TAG_ARRAY,
-	};
 
 	struct BuiltinFuncDef {
 		enum { MAX_ARGS = 5 };

@@ -42,7 +42,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-16 22:23+0000\n"
+"PO-Revision-Date: 2020-02-18 15:09+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -52,7 +52,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.10.2-dev\n"
+"X-Generator: Weblate 3.11\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -721,8 +721,8 @@ msgid "Line Number:"
 msgstr "Numer linii:"
 
 #: editor/code_editor.cpp
-msgid "Replaced %d occurrence(s)."
-msgstr "Zastąpiono %d wystąpień."
+msgid "%d replaced."
+msgstr "%d zamieniono."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -1962,37 +1962,24 @@ msgid "Inherited by:"
 msgstr "Dziedziczone przez:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Description"
-msgstr "Opis:"
+msgstr "Opis"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
 msgstr "Poradniki online"
 
 #: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"Obecnie nie ma żadnych samouczków dla tej klasy, możesz [color=$color][url="
-"$url]dodać jeden[/url][/color] lub [color=$color][url=$url2]poprosić o "
-"jakiś[/url][/color]."
-
-#: editor/editor_help.cpp
 msgid "Properties"
 msgstr "Właściwości"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "override:"
-msgstr "Nadpisuje"
+msgstr "nadpisanie:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "default:"
-msgstr "Domyślny"
+msgstr "domyślne:"
 
 #: editor/editor_help.cpp
 msgid "Methods"
@@ -2015,9 +2002,8 @@ msgid "Property Descriptions"
 msgstr "Opisy właściwości"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "(value)"
-msgstr "Wartość"
+msgstr "(wartość)"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -3994,16 +3980,17 @@ msgid "Saving..."
 msgstr "Zapisywanie..."
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr " Pliki"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "Ustaw jako domyślne dla \"%s\""
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Usuń domyślne dla \"%s\""
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " Pliki"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -4560,7 +4547,6 @@ msgid "Animation Tools"
 msgstr "Narzędzia do animacji"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr "Animacja"
 
@@ -5637,6 +5623,10 @@ msgid "Auto Insert Key"
 msgstr "Automatycznie wstaw klucz"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Animation Key and Pose Options"
+msgstr "Opcje kluczy animacji i pozy"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
 msgstr "Wstaw klucz (istniejące ścieżki)"
 
@@ -5879,12 +5869,12 @@ msgid "Mesh is empty!"
 msgstr "Siatka jest pusta!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Trimesh Body"
-msgstr "Stwórz Static Trimesh Body"
+msgid "Couldn't create a Trimesh collision shape."
+msgstr "Nie udało się utworzyć kształtu trójsiatki."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Convex Body"
-msgstr "Stwórz statycznych ciało wypukłe"
+msgid "Create Static Trimesh Body"
+msgstr "Stwórz Static Trimesh Body"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
@@ -5895,12 +5885,31 @@ msgid "Create Trimesh Static Shape"
 msgstr "Utwórz statyczny kształt trójsiatki"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Failed creating shapes!"
-msgstr "Tworzenie kształtów nieudane!"
+msgid "Can't create a single convex collision shape for the scene root."
+msgstr ""
+"Nie można utworzyć pojedynczego wypukłego kształtu kolizji dla korzenia "
+"sceny."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Convex Shape(s)"
-msgstr "Utwórz kształt wypukły"
+msgid "Couldn't create a single convex collision shape."
+msgstr "Nie udało się utworzyć pojedynczego wypukłego kształtu kolizji."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Create Single Convex Shape"
+msgstr "Utwórz pojedynczy wypukły kształt"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Can't create multiple convex collision shapes for the scene root."
+msgstr ""
+"Nie można utworzyć wielu wypukłych kształtów kolizji dla korzenia sceny."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Couldn't create any collision shapes."
+msgstr "Nie udało się utworzyć żadnego kształtu kolizji."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Create Multiple Convex Shapes"
+msgstr "Utwórz wiele wypukłych kształtów"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
@@ -5919,7 +5928,6 @@ msgid "No mesh to debug."
 msgstr "Brak siatki do debugowania."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr "Model nie posiada UV w tej warstwie"
 
@@ -5952,16 +5960,55 @@ msgid "Create Trimesh Static Body"
 msgstr "Utwórz statyczne ciało trójsiatki"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a StaticBody and assigns a polygon-based collision shape to it "
+"automatically.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
 msgstr "Utwórz sąsiadującą trójsiatkę kolizji"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Convex Collision Sibling(s)"
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Single Convex Collision Siblings"
 msgstr "Utwórz wypukłego sąsiada kolizji"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a single convex collision shape.\n"
+"This is the fastest (but least accurate) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Collision Siblings"
+msgstr "Utwórz wypukłego sąsiada kolizji"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is a performance middle-ground between the two above options."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
 msgstr "Utwórz siatkę zarysu..."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the SpatialMaterial Grow property when using "
+"that property isn't possible."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -7306,6 +7353,10 @@ msgid "Cinematic Preview"
 msgstr "Podgląd kinowy"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Not available when using the GLES2 renderer."
+msgstr "Niedostępne dla renderera GLES2."
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
 msgstr "\"Wolny widok\" w lewo"
 
@@ -8015,8 +8066,8 @@ msgid ""
 "Shift+LMB: Line Draw\n"
 "Shift+Ctrl+LMB: Rectangle Paint"
 msgstr ""
-"Shift+PPM: Rysowanie linii\n"
-"Shift+Ctrl+PPM: Malowanie prostokąta"
+"Shift+LPM: Rysowanie linii\n"
+"Shift+Ctrl+LPM: Malowanie prostokąta"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Pick Tile"
@@ -8368,7 +8419,7 @@ msgstr "TileSet"
 msgid "No VCS addons are available."
 msgstr "Brak dostępnych dodatków VCS."
 
-#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
 msgstr "Błąd"
 
@@ -9534,11 +9585,19 @@ msgid "Export With Debug"
 msgstr "Eksport z debugowaniem"
 
 #: editor/project_manager.cpp
-msgid "The path does not exist."
+#, fuzzy
+msgid "The path specified doesn't exist."
 msgstr "Ścieżka nie istnieje."
 
 #: editor/project_manager.cpp
-msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
+#, fuzzy
+msgid "Error opening package file (it's not in ZIP format)."
+msgstr "Błąd otwierania pliku pakietu, nie jest w formacie ZIP."
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid ""
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr ""
 "Niewłaściwy projekt pliku \".zip\", nie zawiera pliku \"project.godot\"."
 
@@ -9547,11 +9606,13 @@ msgid "Please choose an empty folder."
 msgstr "Proszę wybrać pusty folder."
 
 #: editor/project_manager.cpp
-msgid "Please choose a 'project.godot' or '.zip' file."
+#, fuzzy
+msgid "Please choose a \"project.godot\" or \".zip\" file."
 msgstr "Proszę wybrać plik \"project.godot\" lub \".zip\"."
 
 #: editor/project_manager.cpp
-msgid "Directory already contains a Godot project."
+#, fuzzy
+msgid "This directory already contains a Godot project."
 msgstr "Folder już zawiera projekt Godota."
 
 #: editor/project_manager.cpp
@@ -10250,6 +10311,11 @@ msgid "Suffix"
 msgstr "Przyrostek"
 
 #: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Use Regular Expressions"
+msgstr "Wyrażenia regularne"
+
+#: editor/rename_dialog.cpp
 msgid "Advanced Options"
 msgstr "Opcje zaawansowane"
 
@@ -10286,7 +10352,8 @@ msgstr ""
 "Porównaj opcje licznika."
 
 #: editor/rename_dialog.cpp
-msgid "Per Level counter"
+#, fuzzy
+msgid "Per-level Counter"
 msgstr "Poziomowy licznik"
 
 #: editor/rename_dialog.cpp
@@ -10318,10 +10385,6 @@ msgstr ""
 "Brakujące cyfry są wyrównywane zerami poprzedzającymi."
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expressions"
-msgstr "Wyrażenia regularne"
-
-#: editor/rename_dialog.cpp
 msgid "Post-Process"
 msgstr "Przetwarzanie końcowe"
 
@@ -10330,12 +10393,12 @@ msgid "Keep"
 msgstr "Bez zmian"
 
 #: editor/rename_dialog.cpp
-msgid "CamelCase to under_scored"
-msgstr "CamelCase na under_scored"
+msgid "PascalCase to snake_case"
+msgstr "PascalCase na snake_case"
 
 #: editor/rename_dialog.cpp
-msgid "under_scored to CamelCase"
-msgstr "under_scored na CamelCase"
+msgid "snake_case to PascalCase"
+msgstr "snake_case na PascalCase"
 
 #: editor/rename_dialog.cpp
 msgid "Case"
@@ -10352,6 +10415,14 @@ msgstr "Na wielkie litery"
 #: editor/rename_dialog.cpp
 msgid "Reset"
 msgstr "Resetuj"
+
+#: editor/rename_dialog.cpp
+msgid "Regular Expression Error"
+msgstr "Błąd wyrażenia regularnego"
+
+#: editor/rename_dialog.cpp
+msgid "At character %s"
+msgstr "Przy znaku %s"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10816,8 +10887,8 @@ msgid "Invalid inherited parent name or path."
 msgstr "Nieprawidłowa nazwa lub ścieżka klasy bazowej."
 
 #: editor/script_create_dialog.cpp
-msgid "Script is valid."
-msgstr "Skrypt jest prawidłowy."
+msgid "Script path/name is valid."
+msgstr "Ścieżka/nazwa skryptu jest prawidłowa."
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
@@ -10908,6 +10979,10 @@ msgid "Copy Error"
 msgstr "Kopiuj błąd"
 
 #: editor/script_editor_debugger.cpp
+msgid "Video RAM"
+msgstr "Wideo RAM"
+
+#: editor/script_editor_debugger.cpp
 msgid "Skip Breakpoints"
 msgstr "Pomiń punkty wstrzymania"
 
@@ -10954,10 +11029,6 @@ msgstr "Zużycie pamięci wideo według zasobów:"
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "Całkowity:"
-
-#: editor/script_editor_debugger.cpp
-msgid "Video Mem"
-msgstr "Pamięć wideo"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12643,6 +12714,24 @@ msgstr "Varying może być przypisane tylko w funkcji wierzchołków."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Stałe nie mogą być modyfikowane."
+
+#~ msgid "Replaced %d occurrence(s)."
+#~ msgstr "Zastąpiono %d wystąpień."
+
+#~ msgid "Create Static Convex Body"
+#~ msgstr "Stwórz statycznych ciało wypukłe"
+
+#~ msgid "Failed creating shapes!"
+#~ msgstr "Tworzenie kształtów nieudane!"
+
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "Obecnie nie ma żadnych samouczków dla tej klasy, możesz [color=$color]"
+#~ "[url=$url]dodać jeden[/url][/color] lub [color=$color][url=$url2]poprosić "
+#~ "o jakiś[/url][/color]."
 
 #~ msgid "enum  "
 #~ msgstr "enum  "

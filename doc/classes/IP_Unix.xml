@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="IP_Unix" inherits="IP" category="Core" version="3.2">
+<class name="IP_Unix" inherits="IP" version="3.2">
 	<brief_description>
 		UNIX IP support. See [IP].
 	</brief_description>

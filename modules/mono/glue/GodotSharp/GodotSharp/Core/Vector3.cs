@@ -255,7 +255,7 @@ namespace Godot
         {
 #if DEBUG
             if (!n.IsNormalized())
-                throw new ArgumentException(String.Format("{0} is not normalized", n), nameof(n));
+                throw new ArgumentException("Argument  is not normalized", nameof(n));
 #endif
             return 2.0f * n * Dot(n) - this;
         }
@@ -296,6 +296,10 @@ namespace Godot
 
         public Vector3 Slerp(Vector3 b, real_t t)
         {
+#if DEBUG
+            if (!IsNormalized())
+                throw new InvalidOperationException("Vector3 is not normalized");
+#endif
             real_t theta = AngleTo(b);
             return Rotated(Cross(b), theta * t);
         }

@@ -507,9 +507,8 @@ void OS_Android::process_double_tap(Point2 p_pos) {
 	ev.instance();
 	ev->set_position(p_pos);
 	ev->set_global_position(p_pos);
-	ev->set_pressed(true);
+	ev->set_pressed(false);
 	ev->set_doubleclick(true);
-	ev->set_button_index(1);
 	input->parse_input_event(ev);
 }
 
@@ -559,10 +558,10 @@ int OS_Android::get_virtual_keyboard_height() const {
 	// return 0;
 }
 
-void OS_Android::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect) {
+void OS_Android::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_input_length) {
 
 	if (godot_io_java->has_vk()) {
-		godot_io_java->show_vk(p_existing_text);
+		godot_io_java->show_vk(p_existing_text, p_max_input_length);
 	} else {
 
 		ERR_PRINT("Virtual keyboard not available");

@@ -667,6 +667,7 @@ void ColorPicker::set_presets_visible(bool p_visible) {
 	presets_visible = p_visible;
 	preset_separator->set_visible(p_visible);
 	preset_container->set_visible(p_visible);
+	preset_container2->set_visible(p_visible);
 }
 
 bool ColorPicker::are_presets_visible() const {

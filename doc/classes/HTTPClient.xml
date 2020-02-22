@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HTTPClient" inherits="Reference" category="Core" version="3.2">
+<class name="HTTPClient" inherits="Reference" version="3.2">
 	<brief_description>
 		Hyper-text transfer protocol client.
 	</brief_description>
@@ -100,7 +100,7 @@
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				This needs to be called in order to have any request processed. Check results with [method get_status]
+				This needs to be called in order to have any request processed. Check results with [method get_status].
 			</description>
 		</method>
 		<method name="query_string_from_dict">

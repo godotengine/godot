@@ -277,7 +277,8 @@ void FindReplaceBar::_replace_all() {
 	}
 
 	text_edit->set_v_scroll(vsval);
-	set_error(vformat(TTR("Replaced %d occurrence(s)."), rc));
+	matches_label->add_color_override("font_color", rc > 0 ? get_color("font_color", "Label") : get_color("error_color", "Editor"));
+	matches_label->set_text(vformat(TTR("%d replaced."), rc));
 
 	text_edit->call_deferred("connect", "text_changed", this, "_editor_text_changed");
 	results_count = -1;
@@ -682,6 +683,16 @@ void CodeTextEditor::_input(const Ref<InputEvent> &event) {
 	}
 	if (ED_IS_SHORTCUT("script_text_editor/move_down", key_event)) {
 		move_lines_down();
+		accept_event();
+		return;
+	}
+	if (ED_IS_SHORTCUT("script_text_editor/delete_line", key_event)) {
+		delete_lines();
+		accept_event();
+		return;
+	}
+	if (ED_IS_SHORTCUT("script_text_editor/clone_down", key_event)) {
+		clone_lines_down();
 		accept_event();
 		return;
 	}

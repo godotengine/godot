@@ -273,16 +273,19 @@ int mbedtls_hmac_drbg_seed( mbedtls_hmac_drbg_context *ctx,
 
     ctx->reseed_interval = MBEDTLS_HMAC_DRBG_RESEED_INTERVAL;
 
-    /*
-     * See SP800-57 5.6.1 (p. 65-66) for the security strength provided by
-     * each hash function, then according to SP800-90A rev1 10.1 table 2,
-     * min_entropy_len (in bits) is security_strength.
-     *
-     * (This also matches the sizes used in the NIST test vectors.)
-     */
-    ctx->entropy_len = md_size <= 20 ? 16 : /* 160-bits hash -> 128 bits */
-                       md_size <= 28 ? 24 : /* 224-bits hash -> 192 bits */
-                       32;  /* better (256+) -> 256 bits */
+    if( ctx->entropy_len == 0 )
+    {
+        /*
+         * See SP800-57 5.6.1 (p. 65-66) for the security strength provided by
+         * each hash function, then according to SP800-90A rev1 10.1 table 2,
+         * min_entropy_len (in bits) is security_strength.
+         *
+         * (This also matches the sizes used in the NIST test vectors.)
+         */
+        ctx->entropy_len = md_size <= 20 ? 16 : /* 160-bits hash -> 128 bits */
+                           md_size <= 28 ? 24 : /* 224-bits hash -> 192 bits */
+                           32;  /* better (256+) -> 256 bits */
+    }
 
     if( ( ret = hmac_drbg_reseed_core( ctx, custom, len,
                                        1 /* add nonce */ ) ) != 0 )
@@ -303,7 +306,7 @@ void mbedtls_hmac_drbg_set_prediction_resistance( mbedtls_hmac_drbg_context *ctx
 }
 
 /*
- * Set entropy length grabbed for reseeds
+ * Set entropy length grabbed for seeding
  */
 void mbedtls_hmac_drbg_set_entropy_len( mbedtls_hmac_drbg_context *ctx, size_t len )
 {

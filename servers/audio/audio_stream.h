@@ -82,7 +82,7 @@ public:
 class AudioStream : public Resource {
 
 	GDCLASS(AudioStream, Resource);
-	OBJ_SAVE_TYPE(AudioStream) //children are all saved as AudioStream, so they can be exchanged
+	OBJ_SAVE_TYPE(AudioStream); // Saves derived classes with common type so they can be interchanged.
 
 protected:
 	static void _bind_methods();
@@ -123,7 +123,7 @@ class AudioStreamPlaybackMicrophone : public AudioStreamPlaybackResampled {
 	friend class AudioStreamMicrophone;
 
 	bool active;
-	unsigned int capture_ofs;
+	unsigned int input_ofs;
 
 	Ref<AudioStreamMicrophone> microphone;
 

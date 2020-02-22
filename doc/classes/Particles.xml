@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Particles" inherits="GeometryInstance" category="Core" version="3.2">
+<class name="Particles" inherits="GeometryInstance" version="3.2">
 	<brief_description>
 		3D particle emitter.
 	</brief_description>
@@ -8,7 +8,7 @@
 		Use the [code]process_material[/code] property to add a [ParticlesMaterial] to configure particle appearance and behavior. Alternatively, you can add a [ShaderMaterial] which will be applied to all particles.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/controlling_thousands_of_fish.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/controlling_thousands_of_fish.html</link>
 	</tutorials>
 	<methods>
 		<method name="capture_aabb" qualifiers="const">

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SceneTree" inherits="MainLoop" category="Core" version="3.2">
+<class name="SceneTree" inherits="MainLoop" version="3.2">
 	<brief_description>
 		Manages the game loop via a hierarchy of nodes.
 	</brief_description>
@@ -329,9 +329,9 @@
 			</description>
 		</signal>
 		<signal name="global_menu_action">
-			<argument index="0" name="id" type="Nil">
+			<argument index="0" name="id" type="Variant">
 			</argument>
-			<argument index="1" name="meta" type="Nil">
+			<argument index="1" name="meta" type="Variant">
 			</argument>
 			<description>
 				Emitted whenever global menu item is clicked.

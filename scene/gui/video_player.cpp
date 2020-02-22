@@ -249,6 +249,10 @@ void VideoPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 	}
 
 	update();
+
+	if (!expand) {
+		minimum_size_changed();
+	}
 };
 
 Ref<VideoStream> VideoPlayer::get_stream() const {

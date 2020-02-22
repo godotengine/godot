@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeTexture" inherits="VisualShaderNode" category="Core" version="3.2">
+<class name="VisualShaderNodeTexture" inherits="VisualShaderNode" version="3.2">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -9,7 +9,6 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" override="true" default="[  ]" />
 		<member name="source" type="int" setter="set_source" getter="get_source" enum="VisualShaderNodeTexture.Source" default="0">
 		</member>
 		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">

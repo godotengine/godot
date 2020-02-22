@@ -577,7 +577,10 @@ public:
 	Rect2 get_item_rect(TreeItem *p_item, int p_column = -1) const;
 	bool edit_selected();
 
+	// First item that starts with the text, from the current focused item down and wraps around.
 	TreeItem *search_item_text(const String &p_find, int *r_col = NULL, bool p_selectable = false);
+	// First item that matches the whole text, from the first item down.
+	TreeItem *get_item_with_text(const String &p_find) const;
 
 	Point2 get_scroll() const;
 	void scroll_to_item(TreeItem *p_item);

@@ -247,7 +247,7 @@ real_t CameraMatrix::get_z_near() const {
 	return new_plane.d;
 }
 
-void CameraMatrix::get_viewport_size(real_t &r_width, real_t &r_height) const {
+Vector2 CameraMatrix::get_viewport_half_extents() const {
 
 	const real_t *matrix = (const real_t *)this->matrix;
 	///////--- Near Plane ---///////
@@ -273,8 +273,7 @@ void CameraMatrix::get_viewport_size(real_t &r_width, real_t &r_height) const {
 	Vector3 res;
 	near_plane.intersect_3(right_plane, top_plane, &res);
 
-	r_width = res.x;
-	r_height = res.y;
+	return Vector2(res.x, res.y);
 }
 
 bool CameraMatrix::get_endpoints(const Transform &p_transform, Vector3 *p_8points) const {
@@ -563,9 +562,8 @@ CameraMatrix::operator String() const {
 
 real_t CameraMatrix::get_aspect() const {
 
-	real_t w, h;
-	get_viewport_size(w, h);
-	return w / h;
+	Vector2 vp_he = get_viewport_half_extents();
+	return vp_he.x / vp_he.y;
 }
 
 int CameraMatrix::get_pixels_per_meter(int p_for_pixel_width) const {

@@ -114,7 +114,7 @@ NetworkedMultiplayerPeer::ConnectionStatus WebSocketServer::get_connection_statu
 		return CONNECTION_CONNECTED;
 
 	return CONNECTION_DISCONNECTED;
-};
+}
 
 bool WebSocketServer::is_server() const {
 

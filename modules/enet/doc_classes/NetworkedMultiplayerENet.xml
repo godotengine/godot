@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NetworkedMultiplayerENet" inherits="NetworkedMultiplayerPeer" category="Core" version="3.2">
+<class name="NetworkedMultiplayerENet" inherits="NetworkedMultiplayerPeer" version="3.2">
 	<brief_description>
 		PacketPeer implementation using the [url=http://enet.bespin.org/index.html]ENet[/url] library.
 	</brief_description>
@@ -67,14 +67,14 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the channel of the last packet fetched via [method PacketPeer.get_packet]
+				Returns the channel of the last packet fetched via [method PacketPeer.get_packet].
 			</description>
 		</method>
 		<method name="get_packet_channel" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the channel of the next packet that will be retrieved via [method PacketPeer.get_packet]
+				Returns the channel of the next packet that will be retrieved via [method PacketPeer.get_packet].
 			</description>
 		</method>
 		<method name="get_peer_address" qualifiers="const">

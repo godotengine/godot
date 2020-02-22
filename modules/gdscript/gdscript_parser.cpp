@@ -1868,6 +1868,10 @@ GDScriptParser::Node *GDScriptParser::_reduce_expression(Node *p_node, bool p_to
 						_set_error("Can't assign to constant", tokenizer->get_token_line() - 1);
 						error_line = op->line;
 						return op;
+					} else if (op->arguments[0]->type == Node::TYPE_SELF) {
+						_set_error("Can't assign to self.", op->line);
+						error_line = op->line;
+						return op;
 					}
 
 					if (op->arguments[0]->type == Node::TYPE_OPERATOR) {
@@ -5404,12 +5408,12 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class, bool p_recursive
 
 					ident += ("." + subclass);
 
-					if (base_script->get_subclasses().has(subclass)) {
+					if (find_subclass->get_subclasses().has(subclass)) {
 
-						find_subclass = base_script->get_subclasses()[subclass];
-					} else if (base_script->get_constants().has(subclass)) {
+						find_subclass = find_subclass->get_subclasses()[subclass];
+					} else if (find_subclass->get_constants().has(subclass)) {
 
-						Ref<GDScript> new_base_class = base_script->get_constants()[subclass];
+						Ref<GDScript> new_base_class = find_subclass->get_constants()[subclass];
 						if (new_base_class.is_null()) {
 							_set_error("Constant isn't a class: " + ident, p_class->line);
 							return;
@@ -6290,6 +6294,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 			node_type.has_type = true;
 			node_type.kind = DataType::CLASS;
 			node_type.class_type = current_class;
+			node_type.is_constant = true;
 		} break;
 		case Node::TYPE_IDENTIFIER: {
 			IdentifierNode *id = static_cast<IdentifierNode *>(p_node);

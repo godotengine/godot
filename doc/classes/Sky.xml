@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Sky" inherits="Resource" category="Core" version="3.2">
+<class name="Sky" inherits="Resource" version="3.2">
 	<brief_description>
 		The base class for [PanoramaSky] and [ProceduralSky].
 	</brief_description>
@@ -14,6 +14,7 @@
 		<member name="radiance_size" type="int" setter="set_radiance_size" getter="get_radiance_size" enum="Sky.RadianceSize" default="2">
 			The [Sky]'s radiance map size. The higher the radiance map size, the more detailed the lighting from the [Sky] will be.
 			See [enum RadianceSize] constants for values.
+			[b]Note:[/b] Some hardware will have trouble with higher radiance sizes, especially [constant RADIANCE_SIZE_512] and above. Only use such high values on high-end hardware.
 		</member>
 	</members>
 	<constants>

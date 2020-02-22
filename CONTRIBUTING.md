@@ -80,7 +80,7 @@ In addition to the following tips, also take a look at the
 [Engine development guide](https://docs.godotengine.org/en/latest/development/cpp/)
 for an introduction to developing on Godot.
 
-The [Contributing docs](http://docs.godotengine.org/en/latest/community/contributing/index.html)
+The [Contributing docs](https://docs.godotengine.org/en/latest/community/contributing/index.html)
 also have important information on the PR workflow and the code style we use.
 
 #### Be nice to the git history
@@ -102,7 +102,7 @@ Internet).
 This git style guide has some good practices to have in mind:
 [Git Style Guide](https://github.com/agis-/git-style-guide)
 
-See our [PR workflow](http://docs.godotengine.org/en/latest/community/contributing/pr_workflow.html)
+See our [PR workflow](https://docs.godotengine.org/en/latest/community/contributing/pr_workflow.html)
 documentation for tips on using Git, amending commits and rebasing branches.
 
 #### Format your commit logs with readability in mind

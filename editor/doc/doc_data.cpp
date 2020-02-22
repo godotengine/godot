@@ -233,6 +233,8 @@ void DocData::generate(bool p_basic_types) {
 	List<StringName> classes;
 	ClassDB::get_class_list(&classes);
 	classes.sort_custom<StringName::AlphCompare>();
+	// Move ProjectSettings, so that other classes can register properties there.
+	classes.move_to_back(classes.find("ProjectSettings"));
 
 	bool skip_setter_getter_methods = true;
 
@@ -249,7 +251,6 @@ void DocData::generate(bool p_basic_types) {
 		ClassDoc &c = class_list[cname];
 		c.name = cname;
 		c.inherits = ClassDB::get_parent_class(name);
-		c.category = ClassDB::get_category(name);
 
 		List<PropertyInfo> properties;
 		List<PropertyInfo> own_properties;
@@ -280,13 +281,27 @@ void DocData::generate(bool p_basic_types) {
 			prop.overridden = inherited;
 
 			bool default_value_valid = false;
-			Variant default_value = get_documentation_default_value(name, E->get().name, default_value_valid);
+			Variant default_value;
 
-			if (inherited) {
-				bool base_default_value_valid = false;
-				Variant base_default_value = get_documentation_default_value(ClassDB::get_parent_class(name), E->get().name, base_default_value_valid);
-				if (!default_value_valid || !base_default_value_valid || default_value == base_default_value)
+			if (name == "ProjectSettings") {
+				// Special case for project settings, so that settings are not taken from the current project's settings
+				if (E->get().name == "script" ||
+						ProjectSettings::get_singleton()->get_order(E->get().name) >= ProjectSettings::NO_BUILTIN_ORDER_BASE) {
 					continue;
+				}
+				if (E->get().usage & PROPERTY_USAGE_EDITOR) {
+					default_value = ProjectSettings::get_singleton()->property_get_revert(E->get().name);
+					default_value_valid = true;
+				}
+			} else {
+				default_value = get_documentation_default_value(name, E->get().name, default_value_valid);
+
+				if (inherited) {
+					bool base_default_value_valid = false;
+					Variant base_default_value = get_documentation_default_value(ClassDB::get_parent_class(name), E->get().name, base_default_value_valid);
+					if (!default_value_valid || !base_default_value_valid || default_value == base_default_value)
+						continue;
+				}
 			}
 
 			if (default_value_valid && default_value.get_type() != Variant::OBJECT) {
@@ -387,13 +402,10 @@ void DocData::generate(bool p_basic_types) {
 				} else {
 
 					const PropertyInfo &arginfo = E->get().arguments[i];
-
 					ArgumentDoc argument;
-
 					argument_doc_from_arginfo(argument, arginfo);
 
 					int darg_idx = i - (E->get().arguments.size() - E->get().default_arguments.size());
-
 					if (darg_idx >= 0) {
 						Variant default_arg = E->get().default_arguments[darg_idx];
 						argument.default_value = default_arg.get_construct_string();
@@ -417,14 +429,10 @@ void DocData::generate(bool p_basic_types) {
 				signal.name = EV->get().name;
 				for (int i = 0; i < EV->get().arguments.size(); i++) {
 
-					PropertyInfo arginfo = EV->get().arguments[i];
+					const PropertyInfo &arginfo = EV->get().arguments[i];
 					ArgumentDoc argument;
-					argument.name = arginfo.name;
-					if (arginfo.type == Variant::OBJECT && arginfo.class_name != StringName()) {
-						argument.type = arginfo.class_name.operator String();
-					} else {
-						argument.type = Variant::get_type_name(arginfo.type);
-					}
+					argument_doc_from_arginfo(argument, arginfo);
+
 					signal.arguments.push_back(argument);
 				}
 
@@ -502,7 +510,7 @@ void DocData::generate(bool p_basic_types) {
 	}
 
 	{
-		//so it can be documented that it does not exist
+		// So we can document the concept of Variant even if it's not a usable class per se.
 		class_list["Variant"] = ClassDoc();
 		class_list["Variant"].name = "Variant";
 	}
@@ -510,17 +518,18 @@ void DocData::generate(bool p_basic_types) {
 	if (!p_basic_types)
 		return;
 
+	// Add Variant types.
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-
+		if (i == Variant::NIL)
+			continue; // Not exposed outside of 'null', should not be in class list.
 		if (i == Variant::OBJECT)
-			continue; //use the core type instead
+			continue; // Use the core type instead.
 
 		String cname = Variant::get_type_name(Variant::Type(i));
 
 		class_list[cname] = ClassDoc();
 		ClassDoc &c = class_list[cname];
 		c.name = cname;
-		c.category = "Built-In Types";
 
 		Variant::CallError cerror;
 		Variant v = Variant::construct(Variant::Type(i), NULL, 0, cerror);
@@ -540,14 +549,9 @@ void DocData::generate(bool p_basic_types) {
 			for (int j = 0; j < mi.arguments.size(); j++) {
 
 				PropertyInfo arginfo = mi.arguments[j];
-
 				ArgumentDoc ad;
+				argument_doc_from_arginfo(ad, mi.arguments[j]);
 				ad.name = arginfo.name;
-
-				if (arginfo.type == Variant::NIL)
-					ad.type = "Variant";
-				else
-					ad.type = Variant::get_type_name(arginfo.type);
 
 				int defarg = mi.default_arguments.size() - mi.arguments.size() + j;
 				if (defarg >= 0)
@@ -837,8 +841,6 @@ Error DocData::_load(Ref<XMLParser> parser) {
 		c.name = name;
 		if (parser->has_attribute("inherits"))
 			c.inherits = parser->get_attribute_value("inherits");
-		if (parser->has_attribute("category"))
-			c.category = parser->get_attribute_value("category");
 
 		while (parser->read() == OK) {
 
@@ -1028,25 +1030,24 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 		String header = "<class name=\"" + c.name + "\"";
 		if (c.inherits != "")
 			header += " inherits=\"" + c.inherits + "\"";
-
-		String category = c.category;
-		if (c.category == "")
-			category = "Core";
-		header += " category=\"" + category + "\"";
-		header += String(" version=\"") + VERSION_NUMBER + "\"";
+		header += String(" version=\"") + VERSION_BRANCH + "\"";
 		header += ">";
 		_write_string(f, 0, header);
+
 		_write_string(f, 1, "<brief_description>");
 		_write_string(f, 2, c.brief_description.strip_edges().xml_escape());
 		_write_string(f, 1, "</brief_description>");
+
 		_write_string(f, 1, "<description>");
 		_write_string(f, 2, c.description.strip_edges().xml_escape());
 		_write_string(f, 1, "</description>");
+
 		_write_string(f, 1, "<tutorials>");
 		for (int i = 0; i < c.tutorials.size(); i++) {
 			_write_string(f, 2, "<link>" + c.tutorials.get(i).xml_escape() + "</link>");
 		}
 		_write_string(f, 1, "</tutorials>");
+
 		_write_string(f, 1, "<methods>");
 
 		c.methods.sort();

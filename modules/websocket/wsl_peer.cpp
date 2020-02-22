@@ -243,6 +243,10 @@ Error WSLPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 	msg.msg_length = p_buffer_size;
 
 	wslay_event_queue_msg(_data->ctx, &msg);
+	if (wslay_event_send(_data->ctx) < 0) {
+		close_now();
+		return FAILED;
+	}
 	return OK;
 }
 
@@ -312,6 +316,12 @@ uint16_t WSLPeer::get_connected_port() const {
 	ERR_FAIL_COND_V(!is_connected_to_host() || _data->tcp.is_null(), 0);
 
 	return _data->tcp->get_connected_port();
+}
+
+void WSLPeer::set_no_delay(bool p_enabled) {
+
+	ERR_FAIL_COND(!is_connected_to_host() || _data->tcp.is_null());
+	_data->tcp->set_no_delay(p_enabled);
 }
 
 void WSLPeer::invalidate() {

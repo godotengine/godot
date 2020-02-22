@@ -1,18 +1,36 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNode" inherits="Resource" category="Core" version="3.2">
+<class name="VisualShaderNode" inherits="Resource" version="3.2">
 	<brief_description>
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/shading/visual_shaders.html</link>
 	</tutorials>
 	<methods>
+		<method name="get_default_input_values" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an [Array] containing default values for all of the input ports of the node in the form [code][index0, value0, index1, value1, ...][/code].
+			</description>
+		</method>
 		<method name="get_input_port_default_value" qualifiers="const">
 			<return type="Variant">
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>
 			<description>
+				Returns the default value of the input [code]port[/code].
+			</description>
+		</method>
+		<method name="set_default_input_values">
+			<return type="void">
+			</return>
+			<argument index="0" name="values" type="Array">
+			</argument>
+			<description>
+				Sets the default input ports values using an [Array] of the form [code][index0, value0, index1, value1, ...][/code]. For example: [code][0, Vector3(0, 0, 0), 1, Vector3(0, 0, 0)][/code].
 			</description>
 		</method>
 		<method name="set_input_port_default_value">
@@ -23,18 +41,19 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
+				Sets the default value for the selected input [code]port[/code].
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" default="[ 0, Vector3( 0, 0, 0 ) ]">
-		</member>
 		<member name="output_port_for_preview" type="int" setter="set_output_port_for_preview" getter="get_output_port_for_preview" default="-1">
+			Sets the output port index which will be showed for preview. If set to [code]-1[/code] no port will be open for preview.
 		</member>
 	</members>
 	<signals>
 		<signal name="editor_refresh_request">
 			<description>
+				Emitted when the node requests an editor refresh. Currently called only in setter of [member VisualShaderNodeTexture.source], [VisualShaderNodeTexture], and [VisualShaderNodeCubeMap] (and their derivatives).
 			</description>
 		</signal>
 	</signals>

@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "animation_blend_tree.h"
+
 #include "scene/scene_string_names.h"
 
 void AnimationNodeAnimation::set_animation(const StringName &p_name) {
@@ -718,21 +719,6 @@ String AnimationNodeTransition::get_input_caption(int p_input) const {
 	return inputs[p_input].name;
 }
 
-#if 0
-	Ref<AnimationNodeBlendTree> tree = get_parent();
-
-	if (tree.is_valid() && current >= 0) {
-		prev = current;
-		prev_xfading = xfade;
-		time = 0;
-		current = p_current;
-		switched = true;
-		_change_notify("current");
-	} else {
-		current = p_current;
-	}
-#endif
-
 void AnimationNodeTransition::set_cross_fade_time(float p_fade) {
 	xfade = p_fade;
 }
@@ -846,8 +832,8 @@ void AnimationNodeTransition::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "xfade_time", PROPERTY_HINT_RANGE, "0,120,0.01"), "set_cross_fade_time", "get_cross_fade_time");
 
 	for (int i = 0; i < MAX_INPUTS; i++) {
-		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "input_" + itos(i) + "/name"), "set_input_caption", "get_input_caption", i);
-		ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "input_" + itos(i) + "/auto_advance"), "set_input_as_auto_advance", "is_input_set_as_auto_advance", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "input_" + itos(i) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_input_caption", "get_input_caption", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "input_" + itos(i) + "/auto_advance", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_input_as_auto_advance", "is_input_set_as_auto_advance", i);
 	}
 }
 

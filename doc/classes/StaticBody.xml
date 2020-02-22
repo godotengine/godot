@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StaticBody" inherits="PhysicsBody" category="Core" version="3.2">
+<class name="StaticBody" inherits="PhysicsBody" version="3.2">
 	<brief_description>
 		Static body for 3D physics.
 	</brief_description>
 	<description>
 		Static body for 3D physics. A static body is a simple body that is not intended to move. In contrast to [RigidBody], they don't consume any CPU resources as long as they don't move.
-		A static body can also be animated by using simulated motion mode. This is useful for implementing functionalities such as moving platforms. When this mode is active, the body can be animated and automatically computes linear and angular velocity to apply in that frame and to influence other bodies.
-		Alternatively, a constant linear or angular velocity can be set for the static body, so even if it doesn't move, it affects other bodies as if it was moving (this is useful for simulating conveyor belts or conveyor wheels).
+		Additionally, a constant linear or angular velocity can be set for the static body, so even if it doesn't move, it affects other bodies as if it was moving (this is useful for simulating conveyor belts or conveyor wheels).
 	</description>
 	<tutorials>
 	</tutorials>

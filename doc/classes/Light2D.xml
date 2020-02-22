@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Light2D" inherits="Node2D" category="Core" version="3.2">
+<class name="Light2D" inherits="Node2D" version="3.2">
 	<brief_description>
 		Casts light in a 2D environment.
 	</brief_description>
@@ -8,7 +8,7 @@
 		[b]Note:[/b] Light2D can also be used as a mask.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/latest/tutorials/2d/2d_lights_and_shadows.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/2d/2d_lights_and_shadows.html</link>
 	</tutorials>
 	<methods>
 	</methods>

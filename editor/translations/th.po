@@ -725,8 +725,9 @@ msgid "Line Number:"
 msgstr "บรรทัดที่:"
 
 #: editor/code_editor.cpp
-msgid "Replaced %d occurrence(s)."
-msgstr "แทนที่แล้ว %d ครั้ง"
+#, fuzzy
+msgid "%d replaced."
+msgstr "แทนที่..."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -2042,15 +2043,6 @@ msgstr "รายละเอียด:"
 #, fuzzy
 msgid "Online Tutorials"
 msgstr "สอนใช้งานออนไลน์:"
-
-#: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"คลาสนี้ยังไม่มีการสอนการใช้งาน ท่านสามารถ[color=$color][url=$url]ช่วยเขียน[/url][/"
-"color] หรือ [color=$color][url=$url2]ขอให้จัดทำ[/url][/color]"
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -4088,16 +4080,17 @@ msgid "Saving..."
 msgstr "กำลังบันทึก..."
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr " ไฟล์"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "กำหนดเป็นค่าเริ่มต้นของ '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "ลบค่าเริ่มต้นของ '%s'"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " ไฟล์"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -4689,7 +4682,6 @@ msgid "Animation Tools"
 msgstr "เครื่องมือแอนิเมชัน"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr "แอนิเมชัน"
 
@@ -5822,6 +5814,11 @@ msgid "Auto Insert Key"
 msgstr "แทรกคีย์แอนิเมชัน"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Animation Key and Pose Options"
+msgstr "แทรกคีย์แอนิเมชัน"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
 msgstr "เพิ่มคีย์ (แทร็กที่มีอยู่แล้ว)"
 
@@ -6079,12 +6076,13 @@ msgid "Mesh is empty!"
 msgstr "Mesh ว่างเปล่า!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Trimesh Body"
-msgstr "สร้าง Static Trimesh Body"
+#, fuzzy
+msgid "Couldn't create a Trimesh collision shape."
+msgstr "สร้างรูปทรงกายภาพเป็นโหนดญาติ"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Convex Body"
-msgstr "สร้าง StaticBody ทรงตัน"
+msgid "Create Static Trimesh Body"
+msgstr "สร้าง Static Trimesh Body"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
@@ -6096,12 +6094,30 @@ msgid "Create Trimesh Static Shape"
 msgstr "สร้างรูปทรง Trimesh"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Failed creating shapes!"
+msgid "Can't create a single convex collision shape for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Couldn't create a single convex collision shape."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Convex Shape(s)"
+msgid "Create Single Convex Shape"
+msgstr "สร้างรูปทรงนูน"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Can't create multiple convex collision shapes for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Couldn't create any collision shapes."
+msgstr "ไม่สามารถสร้างโฟลเดอร์"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Shapes"
 msgstr "สร้างรูปทรงนูน"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -6121,7 +6137,6 @@ msgid "No mesh to debug."
 msgstr "ไม่มีพื้นผิวให้แก้ไขจุดบกพร่อง"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr "โมเดลไม่มี UV ในชั้นนี้"
 
@@ -6154,17 +6169,55 @@ msgid "Create Trimesh Static Body"
 msgstr "สร้าง Trimesh Static Body"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a StaticBody and assigns a polygon-based collision shape to it "
+"automatically.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
 msgstr "สร้างรูปทรงกายภาพเป็นโหนดญาติ"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Convex Collision Sibling(s)"
+msgid "Create Single Convex Collision Siblings"
 msgstr "สร้างรูปทรงตันกายภาพเป็นโหนดญาติ"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a single convex collision shape.\n"
+"This is the fastest (but least accurate) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Collision Siblings"
+msgstr "สร้างรูปทรงตันกายภาพเป็นโหนดญาติ"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is a performance middle-ground between the two above options."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
 msgstr "สร้างเส้นขอบ Mesh..."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the SpatialMaterial Grow property when using "
+"that property isn't possible."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -7577,6 +7630,10 @@ msgid "Cinematic Preview"
 msgstr "กำลังสร้างภาพตัวอย่าง Mesh"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Not available when using the GLES2 renderer."
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
 msgstr "มุมมองอิสระ ไปซ้าย"
 
@@ -8732,7 +8789,7 @@ msgstr "Tile Set"
 msgid "No VCS addons are available."
 msgstr ""
 
-#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
 msgstr "ผิดพลาด"
 
@@ -9888,12 +9945,19 @@ msgid "Export With Debug"
 msgstr "ส่งออกพร้อมการแก้ไขจุดบกพร่อง"
 
 #: editor/project_manager.cpp
-msgid "The path does not exist."
+#, fuzzy
+msgid "The path specified doesn't exist."
 msgstr "ไม่พบไฟล์"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
+msgid "Error opening package file (it's not in ZIP format)."
+msgstr "ผิดพลาดขณะเปิดไฟล์แพคเกจ, ไม่ใช่รูปแบบ zip"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid ""
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr "กรุณาเลือกโฟลเดอร์ที่ไม่มีไฟล์ 'project.godot'"
 
 #: editor/project_manager.cpp
@@ -9902,11 +9966,11 @@ msgstr "กรุณาเลือกโฟลเดอร์ว่างเป
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Please choose a 'project.godot' or '.zip' file."
+msgid "Please choose a \"project.godot\" or \".zip\" file."
 msgstr "กรุณาเลือกไฟล์ 'project.godot'"
 
 #: editor/project_manager.cpp
-msgid "Directory already contains a Godot project."
+msgid "This directory already contains a Godot project."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -10588,6 +10652,11 @@ msgstr ""
 
 #: editor/rename_dialog.cpp
 #, fuzzy
+msgid "Use Regular Expressions"
+msgstr "แก้ไขสมการ"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
 msgid "Advanced Options"
 msgstr "ตัวเลือกการจำกัด"
 
@@ -10626,7 +10695,7 @@ msgid ""
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Per Level counter"
+msgid "Per-level Counter"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10658,11 +10727,6 @@ msgstr ""
 
 #: editor/rename_dialog.cpp
 #, fuzzy
-msgid "Regular Expressions"
-msgstr "แก้ไขสมการ"
-
-#: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Post-Process"
 msgstr "สคริปต์หลังประมวลผล:"
 
@@ -10671,11 +10735,11 @@ msgid "Keep"
 msgstr "เก็บ"
 
 #: editor/rename_dialog.cpp
-msgid "CamelCase to under_scored"
+msgid "PascalCase to snake_case"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "under_scored to CamelCase"
+msgid "snake_case to PascalCase"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10696,6 +10760,16 @@ msgstr "ตัวพิมพ์ใหญ่"
 #, fuzzy
 msgid "Reset"
 msgstr "รีเซ็ตซูม"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Regular Expression Error"
+msgstr "แก้ไขสมการ"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "At character %s"
+msgstr "ตัวอักษรที่ใช้ได้:"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -11188,7 +11262,7 @@ msgstr "ชื่อหรือตำแหน่งทีสืบทอดไ
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
-msgid "Script is valid."
+msgid "Script path/name is valid."
 msgstr "สคริปต์ถูกต้อง"
 
 #: editor/script_create_dialog.cpp
@@ -11297,6 +11371,11 @@ msgstr "คัดลอกผิดพลาด"
 
 #: editor/script_editor_debugger.cpp
 #, fuzzy
+msgid "Video RAM"
+msgstr "หน่วยความจำวีดีโอ"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
 msgid "Skip Breakpoints"
 msgstr "ลบจุด"
 
@@ -11344,10 +11423,6 @@ msgstr "รายชื่อรีซอร์สที่ใช้หน่ว
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "ทั้งหมด:"
-
-#: editor/script_editor_debugger.cpp
-msgid "Video Mem"
-msgstr "หน่วยความจำวีดีโอ"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12984,6 +13059,20 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Replaced %d occurrence(s)."
+#~ msgstr "แทนที่แล้ว %d ครั้ง"
+
+#~ msgid "Create Static Convex Body"
+#~ msgstr "สร้าง StaticBody ทรงตัน"
+
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "คลาสนี้ยังไม่มีการสอนการใช้งาน ท่านสามารถ[color=$color][url=$url]ช่วยเขียน[/url][/"
+#~ "color] หรือ [color=$color][url=$url2]ขอให้จัดทำ[/url][/color]"
 
 #~ msgid "enum  "
 #~ msgstr "กลุ่มค่าคงที่  "

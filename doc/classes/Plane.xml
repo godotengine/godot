@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Plane" category="Built-In Types" version="3.2">
+<class name="Plane" version="3.2">
 	<brief_description>
 		Plane in hessian form.
 	</brief_description>
@@ -170,10 +170,13 @@
 	</members>
 	<constants>
 		<constant name="PLANE_YZ" value="Plane( 1, 0, 0, 0 )">
+			A plane that extends in the Y and Z axes.
 		</constant>
 		<constant name="PLANE_XZ" value="Plane( 0, 1, 0, 0 )">
+			A plane that extends in the X and Z axes.
 		</constant>
 		<constant name="PLANE_XY" value="Plane( 0, 0, 1, 0 )">
+			A plane that extends in the X and Y axes.
 		</constant>
 	</constants>
 </class>

@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "audio_stream_sample.h"
+
 #include "core/io/marshalls.h"
 #include "core/os/file_access.h"
 
@@ -656,8 +657,8 @@ AudioStreamSample::AudioStreamSample() {
 	data = NULL;
 	data_bytes = 0;
 }
-AudioStreamSample::~AudioStreamSample() {
 
+AudioStreamSample::~AudioStreamSample() {
 	if (data) {
 		AudioServer::get_singleton()->audio_data_free(data);
 		data = NULL;

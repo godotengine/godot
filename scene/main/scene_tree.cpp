@@ -459,10 +459,7 @@ void SceneTree::input_event(const Ref<InputEvent> &p_event) {
 }
 
 void SceneTree::init() {
-
-	//_quit=false;
 	initialized = true;
-
 	root->_set_tree(this);
 	MainLoop::init();
 }
@@ -1285,6 +1282,14 @@ void SceneTree::_change_scene(Node *p_to) {
 		current_scene = NULL;
 	}
 
+	// If we're quitting, abort.
+	if (unlikely(_quit)) {
+		if (p_to) { // Prevent memory leak.
+			memdelete(p_to);
+		}
+		return;
+	}
+
 	if (p_to) {
 		current_scene = p_to;
 		root->add_child(p_to);
@@ -1292,15 +1297,14 @@ void SceneTree::_change_scene(Node *p_to) {
 }
 
 Error SceneTree::change_scene(const String &p_path) {
-
 	Ref<PackedScene> new_scene = ResourceLoader::load(p_path);
 	if (new_scene.is_null())
 		return ERR_CANT_OPEN;
 
 	return change_scene_to(new_scene);
 }
-Error SceneTree::change_scene_to(const Ref<PackedScene> &p_scene) {
 
+Error SceneTree::change_scene_to(const Ref<PackedScene> &p_scene) {
 	Node *new_scene = NULL;
 	if (p_scene.is_valid()) {
 		new_scene = p_scene->instance();
@@ -1310,8 +1314,8 @@ Error SceneTree::change_scene_to(const Ref<PackedScene> &p_scene) {
 	call_deferred("_change_scene", new_scene);
 	return OK;
 }
-Error SceneTree::reload_current_scene() {
 
+Error SceneTree::reload_current_scene() {
 	ERR_FAIL_COND_V(!current_scene, ERR_UNCONFIGURED);
 	String fname = current_scene->get_filename();
 	return change_scene(fname);
@@ -1322,6 +1326,7 @@ void SceneTree::add_current_scene(Node *p_current) {
 	current_scene = p_current;
 	root->add_child(p_current);
 }
+
 #ifdef DEBUG_ENABLED
 
 static void _fill_array(Node *p_node, Array &array, int p_level) {

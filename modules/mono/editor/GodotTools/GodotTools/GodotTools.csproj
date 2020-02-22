@@ -7,7 +7,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>GodotTools</RootNamespace>
     <AssemblyName>GodotTools</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <GodotSourceRootPath>$(SolutionDir)/../../../../</GodotSourceRootPath>
     <DataDirToolsOutputPath>$(GodotSourceRootPath)/bin/GodotSharp/Tools</DataDirToolsOutputPath>
     <GodotApiConfiguration>Debug</GodotApiConfiguration>

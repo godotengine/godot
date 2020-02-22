@@ -1727,7 +1727,7 @@ void AnimationTimelineEdit::update_values() {
 		time_icon->set_tooltip(TTR("Animation length (frames)"));
 	} else {
 		length->set_value(animation->get_length());
-		length->set_step(0.01);
+		length->set_step(0.001);
 		length->set_tooltip(TTR("Animation length (seconds)"));
 		time_icon->set_tooltip(TTR("Animation length (seconds)"));
 	}
@@ -1890,7 +1890,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	length = memnew(EditorSpinSlider);
 	length->set_min(0.001);
 	length->set_max(36000);
-	length->set_step(0.01);
+	length->set_step(0.001);
 	length->set_allow_greater(true);
 	length->set_custom_minimum_size(Vector2(70 * EDSCALE, 0));
 	length->set_hide_slider(true);
@@ -4838,40 +4838,23 @@ struct _AnimMoveRestore {
 
 void AnimationTrackEditor::_clear_key_edit() {
 	if (key_edit) {
-
-#if 0
-		// going back seems like the most comfortable thing to do, but it results
-		// in weird behaviors and crashes, because going back to animation editor
-		// triggers the editor setting up again itself
-
-		bool go_back = false;
-		if (EditorNode::get_singleton()->get_inspector()->get_edited_object() == key_edit) {
-			EditorNode::get_singleton()->push_item(NULL);
-			go_back = true;
-		}
-
-		memdelete(key_edit);
-		key_edit = NULL;
-
-		if (go_back) {
-			EditorNode::get_singleton()->get_inspector_dock()->go_back();
-		}
-#else
 		//if key edit is the object being inspected, remove it first
-		if (EditorNode::get_singleton()->get_inspector()->get_edited_object() == key_edit ||
-				EditorNode::get_singleton()->get_inspector()->get_edited_object() == multi_key_edit) {
+		if (EditorNode::get_singleton()->get_inspector()->get_edited_object() == key_edit) {
 			EditorNode::get_singleton()->push_item(NULL);
 		}
 
 		//then actually delete it
-		if (key_edit) {
-			memdelete(key_edit);
-			key_edit = NULL;
-		} else if (multi_key_edit) {
-			memdelete(multi_key_edit);
-			multi_key_edit = NULL;
+		memdelete(key_edit);
+		key_edit = NULL;
+	}
+
+	if (multi_key_edit) {
+		if (EditorNode::get_singleton()->get_inspector()->get_edited_object() == multi_key_edit) {
+			EditorNode::get_singleton()->push_item(NULL);
 		}
-#endif
+
+		memdelete(multi_key_edit);
+		multi_key_edit = NULL;
 	}
 }
 
@@ -4927,7 +4910,7 @@ void AnimationTrackEditor::_update_key_edit() {
 
 			if (!key_ofs_map.has(track)) {
 				key_ofs_map[track] = List<float>();
-				base_map[track] = *memnew(NodePath);
+				base_map[track] = NodePath();
 			}
 
 			key_ofs_map[track].push_back(animation->track_get_key_time(track, E->key().key));
@@ -5994,6 +5977,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	keying = false;
 	moving_selection = 0;
 	key_edit = NULL;
+	multi_key_edit = NULL;
 
 	box_selection = memnew(Control);
 	add_child(box_selection);
@@ -6104,5 +6088,8 @@ AnimationTrackEditor::AnimationTrackEditor() {
 AnimationTrackEditor::~AnimationTrackEditor() {
 	if (key_edit) {
 		memdelete(key_edit);
+	}
+	if (multi_key_edit) {
+		memdelete(multi_key_edit);
 	}
 }

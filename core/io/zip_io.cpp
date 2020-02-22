@@ -97,6 +97,7 @@ int zipio_close(voidpf opaque, voidpf stream) {
 	FileAccess *&f = *(FileAccess **)opaque;
 	if (f) {
 		f->close();
+		memdelete(f);
 		f = NULL;
 	}
 	return 0;

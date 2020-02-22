@@ -33,6 +33,7 @@
 
 // Godot imports
 #include "core/script_language.h"
+
 // PluginScript imports
 #include <pluginscript/godot_pluginscript.h>
 
@@ -60,13 +61,12 @@ public:
 	virtual bool has_method(const StringName &p_method) const;
 
 	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
-#if 0
-    // Rely on default implementations provided by ScriptInstance for the moment.
-    // Note that multilevel call could be removed in 3.0 release, so stay tuned
-    // (see https://godotengine.org/qa/9244/can-override-the-_ready-and-_process-functions-child-classes)
-    virtual void call_multilevel(const StringName& p_method,const Variant** p_args,int p_argcount);
-    virtual void call_multilevel_reversed(const StringName& p_method,const Variant** p_args,int p_argcount);
-#endif
+
+	// Rely on default implementations provided by ScriptInstance for the moment.
+	// Note that multilevel call could be removed in 3.0 release, so stay tuned
+	// (see https://godotengine.org/qa/9244/can-override-the-_ready-and-_process-functions-child-classes)
+	//virtual void call_multilevel(const StringName& p_method,const Variant** p_args,int p_argcount);
+	//virtual void call_multilevel_reversed(const StringName& p_method,const Variant** p_args,int p_argcount);
 
 	virtual void notification(int p_notification);
 

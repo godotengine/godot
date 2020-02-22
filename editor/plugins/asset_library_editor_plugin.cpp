@@ -162,7 +162,7 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 						Ref<Image> overlay = get_icon("PlayOverlay", "EditorIcons")->get_data();
 						Ref<Image> thumbnail = p_image->get_data();
 						thumbnail = thumbnail->duplicate();
-						Point2 overlay_pos = Point2((thumbnail->get_width() - overlay->get_width() / 2) / 2, (thumbnail->get_height() - overlay->get_height() / 2) / 2);
+						Point2 overlay_pos = Point2((thumbnail->get_width() - overlay->get_width()) / 2, (thumbnail->get_height() - overlay->get_height()) / 2);
 
 						// Overlay and thumbnail need the same format for `blend_rect` to work.
 						thumbnail->convert(Image::FORMAT_RGBA8);
@@ -435,7 +435,10 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 							String::humanize_size(download->get_body_size())));
 				} else {
 					// Total file size is unknown, so it cannot be displayed.
-					status->set_text(TTR("Downloading..."));
+					progress->set_modulate(Color(0, 0, 0, 0));
+					status->set_text(vformat(
+							TTR("Downloading...") + " (%s)",
+							String::humanize_size(download->get_downloaded_bytes())));
 				}
 			}
 

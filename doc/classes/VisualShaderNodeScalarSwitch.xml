@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeScalarSwitch" inherits="VisualShaderNodeSwitch" category="Core" version="3.2">
+<class name="VisualShaderNodeScalarSwitch" inherits="VisualShaderNodeSwitch" version="3.2">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -8,9 +8,6 @@
 	</tutorials>
 	<methods>
 	</methods>
-	<members>
-		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" override="true" default="[ 0, false, 1, 1.0, 2, 0.0 ]" />
-	</members>
 	<constants>
 	</constants>
 </class>

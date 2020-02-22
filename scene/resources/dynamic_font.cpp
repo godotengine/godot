@@ -130,7 +130,10 @@ Error DynamicFontAtSize::_load() {
 		} else {
 
 			FileAccess *f = FileAccess::open(font->font_path, FileAccess::READ);
-			ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot open font file '" + font->font_path + "'.");
+			if (!f) {
+				FT_Done_FreeType(library);
+				ERR_FAIL_V_MSG(ERR_CANT_OPEN, "Cannot open font file '" + font->font_path + "'.");
+			}
 
 			size_t len = f->get_len();
 			_fontdata[font->font_path] = Vector<uint8_t>();
@@ -145,7 +148,10 @@ Error DynamicFontAtSize::_load() {
 	if (font->font_mem == NULL && font->font_path != String()) {
 
 		FileAccess *f = FileAccess::open(font->font_path, FileAccess::READ);
-		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot open font file '" + font->font_path + "'.");
+		if (!f) {
+			FT_Done_FreeType(library);
+			ERR_FAIL_V_MSG(ERR_CANT_OPEN, "Cannot open font file '" + font->font_path + "'.");
+		}
 
 		memset(&stream, 0, sizeof(FT_StreamRec));
 		stream.base = NULL;
@@ -176,6 +182,7 @@ Error DynamicFontAtSize::_load() {
 		error = FT_Open_Face(library, &fargs, 0, &face);
 
 	} else {
+		FT_Done_FreeType(library);
 		ERR_FAIL_V_MSG(ERR_UNCONFIGURED, "DynamicFont uninitialized.");
 	}
 
@@ -1011,8 +1018,8 @@ void DynamicFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fallback_count"), &DynamicFont::get_fallback_count);
 
 	ADD_GROUP("Settings", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "size", PROPERTY_HINT_RANGE, "1,255,1"), "set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "outline_size", PROPERTY_HINT_RANGE, "0,255,1"), "set_outline_size", "get_outline_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "size", PROPERTY_HINT_RANGE, "1,1024,1"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "outline_size", PROPERTY_HINT_RANGE, "0,1024,1"), "set_outline_size", "get_outline_size");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "outline_color"), "set_outline_color", "get_outline_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_mipmaps"), "set_use_mipmaps", "get_use_mipmaps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_filter"), "set_use_filter", "get_use_filter");

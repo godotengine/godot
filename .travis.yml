@@ -72,12 +72,22 @@ matrix:
       env: PLATFORM=osx TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-clang EXTRA_ARGS="warnings=extra werror=yes"
       os: osx
       compiler: clang
+      addons:
+        homebrew:
+          packages:
+            - scons
+          update: true
 
     - name: iOS export template (debug, Clang)
       stage: build
       env: PLATFORM=iphone TOOLS=no TARGET=debug CACHE_NAME=${PLATFORM}-clang
       os: osx
       compiler: clang
+      addons:
+        homebrew:
+          packages:
+            - scons
+          update: true
 
     - name: Linux headless editor (release_debug, GCC 9, testing project exporting and script running)
       stage: build
@@ -109,15 +119,16 @@ before_install:
     fi
 
 install:
-  - pip install --user scons;
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+      pyenv global 3.7.1 system;
+      pip3 install --user scons;
+    fi
+  - scons --version
   - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$PLATFORM" = "android" ]; then
       export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64;
       export PATH=/usr/lib/jvm/java-8-openjdk-amd64/jre/bin:${PATH};
       java -version;
       misc/travis/android-tools-linux.sh;
-    fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
-      export PATH=${PATH}:/Users/travis/Library/Python/2.7/bin;
     fi
 
 before_script:

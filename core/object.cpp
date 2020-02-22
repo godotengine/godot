@@ -1213,9 +1213,9 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 			MessageQueue::get_singleton()->push_call(target->get_instance_id(), c.method, args, argc, true);
 		} else {
 			Variant::CallError ce;
-			s->lock++;
+			_emitting = true;
 			target->call(c.method, args, argc, ce);
-			s->lock--;
+			_emitting = false;
 
 			if (ce.error != Variant::CallError::CALL_OK) {
 #ifdef DEBUG_ENABLED
@@ -1920,6 +1920,7 @@ Object::Object() {
 	_instance_id = ObjectDB::add_instance(this);
 	_can_translate = true;
 	_is_queued_for_deletion = false;
+	_emitting = false;
 	instance_binding_count = 0;
 	memset(_script_instance_bindings, 0, sizeof(void *) * MAX_SCRIPT_INSTANCE_BINDINGS);
 	script_instance = NULL;
@@ -1942,14 +1943,14 @@ Object::~Object() {
 
 	const StringName *S = NULL;
 
+	if (_emitting) {
+		//@todo this may need to actually reach the debugger prioritarily somehow because it may crash before
+		ERR_PRINTS("Object " + to_string() + " was freed or unreferenced while a signal is being emitted from it. Try connecting to the signal using 'CONNECT_DEFERRED' flag, or use queue_free() to free the object (if this object is a Node) to avoid this error and potential crashes.");
+	}
+
 	while ((S = signal_map.next(NULL))) {
 
 		Signal *s = &signal_map[*S];
-
-		if (s->lock > 0) {
-			//@todo this may need to actually reach the debugger prioritarily somehow because it may crash before
-			ERR_PRINTS("Object was freed or unreferenced while signal '" + String(*S) + "' is being emitted from it. Try connecting to the signal using 'CONNECT_DEFERRED' flag, or use queue_free() to free the object (if this object is a Node) to avoid this error and potential crashes.");
-		}
 
 		//brute force disconnect for performance
 		int slot_count = s->slot_map.size();

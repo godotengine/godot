@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "cpu_particles_2d.h"
-
+#include "core/core_string_names.h"
 #include "scene/2d/canvas_item.h"
 #include "scene/2d/particles_2d.h"
 #include "scene/resources/particles_material.h"
@@ -169,10 +169,20 @@ void CPUParticles2D::_update_mesh_texture() {
 	vertices.push_back(-tex_size * 0.5 + Vector2(tex_size.x, tex_size.y));
 	vertices.push_back(-tex_size * 0.5 + Vector2(0, tex_size.y));
 	PoolVector<Vector2> uvs;
-	uvs.push_back(Vector2(0, 0));
-	uvs.push_back(Vector2(1, 0));
-	uvs.push_back(Vector2(1, 1));
-	uvs.push_back(Vector2(0, 1));
+	AtlasTexture *atlas_texure = Object::cast_to<AtlasTexture>(*texture);
+	if (atlas_texure && atlas_texure->get_atlas().is_valid()) {
+		Rect2 region_rect = atlas_texure->get_region();
+		Size2 atlas_size = atlas_texure->get_atlas()->get_size();
+		uvs.push_back(Vector2(region_rect.position.x / atlas_size.x, region_rect.position.y / atlas_size.y));
+		uvs.push_back(Vector2((region_rect.position.x + region_rect.size.x) / atlas_size.x, region_rect.position.y / atlas_size.y));
+		uvs.push_back(Vector2((region_rect.position.x + region_rect.size.x) / atlas_size.x, (region_rect.position.y + region_rect.size.y) / atlas_size.y));
+		uvs.push_back(Vector2(region_rect.position.x / atlas_size.x, (region_rect.position.y + region_rect.size.y) / atlas_size.y));
+	} else {
+		uvs.push_back(Vector2(0, 0));
+		uvs.push_back(Vector2(1, 0));
+		uvs.push_back(Vector2(1, 1));
+		uvs.push_back(Vector2(0, 1));
+	}
 	PoolVector<Color> colors;
 	colors.push_back(Color(1, 1, 1, 1));
 	colors.push_back(Color(1, 1, 1, 1));
@@ -198,10 +208,27 @@ void CPUParticles2D::_update_mesh_texture() {
 }
 
 void CPUParticles2D::set_texture(const Ref<Texture> &p_texture) {
+	if (p_texture == texture)
+		return;
+
+	if (texture.is_valid())
+		texture->disconnect(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
 
 	texture = p_texture;
+
+	if (texture.is_valid())
+		texture->connect(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
+
 	update();
 	_update_mesh_texture();
+}
+
+void CPUParticles2D::_texture_changed() {
+
+	if (texture.is_valid()) {
+		update();
+		_update_mesh_texture();
+	}
 }
 
 Ref<Texture> CPUParticles2D::get_texture() const {
@@ -292,15 +319,6 @@ void CPUParticles2D::set_spread(float p_spread) {
 float CPUParticles2D::get_spread() const {
 
 	return spread;
-}
-
-void CPUParticles2D::set_flatness(float p_flatness) {
-
-	flatness = p_flatness;
-}
-float CPUParticles2D::get_flatness() const {
-
-	return flatness;
 }
 
 void CPUParticles2D::set_param(Parameter p_param, float p_value) {
@@ -1169,7 +1187,6 @@ void CPUParticles2D::convert_from_particles(Node *p_particles) {
 	Vector3 dir = material->get_direction();
 	set_direction(Vector2(dir.x, dir.y));
 	set_spread(material->get_spread());
-	set_flatness(material->get_flatness());
 
 	set_color(material->get_color());
 
@@ -1283,9 +1300,6 @@ void CPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_spread", "degrees"), &CPUParticles2D::set_spread);
 	ClassDB::bind_method(D_METHOD("get_spread"), &CPUParticles2D::get_spread);
 
-	ClassDB::bind_method(D_METHOD("set_flatness", "amount"), &CPUParticles2D::set_flatness);
-	ClassDB::bind_method(D_METHOD("get_flatness"), &CPUParticles2D::get_flatness);
-
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &CPUParticles2D::set_param);
 	ClassDB::bind_method(D_METHOD("get_param", "param"), &CPUParticles2D::get_param);
 
@@ -1328,6 +1342,7 @@ void CPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("convert_from_particles", "particles"), &CPUParticles2D::convert_from_particles);
 
 	ClassDB::bind_method(D_METHOD("_update_render_thread"), &CPUParticles2D::_update_render_thread);
+	ClassDB::bind_method(D_METHOD("_texture_changed"), &CPUParticles2D::_texture_changed);
 
 	ADD_GROUP("Emission Shape", "emission_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points"), "set_emission_shape", "get_emission_shape");
@@ -1341,7 +1356,6 @@ void CPUParticles2D::_bind_methods() {
 	ADD_GROUP("Direction", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "direction"), "set_direction", "get_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "spread", PROPERTY_HINT_RANGE, "0,180,0.01"), "set_spread", "get_spread");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "flatness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_flatness", "get_flatness");
 	ADD_GROUP("Gravity", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "gravity"), "set_gravity", "get_gravity");
 	ADD_GROUP("Initial Velocity", "initial_");
@@ -1452,7 +1466,6 @@ CPUParticles2D::CPUParticles2D() {
 
 	set_direction(Vector2(1, 0));
 	set_spread(45);
-	set_flatness(0);
 	set_param(PARAM_INITIAL_LINEAR_VELOCITY, 0);
 	set_param(PARAM_ANGULAR_VELOCITY, 0);
 	set_param(PARAM_ORBIT_VELOCITY, 0);

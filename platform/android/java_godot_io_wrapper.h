@@ -73,7 +73,7 @@ public:
 	int get_screen_dpi();
 	String get_unique_id();
 	bool has_vk();
-	void show_vk(const String &p_existing);
+	void show_vk(const String &p_existing, int p_max_input_length);
 	void hide_vk();
 	int get_vk_height();
 	void set_vk_height(int p_height);

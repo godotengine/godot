@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="KinematicCollision" inherits="Reference" category="Core" version="3.2">
+<class name="KinematicCollision" inherits="Reference" version="3.2">
 	<brief_description>
 		Collision data for [KinematicBody] collisions.
 	</brief_description>
@@ -37,7 +37,7 @@
 			The colliding body's shape's normal at the point of collision.
 		</member>
 		<member name="position" type="Vector3" setter="" getter="get_position" default="Vector3( 0, 0, 0 )">
-			The point of collision.
+			The point of collision, in global coordinates.
 		</member>
 		<member name="remainder" type="Vector3" setter="" getter="get_remainder" default="Vector3( 0, 0, 0 )">
 			The moving object's remaining movement vector.

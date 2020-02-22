@@ -491,26 +491,6 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			}
 			draw_rect(Rect2(bs_from, bs_to - bs_from), bs);
 		}
-
-#if 0
-		// KEYFAMES //
-
-		{
-
-			float scale = timeline->get_zoom_scale();
-			int limit_end = get_size().width - timeline->get_buttons_width();
-
-			for (int i = 0; i < animation->track_get_key_count(track); i++) {
-
-				float offset = animation->track_get_key_time(track, i) - timeline->get_value();
-				if (editor->is_key_selected(track, i) && editor->is_moving_selection()) {
-					offset += editor->get_moving_selection_offset();
-				}
-				offset = offset * scale + limit;
-				draw_key(i, scale, int(offset), editor->is_key_selected(track, i), limit, limit_end);
-			}
-		}
-#endif
 	}
 }
 

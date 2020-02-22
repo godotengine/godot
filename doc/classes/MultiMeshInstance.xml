@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MultiMeshInstance" inherits="GeometryInstance" category="Core" version="3.2">
+<class name="MultiMeshInstance" inherits="GeometryInstance" version="3.2">
 	<brief_description>
 		Node that instances a [MultiMesh].
 	</brief_description>
@@ -8,9 +8,9 @@
 		This is useful to optimize the rendering of a high amount of instances of a given mesh (for example trees in a forest or grass strands).
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/animating_thousands_of_fish.html</link>
-		<link>http://docs.godotengine.org/en/latest/tutorials/3d/using_multi_mesh_instance.html</link>
-		<link>http://docs.godotengine.org/en/latest/tutorials/optimization/using_multimesh.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/animating_thousands_of_fish.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/3d/using_multi_mesh_instance.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/optimization/using_multimesh.html</link>
 	</tutorials>
 	<methods>
 	</methods>

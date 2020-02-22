@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OS" inherits="Object" category="Core" version="3.2">
+<class name="OS" inherits="Object" version="3.2">
 	<brief_description>
 		Operating System functions.
 	</brief_description>
@@ -95,7 +95,7 @@
 			</argument>
 			<argument index="1" name="arguments" type="PoolStringArray">
 			</argument>
-			<argument index="2" name="blocking" type="bool">
+			<argument index="2" name="blocking" type="bool" default="true">
 			</argument>
 			<argument index="3" name="output" type="Array" default="[  ]">
 			</argument>
@@ -333,6 +333,7 @@
 			</argument>
 			<description>
 				Returns the given scancode as a string (e.g. Return values: [code]"Escape"[/code], [code]"Shift+Escape"[/code]).
+				See also [member InputEventKey.scancode] and [method InputEventKey.get_scancode_with_modifiers].
 			</description>
 		</method>
 		<method name="get_screen_count" qualifiers="const">
@@ -959,7 +960,7 @@
 			If [code]true[/code], the window background is transparent and window frame is removed.
 			Use [code]get_tree().get_root().set_transparent_background(true)[/code] to disable main viewport background rendering.
 			[b]Note:[/b] This property has no effect if [b]Project &gt; Project Settings &gt; Display &gt; Window &gt; Per-pixel transparency &gt; Allowed[/b] setting is disabled.
-			[b]Note:[/b] This property is implemented on Linux, macOS and Windows.
+			[b]Note:[/b] This property is implemented on HTML5, Linux, macOS and Windows.
 		</member>
 		<member name="window_position" type="Vector2" setter="set_window_position" getter="get_window_position" default="Vector2( 0, 0 )">
 			The window position relative to the screen, the origin is the top left corner, +Y axis goes to the bottom and +X axis goes to the right.

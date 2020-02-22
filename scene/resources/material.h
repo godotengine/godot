@@ -42,7 +42,7 @@ class Material : public Resource {
 
 	GDCLASS(Material, Resource);
 	RES_BASE_EXTENSION("material")
-	OBJ_SAVE_TYPE(Material)
+	OBJ_SAVE_TYPE(Material);
 
 	RID material;
 	Ref<Material> next_pass;
@@ -249,7 +249,7 @@ private:
 			uint64_t blend_mode : 2;
 			uint64_t depth_draw_mode : 2;
 			uint64_t cull_mode : 2;
-			uint64_t flags : 18;
+			uint64_t flags : 19;
 			uint64_t detail_blend_mode : 2;
 			uint64_t diffuse_mode : 3;
 			uint64_t specular_mode : 3;

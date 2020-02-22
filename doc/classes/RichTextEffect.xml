@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RichTextEffect" inherits="Resource" category="Core" version="3.2">
+<class name="RichTextEffect" inherits="Resource" version="3.2">
 	<brief_description>
 		A custom effect for use with [RichTextLabel].
 	</brief_description>
@@ -13,7 +13,7 @@
 		[b]Note:[/b] As soon as a [RichTextLabel] contains at least one [RichTextEffect], it will continuously process the effect unless the project is paused. This may impact battery life negatively.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/latest/tutorials/gui/bbcode_in_richtextlabel.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/gui/bbcode_in_richtextlabel.html</link>
 		<link>https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project</link>
 	</tutorials>
 	<methods>

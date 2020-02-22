@@ -669,14 +669,8 @@ bool OS_X11::refresh_device_info() {
 		int range_max_x = 0;
 		int range_max_y = 0;
 		int pressure_resolution = 0;
-		int pressure_min = 0;
-		int pressure_max = 0;
 		int tilt_resolution_x = 0;
 		int tilt_resolution_y = 0;
-		int tilt_range_min_x = 0;
-		int tilt_range_min_y = 0;
-		int tilt_range_max_x = 0;
-		int tilt_range_max_y = 0;
 		for (int j = 0; j < dev->num_classes; j++) {
 #ifdef TOUCH_ENABLED
 			if (dev->classes[j]->type == XITouchClass && ((XITouchClassInfo *)dev->classes[j])->mode == XIDirectTouch) {
@@ -697,17 +691,14 @@ bool OS_X11::refresh_device_info() {
 					range_max_y = class_info->max;
 					absolute_mode = true;
 				} else if (class_info->number == VALUATOR_PRESSURE && class_info->mode == XIModeAbsolute) {
-					pressure_resolution = class_info->resolution;
-					pressure_min = class_info->min;
-					pressure_max = class_info->max;
+					pressure_resolution = (class_info->max - class_info->min);
+					if (pressure_resolution == 0) pressure_resolution = 1;
 				} else if (class_info->number == VALUATOR_TILTX && class_info->mode == XIModeAbsolute) {
-					tilt_resolution_x = class_info->resolution;
-					tilt_range_min_x = class_info->min;
-					tilt_range_max_x = class_info->max;
+					tilt_resolution_x = (class_info->max - class_info->min);
+					if (tilt_resolution_x == 0) tilt_resolution_x = 1;
 				} else if (class_info->number == VALUATOR_TILTY && class_info->mode == XIModeAbsolute) {
-					tilt_resolution_y = class_info->resolution;
-					tilt_range_min_y = class_info->min;
-					tilt_range_max_y = class_info->max;
+					tilt_resolution_y = (class_info->max - class_info->min);
+					if (tilt_resolution_y == 0) tilt_resolution_y = 1;
 				}
 			}
 		}
@@ -728,15 +719,6 @@ bool OS_X11::refresh_device_info() {
 			print_verbose("XInput: Absolute pointing device: " + String(dev->name));
 		}
 
-		if (pressure_resolution <= 0) {
-			pressure_resolution = (pressure_max - pressure_min);
-		}
-		if (tilt_resolution_x <= 0) {
-			tilt_resolution_x = (tilt_range_max_x - tilt_range_min_x);
-		}
-		if (tilt_resolution_y <= 0) {
-			tilt_resolution_y = (tilt_range_max_y - tilt_range_min_y);
-		}
 		xi.pressure = 0;
 		xi.pen_devices[dev->deviceid] = Vector3(pressure_resolution, tilt_resolution_x, tilt_resolution_y);
 	}
@@ -1429,11 +1411,15 @@ void OS_X11::set_window_fullscreen(bool p_enabled) {
 		set_window_maximized(true);
 	}
 	set_wm_fullscreen(p_enabled);
-	if (!p_enabled && !current_videomode.always_on_top) {
+	if (!p_enabled && current_videomode.always_on_top) {
 		// Restore
 		set_window_maximized(false);
 	}
-
+	if (!p_enabled) {
+		set_window_position(last_position_before_fs);
+	} else {
+		last_position_before_fs = get_window_position();
+	}
 	current_videomode.fullscreen = p_enabled;
 }
 
@@ -1999,11 +1985,6 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 	if (k->is_pressed()) {
 		if (last_is_pressed) {
 			k->set_echo(true);
-		}
-	} else {
-		//ignore
-		if (!last_is_pressed) {
-			return;
 		}
 	}
 
@@ -3507,4 +3488,5 @@ OS_X11::OS_X11() {
 	window_focused = true;
 	xim_style = 0L;
 	mouse_mode = MOUSE_MODE_VISIBLE;
+	last_position_before_fs = Vector2();
 }

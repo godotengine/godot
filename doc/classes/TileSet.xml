@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TileSet" inherits="Resource" category="Core" version="3.2">
+<class name="TileSet" inherits="Resource" version="3.2">
 	<brief_description>
 		Tile library for tilemaps.
 	</brief_description>
@@ -748,6 +748,8 @@
 		<constant name="BIND_TOPRIGHT" value="4" enum="AutotileBindings">
 		</constant>
 		<constant name="BIND_LEFT" value="8" enum="AutotileBindings">
+		</constant>
+		<constant name="BIND_CENTER" value="16" enum="AutotileBindings">
 		</constant>
 		<constant name="BIND_RIGHT" value="32" enum="AutotileBindings">
 		</constant>
