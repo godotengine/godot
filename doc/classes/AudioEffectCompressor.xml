@@ -32,7 +32,7 @@
 		<member name="release_ms" type="float" setter="set_release_ms" getter="get_release_ms" default="250.0">
 			Compressor's delay time to stop reducing the signal after the signal level falls below the threshold, in milliseconds. Value can range from 20 to 2000.
 		</member>
-		<member name="sidechain" type="String" setter="set_sidechain" getter="get_sidechain" default="&quot;&quot;">
+		<member name="sidechain" type="StringName" setter="set_sidechain" getter="get_sidechain" default="@&quot;&quot;">
 			Reduce the sound level using another audio bus for threshold detection.
 		</member>
 		<member name="threshold" type="float" setter="set_threshold" getter="get_threshold" default="0.0">

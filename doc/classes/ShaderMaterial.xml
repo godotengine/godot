@@ -13,7 +13,7 @@
 		<method name="get_shader_param" qualifiers="const">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="param" type="String">
+			<argument index="0" name="param" type="StringName">
 			</argument>
 			<description>
 				Returns the current value set for this material of a uniform in the shader.
@@ -40,7 +40,7 @@
 		<method name="set_shader_param">
 			<return type="void">
 			</return>
-			<argument index="0" name="param" type="String">
+			<argument index="0" name="param" type="StringName">
 			</argument>
 			<argument index="1" name="value" type="Variant">
 			</argument>

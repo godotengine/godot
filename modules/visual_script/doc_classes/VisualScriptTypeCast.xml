@@ -11,7 +11,7 @@
 	<members>
 		<member name="base_script" type="String" setter="set_base_script" getter="get_base_script" default="&quot;&quot;">
 		</member>
-		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type" default="&quot;Object&quot;">
+		<member name="base_type" type="StringName" setter="set_base_type" getter="get_base_type" default="@&quot;Object&quot;">
 		</member>
 	</members>
 	<constants>

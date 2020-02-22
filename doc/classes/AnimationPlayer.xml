@@ -16,7 +16,7 @@
 		<method name="add_animation">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="animation" type="Animation">
 			</argument>
@@ -34,9 +34,9 @@
 			</description>
 		</method>
 		<method name="animation_get_next" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
-			<argument index="0" name="anim_from" type="String">
+			<argument index="0" name="anim_from" type="StringName">
 			</argument>
 			<description>
 				Returns the name of the next animation in the queue.
@@ -45,9 +45,9 @@
 		<method name="animation_set_next">
 			<return type="void">
 			</return>
-			<argument index="0" name="anim_from" type="String">
+			<argument index="0" name="anim_from" type="StringName">
 			</argument>
-			<argument index="1" name="anim_to" type="String">
+			<argument index="1" name="anim_to" type="StringName">
 			</argument>
 			<description>
 				Triggers the [code]anim_to[/code] animation when the [code]anim_from[/code] animation completes.
@@ -68,7 +68,7 @@
 			</description>
 		</method>
 		<method name="find_animation" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="animation" type="Animation">
 			</argument>
@@ -79,7 +79,7 @@
 		<method name="get_animation" qualifiers="const">
 			<return type="Animation">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns the [Animation] with key [code]name[/code] or [code]null[/code] if not found.
@@ -95,9 +95,9 @@
 		<method name="get_blend_time" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="anim_from" type="String">
+			<argument index="0" name="anim_from" type="StringName">
 			</argument>
-			<argument index="1" name="anim_to" type="String">
+			<argument index="1" name="anim_to" type="StringName">
 			</argument>
 			<description>
 				Gets the blend time (in seconds) between two animations, referenced by their names.
@@ -120,7 +120,7 @@
 		<method name="has_animation" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if the [AnimationPlayer] stores an [Animation] with key [code]name[/code].
@@ -136,7 +136,7 @@
 		<method name="play">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String" default="&quot;&quot;">
+			<argument index="0" name="name" type="StringName" default="&quot;&quot;">
 			</argument>
 			<argument index="1" name="custom_blend" type="float" default="-1">
 			</argument>
@@ -153,7 +153,7 @@
 		<method name="play_backwards">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String" default="&quot;&quot;">
+			<argument index="0" name="name" type="StringName" default="&quot;&quot;">
 			</argument>
 			<argument index="1" name="custom_blend" type="float" default="-1">
 			</argument>
@@ -165,7 +165,7 @@
 		<method name="queue">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Queues an animation for playback once the current one is done.
@@ -175,7 +175,7 @@
 		<method name="remove_animation">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Removes the animation with key [code]name[/code].
@@ -184,9 +184,9 @@
 		<method name="rename_animation">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="newname" type="String">
+			<argument index="1" name="newname" type="StringName">
 			</argument>
 			<description>
 				Renames an existing animation with key [code]name[/code] to [code]newname[/code].
@@ -206,9 +206,9 @@
 		<method name="set_blend_time">
 			<return type="void">
 			</return>
-			<argument index="0" name="anim_from" type="String">
+			<argument index="0" name="anim_from" type="StringName">
 			</argument>
-			<argument index="1" name="anim_to" type="String">
+			<argument index="1" name="anim_to" type="StringName">
 			</argument>
 			<argument index="2" name="sec" type="float">
 			</argument>
@@ -264,23 +264,23 @@
 	</members>
 	<signals>
 		<signal name="animation_changed">
-			<argument index="0" name="old_name" type="String">
+			<argument index="0" name="old_name" type="StringName">
 			</argument>
-			<argument index="1" name="new_name" type="String">
+			<argument index="1" name="new_name" type="StringName">
 			</argument>
 			<description>
 				If the currently being played animation changes, this signal will notify of such change.
 			</description>
 		</signal>
 		<signal name="animation_finished">
-			<argument index="0" name="anim_name" type="String">
+			<argument index="0" name="anim_name" type="StringName">
 			</argument>
 			<description>
 				Notifies when an animation finished playing.
 			</description>
 		</signal>
 		<signal name="animation_started">
-			<argument index="0" name="anim_name" type="String">
+			<argument index="0" name="anim_name" type="StringName">
 			</argument>
 			<description>
 				Notifies when an animation starts playing.

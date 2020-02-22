@@ -32,7 +32,7 @@
 			</description>
 		</method>
 		<method name="animation_track_get_key_animation" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="track_idx" type="int">
 			</argument>
@@ -48,7 +48,7 @@
 			</argument>
 			<argument index="1" name="time" type="float">
 			</argument>
-			<argument index="2" name="animation" type="String">
+			<argument index="2" name="animation" type="StringName">
 			</argument>
 			<description>
 			</description>
@@ -60,7 +60,7 @@
 			</argument>
 			<argument index="1" name="key_idx" type="int">
 			</argument>
-			<argument index="2" name="animation" type="String">
+			<argument index="2" name="animation" type="StringName">
 			</argument>
 			<description>
 			</description>
@@ -287,7 +287,7 @@
 			</description>
 		</method>
 		<method name="method_track_get_name" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="track_idx" type="int">
 			</argument>

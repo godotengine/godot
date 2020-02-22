@@ -12,7 +12,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="action" type="String" setter="set_action" getter="get_action" default="&quot;&quot;">
+		<member name="action" type="StringName" setter="set_action" getter="get_action" default="@&quot;&quot;">
 			The action's name. Actions are accessed via this [String].
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">

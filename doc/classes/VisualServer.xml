@@ -1671,7 +1671,7 @@
 			</return>
 			<argument index="0" name="material" type="RID">
 			</argument>
-			<argument index="1" name="parameter" type="String">
+			<argument index="1" name="parameter" type="StringName">
 			</argument>
 			<description>
 				Returns the value of a certain material's parameter.
@@ -1693,7 +1693,7 @@
 			</return>
 			<argument index="0" name="material" type="RID">
 			</argument>
-			<argument index="1" name="parameter" type="String">
+			<argument index="1" name="parameter" type="StringName">
 			</argument>
 			<argument index="2" name="value" type="Variant">
 			</argument>
@@ -2503,7 +2503,7 @@
 			</return>
 			<argument index="0" name="where" type="Object">
 			</argument>
-			<argument index="1" name="method" type="String">
+			<argument index="1" name="method" type="StringName">
 			</argument>
 			<argument index="2" name="userdata" type="Variant">
 			</argument>
@@ -2609,7 +2609,7 @@
 			</return>
 			<argument index="0" name="shader" type="RID">
 			</argument>
-			<argument index="1" name="name" type="String">
+			<argument index="1" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns a default texture from a shader searched by name.
@@ -2620,7 +2620,7 @@
 			</return>
 			<argument index="0" name="material" type="RID">
 			</argument>
-			<argument index="1" name="parameter" type="String">
+			<argument index="1" name="parameter" type="StringName">
 			</argument>
 			<description>
 			</description>
@@ -2650,7 +2650,7 @@
 			</return>
 			<argument index="0" name="shader" type="RID">
 			</argument>
-			<argument index="1" name="name" type="String">
+			<argument index="1" name="name" type="StringName">
 			</argument>
 			<argument index="2" name="texture" type="RID">
 			</argument>

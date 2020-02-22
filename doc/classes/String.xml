@@ -130,6 +130,14 @@
 		<method name="String">
 			<return type="String">
 			</return>
+			<argument index="0" name="from" type="StringName">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
 			<argument index="0" name="from" type="NodePath">
 			</argument>
 			<description>
@@ -143,6 +151,22 @@
 			</argument>
 			<description>
 				Constructs a new String from the given [RID].
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="Callable">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="Signal">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="String">
@@ -322,6 +346,8 @@
 			</description>
 		</method>
 		<method name="erase">
+			<return type="void">
+			</return>
 			<argument index="0" name="position" type="int">
 			</argument>
 			<argument index="1" name="chars" type="int">

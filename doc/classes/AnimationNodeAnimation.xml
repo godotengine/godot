@@ -12,7 +12,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="animation" type="String" setter="set_animation" getter="get_animation" default="&quot;&quot;">
+		<member name="animation" type="StringName" setter="set_animation" getter="get_animation" default="@&quot;&quot;">
 			Animation to use as an output. It is one of the animations provided by [member AnimationTree.anim_player].
 		</member>
 	</members>
