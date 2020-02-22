@@ -83,6 +83,8 @@
 			</description>
 		</method>
 		<method name="append">
+			<return type="void">
+			</return>
 			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
@@ -90,7 +92,7 @@
 			</description>
 		</method>
 		<method name="back">
-			<return type="Variant">
+			<return type="void">
 			</return>
 			<description>
 				Returns the last element of the array, or [code]null[/code] if the array is empty.
@@ -125,6 +127,8 @@
 			</description>
 		</method>
 		<method name="clear">
+			<return type="void">
+			</return>
 			<description>
 				Clears the array. This is equivalent to using [method resize] with a size of [code]0[/code].
 			</description>
@@ -156,6 +160,8 @@
 			</description>
 		</method>
 		<method name="erase">
+			<return type="void">
+			</return>
 			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
@@ -183,7 +189,7 @@
 			</description>
 		</method>
 		<method name="front">
-			<return type="Variant">
+			<return type="void">
 			</return>
 			<description>
 				Returns the first element of the array, or [code]null[/code] if the array is empty.
@@ -212,6 +218,8 @@
 			</description>
 		</method>
 		<method name="insert">
+			<return type="void">
+			</return>
 			<argument index="0" name="position" type="int">
 			</argument>
 			<argument index="1" name="value" type="Variant">
@@ -221,39 +229,43 @@
 			</description>
 		</method>
 		<method name="invert">
+			<return type="void">
+			</return>
 			<description>
 				Reverses the order of the elements in the array.
 			</description>
 		</method>
 		<method name="max">
-			<return type="Variant">
+			<return type="void">
 			</return>
 			<description>
 				Returns the maximum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
 			</description>
 		</method>
 		<method name="min">
-			<return type="Variant">
+			<return type="void">
 			</return>
 			<description>
 				Returns the minimum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
 			</description>
 		</method>
 		<method name="pop_back">
-			<return type="Variant">
+			<return type="void">
 			</return>
 			<description>
 				Removes and returns the last element of the array. Returns [code]null[/code] if the array is empty.
 			</description>
 		</method>
 		<method name="pop_front">
-			<return type="Variant">
+			<return type="void">
 			</return>
 			<description>
 				Removes and returns the first element of the array. Returns [code]null[/code] if the array is empty.
 			</description>
 		</method>
 		<method name="push_back">
+			<return type="void">
+			</return>
 			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
@@ -261,6 +273,8 @@
 			</description>
 		</method>
 		<method name="push_front">
+			<return type="void">
+			</return>
 			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
@@ -268,6 +282,8 @@
 			</description>
 		</method>
 		<method name="remove">
+			<return type="void">
+			</return>
 			<argument index="0" name="position" type="int">
 			</argument>
 			<description>
@@ -275,6 +291,8 @@
 			</description>
 		</method>
 		<method name="resize">
+			<return type="void">
+			</return>
 			<argument index="0" name="size" type="int">
 			</argument>
 			<description>
@@ -293,6 +311,8 @@
 			</description>
 		</method>
 		<method name="shuffle">
+			<return type="void">
+			</return>
 			<description>
 				Shuffles the array such that the items will have a random order. This method uses the global random number generator common to methods such as [method @GDScript.randi]. Call [method @GDScript.randomize] to ensure that a new seed will be used each time if you want non-reproducible shuffling.
 			</description>
@@ -320,6 +340,8 @@
 			</description>
 		</method>
 		<method name="sort">
+			<return type="void">
+			</return>
 			<description>
 				Sorts the array.
 				[b]Note:[/b] Strings are sorted in alphabetical order (as opposed to natural order). This may lead to unexpected behavior when sorting an array of strings ending with a sequence of numbers. Consider the following example:
@@ -331,6 +353,8 @@
 			</description>
 		</method>
 		<method name="sort_custom">
+			<return type="void">
+			</return>
 			<argument index="0" name="obj" type="Object">
 			</argument>
 			<argument index="1" name="func" type="String">
