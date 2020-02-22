@@ -35,6 +35,9 @@
 #if defined(OPENGL_ENABLED)
 #import "gl_view.h"
 #endif
+#if defined(VULKAN_ENABLED)
+#import "vulkan_view.h"
+#endif
 #include "main/main.h"
 #include "os_iphone.h"
 
@@ -658,7 +661,10 @@ static int frame_count = 0;
 #endif
 
 #if defined(VULKAN_ENABLED)
+	VulkanView *vulkanView = [[VulkanView alloc] initWithFrame:rect];
+
 	view_controller = [[ViewController alloc] init];
+	view_controller.view = vulkanView;
 #endif
 
 	window.rootViewController = view_controller;
