@@ -309,9 +309,19 @@ if selected_platform in platform_list:
     env['LINKFLAGS'] = ''
     env.Append(LINKFLAGS=str(LINKFLAGS).split())
 
+    # Platform specific flags
+    flag_list = platform_flags[selected_platform]
+    for f in flag_list:
+        if not (f[0] in ARGUMENTS):  # allow command line to override platform flags
+            env[f[0]] = f[1]
+
+    # Must happen after the flags definition, so that they can be used by platform detect
+    detect.configure(env)
+
     # Set our C and C++ standard requirements.
     # C++17 is required as we need guaranteed copy elision as per GH-36436.
     # Prepending to make it possible to override.
+    # This needs to come after `configure`, otherwise we don't have env.msvc.
     if not env.msvc:
         # Specifying GNU extensions support explicitly, which are supported by
         # both GCC and Clang. Both currently default to gnu11 and gnu++14.
@@ -321,15 +331,6 @@ if selected_platform in platform_list:
         # MSVC doesn't have clear C standard support, /std only covers C++.
         # We apply it to CCFLAGS (both C and C++ code) in case it impacts C features.
         env.Prepend(CCFLAGS=['/std:c++17', '/permissive-'])
-
-    # Platform specific flags
-    flag_list = platform_flags[selected_platform]
-    for f in flag_list:
-        if not (f[0] in ARGUMENTS):  # allow command line to override platform flags
-            env[f[0]] = f[1]
-
-    # Must happen after the flags definition, so that they can be used by platform detect
-    detect.configure(env)
 
     # Configure compiler warnings
     if env.msvc:
