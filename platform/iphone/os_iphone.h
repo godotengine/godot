@@ -79,6 +79,10 @@ private:
 
 	MainLoop *main_loop;
 
+#if defined(VULKAN_ENABLED)
+	VulkanContextIPhone *context_vulkan;
+	RenderingDeviceVulkan *rendering_device_vulkan;
+#endif
 	VideoMode video_mode;
 
 	virtual int get_video_driver_count() const;
