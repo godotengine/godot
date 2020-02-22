@@ -164,5 +164,5 @@ def configure(env):
 
     #env.Append(CPPDEFINES=['GLES_ENABLED', 'OPENGL_ENABLED'])
 
-    env.Append(CCFLAGS=['-mmacosx-version-min=10.11'])
-    env.Append(LINKFLAGS=['-mmacosx-version-min=10.11'])
+    env.Append(CCFLAGS=['-mmacosx-version-min=10.12'])
+    env.Append(LINKFLAGS=['-mmacosx-version-min=10.12'])
