@@ -23,12 +23,26 @@ def get_android_out_dir(env):
                         android_arch_dirs[env['android_arch']])
 
 
-def find_file_in_dir(directory, files, prefix='', extension=''):
-    if not extension.startswith('.'):
-        extension = '.' + extension
-    for curfile in files:
-        if os.path.isfile(os.path.join(directory, prefix + curfile + extension)):
-            return curfile
+def find_name_in_dir_files(directory, names, prefixes=[''], extensions=['']):
+    for extension in extensions:
+        if extension and not extension.startswith('.'):
+            extension = '.' + extension
+        for prefix in prefixes:
+            for curname in names:
+                if os.path.isfile(os.path.join(directory, prefix + curname + extension)):
+                    return curname
+    return ''
+
+
+def find_file_in_dir(directory, names, prefixes=[''], extensions=['']):
+    for extension in extensions:
+        if extension and not extension.startswith('.'):
+            extension = '.' + extension
+        for prefix in prefixes:
+            for curname in names:
+                filename = prefix + curname + extension
+                if os.path.isfile(os.path.join(directory, filename)):
+                    return filename
     return ''
 
 
@@ -120,7 +134,11 @@ def configure(env, env_mono):
         env.Append(LIBPATH=mono_lib_path)
         env_mono.Prepend(CPPPATH=os.path.join(mono_root, 'include', 'mono-2.0'))
 
-        lib_suffix = Environment()['LIBSUFFIX']
+        lib_suffixes = ['.lib']
+
+        if not env.msvc:
+            # MingW supports both '.a' and '.lib'
+            lib_suffixes.insert(0, '.a')
 
         if mono_static:
             if env.msvc:
@@ -128,40 +146,43 @@ def configure(env, env_mono):
             else:
                 mono_static_lib_name = 'libmonosgen-2.0'
 
-            if not os.path.isfile(os.path.join(mono_lib_path, mono_static_lib_name + lib_suffix)):
+            mono_static_lib_file = find_file_in_dir(mono_lib_path, [mono_static_lib_name], extensions=lib_suffixes)
+
+            if not mono_static_lib_file:
                 raise RuntimeError('Could not find static mono library in: ' + mono_lib_path)
 
             if env.msvc:
-                env.Append(LINKFLAGS=mono_static_lib_name + lib_suffix)
+                env.Append(LINKFLAGS=mono_static_lib_file)
 
-                env.Append(LINKFLAGS='Mincore' + lib_suffix)
-                env.Append(LINKFLAGS='msvcrt' + lib_suffix)
-                env.Append(LINKFLAGS='LIBCMT' + lib_suffix)
-                env.Append(LINKFLAGS='Psapi' + lib_suffix)
+                env.Append(LINKFLAGS='Mincore.lib')
+                env.Append(LINKFLAGS='msvcrt.lib')
+                env.Append(LINKFLAGS='LIBCMT.lib')
+                env.Append(LINKFLAGS='Psapi.lib')
             else:
-                env.Append(LINKFLAGS=os.path.join(mono_lib_path, mono_static_lib_name + lib_suffix))
+                mono_static_lib_file_path = os.path.join(mono_lib_path, mono_static_lib_file)
+                env.Append(LINKFLAGS=['-Wl,-whole-archive', mono_static_lib_file_path, '-Wl,-no-whole-archive'])
 
                 env.Append(LIBS=['psapi'])
                 env.Append(LIBS=['version'])
         else:
-            mono_lib_name = find_file_in_dir(mono_lib_path, mono_lib_names, extension=lib_suffix)
+            mono_lib_name = find_name_in_dir_files(mono_lib_path, mono_lib_names, prefixes=['', 'lib'], extensions=lib_suffixes)
 
             if not mono_lib_name:
                 raise RuntimeError('Could not find mono library in: ' + mono_lib_path)
 
             if env.msvc:
-                env.Append(LINKFLAGS=mono_lib_name + lib_suffix)
+                env.Append(LINKFLAGS=mono_lib_name + '.lib')
             else:
                 env.Append(LIBS=[mono_lib_name])
 
             mono_bin_path = os.path.join(mono_root, 'bin')
 
-            mono_dll_name = find_file_in_dir(mono_bin_path, mono_lib_names, extension='.dll')
+            mono_dll_file = find_file_in_dir(mono_bin_path, mono_lib_names, prefixes=['', 'lib'], extensions=['.dll'])
 
-            if not mono_dll_name:
+            if not mono_dll_file:
                 raise RuntimeError('Could not find mono shared library in: ' + mono_bin_path)
 
-            copy_file(mono_bin_path, '#bin', mono_dll_name + '.dll')
+            copy_file(mono_bin_path, '#bin', mono_dll_file)
     else:
         is_apple = env['platform'] in ['osx', 'iphone']
 
@@ -169,7 +190,7 @@ def configure(env, env_mono):
 
         mono_root = mono_prefix
         mono_lib_path = ''
-        mono_so_name = ''
+        mono_so_file = ''
 
         if not mono_root and (is_android or is_javascript):
             raise RuntimeError("Mono installation directory not found; specify one manually with the 'mono_prefix' SCons parameter")
@@ -198,7 +219,7 @@ def configure(env, env_mono):
             env.Append(LIBPATH=[mono_lib_path])
             env_mono.Prepend(CPPPATH=os.path.join(mono_root, 'include', 'mono-2.0'))
 
-            mono_lib = find_file_in_dir(mono_lib_path, mono_lib_names, prefix='lib', extension='.a')
+            mono_lib = find_name_in_dir_files(mono_lib_path, mono_lib_names, prefixes=['lib'], extensions=['.a'])
 
             if not mono_lib:
                 raise RuntimeError('Could not find mono library in: ' + mono_lib_path)
@@ -250,12 +271,10 @@ def configure(env, env_mono):
                 env.Append(LIBS=['m', 'rt', 'dl', 'pthread'])
 
             if not mono_static:
-                mono_so_name = find_file_in_dir(mono_lib_path, mono_lib_names, prefix='lib', extension=sharedlib_ext)
+                mono_so_file = find_file_in_dir(mono_lib_path, mono_lib_names, prefixes=['lib'], extensions=[sharedlib_ext])
 
-                if not mono_so_name:
+                if not mono_so_file:
                     raise RuntimeError('Could not find mono shared library in: ' + mono_lib_path)
-
-                copy_file(mono_lib_path, '#bin', 'lib' + mono_so_name + sharedlib_ext)
         else:
             assert not mono_static
 
@@ -270,18 +289,18 @@ def configure(env, env_mono):
             tmpenv.ParseConfig('pkg-config monosgen-2 --libs-only-L')
 
             for hint_dir in tmpenv['LIBPATH']:
-                name_found = find_file_in_dir(hint_dir, mono_lib_names, prefix='lib', extension=sharedlib_ext)
-                if name_found:
+                file_found = find_file_in_dir(hint_dir, mono_lib_names, prefixes=['lib'], extensions=[sharedlib_ext])
+                if file_found:
                     mono_lib_path = hint_dir
-                    mono_so_name = name_found
+                    mono_so_file = file_found
                     break
 
-            if not mono_so_name:
+            if not mono_so_file:
                 raise RuntimeError('Could not find mono shared library in: ' + str(tmpenv['LIBPATH']))
 
         if not mono_static:
             libs_output_dir = get_android_out_dir(env) if is_android else '#bin'
-            copy_file(mono_lib_path, libs_output_dir, 'lib' + mono_so_name + sharedlib_ext)
+            copy_file(mono_lib_path, libs_output_dir, mono_so_file)
 
     if not tools_enabled:
         if is_desktop(env['platform']):
@@ -433,8 +452,8 @@ def copy_mono_shared_libs(env, mono_root, target_mono_root_dir):
         if not os.path.isdir(target_mono_bin_dir):
             os.makedirs(target_mono_bin_dir)
 
-        mono_posix_helper_name = find_file_in_dir(src_mono_bin_dir, ['MonoPosixHelper', 'libMonoPosixHelper'], extension='.dll')
-        copy(os.path.join(src_mono_bin_dir, mono_posix_helper_name + '.dll'), os.path.join(target_mono_bin_dir, 'MonoPosixHelper.dll'))
+        mono_posix_helper_file = find_file_in_dir(src_mono_bin_dir, ['MonoPosixHelper'], prefixes=['', 'lib'], extensions=['.dll'])
+        copy(os.path.join(src_mono_bin_dir, mono_posix_helper_file), os.path.join(target_mono_bin_dir, 'MonoPosixHelper.dll'))
 
         # For newer versions
         btls_dll_path = os.path.join(src_mono_bin_dir, 'libmono-btls-shared.dll')
@@ -465,7 +484,7 @@ def pkgconfig_try_find_mono_root(mono_lib_names, sharedlib_ext):
     tmpenv.AppendENVPath('PKG_CONFIG_PATH', os.getenv('PKG_CONFIG_PATH'))
     tmpenv.ParseConfig('pkg-config monosgen-2 --libs-only-L')
     for hint_dir in tmpenv['LIBPATH']:
-        name_found = find_file_in_dir(hint_dir, mono_lib_names, prefix='lib', extension=sharedlib_ext)
+        name_found = find_name_in_dir_files(hint_dir, mono_lib_names, prefixes=['lib'], extensions=[sharedlib_ext])
         if name_found and os.path.isdir(os.path.join(hint_dir, '..', 'include', 'mono-2.0')):
             return os.path.join(hint_dir, '..')
     return ''
