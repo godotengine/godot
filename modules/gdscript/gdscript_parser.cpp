@@ -793,7 +793,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 								}
 								_add_warning(GDScriptWarning::UNASSIGNED_VARIABLE_OP_ASSIGN, -1, identifier.operator String());
 							}
-							FALLTHROUGH;
+							[[fallthrough]];
 						}
 						case GDScriptTokenizer::TK_OP_ASSIGN: {
 							lv->assignments += 1;
@@ -2766,13 +2766,12 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 		}
 #endif // DEBUG_ENABLED
 		switch (token) {
-			case GDScriptTokenizer::TK_EOF:
+			case GDScriptTokenizer::TK_EOF: {
 				p_block->end_line = tokenizer->get_token_line();
+				return; // End of file!
+			} break;
 			case GDScriptTokenizer::TK_ERROR: {
-				return; //go back
-
-				//end of file!
-
+				return;
 			} break;
 			case GDScriptTokenizer::TK_NEWLINE: {
 
@@ -3525,11 +3524,12 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 			case GDScriptTokenizer::TK_CURSOR: {
 				tokenizer->advance();
 			} break;
-			case GDScriptTokenizer::TK_EOF:
+			case GDScriptTokenizer::TK_EOF: {
 				p_class->end_line = tokenizer->get_token_line();
+				return; // End of file!
+			} break;
 			case GDScriptTokenizer::TK_ERROR: {
-				return; //go back
-				//end of file!
+				return; // Go back.
 			} break;
 			case GDScriptTokenizer::TK_NEWLINE: {
 				if (!_parse_newline()) {
@@ -3719,7 +3719,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					return;
 				}
 
-				FALLTHROUGH;
+				[[fallthrough]];
 			}
 			case GDScriptTokenizer::TK_PR_FUNCTION: {
 
@@ -4220,7 +4220,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 										break;
 									}
 
-									FALLTHROUGH;
+									[[fallthrough]];
 								}
 								case Variant::REAL: {
 
@@ -5489,7 +5489,7 @@ String GDScriptParser::DataType::to_string() const {
 			if (!gds_class.empty()) {
 				return gds_class;
 			}
-			FALLTHROUGH;
+			[[fallthrough]];
 		}
 		case SCRIPT: {
 			if (is_meta_type) {
@@ -8345,7 +8345,7 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 				if (cn->value.get_type() == Variant::STRING) {
 					break;
 				}
-				FALLTHROUGH;
+				[[fallthrough]];
 			}
 			default: {
 				_mark_line_as_safe(statement->line);

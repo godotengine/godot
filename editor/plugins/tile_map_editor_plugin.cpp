@@ -55,7 +55,7 @@ void TileMapEditor::_notification(int p_what) {
 			if (is_visible_in_tree()) {
 				_update_palette();
 			}
-			FALLTHROUGH;
+			[[fallthrough]];
 		}
 
 		case NOTIFICATION_ENTER_TREE: {

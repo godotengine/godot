@@ -360,8 +360,6 @@ if selected_platform in platform_list:
                 shadow_local_warning = ['-Wshadow-local']
 
         if (env["warnings"] == 'extra'):
-            # Note: enable -Wimplicit-fallthrough for Clang (already part of -Wextra for GCC)
-            # once we switch to C++11 or later (necessary for our FALLTHROUGH macro).
             env.Append(CCFLAGS=['-Wall', '-Wextra', '-Wno-unused-parameter']
                 + all_plus_warnings + shadow_local_warning)
             env.Append(CXXFLAGS=['-Wctor-dtor-privacy', '-Wnon-virtual-dtor'])
@@ -374,6 +372,8 @@ if selected_platform in platform_list:
                 version = methods.get_compiler_version(env)
                 if version != None and version[0] >= '9':
                     env.Append(CCFLAGS=['-Wattribute-alias=2'])
+            if methods.using_clang(env):
+                env.Append(CCFLAGS=['-Wimplicit-fallthrough'])
         elif (env["warnings"] == 'all'):
             env.Append(CCFLAGS=['-Wall'] + shadow_local_warning)
         elif (env["warnings"] == 'moderate'):

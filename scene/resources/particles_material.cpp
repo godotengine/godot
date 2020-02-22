@@ -189,7 +189,7 @@ void ParticlesMaterial::_update_shader() {
 		} break;
 		case EMISSION_SHAPE_DIRECTED_POINTS: {
 			code += "uniform sampler2D emission_texture_normal : hint_black;\n";
-			FALLTHROUGH;
+			[[fallthrough]];
 		}
 		case EMISSION_SHAPE_POINTS: {
 			code += "uniform sampler2D emission_texture_points : hint_black;\n";

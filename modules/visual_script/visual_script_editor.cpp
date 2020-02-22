@@ -3906,7 +3906,7 @@ void VisualScriptEditor::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			variable_editor->connect_compat("changed", this, "_update_members");
 			signal_editor->connect_compat("changed", this, "_update_members");
-			FALLTHROUGH;
+			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
 			if (p_what != NOTIFICATION_READY && !is_visible_in_tree()) {

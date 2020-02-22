@@ -2169,6 +2169,7 @@ int64_t String::to_int(const CharType *p_str, int p_len) {
 				} else {
 					break;
 				}
+				[[fallthrough]];
 			}
 			case READING_INT: {
 
