@@ -204,10 +204,6 @@
 		</theme_item>
 		<theme_item name="increment_highlight" type="Texture2D">
 		</theme_item>
-		<theme_item name="label_valign_bg" type="int" default="2">
-		</theme_item>
-		<theme_item name="label_valign_fg" type="int" default="0">
-		</theme_item>
 		<theme_item name="menu" type="Texture2D">
 		</theme_item>
 		<theme_item name="menu_highlight" type="Texture2D">
@@ -221,8 +217,6 @@
 		<theme_item name="tab_disabled" type="StyleBox">
 		</theme_item>
 		<theme_item name="tab_fg" type="StyleBox">
-		</theme_item>
-		<theme_item name="top_margin" type="int" default="24">
 		</theme_item>
 	</theme_items>
 </class>
