@@ -132,6 +132,8 @@
 			</description>
 		</method>
 		<method name="set_axis_angle">
+			<return type="void">
+			</return>
 			<argument index="0" name="axis" type="Vector3">
 			</argument>
 			<argument index="1" name="angle" type="float">
@@ -141,6 +143,8 @@
 			</description>
 		</method>
 		<method name="set_euler">
+			<return type="void">
+			</return>
 			<argument index="0" name="euler" type="Vector3">
 			</argument>
 			<description>
