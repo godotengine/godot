@@ -23,6 +23,7 @@ def get_opts():
     return [
         ('IPHONEPATH', 'Path to iPhone toolchain', '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain'),
         ('IPHONESDK', 'Path to the iPhone SDK', ''),
+        BoolVariable('use_static_mvk', 'Link MoltenVK statically as Level-0 driver (better portability) or use Vulkan ICD loader (enables validation layers)', False),
         BoolVariable('game_center', 'Support for game center', True),
         BoolVariable('store_kit', 'Support for in-app store', True),
         BoolVariable('icloud', 'Support for iCloud', True),
