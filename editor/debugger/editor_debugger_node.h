@@ -59,7 +59,7 @@ private:
 
 		bool operator<(const Breakpoint &p_b) const {
 			if (line == p_b.line)
-				return line < p_b.line;
+				return source < p_b.source;
 			return line < p_b.line;
 		}
 
