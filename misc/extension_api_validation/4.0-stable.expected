@@ -443,3 +443,11 @@ Validate extension JSON: API was removed: classes/SystemFont/properties/fallback
 
 The property was moved to their common base class Font.
 The setters and getters were already in Font, so this shouldn't affect compatibility.
+
+
+GH-36493
+--------
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/add_icon_shortcut/arguments': size changed value in new API, from 4 to 5.
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/add_shortcut/arguments': size changed value in new API, from 3 to 4.
+
+Added optional argument. Compatibility methods registered.
