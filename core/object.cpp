@@ -1405,6 +1405,9 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, co
 
 	ERR_FAIL_COND_V(p_callable.is_null(), ERR_INVALID_PARAMETER);
 
+	Object *target_object = p_callable.get_object();
+	ERR_FAIL_COND_V(!target_object, ERR_INVALID_PARAMETER);
+
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal);
@@ -1449,7 +1452,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, co
 	conn.flags = p_flags;
 	conn.binds = p_binds;
 	slot.conn = conn;
-	slot.cE = p_callable.get_object()->connections.push_back(conn);
+	slot.cE = target_object->connections.push_back(conn);
 	if (p_flags & CONNECT_REFERENCE_COUNTED) {
 		slot.reference_count = 1;
 	}
@@ -1498,6 +1501,10 @@ void Object::disconnect(const StringName &p_signal, const Callable &p_callable) 
 void Object::_disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force) {
 
 	ERR_FAIL_COND(p_callable.is_null());
+
+	Object *target_object = p_callable.get_object();
+	ERR_FAIL_COND(!target_object);
+
 	SignalData *s = signal_map.getptr(p_signal);
 	ERR_FAIL_COND_MSG(!s, vformat("Nonexistent signal '%s' in %s.", p_signal, to_string()));
 
@@ -1511,9 +1518,8 @@ void Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 			return;
 		}
 	}
-	Object *object = p_callable.get_object();
-	ERR_FAIL_COND(!object);
-	object->connections.erase(slot->cE);
+
+	target_object->connections.erase(slot->cE);
 	s->slot_map.erase(p_callable);
 
 	if (s->slot_map.empty() && ClassDB::has_signal(get_class_name(), p_signal)) {
