@@ -46,6 +46,7 @@
 #include "test_render.h"
 #include "test_shader_lang.h"
 #include "test_string.h"
+#include "test_thread_array_processor.h"
 
 const char **tests_get_names() {
 
