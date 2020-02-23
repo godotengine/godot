@@ -666,90 +666,115 @@ struct _VariantCall {
 		r_ret = s;
 	}
 
-	VCALL_LOCALMEM0R(PackedByteArray, size);
-	VCALL_LOCALMEM0R(PackedByteArray, empty);
-	VCALL_LOCALMEM2(PackedByteArray, set);
-	VCALL_LOCALMEM1R(PackedByteArray, get);
-	VCALL_LOCALMEM1(PackedByteArray, push_back);
-	VCALL_LOCALMEM1(PackedByteArray, resize);
-	VCALL_LOCALMEM2R(PackedByteArray, insert);
-	VCALL_LOCALMEM1(PackedByteArray, remove);
-	VCALL_LOCALMEM1(PackedByteArray, append);
-	VCALL_LOCALMEM1(PackedByteArray, append_array);
-	VCALL_LOCALMEM0(PackedByteArray, invert);
-	VCALL_LOCALMEM2R(PackedByteArray, subarray);
+#define VCALL_PARRMEM0(m_type, m_elemtype, m_method) \
+	static void _call_##m_type##_##m_method(Variant &r_ret, Variant &p_self, const Variant **p_args) { Variant::PackedArrayRef<m_elemtype>::get_array_ptr(p_self._data.packed_array)->m_method(); }
+#define VCALL_PARRMEM0R(m_type, m_elemtype, m_method) \
+	static void _call_##m_type##_##m_method(Variant &r_ret, Variant &p_self, const Variant **p_args) { r_ret = Variant::PackedArrayRef<m_elemtype>::get_array_ptr(p_self._data.packed_array)->m_method(); }
+#define VCALL_PARRMEM1(m_type, m_elemtype, m_method) \
+	static void _call_##m_type##_##m_method(Variant &r_ret, Variant &p_self, const Variant **p_args) { Variant::PackedArrayRef<m_elemtype>::get_array_ptr(p_self._data.packed_array)->m_method(*p_args[0]); }
+#define VCALL_PARRMEM1R(m_type, m_elemtype, m_method) \
+	static void _call_##m_type##_##m_method(Variant &r_ret, Variant &p_self, const Variant **p_args) { r_ret = Variant::PackedArrayRef<m_elemtype>::get_array_ptr(p_self._data.packed_array)->m_method(*p_args[0]); }
+#define VCALL_PARRMEM2(m_type, m_elemtype, m_method) \
+	static void _call_##m_type##_##m_method(Variant &r_ret, Variant &p_self, const Variant **p_args) { Variant::PackedArrayRef<m_elemtype>::get_array_ptr(p_self._data.packed_array)->m_method(*p_args[0], *p_args[1]); }
+#define VCALL_PARRMEM2R(m_type, m_elemtype, m_method) \
+	static void _call_##m_type##_##m_method(Variant &r_ret, Variant &p_self, const Variant **p_args) { r_ret = Variant::PackedArrayRef<m_elemtype>::get_array_ptr(p_self._data.packed_array)->m_method(*p_args[0], *p_args[1]); }
+#define VCALL_PARRMEM3(m_type, m_elemtype, m_method) \
+	static void _call_##m_type##_##m_method(Variant &r_ret, Variant &p_self, const Variant **p_args) { Variant::PackedArrayRef<m_elemtype>::get_array_ptr(p_self._data.packed_array)->m_method(*p_args[0], *p_args[1], *p_args[2]); }
+#define VCALL_PARRMEM3R(m_type, m_elemtype, m_method) \
+	static void _call_##m_type##_##m_method(Variant &r_ret, Variant &p_self, const Variant **p_args) { r_ret = Variant::PackedArrayRef<m_elemtype>::get_array_ptr(p_self._data.packed_array)->m_method(*p_args[0], *p_args[1], *p_args[2]); }
+#define VCALL_PARRMEM4(m_type, m_elemtype, m_method) \
+	static void _call_##m_type##_##m_method(Variant &r_ret, Variant &p_self, const Variant **p_args) { Variant::PackedArrayRef<m_elemtype>::get_array_ptr(p_self._data.packed_array)->m_method(*p_args[0], *p_args[1], *p_args[2], *p_args[3]); }
+#define VCALL_PARRMEM4R(m_type, m_elemtype, m_method) \
+	static void _call_##m_type##_##m_method(Variant &r_ret, Variant &p_self, const Variant **p_args) { r_ret = Variant::PackedArrayRef<m_elemtype>::get_array_ptr(p_self._data.packed_array)->m_method(*p_args[0], *p_args[1], *p_args[2], *p_args[3]); }
+#define VCALL_PARRMEM5(m_type, m_elemtype, m_method) \
+	static void _call_##m_type##_##m_method(Variant &r_ret, Variant &p_self, const Variant **p_args) { Variant::PackedArrayRef<m_elemtype>::get_array_ptr(p_self._data.packed_array)->m_method(*p_args[0], *p_args[1], *p_args[2], *p_args[3], *p_args[4]); }
+#define VCALL_PARRMEM5R(m_type, m_elemtype, m_method) \
+	static void _call_##m_type##_##m_method(Variant &r_ret, Variant &p_self, const Variant **p_args) { r_ret = Variant::PackedArrayRef<m_elemtype>::get_array_ptr(p_self._data.packed_array)->m_method(*p_args[0], *p_args[1], *p_args[2], *p_args[3], *p_args[4]); }
 
-	VCALL_LOCALMEM0R(PackedIntArray, size);
-	VCALL_LOCALMEM0R(PackedIntArray, empty);
-	VCALL_LOCALMEM2(PackedIntArray, set);
-	VCALL_LOCALMEM1R(PackedIntArray, get);
-	VCALL_LOCALMEM1(PackedIntArray, push_back);
-	VCALL_LOCALMEM1(PackedIntArray, resize);
-	VCALL_LOCALMEM2R(PackedIntArray, insert);
-	VCALL_LOCALMEM1(PackedIntArray, remove);
-	VCALL_LOCALMEM1(PackedIntArray, append);
-	VCALL_LOCALMEM1(PackedIntArray, append_array);
-	VCALL_LOCALMEM0(PackedIntArray, invert);
+	VCALL_PARRMEM0R(PackedByteArray, uint8_t, size);
+	VCALL_PARRMEM0R(PackedByteArray, uint8_t, empty);
+	VCALL_PARRMEM2(PackedByteArray, uint8_t, set);
+	VCALL_PARRMEM1R(PackedByteArray, uint8_t, get);
+	VCALL_PARRMEM1(PackedByteArray, uint8_t, push_back);
+	VCALL_PARRMEM1(PackedByteArray, uint8_t, resize);
+	VCALL_PARRMEM2R(PackedByteArray, uint8_t, insert);
+	VCALL_PARRMEM1(PackedByteArray, uint8_t, remove);
+	VCALL_PARRMEM1(PackedByteArray, uint8_t, append);
+	VCALL_PARRMEM1(PackedByteArray, uint8_t, append_array);
+	VCALL_PARRMEM0(PackedByteArray, uint8_t, invert);
+	VCALL_PARRMEM2R(PackedByteArray, uint8_t, subarray);
 
-	VCALL_LOCALMEM0R(PackedRealArray, size);
-	VCALL_LOCALMEM0R(PackedRealArray, empty);
-	VCALL_LOCALMEM2(PackedRealArray, set);
-	VCALL_LOCALMEM1R(PackedRealArray, get);
-	VCALL_LOCALMEM1(PackedRealArray, push_back);
-	VCALL_LOCALMEM1(PackedRealArray, resize);
-	VCALL_LOCALMEM2R(PackedRealArray, insert);
-	VCALL_LOCALMEM1(PackedRealArray, remove);
-	VCALL_LOCALMEM1(PackedRealArray, append);
-	VCALL_LOCALMEM1(PackedRealArray, append_array);
-	VCALL_LOCALMEM0(PackedRealArray, invert);
+	VCALL_PARRMEM0R(PackedIntArray, int32_t, size);
+	VCALL_PARRMEM0R(PackedIntArray, int32_t, empty);
+	VCALL_PARRMEM2(PackedIntArray, int32_t, set);
+	VCALL_PARRMEM1R(PackedIntArray, int32_t, get);
+	VCALL_PARRMEM1(PackedIntArray, int32_t, push_back);
+	VCALL_PARRMEM1(PackedIntArray, int32_t, resize);
+	VCALL_PARRMEM2R(PackedIntArray, int32_t, insert);
+	VCALL_PARRMEM1(PackedIntArray, int32_t, remove);
+	VCALL_PARRMEM1(PackedIntArray, int32_t, append);
+	VCALL_PARRMEM1(PackedIntArray, int32_t, append_array);
+	VCALL_PARRMEM0(PackedIntArray, int32_t, invert);
 
-	VCALL_LOCALMEM0R(PackedStringArray, size);
-	VCALL_LOCALMEM0R(PackedStringArray, empty);
-	VCALL_LOCALMEM2(PackedStringArray, set);
-	VCALL_LOCALMEM1R(PackedStringArray, get);
-	VCALL_LOCALMEM1(PackedStringArray, push_back);
-	VCALL_LOCALMEM1(PackedStringArray, resize);
-	VCALL_LOCALMEM2R(PackedStringArray, insert);
-	VCALL_LOCALMEM1(PackedStringArray, remove);
-	VCALL_LOCALMEM1(PackedStringArray, append);
-	VCALL_LOCALMEM1(PackedStringArray, append_array);
-	VCALL_LOCALMEM0(PackedStringArray, invert);
+	VCALL_PARRMEM0R(PackedRealArray, real_t, size);
+	VCALL_PARRMEM0R(PackedRealArray, real_t, empty);
+	VCALL_PARRMEM2(PackedRealArray, real_t, set);
+	VCALL_PARRMEM1R(PackedRealArray, real_t, get);
+	VCALL_PARRMEM1(PackedRealArray, real_t, push_back);
+	VCALL_PARRMEM1(PackedRealArray, real_t, resize);
+	VCALL_PARRMEM2R(PackedRealArray, real_t, insert);
+	VCALL_PARRMEM1(PackedRealArray, real_t, remove);
+	VCALL_PARRMEM1(PackedRealArray, real_t, append);
+	VCALL_PARRMEM1(PackedRealArray, real_t, append_array);
+	VCALL_PARRMEM0(PackedRealArray, real_t, invert);
 
-	VCALL_LOCALMEM0R(PackedVector2Array, size);
-	VCALL_LOCALMEM0R(PackedVector2Array, empty);
-	VCALL_LOCALMEM2(PackedVector2Array, set);
-	VCALL_LOCALMEM1R(PackedVector2Array, get);
-	VCALL_LOCALMEM1(PackedVector2Array, push_back);
-	VCALL_LOCALMEM1(PackedVector2Array, resize);
-	VCALL_LOCALMEM2R(PackedVector2Array, insert);
-	VCALL_LOCALMEM1(PackedVector2Array, remove);
-	VCALL_LOCALMEM1(PackedVector2Array, append);
-	VCALL_LOCALMEM1(PackedVector2Array, append_array);
-	VCALL_LOCALMEM0(PackedVector2Array, invert);
+	VCALL_PARRMEM0R(PackedStringArray, String, size);
+	VCALL_PARRMEM0R(PackedStringArray, String, empty);
+	VCALL_PARRMEM2(PackedStringArray, String, set);
+	VCALL_PARRMEM1R(PackedStringArray, String, get);
+	VCALL_PARRMEM1(PackedStringArray, String, push_back);
+	VCALL_PARRMEM1(PackedStringArray, String, resize);
+	VCALL_PARRMEM2R(PackedStringArray, String, insert);
+	VCALL_PARRMEM1(PackedStringArray, String, remove);
+	VCALL_PARRMEM1(PackedStringArray, String, append);
+	VCALL_PARRMEM1(PackedStringArray, String, append_array);
+	VCALL_PARRMEM0(PackedStringArray, String, invert);
 
-	VCALL_LOCALMEM0R(PackedVector3Array, size);
-	VCALL_LOCALMEM0R(PackedVector3Array, empty);
-	VCALL_LOCALMEM2(PackedVector3Array, set);
-	VCALL_LOCALMEM1R(PackedVector3Array, get);
-	VCALL_LOCALMEM1(PackedVector3Array, push_back);
-	VCALL_LOCALMEM1(PackedVector3Array, resize);
-	VCALL_LOCALMEM2R(PackedVector3Array, insert);
-	VCALL_LOCALMEM1(PackedVector3Array, remove);
-	VCALL_LOCALMEM1(PackedVector3Array, append);
-	VCALL_LOCALMEM1(PackedVector3Array, append_array);
-	VCALL_LOCALMEM0(PackedVector3Array, invert);
+	VCALL_PARRMEM0R(PackedVector2Array, Vector2, size);
+	VCALL_PARRMEM0R(PackedVector2Array, Vector2, empty);
+	VCALL_PARRMEM2(PackedVector2Array, Vector2, set);
+	VCALL_PARRMEM1R(PackedVector2Array, Vector2, get);
+	VCALL_PARRMEM1(PackedVector2Array, Vector2, push_back);
+	VCALL_PARRMEM1(PackedVector2Array, Vector2, resize);
+	VCALL_PARRMEM2R(PackedVector2Array, Vector2, insert);
+	VCALL_PARRMEM1(PackedVector2Array, Vector2, remove);
+	VCALL_PARRMEM1(PackedVector2Array, Vector2, append);
+	VCALL_PARRMEM1(PackedVector2Array, Vector2, append_array);
+	VCALL_PARRMEM0(PackedVector2Array, Vector2, invert);
 
-	VCALL_LOCALMEM0R(PackedColorArray, size);
-	VCALL_LOCALMEM0R(PackedColorArray, empty);
-	VCALL_LOCALMEM2(PackedColorArray, set);
-	VCALL_LOCALMEM1R(PackedColorArray, get);
-	VCALL_LOCALMEM1(PackedColorArray, push_back);
-	VCALL_LOCALMEM1(PackedColorArray, resize);
-	VCALL_LOCALMEM2R(PackedColorArray, insert);
-	VCALL_LOCALMEM1(PackedColorArray, remove);
-	VCALL_LOCALMEM1(PackedColorArray, append);
-	VCALL_LOCALMEM1(PackedColorArray, append_array);
-	VCALL_LOCALMEM0(PackedColorArray, invert);
+	VCALL_PARRMEM0R(PackedVector3Array, Vector3, size);
+	VCALL_PARRMEM0R(PackedVector3Array, Vector3, empty);
+	VCALL_PARRMEM2(PackedVector3Array, Vector3, set);
+	VCALL_PARRMEM1R(PackedVector3Array, Vector3, get);
+	VCALL_PARRMEM1(PackedVector3Array, Vector3, push_back);
+	VCALL_PARRMEM1(PackedVector3Array, Vector3, resize);
+	VCALL_PARRMEM2R(PackedVector3Array, Vector3, insert);
+	VCALL_PARRMEM1(PackedVector3Array, Vector3, remove);
+	VCALL_PARRMEM1(PackedVector3Array, Vector3, append);
+	VCALL_PARRMEM1(PackedVector3Array, Vector3, append_array);
+	VCALL_PARRMEM0(PackedVector3Array, Vector3, invert);
+
+	VCALL_PARRMEM0R(PackedColorArray, Color, size);
+	VCALL_PARRMEM0R(PackedColorArray, Color, empty);
+	VCALL_PARRMEM2(PackedColorArray, Color, set);
+	VCALL_PARRMEM1R(PackedColorArray, Color, get);
+	VCALL_PARRMEM1(PackedColorArray, Color, push_back);
+	VCALL_PARRMEM1(PackedColorArray, Color, resize);
+	VCALL_PARRMEM2R(PackedColorArray, Color, insert);
+	VCALL_PARRMEM1(PackedColorArray, Color, remove);
+	VCALL_PARRMEM1(PackedColorArray, Color, append);
+	VCALL_PARRMEM1(PackedColorArray, Color, append_array);
+	VCALL_PARRMEM0(PackedColorArray, Color, invert);
 
 #define VCALL_PTR0(m_type, m_method) \
 	static void _call_##m_type##_##m_method(Variant &r_ret, Variant &p_self, const Variant **p_args) { reinterpret_cast<m_type *>(p_self._data._ptr)->m_method(); }
