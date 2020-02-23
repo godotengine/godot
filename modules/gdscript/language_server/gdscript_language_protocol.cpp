@@ -122,7 +122,7 @@ Error GDScriptLanguageProtocol::LSPeer::send_data() {
 Error GDScriptLanguageProtocol::on_client_connected() {
 	Ref<StreamPeerTCP> tcp_peer = server->take_connection();
 	ERR_FAIL_COND_V_MSG(clients.size() >= LSP_MAX_CLIENTS, FAILED, "Max client limits reached");
-	Ref<LSPeer> peer = new LSPeer;
+	Ref<LSPeer> peer = memnew(LSPeer);
 	peer->connection = tcp_peer;
 	clients.set(next_client_id, peer);
 	next_client_id++;
@@ -130,7 +130,7 @@ Error GDScriptLanguageProtocol::on_client_connected() {
 	return OK;
 }
 
-void GDScriptLanguageProtocol::on_client_disconnected(int p_client_id) {
+void GDScriptLanguageProtocol::on_client_disconnected(const int &p_client_id) {
 	clients.erase(p_client_id);
 	EditorNode::get_log()->add_message("Disconnected", EditorLog::MSG_TYPE_EDITOR);
 }
