@@ -85,7 +85,7 @@ public:
 	static class btStaticPlaneShape *create_shape_plane(const btVector3 &planeNormal, btScalar planeConstant);
 	static class btSphereShape *create_shape_sphere(btScalar radius);
 	static class btBoxShape *create_shape_box(const btVector3 &boxHalfExtents);
-	static class btCapsuleShapeZ *create_shape_capsule(btScalar radius, btScalar height);
+	static class btCapsuleShape *create_shape_capsule(btScalar radius, btScalar height);
 	static class btCylinderShape *create_shape_cylinder(btScalar radius, btScalar height);
 	/// IMPORTANT: Remember to delete the shape interface by calling: delete my_shape->getMeshInterface();
 	static class btConvexPointCloudShape *create_shape_convex(btAlignedObjectArray<btVector3> &p_vertices, const btVector3 &p_local_scaling = btVector3(1, 1, 1));
