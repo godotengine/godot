@@ -392,8 +392,8 @@ bool Variant::booleanize() const {
 	if (p_a.type != p_b.type)                                                                                    \
 		_RETURN_FAIL                                                                                             \
                                                                                                                  \
-	const Vector<m_type> &array_a = *reinterpret_cast<const Vector<m_type> *>(p_a._data._mem);                   \
-	const Vector<m_type> &array_b = *reinterpret_cast<const Vector<m_type> *>(p_b._data._mem);                   \
+	const Vector<m_type> &array_a = PackedArrayRef<m_type>::get_array(p_a._data.packed_array);                   \
+	const Vector<m_type> &array_b = PackedArrayRef<m_type>::get_array(p_b._data.packed_array);                   \
                                                                                                                  \
 	int a_len = array_a.size();                                                                                  \
 	if (a_len m_opa array_b.size()) {                                                                            \
@@ -416,8 +416,8 @@ bool Variant::booleanize() const {
 		if (p_a.type != p_b.type)                                                                  \
 			_RETURN_FAIL;                                                                          \
                                                                                                    \
-		const Vector<m_type> &array_a = *reinterpret_cast<const Vector<m_type> *>(p_a._data._mem); \
-		const Vector<m_type> &array_b = *reinterpret_cast<const Vector<m_type> *>(p_b._data._mem); \
+		const Vector<m_type> &array_a = PackedArrayRef<m_type>::get_array(p_a._data.packed_array); \
+		const Vector<m_type> &array_b = PackedArrayRef<m_type>::get_array(p_b._data.packed_array); \
 		Vector<m_type> sum = array_a;                                                              \
 		sum.append_array(array_b);                                                                 \
 		_RETURN(sum);                                                                              \
@@ -1951,11 +1951,38 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 		}                                                                                \
 	} break;
 
-#define DEFAULT_OP_DVECTOR_SET(m_name, dv_type, skip_cond) \
-	DEFAULT_OP_ARRAY_CMD(m_name, Vector<dv_type>, if (skip_cond) return;, arr->set(index, p_value); return )
+#define DEFAULT_OP_DVECTOR_SET(m_name, m_type, skip_cond)                                    \
+	case m_name: {                                                                           \
+		if (skip_cond) return;                                                               \
+                                                                                             \
+		if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {     \
+			int index = p_index;                                                             \
+			Vector<m_type> *arr = PackedArrayRef<m_type>::get_array_ptr(_data.packed_array); \
+                                                                                             \
+			if (index < 0)                                                                   \
+				index += arr->size();                                                        \
+			if (index >= 0 && index < arr->size()) {                                         \
+				valid = true;                                                                \
+				arr->set(index, p_value);                                                    \
+			}                                                                                \
+		}                                                                                    \
+	} break;
 
-#define DEFAULT_OP_DVECTOR_GET(m_name, dv_type) \
-	DEFAULT_OP_ARRAY_CMD(m_name, const Vector<dv_type>, ;, return arr->get(index))
+#define DEFAULT_OP_DVECTOR_GET(m_name, m_type)                                                  \
+	case m_name: {                                                                              \
+                                                                                                \
+		if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {        \
+			int index = p_index;                                                                \
+			const Vector<m_type> *arr = &PackedArrayRef<m_type>::get_array(_data.packed_array); \
+                                                                                                \
+			if (index < 0)                                                                      \
+				index += arr->size();                                                           \
+			if (index >= 0 && index < arr->size()) {                                            \
+				valid = true;                                                                   \
+				return arr->get(index);                                                         \
+			}                                                                                   \
+		}                                                                                       \
+	} break;
 
 void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid) {
 
@@ -3062,7 +3089,7 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
 
 				int index = p_index;
-				const Vector<uint8_t> *arr = reinterpret_cast<const Vector<uint8_t> *>(_data._mem);
+				const Vector<uint8_t> *arr = &PackedArrayRef<uint8_t>::get_array(_data.packed_array);
 				int l = arr->size();
 				if (l) {
 					const uint8_t *r = arr->ptr();
@@ -3080,7 +3107,7 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
 
 				int index = p_index;
-				const Vector<int> *arr = reinterpret_cast<const Vector<int> *>(_data._mem);
+				const Vector<int> *arr = &PackedArrayRef<int>::get_array(_data.packed_array);
 				int l = arr->size();
 				if (l) {
 					const int *r = arr->ptr();
@@ -3098,7 +3125,7 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
 
 				real_t index = p_index;
-				const Vector<real_t> *arr = reinterpret_cast<const Vector<real_t> *>(_data._mem);
+				const Vector<real_t> *arr = &PackedArrayRef<real_t>::get_array(_data.packed_array);
 				int l = arr->size();
 				if (l) {
 					const real_t *r = arr->ptr();
@@ -3116,7 +3143,7 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 			if (p_index.get_type() == Variant::STRING) {
 
 				String index = p_index;
-				const Vector<String> *arr = reinterpret_cast<const Vector<String> *>(_data._mem);
+				const Vector<String> *arr = &PackedArrayRef<String>::get_array(_data.packed_array);
 
 				int l = arr->size();
 				if (l) {
@@ -3135,7 +3162,7 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 			if (p_index.get_type() == Variant::VECTOR2) {
 
 				Vector2 index = p_index;
-				const Vector<Vector2> *arr = reinterpret_cast<const Vector<Vector2> *>(_data._mem);
+				const Vector<Vector2> *arr = &PackedArrayRef<Vector2>::get_array(_data.packed_array);
 
 				int l = arr->size();
 				if (l) {
@@ -3154,7 +3181,7 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 			if (p_index.get_type() == Variant::VECTOR3) {
 
 				Vector3 index = p_index;
-				const Vector<Vector3> *arr = reinterpret_cast<const Vector<Vector3> *>(_data._mem);
+				const Vector<Vector3> *arr = &PackedArrayRef<Vector3>::get_array(_data.packed_array);
 
 				int l = arr->size();
 				if (l) {
@@ -3174,7 +3201,7 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 			if (p_index.get_type() == Variant::COLOR) {
 
 				Color index = p_index;
-				const Vector<Color> *arr = reinterpret_cast<const Vector<Color> *>(_data._mem);
+				const Vector<Color> *arr = &PackedArrayRef<Color>::get_array(_data.packed_array);
 
 				int l = arr->size();
 				if (l) {
@@ -3442,7 +3469,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			return true;
 		} break;
 		case PACKED_BYTE_ARRAY: {
-			const Vector<uint8_t> *arr = reinterpret_cast<const Vector<uint8_t> *>(_data._mem);
+			const Vector<uint8_t> *arr = &PackedArrayRef<uint8_t>::get_array(_data.packed_array);
 			if (arr->size() == 0)
 				return false;
 			r_iter = 0;
@@ -3450,7 +3477,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 
 		} break;
 		case PACKED_INT_ARRAY: {
-			const Vector<int> *arr = reinterpret_cast<const Vector<int> *>(_data._mem);
+			const Vector<int> *arr = &PackedArrayRef<int>::get_array(_data.packed_array);
 			if (arr->size() == 0)
 				return false;
 			r_iter = 0;
@@ -3458,7 +3485,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 
 		} break;
 		case PACKED_REAL_ARRAY: {
-			const Vector<real_t> *arr = reinterpret_cast<const Vector<real_t> *>(_data._mem);
+			const Vector<real_t> *arr = &PackedArrayRef<real_t>::get_array(_data.packed_array);
 			if (arr->size() == 0)
 				return false;
 			r_iter = 0;
@@ -3466,7 +3493,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 
 		} break;
 		case PACKED_STRING_ARRAY: {
-			const Vector<String> *arr = reinterpret_cast<const Vector<String> *>(_data._mem);
+			const Vector<String> *arr = &PackedArrayRef<String>::get_array(_data.packed_array);
 			if (arr->size() == 0)
 				return false;
 			r_iter = 0;
@@ -3474,7 +3501,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 		} break;
 		case PACKED_VECTOR2_ARRAY: {
 
-			const Vector<Vector2> *arr = reinterpret_cast<const Vector<Vector2> *>(_data._mem);
+			const Vector<Vector2> *arr = &PackedArrayRef<Vector2>::get_array(_data.packed_array);
 			if (arr->size() == 0)
 				return false;
 			r_iter = 0;
@@ -3482,7 +3509,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 		} break;
 		case PACKED_VECTOR3_ARRAY: {
 
-			const Vector<Vector3> *arr = reinterpret_cast<const Vector<Vector3> *>(_data._mem);
+			const Vector<Vector3> *arr = &PackedArrayRef<Vector3>::get_array(_data.packed_array);
 			if (arr->size() == 0)
 				return false;
 			r_iter = 0;
@@ -3490,7 +3517,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 		} break;
 		case PACKED_COLOR_ARRAY: {
 
-			const Vector<Color> *arr = reinterpret_cast<const Vector<Color> *>(_data._mem);
+			const Vector<Color> *arr = &PackedArrayRef<Color>::get_array(_data.packed_array);
 			if (arr->size() == 0)
 				return false;
 			r_iter = 0;
@@ -3617,7 +3644,7 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			return true;
 		} break;
 		case PACKED_BYTE_ARRAY: {
-			const Vector<uint8_t> *arr = reinterpret_cast<const Vector<uint8_t> *>(_data._mem);
+			const Vector<uint8_t> *arr = &PackedArrayRef<uint8_t>::get_array(_data.packed_array);
 			int idx = r_iter;
 			idx++;
 			if (idx >= arr->size())
@@ -3627,7 +3654,7 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 
 		} break;
 		case PACKED_INT_ARRAY: {
-			const Vector<int> *arr = reinterpret_cast<const Vector<int> *>(_data._mem);
+			const Vector<int> *arr = &PackedArrayRef<int>::get_array(_data.packed_array);
 			int idx = r_iter;
 			idx++;
 			if (idx >= arr->size())
@@ -3637,7 +3664,7 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 
 		} break;
 		case PACKED_REAL_ARRAY: {
-			const Vector<real_t> *arr = reinterpret_cast<const Vector<real_t> *>(_data._mem);
+			const Vector<real_t> *arr = &PackedArrayRef<real_t>::get_array(_data.packed_array);
 			int idx = r_iter;
 			idx++;
 			if (idx >= arr->size())
@@ -3647,7 +3674,7 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 
 		} break;
 		case PACKED_STRING_ARRAY: {
-			const Vector<String> *arr = reinterpret_cast<const Vector<String> *>(_data._mem);
+			const Vector<String> *arr = &PackedArrayRef<String>::get_array(_data.packed_array);
 			int idx = r_iter;
 			idx++;
 			if (idx >= arr->size())
@@ -3657,7 +3684,7 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 		} break;
 		case PACKED_VECTOR2_ARRAY: {
 
-			const Vector<Vector2> *arr = reinterpret_cast<const Vector<Vector2> *>(_data._mem);
+			const Vector<Vector2> *arr = &PackedArrayRef<Vector2>::get_array(_data.packed_array);
 			int idx = r_iter;
 			idx++;
 			if (idx >= arr->size())
@@ -3667,7 +3694,7 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 		} break;
 		case PACKED_VECTOR3_ARRAY: {
 
-			const Vector<Vector3> *arr = reinterpret_cast<const Vector<Vector3> *>(_data._mem);
+			const Vector<Vector3> *arr = &PackedArrayRef<Vector3>::get_array(_data.packed_array);
 			int idx = r_iter;
 			idx++;
 			if (idx >= arr->size())
@@ -3677,7 +3704,7 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 		} break;
 		case PACKED_COLOR_ARRAY: {
 
-			const Vector<Color> *arr = reinterpret_cast<const Vector<Color> *>(_data._mem);
+			const Vector<Color> *arr = &PackedArrayRef<Color>::get_array(_data.packed_array);
 			int idx = r_iter;
 			idx++;
 			if (idx >= arr->size())
@@ -3764,7 +3791,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			return arr->get(idx);
 		} break;
 		case PACKED_BYTE_ARRAY: {
-			const Vector<uint8_t> *arr = reinterpret_cast<const Vector<uint8_t> *>(_data._mem);
+			const Vector<uint8_t> *arr = &PackedArrayRef<uint8_t>::get_array(_data.packed_array);
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
@@ -3775,7 +3802,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			return arr->get(idx);
 		} break;
 		case PACKED_INT_ARRAY: {
-			const Vector<int> *arr = reinterpret_cast<const Vector<int> *>(_data._mem);
+			const Vector<int> *arr = &PackedArrayRef<int>::get_array(_data.packed_array);
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
@@ -3786,7 +3813,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			return arr->get(idx);
 		} break;
 		case PACKED_REAL_ARRAY: {
-			const Vector<real_t> *arr = reinterpret_cast<const Vector<real_t> *>(_data._mem);
+			const Vector<real_t> *arr = &PackedArrayRef<real_t>::get_array(_data.packed_array);
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
@@ -3797,7 +3824,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			return arr->get(idx);
 		} break;
 		case PACKED_STRING_ARRAY: {
-			const Vector<String> *arr = reinterpret_cast<const Vector<String> *>(_data._mem);
+			const Vector<String> *arr = &PackedArrayRef<String>::get_array(_data.packed_array);
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
@@ -3809,7 +3836,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 		} break;
 		case PACKED_VECTOR2_ARRAY: {
 
-			const Vector<Vector2> *arr = reinterpret_cast<const Vector<Vector2> *>(_data._mem);
+			const Vector<Vector2> *arr = &PackedArrayRef<Vector2>::get_array(_data.packed_array);
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
@@ -3821,7 +3848,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 		} break;
 		case PACKED_VECTOR3_ARRAY: {
 
-			const Vector<Vector3> *arr = reinterpret_cast<const Vector<Vector3> *>(_data._mem);
+			const Vector<Vector3> *arr = &PackedArrayRef<Vector3>::get_array(_data.packed_array);
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
@@ -3833,7 +3860,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 		} break;
 		case PACKED_COLOR_ARRAY: {
 
-			const Vector<Color> *arr = reinterpret_cast<const Vector<Color> *>(_data._mem);
+			const Vector<Color> *arr = &PackedArrayRef<Color>::get_array(_data.packed_array);
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
@@ -4167,8 +4194,8 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case PACKED_INT_ARRAY: {
-			const Vector<int> *arr_a = reinterpret_cast<const Vector<int> *>(a._data._mem);
-			const Vector<int> *arr_b = reinterpret_cast<const Vector<int> *>(b._data._mem);
+			const Vector<int> *arr_a = &PackedArrayRef<int>::get_array(a._data.packed_array);
+			const Vector<int> *arr_b = &PackedArrayRef<int>::get_array(b._data.packed_array);
 			int sz = arr_a->size();
 			if (sz == 0 || arr_b->size() != sz) {
 
@@ -4193,8 +4220,8 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case PACKED_REAL_ARRAY: {
-			const Vector<real_t> *arr_a = reinterpret_cast<const Vector<real_t> *>(a._data._mem);
-			const Vector<real_t> *arr_b = reinterpret_cast<const Vector<real_t> *>(b._data._mem);
+			const Vector<real_t> *arr_a = &PackedArrayRef<real_t>::get_array(a._data.packed_array);
+			const Vector<real_t> *arr_b = &PackedArrayRef<real_t>::get_array(b._data.packed_array);
 			int sz = arr_a->size();
 			if (sz == 0 || arr_b->size() != sz) {
 
@@ -4223,8 +4250,8 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case PACKED_VECTOR2_ARRAY: {
-			const Vector<Vector2> *arr_a = reinterpret_cast<const Vector<Vector2> *>(a._data._mem);
-			const Vector<Vector2> *arr_b = reinterpret_cast<const Vector<Vector2> *>(b._data._mem);
+			const Vector<Vector2> *arr_a = &PackedArrayRef<Vector2>::get_array(a._data.packed_array);
+			const Vector<Vector2> *arr_b = &PackedArrayRef<Vector2>::get_array(b._data.packed_array);
 			int sz = arr_a->size();
 			if (sz == 0 || arr_b->size() != sz) {
 
@@ -4248,8 +4275,8 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			return;
 		case PACKED_VECTOR3_ARRAY: {
 
-			const Vector<Vector3> *arr_a = reinterpret_cast<const Vector<Vector3> *>(a._data._mem);
-			const Vector<Vector3> *arr_b = reinterpret_cast<const Vector<Vector3> *>(b._data._mem);
+			const Vector<Vector3> *arr_a = &PackedArrayRef<Vector3>::get_array(a._data.packed_array);
+			const Vector<Vector3> *arr_b = &PackedArrayRef<Vector3>::get_array(b._data.packed_array);
 			int sz = arr_a->size();
 			if (sz == 0 || arr_b->size() != sz) {
 
@@ -4272,8 +4299,8 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case PACKED_COLOR_ARRAY: {
-			const Vector<Color> *arr_a = reinterpret_cast<const Vector<Color> *>(a._data._mem);
-			const Vector<Color> *arr_b = reinterpret_cast<const Vector<Color> *>(b._data._mem);
+			const Vector<Color> *arr_a = &PackedArrayRef<Color>::get_array(a._data.packed_array);
+			const Vector<Color> *arr_b = &PackedArrayRef<Color>::get_array(b._data.packed_array);
 			int sz = arr_a->size();
 			if (sz == 0 || arr_b->size() != sz) {
 
