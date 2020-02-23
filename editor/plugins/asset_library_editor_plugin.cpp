@@ -1210,7 +1210,16 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			library_vb->add_child(asset_bottom_page);
 
 			if (result.empty()) {
-				library_error->set_text(vformat(TTR("No results for \"%s\"."), filter->get_text()));
+				if (filter->get_text() != String()) {
+					library_error->set_text(
+							vformat(TTR("No results for \"%s\"."), filter->get_text()));
+				} else {
+					// No results, even though the user didn't search for anything specific.
+					// This is typically because the version number changed recently
+					// and no assets compatible with the new version have been published yet.
+					library_error->set_text(
+							vformat(TTR("No results compatible with %s %s."), String(VERSION_SHORT_NAME).capitalize(), String(VERSION_BRANCH)));
+				}
 				library_error->show();
 			}
 
