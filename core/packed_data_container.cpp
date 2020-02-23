@@ -225,8 +225,8 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 
 			string_cache[s] = tmpdata.size();
 
-			FALLTHROUGH;
-		};
+			[[fallthrough]];
+		}
 		case Variant::NIL:
 		case Variant::BOOL:
 		case Variant::INT:

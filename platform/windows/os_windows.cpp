@@ -709,7 +709,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					break;
 				}
 			}
-			FALLTHROUGH;
+			[[fallthrough]];
 		case WM_MBUTTONDOWN:
 		case WM_MBUTTONUP:
 		case WM_RBUTTONDOWN:
@@ -984,7 +984,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			if (wParam==VK_WIN) TODO wtf is this?
 				meta_mem=uMsg==WM_KEYDOWN;
 			*/
-			FALLTHROUGH;
+			[[fallthrough]];
 		}
 		case WM_CHAR: {
 

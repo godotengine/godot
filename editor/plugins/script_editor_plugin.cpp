@@ -214,7 +214,7 @@ void ScriptEditorQuickOpen::_notification(int p_what) {
 			connect_compat("confirmed", this, "_confirmed");
 
 			search_box->set_clear_button_enabled(true);
-			FALLTHROUGH;
+			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
 			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
@@ -900,7 +900,7 @@ void ScriptEditor::_file_dialog_action(String p_file) {
 			}
 			file->close();
 			memdelete(file);
-			FALLTHROUGH;
+			[[fallthrough]];
 		}
 		case FILE_OPEN: {
 
@@ -1396,7 +1396,7 @@ void ScriptEditor::_notification(int p_what) {
 			script_split->connect_compat("dragged", this, "_script_split_dragged");
 
 			EditorSettings::get_singleton()->connect_compat("settings_changed", this, "_editor_settings_changed");
-			FALLTHROUGH;
+			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
 

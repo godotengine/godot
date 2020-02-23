@@ -2178,7 +2178,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				break;
 			}
 
-			FALLTHROUGH;
+			[[fallthrough]];
 		}
 		case SCENE_TAB_CLOSE:
 		case FILE_SAVE_SCENE: {
@@ -2199,7 +2199,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 				break;
 			}
-			FALLTHROUGH;
+			[[fallthrough]];
 		}
 		case FILE_SAVE_AS_SCENE: {
 			int scene_idx = (p_option == FILE_SAVE_SCENE || p_option == FILE_SAVE_AS_SCENE) ? -1 : tab_closing;
