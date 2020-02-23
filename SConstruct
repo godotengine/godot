@@ -332,6 +332,36 @@ if selected_platform in platform_list:
         # We apply it to CCFLAGS (both C and C++ code) in case it impacts C features.
         env.Prepend(CCFLAGS=['/std:c++17', '/permissive-'])
 
+    # Enforce our minimal compiler version requirements
+    version = methods.get_compiler_version(env)
+    major = int(version[0]) if version is not None else -1
+    if methods.using_gcc(env):
+        # GCC 8 has a regression in the support of guaranteed copy elision
+        # which causes a build failure: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86521
+        if major == 8:
+            print("Detected GCC version 8, which is not supported due to a regression "
+                  "in its C++17 guaranteed copy elision support. Use a newer GCC "
+                  "version, or Clang 6 or later by passing \"use_llvm=yes\" to the "
+                  "SCons command line.")
+            sys.exit(255)
+        elif major < 7:
+            print("Detected GCC version older than 7, which does not fully support "
+                  "C++17. Supported versions are GCC 7, 9 and later. Use a newer GCC "
+                  "version, or Clang 6 or later by passing \"use_llvm=yes\" to the "
+                  "SCons command line.")
+            sys.exit(255)
+    elif methods.using_clang(env):
+        # Apple LLVM versions differ from upstream LLVM version \o/, compare
+        # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
+        if (env["platform"] == "osx" or env["platform"] == "iphone") and major < 10:
+            print("Detected Apple Clang version older than 10, which does not fully "
+                  "support C++17. Supported versions are Apple Clang 10 and later.")
+            sys.exit(255)
+        elif major < 6:
+            print("Detected Clang version older than 6, which does not fully support "
+                  "C++17. Supported versions are Clang 6 and later.")
+            sys.exit(255)
+
     # Configure compiler warnings
     if env.msvc:
         # Truncations, narrowing conversions, signed/unsigned comparisons...
