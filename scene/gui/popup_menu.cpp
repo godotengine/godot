@@ -723,19 +723,21 @@ void PopupMenu::add_multistate_item(const String &p_label, int p_max_states, int
 	item.shortcut = p_shortcut;                                                        \
 	item.shortcut_is_global = p_global;
 
-void PopupMenu::add_shortcut(const Ref<ShortCut> &p_shortcut, int p_id, bool p_global) {
+void PopupMenu::add_shortcut(const Ref<ShortCut> &p_shortcut, int p_id, bool p_global, bool p_allow_echo) {
 
 	Item item;
 	ITEM_SETUP_WITH_SHORTCUT(p_shortcut, p_id, p_global);
+	item.allow_echo = p_allow_echo;
 	items.push_back(item);
 	update();
 	minimum_size_changed();
 }
 
-void PopupMenu::add_icon_shortcut(const Ref<Texture2D> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id, bool p_global) {
+void PopupMenu::add_icon_shortcut(const Ref<Texture2D> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id, bool p_global, bool p_allow_echo) {
 
 	Item item;
 	ITEM_SETUP_WITH_SHORTCUT(p_shortcut, p_id, p_global);
+	item.allow_echo = p_allow_echo;
 	item.icon = p_icon;
 	items.push_back(item);
 	update();
@@ -1088,8 +1090,9 @@ bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_fo
 	}
 
 	for (int i = 0; i < items.size(); i++) {
-		if (is_item_disabled(i) || items[i].shortcut_is_disabled)
+		if (is_item_disabled(i) || items[i].shortcut_is_disabled || (!items[i].allow_echo && p_event->is_echo())) {
 			continue;
+		}
 
 		if (items[i].shortcut.is_valid() && items[i].shortcut->is_shortcut(p_event) && (items[i].shortcut_is_global || !p_for_global_only)) {
 			activate_item(i);
