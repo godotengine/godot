@@ -44,6 +44,7 @@
 #include "core/math/transform.h"
 #include "core/math/transform_2d.h"
 #include "core/math/vector3.h"
+#include "core/math/vector3i.h"
 #include "core/node_path.h"
 #include "core/object_id.h"
 #include "core/rid.h"
@@ -87,8 +88,11 @@ public:
 		// math types
 
 		VECTOR2, // 5
+		VECTOR2I,
 		RECT2,
+		RECT2I,
 		VECTOR3,
+		VECTOR3I,
 		TRANSFORM2D,
 		PLANE,
 		QUAT, // 10
@@ -187,8 +191,11 @@ public:
 	operator String() const;
 	operator StringName() const;
 	operator Vector2() const;
+	operator Vector2i() const;
 	operator Rect2() const;
+	operator Rect2i() const;
 	operator Vector3() const;
+	operator Vector3i() const;
 	operator Plane() const;
 	operator ::AABB() const;
 	operator Quat() const;
@@ -255,8 +262,11 @@ public:
 	Variant(const char *const p_cstring);
 	Variant(const CharType *p_wstring);
 	Variant(const Vector2 &p_vector2);
+	Variant(const Vector2i &p_vector2i);
 	Variant(const Rect2 &p_rect2);
+	Variant(const Rect2i &p_rect2i);
 	Variant(const Vector3 &p_vector3);
+	Variant(const Vector3i &p_vector3i);
 	Variant(const Plane &p_plane);
 	Variant(const ::AABB &p_aabb);
 	Variant(const Quat &p_quat);
