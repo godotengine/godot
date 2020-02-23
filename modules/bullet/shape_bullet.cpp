@@ -122,8 +122,8 @@ btBoxShape *ShapeBullet::create_shape_box(const btVector3 &boxHalfExtents) {
 	return bulletnew(btBoxShape(boxHalfExtents));
 }
 
-btCapsuleShapeZ *ShapeBullet::create_shape_capsule(btScalar radius, btScalar height) {
-	return bulletnew(btCapsuleShapeZ(radius, height));
+btCapsuleShape *ShapeBullet::create_shape_capsule(btScalar radius, btScalar height) {
+	return bulletnew(btCapsuleShape(radius, height));
 }
 
 btCylinderShape *ShapeBullet::create_shape_cylinder(btScalar radius, btScalar height) {
