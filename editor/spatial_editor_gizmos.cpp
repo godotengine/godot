@@ -3447,7 +3447,7 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 		Vector<Vector3> points;
 
-		Vector3 d(0, 0, height * 0.5);
+		Vector3 d(0, height * 0.5, 0);
 		for (int i = 0; i < 360; i++) {
 
 			float ra = Math::deg2rad((float)i);
@@ -3455,24 +3455,24 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * radius;
 			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * radius;
 
-			points.push_back(Vector3(a.x, a.y, 0) + d);
-			points.push_back(Vector3(b.x, b.y, 0) + d);
+			points.push_back(Vector3(a.x, 0, a.y) + d);
+			points.push_back(Vector3(b.x, 0, b.y) + d);
 
-			points.push_back(Vector3(a.x, a.y, 0) - d);
-			points.push_back(Vector3(b.x, b.y, 0) - d);
+			points.push_back(Vector3(a.x, 0, a.y) - d);
+			points.push_back(Vector3(b.x, 0, b.y) - d);
 
 			if (i % 90 == 0) {
 
-				points.push_back(Vector3(a.x, a.y, 0) + d);
-				points.push_back(Vector3(a.x, a.y, 0) - d);
+				points.push_back(Vector3(a.x, 0, a.y) + d);
+				points.push_back(Vector3(a.x, 0, a.y) - d);
 			}
 
 			Vector3 dud = i < 180 ? d : -d;
 
-			points.push_back(Vector3(0, a.y, a.x) + dud);
-			points.push_back(Vector3(0, b.y, b.x) + dud);
-			points.push_back(Vector3(a.y, 0, a.x) + dud);
-			points.push_back(Vector3(b.y, 0, b.x) + dud);
+			points.push_back(Vector3(0, a.x, a.y) + dud);
+			points.push_back(Vector3(0, b.x, b.y) + dud);
+			points.push_back(Vector3(a.y, a.x, 0) + dud);
+			points.push_back(Vector3(b.y, b.x, 0) + dud);
 		}
 
 		p_gizmo->add_lines(points, material);
@@ -3486,31 +3486,31 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * radius;
 			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * radius;
 
-			collision_segments.push_back(Vector3(a.x, a.y, 0) + d);
-			collision_segments.push_back(Vector3(b.x, b.y, 0) + d);
+			collision_segments.push_back(Vector3(a.x, 0, a.y) + d);
+			collision_segments.push_back(Vector3(b.x, 0, b.y) + d);
 
-			collision_segments.push_back(Vector3(a.x, a.y, 0) - d);
-			collision_segments.push_back(Vector3(b.x, b.y, 0) - d);
+			collision_segments.push_back(Vector3(a.x, 0, a.y) - d);
+			collision_segments.push_back(Vector3(b.x, 0, b.y) - d);
 
 			if (i % 16 == 0) {
 
-				collision_segments.push_back(Vector3(a.x, a.y, 0) + d);
-				collision_segments.push_back(Vector3(a.x, a.y, 0) - d);
+				collision_segments.push_back(Vector3(a.x, 0, a.y) + d);
+				collision_segments.push_back(Vector3(a.x, 0, a.y) - d);
 			}
 
 			Vector3 dud = i < 32 ? d : -d;
 
-			collision_segments.push_back(Vector3(0, a.y, a.x) + dud);
-			collision_segments.push_back(Vector3(0, b.y, b.x) + dud);
-			collision_segments.push_back(Vector3(a.y, 0, a.x) + dud);
-			collision_segments.push_back(Vector3(b.y, 0, b.x) + dud);
+			collision_segments.push_back(Vector3(0, a.x, a.y) + dud);
+			collision_segments.push_back(Vector3(0, b.x, b.y) + dud);
+			collision_segments.push_back(Vector3(a.y, a.x, 0) + dud);
+			collision_segments.push_back(Vector3(b.y, b.x, 0) + dud);
 		}
 
 		p_gizmo->add_collision_segments(collision_segments);
 
 		Vector<Vector3> handles;
 		handles.push_back(Vector3(cs2->get_radius(), 0, 0));
-		handles.push_back(Vector3(0, 0, cs2->get_height() * 0.5 + cs2->get_radius()));
+		handles.push_back(Vector3(0, cs2->get_height() * 0.5 + cs2->get_radius(), 0));
 		p_gizmo->add_handles(handles, handles_material);
 	}
 

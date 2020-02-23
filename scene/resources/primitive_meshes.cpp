@@ -303,19 +303,19 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 
 		v /= (rings + 1);
 		w = sin(0.5 * Math_PI * v);
-		z = radius * cos(0.5 * Math_PI * v);
+		y = radius * cos(0.5 * Math_PI * v);
 
 		for (i = 0; i <= radial_segments; i++) {
 			u = i;
 			u /= radial_segments;
 
-			x = sin(u * (Math_PI * 2.0));
-			y = -cos(u * (Math_PI * 2.0));
+			x = -sin(u * (Math_PI * 2.0));
+			z = cos(u * (Math_PI * 2.0));
 
-			Vector3 p = Vector3(x * radius * w, y * radius * w, z);
-			points.push_back(p + Vector3(0.0, 0.0, 0.5 * mid_height));
+			Vector3 p = Vector3(x * radius * w, y, -z * radius * w);
+			points.push_back(p + Vector3(0.0, 0.5 * mid_height, 0.0));
 			normals.push_back(p.normalized());
-			ADD_TANGENT(-y, x, 0.0, 1.0)
+			ADD_TANGENT(z, 0.0, x, 1.0)
 			uvs.push_back(Vector2(u, v * onethird));
 			point++;
 
@@ -341,20 +341,20 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 		v = j;
 		v /= (rings + 1);
 
-		z = mid_height * v;
-		z = (mid_height * 0.5) - z;
+		y = mid_height * v;
+		y = (mid_height * 0.5) - y;
 
 		for (i = 0; i <= radial_segments; i++) {
 			u = i;
 			u /= radial_segments;
 
-			x = sin(u * (Math_PI * 2.0));
-			y = -cos(u * (Math_PI * 2.0));
+			x = -sin(u * (Math_PI * 2.0));
+			z = cos(u * (Math_PI * 2.0));
 
-			Vector3 p = Vector3(x * radius, y * radius, z);
+			Vector3 p = Vector3(x * radius, y, -z * radius);
 			points.push_back(p);
-			normals.push_back(Vector3(x, y, 0.0));
-			ADD_TANGENT(-y, x, 0.0, 1.0)
+			normals.push_back(Vector3(x, 0.0, -z));
+			ADD_TANGENT(z, 0.0, x, 1.0)
 			uvs.push_back(Vector2(u, onethird + (v * onethird)));
 			point++;
 
@@ -382,19 +382,19 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 		v /= (rings + 1);
 		v += 1.0;
 		w = sin(0.5 * Math_PI * v);
-		z = radius * cos(0.5 * Math_PI * v);
+		y = radius * cos(0.5 * Math_PI * v);
 
 		for (i = 0; i <= radial_segments; i++) {
 			float u2 = i;
 			u2 /= radial_segments;
 
-			x = sin(u2 * (Math_PI * 2.0));
-			y = -cos(u2 * (Math_PI * 2.0));
+			x = -sin(u2 * (Math_PI * 2.0));
+			z = cos(u2 * (Math_PI * 2.0));
 
-			Vector3 p = Vector3(x * radius * w, y * radius * w, z);
-			points.push_back(p + Vector3(0.0, 0.0, -0.5 * mid_height));
+			Vector3 p = Vector3(x * radius * w, y, -z * radius * w);
+			points.push_back(p + Vector3(0.0, -0.5 * mid_height, 0.0));
 			normals.push_back(p.normalized());
-			ADD_TANGENT(-y, x, 0.0, 1.0)
+			ADD_TANGENT(z, 0.0, x, 1.0)
 			uvs.push_back(Vector2(u2, twothirds + ((v - 1.0) * onethird)));
 			point++;
 
