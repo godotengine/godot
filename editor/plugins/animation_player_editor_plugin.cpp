@@ -38,10 +38,8 @@
 #include "editor/animation_track_editor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
-
-// For onion skinning.
-#include "editor/plugins/canvas_item_editor_plugin.h"
-#include "editor/plugins/spatial_editor_plugin.h"
+#include "editor/plugins/canvas_item_editor_plugin.h" // For onion skinning.
+#include "editor/plugins/spatial_editor_plugin.h" // For onion skinning.
 #include "scene/main/viewport.h"
 #include "servers/visual_server.h"
 
@@ -375,8 +373,7 @@ void AnimationPlayerEditor::_animation_save_in_path(const Ref<Resource> &p_resou
 	Error err = ResourceSaver::save(path, p_resource, flg | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
 
 	if (err != OK) {
-		accept->set_text(TTR("Error saving resource!"));
-		accept->popup_centered_minsize();
+		EditorNode::get_singleton()->show_warning(TTR("Error saving resource!"));
 		return;
 	}
 
@@ -1627,10 +1624,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	scale->set_stretch_ratio(1);
 	scale->set_tooltip(TTR("Scale animation playback globally for the node."));
 	scale->hide();
-
-	accept = memnew(AcceptDialog);
-	add_child(accept);
-	accept->connect_compat("confirmed", this, "_menu_confirm_current");
 
 	delete_dialog = memnew(ConfirmationDialog);
 	add_child(delete_dialog);

@@ -110,7 +110,6 @@ class AnimationPlayerEditor : public VBoxContainer {
 	float timeline_position;
 
 	EditorFileDialog *file;
-	AcceptDialog *accept;
 	ConfirmationDialog *delete_dialog;
 	int current_option;
 
