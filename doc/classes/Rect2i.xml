@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Rect2i" version="4.0">
+	<brief_description>
+		2D axis-aligned bounding box using integer coordinates.
+	</brief_description>
+	<description>
+		[Rect2i] consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
+		It uses integer coordinates.
+	</description>
+	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
+	</tutorials>
+	<methods>
+		<method name="Rect2i">
+			<return type="Rect2i">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<argument index="1" name="size" type="Vector2">
+			</argument>
+			<description>
+				Constructs a [Rect2i] by position and size.
+			</description>
+		</method>
+		<method name="Rect2i">
+			<return type="Rect2i">
+			</return>
+			<argument index="0" name="x" type="int">
+			</argument>
+			<argument index="1" name="y" type="int">
+			</argument>
+			<argument index="2" name="width" type="int">
+			</argument>
+			<argument index="3" name="height" type="int">
+			</argument>
+			<description>
+				Constructs a [Rect2i] by x, y, width, and height.
+			</description>
+		</method>
+		<method name="Rect2i">
+			<return type="Rect2i">
+			</return>
+			<argument index="0" name="from" type="Rect2">
+			</argument>
+			<description>
+				Constructs a new [Rect2i] from [Rect2]. The floating point coordinates will be truncated.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

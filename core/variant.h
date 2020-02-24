@@ -78,7 +78,6 @@ class Variant {
 public:
 	// If this changes the table in variant_op must be updated
 	enum Type {
-
 		NIL,
 
 		// atomic types
@@ -88,8 +87,7 @@ public:
 		STRING,
 
 		// math types
-
-		VECTOR2, // 5
+		VECTOR2,
 		VECTOR2I,
 		RECT2,
 		RECT2I,
@@ -97,7 +95,7 @@ public:
 		VECTOR3I,
 		TRANSFORM2D,
 		PLANE,
-		QUAT, // 10
+		QUAT,
 		AABB,
 		BASIS,
 		TRANSFORM,
@@ -105,26 +103,26 @@ public:
 		// misc types
 		COLOR,
 		STRING_NAME,
-		NODE_PATH, // 15
+		NODE_PATH,
 		_RID,
 		OBJECT,
 		CALLABLE,
 		SIGNAL,
 		DICTIONARY,
 		ARRAY,
-		// arrays
-		PACKED_BYTE_ARRAY, // 20
+
+		// typed arrays
+		PACKED_BYTE_ARRAY,
 		PACKED_INT32_ARRAY,
 		PACKED_INT64_ARRAY,
 		PACKED_FLOAT32_ARRAY,
 		PACKED_FLOAT64_ARRAY,
 		PACKED_STRING_ARRAY,
 		PACKED_VECTOR2_ARRAY,
-		PACKED_VECTOR3_ARRAY, // 25
+		PACKED_VECTOR3_ARRAY,
 		PACKED_COLOR_ARRAY,
 
 		VARIANT_MAX
-
 	};
 
 private:
