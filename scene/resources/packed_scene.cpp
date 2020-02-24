@@ -532,7 +532,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 			if (exists) {
 
 				//check if already exists and did not change
-				if (value.get_type() == Variant::REAL && original.get_type() == Variant::REAL) {
+				if (value.get_type() == Variant::FLOAT && original.get_type() == Variant::FLOAT) {
 					//this must be done because, as some scenes save as text, there might be a tiny difference in floats due to numerical error
 					float a = value;
 					float b = original;

@@ -231,11 +231,17 @@ void EditorPropertyArray::update_property() {
 		case Variant::PACKED_BYTE_ARRAY: {
 			arrtype = "PackedByteArray";
 		} break;
-		case Variant::PACKED_INT_ARRAY: {
-			arrtype = "PackedIntArray";
+		case Variant::PACKED_INT32_ARRAY: {
+			arrtype = "PackedInt32Array";
 		} break;
-		case Variant::PACKED_REAL_ARRAY: {
-			arrtype = "PackedRealArray";
+		case Variant::PACKED_FLOAT32_ARRAY: {
+			arrtype = "PackedFloat32Array";
+		} break;
+		case Variant::PACKED_INT64_ARRAY: {
+			arrtype = "PackedInt64Array";
+		} break;
+		case Variant::PACKED_FLOAT64_ARRAY: {
+			arrtype = "PackedFloat64Array";
 		} break;
 		case Variant::PACKED_STRING_ARRAY: {
 			arrtype = "PackedStringArray";
@@ -724,7 +730,7 @@ void EditorPropertyDictionary::update_property() {
 					prop = editor;
 
 				} break;
-				case Variant::REAL: {
+				case Variant::FLOAT: {
 
 					EditorPropertyFloat *editor = memnew(EditorPropertyFloat);
 					editor->setup(-100000, 100000, 0.001, true, false, true, true);
@@ -851,16 +857,28 @@ void EditorPropertyDictionary::update_property() {
 					editor->setup(Variant::PACKED_BYTE_ARRAY);
 					prop = editor;
 				} break;
-				case Variant::PACKED_INT_ARRAY: {
+				case Variant::PACKED_INT32_ARRAY: {
 
 					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::PACKED_INT_ARRAY);
+					editor->setup(Variant::PACKED_INT32_ARRAY);
 					prop = editor;
 				} break;
-				case Variant::PACKED_REAL_ARRAY: {
+				case Variant::PACKED_FLOAT32_ARRAY: {
 
 					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::PACKED_REAL_ARRAY);
+					editor->setup(Variant::PACKED_FLOAT32_ARRAY);
+					prop = editor;
+				} break;
+				case Variant::PACKED_INT64_ARRAY: {
+
+					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					editor->setup(Variant::PACKED_INT64_ARRAY);
+					prop = editor;
+				} break;
+				case Variant::PACKED_FLOAT64_ARRAY: {
+
+					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					editor->setup(Variant::PACKED_FLOAT64_ARRAY);
 					prop = editor;
 				} break;
 				case Variant::PACKED_STRING_ARRAY: {

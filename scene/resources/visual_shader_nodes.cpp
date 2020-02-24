@@ -86,7 +86,7 @@ void VisualShaderNodeScalarConstant::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_constant", "value"), &VisualShaderNodeScalarConstant::set_constant);
 	ClassDB::bind_method(D_METHOD("get_constant"), &VisualShaderNodeScalarConstant::get_constant);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "constant"), "set_constant", "get_constant");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "constant"), "set_constant", "get_constant");
 }
 
 VisualShaderNodeScalarConstant::VisualShaderNodeScalarConstant() {
@@ -3101,9 +3101,9 @@ void VisualShaderNodeScalarUniform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_step"), &VisualShaderNodeScalarUniform::get_step);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hint", PROPERTY_HINT_ENUM, "None,Range,Range+Step"), "set_hint", "get_hint");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "min"), "set_min", "get_min");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max"), "set_max", "get_max");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "step"), "set_step", "get_step");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min"), "set_min", "get_min");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max"), "set_max", "get_max");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "step"), "set_step", "get_step");
 
 	BIND_ENUM_CONSTANT(HINT_NONE);
 	BIND_ENUM_CONSTANT(HINT_RANGE);

@@ -57,7 +57,7 @@ String Variant::get_type_name(Variant::Type p_type) {
 			return "int";
 
 		} break;
-		case REAL: {
+		case FLOAT: {
 
 			return "float";
 
@@ -175,14 +175,24 @@ String Variant::get_type_name(Variant::Type p_type) {
 			return "PackedByteArray";
 
 		} break;
-		case PACKED_INT_ARRAY: {
+		case PACKED_INT32_ARRAY: {
 
-			return "PackedIntArray";
+			return "PackedInt32Array";
 
 		} break;
-		case PACKED_REAL_ARRAY: {
+		case PACKED_INT64_ARRAY: {
 
-			return "PackedRealArray";
+			return "PackedInt64Array";
+
+		} break;
+		case PACKED_FLOAT32_ARRAY: {
+
+			return "PackedFloat32Array";
+
+		} break;
+		case PACKED_FLOAT64_ARRAY: {
+
+			return "PackedFloat64Array";
 
 		} break;
 		case PACKED_STRING_ARRAY: {
@@ -230,7 +240,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 
 			static const Type valid[] = {
 				INT,
-				REAL,
+				FLOAT,
 				STRING,
 				NIL,
 			};
@@ -241,7 +251,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 
 			static const Type valid[] = {
 				BOOL,
-				REAL,
+				FLOAT,
 				STRING,
 				NIL,
 			};
@@ -249,7 +259,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 			valid_types = valid;
 
 		} break;
-		case REAL: {
+		case FLOAT: {
 
 			static const Type valid[] = {
 				BOOL,
@@ -425,9 +435,11 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 
 			static const Type valid[] = {
 				PACKED_BYTE_ARRAY,
-				PACKED_INT_ARRAY,
+				PACKED_INT32_ARRAY,
+				PACKED_INT64_ARRAY,
+				PACKED_FLOAT32_ARRAY,
+				PACKED_FLOAT64_ARRAY,
 				PACKED_STRING_ARRAY,
-				PACKED_REAL_ARRAY,
 				PACKED_COLOR_ARRAY,
 				PACKED_VECTOR2_ARRAY,
 				PACKED_VECTOR3_ARRAY,
@@ -446,7 +458,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 
 			valid_types = valid;
 		} break;
-		case PACKED_INT_ARRAY: {
+		case PACKED_INT32_ARRAY: {
 
 			static const Type valid[] = {
 				ARRAY,
@@ -454,7 +466,24 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 			};
 			valid_types = valid;
 		} break;
-		case PACKED_REAL_ARRAY: {
+		case PACKED_INT64_ARRAY: {
+
+			static const Type valid[] = {
+				ARRAY,
+				NIL
+			};
+			valid_types = valid;
+		} break;
+		case PACKED_FLOAT32_ARRAY: {
+
+			static const Type valid[] = {
+				ARRAY,
+				NIL
+			};
+
+			valid_types = valid;
+		} break;
+		case PACKED_FLOAT64_ARRAY: {
 
 			static const Type valid[] = {
 				ARRAY,
@@ -547,7 +576,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 
 			static const Type valid[] = {
 				INT,
-				REAL,
+				FLOAT,
 				//STRING,
 				NIL,
 			};
@@ -558,7 +587,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 
 			static const Type valid[] = {
 				BOOL,
-				REAL,
+				FLOAT,
 				//STRING,
 				NIL,
 			};
@@ -566,7 +595,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 			valid_types = valid;
 
 		} break;
-		case REAL: {
+		case FLOAT: {
 
 			static const Type valid[] = {
 				BOOL,
@@ -743,9 +772,11 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 
 			static const Type valid[] = {
 				PACKED_BYTE_ARRAY,
-				PACKED_INT_ARRAY,
+				PACKED_INT32_ARRAY,
+				PACKED_INT64_ARRAY,
+				PACKED_FLOAT32_ARRAY,
+				PACKED_FLOAT64_ARRAY,
 				PACKED_STRING_ARRAY,
-				PACKED_REAL_ARRAY,
 				PACKED_COLOR_ARRAY,
 				PACKED_VECTOR2_ARRAY,
 				PACKED_VECTOR3_ARRAY,
@@ -764,7 +795,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 
 			valid_types = valid;
 		} break;
-		case PACKED_INT_ARRAY: {
+		case PACKED_INT32_ARRAY: {
 
 			static const Type valid[] = {
 				ARRAY,
@@ -772,7 +803,24 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 			};
 			valid_types = valid;
 		} break;
-		case PACKED_REAL_ARRAY: {
+		case PACKED_INT64_ARRAY: {
+
+			static const Type valid[] = {
+				ARRAY,
+				NIL
+			};
+			valid_types = valid;
+		} break;
+		case PACKED_FLOAT32_ARRAY: {
+
+			static const Type valid[] = {
+				ARRAY,
+				NIL
+			};
+
+			valid_types = valid;
+		} break;
+		case PACKED_FLOAT64_ARRAY: {
 
 			static const Type valid[] = {
 				ARRAY,
@@ -882,9 +930,9 @@ bool Variant::is_zero() const {
 			return _data._int == 0;
 
 		} break;
-		case REAL: {
+		case FLOAT: {
 
-			return _data._real == 0;
+			return _data._float == 0;
 
 		} break;
 		case STRING: {
@@ -1008,14 +1056,24 @@ bool Variant::is_zero() const {
 			return PackedArrayRef<uint8_t>::get_array(_data.packed_array).size() == 0;
 
 		} break;
-		case PACKED_INT_ARRAY: {
+		case PACKED_INT32_ARRAY: {
 
 			return PackedArrayRef<int32_t>::get_array(_data.packed_array).size() == 0;
 
 		} break;
-		case PACKED_REAL_ARRAY: {
+		case PACKED_INT64_ARRAY: {
 
-			return PackedArrayRef<real_t>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<int64_t>::get_array(_data.packed_array).size() == 0;
+
+		} break;
+		case PACKED_FLOAT32_ARRAY: {
+
+			return PackedArrayRef<float>::get_array(_data.packed_array).size() == 0;
+
+		} break;
+		case PACKED_FLOAT64_ARRAY: {
+
+			return PackedArrayRef<double>::get_array(_data.packed_array).size() == 0;
 
 		} break;
 		case PACKED_STRING_ARRAY: {
@@ -1063,9 +1121,9 @@ bool Variant::is_one() const {
 			return _data._int == 1;
 
 		} break;
-		case REAL: {
+		case FLOAT: {
 
-			return _data._real == 1;
+			return _data._float == 1;
 
 		} break;
 		case VECTOR2: {
@@ -1131,7 +1189,7 @@ void Variant::reference(const Variant &p_variant) {
 		case NIL:
 		case BOOL:
 		case INT:
-		case REAL:
+		case FLOAT:
 			break;
 		default:
 			clear();
@@ -1154,9 +1212,9 @@ void Variant::reference(const Variant &p_variant) {
 
 			_data._int = p_variant._data._int;
 		} break;
-		case REAL: {
+		case FLOAT: {
 
-			_data._real = p_variant._data._real;
+			_data._float = p_variant._data._float;
 		} break;
 		case STRING: {
 
@@ -1281,7 +1339,7 @@ void Variant::reference(const Variant &p_variant) {
 			}
 
 		} break;
-		case PACKED_INT_ARRAY: {
+		case PACKED_INT32_ARRAY: {
 
 			_data.packed_array = static_cast<PackedArrayRef<int32_t> *>(p_variant._data.packed_array)->reference();
 			if (!_data.packed_array) {
@@ -1289,11 +1347,27 @@ void Variant::reference(const Variant &p_variant) {
 			}
 
 		} break;
-		case PACKED_REAL_ARRAY: {
+		case PACKED_INT64_ARRAY: {
 
-			_data.packed_array = static_cast<PackedArrayRef<real_t> *>(p_variant._data.packed_array)->reference();
+			_data.packed_array = static_cast<PackedArrayRef<int64_t> *>(p_variant._data.packed_array)->reference();
 			if (!_data.packed_array) {
-				_data.packed_array = PackedArrayRef<real_t>::create();
+				_data.packed_array = PackedArrayRef<int64_t>::create();
+			}
+
+		} break;
+		case PACKED_FLOAT32_ARRAY: {
+
+			_data.packed_array = static_cast<PackedArrayRef<float> *>(p_variant._data.packed_array)->reference();
+			if (!_data.packed_array) {
+				_data.packed_array = PackedArrayRef<float>::create();
+			}
+
+		} break;
+		case PACKED_FLOAT64_ARRAY: {
+
+			_data.packed_array = static_cast<PackedArrayRef<double> *>(p_variant._data.packed_array)->reference();
+			if (!_data.packed_array) {
+				_data.packed_array = PackedArrayRef<double>::create();
 			}
 
 		} break;
@@ -1339,7 +1413,7 @@ void Variant::zero() {
 		case NIL: break;
 		case BOOL: this->_data._bool = false; break;
 		case INT: this->_data._int = 0; break;
-		case REAL: this->_data._real = 0; break;
+		case FLOAT: this->_data._float = 0; break;
 		case VECTOR2: *reinterpret_cast<Vector2 *>(this->_data._mem) = Vector2(); break;
 		case VECTOR2I: *reinterpret_cast<Vector2i *>(this->_data._mem) = Vector2i(); break;
 		case RECT2: *reinterpret_cast<Rect2 *>(this->_data._mem) = Rect2(); break;
@@ -1432,11 +1506,19 @@ void Variant::clear() {
 
 			PackedArrayRefBase::destroy(_data.packed_array);
 		} break;
-		case PACKED_INT_ARRAY: {
+		case PACKED_INT32_ARRAY: {
 
 			PackedArrayRefBase::destroy(_data.packed_array);
 		} break;
-		case PACKED_REAL_ARRAY: {
+		case PACKED_INT64_ARRAY: {
+
+			PackedArrayRefBase::destroy(_data.packed_array);
+		} break;
+		case PACKED_FLOAT32_ARRAY: {
+
+			PackedArrayRefBase::destroy(_data.packed_array);
+		} break;
+		case PACKED_FLOAT64_ARRAY: {
 
 			PackedArrayRefBase::destroy(_data.packed_array);
 		} break;
@@ -1470,7 +1552,7 @@ Variant::operator signed int() const {
 		case NIL: return 0;
 		case BOOL: return _data._bool ? 1 : 0;
 		case INT: return _data._int;
-		case REAL: return _data._real;
+		case FLOAT: return _data._float;
 		case STRING: return operator String().to_int();
 		default: {
 
@@ -1485,7 +1567,7 @@ Variant::operator unsigned int() const {
 		case NIL: return 0;
 		case BOOL: return _data._bool ? 1 : 0;
 		case INT: return _data._int;
-		case REAL: return _data._real;
+		case FLOAT: return _data._float;
 		case STRING: return operator String().to_int();
 		default: {
 
@@ -1501,7 +1583,7 @@ Variant::operator int64_t() const {
 		case NIL: return 0;
 		case BOOL: return _data._bool ? 1 : 0;
 		case INT: return _data._int;
-		case REAL: return _data._real;
+		case FLOAT: return _data._float;
 		case STRING: return operator String().to_int64();
 		default: {
 
@@ -1518,7 +1600,7 @@ Variant::operator long unsigned int() const {
 		case NIL: return 0;
 		case BOOL: return _data._bool ? 1 : 0;
 		case INT: return _data._int;
-		case REAL: return _data._real;
+		case FLOAT: return _data._real;
 		case STRING: return operator String().to_int();
 		default: {
 
@@ -1537,7 +1619,7 @@ Variant::operator uint64_t() const {
 		case NIL: return 0;
 		case BOOL: return _data._bool ? 1 : 0;
 		case INT: return _data._int;
-		case REAL: return _data._real;
+		case FLOAT: return _data._float;
 		case STRING: return operator String().to_int();
 		default: {
 
@@ -1564,7 +1646,7 @@ Variant::operator signed long() const {
 		case NIL: return 0;
 		case BOOL: return _data._bool ? 1 : 0;
 		case INT: return _data._int;
-		case REAL: return _data._real;
+		case FLOAT: return _data._real;
 		case STRING: return operator String().to_int();
 		default: {
 
@@ -1582,7 +1664,7 @@ Variant::operator unsigned long() const {
 		case NIL: return 0;
 		case BOOL: return _data._bool ? 1 : 0;
 		case INT: return _data._int;
-		case REAL: return _data._real;
+		case FLOAT: return _data._real;
 		case STRING: return operator String().to_int();
 		default: {
 
@@ -1601,7 +1683,7 @@ Variant::operator signed short() const {
 		case NIL: return 0;
 		case BOOL: return _data._bool ? 1 : 0;
 		case INT: return _data._int;
-		case REAL: return _data._real;
+		case FLOAT: return _data._float;
 		case STRING: return operator String().to_int();
 		default: {
 
@@ -1616,7 +1698,7 @@ Variant::operator unsigned short() const {
 		case NIL: return 0;
 		case BOOL: return _data._bool ? 1 : 0;
 		case INT: return _data._int;
-		case REAL: return _data._real;
+		case FLOAT: return _data._float;
 		case STRING: return operator String().to_int();
 		default: {
 
@@ -1631,7 +1713,7 @@ Variant::operator signed char() const {
 		case NIL: return 0;
 		case BOOL: return _data._bool ? 1 : 0;
 		case INT: return _data._int;
-		case REAL: return _data._real;
+		case FLOAT: return _data._float;
 		case STRING: return operator String().to_int();
 		default: {
 
@@ -1646,7 +1728,7 @@ Variant::operator unsigned char() const {
 		case NIL: return 0;
 		case BOOL: return _data._bool ? 1 : 0;
 		case INT: return _data._int;
-		case REAL: return _data._real;
+		case FLOAT: return _data._float;
 		case STRING: return operator String().to_int();
 		default: {
 
@@ -1667,7 +1749,7 @@ Variant::operator float() const {
 		case NIL: return 0;
 		case BOOL: return _data._bool ? 1.0 : 0.0;
 		case INT: return (float)_data._int;
-		case REAL: return _data._real;
+		case FLOAT: return _data._float;
 		case STRING: return operator String().to_double();
 		default: {
 
@@ -1682,7 +1764,7 @@ Variant::operator double() const {
 		case NIL: return 0;
 		case BOOL: return _data._bool ? 1.0 : 0.0;
 		case INT: return (double)_data._int;
-		case REAL: return _data._real;
+		case FLOAT: return _data._float;
 		case STRING: return operator String().to_double();
 		default: {
 
@@ -1725,7 +1807,7 @@ String Variant::stringify(List<const void *> &stack) const {
 		case NIL: return "Null";
 		case BOOL: return _data._bool ? "True" : "False";
 		case INT: return itos(_data._int);
-		case REAL: return rtos(_data._real);
+		case FLOAT: return rtos(_data._float);
 		case STRING: return *reinterpret_cast<const String *>(_data._mem);
 		case VECTOR2: return "(" + operator Vector2() + ")";
 		case VECTOR2I: return "(" + operator Vector2i() + ")";
@@ -1847,9 +1929,9 @@ String Variant::stringify(List<const void *> &stack) const {
 			str += "]";
 			return str;
 		} break;
-		case PACKED_INT_ARRAY: {
+		case PACKED_INT32_ARRAY: {
 
-			Vector<int> vec = operator Vector<int>();
+			Vector<int32_t> vec = operator Vector<int32_t>();
 			String str("[");
 			for (int i = 0; i < vec.size(); i++) {
 
@@ -1860,9 +1942,35 @@ String Variant::stringify(List<const void *> &stack) const {
 			str += "]";
 			return str;
 		} break;
-		case PACKED_REAL_ARRAY: {
+		case PACKED_INT64_ARRAY: {
 
-			Vector<real_t> vec = operator Vector<real_t>();
+			Vector<int64_t> vec = operator Vector<int64_t>();
+			String str("[");
+			for (int i = 0; i < vec.size(); i++) {
+
+				if (i > 0)
+					str += ", ";
+				str = str + itos(vec[i]);
+			}
+			str += "]";
+			return str;
+		} break;
+		case PACKED_FLOAT32_ARRAY: {
+
+			Vector<float> vec = operator Vector<float>();
+			String str("[");
+			for (int i = 0; i < vec.size(); i++) {
+
+				if (i > 0)
+					str += ", ";
+				str = str + rtos(vec[i]);
+			}
+			str += "]";
+			return str;
+		} break;
+		case PACKED_FLOAT64_ARRAY: {
+
+			Vector<double> vec = operator Vector<double>();
 			String str("[");
 			for (int i = 0; i < vec.size(); i++) {
 
@@ -2218,11 +2326,17 @@ inline DA _convert_array_from_variant(const Variant &p_variant) {
 		case Variant::PACKED_BYTE_ARRAY: {
 			return _convert_array<DA, Vector<uint8_t> >(p_variant.operator Vector<uint8_t>());
 		}
-		case Variant::PACKED_INT_ARRAY: {
-			return _convert_array<DA, Vector<int> >(p_variant.operator Vector<int>());
+		case Variant::PACKED_INT32_ARRAY: {
+			return _convert_array<DA, Vector<int32_t> >(p_variant.operator Vector<int32_t>());
 		}
-		case Variant::PACKED_REAL_ARRAY: {
-			return _convert_array<DA, Vector<real_t> >(p_variant.operator Vector<real_t>());
+		case Variant::PACKED_INT64_ARRAY: {
+			return _convert_array<DA, Vector<int64_t> >(p_variant.operator Vector<int64_t>());
+		}
+		case Variant::PACKED_FLOAT32_ARRAY: {
+			return _convert_array<DA, Vector<float> >(p_variant.operator Vector<float>());
+		}
+		case Variant::PACKED_FLOAT64_ARRAY: {
+			return _convert_array<DA, Vector<double> >(p_variant.operator Vector<double>());
 		}
 		case Variant::PACKED_STRING_ARRAY: {
 			return _convert_array<DA, Vector<String> >(p_variant.operator Vector<String>());
@@ -2257,19 +2371,35 @@ Variant::operator Vector<uint8_t>() const {
 	else
 		return _convert_array_from_variant<Vector<uint8_t> >(*this);
 }
-Variant::operator Vector<int>() const {
+Variant::operator Vector<int32_t>() const {
 
-	if (type == PACKED_INT_ARRAY)
+	if (type == PACKED_INT32_ARRAY)
 		return static_cast<PackedArrayRef<int32_t> *>(_data.packed_array)->array;
 	else
 		return _convert_array_from_variant<Vector<int> >(*this);
 }
-Variant::operator Vector<real_t>() const {
+Variant::operator Vector<int64_t>() const {
 
-	if (type == PACKED_REAL_ARRAY)
-		return static_cast<PackedArrayRef<real_t> *>(_data.packed_array)->array;
+	if (type == PACKED_INT64_ARRAY)
+		return static_cast<PackedArrayRef<int64_t> *>(_data.packed_array)->array;
 	else
-		return _convert_array_from_variant<Vector<real_t> >(*this);
+		return _convert_array_from_variant<Vector<int64_t> >(*this);
+}
+
+Variant::operator Vector<float>() const {
+
+	if (type == PACKED_FLOAT32_ARRAY)
+		return static_cast<PackedArrayRef<float> *>(_data.packed_array)->array;
+	else
+		return _convert_array_from_variant<Vector<float> >(*this);
+}
+
+Variant::operator Vector<double>() const {
+
+	if (type == PACKED_FLOAT64_ARRAY)
+		return static_cast<PackedArrayRef<double> *>(_data.packed_array)->array;
+	else
+		return _convert_array_from_variant<Vector<double> >(*this);
 }
 
 Variant::operator Vector<String>() const {
@@ -2388,7 +2518,7 @@ Variant::operator Orientation() const {
 
 Variant::operator IP_Address() const {
 
-	if (type == PACKED_REAL_ARRAY || type == PACKED_INT_ARRAY || type == PACKED_BYTE_ARRAY) {
+	if (type == PACKED_FLOAT32_ARRAY || type == PACKED_INT32_ARRAY || type == PACKED_FLOAT64_ARRAY || type == PACKED_INT64_ARRAY || type == PACKED_BYTE_ARRAY) {
 
 		Vector<int> addr = operator Vector<int>();
 		if (addr.size() == 4) {
@@ -2472,13 +2602,13 @@ Variant::Variant(unsigned char p_char) {
 }
 Variant::Variant(float p_float) {
 
-	type = REAL;
-	_data._real = p_float;
+	type = FLOAT;
+	_data._float = p_float;
 }
 Variant::Variant(double p_double) {
 
-	type = REAL;
-	_data._real = p_double;
+	type = FLOAT;
+	_data._float = p_double;
 }
 
 Variant::Variant(const ObjectID &p_id) {
@@ -2670,22 +2800,36 @@ Variant::Variant(const Vector<RID> &p_array) {
 	}
 }
 
-Variant::Variant(const Vector<uint8_t> &p_raw_array) {
+Variant::Variant(const Vector<uint8_t> &p_byte_array) {
 
 	type = PACKED_BYTE_ARRAY;
 
-	_data.packed_array = PackedArrayRef<uint8_t>::create(p_raw_array);
+	_data.packed_array = PackedArrayRef<uint8_t>::create(p_byte_array);
 }
-Variant::Variant(const Vector<int> &p_int_array) {
+Variant::Variant(const Vector<int32_t> &p_int32_array) {
 
-	type = PACKED_INT_ARRAY;
-	_data.packed_array = PackedArrayRef<int32_t>::create(p_int_array);
+	type = PACKED_INT32_ARRAY;
+	_data.packed_array = PackedArrayRef<int32_t>::create(p_int32_array);
 }
-Variant::Variant(const Vector<real_t> &p_real_array) {
 
-	type = PACKED_REAL_ARRAY;
-	_data.packed_array = PackedArrayRef<real_t>::create(p_real_array);
+Variant::Variant(const Vector<int64_t> &p_int64_array) {
+
+	type = PACKED_INT64_ARRAY;
+	_data.packed_array = PackedArrayRef<int64_t>::create(p_int64_array);
 }
+
+Variant::Variant(const Vector<float> &p_float32_array) {
+
+	type = PACKED_FLOAT32_ARRAY;
+	_data.packed_array = PackedArrayRef<float>::create(p_float32_array);
+}
+
+Variant::Variant(const Vector<double> &p_float64_array) {
+
+	type = PACKED_FLOAT64_ARRAY;
+	_data.packed_array = PackedArrayRef<double>::create(p_float64_array);
+}
+
 Variant::Variant(const Vector<String> &p_string_array) {
 
 	type = PACKED_STRING_ARRAY;
@@ -2777,9 +2921,9 @@ void Variant::operator=(const Variant &p_variant) {
 
 			_data._int = p_variant._data._int;
 		} break;
-		case REAL: {
+		case FLOAT: {
 
-			_data._real = p_variant._data._real;
+			_data._float = p_variant._data._float;
 		} break;
 		case STRING: {
 
@@ -2900,13 +3044,21 @@ void Variant::operator=(const Variant &p_variant) {
 
 			_data.packed_array = PackedArrayRef<uint8_t>::reference_from(_data.packed_array, p_variant._data.packed_array);
 		} break;
-		case PACKED_INT_ARRAY: {
+		case PACKED_INT32_ARRAY: {
 
 			_data.packed_array = PackedArrayRef<int32_t>::reference_from(_data.packed_array, p_variant._data.packed_array);
 		} break;
-		case PACKED_REAL_ARRAY: {
+		case PACKED_INT64_ARRAY: {
 
-			_data.packed_array = PackedArrayRef<real_t>::reference_from(_data.packed_array, p_variant._data.packed_array);
+			_data.packed_array = PackedArrayRef<int64_t>::reference_from(_data.packed_array, p_variant._data.packed_array);
+		} break;
+		case PACKED_FLOAT32_ARRAY: {
+
+			_data.packed_array = PackedArrayRef<float>::reference_from(_data.packed_array, p_variant._data.packed_array);
+		} break;
+		case PACKED_FLOAT64_ARRAY: {
+
+			_data.packed_array = PackedArrayRef<double>::reference_from(_data.packed_array, p_variant._data.packed_array);
 		} break;
 		case PACKED_STRING_ARRAY: {
 
@@ -2962,9 +3114,9 @@ uint32_t Variant::hash() const {
 
 			return _data._int;
 		} break;
-		case REAL: {
+		case FLOAT: {
 
-			return hash_djb2_one_float(_data._real);
+			return hash_djb2_one_float(_data._float);
 		} break;
 		case STRING: {
 
@@ -3140,26 +3292,51 @@ uint32_t Variant::hash() const {
 			}
 
 		} break;
-		case PACKED_INT_ARRAY: {
+		case PACKED_INT32_ARRAY: {
 
 			const Vector<int32_t> &arr = PackedArrayRef<int32_t>::get_array(_data.packed_array);
 			int len = arr.size();
 			if (likely(len)) {
-				const int *r = arr.ptr();
-				return hash_djb2_buffer((uint8_t *)&r[0], len * sizeof(int));
+				const int32_t *r = arr.ptr();
+				return hash_djb2_buffer((uint8_t *)&r[0], len * sizeof(int32_t));
 			} else {
 				return hash_djb2_one_64(0);
 			}
 
 		} break;
-		case PACKED_REAL_ARRAY: {
+		case PACKED_INT64_ARRAY: {
 
-			const Vector<real_t> &arr = PackedArrayRef<real_t>::get_array(_data.packed_array);
+			const Vector<int64_t> &arr = PackedArrayRef<int64_t>::get_array(_data.packed_array);
+			int len = arr.size();
+			if (likely(len)) {
+				const int64_t *r = arr.ptr();
+				return hash_djb2_buffer((uint8_t *)&r[0], len * sizeof(int64_t));
+			} else {
+				return hash_djb2_one_64(0);
+			}
+
+		} break;
+		case PACKED_FLOAT32_ARRAY: {
+
+			const Vector<float> &arr = PackedArrayRef<float>::get_array(_data.packed_array);
 			int len = arr.size();
 
 			if (likely(len)) {
-				const real_t *r = arr.ptr();
-				return hash_djb2_buffer((uint8_t *)&r[0], len * sizeof(real_t));
+				const float *r = arr.ptr();
+				return hash_djb2_buffer((uint8_t *)&r[0], len * sizeof(float));
+			} else {
+				return hash_djb2_one_float(0.0);
+			}
+
+		} break;
+		case PACKED_FLOAT64_ARRAY: {
+
+			const Vector<double> &arr = PackedArrayRef<double>::get_array(_data.packed_array);
+			int len = arr.size();
+
+			if (likely(len)) {
+				const double *r = arr.ptr();
+				return hash_djb2_buffer((uint8_t *)&r[0], len * sizeof(double));
 			} else {
 				return hash_djb2_one_float(0.0);
 			}
@@ -3266,21 +3443,21 @@ uint32_t Variant::hash() const {
 			(hash_compare_scalar((p_lhs).b, (p_rhs).b)) && \
 			(hash_compare_scalar((p_lhs).a, (p_rhs).a))
 
-#define hash_compare_pool_array(p_lhs, p_rhs, p_type, p_compare_func)           \
-	const Vector<p_type> &l = *reinterpret_cast<const Vector<p_type> *>(p_lhs); \
-	const Vector<p_type> &r = *reinterpret_cast<const Vector<p_type> *>(p_rhs); \
-                                                                                \
-	if (l.size() != r.size())                                                   \
-		return false;                                                           \
-                                                                                \
-	const p_type *lr = l.ptr();                                                 \
-	const p_type *rr = r.ptr();                                                 \
-                                                                                \
-	for (int i = 0; i < l.size(); ++i) {                                        \
-		if (!p_compare_func((lr[i]), (rr[i])))                                  \
-			return false;                                                       \
-	}                                                                           \
-                                                                                \
+#define hash_compare_packed_array(p_lhs, p_rhs, p_type, p_compare_func) \
+	const Vector<p_type> &l = PackedArrayRef<p_type>::get_array(p_lhs); \
+	const Vector<p_type> &r = PackedArrayRef<p_type>::get_array(p_rhs); \
+                                                                        \
+	if (l.size() != r.size())                                           \
+		return false;                                                   \
+                                                                        \
+	const p_type *lr = l.ptr();                                         \
+	const p_type *rr = r.ptr();                                         \
+                                                                        \
+	for (int i = 0; i < l.size(); ++i) {                                \
+		if (!p_compare_func((lr[i]), (rr[i])))                          \
+			return false;                                               \
+	}                                                                   \
+                                                                        \
 	return true
 
 bool Variant::hash_compare(const Variant &p_variant) const {
@@ -3288,8 +3465,8 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 		return false;
 
 	switch (type) {
-		case REAL: {
-			return hash_compare_scalar(_data._real, p_variant._data._real);
+		case FLOAT: {
+			return hash_compare_scalar(_data._float, p_variant._data._float);
 		} break;
 
 		case VECTOR2: {
@@ -3413,20 +3590,25 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 			return true;
 		} break;
 
-		case PACKED_REAL_ARRAY: {
-			hash_compare_pool_array(_data._mem, p_variant._data._mem, real_t, hash_compare_scalar);
+		// This is for floating point comparisons only.
+		case PACKED_FLOAT32_ARRAY: {
+			hash_compare_packed_array(_data.packed_array, p_variant._data.packed_array, float, hash_compare_scalar);
+		} break;
+
+		case PACKED_FLOAT64_ARRAY: {
+			hash_compare_packed_array(_data.packed_array, p_variant._data.packed_array, double, hash_compare_scalar);
 		} break;
 
 		case PACKED_VECTOR2_ARRAY: {
-			hash_compare_pool_array(_data._mem, p_variant._data._mem, Vector2, hash_compare_vector2);
+			hash_compare_packed_array(_data.packed_array, p_variant._data.packed_array, Vector2, hash_compare_vector2);
 		} break;
 
 		case PACKED_VECTOR3_ARRAY: {
-			hash_compare_pool_array(_data._mem, p_variant._data._mem, Vector3, hash_compare_vector3);
+			hash_compare_packed_array(_data.packed_array, p_variant._data.packed_array, Vector3, hash_compare_vector3);
 		} break;
 
 		case PACKED_COLOR_ARRAY: {
-			hash_compare_pool_array(_data._mem, p_variant._data._mem, Color, hash_compare_color);
+			hash_compare_packed_array(_data.packed_array, p_variant._data.packed_array, Color, hash_compare_color);
 		} break;
 
 		default:

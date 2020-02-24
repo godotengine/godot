@@ -1049,7 +1049,7 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/expression", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 			}
 		}
-		p_list->push_back(PropertyInfo(Variant::PACKED_INT_ARRAY, "nodes/" + String(type_string[i]) + "/connections", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "nodes/" + String(type_string[i]) + "/connections", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 	}
 }
 
@@ -1126,7 +1126,7 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 		} else {
 
 			Variant defval = vsnode->get_input_port_default_value(i);
-			if (defval.get_type() == Variant::REAL || defval.get_type() == Variant::INT) {
+			if (defval.get_type() == Variant::FLOAT || defval.get_type() == Variant::INT) {
 				float val = defval;
 				inputs[i] = "n_in" + itos(node) + "p" + itos(i);
 				code += "\tfloat " + inputs[i] + " = " + vformat("%.5f", val) + ";\n";

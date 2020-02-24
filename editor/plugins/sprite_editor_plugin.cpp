@@ -376,7 +376,7 @@ void SpriteEditor::_convert_to_polygon_2d_node() {
 		Vector<Vector2> outline = computed_outline_lines[i];
 		Vector<Vector2> uv_outline = outline_lines[i];
 
-		PackedIntArray pia;
+		PackedInt32Array pia;
 		pia.resize(outline.size());
 		int *pia_write = pia.ptrw();
 

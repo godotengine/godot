@@ -271,13 +271,13 @@ void GIProbeData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "dynamic_range", PROPERTY_HINT_RANGE, "0,8,0.01"), "set_dynamic_range", "get_dynamic_range");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_energy", "get_energy");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bias", PROPERTY_HINT_RANGE, "0,8,0.01"), "set_bias", "get_bias");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "normal_bias", PROPERTY_HINT_RANGE, "0,8,0.01"), "set_normal_bias", "get_normal_bias");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "propagation", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_propagation", "get_propagation");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "anisotropy_strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_anisotropy_strength", "get_anisotropy_strength");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ao", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ao", "get_ao");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ao_size", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ao_size", "get_ao_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_energy", "get_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bias", PROPERTY_HINT_RANGE, "0,8,0.01"), "set_bias", "get_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "normal_bias", PROPERTY_HINT_RANGE, "0,8,0.01"), "set_normal_bias", "get_normal_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "propagation", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_propagation", "get_propagation");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "anisotropy_strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_anisotropy_strength", "get_anisotropy_strength");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ao", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ao", "get_ao");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ao_size", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ao_size", "get_ao_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_two_bounces"), "set_use_two_bounces", "is_using_two_bounces");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interior"), "set_interior", "is_interior");
 }

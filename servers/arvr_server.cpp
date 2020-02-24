@@ -46,7 +46,7 @@ void ARVRServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("center_on_hmd", "rotation_mode", "keep_height"), &ARVRServer::center_on_hmd);
 	ClassDB::bind_method(D_METHOD("get_hmd_transform"), &ARVRServer::get_hmd_transform);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "world_scale"), "set_world_scale", "get_world_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "world_scale"), "set_world_scale", "get_world_scale");
 
 	ClassDB::bind_method(D_METHOD("get_interface_count"), &ARVRServer::get_interface_count);
 	ClassDB::bind_method(D_METHOD("get_interface", "idx"), &ARVRServer::get_interface);

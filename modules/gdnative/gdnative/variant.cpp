@@ -209,13 +209,13 @@ void GDAPI godot_variant_new_packed_byte_array(godot_variant *r_dest, const godo
 
 void GDAPI godot_variant_new_packed_int_array(godot_variant *r_dest, const godot_packed_int_array *p_pia) {
 	Variant *dest = (Variant *)r_dest;
-	PackedIntArray *pia = (PackedIntArray *)p_pia;
+	PackedInt32Array *pia = (PackedInt32Array *)p_pia;
 	memnew_placement_custom(dest, Variant, Variant(*pia));
 }
 
 void GDAPI godot_variant_new_packed_real_array(godot_variant *r_dest, const godot_packed_real_array *p_pra) {
 	Variant *dest = (Variant *)r_dest;
-	PackedRealArray *pra = (PackedRealArray *)p_pra;
+	PackedFloat32Array *pra = (PackedFloat32Array *)p_pra;
 	memnew_placement_custom(dest, Variant, Variant(*pra));
 }
 
@@ -402,8 +402,8 @@ godot_packed_byte_array GDAPI godot_variant_as_packed_byte_array(const godot_var
 godot_packed_int_array GDAPI godot_variant_as_packed_int_array(const godot_variant *p_self) {
 	godot_packed_int_array raw_dest;
 	const Variant *self = (const Variant *)p_self;
-	PackedIntArray *dest = (PackedIntArray *)&raw_dest;
-	memnew_placement(dest, PackedIntArray(self->operator PackedIntArray())); // operator = is overloaded by PackedIntArray
+	PackedInt32Array *dest = (PackedInt32Array *)&raw_dest;
+	memnew_placement(dest, PackedInt32Array(self->operator PackedInt32Array())); // operator = is overloaded by PackedInt32Array
 	*dest = *self;
 	return raw_dest;
 }
@@ -411,8 +411,8 @@ godot_packed_int_array GDAPI godot_variant_as_packed_int_array(const godot_varia
 godot_packed_real_array GDAPI godot_variant_as_packed_real_array(const godot_variant *p_self) {
 	godot_packed_real_array raw_dest;
 	const Variant *self = (const Variant *)p_self;
-	PackedRealArray *dest = (PackedRealArray *)&raw_dest;
-	memnew_placement(dest, PackedRealArray(self->operator PackedRealArray())); // operator = is overloaded by PackedRealArray
+	PackedFloat32Array *dest = (PackedFloat32Array *)&raw_dest;
+	memnew_placement(dest, PackedFloat32Array(self->operator PackedFloat32Array())); // operator = is overloaded by PackedFloat32Array
 	*dest = *self;
 	return raw_dest;
 }

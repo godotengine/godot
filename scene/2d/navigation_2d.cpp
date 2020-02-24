@@ -44,8 +44,8 @@ void Navigation2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_edge_connection_margin", "margin"), &Navigation2D::set_edge_connection_margin);
 	ClassDB::bind_method(D_METHOD("get_edge_connection_margin"), &Navigation2D::get_edge_connection_margin);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "cell_size"), "set_cell_size", "get_cell_size");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "edge_connection_margin"), "set_edge_connection_margin", "get_edge_connection_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_size"), "set_cell_size", "get_cell_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "edge_connection_margin"), "set_edge_connection_margin", "get_edge_connection_margin");
 }
 
 void Navigation2D::_notification(int p_what) {

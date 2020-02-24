@@ -393,12 +393,12 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 		} break;
 		case Variant::INT:
-		case Variant::REAL: {
+		case Variant::FLOAT: {
 
 			if (hint == PROPERTY_HINT_RANGE) {
 
 				int c = hint_text.get_slice_count(",");
-				float min = 0, max = 100, step = type == Variant::REAL ? .01 : 1;
+				float min = 0, max = 100, step = type == Variant::FLOAT ? .01 : 1;
 				if (c >= 1) {
 
 					if (!hint_text.get_slice(",", 0).empty())
@@ -1048,10 +1048,16 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 		case Variant::PACKED_BYTE_ARRAY: {
 
 		} break;
-		case Variant::PACKED_INT_ARRAY: {
+		case Variant::PACKED_INT32_ARRAY: {
 
 		} break;
-		case Variant::PACKED_REAL_ARRAY: {
+		case Variant::PACKED_FLOAT32_ARRAY: {
+
+		} break;
+		case Variant::PACKED_INT64_ARRAY: {
+
+		} break;
+		case Variant::PACKED_FLOAT64_ARRAY: {
 
 		} break;
 		case Variant::PACKED_STRING_ARRAY: {
@@ -1113,7 +1119,7 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 
 void CustomPropertyEditor::_type_create_selected(int p_idx) {
 
-	if (type == Variant::INT || type == Variant::REAL) {
+	if (type == Variant::INT || type == Variant::FLOAT) {
 
 		float newval = 0;
 		switch (p_idx) {
@@ -1563,7 +1569,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 			emit_signal("variant_changed");
 
 		} break;
-		case Variant::REAL: {
+		case Variant::FLOAT: {
 
 			if (hint != PROPERTY_HINT_EXP_EASING) {
 				String text = value_editor[0]->get_text();
@@ -1700,10 +1706,10 @@ void CustomPropertyEditor::_modified(String p_string) {
 		case Variant::PACKED_BYTE_ARRAY: {
 
 		} break;
-		case Variant::PACKED_INT_ARRAY: {
+		case Variant::PACKED_INT32_ARRAY: {
 
 		} break;
-		case Variant::PACKED_REAL_ARRAY: {
+		case Variant::PACKED_FLOAT32_ARRAY: {
 
 		} break;
 		case Variant::PACKED_STRING_ARRAY: {
@@ -1751,7 +1757,7 @@ void CustomPropertyEditor::_range_modified(double p_value) {
 
 void CustomPropertyEditor::_focus_enter() {
 	switch (type) {
-		case Variant::REAL:
+		case Variant::FLOAT:
 		case Variant::STRING:
 		case Variant::VECTOR2:
 		case Variant::RECT2:
@@ -1777,7 +1783,7 @@ void CustomPropertyEditor::_focus_enter() {
 
 void CustomPropertyEditor::_focus_exit() {
 	switch (type) {
-		case Variant::REAL:
+		case Variant::FLOAT:
 		case Variant::STRING:
 		case Variant::VECTOR2:
 		case Variant::RECT2:

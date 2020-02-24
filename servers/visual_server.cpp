@@ -445,7 +445,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 			case VS::ARRAY_TANGENT: {
 
-				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_REAL_ARRAY, ERR_INVALID_PARAMETER);
+				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_FLOAT32_ARRAY, ERR_INVALID_PARAMETER);
 
 				Vector<real_t> array = p_arrays[ai];
 
@@ -571,7 +571,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 			} break;
 			case VS::ARRAY_WEIGHTS: {
 
-				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_REAL_ARRAY, ERR_INVALID_PARAMETER);
+				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_FLOAT32_ARRAY, ERR_INVALID_PARAMETER);
 
 				Vector<real_t> array = p_arrays[ai];
 
@@ -595,7 +595,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 			} break;
 			case VS::ARRAY_BONES: {
 
-				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_INT_ARRAY && p_arrays[ai].get_type() != Variant::PACKED_REAL_ARRAY, ERR_INVALID_PARAMETER);
+				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_INT32_ARRAY && p_arrays[ai].get_type() != Variant::PACKED_FLOAT32_ARRAY, ERR_INVALID_PARAMETER);
 
 				Vector<int> array = p_arrays[ai];
 
@@ -618,7 +618,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 			case VS::ARRAY_INDEX: {
 
 				ERR_FAIL_COND_V(p_index_array_len <= 0, ERR_INVALID_DATA);
-				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_INT_ARRAY, ERR_INVALID_PARAMETER);
+				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_INT32_ARRAY, ERR_INVALID_PARAMETER);
 
 				Vector<int> indices = p_arrays[ai];
 				ERR_FAIL_COND_V(indices.size() == 0, ERR_INVALID_PARAMETER);
@@ -867,7 +867,7 @@ Error VisualServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surface_
 			ERR_FAIL_COND_V(array_len == 0, ERR_INVALID_DATA);
 		} else if (i == VS::ARRAY_INDEX) {
 
-			index_array_len = PackedIntArray(p_arrays[i]).size();
+			index_array_len = PackedInt32Array(p_arrays[i]).size();
 		}
 	}
 
@@ -2352,7 +2352,7 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF("rendering/quality/filters/screen_space_roughness_limiter", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/screen_space_roughness_limiter", PropertyInfo(Variant::INT, "rendering/quality/filters/screen_space_roughness_limiter", PROPERTY_HINT_ENUM, "Disabled,Enabled (Small Cost)"));
 	GLOBAL_DEF("rendering/quality/filters/screen_space_roughness_limiter_curve", 1.0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/screen_space_roughness_limiter_curve", PropertyInfo(Variant::REAL, "rendering/quality/filters/screen_space_roughness_limiter_curve", PROPERTY_HINT_EXP_EASING, "0.01,8,0.01"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/screen_space_roughness_limiter_curve", PropertyInfo(Variant::FLOAT, "rendering/quality/filters/screen_space_roughness_limiter_curve", PROPERTY_HINT_EXP_EASING, "0.01,8,0.01"));
 }
 
 VisualServer::~VisualServer() {

@@ -252,12 +252,12 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 			}
 
 			if (array_type->eklass == CACHED_CLASS_RAW(int32_t)) {
-				SET_FROM_ARRAY(PackedIntArray);
+				SET_FROM_ARRAY(PackedInt32Array);
 				break;
 			}
 
 			if (array_type->eklass == REAL_T_MONOCLASS) {
-				SET_FROM_ARRAY(PackedRealArray);
+				SET_FROM_ARRAY(PackedFloat32Array);
 				break;
 			}
 
@@ -370,7 +370,7 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 					int32_t val = p_value.operator signed int();
 					mono_field_set_value(p_object, mono_field, &val);
 				} break;
-				case Variant::REAL: {
+				case Variant::FLOAT: {
 #ifdef REAL_T_IS_DOUBLE
 					double val = p_value.operator double();
 					mono_field_set_value(p_object, mono_field, &val);
@@ -437,11 +437,11 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 				case Variant::PACKED_BYTE_ARRAY: {
 					SET_FROM_ARRAY(PackedByteArray);
 				} break;
-				case Variant::PACKED_INT_ARRAY: {
-					SET_FROM_ARRAY(PackedIntArray);
+				case Variant::PACKED_INT32_ARRAY: {
+					SET_FROM_ARRAY(PackedInt32Array);
 				} break;
-				case Variant::PACKED_REAL_ARRAY: {
-					SET_FROM_ARRAY(PackedRealArray);
+				case Variant::PACKED_FLOAT32_ARRAY: {
+					SET_FROM_ARRAY(PackedFloat32Array);
 				} break;
 				case Variant::PACKED_STRING_ARRAY: {
 					SET_FROM_ARRAY(PackedStringArray);

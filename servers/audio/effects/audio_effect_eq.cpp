@@ -117,7 +117,7 @@ void AudioEffectEQ::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	for (int i = 0; i < band_names.size(); i++) {
 
-		p_list->push_back(PropertyInfo(Variant::REAL, band_names[i], PROPERTY_HINT_RANGE, "-60,24,0.1"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, band_names[i], PROPERTY_HINT_RANGE, "-60,24,0.1"));
 	}
 }
 

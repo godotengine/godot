@@ -1124,7 +1124,7 @@ static bool _guess_expression_type(GDScriptCompletionContext &p_context, const G
 						v2 = 1;
 						v2_use_value = false;
 					}
-					if (vop == Variant::OP_DIVIDE && v2.get_type() == Variant::REAL) {
+					if (vop == Variant::OP_DIVIDE && v2.get_type() == Variant::FLOAT) {
 						v2 = 1.0;
 						v2_use_value = false;
 					}
@@ -2173,7 +2173,7 @@ static void _find_identifiers(const GDScriptCompletionContext &p_context, bool p
 
 	static const char *_type_names[Variant::VARIANT_MAX] = {
 		"null", "bool", "int", "float", "String", "Vector2", "Rect2", "Vector3", "Transform2D", "Plane", "Quat", "AABB", "Basis", "Transform",
-		"Color", "NodePath", "RID", "Object", "Dictionary", "Array", "PackedByteArray", "PackedIntArray", "PackedRealArray", "PackedStringArray",
+		"Color", "NodePath", "RID", "Object", "Callable", "Signal", "Dictionary", "Array", "PackedByteArray", "PackedInt32Array", "PackedInt64Array", "PackedFloat32Array", "PackedFloat64Array", "PackedStringArray",
 		"PackedVector2Array", "PackedVector3Array", "PackedColorArray"
 	};
 

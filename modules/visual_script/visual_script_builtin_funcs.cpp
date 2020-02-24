@@ -277,22 +277,22 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 		case MATH_EXP:
 		case MATH_ISNAN:
 		case MATH_ISINF: {
-			return PropertyInfo(Variant::REAL, "s");
+			return PropertyInfo(Variant::FLOAT, "s");
 		} break;
 		case MATH_ATAN2: {
 			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "y");
+				return PropertyInfo(Variant::FLOAT, "y");
 			else
-				return PropertyInfo(Variant::REAL, "x");
+				return PropertyInfo(Variant::FLOAT, "x");
 		} break;
 		case MATH_FMOD:
 		case MATH_FPOSMOD:
 		case LOGIC_MAX:
 		case LOGIC_MIN: {
 			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "a");
+				return PropertyInfo(Variant::FLOAT, "a");
 			else
-				return PropertyInfo(Variant::REAL, "b");
+				return PropertyInfo(Variant::FLOAT, "b");
 		} break;
 		case MATH_POSMOD: {
 			if (p_idx == 0)
@@ -302,63 +302,63 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 		} break;
 		case MATH_POW: {
 			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "base");
+				return PropertyInfo(Variant::FLOAT, "base");
 			else
-				return PropertyInfo(Variant::REAL, "exp");
+				return PropertyInfo(Variant::FLOAT, "exp");
 		} break;
 		case MATH_EASE: {
 			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "s");
+				return PropertyInfo(Variant::FLOAT, "s");
 			else
-				return PropertyInfo(Variant::REAL, "curve");
+				return PropertyInfo(Variant::FLOAT, "curve");
 		} break;
 		case MATH_STEP_DECIMALS: {
-			return PropertyInfo(Variant::REAL, "step");
+			return PropertyInfo(Variant::FLOAT, "step");
 		} break;
 		case MATH_STEPIFY: {
 			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "s");
+				return PropertyInfo(Variant::FLOAT, "s");
 			else
-				return PropertyInfo(Variant::REAL, "steps");
+				return PropertyInfo(Variant::FLOAT, "steps");
 		} break;
 		case MATH_LERP:
 		case MATH_LERP_ANGLE:
 		case MATH_INVERSE_LERP:
 		case MATH_SMOOTHSTEP: {
 			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "from");
+				return PropertyInfo(Variant::FLOAT, "from");
 			else if (p_idx == 1)
-				return PropertyInfo(Variant::REAL, "to");
+				return PropertyInfo(Variant::FLOAT, "to");
 			else
-				return PropertyInfo(Variant::REAL, "weight");
+				return PropertyInfo(Variant::FLOAT, "weight");
 		} break;
 		case MATH_RANGE_LERP: {
 			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "value");
+				return PropertyInfo(Variant::FLOAT, "value");
 			else if (p_idx == 1)
-				return PropertyInfo(Variant::REAL, "istart");
+				return PropertyInfo(Variant::FLOAT, "istart");
 			else if (p_idx == 2)
-				return PropertyInfo(Variant::REAL, "istop");
+				return PropertyInfo(Variant::FLOAT, "istop");
 			else if (p_idx == 3)
-				return PropertyInfo(Variant::REAL, "ostart");
+				return PropertyInfo(Variant::FLOAT, "ostart");
 			else
-				return PropertyInfo(Variant::REAL, "ostop");
+				return PropertyInfo(Variant::FLOAT, "ostop");
 		} break;
 		case MATH_MOVE_TOWARD: {
 			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "from");
+				return PropertyInfo(Variant::FLOAT, "from");
 			else if (p_idx == 1)
-				return PropertyInfo(Variant::REAL, "to");
+				return PropertyInfo(Variant::FLOAT, "to");
 			else
-				return PropertyInfo(Variant::REAL, "delta");
+				return PropertyInfo(Variant::FLOAT, "delta");
 		} break;
 		case MATH_DECTIME: {
 			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "value");
+				return PropertyInfo(Variant::FLOAT, "value");
 			else if (p_idx == 1)
-				return PropertyInfo(Variant::REAL, "amount");
+				return PropertyInfo(Variant::FLOAT, "amount");
 			else
-				return PropertyInfo(Variant::REAL, "step");
+				return PropertyInfo(Variant::FLOAT, "step");
 		} break;
 		case MATH_RANDOMIZE:
 		case MATH_RAND:
@@ -367,37 +367,37 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 		} break;
 		case MATH_RANDOM: {
 			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "from");
+				return PropertyInfo(Variant::FLOAT, "from");
 			else
-				return PropertyInfo(Variant::REAL, "to");
+				return PropertyInfo(Variant::FLOAT, "to");
 		} break;
 		case MATH_SEED:
 		case MATH_RANDSEED: {
 			return PropertyInfo(Variant::INT, "seed");
 		} break;
 		case MATH_DEG2RAD: {
-			return PropertyInfo(Variant::REAL, "deg");
+			return PropertyInfo(Variant::FLOAT, "deg");
 		} break;
 		case MATH_RAD2DEG: {
-			return PropertyInfo(Variant::REAL, "rad");
+			return PropertyInfo(Variant::FLOAT, "rad");
 		} break;
 		case MATH_LINEAR2DB: {
-			return PropertyInfo(Variant::REAL, "nrg");
+			return PropertyInfo(Variant::FLOAT, "nrg");
 		} break;
 		case MATH_DB2LINEAR: {
-			return PropertyInfo(Variant::REAL, "db");
+			return PropertyInfo(Variant::FLOAT, "db");
 		} break;
 		case MATH_POLAR2CARTESIAN: {
 			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "r");
+				return PropertyInfo(Variant::FLOAT, "r");
 			else
-				return PropertyInfo(Variant::REAL, "th");
+				return PropertyInfo(Variant::FLOAT, "th");
 		} break;
 		case MATH_CARTESIAN2POLAR: {
 			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "x");
+				return PropertyInfo(Variant::FLOAT, "x");
 			else
-				return PropertyInfo(Variant::REAL, "y");
+				return PropertyInfo(Variant::FLOAT, "y");
 		} break;
 		case MATH_WRAP: {
 			if (p_idx == 0)
@@ -410,11 +410,11 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 		case MATH_WRAPF:
 		case LOGIC_CLAMP: {
 			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "value");
+				return PropertyInfo(Variant::FLOAT, "value");
 			else if (p_idx == 1)
-				return PropertyInfo(Variant::REAL, "min");
+				return PropertyInfo(Variant::FLOAT, "min");
 			else
-				return PropertyInfo(Variant::REAL, "max");
+				return PropertyInfo(Variant::FLOAT, "max");
 		} break;
 		case LOGIC_NEAREST_PO2: {
 			return PropertyInfo(Variant::INT, "value");
@@ -475,7 +475,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 			if (p_idx == 0)
 				return PropertyInfo(Variant::STRING, "name");
 			else
-				return PropertyInfo(Variant::REAL, "alpha");
+				return PropertyInfo(Variant::FLOAT, "alpha");
 		} break;
 		case FUNC_MAX: {
 		}
@@ -504,7 +504,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case MATH_FPOSMOD:
 		case MATH_FLOOR:
 		case MATH_CEIL: {
-			t = Variant::REAL;
+			t = Variant::FLOAT;
 		} break;
 		case MATH_POSMOD:
 		case MATH_ROUND: {
@@ -519,14 +519,14 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case MATH_POW:
 		case MATH_LOG:
 		case MATH_EXP: {
-			t = Variant::REAL;
+			t = Variant::FLOAT;
 		} break;
 		case MATH_ISNAN:
 		case MATH_ISINF: {
 			t = Variant::BOOL;
 		} break;
 		case MATH_EASE: {
-			t = Variant::REAL;
+			t = Variant::FLOAT;
 		} break;
 		case MATH_STEP_DECIMALS: {
 			t = Variant::INT;
@@ -539,7 +539,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case MATH_SMOOTHSTEP:
 		case MATH_MOVE_TOWARD:
 		case MATH_DECTIME: {
-			t = Variant::REAL;
+			t = Variant::FLOAT;
 
 		} break;
 		case MATH_RANDOMIZE: {
@@ -551,7 +551,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		} break;
 		case MATH_RANDF:
 		case MATH_RANDOM: {
-			t = Variant::REAL;
+			t = Variant::FLOAT;
 		} break;
 		case MATH_SEED: {
 
@@ -568,7 +568,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case MATH_LINEAR2DB:
 		case MATH_WRAPF:
 		case MATH_DB2LINEAR: {
-			t = Variant::REAL;
+			t = Variant::FLOAT;
 		} break;
 		case MATH_POLAR2CARTESIAN:
 		case MATH_CARTESIAN2POLAR: {
@@ -679,7 +679,7 @@ VisualScriptBuiltinFunc::BuiltinFunc VisualScriptBuiltinFunc::get_func() {
 	if (!p_inputs[m_arg]->is_num()) {                                     \
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT; \
 		r_error.argument = m_arg;                                         \
-		r_error.expected = Variant::REAL;                                 \
+		r_error.expected = Variant::FLOAT;                                \
 		return;                                                           \
 	}
 
@@ -781,7 +781,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 
 				int64_t i = *p_inputs[0];
 				*r_return = ABS(i);
-			} else if (p_inputs[0]->get_type() == Variant::REAL) {
+			} else if (p_inputs[0]->get_type() == Variant::FLOAT) {
 
 				real_t r = *p_inputs[0];
 				*r_return = Math::abs(r);
@@ -789,7 +789,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
-				r_error.expected = Variant::REAL;
+				r_error.expected = Variant::FLOAT;
 			}
 		} break;
 		case VisualScriptBuiltinFunc::MATH_SIGN: {
@@ -798,7 +798,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 
 				int64_t i = *p_inputs[0];
 				*r_return = i < 0 ? -1 : (i > 0 ? +1 : 0);
-			} else if (p_inputs[0]->get_type() == Variant::REAL) {
+			} else if (p_inputs[0]->get_type() == Variant::FLOAT) {
 
 				real_t r = *p_inputs[0];
 				*r_return = r < 0.0 ? -1.0 : (r > 0.0 ? +1.0 : 0.0);
@@ -806,7 +806,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
-				r_error.expected = Variant::REAL;
+				r_error.expected = Variant::FLOAT;
 			}
 		} break;
 		case VisualScriptBuiltinFunc::MATH_POW: {

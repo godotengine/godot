@@ -58,7 +58,7 @@ void ARVRPositionalTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rumble"), &ARVRPositionalTracker::get_rumble);
 	ClassDB::bind_method(D_METHOD("set_rumble", "rumble"), &ARVRPositionalTracker::set_rumble);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rumble"), "set_rumble", "get_rumble");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rumble"), "set_rumble", "get_rumble");
 };
 
 void ARVRPositionalTracker::set_type(ARVRServer::TrackerType p_type) {

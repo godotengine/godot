@@ -474,7 +474,7 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 	Vector<real_t> l_heights;
 	Variant l_heights_v = d["heights"];
 
-	if (l_heights_v.get_type() == Variant::PACKED_REAL_ARRAY) {
+	if (l_heights_v.get_type() == Variant::PACKED_FLOAT32_ARRAY) {
 		// Ready-to-use heights can be passed
 
 		l_heights = l_heights_v;
@@ -505,7 +505,7 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 		}
 
 	} else {
-		ERR_FAIL_MSG("Expected PackedRealArray or float Image.");
+		ERR_FAIL_MSG("Expected PackedFloat32Array or float Image.");
 	}
 
 	ERR_FAIL_COND(l_width <= 0);

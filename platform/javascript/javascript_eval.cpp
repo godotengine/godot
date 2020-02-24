@@ -81,7 +81,7 @@ Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 
 			case 'number':
 				setValue(PTR, eval_ret, 'double');
-				return 3; // REAL
+				return 3; // FLOAT
 
 			case 'string':
 				var array_len = lengthBytesUTF8(eval_ret)+1;
@@ -128,7 +128,7 @@ Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 	switch (return_type) {
 		case Variant::BOOL:
 			return js_data.b;
-		case Variant::REAL:
+		case Variant::FLOAT:
 			return js_data.d;
 		case Variant::STRING: {
 			String str = String::utf8(js_data.s);

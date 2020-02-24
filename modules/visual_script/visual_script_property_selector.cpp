@@ -120,8 +120,10 @@ void VisualScriptPropertySelector::_update_search() {
 			Control::get_icon("Dictionary", "EditorIcons"),
 			Control::get_icon("Array", "EditorIcons"),
 			Control::get_icon("PackedByteArray", "EditorIcons"),
-			Control::get_icon("PackedIntArray", "EditorIcons"),
-			Control::get_icon("PackedRealArray", "EditorIcons"),
+			Control::get_icon("PackedInt32Array", "EditorIcons"),
+			Control::get_icon("PackedFloat32Array", "EditorIcons"),
+			Control::get_icon("PackedInt64Array", "EditorIcons"),
+			Control::get_icon("PackedFloat64Array", "EditorIcons"),
 			Control::get_icon("PackedStringArray", "EditorIcons"),
 			Control::get_icon("PackedVector2Array", "EditorIcons"),
 			Control::get_icon("PackedVector3Array", "EditorIcons"),
@@ -279,7 +281,7 @@ void VisualScriptPropertySelector::_update_search() {
 			if (type == Variant::BOOL) {
 				get_visual_node_names("operators/logic/", Set<String>(), found, root, search_box);
 			}
-			if (type == Variant::BOOL || type == Variant::INT || type == Variant::REAL || type == Variant::VECTOR2 || type == Variant::VECTOR3) {
+			if (type == Variant::BOOL || type == Variant::INT || type == Variant::FLOAT || type == Variant::VECTOR2 || type == Variant::VECTOR3) {
 				get_visual_node_names("operators/math/", Set<String>(), found, root, search_box);
 			}
 		}

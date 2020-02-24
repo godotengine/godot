@@ -127,20 +127,20 @@ String mono_object_to_variant_string(MonoObject *p_obj, MonoException **r_exc);
 MonoArray *Array_to_mono_array(const Array &p_array);
 Array mono_array_to_Array(MonoArray *p_array);
 
-// PackedIntArray
+// PackedInt32Array
 
-MonoArray *PackedIntArray_to_mono_array(const PackedIntArray &p_array);
-PackedIntArray mono_array_to_PackedIntArray(MonoArray *p_array);
+MonoArray *PackedInt32Array_to_mono_array(const PackedInt32Array &p_array);
+PackedInt32Array mono_array_to_PackedInt32Array(MonoArray *p_array);
 
 // PackedByteArray
 
 MonoArray *PackedByteArray_to_mono_array(const PackedByteArray &p_array);
 PackedByteArray mono_array_to_PackedByteArray(MonoArray *p_array);
 
-// PackedRealArray
+// PackedFloat32Array
 
-MonoArray *PackedRealArray_to_mono_array(const PackedRealArray &p_array);
-PackedRealArray mono_array_to_PackedRealArray(MonoArray *p_array);
+MonoArray *PackedFloat32Array_to_mono_array(const PackedFloat32Array &p_array);
+PackedFloat32Array mono_array_to_PackedFloat32Array(MonoArray *p_array);
 
 // PackedStringArray
 

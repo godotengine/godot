@@ -505,9 +505,9 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				xml_output.append("</c>");
 			} else if (tag == "PackedByteArray") {
 				xml_output.append("<see cref=\"byte\"/>");
-			} else if (tag == "PackedIntArray") {
+			} else if (tag == "PackedInt32Array") {
 				xml_output.append("<see cref=\"int\"/>");
-			} else if (tag == "PackedRealArray") {
+			} else if (tag == "PackedFloat32Array") {
 #ifdef REAL_T_IS_DOUBLE
 				xml_output.append("<see cref=\"double\"/>");
 #else
@@ -2383,7 +2383,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			} else {
 				if (return_info.type == Variant::INT) {
 					imethod.return_type.cname = _get_int_type_name_from_meta(m ? m->get_argument_meta(-1) : GodotTypeInfo::METADATA_NONE);
-				} else if (return_info.type == Variant::REAL) {
+				} else if (return_info.type == Variant::FLOAT) {
 					imethod.return_type.cname = _get_float_type_name_from_meta(m ? m->get_argument_meta(-1) : GodotTypeInfo::METADATA_NONE);
 				} else {
 					imethod.return_type.cname = Variant::get_type_name(return_info.type);
@@ -2410,7 +2410,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				} else {
 					if (arginfo.type == Variant::INT) {
 						iarg.type.cname = _get_int_type_name_from_meta(m ? m->get_argument_meta(i) : GodotTypeInfo::METADATA_NONE);
-					} else if (arginfo.type == Variant::REAL) {
+					} else if (arginfo.type == Variant::FLOAT) {
 						iarg.type.cname = _get_float_type_name_from_meta(m ? m->get_argument_meta(i) : GodotTypeInfo::METADATA_NONE);
 					} else {
 						iarg.type.cname = Variant::get_type_name(arginfo.type);
@@ -2581,7 +2581,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 				r_iarg.default_argument = "(%s)" + r_iarg.default_argument;
 			}
 			break;
-		case Variant::REAL:
+		case Variant::FLOAT:
 #ifndef REAL_T_IS_DOUBLE
 			r_iarg.default_argument += "f";
 #endif
@@ -2629,8 +2629,10 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			break;
 		case Variant::ARRAY:
 		case Variant::PACKED_BYTE_ARRAY:
-		case Variant::PACKED_INT_ARRAY:
-		case Variant::PACKED_REAL_ARRAY:
+		case Variant::PACKED_INT32_ARRAY:
+		case Variant::PACKED_FLOAT32_ARRAY:
+		case Variant::PACKED_INT64_ARRAY:
+		case Variant::PACKED_FLOAT64_ARRAY:
 		case Variant::PACKED_STRING_ARRAY:
 		case Variant::PACKED_VECTOR2_ARRAY:
 		case Variant::PACKED_VECTOR3_ARRAY:
@@ -2914,13 +2916,13 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 
 #define INSERT_ARRAY(m_type, m_proxy_t) INSERT_ARRAY_FULL(m_type, m_type, m_proxy_t)
 
-	INSERT_ARRAY(PackedIntArray, int);
+	INSERT_ARRAY(PackedInt32Array, int);
 	INSERT_ARRAY_FULL(PackedByteArray, PackedByteArray, byte);
 
 #ifdef REAL_T_IS_DOUBLE
-	INSERT_ARRAY(PackedRealArray, double);
+	INSERT_ARRAY(PackedFloat32Array, double);
 #else
-	INSERT_ARRAY(PackedRealArray, float);
+	INSERT_ARRAY(PackedFloat32Array, float);
 #endif
 
 	INSERT_ARRAY(PackedStringArray, string);

@@ -70,9 +70,11 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 		case Variant::NIL: return "null";
 		case Variant::BOOL: return p_var.operator bool() ? "true" : "false";
 		case Variant::INT: return itos(p_var);
-		case Variant::REAL: return rtos(p_var);
-		case Variant::PACKED_INT_ARRAY:
-		case Variant::PACKED_REAL_ARRAY:
+		case Variant::FLOAT: return rtos(p_var);
+		case Variant::PACKED_INT32_ARRAY:
+		case Variant::PACKED_INT64_ARRAY:
+		case Variant::PACKED_FLOAT32_ARRAY:
+		case Variant::PACKED_FLOAT64_ARRAY:
 		case Variant::PACKED_STRING_ARRAY:
 		case Variant::ARRAY: {
 
