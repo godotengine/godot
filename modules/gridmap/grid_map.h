@@ -62,6 +62,11 @@ class GridMap : public Spatial {
 			return key < p_key.key;
 		}
 
+		_FORCE_INLINE_ bool operator==(const IndexKey &p_key) const {
+
+			return x == p_key.x && y == p_key.y && z == p_key.z;
+		}
+
 		IndexKey() { key = 0; }
 	};
 
@@ -246,6 +251,8 @@ public:
 	void set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot = 0);
 	int get_cell_item(int p_x, int p_y, int p_z) const;
 	int get_cell_item_orientation(int p_x, int p_y, int p_z) const;
+
+	void set_cell_item_visibility(int p_x, int p_y, int p_z, bool p_visible);
 
 	Vector3 world_to_map(const Vector3 &p_world_pos) const;
 	Vector3 map_to_world(int p_x, int p_y, int p_z) const;

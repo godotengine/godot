@@ -106,6 +106,8 @@ class GridMapEditor : public VBoxContainer {
 	int edit_floor[3];
 	Vector3 grid_ofs;
 
+	int last_pointed_cell[3];
+
 	RID grid[3];
 	RID grid_instance[3];
 	RID cursor_instance;

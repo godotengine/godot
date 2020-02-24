@@ -476,6 +476,15 @@ bool GridMapEditor::do_input_action(Camera *p_camera, const Point2 &p_point, boo
 		return true;
 	}
 
+	// Temporary hide cell under mouse cursor when painting to show brush item on top of it
+	if (cell[0] != last_pointed_cell[0] || cell[1] != last_pointed_cell[1] || cell[2] != last_pointed_cell[2]) {
+		node->set_cell_item_visibility(last_pointed_cell[0], last_pointed_cell[1], last_pointed_cell[2], true);
+		node->set_cell_item_visibility(cell[0], cell[1], cell[2], false);
+	}
+
+	for (int i = 0; i < 3; ++i)
+		last_pointed_cell[i] = cell[i];
+
 	return false;
 }
 
@@ -1358,6 +1367,9 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	edit_floor[0] = -1;
 	edit_floor[1] = -1;
 	edit_floor[2] = -1;
+
+	for (int i = 0; i < 3; i++)
+		last_pointed_cell[i] = -1;
 
 	cursor_visible = false;
 	selected_palette = -1;
