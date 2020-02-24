@@ -37,7 +37,6 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "editor/debugger/editor_debugger_node.h"
-#include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_node.h"
 #include "editor/editor_run_script.h"
 #include "editor/editor_scale.h"

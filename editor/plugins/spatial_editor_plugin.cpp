@@ -4487,12 +4487,12 @@ void SpatialEditor::_menu_item_toggled(bool pressed, int p_option) {
 		case MENU_TOOL_OVERRIDE_CAMERA: {
 			EditorDebuggerNode *const debugger = EditorDebuggerNode::get_singleton();
 
+			using Override = EditorDebuggerNode::CameraOverride;
 			if (pressed) {
-				using Override = ScriptEditorDebugger::CameraOverride;
 
 				debugger->set_camera_override((Override)(Override::OVERRIDE_3D_1 + camera_override_viewport_id));
 			} else {
-				debugger->set_camera_override(ScriptEditorDebugger::OVERRIDE_NONE);
+				debugger->set_camera_override(Override::OVERRIDE_NONE);
 			}
 
 		} break;
@@ -4545,8 +4545,8 @@ void SpatialEditor::_update_camera_override_viewport(Object *p_viewport) {
 	EditorDebuggerNode *const debugger = EditorDebuggerNode::get_singleton();
 
 	camera_override_viewport_id = current_viewport->index;
-	if (debugger->get_camera_override() >= ScriptEditorDebugger::OVERRIDE_3D_1) {
-		using Override = ScriptEditorDebugger::CameraOverride;
+	if (debugger->get_camera_override() >= EditorDebuggerNode::OVERRIDE_3D_1) {
+		using Override = EditorDebuggerNode::CameraOverride;
 
 		debugger->set_camera_override((Override)(Override::OVERRIDE_3D_1 + camera_override_viewport_id));
 	}
@@ -5503,7 +5503,7 @@ void SpatialEditor::_notification(int p_what) {
 		if (!is_visible() && tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->is_pressed()) {
 			EditorDebuggerNode *debugger = EditorDebuggerNode::get_singleton();
 
-			debugger->set_camera_override(ScriptEditorDebugger::OVERRIDE_NONE);
+			debugger->set_camera_override(EditorDebuggerNode::OVERRIDE_NONE);
 			tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->set_pressed(false);
 		}
 	}
