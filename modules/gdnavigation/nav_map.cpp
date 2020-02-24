@@ -545,8 +545,11 @@ void NavMap::add_region(NavRegion *p_region) {
 }
 
 void NavMap::remove_region(NavRegion *p_region) {
-	regions.push_back(p_region);
-	regenerate_links = true;
+	std::vector<NavRegion *>::iterator it = std::find(regions.begin(), regions.end(), p_region);
+	if (it != regions.end()) {
+		regions.erase(it);
+		regenerate_links = true;
+	}
 }
 
 bool NavMap::has_agent(RvoAgent *agent) const {
