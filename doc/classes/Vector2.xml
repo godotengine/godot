@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Vector2" version="4.0">
 	<brief_description>
-		Vector used for 2D math.
+		Vector used for 2D math using floating point coordinates.
 	</brief_description>
 	<description>
 		2-element structure that can be used to represent positions in 2D space or any other pair of numeric values.
+		It uses floating point coordinates.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
@@ -13,12 +14,21 @@
 		<method name="Vector2">
 			<return type="Vector2">
 			</return>
+			<argument index="0" name="from" type="Vector2i">
+			</argument>
+			<description>
+				Constructs a new [Vector2] from [Vector2i].
+			</description>
+		</method>
+		<method name="Vector2">
+			<return type="Vector2">
+			</return>
 			<argument index="0" name="x" type="float">
 			</argument>
 			<argument index="1" name="y" type="float">
 			</argument>
 			<description>
-				Constructs a new Vector2 from the given [code]x[/code] and [code]y[/code].
+				Constructs a new [Vector2] from the given [code]x[/code] and [code]y[/code].
 			</description>
 		</method>
 		<method name="abs">

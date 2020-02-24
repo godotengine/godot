@@ -3173,7 +3173,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			editor->setup(min, max, step, hide_slider);
 			add_property_editor(p_path, editor);
 
-		} break; // 5
+		} break;
 		case Variant::RECT2: {
 			EditorPropertyRect2 *editor = memnew(EditorPropertyRect2);
 			double min = -65535, max = 65535, step = default_float_step;
@@ -3260,7 +3260,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 
 			editor->setup(min, max, step, hide_slider);
 			add_property_editor(p_path, editor);
-		} break; // 10
+		} break;
 		case Variant::AABB: {
 			EditorPropertyAABB *editor = memnew(EditorPropertyAABB);
 			double min = -65535, max = 65535, step = default_float_step;
@@ -3349,7 +3349,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			}
 			add_property_editor(p_path, editor);
 
-		} break; // 15
+		} break;
 		case Variant::_RID: {
 			EditorPropertyRID *editor = memnew(EditorPropertyRID);
 			add_property_editor(p_path, editor);
@@ -3388,7 +3388,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
 			editor->setup(Variant::PACKED_BYTE_ARRAY);
 			add_property_editor(p_path, editor);
-		} break; // 20
+		} break;
 		case Variant::PACKED_INT32_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
 			editor->setup(Variant::PACKED_INT32_ARRAY);
@@ -3423,7 +3423,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
 			editor->setup(Variant::PACKED_VECTOR3_ARRAY);
 			add_property_editor(p_path, editor);
-		} break; // 25
+		} break;
 		case Variant::PACKED_COLOR_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
 			editor->setup(Variant::PACKED_COLOR_ARRAY);

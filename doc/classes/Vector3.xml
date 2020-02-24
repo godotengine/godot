@@ -1,15 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Vector3" version="4.0">
 	<brief_description>
-		Vector used for 3D math.
+		Vector used for 3D math using floating point coordinates.
 	</brief_description>
 	<description>
 		3-element structure that can be used to represent positions in 3D space or any other pair of numeric values.
+		It uses floating point coordinates.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
 	</tutorials>
 	<methods>
+		<method name="Vector3">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="from" type="Vector3i">
+			</argument>
+			<description>
+				Constructs a new [Vector3] from [Vector3i].
+			</description>
+		</method>
 		<method name="Vector3">
 			<return type="Vector3">
 			</return>
@@ -20,7 +30,7 @@
 			<argument index="2" name="z" type="float">
 			</argument>
 			<description>
-				Returns a Vector3 with the given components.
+				Returns a [Vector3] with the given components.
 			</description>
 		</method>
 		<method name="abs">

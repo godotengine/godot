@@ -49,6 +49,15 @@
 		<method name="String">
 			<return type="String">
 			</return>
+			<argument index="0" name="from" type="Vector2i">
+			</argument>
+			<description>
+				Constructs a new String from the given [Vector2i].
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
 			<argument index="0" name="from" type="Rect2">
 			</argument>
 			<description>
@@ -58,10 +67,28 @@
 		<method name="String">
 			<return type="String">
 			</return>
+			<argument index="0" name="from" type="Rect2i">
+			</argument>
+			<description>
+				Constructs a new String from the given [Rect2i].
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
 			<argument index="0" name="from" type="Vector3">
 			</argument>
 			<description>
 				Constructs a new String from the given [Vector3].
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="Vector3i">
+			</argument>
+			<description>
+				Constructs a new String from the given [Vector3i].
 			</description>
 		</method>
 		<method name="String">
@@ -133,6 +160,7 @@
 			<argument index="0" name="from" type="StringName">
 			</argument>
 			<description>
+				Constructs a new String from the given [StringName].
 			</description>
 		</method>
 		<method name="String">
@@ -159,6 +187,7 @@
 			<argument index="0" name="from" type="Callable">
 			</argument>
 			<description>
+				Constructs a new String from the given [Callable].
 			</description>
 		</method>
 		<method name="String">
@@ -167,6 +196,7 @@
 			<argument index="0" name="from" type="Signal">
 			</argument>
 			<description>
+				Constructs a new String from the given [Signal].
 			</description>
 		</method>
 		<method name="String">

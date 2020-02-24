@@ -186,7 +186,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			if (r_len)
 				(*r_len) += 4 * 2;
 
-		} break; // 5
+		} break;
 		case Variant::VECTOR2I: {
 
 			ERR_FAIL_COND_V(len < 4 * 2, ERR_INVALID_DATA);
@@ -198,7 +198,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			if (r_len)
 				(*r_len) += 4 * 2;
 
-		} break; // 5
+		} break;
 		case Variant::RECT2: {
 
 			ERR_FAIL_COND_V(len < 4 * 4, ERR_INVALID_DATA);
@@ -1058,7 +1058,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 			r_len += 2 * 4;
 
-		} break; // 5
+		} break;
 		case Variant::VECTOR2I: {
 
 			if (buf) {
@@ -1069,7 +1069,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 			r_len += 2 * 4;
 
-		} break; // 5
+		} break;
 		case Variant::RECT2: {
 
 			if (buf) {

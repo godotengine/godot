@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Vector2i" version="4.0">
+	<brief_description>
+		Vector used for 2D math using integer coordinates.
+	</brief_description>
+	<description>
+		2-element structure that can be used to represent positions in 2D space or any other pair of numeric values.
+		It uses integer coordinates.
+	</description>
+	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
+	</tutorials>
+	<methods>
+		<method name="Vector2i">
+			<return type="Vector2i">
+			</return>
+			<argument index="0" name="x" type="int">
+			</argument>
+			<argument index="1" name="y" type="int">
+			</argument>
+			<description>
+				Constructs a new [Vector2i] from the given [code]x[/code] and [code]y[/code].
+			</description>
+		</method>
+		<method name="Vector2i">
+			<return type="Vector2i">
+			</return>
+			<argument index="0" name="from" type="Vector2">
+			</argument>
+			<description>
+				Constructs a new [Vector2i] from [Vector2]. The floating point coordinates will be truncated.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="AXIS_X" value="0">
+			Enumerated value for the X axis.
+		</constant>
+		<constant name="AXIS_Y" value="1">
+			Enumerated value for the Y axis.
+		</constant>
+		<constant name="ZERO" value="Vector2i( 0, 0 )">
+			Zero vector.
+		</constant>
+		<constant name="ONE" value="Vector2i( 1, 1 )">
+			One vector.
+		</constant>
+		<constant name="LEFT" value="Vector2i( -1, 0 )">
+			Left unit vector.
+		</constant>
+		<constant name="RIGHT" value="Vector2i( 1, 0 )">
+			Right unit vector.
+		</constant>
+		<constant name="UP" value="Vector2i( 0, -1 )">
+			Up unit vector.
+		</constant>
+		<constant name="DOWN" value="Vector2i( 0, 1 )">
+			Down unit vector.
+		</constant>
+	</constants>
+</class>
