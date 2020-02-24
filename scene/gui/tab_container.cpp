@@ -538,7 +538,7 @@ void TabContainer::add_child_notify(Node *p_child) {
 
 	update();
 	p_child->connect_compat("renamed", this, "_child_renamed_callback");
-	if (first)
+	if (first && is_inside_tree())
 		emit_signal("tab_changed", current);
 }
 
