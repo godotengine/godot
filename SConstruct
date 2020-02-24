@@ -353,10 +353,16 @@ if selected_platform in platform_list:
     elif methods.using_clang(env):
         # Apple LLVM versions differ from upstream LLVM version \o/, compare
         # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
-        if (env["platform"] == "osx" or env["platform"] == "iphone") and major < 10:
-            print("Detected Apple Clang version older than 10, which does not fully "
-                  "support C++17. Supported versions are Apple Clang 10 and later.")
-            sys.exit(255)
+        if env["platform"] == "osx" or env["platform"] == "iphone":
+            vanilla = methods.is_vanilla_clang(env)
+            if vanilla and major < 6:
+                print("Detected Clang version older than 6, which does not fully support "
+                      "C++17. Supported versions are Clang 6 and later.")
+                sys.exit(255)
+            elif not vanilla and major < 10:
+                print("Detected Apple Clang version older than 10, which does not fully "
+                      "support C++17. Supported versions are Apple Clang 10 and later.")
+                sys.exit(255)
         elif major < 6:
             print("Detected Clang version older than 6, which does not fully support "
                   "C++17. Supported versions are Clang 6 and later.")

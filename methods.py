@@ -549,6 +549,13 @@ def detect_darwin_sdk_path(platform, env):
             print("Failed to find SDK path while running xcrun --sdk {} --show-sdk-path.".format(sdk_name))
             raise
 
+def is_vanilla_clang(env):
+    if not using_clang(env):
+        return False
+    version = decode_utf8(subprocess.check_output([env['CXX'], '--version']).strip())
+    return not version.startswith("Apple")
+
+
 def get_compiler_version(env):
     if using_gcc(env):
         version = decode_utf8(subprocess.check_output([env['CXX'], '-dumpversion']).strip())
