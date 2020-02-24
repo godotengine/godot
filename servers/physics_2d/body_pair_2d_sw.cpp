@@ -381,35 +381,9 @@ bool BodyPair2DSW::setup(real_t p_step) {
 			space->add_debug_contact(global_B + offset_A);
 		}
 #endif
-		int gather_A = A->can_report_contacts();
-		int gather_B = B->can_report_contacts();
 
 		c.rA = global_A;
 		c.rB = global_B - offset_B;
-
-		if (gather_A | gather_B) {
-
-			//Vector2 crB( -B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x );
-
-			global_A += offset_A;
-			global_B += offset_A;
-
-			if (gather_A) {
-				Vector2 crB(-B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x);
-				A->add_contact(global_A, -c.normal, depth, shape_A, global_B, shape_B, B->get_instance_id(), B->get_self(), crB + B->get_linear_velocity());
-			}
-			if (gather_B) {
-
-				Vector2 crA(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x);
-				B->add_contact(global_B, c.normal, depth, shape_B, global_A, shape_A, A->get_instance_id(), A->get_self(), crA + A->get_linear_velocity());
-			}
-		}
-
-		if ((A->get_mode() <= Physics2DServer::BODY_MODE_KINEMATIC && B->get_mode() <= Physics2DServer::BODY_MODE_KINEMATIC)) {
-			c.active = false;
-			collided = false;
-			continue;
-		}
 
 		// Precompute normal mass, tangent mass, and bias.
 		real_t rnA = c.rA.dot(c.normal);
@@ -447,6 +421,45 @@ bool BodyPair2DSW::setup(real_t p_step) {
 			Vector2 crB(-B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x);
 			Vector2 dv = B->get_linear_velocity() + crB - A->get_linear_velocity() - crA;
 			c.bounce = c.bounce * dv.dot(c.normal);
+		}
+
+		int gather_A = A->can_report_contacts();
+		int gather_B = B->can_report_contacts();
+
+		if (gather_A | gather_B) {
+
+			// Compute impulse
+			Vector2 crA(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x);
+			Vector2 crB(-B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x);
+			Vector2 dv = B->get_linear_velocity() + crB - A->get_linear_velocity() - crA;
+
+			real_t vn = dv.dot(c.normal);
+			real_t vt = dv.dot(tangent);
+
+			real_t jn = -(c.bounce + vn) * c.mass_normal;
+
+			real_t friction = combine_friction(A, B);
+
+			real_t jtMax = friction * jn;
+			real_t jt = CLAMP(-vt * c.mass_tangent, -jtMax, jtMax);
+
+			Vector2 j = c.normal * jn + tangent * jt;
+
+			global_A += offset_A;
+			global_B += offset_A;
+
+			if (gather_A) {
+				A->add_contact(global_A, -c.normal, depth, shape_A, global_B, shape_B, B->get_instance_id(), B->get_self(), crB + B->get_linear_velocity(), -j);
+			}
+			if (gather_B) {
+				B->add_contact(global_B, c.normal, depth, shape_B, global_A, shape_A, A->get_instance_id(), A->get_self(), crA + A->get_linear_velocity(), j);
+			}
+		}
+
+		if ((A->get_mode() <= Physics2DServer::BODY_MODE_KINEMATIC && B->get_mode() <= Physics2DServer::BODY_MODE_KINEMATIC)) {
+			c.active = false;
+			collided = false;
+			continue;
 		}
 
 		do_process = true;
