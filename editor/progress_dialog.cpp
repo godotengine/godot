@@ -264,5 +264,5 @@ ProgressDialog::ProgressDialog() {
 	cancel_hb->add_child(cancel);
 	cancel->set_text(TTR("Cancel"));
 	cancel_hb->add_spacer();
-	cancel->connect_compat("pressed", this, "_cancel_pressed");
+	cancel->connect("pressed", Callable(this, "_cancel_pressed"));
 }

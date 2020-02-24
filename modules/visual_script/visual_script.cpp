@@ -198,7 +198,7 @@ void VisualScript::remove_function(const StringName &p_name) {
 
 	for (Map<int, Function::NodeData>::Element *E = functions[p_name].nodes.front(); E; E = E->next()) {
 
-		E->get().node->disconnect_compat("ports_changed", this, "_node_ports_changed");
+		E->get().node->disconnect("ports_changed", Callable(this, "_node_ports_changed"));
 		E->get().node->scripts_used.erase(this);
 	}
 
@@ -340,7 +340,7 @@ void VisualScript::add_node(const StringName &p_func, int p_id, const Ref<Visual
 	nd.pos = p_pos;
 
 	Ref<VisualScriptNode> vsn = p_node;
-	vsn->connect_compat("ports_changed", this, "_node_ports_changed", varray(p_id));
+	vsn->connect("ports_changed", Callable(this, "_node_ports_changed"), varray(p_id));
 	vsn->scripts_used.insert(this);
 	vsn->validate_input_default_values(); // Validate when fully loaded
 
@@ -389,7 +389,7 @@ void VisualScript::remove_node(const StringName &p_func, int p_id) {
 		func.function_id = -1; //revert to invalid
 	}
 
-	func.nodes[p_id].node->disconnect_compat("ports_changed", this, "_node_ports_changed");
+	func.nodes[p_id].node->disconnect("ports_changed", Callable(this, "_node_ports_changed"));
 	func.nodes[p_id].node->scripts_used.erase(this);
 
 	func.nodes.erase(p_id);
@@ -2463,7 +2463,7 @@ void VisualScriptFunctionState::connect_to_signal(Object *p_obj, const String &p
 		binds.push_back(p_binds[i]);
 	}
 	binds.push_back(Ref<VisualScriptFunctionState>(this)); //add myself on the back to avoid dying from unreferencing
-	p_obj->connect_compat(p_signal, this, "_signal_callback", binds, CONNECT_ONESHOT);
+	p_obj->connect(p_signal, Callable(this, "_signal_callback"), binds, CONNECT_ONESHOT);
 }
 
 bool VisualScriptFunctionState::is_valid() const {

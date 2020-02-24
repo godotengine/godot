@@ -1416,7 +1416,7 @@ EditorExport::EditorExport() {
 	add_child(save_timer);
 	save_timer->set_wait_time(0.8);
 	save_timer->set_one_shot(true);
-	save_timer->connect_compat("timeout", this, "_save");
+	save_timer->connect("timeout", Callable(this, "_save"));
 	block_save = false;
 
 	singleton = this;

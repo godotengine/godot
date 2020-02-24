@@ -184,11 +184,11 @@ void NoiseTexture::set_noise(Ref<OpenSimplexNoise> p_noise) {
 	if (p_noise == noise)
 		return;
 	if (noise.is_valid()) {
-		noise->disconnect_compat(CoreStringNames::get_singleton()->changed, this, "_queue_update");
+		noise->disconnect(CoreStringNames::get_singleton()->changed, Callable(this, "_queue_update"));
 	}
 	noise = p_noise;
 	if (noise.is_valid()) {
-		noise->connect_compat(CoreStringNames::get_singleton()->changed, this, "_queue_update");
+		noise->connect(CoreStringNames::get_singleton()->changed, Callable(this, "_queue_update"));
 	}
 	_queue_update();
 }

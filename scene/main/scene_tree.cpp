@@ -88,7 +88,7 @@ void SceneTreeTimer::release_connections() {
 
 	for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
 		Connection const &connection = E->get();
-		disconnect_compat(connection.signal.get_name(), connection.callable.get_object(), connection.callable.get_method());
+		disconnect(connection.signal.get_name(), Callable(connection.callable.get_object(), connection.callable.get_method()));
 	}
 }
 
@@ -1393,21 +1393,21 @@ void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {
 	ERR_FAIL_COND(!p_multiplayer.is_valid());
 
 	if (multiplayer.is_valid()) {
-		multiplayer->disconnect_compat("network_peer_connected", this, "_network_peer_connected");
-		multiplayer->disconnect_compat("network_peer_disconnected", this, "_network_peer_disconnected");
-		multiplayer->disconnect_compat("connected_to_server", this, "_connected_to_server");
-		multiplayer->disconnect_compat("connection_failed", this, "_connection_failed");
-		multiplayer->disconnect_compat("server_disconnected", this, "_server_disconnected");
+		multiplayer->disconnect("network_peer_connected", Callable(this, "_network_peer_connected"));
+		multiplayer->disconnect("network_peer_disconnected", Callable(this, "_network_peer_disconnected"));
+		multiplayer->disconnect("connected_to_server", Callable(this, "_connected_to_server"));
+		multiplayer->disconnect("connection_failed", Callable(this, "_connection_failed"));
+		multiplayer->disconnect("server_disconnected", Callable(this, "_server_disconnected"));
 	}
 
 	multiplayer = p_multiplayer;
 	multiplayer->set_root_node(root);
 
-	multiplayer->connect_compat("network_peer_connected", this, "_network_peer_connected");
-	multiplayer->connect_compat("network_peer_disconnected", this, "_network_peer_disconnected");
-	multiplayer->connect_compat("connected_to_server", this, "_connected_to_server");
-	multiplayer->connect_compat("connection_failed", this, "_connection_failed");
-	multiplayer->connect_compat("server_disconnected", this, "_server_disconnected");
+	multiplayer->connect("network_peer_connected", Callable(this, "_network_peer_connected"));
+	multiplayer->connect("network_peer_disconnected", Callable(this, "_network_peer_disconnected"));
+	multiplayer->connect("connected_to_server", Callable(this, "_connected_to_server"));
+	multiplayer->connect("connection_failed", Callable(this, "_connection_failed"));
+	multiplayer->connect("server_disconnected", Callable(this, "_server_disconnected"));
 }
 
 void SceneTree::set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_network_peer) {

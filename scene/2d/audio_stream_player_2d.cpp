@@ -545,7 +545,7 @@ AudioStreamPlayer2D::AudioStreamPlayer2D() {
 	stream_paused = false;
 	stream_paused_fade_in = false;
 	stream_paused_fade_out = false;
-	AudioServer::get_singleton()->connect_compat("bus_layout_changed", this, "_bus_layout_changed");
+	AudioServer::get_singleton()->connect("bus_layout_changed", Callable(this, "_bus_layout_changed"));
 }
 
 AudioStreamPlayer2D::~AudioStreamPlayer2D() {

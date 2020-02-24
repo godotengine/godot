@@ -152,6 +152,6 @@ EditorPath::EditorPath(EditorHistory *p_history) {
 	history = p_history;
 	set_clip_text(true);
 	set_text_align(ALIGN_LEFT);
-	get_popup()->connect_compat("about_to_show", this, "_about_to_show");
-	get_popup()->connect_compat("id_pressed", this, "_id_pressed");
+	get_popup()->connect("about_to_show", Callable(this, "_about_to_show"));
+	get_popup()->connect("id_pressed", Callable(this, "_id_pressed"));
 }

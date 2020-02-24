@@ -51,8 +51,7 @@ Error connect_signal_awaiter(Object *p_source, const String &p_signal, Object *p
 	Vector<Variant> binds;
 	binds.push_back(sa_con);
 
-	Error err = p_source->connect_compat(p_signal, sa_con.ptr(),
-			CSharpLanguage::get_singleton()->get_string_names()._signal_callback,
+	Error err = p_source->connect(p_signal, Callable(Callable(sa_con.ptr(), CSharpLanguage::get_singleton())->get_string_names()._signal_callback),
 			binds, Object::CONNECT_ONESHOT);
 
 	if (err != OK) {

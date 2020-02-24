@@ -900,11 +900,11 @@ FileDialog::FileDialog() {
 	dir_up = memnew(ToolButton);
 	dir_up->set_tooltip(RTR("Go to parent folder."));
 	hbc->add_child(dir_up);
-	dir_up->connect_compat("pressed", this, "_go_up");
+	dir_up->connect("pressed", Callable(this, "_go_up"));
 
 	drives = memnew(OptionButton);
 	hbc->add_child(drives);
-	drives->connect_compat("item_selected", this, "_select_drive");
+	drives->connect("item_selected", Callable(this, "_select_drive"));
 
 	hbc->add_child(memnew(Label(RTR("Path:"))));
 	dir = memnew(LineEdit);
@@ -913,19 +913,19 @@ FileDialog::FileDialog() {
 
 	refresh = memnew(ToolButton);
 	refresh->set_tooltip(RTR("Refresh files."));
-	refresh->connect_compat("pressed", this, "_update_file_list");
+	refresh->connect("pressed", Callable(this, "_update_file_list"));
 	hbc->add_child(refresh);
 
 	show_hidden = memnew(ToolButton);
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
 	show_hidden->set_tooltip(RTR("Toggle the visibility of hidden files."));
-	show_hidden->connect_compat("toggled", this, "set_show_hidden_files");
+	show_hidden->connect("toggled", Callable(this, "set_show_hidden_files"));
 	hbc->add_child(show_hidden);
 
 	makedir = memnew(Button);
 	makedir->set_text(RTR("Create Folder"));
-	makedir->connect_compat("pressed", this, "_make_dir");
+	makedir->connect("pressed", Callable(this, "_make_dir"));
 	hbc->add_child(makedir);
 	vbc->add_child(hbc);
 
@@ -950,20 +950,20 @@ FileDialog::FileDialog() {
 	access = ACCESS_RESOURCES;
 	_update_drives();
 
-	connect_compat("confirmed", this, "_action_pressed");
-	tree->connect_compat("multi_selected", this, "_tree_multi_selected", varray(), CONNECT_DEFERRED);
-	tree->connect_compat("cell_selected", this, "_tree_selected", varray(), CONNECT_DEFERRED);
-	tree->connect_compat("item_activated", this, "_tree_item_activated", varray());
-	tree->connect_compat("nothing_selected", this, "deselect_items");
-	dir->connect_compat("text_entered", this, "_dir_entered");
-	file->connect_compat("text_entered", this, "_file_entered");
-	filter->connect_compat("item_selected", this, "_filter_selected");
+	connect("confirmed", Callable(this, "_action_pressed"));
+	tree->connect("multi_selected", Callable(this, "_tree_multi_selected"), varray(), CONNECT_DEFERRED);
+	tree->connect("cell_selected", Callable(this, "_tree_selected"), varray(), CONNECT_DEFERRED);
+	tree->connect("item_activated", Callable(this, "_tree_item_activated"), varray());
+	tree->connect("nothing_selected", Callable(this, "deselect_items"));
+	dir->connect("text_entered", Callable(this, "_dir_entered"));
+	file->connect("text_entered", Callable(this, "_file_entered"));
+	filter->connect("item_selected", Callable(this, "_filter_selected"));
 
 	confirm_save = memnew(ConfirmationDialog);
 	confirm_save->set_as_toplevel(true);
 	add_child(confirm_save);
 
-	confirm_save->connect_compat("confirmed", this, "_save_confirm_pressed");
+	confirm_save->connect("confirmed", Callable(this, "_save_confirm_pressed"));
 
 	makedialog = memnew(ConfirmationDialog);
 	makedialog->set_title(RTR("Create Folder"));
@@ -974,7 +974,7 @@ FileDialog::FileDialog() {
 	makevb->add_margin_child(RTR("Name:"), makedirname);
 	add_child(makedialog);
 	makedialog->register_text_enter(makedirname);
-	makedialog->connect_compat("confirmed", this, "_make_dir_confirm");
+	makedialog->connect("confirmed", Callable(this, "_make_dir_confirm"));
 	mkdirerr = memnew(AcceptDialog);
 	mkdirerr->set_text(RTR("Could not create folder."));
 	add_child(mkdirerr);
@@ -1029,10 +1029,10 @@ LineEditFileChooser::LineEditFileChooser() {
 	button = memnew(Button);
 	button->set_text(" .. ");
 	add_child(button);
-	button->connect_compat("pressed", this, "_browse");
+	button->connect("pressed", Callable(this, "_browse"));
 	dialog = memnew(FileDialog);
 	add_child(dialog);
-	dialog->connect_compat("file_selected", this, "_chosen");
-	dialog->connect_compat("dir_selected", this, "_chosen");
-	dialog->connect_compat("files_selected", this, "_chosen");
+	dialog->connect("file_selected", Callable(this, "_chosen"));
+	dialog->connect("dir_selected", Callable(this, "_chosen"));
+	dialog->connect("files_selected", Callable(this, "_chosen"));
 }

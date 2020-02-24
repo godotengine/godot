@@ -40,20 +40,20 @@ EditorDebuggerTree::EditorDebuggerTree() {
 
 	// Popup
 	item_menu = memnew(PopupMenu);
-	item_menu->connect_compat("id_pressed", this, "_item_menu_id_pressed");
+	item_menu->connect("id_pressed", Callable(this, "_item_menu_id_pressed"));
 	add_child(item_menu);
 
 	// File Dialog
 	file_dialog = memnew(EditorFileDialog);
-	file_dialog->connect_compat("file_selected", this, "_file_selected");
+	file_dialog->connect("file_selected", Callable(this, "_file_selected"));
 	add_child(file_dialog);
 }
 
 void EditorDebuggerTree::_notification(int p_what) {
 	if (p_what == NOTIFICATION_POSTINITIALIZE) {
-		connect_compat("cell_selected", this, "_scene_tree_selected");
-		connect_compat("item_collapsed", this, "_scene_tree_folded");
-		connect_compat("item_rmb_selected", this, "_scene_tree_rmb_selected");
+		connect("cell_selected", Callable(this, "_scene_tree_selected"));
+		connect("item_collapsed", Callable(this, "_scene_tree_folded"));
+		connect("item_rmb_selected", Callable(this, "_scene_tree_rmb_selected"));
 	}
 }
 

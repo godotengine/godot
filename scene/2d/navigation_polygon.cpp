@@ -503,14 +503,14 @@ void NavigationPolygonInstance::set_navigation_polygon(const Ref<NavigationPolyg
 	}
 
 	if (navpoly.is_valid()) {
-		navpoly->disconnect_compat(CoreStringNames::get_singleton()->changed, this, "_navpoly_changed");
+		navpoly->disconnect(CoreStringNames::get_singleton()->changed, Callable(this, "_navpoly_changed"));
 	}
 
 	navpoly = p_navpoly;
 	Navigation2DServer::get_singleton()->region_set_navpoly(region, p_navpoly);
 
 	if (navpoly.is_valid()) {
-		navpoly->connect_compat(CoreStringNames::get_singleton()->changed, this, "_navpoly_changed");
+		navpoly->connect(CoreStringNames::get_singleton()->changed, Callable(this, "_navpoly_changed"));
 	}
 	_navpoly_changed();
 

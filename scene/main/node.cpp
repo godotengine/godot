@@ -2353,8 +2353,8 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 			if (p_copy->has_node(ptarget))
 				copytarget = p_copy->get_node(ptarget);
 
-			if (copy && copytarget && !copy->is_connected_compat(E->get().signal.get_name(), copytarget, E->get().callable.get_method())) {
-				copy->connect_compat(E->get().signal.get_name(), copytarget, E->get().callable.get_method(), E->get().binds, E->get().flags);
+			if (copy && copytarget && !copy->is_connected(E->get().signal.get_name(), Callable(copytarget, E->get()).callable.get_method())) {
+				copy->connect(E->get().signal.get_name(), Callable(copytarget, E->get()).callable.get_method(), E->get().binds, E->get().flags);
 			}
 		}
 	}
@@ -2509,10 +2509,10 @@ void Node::_replace_connections_target(Node *p_new_target) {
 		Connection &c = E->get();
 
 		if (c.flags & CONNECT_PERSIST) {
-			c.signal.get_object()->disconnect_compat(c.signal.get_name(), this, c.callable.get_method());
+			c.signal.get_object()->disconnect(c.signal.get_name(), Callable(this, c.callable.get_method()));
 			bool valid = p_new_target->has_method(c.callable.get_method()) || Ref<Script>(p_new_target->get_script()).is_null() || Ref<Script>(p_new_target->get_script())->has_method(c.callable.get_method());
 			ERR_CONTINUE_MSG(!valid, "Attempt to connect signal '" + c.signal.get_object()->get_class() + "." + c.signal.get_name() + "' to nonexistent method '" + c.callable.get_object()->get_class() + "." + c.callable.get_method() + "'.");
-			c.signal.get_object()->connect_compat(c.signal.get_name(), p_new_target, c.callable.get_method(), c.binds, c.flags);
+			c.signal.get_object()->connect(c.signal.get_name(), Callable(p_new_target, c.callable.get_method()), c.binds, c.flags);
 		}
 	}
 }

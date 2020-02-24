@@ -54,11 +54,11 @@ void EditorInspectorPluginStyleBox::parse_end() {
 void StyleBoxPreview::edit(const Ref<StyleBox> &p_stylebox) {
 
 	if (stylebox.is_valid())
-		stylebox->disconnect_compat("changed", this, "_sb_changed");
+		stylebox->disconnect("changed", Callable(this, "_sb_changed"));
 	stylebox = p_stylebox;
 	if (p_stylebox.is_valid()) {
 		preview->add_style_override("panel", stylebox);
-		stylebox->connect_compat("changed", this, "_sb_changed");
+		stylebox->connect("changed", Callable(this, "_sb_changed"));
 	}
 	_sb_changed();
 }
@@ -91,7 +91,7 @@ StyleBoxPreview::StyleBoxPreview() {
 	preview = memnew(Control);
 	preview->set_custom_minimum_size(Size2(0, 150 * EDSCALE));
 	preview->set_clip_contents(true);
-	preview->connect_compat("draw", this, "_redraw");
+	preview->connect("draw", Callable(this, "_redraw"));
 	add_margin_child(TTR("Preview:"), preview);
 }
 

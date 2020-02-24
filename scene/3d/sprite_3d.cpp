@@ -531,11 +531,11 @@ void Sprite3D::set_texture(const Ref<Texture2D> &p_texture) {
 	if (p_texture == texture)
 		return;
 	if (texture.is_valid()) {
-		texture->disconnect_compat(CoreStringNames::get_singleton()->changed, this, SceneStringNames::get_singleton()->_queue_update);
+		texture->disconnect(CoreStringNames::get_singleton()->changed, Callable(this, SceneStringNames::get_singleton())->_queue_update);
 	}
 	texture = p_texture;
 	if (texture.is_valid()) {
-		texture->connect_compat(CoreStringNames::get_singleton()->changed, this, SceneStringNames::get_singleton()->_queue_update);
+		texture->connect(CoreStringNames::get_singleton()->changed, Callable(this, SceneStringNames::get_singleton())->_queue_update);
 	}
 	_queue_update();
 }
@@ -952,10 +952,10 @@ void AnimatedSprite3D::_notification(int p_what) {
 void AnimatedSprite3D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 
 	if (frames.is_valid())
-		frames->disconnect_compat("changed", this, "_res_changed");
+		frames->disconnect("changed", Callable(this, "_res_changed"));
 	frames = p_frames;
 	if (frames.is_valid())
-		frames->connect_compat("changed", this, "_res_changed");
+		frames->connect("changed", Callable(this, "_res_changed"));
 
 	if (!frames.is_valid()) {
 		frame = 0;

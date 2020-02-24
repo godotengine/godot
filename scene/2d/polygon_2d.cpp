@@ -120,11 +120,11 @@ void Polygon2D::_notification(int p_what) {
 			if (new_skeleton_id != current_skeleton_id) {
 				Object *old_skeleton = ObjectDB::get_instance(current_skeleton_id);
 				if (old_skeleton) {
-					old_skeleton->disconnect_compat("bone_setup_changed", this, "_skeleton_bone_setup_changed");
+					old_skeleton->disconnect("bone_setup_changed", Callable(this, "_skeleton_bone_setup_changed"));
 				}
 
 				if (skeleton_node) {
-					skeleton_node->connect_compat("bone_setup_changed", this, "_skeleton_bone_setup_changed");
+					skeleton_node->connect("bone_setup_changed", Callable(this, "_skeleton_bone_setup_changed"));
 				}
 
 				current_skeleton_id = new_skeleton_id;

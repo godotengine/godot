@@ -1034,5 +1034,5 @@ Tabs::Tabs() {
 	drag_to_rearrange_enabled = false;
 	tabs_rearrange_group = -1;
 
-	connect_compat("mouse_exited", this, "_on_mouse_exited");
+	connect("mouse_exited", Callable(this, "_on_mouse_exited"));
 }

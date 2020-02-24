@@ -1,5 +1,5 @@
 /*! \file btGImpactShape.h
-\author Francisco Len Nßjera
+\author Francisco Len Nï¿½jera
 */
 /*
 This source file is part of GIMPACT Library.

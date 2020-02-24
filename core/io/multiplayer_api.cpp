@@ -145,22 +145,22 @@ void MultiplayerAPI::set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_pee
 			"Supplied NetworkedMultiplayerPeer must be connecting or connected.");
 
 	if (network_peer.is_valid()) {
-		network_peer->disconnect_compat("peer_connected", this, "_add_peer");
-		network_peer->disconnect_compat("peer_disconnected", this, "_del_peer");
-		network_peer->disconnect_compat("connection_succeeded", this, "_connected_to_server");
-		network_peer->disconnect_compat("connection_failed", this, "_connection_failed");
-		network_peer->disconnect_compat("server_disconnected", this, "_server_disconnected");
+		network_peer->disconnect("peer_connected", Callable(this, "_add_peer"));
+		network_peer->disconnect("peer_disconnected", Callable(this, "_del_peer"));
+		network_peer->disconnect("connection_succeeded", Callable(this, "_connected_to_server"));
+		network_peer->disconnect("connection_failed", Callable(this, "_connection_failed"));
+		network_peer->disconnect("server_disconnected", Callable(this, "_server_disconnected"));
 		clear();
 	}
 
 	network_peer = p_peer;
 
 	if (network_peer.is_valid()) {
-		network_peer->connect_compat("peer_connected", this, "_add_peer");
-		network_peer->connect_compat("peer_disconnected", this, "_del_peer");
-		network_peer->connect_compat("connection_succeeded", this, "_connected_to_server");
-		network_peer->connect_compat("connection_failed", this, "_connection_failed");
-		network_peer->connect_compat("server_disconnected", this, "_server_disconnected");
+		network_peer->connect("peer_connected", Callable(this, "_add_peer"));
+		network_peer->connect("peer_disconnected", Callable(this, "_del_peer"));
+		network_peer->connect("connection_succeeded", Callable(this, "_connected_to_server"));
+		network_peer->connect("connection_failed", Callable(this, "_connection_failed"));
+		network_peer->connect("server_disconnected", Callable(this, "_server_disconnected"));
 	}
 }
 

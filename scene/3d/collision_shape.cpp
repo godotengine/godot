@@ -152,12 +152,12 @@ void CollisionShape::set_shape(const Ref<Shape> &p_shape) {
 
 	if (!shape.is_null()) {
 		shape->unregister_owner(this);
-		shape->disconnect_compat("changed", this, "_shape_changed");
+		shape->disconnect("changed", Callable(this, "_shape_changed"));
 	}
 	shape = p_shape;
 	if (!shape.is_null()) {
 		shape->register_owner(this);
-		shape->connect_compat("changed", this, "_shape_changed");
+		shape->connect("changed", Callable(this, "_shape_changed"));
 	}
 	update_gizmo();
 	if (parent) {

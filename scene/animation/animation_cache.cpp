@@ -56,7 +56,7 @@ void AnimationCache::_clear_cache() {
 
 	while (connected_nodes.size()) {
 
-		connected_nodes.front()->get()->disconnect_compat("tree_exiting", this, "_node_exit_tree");
+		connected_nodes.front()->get()->disconnect("tree_exiting", Callable(this, "_node_exit_tree"));
 		connected_nodes.erase(connected_nodes.front());
 	}
 	path_cache.clear();
@@ -174,7 +174,7 @@ void AnimationCache::_update_cache() {
 
 		if (!connected_nodes.has(path.node)) {
 			connected_nodes.insert(path.node);
-			path.node->connect_compat("tree_exiting", this, "_node_exit_tree", Node::make_binds(path.node), CONNECT_ONESHOT);
+			path.node->connect("tree_exiting", Callable(this, "_node_exit_tree"), Node::make_binds(path.node), CONNECT_ONESHOT);
 		}
 	}
 
@@ -313,12 +313,12 @@ void AnimationCache::set_animation(const Ref<Animation> &p_animation) {
 	_clear_cache();
 
 	if (animation.is_valid())
-		animation->disconnect_compat("changed", this, "_animation_changed");
+		animation->disconnect("changed", Callable(this, "_animation_changed"));
 
 	animation = p_animation;
 
 	if (animation.is_valid())
-		animation->connect_compat("changed", this, "_animation_changed");
+		animation->connect("changed", Callable(this, "_animation_changed"));
 }
 
 void AnimationCache::_bind_methods() {

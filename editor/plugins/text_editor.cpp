@@ -633,19 +633,19 @@ TextEditor::TextEditor() {
 	code_editor = memnew(CodeTextEditor);
 	add_child(code_editor);
 	code_editor->add_constant_override("separation", 0);
-	code_editor->connect_compat("load_theme_settings", this, "_load_theme_settings");
-	code_editor->connect_compat("validate_script", this, "_validate_script");
+	code_editor->connect("load_theme_settings", Callable(this, "_load_theme_settings"));
+	code_editor->connect("validate_script", Callable(this, "_validate_script"));
 	code_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	code_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	update_settings();
 
 	code_editor->get_text_edit()->set_context_menu_enabled(false);
-	code_editor->get_text_edit()->connect_compat("gui_input", this, "_text_edit_gui_input");
+	code_editor->get_text_edit()->connect("gui_input", Callable(this, "_text_edit_gui_input"));
 
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
-	context_menu->connect_compat("id_pressed", this, "_edit_option");
+	context_menu->connect("id_pressed", Callable(this, "_edit_option"));
 
 	edit_hb = memnew(HBoxContainer);
 
@@ -653,7 +653,7 @@ TextEditor::TextEditor() {
 	edit_hb->add_child(search_menu);
 	search_menu->set_text(TTR("Search"));
 	search_menu->set_switch_on_hover(true);
-	search_menu->get_popup()->connect_compat("id_pressed", this, "_edit_option");
+	search_menu->get_popup()->connect("id_pressed", Callable(this, "_edit_option"));
 
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);
@@ -667,7 +667,7 @@ TextEditor::TextEditor() {
 	edit_hb->add_child(edit_menu);
 	edit_menu->set_text(TTR("Edit"));
 	edit_menu->set_switch_on_hover(true);
-	edit_menu->get_popup()->connect_compat("id_pressed", this, "_edit_option");
+	edit_menu->get_popup()->connect("id_pressed", Callable(this, "_edit_option"));
 
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/undo"), EDIT_UNDO);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/redo"), EDIT_REDO);
@@ -700,7 +700,7 @@ TextEditor::TextEditor() {
 	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_uppercase", TTR("Uppercase")), EDIT_TO_UPPERCASE);
 	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTR("Lowercase")), EDIT_TO_LOWERCASE);
 	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize")), EDIT_CAPITALIZE);
-	convert_case->connect_compat("id_pressed", this, "_edit_option");
+	convert_case->connect("id_pressed", Callable(this, "_edit_option"));
 
 	highlighters["Standard"] = NULL;
 	highlighter_menu = memnew(PopupMenu);
@@ -708,13 +708,13 @@ TextEditor::TextEditor() {
 	edit_menu->get_popup()->add_child(highlighter_menu);
 	edit_menu->get_popup()->add_submenu_item(TTR("Syntax Highlighter"), "highlighter_menu");
 	highlighter_menu->add_radio_check_item(TTR("Standard"));
-	highlighter_menu->connect_compat("id_pressed", this, "_change_syntax_highlighter");
+	highlighter_menu->connect("id_pressed", Callable(this, "_change_syntax_highlighter"));
 
 	MenuButton *goto_menu = memnew(MenuButton);
 	edit_hb->add_child(goto_menu);
 	goto_menu->set_text(TTR("Go To"));
 	goto_menu->set_switch_on_hover(true);
-	goto_menu->get_popup()->connect_compat("id_pressed", this, "_edit_option");
+	goto_menu->get_popup()->connect("id_pressed", Callable(this, "_edit_option"));
 
 	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"), SEARCH_GOTO_LINE);
 	goto_menu->get_popup()->add_separator();
@@ -724,8 +724,8 @@ TextEditor::TextEditor() {
 	goto_menu->get_popup()->add_child(bookmarks_menu);
 	goto_menu->get_popup()->add_submenu_item(TTR("Bookmarks"), "Bookmarks");
 	_update_bookmark_list();
-	bookmarks_menu->connect_compat("about_to_show", this, "_update_bookmark_list");
-	bookmarks_menu->connect_compat("index_pressed", this, "_bookmark_item_pressed");
+	bookmarks_menu->connect("about_to_show", Callable(this, "_update_bookmark_list"));
+	bookmarks_menu->connect("index_pressed", Callable(this, "_bookmark_item_pressed"));
 
 	goto_line_dialog = memnew(GotoLineDialog);
 	add_child(goto_line_dialog);

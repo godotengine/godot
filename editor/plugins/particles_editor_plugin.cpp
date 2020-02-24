@@ -229,11 +229,11 @@ ParticlesEditorBase::ParticlesEditorBase() {
 	emd_vb->add_margin_child(TTR("Emission Source: "), emission_fill);
 
 	emission_dialog->get_ok()->set_text(TTR("Create"));
-	emission_dialog->connect_compat("confirmed", this, "_generate_emission_points");
+	emission_dialog->connect("confirmed", Callable(this, "_generate_emission_points"));
 
 	emission_tree_dialog = memnew(SceneTreeDialog);
 	add_child(emission_tree_dialog);
-	emission_tree_dialog->connect_compat("selected", this, "_node_selected");
+	emission_tree_dialog->connect("selected", Callable(this, "_node_selected"));
 }
 
 void ParticlesEditor::_node_removed(Node *p_node) {
@@ -248,7 +248,7 @@ void ParticlesEditor::_notification(int p_notification) {
 
 	if (p_notification == NOTIFICATION_ENTER_TREE) {
 		options->set_icon(options->get_popup()->get_icon("Particles", "EditorIcons"));
-		get_tree()->connect_compat("node_removed", this, "_node_removed");
+		get_tree()->connect("node_removed", Callable(this, "_node_removed"));
 	}
 }
 
@@ -448,7 +448,7 @@ ParticlesEditor::ParticlesEditor() {
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Restart"), MENU_OPTION_RESTART);
 
-	options->get_popup()->connect_compat("id_pressed", this, "_menu_option");
+	options->get_popup()->connect("id_pressed", Callable(this, "_menu_option"));
 
 	generate_aabb = memnew(ConfirmationDialog);
 	generate_aabb->set_title(TTR("Generate Visibility AABB"));
@@ -462,7 +462,7 @@ ParticlesEditor::ParticlesEditor() {
 
 	add_child(generate_aabb);
 
-	generate_aabb->connect_compat("confirmed", this, "_generate_aabb");
+	generate_aabb->connect("confirmed", Callable(this, "_generate_aabb"));
 }
 
 void ParticlesEditorPlugin::edit(Object *p_object) {

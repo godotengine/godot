@@ -1397,10 +1397,6 @@ void Object::get_signals_connected_to_this(List<Connection> *p_connections) cons
 	}
 }
 
-Error Object::connect_compat(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method, const Vector<Variant> &p_binds, uint32_t p_flags) {
-
-	return connect(p_signal, Callable(p_to_object, p_to_method), p_binds, p_flags);
-}
 Error Object::connect(const StringName &p_signal, const Callable &p_callable, const Vector<Variant> &p_binds, uint32_t p_flags) {
 
 	ERR_FAIL_COND_V(p_callable.is_null(), ERR_INVALID_PARAMETER);
@@ -1459,11 +1455,6 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, co
 	return OK;
 }
 
-bool Object::is_connected_compat(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method) const {
-
-	return is_connected(p_signal, Callable(p_to_object, p_to_method));
-}
-
 bool Object::is_connected(const StringName &p_signal, const Callable &p_callable) const {
 
 	ERR_FAIL_COND_V(p_callable.is_null(), false);
@@ -1484,11 +1475,6 @@ bool Object::is_connected(const StringName &p_signal, const Callable &p_callable
 	return s->slot_map.has(target);
 	//const Map<Signal::Target,Signal::Slot>::Element *E = s->slot_map.find(target);
 	//return (E!=NULL);
-}
-
-void Object::disconnect_compat(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method) {
-
-	_disconnect(p_signal, Callable(p_to_object, p_to_method));
 }
 
 void Object::disconnect(const StringName &p_signal, const Callable &p_callable) {

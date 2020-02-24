@@ -1332,7 +1332,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						OPCODE_BREAK;
 					}
 
-					Error err = obj->connect_compat(signal, gdfs.ptr(), "_signal_callback", varray(gdfs), Object::CONNECT_ONESHOT);
+					Error err = obj->connect(signal, Callable(gdfs.ptr(), "_signal_callback"), varray(gdfs), Object::CONNECT_ONESHOT);
 					if (err != OK) {
 						err_text = "Error connecting to signal: " + signal + " during yield().";
 						OPCODE_BREAK;
@@ -1341,7 +1341,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					Object *obj = argobj->operator Object *();
 					String signal = argname->operator String();
 
-					obj->connect_compat(signal, gdfs.ptr(), "_signal_callback", varray(gdfs), Object::CONNECT_ONESHOT);
+					obj->connect(signal, Callable(gdfs.ptr(), "_signal_callback"), varray(gdfs), Object::CONNECT_ONESHOT);
 #endif
 				}
 

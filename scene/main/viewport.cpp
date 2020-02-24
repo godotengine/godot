@@ -1124,7 +1124,7 @@ void Viewport::set_world(const Ref<World> &p_world) {
 		_propagate_exit_world(this);
 
 	if (own_world.is_valid() && world.is_valid()) {
-		world->disconnect_compat(CoreStringNames::get_singleton()->changed, this, "_own_world_changed");
+		world->disconnect(CoreStringNames::get_singleton()->changed, Callable(this, "_own_world_changed"));
 	}
 
 	world = p_world;
@@ -1132,7 +1132,7 @@ void Viewport::set_world(const Ref<World> &p_world) {
 	if (own_world.is_valid()) {
 		if (world.is_valid()) {
 			own_world = world->duplicate();
-			world->connect_compat(CoreStringNames::get_singleton()->changed, this, "_own_world_changed");
+			world->connect(CoreStringNames::get_singleton()->changed, Callable(this, "_own_world_changed"));
 		} else {
 			own_world = Ref<World>(memnew(World));
 		}
@@ -2473,7 +2473,7 @@ List<Control *>::Element *Viewport::_gui_add_root_control(Control *p_control) {
 
 List<Control *>::Element *Viewport::_gui_add_subwindow_control(Control *p_control) {
 
-	p_control->connect_compat("visibility_changed", this, "_subwindow_visibility_changed");
+	p_control->connect("visibility_changed", Callable(this, "_subwindow_visibility_changed"));
 
 	if (p_control->is_visible_in_tree()) {
 		gui.subwindow_order_dirty = true;
@@ -2568,7 +2568,7 @@ void Viewport::_gui_remove_subwindow_control(List<Control *>::Element *SI) {
 
 	Control *control = SI->get();
 
-	control->disconnect_compat("visibility_changed", this, "_subwindow_visibility_changed");
+	control->disconnect("visibility_changed", Callable(this, "_subwindow_visibility_changed"));
 
 	List<Control *>::Element *E = gui.subwindows.find(control);
 	if (E)
@@ -2850,12 +2850,12 @@ void Viewport::set_use_own_world(bool p_world) {
 	if (!p_world) {
 		own_world = Ref<World>();
 		if (world.is_valid()) {
-			world->disconnect_compat(CoreStringNames::get_singleton()->changed, this, "_own_world_changed");
+			world->disconnect(CoreStringNames::get_singleton()->changed, Callable(this, "_own_world_changed"));
 		}
 	} else {
 		if (world.is_valid()) {
 			own_world = world->duplicate();
-			world->connect_compat(CoreStringNames::get_singleton()->changed, this, "_own_world_changed");
+			world->connect(CoreStringNames::get_singleton()->changed, Callable(this, "_own_world_changed"));
 		} else {
 			own_world = Ref<World>(memnew(World));
 		}

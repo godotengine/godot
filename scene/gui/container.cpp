@@ -48,9 +48,9 @@ void Container::add_child_notify(Node *p_child) {
 	if (!control)
 		return;
 
-	control->connect_compat("size_flags_changed", this, "queue_sort");
-	control->connect_compat("minimum_size_changed", this, "_child_minsize_changed");
-	control->connect_compat("visibility_changed", this, "_child_minsize_changed");
+	control->connect("size_flags_changed", Callable(this, "queue_sort"));
+	control->connect("minimum_size_changed", Callable(this, "_child_minsize_changed"));
+	control->connect("visibility_changed", Callable(this, "_child_minsize_changed"));
 
 	minimum_size_changed();
 	queue_sort();
@@ -75,9 +75,9 @@ void Container::remove_child_notify(Node *p_child) {
 	if (!control)
 		return;
 
-	control->disconnect_compat("size_flags_changed", this, "queue_sort");
-	control->disconnect_compat("minimum_size_changed", this, "_child_minsize_changed");
-	control->disconnect_compat("visibility_changed", this, "_child_minsize_changed");
+	control->disconnect("size_flags_changed", Callable(this, "queue_sort"));
+	control->disconnect("minimum_size_changed", Callable(this, "_child_minsize_changed"));
+	control->disconnect("visibility_changed", Callable(this, "_child_minsize_changed"));
 
 	minimum_size_changed();
 	queue_sort();

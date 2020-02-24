@@ -898,12 +898,12 @@ void CSGMesh::set_mesh(const Ref<Mesh> &p_mesh) {
 	if (mesh == p_mesh)
 		return;
 	if (mesh.is_valid()) {
-		mesh->disconnect_compat("changed", this, "_mesh_changed");
+		mesh->disconnect("changed", Callable(this, "_mesh_changed"));
 	}
 	mesh = p_mesh;
 
 	if (mesh.is_valid()) {
-		mesh->connect_compat("changed", this, "_mesh_changed");
+		mesh->connect("changed", Callable(this, "_mesh_changed"));
 	}
 
 	_make_dirty();
@@ -1812,15 +1812,15 @@ CSGBrush *CSGPolygon::_build_brush() {
 
 		if (path != path_cache) {
 			if (path_cache) {
-				path_cache->disconnect_compat("tree_exited", this, "_path_exited");
-				path_cache->disconnect_compat("curve_changed", this, "_path_changed");
+				path_cache->disconnect("tree_exited", Callable(this, "_path_exited"));
+				path_cache->disconnect("curve_changed", Callable(this, "_path_changed"));
 				path_cache = NULL;
 			}
 
 			path_cache = path;
 
-			path_cache->connect_compat("tree_exited", this, "_path_exited");
-			path_cache->connect_compat("curve_changed", this, "_path_changed");
+			path_cache->connect("tree_exited", Callable(this, "_path_exited"));
+			path_cache->connect("curve_changed", Callable(this, "_path_changed"));
 			path_cache = NULL;
 		}
 		curve = path->get_curve();
@@ -2236,8 +2236,8 @@ CSGBrush *CSGPolygon::_build_brush() {
 void CSGPolygon::_notification(int p_what) {
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 		if (path_cache) {
-			path_cache->disconnect_compat("tree_exited", this, "_path_exited");
-			path_cache->disconnect_compat("curve_changed", this, "_path_changed");
+			path_cache->disconnect("tree_exited", Callable(this, "_path_exited"));
+			path_cache->disconnect("curve_changed", Callable(this, "_path_changed"));
 			path_cache = NULL;
 		}
 	}

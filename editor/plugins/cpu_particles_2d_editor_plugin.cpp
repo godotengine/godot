@@ -240,9 +240,9 @@ void CPUParticles2DEditorPlugin::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		menu->get_popup()->connect_compat("id_pressed", this, "_menu_callback");
+		menu->get_popup()->connect("id_pressed", Callable(this, "_menu_callback"));
 		menu->set_icon(menu->get_popup()->get_icon("Particles2D", "EditorIcons"));
-		file->connect_compat("file_selected", this, "_file_selected");
+		file->connect("file_selected", Callable(this, "_file_selected"));
 	}
 }
 
@@ -305,7 +305,7 @@ CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin(EditorNode *p_node) {
 
 	toolbar->add_child(emission_mask);
 
-	emission_mask->connect_compat("confirmed", this, "_generate_emission_mask");
+	emission_mask->connect("confirmed", Callable(this, "_generate_emission_mask"));
 }
 
 CPUParticles2DEditorPlugin::~CPUParticles2DEditorPlugin() {

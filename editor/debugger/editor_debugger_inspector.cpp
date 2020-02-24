@@ -105,7 +105,7 @@ void EditorDebuggerInspector::_bind_methods() {
 void EditorDebuggerInspector::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE:
-			connect_compat("object_id_selected", this, "_object_selected");
+			connect("object_id_selected", Callable(this, "_object_selected"));
 			break;
 		case NOTIFICATION_ENTER_TREE:
 			edit(variables);
@@ -139,7 +139,7 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 		debugObj->remote_object_id = obj.id;
 		debugObj->type_name = obj.class_name;
 		remote_objects[obj.id] = debugObj;
-		debugObj->connect_compat("value_edited", this, "_object_edited");
+		debugObj->connect("value_edited", Callable(this, "_object_edited"));
 	}
 
 	int old_prop_size = debugObj->prop_list.size();

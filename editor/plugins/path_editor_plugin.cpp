@@ -543,10 +543,10 @@ void PathEditorPlugin::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		curve_create->connect_compat("pressed", this, "_mode_changed", make_binds(0));
-		curve_edit->connect_compat("pressed", this, "_mode_changed", make_binds(1));
-		curve_del->connect_compat("pressed", this, "_mode_changed", make_binds(2));
-		curve_close->connect_compat("pressed", this, "_close_curve");
+		curve_create->connect("pressed", Callable(this, "_mode_changed"), make_binds(0));
+		curve_edit->connect("pressed", Callable(this, "_mode_changed"), make_binds(1));
+		curve_del->connect("pressed", Callable(this, "_mode_changed"), make_binds(2));
+		curve_close->connect("pressed", Callable(this, "_close_curve"));
 	}
 }
 
@@ -614,7 +614,7 @@ PathEditorPlugin::PathEditorPlugin(EditorNode *p_node) {
 	menu->set_item_checked(HANDLE_OPTION_ANGLE, mirror_handle_angle);
 	menu->add_check_item(TTR("Mirror Handle Lengths"));
 	menu->set_item_checked(HANDLE_OPTION_LENGTH, mirror_handle_length);
-	menu->connect_compat("id_pressed", this, "_handle_option_pressed");
+	menu->connect("id_pressed", Callable(this, "_handle_option_pressed"));
 
 	curve_edit->set_pressed(true);
 	/*

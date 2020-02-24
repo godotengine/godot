@@ -212,12 +212,12 @@ void CPUParticles2D::set_texture(const Ref<Texture2D> &p_texture) {
 		return;
 
 	if (texture.is_valid())
-		texture->disconnect_compat(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
+		texture->disconnect(CoreStringNames::get_singleton()->changed, Callable(this, "_texture_changed"));
 
 	texture = p_texture;
 
 	if (texture.is_valid())
-		texture->connect_compat(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
+		texture->connect(CoreStringNames::get_singleton()->changed, Callable(this, "_texture_changed"));
 
 	update();
 	_update_mesh_texture();
@@ -1053,13 +1053,13 @@ void CPUParticles2D::_set_redraw(bool p_redraw) {
 	update_mutex->lock();
 #endif
 	if (redraw) {
-		VS::get_singleton()->connect_compat("frame_pre_draw", this, "_update_render_thread");
+		VS::get_singleton()->connect("frame_pre_draw", Callable(this, "_update_render_thread"));
 		VS::get_singleton()->canvas_item_set_update_when_visible(get_canvas_item(), true);
 
 		VS::get_singleton()->multimesh_set_visible_instances(multimesh, -1);
 	} else {
-		if (VS::get_singleton()->is_connected_compat("frame_pre_draw", this, "_update_render_thread")) {
-			VS::get_singleton()->disconnect_compat("frame_pre_draw", this, "_update_render_thread");
+		if (VS::get_singleton()->is_connected("frame_pre_draw", Callable(this, "_update_render_thread"))) {
+			VS::get_singleton()->disconnect("frame_pre_draw", Callable(this, "_update_render_thread"));
 		}
 		VS::get_singleton()->canvas_item_set_update_when_visible(get_canvas_item(), false);
 

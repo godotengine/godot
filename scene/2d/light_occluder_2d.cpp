@@ -234,7 +234,7 @@ void LightOccluder2D::set_occluder_polygon(const Ref<OccluderPolygon2D> &p_polyg
 
 #ifdef DEBUG_ENABLED
 	if (occluder_polygon.is_valid())
-		occluder_polygon->disconnect_compat("changed", this, "_poly_changed");
+		occluder_polygon->disconnect("changed", Callable(this, "_poly_changed"));
 #endif
 	occluder_polygon = p_polygon;
 
@@ -245,7 +245,7 @@ void LightOccluder2D::set_occluder_polygon(const Ref<OccluderPolygon2D> &p_polyg
 
 #ifdef DEBUG_ENABLED
 	if (occluder_polygon.is_valid())
-		occluder_polygon->connect_compat("changed", this, "_poly_changed");
+		occluder_polygon->connect("changed", Callable(this, "_poly_changed"));
 	update();
 #endif
 }

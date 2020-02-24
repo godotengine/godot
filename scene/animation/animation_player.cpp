@@ -263,8 +263,8 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 		}
 
 		{
-			if (!child->is_connected_compat("tree_exiting", this, "_node_removed"))
-				child->connect_compat("tree_exiting", this, "_node_removed", make_binds(child), CONNECT_ONESHOT);
+			if (!child->is_connected("tree_exiting", Callable(this, "_node_removed")))
+				child->connect("tree_exiting", Callable(this, "_node_removed"), make_binds(child), CONNECT_ONESHOT);
 		}
 
 		TrackNodeCacheKey key;
@@ -1007,12 +1007,12 @@ void AnimationPlayer::remove_animation(const StringName &p_name) {
 
 void AnimationPlayer::_ref_anim(const Ref<Animation> &p_anim) {
 
-	Ref<Animation>(p_anim)->connect_compat(SceneStringNames::get_singleton()->tracks_changed, this, "_animation_changed", varray(), CONNECT_REFERENCE_COUNTED);
+	Ref<Animation>(p_anim)->connect(SceneStringNames::get_singleton()->tracks_changed, Callable(this, "_animation_changed"), varray(), CONNECT_REFERENCE_COUNTED);
 }
 
 void AnimationPlayer::_unref_anim(const Ref<Animation> &p_anim) {
 
-	Ref<Animation>(p_anim)->disconnect_compat(SceneStringNames::get_singleton()->tracks_changed, this, "_animation_changed");
+	Ref<Animation>(p_anim)->disconnect(SceneStringNames::get_singleton()->tracks_changed, Callable(this, "_animation_changed"));
 }
 
 void AnimationPlayer::rename_animation(const StringName &p_name, const StringName &p_new_name) {

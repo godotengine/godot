@@ -69,8 +69,8 @@ void GradientEditor::_bind_methods() {
 
 void GradientEditor::set_gradient(const Ref<Gradient> &p_gradient) {
 	gradient = p_gradient;
-	connect_compat("ramp_changed", this, "_ramp_changed");
-	gradient->connect_compat("changed", this, "_gradient_changed");
+	connect("ramp_changed", Callable(this, "_ramp_changed"));
+	gradient->connect("changed", Callable(this, "_gradient_changed"));
 	set_points(gradient->get_points());
 }
 

@@ -93,14 +93,14 @@ void ExportTemplateManager::_update_template_list() {
 			Button *redownload = memnew(Button);
 			redownload->set_text(TTR("Redownload"));
 			current_hb->add_child(redownload);
-			redownload->connect_compat("pressed", this, "_download_template", varray(current_version));
+			redownload->connect("pressed", Callable(this, "_download_template"), varray(current_version));
 		}
 
 		Button *uninstall = memnew(Button);
 		uninstall->set_text(TTR("Uninstall"));
 		current_hb->add_child(uninstall);
 		current->set_text(current_version + " " + TTR("(Installed)"));
-		uninstall->connect_compat("pressed", this, "_uninstall_template", varray(current_version));
+		uninstall->connect("pressed", Callable(this, "_uninstall_template"), varray(current_version));
 
 	} else {
 		current->add_color_override("font_color", get_color("error_color", "Editor"));
@@ -112,7 +112,7 @@ void ExportTemplateManager::_update_template_list() {
 			redownload->set_tooltip(TTR("Official export templates aren't available for development builds."));
 		}
 
-		redownload->connect_compat("pressed", this, "_download_template", varray(current_version));
+		redownload->connect("pressed", Callable(this, "_download_template"), varray(current_version));
 		current_hb->add_child(redownload);
 		current->set_text(current_version + " " + TTR("(Missing)"));
 	}
@@ -134,7 +134,7 @@ void ExportTemplateManager::_update_template_list() {
 
 		uninstall->set_text(TTR("Uninstall"));
 		hbc->add_child(uninstall);
-		uninstall->connect_compat("pressed", this, "_uninstall_template", varray(E->get()));
+		uninstall->connect("pressed", Callable(this, "_uninstall_template"), varray(E->get()));
 
 		installed_vb->add_child(hbc);
 	}
@@ -385,7 +385,7 @@ void ExportTemplateManager::_http_download_mirror_completed(int p_status, int p_
 			ERR_CONTINUE(!m.has("url") || !m.has("name"));
 			LinkButton *lb = memnew(LinkButton);
 			lb->set_text(m["name"]);
-			lb->connect_compat("pressed", this, "_begin_template_download", varray(m["url"]));
+			lb->connect("pressed", Callable(this, "_begin_template_download"), varray(m["url"]));
 			template_list->add_child(lb);
 			mirrors_found = true;
 		}
@@ -689,14 +689,14 @@ ExportTemplateManager::ExportTemplateManager() {
 	remove_confirm = memnew(ConfirmationDialog);
 	remove_confirm->set_title(TTR("Remove Template"));
 	add_child(remove_confirm);
-	remove_confirm->connect_compat("confirmed", this, "_uninstall_template_confirm");
+	remove_confirm->connect("confirmed", Callable(this, "_uninstall_template_confirm"));
 
 	template_open = memnew(FileDialog);
 	template_open->set_title(TTR("Select Template File"));
 	template_open->add_filter("*.tpz ; " + TTR("Godot Export Templates"));
 	template_open->set_access(FileDialog::ACCESS_FILESYSTEM);
 	template_open->set_mode(FileDialog::MODE_OPEN_FILE);
-	template_open->connect_compat("file_selected", this, "_install_from_file", varray(true));
+	template_open->connect("file_selected", Callable(this, "_install_from_file"), varray(true));
 	add_child(template_open);
 
 	set_title(TTR("Export Template Manager"));
@@ -704,18 +704,18 @@ ExportTemplateManager::ExportTemplateManager() {
 
 	request_mirror = memnew(HTTPRequest);
 	add_child(request_mirror);
-	request_mirror->connect_compat("request_completed", this, "_http_download_mirror_completed");
+	request_mirror->connect("request_completed", Callable(this, "_http_download_mirror_completed"));
 
 	download_templates = memnew(HTTPRequest);
 	add_child(download_templates);
-	download_templates->connect_compat("request_completed", this, "_http_download_templates_completed");
+	download_templates->connect("request_completed", Callable(this, "_http_download_templates_completed"));
 
 	template_downloader = memnew(AcceptDialog);
 	template_downloader->set_title(TTR("Download Templates"));
 	template_downloader->get_ok()->set_text(TTR("Close"));
 	template_downloader->set_exclusive(true);
 	add_child(template_downloader);
-	template_downloader->connect_compat("popup_hide", this, "_window_template_downloader_closed");
+	template_downloader->connect("popup_hide", Callable(this, "_window_template_downloader_closed"));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	template_downloader->add_child(vbc);

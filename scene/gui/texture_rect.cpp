@@ -160,13 +160,13 @@ void TextureRect::set_texture(const Ref<Texture2D> &p_tex) {
 	}
 
 	if (texture.is_valid()) {
-		texture->disconnect_compat(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
+		texture->disconnect(CoreStringNames::get_singleton()->changed, Callable(this, "_texture_changed"));
 	}
 
 	texture = p_tex;
 
 	if (texture.is_valid()) {
-		texture->connect_compat(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
+		texture->connect(CoreStringNames::get_singleton()->changed, Callable(this, "_texture_changed"));
 	}
 
 	update();

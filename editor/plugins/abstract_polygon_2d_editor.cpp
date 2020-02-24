@@ -209,8 +209,8 @@ void AbstractPolygon2DEditor::_notification(int p_what) {
 			button_delete->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("CurveDelete", "EditorIcons"));
 			button_edit->set_pressed(true);
 
-			get_tree()->connect_compat("node_removed", this, "_node_removed");
-			create_resource->connect_compat("confirmed", this, "_create_resource");
+			get_tree()->connect("node_removed", Callable(this, "_node_removed"));
+			create_resource->connect("confirmed", Callable(this, "_create_resource"));
 		} break;
 	}
 }
@@ -820,17 +820,17 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wi
 	add_child(memnew(VSeparator));
 	button_create = memnew(ToolButton);
 	add_child(button_create);
-	button_create->connect_compat("pressed", this, "_menu_option", varray(MODE_CREATE));
+	button_create->connect("pressed", Callable(this, "_menu_option"), varray(MODE_CREATE));
 	button_create->set_toggle_mode(true);
 
 	button_edit = memnew(ToolButton);
 	add_child(button_edit);
-	button_edit->connect_compat("pressed", this, "_menu_option", varray(MODE_EDIT));
+	button_edit->connect("pressed", Callable(this, "_menu_option"), varray(MODE_EDIT));
 	button_edit->set_toggle_mode(true);
 
 	button_delete = memnew(ToolButton);
 	add_child(button_delete);
-	button_delete->connect_compat("pressed", this, "_menu_option", varray(MODE_DELETE));
+	button_delete->connect("pressed", Callable(this, "_menu_option"), varray(MODE_DELETE));
 	button_delete->set_toggle_mode(true);
 
 	create_resource = memnew(ConfirmationDialog);
