@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "groups_editor.h"
+
 #include "editor/scene_tree_editor.h"
 #include "editor_node.h"
 #include "editor_scale.h"
@@ -468,7 +469,6 @@ GroupDialog::GroupDialog() {
 	nodes_to_add->set_select_mode(Tree::SELECT_MULTI);
 	nodes_to_add->set_v_size_flags(SIZE_EXPAND_FILL);
 	nodes_to_add->add_constant_override("draw_guides", 1);
-	nodes_to_add->connect_compat("item_selected", this, "_nodes_to_add_selected");
 
 	HBoxContainer *add_filter_hbc = memnew(HBoxContainer);
 	add_filter_hbc->add_constant_override("separate", 0);
@@ -515,7 +515,6 @@ GroupDialog::GroupDialog() {
 	nodes_to_remove->set_hide_folding(true);
 	nodes_to_remove->set_select_mode(Tree::SELECT_MULTI);
 	nodes_to_remove->add_constant_override("draw_guides", 1);
-	nodes_to_remove->connect_compat("item_selected", this, "_node_to_remove_selected");
 
 	HBoxContainer *remove_filter_hbc = memnew(HBoxContainer);
 	remove_filter_hbc->add_constant_override("separate", 0);

@@ -260,7 +260,7 @@ void InspectorDock::_prepare_history() {
 	}
 }
 
-void InspectorDock::_select_history(int p_idx) const {
+void InspectorDock::_select_history(int p_idx) {
 	//push it to the top, it is not correct, but it's more useful
 	ObjectID id = EditorNode::get_singleton()->get_editor_history()->get_history_obj(p_idx);
 	Object *obj = ObjectDB::get_instance(id);
@@ -269,7 +269,7 @@ void InspectorDock::_select_history(int p_idx) const {
 	editor->push_item(obj);
 }
 
-void InspectorDock::_resource_created() const {
+void InspectorDock::_resource_created() {
 	Object *c = new_resource_dialog->instance_selected();
 
 	ERR_FAIL_COND(!c);
@@ -280,7 +280,7 @@ void InspectorDock::_resource_created() const {
 	editor->push_item(c);
 }
 
-void InspectorDock::_resource_selected(const RES &p_res, const String &p_property) const {
+void InspectorDock::_resource_selected(const RES &p_res, const String &p_property) {
 	if (p_res.is_null())
 		return;
 

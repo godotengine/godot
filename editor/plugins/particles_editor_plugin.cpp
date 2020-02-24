@@ -231,23 +231,9 @@ ParticlesEditorBase::ParticlesEditorBase() {
 	emission_dialog->get_ok()->set_text(TTR("Create"));
 	emission_dialog->connect_compat("confirmed", this, "_generate_emission_points");
 
-	emission_file_dialog = memnew(EditorFileDialog);
-	add_child(emission_file_dialog);
-	emission_file_dialog->connect_compat("file_selected", this, "_resource_seleted");
 	emission_tree_dialog = memnew(SceneTreeDialog);
 	add_child(emission_tree_dialog);
 	emission_tree_dialog->connect_compat("selected", this, "_node_selected");
-
-	List<String> extensions;
-	ResourceLoader::get_recognized_extensions_for_type("Mesh", &extensions);
-
-	emission_file_dialog->clear_filters();
-	for (int i = 0; i < extensions.size(); i++) {
-
-		emission_file_dialog->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
-	}
-
-	emission_file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 }
 
 void ParticlesEditor::_node_removed(Node *p_node) {
@@ -279,17 +265,6 @@ void ParticlesEditor::_menu_option(int p_option) {
 				generate_seconds->set_value(trunc(gen_time) + 1.0);
 			generate_aabb->popup_centered_minsize();
 		} break;
-		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH: {
-
-			Ref<ParticlesMaterial> material = node->get_process_material();
-			if (material.is_null()) {
-				EditorNode::get_singleton()->show_warning(TTR("A processor material of type 'ParticlesMaterial' is required."));
-				return;
-			}
-			emission_file_dialog->popup_centered_ratio();
-
-		} break;
-
 		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE: {
 			Ref<ParticlesMaterial> material = node->get_process_material();
 			if (material.is_null()) {
@@ -467,7 +442,6 @@ ParticlesEditor::ParticlesEditor() {
 	options->set_text(TTR("Particles"));
 	options->get_popup()->add_item(TTR("Generate AABB"), MENU_OPTION_GENERATE_AABB);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item(TTR("Create Emission Points From Mesh"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH);
 	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Convert to CPUParticles"), MENU_OPTION_CONVERT_TO_CPU_PARTICLES);
