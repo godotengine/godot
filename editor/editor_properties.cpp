@@ -3039,7 +3039,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 				add_property_editor(p_path, editor);
 			}
 		} break;
-		case Variant::REAL: {
+		case Variant::FLOAT: {
 
 			if (p_hint == PROPERTY_HINT_EXP_EASING) {
 				EditorPropertyEasing *editor = memnew(EditorPropertyEasing);
@@ -3389,14 +3389,24 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			editor->setup(Variant::PACKED_BYTE_ARRAY);
 			add_property_editor(p_path, editor);
 		} break; // 20
-		case Variant::PACKED_INT_ARRAY: {
+		case Variant::PACKED_INT32_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_INT_ARRAY);
+			editor->setup(Variant::PACKED_INT32_ARRAY);
 			add_property_editor(p_path, editor);
 		} break;
-		case Variant::PACKED_REAL_ARRAY: {
+		case Variant::PACKED_INT64_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_REAL_ARRAY);
+			editor->setup(Variant::PACKED_INT64_ARRAY);
+			add_property_editor(p_path, editor);
+		} break;
+		case Variant::PACKED_FLOAT32_ARRAY: {
+			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			editor->setup(Variant::PACKED_FLOAT32_ARRAY);
+			add_property_editor(p_path, editor);
+		} break;
+		case Variant::PACKED_FLOAT64_ARRAY: {
+			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			editor->setup(Variant::PACKED_FLOAT64_ARRAY);
 			add_property_editor(p_path, editor);
 		} break;
 		case Variant::PACKED_STRING_ARRAY: {

@@ -430,7 +430,7 @@ bool EditorPropertyRevert::is_node_property_different(Node *p_node, const Varian
 			return false; //pointless to check if we are not comparing against anything.
 	}
 
-	if (p_current.get_type() == Variant::REAL && p_orig.get_type() == Variant::REAL) {
+	if (p_current.get_type() == Variant::FLOAT && p_orig.get_type() == Variant::FLOAT) {
 		float a = p_current;
 		float b = p_orig;
 

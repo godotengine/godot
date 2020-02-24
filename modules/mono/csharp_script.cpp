@@ -411,7 +411,7 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 	if (p_var_type_name == Variant::get_type_name(Variant::OBJECT))
 		return "Godot.Object";
 
-	if (p_var_type_name == Variant::get_type_name(Variant::REAL)) {
+	if (p_var_type_name == Variant::get_type_name(Variant::FLOAT)) {
 #ifdef REAL_T_IS_DOUBLE
 		return "double";
 #else
@@ -430,9 +430,9 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 
 	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_BYTE_ARRAY))
 		return "byte[]";
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_INT_ARRAY))
+	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_INT32_ARRAY))
 		return "int[]";
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_REAL_ARRAY)) {
+	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_FLOAT32_ARRAY)) {
 #ifdef REAL_T_IS_DOUBLE
 		return "double[]";
 #else

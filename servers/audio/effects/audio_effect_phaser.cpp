@@ -154,11 +154,11 @@ void AudioEffectPhaser::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_depth", "depth"), &AudioEffectPhaser::set_depth);
 	ClassDB::bind_method(D_METHOD("get_depth"), &AudioEffectPhaser::get_depth);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "range_min_hz", PROPERTY_HINT_RANGE, "10,10000"), "set_range_min_hz", "get_range_min_hz");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "range_max_hz", PROPERTY_HINT_RANGE, "10,10000"), "set_range_max_hz", "get_range_max_hz");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rate_hz", PROPERTY_HINT_RANGE, "0.01,20"), "set_rate_hz", "get_rate_hz");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "feedback", PROPERTY_HINT_RANGE, "0.1,0.9,0.1"), "set_feedback", "get_feedback");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "depth", PROPERTY_HINT_RANGE, "0.1,4,0.1"), "set_depth", "get_depth");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "range_min_hz", PROPERTY_HINT_RANGE, "10,10000"), "set_range_min_hz", "get_range_min_hz");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "range_max_hz", PROPERTY_HINT_RANGE, "10,10000"), "set_range_max_hz", "get_range_max_hz");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rate_hz", PROPERTY_HINT_RANGE, "0.01,20"), "set_rate_hz", "get_rate_hz");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "feedback", PROPERTY_HINT_RANGE, "0.1,0.9,0.1"), "set_feedback", "get_feedback");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth", PROPERTY_HINT_RANGE, "0.1,4,0.1"), "set_depth", "get_depth");
 }
 
 AudioEffectPhaser::AudioEffectPhaser() {

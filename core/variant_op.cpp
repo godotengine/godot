@@ -41,7 +41,7 @@
 #define CASE_TYPE_ALL_BUT_INT(PREFIX, OP)       \
 	CASE_TYPE(PREFIX, OP, NIL)                  \
 	CASE_TYPE(PREFIX, OP, BOOL)                 \
-	CASE_TYPE(PREFIX, OP, REAL)                 \
+	CASE_TYPE(PREFIX, OP, FLOAT)                \
 	CASE_TYPE(PREFIX, OP, STRING)               \
 	CASE_TYPE(PREFIX, OP, VECTOR2)              \
 	CASE_TYPE(PREFIX, OP, VECTOR2I)             \
@@ -65,8 +65,10 @@
 	CASE_TYPE(PREFIX, OP, DICTIONARY)           \
 	CASE_TYPE(PREFIX, OP, ARRAY)                \
 	CASE_TYPE(PREFIX, OP, PACKED_BYTE_ARRAY)    \
-	CASE_TYPE(PREFIX, OP, PACKED_INT_ARRAY)     \
-	CASE_TYPE(PREFIX, OP, PACKED_REAL_ARRAY)    \
+	CASE_TYPE(PREFIX, OP, PACKED_INT32_ARRAY)   \
+	CASE_TYPE(PREFIX, OP, PACKED_INT64_ARRAY)   \
+	CASE_TYPE(PREFIX, OP, PACKED_FLOAT32_ARRAY) \
+	CASE_TYPE(PREFIX, OP, PACKED_FLOAT64_ARRAY) \
 	CASE_TYPE(PREFIX, OP, PACKED_STRING_ARRAY)  \
 	CASE_TYPE(PREFIX, OP, PACKED_VECTOR2_ARRAY) \
 	CASE_TYPE(PREFIX, OP, PACKED_VECTOR3_ARRAY) \
@@ -80,7 +82,7 @@
 		TYPE(PREFIX, OP, NIL),                \
 		TYPE(PREFIX, OP, BOOL),               \
 		TYPE(PREFIX, OP, INT),                \
-		TYPE(PREFIX, OP, REAL),               \
+		TYPE(PREFIX, OP, FLOAT),               \
 		TYPE(PREFIX, OP, STRING),             \
 		TYPE(PREFIX, OP, VECTOR2),            \
 		TYPE(PREFIX, OP, VECTOR2I),            \
@@ -104,8 +106,10 @@
 		TYPE(PREFIX, OP, DICTIONARY),         \
 		TYPE(PREFIX, OP, ARRAY),              \
 		TYPE(PREFIX, OP, PACKED_BYTE_ARRAY),    \
-		TYPE(PREFIX, OP, PACKED_INT_ARRAY),     \
-		TYPE(PREFIX, OP, PACKED_REAL_ARRAY),    \
+		TYPE(PREFIX, OP, PACKED_INT32_ARRAY),     \
+		TYPE(PREFIX, OP, PACKED_INT64_ARRAY),     \
+		TYPE(PREFIX, OP, PACKED_FLOAT32_ARRAY),    \
+		TYPE(PREFIX, OP, PACKED_FLOAT64_ARRAY),    \
 		TYPE(PREFIX, OP, PACKED_STRING_ARRAY),  \
 		TYPE(PREFIX, OP, PACKED_VECTOR2_ARRAY), \
 		TYPE(PREFIX, OP, PACKED_VECTOR3_ARRAY), \
@@ -177,21 +181,21 @@ bool Variant::booleanize() const {
 		return;          \
 	}
 
-#define DEFAULT_OP_NUM(m_prefix, m_op_name, m_name, m_op, m_type)             \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                                  \
-		if (p_b.type == INT) _RETURN(p_a._data.m_type m_op p_b._data._int);   \
-		if (p_b.type == REAL) _RETURN(p_a._data.m_type m_op p_b._data._real); \
-                                                                              \
-		_RETURN_FAIL                                                          \
+#define DEFAULT_OP_NUM(m_prefix, m_op_name, m_name, m_op, m_type)               \
+	CASE_TYPE(m_prefix, m_op_name, m_name) {                                    \
+		if (p_b.type == INT) _RETURN(p_a._data.m_type m_op p_b._data._int);     \
+		if (p_b.type == FLOAT) _RETURN(p_a._data.m_type m_op p_b._data._float); \
+                                                                                \
+		_RETURN_FAIL                                                            \
 	};
 
-#define DEFAULT_OP_NUM_NULL(m_prefix, m_op_name, m_name, m_op, m_type)        \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                                  \
-		if (p_b.type == INT) _RETURN(p_a._data.m_type m_op p_b._data._int);   \
-		if (p_b.type == REAL) _RETURN(p_a._data.m_type m_op p_b._data._real); \
-		if (p_b.type == NIL) _RETURN(!(p_b.type m_op NIL));                   \
-                                                                              \
-		_RETURN_FAIL                                                          \
+#define DEFAULT_OP_NUM_NULL(m_prefix, m_op_name, m_name, m_op, m_type)          \
+	CASE_TYPE(m_prefix, m_op_name, m_name) {                                    \
+		if (p_b.type == INT) _RETURN(p_a._data.m_type m_op p_b._data._int);     \
+		if (p_b.type == FLOAT) _RETURN(p_a._data.m_type m_op p_b._data._float); \
+		if (p_b.type == NIL) _RETURN(!(p_b.type m_op NIL));                     \
+                                                                                \
+		_RETURN_FAIL                                                            \
 	};
 
 #ifdef DEBUG_ENABLED
@@ -204,23 +208,23 @@ bool Variant::booleanize() const {
 			}                                                   \
 			_RETURN(p_a._data.m_type / p_b._data._int);         \
 		}                                                       \
-		if (p_b.type == REAL) {                                 \
-			if (p_b._data._real == 0) {                         \
+		if (p_b.type == FLOAT) {                                \
+			if (p_b._data._float == 0) {                        \
 				r_valid = false;                                \
 				_RETURN("Division By Zero");                    \
 			}                                                   \
-			_RETURN(p_a._data.m_type / p_b._data._real);        \
+			_RETURN(p_a._data.m_type / p_b._data._float);       \
 		}                                                       \
                                                                 \
 		_RETURN_FAIL                                            \
 	};
 #else
-#define DEFAULT_OP_NUM_DIV(m_prefix, m_op_name, m_name, m_type)            \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                               \
-		if (p_b.type == INT) _RETURN(p_a._data.m_type / p_b._data._int);   \
-		if (p_b.type == REAL) _RETURN(p_a._data.m_type / p_b._data._real); \
-                                                                           \
-		_RETURN_FAIL                                                       \
+#define DEFAULT_OP_NUM_DIV(m_prefix, m_op_name, m_name, m_type)              \
+	CASE_TYPE(m_prefix, m_op_name, m_name) {                                 \
+		if (p_b.type == INT) _RETURN(p_a._data.m_type / p_b._data._int);     \
+		if (p_b.type == FLOAT) _RETURN(p_a._data.m_type / p_b._data._float); \
+                                                                             \
+		_RETURN_FAIL                                                         \
 	};
 #endif
 
@@ -237,7 +241,7 @@ bool Variant::booleanize() const {
 #define DEFAULT_OP_NUM_VEC(m_prefix, m_op_name, m_name, m_op, m_type)                                                \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                         \
 		if (p_b.type == INT) _RETURN(p_a._data.m_type m_op p_b._data._int);                                          \
-		if (p_b.type == REAL) _RETURN(p_a._data.m_type m_op p_b._data._real);                                        \
+		if (p_b.type == FLOAT) _RETURN(p_a._data.m_type m_op p_b._data._float);                                      \
 		if (p_b.type == VECTOR2) _RETURN(p_a._data.m_type m_op *reinterpret_cast<const Vector2 *>(p_b._data._mem));  \
 		if (p_b.type == VECTOR3) _RETURN(p_a._data.m_type m_op *reinterpret_cast<const Vector3 *>(p_b._data._mem));  \
 		if (p_b.type == VECTOR2I) _RETURN(p_a._data.m_type m_op *reinterpret_cast<const Vector2 *>(p_b._data._mem)); \
@@ -332,7 +336,7 @@ bool Variant::booleanize() const {
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                                       \
 		if (p_b.type == m_name) _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const m_type *>(p_b._data._mem)); \
 		if (p_b.type == INT) _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op p_b._data._int);                                       \
-		if (p_b.type == REAL) _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op p_b._data._real);                                     \
+		if (p_b.type == FLOAT) _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op p_b._data._float);                                   \
                                                                                                                                                    \
 		_RETURN_FAIL                                                                                                                               \
 	}
@@ -496,7 +500,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			}
 
 			DEFAULT_OP_NUM_NULL(math, OP_EQUAL, INT, ==, _int);
-			DEFAULT_OP_NUM_NULL(math, OP_EQUAL, REAL, ==, _real);
+			DEFAULT_OP_NUM_NULL(math, OP_EQUAL, FLOAT, ==, _float);
 			DEFAULT_OP_STR_NULL(math, OP_EQUAL, STRING, ==, String);
 			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, VECTOR2, ==, Vector2);
 			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, VECTOR2I, ==, Vector2i);
@@ -516,8 +520,10 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, _RID, ==, RID);
 
 			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_BYTE_ARRAY, uint8_t);
-			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_INT_ARRAY, int);
-			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_REAL_ARRAY, real_t);
+			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_INT32_ARRAY, int32_t);
+			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_INT64_ARRAY, int64_t);
+			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_FLOAT32_ARRAY, float);
+			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_FLOAT64_ARRAY, double);
 			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_STRING_ARRAY, String);
 			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_VECTOR2_ARRAY, Vector2);
 			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_VECTOR3_ARRAY, Vector3);
@@ -593,7 +599,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			}
 
 			DEFAULT_OP_NUM_NULL(math, OP_NOT_EQUAL, INT, !=, _int);
-			DEFAULT_OP_NUM_NULL(math, OP_NOT_EQUAL, REAL, !=, _real);
+			DEFAULT_OP_NUM_NULL(math, OP_NOT_EQUAL, FLOAT, !=, _float);
 			DEFAULT_OP_STR_NULL(math, OP_NOT_EQUAL, STRING, !=, String);
 			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, VECTOR2, !=, Vector2);
 			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, VECTOR2I, !=, Vector2i);
@@ -613,8 +619,10 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, _RID, !=, RID);
 
 			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_BYTE_ARRAY, uint8_t);
-			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_INT_ARRAY, int);
-			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_REAL_ARRAY, real_t);
+			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_INT32_ARRAY, int32_t);
+			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_INT64_ARRAY, int64_t);
+			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_FLOAT32_ARRAY, float);
+			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_FLOAT64_ARRAY, double);
 			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_STRING_ARRAY, String);
 			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_VECTOR2_ARRAY, Vector2);
 			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_VECTOR3_ARRAY, Vector3);
@@ -664,7 +672,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			}
 
 			DEFAULT_OP_NUM(math, OP_LESS, INT, <, _int);
-			DEFAULT_OP_NUM(math, OP_LESS, REAL, <, _real);
+			DEFAULT_OP_NUM(math, OP_LESS, FLOAT, <, _float);
 			DEFAULT_OP_STR(math, OP_LESS, STRING, <, String);
 			DEFAULT_OP_LOCALMEM(math, OP_LESS, VECTOR2, <, Vector2);
 			DEFAULT_OP_LOCALMEM(math, OP_LESS, VECTOR2I, <, Vector2i);
@@ -672,8 +680,10 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_LOCALMEM(math, OP_LESS, VECTOR3I, <, Vector3i);
 			DEFAULT_OP_LOCALMEM(math, OP_LESS, _RID, <, RID);
 			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_BYTE_ARRAY, uint8_t);
-			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_INT_ARRAY, int);
-			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_REAL_ARRAY, real_t);
+			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_INT32_ARRAY, int32_t);
+			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_INT64_ARRAY, int64_t);
+			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_FLOAT32_ARRAY, float);
+			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_FLOAT64_ARRAY, double);
 			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_STRING_ARRAY, String);
 			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_VECTOR2_ARRAY, Vector3);
 			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_VECTOR3_ARRAY, Vector3);
@@ -703,7 +713,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			}
 
 			DEFAULT_OP_NUM(math, OP_LESS_EQUAL, INT, <=, _int);
-			DEFAULT_OP_NUM(math, OP_LESS_EQUAL, REAL, <=, _real);
+			DEFAULT_OP_NUM(math, OP_LESS_EQUAL, FLOAT, <=, _float);
 			DEFAULT_OP_STR(math, OP_LESS_EQUAL, STRING, <=, String);
 			DEFAULT_OP_LOCALMEM(math, OP_LESS_EQUAL, VECTOR2, <=, Vector2);
 			DEFAULT_OP_LOCALMEM(math, OP_LESS_EQUAL, VECTOR2I, <=, Vector2i);
@@ -730,8 +740,10 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_LESS_EQUAL, DICTIONARY)
 			CASE_TYPE(math, OP_LESS_EQUAL, ARRAY)
 			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_BYTE_ARRAY);
-			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_INT_ARRAY);
-			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_REAL_ARRAY);
+			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_INT32_ARRAY);
+			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_INT64_ARRAY);
+			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_FLOAT32_ARRAY);
+			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_FLOAT64_ARRAY);
 			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_STRING_ARRAY);
 			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_VECTOR2_ARRAY);
 			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_VECTOR3_ARRAY);
@@ -779,7 +791,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			}
 
 			DEFAULT_OP_NUM(math, OP_GREATER, INT, >, _int);
-			DEFAULT_OP_NUM(math, OP_GREATER, REAL, >, _real);
+			DEFAULT_OP_NUM(math, OP_GREATER, FLOAT, >, _float);
 			DEFAULT_OP_STR_REV(math, OP_GREATER, STRING, <, String);
 			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, VECTOR2, <, Vector2);
 			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, VECTOR2I, <, Vector2i);
@@ -787,8 +799,10 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, VECTOR3I, <, Vector3i);
 			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, _RID, <, RID);
 			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_BYTE_ARRAY, uint8_t);
-			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_INT_ARRAY, int);
-			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_REAL_ARRAY, real_t);
+			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_INT32_ARRAY, int32_t);
+			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_INT64_ARRAY, int64_t);
+			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_FLOAT32_ARRAY, float);
+			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_FLOAT64_ARRAY, double);
 			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_STRING_ARRAY, String);
 			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_VECTOR2_ARRAY, Vector3);
 			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_VECTOR3_ARRAY, Vector3);
@@ -821,7 +835,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			}
 
 			DEFAULT_OP_NUM(math, OP_GREATER_EQUAL, INT, >=, _int);
-			DEFAULT_OP_NUM(math, OP_GREATER_EQUAL, REAL, >=, _real);
+			DEFAULT_OP_NUM(math, OP_GREATER_EQUAL, FLOAT, >=, _float);
 			DEFAULT_OP_STR_REV(math, OP_GREATER_EQUAL, STRING, <=, String);
 			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER_EQUAL, VECTOR2, <=, Vector2);
 			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER_EQUAL, VECTOR2I, <=, Vector2i);
@@ -848,8 +862,10 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_GREATER_EQUAL, DICTIONARY)
 			CASE_TYPE(math, OP_GREATER_EQUAL, ARRAY)
 			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_BYTE_ARRAY);
-			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_INT_ARRAY);
-			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_REAL_ARRAY);
+			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_INT32_ARRAY);
+			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_INT64_ARRAY);
+			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_FLOAT32_ARRAY);
+			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_FLOAT64_ARRAY);
 			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_STRING_ARRAY);
 			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_VECTOR2_ARRAY);
 			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_VECTOR3_ARRAY);
@@ -876,7 +892,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			}
 
 			DEFAULT_OP_NUM(math, OP_ADD, INT, +, _int);
-			DEFAULT_OP_NUM(math, OP_ADD, REAL, +, _real);
+			DEFAULT_OP_NUM(math, OP_ADD, FLOAT, +, _float);
 			DEFAULT_OP_STR(math, OP_ADD, STRING, +, String);
 			DEFAULT_OP_LOCALMEM(math, OP_ADD, VECTOR2, +, Vector2);
 			DEFAULT_OP_LOCALMEM(math, OP_ADD, VECTOR2I, +, Vector2i);
@@ -886,8 +902,10 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_LOCALMEM(math, OP_ADD, COLOR, +, Color);
 
 			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_BYTE_ARRAY, uint8_t);
-			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_INT_ARRAY, int);
-			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_REAL_ARRAY, real_t);
+			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_INT32_ARRAY, int32_t);
+			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_INT64_ARRAY, int64_t);
+			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_FLOAT32_ARRAY, float);
+			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_FLOAT64_ARRAY, double);
 			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_STRING_ARRAY, String);
 			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_VECTOR2_ARRAY, Vector2);
 			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_VECTOR3_ARRAY, Vector3);
@@ -915,7 +933,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 		SWITCH_OP(math, OP_SUBTRACT, p_a.type) {
 			DEFAULT_OP_NUM(math, OP_SUBTRACT, INT, -, _int);
-			DEFAULT_OP_NUM(math, OP_SUBTRACT, REAL, -, _real);
+			DEFAULT_OP_NUM(math, OP_SUBTRACT, FLOAT, -, _float);
 			DEFAULT_OP_LOCALMEM(math, OP_SUBTRACT, VECTOR2, -, Vector2);
 			DEFAULT_OP_LOCALMEM(math, OP_SUBTRACT, VECTOR2I, -, Vector2i);
 			DEFAULT_OP_LOCALMEM(math, OP_SUBTRACT, VECTOR3, -, Vector3);
@@ -943,8 +961,10 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_SUBTRACT, DICTIONARY)
 			CASE_TYPE(math, OP_SUBTRACT, ARRAY)
 			CASE_TYPE(math, OP_SUBTRACT, PACKED_BYTE_ARRAY);
-			CASE_TYPE(math, OP_SUBTRACT, PACKED_INT_ARRAY);
-			CASE_TYPE(math, OP_SUBTRACT, PACKED_REAL_ARRAY);
+			CASE_TYPE(math, OP_SUBTRACT, PACKED_INT32_ARRAY);
+			CASE_TYPE(math, OP_SUBTRACT, PACKED_INT64_ARRAY);
+			CASE_TYPE(math, OP_SUBTRACT, PACKED_FLOAT32_ARRAY);
+			CASE_TYPE(math, OP_SUBTRACT, PACKED_FLOAT64_ARRAY);
 			CASE_TYPE(math, OP_SUBTRACT, PACKED_STRING_ARRAY);
 			CASE_TYPE(math, OP_SUBTRACT, PACKED_VECTOR2_ARRAY);
 			CASE_TYPE(math, OP_SUBTRACT, PACKED_VECTOR3_ARRAY);
@@ -973,8 +993,8 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 					case QUAT: {
 						_RETURN(*reinterpret_cast<const Quat *>(p_a._data._mem) * *reinterpret_cast<const Quat *>(p_b._data._mem));
 					}
-					case REAL: {
-						_RETURN(*reinterpret_cast<const Quat *>(p_a._data._mem) * p_b._data._real);
+					case FLOAT: {
+						_RETURN(*reinterpret_cast<const Quat *>(p_a._data._mem) * p_b._data._float);
 					}
 					default: _RETURN_FAIL;
 				}
@@ -1005,7 +1025,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			}
 
 			DEFAULT_OP_NUM_VEC(math, OP_MULTIPLY, INT, *, _int);
-			DEFAULT_OP_NUM_VEC(math, OP_MULTIPLY, REAL, *, _real);
+			DEFAULT_OP_NUM_VEC(math, OP_MULTIPLY, FLOAT, *, _float);
 			DEFAULT_OP_LOCALMEM_NUM(math, OP_MULTIPLY, VECTOR2, *, Vector2);
 			DEFAULT_OP_LOCALMEM_NUM(math, OP_MULTIPLY, VECTOR2I, *, Vector2i);
 			DEFAULT_OP_LOCALMEM_NUM(math, OP_MULTIPLY, VECTOR3, *, Vector3);
@@ -1029,8 +1049,10 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_MULTIPLY, DICTIONARY)
 			CASE_TYPE(math, OP_MULTIPLY, ARRAY)
 			CASE_TYPE(math, OP_MULTIPLY, PACKED_BYTE_ARRAY);
-			CASE_TYPE(math, OP_MULTIPLY, PACKED_INT_ARRAY);
-			CASE_TYPE(math, OP_MULTIPLY, PACKED_REAL_ARRAY);
+			CASE_TYPE(math, OP_MULTIPLY, PACKED_INT32_ARRAY);
+			CASE_TYPE(math, OP_MULTIPLY, PACKED_INT64_ARRAY);
+			CASE_TYPE(math, OP_MULTIPLY, PACKED_FLOAT32_ARRAY);
+			CASE_TYPE(math, OP_MULTIPLY, PACKED_FLOAT64_ARRAY);
 			CASE_TYPE(math, OP_MULTIPLY, PACKED_STRING_ARRAY);
 			CASE_TYPE(math, OP_MULTIPLY, PACKED_VECTOR2_ARRAY);
 			CASE_TYPE(math, OP_MULTIPLY, PACKED_VECTOR3_ARRAY);
@@ -1040,19 +1062,19 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 		SWITCH_OP(math, OP_DIVIDE, p_a.type) {
 			CASE_TYPE(math, OP_DIVIDE, QUAT) {
-				if (p_b.type != REAL)
+				if (p_b.type != FLOAT)
 					_RETURN_FAIL;
 #ifdef DEBUG_ENABLED
-				if (p_b._data._real == 0) {
+				if (p_b._data._float == 0) {
 					r_valid = false;
 					_RETURN("Division By Zero");
 				}
 #endif
-				_RETURN(*reinterpret_cast<const Quat *>(p_a._data._mem) / p_b._data._real);
+				_RETURN(*reinterpret_cast<const Quat *>(p_a._data._mem) / p_b._data._float);
 			}
 
 			DEFAULT_OP_NUM_DIV(math, OP_DIVIDE, INT, _int);
-			DEFAULT_OP_NUM_DIV(math, OP_DIVIDE, REAL, _real);
+			DEFAULT_OP_NUM_DIV(math, OP_DIVIDE, FLOAT, _float);
 			DEFAULT_OP_LOCALMEM_NUM(math, OP_DIVIDE, VECTOR2, /, Vector2);
 			DEFAULT_OP_LOCALMEM_NUM(math, OP_DIVIDE, VECTOR2I, /, Vector2i);
 			DEFAULT_OP_LOCALMEM_NUM(math, OP_DIVIDE, VECTOR3, /, Vector3);
@@ -1079,8 +1101,10 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_DIVIDE, DICTIONARY)
 			CASE_TYPE(math, OP_DIVIDE, ARRAY)
 			CASE_TYPE(math, OP_DIVIDE, PACKED_BYTE_ARRAY);
-			CASE_TYPE(math, OP_DIVIDE, PACKED_INT_ARRAY);
-			CASE_TYPE(math, OP_DIVIDE, PACKED_REAL_ARRAY);
+			CASE_TYPE(math, OP_DIVIDE, PACKED_INT32_ARRAY);
+			CASE_TYPE(math, OP_DIVIDE, PACKED_INT64_ARRAY);
+			CASE_TYPE(math, OP_DIVIDE, PACKED_FLOAT32_ARRAY);
+			CASE_TYPE(math, OP_DIVIDE, PACKED_FLOAT64_ARRAY);
 			CASE_TYPE(math, OP_DIVIDE, PACKED_STRING_ARRAY);
 			CASE_TYPE(math, OP_DIVIDE, PACKED_VECTOR2_ARRAY);
 			CASE_TYPE(math, OP_DIVIDE, PACKED_VECTOR3_ARRAY);
@@ -1090,7 +1114,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 		SWITCH_OP(math, OP_POSITIVE, p_a.type) {
 			DEFAULT_OP_NUM_POS(math, OP_POSITIVE, INT, _int);
-			DEFAULT_OP_NUM_POS(math, OP_POSITIVE, REAL, _real);
+			DEFAULT_OP_NUM_POS(math, OP_POSITIVE, FLOAT, _float);
 			DEFAULT_OP_LOCALMEM_POS(math, OP_POSITIVE, VECTOR3, Vector3);
 			DEFAULT_OP_LOCALMEM_POS(math, OP_POSITIVE, VECTOR3I, Vector3i);
 			DEFAULT_OP_LOCALMEM_POS(math, OP_POSITIVE, PLANE, Plane);
@@ -1118,8 +1142,10 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_POSITIVE, DICTIONARY)
 			CASE_TYPE(math, OP_POSITIVE, ARRAY)
 			CASE_TYPE(math, OP_POSITIVE, PACKED_BYTE_ARRAY)
-			CASE_TYPE(math, OP_POSITIVE, PACKED_INT_ARRAY)
-			CASE_TYPE(math, OP_POSITIVE, PACKED_REAL_ARRAY)
+			CASE_TYPE(math, OP_POSITIVE, PACKED_INT32_ARRAY)
+			CASE_TYPE(math, OP_POSITIVE, PACKED_INT64_ARRAY)
+			CASE_TYPE(math, OP_POSITIVE, PACKED_FLOAT32_ARRAY)
+			CASE_TYPE(math, OP_POSITIVE, PACKED_FLOAT64_ARRAY)
 			CASE_TYPE(math, OP_POSITIVE, PACKED_STRING_ARRAY)
 			CASE_TYPE(math, OP_POSITIVE, PACKED_VECTOR2_ARRAY)
 			CASE_TYPE(math, OP_POSITIVE, PACKED_VECTOR3_ARRAY)
@@ -1129,7 +1155,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 		SWITCH_OP(math, OP_NEGATE, p_a.type) {
 			DEFAULT_OP_NUM_NEG(math, OP_NEGATE, INT, _int);
-			DEFAULT_OP_NUM_NEG(math, OP_NEGATE, REAL, _real);
+			DEFAULT_OP_NUM_NEG(math, OP_NEGATE, FLOAT, _float);
 
 			DEFAULT_OP_LOCALMEM_NEG(math, OP_NEGATE, VECTOR2, Vector2);
 			DEFAULT_OP_LOCALMEM_NEG(math, OP_NEGATE, VECTOR2I, Vector2i);
@@ -1158,8 +1184,10 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_NEGATE, DICTIONARY)
 			CASE_TYPE(math, OP_NEGATE, ARRAY)
 			CASE_TYPE(math, OP_NEGATE, PACKED_BYTE_ARRAY)
-			CASE_TYPE(math, OP_NEGATE, PACKED_INT_ARRAY)
-			CASE_TYPE(math, OP_NEGATE, PACKED_REAL_ARRAY)
+			CASE_TYPE(math, OP_NEGATE, PACKED_INT32_ARRAY)
+			CASE_TYPE(math, OP_NEGATE, PACKED_INT64_ARRAY)
+			CASE_TYPE(math, OP_NEGATE, PACKED_FLOAT32_ARRAY)
+			CASE_TYPE(math, OP_NEGATE, PACKED_FLOAT64_ARRAY)
 			CASE_TYPE(math, OP_NEGATE, PACKED_STRING_ARRAY)
 			CASE_TYPE(math, OP_NEGATE, PACKED_VECTOR2_ARRAY)
 			CASE_TYPE(math, OP_NEGATE, PACKED_VECTOR3_ARRAY)
@@ -1201,7 +1229,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 			CASE_TYPE(math, OP_MODULE, NIL)
 			CASE_TYPE(math, OP_MODULE, BOOL)
-			CASE_TYPE(math, OP_MODULE, REAL)
+			CASE_TYPE(math, OP_MODULE, FLOAT)
 			CASE_TYPE(math, OP_MODULE, VECTOR2)
 			CASE_TYPE(math, OP_MODULE, VECTOR2I)
 			CASE_TYPE(math, OP_MODULE, RECT2)
@@ -1225,8 +1253,10 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_MODULE, DICTIONARY)
 			CASE_TYPE(math, OP_MODULE, ARRAY)
 			CASE_TYPE(math, OP_MODULE, PACKED_BYTE_ARRAY)
-			CASE_TYPE(math, OP_MODULE, PACKED_INT_ARRAY)
-			CASE_TYPE(math, OP_MODULE, PACKED_REAL_ARRAY)
+			CASE_TYPE(math, OP_MODULE, PACKED_INT32_ARRAY)
+			CASE_TYPE(math, OP_MODULE, PACKED_INT64_ARRAY)
+			CASE_TYPE(math, OP_MODULE, PACKED_FLOAT32_ARRAY)
+			CASE_TYPE(math, OP_MODULE, PACKED_FLOAT64_ARRAY)
 			CASE_TYPE(math, OP_MODULE, PACKED_STRING_ARRAY)
 			CASE_TYPE(math, OP_MODULE, PACKED_VECTOR2_ARRAY)
 			CASE_TYPE(math, OP_MODULE, PACKED_VECTOR3_ARRAY)
@@ -1363,13 +1393,13 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 					v->y = p_value._data._int;
 					valid = true;
 				}
-			} else if (p_value.type == Variant::REAL) {
+			} else if (p_value.type == Variant::FLOAT) {
 				Vector2 *v = reinterpret_cast<Vector2 *>(_data._mem);
 				if (p_index == CoreStringNames::singleton->x) {
-					v->x = p_value._data._real;
+					v->x = p_value._data._float;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->y) {
-					v->y = p_value._data._real;
+					v->y = p_value._data._float;
 					valid = true;
 				}
 			}
@@ -1385,13 +1415,13 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 					v->y = p_value._data._int;
 					valid = true;
 				}
-			} else if (p_value.type == Variant::REAL) {
+			} else if (p_value.type == Variant::FLOAT) {
 				Vector2i *v = reinterpret_cast<Vector2i *>(_data._mem);
 				if (p_index == CoreStringNames::singleton->x) {
-					v->x = p_value._data._real;
+					v->x = p_value._data._float;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->y) {
-					v->y = p_value._data._real;
+					v->y = p_value._data._float;
 					valid = true;
 				}
 			}
@@ -1462,16 +1492,16 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 					v->z = p_value._data._int;
 					valid = true;
 				}
-			} else if (p_value.type == Variant::REAL) {
+			} else if (p_value.type == Variant::FLOAT) {
 				Vector3 *v = reinterpret_cast<Vector3 *>(_data._mem);
 				if (p_index == CoreStringNames::singleton->x) {
-					v->x = p_value._data._real;
+					v->x = p_value._data._float;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->y) {
-					v->y = p_value._data._real;
+					v->y = p_value._data._float;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->z) {
-					v->z = p_value._data._real;
+					v->z = p_value._data._float;
 					valid = true;
 				}
 			}
@@ -1491,16 +1521,16 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 					v->z = p_value._data._int;
 					valid = true;
 				}
-			} else if (p_value.type == Variant::REAL) {
+			} else if (p_value.type == Variant::FLOAT) {
 				Vector3i *v = reinterpret_cast<Vector3i *>(_data._mem);
 				if (p_index == CoreStringNames::singleton->x) {
-					v->x = p_value._data._real;
+					v->x = p_value._data._float;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->y) {
-					v->y = p_value._data._real;
+					v->y = p_value._data._float;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->z) {
-					v->z = p_value._data._real;
+					v->z = p_value._data._float;
 					valid = true;
 				}
 			}
@@ -1523,19 +1553,19 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 					v->d = p_value._data._int;
 					valid = true;
 				}
-			} else if (p_value.type == Variant::REAL) {
+			} else if (p_value.type == Variant::FLOAT) {
 				Plane *v = reinterpret_cast<Plane *>(_data._mem);
 				if (p_index == CoreStringNames::singleton->x) {
-					v->normal.x = p_value._data._real;
+					v->normal.x = p_value._data._float;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->y) {
-					v->normal.y = p_value._data._real;
+					v->normal.y = p_value._data._float;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->z) {
-					v->normal.z = p_value._data._real;
+					v->normal.z = p_value._data._float;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->d) {
-					v->d = p_value._data._real;
+					v->d = p_value._data._float;
 					valid = true;
 				}
 
@@ -1565,19 +1595,19 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 					v->w = p_value._data._int;
 					valid = true;
 				}
-			} else if (p_value.type == Variant::REAL) {
+			} else if (p_value.type == Variant::FLOAT) {
 				Quat *v = reinterpret_cast<Quat *>(_data._mem);
 				if (p_index == CoreStringNames::singleton->x) {
-					v->x = p_value._data._real;
+					v->x = p_value._data._float;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->y) {
-					v->y = p_value._data._real;
+					v->y = p_value._data._float;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->z) {
-					v->z = p_value._data._real;
+					v->z = p_value._data._float;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->w) {
-					v->w = p_value._data._real;
+					v->w = p_value._data._float;
 					valid = true;
 				}
 			}
@@ -1666,40 +1696,40 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 					v->set_hsv(v->get_h(), v->get_v(), p_value._data._int, v->a);
 					valid = true;
 				}
-			} else if (p_value.type == Variant::REAL) {
+			} else if (p_value.type == Variant::FLOAT) {
 				Color *v = reinterpret_cast<Color *>(_data._mem);
 				if (p_index == CoreStringNames::singleton->r) {
-					v->r = p_value._data._real;
+					v->r = p_value._data._float;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->g) {
-					v->g = p_value._data._real;
+					v->g = p_value._data._float;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->b) {
-					v->b = p_value._data._real;
+					v->b = p_value._data._float;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->a) {
-					v->a = p_value._data._real;
+					v->a = p_value._data._float;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->r8) {
-					v->r = p_value._data._real / 255.0;
+					v->r = p_value._data._float / 255.0;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->g8) {
-					v->g = p_value._data._real / 255.0;
+					v->g = p_value._data._float / 255.0;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->b8) {
-					v->b = p_value._data._real / 255.0;
+					v->b = p_value._data._float / 255.0;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->a8) {
-					v->a = p_value._data._real / 255.0;
+					v->a = p_value._data._float / 255.0;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->h) {
-					v->set_hsv(p_value._data._real, v->get_s(), v->get_v(), v->a);
+					v->set_hsv(p_value._data._float, v->get_s(), v->get_v(), v->a);
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->s) {
-					v->set_hsv(v->get_h(), p_value._data._real, v->get_v(), v->a);
+					v->set_hsv(v->get_h(), p_value._data._float, v->get_v(), v->a);
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->v) {
-					v->set_hsv(v->get_h(), v->get_s(), p_value._data._real, v->a);
+					v->set_hsv(v->get_h(), v->get_s(), p_value._data._float, v->a);
 					valid = true;
 				}
 			}
@@ -1934,28 +1964,28 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 	return Variant();
 }
 
-#define DEFAULT_OP_ARRAY_CMD(m_name, m_type, skip_test, cmd)                             \
-	case m_name: {                                                                       \
-		skip_test;                                                                       \
-                                                                                         \
-		if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) { \
-			int index = p_index;                                                         \
-			m_type *arr = reinterpret_cast<m_type *>(_data._mem);                        \
-                                                                                         \
-			if (index < 0)                                                               \
-				index += arr->size();                                                    \
-			if (index >= 0 && index < arr->size()) {                                     \
-				valid = true;                                                            \
-				cmd;                                                                     \
-			}                                                                            \
-		}                                                                                \
+#define DEFAULT_OP_ARRAY_CMD(m_name, m_type, skip_test, cmd)                              \
+	case m_name: {                                                                        \
+		skip_test;                                                                        \
+                                                                                          \
+		if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) { \
+			int index = p_index;                                                          \
+			m_type *arr = reinterpret_cast<m_type *>(_data._mem);                         \
+                                                                                          \
+			if (index < 0)                                                                \
+				index += arr->size();                                                     \
+			if (index >= 0 && index < arr->size()) {                                      \
+				valid = true;                                                             \
+				cmd;                                                                      \
+			}                                                                             \
+		}                                                                                 \
 	} break;
 
 #define DEFAULT_OP_DVECTOR_SET(m_name, m_type, skip_cond)                                    \
 	case m_name: {                                                                           \
 		if (skip_cond) return;                                                               \
                                                                                              \
-		if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {     \
+		if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {    \
 			int index = p_index;                                                             \
 			Vector<m_type> *arr = PackedArrayRef<m_type>::get_array_ptr(_data.packed_array); \
                                                                                              \
@@ -1971,7 +2001,7 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 #define DEFAULT_OP_DVECTOR_GET(m_name, m_type)                                                  \
 	case m_name: {                                                                              \
                                                                                                 \
-		if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {        \
+		if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {       \
 			int index = p_index;                                                                \
 			const Vector<m_type> *arr = &PackedArrayRef<m_type>::get_array(_data.packed_array); \
                                                                                                 \
@@ -2001,12 +2031,12 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 		case INT: {
 			return;
 		} break;
-		case REAL: {
+		case FLOAT: {
 			return;
 		} break;
 		case STRING: {
 
-			if (p_index.type != Variant::INT && p_index.type != Variant::REAL)
+			if (p_index.type != Variant::INT && p_index.type != Variant::FLOAT)
 				return;
 
 			int idx = p_index;
@@ -2018,7 +2048,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 				return;
 
 			String chr;
-			if (p_value.type == Variant::INT || p_value.type == Variant::REAL) {
+			if (p_value.type == Variant::INT || p_value.type == Variant::FLOAT) {
 
 				chr = String::chr(p_value);
 			} else if (p_value.type == Variant::STRING) {
@@ -2035,10 +2065,10 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 		} break;
 		case VECTOR2: {
 
-			if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
+			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT)
 				return;
 
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
+			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 				// scalar index
 				int idx = p_index;
 
@@ -2070,10 +2100,10 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 		} break; // 5
 		case VECTOR2I: {
 
-			if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
+			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT)
 				return;
 
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
+			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 				// scalar index
 				int idx = p_index;
 
@@ -2158,7 +2188,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 			if (p_value.type != Variant::VECTOR2)
 				return;
 
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
+			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 
 				int index = p_index;
 
@@ -2194,10 +2224,10 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 		} break;
 		case VECTOR3: {
 
-			if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
+			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT)
 				return;
 
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
+			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 				//scalar index
 				int idx = p_index;
 				if (idx < 0)
@@ -2232,10 +2262,10 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 		} break;
 		case VECTOR3I: {
 
-			if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
+			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT)
 				return;
 
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
+			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 				//scalar index
 				int idx = p_index;
 				if (idx < 0)
@@ -2275,21 +2305,21 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				Plane *v = reinterpret_cast<Plane *>(_data._mem);
 				if (*str == "x") {
-					if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
+					if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT)
 						return;
 
 					valid = true;
 					v->normal.x = p_value;
 					return;
 				} else if (*str == "y") {
-					if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
+					if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT)
 						return;
 
 					valid = true;
 					v->normal.y = p_value;
 					return;
 				} else if (*str == "z") {
-					if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
+					if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT)
 						return;
 
 					valid = true;
@@ -2312,7 +2342,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 		} break;
 		case QUAT: {
 
-			if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
+			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT)
 				return;
 
 			if (p_index.get_type() == Variant::STRING) {
@@ -2369,7 +2399,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 			if (p_value.type != Variant::VECTOR3)
 				return;
 
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
+			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 
 				int index = p_index;
 
@@ -2405,7 +2435,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 		} break;
 		case TRANSFORM: {
 
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
+			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 
 				if (p_value.type != Variant::VECTOR3)
 					return;
@@ -2448,7 +2478,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 		} break;
 		case COLOR: {
 
-			if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
+			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT)
 				return;
 
 			if (p_index.get_type() == Variant::STRING) {
@@ -2551,9 +2581,11 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 			return;
 		} break;
 			DEFAULT_OP_ARRAY_CMD(ARRAY, Array, ;, (*arr)[index] = p_value; return ) // 20
-			DEFAULT_OP_DVECTOR_SET(PACKED_BYTE_ARRAY, uint8_t, p_value.type != Variant::REAL && p_value.type != Variant::INT)
-			DEFAULT_OP_DVECTOR_SET(PACKED_INT_ARRAY, int, p_value.type != Variant::REAL && p_value.type != Variant::INT)
-			DEFAULT_OP_DVECTOR_SET(PACKED_REAL_ARRAY, real_t, p_value.type != Variant::REAL && p_value.type != Variant::INT)
+			DEFAULT_OP_DVECTOR_SET(PACKED_BYTE_ARRAY, uint8_t, p_value.type != Variant::FLOAT && p_value.type != Variant::INT)
+			DEFAULT_OP_DVECTOR_SET(PACKED_INT32_ARRAY, int32_t, p_value.type != Variant::FLOAT && p_value.type != Variant::INT)
+			DEFAULT_OP_DVECTOR_SET(PACKED_INT64_ARRAY, int64_t, p_value.type != Variant::FLOAT && p_value.type != Variant::INT)
+			DEFAULT_OP_DVECTOR_SET(PACKED_FLOAT32_ARRAY, float, p_value.type != Variant::FLOAT && p_value.type != Variant::INT)
+			DEFAULT_OP_DVECTOR_SET(PACKED_FLOAT64_ARRAY, double, p_value.type != Variant::FLOAT && p_value.type != Variant::INT)
 			DEFAULT_OP_DVECTOR_SET(PACKED_STRING_ARRAY, String, p_value.type != Variant::STRING)
 			DEFAULT_OP_DVECTOR_SET(PACKED_VECTOR2_ARRAY, Vector2, p_value.type != Variant::VECTOR2) // 25
 			DEFAULT_OP_DVECTOR_SET(PACKED_VECTOR3_ARRAY, Vector3, p_value.type != Variant::VECTOR3)
@@ -2581,12 +2613,12 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 		case INT: {
 			return Variant();
 		} break;
-		case REAL: {
+		case FLOAT: {
 			return Variant();
 		} break;
 		case STRING: {
 
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
+			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 				//string index
 
 				int idx = p_index;
@@ -2603,7 +2635,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 		} break;
 		case VECTOR2: {
 
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
+			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 				// scalar index
 				int idx = p_index;
 				if (idx < 0)
@@ -2631,7 +2663,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 		} break; // 5
 		case VECTOR2I: {
 
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
+			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 				// scalar index
 				int idx = p_index;
 				if (idx < 0)
@@ -2697,7 +2729,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 		} break;
 		case VECTOR3: {
 
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
+			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 				//scalar index
 				int idx = p_index;
 				if (idx < 0)
@@ -2728,7 +2760,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 		} break;
 		case VECTOR3I: {
 
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
+			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 				//scalar index
 				int idx = p_index;
 				if (idx < 0)
@@ -2759,7 +2791,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 		} break;
 		case TRANSFORM2D: {
 
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
+			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 
 				int index = p_index;
 
@@ -2857,7 +2889,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 		} break;
 		case BASIS: {
 
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
+			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 
 				int index = p_index;
 				if (index < 0)
@@ -2888,7 +2920,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 		} break;
 		case TRANSFORM: {
 
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
+			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 
 				int index = p_index;
 				if (index < 0)
@@ -3004,8 +3036,10 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 		} break;
 			DEFAULT_OP_ARRAY_CMD(ARRAY, const Array, ;, return (*arr)[index]) // 20
 			DEFAULT_OP_DVECTOR_GET(PACKED_BYTE_ARRAY, uint8_t)
-			DEFAULT_OP_DVECTOR_GET(PACKED_INT_ARRAY, int)
-			DEFAULT_OP_DVECTOR_GET(PACKED_REAL_ARRAY, real_t)
+			DEFAULT_OP_DVECTOR_GET(PACKED_INT32_ARRAY, int32_t)
+			DEFAULT_OP_DVECTOR_GET(PACKED_INT64_ARRAY, int64_t)
+			DEFAULT_OP_DVECTOR_GET(PACKED_FLOAT32_ARRAY, float)
+			DEFAULT_OP_DVECTOR_GET(PACKED_FLOAT64_ARRAY, double)
 			DEFAULT_OP_DVECTOR_GET(PACKED_STRING_ARRAY, String)
 			DEFAULT_OP_DVECTOR_GET(PACKED_VECTOR2_ARRAY, Vector2) // 25
 			DEFAULT_OP_DVECTOR_GET(PACKED_VECTOR3_ARRAY, Vector3)
@@ -3086,7 +3120,7 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 
 		} break;
 		case PACKED_BYTE_ARRAY: {
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
+			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 
 				int index = p_index;
 				const Vector<uint8_t> *arr = &PackedArrayRef<uint8_t>::get_array(_data.packed_array);
@@ -3103,15 +3137,15 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 			}
 
 		} break;
-		case PACKED_INT_ARRAY: {
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
+		case PACKED_INT32_ARRAY: {
+			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 
-				int index = p_index;
-				const Vector<int> *arr = &PackedArrayRef<int>::get_array(_data.packed_array);
-				int l = arr->size();
+				int32_t index = p_index;
+				const Vector<int32_t> *arr = &PackedArrayRef<int32_t>::get_array(_data.packed_array);
+				int32_t l = arr->size();
 				if (l) {
-					const int *r = arr->ptr();
-					for (int i = 0; i < l; i++) {
+					const int32_t *r = arr->ptr();
+					for (int32_t i = 0; i < l; i++) {
 						if (r[i] == index)
 							return true;
 					}
@@ -3120,15 +3154,51 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 				return false;
 			}
 		} break;
-		case PACKED_REAL_ARRAY: {
+		case PACKED_INT64_ARRAY: {
+			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::REAL) {
+				int64_t index = p_index;
+				const Vector<int64_t> *arr = &PackedArrayRef<int64_t>::get_array(_data.packed_array);
+				int64_t l = arr->size();
+				if (l) {
+					const int64_t *r = arr->ptr();
+					for (int64_t i = 0; i < l; i++) {
+						if (r[i] == index)
+							return true;
+					}
+				}
+
+				return false;
+			}
+		} break;
+		case PACKED_FLOAT32_ARRAY: {
+
+			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 
 				real_t index = p_index;
-				const Vector<real_t> *arr = &PackedArrayRef<real_t>::get_array(_data.packed_array);
+				const Vector<float> *arr = &PackedArrayRef<float>::get_array(_data.packed_array);
 				int l = arr->size();
 				if (l) {
-					const real_t *r = arr->ptr();
+					const float *r = arr->ptr();
+					for (int i = 0; i < l; i++) {
+						if (r[i] == index)
+							return true;
+					}
+				}
+
+				return false;
+			}
+
+		} break;
+		case PACKED_FLOAT64_ARRAY: {
+
+			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
+
+				real_t index = p_index;
+				const Vector<double> *arr = &PackedArrayRef<double>::get_array(_data.packed_array);
+				int l = arr->size();
+				if (l) {
+					const double *r = arr->ptr();
 					for (int i = 0; i < l; i++) {
 						if (r[i] == index)
 							return true;
@@ -3229,8 +3299,8 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 	switch (type) {
 		case VECTOR2: {
 
-			p_list->push_back(PropertyInfo(Variant::REAL, "x"));
-			p_list->push_back(PropertyInfo(Variant::REAL, "y"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, "x"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, "y"));
 
 		} break; // 5
 		case VECTOR2I: {
@@ -3255,9 +3325,9 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 		} break;
 		case VECTOR3: {
 
-			p_list->push_back(PropertyInfo(Variant::REAL, "x"));
-			p_list->push_back(PropertyInfo(Variant::REAL, "y"));
-			p_list->push_back(PropertyInfo(Variant::REAL, "z"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, "x"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, "y"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, "z"));
 
 		} break;
 		case VECTOR3I: {
@@ -3277,18 +3347,18 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 		case PLANE: {
 
 			p_list->push_back(PropertyInfo(Variant::VECTOR3, "normal"));
-			p_list->push_back(PropertyInfo(Variant::REAL, "x"));
-			p_list->push_back(PropertyInfo(Variant::REAL, "y"));
-			p_list->push_back(PropertyInfo(Variant::REAL, "z"));
-			p_list->push_back(PropertyInfo(Variant::REAL, "d"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, "x"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, "y"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, "z"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, "d"));
 
 		} break;
 		case QUAT: {
 
-			p_list->push_back(PropertyInfo(Variant::REAL, "x"));
-			p_list->push_back(PropertyInfo(Variant::REAL, "y"));
-			p_list->push_back(PropertyInfo(Variant::REAL, "z"));
-			p_list->push_back(PropertyInfo(Variant::REAL, "w"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, "x"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, "y"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, "z"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, "w"));
 
 		} break; // 10
 		case AABB: {
@@ -3310,13 +3380,13 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 
 		} break;
 		case COLOR: {
-			p_list->push_back(PropertyInfo(Variant::REAL, "r"));
-			p_list->push_back(PropertyInfo(Variant::REAL, "g"));
-			p_list->push_back(PropertyInfo(Variant::REAL, "b"));
-			p_list->push_back(PropertyInfo(Variant::REAL, "a"));
-			p_list->push_back(PropertyInfo(Variant::REAL, "h"));
-			p_list->push_back(PropertyInfo(Variant::REAL, "s"));
-			p_list->push_back(PropertyInfo(Variant::REAL, "v"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, "r"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, "g"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, "b"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, "a"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, "h"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, "s"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, "v"));
 			p_list->push_back(PropertyInfo(Variant::INT, "r8"));
 			p_list->push_back(PropertyInfo(Variant::INT, "g8"));
 			p_list->push_back(PropertyInfo(Variant::INT, "b8"));
@@ -3359,8 +3429,10 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 		} break;
 		case ARRAY: // 20
 		case PACKED_BYTE_ARRAY:
-		case PACKED_INT_ARRAY:
-		case PACKED_REAL_ARRAY:
+		case PACKED_INT32_ARRAY:
+		case PACKED_INT64_ARRAY:
+		case PACKED_FLOAT32_ARRAY:
+		case PACKED_FLOAT64_ARRAY:
 		case PACKED_STRING_ARRAY:
 		case PACKED_VECTOR2_ARRAY: // 25
 		case PACKED_VECTOR3_ARRAY:
@@ -3381,9 +3453,9 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			r_iter = 0;
 			return _data._int > 0;
 		} break;
-		case REAL: {
+		case FLOAT: {
 			r_iter = 0;
-			return _data._real > 0.0;
+			return _data._float > 0.0;
 		} break;
 		case VECTOR2: {
 			int64_t from = reinterpret_cast<const Vector2 *>(_data._mem)->x;
@@ -3476,16 +3548,32 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			return true;
 
 		} break;
-		case PACKED_INT_ARRAY: {
-			const Vector<int> *arr = &PackedArrayRef<int>::get_array(_data.packed_array);
+		case PACKED_INT32_ARRAY: {
+			const Vector<int32_t> *arr = &PackedArrayRef<int32_t>::get_array(_data.packed_array);
 			if (arr->size() == 0)
 				return false;
 			r_iter = 0;
 			return true;
 
 		} break;
-		case PACKED_REAL_ARRAY: {
-			const Vector<real_t> *arr = &PackedArrayRef<real_t>::get_array(_data.packed_array);
+		case PACKED_INT64_ARRAY: {
+			const Vector<int64_t> *arr = &PackedArrayRef<int64_t>::get_array(_data.packed_array);
+			if (arr->size() == 0)
+				return false;
+			r_iter = 0;
+			return true;
+
+		} break;
+		case PACKED_FLOAT32_ARRAY: {
+			const Vector<float> *arr = &PackedArrayRef<float>::get_array(_data.packed_array);
+			if (arr->size() == 0)
+				return false;
+			r_iter = 0;
+			return true;
+
+		} break;
+		case PACKED_FLOAT64_ARRAY: {
+			const Vector<double> *arr = &PackedArrayRef<double>::get_array(_data.packed_array);
 			if (arr->size() == 0)
 				return false;
 			r_iter = 0;
@@ -3543,10 +3631,10 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			r_iter = idx;
 			return true;
 		} break;
-		case REAL: {
+		case FLOAT: {
 			int64_t idx = r_iter;
 			idx++;
-			if (idx >= _data._real)
+			if (idx >= _data._float)
 				return false;
 			r_iter = idx;
 			return true;
@@ -3653,8 +3741,28 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			return true;
 
 		} break;
-		case PACKED_INT_ARRAY: {
-			const Vector<int> *arr = &PackedArrayRef<int>::get_array(_data.packed_array);
+		case PACKED_INT32_ARRAY: {
+			const Vector<int32_t> *arr = &PackedArrayRef<int32_t>::get_array(_data.packed_array);
+			int32_t idx = r_iter;
+			idx++;
+			if (idx >= arr->size())
+				return false;
+			r_iter = idx;
+			return true;
+
+		} break;
+		case PACKED_INT64_ARRAY: {
+			const Vector<int64_t> *arr = &PackedArrayRef<int64_t>::get_array(_data.packed_array);
+			int64_t idx = r_iter;
+			idx++;
+			if (idx >= arr->size())
+				return false;
+			r_iter = idx;
+			return true;
+
+		} break;
+		case PACKED_FLOAT32_ARRAY: {
+			const Vector<float> *arr = &PackedArrayRef<float>::get_array(_data.packed_array);
 			int idx = r_iter;
 			idx++;
 			if (idx >= arr->size())
@@ -3663,8 +3771,8 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			return true;
 
 		} break;
-		case PACKED_REAL_ARRAY: {
-			const Vector<real_t> *arr = &PackedArrayRef<real_t>::get_array(_data.packed_array);
+		case PACKED_FLOAT64_ARRAY: {
+			const Vector<double> *arr = &PackedArrayRef<double>::get_array(_data.packed_array);
 			int idx = r_iter;
 			idx++;
 			if (idx >= arr->size())
@@ -3728,7 +3836,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 
 			return r_iter;
 		} break;
-		case REAL: {
+		case FLOAT: {
 
 			return r_iter;
 		} break;
@@ -3801,8 +3909,30 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 #endif
 			return arr->get(idx);
 		} break;
-		case PACKED_INT_ARRAY: {
-			const Vector<int> *arr = &PackedArrayRef<int>::get_array(_data.packed_array);
+		case PACKED_INT32_ARRAY: {
+			const Vector<int32_t> *arr = &PackedArrayRef<int32_t>::get_array(_data.packed_array);
+			int32_t idx = r_iter;
+#ifdef DEBUG_ENABLED
+			if (idx < 0 || idx >= arr->size()) {
+				r_valid = false;
+				return Variant();
+			}
+#endif
+			return arr->get(idx);
+		} break;
+		case PACKED_INT64_ARRAY: {
+			const Vector<int64_t> *arr = &PackedArrayRef<int64_t>::get_array(_data.packed_array);
+			int64_t idx = r_iter;
+#ifdef DEBUG_ENABLED
+			if (idx < 0 || idx >= arr->size()) {
+				r_valid = false;
+				return Variant();
+			}
+#endif
+			return arr->get(idx);
+		} break;
+		case PACKED_FLOAT32_ARRAY: {
+			const Vector<float> *arr = &PackedArrayRef<float>::get_array(_data.packed_array);
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
@@ -3812,8 +3942,8 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 #endif
 			return arr->get(idx);
 		} break;
-		case PACKED_REAL_ARRAY: {
-			const Vector<real_t> *arr = &PackedArrayRef<real_t>::get_array(_data.packed_array);
+		case PACKED_FLOAT64_ARRAY: {
+			const Vector<double> *arr = &PackedArrayRef<double>::get_array(_data.packed_array);
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
@@ -3923,9 +4053,9 @@ void Variant::blend(const Variant &a, const Variant &b, float c, Variant &r_dst)
 			r_dst = int(va + vb * c + 0.5);
 		}
 			return;
-		case REAL: {
-			double ra = a._data._real;
-			double rb = b._data._real;
+		case FLOAT: {
+			double ra = a._data._float;
+			double rb = b._data._float;
 			r_dst = ra + rb * c;
 		}
 			return;
@@ -4042,9 +4172,9 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			r_dst = int(va + (vb - va) * c);
 		}
 			return;
-		case REAL: {
-			real_t va = a._data._real;
-			real_t vb = b._data._real;
+		case FLOAT: {
+			real_t va = a._data._float;
+			real_t vb = b._data._float;
 			r_dst = va + (vb - va) * c;
 		}
 			return;
@@ -4193,21 +4323,73 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			r_dst = a;
 		}
 			return;
-		case PACKED_INT_ARRAY: {
-			const Vector<int> *arr_a = &PackedArrayRef<int>::get_array(a._data.packed_array);
-			const Vector<int> *arr_b = &PackedArrayRef<int>::get_array(b._data.packed_array);
+		case PACKED_INT32_ARRAY: {
+			const Vector<int32_t> *arr_a = &PackedArrayRef<int32_t>::get_array(a._data.packed_array);
+			const Vector<int32_t> *arr_b = &PackedArrayRef<int32_t>::get_array(b._data.packed_array);
+			int32_t sz = arr_a->size();
+			if (sz == 0 || arr_b->size() != sz) {
+
+				r_dst = a;
+			} else {
+
+				Vector<int32_t> v;
+				v.resize(sz);
+				{
+					int32_t *vw = v.ptrw();
+					const int32_t *ar = arr_a->ptr();
+					const int32_t *br = arr_b->ptr();
+
+					Variant va;
+					for (int32_t i = 0; i < sz; i++) {
+						Variant::interpolate(ar[i], br[i], c, va);
+						vw[i] = va;
+					}
+				}
+				r_dst = v;
+			}
+		}
+			return;
+		case PACKED_INT64_ARRAY: {
+			const Vector<int64_t> *arr_a = &PackedArrayRef<int64_t>::get_array(a._data.packed_array);
+			const Vector<int64_t> *arr_b = &PackedArrayRef<int64_t>::get_array(b._data.packed_array);
+			int64_t sz = arr_a->size();
+			if (sz == 0 || arr_b->size() != sz) {
+
+				r_dst = a;
+			} else {
+
+				Vector<int64_t> v;
+				v.resize(sz);
+				{
+					int64_t *vw = v.ptrw();
+					const int64_t *ar = arr_a->ptr();
+					const int64_t *br = arr_b->ptr();
+
+					Variant va;
+					for (int64_t i = 0; i < sz; i++) {
+						Variant::interpolate(ar[i], br[i], c, va);
+						vw[i] = va;
+					}
+				}
+				r_dst = v;
+			}
+		}
+			return;
+		case PACKED_FLOAT32_ARRAY: {
+			const Vector<float> *arr_a = &PackedArrayRef<float>::get_array(a._data.packed_array);
+			const Vector<float> *arr_b = &PackedArrayRef<float>::get_array(b._data.packed_array);
 			int sz = arr_a->size();
 			if (sz == 0 || arr_b->size() != sz) {
 
 				r_dst = a;
 			} else {
 
-				Vector<int> v;
+				Vector<float> v;
 				v.resize(sz);
 				{
-					int *vw = v.ptrw();
-					const int *ar = arr_a->ptr();
-					const int *br = arr_b->ptr();
+					float *vw = v.ptrw();
+					const float *ar = arr_a->ptr();
+					const float *br = arr_b->ptr();
 
 					Variant va;
 					for (int i = 0; i < sz; i++) {
@@ -4219,21 +4401,21 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			}
 		}
 			return;
-		case PACKED_REAL_ARRAY: {
-			const Vector<real_t> *arr_a = &PackedArrayRef<real_t>::get_array(a._data.packed_array);
-			const Vector<real_t> *arr_b = &PackedArrayRef<real_t>::get_array(b._data.packed_array);
+		case PACKED_FLOAT64_ARRAY: {
+			const Vector<double> *arr_a = &PackedArrayRef<double>::get_array(a._data.packed_array);
+			const Vector<double> *arr_b = &PackedArrayRef<double>::get_array(b._data.packed_array);
 			int sz = arr_a->size();
 			if (sz == 0 || arr_b->size() != sz) {
 
 				r_dst = a;
 			} else {
 
-				Vector<real_t> v;
+				Vector<double> v;
 				v.resize(sz);
 				{
-					real_t *vw = v.ptrw();
-					const real_t *ar = arr_a->ptr();
-					const real_t *br = arr_b->ptr();
+					double *vw = v.ptrw();
+					const double *ar = arr_a->ptr();
+					const double *br = arr_b->ptr();
 
 					Variant va;
 					for (int i = 0; i < sz; i++) {

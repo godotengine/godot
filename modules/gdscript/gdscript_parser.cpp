@@ -3108,7 +3108,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 							args.push_back(op->arguments[i]);
 							if (constant && op->arguments[i]->type == Node::TYPE_CONSTANT) {
 								ConstantNode *c = static_cast<ConstantNode *>(op->arguments[i]);
-								if (c->value.get_type() == Variant::REAL || c->value.get_type() == Variant::INT) {
+								if (c->value.get_type() == Variant::FLOAT || c->value.get_type() == Variant::INT) {
 									constants.push_back(c->value);
 									constant = true;
 								}
@@ -4222,7 +4222,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 									[[fallthrough]];
 								}
-								case Variant::REAL: {
+								case Variant::FLOAT: {
 
 									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "EASE") {
 										current_export.hint = PROPERTY_HINT_EXP_EASING;
@@ -5955,10 +5955,10 @@ GDScriptParser::DataType GDScriptParser::_get_operation_type(const Variant::Oper
 	}
 
 	// Avoid division by zero
-	if (a_type == Variant::INT || a_type == Variant::REAL) {
+	if (a_type == Variant::INT || a_type == Variant::FLOAT) {
 		Variant::evaluate(Variant::OP_ADD, a, 1, a, r_valid);
 	}
-	if (b_type == Variant::INT || b_type == Variant::REAL) {
+	if (b_type == Variant::INT || b_type == Variant::FLOAT) {
 		Variant::evaluate(Variant::OP_ADD, b, 1, b, r_valid);
 	}
 	if (a_type == Variant::STRING && b_type != Variant::ARRAY) {
@@ -6598,14 +6598,16 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 									// Expect int or real as index
 									case Variant::PACKED_BYTE_ARRAY:
 									case Variant::PACKED_COLOR_ARRAY:
-									case Variant::PACKED_INT_ARRAY:
-									case Variant::PACKED_REAL_ARRAY:
+									case Variant::PACKED_INT32_ARRAY:
+									case Variant::PACKED_INT64_ARRAY:
+									case Variant::PACKED_FLOAT32_ARRAY:
+									case Variant::PACKED_FLOAT64_ARRAY:
 									case Variant::PACKED_STRING_ARRAY:
 									case Variant::PACKED_VECTOR2_ARRAY:
 									case Variant::PACKED_VECTOR3_ARRAY:
 									case Variant::ARRAY:
 									case Variant::STRING: {
-										error = index_type.builtin_type != Variant::INT && index_type.builtin_type != Variant::REAL;
+										error = index_type.builtin_type != Variant::INT && index_type.builtin_type != Variant::FLOAT;
 									} break;
 									// Expect String only
 									case Variant::RECT2:
@@ -6621,7 +6623,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 									case Variant::TRANSFORM2D:
 									case Variant::BASIS:
 									case Variant::TRANSFORM: {
-										error = index_type.builtin_type != Variant::INT && index_type.builtin_type != Variant::REAL &&
+										error = index_type.builtin_type != Variant::INT && index_type.builtin_type != Variant::FLOAT &&
 												index_type.builtin_type != Variant::STRING;
 									} break;
 									// Expect String or int
@@ -6648,8 +6650,10 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 									case Variant::DICTIONARY:
 									case Variant::PACKED_BYTE_ARRAY:
 									case Variant::PACKED_COLOR_ARRAY:
-									case Variant::PACKED_INT_ARRAY:
-									case Variant::PACKED_REAL_ARRAY:
+									case Variant::PACKED_INT32_ARRAY:
+									case Variant::PACKED_INT64_ARRAY:
+									case Variant::PACKED_FLOAT32_ARRAY:
+									case Variant::PACKED_FLOAT64_ARRAY:
 									case Variant::PACKED_STRING_ARRAY:
 									case Variant::PACKED_VECTOR2_ARRAY:
 									case Variant::PACKED_VECTOR3_ARRAY: {
@@ -6691,7 +6695,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 							case Variant::NIL:
 							case Variant::BOOL:
 							case Variant::INT:
-							case Variant::REAL:
+							case Variant::FLOAT:
 							case Variant::NODE_PATH:
 							case Variant::_RID: {
 								_set_error("Can't index on a value of type \"" + base_type.to_string() + "\".", op->line);
@@ -6699,15 +6703,17 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 							} break;
 								// Return int
 							case Variant::PACKED_BYTE_ARRAY:
-							case Variant::PACKED_INT_ARRAY: {
+							case Variant::PACKED_INT32_ARRAY:
+							case Variant::PACKED_INT64_ARRAY: {
 								result.builtin_type = Variant::INT;
 							} break;
 								// Return real
-							case Variant::PACKED_REAL_ARRAY:
+							case Variant::PACKED_FLOAT32_ARRAY:
+							case Variant::PACKED_FLOAT64_ARRAY:
 							case Variant::VECTOR2:
 							case Variant::VECTOR3:
 							case Variant::QUAT: {
-								result.builtin_type = Variant::REAL;
+								result.builtin_type = Variant::FLOAT;
 							} break;
 								// Return color
 							case Variant::PACKED_COLOR_ARRAY: {
@@ -7002,7 +7008,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 						break;
 					} else {
 #ifdef DEBUG_ENABLED
-						if (arg_type.kind == DataType::BUILTIN && arg_type.builtin_type == Variant::INT && par_types[i].kind == DataType::BUILTIN && par_types[i].builtin_type == Variant::REAL) {
+						if (arg_type.kind == DataType::BUILTIN && arg_type.builtin_type == Variant::INT && par_types[i].kind == DataType::BUILTIN && par_types[i].builtin_type == Variant::FLOAT) {
 							_add_warning(GDScriptWarning::NARROWING_CONVERSION, p_call->line, Variant::get_type_name(tn->vtype));
 						}
 						if (par_types[i].may_yield && p_call->arguments[i + 1]->type == Node::TYPE_OPERATOR) {
@@ -7245,7 +7251,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 				_mark_line_as_unsafe(p_call->line);
 			}
 		} else {
-			if (arg_type.kind == DataType::BUILTIN && arg_type.builtin_type == Variant::INT && par_type.kind == DataType::BUILTIN && par_type.builtin_type == Variant::REAL) {
+			if (arg_type.kind == DataType::BUILTIN && arg_type.builtin_type == Variant::INT && par_type.kind == DataType::BUILTIN && par_type.builtin_type == Variant::FLOAT) {
 				_add_warning(GDScriptWarning::NARROWING_CONVERSION, p_call->line, callee_name);
 			}
 		}
@@ -8103,7 +8109,7 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 							lv->assign = convert_call;
 							lv->assign_op->arguments.write[1] = convert_call;
 #ifdef DEBUG_ENABLED
-							if (lv->datatype.builtin_type == Variant::INT && assign_type.builtin_type == Variant::REAL) {
+							if (lv->datatype.builtin_type == Variant::INT && assign_type.builtin_type == Variant::FLOAT) {
 								_add_warning(GDScriptWarning::NARROWING_CONVERSION, lv->line);
 							}
 #endif // DEBUG_ENABLED
@@ -8240,7 +8246,7 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 									type_match = true; // Since we are converting, the type is matching
 								}
 #ifdef DEBUG_ENABLED
-								if (lh_type.builtin_type == Variant::INT && rh_type.builtin_type == Variant::REAL) {
+								if (lh_type.builtin_type == Variant::INT && rh_type.builtin_type == Variant::FLOAT) {
 									_add_warning(GDScriptWarning::NARROWING_CONVERSION, op->line);
 								}
 #endif // DEBUG_ENABLED

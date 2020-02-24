@@ -648,7 +648,7 @@ void VisualShaderEditor::_update_graph() {
 						button->set_text(((bool)default_value) ? "true" : "false");
 					} break;
 					case Variant::INT:
-					case Variant::REAL: {
+					case Variant::FLOAT: {
 						button->set_text(String::num(default_value, 4));
 					} break;
 					case Variant::VECTOR3: {
