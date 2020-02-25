@@ -66,6 +66,7 @@ public:
 	RID get_closest_point_owner(const Vector2 &p_point) const;
 
 	Navigation2D();
+	~Navigation2D();
 };
 
 #endif // NAVIGATION_2D_H
