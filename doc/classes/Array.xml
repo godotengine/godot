@@ -58,19 +58,37 @@
 		<method name="Array">
 			<return type="Array">
 			</return>
-			<argument index="0" name="from" type="PackedRealArray">
+			<argument index="0" name="from" type="PackedFloat64Array">
 			</argument>
 			<description>
-				Constructs an array from a [PackedRealArray].
+				Constructs an array from a [PackedFloat64Array].
 			</description>
 		</method>
 		<method name="Array">
 			<return type="Array">
 			</return>
-			<argument index="0" name="from" type="PackedIntArray">
+			<argument index="0" name="from" type="PackedFloat32Array">
 			</argument>
 			<description>
-				Constructs an array from a [PackedIntArray].
+				Constructs an array from a [PackedFloat32Array].
+			</description>
+		</method>
+		<method name="Array">
+			<return type="Array">
+			</return>
+			<argument index="0" name="from" type="PackedInt64Array">
+			</argument>
+			<description>
+				Constructs an array from a [PackedInt64Array].
+			</description>
+		</method>
+		<method name="Array">
+			<return type="Array">
+			</return>
+			<argument index="0" name="from" type="PackedInt32Array">
+			</argument>
+			<description>
+				Constructs an array from a [PackedInt32Array].
 			</description>
 		</method>
 		<method name="Array">

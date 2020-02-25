@@ -202,7 +202,7 @@ void GameCenter::request_achievement_descriptions() {
 			PackedStringArray titles;
 			PackedStringArray unachieved_descriptions;
 			PackedStringArray achieved_descriptions;
-			PackedIntArray maximum_points;
+			PackedInt32Array maximum_points;
 			Array hidden;
 			Array replayable;
 
@@ -254,7 +254,7 @@ void GameCenter::request_achievements() {
 		if (error == nil) {
 			ret["result"] = "ok";
 			PackedStringArray names;
-			PackedRealArray percentages;
+			PackedFloat32Array percentages;
 
 			for (int i = 0; i < [achievements count]; i++) {
 

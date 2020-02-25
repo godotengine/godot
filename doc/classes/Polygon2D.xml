@@ -14,7 +14,7 @@
 			</return>
 			<argument index="0" name="path" type="NodePath">
 			</argument>
-			<argument index="1" name="weights" type="PackedRealArray">
+			<argument index="1" name="weights" type="PackedFloat32Array">
 			</argument>
 			<description>
 			</description>
@@ -48,7 +48,7 @@
 			</description>
 		</method>
 		<method name="get_bone_weights" qualifiers="const">
-			<return type="PackedRealArray">
+			<return type="PackedFloat32Array">
 			</return>
 			<argument index="0" name="index" type="int">
 			</argument>
@@ -70,7 +70,7 @@
 			</return>
 			<argument index="0" name="index" type="int">
 			</argument>
-			<argument index="1" name="weights" type="PackedRealArray">
+			<argument index="1" name="weights" type="PackedFloat32Array">
 			</argument>
 			<description>
 			</description>

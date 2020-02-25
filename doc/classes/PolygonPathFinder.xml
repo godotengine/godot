@@ -72,7 +72,7 @@
 			</return>
 			<argument index="0" name="points" type="PackedVector2Array">
 			</argument>
-			<argument index="1" name="connections" type="PackedIntArray">
+			<argument index="1" name="connections" type="PackedInt32Array">
 			</argument>
 			<description>
 			</description>

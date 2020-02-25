@@ -57,7 +57,7 @@
 			</description>
 		</method>
 		<method name="get_edge_faces" qualifiers="const">
-			<return type="PackedIntArray">
+			<return type="PackedInt32Array">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -160,7 +160,7 @@
 			</description>
 		</method>
 		<method name="get_vertex_bones" qualifiers="const">
-			<return type="PackedIntArray">
+			<return type="PackedInt32Array">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -185,7 +185,7 @@
 			</description>
 		</method>
 		<method name="get_vertex_edges" qualifiers="const">
-			<return type="PackedIntArray">
+			<return type="PackedInt32Array">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -194,7 +194,7 @@
 			</description>
 		</method>
 		<method name="get_vertex_faces" qualifiers="const">
-			<return type="PackedIntArray">
+			<return type="PackedInt32Array">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -248,7 +248,7 @@
 			</description>
 		</method>
 		<method name="get_vertex_weights" qualifiers="const">
-			<return type="PackedRealArray">
+			<return type="PackedFloat32Array">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -303,7 +303,7 @@
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="bones" type="PackedIntArray">
+			<argument index="1" name="bones" type="PackedInt32Array">
 			</argument>
 			<description>
 				Sets the bones of the given vertex.
@@ -380,7 +380,7 @@
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="weights" type="PackedRealArray">
+			<argument index="1" name="weights" type="PackedFloat32Array">
 			</argument>
 			<description>
 				Sets the bone weights of the given vertex.

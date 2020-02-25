@@ -48,10 +48,10 @@
 			</description>
 		</method>
 		<method name="get_baked_tilts" qualifiers="const">
-			<return type="PackedRealArray">
+			<return type="PackedFloat32Array">
 			</return>
 			<description>
-				Returns the cache of tilts as a [PackedRealArray].
+				Returns the cache of tilts as a [PackedFloat32Array].
 			</description>
 		</method>
 		<method name="get_baked_up_vectors" qualifiers="const">

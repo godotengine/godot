@@ -22,7 +22,7 @@
 		<method name="add_bones">
 			<return type="void">
 			</return>
-			<argument index="0" name="bones" type="PackedIntArray">
+			<argument index="0" name="bones" type="PackedInt32Array">
 			</argument>
 			<description>
 				Adds an array of bones for the next vertex to use. [code]bones[/code] must contain 4 integers.
@@ -123,7 +123,7 @@
 		<method name="add_weights">
 			<return type="void">
 			</return>
-			<argument index="0" name="weights" type="PackedRealArray">
+			<argument index="0" name="weights" type="PackedFloat32Array">
 			</argument>
 			<description>
 				Specifies weight values for next vertex to use. [code]weights[/code] must contain 4 values.

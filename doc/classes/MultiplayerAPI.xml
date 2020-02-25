@@ -19,7 +19,7 @@
 			</description>
 		</method>
 		<method name="get_network_connected_peers" qualifiers="const">
-			<return type="PackedIntArray">
+			<return type="PackedInt32Array">
 			</return>
 			<description>
 				Returns the peer IDs of all connected peers of this MultiplayerAPI's [member network_peer].

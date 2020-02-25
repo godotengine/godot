@@ -22,7 +22,7 @@
 			</argument>
 			<argument index="5" name="distance_field" type="PackedByteArray">
 			</argument>
-			<argument index="6" name="level_counts" type="PackedIntArray">
+			<argument index="6" name="level_counts" type="PackedInt32Array">
 			</argument>
 			<description>
 			</description>
@@ -40,7 +40,7 @@
 			</description>
 		</method>
 		<method name="get_level_counts" qualifiers="const">
-			<return type="PackedIntArray">
+			<return type="PackedInt32Array">
 			</return>
 			<description>
 			</description>
