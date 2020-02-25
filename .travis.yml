@@ -125,7 +125,7 @@ before_install:
 
 install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-      pyenv global 3.7.5 system;
+      pyenv global 3.8 system;
       pip3 install --user scons;
     fi
   - scons --version
