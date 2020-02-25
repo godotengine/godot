@@ -87,7 +87,7 @@ void InAppStore::_bind_methods() {
 	ret["result"] = "ok";
 	PackedStringArray titles;
 	PackedStringArray descriptions;
-	PackedRealArray prices;
+	PackedFloat32Array prices;
 	PackedStringArray ids;
 	PackedStringArray localized_prices;
 	PackedStringArray currency_codes;

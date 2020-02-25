@@ -229,19 +229,37 @@
 		<method name="String">
 			<return type="String">
 			</return>
-			<argument index="0" name="from" type="PackedIntArray">
+			<argument index="0" name="from" type="PackedInt32Array">
 			</argument>
 			<description>
-				Constructs a new String from the given [PackedIntArray].
+				Constructs a new String from the given [PackedInt32Array].
 			</description>
 		</method>
 		<method name="String">
 			<return type="String">
 			</return>
-			<argument index="0" name="from" type="PackedRealArray">
+			<argument index="0" name="from" type="PackedInt64Array">
 			</argument>
 			<description>
-				Constructs a new String from the given [PackedRealArray].
+				Constructs a new String from the given [PackedInt64Array].
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="PackedFloat32Array">
+			</argument>
+			<description>
+				Constructs a new String from the given [PackedFloat32Array].
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="PackedFloat64Array">
+			</argument>
+			<description>
+				Constructs a new String from the given [PackedFloat64Array].
 			</description>
 		</method>
 		<method name="String">
@@ -879,7 +897,7 @@
 			</description>
 		</method>
 		<method name="split_floats">
-			<return type="PackedRealArray">
+			<return type="PackedFloat32Array">
 			</return>
 			<argument index="0" name="delimiter" type="String">
 			</argument>

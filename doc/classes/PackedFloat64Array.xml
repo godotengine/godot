@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PackedIntArray" version="4.0">
+<class name="PackedFloat64Array" version="4.0">
 	<brief_description>
-		A packed [Array] of integers ([int]).
+		A packed [Array] of 64-bit floating-point values.
 	</brief_description>
 	<description>
-		An [Array] specifically designed to hold integer values ([int]). Packs data tightly, so it saves memory for large array sizes.
+		An [Array] specifically designed to hold 64-bit floating-point values. Packs data tightly, so it saves memory for large array sizes.
 		[b]Note:[/b] This type is passed by value and not by reference.
-		[b]Note:[/b] This type is limited to signed 32-bit integers, which means it can only take values in the interval [code][-2^31, 2^31 - 1][/code], i.e. [code][-2147483648, 2147483647][/code]. Exceeding those bounds will wrap around. In comparison, [int] uses signed 64-bit integers which can hold much larger values.
+		If you only need to pack 32-bit floats tightly, see [PackedFloat32Array] for a more memory-friendly alternative.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="PackedIntArray">
-			<return type="PackedIntArray">
+		<method name="PackedFloat64Array">
+			<return type="PackedFloat64Array">
 			</return>
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>
-				Constructs a new [PackedIntArray]. Optionally, you can pass in a generic [Array] that will be converted.
+				Constructs a new [PackedFloat64Array]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
 		</method>
 		<method name="append">
 			<return type="void">
 			</return>
-			<argument index="0" name="integer" type="int">
+			<argument index="0" name="value" type="float">
 			</argument>
 			<description>
 				Appends an element at the end of the array (alias of [method push_back]).
@@ -32,10 +32,10 @@
 		<method name="append_array">
 			<return type="void">
 			</return>
-			<argument index="0" name="array" type="PackedIntArray">
+			<argument index="0" name="array" type="PackedFloat64Array">
 			</argument>
 			<description>
-				Appends a [PackedIntArray] at the end of this array.
+				Appends a [PackedFloat64Array] at the end of this array.
 			</description>
 		</method>
 		<method name="empty">
@@ -50,10 +50,10 @@
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="integer" type="int">
+			<argument index="1" name="value" type="float">
 			</argument>
 			<description>
-				Inserts a new integer at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
+				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
 			</description>
 		</method>
 		<method name="invert">
@@ -66,10 +66,10 @@
 		<method name="push_back">
 			<return type="void">
 			</return>
-			<argument index="0" name="integer" type="int">
+			<argument index="0" name="value" type="float">
 			</argument>
 			<description>
-				Appends a value to the array.
+				Appends an element at the end of the array.
 			</description>
 		</method>
 		<method name="remove">
@@ -95,17 +95,17 @@
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="integer" type="int">
+			<argument index="1" name="value" type="float">
 			</argument>
 			<description>
-				Changes the integer at the given index.
+				Changes the float at the given index.
 			</description>
 		</method>
 		<method name="size">
 			<return type="int">
 			</return>
 			<description>
-				Returns the array size.
+				Returns the size of the array.
 			</description>
 		</method>
 	</methods>

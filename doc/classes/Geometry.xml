@@ -445,21 +445,21 @@
 			</description>
 		</method>
 		<method name="triangulate_delaunay_2d">
-			<return type="PackedIntArray">
+			<return type="PackedInt32Array">
 			</return>
 			<argument index="0" name="points" type="PackedVector2Array">
 			</argument>
 			<description>
-				Triangulates the area specified by discrete set of [code]points[/code] such that no point is inside the circumcircle of any resulting triangle. Returns a [PackedIntArray] where each triangle consists of three consecutive point indices into [code]points[/code] (i.e. the returned array will have [code]n * 3[/code] elements, with [code]n[/code] being the number of found triangles). If the triangulation did not succeed, an empty [PackedIntArray] is returned.
+				Triangulates the area specified by discrete set of [code]points[/code] such that no point is inside the circumcircle of any resulting triangle. Returns a [PackedInt32Array] where each triangle consists of three consecutive point indices into [code]points[/code] (i.e. the returned array will have [code]n * 3[/code] elements, with [code]n[/code] being the number of found triangles). If the triangulation did not succeed, an empty [PackedInt32Array] is returned.
 			</description>
 		</method>
 		<method name="triangulate_polygon">
-			<return type="PackedIntArray">
+			<return type="PackedInt32Array">
 			</return>
 			<argument index="0" name="polygon" type="PackedVector2Array">
 			</argument>
 			<description>
-				Triangulates the polygon specified by the points in [code]polygon[/code]. Returns a [PackedIntArray] where each triangle consists of three consecutive point indices into [code]polygon[/code] (i.e. the returned array will have [code]n * 3[/code] elements, with [code]n[/code] being the number of found triangles). If the triangulation did not succeed, an empty [PackedIntArray] is returned.
+				Triangulates the polygon specified by the points in [code]polygon[/code]. Returns a [PackedInt32Array] where each triangle consists of three consecutive point indices into [code]polygon[/code] (i.e. the returned array will have [code]n * 3[/code] elements, with [code]n[/code] being the number of found triangles). If the triangulation did not succeed, an empty [PackedInt32Array] is returned.
 			</description>
 		</method>
 	</methods>
