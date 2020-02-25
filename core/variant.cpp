@@ -1549,6 +1549,8 @@ Variant::operator uint64_t() const {
 Variant::operator ObjectID() const {
 	if (type == INT) {
 		return ObjectID(_data._int);
+	} else if (type == OBJECT) {
+		return _get_obj().id;
 	} else {
 		return ObjectID();
 	}
