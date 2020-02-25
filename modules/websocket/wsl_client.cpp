@@ -336,10 +336,10 @@ Error WSLClient::set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer
 }
 
 WSLClient::WSLClient() {
-	_in_buf_size = nearest_shift((int)GLOBAL_GET(WSC_IN_BUF) - 1) + 10;
-	_in_pkt_size = nearest_shift((int)GLOBAL_GET(WSC_IN_PKT) - 1);
-	_out_buf_size = nearest_shift((int)GLOBAL_GET(WSC_OUT_BUF) - 1) + 10;
-	_out_pkt_size = nearest_shift((int)GLOBAL_GET(WSC_OUT_PKT) - 1);
+	_in_buf_size = DEF_BUF_SHIFT;
+	_in_pkt_size = DEF_PKT_SHIFT;
+	_out_buf_size = DEF_BUF_SHIFT;
+	_out_pkt_size = DEF_PKT_SHIFT;
 
 	_peer.instance();
 	_tcp.instance();
