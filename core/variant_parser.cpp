@@ -1110,6 +1110,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 		value = token.value;
 		return OK;
+	} else if (token.type == TK_STRING_NAME) {
+
+		value = token.value;
+		return OK;
 	} else if (token.type == TK_COLOR) {
 
 		value = token.value;
