@@ -142,7 +142,7 @@
 			</description>
 		</method>
 		<method name="get_selected_items">
-			<return type="PackedIntArray">
+			<return type="PackedInt32Array">
 			</return>
 			<description>
 				Returns an array with the indexes of the selected items.

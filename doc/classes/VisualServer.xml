@@ -1943,7 +1943,7 @@
 			</description>
 		</method>
 		<method name="multimesh_get_buffer" qualifiers="const">
-			<return type="PackedRealArray">
+			<return type="PackedFloat32Array">
 			</return>
 			<argument index="0" name="multimesh" type="RID">
 			</argument>
@@ -2078,7 +2078,7 @@
 			</return>
 			<argument index="0" name="multimesh" type="RID">
 			</argument>
-			<argument index="1" name="buffer" type="PackedRealArray">
+			<argument index="1" name="buffer" type="PackedFloat32Array">
 			</argument>
 			<description>
 			</description>
