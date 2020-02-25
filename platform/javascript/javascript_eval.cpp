@@ -33,11 +33,11 @@
 #include "api/javascript_eval.h"
 #include "emscripten.h"
 
-extern "C" EMSCRIPTEN_KEEPALIVE uint8_t *resize_PackedByteArray_and_open_write(PackedByteArray *p_arr, uint8_t **r_write, int p_len) {
+extern "C" EMSCRIPTEN_KEEPALIVE uint8_t *resize_PackedByteArray_and_open_write(PackedByteArray *p_arr, VectorWriteProxy<uint8_t> *r_write, int p_len) {
 
 	p_arr->resize(p_len);
-	*r_write = p_arr->write();
-	return r_write->ptr();
+	*r_write = p_arr->write;
+	return p_arr->ptrw();
 }
 
 Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
@@ -49,7 +49,7 @@ Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 	} js_data;
 
 	PackedByteArray arr;
-	uint8_t *arr_write;
+	VectorWriteProxy<uint8_t> arr_write;
 
 	/* clang-format off */
 	Variant::Type return_type = static_cast<Variant::Type>(EM_ASM_INT({
@@ -138,7 +138,7 @@ Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 			return str;
 		}
 		case Variant::PACKED_BYTE_ARRAY:
-			arr_write = uint8_t * ();
+			arr_write = VectorWriteProxy<uint8_t>();
 			return arr;
 		default:
 			return Variant();
