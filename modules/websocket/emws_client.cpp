@@ -231,8 +231,9 @@ Error EMWSClient::set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffe
 }
 
 EMWSClient::EMWSClient() {
-	_in_buf_size = nearest_shift((int)GLOBAL_GET(WSC_IN_BUF) - 1) + 10;
-	_in_pkt_size = nearest_shift((int)GLOBAL_GET(WSC_IN_PKT) - 1);
+	_in_buf_size = DEF_BUF_SHIFT;
+	_in_pkt_size = DEF_PKT_SHIFT;
+
 	_is_connecting = false;
 	_peer = Ref<EMWSPeer>(memnew(EMWSPeer));
 	/* clang-format off */
