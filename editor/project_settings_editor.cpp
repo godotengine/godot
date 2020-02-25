@@ -1727,6 +1727,7 @@ void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_item_checked"), &ProjectSettingsEditor::_item_checked);
 	ClassDB::bind_method(D_METHOD("_save"), &ProjectSettingsEditor::_save);
 	ClassDB::bind_method(D_METHOD("_update_actions"), &ProjectSettingsEditor::_update_actions);
+
 	ClassDB::bind_method(D_METHOD("_update_translations"), &ProjectSettingsEditor::_update_translations);
 
 	ClassDB::bind_method(D_METHOD("get_tabs"), &ProjectSettingsEditor::get_tabs);
@@ -1921,7 +1922,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	popup_add = memnew(PopupMenu);
 	add_child(popup_add);
-	popup_add->connect("id_pressed", callable_mp(this, &ProjectSettingsEditor::_add_item));
+	popup_add->connect("id_pressed", callable_mp(this, &ProjectSettingsEditor::_add_item), make_binds(Ref<InputEvent>()));
 
 	press_a_key = memnew(ConfirmationDialog);
 	press_a_key->set_focus_mode(FOCUS_ALL);

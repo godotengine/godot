@@ -1369,6 +1369,10 @@ void AnimationPlayerEditor::_prepare_onion_layers_1() {
 	call_deferred("_prepare_onion_layers_2");
 }
 
+void AnimationPlayerEditor::_prepare_onion_layers_1_deferred() {
+	call_deferred("_prepare_onion_layers_1");
+}
+
 void AnimationPlayerEditor::_prepare_onion_layers_2() {
 
 	Ref<Animation> anim = player->get_animation(player->get_assigned_animation());
@@ -1501,16 +1505,16 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 void AnimationPlayerEditor::_start_onion_skinning() {
 
 	// FIXME: Using "idle_frame" makes onion layers update one frame behind the current.
-	if (!get_tree()->is_connected("idle_frame", callable_mp((Object *)this, &Object::call_deferred))) {
-		get_tree()->connect("idle_frame", callable_mp((Object *)this, &Object::call_deferred), varray("_prepare_onion_layers_1"));
+	if (!get_tree()->is_connected("idle_frame", callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred))) {
+		get_tree()->connect("idle_frame", callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred));
 	}
 }
 
 void AnimationPlayerEditor::_stop_onion_skinning() {
 
-	if (get_tree()->is_connected("idle_frame", callable_mp((Object *)this, &Object::call_deferred))) {
+	if (get_tree()->is_connected("idle_frame", callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred))) {
 
-		get_tree()->disconnect("idle_frame", callable_mp((Object *)this, &Object::call_deferred));
+		get_tree()->disconnect("idle_frame", callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred));
 
 		_free_onion_layers();
 
@@ -1726,11 +1730,11 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	play_bw_from->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_play_bw_from_pressed));
 	stop->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_stop_pressed));
 
-	animation->connect("item_selected", callable_mp(this, &AnimationPlayerEditor::_animation_selected), Vector<Variant>(), true);
+	animation->connect("item_selected", callable_mp(this, &AnimationPlayerEditor::_animation_selected));
 
 	file->connect("file_selected", callable_mp(this, &AnimationPlayerEditor::_dialog_action));
-	frame->connect("value_changed", callable_mp(this, &AnimationPlayerEditor::_seek_value_changed), Vector<Variant>(), true);
-	scale->connect("text_entered", callable_mp(this, &AnimationPlayerEditor::_scale_changed), Vector<Variant>(), true);
+	frame->connect("value_changed", callable_mp(this, &AnimationPlayerEditor::_seek_value_changed), make_binds(true));
+	scale->connect("text_entered", callable_mp(this, &AnimationPlayerEditor::_scale_changed));
 
 	renaming = false;
 	last_active = false;
