@@ -1612,7 +1612,7 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 				}
 			}
 
-		} break; // 10
+		} break;
 		case AABB: {
 
 			if (p_value.type == Variant::VECTOR3) {
@@ -1870,7 +1870,7 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 				return v->w;
 			}
 
-		} break; // 10
+		} break;
 		case AABB: {
 
 			const ::AABB *v = _data._aabb;
@@ -2097,7 +2097,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 				}
 			}
 
-		} break; // 5
+		} break;
 		case VECTOR2I: {
 
 			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT)
@@ -2132,7 +2132,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 				}
 			}
 
-		} break; // 5
+		} break;
 		case RECT2: {
 
 			if (p_value.type != Variant::VECTOR2)
@@ -2368,7 +2368,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 				}
 			}
 
-		} break; // 10
+		} break;
 		case AABB: {
 
 			if (p_value.type != Variant::VECTOR3)
@@ -2544,9 +2544,9 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 
 		} break;
 		case STRING_NAME: {
-		} break; // 15
+		} break;
 		case NODE_PATH: {
-		} break; // 15
+		} break;
 		case _RID: {
 		} break;
 		case OBJECT: {
@@ -2580,14 +2580,14 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 			valid = true; //always valid, i guess? should this really be ok?
 			return;
 		} break;
-			DEFAULT_OP_ARRAY_CMD(ARRAY, Array, ;, (*arr)[index] = p_value; return ) // 20
+			DEFAULT_OP_ARRAY_CMD(ARRAY, Array, ;, (*arr)[index] = p_value; return )
 			DEFAULT_OP_DVECTOR_SET(PACKED_BYTE_ARRAY, uint8_t, p_value.type != Variant::FLOAT && p_value.type != Variant::INT)
 			DEFAULT_OP_DVECTOR_SET(PACKED_INT32_ARRAY, int32_t, p_value.type != Variant::FLOAT && p_value.type != Variant::INT)
 			DEFAULT_OP_DVECTOR_SET(PACKED_INT64_ARRAY, int64_t, p_value.type != Variant::FLOAT && p_value.type != Variant::INT)
 			DEFAULT_OP_DVECTOR_SET(PACKED_FLOAT32_ARRAY, float, p_value.type != Variant::FLOAT && p_value.type != Variant::INT)
 			DEFAULT_OP_DVECTOR_SET(PACKED_FLOAT64_ARRAY, double, p_value.type != Variant::FLOAT && p_value.type != Variant::INT)
 			DEFAULT_OP_DVECTOR_SET(PACKED_STRING_ARRAY, String, p_value.type != Variant::STRING)
-			DEFAULT_OP_DVECTOR_SET(PACKED_VECTOR2_ARRAY, Vector2, p_value.type != Variant::VECTOR2) // 25
+			DEFAULT_OP_DVECTOR_SET(PACKED_VECTOR2_ARRAY, Vector2, p_value.type != Variant::VECTOR2)
 			DEFAULT_OP_DVECTOR_SET(PACKED_VECTOR3_ARRAY, Vector3, p_value.type != Variant::VECTOR3)
 			DEFAULT_OP_DVECTOR_SET(PACKED_COLOR_ARRAY, Color, p_value.type != Variant::COLOR)
 		default:
@@ -2660,7 +2660,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 				}
 			}
 
-		} break; // 5
+		} break;
 		case VECTOR2I: {
 
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
@@ -2688,7 +2688,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 				}
 			}
 
-		} break; // 5
+		} break;
 		case RECT2: {
 
 			if (p_index.get_type() == Variant::STRING) {
@@ -2867,7 +2867,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 				}
 			}
 
-		} break; // 10
+		} break;
 		case AABB: {
 
 			if (p_index.get_type() == Variant::STRING) {
@@ -3000,9 +3000,9 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 
 		} break;
 		case STRING_NAME: {
-		} break; // 15
+		} break;
 		case NODE_PATH: {
-		} break; // 15
+		} break;
 		case _RID: {
 		} break;
 		case OBJECT: {
@@ -3034,14 +3034,14 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 				return *res;
 			}
 		} break;
-			DEFAULT_OP_ARRAY_CMD(ARRAY, const Array, ;, return (*arr)[index]) // 20
+			DEFAULT_OP_ARRAY_CMD(ARRAY, const Array, ;, return (*arr)[index])
 			DEFAULT_OP_DVECTOR_GET(PACKED_BYTE_ARRAY, uint8_t)
 			DEFAULT_OP_DVECTOR_GET(PACKED_INT32_ARRAY, int32_t)
 			DEFAULT_OP_DVECTOR_GET(PACKED_INT64_ARRAY, int64_t)
 			DEFAULT_OP_DVECTOR_GET(PACKED_FLOAT32_ARRAY, float)
 			DEFAULT_OP_DVECTOR_GET(PACKED_FLOAT64_ARRAY, double)
 			DEFAULT_OP_DVECTOR_GET(PACKED_STRING_ARRAY, String)
-			DEFAULT_OP_DVECTOR_GET(PACKED_VECTOR2_ARRAY, Vector2) // 25
+			DEFAULT_OP_DVECTOR_GET(PACKED_VECTOR2_ARRAY, Vector2)
 			DEFAULT_OP_DVECTOR_GET(PACKED_VECTOR3_ARRAY, Vector3)
 			DEFAULT_OP_DVECTOR_GET(PACKED_COLOR_ARRAY, Color)
 		default:
@@ -3103,7 +3103,7 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 			const Dictionary *dic = reinterpret_cast<const Dictionary *>(_data._mem);
 			return dic->has(p_index);
 
-		} break; // 20
+		} break;
 		case ARRAY: {
 
 			const Array *arr = reinterpret_cast<const Array *>(_data._mem);
@@ -3302,13 +3302,13 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(Variant::FLOAT, "x"));
 			p_list->push_back(PropertyInfo(Variant::FLOAT, "y"));
 
-		} break; // 5
+		} break;
 		case VECTOR2I: {
 
 			p_list->push_back(PropertyInfo(Variant::INT, "x"));
 			p_list->push_back(PropertyInfo(Variant::INT, "y"));
 
-		} break; // 5
+		} break;
 		case RECT2: {
 
 			p_list->push_back(PropertyInfo(Variant::VECTOR2, "position"));
@@ -3360,7 +3360,7 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(Variant::FLOAT, "z"));
 			p_list->push_back(PropertyInfo(Variant::FLOAT, "w"));
 
-		} break; // 10
+		} break;
 		case AABB: {
 			p_list->push_back(PropertyInfo(Variant::VECTOR3, "position"));
 			p_list->push_back(PropertyInfo(Variant::VECTOR3, "size"));
@@ -3394,9 +3394,9 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 
 		} break;
 		case STRING_NAME: {
-		} break; // 15
+		} break;
 		case NODE_PATH: {
-		} break; // 15
+		} break;
 		case _RID: {
 		} break;
 		case OBJECT: {
@@ -3427,14 +3427,14 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 				}
 			}
 		} break;
-		case ARRAY: // 20
+		case ARRAY:
 		case PACKED_BYTE_ARRAY:
 		case PACKED_INT32_ARRAY:
 		case PACKED_INT64_ARRAY:
 		case PACKED_FLOAT32_ARRAY:
 		case PACKED_FLOAT64_ARRAY:
 		case PACKED_STRING_ARRAY:
-		case PACKED_VECTOR2_ARRAY: // 25
+		case PACKED_VECTOR2_ARRAY:
 		case PACKED_VECTOR3_ARRAY:
 		case PACKED_COLOR_ARRAY: {
 
