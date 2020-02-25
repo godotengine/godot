@@ -343,6 +343,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/hide_console_window", false);
 	_initial_set("interface/editor/save_each_scene_on_quit", true); // Regression
 	_initial_set("interface/editor/quit_confirmation", true);
+	hints["interface/editor/tooltip_delay"] = PropertyInfo(Variant::REAL, "interface/editor/tooltip_delay", PROPERTY_HINT_RANGE, "0,5,0.01", PROPERTY_USAGE_DEFAULT);
+	_initial_set("interface/editor/tooltip_delay", 0.5f);
 
 	// Theme
 	_initial_set("interface/theme/preset", "Default");
@@ -941,6 +943,9 @@ void EditorSettings::create() {
 		singleton->settings_dir = config_dir;
 		singleton->data_dir = data_dir;
 		singleton->cache_dir = cache_dir;
+
+		// Apply the tooltip delay setting.
+		Viewport::editor_tooltip_delay = EditorSettings::get_singleton()->get("interface/editor/tooltip_delay");
 
 		print_verbose("EditorSettings: Load OK!");
 

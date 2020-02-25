@@ -2219,7 +2219,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 				gui.tooltip = over;
 				gui.tooltip_pos = mpos; //(parent_xform * get_transform()).affine_inverse().xform(pos);
-				gui.tooltip_timer = gui.tooltip_delay;
+				gui.tooltip_timer = *gui.tooltip_delay;
 			}
 		}
 
@@ -3301,6 +3301,9 @@ void Viewport::_subwindow_visibility_changed() {
 	gui.subwindow_visibility_dirty = true;
 }
 
+float Viewport::editor_tooltip_delay = 0.5f;
+float Viewport::regular_tooltip_delay = 0.5f;
+
 Viewport::Viewport() {
 
 	world_2d = Ref<World2D>(memnew(World2D));
@@ -3359,8 +3362,17 @@ Viewport::Viewport() {
 	gui.tooltip_timer = -1;
 
 	//gui.tooltip_timer->force_parent_owned();
-	gui.tooltip_delay = GLOBAL_DEF("gui/timers/tooltip_delay_sec", 0.5);
+
+	// Set the regular tooltip delay, and create a project setting for it.
+	regular_tooltip_delay = GLOBAL_DEF("gui/timers/tooltip_delay_sec", 0.5);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/tooltip_delay_sec", PropertyInfo(Variant::REAL, "gui/timers/tooltip_delay_sec", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater")); // No negative numbers
+
+	// Set the tooltip delay to be either the editor delay, or regular delay, depending on whether this is in the editor or not.
+	if (Engine::get_singleton()->is_editor_hint()) {
+		gui.tooltip_delay = &editor_tooltip_delay;
+	} else {
+		gui.tooltip_delay = &regular_tooltip_delay;
+	}
 
 	gui.tooltip = NULL;
 	gui.tooltip_label = NULL;

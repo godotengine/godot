@@ -88,6 +88,9 @@ class Viewport : public Node {
 	GDCLASS(Viewport, Node);
 
 public:
+	static float editor_tooltip_delay;
+	static float regular_tooltip_delay;
+
 	enum UpdateMode {
 		UPDATE_DISABLED,
 		UPDATE_ONCE, //then goes to disabled
@@ -311,7 +314,7 @@ private:
 		Variant drag_data;
 		Control *drag_preview;
 		float tooltip_timer;
-		float tooltip_delay;
+		float *tooltip_delay;
 		List<Control *> modal_stack;
 		Transform2D focus_inv_xform;
 		bool subwindow_order_dirty;
