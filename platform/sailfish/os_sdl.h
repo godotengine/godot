@@ -186,6 +186,9 @@ public:
 	void stop_audio_driver();
 #endif
 
+	// Really its not a pause ;) just mute all bus streams
+	void pause_audio_driver(bool pause = true);
+
 	virtual String get_name();
 
 	virtual void set_cursor_shape(CursorShape p_shape);

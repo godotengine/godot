@@ -617,6 +617,7 @@ void OS_SDL::process_events() {
 
 		if (event.type == SDL_QUIT) {
 			mprint_verbose("SDL_QUIT event;\n");
+			minimized = false;
 			main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
 			continue;
 		}
@@ -630,13 +631,20 @@ void OS_SDL::process_events() {
 				case SDL_WINDOWEVENT_MINIMIZED:
 					mprint_verbose("SDL_WINDOWEVENT_MINIMIZED;\n");
 					minimized = true;
-					main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+					if (main_loop) {
+						main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+						main_loop->notification(MainLoop::NOTIFICATION_APP_PAUSED);
+					}
+					pause_audio_driver(true);
 					break;
 				case SDL_WINDOWEVENT_LEAVE:
 					mprint_verbose("SDL_WINDOWEVENT_LEAVE;\n");
-					if (main_loop && !mouse_mode_grab)
+					if (main_loop && !mouse_mode_grab){
 						main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
-					main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+						main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+						main_loop->notification(MainLoop::NOTIFICATION_APP_PAUSED);
+					}
+					pause_audio_driver(true);
 					window_has_focus = false;
 					minimized = true;
 					// if (input)
@@ -644,8 +652,11 @@ void OS_SDL::process_events() {
 					break;
 				case SDL_WINDOWEVENT_ENTER:
 					mprint_verbose("SDL_WINDOWEVENT_ENTER;\n");
-					if (main_loop && !mouse_mode_grab)
+					if (main_loop && !mouse_mode_grab) {
 						main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
+					}
+					main_loop->notification(MainLoop::NOTIFICATION_APP_RESUMED);
+					pause_audio_driver(false);
 					// if (input)
 					// 	input->set_mouse_in_window(true);
 					break;
@@ -654,6 +665,8 @@ void OS_SDL::process_events() {
 					minimized = false;
 					window_has_focus = true;
 					main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
+					main_loop->notification(MainLoop::NOTIFICATION_APP_RESUMED);
+					pause_audio_driver(false);
 					//TODO displaykeepalive_start(displaykeepalive);
 					break;
 				case SDL_WINDOWEVENT_FOCUS_LOST:
@@ -661,6 +674,8 @@ void OS_SDL::process_events() {
 					minimized = true;
 					window_has_focus = false;
 					main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+					main_loop->notification(MainLoop::NOTIFICATION_APP_PAUSED);
+					pause_audio_driver(true);
 					//TODO  displaykeepalive_stop(displaykeepalive);
 					break;
 				case SDL_WINDOWEVENT_SHOWN:
@@ -668,6 +683,8 @@ void OS_SDL::process_events() {
 					minimized = false;
 					window_has_focus = true;
 					main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
+					main_loop->notification(MainLoop::NOTIFICATION_APP_RESUMED);
+					pause_audio_driver(false);
 					break;
 				case SDL_WINDOWEVENT_RESIZED:
 					mprint_verbose("SDL_WINDOWEVENT_RESIZED;\n");
@@ -687,7 +704,7 @@ void OS_SDL::process_events() {
 					mprint_verbose2("Window %d got unknown event %d;\n", event.window.windowID, event.window.event);
 					break;
 			}
-			continue; // Probably not a good pattern, but I'm not a fan of else-if in this case.
+			continue; 
 		}
 
 		else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
@@ -1387,6 +1404,8 @@ void OS_SDL::run() {
 	while (!force_quit) {
 
 		process_events(); // get rid of pending events
+		if(minimized)
+			continue;
 #ifdef JOYDEV_ENABLED
 		joypad->process_joypads();
 #endif
@@ -1576,6 +1595,17 @@ void OS_SDL::stop_audio_driver() {
 		AudioDriverManager::get_driver(i)->finish();
 	}
 }
+
+void OS_SDL::pause_audio_driver(bool pause) {
+	
+	AudioServer *audio_server = AudioServer::get_singleton();
+	if(!audio_server)
+		return;
+	
+	for (int bus = 0; bus < audio_server->get_bus_count(); bus++ ) 
+		audio_server->set_bus_mute(bus,pause);
+}
+
 #ifndef DISABLE_LIBAUDIORESOURCE
 static void on_audio_resource_acquired(audioresource_t *audio_resource, bool acquired, void *user_data) {
 	OS_SDL *os = (OS_SDL *)user_data;
