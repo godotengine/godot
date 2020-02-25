@@ -1698,7 +1698,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		visual_profiler->set_name(TTR("Visual Profiler"));
 		tabs->add_child(visual_profiler);
 		visual_profiler->connect_compat("enable_profiling", this, "_visual_profiler_activate");
-		visual_profiler->connect_compat("break_request", this, "_profiler_seeked");
 	}
 
 	{ //network profiler
