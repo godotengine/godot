@@ -303,11 +303,11 @@ void ScriptDebuggerRemote::_put_msg(String p_message, Array p_data) {
 	Array msg;
 	msg.push_back(p_message);
 	msg.push_back(p_data);
-	packet_peer_stream->put_var(msg);
+	peer->put_message(msg);
 }
 
 bool ScriptDebuggerRemote::is_peer_connected() {
-	return tcp_client->is_connected_to_host() && tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED;
+	return peer->is_peer_connected();
 }
 
 void ScriptDebuggerRemote::_send_video_memory() {
@@ -317,48 +317,6 @@ void ScriptDebuggerRemote::_send_video_memory() {
 		resource_usage_func(&usage);
 
 	_put_msg("message:video_mem", usage.serialize());
-}
-
-Error ScriptDebuggerRemote::connect_to_host(const String &p_host, uint16_t p_port) {
-
-	IP_Address ip;
-	if (p_host.is_valid_ip_address())
-		ip = p_host;
-	else
-		ip = IP::get_singleton()->resolve_hostname(p_host);
-
-	int port = p_port;
-
-	const int tries = 6;
-	int waits[tries] = { 1, 10, 100, 1000, 1000, 1000 };
-
-	tcp_client->connect_to_host(ip, port);
-
-	for (int i = 0; i < tries; i++) {
-
-		if (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED) {
-			print_verbose("Remote Debugger: Connected!");
-			break;
-		} else {
-
-			const int ms = waits[i];
-			OS::get_singleton()->delay_usec(ms * 1000);
-			print_verbose("Remote Debugger: Connection failed with status: '" + String::num(tcp_client->get_status()) + "', retrying in " + String::num(ms) + " msec.");
-		};
-	};
-
-	if (tcp_client->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
-
-		ERR_PRINT("Remote Debugger: Unable to connect. Status: " + String::num(tcp_client->get_status()) + ".");
-		return FAILED;
-	};
-
-	packet_peer_stream->set_stream_peer(tcp_client);
-	Array msg;
-	msg.push_back(OS::get_singleton()->get_process_id());
-	send_message("set_pid", msg);
-
-	return OK;
 }
 
 void ScriptDebuggerRemote::_parse_message(const String p_command, const Array &p_data, ScriptLanguage *p_script) {
@@ -539,18 +497,13 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 	uint64_t loop_time_sec = 0;
 	while (true) {
 		loop_begin_usec = OS::get_singleton()->get_ticks_usec();
+		peer->poll();
 
 		_get_output();
 
-		if (packet_peer_stream->get_available_packet_count() > 0) {
+		if (peer->has_message()) {
 
-			Variant var;
-			Error err = packet_peer_stream->get_var(var);
-
-			ERR_CONTINUE(err != OK);
-			ERR_CONTINUE(var.get_type() != Variant::ARRAY);
-
-			Array cmd = var;
+			Array cmd = peer->get_message();
 
 			ERR_CONTINUE(cmd.size() != 2);
 			ERR_CONTINUE(cmd[0].get_type() != Variant::STRING);
@@ -700,19 +653,13 @@ void ScriptDebuggerRemote::_poll_events() {
 	//this si called from ::idle_poll, happens only when running the game,
 	//does not get called while on debug break
 
-	while (packet_peer_stream->get_available_packet_count() > 0) {
+	while (peer->has_message()) {
 
+		peer->poll();
+		//send over output_strings
 		_get_output();
 
-		//send over output_strings
-
-		Variant var;
-		Error err = packet_peer_stream->get_var(var);
-
-		ERR_CONTINUE(err != OK);
-		ERR_CONTINUE(var.get_type() != Variant::ARRAY);
-
-		Array cmd = var;
+		Array cmd = peer->get_message();
 
 		ERR_CONTINUE(cmd.size() < 2);
 		ERR_CONTINUE(cmd[0].get_type() != Variant::STRING);
@@ -1089,18 +1036,23 @@ void ScriptDebuggerRemote::set_skip_breakpoints(bool p_skip_breakpoints) {
 	skip_breakpoints = p_skip_breakpoints;
 }
 
+ScriptDebuggerRemote *ScriptDebuggerRemote::create_for_uri(const String &p_uri) {
+	Ref<ScriptDebuggerPeer> peer = ScriptDebuggerPeer::create_from_uri(p_uri);
+	if (peer.is_valid())
+		return memnew(ScriptDebuggerRemote(peer));
+	return NULL;
+}
+
 ScriptDebuggerRemote::ResourceUsageFunc ScriptDebuggerRemote::resource_usage_func = NULL;
 ScriptDebuggerRemote::ParseMessageFunc ScriptDebuggerRemote::scene_tree_parse_func = NULL;
 
-ScriptDebuggerRemote::ScriptDebuggerRemote() :
+ScriptDebuggerRemote::ScriptDebuggerRemote(Ref<ScriptDebuggerPeer> p_peer) :
 		profiling(false),
 		visual_profiling(false),
 		network_profiling(false),
 		max_frame_functions(16),
 		skip_profile_frame(false),
 		reload_all_scripts(false),
-		tcp_client(Ref<StreamPeerTCP>(memnew(StreamPeerTCP))),
-		packet_peer_stream(Ref<PacketPeerStream>(memnew(PacketPeerStream))),
 		last_perf_time(0),
 		last_net_prof_time(0),
 		last_net_bandwidth_time(0),
@@ -1120,9 +1072,7 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() :
 		locking(false),
 		poll_every(0) {
 
-	packet_peer_stream->set_stream_peer(tcp_client);
-	packet_peer_stream->set_output_buffer_max_size((1024 * 1024 * 8) - 4); // 8 MiB should be way more than enough, minus 4 bytes for separator.
-
+	peer = p_peer;
 	phl.printfunc = _print_handler;
 	phl.userdata = this;
 	add_print_handler(&phl);
