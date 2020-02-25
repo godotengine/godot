@@ -506,12 +506,25 @@ public:
 	}
 
 	void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) override {
-		// EditorNode::print("Could not unzip temporary unaligned APK.");
-		print_verbose("get_preset_features, path " + p_preset->get_export_path() );
+
+//        print_verbose("get_preset_features, path " + p_preset->get_export_path() );
+        String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
+        if (driver == "GLES2") {
+            r_features->push_back("etc");
+        } else if (driver == "GLES3") {
+            print_error("SailfishOS dont support GLES3");
+            r_features->push_back("etc");
+        }
+        
+//        Vector<String> abis = get_enabled_abis(p_preset);
+//        for (int i = 0; i < abis.size(); ++i) {
+//            r_features->push_back(abis[i]);
+//        }
 	}
 
 	virtual void get_platform_features(List<String> *r_features) override {
 		r_features->push_back("mobile");
+//        r_features->push_back("s3tc");
 		r_features->push_back(get_os_name());
 	}
 
@@ -562,6 +575,16 @@ public:
 		String x86_template;
         Error err;
 		bool p_debug = false;
+        
+        String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
+//        if (driver == "GLES2") {
+//            r_features->push_back("etc");
+//        } else
+        if (driver == "GLES3") {
+            print_error(TTR("SailfishOS dont support GLES3"));
+//            r_error = TTR("SailfishOS dont support GLES3");
+//            return false;
+        }
         
 
 		if(p_debug) 

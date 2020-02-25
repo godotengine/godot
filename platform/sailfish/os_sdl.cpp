@@ -1115,7 +1115,7 @@ bool OS_SDL::_check_internal_feature_support(const String &p_feature) {
 		return true;
 	}
 #elif defined(__ARM_ARCH_7A__)
-	if (p_feature == "armeabi-v7a" || p_feature == "armeabi") {
+	if (p_feature == "armeabi-v7a" || p_feature == "armeabi" || p_feature == "arm" ) {
 		return true;
 	}
 #elif defined(__arm__)
