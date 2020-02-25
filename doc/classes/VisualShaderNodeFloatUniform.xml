@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeScalarUniform" inherits="VisualShaderNodeUniform" version="4.0">
+<class name="VisualShaderNodeFloatUniform" inherits="VisualShaderNodeUniform" version="4.0">
 	<brief_description>
-		A scalar uniform to be used within the visual shader graph.
+		A scalar float uniform to be used within the visual shader graph.
 	</brief_description>
 	<description>
 		Translated to [code]uniform float[/code] in the shader language.
@@ -11,7 +11,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="hint" type="int" setter="set_hint" getter="get_hint" enum="VisualShaderNodeScalarUniform.Hint" default="0">
+		<member name="hint" type="int" setter="set_hint" getter="get_hint" enum="VisualShaderNodeFloatUniform.Hint" default="0">
 			A hint applied to the uniform, which controls the values it can take when set through the inspector.
 		</member>
 		<member name="max" type="float" setter="set_max" getter="get_max" default="1.0">
