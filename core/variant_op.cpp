@@ -678,6 +678,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_LOCALMEM(math, OP_LESS, VECTOR2I, <, Vector2i);
 			DEFAULT_OP_LOCALMEM(math, OP_LESS, VECTOR3, <, Vector3);
 			DEFAULT_OP_LOCALMEM(math, OP_LESS, VECTOR3I, <, Vector3i);
+			DEFAULT_OP_LOCALMEM(math, OP_LESS, STRING_NAME, <, StringName);
 			DEFAULT_OP_LOCALMEM(math, OP_LESS, _RID, <, RID);
 			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_BYTE_ARRAY, uint8_t);
 			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_INT32_ARRAY, int32_t);
@@ -699,7 +700,6 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_LESS, BASIS)
 			CASE_TYPE(math, OP_LESS, TRANSFORM)
 			CASE_TYPE(math, OP_LESS, COLOR)
-			CASE_TYPE(math, OP_LESS, STRING_NAME)
 			CASE_TYPE(math, OP_LESS, NODE_PATH)
 			CASE_TYPE(math, OP_LESS, DICTIONARY)
 			_RETURN_FAIL;
@@ -719,6 +719,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_LOCALMEM(math, OP_LESS_EQUAL, VECTOR2I, <=, Vector2i);
 			DEFAULT_OP_LOCALMEM(math, OP_LESS_EQUAL, VECTOR3, <=, Vector3);
 			DEFAULT_OP_LOCALMEM(math, OP_LESS_EQUAL, VECTOR3I, <=, Vector3i);
+			DEFAULT_OP_LOCALMEM(math, OP_LESS_EQUAL, STRING_NAME, <=, StringName);
 			DEFAULT_OP_LOCALMEM(math, OP_LESS_EQUAL, _RID, <=, RID);
 
 			CASE_TYPE(math, OP_LESS_EQUAL, NIL)
@@ -732,7 +733,6 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_LESS_EQUAL, BASIS)
 			CASE_TYPE(math, OP_LESS_EQUAL, TRANSFORM)
 			CASE_TYPE(math, OP_LESS_EQUAL, COLOR)
-			CASE_TYPE(math, OP_LESS_EQUAL, STRING_NAME)
 			CASE_TYPE(math, OP_LESS_EQUAL, NODE_PATH)
 			CASE_TYPE(math, OP_LESS_EQUAL, CALLABLE)
 			CASE_TYPE(math, OP_LESS_EQUAL, SIGNAL)
@@ -797,6 +797,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, VECTOR2I, <, Vector2i);
 			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, VECTOR3, <, Vector3);
 			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, VECTOR3I, <, Vector3i);
+			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, STRING_NAME, <, StringName);
 			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, _RID, <, RID);
 			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_BYTE_ARRAY, uint8_t);
 			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_INT32_ARRAY, int32_t);
@@ -818,7 +819,6 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_GREATER, BASIS)
 			CASE_TYPE(math, OP_GREATER, TRANSFORM)
 			CASE_TYPE(math, OP_GREATER, COLOR)
-			CASE_TYPE(math, OP_GREATER, STRING_NAME)
 			CASE_TYPE(math, OP_GREATER, NODE_PATH)
 			CASE_TYPE(math, OP_GREATER, DICTIONARY)
 			CASE_TYPE(math, OP_GREATER, CALLABLE)
@@ -841,6 +841,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER_EQUAL, VECTOR2I, <=, Vector2i);
 			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER_EQUAL, VECTOR3, <=, Vector3);
 			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER_EQUAL, VECTOR3I, <=, Vector3i);
+			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER_EQUAL, STRING_NAME, <=, StringName);
 			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER_EQUAL, _RID, <=, RID);
 
 			CASE_TYPE(math, OP_GREATER_EQUAL, NIL)
@@ -854,7 +855,6 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_GREATER_EQUAL, BASIS)
 			CASE_TYPE(math, OP_GREATER_EQUAL, TRANSFORM)
 			CASE_TYPE(math, OP_GREATER_EQUAL, COLOR)
-			CASE_TYPE(math, OP_GREATER_EQUAL, STRING_NAME)
 			CASE_TYPE(math, OP_GREATER_EQUAL, NODE_PATH)
 			CASE_TYPE(math, OP_GREATER_EQUAL, CALLABLE)
 			CASE_TYPE(math, OP_GREATER_EQUAL, SIGNAL)
