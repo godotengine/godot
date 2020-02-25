@@ -108,8 +108,7 @@ Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector
 	Error err = prepare_request(p_method, p_url, p_headers);
 	if (err != OK)
 		return err;
-	const uint8_t *read = p_body.ptr();
-	godot_xhr_send_data(xhr_id, read.ptr(), p_body.size());
+	godot_xhr_send_data(xhr_id, p_body.ptr(), p_body.size());
 	return OK;
 }
 
@@ -180,11 +179,7 @@ PackedByteArray HTTPClient::read_response_body_chunk() {
 	int to_read = MIN(read_limit, polled_response.size() - response_read_offset);
 	PackedByteArray chunk;
 	chunk.resize(to_read);
-	uint8_t *write = chunk.ptrw();
-	const uint8_t *read = polled_response.ptr();
-	memcpy(write.ptr(), read.ptr() + response_read_offset, to_read);
-	write = uint8_t * ();
-	read = const uint8_t * ();
+	memcpy(chunk.ptrw(), polled_response.ptr() + response_read_offset, to_read);
 	response_read_offset += to_read;
 
 	if (response_read_offset == polled_response.size()) {
@@ -267,19 +262,13 @@ Error HTTPClient::poll() {
 			int len = godot_xhr_get_response_headers_length(xhr_id);
 			bytes.resize(len + 1);
 
-			uint8_t *write = bytes.ptrw();
-			godot_xhr_get_response_headers(xhr_id, reinterpret_cast<char *>(write.ptr()), len);
-			write[len] = 0;
-			write = uint8_t * ();
+			godot_xhr_get_response_headers(xhr_id, reinterpret_cast<char *>(bytes.ptrw()), len);
+			bytes.ptrw()[len] = 0;
 
-			const uint8_t *read = bytes.ptr();
-			polled_response_header = String::utf8(reinterpret_cast<const char *>(read.ptr()));
-			read = const uint8_t * ();
+			polled_response_header = String::utf8(reinterpret_cast<const char *>(bytes.ptr()));
 
 			polled_response.resize(godot_xhr_get_response_length(xhr_id));
-			write = polled_response.ptrw();
-			godot_xhr_get_response(xhr_id, write.ptr(), polled_response.size());
-			write = uint8_t * ();
+			godot_xhr_get_response(xhr_id, polled_response.ptrw(), polled_response.size());
 			break;
 		}
 
