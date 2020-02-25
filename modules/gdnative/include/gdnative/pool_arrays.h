@@ -48,7 +48,7 @@ typedef struct {
 } godot_packed_byte_array;
 #endif
 
-/////// PackedIntArray
+/////// PackedInt32Array
 
 #define GODOT_PACKED_INT_ARRAY_SIZE sizeof(void *)
 
@@ -59,7 +59,7 @@ typedef struct {
 } godot_packed_int_array;
 #endif
 
-/////// PackedRealArray
+/////// PackedFloat32Array
 
 #define GODOT_PACKED_REAL_ARRAY_SIZE sizeof(void *)
 

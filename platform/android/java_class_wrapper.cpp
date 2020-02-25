@@ -97,7 +97,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				case ARG_TYPE_DOUBLE: {
 
 					if (!p_args[i]->is_num())
-						arg_expected = Variant::REAL;
+						arg_expected = Variant::FLOAT;
 
 				} break;
 				case ARG_TYPE_STRING: {

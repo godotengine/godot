@@ -99,7 +99,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 				v.val.i = *p_arg;
 			};
 		} break;
-		case Variant::REAL: {
+		case Variant::FLOAT: {
 
 			if (force_jobject) {
 
@@ -182,7 +182,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 			v.obj = jdict;
 		} break;
 
-		case Variant::PACKED_INT_ARRAY: {
+		case Variant::PACKED_INT32_ARRAY: {
 
 			Vector<int> array = *p_arg;
 			jintArray arr = env->NewIntArray(array.size());
@@ -201,7 +201,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 			v.obj = arr;
 
 		} break;
-		case Variant::PACKED_REAL_ARRAY: {
+		case Variant::PACKED_FLOAT32_ARRAY: {
 
 			Vector<float> array = *p_arg;
 			jfloatArray arr = env->NewFloatArray(array.size());
@@ -211,6 +211,10 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 			v.obj = arr;
 
 		} break;
+#ifndef _MSC_VER
+#warning This is missing 64 bits arrays, I have no idea how to do it in JNI
+#endif
+
 		default: {
 
 			v.val.i = 0;
@@ -319,7 +323,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 
 		jdoubleArray arr = (jdoubleArray)obj;
 		int fCount = env->GetArrayLength(arr);
-		PackedRealArray sarr;
+		PackedFloat32Array sarr;
 		sarr.resize(fCount);
 
 		real_t *w = sarr.ptrw();
@@ -337,7 +341,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 
 		jfloatArray arr = (jfloatArray)obj;
 		int fCount = env->GetArrayLength(arr);
-		PackedRealArray sarr;
+		PackedFloat32Array sarr;
 		sarr.resize(fCount);
 
 		real_t *w = sarr.ptrw();
@@ -487,7 +491,7 @@ public:
 
 				ret = env->CallIntMethodA(instance, E->get().method, v);
 			} break;
-			case Variant::REAL: {
+			case Variant::FLOAT: {
 
 				ret = env->CallFloatMethodA(instance, E->get().method, v);
 			} break;
@@ -505,7 +509,7 @@ public:
 
 				env->DeleteLocalRef(arr);
 			} break;
-			case Variant::PACKED_INT_ARRAY: {
+			case Variant::PACKED_INT32_ARRAY: {
 
 				jintArray arr = (jintArray)env->CallObjectMethodA(instance, E->get().method, v);
 
@@ -519,7 +523,7 @@ public:
 				ret = sarr;
 				env->DeleteLocalRef(arr);
 			} break;
-			case Variant::PACKED_REAL_ARRAY: {
+			case Variant::PACKED_FLOAT32_ARRAY: {
 
 				jfloatArray arr = (jfloatArray)env->CallObjectMethodA(instance, E->get().method, v);
 
@@ -534,6 +538,9 @@ public:
 				env->DeleteLocalRef(arr);
 			} break;
 
+#ifndef _MSC_VER
+#warning This is missing 64 bits arrays, I have no idea how to do it in JNI
+#endif
 			case Variant::DICTIONARY: {
 
 				jobject obj = env->CallObjectMethodA(instance, E->get().method, v);
@@ -1246,12 +1253,12 @@ static Variant::Type get_jni_type(const String &p_type) {
 		{ "void", Variant::NIL },
 		{ "boolean", Variant::BOOL },
 		{ "int", Variant::INT },
-		{ "float", Variant::REAL },
-		{ "double", Variant::REAL },
+		{ "float", Variant::FLOAT },
+		{ "double", Variant::FLOAT },
 		{ "java.lang.String", Variant::STRING },
-		{ "[I", Variant::PACKED_INT_ARRAY },
+		{ "[I", Variant::PACKED_INT32_ARRAY },
 		{ "[B", Variant::PACKED_BYTE_ARRAY },
-		{ "[F", Variant::PACKED_REAL_ARRAY },
+		{ "[F", Variant::PACKED_FLOAT32_ARRAY },
 		{ "[Ljava.lang.String;", Variant::PACKED_STRING_ARRAY },
 		{ "org.godotengine.godot.Dictionary", Variant::DICTIONARY },
 		{ NULL, Variant::NIL }

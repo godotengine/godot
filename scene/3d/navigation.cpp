@@ -94,8 +94,8 @@ void Navigation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_edge_connection_margin"), &Navigation::get_edge_connection_margin);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "up_vector"), "set_up_vector", "get_up_vector");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "cell_size"), "set_cell_size", "get_cell_size");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "edge_connection_margin"), "set_edge_connection_margin", "get_edge_connection_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_size"), "set_cell_size", "get_cell_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "edge_connection_margin"), "set_edge_connection_margin", "get_edge_connection_margin");
 }
 
 void Navigation::_notification(int p_what) {

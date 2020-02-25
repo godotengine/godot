@@ -221,7 +221,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				ERR_FAIL_COND_V(!d.has("points"), false);
 
 				Vector<float> times = d["times"];
-				PackedRealArray values = d["points"];
+				PackedFloat32Array values = d["points"];
 
 				ERR_FAIL_COND_V(times.size() * 5 != values.size(), false);
 
@@ -373,7 +373,7 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 
 			if (track_get_type(track) == TYPE_TRANSFORM) {
 
-				Vector<real_t> keys;
+				Vector<float> keys;
 				int kk = track_get_key_count(track);
 				keys.resize(kk * 12);
 
@@ -1620,7 +1620,7 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 	vformat |= 1 << type_pa;
 	vformat |= 1 << type_pb;
 
-	if (vformat == ((1 << Variant::INT) | (1 << Variant::REAL)) || vformat == (1 << Variant::REAL)) {
+	if (vformat == ((1 << Variant::INT) | (1 << Variant::FLOAT)) || vformat == (1 << Variant::FLOAT)) {
 		//mix of real and int
 
 		real_t p0 = p_pre_a;
@@ -2810,9 +2810,9 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &Animation::clear);
 	ClassDB::bind_method(D_METHOD("copy_track", "track_idx", "to_animation"), &Animation::copy_track);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "length", PROPERTY_HINT_RANGE, "0.001,99999,0.001"), "set_length", "get_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "0.001,99999,0.001"), "set_length", "get_length");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "step", PROPERTY_HINT_RANGE, "0,4096,0.001"), "set_step", "get_step");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "step", PROPERTY_HINT_RANGE, "0,4096,0.001"), "set_step", "get_step");
 
 	ADD_SIGNAL(MethodInfo("tracks_changed"));
 

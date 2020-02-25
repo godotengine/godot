@@ -156,7 +156,7 @@ void Tween::_get_property_list(List<PropertyInfo> *p_list) const {
 	// Add the property info for the Tween object
 	p_list->push_back(PropertyInfo(Variant::BOOL, "playback/active", PROPERTY_HINT_NONE, ""));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "playback/repeat", PROPERTY_HINT_NONE, ""));
-	p_list->push_back(PropertyInfo(Variant::REAL, "playback/speed", PROPERTY_HINT_RANGE, "-64,64,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "playback/speed", PROPERTY_HINT_RANGE, "-64,64,0.01"));
 }
 
 void Tween::_notification(int p_what) {
@@ -249,14 +249,14 @@ void Tween::_bind_methods() {
 
 	// Add the Tween signals
 	ADD_SIGNAL(MethodInfo("tween_started", PropertyInfo(Variant::OBJECT, "object"), PropertyInfo(Variant::NODE_PATH, "key")));
-	ADD_SIGNAL(MethodInfo("tween_step", PropertyInfo(Variant::OBJECT, "object"), PropertyInfo(Variant::NODE_PATH, "key"), PropertyInfo(Variant::REAL, "elapsed"), PropertyInfo(Variant::OBJECT, "value")));
+	ADD_SIGNAL(MethodInfo("tween_step", PropertyInfo(Variant::OBJECT, "object"), PropertyInfo(Variant::NODE_PATH, "key"), PropertyInfo(Variant::FLOAT, "elapsed"), PropertyInfo(Variant::OBJECT, "value")));
 	ADD_SIGNAL(MethodInfo("tween_completed", PropertyInfo(Variant::OBJECT, "object"), PropertyInfo(Variant::NODE_PATH, "key")));
 	ADD_SIGNAL(MethodInfo("tween_all_completed"));
 
 	// Add the properties and tie them to the getters and setters
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "repeat"), "set_repeat", "is_repeat");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_tween_process_mode", "get_tween_process_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "playback_speed", PROPERTY_HINT_RANGE, "-64,64,0.01"), "set_speed_scale", "get_speed_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "playback_speed", PROPERTY_HINT_RANGE, "-64,64,0.01"), "set_speed_scale", "get_speed_scale");
 
 	// Bind Idle vs Physics process
 	BIND_ENUM_CONSTANT(TWEEN_PROCESS_PHYSICS);
@@ -345,7 +345,7 @@ Variant Tween::_get_final_val(const InterpolateData &p_data) const {
 				ERR_FAIL_COND_V(error.error != Callable::CallError::CALL_OK, p_data.initial_val);
 			}
 
-			// If we're looking at an INT value, instead convert it to a REAL
+			// If we're looking at an INT value, instead convert it to a FLOAT
 			// This is better for interpolation
 			if (final_val.get_type() == Variant::INT) final_val = final_val.operator real_t();
 
@@ -387,7 +387,7 @@ Variant &Tween::_get_delta_val(InterpolateData &p_data) {
 				ERR_FAIL_COND_V(error.error != Callable::CallError::CALL_OK, p_data.initial_val);
 			}
 
-			// If we're looking at an INT value, instead convert it to a REAL
+			// If we're looking at an INT value, instead convert it to a FLOAT
 			// This is better for interpolation
 			if (final_val.get_type() == Variant::INT) final_val = final_val.operator real_t();
 
@@ -401,7 +401,7 @@ Variant &Tween::_get_delta_val(InterpolateData &p_data) {
 			// Grab the initial value from the data to calculate delta
 			Variant initial_val = _get_initial_val(p_data);
 
-			// If we're looking at an INT value, instead convert it to a REAL
+			// If we're looking at an INT value, instead convert it to a FLOAT
 			// This is better for interpolation
 			if (initial_val.get_type() == Variant::INT) initial_val = initial_val.operator real_t();
 
@@ -440,8 +440,8 @@ Variant Tween::_run_equation(InterpolateData &p_data) {
 			result = (int)_run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, (int)initial_val, (int)delta_val, p_data.duration);
 			break;
 
-		case Variant::REAL:
-			// Run the REAL specific equation
+		case Variant::FLOAT:
+			// Run the FLOAT specific equation
 			result = _run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, (real_t)initial_val, (real_t)delta_val, p_data.duration);
 			break;
 
@@ -1137,8 +1137,8 @@ bool Tween::_calc_delta_val(const Variant &p_initial_val, const Variant &p_final
 			delta_val = (int)final_val - (int)initial_val;
 			break;
 
-		case Variant::REAL:
-			// Convert to REAL and find the delta
+		case Variant::FLOAT:
+			// Convert to FLOAT and find the delta
 			delta_val = (real_t)final_val - (real_t)initial_val;
 			break;
 
@@ -1232,7 +1232,7 @@ bool Tween::_calc_delta_val(const Variant &p_initial_val, const Variant &p_final
 			static Variant::Type supported_types[] = {
 				Variant::BOOL,
 				Variant::INT,
-				Variant::REAL,
+				Variant::FLOAT,
 				Variant::VECTOR2,
 				Variant::RECT2,
 				Variant::VECTOR3,
@@ -1498,7 +1498,7 @@ bool Tween::follow_property(Object *p_object, NodePath p_property, Variant p_ini
 	// TODO: Is this documented? It's really helpful for decluttering tweens
 	if (p_initial_val.get_type() == Variant::NIL) p_initial_val = p_object->get_indexed(p_property.get_subnames());
 
-	// Convert initial INT values to REAL as they are better for interpolation
+	// Convert initial INT values to FLOAT as they are better for interpolation
 	if (p_initial_val.get_type() == Variant::INT) p_initial_val = p_initial_val.operator real_t();
 
 	// Confirm the source and target objects are valid
@@ -1524,7 +1524,7 @@ bool Tween::follow_property(Object *p_object, NodePath p_property, Variant p_ini
 	Variant target_val = p_target->get_indexed(p_target_property.get_subnames(), &target_prop_valid);
 	ERR_FAIL_COND_V(!target_prop_valid, false);
 
-	// Convert target INT to REAL since it is better for interpolation
+	// Convert target INT to FLOAT since it is better for interpolation
 	if (target_val.get_type() == Variant::INT) target_val = target_val.operator real_t();
 
 	// Verify that the target value and initial value are the same type
@@ -1560,7 +1560,7 @@ bool Tween::follow_method(Object *p_object, StringName p_method, Variant p_initi
 		_add_pending_command("follow_method", p_object, p_method, p_initial_val, p_target, p_target_method, p_duration, p_trans_type, p_ease_type, p_delay);
 		return true;
 	}
-	// Convert initial INT values to REAL as they are better for interpolation
+	// Convert initial INT values to FLOAT as they are better for interpolation
 	if (p_initial_val.get_type() == Variant::INT) p_initial_val = p_initial_val.operator real_t();
 
 	// Verify the source and target objects are valid
@@ -1586,7 +1586,7 @@ bool Tween::follow_method(Object *p_object, StringName p_method, Variant p_initi
 	Variant target_val = p_target->call(p_target_method, NULL, 0, error);
 	ERR_FAIL_COND_V(error.error != Callable::CallError::CALL_OK, false);
 
-	// Convert target INT values to REAL as they are better for interpolation
+	// Convert target INT values to FLOAT as they are better for interpolation
 	if (target_val.get_type() == Variant::INT) target_val = target_val.operator real_t();
 	ERR_FAIL_COND_V(target_val.get_type() != p_initial_val.get_type(), false);
 
@@ -1624,7 +1624,7 @@ bool Tween::targeting_property(Object *p_object, NodePath p_property, Object *p_
 	p_property = p_property.get_as_property_path();
 	p_initial_property = p_initial_property.get_as_property_path();
 
-	// Convert the initial INT values to REAL as they are better for Interpolation
+	// Convert the initial INT values to FLOAT as they are better for Interpolation
 	if (p_final_val.get_type() == Variant::INT) p_final_val = p_final_val.operator real_t();
 
 	// Verify both objects are valid
@@ -1650,7 +1650,7 @@ bool Tween::targeting_property(Object *p_object, NodePath p_property, Object *p_
 	Variant initial_val = p_initial->get_indexed(p_initial_property.get_subnames(), &initial_prop_valid);
 	ERR_FAIL_COND_V(!initial_prop_valid, false);
 
-	// Convert the initial INT value to REAL as it is better for interpolation
+	// Convert the initial INT value to FLOAT as it is better for interpolation
 	if (initial_val.get_type() == Variant::INT) initial_val = initial_val.operator real_t();
 	ERR_FAIL_COND_V(initial_val.get_type() != p_final_val.get_type(), false);
 
@@ -1690,7 +1690,7 @@ bool Tween::targeting_method(Object *p_object, StringName p_method, Object *p_in
 		return true;
 	}
 
-	// Convert final INT values to REAL as they are better for interpolation
+	// Convert final INT values to FLOAT as they are better for interpolation
 	if (p_final_val.get_type() == Variant::INT) p_final_val = p_final_val.operator real_t();
 
 	// Make sure the given objects are valid
@@ -1716,7 +1716,7 @@ bool Tween::targeting_method(Object *p_object, StringName p_method, Object *p_in
 	Variant initial_val = p_initial->call(p_initial_method, NULL, 0, error);
 	ERR_FAIL_COND_V(error.error != Callable::CallError::CALL_OK, false);
 
-	// Convert initial INT values to REAL as they aer better for interpolation
+	// Convert initial INT values to FLOAT as they aer better for interpolation
 	if (initial_val.get_type() == Variant::INT) initial_val = initial_val.operator real_t();
 	ERR_FAIL_COND_V(initial_val.get_type() != p_final_val.get_type(), false);
 

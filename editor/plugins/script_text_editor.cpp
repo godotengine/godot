@@ -307,8 +307,10 @@ void ScriptTextEditor::_set_theme_for_script() {
 	text_edit->add_keyword_color("Dictionary", basetype_color);
 	text_edit->add_keyword_color("Array", basetype_color);
 	text_edit->add_keyword_color("PackedByteArray", basetype_color);
-	text_edit->add_keyword_color("PackedIntArray", basetype_color);
-	text_edit->add_keyword_color("PackedRealArray", basetype_color);
+	text_edit->add_keyword_color("PackedInt32Array", basetype_color);
+	text_edit->add_keyword_color("PackedFloat32Array", basetype_color);
+	text_edit->add_keyword_color("PackedInt64Array", basetype_color);
+	text_edit->add_keyword_color("PackedFloat64Array", basetype_color);
 	text_edit->add_keyword_color("PackedStringArray", basetype_color);
 	text_edit->add_keyword_color("PackedVector2Array", basetype_color);
 	text_edit->add_keyword_color("PackedVector3Array", basetype_color);

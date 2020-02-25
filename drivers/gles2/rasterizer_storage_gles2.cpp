@@ -1681,11 +1681,11 @@ void RasterizerStorageGLES2::shader_get_param_list(RID p_shader, List<PropertyIn
 			case ShaderLanguage::TYPE_UVEC3:
 			case ShaderLanguage::TYPE_IVEC4:
 			case ShaderLanguage::TYPE_UVEC4: {
-				pi.type = Variant::PACKED_INT_ARRAY;
+				pi.type = Variant::PACKED_INT32_ARRAY;
 			} break;
 
 			case ShaderLanguage::TYPE_FLOAT: {
-				pi.type = Variant::REAL;
+				pi.type = Variant::FLOAT;
 				if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_RANGE) {
 					pi.hint = PROPERTY_HINT_RANGE;
 					pi.hint_string = rtos(u.hint_range[0]) + "," + rtos(u.hint_range[1]) + "," + rtos(u.hint_range[2]);

@@ -392,7 +392,7 @@ void Curve::set_data(Array input) {
 	for (int i = 0; i < input.size(); i += ELEMS) {
 		ERR_FAIL_COND(input[i].get_type() != Variant::VECTOR2);
 		ERR_FAIL_COND(!input[i + 1].is_num());
-		ERR_FAIL_COND(input[i + 2].get_type() != Variant::REAL);
+		ERR_FAIL_COND(input[i + 2].get_type() != Variant::FLOAT);
 
 		ERR_FAIL_COND(input[i + 3].get_type() != Variant::INT);
 		int left_mode = input[i + 3];
@@ -524,8 +524,8 @@ void Curve::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_data"), &Curve::get_data);
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &Curve::set_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "min_value", PROPERTY_HINT_RANGE, "-1024,1024,0.01"), "set_min_value", "get_min_value");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max_value", PROPERTY_HINT_RANGE, "-1024,1024,0.01"), "set_max_value", "get_max_value");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_value", PROPERTY_HINT_RANGE, "-1024,1024,0.01"), "set_min_value", "get_min_value");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_value", PROPERTY_HINT_RANGE, "-1024,1024,0.01"), "set_max_value", "get_max_value");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_resolution", PROPERTY_HINT_RANGE, "1,1000,1"), "set_bake_resolution", "get_bake_resolution");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 
@@ -1001,7 +1001,7 @@ void Curve2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_data"), &Curve2D::_get_data);
 	ClassDB::bind_method(D_METHOD("_set_data"), &Curve2D::_set_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bake_interval", PROPERTY_HINT_RANGE, "0.01,512,0.01"), "set_bake_interval", "get_bake_interval");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_interval", PROPERTY_HINT_RANGE, "0.01,512,0.01"), "set_bake_interval", "get_bake_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 }
 
@@ -1445,7 +1445,7 @@ PackedVector3Array Curve3D::get_baked_points() const {
 	return baked_point_cache;
 }
 
-PackedRealArray Curve3D::get_baked_tilts() const {
+PackedFloat32Array Curve3D::get_baked_tilts() const {
 
 	if (baked_cache_dirty)
 		_bake();
@@ -1567,7 +1567,7 @@ Dictionary Curve3D::_get_data() const {
 	PackedVector3Array d;
 	d.resize(points.size() * 3);
 	Vector3 *w = d.ptrw();
-	PackedRealArray t;
+	PackedFloat32Array t;
 	t.resize(points.size());
 	real_t *wt = t.ptrw();
 
@@ -1594,7 +1594,7 @@ void Curve3D::_set_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(pc % 3 != 0);
 	points.resize(pc / 3);
 	const Vector3 *r = rp.ptr();
-	PackedRealArray rtl = p_data["tilts"];
+	PackedFloat32Array rtl = p_data["tilts"];
 	const real_t *rt = rtl.ptr();
 
 	for (int i = 0; i < points.size(); i++) {
@@ -1682,7 +1682,7 @@ void Curve3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_data"), &Curve3D::_get_data);
 	ClassDB::bind_method(D_METHOD("_set_data"), &Curve3D::_set_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bake_interval", PROPERTY_HINT_RANGE, "0.01,512,0.01"), "set_bake_interval", "get_bake_interval");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_interval", PROPERTY_HINT_RANGE, "0.01,512,0.01"), "set_bake_interval", "get_bake_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 
 	ADD_GROUP("Up Vector", "up_vector_");

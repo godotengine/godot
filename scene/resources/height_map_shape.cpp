@@ -144,7 +144,7 @@ int HeightMapShape::get_map_depth() const {
 	return map_depth;
 }
 
-void HeightMapShape::set_map_data(PackedRealArray p_new) {
+void HeightMapShape::set_map_data(PackedFloat32Array p_new) {
 	int size = (map_width * map_depth);
 	if (p_new.size() != size) {
 		// fail
@@ -174,7 +174,7 @@ void HeightMapShape::set_map_data(PackedRealArray p_new) {
 	_change_notify("map_data");
 }
 
-PackedRealArray HeightMapShape::get_map_data() const {
+PackedFloat32Array HeightMapShape::get_map_data() const {
 	return map_data;
 }
 
@@ -188,7 +188,7 @@ void HeightMapShape::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_width", PROPERTY_HINT_RANGE, "1,4096,1"), "set_map_width", "get_map_width");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_depth", PROPERTY_HINT_RANGE, "1,4096,1"), "set_map_depth", "get_map_depth");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_REAL_ARRAY, "map_data"), "set_map_data", "get_map_data");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "map_data"), "set_map_data", "get_map_data");
 }
 
 HeightMapShape::HeightMapShape() :
