@@ -2945,11 +2945,11 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
-	menu->connect("id_pressed", callable_mp(this, &SceneTreeDock::_tool_selected));
+	menu->connect("id_pressed", callable_mp(this, &SceneTreeDock::_tool_selected), make_binds(false));
 	menu->set_hide_on_window_lose_focus(true);
 	menu_subresources = memnew(PopupMenu);
 	menu_subresources->set_name("Sub-Resources");
-	menu_subresources->connect("id_pressed", callable_mp(this, &SceneTreeDock::_tool_selected));
+	menu_subresources->connect("id_pressed", callable_mp(this, &SceneTreeDock::_tool_selected), make_binds(false));
 	menu->add_child(menu_subresources);
 	first_enter = true;
 	restore_script_editor_on_drag = false;
