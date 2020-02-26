@@ -1,5 +1,4 @@
 import os
-import os.path
 import re
 import glob
 import subprocess
@@ -626,14 +625,23 @@ def detect_darwin_sdk_path(platform, env):
             raise
 
 def get_compiler_version(env):
-    # Not using this method on clang because it returns 4.2.1 # https://reviews.llvm.org/D56803
-    if using_gcc(env):
-        version = decode_utf8(subprocess.check_output([env['CXX'], '-dumpversion']).strip())
-    else:
-        version = decode_utf8(subprocess.check_output([env['CXX'], '--version']).strip())
-    match = re.search('[0-9][0-9.]*', version)
+    """
+    Returns an array of version numbers as ints: [major, minor, patch].
+    The return array should have at least two values (major, minor).
+    """
+    if not env.msvc:
+        # Not using -dumpversion as some GCC distros only return major, and
+        # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
+        try:
+            version = decode_utf8(subprocess.check_output([env.subst(env['CXX']), '--version']).strip())
+        except (subprocess.CalledProcessError, OSError):
+            print("Couldn't parse CXX environment variable to infer compiler version.")
+            return None
+    else:  # TODO: Implement for MSVC
+        return None
+    match = re.search('[0-9]+\.[0-9.]+', version)
     if match is not None:
-        return match.group().split('.')
+        return list(map(int, match.group().split('.')))
     else:
         return None
 

@@ -350,12 +350,13 @@ if selected_platform in platform_list:
         # Force to use Unicode encoding
         env.Append(MSVC_FLAGS=['/utf8'])
     else: # Rest of the world
+        version = methods.get_compiler_version(env) or [-1, -1]
+
         shadow_local_warning = []
         all_plus_warnings = ['-Wwrite-strings']
 
         if methods.using_gcc(env):
-            version = methods.get_compiler_version(env)
-            if version != None and version[0] >= '7':
+            if version[0] >= 7:
                 shadow_local_warning = ['-Wshadow-local']
 
         if (env["warnings"] == 'extra'):
@@ -369,8 +370,7 @@ if selected_platform in platform_list:
                     '-Wduplicated-branches', '-Wduplicated-cond',
                     '-Wstringop-overflow=4', '-Wlogical-op'])
                 env.Append(CXXFLAGS=['-Wnoexcept', '-Wplacement-new=1'])
-                version = methods.get_compiler_version(env)
-                if version != None and version[0] >= '9':
+                if version[0] >= 9:
                     env.Append(CCFLAGS=['-Wattribute-alias=2'])
         elif (env["warnings"] == 'all'):
             env.Append(CCFLAGS=['-Wall'] + shadow_local_warning)
