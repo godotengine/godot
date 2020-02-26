@@ -401,6 +401,11 @@ def configure(env):
         setup_mingw(env)
         env.msvc = False
 
+    if env['use_llvm']:
+        if env['use_thinlto']:
+            # A convenience so you don't need to write use_lto too when using SCons
+            env['use_lto'] = True
+
     # Now set compiler/linker flags
     if env.msvc:
         configure_msvc(env, manual_msvc_config)
