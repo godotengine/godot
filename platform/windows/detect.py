@@ -340,8 +340,8 @@ def configure_mingw(env):
         env["CC"] = mingw_prefix + "clang"
         env['AS'] = mingw_prefix + "as"
         env["CXX"] = mingw_prefix + "clang++"
-        env['AR'] = mingw_prefix + "ar"
-        env['RANLIB'] = mingw_prefix + "ranlib"
+        env['AR'] = mingw_prefix + "llvm-ar"
+        env['RANLIB'] = mingw_prefix + "llvm-ranlib"
         env["LINK"] = mingw_prefix + "clang++"
     else:
         env["CC"] = mingw_prefix + "gcc"
