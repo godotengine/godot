@@ -623,16 +623,24 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 					sbf = EditorNode::get_singleton()->get_theme_base()->get_theme()->get_stylebox("comment", "GraphNode");
 
 				Color c = sbf->get_border_color();
+				Color ic = c;
 				c.a = 1;
 				if (EditorSettings::get_singleton()->get("interface/theme/use_graph_node_headers")) {
-					Color mono_color = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0) : Color(0.0, 0.0, 0.0);
+					Color mono_color;
+					if (((c.r + c.g + c.b) / 3) < 0.7) {
+						mono_color = Color(1.0, 1.0, 1.0);
+						ic = Color(0.0, 0.0, 0.0, 0.7);
+					} else {
+						mono_color = Color(0.0, 0.0, 0.0);
+						ic = Color(1.0, 1.0, 1.0, 0.7);
+					}
 					mono_color.a = 0.85;
 					c = mono_color;
 				}
 				gnode->add_color_override("title_color", c);
 				c.a = 0.7;
 				gnode->add_color_override("close_color", c);
-				gnode->add_color_override("resizer_color", c);
+				gnode->add_color_override("resizer_color", ic);
 				gnode->add_style_override("frame", sbf);
 			}
 
