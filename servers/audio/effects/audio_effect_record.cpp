@@ -90,6 +90,7 @@ void AudioEffectRecordInstance::_io_store_buffer() {
 
 	AudioFrame *rb_buf = ring_buffer.ptrw();
 
+	MutexLock lock(recording_data_mutex);
 	while (to_read) {
 		AudioFrame buffered_frame = rb_buf[ring_buffer_read_pos & ring_buffer_mask];
 		recording_data.push_back(buffered_frame.l);
@@ -113,7 +114,10 @@ void AudioEffectRecordInstance::init() {
 	ring_buffer_read_pos = 0;
 
 	//We start a new recording
-	recording_data.resize(0); //Clear data completely and reset length
+	{
+		MutexLock lock(recording_data_mutex);
+		recording_data.resize(0); //Clear data completely and reset length
+	}
 	is_recording = true;
 
 #ifdef NO_THREADS
@@ -137,6 +141,7 @@ void AudioEffectRecordInstance::finish() {
 AudioEffectRecordInstance::~AudioEffectRecordInstance() {
 
 	finish();
+	memdelete(recording_data_mutex);
 }
 
 Ref<AudioEffectInstance> AudioEffectRecord::instance() {
@@ -218,59 +223,62 @@ Ref<AudioStreamSample> AudioEffectRecord::get_recording() const {
 	PoolVector<uint8_t> dst_data;
 
 	ERR_FAIL_COND_V(current_instance.is_null(), NULL);
-	ERR_FAIL_COND_V(current_instance->recording_data.size() == 0, NULL);
+	{
+		MutexLock lock(current_instance->recording_data_mutex);
+		ERR_FAIL_COND_V(current_instance->recording_data.size() == 0, NULL);
 
-	if (dst_format == AudioStreamSample::FORMAT_8_BITS) {
-		int data_size = current_instance->recording_data.size();
-		dst_data.resize(data_size);
-		PoolVector<uint8_t>::Write w = dst_data.write();
+		if (dst_format == AudioStreamSample::FORMAT_8_BITS) {
+			int data_size = current_instance->recording_data.size();
+			dst_data.resize(data_size);
+			PoolVector<uint8_t>::Write w = dst_data.write();
 
-		for (int i = 0; i < data_size; i++) {
-			int8_t v = CLAMP(current_instance->recording_data[i] * 128, -128, 127);
-			w[i] = v;
+			for (int i = 0; i < data_size; i++) {
+				int8_t v = CLAMP(current_instance->recording_data[i] * 128, -128, 127);
+				w[i] = v;
+			}
+		} else if (dst_format == AudioStreamSample::FORMAT_16_BITS) {
+			int data_size = current_instance->recording_data.size();
+			dst_data.resize(data_size * 2);
+			PoolVector<uint8_t>::Write w = dst_data.write();
+
+			for (int i = 0; i < data_size; i++) {
+				int16_t v = CLAMP(current_instance->recording_data[i] * 32768, -32768, 32767);
+				encode_uint16(v, &w[i * 2]);
+			}
+		} else if (dst_format == AudioStreamSample::FORMAT_IMA_ADPCM) {
+			//byte interleave
+			Vector<float> left;
+			Vector<float> right;
+
+			int tframes = current_instance->recording_data.size() / 2;
+			left.resize(tframes);
+			right.resize(tframes);
+
+			for (int i = 0; i < tframes; i++) {
+				left.set(i, current_instance->recording_data[i * 2 + 0]);
+				right.set(i, current_instance->recording_data[i * 2 + 1]);
+			}
+
+			PoolVector<uint8_t> bleft;
+			PoolVector<uint8_t> bright;
+
+			ResourceImporterWAV::_compress_ima_adpcm(left, bleft);
+			ResourceImporterWAV::_compress_ima_adpcm(right, bright);
+
+			int dl = bleft.size();
+			dst_data.resize(dl * 2);
+
+			PoolVector<uint8_t>::Write w = dst_data.write();
+			PoolVector<uint8_t>::Read rl = bleft.read();
+			PoolVector<uint8_t>::Read rr = bright.read();
+
+			for (int i = 0; i < dl; i++) {
+				w[i * 2 + 0] = rl[i];
+				w[i * 2 + 1] = rr[i];
+			}
+		} else {
+			ERR_PRINT("Format not implemented.");
 		}
-	} else if (dst_format == AudioStreamSample::FORMAT_16_BITS) {
-		int data_size = current_instance->recording_data.size();
-		dst_data.resize(data_size * 2);
-		PoolVector<uint8_t>::Write w = dst_data.write();
-
-		for (int i = 0; i < data_size; i++) {
-			int16_t v = CLAMP(current_instance->recording_data[i] * 32768, -32768, 32767);
-			encode_uint16(v, &w[i * 2]);
-		}
-	} else if (dst_format == AudioStreamSample::FORMAT_IMA_ADPCM) {
-		//byte interleave
-		Vector<float> left;
-		Vector<float> right;
-
-		int tframes = current_instance->recording_data.size() / 2;
-		left.resize(tframes);
-		right.resize(tframes);
-
-		for (int i = 0; i < tframes; i++) {
-			left.set(i, current_instance->recording_data[i * 2 + 0]);
-			right.set(i, current_instance->recording_data[i * 2 + 1]);
-		}
-
-		PoolVector<uint8_t> bleft;
-		PoolVector<uint8_t> bright;
-
-		ResourceImporterWAV::_compress_ima_adpcm(left, bleft);
-		ResourceImporterWAV::_compress_ima_adpcm(right, bright);
-
-		int dl = bleft.size();
-		dst_data.resize(dl * 2);
-
-		PoolVector<uint8_t>::Write w = dst_data.write();
-		PoolVector<uint8_t>::Read rl = bleft.read();
-		PoolVector<uint8_t>::Read rr = bright.read();
-
-		for (int i = 0; i < dl; i++) {
-			w[i * 2 + 0] = rl[i];
-			w[i * 2 + 1] = rr[i];
-		}
-	} else {
-		ERR_PRINT("Format not implemented.");
 	}
 
 	Ref<AudioStreamSample> sample;
