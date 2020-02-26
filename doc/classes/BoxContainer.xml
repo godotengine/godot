@@ -4,7 +4,7 @@
 		Base class for box containers.
 	</brief_description>
 	<description>
-		Arranges child controls vertically or horizontally, and rearranges the controls automatically when their minimum size changes.
+		Arranges child [Control] nodes vertically or horizontally, and rearranges them automatically when their minimum size changes.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,13 +15,13 @@
 			<argument index="0" name="begin" type="bool">
 			</argument>
 			<description>
-				Adds a control to the box as a spacer. If [code]true[/code], [code]begin[/code] will insert the spacer control in front of other children.
+				Adds a [Control] node to the box as a spacer. If [code]begin[/code] is [code]true[/code], it will insert the [Control] node in front of all other children.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="alignment" type="int" setter="set_alignment" getter="get_alignment" enum="BoxContainer.AlignMode" default="0">
-			The alignment of the container's children (must be one of [constant ALIGN_BEGIN], [constant ALIGN_CENTER] or [constant ALIGN_END]).
+			The alignment of the container's children (must be one of [constant ALIGN_BEGIN], [constant ALIGN_CENTER], or [constant ALIGN_END]).
 		</member>
 	</members>
 	<constants>

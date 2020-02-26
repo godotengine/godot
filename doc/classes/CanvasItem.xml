@@ -260,7 +260,7 @@
 			<argument index="9" name="texture_repeat" type="int" enum="CanvasItem.TextureRepeat" default="0">
 			</argument>
 			<description>
-				Draws a custom primitive. 1 point for a point, 2 points for a line, 3 points for a triangle and 4 points for a quad.
+				Draws a custom primitive. 1 point for a point, 2 points for a line, 3 points for a triangle, and 4 points for a quad.
 			</description>
 		</method>
 		<method name="draw_rect">
