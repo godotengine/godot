@@ -67,7 +67,7 @@ class Physics2DServerWrapMT : public Physics2DServer {
 
 	bool first_frame;
 
-	Mutex *alloc_mutex;
+	Mutex alloc_mutex;
 	int pool_max_size;
 
 public:

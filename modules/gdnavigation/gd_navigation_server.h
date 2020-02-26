@@ -61,7 +61,6 @@
 	void MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3)
 
 class GdNavigationServer;
-class Mutex;
 
 struct SetCommand {
 	virtual ~SetCommand() {}
@@ -69,9 +68,9 @@ struct SetCommand {
 };
 
 class GdNavigationServer : public NavigationServer {
-	Mutex *commands_mutex;
+	Mutex commands_mutex;
 	/// Mutex used to make any operation threadsafe.
-	Mutex *operations_mutex;
+	Mutex operations_mutex;
 
 	std::vector<SetCommand *> commands;
 

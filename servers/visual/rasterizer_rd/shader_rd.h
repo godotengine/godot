@@ -33,11 +33,11 @@
 
 #include "core/hash_map.h"
 #include "core/map.h"
+#include "core/os/mutex.h"
 #include "core/rid_owner.h"
 #include "core/variant.h"
 
 #include <stdio.h>
-#include <mutex>
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -66,7 +66,7 @@ class ShaderRD {
 		bool initialize_needed;
 	};
 
-	std::mutex variant_set_mutex;
+	Mutex variant_set_mutex;
 
 	void _compile_variant(uint32_t p_variant, Version *p_version);
 

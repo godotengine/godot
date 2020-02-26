@@ -928,13 +928,11 @@ ScriptInstance *VisualScript::instance_create(Object *p_this) {
 	VisualScriptInstance *instance = memnew(VisualScriptInstance);
 	instance->create(Ref<VisualScript>(this), p_this);
 
-	if (VisualScriptLanguage::singleton->lock)
-		VisualScriptLanguage::singleton->lock->lock();
+	{
+		MutexLock lock(VisualScriptLanguage::singleton->lock);
 
-	instances[p_this] = instance;
-
-	if (VisualScriptLanguage::singleton->lock)
-		VisualScriptLanguage::singleton->lock->unlock();
+		instances[p_this] = instance;
+	}
 
 	return instance;
 }
@@ -2391,13 +2389,11 @@ VisualScriptInstance::VisualScriptInstance() {
 
 VisualScriptInstance::~VisualScriptInstance() {
 
-	if (VisualScriptLanguage::singleton->lock)
-		VisualScriptLanguage::singleton->lock->lock();
+	{
+		MutexLock lock(VisualScriptLanguage::singleton->lock);
 
-	script->instances.erase(owner);
-
-	if (VisualScriptLanguage::singleton->lock)
-		VisualScriptLanguage::singleton->lock->unlock();
+		script->instances.erase(owner);
+	}
 
 	for (Map<int, VisualScriptNodeInstance *>::Element *E = instances.front(); E; E = E->next()) {
 		memdelete(E->get());
@@ -2836,9 +2832,6 @@ VisualScriptLanguage::VisualScriptLanguage() {
 	_step = "_step";
 	_subcall = "_subcall";
 	singleton = this;
-#ifndef NO_THREADS
-	lock = Mutex::create();
-#endif
 
 	_debug_parse_err_node = -1;
 	_debug_parse_err_file = "";
@@ -2858,9 +2851,6 @@ VisualScriptLanguage::VisualScriptLanguage() {
 }
 
 VisualScriptLanguage::~VisualScriptLanguage() {
-
-	if (lock)
-		memdelete(lock);
 
 	if (_call_stack) {
 		memdelete_arr(_call_stack);
