@@ -557,6 +557,10 @@ def is_vanilla_clang(env):
 
 
 def get_compiler_version(env):
+    """
+    Returns an array of version numbers as strings: [major, minor, patch].
+    The return array should have at least two values (major, minor).
+    """
     if using_gcc(env):
         version = decode_utf8(subprocess.check_output([env['CXX'], '-dumpversion']).strip())
     elif using_clang(env):
@@ -564,7 +568,7 @@ def get_compiler_version(env):
         version = decode_utf8(subprocess.check_output([env['CXX'], '--version']).strip())
     else:  # TODO: Implement for MSVC
         return None
-    match = re.search('[0-9][0-9.]*', version)
+    match = re.search('[0-9]+\.[0-9.]*', version)
     if match is not None:
         return match.group().split('.')
     else:
