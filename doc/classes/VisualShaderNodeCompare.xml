@@ -50,7 +50,7 @@
 			Comparison for less than ([code]a &lt; b[/code]). Cannot be used if [member type] set to [constant CTYPE_BOOLEAN] or [constant CTYPE_TRANSFORM].
 		</constant>
 		<constant name="FUNC_LESS_THAN_EQUAL" value="5" enum="Function">
-			Comparison for less than or equal ([code]a &lt; b[/code]). Cannot be used if [member type] set to [constant CTYPE_BOOLEAN] or [constant CTYPE_TRANSFORM].
+			Comparison for less than or equal ([code]a &lt;= b[/code]). Cannot be used if [member type] set to [constant CTYPE_BOOLEAN] or [constant CTYPE_TRANSFORM].
 		</constant>
 		<constant name="COND_ALL" value="0" enum="Condition">
 			The result will be true if all of component in vector satisfy the comparison condition.
