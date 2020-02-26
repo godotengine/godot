@@ -358,13 +358,15 @@
 				Control activation of this server.
 			</description>
 		</method>
-		<method name="step">
+		<method name="process">
 			<return type="void">
 			</return>
 			<argument index="0" name="delta_time" type="float">
 			</argument>
 			<description>
-				Steps the server. This is not threadsafe and must be called in single thread.
+				Process the collision avoidance agents.
+				The result of this process is needed by the physics server, so this must be called in the main thread.
+				Note: This function is not thread safe.
 			</description>
 		</method>
 	</methods>
