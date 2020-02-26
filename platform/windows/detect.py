@@ -195,6 +195,13 @@ def configure_msvc(env, manual_msvc_config):
         env.AppendUnique(CCFLAGS=['/Z7'])
         env.AppendUnique(LINKFLAGS=['/DEBUG'])
 
+    ## Compiler configuration
+    if env['use_llvm']:
+        env["CC"] = "clang-cl"
+        env["CXX"] = "clang-cl"
+        env["LINK"] = "lld-link"
+        env["AR"] = "llvm-lib"
+
     ## Compile/link flags
 
     env.AppendUnique(CCFLAGS=['/MT', '/Gd', '/GR', '/nologo'])
@@ -216,6 +223,8 @@ def configure_msvc(env, manual_msvc_config):
     env.AppendUnique(CPPDEFINES=['NOMINMAX']) # disable bogus min/max WinDef.h macros
     if env["bits"] == "64":
         env.AppendUnique(CPPDEFINES=['_WIN64'])
+    if env['use_llvm']:
+        env.Append(CCFLAGS=['-mssse3', '-msse4.1', '-Wno-c++11-narrowing'])
 
     ## Libs
 
@@ -234,12 +243,21 @@ def configure_msvc(env, manual_msvc_config):
     ## LTO
 
     if (env["use_lto"]):
-        env.AppendUnique(CCFLAGS=['/GL'])
-        env.AppendUnique(ARFLAGS=['/LTCG'])
-        if env["progress"]:
-            env.AppendUnique(LINKFLAGS=['/LTCG:STATUS'])
+        if env['use_llvm']:
+            if env['use_thinlto']:
+                env.Append(CCFLAGS=['-flto=thin'])
+                env.Append(LINKFLAGS=['-flto=thin'])
+            else:
+                env.Append(CCFLAGS=['-flto'])
+                env.Append(LINKFLAGS=['-flto'])
         else:
-            env.AppendUnique(LINKFLAGS=['/LTCG'])
+            env.AppendUnique(CCFLAGS=['/GL'])
+            env.AppendUnique(CCFLAGS=['/GL'])
+            env.AppendUnique(ARFLAGS=['/LTCG'])
+            if env["progress"]:
+                env.AppendUnique(LINKFLAGS=['/LTCG:STATUS'])
+            else:
+                env.AppendUnique(LINKFLAGS=['/LTCG'])
 
     if manual_msvc_config:
         env.Prepend(CPPPATH=[p for p in os.getenv("INCLUDE").split(";")])
