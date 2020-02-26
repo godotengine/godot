@@ -131,7 +131,9 @@ public:
 	COMMAND_1(free, RID, p_object);
 
 	virtual void set_active(bool p_active) const;
-	virtual void step(real_t p_delta_time);
+
+	void flush_queries();
+	virtual void process(real_t p_delta_time);
 };
 
 #undef COMMAND_1

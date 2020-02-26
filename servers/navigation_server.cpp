@@ -75,7 +75,7 @@ void NavigationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("free", "object"), &NavigationServer::free);
 
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &NavigationServer::set_active);
-	ClassDB::bind_method(D_METHOD("step", "delta_time"), &NavigationServer::step);
+	ClassDB::bind_method(D_METHOD("process", "delta_time"), &NavigationServer::process);
 }
 
 const NavigationServer *NavigationServer::get_singleton() {

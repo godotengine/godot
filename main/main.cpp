@@ -203,6 +203,7 @@ void finalize_physics() {
 
 void initialize_navigation_server() {
 	ERR_FAIL_COND(navigation_server != NULL);
+
 	navigation_server = NavigationServerManager::new_default_server();
 	navigation_2d_server = memnew(Navigation2DServer);
 }
@@ -210,6 +211,7 @@ void initialize_navigation_server() {
 void finalize_navigation_server() {
 	memdelete(navigation_server);
 	navigation_server = NULL;
+
 	memdelete(navigation_2d_server);
 	navigation_2d_server = NULL;
 }
@@ -2037,9 +2039,9 @@ bool Main::iteration() {
 			break;
 		}
 
-		message_queue->flush();
+		NavigationServer::get_singleton_mut()->process(frame_slice * time_scale);
 
-		NavigationServer::get_singleton_mut()->step(frame_slice * time_scale);
+		message_queue->flush();
 
 		PhysicsServer::get_singleton()->step(frame_slice * time_scale);
 
