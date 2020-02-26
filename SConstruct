@@ -334,15 +334,16 @@ if selected_platform in platform_list:
 
     # Enforce our minimal compiler version requirements
     version = methods.get_compiler_version(env)
-    major = int(version[0]) if version is not None else -1
-    if methods.using_gcc(env):
-        # GCC 8 has a regression in the support of guaranteed copy elision
+    if version is not None and methods.using_gcc(env):
+        major = int(version[0])
+        minor = int(version[1])
+        # GCC 8 before 8.4 has a regression in the support of guaranteed copy elision
         # which causes a build failure: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86521
-        if major == 8:
-            print("Detected GCC version 8, which is not supported due to a regression "
-                  "in its C++17 guaranteed copy elision support. Use a newer GCC "
-                  "version, or Clang 6 or later by passing \"use_llvm=yes\" to the "
-                  "SCons command line.")
+        if major == 8 and minor < 4:
+            print("Detected GCC 8 version < 8.4, which is not supported due to a "
+                  "regression in its C++17 guaranteed copy elision support. Use a "
+                  "newer GCC version, or Clang 6 or later by passing \"use_llvm=yes\" "
+                  "to the SCons command line.")
             sys.exit(255)
         elif major < 7:
             print("Detected GCC version older than 7, which does not fully support "
@@ -350,7 +351,8 @@ if selected_platform in platform_list:
                   "version, or Clang 6 or later by passing \"use_llvm=yes\" to the "
                   "SCons command line.")
             sys.exit(255)
-    elif methods.using_clang(env):
+    elif version is not None and methods.using_clang(env):
+        major = int(version[0])
         # Apple LLVM versions differ from upstream LLVM version \o/, compare
         # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
         if env["platform"] == "osx" or env["platform"] == "iphone":
