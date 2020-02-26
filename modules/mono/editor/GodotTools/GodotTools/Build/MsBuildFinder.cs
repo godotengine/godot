@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Godot;
+using GodotTools.Ides.Rider;
 using GodotTools.Internals;
 using Directory = System.IO.Directory;
 using Environment = System.Environment;
@@ -54,6 +55,12 @@ namespace GodotTools.Build
 
                         return msbuildPath;
                     }
+                    case BuildManager.BuildTool.JetBrainsMsBuild:
+                        var editorPath = (string)editorSettings.GetSetting(RiderPathManager.EditorPathSettingName);
+                        if (!File.Exists(editorPath))
+                            throw new FileNotFoundException($"Cannot find Rider executable. Tried with path: {editorPath}");
+                        var riderDir = new FileInfo(editorPath).Directory.Parent;
+                        return Path.Combine(riderDir.FullName, @"tools\MSBuild\Current\Bin\MSBuild.exe");
                     default:
                         throw new IndexOutOfRangeException("Invalid build tool in editor settings");
                 }
