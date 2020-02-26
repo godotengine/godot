@@ -57,7 +57,7 @@ class VisualServerWrapMT : public VisualServer {
 
 	void thread_exit();
 
-	Mutex *alloc_mutex;
+	Mutex alloc_mutex;
 
 	int pool_max_size;
 

@@ -40,14 +40,6 @@ void ThreadDummy::make_default() {
 	Thread::create_func = &ThreadDummy::create;
 };
 
-Mutex *MutexDummy::create(bool p_recursive) {
-	return memnew(MutexDummy);
-};
-
-void MutexDummy::make_default() {
-	Mutex::create_func = &MutexDummy::create;
-};
-
 SemaphoreOld *SemaphoreDummy::create() {
 	return memnew(SemaphoreDummy);
 };

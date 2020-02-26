@@ -90,7 +90,7 @@ static IP *ip = NULL;
 
 static _Geometry *_geometry = NULL;
 
-extern Mutex *_global_mutex;
+extern Mutex _global_mutex;
 
 extern void register_global_constants();
 extern void unregister_global_constants();
@@ -104,8 +104,6 @@ void register_core_types() {
 
 	ObjectDB::setup();
 	ResourceCache::setup();
-
-	_global_mutex = Mutex::create();
 
 	StringName::setup();
 	ResourceLoader::initialize();
@@ -319,9 +317,4 @@ void unregister_core_types() {
 	ResourceCache::clear();
 	CoreStringNames::free();
 	StringName::cleanup();
-
-	if (_global_mutex) {
-		memdelete(_global_mutex);
-		_global_mutex = NULL; //still needed at a few places
-	};
 }

@@ -65,7 +65,7 @@ class AudioDriverXAudio2 : public AudioDriver {
 	};
 
 	Thread *thread;
-	Mutex *mutex;
+	Mutex mutex;
 
 	int32_t *samples_in;
 	int16_t *samples_out[AUDIO_BUFFERS];

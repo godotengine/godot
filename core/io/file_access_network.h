@@ -52,8 +52,8 @@ class FileAccessNetworkClient {
 	SemaphoreOld *sem;
 	Thread *thread;
 	bool quit;
-	Mutex *mutex;
-	Mutex *blockrequest_mutex;
+	Mutex mutex;
+	Mutex blockrequest_mutex;
 	Map<int, FileAccessNetwork *> accesses;
 	Ref<StreamPeerTCP> client;
 	int last_id;
@@ -87,7 +87,7 @@ class FileAccessNetwork : public FileAccess {
 
 	SemaphoreOld *sem;
 	SemaphoreOld *page_sem;
-	Mutex *buffer_mutex;
+	Mutex buffer_mutex;
 	bool opened;
 	size_t total_size;
 	mutable size_t pos;

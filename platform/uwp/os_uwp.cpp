@@ -141,7 +141,6 @@ void OS_UWP::initialize_core() {
 
 	ThreadUWP::make_default();
 	SemaphoreWindows::make_default();
-	MutexWindows::make_default();
 	RWLockWindows::make_default();
 
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);

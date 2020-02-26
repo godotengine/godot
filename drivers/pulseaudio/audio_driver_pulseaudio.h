@@ -42,7 +42,7 @@
 class AudioDriverPulseAudio : public AudioDriver {
 
 	Thread *thread;
-	Mutex *mutex;
+	Mutex mutex;
 
 	pa_mainloop *pa_ml;
 	pa_context *pa_ctx;

@@ -107,7 +107,7 @@ public:
 		List<String> args;
 		String output;
 		Thread *execute_output_thread;
-		Mutex *execute_output_mutex;
+		Mutex execute_output_mutex;
 		int exitcode;
 		volatile bool done;
 	};

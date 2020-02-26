@@ -257,7 +257,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	Vector<Device> devices;
 	volatile bool devices_changed;
-	Mutex *device_lock;
+	Mutex device_lock;
 	Thread *device_thread;
 	volatile bool quit_request;
 
@@ -288,7 +288,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 					ldevices.push_back(d);
 				}
 
-				ea->device_lock->lock();
+				MutexLock lock(ea->device_lock);
 
 				bool different = false;
 
@@ -381,8 +381,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 					ea->devices = ndevices;
 					ea->devices_changed = true;
 				}
-
-				ea->device_lock->unlock();
 			}
 
 			uint64_t sleep = 200;
@@ -1432,11 +1430,8 @@ public:
 
 	virtual int get_options_count() const {
 
-		device_lock->lock();
-		int dc = devices.size();
-		device_lock->unlock();
-
-		return dc;
+		MutexLock lock(device_lock);
+		return devices.size();
 	}
 
 	virtual String get_options_tooltip() const {
@@ -1447,16 +1442,14 @@ public:
 	virtual String get_option_label(int p_index) const {
 
 		ERR_FAIL_INDEX_V(p_index, devices.size(), "");
-		device_lock->lock();
-		String s = devices[p_index].name;
-		device_lock->unlock();
-		return s;
+		MutexLock lock(device_lock);
+		return devices[p_index].name;
 	}
 
 	virtual String get_option_tooltip(int p_index) const {
 
 		ERR_FAIL_INDEX_V(p_index, devices.size(), "");
-		device_lock->lock();
+		MutexLock lock(device_lock);
 		String s = devices[p_index].description;
 		if (devices.size() == 1) {
 			// Tooltip will be:
@@ -1464,7 +1457,6 @@ public:
 			// Description
 			s = devices[p_index].name + "\n\n" + s;
 		}
-		device_lock->unlock();
 		return s;
 	}
 
@@ -1479,7 +1471,7 @@ public:
 			return ERR_UNCONFIGURED;
 		}
 
-		device_lock->lock();
+		MutexLock lock(device_lock);
 
 		EditorProgress ep("run", "Running on " + devices[p_device].name, 3);
 
@@ -1487,7 +1479,6 @@ public:
 
 		// Export_temp APK.
 		if (ep.step("Exporting APK...", 0)) {
-			device_lock->unlock();
 			return ERR_SKIP;
 		}
 
@@ -1502,7 +1493,6 @@ public:
 #define CLEANUP_AND_RETURN(m_err)                         \
 	{                                                     \
 		DirAccess::remove_file_or_error(tmp_export_path); \
-		device_lock->unlock();                            \
 		return m_err;                                     \
 	}
 
@@ -2570,7 +2560,6 @@ public:
 		run_icon.instance();
 		run_icon->create_from_image(img);
 
-		device_lock = Mutex::create();
 		devices_changed = true;
 		quit_request = false;
 		device_thread = Thread::create(_device_poll_thread, this);
@@ -2579,7 +2568,6 @@ public:
 	~EditorExportPlatformAndroid() {
 		quit_request = true;
 		Thread::wait_to_finish(device_thread);
-		memdelete(device_lock);
 		memdelete(device_thread);
 	}
 };

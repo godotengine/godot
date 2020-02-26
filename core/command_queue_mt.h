@@ -341,7 +341,7 @@ class CommandQueueMT {
 	uint32_t write_ptr;
 	uint32_t dealloc_ptr;
 	SyncSemaphore sync_sems[SYNC_SEMAPHORES];
-	Mutex *mutex;
+	Mutex mutex;
 	SemaphoreOld *sync;
 
 	template <class T>

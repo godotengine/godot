@@ -67,7 +67,6 @@ Error AudioDriverMediaKit::init() {
 		ERR_FAIL_COND_V(player == NULL, ERR_CANT_OPEN);
 	}
 
-	mutex = Mutex::create();
 	player->Start();
 
 	return OK;
@@ -108,14 +107,14 @@ void AudioDriverMediaKit::lock() {
 	if (!mutex)
 		return;
 
-	mutex->lock();
+	mutex.lock();
 }
 
 void AudioDriverMediaKit::unlock() {
 	if (!mutex)
 		return;
 
-	mutex->unlock();
+	mutex.unlock();
 }
 
 void AudioDriverMediaKit::finish() {
@@ -124,15 +123,9 @@ void AudioDriverMediaKit::finish() {
 	if (samples_in) {
 		memdelete_arr(samples_in);
 	};
-
-	if (mutex) {
-		memdelete(mutex);
-		mutex = NULL;
-	}
 }
 
 AudioDriverMediaKit::AudioDriverMediaKit() {
-	mutex = NULL;
 	player = NULL;
 }
 

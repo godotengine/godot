@@ -109,29 +109,28 @@ void EditorResourcePreview::_thread_func(void *ud) {
 
 void EditorResourcePreview::_preview_ready(const String &p_str, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_small_texture, ObjectID id, const StringName &p_func, const Variant &p_ud) {
 
-	preview_mutex->lock();
-
+	MutexLock lock(preview_mutex);
 	String path = p_str;
-	uint32_t hash = 0;
-	uint64_t modified_time = 0;
+	{
+		uint32_t hash = 0;
+		uint64_t modified_time = 0;
 
-	if (p_str.begins_with("ID:")) {
-		hash = uint32_t(p_str.get_slicec(':', 2).to_int64());
-		path = "ID:" + p_str.get_slicec(':', 1);
-	} else {
-		modified_time = FileAccess::get_modified_time(path);
+		if (p_str.begins_with("ID:")) {
+			hash = uint32_t(p_str.get_slicec(':', 2).to_int64());
+			path = "ID:" + p_str.get_slicec(':', 1);
+		} else {
+			modified_time = FileAccess::get_modified_time(path);
+		}
+
+		Item item;
+		item.order = order++;
+		item.preview = p_texture;
+		item.small_preview = p_small_texture;
+		item.last_hash = hash;
+		item.modified_time = modified_time;
+
+		cache[path] = item;
 	}
-
-	Item item;
-	item.order = order++;
-	item.preview = p_texture;
-	item.small_preview = p_small_texture;
-	item.last_hash = hash;
-	item.modified_time = modified_time;
-
-	cache[path] = item;
-
-	preview_mutex->unlock();
 
 	MessageQueue::get_singleton()->push_call(id, p_func, path, p_texture, p_small_texture, p_ud);
 }
@@ -219,7 +218,7 @@ void EditorResourcePreview::_thread() {
 	while (!exit) {
 
 		preview_sem->wait();
-		preview_mutex->lock();
+		preview_mutex.lock();
 
 		if (queue.size()) {
 
@@ -235,10 +234,10 @@ void EditorResourcePreview::_thread() {
 
 				_preview_ready(path, cache[item.path].preview, cache[item.path].small_preview, item.id, item.function, item.userdata);
 
-				preview_mutex->unlock();
+				preview_mutex.unlock();
 			} else {
 
-				preview_mutex->unlock();
+				preview_mutex.unlock();
 
 				Ref<ImageTexture> texture;
 				Ref<ImageTexture> small_texture;
@@ -345,7 +344,7 @@ void EditorResourcePreview::_thread() {
 			}
 
 		} else {
-			preview_mutex->unlock();
+			preview_mutex.unlock();
 		}
 	}
 	exited = true;
@@ -356,51 +355,54 @@ void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p
 	ERR_FAIL_NULL(p_receiver);
 	ERR_FAIL_COND(!p_res.is_valid());
 
-	preview_mutex->lock();
+	{
+		MutexLock lock(preview_mutex);
 
-	String path_id = "ID:" + itos(p_res->get_instance_id());
+		String path_id = "ID:" + itos(p_res->get_instance_id());
 
-	if (cache.has(path_id) && cache[path_id].last_hash == p_res->hash_edited_version()) {
+		if (cache.has(path_id) && cache[path_id].last_hash == p_res->hash_edited_version()) {
 
-		cache[path_id].order = order++;
-		p_receiver->call(p_receiver_func, path_id, cache[path_id].preview, cache[path_id].small_preview, p_userdata);
-		preview_mutex->unlock();
-		return;
+			cache[path_id].order = order++;
+			p_receiver->call(p_receiver_func, path_id, cache[path_id].preview, cache[path_id].small_preview, p_userdata);
+			preview_mutex.unlock();
+			return;
+		}
+
+		cache.erase(path_id); //erase if exists, since it will be regen
+
+		QueueItem item;
+		item.function = p_receiver_func;
+		item.id = p_receiver->get_instance_id();
+		item.resource = p_res;
+		item.path = path_id;
+		item.userdata = p_userdata;
+
+		queue.push_back(item);
 	}
-
-	cache.erase(path_id); //erase if exists, since it will be regen
-
-	QueueItem item;
-	item.function = p_receiver_func;
-	item.id = p_receiver->get_instance_id();
-	item.resource = p_res;
-	item.path = path_id;
-	item.userdata = p_userdata;
-
-	queue.push_back(item);
-	preview_mutex->unlock();
 	preview_sem->post();
 }
 
 void EditorResourcePreview::queue_resource_preview(const String &p_path, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata) {
 
 	ERR_FAIL_NULL(p_receiver);
-	preview_mutex->lock();
-	if (cache.has(p_path)) {
-		cache[p_path].order = order++;
-		p_receiver->call(p_receiver_func, p_path, cache[p_path].preview, cache[p_path].small_preview, p_userdata);
-		preview_mutex->unlock();
-		return;
+	{
+		MutexLock lock(preview_mutex);
+
+		if (cache.has(p_path)) {
+			cache[p_path].order = order++;
+			p_receiver->call(p_receiver_func, p_path, cache[p_path].preview, cache[p_path].small_preview, p_userdata);
+			preview_mutex.unlock();
+			return;
+		}
+
+		QueueItem item;
+		item.function = p_receiver_func;
+		item.id = p_receiver->get_instance_id();
+		item.path = p_path;
+		item.userdata = p_userdata;
+
+		queue.push_back(item);
 	}
-
-	QueueItem item;
-	item.function = p_receiver_func;
-	item.id = p_receiver->get_instance_id();
-	item.path = p_path;
-	item.userdata = p_userdata;
-
-	queue.push_back(item);
-	preview_mutex->unlock();
 	preview_sem->post();
 }
 
@@ -434,19 +436,18 @@ void EditorResourcePreview::_bind_methods() {
 
 void EditorResourcePreview::check_for_invalidation(const String &p_path) {
 
-	preview_mutex->lock();
-
+	MutexLock lock(preview_mutex);
 	bool call_invalidated = false;
-	if (cache.has(p_path)) {
+	{
+		if (cache.has(p_path)) {
 
-		uint64_t modified_time = FileAccess::get_modified_time(p_path);
-		if (modified_time != cache[p_path].modified_time) {
-			cache.erase(p_path);
-			call_invalidated = true;
+			uint64_t modified_time = FileAccess::get_modified_time(p_path);
+			if (modified_time != cache[p_path].modified_time) {
+				cache.erase(p_path);
+				call_invalidated = true;
+			}
 		}
 	}
-
-	preview_mutex->unlock();
 
 	if (call_invalidated) { //do outside mutex
 		call_deferred("emit_signal", "preview_invalidated", p_path);
@@ -475,7 +476,6 @@ void EditorResourcePreview::stop() {
 EditorResourcePreview::EditorResourcePreview() {
 	thread = NULL;
 	singleton = this;
-	preview_mutex = Mutex::create();
 	preview_sem = SemaphoreOld::create();
 	order = 0;
 	exit = false;
@@ -485,6 +485,5 @@ EditorResourcePreview::EditorResourcePreview() {
 EditorResourcePreview::~EditorResourcePreview() {
 
 	stop();
-	memdelete(preview_mutex);
 	memdelete(preview_sem);
 }

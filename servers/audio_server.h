@@ -238,7 +238,7 @@ private:
 	size_t audio_data_total_mem;
 	size_t audio_data_max_mem;
 
-	Mutex *audio_data_lock;
+	Mutex audio_data_lock;
 
 	void init_channels_and_buffers();
 

@@ -72,7 +72,7 @@ private:
 	};
 
 	bool exit_udev;
-	Mutex *joy_mutex;
+	Mutex joy_mutex;
 	Thread *joy_thread;
 	InputDefault *input;
 	Joypad joypads[JOYPADS_MAX];

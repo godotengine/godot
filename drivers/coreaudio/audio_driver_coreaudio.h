@@ -46,7 +46,7 @@ class AudioDriverCoreAudio : public AudioDriver {
 	AudioComponentInstance input_unit;
 
 	bool active;
-	Mutex *mutex;
+	Mutex mutex;
 
 	String device_name;
 	String capture_device_name;

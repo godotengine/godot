@@ -69,8 +69,6 @@ OSStatus AudioDriverCoreAudio::output_device_address_cb(AudioObjectID inObjectID
 #endif
 
 Error AudioDriverCoreAudio::init() {
-	mutex = Mutex::create();
-
 	AudioComponentDescription desc;
 	zeromem(&desc, sizeof(desc));
 	desc.componentType = kAudioUnitType_Output;
@@ -280,19 +278,15 @@ AudioDriver::SpeakerMode AudioDriverCoreAudio::get_speaker_mode() const {
 };
 
 void AudioDriverCoreAudio::lock() {
-	if (mutex)
-		mutex->lock();
+	mutex.lock();
 };
 
 void AudioDriverCoreAudio::unlock() {
-	if (mutex)
-		mutex->unlock();
+	mutex.unlock();
 };
 
 bool AudioDriverCoreAudio::try_lock() {
-	if (mutex)
-		return mutex->try_lock() == OK;
-	return true;
+	return mutex.try_lock() == OK;
 }
 
 void AudioDriverCoreAudio::finish() {
@@ -343,11 +337,6 @@ void AudioDriverCoreAudio::finish() {
 
 		audio_unit = NULL;
 		unlock();
-	}
-
-	if (mutex) {
-		memdelete(mutex);
-		mutex = NULL;
 	}
 }
 
@@ -691,7 +680,6 @@ AudioDriverCoreAudio::AudioDriverCoreAudio() :
 		audio_unit(NULL),
 		input_unit(NULL),
 		active(false),
-		mutex(NULL),
 		device_name("Default"),
 		capture_device_name("Default"),
 		mix_rate(0),

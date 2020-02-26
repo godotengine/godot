@@ -40,7 +40,7 @@
 #include <SoundPlayer.h>
 
 class AudioDriverMediaKit : public AudioDriver {
-	Mutex *mutex;
+	Mutex mutex;
 
 	BSoundPlayer *player;
 	static int32_t *samples_in;
