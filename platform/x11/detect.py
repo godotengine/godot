@@ -61,6 +61,7 @@ def get_opts():
         BoolVariable('use_lld', 'Use the LLD linker', False),
         BoolVariable('use_thinlto', 'Use ThinLTO', False),
         BoolVariable('use_static_cpp', 'Link libgcc and libstdc++ statically for better portability', False),
+        BoolVariable('use_coverage', 'Test Godot coverage', False),
         BoolVariable('use_ubsan', 'Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)', False),
         BoolVariable('use_asan', 'Use LLVM/GCC compiler address sanitizer (ASAN))', False),
         BoolVariable('use_lsan', 'Use LLVM/GCC compiler leak sanitizer (LSAN))', False),
@@ -140,6 +141,10 @@ def configure(env):
         else:
             print("Using LLD with GCC is not supported yet, try compiling with 'use_llvm=yes'.")
             sys.exit(255)
+
+    if env['use_coverage']:
+        env.Append(CCFLAGS=['-ftest-coverage', '-fprofile-arcs'])
+        env.Append(LINKFLAGS=['-ftest-coverage', '-fprofile-arcs'])
 
     if env['use_ubsan'] or env['use_asan'] or env['use_lsan'] or env['use_tsan']:
         env.extra_suffix += "s"
