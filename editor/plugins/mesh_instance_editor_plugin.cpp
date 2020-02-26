@@ -455,7 +455,7 @@ MeshInstanceEditor::MeshInstanceEditor() {
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Trimesh Collision Sibling"), MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE);
 	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a polygon-based collision shape.\nThis is the most accurate (but slowest) option for collision detection."));
-	options->get_popup()->add_item(TTR("Create Single Convex Collision Siblings"), MENU_OPTION_CREATE_SINGLE_CONVEX_COLLISION_SHAPE);
+	options->get_popup()->add_item(TTR("Create Single Convex Collision Sibling"), MENU_OPTION_CREATE_SINGLE_CONVEX_COLLISION_SHAPE);
 	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a single convex collision shape.\nThis is the fastest (but least accurate) option for collision detection."));
 	options->get_popup()->add_item(TTR("Create Multiple Convex Collision Siblings"), MENU_OPTION_CREATE_MULTIPLE_CONVEX_COLLISION_SHAPES);
 	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a polygon-based collision shape.\nThis is a performance middle-ground between the two above options."));
