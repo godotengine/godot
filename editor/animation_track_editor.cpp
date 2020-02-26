@@ -3385,6 +3385,11 @@ void AnimationTrackEditor::cleanup() {
 }
 
 void AnimationTrackEditor::_name_limit_changed() {
+	// called from conditional (dragging_hsize) at AnimationTimelineEdit::_gui_input through signals
+	if (bezier_edit->is_visible()) {
+		bezier_edit->update();
+		bezier_edit->update_play_position();
+	}
 
 	for (int i = 0; i < track_edits.size(); i++) {
 		track_edits[i]->update();
