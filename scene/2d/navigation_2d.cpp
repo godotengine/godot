@@ -88,3 +88,7 @@ Navigation2D::Navigation2D() {
 	set_cell_size(10); // Ten pixels
 	set_edge_connection_margin(100);
 }
+
+Navigation2D::~Navigation2D() {
+	Navigation2DServer::get_singleton()->free(map);
+}
