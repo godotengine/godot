@@ -179,18 +179,10 @@ def configure(env):
     env.Append(CCFLAGS=['-pipe'])
     env.Append(LINKFLAGS=['-pipe'])
 
-    # Check for gcc version >= 6 before adding -no-pie
-    if using_gcc(env):
-        version = get_compiler_version(env)
-        if version != None and version[0] >= '6':
-            env.Append(CCFLAGS=['-fpie'])
-            env.Append(LINKFLAGS=['-no-pie'])
-    # Do the same for clang should be fine with Clang 4 and higher
-    if using_clang(env):
-        version = get_compiler_version(env)
-        if version != None and version[0] >= '4':
-            env.Append(CCFLAGS=['-fpie'])
-            env.Append(LINKFLAGS=['-no-pie'])
+    # -fpie and -no-pie is supported on GCC 6+ and Clang 4+, both below our
+    # minimal requirements.
+    env.Append(CCFLAGS=['-fpie'])
+    env.Append(LINKFLAGS=['-no-pie'])
 
     ## Dependencies
 
