@@ -358,8 +358,39 @@ Error VulkanContext::_create_physical_device() {
 		free(physical_devices);
 		ERR_FAIL_V(ERR_CANT_CREATE);
 	}
-	/* for now, just grab the first physical device */
-	gpu = physical_devices[0];
+
+	/*Find the first discrete GPU with the most VRAM.*/
+	{
+		print_line("Selecting primary GPU.");
+		VkPhysicalDeviceProperties device_properties;
+		VkPhysicalDeviceMemoryProperties memory_properties;
+		gpu = physical_devices[0];
+		uint32_t largest_vram_size = 0;
+		VkPhysicalDeviceType gpu_type = VK_PHYSICAL_DEVICE_TYPE_OTHER;
+		for (uint32_t i = 0; i < gpu_count; i++) {
+			vkGetPhysicalDeviceProperties(physical_devices[i], &device_properties);
+
+			/*Skip virtual and CPU devices for now.*/
+			if (device_properties.deviceType > VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+				continue;
+			}
+
+			vkGetPhysicalDeviceMemoryProperties(physical_devices[i], &memory_properties);
+
+			/*Total all heaps in case of 3GB+1GB configurations and similar.*/
+			uint32_t memory_size = 0;
+			for (uint32_t j = 0; j < memory_properties.memoryHeapCount; j++) {
+				memory_size += memory_properties.memoryHeaps[j].size;
+			}
+
+			if ((device_properties.deviceType >= gpu_type) || (device_properties.deviceType == gpu_type && memory_size > largest_vram_size)) {
+				gpu = physical_devices[i];
+				gpu_type = device_properties.deviceType;
+				largest_vram_size = memory_size;
+				print_line(device_properties.deviceName);
+			}
+		}
+	}
 	free(physical_devices);
 
 	/* Look for device extensions */
