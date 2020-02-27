@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeInput" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		Represents the input shader parameter within the visual shader graph.
 	</brief_description>
 	<description>
 	</description>
@@ -11,16 +12,19 @@
 			<return type="String">
 			</return>
 			<description>
+				Returns a translated name of the current constant in the Godot Shader Language. eg. [code]"ALBEDO"[/code] if the [member input_name] equal to [code]"albedo"[/code].
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="input_name" type="String" setter="set_input_name" getter="get_input_name" default="&quot;[None]&quot;">
+			One of the several input constants in lower-case style like: "vertex"([/code]VERTEX[code]) or "point_size"([code]POINT_SIZE[/code]).
 		</member>
 	</members>
 	<signals>
 		<signal name="input_type_changed">
 			<description>
+				Emitted when input is changed via [member input_name].
 			</description>
 		</signal>
 	</signals>
