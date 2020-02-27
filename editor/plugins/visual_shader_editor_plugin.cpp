@@ -1609,8 +1609,29 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT)
-		_show_members_dialog(true);
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
+		List<int> to_change;
+		for (int i = 0; i < graph->get_child_count(); i++) {
+			GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+			if (gn) {
+				if (gn->is_selected() && gn->is_close_button_visible()) {
+					to_change.push_back(gn->get_name().operator String().to_int());
+				}
+			}
+		}
+		if (to_change.empty() && copy_nodes_buffer.empty()) {
+			_show_members_dialog(true);
+		} else {
+			popup_menu->set_item_disabled(NodeMenuOptions::COPY, to_change.empty());
+			popup_menu->set_item_disabled(NodeMenuOptions::DELETE, to_change.empty());
+			popup_menu->set_item_disabled(NodeMenuOptions::DUPLICATE, to_change.empty());
+			popup_menu->set_item_disabled(NodeMenuOptions::PASTE, copy_nodes_buffer.empty());
+			menu_point = graph->get_local_mouse_position();
+			Point2 gpos = Input::get_singleton()->get_mouse_position();
+			popup_menu->set_position(gpos);
+			popup_menu->popup();
+		}
+	}
 }
 
 void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos) {
@@ -1908,7 +1929,7 @@ void VisualShaderEditor::_copy_nodes() {
 	_dup_copy_nodes(copy_type, copy_nodes_buffer, copy_nodes_excluded_buffer);
 }
 
-void VisualShaderEditor::_paste_nodes() {
+void VisualShaderEditor::_paste_nodes(bool p_use_custom_position, const Vector2 &p_custom_position) {
 
 	if (copy_nodes_buffer.empty())
 		return;
@@ -1919,7 +1940,14 @@ void VisualShaderEditor::_paste_nodes() {
 
 	float scale = graph->get_zoom();
 
-	_dup_paste_nodes(type, copy_type, copy_nodes_buffer, copy_nodes_excluded_buffer, (graph->get_scroll_ofs() / scale + graph->get_local_mouse_position() / scale - selection_center), false);
+	Vector2 mpos;
+	if (p_use_custom_position) {
+		mpos = p_custom_position;
+	} else {
+		mpos = graph->get_local_mouse_position();
+	}
+
+	_dup_paste_nodes(type, copy_type, copy_nodes_buffer, copy_nodes_excluded_buffer, (graph->get_scroll_ofs() / scale + mpos / scale - selection_center), false);
 
 	_dup_update_excluded(type, copy_nodes_excluded_buffer); // to prevent selection of previous copies at new paste
 }
@@ -2110,6 +2138,26 @@ void VisualShaderEditor::_tools_menu_option(int p_idx) {
 	}
 }
 
+void VisualShaderEditor::_node_menu_id_pressed(int p_idx) {
+	switch (p_idx) {
+		case NodeMenuOptions::ADD:
+			_show_members_dialog(true);
+			break;
+		case NodeMenuOptions::COPY:
+			_copy_nodes();
+			break;
+		case NodeMenuOptions::DELETE:
+			_on_nodes_delete();
+			break;
+		case NodeMenuOptions::DUPLICATE:
+			_duplicate_nodes();
+			break;
+		case NodeMenuOptions::PASTE:
+			_paste_nodes(true, menu_point);
+			break;
+	}
+}
+
 Variant VisualShaderEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 
 	if (p_from == members) {
@@ -2291,6 +2339,8 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_member_unselected", &VisualShaderEditor::_member_unselected);
 	ClassDB::bind_method("_member_create", &VisualShaderEditor::_member_create);
 	ClassDB::bind_method("_member_cancel", &VisualShaderEditor::_member_cancel);
+
+	ClassDB::bind_method("_node_menu_id_pressed", &VisualShaderEditor::_node_menu_id_pressed);
 }
 
 VisualShaderEditor *VisualShaderEditor::singleton = NULL;
@@ -2405,6 +2455,20 @@ VisualShaderEditor::VisualShaderEditor() {
 	error_text = memnew(Label);
 	preview_vbox->add_child(error_text);
 	error_text->set_visible(false);
+
+	///////////////////////////////////////
+	// POPUP MENU
+	///////////////////////////////////////
+
+	popup_menu = memnew(PopupMenu);
+	add_child(popup_menu);
+	popup_menu->add_item("Add Node", NodeMenuOptions::ADD);
+	popup_menu->add_separator();
+	popup_menu->add_item("Copy", NodeMenuOptions::COPY);
+	popup_menu->add_item("Delete", NodeMenuOptions::DELETE);
+	popup_menu->add_item("Duplicate", NodeMenuOptions::DUPLICATE);
+	popup_menu->add_item("Paste", NodeMenuOptions::PASTE);
+	popup_menu->connect_compat("id_pressed", this, "_node_menu_id_pressed");
 
 	///////////////////////////////////////
 	// SHADER NODES TREE
