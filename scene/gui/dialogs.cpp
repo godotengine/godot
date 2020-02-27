@@ -338,8 +338,6 @@ void WindowDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_resizable"), &WindowDialog::get_resizable);
 	ClassDB::bind_method(D_METHOD("get_close_button"), &WindowDialog::get_close_button);
 
-	ClassDB::bind_method(D_METHOD("_closed"), &WindowDialog::_closed); // Still used by some connect_compat.
-
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "window_title", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT_INTL), "set_title", "get_title");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resizable", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT_INTL), "set_resizable", "get_resizable");
 }
@@ -398,7 +396,7 @@ void AcceptDialog::_notification(int p_what) {
 	}
 }
 
-void AcceptDialog::_builtin_text_entered(const String &p_text) {
+void AcceptDialog::_text_entered(const String &p_text) {
 
 	_ok_pressed();
 }
@@ -410,9 +408,16 @@ void AcceptDialog::_ok_pressed() {
 	ok_pressed();
 	emit_signal("confirmed");
 }
+
 void AcceptDialog::_close_pressed() {
 
 	cancel_pressed();
+}
+
+// FIXME: This is redundant with _closed_pressed, but there's a slight behavior
+// change (WindowDialog's _closed() also calls hide()) which should be assessed.
+void AcceptDialog::_on_close_pressed() {
+	_closed(); // From WindowDialog.
 }
 
 String AcceptDialog::get_text() const {
@@ -449,7 +454,7 @@ void AcceptDialog::register_text_enter(Node *p_line_edit) {
 	ERR_FAIL_NULL(p_line_edit);
 	LineEdit *line_edit = Object::cast_to<LineEdit>(p_line_edit);
 	if (line_edit)
-		line_edit->connect("text_entered", callable_mp(this, &AcceptDialog::_builtin_text_entered));
+		line_edit->connect("text_entered", callable_mp(this, &AcceptDialog::_text_entered));
 }
 
 void AcceptDialog::_update_child_rects() {
@@ -546,7 +551,7 @@ Button *AcceptDialog::add_cancel(const String &p_cancel) {
 	if (p_cancel == "")
 		c = RTR("Cancel");
 	Button *b = swap_ok_cancel ? add_button(c, true) : add_button(c);
-	b->connect_compat("pressed", this, "_closed");
+	b->connect("pressed", callable_mp(this, &AcceptDialog::_on_close_pressed));
 	return b;
 }
 
@@ -563,9 +568,6 @@ void AcceptDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text"), &AcceptDialog::get_text);
 	ClassDB::bind_method(D_METHOD("set_autowrap", "autowrap"), &AcceptDialog::set_autowrap);
 	ClassDB::bind_method(D_METHOD("has_autowrap"), &AcceptDialog::has_autowrap);
-
-	ClassDB::bind_method(D_METHOD("_ok"), &AcceptDialog::_ok_pressed); // Still used by some connect_compat.
-	ClassDB::bind_method(D_METHOD("_builtin_text_entered"), &AcceptDialog::_builtin_text_entered); // Still used by some connect_compat.
 
 	ADD_SIGNAL(MethodInfo("confirmed"));
 	ADD_SIGNAL(MethodInfo("custom_action", PropertyInfo(Variant::STRING_NAME, "action")));

@@ -945,7 +945,10 @@ void ProjectExportDialog::_export_project() {
 		}
 	}
 
-	// Ensure that signal is connected if previous attempt left it disconnected with _validate_export_path
+	// Ensure that signal is connected if previous attempt left it disconnected
+	// with _validate_export_path.
+	// FIXME: This is a hack, we should instead change EditorFileDialog to allow
+	// disabling validation by the "text_entered" signal.
 	if (!export_project->get_line_edit()->is_connected_compat("text_entered", export_project, "_file_entered")) {
 		export_project->get_ok()->set_disabled(false);
 		export_project->get_line_edit()->connect_compat("text_entered", export_project, "_file_entered");

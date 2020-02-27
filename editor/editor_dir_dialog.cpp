@@ -121,6 +121,10 @@ void EditorDirDialog::_item_collapsed(Object *p_item) {
 		opened_paths.insert(item->get_metadata(0));
 }
 
+void EditorDirDialog::_item_activated() {
+	_ok_pressed(); // From AcceptDialog.
+}
+
 void EditorDirDialog::ok_pressed() {
 
 	TreeItem *ti = tree->get_selected();
@@ -182,7 +186,7 @@ EditorDirDialog::EditorDirDialog() {
 	tree = memnew(Tree);
 	add_child(tree);
 
-	tree->connect_compat("item_activated", this, "_ok");
+	tree->connect("item_activated", callable_mp(this, &EditorDirDialog::_item_activated));
 
 	makedir = add_button(TTR("Create Folder"), OS::get_singleton()->get_swap_ok_cancel(), "makedir");
 	makedir->connect("pressed", callable_mp(this, &EditorDirDialog::_make_dir));

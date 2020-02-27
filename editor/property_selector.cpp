@@ -389,6 +389,10 @@ void PropertySelector::_item_selected() {
 	help_bit->set_text(text);
 }
 
+void PropertySelector::_hide_requested() {
+	_closed(); // From WindowDialog.
+}
+
 void PropertySelector::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -568,5 +572,5 @@ PropertySelector::PropertySelector() {
 
 	help_bit = memnew(EditorHelpBit);
 	vbc->add_margin_child(TTR("Description:"), help_bit);
-	help_bit->connect_compat("request_hide", this, "_closed");
+	help_bit->connect("request_hide", callable_mp(this, &PropertySelector::_hide_requested));
 }

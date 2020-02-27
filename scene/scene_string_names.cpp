@@ -162,7 +162,6 @@ SceneStringNames::SceneStringNames() {
 	can_drop_data = StaticCString::create("can_drop_data");
 
 	_im_update = StaticCString::create("_im_update"); // Sprite3D
-	_queue_update = StaticCString::create("_queue_update"); // Sprite3D
 
 	baked_light_changed = StaticCString::create("baked_light_changed");
 	_baked_light_changed = StaticCString::create("_baked_light_changed");

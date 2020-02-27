@@ -64,7 +64,6 @@ class WindowDialog : public Popup {
 #endif
 
 	void _gui_input(const Ref<InputEvent> &p_event);
-	void _closed();
 	int _drag_hit_test(const Point2 &pos) const;
 
 protected:
@@ -74,6 +73,9 @@ protected:
 	virtual bool has_point(const Point2 &p_point) const;
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	// Not private since used by derived classes signal.
+	void _closed();
 
 public:
 	TextureButton *get_close_button();
@@ -113,9 +115,7 @@ class AcceptDialog : public WindowDialog {
 	bool hide_on_ok;
 
 	void _custom_action(const String &p_action);
-	void _ok_pressed();
 	void _close_pressed();
-	void _builtin_text_entered(const String &p_text);
 	void _update_child_rects();
 
 	static bool swap_ok_cancel;
@@ -127,6 +127,11 @@ protected:
 	virtual void ok_pressed() {}
 	virtual void cancel_pressed() {}
 	virtual void custom_action(const String &) {}
+
+	// Not private since used by derived classes signal.
+	void _text_entered(const String &p_text);
+	void _ok_pressed();
+	void _on_close_pressed();
 
 public:
 	Size2 get_minimum_size() const;

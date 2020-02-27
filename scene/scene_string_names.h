@@ -174,7 +174,6 @@ public:
 	StringName _get_minimum_size;
 
 	StringName _im_update;
-	StringName _queue_update;
 
 	StringName baked_light_changed;
 	StringName _baked_light_changed;
