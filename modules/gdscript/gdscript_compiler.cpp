@@ -1579,7 +1579,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 	codegen.stack_max = 0;
 	codegen.current_line = 0;
 	codegen.call_max = 0;
-	codegen.debug_stack = ScriptDebugger::get_singleton() != NULL;
+	codegen.debug_stack = EngineDebugger::is_active();
 	Vector<StringName> argnames;
 
 	int stack_level = 0;
@@ -1765,7 +1765,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 	gdfunc->_call_size = codegen.call_max;
 	gdfunc->name = func_name;
 #ifdef DEBUG_ENABLED
-	if (ScriptDebugger::get_singleton()) {
+	if (EngineDebugger::is_active()) {
 		String signature;
 		//path
 		if (p_script->get_path() != String())

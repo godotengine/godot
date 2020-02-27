@@ -30,6 +30,7 @@
 
 #include "audio_server.h"
 
+#include "core/debugger/engine_debugger.h"
 #include "core/io/resource_loader.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
@@ -992,7 +993,7 @@ void AudioServer::init() {
 
 void AudioServer::update() {
 #ifdef DEBUG_ENABLED
-	if (ScriptDebugger::get_singleton() && ScriptDebugger::get_singleton()->is_profiling()) {
+	if (EngineDebugger::is_profiling("servers")) {
 
 		// Driver time includes server time + effects times
 		// Server time includes effects times
@@ -1030,7 +1031,8 @@ void AudioServer::update() {
 		values.push_back("audio_driver");
 		values.push_back(USEC_TO_SEC(driver_time));
 
-		ScriptDebugger::get_singleton()->add_profiling_frame_data("audio_thread", values);
+		values.push_front("audio_thread");
+		EngineDebugger::profiler_add_frame_data("servers", values);
 	}
 
 	// Reset profiling times

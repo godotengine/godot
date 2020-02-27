@@ -194,7 +194,7 @@ ScriptInstance *PluginScript::instance_create(Object *p_this) {
 		if (!ClassDB::is_parent_class(p_this->get_class_name(), base_type)) {
 			String msg = "Script inherits from native type '" + String(base_type) + "', so it can't be instanced in object of type: '" + p_this->get_class() + "'";
 			// TODO: implement PluginscriptLanguage::debug_break_parse
-			// if (ScriptDebugger::get_singleton()) {
+			// if (EngineDebugger::is_active()) {
 			// 	_language->debug_break_parse(get_path(), 0, msg);
 			// }
 			ERR_FAIL_V_MSG(NULL, msg);

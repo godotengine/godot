@@ -34,8 +34,9 @@
 #include "core/array.h"
 #include "core/object.h"
 #include "core/pair.h"
-#include "core/script_language.h"
 #include "core/ustring.h"
+
+class Script;
 
 class SceneDebugger {
 
@@ -50,7 +51,7 @@ private:
 	static void _send_object_id(ObjectID p_id, int p_max_size = 1 << 20);
 
 public:
-	static Error parse_message(const String &p_msg, const Array &p_args);
+	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
 	static void add_to_cache(const String &p_filename, Node *p_node);
 	static void remove_from_cache(const String &p_filename, Node *p_node);
 #endif

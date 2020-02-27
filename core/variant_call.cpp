@@ -33,10 +33,10 @@
 #include "core/color_names.inc"
 #include "core/core_string_names.h"
 #include "core/crypto/crypto_core.h"
+#include "core/debugger/engine_debugger.h"
 #include "core/io/compression.h"
 #include "core/object.h"
 #include "core/os/os.h"
-#include "core/script_language.h"
 
 typedef void (*VariantFunc)(Variant &r_ret, Variant &p_self, const Variant **p_args);
 typedef void (*VariantConstructFunc)(Variant &r_ret, const Variant **p_args);
@@ -1213,7 +1213,7 @@ void Variant::call_ptr(const StringName &p_method, const Variant **p_args, int p
 			return;
 		}
 #ifdef DEBUG_ENABLED
-		if (ScriptDebugger::get_singleton() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+		if (EngineDebugger::is_active() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
 			r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 			return;
 		}

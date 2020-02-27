@@ -30,8 +30,9 @@
 
 #include "scene_debugger.h"
 
+#include "core/debugger/engine_debugger.h"
 #include "core/io/marshalls.h"
-#include "core/script_debugger_remote.h"
+#include "core/script_language.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"
@@ -39,13 +40,16 @@
 void SceneDebugger::initialize() {
 #ifdef DEBUG_ENABLED
 	LiveEditor::singleton = memnew(LiveEditor);
-	ScriptDebuggerRemote::scene_tree_parse_func = SceneDebugger::parse_message;
+	EngineDebugger::register_message_capture("scene", EngineDebugger::Capture(NULL, SceneDebugger::parse_message));
 #endif
 }
 
 void SceneDebugger::deinitialize() {
 #ifdef DEBUG_ENABLED
 	if (LiveEditor::singleton) {
+		// Should be removed automatically when deiniting debugger, but just in case
+		if (EngineDebugger::has_capture("scene"))
+			EngineDebugger::unregister_message_capture("scene");
 		memdelete(LiveEditor::singleton);
 		LiveEditor::singleton = NULL;
 	}
@@ -53,13 +57,15 @@ void SceneDebugger::deinitialize() {
 }
 
 #ifdef DEBUG_ENABLED
-Error SceneDebugger::parse_message(const String &p_msg, const Array &p_args) {
+Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
 	if (!scene_tree)
 		return ERR_UNCONFIGURED;
 	LiveEditor *live_editor = LiveEditor::get_singleton();
 	if (!live_editor)
 		return ERR_UNCONFIGURED;
+
+	r_captured = true;
 	if (p_msg == "request_scene_tree") { // Scene tree
 		live_editor->_send_tree();
 
@@ -171,7 +177,7 @@ Error SceneDebugger::parse_message(const String &p_msg, const Array &p_args) {
 		ERR_FAIL_COND_V(p_args.size() < 4, ERR_INVALID_DATA);
 		live_editor->_reparent_node_func(p_args[0], p_args[1], p_args[2], p_args[3]);
 	} else {
-		return ERR_SKIP;
+		r_captured = false;
 	}
 	return OK;
 }
@@ -180,7 +186,6 @@ void SceneDebugger::_save_node(ObjectID id, const String &p_path) {
 	Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
 	ERR_FAIL_COND(!node);
 
-	WARN_PRINT("SAVING " + itos(id) + " TO " + p_path);
 	Ref<PackedScene> ps = memnew(PackedScene);
 	ps->pack(node);
 	ResourceSaver::save(p_path, ps);
@@ -193,7 +198,7 @@ void SceneDebugger::_send_object_id(ObjectID p_id, int p_max_size) {
 
 	Array arr;
 	obj.serialize(arr);
-	ScriptDebugger::get_singleton()->send_message("inspect_object", arr);
+	EngineDebugger::get_singleton()->send_message("scene:inspect_object", arr);
 }
 
 void SceneDebugger::_set_object_property(ObjectID p_id, const String &p_property, const Variant &p_value) {
@@ -216,7 +221,7 @@ void SceneDebugger::add_to_cache(const String &p_filename, Node *p_node) {
 	if (!debugger)
 		return;
 
-	if (ScriptDebugger::get_singleton() && p_filename != String()) {
+	if (EngineDebugger::get_script_debugger() && p_filename != String()) {
 		debugger->live_scene_edit_cache[p_filename].insert(p_node);
 	}
 }
@@ -487,7 +492,7 @@ void LiveEditor::_send_tree() {
 	// Encoded as a flat list depth fist.
 	SceneDebuggerTree tree(scene_tree->root);
 	tree.serialize(arr);
-	ScriptDebugger::get_singleton()->send_message("scene_tree", arr);
+	EngineDebugger::get_singleton()->send_message("scene:scene_tree", arr);
 }
 
 void LiveEditor::_node_path_func(const NodePath &p_path, int p_id) {
