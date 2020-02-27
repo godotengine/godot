@@ -1623,9 +1623,9 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 			_show_members_dialog(true);
 		} else {
 			popup_menu->set_item_disabled(NodeMenuOptions::COPY, to_change.empty());
+			popup_menu->set_item_disabled(NodeMenuOptions::PASTE, copy_nodes_buffer.empty());
 			popup_menu->set_item_disabled(NodeMenuOptions::DELETE, to_change.empty());
 			popup_menu->set_item_disabled(NodeMenuOptions::DUPLICATE, to_change.empty());
-			popup_menu->set_item_disabled(NodeMenuOptions::PASTE, copy_nodes_buffer.empty());
 			menu_point = graph->get_local_mouse_position();
 			Point2 gpos = Input::get_singleton()->get_mouse_position();
 			popup_menu->set_position(gpos);
@@ -1952,7 +1952,7 @@ void VisualShaderEditor::_paste_nodes(bool p_use_custom_position, const Vector2 
 	_dup_update_excluded(type, copy_nodes_excluded_buffer); // to prevent selection of previous copies at new paste
 }
 
-void VisualShaderEditor::_on_nodes_delete() {
+void VisualShaderEditor::_delete_nodes() {
 
 	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
 	List<int> to_erase;
@@ -2146,14 +2146,14 @@ void VisualShaderEditor::_node_menu_id_pressed(int p_idx) {
 		case NodeMenuOptions::COPY:
 			_copy_nodes();
 			break;
+		case NodeMenuOptions::PASTE:
+			_paste_nodes(true, menu_point);
+			break;
 		case NodeMenuOptions::DELETE:
-			_on_nodes_delete();
+			_delete_nodes();
 			break;
 		case NodeMenuOptions::DUPLICATE:
 			_duplicate_nodes();
-			break;
-		case NodeMenuOptions::PASTE:
-			_paste_nodes(true, menu_point);
 			break;
 	}
 }
@@ -2296,7 +2296,7 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_node_selected", &VisualShaderEditor::_node_selected);
 	ClassDB::bind_method("_scroll_changed", &VisualShaderEditor::_scroll_changed);
 	ClassDB::bind_method("_delete_request", &VisualShaderEditor::_delete_request);
-	ClassDB::bind_method("_on_nodes_delete", &VisualShaderEditor::_on_nodes_delete);
+	ClassDB::bind_method("_delete_nodes", &VisualShaderEditor::_delete_nodes);
 	ClassDB::bind_method("_node_changed", &VisualShaderEditor::_node_changed);
 	ClassDB::bind_method("_edit_port_default_input", &VisualShaderEditor::_edit_port_default_input);
 	ClassDB::bind_method("_port_edited", &VisualShaderEditor::_port_edited);
@@ -2388,7 +2388,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->connect_compat("duplicate_nodes_request", this, "_duplicate_nodes");
 	graph->connect_compat("copy_nodes_request", this, "_copy_nodes");
 	graph->connect_compat("paste_nodes_request", this, "_paste_nodes");
-	graph->connect_compat("delete_nodes_request", this, "_on_nodes_delete");
+	graph->connect_compat("delete_nodes_request", this, "_delete_nodes");
 	graph->connect_compat("gui_input", this, "_graph_gui_input");
 	graph->connect_compat("connection_to_empty", this, "_connection_to_empty");
 	graph->connect_compat("connection_from_empty", this, "_connection_from_empty");
@@ -2465,9 +2465,9 @@ VisualShaderEditor::VisualShaderEditor() {
 	popup_menu->add_item("Add Node", NodeMenuOptions::ADD);
 	popup_menu->add_separator();
 	popup_menu->add_item("Copy", NodeMenuOptions::COPY);
+	popup_menu->add_item("Paste", NodeMenuOptions::PASTE);
 	popup_menu->add_item("Delete", NodeMenuOptions::DELETE);
 	popup_menu->add_item("Duplicate", NodeMenuOptions::DUPLICATE);
-	popup_menu->add_item("Paste", NodeMenuOptions::PASTE);
 	popup_menu->connect_compat("id_pressed", this, "_node_menu_id_pressed");
 
 	///////////////////////////////////////

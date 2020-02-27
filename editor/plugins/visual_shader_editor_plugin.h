@@ -95,9 +95,9 @@ class VisualShaderEditor : public VBoxContainer {
 		ADD,
 		SEPARATOR, // ignore
 		COPY,
+		PASTE,
 		DELETE,
 		DUPLICATE,
-		PASTE,
 	};
 
 	Tree *members;
@@ -191,7 +191,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _node_selected(Object *p_node);
 
 	void _delete_request(int);
-	void _on_nodes_delete();
+	void _delete_nodes();
 
 	void _removed_from_graph();
 
