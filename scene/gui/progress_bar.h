@@ -36,7 +36,6 @@
 class ProgressBar : public Range {
 
 	GDCLASS(ProgressBar, Range);
-
 	bool percent_visible;
 
 protected:
@@ -44,11 +43,27 @@ protected:
 	static void _bind_methods();
 
 public:
+	enum FillMode {
+		FILL_UP,
+		FILL_DOWN,
+		FILL_LEFT,
+		FILL_RIGHT
+	};
+
+private:
+	FillMode fill;
+
+public:
+	void set_fill_mode(FillMode p_fill);
+	FillMode get_fill_mode() const;
+
 	void set_percent_visible(bool p_visible);
 	bool is_percent_visible() const;
 
 	Size2 get_minimum_size() const;
 	ProgressBar();
 };
+
+VARIANT_ENUM_CAST(ProgressBar::FillMode);
 
 #endif // PROGRESS_BAR_H
