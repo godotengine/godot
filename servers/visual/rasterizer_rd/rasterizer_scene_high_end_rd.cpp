@@ -2693,6 +2693,11 @@ RasterizerSceneHighEndRD::~RasterizerSceneHighEndRD() {
 		RD::get_singleton()->free(view_dependant_uniform_set);
 	}
 
+	RD::get_singleton()->free(default_render_buffers_uniform_set);
+	RD::get_singleton()->free(default_radiance_uniform_set);
+	RD::get_singleton()->free(default_vec4_xform_buffer);
+	RD::get_singleton()->free(shadow_sampler);
+
 	storage->free(wireframe_material_shader);
 	storage->free(overdraw_material_shader);
 	storage->free(default_shader);
@@ -2702,6 +2707,11 @@ RasterizerSceneHighEndRD::~RasterizerSceneHighEndRD() {
 	storage->free(default_material);
 
 	{
+		RD::get_singleton()->free(scene_state.uniform_buffer);
+		RD::get_singleton()->free(scene_state.instance_buffer);
+		RD::get_singleton()->free(scene_state.gi_probe_buffer);
+		RD::get_singleton()->free(scene_state.directional_light_buffer);
+		RD::get_singleton()->free(scene_state.light_buffer);
 		RD::get_singleton()->free(scene_state.reflection_buffer);
 		memdelete_arr(scene_state.instances);
 		memdelete_arr(scene_state.gi_probes);

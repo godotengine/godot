@@ -974,6 +974,17 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 
 RasterizerEffectsRD::~RasterizerEffectsRD() {
 	RD::get_singleton()->free(default_sampler);
-	blur.shader.version_free(blur.shader_version);
+	RD::get_singleton()->free(default_mipmap_sampler);
 	RD::get_singleton()->free(index_buffer); //array gets freed as dependency
+	blur.shader.version_free(blur.shader_version);
+	roughness.shader.version_free(roughness.shader_version);
+	sky.shader.version_free(sky.shader_version);
+	tonemap.shader.version_free(tonemap.shader_version);
+	luminance_reduce.shader.version_free(luminance_reduce.shader_version);
+	copy.shader.version_free(copy.shader_version);
+	bokeh.shader.version_free(bokeh.shader_version);
+	ssao.minify_shader.version_free(ssao.minify_shader_version);
+	ssao.gather_shader.version_free(ssao.gather_shader_version);
+	ssao.blur_shader.version_free(ssao.blur_shader_version);
+	roughness_limiter.shader.version_free(roughness_limiter.shader_version);
 }

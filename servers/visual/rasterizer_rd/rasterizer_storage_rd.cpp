@@ -4814,4 +4814,5 @@ RasterizerStorageRD::~RasterizerStorageRD() {
 	for (int i = 0; i < DEFAULT_RD_BUFFER_MAX; i++) {
 		RD::get_singleton()->free(mesh_default_rd_buffers[i]);
 	}
+	giprobe_sdf_shader.version_free(giprobe_sdf_shader_version);
 }

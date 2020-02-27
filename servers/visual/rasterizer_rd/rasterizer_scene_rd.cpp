@@ -3130,5 +3130,7 @@ RasterizerSceneRD::~RasterizerSceneRD() {
 	}
 
 	RD::get_singleton()->free(gi_probe_lights_uniform);
+	giprobe_debug_shader.version_free(giprobe_debug_shader_version);
+	giprobe_shader.version_free(giprobe_lighting_shader_version);
 	memdelete_arr(gi_probe_lights);
 }
