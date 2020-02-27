@@ -32,9 +32,9 @@
 #include "broad_phase_2d_basic.h"
 #include "broad_phase_2d_hash_grid.h"
 #include "collision_solver_2d_sw.h"
+#include "core/debugger/engine_debugger.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
-#include "core/script_language.h"
 
 #define FLUSH_QUERY_CHECK(m_object) \
 	ERR_FAIL_COND_MSG(m_object->get_space() && flushing_queries, "Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead.");
@@ -1369,7 +1369,7 @@ void Physics2DServerSW::flush_queries() {
 
 	flushing_queries = false;
 
-	if (ScriptDebugger::get_singleton() && ScriptDebugger::get_singleton()->is_profiling()) {
+	if (EngineDebugger::is_profiling("servers")) {
 
 		uint64_t total_time[Space2DSW::ELAPSED_TIME_MAX];
 		static const char *time_name[Space2DSW::ELAPSED_TIME_MAX] = {
@@ -1400,7 +1400,8 @@ void Physics2DServerSW::flush_queries() {
 		values.push_back("flush_queries");
 		values.push_back(USEC_TO_SEC(OS::get_singleton()->get_ticks_usec() - time_beg));
 
-		ScriptDebugger::get_singleton()->add_profiling_frame_data("physics_2d", values);
+		values.push_front("physics_2d");
+		EngineDebugger::profiler_add_frame_data("servers", values);
 	}
 }
 

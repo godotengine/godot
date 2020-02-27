@@ -33,8 +33,9 @@
 
 #include "os_windows.h"
 
+#include "core/debugger/engine_debugger.h"
+#include "core/debugger/script_debugger.h"
 #include "core/io/marshalls.h"
-#include "core/script_language.h"
 #include "core/version_generated.gen.h"
 
 #if defined(OPENGL_ENABLED)
@@ -194,13 +195,13 @@ void RedirectIOToConsole() {
 }
 
 BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
-	if (ScriptDebugger::get_singleton() == NULL)
+	if (!EngineDebugger::is_active())
 		return FALSE;
 
 	switch (dwCtrlType) {
 		case CTRL_C_EVENT:
-			ScriptDebugger::get_singleton()->set_depth(-1);
-			ScriptDebugger::get_singleton()->set_lines_left(1);
+			EngineDebugger::get_script_debugger()->set_depth(-1);
+			EngineDebugger::get_script_debugger()->set_lines_left(1);
 			return TRUE;
 		default:
 			return FALSE;

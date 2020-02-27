@@ -30,6 +30,7 @@
 
 #include "scene_tree.h"
 
+#include "core/debugger/engine_debugger.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/message_queue.h"
@@ -38,7 +39,6 @@
 #include "core/os/os.h"
 #include "core/print_string.h"
 #include "core/project_settings.h"
-#include "core/script_debugger_remote.h"
 #include "main/input_default.h"
 #include "node.h"
 #include "scene/debugger/scene_debugger.h"
@@ -432,11 +432,11 @@ void SceneTree::input_event(const Ref<InputEvent> &p_event) {
 
 	call_group_flags(GROUP_CALL_REALTIME, "_viewports", "_vp_input", ev); //special one for GUI, as controls use their own process check
 
-	if (ScriptDebugger::get_singleton() && ScriptDebugger::get_singleton()->is_remote()) {
+	if (EngineDebugger::is_active()) {
 		//quit from game window using F8
 		Ref<InputEventKey> k = ev;
 		if (k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == KEY_F8) {
-			ScriptDebugger::get_singleton()->request_quit();
+			EngineDebugger::get_singleton()->send_message("request_quit", Array());
 		}
 	}
 
@@ -1736,10 +1736,6 @@ SceneTree::SceneTree() {
 
 	last_screen_size = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
 	_update_root_rect();
-
-	if (ScriptDebugger::get_singleton()) {
-		ScriptDebugger::get_singleton()->set_multiplayer(multiplayer);
-	}
 
 	root->set_physics_object_picking(GLOBAL_DEF("physics/common/enable_object_picking", true));
 

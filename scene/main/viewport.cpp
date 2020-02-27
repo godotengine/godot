@@ -31,6 +31,7 @@
 #include "viewport.h"
 
 #include "core/core_string_names.h"
+#include "core/debugger/engine_debugger.h"
 #include "core/os/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
@@ -1927,12 +1928,12 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			mb->set_position(pos);
 
 #ifdef DEBUG_ENABLED
-			if (ScriptDebugger::get_singleton() && gui.mouse_focus) {
+			if (EngineDebugger::get_singleton() && gui.mouse_focus) {
 
 				Array arr;
 				arr.push_back(gui.mouse_focus->get_path());
 				arr.push_back(gui.mouse_focus->get_class());
-				ScriptDebugger::get_singleton()->send_message("click_ctrl", arr);
+				EngineDebugger::get_singleton()->send_message("scene:click_ctrl", arr);
 			}
 #endif
 

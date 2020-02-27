@@ -1629,7 +1629,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 	int flow_stack_pos = p_flow_stack_pos;
 
 #ifdef DEBUG_ENABLED
-	if (ScriptDebugger::get_singleton()) {
+	if (EngineDebugger::is_active()) {
 		VisualScriptLanguage::singleton->enter_function(this, &p_method, variant_stack, &working_mem, &current_node_id);
 	}
 #endif
@@ -1766,7 +1766,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 
 #ifdef DEBUG_ENABLED
 				//will re-enter later, so exiting
-				if (ScriptDebugger::get_singleton()) {
+				if (EngineDebugger::is_active()) {
 					VisualScriptLanguage::singleton->exit_function();
 				}
 #endif
@@ -1776,26 +1776,26 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 		}
 
 #ifdef DEBUG_ENABLED
-		if (ScriptDebugger::get_singleton()) {
+		if (EngineDebugger::is_active()) {
 			// line
 			bool do_break = false;
 
-			if (ScriptDebugger::get_singleton()->get_lines_left() > 0) {
+			if (EngineDebugger::get_script_debugger()->get_lines_left() > 0) {
 
-				if (ScriptDebugger::get_singleton()->get_depth() <= 0)
-					ScriptDebugger::get_singleton()->set_lines_left(ScriptDebugger::get_singleton()->get_lines_left() - 1);
-				if (ScriptDebugger::get_singleton()->get_lines_left() <= 0)
+				if (EngineDebugger::get_script_debugger()->get_depth() <= 0)
+					EngineDebugger::get_script_debugger()->set_lines_left(EngineDebugger::get_script_debugger()->get_lines_left() - 1);
+				if (EngineDebugger::get_script_debugger()->get_lines_left() <= 0)
 					do_break = true;
 			}
 
-			if (ScriptDebugger::get_singleton()->is_breakpoint(current_node_id, source))
+			if (EngineDebugger::get_script_debugger()->is_breakpoint(current_node_id, source))
 				do_break = true;
 
 			if (do_break) {
 				VisualScriptLanguage::singleton->debug_break("Breakpoint", true);
 			}
 
-			ScriptDebugger::get_singleton()->line_poll();
+			EngineDebugger::get_singleton()->line_poll();
 		}
 #endif
 		int output = ret & VisualScriptNodeInstance::STEP_MASK;
@@ -1983,7 +1983,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 	}
 
 #ifdef DEBUG_ENABLED
-	if (ScriptDebugger::get_singleton()) {
+	if (EngineDebugger::is_active()) {
 		VisualScriptLanguage::singleton->exit_function();
 	}
 #endif
@@ -2593,12 +2593,12 @@ void VisualScriptLanguage::add_global_constant(const StringName &p_variable, con
 bool VisualScriptLanguage::debug_break_parse(const String &p_file, int p_node, const String &p_error) {
 	//break because of parse error
 
-	if (ScriptDebugger::get_singleton() && Thread::get_caller_id() == Thread::get_main_id()) {
+	if (EngineDebugger::is_active() && Thread::get_caller_id() == Thread::get_main_id()) {
 
 		_debug_parse_err_node = p_node;
 		_debug_parse_err_file = p_file;
 		_debug_error = p_error;
-		ScriptDebugger::get_singleton()->debug(this, false, true);
+		EngineDebugger::get_script_debugger()->debug(this, false, true);
 		return true;
 	} else {
 		return false;
@@ -2607,12 +2607,12 @@ bool VisualScriptLanguage::debug_break_parse(const String &p_file, int p_node, c
 
 bool VisualScriptLanguage::debug_break(const String &p_error, bool p_allow_continue) {
 
-	if (ScriptDebugger::get_singleton() && Thread::get_caller_id() == Thread::get_main_id()) {
+	if (EngineDebugger::is_active() && Thread::get_caller_id() == Thread::get_main_id()) {
 
 		_debug_parse_err_node = -1;
 		_debug_parse_err_file = "";
 		_debug_error = p_error;
-		ScriptDebugger::get_singleton()->debug(this, p_allow_continue, true);
+		EngineDebugger::get_script_debugger()->debug(this, p_allow_continue, true);
 		return true;
 	} else {
 		return false;
@@ -2837,7 +2837,7 @@ VisualScriptLanguage::VisualScriptLanguage() {
 	int dmcs = GLOBAL_DEF("debug/settings/visual_script/max_call_stack", 1024);
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/visual_script/max_call_stack", PropertyInfo(Variant::INT, "debug/settings/visual_script/max_call_stack", PROPERTY_HINT_RANGE, "1024,4096,1,or_greater")); //minimum is 1024
 
-	if (ScriptDebugger::get_singleton()) {
+	if (EngineDebugger::is_active()) {
 		//debugging enabled!
 		_debug_max_call_stack = dmcs;
 		_call_stack = memnew_arr(CallLevel, _debug_max_call_stack + 1);

@@ -38,6 +38,9 @@
 #include "gd_mono_marshal.h"
 #include "gd_mono_utils.h"
 
+#include "core/debugger/engine_debugger.h"
+#include "core/debugger/script_debugger.h"
+
 #include <mono/metadata/exception.h>
 
 namespace GDMonoInternals {
@@ -120,8 +123,8 @@ void unhandled_exception(MonoException *p_exc) {
 	} else {
 #ifdef DEBUG_ENABLED
 		GDMonoUtils::debug_send_unhandled_exception_error((MonoException *)p_exc);
-		if (ScriptDebugger::get_singleton())
-			ScriptDebugger::get_singleton()->idle_poll();
+		if (EngineDebugger::is_active())
+			EngineDebugger::get_singleton()->poll_events(false);
 #endif
 	}
 }

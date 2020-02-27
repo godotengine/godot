@@ -56,7 +56,6 @@
 #include "audio_server.h"
 #include "camera/camera_feed.h"
 #include "camera_server.h"
-#include "core/script_debugger_remote.h"
 #include "navigation_2d_server.h"
 #include "navigation_server.h"
 #include "physics/physics_server_sw.h"
@@ -66,27 +65,6 @@
 #include "physics_server.h"
 #include "visual/shader_types.h"
 #include "visual_server.h"
-
-static void _debugger_get_resource_usage(ScriptDebuggerRemote::ResourceUsage *r_usage) {
-
-	List<VS::TextureInfo> tinfo;
-	VS::get_singleton()->texture_debug_usage(&tinfo);
-
-	for (List<VS::TextureInfo>::Element *E = tinfo.front(); E; E = E->next()) {
-
-		ScriptDebuggerRemote::ResourceInfo usage;
-		usage.path = E->get().path;
-		usage.vram = E->get().bytes;
-		usage.id = E->get().texture;
-		usage.type = "Texture";
-		if (E->get().depth == 0) {
-			usage.format = itos(E->get().width) + "x" + itos(E->get().height) + " " + Image::get_format_name(E->get().format);
-		} else {
-			usage.format = itos(E->get().width) + "x" + itos(E->get().height) + "x" + itos(E->get().depth) + " " + Image::get_format_name(E->get().format);
-		}
-		r_usage->infos.push_back(usage);
-	}
-}
 
 ShaderTypes *shader_types = NULL;
 
@@ -188,8 +166,6 @@ void register_server_types() {
 	ClassDB::register_virtual_class<PhysicsDirectBodyState>();
 	ClassDB::register_virtual_class<PhysicsDirectSpaceState>();
 	ClassDB::register_virtual_class<PhysicsShapeQueryResult>();
-
-	ScriptDebuggerRemote::resource_usage_func = _debugger_get_resource_usage;
 
 	// Physics 2D
 	GLOBAL_DEF(Physics2DServerManager::setting_property_name, "DEFAULT");

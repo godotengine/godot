@@ -32,8 +32,8 @@
 
 #include "broad_phase_basic.h"
 #include "broad_phase_octree.h"
+#include "core/debugger/engine_debugger.h"
 #include "core/os/os.h"
-#include "core/script_language.h"
 #include "joints/cone_twist_joint_sw.h"
 #include "joints/generic_6dof_joint_sw.h"
 #include "joints/hinge_joint_sw.h"
@@ -1467,7 +1467,7 @@ void PhysicsServerSW::flush_queries() {
 
 	flushing_queries = false;
 
-	if (ScriptDebugger::get_singleton() && ScriptDebugger::get_singleton()->is_profiling()) {
+	if (EngineDebugger::is_profiling("servers")) {
 
 		uint64_t total_time[SpaceSW::ELAPSED_TIME_MAX];
 		static const char *time_name[SpaceSW::ELAPSED_TIME_MAX] = {
@@ -1498,7 +1498,8 @@ void PhysicsServerSW::flush_queries() {
 		values.push_back("flush_queries");
 		values.push_back(USEC_TO_SEC(OS::get_singleton()->get_ticks_usec() - time_beg));
 
-		ScriptDebugger::get_singleton()->add_profiling_frame_data("physics", values);
+		values.push_front("physics");
+		EngineDebugger::profiler_add_frame_data("server", values);
 	}
 #endif
 };

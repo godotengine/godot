@@ -391,7 +391,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 
-	if (ScriptDebugger::get_singleton())
+	if (EngineDebugger::is_active())
 		GDScriptLanguage::get_singleton()->enter_function(p_instance, this, stack, &ip, &line);
 
 #define GD_ERR_BREAK(m_cond)                                                                                           \
@@ -1522,7 +1522,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 			OPCODE(OPCODE_BREAKPOINT) {
 #ifdef DEBUG_ENABLED
-				if (ScriptDebugger::get_singleton()) {
+				if (EngineDebugger::is_active()) {
 					GDScriptLanguage::get_singleton()->debug_break("Breakpoint Statement", true);
 				}
 #endif
@@ -1536,26 +1536,26 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				line = _code_ptr[ip + 1];
 				ip += 2;
 
-				if (ScriptDebugger::get_singleton()) {
+				if (EngineDebugger::is_active()) {
 					// line
 					bool do_break = false;
 
-					if (ScriptDebugger::get_singleton()->get_lines_left() > 0) {
+					if (EngineDebugger::get_script_debugger()->get_lines_left() > 0) {
 
-						if (ScriptDebugger::get_singleton()->get_depth() <= 0)
-							ScriptDebugger::get_singleton()->set_lines_left(ScriptDebugger::get_singleton()->get_lines_left() - 1);
-						if (ScriptDebugger::get_singleton()->get_lines_left() <= 0)
+						if (EngineDebugger::get_script_debugger()->get_depth() <= 0)
+							EngineDebugger::get_script_debugger()->set_lines_left(EngineDebugger::get_script_debugger()->get_lines_left() - 1);
+						if (EngineDebugger::get_script_debugger()->get_lines_left() <= 0)
 							do_break = true;
 					}
 
-					if (ScriptDebugger::get_singleton()->is_breakpoint(line, source))
+					if (EngineDebugger::get_script_debugger()->is_breakpoint(line, source))
 						do_break = true;
 
 					if (do_break) {
 						GDScriptLanguage::get_singleton()->debug_break("Breakpoint", true);
 					}
 
-					ScriptDebugger::get_singleton()->line_poll();
+					EngineDebugger::get_singleton()->line_poll();
 				}
 			}
 			DISPATCH_OPCODE;
@@ -1622,7 +1622,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	// When it's the last resume it will postpone the exit from stack,
 	// so the debugger knows which function triggered the resume of the next function (if any)
 	if (!p_state || yielded) {
-		if (ScriptDebugger::get_singleton())
+		if (EngineDebugger::is_active())
 			GDScriptLanguage::get_singleton()->exit_function();
 #endif
 
@@ -1884,7 +1884,7 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 		}
 
 #ifdef DEBUG_ENABLED
-		if (ScriptDebugger::get_singleton())
+		if (EngineDebugger::is_active())
 			GDScriptLanguage::get_singleton()->exit_function();
 		if (state.stack_size) {
 			//free stack

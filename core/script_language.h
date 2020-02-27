@@ -350,6 +350,11 @@ public:
 	virtual void thread_exit() {}
 
 	/* DEBUGGER FUNCTIONS */
+	struct StackInfo {
+		String file;
+		String func;
+		int line;
+	};
 
 	virtual String debug_get_error() const = 0;
 	virtual int debug_get_stack_level_count() const = 0;
@@ -361,12 +366,6 @@ public:
 	virtual ScriptInstance *debug_get_stack_level_instance(int p_level) { return NULL; }
 	virtual void debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
 	virtual String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems = -1, int p_max_depth = -1) = 0;
-
-	struct StackInfo {
-		String file;
-		String func;
-		int line;
-	};
 
 	virtual Vector<StackInfo> debug_get_current_stack_info() { return Vector<StackInfo>(); }
 
@@ -460,56 +459,4 @@ public:
 	PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner);
 	~PlaceHolderScriptInstance();
 };
-
-class ScriptDebugger {
-
-	int lines_left;
-	int depth;
-
-	static ScriptDebugger *singleton;
-	Map<int, Set<StringName> > breakpoints;
-
-	ScriptLanguage *break_lang;
-
-public:
-	_FORCE_INLINE_ static ScriptDebugger *get_singleton() { return singleton; }
-	void set_lines_left(int p_left);
-	int get_lines_left() const;
-
-	void set_depth(int p_depth);
-	int get_depth() const;
-
-	String breakpoint_find_source(const String &p_source) const;
-	void insert_breakpoint(int p_line, const StringName &p_source);
-	void remove_breakpoint(int p_line, const StringName &p_source);
-	bool is_breakpoint(int p_line, const StringName &p_source) const;
-	bool is_breakpoint_line(int p_line) const;
-	void clear_breakpoints();
-	const Map<int, Set<StringName> > &get_breakpoints() const { return breakpoints; }
-
-	virtual void debug(ScriptLanguage *p_script, bool p_can_continue = true, bool p_is_error_breakpoint = false) = 0;
-	virtual void idle_poll();
-	virtual void line_poll();
-
-	void set_break_language(ScriptLanguage *p_lang);
-	ScriptLanguage *get_break_language() const;
-
-	virtual void send_message(const String &p_message, const Array &p_args) = 0;
-	virtual void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type, const Vector<ScriptLanguage::StackInfo> &p_stack_info) = 0;
-
-	virtual bool is_remote() const { return false; }
-	virtual void request_quit() {}
-
-	virtual void set_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {}
-
-	virtual bool is_profiling() const = 0;
-	virtual void add_profiling_frame_data(const StringName &p_name, const Array &p_data) = 0;
-	virtual void profiling_start() = 0;
-	virtual void profiling_end() = 0;
-	virtual void profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) = 0;
-
-	ScriptDebugger();
-	virtual ~ScriptDebugger() { singleton = NULL; }
-};
-
 #endif

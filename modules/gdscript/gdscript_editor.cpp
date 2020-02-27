@@ -221,12 +221,12 @@ Script *GDScriptLanguage::create_script() const {
 bool GDScriptLanguage::debug_break_parse(const String &p_file, int p_line, const String &p_error) {
 	//break because of parse error
 
-	if (ScriptDebugger::get_singleton() && Thread::get_caller_id() == Thread::get_main_id()) {
+	if (EngineDebugger::is_active() && Thread::get_caller_id() == Thread::get_main_id()) {
 
 		_debug_parse_err_line = p_line;
 		_debug_parse_err_file = p_file;
 		_debug_error = p_error;
-		ScriptDebugger::get_singleton()->debug(this, false, true);
+		EngineDebugger::get_script_debugger()->debug(this, false, true);
 		return true;
 	} else {
 		return false;
@@ -235,13 +235,13 @@ bool GDScriptLanguage::debug_break_parse(const String &p_file, int p_line, const
 
 bool GDScriptLanguage::debug_break(const String &p_error, bool p_allow_continue) {
 
-	if (ScriptDebugger::get_singleton() && Thread::get_caller_id() == Thread::get_main_id()) {
+	if (EngineDebugger::is_active() && Thread::get_caller_id() == Thread::get_main_id()) {
 
 		_debug_parse_err_line = -1;
 		_debug_parse_err_file = "";
 		_debug_error = p_error;
 		bool is_error_breakpoint = p_error != "Breakpoint";
-		ScriptDebugger::get_singleton()->debug(this, p_allow_continue, is_error_breakpoint);
+		EngineDebugger::get_script_debugger()->debug(this, p_allow_continue, is_error_breakpoint);
 		return true;
 	} else {
 		return false;
