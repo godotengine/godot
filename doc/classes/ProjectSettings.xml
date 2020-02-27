@@ -956,10 +956,12 @@
 			Enables [member Viewport.physics_object_picking] on the root viewport.
 		</member>
 		<member name="physics/common/physics_fps" type="int" setter="" getter="" default="60">
-			Frames per second used in the physics. Physics always needs a fixed amount of frames per second.
+			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run.
+			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.iterations_per_second] instead.
 		</member>
 		<member name="physics/common/physics_jitter_fix" type="float" setter="" getter="" default="0.5">
 			Fix to improve physics jitter, specially on monitors where refresh rate is different than the physics FPS.
+			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_jitter_fix] instead.
 		</member>
 		<member name="rendering/environment/default_clear_color" type="Color" setter="" getter="" default="Color( 0.3, 0.3, 0.3, 1 )">
 			Default background clear color. Overridable per [Viewport] using its [Environment]. See [member Environment.background_mode] and [member Environment.background_color] in particular. To change this default color programmatically, use [method VisualServer.set_default_clear_color].
