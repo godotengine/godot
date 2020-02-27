@@ -596,7 +596,7 @@ FindInFilesPanel::FindInFilesPanel() {
 
 		_refresh_button = memnew(Button);
 		_refresh_button->set_text(TTR("Refresh"));
-		_refresh_button->connect("pressed", this, "_on_refresh_button_clicked");
+		_refresh_button->connect_compat("pressed", this, "_on_refresh_button_clicked");
 		_refresh_button->hide();
 		hbc->add_child(_refresh_button);
 
