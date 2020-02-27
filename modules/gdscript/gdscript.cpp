@@ -597,52 +597,7 @@ Error GDScript::reload(bool p_keep_state) {
 		_set_subclass_path(E->get(), path);
 	}
 
-	// Copy the base rpc methods so we don't mask their IDs.
-	rpc_functions.clear();
-	rpc_variables.clear();
-	if (base.is_valid()) {
-		rpc_functions = base->rpc_functions;
-		rpc_variables = base->rpc_variables;
-	}
-
-	GDScript *cscript = this;
-	Map<StringName, Ref<GDScript> >::Element *sub_E = subclasses.front();
-	while (cscript) {
-		// RPC Methods
-		for (Map<StringName, GDScriptFunction *>::Element *E = cscript->member_functions.front(); E; E = E->next()) {
-			if (E->get()->get_rpc_mode() != MultiplayerAPI::RPC_MODE_DISABLED) {
-				ScriptNetData nd;
-				nd.name = E->key();
-				nd.mode = E->get()->get_rpc_mode();
-				if (-1 == rpc_functions.find(nd)) {
-					rpc_functions.push_back(nd);
-				}
-			}
-		}
-		// RSet
-		for (Map<StringName, MemberInfo>::Element *E = cscript->member_indices.front(); E; E = E->next()) {
-			if (E->get().rpc_mode != MultiplayerAPI::RPC_MODE_DISABLED) {
-				ScriptNetData nd;
-				nd.name = E->key();
-				nd.mode = E->get().rpc_mode;
-				if (-1 == rpc_variables.find(nd)) {
-					rpc_variables.push_back(nd);
-				}
-			}
-		}
-
-		if (cscript != this)
-			sub_E = sub_E->next();
-
-		if (sub_E)
-			cscript = sub_E->get().ptr();
-		else
-			cscript = NULL;
-	}
-
-	// Sort so we are 100% that they are always the same.
-	rpc_functions.sort_custom<SortNetData>();
-	rpc_variables.sort_custom<SortNetData>();
+	_init_rpc_methods_properties();
 
 	return OK;
 }
@@ -881,6 +836,8 @@ Error GDScript::load_byte_code(const String &p_path) {
 		_set_subclass_path(E->get(), path);
 	}
 
+	_init_rpc_methods_properties();
+
 	return OK;
 }
 
@@ -1028,6 +985,55 @@ void GDScript::_save_orphaned_subclasses() {
 		// subclass is not released
 		GDScriptLanguage::get_singleton()->add_orphan_subclass(subclass.fully_qualified_name, subclass.id);
 	}
+}
+
+void GDScript::_init_rpc_methods_properties() {
+	// Copy the base rpc methods so we don't mask their IDs.
+	rpc_functions.clear();
+	rpc_variables.clear();
+	if (base.is_valid()) {
+		rpc_functions = base->rpc_functions;
+		rpc_variables = base->rpc_variables;
+	}
+
+	GDScript *cscript = this;
+	Map<StringName, Ref<GDScript> >::Element *sub_E = subclasses.front();
+	while (cscript) {
+		// RPC Methods
+		for (Map<StringName, GDScriptFunction *>::Element *E = cscript->member_functions.front(); E; E = E->next()) {
+			if (E->get()->get_rpc_mode() != MultiplayerAPI::RPC_MODE_DISABLED) {
+				ScriptNetData nd;
+				nd.name = E->key();
+				nd.mode = E->get()->get_rpc_mode();
+				if (-1 == rpc_functions.find(nd)) {
+					rpc_functions.push_back(nd);
+				}
+			}
+		}
+		// RSet
+		for (Map<StringName, MemberInfo>::Element *E = cscript->member_indices.front(); E; E = E->next()) {
+			if (E->get().rpc_mode != MultiplayerAPI::RPC_MODE_DISABLED) {
+				ScriptNetData nd;
+				nd.name = E->key();
+				nd.mode = E->get().rpc_mode;
+				if (-1 == rpc_variables.find(nd)) {
+					rpc_variables.push_back(nd);
+				}
+			}
+		}
+
+		if (cscript != this)
+			sub_E = sub_E->next();
+
+		if (sub_E)
+			cscript = sub_E->get().ptr();
+		else
+			cscript = NULL;
+	}
+
+	// Sort so we are 100% that they are always the same.
+	rpc_functions.sort_custom<SortNetData>();
+	rpc_variables.sort_custom<SortNetData>();
 }
 
 GDScript::~GDScript() {
