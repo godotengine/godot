@@ -120,7 +120,7 @@ class ResourceLoader {
 	static ResourceLoadedCallback _loaded_callback;
 
 	static Ref<ResourceFormatLoader> _find_custom_resource_format_loader(String path);
-	static Mutex *loading_map_mutex;
+	static Mutex loading_map_mutex;
 
 	//used to track paths being loaded in a thread, avoids cyclic recursion
 	struct LoadingMapKey {

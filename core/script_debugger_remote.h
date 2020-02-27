@@ -230,7 +230,7 @@ protected:
 	uint64_t last_net_bandwidth_time;
 	Object *performance;
 	bool requested_quit;
-	Mutex *mutex;
+	Mutex mutex;
 
 	List<String> output_strings;
 	List<Message> messages;

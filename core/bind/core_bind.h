@@ -609,7 +609,7 @@ public:
 class _Mutex : public Reference {
 
 	GDCLASS(_Mutex, Reference);
-	Mutex *mutex;
+	Mutex mutex;
 
 	static void _bind_methods();
 
@@ -617,9 +617,6 @@ public:
 	void lock();
 	Error try_lock();
 	void unlock();
-
-	_Mutex();
-	~_Mutex();
 };
 
 class _Semaphore : public Reference {
