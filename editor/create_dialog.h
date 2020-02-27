@@ -60,6 +60,7 @@ class CreateDialog : public ConfirmationDialog {
 	Set<StringName> type_blacklist;
 
 	void _item_selected();
+	void _hide_requested();
 
 	void _update_search();
 	void _update_favorite_list();

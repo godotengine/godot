@@ -131,6 +131,10 @@ void EditorSubScene::_item_multi_selected(Object *p_object, int p_cell, bool p_s
 	}
 }
 
+void EditorSubScene::_item_activated() {
+	_ok_pressed(); // From AcceptDialog.
+}
+
 void EditorSubScene::_remove_selection_child(Node *p_node) {
 	if (p_node->get_child_count() > 0) {
 		for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -251,7 +255,7 @@ EditorSubScene::EditorSubScene() {
 	//tree->connect("nothing_selected", this, "_deselect_items");
 	tree->connect("cell_selected", callable_mp(this, &EditorSubScene::_selected_changed));
 
-	tree->connect_compat("item_activated", this, "_ok", make_binds(), CONNECT_DEFERRED);
+	tree->connect("item_activated", callable_mp(this, &EditorSubScene::_item_activated), make_binds(), CONNECT_DEFERRED);
 
 	file_dialog = memnew(EditorFileDialog);
 	List<String> extensions;

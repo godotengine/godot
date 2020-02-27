@@ -518,6 +518,10 @@ void VisualScriptPropertySelector::_item_selected() {
 	help_bit->set_text(text);
 }
 
+void VisualScriptPropertySelector::_hide_requested() {
+	_closed(); // From WindowDialog.
+}
+
 void VisualScriptPropertySelector::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -716,7 +720,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	seq_connect = false;
 	help_bit = memnew(EditorHelpBit);
 	vbc->add_margin_child(TTR("Description:"), help_bit);
-	help_bit->connect_compat("request_hide", this, "_closed");
+	help_bit->connect("request_hide", callable_mp(this, &VisualScriptPropertySelector::_hide_requested));
 	search_options->set_columns(3);
 	search_options->set_column_expand(1, false);
 	search_options->set_column_expand(2, false);

@@ -561,6 +561,10 @@ void CreateDialog::_item_selected() {
 	get_ok()->set_disabled(false);
 }
 
+void CreateDialog::_hide_requested() {
+	_closed(); // From WindowDialog.
+}
+
 void CreateDialog::_favorite_toggled() {
 
 	TreeItem *item = search_options->get_selected();
@@ -804,7 +808,7 @@ CreateDialog::CreateDialog() {
 
 	help_bit = memnew(EditorHelpBit);
 	vbc->add_margin_child(TTR("Description:"), help_bit);
-	help_bit->connect_compat("request_hide", this, "_closed");
+	help_bit->connect("request_hide", callable_mp(this, &CreateDialog::_hide_requested));
 
 	type_blacklist.insert("PluginScript"); // PluginScript must be initialized before use, which is not possible here
 	type_blacklist.insert("ScriptCreateDialog"); // This is an exposed editor Node that doesn't have an Editor prefix.

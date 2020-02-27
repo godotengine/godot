@@ -50,6 +50,7 @@ class EditorDirDialog : public ConfirmationDialog {
 	bool updating;
 
 	void _item_collapsed(Object *p_item);
+	void _item_activated();
 	void _update_dir(TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path = String());
 
 	void _make_dir();

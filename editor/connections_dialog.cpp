@@ -134,8 +134,15 @@ void ConnectDialog::ok_pressed() {
 }
 
 void ConnectDialog::_cancel_pressed() {
-
 	hide();
+}
+
+void ConnectDialog::_item_activated() {
+	_ok_pressed(); // From AcceptDialog.
+}
+
+void ConnectDialog::_text_entered(const String &p_text) {
+	_ok_pressed(); // From AcceptDialog.
 }
 
 /*
@@ -386,7 +393,7 @@ ConnectDialog::ConnectDialog() {
 
 	tree = memnew(SceneTreeEditor(false));
 	tree->set_connecting_signal(true);
-	tree->get_scene_tree()->connect_compat("item_activated", this, "_ok");
+	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &ConnectDialog::_item_activated));
 	tree->connect("node_selected", callable_mp(this, &ConnectDialog::_tree_node_selected));
 	tree->set_connect_to_script_mode(true);
 
@@ -445,7 +452,7 @@ ConnectDialog::ConnectDialog() {
 
 	dst_method = memnew(LineEdit);
 	dst_method->set_h_size_flags(SIZE_EXPAND_FILL);
-	dst_method->connect_compat("text_entered", this, "_builtin_text_entered");
+	dst_method->connect("text_entered", callable_mp(this, &ConnectDialog::_text_entered));
 	dstm_hb->add_child(dst_method);
 
 	advanced = memnew(CheckButton);
@@ -861,7 +868,6 @@ void ConnectionsDock::_notification(int p_what) {
 
 void ConnectionsDock::_bind_methods() {
 
-	ClassDB::bind_method("_close", &ConnectionsDock::_close);
 	ClassDB::bind_method("update_tree", &ConnectionsDock::update_tree);
 }
 

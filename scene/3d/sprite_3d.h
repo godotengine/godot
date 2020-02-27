@@ -157,6 +157,8 @@ class Sprite3D : public SpriteBase3D {
 	int vframes;
 	int hframes;
 
+	void _texture_changed();
+
 protected:
 	virtual void _draw();
 	static void _bind_methods();
