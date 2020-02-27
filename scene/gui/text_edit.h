@@ -364,8 +364,9 @@ private:
 	bool undo_enabled;
 	bool line_numbers;
 	bool line_numbers_zero_padded;
-	bool line_length_guideline;
-	int line_length_guideline_col;
+	bool line_length_guidelines;
+	int line_length_guideline_soft_col;
+	int line_length_guideline_hard_col;
 	bool draw_bookmark_gutter;
 	bool draw_breakpoint_gutter;
 	int breakpoint_gutter_width;
@@ -762,8 +763,9 @@ public:
 
 	void set_line_numbers_zero_padded(bool p_zero_padded);
 
-	void set_show_line_length_guideline(bool p_show);
-	void set_line_length_guideline_column(int p_column);
+	void set_show_line_length_guidelines(bool p_show);
+	void set_line_length_guideline_soft_column(int p_column);
+	void set_line_length_guideline_hard_column(int p_column);
 
 	void set_bookmark_gutter_enabled(bool p_draw);
 	bool is_bookmark_gutter_enabled() const;

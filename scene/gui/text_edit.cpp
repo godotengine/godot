@@ -716,10 +716,18 @@ void TextEdit::_notification(int p_what) {
 				}
 			}
 
-			if (line_length_guideline) {
-				int x = xmargin_beg + (int)cache.font->get_char_size('0').width * line_length_guideline_col - cursor.x_ofs;
-				if (x > xmargin_beg && x < xmargin_end) {
-					VisualServer::get_singleton()->canvas_item_add_line(ci, Point2(x, 0), Point2(x, size.height), cache.line_length_guideline_color);
+			if (line_length_guidelines) {
+				const int hard_x = xmargin_beg + (int)cache.font->get_char_size('0').width * line_length_guideline_hard_col - cursor.x_ofs;
+				if (hard_x > xmargin_beg && hard_x < xmargin_end) {
+					VisualServer::get_singleton()->canvas_item_add_line(ci, Point2(hard_x, 0), Point2(hard_x, size.height), cache.line_length_guideline_color);
+				}
+
+				// Draw a "Soft" line length guideline, less visible than the hard line length guideline.
+				// It's usually set to a lower column compared to the hard line length guideline.
+				// Only drawn if its column differs from the hard line length guideline.
+				const int soft_x = xmargin_beg + (int)cache.font->get_char_size('0').width * line_length_guideline_soft_col - cursor.x_ofs;
+				if (hard_x != soft_x && soft_x > xmargin_beg && soft_x < xmargin_end) {
+					VisualServer::get_singleton()->canvas_item_add_line(ci, Point2(soft_x, 0), Point2(soft_x, size.height), cache.line_length_guideline_color * Color(1, 1, 1, 0.5));
 				}
 			}
 
@@ -6795,13 +6803,18 @@ bool TextEdit::is_show_line_numbers_enabled() const {
 	return line_numbers;
 }
 
-void TextEdit::set_show_line_length_guideline(bool p_show) {
-	line_length_guideline = p_show;
+void TextEdit::set_show_line_length_guidelines(bool p_show) {
+	line_length_guidelines = p_show;
 	update();
 }
 
-void TextEdit::set_line_length_guideline_column(int p_column) {
-	line_length_guideline_col = p_column;
+void TextEdit::set_line_length_guideline_soft_column(int p_column) {
+	line_length_guideline_soft_col = p_column;
+	update();
+}
+
+void TextEdit::set_line_length_guideline_hard_column(int p_column) {
+	line_length_guideline_hard_col = p_column;
 	update();
 }
 
@@ -7287,8 +7300,9 @@ TextEdit::TextEdit() {
 	tooltip_obj = nullptr;
 	line_numbers = false;
 	line_numbers_zero_padded = false;
-	line_length_guideline = false;
-	line_length_guideline_col = 80;
+	line_length_guidelines = false;
+	line_length_guideline_soft_col = 80;
+	line_length_guideline_hard_col = 100;
 	draw_bookmark_gutter = false;
 	draw_breakpoint_gutter = false;
 	draw_fold_gutter = false;
