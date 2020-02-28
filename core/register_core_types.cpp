@@ -186,8 +186,6 @@ void register_core_types() {
 	ClassDB::register_class<HTTPClient>();
 	ClassDB::register_class<TriangleMesh>();
 
-	ClassDB::register_virtual_class<ResourceInteractiveLoader>();
-
 	ClassDB::register_class<ResourceFormatLoader>();
 	ClassDB::register_class<ResourceFormatSaver>();
 
