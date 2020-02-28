@@ -107,6 +107,9 @@ void ImportDock::set_edit_path(const String &p_path) {
 		return;
 	}
 
+	params->paths.clear();
+	params->paths.push_back(p_path);
+
 	_update_options(config);
 
 	List<Ref<ResourceImporter> > importers;
@@ -129,8 +132,6 @@ void ImportDock::set_edit_path(const String &p_path) {
 		}
 	}
 
-	params->paths.clear();
-	params->paths.push_back(p_path);
 	import->set_disabled(false);
 	import_as->set_disabled(false);
 	preset->set_disabled(false);
@@ -145,7 +146,7 @@ void ImportDock::_update_options(const Ref<ConfigFile> &p_config) {
 
 	params->properties.clear();
 	params->values.clear();
-	params->checking = false;
+	params->checking = params->paths.size() > 1;
 	params->checked.clear();
 
 	for (List<ResourceImporter::ImportOption>::Element *E = options.front(); E; E = E->next()) {
