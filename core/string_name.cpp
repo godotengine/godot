@@ -47,7 +47,7 @@ StringName _scs_create(const char *p_chr) {
 }
 
 bool StringName::configured = false;
-Mutex StringName::lock;
+Mutex StringName::mutex;
 
 void StringName::setup() {
 
@@ -61,7 +61,7 @@ void StringName::setup() {
 
 void StringName::cleanup() {
 
-	MutexLock lock(StringName::lock);
+	MutexLock lock(mutex);
 
 	int lost_strings = 0;
 	for (int i = 0; i < STRING_TABLE_LEN; i++) {
@@ -93,7 +93,7 @@ void StringName::unref() {
 
 	if (_data && _data->refcount.unref()) {
 
-		MutexLock lock(StringName::lock);
+		MutexLock lock(mutex);
 
 		if (_data->prev) {
 			_data->prev->next = _data->next;
@@ -178,7 +178,7 @@ StringName::StringName(const char *p_name) {
 	if (!p_name || p_name[0] == 0)
 		return; //empty, ignore
 
-	MutexLock lock(StringName::lock);
+	MutexLock lock(mutex);
 
 	uint32_t hash = String::hash(p_name);
 
@@ -222,7 +222,7 @@ StringName::StringName(const StaticCString &p_static_string) {
 
 	ERR_FAIL_COND(!p_static_string.ptr || !p_static_string.ptr[0]);
 
-	MutexLock lock(StringName::lock);
+	MutexLock lock(mutex);
 
 	uint32_t hash = String::hash(p_static_string.ptr);
 
@@ -267,7 +267,7 @@ StringName::StringName(const String &p_name) {
 	if (p_name == String())
 		return;
 
-	MutexLock lock(StringName::lock);
+	MutexLock lock(mutex);
 
 	uint32_t hash = p_name.hash();
 	uint32_t idx = hash & STRING_TABLE_MASK;
@@ -309,7 +309,7 @@ StringName StringName::search(const char *p_name) {
 	if (!p_name[0])
 		return StringName();
 
-	MutexLock lock(StringName::lock);
+	MutexLock lock(mutex);
 
 	uint32_t hash = String::hash(p_name);
 	uint32_t idx = hash & STRING_TABLE_MASK;
@@ -339,7 +339,7 @@ StringName StringName::search(const CharType *p_name) {
 	if (!p_name[0])
 		return StringName();
 
-	MutexLock lock(StringName::lock);
+	MutexLock lock(mutex);
 
 	uint32_t hash = String::hash(p_name);
 
@@ -365,7 +365,7 @@ StringName StringName::search(const String &p_name) {
 
 	ERR_FAIL_COND_V(p_name == "", StringName());
 
-	MutexLock lock(StringName::lock);
+	MutexLock lock(mutex);
 
 	uint32_t hash = p_name.hash();
 
