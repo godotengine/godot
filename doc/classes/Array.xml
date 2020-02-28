@@ -14,6 +14,12 @@
 		array[2] = "Three"
 		print(array[-2]) # Three.
 		[/codeblock]
+		Arrays can be concatenated using the [code]+[/code] operator:
+		[codeblock]
+		var array1 = ["One", 2]
+		var array2 = [3, "Four"]
+		print(array1 + array2) # ["One", 2, 3, "Four"]
+		[/codeblock]
 		Arrays are always passed by reference.
 	</description>
 	<tutorials>
