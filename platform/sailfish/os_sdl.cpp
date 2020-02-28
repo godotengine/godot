@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "os_sdl.h"
 #include "core/string_builder.h"
+#include "os_sdl.h"
 // #ifndef GLES2_ENABLED
 // #include "drivers/gles3/rasterizer_gles3.h"
 // #else
@@ -366,6 +366,9 @@ int OS_SDL::get_screen_count() const {
 }
 
 int OS_SDL::get_current_screen() const {
+	if (sdl_window == nullptr)
+		return -1;
+
 	int current_display = SDL_GetWindowDisplayIndex(sdl_window);
 
 	if (current_display < 0) {
@@ -394,9 +397,16 @@ void OS_SDL::set_current_screen(int p_screen) {
 
 Point2 OS_SDL::get_screen_position(int p_screen) const {
 	SDL_Rect display_bounds;
+	print_line(String("Try SDL_GetDisplayBounds with p_screen=") + String(Variant(p_screen)));
+
+	if (p_screen >= get_screen_count() || p_screen < 0)
+		p_screen = get_current_screen();
+
+	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), Point2i(0, 0));
 
 	if (SDL_GetDisplayBounds(p_screen, &display_bounds) != 0) {
-		fprintf(stderr, "Could not get the screen position for display %i from SDL, Error: %s\n", p_screen, SDL_GetError());
+		::print_error(String("Could not get the screen position for display ") + String(Variant(p_screen)) +
+					  String(" from SDL, Error: ") + String(SDL_GetError()));
 		return Point2i(0, 0);
 	}
 
@@ -406,8 +416,17 @@ Point2 OS_SDL::get_screen_position(int p_screen) const {
 Size2 OS_SDL::get_screen_size(int p_screen) const {
 	SDL_Rect display_bounds;
 
+	print_line(String("Try SDL_GetDisplayBounds with p_screen=") + String(Variant(p_screen)));
+
+	if (p_screen >= get_screen_count() || p_screen < 0)
+		p_screen = get_current_screen();
+
+	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), Size2i(0, 0));
+
 	if (SDL_GetDisplayBounds(p_screen, &display_bounds) != 0) {
-		fprintf(stderr, "Could not get the screen position for display %i from SDL, Error: %s\n", p_screen, SDL_GetError());
+		// print_error( "OS_SDL::get_screen_size", )
+		::print_error(String("Could not get the screen position for display ") + String(Variant(p_screen)) +
+					  String(" from SDL, Error: ") + String(SDL_GetError()));
 		return Size2i(0, 0);
 	}
 
@@ -415,20 +434,23 @@ Size2 OS_SDL::get_screen_size(int p_screen) const {
 }
 
 int OS_SDL::get_screen_dpi(int p_screen) const {
-	if (p_screen == -1) {
+
+	if (p_screen >= get_screen_count() || p_screen < 0)
 		p_screen = get_current_screen();
-	}
 
 	// Invalid screen?
 	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), 0);
 
 	float diagonal_dpi = 96.0f;
 
-	// if (SDL_GetDisplayDPI(p_screen, &diagonal_dpi, NULL, NULL) != 0) {
-	// 	fprintf(stderr, "Could not get the screen DPI for display %i from SDL, Error: %s\n", p_screen, SDL_GetError());
-	// }
-	// TODO get rigth display size in Wayland sailfish
-	diagonal_dpi = 1280 / 4.370079;
+	if (SDL_GetDisplayDPI(p_screen, &diagonal_dpi, NULL, NULL) != 0) {
+		::print_error(String("Could not get the screen DPI for display ") +
+					  String(Variant(p_screen)) + String(" from SDL, Error: ") + String(SDL_GetError()));
+	} else {
+		Size2 sz = get_screen_size(p_screen);
+		// TODO get rigth display size in Wayland sailfish
+		diagonal_dpi = sz.width / 4.370079;
+	}
 
 	return static_cast<int>(diagonal_dpi);
 }
@@ -639,7 +661,7 @@ void OS_SDL::process_events() {
 					break;
 				case SDL_WINDOWEVENT_LEAVE:
 					mprint_verbose("SDL_WINDOWEVENT_LEAVE;\n");
-					if (main_loop && !mouse_mode_grab){
+					if (main_loop && !mouse_mode_grab) {
 						main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
 						main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 						main_loop->notification(MainLoop::NOTIFICATION_APP_PAUSED);
@@ -704,7 +726,7 @@ void OS_SDL::process_events() {
 					mprint_verbose2("Window %d got unknown event %d;\n", event.window.windowID, event.window.event);
 					break;
 			}
-			continue; 
+			continue;
 		}
 
 		else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
@@ -1132,7 +1154,7 @@ bool OS_SDL::_check_internal_feature_support(const String &p_feature) {
 		return true;
 	}
 #elif defined(__ARM_ARCH_7A__)
-	if (p_feature == "armeabi-v7a" || p_feature == "armeabi" || p_feature == "arm" ) {
+	if (p_feature == "armeabi-v7a" || p_feature == "armeabi" || p_feature == "arm") {
 		return true;
 	}
 #elif defined(__arm__)
@@ -1404,7 +1426,7 @@ void OS_SDL::run() {
 	while (!force_quit) {
 
 		process_events(); // get rid of pending events
-		if(minimized)
+		if (minimized)
 			continue;
 #ifdef JOYDEV_ENABLED
 		joypad->process_joypads();
@@ -1597,13 +1619,13 @@ void OS_SDL::stop_audio_driver() {
 }
 
 void OS_SDL::pause_audio_driver(bool pause) {
-	
+
 	AudioServer *audio_server = AudioServer::get_singleton();
-	if(!audio_server)
+	if (!audio_server)
 		return;
-	
-	for (int bus = 0; bus < audio_server->get_bus_count(); bus++ ) 
-		audio_server->set_bus_mute(bus,pause);
+
+	for (int bus = 0; bus < audio_server->get_bus_count(); bus++)
+		audio_server->set_bus_mute(bus, pause);
 }
 
 #ifndef DISABLE_LIBAUDIORESOURCE

@@ -253,12 +253,14 @@ protected:
 		return "noarch";
 	}
 
-	String get_sdk_config_path() const {
+	String get_sdk_config_path(const Ref<EditorExportPreset> &p_preset) const {
 		String sdk_configs_path = OS::get_singleton()->get_config_path();
 		//sdk_configs_path +=  String("/SailfishOS-SDK/"); // old SailfishSDK , before 3.0.7
 		//mer_sdk_tools = sdk_configs_path + String("/mer-sdk-tools/Sailfish OS Build Engine/"); // old SailfishSDK , before 3.0.7
 #ifdef OSX_ENABLED
 		sdk_configs_path = OS::get_singleton()->get_environment("HOME") + String("/.config");
+#elif WINDOWS_ENABLED
+		sdk_configs_path = String(p_preset->get(prop_sailfish_sdk_path)) + separator + String("settings");
 #endif
 		sdk_configs_path += separator + sdk_config_dir;
 		return sdk_configs_path;
@@ -622,16 +624,10 @@ public:
 			print_error("SailfishOS dont support GLES3");
 			r_features->push_back("etc");
 		}
-
-		//        Vector<String> abis = get_enabled_abis(p_preset);
-		//        for (int i = 0; i < abis.size(); ++i) {
-		//            r_features->push_back(abis[i]);
-		//        }
 	}
 
 	virtual void get_platform_features(List<String> *r_features) override {
 		r_features->push_back("mobile");
-		//        r_features->push_back("s3tc");
 		r_features->push_back(get_os_name());
 	}
 
@@ -806,7 +802,7 @@ public:
 		}
 
 		String xml_path;
-		String sdk_configs_path = get_sdk_config_path();
+		String sdk_configs_path = get_sdk_config_path(p_preset);
 #ifdef WINDOWS_ENABLED
 		xml_path = sdk_configs_path + String("\\libsfdk\\");
 #else
