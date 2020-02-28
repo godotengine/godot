@@ -162,7 +162,7 @@ void Path2D::_bind_methods() {
 
 Path2D::Path2D() {
 
-	set_curve(Ref<Curve2D>(memnew(Curve2D))); //create one by default
+	set_curve(Ref<Curve2D>());
 	set_self_modulate(Color(0.5, 0.6, 1.0, 0.7));
 }
 
