@@ -32,12 +32,12 @@ layout(local_size_x = GROUP_SIZE, local_size_y = 1, local_size_z = 1) in;
 
 layout(set = 0, binding = 0) uniform samplerCube source_cubemap;
 layout(rgba16f, set = 2, binding = 0) uniform restrict writeonly imageCube dest_cubemap0;
-layout(rgba16f, set = 3, binding = 0) uniform restrict writeonly imageCube dest_cubemap1;
-layout(rgba16f, set = 4, binding = 0) uniform restrict writeonly imageCube dest_cubemap2;
-layout(rgba16f, set = 5, binding = 0) uniform restrict writeonly imageCube dest_cubemap3;
-layout(rgba16f, set = 6, binding = 0) uniform restrict writeonly imageCube dest_cubemap4;
-layout(rgba16f, set = 7, binding = 0) uniform restrict writeonly imageCube dest_cubemap5;
-layout(rgba16f, set = 8, binding = 0) uniform restrict writeonly imageCube dest_cubemap6;
+layout(rgba16f, set = 2, binding = 1) uniform restrict writeonly imageCube dest_cubemap1;
+layout(rgba16f, set = 2, binding = 2) uniform restrict writeonly imageCube dest_cubemap2;
+layout(rgba16f, set = 2, binding = 3) uniform restrict writeonly imageCube dest_cubemap3;
+layout(rgba16f, set = 2, binding = 4) uniform restrict writeonly imageCube dest_cubemap4;
+layout(rgba16f, set = 2, binding = 5) uniform restrict writeonly imageCube dest_cubemap5;
+layout(rgba16f, set = 2, binding = 6) uniform restrict writeonly imageCube dest_cubemap6;
 
 #ifdef USE_HIGH_QUALITY
 #define NUM_TAPS 32
