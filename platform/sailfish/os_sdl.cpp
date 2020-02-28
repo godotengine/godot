@@ -1619,13 +1619,16 @@ void OS_SDL::stop_audio_driver() {
 }
 
 void OS_SDL::pause_audio_driver(bool pause) {
-
+#if defined(PULSEAUDIO_ENABLED)
+	driver_pulseaudio.pause(pause);
+	return;
+#else
 	AudioServer *audio_server = AudioServer::get_singleton();
 	if (!audio_server)
 		return;
-
 	for (int bus = 0; bus < audio_server->get_bus_count(); bus++)
 		audio_server->set_bus_mute(bus, pause);
+#endif
 }
 
 #ifndef DISABLE_LIBAUDIORESOURCE

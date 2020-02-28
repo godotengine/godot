@@ -529,6 +529,14 @@ void AudioDriverPulseAudio::start() {
 	active = true;
 }
 
+void AudioDriverPulseAudio::pause(bool pause) {
+
+	if (!pa_str)
+		return;
+	print_verbose(String("PulseAudio: try set pause = ") + ((pause == true) ? String("true") : String("false")));
+	pa_stream_cork(pa_str, (pause) ? 1 : 0, pa_stream_success_cb, (void *)this);
+}
+
 int AudioDriverPulseAudio::get_mix_rate() const {
 
 	return mix_rate;
@@ -755,6 +763,13 @@ void AudioDriverPulseAudio::pa_sourcelist_cb(pa_context *c, const pa_source_info
 	}
 
 	ad->pa_status++;
+}
+
+void AudioDriverPulseAudio::pa_stream_success_cb(pa_stream *s, int success, void *userdata) {
+
+	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
+
+	print_verbose(String("PulseAudio: stream pause success=") + String(Variant(success)));
 }
 
 Array AudioDriverPulseAudio::capture_get_device_list() {

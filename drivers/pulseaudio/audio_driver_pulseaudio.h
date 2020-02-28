@@ -83,6 +83,7 @@ class AudioDriverPulseAudio : public AudioDriver {
 	static void pa_server_info_cb(pa_context *c, const pa_server_info *i, void *userdata);
 	static void pa_sinklist_cb(pa_context *c, const pa_sink_info *l, int eol, void *userdata);
 	static void pa_sourcelist_cb(pa_context *c, const pa_source_info *l, int eol, void *userdata);
+	static void pa_stream_success_cb(pa_stream *s, int success, void *userdata);
 
 	Error init_device();
 	void finish_device();
@@ -101,6 +102,7 @@ public:
 
 	virtual Error init();
 	virtual void start();
+	void pause(bool pause = true);
 	virtual int get_mix_rate() const;
 	virtual SpeakerMode get_speaker_mode() const;
 

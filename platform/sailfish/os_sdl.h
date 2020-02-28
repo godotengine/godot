@@ -53,11 +53,12 @@
 
 #undef CursorShape
 /**
-	@author Juan Linietsky <reduzio@gmail.com>
+	@author sashikknox <sashikknox@gmail.com>
 */
 
 #define MAX_TOUCHES 20
 
+/** main class of SDL implementation */
 class OS_SDL : public OS_Unix {
 
 #if defined(GLES_ENABLED)
