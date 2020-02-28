@@ -1004,7 +1004,6 @@ void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 	} else {
 		// if mesh does not exist (first time this is loaded, most likely),
 		// we can create it with a single call, which is a lot more efficient and thread friendly
-		print_line("create mesh from surfaces: " + itos(surface_data.size()));
 		mesh = VS::get_singleton()->mesh_create_from_surfaces(surface_data);
 		VS::get_singleton()->mesh_set_blend_shape_mode(mesh, (VS::BlendShapeMode)blend_shape_mode);
 	}
