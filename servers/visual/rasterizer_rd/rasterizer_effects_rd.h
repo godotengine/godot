@@ -391,6 +391,7 @@ class RasterizerEffectsRD {
 		RID shader_version;
 		RID pipelines[FILTER_MODE_MAX];
 		RID uniform_set;
+		RID image_uniform_set;
 		RID coefficient_buffer;
 		bool use_high_quality;
 
