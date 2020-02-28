@@ -60,11 +60,11 @@
 #define prop_package_prefix "package/assets_prefix"
 #define prop_package_icon "package/launcher_icon"
 
-#ifdef WINDOWS_ENABLED
-const String separator("\\");
-#else
+// #ifdef WINDOWS_ENABLED
+// const String separator("\\");
+// #else
 const String separator("/");
-#endif
+// #endif
 
 // const String spec_file_tempalte =
 // "Name:       %{_gd_application_name}\n"
@@ -872,7 +872,7 @@ public:
 		}
 
 		String export_path = get_absolute_export_path(p_preset->get_export_path());
-
+		print_verbose( String("Export path: ") + export_path );
 		if (!shared_home.empty() && export_path.find(shared_home) >= 0) {
 			//            result = result;
 			return true && result;
@@ -884,7 +884,7 @@ public:
 		//            result = false;
 		r_error += TTR("Export path is outside of Shared Home in SailfishSDK (choose export path inside shared home):\nSharedHome: ") + shared_home + String("\nShareedSource: ") + shared_src;
 
-		return false;
+		return true;
 	}
 
 	List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override {
@@ -947,10 +947,22 @@ public:
 		args.push_back("-l");
 		ep.step("check sfdk targets.", 20);
 		List<MerTarget> targets;
+		{// echo verbose
+			String result_cmd = sfdk_tool;
+			for(int i = 0; i < args.size(); i ++ )
+				result_cmd += String(" ") + args[i];
+			print_verbose(result_cmd);
+		}
 		//        int result = EditorNode::get_singleton()->execute_and_show_output(TTR("Run sfdk tool"), sfdk_tool, args, true, false);
 		int result = execute_task(sfdk_tool, args, output_list);
 		if (result != 0) {
-			EditorNode::get_singleton()->show_warning(TTR("Building of Sailfish RPM failed, check output for the error.\nAlternatively visit docs.godotengine.org for Sailfish build documentation."));
+			String result_cmd;
+			List<String>::Element *e = output_list.front();
+			while (e) {
+				result_cmd += String("\n") + e->get();
+				e = e->next();
+			}
+			EditorNode::get_singleton()->show_warning(TTR("Building of Sailfish RPM failed, check output for the error.\nAlternatively visit docs.godotengine.org for Sailfish build documentation.\n Output: ") + result_cmd);
 			return ERR_CANT_CREATE;
 		} else {
 			// parse export targets, and choose two latest targets
