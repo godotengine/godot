@@ -109,8 +109,8 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 
 			Node *child2 = mi->get_child(j);
 
-			if (Object::cast_to<NavigationPolygonInstance>(child2))
-				nav_poly = Object::cast_to<NavigationPolygonInstance>(child2)->get_navigation_polygon();
+			if (Object::cast_to<NavigationRegion2D>(child2))
+				nav_poly = Object::cast_to<NavigationRegion2D>(child2)->get_navigation_polygon();
 
 			if (Object::cast_to<LightOccluder2D>(child2))
 				occluder = Object::cast_to<LightOccluder2D>(child2)->get_occluder_polygon();

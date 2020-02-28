@@ -726,7 +726,7 @@ void register_scene_types() {
 
 	ClassDB::register_class<Navigation2D>();
 	ClassDB::register_class<NavigationPolygon>();
-	ClassDB::register_class<NavigationPolygonInstance>();
+	ClassDB::register_class<NavigationRegion2D>();
 	ClassDB::register_class<NavigationAgent2D>();
 	ClassDB::register_class<NavigationObstacle2D>();
 
@@ -746,6 +746,9 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarUniform", "VisualShaderNodeFloatUniform");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarOp", "VisualShaderNodeFloatOp");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarFunc", "VisualShaderNodeFloatFunc");
+	ClassDB::add_compatibility_class("NavigationMeshInstance", "NavigationRegion");
+	ClassDB::add_compatibility_class("NavigationPolygonInstance", "NavigationRegion2D");
+	ClassDB::add_compatibility_class("PlaneShape", "WorldMarginShape");
 #endif
 
 	OS::get_singleton()->yield(); //may take time to init

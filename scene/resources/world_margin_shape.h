@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef world_margin_shape_H
-#define world_margin_shape_H
+#ifndef WORLD_MARGIN_SHAPE_H
+#define WORLD_MARGIN_SHAPE_H
 
 #include "scene/resources/shape.h"
 
@@ -54,4 +54,4 @@ public:
 
 	WorldMarginShape();
 };
-#endif // world_margin_shape_H
+#endif // WORLD_MARGIN_SHAPE_H
