@@ -218,20 +218,29 @@ namespace GodotTools.Ides.Rider
 
         private static void CollectPathsFromRegistry(string registryKey, List<string> installPaths)
         {
+            using (var key = Registry.CurrentUser.OpenSubKey(registryKey))
+            {
+                CollectPathsFromRegistry(installPaths, key);
+            }
             using (var key = Registry.LocalMachine.OpenSubKey(registryKey))
             {
-                if (key == null) return;
-                foreach (var subkeyName in key.GetSubKeyNames().Where(a => a.Contains("Rider")))
+                CollectPathsFromRegistry(installPaths, key);
+            }
+        }
+
+        private static void CollectPathsFromRegistry(List<string> installPaths, RegistryKey key)
+        {
+            if (key == null) return;
+            foreach (var subkeyName in key.GetSubKeyNames().Where(a => a.Contains("Rider")))
+            {
+                using (var subkey = key.OpenSubKey(subkeyName))
                 {
-                    using (var subkey = key.OpenSubKey(subkeyName))
-                    {
-                        var folderObject = subkey?.GetValue("InstallLocation");
-                        if (folderObject == null) continue;
-                        var folder = folderObject.ToString();
-                        var possiblePath = Path.Combine(folder, @"bin\rider64.exe");
-                        if (File.Exists(possiblePath))
-                            installPaths.Add(possiblePath);
-                    }
+                    var folderObject = subkey?.GetValue("InstallLocation");
+                    if (folderObject == null) continue;
+                    var folder = folderObject.ToString();
+                    var possiblePath = Path.Combine(folder, @"bin\rider64.exe");
+                    if (File.Exists(possiblePath))
+                        installPaths.Add(possiblePath);
                 }
             }
         }
