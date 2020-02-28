@@ -941,8 +941,10 @@ public:
 		ep.step("found export template binaries.", 10);
 		List<String> args;
 		List<String> output_list;
-		args.push_back("tools");
-		args.push_back("list");
+		args.push_back("engine");
+		args.push_back("exec");
+		args.push_back("sb2-config");
+		args.push_back("-l");
 		ep.step("check sfdk targets.", 20);
 		List<MerTarget> targets;
 		//        int result = EditorNode::get_singleton()->execute_and_show_output(TTR("Run sfdk tool"), sfdk_tool, args, true, false);
@@ -1012,16 +1014,6 @@ public:
 						}
 					}
 				}
-				// else {
-				//     for(int i = 0; i < matches.size(); i++ ) {
-				//         Ref<RegExMatch> rem = ((Ref<RegExMatch>)matches[i]);
-				//         Array names = rem->get_strings();
-				//         for( int d = 0; d < names.size(); d++ )
-				//         {
-				//             print_verbose( String("match[") + Variant(i) + String("].strings[") + Variant(d) + String("]: ") + String(names[d]) );
-				//         }
-				//     }
-				// }
 
 				e = e->next();
 			}
