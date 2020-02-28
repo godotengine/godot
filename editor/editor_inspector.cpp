@@ -695,7 +695,14 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 
 			Variant default_value = ClassDB::class_get_default_property_value(object->get_class_name(), property);
 			if (default_value != Variant()) {
-				emit_changed(property, default_value);
+				Object *obj = default_value.operator Object *();
+				Resource *res = Object::cast_to<Resource>(obj);
+				if (res) {
+					emit_changed(property, res->duplicate(true));
+				} else {
+					emit_changed(property, default_value);
+				}
+
 				update_property();
 				return;
 			}
