@@ -1015,9 +1015,10 @@ void ConnectionsDock::update_tree() {
 
 			for (List<Object::Connection>::Element *F = connections.front(); F; F = F->next()) {
 
-				ConnectDialog::ConnectionData c = F->get();
-				if (!(c.flags & CONNECT_PERSIST))
+				Connection cn = F->get();
+				if (!(cn.flags & CONNECT_PERSIST))
 					continue;
+				ConnectDialog::ConnectionData c = cn;
 
 				Node *target = Object::cast_to<Node>(c.target);
 				if (!target)
