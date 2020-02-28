@@ -293,6 +293,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 						_printerr();
 						return Ref<PackedScene>();
 					} else {
+						error = OK;
 						return packed_scene;
 					}
 				}
@@ -367,6 +368,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 					_printerr();
 					return Ref<PackedScene>();
 				} else {
+					error = OK;
 					return packed_scene;
 				}
 			}
@@ -390,6 +392,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 					_printerr();
 					return Ref<PackedScene>();
 				} else {
+					error = OK;
 					return packed_scene;
 				}
 			}
@@ -641,6 +644,7 @@ Error ResourceLoaderText::load() {
 				if (error != ERR_FILE_EOF) {
 					_printerr();
 				} else {
+					error = OK;
 					if (!ResourceCache::has(res_path)) {
 						resource->set_path(res_path);
 					}
