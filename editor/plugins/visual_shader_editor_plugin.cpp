@@ -73,8 +73,8 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 			}
 		}
 		visual_shader = Ref<VisualShader>(p_visual_shader);
-		if (!visual_shader->is_connected_compat("changed", this, "_update_preview")) {
-			visual_shader->connect_compat("changed", this, "_update_preview");
+		if (!visual_shader->is_connected("changed", callable_mp(this, &VisualShaderEditor::_update_preview))) {
+			visual_shader->connect("changed", callable_mp(this, &VisualShaderEditor::_update_preview));
 		}
 #ifndef DISABLE_DEPRECATED
 		String version = VERSION_BRANCH;
@@ -85,8 +85,8 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 		visual_shader->set_graph_offset(graph->get_scroll_ofs() / EDSCALE);
 	} else {
 		if (visual_shader.is_valid()) {
-			if (visual_shader->is_connected_compat("changed", this, "")) {
-				visual_shader->disconnect_compat("changed", this, "_update_preview");
+			if (visual_shader->is_connected("changed", callable_mp(this, &VisualShaderEditor::_update_preview))) {
+				visual_shader->disconnect("changed", callable_mp(this, &VisualShaderEditor::_update_preview));
 			}
 		}
 		visual_shader.unref();
@@ -517,15 +517,11 @@ void VisualShaderEditor::_update_graph() {
 			size = group_node->get_size();
 
 			node->set_resizable(true);
-			node->connect_compat("resize_request", this, "_node_resized", varray((int)type, nodes[n_i]));
+			node->connect("resize_request", callable_mp(this, &VisualShaderEditor::_node_resized), varray((int)type, nodes[n_i]));
 		}
 		if (is_expression) {
 			expression = expression_node->get_expression();
 		}
-
-		/*if (!vsnode->is_connected("changed", this, "_node_changed")) {
-			vsnode->connect("changed", this, "_node_changed", varray(vsnode->get_instance_id()), CONNECT_DEFERRED);
-		}*/
 
 		node->set_offset(position);
 
@@ -534,10 +530,10 @@ void VisualShaderEditor::_update_graph() {
 
 		if (nodes[n_i] >= 2) {
 			node->set_show_close_button(true);
-			node->connect_compat("close_request", this, "_delete_request", varray(nodes[n_i]), CONNECT_DEFERRED);
+			node->connect("close_request", callable_mp(this, &VisualShaderEditor::_delete_request), varray(nodes[n_i]), CONNECT_DEFERRED);
 		}
 
-		node->connect_compat("dragged", this, "_node_dragged", varray(nodes[n_i]));
+		node->connect("dragged", callable_mp(this, &VisualShaderEditor::_node_dragged), varray(nodes[n_i]));
 
 		Control *custom_editor = NULL;
 		int port_offset = 0;
@@ -556,8 +552,8 @@ void VisualShaderEditor::_update_graph() {
 			LineEdit *uniform_name = memnew(LineEdit);
 			uniform_name->set_text(uniform->get_uniform_name());
 			node->add_child(uniform_name);
-			uniform_name->connect_compat("text_entered", this, "_line_edit_changed", varray(uniform_name, nodes[n_i]));
-			uniform_name->connect_compat("focus_exited", this, "_line_edit_focus_out", varray(uniform_name, nodes[n_i]));
+			uniform_name->connect("text_entered", callable_mp(this, &VisualShaderEditor::_line_edit_changed), varray(uniform_name, nodes[n_i]));
+			uniform_name->connect("focus_exited", callable_mp(this, &VisualShaderEditor::_line_edit_focus_out), varray(uniform_name, nodes[n_i]));
 
 			if (vsnode->get_input_port_count() == 0 && vsnode->get_output_port_count() == 1 && vsnode->get_output_port_name(0) == "") {
 				//shortcut
@@ -601,14 +597,14 @@ void VisualShaderEditor::_update_graph() {
 
 				Button *add_input_btn = memnew(Button);
 				add_input_btn->set_text(TTR("Add Input"));
-				add_input_btn->connect_compat("pressed", this, "_add_input_port", varray(nodes[n_i], group_node->get_free_input_port_id(), VisualShaderNode::PORT_TYPE_VECTOR, "input" + itos(group_node->get_free_input_port_id())), CONNECT_DEFERRED);
+				add_input_btn->connect("pressed", callable_mp(this, &VisualShaderEditor::_add_input_port), varray(nodes[n_i], group_node->get_free_input_port_id(), VisualShaderNode::PORT_TYPE_VECTOR, "input" + itos(group_node->get_free_input_port_id())), CONNECT_DEFERRED);
 				hb2->add_child(add_input_btn);
 
 				hb2->add_spacer();
 
 				Button *add_output_btn = memnew(Button);
 				add_output_btn->set_text(TTR("Add Output"));
-				add_output_btn->connect_compat("pressed", this, "_add_output_port", varray(nodes[n_i], group_node->get_free_output_port_id(), VisualShaderNode::PORT_TYPE_VECTOR, "output" + itos(group_node->get_free_output_port_id())), CONNECT_DEFERRED);
+				add_output_btn->connect("pressed", callable_mp(this, &VisualShaderEditor::_add_output_port), varray(nodes[n_i], group_node->get_free_output_port_id(), VisualShaderNode::PORT_TYPE_VECTOR, "output" + itos(group_node->get_free_output_port_id())), CONNECT_DEFERRED);
 				hb2->add_child(add_output_btn);
 
 				node->add_child(hb2);
@@ -656,13 +652,13 @@ void VisualShaderEditor::_update_graph() {
 			if (default_value.get_type() != Variant::NIL) { // only a label
 				Button *button = memnew(Button);
 				hb->add_child(button);
-				button->connect_compat("pressed", this, "_edit_port_default_input", varray(button, nodes[n_i], i));
+				button->connect("pressed", callable_mp(this, &VisualShaderEditor::_edit_port_default_input), varray(button, nodes[n_i], i));
 
 				switch (default_value.get_type()) {
 
 					case Variant::COLOR: {
 						button->set_custom_minimum_size(Size2(30, 0) * EDSCALE);
-						button->connect_compat("draw", this, "_draw_color_over_button", varray(button, default_value));
+						button->connect("draw", callable_mp(this, &VisualShaderEditor::_draw_color_over_button), varray(button, default_value));
 					} break;
 					case Variant::BOOL: {
 						button->set_text(((bool)default_value) ? "true" : "false");
@@ -698,20 +694,20 @@ void VisualShaderEditor::_update_graph() {
 						type_box->add_item(TTR("Sampler"));
 						type_box->select(group_node->get_input_port_type(i));
 						type_box->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-						type_box->connect_compat("item_selected", this, "_change_input_port_type", varray(nodes[n_i], i), CONNECT_DEFERRED);
+						type_box->connect("item_selected", callable_mp(this, &VisualShaderEditor::_change_input_port_type), varray(nodes[n_i], i), CONNECT_DEFERRED);
 
 						LineEdit *name_box = memnew(LineEdit);
 						hb->add_child(name_box);
 						name_box->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
 						name_box->set_h_size_flags(SIZE_EXPAND_FILL);
 						name_box->set_text(name_left);
-						name_box->connect_compat("text_entered", this, "_change_input_port_name", varray(name_box, nodes[n_i], i));
-						name_box->connect_compat("focus_exited", this, "_port_name_focus_out", varray(name_box, nodes[n_i], i, false));
+						name_box->connect("text_entered", callable_mp(this, &VisualShaderEditor::_change_input_port_name), varray(name_box, nodes[n_i], i));
+						name_box->connect("focus_exited", callable_mp(this, &VisualShaderEditor::_port_name_focus_out), varray(name_box, nodes[n_i], i, false));
 
 						Button *remove_btn = memnew(Button);
 						remove_btn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Remove", "EditorIcons"));
 						remove_btn->set_tooltip(TTR("Remove") + " " + name_left);
-						remove_btn->connect_compat("pressed", this, "_remove_input_port", varray(nodes[n_i], i), CONNECT_DEFERRED);
+						remove_btn->connect("pressed", callable_mp(this, &VisualShaderEditor::_remove_input_port), varray(nodes[n_i], i), CONNECT_DEFERRED);
 						hb->add_child(remove_btn);
 					} else {
 
@@ -740,7 +736,7 @@ void VisualShaderEditor::_update_graph() {
 						Button *remove_btn = memnew(Button);
 						remove_btn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Remove", "EditorIcons"));
 						remove_btn->set_tooltip(TTR("Remove") + " " + name_left);
-						remove_btn->connect_compat("pressed", this, "_remove_output_port", varray(nodes[n_i], i), CONNECT_DEFERRED);
+						remove_btn->connect("pressed", callable_mp(this, &VisualShaderEditor::_remove_output_port), varray(nodes[n_i], i), CONNECT_DEFERRED);
 						hb->add_child(remove_btn);
 
 						LineEdit *name_box = memnew(LineEdit);
@@ -748,8 +744,8 @@ void VisualShaderEditor::_update_graph() {
 						name_box->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
 						name_box->set_h_size_flags(SIZE_EXPAND_FILL);
 						name_box->set_text(name_right);
-						name_box->connect_compat("text_entered", this, "_change_output_port_name", varray(name_box, nodes[n_i], i));
-						name_box->connect_compat("focus_exited", this, "_port_name_focus_out", varray(name_box, nodes[n_i], i, true));
+						name_box->connect("text_entered", callable_mp(this, &VisualShaderEditor::_change_output_port_name), varray(name_box, nodes[n_i], i));
+						name_box->connect("focus_exited", callable_mp(this, &VisualShaderEditor::_port_name_focus_out), varray(name_box, nodes[n_i], i, true));
 
 						OptionButton *type_box = memnew(OptionButton);
 						hb->add_child(type_box);
@@ -760,7 +756,7 @@ void VisualShaderEditor::_update_graph() {
 						type_box->add_item(TTR("Transform"));
 						type_box->select(group_node->get_output_port_type(i));
 						type_box->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-						type_box->connect_compat("item_selected", this, "_change_output_port_type", varray(nodes[n_i], i), CONNECT_DEFERRED);
+						type_box->connect("item_selected", callable_mp(this, &VisualShaderEditor::_change_output_port_type), varray(nodes[n_i], i), CONNECT_DEFERRED);
 					} else {
 						Label *label = memnew(Label);
 						label->set_text(name_right);
@@ -781,7 +777,7 @@ void VisualShaderEditor::_update_graph() {
 					preview->set_pressed(true);
 				}
 
-				preview->connect_compat("pressed", this, "_preview_select_port", varray(nodes[n_i], i), CONNECT_DEFERRED);
+				preview->connect("pressed", callable_mp(this, &VisualShaderEditor::_preview_select_port), varray(nodes[n_i], i), CONNECT_DEFERRED);
 				hb->add_child(preview);
 			}
 
@@ -854,7 +850,7 @@ void VisualShaderEditor::_update_graph() {
 			expression_box->set_context_menu_enabled(false);
 			expression_box->set_show_line_numbers(true);
 
-			expression_box->connect_compat("focus_exited", this, "_expression_focus_out", varray(expression_box, nodes[n_i]));
+			expression_box->connect("focus_exited", callable_mp(this, &VisualShaderEditor::_expression_focus_out), varray(expression_box, nodes[n_i]));
 		}
 
 		if (!uniform.is_valid()) {
@@ -2288,59 +2284,17 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_rebuild", &VisualShaderEditor::_rebuild);
 	ClassDB::bind_method("_update_graph", &VisualShaderEditor::_update_graph);
 	ClassDB::bind_method("_update_options_menu", &VisualShaderEditor::_update_options_menu);
-	ClassDB::bind_method("_expression_focus_out", &VisualShaderEditor::_expression_focus_out);
 	ClassDB::bind_method("_add_node", &VisualShaderEditor::_add_node);
-	ClassDB::bind_method("_node_dragged", &VisualShaderEditor::_node_dragged);
-	ClassDB::bind_method("_connection_request", &VisualShaderEditor::_connection_request);
-	ClassDB::bind_method("_disconnection_request", &VisualShaderEditor::_disconnection_request);
-	ClassDB::bind_method("_node_selected", &VisualShaderEditor::_node_selected);
-	ClassDB::bind_method("_scroll_changed", &VisualShaderEditor::_scroll_changed);
-	ClassDB::bind_method("_delete_request", &VisualShaderEditor::_delete_request);
-	ClassDB::bind_method("_delete_nodes", &VisualShaderEditor::_delete_nodes);
 	ClassDB::bind_method("_node_changed", &VisualShaderEditor::_node_changed);
-	ClassDB::bind_method("_edit_port_default_input", &VisualShaderEditor::_edit_port_default_input);
-	ClassDB::bind_method("_port_edited", &VisualShaderEditor::_port_edited);
-	ClassDB::bind_method("_connection_to_empty", &VisualShaderEditor::_connection_to_empty);
-	ClassDB::bind_method("_connection_from_empty", &VisualShaderEditor::_connection_from_empty);
-	ClassDB::bind_method("_line_edit_focus_out", &VisualShaderEditor::_line_edit_focus_out);
-	ClassDB::bind_method("_line_edit_changed", &VisualShaderEditor::_line_edit_changed);
-	ClassDB::bind_method("_port_name_focus_out", &VisualShaderEditor::_port_name_focus_out);
-	ClassDB::bind_method("_duplicate_nodes", &VisualShaderEditor::_duplicate_nodes);
-	ClassDB::bind_method("_copy_nodes", &VisualShaderEditor::_copy_nodes);
-	ClassDB::bind_method("_paste_nodes", &VisualShaderEditor::_paste_nodes);
-	ClassDB::bind_method("_mode_selected", &VisualShaderEditor::_mode_selected);
 	ClassDB::bind_method("_input_select_item", &VisualShaderEditor::_input_select_item);
-	ClassDB::bind_method("_preview_select_port", &VisualShaderEditor::_preview_select_port);
-	ClassDB::bind_method("_graph_gui_input", &VisualShaderEditor::_graph_gui_input);
-	ClassDB::bind_method("_add_input_port", &VisualShaderEditor::_add_input_port);
-	ClassDB::bind_method("_change_input_port_type", &VisualShaderEditor::_change_input_port_type);
-	ClassDB::bind_method("_change_input_port_name", &VisualShaderEditor::_change_input_port_name);
-	ClassDB::bind_method("_remove_input_port", &VisualShaderEditor::_remove_input_port);
-	ClassDB::bind_method("_add_output_port", &VisualShaderEditor::_add_output_port);
-	ClassDB::bind_method("_change_output_port_type", &VisualShaderEditor::_change_output_port_type);
-	ClassDB::bind_method("_change_output_port_name", &VisualShaderEditor::_change_output_port_name);
-	ClassDB::bind_method("_remove_output_port", &VisualShaderEditor::_remove_output_port);
-	ClassDB::bind_method("_node_resized", &VisualShaderEditor::_node_resized);
 	ClassDB::bind_method("_set_node_size", &VisualShaderEditor::_set_node_size);
 	ClassDB::bind_method("_clear_buffer", &VisualShaderEditor::_clear_buffer);
-	ClassDB::bind_method("_show_preview_text", &VisualShaderEditor::_show_preview_text);
-	ClassDB::bind_method("_update_preview", &VisualShaderEditor::_update_preview);
 
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &VisualShaderEditor::get_drag_data_fw);
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &VisualShaderEditor::can_drop_data_fw);
 	ClassDB::bind_method(D_METHOD("drop_data_fw"), &VisualShaderEditor::drop_data_fw);
 
 	ClassDB::bind_method("_is_available", &VisualShaderEditor::_is_available);
-	ClassDB::bind_method("_tools_menu_option", &VisualShaderEditor::_tools_menu_option);
-	ClassDB::bind_method("_show_members_dialog", &VisualShaderEditor::_show_members_dialog);
-	ClassDB::bind_method("_sbox_input", &VisualShaderEditor::_sbox_input);
-	ClassDB::bind_method("_member_filter_changed", &VisualShaderEditor::_member_filter_changed);
-	ClassDB::bind_method("_member_selected", &VisualShaderEditor::_member_selected);
-	ClassDB::bind_method("_member_unselected", &VisualShaderEditor::_member_unselected);
-	ClassDB::bind_method("_member_create", &VisualShaderEditor::_member_create);
-	ClassDB::bind_method("_member_cancel", &VisualShaderEditor::_member_cancel);
-
-	ClassDB::bind_method("_node_menu_id_pressed", &VisualShaderEditor::_node_menu_id_pressed);
 }
 
 VisualShaderEditor *VisualShaderEditor::singleton = NULL;
@@ -2381,17 +2335,17 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_SAMPLER);
 	//graph->add_valid_left_disconnect_type(0);
 	graph->set_v_size_flags(SIZE_EXPAND_FILL);
-	graph->connect_compat("connection_request", this, "_connection_request", varray(), CONNECT_DEFERRED);
-	graph->connect_compat("disconnection_request", this, "_disconnection_request", varray(), CONNECT_DEFERRED);
-	graph->connect_compat("node_selected", this, "_node_selected");
-	graph->connect_compat("scroll_offset_changed", this, "_scroll_changed");
-	graph->connect_compat("duplicate_nodes_request", this, "_duplicate_nodes");
-	graph->connect_compat("copy_nodes_request", this, "_copy_nodes");
-	graph->connect_compat("paste_nodes_request", this, "_paste_nodes");
-	graph->connect_compat("delete_nodes_request", this, "_delete_nodes");
-	graph->connect_compat("gui_input", this, "_graph_gui_input");
-	graph->connect_compat("connection_to_empty", this, "_connection_to_empty");
-	graph->connect_compat("connection_from_empty", this, "_connection_from_empty");
+	graph->connect("connection_request", callable_mp(this, &VisualShaderEditor::_connection_request), varray(), CONNECT_DEFERRED);
+	graph->connect("disconnection_request", callable_mp(this, &VisualShaderEditor::_disconnection_request), varray(), CONNECT_DEFERRED);
+	graph->connect("node_selected", callable_mp(this, &VisualShaderEditor::_node_selected));
+	graph->connect("scroll_offset_changed", callable_mp(this, &VisualShaderEditor::_scroll_changed));
+	graph->connect("duplicate_nodes_request", callable_mp(this, &VisualShaderEditor::_duplicate_nodes));
+	graph->connect("copy_nodes_request", callable_mp(this, &VisualShaderEditor::_copy_nodes));
+	graph->connect("paste_nodes_request", callable_mp(this, &VisualShaderEditor::_paste_nodes));
+	graph->connect("delete_nodes_request", callable_mp(this, &VisualShaderEditor::_delete_nodes));
+	graph->connect("gui_input", callable_mp(this, &VisualShaderEditor::_graph_gui_input));
+	graph->connect("connection_to_empty", callable_mp(this, &VisualShaderEditor::_connection_to_empty));
+	graph->connect("connection_from_empty", callable_mp(this, &VisualShaderEditor::_connection_from_empty));
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_SCALAR);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_SCALAR_INT);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_VECTOR);
@@ -2420,7 +2374,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	edit_type->add_item(TTR("Fragment"));
 	edit_type->add_item(TTR("Light"));
 	edit_type->select(1);
-	edit_type->connect_compat("item_selected", this, "_mode_selected");
+	edit_type->connect("item_selected", callable_mp(this, &VisualShaderEditor::_mode_selected));
 	graph->get_zoom_hbox()->add_child(edit_type);
 	graph->get_zoom_hbox()->move_child(edit_type, 0);
 
@@ -2428,13 +2382,13 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->get_zoom_hbox()->add_child(add_node);
 	add_node->set_text(TTR("Add Node..."));
 	graph->get_zoom_hbox()->move_child(add_node, 0);
-	add_node->connect_compat("pressed", this, "_show_members_dialog", varray(false));
+	add_node->connect("pressed", callable_mp(this, &VisualShaderEditor::_show_members_dialog), varray(false));
 
 	preview_shader = memnew(ToolButton);
 	preview_shader->set_toggle_mode(true);
 	preview_shader->set_tooltip(TTR("Show resulted shader code."));
 	graph->get_zoom_hbox()->add_child(preview_shader);
-	preview_shader->connect_compat("pressed", this, "_show_preview_text");
+	preview_shader->connect("pressed", callable_mp(this, &VisualShaderEditor::_show_preview_text));
 
 	///////////////////////////////////////
 	// PREVIEW PANEL
@@ -2468,7 +2422,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	popup_menu->add_item("Paste", NodeMenuOptions::PASTE);
 	popup_menu->add_item("Delete", NodeMenuOptions::DELETE);
 	popup_menu->add_item("Duplicate", NodeMenuOptions::DUPLICATE);
-	popup_menu->connect_compat("id_pressed", this, "_node_menu_id_pressed");
+	popup_menu->connect("id_pressed", callable_mp(this, &VisualShaderEditor::_node_menu_id_pressed));
 
 	///////////////////////////////////////
 	// SHADER NODES TREE
@@ -2482,15 +2436,15 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	node_filter = memnew(LineEdit);
 	filter_hb->add_child(node_filter);
-	node_filter->connect_compat("text_changed", this, "_member_filter_changed");
-	node_filter->connect_compat("gui_input", this, "_sbox_input");
+	node_filter->connect("text_changed", callable_mp(this, &VisualShaderEditor::_member_filter_changed));
+	node_filter->connect("gui_input", callable_mp(this, &VisualShaderEditor::_sbox_input));
 	node_filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	node_filter->set_placeholder(TTR("Search"));
 
 	tools = memnew(MenuButton);
 	filter_hb->add_child(tools);
 	tools->set_tooltip(TTR("Options"));
-	tools->get_popup()->connect_compat("id_pressed", this, "_tools_menu_option");
+	tools->get_popup()->connect("id_pressed", callable_mp(this, &VisualShaderEditor::_tools_menu_option));
 	tools->get_popup()->add_item(TTR("Expand All"), EXPAND_ALL);
 	tools->get_popup()->add_item(TTR("Collapse All"), COLLAPSE_ALL);
 
@@ -2503,9 +2457,9 @@ VisualShaderEditor::VisualShaderEditor() {
 	members->set_allow_reselect(true);
 	members->set_hide_folding(false);
 	members->set_custom_minimum_size(Size2(180 * EDSCALE, 200 * EDSCALE));
-	members->connect_compat("item_activated", this, "_member_create");
-	members->connect_compat("item_selected", this, "_member_selected");
-	members->connect_compat("nothing_selected", this, "_member_unselected");
+	members->connect("item_activated", callable_mp(this, &VisualShaderEditor::_member_create));
+	members->connect("item_selected", callable_mp(this, &VisualShaderEditor::_member_selected));
+	members->connect("nothing_selected", callable_mp(this, &VisualShaderEditor::_member_unselected));
 
 	HBoxContainer *desc_hbox = memnew(HBoxContainer);
 	members_vb->add_child(desc_hbox);
@@ -2533,11 +2487,11 @@ VisualShaderEditor::VisualShaderEditor() {
 	members_dialog->set_title(TTR("Create Shader Node"));
 	members_dialog->add_child(members_vb);
 	members_dialog->get_ok()->set_text(TTR("Create"));
-	members_dialog->get_ok()->connect_compat("pressed", this, "_member_create");
+	members_dialog->get_ok()->connect("pressed", callable_mp(this, &VisualShaderEditor::_member_create));
 	members_dialog->get_ok()->set_disabled(true);
 	members_dialog->set_resizable(true);
 	members_dialog->set_as_minsize();
-	members_dialog->connect_compat("hide", this, "_member_cancel");
+	members_dialog->connect("hide", callable_mp(this, &VisualShaderEditor::_member_cancel));
 	add_child(members_dialog);
 
 	alert = memnew(AcceptDialog);
@@ -2929,7 +2883,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	property_editor = memnew(CustomPropertyEditor);
 	add_child(property_editor);
 
-	property_editor->connect_compat("variant_changed", this, "_port_edited");
+	property_editor->connect("variant_changed", callable_mp(this, &VisualShaderEditor::_port_edited));
 }
 
 void VisualShaderEditorPlugin::edit(Object *p_object) {
@@ -2982,15 +2936,10 @@ class VisualShaderNodePluginInputEditor : public OptionButton {
 
 	Ref<VisualShaderNodeInput> input;
 
-protected:
-	static void _bind_methods() {
-		ClassDB::bind_method("_item_selected", &VisualShaderNodePluginInputEditor::_item_selected);
-	}
-
 public:
 	void _notification(int p_what) {
 		if (p_what == NOTIFICATION_READY) {
-			connect_compat("item_selected", this, "_item_selected");
+			connect("item_selected", callable_mp(this, &VisualShaderNodePluginInputEditor::_item_selected));
 		}
 	}
 
@@ -3120,25 +3069,22 @@ public:
 
 			bool res_prop = Object::cast_to<EditorPropertyResource>(p_properties[i]);
 			if (res_prop) {
-				p_properties[i]->connect_compat("resource_selected", this, "_resource_selected");
+				p_properties[i]->connect("resource_selected", callable_mp(this, &VisualShaderNodePluginDefaultEditor::_resource_selected));
 			}
 
-			properties[i]->connect_compat("property_changed", this, "_property_changed");
+			properties[i]->connect("property_changed", callable_mp(this, &VisualShaderNodePluginDefaultEditor::_property_changed));
 			properties[i]->set_object_and_property(node.ptr(), p_names[i]);
 			properties[i]->update_property();
 			properties[i]->set_name_split_ratio(0);
 		}
-		node->connect_compat("changed", this, "_node_changed");
-		node->connect_compat("editor_refresh_request", this, "_refresh_request", varray(), CONNECT_DEFERRED);
+		node->connect("changed", callable_mp(this, &VisualShaderNodePluginDefaultEditor::_node_changed));
+		node->connect("editor_refresh_request", callable_mp(this, &VisualShaderNodePluginDefaultEditor::_refresh_request), varray(), CONNECT_DEFERRED);
 	}
 
 	static void _bind_methods() {
-		ClassDB::bind_method("_property_changed", &VisualShaderNodePluginDefaultEditor::_property_changed, DEFVAL(String()), DEFVAL(false));
-		ClassDB::bind_method("_node_changed", &VisualShaderNodePluginDefaultEditor::_node_changed);
-		ClassDB::bind_method("_refresh_request", &VisualShaderNodePluginDefaultEditor::_refresh_request);
-		ClassDB::bind_method("_resource_selected", &VisualShaderNodePluginDefaultEditor::_resource_selected);
-		ClassDB::bind_method("_open_inspector", &VisualShaderNodePluginDefaultEditor::_open_inspector);
-		ClassDB::bind_method("_show_prop_names", &VisualShaderNodePluginDefaultEditor::_show_prop_names);
+		ClassDB::bind_method("_refresh_request", &VisualShaderNodePluginDefaultEditor::_refresh_request); // Used by UndoRedo.
+		ClassDB::bind_method("_open_inspector", &VisualShaderNodePluginDefaultEditor::_open_inspector); // Used by UndoRedo.
+		ClassDB::bind_method("_show_prop_names", &VisualShaderNodePluginDefaultEditor::_show_prop_names); // Used with call_deferred.
 	}
 };
 
@@ -3286,8 +3232,6 @@ void EditorPropertyShaderMode::set_option_button_clip(bool p_enable) {
 }
 
 void EditorPropertyShaderMode::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_option_selected"), &EditorPropertyShaderMode::_option_selected);
 }
 
 EditorPropertyShaderMode::EditorPropertyShaderMode() {
@@ -3295,7 +3239,7 @@ EditorPropertyShaderMode::EditorPropertyShaderMode() {
 	options->set_clip_text(true);
 	add_child(options);
 	add_focusable(options);
-	options->connect_compat("item_selected", this, "_option_selected");
+	options->connect("item_selected", callable_mp(this, &EditorPropertyShaderMode::_option_selected));
 }
 
 bool EditorInspectorShaderModePlugin::can_handle(Object *p_object) {
@@ -3368,7 +3312,7 @@ void VisualShaderNodePortPreview::_shader_changed() {
 void VisualShaderNodePortPreview::setup(const Ref<VisualShader> &p_shader, VisualShader::Type p_type, int p_node, int p_port) {
 
 	shader = p_shader;
-	shader->connect_compat("changed", this, "_shader_changed");
+	shader->connect("changed", callable_mp(this, &VisualShaderNodePortPreview::_shader_changed));
 	type = p_type;
 	port = p_port;
 	node = p_node;
@@ -3403,7 +3347,6 @@ void VisualShaderNodePortPreview::_notification(int p_what) {
 }
 
 void VisualShaderNodePortPreview::_bind_methods() {
-	ClassDB::bind_method("_shader_changed", &VisualShaderNodePortPreview::_shader_changed);
 }
 
 VisualShaderNodePortPreview::VisualShaderNodePortPreview() {

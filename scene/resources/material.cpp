@@ -197,7 +197,7 @@ void ShaderMaterial::set_shader(const Ref<Shader> &p_shader) {
 	// This can be a slow operation, and `_change_notify()` (which is called by `_shader_changed()`)
 	// does nothing in non-editor builds anyway. See GH-34741 for details.
 	if (shader.is_valid() && Engine::get_singleton()->is_editor_hint()) {
-		shader->disconnect_compat("changed", this, "_shader_changed");
+		shader->disconnect("changed", callable_mp(this, &ShaderMaterial::_shader_changed));
 	}
 
 	shader = p_shader;
@@ -207,7 +207,7 @@ void ShaderMaterial::set_shader(const Ref<Shader> &p_shader) {
 		rid = shader->get_rid();
 
 		if (Engine::get_singleton()->is_editor_hint()) {
-			shader->connect_compat("changed", this, "_shader_changed");
+			shader->connect("changed", callable_mp(this, &ShaderMaterial::_shader_changed));
 		}
 	}
 
@@ -241,7 +241,6 @@ void ShaderMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_shader"), &ShaderMaterial::get_shader);
 	ClassDB::bind_method(D_METHOD("set_shader_param", "param", "value"), &ShaderMaterial::set_shader_param);
 	ClassDB::bind_method(D_METHOD("get_shader_param", "param"), &ShaderMaterial::get_shader_param);
-	ClassDB::bind_method(D_METHOD("_shader_changed"), &ShaderMaterial::_shader_changed);
 	ClassDB::bind_method(D_METHOD("property_can_revert", "name"), &ShaderMaterial::property_can_revert);
 	ClassDB::bind_method(D_METHOD("property_get_revert", "name"), &ShaderMaterial::property_get_revert);
 

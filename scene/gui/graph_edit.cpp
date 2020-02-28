@@ -257,9 +257,9 @@ void GraphEdit::add_child_notify(Node *p_child) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_child);
 	if (gn) {
 		gn->set_scale(Vector2(zoom, zoom));
-		gn->connect_compat("offset_changed", this, "_graph_node_moved", varray(gn));
-		gn->connect_compat("raise_request", this, "_graph_node_raised", varray(gn));
-		gn->connect_compat("item_rect_changed", connections_layer, "update");
+		gn->connect("offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved), varray(gn));
+		gn->connect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised), varray(gn));
+		gn->connect("item_rect_changed", callable_mp((CanvasItem *)connections_layer, &CanvasItem::update));
 		_graph_node_moved(gn);
 		gn->set_mouse_filter(MOUSE_FILTER_PASS);
 	}
@@ -273,8 +273,8 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 	}
 	GraphNode *gn = Object::cast_to<GraphNode>(p_child);
 	if (gn) {
-		gn->disconnect_compat("offset_changed", this, "_graph_node_moved");
-		gn->disconnect_compat("raise_request", this, "_graph_node_raised");
+		gn->disconnect("offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved));
+		gn->disconnect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised));
 	}
 }
 
@@ -1291,21 +1291,8 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_right_disconnects", "enable"), &GraphEdit::set_right_disconnects);
 	ClassDB::bind_method(D_METHOD("is_right_disconnects_enabled"), &GraphEdit::is_right_disconnects_enabled);
 
-	ClassDB::bind_method(D_METHOD("_graph_node_moved"), &GraphEdit::_graph_node_moved);
-	ClassDB::bind_method(D_METHOD("_graph_node_raised"), &GraphEdit::_graph_node_raised);
-
-	ClassDB::bind_method(D_METHOD("_top_layer_input"), &GraphEdit::_top_layer_input);
-	ClassDB::bind_method(D_METHOD("_top_layer_draw"), &GraphEdit::_top_layer_draw);
-	ClassDB::bind_method(D_METHOD("_scroll_moved"), &GraphEdit::_scroll_moved);
-	ClassDB::bind_method(D_METHOD("_zoom_minus"), &GraphEdit::_zoom_minus);
-	ClassDB::bind_method(D_METHOD("_zoom_reset"), &GraphEdit::_zoom_reset);
-	ClassDB::bind_method(D_METHOD("_zoom_plus"), &GraphEdit::_zoom_plus);
-	ClassDB::bind_method(D_METHOD("_snap_toggled"), &GraphEdit::_snap_toggled);
-	ClassDB::bind_method(D_METHOD("_snap_value_changed"), &GraphEdit::_snap_value_changed);
-
 	ClassDB::bind_method(D_METHOD("_gui_input"), &GraphEdit::_gui_input);
 	ClassDB::bind_method(D_METHOD("_update_scroll_offset"), &GraphEdit::_update_scroll_offset);
-	ClassDB::bind_method(D_METHOD("_connections_layer_draw"), &GraphEdit::_connections_layer_draw);
 
 	ClassDB::bind_method(D_METHOD("get_zoom_hbox"), &GraphEdit::get_zoom_hbox);
 
@@ -1341,12 +1328,12 @@ GraphEdit::GraphEdit() {
 	add_child(top_layer);
 	top_layer->set_mouse_filter(MOUSE_FILTER_PASS);
 	top_layer->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	top_layer->connect_compat("draw", this, "_top_layer_draw");
-	top_layer->connect_compat("gui_input", this, "_top_layer_input");
+	top_layer->connect("draw", callable_mp(this, &GraphEdit::_top_layer_draw));
+	top_layer->connect("gui_input", callable_mp(this, &GraphEdit::_top_layer_input));
 
 	connections_layer = memnew(Control);
 	add_child(connections_layer);
-	connections_layer->connect_compat("draw", this, "_connections_layer_draw");
+	connections_layer->connect("draw", callable_mp(this, &GraphEdit::_connections_layer_draw));
 	connections_layer->set_name("CLAYER");
 	connections_layer->set_disable_visibility_clip(true); // so it can draw freely and be offset
 	connections_layer->set_mouse_filter(MOUSE_FILTER_IGNORE);
@@ -1373,8 +1360,8 @@ GraphEdit::GraphEdit() {
 	v_scroll->set_min(-10000);
 	v_scroll->set_max(10000);
 
-	h_scroll->connect_compat("value_changed", this, "_scroll_moved");
-	v_scroll->connect_compat("value_changed", this, "_scroll_moved");
+	h_scroll->connect("value_changed", callable_mp(this, &GraphEdit::_scroll_moved));
+	v_scroll->connect("value_changed", callable_mp(this, &GraphEdit::_scroll_moved));
 
 	zoom = 1;
 
@@ -1385,25 +1372,25 @@ GraphEdit::GraphEdit() {
 	zoom_minus = memnew(ToolButton);
 	zoom_hb->add_child(zoom_minus);
 	zoom_minus->set_tooltip(RTR("Zoom Out"));
-	zoom_minus->connect_compat("pressed", this, "_zoom_minus");
+	zoom_minus->connect("pressed", callable_mp(this, &GraphEdit::_zoom_minus));
 	zoom_minus->set_focus_mode(FOCUS_NONE);
 
 	zoom_reset = memnew(ToolButton);
 	zoom_hb->add_child(zoom_reset);
 	zoom_reset->set_tooltip(RTR("Zoom Reset"));
-	zoom_reset->connect_compat("pressed", this, "_zoom_reset");
+	zoom_reset->connect("pressed", callable_mp(this, &GraphEdit::_zoom_reset));
 	zoom_reset->set_focus_mode(FOCUS_NONE);
 
 	zoom_plus = memnew(ToolButton);
 	zoom_hb->add_child(zoom_plus);
 	zoom_plus->set_tooltip(RTR("Zoom In"));
-	zoom_plus->connect_compat("pressed", this, "_zoom_plus");
+	zoom_plus->connect("pressed", callable_mp(this, &GraphEdit::_zoom_plus));
 	zoom_plus->set_focus_mode(FOCUS_NONE);
 
 	snap_button = memnew(ToolButton);
 	snap_button->set_toggle_mode(true);
 	snap_button->set_tooltip(RTR("Enable snap and show grid."));
-	snap_button->connect_compat("pressed", this, "_snap_toggled");
+	snap_button->connect("pressed", callable_mp(this, &GraphEdit::_snap_toggled));
 	snap_button->set_pressed(true);
 	snap_button->set_focus_mode(FOCUS_NONE);
 	zoom_hb->add_child(snap_button);
@@ -1413,7 +1400,7 @@ GraphEdit::GraphEdit() {
 	snap_amount->set_max(100);
 	snap_amount->set_step(1);
 	snap_amount->set_value(20);
-	snap_amount->connect_compat("value_changed", this, "_snap_value_changed");
+	snap_amount->connect("value_changed", callable_mp(this, &GraphEdit::_snap_value_changed));
 	zoom_hb->add_child(snap_amount);
 
 	setting_scroll_ofs = false;

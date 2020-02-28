@@ -85,7 +85,7 @@ void AnimationTreeEditor::_update_path() {
 	b->set_button_group(group);
 	b->set_pressed(true);
 	b->set_focus_mode(FOCUS_NONE);
-	b->connect_compat("pressed", this, "_path_button_pressed", varray(-1));
+	b->connect("pressed", callable_mp(this, &AnimationTreeEditor::_path_button_pressed), varray(-1));
 	path_hb->add_child(b);
 	for (int i = 0; i < button_path.size(); i++) {
 		b = memnew(Button);
@@ -95,7 +95,7 @@ void AnimationTreeEditor::_update_path() {
 		path_hb->add_child(b);
 		b->set_pressed(true);
 		b->set_focus_mode(FOCUS_NONE);
-		b->connect_compat("pressed", this, "_path_button_pressed", varray(i));
+		b->connect("pressed", callable_mp(this, &AnimationTreeEditor::_path_button_pressed), varray(i));
 	}
 }
 
@@ -167,7 +167,6 @@ void AnimationTreeEditor::_notification(int p_what) {
 }
 
 void AnimationTreeEditor::_bind_methods() {
-	ClassDB::bind_method("_path_button_pressed", &AnimationTreeEditor::_path_button_pressed);
 }
 
 AnimationTreeEditor *AnimationTreeEditor::singleton = NULL;

@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "sprite_3d.h"
+
 #include "core/core_string_names.h"
 #include "scene/scene_string_names.h"
 
@@ -177,8 +178,6 @@ void SpriteBase3D::_im_update() {
 	_draw();
 
 	pending_update = false;
-
-	//texture->draw_rect_region(ci,dst_rect,src_rect,modulate);
 }
 
 void SpriteBase3D::_queue_update() {
@@ -333,9 +332,6 @@ void SpriteBase3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_item_rect"), &SpriteBase3D::get_item_rect);
 	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &SpriteBase3D::generate_triangle_mesh);
-
-	ClassDB::bind_method(D_METHOD("_queue_update"), &SpriteBase3D::_queue_update);
-	ClassDB::bind_method(D_METHOD("_im_update"), &SpriteBase3D::_im_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
@@ -526,16 +522,20 @@ void Sprite3D::_draw() {
 	VS::get_singleton()->immediate_end(immediate);
 }
 
+void Sprite3D::_texture_changed() {
+	_queue_update();
+}
+
 void Sprite3D::set_texture(const Ref<Texture2D> &p_texture) {
 
 	if (p_texture == texture)
 		return;
 	if (texture.is_valid()) {
-		texture->disconnect_compat(CoreStringNames::get_singleton()->changed, this, SceneStringNames::get_singleton()->_queue_update);
+		texture->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Sprite3D::_texture_changed));
 	}
 	texture = p_texture;
 	if (texture.is_valid()) {
-		texture->connect_compat(CoreStringNames::get_singleton()->changed, this, SceneStringNames::get_singleton()->_queue_update);
+		texture->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Sprite3D::_texture_changed));
 	}
 	_queue_update();
 }
@@ -952,10 +952,10 @@ void AnimatedSprite3D::_notification(int p_what) {
 void AnimatedSprite3D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 
 	if (frames.is_valid())
-		frames->disconnect_compat("changed", this, "_res_changed");
+		frames->disconnect("changed", callable_mp(this, &AnimatedSprite3D::_res_changed));
 	frames = p_frames;
 	if (frames.is_valid())
-		frames->connect_compat("changed", this, "_res_changed");
+		frames->connect("changed", callable_mp(this, &AnimatedSprite3D::_res_changed));
 
 	if (!frames.is_valid()) {
 		frame = 0;
@@ -1124,8 +1124,6 @@ void AnimatedSprite3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_frame", "frame"), &AnimatedSprite3D::set_frame);
 	ClassDB::bind_method(D_METHOD("get_frame"), &AnimatedSprite3D::get_frame);
-
-	ClassDB::bind_method(D_METHOD("_res_changed"), &AnimatedSprite3D::_res_changed);
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 

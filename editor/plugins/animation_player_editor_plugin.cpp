@@ -97,13 +97,13 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 
-			tool_anim->get_popup()->connect_compat("id_pressed", this, "_animation_tool_menu");
+			tool_anim->get_popup()->connect("id_pressed", callable_mp(this, &AnimationPlayerEditor::_animation_tool_menu));
 
-			onion_skinning->get_popup()->connect_compat("id_pressed", this, "_onion_skinning_menu");
+			onion_skinning->get_popup()->connect("id_pressed", callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu));
 
-			blend_editor.next->connect_compat("item_selected", this, "_blend_editor_next_changed");
+			blend_editor.next->connect("item_selected", callable_mp(this, &AnimationPlayerEditor::_blend_editor_next_changed));
 
-			get_tree()->connect_compat("node_removed", this, "_node_removed");
+			get_tree()->connect("node_removed", callable_mp(this, &AnimationPlayerEditor::_node_removed));
 
 			add_style_override("panel", editor->get_gui_base()->get_stylebox("panel", "Panel"));
 		} break;
@@ -1369,6 +1369,10 @@ void AnimationPlayerEditor::_prepare_onion_layers_1() {
 	call_deferred("_prepare_onion_layers_2");
 }
 
+void AnimationPlayerEditor::_prepare_onion_layers_1_deferred() {
+	call_deferred("_prepare_onion_layers_1");
+}
+
 void AnimationPlayerEditor::_prepare_onion_layers_2() {
 
 	Ref<Animation> anim = player->get_animation(player->get_assigned_animation());
@@ -1501,16 +1505,16 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 void AnimationPlayerEditor::_start_onion_skinning() {
 
 	// FIXME: Using "idle_frame" makes onion layers update one frame behind the current.
-	if (!get_tree()->is_connected_compat("idle_frame", this, "call_deferred")) {
-		get_tree()->connect_compat("idle_frame", this, "call_deferred", varray("_prepare_onion_layers_1"));
+	if (!get_tree()->is_connected("idle_frame", callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred))) {
+		get_tree()->connect("idle_frame", callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred));
 	}
 }
 
 void AnimationPlayerEditor::_stop_onion_skinning() {
 
-	if (get_tree()->is_connected_compat("idle_frame", this, "call_deferred")) {
+	if (get_tree()->is_connected("idle_frame", callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred))) {
 
-		get_tree()->disconnect_compat("idle_frame", this, "call_deferred");
+		get_tree()->disconnect("idle_frame", callable_mp(this, &AnimationPlayerEditor::_prepare_onion_layers_1_deferred));
 
 		_free_onion_layers();
 
@@ -1527,44 +1531,22 @@ void AnimationPlayerEditor::_pin_pressed() {
 
 void AnimationPlayerEditor::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_node_removed"), &AnimationPlayerEditor::_node_removed);
-	ClassDB::bind_method(D_METHOD("_play_pressed"), &AnimationPlayerEditor::_play_pressed);
-	ClassDB::bind_method(D_METHOD("_play_from_pressed"), &AnimationPlayerEditor::_play_from_pressed);
-	ClassDB::bind_method(D_METHOD("_play_bw_pressed"), &AnimationPlayerEditor::_play_bw_pressed);
-	ClassDB::bind_method(D_METHOD("_play_bw_from_pressed"), &AnimationPlayerEditor::_play_bw_from_pressed);
-	ClassDB::bind_method(D_METHOD("_stop_pressed"), &AnimationPlayerEditor::_stop_pressed);
-	ClassDB::bind_method(D_METHOD("_autoplay_pressed"), &AnimationPlayerEditor::_autoplay_pressed);
-	ClassDB::bind_method(D_METHOD("_animation_selected"), &AnimationPlayerEditor::_animation_selected);
-	ClassDB::bind_method(D_METHOD("_animation_name_edited"), &AnimationPlayerEditor::_animation_name_edited);
 	ClassDB::bind_method(D_METHOD("_animation_new"), &AnimationPlayerEditor::_animation_new);
 	ClassDB::bind_method(D_METHOD("_animation_rename"), &AnimationPlayerEditor::_animation_rename);
 	ClassDB::bind_method(D_METHOD("_animation_load"), &AnimationPlayerEditor::_animation_load);
 	ClassDB::bind_method(D_METHOD("_animation_remove"), &AnimationPlayerEditor::_animation_remove);
-	ClassDB::bind_method(D_METHOD("_animation_remove_confirmed"), &AnimationPlayerEditor::_animation_remove_confirmed);
 	ClassDB::bind_method(D_METHOD("_animation_blend"), &AnimationPlayerEditor::_animation_blend);
 	ClassDB::bind_method(D_METHOD("_animation_edit"), &AnimationPlayerEditor::_animation_edit);
 	ClassDB::bind_method(D_METHOD("_animation_resource_edit"), &AnimationPlayerEditor::_animation_resource_edit);
-	ClassDB::bind_method(D_METHOD("_dialog_action"), &AnimationPlayerEditor::_dialog_action);
-	ClassDB::bind_method(D_METHOD("_seek_value_changed"), &AnimationPlayerEditor::_seek_value_changed, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("_animation_player_changed"), &AnimationPlayerEditor::_animation_player_changed);
-	ClassDB::bind_method(D_METHOD("_blend_edited"), &AnimationPlayerEditor::_blend_edited);
-	ClassDB::bind_method(D_METHOD("_scale_changed"), &AnimationPlayerEditor::_scale_changed);
 	ClassDB::bind_method(D_METHOD("_list_changed"), &AnimationPlayerEditor::_list_changed);
-	ClassDB::bind_method(D_METHOD("_animation_key_editor_seek"), &AnimationPlayerEditor::_animation_key_editor_seek);
-	ClassDB::bind_method(D_METHOD("_animation_key_editor_anim_len_changed"), &AnimationPlayerEditor::_animation_key_editor_anim_len_changed);
 	ClassDB::bind_method(D_METHOD("_animation_duplicate"), &AnimationPlayerEditor::_animation_duplicate);
-	ClassDB::bind_method(D_METHOD("_blend_editor_next_changed"), &AnimationPlayerEditor::_blend_editor_next_changed);
 	ClassDB::bind_method(D_METHOD("_unhandled_key_input"), &AnimationPlayerEditor::_unhandled_key_input);
-	ClassDB::bind_method(D_METHOD("_animation_tool_menu"), &AnimationPlayerEditor::_animation_tool_menu);
 
-	ClassDB::bind_method(D_METHOD("_onion_skinning_menu"), &AnimationPlayerEditor::_onion_skinning_menu);
-	ClassDB::bind_method(D_METHOD("_editor_visibility_changed"), &AnimationPlayerEditor::_editor_visibility_changed);
 	ClassDB::bind_method(D_METHOD("_prepare_onion_layers_1"), &AnimationPlayerEditor::_prepare_onion_layers_1);
 	ClassDB::bind_method(D_METHOD("_prepare_onion_layers_2"), &AnimationPlayerEditor::_prepare_onion_layers_2);
 	ClassDB::bind_method(D_METHOD("_start_onion_skinning"), &AnimationPlayerEditor::_start_onion_skinning);
 	ClassDB::bind_method(D_METHOD("_stop_onion_skinning"), &AnimationPlayerEditor::_stop_onion_skinning);
-
-	ClassDB::bind_method(D_METHOD("_pin_pressed"), &AnimationPlayerEditor::_pin_pressed);
 }
 
 AnimationPlayerEditor *AnimationPlayerEditor::singleton = NULL;
@@ -1627,7 +1609,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	delete_dialog = memnew(ConfirmationDialog);
 	add_child(delete_dialog);
-	delete_dialog->connect_compat("confirmed", this, "_animation_remove_confirmed");
+	delete_dialog->connect("confirmed", callable_mp(this, &AnimationPlayerEditor::_animation_remove_confirmed));
 
 	tool_anim = memnew(MenuButton);
 	tool_anim->set_flat(false);
@@ -1672,7 +1654,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	onion_toggle = memnew(ToolButton);
 	onion_toggle->set_toggle_mode(true);
 	onion_toggle->set_tooltip(TTR("Enable Onion Skinning"));
-	onion_toggle->connect_compat("pressed", this, "_onion_skinning_menu", varray(ONION_SKINNING_ENABLE));
+	onion_toggle->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu), varray(ONION_SKINNING_ENABLE));
 	hb->add_child(onion_toggle);
 
 	onion_skinning = memnew(MenuButton);
@@ -1698,7 +1680,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	pin->set_toggle_mode(true);
 	pin->set_tooltip(TTR("Pin AnimationPlayer"));
 	hb->add_child(pin);
-	pin->connect_compat("pressed", this, "_pin_pressed");
+	pin->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_pin_pressed));
 
 	file = memnew(EditorFileDialog);
 	add_child(file);
@@ -1722,7 +1704,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	error_dialog->set_title(TTR("Error!"));
 	add_child(error_dialog);
 
-	name_dialog->connect_compat("confirmed", this, "_animation_name_edited");
+	name_dialog->connect("confirmed", callable_mp(this, &AnimationPlayerEditor::_animation_name_edited));
 
 	blend_editor.dialog = memnew(AcceptDialog);
 	add_child(blend_editor.dialog);
@@ -1738,21 +1720,21 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	blend_editor.dialog->set_title(TTR("Cross-Animation Blend Times"));
 	updating_blends = false;
 
-	blend_editor.tree->connect_compat("item_edited", this, "_blend_edited");
+	blend_editor.tree->connect("item_edited", callable_mp(this, &AnimationPlayerEditor::_blend_edited));
 
-	autoplay->connect_compat("pressed", this, "_autoplay_pressed");
+	autoplay->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_autoplay_pressed));
 	autoplay->set_toggle_mode(true);
-	play->connect_compat("pressed", this, "_play_pressed");
-	play_from->connect_compat("pressed", this, "_play_from_pressed");
-	play_bw->connect_compat("pressed", this, "_play_bw_pressed");
-	play_bw_from->connect_compat("pressed", this, "_play_bw_from_pressed");
-	stop->connect_compat("pressed", this, "_stop_pressed");
+	play->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_play_pressed));
+	play_from->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_play_from_pressed));
+	play_bw->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_play_bw_pressed));
+	play_bw_from->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_play_bw_from_pressed));
+	stop->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_stop_pressed));
 
-	animation->connect_compat("item_selected", this, "_animation_selected", Vector<Variant>(), true);
+	animation->connect("item_selected", callable_mp(this, &AnimationPlayerEditor::_animation_selected));
 
-	file->connect_compat("file_selected", this, "_dialog_action");
-	frame->connect_compat("value_changed", this, "_seek_value_changed", Vector<Variant>(), true);
-	scale->connect_compat("text_entered", this, "_scale_changed", Vector<Variant>(), true);
+	file->connect("file_selected", callable_mp(this, &AnimationPlayerEditor::_dialog_action));
+	frame->connect("value_changed", callable_mp(this, &AnimationPlayerEditor::_seek_value_changed), make_binds(true));
+	scale->connect("text_entered", callable_mp(this, &AnimationPlayerEditor::_scale_changed));
 
 	renaming = false;
 	last_active = false;
@@ -1762,14 +1744,14 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	add_child(track_editor);
 	track_editor->set_v_size_flags(SIZE_EXPAND_FILL);
-	track_editor->connect_compat("timeline_changed", this, "_animation_key_editor_seek");
-	track_editor->connect_compat("animation_len_changed", this, "_animation_key_editor_anim_len_changed");
+	track_editor->connect("timeline_changed", callable_mp(this, &AnimationPlayerEditor::_animation_key_editor_seek));
+	track_editor->connect("animation_len_changed", callable_mp(this, &AnimationPlayerEditor::_animation_key_editor_anim_len_changed));
 
 	_update_player();
 
 	// Onion skinning.
 
-	track_editor->connect_compat("visibility_changed", this, "_editor_visibility_changed");
+	track_editor->connect("visibility_changed", callable_mp(this, &AnimationPlayerEditor::_editor_visibility_changed));
 
 	onion.enabled = false;
 	onion.past = true;

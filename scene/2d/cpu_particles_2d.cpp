@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "cpu_particles_2d.h"
+
 #include "core/core_string_names.h"
 #include "scene/2d/canvas_item.h"
 #include "scene/2d/particles_2d.h"
@@ -212,12 +213,12 @@ void CPUParticles2D::set_texture(const Ref<Texture2D> &p_texture) {
 		return;
 
 	if (texture.is_valid())
-		texture->disconnect_compat(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
+		texture->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CPUParticles2D::_texture_changed));
 
 	texture = p_texture;
 
 	if (texture.is_valid())
-		texture->connect_compat(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
+		texture->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CPUParticles2D::_texture_changed));
 
 	update();
 	_update_mesh_texture();
@@ -1045,13 +1046,13 @@ void CPUParticles2D::_set_redraw(bool p_redraw) {
 		MutexLock lock(update_mutex);
 
 		if (redraw) {
-			VS::get_singleton()->connect_compat("frame_pre_draw", this, "_update_render_thread");
+			VS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &CPUParticles2D::_update_render_thread));
 			VS::get_singleton()->canvas_item_set_update_when_visible(get_canvas_item(), true);
 
 			VS::get_singleton()->multimesh_set_visible_instances(multimesh, -1);
 		} else {
-			if (VS::get_singleton()->is_connected_compat("frame_pre_draw", this, "_update_render_thread")) {
-				VS::get_singleton()->disconnect_compat("frame_pre_draw", this, "_update_render_thread");
+			if (VS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &CPUParticles2D::_update_render_thread))) {
+				VS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &CPUParticles2D::_update_render_thread));
 			}
 			VS::get_singleton()->canvas_item_set_update_when_visible(get_canvas_item(), false);
 
@@ -1325,9 +1326,6 @@ void CPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_gravity", "accel_vec"), &CPUParticles2D::set_gravity);
 
 	ClassDB::bind_method(D_METHOD("convert_from_particles", "particles"), &CPUParticles2D::convert_from_particles);
-
-	ClassDB::bind_method(D_METHOD("_update_render_thread"), &CPUParticles2D::_update_render_thread);
-	ClassDB::bind_method(D_METHOD("_texture_changed"), &CPUParticles2D::_texture_changed);
 
 	ADD_GROUP("Emission Shape", "emission_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points"), "set_emission_shape", "get_emission_shape");

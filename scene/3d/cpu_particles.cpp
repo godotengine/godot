@@ -1115,12 +1115,12 @@ void CPUParticles::_set_redraw(bool p_redraw) {
 		MutexLock lock(update_mutex);
 
 		if (redraw) {
-			VS::get_singleton()->connect_compat("frame_pre_draw", this, "_update_render_thread");
+			VS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &CPUParticles::_update_render_thread));
 			VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
 			VS::get_singleton()->multimesh_set_visible_instances(multimesh, -1);
 		} else {
-			if (VS::get_singleton()->is_connected_compat("frame_pre_draw", this, "_update_render_thread")) {
-				VS::get_singleton()->disconnect_compat("frame_pre_draw", this, "_update_render_thread");
+			if (VS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &CPUParticles::_update_render_thread))) {
+				VS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &CPUParticles::_update_render_thread));
 			}
 			VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, false);
 			VS::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
@@ -1381,8 +1381,6 @@ void CPUParticles::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_gravity", "accel_vec"), &CPUParticles::set_gravity);
 
 	ClassDB::bind_method(D_METHOD("convert_from_particles", "particles"), &CPUParticles::convert_from_particles);
-
-	ClassDB::bind_method(D_METHOD("_update_render_thread"), &CPUParticles::_update_render_thread);
 
 	ADD_GROUP("Emission Shape", "emission_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points"), "set_emission_shape", "get_emission_shape");

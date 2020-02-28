@@ -108,7 +108,7 @@ void ProjectSettingsEditor::_notification(int p_what) {
 
 			action_add_error->add_color_override("font_color", get_color("error_color", "Editor"));
 
-			translation_list->connect_compat("button_pressed", this, "_translation_delete");
+			translation_list->connect("button_pressed", callable_mp(this, &ProjectSettingsEditor::_translation_delete));
 			_update_actions();
 			popup_add->add_icon_item(get_icon("Keyboard", "EditorIcons"), TTR("Key "), INPUT_KEY); //"Key " - because the word 'key' has already been used as a key animation
 			popup_add->add_icon_item(get_icon("JoyButton", "EditorIcons"), TTR("Joy Button"), INPUT_JOY_BUTTON);
@@ -1724,51 +1724,11 @@ void ProjectSettingsEditor::_editor_restart_close() {
 void ProjectSettingsEditor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_unhandled_input"), &ProjectSettingsEditor::_unhandled_input);
-	ClassDB::bind_method(D_METHOD("_item_selected"), &ProjectSettingsEditor::_item_selected);
-	ClassDB::bind_method(D_METHOD("_item_add"), &ProjectSettingsEditor::_item_add);
-	ClassDB::bind_method(D_METHOD("_item_adds"), &ProjectSettingsEditor::_item_adds);
-	ClassDB::bind_method(D_METHOD("_item_del"), &ProjectSettingsEditor::_item_del);
 	ClassDB::bind_method(D_METHOD("_item_checked"), &ProjectSettingsEditor::_item_checked);
 	ClassDB::bind_method(D_METHOD("_save"), &ProjectSettingsEditor::_save);
-	ClassDB::bind_method(D_METHOD("_action_add"), &ProjectSettingsEditor::_action_add);
-	ClassDB::bind_method(D_METHOD("_action_adds"), &ProjectSettingsEditor::_action_adds);
-	ClassDB::bind_method(D_METHOD("_action_check"), &ProjectSettingsEditor::_action_check);
-	ClassDB::bind_method(D_METHOD("_action_selected"), &ProjectSettingsEditor::_action_selected);
-	ClassDB::bind_method(D_METHOD("_action_edited"), &ProjectSettingsEditor::_action_edited);
-	ClassDB::bind_method(D_METHOD("_action_activated"), &ProjectSettingsEditor::_action_activated);
-	ClassDB::bind_method(D_METHOD("_action_button_pressed"), &ProjectSettingsEditor::_action_button_pressed);
 	ClassDB::bind_method(D_METHOD("_update_actions"), &ProjectSettingsEditor::_update_actions);
-	ClassDB::bind_method(D_METHOD("_wait_for_key"), &ProjectSettingsEditor::_wait_for_key);
-	ClassDB::bind_method(D_METHOD("_add_item"), &ProjectSettingsEditor::_add_item, DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("_device_input_add"), &ProjectSettingsEditor::_device_input_add);
-	ClassDB::bind_method(D_METHOD("_press_a_key_confirm"), &ProjectSettingsEditor::_press_a_key_confirm);
-	ClassDB::bind_method(D_METHOD("_settings_prop_edited"), &ProjectSettingsEditor::_settings_prop_edited);
-	ClassDB::bind_method(D_METHOD("_copy_to_platform"), &ProjectSettingsEditor::_copy_to_platform);
+
 	ClassDB::bind_method(D_METHOD("_update_translations"), &ProjectSettingsEditor::_update_translations);
-	ClassDB::bind_method(D_METHOD("_translation_delete"), &ProjectSettingsEditor::_translation_delete);
-	ClassDB::bind_method(D_METHOD("_settings_changed"), &ProjectSettingsEditor::_settings_changed);
-	ClassDB::bind_method(D_METHOD("_translation_add"), &ProjectSettingsEditor::_translation_add);
-	ClassDB::bind_method(D_METHOD("_translation_file_open"), &ProjectSettingsEditor::_translation_file_open);
-
-	ClassDB::bind_method(D_METHOD("_translation_res_add"), &ProjectSettingsEditor::_translation_res_add);
-	ClassDB::bind_method(D_METHOD("_translation_res_file_open"), &ProjectSettingsEditor::_translation_res_file_open);
-	ClassDB::bind_method(D_METHOD("_translation_res_option_add"), &ProjectSettingsEditor::_translation_res_option_add);
-	ClassDB::bind_method(D_METHOD("_translation_res_option_file_open"), &ProjectSettingsEditor::_translation_res_option_file_open);
-	ClassDB::bind_method(D_METHOD("_translation_res_select"), &ProjectSettingsEditor::_translation_res_select);
-	ClassDB::bind_method(D_METHOD("_translation_res_option_changed"), &ProjectSettingsEditor::_translation_res_option_changed);
-	ClassDB::bind_method(D_METHOD("_translation_res_delete"), &ProjectSettingsEditor::_translation_res_delete);
-	ClassDB::bind_method(D_METHOD("_translation_res_option_delete"), &ProjectSettingsEditor::_translation_res_option_delete);
-
-	ClassDB::bind_method(D_METHOD("_translation_filter_option_changed"), &ProjectSettingsEditor::_translation_filter_option_changed);
-	ClassDB::bind_method(D_METHOD("_translation_filter_mode_changed"), &ProjectSettingsEditor::_translation_filter_mode_changed);
-
-	ClassDB::bind_method(D_METHOD("_toggle_search_bar"), &ProjectSettingsEditor::_toggle_search_bar);
-
-	ClassDB::bind_method(D_METHOD("_copy_to_platform_about_to_show"), &ProjectSettingsEditor::_copy_to_platform_about_to_show);
-
-	ClassDB::bind_method(D_METHOD("_editor_restart_request"), &ProjectSettingsEditor::_editor_restart_request);
-	ClassDB::bind_method(D_METHOD("_editor_restart"), &ProjectSettingsEditor::_editor_restart);
-	ClassDB::bind_method(D_METHOD("_editor_restart_close"), &ProjectSettingsEditor::_editor_restart_close);
 
 	ClassDB::bind_method(D_METHOD("get_tabs"), &ProjectSettingsEditor::get_tabs);
 
@@ -1805,7 +1765,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	search_button->set_pressed(false);
 	search_button->set_text(TTR("Search"));
 	hbc->add_child(search_button);
-	search_button->connect_compat("toggled", this, "_toggle_search_bar");
+	search_button->connect("toggled", callable_mp(this, &ProjectSettingsEditor::_toggle_search_bar));
 
 	hbc->add_child(memnew(VSeparator));
 
@@ -1820,7 +1780,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	category = memnew(LineEdit);
 	category->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_prop_bar->add_child(category);
-	category->connect_compat("text_entered", this, "_item_adds");
+	category->connect("text_entered", callable_mp(this, &ProjectSettingsEditor::_item_adds));
 
 	l = memnew(Label);
 	add_prop_bar->add_child(l);
@@ -1829,7 +1789,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	property = memnew(LineEdit);
 	property->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_prop_bar->add_child(property);
-	property->connect_compat("text_entered", this, "_item_adds");
+	property->connect("text_entered", callable_mp(this, &ProjectSettingsEditor::_item_adds));
 
 	l = memnew(Label);
 	add_prop_bar->add_child(l);
@@ -1847,7 +1807,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	Button *add = memnew(Button);
 	add_prop_bar->add_child(add);
 	add->set_text(TTR("Add"));
-	add->connect_compat("pressed", this, "_item_add");
+	add->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_item_add));
 
 	search_bar = memnew(HBoxContainer);
 	search_bar->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1863,14 +1823,14 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	globals_editor->get_inspector()->set_undo_redo(EditorNode::get_singleton()->get_undo_redo());
 	globals_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	globals_editor->register_search_box(search_box);
-	globals_editor->get_inspector()->connect_compat("property_selected", this, "_item_selected");
-	globals_editor->get_inspector()->connect_compat("property_edited", this, "_settings_prop_edited");
-	globals_editor->get_inspector()->connect_compat("restart_requested", this, "_editor_restart_request");
+	globals_editor->get_inspector()->connect("property_selected", callable_mp(this, &ProjectSettingsEditor::_item_selected));
+	globals_editor->get_inspector()->connect("property_edited", callable_mp(this, &ProjectSettingsEditor::_settings_prop_edited));
+	globals_editor->get_inspector()->connect("restart_requested", callable_mp(this, &ProjectSettingsEditor::_editor_restart_request));
 
 	Button *del = memnew(Button);
 	hbc->add_child(del);
 	del->set_text(TTR("Delete"));
-	del->connect_compat("pressed", this, "_item_del");
+	del->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_item_del));
 
 	add_prop_bar->add_child(memnew(VSeparator));
 
@@ -1879,8 +1839,8 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	popup_copy_to_feature->set_disabled(true);
 	add_prop_bar->add_child(popup_copy_to_feature);
 
-	popup_copy_to_feature->get_popup()->connect_compat("id_pressed", this, "_copy_to_platform");
-	popup_copy_to_feature->get_popup()->connect_compat("about_to_show", this, "_copy_to_platform_about_to_show");
+	popup_copy_to_feature->get_popup()->connect("id_pressed", callable_mp(this, &ProjectSettingsEditor::_copy_to_platform));
+	popup_copy_to_feature->get_popup()->connect("about_to_show", callable_mp(this, &ProjectSettingsEditor::_copy_to_platform_about_to_show));
 
 	get_ok()->set_text(TTR("Close"));
 	set_hide_on_ok(true);
@@ -1897,11 +1857,11 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	restart_hb->add_child(restart_label);
 	restart_hb->add_spacer();
 	Button *restart_button = memnew(Button);
-	restart_button->connect_compat("pressed", this, "_editor_restart");
+	restart_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_editor_restart));
 	restart_hb->add_child(restart_button);
 	restart_button->set_text(TTR("Save & Restart"));
 	restart_close_button = memnew(ToolButton);
-	restart_close_button->connect_compat("pressed", this, "_editor_restart_close");
+	restart_close_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_editor_restart_close));
 	restart_hb->add_child(restart_close_button);
 	restart_container->hide();
 
@@ -1929,8 +1889,8 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	action_name = memnew(LineEdit);
 	action_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	hbc->add_child(action_name);
-	action_name->connect_compat("text_entered", this, "_action_adds");
-	action_name->connect_compat("text_changed", this, "_action_check");
+	action_name->connect("text_entered", callable_mp(this, &ProjectSettingsEditor::_action_adds));
+	action_name->connect("text_changed", callable_mp(this, &ProjectSettingsEditor::_action_check));
 
 	action_add_error = memnew(Label);
 	hbc->add_child(action_add_error);
@@ -1940,7 +1900,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	hbc->add_child(add);
 	add->set_text(TTR("Add"));
 	add->set_disabled(true);
-	add->connect_compat("pressed", this, "_action_add");
+	add->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_action_add));
 	action_add = add;
 
 	input_editor = memnew(Tree);
@@ -1954,15 +1914,15 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	input_editor->set_column_min_width(1, 80 * EDSCALE);
 	input_editor->set_column_expand(2, false);
 	input_editor->set_column_min_width(2, 50 * EDSCALE);
-	input_editor->connect_compat("item_edited", this, "_action_edited");
-	input_editor->connect_compat("item_activated", this, "_action_activated");
-	input_editor->connect_compat("cell_selected", this, "_action_selected");
-	input_editor->connect_compat("button_pressed", this, "_action_button_pressed");
+	input_editor->connect("item_edited", callable_mp(this, &ProjectSettingsEditor::_action_edited));
+	input_editor->connect("item_activated", callable_mp(this, &ProjectSettingsEditor::_action_activated));
+	input_editor->connect("cell_selected", callable_mp(this, &ProjectSettingsEditor::_action_selected));
+	input_editor->connect("button_pressed", callable_mp(this, &ProjectSettingsEditor::_action_button_pressed));
 	input_editor->set_drag_forwarding(this);
 
 	popup_add = memnew(PopupMenu);
 	add_child(popup_add);
-	popup_add->connect_compat("id_pressed", this, "_add_item");
+	popup_add->connect("id_pressed", callable_mp(this, &ProjectSettingsEditor::_add_item), make_binds(Ref<InputEvent>()));
 
 	press_a_key = memnew(ConfirmationDialog);
 	press_a_key->set_focus_mode(FOCUS_ALL);
@@ -1977,13 +1937,13 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	press_a_key->get_ok()->set_disabled(true);
 	press_a_key_label = l;
 	press_a_key->add_child(l);
-	press_a_key->connect_compat("gui_input", this, "_wait_for_key");
-	press_a_key->connect_compat("confirmed", this, "_press_a_key_confirm");
+	press_a_key->connect("gui_input", callable_mp(this, &ProjectSettingsEditor::_wait_for_key));
+	press_a_key->connect("confirmed", callable_mp(this, &ProjectSettingsEditor::_press_a_key_confirm));
 
 	device_input = memnew(ConfirmationDialog);
 	add_child(device_input);
 	device_input->get_ok()->set_text(TTR("Add"));
-	device_input->connect_compat("confirmed", this, "_device_input_add");
+	device_input->connect("confirmed", callable_mp(this, &ProjectSettingsEditor::_device_input_add));
 
 	hbc = memnew(HBoxContainer);
 	device_input->add_child(hbc);
@@ -2034,7 +1994,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		thb->add_child(memnew(Label(TTR("Translations:"))));
 		thb->add_spacer();
 		Button *addtr = memnew(Button(TTR("Add...")));
-		addtr->connect_compat("pressed", this, "_translation_file_open");
+		addtr->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_translation_file_open));
 		thb->add_child(addtr);
 		VBoxContainer *tmc = memnew(VBoxContainer);
 		tvb->add_child(tmc);
@@ -2046,7 +2006,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		translation_file_open = memnew(EditorFileDialog);
 		add_child(translation_file_open);
 		translation_file_open->set_mode(EditorFileDialog::MODE_OPEN_FILE);
-		translation_file_open->connect_compat("file_selected", this, "_translation_add");
+		translation_file_open->connect("file_selected", callable_mp(this, &ProjectSettingsEditor::_translation_add));
 	}
 
 	{
@@ -2058,28 +2018,28 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		thb->add_child(memnew(Label(TTR("Resources:"))));
 		thb->add_spacer();
 		Button *addtr = memnew(Button(TTR("Add...")));
-		addtr->connect_compat("pressed", this, "_translation_res_file_open");
+		addtr->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_translation_res_file_open));
 		thb->add_child(addtr);
 		VBoxContainer *tmc = memnew(VBoxContainer);
 		tvb->add_child(tmc);
 		tmc->set_v_size_flags(SIZE_EXPAND_FILL);
 		translation_remap = memnew(Tree);
 		translation_remap->set_v_size_flags(SIZE_EXPAND_FILL);
-		translation_remap->connect_compat("cell_selected", this, "_translation_res_select");
+		translation_remap->connect("cell_selected", callable_mp(this, &ProjectSettingsEditor::_translation_res_select));
 		tmc->add_child(translation_remap);
-		translation_remap->connect_compat("button_pressed", this, "_translation_res_delete");
+		translation_remap->connect("button_pressed", callable_mp(this, &ProjectSettingsEditor::_translation_res_delete));
 
 		translation_res_file_open = memnew(EditorFileDialog);
 		add_child(translation_res_file_open);
 		translation_res_file_open->set_mode(EditorFileDialog::MODE_OPEN_FILE);
-		translation_res_file_open->connect_compat("file_selected", this, "_translation_res_add");
+		translation_res_file_open->connect("file_selected", callable_mp(this, &ProjectSettingsEditor::_translation_res_add));
 
 		thb = memnew(HBoxContainer);
 		tvb->add_child(thb);
 		thb->add_child(memnew(Label(TTR("Remaps by Locale:"))));
 		thb->add_spacer();
 		addtr = memnew(Button(TTR("Add...")));
-		addtr->connect_compat("pressed", this, "_translation_res_option_file_open");
+		addtr->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_translation_res_option_file_open));
 		translation_res_option_add_button = addtr;
 		thb->add_child(addtr);
 		tmc = memnew(VBoxContainer);
@@ -2096,13 +2056,13 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		translation_remap_options->set_column_expand(0, true);
 		translation_remap_options->set_column_expand(1, false);
 		translation_remap_options->set_column_min_width(1, 200);
-		translation_remap_options->connect_compat("item_edited", this, "_translation_res_option_changed");
-		translation_remap_options->connect_compat("button_pressed", this, "_translation_res_option_delete");
+		translation_remap_options->connect("item_edited", callable_mp(this, &ProjectSettingsEditor::_translation_res_option_changed));
+		translation_remap_options->connect("button_pressed", callable_mp(this, &ProjectSettingsEditor::_translation_res_option_delete));
 
 		translation_res_option_file_open = memnew(EditorFileDialog);
 		add_child(translation_res_option_file_open);
 		translation_res_option_file_open->set_mode(EditorFileDialog::MODE_OPEN_FILE);
-		translation_res_option_file_open->connect_compat("file_selected", this, "_translation_res_option_add");
+		translation_res_option_file_open->connect("file_selected", callable_mp(this, &ProjectSettingsEditor::_translation_res_option_add));
 	}
 
 	{
@@ -2118,20 +2078,20 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		translation_locale_filter_mode->add_item(TTR("Show Selected Locales Only"), SHOW_ONLY_SELECTED_LOCALES);
 		translation_locale_filter_mode->select(0);
 		tmc->add_margin_child(TTR("Filter mode:"), translation_locale_filter_mode);
-		translation_locale_filter_mode->connect_compat("item_selected", this, "_translation_filter_mode_changed");
+		translation_locale_filter_mode->connect("item_selected", callable_mp(this, &ProjectSettingsEditor::_translation_filter_mode_changed));
 
 		translation_filter = memnew(Tree);
 		translation_filter->set_v_size_flags(SIZE_EXPAND_FILL);
 		translation_filter->set_columns(1);
 		tmc->add_child(memnew(Label(TTR("Locales:"))));
 		tmc->add_child(translation_filter);
-		translation_filter->connect_compat("item_edited", this, "_translation_filter_option_changed");
+		translation_filter->connect("item_edited", callable_mp(this, &ProjectSettingsEditor::_translation_filter_option_changed));
 	}
 
 	autoload_settings = memnew(EditorAutoloadSettings);
 	autoload_settings->set_name(TTR("AutoLoad"));
 	tab_container->add_child(autoload_settings);
-	autoload_settings->connect_compat("autoload_changed", this, "_settings_changed");
+	autoload_settings->connect("autoload_changed", callable_mp(this, &ProjectSettingsEditor::_settings_changed));
 
 	plugin_settings = memnew(EditorPluginSettings);
 	plugin_settings->set_name(TTR("Plugins"));
@@ -2139,7 +2099,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	timer = memnew(Timer);
 	timer->set_wait_time(1.5);
-	timer->connect_compat("timeout", ProjectSettings::get_singleton(), "save");
+	timer->connect("timeout", callable_mp(ProjectSettings::get_singleton(), &ProjectSettings::save));
 	timer->set_one_shot(true);
 	add_child(timer);
 

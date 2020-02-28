@@ -95,8 +95,6 @@ EditorDebuggerInspector::~EditorDebuggerInspector() {
 }
 
 void EditorDebuggerInspector::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_object_edited", "name", "value"), &EditorDebuggerInspector::_object_edited);
-	ClassDB::bind_method(D_METHOD("_object_selected", "id"), &EditorDebuggerInspector::_object_selected);
 	ADD_SIGNAL(MethodInfo("object_selected", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("object_edited", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "property"), PropertyInfo("value")));
 	ADD_SIGNAL(MethodInfo("object_property_updated", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "property")));
@@ -105,7 +103,7 @@ void EditorDebuggerInspector::_bind_methods() {
 void EditorDebuggerInspector::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE:
-			connect_compat("object_id_selected", this, "_object_selected");
+			connect("object_id_selected", callable_mp(this, &EditorDebuggerInspector::_object_selected));
 			break;
 		case NOTIFICATION_ENTER_TREE:
 			edit(variables);
@@ -139,7 +137,7 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 		debugObj->remote_object_id = obj.id;
 		debugObj->type_name = obj.class_name;
 		remote_objects[obj.id] = debugObj;
-		debugObj->connect_compat("value_edited", this, "_object_edited");
+		debugObj->connect("value_edited", callable_mp(this, &EditorDebuggerInspector::_object_edited));
 	}
 
 	int old_prop_size = debugObj->prop_list.size();

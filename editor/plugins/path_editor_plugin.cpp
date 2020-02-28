@@ -543,18 +543,14 @@ void PathEditorPlugin::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		curve_create->connect_compat("pressed", this, "_mode_changed", make_binds(0));
-		curve_edit->connect_compat("pressed", this, "_mode_changed", make_binds(1));
-		curve_del->connect_compat("pressed", this, "_mode_changed", make_binds(2));
-		curve_close->connect_compat("pressed", this, "_close_curve");
+		curve_create->connect("pressed", callable_mp(this, &PathEditorPlugin::_mode_changed), make_binds(0));
+		curve_edit->connect("pressed", callable_mp(this, &PathEditorPlugin::_mode_changed), make_binds(1));
+		curve_del->connect("pressed", callable_mp(this, &PathEditorPlugin::_mode_changed), make_binds(2));
+		curve_close->connect("pressed", callable_mp(this, &PathEditorPlugin::_close_curve));
 	}
 }
 
 void PathEditorPlugin::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_mode_changed"), &PathEditorPlugin::_mode_changed);
-	ClassDB::bind_method(D_METHOD("_close_curve"), &PathEditorPlugin::_close_curve);
-	ClassDB::bind_method(D_METHOD("_handle_option_pressed"), &PathEditorPlugin::_handle_option_pressed);
 }
 
 PathEditorPlugin *PathEditorPlugin::singleton = NULL;
@@ -614,7 +610,7 @@ PathEditorPlugin::PathEditorPlugin(EditorNode *p_node) {
 	menu->set_item_checked(HANDLE_OPTION_ANGLE, mirror_handle_angle);
 	menu->add_check_item(TTR("Mirror Handle Lengths"));
 	menu->set_item_checked(HANDLE_OPTION_LENGTH, mirror_handle_length);
-	menu->connect_compat("id_pressed", this, "_handle_option_pressed");
+	menu->connect("id_pressed", callable_mp(this, &PathEditorPlugin::_handle_option_pressed));
 
 	curve_edit->set_pressed(true);
 	/*

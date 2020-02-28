@@ -59,13 +59,13 @@ void Path::_curve_changed() {
 void Path::set_curve(const Ref<Curve3D> &p_curve) {
 
 	if (curve.is_valid()) {
-		curve->disconnect_compat("changed", this, "_curve_changed");
+		curve->disconnect("changed", callable_mp(this, &Path::_curve_changed));
 	}
 
 	curve = p_curve;
 
 	if (curve.is_valid()) {
-		curve->connect_compat("changed", this, "_curve_changed");
+		curve->connect("changed", callable_mp(this, &Path::_curve_changed));
 	}
 	_curve_changed();
 }
@@ -79,7 +79,6 @@ void Path::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &Path::set_curve);
 	ClassDB::bind_method(D_METHOD("get_curve"), &Path::get_curve);
-	ClassDB::bind_method(D_METHOD("_curve_changed"), &Path::_curve_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve3D"), "set_curve", "get_curve");
 
