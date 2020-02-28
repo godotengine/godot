@@ -93,7 +93,7 @@ enum {
 
 };
 
-void ResourceInteractiveLoaderBinary::_advance_padding(uint32_t p_len) {
+void ResourceLoaderBinary::_advance_padding(uint32_t p_len) {
 
 	uint32_t extra = 4 - (p_len % 4);
 	if (extra < 4) {
@@ -102,7 +102,7 @@ void ResourceInteractiveLoaderBinary::_advance_padding(uint32_t p_len) {
 	}
 }
 
-StringName ResourceInteractiveLoaderBinary::_get_string() {
+StringName ResourceLoaderBinary::_get_string() {
 
 	uint32_t id = f->get_32();
 	if (id & 0x80000000) {
@@ -121,7 +121,7 @@ StringName ResourceInteractiveLoaderBinary::_get_string() {
 	return string_map[id];
 }
 
-Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
+Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 
 	uint32_t type = f->get_32();
 	print_bl("find property of type: " + itos(type));
@@ -377,20 +377,26 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 						r_v = Variant();
 					} else {
 
-						String exttype = external_resources[erindex].type;
-						String path = external_resources[erindex].path;
+						if (external_resources[erindex].cache.is_null()) {
+							//cache not here yet, wait for it?
+							if (use_sub_threads) {
+								Error err;
+								external_resources.write[erindex].cache = ResourceLoader::load_threaded_get(external_resources[erindex].path, &err);
 
-						if (path.find("://") == -1 && path.is_rel_path()) {
-							// path is relative to file being loaded, so convert to a resource path
-							path = ProjectSettings::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
+								if (err != OK || external_resources[erindex].cache.is_null()) {
+									if (!ResourceLoader::get_abort_on_missing_resources()) {
+
+										ResourceLoader::notify_dependency_error(local_path, external_resources[erindex].path, external_resources[erindex].type);
+									} else {
+
+										error = ERR_FILE_MISSING_DEPENDENCIES;
+										ERR_FAIL_V_MSG(error, "Can't load dependency: " + external_resources[erindex].path + ".");
+									}
+								}
+							}
 						}
 
-						RES res = ResourceLoader::load(path, exttype);
-
-						if (res.is_null()) {
-							WARN_PRINT(String("Couldn't load resource: " + path).utf8().get_data());
-						}
-						r_v = res;
+						r_v = external_resources[erindex].cache;
 					}
 
 				} break;
@@ -638,160 +644,168 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 	return OK; //never reach anyway
 }
 
-void ResourceInteractiveLoaderBinary::set_local_path(const String &p_local_path) {
+void ResourceLoaderBinary::set_local_path(const String &p_local_path) {
 
 	res_path = p_local_path;
 }
 
-Ref<Resource> ResourceInteractiveLoaderBinary::get_resource() {
+Ref<Resource> ResourceLoaderBinary::get_resource() {
 
 	return resource;
 }
-Error ResourceInteractiveLoaderBinary::poll() {
+Error ResourceLoaderBinary::load() {
 
 	if (error != OK)
 		return error;
 
-	int s = stage;
+	int stage = 0;
 
-	if (s < external_resources.size()) {
+	for (int i = 0; i < external_resources.size(); i++) {
 
-		String path = external_resources[s].path;
+		String path = external_resources[i].path;
 
 		if (remaps.has(path)) {
 			path = remaps[path];
 		}
-		RES res = ResourceLoader::load(path, external_resources[s].type);
-		if (res.is_null()) {
 
-			if (!ResourceLoader::get_abort_on_missing_resources()) {
+		if (path.find("://") == -1 && path.is_rel_path()) {
+			// path is relative to file being loaded, so convert to a resource path
+			path = ProjectSettings::get_singleton()->localize_path(path.get_base_dir().plus_file(external_resources[i].path));
+		}
 
-				ResourceLoader::notify_dependency_error(local_path, path, external_resources[s].type);
-			} else {
+		external_resources.write[i].path = path; //remap happens here, not on load because on load it can actually be used for filesystem dock resource remap
 
-				error = ERR_FILE_MISSING_DEPENDENCIES;
-				ERR_FAIL_V_MSG(error, "Can't load dependency: " + path + ".");
+		if (!use_sub_threads) {
+			external_resources.write[i].cache = ResourceLoader::load(path, external_resources[i].type);
+
+			if (external_resources[i].cache.is_null()) {
+				if (!ResourceLoader::get_abort_on_missing_resources()) {
+
+					ResourceLoader::notify_dependency_error(local_path, path, external_resources[i].type);
+				} else {
+
+					error = ERR_FILE_MISSING_DEPENDENCIES;
+					ERR_FAIL_V_MSG(error, "Can't load dependency: " + path + ".");
+				}
 			}
 
 		} else {
-			resource_cache.push_back(res);
+			Error err = ResourceLoader::load_threaded_request(path, external_resources[i].type, use_sub_threads, local_path);
+			if (err != OK) {
+				if (!ResourceLoader::get_abort_on_missing_resources()) {
+
+					ResourceLoader::notify_dependency_error(local_path, path, external_resources[i].type);
+				} else {
+
+					error = ERR_FILE_MISSING_DEPENDENCIES;
+					ERR_FAIL_V_MSG(error, "Can't load dependency: " + path + ".");
+				}
+			}
 		}
 
 		stage++;
-		return error;
 	}
 
-	s -= external_resources.size();
+	for (int i = 0; i < internal_resources.size(); i++) {
 
-	if (s >= internal_resources.size()) {
+		bool main = i == (internal_resources.size() - 1);
 
-		error = ERR_BUG;
-		ERR_FAIL_COND_V(s >= internal_resources.size(), error);
-	}
+		//maybe it is loaded already
+		String path;
+		int subindex = 0;
 
-	bool main = s == (internal_resources.size() - 1);
+		if (!main) {
 
-	//maybe it is loaded already
-	String path;
-	int subindex = 0;
+			path = internal_resources[i].path;
+			if (path.begins_with("local://")) {
+				path = path.replace_first("local://", "");
+				subindex = path.to_int();
+				path = res_path + "::" + path;
+			}
 
-	if (!main) {
+			if (ResourceCache::has(path)) {
+				//already loaded, don't do anything
+				stage++;
+				error = OK;
+				continue;
+			}
+		} else {
 
-		path = internal_resources[s].path;
-		if (path.begins_with("local://")) {
-			path = path.replace_first("local://", "");
-			subindex = path.to_int();
-			path = res_path + "::" + path;
+			if (!ResourceCache::has(res_path))
+				path = res_path;
 		}
 
-		if (ResourceCache::has(path)) {
-			//already loaded, don't do anything
-			stage++;
-			error = OK;
-			return error;
-		}
-	} else {
+		uint64_t offset = internal_resources[i].offset;
 
-		if (!ResourceCache::has(res_path))
-			path = res_path;
-	}
+		f->seek(offset);
 
-	uint64_t offset = internal_resources[s].offset;
+		String t = get_unicode_string();
 
-	f->seek(offset);
-
-	String t = get_unicode_string();
-
-	Object *obj = ClassDB::instance(t);
-	if (!obj) {
-		error = ERR_FILE_CORRUPT;
-		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource of unrecognized type in file: " + t + ".");
-	}
-
-	Resource *r = Object::cast_to<Resource>(obj);
-	if (!r) {
-		String obj_class = obj->get_class();
-		error = ERR_FILE_CORRUPT;
-		memdelete(obj); //bye
-		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource type in resource field not a resource, type is: " + obj_class + ".");
-	}
-
-	RES res = RES(r);
-
-	r->set_path(path);
-	r->set_subindex(subindex);
-
-	int pc = f->get_32();
-
-	//set properties
-
-	for (int i = 0; i < pc; i++) {
-
-		StringName name = _get_string();
-
-		if (name == StringName()) {
+		Object *obj = ClassDB::instance(t);
+		if (!obj) {
 			error = ERR_FILE_CORRUPT;
-			ERR_FAIL_V(ERR_FILE_CORRUPT);
+			ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource of unrecognized type in file: " + t + ".");
 		}
 
-		Variant value;
+		Resource *r = Object::cast_to<Resource>(obj);
+		if (!r) {
+			String obj_class = obj->get_class();
+			error = ERR_FILE_CORRUPT;
+			memdelete(obj); //bye
+			ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource type in resource field not a resource, type is: " + obj_class + ".");
+		}
 
-		error = parse_variant(value);
-		if (error)
-			return error;
+		RES res = RES(r);
 
-		res->set(name, value);
-	}
+		r->set_path(path);
+		r->set_subindex(subindex);
+
+		int pc = f->get_32();
+
+		//set properties
+
+		for (int j = 0; j < pc; j++) {
+
+			StringName name = _get_string();
+
+			if (name == StringName()) {
+				error = ERR_FILE_CORRUPT;
+				ERR_FAIL_V(ERR_FILE_CORRUPT);
+			}
+
+			Variant value;
+
+			error = parse_variant(value);
+			if (error)
+				return error;
+
+			res->set(name, value);
+		}
 #ifdef TOOLS_ENABLED
-	res->set_edited(false);
+		res->set_edited(false);
 #endif
-	stage++;
+		stage++;
 
-	resource_cache.push_back(res);
+		if (progress) {
+			*progress = (i + 1) / float(internal_resources.size());
+		}
 
-	if (main) {
+		resource_cache.push_back(res);
 
-		f->close();
-		resource = res;
-		resource->set_as_translation_remapped(translation_remapped);
-		error = ERR_FILE_EOF;
+		if (main) {
 
-	} else {
-		error = OK;
+			f->close();
+			resource = res;
+			resource->set_as_translation_remapped(translation_remapped);
+			error = OK;
+			return OK;
+		}
 	}
 
-	return OK;
-}
-int ResourceInteractiveLoaderBinary::get_stage() const {
-
-	return stage;
-}
-int ResourceInteractiveLoaderBinary::get_stage_count() const {
-
-	return external_resources.size() + internal_resources.size();
+	return ERR_FILE_EOF;
 }
 
-void ResourceInteractiveLoaderBinary::set_translation_remapped(bool p_remapped) {
+void ResourceLoaderBinary::set_translation_remapped(bool p_remapped) {
 
 	translation_remapped = p_remapped;
 }
@@ -814,7 +828,7 @@ static String get_ustring(FileAccess *f) {
 	return s;
 }
 
-String ResourceInteractiveLoaderBinary::get_unicode_string() {
+String ResourceLoaderBinary::get_unicode_string() {
 
 	int len = f->get_32();
 	if (len > str_buf.size()) {
@@ -828,7 +842,7 @@ String ResourceInteractiveLoaderBinary::get_unicode_string() {
 	return s;
 }
 
-void ResourceInteractiveLoaderBinary::get_dependencies(FileAccess *p_f, List<String> *p_dependencies, bool p_add_types) {
+void ResourceLoaderBinary::get_dependencies(FileAccess *p_f, List<String> *p_dependencies, bool p_add_types) {
 
 	open(p_f);
 	if (error)
@@ -846,7 +860,7 @@ void ResourceInteractiveLoaderBinary::get_dependencies(FileAccess *p_f, List<Str
 	}
 }
 
-void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
+void ResourceLoaderBinary::open(FileAccess *p_f) {
 
 	error = OK;
 
@@ -947,7 +961,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 	}
 }
 
-String ResourceInteractiveLoaderBinary::recognize(FileAccess *p_f) {
+String ResourceLoaderBinary::recognize(FileAccess *p_f) {
 
 	error = OK;
 
@@ -992,20 +1006,22 @@ String ResourceInteractiveLoaderBinary::recognize(FileAccess *p_f) {
 	return type;
 }
 
-ResourceInteractiveLoaderBinary::ResourceInteractiveLoaderBinary() :
+ResourceLoaderBinary::ResourceLoaderBinary() :
 		translation_remapped(false),
 		f(NULL),
-		error(OK),
-		stage(0) {
+		error(OK) {
+
+	progress = nullptr;
+	use_sub_threads = false;
 }
 
-ResourceInteractiveLoaderBinary::~ResourceInteractiveLoaderBinary() {
+ResourceLoaderBinary::~ResourceLoaderBinary() {
 
 	if (f)
 		memdelete(f);
 }
 
-Ref<ResourceInteractiveLoader> ResourceFormatLoaderBinary::load_interactive(const String &p_path, const String &p_original_path, Error *r_error) {
+RES ResourceFormatLoaderBinary::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 
 	if (r_error)
 		*r_error = ERR_FILE_CANT_OPEN;
@@ -1013,16 +1029,27 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoaderBinary::load_interactive(cons
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	ERR_FAIL_COND_V_MSG(err != OK, Ref<ResourceInteractiveLoader>(), "Cannot open file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot open file '" + p_path + "'.");
 
-	Ref<ResourceInteractiveLoaderBinary> ria = memnew(ResourceInteractiveLoaderBinary);
+	ResourceLoaderBinary loader;
+	loader.use_sub_threads = p_use_sub_threads;
+	loader.progress = r_progress;
 	String path = p_original_path != "" ? p_original_path : p_path;
-	ria->local_path = ProjectSettings::get_singleton()->localize_path(path);
-	ria->res_path = ria->local_path;
-	//ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
-	ria->open(f);
+	loader.local_path = ProjectSettings::get_singleton()->localize_path(path);
+	loader.res_path = loader.local_path;
+	//loader.set_local_path( Globals::get_singleton()->localize_path(p_path) );
+	loader.open(f);
 
-	return ria;
+	err = loader.load();
+
+	if (r_error) {
+		*r_error = err;
+	}
+
+	if (err) {
+		return RES();
+	}
+	return loader.resource;
 }
 
 void ResourceFormatLoaderBinary::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
@@ -1064,11 +1091,11 @@ void ResourceFormatLoaderBinary::get_dependencies(const String &p_path, List<Str
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_MSG(!f, "Cannot open file '" + p_path + "'.");
 
-	Ref<ResourceInteractiveLoaderBinary> ria = memnew(ResourceInteractiveLoaderBinary);
-	ria->local_path = ProjectSettings::get_singleton()->localize_path(p_path);
-	ria->res_path = ria->local_path;
-	//ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
-	ria->get_dependencies(f, p_dependencies, p_add_types);
+	ResourceLoaderBinary loader;
+	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+	loader.res_path = loader.local_path;
+	//loader.set_local_path( Globals::get_singleton()->localize_path(p_path) );
+	loader.get_dependencies(f, p_dependencies, p_add_types);
 }
 
 Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, const Map<String, String> &p_map) {
@@ -1153,21 +1180,17 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 		ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_OPEN, "Cannot open file '" + p_path + "'.");
 
-		Ref<ResourceInteractiveLoaderBinary> ria = memnew(ResourceInteractiveLoaderBinary);
-		ria->local_path = ProjectSettings::get_singleton()->localize_path(p_path);
-		ria->res_path = ria->local_path;
-		ria->remaps = p_map;
-		//ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
-		ria->open(f);
+		ResourceLoaderBinary loader;
+		loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+		loader.res_path = loader.local_path;
+		loader.remaps = p_map;
+		//loader.set_local_path( Globals::get_singleton()->localize_path(p_path) );
+		loader.open(f);
 
-		err = ria->poll();
-
-		while (err == OK) {
-			err = ria->poll();
-		}
+		err = loader.load();
 
 		ERR_FAIL_COND_V(err != ERR_FILE_EOF, ERR_FILE_CORRUPT);
-		RES res = ria->get_resource();
+		RES res = loader.get_resource();
 		ERR_FAIL_COND_V(!res.is_valid(), ERR_FILE_CORRUPT);
 
 		return ResourceFormatSaverBinary::singleton->save(p_path, res);
@@ -1283,11 +1306,11 @@ String ResourceFormatLoaderBinary::get_resource_type(const String &p_path) const
 		return ""; //could not rwead
 	}
 
-	Ref<ResourceInteractiveLoaderBinary> ria = memnew(ResourceInteractiveLoaderBinary);
-	ria->local_path = ProjectSettings::get_singleton()->localize_path(p_path);
-	ria->res_path = ria->local_path;
-	//ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
-	String r = ria->recognize(f);
+	ResourceLoaderBinary loader;
+	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+	loader.res_path = loader.local_path;
+	//loader.set_local_path( Globals::get_singleton()->localize_path(p_path) );
+	String r = loader.recognize(f);
 	return ClassDB::get_compatibility_remapped_class(r);
 }
 

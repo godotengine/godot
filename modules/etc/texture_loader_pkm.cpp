@@ -42,7 +42,7 @@ struct ETC1Header {
 	uint16_t origHeight;
 };
 
-RES ResourceFormatPKM::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES ResourceFormatPKM::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 
 	if (r_error)
 		*r_error = ERR_CANT_OPEN;

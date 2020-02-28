@@ -1063,7 +1063,7 @@ void DynamicFont::update_oversampling() {
 
 /////////////////////////
 
-RES ResourceFormatLoaderDynamicFont::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES ResourceFormatLoaderDynamicFont::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 
 	if (r_error)
 		*r_error = ERR_FILE_CANT_OPEN;
