@@ -96,9 +96,9 @@ public:
 
 class Navigation2D;
 
-class NavigationPolygonInstance : public Node2D {
+class NavigationRegion2D : public Node2D {
 
-	GDCLASS(NavigationPolygonInstance, Node2D);
+	GDCLASS(NavigationRegion2D, Node2D);
 
 	bool enabled;
 	RID region;
@@ -125,8 +125,8 @@ public:
 
 	String get_configuration_warning() const;
 
-	NavigationPolygonInstance();
-	~NavigationPolygonInstance();
+	NavigationRegion2D();
+	~NavigationRegion2D();
 };
 
 #endif // NAVIGATIONPOLYGON_H
