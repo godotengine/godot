@@ -11,7 +11,7 @@
 		var outline = PackedVector2Array([Vector2(0, 0), Vector2(0, 50), Vector2(50, 50), Vector2(50, 0)])
 		polygon.add_outline(outline)
 		polygon.make_polygons_from_outlines()
-		$NavigationPolygonInstance.navpoly = polygon
+		$NavigationRegion2D.navpoly = polygon
 		[/codeblock]
 		Using [method add_polygon] and indices of the vertices array.
 		[codeblock]
@@ -20,7 +20,7 @@
 		polygon.set_vertices(vertices)
 		var indices = PackedInt32Array(0, 3, 1)
 		polygon.add_polygon(indices)
-		$NavigationPolygonInstance.navpoly = polygon
+		$NavigationRegion2D.navpoly = polygon
 		[/codeblock]
 	</description>
 	<tutorials>

@@ -4,7 +4,7 @@
 		Mesh-based navigation and pathfinding node.
 	</brief_description>
 	<description>
-		Provides navigation and pathfinding within a collection of [NavigationMesh]es. These will be automatically collected from child [NavigationMeshInstance] nodes. In addition to basic pathfinding, this class also assists with aligning navigation agents with the meshes they are navigating on.
+		Provides navigation and pathfinding within a collection of [NavigationMesh]es. These will be automatically collected from child [NavigationRegion] nodes. In addition to basic pathfinding, this class also assists with aligning navigation agents with the meshes they are navigating on.
 	</description>
 	<tutorials>
 	</tutorials>

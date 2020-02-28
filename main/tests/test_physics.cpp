@@ -110,13 +110,13 @@ protected:
 
 		PhysicsServer *ps = PhysicsServer::get_singleton();
 
-		RID plane_shape = ps->shape_create(PhysicsServer::SHAPE_PLANE);
-		ps->shape_set_data(plane_shape, p_plane);
+		RID world_margin_shape = ps->shape_create(PhysicsServer::SHAPE_PLANE);
+		ps->shape_set_data(world_margin_shape, p_plane);
 
 		RID b = ps->body_create(PhysicsServer::BODY_MODE_STATIC);
 		ps->body_set_space(b, space);
 		//todo set space
-		ps->body_add_shape(b, plane_shape);
+		ps->body_add_shape(b, world_margin_shape);
 		return b;
 	}
 

@@ -32,7 +32,7 @@
 
 #include "editor/editor_scale.h"
 #include "scene/3d/collision_shape.h"
-#include "scene/3d/navigation_mesh_instance.h"
+#include "scene/3d/navigation_region.h"
 #include "scene/3d/physics_body.h"
 #include "scene/gui/box_container.h"
 #include "spatial_editor_plugin.h"
@@ -233,7 +233,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 				return;
 
 			nmesh->create_from_mesh(mesh);
-			NavigationMeshInstance *nmi = memnew(NavigationMeshInstance);
+			NavigationRegion *nmi = memnew(NavigationRegion);
 			nmi->set_navigation_mesh(nmesh);
 
 			Node *owner = node == get_tree()->get_edited_scene_root() ? node : node->get_owner();

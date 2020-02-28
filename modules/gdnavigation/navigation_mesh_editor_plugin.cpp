@@ -84,7 +84,7 @@ void NavigationMeshEditor::_clear_pressed() {
 	}
 }
 
-void NavigationMeshEditor::edit(NavigationMeshInstance *p_nav_mesh_instance) {
+void NavigationMeshEditor::edit(NavigationRegion *p_nav_mesh_instance) {
 
 	if (p_nav_mesh_instance == NULL || node == p_nav_mesh_instance) {
 		return;
@@ -128,12 +128,12 @@ NavigationMeshEditor::~NavigationMeshEditor() {
 
 void NavigationMeshEditorPlugin::edit(Object *p_object) {
 
-	navigation_mesh_editor->edit(Object::cast_to<NavigationMeshInstance>(p_object));
+	navigation_mesh_editor->edit(Object::cast_to<NavigationRegion>(p_object));
 }
 
 bool NavigationMeshEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_class("NavigationMeshInstance");
+	return p_object->is_class("NavigationRegion");
 }
 
 void NavigationMeshEditorPlugin::make_visible(bool p_visible) {

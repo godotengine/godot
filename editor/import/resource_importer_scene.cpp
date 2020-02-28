@@ -41,10 +41,10 @@
 #include "scene/resources/animation.h"
 #include "scene/resources/box_shape.h"
 #include "scene/resources/packed_scene.h"
-#include "scene/resources/plane_shape.h"
 #include "scene/resources/ray_shape.h"
 #include "scene/resources/resource_format_text.h"
 #include "scene/resources/sphere_shape.h"
+#include "scene/resources/world_margin_shape.h"
 
 uint32_t EditorSceneImporter::get_import_flags() const {
 
@@ -446,9 +446,9 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 				colshape->set_name("RayShape");
 				Object::cast_to<Spatial>(sb)->rotate_x(Math_PI / 2);
 			} else if (empty_draw_type == "IMAGE") {
-				PlaneShape *planeShape = memnew(PlaneShape);
-				colshape->set_shape(planeShape);
-				colshape->set_name("PlaneShape");
+				WorldMarginShape *world_margin_shape = memnew(WorldMarginShape);
+				colshape->set_shape(world_margin_shape);
+				colshape->set_name("WorldMarginShape");
 			} else {
 				SphereShape *sphereShape = memnew(SphereShape);
 				sphereShape->set_radius(1);
@@ -559,7 +559,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 
 		Ref<ArrayMesh> mesh = mi->get_mesh();
 		ERR_FAIL_COND_V(mesh.is_null(), NULL);
-		NavigationMeshInstance *nmi = memnew(NavigationMeshInstance);
+		NavigationRegion *nmi = memnew(NavigationRegion);
 
 		nmi->set_name(_fixstr(name, "navmesh"));
 		Ref<NavigationMesh> nmesh = memnew(NavigationMesh);

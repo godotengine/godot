@@ -36,7 +36,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 
-class NavigationMeshInstance;
+class NavigationRegion;
 
 class NavigationMeshEditor : public Control {
 	friend class NavigationMeshEditorPlugin;
@@ -50,7 +50,7 @@ class NavigationMeshEditor : public Control {
 	ToolButton *button_reset;
 	Label *bake_info;
 
-	NavigationMeshInstance *node;
+	NavigationRegion *node;
 
 	void _bake_pressed();
 	void _clear_pressed();
@@ -61,7 +61,7 @@ protected:
 	void _notification(int p_option);
 
 public:
-	void edit(NavigationMeshInstance *p_nav_mesh_instance);
+	void edit(NavigationRegion *p_nav_mesh_instance);
 	NavigationMeshEditor();
 	~NavigationMeshEditor();
 };

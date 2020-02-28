@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  plane_shape.cpp                                                      */
+/*  navigation_region.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,68 +28,48 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "plane_shape.h"
+#ifndef NAVIGATION_REGION_H
+#define NAVIGATION_REGION_H
 
-#include "servers/physics_server.h"
+#include "scene/3d/spatial.h"
+#include "scene/resources/mesh.h"
+#include "scene/resources/navigation_mesh.h"
 
-Vector<Vector3> PlaneShape::get_debug_mesh_lines() {
+class Navigation;
 
-	Plane p = get_plane();
-	Vector<Vector3> points;
+class NavigationRegion : public Spatial {
 
-	Vector3 n1 = p.get_any_perpendicular_normal();
-	Vector3 n2 = p.normal.cross(n1).normalized();
+	GDCLASS(NavigationRegion, Spatial);
 
-	Vector3 pface[4] = {
-		p.normal * p.d + n1 * 10.0 + n2 * 10.0,
-		p.normal * p.d + n1 * 10.0 + n2 * -10.0,
-		p.normal * p.d + n1 * -10.0 + n2 * -10.0,
-		p.normal * p.d + n1 * -10.0 + n2 * 10.0,
-	};
+	bool enabled;
+	RID region;
+	Ref<NavigationMesh> navmesh;
 
-	points.push_back(pface[0]);
-	points.push_back(pface[1]);
-	points.push_back(pface[1]);
-	points.push_back(pface[2]);
-	points.push_back(pface[2]);
-	points.push_back(pface[3]);
-	points.push_back(pface[3]);
-	points.push_back(pface[0]);
-	points.push_back(p.normal * p.d);
-	points.push_back(p.normal * p.d + p.normal * 3);
+	Navigation *navigation;
+	Node *debug_view;
+	Thread *bake_thread;
 
-	return points;
-}
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+	void _changed_callback(Object *p_changed, const char *p_prop);
 
-void PlaneShape::_update_shape() {
+public:
+	void set_enabled(bool p_enabled);
+	bool is_enabled() const;
 
-	PhysicsServer::get_singleton()->shape_set_data(get_shape(), plane);
-	Shape::_update_shape();
-}
+	void set_navigation_mesh(const Ref<NavigationMesh> &p_navmesh);
+	Ref<NavigationMesh> get_navigation_mesh() const;
 
-void PlaneShape::set_plane(Plane p_plane) {
+	/// Bakes the navigation mesh in a dedicated thread; once done, automatically
+	/// sets the new navigation mesh and emits a signal
+	void bake_navigation_mesh();
+	void _bake_finished(Ref<NavigationMesh> p_nav_mesh);
 
-	plane = p_plane;
-	_update_shape();
-	notify_change_to_owners();
-	_change_notify("plane");
-}
+	String get_configuration_warning() const;
 
-Plane PlaneShape::get_plane() const {
+	NavigationRegion();
+	~NavigationRegion();
+};
 
-	return plane;
-}
-
-void PlaneShape::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("set_plane", "plane"), &PlaneShape::set_plane);
-	ClassDB::bind_method(D_METHOD("get_plane"), &PlaneShape::get_plane);
-
-	ADD_PROPERTY(PropertyInfo(Variant::PLANE, "plane"), "set_plane", "get_plane");
-}
-
-PlaneShape::PlaneShape() :
-		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_PLANE)) {
-
-	set_plane(Plane(0, 1, 0, 0));
-}
+#endif // NAVIGATION_REGION_H

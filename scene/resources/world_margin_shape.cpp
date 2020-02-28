@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  plane_shape.h                                                        */
+/*  world_margin_shape.cpp                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,30 +28,68 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PLANE_SHAPE_H
-#define PLANE_SHAPE_H
+#include "world_margin_shape.h"
 
-#include "scene/resources/shape.h"
+#include "servers/physics_server.h"
 
-class PlaneShape : public Shape {
+Vector<Vector3> WorldMarginShape::get_debug_mesh_lines() {
 
-	GDCLASS(PlaneShape, Shape);
-	Plane plane;
+	Plane p = get_plane();
+	Vector<Vector3> points;
 
-protected:
-	static void _bind_methods();
-	virtual void _update_shape();
+	Vector3 n1 = p.get_any_perpendicular_normal();
+	Vector3 n2 = p.normal.cross(n1).normalized();
 
-public:
-	void set_plane(Plane p_plane);
-	Plane get_plane() const;
+	Vector3 pface[4] = {
+		p.normal * p.d + n1 * 10.0 + n2 * 10.0,
+		p.normal * p.d + n1 * 10.0 + n2 * -10.0,
+		p.normal * p.d + n1 * -10.0 + n2 * -10.0,
+		p.normal * p.d + n1 * -10.0 + n2 * 10.0,
+	};
 
-	virtual Vector<Vector3> get_debug_mesh_lines();
-	virtual real_t get_enclosing_radius() const {
-		// Should be infinite?
-		return 0;
-	}
+	points.push_back(pface[0]);
+	points.push_back(pface[1]);
+	points.push_back(pface[1]);
+	points.push_back(pface[2]);
+	points.push_back(pface[2]);
+	points.push_back(pface[3]);
+	points.push_back(pface[3]);
+	points.push_back(pface[0]);
+	points.push_back(p.normal * p.d);
+	points.push_back(p.normal * p.d + p.normal * 3);
 
-	PlaneShape();
-};
-#endif // PLANE_SHAPE_H
+	return points;
+}
+
+void WorldMarginShape::_update_shape() {
+
+	PhysicsServer::get_singleton()->shape_set_data(get_shape(), plane);
+	Shape::_update_shape();
+}
+
+void WorldMarginShape::set_plane(Plane p_plane) {
+
+	plane = p_plane;
+	_update_shape();
+	notify_change_to_owners();
+	_change_notify("plane");
+}
+
+Plane WorldMarginShape::get_plane() const {
+
+	return plane;
+}
+
+void WorldMarginShape::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_plane", "plane"), &WorldMarginShape::set_plane);
+	ClassDB::bind_method(D_METHOD("get_plane"), &WorldMarginShape::get_plane);
+
+	ADD_PROPERTY(PropertyInfo(Variant::PLANE, "plane"), "set_plane", "get_plane");
+}
+
+WorldMarginShape::WorldMarginShape() :
+		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_PLANE)) {
+
+	set_plane(Plane(0, 1, 0, 0));
+}
