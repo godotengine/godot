@@ -168,6 +168,7 @@ void ConnectDialog::_add_bind() {
 		case Variant::INT: value = 0; break;
 		case Variant::REAL: value = 0.0; break;
 		case Variant::STRING: value = ""; break;
+		case Variant::STRING_NAME: value = ""; break;
 		case Variant::VECTOR2: value = Vector2(); break;
 		case Variant::RECT2: value = Rect2(); break;
 		case Variant::VECTOR3: value = Vector3(); break;
@@ -415,6 +416,7 @@ ConnectDialog::ConnectDialog() {
 	type_list->add_item("int", Variant::INT);
 	type_list->add_item("real", Variant::REAL);
 	type_list->add_item("String", Variant::STRING);
+	type_list->add_item("StringName", Variant::STRING_NAME);
 	type_list->add_item("Vector2", Variant::VECTOR2);
 	type_list->add_item("Rect2", Variant::RECT2);
 	type_list->add_item("Vector3", Variant::VECTOR3);

@@ -39,10 +39,9 @@ class Object;
 class Variant;
 class CallableCustom;
 
-// This is an abstraction of things that can be called
-// it is used for signals and other cases where effient
-// calling of functions is required.
-// It is designed for the standard case (object and method)
+// This is an abstraction of things that can be called.
+// It is used for signals and other cases where efficient calling of functions
+// is required. It is designed for the standard case (object and method)
 // but can be optimized or customized.
 
 class Callable {

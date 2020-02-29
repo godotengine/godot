@@ -37,6 +37,7 @@
 #include "core/message_queue.h"
 #include "core/print_string.h"
 #include "instance_placeholder.h"
+#include "scene/debugger/scene_debugger.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
 #include "viewport.h"
@@ -244,11 +245,7 @@ void Node::_propagate_enter_tree() {
 	data.blocked--;
 
 #ifdef DEBUG_ENABLED
-
-	if (ScriptDebugger::get_singleton() && data.filename != String()) {
-		//used for live edit
-		data.tree->live_scene_edit_cache[data.filename].insert(this);
-	}
+	SceneDebugger::add_to_cache(data.filename, this);
 #endif
 	// enter groups
 }
@@ -268,26 +265,7 @@ void Node::_propagate_exit_tree() {
 	//block while removing children
 
 #ifdef DEBUG_ENABLED
-
-	if (ScriptDebugger::get_singleton() && data.filename != String()) {
-		//used for live edit
-		Map<String, Set<Node *> >::Element *E = data.tree->live_scene_edit_cache.find(data.filename);
-		if (E) {
-			E->get().erase(this);
-			if (E->get().size() == 0) {
-				data.tree->live_scene_edit_cache.erase(E);
-			}
-		}
-
-		Map<Node *, Map<ObjectID, Node *> >::Element *F = data.tree->live_edit_remove_list.find(this);
-		if (F) {
-			for (Map<ObjectID, Node *>::Element *G = F->get().front(); G; G = G->next()) {
-
-				memdelete(G->get());
-			}
-			data.tree->live_edit_remove_list.erase(F);
-		}
-	}
+	SceneDebugger::remove_from_cache(data.filename, this);
 #endif
 	data.blocked++;
 
@@ -2926,7 +2904,7 @@ void Node::_bind_methods() {
 	{
 		MethodInfo mi;
 
-		mi.arguments.push_back(PropertyInfo(Variant::STRING, "method"));
+		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
 
 		mi.name = "rpc";
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc", &Node::_rpc_bind, mi);
@@ -2998,7 +2976,7 @@ void Node::_bind_methods() {
 	ADD_GROUP("Pause", "pause_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "pause_mode", PROPERTY_HINT_ENUM, "Inherit,Stop,Process"), "set_pause_mode", "get_pause_mode");
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "name", PROPERTY_HINT_NONE, "", 0), "set_name", "get_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", 0), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "filename", PROPERTY_HINT_NONE, "", 0), "set_filename", "get_filename");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_owner", "get_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "", "get_multiplayer");

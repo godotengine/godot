@@ -116,7 +116,7 @@ void VisualShaderEditor::clear_custom_types() {
 	}
 }
 
-void VisualShaderEditor::add_custom_type(const String &p_name, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, const String &p_subcategory, bool p_highend) {
+void VisualShaderEditor::add_custom_type(const String &p_name, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, bool p_highend) {
 
 	ERR_FAIL_COND(!p_name.is_valid_identifier());
 	ERR_FAIL_COND(!p_script.is_valid());
@@ -134,15 +134,15 @@ void VisualShaderEditor::add_custom_type(const String &p_name, const Ref<Script>
 	ao.return_type = p_return_icon_type;
 	ao.description = p_description;
 	ao.category = p_category;
-	ao.sub_category = p_subcategory;
 	ao.highend = p_highend;
 	ao.is_custom = true;
 
 	bool begin = false;
+	String root = p_category.split("/")[0];
 
 	for (int i = 0; i < add_options.size(); i++) {
 		if (add_options[i].is_custom) {
-			if (add_options[i].category == p_category) {
+			if (add_options[i].category == root) {
 				if (!begin) {
 					begin = true;
 				}
@@ -239,9 +239,6 @@ void VisualShaderEditor::update_custom_nodes() {
 			if (ref->has_method("_get_category")) {
 				category = (String)ref->call("_get_category");
 			}
-			if (category == "") {
-				category = "Custom";
-			}
 
 			String subcategory = "";
 			if (ref->has_method("_get_subcategory")) {
@@ -258,18 +255,19 @@ void VisualShaderEditor::update_custom_nodes() {
 			dict["script"] = script;
 			dict["description"] = description;
 			dict["return_icon_type"] = return_icon_type;
+
+			category = category.rstrip("/");
+			category = category.lstrip("/");
+			category = "Addons/" + category;
+			if (subcategory != "") {
+				category += "/" + subcategory;
+			}
+
 			dict["category"] = category;
-			dict["subcategory"] = subcategory;
 			dict["highend"] = highend;
 
 			String key;
-			key = category;
-			key += "/";
-			if (subcategory != "") {
-				key += subcategory;
-				key += "/";
-			}
-			key += name;
+			key = category + "/" + name;
 
 			added[key] = dict;
 		}
@@ -284,7 +282,7 @@ void VisualShaderEditor::update_custom_nodes() {
 
 		const Dictionary &value = (Dictionary)added[key];
 
-		add_custom_type(value["name"], value["script"], value["description"], value["return_icon_type"], value["category"], value["subcategory"], value["highend"]);
+		add_custom_type(value["name"], value["script"], value["description"], value["return_icon_type"], value["category"], value["highend"]);
 	}
 
 	_update_options_menu();
@@ -299,22 +297,12 @@ void VisualShaderEditor::_update_options_menu() {
 	node_desc->set_text("");
 	members_dialog->get_ok()->set_disabled(true);
 
-	String prev_category;
-	String prev_sub_category;
-
 	members->clear();
 	TreeItem *root = members->create_item();
-	TreeItem *category = NULL;
-	TreeItem *sub_category = NULL;
 
 	String filter = node_filter->get_text().strip_edges();
 	bool use_filter = !filter.empty();
 
-	Vector<String> categories;
-	Vector<String> sub_categories;
-
-	int item_count = 0;
-	int item_count2 = 0;
 	bool is_first_item = true;
 
 	Color unsupported_color = get_color("error_color", "Editor");
@@ -322,111 +310,92 @@ void VisualShaderEditor::_update_options_menu() {
 
 	static bool low_driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name") == "GLES2";
 
+	Map<String, TreeItem *> folders;
+
 	int current_func = -1;
 
 	if (!visual_shader.is_null()) {
 		current_func = visual_shader->get_mode();
 	}
 
-	for (int i = 0; i < add_options.size() + 1; i++) {
+	Vector<AddOption> custom_options;
+	Vector<AddOption> embedded_options;
 
-		if (i == add_options.size()) {
-			if (sub_category != NULL && item_count2 == 0) {
-				memdelete(sub_category);
-				--item_count;
-			}
-			if (category != NULL && item_count == 0) {
-				memdelete(category);
-			}
-			break;
-		}
-
+	for (int i = 0; i < add_options.size(); i++) {
 		if (!use_filter || add_options[i].name.findn(filter) != -1) {
-
-			if ((add_options[i].func != current_func && add_options[i].func != -1) || !_is_available(add_options[i].mode))
+			if ((add_options[i].func != current_func && add_options[i].func != -1) || !_is_available(add_options[i].mode)) {
 				continue;
-
-			if (prev_category != add_options[i].category) {
-				if (category != NULL && item_count == 0) {
-					memdelete(category);
-				}
-
-				item_count = 0;
-				prev_sub_category = "";
-				category = members->create_item(root);
-				category->set_text(0, add_options[i].category);
-				category->set_selectable(0, false);
-				if (!use_filter)
-					category->set_collapsed(true);
 			}
-
-			if (add_options[i].sub_category != "") {
-				if (prev_sub_category != add_options[i].sub_category) {
-					if (category != NULL) {
-						if (sub_category != NULL && item_count2 == 0) {
-							memdelete(sub_category);
-							--item_count;
-						}
-						++item_count;
-						item_count2 = 0;
-						sub_category = members->create_item(category);
-						sub_category->set_text(0, add_options[i].sub_category);
-						sub_category->set_selectable(0, false);
-						if (!use_filter)
-							sub_category->set_collapsed(true);
-					}
-				}
+			const_cast<AddOption &>(add_options[i]).temp_idx = i; // save valid id
+			if (add_options[i].is_custom) {
+				custom_options.push_back(add_options[i]);
 			} else {
-				sub_category = NULL;
+				embedded_options.push_back(add_options[i]);
 			}
-
-			TreeItem *p_category = NULL;
-
-			if (sub_category != NULL) {
-				p_category = sub_category;
-				++item_count2;
-			} else if (category != NULL) {
-				p_category = category;
-				++item_count;
-			}
-
-			if (p_category != NULL) {
-				TreeItem *item = members->create_item(p_category);
-				if (add_options[i].highend && low_driver)
-					item->set_custom_color(0, unsupported_color);
-				else if (add_options[i].highend)
-					item->set_custom_color(0, supported_color);
-				item->set_text(0, add_options[i].name);
-				if (is_first_item && use_filter) {
-					item->select(0);
-					node_desc->set_text(_get_description(i));
-					is_first_item = false;
-				}
-				switch (add_options[i].return_type) {
-					case VisualShaderNode::PORT_TYPE_SCALAR:
-						item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("float", "EditorIcons"));
-						break;
-					case VisualShaderNode::PORT_TYPE_VECTOR:
-						item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("Vector3", "EditorIcons"));
-						break;
-					case VisualShaderNode::PORT_TYPE_BOOLEAN:
-						item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("bool", "EditorIcons"));
-						break;
-					case VisualShaderNode::PORT_TYPE_TRANSFORM:
-						item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("Transform", "EditorIcons"));
-						break;
-					case VisualShaderNode::PORT_TYPE_SAMPLER:
-						item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("ImageTexture", "EditorIcons"));
-						break;
-					default:
-						break;
-				}
-				item->set_meta("id", i);
-			}
-
-			prev_sub_category = add_options[i].sub_category;
-			prev_category = add_options[i].category;
 		}
+	}
+	Vector<AddOption> options;
+	SortArray<AddOption, _OptionComparator> sorter;
+	sorter.sort(custom_options.ptrw(), custom_options.size());
+
+	options.append_array(custom_options);
+	options.append_array(embedded_options);
+
+	for (int i = 0; i < options.size(); i++) {
+		String path = options[i].category;
+		Vector<String> subfolders = path.split("/");
+		TreeItem *category = NULL;
+
+		if (!folders.has(path)) {
+			category = root;
+			String path_temp = "";
+			for (int j = 0; j < subfolders.size(); j++) {
+				path_temp += subfolders[j];
+				if (!folders.has(path_temp)) {
+					category = members->create_item(category);
+					category->set_selectable(0, false);
+					category->set_collapsed(!use_filter);
+					category->set_text(0, subfolders[j]);
+					folders.insert(path_temp, category);
+				} else {
+					category = folders[path_temp];
+				}
+			}
+		} else {
+			category = folders[path];
+		}
+
+		TreeItem *item = members->create_item(category);
+		if (options[i].highend && low_driver)
+			item->set_custom_color(0, unsupported_color);
+		else if (options[i].highend)
+			item->set_custom_color(0, supported_color);
+		item->set_text(0, options[i].name);
+		if (is_first_item && use_filter) {
+			item->select(0);
+			node_desc->set_text(options[i].description);
+			is_first_item = false;
+		}
+		switch (options[i].return_type) {
+			case VisualShaderNode::PORT_TYPE_SCALAR:
+				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("float", "EditorIcons"));
+				break;
+			case VisualShaderNode::PORT_TYPE_VECTOR:
+				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("Vector3", "EditorIcons"));
+				break;
+			case VisualShaderNode::PORT_TYPE_BOOLEAN:
+				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("bool", "EditorIcons"));
+				break;
+			case VisualShaderNode::PORT_TYPE_TRANSFORM:
+				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("Transform", "EditorIcons"));
+				break;
+			case VisualShaderNode::PORT_TYPE_SAMPLER:
+				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("ImageTexture", "EditorIcons"));
+				break;
+			default:
+				break;
+		}
+		item->set_meta("id", options[i].temp_idx);
 	}
 }
 

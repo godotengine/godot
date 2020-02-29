@@ -46,7 +46,6 @@
 #include "core/math/vector3.h"
 #include "core/node_path.h"
 #include "core/object_id.h"
-
 #include "core/rid.h"
 #include "core/ustring.h"
 
@@ -99,6 +98,7 @@ public:
 
 		// misc types
 		COLOR,
+		STRING_NAME,
 		NODE_PATH, // 15
 		_RID,
 		OBJECT,

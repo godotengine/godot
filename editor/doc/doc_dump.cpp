@@ -165,6 +165,9 @@ void DocDump::dump(const String &p_file) {
 								//keep it
 								break;
 							case Variant::STRING:
+							case Variant::STRING_NAME:
+								default_arg_text = "@\"" + default_arg_text + "\"";
+								break;
 							case Variant::NODE_PATH:
 								default_arg_text = "\"" + default_arg_text + "\"";
 								break;

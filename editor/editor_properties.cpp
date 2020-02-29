@@ -64,7 +64,11 @@ void EditorPropertyText::_text_changed(const String &p_string) {
 	if (updating)
 		return;
 
-	emit_changed(get_edited_property(), p_string, "", true);
+	if (string_name) {
+		emit_changed(get_edited_property(), StringName(p_string), "", true);
+	} else {
+		emit_changed(get_edited_property(), p_string, "", true);
+	}
 }
 
 void EditorPropertyText::update_property() {
@@ -75,6 +79,9 @@ void EditorPropertyText::update_property() {
 	updating = false;
 }
 
+void EditorPropertyText::set_string_name(bool p_enabled) {
+	string_name = p_enabled;
+}
 void EditorPropertyText::set_placeholder(const String &p_string) {
 	text->set_placeholder(p_string);
 }
@@ -92,6 +99,7 @@ EditorPropertyText::EditorPropertyText() {
 	text->connect_compat("text_changed", this, "_text_changed");
 	text->connect_compat("text_entered", this, "_text_entered");
 
+	string_name = false;
 	updating = false;
 }
 
@@ -172,7 +180,12 @@ EditorPropertyMultilineText::EditorPropertyMultilineText() {
 
 void EditorPropertyTextEnum::_option_selected(int p_which) {
 
-	emit_changed(get_edited_property(), options->get_item_text(p_which));
+	if (string_name) {
+
+		emit_changed(get_edited_property(), StringName(options->get_item_text(p_which)));
+	} else {
+		emit_changed(get_edited_property(), options->get_item_text(p_which));
+	}
 }
 
 void EditorPropertyTextEnum::update_property() {
@@ -187,10 +200,11 @@ void EditorPropertyTextEnum::update_property() {
 	}
 }
 
-void EditorPropertyTextEnum::setup(const Vector<String> &p_options) {
+void EditorPropertyTextEnum::setup(const Vector<String> &p_options, bool p_string_name) {
 	for (int i = 0; i < p_options.size(); i++) {
 		options->add_item(p_options[i], i);
 	}
+	string_name = p_string_name;
 }
 
 void EditorPropertyTextEnum::_bind_methods() {
@@ -202,6 +216,7 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
 	options->set_flat(true);
+	string_name = false;
 
 	add_child(options);
 	add_focusable(options);
@@ -3304,6 +3319,22 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			EditorPropertyColor *editor = memnew(EditorPropertyColor);
 			editor->setup(p_hint != PROPERTY_HINT_COLOR_NO_ALPHA);
 			add_property_editor(p_path, editor);
+		} break;
+		case Variant::STRING_NAME: {
+
+			if (p_hint == PROPERTY_HINT_ENUM) {
+				EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
+				Vector<String> options = p_hint_text.split(",");
+				editor->setup(options, true);
+				add_property_editor(p_path, editor);
+			} else {
+				EditorPropertyText *editor = memnew(EditorPropertyText);
+				if (p_hint == PROPERTY_HINT_PLACEHOLDER_TEXT) {
+					editor->set_placeholder(p_hint_text);
+				}
+				editor->set_string_name(true);
+				add_property_editor(p_path, editor);
+			}
 		} break;
 		case Variant::NODE_PATH: {
 

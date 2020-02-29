@@ -123,5 +123,5 @@ void BoneAttachment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bone_name", "bone_name"), &BoneAttachment::set_bone_name);
 	ClassDB::bind_method(D_METHOD("get_bone_name"), &BoneAttachment::get_bone_name);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bone_name"), "set_bone_name", "get_bone_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bone_name"), "set_bone_name", "get_bone_name");
 }

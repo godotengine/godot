@@ -160,6 +160,7 @@ static const _bit _type_list[] = {
 	{ Variant::COLOR, "Color" },
 	{ Variant::_RID, "RID" },
 	{ Variant::OBJECT, "Object" },
+	{ Variant::STRING_NAME, "StringName" },
 	{ Variant::NODE_PATH, "NodePath" },
 	{ Variant::DICTIONARY, "Dictionary" },
 	{ Variant::CALLABLE, "Callable" },
@@ -477,7 +478,7 @@ void GDScriptTokenizerText::_advance() {
 	}
 	while (true) {
 
-		bool is_node_path = false;
+		bool is_string_name = false;
 		StringMode string_mode = STRING_DOUBLE_QUOTE;
 
 		switch (GETCHAR(0)) {
@@ -751,7 +752,7 @@ void GDScriptTokenizerText::_advance() {
 					return;
 				}
 				INCPOS(1);
-				is_node_path = true;
+				is_string_name = true;
 				FALLTHROUGH;
 			case '\'':
 			case '"': {
@@ -862,8 +863,8 @@ void GDScriptTokenizerText::_advance() {
 				}
 				INCPOS(i);
 
-				if (is_node_path) {
-					_make_constant(NodePath(str));
+				if (is_string_name) {
+					_make_constant(StringName(str));
 				} else {
 					_make_constant(str);
 				}

@@ -82,6 +82,7 @@ if env['tools']:
 
     SConscript('collada/SCsub')
     SConscript('doc/SCsub')
+    SConscript('debugger/SCsub')
     SConscript('fileserver/SCsub')
     SConscript('icons/SCsub')
     SConscript('import/SCsub')

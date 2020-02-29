@@ -32,7 +32,8 @@
 #define SCRIPT_EDITOR_DEBUGGER_H
 
 #include "core/io/packet_peer.h"
-#include "core/io/tcp_server.h"
+#include "core/io/stream_peer_tcp.h"
+#include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/editor_inspector.h"
 #include "editor/property_editor.h"
 #include "scene/3d/camera.h"
@@ -41,7 +42,6 @@
 
 class Tree;
 class EditorNode;
-class ScriptEditorDebuggerVariables;
 class LineEdit;
 class TabContainer;
 class RichTextLabel;
@@ -53,12 +53,13 @@ class ItemList;
 class EditorProfiler;
 class EditorVisualProfiler;
 class EditorNetworkProfiler;
-
-class ScriptEditorDebuggerInspectedObject;
+class SceneDebuggerTree;
 
 class ScriptEditorDebugger : public MarginContainer {
 
 	GDCLASS(ScriptEditorDebugger, MarginContainer);
+
+	friend class EditorDebuggerNode;
 
 public:
 	enum CameraOverride {
@@ -77,15 +78,7 @@ private:
 		MESSAGE_SUCCESS,
 	};
 
-	enum ItemMenu {
-		ITEM_MENU_COPY_ERROR,
-		ITEM_MENU_SAVE_REMOTE_NODE,
-		ITEM_MENU_COPY_NODE_PATH,
-	};
-
 	AcceptDialog *msgdialog;
-
-	Button *debugger_button;
 
 	LineEdit *clicked_ctrl;
 	LineEdit *clicked_ctrl_type;
@@ -94,35 +87,15 @@ private:
 	Button *le_clear;
 	Button *export_csv;
 
-	bool updating_scene_tree;
-	float inspect_scene_tree_timeout;
-	float inspect_edited_object_timeout;
-	bool auto_switch_remote_scene_tree;
-	ObjectID inspected_object_id;
-	ScriptEditorDebuggerVariables *variables;
-	Map<ObjectID, ScriptEditorDebuggerInspectedObject *> remote_objects;
-	Set<ObjectID> unfold_cache;
-
 	VBoxContainer *errors_tab;
 	Tree *error_tree;
-	Tree *inspect_scene_tree;
 	Button *clearbutton;
 	PopupMenu *item_menu;
 
 	EditorFileDialog *file_dialog;
-	enum FileDialogMode {
-		SAVE_CSV,
-		SAVE_NODE,
-	};
-	FileDialogMode file_dialog_mode;
 
 	int error_count;
 	int warning_count;
-	int last_error_count;
-	int last_warning_count;
-
-	bool hide_on_stop;
-	bool enable_external_editor;
 
 	bool skip_breakpoints_value = false;
 	Ref<Script> stack_script;
@@ -135,10 +108,11 @@ private:
 	Button *copy;
 	Button *step;
 	Button *next;
-	Button *back;
-	Button *forward;
 	Button *dobreak;
 	Button *docontinue;
+	// Reference to "Remote" tab in scene tree. Needed by _live_edit_set and buttons state.
+	// Each debugger should have it's tree in the future I guess.
+	const Tree *editor_remote_tree = NULL;
 
 	List<Vector<float> > perf_history;
 	Vector<float> perf_max;
@@ -155,15 +129,11 @@ private:
 	LineEdit *vmem_total;
 
 	Tree *stack_dump;
-	EditorInspector *inspector;
+	EditorDebuggerInspector *inspector;
+	SceneDebuggerTree *scene_tree;
 
-	Ref<TCP_Server> server;
 	Ref<StreamPeerTCP> connection;
 	Ref<PacketPeerStream> ppeer;
-
-	String message_type;
-	Array message;
-	int pending_in_queue;
 
 	HashMap<NodePath, int> node_path_cache;
 	int last_path_id;
@@ -175,7 +145,9 @@ private:
 
 	EditorNode *editor;
 
-	bool breaked;
+	OS::ProcessID remote_pid = 0;
+	bool breaked = false;
+	bool can_debug = false;
 
 	bool live_debug;
 
@@ -184,18 +156,14 @@ private:
 	void _performance_draw();
 	void _performance_select();
 	void _stack_dump_frame_selected();
-	void _output_clear();
 
-	void _scene_tree_folded(Object *obj);
-	void _scene_tree_selected();
-	void _scene_tree_rmb_selected(const Vector2 &p_position);
 	void _file_selected(const String &p_file);
-	void _scene_tree_request();
 	void _parse_message(const String &p_msg, const Array &p_data);
 	void _set_reason_text(const String &p_reason, MessageType p_type);
-	void _scene_tree_property_select_object(ObjectID p_object);
-	void _scene_tree_property_value_edited(const String &p_prop, const Variant &p_value);
-	int _update_scene_tree(TreeItem *parent, const Array &nodes, int current_index);
+	void _update_buttons_state();
+	void _remote_object_selected(ObjectID p_object);
+	void _remote_object_edited(ObjectID, const String &p_prop, const Variant &p_value);
+	void _remote_object_property_updated(ObjectID p_id, const String &p_property);
 
 	void _video_mem_request();
 
@@ -221,28 +189,34 @@ private:
 
 	void _network_profiler_activate(bool p_enable);
 
-	void _paused();
-
-	void _set_remote_object(ObjectID p_id, ScriptEditorDebuggerInspectedObject *p_obj);
-	void _clear_remote_objects();
 	void _clear_errors_list();
 
 	void _error_tree_item_rmb_selected(const Vector2 &p_pos);
 	void _item_menu_id_pressed(int p_option);
 	void _tab_changed(int p_tab);
 
+	void _put_msg(String p_message, Array p_data);
 	void _export_csv();
 
 	void _clear_execution();
+	void _stop_and_notify();
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	void start();
-	void pause();
-	void unpause();
+	void request_remote_object(ObjectID p_obj_id);
+	void update_remote_object(ObjectID p_obj_id, const String &p_prop, const Variant &p_value);
+	Object *get_remote_object(ObjectID p_id);
+
+	// Needed by _live_edit_set, buttons state.
+	void set_editor_remote_tree(const Tree *p_tree) { editor_remote_tree = p_tree; }
+
+	void request_remote_tree();
+	const SceneDebuggerTree *get_remote_tree();
+
+	void start(Ref<StreamPeerTCP> p_connection);
 	void stop();
 
 	void debug_skip_breakpoints();
@@ -252,13 +226,22 @@ public:
 	void debug_step();
 	void debug_break();
 	void debug_continue();
+	bool is_breaked() const { return breaked; }
+	bool is_debuggable() const { return can_debug; }
+	bool is_session_active() { return connection.is_valid() && connection->is_connected_to_host(); };
+	int get_remote_pid() const { return remote_pid; }
 
+	int get_error_count() const { return error_count; }
+	int get_warning_count() const { return warning_count; }
+	String get_stack_script_file() const;
+	int get_stack_script_line() const;
+	int get_stack_script_frame() const;
+
+	void update_tabs();
 	String get_var_value(const String &p_var) const;
 
+	void save_node(ObjectID p_id, const String &p_file);
 	void set_live_debugging(bool p_enable);
-
-	static void _method_changeds(void *p_ud, Object *p_base, const StringName &p_name, VARIANT_ARG_DECLARE);
-	static void _property_changeds(void *p_ud, Object *p_base, const StringName &p_property, const Variant &p_value);
 
 	void live_debug_create_node(const NodePath &p_parent, const String &p_type, const String &p_name);
 	void live_debug_instance_node(const NodePath &p_parent, const String &p_path, const String &p_name);
@@ -274,15 +257,6 @@ public:
 	void set_breakpoint(const String &p_path, int p_line, bool p_enabled);
 
 	void update_live_edit_root();
-
-	void set_hide_on_stop(bool p_hide);
-
-	bool get_debug_with_external_editor() const;
-	void set_debug_with_external_editor(bool p_enabled);
-
-	Ref<Script> get_dump_stack_script() const;
-
-	void set_tool_button(Button *p_tb) { debugger_button = p_tb; }
 
 	void reload_scripts();
 

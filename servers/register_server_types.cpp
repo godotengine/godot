@@ -56,6 +56,7 @@
 #include "audio_server.h"
 #include "camera/camera_feed.h"
 #include "camera_server.h"
+#include "core/script_debugger_remote.h"
 #include "navigation_2d_server.h"
 #include "navigation_server.h"
 #include "physics/physics_server_sw.h"
@@ -63,18 +64,17 @@
 #include "physics_2d/physics_2d_server_wrap_mt.h"
 #include "physics_2d_server.h"
 #include "physics_server.h"
-#include "scene/debugger/script_debugger_remote.h"
 #include "visual/shader_types.h"
 #include "visual_server.h"
 
-static void _debugger_get_resource_usage(List<ScriptDebuggerRemote::ResourceUsage> *r_usage) {
+static void _debugger_get_resource_usage(ScriptDebuggerRemote::ResourceUsage *r_usage) {
 
 	List<VS::TextureInfo> tinfo;
 	VS::get_singleton()->texture_debug_usage(&tinfo);
 
 	for (List<VS::TextureInfo>::Element *E = tinfo.front(); E; E = E->next()) {
 
-		ScriptDebuggerRemote::ResourceUsage usage;
+		ScriptDebuggerRemote::ResourceInfo usage;
 		usage.path = E->get().path;
 		usage.vram = E->get().bytes;
 		usage.id = E->get().texture;
@@ -84,7 +84,7 @@ static void _debugger_get_resource_usage(List<ScriptDebuggerRemote::ResourceUsag
 		} else {
 			usage.format = itos(E->get().width) + "x" + itos(E->get().height) + "x" + itos(E->get().depth) + " " + Image::get_format_name(E->get().format);
 		}
-		r_usage->push_back(usage);
+		r_usage->infos.push_back(usage);
 	}
 }
 

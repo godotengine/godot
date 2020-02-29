@@ -42,7 +42,7 @@ public:
 		STATUS_STOP
 	};
 
-	OS::ProcessID pid;
+	List<OS::ProcessID> pids;
 
 private:
 	bool debug_collisions;
@@ -51,11 +51,13 @@ private:
 
 public:
 	Status get_status() const;
-	Error run(const String &p_scene, const String &p_custom_args, const List<String> &p_breakpoints, const bool &p_skip_breakpoints = false);
+	Error run(const String &p_scene, const String &p_custom_args, const List<String> &p_breakpoints, const bool &p_skip_breakpoints = false, const int &p_instances = 1);
 	void run_native_notify() { status = STATUS_PLAY; }
 	void stop();
 
-	OS::ProcessID get_pid() const { return pid; }
+	void stop_child_process(OS::ProcessID p_pid);
+	bool has_child_process(OS::ProcessID p_pid) const;
+	int get_child_process_count() const { return pids.size(); }
 
 	void set_debug_collisions(bool p_debug);
 	bool get_debug_collisions() const;
