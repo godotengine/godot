@@ -35,7 +35,117 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 
-class SectionedInspectorFilter;
+class SectionedInspector;
+
+class SectionedInspectorFilter : public Object {
+
+	GDCLASS(SectionedInspectorFilter, Object);
+
+	SectionedInspector *sectioned_inspector;
+	Object *edited;
+	String section;
+	bool allow_sub;
+
+	bool _set(const StringName &p_name, const Variant &p_value) {
+
+		if (!edited)
+			return false;
+
+		String name = p_name;
+		if (section != "") {
+			name = section + "/" + name;
+		}
+
+		bool valid;
+		edited->set(name, p_value, &valid);
+		return valid;
+	}
+
+	bool _get(const StringName &p_name, Variant &r_ret) const {
+
+		if (!edited)
+			return false;
+
+		String name = p_name;
+		if (section != "") {
+			name = section + "/" + name;
+		}
+
+		bool valid = false;
+
+		r_ret = edited->get(name, &valid);
+		return valid;
+	}
+	void _get_property_list(List<PropertyInfo> *p_list) const {
+
+		if (!edited)
+			return;
+
+		List<PropertyInfo> pinfo;
+		edited->get_property_list(&pinfo);
+		for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
+
+			PropertyInfo pi = E->get();
+			int sp = pi.name.find("/");
+
+			if (pi.name == "resource_path" || pi.name == "resource_name" || pi.name == "resource_local_to_scene" || pi.name.begins_with("script/") || pi.name.begins_with("_global_script")) //skip resource stuff
+				continue;
+
+			if (sp == -1) {
+				pi.name = "global/" + pi.name;
+			}
+
+			if (pi.name.begins_with(section + "/")) {
+				pi.name = pi.name.replace_first(section + "/", "");
+				if (!allow_sub && pi.name.find("/") != -1)
+					continue;
+				p_list->push_back(pi);
+			}
+		}
+	}
+
+	bool property_can_revert(const String &p_name) {
+
+		return edited->call("property_can_revert", section + "/" + p_name);
+	}
+
+	Variant property_get_revert(const String &p_name) {
+
+		return edited->call("property_get_revert", section + "/" + p_name);
+	}
+
+protected:
+	static void _bind_methods() {
+
+		ClassDB::bind_method("property_can_revert", &SectionedInspectorFilter::property_can_revert);
+		ClassDB::bind_method("property_get_revert", &SectionedInspectorFilter::property_get_revert);
+	}
+
+public:
+	SectionedInspector *_get_sectioned_inspector() {
+		return sectioned_inspector;
+	}
+
+	void _set_sectioned_inspector(SectionedInspector *p_sectioned_inspector) {
+		sectioned_inspector = p_sectioned_inspector;
+	}
+
+	void set_section(const String &p_section, bool p_allow_sub) {
+
+		section = p_section;
+		allow_sub = p_allow_sub;
+		_change_notify();
+	}
+
+	void set_edited(Object *p_edited) {
+		edited = p_edited;
+		_change_notify();
+	}
+
+	SectionedInspectorFilter() {
+		edited = NULL;
+	}
+};
 
 class SectionedInspector : public HSplitContainer {
 

@@ -30,111 +30,12 @@
 
 #include "editor_sectioned_inspector.h"
 #include "editor_scale.h"
-class SectionedInspectorFilter : public Object {
-
-	GDCLASS(SectionedInspectorFilter, Object);
-
-	Object *edited;
-	String section;
-	bool allow_sub;
-
-	bool _set(const StringName &p_name, const Variant &p_value) {
-
-		if (!edited)
-			return false;
-
-		String name = p_name;
-		if (section != "") {
-			name = section + "/" + name;
-		}
-
-		bool valid;
-		edited->set(name, p_value, &valid);
-		return valid;
-	}
-
-	bool _get(const StringName &p_name, Variant &r_ret) const {
-
-		if (!edited)
-			return false;
-
-		String name = p_name;
-		if (section != "") {
-			name = section + "/" + name;
-		}
-
-		bool valid = false;
-
-		r_ret = edited->get(name, &valid);
-		return valid;
-	}
-	void _get_property_list(List<PropertyInfo> *p_list) const {
-
-		if (!edited)
-			return;
-
-		List<PropertyInfo> pinfo;
-		edited->get_property_list(&pinfo);
-		for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-
-			PropertyInfo pi = E->get();
-			int sp = pi.name.find("/");
-
-			if (pi.name == "resource_path" || pi.name == "resource_name" || pi.name == "resource_local_to_scene" || pi.name.begins_with("script/") || pi.name.begins_with("_global_script")) //skip resource stuff
-				continue;
-
-			if (sp == -1) {
-				pi.name = "global/" + pi.name;
-			}
-
-			if (pi.name.begins_with(section + "/")) {
-				pi.name = pi.name.replace_first(section + "/", "");
-				if (!allow_sub && pi.name.find("/") != -1)
-					continue;
-				p_list->push_back(pi);
-			}
-		}
-	}
-
-	bool property_can_revert(const String &p_name) {
-
-		return edited->call("property_can_revert", section + "/" + p_name);
-	}
-
-	Variant property_get_revert(const String &p_name) {
-
-		return edited->call("property_get_revert", section + "/" + p_name);
-	}
-
-protected:
-	static void _bind_methods() {
-
-		ClassDB::bind_method("property_can_revert", &SectionedInspectorFilter::property_can_revert);
-		ClassDB::bind_method("property_get_revert", &SectionedInspectorFilter::property_get_revert);
-	}
-
-public:
-	void set_section(const String &p_section, bool p_allow_sub) {
-
-		section = p_section;
-		allow_sub = p_allow_sub;
-		_change_notify();
-	}
-
-	void set_edited(Object *p_edited) {
-		edited = p_edited;
-		_change_notify();
-	}
-
-	SectionedInspectorFilter() {
-		edited = NULL;
-	}
-};
 
 void SectionedInspector::_bind_methods() {
 
 	ClassDB::bind_method("_section_selected", &SectionedInspector::_section_selected);
 	ClassDB::bind_method("_search_changed", &SectionedInspector::_search_changed);
+	ClassDB::bind_method("_set_current_section", &SectionedInspector::set_current_section);
 
 	ClassDB::bind_method("update_category_list", &SectionedInspector::update_category_list);
 }
@@ -313,6 +214,8 @@ SectionedInspector::SectionedInspector() :
 		inspector(memnew(EditorInspector)),
 		search_box(NULL) {
 	add_constant_override("autohide", 1); // Fixes the dragger always showing up
+
+	filter->_set_sectioned_inspector(this);
 
 	VBoxContainer *left_vb = memnew(VBoxContainer);
 	left_vb->set_custom_minimum_size(Size2(190, 0) * EDSCALE);

@@ -31,6 +31,7 @@
 #include "undo_redo.h"
 
 #include "core/os/os.h"
+#include "editor/editor_sectioned_inspector.h"
 
 void UndoRedo::_discard_redo() {
 
@@ -173,6 +174,17 @@ void UndoRedo::add_undo_property(Object *p_object, const StringName &p_property,
 	// No undo if the merge mode is MERGE_ENDS
 	if (merge_mode == MERGE_ENDS)
 		return;
+
+	// SectionedInspector's section property must reset before performing undo
+	SectionedInspectorFilter *filter = Object::cast_to<SectionedInspectorFilter>(p_object);
+	if (filter && filter->_get_sectioned_inspector()) {
+		Operation tab_change_op;
+		tab_change_op.object = filter->_get_sectioned_inspector()->get_instance_id();
+		tab_change_op.type = Operation::TYPE_METHOD;
+		tab_change_op.name = StringName("_set_current_section");
+		tab_change_op.args[0] = filter->_get_sectioned_inspector()->get_current_section();
+		actions.write[current_action + 1].undo_ops.push_back(tab_change_op);
+	}
 
 	Operation undo_op;
 	undo_op.object = p_object->get_instance_id();
