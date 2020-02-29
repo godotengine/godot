@@ -82,9 +82,10 @@ bool NavigationPolygon::_edit_is_selected_on_click(const Point2 &p_point, double
 
 void NavigationPolygon::set_vertices(const Vector<Vector2> &p_vertices) {
 
-	navmesh_generation->lock();
-	navmesh.unref();
-	navmesh_generation->unlock();
+	{
+		MutexLock lock(navmesh_generation);
+		navmesh.unref();
+	}
 	vertices = p_vertices;
 	rect_cache_dirty = true;
 }
@@ -96,9 +97,10 @@ Vector<Vector2> NavigationPolygon::get_vertices() const {
 
 void NavigationPolygon::_set_polygons(const Array &p_array) {
 
-	navmesh_generation->lock();
-	navmesh.unref();
-	navmesh_generation->unlock();
+	{
+		MutexLock lock(navmesh_generation);
+		navmesh.unref();
+	}
 	polygons.resize(p_array.size());
 	for (int i = 0; i < p_array.size(); i++) {
 		polygons.write[i].indices = p_array[i];
@@ -141,9 +143,10 @@ void NavigationPolygon::add_polygon(const Vector<int> &p_polygon) {
 	Polygon polygon;
 	polygon.indices = p_polygon;
 	polygons.push_back(polygon);
-	navmesh_generation->lock();
-	navmesh.unref();
-	navmesh_generation->unlock();
+	{
+		MutexLock lock(navmesh_generation);
+		navmesh.unref();
+	}
 }
 
 void NavigationPolygon::add_outline_at_index(const Vector<Vector2> &p_outline, int p_index) {
@@ -164,13 +167,15 @@ Vector<int> NavigationPolygon::get_polygon(int p_idx) {
 void NavigationPolygon::clear_polygons() {
 
 	polygons.clear();
-	navmesh_generation->lock();
-	navmesh.unref();
-	navmesh_generation->unlock();
+	{
+		MutexLock lock(navmesh_generation);
+		navmesh.unref();
+	}
 }
 
 Ref<NavigationMesh> NavigationPolygon::get_mesh() {
-	navmesh_generation->lock();
+	MutexLock lock(navmesh_generation);
+
 	if (navmesh.is_null()) {
 		navmesh.instance();
 		Vector<Vector3> verts;
@@ -190,7 +195,7 @@ Ref<NavigationMesh> NavigationPolygon::get_mesh() {
 			navmesh->add_polygon(get_polygon(i));
 		}
 	}
-	navmesh_generation->unlock();
+
 	return navmesh;
 }
 
@@ -230,9 +235,10 @@ void NavigationPolygon::clear_outlines() {
 }
 void NavigationPolygon::make_polygons_from_outlines() {
 
-	navmesh_generation->lock();
-	navmesh.unref();
-	navmesh_generation->unlock();
+	{
+		MutexLock lock(navmesh_generation);
+		navmesh.unref();
+	}
 	List<TriangulatorPoly> in_poly, out_poly;
 
 	Vector2 outside_point(-1e10, -1e10);
@@ -362,15 +368,13 @@ void NavigationPolygon::_bind_methods() {
 }
 
 NavigationPolygon::NavigationPolygon() :
-		rect_cache_dirty(true),
-		navmesh_generation(Mutex::create()) {
+		rect_cache_dirty(true) {
 }
 
 NavigationPolygon::~NavigationPolygon() {
-	memdelete(navmesh_generation);
 }
 
-void NavigationPolygonInstance::set_enabled(bool p_enabled) {
+void NavigationRegion2D::set_enabled(bool p_enabled) {
 
 	if (enabled == p_enabled)
 		return;
@@ -394,25 +398,25 @@ void NavigationPolygonInstance::set_enabled(bool p_enabled) {
 		update();
 }
 
-bool NavigationPolygonInstance::is_enabled() const {
+bool NavigationRegion2D::is_enabled() const {
 
 	return enabled;
 }
 
 /////////////////////////////
 #ifdef TOOLS_ENABLED
-Rect2 NavigationPolygonInstance::_edit_get_rect() const {
+Rect2 NavigationRegion2D::_edit_get_rect() const {
 
 	return navpoly.is_valid() ? navpoly->_edit_get_rect() : Rect2();
 }
 
-bool NavigationPolygonInstance::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+bool NavigationRegion2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 
 	return navpoly.is_valid() ? navpoly->_edit_is_selected_on_click(p_point, p_tolerance) : false;
 }
 #endif
 
-void NavigationPolygonInstance::_notification(int p_what) {
+void NavigationRegion2D::_notification(int p_what) {
 
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -496,21 +500,21 @@ void NavigationPolygonInstance::_notification(int p_what) {
 	}
 }
 
-void NavigationPolygonInstance::set_navigation_polygon(const Ref<NavigationPolygon> &p_navpoly) {
+void NavigationRegion2D::set_navigation_polygon(const Ref<NavigationPolygon> &p_navpoly) {
 
 	if (p_navpoly == navpoly) {
 		return;
 	}
 
 	if (navpoly.is_valid()) {
-		navpoly->disconnect_compat(CoreStringNames::get_singleton()->changed, this, "_navpoly_changed");
+		navpoly->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NavigationRegion2D::_navpoly_changed));
 	}
 
 	navpoly = p_navpoly;
 	Navigation2DServer::get_singleton()->region_set_navpoly(region, p_navpoly);
 
 	if (navpoly.is_valid()) {
-		navpoly->connect_compat(CoreStringNames::get_singleton()->changed, this, "_navpoly_changed");
+		navpoly->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NavigationRegion2D::_navpoly_changed));
 	}
 	_navpoly_changed();
 
@@ -518,18 +522,18 @@ void NavigationPolygonInstance::set_navigation_polygon(const Ref<NavigationPolyg
 	update_configuration_warning();
 }
 
-Ref<NavigationPolygon> NavigationPolygonInstance::get_navigation_polygon() const {
+Ref<NavigationPolygon> NavigationRegion2D::get_navigation_polygon() const {
 
 	return navpoly;
 }
 
-void NavigationPolygonInstance::_navpoly_changed() {
+void NavigationRegion2D::_navpoly_changed() {
 
 	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()))
 		update();
 }
 
-String NavigationPolygonInstance::get_configuration_warning() const {
+String NavigationRegion2D::get_configuration_warning() const {
 
 	if (!is_visible_in_tree() || !is_inside_tree())
 		return String();
@@ -547,24 +551,24 @@ String NavigationPolygonInstance::get_configuration_warning() const {
 		c = Object::cast_to<Node2D>(c->get_parent());
 	}
 
-	return TTR("NavigationPolygonInstance must be a child or grandchild to a Navigation2D node. It only provides navigation data.");
+	return TTR("NavigationRegion2D must be a child or grandchild to a Navigation2D node. It only provides navigation data.");
 }
 
-void NavigationPolygonInstance::_bind_methods() {
+void NavigationRegion2D::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_navigation_polygon", "navpoly"), &NavigationPolygonInstance::set_navigation_polygon);
-	ClassDB::bind_method(D_METHOD("get_navigation_polygon"), &NavigationPolygonInstance::get_navigation_polygon);
+	ClassDB::bind_method(D_METHOD("set_navigation_polygon", "navpoly"), &NavigationRegion2D::set_navigation_polygon);
+	ClassDB::bind_method(D_METHOD("get_navigation_polygon"), &NavigationRegion2D::get_navigation_polygon);
 
-	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NavigationPolygonInstance::set_enabled);
-	ClassDB::bind_method(D_METHOD("is_enabled"), &NavigationPolygonInstance::is_enabled);
+	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NavigationRegion2D::set_enabled);
+	ClassDB::bind_method(D_METHOD("is_enabled"), &NavigationRegion2D::is_enabled);
 
-	ClassDB::bind_method(D_METHOD("_navpoly_changed"), &NavigationPolygonInstance::_navpoly_changed);
+	ClassDB::bind_method(D_METHOD("_navpoly_changed"), &NavigationRegion2D::_navpoly_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navpoly", PROPERTY_HINT_RESOURCE_TYPE, "NavigationPolygon"), "set_navigation_polygon", "get_navigation_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 }
 
-NavigationPolygonInstance::NavigationPolygonInstance() {
+NavigationRegion2D::NavigationRegion2D() {
 
 	enabled = true;
 	set_notify_transform(true);
@@ -573,6 +577,6 @@ NavigationPolygonInstance::NavigationPolygonInstance() {
 	navigation = NULL;
 }
 
-NavigationPolygonInstance::~NavigationPolygonInstance() {
+NavigationRegion2D::~NavigationRegion2D() {
 	Navigation2DServer::get_singleton()->free(region);
 }

@@ -161,7 +161,7 @@ void DocDump::dump(const String &p_file) {
 									default_arg_text = "false";
 								break;
 							case Variant::INT:
-							case Variant::REAL:
+							case Variant::FLOAT:
 								//keep it
 								break;
 							case Variant::STRING:
@@ -188,15 +188,17 @@ void DocDump::dump(const String &p_file) {
 							case Variant::BASIS:
 							case Variant::COLOR:
 							case Variant::PACKED_BYTE_ARRAY:
-							case Variant::PACKED_INT_ARRAY:
-							case Variant::PACKED_REAL_ARRAY:
+							case Variant::PACKED_INT32_ARRAY:
+							case Variant::PACKED_FLOAT32_ARRAY:
+							case Variant::PACKED_INT64_ARRAY:
+							case Variant::PACKED_FLOAT64_ARRAY:
 							case Variant::PACKED_STRING_ARRAY:
 							case Variant::PACKED_VECTOR3_ARRAY:
 							case Variant::PACKED_COLOR_ARRAY:
 								default_arg_text = Variant::get_type_name(default_arg.get_type()) + "(" + default_arg_text + ")";
 								break;
 							case Variant::OBJECT:
-							case Variant::DICTIONARY: // 20
+							case Variant::DICTIONARY:
 							case Variant::ARRAY:
 							case Variant::_RID:
 

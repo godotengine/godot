@@ -330,11 +330,10 @@ void AnimationTrackEditAudio::set_node(Object *p_object) {
 }
 
 void AnimationTrackEditAudio::_bind_methods() {
-	ClassDB::bind_method("_preview_changed", &AnimationTrackEditAudio::_preview_changed);
 }
 
 AnimationTrackEditAudio::AnimationTrackEditAudio() {
-	AudioStreamPreviewGenerator::get_singleton()->connect_compat("preview_updated", this, "_preview_changed");
+	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditAudio::_preview_changed));
 }
 
 /// SPRITE FRAME / FRAME_COORDS ///
@@ -945,11 +944,10 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 }
 
 void AnimationTrackEditTypeAudio::_bind_methods() {
-	ClassDB::bind_method("_preview_changed", &AnimationTrackEditTypeAudio::_preview_changed);
 }
 
 AnimationTrackEditTypeAudio::AnimationTrackEditTypeAudio() {
-	AudioStreamPreviewGenerator::get_singleton()->connect_compat("preview_updated", this, "_preview_changed");
+	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditTypeAudio::_preview_changed));
 	len_resizing = false;
 }
 

@@ -60,9 +60,9 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 			return Variant::INT;
 
 		case MONO_TYPE_R4:
-			return Variant::REAL;
+			return Variant::FLOAT;
 		case MONO_TYPE_R8:
-			return Variant::REAL;
+			return Variant::FLOAT;
 
 		case MONO_TYPE_STRING: {
 			return Variant::STRING;
@@ -116,10 +116,10 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 				return Variant::PACKED_BYTE_ARRAY;
 
 			if (array_type->eklass == CACHED_CLASS_RAW(int32_t))
-				return Variant::PACKED_INT_ARRAY;
+				return Variant::PACKED_INT32_ARRAY;
 
 			if (array_type->eklass == REAL_T_MONOCLASS)
-				return Variant::PACKED_REAL_ARRAY;
+				return Variant::PACKED_FLOAT32_ARRAY;
 
 			if (array_type->eklass == CACHED_CLASS_RAW(String))
 				return Variant::PACKED_STRING_ARRAY;
@@ -494,10 +494,10 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 				return (MonoObject *)PackedByteArray_to_mono_array(p_var->operator PackedByteArray());
 
 			if (array_type->eklass == CACHED_CLASS_RAW(int32_t))
-				return (MonoObject *)PackedIntArray_to_mono_array(p_var->operator PackedIntArray());
+				return (MonoObject *)PackedInt32Array_to_mono_array(p_var->operator PackedInt32Array());
 
 			if (array_type->eklass == REAL_T_MONOCLASS)
-				return (MonoObject *)PackedRealArray_to_mono_array(p_var->operator PackedRealArray());
+				return (MonoObject *)PackedFloat32Array_to_mono_array(p_var->operator PackedFloat32Array());
 
 			if (array_type->eklass == CACHED_CLASS_RAW(String))
 				return (MonoObject *)PackedStringArray_to_mono_array(p_var->operator PackedStringArray());
@@ -577,7 +577,7 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 					int32_t val = p_var->operator signed int();
 					return BOX_INT32(val);
 				}
-				case Variant::REAL: {
+				case Variant::FLOAT: {
 #ifdef REAL_T_IS_DOUBLE
 					double val = p_var->operator double();
 					return BOX_DOUBLE(val);
@@ -640,10 +640,10 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 					return GDMonoUtils::create_managed_from(p_var->operator Array(), CACHED_CLASS(Array));
 				case Variant::PACKED_BYTE_ARRAY:
 					return (MonoObject *)PackedByteArray_to_mono_array(p_var->operator PackedByteArray());
-				case Variant::PACKED_INT_ARRAY:
-					return (MonoObject *)PackedIntArray_to_mono_array(p_var->operator PackedIntArray());
-				case Variant::PACKED_REAL_ARRAY:
-					return (MonoObject *)PackedRealArray_to_mono_array(p_var->operator PackedRealArray());
+				case Variant::PACKED_INT32_ARRAY:
+					return (MonoObject *)PackedInt32Array_to_mono_array(p_var->operator PackedInt32Array());
+				case Variant::PACKED_FLOAT32_ARRAY:
+					return (MonoObject *)PackedFloat32Array_to_mono_array(p_var->operator PackedFloat32Array());
 				case Variant::PACKED_STRING_ARRAY:
 					return (MonoObject *)PackedStringArray_to_mono_array(p_var->operator PackedStringArray());
 				case Variant::PACKED_VECTOR2_ARRAY:
@@ -788,10 +788,10 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 				return mono_array_to_PackedByteArray((MonoArray *)p_obj);
 
 			if (array_type->eklass == CACHED_CLASS_RAW(int32_t))
-				return mono_array_to_PackedIntArray((MonoArray *)p_obj);
+				return mono_array_to_PackedInt32Array((MonoArray *)p_obj);
 
 			if (array_type->eklass == REAL_T_MONOCLASS)
-				return mono_array_to_PackedRealArray((MonoArray *)p_obj);
+				return mono_array_to_PackedFloat32Array((MonoArray *)p_obj);
 
 			if (array_type->eklass == CACHED_CLASS_RAW(String))
 				return mono_array_to_PackedStringArray((MonoArray *)p_obj);
@@ -987,7 +987,7 @@ Array mono_array_to_Array(MonoArray *p_array) {
 
 // TODO: Use memcpy where possible
 
-MonoArray *PackedIntArray_to_mono_array(const PackedIntArray &p_array) {
+MonoArray *PackedInt32Array_to_mono_array(const PackedInt32Array &p_array) {
 	const int *r = p_array.ptr();
 
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(int32_t), p_array.size());
@@ -999,8 +999,8 @@ MonoArray *PackedIntArray_to_mono_array(const PackedIntArray &p_array) {
 	return ret;
 }
 
-PackedIntArray mono_array_to_PackedIntArray(MonoArray *p_array) {
-	PackedIntArray ret;
+PackedInt32Array mono_array_to_PackedInt32Array(MonoArray *p_array) {
+	PackedInt32Array ret;
 	if (!p_array)
 		return ret;
 	int length = mono_array_length(p_array);
@@ -1041,7 +1041,7 @@ PackedByteArray mono_array_to_PackedByteArray(MonoArray *p_array) {
 	return ret;
 }
 
-MonoArray *PackedRealArray_to_mono_array(const PackedRealArray &p_array) {
+MonoArray *PackedFloat32Array_to_mono_array(const PackedFloat32Array &p_array) {
 	const real_t *r = p_array.ptr();
 
 	MonoArray *ret = mono_array_new(mono_domain_get(), REAL_T_MONOCLASS, p_array.size());
@@ -1053,8 +1053,8 @@ MonoArray *PackedRealArray_to_mono_array(const PackedRealArray &p_array) {
 	return ret;
 }
 
-PackedRealArray mono_array_to_PackedRealArray(MonoArray *p_array) {
-	PackedRealArray ret;
+PackedFloat32Array mono_array_to_PackedFloat32Array(MonoArray *p_array) {
+	PackedFloat32Array ret;
 	if (!p_array)
 		return ret;
 	int length = mono_array_length(p_array);

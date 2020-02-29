@@ -459,13 +459,13 @@ void CreateDialog::_notification(int p_what) {
 
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			connect_compat("confirmed", this, "_confirmed");
+			connect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
 			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 			search_box->set_clear_button_enabled(true);
 			favorite->set_icon(get_icon("Favorites", "EditorIcons"));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			disconnect_compat("confirmed", this, "_confirmed");
+			disconnect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible_in_tree()) {
@@ -559,6 +559,10 @@ void CreateDialog::_item_selected() {
 	help_bit->set_text(EditorHelp::get_doc_data()->class_list[name].brief_description);
 
 	get_ok()->set_disabled(false);
+}
+
+void CreateDialog::_hide_requested() {
+	_closed(); // From WindowDialog.
 }
 
 void CreateDialog::_favorite_toggled() {
@@ -725,15 +729,6 @@ void CreateDialog::_save_and_update_favorite_list() {
 
 void CreateDialog::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_text_changed"), &CreateDialog::_text_changed);
-	ClassDB::bind_method(D_METHOD("_confirmed"), &CreateDialog::_confirmed);
-	ClassDB::bind_method(D_METHOD("_sbox_input"), &CreateDialog::_sbox_input);
-	ClassDB::bind_method(D_METHOD("_item_selected"), &CreateDialog::_item_selected);
-	ClassDB::bind_method(D_METHOD("_favorite_toggled"), &CreateDialog::_favorite_toggled);
-	ClassDB::bind_method(D_METHOD("_history_selected"), &CreateDialog::_history_selected);
-	ClassDB::bind_method(D_METHOD("_favorite_selected"), &CreateDialog::_favorite_selected);
-	ClassDB::bind_method(D_METHOD("_history_activated"), &CreateDialog::_history_activated);
-	ClassDB::bind_method(D_METHOD("_favorite_activated"), &CreateDialog::_favorite_activated);
 	ClassDB::bind_method(D_METHOD("_save_and_update_favorite_list"), &CreateDialog::_save_and_update_favorite_list);
 
 	ClassDB::bind_method("get_drag_data_fw", &CreateDialog::get_drag_data_fw);
@@ -766,8 +761,8 @@ CreateDialog::CreateDialog() {
 	favorites->set_hide_root(true);
 	favorites->set_hide_folding(true);
 	favorites->set_allow_reselect(true);
-	favorites->connect_compat("cell_selected", this, "_favorite_selected");
-	favorites->connect_compat("item_activated", this, "_favorite_activated");
+	favorites->connect("cell_selected", callable_mp(this, &CreateDialog::_favorite_selected));
+	favorites->connect("item_activated", callable_mp(this, &CreateDialog::_favorite_activated));
 	favorites->set_drag_forwarding(this);
 	favorites->add_constant_override("draw_guides", 1);
 
@@ -781,8 +776,8 @@ CreateDialog::CreateDialog() {
 	recent->set_hide_root(true);
 	recent->set_hide_folding(true);
 	recent->set_allow_reselect(true);
-	recent->connect_compat("cell_selected", this, "_history_selected");
-	recent->connect_compat("item_activated", this, "_history_activated");
+	recent->connect("cell_selected", callable_mp(this, &CreateDialog::_history_selected));
+	recent->connect("item_activated", callable_mp(this, &CreateDialog::_history_activated));
 	recent->add_constant_override("draw_guides", 1);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
@@ -797,23 +792,23 @@ CreateDialog::CreateDialog() {
 	favorite->set_flat(true);
 	favorite->set_toggle_mode(true);
 	search_hb->add_child(favorite);
-	favorite->connect_compat("pressed", this, "_favorite_toggled");
+	favorite->connect("pressed", callable_mp(this, &CreateDialog::_favorite_toggled));
 	vbc->add_margin_child(TTR("Search:"), search_hb);
-	search_box->connect_compat("text_changed", this, "_text_changed");
-	search_box->connect_compat("gui_input", this, "_sbox_input");
+	search_box->connect("text_changed", callable_mp(this, &CreateDialog::_text_changed));
+	search_box->connect("gui_input", callable_mp(this, &CreateDialog::_sbox_input));
 	search_options = memnew(Tree);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
-	search_options->connect_compat("item_activated", this, "_confirmed");
-	search_options->connect_compat("cell_selected", this, "_item_selected");
+	search_options->connect("item_activated", callable_mp(this, &CreateDialog::_confirmed));
+	search_options->connect("cell_selected", callable_mp(this, &CreateDialog::_item_selected));
 	base_type = "Object";
 	preferred_search_result_type = "";
 
 	help_bit = memnew(EditorHelpBit);
 	vbc->add_margin_child(TTR("Description:"), help_bit);
-	help_bit->connect_compat("request_hide", this, "_closed");
+	help_bit->connect("request_hide", callable_mp(this, &CreateDialog::_hide_requested));
 
 	type_blacklist.insert("PluginScript"); // PluginScript must be initialized before use, which is not possible here
 	type_blacklist.insert("ScriptCreateDialog"); // This is an exposed editor Node that doesn't have an Editor prefix.

@@ -1275,7 +1275,7 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 				for (size_t l = 0; l < num_vertices; l++) {
 					AssimpUtils::calc_tangent_from_mesh(ai_mesh, j, l, l, w);
 				}
-				PackedRealArray new_tangents = array_copy[VisualServer::ARRAY_TANGENT].duplicate(true);
+				PackedFloat32Array new_tangents = array_copy[VisualServer::ARRAY_TANGENT].duplicate(true);
 				ERR_CONTINUE(new_tangents.size() != tangents.size() * 4);
 				for (int32_t l = 0; l < tangents.size(); l++) {
 					new_tangents.ptrw()[l + 0] = tangents[l].r;

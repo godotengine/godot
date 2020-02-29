@@ -811,7 +811,7 @@ public:
 		create_dir = memnew(Button);
 		pnhb->add_child(create_dir);
 		create_dir->set_text(TTR("Create Folder"));
-		create_dir->connect_compat("pressed", this, "_create_folder");
+		create_dir->connect("pressed", callable_mp(this, &ProjectDialog::_create_folder));
 
 		path_container = memnew(VBoxContainer);
 		vb->add_child(path_container);
@@ -848,7 +848,7 @@ public:
 
 		browse = memnew(Button);
 		browse->set_text(TTR("Browse"));
-		browse->connect_compat("pressed", this, "_browse_path");
+		browse->connect("pressed", callable_mp(this, &ProjectDialog::_browse_path));
 		pphb->add_child(browse);
 
 		// install status icon
@@ -858,7 +858,7 @@ public:
 
 		install_browse = memnew(Button);
 		install_browse->set_text(TTR("Browse"));
-		install_browse->connect_compat("pressed", this, "_browse_install_path");
+		install_browse->connect("pressed", callable_mp(this, &ProjectDialog::_browse_install_path));
 		iphb->add_child(install_browse);
 
 		msg = memnew(Label);
@@ -928,13 +928,13 @@ public:
 		fdialog_install->set_access(FileDialog::ACCESS_FILESYSTEM);
 		add_child(fdialog);
 		add_child(fdialog_install);
-		project_name->connect_compat("text_changed", this, "_text_changed");
-		project_path->connect_compat("text_changed", this, "_path_text_changed");
-		install_path->connect_compat("text_changed", this, "_path_text_changed");
-		fdialog->connect_compat("dir_selected", this, "_path_selected");
-		fdialog->connect_compat("file_selected", this, "_file_selected");
-		fdialog_install->connect_compat("dir_selected", this, "_install_path_selected");
-		fdialog_install->connect_compat("file_selected", this, "_install_path_selected");
+		project_name->connect("text_changed", callable_mp(this, &ProjectDialog::_text_changed));
+		project_path->connect("text_changed", callable_mp(this, &ProjectDialog::_path_text_changed));
+		install_path->connect("text_changed", callable_mp(this, &ProjectDialog::_path_text_changed));
+		fdialog->connect("dir_selected", callable_mp(this, &ProjectDialog::_path_selected));
+		fdialog->connect("file_selected", callable_mp(this, &ProjectDialog::_file_selected));
+		fdialog_install->connect("dir_selected", callable_mp(this, &ProjectDialog::_install_path_selected));
+		fdialog_install->connect("file_selected", callable_mp(this, &ProjectDialog::_install_path_selected));
 
 		set_hide_on_ok(false);
 		mode = MODE_NEW;
@@ -1320,8 +1320,8 @@ void ProjectList::create_project_item_control(int p_index) {
 	Color font_color = get_color("font_color", "Tree");
 
 	ProjectListItemControl *hb = memnew(ProjectListItemControl);
-	hb->connect_compat("draw", this, "_panel_draw", varray(hb));
-	hb->connect_compat("gui_input", this, "_panel_input", varray(hb));
+	hb->connect("draw", callable_mp(this, &ProjectList::_panel_draw), varray(hb));
+	hb->connect("gui_input", callable_mp(this, &ProjectList::_panel_input), varray(hb));
 	hb->add_constant_override("separation", 10 * EDSCALE);
 	hb->set_tooltip(item.description);
 
@@ -1332,7 +1332,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	favorite->set_normal_texture(favorite_icon);
 	// This makes the project's "hover" style display correctly when hovering the favorite icon
 	favorite->set_mouse_filter(MOUSE_FILTER_PASS);
-	favorite->connect_compat("pressed", this, "_favorite_pressed", varray(hb));
+	favorite->connect("pressed", callable_mp(this, &ProjectList::_favorite_pressed), varray(hb));
 	favorite_box->add_child(favorite);
 	favorite_box->set_alignment(BoxContainer::ALIGN_CENTER);
 	hb->add_child(favorite_box);
@@ -1380,7 +1380,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	path_hb->add_child(show);
 
 	if (!item.missing) {
-		show->connect_compat("pressed", this, "_show_project", varray(item.path));
+		show->connect("pressed", callable_mp(this, &ProjectList::_show_project), varray(item.path));
 		show->set_tooltip(TTR("Show in File Manager"));
 	} else {
 		show->set_tooltip(TTR("Error: Project is missing on the filesystem."));
@@ -1812,11 +1812,6 @@ const char *ProjectList::SIGNAL_SELECTION_CHANGED = "selection_changed";
 const char *ProjectList::SIGNAL_PROJECT_ASK_OPEN = "project_ask_open";
 
 void ProjectList::_bind_methods() {
-
-	ClassDB::bind_method("_panel_draw", &ProjectList::_panel_draw);
-	ClassDB::bind_method("_panel_input", &ProjectList::_panel_input);
-	ClassDB::bind_method("_favorite_pressed", &ProjectList::_favorite_pressed);
-	ClassDB::bind_method("_show_project", &ProjectList::_show_project);
 
 	ADD_SIGNAL(MethodInfo(SIGNAL_SELECTION_CHANGED));
 	ADD_SIGNAL(MethodInfo(SIGNAL_PROJECT_ASK_OPEN));
@@ -2358,8 +2353,8 @@ void ProjectManager::_files_dropped(PackedStringArray p_files, int p_screen) {
 			memdelete(dir);
 		}
 		if (confirm) {
-			multi_scan_ask->get_ok()->disconnect_compat("pressed", this, "_scan_multiple_folders");
-			multi_scan_ask->get_ok()->connect_compat("pressed", this, "_scan_multiple_folders", varray(folders));
+			multi_scan_ask->get_ok()->disconnect("pressed", callable_mp(this, &ProjectManager::_scan_multiple_folders));
+			multi_scan_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_scan_multiple_folders), varray(folders));
 			multi_scan_ask->set_text(
 					vformat(TTR("Are you sure to scan %s folders for existing Godot projects?\nThis could take a while."), folders.size()));
 			multi_scan_ask->popup_centered_minsize();
@@ -2393,34 +2388,9 @@ void ProjectManager::_on_filter_option_changed() {
 
 void ProjectManager::_bind_methods() {
 
-	ClassDB::bind_method("_open_selected_projects_ask", &ProjectManager::_open_selected_projects_ask);
-	ClassDB::bind_method("_open_selected_projects", &ProjectManager::_open_selected_projects);
-	ClassDB::bind_method(D_METHOD("_global_menu_action"), &ProjectManager::_global_menu_action, DEFVAL(Variant()));
-	ClassDB::bind_method("_run_project", &ProjectManager::_run_project);
-	ClassDB::bind_method("_run_project_confirm", &ProjectManager::_run_project_confirm);
-	ClassDB::bind_method("_scan_projects", &ProjectManager::_scan_projects);
-	ClassDB::bind_method("_scan_begin", &ProjectManager::_scan_begin);
-	ClassDB::bind_method("_import_project", &ProjectManager::_import_project);
-	ClassDB::bind_method("_new_project", &ProjectManager::_new_project);
-	ClassDB::bind_method("_rename_project", &ProjectManager::_rename_project);
-	ClassDB::bind_method("_erase_project", &ProjectManager::_erase_project);
-	ClassDB::bind_method("_erase_missing_projects", &ProjectManager::_erase_missing_projects);
-	ClassDB::bind_method("_erase_project_confirm", &ProjectManager::_erase_project_confirm);
-	ClassDB::bind_method("_erase_missing_projects_confirm", &ProjectManager::_erase_missing_projects_confirm);
-	ClassDB::bind_method("_language_selected", &ProjectManager::_language_selected);
-	ClassDB::bind_method("_restart_confirm", &ProjectManager::_restart_confirm);
 	ClassDB::bind_method("_exit_dialog", &ProjectManager::_exit_dialog);
-	ClassDB::bind_method("_on_order_option_changed", &ProjectManager::_on_order_option_changed);
-	ClassDB::bind_method("_on_filter_option_changed", &ProjectManager::_on_filter_option_changed);
-	ClassDB::bind_method("_on_projects_updated", &ProjectManager::_on_projects_updated);
-	ClassDB::bind_method("_on_project_created", &ProjectManager::_on_project_created);
 	ClassDB::bind_method("_unhandled_input", &ProjectManager::_unhandled_input);
-	ClassDB::bind_method("_install_project", &ProjectManager::_install_project);
-	ClassDB::bind_method("_files_dropped", &ProjectManager::_files_dropped);
-	ClassDB::bind_method("_open_asset_library", &ProjectManager::_open_asset_library);
-	ClassDB::bind_method("_confirm_update_settings", &ProjectManager::_confirm_update_settings);
 	ClassDB::bind_method("_update_project_buttons", &ProjectManager::_update_project_buttons);
-	ClassDB::bind_method(D_METHOD("_scan_multiple_folders", "files"), &ProjectManager::_scan_multiple_folders);
 }
 
 void ProjectManager::_open_asset_library() {
@@ -2524,7 +2494,7 @@ ProjectManager::ProjectManager() {
 	project_order_filter->_setup_filters(sort_filter_titles);
 	project_order_filter->set_filter_size(150);
 	sort_filters->add_child(project_order_filter);
-	project_order_filter->connect_compat("filter_changed", this, "_on_order_option_changed");
+	project_order_filter->connect("filter_changed", callable_mp(this, &ProjectManager::_on_order_option_changed));
 	project_order_filter->set_custom_minimum_size(Size2(180, 10) * EDSCALE);
 
 	int projects_sorting_order = (int)EditorSettings::get_singleton()->get("project_manager/sorting_order");
@@ -2534,7 +2504,7 @@ ProjectManager::ProjectManager() {
 
 	project_filter = memnew(ProjectListFilter);
 	project_filter->add_search_box();
-	project_filter->connect_compat("filter_changed", this, "_on_filter_option_changed");
+	project_filter->connect("filter_changed", callable_mp(this, &ProjectManager::_on_filter_option_changed));
 	project_filter->set_custom_minimum_size(Size2(280, 10) * EDSCALE);
 	sort_filters->add_child(project_filter);
 
@@ -2546,8 +2516,8 @@ ProjectManager::ProjectManager() {
 	pc->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	_project_list = memnew(ProjectList);
-	_project_list->connect_compat(ProjectList::SIGNAL_SELECTION_CHANGED, this, "_update_project_buttons");
-	_project_list->connect_compat(ProjectList::SIGNAL_PROJECT_ASK_OPEN, this, "_open_selected_projects_ask");
+	_project_list->connect(ProjectList::SIGNAL_SELECTION_CHANGED, callable_mp(this, &ProjectManager::_update_project_buttons));
+	_project_list->connect(ProjectList::SIGNAL_PROJECT_ASK_OPEN, callable_mp(this, &ProjectManager::_open_selected_projects_ask));
 	pc->add_child(_project_list);
 	_project_list->set_enable_h_scroll(false);
 
@@ -2557,13 +2527,13 @@ ProjectManager::ProjectManager() {
 	Button *open = memnew(Button);
 	open->set_text(TTR("Edit"));
 	tree_vb->add_child(open);
-	open->connect_compat("pressed", this, "_open_selected_projects_ask");
+	open->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects_ask));
 	open_btn = open;
 
 	Button *run = memnew(Button);
 	run->set_text(TTR("Run"));
 	tree_vb->add_child(run);
-	run->connect_compat("pressed", this, "_run_project");
+	run->connect("pressed", callable_mp(this, &ProjectManager::_run_project));
 	run_btn = run;
 
 	tree_vb->add_child(memnew(HSeparator));
@@ -2571,7 +2541,7 @@ ProjectManager::ProjectManager() {
 	Button *scan = memnew(Button);
 	scan->set_text(TTR("Scan"));
 	tree_vb->add_child(scan);
-	scan->connect_compat("pressed", this, "_scan_projects");
+	scan->connect("pressed", callable_mp(this, &ProjectManager::_scan_projects));
 
 	tree_vb->add_child(memnew(HSeparator));
 
@@ -2581,34 +2551,34 @@ ProjectManager::ProjectManager() {
 	scan_dir->set_title(TTR("Select a Folder to Scan")); // must be after mode or it's overridden
 	scan_dir->set_current_dir(EditorSettings::get_singleton()->get("filesystem/directories/default_project_path"));
 	gui_base->add_child(scan_dir);
-	scan_dir->connect_compat("dir_selected", this, "_scan_begin");
+	scan_dir->connect("dir_selected", callable_mp(this, &ProjectManager::_scan_begin));
 
 	Button *create = memnew(Button);
 	create->set_text(TTR("New Project"));
 	tree_vb->add_child(create);
-	create->connect_compat("pressed", this, "_new_project");
+	create->connect("pressed", callable_mp(this, &ProjectManager::_new_project));
 
 	Button *import = memnew(Button);
 	import->set_text(TTR("Import"));
 	tree_vb->add_child(import);
-	import->connect_compat("pressed", this, "_import_project");
+	import->connect("pressed", callable_mp(this, &ProjectManager::_import_project));
 
 	Button *rename = memnew(Button);
 	rename->set_text(TTR("Rename"));
 	tree_vb->add_child(rename);
-	rename->connect_compat("pressed", this, "_rename_project");
+	rename->connect("pressed", callable_mp(this, &ProjectManager::_rename_project));
 	rename_btn = rename;
 
 	Button *erase = memnew(Button);
 	erase->set_text(TTR("Remove"));
 	tree_vb->add_child(erase);
-	erase->connect_compat("pressed", this, "_erase_project");
+	erase->connect("pressed", callable_mp(this, &ProjectManager::_erase_project));
 	erase_btn = erase;
 
 	Button *erase_missing = memnew(Button);
 	erase_missing->set_text(TTR("Remove Missing"));
 	tree_vb->add_child(erase_missing);
-	erase_missing->connect_compat("pressed", this, "_erase_missing_projects");
+	erase_missing->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects));
 	erase_missing_btn = erase_missing;
 
 	tree_vb->add_spacer();
@@ -2617,7 +2587,7 @@ ProjectManager::ProjectManager() {
 		asset_library = memnew(EditorAssetLibrary(true));
 		asset_library->set_name(TTR("Templates"));
 		tabs->add_child(asset_library);
-		asset_library->connect_compat("install_asset", this, "_install_project");
+		asset_library->connect("install_asset", callable_mp(this, &ProjectManager::_install_project));
 	} else {
 		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
 	}
@@ -2664,7 +2634,7 @@ ProjectManager::ProjectManager() {
 	language_btn->set_icon(get_icon("Environment", "EditorIcons"));
 
 	settings_hb->add_child(language_btn);
-	language_btn->connect_compat("item_selected", this, "_language_selected");
+	language_btn->connect("item_selected", callable_mp(this, &ProjectManager::_language_selected));
 
 	center_box->add_child(settings_hb);
 	settings_hb->set_anchors_and_margins_preset(Control::PRESET_TOP_RIGHT);
@@ -2673,28 +2643,28 @@ ProjectManager::ProjectManager() {
 
 	language_restart_ask = memnew(ConfirmationDialog);
 	language_restart_ask->get_ok()->set_text(TTR("Restart Now"));
-	language_restart_ask->get_ok()->connect_compat("pressed", this, "_restart_confirm");
+	language_restart_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_restart_confirm));
 	language_restart_ask->get_cancel()->set_text(TTR("Continue"));
 	gui_base->add_child(language_restart_ask);
 
 	erase_missing_ask = memnew(ConfirmationDialog);
 	erase_missing_ask->get_ok()->set_text(TTR("Remove All"));
-	erase_missing_ask->get_ok()->connect_compat("pressed", this, "_erase_missing_projects_confirm");
+	erase_missing_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects_confirm));
 	gui_base->add_child(erase_missing_ask);
 
 	erase_ask = memnew(ConfirmationDialog);
 	erase_ask->get_ok()->set_text(TTR("Remove"));
-	erase_ask->get_ok()->connect_compat("pressed", this, "_erase_project_confirm");
+	erase_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_erase_project_confirm));
 	gui_base->add_child(erase_ask);
 
 	multi_open_ask = memnew(ConfirmationDialog);
 	multi_open_ask->get_ok()->set_text(TTR("Edit"));
-	multi_open_ask->get_ok()->connect_compat("pressed", this, "_open_selected_projects");
+	multi_open_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects));
 	gui_base->add_child(multi_open_ask);
 
 	multi_run_ask = memnew(ConfirmationDialog);
 	multi_run_ask->get_ok()->set_text(TTR("Run"));
-	multi_run_ask->get_ok()->connect_compat("pressed", this, "_run_project_confirm");
+	multi_run_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_run_project_confirm));
 	gui_base->add_child(multi_run_ask);
 
 	multi_scan_ask = memnew(ConfirmationDialog);
@@ -2702,7 +2672,7 @@ ProjectManager::ProjectManager() {
 	gui_base->add_child(multi_scan_ask);
 
 	ask_update_settings = memnew(ConfirmationDialog);
-	ask_update_settings->get_ok()->connect_compat("pressed", this, "_confirm_update_settings");
+	ask_update_settings->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_confirm_update_settings));
 	gui_base->add_child(ask_update_settings);
 
 	OS::get_singleton()->set_low_processor_usage_mode(true);
@@ -2710,8 +2680,8 @@ ProjectManager::ProjectManager() {
 	npdialog = memnew(ProjectDialog);
 	gui_base->add_child(npdialog);
 
-	npdialog->connect_compat("projects_updated", this, "_on_projects_updated");
-	npdialog->connect_compat("project_created", this, "_on_project_created");
+	npdialog->connect("projects_updated", callable_mp(this, &ProjectManager::_on_projects_updated));
+	npdialog->connect("project_created", callable_mp(this, &ProjectManager::_on_project_created));
 
 	_load_recent_projects();
 
@@ -2719,8 +2689,8 @@ ProjectManager::ProjectManager() {
 		_scan_begin(EditorSettings::get_singleton()->get("filesystem/directories/autoscan_project_path"));
 	}
 
-	SceneTree::get_singleton()->connect_compat("files_dropped", this, "_files_dropped");
-	SceneTree::get_singleton()->connect_compat("global_menu_action", this, "_global_menu_action");
+	SceneTree::get_singleton()->connect("files_dropped", callable_mp(this, &ProjectManager::_files_dropped));
+	SceneTree::get_singleton()->connect("global_menu_action", callable_mp(this, &ProjectManager::_global_menu_action));
 
 	run_error_diag = memnew(AcceptDialog);
 	gui_base->add_child(run_error_diag);
@@ -2732,7 +2702,7 @@ ProjectManager::ProjectManager() {
 	open_templates = memnew(ConfirmationDialog);
 	open_templates->set_text(TTR("You currently don't have any projects.\nWould you like to explore official example projects in the Asset Library?"));
 	open_templates->get_ok()->set_text(TTR("Open Asset Library"));
-	open_templates->connect_compat("confirmed", this, "_open_asset_library");
+	open_templates->connect("confirmed", callable_mp(this, &ProjectManager::_open_asset_library));
 	add_child(open_templates);
 }
 
@@ -2784,23 +2754,20 @@ void ProjectListFilter::_notification(int p_what) {
 
 void ProjectListFilter::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_search_text_changed"), &ProjectListFilter::_search_text_changed);
-	ClassDB::bind_method(D_METHOD("_filter_option_selected"), &ProjectListFilter::_filter_option_selected);
-
 	ADD_SIGNAL(MethodInfo("filter_changed"));
 }
 
 void ProjectListFilter::add_filter_option() {
 	filter_option = memnew(OptionButton);
 	filter_option->set_clip_text(true);
-	filter_option->connect_compat("item_selected", this, "_filter_option_selected");
+	filter_option->connect("item_selected", callable_mp(this, &ProjectListFilter::_filter_option_selected));
 	add_child(filter_option);
 }
 
 void ProjectListFilter::add_search_box() {
 	search_box = memnew(LineEdit);
 	search_box->set_placeholder(TTR("Search"));
-	search_box->connect_compat("text_changed", this, "_search_text_changed");
+	search_box->connect("text_changed", callable_mp(this, &ProjectListFilter::_search_text_changed));
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(search_box);
 

@@ -146,11 +146,11 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			name->set_expand_to_text_length(true);
 			node->add_child(name);
 			node->set_slot(0, false, 0, Color(), true, 0, get_color("font_color", "Label"));
-			name->connect_compat("text_entered", this, "_node_renamed", varray(agnode));
-			name->connect_compat("focus_exited", this, "_node_renamed_focus_out", varray(name, agnode), CONNECT_DEFERRED);
+			name->connect("text_entered", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed), varray(agnode));
+			name->connect("focus_exited", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out), varray(name, agnode), CONNECT_DEFERRED);
 			base = 1;
 			node->set_show_close_button(true);
-			node->connect_compat("close_request", this, "_delete_request", varray(E->get()), CONNECT_DEFERRED);
+			node->connect("close_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_delete_request), varray(E->get()), CONNECT_DEFERRED);
 		}
 
 		for (int i = 0; i < agnode->get_input_count(); i++) {
@@ -173,13 +173,13 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 				prop->set_object_and_property(AnimationTreeEditor::get_singleton()->get_tree(), base_path);
 				prop->update_property();
 				prop->set_name_split_ratio(0);
-				prop->connect_compat("property_changed", this, "_property_changed");
+				prop->connect("property_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_property_changed));
 				node->add_child(prop);
 				visible_properties.push_back(prop);
 			}
 		}
 
-		node->connect_compat("dragged", this, "_node_dragged", varray(E->get()));
+		node->connect("dragged", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_dragged), varray(E->get()));
 
 		if (AnimationTreeEditor::get_singleton()->can_edit(agnode)) {
 			node->add_child(memnew(HSeparator));
@@ -187,7 +187,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			open_in_editor->set_text(TTR("Open Editor"));
 			open_in_editor->set_icon(get_icon("Edit", "EditorIcons"));
 			node->add_child(open_in_editor);
-			open_in_editor->connect_compat("pressed", this, "_open_in_editor", varray(E->get()), CONNECT_DEFERRED);
+			open_in_editor->connect("pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_open_in_editor), varray(E->get()), CONNECT_DEFERRED);
 			open_in_editor->set_h_size_flags(SIZE_SHRINK_CENTER);
 		}
 
@@ -198,7 +198,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			edit_filters->set_text(TTR("Edit Filters"));
 			edit_filters->set_icon(get_icon("AnimationFilter", "EditorIcons"));
 			node->add_child(edit_filters);
-			edit_filters->connect_compat("pressed", this, "_edit_filters", varray(E->get()), CONNECT_DEFERRED);
+			edit_filters->connect("pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_edit_filters), varray(E->get()), CONNECT_DEFERRED);
 			edit_filters->set_h_size_flags(SIZE_SHRINK_CENTER);
 		}
 
@@ -238,7 +238,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			animations[E->get()] = pb;
 			node->add_child(pb);
 
-			mb->get_popup()->connect_compat("index_pressed", this, "_anim_selected", varray(options, E->get()), CONNECT_DEFERRED);
+			mb->get_popup()->connect("index_pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_anim_selected), varray(options, E->get()), CONNECT_DEFERRED);
 		}
 
 		if (EditorSettings::get_singleton()->get("interface/theme/use_graph_node_headers")) {
@@ -799,28 +799,7 @@ void AnimationNodeBlendTreeEditor::_scroll_changed(const Vector2 &p_scroll) {
 void AnimationNodeBlendTreeEditor::_bind_methods() {
 
 	ClassDB::bind_method("_update_graph", &AnimationNodeBlendTreeEditor::_update_graph);
-	ClassDB::bind_method("_add_node", &AnimationNodeBlendTreeEditor::_add_node);
-	ClassDB::bind_method("_node_dragged", &AnimationNodeBlendTreeEditor::_node_dragged);
-	ClassDB::bind_method("_node_renamed", &AnimationNodeBlendTreeEditor::_node_renamed);
-	ClassDB::bind_method("_node_renamed_focus_out", &AnimationNodeBlendTreeEditor::_node_renamed_focus_out);
-	ClassDB::bind_method("_connection_request", &AnimationNodeBlendTreeEditor::_connection_request);
-	ClassDB::bind_method("_disconnection_request", &AnimationNodeBlendTreeEditor::_disconnection_request);
-	ClassDB::bind_method("_node_selected", &AnimationNodeBlendTreeEditor::_node_selected);
-	ClassDB::bind_method("_open_in_editor", &AnimationNodeBlendTreeEditor::_open_in_editor);
-	ClassDB::bind_method("_scroll_changed", &AnimationNodeBlendTreeEditor::_scroll_changed);
-	ClassDB::bind_method("_delete_request", &AnimationNodeBlendTreeEditor::_delete_request);
-	ClassDB::bind_method("_delete_nodes_request", &AnimationNodeBlendTreeEditor::_delete_nodes_request);
-	ClassDB::bind_method("_popup_request", &AnimationNodeBlendTreeEditor::_popup_request);
-	ClassDB::bind_method("_edit_filters", &AnimationNodeBlendTreeEditor::_edit_filters);
 	ClassDB::bind_method("_update_filters", &AnimationNodeBlendTreeEditor::_update_filters);
-	ClassDB::bind_method("_filter_edited", &AnimationNodeBlendTreeEditor::_filter_edited);
-	ClassDB::bind_method("_filter_toggled", &AnimationNodeBlendTreeEditor::_filter_toggled);
-	ClassDB::bind_method("_removed_from_graph", &AnimationNodeBlendTreeEditor::_removed_from_graph);
-	ClassDB::bind_method("_property_changed", &AnimationNodeBlendTreeEditor::_property_changed);
-	ClassDB::bind_method("_file_opened", &AnimationNodeBlendTreeEditor::_file_opened);
-	ClassDB::bind_method("_update_options_menu", &AnimationNodeBlendTreeEditor::_update_options_menu);
-
-	ClassDB::bind_method("_anim_selected", &AnimationNodeBlendTreeEditor::_anim_selected);
 }
 
 AnimationNodeBlendTreeEditor *AnimationNodeBlendTreeEditor::singleton = NULL;
@@ -911,7 +890,7 @@ bool AnimationNodeBlendTreeEditor::can_edit(const Ref<AnimationNode> &p_node) {
 void AnimationNodeBlendTreeEditor::edit(const Ref<AnimationNode> &p_node) {
 
 	if (blend_tree.is_valid()) {
-		blend_tree->disconnect_compat("removed_from_graph", this, "_removed_from_graph");
+		blend_tree->disconnect("removed_from_graph", callable_mp(this, &AnimationNodeBlendTreeEditor::_removed_from_graph));
 	}
 
 	blend_tree = p_node;
@@ -919,7 +898,7 @@ void AnimationNodeBlendTreeEditor::edit(const Ref<AnimationNode> &p_node) {
 	if (blend_tree.is_null()) {
 		hide();
 	} else {
-		blend_tree->connect_compat("removed_from_graph", this, "_removed_from_graph");
+		blend_tree->connect("removed_from_graph", callable_mp(this, &AnimationNodeBlendTreeEditor::_removed_from_graph));
 
 		_update_graph();
 	}
@@ -936,12 +915,12 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	graph->add_valid_right_disconnect_type(0);
 	graph->add_valid_left_disconnect_type(0);
 	graph->set_v_size_flags(SIZE_EXPAND_FILL);
-	graph->connect_compat("connection_request", this, "_connection_request", varray(), CONNECT_DEFERRED);
-	graph->connect_compat("disconnection_request", this, "_disconnection_request", varray(), CONNECT_DEFERRED);
-	graph->connect_compat("node_selected", this, "_node_selected");
-	graph->connect_compat("scroll_offset_changed", this, "_scroll_changed");
-	graph->connect_compat("delete_nodes_request", this, "_delete_nodes_request");
-	graph->connect_compat("popup_request", this, "_popup_request");
+	graph->connect("connection_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_connection_request), varray(), CONNECT_DEFERRED);
+	graph->connect("disconnection_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_disconnection_request), varray(), CONNECT_DEFERRED);
+	graph->connect("node_selected", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_selected));
+	graph->connect("scroll_offset_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_scroll_changed));
+	graph->connect("delete_nodes_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_delete_nodes_request));
+	graph->connect("popup_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_popup_request));
 
 	VSeparator *vs = memnew(VSeparator);
 	graph->get_zoom_hbox()->add_child(vs);
@@ -951,8 +930,8 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	graph->get_zoom_hbox()->add_child(add_node);
 	add_node->set_text(TTR("Add Node..."));
 	graph->get_zoom_hbox()->move_child(add_node, 0);
-	add_node->get_popup()->connect_compat("id_pressed", this, "_add_node");
-	add_node->connect_compat("about_to_show", this, "_update_options_menu");
+	add_node->get_popup()->connect("id_pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_add_node));
+	add_node->connect("about_to_show", callable_mp(this, &AnimationNodeBlendTreeEditor::_update_options_menu));
 
 	add_options.push_back(AddOption("Animation", "AnimationNodeAnimation"));
 	add_options.push_back(AddOption("OneShot", "AnimationNodeOneShot"));
@@ -984,19 +963,19 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 
 	filter_enabled = memnew(CheckBox);
 	filter_enabled->set_text(TTR("Enable Filtering"));
-	filter_enabled->connect_compat("pressed", this, "_filter_toggled");
+	filter_enabled->connect("pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_filter_toggled));
 	filter_vbox->add_child(filter_enabled);
 
 	filters = memnew(Tree);
 	filter_vbox->add_child(filters);
 	filters->set_v_size_flags(SIZE_EXPAND_FILL);
 	filters->set_hide_root(true);
-	filters->connect_compat("item_edited", this, "_filter_edited");
+	filters->connect("item_edited", callable_mp(this, &AnimationNodeBlendTreeEditor::_filter_edited));
 
 	open_file = memnew(EditorFileDialog);
 	add_child(open_file);
 	open_file->set_title(TTR("Open Animation Node"));
 	open_file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
-	open_file->connect_compat("file_selected", this, "_file_opened");
+	open_file->connect("file_selected", callable_mp(this, &AnimationNodeBlendTreeEditor::_file_opened));
 	undo_redo = EditorNode::get_undo_redo();
 }

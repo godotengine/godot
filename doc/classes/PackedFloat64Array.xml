@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PackedFloat64Array" version="4.0">
+	<brief_description>
+		A packed [Array] of 64-bit floating-point values.
+	</brief_description>
+	<description>
+		An [Array] specifically designed to hold 64-bit floating-point values. Packs data tightly, so it saves memory for large array sizes.
+		[b]Note:[/b] This type is passed by value and not by reference.
+		If you only need to pack 32-bit floats tightly, see [PackedFloat32Array] for a more memory-friendly alternative.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="PackedFloat64Array">
+			<return type="PackedFloat64Array">
+			</return>
+			<argument index="0" name="from" type="Array">
+			</argument>
+			<description>
+				Constructs a new [PackedFloat64Array]. Optionally, you can pass in a generic [Array] that will be converted.
+			</description>
+		</method>
+		<method name="append">
+			<return type="void">
+			</return>
+			<argument index="0" name="value" type="float">
+			</argument>
+			<description>
+				Appends an element at the end of the array (alias of [method push_back]).
+			</description>
+		</method>
+		<method name="append_array">
+			<return type="void">
+			</return>
+			<argument index="0" name="array" type="PackedFloat64Array">
+			</argument>
+			<description>
+				Appends a [PackedFloat64Array] at the end of this array.
+			</description>
+		</method>
+		<method name="empty">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the array is empty.
+			</description>
+		</method>
+		<method name="insert">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="value" type="float">
+			</argument>
+			<description>
+				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
+			</description>
+		</method>
+		<method name="invert">
+			<return type="void">
+			</return>
+			<description>
+				Reverses the order of the elements in the array.
+			</description>
+		</method>
+		<method name="push_back">
+			<return type="void">
+			</return>
+			<argument index="0" name="value" type="float">
+			</argument>
+			<description>
+				Appends an element at the end of the array.
+			</description>
+		</method>
+		<method name="remove">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Removes an element from the array by index.
+			</description>
+		</method>
+		<method name="resize">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size.
+			</description>
+		</method>
+		<method name="set">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="value" type="float">
+			</argument>
+			<description>
+				Changes the float at the given index.
+			</description>
+		</method>
+		<method name="size">
+			<return type="int">
+			</return>
+			<description>
+				Returns the size of the array.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

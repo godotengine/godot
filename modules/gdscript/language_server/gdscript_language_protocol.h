@@ -77,7 +77,7 @@ private:
 	Ref<GDScriptWorkspace> workspace;
 
 	Error on_client_connected();
-	void on_client_disconnected(int p_client_id);
+	void on_client_disconnected(const int &p_client_id);
 
 	String process_message(const String &p_text);
 	String format_output(const String &p_text);

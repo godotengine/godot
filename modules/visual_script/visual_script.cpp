@@ -30,13 +30,13 @@
 
 #include "visual_script.h"
 
-#include <stdint.h>
-
 #include "core/core_string_names.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "scene/main/node.h"
 #include "visual_script_nodes.h"
+
+#include <stdint.h>
 
 //used by editor, this is not really saved
 void VisualScriptNode::set_breakpoint(bool p_breakpoint) {
@@ -198,7 +198,7 @@ void VisualScript::remove_function(const StringName &p_name) {
 
 	for (Map<int, Function::NodeData>::Element *E = functions[p_name].nodes.front(); E; E = E->next()) {
 
-		E->get().node->disconnect_compat("ports_changed", this, "_node_ports_changed");
+		E->get().node->disconnect("ports_changed", callable_mp(this, &VisualScript::_node_ports_changed));
 		E->get().node->scripts_used.erase(this);
 	}
 
@@ -340,7 +340,7 @@ void VisualScript::add_node(const StringName &p_func, int p_id, const Ref<Visual
 	nd.pos = p_pos;
 
 	Ref<VisualScriptNode> vsn = p_node;
-	vsn->connect_compat("ports_changed", this, "_node_ports_changed", varray(p_id));
+	vsn->connect("ports_changed", callable_mp(this, &VisualScript::_node_ports_changed), varray(p_id));
 	vsn->scripts_used.insert(this);
 	vsn->validate_input_default_values(); // Validate when fully loaded
 
@@ -389,7 +389,7 @@ void VisualScript::remove_node(const StringName &p_func, int p_id) {
 		func.function_id = -1; //revert to invalid
 	}
 
-	func.nodes[p_id].node->disconnect_compat("ports_changed", this, "_node_ports_changed");
+	func.nodes[p_id].node->disconnect("ports_changed", callable_mp(this, &VisualScript::_node_ports_changed));
 	func.nodes[p_id].node->scripts_used.erase(this);
 
 	func.nodes.erase(p_id);
@@ -928,13 +928,11 @@ ScriptInstance *VisualScript::instance_create(Object *p_this) {
 	VisualScriptInstance *instance = memnew(VisualScriptInstance);
 	instance->create(Ref<VisualScript>(this), p_this);
 
-	if (VisualScriptLanguage::singleton->lock)
-		VisualScriptLanguage::singleton->lock->lock();
+	{
+		MutexLock lock(VisualScriptLanguage::singleton->lock);
 
-	instances[p_this] = instance;
-
-	if (VisualScriptLanguage::singleton->lock)
-		VisualScriptLanguage::singleton->lock->unlock();
+		instances[p_this] = instance;
+	}
 
 	return instance;
 }
@@ -1374,8 +1372,6 @@ Dictionary VisualScript::_get_data() const {
 }
 
 void VisualScript::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_node_ports_changed"), &VisualScript::_node_ports_changed);
 
 	ClassDB::bind_method(D_METHOD("add_function", "name"), &VisualScript::add_function);
 	ClassDB::bind_method(D_METHOD("has_function", "name"), &VisualScript::has_function);
@@ -2391,13 +2387,11 @@ VisualScriptInstance::VisualScriptInstance() {
 
 VisualScriptInstance::~VisualScriptInstance() {
 
-	if (VisualScriptLanguage::singleton->lock)
-		VisualScriptLanguage::singleton->lock->lock();
+	{
+		MutexLock lock(VisualScriptLanguage::singleton->lock);
 
-	script->instances.erase(owner);
-
-	if (VisualScriptLanguage::singleton->lock)
-		VisualScriptLanguage::singleton->lock->unlock();
+		script->instances.erase(owner);
+	}
 
 	for (Map<int, VisualScriptNodeInstance *>::Element *E = instances.front(); E; E = E->next()) {
 		memdelete(E->get());
@@ -2836,9 +2830,6 @@ VisualScriptLanguage::VisualScriptLanguage() {
 	_step = "_step";
 	_subcall = "_subcall";
 	singleton = this;
-#ifndef NO_THREADS
-	lock = Mutex::create();
-#endif
 
 	_debug_parse_err_node = -1;
 	_debug_parse_err_file = "";
@@ -2858,9 +2849,6 @@ VisualScriptLanguage::VisualScriptLanguage() {
 }
 
 VisualScriptLanguage::~VisualScriptLanguage() {
-
-	if (lock)
-		memdelete(lock);
 
 	if (_call_stack) {
 		memdelete_arr(_call_stack);

@@ -13,7 +13,7 @@
 		<method name="action_press">
 			<return type="void">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<argument index="1" name="strength" type="float" default="1.0">
 			</argument>
@@ -26,7 +26,7 @@
 		<method name="action_release">
 			<return type="void">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<description>
 				If the specified action is already pressed, this will release it.
@@ -54,7 +54,7 @@
 		<method name="get_action_strength" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<description>
 				Returns a value between 0 and 1 representing the intensity of the given action. In a joypad, for example, the further away the axis (analog sticks or L2, R2 triggers) is from the dead zone, the closer the value will be to 1. If the action is mapped to a control that has no axis as the keyboard, the value returned will be 0 or 1.
@@ -202,7 +202,7 @@
 		<method name="is_action_just_pressed" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] when the user starts pressing the action event, meaning it's [code]true[/code] only on the frame that the user pressed down the button.
@@ -212,7 +212,7 @@
 		<method name="is_action_just_released" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] when the user stops pressing the action event, meaning it's [code]true[/code] only on the frame that the user released the button.
@@ -221,7 +221,7 @@
 		<method name="is_action_pressed" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if you are pressing the action event. Note that if an action has multiple buttons assigned and more than one of them is pressed, releasing one button will release the action, even if some other button assigned to this action is still pressed.

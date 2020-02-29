@@ -46,6 +46,11 @@
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 
+#if defined(VULKAN_ENABLED)
+#include "drivers/vulkan/rendering_device_vulkan.h"
+#include "platform/iphone/vulkan_context_iphone.h"
+#endif
+
 class OSIPhone : public OS_Unix {
 
 private:
@@ -74,6 +79,10 @@ private:
 
 	MainLoop *main_loop;
 
+#if defined(VULKAN_ENABLED)
+	VulkanContextIPhone *context_vulkan;
+	RenderingDeviceVulkan *rendering_device_vulkan;
+#endif
 	VideoMode video_mode;
 
 	virtual int get_video_driver_count() const;

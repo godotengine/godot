@@ -117,7 +117,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 	return OK;
 }
 
-RES ResourceFormatImporter::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES ResourceFormatImporter::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 
 	PathAndType pat;
 	Error err = _get_path_and_type(p_path, pat);
@@ -130,7 +130,7 @@ RES ResourceFormatImporter::load(const String &p_path, const String &p_original_
 		return RES();
 	}
 
-	RES res = ResourceLoader::_load(pat.path, p_path, pat.type, false, r_error);
+	RES res = ResourceLoader::_load(pat.path, p_path, pat.type, false, r_error, p_use_sub_threads, r_progress);
 
 #ifdef TOOLS_ENABLED
 	if (res.is_valid()) {

@@ -2699,7 +2699,6 @@ int RichTextLabel::get_content_height() {
 void RichTextLabel::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &RichTextLabel::_gui_input);
-	ClassDB::bind_method(D_METHOD("_scroll_changed"), &RichTextLabel::_scroll_changed);
 	ClassDB::bind_method(D_METHOD("get_text"), &RichTextLabel::get_text);
 	ClassDB::bind_method(D_METHOD("add_text", "text"), &RichTextLabel::add_text);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &RichTextLabel::set_text);
@@ -2781,7 +2780,7 @@ void RichTextLabel::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bbcode_text", PROPERTY_HINT_MULTILINE_TEXT), "set_bbcode", "get_bbcode");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters", PROPERTY_HINT_RANGE, "-1,128000,1"), "set_visible_characters", "get_visible_characters");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "percent_visible", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_percent_visible", "get_percent_visible");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "percent_visible", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_percent_visible", "get_percent_visible");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "meta_underlined"), "set_meta_underline", "is_meta_underlined");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_size", PROPERTY_HINT_RANGE, "0,24,1"), "set_tab_size", "get_tab_size");
@@ -2963,7 +2962,7 @@ RichTextLabel::RichTextLabel() {
 	vscroll->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 0);
 	vscroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
 	vscroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
-	vscroll->connect_compat("value_changed", this, "_scroll_changed");
+	vscroll->connect("value_changed", callable_mp(this, &RichTextLabel::_scroll_changed));
 	vscroll->set_step(1);
 	vscroll->hide();
 	current_idx = 1;

@@ -18,7 +18,7 @@
 		<method name="is_class_disabled" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="class_name" type="String">
+			<argument index="0" name="class_name" type="StringName">
 			</argument>
 			<description>
 			</description>
@@ -26,7 +26,7 @@
 		<method name="is_class_editor_disabled" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="class_name" type="String">
+			<argument index="0" name="class_name" type="StringName">
 			</argument>
 			<description>
 			</description>
@@ -34,9 +34,9 @@
 		<method name="is_class_property_disabled" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="class_name" type="String">
+			<argument index="0" name="class_name" type="StringName">
 			</argument>
-			<argument index="1" name="property" type="String">
+			<argument index="1" name="property" type="StringName">
 			</argument>
 			<description>
 			</description>
@@ -68,7 +68,7 @@
 		<method name="set_disable_class">
 			<return type="void">
 			</return>
-			<argument index="0" name="class_name" type="String">
+			<argument index="0" name="class_name" type="StringName">
 			</argument>
 			<argument index="1" name="disable" type="bool">
 			</argument>
@@ -78,7 +78,7 @@
 		<method name="set_disable_class_editor">
 			<return type="void">
 			</return>
-			<argument index="0" name="class_name" type="String">
+			<argument index="0" name="class_name" type="StringName">
 			</argument>
 			<argument index="1" name="disable" type="bool">
 			</argument>
@@ -88,9 +88,9 @@
 		<method name="set_disable_class_property">
 			<return type="void">
 			</return>
-			<argument index="0" name="class_name" type="String">
+			<argument index="0" name="class_name" type="StringName">
 			</argument>
-			<argument index="1" name="property" type="String">
+			<argument index="1" name="property" type="StringName">
 			</argument>
 			<argument index="2" name="disable" type="bool">
 			</argument>

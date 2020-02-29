@@ -621,7 +621,7 @@ void CSGShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_meshes"), &CSGShape::get_meshes);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "operation", PROPERTY_HINT_ENUM, "Union,Intersection,Subtraction"), "set_operation", "get_operation");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "snap", PROPERTY_HINT_RANGE, "0.0001,1,0.001"), "set_snap", "get_snap");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "snap", PROPERTY_HINT_RANGE, "0.0001,1,0.001"), "set_snap", "get_snap");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "calculate_tangents"), "set_calculate_tangents", "is_calculating_tangents");
 
 	ADD_GROUP("Collision", "collision_");
@@ -884,8 +884,6 @@ void CSGMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &CSGMesh::set_mesh);
 	ClassDB::bind_method(D_METHOD("get_mesh"), &CSGMesh::get_mesh);
 
-	ClassDB::bind_method(D_METHOD("_mesh_changed"), &CSGMesh::_mesh_changed);
-
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGMesh::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &CSGMesh::get_material);
 
@@ -898,12 +896,12 @@ void CSGMesh::set_mesh(const Ref<Mesh> &p_mesh) {
 	if (mesh == p_mesh)
 		return;
 	if (mesh.is_valid()) {
-		mesh->disconnect_compat("changed", this, "_mesh_changed");
+		mesh->disconnect("changed", callable_mp(this, &CSGMesh::_mesh_changed));
 	}
 	mesh = p_mesh;
 
 	if (mesh.is_valid()) {
-		mesh->connect_compat("changed", this, "_mesh_changed");
+		mesh->connect("changed", callable_mp(this, &CSGMesh::_mesh_changed));
 	}
 
 	_make_dirty();
@@ -1049,7 +1047,7 @@ void CSGSphere::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGSphere::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &CSGSphere::get_material);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radius", PROPERTY_HINT_RANGE, "0.001,100.0,0.001"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,100.0,0.001"), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "1,100,1"), "set_radial_segments", "get_radial_segments");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "1,100,1"), "set_rings", "get_rings");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
@@ -1236,9 +1234,9 @@ void CSGBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGBox::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &CSGBox::get_material);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "width", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_width", "get_width");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "height", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_height", "get_height");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "depth", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_depth", "get_depth");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_depth", "get_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "StandardMaterial3D,ShaderMaterial"), "set_material", "get_material");
 }
 
@@ -1451,8 +1449,8 @@ void CSGCylinder::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_smooth_faces", "smooth_faces"), &CSGCylinder::set_smooth_faces);
 	ClassDB::bind_method(D_METHOD("get_smooth_faces"), &CSGCylinder::get_smooth_faces);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radius", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_radius", "get_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "height", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sides", PROPERTY_HINT_RANGE, "3,64,1"), "set_sides", "get_sides");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cone"), "set_cone", "is_cone");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
@@ -1678,8 +1676,8 @@ void CSGTorus::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_smooth_faces", "smooth_faces"), &CSGTorus::set_smooth_faces);
 	ClassDB::bind_method(D_METHOD("get_smooth_faces"), &CSGTorus::get_smooth_faces);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "inner_radius", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_inner_radius", "get_inner_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "outer_radius", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_outer_radius", "get_outer_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "inner_radius", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_inner_radius", "get_inner_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "outer_radius", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_outer_radius", "get_outer_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sides", PROPERTY_HINT_RANGE, "3,64,1"), "set_sides", "get_sides");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ring_sides", PROPERTY_HINT_RANGE, "3,64,1"), "set_ring_sides", "get_ring_sides");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
@@ -1812,15 +1810,15 @@ CSGBrush *CSGPolygon::_build_brush() {
 
 		if (path != path_cache) {
 			if (path_cache) {
-				path_cache->disconnect_compat("tree_exited", this, "_path_exited");
-				path_cache->disconnect_compat("curve_changed", this, "_path_changed");
+				path_cache->disconnect("tree_exited", callable_mp(this, &CSGPolygon::_path_exited));
+				path_cache->disconnect("curve_changed", callable_mp(this, &CSGPolygon::_path_changed));
 				path_cache = NULL;
 			}
 
 			path_cache = path;
 
-			path_cache->connect_compat("tree_exited", this, "_path_exited");
-			path_cache->connect_compat("curve_changed", this, "_path_changed");
+			path_cache->connect("tree_exited", callable_mp(this, &CSGPolygon::_path_exited));
+			path_cache->connect("curve_changed", callable_mp(this, &CSGPolygon::_path_changed));
 			path_cache = NULL;
 		}
 		curve = path->get_curve();
@@ -2236,8 +2234,8 @@ CSGBrush *CSGPolygon::_build_brush() {
 void CSGPolygon::_notification(int p_what) {
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 		if (path_cache) {
-			path_cache->disconnect_compat("tree_exited", this, "_path_exited");
-			path_cache->disconnect_compat("curve_changed", this, "_path_changed");
+			path_cache->disconnect("tree_exited", callable_mp(this, &CSGPolygon::_path_exited));
+			path_cache->disconnect("curve_changed", callable_mp(this, &CSGPolygon::_path_changed));
 			path_cache = NULL;
 		}
 	}
@@ -2309,16 +2307,13 @@ void CSGPolygon::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_is_editable_3d_polygon"), &CSGPolygon::_is_editable_3d_polygon);
 	ClassDB::bind_method(D_METHOD("_has_editable_3d_polygon_no_depth"), &CSGPolygon::_has_editable_3d_polygon_no_depth);
 
-	ClassDB::bind_method(D_METHOD("_path_exited"), &CSGPolygon::_path_exited);
-	ClassDB::bind_method(D_METHOD("_path_changed"), &CSGPolygon::_path_changed);
-
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Depth,Spin,Path"), "set_mode", "get_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "depth", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_depth", "get_depth");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "spin_degrees", PROPERTY_HINT_RANGE, "1,360,0.1"), "set_spin_degrees", "get_spin_degrees");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_depth", "get_depth");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "spin_degrees", PROPERTY_HINT_RANGE, "1,360,0.1"), "set_spin_degrees", "get_spin_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "spin_sides", PROPERTY_HINT_RANGE, "3,64,1"), "set_spin_sides", "get_spin_sides");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "path_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Path"), "set_path_node", "get_path_node");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "path_interval", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_path_interval", "get_path_interval");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_interval", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_path_interval", "get_path_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_rotation", PROPERTY_HINT_ENUM, "Polygon,Path,PathFollow"), "set_path_rotation", "get_path_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_local"), "set_path_local", "is_path_local");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_continuous_u"), "set_path_continuous_u", "is_path_continuous_u");

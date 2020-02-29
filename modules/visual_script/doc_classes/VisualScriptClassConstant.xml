@@ -15,10 +15,10 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type" default="&quot;Object&quot;">
+		<member name="base_type" type="StringName" setter="set_base_type" getter="get_base_type" default="@&quot;Object&quot;">
 			The constant's parent class.
 		</member>
-		<member name="constant" type="String" setter="set_class_constant" getter="get_class_constant" default="&quot;&quot;">
+		<member name="constant" type="StringName" setter="set_class_constant" getter="get_class_constant" default="@&quot;&quot;">
 			The constant to return. See the given class for its available constants.
 		</member>
 	</members>

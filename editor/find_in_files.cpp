@@ -319,8 +319,8 @@ FindInFilesDialog::FindInFilesDialog() {
 
 	_search_text_line_edit = memnew(LineEdit);
 	_search_text_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
-	_search_text_line_edit->connect_compat("text_changed", this, "_on_search_text_modified");
-	_search_text_line_edit->connect_compat("text_entered", this, "_on_search_text_entered");
+	_search_text_line_edit->connect("text_changed", callable_mp(this, &FindInFilesDialog::_on_search_text_modified));
+	_search_text_line_edit->connect("text_entered", callable_mp(this, &FindInFilesDialog::_on_search_text_entered));
 	gc->add_child(_search_text_line_edit);
 
 	_replace_label = memnew(Label);
@@ -330,7 +330,7 @@ FindInFilesDialog::FindInFilesDialog() {
 
 	_replace_text_line_edit = memnew(LineEdit);
 	_replace_text_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
-	_replace_text_line_edit->connect_compat("text_entered", this, "_on_replace_text_entered");
+	_replace_text_line_edit->connect("text_entered", callable_mp(this, &FindInFilesDialog::_on_replace_text_entered));
 	_replace_text_line_edit->hide();
 	gc->add_child(_replace_text_line_edit);
 
@@ -367,12 +367,12 @@ FindInFilesDialog::FindInFilesDialog() {
 
 		Button *folder_button = memnew(Button);
 		folder_button->set_text("...");
-		folder_button->connect_compat("pressed", this, "_on_folder_button_pressed");
+		folder_button->connect("pressed", callable_mp(this, &FindInFilesDialog::_on_folder_button_pressed));
 		hbc->add_child(folder_button);
 
 		_folder_dialog = memnew(FileDialog);
 		_folder_dialog->set_mode(FileDialog::MODE_OPEN_DIR);
-		_folder_dialog->connect_compat("dir_selected", this, "_on_folder_selected");
+		_folder_dialog->connect("dir_selected", callable_mp(this, &FindInFilesDialog::_on_folder_selected));
 		add_child(_folder_dialog);
 
 		gc->add_child(hbc);
@@ -546,12 +546,6 @@ void FindInFilesDialog::_on_folder_selected(String path) {
 
 void FindInFilesDialog::_bind_methods() {
 
-	ClassDB::bind_method("_on_folder_button_pressed", &FindInFilesDialog::_on_folder_button_pressed);
-	ClassDB::bind_method("_on_folder_selected", &FindInFilesDialog::_on_folder_selected);
-	ClassDB::bind_method("_on_search_text_modified", &FindInFilesDialog::_on_search_text_modified);
-	ClassDB::bind_method("_on_search_text_entered", &FindInFilesDialog::_on_search_text_entered);
-	ClassDB::bind_method("_on_replace_text_entered", &FindInFilesDialog::_on_replace_text_entered);
-
 	ADD_SIGNAL(MethodInfo(SIGNAL_FIND_REQUESTED));
 	ADD_SIGNAL(MethodInfo(SIGNAL_REPLACE_REQUESTED));
 }
@@ -563,8 +557,8 @@ const char *FindInFilesPanel::SIGNAL_FILES_MODIFIED = "files_modified";
 FindInFilesPanel::FindInFilesPanel() {
 
 	_finder = memnew(FindInFiles);
-	_finder->connect_compat(FindInFiles::SIGNAL_RESULT_FOUND, this, "_on_result_found");
-	_finder->connect_compat(FindInFiles::SIGNAL_FINISHED, this, "_on_finished");
+	_finder->connect(FindInFiles::SIGNAL_RESULT_FOUND, callable_mp(this, &FindInFilesPanel::_on_result_found));
+	_finder->connect(FindInFiles::SIGNAL_FINISHED, callable_mp(this, &FindInFilesPanel::_on_finished));
 	add_child(_finder);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
@@ -594,9 +588,15 @@ FindInFilesPanel::FindInFilesPanel() {
 		_status_label = memnew(Label);
 		hbc->add_child(_status_label);
 
+		_refresh_button = memnew(Button);
+		_refresh_button->set_text(TTR("Refresh"));
+		_refresh_button->connect("pressed", callable_mp(this, &FindInFilesPanel::_on_refresh_button_clicked));
+		_refresh_button->hide();
+		hbc->add_child(_refresh_button);
+
 		_cancel_button = memnew(Button);
 		_cancel_button->set_text(TTR("Cancel"));
-		_cancel_button->connect_compat("pressed", this, "_on_cancel_button_clicked");
+		_cancel_button->connect("pressed", callable_mp(this, &FindInFilesPanel::_on_cancel_button_clicked));
 		_cancel_button->hide();
 		hbc->add_child(_cancel_button);
 
@@ -606,8 +606,8 @@ FindInFilesPanel::FindInFilesPanel() {
 	_results_display = memnew(Tree);
 	_results_display->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("source", "EditorFonts"));
 	_results_display->set_v_size_flags(SIZE_EXPAND_FILL);
-	_results_display->connect_compat("item_selected", this, "_on_result_selected");
-	_results_display->connect_compat("item_edited", this, "_on_item_edited");
+	_results_display->connect("item_selected", callable_mp(this, &FindInFilesPanel::_on_result_selected));
+	_results_display->connect("item_edited", callable_mp(this, &FindInFilesPanel::_on_item_edited));
 	_results_display->set_hide_root(true);
 	_results_display->set_select_mode(Tree::SELECT_ROW);
 	_results_display->set_allow_rmb_select(true);
@@ -625,12 +625,12 @@ FindInFilesPanel::FindInFilesPanel() {
 
 		_replace_line_edit = memnew(LineEdit);
 		_replace_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
-		_replace_line_edit->connect_compat("text_changed", this, "_on_replace_text_changed");
+		_replace_line_edit->connect("text_changed", callable_mp(this, &FindInFilesPanel::_on_replace_text_changed));
 		_replace_container->add_child(_replace_line_edit);
 
 		_replace_all_button = memnew(Button);
 		_replace_all_button->set_text(TTR("Replace all (no undo)"));
-		_replace_all_button->connect_compat("pressed", this, "_on_replace_all_clicked");
+		_replace_all_button->connect("pressed", callable_mp(this, &FindInFilesPanel::_on_replace_all_clicked));
 		_replace_container->add_child(_replace_all_button);
 
 		_replace_container->hide();
@@ -681,6 +681,7 @@ void FindInFilesPanel::start_search() {
 	_finder->start();
 
 	update_replace_buttons();
+	_refresh_button->hide();
 	_cancel_button->show();
 }
 
@@ -691,6 +692,7 @@ void FindInFilesPanel::stop_search() {
 	_status_label->set_text("");
 	update_replace_buttons();
 	set_progress_visible(false);
+	_refresh_button->show();
 	_cancel_button->hide();
 }
 
@@ -793,7 +795,12 @@ void FindInFilesPanel::_on_finished() {
 	_status_label->set_text(TTR("Search complete"));
 	update_replace_buttons();
 	set_progress_visible(false);
+	_refresh_button->show();
 	_cancel_button->hide();
+}
+
+void FindInFilesPanel::_on_refresh_button_clicked() {
+	start_search();
 }
 
 void FindInFilesPanel::_on_cancel_button_clicked() {
@@ -968,12 +975,7 @@ void FindInFilesPanel::set_progress_visible(bool visible) {
 void FindInFilesPanel::_bind_methods() {
 
 	ClassDB::bind_method("_on_result_found", &FindInFilesPanel::_on_result_found);
-	ClassDB::bind_method("_on_item_edited", &FindInFilesPanel::_on_item_edited);
 	ClassDB::bind_method("_on_finished", &FindInFilesPanel::_on_finished);
-	ClassDB::bind_method("_on_cancel_button_clicked", &FindInFilesPanel::_on_cancel_button_clicked);
-	ClassDB::bind_method("_on_result_selected", &FindInFilesPanel::_on_result_selected);
-	ClassDB::bind_method("_on_replace_text_changed", &FindInFilesPanel::_on_replace_text_changed);
-	ClassDB::bind_method("_on_replace_all_clicked", &FindInFilesPanel::_on_replace_all_clicked);
 	ClassDB::bind_method("_draw_result_text", &FindInFilesPanel::draw_result_text);
 
 	ADD_SIGNAL(MethodInfo(SIGNAL_RESULT_SELECTED,

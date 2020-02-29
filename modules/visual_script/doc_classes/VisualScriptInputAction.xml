@@ -9,7 +9,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="action" type="String" setter="set_action_name" getter="get_action_name" default="&quot;&quot;">
+		<member name="action" type="StringName" setter="set_action_name" getter="get_action_name" default="@&quot;&quot;">
 		</member>
 		<member name="mode" type="int" setter="set_action_mode" getter="get_action_mode" enum="VisualScriptInputAction.Mode" default="0">
 		</member>

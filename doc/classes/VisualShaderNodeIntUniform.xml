@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeIntUniform" inherits="VisualShaderNodeUniform" version="4.0">
+	<brief_description>
+		A scalar integer uniform to be used within the visual shader graph.
+	</brief_description>
+	<description>
+		Translated to [code]uniform int[/code] in the shader language.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="hint" type="int" setter="set_hint" getter="get_hint" enum="VisualShaderNodeIntUniform.Hint" default="0">
+			A hint applied to the uniform, which controls the values it can take when set through the inspector.
+		</member>
+		<member name="max" type="int" setter="set_max" getter="get_max" default="100">
+			Minimum value for range hints. Used if [member hint] is set to [constant HINT_RANGE] or [constant HINT_RANGE_STEP].
+		</member>
+		<member name="min" type="int" setter="set_min" getter="get_min" default="0">
+			Maximum value for range hints. Used if [member hint] is set to [constant HINT_RANGE] or [constant HINT_RANGE_STEP].
+		</member>
+		<member name="step" type="int" setter="set_step" getter="get_step" default="1">
+			Step (increment) value for the range hint with step. Used if [member hint] is set to [constant HINT_RANGE_STEP].
+		</member>
+	</members>
+	<constants>
+		<constant name="HINT_NONE" value="0" enum="Hint">
+			No hint used.
+		</constant>
+		<constant name="HINT_RANGE" value="1" enum="Hint">
+			A range hint for scalar value, which limits possible input values between [member min] and [member max]. Translated to [code]hint_range(min, max)[/code] in shader code.
+		</constant>
+		<constant name="HINT_RANGE_STEP" value="2" enum="Hint">
+			A range hint for scalar value with step, which limits possible input values between [member min] and [member max], with a step (increment) of [member step]). Translated to [code]hint_range(min, max, step)[/code] in shader code.
+		</constant>
+	</constants>
+</class>

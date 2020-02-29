@@ -66,6 +66,8 @@
 	</tutorials>
 	<methods>
 		<method name="clear">
+			<return type="void">
+			</return>
 			<description>
 				Clear the dictionary, removing all key/value pairs.
 			</description>
@@ -96,7 +98,7 @@
 			</description>
 		</method>
 		<method name="get">
-			<return type="Variant">
+			<return type="void">
 			</return>
 			<argument index="0" name="key" type="Variant">
 			</argument>

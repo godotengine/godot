@@ -1,7 +1,7 @@
 language: cpp
 
 # OS config, depends on actual 'os' in build matrix
-dist: xenial
+dist: bionic
 
 stages:
   - build
@@ -26,8 +26,6 @@ matrix:
       compiler: gcc
       addons:
         apt:
-          sources:
-            - llvm-toolchain-xenial-8
           packages:
             - clang-format-8
 
@@ -39,14 +37,15 @@ matrix:
       addons:
         apt:
           sources:
-            - mono
-            - ubuntu-toolchain-r-test
+            - sourceline: "deb https://download.mono-project.com/repo/ubuntu stable-bionic main"
+              key_url: "https://raw.githubusercontent.com/travis-ci/apt-source-safelist/master/keys/mono.asc"
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
             - &gcc9_deps [gcc-9, g++-9]
             - &linux_deps [libasound2-dev, libgl1-mesa-dev, libglu1-mesa-dev, libx11-dev, libxcursor-dev, libxi-dev, libxinerama-dev, libxrandr-dev]
             - &linux_mono_deps [mono-devel, msbuild, nuget]
 
-    - name: Linux export template (release, Clang)
+    - name: Linux export template (release, Clang 7)
       stage: build
       env: PLATFORM=x11 TOOLS=no TARGET=release CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="warnings=extra werror=yes"
       os: linux
@@ -72,6 +71,7 @@ matrix:
       stage: build
       env: PLATFORM=osx TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-clang EXTRA_ARGS="warnings=extra werror=yes"
       os: osx
+      osx_image: xcode11.3
       compiler: clang
       addons:
         homebrew:
@@ -85,6 +85,7 @@ matrix:
 #      stage: build
 #      env: PLATFORM=iphone TOOLS=no TARGET=debug CACHE_NAME=${PLATFORM}-clang
 #      os: osx
+#      osx_image: xcode11.3
 #      compiler: clang
 #      addons:
 #        homebrew:
@@ -101,14 +102,14 @@ matrix:
 #      addons:
 #        apt:
 #          sources:
-#            - ubuntu-toolchain-r-test
+#            - sourceline: "ppa:ubuntu-toolchain-r/test"
 #          packages:
 #            - *gcc9_deps
 #            - *linux_deps
 
-    - name: Linux export template (release_debug, GCC 5, without 3D support)
+    - name: Linux export template (release_debug, GCC 7, without 3D support)
       stage: build
-      env: PLATFORM=x11 TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-gcc-5 EXTRA_ARGS="CXXFLAGS=-fno-strict-aliasing disable_3d=yes"
+      env: PLATFORM=x11 TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-gcc-7 EXTRA_ARGS="disable_3d=yes"
       os: linux
       compiler: gcc
       addons:
@@ -124,7 +125,7 @@ before_install:
 
 install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-      pyenv global 3.7.1 system;
+      pyenv global 3.8 system;
       pip3 install --user scons;
     fi
   - scons --version

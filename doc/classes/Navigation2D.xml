@@ -4,7 +4,7 @@
 		2D navigation and pathfinding node.
 	</brief_description>
 	<description>
-		Navigation2D provides navigation and pathfinding within a 2D area, specified as a collection of [NavigationPolygon] resources. These are automatically collected from child [NavigationPolygonInstance] nodes.
+		Navigation2D provides navigation and pathfinding within a 2D area, specified as a collection of [NavigationPolygon] resources. These are automatically collected from child [NavigationRegion2D] nodes.
 	</description>
 	<tutorials>
 	</tutorials>

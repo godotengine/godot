@@ -44,6 +44,7 @@
 #include "core/math/transform.h"
 #include "core/math/transform_2d.h"
 #include "core/math/vector3.h"
+#include "core/math/vector3i.h"
 #include "core/node_path.h"
 #include "core/object_id.h"
 #include "core/rid.h"
@@ -57,8 +58,10 @@ struct PropertyInfo;
 struct MethodInfo;
 
 typedef Vector<uint8_t> PackedByteArray;
-typedef Vector<int> PackedIntArray;
-typedef Vector<real_t> PackedRealArray;
+typedef Vector<int32_t> PackedInt32Array;
+typedef Vector<int64_t> PackedInt64Array;
+typedef Vector<float> PackedFloat32Array;
+typedef Vector<double> PackedFloat64Array;
 typedef Vector<String> PackedStringArray;
 typedef Vector<Vector2> PackedVector2Array;
 typedef Vector<Vector3> PackedVector3Array;
@@ -75,23 +78,24 @@ class Variant {
 public:
 	// If this changes the table in variant_op must be updated
 	enum Type {
-
 		NIL,
 
 		// atomic types
 		BOOL,
 		INT,
-		REAL,
+		FLOAT,
 		STRING,
 
 		// math types
-
-		VECTOR2, // 5
+		VECTOR2,
+		VECTOR2I,
 		RECT2,
+		RECT2I,
 		VECTOR3,
+		VECTOR3I,
 		TRANSFORM2D,
 		PLANE,
-		QUAT, // 10
+		QUAT,
 		AABB,
 		BASIS,
 		TRANSFORM,
@@ -99,24 +103,26 @@ public:
 		// misc types
 		COLOR,
 		STRING_NAME,
-		NODE_PATH, // 15
+		NODE_PATH,
 		_RID,
 		OBJECT,
 		CALLABLE,
 		SIGNAL,
 		DICTIONARY,
 		ARRAY,
-		// arrays
-		PACKED_BYTE_ARRAY, // 20
-		PACKED_INT_ARRAY,
-		PACKED_REAL_ARRAY,
+
+		// typed arrays
+		PACKED_BYTE_ARRAY,
+		PACKED_INT32_ARRAY,
+		PACKED_INT64_ARRAY,
+		PACKED_FLOAT32_ARRAY,
+		PACKED_FLOAT64_ARRAY,
 		PACKED_STRING_ARRAY,
 		PACKED_VECTOR2_ARRAY,
-		PACKED_VECTOR3_ARRAY, // 25
+		PACKED_VECTOR3_ARRAY,
 		PACKED_COLOR_ARRAY,
 
 		VARIANT_MAX
-
 	};
 
 private:
@@ -132,17 +138,77 @@ private:
 		Object *obj;
 	};
 
+	/* array helpers */
+	struct PackedArrayRefBase {
+		SafeRefCount refcount;
+		_FORCE_INLINE_ PackedArrayRefBase *reference() {
+			if (this->refcount.ref()) {
+				return this;
+			} else {
+				return nullptr;
+			}
+		}
+		static _FORCE_INLINE_ PackedArrayRefBase *reference_from(PackedArrayRefBase *p_base, PackedArrayRefBase *p_from) {
+			if (p_base == p_from) {
+				return p_base; //same thing, do nothing
+			}
+
+			if (p_from->reference()) {
+				if (p_base->refcount.unref()) {
+					memdelete(p_base);
+				}
+				return p_from;
+			} else {
+				return p_base; //keep, could not reference new
+			}
+		}
+		static _FORCE_INLINE_ void destroy(PackedArrayRefBase *p_array) {
+			if (p_array->refcount.unref()) {
+				memdelete(p_array);
+			}
+		}
+		_FORCE_INLINE_ virtual ~PackedArrayRefBase() {} //needs virtual destructor, but make inline
+	};
+
+	template <class T>
+	struct PackedArrayRef : public PackedArrayRefBase {
+		Vector<T> array;
+		static _FORCE_INLINE_ PackedArrayRef<T> *create() {
+			return memnew(PackedArrayRef<T>);
+		}
+		static _FORCE_INLINE_ PackedArrayRef<T> *create(const Vector<T> &p_from) {
+			return memnew(PackedArrayRef<T>(p_from));
+		}
+
+		static _FORCE_INLINE_ const Vector<T> &get_array(PackedArrayRefBase *p_base) {
+			return static_cast<PackedArrayRef<T> *>(p_base)->array;
+		}
+		static _FORCE_INLINE_ Vector<T> *get_array_ptr(const PackedArrayRefBase *p_base) {
+			return &const_cast<PackedArrayRef<T> *>(static_cast<const PackedArrayRef<T> *>(p_base))->array;
+		}
+
+		_FORCE_INLINE_ PackedArrayRef(const Vector<T> &p_from) {
+			array = p_from;
+			refcount.init();
+		}
+		_FORCE_INLINE_ PackedArrayRef() {
+			refcount.init();
+		}
+	};
+
+	/* end of array helpers */
 	_ALWAYS_INLINE_ ObjData &_get_obj();
 	_ALWAYS_INLINE_ const ObjData &_get_obj() const;
 
 	union {
 		bool _bool;
 		int64_t _int;
-		double _real;
+		double _float;
 		Transform2D *_transform2d;
 		::AABB *_aabb;
 		Basis *_basis;
 		Transform *_transform;
+		PackedArrayRefBase *packed_array;
 		void *_ptr; //generic pointer
 		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)];
 	} _data GCC_ALIGNED_8;
@@ -151,14 +217,20 @@ private:
 	void clear();
 
 public:
-	_FORCE_INLINE_ Type get_type() const { return type; }
+	_FORCE_INLINE_ Type get_type() const {
+		return type;
+	}
 	static String get_type_name(Variant::Type p_type);
 	static bool can_convert(Type p_type_from, Type p_type_to);
 	static bool can_convert_strict(Type p_type_from, Type p_type_to);
 
 	bool is_ref() const;
-	_FORCE_INLINE_ bool is_num() const { return type == INT || type == REAL; };
-	_FORCE_INLINE_ bool is_array() const { return type >= ARRAY; };
+	_FORCE_INLINE_ bool is_num() const {
+		return type == INT || type == FLOAT;
+	};
+	_FORCE_INLINE_ bool is_array() const {
+		return type >= ARRAY;
+	};
 	bool is_shared() const;
 	bool is_zero() const;
 	bool is_one() const;
@@ -187,8 +259,11 @@ public:
 	operator String() const;
 	operator StringName() const;
 	operator Vector2() const;
+	operator Vector2i() const;
 	operator Rect2() const;
+	operator Rect2i() const;
 	operator Vector3() const;
+	operator Vector3i() const;
 	operator Plane() const;
 	operator ::AABB() const;
 	operator Quat() const;
@@ -211,8 +286,10 @@ public:
 	operator Array() const;
 
 	operator Vector<uint8_t>() const;
-	operator Vector<int>() const;
-	operator Vector<real_t>() const;
+	operator Vector<int32_t>() const;
+	operator Vector<int64_t>() const;
+	operator Vector<float>() const;
+	operator Vector<double>() const;
 	operator Vector<String>() const;
 	operator Vector<Vector3>() const;
 	operator Vector<Color>() const;
@@ -255,8 +332,11 @@ public:
 	Variant(const char *const p_cstring);
 	Variant(const CharType *p_wstring);
 	Variant(const Vector2 &p_vector2);
+	Variant(const Vector2i &p_vector2i);
 	Variant(const Rect2 &p_rect2);
+	Variant(const Rect2i &p_rect2i);
 	Variant(const Vector3 &p_vector3);
+	Variant(const Vector3i &p_vector3i);
 	Variant(const Plane &p_plane);
 	Variant(const ::AABB &p_aabb);
 	Variant(const Quat &p_quat);
@@ -273,9 +353,11 @@ public:
 
 	Variant(const Array &p_array);
 	Variant(const Vector<Plane> &p_array); // helper
-	Variant(const Vector<uint8_t> &p_raw_array);
-	Variant(const Vector<int> &p_int_array);
-	Variant(const Vector<real_t> &p_real_array);
+	Variant(const Vector<uint8_t> &p_byte_array);
+	Variant(const Vector<int32_t> &p_int32_array);
+	Variant(const Vector<int64_t> &p_int64_array);
+	Variant(const Vector<float> &p_float32_array);
+	Variant(const Vector<double> &p_float64_array);
 	Variant(const Vector<String> &p_string_array);
 	Variant(const Vector<Vector3> &p_vector3_array);
 	Variant(const Vector<Color> &p_color_array);
@@ -395,7 +477,9 @@ public:
 
 	void operator=(const Variant &p_variant); // only this is enough for all the other types
 	Variant(const Variant &p_variant);
-	_FORCE_INLINE_ Variant() { type = NIL; }
+	_FORCE_INLINE_ Variant() {
+		type = NIL;
+	}
 	_FORCE_INLINE_ ~Variant() {
 		if (type != Variant::NIL) clear();
 	}

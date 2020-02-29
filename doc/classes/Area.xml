@@ -89,7 +89,7 @@
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="0.1">
 			The rate at which objects stop spinning in this area. Represents the angular velocity lost per second. Values range from [code]0[/code] (no damping) to [code]1[/code] (full damping).
 		</member>
-		<member name="audio_bus_name" type="String" setter="set_audio_bus" getter="get_audio_bus" default="&quot;Master&quot;">
+		<member name="audio_bus_name" type="StringName" setter="set_audio_bus" getter="get_audio_bus" default="@&quot;Master&quot;">
 			The name of the area's audio bus.
 		</member>
 		<member name="audio_bus_override" type="bool" setter="set_audio_bus_override" getter="is_overriding_audio_bus" default="false">
@@ -131,7 +131,7 @@
 		<member name="reverb_bus_enable" type="bool" setter="set_use_reverb_bus" getter="is_using_reverb_bus" default="false">
 			If [code]true[/code], the area applies reverb to its associated audio.
 		</member>
-		<member name="reverb_bus_name" type="String" setter="set_reverb_bus" getter="get_reverb_bus" default="&quot;Master&quot;">
+		<member name="reverb_bus_name" type="StringName" setter="set_reverb_bus" getter="get_reverb_bus" default="@&quot;Master&quot;">
 			The reverb bus name to use for this area's associated audio.
 		</member>
 		<member name="reverb_bus_uniformity" type="float" setter="set_reverb_uniformity" getter="get_reverb_uniformity" default="0.0">

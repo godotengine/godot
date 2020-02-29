@@ -2259,7 +2259,7 @@ PropertyInfo VisualScriptMathConstant::get_input_value_port_info(int p_idx) cons
 
 PropertyInfo VisualScriptMathConstant::get_output_value_port_info(int p_idx) const {
 
-	return PropertyInfo(Variant::REAL, const_name[constant]);
+	return PropertyInfo(Variant::FLOAT, const_name[constant]);
 }
 
 String VisualScriptMathConstant::get_caption() const {
@@ -3130,8 +3130,6 @@ void VisualScriptCustomNode::_bind_methods() {
 	stepmi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 	BIND_VMETHOD(stepmi);
 
-	ClassDB::bind_method(D_METHOD("_script_changed"), &VisualScriptCustomNode::_script_changed);
-
 	BIND_ENUM_CONSTANT(START_MODE_BEGIN_SEQUENCE);
 	BIND_ENUM_CONSTANT(START_MODE_CONTINUE_SEQUENCE);
 	BIND_ENUM_CONSTANT(START_MODE_RESUME_YIELD);
@@ -3144,7 +3142,7 @@ void VisualScriptCustomNode::_bind_methods() {
 }
 
 VisualScriptCustomNode::VisualScriptCustomNode() {
-	connect_compat("script_changed", this, "_script_changed");
+	connect("script_changed", callable_mp(this, &VisualScriptCustomNode::_script_changed));
 }
 
 //////////////////////////////////////////

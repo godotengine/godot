@@ -41,7 +41,7 @@
 #include "scene/3d/light.h"
 #include "scene/3d/listener.h"
 #include "scene/3d/mesh_instance.h"
-#include "scene/3d/navigation_mesh_instance.h"
+#include "scene/3d/navigation_region.h"
 #include "scene/3d/particles.h"
 #include "scene/3d/physics_joint.h"
 #include "scene/3d/position_3d.h"
@@ -58,11 +58,11 @@
 #include "scene/resources/convex_polygon_shape.h"
 #include "scene/resources/cylinder_shape.h"
 #include "scene/resources/height_map_shape.h"
-#include "scene/resources/plane_shape.h"
 #include "scene/resources/primitive_meshes.h"
 #include "scene/resources/ray_shape.h"
 #include "scene/resources/sphere_shape.h"
 #include "scene/resources/surface_tool.h"
+#include "scene/resources/world_margin_shape.h"
 
 #define HANDLE_HALF_SIZE 9.5
 
@@ -3447,7 +3447,7 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 		Vector<Vector3> points;
 
-		Vector3 d(0, 0, height * 0.5);
+		Vector3 d(0, height * 0.5, 0);
 		for (int i = 0; i < 360; i++) {
 
 			float ra = Math::deg2rad((float)i);
@@ -3455,24 +3455,24 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * radius;
 			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * radius;
 
-			points.push_back(Vector3(a.x, a.y, 0) + d);
-			points.push_back(Vector3(b.x, b.y, 0) + d);
+			points.push_back(Vector3(a.x, 0, a.y) + d);
+			points.push_back(Vector3(b.x, 0, b.y) + d);
 
-			points.push_back(Vector3(a.x, a.y, 0) - d);
-			points.push_back(Vector3(b.x, b.y, 0) - d);
+			points.push_back(Vector3(a.x, 0, a.y) - d);
+			points.push_back(Vector3(b.x, 0, b.y) - d);
 
 			if (i % 90 == 0) {
 
-				points.push_back(Vector3(a.x, a.y, 0) + d);
-				points.push_back(Vector3(a.x, a.y, 0) - d);
+				points.push_back(Vector3(a.x, 0, a.y) + d);
+				points.push_back(Vector3(a.x, 0, a.y) - d);
 			}
 
 			Vector3 dud = i < 180 ? d : -d;
 
-			points.push_back(Vector3(0, a.y, a.x) + dud);
-			points.push_back(Vector3(0, b.y, b.x) + dud);
-			points.push_back(Vector3(a.y, 0, a.x) + dud);
-			points.push_back(Vector3(b.y, 0, b.x) + dud);
+			points.push_back(Vector3(0, a.x, a.y) + dud);
+			points.push_back(Vector3(0, b.x, b.y) + dud);
+			points.push_back(Vector3(a.y, a.x, 0) + dud);
+			points.push_back(Vector3(b.y, b.x, 0) + dud);
 		}
 
 		p_gizmo->add_lines(points, material);
@@ -3486,31 +3486,31 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * radius;
 			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * radius;
 
-			collision_segments.push_back(Vector3(a.x, a.y, 0) + d);
-			collision_segments.push_back(Vector3(b.x, b.y, 0) + d);
+			collision_segments.push_back(Vector3(a.x, 0, a.y) + d);
+			collision_segments.push_back(Vector3(b.x, 0, b.y) + d);
 
-			collision_segments.push_back(Vector3(a.x, a.y, 0) - d);
-			collision_segments.push_back(Vector3(b.x, b.y, 0) - d);
+			collision_segments.push_back(Vector3(a.x, 0, a.y) - d);
+			collision_segments.push_back(Vector3(b.x, 0, b.y) - d);
 
 			if (i % 16 == 0) {
 
-				collision_segments.push_back(Vector3(a.x, a.y, 0) + d);
-				collision_segments.push_back(Vector3(a.x, a.y, 0) - d);
+				collision_segments.push_back(Vector3(a.x, 0, a.y) + d);
+				collision_segments.push_back(Vector3(a.x, 0, a.y) - d);
 			}
 
 			Vector3 dud = i < 32 ? d : -d;
 
-			collision_segments.push_back(Vector3(0, a.y, a.x) + dud);
-			collision_segments.push_back(Vector3(0, b.y, b.x) + dud);
-			collision_segments.push_back(Vector3(a.y, 0, a.x) + dud);
-			collision_segments.push_back(Vector3(b.y, 0, b.x) + dud);
+			collision_segments.push_back(Vector3(0, a.x, a.y) + dud);
+			collision_segments.push_back(Vector3(0, b.x, b.y) + dud);
+			collision_segments.push_back(Vector3(a.y, a.x, 0) + dud);
+			collision_segments.push_back(Vector3(b.y, b.x, 0) + dud);
 		}
 
 		p_gizmo->add_collision_segments(collision_segments);
 
 		Vector<Vector3> handles;
 		handles.push_back(Vector3(cs2->get_radius(), 0, 0));
-		handles.push_back(Vector3(0, 0, cs2->get_height() * 0.5 + cs2->get_radius()));
+		handles.push_back(Vector3(0, cs2->get_height() * 0.5 + cs2->get_radius(), 0));
 		p_gizmo->add_handles(handles, handles_material);
 	}
 
@@ -3575,9 +3575,9 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 		p_gizmo->add_handles(handles, handles_material);
 	}
 
-	if (Object::cast_to<PlaneShape>(*s)) {
+	if (Object::cast_to<WorldMarginShape>(*s)) {
 
-		Ref<PlaneShape> ps = s;
+		Ref<WorldMarginShape> ps = s;
 		Plane p = ps->get_plane();
 		Vector<Vector3> points;
 
@@ -3720,11 +3720,11 @@ NavigationMeshSpatialGizmoPlugin::NavigationMeshSpatialGizmoPlugin() {
 }
 
 bool NavigationMeshSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<NavigationMeshInstance>(p_spatial) != NULL;
+	return Object::cast_to<NavigationRegion>(p_spatial) != NULL;
 }
 
 String NavigationMeshSpatialGizmoPlugin::get_name() const {
-	return "NavigationMeshInstance";
+	return "NavigationRegion";
 }
 
 int NavigationMeshSpatialGizmoPlugin::get_priority() const {
@@ -3733,7 +3733,7 @@ int NavigationMeshSpatialGizmoPlugin::get_priority() const {
 
 void NavigationMeshSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
-	NavigationMeshInstance *navmesh = Object::cast_to<NavigationMeshInstance>(p_gizmo->get_spatial_node());
+	NavigationRegion *navmesh = Object::cast_to<NavigationRegion>(p_gizmo->get_spatial_node());
 
 	Ref<Material> edge_material = get_material("navigation_edge_material", p_gizmo);
 	Ref<Material> edge_material_disabled = get_material("navigation_edge_material_disabled", p_gizmo);

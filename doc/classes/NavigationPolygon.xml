@@ -11,16 +11,16 @@
 		var outline = PackedVector2Array([Vector2(0, 0), Vector2(0, 50), Vector2(50, 50), Vector2(50, 0)])
 		polygon.add_outline(outline)
 		polygon.make_polygons_from_outlines()
-		$NavigationPolygonInstance.navpoly = polygon
+		$NavigationRegion2D.navpoly = polygon
 		[/codeblock]
 		Using [method add_polygon] and indices of the vertices array.
 		[codeblock]
 		var polygon = NavigationPolygon.new()
 		var vertices = PackedVector2Array([Vector2(0, 0), Vector2(0, 50), Vector2(50, 50), Vector2(50, 0)])
 		polygon.set_vertices(vertices)
-		var indices = PackedIntArray(0, 3, 1)
+		var indices = PackedInt32Array(0, 3, 1)
 		polygon.add_polygon(indices)
-		$NavigationPolygonInstance.navpoly = polygon
+		$NavigationRegion2D.navpoly = polygon
 		[/codeblock]
 	</description>
 	<tutorials>
@@ -49,7 +49,7 @@
 		<method name="add_polygon">
 			<return type="void">
 			</return>
-			<argument index="0" name="polygon" type="PackedIntArray">
+			<argument index="0" name="polygon" type="PackedInt32Array">
 			</argument>
 			<description>
 				Adds a polygon using the indices of the vertices you get when calling [method get_vertices].
@@ -86,12 +86,12 @@
 			</description>
 		</method>
 		<method name="get_polygon">
-			<return type="PackedIntArray">
+			<return type="PackedInt32Array">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns a [PackedIntArray] containing the indices of the vertices of a created polygon.
+				Returns a [PackedInt32Array] containing the indices of the vertices of a created polygon.
 			</description>
 		</method>
 		<method name="get_polygon_count" qualifiers="const">

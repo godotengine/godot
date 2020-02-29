@@ -852,12 +852,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> style_panel_debugger = style_content_panel->duplicate();
 	style_panel_debugger->set_border_width(MARGIN_BOTTOM, 0);
 	theme->set_stylebox("DebuggerPanel", "EditorStyles", style_panel_debugger);
-	theme->set_stylebox("DebuggerTabFG", "EditorStyles", style_tab_selected);
-	theme->set_stylebox("DebuggerTabBG", "EditorStyles", style_tab_unselected);
 
 	Ref<StyleBoxFlat> style_panel_invisible_top = style_content_panel->duplicate();
 	int stylebox_offset = theme->get_font("tab_fg", "TabContainer")->get_height() + theme->get_stylebox("tab_fg", "TabContainer")->get_minimum_size().height + theme->get_stylebox("panel", "TabContainer")->get_default_margin(MARGIN_TOP);
 	style_panel_invisible_top->set_expand_margin_size(MARGIN_TOP, -stylebox_offset);
+	style_panel_invisible_top->set_default_margin(MARGIN_TOP, 0);
 	theme->set_stylebox("BottomPanelDebuggerOverride", "EditorStyles", style_panel_invisible_top);
 
 	// LineEdit

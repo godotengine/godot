@@ -32,7 +32,16 @@
 
 #include "os_iphone.h"
 
+#if defined(OPENGL_ENABLED)
 #include "drivers/gles2/rasterizer_gles2.h"
+#endif
+
+#if defined(VULKAN_ENABLED)
+#include "servers/visual/rasterizer_rd/rasterizer_rd.h"
+// #import <QuartzCore/CAMetalLayer.h>
+#include <vulkan/vulkan_metal.h>
+#endif
+
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 
@@ -101,7 +110,9 @@ int OSIPhone::get_current_video_driver() const {
 }
 
 Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+	video_driver_index = p_video_driver;
 
+#if defined(OPENGL_ENABLED)
 	bool gl_initialization_error = false;
 
 	// FIXME: Add Vulkan support via MoltenVK. Add fallback code back?
@@ -118,19 +129,25 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 				"Unable to initialize video driver");
 		return ERR_UNAVAILABLE;
 	}
+#endif
 
-	video_driver_index = p_video_driver;
+#if defined(VULKAN_ENABLED)
+	RasterizerRD::make_current();
+#endif
+
+	
 	visual_server = memnew(VisualServerRaster);
 	// FIXME: Reimplement threaded rendering
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 		visual_server = memnew(VisualServerWrapMT(visual_server, false));
 	}
-
 	visual_server->init();
 	//visual_server->cursor_set_visible(false, 0);
 
+#if defined(OPENGL_ENABLED)
 	// reset this to what it should be, it will have been set to 0 after visual_server->init() is called
 	RasterizerStorageGLES2::system_fbo = gl_view_base_fb;
+#endif
 
 	AudioDriverManager::initialize(p_audio_driver);
 
@@ -437,9 +454,10 @@ bool OSIPhone::can_draw() const {
 };
 
 int OSIPhone::set_base_framebuffer(int p_fb) {
-
+#if defined(OPENGL_ENABLED)
 	// gl_view_base_fb has not been updated yet
 	RasterizerStorageGLES2::system_fbo = p_fb;
+#endif
 
 	return 0;
 };

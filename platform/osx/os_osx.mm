@@ -747,7 +747,7 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	const Vector2 pos = get_mouse_pos([event locationInWindow], backingScaleFactor);
 	mm->set_position(pos);
 	mm->set_pressure([event pressure]);
-	if ([event subtype] == NSTabletPointEventSubtype) {
+	if ([event subtype] == NSEventSubtypeTabletPoint) {
 		const NSPoint p = [event tilt];
 		mm->set_tilt(Vector2(p.x, p.y));
 	}
@@ -1757,7 +1757,7 @@ void OS_OSX::alert(const String &p_alert, const String &p_title) {
 	[window addButtonWithTitle:@"OK"];
 	[window setMessageText:ns_title];
 	[window setInformativeText:ns_alert];
-	[window setAlertStyle:NSWarningAlertStyle];
+	[window setAlertStyle:NSAlertStyleWarning];
 
 	// Display it, then release
 	[window runModal];

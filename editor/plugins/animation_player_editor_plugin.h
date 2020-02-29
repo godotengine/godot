@@ -110,7 +110,6 @@ class AnimationPlayerEditor : public VBoxContainer {
 	float timeline_position;
 
 	EditorFileDialog *file;
-	AcceptDialog *accept;
 	ConfirmationDialog *delete_dialog;
 	int current_option;
 
@@ -210,6 +209,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _allocate_onion_layers();
 	void _free_onion_layers();
 	void _prepare_onion_layers_1();
+	void _prepare_onion_layers_1_deferred();
 	void _prepare_onion_layers_2();
 	void _start_onion_skinning();
 	void _stop_onion_skinning();

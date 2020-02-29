@@ -1124,7 +1124,7 @@ void Viewport::set_world(const Ref<World> &p_world) {
 		_propagate_exit_world(this);
 
 	if (own_world.is_valid() && world.is_valid()) {
-		world->disconnect_compat(CoreStringNames::get_singleton()->changed, this, "_own_world_changed");
+		world->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Viewport::_own_world_changed));
 	}
 
 	world = p_world;
@@ -1132,7 +1132,7 @@ void Viewport::set_world(const Ref<World> &p_world) {
 	if (own_world.is_valid()) {
 		if (world.is_valid()) {
 			own_world = world->duplicate();
-			world->connect_compat(CoreStringNames::get_singleton()->changed, this, "_own_world_changed");
+			world->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Viewport::_own_world_changed));
 		} else {
 			own_world = Ref<World>(memnew(World));
 		}
@@ -2473,7 +2473,7 @@ List<Control *>::Element *Viewport::_gui_add_root_control(Control *p_control) {
 
 List<Control *>::Element *Viewport::_gui_add_subwindow_control(Control *p_control) {
 
-	p_control->connect_compat("visibility_changed", this, "_subwindow_visibility_changed");
+	p_control->connect("visibility_changed", callable_mp(this, &Viewport::_subwindow_visibility_changed));
 
 	if (p_control->is_visible_in_tree()) {
 		gui.subwindow_order_dirty = true;
@@ -2568,7 +2568,7 @@ void Viewport::_gui_remove_subwindow_control(List<Control *>::Element *SI) {
 
 	Control *control = SI->get();
 
-	control->disconnect_compat("visibility_changed", this, "_subwindow_visibility_changed");
+	control->disconnect("visibility_changed", callable_mp(this, &Viewport::_subwindow_visibility_changed));
 
 	List<Control *>::Element *E = gui.subwindows.find(control);
 	if (E)
@@ -2850,12 +2850,12 @@ void Viewport::set_use_own_world(bool p_world) {
 	if (!p_world) {
 		own_world = Ref<World>();
 		if (world.is_valid()) {
-			world->disconnect_compat(CoreStringNames::get_singleton()->changed, this, "_own_world_changed");
+			world->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Viewport::_own_world_changed));
 		}
 	} else {
 		if (world.is_valid()) {
 			own_world = world->duplicate();
-			world->connect_compat(CoreStringNames::get_singleton()->changed, this, "_own_world_changed");
+			world->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Viewport::_own_world_changed));
 		} else {
 			own_world = Ref<World>(memnew(World));
 		}
@@ -3194,10 +3194,6 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_canvas_item_texture_repeat", "mode"), &Viewport::set_default_canvas_item_texture_repeat);
 	ClassDB::bind_method(D_METHOD("get_default_canvas_item_texture_repeat"), &Viewport::get_default_canvas_item_texture_repeat);
 
-	ClassDB::bind_method(D_METHOD("_subwindow_visibility_changed"), &Viewport::_subwindow_visibility_changed);
-
-	ClassDB::bind_method(D_METHOD("_own_world_changed"), &Viewport::_own_world_changed);
-
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "arvr"), "set_use_arvr", "use_arvr");
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
@@ -3360,7 +3356,7 @@ Viewport::Viewport() {
 
 	//gui.tooltip_timer->force_parent_owned();
 	gui.tooltip_delay = GLOBAL_DEF("gui/timers/tooltip_delay_sec", 0.5);
-	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/tooltip_delay_sec", PropertyInfo(Variant::REAL, "gui/timers/tooltip_delay_sec", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater")); // No negative numbers
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/tooltip_delay_sec", PropertyInfo(Variant::FLOAT, "gui/timers/tooltip_delay_sec", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater")); // No negative numbers
 
 	gui.tooltip = NULL;
 	gui.tooltip_label = NULL;

@@ -38,9 +38,9 @@
 
 class EditorDebuggerTree;
 
-class EditorDebuggerNode : public TabContainer {
+class EditorDebuggerNode : public MarginContainer {
 
-	GDCLASS(EditorDebuggerNode, TabContainer);
+	GDCLASS(EditorDebuggerNode, MarginContainer);
 
 private:
 	enum Options {
@@ -59,7 +59,7 @@ private:
 
 		bool operator<(const Breakpoint &p_b) const {
 			if (line == p_b.line)
-				return line < p_b.line;
+				return source < p_b.source;
 			return line < p_b.line;
 		}
 
@@ -72,6 +72,7 @@ private:
 	};
 
 	Ref<TCP_Server> server = NULL;
+	TabContainer *tabs = NULL;
 	Button *debugger_button = NULL;
 	MenuButton *script_menu = NULL;
 
@@ -89,7 +90,7 @@ private:
 	ScriptEditorDebugger::CameraOverride camera_override = ScriptEditorDebugger::OVERRIDE_NONE;
 	Map<Breakpoint, bool> breakpoints;
 
-	ScriptEditorDebugger *_add_debugger(String p_name);
+	ScriptEditorDebugger *_add_debugger();
 	EditorDebuggerRemoteObject *get_inspected_remote_object();
 
 	friend class DebuggerEditorPlugin;

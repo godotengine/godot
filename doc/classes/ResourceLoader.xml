@@ -68,16 +68,34 @@
 				Returns an empty resource if no ResourceFormatLoader could handle the file.
 			</description>
 		</method>
-		<method name="load_interactive">
-			<return type="ResourceInteractiveLoader">
+		<method name="load_threaded_get">
+			<return type="Resource">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="load_threaded_get_status">
+			<return type="int" enum="ResourceLoader.ThreadLoadStatus">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="progress" type="Array" default="[  ]">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="load_threaded_request">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
 			<argument index="1" name="type_hint" type="String" default="&quot;&quot;">
 			</argument>
+			<argument index="2" name="use_sub_threads" type="bool" default="false">
+			</argument>
 			<description>
-				Starts loading a resource interactively. The returned [ResourceInteractiveLoader] object allows to load with high granularity, calling its [method ResourceInteractiveLoader.poll] method successively to load chunks.
-				An optional [code]type_hint[/code] can be used to further specify the [Resource] type that should be handled by the [ResourceFormatLoader].
 			</description>
 		</method>
 		<method name="set_abort_on_missing_resources">
@@ -91,5 +109,13 @@
 		</method>
 	</methods>
 	<constants>
+		<constant name="THREAD_LOAD_INVALID_RESOURCE" value="0" enum="ThreadLoadStatus">
+		</constant>
+		<constant name="THREAD_LOAD_IN_PROGRESS" value="1" enum="ThreadLoadStatus">
+		</constant>
+		<constant name="THREAD_LOAD_FAILED" value="2" enum="ThreadLoadStatus">
+		</constant>
+		<constant name="THREAD_LOAD_LOADED" value="3" enum="ThreadLoadStatus">
+		</constant>
 	</constants>
 </class>

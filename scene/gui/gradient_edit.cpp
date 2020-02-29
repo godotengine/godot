@@ -302,8 +302,8 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 void GradientEdit::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (!picker->is_connected_compat("color_changed", this, "_color_changed")) {
-			picker->connect_compat("color_changed", this, "_color_changed");
+		if (!picker->is_connected("color_changed", callable_mp(this, &GradientEdit::_color_changed))) {
+			picker->connect("color_changed", callable_mp(this, &GradientEdit::_color_changed));
 		}
 	}
 	if (p_what == NOTIFICATION_DRAW) {
@@ -490,6 +490,5 @@ Vector<Gradient::Point> &GradientEdit::get_points() {
 
 void GradientEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_gui_input"), &GradientEdit::_gui_input);
-	ClassDB::bind_method(D_METHOD("_color_changed"), &GradientEdit::_color_changed);
 	ADD_SIGNAL(MethodInfo("ramp_changed"));
 }

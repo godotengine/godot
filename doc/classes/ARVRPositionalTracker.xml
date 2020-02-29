@@ -34,7 +34,7 @@
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<description>
 				Returns the controller or anchor point's name if available.

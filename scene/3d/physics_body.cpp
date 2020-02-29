@@ -180,14 +180,15 @@ PhysicsBody::PhysicsBody(PhysicsServer::BodyMode p_mode) :
 
 void StaticBody::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
 	if (physics_material_override.is_valid()) {
-		if (physics_material_override->is_connected_compat(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics"))
-			physics_material_override->disconnect_compat(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics");
+		if (physics_material_override->is_connected(CoreStringNames::get_singleton()->changed, callable_mp(this, &StaticBody::_reload_physics_characteristics))) {
+			physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &StaticBody::_reload_physics_characteristics));
+		}
 	}
 
 	physics_material_override = p_physics_material_override;
 
 	if (physics_material_override.is_valid()) {
-		physics_material_override->connect_compat(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics");
+		physics_material_override->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &StaticBody::_reload_physics_characteristics));
 	}
 	_reload_physics_characteristics();
 }
@@ -226,8 +227,6 @@ void StaticBody::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_physics_material_override", "physics_material_override"), &StaticBody::set_physics_material_override);
 	ClassDB::bind_method(D_METHOD("get_physics_material_override"), &StaticBody::get_physics_material_override);
-
-	ClassDB::bind_method(D_METHOD("_reload_physics_characteristics"), &StaticBody::_reload_physics_characteristics);
 
 	ClassDB::bind_method(D_METHOD("get_collision_exceptions"), &PhysicsBody::get_collision_exceptions);
 	ClassDB::bind_method(D_METHOD("add_collision_exception_with", "body"), &PhysicsBody::add_collision_exception_with);
@@ -322,8 +321,8 @@ void RigidBody::_body_inout(int p_status, ObjectID p_instance, int p_body_shape,
 			//E->get().rc=0;
 			E->get().in_tree = node && node->is_inside_tree();
 			if (node) {
-				node->connect_compat(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_body_enter_tree, make_binds(objid));
-				node->connect_compat(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree, make_binds(objid));
+				node->connect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody::_body_enter_tree), make_binds(objid));
+				node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody::_body_exit_tree), make_binds(objid));
 				if (E->get().in_tree) {
 					emit_signal(SceneStringNames::get_singleton()->body_entered, node);
 				}
@@ -349,8 +348,8 @@ void RigidBody::_body_inout(int p_status, ObjectID p_instance, int p_body_shape,
 		if (E->get().shapes.empty()) {
 
 			if (node) {
-				node->disconnect_compat(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_body_enter_tree);
-				node->disconnect_compat(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
+				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody::_body_enter_tree));
+				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody::_body_exit_tree));
 				if (in_tree)
 					emit_signal(SceneStringNames::get_singleton()->body_exited, node);
 			}
@@ -550,14 +549,15 @@ real_t RigidBody::get_weight() const {
 
 void RigidBody::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
 	if (physics_material_override.is_valid()) {
-		if (physics_material_override->is_connected_compat(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics"))
-			physics_material_override->disconnect_compat(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics");
+		if (physics_material_override->is_connected(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidBody::_reload_physics_characteristics))) {
+			physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidBody::_reload_physics_characteristics));
+		}
 	}
 
 	physics_material_override = p_physics_material_override;
 
 	if (physics_material_override.is_valid()) {
-		physics_material_override->connect_compat(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics");
+		physics_material_override->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidBody::_reload_physics_characteristics));
 	}
 	_reload_physics_characteristics();
 }
@@ -737,9 +737,8 @@ void RigidBody::set_contact_monitor(bool p_enabled) {
 			Node *node = Object::cast_to<Node>(obj);
 
 			if (node) {
-
-				node->disconnect_compat(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_body_enter_tree);
-				node->disconnect_compat(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
+				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody::_body_enter_tree));
+				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody::_body_exit_tree));
 			}
 		}
 
@@ -814,8 +813,6 @@ void RigidBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_material_override", "physics_material_override"), &RigidBody::set_physics_material_override);
 	ClassDB::bind_method(D_METHOD("get_physics_material_override"), &RigidBody::get_physics_material_override);
 
-	ClassDB::bind_method(D_METHOD("_reload_physics_characteristics"), &RigidBody::_reload_physics_characteristics);
-
 	ClassDB::bind_method(D_METHOD("set_linear_velocity", "linear_velocity"), &RigidBody::set_linear_velocity);
 	ClassDB::bind_method(D_METHOD("get_linear_velocity"), &RigidBody::get_linear_velocity);
 
@@ -860,8 +857,6 @@ void RigidBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_able_to_sleep"), &RigidBody::is_able_to_sleep);
 
 	ClassDB::bind_method(D_METHOD("_direct_state_changed"), &RigidBody::_direct_state_changed);
-	ClassDB::bind_method(D_METHOD("_body_enter_tree"), &RigidBody::_body_enter_tree);
-	ClassDB::bind_method(D_METHOD("_body_exit_tree"), &RigidBody::_body_exit_tree);
 
 	ClassDB::bind_method(D_METHOD("set_axis_lock", "axis", "lock"), &RigidBody::set_axis_lock);
 	ClassDB::bind_method(D_METHOD("get_axis_lock", "axis"), &RigidBody::get_axis_lock);
@@ -871,10 +866,10 @@ void RigidBody::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("_integrate_forces", PropertyInfo(Variant::OBJECT, "state", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsDirectBodyState")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Rigid,Static,Character,Kinematic"), "set_mode", "get_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "mass", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01"), "set_mass", "get_mass");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "weight", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01", PROPERTY_USAGE_EDITOR), "set_weight", "get_weight");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01"), "set_mass", "get_mass");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "weight", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01", PROPERTY_USAGE_EDITOR), "set_weight", "get_weight");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material_override", "get_physics_material_override");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "gravity_scale", PROPERTY_HINT_RANGE, "-128,128,0.01"), "set_gravity_scale", "get_gravity_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_scale", PROPERTY_HINT_RANGE, "-128,128,0.01"), "set_gravity_scale", "get_gravity_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "custom_integrator"), "set_use_custom_integrator", "is_using_custom_integrator");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "continuous_cd"), "set_use_continuous_collision_detection", "is_using_continuous_collision_detection");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "contacts_reported", PROPERTY_HINT_RANGE, "0,64,1,or_greater"), "set_max_contacts_reported", "get_max_contacts_reported");
@@ -890,10 +885,10 @@ void RigidBody::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_z"), "set_axis_lock", "get_axis_lock", PhysicsServer::BODY_AXIS_ANGULAR_Z);
 	ADD_GROUP("Linear", "linear_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "linear_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_linear_damp", "get_linear_damp");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_linear_damp", "get_linear_damp");
 	ADD_GROUP("Angular", "angular_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "angular_velocity"), "set_angular_velocity", "get_angular_velocity");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
 
 	ADD_SIGNAL(MethodInfo("body_shape_entered", PropertyInfo(Variant::INT, "body_id"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape"), PropertyInfo(Variant::INT, "local_shape")));
 	ADD_SIGNAL(MethodInfo("body_shape_exited", PropertyInfo(Variant::INT, "body_id"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape"), PropertyInfo(Variant::INT, "local_shape")));
@@ -1297,7 +1292,7 @@ void KinematicBody::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "move_lock_y", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_axis_lock", "get_axis_lock", PhysicsServer::BODY_AXIS_LINEAR_Y);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "move_lock_z", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_axis_lock", "get_axis_lock", PhysicsServer::BODY_AXIS_LINEAR_Z);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_safe_margin", "get_safe_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_safe_margin", "get_safe_margin");
 }
 
 void KinematicBody::_direct_state_changed(Object *p_state) {
@@ -1514,9 +1509,9 @@ bool PhysicalBone::PinJointData::_get(const StringName &p_name, Variant &r_ret) 
 void PhysicalBone::PinJointData::_get_property_list(List<PropertyInfo> *p_list) const {
 	JointData::_get_property_list(p_list);
 
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/bias", PROPERTY_HINT_RANGE, "0.01,0.99,0.01"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/damping", PROPERTY_HINT_RANGE, "0.01,8.0,0.01"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/impulse_clamp", PROPERTY_HINT_RANGE, "0.0,64.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/bias", PROPERTY_HINT_RANGE, "0.01,0.99,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/damping", PROPERTY_HINT_RANGE, "0.01,8.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/impulse_clamp", PROPERTY_HINT_RANGE, "0.0,64.0,0.01"));
 }
 
 bool PhysicalBone::ConeJointData::_set(const StringName &p_name, const Variant &p_value, RID j) {
@@ -1581,11 +1576,11 @@ bool PhysicalBone::ConeJointData::_get(const StringName &p_name, Variant &r_ret)
 void PhysicalBone::ConeJointData::_get_property_list(List<PropertyInfo> *p_list) const {
 	JointData::_get_property_list(p_list);
 
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/swing_span", PROPERTY_HINT_RANGE, "-180,180,0.01"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/twist_span", PROPERTY_HINT_RANGE, "-40000,40000,0.1,or_lesser,or_greater"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/bias", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/softness", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/relaxation", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/swing_span", PROPERTY_HINT_RANGE, "-180,180,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/twist_span", PROPERTY_HINT_RANGE, "-40000,40000,0.1,or_lesser,or_greater"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/bias", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/softness", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/relaxation", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
 }
 
 bool PhysicalBone::HingeJointData::_set(const StringName &p_name, const Variant &p_value, RID j) {
@@ -1658,11 +1653,11 @@ void PhysicalBone::HingeJointData::_get_property_list(List<PropertyInfo> *p_list
 	JointData::_get_property_list(p_list);
 
 	p_list->push_back(PropertyInfo(Variant::BOOL, "joint_constraints/angular_limit_enabled"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/angular_limit_upper", PROPERTY_HINT_RANGE, "-180,180,0.01"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/angular_limit_lower", PROPERTY_HINT_RANGE, "-180,180,0.01"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/angular_limit_bias", PROPERTY_HINT_RANGE, "0.01,0.99,0.01"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/angular_limit_softness", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/angular_limit_relaxation", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/angular_limit_upper", PROPERTY_HINT_RANGE, "-180,180,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/angular_limit_lower", PROPERTY_HINT_RANGE, "-180,180,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/angular_limit_bias", PROPERTY_HINT_RANGE, "0.01,0.99,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/angular_limit_softness", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/angular_limit_relaxation", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
 }
 
 bool PhysicalBone::SliderJointData::_set(const StringName &p_name, const Variant &p_value, RID j) {
@@ -1762,17 +1757,17 @@ bool PhysicalBone::SliderJointData::_get(const StringName &p_name, Variant &r_re
 void PhysicalBone::SliderJointData::_get_property_list(List<PropertyInfo> *p_list) const {
 	JointData::_get_property_list(p_list);
 
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/linear_limit_upper"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/linear_limit_lower"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/linear_limit_softness", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/linear_limit_restitution", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/linear_limit_damping", PROPERTY_HINT_RANGE, "0,16.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/linear_limit_upper"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/linear_limit_lower"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/linear_limit_softness", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/linear_limit_restitution", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/linear_limit_damping", PROPERTY_HINT_RANGE, "0,16.0,0.01"));
 
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/angular_limit_upper", PROPERTY_HINT_RANGE, "-180,180,0.01"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/angular_limit_lower", PROPERTY_HINT_RANGE, "-180,180,0.01"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/angular_limit_softness", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/angular_limit_restitution", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/angular_limit_damping", PROPERTY_HINT_RANGE, "0,16.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/angular_limit_upper", PROPERTY_HINT_RANGE, "-180,180,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/angular_limit_lower", PROPERTY_HINT_RANGE, "-180,180,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/angular_limit_softness", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/angular_limit_restitution", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/angular_limit_damping", PROPERTY_HINT_RANGE, "0,16.0,0.01"));
 }
 
 bool PhysicalBone::SixDOFJointData::_set(const StringName &p_name, const Variant &p_value, RID j) {
@@ -1986,26 +1981,26 @@ void PhysicalBone::SixDOFJointData::_get_property_list(List<PropertyInfo> *p_lis
 	const StringName axis_names[] = { "x", "y", "z" };
 	for (int i = 0; i < 3; ++i) {
 		p_list->push_back(PropertyInfo(Variant::BOOL, "joint_constraints/" + axis_names[i] + "/linear_limit_enabled"));
-		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/linear_limit_upper"));
-		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/linear_limit_lower"));
-		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/linear_limit_softness", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/linear_limit_upper"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/linear_limit_lower"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/linear_limit_softness", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
 		p_list->push_back(PropertyInfo(Variant::BOOL, "joint_constraints/" + axis_names[i] + "/linear_spring_enabled"));
-		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/linear_spring_stiffness"));
-		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/linear_spring_damping"));
-		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/linear_equilibrium_point"));
-		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/linear_restitution", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
-		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/linear_damping", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/linear_spring_stiffness"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/linear_spring_damping"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/linear_equilibrium_point"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/linear_restitution", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/linear_damping", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
 		p_list->push_back(PropertyInfo(Variant::BOOL, "joint_constraints/" + axis_names[i] + "/angular_limit_enabled"));
-		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/angular_limit_upper", PROPERTY_HINT_RANGE, "-180,180,0.01"));
-		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/angular_limit_lower", PROPERTY_HINT_RANGE, "-180,180,0.01"));
-		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/angular_limit_softness", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
-		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/angular_restitution", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
-		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/angular_damping", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
-		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/erp"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/angular_limit_upper", PROPERTY_HINT_RANGE, "-180,180,0.01"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/angular_limit_lower", PROPERTY_HINT_RANGE, "-180,180,0.01"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/angular_limit_softness", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/angular_restitution", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/angular_damping", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/erp"));
 		p_list->push_back(PropertyInfo(Variant::BOOL, "joint_constraints/" + axis_names[i] + "/angular_spring_enabled"));
-		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/angular_spring_stiffness"));
-		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/angular_spring_damping"));
-		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/angular_equilibrium_point"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/angular_spring_stiffness"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/angular_spring_damping"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_constraints/" + axis_names[i] + "/angular_equilibrium_point"));
 	}
 }
 
@@ -2169,11 +2164,11 @@ void PhysicalBone::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "body_offset"), "set_body_offset", "get_body_offset");
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "mass", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01"), "set_mass", "get_mass");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "weight", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01"), "set_weight", "get_weight");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "friction", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_friction", "get_friction");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_bounce", "get_bounce");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "gravity_scale", PROPERTY_HINT_RANGE, "-10,10,0.01"), "set_gravity_scale", "get_gravity_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01"), "set_mass", "get_mass");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "weight", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01"), "set_weight", "get_weight");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "friction", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_friction", "get_friction");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_bounce", "get_bounce");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_scale", PROPERTY_HINT_RANGE, "-10,10,0.01"), "set_gravity_scale", "get_gravity_scale");
 
 	BIND_ENUM_CONSTANT(JOINT_TYPE_NONE);
 	BIND_ENUM_CONSTANT(JOINT_TYPE_PIN);

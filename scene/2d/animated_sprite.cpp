@@ -475,10 +475,10 @@ void AnimatedSprite::_notification(int p_what) {
 void AnimatedSprite::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 
 	if (frames.is_valid())
-		frames->disconnect_compat("changed", this, "_res_changed");
+		frames->disconnect("changed", callable_mp(this, &AnimatedSprite::_res_changed));
 	frames = p_frames;
 	if (frames.is_valid())
-		frames->connect_compat("changed", this, "_res_changed");
+		frames->connect("changed", callable_mp(this, &AnimatedSprite::_res_changed));
 
 	if (!frames.is_valid()) {
 		frame = 0;
@@ -735,8 +735,6 @@ void AnimatedSprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shininess", "shininess"), &AnimatedSprite::set_shininess);
 	ClassDB::bind_method(D_METHOD("get_shininess"), &AnimatedSprite::get_shininess);
 
-	ClassDB::bind_method(D_METHOD("_res_changed"), &AnimatedSprite::_res_changed);
-
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 	ADD_SIGNAL(MethodInfo("animation_finished"));
 
@@ -744,11 +742,11 @@ void AnimatedSprite::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation"), "set_animation", "get_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "speed_scale"), "set_speed_scale", "get_speed_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");
 	ADD_GROUP("Lighting", "");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "specular_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_specular_color", "get_specular_color");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "shininess", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_shininess", "get_shininess");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "shininess", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_shininess", "get_shininess");
 	ADD_GROUP("Offset", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");

@@ -26,7 +26,7 @@
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<description>
 				Returns the name of this interface (OpenVR, OpenHMD, ARKit, etc).

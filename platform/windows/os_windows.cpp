@@ -47,7 +47,6 @@
 
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
-#include "drivers/windows/mutex_windows.h"
 #include "drivers/windows/rw_lock_windows.h"
 #include "drivers/windows/semaphore_windows.h"
 #include "drivers/windows/thread_windows.h"
@@ -230,7 +229,6 @@ void OS_Windows::initialize_core() {
 
 	ThreadWindows::make_default();
 	SemaphoreWindows::make_default();
-	MutexWindows::make_default();
 	RWLockWindows::make_default();
 
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
@@ -709,7 +707,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					break;
 				}
 			}
-			FALLTHROUGH;
+			[[fallthrough]];
 		case WM_MBUTTONDOWN:
 		case WM_MBUTTONUP:
 		case WM_RBUTTONDOWN:
@@ -984,7 +982,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			if (wParam==VK_WIN) TODO wtf is this?
 				meta_mem=uMsg==WM_KEYDOWN;
 			*/
-			FALLTHROUGH;
+			[[fallthrough]];
 		}
 		case WM_CHAR: {
 

@@ -174,7 +174,7 @@ void SoftBody::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	const int pinned_points_indices_size = pinned_points.size();
 
-	p_list->push_back(PropertyInfo(Variant::PACKED_INT_ARRAY, "pinned_points"));
+	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "pinned_points"));
 
 	for (int i = 0; i < pinned_points_indices_size; ++i) {
 		p_list->push_back(PropertyInfo(Variant::INT, "attachments/" + itos(i) + "/point_index"));
@@ -319,8 +319,6 @@ void SoftBody::_notification(int p_what) {
 
 void SoftBody::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_draw_soft_mesh"), &SoftBody::_draw_soft_mesh);
-
 	ClassDB::bind_method(D_METHOD("set_collision_mask", "collision_mask"), &SoftBody::set_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_collision_mask"), &SoftBody::get_collision_mask);
 
@@ -376,14 +374,14 @@ void SoftBody::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "parent_collision_ignore", PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE, "Parent collision object"), "set_parent_collision_ignore", "get_parent_collision_ignore");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "simulation_precision", PROPERTY_HINT_RANGE, "1,100,1"), "set_simulation_precision", "get_simulation_precision");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "total_mass", PROPERTY_HINT_RANGE, "0.01,10000,1"), "set_total_mass", "get_total_mass");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "linear_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_linear_stiffness", "get_linear_stiffness");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "areaAngular_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_areaAngular_stiffness", "get_areaAngular_stiffness");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "volume_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_volume_stiffness", "get_volume_stiffness");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pressure_coefficient"), "set_pressure_coefficient", "get_pressure_coefficient");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "damping_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_damping_coefficient", "get_damping_coefficient");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "drag_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_coefficient", "get_drag_coefficient");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pose_matching_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_pose_matching_coefficient", "get_pose_matching_coefficient");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "total_mass", PROPERTY_HINT_RANGE, "0.01,10000,1"), "set_total_mass", "get_total_mass");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_linear_stiffness", "get_linear_stiffness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "areaAngular_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_areaAngular_stiffness", "get_areaAngular_stiffness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_volume_stiffness", "get_volume_stiffness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure_coefficient"), "set_pressure_coefficient", "get_pressure_coefficient");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_damping_coefficient", "get_damping_coefficient");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "drag_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_coefficient", "get_drag_coefficient");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pose_matching_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_pose_matching_coefficient", "get_pose_matching_coefficient");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ray_pickable"), "set_ray_pickable", "is_ray_pickable");
 }
@@ -464,12 +462,12 @@ void SoftBody::prepare_physics_server() {
 
 		become_mesh_owner();
 		PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
-		VS::get_singleton()->connect_compat("frame_pre_draw", this, "_draw_soft_mesh");
+		VS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &SoftBody::_draw_soft_mesh));
 	} else {
 
 		PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, NULL);
-		if (VS::get_singleton()->is_connected_compat("frame_pre_draw", this, "_draw_soft_mesh")) {
-			VS::get_singleton()->disconnect_compat("frame_pre_draw", this, "_draw_soft_mesh");
+		if (VS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &SoftBody::_draw_soft_mesh))) {
+			VS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &SoftBody::_draw_soft_mesh));
 		}
 	}
 }

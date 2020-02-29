@@ -107,7 +107,7 @@
 		<method name="get_bus_index" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="bus_name" type="String">
+			<argument index="0" name="bus_name" type="StringName">
 			</argument>
 			<description>
 				Returns the index of the bus with the name [code]bus_name[/code].
@@ -145,7 +145,7 @@
 			</description>
 		</method>
 		<method name="get_bus_send" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="bus_idx" type="int">
 			</argument>
@@ -341,7 +341,7 @@
 			</return>
 			<argument index="0" name="bus_idx" type="int">
 			</argument>
-			<argument index="1" name="send" type="String">
+			<argument index="1" name="send" type="StringName">
 			</argument>
 			<description>
 				Connects the output of the bus at [code]bus_idx[/code] to the bus named [code]send[/code].

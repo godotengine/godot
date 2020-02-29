@@ -43,7 +43,7 @@
 		<method name="handles_type" qualifiers="virtual">
 			<return type="bool">
 			</return>
-			<argument index="0" name="typename" type="String">
+			<argument index="0" name="typename" type="StringName">
 			</argument>
 			<description>
 				Tells which resource class this loader can load.

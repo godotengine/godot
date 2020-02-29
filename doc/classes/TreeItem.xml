@@ -30,7 +30,7 @@
 		<method name="call_recursive" qualifiers="vararg">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="method" type="String">
+			<argument index="0" name="method" type="StringName">
 			</argument>
 			<description>
 				Calls the [code]method[/code] on the actual TreeItem and its children recursively. Pass parameters as a comma separated list.
@@ -452,7 +452,7 @@
 			</argument>
 			<argument index="1" name="object" type="Object">
 			</argument>
-			<argument index="2" name="callback" type="String">
+			<argument index="2" name="callback" type="StringName">
 			</argument>
 			<description>
 				Sets the given column's custom draw callback to [code]callback[/code] method on [code]object[/code].

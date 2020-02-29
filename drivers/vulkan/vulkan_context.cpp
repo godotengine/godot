@@ -29,17 +29,19 @@
 /*************************************************************************/
 
 #include "vulkan_context.h"
+
 #include "core/engine.h"
 #include "core/project_settings.h"
 #include "core/ustring.h"
 #include "core/version.h"
+
 #include "vk_enum_string_helper.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
-#define VULKAN_DEBUG(m_text) print_line(m_text)
 #define APP_SHORT_NAME "GodotEngine"
 
 VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -47,17 +49,21 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(VkDebugU
 		const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
 		void *pUserData) {
 
-	//This error needs to be ignored because the AMD allocator will mix up memory types on IGP processors
+	// This error needs to be ignored because the AMD allocator will mix up memory types on IGP processors.
 	if (strstr(pCallbackData->pMessage, "Mapping an image with layout") != NULL &&
 			strstr(pCallbackData->pMessage, "can result in undefined behavior if this memory is used by the device") != NULL) {
 		return VK_FALSE;
 	}
-	// This needs to be ignored because Validator is wrong here
+	// This needs to be ignored because Validator is wrong here.
 	if (strstr(pCallbackData->pMessage, "SPIR-V module not valid: Pointer operand") != NULL &&
 			strstr(pCallbackData->pMessage, "must be a memory object") != NULL) {
 		return VK_FALSE;
 	}
-	if (strstr(pCallbackData->pMessageIdName, "UNASSIGNED-CoreValidation-DrawState-ClearCmdBeforeDraw") != NULL) {
+	// Workaround for Vulkan-Loader usability bug: https://github.com/KhronosGroup/Vulkan-Loader/issues/262.
+	if (strstr(pCallbackData->pMessage, "wrong ELF class: ELFCLASS32") != NULL) {
+		return VK_FALSE;
+	}
+	if (pCallbackData->pMessageIdName && strstr(pCallbackData->pMessageIdName, "UNASSIGNED-CoreValidation-DrawState-ClearCmdBeforeDraw") != NULL) {
 		return VK_FALSE;
 	}
 
@@ -400,15 +406,11 @@ Error VulkanContext::_create_physical_device() {
 				if (!strcmp(VK_KHR_INCREMENTAL_PRESENT_EXTENSION_NAME, device_extensions[i].extensionName)) {
 					extension_names[enabled_extension_count++] = VK_KHR_INCREMENTAL_PRESENT_EXTENSION_NAME;
 					VK_KHR_incremental_present_enabled = true;
-					VULKAN_DEBUG("VK_KHR_incremental_present extension enabled\n");
 				}
 				if (enabled_extension_count >= MAX_EXTENSIONS) {
 					free(device_extensions);
 					ERR_FAIL_V_MSG(ERR_BUG, "Enabled extension count reaches MAX_EXTENSIONS, BUG");
 				}
-			}
-			if (!VK_KHR_incremental_present_enabled) {
-				VULKAN_DEBUG("VK_KHR_incremental_present extension NOT AVAILABLE\n");
 			}
 		}
 
@@ -422,15 +424,11 @@ Error VulkanContext::_create_physical_device() {
 				if (!strcmp(VK_GOOGLE_DISPLAY_TIMING_EXTENSION_NAME, device_extensions[i].extensionName)) {
 					extension_names[enabled_extension_count++] = VK_GOOGLE_DISPLAY_TIMING_EXTENSION_NAME;
 					VK_GOOGLE_display_timing_enabled = true;
-					VULKAN_DEBUG("VK_GOOGLE_display_timing extension enabled\n");
 				}
 				if (enabled_extension_count >= MAX_EXTENSIONS) {
 					free(device_extensions);
 					ERR_FAIL_V_MSG(ERR_BUG, "Enabled extension count reaches MAX_EXTENSIONS, BUG");
 				}
-			}
-			if (!VK_GOOGLE_display_timing_enabled) {
-				VULKAN_DEBUG("VK_GOOGLE_display_timing extension NOT AVAILABLE\n");
 			}
 		}
 
@@ -1143,7 +1141,7 @@ Error VulkanContext::initialize() {
 	if (err) {
 		return err;
 	}
-	print_line("Vulkan physical device creation success o_O");
+
 	return OK;
 }
 

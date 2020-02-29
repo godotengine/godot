@@ -1124,7 +1124,7 @@ static bool _guess_expression_type(GDScriptCompletionContext &p_context, const G
 						v2 = 1;
 						v2_use_value = false;
 					}
-					if (vop == Variant::OP_DIVIDE && v2.get_type() == Variant::REAL) {
+					if (vop == Variant::OP_DIVIDE && v2.get_type() == Variant::FLOAT) {
 						v2 = 1.0;
 						v2_use_value = false;
 					}
@@ -2172,8 +2172,8 @@ static void _find_identifiers(const GDScriptCompletionContext &p_context, bool p
 	}
 
 	static const char *_type_names[Variant::VARIANT_MAX] = {
-		"null", "bool", "int", "float", "String", "Vector2", "Rect2", "Vector3", "Transform2D", "Plane", "Quat", "AABB", "Basis", "Transform",
-		"Color", "NodePath", "RID", "Object", "Dictionary", "Array", "PackedByteArray", "PackedIntArray", "PackedRealArray", "PackedStringArray",
+		"null", "bool", "int", "float", "String", "Vector2", "Vector2i", "Rect2", "Rect2i", "Vector3", "Vector3i", "Transform2D", "Plane", "Quat", "AABB", "Basis", "Transform",
+		"Color", "StringName", "NodePath", "RID", "Object", "Callable", "Signal", "Dictionary", "Array", "PackedByteArray", "PackedInt32Array", "PackedInt64Array", "PackedFloat32Array", "PackedFloat64Array", "PackedStringArray",
 		"PackedVector2Array", "PackedVector3Array", "PackedColorArray"
 	};
 
@@ -2565,7 +2565,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 		} break;
 		case GDScriptParser::COMPLETION_FUNCTION: {
 			is_function = true;
-			FALLTHROUGH;
+			[[fallthrough]];
 		}
 		case GDScriptParser::COMPLETION_IDENTIFIER: {
 			_find_identifiers(context, is_function, options);
@@ -2608,7 +2608,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 		} break;
 		case GDScriptParser::COMPLETION_METHOD: {
 			is_function = true;
-			FALLTHROUGH;
+			[[fallthrough]];
 		}
 		case GDScriptParser::COMPLETION_INDEX: {
 			const GDScriptParser::Node *node = parser.get_completion_node();
@@ -3330,7 +3330,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 		case GDScriptParser::COMPLETION_PARENT_FUNCTION:
 		case GDScriptParser::COMPLETION_FUNCTION: {
 			is_function = true;
-			FALLTHROUGH;
+			[[fallthrough]];
 		}
 		case GDScriptParser::COMPLETION_IDENTIFIER: {
 
@@ -3462,7 +3462,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 		} break;
 		case GDScriptParser::COMPLETION_METHOD: {
 			is_function = true;
-			FALLTHROUGH;
+			[[fallthrough]];
 		}
 		case GDScriptParser::COMPLETION_INDEX: {
 			const GDScriptParser::Node *node = parser.get_completion_node();

@@ -231,11 +231,17 @@ void EditorPropertyArray::update_property() {
 		case Variant::PACKED_BYTE_ARRAY: {
 			arrtype = "PackedByteArray";
 		} break;
-		case Variant::PACKED_INT_ARRAY: {
-			arrtype = "PackedIntArray";
+		case Variant::PACKED_INT32_ARRAY: {
+			arrtype = "PackedInt32Array";
 		} break;
-		case Variant::PACKED_REAL_ARRAY: {
-			arrtype = "PackedRealArray";
+		case Variant::PACKED_FLOAT32_ARRAY: {
+			arrtype = "PackedFloat32Array";
+		} break;
+		case Variant::PACKED_INT64_ARRAY: {
+			arrtype = "PackedInt64Array";
+		} break;
+		case Variant::PACKED_FLOAT64_ARRAY: {
+			arrtype = "PackedFloat64Array";
 		} break;
 		case Variant::PACKED_STRING_ARRAY: {
 			arrtype = "PackedStringArray";
@@ -290,7 +296,7 @@ void EditorPropertyArray::update_property() {
 			length->set_max(1000000);
 			length->set_h_size_flags(SIZE_EXPAND_FILL);
 			hbc->add_child(length);
-			length->connect_compat("value_changed", this, "_length_changed");
+			length->connect("value_changed", callable_mp(this, &EditorPropertyArray::_length_changed));
 
 			page_hb = memnew(HBoxContainer);
 			vbox->add_child(page_hb);
@@ -301,7 +307,7 @@ void EditorPropertyArray::update_property() {
 			page->set_step(1);
 			page_hb->add_child(page);
 			page->set_h_size_flags(SIZE_EXPAND_FILL);
-			page->connect_compat("value_changed", this, "_page_changed");
+			page->connect("value_changed", callable_mp(this, &EditorPropertyArray::_page_changed));
 		} else {
 			//bye bye children of the box
 			while (vbox->get_child_count() > 2) {
@@ -353,8 +359,8 @@ void EditorPropertyArray::update_property() {
 			prop->set_object_and_property(object.ptr(), prop_name);
 			prop->set_label(itos(i + offset));
 			prop->set_selectable(false);
-			prop->connect_compat("property_changed", this, "_property_changed");
-			prop->connect_compat("object_id_selected", this, "_object_id_selected");
+			prop->connect("property_changed", callable_mp(this, &EditorPropertyArray::_property_changed));
+			prop->connect("object_id_selected", callable_mp(this, &EditorPropertyArray::_object_id_selected));
 			prop->set_h_size_flags(SIZE_EXPAND_FILL);
 
 			HBoxContainer *hb = memnew(HBoxContainer);
@@ -369,12 +375,12 @@ void EditorPropertyArray::update_property() {
 				Button *edit = memnew(Button);
 				edit->set_icon(get_icon("Edit", "EditorIcons"));
 				hb->add_child(edit);
-				edit->connect_compat("pressed", this, "_change_type", varray(edit, i + offset));
+				edit->connect("pressed", callable_mp(this, &EditorPropertyArray::_change_type), varray(edit, i + offset));
 			} else {
 
 				Button *remove = memnew(Button);
 				remove->set_icon(get_icon("Remove", "EditorIcons"));
-				remove->connect_compat("pressed", this, "_remove_pressed", varray(i + offset));
+				remove->connect("pressed", callable_mp(this, &EditorPropertyArray::_remove_pressed), varray(i + offset));
 				hb->add_child(remove);
 			}
 
@@ -484,14 +490,6 @@ void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint
 }
 
 void EditorPropertyArray::_bind_methods() {
-	ClassDB::bind_method("_edit_pressed", &EditorPropertyArray::_edit_pressed);
-	ClassDB::bind_method("_page_changed", &EditorPropertyArray::_page_changed);
-	ClassDB::bind_method("_length_changed", &EditorPropertyArray::_length_changed);
-	ClassDB::bind_method("_property_changed", &EditorPropertyArray::_property_changed, DEFVAL(String()), DEFVAL(false));
-	ClassDB::bind_method("_change_type", &EditorPropertyArray::_change_type);
-	ClassDB::bind_method("_change_type_menu", &EditorPropertyArray::_change_type_menu);
-	ClassDB::bind_method("_object_id_selected", &EditorPropertyArray::_object_id_selected);
-	ClassDB::bind_method("_remove_pressed", &EditorPropertyArray::_remove_pressed);
 }
 
 EditorPropertyArray::EditorPropertyArray() {
@@ -503,7 +501,7 @@ EditorPropertyArray::EditorPropertyArray() {
 	edit->set_flat(true);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit->set_clip_text(true);
-	edit->connect_compat("pressed", this, "_edit_pressed");
+	edit->connect("pressed", callable_mp(this, &EditorPropertyArray::_edit_pressed));
 	edit->set_toggle_mode(true);
 	add_child(edit);
 	add_focusable(edit);
@@ -513,7 +511,7 @@ EditorPropertyArray::EditorPropertyArray() {
 	updating = false;
 	change_type = memnew(PopupMenu);
 	add_child(change_type);
-	change_type->connect_compat("id_pressed", this, "_change_type_menu");
+	change_type->connect("id_pressed", callable_mp(this, &EditorPropertyArray::_change_type_menu));
 
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 		String type = Variant::get_type_name(Variant::Type(i));
@@ -661,7 +659,7 @@ void EditorPropertyDictionary::update_property() {
 			page->set_step(1);
 			page_hb->add_child(page);
 			page->set_h_size_flags(SIZE_EXPAND_FILL);
-			page->connect_compat("value_changed", this, "_page_changed");
+			page->connect("value_changed", callable_mp(this, &EditorPropertyDictionary::_page_changed));
 		} else {
 			// Queue children for deletion, deleting immediately might cause errors.
 			for (int i = 1; i < vbox->get_child_count(); i++) {
@@ -724,7 +722,7 @@ void EditorPropertyDictionary::update_property() {
 					prop = editor;
 
 				} break;
-				case Variant::REAL: {
+				case Variant::FLOAT: {
 
 					EditorPropertyFloat *editor = memnew(EditorPropertyFloat);
 					editor->setup(-100000, 100000, 0.001, true, false, true, true);
@@ -851,16 +849,28 @@ void EditorPropertyDictionary::update_property() {
 					editor->setup(Variant::PACKED_BYTE_ARRAY);
 					prop = editor;
 				} break;
-				case Variant::PACKED_INT_ARRAY: {
+				case Variant::PACKED_INT32_ARRAY: {
 
 					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::PACKED_INT_ARRAY);
+					editor->setup(Variant::PACKED_INT32_ARRAY);
 					prop = editor;
 				} break;
-				case Variant::PACKED_REAL_ARRAY: {
+				case Variant::PACKED_FLOAT32_ARRAY: {
 
 					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::PACKED_REAL_ARRAY);
+					editor->setup(Variant::PACKED_FLOAT32_ARRAY);
+					prop = editor;
+				} break;
+				case Variant::PACKED_INT64_ARRAY: {
+
+					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					editor->setup(Variant::PACKED_INT64_ARRAY);
+					prop = editor;
+				} break;
+				case Variant::PACKED_FLOAT64_ARRAY: {
+
+					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					editor->setup(Variant::PACKED_FLOAT64_ARRAY);
 					prop = editor;
 				} break;
 				case Variant::PACKED_STRING_ARRAY: {
@@ -922,8 +932,8 @@ void EditorPropertyDictionary::update_property() {
 			}
 
 			prop->set_selectable(false);
-			prop->connect_compat("property_changed", this, "_property_changed");
-			prop->connect_compat("object_id_selected", this, "_object_id_selected");
+			prop->connect("property_changed", callable_mp(this, &EditorPropertyDictionary::_property_changed));
+			prop->connect("object_id_selected", callable_mp(this, &EditorPropertyDictionary::_object_id_selected));
 
 			HBoxContainer *hb = memnew(HBoxContainer);
 			if (add_vbox) {
@@ -936,14 +946,14 @@ void EditorPropertyDictionary::update_property() {
 			Button *edit = memnew(Button);
 			edit->set_icon(get_icon("Edit", "EditorIcons"));
 			hb->add_child(edit);
-			edit->connect_compat("pressed", this, "_change_type", varray(edit, change_index));
+			edit->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_change_type), varray(edit, change_index));
 
 			prop->update_property();
 
 			if (i == amount + 1) {
 				Button *butt_add_item = memnew(Button);
 				butt_add_item->set_text(TTR("Add Key/Value Pair"));
-				butt_add_item->connect_compat("pressed", this, "_add_key_value");
+				butt_add_item->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_add_key_value));
 				add_vbox->add_child(butt_add_item);
 			}
 		}
@@ -987,13 +997,6 @@ void EditorPropertyDictionary::_page_changed(double p_page) {
 }
 
 void EditorPropertyDictionary::_bind_methods() {
-	ClassDB::bind_method("_edit_pressed", &EditorPropertyDictionary::_edit_pressed);
-	ClassDB::bind_method("_page_changed", &EditorPropertyDictionary::_page_changed);
-	ClassDB::bind_method("_property_changed", &EditorPropertyDictionary::_property_changed, DEFVAL(String()), DEFVAL(false));
-	ClassDB::bind_method("_change_type", &EditorPropertyDictionary::_change_type);
-	ClassDB::bind_method("_change_type_menu", &EditorPropertyDictionary::_change_type_menu);
-	ClassDB::bind_method("_add_key_value", &EditorPropertyDictionary::_add_key_value);
-	ClassDB::bind_method("_object_id_selected", &EditorPropertyDictionary::_object_id_selected);
 }
 
 EditorPropertyDictionary::EditorPropertyDictionary() {
@@ -1005,7 +1008,7 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	edit->set_flat(true);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit->set_clip_text(true);
-	edit->connect_compat("pressed", this, "_edit_pressed");
+	edit->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_edit_pressed));
 	edit->set_toggle_mode(true);
 	add_child(edit);
 	add_focusable(edit);
@@ -1014,7 +1017,7 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	updating = false;
 	change_type = memnew(PopupMenu);
 	add_child(change_type);
-	change_type->connect_compat("id_pressed", this, "_change_type_menu");
+	change_type->connect("id_pressed", callable_mp(this, &EditorPropertyDictionary::_change_type_menu));
 
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 		String type = Variant::get_type_name(Variant::Type(i));

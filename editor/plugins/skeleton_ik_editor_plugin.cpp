@@ -81,8 +81,6 @@ void SkeletonIKEditorPlugin::make_visible(bool p_visible) {
 }
 
 void SkeletonIKEditorPlugin::_bind_methods() {
-
-	ClassDB::bind_method("_play", &SkeletonIKEditorPlugin::_play);
 }
 
 SkeletonIKEditorPlugin::SkeletonIKEditorPlugin(EditorNode *p_node) {
@@ -93,7 +91,7 @@ SkeletonIKEditorPlugin::SkeletonIKEditorPlugin(EditorNode *p_node) {
 	play_btn->set_text(TTR("Play IK"));
 	play_btn->set_toggle_mode(true);
 	play_btn->hide();
-	play_btn->connect_compat("pressed", this, "_play");
+	play_btn->connect("pressed", callable_mp(this, &SkeletonIKEditorPlugin::_play));
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, play_btn);
 	skeleton_ik = NULL;
 }

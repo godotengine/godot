@@ -121,9 +121,7 @@ void RasterizerRD::initialize() {
 		String error;
 		copy_viewports_rd_shader = RD::get_singleton()->shader_create(source);
 		if (!copy_viewports_rd_shader.is_valid()) {
-			print_line("failed compilation: " + error);
-		} else {
-			print_line("compilation success");
+			print_line("Failed compilation: " + error);
 		}
 	}
 

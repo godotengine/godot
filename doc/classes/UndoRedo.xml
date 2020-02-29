@@ -36,7 +36,7 @@
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="method" type="String">
+			<argument index="1" name="method" type="StringName">
 			</argument>
 			<description>
 				Register a method that will be called when the action is committed.
@@ -47,7 +47,7 @@
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="property" type="String">
+			<argument index="1" name="property" type="StringName">
 			</argument>
 			<argument index="2" name="value" type="Variant">
 			</argument>
@@ -69,7 +69,7 @@
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="method" type="String">
+			<argument index="1" name="method" type="StringName">
 			</argument>
 			<description>
 				Register a method that will be called when the action is undone.
@@ -80,7 +80,7 @@
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="property" type="String">
+			<argument index="1" name="property" type="StringName">
 			</argument>
 			<argument index="2" name="value" type="Variant">
 			</argument>

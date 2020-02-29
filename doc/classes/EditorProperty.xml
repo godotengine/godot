@@ -21,11 +21,11 @@
 		<method name="emit_changed">
 			<return type="void">
 			</return>
-			<argument index="0" name="property" type="String">
+			<argument index="0" name="property" type="StringName">
 			</argument>
 			<argument index="1" name="value" type="Variant">
 			</argument>
-			<argument index="2" name="field" type="String" default="&quot;&quot;">
+			<argument index="2" name="field" type="StringName" default="@&quot;&quot;">
 			</argument>
 			<argument index="3" name="changing" type="bool" default="false">
 			</argument>
@@ -41,7 +41,7 @@
 			</description>
 		</method>
 		<method name="get_edited_property">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<description>
 				Gets the edited property. If your editor is for a single property (added via [method EditorInspectorPlugin.parse_property]), then this will return the property.
@@ -102,7 +102,7 @@
 			</description>
 		</signal>
 		<signal name="object_id_selected">
-			<argument index="0" name="property" type="String">
+			<argument index="0" name="property" type="StringName">
 			</argument>
 			<argument index="1" name="id" type="int">
 			</argument>
@@ -111,7 +111,7 @@
 			</description>
 		</signal>
 		<signal name="property_changed">
-			<argument index="0" name="property" type="String">
+			<argument index="0" name="property" type="StringName">
 			</argument>
 			<argument index="1" name="value" type="Variant">
 			</argument>
@@ -120,7 +120,7 @@
 			</description>
 		</signal>
 		<signal name="property_checked">
-			<argument index="0" name="property" type="String">
+			<argument index="0" name="property" type="StringName">
 			</argument>
 			<argument index="1" name="bool" type="String">
 			</argument>
@@ -129,14 +129,14 @@
 			</description>
 		</signal>
 		<signal name="property_keyed">
-			<argument index="0" name="property" type="String">
+			<argument index="0" name="property" type="StringName">
 			</argument>
 			<description>
 				Emit it if you want to add this value as an animation key (check for keying being enabled first).
 			</description>
 		</signal>
 		<signal name="property_keyed_with_value">
-			<argument index="0" name="property" type="String">
+			<argument index="0" name="property" type="StringName">
 			</argument>
 			<argument index="1" name="value" type="Variant">
 			</argument>

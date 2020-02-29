@@ -134,7 +134,7 @@ void call_with_variant_args_helper(T *p_instance, void (T::*p_method)(P...), con
 #ifdef DEBUG_METHODS_ENABLED
 	(p_instance->*p_method)(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...);
 #else
-	(p_instance->*p_method)(VariantCaster<P...>::cast(p_args[Is])...);
+	(p_instance->*p_method)(VariantCaster<P>::cast(p_args[Is])...);
 #endif
 }
 
@@ -201,6 +201,15 @@ Callable create_custom_callable_function_pointer(T *p_instance,
 
 // VERSION WITH RETURN
 
+// GCC 8 raises "parameter 'p_args' set but not used" here, probably using a
+// template version that does not have arguments and thus sees it unused, but
+// obviously the template can be used for functions with and without them, and
+// the optimizer will get rid of it anyway.
+#if defined(DEBUG_METHODS_ENABLED) && defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-parameter"
+#endif
+
 template <class T, class R, class... P, size_t... Is>
 void call_with_variant_args_ret_helper(T *p_instance, R (T::*p_method)(P...), const Variant **p_args, Variant &r_ret, Callable::CallError &r_error, IndexSequence<Is...>) {
 	r_error.error = Callable::CallError::CALL_OK;
@@ -208,9 +217,13 @@ void call_with_variant_args_ret_helper(T *p_instance, R (T::*p_method)(P...), co
 #ifdef DEBUG_METHODS_ENABLED
 	r_ret = (p_instance->*p_method)(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...);
 #else
-	(p_instance->*p_method)(VariantCaster<P...>::cast(p_args[Is])...);
+	(p_instance->*p_method)(VariantCaster<P>::cast(p_args[Is])...);
 #endif
 }
+
+#if defined(DEBUG_METHODS_ENABLED) && defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 template <class T, class R, class... P>
 void call_with_variant_args_ret(T *p_instance, R (T::*p_method)(P...), const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {

@@ -20,6 +20,8 @@
 			</description>
 		</method>
 		<method name="append">
+			<return type="void">
+			</return>
 			<argument index="0" name="byte" type="int">
 			</argument>
 			<description>
@@ -27,6 +29,8 @@
 			</description>
 		</method>
 		<method name="append_array">
+			<return type="void">
+			</return>
 			<argument index="0" name="array" type="PackedByteArray">
 			</argument>
 			<description>
@@ -97,11 +101,15 @@
 			</description>
 		</method>
 		<method name="invert">
+			<return type="void">
+			</return>
 			<description>
 				Reverses the order of the elements in the array.
 			</description>
 		</method>
 		<method name="push_back">
+			<return type="void">
+			</return>
 			<argument index="0" name="byte" type="int">
 			</argument>
 			<description>
@@ -109,6 +117,8 @@
 			</description>
 		</method>
 		<method name="remove">
+			<return type="void">
+			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
@@ -116,6 +126,8 @@
 			</description>
 		</method>
 		<method name="resize">
+			<return type="void">
+			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
@@ -123,6 +135,8 @@
 			</description>
 		</method>
 		<method name="set">
+			<return type="void">
+			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<argument index="1" name="byte" type="int">

@@ -1213,8 +1213,6 @@ void EditorExport::save_presets() {
 }
 
 void EditorExport::_bind_methods() {
-
-	ClassDB::bind_method("_save", &EditorExport::_save);
 }
 
 void EditorExport::add_export_platform(const Ref<EditorExportPlatform> &p_platform) {
@@ -1416,7 +1414,7 @@ EditorExport::EditorExport() {
 	add_child(save_timer);
 	save_timer->set_wait_time(0.8);
 	save_timer->set_one_shot(true);
-	save_timer->connect_compat("timeout", this, "_save");
+	save_timer->connect("timeout", callable_mp(this, &EditorExport::_save));
 	block_save = false;
 
 	singleton = this;

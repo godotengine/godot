@@ -90,8 +90,8 @@
 		<member name="colors" type="PackedColorArray" setter="set_colors" getter="get_colors" default="PackedColorArray( 0, 0, 0, 1, 1, 1, 1, 1 )">
 			Gradient's colors returned as a [PackedColorArray].
 		</member>
-		<member name="offsets" type="PackedRealArray" setter="set_offsets" getter="get_offsets" default="PackedRealArray( 0, 1 )">
-			Gradient's offsets returned as a [PackedRealArray].
+		<member name="offsets" type="PackedFloat32Array" setter="set_offsets" getter="get_offsets" default="PackedFloat32Array( 0, 1 )">
+			Gradient's offsets returned as a [PackedFloat32Array].
 		</member>
 	</members>
 	<constants>

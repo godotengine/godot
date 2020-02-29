@@ -30,6 +30,8 @@
 
 #include "rasterizer_effects_rd.h"
 #include "core/os/os.h"
+#include "core/project_settings.h"
+#include "cubemap_coeffs.h"
 
 static _FORCE_INLINE_ void store_transform_3x3(const Basis &p_basis, float *p_array) {
 	p_array[0] = p_basis.elements[0][0];
@@ -750,6 +752,55 @@ void RasterizerEffectsRD::roughness_limit(RID p_source_normal, RID p_roughness, 
 	RD::get_singleton()->compute_list_end();
 }
 
+void RasterizerEffectsRD::cubemap_downsample(RID p_source_cubemap, bool p_source_is_panorama, RID p_dest_cubemap, const Size2i &p_size) {
+
+	cubemap_downsampler.push_constant.face_size = p_size.x;
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, cubemap_downsampler.pipelines[p_source_is_panorama ? CUBEMAP_DOWNSAMPLER_SOURCE_PANORAMA : CUBEMAP_DOWNSAMPLER_SOURCE_CUBEMAP]);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_cubemap), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_dest_cubemap), 1);
+
+	int x_groups = (p_size.x - 1) / 8 + 1;
+	int y_groups = (p_size.y - 1) / 8 + 1;
+
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &cubemap_downsampler.push_constant, sizeof(CubemapDownsamplerPushConstant));
+
+	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 6); // one z_group for each face
+
+	RD::get_singleton()->compute_list_end();
+}
+
+void RasterizerEffectsRD::cubemap_filter(RID p_source_cubemap, Vector<RID> p_dest_cubemap, bool p_use_array) {
+
+	Vector<RD::Uniform> uniforms;
+	for (int i = 0; i < p_dest_cubemap.size(); i++) {
+		RD::Uniform u;
+		u.type = RD::UNIFORM_TYPE_IMAGE;
+		u.binding = i;
+		u.ids.push_back(p_dest_cubemap[i]);
+		uniforms.push_back(u);
+	}
+	if (RD::get_singleton()->uniform_set_is_valid(filter.image_uniform_set)) {
+		RD::get_singleton()->free(filter.image_uniform_set);
+	}
+	filter.image_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, filter.shader.version_get_shader(filter.shader_version, 0), 2);
+
+	int pipeline = p_use_array ? FILTER_MODE_HIGH_QUALITY_ARRAY : FILTER_MODE_HIGH_QUALITY;
+	pipeline = filter.use_high_quality ? pipeline : pipeline + 1;
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, filter.pipelines[pipeline]);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_cubemap, true), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, filter.uniform_set, 1);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, filter.image_uniform_set, 2);
+
+	int x_groups = p_use_array ? 1792 : 342; // (128 * 128 * 7) / 64 : (128*128 + 64*64 + 32*32 + 16*16 + 8*8 + 4*4 + 2*2) / 64
+
+	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, 6, 1); // one y_group for each face
+
+	RD::get_singleton()->compute_list_end();
+}
+
 RasterizerEffectsRD::RasterizerEffectsRD() {
 
 	{
@@ -930,7 +981,7 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 	}
 
 	{
-		// Initialize copier
+		// Initialize roughness limiter
 		Vector<String> shader_modes;
 		shader_modes.push_back("");
 
@@ -939,6 +990,55 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 		roughness_limiter.shader_version = roughness_limiter.shader.version_create();
 
 		roughness_limiter.pipeline = RD::get_singleton()->compute_pipeline_create(roughness_limiter.shader.version_get_shader(roughness_limiter.shader_version, 0));
+	}
+
+	{
+		//Initialize cubemap downsampler
+		Vector<String> cubemap_downsampler_modes;
+		cubemap_downsampler_modes.push_back("\n#define MODE_SOURCE_PANORAMA\n");
+		cubemap_downsampler_modes.push_back("\n#define MODE_SOURCE_CUBEMAP\n");
+		cubemap_downsampler.shader.initialize(cubemap_downsampler_modes);
+
+		cubemap_downsampler.shader_version = cubemap_downsampler.shader.version_create();
+
+		for (int i = 0; i < CUBEMAP_DOWNSAMPLER_SOURCE_MAX; i++) {
+			cubemap_downsampler.pipelines[i] = RD::get_singleton()->compute_pipeline_create(cubemap_downsampler.shader.version_get_shader(cubemap_downsampler.shader_version, i));
+		}
+	}
+
+	{
+		// Initialize cubemap filter
+		filter.use_high_quality = GLOBAL_GET("rendering/quality/reflections/fast_filter_high_quality");
+
+		Vector<String> cubemap_filter_modes;
+		cubemap_filter_modes.push_back("\n#define USE_HIGH_QUALITY\n");
+		cubemap_filter_modes.push_back("\n#define USE_LOW_QUALITY\n");
+		cubemap_filter_modes.push_back("\n#define USE_HIGH_QUALITY\n#define USE_TEXTURE_ARRAY\n");
+		cubemap_filter_modes.push_back("\n#define USE_LOW_QUALITY\n#define USE_TEXTURE_ARRAY\n");
+		filter.shader.initialize(cubemap_filter_modes);
+		filter.shader_version = filter.shader.version_create();
+
+		for (int i = 0; i < FILTER_MODE_MAX; i++) {
+			filter.pipelines[i] = RD::get_singleton()->compute_pipeline_create(filter.shader.version_get_shader(filter.shader_version, i));
+		}
+
+		if (filter.use_high_quality) {
+			filter.coefficient_buffer = RD::get_singleton()->storage_buffer_create(sizeof(high_quality_coeffs));
+			RD::get_singleton()->buffer_update(filter.coefficient_buffer, 0, sizeof(high_quality_coeffs), &high_quality_coeffs[0], false);
+		} else {
+			filter.coefficient_buffer = RD::get_singleton()->storage_buffer_create(sizeof(low_quality_coeffs));
+			RD::get_singleton()->buffer_update(filter.coefficient_buffer, 0, sizeof(low_quality_coeffs), &low_quality_coeffs[0], false);
+		}
+
+		Vector<RD::Uniform> uniforms;
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 0;
+			u.ids.push_back(filter.coefficient_buffer);
+			uniforms.push_back(u);
+		}
+		filter.uniform_set = RD::get_singleton()->uniform_set_create(uniforms, filter.shader.version_get_shader(filter.shader_version, filter.use_high_quality ? 0 : 1), 1);
 	}
 
 	RD::SamplerState sampler;
@@ -973,7 +1073,29 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 }
 
 RasterizerEffectsRD::~RasterizerEffectsRD() {
+	if (RD::get_singleton()->uniform_set_is_valid(filter.image_uniform_set)) {
+		RD::get_singleton()->free(filter.image_uniform_set);
+	}
+
+	if (RD::get_singleton()->uniform_set_is_valid(filter.image_uniform_set)) {
+		RD::get_singleton()->free(filter.uniform_set);
+	}
+
 	RD::get_singleton()->free(default_sampler);
-	blur.shader.version_free(blur.shader_version);
+	RD::get_singleton()->free(default_mipmap_sampler);
 	RD::get_singleton()->free(index_buffer); //array gets freed as dependency
+	RD::get_singleton()->free(filter.coefficient_buffer);
+	blur.shader.version_free(blur.shader_version);
+	roughness.shader.version_free(roughness.shader_version);
+	sky.shader.version_free(sky.shader_version);
+	tonemap.shader.version_free(tonemap.shader_version);
+	luminance_reduce.shader.version_free(luminance_reduce.shader_version);
+	copy.shader.version_free(copy.shader_version);
+	bokeh.shader.version_free(bokeh.shader_version);
+	ssao.minify_shader.version_free(ssao.minify_shader_version);
+	ssao.gather_shader.version_free(ssao.gather_shader_version);
+	ssao.blur_shader.version_free(ssao.blur_shader_version);
+	roughness_limiter.shader.version_free(roughness_limiter.shader_version);
+	cubemap_downsampler.shader.version_free(cubemap_downsampler.shader_version);
+	filter.shader.version_free(filter.shader_version);
 }

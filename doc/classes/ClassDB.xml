@@ -12,7 +12,7 @@
 		<method name="can_instance" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="class" type="String">
+			<argument index="0" name="class" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if you can instance objects from the specified [code]class[/code], [code]false[/code] in other case.
@@ -21,16 +21,16 @@
 		<method name="class_exists" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="class" type="String">
+			<argument index="0" name="class" type="StringName">
 			</argument>
 			<description>
 				Returns whether the specified [code]class[/code] is available or not.
 			</description>
 		</method>
 		<method name="class_get_category" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
-			<argument index="0" name="class" type="String">
+			<argument index="0" name="class" type="StringName">
 			</argument>
 			<description>
 				Returns a category associated with the class for use in documentation and the Asset Library. Debug mode required.
@@ -39,9 +39,9 @@
 		<method name="class_get_integer_constant" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="class" type="String">
+			<argument index="0" name="class" type="StringName">
 			</argument>
-			<argument index="1" name="name" type="String">
+			<argument index="1" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns the value of the integer constant [code]name[/code] of [code]class[/code] or its ancestry. Always returns 0 when the constant could not be found.
@@ -50,7 +50,7 @@
 		<method name="class_get_integer_constant_list" qualifiers="const">
 			<return type="PackedStringArray">
 			</return>
-			<argument index="0" name="class" type="String">
+			<argument index="0" name="class" type="StringName">
 			</argument>
 			<argument index="1" name="no_inheritance" type="bool" default="false">
 			</argument>
@@ -61,7 +61,7 @@
 		<method name="class_get_method_list" qualifiers="const">
 			<return type="Array">
 			</return>
-			<argument index="0" name="class" type="String">
+			<argument index="0" name="class" type="StringName">
 			</argument>
 			<argument index="1" name="no_inheritance" type="bool" default="false">
 			</argument>
@@ -74,7 +74,7 @@
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="property" type="String">
+			<argument index="1" name="property" type="StringName">
 			</argument>
 			<description>
 				Returns the value of [code]property[/code] of [code]class[/code] or its ancestry.
@@ -83,7 +83,7 @@
 		<method name="class_get_property_list" qualifiers="const">
 			<return type="Array">
 			</return>
-			<argument index="0" name="class" type="String">
+			<argument index="0" name="class" type="StringName">
 			</argument>
 			<argument index="1" name="no_inheritance" type="bool" default="false">
 			</argument>
@@ -94,9 +94,9 @@
 		<method name="class_get_signal" qualifiers="const">
 			<return type="Dictionary">
 			</return>
-			<argument index="0" name="class" type="String">
+			<argument index="0" name="class" type="StringName">
 			</argument>
-			<argument index="1" name="signal" type="String">
+			<argument index="1" name="signal" type="StringName">
 			</argument>
 			<description>
 				Returns the [code]signal[/code] data of [code]class[/code] or its ancestry. The returned value is a [Dictionary] with the following keys: [code]args[/code], [code]default_args[/code], [code]flags[/code], [code]id[/code], [code]name[/code], [code]return: (class_name, hint, hint_string, name, type, usage)[/code].
@@ -105,7 +105,7 @@
 		<method name="class_get_signal_list" qualifiers="const">
 			<return type="Array">
 			</return>
-			<argument index="0" name="class" type="String">
+			<argument index="0" name="class" type="StringName">
 			</argument>
 			<argument index="1" name="no_inheritance" type="bool" default="false">
 			</argument>
@@ -116,9 +116,9 @@
 		<method name="class_has_integer_constant" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="class" type="String">
+			<argument index="0" name="class" type="StringName">
 			</argument>
-			<argument index="1" name="name" type="String">
+			<argument index="1" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns whether [code]class[/code] or its ancestry has an integer constant called [code]name[/code] or not.
@@ -127,9 +127,9 @@
 		<method name="class_has_method" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="class" type="String">
+			<argument index="0" name="class" type="StringName">
 			</argument>
-			<argument index="1" name="method" type="String">
+			<argument index="1" name="method" type="StringName">
 			</argument>
 			<argument index="2" name="no_inheritance" type="bool" default="false">
 			</argument>
@@ -140,9 +140,9 @@
 		<method name="class_has_signal" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="class" type="String">
+			<argument index="0" name="class" type="StringName">
 			</argument>
-			<argument index="1" name="signal" type="String">
+			<argument index="1" name="signal" type="StringName">
 			</argument>
 			<description>
 				Returns whether [code]class[/code] or its ancestry has a signal called [code]signal[/code] or not.
@@ -153,7 +153,7 @@
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="property" type="String">
+			<argument index="1" name="property" type="StringName">
 			</argument>
 			<argument index="2" name="value" type="Variant">
 			</argument>
@@ -171,16 +171,16 @@
 		<method name="get_inheriters_from_class" qualifiers="const">
 			<return type="PackedStringArray">
 			</return>
-			<argument index="0" name="class" type="String">
+			<argument index="0" name="class" type="StringName">
 			</argument>
 			<description>
 				Returns the names of all the classes that directly or indirectly inherit from [code]class[/code].
 			</description>
 		</method>
 		<method name="get_parent_class" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
-			<argument index="0" name="class" type="String">
+			<argument index="0" name="class" type="StringName">
 			</argument>
 			<description>
 				Returns the parent class of [code]class[/code].
@@ -189,7 +189,7 @@
 		<method name="instance" qualifiers="const">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="class" type="String">
+			<argument index="0" name="class" type="StringName">
 			</argument>
 			<description>
 				Creates an instance of [code]class[/code].
@@ -198,7 +198,7 @@
 		<method name="is_class_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="class" type="String">
+			<argument index="0" name="class" type="StringName">
 			</argument>
 			<description>
 				Returns whether this [code]class[/code] is enabled or not.
@@ -207,9 +207,9 @@
 		<method name="is_parent_class" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="class" type="String">
+			<argument index="0" name="class" type="StringName">
 			</argument>
-			<argument index="1" name="inherits" type="String">
+			<argument index="1" name="inherits" type="StringName">
 			</argument>
 			<description>
 				Returns whether [code]inherits[/code] is an ancestor of [code]class[/code] or not.

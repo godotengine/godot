@@ -10,7 +10,7 @@
 		<method name="add_polygon">
 			<return type="void">
 			</return>
-			<argument index="0" name="polygon" type="PackedIntArray">
+			<argument index="0" name="polygon" type="PackedInt32Array">
 			</argument>
 			<description>
 			</description>
@@ -38,7 +38,7 @@
 			</description>
 		</method>
 		<method name="get_polygon">
-			<return type="PackedIntArray">
+			<return type="PackedInt32Array">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -109,7 +109,7 @@
 		</member>
 		<member name="geometry/source_geometry_mode" type="int" setter="set_source_geometry_mode" getter="get_source_geometry_mode" default="0">
 		</member>
-		<member name="geometry/source_group_name" type="String" setter="set_source_group_name" getter="get_source_group_name">
+		<member name="geometry/source_group_name" type="StringName" setter="set_source_group_name" getter="get_source_group_name">
 		</member>
 		<member name="polygon/verts_per_poly" type="float" setter="set_verts_per_poly" getter="get_verts_per_poly" default="6.0">
 		</member>

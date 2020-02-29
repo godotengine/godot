@@ -111,7 +111,7 @@ void EditorHelpSearch::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 
-			connect_compat("confirmed", this, "_confirmed");
+			connect("confirmed", callable_mp(this, &EditorHelpSearch::_confirmed));
 			_update_icons();
 		} break;
 		case NOTIFICATION_POPUP_HIDE: {
@@ -147,11 +147,6 @@ void EditorHelpSearch::_notification(int p_what) {
 
 void EditorHelpSearch::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_update_results"), &EditorHelpSearch::_update_results);
-	ClassDB::bind_method(D_METHOD("_search_box_gui_input"), &EditorHelpSearch::_search_box_gui_input);
-	ClassDB::bind_method(D_METHOD("_search_box_text_changed"), &EditorHelpSearch::_search_box_text_changed);
-	ClassDB::bind_method(D_METHOD("_filter_combo_item_selected"), &EditorHelpSearch::_filter_combo_item_selected);
-	ClassDB::bind_method(D_METHOD("_confirmed"), &EditorHelpSearch::_confirmed);
 	ADD_SIGNAL(MethodInfo("go_to_help"));
 }
 
@@ -206,21 +201,21 @@ EditorHelpSearch::EditorHelpSearch() {
 	search_box = memnew(LineEdit);
 	search_box->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
-	search_box->connect_compat("gui_input", this, "_search_box_gui_input");
-	search_box->connect_compat("text_changed", this, "_search_box_text_changed");
+	search_box->connect("gui_input", callable_mp(this, &EditorHelpSearch::_search_box_gui_input));
+	search_box->connect("text_changed", callable_mp(this, &EditorHelpSearch::_search_box_text_changed));
 	register_text_enter(search_box);
 	hbox->add_child(search_box);
 
 	case_sensitive_button = memnew(ToolButton);
 	case_sensitive_button->set_tooltip(TTR("Case Sensitive"));
-	case_sensitive_button->connect_compat("pressed", this, "_update_results");
+	case_sensitive_button->connect("pressed", callable_mp(this, &EditorHelpSearch::_update_results));
 	case_sensitive_button->set_toggle_mode(true);
 	case_sensitive_button->set_focus_mode(FOCUS_NONE);
 	hbox->add_child(case_sensitive_button);
 
 	hierarchy_button = memnew(ToolButton);
 	hierarchy_button->set_tooltip(TTR("Show Hierarchy"));
-	hierarchy_button->connect_compat("pressed", this, "_update_results");
+	hierarchy_button->connect("pressed", callable_mp(this, &EditorHelpSearch::_update_results));
 	hierarchy_button->set_toggle_mode(true);
 	hierarchy_button->set_pressed(true);
 	hierarchy_button->set_focus_mode(FOCUS_NONE);
@@ -237,7 +232,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	filter_combo->add_item(TTR("Constants Only"), SEARCH_CONSTANTS);
 	filter_combo->add_item(TTR("Properties Only"), SEARCH_PROPERTIES);
 	filter_combo->add_item(TTR("Theme Properties Only"), SEARCH_THEME_ITEMS);
-	filter_combo->connect_compat("item_selected", this, "_filter_combo_item_selected");
+	filter_combo->connect("item_selected", callable_mp(this, &EditorHelpSearch::_filter_combo_item_selected));
 	hbox->add_child(filter_combo);
 
 	// Create the results tree.
@@ -251,8 +246,8 @@ EditorHelpSearch::EditorHelpSearch() {
 	results_tree->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
 	results_tree->set_hide_root(true);
 	results_tree->set_select_mode(Tree::SELECT_ROW);
-	results_tree->connect_compat("item_activated", this, "_confirmed");
-	results_tree->connect_compat("item_selected", get_ok(), "set_disabled", varray(false));
+	results_tree->connect("item_activated", callable_mp(this, &EditorHelpSearch::_confirmed));
+	results_tree->connect("item_selected", callable_mp((BaseButton *)get_ok(), &BaseButton::set_disabled), varray(false));
 	vbox->add_child(results_tree, true);
 }
 

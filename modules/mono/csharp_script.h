@@ -325,16 +325,16 @@ class CSharpLanguage : public ScriptLanguage {
 	GDMono *gdmono;
 	SelfList<CSharpScript>::List script_list;
 
-	Mutex *script_instances_mutex;
-	Mutex *script_gchandle_release_mutex;
-	Mutex *language_bind_mutex;
+	Mutex script_instances_mutex;
+	Mutex script_gchandle_release_mutex;
+	Mutex language_bind_mutex;
 
 	Map<Object *, CSharpScriptBinding> script_bindings;
 
 #ifdef DEBUG_ENABLED
 	// List of unsafe object references
 	Map<ObjectID, int> unsafe_object_references;
-	Mutex *unsafe_object_references_lock;
+	Mutex unsafe_object_references_lock;
 #endif
 
 	struct StringNameCache {
@@ -376,7 +376,7 @@ class CSharpLanguage : public ScriptLanguage {
 public:
 	StringNameCache string_names;
 
-	Mutex *get_language_bind_mutex() { return language_bind_mutex; }
+	const Mutex &get_language_bind_mutex() { return language_bind_mutex; }
 
 	_FORCE_INLINE_ int get_language_index() { return lang_idx; }
 	void set_language_index(int p_idx);
@@ -497,7 +497,7 @@ public:
 
 class ResourceFormatLoaderCSharpScript : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL, bool p_use_sub_threads = false, float *r_progress = nullptr);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

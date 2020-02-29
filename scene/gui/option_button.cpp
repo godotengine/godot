@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "option_button.h"
+
 #include "core/print_string.h"
 
 Size2 OptionButton::get_minimum_size() const {
@@ -309,9 +310,6 @@ void OptionButton::get_translatable_strings(List<String> *p_strings) const {
 
 void OptionButton::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_selected"), &OptionButton::_selected);
-	ClassDB::bind_method(D_METHOD("_focused"), &OptionButton::_focused);
-
 	ClassDB::bind_method(D_METHOD("add_item", "label", "id"), &OptionButton::add_item, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("add_icon_item", "texture", "label", "id"), &OptionButton::add_icon_item, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("set_item_text", "idx", "text"), &OptionButton::set_item_text);
@@ -363,9 +361,9 @@ OptionButton::OptionButton() {
 	popup->set_pass_on_modal_close_click(false);
 	popup->set_notify_transform(true);
 	popup->set_allow_search(true);
-	popup->connect_compat("index_pressed", this, "_selected");
-	popup->connect_compat("id_focused", this, "_focused");
-	popup->connect_compat("popup_hide", this, "set_pressed", varray(false));
+	popup->connect("index_pressed", callable_mp(this, &OptionButton::_selected));
+	popup->connect("id_focused", callable_mp(this, &OptionButton::_focused));
+	popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(false));
 }
 
 OptionButton::~OptionButton() {

@@ -309,19 +309,6 @@ if selected_platform in platform_list:
     env['LINKFLAGS'] = ''
     env.Append(LINKFLAGS=str(LINKFLAGS).split())
 
-    # Set our C and C++ standard requirements.
-    # Prepending to make it possible to override
-    if not env.msvc:
-        # Specifying GNU extensions support explicitly, which are supported by
-        # both GCC and Clang. This mirrors GCC and Clang's current default
-        # compile flags if no -std is specified.
-        env.Prepend(CFLAGS=['-std=gnu11'])
-        env.Prepend(CXXFLAGS=['-std=gnu++14'])
-    else:
-        # MSVC doesn't have clear C standard support, /std only covers C++.
-        # We apply it to CCFLAGS (both C and C++ code) in case it impacts C features.
-        env.Prepend(CCFLAGS=['/std:c++14', '/permissive-'])
-
     # Platform specific flags
     flag_list = platform_flags[selected_platform]
     for f in flag_list:
@@ -330,6 +317,58 @@ if selected_platform in platform_list:
 
     # Must happen after the flags definition, so that they can be used by platform detect
     detect.configure(env)
+
+    # Set our C and C++ standard requirements.
+    # C++17 is required as we need guaranteed copy elision as per GH-36436.
+    # Prepending to make it possible to override.
+    # This needs to come after `configure`, otherwise we don't have env.msvc.
+    if not env.msvc:
+        # Specifying GNU extensions support explicitly, which are supported by
+        # both GCC and Clang. Both currently default to gnu11 and gnu++14.
+        env.Prepend(CFLAGS=['-std=gnu11'])
+        env.Prepend(CXXFLAGS=['-std=gnu++17'])
+    else:
+        # MSVC doesn't have clear C standard support, /std only covers C++.
+        # We apply it to CCFLAGS (both C and C++ code) in case it impacts C features.
+        env.Prepend(CCFLAGS=['/std:c++17', '/permissive-'])
+
+    # Enforce our minimal compiler version requirements
+    cc_version = methods.get_compiler_version(env) or [-1, -1]
+    cc_version_major = cc_version[0]
+    cc_version_minor = cc_version[1]
+
+    if methods.using_gcc(env):
+        # GCC 8 before 8.4 has a regression in the support of guaranteed copy elision
+        # which causes a build failure: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86521
+        if cc_version_major == 8 and cc_version_minor < 4:
+            print("Detected GCC 8 version < 8.4, which is not supported due to a "
+                  "regression in its C++17 guaranteed copy elision support. Use a "
+                  "newer GCC version, or Clang 6 or later by passing \"use_llvm=yes\" "
+                  "to the SCons command line.")
+            sys.exit(255)
+        elif cc_version_major < 7:
+            print("Detected GCC version older than 7, which does not fully support "
+                  "C++17. Supported versions are GCC 7, 9 and later. Use a newer GCC "
+                  "version, or Clang 6 or later by passing \"use_llvm=yes\" to the "
+                  "SCons command line.")
+            sys.exit(255)
+    elif methods.using_clang(env):
+        # Apple LLVM versions differ from upstream LLVM version \o/, compare
+        # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
+        if env["platform"] == "osx" or env["platform"] == "iphone":
+            vanilla = methods.is_vanilla_clang(env)
+            if vanilla and cc_version_major < 6:
+                print("Detected Clang version older than 6, which does not fully support "
+                      "C++17. Supported versions are Clang 6 and later.")
+                sys.exit(255)
+            elif not vanilla and cc_version_major < 10:
+                print("Detected Apple Clang version older than 10, which does not fully "
+                      "support C++17. Supported versions are Apple Clang 10 and later.")
+                sys.exit(255)
+        elif cc_version_major < 6:
+            print("Detected Clang version older than 6, which does not fully support "
+                  "C++17. Supported versions are Clang 6 and later.")
+            sys.exit(255)
 
     # Configure compiler warnings
     if env.msvc:
@@ -354,13 +393,10 @@ if selected_platform in platform_list:
         all_plus_warnings = ['-Wwrite-strings']
 
         if methods.using_gcc(env):
-            version = methods.get_compiler_version(env)
-            if version != None and version[0] >= '7':
+            if cc_version_major >= 7:
                 shadow_local_warning = ['-Wshadow-local']
 
         if (env["warnings"] == 'extra'):
-            # Note: enable -Wimplicit-fallthrough for Clang (already part of -Wextra for GCC)
-            # once we switch to C++11 or later (necessary for our FALLTHROUGH macro).
             env.Append(CCFLAGS=['-Wall', '-Wextra', '-Wno-unused-parameter']
                 + all_plus_warnings + shadow_local_warning)
             env.Append(CXXFLAGS=['-Wctor-dtor-privacy', '-Wnon-virtual-dtor'])
@@ -370,9 +406,10 @@ if selected_platform in platform_list:
                     '-Wstringop-overflow=4', '-Wlogical-op'])
                 # -Wnoexcept was removed temporarily due to GH-36325.
                 env.Append(CXXFLAGS=['-Wplacement-new=1'])
-                version = methods.get_compiler_version(env)
-                if version != None and version[0] >= '9':
+                if cc_version_major >= 9:
                     env.Append(CCFLAGS=['-Wattribute-alias=2'])
+            if methods.using_clang(env):
+                env.Append(CCFLAGS=['-Wimplicit-fallthrough'])
         elif (env["warnings"] == 'all'):
             env.Append(CCFLAGS=['-Wall'] + shadow_local_warning)
         elif (env["warnings"] == 'moderate'):

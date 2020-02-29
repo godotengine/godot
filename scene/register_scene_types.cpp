@@ -151,7 +151,6 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/particles_material.h"
 #include "scene/resources/physics_material.h"
-#include "scene/resources/plane_shape.h"
 #include "scene/resources/polygon_path_finder.h"
 #include "scene/resources/primitive_meshes.h"
 #include "scene/resources/ray_shape.h"
@@ -169,6 +168,7 @@
 #include "scene/resources/visual_shader_nodes.h"
 #include "scene/resources/world.h"
 #include "scene/resources/world_2d.h"
+#include "scene/resources/world_margin_shape.h"
 #include "scene/scene_string_names.h"
 
 #ifndef _3D_DISABLED
@@ -190,8 +190,8 @@
 #include "scene/3d/multimesh_instance.h"
 #include "scene/3d/navigation.h"
 #include "scene/3d/navigation_agent.h"
-#include "scene/3d/navigation_mesh_instance.h"
 #include "scene/3d/navigation_obstacle.h"
+#include "scene/3d/navigation_region.h"
 #include "scene/3d/particles.h"
 #include "scene/3d/path.h"
 #include "scene/3d/physics_body.h"
@@ -470,7 +470,7 @@ void register_scene_types() {
 	ClassDB::register_class<Generic6DOFJoint>();
 
 	ClassDB::register_class<Navigation>();
-	ClassDB::register_class<NavigationMeshInstance>();
+	ClassDB::register_class<NavigationRegion>();
 	ClassDB::register_class<NavigationAgent>();
 	ClassDB::register_class<NavigationObstacle>();
 
@@ -488,17 +488,20 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeInput>();
 	ClassDB::register_virtual_class<VisualShaderNodeOutput>();
 	ClassDB::register_class<VisualShaderNodeGroupBase>();
-	ClassDB::register_class<VisualShaderNodeScalarConstant>();
+	ClassDB::register_class<VisualShaderNodeFloatConstant>();
+	ClassDB::register_class<VisualShaderNodeIntConstant>();
 	ClassDB::register_class<VisualShaderNodeBooleanConstant>();
 	ClassDB::register_class<VisualShaderNodeColorConstant>();
 	ClassDB::register_class<VisualShaderNodeVec3Constant>();
 	ClassDB::register_class<VisualShaderNodeTransformConstant>();
-	ClassDB::register_class<VisualShaderNodeScalarOp>();
+	ClassDB::register_class<VisualShaderNodeFloatOp>();
+	ClassDB::register_class<VisualShaderNodeIntOp>();
 	ClassDB::register_class<VisualShaderNodeVectorOp>();
 	ClassDB::register_class<VisualShaderNodeColorOp>();
 	ClassDB::register_class<VisualShaderNodeTransformMult>();
 	ClassDB::register_class<VisualShaderNodeTransformVecMult>();
-	ClassDB::register_class<VisualShaderNodeScalarFunc>();
+	ClassDB::register_class<VisualShaderNodeFloatFunc>();
+	ClassDB::register_class<VisualShaderNodeIntFunc>();
 	ClassDB::register_class<VisualShaderNodeVectorFunc>();
 	ClassDB::register_class<VisualShaderNodeColorFunc>();
 	ClassDB::register_class<VisualShaderNodeTransformFunc>();
@@ -527,7 +530,8 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeTexture>();
 	ClassDB::register_class<VisualShaderNodeCubemap>();
 	ClassDB::register_virtual_class<VisualShaderNodeUniform>();
-	ClassDB::register_class<VisualShaderNodeScalarUniform>();
+	ClassDB::register_class<VisualShaderNodeFloatUniform>();
+	ClassDB::register_class<VisualShaderNodeIntUniform>();
 	ClassDB::register_class<VisualShaderNodeBooleanUniform>();
 	ClassDB::register_class<VisualShaderNodeColorUniform>();
 	ClassDB::register_class<VisualShaderNodeVec3Uniform>();
@@ -639,7 +643,7 @@ void register_scene_types() {
 	ClassDB::register_class<CapsuleShape>();
 	ClassDB::register_class<CylinderShape>();
 	ClassDB::register_class<HeightMapShape>();
-	ClassDB::register_class<PlaneShape>();
+	ClassDB::register_class<WorldMarginShape>();
 	ClassDB::register_class<ConvexPolygonShape>();
 	ClassDB::register_class<ConcavePolygonShape>();
 
@@ -722,7 +726,7 @@ void register_scene_types() {
 
 	ClassDB::register_class<Navigation2D>();
 	ClassDB::register_class<NavigationPolygon>();
-	ClassDB::register_class<NavigationPolygonInstance>();
+	ClassDB::register_class<NavigationRegion2D>();
 	ClassDB::register_class<NavigationAgent2D>();
 	ClassDB::register_class<NavigationObstacle2D>();
 
@@ -738,6 +742,13 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("SpatialMaterial", "StandardMaterial3D");
 	ClassDB::add_compatibility_class("Mesh", "ArrayMesh");
 	ClassDB::add_compatibility_class("AnimationTreePlayer", "AnimationTree");
+	ClassDB::add_compatibility_class("VisualShaderNodeScalarConstant", "VisualShaderNodeFloatConstant");
+	ClassDB::add_compatibility_class("VisualShaderNodeScalarUniform", "VisualShaderNodeFloatUniform");
+	ClassDB::add_compatibility_class("VisualShaderNodeScalarOp", "VisualShaderNodeFloatOp");
+	ClassDB::add_compatibility_class("VisualShaderNodeScalarFunc", "VisualShaderNodeFloatFunc");
+	ClassDB::add_compatibility_class("NavigationMeshInstance", "NavigationRegion");
+	ClassDB::add_compatibility_class("NavigationPolygonInstance", "NavigationRegion2D");
+	ClassDB::add_compatibility_class("PlaneShape", "WorldMarginShape");
 #endif
 
 	OS::get_singleton()->yield(); //may take time to init

@@ -238,6 +238,7 @@ public:
 	int get_stack_script_frame() const;
 
 	void update_tabs();
+	void clear_style();
 	String get_var_value(const String &p_var) const;
 
 	void save_node(ObjectID p_id, const String &p_file);

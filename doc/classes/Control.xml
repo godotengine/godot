@@ -90,7 +90,7 @@
 		<method name="add_color_override">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="color" type="Color">
 			</argument>
@@ -101,7 +101,7 @@
 		<method name="add_constant_override">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="constant" type="int">
 			</argument>
@@ -112,7 +112,7 @@
 		<method name="add_font_override">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="font" type="Font">
 			</argument>
@@ -123,7 +123,7 @@
 		<method name="add_icon_override">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="texture" type="Texture2D">
 			</argument>
@@ -134,7 +134,7 @@
 		<method name="add_shader_override">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="shader" type="Shader">
 			</argument>
@@ -145,7 +145,7 @@
 		<method name="add_stylebox_override">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="stylebox" type="StyleBox">
 			</argument>
@@ -220,9 +220,9 @@
 		<method name="get_color" qualifiers="const">
 			<return type="Color">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String" default="&quot;&quot;">
+			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Returns a color from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]type[/code].
@@ -242,9 +242,9 @@
 		<method name="get_constant" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String" default="&quot;&quot;">
+			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Returns a constant from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]type[/code].
@@ -301,9 +301,9 @@
 		<method name="get_font" qualifiers="const">
 			<return type="Font">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String" default="&quot;&quot;">
+			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Returns a font from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]type[/code].
@@ -319,9 +319,9 @@
 		<method name="get_icon" qualifiers="const">
 			<return type="Texture2D">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String" default="&quot;&quot;">
+			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Returns an icon from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]type[/code].
@@ -374,9 +374,9 @@
 		<method name="get_stylebox" qualifiers="const">
 			<return type="StyleBox">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String" default="&quot;&quot;">
+			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Returns a [StyleBox] from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]type[/code].
@@ -412,9 +412,9 @@
 		<method name="has_color" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String" default="&quot;&quot;">
+			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Returns [code]true[/code] if [Color] with given [code]name[/code] and associated with [Control] of given [code]type[/code] exists in assigned [Theme].
@@ -423,7 +423,7 @@
 		<method name="has_color_override" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if [Color] with given [code]name[/code] has a valid override in this [Control] node.
@@ -432,9 +432,9 @@
 		<method name="has_constant" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String" default="&quot;&quot;">
+			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Returns [code]true[/code] if constant with given [code]name[/code] and associated with [Control] of given [code]type[/code] exists in assigned [Theme].
@@ -443,7 +443,7 @@
 		<method name="has_constant_override" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if constant with given [code]name[/code] has a valid override in this [Control] node.
@@ -459,9 +459,9 @@
 		<method name="has_font" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String" default="&quot;&quot;">
+			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Returns [code]true[/code] if font with given [code]name[/code] and associated with [Control] of given [code]type[/code] exists in assigned [Theme].
@@ -470,7 +470,7 @@
 		<method name="has_font_override" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if font with given [code]name[/code] has a valid override in this [Control] node.
@@ -479,9 +479,9 @@
 		<method name="has_icon" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String" default="&quot;&quot;">
+			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Returns [code]true[/code] if icon with given [code]name[/code] and associated with [Control] of given [code]type[/code] exists in assigned [Theme].
@@ -490,7 +490,7 @@
 		<method name="has_icon_override" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if icon with given [code]name[/code] has a valid override in this [Control] node.
@@ -510,7 +510,7 @@
 		<method name="has_shader_override" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if [Shader] with given [code]name[/code] has a valid override in this [Control] node.
@@ -519,9 +519,9 @@
 		<method name="has_stylebox" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="String" default="&quot;&quot;">
+			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Returns [code]true[/code] if [StyleBox] with given [code]name[/code] and associated with [Control] of given [code]type[/code] exists in assigned [Theme].
@@ -530,7 +530,7 @@
 		<method name="has_stylebox_override" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if [StyleBox] with given [code]name[/code] has a valid override in this [Control] node.

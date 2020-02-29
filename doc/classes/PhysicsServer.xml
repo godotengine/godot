@@ -156,7 +156,7 @@
 			</argument>
 			<argument index="1" name="receiver" type="Object">
 			</argument>
-			<argument index="2" name="method" type="String">
+			<argument index="2" name="method" type="StringName">
 			</argument>
 			<description>
 			</description>
@@ -190,7 +190,7 @@
 			</argument>
 			<argument index="1" name="receiver" type="Object">
 			</argument>
-			<argument index="2" name="method" type="String">
+			<argument index="2" name="method" type="StringName">
 			</argument>
 			<description>
 				Sets the function to call when any body/area enters or exits the area. This callback will be called for any object interacting with the area, and takes five parameters:
@@ -678,7 +678,7 @@
 			</argument>
 			<argument index="1" name="receiver" type="Object">
 			</argument>
-			<argument index="2" name="method" type="String">
+			<argument index="2" name="method" type="StringName">
 			</argument>
 			<argument index="3" name="userdata" type="Variant" default="null">
 			</argument>
@@ -1467,7 +1467,7 @@
 			If [code]set[/code] there is a linear motor on this axis that targets a specific velocity.
 		</constant>
 		<constant name="SHAPE_PLANE" value="0" enum="ShapeType">
-			The [Shape] is a [PlaneShape].
+			The [Shape] is a [WorldMarginShape].
 		</constant>
 		<constant name="SHAPE_RAY" value="1" enum="ShapeType">
 			The [Shape] is a [RayShape].

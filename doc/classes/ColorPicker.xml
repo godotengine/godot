@@ -4,7 +4,7 @@
 		Color picker control.
 	</brief_description>
 	<description>
-		[Control] node displaying a color picker widget. It's useful for selecting a color from an RGB/RGBA colorspace.
+		Displays a color picker widget. Useful for selecting a color from an RGB/RGBA colorspace.
 	</description>
 	<tutorials>
 	</tutorials>

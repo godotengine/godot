@@ -115,30 +115,27 @@
 
 GdNavigationServer::GdNavigationServer() :
 		NavigationServer(),
-		commands_mutex(Mutex::create()),
-		operations_mutex(Mutex::create()),
 		active(true) {
 }
 
 GdNavigationServer::~GdNavigationServer() {
-	memdelete(operations_mutex);
-	memdelete(commands_mutex);
+	flush_queries();
 }
 
 void GdNavigationServer::add_command(SetCommand *command) const {
 	auto mut_this = const_cast<GdNavigationServer *>(this);
-	commands_mutex->lock();
-	mut_this->commands.push_back(command);
-	commands_mutex->unlock();
+	{
+		MutexLock lock(commands_mutex);
+		mut_this->commands.push_back(command);
+	}
 }
 
 RID GdNavigationServer::map_create() const {
 	auto mut_this = const_cast<GdNavigationServer *>(this);
-	mut_this->operations_mutex->lock();
+	MutexLock lock(mut_this->operations_mutex);
 	NavMap *space = memnew(NavMap);
 	RID rid = map_owner.make_rid(space);
 	space->set_self(rid);
-	mut_this->operations_mutex->unlock();
 	return rid;
 }
 
@@ -241,11 +238,10 @@ RID GdNavigationServer::map_get_closest_point_owner(RID p_map, const Vector3 &p_
 
 RID GdNavigationServer::region_create() const {
 	auto mut_this = const_cast<GdNavigationServer *>(this);
-	mut_this->operations_mutex->lock();
+	MutexLock lock(mut_this->operations_mutex);
 	NavRegion *reg = memnew(NavRegion);
 	RID rid = region_owner.make_rid(reg);
 	reg->set_self(rid);
-	mut_this->operations_mutex->unlock();
 	return rid;
 }
 
@@ -297,11 +293,10 @@ void GdNavigationServer::region_bake_navmesh(Ref<NavigationMesh> r_mesh, Node *p
 
 RID GdNavigationServer::agent_create() const {
 	auto mut_this = const_cast<GdNavigationServer *>(this);
-	mut_this->operations_mutex->lock();
+	MutexLock lock(mut_this->operations_mutex);
 	RvoAgent *agent = memnew(RvoAgent());
 	RID rid = agent_owner.make_rid(agent);
 	agent->set_self(rid);
-	mut_this->operations_mutex->unlock();
 	return rid;
 }
 
@@ -469,28 +464,32 @@ COMMAND_1(free, RID, p_object) {
 
 void GdNavigationServer::set_active(bool p_active) const {
 	auto mut_this = const_cast<GdNavigationServer *>(this);
-	mut_this->operations_mutex->lock();
+	MutexLock lock(mut_this->operations_mutex);
 	mut_this->active = p_active;
-	mut_this->operations_mutex->unlock();
 }
 
-void GdNavigationServer::step(real_t p_delta_time) {
-	if (!active) {
-		return;
-	}
-
-	// With c++ we can't be 100% sure this is called in single thread so use the mutex.
-	commands_mutex->lock();
-	operations_mutex->lock();
+void GdNavigationServer::flush_queries() {
+	// In c++ we can't be sure that this is performed in the main thread
+	// even with mutable functions.
+	MutexLock lock(commands_mutex);
+	MutexLock lock2(operations_mutex);
 	for (size_t i(0); i < commands.size(); i++) {
 		commands[i]->exec(this);
 		memdelete(commands[i]);
 	}
 	commands.clear();
-	operations_mutex->unlock();
-	commands_mutex->unlock();
+}
 
-	// These are internal operations so don't need to be shielded.
+void GdNavigationServer::process(real_t p_delta_time) {
+	flush_queries();
+
+	if (!active) {
+		return;
+	}
+
+	// In c++ we can't be sure that this is performed in the main thread
+	// even with mutable functions.
+	MutexLock lock(operations_mutex);
 	for (int i(0); i < active_maps.size(); i++) {
 		active_maps[i]->sync();
 		active_maps[i]->step(p_delta_time);

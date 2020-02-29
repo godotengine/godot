@@ -60,7 +60,7 @@
 		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled" default="false">
 			If [code]true[/code], audio plays when added to scene tree.
 		</member>
-		<member name="bus" type="String" setter="set_bus" getter="get_bus" default="&quot;Master&quot;">
+		<member name="bus" type="StringName" setter="set_bus" getter="get_bus" default="@&quot;Master&quot;">
 			Bus on which this audio is playing.
 		</member>
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" default="2000.0">

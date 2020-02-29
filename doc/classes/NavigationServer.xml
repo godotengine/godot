@@ -32,7 +32,7 @@
 			</argument>
 			<argument index="1" name="receiver" type="Object">
 			</argument>
-			<argument index="2" name="method" type="String">
+			<argument index="2" name="method" type="StringName">
 			</argument>
 			<argument index="3" name="userdata" type="Variant" default="null">
 			</argument>
@@ -298,6 +298,17 @@
 				Sets the map up direction.
 			</description>
 		</method>
+		<method name="process">
+			<return type="void">
+			</return>
+			<argument index="0" name="delta_time" type="float">
+			</argument>
+			<description>
+				Process the collision avoidance agents.
+				The result of this process is needed by the physics server, so this must be called in the main thread.
+				Note: This function is not thread safe.
+			</description>
+		</method>
 		<method name="region_bake_navmesh" qualifiers="const">
 			<return type="void">
 			</return>
@@ -356,15 +367,6 @@
 			</argument>
 			<description>
 				Control activation of this server.
-			</description>
-		</method>
-		<method name="step">
-			<return type="void">
-			</return>
-			<argument index="0" name="delta_time" type="float">
-			</argument>
-			<description>
-				Steps the server. This is not threadsafe and must be called in single thread.
 			</description>
 		</method>
 	</methods>

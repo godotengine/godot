@@ -120,8 +120,10 @@ void VisualScriptPropertySelector::_update_search() {
 			Control::get_icon("Dictionary", "EditorIcons"),
 			Control::get_icon("Array", "EditorIcons"),
 			Control::get_icon("PackedByteArray", "EditorIcons"),
-			Control::get_icon("PackedIntArray", "EditorIcons"),
-			Control::get_icon("PackedRealArray", "EditorIcons"),
+			Control::get_icon("PackedInt32Array", "EditorIcons"),
+			Control::get_icon("PackedFloat32Array", "EditorIcons"),
+			Control::get_icon("PackedInt64Array", "EditorIcons"),
+			Control::get_icon("PackedFloat64Array", "EditorIcons"),
 			Control::get_icon("PackedStringArray", "EditorIcons"),
 			Control::get_icon("PackedVector2Array", "EditorIcons"),
 			Control::get_icon("PackedVector3Array", "EditorIcons"),
@@ -279,7 +281,7 @@ void VisualScriptPropertySelector::_update_search() {
 			if (type == Variant::BOOL) {
 				get_visual_node_names("operators/logic/", Set<String>(), found, root, search_box);
 			}
-			if (type == Variant::BOOL || type == Variant::INT || type == Variant::REAL || type == Variant::VECTOR2 || type == Variant::VECTOR3) {
+			if (type == Variant::BOOL || type == Variant::INT || type == Variant::FLOAT || type == Variant::VECTOR2 || type == Variant::VECTOR3) {
 				get_visual_node_names("operators/math/", Set<String>(), found, root, search_box);
 			}
 		}
@@ -355,7 +357,7 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 			continue;
 		}
 
-		bool in_modifier = false | p_modifiers.empty();
+		bool in_modifier = p_modifiers.empty();
 		for (Set<String>::Element *F = p_modifiers.front(); F && in_modifier; F = F->next()) {
 			if (E->get().findn(F->get()) != -1)
 				in_modifier = true;
@@ -516,11 +518,15 @@ void VisualScriptPropertySelector::_item_selected() {
 	help_bit->set_text(text);
 }
 
+void VisualScriptPropertySelector::_hide_requested() {
+	_closed(); // From WindowDialog.
+}
+
 void VisualScriptPropertySelector::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		connect_compat("confirmed", this, "_confirmed");
+		connect("confirmed", callable_mp(this, &VisualScriptPropertySelector::_confirmed));
 	}
 }
 
@@ -688,11 +694,6 @@ void VisualScriptPropertySelector::show_window(float p_screen_ratio) {
 
 void VisualScriptPropertySelector::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_text_changed"), &VisualScriptPropertySelector::_text_changed);
-	ClassDB::bind_method(D_METHOD("_confirmed"), &VisualScriptPropertySelector::_confirmed);
-	ClassDB::bind_method(D_METHOD("_sbox_input"), &VisualScriptPropertySelector::_sbox_input);
-	ClassDB::bind_method(D_METHOD("_item_selected"), &VisualScriptPropertySelector::_item_selected);
-
 	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "category"), PropertyInfo(Variant::BOOL, "connecting")));
 }
 
@@ -703,23 +704,23 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	//set_child_rect(vbc);
 	search_box = memnew(LineEdit);
 	vbc->add_margin_child(TTR("Search:"), search_box);
-	search_box->connect_compat("text_changed", this, "_text_changed");
-	search_box->connect_compat("gui_input", this, "_sbox_input");
+	search_box->connect("text_changed", callable_mp(this, &VisualScriptPropertySelector::_text_changed));
+	search_box->connect("gui_input", callable_mp(this, &VisualScriptPropertySelector::_sbox_input));
 	search_options = memnew(Tree);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 	get_ok()->set_text(TTR("Open"));
 	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
-	search_options->connect_compat("item_activated", this, "_confirmed");
-	search_options->connect_compat("cell_selected", this, "_item_selected");
+	search_options->connect("item_activated", callable_mp(this, &VisualScriptPropertySelector::_confirmed));
+	search_options->connect("cell_selected", callable_mp(this, &VisualScriptPropertySelector::_item_selected));
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
 	virtuals_only = false;
 	seq_connect = false;
 	help_bit = memnew(EditorHelpBit);
 	vbc->add_margin_child(TTR("Description:"), help_bit);
-	help_bit->connect_compat("request_hide", this, "_closed");
+	help_bit->connect("request_hide", callable_mp(this, &VisualScriptPropertySelector::_hide_requested));
 	search_options->set_columns(3);
 	search_options->set_column_expand(1, false);
 	search_options->set_column_expand(2, false);

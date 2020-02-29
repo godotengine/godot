@@ -104,28 +104,21 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 
 	/* STEP 2, INITIALIZE AND CONSTRUCT */
 
-#ifndef NO_THREADS
-	GDScriptLanguage::singleton->lock->lock();
-#endif
+	{
+		MutexLock lock(GDScriptLanguage::singleton->lock);
 
-	instances.insert(instance->owner);
-
-#ifndef NO_THREADS
-	GDScriptLanguage::singleton->lock->unlock();
-#endif
+		instances.insert(instance->owner);
+	}
 
 	initializer->call(instance, p_args, p_argcount, r_error);
 
 	if (r_error.error != Callable::CallError::CALL_OK) {
 		instance->script = Ref<GDScript>();
 		instance->owner->set_script_instance(NULL);
-#ifndef NO_THREADS
-		GDScriptLanguage::singleton->lock->lock();
-#endif
-		instances.erase(p_owner);
-#ifndef NO_THREADS
-		GDScriptLanguage::singleton->lock->unlock();
-#endif
+		{
+			MutexLock lock(GDScriptLanguage::singleton->lock);
+			instances.erase(p_owner);
+		}
 
 		ERR_FAIL_COND_V(r_error.error != Callable::CallError::CALL_OK, NULL); //error constructing
 	}
@@ -346,16 +339,9 @@ PlaceHolderScriptInstance *GDScript::placeholder_instance_create(Object *p_this)
 
 bool GDScript::instance_has(const Object *p_this) const {
 
-#ifndef NO_THREADS
-	GDScriptLanguage::singleton->lock->lock();
-#endif
-	bool hasit = instances.has((Object *)p_this);
+	MutexLock lock(GDScriptLanguage::singleton->lock);
 
-#ifndef NO_THREADS
-	GDScriptLanguage::singleton->lock->unlock();
-#endif
-
-	return hasit;
+	return instances.has((Object *)p_this);
 }
 
 bool GDScript::has_source_code() const {
@@ -544,14 +530,12 @@ void GDScript::_set_subclass_path(Ref<GDScript> &p_sc, const String &p_path) {
 
 Error GDScript::reload(bool p_keep_state) {
 
-#ifndef NO_THREADS
-	GDScriptLanguage::singleton->lock->lock();
-#endif
-	bool has_instances = instances.size();
+	bool has_instances;
+	{
+		MutexLock lock(GDScriptLanguage::singleton->lock);
 
-#ifndef NO_THREADS
-	GDScriptLanguage::singleton->lock->unlock();
-#endif
+		has_instances = instances.size();
+	}
 
 	ERR_FAIL_COND_V(!p_keep_state && has_instances, ERR_ALREADY_IN_USE);
 
@@ -1007,13 +991,10 @@ GDScript::GDScript() :
 #endif
 
 #ifdef DEBUG_ENABLED
-	if (GDScriptLanguage::get_singleton()->lock) {
-		GDScriptLanguage::get_singleton()->lock->lock();
-	}
-	GDScriptLanguage::get_singleton()->script_list.add(&script_list);
+	{
+		MutexLock lock(GDScriptLanguage::get_singleton()->lock);
 
-	if (GDScriptLanguage::get_singleton()->lock) {
-		GDScriptLanguage::get_singleton()->lock->unlock();
+		GDScriptLanguage::get_singleton()->script_list.add(&script_list);
 	}
 #endif
 }
@@ -1057,13 +1038,10 @@ GDScript::~GDScript() {
 	_save_orphaned_subclasses();
 
 #ifdef DEBUG_ENABLED
-	if (GDScriptLanguage::get_singleton()->lock) {
-		GDScriptLanguage::get_singleton()->lock->lock();
-	}
-	GDScriptLanguage::get_singleton()->script_list.remove(&script_list);
+	{
+		MutexLock lock(GDScriptLanguage::get_singleton()->lock);
 
-	if (GDScriptLanguage::get_singleton()->lock) {
-		GDScriptLanguage::get_singleton()->lock->unlock();
+		GDScriptLanguage::get_singleton()->script_list.remove(&script_list);
 	}
 #endif
 }
@@ -1472,14 +1450,9 @@ GDScriptInstance::GDScriptInstance() {
 
 GDScriptInstance::~GDScriptInstance() {
 	if (script.is_valid() && owner) {
-#ifndef NO_THREADS
-		GDScriptLanguage::singleton->lock->lock();
-#endif
+		MutexLock lock(GDScriptLanguage::singleton->lock);
 
 		script->instances.erase(owner);
-#ifndef NO_THREADS
-		GDScriptLanguage::singleton->lock->unlock();
-#endif
 	}
 }
 
@@ -1580,9 +1553,7 @@ void GDScriptLanguage::finish() {
 void GDScriptLanguage::profiling_start() {
 
 #ifdef DEBUG_ENABLED
-	if (lock) {
-		lock->lock();
-	}
+	MutexLock lock(this->lock);
 
 	SelfList<GDScriptFunction> *elem = function_list.first();
 	while (elem) {
@@ -1599,25 +1570,15 @@ void GDScriptLanguage::profiling_start() {
 	}
 
 	profiling = true;
-	if (lock) {
-		lock->unlock();
-	}
-
 #endif
 }
 
 void GDScriptLanguage::profiling_stop() {
 
 #ifdef DEBUG_ENABLED
-	if (lock) {
-		lock->lock();
-	}
+	MutexLock lock(this->lock);
 
 	profiling = false;
-	if (lock) {
-		lock->unlock();
-	}
-
 #endif
 }
 
@@ -1625,9 +1586,8 @@ int GDScriptLanguage::profiling_get_accumulated_data(ProfilingInfo *p_info_arr, 
 
 	int current = 0;
 #ifdef DEBUG_ENABLED
-	if (lock) {
-		lock->lock();
-	}
+
+	MutexLock lock(this->lock);
 
 	SelfList<GDScriptFunction> *elem = function_list.first();
 	while (elem) {
@@ -1640,11 +1600,6 @@ int GDScriptLanguage::profiling_get_accumulated_data(ProfilingInfo *p_info_arr, 
 		elem = elem->next();
 		current++;
 	}
-
-	if (lock) {
-		lock->unlock();
-	}
-
 #endif
 
 	return current;
@@ -1655,9 +1610,7 @@ int GDScriptLanguage::profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_
 	int current = 0;
 
 #ifdef DEBUG_ENABLED
-	if (lock) {
-		lock->lock();
-	}
+	MutexLock lock(this->lock);
 
 	SelfList<GDScriptFunction> *elem = function_list.first();
 	while (elem) {
@@ -1672,11 +1625,6 @@ int GDScriptLanguage::profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_
 		}
 		elem = elem->next();
 	}
-
-	if (lock) {
-		lock->unlock();
-	}
-
 #endif
 
 	return current;
@@ -1707,23 +1655,18 @@ void GDScriptLanguage::reload_all_scripts() {
 
 #ifdef DEBUG_ENABLED
 	print_verbose("GDScript: Reloading all scripts");
-	if (lock) {
-		lock->lock();
-	}
-
 	List<Ref<GDScript> > scripts;
+	{
+		MutexLock lock(this->lock);
 
-	SelfList<GDScript> *elem = script_list.first();
-	while (elem) {
-		if (elem->self()->get_path().is_resource_file()) {
-			print_verbose("GDScript: Found: " + elem->self()->get_path());
-			scripts.push_back(Ref<GDScript>(elem->self())); //cast to gdscript to avoid being erased by accident
+		SelfList<GDScript> *elem = script_list.first();
+		while (elem) {
+			if (elem->self()->get_path().is_resource_file()) {
+				print_verbose("GDScript: Found: " + elem->self()->get_path());
+				scripts.push_back(Ref<GDScript>(elem->self())); //cast to gdscript to avoid being erased by accident
+			}
+			elem = elem->next();
 		}
-		elem = elem->next();
-	}
-
-	if (lock) {
-		lock->unlock();
 	}
 
 	//as scripts are going to be reloaded, must proceed without locking here
@@ -1743,23 +1686,18 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 
 #ifdef DEBUG_ENABLED
 
-	if (lock) {
-		lock->lock();
-	}
-
 	List<Ref<GDScript> > scripts;
+	{
+		MutexLock lock(this->lock);
 
-	SelfList<GDScript> *elem = script_list.first();
-	while (elem) {
-		if (elem->self()->get_path().is_resource_file()) {
+		SelfList<GDScript> *elem = script_list.first();
+		while (elem) {
+			if (elem->self()->get_path().is_resource_file()) {
 
-			scripts.push_back(Ref<GDScript>(elem->self())); //cast to gdscript to avoid being erased by accident
+				scripts.push_back(Ref<GDScript>(elem->self())); //cast to gdscript to avoid being erased by accident
+			}
+			elem = elem->next();
 		}
-		elem = elem->next();
-	}
-
-	if (lock) {
-		lock->unlock();
 	}
 
 	//when someone asks you why dynamically typed languages are easier to write....
@@ -1879,9 +1817,7 @@ void GDScriptLanguage::frame() {
 
 #ifdef DEBUG_ENABLED
 	if (profiling) {
-		if (lock) {
-			lock->lock();
-		}
+		MutexLock lock(this->lock);
 
 		SelfList<GDScriptFunction> *elem = function_list.first();
 		while (elem) {
@@ -1892,10 +1828,6 @@ void GDScriptLanguage::frame() {
 			elem->self()->profile.frame_self_time = 0;
 			elem->self()->profile.frame_total_time = 0;
 			elem = elem->next();
-		}
-
-		if (lock) {
-			lock->unlock();
 		}
 	}
 
@@ -2262,11 +2194,6 @@ GDScriptLanguage::GDScriptLanguage() {
 	_debug_parse_err_line = -1;
 	_debug_parse_err_file = "";
 
-#ifdef NO_THREADS
-	lock = NULL;
-#else
-	lock = Mutex::create();
-#endif
 	profiling = false;
 	script_frame_time = 0;
 
@@ -2300,10 +2227,6 @@ GDScriptLanguage::GDScriptLanguage() {
 
 GDScriptLanguage::~GDScriptLanguage() {
 
-	if (lock) {
-		memdelete(lock);
-		lock = NULL;
-	}
 	if (_call_stack) {
 		memdelete_arr(_call_stack);
 	}
@@ -2328,7 +2251,7 @@ Ref<GDScript> GDScriptLanguage::get_orphan_subclass(const String &p_qualified_na
 
 /*************** RESOURCE ***************/
 
-RES ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 
 	if (r_error)
 		*r_error = ERR_FILE_CANT_OPEN;

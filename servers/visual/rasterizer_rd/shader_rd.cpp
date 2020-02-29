@@ -342,23 +342,21 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 	}
 
 	if (!build_ok) {
-		variant_set_mutex.lock(); //properly print the errors
+		MutexLock lock(variant_set_mutex); //properly print the errors
 		ERR_PRINT("Error compiling " + String(current_stage == RD::SHADER_STAGE_COMPUTE ? "Compute " : (current_stage == RD::SHADER_STAGE_VERTEX ? "Vertex" : "Fragment")) + " shader, variant #" + itos(p_variant) + " (" + variant_defines[p_variant].get_data() + ").");
 		ERR_PRINT(error);
 
 #ifdef DEBUG_ENABLED
 		ERR_PRINT("code:\n" + current_source.get_with_code_lines());
 #endif
-
-		variant_set_mutex.unlock();
 		return;
 	}
 
 	RID shader = RD::get_singleton()->shader_create(stages);
-
-	variant_set_mutex.lock();
-	p_version->variants[p_variant] = shader;
-	variant_set_mutex.unlock();
+	{
+		MutexLock lock(variant_set_mutex);
+		p_version->variants[p_variant] = shader;
+	}
 }
 
 void ShaderRD::_compile_version(Version *p_version) {

@@ -49,11 +49,11 @@
 		<method name="connect_node">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
 			<argument index="1" name="from_port" type="int">
 			</argument>
-			<argument index="2" name="to" type="String">
+			<argument index="2" name="to" type="StringName">
 			</argument>
 			<argument index="3" name="to_port" type="int">
 			</argument>
@@ -64,11 +64,11 @@
 		<method name="disconnect_node">
 			<return type="void">
 			</return>
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
 			<argument index="1" name="from_port" type="int">
 			</argument>
-			<argument index="2" name="to" type="String">
+			<argument index="2" name="to" type="StringName">
 			</argument>
 			<argument index="3" name="to_port" type="int">
 			</argument>
@@ -94,11 +94,11 @@
 		<method name="is_node_connected">
 			<return type="bool">
 			</return>
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
 			<argument index="1" name="from_port" type="int">
 			</argument>
-			<argument index="2" name="to" type="String">
+			<argument index="2" name="to" type="StringName">
 			</argument>
 			<argument index="3" name="to_port" type="int">
 			</argument>
@@ -149,11 +149,11 @@
 		<method name="set_connection_activity">
 			<return type="void">
 			</return>
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
 			<argument index="1" name="from_port" type="int">
 			</argument>
-			<argument index="2" name="to" type="String">
+			<argument index="2" name="to" type="StringName">
 			</argument>
 			<argument index="3" name="to_port" type="int">
 			</argument>
@@ -204,7 +204,7 @@
 			</description>
 		</signal>
 		<signal name="connection_from_empty">
-			<argument index="0" name="to" type="String">
+			<argument index="0" name="to" type="StringName">
 			</argument>
 			<argument index="1" name="to_slot" type="int">
 			</argument>
@@ -215,11 +215,11 @@
 			</description>
 		</signal>
 		<signal name="connection_request">
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
 			<argument index="1" name="from_slot" type="int">
 			</argument>
-			<argument index="2" name="to" type="String">
+			<argument index="2" name="to" type="StringName">
 			</argument>
 			<argument index="3" name="to_slot" type="int">
 			</argument>
@@ -228,7 +228,7 @@
 			</description>
 		</signal>
 		<signal name="connection_to_empty">
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
 			<argument index="1" name="from_slot" type="int">
 			</argument>
@@ -249,11 +249,11 @@
 			</description>
 		</signal>
 		<signal name="disconnection_request">
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
 			<argument index="1" name="from_slot" type="int">
 			</argument>
-			<argument index="2" name="to" type="String">
+			<argument index="2" name="to" type="StringName">
 			</argument>
 			<argument index="3" name="to_slot" type="int">
 			</argument>

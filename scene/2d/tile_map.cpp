@@ -177,7 +177,7 @@ void TileMap::_update_quadrant_transform() {
 void TileMap::set_tileset(const Ref<TileSet> &p_tileset) {
 
 	if (tile_set.is_valid()) {
-		tile_set->disconnect_compat("changed", this, "_recreate_quadrants");
+		tile_set->disconnect("changed", callable_mp(this, &TileMap::_recreate_quadrants));
 		tile_set->remove_change_receptor(this);
 	}
 
@@ -185,7 +185,7 @@ void TileMap::set_tileset(const Ref<TileSet> &p_tileset) {
 	tile_set = p_tileset;
 
 	if (tile_set.is_valid()) {
-		tile_set->connect_compat("changed", this, "_recreate_quadrants");
+		tile_set->connect("changed", callable_mp(this, &TileMap::_recreate_quadrants));
 		tile_set->add_change_receptor(this);
 	} else {
 		clear();
@@ -1883,7 +1883,6 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("world_to_map", "world_position"), &TileMap::world_to_map);
 
 	ClassDB::bind_method(D_METHOD("_clear_quadrants"), &TileMap::_clear_quadrants);
-	ClassDB::bind_method(D_METHOD("_recreate_quadrants"), &TileMap::_recreate_quadrants);
 	ClassDB::bind_method(D_METHOD("update_dirty_quadrants"), &TileMap::update_dirty_quadrants);
 
 	ClassDB::bind_method(D_METHOD("update_bitmask_area", "position"), &TileMap::update_bitmask_area);
@@ -1909,8 +1908,8 @@ void TileMap::_bind_methods() {
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_use_parent", PROPERTY_HINT_NONE, ""), "set_collision_use_parent", "get_collision_use_parent");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_use_kinematic", PROPERTY_HINT_NONE, ""), "set_collision_use_kinematic", "get_collision_use_kinematic");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "collision_friction", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_collision_friction", "get_collision_friction");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "collision_bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_collision_bounce", "get_collision_bounce");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_friction", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_collision_friction", "get_collision_friction");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_collision_bounce", "get_collision_bounce");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_mask", "get_collision_mask");
 

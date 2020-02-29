@@ -1769,13 +1769,10 @@ GDScriptFunction::GDScriptFunction() :
 #ifdef DEBUG_ENABLED
 	_func_cname = NULL;
 
-	if (GDScriptLanguage::get_singleton()->lock) {
-		GDScriptLanguage::get_singleton()->lock->lock();
-	}
-	GDScriptLanguage::get_singleton()->function_list.add(&function_list);
+	{
+		MutexLock lock(GDScriptLanguage::get_singleton()->lock);
 
-	if (GDScriptLanguage::get_singleton()->lock) {
-		GDScriptLanguage::get_singleton()->lock->unlock();
+		GDScriptLanguage::get_singleton()->function_list.add(&function_list);
 	}
 
 	profile.call_count = 0;
@@ -1793,14 +1790,10 @@ GDScriptFunction::GDScriptFunction() :
 
 GDScriptFunction::~GDScriptFunction() {
 #ifdef DEBUG_ENABLED
-	if (GDScriptLanguage::get_singleton()->lock) {
-		GDScriptLanguage::get_singleton()->lock->lock();
-	}
-	GDScriptLanguage::get_singleton()->function_list.remove(&function_list);
 
-	if (GDScriptLanguage::get_singleton()->lock) {
-		GDScriptLanguage::get_singleton()->lock->unlock();
-	}
+	MutexLock lock(GDScriptLanguage::get_singleton()->lock);
+
+	GDScriptLanguage::get_singleton()->function_list.remove(&function_list);
 #endif
 }
 

@@ -61,6 +61,7 @@ def get_opts():
         BoolVariable('use_lld', 'Use the LLD linker', False),
         BoolVariable('use_thinlto', 'Use ThinLTO', False),
         BoolVariable('use_static_cpp', 'Link libgcc and libstdc++ statically for better portability', False),
+        BoolVariable('use_coverage', 'Test Godot coverage', False),
         BoolVariable('use_ubsan', 'Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)', False),
         BoolVariable('use_asan', 'Use LLVM/GCC compiler address sanitizer (ASAN))', False),
         BoolVariable('use_lsan', 'Use LLVM/GCC compiler leak sanitizer (LSAN))', False),
@@ -141,6 +142,10 @@ def configure(env):
             print("Using LLD with GCC is not supported yet, try compiling with 'use_llvm=yes'.")
             sys.exit(255)
 
+    if env['use_coverage']:
+        env.Append(CCFLAGS=['-ftest-coverage', '-fprofile-arcs'])
+        env.Append(LINKFLAGS=['-ftest-coverage', '-fprofile-arcs'])
+
     if env['use_ubsan'] or env['use_asan'] or env['use_lsan'] or env['use_tsan']:
         env.extra_suffix += "s"
 
@@ -179,18 +184,10 @@ def configure(env):
     env.Append(CCFLAGS=['-pipe'])
     env.Append(LINKFLAGS=['-pipe'])
 
-    # Check for gcc version >= 6 before adding -no-pie
-    if using_gcc(env):
-        version = get_compiler_version(env)
-        if version != None and version[0] >= '6':
-            env.Append(CCFLAGS=['-fpie'])
-            env.Append(LINKFLAGS=['-no-pie'])
-    # Do the same for clang should be fine with Clang 4 and higher
-    if using_clang(env):
-        version = get_compiler_version(env)
-        if version != None and version[0] >= '4':
-            env.Append(CCFLAGS=['-fpie'])
-            env.Append(LINKFLAGS=['-no-pie'])
+    # -fpie and -no-pie is supported on GCC 6+ and Clang 4+, both below our
+    # minimal requirements.
+    env.Append(CCFLAGS=['-fpie'])
+    env.Append(LINKFLAGS=['-no-pie'])
 
     ## Dependencies
 

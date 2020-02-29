@@ -37,7 +37,7 @@
 
 #include "core/object.h"
 #include "core/rid.h"
-#include "scene/3d/navigation_mesh_instance.h"
+#include "scene/3d/navigation_region.h"
 
 /// This server uses the concept of internal mutability.
 /// All the constant functions can be called in multithread because internally
@@ -175,9 +175,11 @@ public:
 	/// Control activation of this server.
 	virtual void set_active(bool p_active) const = 0;
 
-	/// Step the server
-	/// NOTE: This function is not Threadsafe and MUST be called in single thread.
-	virtual void step(real_t delta_time) = 0;
+	/// Process the collision avoidance agents.
+	/// The result of this process is needed by the physics server,
+	/// so this must be called in the main thread.
+	/// Note: This function is not thread safe.
+	virtual void process(real_t delta_time) = 0;
 
 	NavigationServer();
 	virtual ~NavigationServer();

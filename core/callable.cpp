@@ -73,9 +73,11 @@ ObjectID Callable::get_object_id() const {
 	}
 }
 StringName Callable::get_method() const {
-	ERR_FAIL_COND_V(is_custom(), StringName());
+	ERR_FAIL_COND_V_MSG(is_custom(), StringName(),
+			vformat("Can't get method on CallableCustom \"%s\".", operator String()));
 	return method;
 }
+
 uint32_t Callable::hash() const {
 	if (is_custom()) {
 		return custom->hash();

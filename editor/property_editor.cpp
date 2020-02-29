@@ -393,12 +393,12 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 		} break;
 		case Variant::INT:
-		case Variant::REAL: {
+		case Variant::FLOAT: {
 
 			if (hint == PROPERTY_HINT_RANGE) {
 
 				int c = hint_text.get_slice_count(",");
-				float min = 0, max = 100, step = type == Variant::REAL ? .01 : 1;
+				float min = 0, max = 100, step = type == Variant::FLOAT ? .01 : 1;
 				if (c >= 1) {
 
 					if (!hint_text.get_slice(",", 0).empty())
@@ -589,7 +589,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 				if (!create_dialog) {
 					create_dialog = memnew(CreateDialog);
-					create_dialog->connect_compat("create", this, "_create_dialog_callback");
+					create_dialog->connect("create", callable_mp(this, &CustomPropertyEditor::_create_dialog_callback));
 					add_child(create_dialog);
 				}
 
@@ -605,12 +605,12 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				return false;
 
 			} else if (hint == PROPERTY_HINT_METHOD_OF_VARIANT_TYPE) {
-#define MAKE_PROPSELECT                                                                 \
-	if (!property_select) {                                                             \
-		property_select = memnew(PropertySelector);                                     \
-		property_select->connect_compat("selected", this, "_create_selected_property"); \
-		add_child(property_select);                                                     \
-	}                                                                                   \
+#define MAKE_PROPSELECT                                                                                            \
+	if (!property_select) {                                                                                        \
+		property_select = memnew(PropertySelector);                                                                \
+		property_select->connect("selected", callable_mp(this, &CustomPropertyEditor::_create_selected_property)); \
+		add_child(property_select);                                                                                \
+	}                                                                                                              \
 	hide();
 
 				MAKE_PROPSELECT;
@@ -865,7 +865,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				color_picker->set_deferred_mode(true);
 				add_child(color_picker);
 				color_picker->hide();
-				color_picker->connect_compat("color_changed", this, "_color_changed");
+				color_picker->connect("color_changed", callable_mp(this, &CustomPropertyEditor::_color_changed));
 
 				// get default color picker mode from editor settings
 				int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
@@ -1048,10 +1048,16 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 		case Variant::PACKED_BYTE_ARRAY: {
 
 		} break;
-		case Variant::PACKED_INT_ARRAY: {
+		case Variant::PACKED_INT32_ARRAY: {
 
 		} break;
-		case Variant::PACKED_REAL_ARRAY: {
+		case Variant::PACKED_FLOAT32_ARRAY: {
+
+		} break;
+		case Variant::PACKED_INT64_ARRAY: {
+
+		} break;
+		case Variant::PACKED_FLOAT64_ARRAY: {
 
 		} break;
 		case Variant::PACKED_STRING_ARRAY: {
@@ -1113,7 +1119,7 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 
 void CustomPropertyEditor::_type_create_selected(int p_idx) {
 
-	if (type == Variant::INT || type == Variant::REAL) {
+	if (type == Variant::INT || type == Variant::FLOAT) {
 
 		float newval = 0;
 		switch (p_idx) {
@@ -1563,7 +1569,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 			emit_signal("variant_changed");
 
 		} break;
-		case Variant::REAL: {
+		case Variant::FLOAT: {
 
 			if (hint != PROPERTY_HINT_EXP_EASING) {
 				String text = value_editor[0]->get_text();
@@ -1700,10 +1706,10 @@ void CustomPropertyEditor::_modified(String p_string) {
 		case Variant::PACKED_BYTE_ARRAY: {
 
 		} break;
-		case Variant::PACKED_INT_ARRAY: {
+		case Variant::PACKED_INT32_ARRAY: {
 
 		} break;
-		case Variant::PACKED_REAL_ARRAY: {
+		case Variant::PACKED_FLOAT32_ARRAY: {
 
 		} break;
 		case Variant::PACKED_STRING_ARRAY: {
@@ -1751,7 +1757,7 @@ void CustomPropertyEditor::_range_modified(double p_value) {
 
 void CustomPropertyEditor::_focus_enter() {
 	switch (type) {
-		case Variant::REAL:
+		case Variant::FLOAT:
 		case Variant::STRING:
 		case Variant::VECTOR2:
 		case Variant::RECT2:
@@ -1777,7 +1783,7 @@ void CustomPropertyEditor::_focus_enter() {
 
 void CustomPropertyEditor::_focus_exit() {
 	switch (type) {
-		case Variant::REAL:
+		case Variant::FLOAT:
 		case Variant::STRING:
 		case Variant::VECTOR2:
 		case Variant::RECT2:
@@ -1868,22 +1874,6 @@ void CustomPropertyEditor::config_value_editors(int p_amount, int p_columns, int
 
 void CustomPropertyEditor::_bind_methods() {
 
-	ClassDB::bind_method("_focus_enter", &CustomPropertyEditor::_focus_enter);
-	ClassDB::bind_method("_focus_exit", &CustomPropertyEditor::_focus_exit);
-	ClassDB::bind_method("_modified", &CustomPropertyEditor::_modified);
-	ClassDB::bind_method("_range_modified", &CustomPropertyEditor::_range_modified);
-	ClassDB::bind_method("_action_pressed", &CustomPropertyEditor::_action_pressed);
-	ClassDB::bind_method("_file_selected", &CustomPropertyEditor::_file_selected);
-	ClassDB::bind_method("_type_create_selected", &CustomPropertyEditor::_type_create_selected);
-	ClassDB::bind_method("_node_path_selected", &CustomPropertyEditor::_node_path_selected);
-	ClassDB::bind_method("_color_changed", &CustomPropertyEditor::_color_changed);
-	ClassDB::bind_method("_draw_easing", &CustomPropertyEditor::_draw_easing);
-	ClassDB::bind_method("_drag_easing", &CustomPropertyEditor::_drag_easing);
-	ClassDB::bind_method("_text_edit_changed", &CustomPropertyEditor::_text_edit_changed);
-	ClassDB::bind_method("_menu_option", &CustomPropertyEditor::_menu_option);
-	ClassDB::bind_method("_create_dialog_callback", &CustomPropertyEditor::_create_dialog_callback);
-	ClassDB::bind_method("_create_selected_property", &CustomPropertyEditor::_create_selected_property);
-
 	ADD_SIGNAL(MethodInfo("variant_changed"));
 	ADD_SIGNAL(MethodInfo("variant_field_changed", PropertyInfo(Variant::STRING, "field")));
 	ADD_SIGNAL(MethodInfo("resource_edit_request"));
@@ -1902,9 +1892,9 @@ CustomPropertyEditor::CustomPropertyEditor() {
 		add_child(value_label[i]);
 		value_editor[i]->hide();
 		value_label[i]->hide();
-		value_editor[i]->connect_compat("text_entered", this, "_modified");
-		value_editor[i]->connect_compat("focus_entered", this, "_focus_enter");
-		value_editor[i]->connect_compat("focus_exited", this, "_focus_exit");
+		value_editor[i]->connect("text_entered", callable_mp(this, &CustomPropertyEditor::_modified));
+		value_editor[i]->connect("focus_entered", callable_mp(this, &CustomPropertyEditor::_focus_enter));
+		value_editor[i]->connect("focus_exited", callable_mp(this, &CustomPropertyEditor::_focus_exit));
 	}
 	focused_value_editor = -1;
 
@@ -1934,7 +1924,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 		checks20[i]->set_focus_mode(FOCUS_NONE);
 		checks20gc->add_child(checks20[i]);
 		checks20[i]->hide();
-		checks20[i]->connect_compat("pressed", this, "_action_pressed", make_binds(i));
+		checks20[i]->connect("pressed", callable_mp(this, &CustomPropertyEditor::_action_pressed), make_binds(i));
 		checks20[i]->set_tooltip(vformat(TTR("Bit %d, val %d."), i, 1 << i));
 	}
 
@@ -1944,7 +1934,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	text_edit->set_margin(MARGIN_BOTTOM, -30);
 
 	text_edit->hide();
-	text_edit->connect_compat("text_changed", this, "_text_edit_changed");
+	text_edit->connect("text_changed", callable_mp(this, &CustomPropertyEditor::_text_edit_changed));
 
 	for (int i = 0; i < MAX_ACTION_BUTTONS; i++) {
 
@@ -1953,7 +1943,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 		add_child(action_buttons[i]);
 		Vector<Variant> binds;
 		binds.push_back(i);
-		action_buttons[i]->connect_compat("pressed", this, "_action_pressed", binds);
+		action_buttons[i]->connect("pressed", callable_mp(this, &CustomPropertyEditor::_action_pressed), binds);
 		action_buttons[i]->set_flat(true);
 	}
 
@@ -1964,8 +1954,8 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	add_child(file);
 	file->hide();
 
-	file->connect_compat("file_selected", this, "_file_selected");
-	file->connect_compat("dir_selected", this, "_file_selected");
+	file->connect("file_selected", callable_mp(this, &CustomPropertyEditor::_file_selected));
+	file->connect("dir_selected", callable_mp(this, &CustomPropertyEditor::_file_selected));
 
 	error = memnew(ConfirmationDialog);
 	error->set_title(TTR("Error!"));
@@ -1973,7 +1963,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 
 	scene_tree = memnew(SceneTreeDialog);
 	add_child(scene_tree);
-	scene_tree->connect_compat("selected", this, "_node_path_selected");
+	scene_tree->connect("selected", callable_mp(this, &CustomPropertyEditor::_node_path_selected));
 	scene_tree->get_scene_tree()->set_show_enabled_subscene(true);
 
 	texture_preview = memnew(TextureRect);
@@ -1983,31 +1973,31 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	easing_draw = memnew(Control);
 	add_child(easing_draw);
 	easing_draw->hide();
-	easing_draw->connect_compat("draw", this, "_draw_easing");
-	easing_draw->connect_compat("gui_input", this, "_drag_easing");
+	easing_draw->connect("draw", callable_mp(this, &CustomPropertyEditor::_draw_easing));
+	easing_draw->connect("gui_input", callable_mp(this, &CustomPropertyEditor::_drag_easing));
 	easing_draw->set_default_cursor_shape(Control::CURSOR_MOVE);
 
 	type_button = memnew(MenuButton);
 	add_child(type_button);
 	type_button->hide();
-	type_button->get_popup()->connect_compat("id_pressed", this, "_type_create_selected");
+	type_button->get_popup()->connect("id_pressed", callable_mp(this, &CustomPropertyEditor::_type_create_selected));
 
 	menu = memnew(PopupMenu);
 	menu->set_pass_on_modal_close_click(false);
 	add_child(menu);
-	menu->connect_compat("id_pressed", this, "_menu_option");
+	menu->connect("id_pressed", callable_mp(this, &CustomPropertyEditor::_menu_option));
 
 	evaluator = NULL;
 
 	spinbox = memnew(SpinBox);
 	add_child(spinbox);
 	spinbox->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 5);
-	spinbox->connect_compat("value_changed", this, "_range_modified");
+	spinbox->connect("value_changed", callable_mp(this, &CustomPropertyEditor::_range_modified));
 
 	slider = memnew(HSlider);
 	add_child(slider);
 	slider->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 5);
-	slider->connect_compat("value_changed", this, "_range_modified");
+	slider->connect("value_changed", callable_mp(this, &CustomPropertyEditor::_range_modified));
 
 	create_dialog = NULL;
 	property_select = NULL;

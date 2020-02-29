@@ -107,7 +107,7 @@
 			</description>
 		</method>
 		<method name="get_node_list" qualifiers="const">
-			<return type="PackedIntArray">
+			<return type="PackedInt32Array">
 			</return>
 			<argument index="0" name="type" type="int" enum="VisualShader.Type">
 			</argument>
@@ -182,6 +182,8 @@
 	<members>
 		<member name="code" type="String" setter="set_code" getter="get_code" override="true" default="&quot;shader_type spatial;void vertex() {// Output:0}void fragment() {// Output:0}void light() {// Output:0}&quot;" />
 		<member name="graph_offset" type="Vector2" setter="set_graph_offset" getter="get_graph_offset" default="Vector2( 0, 0 )">
+		</member>
+		<member name="version" type="String" setter="set_version" getter="get_version" default="&quot;&quot;">
 		</member>
 	</members>
 	<constants>

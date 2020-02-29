@@ -81,6 +81,7 @@ class VisualShaderEditor : public VBoxContainer {
 	bool saved_node_pos_dirty;
 
 	ConfirmationDialog *members_dialog;
+	PopupMenu *popup_menu;
 	MenuButton *tools;
 
 	bool preview_showed;
@@ -88,6 +89,15 @@ class VisualShaderEditor : public VBoxContainer {
 	enum ToolsMenuOptions {
 		EXPAND_ALL,
 		COLLAPSE_ALL
+	};
+
+	enum NodeMenuOptions {
+		ADD,
+		SEPARATOR, // ignore
+		COPY,
+		PASTE,
+		DELETE,
+		DUPLICATE,
 	};
 
 	Tree *members;
@@ -181,7 +191,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _node_selected(Object *p_node);
 
 	void _delete_request(int);
-	void _on_nodes_delete();
+	void _delete_nodes();
 
 	void _removed_from_graph();
 
@@ -216,7 +226,7 @@ class VisualShaderEditor : public VBoxContainer {
 
 	void _clear_buffer();
 	void _copy_nodes();
-	void _paste_nodes();
+	void _paste_nodes(bool p_use_custom_position = false, const Vector2 &p_custom_position = Vector2());
 
 	Vector<Ref<VisualShaderNodePlugin> > plugins;
 
@@ -249,6 +259,9 @@ class VisualShaderEditor : public VBoxContainer {
 	void _member_unselected();
 	void _member_create();
 	void _member_cancel();
+
+	Vector2 menu_point;
+	void _node_menu_id_pressed(int p_idx);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
