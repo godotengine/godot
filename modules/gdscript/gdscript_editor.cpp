@@ -30,6 +30,7 @@
 
 #include "gdscript.h"
 
+#include "core/class_db.h"
 #include "core/engine.h"
 #include "core/global_constants.h"
 #include "core/os/file_access.h"
@@ -87,17 +88,20 @@ Ref<Script> GDScriptLanguage::get_template(const String &p_class_name, const Str
 					   "\n"
 					   "# Declare member variables here. Examples:\n"
 					   "# var a%INT_TYPE% = 2\n"
-					   "# var b%STRING_TYPE% = \"text\"\n"
-					   "\n"
-					   "\n"
-					   "# Called when the node enters the scene tree for the first time.\n"
-					   "func _ready()%VOID_RETURN%:\n"
-					   "%TS%pass # Replace with function body.\n"
-					   "\n"
-					   "\n"
-					   "# Called every frame. 'delta' is the elapsed time since the previous frame.\n"
-					   "#func _process(delta%FLOAT_TYPE%)%VOID_RETURN%:\n"
-					   "#%TS%pass\n";
+					   "# var b%STRING_TYPE% = \"text\"\n";
+
+	if (ClassDB::is_parent_class(p_base_class_name, "Node")) {
+		_template = _template +
+					"\n"
+					"# Called when the node enters the scene tree for the first time.\n"
+					"func _ready()%VOID_RETURN%:\n"
+					"%TS%pass # Replace with function body.\n"
+					"\n"
+					"\n"
+					"# Called every frame. 'delta' is the elapsed time since the previous frame.\n"
+					"#func _process(delta%FLOAT_TYPE%)%VOID_RETURN%:\n"
+					"#%TS%pass\n";
+	}
 
 	_template = _get_processed_template(_template, p_base_class_name);
 

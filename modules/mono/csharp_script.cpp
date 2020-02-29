@@ -33,6 +33,7 @@
 #include <mono/metadata/threads.h>
 #include <stdint.h>
 
+#include "core/class_db.h"
 #include "core/io/json.h"
 #include "core/os/file_access.h"
 #include "core/os/mutex.h"
@@ -330,20 +331,25 @@ Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const Strin
 							 "{\n"
 							 "    // Declare member variables here. Examples:\n"
 							 "    // private int a = 2;\n"
-							 "    // private string b = \"text\";\n"
-							 "\n"
-							 "    // Called when the node enters the scene tree for the first time.\n"
-							 "    public override void _Ready()\n"
-							 "    {\n"
-							 "        \n"
-							 "    }\n"
-							 "\n"
-							 "//  // Called every frame. 'delta' is the elapsed time since the previous frame.\n"
-							 "//  public override void _Process(float delta)\n"
-							 "//  {\n"
-							 "//      \n"
-							 "//  }\n"
-							 "}\n";
+							 "    // private string b = \"text\";\n";
+
+	if (ClassDB::is_parent_class(p_base_class_name, "Node")) {
+		script_template = script_template +
+						  "\n"
+						  "    // Called when the node enters the scene tree for the first time.\n"
+						  "    public override void _Ready()\n"
+						  "    {\n"
+						  "        \n"
+						  "    }\n"
+						  "\n"
+						  "//  // Called every frame. 'delta' is the elapsed time since the previous frame.\n"
+						  "//  public override void _Process(float delta)\n"
+						  "//  {\n"
+						  "//      \n"
+						  "//  }\n";
+	}
+
+	script_template = script_template + "}\n";
 
 	String base_class_name = get_base_class_name(p_base_class_name, p_class_name);
 	script_template = script_template.replace("%BASE%", base_class_name)
