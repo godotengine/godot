@@ -63,7 +63,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(VkDebugU
 	if (strstr(pCallbackData->pMessage, "wrong ELF class: ELFCLASS32") != NULL) {
 		return VK_FALSE;
 	}
-	if (strstr(pCallbackData->pMessageIdName, "UNASSIGNED-CoreValidation-DrawState-ClearCmdBeforeDraw") != NULL) {
+	if (pCallbackData->pMessageIdName && strstr(pCallbackData->pMessageIdName, "UNASSIGNED-CoreValidation-DrawState-ClearCmdBeforeDraw") != NULL) {
 		return VK_FALSE;
 	}
 
