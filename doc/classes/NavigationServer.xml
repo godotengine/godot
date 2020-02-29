@@ -298,6 +298,17 @@
 				Sets the map up direction.
 			</description>
 		</method>
+		<method name="process">
+			<return type="void">
+			</return>
+			<argument index="0" name="delta_time" type="float">
+			</argument>
+			<description>
+				Process the collision avoidance agents.
+				The result of this process is needed by the physics server, so this must be called in the main thread.
+				Note: This function is not thread safe.
+			</description>
+		</method>
 		<method name="region_bake_navmesh" qualifiers="const">
 			<return type="void">
 			</return>
@@ -356,17 +367,6 @@
 			</argument>
 			<description>
 				Control activation of this server.
-			</description>
-		</method>
-		<method name="process">
-			<return type="void">
-			</return>
-			<argument index="0" name="delta_time" type="float">
-			</argument>
-			<description>
-				Process the collision avoidance agents.
-				The result of this process is needed by the physics server, so this must be called in the main thread.
-				Note: This function is not thread safe.
 			</description>
 		</method>
 	</methods>

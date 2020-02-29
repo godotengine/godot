@@ -11,7 +11,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeIntFunc.Function" default="0">
+		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeIntFunc.Function" default="3">
 			A function to be applied to the scalar. See [enum Function] for options.
 		</member>
 	</members>
