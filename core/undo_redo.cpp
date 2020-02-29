@@ -182,7 +182,7 @@ void UndoRedo::add_undo_property(Object *p_object, const StringName &p_property,
 		tab_change_op.object = filter->_get_sectioned_inspector()->get_instance_id();
 		tab_change_op.type = Operation::TYPE_METHOD;
 		tab_change_op.name = StringName("_set_current_section");
-		tab_change_op.args[0] = filter->_get_sectioned_inspector()->get_current_section();
+		tab_change_op.args[0] = filter->_get_sectioned_inspector()->call(StringName("_get_current_section"));
 		actions.write[current_action + 1].undo_ops.push_back(tab_change_op);
 	}
 

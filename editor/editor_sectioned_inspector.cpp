@@ -33,10 +33,10 @@
 
 void SectionedInspector::_bind_methods() {
 
-
 	ClassDB::bind_method("_section_selected", &SectionedInspector::_section_selected);
 	ClassDB::bind_method("_search_changed", &SectionedInspector::_search_changed);
 	ClassDB::bind_method("_set_current_section", &SectionedInspector::set_current_section);
+	ClassDB::bind_method("_get_current_section", &SectionedInspector::get_current_section);
 
 	ClassDB::bind_method("update_category_list", &SectionedInspector::update_category_list);
 }
