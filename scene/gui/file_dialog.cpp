@@ -391,7 +391,7 @@ void FileDialog::_tree_item_activated() {
 
 	if (d["dir"]) {
 
-		dir_access->change_dir(d["name"]);
+		set_current_dir(d["name"]);
 		if (mode == MODE_OPEN_FILE || mode == MODE_OPEN_FILES || mode == MODE_OPEN_DIR || mode == MODE_OPEN_ANY)
 			file->set_text("");
 		call_deferred("_update_file_list");
