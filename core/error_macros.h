@@ -477,7 +477,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  */
 #define ERR_FAIL()                                                                     \
 	if (1) {                                                                           \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/Function Failed."); \
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed."); \
 		return;                                                                        \
 	} else                                                                             \
 		((void)0)
@@ -490,7 +490,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  */
 #define ERR_FAIL_MSG(m_msg)                                                                              \
 	if (1) {                                                                                             \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/Function Failed.", DEBUG_STR(m_msg)); \
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed.", DEBUG_STR(m_msg)); \
 		return;                                                                                          \
 	} else                                                                                               \
 		((void)0)
@@ -504,7 +504,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  */
 #define ERR_FAIL_V(m_retval)                                                                                      \
 	if (1) {                                                                                                      \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/Function Failed, returning: " __STR(m_value)); \
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed, returning: " __STR(m_value)); \
 		return m_retval;                                                                                          \
 	} else                                                                                                        \
 		((void)0)
@@ -517,7 +517,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  */
 #define ERR_FAIL_V_MSG(m_retval, m_msg)                                                                                             \
 	if (1) {                                                                                                                        \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/Function Failed, returning: " __STR(m_value), DEBUG_STR(m_msg)); \
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed, returning: " __STR(m_value), DEBUG_STR(m_msg)); \
 		return m_retval;                                                                                                            \
 	} else                                                                                                                          \
 		((void)0)
@@ -606,7 +606,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  */
 #define CRASH_NOW()                                                                           \
 	if (1) {                                                                                  \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Method/Function Failed."); \
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Method/function failed."); \
 		GENERATE_TRAP();                                                                      \
 	} else                                                                                    \
 		((void)0)
@@ -618,7 +618,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  */
 #define CRASH_NOW_MSG(m_msg)                                                                                    \
 	if (1) {                                                                                                    \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Method/Function Failed.", DEBUG_STR(m_msg)); \
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Method/function failed.", DEBUG_STR(m_msg)); \
 		GENERATE_TRAP();                                                                                        \
 	} else                                                                                                      \
 		((void)0)

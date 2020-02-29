@@ -78,7 +78,7 @@ bool GDScriptParser::_enter_indent_block(BlockNode *p_block) {
 		// report location at the previous token (on the previous line)
 		int error_line = tokenizer->get_token_line(-1);
 		int error_column = tokenizer->get_token_column(-1);
-		_set_error("':' expected at end of line.", error_line, error_column);
+		_set_error("\":\" expected at end of line.", error_line, error_column);
 		return false;
 	}
 	tokenizer->advance();
@@ -109,7 +109,7 @@ bool GDScriptParser::_enter_indent_block(BlockNode *p_block) {
 			IndentLevel current_level = indent_level.back()->get();
 			IndentLevel new_indent(indent, tabs);
 			if (new_indent.is_mixed(current_level)) {
-				_set_error("Mixed tabs and spaces in indentation.");
+				_set_error("Mixed tabs and spaces in indentation. Use only tabs or spaces for indentation, not both.");
 				return false;
 			}
 
@@ -171,7 +171,7 @@ bool GDScriptParser::_parse_arguments(Node *p_parent, Vector<Node *> &p_args, bo
 
 				if (tokenizer->get_token(1) == GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
 
-					_set_error("Expression expected");
+					_set_error("Expression expected.");
 					return false;
 				}
 
@@ -179,7 +179,7 @@ bool GDScriptParser::_parse_arguments(Node *p_parent, Vector<Node *> &p_args, bo
 				argidx++;
 			} else {
 				// something is broken
-				_set_error("Expected ',' or ')'");
+				_set_error("Expected \",\" or \")\".");
 				return false;
 			}
 		}
@@ -280,7 +280,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 			if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
 
-				_set_error("Expected ')' in expression");
+				_set_error("Expected \")\" in expression.");
 				return NULL;
 			}
 
@@ -317,7 +317,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 						}
 
 						if (tokenizer->get_token_constant().get_type() != Variant::STRING) {
-							_set_error("Expected string constant or identifier after '$' or '/'.");
+							_set_error("Expected a string constant or identifier after \"$\" or \"/\".");
 							return NULL;
 						}
 
@@ -426,7 +426,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			//constant defined by tokenizer
 			tokenizer->advance();
 			if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
-				_set_error("Expected '(' after 'preload'");
+				_set_error("Expected \"(\" after \"preload\".");
 				return NULL;
 			}
 			tokenizer->advance();
@@ -475,7 +475,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			}
 
 			if (!valid) {
-				_set_error("expected string constant as 'preload' argument.");
+				_set_error("Expected a string constant as \"preload\" argument.");
 				return NULL;
 			}
 
@@ -484,7 +484,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			path = path.replace("///", "//").simplify_path();
 			if (path == self_path) {
 
-				_set_error("Can't preload itself (use 'get_script()').");
+				_set_error("A script can't preload itself. Use \"get_script()\" instead.");
 				return NULL;
 			}
 
@@ -515,7 +515,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			}
 
 			if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
-				_set_error("Expected ')' after 'preload' path");
+				_set_error("Expected \")\" after \"preload\" path.");
 				return NULL;
 			}
 
@@ -673,7 +673,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 						}
 					}
 					if (!valid) {
-						_set_error("Static constant  '" + identifier.operator String() + "' not present in built-in type " + Variant::get_type_name(bi_type) + ".");
+						_set_error("Static constant  \"" + identifier.operator String() + "\" not present in built-in type " + Variant::get_type_name(bi_type) + ".");
 						return NULL;
 					}
 				}
@@ -911,7 +911,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			tokenizer->advance();
 
 			if (e.op != OperatorNode::OP_NOT && tokenizer->get_token() == GDScriptTokenizer::TK_OP_NOT) {
-				_set_error("Misplaced 'not'.");
+				_set_error("Misplaced \"not\".");
 				return NULL;
 			}
 
@@ -928,7 +928,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_IS && tokenizer->get_token(1) == GDScriptTokenizer::TK_BUILT_IN_TYPE) {
 			// 'is' operator with built-in type
 			if (!expr) {
-				_set_error("Expected identifier before 'is' operator");
+				_set_error("Expected an identifier before \"is\" operator.");
 				return NULL;
 			}
 			OperatorNode *op = alloc_node<OperatorNode>();
@@ -954,7 +954,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_EOF) {
 
-					_set_error("Unterminated array");
+					_set_error("Unterminated array.");
 					return NULL;
 
 				} else if (tokenizer->get_token() == GDScriptTokenizer::TK_BRACKET_CLOSE) {
@@ -965,7 +965,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 					tokenizer->advance(); //ignore newline
 				} else if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
 					if (!expecting_comma) {
-						_set_error("expression or ']' expected");
+						_set_error("Expression or \"]\" expected");
 						return NULL;
 					}
 
@@ -974,7 +974,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				} else {
 					//parse expression
 					if (expecting_comma) {
-						_set_error("',' or ']' expected");
+						_set_error("\",\" or \"]\" expected");
 						return NULL;
 					}
 					Node *n = _parse_expression(arr, p_static, p_allow_assign, p_parsing_constant);
@@ -1010,17 +1010,17 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_EOF) {
 
-					_set_error("Unterminated dictionary");
+					_set_error("Unterminated dictionary.");
 					return NULL;
 
 				} else if (tokenizer->get_token() == GDScriptTokenizer::TK_CURLY_BRACKET_CLOSE) {
 
 					if (expecting == DICT_EXPECT_COLON) {
-						_set_error("':' expected");
+						_set_error("\":\" expected.");
 						return NULL;
 					}
 					if (expecting == DICT_EXPECT_VALUE) {
-						_set_error("value expected");
+						_set_error("Value expected.");
 						return NULL;
 					}
 					tokenizer->advance();
@@ -1031,15 +1031,15 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				} else if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
 
 					if (expecting == DICT_EXPECT_KEY) {
-						_set_error("key or '}' expected");
+						_set_error("Key or \"}\" expected.");
 						return NULL;
 					}
 					if (expecting == DICT_EXPECT_VALUE) {
-						_set_error("value expected");
+						_set_error("Value expected.");
 						return NULL;
 					}
 					if (expecting == DICT_EXPECT_COLON) {
-						_set_error("':' expected");
+						_set_error("\":\" expected.");
 						return NULL;
 					}
 
@@ -1049,15 +1049,15 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				} else if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
 
 					if (expecting == DICT_EXPECT_KEY) {
-						_set_error("key or '}' expected");
+						_set_error("Key or \"}\" expected.");
 						return NULL;
 					}
 					if (expecting == DICT_EXPECT_VALUE) {
-						_set_error("value expected");
+						_set_error("Value expected.");
 						return NULL;
 					}
 					if (expecting == DICT_EXPECT_COMMA) {
-						_set_error("',' or '}' expected");
+						_set_error("\",\" or \"}\" expected.");
 						return NULL;
 					}
 
@@ -1066,11 +1066,11 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				} else {
 
 					if (expecting == DICT_EXPECT_COMMA) {
-						_set_error("',' or '}' expected");
+						_set_error("\",\" or \"}\" expected.");
 						return NULL;
 					}
 					if (expecting == DICT_EXPECT_COLON) {
-						_set_error("':' expected");
+						_set_error("\":\" expected.");
 						return NULL;
 					}
 
@@ -1104,7 +1104,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 							Variant const &keyName = static_cast<const GDScriptParser::ConstantNode *>(key)->value;
 
 							if (keys.has(keyName)) {
-								_set_error("Duplicate key found in Dictionary literal");
+								_set_error("Duplicate key found in Dictionary literal.");
 								return NULL;
 							}
 							keys.insert(keyName);
@@ -1141,7 +1141,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 			if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
 				if (!is_completion) {
-					_set_error("Expected '(' for parent function call.");
+					_set_error("Expected \"(\" for parent function call.");
 					return NULL;
 				}
 			} else {
@@ -1185,7 +1185,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 				if (tokenizer->get_token(1) != GDScriptTokenizer::TK_CURSOR && !tokenizer->is_token_literal(1)) {
 					// We check with is_token_literal, as this allows us to use match/sync/etc. as a name
-					_set_error("Expected identifier as member");
+					_set_error("Expected an identifier as member.");
 					return NULL;
 				} else if (tokenizer->get_token(2) == GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
 					//call!!
@@ -1255,7 +1255,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				}
 
 				if (tokenizer->get_token() != GDScriptTokenizer::TK_BRACKET_CLOSE) {
-					_set_error("Expected ']'");
+					_set_error("Expected \"]\"");
 					return NULL;
 				}
 
@@ -1275,12 +1275,12 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 		bool has_casting = expr->type == Node::TYPE_CAST;
 		if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_AS) {
 			if (has_casting) {
-				_set_error("Unexpected 'as'.");
+				_set_error("Unexpected \"as\".");
 				return NULL;
 			}
 			CastNode *cn = alloc_node<CastNode>();
 			if (!_parse_type(cn->cast_type)) {
-				_set_error("Expected type after 'as'.");
+				_set_error("Expected a type after \"as\".");
 				return NULL;
 			}
 			has_casting = true;
@@ -1487,7 +1487,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				// < is used for left to right (default)
 				// <= is used for right to left
 				if (error) {
-					_set_error("Unexpected operator");
+					_set_error("Unexpected operator.");
 					return NULL;
 				}
 				next_op = i;
@@ -1499,7 +1499,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 		if (next_op == -1) {
 
-			_set_error("Yet another parser bug....");
+			_set_error("Unknown parser bug (please report on GitHub).");
 			ERR_FAIL_V(NULL);
 		}
 
@@ -1531,16 +1531,16 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 		} else if (is_ternary) {
 			if (next_op < 1 || next_op >= (expression.size() - 1)) {
-				_set_error("Parser bug...");
+				_set_error("Unknown parser bug (please report on GitHub).");
 				ERR_FAIL_V(NULL);
 			}
 
 			if (next_op >= (expression.size() - 2) || expression[next_op + 2].op != OperatorNode::OP_TERNARY_ELSE) {
-				_set_error("Expected else after ternary if.");
+				_set_error("Expected \"else\" after ternary \"if\".");
 				return NULL;
 			}
 			if (next_op >= (expression.size() - 3)) {
-				_set_error("Expected value after ternary else.");
+				_set_error("Expected a value after ternary \"else\".");
 				return NULL;
 			}
 
@@ -1550,7 +1550,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 			if (expression[next_op - 1].is_op) {
 
-				_set_error("Parser bug...");
+				_set_error("Unknown parser bug (please report on GitHub).");
 				ERR_FAIL_V(NULL);
 			}
 
@@ -1560,7 +1560,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				// can be followed by a unary op in a valid combination,
 				// due to how precedence works, unaries will always disappear first
 
-				_set_error("Unexpected two consecutive operators after ternary if.");
+				_set_error("Unexpected two consecutive operators after ternary \"if\".");
 				return NULL;
 			}
 
@@ -1570,7 +1570,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				// can be followed by a unary op in a valid combination,
 				// due to how precedence works, unaries will always disappear first
 
-				_set_error("Unexpected two consecutive operators after ternary else.");
+				_set_error("Unexpected two consecutive operators after ternary \"else\".");
 				return NULL;
 			}
 
@@ -1587,7 +1587,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 		} else {
 
 			if (next_op < 1 || next_op >= (expression.size() - 1)) {
-				_set_error("Parser bug...");
+				_set_error("Unknown parser bug (please report on GitHub).");
 				ERR_FAIL_V(NULL);
 			}
 
@@ -1597,7 +1597,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 			if (expression[next_op - 1].is_op) {
 
-				_set_error("Parser bug...");
+				_set_error("Unknown parser bug (please report on GitHub).");
 				ERR_FAIL_V(NULL);
 			}
 
@@ -1756,11 +1756,11 @@ GDScriptParser::Node *GDScriptParser::_reduce_expression(Node *p_node, bool p_to
 						String errwhere;
 						if (op->arguments[0]->type == Node::TYPE_TYPE) {
 							TypeNode *tn = static_cast<TypeNode *>(op->arguments[0]);
-							errwhere = "'" + Variant::get_type_name(tn->vtype) + "' constructor";
+							errwhere = "\"" + Variant::get_type_name(tn->vtype) + "\" constructor";
 
 						} else {
 							GDScriptFunctions::Function func = static_cast<BuiltInFunctionNode *>(op->arguments[0])->function;
-							errwhere = String("'") + GDScriptFunctions::get_func_name(func) + "' intrinsic function";
+							errwhere = String("\"") + GDScriptFunctions::get_func_name(func) + "\" intrinsic function";
 						}
 
 						switch (ce.error) {
@@ -1772,14 +1772,14 @@ GDScriptParser::Node *GDScriptParser::_reduce_expression(Node *p_node, bool p_to
 							} break;
 							case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS: {
 
-								_set_error("Too many arguments for " + errwhere + ".");
+								_set_error(vformat("Too many arguments for %s (%d given).", errwhere, op->arguments.size()));
 							} break;
 							case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS: {
 
-								_set_error("Too few arguments for " + errwhere + ".");
+								_set_error(vformat("Too few arguments for %s (%d given).", errwhere, op->arguments.size()));
 							} break;
 							default: {
-								_set_error("Invalid arguments for " + errwhere + ".");
+								_set_error(vformat("Invalid arguments for %s ."));
 
 							} break;
 						}
@@ -1812,7 +1812,7 @@ GDScriptParser::Node *GDScriptParser::_reduce_expression(Node *p_node, bool p_to
 
 					Variant v = ca->value.get(cb->value, &valid);
 					if (!valid) {
-						_set_error("invalid index in constant expression");
+						_set_error("Invalid index in constant expression.");
 						error_line = op->line;
 						return op;
 					}
@@ -1835,7 +1835,7 @@ GDScriptParser::Node *GDScriptParser::_reduce_expression(Node *p_node, bool p_to
 					bool valid;
 					Variant v = ca->value.get_named(ib->name, &valid);
 					if (!valid) {
-						_set_error("invalid index '" + String(ib->name) + "' in constant expression");
+						_set_error("Invalid index \"" + String(ib->name) + "\" in constant expression.");
 						error_line = op->line;
 						return op;
 					}
@@ -1896,7 +1896,7 @@ GDScriptParser::Node *GDScriptParser::_reduce_expression(Node *p_node, bool p_to
 	Variant res;                                                                                           \
 	Variant::evaluate(m_vop, static_cast<ConstantNode *>(op->arguments[0])->value, Variant(), res, valid); \
 	if (!valid) {                                                                                          \
-		_set_error("Invalid operand for unary operator");                                                  \
+		_set_error("Invalid operand for unary operator.");                                                 \
 		error_line = op->line;                                                                             \
 		return p_node;                                                                                     \
 	}                                                                                                      \
@@ -1910,7 +1910,7 @@ GDScriptParser::Node *GDScriptParser::_reduce_expression(Node *p_node, bool p_to
 	Variant res;                                                                                                                                      \
 	Variant::evaluate(m_vop, static_cast<ConstantNode *>(op->arguments[0])->value, static_cast<ConstantNode *>(op->arguments[1])->value, res, valid); \
 	if (!valid) {                                                                                                                                     \
-		_set_error("Invalid operands for operator");                                                                                                  \
+		_set_error("Invalid operands for operator.");                                                                                                 \
 		error_line = op->line;                                                                                                                        \
 		return p_node;                                                                                                                                \
 	}                                                                                                                                                 \
@@ -2077,7 +2077,7 @@ GDScriptParser::PatternNode *GDScriptParser::_parse_pattern(bool p_static) {
 						tokenizer->advance(1);
 						break;
 					} else {
-						_set_error("'..' pattern only allowed at the end of an array pattern");
+						_set_error("\"..\" pattern only allowed at the end of an array pattern.");
 						return NULL;
 					}
 				}
@@ -2096,7 +2096,7 @@ GDScriptParser::PatternNode *GDScriptParser::_parse_pattern(bool p_static) {
 					tokenizer->advance();
 					break;
 				} else {
-					_set_error("Not a valid pattern");
+					_set_error("Not a valid pattern.");
 					return NULL;
 				}
 			}
@@ -2105,7 +2105,7 @@ GDScriptParser::PatternNode *GDScriptParser::_parse_pattern(bool p_static) {
 		case GDScriptTokenizer::TK_PR_VAR: {
 			tokenizer->advance();
 			if (!tokenizer->is_token_literal()) {
-				_set_error("Expected identifier for binding variable name.");
+				_set_error("Expected an identifier for binding variable name.");
 				return NULL;
 			}
 			pattern->pt_type = GDScriptParser::PatternNode::PT_BIND;
@@ -2114,7 +2114,7 @@ GDScriptParser::PatternNode *GDScriptParser::_parse_pattern(bool p_static) {
 			BlockNode *bl = current_block;
 			while (bl) {
 				if (bl->variables.has(pattern->bind)) {
-					_set_error("Binding name of '" + pattern->bind.operator String() + "' is already declared in this scope.");
+					_set_error("Binding name of \"" + pattern->bind.operator String() + "\" is already declared in this scope.");
 					return NULL;
 				}
 				bl = bl->parent_block;
@@ -2149,19 +2149,19 @@ GDScriptParser::PatternNode *GDScriptParser::_parse_pattern(bool p_static) {
 						tokenizer->advance(1);
 						break;
 					} else {
-						_set_error("'..' pattern only allowed at the end of a dictionary pattern");
+						_set_error("\"..\" pattern only allowed at the end of a dictionary pattern");
 						return NULL;
 					}
 				}
 
 				Node *key = _parse_and_reduce_expression(pattern, p_static);
 				if (!key) {
-					_set_error("Not a valid key in pattern");
+					_set_error("Not a valid key in pattern.");
 					return NULL;
 				}
 
 				if (key->type != GDScriptParser::Node::TYPE_CONSTANT) {
-					_set_error("Not a constant expression as key");
+					_set_error("Not a constant expression as key.");
 					return NULL;
 				}
 
@@ -2170,7 +2170,7 @@ GDScriptParser::PatternNode *GDScriptParser::_parse_pattern(bool p_static) {
 
 					PatternNode *value = _parse_pattern(p_static);
 					if (!value) {
-						_set_error("Expected pattern in dictionary value");
+						_set_error("Expected a pattern in dictionary value.");
 						return NULL;
 					}
 
@@ -2186,7 +2186,7 @@ GDScriptParser::PatternNode *GDScriptParser::_parse_pattern(bool p_static) {
 					tokenizer->advance();
 					break;
 				} else {
-					_set_error("Not a valid pattern");
+					_set_error("Not a valid pattern.");
 					return NULL;
 				}
 			}
@@ -2199,7 +2199,7 @@ GDScriptParser::PatternNode *GDScriptParser::_parse_pattern(bool p_static) {
 		default: {
 			Node *value = _parse_and_reduce_expression(pattern, p_static);
 			if (!value) {
-				_set_error("Expect constant expression or variables in a pattern");
+				_set_error("Expect a constant expression or variables in a pattern.");
 				return NULL;
 			}
 
@@ -2218,12 +2218,12 @@ GDScriptParser::PatternNode *GDScriptParser::_parse_pattern(bool p_static) {
 				}
 
 				if (current_value->type != Node::TYPE_IDENTIFIER) {
-					_set_error("Only constant expression or variables allowed in a pattern");
+					_set_error("Only constant expressions or variables are allowed in a pattern.");
 					return NULL;
 				}
 
 			} else if (value->type != Node::TYPE_IDENTIFIER && value->type != Node::TYPE_CONSTANT) {
-				_set_error("Only constant expressions or variables allowed in a pattern");
+				_set_error("Only constant expressions or variables are allowed in a pattern.");
 				return NULL;
 			}
 
@@ -2299,7 +2299,7 @@ void GDScriptParser::_parse_pattern_block(BlockNode *p_block, Vector<PatternBran
 		catch_all_appeared = catch_all_appeared || catch_all;
 
 		if (!_enter_indent_block()) {
-			_set_error("Expected block in pattern branch");
+			_set_error("Expected a block in pattern branch.");
 			return;
 		}
 
@@ -2646,7 +2646,7 @@ void GDScriptParser::_transform_match_statment(MatchNode *p_match_statement) {
 			}
 
 			if (!binding.empty() && !bindings.empty()) {
-				_set_error("Multipatterns can't contain bindings");
+				_set_error("Multipatterns can't contain bindings.");
 				return;
 			} else {
 				binding = bindings;
@@ -3167,7 +3167,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				p_block->sub_blocks.push_back(cf_for->body);
 
 				if (!_enter_indent_block(cf_for->body)) {
-					_set_error("Expected indented block after \"for\".");
+					_set_error("Expected an indented block after \"for\".");
 					p_block->end_line = tokenizer->get_token_line();
 					return;
 				}
@@ -3241,7 +3241,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 					cf_return->arguments.push_back(retexpr);
 					p_block->statements.push_back(cf_return);
 					if (!_end_statement()) {
-						_set_error("Expected end of statement after return expression.");
+						_set_error("Expected end of statement after \"return\" expression.");
 						return;
 					}
 				}
@@ -3266,7 +3266,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				match_node->val_to_match = val_to_match;
 
 				if (!_enter_indent_block()) {
-					_set_error("Expected indented pattern matching block after \"match\".");
+					_set_error("Expected an indented pattern matching block after \"match\".");
 					return;
 				}
 
@@ -3295,7 +3295,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				tokenizer->advance();
 
 				if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
-					_set_error("Expected '(' after assert");
+					_set_error("Expected \"(\" after assert.");
 					return;
 				}
 
@@ -3308,7 +3308,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				}
 
 				if (args.empty() || args.size() > 2) {
-					_set_error("Wrong number of arguments, expected 1 or 2");
+					_set_error(vformat("Wrong number of arguments (expected 1 or 2, %d given).", args.size()));
 					return;
 				}
 
@@ -3354,9 +3354,9 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				if (!_end_statement()) {
 					// Attempt to guess a better error message if the user "retypes" a variable
 					if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON && tokenizer->get_token(1) == GDScriptTokenizer::TK_OP_ASSIGN) {
-						_set_error("Unexpected ':=', use '=' instead. Expected end of statement after expression.");
+						_set_error("Unexpected \":=\", use \"=\" instead. Expected end of statement after expression.");
 					} else {
-						_set_error(String() + "Expected end of statement after expression, got " + tokenizer->get_token_name(tokenizer->get_token()) + " instead");
+						_set_error(String() + "Expected end of statement after expression, got " + tokenizer->get_token_name(tokenizer->get_token()) + " instead.");
 					}
 					return;
 				}
@@ -3485,7 +3485,7 @@ void GDScriptParser::_parse_extends(ClassNode *p_class) {
 
 			default: {
 
-				_set_error("Invalid \"extends\" syntax, expected string constant (path) and/or identifier (parent class).");
+				_set_error("Invalid \"extends\" syntax. Expected a string constant (path) and/or identifier (parent class).");
 				return;
 			}
 		}
@@ -4424,7 +4424,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 											if (tokenizer->get_token() != GDScriptTokenizer::TK_CONSTANT || tokenizer->get_token_constant().get_type() != Variant::STRING) {
 
 												if (current_export.hint == PROPERTY_HINT_GLOBAL_FILE)
-													_set_error("Expected string constant with filter.");
+													_set_error("Expected a string constant with filter.");
 												else
 													_set_error("Expected \"GLOBAL\" or string constant with filter.");
 												return;
@@ -4557,7 +4557,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 							}
 						} else {
 							current_export = PropertyInfo();
-							_set_error("Expected type for export.");
+							_set_error("Expected a type for the export hint.");
 							return;
 						}
 					}
@@ -5329,7 +5329,7 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class, bool p_recursive
 						}
 						base_script = ResourceLoader::load(singleton_path);
 						if (!base_script.is_valid()) {
-							_set_error("Class '" + base + "' could not be fully loaded (script error or cyclic inheritance).", p_class->line);
+							_set_error("Class \"" + base + "\" could not be fully loaded (script error or cyclic inheritance).", p_class->line);
 							return;
 						}
 						p = NULL;
@@ -5705,7 +5705,7 @@ GDScriptParser::DataType GDScriptParser::_resolve_type(const DataType &p_source,
 				Ref<GDScript> gds = script;
 				if (gds.is_valid()) {
 					if (!gds->is_valid()) {
-						_set_error("Class '" + id + "' could not be fully loaded (script error or cyclic inheritance).", p_line);
+						_set_error("Class \"" + id + "\" could not be fully loaded (script error or cyclic inheritance).", p_line);
 						return DataType();
 					}
 					result.kind = DataType::GDSCRIPT;
@@ -5714,7 +5714,7 @@ GDScriptParser::DataType GDScriptParser::_resolve_type(const DataType &p_source,
 					result.kind = DataType::SCRIPT;
 					result.script_type = script;
 				} else {
-					_set_error("Couldn't fully load singleton script '" + id + "' (possible cyclic reference or parse error).", p_line);
+					_set_error("Couldn't fully load singleton script \"" + id + "\" (possible cyclic reference or parse error).", p_line);
 					return DataType();
 				}
 				name_part++;
@@ -6875,7 +6875,7 @@ bool GDScriptParser::_get_function_signature(DataType &p_base_type, const String
 	}
 	if (!ClassDB::class_exists(native)) {
 		if (!check_types) return false;
-		ERR_FAIL_V_MSG(false, "Parser bug: Class '" + String(native) + "' not found.");
+		ERR_FAIL_V_MSG(false, "Parser bug: Class \"" + String(native) + "\" not found.");
 	}
 
 	MethodBind *method = ClassDB::get_method(native, p_function);
@@ -7028,15 +7028,15 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 			if (match) {
 				return _type_from_property(return_type2, false);
 			} else if (check_types) {
-				String err = "No constructor of '";
+				String err = "No constructor of \"";
 				err += Variant::get_type_name(tn->vtype);
-				err += "' matches the signature '";
+				err += "\" matches the signature \"";
 				err += Variant::get_type_name(tn->vtype) + "(";
 				for (int i = 0; i < par_types.size(); i++) {
 					if (i > 0) err += ", ";
 					err += par_types[i].to_string();
 				}
-				err += ")'.";
+				err += ")\".";
 				_set_error(err, p_call->line, p_call->column);
 				return DataType();
 			}
@@ -7216,11 +7216,21 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 	}
 
 	if (arg_count < arg_types.size() - default_args_count) {
-		_set_error("Too few arguments for \"" + callee_name + "()\" call. Expected at least " + itos(arg_types.size() - default_args_count) + ".", p_call->line);
+		_set_error(
+				vformat("Too few arguments for \"%s()\" call. Expected at least %d (%d given).",
+						callee_name,
+						arg_types.size() - default_args_count,
+						arg_count),
+				p_call->line);
 		return return_type;
 	}
 	if (!is_vararg && arg_count > arg_types.size()) {
-		_set_error("Too many arguments for \"" + callee_name + "()\" call. Expected at most " + itos(arg_types.size()) + ".", p_call->line);
+		_set_error(
+				vformat("Too many arguments for \"%s()\" call. Expected at most %d (%d given).",
+						callee_name,
+						arg_types.size(),
+						arg_count),
+				p_call->line);
 		return return_type;
 	}
 
@@ -7875,8 +7885,8 @@ void GDScriptParser::_check_function_types(FunctionNode *p_function) {
 
 				if (!_is_type_compatible(p_function->argument_types[i], def_type, true)) {
 					String arg_name = p_function->arguments[i];
-					_set_error("Value type (" + def_type.to_string() + ") doesn't match the type of argument '" +
-									   arg_name + "' (" + p_function->argument_types[i].to_string() + ").",
+					_set_error("Value type (" + def_type.to_string() + ") doesn't match the type of argument \"" +
+									   arg_name + "\" (" + p_function->argument_types[i].to_string() + ").",
 							p_function->line);
 				}
 			}

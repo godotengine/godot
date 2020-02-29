@@ -41,7 +41,7 @@
 #include "core/os/dir_access.h"
 #include "core/version.h"
 
-#define _printerr() ERR_PRINT(String(res_path + ":" + itos(lines) + " - Parse Error: " + error_text).utf8().get_data());
+#define _printerr() ERR_PRINT(String(res_path + ":" + itos(lines) + " - Parse error: " + error_text).utf8().get_data());
 
 ///
 
