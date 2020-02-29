@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "popup_menu.h"
+
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -1233,7 +1234,7 @@ void PopupMenu::_ref_shortcut(Ref<ShortCut> p_sc) {
 
 	if (!shortcut_refcount.has(p_sc)) {
 		shortcut_refcount[p_sc] = 1;
-		p_sc->connect_compat("changed", this, "update");
+		p_sc->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::update));
 	} else {
 		shortcut_refcount[p_sc] += 1;
 	}
@@ -1244,7 +1245,7 @@ void PopupMenu::_unref_shortcut(Ref<ShortCut> p_sc) {
 	ERR_FAIL_COND(!shortcut_refcount.has(p_sc));
 	shortcut_refcount[p_sc]--;
 	if (shortcut_refcount[p_sc] == 0) {
-		p_sc->disconnect_compat("changed", this, "update");
+		p_sc->disconnect("changed", callable_mp((CanvasItem *)this, &CanvasItem::update));
 		shortcut_refcount.erase(p_sc);
 	}
 }
@@ -1471,8 +1472,6 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_allow_search", "allow"), &PopupMenu::set_allow_search);
 	ClassDB::bind_method(D_METHOD("get_allow_search"), &PopupMenu::get_allow_search);
 
-	ClassDB::bind_method(D_METHOD("_submenu_timeout"), &PopupMenu::_submenu_timeout);
-
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_items", "_get_items");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_item_selection"), "set_hide_on_item_selection", "is_hide_on_item_selection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_checkable_item_selection"), "set_hide_on_checkable_item_selection", "is_hide_on_checkable_item_selection");
@@ -1514,7 +1513,7 @@ PopupMenu::PopupMenu() {
 	submenu_timer = memnew(Timer);
 	submenu_timer->set_wait_time(0.3);
 	submenu_timer->set_one_shot(true);
-	submenu_timer->connect_compat("timeout", this, "_submenu_timeout");
+	submenu_timer->connect("timeout", callable_mp(this, &PopupMenu::_submenu_timeout));
 	add_child(submenu_timer);
 }
 

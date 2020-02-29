@@ -134,8 +134,15 @@ void ConnectDialog::ok_pressed() {
 }
 
 void ConnectDialog::_cancel_pressed() {
-
 	hide();
+}
+
+void ConnectDialog::_item_activated() {
+	_ok_pressed(); // From AcceptDialog.
+}
+
+void ConnectDialog::_text_entered(const String &p_text) {
+	_ok_pressed(); // From AcceptDialog.
 }
 
 /*
@@ -234,11 +241,7 @@ void ConnectDialog::_notification(int p_what) {
 
 void ConnectDialog::_bind_methods() {
 
-	ClassDB::bind_method("_advanced_pressed", &ConnectDialog::_advanced_pressed);
 	ClassDB::bind_method("_cancel", &ConnectDialog::_cancel_pressed);
-	ClassDB::bind_method("_tree_node_selected", &ConnectDialog::_tree_node_selected);
-	ClassDB::bind_method("_add_bind", &ConnectDialog::_add_bind);
-	ClassDB::bind_method("_remove_bind", &ConnectDialog::_remove_bind);
 	ClassDB::bind_method("_update_ok_enabled", &ConnectDialog::_update_ok_enabled);
 
 	ADD_SIGNAL(MethodInfo("connected"));
@@ -390,8 +393,8 @@ ConnectDialog::ConnectDialog() {
 
 	tree = memnew(SceneTreeEditor(false));
 	tree->set_connecting_signal(true);
-	tree->get_scene_tree()->connect_compat("item_activated", this, "_ok");
-	tree->connect_compat("node_selected", this, "_tree_node_selected");
+	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &ConnectDialog::_item_activated));
+	tree->connect("node_selected", callable_mp(this, &ConnectDialog::_tree_node_selected));
 	tree->set_connect_to_script_mode(true);
 
 	Node *mc = vbc_left->add_margin_child(TTR("Connect to Script:"), tree, true);
@@ -431,12 +434,12 @@ ConnectDialog::ConnectDialog() {
 	Button *add_bind = memnew(Button);
 	add_bind->set_text(TTR("Add"));
 	add_bind_hb->add_child(add_bind);
-	add_bind->connect_compat("pressed", this, "_add_bind");
+	add_bind->connect("pressed", callable_mp(this, &ConnectDialog::_add_bind));
 
 	Button *del_bind = memnew(Button);
 	del_bind->set_text(TTR("Remove"));
 	add_bind_hb->add_child(del_bind);
-	del_bind->connect_compat("pressed", this, "_remove_bind");
+	del_bind->connect("pressed", callable_mp(this, &ConnectDialog::_remove_bind));
 
 	vbc_right->add_margin_child(TTR("Add Extra Call Argument:"), add_bind_hb);
 
@@ -449,13 +452,13 @@ ConnectDialog::ConnectDialog() {
 
 	dst_method = memnew(LineEdit);
 	dst_method->set_h_size_flags(SIZE_EXPAND_FILL);
-	dst_method->connect_compat("text_entered", this, "_builtin_text_entered");
+	dst_method->connect("text_entered", callable_mp(this, &ConnectDialog::_text_entered));
 	dstm_hb->add_child(dst_method);
 
 	advanced = memnew(CheckButton);
 	dstm_hb->add_child(advanced);
 	advanced->set_text(TTR("Advanced"));
-	advanced->connect_compat("pressed", this, "_advanced_pressed");
+	advanced->connect("pressed", callable_mp(this, &ConnectDialog::_advanced_pressed));
 
 	// Add spacing so the tree and inspector are the same size.
 	Control *spacing = memnew(Control);
@@ -502,7 +505,6 @@ Control *ConnectionsDockTree::make_custom_tooltip(const String &p_text) const {
 	String text = TTR("Signal:") + " [u][b]" + p_text.get_slice("::", 0) + "[/b][/u]";
 	text += p_text.get_slice("::", 1).strip_edges() + "\n";
 	text += p_text.get_slice("::", 2).strip_edges();
-	help_bit->set_text(text);
 	help_bit->call_deferred("set_text", text); //hack so it uses proper theme once inside scene
 	return help_bit;
 }
@@ -866,15 +868,6 @@ void ConnectionsDock::_notification(int p_what) {
 
 void ConnectionsDock::_bind_methods() {
 
-	ClassDB::bind_method("_make_or_edit_connection", &ConnectionsDock::_make_or_edit_connection);
-	ClassDB::bind_method("_disconnect_all", &ConnectionsDock::_disconnect_all);
-	ClassDB::bind_method("_tree_item_selected", &ConnectionsDock::_tree_item_selected);
-	ClassDB::bind_method("_tree_item_activated", &ConnectionsDock::_tree_item_activated);
-	ClassDB::bind_method("_handle_signal_menu_option", &ConnectionsDock::_handle_signal_menu_option);
-	ClassDB::bind_method("_handle_slot_menu_option", &ConnectionsDock::_handle_slot_menu_option);
-	ClassDB::bind_method("_rmb_pressed", &ConnectionsDock::_rmb_pressed);
-	ClassDB::bind_method("_close", &ConnectionsDock::_close);
-	ClassDB::bind_method("_connect_pressed", &ConnectionsDock::_connect_pressed);
 	ClassDB::bind_method("update_tree", &ConnectionsDock::update_tree);
 }
 
@@ -1022,9 +1015,10 @@ void ConnectionsDock::update_tree() {
 
 			for (List<Object::Connection>::Element *F = connections.front(); F; F = F->next()) {
 
-				ConnectDialog::ConnectionData c = F->get();
-				if (!(c.flags & CONNECT_PERSIST))
+				Connection cn = F->get();
+				if (!(cn.flags & CONNECT_PERSIST))
 					continue;
+				ConnectDialog::ConnectionData c = cn;
 
 				Node *target = Object::cast_to<Node>(c.target);
 				if (!target)
@@ -1086,7 +1080,7 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	vbc->add_child(hb);
 	hb->add_spacer();
 	hb->add_child(connect_button);
-	connect_button->connect_compat("pressed", this, "_connect_pressed");
+	connect_button->connect("pressed", callable_mp(this, &ConnectionsDock::_connect_pressed));
 
 	connect_dialog = memnew(ConnectDialog);
 	connect_dialog->set_as_toplevel(true);
@@ -1095,26 +1089,26 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	disconnect_all_dialog = memnew(ConfirmationDialog);
 	disconnect_all_dialog->set_as_toplevel(true);
 	add_child(disconnect_all_dialog);
-	disconnect_all_dialog->connect_compat("confirmed", this, "_disconnect_all");
+	disconnect_all_dialog->connect("confirmed", callable_mp(this, &ConnectionsDock::_disconnect_all));
 	disconnect_all_dialog->set_text(TTR("Are you sure you want to remove all connections from this signal?"));
 
 	signal_menu = memnew(PopupMenu);
 	add_child(signal_menu);
-	signal_menu->connect_compat("id_pressed", this, "_handle_signal_menu_option");
+	signal_menu->connect("id_pressed", callable_mp(this, &ConnectionsDock::_handle_signal_menu_option));
 	signal_menu->add_item(TTR("Connect..."), CONNECT);
 	signal_menu->add_item(TTR("Disconnect All"), DISCONNECT_ALL);
 
 	slot_menu = memnew(PopupMenu);
 	add_child(slot_menu);
-	slot_menu->connect_compat("id_pressed", this, "_handle_slot_menu_option");
+	slot_menu->connect("id_pressed", callable_mp(this, &ConnectionsDock::_handle_slot_menu_option));
 	slot_menu->add_item(TTR("Edit..."), EDIT);
 	slot_menu->add_item(TTR("Go To Method"), GO_TO_SCRIPT);
 	slot_menu->add_item(TTR("Disconnect"), DISCONNECT);
 
-	connect_dialog->connect_compat("connected", this, "_make_or_edit_connection");
-	tree->connect_compat("item_selected", this, "_tree_item_selected");
-	tree->connect_compat("item_activated", this, "_tree_item_activated");
-	tree->connect_compat("item_rmb_selected", this, "_rmb_pressed");
+	connect_dialog->connect("connected", callable_mp(this, &ConnectionsDock::_make_or_edit_connection));
+	tree->connect("item_selected", callable_mp(this, &ConnectionsDock::_tree_item_selected));
+	tree->connect("item_activated", callable_mp(this, &ConnectionsDock::_tree_item_activated));
+	tree->connect("item_rmb_selected", callable_mp(this, &ConnectionsDock::_rmb_pressed));
 
 	add_constant_override("separation", 3 * EDSCALE);
 }

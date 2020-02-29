@@ -40,7 +40,7 @@
 class AudioDriverOpenSL : public AudioDriver {
 
 	bool active;
-	Mutex *mutex;
+	Mutex mutex;
 
 	enum {
 

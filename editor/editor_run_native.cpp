@@ -55,8 +55,8 @@ void EditorRunNative::_notification(int p_what) {
 					small_icon.instance();
 					small_icon->create_from_image(im);
 					MenuButton *mb = memnew(MenuButton);
-					mb->get_popup()->connect_compat("id_pressed", this, "_run_native", varray(i));
-					mb->connect_compat("pressed", this, "_run_native", varray(-1, i));
+					mb->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::_run_native), varray(i));
+					mb->connect("pressed", callable_mp(this, &EditorRunNative::_run_native), varray(-1, i));
 					mb->set_icon(small_icon);
 					add_child(mb);
 					menus[i] = mb;
@@ -153,8 +153,6 @@ void EditorRunNative::resume_run_native() {
 }
 
 void EditorRunNative::_bind_methods() {
-
-	ClassDB::bind_method("_run_native", &EditorRunNative::_run_native);
 
 	ADD_SIGNAL(MethodInfo("native_run"));
 }

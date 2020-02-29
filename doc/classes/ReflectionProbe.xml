@@ -4,7 +4,7 @@
 		Captures its surroundings to create reflections.
 	</brief_description>
 	<description>
-		Capture its surroundings as a dual parabolid image, and stores versions of it with increasing levels of blur to simulate different material roughnesses.
+		Captures its surroundings as a cubemap, and stores versions of it with increasing levels of blur to simulate different material roughnesses.
 		The [ReflectionProbe] is used to create high-quality reflections at the cost of performance. It can be combined with [GIProbe]s and Screen Space Reflections to achieve high quality reflections. [ReflectionProbe]s render all objects within their [member cull_mask], so updating them can be quite expensive. It is best to update them once with the important static objects and then leave them.
 	</description>
 	<tutorials>
@@ -52,7 +52,7 @@
 	</members>
 	<constants>
 		<constant name="UPDATE_ONCE" value="0" enum="UpdateMode">
-			Update the probe once on the next frame.
+			Update the probe once on the next frame. The corresponding radiance map will be generated over the following six frames. This is slower to update than [constant UPDATE_ALWAYS] but can result in higher quality reflections.
 		</constant>
 		<constant name="UPDATE_ALWAYS" value="1" enum="UpdateMode">
 			Update the probe every frame. This is needed when you want to capture dynamic objects. However, it results in an increased render time. Use [constant UPDATE_ONCE] whenever possible.

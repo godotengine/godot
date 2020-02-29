@@ -475,10 +475,10 @@ void AnimatedSprite::_notification(int p_what) {
 void AnimatedSprite::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 
 	if (frames.is_valid())
-		frames->disconnect_compat("changed", this, "_res_changed");
+		frames->disconnect("changed", callable_mp(this, &AnimatedSprite::_res_changed));
 	frames = p_frames;
 	if (frames.is_valid())
-		frames->connect_compat("changed", this, "_res_changed");
+		frames->connect("changed", callable_mp(this, &AnimatedSprite::_res_changed));
 
 	if (!frames.is_valid()) {
 		frame = 0;
@@ -734,8 +734,6 @@ void AnimatedSprite::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_shininess", "shininess"), &AnimatedSprite::set_shininess);
 	ClassDB::bind_method(D_METHOD("get_shininess"), &AnimatedSprite::get_shininess);
-
-	ClassDB::bind_method(D_METHOD("_res_changed"), &AnimatedSprite::_res_changed);
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 	ADD_SIGNAL(MethodInfo("animation_finished"));

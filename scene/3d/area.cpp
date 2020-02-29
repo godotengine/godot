@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "area.h"
+
 #include "scene/scene_string_names.h"
 #include "servers/audio_server.h"
 #include "servers/physics_server.h"
@@ -170,8 +171,8 @@ void Area::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, int
 			E->get().rc = 0;
 			E->get().in_tree = node && node->is_inside_tree();
 			if (node) {
-				node->connect_compat(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_body_enter_tree, make_binds(objid));
-				node->connect_compat(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree, make_binds(objid));
+				node->connect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &Area::_body_enter_tree), make_binds(objid));
+				node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Area::_body_exit_tree), make_binds(objid));
 				if (E->get().in_tree) {
 					emit_signal(SceneStringNames::get_singleton()->body_entered, node);
 				}
@@ -197,8 +198,8 @@ void Area::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, int
 		if (E->get().rc == 0) {
 
 			if (node) {
-				node->disconnect_compat(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_body_enter_tree);
-				node->disconnect_compat(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
+				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &Area::_body_enter_tree));
+				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Area::_body_exit_tree));
 				if (E->get().in_tree)
 					emit_signal(SceneStringNames::get_singleton()->body_exited, obj);
 			}
@@ -244,8 +245,8 @@ void Area::_clear_monitoring() {
 
 			emit_signal(SceneStringNames::get_singleton()->body_exited, node);
 
-			node->disconnect_compat(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_body_enter_tree);
-			node->disconnect_compat(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
+			node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &Area::_body_enter_tree));
+			node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Area::_body_exit_tree));
 		}
 	}
 
@@ -274,8 +275,8 @@ void Area::_clear_monitoring() {
 
 			emit_signal(SceneStringNames::get_singleton()->area_exited, obj);
 
-			node->disconnect_compat(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_area_enter_tree);
-			node->disconnect_compat(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_area_exit_tree);
+			node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &Area::_area_enter_tree));
+			node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Area::_area_exit_tree));
 		}
 	}
 }
@@ -363,8 +364,8 @@ void Area::_area_inout(int p_status, const RID &p_area, ObjectID p_instance, int
 			E->get().rc = 0;
 			E->get().in_tree = node && node->is_inside_tree();
 			if (node) {
-				node->connect_compat(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_area_enter_tree, make_binds(objid));
-				node->connect_compat(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_area_exit_tree, make_binds(objid));
+				node->connect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &Area::_area_enter_tree), make_binds(objid));
+				node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Area::_area_exit_tree), make_binds(objid));
 				if (E->get().in_tree) {
 					emit_signal(SceneStringNames::get_singleton()->area_entered, node);
 				}
@@ -390,8 +391,8 @@ void Area::_area_inout(int p_status, const RID &p_area, ObjectID p_instance, int
 		if (E->get().rc == 0) {
 
 			if (node) {
-				node->disconnect_compat(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_area_enter_tree);
-				node->disconnect_compat(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_area_exit_tree);
+				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &Area::_area_enter_tree));
+				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Area::_area_exit_tree));
 				if (E->get().in_tree) {
 					emit_signal(SceneStringNames::get_singleton()->area_exited, obj);
 				}
@@ -618,13 +619,6 @@ void Area::_validate_property(PropertyInfo &property) const {
 }
 
 void Area::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_body_enter_tree", "id"), &Area::_body_enter_tree);
-	ClassDB::bind_method(D_METHOD("_body_exit_tree", "id"), &Area::_body_exit_tree);
-
-	ClassDB::bind_method(D_METHOD("_area_enter_tree", "id"), &Area::_area_enter_tree);
-	ClassDB::bind_method(D_METHOD("_area_exit_tree", "id"), &Area::_area_exit_tree);
-
 	ClassDB::bind_method(D_METHOD("set_space_override_mode", "enable"), &Area::set_space_override_mode);
 	ClassDB::bind_method(D_METHOD("get_space_override_mode"), &Area::get_space_override_mode);
 

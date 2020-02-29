@@ -1017,140 +1017,125 @@ void CPUParticles::_particles_process(float p_delta) {
 }
 
 void CPUParticles::_update_particle_data_buffer() {
-#ifndef NO_THREADS
-	update_mutex->lock();
-#endif
+	MutexLock lock(update_mutex);
 
-	{
+	int pc = particles.size();
 
-		int pc = particles.size();
+	int *ow;
+	int *order = NULL;
 
-		int *ow;
-		int *order = NULL;
+	float *w = particle_data.ptrw();
+	const Particle *r = particles.ptr();
+	float *ptr = w;
 
-		float *w = particle_data.ptrw();
-		const Particle *r = particles.ptr();
-		float *ptr = w;
-
-		if (draw_order != DRAW_ORDER_INDEX) {
-			ow = particle_order.ptrw();
-			order = ow;
-
-			for (int i = 0; i < pc; i++) {
-				order[i] = i;
-			}
-			if (draw_order == DRAW_ORDER_LIFETIME) {
-				SortArray<int, SortLifetime> sorter;
-				sorter.compare.particles = r;
-				sorter.sort(order, pc);
-			} else if (draw_order == DRAW_ORDER_VIEW_DEPTH) {
-				Camera *c = get_viewport()->get_camera();
-				if (c) {
-					Vector3 dir = c->get_global_transform().basis.get_axis(2); //far away to close
-
-					if (local_coords) {
-
-						// will look different from Particles in editor as this is based on the camera in the scenetree
-						// and not the editor camera
-						dir = inv_emission_transform.xform(dir).normalized();
-					} else {
-						dir = dir.normalized();
-					}
-
-					SortArray<int, SortAxis> sorter;
-					sorter.compare.particles = r;
-					sorter.compare.axis = dir;
-					sorter.sort(order, pc);
-				}
-			}
-		}
+	if (draw_order != DRAW_ORDER_INDEX) {
+		ow = particle_order.ptrw();
+		order = ow;
 
 		for (int i = 0; i < pc; i++) {
-
-			int idx = order ? order[i] : i;
-
-			Transform t = r[idx].transform;
-
-			if (!local_coords) {
-				t = inv_emission_transform * t;
-			}
-
-			if (r[idx].active) {
-				ptr[0] = t.basis.elements[0][0];
-				ptr[1] = t.basis.elements[0][1];
-				ptr[2] = t.basis.elements[0][2];
-				ptr[3] = t.origin.x;
-				ptr[4] = t.basis.elements[1][0];
-				ptr[5] = t.basis.elements[1][1];
-				ptr[6] = t.basis.elements[1][2];
-				ptr[7] = t.origin.y;
-				ptr[8] = t.basis.elements[2][0];
-				ptr[9] = t.basis.elements[2][1];
-				ptr[10] = t.basis.elements[2][2];
-				ptr[11] = t.origin.z;
-			} else {
-				zeromem(ptr, sizeof(float) * 12);
-			}
-
-			Color c = r[idx].color;
-
-			ptr[12] = c.r;
-			ptr[13] = c.g;
-			ptr[14] = c.b;
-			ptr[15] = c.a;
-
-			ptr[16] = r[idx].custom[0];
-			ptr[17] = r[idx].custom[1];
-			ptr[18] = r[idx].custom[2];
-			ptr[19] = r[idx].custom[3];
-
-			ptr += 20;
+			order[i] = i;
 		}
+		if (draw_order == DRAW_ORDER_LIFETIME) {
+			SortArray<int, SortLifetime> sorter;
+			sorter.compare.particles = r;
+			sorter.sort(order, pc);
+		} else if (draw_order == DRAW_ORDER_VIEW_DEPTH) {
+			Camera *c = get_viewport()->get_camera();
+			if (c) {
+				Vector3 dir = c->get_global_transform().basis.get_axis(2); //far away to close
 
-		can_update = true;
+				if (local_coords) {
+
+					// will look different from Particles in editor as this is based on the camera in the scenetree
+					// and not the editor camera
+					dir = inv_emission_transform.xform(dir).normalized();
+				} else {
+					dir = dir.normalized();
+				}
+
+				SortArray<int, SortAxis> sorter;
+				sorter.compare.particles = r;
+				sorter.compare.axis = dir;
+				sorter.sort(order, pc);
+			}
+		}
 	}
 
-#ifndef NO_THREADS
-	update_mutex->unlock();
-#endif
+	for (int i = 0; i < pc; i++) {
+
+		int idx = order ? order[i] : i;
+
+		Transform t = r[idx].transform;
+
+		if (!local_coords) {
+			t = inv_emission_transform * t;
+		}
+
+		if (r[idx].active) {
+			ptr[0] = t.basis.elements[0][0];
+			ptr[1] = t.basis.elements[0][1];
+			ptr[2] = t.basis.elements[0][2];
+			ptr[3] = t.origin.x;
+			ptr[4] = t.basis.elements[1][0];
+			ptr[5] = t.basis.elements[1][1];
+			ptr[6] = t.basis.elements[1][2];
+			ptr[7] = t.origin.y;
+			ptr[8] = t.basis.elements[2][0];
+			ptr[9] = t.basis.elements[2][1];
+			ptr[10] = t.basis.elements[2][2];
+			ptr[11] = t.origin.z;
+		} else {
+			zeromem(ptr, sizeof(float) * 12);
+		}
+
+		Color c = r[idx].color;
+
+		ptr[12] = c.r;
+		ptr[13] = c.g;
+		ptr[14] = c.b;
+		ptr[15] = c.a;
+
+		ptr[16] = r[idx].custom[0];
+		ptr[17] = r[idx].custom[1];
+		ptr[18] = r[idx].custom[2];
+		ptr[19] = r[idx].custom[3];
+
+		ptr += 20;
+	}
+
+	can_update = true;
 }
 
 void CPUParticles::_set_redraw(bool p_redraw) {
 	if (redraw == p_redraw)
 		return;
 	redraw = p_redraw;
-#ifndef NO_THREADS
-	update_mutex->lock();
-#endif
-	if (redraw) {
-		VS::get_singleton()->connect_compat("frame_pre_draw", this, "_update_render_thread");
-		VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
-		VS::get_singleton()->multimesh_set_visible_instances(multimesh, -1);
-	} else {
-		if (VS::get_singleton()->is_connected_compat("frame_pre_draw", this, "_update_render_thread")) {
-			VS::get_singleton()->disconnect_compat("frame_pre_draw", this, "_update_render_thread");
+
+	{
+		MutexLock lock(update_mutex);
+
+		if (redraw) {
+			VS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &CPUParticles::_update_render_thread));
+			VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
+			VS::get_singleton()->multimesh_set_visible_instances(multimesh, -1);
+		} else {
+			if (VS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &CPUParticles::_update_render_thread))) {
+				VS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &CPUParticles::_update_render_thread));
+			}
+			VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, false);
+			VS::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
 		}
-		VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, false);
-		VS::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
 	}
-#ifndef NO_THREADS
-	update_mutex->unlock();
-#endif
 }
 
 void CPUParticles::_update_render_thread() {
 
-#ifndef NO_THREADS
-	update_mutex->lock();
-#endif
+	MutexLock lock(update_mutex);
+
 	if (can_update) {
 		VS::get_singleton()->multimesh_set_buffer(multimesh, particle_data);
 		can_update = false; //wait for next time
 	}
-
-#ifndef NO_THREADS
-	update_mutex->unlock();
-#endif
 }
 
 void CPUParticles::_notification(int p_what) {
@@ -1397,8 +1382,6 @@ void CPUParticles::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("convert_from_particles", "particles"), &CPUParticles::convert_from_particles);
 
-	ClassDB::bind_method(D_METHOD("_update_render_thread"), &CPUParticles::_update_render_thread);
-
 	ADD_GROUP("Emission Shape", "emission_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points"), "set_emission_shape", "get_emission_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_sphere_radius", PROPERTY_HINT_RANGE, "0.01,128,0.01"), "set_emission_sphere_radius", "get_emission_sphere_radius");
@@ -1556,16 +1539,8 @@ CPUParticles::CPUParticles() {
 	can_update = false;
 
 	set_color(Color(1, 1, 1, 1));
-
-#ifndef NO_THREADS
-	update_mutex = Mutex::create();
-#endif
 }
 
 CPUParticles::~CPUParticles() {
 	VS::get_singleton()->free(multimesh);
-
-#ifndef NO_THREADS
-	memdelete(update_mutex);
-#endif
 }

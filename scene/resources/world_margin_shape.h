@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  navigation_mesh_instance.h                                           */
+/*  world_margin_shape.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,48 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NAVIGATION_MESH_INSTANCE_H
-#define NAVIGATION_MESH_INSTANCE_H
+#ifndef WORLD_MARGIN_SHAPE_H
+#define WORLD_MARGIN_SHAPE_H
 
-#include "scene/3d/spatial.h"
-#include "scene/resources/mesh.h"
-#include "scene/resources/navigation_mesh.h"
+#include "scene/resources/shape.h"
 
-class Navigation;
+class WorldMarginShape : public Shape {
 
-class NavigationMeshInstance : public Spatial {
-
-	GDCLASS(NavigationMeshInstance, Spatial);
-
-	bool enabled;
-	RID region;
-	Ref<NavigationMesh> navmesh;
-
-	Navigation *navigation;
-	Node *debug_view;
-	Thread *bake_thread;
+	GDCLASS(WorldMarginShape, Shape);
+	Plane plane;
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
-	void _changed_callback(Object *p_changed, const char *p_prop);
+	virtual void _update_shape();
 
 public:
-	void set_enabled(bool p_enabled);
-	bool is_enabled() const;
+	void set_plane(Plane p_plane);
+	Plane get_plane() const;
 
-	void set_navigation_mesh(const Ref<NavigationMesh> &p_navmesh);
-	Ref<NavigationMesh> get_navigation_mesh() const;
+	virtual Vector<Vector3> get_debug_mesh_lines();
+	virtual real_t get_enclosing_radius() const {
+		// Should be infinite?
+		return 0;
+	}
 
-	/// Bakes the navigation mesh in a dedicated thread; once done, automatically
-	/// sets the new navigation mesh and emits a signal
-	void bake_navigation_mesh();
-	void _bake_finished(Ref<NavigationMesh> p_nav_mesh);
-
-	String get_configuration_warning() const;
-
-	NavigationMeshInstance();
-	~NavigationMeshInstance();
+	WorldMarginShape();
 };
-
-#endif // NAVIGATION_MESH_INSTANCE_H
+#endif // WORLD_MARGIN_SHAPE_H

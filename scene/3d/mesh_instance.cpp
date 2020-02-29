@@ -34,7 +34,6 @@
 #include "core/core_string_names.h"
 #include "physics_body.h"
 #include "scene/resources/material.h"
-#include "scene/scene_string_names.h"
 #include "skeleton.h"
 
 bool MeshInstance::_set(const StringName &p_name, const Variant &p_value) {
@@ -101,7 +100,7 @@ void MeshInstance::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	if (mesh.is_valid()) {
 		for (int i = 0; i < mesh->get_surface_count(); i++) {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "material/" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,StandardMaterial3D"));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "material/" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,StandardMaterial3D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE));
 		}
 	}
 }
@@ -112,7 +111,7 @@ void MeshInstance::set_mesh(const Ref<Mesh> &p_mesh) {
 		return;
 
 	if (mesh.is_valid()) {
-		mesh->disconnect_compat(CoreStringNames::get_singleton()->changed, this, SceneStringNames::get_singleton()->_mesh_changed);
+		mesh->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &MeshInstance::_mesh_changed));
 		materials.clear();
 	}
 
@@ -129,7 +128,7 @@ void MeshInstance::set_mesh(const Ref<Mesh> &p_mesh) {
 			blend_shape_tracks["blend_shapes/" + String(mesh->get_blend_shape_name(i))] = mt;
 		}
 
-		mesh->connect_compat(CoreStringNames::get_singleton()->changed, this, SceneStringNames::get_singleton()->_mesh_changed);
+		mesh->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &MeshInstance::_mesh_changed));
 		materials.resize(mesh->get_surface_count());
 
 		set_base(mesh->get_rid());
@@ -403,7 +402,6 @@ void MeshInstance::_bind_methods() {
 	ClassDB::set_method_flags("MeshInstance", "create_trimesh_collision", METHOD_FLAGS_DEFAULT);
 	ClassDB::bind_method(D_METHOD("create_convex_collision"), &MeshInstance::create_convex_collision);
 	ClassDB::set_method_flags("MeshInstance", "create_convex_collision", METHOD_FLAGS_DEFAULT);
-	ClassDB::bind_method(D_METHOD("_mesh_changed"), &MeshInstance::_mesh_changed);
 
 	ClassDB::bind_method(D_METHOD("create_debug_tangents"), &MeshInstance::create_debug_tangents);
 	ClassDB::set_method_flags("MeshInstance", "create_debug_tangents", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);

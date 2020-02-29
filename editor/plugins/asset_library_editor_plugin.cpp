@@ -86,9 +86,6 @@ void EditorAssetLibraryItem::_author_clicked() {
 void EditorAssetLibraryItem::_bind_methods() {
 
 	ClassDB::bind_method("set_image", &EditorAssetLibraryItem::set_image);
-	ClassDB::bind_method("_asset_clicked", &EditorAssetLibraryItem::_asset_clicked);
-	ClassDB::bind_method("_category_clicked", &EditorAssetLibraryItem::_category_clicked);
-	ClassDB::bind_method("_author_clicked", &EditorAssetLibraryItem::_author_clicked);
 	ADD_SIGNAL(MethodInfo("asset_selected"));
 	ADD_SIGNAL(MethodInfo("category_selected"));
 	ADD_SIGNAL(MethodInfo("author_selected"));
@@ -112,7 +109,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	icon = memnew(TextureButton);
 	icon->set_custom_minimum_size(Size2(64, 64) * EDSCALE);
 	icon->set_default_cursor_shape(CURSOR_POINTING_HAND);
-	icon->connect_compat("pressed", this, "_asset_clicked");
+	icon->connect("pressed", callable_mp(this, &EditorAssetLibraryItem::_asset_clicked));
 
 	hb->add_child(icon);
 
@@ -123,17 +120,17 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 
 	title = memnew(LinkButton);
 	title->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-	title->connect_compat("pressed", this, "_asset_clicked");
+	title->connect("pressed", callable_mp(this, &EditorAssetLibraryItem::_asset_clicked));
 	vb->add_child(title);
 
 	category = memnew(LinkButton);
 	category->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-	category->connect_compat("pressed", this, "_category_clicked");
+	category->connect("pressed", callable_mp(this, &EditorAssetLibraryItem::_category_clicked));
 	vb->add_child(category);
 
 	author = memnew(LinkButton);
 	author->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-	author->connect_compat("pressed", this, "_author_clicked");
+	author->connect("pressed", callable_mp(this, &EditorAssetLibraryItem::_author_clicked));
 	vb->add_child(author);
 
 	price = memnew(Label);
@@ -208,8 +205,6 @@ void EditorAssetLibraryItemDescription::_notification(int p_what) {
 
 void EditorAssetLibraryItemDescription::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_image"), &EditorAssetLibraryItemDescription::set_image);
-	ClassDB::bind_method(D_METHOD("_link_click"), &EditorAssetLibraryItemDescription::_link_click);
-	ClassDB::bind_method(D_METHOD("_preview_click"), &EditorAssetLibraryItemDescription::_preview_click);
 }
 
 void EditorAssetLibraryItemDescription::_link_click(const String &p_url) {
@@ -263,7 +258,7 @@ void EditorAssetLibraryItemDescription::add_preview(int p_id, bool p_video, cons
 	preview.button->set_flat(true);
 	preview.button->set_icon(get_icon("ThumbnailWait", "EditorIcons"));
 	preview.button->set_toggle_mode(true);
-	preview.button->connect_compat("pressed", this, "_preview_click", varray(p_id));
+	preview.button->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDescription::_preview_click), varray(p_id));
 	preview_hb->add_child(preview.button);
 	if (!p_video) {
 		preview.image = get_icon("ThumbnailWait", "EditorIcons");
@@ -290,7 +285,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	description = memnew(RichTextLabel);
 	desc_vbox->add_child(description);
 	description->set_v_size_flags(SIZE_EXPAND_FILL);
-	description->connect_compat("meta_clicked", this, "_link_click");
+	description->connect("meta_clicked", callable_mp(this, &EditorAssetLibraryItemDescription::_link_click));
 	description->add_constant_override("line_separation", Math::round(5 * EDSCALE));
 
 	VBoxContainer *previews_vbox = memnew(VBoxContainer);
@@ -500,11 +495,6 @@ void EditorAssetLibraryItemDownload::_make_request() {
 
 void EditorAssetLibraryItemDownload::_bind_methods() {
 
-	ClassDB::bind_method("_http_download_completed", &EditorAssetLibraryItemDownload::_http_download_completed);
-	ClassDB::bind_method("_install", &EditorAssetLibraryItemDownload::_install);
-	ClassDB::bind_method("_close", &EditorAssetLibraryItemDownload::_close);
-	ClassDB::bind_method("_make_request", &EditorAssetLibraryItemDownload::_make_request);
-
 	ADD_SIGNAL(MethodInfo("install_asset", PropertyInfo(Variant::STRING, "zip_path"), PropertyInfo(Variant::STRING, "name")));
 }
 
@@ -526,7 +516,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	title->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	dismiss = memnew(TextureButton);
-	dismiss->connect_compat("pressed", this, "_close");
+	dismiss->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDownload::_close));
 	title_hb->add_child(dismiss);
 
 	title->set_clip_text(true);
@@ -546,11 +536,11 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	install = memnew(Button);
 	install->set_text(TTR("Install..."));
 	install->set_disabled(true);
-	install->connect_compat("pressed", this, "_install");
+	install->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDownload::_install));
 
 	retry = memnew(Button);
 	retry->set_text(TTR("Retry"));
-	retry->connect_compat("pressed", this, "_make_request");
+	retry->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDownload::_make_request));
 
 	hb2->add_child(retry);
 	hb2->add_child(install);
@@ -558,7 +548,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	download = memnew(HTTPRequest);
 	add_child(download);
-	download->connect_compat("request_completed", this, "_http_download_completed");
+	download->connect("request_completed", callable_mp(this, &EditorAssetLibraryItemDownload::_http_download_completed));
 	download->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));
 
 	download_error = memnew(AcceptDialog);
@@ -567,7 +557,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	asset_installer = memnew(EditorAssetInstaller);
 	add_child(asset_installer);
-	asset_installer->connect_compat("confirmed", this, "_close");
+	asset_installer->connect("confirmed", callable_mp(this, &EditorAssetLibraryItemDownload::_close));
 
 	prev_status = -1;
 
@@ -657,7 +647,7 @@ void EditorAssetLibrary::_install_asset() {
 
 	if (templates_only) {
 		download->set_external_install(true);
-		download->connect_compat("install_asset", this, "_install_external_asset");
+		download->connect("install_asset", callable_mp(this, &EditorAssetLibrary::_install_external_asset));
 	}
 }
 
@@ -892,7 +882,7 @@ void EditorAssetLibrary::_request_image(ObjectID p_for, String p_image_url, Imag
 	iq.queue_id = ++last_queue_id;
 	iq.active = false;
 
-	iq.request->connect_compat("request_completed", this, "_image_request_completed", varray(iq.queue_id));
+	iq.request->connect("request_completed", callable_mp(this, &EditorAssetLibrary::_image_request_completed), varray(iq.queue_id));
 
 	image_queue[iq.queue_id] = iq;
 
@@ -991,7 +981,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	Button *first = memnew(Button);
 	first->set_text(TTR("First"));
 	if (p_page != 0) {
-		first->connect_compat("pressed", this, "_search", varray(0));
+		first->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), varray(0));
 	} else {
 		first->set_disabled(true);
 		first->set_focus_mode(Control::FOCUS_NONE);
@@ -1001,7 +991,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	Button *prev = memnew(Button);
 	prev->set_text(TTR("Previous"));
 	if (p_page > 0) {
-		prev->connect_compat("pressed", this, "_search", varray(p_page - 1));
+		prev->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), varray(p_page - 1));
 	} else {
 		prev->set_disabled(true);
 		prev->set_focus_mode(Control::FOCUS_NONE);
@@ -1023,7 +1013,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 
 			Button *current = memnew(Button);
 			current->set_text(itos(i + 1));
-			current->connect_compat("pressed", this, "_search", varray(i));
+			current->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), varray(i));
 
 			hbc->add_child(current);
 		}
@@ -1032,7 +1022,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	Button *next = memnew(Button);
 	next->set_text(TTR("Next"));
 	if (p_page < p_page_count - 1) {
-		next->connect_compat("pressed", this, "_search", varray(p_page + 1));
+		next->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), varray(p_page + 1));
 	} else {
 		next->set_disabled(true);
 		next->set_focus_mode(Control::FOCUS_NONE);
@@ -1043,7 +1033,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	Button *last = memnew(Button);
 	last->set_text(TTR("Last"));
 	if (p_page != p_page_count - 1) {
-		last->connect_compat("pressed", this, "_search", varray(p_page_count - 1));
+		last->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), varray(p_page_count - 1));
 	} else {
 		last->set_disabled(true);
 		last->set_focus_mode(Control::FOCUS_NONE);
@@ -1210,7 +1200,16 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			library_vb->add_child(asset_bottom_page);
 
 			if (result.empty()) {
-				library_error->set_text(vformat(TTR("No results for \"%s\"."), filter->get_text()));
+				if (filter->get_text() != String()) {
+					library_error->set_text(
+							vformat(TTR("No results for \"%s\"."), filter->get_text()));
+				} else {
+					// No results, even though the user didn't search for anything specific.
+					// This is typically because the version number changed recently
+					// and no assets compatible with the new version have been published yet.
+					library_error->set_text(
+							vformat(TTR("No results compatible with %s %s."), String(VERSION_SHORT_NAME).capitalize(), String(VERSION_BRANCH)));
+				}
 				library_error->show();
 			}
 
@@ -1229,9 +1228,9 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				EditorAssetLibraryItem *item = memnew(EditorAssetLibraryItem);
 				asset_items->add_child(item);
 				item->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"]);
-				item->connect_compat("asset_selected", this, "_select_asset");
-				item->connect_compat("author_selected", this, "_select_author");
-				item->connect_compat("category_selected", this, "_select_category");
+				item->connect("asset_selected", callable_mp(this, &EditorAssetLibrary::_select_asset));
+				item->connect("author_selected", callable_mp(this, &EditorAssetLibrary::_select_author));
+				item->connect("category_selected", callable_mp(this, &EditorAssetLibrary::_select_category));
 
 				if (r.has("icon_url") && r["icon_url"] != "") {
 					_request_image(item->get_instance_id(), r["icon_url"], IMAGE_QUEUE_ICON, 0);
@@ -1262,7 +1261,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			description = memnew(EditorAssetLibraryItemDescription);
 			add_child(description);
 			description->popup_centered_minsize();
-			description->connect_compat("confirmed", this, "_install_asset");
+			description->connect("confirmed", callable_mp(this, &EditorAssetLibrary::_install_asset));
 
 			description->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"], r["version"], r["version_string"], r["description"], r["download_url"], r["browse_url"], r["download_hash"]);
 
@@ -1337,21 +1336,6 @@ void EditorAssetLibrary::disable_community_support() {
 void EditorAssetLibrary::_bind_methods() {
 
 	ClassDB::bind_method("_unhandled_input", &EditorAssetLibrary::_unhandled_input);
-	ClassDB::bind_method("_http_request_completed", &EditorAssetLibrary::_http_request_completed);
-	ClassDB::bind_method("_select_asset", &EditorAssetLibrary::_select_asset);
-	ClassDB::bind_method("_select_author", &EditorAssetLibrary::_select_author);
-	ClassDB::bind_method("_select_category", &EditorAssetLibrary::_select_category);
-	ClassDB::bind_method("_image_request_completed", &EditorAssetLibrary::_image_request_completed);
-	ClassDB::bind_method("_search", &EditorAssetLibrary::_search, DEFVAL(0));
-	ClassDB::bind_method("_search_text_entered", &EditorAssetLibrary::_search_text_entered);
-	ClassDB::bind_method("_install_asset", &EditorAssetLibrary::_install_asset);
-	ClassDB::bind_method("_manage_plugins", &EditorAssetLibrary::_manage_plugins);
-	ClassDB::bind_method("_asset_open", &EditorAssetLibrary::_asset_open);
-	ClassDB::bind_method("_asset_file_selected", &EditorAssetLibrary::_asset_file_selected);
-	ClassDB::bind_method("_repository_changed", &EditorAssetLibrary::_repository_changed);
-	ClassDB::bind_method("_support_toggled", &EditorAssetLibrary::_support_toggled);
-	ClassDB::bind_method("_rerun_search", &EditorAssetLibrary::_rerun_search);
-	ClassDB::bind_method("_install_external_asset", &EditorAssetLibrary::_install_external_asset);
 
 	ADD_SIGNAL(MethodInfo("install_asset", PropertyInfo(Variant::STRING, "zip_path"), PropertyInfo(Variant::STRING, "name")));
 }
@@ -1374,9 +1358,9 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	filter = memnew(LineEdit);
 	search_hb->add_child(filter);
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
-	filter->connect_compat("text_entered", this, "_search_text_entered");
+	filter->connect("text_entered", callable_mp(this, &EditorAssetLibrary::_search_text_entered));
 	search = memnew(Button(TTR("Search")));
-	search->connect_compat("pressed", this, "_search");
+	search->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search));
 	search_hb->add_child(search);
 
 	if (!p_templates_only)
@@ -1385,12 +1369,12 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	Button *open_asset = memnew(Button);
 	open_asset->set_text(TTR("Import..."));
 	search_hb->add_child(open_asset);
-	open_asset->connect_compat("pressed", this, "_asset_open");
+	open_asset->connect("pressed", callable_mp(this, &EditorAssetLibrary::_asset_open));
 
 	Button *plugins = memnew(Button);
 	plugins->set_text(TTR("Plugins..."));
 	search_hb->add_child(plugins);
-	plugins->connect_compat("pressed", this, "_manage_plugins");
+	plugins->connect("pressed", callable_mp(this, &EditorAssetLibrary::_manage_plugins));
 
 	if (p_templates_only) {
 		open_asset->hide();
@@ -1409,7 +1393,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child(sort);
 
 	sort->set_h_size_flags(SIZE_EXPAND_FILL);
-	sort->connect_compat("item_selected", this, "_rerun_search");
+	sort->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_rerun_search));
 
 	search_hb2->add_child(memnew(VSeparator));
 
@@ -1418,7 +1402,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	categories->add_item(TTR("All"));
 	search_hb2->add_child(categories);
 	categories->set_h_size_flags(SIZE_EXPAND_FILL);
-	categories->connect_compat("item_selected", this, "_rerun_search");
+	categories->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_rerun_search));
 
 	search_hb2->add_child(memnew(VSeparator));
 
@@ -1430,7 +1414,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	repository->add_item("localhost");
 	repository->set_item_metadata(1, "http://127.0.0.1/asset-library/api");
 
-	repository->connect_compat("item_selected", this, "_repository_changed");
+	repository->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_repository_changed));
 
 	search_hb2->add_child(repository);
 	repository->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1445,7 +1429,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	support->get_popup()->add_check_item(TTR("Testing"), SUPPORT_TESTING);
 	support->get_popup()->set_item_checked(SUPPORT_OFFICIAL, true);
 	support->get_popup()->set_item_checked(SUPPORT_COMMUNITY, true);
-	support->get_popup()->connect_compat("id_pressed", this, "_support_toggled");
+	support->get_popup()->connect("id_pressed", callable_mp(this, &EditorAssetLibrary::_support_toggled));
 
 	/////////
 
@@ -1501,7 +1485,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	request = memnew(HTTPRequest);
 	add_child(request);
 	request->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));
-	request->connect_compat("request_completed", this, "_http_request_completed");
+	request->connect("request_completed", callable_mp(this, &EditorAssetLibrary::_http_request_completed));
 
 	last_queue_id = 0;
 
@@ -1534,7 +1518,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	asset_open->add_filter("*.zip ; " + TTR("Assets ZIP File"));
 	asset_open->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	add_child(asset_open);
-	asset_open->connect_compat("file_selected", this, "_asset_file_selected");
+	asset_open->connect("file_selected", callable_mp(this, &EditorAssetLibrary::_asset_file_selected));
 
 	asset_installer = NULL;
 }

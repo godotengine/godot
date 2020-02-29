@@ -3891,10 +3891,10 @@ void CanvasItemEditor::_notification(int p_what) {
 			select_sb->set_default_margin(Margin(i), 4);
 		}
 
-		AnimationPlayerEditor::singleton->get_track_editor()->connect_compat("visibility_changed", this, "_keying_changed");
+		AnimationPlayerEditor::singleton->get_track_editor()->connect("visibility_changed", callable_mp(this, &CanvasItemEditor::_keying_changed));
 		_keying_changed();
-		get_tree()->connect_compat("node_added", this, "_tree_changed", varray());
-		get_tree()->connect_compat("node_removed", this, "_tree_changed", varray());
+		get_tree()->connect("node_added", callable_mp(this, &CanvasItemEditor::_tree_changed), varray());
+		get_tree()->connect("node_removed", callable_mp(this, &CanvasItemEditor::_tree_changed), varray());
 
 	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 
@@ -3902,8 +3902,8 @@ void CanvasItemEditor::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
-		get_tree()->disconnect_compat("node_added", this, "_tree_changed");
-		get_tree()->disconnect_compat("node_removed", this, "_tree_changed");
+		get_tree()->disconnect("node_added", callable_mp(this, &CanvasItemEditor::_tree_changed));
+		get_tree()->disconnect("node_removed", callable_mp(this, &CanvasItemEditor::_tree_changed));
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
@@ -4181,7 +4181,7 @@ void CanvasItemEditor::_popup_warning_temporarily(Control *p_control, const floa
 	Timer *timer;
 	if (!popup_temporarily_timers.has(p_control)) {
 		timer = memnew(Timer);
-		timer->connect_compat("timeout", this, "_popup_warning_depop", varray(p_control));
+		timer->connect("timeout", callable_mp(this, &CanvasItemEditor::_popup_warning_depop), varray(p_control));
 		timer->set_one_shot(true);
 		add_child(timer);
 
@@ -5060,31 +5060,11 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 
 void CanvasItemEditor::_bind_methods() {
 
-	ClassDB::bind_method("_button_zoom_minus", &CanvasItemEditor::_button_zoom_minus);
-	ClassDB::bind_method("_button_zoom_reset", &CanvasItemEditor::_button_zoom_reset);
-	ClassDB::bind_method("_button_zoom_plus", &CanvasItemEditor::_button_zoom_plus);
-	ClassDB::bind_method("_button_toggle_smart_snap", &CanvasItemEditor::_button_toggle_smart_snap);
-	ClassDB::bind_method("_button_toggle_grid_snap", &CanvasItemEditor::_button_toggle_grid_snap);
-	ClassDB::bind_method(D_METHOD("_button_override_camera", "pressed"), &CanvasItemEditor::_button_override_camera);
 	ClassDB::bind_method(D_METHOD("_update_override_camera_button", "game_running"), &CanvasItemEditor::_update_override_camera_button);
-	ClassDB::bind_method("_button_toggle_anchor_mode", &CanvasItemEditor::_button_toggle_anchor_mode);
-	ClassDB::bind_method("_update_scroll", &CanvasItemEditor::_update_scroll);
-	ClassDB::bind_method("_update_scrollbars", &CanvasItemEditor::_update_scrollbars);
-	ClassDB::bind_method("_popup_callback", &CanvasItemEditor::_popup_callback);
 	ClassDB::bind_method("_get_editor_data", &CanvasItemEditor::_get_editor_data);
-	ClassDB::bind_method("_button_tool_select", &CanvasItemEditor::_button_tool_select);
-	ClassDB::bind_method("_keying_changed", &CanvasItemEditor::_keying_changed);
 	ClassDB::bind_method("_unhandled_key_input", &CanvasItemEditor::_unhandled_key_input);
-	ClassDB::bind_method("_draw_viewport", &CanvasItemEditor::_draw_viewport);
-	ClassDB::bind_method("_gui_input_viewport", &CanvasItemEditor::_gui_input_viewport);
-	ClassDB::bind_method("_snap_changed", &CanvasItemEditor::_snap_changed);
 	ClassDB::bind_method("_queue_update_bone_list", &CanvasItemEditor::_update_bone_list);
 	ClassDB::bind_method("_update_bone_list", &CanvasItemEditor::_update_bone_list);
-	ClassDB::bind_method("_tree_changed", &CanvasItemEditor::_tree_changed);
-	ClassDB::bind_method("_selection_changed", &CanvasItemEditor::_selection_changed);
-	ClassDB::bind_method("_popup_warning_depop", &CanvasItemEditor::_popup_warning_depop);
-	ClassDB::bind_method(D_METHOD("_selection_result_pressed"), &CanvasItemEditor::_selection_result_pressed);
-	ClassDB::bind_method(D_METHOD("_selection_menu_hide"), &CanvasItemEditor::_selection_menu_hide);
 	ClassDB::bind_method(D_METHOD("set_state"), &CanvasItemEditor::set_state);
 	ClassDB::bind_method(D_METHOD("update_viewport"), &CanvasItemEditor::update_viewport);
 
@@ -5410,11 +5390,11 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	editor = p_editor;
 	editor_selection = p_editor->get_editor_selection();
 	editor_selection->add_editor_plugin(this);
-	editor_selection->connect_compat("selection_changed", this, "update");
-	editor_selection->connect_compat("selection_changed", this, "_selection_changed");
+	editor_selection->connect("selection_changed", callable_mp((CanvasItem *)this, &CanvasItem::update));
+	editor_selection->connect("selection_changed", callable_mp(this, &CanvasItemEditor::_selection_changed));
 
-	editor->call_deferred("connect", make_binds("play_pressed", Callable(this, "_update_override_camera_button"), true));
-	editor->call_deferred("connect", make_binds("stop_pressed", Callable(this, "_update_override_camera_button"), false));
+	editor->call_deferred("connect", "play_pressed", Callable(this, "_update_override_camera_button"), make_binds(true));
+	editor->call_deferred("connect", "stop_pressed", Callable(this, "_update_override_camera_button"), make_binds(false));
 
 	hb = memnew(HBoxContainer);
 	add_child(hb);
@@ -5434,7 +5414,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	viewport_scrollable->set_clip_contents(true);
 	viewport_scrollable->set_v_size_flags(SIZE_EXPAND_FILL);
 	viewport_scrollable->set_h_size_flags(SIZE_EXPAND_FILL);
-	viewport_scrollable->connect_compat("draw", this, "_update_scrollbars");
+	viewport_scrollable->connect("draw", callable_mp(this, &CanvasItemEditor::_update_scrollbars));
 
 	ViewportContainer *scene_tree = memnew(ViewportContainer);
 	viewport_scrollable->add_child(scene_tree);
@@ -5456,8 +5436,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	viewport->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	viewport->set_clip_contents(true);
 	viewport->set_focus_mode(FOCUS_ALL);
-	viewport->connect_compat("draw", this, "_draw_viewport");
-	viewport->connect_compat("gui_input", this, "_gui_input_viewport");
+	viewport->connect("draw", callable_mp(this, &CanvasItemEditor::_draw_viewport));
+	viewport->connect("gui_input", callable_mp(this, &CanvasItemEditor::_gui_input_viewport));
 
 	info_overlay = memnew(VBoxContainer);
 	info_overlay->set_anchors_and_margins_preset(Control::PRESET_BOTTOM_LEFT);
@@ -5485,25 +5465,25 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	h_scroll = memnew(HScrollBar);
 	viewport->add_child(h_scroll);
-	h_scroll->connect_compat("value_changed", this, "_update_scroll");
+	h_scroll->connect("value_changed", callable_mp(this, &CanvasItemEditor::_update_scroll));
 	h_scroll->hide();
 
 	v_scroll = memnew(VScrollBar);
 	viewport->add_child(v_scroll);
-	v_scroll->connect_compat("value_changed", this, "_update_scroll");
+	v_scroll->connect("value_changed", callable_mp(this, &CanvasItemEditor::_update_scroll));
 	v_scroll->hide();
 
 	viewport->add_child(controls_vb);
 
 	zoom_minus = memnew(ToolButton);
 	zoom_hb->add_child(zoom_minus);
-	zoom_minus->connect_compat("pressed", this, "_button_zoom_minus");
+	zoom_minus->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_zoom_minus));
 	zoom_minus->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_minus", TTR("Zoom Out"), KEY_MASK_CMD | KEY_MINUS));
 	zoom_minus->set_focus_mode(FOCUS_NONE);
 
 	zoom_reset = memnew(ToolButton);
 	zoom_hb->add_child(zoom_reset);
-	zoom_reset->connect_compat("pressed", this, "_button_zoom_reset");
+	zoom_reset->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_zoom_reset));
 	zoom_reset->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_reset", TTR("Zoom Reset"), KEY_MASK_CMD | KEY_0));
 	zoom_reset->set_focus_mode(FOCUS_NONE);
 	zoom_reset->set_text_align(Button::TextAlign::ALIGN_CENTER);
@@ -5512,7 +5492,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	zoom_plus = memnew(ToolButton);
 	zoom_hb->add_child(zoom_plus);
-	zoom_plus->connect_compat("pressed", this, "_button_zoom_plus");
+	zoom_plus->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_zoom_plus));
 	zoom_plus->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_plus", TTR("Zoom In"), KEY_MASK_CMD | KEY_EQUAL)); // Usually direct access key for PLUS
 	zoom_plus->set_focus_mode(FOCUS_NONE);
 
@@ -5521,7 +5501,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	select_button = memnew(ToolButton);
 	hb->add_child(select_button);
 	select_button->set_toggle_mode(true);
-	select_button->connect_compat("pressed", this, "_button_tool_select", make_binds(TOOL_SELECT));
+	select_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select), make_binds(TOOL_SELECT));
 	select_button->set_pressed(true);
 	select_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/select_mode", TTR("Select Mode"), KEY_Q));
 	select_button->set_tooltip(keycode_get_string(KEY_MASK_CMD) + TTR("Drag: Rotate") + "\n" + TTR("Alt+Drag: Move") + "\n" + TTR("Press 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving).") + "\n" + TTR("Alt+RMB: Depth list selection"));
@@ -5531,21 +5511,21 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	move_button = memnew(ToolButton);
 	hb->add_child(move_button);
 	move_button->set_toggle_mode(true);
-	move_button->connect_compat("pressed", this, "_button_tool_select", make_binds(TOOL_MOVE));
+	move_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select), make_binds(TOOL_MOVE));
 	move_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/move_mode", TTR("Move Mode"), KEY_W));
 	move_button->set_tooltip(TTR("Move Mode"));
 
 	rotate_button = memnew(ToolButton);
 	hb->add_child(rotate_button);
 	rotate_button->set_toggle_mode(true);
-	rotate_button->connect_compat("pressed", this, "_button_tool_select", make_binds(TOOL_ROTATE));
+	rotate_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select), make_binds(TOOL_ROTATE));
 	rotate_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/rotate_mode", TTR("Rotate Mode"), KEY_E));
 	rotate_button->set_tooltip(TTR("Rotate Mode"));
 
 	scale_button = memnew(ToolButton);
 	hb->add_child(scale_button);
 	scale_button->set_toggle_mode(true);
-	scale_button->connect_compat("pressed", this, "_button_tool_select", make_binds(TOOL_SCALE));
+	scale_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select), make_binds(TOOL_SCALE));
 	scale_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/scale_mode", TTR("Scale Mode"), KEY_S));
 	scale_button->set_tooltip(TTR("Scale Mode"));
 
@@ -5554,25 +5534,25 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	list_select_button = memnew(ToolButton);
 	hb->add_child(list_select_button);
 	list_select_button->set_toggle_mode(true);
-	list_select_button->connect_compat("pressed", this, "_button_tool_select", make_binds(TOOL_LIST_SELECT));
+	list_select_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select), make_binds(TOOL_LIST_SELECT));
 	list_select_button->set_tooltip(TTR("Show a list of all objects at the position clicked\n(same as Alt+RMB in select mode)."));
 
 	pivot_button = memnew(ToolButton);
 	hb->add_child(pivot_button);
 	pivot_button->set_toggle_mode(true);
-	pivot_button->connect_compat("pressed", this, "_button_tool_select", make_binds(TOOL_EDIT_PIVOT));
+	pivot_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select), make_binds(TOOL_EDIT_PIVOT));
 	pivot_button->set_tooltip(TTR("Click to change object's rotation pivot."));
 
 	pan_button = memnew(ToolButton);
 	hb->add_child(pan_button);
 	pan_button->set_toggle_mode(true);
-	pan_button->connect_compat("pressed", this, "_button_tool_select", make_binds(TOOL_PAN));
+	pan_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select), make_binds(TOOL_PAN));
 	pan_button->set_tooltip(TTR("Pan Mode"));
 
 	ruler_button = memnew(ToolButton);
 	hb->add_child(ruler_button);
 	ruler_button->set_toggle_mode(true);
-	ruler_button->connect_compat("pressed", this, "_button_tool_select", make_binds(TOOL_RULER));
+	ruler_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select), make_binds(TOOL_RULER));
 	ruler_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/ruler_mode", TTR("Ruler Mode"), KEY_R));
 	ruler_button->set_tooltip(TTR("Ruler Mode"));
 
@@ -5581,14 +5561,14 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	smart_snap_button = memnew(ToolButton);
 	hb->add_child(smart_snap_button);
 	smart_snap_button->set_toggle_mode(true);
-	smart_snap_button->connect_compat("toggled", this, "_button_toggle_smart_snap");
+	smart_snap_button->connect("toggled", callable_mp(this, &CanvasItemEditor::_button_toggle_smart_snap));
 	smart_snap_button->set_tooltip(TTR("Toggle smart snapping."));
 	smart_snap_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/use_smart_snap", TTR("Use Smart Snap"), KEY_MASK_SHIFT | KEY_S));
 
 	grid_snap_button = memnew(ToolButton);
 	hb->add_child(grid_snap_button);
 	grid_snap_button->set_toggle_mode(true);
-	grid_snap_button->connect_compat("toggled", this, "_button_toggle_grid_snap");
+	grid_snap_button->connect("toggled", callable_mp(this, &CanvasItemEditor::_button_toggle_grid_snap));
 	grid_snap_button->set_tooltip(TTR("Toggle grid snapping."));
 	grid_snap_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/use_grid_snap", TTR("Use Grid Snap"), KEY_MASK_SHIFT | KEY_G));
 
@@ -5599,7 +5579,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	snap_config_menu->set_switch_on_hover(true);
 
 	PopupMenu *p = snap_config_menu->get_popup();
-	p->connect_compat("id_pressed", this, "_popup_callback");
+	p->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_popup_callback));
 	p->set_hide_on_checkable_item_selection(false);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/use_rotation_snap", TTR("Use Rotation Snap")), SNAP_USE_ROTATION);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/use_scale_snap", TTR("Use Scale Snap")), SNAP_USE_SCALE);
@@ -5613,7 +5593,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	smartsnap_config_popup = memnew(PopupMenu);
 	p->add_child(smartsnap_config_popup);
 	smartsnap_config_popup->set_name("SmartSnapping");
-	smartsnap_config_popup->connect_compat("id_pressed", this, "_popup_callback");
+	smartsnap_config_popup->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_popup_callback));
 	smartsnap_config_popup->set_hide_on_checkable_item_selection(false);
 	smartsnap_config_popup->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_node_parent", TTR("Snap to Parent")), SNAP_USE_NODE_PARENT);
 	smartsnap_config_popup->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_node_anchors", TTR("Snap to Node Anchor")), SNAP_USE_NODE_ANCHORS);
@@ -5627,22 +5607,22 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	lock_button = memnew(ToolButton);
 	hb->add_child(lock_button);
 
-	lock_button->connect_compat("pressed", this, "_popup_callback", varray(LOCK_SELECTED));
+	lock_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback), varray(LOCK_SELECTED));
 	lock_button->set_tooltip(TTR("Lock the selected object in place (can't be moved)."));
 
 	unlock_button = memnew(ToolButton);
 	hb->add_child(unlock_button);
-	unlock_button->connect_compat("pressed", this, "_popup_callback", varray(UNLOCK_SELECTED));
+	unlock_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback), varray(UNLOCK_SELECTED));
 	unlock_button->set_tooltip(TTR("Unlock the selected object (can be moved)."));
 
 	group_button = memnew(ToolButton);
 	hb->add_child(group_button);
-	group_button->connect_compat("pressed", this, "_popup_callback", varray(GROUP_SELECTED));
+	group_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback), varray(GROUP_SELECTED));
 	group_button->set_tooltip(TTR("Makes sure the object's children are not selectable."));
 
 	ungroup_button = memnew(ToolButton);
 	hb->add_child(ungroup_button);
-	ungroup_button->connect_compat("pressed", this, "_popup_callback", varray(UNGROUP_SELECTED));
+	ungroup_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback), varray(UNGROUP_SELECTED));
 	ungroup_button->set_tooltip(TTR("Restores the object's children's ability to be selected."));
 
 	hb->add_child(memnew(VSeparator));
@@ -5661,13 +5641,13 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_make_bones", TTR("Make Custom Bone(s) from Node(s)"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_B), SKELETON_MAKE_BONES);
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_clear_bones", TTR("Clear Custom Bones")), SKELETON_CLEAR_BONES);
-	p->connect_compat("id_pressed", this, "_popup_callback");
+	p->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_popup_callback));
 
 	hb->add_child(memnew(VSeparator));
 
 	override_camera_button = memnew(ToolButton);
 	hb->add_child(override_camera_button);
-	override_camera_button->connect_compat("toggled", this, "_button_override_camera");
+	override_camera_button->connect("toggled", callable_mp(this, &CanvasItemEditor::_button_override_camera));
 	override_camera_button->set_toggle_mode(true);
 	override_camera_button->set_disabled(true);
 	_update_override_camera_button(false);
@@ -5677,7 +5657,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	view_menu = memnew(MenuButton);
 	view_menu->set_text(TTR("View"));
 	hb->add_child(view_menu);
-	view_menu->get_popup()->connect_compat("id_pressed", this, "_popup_callback");
+	view_menu->get_popup()->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_popup_callback));
 	view_menu->set_switch_on_hover(true);
 
 	p = view_menu->get_popup();
@@ -5705,18 +5685,18 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	presets_menu->set_switch_on_hover(true);
 
 	p = presets_menu->get_popup();
-	p->connect_compat("id_pressed", this, "_popup_callback");
+	p->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_popup_callback));
 
 	anchors_popup = memnew(PopupMenu);
 	p->add_child(anchors_popup);
 	anchors_popup->set_name("Anchors");
-	anchors_popup->connect_compat("id_pressed", this, "_popup_callback");
+	anchors_popup->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_popup_callback));
 
 	anchor_mode_button = memnew(ToolButton);
 	hb->add_child(anchor_mode_button);
 	anchor_mode_button->set_toggle_mode(true);
 	anchor_mode_button->hide();
-	anchor_mode_button->connect_compat("toggled", this, "_button_toggle_anchor_mode");
+	anchor_mode_button->connect("toggled", callable_mp(this, &CanvasItemEditor::_button_toggle_anchor_mode));
 
 	animation_hb = memnew(HBoxContainer);
 	hb->add_child(animation_hb);
@@ -5728,7 +5708,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	key_loc_button->set_flat(true);
 	key_loc_button->set_pressed(true);
 	key_loc_button->set_focus_mode(FOCUS_NONE);
-	key_loc_button->connect_compat("pressed", this, "_popup_callback", varray(ANIM_INSERT_POS));
+	key_loc_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback), varray(ANIM_INSERT_POS));
 	key_loc_button->set_tooltip(TTR("Translation mask for inserting keys."));
 	animation_hb->add_child(key_loc_button);
 	key_rot_button = memnew(Button);
@@ -5736,20 +5716,20 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	key_rot_button->set_flat(true);
 	key_rot_button->set_pressed(true);
 	key_rot_button->set_focus_mode(FOCUS_NONE);
-	key_rot_button->connect_compat("pressed", this, "_popup_callback", varray(ANIM_INSERT_ROT));
+	key_rot_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback), varray(ANIM_INSERT_ROT));
 	key_rot_button->set_tooltip(TTR("Rotation mask for inserting keys."));
 	animation_hb->add_child(key_rot_button);
 	key_scale_button = memnew(Button);
 	key_scale_button->set_toggle_mode(true);
 	key_scale_button->set_flat(true);
 	key_scale_button->set_focus_mode(FOCUS_NONE);
-	key_scale_button->connect_compat("pressed", this, "_popup_callback", varray(ANIM_INSERT_SCALE));
+	key_scale_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback), varray(ANIM_INSERT_SCALE));
 	key_scale_button->set_tooltip(TTR("Scale mask for inserting keys."));
 	animation_hb->add_child(key_scale_button);
 	key_insert_button = memnew(Button);
 	key_insert_button->set_flat(true);
 	key_insert_button->set_focus_mode(FOCUS_NONE);
-	key_insert_button->connect_compat("pressed", this, "_popup_callback", varray(ANIM_INSERT_KEY));
+	key_insert_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback), varray(ANIM_INSERT_KEY));
 	key_insert_button->set_tooltip(TTR("Insert keys (based on mask)."));
 	key_insert_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/anim_insert_key", TTR("Insert Key"), KEY_INSERT));
 	animation_hb->add_child(key_insert_button);
@@ -5765,7 +5745,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	animation_menu = memnew(MenuButton);
 	animation_menu->set_tooltip(TTR("Animation Key and Pose Options"));
 	animation_hb->add_child(animation_menu);
-	animation_menu->get_popup()->connect_compat("id_pressed", this, "_popup_callback");
+	animation_menu->get_popup()->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_popup_callback));
 	animation_menu->set_switch_on_hover(true);
 
 	p = animation_menu->get_popup();
@@ -5778,7 +5758,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/anim_clear_pose", TTR("Clear Pose"), KEY_MASK_SHIFT | KEY_K), ANIM_CLEAR_POSE);
 
 	snap_dialog = memnew(SnapDialog);
-	snap_dialog->connect_compat("confirmed", this, "_snap_changed");
+	snap_dialog->connect("confirmed", callable_mp(this, &CanvasItemEditor::_snap_changed));
 	add_child(snap_dialog);
 
 	select_sb = Ref<StyleBoxTexture>(memnew(StyleBoxTexture));
@@ -5786,8 +5766,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	selection_menu = memnew(PopupMenu);
 	add_child(selection_menu);
 	selection_menu->set_custom_minimum_size(Vector2(100, 0));
-	selection_menu->connect_compat("id_pressed", this, "_selection_result_pressed");
-	selection_menu->connect_compat("popup_hide", this, "_selection_menu_hide");
+	selection_menu->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_selection_result_pressed));
+	selection_menu->connect("popup_hide", callable_mp(this, &CanvasItemEditor::_selection_menu_hide));
 
 	multiply_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/multiply_grid_step", TTR("Multiply grid step by 2"), KEY_KP_MULTIPLY);
 	divide_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/divide_grid_step", TTR("Divide grid step by 2"), KEY_KP_DIVIDE);
@@ -6234,11 +6214,11 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 void CanvasItemEditorViewport::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			connect_compat("mouse_exited", this, "_on_mouse_exit");
+			connect("mouse_exited", callable_mp(this, &CanvasItemEditorViewport::_on_mouse_exit));
 			label->add_color_override("font_color", get_color("warning_color", "Editor"));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			disconnect_compat("mouse_exited", this, "_on_mouse_exit");
+			disconnect("mouse_exited", callable_mp(this, &CanvasItemEditorViewport::_on_mouse_exit));
 		} break;
 
 		default: break;
@@ -6246,10 +6226,6 @@ void CanvasItemEditorViewport::_notification(int p_what) {
 }
 
 void CanvasItemEditorViewport::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_on_select_type"), &CanvasItemEditorViewport::_on_select_type);
-	ClassDB::bind_method(D_METHOD("_on_change_type_confirmed"), &CanvasItemEditorViewport::_on_change_type_confirmed);
-	ClassDB::bind_method(D_METHOD("_on_change_type_closed"), &CanvasItemEditorViewport::_on_change_type_closed);
-	ClassDB::bind_method(D_METHOD("_on_mouse_exit"), &CanvasItemEditorViewport::_on_mouse_exit);
 }
 
 CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasItemEditor *p_canvas_item_editor) {
@@ -6276,8 +6252,8 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 	selector = memnew(AcceptDialog);
 	editor->get_gui_base()->add_child(selector);
 	selector->set_title(TTR("Change Default Type"));
-	selector->connect_compat("confirmed", this, "_on_change_type_confirmed");
-	selector->connect_compat("popup_hide", this, "_on_change_type_closed");
+	selector->connect("confirmed", callable_mp(this, &CanvasItemEditorViewport::_on_change_type_confirmed));
+	selector->connect("popup_hide", callable_mp(this, &CanvasItemEditorViewport::_on_change_type_closed));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	selector->add_child(vbc);
@@ -6294,7 +6270,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 		CheckBox *check = memnew(CheckBox);
 		btn_group->add_child(check);
 		check->set_text(types[i]);
-		check->connect_compat("button_down", this, "_on_select_type", varray(check));
+		check->connect("button_down", callable_mp(this, &CanvasItemEditorViewport::_on_select_type), varray(check));
 		check->set_button_group(button_group);
 	}
 

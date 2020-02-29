@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  mutex_windows.h                                                      */
+/*  navigation_region.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,36 +28,48 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MUTEX_WINDOWS_H
-#define MUTEX_WINDOWS_H
+#ifndef NAVIGATION_REGION_H
+#define NAVIGATION_REGION_H
 
-#ifdef WINDOWS_ENABLED
+#include "scene/3d/spatial.h"
+#include "scene/resources/mesh.h"
+#include "scene/resources/navigation_mesh.h"
 
-#include "core/os/mutex.h"
+class Navigation;
 
-#include <windows.h>
+class NavigationRegion : public Spatial {
 
-class MutexWindows : public Mutex {
+	GDCLASS(NavigationRegion, Spatial);
 
-#ifdef WINDOWS_USE_MUTEX
-	HANDLE mutex;
-#else
-	CRITICAL_SECTION mutex;
-#endif
+	bool enabled;
+	RID region;
+	Ref<NavigationMesh> navmesh;
 
-	static Mutex *create_func_windows(bool p_recursive);
+	Navigation *navigation;
+	Node *debug_view;
+	Thread *bake_thread;
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+	void _changed_callback(Object *p_changed, const char *p_prop);
 
 public:
-	virtual void lock();
-	virtual void unlock();
-	virtual Error try_lock();
+	void set_enabled(bool p_enabled);
+	bool is_enabled() const;
 
-	static void make_default();
+	void set_navigation_mesh(const Ref<NavigationMesh> &p_navmesh);
+	Ref<NavigationMesh> get_navigation_mesh() const;
 
-	MutexWindows();
-	~MutexWindows();
+	/// Bakes the navigation mesh in a dedicated thread; once done, automatically
+	/// sets the new navigation mesh and emits a signal
+	void bake_navigation_mesh();
+	void _bake_finished(Ref<NavigationMesh> p_nav_mesh);
+
+	String get_configuration_warning() const;
+
+	NavigationRegion();
+	~NavigationRegion();
 };
 
-#endif
-
-#endif
+#endif // NAVIGATION_REGION_H

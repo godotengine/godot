@@ -38,7 +38,6 @@
 class Reference : public Object {
 
 	GDCLASS(Reference, Object);
-	friend class RefBase;
 	SafeRefCount refcount;
 	SafeRefCount refcount_init;
 

@@ -537,8 +537,8 @@ void TabContainer::add_child_notify(Node *p_child) {
 	c->set_margin(Margin(MARGIN_BOTTOM), c->get_margin(Margin(MARGIN_BOTTOM)) - sb->get_margin(Margin(MARGIN_BOTTOM)));
 
 	update();
-	p_child->connect_compat("renamed", this, "_child_renamed_callback");
-	if (first)
+	p_child->connect("renamed", callable_mp(this, &TabContainer::_child_renamed_callback));
+	if (first && is_inside_tree())
 		emit_signal("tab_changed", current);
 }
 
@@ -620,7 +620,7 @@ void TabContainer::remove_child_notify(Node *p_child) {
 
 	call_deferred("_update_current_tab");
 
-	p_child->disconnect_compat("renamed", this, "_child_renamed_callback");
+	p_child->disconnect("renamed", callable_mp(this, &TabContainer::_child_renamed_callback));
 
 	update();
 }
@@ -1011,9 +1011,7 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_hidden_tabs_for_min_size", "enabled"), &TabContainer::set_use_hidden_tabs_for_min_size);
 	ClassDB::bind_method(D_METHOD("get_use_hidden_tabs_for_min_size"), &TabContainer::get_use_hidden_tabs_for_min_size);
 
-	ClassDB::bind_method(D_METHOD("_child_renamed_callback"), &TabContainer::_child_renamed_callback);
 	ClassDB::bind_method(D_METHOD("_on_theme_changed"), &TabContainer::_on_theme_changed);
-	ClassDB::bind_method(D_METHOD("_on_mouse_exited"), &TabContainer::_on_mouse_exited);
 	ClassDB::bind_method(D_METHOD("_update_current_tab"), &TabContainer::_update_current_tab);
 
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
@@ -1048,5 +1046,5 @@ TabContainer::TabContainer() {
 	tabs_rearrange_group = -1;
 	use_hidden_tabs_for_min_size = false;
 
-	connect_compat("mouse_exited", this, "_on_mouse_exited");
+	connect("mouse_exited", callable_mp(this, &TabContainer::_on_mouse_exited));
 }

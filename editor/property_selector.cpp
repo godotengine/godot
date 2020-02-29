@@ -389,13 +389,17 @@ void PropertySelector::_item_selected() {
 	help_bit->set_text(text);
 }
 
+void PropertySelector::_hide_requested() {
+	_closed(); // From WindowDialog.
+}
+
 void PropertySelector::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		connect_compat("confirmed", this, "_confirmed");
+		connect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
 	} else if (p_what == NOTIFICATION_EXIT_TREE) {
-		disconnect_compat("confirmed", this, "_confirmed");
+		disconnect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
 	}
 }
 
@@ -542,11 +546,6 @@ void PropertySelector::set_type_filter(const Vector<Variant::Type> &p_type_filte
 
 void PropertySelector::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_text_changed"), &PropertySelector::_text_changed);
-	ClassDB::bind_method(D_METHOD("_confirmed"), &PropertySelector::_confirmed);
-	ClassDB::bind_method(D_METHOD("_sbox_input"), &PropertySelector::_sbox_input);
-	ClassDB::bind_method(D_METHOD("_item_selected"), &PropertySelector::_item_selected);
-
 	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::STRING, "name")));
 }
 
@@ -557,21 +556,21 @@ PropertySelector::PropertySelector() {
 	//set_child_rect(vbc);
 	search_box = memnew(LineEdit);
 	vbc->add_margin_child(TTR("Search:"), search_box);
-	search_box->connect_compat("text_changed", this, "_text_changed");
-	search_box->connect_compat("gui_input", this, "_sbox_input");
+	search_box->connect("text_changed", callable_mp(this, &PropertySelector::_text_changed));
+	search_box->connect("gui_input", callable_mp(this, &PropertySelector::_sbox_input));
 	search_options = memnew(Tree);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 	get_ok()->set_text(TTR("Open"));
 	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
-	search_options->connect_compat("item_activated", this, "_confirmed");
-	search_options->connect_compat("cell_selected", this, "_item_selected");
+	search_options->connect("item_activated", callable_mp(this, &PropertySelector::_confirmed));
+	search_options->connect("cell_selected", callable_mp(this, &PropertySelector::_item_selected));
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
 	virtuals_only = false;
 
 	help_bit = memnew(EditorHelpBit);
 	vbc->add_margin_child(TTR("Description:"), help_bit);
-	help_bit->connect_compat("request_hide", this, "_closed");
+	help_bit->connect("request_hide", callable_mp(this, &PropertySelector::_hide_requested));
 }

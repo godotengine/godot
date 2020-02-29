@@ -307,8 +307,6 @@ void EditorAssetInstaller::ok_pressed() {
 }
 
 void EditorAssetInstaller::_bind_methods() {
-
-	ClassDB::bind_method("_item_edited", &EditorAssetInstaller::_item_edited);
 }
 
 EditorAssetInstaller::EditorAssetInstaller() {
@@ -318,7 +316,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 
 	tree = memnew(Tree);
 	vb->add_margin_child(TTR("Package Contents:"), tree, true);
-	tree->connect_compat("item_edited", this, "_item_edited");
+	tree->connect("item_edited", callable_mp(this, &EditorAssetInstaller::_item_edited));
 
 	error = memnew(AcceptDialog);
 	add_child(error);

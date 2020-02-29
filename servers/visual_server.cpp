@@ -2316,9 +2316,8 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF("rendering/quality/reflections/texture_array_reflections.mobile", false);
 	GLOBAL_DEF("rendering/quality/reflections/ggx_samples", 1024);
 	GLOBAL_DEF("rendering/quality/reflections/ggx_samples.mobile", 128);
-	GLOBAL_DEF("rendering/quality/reflections/ggx_samples_realtime", 64);
-	GLOBAL_DEF("rendering/quality/reflections/ggx_samples_realtime.mobile", 16);
-	GLOBAL_DEF("rendering/quality/reflection_atlas/reflection_size", 256);
+	GLOBAL_DEF("rendering/quality/reflections/fast_filter_high_quality", false);
+	GLOBAL_DEF("rendering/quality/reflection_atlas/reflection_size", 128);
 	GLOBAL_DEF("rendering/quality/reflection_atlas/reflection_size.mobile", 128);
 	GLOBAL_DEF("rendering/quality/reflection_atlas/reflection_count", 64);
 

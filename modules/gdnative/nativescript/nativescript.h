@@ -35,6 +35,7 @@
 #include "core/io/resource_saver.h"
 #include "core/oa_hash_map.h"
 #include "core/ordered_hash_map.h"
+#include "core/os/mutex.h"
 #include "core/os/thread_safe.h"
 #include "core/resource.h"
 #include "core/script_language.h"
@@ -43,10 +44,6 @@
 
 #include "modules/gdnative/gdnative.h"
 #include <nativescript/godot_nativescript.h>
-
-#ifndef NO_THREADS
-#include "core/os/mutex.h"
-#endif
 
 struct NativeScriptDesc {
 
@@ -127,9 +124,7 @@ class NativeScript : public Script {
 	String script_class_name;
 	String script_class_icon_path;
 
-#ifndef NO_THREADS
-	Mutex *owners_lock;
-#endif
+	Mutex owners_lock;
 	Set<Object *> instance_owners;
 
 protected:
@@ -266,9 +261,8 @@ private:
 
 	void _unload_stuff(bool p_reload = false);
 
+	Mutex mutex;
 #ifndef NO_THREADS
-	Mutex *mutex;
-
 	Set<Ref<GDNativeLibrary> > libs_to_init;
 	Set<NativeScript *> scripts_to_register;
 	volatile bool has_objects_to_register; // so that we don't lock mutex every frame - it's rarely needed
@@ -412,7 +406,7 @@ public:
 
 class ResourceFormatLoaderNativeScript : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL, bool p_use_sub_threads = false, float *r_progress = nullptr);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

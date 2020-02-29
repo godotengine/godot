@@ -30,8 +30,6 @@
 
 #include "node.h"
 
-#include <stdint.h>
-
 #include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
 #include "core/message_queue.h"
@@ -45,6 +43,8 @@
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
 #endif
+
+#include <stdint.h>
 
 VARIANT_ENUM_CAST(Node::PauseMode);
 
@@ -2346,15 +2346,18 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 
 			Node *copytarget = target;
 
-			// Atempt to find a path to the duplicate target, if it seems it's not part
+			// Attempt to find a path to the duplicate target, if it seems it's not part
 			// of the duplicated and not yet parented hierarchy then at least try to connect
 			// to the same target as the original
 
 			if (p_copy->has_node(ptarget))
 				copytarget = p_copy->get_node(ptarget);
 
-			if (copy && copytarget && !copy->is_connected_compat(E->get().signal.get_name(), copytarget, E->get().callable.get_method())) {
-				copy->connect_compat(E->get().signal.get_name(), copytarget, E->get().callable.get_method(), E->get().binds, E->get().flags);
+			if (copy && copytarget) {
+				const Callable copy_callable = Callable(copytarget, E->get().callable.get_method());
+				if (!copy->is_connected(E->get().signal.get_name(), copy_callable)) {
+					copy->connect(E->get().signal.get_name(), copy_callable, E->get().binds, E->get().flags);
+				}
 			}
 		}
 	}
@@ -2509,10 +2512,10 @@ void Node::_replace_connections_target(Node *p_new_target) {
 		Connection &c = E->get();
 
 		if (c.flags & CONNECT_PERSIST) {
-			c.signal.get_object()->disconnect_compat(c.signal.get_name(), this, c.callable.get_method());
+			c.signal.get_object()->disconnect(c.signal.get_name(), Callable(this, c.callable.get_method()));
 			bool valid = p_new_target->has_method(c.callable.get_method()) || Ref<Script>(p_new_target->get_script()).is_null() || Ref<Script>(p_new_target->get_script())->has_method(c.callable.get_method());
 			ERR_CONTINUE_MSG(!valid, "Attempt to connect signal '" + c.signal.get_object()->get_class() + "." + c.signal.get_name() + "' to nonexistent method '" + c.callable.get_object()->get_class() + "." + c.callable.get_method() + "'.");
-			c.signal.get_object()->connect_compat(c.signal.get_name(), p_new_target, c.callable.get_method(), c.binds, c.flags);
+			c.signal.get_object()->connect(c.signal.get_name(), Callable(p_new_target, c.callable.get_method()), c.binds, c.flags);
 		}
 	}
 }
@@ -2800,7 +2803,7 @@ void Node::_bind_methods() {
 	GLOBAL_DEF("node/name_casing", NAME_CASING_PASCAL_CASE);
 	ProjectSettings::get_singleton()->set_custom_property_info("node/name_casing", PropertyInfo(Variant::INT, "node/name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case"));
 
-	ClassDB::bind_method(D_METHOD("add_child_below_node", "node", "child_node", "legible_unique_name"), &Node::add_child_below_node, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_child_below_node", "preceding_node", "node", "legible_unique_name"), &Node::add_child_below_node, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);

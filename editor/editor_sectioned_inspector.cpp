@@ -33,6 +33,7 @@
 
 void SectionedInspector::_bind_methods() {
 
+
 	ClassDB::bind_method("_section_selected", &SectionedInspector::_section_selected);
 	ClassDB::bind_method("_search_changed", &SectionedInspector::_search_changed);
 	ClassDB::bind_method("_set_current_section", &SectionedInspector::set_current_section);
@@ -195,7 +196,7 @@ void SectionedInspector::register_search_box(LineEdit *p_box) {
 
 	search_box = p_box;
 	inspector->register_text_enter(p_box);
-	search_box->connect_compat("text_changed", this, "_search_changed");
+	search_box->connect("text_changed", callable_mp(this, &SectionedInspector::_search_changed));
 }
 
 void SectionedInspector::_search_changed(const String &p_what) {
@@ -235,7 +236,7 @@ SectionedInspector::SectionedInspector() :
 	right_vb->add_child(inspector, true);
 	inspector->set_use_doc_hints(true);
 
-	sections->connect_compat("cell_selected", this, "_section_selected");
+	sections->connect("cell_selected", callable_mp(this, &SectionedInspector::_section_selected));
 }
 
 SectionedInspector::~SectionedInspector() {

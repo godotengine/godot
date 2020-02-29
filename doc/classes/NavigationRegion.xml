@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationMeshInstance" inherits="Spatial" version="4.0">
+<class name="NavigationRegion" inherits="Spatial" version="4.0">
 	<brief_description>
-		An instance of a [NavigationMesh].
+		A region of the navigation map.
 	</brief_description>
 	<description>
-		An instance of a [NavigationMesh]. It tells the [Navigation] node what can be navigated and what cannot, based on the [NavigationMesh] resource. This should be a child of a [Navigation] node.
+		A region of the navigation map. It tells the [Navigation] node what can be navigated and what cannot, based on the [NavigationMesh] resource. This should be a child of a [Navigation] node (even not a direct child).
 	</description>
 	<tutorials>
 	</tutorials>
@@ -19,7 +19,7 @@
 	</methods>
 	<members>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
-			Determines if the [NavigationMeshInstance] is enabled or disabled.
+			Determines if the [NavigationRegion] is enabled or disabled.
 		</member>
 		<member name="navmesh" type="NavigationMesh" setter="set_navigation_mesh" getter="get_navigation_mesh">
 			The [NavigationMesh] resource to use.

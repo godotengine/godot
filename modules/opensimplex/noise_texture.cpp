@@ -76,7 +76,6 @@ void NoiseTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bump_strength"), &NoiseTexture::get_bump_strength);
 
 	ClassDB::bind_method(D_METHOD("_update_texture"), &NoiseTexture::_update_texture);
-	ClassDB::bind_method(D_METHOD("_queue_update"), &NoiseTexture::_queue_update);
 	ClassDB::bind_method(D_METHOD("_generate_texture"), &NoiseTexture::_generate_texture);
 	ClassDB::bind_method(D_METHOD("_thread_done", "image"), &NoiseTexture::_thread_done);
 
@@ -184,11 +183,11 @@ void NoiseTexture::set_noise(Ref<OpenSimplexNoise> p_noise) {
 	if (p_noise == noise)
 		return;
 	if (noise.is_valid()) {
-		noise->disconnect_compat(CoreStringNames::get_singleton()->changed, this, "_queue_update");
+		noise->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NoiseTexture::_queue_update));
 	}
 	noise = p_noise;
 	if (noise.is_valid()) {
-		noise->connect_compat(CoreStringNames::get_singleton()->changed, this, "_queue_update");
+		noise->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NoiseTexture::_queue_update));
 	}
 	_queue_update();
 }

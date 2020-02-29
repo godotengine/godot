@@ -248,10 +248,6 @@ void EditorPropertyRootMotion::_notification(int p_what) {
 }
 
 void EditorPropertyRootMotion::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_confirmed"), &EditorPropertyRootMotion::_confirmed);
-	ClassDB::bind_method(D_METHOD("_node_assign"), &EditorPropertyRootMotion::_node_assign);
-	ClassDB::bind_method(D_METHOD("_node_clear"), &EditorPropertyRootMotion::_node_clear);
 }
 
 EditorPropertyRootMotion::EditorPropertyRootMotion() {
@@ -262,24 +258,24 @@ EditorPropertyRootMotion::EditorPropertyRootMotion() {
 	assign->set_flat(true);
 	assign->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
-	assign->connect_compat("pressed", this, "_node_assign");
+	assign->connect("pressed", callable_mp(this, &EditorPropertyRootMotion::_node_assign));
 	hbc->add_child(assign);
 
 	clear = memnew(Button);
 	clear->set_flat(true);
-	clear->connect_compat("pressed", this, "_node_clear");
+	clear->connect("pressed", callable_mp(this, &EditorPropertyRootMotion::_node_clear));
 	hbc->add_child(clear);
 
 	filter_dialog = memnew(ConfirmationDialog);
 	add_child(filter_dialog);
 	filter_dialog->set_title(TTR("Edit Filtered Tracks:"));
-	filter_dialog->connect_compat("confirmed", this, "_confirmed");
+	filter_dialog->connect("confirmed", callable_mp(this, &EditorPropertyRootMotion::_confirmed));
 
 	filters = memnew(Tree);
 	filter_dialog->add_child(filters);
 	filters->set_v_size_flags(SIZE_EXPAND_FILL);
 	filters->set_hide_root(true);
-	filters->connect_compat("item_activated", this, "_confirmed");
+	filters->connect("item_activated", callable_mp(this, &EditorPropertyRootMotion::_confirmed));
 	//filters->connect("item_edited", this, "_filter_edited");
 }
 //////////////////////////

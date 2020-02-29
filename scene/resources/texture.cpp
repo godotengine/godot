@@ -363,7 +363,6 @@ Ref<Image> StreamTexture::load_image_from_file(FileAccess *f, int p_size_limit) 
 	uint32_t mipmaps = f->get_32();
 	Image::Format format = Image::Format(f->get_32());
 
-	print_line("format: " + itos(data_format) + " size " + Size2i(w, h) + " mipmaps: " + itos(mipmaps));
 	if (data_format == DATA_FORMAT_LOSSLESS || data_format == DATA_FORMAT_LOSSY || data_format == DATA_FORMAT_BASIS_UNIVERSAL) {
 		//look for a PNG or WEBP file inside
 
@@ -797,7 +796,7 @@ StreamTexture::~StreamTexture() {
 	}
 }
 
-RES ResourceFormatLoaderStreamTexture::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES ResourceFormatLoaderStreamTexture::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 
 	Ref<StreamTexture> st;
 	st.instance();
@@ -1409,11 +1408,11 @@ void CurveTexture::ensure_default_setup(float p_min, float p_max) {
 void CurveTexture::set_curve(Ref<Curve> p_curve) {
 	if (_curve != p_curve) {
 		if (_curve.is_valid()) {
-			_curve->disconnect_compat(CoreStringNames::get_singleton()->changed, this, "_update");
+			_curve->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveTexture::_update));
 		}
 		_curve = p_curve;
 		if (_curve.is_valid()) {
-			_curve->connect_compat(CoreStringNames::get_singleton()->changed, this, "_update");
+			_curve->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveTexture::_update));
 		}
 		_update();
 	}
@@ -1514,11 +1513,11 @@ void GradientTexture::set_gradient(Ref<Gradient> p_gradient) {
 	if (p_gradient == gradient)
 		return;
 	if (gradient.is_valid()) {
-		gradient->disconnect_compat(CoreStringNames::get_singleton()->changed, this, "_update");
+		gradient->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GradientTexture::_update));
 	}
 	gradient = p_gradient;
 	if (gradient.is_valid()) {
-		gradient->connect_compat(CoreStringNames::get_singleton()->changed, this, "_update");
+		gradient->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GradientTexture::_update));
 	}
 	_update();
 	emit_changed();
@@ -1843,8 +1842,6 @@ void AnimatedTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_frame_delay", "frame", "delay"), &AnimatedTexture::set_frame_delay);
 	ClassDB::bind_method(D_METHOD("get_frame_delay", "frame"), &AnimatedTexture::get_frame_delay);
 
-	ClassDB::bind_method(D_METHOD("_update_proxy"), &AnimatedTexture::_update_proxy);
-
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frames", PROPERTY_HINT_RANGE, "1," + itos(MAX_FRAMES), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_frames", "get_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fps", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_fps", "get_fps");
 
@@ -1867,7 +1864,7 @@ AnimatedTexture::AnimatedTexture() {
 	fps = 4;
 	prev_ticks = 0;
 	current_frame = 0;
-	VisualServer::get_singleton()->connect_compat("frame_pre_draw", this, "_update_proxy");
+	VisualServer::get_singleton()->connect("frame_pre_draw", callable_mp(this, &AnimatedTexture::_update_proxy));
 
 #ifndef NO_THREADS
 	rw_lock = RWLock::create();
@@ -2027,7 +2024,7 @@ TextureLayered::~TextureLayered() {
 	}
 }
 
-RES ResourceFormatLoaderTextureLayered::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES ResourceFormatLoaderTextureLayered::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 
 	if (r_error) {
 		*r_error = ERR_CANT_OPEN;

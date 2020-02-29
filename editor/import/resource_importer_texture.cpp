@@ -38,7 +38,8 @@
 
 void ResourceImporterTexture::_texture_reimport_roughness(const Ref<StreamTexture> &p_tex, const String &p_normal_path, VS::TextureDetectRoughnessChannel p_channel) {
 
-	singleton->mutex->lock();
+	MutexLock lock(singleton->mutex);
+
 	StringName path = p_tex->get_path();
 
 	if (!singleton->make_flags.has(path)) {
@@ -48,13 +49,12 @@ void ResourceImporterTexture::_texture_reimport_roughness(const Ref<StreamTextur
 	singleton->make_flags[path].flags |= MAKE_ROUGHNESS_FLAG;
 	singleton->make_flags[path].channel_for_roughness = p_channel;
 	singleton->make_flags[path].normal_path_for_roughness = p_normal_path;
-
-	singleton->mutex->unlock();
 }
 
 void ResourceImporterTexture::_texture_reimport_3d(const Ref<StreamTexture> &p_tex) {
 
-	singleton->mutex->lock();
+	MutexLock lock(singleton->mutex);
+
 	StringName path = p_tex->get_path();
 
 	if (!singleton->make_flags.has(path)) {
@@ -62,13 +62,12 @@ void ResourceImporterTexture::_texture_reimport_3d(const Ref<StreamTexture> &p_t
 	}
 
 	singleton->make_flags[path].flags |= MAKE_3D_FLAG;
-
-	singleton->mutex->unlock();
 }
 
 void ResourceImporterTexture::_texture_reimport_normal(const Ref<StreamTexture> &p_tex) {
 
-	singleton->mutex->lock();
+	MutexLock lock(singleton->mutex);
+
 	StringName path = p_tex->get_path();
 
 	if (!singleton->make_flags.has(path)) {
@@ -76,8 +75,6 @@ void ResourceImporterTexture::_texture_reimport_normal(const Ref<StreamTexture> 
 	}
 
 	singleton->make_flags[path].flags |= MAKE_NORMAL_FLAG;
-
-	singleton->mutex->unlock();
 }
 
 void ResourceImporterTexture::update_imports() {
@@ -85,57 +82,56 @@ void ResourceImporterTexture::update_imports() {
 	if (EditorFileSystem::get_singleton()->is_scanning() || EditorFileSystem::get_singleton()->is_importing()) {
 		return; // do nothing for now
 	}
-	mutex->lock();
 
-	if (make_flags.empty()) {
-		mutex->unlock();
-		return;
-	}
-
+	MutexLock lock(mutex);
 	Vector<String> to_reimport;
-	for (Map<StringName, MakeInfo>::Element *E = make_flags.front(); E; E = E->next()) {
-
-		Ref<ConfigFile> cf;
-		cf.instance();
-		String src_path = String(E->key()) + ".import";
-
-		Error err = cf->load(src_path);
-		ERR_CONTINUE(err != OK);
-
-		bool changed = false;
-
-		if (E->get().flags & MAKE_NORMAL_FLAG && int(cf->get_value("params", "compress/normal_map")) == 0) {
-			cf->set_value("params", "compress/normal_map", 1);
-			changed = true;
+	{
+		if (make_flags.empty()) {
+			return;
 		}
 
-		if (E->get().flags & MAKE_ROUGHNESS_FLAG && int(cf->get_value("params", "roughness/mode")) == 0) {
-			cf->set_value("params", "roughness/mode", E->get().channel_for_roughness + 2);
-			cf->set_value("params", "roughness/src_normal", E->get().normal_path_for_roughness);
-			changed = true;
-		}
+		for (Map<StringName, MakeInfo>::Element *E = make_flags.front(); E; E = E->next()) {
 
-		if (E->get().flags & MAKE_3D_FLAG && bool(cf->get_value("params", "detect_3d/compress_to"))) {
-			int compress_to = cf->get_value("params", "detect_3d/compress_to");
-			cf->set_value("params", "detect_3d/compress_to", 0);
-			if (compress_to == 1) {
-				cf->set_value("params", "compress/mode", COMPRESS_VRAM_COMPRESSED);
-			} else if (compress_to == 2) {
-				cf->set_value("params", "compress/mode", COMPRESS_BASIS_UNIVERSAL);
+			Ref<ConfigFile> cf;
+			cf.instance();
+			String src_path = String(E->key()) + ".import";
+
+			Error err = cf->load(src_path);
+			ERR_CONTINUE(err != OK);
+
+			bool changed = false;
+
+			if (E->get().flags & MAKE_NORMAL_FLAG && int(cf->get_value("params", "compress/normal_map")) == 0) {
+				cf->set_value("params", "compress/normal_map", 1);
+				changed = true;
 			}
-			cf->set_value("params", "mipmaps/generate", true);
-			changed = true;
+
+			if (E->get().flags & MAKE_ROUGHNESS_FLAG && int(cf->get_value("params", "roughness/mode")) == 0) {
+				cf->set_value("params", "roughness/mode", E->get().channel_for_roughness + 2);
+				cf->set_value("params", "roughness/src_normal", E->get().normal_path_for_roughness);
+				changed = true;
+			}
+
+			if (E->get().flags & MAKE_3D_FLAG && bool(cf->get_value("params", "detect_3d/compress_to"))) {
+				int compress_to = cf->get_value("params", "detect_3d/compress_to");
+				cf->set_value("params", "detect_3d/compress_to", 0);
+				if (compress_to == 1) {
+					cf->set_value("params", "compress/mode", COMPRESS_VRAM_COMPRESSED);
+				} else if (compress_to == 2) {
+					cf->set_value("params", "compress/mode", COMPRESS_BASIS_UNIVERSAL);
+				}
+				cf->set_value("params", "mipmaps/generate", true);
+				changed = true;
+			}
+
+			if (changed) {
+				cf->save(src_path);
+				to_reimport.push_back(E->key());
+			}
 		}
 
-		if (changed) {
-			cf->save(src_path);
-			to_reimport.push_back(E->key());
-		}
+		make_flags.clear();
 	}
-
-	make_flags.clear();
-
-	mutex->unlock();
 
 	if (to_reimport.size()) {
 		EditorFileSystem::get_singleton()->reimport_files(to_reimport);
@@ -642,10 +638,7 @@ ResourceImporterTexture::ResourceImporterTexture() {
 	StreamTexture::request_3d_callback = _texture_reimport_3d;
 	StreamTexture::request_roughness_callback = _texture_reimport_roughness;
 	StreamTexture::request_normal_callback = _texture_reimport_normal;
-	mutex = Mutex::create();
 }
 
 ResourceImporterTexture::~ResourceImporterTexture() {
-
-	memdelete(mutex);
 }

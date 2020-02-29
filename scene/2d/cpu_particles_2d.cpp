@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "cpu_particles_2d.h"
+
 #include "core/core_string_names.h"
 #include "scene/2d/canvas_item.h"
 #include "scene/2d/particles_2d.h"
@@ -212,12 +213,12 @@ void CPUParticles2D::set_texture(const Ref<Texture2D> &p_texture) {
 		return;
 
 	if (texture.is_valid())
-		texture->disconnect_compat(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
+		texture->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CPUParticles2D::_texture_changed));
 
 	texture = p_texture;
 
 	if (texture.is_valid())
-		texture->connect_compat(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
+		texture->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CPUParticles2D::_texture_changed));
 
 	update();
 	_update_mesh_texture();
@@ -970,118 +971,103 @@ void CPUParticles2D::_particles_process(float p_delta) {
 }
 
 void CPUParticles2D::_update_particle_data_buffer() {
-#ifndef NO_THREADS
-	update_mutex->lock();
-#endif
+	MutexLock lock(update_mutex);
 
-	{
+	int pc = particles.size();
 
-		int pc = particles.size();
+	int *ow;
+	int *order = NULL;
 
-		int *ow;
-		int *order = NULL;
+	float *w = particle_data.ptrw();
+	const Particle *r = particles.ptr();
+	float *ptr = w;
 
-		float *w = particle_data.ptrw();
-		const Particle *r = particles.ptr();
-		float *ptr = w;
-
-		if (draw_order != DRAW_ORDER_INDEX) {
-			ow = particle_order.ptrw();
-			order = ow;
-
-			for (int i = 0; i < pc; i++) {
-				order[i] = i;
-			}
-			if (draw_order == DRAW_ORDER_LIFETIME) {
-				SortArray<int, SortLifetime> sorter;
-				sorter.compare.particles = r;
-				sorter.sort(order, pc);
-			}
-		}
+	if (draw_order != DRAW_ORDER_INDEX) {
+		ow = particle_order.ptrw();
+		order = ow;
 
 		for (int i = 0; i < pc; i++) {
-
-			int idx = order ? order[i] : i;
-
-			Transform2D t = r[idx].transform;
-
-			if (!local_coords) {
-				t = inv_emission_transform * t;
-			}
-
-			if (r[idx].active) {
-
-				ptr[0] = t.elements[0][0];
-				ptr[1] = t.elements[1][0];
-				ptr[2] = 0;
-				ptr[3] = t.elements[2][0];
-				ptr[4] = t.elements[0][1];
-				ptr[5] = t.elements[1][1];
-				ptr[6] = 0;
-				ptr[7] = t.elements[2][1];
-
-			} else {
-				zeromem(ptr, sizeof(float) * 8);
-			}
-
-			Color c = r[idx].color;
-
-			ptr[8] = c.r;
-			ptr[9] = c.g;
-			ptr[10] = c.b;
-			ptr[11] = c.a;
-
-			ptr[12] = r[idx].custom[0];
-			ptr[13] = r[idx].custom[1];
-			ptr[14] = r[idx].custom[2];
-			ptr[15] = r[idx].custom[3];
-
-			ptr += 16;
+			order[i] = i;
+		}
+		if (draw_order == DRAW_ORDER_LIFETIME) {
+			SortArray<int, SortLifetime> sorter;
+			sorter.compare.particles = r;
+			sorter.sort(order, pc);
 		}
 	}
 
-#ifndef NO_THREADS
-	update_mutex->unlock();
-#endif
+	for (int i = 0; i < pc; i++) {
+
+		int idx = order ? order[i] : i;
+
+		Transform2D t = r[idx].transform;
+
+		if (!local_coords) {
+			t = inv_emission_transform * t;
+		}
+
+		if (r[idx].active) {
+
+			ptr[0] = t.elements[0][0];
+			ptr[1] = t.elements[1][0];
+			ptr[2] = 0;
+			ptr[3] = t.elements[2][0];
+			ptr[4] = t.elements[0][1];
+			ptr[5] = t.elements[1][1];
+			ptr[6] = 0;
+			ptr[7] = t.elements[2][1];
+
+		} else {
+			zeromem(ptr, sizeof(float) * 8);
+		}
+
+		Color c = r[idx].color;
+
+		ptr[8] = c.r;
+		ptr[9] = c.g;
+		ptr[10] = c.b;
+		ptr[11] = c.a;
+
+		ptr[12] = r[idx].custom[0];
+		ptr[13] = r[idx].custom[1];
+		ptr[14] = r[idx].custom[2];
+		ptr[15] = r[idx].custom[3];
+
+		ptr += 16;
+	}
 }
 
 void CPUParticles2D::_set_redraw(bool p_redraw) {
 	if (redraw == p_redraw)
 		return;
 	redraw = p_redraw;
-#ifndef NO_THREADS
-	update_mutex->lock();
-#endif
-	if (redraw) {
-		VS::get_singleton()->connect_compat("frame_pre_draw", this, "_update_render_thread");
-		VS::get_singleton()->canvas_item_set_update_when_visible(get_canvas_item(), true);
 
-		VS::get_singleton()->multimesh_set_visible_instances(multimesh, -1);
-	} else {
-		if (VS::get_singleton()->is_connected_compat("frame_pre_draw", this, "_update_render_thread")) {
-			VS::get_singleton()->disconnect_compat("frame_pre_draw", this, "_update_render_thread");
+	{
+		MutexLock lock(update_mutex);
+
+		if (redraw) {
+			VS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &CPUParticles2D::_update_render_thread));
+			VS::get_singleton()->canvas_item_set_update_when_visible(get_canvas_item(), true);
+
+			VS::get_singleton()->multimesh_set_visible_instances(multimesh, -1);
+		} else {
+			if (VS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &CPUParticles2D::_update_render_thread))) {
+				VS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &CPUParticles2D::_update_render_thread));
+			}
+			VS::get_singleton()->canvas_item_set_update_when_visible(get_canvas_item(), false);
+
+			VS::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
 		}
-		VS::get_singleton()->canvas_item_set_update_when_visible(get_canvas_item(), false);
-
-		VS::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
 	}
-#ifndef NO_THREADS
-	update_mutex->unlock();
-#endif
+
 	update(); // redraw to update render list
 }
 
 void CPUParticles2D::_update_render_thread() {
 
-#ifndef NO_THREADS
-	update_mutex->lock();
-#endif
+	MutexLock lock(update_mutex);
 
 	VS::get_singleton()->multimesh_set_buffer(multimesh, particle_data);
-
-#ifndef NO_THREADS
-	update_mutex->unlock();
-#endif
 }
 
 void CPUParticles2D::_notification(int p_what) {
@@ -1341,9 +1327,6 @@ void CPUParticles2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("convert_from_particles", "particles"), &CPUParticles2D::convert_from_particles);
 
-	ClassDB::bind_method(D_METHOD("_update_render_thread"), &CPUParticles2D::_update_render_thread);
-	ClassDB::bind_method(D_METHOD("_texture_changed"), &CPUParticles2D::_texture_changed);
-
 	ADD_GROUP("Emission Shape", "emission_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points"), "set_emission_shape", "get_emission_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_sphere_radius", PROPERTY_HINT_RANGE, "0.01,128,0.01"), "set_emission_sphere_radius", "get_emission_sphere_radius");
@@ -1494,18 +1477,10 @@ CPUParticles2D::CPUParticles2D() {
 
 	set_color(Color(1, 1, 1, 1));
 
-#ifndef NO_THREADS
-	update_mutex = Mutex::create();
-#endif
-
 	_update_mesh_texture();
 }
 
 CPUParticles2D::~CPUParticles2D() {
 	VS::get_singleton()->free(multimesh);
 	VS::get_singleton()->free(mesh);
-
-#ifndef NO_THREADS
-	memdelete(update_mutex);
-#endif
 }

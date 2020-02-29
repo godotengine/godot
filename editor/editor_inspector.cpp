@@ -570,7 +570,7 @@ void EditorProperty::_focusable_focused(int p_index) {
 
 void EditorProperty::add_focusable(Control *p_control) {
 
-	p_control->connect_compat("focus_entered", this, "_focusable_focused", varray(focusables.size()));
+	p_control->connect("focus_entered", callable_mp(this, &EditorProperty::_focusable_focused), varray(focusables.size()));
 	focusables.push_back(p_control);
 }
 
@@ -778,10 +778,20 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 	help_bit->add_style_override("panel", get_stylebox("panel", "TooltipPanel"));
 	help_bit->get_rich_text()->set_fixed_size_to_width(360 * EDSCALE);
 
-	String text = TTR("Property:") + " [u][b]" + p_text.get_slice("::", 0) + "[/b][/u]\n";
-	text += p_text.get_slice("::", 1).strip_edges();
-	help_bit->set_text(text);
-	help_bit->call_deferred("set_text", text); //hack so it uses proper theme once inside scene
+	PackedStringArray slices = p_text.split("::", false);
+	if (!slices.empty()) {
+		String property_name = slices[0].strip_edges();
+		String text = TTR("Property:") + " [u][b]" + property_name + "[/b][/u]";
+
+		if (slices.size() > 1) {
+			String property_doc = slices[1].strip_edges();
+			if (property_name != property_doc) {
+				text += "\n" + property_doc;
+			}
+		}
+		help_bit->call_deferred("set_text", text); //hack so it uses proper theme once inside scene
+	}
+
 	return help_bit;
 }
 
@@ -813,7 +823,6 @@ void EditorProperty::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_edited_object"), &EditorProperty::get_edited_object);
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &EditorProperty::_gui_input);
-	ClassDB::bind_method(D_METHOD("_focusable_focused"), &EditorProperty::_focusable_focused);
 
 	ClassDB::bind_method(D_METHOD("get_tooltip_text"), &EditorProperty::get_tooltip_text);
 
@@ -1005,10 +1014,20 @@ Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) cons
 	help_bit->add_style_override("panel", get_stylebox("panel", "TooltipPanel"));
 	help_bit->get_rich_text()->set_fixed_size_to_width(360 * EDSCALE);
 
-	String text = "[u][b]" + p_text.get_slice("::", 0) + "[/b][/u]\n";
-	text += p_text.get_slice("::", 1).strip_edges();
-	help_bit->set_text(text);
-	help_bit->call_deferred("set_text", text); //hack so it uses proper theme once inside scene
+	PackedStringArray slices = p_text.split("::", false);
+	if (!slices.empty()) {
+		String property_name = slices[0].strip_edges();
+		String text = "[u][b]" + property_name + "[/b][/u]";
+
+		if (slices.size() > 1) {
+			String property_doc = slices[1].strip_edges();
+			if (property_name != property_doc) {
+				text += "\n" + property_doc;
+			}
+		}
+		help_bit->call_deferred("set_text", text); //hack so it uses proper theme once inside scene
+	}
+
 	return help_bit;
 }
 
@@ -1339,14 +1358,14 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, Ref<Edit
 		if (ep) {
 
 			ep->object = object;
-			ep->connect_compat("property_changed", this, "_property_changed");
-			ep->connect_compat("property_keyed", this, "_property_keyed");
-			ep->connect_compat("property_keyed_with_value", this, "_property_keyed_with_value");
-			ep->connect_compat("property_checked", this, "_property_checked");
-			ep->connect_compat("selected", this, "_property_selected");
-			ep->connect_compat("multiple_properties_changed", this, "_multiple_properties_changed");
-			ep->connect_compat("resource_selected", this, "_resource_selected", varray(), CONNECT_DEFERRED);
-			ep->connect_compat("object_id_selected", this, "_object_id_selected", varray(), CONNECT_DEFERRED);
+			ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed));
+			ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
+			ep->connect("property_keyed_with_value", callable_mp(this, &EditorInspector::_property_keyed_with_value));
+			ep->connect("property_checked", callable_mp(this, &EditorInspector::_property_checked));
+			ep->connect("selected", callable_mp(this, &EditorInspector::_property_selected));
+			ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
+			ep->connect("resource_selected", callable_mp(this, &EditorInspector::_resource_selected), varray(), CONNECT_DEFERRED);
+			ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), varray(), CONNECT_DEFERRED);
 
 			if (F->get().properties.size()) {
 
@@ -1751,17 +1770,17 @@ void EditorInspector::update_tree() {
 
 				if (ep) {
 
-					ep->connect_compat("property_changed", this, "_property_changed");
+					ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed));
 					if (p.usage & PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED) {
-						ep->connect_compat("property_changed", this, "_property_changed_update_all", varray(), CONNECT_DEFERRED);
+						ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed_update_all), varray(), CONNECT_DEFERRED);
 					}
-					ep->connect_compat("property_keyed", this, "_property_keyed");
-					ep->connect_compat("property_keyed_with_value", this, "_property_keyed_with_value");
-					ep->connect_compat("property_checked", this, "_property_checked");
-					ep->connect_compat("selected", this, "_property_selected");
-					ep->connect_compat("multiple_properties_changed", this, "_multiple_properties_changed");
-					ep->connect_compat("resource_selected", this, "_resource_selected", varray(), CONNECT_DEFERRED);
-					ep->connect_compat("object_id_selected", this, "_object_id_selected", varray(), CONNECT_DEFERRED);
+					ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
+					ep->connect("property_keyed_with_value", callable_mp(this, &EditorInspector::_property_keyed_with_value));
+					ep->connect("property_checked", callable_mp(this, &EditorInspector::_property_checked));
+					ep->connect("selected", callable_mp(this, &EditorInspector::_property_selected));
+					ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
+					ep->connect("resource_selected", callable_mp(this, &EditorInspector::_resource_selected), varray(), CONNECT_DEFERRED);
+					ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), varray(), CONNECT_DEFERRED);
 					if (doc_hint != String()) {
 						ep->set_tooltip(property_prefix + p.name + "::" + doc_hint);
 					} else {
@@ -1889,7 +1908,7 @@ void EditorInspector::set_use_filter(bool p_use) {
 void EditorInspector::register_text_enter(Node *p_line_edit) {
 	search_box = Object::cast_to<LineEdit>(p_line_edit);
 	if (search_box)
-		search_box->connect_compat("text_changed", this, "_filter_changed");
+		search_box->connect("text_changed", callable_mp(this, &EditorInspector::_filter_changed));
 }
 
 void EditorInspector::_filter_changed(const String &p_text) {
@@ -2165,7 +2184,7 @@ void EditorInspector::_node_removed(Node *p_node) {
 void EditorInspector::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_READY) {
-		EditorFeatureProfileManager::get_singleton()->connect_compat("current_feature_profile_changed", this, "_feature_profile_changed");
+		EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &EditorInspector::_feature_profile_changed));
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -2174,7 +2193,7 @@ void EditorInspector::_notification(int p_what) {
 			add_style_override("bg", get_stylebox("sub_inspector_bg", "Editor"));
 		} else {
 			add_style_override("bg", get_stylebox("bg", "Tree"));
-			get_tree()->connect_compat("node_removed", this, "_node_removed");
+			get_tree()->connect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
 		}
 	}
 	if (p_what == NOTIFICATION_PREDELETE) {
@@ -2183,7 +2202,7 @@ void EditorInspector::_notification(int p_what) {
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 
 		if (!sub_inspector) {
-			get_tree()->disconnect_compat("node_removed", this, "_node_removed");
+			get_tree()->disconnect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
 		}
 		edit(NULL);
 	}
@@ -2281,21 +2300,7 @@ void EditorInspector::_feature_profile_changed() {
 
 void EditorInspector::_bind_methods() {
 
-	ClassDB::bind_method("_property_changed", &EditorInspector::_property_changed, DEFVAL(""), DEFVAL(false));
-	ClassDB::bind_method("_multiple_properties_changed", &EditorInspector::_multiple_properties_changed);
-	ClassDB::bind_method("_property_changed_update_all", &EditorInspector::_property_changed_update_all);
-
 	ClassDB::bind_method("_edit_request_change", &EditorInspector::_edit_request_change);
-	ClassDB::bind_method("_node_removed", &EditorInspector::_node_removed);
-	ClassDB::bind_method("_filter_changed", &EditorInspector::_filter_changed);
-	ClassDB::bind_method("_property_keyed", &EditorInspector::_property_keyed);
-	ClassDB::bind_method("_property_keyed_with_value", &EditorInspector::_property_keyed_with_value);
-	ClassDB::bind_method("_property_checked", &EditorInspector::_property_checked);
-	ClassDB::bind_method("_property_selected", &EditorInspector::_property_selected);
-	ClassDB::bind_method("_resource_selected", &EditorInspector::_resource_selected);
-	ClassDB::bind_method("_object_id_selected", &EditorInspector::_object_id_selected);
-	ClassDB::bind_method("_vscroll_changed", &EditorInspector::_vscroll_changed);
-	ClassDB::bind_method("_feature_profile_changed", &EditorInspector::_feature_profile_changed);
 
 	ClassDB::bind_method("refresh", &EditorInspector::refresh);
 
@@ -2337,6 +2342,6 @@ EditorInspector::EditorInspector() {
 	property_focusable = -1;
 	sub_inspector = false;
 
-	get_v_scrollbar()->connect_compat("value_changed", this, "_vscroll_changed");
+	get_v_scrollbar()->connect("value_changed", callable_mp(this, &EditorInspector::_vscroll_changed));
 	update_scroll_request = -1;
 }

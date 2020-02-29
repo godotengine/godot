@@ -119,12 +119,6 @@ SceneStringNames::SceneStringNames() {
 	camera_entered = StaticCString::create("camera_entered");
 	camera_exited = StaticCString::create("camera_exited");
 
-	_body_enter_tree = StaticCString::create("_body_enter_tree");
-	_body_exit_tree = StaticCString::create("_body_exit_tree");
-
-	_area_enter_tree = StaticCString::create("_area_enter_tree");
-	_area_exit_tree = StaticCString::create("_area_exit_tree");
-
 	_input = StaticCString::create("_input");
 	_input_event = StaticCString::create("_input_event");
 
@@ -167,8 +161,7 @@ SceneStringNames::SceneStringNames() {
 	drop_data = StaticCString::create("drop_data");
 	can_drop_data = StaticCString::create("can_drop_data");
 
-	_im_update = StaticCString::create("_im_update");
-	_queue_update = StaticCString::create("_queue_update");
+	_im_update = StaticCString::create("_im_update"); // Sprite3D
 
 	baked_light_changed = StaticCString::create("baked_light_changed");
 	_baked_light_changed = StaticCString::create("_baked_light_changed");
@@ -199,8 +192,6 @@ SceneStringNames::SceneStringNames() {
 
 		mesh_materials[i] = "material/" + itos(i);
 	}
-
-	_mesh_changed = StaticCString::create("_mesh_changed");
 
 	parameters_base_path = "parameters/";
 

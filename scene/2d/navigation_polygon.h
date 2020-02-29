@@ -34,8 +34,6 @@
 #include "scene/2d/node_2d.h"
 #include "scene/resources/navigation_mesh.h"
 
-class Mutex;
-
 class NavigationPolygon : public Resource {
 
 	GDCLASS(NavigationPolygon, Resource);
@@ -50,7 +48,7 @@ class NavigationPolygon : public Resource {
 	mutable Rect2 item_rect;
 	mutable bool rect_cache_dirty;
 
-	Mutex *navmesh_generation;
+	Mutex navmesh_generation;
 	// Navigation mesh
 	Ref<NavigationMesh> navmesh;
 
@@ -96,9 +94,9 @@ public:
 
 class Navigation2D;
 
-class NavigationPolygonInstance : public Node2D {
+class NavigationRegion2D : public Node2D {
 
-	GDCLASS(NavigationPolygonInstance, Node2D);
+	GDCLASS(NavigationRegion2D, Node2D);
 
 	bool enabled;
 	RID region;
@@ -125,8 +123,8 @@ public:
 
 	String get_configuration_warning() const;
 
-	NavigationPolygonInstance();
-	~NavigationPolygonInstance();
+	NavigationRegion2D();
+	~NavigationRegion2D();
 };
 
 #endif // NAVIGATIONPOLYGON_H

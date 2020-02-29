@@ -1467,7 +1467,7 @@
 			If [code]set[/code] there is a linear motor on this axis that targets a specific velocity.
 		</constant>
 		<constant name="SHAPE_PLANE" value="0" enum="ShapeType">
-			The [Shape] is a [PlaneShape].
+			The [Shape] is a [WorldMarginShape].
 		</constant>
 		<constant name="SHAPE_RAY" value="1" enum="ShapeType">
 			The [Shape] is a [RayShape].

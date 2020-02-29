@@ -58,7 +58,7 @@ protected:
 		MAKE_NORMAL_FLAG = 4
 	};
 
-	Mutex *mutex;
+	Mutex mutex;
 	struct MakeInfo {
 
 		int flags;

@@ -598,17 +598,6 @@ void EditorProfiler::_combo_changed(int) {
 
 void EditorProfiler::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_update_frame"), &EditorProfiler::_update_frame);
-	ClassDB::bind_method(D_METHOD("_update_plot"), &EditorProfiler::_update_plot);
-	ClassDB::bind_method(D_METHOD("_activate_pressed"), &EditorProfiler::_activate_pressed);
-	ClassDB::bind_method(D_METHOD("_clear_pressed"), &EditorProfiler::_clear_pressed);
-	ClassDB::bind_method(D_METHOD("_graph_tex_draw"), &EditorProfiler::_graph_tex_draw);
-	ClassDB::bind_method(D_METHOD("_graph_tex_input"), &EditorProfiler::_graph_tex_input);
-	ClassDB::bind_method(D_METHOD("_graph_tex_mouse_exit"), &EditorProfiler::_graph_tex_mouse_exit);
-	ClassDB::bind_method(D_METHOD("_cursor_metric_changed"), &EditorProfiler::_cursor_metric_changed);
-	ClassDB::bind_method(D_METHOD("_combo_changed"), &EditorProfiler::_combo_changed);
-
-	ClassDB::bind_method(D_METHOD("_item_edited"), &EditorProfiler::_item_edited);
 	ADD_SIGNAL(MethodInfo("enable_profiling", PropertyInfo(Variant::BOOL, "enable")));
 	ADD_SIGNAL(MethodInfo("break_request"));
 }
@@ -686,12 +675,12 @@ EditorProfiler::EditorProfiler() {
 	activate = memnew(Button);
 	activate->set_toggle_mode(true);
 	activate->set_text(TTR("Start"));
-	activate->connect_compat("pressed", this, "_activate_pressed");
+	activate->connect("pressed", callable_mp(this, &EditorProfiler::_activate_pressed));
 	hb->add_child(activate);
 
 	clear_button = memnew(Button);
 	clear_button->set_text(TTR("Clear"));
-	clear_button->connect_compat("pressed", this, "_clear_pressed");
+	clear_button->connect("pressed", callable_mp(this, &EditorProfiler::_clear_pressed));
 	hb->add_child(clear_button);
 
 	hb->add_child(memnew(Label(TTR("Measure:"))));
@@ -701,7 +690,7 @@ EditorProfiler::EditorProfiler() {
 	display_mode->add_item(TTR("Average Time (sec)"));
 	display_mode->add_item(TTR("Frame %"));
 	display_mode->add_item(TTR("Physics Frame %"));
-	display_mode->connect_compat("item_selected", this, "_combo_changed");
+	display_mode->connect("item_selected", callable_mp(this, &EditorProfiler::_combo_changed));
 
 	hb->add_child(display_mode);
 
@@ -710,7 +699,7 @@ EditorProfiler::EditorProfiler() {
 	display_time = memnew(OptionButton);
 	display_time->add_item(TTR("Inclusive"));
 	display_time->add_item(TTR("Self"));
-	display_time->connect_compat("item_selected", this, "_combo_changed");
+	display_time->connect("item_selected", callable_mp(this, &EditorProfiler::_combo_changed));
 
 	hb->add_child(display_time);
 
@@ -721,7 +710,7 @@ EditorProfiler::EditorProfiler() {
 	cursor_metric_edit = memnew(SpinBox);
 	cursor_metric_edit->set_h_size_flags(SIZE_FILL);
 	hb->add_child(cursor_metric_edit);
-	cursor_metric_edit->connect_compat("value_changed", this, "_cursor_metric_changed");
+	cursor_metric_edit->connect("value_changed", callable_mp(this, &EditorProfiler::_cursor_metric_changed));
 
 	hb->add_constant_override("separation", 8 * EDSCALE);
 
@@ -745,14 +734,14 @@ EditorProfiler::EditorProfiler() {
 	variables->set_column_title(2, TTR("Calls"));
 	variables->set_column_expand(2, false);
 	variables->set_column_min_width(2, 60 * EDSCALE);
-	variables->connect_compat("item_edited", this, "_item_edited");
+	variables->connect("item_edited", callable_mp(this, &EditorProfiler::_item_edited));
 
 	graph = memnew(TextureRect);
 	graph->set_expand(true);
 	graph->set_mouse_filter(MOUSE_FILTER_STOP);
-	graph->connect_compat("draw", this, "_graph_tex_draw");
-	graph->connect_compat("gui_input", this, "_graph_tex_input");
-	graph->connect_compat("mouse_exited", this, "_graph_tex_mouse_exit");
+	graph->connect("draw", callable_mp(this, &EditorProfiler::_graph_tex_draw));
+	graph->connect("gui_input", callable_mp(this, &EditorProfiler::_graph_tex_input));
+	graph->connect("mouse_exited", callable_mp(this, &EditorProfiler::_graph_tex_mouse_exit));
 
 	h_split->add_child(graph);
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -768,13 +757,13 @@ EditorProfiler::EditorProfiler() {
 	frame_delay->set_wait_time(0.1);
 	frame_delay->set_one_shot(true);
 	add_child(frame_delay);
-	frame_delay->connect_compat("timeout", this, "_update_frame");
+	frame_delay->connect("timeout", callable_mp(this, &EditorProfiler::_update_frame));
 
 	plot_delay = memnew(Timer);
 	plot_delay->set_wait_time(0.1);
 	plot_delay->set_one_shot(true);
 	add_child(plot_delay);
-	plot_delay->connect_compat("timeout", this, "_update_plot");
+	plot_delay->connect("timeout", callable_mp(this, &EditorProfiler::_update_plot));
 
 	plot_sigs.insert("physics_frame_time");
 	plot_sigs.insert("category_frame_time");

@@ -53,7 +53,7 @@ class PluginScriptLanguage : public ScriptLanguage {
 	const godot_pluginscript_language_desc _desc;
 	godot_pluginscript_language_data *_data;
 
-	Mutex *_lock;
+	Mutex _lock;
 	SelfList<PluginScript>::List _script_list;
 
 public:

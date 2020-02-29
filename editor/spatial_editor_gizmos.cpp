@@ -41,7 +41,7 @@
 #include "scene/3d/light.h"
 #include "scene/3d/listener.h"
 #include "scene/3d/mesh_instance.h"
-#include "scene/3d/navigation_mesh_instance.h"
+#include "scene/3d/navigation_region.h"
 #include "scene/3d/particles.h"
 #include "scene/3d/physics_joint.h"
 #include "scene/3d/position_3d.h"
@@ -58,11 +58,11 @@
 #include "scene/resources/convex_polygon_shape.h"
 #include "scene/resources/cylinder_shape.h"
 #include "scene/resources/height_map_shape.h"
-#include "scene/resources/plane_shape.h"
 #include "scene/resources/primitive_meshes.h"
 #include "scene/resources/ray_shape.h"
 #include "scene/resources/sphere_shape.h"
 #include "scene/resources/surface_tool.h"
+#include "scene/resources/world_margin_shape.h"
 
 #define HANDLE_HALF_SIZE 9.5
 
@@ -3575,9 +3575,9 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 		p_gizmo->add_handles(handles, handles_material);
 	}
 
-	if (Object::cast_to<PlaneShape>(*s)) {
+	if (Object::cast_to<WorldMarginShape>(*s)) {
 
-		Ref<PlaneShape> ps = s;
+		Ref<WorldMarginShape> ps = s;
 		Plane p = ps->get_plane();
 		Vector<Vector3> points;
 
@@ -3720,11 +3720,11 @@ NavigationMeshSpatialGizmoPlugin::NavigationMeshSpatialGizmoPlugin() {
 }
 
 bool NavigationMeshSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<NavigationMeshInstance>(p_spatial) != NULL;
+	return Object::cast_to<NavigationRegion>(p_spatial) != NULL;
 }
 
 String NavigationMeshSpatialGizmoPlugin::get_name() const {
-	return "NavigationMeshInstance";
+	return "NavigationRegion";
 }
 
 int NavigationMeshSpatialGizmoPlugin::get_priority() const {
@@ -3733,7 +3733,7 @@ int NavigationMeshSpatialGizmoPlugin::get_priority() const {
 
 void NavigationMeshSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
-	NavigationMeshInstance *navmesh = Object::cast_to<NavigationMeshInstance>(p_gizmo->get_spatial_node());
+	NavigationRegion *navmesh = Object::cast_to<NavigationRegion>(p_gizmo->get_spatial_node());
 
 	Ref<Material> edge_material = get_material("navigation_edge_material", p_gizmo);
 	Ref<Material> edge_material_disabled = get_material("navigation_edge_material_disabled", p_gizmo);

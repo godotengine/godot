@@ -84,7 +84,7 @@ void NavigationMeshEditor::_clear_pressed() {
 	}
 }
 
-void NavigationMeshEditor::edit(NavigationMeshInstance *p_nav_mesh_instance) {
+void NavigationMeshEditor::edit(NavigationRegion *p_nav_mesh_instance) {
 
 	if (p_nav_mesh_instance == NULL || node == p_nav_mesh_instance) {
 		return;
@@ -94,9 +94,6 @@ void NavigationMeshEditor::edit(NavigationMeshInstance *p_nav_mesh_instance) {
 }
 
 void NavigationMeshEditor::_bind_methods() {
-
-	ClassDB::bind_method("_bake_pressed", &NavigationMeshEditor::_bake_pressed);
-	ClassDB::bind_method("_clear_pressed", &NavigationMeshEditor::_clear_pressed);
 }
 
 NavigationMeshEditor::NavigationMeshEditor() {
@@ -107,13 +104,13 @@ NavigationMeshEditor::NavigationMeshEditor() {
 	bake_hbox->add_child(button_bake);
 	button_bake->set_toggle_mode(true);
 	button_bake->set_text(TTR("Bake NavMesh"));
-	button_bake->connect_compat("pressed", this, "_bake_pressed");
+	button_bake->connect("pressed", callable_mp(this, &NavigationMeshEditor::_bake_pressed));
 
 	button_reset = memnew(ToolButton);
 	bake_hbox->add_child(button_reset);
 	// No button text, we only use a revert icon which is set when entering the tree.
 	button_reset->set_tooltip(TTR("Clear the navigation mesh."));
-	button_reset->connect_compat("pressed", this, "_clear_pressed");
+	button_reset->connect("pressed", callable_mp(this, &NavigationMeshEditor::_clear_pressed));
 
 	bake_info = memnew(Label);
 	bake_hbox->add_child(bake_info);
@@ -128,12 +125,12 @@ NavigationMeshEditor::~NavigationMeshEditor() {
 
 void NavigationMeshEditorPlugin::edit(Object *p_object) {
 
-	navigation_mesh_editor->edit(Object::cast_to<NavigationMeshInstance>(p_object));
+	navigation_mesh_editor->edit(Object::cast_to<NavigationRegion>(p_object));
 }
 
 bool NavigationMeshEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_class("NavigationMeshInstance");
+	return p_object->is_class("NavigationRegion");
 }
 
 void NavigationMeshEditorPlugin::make_visible(bool p_visible) {

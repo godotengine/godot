@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  navigation_mesh_instance.cpp                                         */
+/*  navigation_region.cpp                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "navigation_mesh_instance.h"
+#include "navigation_region.h"
 #include "core/os/thread.h"
 #include "mesh_instance.h"
 #include "navigation.h"
 #include "servers/navigation_server.h"
 
-void NavigationMeshInstance::set_enabled(bool p_enabled) {
+void NavigationRegion::set_enabled(bool p_enabled) {
 
 	if (enabled == p_enabled)
 		return;
@@ -66,14 +66,14 @@ void NavigationMeshInstance::set_enabled(bool p_enabled) {
 	update_gizmo();
 }
 
-bool NavigationMeshInstance::is_enabled() const {
+bool NavigationRegion::is_enabled() const {
 
 	return enabled;
 }
 
 /////////////////////////////
 
-void NavigationMeshInstance::_notification(int p_what) {
+void NavigationRegion::_notification(int p_what) {
 
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -129,7 +129,7 @@ void NavigationMeshInstance::_notification(int p_what) {
 	}
 }
 
-void NavigationMeshInstance::set_navigation_mesh(const Ref<NavigationMesh> &p_navmesh) {
+void NavigationRegion::set_navigation_mesh(const Ref<NavigationMesh> &p_navmesh) {
 
 	if (p_navmesh == navmesh)
 		return;
@@ -156,13 +156,13 @@ void NavigationMeshInstance::set_navigation_mesh(const Ref<NavigationMesh> &p_na
 	update_configuration_warning();
 }
 
-Ref<NavigationMesh> NavigationMeshInstance::get_navigation_mesh() const {
+Ref<NavigationMesh> NavigationRegion::get_navigation_mesh() const {
 
 	return navmesh;
 }
 
 struct BakeThreadsArgs {
-	NavigationMeshInstance *nav_mesh_instance;
+	NavigationRegion *nav_mesh_instance;
 };
 
 void _bake_navigation_mesh(void *p_user_data) {
@@ -182,7 +182,7 @@ void _bake_navigation_mesh(void *p_user_data) {
 	}
 }
 
-void NavigationMeshInstance::bake_navigation_mesh() {
+void NavigationRegion::bake_navigation_mesh() {
 	ERR_FAIL_COND(bake_thread != NULL);
 
 	BakeThreadsArgs *args = memnew(BakeThreadsArgs);
@@ -192,12 +192,12 @@ void NavigationMeshInstance::bake_navigation_mesh() {
 	ERR_FAIL_COND(bake_thread == NULL);
 }
 
-void NavigationMeshInstance::_bake_finished(Ref<NavigationMesh> p_nav_mesh) {
+void NavigationRegion::_bake_finished(Ref<NavigationMesh> p_nav_mesh) {
 	set_navigation_mesh(p_nav_mesh);
 	bake_thread = NULL;
 }
 
-String NavigationMeshInstance::get_configuration_warning() const {
+String NavigationRegion::get_configuration_warning() const {
 
 	if (!is_visible_in_tree() || !is_inside_tree())
 		return String();
@@ -214,19 +214,19 @@ String NavigationMeshInstance::get_configuration_warning() const {
 		c = Object::cast_to<Spatial>(c->get_parent());
 	}
 
-	return TTR("NavigationMeshInstance must be a child or grandchild to a Navigation node. It only provides navigation data.");
+	return TTR("NavigationRegion must be a child or grandchild to a Navigation node. It only provides navigation data.");
 }
 
-void NavigationMeshInstance::_bind_methods() {
+void NavigationRegion::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_navigation_mesh", "navmesh"), &NavigationMeshInstance::set_navigation_mesh);
-	ClassDB::bind_method(D_METHOD("get_navigation_mesh"), &NavigationMeshInstance::get_navigation_mesh);
+	ClassDB::bind_method(D_METHOD("set_navigation_mesh", "navmesh"), &NavigationRegion::set_navigation_mesh);
+	ClassDB::bind_method(D_METHOD("get_navigation_mesh"), &NavigationRegion::get_navigation_mesh);
 
-	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NavigationMeshInstance::set_enabled);
-	ClassDB::bind_method(D_METHOD("is_enabled"), &NavigationMeshInstance::is_enabled);
+	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NavigationRegion::set_enabled);
+	ClassDB::bind_method(D_METHOD("is_enabled"), &NavigationRegion::is_enabled);
 
-	ClassDB::bind_method(D_METHOD("bake_navigation_mesh"), &NavigationMeshInstance::bake_navigation_mesh);
-	ClassDB::bind_method(D_METHOD("_bake_finished", "nav_mesh"), &NavigationMeshInstance::_bake_finished);
+	ClassDB::bind_method(D_METHOD("bake_navigation_mesh"), &NavigationRegion::bake_navigation_mesh);
+	ClassDB::bind_method(D_METHOD("_bake_finished", "nav_mesh"), &NavigationRegion::_bake_finished);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navmesh", PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"), "set_navigation_mesh", "get_navigation_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
@@ -235,12 +235,12 @@ void NavigationMeshInstance::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("bake_finished"));
 }
 
-void NavigationMeshInstance::_changed_callback(Object *p_changed, const char *p_prop) {
+void NavigationRegion::_changed_callback(Object *p_changed, const char *p_prop) {
 	update_gizmo();
 	update_configuration_warning();
 }
 
-NavigationMeshInstance::NavigationMeshInstance() {
+NavigationRegion::NavigationRegion() {
 
 	enabled = true;
 	set_notify_transform(true);
@@ -251,7 +251,7 @@ NavigationMeshInstance::NavigationMeshInstance() {
 	bake_thread = NULL;
 }
 
-NavigationMeshInstance::~NavigationMeshInstance() {
+NavigationRegion::~NavigationRegion() {
 	if (navmesh.is_valid())
 		navmesh->remove_change_receptor(this);
 	NavigationServer::get_singleton()->free(region);

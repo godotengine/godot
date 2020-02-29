@@ -40,29 +40,24 @@ EditorDebuggerTree::EditorDebuggerTree() {
 
 	// Popup
 	item_menu = memnew(PopupMenu);
-	item_menu->connect_compat("id_pressed", this, "_item_menu_id_pressed");
+	item_menu->connect("id_pressed", callable_mp(this, &EditorDebuggerTree::_item_menu_id_pressed));
 	add_child(item_menu);
 
 	// File Dialog
 	file_dialog = memnew(EditorFileDialog);
-	file_dialog->connect_compat("file_selected", this, "_file_selected");
+	file_dialog->connect("file_selected", callable_mp(this, &EditorDebuggerTree::_file_selected));
 	add_child(file_dialog);
 }
 
 void EditorDebuggerTree::_notification(int p_what) {
 	if (p_what == NOTIFICATION_POSTINITIALIZE) {
-		connect_compat("cell_selected", this, "_scene_tree_selected");
-		connect_compat("item_collapsed", this, "_scene_tree_folded");
-		connect_compat("item_rmb_selected", this, "_scene_tree_rmb_selected");
+		connect("cell_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_selected));
+		connect("item_collapsed", callable_mp(this, &EditorDebuggerTree::_scene_tree_folded));
+		connect("item_rmb_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_rmb_selected));
 	}
 }
 
 void EditorDebuggerTree::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_scene_tree_selected"), &EditorDebuggerTree::_scene_tree_selected);
-	ClassDB::bind_method(D_METHOD("_scene_tree_folded"), &EditorDebuggerTree::_scene_tree_folded);
-	ClassDB::bind_method(D_METHOD("_scene_tree_rmb_selected"), &EditorDebuggerTree::_scene_tree_rmb_selected);
-	ClassDB::bind_method(D_METHOD("_item_menu_id_pressed"), &EditorDebuggerTree::_item_menu_id_pressed);
-	ClassDB::bind_method(D_METHOD("_file_selected"), &EditorDebuggerTree::_file_selected);
 	ADD_SIGNAL(MethodInfo("object_selected", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::INT, "debugger")));
 	ADD_SIGNAL(MethodInfo("save_node", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::STRING, "filename"), PropertyInfo(Variant::INT, "debugger")));
 }

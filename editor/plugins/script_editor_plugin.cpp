@@ -211,7 +211,7 @@ void ScriptEditorQuickOpen::_notification(int p_what) {
 
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			connect_compat("confirmed", this, "_confirmed");
+			connect("confirmed", callable_mp(this, &ScriptEditorQuickOpen::_confirmed));
 
 			search_box->set_clear_button_enabled(true);
 			[[fallthrough]];
@@ -220,16 +220,12 @@ void ScriptEditorQuickOpen::_notification(int p_what) {
 			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			disconnect_compat("confirmed", this, "_confirmed");
+			disconnect("confirmed", callable_mp(this, &ScriptEditorQuickOpen::_confirmed));
 		} break;
 	}
 }
 
 void ScriptEditorQuickOpen::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_text_changed"), &ScriptEditorQuickOpen::_text_changed);
-	ClassDB::bind_method(D_METHOD("_confirmed"), &ScriptEditorQuickOpen::_confirmed);
-	ClassDB::bind_method(D_METHOD("_sbox_input"), &ScriptEditorQuickOpen::_sbox_input);
 
 	ADD_SIGNAL(MethodInfo("goto_line", PropertyInfo(Variant::INT, "line")));
 }
@@ -240,15 +236,15 @@ ScriptEditorQuickOpen::ScriptEditorQuickOpen() {
 	add_child(vbc);
 	search_box = memnew(LineEdit);
 	vbc->add_margin_child(TTR("Search:"), search_box);
-	search_box->connect_compat("text_changed", this, "_text_changed");
-	search_box->connect_compat("gui_input", this, "_sbox_input");
+	search_box->connect("text_changed", callable_mp(this, &ScriptEditorQuickOpen::_text_changed));
+	search_box->connect("gui_input", callable_mp(this, &ScriptEditorQuickOpen::_sbox_input));
 	search_options = memnew(Tree);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 	get_ok()->set_text(TTR("Open"));
 	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
-	search_options->connect_compat("item_activated", this, "_confirmed");
+	search_options->connect("item_activated", callable_mp(this, &ScriptEditorQuickOpen::_confirmed));
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
 	search_options->add_constant_override("draw_guides", 1);
@@ -1386,16 +1382,16 @@ void ScriptEditor::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-			editor->connect_compat("stop_pressed", this, "_editor_stop");
-			editor->connect_compat("script_add_function_request", this, "_add_callback");
-			editor->connect_compat("resource_saved", this, "_res_saved_callback");
-			script_list->connect_compat("item_selected", this, "_script_selected");
+			editor->connect("stop_pressed", callable_mp(this, &ScriptEditor::_editor_stop));
+			editor->connect("script_add_function_request", callable_mp(this, &ScriptEditor::_add_callback));
+			editor->connect("resource_saved", callable_mp(this, &ScriptEditor::_res_saved_callback));
+			script_list->connect("item_selected", callable_mp(this, &ScriptEditor::_script_selected));
 
-			members_overview->connect_compat("item_selected", this, "_members_overview_selected");
-			help_overview->connect_compat("item_selected", this, "_help_overview_selected");
-			script_split->connect_compat("dragged", this, "_script_split_dragged");
+			members_overview->connect("item_selected", callable_mp(this, &ScriptEditor::_members_overview_selected));
+			help_overview->connect("item_selected", callable_mp(this, &ScriptEditor::_help_overview_selected));
+			script_split->connect("dragged", callable_mp(this, &ScriptEditor::_script_split_dragged));
 
-			EditorSettings::get_singleton()->connect_compat("settings_changed", this, "_editor_settings_changed");
+			EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &ScriptEditor::_editor_settings_changed));
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
@@ -1419,14 +1415,14 @@ void ScriptEditor::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 
-			get_tree()->connect_compat("tree_changed", this, "_tree_changed");
-			editor->get_inspector_dock()->connect_compat("request_help", this, "_request_help");
-			editor->connect_compat("request_help_search", this, "_help_search");
+			get_tree()->connect("tree_changed", callable_mp(this, &ScriptEditor::_tree_changed));
+			editor->get_inspector_dock()->connect("request_help", callable_mp(this, &ScriptEditor::_help_class_open));
+			editor->connect("request_help_search", callable_mp(this, &ScriptEditor::_help_search));
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 
-			editor->disconnect_compat("stop_pressed", this, "_editor_stop");
+			editor->disconnect("stop_pressed", callable_mp(this, &ScriptEditor::_editor_stop));
 		} break;
 
 		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
@@ -2137,14 +2133,14 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 	_sort_list_on_update = true;
 	_update_script_names();
 	_save_layout();
-	se->connect_compat("name_changed", this, "_update_script_names");
-	se->connect_compat("edited_script_changed", this, "_script_changed");
-	se->connect_compat("request_help", this, "_help_search");
-	se->connect_compat("request_open_script_at_line", this, "_goto_script_line");
-	se->connect_compat("go_to_help", this, "_help_class_goto");
-	se->connect_compat("request_save_history", this, "_save_history");
-	se->connect_compat("search_in_files_requested", this, "_on_find_in_files_requested");
-	se->connect_compat("replace_in_files_requested", this, "_on_replace_in_files_requested");
+	se->connect("name_changed", callable_mp(this, &ScriptEditor::_update_script_names));
+	se->connect("edited_script_changed", callable_mp(this, &ScriptEditor::_script_changed));
+	se->connect("request_help", callable_mp(this, &ScriptEditor::_help_search));
+	se->connect("request_open_script_at_line", callable_mp(this, &ScriptEditor::_goto_script_line));
+	se->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
+	se->connect("request_save_history", callable_mp(this, &ScriptEditor::_save_history));
+	se->connect("search_in_files_requested", callable_mp(this, &ScriptEditor::_on_find_in_files_requested));
+	se->connect("replace_in_files_requested", callable_mp(this, &ScriptEditor::_on_replace_in_files_requested));
 
 	//test for modification, maybe the script was not edited but was loaded
 
@@ -2737,7 +2733,7 @@ void ScriptEditor::_help_class_open(const String &p_class) {
 	tab_container->add_child(eh);
 	_go_to_tab(tab_container->get_tab_count() - 1);
 	eh->go_to_class(p_class, 0);
-	eh->connect_compat("go_to_help", this, "_help_class_goto");
+	eh->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
 	_add_recent_script(p_class);
 	_sort_list_on_update = true;
 	_update_script_names();
@@ -2767,7 +2763,7 @@ void ScriptEditor::_help_class_goto(const String &p_desc) {
 	tab_container->add_child(eh);
 	_go_to_tab(tab_container->get_tab_count() - 1);
 	eh->go_to_help(p_desc);
-	eh->connect_compat("go_to_help", this, "_help_class_goto");
+	eh->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
 	_add_recent_script(eh->get_class());
 	_sort_list_on_update = true;
 	_update_script_names();
@@ -3039,61 +3035,19 @@ void ScriptEditor::_filter_methods_text_changed(const String &p_newtext) {
 
 void ScriptEditor::_bind_methods() {
 
-	ClassDB::bind_method("_file_dialog_action", &ScriptEditor::_file_dialog_action);
-	ClassDB::bind_method("_tab_changed", &ScriptEditor::_tab_changed);
-	ClassDB::bind_method("_menu_option", &ScriptEditor::_menu_option);
-	ClassDB::bind_method("_close_current_tab", &ScriptEditor::_close_current_tab);
-	ClassDB::bind_method("_close_discard_current_tab", &ScriptEditor::_close_discard_current_tab);
 	ClassDB::bind_method("_close_docs_tab", &ScriptEditor::_close_docs_tab);
 	ClassDB::bind_method("_close_all_tabs", &ScriptEditor::_close_all_tabs);
 	ClassDB::bind_method("_close_other_tabs", &ScriptEditor::_close_other_tabs);
-	ClassDB::bind_method("_open_recent_script", &ScriptEditor::_open_recent_script);
-	ClassDB::bind_method("_theme_option", &ScriptEditor::_theme_option);
-	ClassDB::bind_method("_editor_stop", &ScriptEditor::_editor_stop);
-	ClassDB::bind_method("_add_callback", &ScriptEditor::_add_callback);
-	ClassDB::bind_method("_reload_scripts", &ScriptEditor::_reload_scripts);
-	ClassDB::bind_method("_resave_scripts", &ScriptEditor::_resave_scripts);
-	ClassDB::bind_method("_res_saved_callback", &ScriptEditor::_res_saved_callback);
-	ClassDB::bind_method("_goto_script_line", &ScriptEditor::_goto_script_line);
 	ClassDB::bind_method("_goto_script_line2", &ScriptEditor::_goto_script_line2);
-	ClassDB::bind_method("_set_execution", &ScriptEditor::_set_execution);
-	ClassDB::bind_method("_clear_execution", &ScriptEditor::_clear_execution);
-	ClassDB::bind_method("_help_search", &ScriptEditor::_help_search);
-	ClassDB::bind_method("_save_history", &ScriptEditor::_save_history);
 	ClassDB::bind_method("_copy_script_path", &ScriptEditor::_copy_script_path);
 
-	ClassDB::bind_method("_breaked", &ScriptEditor::_breaked);
 	ClassDB::bind_method("_get_debug_tooltip", &ScriptEditor::_get_debug_tooltip);
-	ClassDB::bind_method("_autosave_scripts", &ScriptEditor::_autosave_scripts);
-	ClassDB::bind_method("_update_autosave_timer", &ScriptEditor::_update_autosave_timer);
-	ClassDB::bind_method("_editor_settings_changed", &ScriptEditor::_editor_settings_changed);
-	ClassDB::bind_method("_update_script_names", &ScriptEditor::_update_script_names);
 	ClassDB::bind_method("_update_script_connections", &ScriptEditor::_update_script_connections);
-	ClassDB::bind_method("_tree_changed", &ScriptEditor::_tree_changed);
-	ClassDB::bind_method("_members_overview_selected", &ScriptEditor::_members_overview_selected);
-	ClassDB::bind_method("_help_overview_selected", &ScriptEditor::_help_overview_selected);
-	ClassDB::bind_method("_script_selected", &ScriptEditor::_script_selected);
-	ClassDB::bind_method("_script_created", &ScriptEditor::_script_created);
-	ClassDB::bind_method("_script_split_dragged", &ScriptEditor::_script_split_dragged);
 	ClassDB::bind_method("_help_class_open", &ScriptEditor::_help_class_open);
-	ClassDB::bind_method("_help_class_goto", &ScriptEditor::_help_class_goto);
-	ClassDB::bind_method("_request_help", &ScriptEditor::_help_class_open);
-	ClassDB::bind_method("_history_forward", &ScriptEditor::_history_forward);
-	ClassDB::bind_method("_history_back", &ScriptEditor::_history_back);
 	ClassDB::bind_method("_live_auto_reload_running_scripts", &ScriptEditor::_live_auto_reload_running_scripts);
 	ClassDB::bind_method("_unhandled_input", &ScriptEditor::_unhandled_input);
-	ClassDB::bind_method("_script_list_gui_input", &ScriptEditor::_script_list_gui_input);
-	ClassDB::bind_method("_toggle_members_overview_alpha_sort", &ScriptEditor::_toggle_members_overview_alpha_sort);
 	ClassDB::bind_method("_update_members_overview", &ScriptEditor::_update_members_overview);
-	ClassDB::bind_method("_script_changed", &ScriptEditor::_script_changed);
-	ClassDB::bind_method("_filter_scripts_text_changed", &ScriptEditor::_filter_scripts_text_changed);
-	ClassDB::bind_method("_filter_methods_text_changed", &ScriptEditor::_filter_methods_text_changed);
 	ClassDB::bind_method("_update_recent_scripts", &ScriptEditor::_update_recent_scripts);
-	ClassDB::bind_method("_on_find_in_files_requested", &ScriptEditor::_on_find_in_files_requested);
-	ClassDB::bind_method("_on_replace_in_files_requested", &ScriptEditor::_on_replace_in_files_requested);
-	ClassDB::bind_method("_start_find_in_files", &ScriptEditor::_start_find_in_files);
-	ClassDB::bind_method("_on_find_in_files_result_selected", &ScriptEditor::_on_find_in_files_result_selected);
-	ClassDB::bind_method("_on_find_in_files_modified_files", &ScriptEditor::_on_find_in_files_modified_files);
 
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw", "point", "from"), &ScriptEditor::get_drag_data_fw);
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw", "point", "data", "from"), &ScriptEditor::can_drop_data_fw);
@@ -3142,22 +3096,22 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	filter_scripts = memnew(LineEdit);
 	filter_scripts->set_placeholder(TTR("Filter scripts"));
 	filter_scripts->set_clear_button_enabled(true);
-	filter_scripts->connect_compat("text_changed", this, "_filter_scripts_text_changed");
+	filter_scripts->connect("text_changed", callable_mp(this, &ScriptEditor::_filter_scripts_text_changed));
 	scripts_vbox->add_child(filter_scripts);
 
 	script_list = memnew(ItemList);
 	scripts_vbox->add_child(script_list);
 	script_list->set_custom_minimum_size(Size2(150, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
 	script_list->set_v_size_flags(SIZE_EXPAND_FILL);
-	script_split->set_split_offset(140);
+	script_split->set_split_offset(70 * EDSCALE);
 	_sort_list_on_update = true;
-	script_list->connect_compat("gui_input", this, "_script_list_gui_input", varray(), CONNECT_DEFERRED);
+	script_list->connect("gui_input", callable_mp(this, &ScriptEditor::_script_list_gui_input), varray(), CONNECT_DEFERRED);
 	script_list->set_allow_rmb_select(true);
 	script_list->set_drag_forwarding(this);
 
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
-	context_menu->connect_compat("id_pressed", this, "_menu_option");
+	context_menu->connect("id_pressed", callable_mp(this, &ScriptEditor::_menu_option));
 	context_menu->set_hide_on_window_lose_focus(true);
 
 	overview_vbox = memnew(VBoxContainer);
@@ -3178,14 +3132,14 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	members_overview_alphabeta_sort_button->set_tooltip(TTR("Toggle alphabetical sorting of the method list."));
 	members_overview_alphabeta_sort_button->set_toggle_mode(true);
 	members_overview_alphabeta_sort_button->set_pressed(EditorSettings::get_singleton()->get("text_editor/tools/sort_members_outline_alphabetically"));
-	members_overview_alphabeta_sort_button->connect_compat("toggled", this, "_toggle_members_overview_alpha_sort");
+	members_overview_alphabeta_sort_button->connect("toggled", callable_mp(this, &ScriptEditor::_toggle_members_overview_alpha_sort));
 
 	buttons_hbox->add_child(members_overview_alphabeta_sort_button);
 
 	filter_methods = memnew(LineEdit);
 	filter_methods->set_placeholder(TTR("Filter methods"));
 	filter_methods->set_clear_button_enabled(true);
-	filter_methods->connect_compat("text_changed", this, "_filter_methods_text_changed");
+	filter_methods->connect("text_changed", callable_mp(this, &ScriptEditor::_filter_methods_text_changed));
 	overview_vbox->add_child(filter_methods);
 
 	members_overview = memnew(ItemList);
@@ -3229,7 +3183,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	recent_scripts = memnew(PopupMenu);
 	recent_scripts->set_name("RecentScripts");
 	file_menu->get_popup()->add_child(recent_scripts);
-	recent_scripts->connect_compat("id_pressed", this, "_open_recent_script");
+	recent_scripts->connect("id_pressed", callable_mp(this, &ScriptEditor::_open_recent_script));
 	_update_recent_scripts();
 
 	file_menu->get_popup()->add_separator();
@@ -3251,7 +3205,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	theme_submenu = memnew(PopupMenu);
 	theme_submenu->set_name("Theme");
 	file_menu->get_popup()->add_child(theme_submenu);
-	theme_submenu->connect_compat("id_pressed", this, "_theme_option");
+	theme_submenu->connect("id_pressed", callable_mp(this, &ScriptEditor::_theme_option));
 	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/import_theme", TTR("Import Theme...")), THEME_IMPORT);
 	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/reload_theme", TTR("Reload Theme")), THEME_RELOAD);
 
@@ -3270,14 +3224,14 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/toggle_scripts_panel", TTR("Toggle Scripts Panel"), KEY_MASK_CMD | KEY_BACKSLASH), TOGGLE_SCRIPTS_PANEL);
-	file_menu->get_popup()->connect_compat("id_pressed", this, "_menu_option");
+	file_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptEditor::_menu_option));
 
 	script_search_menu = memnew(MenuButton);
 	menu_hb->add_child(script_search_menu);
 	script_search_menu->set_text(TTR("Search"));
 	script_search_menu->set_switch_on_hover(true);
 	script_search_menu->get_popup()->set_hide_on_window_lose_focus(true);
-	script_search_menu->get_popup()->connect_compat("id_pressed", this, "_menu_option");
+	script_search_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptEditor::_menu_option));
 
 	MenuButton *debug_menu = memnew(MenuButton);
 	menu_hb->add_child(debug_menu);
@@ -3285,10 +3239,10 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	EditorDebuggerNode *debugger = EditorDebuggerNode::get_singleton();
 	debugger->set_script_debug_button(debug_menu);
-	debugger->connect_compat("goto_script_line", this, "_goto_script_line");
-	debugger->connect_compat("set_execution", this, "_set_execution");
-	debugger->connect_compat("clear_execution", this, "_clear_execution");
-	debugger->connect_compat("breaked", this, "_breaked");
+	debugger->connect("goto_script_line", callable_mp(this, &ScriptEditor::_goto_script_line));
+	debugger->connect("set_execution", callable_mp(this, &ScriptEditor::_set_execution));
+	debugger->connect("clear_execution", callable_mp(this, &ScriptEditor::_clear_execution));
+	debugger->connect("breaked", callable_mp(this, &ScriptEditor::_breaked));
 
 	menu_hb->add_spacer();
 
@@ -3304,54 +3258,54 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	site_search = memnew(ToolButton);
 	site_search->set_text(TTR("Online Docs"));
-	site_search->connect_compat("pressed", this, "_menu_option", varray(SEARCH_WEBSITE));
+	site_search->connect("pressed", callable_mp(this, &ScriptEditor::_menu_option), varray(SEARCH_WEBSITE));
 	menu_hb->add_child(site_search);
 	site_search->set_tooltip(TTR("Open Godot online documentation."));
 
 	request_docs = memnew(ToolButton);
 	request_docs->set_text(TTR("Request Docs"));
-	request_docs->connect_compat("pressed", this, "_menu_option", varray(REQUEST_DOCS));
+	request_docs->connect("pressed", callable_mp(this, &ScriptEditor::_menu_option), varray(REQUEST_DOCS));
 	menu_hb->add_child(request_docs);
 	request_docs->set_tooltip(TTR("Help improve the Godot documentation by giving feedback."));
 
 	help_search = memnew(ToolButton);
 	help_search->set_text(TTR("Search Help"));
-	help_search->connect_compat("pressed", this, "_menu_option", varray(SEARCH_HELP));
+	help_search->connect("pressed", callable_mp(this, &ScriptEditor::_menu_option), varray(SEARCH_HELP));
 	menu_hb->add_child(help_search);
 	help_search->set_tooltip(TTR("Search the reference documentation."));
 
 	menu_hb->add_child(memnew(VSeparator));
 
 	script_back = memnew(ToolButton);
-	script_back->connect_compat("pressed", this, "_history_back");
+	script_back->connect("pressed", callable_mp(this, &ScriptEditor::_history_back));
 	menu_hb->add_child(script_back);
 	script_back->set_disabled(true);
 	script_back->set_tooltip(TTR("Go to previous edited document."));
 
 	script_forward = memnew(ToolButton);
-	script_forward->connect_compat("pressed", this, "_history_forward");
+	script_forward->connect("pressed", callable_mp(this, &ScriptEditor::_history_forward));
 	menu_hb->add_child(script_forward);
 	script_forward->set_disabled(true);
 	script_forward->set_tooltip(TTR("Go to next edited document."));
 
-	tab_container->connect_compat("tab_changed", this, "_tab_changed");
+	tab_container->connect("tab_changed", callable_mp(this, &ScriptEditor::_tab_changed));
 
 	erase_tab_confirm = memnew(ConfirmationDialog);
 	erase_tab_confirm->get_ok()->set_text(TTR("Save"));
 	erase_tab_confirm->add_button(TTR("Discard"), OS::get_singleton()->get_swap_ok_cancel(), "discard");
-	erase_tab_confirm->connect_compat("confirmed", this, "_close_current_tab");
-	erase_tab_confirm->connect_compat("custom_action", this, "_close_discard_current_tab");
+	erase_tab_confirm->connect("confirmed", callable_mp(this, &ScriptEditor::_close_current_tab));
+	erase_tab_confirm->connect("custom_action", callable_mp(this, &ScriptEditor::_close_discard_current_tab));
 	add_child(erase_tab_confirm);
 
 	script_create_dialog = memnew(ScriptCreateDialog);
 	script_create_dialog->set_title(TTR("Create Script"));
 	add_child(script_create_dialog);
-	script_create_dialog->connect_compat("script_created", this, "_script_created");
+	script_create_dialog->connect("script_created", callable_mp(this, &ScriptEditor::_script_created));
 
 	file_dialog_option = -1;
 	file_dialog = memnew(EditorFileDialog);
 	add_child(file_dialog);
-	file_dialog->connect_compat("file_selected", this, "_file_dialog_action");
+	file_dialog->connect("file_selected", callable_mp(this, &ScriptEditor::_file_dialog_action));
 
 	error_dialog = memnew(AcceptDialog);
 	add_child(error_dialog);
@@ -3369,11 +3323,11 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 		vbc->add_child(disk_changed_list);
 		disk_changed_list->set_v_size_flags(SIZE_EXPAND_FILL);
 
-		disk_changed->connect_compat("confirmed", this, "_reload_scripts");
+		disk_changed->connect("confirmed", callable_mp(this, &ScriptEditor::_reload_scripts));
 		disk_changed->get_ok()->set_text(TTR("Reload"));
 
 		disk_changed->add_button(TTR("Resave"), !OS::get_singleton()->get_swap_ok_cancel(), "resave");
-		disk_changed->connect_compat("custom_action", this, "_resave_scripts");
+		disk_changed->connect("custom_action", callable_mp(this, &ScriptEditor::_resave_scripts));
 	}
 
 	add_child(disk_changed);
@@ -3382,25 +3336,25 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	autosave_timer = memnew(Timer);
 	autosave_timer->set_one_shot(false);
-	autosave_timer->connect_compat(SceneStringNames::get_singleton()->tree_entered, this, "_update_autosave_timer");
-	autosave_timer->connect_compat("timeout", this, "_autosave_scripts");
+	autosave_timer->connect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &ScriptEditor::_update_autosave_timer));
+	autosave_timer->connect("timeout", callable_mp(this, &ScriptEditor::_autosave_scripts));
 	add_child(autosave_timer);
 
 	grab_focus_block = false;
 
 	help_search_dialog = memnew(EditorHelpSearch);
 	add_child(help_search_dialog);
-	help_search_dialog->connect_compat("go_to_help", this, "_help_class_goto");
+	help_search_dialog->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
 
 	find_in_files_dialog = memnew(FindInFilesDialog);
-	find_in_files_dialog->connect_compat(FindInFilesDialog::SIGNAL_FIND_REQUESTED, this, "_start_find_in_files", varray(false));
-	find_in_files_dialog->connect_compat(FindInFilesDialog::SIGNAL_REPLACE_REQUESTED, this, "_start_find_in_files", varray(true));
+	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_FIND_REQUESTED, callable_mp(this, &ScriptEditor::_start_find_in_files), varray(false));
+	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_REPLACE_REQUESTED, callable_mp(this, &ScriptEditor::_start_find_in_files), varray(true));
 	add_child(find_in_files_dialog);
 	find_in_files = memnew(FindInFilesPanel);
 	find_in_files_button = editor->add_bottom_panel_item(TTR("Search Results"), find_in_files);
 	find_in_files->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
-	find_in_files->connect_compat(FindInFilesPanel::SIGNAL_RESULT_SELECTED, this, "_on_find_in_files_result_selected");
-	find_in_files->connect_compat(FindInFilesPanel::SIGNAL_FILES_MODIFIED, this, "_on_find_in_files_modified_files");
+	find_in_files->connect(FindInFilesPanel::SIGNAL_RESULT_SELECTED, callable_mp(this, &ScriptEditor::_on_find_in_files_result_selected));
+	find_in_files->connect(FindInFilesPanel::SIGNAL_FILES_MODIFIED, callable_mp(this, &ScriptEditor::_on_find_in_files_modified_files));
 	find_in_files->hide();
 	find_in_files_button->hide();
 

@@ -32,7 +32,7 @@
 
 #include "editor/editor_scale.h"
 #include "scene/3d/collision_shape.h"
-#include "scene/3d/navigation_mesh_instance.h"
+#include "scene/3d/navigation_region.h"
 #include "scene/3d/physics_body.h"
 #include "scene/gui/box_container.h"
 #include "spatial_editor_plugin.h"
@@ -233,7 +233,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 				return;
 
 			nmesh->create_from_mesh(mesh);
-			NavigationMeshInstance *nmi = memnew(NavigationMeshInstance);
+			NavigationRegion *nmi = memnew(NavigationRegion);
 			nmi->set_navigation_mesh(nmesh);
 
 			Node *owner = node == get_tree()->get_edited_scene_root() ? node : node->get_owner();
@@ -435,10 +435,6 @@ void MeshInstanceEditor::_create_outline_mesh() {
 }
 
 void MeshInstanceEditor::_bind_methods() {
-
-	ClassDB::bind_method("_menu_option", &MeshInstanceEditor::_menu_option);
-	ClassDB::bind_method("_create_outline_mesh", &MeshInstanceEditor::_create_outline_mesh);
-	ClassDB::bind_method("_debug_uv_draw", &MeshInstanceEditor::_debug_uv_draw);
 }
 
 MeshInstanceEditor::MeshInstanceEditor() {
@@ -469,7 +465,7 @@ MeshInstanceEditor::MeshInstanceEditor() {
 	options->get_popup()->add_item(TTR("View UV2"), MENU_OPTION_DEBUG_UV2);
 	options->get_popup()->add_item(TTR("Unwrap UV2 for Lightmap/AO"), MENU_OPTION_CREATE_UV2);
 
-	options->get_popup()->connect_compat("id_pressed", this, "_menu_option");
+	options->get_popup()->connect("id_pressed", callable_mp(this, &MeshInstanceEditor::_menu_option));
 
 	outline_dialog = memnew(ConfirmationDialog);
 	outline_dialog->set_title(TTR("Create Outline Mesh"));
@@ -487,7 +483,7 @@ MeshInstanceEditor::MeshInstanceEditor() {
 	outline_dialog_vbc->add_margin_child(TTR("Outline Size:"), outline_size);
 
 	add_child(outline_dialog);
-	outline_dialog->connect_compat("confirmed", this, "_create_outline_mesh");
+	outline_dialog->connect("confirmed", callable_mp(this, &MeshInstanceEditor::_create_outline_mesh));
 
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);
@@ -497,7 +493,7 @@ MeshInstanceEditor::MeshInstanceEditor() {
 	add_child(debug_uv_dialog);
 	debug_uv = memnew(Control);
 	debug_uv->set_custom_minimum_size(Size2(600, 600) * EDSCALE);
-	debug_uv->connect_compat("draw", this, "_debug_uv_draw");
+	debug_uv->connect("draw", callable_mp(this, &MeshInstanceEditor::_debug_uv_draw));
 	debug_uv_dialog->add_child(debug_uv);
 }
 

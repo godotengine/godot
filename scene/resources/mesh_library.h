@@ -34,7 +34,7 @@
 #include "core/map.h"
 #include "core/resource.h"
 #include "mesh.h"
-#include "scene/3d/navigation_mesh_instance.h"
+#include "scene/3d/navigation_region.h"
 #include "shape.h"
 
 class MeshLibrary : public Resource {
