@@ -48,7 +48,7 @@
 			</argument>
 			<description>
 				Returns whether a cached resource is available for the given [code]path[/code].
-				Once a resource has been loaded by the engine, it is cached in memory for faster access, and future calls to the [method load] or [method load_interactive] methods will use the cached version. The cached resource can be overridden by using [method Resource.take_over_path] on a new resource for that same path.
+				Once a resource has been loaded by the engine, it is cached in memory for faster access, and future calls to the [method load] method will use the cached version. The cached resource can be overridden by using [method Resource.take_over_path] on a new resource for that same path.
 			</description>
 		</method>
 		<method name="load">
