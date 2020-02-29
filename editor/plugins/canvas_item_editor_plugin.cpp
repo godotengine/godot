@@ -5393,8 +5393,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	editor_selection->connect("selection_changed", callable_mp((CanvasItem *)this, &CanvasItem::update));
 	editor_selection->connect("selection_changed", callable_mp(this, &CanvasItemEditor::_selection_changed));
 
-	editor->call_deferred("connect", make_binds("play_pressed", Callable(this, "_update_override_camera_button"), true));
-	editor->call_deferred("connect", make_binds("stop_pressed", Callable(this, "_update_override_camera_button"), false));
+	editor->call_deferred("connect", "play_pressed", Callable(this, "_update_override_camera_button"), make_binds(true));
+	editor->call_deferred("connect", "stop_pressed", Callable(this, "_update_override_camera_button"), make_binds(false));
 
 	hb = memnew(HBoxContainer);
 	add_child(hb);
