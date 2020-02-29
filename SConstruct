@@ -330,7 +330,13 @@ if selected_platform in platform_list:
     else:
         # MSVC doesn't have clear C standard support, /std only covers C++.
         # We apply it to CCFLAGS (both C and C++ code) in case it impacts C features.
-        env.Prepend(CCFLAGS=['/std:c++17', '/permissive-'])
+        sdk_version = os.getenv("WindowsSDKVersion")
+        if (not sdk_version) or (methods.compare_version(sdk_version, "10.0.16299.0") >= 0):
+            env.Prepend(CCFLAGS=['/std:c++17', '/permissive-'])
+        else:
+            print("The current Windows SDK version doesn't support '/permissive-' flag, "
+                  "it will be disabled.")
+            env.Prepend(CCFLAGS=['/std:c++17'])
 
     # Enforce our minimal compiler version requirements
     cc_version = methods.get_compiler_version(env) or [-1, -1]

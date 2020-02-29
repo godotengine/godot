@@ -573,6 +573,17 @@ def get_compiler_version(env):
     else:
         return None
 
+def compare_version(ver1, ver2):
+    """
+    Takes two strings that represent version numbers of any size, separated with dots.
+    Returns 1 if ver1 > ver2, -1 if ver1 < ver2, and 0 if ver1 == ver2.
+    """
+    def normalize(v):
+        return [int(re.sub(r'[^0-9]', '', x)) for x in re.sub(r'(\.0+)*$','', v).split(".")]
+    def cmp(a, b):
+        return (a > b) - (a < b) 
+    return cmp(normalize(ver1), normalize(ver2))
+
 def using_gcc(env):
     return 'gcc' in os.path.basename(env["CC"])
 
