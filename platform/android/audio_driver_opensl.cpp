@@ -328,13 +328,13 @@ AudioDriver::SpeakerMode AudioDriverOpenSL::get_speaker_mode() const {
 
 void AudioDriverOpenSL::lock() {
 
-	if (active && mutex)
+	if (active)
 		mutex.lock();
 }
 
 void AudioDriverOpenSL::unlock() {
 
-	if (active && mutex)
+	if (active)
 		mutex.unlock();
 }
 
