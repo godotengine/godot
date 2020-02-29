@@ -36,7 +36,6 @@
 class ProgressBar : public Range {
 
 	GDCLASS(ProgressBar, Range);
-
 	bool percent_visible;
 
 protected:
