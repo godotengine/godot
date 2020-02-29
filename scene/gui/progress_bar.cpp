@@ -61,24 +61,23 @@ void ProgressBar::_notification(int p_what) {
 		float r = get_as_ratio();
 
 
-		if(fill == FILL_LEFT_TO_RIGHT || fill == FILL_RIGHT_TO_LEFT){
+		if (fill == FILL_LEFT_TO_RIGHT || fill == FILL_RIGHT_TO_LEFT) {
 			int mp = fg->get_minimum_size().width;
 			int p = r * (get_size().width - mp);
 			if (p > 0) {
-				if(fill == FILL_LEFT_TO_RIGHT){
+				if (fill == FILL_LEFT_TO_RIGHT) {
 					draw_style_box(fg, Rect2(Point2(), Size2(p + fg->get_minimum_size().width, get_size().height)));
-				}else{
+				} else {
 					draw_style_box(fg, Rect2(Point2(get_size().width - (p + fg->get_minimum_size().width), 0), Size2(p + fg->get_minimum_size().width, get_size().height)));
 				}
 			}
-		}else{
+		} else {
 			int mp = fg->get_minimum_size().height;
 			int p = r * (get_size().height - mp);
 			if (p > 0) {
-				if(fill == FILL_BOTTOM_TO_TOP){
+				if (fill == FILL_BOTTOM_TO_TOP) {
 					draw_style_box(fg, Rect2(Point2(), Size2(get_size().width, p + fg->get_minimum_size().height)));
-				}
-				else{
+				} else {
 					draw_style_box(fg, Rect2(Point2(0, get_size().height - (p + fg->get_minimum_size().height)), Size2(get_size().width, p + fg->get_minimum_size().height)));
 				}
 			}
