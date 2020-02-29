@@ -47,7 +47,7 @@ class EditorPluginSettings : public VBoxContainer {
 
 	PluginConfigDialog *plugin_config_dialog;
 	Button *create_plugin;
-	Button *update_list;
+	Button *refresh_list;
 	Tree *plugin_list;
 	bool updating;
 
@@ -61,7 +61,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void update_plugins();
+	void refresh_plugins();
 
 	EditorPluginSettings();
 };

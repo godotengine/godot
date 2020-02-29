@@ -820,12 +820,12 @@ void ProjectSettingsEditor::popup_project_settings() {
 	globals_editor->update_category_list();
 	_update_translations();
 	autoload_settings->update_autoload();
-	plugin_settings->update_plugins();
+	plugin_settings->refresh_plugins();
 	set_process_unhandled_input(true);
 }
 
-void ProjectSettingsEditor::update_plugins() {
-	plugin_settings->update_plugins();
+void ProjectSettingsEditor::refresh_plugins() {
+	plugin_settings->refresh_plugins();
 }
 
 void ProjectSettingsEditor::_item_selected(const String &p_path) {

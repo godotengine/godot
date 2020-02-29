@@ -41,14 +41,14 @@
 void EditorPluginSettings::_notification(int p_what) {
 
 	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN) {
-		update_plugins();
+		refresh_plugins();
 	} else if (p_what == Node::NOTIFICATION_READY) {
 		plugin_config_dialog->connect_compat("plugin_ready", EditorNode::get_singleton(), "_on_plugin_ready");
 		plugin_list->connect("button_pressed", callable_mp(this, &EditorPluginSettings::_cell_button_pressed));
 	}
 }
 
-void EditorPluginSettings::update_plugins() {
+void EditorPluginSettings::refresh_plugins() {
 
 	plugin_list->clear();
 
@@ -216,9 +216,9 @@ EditorPluginSettings::EditorPluginSettings() {
 	create_plugin = memnew(Button(TTR("Create")));
 	create_plugin->connect("pressed", callable_mp(this, &EditorPluginSettings::_create_clicked));
 	title_hb->add_child(create_plugin);
-	update_list = memnew(Button(TTR("Update")));
-	update_list->connect("pressed", callable_mp(this, &EditorPluginSettings::update_plugins));
-	title_hb->add_child(update_list);
+	refresh_list = memnew(Button(TTR("Refresh")));
+	refresh_list->connect("pressed", callable_mp(this, &EditorPluginSettings::refresh_plugins));
+	title_hb->add_child(refresh_list);
 	add_child(title_hb);
 
 	plugin_list = memnew(Tree);

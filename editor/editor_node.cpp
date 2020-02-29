@@ -542,7 +542,7 @@ void EditorNode::_on_plugin_ready(Object *p_script, const String &p_activate_nam
 	if (p_activate_name.length()) {
 		set_addon_plugin_enabled(p_activate_name, true);
 	}
-	project_settings->update_plugins();
+	project_settings->refresh_plugins();
 	project_settings->hide();
 	push_item(script.operator->());
 }
