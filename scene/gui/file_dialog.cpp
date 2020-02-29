@@ -829,6 +829,7 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_showing_hidden_files"), &FileDialog::is_showing_hidden_files);
 	ClassDB::bind_method(D_METHOD("_update_file_name"), &FileDialog::update_file_name);
 	ClassDB::bind_method(D_METHOD("_update_dir"), &FileDialog::update_dir);
+	ClassDB::bind_method(D_METHOD("_update_file_list"), &FileDialog::update_file_list);
 	ClassDB::bind_method(D_METHOD("deselect_items"), &FileDialog::deselect_items);
 
 	ClassDB::bind_method(D_METHOD("invalidate"), &FileDialog::invalidate);
