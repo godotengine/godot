@@ -182,6 +182,21 @@ void SpinBox::_line_edit_focus_exit() {
 	_text_entered(line_edit->get_text());
 }
 
+void SpinBox::_set_line_edit_mouse_filter(MouseFilter p_filter) {
+	MouseFilter filter;
+	switch (p_filter) {
+		case MOUSE_FILTER_PASS:
+			filter = MOUSE_FILTER_PASS;
+			break;
+		case MOUSE_FILTER_STOP:
+			filter = MOUSE_FILTER_PASS;
+			break;
+		case MOUSE_FILTER_IGNORE:
+			filter = MOUSE_FILTER_IGNORE;
+	}
+	line_edit->set_mouse_filter(filter);
+}
+
 inline void SpinBox::_adjust_width_for_icon(const Ref<Texture2D> &icon) {
 
 	int w = icon->get_width();
@@ -259,6 +274,12 @@ bool SpinBox::is_editable() const {
 	return line_edit->is_editable();
 }
 
+void SpinBox::set_mouse_filter(MouseFilter p_filter) {
+
+	_set_line_edit_mouse_filter(p_filter);
+	Control::set_mouse_filter(p_filter);
+}
+
 void SpinBox::apply() {
 	_text_entered(line_edit->get_text());
 }
@@ -291,7 +312,7 @@ SpinBox::SpinBox() {
 	add_child(line_edit);
 
 	line_edit->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	line_edit->set_mouse_filter(MOUSE_FILTER_PASS);
+	_set_line_edit_mouse_filter(get_mouse_filter());
 	//connect("value_changed",this,"_value_changed");
 	line_edit->connect("text_entered", callable_mp(this, &SpinBox::_text_entered), Vector<Variant>(), CONNECT_DEFERRED);
 	line_edit->connect("focus_exited", callable_mp(this, &SpinBox::_line_edit_focus_exit), Vector<Variant>(), CONNECT_DEFERRED);
