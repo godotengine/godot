@@ -32,7 +32,9 @@
 
 #include "core/io/file_access_buffered_fa.h"
 #include "core/project_settings.h"
+#if defined(OPENGL_ENABLED)
 #include "drivers/gles2/rasterizer_gles2.h"
+#endif
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "file_access_android.h"
@@ -120,23 +122,27 @@ int OS_Android::get_current_video_driver() const {
 
 Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
-	bool gl_initialization_error = false;
-
 	// FIXME: Add Vulkan support. Readd fallback code from Vulkan to GLES2?
 
-	if (RasterizerGLES2::is_viable() == OK) {
-		RasterizerGLES2::register_config();
-		RasterizerGLES2::make_current();
-	} else {
-		gl_initialization_error = true;
-	}
+#if defined(OPENGL_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+		bool gl_initialization_error = false;
 
-	if (gl_initialization_error) {
-		OS::get_singleton()->alert("Your device does not support any of the supported OpenGL versions.\n"
-								   "Please try updating your Android version.",
-				"Unable to initialize video driver");
-		return ERR_UNAVAILABLE;
+		if (RasterizerGLES2::is_viable() == OK) {
+			RasterizerGLES2::register_config();
+			RasterizerGLES2::make_current();
+		} else {
+			gl_initialization_error = true;
+		}
+
+		if (gl_initialization_error) {
+			OS::get_singleton()->alert("Your device does not support any of the supported OpenGL versions.\n"
+									   "Please try updating your Android version.",
+					"Unable to initialize video driver");
+			return ERR_UNAVAILABLE;
+		}
 	}
+#endif
 
 	video_driver_index = p_video_driver;
 
@@ -752,6 +758,8 @@ OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_god
 	gl_extensions = NULL;
 	//rasterizer = NULL;
 	use_gl2 = false;
+
+	visual_server = NULL;
 
 	godot_java = p_godot_java;
 	godot_io_java = p_godot_io_java;

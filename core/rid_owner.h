@@ -298,7 +298,11 @@ public:
 			if (description) {
 				print_error("ERROR: " + itos(alloc_count) + " RID allocations of type '" + description + "' were leaked at exit.");
 			} else {
+#ifdef NO_SAFE_CAST
+				print_error("ERROR: " + itos(alloc_count) + " RID allocations of type 'unknown' were leaked at exit.");
+#else
 				print_error("ERROR: " + itos(alloc_count) + " RID allocations of type '" + typeid(T).name() + "' were leaked at exit.");
+#endif
 			}
 
 			for (size_t i = 0; i < max_alloc; i++) {
