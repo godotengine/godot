@@ -42,7 +42,7 @@ class GDScriptWorkspace : public Reference {
 
 private:
 	void _get_owners(EditorFileSystemDirectory *efsd, String p_path, List<String> &owners);
-	Node *_get_owner_node(String p_path);
+	Node *_get_owner_scene_node(String p_path);
 
 protected:
 	static void _bind_methods();
