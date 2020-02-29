@@ -60,7 +60,6 @@ void ProgressBar::_notification(int p_what) {
 		draw_style_box(bg, Rect2(Point2(), get_size()));
 		float r = get_as_ratio();
 
-
 		if (fill == FILL_LEFT_TO_RIGHT || fill == FILL_RIGHT_TO_LEFT) {
 			int mp = fg->get_minimum_size().width;
 			int p = r * (get_size().width - mp);
@@ -102,14 +101,15 @@ bool ProgressBar::is_percent_visible() const {
 }
 
 void ProgressBar::set_fill_mode(FillMode p_fill) {
+
 	fill = p_fill;
 	update();
 }
 
 ProgressBar::FillMode ProgressBar::get_fill_mode() const {
+
 	return fill;
 }
-
 
 void ProgressBar::_bind_methods() {
 
@@ -131,6 +131,7 @@ void ProgressBar::_bind_methods() {
 }
 
 ProgressBar::ProgressBar() {
+	
 	set_v_size_flags(0);
 	set_step(0.01);
 	percent_visible = true;
