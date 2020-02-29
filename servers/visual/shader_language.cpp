@@ -2646,7 +2646,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			pi.type = Variant::INT;
 			if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_RANGE) {
 				pi.hint = PROPERTY_HINT_RANGE;
-				pi.hint_string = rtos(p_uniform.hint_range[0]) + "," + rtos(p_uniform.hint_range[1]);
+				pi.hint_string = rtos(p_uniform.hint_range[0]) + "," + rtos(p_uniform.hint_range[1]) + "," + rtos(p_uniform.hint_range[2]);
 			}
 
 		} break;
