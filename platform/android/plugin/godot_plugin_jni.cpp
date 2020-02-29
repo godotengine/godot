@@ -43,7 +43,7 @@ extern "C" {
 JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterSingleton(JNIEnv *env, jobject obj, jstring name) {
 
 	String singname = jstring_to_string(name, env);
-	JNISingleton *s = memnew(JNISingleton);
+	JNISingleton *s = (JNISingleton *)ClassDB::instance("JNISingleton");
 	s->set_instance(env->NewGlobalRef(obj));
 	jni_singletons[singname] = s;
 
@@ -84,6 +84,51 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegis
 	}
 
 	s->add_method(mname, mid, types, get_jni_type(retval));
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterSignal(JNIEnv *env, jobject obj, jstring sname, jstring name, jobjectArray args) {
+	String singname = jstring_to_string(sname, env);
+
+	ERR_FAIL_COND(!jni_singletons.has(singname));
+
+	JNISingleton *s = jni_singletons.get(singname);
+
+	String mname = jstring_to_string(name, env);
+	Vector<Variant::Type> types;
+
+	int stringCount = env->GetArrayLength(args);
+
+	for (int i = 0; i < stringCount; i++) {
+
+		jstring string = (jstring)env->GetObjectArrayElement(args, i);
+		const String rawString = jstring_to_string(string, env);
+		types.push_back(get_jni_type(rawString));
+	}
+
+	s->add_signal(mname, types);
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeEmitSignal(JNIEnv *env, jobject obj, jstring sname, jstring name, jobjectArray params) {
+	String singname = jstring_to_string(sname, env);
+
+	ERR_FAIL_COND(!jni_singletons.has(singname));
+
+	JNISingleton *s = jni_singletons.get(singname);
+
+	String mname = jstring_to_string(name, env);
+
+	int count = env->GetArrayLength(params);
+	Variant args[VARIANT_ARG_MAX];
+
+	for (int i = 0; i < MIN(count, VARIANT_ARG_MAX); i++) {
+
+		jobject obj = env->GetObjectArrayElement(params, i);
+		if (obj)
+			args[i] = _jobject_to_variant(env, obj);
+		env->DeleteLocalRef(obj);
+	};
+
+	s->emit_signal(mname, args[0], args[1], args[2], args[3], args[4]);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterGDNativeLibraries(JNIEnv *env, jobject obj, jobjectArray gdnlib_paths) {

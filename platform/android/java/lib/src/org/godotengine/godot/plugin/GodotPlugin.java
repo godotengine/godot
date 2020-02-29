@@ -37,6 +37,7 @@ import android.support.annotation.Nullable;
 import android.view.View;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -113,6 +114,10 @@ public abstract class GodotPlugin {
 			ptr.toArray(pt);
 
 			nativeRegisterMethod(getPluginName(), method.getName(), method.getReturnType().getName(), pt);
+		}
+
+		for (String s : getPluginSignals()) {
+			nativeRegisterSignal(getPluginName(), s, new String[] {});
 		}
 
 		// Get the list of gdnative libraries to register.
@@ -204,6 +209,14 @@ public abstract class GodotPlugin {
 	public abstract List<String> getPluginMethods();
 
 	/**
+	 * Returns the list of signals to be exposed to Godot.
+	 */
+	@NonNull
+	public List<String> getPluginSignals() {
+		return Arrays.asList();
+	}
+
+	/**
 	 * Returns the paths for the plugin's gdnative libraries.
 	 *
 	 * The paths must be relative to the 'assets' directory and point to a '*.gdnlib' file.
@@ -233,6 +246,10 @@ public abstract class GodotPlugin {
 		godot.runOnGLThread(action);
 	}
 
+	public void emitSignal(final String sig_name, final Object[] params) {
+		nativeEmitSignal(getPluginName(), sig_name, params);
+	}
+
 	/**
 	 * Used to setup a {@link GodotPlugin} instance.
 	 * @param p_name Name of the instance.
@@ -247,6 +264,22 @@ public abstract class GodotPlugin {
 	 * @param p_params Method parameters types
 	 */
 	private native void nativeRegisterMethod(String p_sname, String p_name, String p_ret, String[] p_params);
+
+	/**
+	 * Used to complete registration of the {@link GodotPlugin} instance's methods.
+	 * @param p_sname Name of the instance
+	 * @param p_name Name of the signal to register
+	 * @param p_params Signal parameters types
+	 */
+	private native void nativeRegisterSignal(String p_sname, String p_name, String[] p_params);
+
+	/**
+	 * Used to emit signal by {@link GodotPlugin} instance.
+	 * @param p_sname Name of the instance
+	 * @param p_name Name of the signal to emit
+	 * @param p_params Signal parameters
+	 */
+	private native void nativeEmitSignal(String p_sname, String p_name, Object[] p_params);
 
 	/**
 	 * Used to register gdnative libraries bundled by the plugin.
