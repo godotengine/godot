@@ -3809,6 +3809,12 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						}
 
 						StringName argname = tokenizer->get_token_identifier();
+						for (int i = 0; i < arguments.size(); i++) {
+							if (arguments[i] == argname) {
+								_set_error("The argument name \"" + String(argname) + "\" is defined multiple times.");
+								return;
+							}
+						}
 						arguments.push_back(argname);
 #ifdef DEBUG_ENABLED
 						arguments_usage.push_back(0);
