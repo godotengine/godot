@@ -31,7 +31,7 @@
 #include "texture_region_editor_plugin.h"
 
 #include "core/core_string_names.h"
-#include "core/os/input.h"
+#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
 #include "scene/gui/check_box.h"

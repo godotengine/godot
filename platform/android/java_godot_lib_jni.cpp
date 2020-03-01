@@ -41,7 +41,7 @@
 #include "dir_access_jandroid.h"
 #include "file_access_android.h"
 #include "file_access_jandroid.h"
-#include "main/input_default.h"
+#include "core/input/input.h"
 #include "main/main.h"
 #include "net_socket_android.h"
 #include "os_android.h"

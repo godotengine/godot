@@ -40,7 +40,7 @@
 #include <ForceFeedback/ForceFeedbackConstants.h>
 #include <IOKit/hid/IOHIDLib.h>
 
-#include "main/input_default.h"
+#include "core/input/input.h"
 
 struct rec_element {
 	IOHIDElementRef ref;

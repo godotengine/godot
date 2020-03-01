@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "arvr_nodes.h"
-#include "core/os/input.h"
+#include "core/input/input.h"
 #include "servers/arvr/arvr_interface.h"
 #include "servers/arvr_server.h"
 

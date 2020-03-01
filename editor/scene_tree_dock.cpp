@@ -31,7 +31,7 @@
 #include "scene_tree_dock.h"
 
 #include "core/io/resource_saver.h"
-#include "core/os/input.h"
+#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 

@@ -57,6 +57,7 @@
 #include "camera/camera_feed.h"
 #include "camera_server.h"
 #include "core/script_debugger_remote.h"
+#include "display_server.h"
 #include "navigation_2d_server.h"
 #include "navigation_server.h"
 #include "physics/physics_server_sw.h"
@@ -117,6 +118,7 @@ void register_server_types() {
 
 	OS::get_singleton()->set_has_server_feature_callback(has_server_feature_callback);
 
+	ClassDB::register_virtual_class<DisplayServer>();
 	ClassDB::register_virtual_class<VisualServer>();
 	ClassDB::register_class<AudioServer>();
 	ClassDB::register_virtual_class<PhysicsServer>();

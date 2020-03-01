@@ -31,7 +31,7 @@
 #ifndef MAIN_LOOP_H
 #define MAIN_LOOP_H
 
-#include "core/os/input_event.h"
+#include "core/input/input_event.h"
 #include "core/reference.h"
 #include "core/script_language.h"
 

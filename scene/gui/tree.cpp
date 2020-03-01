@@ -31,7 +31,7 @@
 #include "tree.h"
 
 #include "core/math/math_funcs.h"
-#include "core/os/input.h"
+#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/print_string.h"

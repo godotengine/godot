@@ -31,7 +31,7 @@
 #include "main.h"
 
 #include "core/crypto/crypto.h"
-#include "core/input_map.h"
+#include "core/input/input_map.h"
 #include "core/io/file_access_network.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/file_access_zip.h"
@@ -40,6 +40,7 @@
 #include "core/io/resource_loader.h"
 #include "core/message_queue.h"
 #include "core/os/dir_access.h"
+#include "core/input/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "core/register_core_types.h"
@@ -51,7 +52,6 @@
 #include "core/version_hash.gen.h"
 #include "drivers/register_driver_types.h"
 #include "main/app_icon.gen.h"
-#include "main/input_default.h"
 #include "main/main_timer_sync.h"
 #include "main/performance.h"
 #include "main/splash.gen.h"
@@ -1332,7 +1332,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	GLOBAL_DEF("application/config/windows_native_icon", String());
 	ProjectSettings::get_singleton()->set_custom_property_info("application/config/windows_native_icon", PropertyInfo(Variant::STRING, "application/config/windows_native_icon", PROPERTY_HINT_FILE, "*.ico"));
 
-	InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
+	Input *id = Input::get_singleton();
 	if (id) {
 		if (bool(GLOBAL_DEF("input_devices/pointing/emulate_touch_from_mouse", false)) && !(editor || project_manager)) {
 			if (!OS::get_singleton()->has_touchscreen_ui_hint()) {

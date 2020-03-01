@@ -33,7 +33,7 @@
 #include "core/engine.h"
 #include "core/io/ip.h"
 #include "core/io/marshalls.h"
-#include "core/os/input.h"
+#include "core/input/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "servers/visual_server.h"

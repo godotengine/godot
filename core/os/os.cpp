@@ -32,7 +32,7 @@
 
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
-#include "core/os/input.h"
+#include "core/input/input.h"
 #include "core/os/midi_driver.h"
 #include "core/project_settings.h"
 #include "core/version_generated.gen.h"

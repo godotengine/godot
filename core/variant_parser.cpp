@@ -31,7 +31,7 @@
 #include "variant_parser.h"
 
 #include "core/io/resource_loader.h"
-#include "core/os/input_event.h"
+#include "core/input/input_event.h"
 #include "core/os/keyboard.h"
 #include "core/string_buffer.h"
 

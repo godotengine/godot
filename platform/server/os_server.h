@@ -33,7 +33,7 @@
 
 #include "drivers/dummy/texture_loader_dummy.h"
 #include "drivers/unix/os_unix.h"
-#include "main/input_default.h"
+#include "core/input/input.h"
 #ifdef __APPLE__
 #include "platform/osx/crash_handler_osx.h"
 #include "platform/osx/semaphore_osx.h"

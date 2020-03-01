@@ -39,7 +39,7 @@
 #include "core/io/stream_peer_ssl.h"
 #include "core/message_queue.h"
 #include "core/os/file_access.h"
-#include "core/os/input.h"
+#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/path_remap.h"
@@ -47,7 +47,6 @@
 #include "core/project_settings.h"
 #include "core/translation.h"
 #include "core/version.h"
-#include "main/input_default.h"
 #include "main/main.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/control.h"
@@ -5630,7 +5629,7 @@ EditorNode::EditorNode() {
 	ResourceLoader::clear_translation_remaps(); //no remaps using during editor
 	ResourceLoader::clear_path_remaps();
 
-	InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
+	Input *id = Input::get_singleton();
 
 	if (id) {
 

@@ -31,7 +31,7 @@
 #include "editor_audio_buses.h"
 
 #include "core/io/resource_saver.h"
-#include "core/os/input.h"
+#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "editor_node.h"
 #include "editor_scale.h"

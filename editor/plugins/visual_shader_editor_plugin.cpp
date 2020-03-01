@@ -32,7 +32,7 @@
 
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
-#include "core/os/input.h"
+#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "core/version.h"
