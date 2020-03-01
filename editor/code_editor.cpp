@@ -30,7 +30,7 @@
 
 #include "code_editor.h"
 
-#include "core/os/input.h"
+#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/string_builder.h"
 #include "editor/editor_scale.h"

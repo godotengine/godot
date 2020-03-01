@@ -31,8 +31,8 @@
 #include "collision_polygon_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
+#include "core/input/input.h"
 #include "core/os/file_access.h"
-#include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_settings.h"
 #include "scene/3d/camera.h"

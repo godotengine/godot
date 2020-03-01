@@ -31,14 +31,13 @@
 #ifndef OS_X11_H
 #define OS_X11_H
 
-#include "core/os/input.h"
+#include "core/input/input.h"
 #include "crash_handler_x11.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "drivers/unix/os_unix.h"
 #include "joypad_linux.h"
-#include "main/input_default.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
@@ -181,7 +180,7 @@ class OS_X11 : public OS_Unix {
 	CursorShape current_cursor;
 	Map<CursorShape, Vector<Variant>> cursors_cache;
 
-	InputDefault *input;
+	Input *input;
 
 #ifdef JOYDEV_ENABLED
 	JoypadLinux *joypad;

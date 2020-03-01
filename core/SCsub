@@ -166,6 +166,7 @@ SConscript('math/SCsub')
 SConscript('crypto/SCsub')
 SConscript('io/SCsub')
 SConscript('debugger/SCsub')
+SConscript('input/SCsub')
 SConscript('bind/SCsub')
 
 

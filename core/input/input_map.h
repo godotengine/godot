@@ -31,8 +31,8 @@
 #ifndef INPUT_MAP_H
 #define INPUT_MAP_H
 
+#include "core/input/input_event.h"
 #include "core/object.h"
-#include "core/os/input_event.h"
 
 class InputMap : public Object {
 

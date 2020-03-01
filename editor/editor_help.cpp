@@ -30,7 +30,7 @@
 
 #include "editor_help.h"
 
-#include "core/os/input.h"
+#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "doc_data_compressed.gen.h"
 #include "editor/plugins/script_editor_plugin.h"
