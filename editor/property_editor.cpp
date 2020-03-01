@@ -31,11 +31,11 @@
 #include "property_editor.h"
 
 #include "core/class_db.h"
+#include "core/input/input.h"
 #include "core/io/image_loader.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/math/expression.h"
-#include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/pair.h"
 #include "core/print_string.h"

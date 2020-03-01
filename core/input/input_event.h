@@ -205,8 +205,24 @@ public:
 	InputEvent();
 };
 
-class InputEventWithModifiers : public InputEvent {
-	GDCLASS(InputEventWithModifiers, InputEvent);
+class InputEventFromWindow : public InputEvent {
+
+	GDCLASS(InputEventFromWindow, InputEvent);
+
+	int64_t window_id;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_window_id(int64_t p_id);
+	int64_t get_window_id() const;
+
+	InputEventFromWindow();
+};
+
+class InputEventWithModifiers : public InputEventFromWindow {
+	GDCLASS(InputEventWithModifiers, InputEventFromWindow);
 
 	bool shift;
 	bool alt;
@@ -440,8 +456,8 @@ public:
 	InputEventJoypadButton();
 };
 
-class InputEventScreenTouch : public InputEvent {
-	GDCLASS(InputEventScreenTouch, InputEvent);
+class InputEventScreenTouch : public InputEventFromWindow {
+	GDCLASS(InputEventScreenTouch, InputEventFromWindow);
 	int index;
 	Vector2 pos;
 	bool pressed;
@@ -465,9 +481,9 @@ public:
 	InputEventScreenTouch();
 };
 
-class InputEventScreenDrag : public InputEvent {
+class InputEventScreenDrag : public InputEventFromWindow {
 
-	GDCLASS(InputEventScreenDrag, InputEvent);
+	GDCLASS(InputEventScreenDrag, InputEventFromWindow);
 	int index;
 	Vector2 pos;
 	Vector2 relative;

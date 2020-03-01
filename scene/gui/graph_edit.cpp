@@ -30,7 +30,7 @@
 
 #include "graph_edit.h"
 
-#include "core/os/input.h"
+#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "scene/gui/box_container.h"
 

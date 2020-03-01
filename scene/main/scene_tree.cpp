@@ -31,6 +31,7 @@
 #include "scene_tree.h"
 
 #include "core/debugger/engine_debugger.h"
+#include "core/input/input.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/message_queue.h"
@@ -39,7 +40,6 @@
 #include "core/os/os.h"
 #include "core/print_string.h"
 #include "core/project_settings.h"
-#include "main/input_default.h"
 #include "node.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/resources/dynamic_font.h"
@@ -668,7 +668,7 @@ void SceneTree::_notification(int p_notification) {
 
 		case NOTIFICATION_WM_FOCUS_IN: {
 
-			InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
+			Input *id = Input::get_singleton();
 			if (id) {
 				id->ensure_touch_mouse_raised();
 			}

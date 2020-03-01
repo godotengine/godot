@@ -33,13 +33,12 @@
 
 #define BitMap _QDBitMap // Suppress deprecated QuickDraw definition.
 
-#include "core/os/input.h"
+#include "core/input/input.h"
 #include "crash_handler_osx.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/coremidi/midi_driver_coremidi.h"
 #include "drivers/unix/os_unix.h"
 #include "joypad_osx.h"
-#include "main/input_default.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual/visual_server_wrap_mt.h"

@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "mobile_vr_interface.h"
-#include "core/os/input.h"
+#include "core/input/input.h"
 #include "core/os/os.h"
 #include "servers/visual/visual_server_globals.h"
 

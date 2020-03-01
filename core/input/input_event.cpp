@@ -30,7 +30,7 @@
 
 #include "input_event.h"
 
-#include "core/input_map.h"
+#include "core/input/input_map.h"
 #include "core/os/keyboard.h"
 
 const int InputEvent::DEVICE_ID_TOUCH_MOUSE = -1;
@@ -135,6 +135,25 @@ void InputEvent::_bind_methods() {
 InputEvent::InputEvent() {
 
 	device = 0;
+}
+////////////////
+
+void InputEventFromWindow::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_window_id", "id"), &InputEventFromWindow::set_window_id);
+	ClassDB::bind_method(D_METHOD("get_window_id"), &InputEventFromWindow::get_window_id);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "window_id"), "set_window_id", "get_window_id");
+}
+
+void InputEventFromWindow::set_window_id(int64_t p_id) {
+	window_id = p_id;
+}
+int64_t InputEventFromWindow::get_window_id() const {
+	return window_id;
+}
+
+InputEventFromWindow::InputEventFromWindow() {
+	window_id = 0;
 }
 
 //////////////////
@@ -499,7 +518,7 @@ Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, co
 	mb.instance();
 
 	mb->set_device(get_device());
-
+	mb->set_window_id(get_window_id());
 	mb->set_modifiers_from_event(this);
 
 	mb->set_position(l);
@@ -650,6 +669,7 @@ Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, co
 	mm.instance();
 
 	mm->set_device(get_device());
+	mm->set_window_id(get_window_id());
 
 	mm->set_modifiers_from_event(this);
 
@@ -696,6 +716,10 @@ bool InputEventMouseMotion::accumulate(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> motion = p_event;
 	if (motion.is_null())
 		return false;
+
+	if (get_window_id() != motion->get_window_id()) {
+		return false;
+	}
 
 	if (is_pressed() != motion->is_pressed()) {
 		return false;
@@ -948,6 +972,7 @@ Ref<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &p_xform, co
 	Ref<InputEventScreenTouch> st;
 	st.instance();
 	st->set_device(get_device());
+	st->set_window_id(get_window_id());
 	st->set_index(index);
 	st->set_position(p_xform.xform(pos + p_local_ofs));
 	st->set_pressed(pressed);
@@ -1028,6 +1053,7 @@ Ref<InputEvent> InputEventScreenDrag::xformed_by(const Transform2D &p_xform, con
 	sd.instance();
 
 	sd->set_device(get_device());
+	sd->set_window_id(get_window_id());
 
 	sd->set_index(index);
 	sd->set_position(p_xform.xform(pos + p_local_ofs));
@@ -1186,6 +1212,8 @@ Ref<InputEvent> InputEventMagnifyGesture::xformed_by(const Transform2D &p_xform,
 	ev.instance();
 
 	ev->set_device(get_device());
+	ev->set_window_id(get_window_id());
+
 	ev->set_modifiers_from_event(this);
 
 	ev->set_position(p_xform.xform(get_position() + p_local_ofs));
@@ -1228,6 +1256,8 @@ Ref<InputEvent> InputEventPanGesture::xformed_by(const Transform2D &p_xform, con
 	ev.instance();
 
 	ev->set_device(get_device());
+	ev->set_window_id(get_window_id());
+
 	ev->set_modifiers_from_event(this);
 
 	ev->set_position(p_xform.xform(get_position() + p_local_ofs));

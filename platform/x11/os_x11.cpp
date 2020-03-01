@@ -651,7 +651,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	AudioDriverManager::initialize(p_audio_driver);
 
-	input = memnew(InputDefault);
+	input = memnew(Input);
 
 	window_has_focus = true; // Set focus to true at init
 #ifdef JOYDEV_ENABLED

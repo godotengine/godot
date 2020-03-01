@@ -30,8 +30,8 @@
 
 #include "spatial_editor_plugin.h"
 
+#include "core/input/input.h"
 #include "core/math/camera_matrix.h"
-#include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/print_string.h"
 #include "core/project_settings.h"

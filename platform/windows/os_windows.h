@@ -31,7 +31,7 @@
 #ifndef OS_WINDOWS_H
 #define OS_WINDOWS_H
 
-#include "core/os/input.h"
+#include "core/input/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "crash_handler_windows.h"
@@ -39,7 +39,6 @@
 #include "drivers/wasapi/audio_driver_wasapi.h"
 #include "drivers/winmidi/midi_driver_winmidi.h"
 #include "key_mapping_windows.h"
-#include "main/input_default.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"

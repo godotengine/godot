@@ -31,7 +31,7 @@
 #include "project_settings_editor.h"
 
 #include "core/global_constants.h"
-#include "core/input_map.h"
+#include "core/input/input_map.h"
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "core/translation.h"
