@@ -45,7 +45,7 @@ void EditorLayoutsDialog::_line_gui_input(const Ref<InputEvent> &p_event) {
 		if (!k->is_pressed())
 			return;
 
-		switch (k->get_scancode()) {
+		switch (k->get_keycode()) {
 			case KEY_KP_ENTER:
 			case KEY_ENTER: {
 

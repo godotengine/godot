@@ -435,7 +435,7 @@ void SceneTree::input_event(const Ref<InputEvent> &p_event) {
 	if (ScriptDebugger::get_singleton() && ScriptDebugger::get_singleton()->is_remote()) {
 		//quit from game window using F8
 		Ref<InputEventKey> k = ev;
-		if (k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_scancode() == KEY_F8) {
+		if (k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == KEY_F8) {
 			ScriptDebugger::get_singleton()->request_quit();
 		}
 	}

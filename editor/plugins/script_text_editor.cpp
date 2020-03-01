@@ -1600,7 +1600,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	if (mb.is_valid() && mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed()) {
 		local_pos = mb->get_global_position() - tx->get_global_position();
 		create_menu = true;
-	} else if (k.is_valid() && k->get_scancode() == KEY_MENU) {
+	} else if (k.is_valid() && k->get_keycode() == KEY_MENU) {
 		local_pos = tx->_get_cursor_pixel_pos();
 		create_menu = true;
 	}

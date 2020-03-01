@@ -1043,22 +1043,22 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 
 	if (k.is_valid()) {
 
-		if (k->get_scancode() == KEY_D && k->is_pressed() && k->get_command()) {
+		if (k->get_keycode() == KEY_D && k->is_pressed() && k->get_command()) {
 			emit_signal("duplicate_nodes_request");
 			accept_event();
 		}
 
-		if (k->get_scancode() == KEY_C && k->is_pressed() && k->get_command()) {
+		if (k->get_keycode() == KEY_C && k->is_pressed() && k->get_command()) {
 			emit_signal("copy_nodes_request");
 			accept_event();
 		}
 
-		if (k->get_scancode() == KEY_V && k->is_pressed() && k->get_command()) {
+		if (k->get_keycode() == KEY_V && k->is_pressed() && k->get_command()) {
 			emit_signal("paste_nodes_request");
 			accept_event();
 		}
 
-		if (k->get_scancode() == KEY_DELETE && k->is_pressed()) {
+		if (k->get_keycode() == KEY_DELETE && k->is_pressed()) {
 			emit_signal("delete_nodes_request");
 			accept_event();
 		}

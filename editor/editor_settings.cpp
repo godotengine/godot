@@ -1531,7 +1531,7 @@ Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 		ie.instance();
 
 		ie->set_unicode(p_keycode & KEY_CODE_MASK);
-		ie->set_scancode(p_keycode & KEY_CODE_MASK);
+		ie->set_keycode(p_keycode & KEY_CODE_MASK);
 		ie->set_shift(bool(p_keycode & KEY_MASK_SHIFT));
 		ie->set_alt(bool(p_keycode & KEY_MASK_ALT));
 		ie->set_control(bool(p_keycode & KEY_MASK_CTRL));

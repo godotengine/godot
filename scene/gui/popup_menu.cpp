@@ -1075,7 +1075,7 @@ bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_fo
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid()) {
-		code = k->get_scancode();
+		code = k->get_keycode();
 		if (code == 0)
 			code = k->get_unicode();
 		if (k->get_control())

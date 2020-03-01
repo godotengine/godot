@@ -617,7 +617,7 @@ void EditorAssetLibrary::_unhandled_input(const Ref<InputEvent> &p_event) {
 
 	if (key.is_valid() && key->is_pressed()) {
 
-		if (key->get_scancode_with_modifiers() == (KEY_MASK_CMD | KEY_F) && is_visible_in_tree()) {
+		if (key->get_keycode_with_modifiers() == (KEY_MASK_CMD | KEY_F) && is_visible_in_tree()) {
 
 			filter->grab_focus();
 			filter->select_all();

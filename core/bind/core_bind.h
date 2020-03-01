@@ -266,9 +266,9 @@ public:
 
 	String get_unique_id() const;
 
-	String get_scancode_string(uint32_t p_code) const;
-	bool is_scancode_unicode(uint32_t p_unicode) const;
-	int find_scancode_from_string(const String &p_code) const;
+	String get_keycode_string(uint32_t p_code) const;
+	bool is_keycode_unicode(uint32_t p_unicode) const;
+	int find_keycode_from_string(const String &p_code) const;
 
 	void set_use_file_access_save_and_swap(bool p_enable);
 

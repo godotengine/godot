@@ -69,7 +69,8 @@ public:
 		bool pressed;
 		bool echo;
 		bool raw;
-		uint32_t scancode;
+		uint32_t keycode;
+		uint32_t physical_keycode;
 		uint32_t unicode;
 	};
 

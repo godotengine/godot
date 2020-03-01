@@ -1209,7 +1209,7 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 	if (k.is_valid()) {
 		if (k->is_pressed() && !k->get_alt() && !k->get_shift()) {
 			bool handled = false;
-			switch (k->get_scancode()) {
+			switch (k->get_keycode()) {
 				case KEY_PAGEUP: {
 
 					if (vscroll->is_visible_in_tree()) {

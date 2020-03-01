@@ -582,7 +582,7 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	}
 
 	Ref<InputEventKey> k = ev;
-	if (k.is_valid() && k->is_pressed() && k->get_scancode() == KEY_MENU) {
+	if (k.is_valid() && k->is_pressed() && k->get_keycode() == KEY_MENU) {
 		TextEdit *tx = code_editor->get_text_edit();
 		int line = tx->cursor_get_line();
 		_make_context_menu(tx->is_selection_active(), tx->can_fold(line), tx->is_folded(line), (get_global_transform().inverse() * tx->get_global_transform()).xform(tx->_get_cursor_pixel_pos()));

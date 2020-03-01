@@ -165,7 +165,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 #ifdef APPLE_STYLE_KEYS
 		if (k->get_control() && !k->get_shift() && !k->get_alt() && !k->get_command()) {
 			uint32_t remap_key = KEY_UNKNOWN;
-			switch (k->get_scancode()) {
+			switch (k->get_keycode()) {
 				case KEY_F: {
 					remap_key = KEY_RIGHT;
 				} break;
@@ -193,13 +193,13 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			}
 
 			if (remap_key != KEY_UNKNOWN) {
-				k->set_scancode(remap_key);
+				k->set_keycode(remap_key);
 				k->set_control(false);
 			}
 		}
 #endif
 
-		unsigned int code = k->get_scancode();
+		unsigned int code = k->get_keycode();
 
 		if (k->get_command() && is_shortcut_keys_enabled()) {
 
@@ -571,7 +571,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			if (handled) {
 				accept_event();
 			} else if (!k->get_command()) {
-				if (k->get_unicode() >= 32 && k->get_scancode() != KEY_DELETE) {
+				if (k->get_unicode() >= 32 && k->get_keycode() != KEY_DELETE) {
 
 					if (editable) {
 						selection_delete();

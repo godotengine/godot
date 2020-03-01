@@ -43,6 +43,7 @@ class KeyMappingWindows {
 
 public:
 	static unsigned int get_keysym(unsigned int p_code);
+	static unsigned int get_scansym(unsigned int p_code, bool p_extended);
 };
 
 #endif // KEY_MAPPING_WINDOWS_H

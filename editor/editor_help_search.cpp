@@ -66,7 +66,7 @@ void EditorHelpSearch::_search_box_gui_input(const Ref<InputEvent> &p_event) {
 	// Redirect up and down navigational key events to the results list.
 	Ref<InputEventKey> key = p_event;
 	if (key.is_valid()) {
-		switch (key->get_scancode()) {
+		switch (key->get_keycode()) {
 			case KEY_UP:
 			case KEY_DOWN:
 			case KEY_PAGEUP:
