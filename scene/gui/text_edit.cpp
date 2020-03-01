@@ -1856,6 +1856,7 @@ void TextEdit::_consume_pair_symbol(CharType ch) {
 
 	bool in_single_quote = false;
 	bool in_double_quote = false;
+	bool found_comment = false;
 
 	int c = 0;
 	while (c < line.length()) {
@@ -1865,6 +1866,9 @@ void TextEdit::_consume_pair_symbol(CharType ch) {
 			if (cursor.column == c) {
 				break;
 			}
+		} else if (!in_single_quote && !in_double_quote && line[c] == '#') {
+			found_comment = true;
+			break;
 		} else {
 			if (line[c] == '\'' && !in_double_quote) {
 				in_single_quote = !in_single_quote;
@@ -1880,7 +1884,15 @@ void TextEdit::_consume_pair_symbol(CharType ch) {
 		}
 	}
 
-	//	Disallow inserting duplicated quotes while already in string
+	// Do not need to duplicate quotes while in comments
+	if (found_comment) {
+		insert_text_at_cursor(ch_single);
+		cursor_set_column(cursor_position_to_move);
+
+		return;
+	}
+
+	// Disallow inserting duplicated quotes while already in string
 	if ((in_single_quote || in_double_quote) && (ch == '"' || ch == '\'')) {
 		insert_text_at_cursor(ch_single);
 		cursor_set_column(cursor_position_to_move);
