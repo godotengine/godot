@@ -248,26 +248,30 @@ void RasterizerEffectsRD::gaussian_glow(RID p_source_rd_texture, RID p_framebuff
 	RD::get_singleton()->draw_list_end();
 }
 
-void RasterizerEffectsRD::cubemap_roughness(RID p_source_rd_texture, bool p_source_is_panorama, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness) {
+void RasterizerEffectsRD::cubemap_roughness(RID p_source_rd_texture, bool p_source_is_panorama, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size) {
 
 	zeromem(&roughness.push_constant, sizeof(CubemapRoughnessPushConstant));
 
-	roughness.push_constant.face_id = p_face_id;
+	roughness.push_constant.face_id = p_face_id > 9 ? 0 : p_face_id;
 	roughness.push_constant.roughness = p_roughness;
 	roughness.push_constant.sample_count = p_sample_count;
 	roughness.push_constant.use_direct_write = p_roughness == 0.0;
+	roughness.push_constant.face_size = p_size;
 
-	//RUN
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, roughness.pipelines[p_source_is_panorama ? CUBEMAP_ROUGHNESS_SOURCE_PANORAMA : CUBEMAP_ROUGHNESS_SOURCE_CUBEMAP].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, roughness.pipelines[p_source_is_panorama ? CUBEMAP_ROUGHNESS_SOURCE_PANORAMA : CUBEMAP_ROUGHNESS_SOURCE_CUBEMAP]);
 
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_rd_texture), 0);
-	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_rd_texture), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_dest_framebuffer), 1);
 
-	RD::get_singleton()->draw_list_set_push_constant(draw_list, &roughness.push_constant, sizeof(CubemapRoughnessPushConstant));
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &roughness.push_constant, sizeof(CubemapRoughnessPushConstant));
 
-	RD::get_singleton()->draw_list_draw(draw_list, true);
-	RD::get_singleton()->draw_list_end();
+	int x_groups = (p_size - 1) / 8 + 1;
+	int y_groups = (p_size - 1) / 8 + 1;
+
+	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, p_face_id > 9 ? 6 : 1);
+
+	RD::get_singleton()->compute_list_end();
 }
 
 void RasterizerEffectsRD::render_panorama(RD::DrawListID p_list, RenderingDevice::FramebufferFormatID p_fb_format, RID p_panorama, const CameraMatrix &p_camera, const Basis &p_orientation, float p_alpha, float p_multipler) {
@@ -830,7 +834,7 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 		roughness.shader_version = roughness.shader.version_create();
 
 		for (int i = 0; i < CUBEMAP_ROUGHNESS_SOURCE_MAX; i++) {
-			roughness.pipelines[i].setup(roughness.shader.version_get_shader(roughness.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+			roughness.pipelines[i] = RD::get_singleton()->compute_pipeline_create(roughness.shader.version_get_shader(roughness.shader_version, i));
 		}
 	}
 

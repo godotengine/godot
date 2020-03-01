@@ -146,9 +146,7 @@ void RasterizerSceneRD::_create_reflection_from_panorama(ReflectionData &rd, RID
 		if (p_quality) {
 			//render directly to the layers
 			for (int i = 0; i < rd.layers.size(); i++) {
-				for (int j = 0; j < 6; j++) {
-					storage->get_effects()->cubemap_roughness(p_panorama, true, rd.layers[i].mipmaps[0].framebuffers[j], j, sky_ggx_samples_quality, float(i) / (rd.layers.size() - 1.0));
-				}
+				storage->get_effects()->cubemap_roughness(p_panorama, true, rd.layers[i].views[0], 10, sky_ggx_samples_quality, float(i) / (rd.layers.size() - 1.0), rd.layers[i].mipmaps[0].size.x);
 			}
 		} else {
 			// Use fast filtering. Render directly to base mip levels
@@ -169,9 +167,7 @@ void RasterizerSceneRD::_create_reflection_from_panorama(ReflectionData &rd, RID
 		if (p_quality) {
 			//render directly to the layers
 			for (int i = 0; i < rd.layers[0].mipmaps.size(); i++) {
-				for (int j = 0; j < 6; j++) {
-					storage->get_effects()->cubemap_roughness(p_panorama, true, rd.layers[0].mipmaps[i].framebuffers[j], j, sky_ggx_samples_quality, float(i) / (rd.layers[0].mipmaps.size() - 1.0));
-				}
+				storage->get_effects()->cubemap_roughness(p_panorama, true, rd.layers[0].views[i], 10, sky_ggx_samples_quality, float(i) / (rd.layers[0].mipmaps.size() - 1.0), rd.layers[0].mipmaps[i].size.x);
 			}
 		} else {
 			// Use fast filtering. Render directly to each mip level
@@ -185,15 +181,13 @@ void RasterizerSceneRD::_create_reflection_from_panorama(ReflectionData &rd, RID
 	}
 }
 
-void RasterizerSceneRD::_create_reflection_from_base_mipmap(ReflectionData &rd, bool p_use_arrays, bool p_quality, int p_cube_side) {
+void RasterizerSceneRD::_create_reflection_from_base_mipmap(ReflectionData &rd, bool p_use_arrays, bool p_quality, int p_cube_side, int p_base_layer) {
 
 	if (p_use_arrays) {
 
 		if (p_quality) {
 			//render directly to the layers
-			for (int i = 1; i < rd.layers.size(); i++) {
-				storage->get_effects()->cubemap_roughness(rd.radiance_base_cubemap, false, rd.layers[i].mipmaps[0].framebuffers[p_cube_side], p_cube_side, sky_ggx_samples_quality, float(i) / (rd.layers.size() - 1.0));
-			}
+			storage->get_effects()->cubemap_roughness(rd.radiance_base_cubemap, false, rd.layers[p_base_layer].views[0], p_cube_side, sky_ggx_samples_quality, float(p_base_layer) / (rd.layers.size() - 1.0), rd.layers[p_base_layer].mipmaps[0].size.x);
 		} else {
 
 			storage->get_effects()->cubemap_downsample(rd.radiance_base_cubemap, false, rd.downsampled_layer.mipmaps[0].view, rd.downsampled_layer.mipmaps[0].size);
@@ -211,10 +205,8 @@ void RasterizerSceneRD::_create_reflection_from_base_mipmap(ReflectionData &rd, 
 	} else {
 
 		if (p_quality) {
-			//render directly to the layers
-			for (int i = 1; i < rd.layers[0].mipmaps.size(); i++) {
-				storage->get_effects()->cubemap_roughness(rd.radiance_base_cubemap, false, rd.layers[0].mipmaps[i].framebuffers[p_cube_side], p_cube_side, sky_ggx_samples_quality, float(i) / (rd.layers[0].mipmaps.size() - 1.0));
-			}
+
+			storage->get_effects()->cubemap_roughness(rd.layers[0].views[p_base_layer - 1], false, rd.layers[0].views[p_base_layer], p_cube_side, sky_ggx_samples_quality, float(p_base_layer) / (rd.layers[0].mipmaps.size() - 1.0), rd.layers[0].mipmaps[p_base_layer].size.x);
 		} else {
 
 			storage->get_effects()->cubemap_downsample(rd.radiance_base_cubemap, false, rd.downsampled_layer.mipmaps[0].view, rd.downsampled_layer.mipmaps[0].size);
@@ -739,6 +731,21 @@ bool RasterizerSceneRD::reflection_probe_instance_begin_render(RID p_instance, R
 		reflection_atlas_set_size(p_reflection_atlas, 128, atlas->count);
 	}
 
+	if (storage->reflection_probe_get_update_mode(rpi->probe) == VS::REFLECTION_PROBE_UPDATE_ALWAYS && atlas->reflection.is_valid() && atlas->reflections[0].data.layers[0].mipmaps.size() != 7) {
+		// Invalidate reflection atlas, need to regenerate
+		RD::get_singleton()->free(atlas->reflection);
+		atlas->reflection = RID();
+
+		for (int i = 0; i < atlas->reflections.size(); i++) {
+			if (atlas->reflections[i].owner.is_null()) {
+				continue;
+			}
+			reflection_probe_release_atlas_index(atlas->reflections[i].owner);
+		}
+
+		atlas->reflections.clear();
+	}
+
 	if (atlas->reflection.is_null()) {
 		int mipmaps = MIN(roughness_layers, Image::get_image_required_mipmaps(atlas->size, atlas->size, Image::FORMAT_RGBAH) + 1);
 		mipmaps = storage->reflection_probe_get_update_mode(rpi->probe) == VS::REFLECTION_PROBE_UPDATE_ALWAYS ? 7 : mipmaps; // always use 7 mipmaps with real time filtering
@@ -805,6 +812,7 @@ bool RasterizerSceneRD::reflection_probe_instance_begin_render(RID p_instance, R
 	rpi->atlas = p_reflection_atlas;
 	rpi->rendering = true;
 	rpi->dirty = false;
+	rpi->processing_layer = 1;
 	rpi->processing_side = 0;
 
 	return true;
@@ -824,24 +832,36 @@ bool RasterizerSceneRD::reflection_probe_instance_postprocess_step(RID p_instanc
 		return false;
 	}
 
-	_create_reflection_from_base_mipmap(atlas->reflections.write[rpi->atlas_index].data, false, storage->reflection_probe_get_update_mode(rpi->probe) == VS::REFLECTION_PROBE_UPDATE_ONCE, rpi->processing_side);
+	if (rpi->processing_layer > 1) {
+		_create_reflection_from_base_mipmap(atlas->reflections.write[rpi->atlas_index].data, false, storage->reflection_probe_get_update_mode(rpi->probe) == VS::REFLECTION_PROBE_UPDATE_ONCE, 10, rpi->processing_layer);
+		rpi->processing_layer++;
+		if (rpi->processing_layer == atlas->reflections[rpi->atlas_index].data.layers[0].mipmaps.size()) {
+			rpi->rendering = false;
+			rpi->processing_side = 0;
+			rpi->processing_layer = 1;
+			return true;
+		}
+		return false;
+
+	} else {
+		_create_reflection_from_base_mipmap(atlas->reflections.write[rpi->atlas_index].data, false, storage->reflection_probe_get_update_mode(rpi->probe) == VS::REFLECTION_PROBE_UPDATE_ONCE, rpi->processing_side, rpi->processing_layer);
+	}
 
 	if (storage->reflection_probe_get_update_mode(rpi->probe) == VS::REFLECTION_PROBE_UPDATE_ALWAYS) {
 		// Using real time reflections, all roughness is done in one step
 		rpi->rendering = false;
 		rpi->processing_side = 0;
+		rpi->processing_layer = 1;
 		return true;
 	}
 
 	rpi->processing_side++;
-
 	if (rpi->processing_side == 6) {
-		rpi->rendering = false;
 		rpi->processing_side = 0;
-		return true;
-	} else {
-		return false;
+		rpi->processing_layer++;
 	}
+
+	return false;
 }
 
 uint32_t RasterizerSceneRD::reflection_probe_instance_get_resolution(RID p_instance) {
