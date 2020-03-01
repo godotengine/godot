@@ -665,112 +665,119 @@ void ResourceImporterScene::_create_clips(Node *scene, const Array &p_clips, boo
 	AnimationPlayer *anim = Object::cast_to<AnimationPlayer>(n);
 	ERR_FAIL_COND(!anim);
 
-	if (!anim->has_animation("default"))
+	List<StringName> default_animations;
+	anim->get_animation_list(&default_animations);
+
+	if (default_animations.size() <= 0)
 		return;
 
-	Ref<Animation> default_anim = anim->get_animation("default");
+	for (List<StringName>::Element *E = default_animations.front(); E; E = E->next()) {
+		Ref<Animation> default_anim = anim->get_animation(E->get());
 
-	for (int i = 0; i < p_clips.size(); i += 4) {
+		for (int i = 0; i < p_clips.size(); i += 4) {
 
-		String name = p_clips[i];
-		float from = p_clips[i + 1];
-		float to = p_clips[i + 2];
-		bool loop = p_clips[i + 3];
-		if (from >= to)
-			continue;
+			String name = String(E->get()) + String(p_clips[i]);
+			float from = p_clips[i + 1];
+			float to = p_clips[i + 2];
+			bool loop = p_clips[i + 3];
+			if (from >= to)
+				continue;
 
-		Ref<Animation> new_anim = memnew(Animation);
+			Ref<Animation> new_anim = memnew(Animation);
 
-		for (int j = 0; j < default_anim->get_track_count(); j++) {
+			for (int j = 0; j < default_anim->get_track_count(); j++) {
 
-			List<float> keys;
-			int kc = default_anim->track_get_key_count(j);
-			int dtrack = -1;
-			for (int k = 0; k < kc; k++) {
+				List<float> keys;
+				int kc = default_anim->track_get_key_count(j);
+				int dtrack = -1;
+				for (int k = 0; k < kc; k++) {
 
-				float kt = default_anim->track_get_key_time(j, k);
-				if (kt >= from && kt < to) {
+					float kt = default_anim->track_get_key_time(j, k);
+					if (kt >= from && kt < to) {
 
-					//found a key within range, so create track
-					if (dtrack == -1) {
-						new_anim->add_track(default_anim->track_get_type(j));
-						dtrack = new_anim->get_track_count() - 1;
-						new_anim->track_set_path(dtrack, default_anim->track_get_path(j));
+						//found a key within range, so create track
+						if (dtrack == -1) {
+							new_anim->add_track(default_anim->track_get_type(j));
+							dtrack = new_anim->get_track_count() - 1;
+							new_anim->track_set_path(dtrack, default_anim->track_get_path(j));
 
-						if (kt > (from + 0.01) && k > 0) {
+							if (kt > (from + 0.01) && k > 0) {
 
-							if (default_anim->track_get_type(j) == Animation::TYPE_TRANSFORM) {
-								Quat q;
-								Vector3 p;
-								Vector3 s;
-								default_anim->transform_track_interpolate(j, from, &p, &q, &s);
-								new_anim->transform_track_insert_key(dtrack, 0, p, q, s);
+								if (default_anim->track_get_type(j) == Animation::TYPE_TRANSFORM) {
+									Quat q;
+									Vector3 p;
+									Vector3 s;
+									default_anim->transform_track_interpolate(j, from, &p, &q, &s);
+									new_anim->transform_track_insert_key(dtrack, 0, p, q, s);
+								}
+								if (default_anim->track_get_type(j) == Animation::TYPE_VALUE) {
+									Variant var = default_anim->value_track_interpolate(j, from);
+									new_anim->track_insert_key(dtrack, 0, var);
+								}
 							}
-							if (default_anim->track_get_type(j) == Animation::TYPE_VALUE) {
-								Variant var = default_anim->value_track_interpolate(j, from);
-								new_anim->track_insert_key(dtrack, 0, var);
-							}
+						}
+
+						if (default_anim->track_get_type(j) == Animation::TYPE_TRANSFORM) {
+							Quat q;
+							Vector3 p;
+							Vector3 s;
+							default_anim->transform_track_get_key(j, k, &p, &q, &s);
+							new_anim->transform_track_insert_key(dtrack, kt - from, p, q, s);
+						}
+						if (default_anim->track_get_type(j) == Animation::TYPE_VALUE) {
+							Variant var = default_anim->track_get_key_value(j, k);
+							new_anim->track_insert_key(dtrack, kt - from, var);
 						}
 					}
 
-					if (default_anim->track_get_type(j) == Animation::TYPE_TRANSFORM) {
-						Quat q;
-						Vector3 p;
-						Vector3 s;
-						default_anim->transform_track_get_key(j, k, &p, &q, &s);
-						new_anim->transform_track_insert_key(dtrack, kt - from, p, q, s);
-					}
-					if (default_anim->track_get_type(j) == Animation::TYPE_VALUE) {
-						Variant var = default_anim->track_get_key_value(j, k);
-						new_anim->track_insert_key(dtrack, kt - from, var);
+					if (dtrack != -1 && kt >= to) {
+
+						if (default_anim->track_get_type(j) == Animation::TYPE_TRANSFORM) {
+							Quat q;
+							Vector3 p;
+							Vector3 s;
+							default_anim->transform_track_interpolate(j, to, &p, &q, &s);
+							new_anim->transform_track_insert_key(dtrack, to - from, p, q, s);
+						}
+						if (default_anim->track_get_type(j) == Animation::TYPE_VALUE) {
+							Variant var = default_anim->value_track_interpolate(j, to);
+							new_anim->track_insert_key(dtrack, to - from, var);
+						}
 					}
 				}
 
-				if (dtrack != -1 && kt >= to) {
-
+				if (dtrack == -1 && p_bake_all) {
+					new_anim->add_track(default_anim->track_get_type(j));
+					dtrack = new_anim->get_track_count() - 1;
+					new_anim->track_set_path(dtrack, default_anim->track_get_path(j));
 					if (default_anim->track_get_type(j) == Animation::TYPE_TRANSFORM) {
+
 						Quat q;
 						Vector3 p;
 						Vector3 s;
+						default_anim->transform_track_interpolate(j, from, &p, &q, &s);
+						new_anim->transform_track_insert_key(dtrack, 0, p, q, s);
 						default_anim->transform_track_interpolate(j, to, &p, &q, &s);
 						new_anim->transform_track_insert_key(dtrack, to - from, p, q, s);
 					}
 					if (default_anim->track_get_type(j) == Animation::TYPE_VALUE) {
-						Variant var = default_anim->value_track_interpolate(j, to);
-						new_anim->track_insert_key(dtrack, to - from, var);
+						Variant var = default_anim->value_track_interpolate(j, from);
+						new_anim->track_insert_key(dtrack, 0, var);
+						Variant to_var = default_anim->value_track_interpolate(j, to);
+						new_anim->track_insert_key(dtrack, to - from, to_var);
 					}
 				}
 			}
 
-			if (dtrack == -1 && p_bake_all) {
-				new_anim->add_track(default_anim->track_get_type(j));
-				dtrack = new_anim->get_track_count() - 1;
-				new_anim->track_set_path(dtrack, default_anim->track_get_path(j));
-				if (default_anim->track_get_type(j) == Animation::TYPE_TRANSFORM) {
-
-					Quat q;
-					Vector3 p;
-					Vector3 s;
-					default_anim->transform_track_interpolate(j, from, &p, &q, &s);
-					new_anim->transform_track_insert_key(dtrack, 0, p, q, s);
-					default_anim->transform_track_interpolate(j, to, &p, &q, &s);
-					new_anim->transform_track_insert_key(dtrack, to - from, p, q, s);
-				}
-				if (default_anim->track_get_type(j) == Animation::TYPE_VALUE) {
-					Variant var = default_anim->value_track_interpolate(j, from);
-					new_anim->track_insert_key(dtrack, 0, var);
-					Variant to_var = default_anim->value_track_interpolate(j, to);
-					new_anim->track_insert_key(dtrack, to - from, to_var);
-				}
-			}
+			new_anim->set_loop(loop);
+			new_anim->set_length(to - from);
+			anim->add_animation(name, new_anim);
 		}
-
-		new_anim->set_loop(loop);
-		new_anim->set_length(to - from);
-		anim->add_animation(name, new_anim);
 	}
 
-	anim->remove_animation("default"); //remove default (no longer needed)
+	for (List<StringName>::Element *E = default_animations.front(); E; E = E->next()) {
+		anim->remove_animation(E->get()); //remove default (no longer needed)
+	}
 }
 
 void ResourceImporterScene::_filter_anim_tracks(Ref<Animation> anim, Set<String> &keep) {
