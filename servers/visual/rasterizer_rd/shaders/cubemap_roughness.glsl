@@ -1,83 +1,38 @@
 /* clang-format off */
-[vertex]
+[compute]
 
 #version 450
 
 VERSION_DEFINES
 
-layout(location = 0) out highp vec2 uv_interp;
+#define GROUP_SIZE 8
+
+layout(local_size_x = GROUP_SIZE, local_size_y = GROUP_SIZE, local_size_z = 1) in;
 /* clang-format on */
-
-void main() {
-
-	vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
-	uv_interp = base_arr[gl_VertexIndex];
-	gl_Position = vec4(uv_interp * 2.0 - 1.0, 0.0, 1.0);
-}
-
-/* clang-format off */
-[fragment]
-
-#version 450
-
-VERSION_DEFINES
 
 #ifdef MODE_SOURCE_PANORAMA
 layout(set = 0, binding = 0) uniform sampler2D source_panorama;
-/* clang-format on */
 #endif
 
 #ifdef MODE_SOURCE_CUBEMAP
 layout(set = 0, binding = 0) uniform samplerCube source_cube;
 #endif
 
+layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly imageCube dest_cubemap;
+
 layout(push_constant, binding = 1, std430) uniform Params {
 	uint face_id;
 	uint sample_count;
 	float roughness;
 	bool use_direct_write;
+	float face_size;
 }
 params;
-
-layout(location = 0) in vec2 uv_interp;
-
-layout(location = 0) out vec4 frag_color;
 
 #define M_PI 3.14159265359
 
 vec3 texelCoordToVec(vec2 uv, uint faceID) {
 	mat3 faceUvVectors[6];
-	/*
-	// -x
-	faceUvVectors[0][0] = vec3(0.0, 0.0, 1.0);  // u -> +z
-	faceUvVectors[0][1] = vec3(0.0, -1.0, 0.0); // v -> -y
-	faceUvVectors[0][2] = vec3(-1.0, 0.0, 0.0); // -x face
-
-	// +x
-	faceUvVectors[1][0] = vec3(0.0, 0.0, -1.0); // u -> -z
-	faceUvVectors[1][1] = vec3(0.0, -1.0, 0.0); // v -> -y
-	faceUvVectors[1][2] = vec3(1.0, 0.0, 0.0);  // +x face
-
-	// -y
-	faceUvVectors[2][0] = vec3(1.0, 0.0, 0.0);  // u -> +x
-	faceUvVectors[2][1] = vec3(0.0, 0.0, -1.0); // v -> -z
-	faceUvVectors[2][2] = vec3(0.0, -1.0, 0.0); // -y face
-
-	// +y
-	faceUvVectors[3][0] = vec3(1.0, 0.0, 0.0);  // u -> +x
-	faceUvVectors[3][1] = vec3(0.0, 0.0, 1.0);  // v -> +z
-	faceUvVectors[3][2] = vec3(0.0, 1.0, 0.0);  // +y face
-
-	// -z
-	faceUvVectors[4][0] = vec3(-1.0, 0.0, 0.0); // u -> -x
-	faceUvVectors[4][1] = vec3(0.0, -1.0, 0.0); // v -> -y
-	faceUvVectors[4][2] = vec3(0.0, 0.0, -1.0); // -z face
-
-	// +z
-	faceUvVectors[5][0] = vec3(1.0, 0.0, 0.0);  // u -> +x
-	faceUvVectors[5][1] = vec3(0.0, -1.0, 0.0); // v -> -y
-	faceUvVectors[5][2] = vec3(0.0, 0.0, 1.0);  // +z face
-	*/
 
 	// -x
 	faceUvVectors[1][0] = vec3(0.0, 0.0, 1.0); // u -> +z
@@ -179,21 +134,23 @@ vec4 texturePanorama(vec3 normal, sampler2D pano) {
 #endif
 
 void main() {
+	uvec3 id = gl_GlobalInvocationID;
+	id.z += params.face_id;
 
-	vec2 uv = (uv_interp * 2.0) - 1.0;
-	vec3 N = texelCoordToVec(uv, params.face_id);
+	vec2 uv = ((vec2(id.xy) * 2.0 + 1.0) / (params.face_size) - 1.0);
+	vec3 N = texelCoordToVec(uv, id.z);
 
 	//vec4 color = color_interp;
 
 	if (params.use_direct_write) {
 
 #ifdef MODE_SOURCE_PANORAMA
-
-		frag_color = vec4(texturePanorama(N, source_panorama).rgb, 1.0);
+		imageStore(dest_cubemap, ivec3(id), vec4(texturePanorama(N, source_panorama).rgb, 1.0));
 #endif
 
 #ifdef MODE_SOURCE_CUBEMAP
-		frag_color = vec4(texture(source_cube, N).rgb, 1.0);
+		imageStore(dest_cubemap, ivec3(id), vec4(texture(source_cube, N).rgb, 1.0));
+
 #endif
 
 	} else {
@@ -222,6 +179,6 @@ void main() {
 		}
 		sum /= sum.a;
 
-		frag_color = vec4(sum.rgb, 1.0);
+		imageStore(dest_cubemap, ivec3(id), vec4(sum.rgb, 1.0));
 	}
 }

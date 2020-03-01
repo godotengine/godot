@@ -108,7 +108,7 @@ private:
 	void _clear_reflection_data(ReflectionData &rd);
 	void _update_reflection_data(ReflectionData &rd, int p_size, int p_mipmaps, bool p_use_array, RID p_base_cube, int p_base_layer, bool p_low_quality);
 	void _create_reflection_from_panorama(ReflectionData &rd, RID p_panorama, bool p_quality);
-	void _create_reflection_from_base_mipmap(ReflectionData &rd, bool p_use_arrays, bool p_quality, int p_cube_side);
+	void _create_reflection_from_base_mipmap(ReflectionData &rd, bool p_use_arrays, bool p_quality, int p_cube_side, int p_base_layer);
 	void _update_reflection_mipmaps(ReflectionData &rd, bool p_quality);
 
 	/* SKY */
@@ -165,6 +165,7 @@ private:
 
 		bool dirty = true;
 		bool rendering = false;
+		int processing_layer = 1;
 		int processing_side = 0;
 
 		uint32_t render_step = 0;
