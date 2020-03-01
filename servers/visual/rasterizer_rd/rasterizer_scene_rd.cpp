@@ -653,8 +653,11 @@ void RasterizerSceneRD::reflection_atlas_set_size(RID p_ref_atlas, int p_reflect
 		//clear and invalidate everything
 		RD::get_singleton()->free(ra->reflection);
 		ra->reflection = RID();
+		RD::get_singleton()->free(ra->depth_buffer);
+		ra->depth_buffer = RID();
 
 		for (int i = 0; i < ra->reflections.size(); i++) {
+			_clear_reflection_data(ra->reflections.write[i].data);
 			if (ra->reflections[i].owner.is_null()) {
 				continue;
 			}
