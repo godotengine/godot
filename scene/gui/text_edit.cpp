@@ -2517,13 +2517,11 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				String new_word = get_word_at_pos(mm->get_position());
 				if (new_word != highlighted_word) {
-					highlighted_word = new_word;
-					update();
+					emit_signal("symbol_validate", new_word);
 				}
 			} else {
 				if (highlighted_word != String()) {
-					highlighted_word = String();
-					update();
+					set_highlighted_word(String());
 				}
 			}
 		}
@@ -2572,13 +2570,9 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			if (select_identifiers_enabled) {
 
 				if (k->is_pressed() && !dragging_minimap && !dragging_selection) {
-
-					highlighted_word = get_word_at_pos(get_local_mouse_position());
-					update();
-
+					emit_signal("symbol_validate", get_word_at_pos(get_local_mouse_position()));
 				} else {
-					highlighted_word = String();
-					update();
+					set_highlighted_word(String());
 				}
 			}
 		}
@@ -6996,6 +6990,11 @@ void TextEdit::menu_option(int p_option) {
 	}
 }
 
+void TextEdit::set_highlighted_word(const String &new_word) {
+	highlighted_word = new_word;
+	update();
+}
+
 void TextEdit::set_select_identifiers_on_hover(bool p_enable) {
 
 	select_identifiers_enabled = p_enable;
@@ -7213,6 +7212,7 @@ void TextEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo(Variant::INT, "row")));
 	ADD_SIGNAL(MethodInfo("symbol_lookup", PropertyInfo(Variant::STRING, "symbol"), PropertyInfo(Variant::INT, "row"), PropertyInfo(Variant::INT, "column")));
 	ADD_SIGNAL(MethodInfo("info_clicked", PropertyInfo(Variant::INT, "row"), PropertyInfo(Variant::STRING, "info")));
+	ADD_SIGNAL(MethodInfo("symbol_validate", PropertyInfo(Variant::STRING, "symbol")));
 
 	BIND_ENUM_CONSTANT(MENU_CUT);
 	BIND_ENUM_CONSTANT(MENU_COPY);
