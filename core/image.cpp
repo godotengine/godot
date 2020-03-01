@@ -1448,6 +1448,8 @@ Error Image::generate_mipmaps(bool p_renormalize) {
 
 	ERR_FAIL_COND_V_MSG(!_can_modify(format), ERR_UNAVAILABLE, "Cannot generate mipmaps in compressed or custom image formats.");
 
+	ERR_FAIL_COND_V_MSG(format == FORMAT_RGBA4444 || format == FORMAT_RGBA5551, ERR_UNAVAILABLE, "Cannot generate mipmaps in custom image formats.");
+
 	ERR_FAIL_COND_V_MSG(width == 0 || height == 0, ERR_UNCONFIGURED, "Cannot generate mipmaps with width or height equal to 0.");
 
 	int mmcount;
