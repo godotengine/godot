@@ -585,6 +585,7 @@ public:
 
 	bool is_insert_text_operation();
 
+	void set_highlighted_word(const String &new_word);
 	void set_text(String p_text);
 	void insert_text_at_cursor(const String &p_text);
 	void insert_at(const String &p_text, int at);

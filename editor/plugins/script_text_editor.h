@@ -178,6 +178,7 @@ protected:
 
 	void _goto_line(int p_line) { goto_line(p_line); }
 	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
+	void _validate_symbol(const String &p_symbol);
 
 	void _lookup_connections(int p_row, String p_method);
 
