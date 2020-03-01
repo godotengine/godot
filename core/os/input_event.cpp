@@ -389,7 +389,7 @@ void InputEventKey::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "keycode"), "set_keycode", "get_keycode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "physical_keycode"), "set_physical_keycode", "get_physical_keycode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "unicode"), "set_unicode", "get_unicode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "echo"), "set_echo", "is_echo");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "echo"), "set_echo", "is_echo");
 }
 
 InputEventKey::InputEventKey() {
