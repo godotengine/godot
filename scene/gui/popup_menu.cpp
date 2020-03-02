@@ -388,7 +388,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
 
-	if (allow_search && k.is_valid() && k->get_unicode()) {
+	if (allow_search && k.is_valid() && k->get_unicode() && k->is_pressed()) {
 
 		uint64_t now = OS::get_singleton()->get_ticks_msec();
 		uint64_t diff = now - search_time_msec;
@@ -402,20 +402,19 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 		if (String::chr(k->get_unicode()) != search_string)
 			search_string += String::chr(k->get_unicode());
 
-		for (int i = mouse_over + 1; i <= items.size(); i++) {
-			if (i == items.size()) {
-				if (mouse_over <= 0)
-					break;
-				else
-					i = 0;
-			}
+		String lowered_search_string = search_string.to_lower();
 
-			if (i == mouse_over)
+		for (int i = 0; i < items.size(); i++) {
+
+			int index = (mouse_over + 1 + i) % items.size();
+
+			if (mouse_over == index)
 				break;
 
-			if (items[i].text.findn(search_string) == 0) {
-				mouse_over = i;
-				emit_signal("id_focused", i);
+			if (items[index].text.to_lower().begins_with(lowered_search_string)) {
+
+				mouse_over = index;
+				emit_signal("id_focused", index);
 				update();
 				accept_event();
 				break;
@@ -1499,7 +1498,12 @@ PopupMenu::PopupMenu() {
 	initial_button_mask = 0;
 	during_grabbed_click = false;
 
+#ifdef TOOLS_ENABLED
+	allow_search = Engine::get_singleton()->is_editor_hint();
+#else
 	allow_search = false;
+#endif
+
 	search_time_msec = 0;
 	search_string = "";
 
