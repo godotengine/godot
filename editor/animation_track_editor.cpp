@@ -2303,7 +2303,7 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 			}
 			text += ")";
 		}
-		
+
 		int limit = MAX(0, p_clip_right - p_x - icon_to_draw->get_width());
 		if (limit > 0) {
 			draw_string(font, Vector2(p_x + icon_to_draw->get_width(), int(get_size().height - font->get_height()) / 2 + font->get_ascent()), text, color, limit);
@@ -5870,13 +5870,13 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bottom_hb->add_child(memnew(VSeparator));
 
 	function_text_mode_label = memnew(Label);
-	function_text_mode_label->set_text(TTR("Function calls:") + " ");
+	function_text_mode_label->set_text(TTR("Function Calls:") + " ");
 	bottom_hb->add_child(function_text_mode_label);
 
 	function_text_mode_button = memnew(OptionButton);
 	function_text_mode_button->add_item(TTR("None"));
-	function_text_mode_button->add_item(TTR("Name only"));
-	function_text_mode_button->add_item(TTR("Name and arguments"));
+	function_text_mode_button->add_item(TTR("Name"));
+	function_text_mode_button->add_item(TTR("Name and Arguments"));
 	bottom_hb->add_child(function_text_mode_button);
 	function_text_mode_button->connect("item_selected", callable_mp(this, &AnimationTrackEditor::_function_text_mode_changed));
 	function_text_mode_button->set_disabled(true);
