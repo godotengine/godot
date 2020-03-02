@@ -83,7 +83,7 @@ namespace Godot
 
         public static void Print(params object[] what)
         {
-            godot_icall_GD_print(Array.ConvertAll(what, x => x.ToString()));
+            godot_icall_GD_print(Array.ConvertAll(what, x => x?.ToString()));
         }
 
         public static void PrintStack()
