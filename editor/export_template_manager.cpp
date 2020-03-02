@@ -547,9 +547,7 @@ void ExportTemplateManager::_notification(int p_what) {
 bool ExportTemplateManager::can_install_android_template() {
 
 	const String templates_dir = EditorSettings::get_singleton()->get_templates_dir().plus_file(VERSION_FULL_CONFIG);
-	return FileAccess::exists(templates_dir.plus_file("android_source.zip")) &&
-		   FileAccess::exists(templates_dir.plus_file("android_release.apk")) &&
-		   FileAccess::exists(templates_dir.plus_file("android_debug.apk"));
+	return FileAccess::exists(templates_dir.plus_file("android_source.zip"));
 }
 
 Error ExportTemplateManager::install_android_template() {
