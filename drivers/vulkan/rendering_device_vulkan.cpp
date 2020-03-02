@@ -4182,7 +4182,10 @@ RenderingDeviceVulkan::DescriptorPool *RenderingDeviceVulkan::_descriptor_pool_a
 		descriptor_pool_create_info.poolSizeCount = sizes.size();
 		descriptor_pool_create_info.pPoolSizes = sizes.ptr();
 		VkResult res = vkCreateDescriptorPool(device, &descriptor_pool_create_info, NULL, &pool->pool);
-		ERR_FAIL_COND_V(res, NULL);
+		if (res) {
+			memdelete(pool);
+			ERR_FAIL_COND_V(res, NULL);
+		}
 		descriptor_pools[p_key].insert(pool);
 	}
 

@@ -116,7 +116,7 @@ private:
 		String type_hint;
 		float progress = 0.0;
 		ThreadLoadStatus status = THREAD_LOAD_IN_PROGRESS;
-		Error error;
+		Error error = OK;
 		RES resource;
 		bool xl_remapped = false;
 		bool use_sub_threads = false;

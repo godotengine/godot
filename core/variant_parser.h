@@ -77,7 +77,7 @@ public:
 
 	struct ResourceParser {
 
-		void *userdata;
+		void *userdata = nullptr;
 		ParseResourceFunc func;
 		ParseResourceFunc ext_func;
 		ParseResourceFunc sub_func;

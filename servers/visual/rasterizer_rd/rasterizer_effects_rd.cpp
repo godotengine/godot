@@ -1077,7 +1077,7 @@ RasterizerEffectsRD::~RasterizerEffectsRD() {
 		RD::get_singleton()->free(filter.image_uniform_set);
 	}
 
-	if (RD::get_singleton()->uniform_set_is_valid(filter.image_uniform_set)) {
+	if (RD::get_singleton()->uniform_set_is_valid(filter.uniform_set)) {
 		RD::get_singleton()->free(filter.uniform_set);
 	}
 

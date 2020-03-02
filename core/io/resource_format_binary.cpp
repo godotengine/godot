@@ -1008,7 +1008,9 @@ String ResourceLoaderBinary::recognize(FileAccess *p_f) {
 
 ResourceLoaderBinary::ResourceLoaderBinary() :
 		translation_remapped(false),
+		ver_format(0),
 		f(NULL),
+		importmd_ofs(0),
 		error(OK) {
 
 	progress = nullptr;
