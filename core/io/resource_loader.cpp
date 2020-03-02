@@ -538,6 +538,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 				if (r_error) {
 					*r_error = err;
 				}
+				thread_load_mutex->unlock();
 				return RES();
 			}
 			thread_load_mutex->unlock();

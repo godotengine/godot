@@ -403,8 +403,6 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 			return Ref<PackedScene>();
 		}
 	}
-
-	return packed_scene;
 }
 
 Error ResourceLoaderText::load() {
@@ -671,10 +669,6 @@ Error ResourceLoaderText::load() {
 				return error;
 			}
 		}
-
-		if (progress) {
-			*progress = resource_current / float(resources_total);
-		}
 	}
 
 	//for scene files
@@ -731,9 +725,15 @@ void ResourceLoaderText::set_translation_remapped(bool p_remapped) {
 }
 
 ResourceLoaderText::ResourceLoaderText() {
+	resources_total = 0;
+	resource_current = 0;
+	use_sub_threads = false;
+
 	progress = nullptr;
+	lines = false;
 	translation_remapped = false;
 	use_sub_threads = false;
+	error = OK;
 }
 
 ResourceLoaderText::~ResourceLoaderText() {
