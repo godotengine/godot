@@ -290,11 +290,12 @@ bool BodyPair2DSW::setup(real_t p_step) {
 			bool valid = false;
 			for (int i = 0; i < contact_count; i++) {
 				Contact &c = contacts[i];
-				if (!c.reused){
+				if (!c.reused) {
 					continue;
 				}
-					if (c.normal.dot(direction) > 0) {//greater (normal inverted)
-					continue;}
+				if (c.normal.dot(direction) > 0) { //greater (normal inverted)
+					continue;
+				}
 
 				valid = true;
 				break;
@@ -312,11 +313,12 @@ bool BodyPair2DSW::setup(real_t p_step) {
 			bool valid = false;
 			for (int i = 0; i < contact_count; i++) {
 				Contact &c = contacts[i];
-				if (!c.reused){
+				if (!c.reused) {
 					continue;
 				}
-					if (c.normal.dot(direction) < 0) {//less (normal ok)
-					continue;}
+				if (c.normal.dot(direction) < 0) { //less (normal ok)
+					continue;
+				}
 
 				valid = true;
 				break;
