@@ -3092,6 +3092,8 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 				cf_while->body = alloc_node<BlockNode>();
 				cf_while->body->parent_block = p_block;
+				cf_while->body->can_break = true;
+				cf_while->body->can_continue = true;
 				p_block->sub_blocks.push_back(cf_while->body);
 
 				if (!_enter_indent_block(cf_while->body)) {
@@ -3211,6 +3213,8 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 				cf_for->body = alloc_node<BlockNode>();
 				cf_for->body->parent_block = p_block;
+				cf_for->body->can_break = true;
+				cf_for->body->can_continue = true;
 				p_block->sub_blocks.push_back(cf_for->body);
 
 				if (!_enter_indent_block(cf_for->body)) {
@@ -3240,6 +3244,20 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				p_block->statements.push_back(cf_for);
 			} break;
 			case GDScriptTokenizer::TK_CF_CONTINUE: {
+				BlockNode *upper_block = p_block;
+				bool is_continue_valid = false;
+				while (upper_block) {
+					if (upper_block->can_continue) {
+						is_continue_valid = true;
+						break;
+					}
+					upper_block = upper_block->parent_block;
+				}
+
+				if (!is_continue_valid) {
+					_set_error("Unexpected keyword \"continue\" outside a loop.");
+					return;
+				}
 
 				_mark_line_as_safe(tokenizer->get_token_line());
 				tokenizer->advance();
@@ -3252,6 +3270,20 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				}
 			} break;
 			case GDScriptTokenizer::TK_CF_BREAK: {
+				BlockNode *upper_block = p_block;
+				bool is_break_valid = false;
+				while (upper_block) {
+					if (upper_block->can_break) {
+						is_break_valid = true;
+						break;
+					}
+					upper_block = upper_block->parent_block;
+				}
+
+				if (!is_break_valid) {
+					_set_error("Unexpected keyword \"break\" outside a loop.");
+					return;
+				}
 
 				_mark_line_as_safe(tokenizer->get_token_line());
 				tokenizer->advance();
@@ -3320,6 +3352,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				BlockNode *compiled_branches = alloc_node<BlockNode>();
 				compiled_branches->parent_block = p_block;
 				compiled_branches->parent_class = p_block->parent_class;
+				compiled_branches->can_continue = true;
 
 				p_block->sub_blocks.push_back(compiled_branches);
 

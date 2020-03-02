@@ -240,7 +240,9 @@ public:
 		BlockNode *parent_block;
 		List<Node *> statements;
 		Map<StringName, LocalVarNode *> variables;
-		bool has_return;
+		bool has_return = false;
+		bool can_break = false;
+		bool can_continue = false;
 
 		Node *if_condition; //tiny hack to improve code completion on if () blocks
 
@@ -253,7 +255,6 @@ public:
 			end_line = -1;
 			parent_block = NULL;
 			parent_class = NULL;
-			has_return = false;
 		}
 	};
 
