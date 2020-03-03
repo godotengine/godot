@@ -1854,6 +1854,7 @@ public:
 					while (!f->eof_reached()) {
 						String l = f->get_line();
 
+						bool append_line = false;
 						if (l.begins_with("//CHUNK_")) {
 							String text = l.replace_first("//CHUNK_", "");
 							int begin_pos = text.find("_BEGIN");
@@ -1885,10 +1886,14 @@ public:
 											new_file += E->get() + "\n";
 										}
 									}
-									new_file += end_marker + "\n";
+									if (f->eof_reached()) {
+										new_file += end_marker;
+									} else {
+										new_file += end_marker + "\n";
+									}
 								}
 							} else {
-								new_file += l + "\n"; //pass line by
+								append_line = true;
 							}
 						} else if (l.begins_with("//DIR_")) {
 							String text = l.replace_first("//DIR_", "");
@@ -1921,14 +1926,25 @@ public:
 											new_file += "\n";
 										}
 									}
-									new_file += end_marker + "\n";
+									if (f->eof_reached()) {
+										new_file += end_marker;
+									} else {
+										new_file += end_marker + "\n";
+									}
 								}
 							} else {
-								new_file += l + "\n"; //pass line by
+								append_line = true;
 							}
-
 						} else {
-							new_file += l + "\n";
+							append_line = true;
+						}
+
+						if (append_line) {
+							if (f->eof_reached()) {
+								new_file += l;
+							} else {
+								new_file += l + "\n";
+							}
 						}
 					}
 				}
@@ -1949,6 +1965,7 @@ public:
 					while (!f->eof_reached()) {
 						String l = f->get_line();
 
+						bool append_line = false;
 						if (l.begins_with("<!--CHUNK_")) {
 							String text = l.replace_first("<!--CHUNK_", "");
 							int begin_pos = text.find("_BEGIN-->");
@@ -1979,10 +1996,14 @@ public:
 											new_file += E->get() + "\n";
 										}
 									}
-									new_file += end_marker + "\n";
+									if (f->eof_reached()) {
+										new_file += end_marker;
+									} else {
+										new_file += end_marker + "\n";
+									}
 								}
 							} else {
-								new_file += l + "\n"; //pass line by
+								append_line = true;
 							}
 
 						} else if (l.strip_edges().begins_with("<application")) {
@@ -1990,7 +2011,7 @@ public:
 							int last_tag_pos = l.find(last_tag);
 							if (last_tag_pos == -1) {
 								ERR_PRINTS("Not adding application attributes as the expected tag was not found in '<application': " + last_tag);
-								new_file += l + "\n";
+								append_line = true;
 							} else {
 								String base = l.substr(0, last_tag_pos + last_tag.length());
 								if (manifest_sections.has("application_attribs")) {
@@ -2003,7 +2024,14 @@ public:
 								new_file += base;
 							}
 						} else {
-							new_file += l + "\n";
+							append_line = true;
+						}
+
+						if (append_line) {
+							new_file += l;
+							if (!f->eof_reached()) {
+								new_file += "\n";
+							}
 						}
 					}
 				}
