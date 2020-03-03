@@ -1127,7 +1127,7 @@ void SceneTreeDock::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			clear_inherit_confirm->connect("confirmed", callable_mp(this, &SceneTreeDock::_tool_selected), varray(TOOL_SCENE_CLEAR_INHERITANCE_CONFIRM));
+			clear_inherit_confirm->connect("confirmed", callable_mp(this, &SceneTreeDock::_tool_selected), make_binds(TOOL_SCENE_CLEAR_INHERITANCE_CONFIRM, false));
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -2739,7 +2739,7 @@ void SceneTreeDock::_update_create_root_dialog() {
 
 void SceneTreeDock::_favorite_root_selected(const String &p_class) {
 	selected_favorite_root = p_class;
-	_tool_selected(TOOL_CREATE_FAVORITE, false);
+	_tool_selected(TOOL_CREATE_FAVORITE);
 }
 
 void SceneTreeDock::_feature_profile_changed() {
