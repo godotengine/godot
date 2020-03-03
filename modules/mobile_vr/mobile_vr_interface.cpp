@@ -31,6 +31,7 @@
 #include "mobile_vr_interface.h"
 #include "core/input/input.h"
 #include "core/os/os.h"
+#include "servers/display_server.h"
 #include "servers/visual/visual_server_globals.h"
 
 StringName MobileVRInterface::get_name() const {
@@ -339,7 +340,7 @@ Size2 MobileVRInterface::get_render_targetsize() {
 	_THREAD_SAFE_METHOD_
 
 	// we use half our window size
-	Size2 target_size = OS::get_singleton()->get_window_size();
+	Size2 target_size = DisplayServer::get_singleton()->window_get_size();
 
 	target_size.x *= 0.5 * oversample;
 	target_size.y *= oversample;

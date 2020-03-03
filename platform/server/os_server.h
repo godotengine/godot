@@ -38,7 +38,7 @@
 #include "platform/osx/crash_handler_osx.h"
 #include "platform/osx/semaphore_osx.h"
 #else
-#include "platform/x11/crash_handler_x11.h"
+#include "platform/x11/crash_handler_linuxbsd.h"
 #endif
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"

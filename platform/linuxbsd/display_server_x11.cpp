@@ -2,7 +2,7 @@
 
 #ifdef X11_ENABLED
 
-#include "detect_prime.h"
+#include "detect_prime_x11.h"
 
 #include "core/os/dir_access.h"
 #include "core/print_string.h"
@@ -578,7 +578,8 @@ bool DisplayServerX11::screen_is_touchscreen(int p_screen) const {
 #ifndef _MSC_VER
 #warning Need to get from proper window
 #endif
-	return false; //?
+
+	return DisplayServer::screen_is_touchscreen(p_screen);
 }
 
 Vector<DisplayServer::WindowID> DisplayServerX11::get_window_list() const {
@@ -608,6 +609,11 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 
 	WindowData &wd = windows[p_id];
 
+#ifdef VULKAN_ENABLED
+	if (rendering_driver == "vulkan") {
+		context_vulkan->window_destroy(wd.vulkan_window);
+	}
+#endif
 	XUnmapWindow(x11_display, wd.x11_window);
 	XDestroyWindow(x11_display, wd.x11_window);
 	if (wd.xic) {
@@ -619,7 +625,7 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 
 void DisplayServerX11::window_set_title(const String &p_title, WindowID p_window) {
 
-	ERR_FAIL_COND(windows.has(p_window));
+	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
 	XStoreName(x11_display, wd.x11_window, p_title.utf8().get_data());
@@ -630,7 +636,7 @@ void DisplayServerX11::window_set_title(const String &p_title, WindowID p_window
 }
 
 int DisplayServerX11::window_get_current_screen(WindowID p_window) const {
-	ERR_FAIL_COND_V(windows.has(p_window), -1);
+	ERR_FAIL_COND_V(!windows.has(p_window), -1);
 	const WindowData &wd = windows[p_window];
 
 	int x, y;
@@ -647,7 +653,7 @@ int DisplayServerX11::window_get_current_screen(WindowID p_window) const {
 	return 0;
 }
 void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window) {
-	ERR_FAIL_COND(windows.has(p_window));
+	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
 	int count = get_screen_count();
@@ -667,7 +673,7 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 }
 
 Point2i DisplayServerX11::window_get_position(WindowID p_window) const {
-	ERR_FAIL_COND_V(windows.has(p_window), Point2i());
+	ERR_FAIL_COND_V(!windows.has(p_window), Point2i());
 	const WindowData &wd = windows[p_window];
 	int x, y;
 	Window child;
@@ -675,7 +681,7 @@ Point2i DisplayServerX11::window_get_position(WindowID p_window) const {
 	return Point2i(x, y);
 }
 void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p_window) {
-	ERR_FAIL_COND(windows.has(p_window));
+	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
 	int x = 0;
@@ -705,7 +711,7 @@ void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p
 }
 
 void DisplayServerX11::window_set_max_size(const Size2i p_size, WindowID p_window) {
-	ERR_FAIL_COND(windows.has(p_window));
+	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
 	if ((p_size != Size2i()) && ((p_size.x < wd.min_size.x) || (p_size.y < wd.min_size.y))) {
@@ -735,14 +741,14 @@ void DisplayServerX11::window_set_max_size(const Size2i p_size, WindowID p_windo
 	}
 }
 Size2i DisplayServerX11::window_get_max_size(WindowID p_window) const {
-	ERR_FAIL_COND_V(windows.has(p_window), Size2i());
+	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
 	const WindowData &wd = windows[p_window];
 
 	return wd.max_size;
 }
 
 void DisplayServerX11::window_set_min_size(const Size2i p_size, WindowID p_window) {
-	ERR_FAIL_COND(windows.has(p_window));
+	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
 	if ((p_size != Size2i()) && (wd.max_size != Size2i()) && ((p_size.x > wd.max_size.x) || (p_size.y > wd.max_size.y))) {
@@ -772,14 +778,14 @@ void DisplayServerX11::window_set_min_size(const Size2i p_size, WindowID p_windo
 	}
 }
 Size2i DisplayServerX11::window_get_min_size(WindowID p_window) const {
-	ERR_FAIL_COND_V(windows.has(p_window), Size2i());
+	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
 	const WindowData &wd = windows[p_window];
 
 	return wd.min_size;
 }
 
 void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
-	ERR_FAIL_COND(windows.has(p_window));
+	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
 	if (wd.size.width == p_size.width && wd.size.height == p_size.height)
@@ -833,12 +839,12 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 	}
 }
 Size2i DisplayServerX11::window_get_size(WindowID p_window) const {
-	ERR_FAIL_COND_V(windows.has(p_window), Size2i());
+	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
 	const WindowData &wd = windows[p_window];
 	return wd.size;
 }
 Size2i DisplayServerX11::window_get_real_size(WindowID p_window) const {
-	ERR_FAIL_COND_V(windows.has(p_window), Size2i());
+	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
 	const WindowData &wd = windows[p_window];
 
 	XWindowAttributes xwa;
@@ -867,7 +873,7 @@ Size2i DisplayServerX11::window_get_real_size(WindowID p_window) const {
 
 bool DisplayServerX11::window_is_maximize_allowed(WindowID p_window) const {
 
-	ERR_FAIL_COND_V(windows.has(p_window), false);
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
 	const WindowData &wd = windows[p_window];
 
 	Atom property = XInternAtom(x11_display, "_NET_WM_ALLOWED_ACTIONS", False);
@@ -914,7 +920,7 @@ bool DisplayServerX11::window_is_maximize_allowed(WindowID p_window) const {
 }
 
 void DisplayServerX11::_set_wm_maximized(WindowID p_window, bool p_enabled) {
-	ERR_FAIL_COND(windows.has(p_window));
+	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
 	// Using EWMH -- Extended Window Manager Hints
@@ -946,7 +952,7 @@ void DisplayServerX11::_set_wm_maximized(WindowID p_window, bool p_enabled) {
 
 void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled) {
 
-	ERR_FAIL_COND(windows.has(p_window));
+	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
 	if (p_enabled && !window_get_flag(WINDOW_FLAG_BORDERLESS, p_window)) {
@@ -1030,7 +1036,7 @@ void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled) {
 }
 
 void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
-	ERR_FAIL_COND(windows.has(p_window));
+	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
 	WindowMode old_mode = window_get_mode(p_window);
@@ -1141,7 +1147,7 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 }
 
 DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) const {
-	ERR_FAIL_COND_V(windows.has(p_window), WINDOW_MODE_WINDOWED);
+	ERR_FAIL_COND_V(!windows.has(p_window), WINDOW_MODE_WINDOWED);
 	const WindowData &wd = windows[p_window];
 
 	if (wd.fullscreen) { //if fullscreen, it's not in another mode
@@ -1233,7 +1239,7 @@ DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) c
 }
 
 void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window) {
-	ERR_FAIL_COND(windows.has(p_window));
+	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
 	switch (p_flag) {
@@ -1318,7 +1324,7 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 	}
 }
 bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) const {
-	ERR_FAIL_COND_V(windows.has(p_window), false);
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
 	const WindowData &wd = windows[p_window];
 
 	switch (p_flag) {
@@ -1361,7 +1367,7 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 }
 
 void DisplayServerX11::window_request_attention(WindowID p_window) {
-	ERR_FAIL_COND(windows.has(p_window));
+	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 	// Using EWMH -- Extended Window Manager Hints
 	//
@@ -1385,7 +1391,7 @@ void DisplayServerX11::window_request_attention(WindowID p_window) {
 }
 
 void DisplayServerX11::window_move_to_foreground(WindowID p_window) {
-	ERR_FAIL_COND(windows.has(p_window));
+	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
 	XEvent xev;
@@ -1407,9 +1413,19 @@ bool DisplayServerX11::window_can_draw(WindowID p_window) const {
 	//this seems to be all that is provided by X11
 	return window_get_mode(p_window) != WINDOW_MODE_MINIMIZED;
 }
+bool DisplayServerX11::can_any_window_draw() const {
+
+	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+		if (window_get_mode(E->key()) != WINDOW_MODE_MINIMIZED) {
+			return true;
+		}
+	}
+
+	return false;
+}
 
 void DisplayServerX11::window_set_ime_active(const bool p_active, WindowID p_window) {
-	ERR_FAIL_COND(windows.has(p_window));
+	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
 	wd.im_active = p_active;
@@ -1425,7 +1441,7 @@ void DisplayServerX11::window_set_ime_active(const bool p_active, WindowID p_win
 	}
 }
 void DisplayServerX11::window_set_ime_position(const Point2i &p_pos, WindowID p_window) {
-	ERR_FAIL_COND(windows.has(p_window));
+	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
 	wd.im_position = p_pos;
@@ -1955,7 +1971,7 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	wd.size.height = event->xconfigure.height;
 
 #if defined(VULKAN_ENABLED)
-	if (video_driver == "vulkan") {
+	if (rendering_driver == "vulkan") {
 		context_vulkan->window_resize(wd.vulkan_window, wd.size.width, wd.size.height);
 	}
 #endif
@@ -2586,15 +2602,59 @@ void DisplayServerX11::process_events() {
 }
 
 void DisplayServerX11::release_rendering_thread() {
-	WARN_PRINT("Rendering thread not supported by this display server.");
-}
-void DisplayServerX11::make_rendering_thread() {
-	WARN_PRINT("Rendering thread not supported by this display server.");
-}
-void DisplayServerX11::swap_buffers() {
-	WARN_PRINT("Swap buffers not supported by this display server.");
 }
 
+void DisplayServerX11::make_rendering_thread() {
+}
+
+void DisplayServerX11::swap_buffers() {
+}
+
+void DisplayServerX11::_update_context(WindowData &wd) {
+	XClassHint *classHint = XAllocClassHint();
+
+	if (classHint) {
+
+		CharString name_str;
+		switch (context) {
+			case CONTEXT_EDITOR:
+				name_str = "Godot_Editor";
+				break;
+			case CONTEXT_PROJECTMAN:
+				name_str = "Godot_ProjectList";
+				break;
+			case CONTEXT_ENGINE:
+				name_str = "Godot_Engine";
+				break;
+		}
+
+		CharString class_str;
+		if (context == CONTEXT_ENGINE) {
+			String config_name = GLOBAL_GET("application/config/name");
+			if (config_name.length() == 0) {
+				class_str = "Godot_Engine";
+			} else {
+				class_str = config_name.utf8();
+			}
+		} else {
+			class_str = "Godot";
+		}
+
+		classHint->res_class = class_str.ptrw();
+		classHint->res_name = name_str.ptrw();
+
+		XSetClassHint(x11_display, wd.x11_window, classHint);
+		XFree(classHint);
+	}
+}
+void DisplayServerX11::set_context(Context p_context) {
+
+	context = p_context;
+
+	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+		_update_context(E->get());
+	}
+}
 void DisplayServerX11::set_native_icon(const String &p_filename) {
 	WARN_PRINT("Native icon not supported by this display server.");
 }
@@ -2602,9 +2662,22 @@ void DisplayServerX11::set_icon(const Ref<Image> &p_icon) {
 	WARN_PRINT("Icon not supported by this display server.");
 }
 
-DisplayServer *DisplayServerX11::create_func(const String &p_video_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+Vector<String> DisplayServerX11::get_rendering_drivers_func() {
+	Vector<String> drivers;
 
-	return memnew(DisplayServerX11(p_video_driver, p_mode, p_flags, p_resolution, r_error));
+#ifdef VULKAN_ENABLED
+	drivers.push_back("vulkan");
+#endif
+#ifdef OPENGL_ENABLED
+	drivers.push_back("opengl");
+#endif
+
+	return drivers;
+}
+
+DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+
+	return memnew(DisplayServerX11(p_rendering_driver, p_mode, p_flags, p_resolution, r_error));
 }
 
 DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, const Vector2i &p_resolution) {
@@ -2630,7 +2703,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, c
 	WindowID id;
 	{
 		WindowData wd;
-		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo->screen), 0, 0, OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height, 0, visualInfo->depth, InputOutput, visualInfo->visual, valuemask, &windowAttributes);
+		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo->screen), 0, 0, p_resolution.width, p_resolution.height, 0, visualInfo->depth, InputOutput, visualInfo->visual, valuemask, &windowAttributes);
 
 		//set_class_hint(x11_display, wd.x11_window);
 		XMapWindow(x11_display, wd.x11_window);
@@ -2723,6 +2796,8 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, c
 			WARN_PRINT("XCreateIC couldn't create wd.xic");
 		}
 
+		_update_context(wd);
+
 		id = window_id_counter++;
 
 		windows[id] = wd;
@@ -2740,7 +2815,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, c
 	return id;
 }
 
-DisplayServerX11::DisplayServerX11(const String &p_video_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 
 	r_error = OK;
 
@@ -2822,8 +2897,8 @@ DisplayServerX11::DisplayServerX11(const String &p_video_driver, WindowMode p_mo
 	}
 
 	if (!_refresh_device_info()) {
-		OS::get_singleton()->alert("Your system does not support XInput 2.\n"
-								   "Please upgrade your distribution.",
+		alert("Your system does not support XInput 2.\n"
+			  "Please upgrade your distribution.",
 				"Unable to initialize XInput");
 		r_error = ERR_UNAVAILABLE;
 		return;
@@ -2882,15 +2957,15 @@ DisplayServerX11::DisplayServerX11(const String &p_video_driver, WindowMode p_mo
 
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//TODO - do Vulkan and GLES2 support checks, driver selection and fallback
-	video_driver = p_video_driver;
+	rendering_driver = p_rendering_driver;
 
 #ifndef _MSC_VER
-#warning Forcing vulkan video driver because OpenGL not implemented yet
+#warning Forcing vulkan rendering driver because OpenGL not implemented yet
 #endif
-	video_driver = "vulkan";
+	rendering_driver = "vulkan";
 
 #if defined(VULKAN_ENABLED)
-	if (video_driver == "vulkan") {
+	if (rendering_driver == "vulkan") {
 
 		context_vulkan = memnew(VulkanContextX11);
 		if (context_vulkan->initialize() != OK) {
@@ -2899,17 +2974,11 @@ DisplayServerX11::DisplayServerX11(const String &p_video_driver, WindowMode p_mo
 			r_error = ERR_CANT_CREATE;
 			ERR_FAIL_MSG("Could not initialize Vulkan");
 		}
-
-		//temporary
-		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
-		rendering_device_vulkan->initialize(context_vulkan);
-
-		RasterizerRD::make_current();
 	}
 #endif
 	// Init context and rendering device
 #if defined(OPENGL_ENABLED)
-	if (video_driver == "opengl_es") {
+	if (rendering_driver == "opengl_es") {
 		if (getenv("DRI_PRIME") == NULL) {
 			int use_prime = -1;
 
@@ -2979,6 +3048,18 @@ DisplayServerX11::DisplayServerX11(const String &p_video_driver, WindowMode p_mo
 			window_set_flag(WindowFlags(i), true, main_window);
 		}
 	}
+
+//create RenderingDevice if used
+#if defined(VULKAN_ENABLED)
+	if (rendering_driver == "vulkan") {
+
+		//temporary
+		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
+		rendering_device_vulkan->initialize(context_vulkan);
+
+		RasterizerRD::make_current();
+	}
+#endif
 
 	/*
 	visual_server = memnew(VisualServerRaster);
@@ -3142,8 +3223,6 @@ DisplayServerX11::DisplayServerX11(const String &p_video_driver, WindowMode p_mo
 
 	requested = None;
 
-	visual_server->init();
-
 	window_has_focus = true; // Set focus to true at init
 
 	/*if (p_desired.layered) {
@@ -3163,6 +3242,58 @@ DisplayServerX11::DisplayServerX11(const String &p_video_driver, WindowMode p_mo
 	r_error = OK;
 }
 DisplayServerX11::~DisplayServerX11() {
+
+	//destroy all windows
+	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+#ifdef VULKAN_ENABLED
+		if (rendering_driver == "vulkan") {
+			context_vulkan->window_destroy(E->get().vulkan_window);
+		}
+#endif
+
+		if (E->get().xic) {
+			XDestroyIC(E->get().xic);
+		}
+		XUnmapWindow(x11_display, E->get().x11_window);
+		XDestroyWindow(x11_display, E->get().x11_window);
+	}
+
+	//destroy drivers
+#if defined(VULKAN_ENABLED)
+	if (rendering_driver == "vulkan") {
+
+		if (rendering_device_vulkan) {
+			rendering_device_vulkan->finalize();
+			memdelete(rendering_device_vulkan);
+		}
+
+		if (context_vulkan)
+			memdelete(context_vulkan);
+	}
+#endif
+
+	if (xrandr_handle)
+		dlclose(xrandr_handle);
+
+	for (int i = 0; i < CURSOR_MAX; i++) {
+		if (cursors[i] != None)
+			XFreeCursor(x11_display, cursors[i]);
+		if (img[i] != NULL)
+			XcursorImageDestroy(img[i]);
+	};
+
+	if (xim) {
+		XCloseIM(xim);
+	}
+
+	XCloseDisplay(x11_display);
+	if (xmbstring)
+		memfree(xmbstring);
+}
+
+void DisplayServerX11::register_x11_driver() {
+
+	register_create_function("x11", create_func, get_rendering_drivers_func);
 }
 
 #endif // X11 enabled

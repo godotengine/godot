@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_x11.cpp                                                        */
+/*  godot_linuxbsd.cpp                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -34,11 +34,11 @@
 #include <unistd.h>
 
 #include "main/main.h"
-#include "os_x11.h"
+#include "os_linuxbsd.h"
 
 int main(int argc, char *argv[]) {
 
-	OS_X11 os;
+	OS_LinuxBSD os;
 
 	setlocale(LC_CTYPE, "");
 

@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "crash_handler_x11.h"
+#include "crash_handler_linuxbsd.h"
 
 #include "core/os/os.h"
 #include "core/project_settings.h"

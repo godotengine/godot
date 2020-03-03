@@ -28,4 +28,4 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-void register_x11_exporter();
+void register_linuxbsd_exporter();

@@ -30,11 +30,11 @@
 
 #include "scene_tree.h"
 
+#include "core/input/input.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/message_queue.h"
 #include "core/os/dir_access.h"
-#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
@@ -47,6 +47,7 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
+#include "servers/display_server.h"
 #include "servers/navigation_server.h"
 #include "servers/physics_2d_server.h"
 #include "servers/physics_server.h"
@@ -526,7 +527,7 @@ bool SceneTree::idle(float p_time) {
 	_notify_group_pause("idle_process_internal", Node::NOTIFICATION_INTERNAL_PROCESS);
 	_notify_group_pause("idle_process", Node::NOTIFICATION_PROCESS);
 
-	Size2 win_size = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
+	Size2 win_size = Size2(DisplayServer::get_singleton()->window_get_size().width, DisplayServer::get_singleton()->window_get_size().height);
 
 	if (win_size != last_screen_size) {
 
@@ -1143,7 +1144,7 @@ void SceneTree::_update_root_rect() {
 	}
 
 	//actual screen video mode
-	Size2 video_mode = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
+	Size2 video_mode = Size2(DisplayServer::get_singleton()->window_get_size().width, DisplayServer::get_singleton()->window_get_size().height);
 	Size2 desired_res = stretch_min;
 
 	Size2 viewport_size;
@@ -1739,7 +1740,7 @@ SceneTree::SceneTree() {
 	stretch_aspect = STRETCH_ASPECT_IGNORE;
 	stretch_shrink = 1;
 
-	last_screen_size = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
+	last_screen_size = Size2(DisplayServer::get_singleton()->window_get_size().width, DisplayServer::get_singleton()->window_get_size().height);
 	_update_root_rect();
 
 	if (ScriptDebugger::get_singleton()) {

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_driver_alsa.h                                                  */
+/*  os_linuxbsd.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,67 +28,79 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef OS_LINUXBSD_H
+#define OS_LINUXBSD_H
+
+#include "core/input/input.h"
+#include "crash_handler_linuxbsd.h"
+#include "drivers/alsa/audio_driver_alsa.h"
+#include "drivers/alsamidi/midi_driver_alsamidi.h"
+#include "drivers/pulseaudio/audio_driver_pulseaudio.h"
+#include "drivers/unix/os_unix.h"
+#include "joypad_linux.h"
 #include "servers/audio_server.h"
-#ifndef AUDIO_DRIVER_ALSA_H
-#define AUDIO_DRIVER_ALSA_H
+#include "servers/visual/rasterizer.h"
+#include "servers/visual_server.h"
+
+class OS_LinuxBSD : public OS_Unix {
+
+	virtual void delete_main_loop();
+
+	bool force_quit;
+
+#ifdef JOYDEV_ENABLED
+	JoypadLinux *joypad;
+#endif
 
 #ifdef ALSA_ENABLED
+	AudioDriverALSA driver_alsa;
+#endif
 
-#include "core/os/mutex.h"
-#include "core/os/thread.h"
+#ifdef ALSAMIDI_ENABLED
+	MIDIDriverALSAMidi driver_alsamidi;
+#endif
 
-#include <alsa/asoundlib.h>
+#ifdef PULSEAUDIO_ENABLED
+	AudioDriverPulseAudio driver_pulseaudio;
+#endif
 
-class AudioDriverALSA : public AudioDriver {
+	CrashHandler crash_handler;
 
-	Thread *thread;
-	Mutex mutex;
+	MainLoop *main_loop;
 
-	snd_pcm_t *pcm_handle;
+protected:
+	virtual void initialize();
+	virtual void finalize();
 
-	String device_name;
-	String new_device;
+	virtual void initialize_joypads();
 
-	Vector<int32_t> samples_in;
-	Vector<int16_t> samples_out;
-
-	Error init_device();
-	void finish_device();
-
-	static void thread_func(void *p_udata);
-
-	unsigned int mix_rate;
-	SpeakerMode speaker_mode;
-
-	snd_pcm_uframes_t buffer_frames;
-	snd_pcm_uframes_t buffer_size;
-	snd_pcm_uframes_t period_size;
-	int channels;
-
-	bool active;
-	bool thread_exited;
-	mutable bool exit_thread;
+	virtual void set_main_loop(MainLoop *p_main_loop);
 
 public:
-	const char *get_name() const {
-		return "ALSA";
-	};
+	virtual String get_name() const;
 
-	virtual Error init();
-	virtual void start();
-	virtual int get_mix_rate() const;
-	virtual SpeakerMode get_speaker_mode() const;
-	virtual Array get_device_list();
-	virtual String get_device();
-	virtual void set_device(String device);
-	virtual void lock();
-	virtual void unlock();
-	virtual void finish();
+	virtual MainLoop *get_main_loop() const;
 
-	AudioDriverALSA();
-	~AudioDriverALSA();
+	virtual String get_config_path() const;
+	virtual String get_data_path() const;
+	virtual String get_cache_path() const;
+
+	virtual String get_system_dir(SystemDir p_dir) const;
+
+	virtual Error shell_open(String p_uri);
+
+	virtual String get_unique_id() const;
+
+	virtual bool _check_internal_feature_support(const String &p_feature);
+
+	void run();
+
+	void disable_crash_handler();
+	bool is_disable_crash_handler() const;
+
+	virtual Error move_to_trash(const String &p_path);
+
+	OS_LinuxBSD();
 };
-
-#endif
 
 #endif

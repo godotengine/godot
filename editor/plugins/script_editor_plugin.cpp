@@ -30,9 +30,9 @@
 
 #include "script_editor_plugin.h"
 
+#include "core/input/input.h"
 #include "core/io/resource_loader.h"
 #include "core/os/file_access.h"
-#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
@@ -49,6 +49,7 @@
 #include "scene/main/viewport.h"
 #include "scene/scene_string_names.h"
 #include "script_text_editor.h"
+#include "servers/display_server.h"
 #include "text_editor.h"
 
 /*** SCRIPT EDITOR ****/
@@ -656,7 +657,7 @@ void ScriptEditor::_close_docs_tab() {
 void ScriptEditor::_copy_script_path() {
 	ScriptEditorBase *se = _get_current_editor();
 	RES script = se->get_edited_resource();
-	OS::get_singleton()->set_clipboard(script->get_path());
+	DisplayServer::get_singleton()->clipboard_set(script->get_path());
 }
 
 void ScriptEditor::_close_other_tabs() {
@@ -3338,7 +3339,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	erase_tab_confirm = memnew(ConfirmationDialog);
 	erase_tab_confirm->get_ok()->set_text(TTR("Save"));
-	erase_tab_confirm->add_button(TTR("Discard"), OS::get_singleton()->get_swap_ok_cancel(), "discard");
+	erase_tab_confirm->add_button(TTR("Discard"), DisplayServer::get_singleton()->get_swap_ok_cancel(), "discard");
 	erase_tab_confirm->connect_compat("confirmed", this, "_close_current_tab");
 	erase_tab_confirm->connect_compat("custom_action", this, "_close_discard_current_tab");
 	add_child(erase_tab_confirm);
@@ -3372,7 +3373,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 		disk_changed->connect_compat("confirmed", this, "_reload_scripts");
 		disk_changed->get_ok()->set_text(TTR("Reload"));
 
-		disk_changed->add_button(TTR("Resave"), !OS::get_singleton()->get_swap_ok_cancel(), "resave");
+		disk_changed->add_button(TTR("Resave"), !DisplayServer::get_singleton()->get_swap_ok_cancel(), "resave");
 		disk_changed->connect_compat("custom_action", this, "_resave_scripts");
 	}
 

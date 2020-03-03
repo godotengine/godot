@@ -234,7 +234,7 @@ void VisualServerRaster::set_debug_generate_wireframes(bool p_generate) {
 }
 
 void VisualServerRaster::call_set_use_vsync(bool p_enable) {
-	OS::get_singleton()->_set_use_vsync(p_enable);
+	DisplayServer::get_singleton()->_set_use_vsync(p_enable);
 }
 
 bool VisualServerRaster::is_low_end() const {

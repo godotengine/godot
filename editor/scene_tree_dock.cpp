@@ -30,8 +30,8 @@
 
 #include "scene_tree_dock.h"
 
-#include "core/io/resource_saver.h"
 #include "core/input/input.h"
+#include "core/io/resource_saver.h"
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 
@@ -47,6 +47,8 @@
 #include "editor/plugins/spatial_editor_plugin.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"
+#include "servers/display_server.h"
+#include "servers/visual_server.h"
 
 void SceneTreeDock::_nodes_drag_begin() {
 
@@ -823,7 +825,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				if (node) {
 					Node *root = EditorNode::get_singleton()->get_edited_scene();
 					NodePath path = root->get_path().rel_path_to(node->get_path());
-					OS::get_singleton()->set_clipboard(path);
+					DisplayServer::get_singleton()->clipboard_set(path);
 				}
 			}
 		} break;
