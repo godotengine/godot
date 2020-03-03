@@ -85,6 +85,7 @@
 			<argument index="1" name="width" type="float">
 			</argument>
 			<description>
+				Returns the size that the string would have with word wrapping enabled with a fixed [code]width[/code].
 			</description>
 		</method>
 		<method name="has_outline" qualifiers="const">

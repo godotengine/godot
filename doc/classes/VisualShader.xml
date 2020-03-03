@@ -22,6 +22,7 @@
 			<argument index="3" name="id" type="int">
 			</argument>
 			<description>
+				Adds the specified node to the shader.
 			</description>
 		</method>
 		<method name="can_connect_nodes" qualifiers="const">
@@ -38,6 +39,7 @@
 			<argument index="4" name="to_port" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the specified nodes and ports can be connected together.
 			</description>
 		</method>
 		<method name="connect_nodes">
@@ -54,6 +56,7 @@
 			<argument index="4" name="to_port" type="int">
 			</argument>
 			<description>
+				Connects the specified nodes and ports.
 			</description>
 		</method>
 		<method name="connect_nodes_forced">
@@ -70,6 +73,7 @@
 			<argument index="4" name="to_port" type="int">
 			</argument>
 			<description>
+				Connects the specified nodes and ports, even if they can't be connected. Such connection is invalid and will not function properly.
 			</description>
 		</method>
 		<method name="disconnect_nodes">
@@ -86,6 +90,7 @@
 			<argument index="4" name="to_port" type="int">
 			</argument>
 			<description>
+				Connects the specified nodes and ports.
 			</description>
 		</method>
 		<method name="get_node" qualifiers="const">
@@ -96,6 +101,7 @@
 			<argument index="1" name="id" type="int">
 			</argument>
 			<description>
+				Returns the shader node instance with specified [code]type[/code] and [code]id[/code].
 			</description>
 		</method>
 		<method name="get_node_connections" qualifiers="const">
@@ -104,6 +110,7 @@
 			<argument index="0" name="type" type="int" enum="VisualShader.Type">
 			</argument>
 			<description>
+				Returns the list of connected nodes with the specified type.
 			</description>
 		</method>
 		<method name="get_node_list" qualifiers="const">
@@ -112,6 +119,7 @@
 			<argument index="0" name="type" type="int" enum="VisualShader.Type">
 			</argument>
 			<description>
+				Returns the list of all nodes in the shader with the specified type.
 			</description>
 		</method>
 		<method name="get_node_position" qualifiers="const">
@@ -122,6 +130,7 @@
 			<argument index="1" name="id" type="int">
 			</argument>
 			<description>
+				Returns the position of the specified node within the shader graph.
 			</description>
 		</method>
 		<method name="get_valid_node_id" qualifiers="const">
@@ -146,6 +155,7 @@
 			<argument index="4" name="to_port" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the specified node and port connection exist.
 			</description>
 		</method>
 		<method name="remove_node">
@@ -156,6 +166,7 @@
 			<argument index="1" name="id" type="int">
 			</argument>
 			<description>
+				Removes the specified node from the shader.
 			</description>
 		</method>
 		<method name="set_mode">
@@ -164,6 +175,7 @@
 			<argument index="0" name="mode" type="int" enum="Shader.Mode">
 			</argument>
 			<description>
+				Sets the mode of this shader.
 			</description>
 		</method>
 		<method name="set_node_position">
@@ -176,20 +188,25 @@
 			<argument index="2" name="position" type="Vector2">
 			</argument>
 			<description>
+				Sets the position of the specified node.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="code" type="String" setter="set_code" getter="get_code" override="true" default="&quot;shader_type spatial;void vertex() {// Output:0}void fragment() {// Output:0}void light() {// Output:0}&quot;" />
 		<member name="graph_offset" type="Vector2" setter="set_graph_offset" getter="get_graph_offset" default="Vector2( 0, 0 )">
+			The offset vector of the whole graph.
 		</member>
 	</members>
 	<constants>
 		<constant name="TYPE_VERTEX" value="0" enum="Type">
+			A vertex shader, operating on vertices.
 		</constant>
 		<constant name="TYPE_FRAGMENT" value="1" enum="Type">
+			A fragment shader, operating on fragments (pixels).
 		</constant>
 		<constant name="TYPE_LIGHT" value="2" enum="Type">
+			A shader for light calculations.
 		</constant>
 		<constant name="TYPE_MAX" value="3" enum="Type">
 			Represents the size of the [enum Type] enum.

@@ -75,6 +75,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Scans the script files and updates the list of custom class names.
 			</description>
 		</method>
 	</methods>
