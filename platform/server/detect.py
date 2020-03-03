@@ -224,7 +224,8 @@ def configure(env):
     env.Append(CPPDEFINES=['SERVER_ENABLED', 'UNIX_ENABLED'])
 
     if (platform.system() == "Darwin"):
-        env.Append(LINKFLAGS=['-framework', 'Cocoa', '-framework', 'Carbon', '-lz', '-framework', 'IOKit'])
+        env.AppendUnique(FRAMEWORKS=['Cocoa', 'Carbon', 'IOKit'])
+        env.Append(LIBS=['z'])
 
     env.Append(LIBS=['pthread'])
 

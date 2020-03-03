@@ -149,8 +149,8 @@ def configure(env):
 
     env.Prepend(CPPPATH=['#platform/osx'])
     env.Append(CPPDEFINES=['OSX_ENABLED', 'UNIX_ENABLED', 'GLES_ENABLED', 'APPLE_STYLE_KEYS', 'COREAUDIO_ENABLED', 'COREMIDI_ENABLED'])
-    env.Append(LINKFLAGS=['-framework', 'Cocoa', '-framework', 'Carbon', '-framework', 'OpenGL', '-framework', 'AGL', '-framework', 'AudioUnit', '-framework', 'CoreAudio', '-framework', 'CoreMIDI', '-lz', '-framework', 'IOKit', '-framework', 'ForceFeedback', '-framework', 'AVFoundation', '-framework', 'CoreMedia', '-framework', 'CoreVideo'])
-    env.Append(LIBS=['pthread'])
+    env.AppendUnique(FRAMEWORKS=['Cocoa', 'Carbon', 'OpenGL', 'AGL', 'AudioUnit', 'CoreAudio', 'CoreMIDI', 'IOKit', 'ForceFeedback', 'AVFoundation', 'CoreMedia', 'CoreVideo'])
+    env.Append(LIBS=['pthread', 'z'])
 
     env.Append(CCFLAGS=['-mmacosx-version-min=10.9'])
     env.Append(LINKFLAGS=['-mmacosx-version-min=10.9'])
