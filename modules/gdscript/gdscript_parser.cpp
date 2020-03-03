@@ -5288,6 +5288,10 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				}
 			} break;
 
+			case GDScriptTokenizer::TK_CF_PASS: {
+				tokenizer->advance();
+			} break;
+
 			default: {
 
 				_set_error(String() + "Unexpected token: " + tokenizer->get_token_name(tokenizer->get_token()) + ":" + tokenizer->get_token_identifier());
