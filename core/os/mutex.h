@@ -34,7 +34,7 @@
 #include "core/error_list.h"
 #include "core/typedefs.h"
 
-#if !(defined NO_THREADS)
+#if !defined(NO_THREADS)
 
 #include <mutex>
 

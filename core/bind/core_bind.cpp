@@ -2576,30 +2576,26 @@ void _Marshalls::_bind_methods() {
 
 ////////////////
 
-Error _Semaphore::wait() {
+void _Semaphore::wait() {
 
-	return semaphore->wait();
+	semaphore.wait();
 }
 
-Error _Semaphore::post() {
+Error _Semaphore::try_wait() {
 
-	return semaphore->post();
+	return semaphore.try_wait() ? OK : ERR_BUSY;
+}
+
+void _Semaphore::post() {
+
+	semaphore.post();
 }
 
 void _Semaphore::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("wait"), &_Semaphore::wait);
+	ClassDB::bind_method(D_METHOD("try_wait"), &_Semaphore::try_wait);
 	ClassDB::bind_method(D_METHOD("post"), &_Semaphore::post);
-}
-
-_Semaphore::_Semaphore() {
-
-	semaphore = SemaphoreOld::create();
-}
-
-_Semaphore::~_Semaphore() {
-
-	memdelete(semaphore);
 }
 
 ///////////////

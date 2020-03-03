@@ -635,16 +635,14 @@ public:
 class _Semaphore : public Reference {
 
 	GDCLASS(_Semaphore, Reference);
-	SemaphoreOld *semaphore;
+	Semaphore semaphore;
 
 	static void _bind_methods();
 
 public:
-	Error wait();
-	Error post();
-
-	_Semaphore();
-	~_Semaphore();
+	void wait();
+	Error try_wait();
+	void post();
 };
 
 class _Thread : public Reference {

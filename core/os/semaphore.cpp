@@ -29,17 +29,3 @@
 /*************************************************************************/
 
 #include "semaphore.h"
-
-#include "core/error_macros.h"
-
-SemaphoreOld *(*SemaphoreOld::create_func)() = 0;
-
-SemaphoreOld *SemaphoreOld::create() {
-
-	ERR_FAIL_COND_V(!create_func, 0);
-
-	return create_func();
-}
-
-SemaphoreOld::~SemaphoreOld() {
-}

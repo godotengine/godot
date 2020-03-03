@@ -48,7 +48,6 @@
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
 #include "drivers/windows/rw_lock_windows.h"
-#include "drivers/windows/semaphore_windows.h"
 #include "drivers/windows/thread_windows.h"
 #include "joypad_windows.h"
 #include "lang_table.h"
@@ -228,7 +227,6 @@ void OS_Windows::initialize_core() {
 	borderless = false;
 
 	ThreadWindows::make_default();
-	SemaphoreWindows::make_default();
 	RWLockWindows::make_default();
 
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);

@@ -40,14 +40,6 @@ void ThreadDummy::make_default() {
 	Thread::create_func = &ThreadDummy::create;
 };
 
-SemaphoreOld *SemaphoreDummy::create() {
-	return memnew(SemaphoreDummy);
-};
-
-void SemaphoreDummy::make_default() {
-	SemaphoreOld::create_func = &SemaphoreDummy::create;
-};
-
 RWLock *RWLockDummy::create() {
 	return memnew(RWLockDummy);
 };
