@@ -18,14 +18,14 @@
 			<argument index="0" name="RID" type="RID">
 			</argument>
 			<description>
-				Adds the object with the given [RID] to the list of objects excluded from the collision check.
+				Adds the [PhysicsBody] object with the given [RID] to the list of [PhysicsBody] objects excluded from the collision check.
 			</description>
 		</method>
 		<method name="clear_excluded_objects">
 			<return type="void">
 			</return>
 			<description>
-				Clears the list of objects excluded from the collision check.
+				Clears the list of [PhysicsBody] objects excluded from the collision check.
 			</description>
 		</method>
 		<method name="get_hit_length">
@@ -41,7 +41,7 @@
 			<argument index="0" name="RID" type="RID">
 			</argument>
 			<description>
-				Removes the given [RID] from the list of objects excluded from the collision check.
+				Removes the given [RID] from the list of [PhysicsBody] objects excluded from the collision check.
 			</description>
 		</method>
 	</methods>
