@@ -1358,7 +1358,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, Ref<Edit
 		if (ep) {
 
 			ep->object = object;
-			ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed));
+			ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed), make_binds(StringName(), false));
 			ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
 			ep->connect("property_keyed_with_value", callable_mp(this, &EditorInspector::_property_keyed_with_value));
 			ep->connect("property_checked", callable_mp(this, &EditorInspector::_property_checked));
@@ -1770,9 +1770,9 @@ void EditorInspector::update_tree() {
 
 				if (ep) {
 
-					ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed));
+					ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed), make_binds(StringName(), false));
 					if (p.usage & PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED) {
-						ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed_update_all), varray(), CONNECT_DEFERRED);
+						ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed_update_all), make_binds(StringName(), false), CONNECT_DEFERRED);
 					}
 					ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
 					ep->connect("property_keyed_with_value", callable_mp(this, &EditorInspector::_property_keyed_with_value));
@@ -2052,16 +2052,16 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 	}
 }
 
-void EditorInspector::_property_changed(const String &p_path, const Variant &p_value, const String &p_name, bool changing) {
+void EditorInspector::_property_changed(const String &p_path, const Variant &p_value, const String &p_name, bool p_changing) {
 
 	// The "changing" variable must be true for properties that trigger events as typing occurs,
-	// like "text_changed" signal. eg: Text property of Label, Button, RichTextLabel, etc.
-	if (changing)
+	// like "text_changed" signal. E.g. text property of Label, Button, RichTextLabel, etc.
+	if (p_changing)
 		this->changing++;
 
 	_edit_set(p_path, p_value, false, p_name);
 
-	if (changing)
+	if (p_changing)
 		this->changing--;
 
 	if (restart_request_props.has(p_path)) {
