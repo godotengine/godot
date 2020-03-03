@@ -44,7 +44,6 @@
 #endif
 
 #include "main/main.h"
-#include "semaphore_osx.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 
@@ -1464,8 +1463,6 @@ void OS_OSX::initialize_core() {
 	DirAccess::make_default<DirAccessOSX>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessOSX>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessOSX>(DirAccess::ACCESS_FILESYSTEM);
-
-	SemaphoreOSX::make_default();
 }
 
 static bool keyboard_layout_dirty = true;

@@ -10,7 +10,6 @@ common_server = [\
 
 if sys.platform == "darwin":
 	common_server.append("#platform/osx/crash_handler_osx.mm")
-	common_server.append("#platform/osx/semaphore_osx.cpp")
 else:
 	common_server.append("#platform/x11/crash_handler_x11.cpp")
 

@@ -88,9 +88,7 @@ void FileAccessNetworkClient::_thread_func() {
 	while (!quit) {
 
 		DEBUG_PRINT("SEM WAIT - " + itos(sem->get()));
-		Error err = sem->wait();
-		if (err != OK)
-			ERR_PRINT("sem->wait() failed");
+		sem.wait();
 		DEBUG_TIME("sem_unlock");
 		//DEBUG_PRINT("semwait returned "+itos(werr));
 		DEBUG_PRINT("MUTEX LOCK " + itos(lockcount));
@@ -141,7 +139,7 @@ void FileAccessNetworkClient::_thread_func() {
 					fa->_respond(len, Error(status));
 				}
 
-				fa->sem->post();
+				fa->sem.post();
 
 			} break;
 			case FileAccessNetwork::RESPONSE_DATA: {
@@ -161,14 +159,14 @@ void FileAccessNetworkClient::_thread_func() {
 
 				int status = get_32();
 				fa->exists_modtime = status != 0;
-				fa->sem->post();
+				fa->sem.post();
 
 			} break;
 			case FileAccessNetwork::RESPONSE_GET_MODTIME: {
 
 				uint64_t status = get_64();
 				fa->exists_modtime = status;
-				fa->sem->post();
+				fa->sem.post();
 
 			} break;
 		}
@@ -230,7 +228,6 @@ FileAccessNetworkClient::FileAccessNetworkClient() {
 	singleton = this;
 	last_id = 0;
 	client.instance();
-	sem = SemaphoreOld::create();
 	lockcount = 0;
 }
 
@@ -238,12 +235,10 @@ FileAccessNetworkClient::~FileAccessNetworkClient() {
 
 	if (thread) {
 		quit = true;
-		sem->post();
+		sem.post();
 		Thread::wait_to_finish(thread);
 		memdelete(thread);
 	}
-
-	memdelete(sem);
 }
 
 void FileAccessNetwork::_set_block(int p_offset, const Vector<uint8_t> &p_block) {
@@ -264,7 +259,7 @@ void FileAccessNetwork::_set_block(int p_offset, const Vector<uint8_t> &p_block)
 
 	if (waiting_on_page == page) {
 		waiting_on_page = -1;
-		page_sem->post();
+		page_sem.post();
 	}
 }
 
@@ -306,9 +301,9 @@ Error FileAccessNetwork::_open(const String &p_path, int p_mode_flags) {
 	nc->unlock_mutex();
 	DEBUG_PRINT("OPEN POST");
 	DEBUG_TIME("open_post");
-	nc->sem->post(); //awaiting answer
+	nc->sem.post(); //awaiting answer
 	DEBUG_PRINT("WAIT...");
-	sem->wait();
+	sem.wait();
 	DEBUG_TIME("open_end");
 	DEBUG_PRINT("WAIT ENDED...");
 
@@ -393,7 +388,7 @@ void FileAccessNetwork::_queue_page(int p_page) const {
 			pages.write[p_page].queued = true;
 		}
 		DEBUG_PRINT("QUEUE PAGE POST");
-		nc->sem->post();
+		nc->sem.post();
 		DEBUG_PRINT("queued " + itos(p_page));
 	}
 }
@@ -426,7 +421,7 @@ int FileAccessNetwork::get_buffer(uint8_t *p_dst, int p_length) const {
 				}
 				buffer_mutex.unlock();
 				DEBUG_PRINT("wait");
-				page_sem->wait();
+				page_sem.wait();
 				DEBUG_PRINT("done");
 			} else {
 
@@ -475,8 +470,8 @@ bool FileAccessNetwork::file_exists(const String &p_path) {
 	nc->client->put_data((const uint8_t *)cs.ptr(), cs.length());
 	nc->unlock_mutex();
 	DEBUG_PRINT("FILE EXISTS POST");
-	nc->sem->post();
-	sem->wait();
+	nc->sem.post();
+	sem.wait();
 
 	return exists_modtime != 0;
 }
@@ -492,8 +487,8 @@ uint64_t FileAccessNetwork::_get_modified_time(const String &p_file) {
 	nc->client->put_data((const uint8_t *)cs.ptr(), cs.length());
 	nc->unlock_mutex();
 	DEBUG_PRINT("MODTIME POST");
-	nc->sem->post();
-	sem->wait();
+	nc->sem.post();
+	sem.wait();
 
 	return exists_modtime;
 }
@@ -521,8 +516,6 @@ FileAccessNetwork::FileAccessNetwork() {
 	eof_flag = false;
 	opened = false;
 	pos = 0;
-	sem = SemaphoreOld::create();
-	page_sem = SemaphoreOld::create();
 	FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 	nc->lock_mutex();
 	id = nc->last_id++;
@@ -538,8 +531,6 @@ FileAccessNetwork::FileAccessNetwork() {
 FileAccessNetwork::~FileAccessNetwork() {
 
 	close();
-	memdelete(sem);
-	memdelete(page_sem);
 
 	FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 	nc->lock_mutex();
