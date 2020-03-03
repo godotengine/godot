@@ -103,9 +103,12 @@ void CachedData::clear_godot_api_cache() {
 	rawclass_Dictionary = NULL;
 
 	class_Vector2 = NULL;
+	class_Vector2i = NULL;
 	class_Rect2 = NULL;
+	class_Rect2i = NULL;
 	class_Transform2D = NULL;
 	class_Vector3 = NULL;
+	class_Vector3i = NULL;
 	class_Basis = NULL;
 	class_Quat = NULL;
 	class_Transform = NULL;
@@ -229,9 +232,12 @@ void update_corlib_cache() {
 void update_godot_api_cache() {
 
 	CACHE_CLASS_AND_CHECK(Vector2, GODOT_API_CLASS(Vector2));
+	CACHE_CLASS_AND_CHECK(Vector2i, GODOT_API_CLASS(Vector2i));
 	CACHE_CLASS_AND_CHECK(Rect2, GODOT_API_CLASS(Rect2));
+	CACHE_CLASS_AND_CHECK(Rect2i, GODOT_API_CLASS(Rect2i));
 	CACHE_CLASS_AND_CHECK(Transform2D, GODOT_API_CLASS(Transform2D));
 	CACHE_CLASS_AND_CHECK(Vector3, GODOT_API_CLASS(Vector3));
+	CACHE_CLASS_AND_CHECK(Vector3i, GODOT_API_CLASS(Vector3i));
 	CACHE_CLASS_AND_CHECK(Basis, GODOT_API_CLASS(Basis));
 	CACHE_CLASS_AND_CHECK(Quat, GODOT_API_CLASS(Quat));
 	CACHE_CLASS_AND_CHECK(Transform, GODOT_API_CLASS(Transform));
