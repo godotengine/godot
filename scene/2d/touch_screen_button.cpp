@@ -33,6 +33,7 @@
 #include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/os/os.h"
+#include "scene/main/viewport.h"
 
 void TouchScreenButton::set_texture(const Ref<Texture2D> &p_texture) {
 
@@ -114,7 +115,7 @@ void TouchScreenButton::_notification(int p_what) {
 
 			if (!is_inside_tree())
 				return;
-			if (!Engine::get_singleton()->is_editor_hint() && !OS::get_singleton()->has_touchscreen_ui_hint() && visibility == VISIBILITY_TOUCHSCREEN_ONLY)
+			if (!Engine::get_singleton()->is_editor_hint() && !!DisplayServer::get_singleton()->screen_is_touchscreen(DisplayServer::get_singleton()->window_get_current_screen(get_viewport()->get_window_id())) && visibility == VISIBILITY_TOUCHSCREEN_ONLY)
 				return;
 
 			if (finger_pressed != -1) {
@@ -145,7 +146,7 @@ void TouchScreenButton::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 
-			if (!Engine::get_singleton()->is_editor_hint() && !OS::get_singleton()->has_touchscreen_ui_hint() && visibility == VISIBILITY_TOUCHSCREEN_ONLY)
+			if (!Engine::get_singleton()->is_editor_hint() && !!DisplayServer::get_singleton()->screen_is_touchscreen(DisplayServer::get_singleton()->window_get_current_screen(get_viewport()->get_window_id())) && visibility == VISIBILITY_TOUCHSCREEN_ONLY)
 				return;
 			update();
 

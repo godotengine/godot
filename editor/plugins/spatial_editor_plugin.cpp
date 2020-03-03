@@ -51,6 +51,7 @@
 #include "scene/gui/viewport_container.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/surface_tool.h"
+#include "servers/display_server.h"
 
 #define DISTANCE_DEFAULT 4
 
@@ -2213,14 +2214,14 @@ void SpatialEditorViewport::set_freelook_active(bool active_now) {
 		}
 
 		// Hide mouse like in an FPS (warping doesn't work)
-		OS::get_singleton()->set_mouse_mode(OS::MOUSE_MODE_CAPTURED);
+		DisplayServer::get_singleton()->mouse_set_mode(DisplayServer::MOUSE_MODE_CAPTURED);
 
 	} else if (freelook_active && !active_now) {
 		// Sync camera cursor to cursor to "cut" interpolation jumps due to changing referential
 		cursor = camera_cursor;
 
 		// Restore mouse
-		OS::get_singleton()->set_mouse_mode(OS::MOUSE_MODE_VISIBLE);
+		DisplayServer::get_singleton()->mouse_set_mode(DisplayServer::MOUSE_MODE_VISIBLE);
 	}
 
 	freelook_active = active_now;
@@ -3926,8 +3927,11 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->get_popup()->connect("id_pressed", callable_mp(this, &SpatialEditorViewport::_menu_option));
 	display_submenu->connect("id_pressed", callable_mp(this, &SpatialEditorViewport::_menu_option));
 	view_menu->set_disable_shortcuts(true);
-
-	if (OS::get_singleton()->get_current_video_driver() == OS::VIDEO_DRIVER_GLES2) {
+#ifndef _MSC_VER
+#warning this needs to be fixed
+#endif
+	//if (OS::get_singleton()->get_current_video_driver() == OS::VIDEO_DRIVER_GLES2) {
+	if (false) {
 		// Alternate display modes only work when using the Vulkan renderer; make this explicit.
 		const int normal_idx = view_menu->get_popup()->get_item_index(VIEW_DISPLAY_NORMAL);
 		const int wireframe_idx = view_menu->get_popup()->get_item_index(VIEW_DISPLAY_WIREFRAME);

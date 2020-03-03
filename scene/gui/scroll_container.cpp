@@ -129,7 +129,7 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll)
 			accept_event(); //accept event if scroll changed
 
-		if (!OS::get_singleton()->has_touchscreen_ui_hint())
+		if (!DisplayServer::get_singleton()->screen_is_touchscreen(DisplayServer::get_singleton()->window_get_current_screen(get_viewport()->get_window_id())))
 			return;
 
 		if (mb->get_button_index() != BUTTON_LEFT)
@@ -145,7 +145,7 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			drag_accum = Vector2();
 			last_drag_accum = Vector2();
 			drag_from = Vector2(h_scroll->get_value(), v_scroll->get_value());
-			drag_touching = OS::get_singleton()->has_touchscreen_ui_hint();
+			drag_touching = !DisplayServer::get_singleton()->screen_is_touchscreen(DisplayServer::get_singleton()->window_get_current_screen(get_viewport()->get_window_id()));
 			drag_touching_deaccel = false;
 			beyond_deadzone = false;
 			time_since_motion = 0;

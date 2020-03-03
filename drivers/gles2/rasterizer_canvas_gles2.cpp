@@ -124,7 +124,7 @@ void RasterizerCanvasGLES2::canvas_begin() {
 			viewport_width = storage->frame.current_rt->width;
 			viewport_height = storage->frame.current_rt->height;
 			viewport_x = storage->frame.current_rt->x;
-			viewport_y = OS::get_singleton()->get_window_size().height - viewport_height - storage->frame.current_rt->y;
+			viewport_y = DisplayServer::get_singleton()->window_get_size().height - viewport_height - storage->frame.current_rt->y;
 			glScissor(viewport_x, viewport_y, viewport_width, viewport_height);
 			glViewport(viewport_x, viewport_y, viewport_width, viewport_height);
 			glEnable(GL_SCISSOR_TEST);
@@ -168,7 +168,7 @@ void RasterizerCanvasGLES2::canvas_begin() {
 		canvas_transform.translate(-(storage->frame.current_rt->width / 2.0f), -(storage->frame.current_rt->height / 2.0f), 0.0f);
 		canvas_transform.scale(Vector3(2.0f / storage->frame.current_rt->width, csy * -2.0f / storage->frame.current_rt->height, 1.0f));
 	} else {
-		Vector2 ssize = OS::get_singleton()->get_window_size();
+		Vector2 ssize = DisplayServer::get_singleton()->window_get_size();
 		canvas_transform.translate(-(ssize.width / 2.0f), -(ssize.height / 2.0f), 0.0f);
 		canvas_transform.scale(Vector3(2.0f / ssize.width, -2.0f / ssize.height, 1.0f));
 	}
@@ -194,8 +194,8 @@ void RasterizerCanvasGLES2::canvas_end() {
 
 	if (storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_DIRECT_TO_SCREEN]) {
 		//reset viewport to full window size
-		int viewport_width = OS::get_singleton()->get_window_size().width;
-		int viewport_height = OS::get_singleton()->get_window_size().height;
+		int viewport_width = DisplayServer::get_singleton()->window_get_size().width;
+		int viewport_height = DisplayServer::get_singleton()->window_get_size().height;
 		glViewport(0, 0, viewport_width, viewport_height);
 		glScissor(0, 0, viewport_width, viewport_height);
 	}
@@ -1995,7 +1995,7 @@ void RasterizerCanvasGLES2::draw_lens_distortion_rect(const Rect2 &p_rect, float
 	if (storage->frame.current_rt) {
 		half_size = Vector2(storage->frame.current_rt->width, storage->frame.current_rt->height);
 	} else {
-		half_size = OS::get_singleton()->get_window_size();
+		half_size = DisplayServer::get_singleton()->window_get_size();
 	}
 	half_size *= 0.5;
 	Vector2 offset((p_rect.position.x - half_size.x) / half_size.x, (p_rect.position.y - half_size.y) / half_size.y);
@@ -2029,7 +2029,7 @@ void RasterizerCanvasGLES2::draw_lens_distortion_rect(const Rect2 &p_rect, float
 
 void RasterizerCanvasGLES2::draw_window_margins(int *black_margin, RID *black_image) {
 
-	Vector2 window_size = OS::get_singleton()->get_window_size();
+	Vector2 window_size = DisplayServer::get_singleton()->window_get_size();
 	int window_h = window_size.height;
 	int window_w = window_size.width;
 

@@ -236,7 +236,7 @@ elif env_base['p'] != "":
 else:
     # Missing `platform` argument, try to detect platform automatically
     if sys.platform.startswith('linux'):
-        selected_platform = 'x11'
+        selected_platform = 'linuxbsd'
     elif sys.platform == 'darwin':
         selected_platform = 'osx'
     elif sys.platform == 'win32':

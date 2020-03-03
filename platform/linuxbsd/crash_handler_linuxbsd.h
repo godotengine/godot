@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  detect_prime.h                                                       */
+/*  crash_handler_linuxbsd.h                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,10 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef X11_ENABLED
-#if defined(OPENGL_ENABLED)
+#ifndef CRASH_HANDLER_X11_H
+#define CRASH_HANDLER_X11_H
 
-int detect_prime();
+class CrashHandler {
 
-#endif
-#endif
+	bool disabled;
+
+public:
+	void initialize();
+
+	void disable();
+	bool is_disabled() const { return disabled; };
+
+	CrashHandler();
+	~CrashHandler();
+};
+
+#endif // CRASH_HANDLER_X11_H

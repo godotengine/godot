@@ -145,82 +145,9 @@ public:
 		MONTH_DECEMBER
 	};
 
-	void global_menu_add_item(const String &p_menu, const String &p_label, const Variant &p_signal, const Variant &p_meta);
-	void global_menu_add_separator(const String &p_menu);
-	void global_menu_remove_item(const String &p_menu, int p_idx);
-	void global_menu_clear(const String &p_menu);
-
-	Point2 get_mouse_position() const;
-	void set_window_title(const String &p_title);
-	int get_mouse_button_state() const;
-
-	void set_clipboard(const String &p_text);
-	String get_clipboard() const;
-
-	void set_video_mode(const Size2 &p_size, bool p_fullscreen, bool p_resizeable, int p_screen = 0);
-	Size2 get_video_mode(int p_screen = 0) const;
-	bool is_video_mode_fullscreen(int p_screen = 0) const;
-	bool is_video_mode_resizable(int p_screen = 0) const;
-	Array get_fullscreen_mode_list(int p_screen = 0) const;
-
-	virtual int get_video_driver_count() const;
-	virtual String get_video_driver_name(VideoDriver p_driver) const;
-	virtual VideoDriver get_current_video_driver() const;
-
-	virtual int get_audio_driver_count() const;
-	virtual String get_audio_driver_name(int p_driver) const;
-
 	virtual PackedStringArray get_connected_midi_inputs();
 	virtual void open_midi_inputs();
 	virtual void close_midi_inputs();
-
-	virtual int get_screen_count() const;
-	virtual int get_current_screen() const;
-	virtual void set_current_screen(int p_screen);
-	virtual Point2 get_screen_position(int p_screen = -1) const;
-	virtual Size2 get_screen_size(int p_screen = -1) const;
-	virtual int get_screen_dpi(int p_screen = -1) const;
-	virtual Point2 get_window_position() const;
-	virtual void set_window_position(const Point2 &p_position);
-	virtual Size2 get_max_window_size() const;
-	virtual Size2 get_min_window_size() const;
-	virtual Size2 get_window_size() const;
-	virtual Size2 get_real_window_size() const;
-	virtual Rect2 get_window_safe_area() const;
-	virtual void set_max_window_size(const Size2 &p_size);
-	virtual void set_min_window_size(const Size2 &p_size);
-	virtual void set_window_size(const Size2 &p_size);
-	virtual void set_window_fullscreen(bool p_enabled);
-	virtual bool is_window_fullscreen() const;
-	virtual void set_window_resizable(bool p_enabled);
-	virtual bool is_window_resizable() const;
-	virtual void set_window_minimized(bool p_enabled);
-	virtual bool is_window_minimized() const;
-	virtual void set_window_maximized(bool p_enabled);
-	virtual bool is_window_maximized() const;
-	virtual void set_window_always_on_top(bool p_enabled);
-	virtual bool is_window_always_on_top() const;
-	virtual bool is_window_focused() const;
-	virtual void request_attention();
-	virtual void center_window();
-	virtual void move_window_to_foreground();
-
-	virtual void set_borderless_window(bool p_borderless);
-	virtual bool get_borderless_window() const;
-
-	virtual bool get_window_per_pixel_transparency_enabled() const;
-	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled);
-
-	virtual void set_ime_active(const bool p_active);
-	virtual void set_ime_position(const Point2 &p_pos);
-	virtual Point2 get_ime_selection() const;
-	virtual String get_ime_text() const;
-
-	Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
-	bool native_video_is_playing();
-	void native_video_pause();
-	void native_video_unpause();
-	void native_video_stop();
 
 	void set_low_processor_usage_mode(bool p_enabled);
 	bool is_in_low_processor_usage_mode() const;
@@ -243,24 +170,16 @@ public:
 	Vector<String> get_cmdline_args();
 
 	String get_locale() const;
-	String get_latin_keyboard_variant() const;
 
 	String get_model_name() const;
 
 	void dump_memory_to_file(const String &p_file);
 	void dump_resources_to_file(const String &p_file);
 
-	bool has_virtual_keyboard() const;
-	void show_virtual_keyboard(const String &p_existing_text = "");
-	void hide_virtual_keyboard();
-	int get_virtual_keyboard_height();
-
 	void print_resources_in_use(bool p_short = false);
 	void print_all_resources(const String &p_to_file);
 	void print_all_textures_by_size();
 	void print_resources_by_type(const Vector<String> &p_types);
-
-	bool has_touchscreen_ui_hint() const;
 
 	bool is_debug_build() const;
 
@@ -271,9 +190,6 @@ public:
 	int find_keycode_from_string(const String &p_code) const;
 
 	void set_use_file_access_save_and_swap(bool p_enable);
-
-	void set_native_icon(const String &p_filename);
-	void set_icon(const Ref<Image> &p_icon);
 
 	int get_exit_code() const;
 	void set_exit_code(int p_code);
@@ -298,8 +214,6 @@ public:
 
 	bool can_use_threads() const;
 
-	bool can_draw() const;
-
 	bool is_userfs_persistent() const;
 
 	bool is_stdout_verbose() const;
@@ -317,38 +231,11 @@ public:
 		SYSTEM_DIR_RINGTONES,
 	};
 
-	enum ScreenOrientation {
-
-		SCREEN_ORIENTATION_LANDSCAPE,
-		SCREEN_ORIENTATION_PORTRAIT,
-		SCREEN_ORIENTATION_REVERSE_LANDSCAPE,
-		SCREEN_ORIENTATION_REVERSE_PORTRAIT,
-		SCREEN_ORIENTATION_SENSOR_LANDSCAPE,
-		SCREEN_ORIENTATION_SENSOR_PORTRAIT,
-		SCREEN_ORIENTATION_SENSOR,
-	};
-
 	String get_system_dir(SystemDir p_dir) const;
 
 	String get_user_data_dir() const;
 
-	void alert(const String &p_alert, const String &p_title = "ALERT!");
-
-	void set_screen_orientation(ScreenOrientation p_orientation);
-	ScreenOrientation get_screen_orientation() const;
-
-	void set_keep_screen_on(bool p_enabled);
-	bool is_keep_screen_on() const;
-
-	bool is_ok_left_and_cancel_right() const;
-
 	Error set_thread_name(const String &p_name);
-
-	void set_use_vsync(bool p_enable);
-	bool is_vsync_enabled() const;
-
-	void set_vsync_via_compositor(bool p_enable);
-	bool is_vsync_via_compositor_enabled() const;
 
 	bool has_feature(const String &p_feature) const;
 
@@ -365,7 +252,6 @@ VARIANT_ENUM_CAST(_OS::VideoDriver);
 VARIANT_ENUM_CAST(_OS::Weekday);
 VARIANT_ENUM_CAST(_OS::Month);
 VARIANT_ENUM_CAST(_OS::SystemDir);
-VARIANT_ENUM_CAST(_OS::ScreenOrientation);
 
 class _Geometry : public Object {
 

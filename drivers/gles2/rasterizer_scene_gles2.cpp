@@ -3261,7 +3261,7 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 		viewport_x = storage->frame.current_rt->x;
 
 		if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_DIRECT_TO_SCREEN]) {
-			viewport_y = OS::get_singleton()->get_window_size().height - viewport_height - storage->frame.current_rt->y;
+			viewport_y = DisplayServer::get_singleton()->window_get_size().height - viewport_height - storage->frame.current_rt->y;
 		} else {
 			viewport_y = storage->frame.current_rt->y;
 		}

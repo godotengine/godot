@@ -38,6 +38,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/property_editor.h"
+#include "servers/display_server.h"
 #include "servers/visual/shader_types.h"
 
 /*** SHADER SCRIPT EDITOR ****/
@@ -699,7 +700,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	disk_changed->connect("confirmed", callable_mp(this, &ShaderEditor::_reload_shader_from_disk));
 	disk_changed->get_ok()->set_text(TTR("Reload"));
 
-	disk_changed->add_button(TTR("Resave"), !OS::get_singleton()->get_swap_ok_cancel(), "resave");
+	disk_changed->add_button(TTR("Resave"), !DisplayServer::get_singleton()->get_swap_ok_cancel(), "resave");
 	disk_changed->connect("custom_action", callable_mp(this, &ShaderEditor::save_external_data));
 
 	add_child(disk_changed);

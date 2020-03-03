@@ -44,6 +44,7 @@
 #include "import_dock.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"
+#include "servers/display_server.h"
 
 Ref<Texture2D> FileSystemDock::_get_tree_item_icon(EditorFileSystemDirectory *p_dir, int p_idx) {
 	Ref<Texture2D> file_icon;
@@ -1765,7 +1766,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case FILE_COPY_PATH: {
 			if (!p_selected.empty()) {
 				String fpath = p_selected[0];
-				OS::get_singleton()->set_clipboard(fpath);
+				DisplayServer::get_singleton()->clipboard_set(fpath);
 			}
 		} break;
 

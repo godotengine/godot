@@ -219,6 +219,14 @@ private:
 
 	List<Ref<InputEvent>> accumulated_events;
 	bool use_accumulated_input;
+	friend class DisplayServer;
+
+	static void (*set_mouse_mode_func)(MouseMode);
+	static MouseMode (*get_mouse_mode_func)();
+	static void (*warp_mouse_func)(const Vector2 &p_to_pos);
+
+	static CursorShape (*get_current_cursor_shape_func)();
+	static void (*set_custom_mouse_cursor_func)(const RES &, CursorShape, const Vector2 &);
 
 protected:
 	static void _bind_methods();
@@ -300,8 +308,6 @@ public:
 
 	void add_joy_mapping(String p_mapping, bool p_update_existing = false);
 	void remove_joy_mapping(String p_guid);
-	bool is_joy_known(int p_device);
-	String get_joy_guid(int p_device) const;
 
 	String get_joy_button_string(int p_button);
 	String get_joy_axis_string(int p_axis);
@@ -310,8 +316,8 @@ public:
 
 	int get_unused_joy_id();
 
-	bool is_joy_mapped(int p_device);
-	String get_joy_guid_remapped(int p_device) const;
+	bool is_joy_known(int p_device);
+	String get_joy_guid(int p_device) const;
 	void set_fallback_mapping(String p_guid);
 
 	void accumulate_input_event(const Ref<InputEvent> &p_event);

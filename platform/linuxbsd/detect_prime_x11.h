@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.h                                                             */
+/*  detect_prime_x11.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,9 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef X11_EXPORT_H
-#define X11_EXPORT_H
+#ifdef X11_ENABLED
+#if defined(OPENGL_ENABLED)
 
-void register_x11_exporter();
+int detect_prime();
 
-#endif // X11_EXPORT_H
+#endif
+#endif

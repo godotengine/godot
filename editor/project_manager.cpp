@@ -51,6 +51,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tool_button.h"
+#include "servers/display_server.h"
 
 static inline String get_project_key_from_path(const String &dir) {
 	return dir.replace("/", "::");
@@ -1284,7 +1285,11 @@ void ProjectList::load_projects() {
 }
 
 void ProjectList::update_dock_menu() {
-	OS::get_singleton()->global_menu_clear("_dock");
+
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
+		return;
+	}
+	DisplayServer::get_singleton()->global_menu_clear("_dock");
 
 	int favs_added = 0;
 	int total_added = 0;
@@ -1294,18 +1299,18 @@ void ProjectList::update_dock_menu() {
 				favs_added++;
 			} else {
 				if (favs_added != 0) {
-					OS::get_singleton()->global_menu_add_separator("_dock");
+					DisplayServer::get_singleton()->global_menu_add_separator("_dock");
 				}
 				favs_added = 0;
 			}
-			OS::get_singleton()->global_menu_add_item("_dock", _projects[i].project_name + " ( " + _projects[i].path + " )", GLOBAL_OPEN_PROJECT, Variant(_projects[i].path.plus_file("project.godot")));
+			DisplayServer::get_singleton()->global_menu_add_item("_dock", _projects[i].project_name + " ( " + _projects[i].path + " )", GLOBAL_OPEN_PROJECT, Variant(_projects[i].path.plus_file("project.godot")));
 			total_added++;
 		}
 	}
 	if (total_added != 0) {
-		OS::get_singleton()->global_menu_add_separator("_dock");
+		DisplayServer::get_singleton()->global_menu_add_separator("_dock");
 	}
-	OS::get_singleton()->global_menu_add_item("_dock", TTR("New Window"), GLOBAL_NEW_WINDOW, Variant());
+	DisplayServer::get_singleton()->global_menu_add_item("_dock", TTR("New Window"), GLOBAL_NEW_WINDOW, Variant());
 }
 
 void ProjectList::create_project_item_control(int p_index) {
@@ -2413,8 +2418,8 @@ ProjectManager::ProjectManager() {
 		switch (display_scale) {
 			case 0: {
 				// Try applying a suitable display scale automatically
-				const int screen = OS::get_singleton()->get_current_screen();
-				editor_set_scale(OS::get_singleton()->get_screen_dpi(screen) >= 192 && OS::get_singleton()->get_screen_size(screen).x > 2000 ? 2.0 : 1.0);
+				const int screen = DisplayServer::get_singleton()->window_get_current_screen();
+				editor_set_scale(DisplayServer::get_singleton()->screen_get_dpi(screen) >= 192 && DisplayServer::get_singleton()->screen_get_size(screen).x > 2000 ? 2.0 : 1.0);
 			} break;
 
 			case 1: editor_set_scale(0.75); break;
@@ -2430,12 +2435,12 @@ ProjectManager::ProjectManager() {
 		}
 
 		// Define a minimum window size to prevent UI elements from overlapping or being cut off
-		OS::get_singleton()->set_min_window_size(Size2(750, 420) * EDSCALE);
+		DisplayServer::get_singleton()->window_set_min_size(Size2(750, 420) * EDSCALE);
 
 #ifndef OSX_ENABLED
 		// The macOS platform implementation uses its own hiDPI window resizing code
 		// TODO: Resize windows on hiDPI displays on Windows and Linux and remove the line below
-		OS::get_singleton()->set_window_size(OS::get_singleton()->get_window_size() * MAX(1, EDSCALE));
+		DisplayServer::get_singleton()->window_set_size(DisplayServer::get_singleton()->window_get_size() * MAX(1, EDSCALE));
 #endif
 	}
 
@@ -2459,7 +2464,7 @@ ProjectManager::ProjectManager() {
 
 	String cp;
 	cp += 0xA9;
-	OS::get_singleton()->set_window_title(VERSION_NAME + String(" - ") + TTR("Project Manager") + " - " + cp + " 2007-2020 Juan Linietsky, Ariel Manzur & Godot Contributors");
+	DisplayServer::get_singleton()->window_set_title(VERSION_NAME + String(" - ") + TTR("Project Manager") + " - " + cp + " 2007-2020 Juan Linietsky, Ariel Manzur & Godot Contributors");
 
 	Control *center_box = memnew(Control);
 	center_box->set_v_size_flags(SIZE_EXPAND_FILL);

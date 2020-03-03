@@ -29,8 +29,13 @@
 /*************************************************************************/
 
 #include "display_server.h"
+#include "core/input/input.h"
 
 DisplayServer *DisplayServer::singleton = nullptr;
+DisplayServer::SwitchVSyncCallbackInThread DisplayServer::switch_vsync_function = nullptr;
+
+DisplayServer::DisplayServerCreate DisplayServer::server_create_functions[DisplayServer::MAX_SERVERS];
+int DisplayServer::server_create_count = 0;
 
 void DisplayServer::global_menu_add_item(const String &p_menu, const String &p_label, const Variant &p_signal, const Variant &p_meta) {
 	WARN_PRINT("Global menus not supported by this display server.");
@@ -76,6 +81,18 @@ DisplayServer::ScreenOrientation DisplayServer::screen_get_orientation(int p_scr
 	return SCREEN_LANDSCAPE;
 }
 
+bool DisplayServer::screen_is_touchscreen(int p_screen) const {
+	//return false;
+	return Input::get_singleton() && Input::get_singleton()->is_emulating_touch_from_mouse();
+}
+
+void DisplayServer::screen_set_keep_on(bool p_enable) {
+	WARN_PRINT("Keeping screen on not supported by this display server.");
+}
+bool DisplayServer::screen_is_kept_on() const {
+	return false;
+}
+
 DisplayServer::WindowID DisplayServer::create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i) {
 	ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Sub-windows not supported by this display server.");
 }
@@ -104,7 +121,7 @@ bool DisplayServer::is_console_visible() const {
 	return false;
 }
 
-void DisplayServer::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect) {
+void DisplayServer::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_legth) {
 	WARN_PRINT("Virtual keyboard not supported by this display server.");
 }
 void DisplayServer::virtual_keyboard_hide() {
@@ -180,7 +197,32 @@ void DisplayServer::set_native_icon(const String &p_filename) {
 	WARN_PRINT("Native icon not supported by this display server.");
 }
 void DisplayServer::set_icon(const Ref<Image> &p_icon) {
-	WARN_PRINT("Iconnot supported by this display server.");
+	WARN_PRINT("Icon not supported by this display server.");
+}
+
+void DisplayServer::_set_use_vsync(bool p_enable) {
+	WARN_PRINT("VSync not supported by this display server.");
+}
+void DisplayServer::vsync_set_enabled(bool p_enable) {
+	vsync_enabled = p_enable;
+	if (switch_vsync_function) { //if a function was set, use function
+		switch_vsync_function(p_enable);
+	} else { //otherwise just call here
+		_set_use_vsync(p_enable);
+	}
+}
+bool DisplayServer::vsync_is_enabled() const {
+	return vsync_enabled;
+}
+
+void DisplayServer::vsync_set_use_via_compositor(bool p_enable) {
+	WARN_PRINT("VSync via compositor not supported by this display server.");
+}
+bool DisplayServer::vsync_is_using_via_compositor() const {
+	return false;
+}
+
+void DisplayServer::set_context(Context p_context) {
 }
 
 void DisplayServer::_bind_methods() {
@@ -213,6 +255,9 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("screen_set_orientation", "orientation", "screen"), &DisplayServer::screen_set_orientation, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_get_orientation", "screen"), &DisplayServer::screen_get_orientation, DEFVAL(SCREEN_OF_MAIN_WINDOW));
+
+	ClassDB::bind_method(D_METHOD("screen_set_keep_on", "enable"), &DisplayServer::screen_set_keep_on);
+	ClassDB::bind_method(D_METHOD("screen_is_kept_on"), &DisplayServer::screen_is_kept_on);
 
 	ClassDB::bind_method(D_METHOD("get_window_list"), &DisplayServer::get_window_list);
 
@@ -258,14 +303,14 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("console_set_visible", "console_visible"), &DisplayServer::console_set_visible);
 	ClassDB::bind_method(D_METHOD("is_console_visible"), &DisplayServer::is_console_visible);
 
-	ClassDB::bind_method(D_METHOD("virtual_keyboard_show", "existing_text", "position"), &DisplayServer::virtual_keyboard_show, DEFVAL(Rect2i()));
+	ClassDB::bind_method(D_METHOD("virtual_keyboard_show", "existing_text", "position", "max_length"), &DisplayServer::virtual_keyboard_show, DEFVAL(Rect2i()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("virtual_keyboard_hide"), &DisplayServer::virtual_keyboard_hide);
 
 	ClassDB::bind_method(D_METHOD("virtual_keyboard_get_height"), &DisplayServer::virtual_keyboard_get_height);
 
 	ClassDB::bind_method(D_METHOD("cursor_set_shape", "shape"), &DisplayServer::cursor_set_shape);
 	ClassDB::bind_method(D_METHOD("cursor_get_shape"), &DisplayServer::cursor_get_shape);
-	ClassDB::bind_method(D_METHOD("cursor_set_custom_image", "cursor", "shape", "hotspot"), &DisplayServer::cursor_set_custom_image);
+	ClassDB::bind_method(D_METHOD("cursor_set_custom_image", "cursor", "shape", "hotspot"), &DisplayServer::cursor_set_custom_image, DEFVAL(CURSOR_ARROW), DEFVAL(Vector2()));
 
 	ClassDB::bind_method(D_METHOD("get_swap_ok_cancel"), &DisplayServer::get_swap_ok_cancel);
 
@@ -284,6 +329,12 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("process_events"), &DisplayServer::process_events);
 	ClassDB::bind_method(D_METHOD("force_process_and_drop_events"), &DisplayServer::force_process_and_drop_events);
+
+	ClassDB::bind_method(D_METHOD("vsync_set_enabled", "enabled"), &DisplayServer::vsync_set_enabled);
+	ClassDB::bind_method(D_METHOD("vsync_is_enabled"), &DisplayServer::vsync_is_enabled);
+
+	ClassDB::bind_method(D_METHOD("vsync_set_use_via_compositor", "enabled"), &DisplayServer::vsync_set_use_via_compositor);
+	ClassDB::bind_method(D_METHOD("vsync_is_using_via_compositor"), &DisplayServer::vsync_is_using_via_compositor);
 
 	ClassDB::bind_method(D_METHOD("set_native_icon", "filename"), &DisplayServer::set_native_icon);
 	ClassDB::bind_method(D_METHOD("set_icon", "image"), &DisplayServer::set_icon);
@@ -367,8 +418,56 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(LATIN_KEYBOARD_NEO);
 	BIND_ENUM_CONSTANT(LATIN_KEYBOARD_COLEMAK);
 }
+
+void DisplayServer::register_create_function(const char *p_name, CreateFunction p_function, GetVideoDriversFunction p_get_drivers) {
+	ERR_FAIL_COND(server_create_count == MAX_SERVERS);
+	server_create_functions[server_create_count].create_function = p_function;
+	server_create_functions[server_create_count].name = p_name;
+	server_create_count++;
+}
+int DisplayServer::get_create_function_count() {
+	return server_create_count;
+}
+const char *DisplayServer::get_create_function_name(int p_index) {
+	ERR_FAIL_INDEX_V(p_index, server_create_count, nullptr);
+	return server_create_functions[p_index].name;
+}
+
+Vector<String> DisplayServer::get_create_function_rendering_drivers(int p_index) {
+	ERR_FAIL_INDEX_V(p_index, server_create_count, Vector<String>());
+	return server_create_functions[p_index].get_rendering_drivers_function();
+}
+
+DisplayServer *DisplayServer::create(int p_index, const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+	ERR_FAIL_INDEX_V(p_index, server_create_count, nullptr);
+	return server_create_functions[p_index].create_function(p_rendering_driver, p_mode, p_flags, p_resolution, r_error);
+}
+
+void DisplayServer::_input_set_mouse_mode(Input::MouseMode p_mode) {
+	singleton->mouse_set_mode(MouseMode(p_mode));
+}
+Input::MouseMode DisplayServer::_input_get_mouse_mode() {
+	return Input::MouseMode(singleton->mouse_get_mode());
+}
+
+void DisplayServer::_input_warp(const Vector2 &p_to_pos) {
+	singleton->mouse_warp_to_position(p_to_pos);
+}
+
+Input::CursorShape DisplayServer::_input_get_current_cursor_shape() {
+	return (Input::CursorShape)singleton->cursor_get_shape();
+}
+void DisplayServer::_input_set_custom_mouse_cursor_func(const RES &p_image, Input::CursorShape p_shape, const Vector2 &p_hostspot) {
+	singleton->cursor_set_custom_image(p_image, (CursorShape)p_shape, p_hostspot);
+}
+
 DisplayServer::DisplayServer() {
 	singleton = this;
+	Input::set_mouse_mode_func = _input_set_mouse_mode;
+	Input::get_mouse_mode_func = _input_get_mouse_mode;
+	Input::warp_mouse_func = _input_warp;
+	Input::get_current_cursor_shape_func = _input_get_current_cursor_shape;
+	Input::set_custom_mouse_cursor_func = _input_set_custom_mouse_cursor_func;
 }
 DisplayServer::~DisplayServer() {
 }
