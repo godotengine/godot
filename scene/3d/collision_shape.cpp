@@ -123,6 +123,14 @@ String CollisionShape::get_configuration_warning() const {
 		return TTR("A shape must be provided for CollisionShape to function. Please create a shape resource for it.");
 	}
 
+	if (Object::cast_to<RigidBody>(get_parent())) {
+		if (Object::cast_to<ConcavePolygonShape>(*shape)) {
+			if (Object::cast_to<RigidBody>(get_parent())->get_mode() != RigidBody::MODE_STATIC) {
+				return TTR("ConcavePolygonShape doesn't support RigidBody in another mode than static.");
+			}
+		}
+	}
+
 	return String();
 }
 
