@@ -1360,7 +1360,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	filter->connect("text_entered", callable_mp(this, &EditorAssetLibrary::_search_text_entered));
 	search = memnew(Button(TTR("Search")));
-	search->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search));
+	search->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), make_binds(0));
 	search_hb->add_child(search);
 
 	if (!p_templates_only)

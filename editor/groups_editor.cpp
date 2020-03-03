@@ -659,6 +659,7 @@ void GroupsEditor::_show_group_dialog() {
 }
 
 void GroupsEditor::_bind_methods() {
+	ClassDB::bind_method("update_tree", &GroupsEditor::update_tree);
 }
 
 GroupsEditor::GroupsEditor() {

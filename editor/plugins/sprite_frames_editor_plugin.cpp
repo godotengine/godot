@@ -990,7 +990,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	empty2->connect("pressed", callable_mp(this, &SpriteFramesEditor::_empty2_pressed));
 	move_up->connect("pressed", callable_mp(this, &SpriteFramesEditor::_up_pressed));
 	move_down->connect("pressed", callable_mp(this, &SpriteFramesEditor::_down_pressed));
-	file->connect("files_selected", callable_mp(this, &SpriteFramesEditor::_file_load_request));
+	file->connect("files_selected", callable_mp(this, &SpriteFramesEditor::_file_load_request), make_binds(-1));
 	loading_scene = false;
 	sel = -1;
 

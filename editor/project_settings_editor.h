@@ -119,7 +119,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _item_del();
 	void _update_actions();
 	void _save();
-	void _add_item(int p_item, Ref<InputEvent> p_exiting_event = NULL);
+	void _add_item(int p_item, Ref<InputEvent> p_exiting_event = Ref<InputEvent>());
 	void _edit_item(Ref<InputEvent> p_exiting_event);
 
 	void _action_check(String p_action);
