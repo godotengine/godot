@@ -91,6 +91,7 @@ void ScriptEditorDebugger::debug_next() {
 
 	_put_msg("next", Array());
 	_clear_execution();
+	debug_step_or_next = true;
 }
 void ScriptEditorDebugger::debug_step() {
 
@@ -98,6 +99,13 @@ void ScriptEditorDebugger::debug_step() {
 
 	_put_msg("step", Array());
 	_clear_execution();
+	debug_step_or_next = true;
+}
+
+void ScriptEditorDebugger::debug_step_comment() {
+	if (debug_step_or_next) {
+		debug_step();
+	}
 }
 
 void ScriptEditorDebugger::debug_break() {
@@ -105,6 +113,7 @@ void ScriptEditorDebugger::debug_break() {
 	ERR_FAIL_COND(breaked);
 
 	_put_msg("break", Array());
+	debug_step_or_next = false;
 }
 
 void ScriptEditorDebugger::debug_continue() {
@@ -117,6 +126,7 @@ void ScriptEditorDebugger::debug_continue() {
 
 	_clear_execution();
 	_put_msg("continue", Array());
+	debug_step_or_next = false;
 }
 
 void ScriptEditorDebugger::update_tabs() {
@@ -256,6 +266,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		}
 		profiler->set_enabled(false);
 		inspector->clear_cache(); // Take a chance to force remote objects update.
+		from_debug_enter = true;
 
 	} else if (p_msg == "debug_exit") {
 
@@ -340,6 +351,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				s->select(0);
 		}
 	} else if (p_msg == "stack_frame_vars") {
+		if (!from_debug_enter) {
+			debug_step_or_next = false;
+		}
+		from_debug_enter = false;
 
 		inspector->clear_stack_variables();
 

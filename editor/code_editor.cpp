@@ -33,7 +33,10 @@
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/string_builder.h"
+#include "editor/debugger/editor_debugger_node.h"
+#include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_scale.h"
+#include "editor/plugins/script_editor_plugin.h"
 #include "editor_node.h"
 #include "editor_settings.h"
 #include "scene/gui/margin_container.h"
@@ -923,6 +926,7 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink"));
 	text_editor->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink_speed"));
 	text_editor->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/completion/auto_brace_complete"));
+	defaultHighliteCurrentLine = EditorSettings::get_singleton()->get("text_editor/highlighting/highlight_current_line");
 }
 
 void CodeTextEditor::trim_trailing_whitespace() {
@@ -1338,9 +1342,28 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 }
 
 void CodeTextEditor::goto_line(int p_line) {
+	int line = text_editor->cursor_get_line();
+
 	text_editor->deselect();
 	text_editor->unfold_line(p_line);
 	text_editor->call_deferred("cursor_set_line", p_line);
+
+	text_editor->set_debug_comment_hide_cursor(false, defaultHighliteCurrentLine);
+	ScriptEditorDebugger *debugger = EditorDebuggerNode::get_singleton()->get_current_debugger();
+	if ((line == p_line) || (debugger == nullptr) || (debugger->get_debug_step_or_next() == false))
+		return;
+	if (text_editor->is_line_empty_or_comment(p_line)) {
+		if ((line == (p_line - 1)) || (line == (p_line + 1)) || (p_line == next_line)) {
+			// Next line is comment or empty :
+			debugger->debug_step_comment();
+			text_editor->set_debug_comment_hide_cursor(true, defaultHighliteCurrentLine);
+			if (p_line == next_line)
+				next_line = -1;
+		}
+	} else {
+		if (line == (p_line - 1))
+			next_line = p_line + 1;
+	}
 }
 
 void CodeTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {

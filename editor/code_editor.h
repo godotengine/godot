@@ -202,6 +202,8 @@ protected:
 	static void _bind_methods();
 
 	bool is_warnings_panel_opened;
+	bool defaultHighliteCurrentLine;
+	int next_line;
 
 public:
 	void trim_trailing_whitespace();

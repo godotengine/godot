@@ -340,6 +340,8 @@ int TextEdit::Text::get_char_width(CharType c, CharType next_c, int px) const {
 }
 
 void TextEdit::_update_scrollbars() {
+	if (debug_comment_hide_cursor)
+		return;
 
 	Size2 size = get_size();
 	Size2 hmin = h_scroll->get_combined_minimum_size();
@@ -1245,7 +1247,7 @@ void TextEdit::_notification(int p_what) {
 
 						// Draw execution marker.
 						if (executing_line == line) {
-							if (draw_breakpoint_gutter) {
+							if (draw_breakpoint_gutter && !debug_comment_hide_cursor) {
 								int icon_extra_size = 4;
 								int vertical_gap = (get_row_height() * 40) / 100;
 								int horizontal_gap = (cache.breakpoint_gutter_width * 30) / 100;
@@ -4273,6 +4275,8 @@ void TextEdit::_update_wrap_at() {
 }
 
 void TextEdit::adjust_viewport_to_cursor() {
+	if (debug_comment_hide_cursor)
+		return;
 
 	// Make sure cursor is visible on the screen.
 	scrolling = false;
@@ -5011,7 +5015,7 @@ void TextEdit::_reset_caret_blink_timer() {
 }
 
 void TextEdit::_toggle_draw_caret() {
-	draw_caret = !draw_caret;
+	draw_caret = !draw_caret && !debug_comment_hide_cursor;
 	if (is_visible_in_tree() && has_focus() && window_has_focus) {
 		update();
 	}
@@ -5890,6 +5894,35 @@ int TextEdit::get_indent_level(int p_line) const {
 		}
 	}
 	return tab_count * indent_size + whitespace_count;
+}
+
+bool TextEdit::is_line_empty_or_comment(int p_line) const {
+	// If line is empty, look for next line of code.
+	// When p_line is within a declaration block, empty lines are skipped by default,
+	// so return false in that cases.
+	int line_length = text[p_line].size();
+	if (line_length == 0) {
+		for (int i = p_line + 1; i < text.size(); i++) {
+			if (!is_line_comment(i)) {
+				String var = "var ";
+				String exp = "export(";
+				if (var.is_subsequence_of(text[i]) || exp.is_subsequence_of(text[i])) {
+					return false;
+				} else {
+					return true;
+				}
+			}
+		}
+	}
+	// Check for white spaces or comment line s:
+	for (int i = 0; i < line_length - 1; i++) {
+		if (!_is_whitespace(text[p_line][i])) {
+			if ((text[p_line][i] == '#') || (text[p_line][i] == '/'))
+				return true;
+			return false;
+		}
+	}
+	return true;
 }
 
 bool TextEdit::is_line_comment(int p_line) const {
@@ -6956,6 +6989,14 @@ void TextEdit::set_highlight_current_line(bool p_enabled) {
 
 bool TextEdit::is_highlight_current_line_enabled() const {
 	return highlight_current_line;
+}
+
+void TextEdit::set_debug_comment_hide_cursor(bool hide, bool default_highlite) {
+	if (debug_comment_hide_cursor == hide)
+		return;
+	debug_comment_hide_cursor = hide;
+	set_highlight_current_line(!hide && default_highlite);
+	_toggle_draw_caret();
 }
 
 bool TextEdit::is_text_field() const {
