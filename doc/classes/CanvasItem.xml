@@ -656,10 +656,13 @@
 			The [CanvasItem] has exited the canvas.
 		</constant>
 		<constant name="TEXTURE_FILTER_PARENT_NODE" value="0" enum="TextureFilter">
+			The [CanvasItem] will inherit the filter from its parent.
 		</constant>
 		<constant name="TEXTURE_FILTER_NEAREST" value="1" enum="TextureFilter">
+			The texture filter reads from the nearest pixel only. The simplest and fastest method of filtering. Useful for pixel art.
 		</constant>
 		<constant name="TEXTURE_FILTER_LINEAR" value="2" enum="TextureFilter">
+			The texture filter blends between the nearest four pixels. Use this for most cases where you want to avoid a pixelated style.
 		</constant>
 		<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="3" enum="TextureFilter">
 		</constant>
@@ -670,16 +673,22 @@
 		<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC" value="6" enum="TextureFilter">
 		</constant>
 		<constant name="TEXTURE_FILTER_MAX" value="7" enum="TextureFilter">
+			Represents the size of the [enum TextureFilter] enum.
 		</constant>
 		<constant name="TEXTURE_REPEAT_PARENT_NODE" value="0" enum="TextureRepeat">
+			The [CanvasItem] will inherit the filter from its parent.
 		</constant>
 		<constant name="TEXTURE_REPEAT_DISABLED" value="1" enum="TextureRepeat">
+			Texture will not repeat.
 		</constant>
 		<constant name="TEXTURE_REPEAT_ENABLED" value="2" enum="TextureRepeat">
+			Texture will repeat normally.
 		</constant>
 		<constant name="TEXTURE_REPEAT_MIRROR" value="3" enum="TextureRepeat">
+			Texture will repeat in a 2x2 tiled mode, where elements at even positions are mirrored.
 		</constant>
 		<constant name="TEXTURE_REPEAT_MAX" value="4" enum="TextureRepeat">
+			Represents the size of the [enum TextureRepeat] enum.
 		</constant>
 	</constants>
 </class>

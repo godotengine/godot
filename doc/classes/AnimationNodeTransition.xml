@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationNodeTransition" inherits="AnimationNode" version="4.0">
 	<brief_description>
+		A generic animation transition node for [AnimationTree].
 	</brief_description>
 	<description>
+		Simple state machine for cases which don't require a more advanced [AnimationNodeStateMachine]. Animations can be connected to the inputs and transition times can be specified.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
@@ -47,8 +49,10 @@
 	</methods>
 	<members>
 		<member name="input_count" type="int" setter="set_enabled_inputs" getter="get_enabled_inputs" default="0">
+			The number of available input ports for this node.
 		</member>
 		<member name="xfade_time" type="float" setter="set_cross_fade_time" getter="get_cross_fade_time" default="0.0">
+			Cross-fading time (in seconds) between each animation connected to the inputs.
 		</member>
 	</members>
 	<constants>

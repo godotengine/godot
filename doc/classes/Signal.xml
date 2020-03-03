@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Signal" version="4.0">
 	<brief_description>
+		Class representing a signal defined in an object.
 	</brief_description>
 	<description>
 	</description>
@@ -15,6 +16,7 @@
 			<argument index="1" name="signal_name" type="StringName">
 			</argument>
 			<description>
+				Creates a new signal named [code]signal_name[/code] in the given object.
 			</description>
 		</method>
 		<method name="connect">
@@ -27,6 +29,7 @@
 			<argument index="2" name="flags" type="int" default="0">
 			</argument>
 			<description>
+				Connects this signal to the specified [Callable], optionally providing binds and connection flags.
 			</description>
 		</method>
 		<method name="disconnect">
@@ -35,36 +38,42 @@
 			<argument index="0" name="callable" type="Callable">
 			</argument>
 			<description>
+				Disconnects this signal from the specified [Callable].
 			</description>
 		</method>
 		<method name="emit" qualifiers="vararg">
 			<return type="void">
 			</return>
 			<description>
+				Emits this signal to all connected objects.
 			</description>
 		</method>
 		<method name="get_connections">
 			<return type="Array">
 			</return>
 			<description>
+				Returns the list of [Callable]s connected to this signal.
 			</description>
 		</method>
 		<method name="get_name">
 			<return type="StringName">
 			</return>
 			<description>
+				Returns the name of this signal.
 			</description>
 		</method>
 		<method name="get_object">
 			<return type="Object">
 			</return>
 			<description>
+				Returns the object emitting this signal.
 			</description>
 		</method>
 		<method name="get_object_id">
 			<return type="int">
 			</return>
 			<description>
+				Returns the ID of the object emitting this signal (see [method Object.get_instance_id]).
 			</description>
 		</method>
 		<method name="is_connected">
@@ -73,6 +82,7 @@
 			<argument index="0" name="callable" type="Callable">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the specified [Callable] is connected to this signal.
 			</description>
 		</method>
 		<method name="is_null">
