@@ -17,6 +17,7 @@
 	</constants>
 	<theme_items>
 		<theme_item name="panel" type="StyleBox">
+			The style of [PanelContainer]'s background.
 		</theme_item>
 	</theme_items>
 </class>

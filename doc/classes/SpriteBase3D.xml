@@ -21,12 +21,14 @@
 			<argument index="0" name="flag" type="int" enum="SpriteBase3D.DrawFlags">
 			</argument>
 			<description>
+				Returns the value of the specified flag.
 			</description>
 		</method>
 		<method name="get_item_rect" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<description>
+				Returns the rectangle representing this sprite.
 			</description>
 		</method>
 		<method name="set_draw_flag">
@@ -37,6 +39,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code], the specified flag will be enabled.
 			</description>
 		</method>
 	</methods>

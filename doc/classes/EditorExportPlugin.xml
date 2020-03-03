@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EditorExportPlugin" inherits="Reference" version="4.0">
 	<brief_description>
+		A script that is executed when exporting projects.
 	</brief_description>
 	<description>
 	</description>
@@ -19,12 +20,14 @@
 			<argument index="3" name="flags" type="int">
 			</argument>
 			<description>
+				Virtual method to be overridden by the user. It is called when the export starts and provides all information about the export.
 			</description>
 		</method>
 		<method name="_export_end" qualifiers="virtual">
 			<return type="void">
 			</return>
 			<description>
+				Virtual method to be overridden by the user. Called when the export is finished.
 			</description>
 		</method>
 		<method name="_export_file" qualifiers="virtual">

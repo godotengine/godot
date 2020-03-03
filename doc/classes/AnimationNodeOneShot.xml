@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationNodeOneShot" inherits="AnimationNode" version="4.0">
 	<brief_description>
+		Plays an animation once in [AnimationNodeBlendTree].
 	</brief_description>
 	<description>
+		A resource to add to an [AnimationNodeBlendTree]. This node will execute a sub-animation and return once it finishes. Blend times for fading in and out can be customized, as well as filters.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
@@ -25,10 +27,13 @@
 	</methods>
 	<members>
 		<member name="autorestart" type="bool" setter="set_autorestart" getter="has_autorestart" default="false">
+			If [code]true[/code], the sub-animation will restart automatically after finishing.
 		</member>
 		<member name="autorestart_delay" type="float" setter="set_autorestart_delay" getter="get_autorestart_delay" default="1.0">
+			The delay after which the automatic restart is triggered, in seconds.
 		</member>
 		<member name="autorestart_random_delay" type="float" setter="set_autorestart_random_delay" getter="get_autorestart_random_delay" default="0.0">
+			If [member autorestart] is [code]true[/code], a random additional delay (in seconds) between 0 and this value will be added to [member autorestart_delay].
 		</member>
 		<member name="fadein_time" type="float" setter="set_fadein_time" getter="get_fadein_time" default="0.1">
 		</member>

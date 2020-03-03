@@ -191,6 +191,7 @@
 		<member name="reflected_light_source" type="int" setter="set_reflection_source" getter="get_reflection_source" enum="Environment.ReflectionSource" default="0">
 		</member>
 		<member name="sky" type="Sky" setter="set_sky" getter="get_sky">
+			The [Sky] resource used for this [Environment].
 		</member>
 		<member name="sky_custom_fov" type="float" setter="set_sky_custom_fov" getter="get_sky_custom_fov" default="0.0">
 		</member>

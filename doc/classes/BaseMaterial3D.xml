@@ -67,6 +67,7 @@
 			<argument index="1" name="texture" type="Texture2D">
 			</argument>
 			<description>
+				Sets the texture for the slot specified by [code]param[/code]. See [enum TextureParam] for available slots. 
 			</description>
 		</method>
 	</methods>
@@ -425,8 +426,10 @@
 			Represents the size of the [enum TextureParam] enum.
 		</constant>
 		<constant name="TEXTURE_FILTER_NEAREST" value="0" enum="TextureFilter">
+			The texture filter reads from the nearest pixel only. The simplest and fastest method of filtering, but the texture will look pixelized.
 		</constant>
 		<constant name="TEXTURE_FILTER_LINEAR" value="1" enum="TextureFilter">
+			The texture filter blends between the nearest four pixels. Use this for most cases where you want to avoid a pixelated style.
 		</constant>
 		<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="2" enum="TextureFilter">
 		</constant>
@@ -437,6 +440,7 @@
 		<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC" value="5" enum="TextureFilter">
 		</constant>
 		<constant name="TEXTURE_FILTER_MAX" value="6" enum="TextureFilter">
+			Represents the size of the [enum TextureFilter] enum.
 		</constant>
 		<constant name="DETAIL_UV_1" value="0" enum="DetailUV">
 			Use [code]UV[/code] with the detail texture.
@@ -445,22 +449,29 @@
 			Use [code]UV2[/code] with the detail texture.
 		</constant>
 		<constant name="TRANSPARENCY_DISABLED" value="0" enum="Transparency">
+			The material will not use transparency.
 		</constant>
 		<constant name="TRANSPARENCY_ALPHA" value="1" enum="Transparency">
+			The material will use the texture's alpha values for transparency.
 		</constant>
 		<constant name="TRANSPARENCY_ALPHA_SCISSOR" value="2" enum="Transparency">
 		</constant>
 		<constant name="TRANSPARENCY_ALPHA_DEPTH_PRE_PASS" value="3" enum="Transparency">
 		</constant>
 		<constant name="TRANSPARENCY_MAX" value="4" enum="Transparency">
+			Represents the size of the [enum Transparency] enum.
 		</constant>
 		<constant name="SHADING_MODE_UNSHADED" value="0" enum="ShadingMode">
+			The object will not receive shadows.
 		</constant>
 		<constant name="SHADING_MODE_PER_PIXEL" value="1" enum="ShadingMode">
+			The object will be shaded per pixel. Useful for realistic shading effect.
 		</constant>
 		<constant name="SHADING_MODE_PER_VERTEX" value="2" enum="ShadingMode">
+			The object will be shaded per vertex. Useful when you want cheaper shaders and do not care about visual quality.
 		</constant>
 		<constant name="SHADING_MODE_MAX" value="3" enum="ShadingMode">
+			Represents the size of the [enum ShadingMode] enum.
 		</constant>
 		<constant name="FEATURE_EMISSION" value="0" enum="Feature">
 			Constant for setting [member emission_enabled].

@@ -15,6 +15,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+				Loads the texture from the given path.
 			</description>
 		</method>
 	</methods>

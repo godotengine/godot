@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EditorFileDialog" inherits="ConfirmationDialog" version="4.0">
 	<brief_description>
+		A modified version of [FileDialog] used by the editor.
 	</brief_description>
 	<description>
 	</description>

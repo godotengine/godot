@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationNodeTimeScale" inherits="AnimationNode" version="4.0">
 	<brief_description>
+		A time-scaling animation node to be used with [AnimationTree].
 	</brief_description>
 	<description>
+		Allows scaling the speed of the animation (or reversing it) in any children nodes. Setting it to 0 will pause the animation.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>

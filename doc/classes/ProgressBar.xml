@@ -21,14 +21,19 @@
 	</constants>
 	<theme_items>
 		<theme_item name="bg" type="StyleBox">
+			The style of the background.
 		</theme_item>
 		<theme_item name="fg" type="StyleBox">
+			The style of the progress (i.e. the part that fills the bar).
 		</theme_item>
 		<theme_item name="font" type="Font">
+			Font used to draw the fill percentage if [member percent_visible] is [code]true[/code].
 		</theme_item>
 		<theme_item name="font_color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+			The color of the text.
 		</theme_item>
 		<theme_item name="font_color_shadow" type="Color" default="Color( 0, 0, 0, 1 )">
+			The color of the text's shadow.
 		</theme_item>
 	</theme_items>
 </class>
