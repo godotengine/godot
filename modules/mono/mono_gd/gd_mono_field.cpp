@@ -132,8 +132,18 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 				break;
 			}
 
+			if (tclass == CACHED_CLASS(Vector2i)) {
+				SET_FROM_STRUCT(Vector2i);
+				break;
+			}
+
 			if (tclass == CACHED_CLASS(Rect2)) {
 				SET_FROM_STRUCT(Rect2);
+				break;
+			}
+
+			if (tclass == CACHED_CLASS(Rect2i)) {
+				SET_FROM_STRUCT(Rect2i);
 				break;
 			}
 
@@ -144,6 +154,11 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 
 			if (tclass == CACHED_CLASS(Vector3)) {
 				SET_FROM_STRUCT(Vector3);
+				break;
+			}
+
+			if (tclass == CACHED_CLASS(Vector3i)) {
+				SET_FROM_STRUCT(Vector3i);
 				break;
 			}
 
@@ -418,11 +433,20 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 				case Variant::VECTOR2: {
 					SET_FROM_STRUCT(Vector2);
 				} break;
+				case Variant::VECTOR2I: {
+					SET_FROM_STRUCT(Vector2i);
+				} break;
 				case Variant::RECT2: {
 					SET_FROM_STRUCT(Rect2);
 				} break;
+				case Variant::RECT2I: {
+					SET_FROM_STRUCT(Rect2i);
+				} break;
 				case Variant::VECTOR3: {
 					SET_FROM_STRUCT(Vector3);
+				} break;
+				case Variant::VECTOR3I: {
+					SET_FROM_STRUCT(Vector3i);
 				} break;
 				case Variant::TRANSFORM2D: {
 					SET_FROM_STRUCT(Transform2D);

@@ -75,14 +75,23 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_
 			if (vtclass == CACHED_CLASS(Vector2))
 				return Variant::VECTOR2;
 
+			if (vtclass == CACHED_CLASS(Vector2i))
+				return Variant::VECTOR2I;
+
 			if (vtclass == CACHED_CLASS(Rect2))
 				return Variant::RECT2;
+
+			if (vtclass == CACHED_CLASS(Rect2i))
+				return Variant::RECT2I;
 
 			if (vtclass == CACHED_CLASS(Transform2D))
 				return Variant::TRANSFORM2D;
 
 			if (vtclass == CACHED_CLASS(Vector3))
 				return Variant::VECTOR3;
+
+			if (vtclass == CACHED_CLASS(Vector3i))
+				return Variant::VECTOR3I;
 
 			if (vtclass == CACHED_CLASS(Basis))
 				return Variant::BASIS;
@@ -413,9 +422,19 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Vector2), &from);
 			}
 
+			if (vtclass == CACHED_CLASS(Vector2i)) {
+				GDMonoMarshal::M_Vector2i from = MARSHALLED_OUT(Vector2i, p_var->operator ::Vector2i());
+				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Vector2i), &from);
+			}
+
 			if (vtclass == CACHED_CLASS(Rect2)) {
 				GDMonoMarshal::M_Rect2 from = MARSHALLED_OUT(Rect2, p_var->operator ::Rect2());
 				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Rect2), &from);
+			}
+
+			if (vtclass == CACHED_CLASS(Rect2i)) {
+				GDMonoMarshal::M_Rect2i from = MARSHALLED_OUT(Rect2i, p_var->operator ::Rect2i());
+				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Rect2i), &from);
 			}
 
 			if (vtclass == CACHED_CLASS(Transform2D)) {
@@ -426,6 +445,11 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 			if (vtclass == CACHED_CLASS(Vector3)) {
 				GDMonoMarshal::M_Vector3 from = MARSHALLED_OUT(Vector3, p_var->operator ::Vector3());
 				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Vector3), &from);
+			}
+
+			if (vtclass == CACHED_CLASS(Vector3i)) {
+				GDMonoMarshal::M_Vector3i from = MARSHALLED_OUT(Vector3i, p_var->operator ::Vector3i());
+				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Vector3i), &from);
 			}
 
 			if (vtclass == CACHED_CLASS(Basis)) {
@@ -638,13 +662,25 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 					GDMonoMarshal::M_Vector2 from = MARSHALLED_OUT(Vector2, p_var->operator ::Vector2());
 					return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Vector2), &from);
 				}
+				case Variant::VECTOR2I: {
+					GDMonoMarshal::M_Vector2i from = MARSHALLED_OUT(Vector2i, p_var->operator ::Vector2i());
+					return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Vector2i), &from);
+				}
 				case Variant::RECT2: {
 					GDMonoMarshal::M_Rect2 from = MARSHALLED_OUT(Rect2, p_var->operator ::Rect2());
 					return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Rect2), &from);
 				}
+				case Variant::RECT2I: {
+					GDMonoMarshal::M_Rect2i from = MARSHALLED_OUT(Rect2i, p_var->operator ::Rect2i());
+					return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Rect2i), &from);
+				}
 				case Variant::VECTOR3: {
 					GDMonoMarshal::M_Vector3 from = MARSHALLED_OUT(Vector3, p_var->operator ::Vector3());
 					return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Vector3), &from);
+				}
+				case Variant::VECTOR3I: {
+					GDMonoMarshal::M_Vector3i from = MARSHALLED_OUT(Vector3i, p_var->operator ::Vector3i());
+					return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Vector3i), &from);
 				}
 				case Variant::TRANSFORM2D: {
 					GDMonoMarshal::M_Transform2D from = MARSHALLED_OUT(Transform2D, p_var->operator ::Transform2D());
@@ -806,14 +842,23 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 			if (vtclass == CACHED_CLASS(Vector2))
 				return MARSHALLED_IN(Vector2, unbox_addr<GDMonoMarshal::M_Vector2>(p_obj));
 
+			if (vtclass == CACHED_CLASS(Vector2i))
+				return MARSHALLED_IN(Vector2i, unbox_addr<GDMonoMarshal::M_Vector2i>(p_obj));
+
 			if (vtclass == CACHED_CLASS(Rect2))
 				return MARSHALLED_IN(Rect2, unbox_addr<GDMonoMarshal::M_Rect2>(p_obj));
+
+			if (vtclass == CACHED_CLASS(Rect2i))
+				return MARSHALLED_IN(Rect2i, unbox_addr<GDMonoMarshal::M_Rect2i>(p_obj));
 
 			if (vtclass == CACHED_CLASS(Transform2D))
 				return MARSHALLED_IN(Transform2D, unbox_addr<GDMonoMarshal::M_Transform2D>(p_obj));
 
 			if (vtclass == CACHED_CLASS(Vector3))
 				return MARSHALLED_IN(Vector3, unbox_addr<GDMonoMarshal::M_Vector3>(p_obj));
+
+			if (vtclass == CACHED_CLASS(Vector3i))
+				return MARSHALLED_IN(Vector3i, unbox_addr<GDMonoMarshal::M_Vector3i>(p_obj));
 
 			if (vtclass == CACHED_CLASS(Basis))
 				return MARSHALLED_IN(Basis, unbox_addr<GDMonoMarshal::M_Basis>(p_obj));

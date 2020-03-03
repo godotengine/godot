@@ -201,6 +201,8 @@ M_SignalInfo signal_info_to_managed(const Signal &p_signal);
 namespace InteropLayout {
 
 enum {
+	MATCHES_int = (sizeof(int32_t) == sizeof(uint32_t)),
+
 	MATCHES_float = (sizeof(float) == sizeof(uint32_t)),
 
 	MATCHES_double = (sizeof(double) == sizeof(uint64_t)),
@@ -215,9 +217,17 @@ enum {
 					   offsetof(Vector2, x) == (sizeof(real_t) * 0) &&
 					   offsetof(Vector2, y) == (sizeof(real_t) * 1)),
 
+	MATCHES_Vector2i = (MATCHES_int && (sizeof(Vector2i) == (sizeof(int32_t) * 2)) &&
+						offsetof(Vector2i, x) == (sizeof(int32_t) * 0) &&
+						offsetof(Vector2i, y) == (sizeof(int32_t) * 1)),
+
 	MATCHES_Rect2 = (MATCHES_Vector2 && (sizeof(Rect2) == (sizeof(Vector2) * 2)) &&
 					 offsetof(Rect2, position) == (sizeof(Vector2) * 0) &&
 					 offsetof(Rect2, size) == (sizeof(Vector2) * 1)),
+
+	MATCHES_Rect2i = (MATCHES_Vector2i && (sizeof(Rect2i) == (sizeof(Vector2i) * 2)) &&
+					  offsetof(Rect2i, position) == (sizeof(Vector2i) * 0) &&
+					  offsetof(Rect2i, size) == (sizeof(Vector2i) * 1)),
 
 	MATCHES_Transform2D = (MATCHES_Vector2 && (sizeof(Transform2D) == (sizeof(Vector2) * 3))), // No field offset required, it stores an array
 
@@ -225,6 +235,11 @@ enum {
 					   offsetof(Vector3, x) == (sizeof(real_t) * 0) &&
 					   offsetof(Vector3, y) == (sizeof(real_t) * 1) &&
 					   offsetof(Vector3, z) == (sizeof(real_t) * 2)),
+
+	MATCHES_Vector3i = (MATCHES_int && (sizeof(Vector3i) == (sizeof(int32_t) * 3)) &&
+						offsetof(Vector3i, x) == (sizeof(int32_t) * 0) &&
+						offsetof(Vector3i, y) == (sizeof(int32_t) * 1) &&
+						offsetof(Vector3i, z) == (sizeof(int32_t) * 2)),
 
 	MATCHES_Basis = (MATCHES_Vector3 && (sizeof(Basis) == (sizeof(Vector3) * 3))), // No field offset required, it stores an array
 
@@ -257,7 +272,8 @@ enum {
 #ifdef GD_MONO_FORCE_INTEROP_STRUCT_COPY
 /* clang-format off */
 static_assert(MATCHES_Vector2 && MATCHES_Rect2 && MATCHES_Transform2D && MATCHES_Vector3 &&
-				MATCHES_Basis && MATCHES_Quat && MATCHES_Transform && MATCHES_AABB && MATCHES_Color && MATCHES_Plane);
+				MATCHES_Basis && MATCHES_Quat && MATCHES_Transform && MATCHES_AABB && MATCHES_Color &&
+				MATCHES_Plane && MATCHES_Vector2i && MATCHES_Rect2i && MATCHES_Vector3i);
 /* clang-format on */
 #endif
 
@@ -278,6 +294,19 @@ struct M_Vector2 {
 	}
 };
 
+struct M_Vector2i {
+	int32_t x, y;
+
+	static _FORCE_INLINE_ Vector2i convert_to(const M_Vector2i &p_from) {
+		return Vector2i(p_from.x, p_from.y);
+	}
+
+	static _FORCE_INLINE_ M_Vector2i convert_from(const Vector2i &p_from) {
+		M_Vector2i ret = { p_from.x, p_from.y };
+		return ret;
+	}
+};
+
 struct M_Rect2 {
 	M_Vector2 position;
 	M_Vector2 size;
@@ -289,6 +318,21 @@ struct M_Rect2 {
 
 	static _FORCE_INLINE_ M_Rect2 convert_from(const Rect2 &p_from) {
 		M_Rect2 ret = { M_Vector2::convert_from(p_from.position), M_Vector2::convert_from(p_from.size) };
+		return ret;
+	}
+};
+
+struct M_Rect2i {
+	M_Vector2i position;
+	M_Vector2i size;
+
+	static _FORCE_INLINE_ Rect2i convert_to(const M_Rect2i &p_from) {
+		return Rect2i(M_Vector2i::convert_to(p_from.position),
+				M_Vector2i::convert_to(p_from.size));
+	}
+
+	static _FORCE_INLINE_ M_Rect2i convert_from(const Rect2i &p_from) {
+		M_Rect2i ret = { M_Vector2i::convert_from(p_from.position), M_Vector2i::convert_from(p_from.size) };
 		return ret;
 	}
 };
@@ -321,6 +365,19 @@ struct M_Vector3 {
 
 	static _FORCE_INLINE_ M_Vector3 convert_from(const Vector3 &p_from) {
 		M_Vector3 ret = { p_from.x, p_from.y, p_from.z };
+		return ret;
+	}
+};
+
+struct M_Vector3i {
+	int32_t x, y, z;
+
+	static _FORCE_INLINE_ Vector3i convert_to(const M_Vector3i &p_from) {
+		return Vector3i(p_from.x, p_from.y, p_from.z);
+	}
+
+	static _FORCE_INLINE_ M_Vector3i convert_from(const Vector3i &p_from) {
+		M_Vector3i ret = { p_from.x, p_from.y, p_from.z };
 		return ret;
 	}
 };
@@ -450,9 +507,12 @@ struct M_Plane {
 	}
 
 DECL_TYPE_MARSHAL_TEMPLATES(Vector2)
+DECL_TYPE_MARSHAL_TEMPLATES(Vector2i)
 DECL_TYPE_MARSHAL_TEMPLATES(Rect2)
+DECL_TYPE_MARSHAL_TEMPLATES(Rect2i)
 DECL_TYPE_MARSHAL_TEMPLATES(Transform2D)
 DECL_TYPE_MARSHAL_TEMPLATES(Vector3)
+DECL_TYPE_MARSHAL_TEMPLATES(Vector3i)
 DECL_TYPE_MARSHAL_TEMPLATES(Basis)
 DECL_TYPE_MARSHAL_TEMPLATES(Quat)
 DECL_TYPE_MARSHAL_TEMPLATES(Transform)

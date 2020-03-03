@@ -73,9 +73,12 @@ struct CachedData {
 	// -----------------------------------------------
 
 	GDMonoClass *class_Vector2;
+	GDMonoClass *class_Vector2i;
 	GDMonoClass *class_Rect2;
+	GDMonoClass *class_Rect2i;
 	GDMonoClass *class_Transform2D;
 	GDMonoClass *class_Vector3;
+	GDMonoClass *class_Vector3i;
 	GDMonoClass *class_Basis;
 	GDMonoClass *class_Quat;
 	GDMonoClass *class_Transform;
