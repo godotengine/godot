@@ -3497,6 +3497,15 @@ void GDScriptParser::_parse_extends(ClassNode *p_class) {
 			case GDScriptTokenizer::TK_IDENTIFIER:
 			case GDScriptTokenizer::TK_PERIOD:
 				continue;
+			case GDScriptTokenizer::TK_CURSOR:
+				completion_type = COMPLETION_TYPE_HINT;
+				completion_class = current_class;
+				completion_function = current_function;
+				completion_line = tokenizer->get_token_line();
+				completion_block = current_block;
+				completion_ident_is_call = false;
+				completion_found = true;
+				break;
 
 			default:
 				return;
