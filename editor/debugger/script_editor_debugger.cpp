@@ -58,6 +58,7 @@
 #include "scene/gui/texture_button.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/packed_scene.h"
+#include "servers/display_server.h"
 
 using CameraOverride = EditorDebuggerNode::CameraOverride;
 
@@ -73,7 +74,7 @@ void ScriptEditorDebugger::_put_msg(String p_message, Array p_data) {
 void ScriptEditorDebugger::debug_copy() {
 	String msg = reason->get_text();
 	if (msg == "") return;
-	OS::get_singleton()->set_clipboard(msg);
+	DisplayServer::get_singleton()->clipboard_set(msg);
 }
 
 void ScriptEditorDebugger::debug_skip_breakpoints() {
@@ -116,7 +117,7 @@ void ScriptEditorDebugger::debug_continue() {
 
 	// Allow focus stealing only if we actually run this client for security.
 	if (remote_pid && EditorNode::get_singleton()->has_child_process(remote_pid))
-		OS::get_singleton()->enable_for_stealing_focus(remote_pid);
+		DisplayServer::get_singleton()->enable_for_stealing_focus(remote_pid);
 
 	_clear_execution();
 	_put_msg("continue", Array());
@@ -253,7 +254,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		_update_buttons_state();
 		_set_reason_text(error, MESSAGE_ERROR);
 		emit_signal("breaked", true, can_continue);
-		OS::get_singleton()->move_window_to_foreground();
+		DisplayServer::get_singleton()->window_move_to_foreground();
 		if (error != "") {
 			tabs->set_current_tab(0);
 		}
@@ -1420,7 +1421,7 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 		ci = ci->get_next();
 	}
 
-	OS::get_singleton()->set_clipboard(text);
+	DisplayServer::get_singleton()->clipboard_set(text);
 }
 
 void ScriptEditorDebugger::_tab_changed(int p_tab) {

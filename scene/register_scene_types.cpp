@@ -480,7 +480,7 @@ void register_scene_types() {
 #endif
 	ClassDB::register_class<NavigationMesh>();
 
-	AcceptDialog::set_swap_ok_cancel(GLOBAL_DEF("gui/common/swap_ok_cancel", bool(OS::get_singleton()->get_swap_ok_cancel())));
+	AcceptDialog::set_swap_ok_cancel(GLOBAL_DEF("gui/common/swap_ok_cancel", bool(DisplayServer::get_singleton()->get_swap_ok_cancel())));
 
 	ClassDB::register_class<Shader>();
 	ClassDB::register_class<VisualShader>();

@@ -36,7 +36,7 @@
 #include "servers/display_server.h"
 
 #include "core/input/input.h"
-#include "crash_handler_x11.h"
+
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
@@ -52,7 +52,7 @@
 
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_device_vulkan.h"
-#include "platform/x11/vulkan_context_x11.h"
+#include "platform/linuxbsd/vulkan_context_x11.h"
 #endif
 
 #include <X11/Xcursor/Xcursor.h>
@@ -109,9 +109,6 @@ class DisplayServerX11 : public DisplayServer {
 	VulkanContextX11 *context_vulkan;
 	RenderingDeviceVulkan *rendering_device_vulkan;
 #endif
-
-	//Rasterizer *rasterizer;
-	VisualServer *visual_server;
 
 	struct WindowData {
 		Window x11_window;
@@ -200,7 +197,7 @@ class DisplayServerX11 : public DisplayServer {
 
 	bool layered_window;
 
-	String video_driver;
+	String rendering_driver;
 	bool window_focused;
 	//void set_wm_border(bool p_enabled);
 	void set_wm_fullscreen(bool p_enabled);
@@ -223,6 +220,10 @@ class DisplayServerX11 : public DisplayServer {
 	void _update_real_mouse_position(const WindowData &wd);
 	void _set_wm_fullscreen(WindowID p_window, bool p_enabled);
 	void _set_wm_maximized(WindowID p_window, bool p_enabled);
+
+	void _update_context(WindowData &wd);
+
+	Context context = CONTEXT_ENGINE;
 
 protected:
 	void _window_changed(XEvent *event);
@@ -286,6 +287,8 @@ public:
 
 	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const;
 
+	virtual bool can_any_window_draw() const;
+
 	virtual void window_set_ime_active(const bool p_active, WindowID p_window = MAIN_WINDOW_ID);
 	virtual void window_set_ime_position(const Point2i &p_pos, WindowID p_window = MAIN_WINDOW_ID);
 
@@ -301,12 +304,17 @@ public:
 	virtual void make_rendering_thread();
 	virtual void swap_buffers();
 
+	virtual void set_context(Context p_context);
+
 	virtual void set_native_icon(const String &p_filename);
 	virtual void set_icon(const Ref<Image> &p_icon);
 
-	static DisplayServer *create_func(const String &p_video_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
+	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
+	static Vector<String> get_rendering_drivers_func();
 
-	DisplayServerX11(const String &p_video_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
+	static void register_x11_driver();
+
+	DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
 	~DisplayServerX11();
 };
 

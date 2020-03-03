@@ -51,6 +51,7 @@
 #include "scene/main/timer.h"
 #include "scene/resources/mesh.h"
 #include "scene/scene_string_names.h"
+#include "servers/display_server.h"
 #include "servers/physics_2d_server.h"
 
 void ViewportTexture::setup_local_to_scene() {
@@ -732,7 +733,7 @@ Rect2 Viewport::get_visible_rect() const {
 	Rect2 r;
 
 	if (size == Size2()) {
-		r = Rect2(Point2(), OS::get_singleton()->get_window_size());
+		r = Rect2(Point2(), DisplayServer::get_singleton()->window_get_size());
 	} else {
 		r = Rect2(Point2(), size);
 	}
@@ -2172,7 +2173,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		}
 
 		if (!over) {
-			OS::get_singleton()->set_cursor_shape((OS::CursorShape)Input::get_singleton()->get_default_cursor_shape());
+			DisplayServer::get_singleton()->cursor_set_shape((DisplayServer::CursorShape)Input::get_singleton()->get_default_cursor_shape());
 			return;
 		}
 
@@ -2245,7 +2246,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 		}
 
-		OS::get_singleton()->set_cursor_shape((OS::CursorShape)cursor_shape);
+		DisplayServer::get_singleton()->cursor_set_shape((DisplayServer::CursorShape)cursor_shape);
 
 		if (over && over->can_process()) {
 			_gui_call_input(over, mm);
@@ -2258,9 +2259,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			bool can_drop = _gui_drop(over, pos, true);
 
 			if (!can_drop) {
-				OS::get_singleton()->set_cursor_shape(OS::CURSOR_FORBIDDEN);
+				DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CURSOR_FORBIDDEN);
 			} else {
-				OS::get_singleton()->set_cursor_shape(OS::CURSOR_CAN_DROP);
+				DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CURSOR_CAN_DROP);
 			}
 			//change mouse accordingly i guess
 		}
@@ -3084,6 +3085,10 @@ void Viewport::_propagate_update_default_repeat(Node *p_node) {
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_propagate_update_default_repeat(p_node->get_child(i));
 	}
+}
+
+DisplayServer::WindowID Viewport::get_window_id() const {
+	return DisplayServer::MAIN_WINDOW_ID;
 }
 
 void Viewport::_bind_methods() {

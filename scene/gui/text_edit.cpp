@@ -1754,8 +1754,8 @@ void TextEdit::_notification(int p_what) {
 			}
 
 			if (has_focus()) {
-				OS::get_singleton()->set_ime_active(true);
-				OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos + Point2(0, get_row_height()));
+				DisplayServer::get_singleton()->window_set_ime_active(true);
+				DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + cursor_pos + Point2(0, get_row_height()));
 			}
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
@@ -1766,12 +1766,12 @@ void TextEdit::_notification(int p_what) {
 				draw_caret = true;
 			}
 
-			OS::get_singleton()->set_ime_active(true);
+			DisplayServer::get_singleton()->window_set_ime_active(true);
 			Point2 cursor_pos = Point2(cursor_get_column(), cursor_get_line()) * get_row_height();
-			OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
+			DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + cursor_pos);
 
-			if (OS::get_singleton()->has_virtual_keyboard())
-				OS::get_singleton()->show_virtual_keyboard(get_text(), get_global_rect());
+			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD))
+				DisplayServer::get_singleton()->virtual_keyboard_show(get_text(), get_global_rect());
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
 
@@ -1779,19 +1779,19 @@ void TextEdit::_notification(int p_what) {
 				caret_blink_timer->stop();
 			}
 
-			OS::get_singleton()->set_ime_position(Point2());
-			OS::get_singleton()->set_ime_active(false);
+			DisplayServer::get_singleton()->window_set_ime_position(Point2());
+			DisplayServer::get_singleton()->window_set_ime_active(false);
 			ime_text = "";
 			ime_selection = Point2();
 
-			if (OS::get_singleton()->has_virtual_keyboard())
-				OS::get_singleton()->hide_virtual_keyboard();
+			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD))
+				DisplayServer::get_singleton()->virtual_keyboard_hide();
 		} break;
 		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
 
 			if (has_focus()) {
-				ime_text = OS::get_singleton()->get_ime_text();
-				ime_selection = OS::get_singleton()->get_ime_selection();
+				ime_text = DisplayServer::get_singleton()->ime_get_text();
+				ime_selection = DisplayServer::get_singleton()->ime_get_selection();
 				update();
 			}
 		} break;
@@ -5226,7 +5226,7 @@ void TextEdit::cut() {
 	if (!selection.active) {
 
 		String clipboard = text[cursor.line];
-		OS::get_singleton()->set_clipboard(clipboard);
+		DisplayServer::get_singleton()->clipboard_set(clipboard);
 		cursor_set_line(cursor.line);
 		cursor_set_column(0);
 
@@ -5244,7 +5244,7 @@ void TextEdit::cut() {
 	} else {
 
 		String clipboard = _base_get_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
-		OS::get_singleton()->set_clipboard(clipboard);
+		DisplayServer::get_singleton()->clipboard_set(clipboard);
 
 		_remove_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
 		cursor_set_line(selection.from_line); // Set afterwards else it causes the view to be offset.
@@ -5264,19 +5264,19 @@ void TextEdit::copy() {
 		if (text[cursor.line].length() != 0) {
 
 			String clipboard = _base_get_text(cursor.line, 0, cursor.line, text[cursor.line].length());
-			OS::get_singleton()->set_clipboard(clipboard);
+			DisplayServer::get_singleton()->clipboard_set(clipboard);
 			cut_copy_line = clipboard;
 		}
 	} else {
 		String clipboard = _base_get_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
-		OS::get_singleton()->set_clipboard(clipboard);
+		DisplayServer::get_singleton()->clipboard_set(clipboard);
 		cut_copy_line = "";
 	}
 }
 
 void TextEdit::paste() {
 
-	String clipboard = OS::get_singleton()->get_clipboard();
+	String clipboard = DisplayServer::get_singleton()->clipboard_get();
 
 	begin_complex_operation();
 	if (selection.active) {

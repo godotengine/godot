@@ -240,7 +240,7 @@ bool Particles::get_fractional_delta() const {
 
 String Particles::get_configuration_warning() const {
 
-	if (OS::get_singleton()->get_current_video_driver() == OS::VIDEO_DRIVER_GLES2) {
+	if (VisualServer::get_singleton()->is_low_end()) {
 		return TTR("GPU-based particles are not supported by the GLES2 video driver.\nUse the CPUParticles node instead. You can use the \"Convert to CPUParticles\" option for this purpose.");
 	}
 

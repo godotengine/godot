@@ -35,6 +35,7 @@
 #include "editor/editor_file_system.h"
 #include "editor/editor_settings.h"
 #include "editor_scale.h"
+#include "servers/display_server.h"
 
 void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path) {
 
@@ -188,7 +189,7 @@ EditorDirDialog::EditorDirDialog() {
 
 	tree->connect("item_activated", callable_mp(this, &EditorDirDialog::_item_activated));
 
-	makedir = add_button(TTR("Create Folder"), OS::get_singleton()->get_swap_ok_cancel(), "makedir");
+	makedir = add_button(TTR("Create Folder"), DisplayServer::get_singleton()->get_swap_ok_cancel(), "makedir");
 	makedir->connect("pressed", callable_mp(this, &EditorDirDialog::_make_dir));
 
 	makedialog = memnew(ConfirmationDialog);

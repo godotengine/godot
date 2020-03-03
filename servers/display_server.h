@@ -31,6 +31,7 @@
 #ifndef DISPLAY_SERVER_H
 #define DISPLAY_SERVER_H
 
+#include "core/input/input.h"
 #include "core/os/os.h"
 #include "core/resource.h"
 
@@ -38,9 +39,45 @@ class DisplayServer : public Object {
 	GDCLASS(DisplayServer, Object)
 
 	static DisplayServer *singleton;
+	bool vsync_enabled = true;
+
+public:
+	_FORCE_INLINE_ static DisplayServer *get_singleton() {
+		return singleton;
+	}
+	enum WindowMode {
+		WINDOW_MODE_WINDOWED,
+		WINDOW_MODE_MINIMIZED,
+		WINDOW_MODE_MAXIMIZED,
+		WINDOW_MODE_FULLSCREEN
+	};
+
+	typedef DisplayServer *(*CreateFunction)(const String &, WindowMode, uint32_t, const Size2i &, Error &r_error); //video driver, window mode, resolution
+	typedef Vector<String> (*GetVideoDriversFunction)(); //video driver, window mode, resolution
+private:
+	static void _input_set_mouse_mode(Input::MouseMode p_mode);
+	static Input::MouseMode _input_get_mouse_mode();
+	static void _input_warp(const Vector2 &p_to_pos);
+	static Input::CursorShape _input_get_current_cursor_shape();
+	static void _input_set_custom_mouse_cursor_func(const RES &, Input::CursorShape, const Vector2 &p_hostspot);
 
 protected:
 	static void _bind_methods();
+	enum {
+		MAX_SERVERS = 64
+	};
+
+	struct DisplayServerCreate {
+		const char *name;
+		GetVideoDriversFunction get_rendering_drivers_function;
+		CreateFunction create_function;
+	};
+
+	static DisplayServerCreate server_create_functions[MAX_SERVERS];
+	static int server_create_count;
+
+	friend class VisualServerRaster;
+	virtual void _set_use_vsync(bool p_enable);
 
 public:
 	enum Feature {
@@ -62,7 +99,8 @@ public:
 		FEATURE_ICON,
 		FEATURE_NATIVE_ICON,
 		FEATURE_ORIENTATION,
-		FEATURE_SWAP_BUFFERS
+		FEATURE_SWAP_BUFFERS,
+		FEATURE_KEEP_SCREEN_ON,
 
 	};
 
@@ -101,8 +139,7 @@ public:
 	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
-	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
-
+	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 	enum ScreenOrientation {
 
 		SCREEN_LANDSCAPE,
@@ -117,6 +154,8 @@ public:
 	virtual void screen_set_orientation(ScreenOrientation p_orientation, int p_screen = SCREEN_OF_MAIN_WINDOW);
 	ScreenOrientation screen_get_orientation(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 
+	virtual void screen_set_keep_on(bool p_enable); //disable screensaver
+	virtual bool screen_is_kept_on() const;
 	enum {
 		MAIN_WINDOW_ID = 0,
 		INVALID_WINDOW_ID = -1
@@ -125,13 +164,6 @@ public:
 	typedef int WindowID;
 
 	virtual Vector<int> get_window_list() const = 0;
-
-	enum WindowMode {
-		WINDOW_MODE_WINDOWED,
-		WINDOW_MODE_MINIMIZED,
-		WINDOW_MODE_MAXIMIZED,
-		WINDOW_MODE_FULLSCREEN
-	};
 
 	enum WindowFlags {
 		WINDOW_FLAG_RESIZE_DISABLED,
@@ -179,6 +211,8 @@ public:
 
 	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
+	virtual bool can_any_window_draw() const = 0;
+
 	virtual void window_set_ime_active(const bool p_active, WindowID p_window = MAIN_WINDOW_ID);
 	virtual void window_set_ime_position(const Point2i &p_pos, WindowID p_window = MAIN_WINDOW_ID);
 
@@ -188,7 +222,7 @@ public:
 	virtual void console_set_visible(bool p_enabled);
 	virtual bool is_console_visible() const;
 
-	virtual void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2());
+	virtual void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), int p_max_legth = -1);
 	virtual void virtual_keyboard_hide();
 
 	// returns height of the currently shown virtual keyboard (0 if keyboard is hidden)
@@ -216,7 +250,7 @@ public:
 	};
 	virtual void cursor_set_shape(CursorShape p_shape);
 	virtual CursorShape cursor_get_shape() const;
-	virtual void cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
+	virtual void cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
 
 	virtual bool get_swap_ok_cancel();
 
@@ -255,8 +289,31 @@ public:
 	virtual void set_native_icon(const String &p_filename);
 	virtual void set_icon(const Ref<Image> &p_icon);
 
-	typedef Vector<String> *(*GetSupportedVideoDriversFunction)();
-	typedef DisplayServer *(*CreateFunction)(const String &, WindowMode, uint32_t, const Size2i &, Error &r_error); //video driver, window mode, resolution
+	typedef void (*SwitchVSyncCallbackInThread)(bool);
+
+	static SwitchVSyncCallbackInThread switch_vsync_function;
+
+	void vsync_set_enabled(bool p_enable);
+	bool vsync_is_enabled() const;
+
+	virtual void vsync_set_use_via_compositor(bool p_enable);
+	virtual bool vsync_is_using_via_compositor() const;
+
+	//real, actual overridable function to switch vsync, which needs to be called from graphics thread if needed
+
+	enum Context {
+		CONTEXT_EDITOR,
+		CONTEXT_PROJECTMAN,
+		CONTEXT_ENGINE,
+	};
+
+	virtual void set_context(Context p_context);
+
+	static void register_create_function(const char *p_name, CreateFunction p_function, GetVideoDriversFunction p_get_drivers);
+	static int get_create_function_count();
+	static const char *get_create_function_name(int p_index);
+	static Vector<String> get_create_function_rendering_drivers(int p_index);
+	static DisplayServer *create(int p_index, const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
 
 	DisplayServer();
 	~DisplayServer();

@@ -41,6 +41,12 @@
 
 Input *Input::singleton = NULL;
 
+void (*Input::set_mouse_mode_func)(Input::MouseMode) = nullptr;
+Input::MouseMode (*Input::get_mouse_mode_func)() = nullptr;
+void (*Input::warp_mouse_func)(const Vector2 &p_to_pos) = nullptr;
+Input::CursorShape (*Input::get_current_cursor_shape_func)() = nullptr;
+void (*Input::set_custom_mouse_cursor_func)(const RES &, Input::CursorShape, const Vector2 &) = nullptr;
+
 Input *Input::get_singleton() {
 
 	return singleton;
@@ -48,12 +54,12 @@ Input *Input::get_singleton() {
 
 void Input::set_mouse_mode(MouseMode p_mode) {
 	ERR_FAIL_INDEX((int)p_mode, 4);
-	OS::get_singleton()->set_mouse_mode((OS::MouseMode)p_mode);
+	set_mouse_mode_func(p_mode);
 }
 
 Input::MouseMode Input::get_mouse_mode() const {
 
-	return (MouseMode)OS::get_singleton()->get_mouse_mode();
+	return get_mouse_mode_func();
 }
 
 void Input::_bind_methods() {
@@ -654,10 +660,8 @@ int Input::get_mouse_button_mask() const {
 }
 
 void Input::warp_mouse_position(const Vector2 &p_to) {
-
-	OS::get_singleton()->warp_mouse_position(p_to);
+	warp_mouse_func(p_to);
 }
-
 Point2i Input::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect) {
 
 	// The relative distance reported for the next event after a warp is in the boundaries of the
@@ -678,7 +682,7 @@ Point2i Input::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, con
 	const Point2i pos_local = p_motion->get_global_position() - p_rect.position;
 	const Point2i pos_warped(Math::fposmod(pos_local.x, p_rect.size.x), Math::fposmod(pos_local.y, p_rect.size.y));
 	if (pos_warped != pos_local) {
-		OS::get_singleton()->warp_mouse_position(pos_warped + p_rect.position);
+		warp_mouse_position(pos_warped + p_rect.position);
 	}
 
 	return rel_warped;
@@ -774,14 +778,14 @@ void Input::set_default_cursor_shape(CursorShape p_shape) {
 
 Input::CursorShape Input::get_current_cursor_shape() const {
 
-	return (Input::CursorShape)OS::get_singleton()->get_cursor_shape();
+	return get_current_cursor_shape_func();
 }
 
 void Input::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	if (Engine::get_singleton()->is_editor_hint())
 		return;
 
-	OS::get_singleton()->set_custom_mouse_cursor(p_cursor, (OS::CursorShape)p_shape, p_hotspot);
+	set_custom_mouse_cursor_func(p_cursor, p_shape, p_hotspot);
 }
 
 void Input::accumulate_input_event(const Ref<InputEvent> &p_event) {
@@ -1171,23 +1175,13 @@ void Input::set_fallback_mapping(String p_guid) {
 	}
 }
 
-//Defaults to simple implementation for platforms with a fixed gamepad layout, like consoles.
-bool Input::is_joy_known(int p_device) {
-
-	return OS::get_singleton()->is_joy_known(p_device);
-}
-
-String Input::get_joy_guid(int p_device) const {
-	return OS::get_singleton()->get_joy_guid(p_device);
-}
-
 //platforms that use the remapping system can override and call to these ones
-bool Input::is_joy_mapped(int p_device) {
+bool Input::is_joy_known(int p_device) {
 	int mapping = joy_names[p_device].mapping;
 	return mapping != -1 ? (mapping != fallback_mapping) : false;
 }
 
-String Input::get_joy_guid_remapped(int p_device) const {
+String Input::get_joy_guid(int p_device) const {
 	ERR_FAIL_COND_V(!joy_names.has(p_device), "");
 	return joy_names[p_device].uid;
 }

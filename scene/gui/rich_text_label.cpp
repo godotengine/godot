@@ -34,6 +34,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "scene/scene_string_names.h"
+#include "servers/display_server.h"
 
 #include "modules/modules_enabled.gen.h"
 #ifdef MODULE_REGEX_ENABLED
@@ -2584,7 +2585,7 @@ void RichTextLabel::selection_copy() {
 	}
 
 	if (text != "") {
-		OS::get_singleton()->set_clipboard(text);
+		DisplayServer::get_singleton()->clipboard_set(text);
 	}
 }
 

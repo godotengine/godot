@@ -38,6 +38,7 @@
 #include "core/project_settings.h"
 #include "core/script_language.h"
 #include "scene/main/node.h"
+#include "servers/display_server.h"
 
 template <typename T>
 void RemoteDebugger::_bind_profiler(const String &p_name, T *p_prof) {
@@ -694,7 +695,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			} else if (command == "continue") {
 				script_debugger->set_depth(-1);
 				script_debugger->set_lines_left(-1);
-				OS::get_singleton()->move_window_to_foreground();
+				DisplayServer::get_singleton()->window_move_to_foreground();
 				break;
 
 			} else if (command == "break") {

@@ -33,6 +33,7 @@
 #include "editor/editor_node.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/resources/packed_scene.h"
+#include "servers/display_server.h"
 
 EditorDebuggerTree::EditorDebuggerTree() {
 	set_v_size_flags(SIZE_EXPAND_FILL);
@@ -257,7 +258,7 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 					text = text.substr(slash + 1);
 				}
 			}
-			OS::get_singleton()->set_clipboard(text);
+			DisplayServer::get_singleton()->clipboard_set(text);
 		} break;
 	}
 }

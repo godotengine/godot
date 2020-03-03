@@ -169,7 +169,7 @@
 #include "editor/register_exporters.h"
 #include "editor/run_settings_dialog.h"
 #include "editor/settings_config_dialog.h"
-
+#include "servers/display_server.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -179,7 +179,9 @@ void EditorNode::_update_scene_tabs() {
 
 	bool show_rb = EditorSettings::get_singleton()->get("interface/scene_tabs/show_script_button");
 
-	OS::get_singleton()->global_menu_clear("_dock");
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
+		DisplayServer::get_singleton()->global_menu_clear("_dock");
+	}
 
 	scene_tabs->clear_tabs();
 	Ref<Texture2D> script_icon = gui_base->get_icon("Script", "EditorIcons");
@@ -195,15 +197,19 @@ void EditorNode::_update_scene_tabs() {
 		bool unsaved = (i == current) ? saved_version != editor_data.get_undo_redo().get_version() : editor_data.get_scene_version(i) != 0;
 		scene_tabs->add_tab(editor_data.get_scene_title(i) + (unsaved ? "(*)" : ""), icon);
 
-		OS::get_singleton()->global_menu_add_item("_dock", editor_data.get_scene_title(i) + (unsaved ? "(*)" : ""), GLOBAL_SCENE, i);
+		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
+			DisplayServer::get_singleton()->global_menu_add_item("_dock", editor_data.get_scene_title(i) + (unsaved ? "(*)" : ""), GLOBAL_SCENE, i);
+		}
 
 		if (show_rb && editor_data.get_scene_root_script(i).is_valid()) {
 			scene_tabs->set_tab_right_button(i, script_icon);
 		}
 	}
 
-	OS::get_singleton()->global_menu_add_separator("_dock");
-	OS::get_singleton()->global_menu_add_item("_dock", TTR("New Window"), GLOBAL_NEW_WINDOW, Variant());
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
+		DisplayServer::get_singleton()->global_menu_add_separator("_dock");
+		DisplayServer::get_singleton()->global_menu_add_item("_dock", TTR("New Window"), GLOBAL_NEW_WINDOW, Variant());
+	}
 
 	scene_tabs->set_current_tab(editor_data.get_edited_scene());
 
@@ -252,7 +258,7 @@ void EditorNode::_update_title() {
 	if (unsaved_cache)
 		title += " (*)";
 
-	OS::get_singleton()->set_window_title(title);
+	DisplayServer::get_singleton()->window_set_title(title);
 }
 
 void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
@@ -2537,7 +2543,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					}
 				}
 
-				OS::get_singleton()->request_attention();
+				DisplayServer::get_singleton()->window_request_attention();
 				break;
 			}
 
@@ -2585,13 +2591,13 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case SETTINGS_TOGGLE_FULLSCREEN: {
 
-			OS::get_singleton()->set_window_fullscreen(!OS::get_singleton()->is_window_fullscreen());
+			DisplayServer::get_singleton()->window_set_mode(DisplayServer::get_singleton()->window_get_mode() == DisplayServer::WINDOW_MODE_FULLSCREEN ? DisplayServer::WINDOW_MODE_WINDOWED : DisplayServer::WINDOW_MODE_FULLSCREEN);
 
 		} break;
 		case SETTINGS_TOGGLE_CONSOLE: {
 
-			bool was_visible = OS::get_singleton()->is_console_visible();
-			OS::get_singleton()->set_console_visible(!was_visible);
+			bool was_visible = DisplayServer::get_singleton()->is_console_visible();
+			DisplayServer::get_singleton()->console_set_visible(!was_visible);
 			EditorSettings::get_singleton()->set_setting("interface/editor/hide_console_window", was_visible);
 		} break;
 		case EDITOR_SCREENSHOT: {
@@ -3937,7 +3943,7 @@ void EditorNode::show_warning(const String &p_text, const String &p_title) {
 
 void EditorNode::_copy_warning(const String &p_str) {
 
-	OS::get_singleton()->set_clipboard(warning->get_text());
+	DisplayServer::get_singleton()->clipboard_set(warning->get_text());
 }
 
 void EditorNode::_dock_select_input(const Ref<InputEvent> &p_input) {
@@ -5286,7 +5292,7 @@ void EditorNode::_video_driver_selected(int p_which) {
 
 	String driver = video_driver->get_item_metadata(p_which);
 
-	String current = OS::get_singleton()->get_video_driver_name(OS::get_singleton()->get_current_video_driver());
+	String current = ""; //OS::get_singleton()->get_video_driver_name(OS::get_singleton()->get_current_video_driver());
 
 	if (driver == current) {
 		return;
@@ -5485,11 +5491,18 @@ EditorNode::EditorNode() {
 
 	if (id) {
 
-		if (!OS::get_singleton()->has_touchscreen_ui_hint() && Input::get_singleton()) {
+		bool found_touchscreen = false;
+		for (int i = 0; i < DisplayServer::get_singleton()->get_screen_count(); i++) {
+			if (DisplayServer::get_singleton()->screen_is_touchscreen(i)) {
+				found_touchscreen = true;
+			}
+		}
+
+		if (!found_touchscreen && Input::get_singleton()) {
 			//only if no touchscreen ui hint, set emulation
 			id->set_emulate_touch_from_mouse(false); //just disable just in case
 		}
-		id->set_custom_mouse_cursor(RES());
+		DisplayServer::get_singleton()->cursor_set_custom_image(RES());
 	}
 
 	singleton = this;
@@ -5518,8 +5531,8 @@ EditorNode::EditorNode() {
 		switch (display_scale) {
 			case 0: {
 				// Try applying a suitable display scale automatically
-				const int screen = OS::get_singleton()->get_current_screen();
-				editor_set_scale(OS::get_singleton()->get_screen_dpi(screen) >= 192 && OS::get_singleton()->get_screen_size(screen).x > 2000 ? 2.0 : 1.0);
+				const int screen = DisplayServer::get_singleton()->window_get_current_screen();
+				editor_set_scale(DisplayServer::get_singleton()->screen_get_dpi(screen) >= 192 && DisplayServer::get_singleton()->screen_get_size(screen).x > 2000 ? 2.0 : 1.0);
 			} break;
 
 			case 1: {
@@ -5553,7 +5566,7 @@ EditorNode::EditorNode() {
 	}
 
 	// Define a minimum window size to prevent UI elements from overlapping or being cut off
-	OS::get_singleton()->set_min_window_size(Size2(1024, 600) * EDSCALE);
+	DisplayServer::get_singleton()->window_set_min_size(Size2(1024, 600) * EDSCALE);
 
 	ResourceLoader::set_abort_on_missing_resources(false);
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files"));
@@ -6257,6 +6270,10 @@ EditorNode::EditorNode() {
 	video_driver->set_disabled(true);
 	right_menu_hb->add_child(video_driver);
 
+#ifndef _MSC_VER
+#warning neeeds to be reimplemented
+#endif
+#if 0
 	String video_drivers = ProjectSettings::get_singleton()->get_custom_property_info()["rendering/quality/driver/driver_name"].hint_string;
 	String current_video_driver = OS::get_singleton()->get_video_driver_name(OS::get_singleton()->get_current_video_driver());
 	video_driver_current = 0;
@@ -6272,7 +6289,7 @@ EditorNode::EditorNode() {
 	}
 
 	_update_video_driver_color();
-
+#endif
 	video_restart_dialog = memnew(ConfirmationDialog);
 	video_restart_dialog->set_text(TTR("Changing the video driver requires restarting the editor."));
 	video_restart_dialog->get_ok()->set_text(TTR("Save & Restart"));
@@ -6413,7 +6430,7 @@ EditorNode::EditorNode() {
 	confirmation->connect("confirmed", callable_mp(this, &EditorNode::_menu_confirm_current));
 
 	save_confirmation = memnew(ConfirmationDialog);
-	save_confirmation->add_button(TTR("Don't Save"), OS::get_singleton()->get_swap_ok_cancel(), "discard");
+	save_confirmation->add_button(TTR("Don't Save"), DisplayServer::get_singleton()->get_swap_ok_cancel(), "discard");
 	gui_base->add_child(save_confirmation);
 	save_confirmation->connect("confirmed", callable_mp(this, &EditorNode::_menu_confirm_current));
 	save_confirmation->connect("custom_action", callable_mp(this, &EditorNode::_discard_changes));
@@ -6624,7 +6641,7 @@ EditorNode::EditorNode() {
 
 	open_imported = memnew(ConfirmationDialog);
 	open_imported->get_ok()->set_text(TTR("Open Anyway"));
-	new_inherited_button = open_imported->add_button(TTR("New Inherited"), !OS::get_singleton()->get_swap_ok_cancel(), "inherit");
+	new_inherited_button = open_imported->add_button(TTR("New Inherited"), !DisplayServer::get_singleton()->get_swap_ok_cancel(), "inherit");
 	open_imported->connect("confirmed", callable_mp(this, &EditorNode::_open_imported));
 	open_imported->connect("custom_action", callable_mp(this, &EditorNode::_inherit_imported));
 	gui_base->add_child(open_imported);

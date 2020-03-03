@@ -35,6 +35,7 @@
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 #include "scene/resources/world_2d.h"
+#include "servers/display_server.h"
 #include "servers/visual_server.h"
 
 class Camera;
@@ -559,6 +560,8 @@ public:
 
 	void set_default_canvas_item_texture_repeat(DefaultCanvasItemTextureRepeat p_repeat);
 	DefaultCanvasItemTextureRepeat get_default_canvas_item_texture_repeat() const;
+
+	DisplayServer::WindowID get_window_id() const;
 
 	Viewport();
 	~Viewport();

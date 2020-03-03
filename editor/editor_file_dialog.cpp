@@ -42,6 +42,7 @@
 #include "scene/gui/center_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
+#include "servers/display_server.h"
 
 EditorFileDialog::GetIconFunc EditorFileDialog::get_icon_func = NULL;
 EditorFileDialog::GetIconFunc EditorFileDialog::get_large_icon_func = NULL;
@@ -631,7 +632,7 @@ void EditorFileDialog::_item_menu_id_pressed(int p_option) {
 
 		case ITEM_MENU_COPY_PATH: {
 			Dictionary item_meta = item_list->get_item_metadata(item_list->get_current());
-			OS::get_singleton()->set_clipboard(item_meta["path"]);
+			DisplayServer::get_singleton()->clipboard_set(item_meta["path"]);
 		} break;
 
 		case ITEM_MENU_DELETE: {

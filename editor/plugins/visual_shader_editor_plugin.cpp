@@ -44,6 +44,7 @@
 #include "scene/gui/panel.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/visual_shader_nodes.h"
+#include "servers/display_server.h"
 #include "servers/visual/shader_types.h"
 
 Control *VisualShaderNodePlugin::create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node) {
@@ -1646,7 +1647,7 @@ void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos) {
 	}
 
 	// keep dialog within window bounds
-	Size2 window_size = OS::get_singleton()->get_window_size();
+	Size2 window_size = DisplayServer::get_singleton()->window_get_size();
 	Rect2 dialog_rect = members_dialog->get_global_rect();
 	if (dialog_rect.position.y + dialog_rect.size.y > window_size.y) {
 		int difference = dialog_rect.position.y + dialog_rect.size.y - window_size.y;

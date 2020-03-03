@@ -8,7 +8,7 @@ def is_active():
 
 
 def get_name():
-    return "X11"
+    return "LinuxBSD"
 
 
 def can_build():
@@ -317,7 +317,7 @@ def configure(env):
     if not env['builtin_zlib']:
         env.ParseConfig('pkg-config zlib --cflags --libs')
 
-    env.Prepend(CPPPATH=['#platform/x11'])
+    env.Prepend(CPPPATH=['#platform/linuxbsd'])
     env.Append(CPPDEFINES=['X11_ENABLED', 'UNIX_ENABLED'])
 
     env.Append(CPPDEFINES=['VULKAN_ENABLED'])
@@ -350,9 +350,9 @@ def configure(env):
             print("Warning: Creating template binaries enabled for PCK embedding is currently only supported with GNU ld")
         else:
             if float(gnu_ld_version.group(1)) >= 2.30:
-                env.Append(LINKFLAGS=['-T', 'platform/x11/pck_embed.ld'])
+                env.Append(LINKFLAGS=['-T', 'platform/linuxbsd/pck_embed.ld'])
             else:
-                env.Append(LINKFLAGS=['-T', 'platform/x11/pck_embed.legacy.ld'])
+                env.Append(LINKFLAGS=['-T', 'platform/linuxbsd/pck_embed.legacy.ld'])
 
     ## Cross-compilation
 
