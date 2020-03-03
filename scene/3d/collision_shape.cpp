@@ -127,6 +127,14 @@ String CollisionShape::get_configuration_warning() const {
 		return TTR("Plane shapes don't work well and will be removed in future versions. Please don't use them.");
 	}
 
+	if (Object::cast_to<RigidBody>(get_parent())) {
+		if (Object::cast_to<ConcavePolygonShape>(*shape)) {
+			if (Object::cast_to<RigidBody>(get_parent())->get_mode() != RigidBody::MODE_STATIC) {
+				return TTR("ConcavePolygonShape doesn't support RigidBody in another mode than static.");
+			}
+		}
+	}
+
 	return String();
 }
 

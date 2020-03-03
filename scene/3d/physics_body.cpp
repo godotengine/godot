@@ -590,6 +590,7 @@ void RigidBody::set_mode(Mode p_mode) {
 			PhysicsServer::get_singleton()->body_set_mode(get_rid(), PhysicsServer::BODY_MODE_KINEMATIC);
 		} break;
 	}
+	update_configuration_warning();
 }
 
 RigidBody::Mode RigidBody::get_mode() const {
