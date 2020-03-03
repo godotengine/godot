@@ -2258,6 +2258,14 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 					}
 				}
 
+				if ((p_method == "set" || p_method == "get") && p_argidx == 0) {
+					for (int i = 0; i < base_type.class_type->variables.size(); i++) {
+						ScriptCodeCompletionOption option(base_type.class_type->variables[i].identifier.operator String(), ScriptCodeCompletionOption::KIND_MEMBER);
+						option.insert_text = quote_style + option.display + quote_style;
+						r_result.insert(option.display, option);
+					}
+				}
+
 				base_type = base_type.class_type->base_type;
 			} break;
 			case GDScriptParser::DataType::GDSCRIPT: {
