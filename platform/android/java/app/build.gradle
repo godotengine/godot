@@ -80,33 +80,33 @@ android {
         main {
             manifest.srcFile 'AndroidManifest.xml'
             java.srcDirs = [
-                    'src'
+                'src'
 //DIR_SRC_BEGIN
 //DIR_SRC_END
             ]
             res.srcDirs = [
-                    'res'
+                'res'
 //DIR_RES_BEGIN
 //DIR_RES_END
             ]
             aidl.srcDirs = [
-                    'aidl'
+                'aidl'
 //DIR_AIDL_BEGIN
 //DIR_AIDL_END
             ]
             assets.srcDirs = [
-                    'assets'
+                'assets'
 //DIR_ASSETS_BEGIN
 //DIR_ASSETS_END
             ]
         }
         debug.jniLibs.srcDirs = [
-                'libs/debug'
+            'libs/debug'
 //DIR_JNI_DEBUG_BEGIN
 //DIR_JNI_DEBUG_END
         ]
         release.jniLibs.srcDirs = [
-                'libs/release'
+            'libs/release'
 //DIR_JNI_RELEASE_BEGIN
 //DIR_JNI_RELEASE_END
         ]

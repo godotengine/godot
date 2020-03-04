@@ -24,7 +24,7 @@ ext {
     sconsExt = org.gradle.internal.os.OperatingSystem.current().isWindows() ? ".bat" : ""
 
     supportedAbis = ["armv7", "arm64v8", "x86", "x86_64"]
-    supportedTargets = ['release':"release", 'debug':"release_debug"]
+    supportedTargets = ['release': "release", 'debug': "release_debug"]
 
     // Used by gradle to specify which architecture to build for by default when running `./gradlew build`.
     // This command is usually used by Android Studio.
@@ -95,7 +95,7 @@ task zipCustomBuild(type: Zip) {
     doFirst {
         logger.lifecycle("Generating Godot custom build template")
     }
-    from(fileTree(dir: 'app', excludes: ['**/build/**', '**/.gradle/**', '**/*.iml']), fileTree(dir: '.', includes: ['gradle.properties','gradlew', 'gradlew.bat', 'gradle/**']))
+    from(fileTree(dir: 'app', excludes: ['**/build/**', '**/.gradle/**', '**/*.iml']), fileTree(dir: '.', includes: ['gradle.properties', 'gradlew', 'gradlew.bat', 'gradle/**']))
     include '**/*'
     archiveName 'android_source.zip'
     destinationDir(file(binDir))
@@ -133,20 +133,20 @@ task generateGodotTemplates(type: GradleBuild) {
  * Clean the generated artifacts.
  */
 task cleanGodotTemplates(type: Delete) {
-	// Delete the generated native libs
-	delete("lib/libs")
+    // Delete the generated native libs
+    delete("lib/libs")
 
-	// Delete the library generated AAR files
-	delete("lib/build/outputs/aar")
+    // Delete the library generated AAR files
+    delete("lib/build/outputs/aar")
 
-	// Delete the app libs directory contents
-	delete("app/libs")
+    // Delete the app libs directory contents
+    delete("app/libs")
 
-	// Delete the generated binary apks
-	delete("app/build/outputs/apk")
+    // Delete the generated binary apks
+    delete("app/build/outputs/apk")
 
-	// Delete the Godot templates in the Godot bin directory
-	delete("$binDir/android_debug.apk")
-	delete("$binDir/android_release.apk")
-	delete("$binDir/android_source.zip")
+    // Delete the Godot templates in the Godot bin directory
+    delete("$binDir/android_debug.apk")
+    delete("$binDir/android_release.apk")
+    delete("$binDir/android_source.zip")
 }
