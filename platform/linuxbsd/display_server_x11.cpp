@@ -640,6 +640,14 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 
 	WindowData &wd = windows[p_id];
 
+	while (wd.transient_children.size()) {
+		window_set_transient(wd.transient_children.front()->get(), INVALID_WINDOW_ID);
+	}
+
+	if (wd.transient_parent != INVALID_WINDOW_ID) {
+		window_set_transient(p_id, INVALID_WINDOW_ID);
+	}
+
 #ifdef VULKAN_ENABLED
 	if (rendering_driver == "vulkan") {
 		context_vulkan->window_destroy(p_id);
@@ -730,6 +738,40 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 			Point2i position = screen_get_position(p_screen);
 			XMoveWindow(x11_display, wd.x11_window, position.x, position.y);
 		}
+	}
+}
+
+void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent) {
+
+	ERR_FAIL_COND(p_window == p_parent);
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd_window = windows[p_window];
+
+	ERR_FAIL_COND(wd_window.transient_parent == p_parent);
+
+	ERR_FAIL_COND_MSG(wd_window.on_top, "Windows with the 'on top' can't become transient.");
+	if (p_parent == INVALID_WINDOW_ID) {
+		//remove transient
+
+		ERR_FAIL_COND(wd_window.transient_parent == INVALID_WINDOW_ID);
+		ERR_FAIL_COND(!windows.has(wd_window.transient_parent));
+
+		WindowData &wd_parent = windows[wd_window.transient_parent];
+
+		wd_window.transient_parent = INVALID_WINDOW_ID;
+		wd_parent.transient_children.erase(p_window);
+
+		XSetTransientForHint(x11_display, wd_window.x11_window, None);
+	} else {
+		ERR_FAIL_COND(!windows.has(p_parent));
+		ERR_FAIL_COND_MSG(wd_window.transient_parent != INVALID_WINDOW_ID, "Window already has a transient parent");
+		WindowData &wd_parent = windows[p_parent];
+
+		wd_window.transient_parent = p_parent;
+		wd_parent.transient_children.insert(p_window);
+
+		XSetTransientForHint(x11_display, wd_window.x11_window, wd_parent.x11_window);
 	}
 }
 
@@ -1353,6 +1395,7 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
 
+			ERR_FAIL_COND_MSG(wd.transient_parent != INVALID_WINDOW_ID, "Can't make a window transient if the 'on top' flag is active.");
 			if (p_enabled && wd.fullscreen) {
 				_set_wm_maximized(p_window, true);
 			}
