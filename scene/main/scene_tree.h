@@ -39,9 +39,11 @@
 #include "scene/resources/world.h"
 #include "scene/resources/world_2d.h"
 
+#undef Window
+
 class PackedScene;
 class Node;
-class Viewport;
+class Window;
 class Material;
 class Mesh;
 class SceneDebugger;
@@ -76,22 +78,6 @@ class SceneTree : public MainLoop {
 public:
 	typedef void (*IdleCallback)();
 
-	enum StretchMode {
-
-		STRETCH_MODE_DISABLED,
-		STRETCH_MODE_2D,
-		STRETCH_MODE_VIEWPORT,
-	};
-
-	enum StretchAspect {
-
-		STRETCH_ASPECT_IGNORE,
-		STRETCH_ASPECT_KEEP,
-		STRETCH_ASPECT_KEEP_WIDTH,
-		STRETCH_ASPECT_KEEP_HEIGHT,
-		STRETCH_ASPECT_EXPAND,
-	};
-
 private:
 	struct Group {
 
@@ -101,7 +87,7 @@ private:
 		Group() { changed = false; };
 	};
 
-	Viewport *root;
+	Window *root;
 
 	uint64_t tree_version;
 	float physics_process_time;
@@ -121,13 +107,11 @@ private:
 	bool initialized;
 	bool input_handled;
 
-	Size2 last_screen_size;
 	StringName tree_changed_name;
 	StringName node_added_name;
 	StringName node_removed_name;
 	StringName node_renamed_name;
 
-	bool use_font_oversampling;
 	int64_t current_frame;
 	int64_t current_event;
 	int node_count;
@@ -146,14 +130,6 @@ private:
 	//safety for when a node is deleted while a group is being called
 	int call_lock;
 	Set<Node *> call_skip; //skip erased nodes
-
-	StretchMode stretch_mode;
-	StretchAspect stretch_aspect;
-	Size2i stretch_min;
-	real_t stretch_shrink;
-
-	void _update_font_oversampling(float p_ratio);
-	void _update_root_rect();
 
 	List<ObjectID> delete_queue;
 
@@ -249,7 +225,7 @@ public:
 		GROUP_CALL_MULTILEVEL = 8,
 	};
 
-	_FORCE_INLINE_ Viewport *get_root() const { return root; }
+	_FORCE_INLINE_ Window *get_root() const { return root; }
 
 	void call_group_flags(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, VARIANT_ARG_LIST);
 	void notify_group_flags(uint32_t p_call_flags, const StringName &p_group, int p_notification);
@@ -335,11 +311,6 @@ public:
 	void get_nodes_in_group(const StringName &p_group, List<Node *> *p_list);
 	bool has_group(const StringName &p_identifier) const;
 
-	void set_screen_stretch(StretchMode p_mode, StretchAspect p_aspect, const Size2 &p_minsize, real_t p_shrink = 1);
-
-	void set_use_font_oversampling(bool p_oversampling);
-	bool is_using_font_oversampling() const;
-
 	//void change_scene(const String& p_path);
 	//Node *get_loaded_scene();
 
@@ -388,8 +359,6 @@ public:
 	~SceneTree();
 };
 
-VARIANT_ENUM_CAST(SceneTree::StretchMode);
-VARIANT_ENUM_CAST(SceneTree::StretchAspect);
 VARIANT_ENUM_CAST(SceneTree::GroupCallFlags);
 
 #endif

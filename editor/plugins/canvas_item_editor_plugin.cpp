@@ -50,7 +50,7 @@
 #include "scene/gui/nine_patch_rect.h"
 #include "scene/gui/viewport_container.h"
 #include "scene/main/canvas_layer.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
 #define MIN_ZOOM 0.01

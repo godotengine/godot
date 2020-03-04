@@ -36,7 +36,7 @@
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/navigation_region.h"
 #include "scene/3d/physics_body.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "spatial_editor_plugin.h"
 

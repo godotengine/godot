@@ -35,7 +35,7 @@
 #include "editor_node.h"
 #include "editor_properties_array_dict.h"
 #include "editor_scale.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 
 ///////////////////// NULL /////////////////////////
 

@@ -39,7 +39,7 @@
 #include "modules/visual_script/visual_script_func_nodes.h"
 #include "modules/visual_script/visual_script_nodes.h"
 #include "scene/main/node.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 
 void VisualScriptPropertySelector::_text_changed(const String &p_newtext) {
 	_update_search();

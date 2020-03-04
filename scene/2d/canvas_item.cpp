@@ -33,7 +33,7 @@
 #include "core/method_bind_ext.gen.inc"
 #include "core/input/input.h"
 #include "scene/main/canvas_layer.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 #include "scene/resources/font.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"

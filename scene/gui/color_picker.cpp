@@ -38,7 +38,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #endif
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 
 void ColorPicker::_notification(int p_what) {
 
