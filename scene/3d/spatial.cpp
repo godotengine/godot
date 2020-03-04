@@ -33,7 +33,7 @@
 #include "core/engine.h"
 #include "core/message_queue.h"
 #include "scene/main/scene_tree.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 #include "scene/scene_string_names.h"
 
 /*

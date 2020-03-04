@@ -114,7 +114,7 @@ MaterialEditor::MaterialEditor() {
 	vc->set_stretch(true);
 	add_child(vc);
 	vc->set_anchors_and_margins_preset(PRESET_WIDE);
-	viewport = memnew(Viewport);
+	viewport = memnew(SubViewport);
 	Ref<World> world;
 	world.instance();
 	viewport->set_world(world); //use own world

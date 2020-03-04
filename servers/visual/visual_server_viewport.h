@@ -60,7 +60,7 @@ public:
 
 		VS::ViewportMSAA msaa;
 
-		int viewport_to_screen;
+		DisplayServer::WindowID viewport_to_screen;
 		Rect2 viewport_to_screen_rect;
 		bool viewport_render_direct_to_screen;
 
@@ -117,7 +117,7 @@ public:
 			clear_mode = VS::VIEWPORT_CLEAR_ALWAYS;
 			transparent_bg = false;
 			disable_environment = false;
-			viewport_to_screen = 0;
+			viewport_to_screen = DisplayServer::INVALID_WINDOW_ID;
 			shadow_atlas_size = 0;
 			keep_3d_linear = false;
 			debug_draw = VS::VIEWPORT_DEBUG_DRAW_DISABLED;
@@ -158,9 +158,8 @@ public:
 
 	void viewport_set_size(RID p_viewport, int p_width, int p_height);
 
-	void viewport_attach_to_screen(RID p_viewport, const Rect2 &p_rect = Rect2(), int p_screen = 0);
+	void viewport_attach_to_screen(RID p_viewport, const Rect2 &p_rect = Rect2(), DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID);
 	void viewport_set_render_direct_to_screen(RID p_viewport, bool p_enable);
-	void viewport_detach(RID p_viewport);
 
 	void viewport_set_active(RID p_viewport, bool p_active);
 	void viewport_set_parent_viewport(RID p_viewport, RID p_parent_viewport);

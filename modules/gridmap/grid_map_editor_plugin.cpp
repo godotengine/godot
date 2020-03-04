@@ -37,6 +37,7 @@
 
 #include "core/math/geometry.h"
 #include "core/os/keyboard.h"
+#include "scene/main/window.h"
 
 void GridMapEditor::_node_removed(Node *p_node) {
 

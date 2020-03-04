@@ -31,7 +31,7 @@
 #include "menu_button.h"
 
 #include "core/os/keyboard.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 
 void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
 

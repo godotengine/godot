@@ -53,7 +53,7 @@
 #include "editor/multi_node_edit.h"
 #include "editor/property_selector.h"
 #include "scene/gui/label.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 #include "scene/resources/font.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"

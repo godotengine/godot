@@ -32,7 +32,7 @@
 
 #include "core/engine.h"
 #include "scene/2d/area_2d.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 
 void AudioStreamPlayer2D::_mix_audio() {
 

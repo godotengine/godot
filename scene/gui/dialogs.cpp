@@ -36,7 +36,7 @@
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
-#include "scene/main/viewport.h" // Only used to check for more modals when dimming the editor.
+#include "scene/main/window.h" // Only used to check for more modals when dimming the editor.
 #endif
 
 // WindowDialog

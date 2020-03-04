@@ -40,7 +40,7 @@ Size2 ViewportContainer::get_minimum_size() const {
 	Size2 ms;
 	for (int i = 0; i < get_child_count(); i++) {
 
-		Viewport *c = Object::cast_to<Viewport>(get_child(i));
+		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
 		if (!c)
 			continue;
 
@@ -77,7 +77,7 @@ void ViewportContainer::set_stretch_shrink(int p_shrink) {
 
 	for (int i = 0; i < get_child_count(); i++) {
 
-		Viewport *c = Object::cast_to<Viewport>(get_child(i));
+		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
 		if (!c)
 			continue;
 
@@ -101,7 +101,7 @@ void ViewportContainer::_notification(int p_what) {
 
 		for (int i = 0; i < get_child_count(); i++) {
 
-			Viewport *c = Object::cast_to<Viewport>(get_child(i));
+			SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
 			if (!c)
 				continue;
 
@@ -113,14 +113,14 @@ void ViewportContainer::_notification(int p_what) {
 
 		for (int i = 0; i < get_child_count(); i++) {
 
-			Viewport *c = Object::cast_to<Viewport>(get_child(i));
+			SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
 			if (!c)
 				continue;
 
 			if (is_visible_in_tree())
-				c->set_update_mode(Viewport::UPDATE_ALWAYS);
+				c->set_update_mode(SubViewport::UPDATE_ALWAYS);
 			else
-				c->set_update_mode(Viewport::UPDATE_DISABLED);
+				c->set_update_mode(SubViewport::UPDATE_DISABLED);
 
 			c->set_handle_input_locally(false); //do not handle input locally here
 		}
@@ -130,7 +130,7 @@ void ViewportContainer::_notification(int p_what) {
 
 		for (int i = 0; i < get_child_count(); i++) {
 
-			Viewport *c = Object::cast_to<Viewport>(get_child(i));
+			SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
 			if (!c)
 				continue;
 
@@ -159,7 +159,7 @@ void ViewportContainer::_input(const Ref<InputEvent> &p_event) {
 
 	for (int i = 0; i < get_child_count(); i++) {
 
-		Viewport *c = Object::cast_to<Viewport>(get_child(i));
+		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
 		if (!c || c->is_input_disabled())
 			continue;
 
@@ -184,7 +184,7 @@ void ViewportContainer::_unhandled_input(const Ref<InputEvent> &p_event) {
 
 	for (int i = 0; i < get_child_count(); i++) {
 
-		Viewport *c = Object::cast_to<Viewport>(get_child(i));
+		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
 		if (!c || c->is_input_disabled())
 			continue;
 

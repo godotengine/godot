@@ -34,7 +34,7 @@
 #include "core/io/marshalls.h"
 #include "core/script_language.h"
 #include "scene/main/scene_tree.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
 void SceneDebugger::initialize() {

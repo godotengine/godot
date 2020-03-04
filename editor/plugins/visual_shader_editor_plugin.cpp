@@ -42,7 +42,7 @@
 #include "scene/animation/animation_player.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 #include "scene/resources/visual_shader_nodes.h"
 #include "servers/display_server.h"
 #include "servers/visual/shader_types.h"

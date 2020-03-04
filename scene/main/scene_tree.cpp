@@ -51,7 +51,7 @@
 #include "servers/navigation_server.h"
 #include "servers/physics_2d_server.h"
 #include "servers/physics_server.h"
-#include "viewport.h"
+#include "window.h"
 
 #include <stdio.h>
 
@@ -494,14 +494,6 @@ bool SceneTree::iteration(float p_time) {
 	return _quit;
 }
 
-void SceneTree::_update_font_oversampling(float p_ratio) {
-
-	if (use_font_oversampling) {
-		DynamicFontAtSize::font_oversampling = p_ratio;
-		DynamicFont::update_oversampling();
-	}
-}
-
 bool SceneTree::idle(float p_time) {
 
 	//print_line("ram: "+itos(OS::get_singleton()->get_static_memory_usage())+" sram: "+itos(OS::get_singleton()->get_dynamic_memory_usage()));
@@ -526,15 +518,6 @@ bool SceneTree::idle(float p_time) {
 
 	_notify_group_pause("idle_process_internal", Node::NOTIFICATION_INTERNAL_PROCESS);
 	_notify_group_pause("idle_process", Node::NOTIFICATION_PROCESS);
-
-	Size2 win_size = Size2(DisplayServer::get_singleton()->window_get_size().width, DisplayServer::get_singleton()->window_get_size().height);
-
-	if (win_size != last_screen_size) {
-
-		last_screen_size = win_size;
-		_update_root_rect();
-		emit_signal("screen_resized");
-	}
 
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
@@ -1130,129 +1113,6 @@ int SceneTree::get_node_count() const {
 	return node_count;
 }
 
-void SceneTree::_update_root_rect() {
-
-	if (stretch_mode == STRETCH_MODE_DISABLED) {
-
-		_update_font_oversampling(1.0);
-		root->set_size((last_screen_size / stretch_shrink).floor());
-		root->set_attach_to_screen_rect(Rect2(Point2(), last_screen_size));
-		root->set_size_override_stretch(false);
-		root->set_size_override(false, Size2());
-		root->update_canvas_items();
-		return; //user will take care
-	}
-
-	//actual screen video mode
-	Size2 video_mode = Size2(DisplayServer::get_singleton()->window_get_size().width, DisplayServer::get_singleton()->window_get_size().height);
-	Size2 desired_res = stretch_min;
-
-	Size2 viewport_size;
-	Size2 screen_size;
-
-	float viewport_aspect = desired_res.aspect();
-	float video_mode_aspect = video_mode.aspect();
-
-	if (use_font_oversampling && stretch_aspect == STRETCH_ASPECT_IGNORE) {
-		WARN_PRINT("Font oversampling only works with the resize modes 'Keep Width', 'Keep Height', and 'Expand'.");
-	}
-
-	if (stretch_aspect == STRETCH_ASPECT_IGNORE || Math::is_equal_approx(viewport_aspect, video_mode_aspect)) {
-		//same aspect or ignore aspect
-		viewport_size = desired_res;
-		screen_size = video_mode;
-	} else if (viewport_aspect < video_mode_aspect) {
-		// screen ratio is smaller vertically
-
-		if (stretch_aspect == STRETCH_ASPECT_KEEP_HEIGHT || stretch_aspect == STRETCH_ASPECT_EXPAND) {
-
-			//will stretch horizontally
-			viewport_size.x = desired_res.y * video_mode_aspect;
-			viewport_size.y = desired_res.y;
-			screen_size = video_mode;
-
-		} else {
-			//will need black bars
-			viewport_size = desired_res;
-			screen_size.x = video_mode.y * viewport_aspect;
-			screen_size.y = video_mode.y;
-		}
-	} else {
-		//screen ratio is smaller horizontally
-		if (stretch_aspect == STRETCH_ASPECT_KEEP_WIDTH || stretch_aspect == STRETCH_ASPECT_EXPAND) {
-
-			//will stretch horizontally
-			viewport_size.x = desired_res.x;
-			viewport_size.y = desired_res.x / video_mode_aspect;
-			screen_size = video_mode;
-
-		} else {
-			//will need black bars
-			viewport_size = desired_res;
-			screen_size.x = video_mode.x;
-			screen_size.y = video_mode.x / viewport_aspect;
-		}
-	}
-
-	screen_size = screen_size.floor();
-	viewport_size = viewport_size.floor();
-
-	Size2 margin;
-	Size2 offset;
-	//black bars and margin
-	if (stretch_aspect != STRETCH_ASPECT_EXPAND && screen_size.x < video_mode.x) {
-		margin.x = Math::round((video_mode.x - screen_size.x) / 2.0);
-		VisualServer::get_singleton()->black_bars_set_margins(margin.x, 0, margin.x, 0);
-		offset.x = Math::round(margin.x * viewport_size.y / screen_size.y);
-	} else if (stretch_aspect != STRETCH_ASPECT_EXPAND && screen_size.y < video_mode.y) {
-		margin.y = Math::round((video_mode.y - screen_size.y) / 2.0);
-		VisualServer::get_singleton()->black_bars_set_margins(0, margin.y, 0, margin.y);
-		offset.y = Math::round(margin.y * viewport_size.x / screen_size.x);
-	} else {
-		VisualServer::get_singleton()->black_bars_set_margins(0, 0, 0, 0);
-	}
-
-	switch (stretch_mode) {
-		case STRETCH_MODE_DISABLED: {
-			// Already handled above
-			_update_font_oversampling(1.0);
-		} break;
-		case STRETCH_MODE_2D: {
-
-			_update_font_oversampling(screen_size.x / viewport_size.x); //screen / viewport radio drives oversampling
-			root->set_size((screen_size / stretch_shrink).floor());
-			root->set_attach_to_screen_rect(Rect2(margin, screen_size));
-			root->set_size_override_stretch(true);
-			root->set_size_override(true, (viewport_size / stretch_shrink).floor());
-			root->update_canvas_items(); //force them to update just in case
-
-		} break;
-		case STRETCH_MODE_VIEWPORT: {
-
-			_update_font_oversampling(1.0);
-			root->set_size((viewport_size / stretch_shrink).floor());
-			root->set_attach_to_screen_rect(Rect2(margin, screen_size));
-			root->set_size_override_stretch(false);
-			root->set_size_override(false, Size2());
-			root->update_canvas_items(); //force them to update just in case
-
-			if (use_font_oversampling) {
-				WARN_PRINT("Font oversampling does not work in 'Viewport' stretch mode, only '2D'.");
-			}
-
-		} break;
-	}
-}
-
-void SceneTree::set_screen_stretch(StretchMode p_mode, StretchAspect p_aspect, const Size2 &p_minsize, real_t p_shrink) {
-
-	stretch_mode = p_mode;
-	stretch_aspect = p_aspect;
-	stretch_min = p_minsize;
-	stretch_shrink = p_shrink;
-	_update_root_rect();
-}
-
 void SceneTree::set_edited_scene_root(Node *p_node) {
 #ifdef TOOLS_ENABLED
 	edited_scene_root = p_node;
@@ -1479,8 +1339,6 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_frame"), &SceneTree::get_frame);
 	ClassDB::bind_method(D_METHOD("quit", "exit_code"), &SceneTree::quit, DEFVAL(-1));
 
-	ClassDB::bind_method(D_METHOD("set_screen_stretch", "mode", "aspect", "minsize", "shrink"), &SceneTree::set_screen_stretch, DEFVAL(1));
-
 	ClassDB::bind_method(D_METHOD("queue_delete", "obj"), &SceneTree::queue_delete);
 
 	MethodInfo mi;
@@ -1530,15 +1388,11 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_refuse_new_network_connections", "refuse"), &SceneTree::set_refuse_new_network_connections);
 	ClassDB::bind_method(D_METHOD("is_refusing_new_network_connections"), &SceneTree::is_refusing_new_network_connections);
 
-	ClassDB::bind_method(D_METHOD("set_use_font_oversampling", "enable"), &SceneTree::set_use_font_oversampling);
-	ClassDB::bind_method(D_METHOD("is_using_font_oversampling"), &SceneTree::is_using_font_oversampling);
-
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_collisions_hint"), "set_debug_collisions_hint", "is_debugging_collisions_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_navigation_hint"), "set_debug_navigation_hint", "is_debugging_navigation_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused"), "set_pause", "is_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_network_connections"), "set_refuse_new_network_connections", "is_refusing_new_network_connections");
 	ADD_PROPERTY_DEFAULT("refuse_new_network_connections", false);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_font_oversampling"), "set_use_font_oversampling", "is_using_font_oversampling");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_scene_root", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_edited_scene_root", "get_edited_scene_root");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "current_scene", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_current_scene", "get_current_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "network_peer", PROPERTY_HINT_RESOURCE_TYPE, "NetworkedMultiplayerPeer", 0), "set_network_peer", "get_network_peer");
@@ -1550,7 +1404,6 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("node_added", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_removed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_renamed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
-	ADD_SIGNAL(MethodInfo("screen_resized"));
 	ADD_SIGNAL(MethodInfo("node_configuration_warning_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 
 	ADD_SIGNAL(MethodInfo("idle_frame"));
@@ -1568,16 +1421,6 @@ void SceneTree::_bind_methods() {
 	BIND_ENUM_CONSTANT(GROUP_CALL_REVERSE);
 	BIND_ENUM_CONSTANT(GROUP_CALL_REALTIME);
 	BIND_ENUM_CONSTANT(GROUP_CALL_UNIQUE);
-
-	BIND_ENUM_CONSTANT(STRETCH_MODE_DISABLED);
-	BIND_ENUM_CONSTANT(STRETCH_MODE_2D);
-	BIND_ENUM_CONSTANT(STRETCH_MODE_VIEWPORT);
-
-	BIND_ENUM_CONSTANT(STRETCH_ASPECT_IGNORE);
-	BIND_ENUM_CONSTANT(STRETCH_ASPECT_KEEP);
-	BIND_ENUM_CONSTANT(STRETCH_ASPECT_KEEP_WIDTH);
-	BIND_ENUM_CONSTANT(STRETCH_ASPECT_KEEP_HEIGHT);
-	BIND_ENUM_CONSTANT(STRETCH_ASPECT_EXPAND);
 }
 
 SceneTree *SceneTree::singleton = NULL;
@@ -1595,19 +1438,6 @@ void SceneTree::_call_idle_callbacks() {
 void SceneTree::add_idle_callback(IdleCallback p_callback) {
 	ERR_FAIL_COND(idle_callback_count >= MAX_IDLE_CALLBACKS);
 	idle_callbacks[idle_callback_count++] = p_callback;
-}
-
-void SceneTree::set_use_font_oversampling(bool p_oversampling) {
-
-	if (use_font_oversampling == p_oversampling)
-		return;
-
-	use_font_oversampling = p_oversampling;
-	_update_root_rect();
-}
-
-bool SceneTree::is_using_font_oversampling() const {
-	return use_font_oversampling;
 }
 
 void SceneTree::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
@@ -1649,7 +1479,6 @@ SceneTree::SceneTree() {
 	accept_quit = true;
 	quit_on_go_back = true;
 	initialized = false;
-	use_font_oversampling = false;
 #ifdef DEBUG_ENABLED
 	debug_collisions_hint = false;
 	debug_navigation_hint = false;
@@ -1681,7 +1510,7 @@ SceneTree::SceneTree() {
 
 	//create with mainloop
 
-	root = memnew(Viewport);
+	root = memnew(Window);
 	root->set_name("root");
 	root->set_handle_input_locally(false);
 	if (!root->get_world().is_valid())
@@ -1730,13 +1559,6 @@ SceneTree::SceneTree() {
 			}
 		}
 	}
-
-	stretch_mode = STRETCH_MODE_DISABLED;
-	stretch_aspect = STRETCH_ASPECT_IGNORE;
-	stretch_shrink = 1;
-
-	last_screen_size = Size2(DisplayServer::get_singleton()->window_get_size().width, DisplayServer::get_singleton()->window_get_size().height);
-	_update_root_rect();
 
 	root->set_physics_object_picking(GLOBAL_DEF("physics/common/enable_object_picking", true));
 

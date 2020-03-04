@@ -89,13 +89,6 @@ class Viewport : public Node {
 	GDCLASS(Viewport, Node);
 
 public:
-	enum UpdateMode {
-		UPDATE_DISABLED,
-		UPDATE_ONCE, //then goes to disabled
-		UPDATE_WHEN_VISIBLE, // default
-		UPDATE_ALWAYS
-	};
-
 	enum ShadowAtlasQuadrantSubdiv {
 		SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED,
 		SHADOW_ATLAS_QUADRANT_SUBDIV_1,
@@ -143,13 +136,6 @@ public:
 		DEBUG_DRAW_ROUGHNESS_LIMITER
 	};
 
-	enum ClearMode {
-
-		CLEAR_MODE_ALWAYS,
-		CLEAR_MODE_NEVER,
-		CLEAR_MODE_ONLY_NEXT_FRAME
-	};
-
 	enum DefaultCanvasItemTextureFilter {
 		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST,
 		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR,
@@ -172,8 +158,6 @@ private:
 
 	Listener *listener;
 	Set<Listener *> listeners;
-
-	bool arvr;
 
 	struct CameraOverrideData {
 		Transform transform;
@@ -213,23 +197,17 @@ private:
 	Transform2D global_canvas_transform;
 	Transform2D stretch_transform;
 
-	Size2 size;
-	Rect2 to_screen_rect;
-	bool render_direct_to_screen;
+	Size2i size;
+	Size2i size_override;
+	bool size_allocated;
 
 	RID contact_2d_debug;
 	RID contact_3d_debug_multimesh;
 	RID contact_3d_debug_instance;
 
-	bool size_override;
-	bool size_override_stretch;
-	Size2 size_override_size;
-	Size2 size_override_margin;
-
 	Rect2 last_vp_rect;
 
 	bool transparent_bg;
-	ClearMode clear_mode;
 	bool filter;
 	bool gen_mipmaps;
 
@@ -265,6 +243,7 @@ private:
 	Ref<World> world;
 	Ref<World> own_world;
 
+	Rect2i to_screen_rect;
 	StringName input_group;
 	StringName gui_input_group;
 	StringName unhandled_input_group;
@@ -277,10 +256,8 @@ private:
 	void _propagate_exit_world(Node *p_node);
 	void _propagate_viewport_notification(Node *p_node, int p_what);
 
-	void _update_stretch_transform();
 	void _update_global_transform();
 
-	UpdateMode update_mode;
 	RID texture_rid;
 
 	DebugDraw debug_draw;
@@ -323,6 +300,7 @@ private:
 		List<Control *> roots;
 		int canvas_sort_index; //for sorting items with canvas as root
 		bool dragging;
+		bool embed_subwindows_hint;
 
 		GUI();
 	} gui;
@@ -422,6 +400,11 @@ private:
 	void _own_world_changed();
 
 protected:
+	void _set_size(const Size2i &p_size, const Size2i &p_size_override, const Rect2i &p_to_screen_rect, const Transform2D &p_stretch_transform, bool p_allocated);
+
+	Size2i _get_size() const;
+	bool _is_size_allocated() const;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 	virtual void _validate_property(PropertyInfo &property) const;
@@ -439,19 +422,14 @@ public:
 	void set_camera_override_perspective(float p_fovy_degrees, float p_z_near, float p_z_far);
 	void set_camera_override_orthogonal(float p_size, float p_z_near, float p_z_far);
 
-	void set_use_arvr(bool p_use_arvr);
-	bool use_arvr();
-
 	void set_as_audio_listener(bool p_enable);
 	bool is_audio_listener() const;
 
 	void set_as_audio_listener_2d(bool p_enable);
 	bool is_audio_listener_2d() const;
 
-	void set_size(const Size2 &p_size);
 	void update_canvas_items();
 
-	Size2 get_size() const;
 	Rect2 get_visible_rect() const;
 	RID get_viewport_rid() const;
 
@@ -480,18 +458,6 @@ public:
 	void set_transparent_background(bool p_enable);
 	bool has_transparent_background() const;
 
-	void set_size_override(bool p_enable, const Size2 &p_size = Size2(-1, -1), const Vector2 &p_margin = Vector2());
-	Size2 get_size_override() const;
-
-	bool is_size_override_enabled() const;
-	void set_size_override_stretch(bool p_enable);
-	bool is_size_override_stretch_enabled() const;
-
-	void set_clear_mode(ClearMode p_mode);
-	ClearMode get_clear_mode() const;
-
-	void set_update_mode(UpdateMode p_mode);
-	UpdateMode get_update_mode() const;
 	Ref<ViewportTexture> get_texture() const;
 
 	void set_shadow_atlas_size(int p_size);
@@ -514,12 +480,6 @@ public:
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;
-
-	void set_attach_to_screen_rect(const Rect2 &p_rect);
-	Rect2 get_attach_to_screen_rect() const;
-
-	void set_use_render_direct_to_screen(bool p_render_direct_to_screen);
-	bool is_using_render_direct_to_screen() const;
 
 	Vector2 get_mouse_position() const;
 	void warp_mouse(const Vector2 &p_pos);
@@ -561,17 +521,66 @@ public:
 	void set_default_canvas_item_texture_repeat(DefaultCanvasItemTextureRepeat p_repeat);
 	DefaultCanvasItemTextureRepeat get_default_canvas_item_texture_repeat() const;
 
-	DisplayServer::WindowID get_window_id() const;
+	virtual DisplayServer::WindowID get_window_id() const = 0;
 
+	void set_embed_subwindows_hint(bool p_embed);
+	bool get_embed_subwindows_hint() const;
+	bool is_embedding_subwindows() const;
+
+	Viewport *get_parent_viewport() const;
 	Viewport();
 	~Viewport();
 };
 
-VARIANT_ENUM_CAST(Viewport::UpdateMode);
+class SubViewport : public Viewport {
+
+	GDCLASS(SubViewport, Viewport);
+
+public:
+	enum ClearMode {
+
+		CLEAR_MODE_ALWAYS,
+		CLEAR_MODE_NEVER,
+		CLEAR_MODE_ONLY_NEXT_FRAME
+	};
+
+	enum UpdateMode {
+		UPDATE_DISABLED,
+		UPDATE_ONCE, //then goes to disabled
+		UPDATE_WHEN_VISIBLE, // default
+		UPDATE_ALWAYS
+	};
+
+private:
+	UpdateMode update_mode;
+	ClearMode clear_mode;
+	bool arvr;
+
+protected:
+	static void _bind_methods();
+	virtual DisplayServer::WindowID get_window_id() const;
+
+public:
+	void set_size(const Size2i &p_size);
+	Size2i get_size() const;
+
+	void set_use_arvr(bool p_use_arvr);
+	bool is_using_arvr();
+
+	void set_update_mode(UpdateMode p_mode);
+	UpdateMode get_update_mode() const;
+
+	void set_clear_mode(ClearMode p_mode);
+	ClearMode get_clear_mode() const;
+
+	SubViewport();
+	~SubViewport();
+};
+VARIANT_ENUM_CAST(SubViewport::UpdateMode);
 VARIANT_ENUM_CAST(Viewport::ShadowAtlasQuadrantSubdiv);
 VARIANT_ENUM_CAST(Viewport::MSAA);
 VARIANT_ENUM_CAST(Viewport::DebugDraw);
-VARIANT_ENUM_CAST(Viewport::ClearMode);
+VARIANT_ENUM_CAST(SubViewport::ClearMode);
 VARIANT_ENUM_CAST(Viewport::RenderInfo);
 VARIANT_ENUM_CAST(Viewport::DefaultCanvasItemTextureFilter);
 VARIANT_ENUM_CAST(Viewport::DefaultCanvasItemTextureRepeat);

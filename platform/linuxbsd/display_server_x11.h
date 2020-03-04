@@ -113,14 +113,13 @@ class DisplayServerX11 : public DisplayServer {
 	struct WindowData {
 		Window x11_window;
 		::XIC xic;
-#if defined(VULKAN_ENABLED)
-		int vulkan_window;
-#endif
+
 		Size2i min_size;
 		Size2i max_size;
 		Size2i size;
 		Size2i im_position;
 		bool im_active = false;
+		Callable resize_callback;
 
 		//better to guess on the fly, given WM can change it
 		//WindowMode mode;
@@ -256,6 +255,7 @@ public:
 	virtual void delete_sub_window(WindowID p_id);
 
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID);
+	virtual void window_set_resize_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
 
 	virtual int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const;
 	virtual void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID);

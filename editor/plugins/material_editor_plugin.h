@@ -48,7 +48,7 @@ class MaterialEditor : public Control {
 	GDCLASS(MaterialEditor, Control);
 
 	ViewportContainer *vc;
-	Viewport *viewport;
+	SubViewport *viewport;
 	MeshInstance *sphere_instance;
 	MeshInstance *box_instance;
 	DirectionalLight *light1;

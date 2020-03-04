@@ -32,6 +32,7 @@
 #define RENDERING_DEVICE_H
 
 #include "core/object.h"
+#include "servers/display_server.h"
 
 class RenderingDevice : public Object {
 	GDCLASS(RenderingDevice, Object)
@@ -896,8 +897,8 @@ public:
 	/**** SCREEN ****/
 	/****************/
 
-	virtual int screen_get_width(int p_screen = 0) const = 0;
-	virtual int screen_get_height(int p_screen = 0) const = 0;
+	virtual int screen_get_width(DisplayServer::WindowID p_screen = 0) const = 0;
+	virtual int screen_get_height(DisplayServer::WindowID p_screen = 0) const = 0;
 	virtual FramebufferFormatID screen_get_framebuffer_format() const = 0;
 
 	/********************/
@@ -920,7 +921,7 @@ public:
 
 	typedef int64_t DrawListID;
 
-	virtual DrawListID draw_list_begin_for_screen(int p_screen = 0, const Color &p_clear_color = Color()) = 0;
+	virtual DrawListID draw_list_begin_for_screen(DisplayServer::WindowID p_screen = 0, const Color &p_clear_color = Color()) = 0;
 	virtual DrawListID draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2()) = 0;
 	virtual Error draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, DrawListID *r_split_ids, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2()) = 0;
 

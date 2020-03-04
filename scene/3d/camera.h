@@ -33,7 +33,7 @@
 
 #include "scene/3d/spatial.h"
 #include "scene/3d/spatial_velocity_tracker.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 #include "scene/resources/environment.h"
 
 class Camera : public Spatial {

@@ -41,7 +41,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #endif
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 static bool _is_text_char(CharType c) {
 
 	return !is_symbol(c);

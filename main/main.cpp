@@ -58,7 +58,7 @@
 #include "modules/register_module_types.h"
 #include "platform/register_platform_apis.h"
 #include "scene/main/scene_tree.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 #include "scene/register_scene_types.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/arvr_server.h"
@@ -1819,25 +1819,26 @@ bool Main::start() {
 			String stretch_mode = GLOBAL_DEF("display/window/stretch/mode", "disabled");
 			String stretch_aspect = GLOBAL_DEF("display/window/stretch/aspect", "ignore");
 			Size2i stretch_size = Size2(GLOBAL_DEF("display/window/size/width", 0), GLOBAL_DEF("display/window/size/height", 0));
-			real_t stretch_shrink = GLOBAL_DEF("display/window/stretch/shrink", 1.0);
 
-			SceneTree::StretchMode sml_sm = SceneTree::STRETCH_MODE_DISABLED;
-			if (stretch_mode == "2d")
-				sml_sm = SceneTree::STRETCH_MODE_2D;
-			else if (stretch_mode == "viewport")
-				sml_sm = SceneTree::STRETCH_MODE_VIEWPORT;
+			Window::ContentScaleMode cs_sm = Window::CONTENT_SCALE_MODE_DISABLED;
+			if (stretch_mode == "objects")
+				cs_sm = Window::CONTENT_SCALE_MODE_OBJECTS;
+			else if (stretch_mode == "pixels")
+				cs_sm = Window::CONTENT_SCALE_MODE_PIXELS;
 
-			SceneTree::StretchAspect sml_aspect = SceneTree::STRETCH_ASPECT_IGNORE;
+			Window::ContentScaleAspect cs_aspect = Window::CONTENT_SCALE_ASPECT_IGNORE;
 			if (stretch_aspect == "keep")
-				sml_aspect = SceneTree::STRETCH_ASPECT_KEEP;
+				cs_aspect = Window::CONTENT_SCALE_ASPECT_KEEP;
 			else if (stretch_aspect == "keep_width")
-				sml_aspect = SceneTree::STRETCH_ASPECT_KEEP_WIDTH;
+				cs_aspect = Window::CONTENT_SCALE_ASPECT_KEEP_WIDTH;
 			else if (stretch_aspect == "keep_height")
-				sml_aspect = SceneTree::STRETCH_ASPECT_KEEP_HEIGHT;
+				cs_aspect = Window::CONTENT_SCALE_ASPECT_KEEP_HEIGHT;
 			else if (stretch_aspect == "expand")
-				sml_aspect = SceneTree::STRETCH_ASPECT_EXPAND;
+				cs_aspect = Window::CONTENT_SCALE_ASPECT_EXPAND;
 
-			sml->set_screen_stretch(sml_sm, sml_aspect, stretch_size, stretch_shrink);
+			sml->get_root()->set_content_scale_mode(cs_sm);
+			sml->get_root()->set_content_scale_aspect(cs_aspect);
+			sml->get_root()->set_content_scale_size(stretch_size);
 
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
 			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
@@ -1861,7 +1862,7 @@ bool Main::start() {
 			sml->get_root()->set_snap_controls_to_pixels(snap_controls);
 
 			bool font_oversampling = GLOBAL_DEF("rendering/quality/dynamic_fonts/use_oversampling", true);
-			sml->set_use_font_oversampling(font_oversampling);
+			sml->get_root()->set_use_font_oversampling(font_oversampling);
 
 			int texture_filter = GLOBAL_DEF("rendering/canvas_textures/default_texture_filter", 1);
 			int texture_repeat = GLOBAL_DEF("rendering/canvas_textures/default_texture_repeat", 0);
