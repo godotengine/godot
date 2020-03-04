@@ -1383,6 +1383,7 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_showing_hidden_files"), &EditorFileDialog::is_showing_hidden_files);
 	ClassDB::bind_method(D_METHOD("_update_file_name"), &EditorFileDialog::update_file_name);
 	ClassDB::bind_method(D_METHOD("_update_dir"), &EditorFileDialog::update_dir);
+	ClassDB::bind_method(D_METHOD("_update_file_list"), &EditorFileDialog::update_file_list);
 	ClassDB::bind_method(D_METHOD("_thumbnail_done"), &EditorFileDialog::_thumbnail_done);
 	ClassDB::bind_method(D_METHOD("set_display_mode", "mode"), &EditorFileDialog::set_display_mode);
 	ClassDB::bind_method(D_METHOD("get_display_mode"), &EditorFileDialog::get_display_mode);
