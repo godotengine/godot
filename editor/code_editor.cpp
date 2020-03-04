@@ -926,7 +926,7 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink"));
 	text_editor->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink_speed"));
 	text_editor->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/completion/auto_brace_complete"));
-	is_default_highlite_current_line = EditorSettings::get_singleton()->get("text_editor/highlighting/highlight_current_line");
+	is_highlight_current_line = EditorSettings::get_singleton()->get("text_editor/highlighting/highlight_current_line");
 }
 
 void CodeTextEditor::trim_trailing_whitespace() {
@@ -1348,7 +1348,7 @@ void CodeTextEditor::goto_line(int p_line) {
 	text_editor->unfold_line(p_line);
 	text_editor->call_deferred("cursor_set_line", p_line);
 
-	text_editor->set_cursor_visible(false, is_default_highlite_current_line);
+	text_editor->set_cursor_visible(false, is_highlight_current_line);
 	ScriptEditorDebugger *debugger = EditorDebuggerNode::get_singleton()->get_current_debugger();
 	if ((line == p_line) || (debugger == nullptr) || (debugger->get_debug_step_or_next() == false))
 		return;
@@ -1356,7 +1356,7 @@ void CodeTextEditor::goto_line(int p_line) {
 		if ((line == (p_line - 1)) || (line == (p_line + 1)) || (p_line == next_line)) {
 			// Next line is comment or empty :
 			debugger->debug_step_comment();
-			text_editor->set_cursor_visible(true, is_default_highlite_current_line);
+			text_editor->set_cursor_visible(true, is_highlight_current_line);
 			if (p_line == next_line)
 				next_line = -1;
 		}

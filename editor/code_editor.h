@@ -202,7 +202,7 @@ protected:
 	static void _bind_methods();
 
 	bool is_warnings_panel_opened;
-	bool is_default_highlite_current_line;
+	bool is_highlight_current_line;
 	int next_line;
 
 public:
