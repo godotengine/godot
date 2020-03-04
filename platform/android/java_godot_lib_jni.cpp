@@ -187,7 +187,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 			Vector<int> array = *p_arg;
 			jintArray arr = env->NewIntArray(array.size());
 			const int *r = array.ptr();
-			env->SetIntArrayRegion(arr, 0, array.size(), r.ptr());
+			env->SetIntArrayRegion(arr, 0, array.size(), r);
 			v.val.l = arr;
 			v.obj = arr;
 
@@ -196,7 +196,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 			Vector<uint8_t> array = *p_arg;
 			jbyteArray arr = env->NewByteArray(array.size());
 			const uint8_t *r = array.ptr();
-			env->SetByteArrayRegion(arr, 0, array.size(), reinterpret_cast<const signed char *>(r.ptr()));
+			env->SetByteArrayRegion(arr, 0, array.size(), reinterpret_cast<const signed char *>(r));
 			v.val.l = arr;
 			v.obj = arr;
 
@@ -206,7 +206,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 			Vector<float> array = *p_arg;
 			jfloatArray arr = env->NewFloatArray(array.size());
 			const float *r = array.ptr();
-			env->SetFloatArrayRegion(arr, 0, array.size(), r.ptr());
+			env->SetFloatArrayRegion(arr, 0, array.size(), r);
 			v.val.l = arr;
 			v.obj = arr;
 
@@ -293,8 +293,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 		sarr.resize(fCount);
 
 		int *w = sarr.ptrw();
-		env->GetIntArrayRegion(arr, 0, fCount, w.ptr());
-		w.release();
+		env->GetIntArrayRegion(arr, 0, fCount, w);
 		return sarr;
 	};
 
@@ -306,8 +305,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 		sarr.resize(fCount);
 
 		uint8_t *w = sarr.ptrw();
-		env->GetByteArrayRegion(arr, 0, fCount, reinterpret_cast<signed char *>(w.ptr()));
-		w.release();
+		env->GetByteArrayRegion(arr, 0, fCount, reinterpret_cast<signed char *>(w));
 		return sarr;
 	};
 
@@ -332,7 +330,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 
 			double n;
 			env->GetDoubleArrayRegion(arr, i, 1, &n);
-			w.ptr()[i] = n;
+			w[i] = n;
 		};
 		return sarr;
 	};
@@ -350,7 +348,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 
 			float n;
 			env->GetFloatArrayRegion(arr, i, 1, &n);
-			w.ptr()[i] = n;
+			w[i] = n;
 		};
 		return sarr;
 	};
@@ -518,8 +516,7 @@ public:
 				sarr.resize(fCount);
 
 				int *w = sarr.ptrw();
-				env->GetIntArrayRegion(arr, 0, fCount, w.ptr());
-				w.release();
+				env->GetIntArrayRegion(arr, 0, fCount, w);
 				ret = sarr;
 				env->DeleteLocalRef(arr);
 			} break;
@@ -532,8 +529,7 @@ public:
 				sarr.resize(fCount);
 
 				float *w = sarr.ptrw();
-				env->GetFloatArrayRegion(arr, 0, fCount, w.ptr());
-				w.release();
+				env->GetFloatArrayRegion(arr, 0, fCount, w);
 				ret = sarr;
 				env->DeleteLocalRef(arr);
 			} break;
@@ -1355,7 +1351,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_method(JNIEnv *env, j
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_callobject(JNIEnv *env, jobject p_obj, jint ID, jstring method, jobjectArray params) {
 
-	Object *obj = ObjectDB::get_instance(ID);
+	Object *obj = ObjectDB::get_instance(ObjectID((uint64_t)ID));
 	ERR_FAIL_COND(!obj);
 
 	int res = env->PushLocalFrame(16);
@@ -1387,7 +1383,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_callobject(JNIEnv *en
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv *env, jobject p_obj, jint ID, jstring method, jobjectArray params) {
 
-	Object *obj = ObjectDB::get_instance(ID);
+	Object *obj = ObjectDB::get_instance(ObjectID((uint64_t)ID));
 	ERR_FAIL_COND(!obj);
 
 	int res = env->PushLocalFrame(16);
