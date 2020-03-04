@@ -95,6 +95,9 @@ class DisplayServerX11 : public DisplayServer {
 		Callable input_text_callback;
 		Callable drop_files_callback;
 
+		WindowID transient_parent = INVALID_WINDOW_ID;
+		Set<WindowID> transient_children;
+
 		//better to guess on the fly, given WM can change it
 		//WindowMode mode;
 		bool fullscreen = false; //OS can't exit from this mode
@@ -247,6 +250,8 @@ public:
 
 	virtual void window_set_max_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID);
 	virtual Size2i window_get_max_size(WindowID p_window = MAIN_WINDOW_ID) const;
+
+	virtual void window_set_transient(WindowID p_window, WindowID p_parent);
 
 	virtual void window_set_min_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID);
 	virtual Size2i window_get_min_size(WindowID p_window = MAIN_WINDOW_ID) const;
