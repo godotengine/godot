@@ -1171,6 +1171,7 @@ public:
 				Command *n = c->next;
 				if (c == commands) {
 					memdelete(commands);
+					commands = NULL;
 				} else {
 					c->~Command();
 				}
