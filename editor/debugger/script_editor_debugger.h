@@ -150,8 +150,8 @@ private:
 	bool can_debug = false;
 
 	bool live_debug;
-	bool debug_step_or_next;
-	bool from_debug_enter;
+	bool is_debug_step_or_next = false;
+	bool is_from_debug_enter = false;
 
 	CameraOverride camera_override;
 
@@ -266,8 +266,8 @@ public:
 
 	bool is_skip_breakpoints();
 
-	bool get_debug_step_or_next() { return debug_step_or_next; }
-	void set_debug_step_or_next(bool b) { debug_step_or_next = b; }
+	bool get_debug_step_or_next() { return is_debug_step_or_next; }
+	void set_debug_step_or_next(bool b) { is_debug_step_or_next = b; }
 
 	virtual Size2 get_minimum_size() const;
 	ScriptEditorDebugger(EditorNode *p_editor = NULL);

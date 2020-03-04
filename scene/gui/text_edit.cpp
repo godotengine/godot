@@ -6991,11 +6991,11 @@ bool TextEdit::is_highlight_current_line_enabled() const {
 	return highlight_current_line;
 }
 
-void TextEdit::set_debug_comment_hide_cursor(bool hide, bool default_highlite) {
+void TextEdit::set_cursor_visible(bool hide, bool is_cursor_visible) {
 	if (debug_comment_hide_cursor == hide)
 		return;
 	debug_comment_hide_cursor = hide;
-	set_highlight_current_line(!hide && default_highlite);
+	set_highlight_current_line(!hide && is_cursor_visible);
 	_toggle_draw_caret();
 }
 
