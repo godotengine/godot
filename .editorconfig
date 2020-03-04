@@ -9,6 +9,10 @@ insert_final_newline = true
 [*.{cpp,hpp,c,h,mm}]
 trim_trailing_whitespace = true
 
+[{*.gradle,AndroidManifest.xml}]
+indent_style = space
+indent_size = 4
+
 [{*.{py,cs},SConstruct,SCsub}]
 indent_style = space
 indent_size = 4
