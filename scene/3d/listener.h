@@ -32,7 +32,7 @@
 #define LISTENER_H
 
 #include "scene/3d/spatial.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 
 class Listener : public Spatial {
 

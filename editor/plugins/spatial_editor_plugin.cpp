@@ -3834,7 +3834,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	c->set_stretch(true);
 	add_child(c);
 	c->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	viewport = memnew(Viewport);
+	viewport = memnew(SubViewport);
 	viewport->set_disable_input(true);
 
 	c->add_child(viewport);

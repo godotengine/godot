@@ -84,6 +84,8 @@ class Tabs;
 class TextureProgress;
 class ToolButton;
 class VSplitContainer;
+class Window;
+class SubViewport;
 
 class EditorNode : public Node {
 
@@ -206,7 +208,7 @@ private:
 		TOOL_MENU_BASE = 1000
 	};
 
-	Viewport *scene_root; //root of the scene being edited
+	SubViewport *scene_root; //root of the scene being edited
 
 	PanelContainer *scene_root_parent;
 	Control *theme_base;
@@ -724,7 +726,7 @@ public:
 
 	Node *get_edited_scene() { return editor_data.get_edited_scene_root(); }
 
-	Viewport *get_scene_root() { return scene_root; } //root of the scene being edited
+	SubViewport *get_scene_root() { return scene_root; } //root of the scene being edited
 
 	void fix_dependencies(const String &p_for_file);
 	void clear_scene() { _cleanup_scene(); }

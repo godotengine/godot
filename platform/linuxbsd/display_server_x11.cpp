@@ -47,8 +47,7 @@
 #include "servers/visual/rasterizer_rd/rasterizer_rd.h"
 #endif
 
-#include "servers/visual/visual_server_raster.h"
-#include "servers/visual/visual_server_wrap_mt.h"
+#include "scene/resources/texture.h"
 
 #ifdef HAVE_MNTENT
 #include <mntent.h>
@@ -88,6 +87,8 @@
 #undef CursorShape
 
 #include <X11/XKBlib.h>
+
+#include "core/project_settings.h"
 
 // 2.2 is the first release with multitouch
 #define XINPUT_CLIENT_VERSION_MAJOR 2
@@ -641,7 +642,7 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 
 #ifdef VULKAN_ENABLED
 	if (rendering_driver == "vulkan") {
-		context_vulkan->window_destroy(wd.vulkan_window);
+		context_vulkan->window_destroy(p_id);
 	}
 #endif
 	XUnmapWindow(x11_display, wd.x11_window);
@@ -663,6 +664,13 @@ void DisplayServerX11::window_set_title(const String &p_title, WindowID p_window
 	Atom _net_wm_name = XInternAtom(x11_display, "_NET_WM_NAME", false);
 	Atom utf8_string = XInternAtom(x11_display, "UTF8_STRING", false);
 	XChangeProperty(x11_display, wd.x11_window, _net_wm_name, utf8_string, 8, PropModeReplace, (unsigned char *)p_title.utf8().get_data(), p_title.utf8().length());
+}
+
+void DisplayServerX11::window_set_resize_callback(const Callable &p_callable, WindowID p_window) {
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+	wd.resize_callback = p_callable;
 }
 
 int DisplayServerX11::window_get_current_screen(WindowID p_window) const {
@@ -2020,9 +2028,17 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
-		context_vulkan->window_resize(wd.vulkan_window, wd.size.width, wd.size.height);
+		context_vulkan->window_resize(window_id, wd.size.width, wd.size.height);
 	}
 #endif
+
+	if (!wd.resize_callback.is_null()) {
+		Variant size = wd.size;
+		Variant *sizep = &size;
+		Variant ret;
+		Callable::CallError ce;
+		wd.resize_callback.call((const Variant **)&sizep, 1, ret, ce);
+	}
 }
 
 void DisplayServerX11::process_events() {
@@ -2764,8 +2780,8 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, c
 
 #if defined(VULKAN_ENABLED)
 		if (context_vulkan) {
-			wd.vulkan_window = context_vulkan->window_create(wd.x11_window, x11_display, p_resolution.width, p_resolution.height);
-			ERR_FAIL_COND_V_MSG(wd.vulkan_window == -1, INVALID_WINDOW_ID, "Can't create a Vulkan window");
+			Error err = context_vulkan->window_create(window_id_counter, wd.x11_window, x11_display, p_resolution.width, p_resolution.height);
+			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a Vulkan window");
 		}
 #endif
 
@@ -3295,7 +3311,7 @@ DisplayServerX11::~DisplayServerX11() {
 	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
 #ifdef VULKAN_ENABLED
 		if (rendering_driver == "vulkan") {
-			context_vulkan->window_destroy(E->get().vulkan_window);
+			context_vulkan->window_destroy(E->key());
 		}
 #endif
 

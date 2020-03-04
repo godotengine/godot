@@ -1294,7 +1294,7 @@ public:
 	};
 
 	virtual void prepare_for_blitting_render_targets() = 0;
-	virtual void blit_render_targets_to_screen(int p_screen, const BlitToScreen *p_render_targets, int p_amount) = 0;
+	virtual void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) = 0;
 
 	virtual void end_frame(bool p_swap_buffers) = 0;
 	virtual void finalize() = 0;

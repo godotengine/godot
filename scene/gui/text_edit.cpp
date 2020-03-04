@@ -36,7 +36,7 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "core/script_language.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_scale.h"

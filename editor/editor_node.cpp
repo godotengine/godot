@@ -169,6 +169,7 @@
 #include "editor/register_exporters.h"
 #include "editor/run_settings_dialog.h"
 #include "editor/settings_config_dialog.h"
+#include "scene/main/window.h"
 #include "servers/display_server.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -346,7 +347,7 @@ void EditorNode::_notification(int p_what) {
 
 			editor_selection->update();
 
-			scene_root->set_size_override(true, Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height")));
+			//scene_root->set_size_override(true, Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height")));
 
 			{ //TODO should only happen on settings changed
 				int current_filter = GLOBAL_GET("rendering/canvas_textures/default_texture_filter");
@@ -2668,10 +2669,10 @@ void EditorNode::_screenshot(bool p_use_utc) {
 
 void EditorNode::_save_screenshot(NodePath p_path) {
 
-	Viewport *viewport = EditorInterface::get_singleton()->get_editor_viewport()->get_viewport();
-	viewport->set_clear_mode(Viewport::CLEAR_MODE_ONLY_NEXT_FRAME);
+	SubViewport *viewport = Object::cast_to<SubViewport>(EditorInterface::get_singleton()->get_editor_viewport()->get_viewport());
+	viewport->set_clear_mode(SubViewport::CLEAR_MODE_ONLY_NEXT_FRAME);
 	Ref<Image> img = viewport->get_texture()->get_data();
-	viewport->set_clear_mode(Viewport::CLEAR_MODE_ALWAYS);
+	viewport->set_clear_mode(SubViewport::CLEAR_MODE_ALWAYS);
 	Error error = img->save_png(p_path);
 	ERR_FAIL_COND_MSG(error != OK, "Cannot save screenshot to file '" + p_path + "'.");
 }
@@ -5941,7 +5942,7 @@ EditorNode::EditorNode() {
 	srt->add_child(scene_root_parent);
 	scene_root_parent->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
-	scene_root = memnew(Viewport);
+	scene_root = memnew(SubViewport);
 	//scene_root->set_usage(Viewport::USAGE_2D); canvas BG mode prevents usage of this as 2D
 
 	VisualServer::get_singleton()->viewport_set_hide_scenario(scene_root->get_viewport_rid(), true);

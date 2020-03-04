@@ -115,7 +115,7 @@ void MeshEditor::_bind_methods() {
 
 MeshEditor::MeshEditor() {
 
-	viewport = memnew(Viewport);
+	viewport = memnew(SubViewport);
 	Ref<World> world;
 	world.instance();
 	viewport->set_world(world); //use own world

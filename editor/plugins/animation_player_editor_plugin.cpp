@@ -40,7 +40,7 @@
 #include "editor/editor_settings.h"
 #include "editor/plugins/canvas_item_editor_plugin.h" // For onion skinning.
 #include "editor/plugins/spatial_editor_plugin.h" // For onion skinning.
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 #include "servers/visual_server.h"
 
 void AnimationPlayerEditor::_node_removed(Node *p_node) {
@@ -1420,7 +1420,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 
 	// Tweak the root viewport to ensure it's rendered before our target.
 	RID root_vp = get_tree()->get_root()->get_viewport_rid();
-	Rect2 root_vp_screen_rect = get_tree()->get_root()->get_attach_to_screen_rect();
+	Rect2 root_vp_screen_rect = Rect2(Vector2(), get_tree()->get_root()->get_size());
 	VS::get_singleton()->viewport_attach_to_screen(root_vp, Rect2());
 	VS::get_singleton()->viewport_set_update_mode(root_vp, VS::VIEWPORT_UPDATE_ALWAYS);
 

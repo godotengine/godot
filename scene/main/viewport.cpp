@@ -142,7 +142,7 @@ void ViewportTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_viewport_path_in_scene", "path"), &ViewportTexture::set_viewport_path_in_scene);
 	ClassDB::bind_method(D_METHOD("get_viewport_path_in_scene"), &ViewportTexture::get_viewport_path_in_scene);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "viewport_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Viewport", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT), "set_viewport_path_in_scene", "get_viewport_path_in_scene");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "viewport_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "SubViewport", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT), "set_viewport_path_in_scene", "get_viewport_path_in_scene");
 }
 
 ViewportTexture::ViewportTexture() {
@@ -185,6 +185,8 @@ public:
 
 Viewport::GUI::GUI() {
 
+	embed_subwindows_hint = false;
+
 	dragging = false;
 	mouse_focus = NULL;
 	mouse_click_grabber = NULL;
@@ -200,23 +202,6 @@ Viewport::GUI::GUI() {
 }
 
 /////////////////////////////////////
-
-void Viewport::_update_stretch_transform() {
-
-	if (size_override_stretch && size_override) {
-
-		stretch_transform = Transform2D();
-		Size2 scale = size / (size_override_size + size_override_margin * 2);
-		stretch_transform.scale(scale);
-		stretch_transform.elements[2] = size_override_margin * scale;
-
-	} else {
-
-		stretch_transform = Transform2D();
-	}
-
-	_update_global_transform();
-}
 
 void Viewport::update_worlds() {
 
@@ -409,7 +394,7 @@ void Viewport::_notification(int p_what) {
 				VS::get_singleton()->multimesh_set_visible_instances(contact_3d_debug_multimesh, point_count);
 			}
 
-			if (physics_object_picking && (to_screen_rect == Rect2() || Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED)) {
+			if (physics_object_picking && (to_screen_rect == Rect2i() || Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED)) {
 
 #ifndef _3D_DISABLED
 				Vector2 last_pos(1e20, 1e20);
@@ -699,16 +684,6 @@ RID Viewport::get_viewport_rid() const {
 	return viewport;
 }
 
-void Viewport::set_use_arvr(bool p_use_arvr) {
-	arvr = p_use_arvr;
-
-	VS::get_singleton()->viewport_set_use_arvr(viewport, arvr);
-}
-
-bool Viewport::use_arvr() {
-	return arvr;
-}
-
 void Viewport::update_canvas_items() {
 	if (!is_inside_tree())
 		return;
@@ -716,16 +691,33 @@ void Viewport::update_canvas_items() {
 	_update_canvas_items(this);
 }
 
-void Viewport::set_size(const Size2 &p_size) {
+void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_override, const Rect2i &p_to_screen_rect, const Transform2D &p_stretch_transform, bool p_allocated) {
 
-	if (size == p_size.floor())
+	if (size == p_size && size_allocated == p_allocated && stretch_transform == p_stretch_transform && p_size_override == size_override && to_screen_rect != p_to_screen_rect)
 		return;
-	size = p_size.floor();
-	VS::get_singleton()->viewport_set_size(viewport, size.width, size.height);
+	size = p_size;
+	size_allocated = p_allocated;
+	size_override = p_size_override;
+	stretch_transform = p_stretch_transform;
+	to_screen_rect = p_to_screen_rect;
 
-	_update_stretch_transform();
+	if (p_allocated) {
+		VS::get_singleton()->viewport_set_size(viewport, size.width, size.height);
+	} else {
+		VS::get_singleton()->viewport_set_size(viewport, 0, 0);
+	}
+	_update_global_transform();
+
+	update_canvas_items();
 
 	emit_signal("size_changed");
+}
+
+Size2i Viewport::_get_size() const {
+	return size;
+}
+bool Viewport::_is_size_allocated() const {
+	return size_allocated;
 }
 
 Rect2 Viewport::get_visible_rect() const {
@@ -738,16 +730,11 @@ Rect2 Viewport::get_visible_rect() const {
 		r = Rect2(Point2(), size);
 	}
 
-	if (size_override) {
-		r.size = size_override_size;
+	if (size_override != Size2i()) {
+		r.size = size_override;
 	}
 
 	return r;
-}
-
-Size2 Viewport::get_size() const {
-
-	return size;
 }
 
 void Viewport::_update_listener() {
@@ -1279,68 +1266,9 @@ void Viewport::_update_canvas_items(Node *p_node) {
 	}
 }
 
-void Viewport::set_size_override(bool p_enable, const Size2 &p_size, const Vector2 &p_margin) {
-
-	if (size_override == p_enable && p_size == size_override_size)
-		return;
-
-	size_override = p_enable;
-	if (p_size.x >= 0 || p_size.y >= 0) {
-		size_override_size = p_size;
-	}
-	size_override_margin = p_margin;
-
-	_update_stretch_transform();
-	emit_signal("size_changed");
-}
-
-Size2 Viewport::get_size_override() const {
-
-	return size_override_size;
-}
-bool Viewport::is_size_override_enabled() const {
-
-	return size_override;
-}
-void Viewport::set_size_override_stretch(bool p_enable) {
-
-	if (p_enable == size_override_stretch)
-		return;
-
-	size_override_stretch = p_enable;
-
-	_update_stretch_transform();
-}
-
-bool Viewport::is_size_override_stretch_enabled() const {
-
-	return size_override_stretch;
-}
-
-void Viewport::set_update_mode(UpdateMode p_mode) {
-
-	update_mode = p_mode;
-	VS::get_singleton()->viewport_set_update_mode(viewport, VS::ViewportUpdateMode(p_mode));
-}
-Viewport::UpdateMode Viewport::get_update_mode() const {
-
-	return update_mode;
-}
-
 Ref<ViewportTexture> Viewport::get_texture() const {
 
 	return default_texture;
-}
-
-void Viewport::set_clear_mode(ClearMode p_mode) {
-
-	clear_mode = p_mode;
-	VS::get_singleton()->viewport_set_clear_mode(viewport, VS::ViewportClearMode(p_mode));
-}
-
-Viewport::ClearMode Viewport::get_clear_mode() const {
-
-	return clear_mode;
 }
 
 void Viewport::set_shadow_atlas_size(int p_size) {
@@ -1380,7 +1308,7 @@ Transform2D Viewport::_get_input_pre_xform() const {
 
 	Transform2D pre_xf;
 
-	if (to_screen_rect != Rect2()) {
+	if (to_screen_rect != Rect2i()) {
 
 		pre_xf.elements[2] = -to_screen_rect.position;
 		pre_xf.scale(size / to_screen_rect.size);
@@ -1423,8 +1351,12 @@ void Viewport::_vp_input(const Ref<InputEvent> &p_ev) {
 	}
 #endif
 
-	if (to_screen_rect == Rect2())
-		return; //if render target, can't get input events
+	Ref<InputEventFromWindow> window_event = p_ev;
+	if (window_event.is_valid()) {
+		if (window_event->get_window_id() != get_window_id()) {
+			return;
+		}
+	}
 
 	//this one handles system input, p_ev are in system coordinates
 	//they are converted to viewport coordinates
@@ -1448,8 +1380,12 @@ void Viewport::_vp_unhandled_input(const Ref<InputEvent> &p_ev) {
 		return;
 	*/
 
-	if (to_screen_rect == Rect2())
-		return; //if render target, can't get input events
+	Ref<InputEventFromWindow> window_event = p_ev;
+	if (window_event.is_valid()) {
+		if (window_event->get_window_id() != get_window_id()) {
+			return;
+		}
+	}
 
 	//this one handles system input, p_ev are in system coordinates
 	//they are converted to viewport coordinates
@@ -2878,30 +2814,6 @@ bool Viewport::is_using_own_world() const {
 	return own_world.is_valid();
 }
 
-void Viewport::set_attach_to_screen_rect(const Rect2 &p_rect) {
-
-	VS::get_singleton()->viewport_attach_to_screen(viewport, p_rect);
-	to_screen_rect = p_rect;
-}
-
-Rect2 Viewport::get_attach_to_screen_rect() const {
-
-	return to_screen_rect;
-}
-
-void Viewport::set_use_render_direct_to_screen(bool p_render_direct_to_screen) {
-
-	if (p_render_direct_to_screen == render_direct_to_screen)
-		return;
-
-	render_direct_to_screen = p_render_direct_to_screen;
-	VS::get_singleton()->viewport_set_render_direct_to_screen(viewport, p_render_direct_to_screen);
-}
-
-bool Viewport::is_using_render_direct_to_screen() const {
-	return render_direct_to_screen;
-}
-
 void Viewport::set_physics_object_picking(bool p_enable) {
 
 	physics_object_picking = p_enable;
@@ -3091,13 +3003,27 @@ DisplayServer::WindowID Viewport::get_window_id() const {
 	return DisplayServer::MAIN_WINDOW_ID;
 }
 
+Viewport *Viewport::get_parent_viewport() const {
+	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
+	if (!get_parent()) {
+		return nullptr; //root viewport
+	}
+
+	return get_parent()->get_viewport();
+}
+
+void Viewport::set_embed_subwindows_hint(bool p_embed) {
+	gui.embed_subwindows_hint = p_embed;
+}
+bool Viewport::get_embed_subwindows_hint() const {
+	return gui.embed_subwindows_hint;
+}
+bool Viewport::is_embedding_subwindows() const {
+	return gui.embed_subwindows_hint;
+}
+
 void Viewport::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_use_arvr", "use"), &Viewport::set_use_arvr);
-	ClassDB::bind_method(D_METHOD("use_arvr"), &Viewport::use_arvr);
-
-	ClassDB::bind_method(D_METHOD("set_size", "size"), &Viewport::set_size);
-	ClassDB::bind_method(D_METHOD("get_size"), &Viewport::get_size);
 	ClassDB::bind_method(D_METHOD("set_world_2d", "world_2d"), &Viewport::set_world_2d);
 	ClassDB::bind_method(D_METHOD("get_world_2d"), &Viewport::get_world_2d);
 	ClassDB::bind_method(D_METHOD("find_world_2d"), &Viewport::find_world_2d);
@@ -3119,18 +3045,6 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_vp_input"), &Viewport::_vp_input);
 	ClassDB::bind_method(D_METHOD("_vp_input_text", "text"), &Viewport::_vp_input_text);
 	ClassDB::bind_method(D_METHOD("_vp_unhandled_input"), &Viewport::_vp_unhandled_input);
-
-	ClassDB::bind_method(D_METHOD("set_size_override", "enable", "size", "margin"), &Viewport::set_size_override, DEFVAL(Size2(-1, -1)), DEFVAL(Size2(0, 0)));
-	ClassDB::bind_method(D_METHOD("get_size_override"), &Viewport::get_size_override);
-	ClassDB::bind_method(D_METHOD("is_size_override_enabled"), &Viewport::is_size_override_enabled);
-	ClassDB::bind_method(D_METHOD("set_size_override_stretch", "enabled"), &Viewport::set_size_override_stretch);
-	ClassDB::bind_method(D_METHOD("is_size_override_stretch_enabled"), &Viewport::is_size_override_stretch_enabled);
-
-	ClassDB::bind_method(D_METHOD("set_clear_mode", "mode"), &Viewport::set_clear_mode);
-	ClassDB::bind_method(D_METHOD("get_clear_mode"), &Viewport::get_clear_mode);
-
-	ClassDB::bind_method(D_METHOD("set_update_mode", "mode"), &Viewport::set_update_mode);
-	ClassDB::bind_method(D_METHOD("get_update_mode"), &Viewport::get_update_mode);
 
 	ClassDB::bind_method(D_METHOD("set_msaa", "msaa"), &Viewport::set_msaa);
 	ClassDB::bind_method(D_METHOD("get_msaa"), &Viewport::get_msaa);
@@ -3161,9 +3075,6 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_as_audio_listener_2d", "enable"), &Viewport::set_as_audio_listener_2d);
 	ClassDB::bind_method(D_METHOD("is_audio_listener_2d"), &Viewport::is_audio_listener_2d);
-	ClassDB::bind_method(D_METHOD("set_attach_to_screen_rect", "rect"), &Viewport::set_attach_to_screen_rect);
-	ClassDB::bind_method(D_METHOD("set_use_render_direct_to_screen", "enable"), &Viewport::set_use_render_direct_to_screen);
-	ClassDB::bind_method(D_METHOD("is_using_render_direct_to_screen"), &Viewport::is_using_render_direct_to_screen);
 
 	ClassDB::bind_method(D_METHOD("get_mouse_position"), &Viewport::get_mouse_position);
 	ClassDB::bind_method(D_METHOD("warp_mouse", "to_position"), &Viewport::warp_mouse);
@@ -3199,13 +3110,13 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_canvas_item_texture_filter", "mode"), &Viewport::set_default_canvas_item_texture_filter);
 	ClassDB::bind_method(D_METHOD("get_default_canvas_item_texture_filter"), &Viewport::get_default_canvas_item_texture_filter);
 
+	ClassDB::bind_method(D_METHOD("set_embed_subwindows_hint", "enable"), &Viewport::set_embed_subwindows_hint);
+	ClassDB::bind_method(D_METHOD("get_embed_subwindows_hint"), &Viewport::get_embed_subwindows_hint);
+	ClassDB::bind_method(D_METHOD("is_embedding_subwindows"), &Viewport::is_embedding_subwindows);
+
 	ClassDB::bind_method(D_METHOD("set_default_canvas_item_texture_repeat", "mode"), &Viewport::set_default_canvas_item_texture_repeat);
 	ClassDB::bind_method(D_METHOD("get_default_canvas_item_texture_repeat"), &Viewport::get_default_canvas_item_texture_repeat);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "arvr"), "set_use_arvr", "use_arvr");
-
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "size_override_stretch"), "set_size_override_stretch", "is_size_override_stretch_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "own_world"), "set_use_own_world", "is_using_own_world");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "world", PROPERTY_HINT_RESOURCE_TYPE, "World"), "set_world", "get_world");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "world_2d", PROPERTY_HINT_RESOURCE_TYPE, "World2D", 0), "set_world_2d", "get_world_2d");
@@ -3213,11 +3124,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "handle_input_locally"), "set_handle_input_locally", "is_handling_input_locally");
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x,AndroidVR 2x,AndroidVR 4x"), "set_msaa", "get_msaa");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "render_direct_to_screen"), "set_use_render_direct_to_screen", "is_using_render_direct_to_screen");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_draw", PROPERTY_HINT_ENUM, "Disabled,Unshaded,Overdraw,Wireframe"), "set_debug_draw", "get_debug_draw");
-	ADD_GROUP("Render Target", "render_target_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_clear_mode", PROPERTY_HINT_ENUM, "Always,Never,Next Frame"), "set_clear_mode", "get_clear_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_update_mode", PROPERTY_HINT_ENUM, "Disabled,Once,When Visible,Always"), "set_update_mode", "get_update_mode");
 	ADD_GROUP("Canvas Items", "canvas_item_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,MipmapLinear,MipmapNearest"), "set_default_canvas_item_texture_filter", "get_default_canvas_item_texture_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_repeat", PROPERTY_HINT_ENUM, "Disabled,Enabled,Mirror"), "set_default_canvas_item_texture_repeat", "get_default_canvas_item_texture_repeat");
@@ -3229,6 +3136,7 @@ void Viewport::_bind_methods() {
 	ADD_GROUP("GUI", "gui_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_disable_input"), "set_disable_input", "is_input_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_snap_controls_to_pixels"), "set_snap_controls_to_pixels", "is_snap_controls_to_pixels_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_embed_subwindows"), "set_embed_subwindows_hint", "get_embed_subwindows_hint");
 	ADD_GROUP("Shadow Atlas", "shadow_atlas_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_atlas_size"), "set_shadow_atlas_size", "get_shadow_atlas_size");
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "shadow_atlas_quad_0", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_shadow_atlas_quadrant_subdiv", "get_shadow_atlas_quadrant_subdiv", 0);
@@ -3240,11 +3148,6 @@ void Viewport::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("size_changed"));
 	ADD_SIGNAL(MethodInfo("gui_focus_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
-
-	BIND_ENUM_CONSTANT(UPDATE_DISABLED);
-	BIND_ENUM_CONSTANT(UPDATE_ONCE);
-	BIND_ENUM_CONSTANT(UPDATE_WHEN_VISIBLE);
-	BIND_ENUM_CONSTANT(UPDATE_ALWAYS);
 
 	BIND_ENUM_CONSTANT(SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED);
 	BIND_ENUM_CONSTANT(SHADOW_ATLAS_QUADRANT_SUBDIV_1);
@@ -3282,10 +3185,6 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(MSAA_8X);
 	BIND_ENUM_CONSTANT(MSAA_16X);
 
-	BIND_ENUM_CONSTANT(CLEAR_MODE_ALWAYS);
-	BIND_ENUM_CONSTANT(CLEAR_MODE_NEVER);
-	BIND_ENUM_CONSTANT(CLEAR_MODE_ONLY_NEXT_FRAME);
-
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS);
@@ -3312,8 +3211,6 @@ Viewport::Viewport() {
 	viewport = VisualServer::get_singleton()->viewport_create();
 	texture_rid = VisualServer::get_singleton()->viewport_get_texture(viewport);
 
-	render_direct_to_screen = false;
-
 	default_texture.instance();
 	default_texture->vp = const_cast<Viewport *>(this);
 	viewport_textures.insert(default_texture.ptr());
@@ -3329,14 +3226,10 @@ Viewport::Viewport() {
 	camera = NULL;
 	override_canvas_transform = false;
 	canvas_layers.insert(NULL); // This eases picking code (interpreted as the canvas of the Viewport)
-	arvr = false;
-	size_override = false;
-	size_override_stretch = false;
-	size_override_size = Size2(1, 1);
+
 	gen_mipmaps = false;
 
 	//clear=true;
-	update_mode = UPDATE_WHEN_VISIBLE;
 
 	physics_object_picking = false;
 	physics_has_last_mousepos = false;
@@ -3378,7 +3271,6 @@ Viewport::Viewport() {
 	msaa = MSAA_DISABLED;
 
 	debug_draw = DEBUG_DRAW_DISABLED;
-	clear_mode = CLEAR_MODE_ALWAYS;
 
 	snap_controls_to_pixels = true;
 	physics_last_mouse_state.alt = false;
@@ -3388,6 +3280,8 @@ Viewport::Viewport() {
 	physics_last_mouse_state.mouse_mask = 0;
 	local_input_handled = false;
 	handle_input_locally = true;
+
+	size_allocated = false;
 
 	default_canvas_item_texture_filter = DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
 	default_canvas_item_texture_repeat = DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
@@ -3402,4 +3296,85 @@ Viewport::~Viewport() {
 	VisualServer::get_singleton()->free(viewport);
 	//SpatialSoundServer::get_singleton()->free(internal_listener);
 	//SpatialSound2DServer::get_singleton()->free(internal_listener_2d);
+}
+
+/////////////////////////////////
+
+void SubViewport::set_use_arvr(bool p_use_arvr) {
+	arvr = p_use_arvr;
+
+	VS::get_singleton()->viewport_set_use_arvr(get_viewport_rid(), arvr);
+}
+
+bool SubViewport::is_using_arvr() {
+	return arvr;
+}
+
+void SubViewport::set_size(const Size2i &p_size) {
+	_set_size(p_size, Size2i(), Rect2i(), Transform2D(), true);
+}
+Size2i SubViewport::get_size() const {
+	return _get_size();
+}
+
+void SubViewport::set_update_mode(UpdateMode p_mode) {
+
+	update_mode = p_mode;
+	VS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), VS::ViewportUpdateMode(p_mode));
+}
+SubViewport::UpdateMode SubViewport::get_update_mode() const {
+
+	return update_mode;
+}
+
+void SubViewport::set_clear_mode(ClearMode p_mode) {
+
+	clear_mode = p_mode;
+	VS::get_singleton()->viewport_set_clear_mode(get_viewport_rid(), VS::ViewportClearMode(p_mode));
+}
+
+SubViewport::ClearMode SubViewport::get_clear_mode() const {
+
+	return clear_mode;
+}
+
+DisplayServer::WindowID SubViewport::get_window_id() const {
+	return DisplayServer::INVALID_WINDOW_ID;
+}
+
+void SubViewport::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_use_arvr", "use"), &SubViewport::set_use_arvr);
+	ClassDB::bind_method(D_METHOD("is_using_arvr"), &SubViewport::is_using_arvr);
+
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &SubViewport::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &SubViewport::get_size);
+
+	ClassDB::bind_method(D_METHOD("set_update_mode", "mode"), &SubViewport::set_update_mode);
+	ClassDB::bind_method(D_METHOD("get_update_mode"), &SubViewport::get_update_mode);
+
+	ClassDB::bind_method(D_METHOD("set_clear_mode", "mode"), &SubViewport::set_clear_mode);
+	ClassDB::bind_method(D_METHOD("get_clear_mode"), &SubViewport::get_clear_mode);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "arvr"), "set_use_arvr", "is_using_arvr");
+	ADD_GROUP("Render Target", "render_target_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_clear_mode", PROPERTY_HINT_ENUM, "Always,Never,Next Frame"), "set_clear_mode", "get_clear_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_update_mode", PROPERTY_HINT_ENUM, "Disabled,Once,When Visible,Always"), "set_update_mode", "get_update_mode");
+
+	BIND_ENUM_CONSTANT(UPDATE_DISABLED);
+	BIND_ENUM_CONSTANT(UPDATE_ONCE);
+	BIND_ENUM_CONSTANT(UPDATE_WHEN_VISIBLE);
+	BIND_ENUM_CONSTANT(UPDATE_ALWAYS);
+
+	BIND_ENUM_CONSTANT(CLEAR_MODE_ALWAYS);
+	BIND_ENUM_CONSTANT(CLEAR_MODE_NEVER);
+	BIND_ENUM_CONSTANT(CLEAR_MODE_ONLY_NEXT_FRAME);
+}
+
+SubViewport::SubViewport() {
+	arvr = false;
+	update_mode = UPDATE_WHEN_VISIBLE;
+	clear_mode = CLEAR_MODE_ALWAYS;
+}
+
+SubViewport::~SubViewport() {
 }
