@@ -256,6 +256,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 			}
 
 			//name
+			node->set_name(snames[n.name]);
 
 			//groups
 			for (int j = 0; j < n.groups.size(); j++) {
@@ -268,7 +269,18 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 				//if node was not part of instance, must set its name, parenthood and ownership
 				if (i > 0) {
 					if (parent) {
-						parent->_add_child_nocheck(node, snames[n.name]);
+						// check name of node: parent instance might have added a node with the
+						// same name since the last time this scene was opened (Fixes #26390)
+						if (Engine::get_singleton()->is_editor_hint()) {
+							parent->add_child(node, true);
+							if (snames[n.name] != node->get_name()) {
+								// The node got renamed
+								ERR_PRINT(vformat("Duplicate names: Node '%s' already has a child with name '%s'. The duplicate child has been renamed to '%s'.",
+										parent->get_name(), snames[n.name], node->get_name()));
+							}
+						} else {
+							parent->_add_child_nocheck(node, snames[n.name]);
+						}
 						if (n.index >= 0 && n.index < parent->get_child_count() - 1)
 							parent->move_child(node, n.index);
 					} else {
