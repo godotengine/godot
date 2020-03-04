@@ -2480,7 +2480,7 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 
 	state.time = 0;
 
-	ERR_FAIL_COND(sizeof(PushConstant) != 128);
+	static_assert(sizeof(PushConstant) == 128);
 }
 
 bool RasterizerCanvasRD::free(RID p_rid) {
