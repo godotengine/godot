@@ -30,7 +30,7 @@
 
 #include "text_edit.h"
 
-#include "core/input/input.h"
+#include "core/input/input_filter.h"
 #include "core/message_queue.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -446,7 +446,7 @@ void TextEdit::_click_selection_held() {
 	// Warning: is_mouse_button_pressed(BUTTON_LEFT) returns false for double+ clicks, so this doesn't work for MODE_WORD
 	// and MODE_LINE. However, moving the mouse triggers _gui_input, which calls these functions too, so that's not a huge problem.
 	// I'm unsure if there's an actual fix that doesn't have a ton of side effects.
-	if (Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) && selection.selecting_mode != Selection::MODE_NONE) {
+	if (InputFilter::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) && selection.selecting_mode != Selection::MODE_NONE) {
 		switch (selection.selecting_mode) {
 			case Selection::MODE_POINTER: {
 				_update_selection_mode_pointer();
@@ -639,12 +639,12 @@ void TextEdit::_notification(int p_what) {
 			_update_wrap_at();
 			syntax_highlighting_cache.clear();
 		} break;
-		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
+		case NOTIFICATION_WM_FOCUS_IN: {
 			window_has_focus = true;
 			draw_caret = true;
 			update();
 		} break;
-		case MainLoop::NOTIFICATION_WM_FOCUS_OUT: {
+		case NOTIFICATION_WM_FOCUS_OUT: {
 			window_has_focus = false;
 			draw_caret = false;
 			update();

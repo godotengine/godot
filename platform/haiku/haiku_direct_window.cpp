@@ -74,7 +74,7 @@ void HaikuDirectWindow::SetMainLoop(MainLoop *p_main_loop) {
 
 bool HaikuDirectWindow::QuitRequested() {
 	StopMessageRunner();
-	main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
+	main_loop->notification(NOTIFICATION_WM_CLOSE_REQUEST);
 	return false;
 }
 

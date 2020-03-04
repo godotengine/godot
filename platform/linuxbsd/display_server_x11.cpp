@@ -208,7 +208,7 @@ void DisplayServerX11::_update_real_mouse_position(const WindowData &wd) {
 			last_mouse_pos.x = win_x;
 			last_mouse_pos.y = win_y;
 			last_mouse_pos_valid = true;
-			Input::get_singleton()->set_mouse_position(last_mouse_pos);
+			InputFilter::get_singleton()->set_mouse_position(last_mouse_pos);
 		}
 	}
 }
@@ -389,7 +389,7 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 			XWarpPointer(x11_display, None, main_window.x11_window,
 					0, 0, 0, 0, (int)center.x, (int)center.y);
 
-			Input::get_singleton()->set_mouse_position(center);
+			InputFilter::get_singleton()->set_mouse_position(center);
 		}
 	} else {
 		do_mouse_warp = false;
@@ -671,6 +671,29 @@ void DisplayServerX11::window_set_resize_callback(const Callable &p_callable, Wi
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 	wd.resize_callback = p_callable;
+}
+
+void DisplayServerX11::window_set_window_event_callback(const Callable &p_callable, WindowID p_window) {
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+	wd.event_callback = p_callable;
+}
+
+void DisplayServerX11::window_set_input_event_callback(const Callable &p_callable, WindowID p_window) {
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+	wd.input_event_callback = p_callable;
+}
+void DisplayServerX11::window_set_input_text_callback(const Callable &p_callable, WindowID p_window) {
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+	wd.input_text_callback = p_callable;
+}
+
+void DisplayServerX11::window_set_drop_files_callback(const Callable &p_callable, WindowID p_window) {
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+	wd.drop_files_callback = p_callable;
 }
 
 int DisplayServerX11::window_get_current_screen(WindowID p_window) const {
@@ -1837,7 +1860,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 					k->set_shift(true);
 				}
 
-				Input::get_singleton()->accumulate_input_event(k);
+				InputFilter::get_singleton()->accumulate_input_event(k);
 			}
 			memfree(utf8string);
 			return;
@@ -1979,14 +2002,14 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 			k->set_metakey(false);
 	}
 
-	bool last_is_pressed = Input::get_singleton()->is_key_pressed(k->get_keycode());
+	bool last_is_pressed = InputFilter::get_singleton()->is_key_pressed(k->get_keycode());
 	if (k->is_pressed()) {
 		if (last_is_pressed) {
 			k->set_echo(true);
 		}
 	}
 
-	Input::get_singleton()->accumulate_input_event(k);
+	InputFilter::get_singleton()->accumulate_input_event(k);
 }
 
 void DisplayServerX11::_xim_destroy_callback(::XIM im, ::XPointer client_data,
@@ -2041,6 +2064,47 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	}
 }
 
+void DisplayServerX11::_dispatch_input_events(const Ref<InputEvent> &p_event) {
+	((DisplayServerX11 *)(get_singleton()))->_dispatch_input_event(p_event);
+}
+
+void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
+
+	Variant ev = p_event;
+	Variant *evp = &ev;
+	Variant ret;
+	Callable::CallError ce;
+
+	Ref<InputEventFromWindow> event_from_window = p_event;
+	if (event_from_window.is_valid() && event_from_window->get_window_id() != INVALID_WINDOW_ID) {
+		//send to a window
+		ERR_FAIL_COND(!windows.has(event_from_window->get_window_id()));
+		Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
+		if (callable.is_null()) {
+			return;
+		}
+		callable.call((const Variant **)&evp, 1, ret, ce);
+	} else {
+		//send to all windows
+		for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+			Callable callable = E->get().input_event_callback;
+			if (callable.is_null()) {
+				continue;
+			}
+			callable.call((const Variant **)&evp, 1, ret, ce);
+		}
+	}
+}
+
+void DisplayServerX11::_send_window_event(const WindowData &wd, WindowEvent p_event) {
+	if (!wd.event_callback.is_null()) {
+		Variant event = int(p_event);
+		Variant *eventp = &event;
+		Variant ret;
+		Callable::CallError ce;
+		wd.event_callback.call((const Variant **)&eventp, 1, ret, ce);
+	}
+}
 void DisplayServerX11::process_events() {
 	do_mouse_warp = false;
 
@@ -2180,12 +2244,12 @@ void DisplayServerX11::process_events() {
 								// in a spurious mouse motion event being sent to Godot; remember it to be able to filter it out
 								xi.mouse_pos_to_filter = pos;
 							}
-							Input::get_singleton()->accumulate_input_event(st);
+							InputFilter::get_singleton()->accumulate_input_event(st);
 						} else {
 							if (!xi.state.has(index)) // Defensive
 								break;
 							xi.state.erase(index);
-							Input::get_singleton()->accumulate_input_event(st);
+							InputFilter::get_singleton()->accumulate_input_event(st);
 						}
 					} break;
 
@@ -2204,7 +2268,7 @@ void DisplayServerX11::process_events() {
 							sd->set_index(index);
 							sd->set_position(pos);
 							sd->set_relative(pos - curr_pos_elem->value());
-							Input::get_singleton()->accumulate_input_event(sd);
+							InputFilter::get_singleton()->accumulate_input_event(sd);
 
 							curr_pos_elem->value() = pos;
 						}
@@ -2229,18 +2293,20 @@ void DisplayServerX11::process_events() {
 				minimized = (visibility->state == VisibilityFullyObscured);
 			} break;
 			case LeaveNotify: {
-				if (!mouse_mode_grab)
-					Input::get_singleton()->parse_notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
+				if (!mouse_mode_grab) {
+					_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_EXIT);
+				}
 
 			} break;
 			case EnterNotify: {
-				if (!mouse_mode_grab)
-					Input::get_singleton()->parse_notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
+				if (!mouse_mode_grab) {
+					_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
+				}
 			} break;
 			case FocusIn:
 				minimized = false;
 				window_has_focus = true;
-				Input::get_singleton()->parse_notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
+				_send_window_event(windows[window_id], WINDOW_EVENT_FOCUS_IN);
 				window_focused = true;
 
 				if (mouse_mode_grab) {
@@ -2272,8 +2338,8 @@ void DisplayServerX11::process_events() {
 
 			case FocusOut:
 				window_has_focus = false;
-				Input::get_singleton()->release_pressed_events();
-				Input::get_singleton()->parse_notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+				InputFilter::get_singleton()->release_pressed_events();
+				_send_window_event(windows[window_id], WINDOW_EVENT_FOCUS_OUT);
 				window_focused = false;
 
 				if (mouse_mode_grab) {
@@ -2301,7 +2367,7 @@ void DisplayServerX11::process_events() {
 					st->set_index(E->key());
 					st->set_window_id(window_id);
 					st->set_position(E->get());
-					Input::get_singleton()->accumulate_input_event(st);
+					InputFilter::get_singleton()->accumulate_input_event(st);
 				}
 				xi.state.clear();
 #endif
@@ -2363,7 +2429,7 @@ void DisplayServerX11::process_events() {
 					}
 				}
 
-				Input::get_singleton()->accumulate_input_event(mb);
+				InputFilter::get_singleton()->accumulate_input_event(mb);
 
 			} break;
 			case MotionNotify: {
@@ -2465,8 +2531,8 @@ void DisplayServerX11::process_events() {
 				mm->set_button_mask(mouse_get_button_state());
 				mm->set_position(posi);
 				mm->set_global_position(posi);
-				Input::get_singleton()->set_mouse_position(posi);
-				mm->set_speed(Input::get_singleton()->get_last_mouse_speed());
+				InputFilter::get_singleton()->set_mouse_position(posi);
+				mm->set_speed(InputFilter::get_singleton()->get_last_mouse_speed());
 
 				mm->set_relative(rel);
 
@@ -2477,7 +2543,7 @@ void DisplayServerX11::process_events() {
 				// this is so that the relative motion doesn't get messed up
 				// after we regain focus.
 				if (window_has_focus || !mouse_mode_grab)
-					Input::get_singleton()->accumulate_input_event(mm);
+					InputFilter::get_singleton()->accumulate_input_event(mm);
 
 			} break;
 			case KeyPress:
@@ -2561,7 +2627,14 @@ void DisplayServerX11::process_events() {
 					for (int i = 0; i < files.size(); i++) {
 						files.write[i] = files[i].replace("file://", "").http_unescape().strip_edges();
 					}
-					Input::get_singleton()->parse_drop_files(files);
+
+					if (!windows[window_id].drop_files_callback.is_null()) {
+						Variant v = files;
+						Variant *vp = &v;
+						Variant ret;
+						Callable::CallError ce;
+						windows[window_id].drop_files_callback.call((const Variant **)&vp, 1, ret, ce);
+					}
 
 					//Reply that all is well.
 					XClientMessageEvent m;
@@ -2581,8 +2654,9 @@ void DisplayServerX11::process_events() {
 
 			case ClientMessage:
 
-				if ((unsigned int)event.xclient.data.l[0] == (unsigned int)wm_delete)
-					Input::get_singleton()->parse_notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
+				if ((unsigned int)event.xclient.data.l[0] == (unsigned int)wm_delete) {
+					_send_window_event(windows[window_id], WINDOW_EVENT_CLOSE_REQUEST);
+				}
 
 				else if ((unsigned int)event.xclient.message_type == (unsigned int)xdnd_enter) {
 
@@ -2662,7 +2736,7 @@ void DisplayServerX11::process_events() {
 		*/
 	}
 
-	Input::get_singleton()->flush_accumulated_events();
+	InputFilter::get_singleton()->flush_accumulated_events();
 }
 
 void DisplayServerX11::release_rendering_thread() {
@@ -2880,6 +2954,8 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, c
 }
 
 DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+
+	InputFilter::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 
 	r_error = OK;
 

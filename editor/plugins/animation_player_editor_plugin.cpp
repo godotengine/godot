@@ -30,7 +30,7 @@
 
 #include "animation_player_editor_plugin.h"
 
-#include "core/input/input.h"
+#include "core/input/input_filter.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/os/keyboard.h"
@@ -488,7 +488,7 @@ double AnimationPlayerEditor::_get_editor_step() const {
 		ERR_FAIL_COND_V(!anim.is_valid(), 0.0);
 
 		// Use more precise snapping when holding Shift
-		return Input::get_singleton()->is_key_pressed(KEY_SHIFT) ? anim->get_step() * 0.25 : anim->get_step();
+		return InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT) ? anim->get_step() * 0.25 : anim->get_step();
 	}
 
 	return 0.0;

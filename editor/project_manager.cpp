@@ -51,6 +51,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tool_button.h"
+#include "scene/main/window.h"
 #include "servers/display_server.h"
 
 static inline String get_project_key_from_path(const String &dir) {
@@ -657,7 +658,7 @@ private:
 
 	void _notification(int p_what) {
 
-		if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST)
+		if (p_what == NOTIFICATION_WM_CLOSE_REQUEST)
 			_remove_created_folder();
 	}
 
@@ -1850,7 +1851,7 @@ void ProjectManager::_notification(int p_what) {
 
 			set_process_unhandled_input(is_visible_in_tree());
 		} break;
-		case NOTIFICATION_WM_QUIT_REQUEST: {
+		case NOTIFICATION_WM_CLOSE_REQUEST: {
 
 			_dim_window();
 		} break;
@@ -2694,7 +2695,7 @@ ProjectManager::ProjectManager() {
 		_scan_begin(EditorSettings::get_singleton()->get("filesystem/directories/autoscan_project_path"));
 	}
 
-	SceneTree::get_singleton()->connect("files_dropped", callable_mp(this, &ProjectManager::_files_dropped));
+	SceneTree::get_singleton()->get_root()->connect("files_dropped", callable_mp(this, &ProjectManager::_files_dropped));
 	SceneTree::get_singleton()->connect("global_menu_action", callable_mp(this, &ProjectManager::_global_menu_action));
 
 	run_error_diag = memnew(AcceptDialog);

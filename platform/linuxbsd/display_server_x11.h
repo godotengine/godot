@@ -35,7 +35,7 @@
 
 #include "servers/display_server.h"
 
-#include "core/input/input.h"
+#include "core/input/input_filter.h"
 
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
@@ -120,6 +120,10 @@ class DisplayServerX11 : public DisplayServer {
 		Size2i im_position;
 		bool im_active = false;
 		Callable resize_callback;
+		Callable event_callback;
+		Callable input_event_callback;
+		Callable input_text_callback;
+		Callable drop_files_callback;
 
 		//better to guess on the fly, given WM can change it
 		//WindowMode mode;
@@ -224,6 +228,10 @@ class DisplayServerX11 : public DisplayServer {
 
 	Context context = CONTEXT_ENGINE;
 
+	void _send_window_event(const WindowData &wd, WindowEvent p_event);
+	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
+	void _dispatch_input_event(const Ref<InputEvent> &p_event);
+
 protected:
 	void _window_changed(XEvent *event);
 
@@ -256,6 +264,10 @@ public:
 
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID);
 	virtual void window_set_resize_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
+	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
+	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
+	virtual void window_set_input_text_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
+	virtual void window_set_drop_files_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
 
 	virtual int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const;
 	virtual void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID);

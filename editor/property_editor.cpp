@@ -31,7 +31,7 @@
 #include "property_editor.h"
 
 #include "core/class_db.h"
-#include "core/input/input.h"
+#include "core/input/input_filter.h"
 #include "core/io/image_loader.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
@@ -108,7 +108,7 @@ void CustomPropertyEditor::_notification(int p_what) {
 		RID ci = get_canvas_item();
 		get_stylebox("panel", "PopupMenu")->draw(ci, Rect2(Point2(), get_size()));
 	}
-	if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST) {
+	if (p_what == NOTIFICATION_WM_CLOSE_REQUEST) {
 		hide();
 	}
 }
@@ -1743,7 +1743,7 @@ real_t CustomPropertyEditor::_parse_real_expression(String text) {
 
 void CustomPropertyEditor::_emit_changed_whole_or_field() {
 
-	if (!Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	if (!InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 		emit_signal("variant_changed");
 	} else {
 		emit_signal("variant_field_changed", field_names[focused_value_editor]);

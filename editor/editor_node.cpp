@@ -32,7 +32,7 @@
 
 #include "core/bind/core_bind.h"
 #include "core/class_db.h"
-#include "core/input/input.h"
+#include "core/input/input_filter.h"
 #include "core/io/config_file.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
@@ -303,7 +303,7 @@ void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (old_editor != editor_plugin_screen) {
-			get_tree()->set_input_as_handled();
+			get_tree()->get_root()->set_input_as_handled();
 		}
 	}
 }
@@ -380,7 +380,7 @@ void EditorNode::_notification(int p_what) {
 			get_tree()->get_root()->set_as_audio_listener(false);
 			get_tree()->get_root()->set_as_audio_listener_2d(false);
 			get_tree()->set_auto_accept_quit(false);
-			get_tree()->connect("files_dropped", callable_mp(this, &EditorNode::_dropped_files));
+			get_tree()->get_root()->connect("files_dropped", callable_mp(this, &EditorNode::_dropped_files));
 			get_tree()->connect("global_menu_action", callable_mp(this, &EditorNode::_global_menu_action));
 
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
@@ -423,7 +423,7 @@ void EditorNode::_notification(int p_what) {
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
 
-		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
+		case NOTIFICATION_WM_FOCUS_IN: {
 
 			// Restore the original FPS cap after focusing back on the editor
 			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
@@ -431,18 +431,18 @@ void EditorNode::_notification(int p_what) {
 			EditorFileSystem::get_singleton()->scan_changes();
 		} break;
 
-		case MainLoop::NOTIFICATION_WM_FOCUS_OUT: {
+		case NOTIFICATION_WM_FOCUS_OUT: {
 
 			// Set a low FPS cap to decrease CPU/GPU usage while the editor is unfocused
 			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/unfocused_low_processor_mode_sleep_usec")));
 		} break;
 
-		case MainLoop::NOTIFICATION_WM_ABOUT: {
+		case NOTIFICATION_WM_ABOUT: {
 
 			show_about();
 		} break;
 
-		case MainLoop::NOTIFICATION_WM_QUIT_REQUEST: {
+		case NOTIFICATION_WM_CLOSE_REQUEST: {
 
 			_menu_option_confirm(FILE_QUIT, false);
 		} break;
@@ -2347,7 +2347,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		case EDIT_UNDO: {
 
-			if (Input::get_singleton()->get_mouse_button_mask() & 0x7) {
+			if (InputFilter::get_singleton()->get_mouse_button_mask() & 0x7) {
 				log->add_message("Can't undo while mouse buttons are pressed.", EditorLog::MSG_TYPE_EDITOR);
 			} else {
 				String action = editor_data.get_undo_redo().get_current_action_name();
@@ -2361,7 +2361,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case EDIT_REDO: {
 
-			if (Input::get_singleton()->get_mouse_button_mask() & 0x7) {
+			if (InputFilter::get_singleton()->get_mouse_button_mask() & 0x7) {
 				log->add_message("Can't redo while mouse buttons are pressed.", EditorLog::MSG_TYPE_EDITOR);
 			} else {
 				if (!editor_data.get_undo_redo().redo()) {
@@ -5472,7 +5472,7 @@ int EditorNode::execute_and_show_output(const String &p_title, const String &p_p
 
 EditorNode::EditorNode() {
 
-	Input::get_singleton()->set_use_accumulated_input(true);
+	InputFilter::get_singleton()->set_use_accumulated_input(true);
 	Resource::_get_local_scene_func = _resource_get_edited_scene;
 
 	VisualServer::get_singleton()->set_debug_generate_wireframes(true);
@@ -5488,7 +5488,7 @@ EditorNode::EditorNode() {
 	ResourceLoader::clear_translation_remaps(); //no remaps using during editor
 	ResourceLoader::clear_path_remaps();
 
-	Input *id = Input::get_singleton();
+	InputFilter *id = InputFilter::get_singleton();
 
 	if (id) {
 
@@ -5499,7 +5499,7 @@ EditorNode::EditorNode() {
 			}
 		}
 
-		if (!found_touchscreen && Input::get_singleton()) {
+		if (!found_touchscreen && InputFilter::get_singleton()) {
 			//only if no touchscreen ui hint, set emulation
 			id->set_emulate_touch_from_mouse(false); //just disable just in case
 		}

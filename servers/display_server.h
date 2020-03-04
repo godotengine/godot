@@ -32,7 +32,7 @@
 #define DISPLAY_SERVER_H
 
 #include "core/callable.h"
-#include "core/input/input.h"
+#include "core/input/input_filter.h"
 #include "core/os/os.h"
 #include "core/resource.h"
 
@@ -56,11 +56,11 @@ public:
 	typedef DisplayServer *(*CreateFunction)(const String &, WindowMode, uint32_t, const Size2i &, Error &r_error); //video driver, window mode, resolution
 	typedef Vector<String> (*GetVideoDriversFunction)(); //video driver, window mode, resolution
 private:
-	static void _input_set_mouse_mode(Input::MouseMode p_mode);
-	static Input::MouseMode _input_get_mouse_mode();
+	static void _input_set_mouse_mode(InputFilter::MouseMode p_mode);
+	static InputFilter::MouseMode _input_get_mouse_mode();
 	static void _input_warp(const Vector2 &p_to_pos);
-	static Input::CursorShape _input_get_current_cursor_shape();
-	static void _input_set_custom_mouse_cursor_func(const RES &, Input::CursorShape, const Vector2 &p_hostspot);
+	static InputFilter::CursorShape _input_get_current_cursor_shape();
+	static void _input_set_custom_mouse_cursor_func(const RES &, InputFilter::CursorShape, const Vector2 &p_hostspot);
 
 protected:
 	static void _bind_methods();
@@ -182,6 +182,20 @@ public:
 	virtual void delete_sub_window(WindowID p_id);
 
 	virtual void window_set_resize_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) = 0;
+
+	enum WindowEvent {
+		WINDOW_EVENT_MOUSE_ENTER,
+		WINDOW_EVENT_MOUSE_EXIT,
+		WINDOW_EVENT_FOCUS_IN,
+		WINDOW_EVENT_FOCUS_OUT,
+		WINDOW_EVENT_CLOSE_REQUEST,
+		WINDOW_EVENT_GO_BACK_REQUEST,
+	};
+	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) = 0;
+	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) = 0;
+	virtual void window_set_input_text_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) = 0;
+	virtual void window_set_drop_files_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) = 0;
+
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) = 0;
 
 	virtual int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const = 0;
@@ -321,6 +335,7 @@ public:
 	~DisplayServer();
 };
 
+VARIANT_ENUM_CAST(DisplayServer::WindowEvent)
 VARIANT_ENUM_CAST(DisplayServer::Feature)
 VARIANT_ENUM_CAST(DisplayServer::MouseMode)
 VARIANT_ENUM_CAST(DisplayServer::ScreenOrientation)

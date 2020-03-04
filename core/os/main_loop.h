@@ -48,13 +48,6 @@ protected:
 public:
 	enum {
 		//make sure these are replicated in Node
-		NOTIFICATION_WM_MOUSE_ENTER = 1002,
-		NOTIFICATION_WM_MOUSE_EXIT = 1003,
-		NOTIFICATION_WM_FOCUS_IN = 1004,
-		NOTIFICATION_WM_FOCUS_OUT = 1005,
-		NOTIFICATION_WM_QUIT_REQUEST = 1006,
-		NOTIFICATION_WM_GO_BACK_REQUEST = 1007,
-		NOTIFICATION_WM_UNFOCUS_REQUEST = 1008,
 		NOTIFICATION_OS_MEMORY_WARNING = 1009,
 		NOTIFICATION_TRANSLATION_CHANGED = 1010,
 		NOTIFICATION_WM_ABOUT = 1011,
@@ -64,15 +57,11 @@ public:
 		NOTIFICATION_APP_PAUSED = 1015,
 	};
 
-	virtual void input_event(const Ref<InputEvent> &p_event);
-	virtual void input_text(const String &p_text);
-
 	virtual void init();
 	virtual bool iteration(float p_time);
 	virtual bool idle(float p_time);
 	virtual void finish();
 
-	virtual void drop_files(const Vector<String> &p_files, int p_from_screen = 0);
 	virtual void global_menu_action(const Variant &p_id, const Variant &p_meta);
 
 	void set_init_script(const Ref<Script> &p_init_script);

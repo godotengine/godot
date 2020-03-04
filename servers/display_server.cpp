@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "display_server.h"
-#include "core/input/input.h"
+#include "core/input/input_filter.h"
 
 DisplayServer *DisplayServer::singleton = nullptr;
 DisplayServer::SwitchVSyncCallbackInThread DisplayServer::switch_vsync_function = nullptr;
@@ -83,7 +83,7 @@ DisplayServer::ScreenOrientation DisplayServer::screen_get_orientation(int p_scr
 
 bool DisplayServer::screen_is_touchscreen(int p_screen) const {
 	//return false;
-	return Input::get_singleton() && Input::get_singleton()->is_emulating_touch_from_mouse();
+	return InputFilter::get_singleton() && InputFilter::get_singleton()->is_emulating_touch_from_mouse();
 }
 
 void DisplayServer::screen_set_keep_on(bool p_enable) {
@@ -275,6 +275,10 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("window_get_size", "window_id"), &DisplayServer::window_get_size, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_set_size", "size", "window_id"), &DisplayServer::window_set_size, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_set_resize_callback", "callback", "window_id"), &DisplayServer::window_set_resize_callback, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_set_window_event_callback", "callback", "window_id"), &DisplayServer::window_set_window_event_callback, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_set_input_event_callback", "callback", "window_id"), &DisplayServer::window_set_input_event_callback, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_set_input_text_callback", "callback", "window_id"), &DisplayServer::window_set_input_text_callback, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_set_drop_files_callback", "callback", "window_id"), &DisplayServer::window_set_drop_files_callback, DEFVAL(MAIN_WINDOW_ID));
 
 	ClassDB::bind_method(D_METHOD("window_get_max_size", "window_id"), &DisplayServer::window_get_max_size, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_set_max_size", "max_size", "window_id"), &DisplayServer::window_set_max_size, DEFVAL(MAIN_WINDOW_ID));
@@ -418,6 +422,13 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(LATIN_KEYBOARD_DVORAK);
 	BIND_ENUM_CONSTANT(LATIN_KEYBOARD_NEO);
 	BIND_ENUM_CONSTANT(LATIN_KEYBOARD_COLEMAK);
+
+	BIND_ENUM_CONSTANT(WINDOW_EVENT_MOUSE_ENTER);
+	BIND_ENUM_CONSTANT(WINDOW_EVENT_MOUSE_EXIT);
+	BIND_ENUM_CONSTANT(WINDOW_EVENT_FOCUS_IN);
+	BIND_ENUM_CONSTANT(WINDOW_EVENT_FOCUS_OUT);
+	BIND_ENUM_CONSTANT(WINDOW_EVENT_CLOSE_REQUEST);
+	BIND_ENUM_CONSTANT(WINDOW_EVENT_GO_BACK_REQUEST);
 }
 
 void DisplayServer::register_create_function(const char *p_name, CreateFunction p_function, GetVideoDriversFunction p_get_drivers) {
@@ -444,31 +455,31 @@ DisplayServer *DisplayServer::create(int p_index, const String &p_rendering_driv
 	return server_create_functions[p_index].create_function(p_rendering_driver, p_mode, p_flags, p_resolution, r_error);
 }
 
-void DisplayServer::_input_set_mouse_mode(Input::MouseMode p_mode) {
+void DisplayServer::_input_set_mouse_mode(InputFilter::MouseMode p_mode) {
 	singleton->mouse_set_mode(MouseMode(p_mode));
 }
-Input::MouseMode DisplayServer::_input_get_mouse_mode() {
-	return Input::MouseMode(singleton->mouse_get_mode());
+InputFilter::MouseMode DisplayServer::_input_get_mouse_mode() {
+	return InputFilter::MouseMode(singleton->mouse_get_mode());
 }
 
 void DisplayServer::_input_warp(const Vector2 &p_to_pos) {
 	singleton->mouse_warp_to_position(p_to_pos);
 }
 
-Input::CursorShape DisplayServer::_input_get_current_cursor_shape() {
-	return (Input::CursorShape)singleton->cursor_get_shape();
+InputFilter::CursorShape DisplayServer::_input_get_current_cursor_shape() {
+	return (InputFilter::CursorShape)singleton->cursor_get_shape();
 }
-void DisplayServer::_input_set_custom_mouse_cursor_func(const RES &p_image, Input::CursorShape p_shape, const Vector2 &p_hostspot) {
+void DisplayServer::_input_set_custom_mouse_cursor_func(const RES &p_image, InputFilter::CursorShape p_shape, const Vector2 &p_hostspot) {
 	singleton->cursor_set_custom_image(p_image, (CursorShape)p_shape, p_hostspot);
 }
 
 DisplayServer::DisplayServer() {
 	singleton = this;
-	Input::set_mouse_mode_func = _input_set_mouse_mode;
-	Input::get_mouse_mode_func = _input_get_mouse_mode;
-	Input::warp_mouse_func = _input_warp;
-	Input::get_current_cursor_shape_func = _input_get_current_cursor_shape;
-	Input::set_custom_mouse_cursor_func = _input_set_custom_mouse_cursor_func;
+	InputFilter::set_mouse_mode_func = _input_set_mouse_mode;
+	InputFilter::get_mouse_mode_func = _input_get_mouse_mode;
+	InputFilter::warp_mouse_func = _input_warp;
+	InputFilter::get_current_cursor_shape_func = _input_get_current_cursor_shape;
+	InputFilter::set_custom_mouse_cursor_func = _input_set_custom_mouse_cursor_func;
 }
 DisplayServer::~DisplayServer() {
 }

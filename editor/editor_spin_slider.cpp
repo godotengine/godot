@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "editor_spin_slider.h"
-#include "core/input/input.h"
+
+#include "core/input/input_filter.h"
 #include "core/math/expression.h"
 #include "editor_node.h"
 #include "editor_scale.h"
@@ -67,7 +68,7 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 					grabbing_spinner_dist_cache = 0;
 					pre_grab_value = get_value();
 					grabbing_spinner = false;
-					grabbing_spinner_mouse_pos = Input::get_singleton()->get_mouse_position();
+					grabbing_spinner_mouse_pos = InputFilter::get_singleton()->get_mouse_position();
 				}
 			} else {
 
@@ -75,8 +76,8 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 
 					if (grabbing_spinner) {
 
-						Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
-						Input::get_singleton()->warp_mouse_position(grabbing_spinner_mouse_pos);
+						InputFilter::get_singleton()->set_mouse_mode(InputFilter::MOUSE_MODE_VISIBLE);
+						InputFilter::get_singleton()->warp_mouse_position(grabbing_spinner_mouse_pos);
 						update();
 					} else {
 						_focus_entered();
@@ -105,7 +106,7 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 			grabbing_spinner_dist_cache += diff_x;
 
 			if (!grabbing_spinner && ABS(grabbing_spinner_dist_cache) > 4 * EDSCALE) {
-				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+				InputFilter::get_singleton()->set_mouse_mode(InputFilter::MOUSE_MODE_CAPTURED);
 				grabbing_spinner = true;
 			}
 
@@ -176,11 +177,11 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 
 void EditorSpinSlider::_notification(int p_what) {
 
-	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_OUT ||
-			p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN ||
+	if (p_what == NOTIFICATION_WM_FOCUS_OUT ||
+			p_what == NOTIFICATION_WM_FOCUS_IN ||
 			p_what == NOTIFICATION_EXIT_TREE) {
 		if (grabbing_spinner) {
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+			InputFilter::get_singleton()->set_mouse_mode(InputFilter::MOUSE_MODE_VISIBLE);
 			grabbing_spinner = false;
 			grabbing_spinner_attempt = false;
 		}
@@ -297,7 +298,7 @@ void EditorSpinSlider::_notification(int p_what) {
 				grabber->set_position(get_global_position() + grabber_rect.position + grabber_rect.size * 0.5 - grabber->get_size() * 0.5);
 
 				if (mousewheel_over_grabber) {
-					Input::get_singleton()->warp_mouse_position(grabber->get_position() + grabber_rect.size);
+					InputFilter::get_singleton()->warp_mouse_position(grabber->get_position() + grabber_rect.size);
 				}
 
 				grabber_range = width;
@@ -316,12 +317,7 @@ void EditorSpinSlider::_notification(int p_what) {
 		update();
 	}
 	if (p_what == NOTIFICATION_FOCUS_ENTER) {
-		/* Sorry, I don't like this, it makes navigating the different fields with arrows more difficult.
-		 * Just press enter to edit.
-		 * if (Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) && !value_input_just_closed) {
-			_focus_entered();
-		}*/
-		if ((Input::get_singleton()->is_action_pressed("ui_focus_next") || Input::get_singleton()->is_action_pressed("ui_focus_prev")) && !value_input_just_closed) {
+		if ((InputFilter::get_singleton()->is_action_pressed("ui_focus_next") || InputFilter::get_singleton()->is_action_pressed("ui_focus_prev")) && !value_input_just_closed) {
 			_focus_entered();
 		}
 		value_input_just_closed = false;

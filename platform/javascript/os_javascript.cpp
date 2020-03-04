@@ -1009,10 +1009,10 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 			update_clipboard(evt.clipboardData.getData('text'));
 		}, true);
 	},
-		MainLoop::NOTIFICATION_WM_MOUSE_ENTER,
-		MainLoop::NOTIFICATION_WM_MOUSE_EXIT,
-		MainLoop::NOTIFICATION_WM_FOCUS_IN,
-		MainLoop::NOTIFICATION_WM_FOCUS_OUT
+		NOTIFICATION_WM_MOUSE_ENTER,
+		NOTIFICATION_WM_MOUSE_EXIT,
+		NOTIFICATION_WM_FOCUS_IN,
+		NOTIFICATION_WM_FOCUS_OUT
 	);
 	/* clang-format on */
 
@@ -1121,8 +1121,8 @@ int OS_JavaScript::get_process_id() const {
 
 extern "C" EMSCRIPTEN_KEEPALIVE void send_notification(int p_notification) {
 
-	if (p_notification == MainLoop::NOTIFICATION_WM_MOUSE_ENTER || p_notification == MainLoop::NOTIFICATION_WM_MOUSE_EXIT) {
-		cursor_inside_canvas = p_notification == MainLoop::NOTIFICATION_WM_MOUSE_ENTER;
+	if (p_notification == NOTIFICATION_WM_MOUSE_ENTER || p_notification == NOTIFICATION_WM_MOUSE_EXIT) {
+		cursor_inside_canvas = p_notification == NOTIFICATION_WM_MOUSE_ENTER;
 	}
 	OS_JavaScript::get_singleton()->get_main_loop()->notification(p_notification);
 }

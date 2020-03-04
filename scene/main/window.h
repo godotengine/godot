@@ -95,10 +95,20 @@ private:
 	void _update_from_window();
 
 	void _resize_callback(const Size2i &p_callback);
+	void _event_callback(DisplayServer::WindowEvent p_event);
 
 	void _update_size();
 
+	void _propagate_window_notification(Node *p_node, int p_notification);
+
 	virtual DisplayServer::WindowID get_window_id() const;
+
+	void _window_input(const Ref<InputEvent> &p_ev);
+	void _window_input_text(const String &p_text);
+	void _window_drop_files(const Vector<String> &p_files);
+
+	void _window_unhandled_input(const Ref<InputEvent> &p_ev);
+	void _update_window_callbacks();
 
 protected:
 	static void _bind_methods();

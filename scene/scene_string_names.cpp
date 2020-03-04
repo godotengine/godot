@@ -193,6 +193,10 @@ SceneStringNames::SceneStringNames() {
 		mesh_materials[i] = "material/" + itos(i);
 	}
 
+	_window_group = StaticCString::create("_window_group");
+	_window_input = StaticCString::create("_window_input");
+	_window_unhandled_input = StaticCString::create("_window_unhandled_input");
+
 	parameters_base_path = "parameters/";
 
 	tracks_changed = "tracks_changed";

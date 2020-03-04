@@ -201,6 +201,10 @@ public:
 
 	StringName tracks_changed;
 
+	StringName _window_group;
+	StringName _window_input;
+	StringName _window_unhandled_input;
+
 	enum {
 		MAX_MATERIALS = 32
 	};
