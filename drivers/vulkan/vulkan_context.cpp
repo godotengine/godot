@@ -44,7 +44,8 @@
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #define APP_SHORT_NAME "GodotEngine"
 
-VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(
+		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 		VkDebugUtilsMessageTypeFlagsEXT messageType,
 		const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
 		void *pUserData) {
@@ -65,24 +66,6 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(VkDebugU
 	}
 	if (pCallbackData->pMessageIdName && strstr(pCallbackData->pMessageIdName, "UNASSIGNED-CoreValidation-DrawState-ClearCmdBeforeDraw") != NULL) {
 		return VK_FALSE;
-	}
-
-	String severity_string;
-	switch (messageSeverity) {
-		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-			severity_string = "VERBOSE : ";
-			break;
-		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-			severity_string = "INFO : ";
-			break;
-		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-			severity_string = "WARNING : ";
-			break;
-		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-			severity_string = "ERROR : ";
-			break;
-		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT:
-			break;
 	}
 
 	String type_string;
@@ -133,16 +116,31 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(VkDebugU
 		}
 	}
 
-	String error_message(severity_string + type_string +
+	String error_message(type_string +
 						 " - Message Id Number: " + String::num_int64(pCallbackData->messageIdNumber) +
 						 " | Message Id Name: " + pCallbackData->pMessageIdName +
 						 "\n\t" + pCallbackData->pMessage +
 						 objects_string + labels_string);
 
-	ERR_PRINT(error_message);
-
-	CRASH_COND_MSG(Engine::get_singleton()->is_abort_on_gpu_errors_enabled(),
-			"Crashing, because abort on GPU errors is enabled.");
+	// Convert VK severity to our own log macros.
+	switch (messageSeverity) {
+		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+			print_verbose(error_message);
+			break;
+		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+			print_line(error_message);
+			break;
+		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+			WARN_PRINT(error_message);
+			break;
+		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+			ERR_PRINT(error_message);
+			CRASH_COND_MSG(Engine::get_singleton()->is_abort_on_gpu_errors_enabled(),
+					"Crashing, because abort on GPU errors is enabled.");
+			break;
+		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT:
+			break; // Shouldn't happen, only handling to make compilers happy.
+	}
 
 	return VK_FALSE;
 }
