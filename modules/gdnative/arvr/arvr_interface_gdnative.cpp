@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "arvr_interface_gdnative.h"
-#include "core/input/input.h"
+#include "core/input/input_filter.h"
 #include "servers/arvr/arvr_positional_tracker.h"
 #include "servers/visual/visual_server_globals.h"
 
@@ -317,7 +317,7 @@ godot_int GDAPI godot_arvr_add_controller(char *p_device_name, godot_int p_hand,
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL_V(arvr_server, 0);
 
-	Input *input = Input::get_singleton();
+	InputFilter *input = InputFilter::get_singleton();
 	ERR_FAIL_NULL_V(input, 0);
 
 	ARVRPositionalTracker *new_tracker = memnew(ARVRPositionalTracker);
@@ -356,7 +356,7 @@ void GDAPI godot_arvr_remove_controller(godot_int p_controller_id) {
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL(arvr_server);
 
-	Input *input = Input::get_singleton();
+	InputFilter *input = InputFilter::get_singleton();
 	ERR_FAIL_NULL(input);
 
 	ARVRPositionalTracker *remove_tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, p_controller_id);
@@ -394,7 +394,7 @@ void GDAPI godot_arvr_set_controller_button(godot_int p_controller_id, godot_int
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL(arvr_server);
 
-	Input *input = Input::get_singleton();
+	InputFilter *input = InputFilter::get_singleton();
 	ERR_FAIL_NULL(input);
 
 	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, p_controller_id);
@@ -410,14 +410,14 @@ void GDAPI godot_arvr_set_controller_axis(godot_int p_controller_id, godot_int p
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL(arvr_server);
 
-	Input *input = Input::get_singleton();
+	InputFilter *input = InputFilter::get_singleton();
 	ERR_FAIL_NULL(input);
 
 	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, p_controller_id);
 	if (tracker != NULL) {
 		int joyid = tracker->get_joy_id();
 		if (joyid != -1) {
-			Input::JoyAxis jx;
+			InputFilter::JoyAxis jx;
 			jx.min = p_can_be_negative ? -1 : 0;
 			jx.value = p_value;
 			input->joy_axis(joyid, p_axis, jx);

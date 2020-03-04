@@ -33,7 +33,7 @@
 
 #include "audio_driver_javascript.h"
 #include "drivers/unix/os_unix.h"
-#include "core/input/input.h"
+#include "core/input/input_filter.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 

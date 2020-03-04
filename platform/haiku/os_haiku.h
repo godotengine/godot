@@ -36,7 +36,7 @@
 #include "drivers/unix/os_unix.h"
 #include "haiku_application.h"
 #include "haiku_direct_window.h"
-#include "core/input/input.h"
+#include "core/input/input_filter.h"
 #include "servers/audio_server.h"
 #include "servers/visual_server.h"
 

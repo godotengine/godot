@@ -32,7 +32,7 @@
 
 #include "canvas_item_editor_plugin.h"
 #include "core/os/file_access.h"
-#include "core/input/input.h"
+#include "core/input/input_filter.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_settings.h"
 #include "scene/3d/camera.h"
@@ -342,7 +342,7 @@ bool Polygon3DEditor::forward_spatial_gui_input(Camera *p_camera, const Ref<Inpu
 
 			Vector2 cpoint(spoint.x, spoint.y);
 
-			if (snap_ignore && !Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+			if (snap_ignore && !InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL)) {
 				snap_ignore = false;
 			}
 

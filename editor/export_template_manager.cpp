@@ -33,7 +33,7 @@
 #include "core/io/json.h"
 #include "core/io/zip_io.h"
 #include "core/os/dir_access.h"
-#include "core/input/input.h"
+#include "core/input/input_filter.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
 #include "editor_node.h"
@@ -446,7 +446,7 @@ void ExportTemplateManager::_http_download_templates_completed(int p_status, int
 
 void ExportTemplateManager::_begin_template_download(const String &p_url) {
 
-	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	if (InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 		OS::get_singleton()->shell_open(p_url);
 		return;
 	}

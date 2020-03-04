@@ -30,7 +30,7 @@
 
 #include "code_editor.h"
 
-#include "core/input/input.h"
+#include "core/input/input_filter.h"
 #include "core/os/keyboard.h"
 #include "core/string_builder.h"
 #include "editor/editor_scale.h"
@@ -505,7 +505,7 @@ void FindReplaceBar::_search_text_changed(const String &p_text) {
 
 void FindReplaceBar::_search_text_entered(const String &p_text) {
 
-	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	if (InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 		search_prev();
 	} else {
 		search_next();
@@ -517,7 +517,7 @@ void FindReplaceBar::_replace_text_entered(const String &p_text) {
 	if (selection_only->is_pressed() && text_edit->is_selection_active()) {
 		_replace_all();
 		_hide_bar();
-	} else if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	} else if (InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 		_replace();
 		search_prev();
 	} else {

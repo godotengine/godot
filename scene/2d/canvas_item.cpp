@@ -31,7 +31,7 @@
 #include "canvas_item.h"
 #include "core/message_queue.h"
 #include "core/method_bind_ext.gen.inc"
-#include "core/input/input.h"
+#include "core/input/input_filter.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
 #include "scene/resources/font.h"

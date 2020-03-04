@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "popup_menu.h"
-#include "core/input/input.h"
+#include "core/input/input_filter.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
@@ -586,7 +586,7 @@ void PopupMenu::_notification(int p_what) {
 				ofs.y += h;
 			}
 		} break;
-		case MainLoop::NOTIFICATION_WM_FOCUS_OUT: {
+		case NOTIFICATION_WM_FOCUS_OUT: {
 
 			if (hide_on_window_lose_focus)
 				hide();
@@ -604,7 +604,7 @@ void PopupMenu::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_POST_POPUP: {
 
-			initial_button_mask = Input::get_singleton()->get_mouse_button_mask();
+			initial_button_mask = InputFilter::get_singleton()->get_mouse_button_mask();
 			during_grabbed_click = (bool)initial_button_mask;
 		} break;
 		case NOTIFICATION_POPUP_HIDE: {

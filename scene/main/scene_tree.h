@@ -105,7 +105,6 @@ private:
 	Map<StringName, Group> group_map;
 	bool _quit;
 	bool initialized;
-	bool input_handled;
 
 	StringName tree_changed_name;
 	StringName node_added_name;
@@ -184,7 +183,6 @@ private:
 	void make_group_changed(const StringName &p_group);
 
 	void _notify_group_pause(const StringName &p_group, int p_notification);
-	void _call_input_pause(const StringName &p_group, const StringName &p_method, const Ref<InputEvent> &p_input);
 	Variant _call_group_flags(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Variant _call_group(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
@@ -207,6 +205,13 @@ private:
 	static IdleCallback idle_callbacks[MAX_IDLE_CALLBACKS];
 	static int idle_callback_count;
 	void _call_idle_callbacks();
+
+	void _main_window_focus_in();
+	void _main_window_close();
+	void _main_window_go_back();
+
+	//used by viewport
+	void _call_input_pause(const StringName &p_group, const StringName &p_method, const Ref<InputEvent> &p_input, Viewport *p_viewport);
 
 protected:
 	void _notification(int p_notification);
@@ -237,8 +242,6 @@ public:
 
 	void flush_transform_notifications();
 
-	virtual void input_text(const String &p_text);
-	virtual void input_event(const Ref<InputEvent> &p_event);
 	virtual void init();
 
 	virtual bool iteration(float p_time);
@@ -251,8 +254,6 @@ public:
 
 	void quit(int p_exit_code = -1);
 
-	void set_input_as_handled();
-	bool is_input_handled();
 	_FORCE_INLINE_ float get_physics_process_time() const { return physics_process_time; }
 	_FORCE_INLINE_ float get_idle_process_time() const { return idle_process_time; }
 
@@ -330,7 +331,6 @@ public:
 
 	static SceneTree *get_singleton() { return singleton; }
 
-	void drop_files(const Vector<String> &p_files, int p_from_screen = 0);
 	void global_menu_action(const Variant &p_id, const Variant &p_meta);
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
 

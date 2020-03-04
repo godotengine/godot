@@ -31,7 +31,7 @@
 #include "script_debugger_remote.h"
 
 #include "core/engine.h"
-#include "core/input/input.h"
+#include "core/input/input_filter.h"
 #include "core/io/ip.h"
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
@@ -532,9 +532,9 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 
 	skip_profile_frame = true; // to avoid super long frame time for the frame
 
-	Input::MouseMode mouse_mode = Input::get_singleton()->get_mouse_mode();
-	if (mouse_mode != Input::MOUSE_MODE_VISIBLE)
-		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+	InputFilter::MouseMode mouse_mode = InputFilter::get_singleton()->get_mouse_mode();
+	if (mouse_mode != InputFilter::MOUSE_MODE_VISIBLE)
+		InputFilter::get_singleton()->set_mouse_mode(InputFilter::MOUSE_MODE_VISIBLE);
 
 	uint64_t loop_begin_usec = 0;
 	uint64_t loop_time_sec = 0;
@@ -596,8 +596,8 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 
 	_put_msg("debug_exit", Array());
 
-	if (mouse_mode != Input::MOUSE_MODE_VISIBLE)
-		Input::get_singleton()->set_mouse_mode(mouse_mode);
+	if (mouse_mode != InputFilter::MOUSE_MODE_VISIBLE)
+		InputFilter::get_singleton()->set_mouse_mode(mouse_mode);
 }
 
 void ScriptDebuggerRemote::_get_output() {

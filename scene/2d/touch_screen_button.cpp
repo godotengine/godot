@@ -30,11 +30,11 @@
 
 #include "touch_screen_button.h"
 
-#include "core/input/input.h"
+#include "core/input/input_filter.h"
 #include "core/input/input_map.h"
 #include "core/os/os.h"
 #include "scene/main/window.h"
-
+#
 void TouchScreenButton::set_texture(const Ref<Texture2D> &p_texture) {
 
 	texture = p_texture;
@@ -290,12 +290,12 @@ void TouchScreenButton::_press(int p_finger_pressed) {
 
 	if (action != StringName()) {
 
-		Input::get_singleton()->action_press(action);
+		InputFilter::get_singleton()->action_press(action);
 		Ref<InputEventAction> iea;
 		iea.instance();
 		iea->set_action(action);
 		iea->set_pressed(true);
-		get_tree()->input_event(iea);
+		get_viewport()->input(iea, true);
 	}
 
 	emit_signal("pressed");
@@ -308,14 +308,14 @@ void TouchScreenButton::_release(bool p_exiting_tree) {
 
 	if (action != StringName()) {
 
-		Input::get_singleton()->action_release(action);
+		InputFilter::get_singleton()->action_release(action);
 		if (!p_exiting_tree) {
 
 			Ref<InputEventAction> iea;
 			iea.instance();
 			iea->set_action(action);
 			iea->set_pressed(false);
-			get_tree()->input_event(iea);
+			get_viewport()->input(iea, true);
 		}
 	}
 

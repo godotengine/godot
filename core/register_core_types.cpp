@@ -62,7 +62,7 @@
 #include "core/math/geometry.h"
 #include "core/math/random_number_generator.h"
 #include "core/math/triangle_mesh.h"
-#include "core/input/input.h"
+#include "core/input/input_filter.h"
 #include "core/os/main_loop.h"
 #include "core/packed_data_container.h"
 #include "core/path_remap.h"
@@ -250,7 +250,7 @@ void register_core_singletons() {
 	ClassDB::register_class<_ClassDB>();
 	ClassDB::register_class<_Marshalls>();
 	ClassDB::register_class<TranslationServer>();
-	ClassDB::register_virtual_class<Input>();
+	ClassDB::register_virtual_class<InputFilter>();
 	ClassDB::register_class<InputMap>();
 	ClassDB::register_class<_JSON>();
 	ClassDB::register_class<Expression>();
@@ -265,7 +265,7 @@ void register_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ClassDB", _classdb));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Marshalls", _Marshalls::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("TranslationServer", TranslationServer::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Input", Input::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Input", InputFilter::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("InputMap", InputMap::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("JSON", _JSON::get_singleton()));
 }
