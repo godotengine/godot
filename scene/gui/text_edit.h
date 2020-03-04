@@ -634,7 +634,7 @@ public:
 	bool is_line_comment(int p_line) const;
 
 	bool is_line_empty_or_comment(int p_line) const;
-	void set_cursor_visible(bool hide, bool is_cursor_visible);
+	void set_cursor_visible(bool p_hide, bool p_is_cursor_visible);
 	bool get_debug_comment_hide_cursor() { return debug_comment_hide_cursor; }
 
 	inline void set_scroll_pass_end_of_file(bool p_enabled) {
