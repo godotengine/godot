@@ -1,5 +1,4 @@
 import os
-import os.path
 import re
 import glob
 import subprocess
@@ -564,7 +563,11 @@ def get_compiler_version(env):
     if not env.msvc:
         # Not using -dumpversion as some GCC distros only return major, and
         # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
-        version = decode_utf8(subprocess.check_output([env['CXX'], '--version']).strip())
+        try:
+            version = decode_utf8(subprocess.check_output([env.subst(env['CXX']), '--version']).strip())
+        except (subprocess.CalledProcessError, OSError):
+            print("Couldn't parse CXX environment variable to infer compiler version.")
+            return None
     else:  # TODO: Implement for MSVC
         return None
     match = re.search('[0-9]+\.[0-9.]+', version)
