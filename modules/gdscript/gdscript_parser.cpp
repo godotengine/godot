@@ -8051,9 +8051,12 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 		Node *statement = E->get();
 		switch (statement->type) {
 			case Node::TYPE_NEWLINE:
-			case Node::TYPE_BREAKPOINT:
-			case Node::TYPE_ASSERT: {
+			case Node::TYPE_BREAKPOINT: {
 				// Nothing to do
+			} break;
+			case Node::TYPE_ASSERT: {
+				AssertNode *assert_statement = static_cast<AssertNode *>(statement);
+				_reduce_node_type(assert_statement->condition);
 			} break;
 			case Node::TYPE_LOCAL_VAR: {
 				LocalVarNode *lv = static_cast<LocalVarNode *>(statement);
