@@ -30,6 +30,8 @@
 
 #include "window.h"
 
+#include "core/debugger/engine_debugger.h"
+#include "core/os/keyboard.h"
 #include "scene/resources/dynamic_font.h"
 
 void Window::set_title(const String &p_title) {
@@ -242,6 +244,48 @@ void Window::_resize_callback(const Size2i &p_callback) {
 	_update_size();
 }
 
+void Window::_propagate_window_notification(Node *p_node, int p_notification) {
+	p_node->notification(p_notification);
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		Node *child = p_node->get_child(i);
+		Window *window = Object::cast_to<Window>(child);
+		if (window) {
+			break;
+		}
+		_propagate_window_notification(child, p_notification);
+	}
+}
+
+void Window::_event_callback(DisplayServer::WindowEvent p_event) {
+
+	switch (p_event) {
+		case DisplayServer::WINDOW_EVENT_MOUSE_ENTER: {
+			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_ENTER);
+			emit_signal("mouse_entered");
+		} break;
+		case DisplayServer::WINDOW_EVENT_MOUSE_EXIT: {
+			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_EXIT);
+			emit_signal("mouse_exited");
+		} break;
+		case DisplayServer::WINDOW_EVENT_FOCUS_IN: {
+			_propagate_window_notification(this, NOTIFICATION_WM_FOCUS_IN);
+			emit_signal("focus_entered");
+		} break;
+		case DisplayServer::WINDOW_EVENT_FOCUS_OUT: {
+			_propagate_window_notification(this, NOTIFICATION_WM_FOCUS_OUT);
+			emit_signal("focus_exited");
+		} break;
+		case DisplayServer::WINDOW_EVENT_CLOSE_REQUEST: {
+			_propagate_window_notification(this, NOTIFICATION_WM_CLOSE_REQUEST);
+			emit_signal("close_requested");
+		} break;
+		case DisplayServer::WINDOW_EVENT_GO_BACK_REQUEST: {
+			_propagate_window_notification(this, NOTIFICATION_WM_GO_BACK_REQUEST);
+			emit_signal("go_back_requested");
+		} break;
+	}
+}
+
 void Window::set_visible(bool p_visible) {
 	if (visible == p_visible) {
 		return;
@@ -398,6 +442,13 @@ void Window::_update_size() {
 	}
 }
 
+void Window::_update_window_callbacks() {
+	DisplayServer::get_singleton()->window_set_resize_callback(callable_mp(this, &Window::_resize_callback), window_id);
+	DisplayServer::get_singleton()->window_set_window_event_callback(callable_mp(this, &Window::_event_callback), window_id);
+	DisplayServer::get_singleton()->window_set_input_event_callback(callable_mp(this, &Window::_window_input), window_id);
+	DisplayServer::get_singleton()->window_set_input_text_callback(callable_mp(this, &Window::_window_input_text), window_id);
+	DisplayServer::get_singleton()->window_set_drop_files_callback(callable_mp(this, &Window::_window_drop_files), window_id);
+}
 void Window::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		if (is_embedded()) {
@@ -409,11 +460,11 @@ void Window::_notification(int p_what) {
 				window_id = DisplayServer::MAIN_WINDOW_ID;
 				_update_from_window();
 				_update_size();
-				DisplayServer::get_singleton()->window_set_resize_callback(callable_mp(this, &Window::_resize_callback), window_id);
+				_update_window_callbacks();
 			} else {
 				//create
 				_make_window();
-				DisplayServer::get_singleton()->window_set_resize_callback(callable_mp(this, &Window::_resize_callback), window_id);
+				_update_window_callbacks();
 			}
 		}
 	}
@@ -423,7 +474,7 @@ void Window::_notification(int p_what) {
 
 			if (window_id == DisplayServer::MAIN_WINDOW_ID) {
 
-				DisplayServer::get_singleton()->window_set_resize_callback(Callable(), window_id);
+				_update_window_callbacks();
 			} else {
 				_clear_window();
 			}
@@ -475,7 +526,40 @@ DisplayServer::WindowID Window::get_window_id() const {
 	return window_id;
 }
 
+void Window::_window_input(const Ref<InputEvent> &p_ev) {
+
+	if (Engine::get_singleton()->is_editor_hint() && (Object::cast_to<InputEventJoypadButton>(p_ev.ptr()) || Object::cast_to<InputEventJoypadMotion>(*p_ev)))
+		return; //avoid joy input on editor
+
+	if (EngineDebugger::is_active()) {
+		//quit from game window using F8
+		Ref<InputEventKey> k = p_ev;
+		if (k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == KEY_F8) {
+			EngineDebugger::get_singleton()->send_message("request_quit", Array());
+		}
+	}
+
+	input(p_ev);
+	if (!is_input_handled()) {
+		unhandled_input(p_ev);
+	}
+}
+void Window::_window_input_text(const String &p_text) {
+	input_text(p_text);
+}
+void Window::_window_drop_files(const Vector<String> &p_files) {
+	emit_signal("files_dropped", p_files);
+}
+
 void Window::_bind_methods() {
+
+	ADD_SIGNAL(MethodInfo("files_dropped"));
+	ADD_SIGNAL(MethodInfo("mouse_entered"));
+	ADD_SIGNAL(MethodInfo("mouse_exited"));
+	ADD_SIGNAL(MethodInfo("focus_entered"));
+	ADD_SIGNAL(MethodInfo("focus_exited"));
+	ADD_SIGNAL(MethodInfo("close_requested"));
+	ADD_SIGNAL(MethodInfo("go_back_requested"));
 }
 
 Window::Window() {

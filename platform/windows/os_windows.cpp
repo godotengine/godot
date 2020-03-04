@@ -361,14 +361,14 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			};
 			if (LOWORD(wParam) == WA_ACTIVE || LOWORD(wParam) == WA_CLICKACTIVE) {
 
-				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
+				main_loop->notification(NOTIFICATION_WM_FOCUS_IN);
 				window_focused = true;
 				alt_mem = false;
 				control_mem = false;
 				shift_mem = false;
 			} else { // WM_INACTIVE
 				input->release_pressed_events();
-				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+				main_loop->notification(NOTIFICATION_WM_FOCUS_OUT);
 				window_focused = false;
 				alt_mem = false;
 			};
@@ -414,7 +414,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		case WM_CLOSE: // Did We Receive A Close Message?
 		{
 			if (main_loop)
-				main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
+				main_loop->notification(NOTIFICATION_WM_CLOSE_REQUEST);
 			//force_quit=true;
 			return 0; // Jump Back
 		}
@@ -423,7 +423,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			old_invalid = true;
 			outside = true;
 			if (main_loop && mouse_mode != MOUSE_MODE_CAPTURED)
-				main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
+				main_loop->notification(NOTIFICATION_WM_MOUSE_EXIT);
 
 		} break;
 		case WM_INPUT: {
@@ -536,7 +536,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				//mouse enter
 
 				if (main_loop && mouse_mode != MOUSE_MODE_CAPTURED)
-					main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
+					main_loop->notification(NOTIFICATION_WM_MOUSE_ENTER);
 
 				CursorShape c = cursor_shape;
 				cursor_shape = CURSOR_MAX;
@@ -630,7 +630,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				//mouse enter
 
 				if (main_loop && mouse_mode != MOUSE_MODE_CAPTURED)
-					main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
+					main_loop->notification(NOTIFICATION_WM_MOUSE_ENTER);
 
 				CursorShape c = cursor_shape;
 				cursor_shape = CURSOR_MAX;
@@ -974,7 +974,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				// When SetCapture is used, ALT+F4 hotkey is ignored by Windows, so handle it ourselves
 				if (wParam == VK_F4 && alt_mem && (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN)) {
 					if (main_loop)
-						main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
+						main_loop->notification(NOTIFICATION_WM_CLOSE_REQUEST);
 				}
 			}
 			/*

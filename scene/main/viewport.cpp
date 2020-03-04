@@ -32,7 +32,7 @@
 
 #include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
-#include "core/input/input.h"
+#include "core/input/input_filter.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "scene/2d/collision_object_2d.h"
@@ -49,6 +49,7 @@
 #include "scene/gui/popup_menu.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/timer.h"
+#include "scene/main/window.h"
 #include "scene/resources/mesh.h"
 #include "scene/scene_string_names.h"
 #include "servers/display_server.h"
@@ -394,7 +395,7 @@ void Viewport::_notification(int p_what) {
 				VS::get_singleton()->multimesh_set_visible_instances(contact_3d_debug_multimesh, point_count);
 			}
 
-			if (physics_object_picking && (to_screen_rect == Rect2i() || Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED)) {
+			if (physics_object_picking && (to_screen_rect == Rect2i() || InputFilter::get_singleton()->get_mouse_mode() != InputFilter::MOUSE_MODE_CAPTURED)) {
 
 #ifndef _3D_DISABLED
 				Vector2 last_pos(1e20, 1e20);
@@ -666,8 +667,8 @@ void Viewport::_notification(int p_what) {
 			}
 
 		} break;
-		case SceneTree::NOTIFICATION_WM_MOUSE_EXIT:
-		case SceneTree::NOTIFICATION_WM_FOCUS_OUT: {
+		case NOTIFICATION_WM_MOUSE_EXIT:
+		case NOTIFICATION_WM_FOCUS_OUT: {
 
 			_drop_physics_mouseover();
 
@@ -1333,76 +1334,15 @@ Ref<InputEvent> Viewport::_make_input_local(const Ref<InputEvent> &ev) {
 	return ev->xformed_by(ai, -vp_ofs);
 }
 
-void Viewport::_vp_input_text(const String &p_text) {
-
-	if (gui.key_focus) {
-		gui.key_focus->call("set_text", p_text);
-	}
-}
-
-void Viewport::_vp_input(const Ref<InputEvent> &p_ev) {
-
-	if (disable_input)
-		return;
-
-#ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_a_parent_of(this)) {
-		return;
-	}
-#endif
-
-	Ref<InputEventFromWindow> window_event = p_ev;
-	if (window_event.is_valid()) {
-		if (window_event->get_window_id() != get_window_id()) {
-			return;
-		}
-	}
-
-	//this one handles system input, p_ev are in system coordinates
-	//they are converted to viewport coordinates
-
-	Ref<InputEvent> ev = _make_input_local(p_ev);
-	input(ev);
-}
-
-void Viewport::_vp_unhandled_input(const Ref<InputEvent> &p_ev) {
-
-	if (disable_input)
-		return;
-#ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_a_parent_of(this)) {
-		return;
-	}
-#endif
-
-	/*
-	if (parent_control && !parent_control->is_visible_in_tree())
-		return;
-	*/
-
-	Ref<InputEventFromWindow> window_event = p_ev;
-	if (window_event.is_valid()) {
-		if (window_event->get_window_id() != get_window_id()) {
-			return;
-		}
-	}
-
-	//this one handles system input, p_ev are in system coordinates
-	//they are converted to viewport coordinates
-
-	Ref<InputEvent> ev = _make_input_local(p_ev);
-	unhandled_input(ev);
-}
-
 Vector2 Viewport::get_mouse_position() const {
 
-	return (get_final_transform().affine_inverse() * _get_input_pre_xform()).xform(Input::get_singleton()->get_mouse_position() - _get_window_offset());
+	return (get_final_transform().affine_inverse() * _get_input_pre_xform()).xform(InputFilter::get_singleton()->get_mouse_position() - _get_window_offset());
 }
 
 void Viewport::warp_mouse(const Vector2 &p_pos) {
 
 	Vector2 gpos = (get_final_transform().affine_inverse() * _get_input_pre_xform()).affine_inverse().xform(p_pos);
-	Input::get_singleton()->warp_mouse_position(gpos);
+	InputFilter::get_singleton()->warp_mouse_position(gpos);
 }
 
 void Viewport::_gui_prepare_subwindows() {
@@ -2109,7 +2049,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		}
 
 		if (!over) {
-			DisplayServer::get_singleton()->cursor_set_shape((DisplayServer::CursorShape)Input::get_singleton()->get_default_cursor_shape());
+			DisplayServer::get_singleton()->cursor_set_shape((DisplayServer::CursorShape)InputFilter::get_singleton()->get_default_cursor_shape());
 			return;
 		}
 
@@ -2363,7 +2303,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (from && p_event->is_pressed()) {
 			Control *next = NULL;
 
-			Input *input = Input::get_singleton();
+			InputFilter *input = InputFilter::get_singleton();
 
 			if (p_event->is_action_pressed("ui_focus_next") && input->is_action_just_pressed("ui_focus_next")) {
 
@@ -2735,44 +2675,78 @@ void Viewport::_post_gui_grab_click_focus() {
 
 ///////////////////////////////
 
-void Viewport::input(const Ref<InputEvent> &p_event) {
+void Viewport::input_text(const String &p_text) {
+
+	if (gui.key_focus) {
+		gui.key_focus->call("set_text", p_text);
+	}
+}
+void Viewport::input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 
 	ERR_FAIL_COND(!is_inside_tree());
+
+	if (disable_input)
+		return;
+
+	if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_a_parent_of(this)) {
+		return;
+	}
 
 	local_input_handled = false;
 
-	if (!is_input_handled()) {
-		get_tree()->_call_input_pause(input_group, "_input", p_event); //not a bug, must happen before GUI, order is _input -> gui input -> _unhandled input
+	Ref<InputEvent> ev;
+	if (!p_local_coords) {
+		ev = _make_input_local(p_event);
+	} else {
+		ev = p_event;
 	}
 
 	if (!is_input_handled()) {
-		_gui_input_event(p_event);
+		get_tree()->_call_input_pause(input_group, "_input", ev, this); //not a bug, must happen before GUI, order is _input -> gui input -> _unhandled input
 	}
-	//get_tree()->call_group(SceneTree::GROUP_CALL_REVERSE|SceneTree::GROUP_CALL_REALTIME|SceneTree::GROUP_CALL_MULIILEVEL,gui_input_group,"_gui_input",p_event); //special one for GUI, as controls use their own process check
+
+	if (!is_input_handled()) {
+		_gui_input_event(ev);
+	}
+	//get_tree()->call_group(SceneTree::GROUP_CALL_REVERSE|SceneTree::GROUP_CALL_REALTIME|SceneTree::GROUP_CALL_MULIILEVEL,gui_input_group,"_gui_input",ev); //special one for GUI, as controls use their own process check
 }
 
-void Viewport::unhandled_input(const Ref<InputEvent> &p_event) {
+void Viewport::unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 
 	ERR_FAIL_COND(!is_inside_tree());
 
-	get_tree()->_call_input_pause(unhandled_input_group, "_unhandled_input", p_event);
+	if (disable_input)
+		return;
+
+	if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_a_parent_of(this)) {
+		return;
+	}
+
+	Ref<InputEvent> ev;
+	if (!p_local_coords) {
+		ev = _make_input_local(p_event);
+	} else {
+		ev = p_event;
+	}
+
+	get_tree()->_call_input_pause(unhandled_input_group, "_unhandled_input", ev, this);
 	//call_group(GROUP_CALL_REVERSE|GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"unhandled_input","_unhandled_input",ev);
-	if (!get_tree()->input_handled && Object::cast_to<InputEventKey>(*p_event) != NULL) {
-		get_tree()->_call_input_pause(unhandled_key_input_group, "_unhandled_key_input", p_event);
+	if (!is_input_handled() && Object::cast_to<InputEventKey>(*ev) != NULL) {
+		get_tree()->_call_input_pause(unhandled_key_input_group, "_unhandled_key_input", ev, this);
 		//call_group(GROUP_CALL_REVERSE|GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"unhandled_key_input","_unhandled_key_input",ev);
 	}
 
-	if (physics_object_picking && !get_tree()->input_handled) {
+	if (physics_object_picking && !is_input_handled()) {
 
-		if (Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED &&
-				(Object::cast_to<InputEventMouseButton>(*p_event) ||
-						Object::cast_to<InputEventMouseMotion>(*p_event) ||
-						Object::cast_to<InputEventScreenDrag>(*p_event) ||
-						Object::cast_to<InputEventScreenTouch>(*p_event) ||
-						Object::cast_to<InputEventKey>(*p_event) //to remember state
+		if (InputFilter::get_singleton()->get_mouse_mode() != InputFilter::MOUSE_MODE_CAPTURED &&
+				(Object::cast_to<InputEventMouseButton>(*ev) ||
+						Object::cast_to<InputEventMouseMotion>(*ev) ||
+						Object::cast_to<InputEventScreenDrag>(*ev) ||
+						Object::cast_to<InputEventScreenTouch>(*ev) ||
+						Object::cast_to<InputEventKey>(*ev) //to remember state
 
 						)) {
-			physics_picking_events.push_back(p_event);
+			physics_picking_events.push_back(ev);
 		}
 	}
 }
@@ -2930,7 +2904,17 @@ void Viewport::set_input_as_handled() {
 		local_input_handled = true;
 	} else {
 		ERR_FAIL_COND(!is_inside_tree());
-		get_tree()->set_input_as_handled();
+		Viewport *vp = this;
+		while (true) {
+			if (Object::cast_to<Window>(vp)) {
+				break;
+			}
+			if (!vp->get_parent()) {
+				break;
+			}
+			vp = vp->get_parent()->get_viewport();
+		}
+		vp->set_input_as_handled();
 	}
 }
 
@@ -2938,8 +2922,17 @@ bool Viewport::is_input_handled() const {
 	if (handle_input_locally) {
 		return local_input_handled;
 	} else {
-		ERR_FAIL_COND_V(!is_inside_tree(), false);
-		return get_tree()->is_input_handled();
+		const Viewport *vp = this;
+		while (true) {
+			if (Object::cast_to<Window>(vp)) {
+				break;
+			}
+			if (!vp->get_parent()) {
+				break;
+			}
+			vp = vp->get_parent()->get_viewport();
+		}
+		return vp->is_input_handled();
 	}
 }
 
@@ -3042,10 +3035,6 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transparent_background", "enable"), &Viewport::set_transparent_background);
 	ClassDB::bind_method(D_METHOD("has_transparent_background"), &Viewport::has_transparent_background);
 
-	ClassDB::bind_method(D_METHOD("_vp_input"), &Viewport::_vp_input);
-	ClassDB::bind_method(D_METHOD("_vp_input_text", "text"), &Viewport::_vp_input_text);
-	ClassDB::bind_method(D_METHOD("_vp_unhandled_input"), &Viewport::_vp_unhandled_input);
-
 	ClassDB::bind_method(D_METHOD("set_msaa", "msaa"), &Viewport::set_msaa);
 	ClassDB::bind_method(D_METHOD("get_msaa"), &Viewport::get_msaa);
 
@@ -3060,8 +3049,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_physics_object_picking"), &Viewport::get_physics_object_picking);
 
 	ClassDB::bind_method(D_METHOD("get_viewport_rid"), &Viewport::get_viewport_rid);
-	ClassDB::bind_method(D_METHOD("input", "local_event"), &Viewport::input);
-	ClassDB::bind_method(D_METHOD("unhandled_input", "local_event"), &Viewport::unhandled_input);
+	ClassDB::bind_method(D_METHOD("input_text", "text"), &Viewport::input_text);
+	ClassDB::bind_method(D_METHOD("input", "event", "in_local_coords"), &Viewport::input, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("unhandled_input", "event", "in_local_coords"), &Viewport::unhandled_input, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("update_worlds"), &Viewport::update_worlds);
 

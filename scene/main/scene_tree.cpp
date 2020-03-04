@@ -31,7 +31,7 @@
 #include "scene_tree.h"
 
 #include "core/debugger/engine_debugger.h"
-#include "core/input/input.h"
+#include "core/input/input_filter.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/message_queue.h"
@@ -398,69 +398,6 @@ void SceneTree::set_group(const StringName &p_group, const String &p_name, const
 	set_group_flags(0, p_group, p_name, p_value);
 }
 
-void SceneTree::set_input_as_handled() {
-
-	input_handled = true;
-}
-
-void SceneTree::input_text(const String &p_text) {
-
-	root_lock++;
-
-	call_group_flags(GROUP_CALL_REALTIME, "_viewports", "_vp_input_text", p_text); //special one for GUI, as controls use their own process check
-
-	root_lock--;
-}
-
-bool SceneTree::is_input_handled() {
-	return input_handled;
-}
-
-void SceneTree::input_event(const Ref<InputEvent> &p_event) {
-
-	if (Engine::get_singleton()->is_editor_hint() && (Object::cast_to<InputEventJoypadButton>(p_event.ptr()) || Object::cast_to<InputEventJoypadMotion>(*p_event)))
-		return; //avoid joy input on editor
-
-	current_event++;
-	root_lock++;
-
-	input_handled = false;
-
-	// Don't make const ref unless you can find and fix what caused GH-34691.
-	Ref<InputEvent> ev = p_event;
-
-	MainLoop::input_event(ev);
-
-	call_group_flags(GROUP_CALL_REALTIME, "_viewports", "_vp_input", ev); //special one for GUI, as controls use their own process check
-
-	if (EngineDebugger::is_active()) {
-		//quit from game window using F8
-		Ref<InputEventKey> k = ev;
-		if (k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == KEY_F8) {
-			EngineDebugger::get_singleton()->send_message("request_quit", Array());
-		}
-	}
-
-	_flush_ugc();
-	root_lock--;
-	//MessageQueue::get_singleton()->flush(); //flushing here causes UI and other places slowness
-
-	root_lock++;
-
-	if (!input_handled) {
-		call_group_flags(GROUP_CALL_REALTIME, "_viewports", "_vp_unhandled_input", ev); //special one for GUI, as controls use their own process check
-		_flush_ugc();
-		//		input_handled = true; - no reason to set this as handled
-		root_lock--;
-		//MessageQueue::get_singleton()->flush(); //flushing here causes UI and other places slowness
-	} else {
-		//		input_handled = true; - no reason to set this as handled
-		root_lock--;
-	}
-
-	_call_idle_callbacks();
-}
-
 void SceneTree::init() {
 	initialized = true;
 	root->_set_tree(this);
@@ -626,59 +563,36 @@ void SceneTree::quit(int p_exit_code) {
 	_quit = true;
 }
 
+void SceneTree::_main_window_close() {
+
+	if (accept_quit) {
+		_quit = true;
+	}
+}
+void SceneTree::_main_window_go_back() {
+	if (quit_on_go_back) {
+		_quit = true;
+	}
+}
+
+void SceneTree::_main_window_focus_in() {
+	InputFilter *id = InputFilter::get_singleton();
+	if (id) {
+		id->ensure_touch_mouse_raised();
+	}
+}
+
 void SceneTree::_notification(int p_notification) {
 
 	switch (p_notification) {
-
-		case NOTIFICATION_WM_QUIT_REQUEST: {
-
-			get_root()->propagate_notification(p_notification);
-
-			if (accept_quit) {
-				_quit = true;
-				break;
-			}
-		} break;
-
-		case NOTIFICATION_WM_GO_BACK_REQUEST: {
-
-			get_root()->propagate_notification(p_notification);
-
-			if (quit_on_go_back) {
-				_quit = true;
-				break;
-			}
-		} break;
-
-		case NOTIFICATION_WM_FOCUS_IN: {
-
-			Input *id = Input::get_singleton();
-			if (id) {
-				id->ensure_touch_mouse_raised();
-			}
-
-			get_root()->propagate_notification(p_notification);
-		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (!Engine::get_singleton()->is_editor_hint()) {
 				get_root()->propagate_notification(p_notification);
 			}
 		} break;
-
-		case NOTIFICATION_WM_UNFOCUS_REQUEST: {
-
-			notify_group_flags(GROUP_CALL_REALTIME | GROUP_CALL_MULTILEVEL, "input", NOTIFICATION_WM_UNFOCUS_REQUEST);
-
-			get_root()->propagate_notification(p_notification);
-
-		} break;
-
 		case NOTIFICATION_OS_MEMORY_WARNING:
 		case NOTIFICATION_OS_IME_UPDATE:
-		case NOTIFICATION_WM_MOUSE_ENTER:
-		case NOTIFICATION_WM_MOUSE_EXIT:
-		case NOTIFICATION_WM_FOCUS_OUT:
 		case NOTIFICATION_WM_ABOUT:
 		case NOTIFICATION_CRASH:
 		case NOTIFICATION_APP_RESUMED:
@@ -894,50 +808,6 @@ bool SceneTree::is_paused() const {
 	return pause;
 }
 
-void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p_method, const Ref<InputEvent> &p_input) {
-
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
-	if (!E)
-		return;
-	Group &g = E->get();
-	if (g.nodes.empty())
-		return;
-
-	_update_group_order(g);
-
-	//copy, so copy on write happens in case something is removed from process while being called
-	//performance is not lost because only if something is added/removed the vector is copied.
-	Vector<Node *> nodes_copy = g.nodes;
-
-	int node_count = nodes_copy.size();
-	Node **nodes = nodes_copy.ptrw();
-
-	Variant arg = p_input;
-	const Variant *v[1] = { &arg };
-
-	call_lock++;
-
-	for (int i = node_count - 1; i >= 0; i--) {
-
-		if (input_handled)
-			break;
-
-		Node *n = nodes[i];
-		if (call_lock && call_skip.has(n))
-			continue;
-
-		if (!n->can_process())
-			continue;
-
-		n->call_multilevel(p_method, (const Variant **)v, 1);
-		//ERR_FAIL_COND(node_count != g.nodes.size());
-	}
-
-	call_lock--;
-	if (call_lock == 0)
-		call_skip.clear();
-}
-
 void SceneTree::_notify_group_pause(const StringName &p_group, int p_notification) {
 
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
@@ -989,6 +859,49 @@ void SceneMainLoop::_update_listener_2d() {
 }
 */
 
+void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p_method, const Ref<InputEvent> &p_input, Viewport *p_viewport) {
+
+	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	if (!E)
+		return;
+	Group &g = E->get();
+	if (g.nodes.empty())
+		return;
+
+	_update_group_order(g);
+
+	//copy, so copy on write happens in case something is removed from process while being called
+	//performance is not lost because only if something is added/removed the vector is copied.
+	Vector<Node *> nodes_copy = g.nodes;
+
+	int node_count = nodes_copy.size();
+	Node **nodes = nodes_copy.ptrw();
+
+	Variant arg = p_input;
+	const Variant *v[1] = { &arg };
+
+	call_lock++;
+
+	for (int i = node_count - 1; i >= 0; i--) {
+
+		if (p_viewport->is_input_handled())
+			break;
+
+		Node *n = nodes[i];
+		if (call_lock && call_skip.has(n))
+			continue;
+
+		if (!n->can_process())
+			continue;
+
+		n->call_multilevel(p_method, (const Variant **)v, 1);
+		//ERR_FAIL_COND(node_count != g.nodes.size());
+	}
+
+	call_lock--;
+	if (call_lock == 0)
+		call_skip.clear();
+}
 Variant SceneTree::_call_group_flags(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 
 	r_error.error = Callable::CallError::CALL_OK;
@@ -1191,12 +1104,6 @@ void SceneTree::add_current_scene(Node *p_current) {
 	root->add_child(p_current);
 }
 
-void SceneTree::drop_files(const Vector<String> &p_files, int p_from_screen) {
-
-	emit_signal("files_dropped", p_files, p_from_screen);
-	MainLoop::drop_files(p_files, p_from_screen);
-}
-
 void SceneTree::global_menu_action(const Variant &p_id, const Variant &p_meta) {
 
 	emit_signal("global_menu_action", p_id, p_meta);
@@ -1330,8 +1237,6 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_pause", "enable"), &SceneTree::set_pause);
 	ClassDB::bind_method(D_METHOD("is_paused"), &SceneTree::is_paused);
-	ClassDB::bind_method(D_METHOD("set_input_as_handled"), &SceneTree::set_input_as_handled);
-	ClassDB::bind_method(D_METHOD("is_input_handled"), &SceneTree::is_input_handled);
 
 	ClassDB::bind_method(D_METHOD("create_timer", "time_sec", "pause_mode_process"), &SceneTree::create_timer, DEFVAL(true));
 
@@ -1495,7 +1400,6 @@ SceneTree::SceneTree() {
 	idle_process_time = 1;
 
 	root = NULL;
-	input_handled = false;
 	pause = false;
 	current_frame = 0;
 	current_event = 0;
@@ -1512,7 +1416,6 @@ SceneTree::SceneTree() {
 
 	root = memnew(Window);
 	root->set_name("root");
-	root->set_handle_input_locally(false);
 	if (!root->get_world().is_valid())
 		root->set_world(Ref<World>(memnew(World)));
 
@@ -1561,6 +1464,10 @@ SceneTree::SceneTree() {
 	}
 
 	root->set_physics_object_picking(GLOBAL_DEF("physics/common/enable_object_picking", true));
+
+	root->connect("close_requested", callable_mp(this, &SceneTree::_main_window_close));
+	root->connect("go_back_requested", callable_mp(this, &SceneTree::_main_window_go_back));
+	root->connect("focus_entered", callable_mp(this, &SceneTree::_main_window_focus_in));
 
 #ifdef TOOLS_ENABLED
 	edited_scene_root = NULL;

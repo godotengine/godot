@@ -329,9 +329,6 @@ private:
 
 	_FORCE_INLINE_ Transform2D _get_input_pre_xform() const;
 
-	void _vp_input(const Ref<InputEvent> &p_ev);
-	void _vp_input_text(const String &p_text);
-	void _vp_unhandled_input(const Ref<InputEvent> &p_ev);
 	Ref<InputEvent> _make_input_local(const Ref<InputEvent> &ev);
 
 	friend class Control;
@@ -475,8 +472,9 @@ public:
 	void set_use_own_world(bool p_world);
 	bool is_using_own_world() const;
 
-	void input(const Ref<InputEvent> &p_event);
-	void unhandled_input(const Ref<InputEvent> &p_event);
+	void input_text(const String &p_text);
+	void input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
+	void unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  input.h                                                              */
+/*  input_filter.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -31,16 +31,16 @@
 #ifndef INPUT_H
 #define INPUT_H
 
+#include "core/input/input_event.h"
 #include "core/object.h"
-#include "core/os/main_loop.h"
 #include "core/os/thread_safe.h"
 
-class Input : public Object {
+class InputFilter : public Object {
 
-	GDCLASS(Input, Object);
+	GDCLASS(InputFilter, Object);
 	_THREAD_SAFE_CLASS_
 
-	static Input *singleton;
+	static InputFilter *singleton;
 
 public:
 	enum MouseMode {
@@ -97,6 +97,8 @@ public:
 		float value;
 	};
 
+	typedef void (*EventDispatchFunc)(const Ref<InputEvent> &p_event);
+
 private:
 	int mouse_button_mask;
 
@@ -110,7 +112,6 @@ private:
 	Vector3 gyroscope;
 	Vector2 mouse_pos;
 	int64_t mouse_window;
-	MainLoop *main_loop;
 
 	struct Action {
 		uint64_t physics_frame;
@@ -228,6 +229,8 @@ private:
 	static CursorShape (*get_current_cursor_shape_func)();
 	static void (*set_custom_mouse_cursor_func)(const RES &, CursorShape, const Vector2 &);
 
+	EventDispatchFunc event_dispatch_function;
+
 protected:
 	static void _bind_methods();
 
@@ -236,7 +239,7 @@ public:
 	MouseMode get_mouse_mode() const;
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
 
-	static Input *get_singleton();
+	static InputFilter *get_singleton();
 
 	bool is_key_pressed(int p_keycode) const;
 	bool is_mouse_button_pressed(int p_button) const;
@@ -267,8 +270,6 @@ public:
 	void warp_mouse_position(const Vector2 &p_to);
 	Point2i warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect);
 
-	void parse_drop_files(const Vector<String> &p_files);
-	void parse_notification(int p_notification);
 	void parse_input_event(const Ref<InputEvent> &p_event);
 
 	void set_gravity(const Vector3 &p_gravity);
@@ -281,7 +282,6 @@ public:
 	void stop_joy_vibration(int p_device);
 	void vibrate_handheld(int p_duration_ms = 500);
 
-	void set_main_loop(MainLoop *p_main_loop);
 	void set_mouse_position(const Point2 &p_posf);
 
 	void action_press(const StringName &p_action, float p_strength = 1.f);
@@ -299,7 +299,7 @@ public:
 	CursorShape get_default_cursor_shape() const;
 	void set_default_cursor_shape(CursorShape p_shape);
 	CursorShape get_current_cursor_shape() const;
-	void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape = Input::CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
+	void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape = InputFilter::CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
 
 	void parse_mapping(String p_mapping);
 	void joy_button(int p_device, int p_button, bool p_pressed);
@@ -326,10 +326,12 @@ public:
 
 	void release_pressed_events();
 
-	Input();
+	void set_event_dispatch_function(EventDispatchFunc p_function);
+
+	InputFilter();
 };
 
-VARIANT_ENUM_CAST(Input::MouseMode);
-VARIANT_ENUM_CAST(Input::CursorShape);
+VARIANT_ENUM_CAST(InputFilter::MouseMode);
+VARIANT_ENUM_CAST(InputFilter::CursorShape);
 
 #endif // INPUT_H

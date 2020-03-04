@@ -667,11 +667,6 @@ void Control::_notification(int p_notification) {
 			}
 
 		} break;
-		case SceneTree::NOTIFICATION_WM_UNFOCUS_REQUEST: {
-
-			get_viewport()->_gui_unfocus_control(this);
-
-		} break;
 	}
 }
 

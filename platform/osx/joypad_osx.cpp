@@ -573,7 +573,7 @@ void JoypadOSX::config_hid_manager(CFArrayRef p_matching_array) const {
 
 JoypadOSX::JoypadOSX() {
 	self = this;
-	input = (InputDefault *)Input::get_singleton();
+	input = (InputDefault *)InputFilter::get_singleton();
 
 	int okay = 1;
 	const void *vals[] = {

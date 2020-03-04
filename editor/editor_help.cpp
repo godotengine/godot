@@ -30,7 +30,7 @@
 
 #include "editor_help.h"
 
-#include "core/input/input.h"
+#include "core/input/input_filter.h"
 #include "core/os/keyboard.h"
 #include "doc_data_compressed.gen.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -1828,7 +1828,7 @@ void FindBar::_search_text_changed(const String &p_text) {
 
 void FindBar::_search_text_entered(const String &p_text) {
 
-	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	if (InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 		search_prev();
 	} else {
 		search_next();

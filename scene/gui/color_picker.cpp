@@ -30,7 +30,7 @@
 
 #include "color_picker.h"
 
-#include "core/input/input.h"
+#include "core/input/input_filter.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 
@@ -78,7 +78,7 @@ void ColorPicker::_notification(int p_what) {
 			if (p)
 				p->set_size(Size2(get_combined_minimum_size().width + get_constant("margin") * 2, get_combined_minimum_size().height + get_constant("margin") * 2));
 		} break;
-		case MainLoop::NOTIFICATION_WM_QUIT_REQUEST: {
+		case NOTIFICATION_WM_CLOSE_REQUEST: {
 
 			if (screen != NULL && screen->is_visible())
 				screen->hide();
@@ -902,7 +902,7 @@ void ColorPickerButton::_notification(int p_what) {
 				draw_texture(Control::get_icon("overbright_indicator", "ColorPicker"), normal->get_offset());
 			}
 		} break;
-		case MainLoop::NOTIFICATION_WM_QUIT_REQUEST: {
+		case NOTIFICATION_WM_CLOSE_REQUEST: {
 
 			if (popup)
 				popup->hide();
