@@ -572,7 +572,7 @@ public:
 	int get_current_drive();
 
 	Error change_dir(String p_dir); // Can be relative or absolute, return false on success.
-	String get_current_dir(); // Return current dir location.
+	String get_current_dir(bool p_include_drive = true); // Return current dir location.
 
 	Error make_dir(String p_dir);
 	Error make_dir_recursive(String p_dir);
