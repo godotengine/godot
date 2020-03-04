@@ -691,7 +691,7 @@ void EditorFileDialog::update_file_name() {
 		String base_name = file_str.get_basename();
 		Vector<String> filter_substr = filter_str.split(";");
 		if (filter_substr.size() >= 2) {
-			file_str = base_name + "." + filter_substr[1].strip_edges().to_lower();
+			file_str = base_name + "." + filter_substr[0].strip_edges().lstrip("*.").to_lower();
 		} else {
 			file_str = base_name + "." + filter_str.get_extension().strip_edges().to_lower();
 		}
