@@ -2724,10 +2724,11 @@ GIProbeGizmoPlugin::GIProbeGizmoPlugin() {
 
 	create_material("gi_probe_material", gizmo_color);
 
-	gizmo_color.a = 0.5;
+	// This gizmo draws a lot of lines. Use a low opacity to make it not too intrusive.
+	gizmo_color.a = 0.1;
 	create_material("gi_probe_internal_material", gizmo_color);
 
-	gizmo_color.a = 0.1;
+	gizmo_color.a = 0.05;
 	create_material("gi_probe_solid_material", gizmo_color);
 
 	create_icon_material("gi_probe_icon", SpatialEditor::get_singleton()->get_icon("GizmoGIProbe", "EditorIcons"));
