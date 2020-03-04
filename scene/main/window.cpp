@@ -217,6 +217,16 @@ void Window::_make_window() {
 	DisplayServer::get_singleton()->window_set_title(title, window_id);
 
 	_update_size();
+
+	if (transient_parent && transient_parent->window_id != DisplayServer::INVALID_WINDOW_ID) {
+		DisplayServer::get_singleton()->window_set_transient(window_id, transient_parent->window_id);
+	}
+
+	for (Set<Window *>::Element *E = transient_children.front(); E; E = E->next()) {
+		if (E->get()->window_id != DisplayServer::INVALID_WINDOW_ID) {
+			DisplayServer::get_singleton()->window_set_transient(E->get()->window_id, transient_parent->window_id);
+		}
+	}
 }
 void Window::_update_from_window() {
 
@@ -233,6 +243,17 @@ void Window::_update_from_window() {
 
 void Window::_clear_window() {
 	ERR_FAIL_COND(window_id == DisplayServer::INVALID_WINDOW_ID);
+
+	if (transient_parent && transient_parent->window_id != DisplayServer::INVALID_WINDOW_ID) {
+		DisplayServer::get_singleton()->window_set_transient(window_id, DisplayServer::INVALID_WINDOW_ID);
+	}
+
+	for (Set<Window *>::Element *E = transient_children.front(); E; E = E->next()) {
+		if (E->get()->window_id != DisplayServer::INVALID_WINDOW_ID) {
+			DisplayServer::get_singleton()->window_set_transient(E->get()->window_id, DisplayServer::INVALID_WINDOW_ID);
+		}
+	}
+
 	_update_from_window();
 	DisplayServer::get_singleton()->delete_sub_window(window_id);
 	window_id = DisplayServer::INVALID_WINDOW_ID;
@@ -310,6 +331,69 @@ void Window::set_visible(bool p_visible) {
 		_update_size();
 	}
 }
+
+void Window::_clear_transient() {
+	if (transient_parent) {
+		if (transient_parent->window_id != DisplayServer::INVALID_WINDOW_ID && window_id != DisplayServer::INVALID_WINDOW_ID) {
+			DisplayServer::get_singleton()->window_set_transient(window_id, DisplayServer::INVALID_WINDOW_ID);
+		}
+		transient_parent->transient_children.erase(this);
+		transient_parent = nullptr;
+	}
+}
+
+void Window::_make_transient() {
+	if (!get_parent()) {
+		//main window, can't be transient
+		return;
+	}
+	//find transient parent
+	Viewport *vp = get_parent()->get_viewport();
+	Window *window = nullptr;
+	while (vp) {
+		window = Object::cast_to<Window>(vp);
+		if (window) {
+			break;
+		}
+		if (!vp->get_parent()) {
+			break;
+		}
+
+		vp = vp->get_parent()->get_viewport();
+	}
+
+	if (window) {
+		transient_parent = window;
+		window->transient_children.insert(this);
+	}
+
+	//see if we can make transient
+	if (transient_parent->window_id != DisplayServer::INVALID_WINDOW_ID && window_id != DisplayServer::INVALID_WINDOW_ID) {
+		DisplayServer::get_singleton()->window_set_transient(window_id, transient_parent->window_id);
+	}
+}
+
+void Window::set_transient(bool p_transient) {
+	if (transient == p_transient) {
+		return;
+	}
+
+	transient = p_transient;
+
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	if (transient) {
+		_make_transient();
+	} else {
+		_clear_transient();
+	}
+}
+bool Window::is_transient() const {
+	return transient;
+}
+
 bool Window::is_visible() const {
 	return visible;
 }
@@ -467,9 +551,18 @@ void Window::_notification(int p_what) {
 				_update_window_callbacks();
 			}
 		}
+
+		if (transient) {
+			_make_transient();
+		}
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
+
+		if (transient) {
+			_clear_transient();
+		}
+
 		if (!is_embedded() && window_id != DisplayServer::INVALID_WINDOW_ID) {
 
 			if (window_id == DisplayServer::MAIN_WINDOW_ID) {
@@ -495,7 +588,7 @@ Size2i Window::get_content_scale_size() const {
 	return content_scale_size;
 }
 
-void Window::set_content_scale_mode(const ContentScaleMode &p_mode) {
+void Window::set_content_scale_mode(ContentScaleMode p_mode) {
 	content_scale_mode = p_mode;
 	_update_size();
 }
@@ -503,7 +596,7 @@ Window::ContentScaleMode Window::get_content_scale_mode() const {
 	return content_scale_mode;
 }
 
-void Window::set_content_scale_aspect(const ContentScaleAspect &p_aspect) {
+void Window::set_content_scale_aspect(ContentScaleAspect p_aspect) {
 	content_scale_aspect = p_aspect;
 	_update_size();
 }
@@ -552,6 +645,83 @@ void Window::_window_drop_files(const Vector<String> &p_files) {
 }
 
 void Window::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_title", "title"), &Window::set_title);
+	ClassDB::bind_method(D_METHOD("get_title"), &Window::get_title);
+
+	ClassDB::bind_method(D_METHOD("set_current_screen", "index"), &Window::set_current_screen);
+	ClassDB::bind_method(D_METHOD("get_current_screen"), &Window::get_current_screen);
+
+	ClassDB::bind_method(D_METHOD("set_position", "position"), &Window::set_position);
+	ClassDB::bind_method(D_METHOD("get_position"), &Window::get_position);
+
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &Window::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &Window::get_size);
+
+	ClassDB::bind_method(D_METHOD("get_real_size"), &Window::get_real_size);
+
+	ClassDB::bind_method(D_METHOD("set_max_size", "max_size"), &Window::set_max_size);
+	ClassDB::bind_method(D_METHOD("get_max_size"), &Window::get_max_size);
+
+	ClassDB::bind_method(D_METHOD("set_min_size", "min_size"), &Window::set_min_size);
+	ClassDB::bind_method(D_METHOD("get_min_size"), &Window::get_min_size);
+
+	ClassDB::bind_method(D_METHOD("set_mode", "mode"), &Window::set_mode);
+	ClassDB::bind_method(D_METHOD("get_mode"), &Window::get_mode);
+
+	ClassDB::bind_method(D_METHOD("set_flag", "flag", "enabled"), &Window::set_flag);
+	ClassDB::bind_method(D_METHOD("get_flag", "flag"), &Window::get_flag);
+
+	ClassDB::bind_method(D_METHOD("is_maximize_allowed"), &Window::is_maximize_allowed);
+
+	ClassDB::bind_method(D_METHOD("request_attention"), &Window::request_attention);
+
+	ClassDB::bind_method(D_METHOD("move_to_foreground"), &Window::move_to_foreground);
+
+	ClassDB::bind_method(D_METHOD("set_visible", "visible"), &Window::set_visible);
+	ClassDB::bind_method(D_METHOD("is_visible"), &Window::is_visible);
+
+	ClassDB::bind_method(D_METHOD("set_transient", "transient"), &Window::set_transient);
+	ClassDB::bind_method(D_METHOD("is_transient"), &Window::is_transient);
+
+	ClassDB::bind_method(D_METHOD("can_draw"), &Window::is_transient);
+
+	ClassDB::bind_method(D_METHOD("set_ime_active"), &Window::set_ime_active);
+	ClassDB::bind_method(D_METHOD("set_ime_position"), &Window::set_ime_position);
+
+	ClassDB::bind_method(D_METHOD("is_embedded"), &Window::is_embedded);
+
+	ClassDB::bind_method(D_METHOD("set_content_scale_size", "size"), &Window::set_content_scale_size);
+	ClassDB::bind_method(D_METHOD("get_content_scale_size"), &Window::get_content_scale_size);
+
+	ClassDB::bind_method(D_METHOD("set_content_scale_mode", "mode"), &Window::set_content_scale_mode);
+	ClassDB::bind_method(D_METHOD("get_content_scale_mode"), &Window::get_content_scale_mode);
+
+	ClassDB::bind_method(D_METHOD("set_content_scale_aspect", "aspect"), &Window::set_content_scale_aspect);
+	ClassDB::bind_method(D_METHOD("get_content_scale_aspect"), &Window::get_content_scale_aspect);
+
+	ClassDB::bind_method(D_METHOD("set_use_font_oversampling", "enable"), &Window::set_use_font_oversampling);
+	ClassDB::bind_method(D_METHOD("is_using_font_oversampling"), &Window::is_using_font_oversampling);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "position"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Windowed,Minimized,Maximized,FullScreen"), "set_mode", "get_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_screen"), "set_current_screen", "get_current_screen");
+	ADD_GROUP("Flags", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transient"), "set_transient", "is_transient");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "unresizable"), "set_flag", "get_flag", FLAG_RESIZE_DISABLED);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "borderless"), "set_flag", "get_flag", FLAG_BORDERLESS);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "always_on_top"), "set_flag", "get_flag", FLAG_ALWAYS_ON_TOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transparent"), "set_flag", "get_flag", FLAG_TRANSPARENT);
+	ADD_GROUP("Limits", "");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "min_size"), "set_min_size", "get_min_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "max_size"), "set_max_size", "get_max_size");
+	ADD_GROUP("Content Scale", "content_scale_");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "content_scale_size"), "set_content_scale_size", "get_content_scale_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_mode", PROPERTY_HINT_ENUM, "Disabled,Object,Pixels"), "set_content_scale_mode", "get_content_scale_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_aspect", PROPERTY_HINT_ENUM, "Ignore,Keep,KeepWidth,KeepHeight,Expand"), "set_content_scale_aspect", "get_content_scale_aspect");
 
 	ADD_SIGNAL(MethodInfo("files_dropped"));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));

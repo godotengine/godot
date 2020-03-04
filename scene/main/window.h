@@ -85,6 +85,7 @@ private:
 	bool visible = true;
 
 	bool use_font_oversampling = false;
+	bool transient = false;
 
 	Size2i content_scale_size;
 	ContentScaleMode content_scale_mode;
@@ -109,6 +110,11 @@ private:
 
 	void _window_unhandled_input(const Ref<InputEvent> &p_ev);
 	void _update_window_callbacks();
+
+	void _clear_transient();
+	void _make_transient();
+	Window *transient_parent = nullptr;
+	Set<Window *> transient_children;
 
 protected:
 	static void _bind_methods();
@@ -149,6 +155,9 @@ public:
 	void set_visible(bool p_visible);
 	bool is_visible() const;
 
+	void set_transient(bool p_transient);
+	bool is_transient() const;
+
 	bool can_draw() const;
 
 	void set_ime_active(bool p_active);
@@ -159,10 +168,10 @@ public:
 	void set_content_scale_size(const Size2i &p_size);
 	Size2i get_content_scale_size() const;
 
-	void set_content_scale_mode(const ContentScaleMode &p_mode);
+	void set_content_scale_mode(ContentScaleMode p_mode);
 	ContentScaleMode get_content_scale_mode() const;
 
-	void set_content_scale_aspect(const ContentScaleAspect &p_aspect);
+	void set_content_scale_aspect(ContentScaleAspect p_aspect);
 	ContentScaleAspect get_content_scale_aspect() const;
 
 	void set_use_font_oversampling(bool p_oversampling);
