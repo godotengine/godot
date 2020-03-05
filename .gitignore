@@ -19,7 +19,7 @@ local.properties
 .gradletasknamecache
 project.properties
 platform/android/java/libs/*
-platform/android/java/assets
+platform/android/java/app/libs/*
 
 # General c++ generated files
 *.lib
