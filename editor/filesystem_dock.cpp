@@ -36,6 +36,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "editor/plugins/audio_stream_editor_plugin.h"
 #include "editor_feature_profile.h"
 #include "editor_node.h"
 #include "editor_resource_preview.h"
@@ -831,6 +832,15 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 			editor->open_request(fpath);
 		} else {
 			editor->load_resource(fpath);
+			if (ResourceLoader::get_resource_type(fpath).begins_with("AudioStream")) {
+				for (int i = 0; i < EditorNode::get_editor_data().get_editor_plugin_count(); i++) {
+					AudioStreamEditorPlugin *ep = Object::cast_to<AudioStreamEditorPlugin>(EditorNode::get_editor_data().get_editor_plugin(i));
+					if (ep != nullptr) {
+						ep->play();
+						break;
+					}
+				}
+			}
 		}
 	}
 	_navigate_to_path(fpath, p_select_in_favorites);

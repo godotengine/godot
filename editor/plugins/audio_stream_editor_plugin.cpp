@@ -106,7 +106,7 @@ void AudioStreamEditor::_changed_callback(Object *p_changed, const char *p_prop)
 	update();
 }
 
-void AudioStreamEditor::_play() {
+void AudioStreamEditor::play() {
 
 	if (_player->is_playing()) {
 		_player->stop();
@@ -231,7 +231,7 @@ AudioStreamEditor::AudioStreamEditor() {
 	_play_button = memnew(ToolButton);
 	hbox->add_child(_play_button);
 	_play_button->set_focus_mode(Control::FOCUS_NONE);
-	_play_button->connect("pressed", callable_mp(this, &AudioStreamEditor::_play));
+	_play_button->connect("pressed", callable_mp(this, &AudioStreamEditor::play));
 
 	_stop_button = memnew(ToolButton);
 	hbox->add_child(_stop_button);
@@ -275,6 +275,10 @@ AudioStreamEditorPlugin::AudioStreamEditorPlugin(EditorNode *p_node) {
 	audio_editor = memnew(AudioStreamEditor);
 	add_control_to_container(CONTAINER_PROPERTY_EDITOR_BOTTOM, audio_editor);
 	audio_editor->hide();
+}
+
+void AudioStreamEditorPlugin::play() {
+	audio_editor->play();
 }
 
 AudioStreamEditorPlugin::~AudioStreamEditorPlugin() {
