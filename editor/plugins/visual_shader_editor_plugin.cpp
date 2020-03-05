@@ -2978,7 +2978,7 @@ class VisualShaderNodePluginDefaultEditor : public VBoxContainer {
 	Ref<Resource> parent_resource;
 
 public:
-	void _property_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false) {
+	void _property_changed(const String &p_property, const Variant &p_value, const String &p_field = "", bool p_changing = false) {
 
 		if (p_changing)
 			return;
@@ -3072,7 +3072,7 @@ public:
 				p_properties[i]->connect("resource_selected", callable_mp(this, &VisualShaderNodePluginDefaultEditor::_resource_selected));
 			}
 
-			properties[i]->connect("property_changed", callable_mp(this, &VisualShaderNodePluginDefaultEditor::_property_changed), make_binds(StringName(), false));
+			properties[i]->connect("property_changed", callable_mp(this, &VisualShaderNodePluginDefaultEditor::_property_changed));
 			properties[i]->set_object_and_property(node.ptr(), p_names[i]);
 			properties[i]->update_property();
 			properties[i]->set_name_split_ratio(0);
