@@ -91,6 +91,7 @@ EditorDebuggerInspector::EditorDebuggerInspector() {
 }
 
 EditorDebuggerInspector::~EditorDebuggerInspector() {
+	clear_cache();
 	memdelete(variables);
 }
 
