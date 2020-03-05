@@ -71,7 +71,7 @@ class EditorResourcePreview : public Node {
 	List<QueueItem> queue;
 
 	Mutex preview_mutex;
-	SemaphoreOld *preview_sem;
+	Semaphore preview_sem;
 	Thread *thread;
 	volatile bool exit;
 	volatile bool exited;

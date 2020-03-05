@@ -100,7 +100,6 @@ String OSIPhone::get_unique_id() const {
 void OSIPhone::initialize_core() {
 
 	OS_Unix::initialize_core();
-	SemaphoreIphone::make_default();
 
 	set_data_dir(data_dir);
 };
