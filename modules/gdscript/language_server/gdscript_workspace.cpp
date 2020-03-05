@@ -50,7 +50,7 @@ void GDScriptWorkspace::remove_cache_parser(const String &p_path) {
 	Map<String, ExtendGDScriptParser *>::Element *parser = parse_results.find(p_path);
 	Map<String, ExtendGDScriptParser *>::Element *script = scripts.find(p_path);
 	if (parser && script) {
-		if (script->get() && script->get() == script->get()) {
+		if (script->get() && script->get() == parser->get()) {
 			memdelete(script->get());
 		} else {
 			memdelete(script->get());
