@@ -3246,7 +3246,7 @@ void EditorNode::_clear_undo_history() {
 void EditorNode::set_current_scene(int p_idx) {
 
 	//Save the folding in case the scene gets reloaded.
-	if (editor_data.get_scene_path(p_idx) != "")
+	if (editor_data.get_scene_path(p_idx) != "" && editor_data.get_edited_scene_root(p_idx))
 		editor_folding.save_scene_folding(editor_data.get_edited_scene_root(p_idx), editor_data.get_scene_path(p_idx));
 
 	if (editor_data.check_and_update_scene(p_idx)) {
