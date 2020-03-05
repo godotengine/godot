@@ -726,9 +726,6 @@ void SpaceBullet::check_ghost_overlaps() {
 
 					other_body_shape = static_cast<btCollisionShape *>(otherObject->get_bt_shape(z));
 
-					if (other_body_shape->isConcave())
-						continue;
-
 					btTransform other_shape_transform(otherObject->get_bt_shape_transform(z));
 					other_shape_transform.getOrigin() *= other_body_scale;
 

@@ -490,9 +490,13 @@
 			<argument index="2" name="weight" type="float">
 			</argument>
 			<description>
-				Returns a normalized value considering the given range.
+				Returns a normalized value considering the given range. This is the opposite of [method lerp].
 				[codeblock]
-				inverse_lerp(3, 5, 4) # Returns 0.5
+				var middle = lerp(20, 30, 0.75)
+				# `middle` is now 27.5.
+				# Now, we pretend to have forgotten the original ratio and want to get it back.
+				var ratio = inverse_lerp(20, 30, 27.5)
+				# `ratio` is now 0.75.
 				[/codeblock]
 			</description>
 		</method>
@@ -567,7 +571,7 @@
 			<argument index="2" name="weight" type="float">
 			</argument>
 			<description>
-				Linearly interpolates between two values by a normalized value.
+				Linearly interpolates between two values by a normalized value. This is the opposite of [method inverse_lerp].
 				If the [code]from[/code] and [code]to[/code] arguments are of type [int] or [float], the return value is a [float].
 				If both are of the same vector type ([Vector2], [Vector3] or [Color]), the return value will be of the same type ([code]lerp[/code] then calls the vector type's [code]linear_interpolate[/code] method).
 				[codeblock]
@@ -587,7 +591,7 @@
 			</argument>
 			<description>
 				Linearly interpolates between two angles (in radians) by a normalized value.
-				Similar to [method lerp] but interpolate correctly when the angles wrap around [constant @GDScript.TAU].
+				Similar to [method lerp], but interpolates correctly when the angles wrap around [constant @GDScript.TAU].
 				[codeblock]
 				extends Sprite
 				var elapsed = 0.0
@@ -605,7 +609,13 @@
 			<argument index="0" name="nrg" type="float">
 			</argument>
 			<description>
-				Converts from linear energy to decibels (audio).
+				Converts from linear energy to decibels (audio). This can be used to implement volume sliders that behave as expected (since volume isn't linear). Example:
+				[codeblock]
+				# "Slider" refers to a node that inherits Range such as HSlider or VSlider.
+				# Its range must be configured to go from 0 to 1.
+				# Change the bus name if you'd like to change the volume of a specific bus only.
+				AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), linear2db($Slider.value))
+				[/codeblock]
 			</description>
 		</method>
 		<method name="load">

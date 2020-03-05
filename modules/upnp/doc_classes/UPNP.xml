@@ -45,7 +45,7 @@
 			<description>
 				Adds a mapping to forward the external [code]port[/code] (between 1 and 65535) on the default gateway (see [method get_gateway]) to the [code]internal_port[/code] on the local machine for the given protocol [code]proto[/code] (either [code]TCP[/code] or [code]UDP[/code], with UDP being the default). If a port mapping for the given port and protocol combination already exists on that gateway device, this method tries to overwrite it. If that is not desired, you can retrieve the gateway manually with [method get_gateway] and call [method add_port_mapping] on it, if any.
 				If [code]internal_port[/code] is [code]0[/code] (the default), the same port number is used for both the external and the internal port (the [code]port[/code] value).
-				The description ([code]desc[/code]) is shown in some router UIs and can be used to point out which application added the mapping, and the lifetime of the mapping can be limited by [code]duration[/code]. However, some routers are incompatible with one or both of these, so use with caution and add fallback logic in case of errors to retry without them if in doubt.
+				The description ([code]desc[/code]) is shown in some router UIs and can be used to point out which application added the mapping. The mapping's lease duration can be limited by specifying a [code]duration[/code] (in seconds). However, some routers are incompatible with one or both of these, so use with caution and add fallback logic in case of errors to retry without them if in doubt.
 				See [enum UPNPResult] for possible return values.
 			</description>
 		</method>

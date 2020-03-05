@@ -2179,6 +2179,8 @@ Error EditorSceneImporterGLTF::_map_skin_joints_indices_to_skeleton_bone_indices
 			const GLTFNodeIndex node_i = skin.joints_original[joint_index];
 			const GLTFNode *node = state.nodes[node_i];
 
+			skin.joint_i_to_name.insert(joint_index, node->name);
+
 			const int bone_index = skeleton.godot_skeleton->find_bone(node->name);
 			ERR_FAIL_COND_V(bone_index < 0, FAILED);
 
@@ -2200,12 +2202,18 @@ Error EditorSceneImporterGLTF::_create_skins(GLTFState &state) {
 		const bool has_ibms = !gltf_skin.inverse_binds.empty();
 
 		for (int joint_i = 0; joint_i < gltf_skin.joints_original.size(); ++joint_i) {
-			int bone_i = gltf_skin.joint_i_to_bone_i[joint_i];
 
+			Transform xform;
 			if (has_ibms) {
-				skin->add_bind(bone_i, gltf_skin.inverse_binds[joint_i]);
+				xform = gltf_skin.inverse_binds[joint_i];
+			}
+
+			if (state.use_named_skin_binds) {
+				StringName name = gltf_skin.joint_i_to_name[joint_i];
+				skin->add_named_bind(name, xform);
 			} else {
-				skin->add_bind(bone_i, Transform());
+				int bone_i = gltf_skin.joint_i_to_bone_i[joint_i];
+				skin->add_bind(bone_i, xform);
 			}
 		}
 
@@ -2991,6 +2999,7 @@ Node *EditorSceneImporterGLTF::import_scene(const String &p_path, uint32_t p_fla
 
 	state.major_version = version.get_slice(".", 0).to_int();
 	state.minor_version = version.get_slice(".", 1).to_int();
+	state.use_named_skin_binds = p_flags & IMPORT_USE_NAMED_SKIN_BINDS;
 
 	/* STEP 0 PARSE SCENE */
 	Error err = _parse_scenes(state);

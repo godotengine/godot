@@ -2480,6 +2480,9 @@ void AnimationTrackEdit::_path_entered(const String &p_text) {
 
 bool AnimationTrackEdit::_is_value_key_valid(const Variant &p_key_value, Variant::Type &r_valid_type) const {
 
+	if (root == nullptr)
+		return false;
+
 	RES res;
 	Vector<StringName> leftover_path;
 	Node *node = root->get_node_and_resource(animation->track_get_path(track), res, leftover_path);

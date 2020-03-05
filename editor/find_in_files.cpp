@@ -533,6 +533,12 @@ FindInFilesPanel::FindInFilesPanel() {
 		_status_label = memnew(Label);
 		hbc->add_child(_status_label);
 
+		_refresh_button = memnew(Button);
+		_refresh_button->set_text(TTR("Refresh"));
+		_refresh_button->connect("pressed", this, "_on_refresh_button_clicked");
+		_refresh_button->hide();
+		hbc->add_child(_refresh_button);
+
 		_cancel_button = memnew(Button);
 		_cancel_button->set_text(TTR("Cancel"));
 		_cancel_button->connect("pressed", this, "_on_cancel_button_clicked");
@@ -616,6 +622,7 @@ void FindInFilesPanel::start_search() {
 	_finder->start();
 
 	update_replace_buttons();
+	_refresh_button->hide();
 	_cancel_button->show();
 }
 
@@ -626,6 +633,7 @@ void FindInFilesPanel::stop_search() {
 	_status_label->set_text("");
 	update_replace_buttons();
 	set_progress_visible(false);
+	_refresh_button->show();
 	_cancel_button->hide();
 }
 
@@ -728,7 +736,12 @@ void FindInFilesPanel::_on_finished() {
 	_status_label->set_text(TTR("Search complete"));
 	update_replace_buttons();
 	set_progress_visible(false);
+	_refresh_button->show();
 	_cancel_button->hide();
+}
+
+void FindInFilesPanel::_on_refresh_button_clicked() {
+	start_search();
 }
 
 void FindInFilesPanel::_on_cancel_button_clicked() {
@@ -905,6 +918,7 @@ void FindInFilesPanel::_bind_methods() {
 	ClassDB::bind_method("_on_result_found", &FindInFilesPanel::_on_result_found);
 	ClassDB::bind_method("_on_item_edited", &FindInFilesPanel::_on_item_edited);
 	ClassDB::bind_method("_on_finished", &FindInFilesPanel::_on_finished);
+	ClassDB::bind_method("_on_refresh_button_clicked", &FindInFilesPanel::_on_refresh_button_clicked);
 	ClassDB::bind_method("_on_cancel_button_clicked", &FindInFilesPanel::_on_cancel_button_clicked);
 	ClassDB::bind_method("_on_result_selected", &FindInFilesPanel::_on_result_selected);
 	ClassDB::bind_method("_on_replace_text_changed", &FindInFilesPanel::_on_replace_text_changed);

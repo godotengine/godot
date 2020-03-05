@@ -143,8 +143,8 @@ static void _plot_triangle(Vector2 *vertices, const Vector2 &p_offset, bool p_tr
 
 				int px = xi, py = yi;
 				int sx = px, sy = py;
-				sx = CLAMP(sx, 0, src_width);
-				sy = CLAMP(sy, 0, src_height);
+				sx = CLAMP(sx, 0, src_width - 1);
+				sy = CLAMP(sy, 0, src_height - 1);
 				Color color = p_src_image->get_pixel(sx, sy);
 				if (p_transposed) {
 					SWAP(px, py);
@@ -165,8 +165,8 @@ static void _plot_triangle(Vector2 *vertices, const Vector2 &p_offset, bool p_tr
 			for (int xi = (xf < width ? int(xf) : width - 1); xi >= (xt > 0 ? xt : 0); xi--) {
 				int px = xi, py = yi;
 				int sx = px, sy = py;
-				sx = CLAMP(sx, 0, src_width);
-				sy = CLAMP(sy, 0, src_height);
+				sx = CLAMP(sx, 0, src_width - 1);
+				sy = CLAMP(sy, 0, src_height - 1);
 				Color color = p_src_image->get_pixel(sx, sy);
 				if (p_transposed) {
 					SWAP(px, py);
