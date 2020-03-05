@@ -42,6 +42,13 @@
 class GodotJavaWrapper;
 class GodotIOJavaWrapper;
 
+#if defined(VULKAN_ENABLED)
+class VulkanContextAndroid;
+class RenderingDeviceVulkan;
+#endif
+
+struct ANativeWindow;
+
 class OS_Android : public OS_Unix {
 public:
 	struct TouchPos {
@@ -75,6 +82,12 @@ private:
 
 	bool use_16bits_fbo;
 
+#if defined(VULKAN_ENABLED)
+	VulkanContextAndroid *context_vulkan;
+	RenderingDeviceVulkan *rendering_device_vulkan;
+	ANativeWindow *native_window;
+#endif
+
 	RenderingServer *rendering_server;
 
 	mutable String data_dir_cache;
@@ -94,10 +107,6 @@ private:
 	int video_driver_index;
 
 public:
-	// functions used by main to initialize/deinitialize the OS
-	virtual int get_video_driver_count() const;
-	virtual const char *get_video_driver_name(int p_driver) const;
-
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
@@ -162,6 +171,8 @@ public:
 	void set_display_size(Size2 p_size);
 
 	void set_context_is_16_bits(bool p_is_16);
+
+	void set_native_window(ANativeWindow *p_native_window);
 
 	virtual void set_screen_orientation(ScreenOrientation p_orientation);
 

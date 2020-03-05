@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  vk_renderer_jni.cpp                                                  */
+/*  vulkan_context_android.cpp                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,31 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "vk_renderer_jni.h"
+#include "vulkan_context_android.h"
+#include <vulkan/vulkan_android.h>
 
-extern "C" {
+#define VMA_IMPLEMENTATION
+#ifdef DEBUG_ENABLED
+#ifndef _MSC_VER
+#define _DEBUG
+#endif
+#endif
+#include <vk_mem_alloc.h>
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_vulkan_VkRenderer_nativeOnVkSurfaceCreated(JNIEnv *env, jobject obj, jobject j_surface) {
-	// TODO: complete
+const char *VulkanContextAndroid::_get_platform_surface_extension() const {
+	return VK_KHR_ANDROID_SURFACE_EXTENSION_NAME;
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_vulkan_VkRenderer_nativeOnVkSurfaceChanged(JNIEnv *env, jobject object, jobject j_surface, jint width, jint height) {
-	// TODO: complete
+int VulkanContextAndroid::window_create(ANativeWindow *p_window, int p_width, int p_height) {
+	VkAndroidSurfaceCreateInfoKHR createInfo;
+	createInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
+	createInfo.pNext = NULL;
+	createInfo.flags = 0;
+	createInfo.window = p_window;
+
+	VkSurfaceKHR surface;
+	VkResult err = vkCreateAndroidSurfaceKHR(_get_instance(), &createInfo, NULL, &surface);
+	if (err != VK_SUCCESS) {
+		ERR_FAIL_V_MSG(-1, "vkCreateAndroidSurfaceKHR failed with error " + itos(err));
+	}
+
+	return _window_create(surface, p_width, p_height);
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_vulkan_VkRenderer_nativeOnVkResume(JNIEnv *env, jobject obj) {
-	// TODO: complete
+VulkanContextAndroid::VulkanContextAndroid() {
+	// TODO: fix validation layers
+	use_validation_layers = false;
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_vulkan_VkRenderer_nativeOnVkDrawFrame(JNIEnv *env, jobject obj) {
-	// TODO: complete
-}
-
-JNIEXPORT void JNICALL Java_org_godotengine_godot_vulkan_VkRenderer_nativeOnVkPause(JNIEnv *env, jobject obj) {
-	// TODO: complete
-}
-
-JNIEXPORT void JNICALL Java_org_godotengine_godot_vulkan_VkRenderer_nativeOnVkDestroy(JNIEnv *env, jobject obj) {
-	// TODO: complete
-}
+VulkanContextAndroid::~VulkanContextAndroid() {
 }
