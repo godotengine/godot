@@ -1423,7 +1423,7 @@ void ScriptEditorDebugger::_clear_errors_list() {
 	error_tree->clear();
 	error_count = 0;
 	warning_count = 0;
-	_notification(NOTIFICATION_PROCESS);
+	update_tabs();
 }
 
 // Right click on specific file(s) or folder(s).
@@ -1834,7 +1834,5 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 ScriptEditorDebugger::~ScriptEditorDebugger() {
 
 	ppeer->set_stream_peer(Ref<StreamPeer>());
-
-	inspector->clear_cache();
 	memdelete(scene_tree);
 }
