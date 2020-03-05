@@ -133,6 +133,8 @@ void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p
 }
 void EditorFolding::save_scene_folding(const Node *p_scene, const String &p_path) {
 
+	ERR_FAIL_NULL(p_scene);
+
 	FileAccessRef file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
 	if (!file_check->file_exists(p_path)) //This can happen when creating scene from FilesystemDock. It has path, but no file.
 		return;
