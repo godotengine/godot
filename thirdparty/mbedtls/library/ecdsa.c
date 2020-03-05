@@ -297,7 +297,7 @@ static int ecdsa_sign_restartable( mbedtls_ecp_group *grp,
     *p_sign_tries = 0;
     do
     {
-        if( *p_sign_tries++ > 10 )
+        if( (*p_sign_tries)++ > 10 )
         {
             ret = MBEDTLS_ERR_ECP_RANDOM_FAILED;
             goto cleanup;
@@ -310,7 +310,7 @@ static int ecdsa_sign_restartable( mbedtls_ecp_group *grp,
         *p_key_tries = 0;
         do
         {
-            if( *p_key_tries++ > 10 )
+            if( (*p_key_tries)++ > 10 )
             {
                 ret = MBEDTLS_ERR_ECP_RANDOM_FAILED;
                 goto cleanup;

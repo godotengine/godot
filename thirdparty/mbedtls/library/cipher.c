@@ -361,6 +361,10 @@ int mbedtls_cipher_update( mbedtls_cipher_context_t *ctx, const unsigned char *i
 
     *olen = 0;
     block_size = mbedtls_cipher_get_block_size( ctx );
+    if ( 0 == block_size )
+    {
+        return( MBEDTLS_ERR_CIPHER_INVALID_CONTEXT );
+    }
 
     if( ctx->cipher_info->mode == MBEDTLS_MODE_ECB )
     {
@@ -395,11 +399,6 @@ int mbedtls_cipher_update( mbedtls_cipher_context_t *ctx, const unsigned char *i
                                            ilen, input, output ) );
     }
 #endif
-
-    if ( 0 == block_size )
-    {
-        return( MBEDTLS_ERR_CIPHER_INVALID_CONTEXT );
-    }
 
     if( input == output &&
        ( ctx->unprocessed_len != 0 || ilen % block_size ) )
@@ -459,11 +458,6 @@ int mbedtls_cipher_update( mbedtls_cipher_context_t *ctx, const unsigned char *i
          */
         if( 0 != ilen )
         {
-            if( 0 == block_size )
-            {
-                return( MBEDTLS_ERR_CIPHER_INVALID_CONTEXT );
-            }
-
             /* Encryption: only cache partial blocks
              * Decryption w/ padding: always keep at least one whole block
              * Decryption w/o padding: only cache partial blocks
