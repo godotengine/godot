@@ -25,7 +25,7 @@ ext {
     sconsExt = org.gradle.internal.os.OperatingSystem.current().isWindows() ? ".bat" : ""
 
     supportedAbis = ["armv7", "arm64v8", "x86", "x86_64"]
-    supportedTargets = ['release': "release", 'debug': "release_debug"]
+    supportedTargets = ['release': "release", 'debug': "debug"]
 
     // Used by gradle to specify which architecture to build for by default when running `./gradlew build`.
     // This command is usually used by Android Studio.
