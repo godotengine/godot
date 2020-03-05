@@ -786,6 +786,7 @@ public:
 			_test_path();
 		}
 
+		set_size(get_minimum_size());
 		popup_centered_minsize(Size2(500, 0) * EDSCALE);
 	}
 
