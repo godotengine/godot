@@ -165,7 +165,7 @@ EditorPropertyDictionaryObject::EditorPropertyDictionaryObject() {
 
 ///////////////////// ARRAY ///////////////////////////
 
-void EditorPropertyArray::_property_changed(const String &p_property, Variant p_value, const StringName &p_name, bool p_changing) {
+void EditorPropertyArray::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
 
 	if (p_property.begins_with("indices")) {
 		int idx = p_property.get_slice("/", 1).to_int();
@@ -359,7 +359,7 @@ void EditorPropertyArray::update_property() {
 			prop->set_object_and_property(object.ptr(), prop_name);
 			prop->set_label(itos(i + offset));
 			prop->set_selectable(false);
-			prop->connect("property_changed", callable_mp(this, &EditorPropertyArray::_property_changed), make_binds(StringName(), false));
+			prop->connect("property_changed", callable_mp(this, &EditorPropertyArray::_property_changed));
 			prop->connect("object_id_selected", callable_mp(this, &EditorPropertyArray::_object_id_selected));
 			prop->set_h_size_flags(SIZE_EXPAND_FILL);
 
@@ -528,7 +528,7 @@ EditorPropertyArray::EditorPropertyArray() {
 
 ///////////////////// DICTIONARY ///////////////////////////
 
-void EditorPropertyDictionary::_property_changed(const String &p_property, Variant p_value, const StringName &p_name, bool p_changing) {
+void EditorPropertyDictionary::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
 
 	if (p_property == "new_item_key") {
 
@@ -932,7 +932,7 @@ void EditorPropertyDictionary::update_property() {
 			}
 
 			prop->set_selectable(false);
-			prop->connect("property_changed", callable_mp(this, &EditorPropertyDictionary::_property_changed), make_binds(StringName(), false));
+			prop->connect("property_changed", callable_mp(this, &EditorPropertyDictionary::_property_changed));
 			prop->connect("object_id_selected", callable_mp(this, &EditorPropertyDictionary::_object_id_selected));
 
 			HBoxContainer *hb = memnew(HBoxContainer);

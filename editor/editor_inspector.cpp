@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "editor_inspector.h"
+
 #include "array_property_edit.h"
 #include "dictionary_property_edit.h"
 #include "editor_feature_profile.h"
@@ -1358,7 +1359,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, Ref<Edit
 		if (ep) {
 
 			ep->object = object;
-			ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed), make_binds(StringName(), false));
+			ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed));
 			ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
 			ep->connect("property_keyed_with_value", callable_mp(this, &EditorInspector::_property_keyed_with_value));
 			ep->connect("property_checked", callable_mp(this, &EditorInspector::_property_checked));
@@ -1770,9 +1771,9 @@ void EditorInspector::update_tree() {
 
 				if (ep) {
 
-					ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed), make_binds(StringName(), false));
+					ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed));
 					if (p.usage & PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED) {
-						ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed_update_all), make_binds(StringName(), false), CONNECT_DEFERRED);
+						ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed_update_all), varray(), CONNECT_DEFERRED);
 					}
 					ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
 					ep->connect("property_keyed_with_value", callable_mp(this, &EditorInspector::_property_keyed_with_value));
