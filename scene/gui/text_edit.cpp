@@ -628,6 +628,10 @@ void TextEdit::_notification(int p_what) {
 			_update_scrollbars();
 			_update_wrap_at();
 		} break;
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			placeholder.text_translated = tr(placeholder.text);
+			update();
+		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
 				call_deferred("_update_scrollbars");
@@ -1082,6 +1086,24 @@ void TextEdit::_notification(int p_what) {
 
 			// draw main text
 			int line = first_visible_line;
+
+			if (get_text() == "" && ime_text.size() <= 0 && placeholder.text.size() >= 0) {
+				String text = placeholder.text;
+				int char_ofs = 0;
+				int ofs_y = cache.line_spacing;
+				int ofs_x = cache.breakpoint_gutter_width + cache.info_gutter_width + cache.fold_gutter_width + cache.line_number_w;
+				int font_ascent = cache.font->get_ascent();
+				color.a *= placeholder.alpha;
+
+				for (int i = 0; i < text.size(); i++) {
+					CharType cchar = text[i];
+					CharType next = text[i + 1];
+					int char_width = cache.font->get_char_size(cchar, next).width;
+					drawer.draw_char(ci, Point2(char_ofs + ofs_x, ofs_y + font_ascent), cchar, next, color);
+					char_ofs += char_width;
+				}
+			}
+
 			for (int i = 0; i < draw_amount; i++) {
 
 				line++;
@@ -7041,6 +7063,25 @@ PopupMenu *TextEdit::get_menu() const {
 	return menu;
 }
 
+void TextEdit::set_placeholder(String p_text) {
+	placeholder.text = p_text;
+	placeholder.text_translated = tr(p_text);
+	update();
+}
+
+String TextEdit::get_placeholder() const {
+	return placeholder.text;
+}
+
+void TextEdit::set_placeholder_alpha(float p_alpha) {
+	placeholder.alpha = p_alpha;
+	update();
+}
+
+float TextEdit::get_placeholder_alpha() const {
+	return placeholder.alpha;
+}
+
 void TextEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &TextEdit::_gui_input);
@@ -7176,6 +7217,11 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_minimap_width", "width"), &TextEdit::set_minimap_width);
 	ClassDB::bind_method(D_METHOD("get_minimap_width"), &TextEdit::get_minimap_width);
 
+	ClassDB::bind_method(D_METHOD("set_placeholder", "text"), &TextEdit::set_placeholder);
+	ClassDB::bind_method(D_METHOD("get_placeholder"), &TextEdit::get_placeholder);
+	ClassDB::bind_method(D_METHOD("set_placeholder_alpha", "alpha"), &TextEdit::set_placeholder_alpha);
+	ClassDB::bind_method(D_METHOD("get_placeholder_alpha"), &TextEdit::get_placeholder_alpha);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "readonly"), "set_readonly", "is_readonly");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_current_line"), "set_highlight_current_line", "is_highlight_current_line_enabled");
@@ -7196,6 +7242,10 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "wrap_enabled"), "set_wrap_enabled", "is_wrap_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_vertical"), "set_v_scroll", "get_v_scroll");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_horizontal"), "set_h_scroll", "get_h_scroll");
+
+	ADD_GROUP("Placeholder", "placeholder_");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "placeholder_text"), "set_placeholder", "get_placeholder");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "placeholder_alpha", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_placeholder_alpha", "get_placeholder_alpha");
 
 	ADD_GROUP("Minimap", "minimap_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_draw"), "draw_minimap", "is_drawing_minimap");
@@ -7363,6 +7413,8 @@ TextEdit::TextEdit() {
 	first_draw = true;
 
 	executing_line = -1;
+
+	placeholder.alpha = 0.6;
 }
 
 TextEdit::~TextEdit() {

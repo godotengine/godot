@@ -167,6 +167,18 @@ private:
 		}
 	} cursor;
 
+	struct Placeholder {
+		int width_cache;
+		float alpha;
+		String text;
+		String text_translated;
+
+		Placeholder() {
+			width_cache = 0;
+			alpha = 0;
+		}
+	} placeholder;
+
 	struct Selection {
 
 		enum Mode {
@@ -585,6 +597,10 @@ public:
 
 	bool is_insert_text_operation();
 
+	void set_placeholder(String p_text);
+	String get_placeholder() const;
+	void set_placeholder_alpha(float p_alpha);
+	float get_placeholder_alpha() const;
 	void set_text(String p_text);
 	void insert_text_at_cursor(const String &p_text);
 	void insert_at(const String &p_text, int at);
