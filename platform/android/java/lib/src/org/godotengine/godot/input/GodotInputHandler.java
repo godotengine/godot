@@ -42,27 +42,27 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import org.godotengine.godot.GodotLib;
-import org.godotengine.godot.GodotView;
+import org.godotengine.godot.GodotRenderView;
 import org.godotengine.godot.input.InputManagerCompat.InputDeviceListener;
 
 /**
- * Handles input related events for the {@link GodotView} view.
+ * Handles input related events for the {@link GodotRenderView} view.
  */
 public class GodotInputHandler implements InputDeviceListener {
 
-	private final ArrayList<Joystick> joysticksDevices = new ArrayList<Joystick>();
+	private final ArrayList<Joystick> mJoysticksDevices = new ArrayList<Joystick>();
 
-	private final GodotView godotView;
-	private final InputManagerCompat inputManager;
+	private final GodotRenderView mRenderView;
+	private final InputManagerCompat mInputManager;
 
-	public GodotInputHandler(GodotView godotView) {
-		this.godotView = godotView;
-		this.inputManager = InputManagerCompat.Factory.getInputManager(godotView.getContext());
-		this.inputManager.registerInputDeviceListener(this, null);
+	public GodotInputHandler(GodotRenderView godotView) {
+		mRenderView = godotView;
+		mInputManager = InputManagerCompat.Factory.getInputManager(mRenderView.getView().getContext());
+		mInputManager.registerInputDeviceListener(this, null);
 	}
 
 	private void queueEvent(Runnable task) {
-		godotView.queueEvent(task);
+		mRenderView.queueOnRenderThread(task);
 	}
 
 	private boolean isKeyEvent_GameDevice(int source) {
@@ -113,7 +113,7 @@ public class GodotInputHandler implements InputDeviceListener {
 
 	public boolean onKeyDown(final int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			godotView.onBackPressed();
+			mRenderView.onBackPressed();
 			// press 'back' button should not terminate program
 			//normal handle 'back' event in game logic
 			return true;
@@ -164,7 +164,7 @@ public class GodotInputHandler implements InputDeviceListener {
 
 			// Check if the device exists
 			if (device_id > -1) {
-				Joystick joy = joysticksDevices.get(device_id);
+				Joystick joy = mJoysticksDevices.get(device_id);
 
 				for (int i = 0; i < joy.axes.size(); i++) {
 					InputDevice.MotionRange range = joy.axes.get(i);
@@ -208,11 +208,11 @@ public class GodotInputHandler implements InputDeviceListener {
 
 	public void initInputDevices() {
 		/* initially add input devices*/
-		int[] deviceIds = inputManager.getInputDeviceIds();
+		int[] deviceIds = mInputManager.getInputDeviceIds();
 		for (int deviceId : deviceIds) {
-			InputDevice device = inputManager.getInputDevice(deviceId);
+			InputDevice device = mInputManager.getInputDevice(deviceId);
 			if (DEBUG) {
-				Log.v("GodotView", String.format("init() deviceId:%d, Name:%s\n", deviceId, device.getName()));
+				Log.v("GodotInputHandler", String.format("init() deviceId:%d, Name:%s\n", deviceId, device.getName()));
 			}
 			onInputDeviceAdded(deviceId);
 		}
@@ -224,13 +224,13 @@ public class GodotInputHandler implements InputDeviceListener {
 
 		// Check if the device has not been already added
 		if (id < 0) {
-			InputDevice device = inputManager.getInputDevice(deviceId);
+			InputDevice device = mInputManager.getInputDevice(deviceId);
 			//device can be null if deviceId is not found
 			if (device != null) {
 				int sources = device.getSources();
 				if (((sources & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) ||
 						((sources & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK)) {
-					id = joysticksDevices.size();
+					id = mJoysticksDevices.size();
 
 					Joystick joy = new Joystick();
 					joy.device_id = deviceId;
@@ -249,7 +249,7 @@ public class GodotInputHandler implements InputDeviceListener {
 						}
 					}
 
-					joysticksDevices.add(joy);
+					mJoysticksDevices.add(joy);
 
 					final int device_id = id;
 					final String name = joy.name;
@@ -270,7 +270,7 @@ public class GodotInputHandler implements InputDeviceListener {
 
 		// Check if the evice has not been already removed
 		if (device_id > -1) {
-			joysticksDevices.remove(device_id);
+			mJoysticksDevices.remove(device_id);
 
 			queueEvent(new Runnable() {
 				@Override
@@ -360,8 +360,8 @@ public class GodotInputHandler implements InputDeviceListener {
 	}
 
 	private int findJoystickDevice(int device_id) {
-		for (int i = 0; i < joysticksDevices.size(); i++) {
-			if (joysticksDevices.get(i).device_id == device_id) {
+		for (int i = 0; i < mJoysticksDevices.size(); i++) {
+			if (mJoysticksDevices.get(i).device_id == device_id) {
 				return i;
 			}
 		}

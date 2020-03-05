@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  GodotView.java                                                       */
+/*  GodotGLRenderView.java                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -35,6 +35,7 @@ import android.opengl.GLSurfaceView;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.SurfaceView;
 import org.godotengine.godot.input.GodotGestureHandler;
 import org.godotengine.godot.input.GodotInputHandler;
 import org.godotengine.godot.utils.GLUtils;
@@ -64,16 +65,14 @@ import org.godotengine.godot.xr.regular.RegularFallbackConfigChooser;
  *   that matches it exactly (with regards to red/green/blue/alpha channels
  *   bit depths). Failure to do so would result in an EGL_BAD_MATCH error.
  */
-public class GodotView extends GLSurfaceView {
-
-	private static String TAG = GodotView.class.getSimpleName();
+public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 
 	private final Godot activity;
 	private final GodotInputHandler inputHandler;
 	private final GestureDetector detector;
 	private final GodotRenderer godotRenderer;
 
-	public GodotView(Godot activity, XRMode xrMode, boolean p_use_32_bits, boolean p_use_debug_opengl) {
+	public GodotGLRenderView(Godot activity, XRMode xrMode, boolean p_use_32_bits, boolean p_use_debug_opengl) {
 		super(activity);
 		GLUtils.use_32 = p_use_32_bits;
 		GLUtils.use_debug_opengl = p_use_debug_opengl;
@@ -85,8 +84,34 @@ public class GodotView extends GLSurfaceView {
 		init(xrMode, false, 16, 0);
 	}
 
+	@Override
+	public SurfaceView getView() {
+		return this;
+	}
+
+	@Override
 	public void initInputDevices() {
 		this.inputHandler.initInputDevices();
+	}
+
+	@Override
+	public void queueOnRenderThread(Runnable event) {
+		queueEvent(event);
+	}
+
+	@Override
+	public void onActivityPaused() {
+		onPause();
+	}
+
+	@Override
+	public void onActivityResumed() {
+		onResume();
+	}
+
+	@Override
+	public void onBackPressed() {
+		activity.onBackPressed();
 	}
 
 	@SuppressLint("ClickableViewAccessibility")
@@ -168,10 +193,6 @@ public class GodotView extends GLSurfaceView {
 
 		/* Set the renderer responsible for frame rendering */
 		setRenderer(godotRenderer);
-	}
-
-	public void onBackPressed() {
-		activity.onBackPressed();
 	}
 
 	@Override

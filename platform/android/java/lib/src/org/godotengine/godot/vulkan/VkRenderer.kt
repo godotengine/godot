@@ -33,6 +33,11 @@ package org.godotengine.godot.vulkan
 
 import android.view.Surface
 
+import org.godotengine.godot.Godot
+import org.godotengine.godot.GodotLib
+import org.godotengine.godot.plugin.GodotPlugin
+import org.godotengine.godot.plugin.GodotPluginRegistry
+
 /**
  * Responsible to setting up and driving the Vulkan rendering logic.
  *
@@ -48,52 +53,64 @@ import android.view.Surface
  */
 internal class VkRenderer {
 
+	private val pluginRegistry: GodotPluginRegistry = GodotPluginRegistry.getPluginRegistry()
+
 	/**
 	 * Called when the surface is created and signals the beginning of rendering.
 	 */
 	fun onVkSurfaceCreated(surface: Surface) {
-		nativeOnVkSurfaceCreated(surface)
+		// TODO: properly implement surface re-creation:
+		// GodotLib.newcontext should be called here once it's done.
+		//GodotLib.newcontext(surface, false)
+
+		for (plugin in pluginRegistry.getAllPlugins()) {
+			plugin.onVkSurfaceCreated(surface)
+		}
 	}
 
 	/**
 	 * Called after the surface is created and whenever its size changes.
 	 */
 	fun onVkSurfaceChanged(surface: Surface, width: Int, height: Int) {
-		nativeOnVkSurfaceChanged(surface, width, height)
+		GodotLib.resize(width, height)
+		
+		// TODO: properly implement surface re-creation:
+		// Update the native renderer instead of restarting the app.
+		// GodotLib.newcontext should not be called here once it's done.
+		GodotLib.newcontext(surface, false)
+		
+		for (plugin in pluginRegistry.getAllPlugins()) {
+			plugin.onVkSurfaceChanged(surface, width, height)
+		}
 	}
 
 	/**
 	 * Called to draw the current frame.
 	 */
 	fun onVkDrawFrame() {
-		nativeOnVkDrawFrame()
+		GodotLib.step()
+		for (plugin in pluginRegistry.getAllPlugins()) {
+			plugin.onVkDrawFrame()
+		}
 	}
 
 	/**
 	 * Called when the rendering thread is resumed.
 	 */
 	fun onVkResume() {
-		nativeOnVkResume()
+		GodotLib.onRendererResumed()
 	}
 
 	/**
 	 * Called when the rendering thread is paused.
 	 */
 	fun onVkPause() {
-		nativeOnVkPause()
+		GodotLib.onRendererPaused()
 	}
 
 	/**
 	 * Called when the rendering thread is destroyed and used as signal to tear down the Vulkan logic.
 	 */
 	fun onVkDestroy() {
-		nativeOnVkDestroy()
 	}
-
-	private external fun nativeOnVkSurfaceCreated(surface: Surface)
-	private external fun nativeOnVkSurfaceChanged(surface: Surface, width: Int, height: Int)
-	private external fun nativeOnVkResume()
-	private external fun nativeOnVkDrawFrame()
-	private external fun nativeOnVkPause()
-	private external fun nativeOnVkDestroy()
 }

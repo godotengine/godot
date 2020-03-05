@@ -51,7 +51,7 @@ public class GodotEditText extends EditText {
 	// ===========================================================
 	// Fields
 	// ===========================================================
-	private GodotView mView;
+	private GodotRenderView mRenderView;
 	private GodotTextInputWrapper mInputWrapper;
 	private EditHandler sHandler = new EditHandler(this);
 	private String mOriginText;
@@ -76,22 +76,22 @@ public class GodotEditText extends EditText {
 	// ===========================================================
 	public GodotEditText(final Context context) {
 		super(context);
-		this.initView();
+		initView();
 	}
 
 	public GodotEditText(final Context context, final AttributeSet attrs) {
 		super(context, attrs);
-		this.initView();
+		initView();
 	}
 
 	public GodotEditText(final Context context, final AttributeSet attrs, final int defStyle) {
 		super(context, attrs, defStyle);
-		this.initView();
+		initView();
 	}
 
 	protected void initView() {
-		this.setPadding(0, 0, 0, 0);
-		this.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
+		setPadding(0, 0, 0, 0);
+		setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
 	}
 
 	private void handleMessage(final Message msg) {
@@ -106,7 +106,7 @@ public class GodotEditText extends EditText {
 					edit.mInputWrapper.setOriginText(text);
 					edit.addTextChangedListener(edit.mInputWrapper);
 					setMaxInputLength(edit, msg.arg1);
-					final InputMethodManager imm = (InputMethodManager)mView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+					final InputMethodManager imm = (InputMethodManager)mRenderView.getView().getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
 					imm.showSoftInput(edit, 0);
 				}
 			} break;
@@ -115,9 +115,9 @@ public class GodotEditText extends EditText {
 				GodotEditText edit = (GodotEditText)msg.obj;
 
 				edit.removeTextChangedListener(mInputWrapper);
-				final InputMethodManager imm = (InputMethodManager)mView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+				final InputMethodManager imm = (InputMethodManager)mRenderView.getView().getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
 				imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
-				edit.mView.requestFocus();
+				edit.mRenderView.getView().requestFocus();
 			} break;
 		}
 	}
@@ -135,12 +135,12 @@ public class GodotEditText extends EditText {
 	// ===========================================================
 	// Getter & Setter
 	// ===========================================================
-	public void setView(final GodotView view) {
-		this.mView = view;
+	public void setView(final GodotRenderView view) {
+		mRenderView = view;
 		if (mInputWrapper == null)
-			mInputWrapper = new GodotTextInputWrapper(mView, this);
-		this.setOnEditorActionListener(mInputWrapper);
-		view.requestFocus();
+			mInputWrapper = new GodotTextInputWrapper(mRenderView, this);
+		setOnEditorActionListener(mInputWrapper);
+		view.getView().requestFocus();
 	}
 
 	// ===========================================================
@@ -152,7 +152,7 @@ public class GodotEditText extends EditText {
 
 		/* Let GlSurfaceView get focus if back key is input. */
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			this.mView.requestFocus();
+			mRenderView.getView().requestFocus();
 		}
 
 		return true;
@@ -162,7 +162,7 @@ public class GodotEditText extends EditText {
 	// Methods
 	// ===========================================================
 	public void showKeyboard(String p_existing_text, int p_max_input_length) {
-		this.mOriginText = p_existing_text;
+		mOriginText = p_existing_text;
 
 		final Message msg = new Message();
 		msg.what = HANDLER_OPEN_IME_KEYBOARD;

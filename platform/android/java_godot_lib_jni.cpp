@@ -52,6 +52,8 @@
 
 #include <unistd.h>
 
+#include <android/native_window_jni.h>
+
 static JavaClassWrapper *java_class_wrapper = nullptr;
 static OS_Android *os_android = nullptr;
 static GodotJavaWrapper *godot_java = nullptr;
@@ -168,14 +170,17 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, j
 		os_android->set_display_size(Size2(width, height));
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *env, jclass clazz, jboolean p_32_bits) {
-
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *env, jclass clazz, jobject p_surface, jboolean p_32_bits) {
 	if (os_android) {
 		if (step == 0) {
 			// During startup
 			os_android->set_context_is_16_bits(!p_32_bits);
+			if (p_surface) {
+				ANativeWindow *native_window = ANativeWindow_fromSurface(env, p_surface);
+				os_android->set_native_window(native_window);
+			}
 		} else {
-			// GL context recreated because it was lost; restart app to let it reload everything
+			// Rendering context recreated because it was lost; restart app to let it reload everything
 			os_android->main_loop_end();
 			godot_java->restart(env);
 			step = -1; // Ensure no further steps are attempted

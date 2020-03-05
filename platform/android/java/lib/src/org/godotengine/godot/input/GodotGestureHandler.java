@@ -34,22 +34,22 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import org.godotengine.godot.GodotLib;
-import org.godotengine.godot.GodotView;
+import org.godotengine.godot.GodotRenderView;
 
 /**
- * Handles gesture input related events for the {@link GodotView} view.
+ * Handles gesture input related events for the {@link GodotRenderView} view.
  * https://developer.android.com/reference/android/view/GestureDetector.SimpleOnGestureListener
  */
 public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener {
 
-	private final GodotView godotView;
+	private final GodotRenderView mRenderView;
 
-	public GodotGestureHandler(GodotView godotView) {
-		this.godotView = godotView;
+	public GodotGestureHandler(GodotRenderView godotView) {
+		mRenderView = godotView;
 	}
 
 	private void queueEvent(Runnable task) {
-		godotView.queueEvent(task);
+		mRenderView.queueOnRenderThread(task);
 	}
 
 	@Override

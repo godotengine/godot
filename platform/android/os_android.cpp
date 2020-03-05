@@ -35,6 +35,11 @@
 #if defined(OPENGL_ENABLED)
 #include "drivers/gles2/rasterizer_gles2.h"
 #endif
+#if defined(VULKAN_ENABLED)
+#include "drivers/vulkan/rendering_device_vulkan.h"
+#include "platform/android/vulkan/vulkan_context_android.h"
+#include "servers/visual/rasterizer_rd/rasterizer_rd.h"
+#endif
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "file_access_android.h"
@@ -60,19 +65,6 @@ public:
 	virtual ~AndroidLogger() {}
 };
 
-int OS_Android::get_video_driver_count() const {
-
-	return 2;
-}
-
-const char *OS_Android::get_video_driver_name(int p_driver) const {
-
-	switch (p_driver) {
-		case VIDEO_DRIVER_GLES2:
-			return "GLES2";
-	}
-	ERR_FAIL_V_MSG(nullptr, "Invalid video driver index: " + itos(p_driver) + ".");
-}
 int OS_Android::get_audio_driver_count() const {
 
 	return 1;
@@ -121,8 +113,7 @@ int OS_Android::get_current_video_driver() const {
 }
 
 Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
-
-	// FIXME: Add Vulkan support. Readd fallback code from Vulkan to GLES2?
+	video_driver_index = p_video_driver;
 
 #if defined(OPENGL_ENABLED)
 	if (video_driver_index == VIDEO_DRIVER_GLES2) {
@@ -144,7 +135,31 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 	}
 #endif
 
-	video_driver_index = p_video_driver;
+#if defined(VULKAN_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_VULKAN) {
+		ERR_FAIL_COND_V(!native_window, ERR_UNAVAILABLE);
+
+		context_vulkan = memnew(VulkanContextAndroid);
+		if (context_vulkan->initialize() != OK) {
+			memdelete(context_vulkan);
+			context_vulkan = NULL;
+			ERR_FAIL_V(ERR_UNAVAILABLE);
+		}
+
+		Size2 window_size = get_window_size();
+		if (context_vulkan->window_create(native_window, window_size.width, window_size.height) == -1) {
+			memdelete(context_vulkan);
+			context_vulkan = NULL;
+			ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Failed to create Vulkan window.");
+		}
+
+		//temporary
+		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
+		rendering_device_vulkan->initialize(context_vulkan);
+
+		RasterizerRD::make_current();
+	}
+#endif
 
 	rendering_server = memnew(RenderingServerRaster);
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
@@ -175,6 +190,19 @@ void OS_Android::delete_main_loop() {
 void OS_Android::finalize() {
 
 	memdelete(input);
+
+#if defined(VULKAN_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_VULKAN) {
+		if (rendering_device_vulkan) {
+			rendering_device_vulkan->finalize();
+			memdelete(rendering_device_vulkan);
+		}
+
+		if (context_vulkan) {
+			memdelete(context_vulkan);
+		}
+	}
+#endif
 }
 
 GodotJavaWrapper *OS_Android::get_godot_java() {
@@ -572,9 +600,8 @@ void OS_Android::main_loop_request_go_back() {
 }
 
 void OS_Android::set_display_size(Size2 p_size) {
-
-	default_videomode.width = p_size.x;
-	default_videomode.height = p_size.y;
+	default_videomode.width = p_size.width;
+	default_videomode.height = p_size.height;
 }
 
 Error OS_Android::shell_open(String p_uri) {
@@ -710,6 +737,12 @@ void OS_Android::set_context_is_16_bits(bool p_is_16) {
 	//	rasterizer->set_force_16_bits_fbo(p_is_16);
 }
 
+void OS_Android::set_native_window(ANativeWindow *p_native_window) {
+#if defined(VULKAN_ENABLED)
+	native_window = p_native_window;
+#endif
+}
+
 void OS_Android::joy_connection_changed(int p_device, bool p_connected, String p_name) {
 	return input->joy_connection_changed(p_device, p_connected, p_name, "");
 }
@@ -758,6 +791,12 @@ OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_god
 	gl_extensions = nullptr;
 	//rasterizer = nullptr;
 	use_gl2 = false;
+
+#if defined(VULKAN_ENABLED)
+	context_vulkan = NULL;
+	rendering_device_vulkan = NULL;
+	native_window = NULL;
+#endif
 
 	rendering_server = nullptr;
 
