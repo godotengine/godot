@@ -61,8 +61,11 @@ import android.os.Messenger;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.provider.Settings.Secure;
+import android.support.annotation.CallSuper;
 import android.support.annotation.Keep;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentActivity;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -87,22 +90,20 @@ import com.google.android.vending.expansion.downloader.IStub;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.security.MessageDigest;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import javax.microedition.khronos.opengles.GL10;
 import org.godotengine.godot.input.GodotEditText;
 import org.godotengine.godot.payments.PaymentsManager;
+import org.godotengine.godot.plugin.GodotPlugin;
+import org.godotengine.godot.plugin.GodotPluginRegistry;
 import org.godotengine.godot.utils.GodotNetUtils;
 import org.godotengine.godot.utils.PermissionsUtil;
 import org.godotengine.godot.xr.XRMode;
 
-public abstract class Godot extends Activity implements SensorEventListener, IDownloaderClient {
+public abstract class Godot extends FragmentActivity implements SensorEventListener, IDownloaderClient {
 
-	static final int MAX_SINGLETONS = 64;
 	private IStub mDownloaderClientStub;
 	private TextView mStatusText;
 	private TextView mProgressFraction;
@@ -126,8 +127,7 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 	private boolean activityResumed;
 	private int mState;
 
-	// Used to dispatch events to the main thread.
-	private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
+	private GodotPluginRegistry pluginRegistry;
 
 	static private Intent mCurrentIntent;
 
@@ -154,83 +154,6 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 		mPauseButton.setText(stringResourceID);
 	}
 
-	static public class SingletonBase {
-
-		protected void registerClass(String p_name, String[] p_methods) {
-
-			GodotLib.singleton(p_name, this);
-
-			Class clazz = getClass();
-			Method[] methods = clazz.getDeclaredMethods();
-			for (Method method : methods) {
-				boolean found = false;
-
-				for (String s : p_methods) {
-					if (s.equals(method.getName())) {
-						found = true;
-						break;
-					}
-				}
-				if (!found)
-					continue;
-
-				List<String> ptr = new ArrayList<String>();
-
-				Class[] paramTypes = method.getParameterTypes();
-				for (Class c : paramTypes) {
-					ptr.add(c.getName());
-				}
-
-				String[] pt = new String[ptr.size()];
-				ptr.toArray(pt);
-
-				GodotLib.method(p_name, method.getName(), method.getReturnType().getName(), pt);
-			}
-
-			Godot.singletons[Godot.singleton_count++] = this;
-		}
-
-		/**
-		 * Invoked once during the Godot Android initialization process after creation of the
-		 * {@link GodotView} view.
-		 * <p>
-		 * This method should be overridden by descendants of this class that would like to add
-		 * their view/layout to the Godot view hierarchy.
-		 *
-		 * @return the view to be included; null if no views should be included.
-		 */
-		@Nullable
-		protected View onMainCreateView(Activity activity) {
-			return null;
-		}
-
-		protected void onMainActivityResult(int requestCode, int resultCode, Intent data) {
-		}
-
-		protected void onMainRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-		}
-
-		protected void onMainPause() {}
-		protected void onMainResume() {}
-		protected void onMainDestroy() {}
-		protected boolean onMainBackPressed() { return false; }
-
-		protected void onGLDrawFrame(GL10 gl) {}
-		protected void onGLSurfaceChanged(GL10 gl, int width, int height) {} // singletons will always miss first onGLSurfaceChanged call
-		//protected void onGLSurfaceCreated(GL10 gl, EGLConfig config) {} // singletons won't be ready until first GodotLib.step()
-
-		public void registerMethods() {}
-	}
-
-	/*
-	protected List<SingletonBase> singletons = new ArrayList<SingletonBase>();
-	protected void instanceSingleton(SingletonBase s) {
-
-		s.registerMethods();
-		singletons.add(s);
-	}
-	*/
-
 	private String[] command_line;
 	private boolean use_apk_expansion;
 
@@ -245,9 +168,6 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 
 	public static GodotIO io;
 	public static GodotNetUtils netUtils;
-
-	static SingletonBase[] singletons = new SingletonBase[MAX_SINGLETONS];
-	static int singleton_count = 0;
 
 	public interface ResultCallback {
 		public void callback(int requestCode, int resultCode, Intent data);
@@ -265,22 +185,31 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 			result_callback = null;
 		};
 
-		for (int i = 0; i < singleton_count; i++) {
-
-			singletons[i].onMainActivityResult(requestCode, resultCode, data);
+		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
+			plugin.onMainActivityResult(requestCode, resultCode, data);
 		}
 	};
 
 	@Override
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-		for (int i = 0; i < singleton_count; i++) {
-			singletons[i].onMainRequestPermissionsResult(requestCode, permissions, grantResults);
+		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
+			plugin.onMainRequestPermissionsResult(requestCode, permissions, grantResults);
 		}
 
 		for (int i = 0; i < permissions.length; i++) {
 			GodotLib.requestPermissionResult(permissions[i], grantResults[i] == PackageManager.PERMISSION_GRANTED);
 		}
 	};
+
+	/**
+	 * Invoked on the GL thread when the Godot main loop has started.
+	 */
+	@CallSuper
+	protected void onGLGodotMainLoopStarted() {
+		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
+			plugin.onGLGodotMainLoopStarted();
+		}
+	}
 
 	/**
 	 * Used by the native code (java_godot_lib_jni.cpp) to complete initialization of the GLSurfaceView view and renderer.
@@ -302,14 +231,13 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 		edittext.setView(mView);
 		io.setEdit(edittext);
 
-		final Godot godot = this;
 		mView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
 			@Override
 			public void onGlobalLayout() {
 				Point fullSize = new Point();
-				godot.getWindowManager().getDefaultDisplay().getSize(fullSize);
+				getWindowManager().getDefaultDisplay().getSize(fullSize);
 				Rect gameSize = new Rect();
-				godot.mView.getWindowVisibleDisplayFrame(gameSize);
+				mView.getWindowVisibleDisplayFrame(gameSize);
 
 				final int keyboardHeight = fullSize.y - gameSize.bottom;
 				GodotLib.setVirtualKeyboardHeight(keyboardHeight);
@@ -321,23 +249,23 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 			@Override
 			public void run() {
 				GodotLib.setup(current_command_line);
-				setKeepScreenOn("True".equals(GodotLib.getGlobal("display/window/energy_saving/keep_screen_on")));
 
-				// The Godot Android plugins are setup on completion of GodotLib.setup
-				mainThreadHandler.post(new Runnable() {
-					@Override
-					public void run() {
-						// Include the non-null views returned in the Godot view hierarchy.
-						for (int i = 0; i < singleton_count; i++) {
-							View view = singletons[i].onMainCreateView(Godot.this);
-							if (view != null) {
-								layout.addView(view);
-							}
-						}
-					}
-				});
+				// Must occur after GodotLib.setup has completed.
+				for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
+					plugin.onGLRegisterPluginWithGodotNative();
+				}
+
+				setKeepScreenOn("True".equals(GodotLib.getGlobal("display/window/energy_saving/keep_screen_on")));
 			}
 		});
+
+		// Include the returned non-null views in the Godot view hierarchy.
+		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
+			View pluginView = plugin.onMainCreateView(this);
+			if (pluginView != null) {
+				layout.addView(pluginView);
+			}
+		}
 	}
 
 	public void setKeepScreenOn(final boolean p_enabled) {
@@ -535,6 +463,7 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 		Window window = getWindow();
 		window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 		mClipboard = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
+		pluginRegistry = GodotPluginRegistry.initializePluginRegistry(this);
 
 		//check for apk expansion API
 		if (true) {
@@ -675,8 +604,8 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 	protected void onDestroy() {
 
 		if (mPaymentsManager != null) mPaymentsManager.destroy();
-		for (int i = 0; i < singleton_count; i++) {
-			singletons[i].onMainDestroy();
+		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
+			plugin.onMainDestroy();
 		}
 
 		GodotLib.ondestroy(this);
@@ -703,8 +632,8 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 
 		mSensorManager.unregisterListener(this);
 
-		for (int i = 0; i < singleton_count; i++) {
-			singletons[i].onMainPause();
+		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
+			plugin.onMainPause();
 		}
 	}
 
@@ -755,9 +684,8 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 					View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 		}
 
-		for (int i = 0; i < singleton_count; i++) {
-
-			singletons[i].onMainResume();
+		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
+			plugin.onMainResume();
 		}
 	}
 
@@ -850,8 +778,8 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 	public void onBackPressed() {
 		boolean shouldQuit = true;
 
-		for (int i = 0; i < singleton_count; i++) {
-			if (singletons[i].onMainBackPressed()) {
+		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
+			if (plugin.onMainBackPressed()) {
 				shouldQuit = false;
 			}
 		}
@@ -863,6 +791,17 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 					GodotLib.back();
 				}
 			});
+		}
+	}
+
+	/**
+	 * Queue a runnable to be run on the GL thread.
+	 * <p>
+	 * This must be called after the GL thread has started.
+	 */
+	public final void runOnGLThread(@NonNull Runnable action) {
+		if (mView != null) {
+			mView.queueEvent(action);
 		}
 	}
 

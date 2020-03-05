@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  GodotRenderer.java                                                   */
+/*  GodotPaymentInterface.java                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,61 +28,70 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-package org.godotengine.godot;
+package org.godotengine.godot.payments;
 
-import android.content.Context;
-import android.opengl.GLSurfaceView;
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
-import org.godotengine.godot.plugin.GodotPlugin;
-import org.godotengine.godot.plugin.GodotPluginRegistry;
-import org.godotengine.godot.utils.GLUtils;
+public interface GodotPaymentInterface {
+	void purchase(String sku, String transactionId);
 
-/**
- * Godot's renderer implementation.
- */
-class GodotRenderer implements GLSurfaceView.Renderer {
+	void consumeUnconsumedPurchases();
 
-	private final GodotPluginRegistry pluginRegistry;
-	private boolean activityJustResumed = false;
+	String getSignature();
 
-	GodotRenderer() {
-		this.pluginRegistry = GodotPluginRegistry.getPluginRegistry();
-	}
+	void callbackSuccess(String ticket, String signature, String sku);
 
-	public void onDrawFrame(GL10 gl) {
-		if (activityJustResumed) {
-			GodotLib.onRendererResumed();
-			activityJustResumed = false;
-		}
+	void callbackSuccessProductMassConsumed(String ticket, String signature, String sku);
 
-		GodotLib.step();
-		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
-			plugin.onGLDrawFrame(gl);
-		}
-	}
+	void callbackSuccessNoUnconsumedPurchases();
 
-	public void onSurfaceChanged(GL10 gl, int width, int height) {
-		GodotLib.resize(width, height);
-		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
-			plugin.onGLSurfaceChanged(gl, width, height);
-		}
-	}
+	void callbackFailConsume(String message);
 
-	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-		GodotLib.newcontext(GLUtils.use_32);
-		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
-			plugin.onGLSurfaceCreated(gl, config);
-		}
-	}
+	void callbackFail(String message);
 
-	void onActivityResumed() {
-		// We defer invoking GodotLib.onRendererResumed() until the first draw frame call.
-		// This ensures we have a valid GL context and surface when we do so.
-		activityJustResumed = true;
-	}
+	void callbackCancel();
 
-	void onActivityPaused() {
-		GodotLib.onRendererPaused();
-	}
+	void callbackAlreadyOwned(String sku);
+
+	int getPurchaseCallbackId();
+
+	void setPurchaseCallbackId(int purchaseCallbackId);
+
+	String getPurchaseValidationUrlPrefix();
+
+	void setPurchaseValidationUrlPrefix(String url);
+
+	String getAccessToken();
+
+	void setAccessToken(String accessToken);
+
+	void setTransactionId(String transactionId);
+
+	String getTransactionId();
+
+	// request purchased items are not consumed
+	void requestPurchased();
+
+	// callback for requestPurchased()
+	void callbackPurchased(String receipt, String signature, String sku);
+
+	void callbackDisconnected();
+
+	void callbackConnected();
+
+	// true if connected, false otherwise
+	boolean isConnected();
+
+	// consume item automatically after purchase. default is true.
+	void setAutoConsume(boolean autoConsume);
+
+	// consume a specific item
+	void consume(String sku);
+
+	// query in app item detail info
+	void querySkuDetails(String[] list);
+
+	void addSkuDetail(String itemJson);
+
+	void completeSkuDetail();
+
+	void errorSkuDetail(String errorMessage);
 }
