@@ -2542,9 +2542,7 @@
  *
  * This modules adds support for the VIA PadLock on x86.
  */
-// -- GODOT start --
-// #define MBEDTLS_PADLOCK_C
-// -- GODOT end --
+#define MBEDTLS_PADLOCK_C
 
 /**
  * \def MBEDTLS_PEM_PARSE_C
