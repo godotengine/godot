@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
+Copyright (c) 2006-2020, assimp team
 
 
 
@@ -311,6 +311,10 @@ enum aiTextureType
 };
 
 #define AI_TEXTURE_TYPE_MAX  aiTextureType_UNKNOWN
+
+// -------------------------------------------------------------------------------
+// Get a string for a given aiTextureType
+ASSIMP_API const char* TextureTypeToString(enum aiTextureType in);
 
 // ---------------------------------------------------------------------------
 /** @brief Defines all shading models supported by the library

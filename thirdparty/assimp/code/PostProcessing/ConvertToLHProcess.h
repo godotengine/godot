@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
+Copyright (c) 2006-2020, assimp team
 
 
 All rights reserved.
@@ -137,8 +137,9 @@ public:
     // -------------------------------------------------------------------
     void Execute( aiScene* pScene);
 
-protected:
-    void ProcessMesh( aiMesh* pMesh);
+public:
+    /** Some other types of post-processing require winding order flips */
+    static void ProcessMesh( aiMesh* pMesh);
 };
 
 // ---------------------------------------------------------------------------

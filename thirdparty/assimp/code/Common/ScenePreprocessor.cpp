@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
+Copyright (c) 2006-2020, assimp team
 
 
 All rights reserved.
@@ -217,6 +217,7 @@ void ScenePreprocessor::ProcessAnimation (aiAnimation* anim)
 
                 // No rotation keys? Generate a dummy track
                 if (!channel->mNumRotationKeys) {
+                    ai_assert(!channel->mRotationKeys);
                     channel->mNumRotationKeys = 1;
                     channel->mRotationKeys = new aiQuatKey[1];
                     aiQuatKey& q = channel->mRotationKeys[0];
@@ -225,10 +226,13 @@ void ScenePreprocessor::ProcessAnimation (aiAnimation* anim)
                     q.mValue = rotation;
 
                     ASSIMP_LOG_DEBUG("ScenePreprocessor: Dummy rotation track has been generated");
+                } else {
+                    ai_assert(channel->mRotationKeys);
                 }
 
                 // No scaling keys? Generate a dummy track
                 if (!channel->mNumScalingKeys)  {
+                    ai_assert(!channel->mScalingKeys);
                     channel->mNumScalingKeys = 1;
                     channel->mScalingKeys = new aiVectorKey[1];
                     aiVectorKey& q = channel->mScalingKeys[0];
@@ -237,10 +241,13 @@ void ScenePreprocessor::ProcessAnimation (aiAnimation* anim)
                     q.mValue = scaling;
 
                     ASSIMP_LOG_DEBUG("ScenePreprocessor: Dummy scaling track has been generated");
+                } else {
+                    ai_assert(channel->mScalingKeys);
                 }
 
                 // No position keys? Generate a dummy track
                 if (!channel->mNumPositionKeys) {
+                    ai_assert(!channel->mPositionKeys);
                     channel->mNumPositionKeys = 1;
                     channel->mPositionKeys = new aiVectorKey[1];
                     aiVectorKey& q = channel->mPositionKeys[0];
@@ -249,6 +256,8 @@ void ScenePreprocessor::ProcessAnimation (aiAnimation* anim)
                     q.mValue = position;
 
                     ASSIMP_LOG_DEBUG("ScenePreprocessor: Dummy position track has been generated");
+                } else {
+                    ai_assert(channel->mPositionKeys);
                 }
             }
         }

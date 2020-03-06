@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
+Copyright (c) 2006-2020, assimp team
 
 
 All rights reserved.
@@ -228,46 +228,6 @@ VertexWeightTable* ComputeVertexBoneWeightTable(const aiMesh* pMesh)
         }
     }
     return avPerVertexWeights;
-}
-
-
-// -------------------------------------------------------------------------------
-const char* TextureTypeToString(aiTextureType in)
-{
-    switch (in)
-    {
-    case aiTextureType_NONE:
-        return "n/a";
-    case aiTextureType_DIFFUSE:
-        return "Diffuse";
-    case aiTextureType_SPECULAR:
-        return "Specular";
-    case aiTextureType_AMBIENT:
-        return "Ambient";
-    case aiTextureType_EMISSIVE:
-        return "Emissive";
-    case aiTextureType_OPACITY:
-        return "Opacity";
-    case aiTextureType_NORMALS:
-        return "Normals";
-    case aiTextureType_HEIGHT:
-        return "Height";
-    case aiTextureType_SHININESS:
-        return "Shininess";
-    case aiTextureType_DISPLACEMENT:
-        return "Displacement";
-    case aiTextureType_LIGHTMAP:
-        return "Lightmap";
-    case aiTextureType_REFLECTION:
-        return "Reflection";
-    case aiTextureType_UNKNOWN:
-        return "Unknown";
-    default:
-        break;
-    }
-
-    ai_assert(false);
-    return  "BUG";
 }
 
 // -------------------------------------------------------------------------------

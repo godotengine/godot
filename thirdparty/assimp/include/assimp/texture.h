@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
+Copyright (c) 2006-2020, assimp team
 
 All rights reserved.
 
@@ -207,8 +207,7 @@ struct aiTexture {
     , mHeight(0)
     , pcData(nullptr)
     , mFilename() {
-        achFormatHint[0] = achFormatHint[1] = 0;
-        achFormatHint[2] = achFormatHint[3] = 0;
+        memset(achFormatHint, 0, sizeof(achFormatHint));
     }
 
     // Destruction

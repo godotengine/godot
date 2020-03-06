@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
+Copyright (c) 2006-2020, assimp team
 
 
 All rights reserved.
@@ -367,9 +367,13 @@ float ParseTokenAsFloat(const Token& t, const char*& err_out)
     // first - next in the fbx token stream comes ',',
     // which fast_atof could interpret as decimal point.
 #define MAX_FLOAT_LENGTH 31
-    char temp[MAX_FLOAT_LENGTH + 1];
     const size_t length = static_cast<size_t>(t.end()-t.begin());
-    std::copy(t.begin(),t.end(),temp);
+    if (length > MAX_FLOAT_LENGTH) {
+        return 0.f;
+    }
+
+    char temp[MAX_FLOAT_LENGTH + 1];
+    std::copy(t.begin(), t.end(), temp);
     temp[std::min(static_cast<size_t>(MAX_FLOAT_LENGTH),length)] = '\0';
 
     return fast_atof(temp);

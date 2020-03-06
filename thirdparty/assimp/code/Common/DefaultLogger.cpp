@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
+Copyright (c) 2006-2020, assimp team
 
 
 
@@ -107,7 +107,7 @@ LogStream* LogStream::createDefaultStream(aiDefaultLogStream    streams,
         return nullptr;
 #endif
 
-        // Platform-independent default streams
+    // Platform-independent default streams
     case aiDefaultLogStream_STDERR:
         return new StdOStreamLogStream(std::cerr);
     case aiDefaultLogStream_STDOUT:
@@ -121,7 +121,7 @@ LogStream* LogStream::createDefaultStream(aiDefaultLogStream    streams,
     };
 
     // For compilers without dead code path detection
-    return NULL;
+    return nullptr;
 }
 
 // ----------------------------------------------------------------------------------

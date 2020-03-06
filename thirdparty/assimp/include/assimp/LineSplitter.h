@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
+Copyright (c) 2006-2020, assimp team
 
 
 All rights reserved.
@@ -72,7 +72,7 @@ for(LineSplitter splitter(stream);splitter;++splitter) {
        if (strtol(splitter[2]) > 5) { .. }
     }
 
-    std::cout << "Current line is: " << splitter.get_index() << std::endl;
+    ASSIMP_LOG_DEBUG_F("Current line is: ", splitter.get_index());
 }
 @endcode
 */
