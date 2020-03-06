@@ -72,6 +72,16 @@ bool GDScriptParser::_end_statement() {
 	return false;
 }
 
+void GDScriptParser::_set_end_statement_error(String p_name) {
+	String error_msg;
+	if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER) {
+		error_msg = vformat("Expected end of statement (\"%s\"), got %s (\"%s\") instead.", p_name, tokenizer->get_token_name(tokenizer->get_token()), tokenizer->get_token_identifier());
+	} else {
+		error_msg = vformat("Expected end of statement (\"%s\"), got %s instead.", p_name, tokenizer->get_token_name(tokenizer->get_token()));
+	}
+	_set_error(error_msg);
+}
+
 bool GDScriptParser::_enter_indent_block(BlockNode *p_block) {
 
 	if (tokenizer->get_token() != GDScriptTokenizer::TK_COLON) {
@@ -2938,7 +2948,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				lv->assign = assigned;
 
 				if (!_end_statement()) {
-					_set_error("Expected end of statement (\"var\").");
+					_set_end_statement_error("var");
 					return;
 				}
 
@@ -3249,7 +3259,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				cf_continue->cf_type = ControlFlowNode::CF_CONTINUE;
 				p_block->statements.push_back(cf_continue);
 				if (!_end_statement()) {
-					_set_error("Expected end of statement (\"continue\").");
+					_set_end_statement_error("continue");
 					return;
 				}
 			} break;
@@ -3261,7 +3271,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				cf_break->cf_type = ControlFlowNode::CF_BREAK;
 				p_block->statements.push_back(cf_break);
 				if (!_end_statement()) {
-					_set_error("Expected end of statement (\"break\").");
+					_set_end_statement_error("break");
 					return;
 				}
 			} break;
@@ -3290,7 +3300,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 					cf_return->arguments.push_back(retexpr);
 					p_block->statements.push_back(cf_return);
 					if (!_end_statement()) {
-						_set_error("Expected end of statement after return expression.");
+						_set_end_statement_error("return");
 						return;
 					}
 				}
@@ -3379,7 +3389,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				p_block->statements.push_back(an);
 
 				if (!_end_statement()) {
-					_set_error("Expected end of statement after \"assert\".", assert_line);
+					_set_end_statement_error("assert");
 					return;
 				}
 			} break;
@@ -3390,7 +3400,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				p_block->statements.push_back(bn);
 
 				if (!_end_statement()) {
-					_set_error("Expected end of statement after \"breakpoint\".");
+					_set_end_statement_error("breakpoint");
 					return;
 				}
 			} break;
@@ -3409,7 +3419,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 					if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON && tokenizer->get_token(1) == GDScriptTokenizer::TK_OP_ASSIGN) {
 						_set_error("Unexpected ':=', use '=' instead. Expected end of statement after expression.");
 					} else {
-						_set_error(String() + "Expected end of statement after expression, got " + tokenizer->get_token_name(tokenizer->get_token()) + " instead");
+						_set_error(vformat("Expected end of statement after expression, got %s instead.", tokenizer->get_token_name(tokenizer->get_token())));
 					}
 					return;
 				}
@@ -3599,7 +3609,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				if (error_set)
 					return;
 				if (!_end_statement()) {
-					_set_error("Expected end of statement after \"extends\".");
+					_set_end_statement_error("extends");
 					return;
 				}
 
@@ -4104,7 +4114,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				p_class->_signals.push_back(sig);
 
 				if (!_end_statement()) {
-					_set_error("Expected end of statement (\"signal\").");
+					_set_end_statement_error("signal");
 					return;
 				}
 			} break;
@@ -5047,7 +5057,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				p_class->variables.push_back(member);
 
 				if (!_end_statement()) {
-					_set_error("Expected end of statement (\"continue\").");
+					_set_end_statement_error("var");
 					return;
 				}
 			} break;
@@ -5127,7 +5137,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				p_class->constant_expressions.insert(const_id, constant);
 
 				if (!_end_statement()) {
-					_set_error("Expected end of statement (constant).", line);
+					_set_end_statement_error("const");
 					return;
 				}
 
@@ -5281,7 +5291,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				}
 
 				if (!_end_statement()) {
-					_set_error("Expected end of statement (\"enum\").");
+					_set_end_statement_error("enum");
 					return;
 				}
 
