@@ -1097,10 +1097,10 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 					GDScript *p = base.ptr();
 					Vector<StringName> sname;
 
-					while (p->_owner) {
+					while (p->_owner.ptr()) {
 
 						sname.push_back(p->name);
-						p = p->_owner;
+						p = p->_owner.ptr();
 					}
 					sname.invert();
 

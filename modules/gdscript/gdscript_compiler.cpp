@@ -302,7 +302,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 					}
 				}
 
-				owner = owner->_owner;
+				owner = owner->_owner.ptr();
 			}
 
 			if (GDScriptLanguage::get_singleton()->get_global_map().has(identifier)) {
@@ -1824,12 +1824,12 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 
 	if (p_class->owner && p_class->owner->owner) {
 		// Owner is not root
-		if (!parsed_classes.has(p_script->_owner)) {
-			if (parsing_classes.has(p_script->_owner)) {
+		if (!parsed_classes.has(p_script->_owner.ptr())) {
+			if (parsing_classes.has(p_script->_owner.ptr())) {
 				_set_error("Cyclic class reference for '" + String(p_class->name) + "'.", p_class);
 				return ERR_PARSE_ERROR;
 			}
-			Error err = _parse_class_level(p_script->_owner, p_class->owner, p_keep_state);
+			Error err = _parse_class_level(p_script->_owner.ptr(), p_class->owner, p_keep_state);
 			if (err) {
 				return err;
 			}
@@ -2136,7 +2136,7 @@ void GDScriptCompiler::_make_scripts(GDScript *p_script, const GDScriptParser::C
 			}
 		}
 
-		subclass->_owner = p_script;
+		subclass->_owner.reference_ptr(p_script);
 		subclass->fully_qualified_name = fully_qualified_name;
 		p_script->subclasses.insert(name, subclass);
 
@@ -2162,7 +2162,7 @@ Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_scri
 	// Create scripts for subclasses beforehand so they can be referenced
 	_make_scripts(p_script, static_cast<const GDScriptParser::ClassNode *>(root), p_keep_state);
 
-	p_script->_owner = nullptr;
+	p_script->_owner.unref();
 	Error err = _parse_class_level(p_script, static_cast<const GDScriptParser::ClassNode *>(root), p_keep_state);
 
 	if (err)

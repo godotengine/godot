@@ -940,7 +940,7 @@ GDScript::GDScript() :
 	subclass_count = 0;
 	initializer = nullptr;
 	_base = nullptr;
-	_owner = nullptr;
+	_owner.unref();
 	tool = false;
 #ifdef TOOLS_ENABLED
 	source_changed_cache = false;
@@ -964,7 +964,7 @@ void GDScript::_save_orphaned_subclasses() {
 	Vector<ClassRefWithName> weak_subclasses;
 	// collect subclasses ObjectID and name
 	for (Map<StringName, Ref<GDScript>>::Element *E = subclasses.front(); E; E = E->next()) {
-		E->get()->_owner = nullptr; //bye, you are no longer owned cause I died
+		E->get()->_owner.unref(); //bye, you are no longer owned cause I died
 		ClassRefWithName subclass;
 		subclass.id = E->get()->get_instance_id();
 		subclass.fully_qualified_name = E->get()->fully_qualified_name;

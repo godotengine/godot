@@ -81,7 +81,7 @@ Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_insta
 					if (E) {
 						return &E->get();
 					}
-					o = o->_owner;
+					o = o->_owner.ptr();
 				}
 				s = s->_base;
 			}

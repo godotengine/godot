@@ -78,7 +78,7 @@ class GDScript : public Script {
 	Ref<GDScriptNativeClass> native;
 	Ref<GDScript> base;
 	GDScript *_base; //fast pointer access
-	GDScript *_owner; //for subclasses
+	Ref<GDScript> _owner; //for subclasses
 
 	Set<StringName> members; //members are just indices to the instanced script.
 	Map<StringName, Variant> constants;
