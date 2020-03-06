@@ -619,7 +619,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	//---------------
 	texture_dialog = memnew(EditorFileDialog);
 	texture_dialog->set_access(EditorFileDialog::ACCESS_RESOURCES);
-	texture_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILES);
+	texture_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
 	texture_dialog->clear_filters();
 	List<String> extensions;
 

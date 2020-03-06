@@ -44,7 +44,7 @@ void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p
 	String path = p_dir->get_path();
 
 	p_item->set_metadata(0, p_dir->get_path());
-	p_item->set_icon(0, get_icon("Folder", "EditorIcons"));
+	p_item->set_icon(0, tree->get_icon("Folder", "EditorIcons"));
 
 	if (!p_item->get_parent()) {
 		p_item->set_text(0, "res://");
@@ -69,7 +69,7 @@ void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p
 
 void EditorDirDialog::reload(const String &p_path) {
 
-	if (!is_visible_in_tree()) {
+	if (!is_visible()) {
 		must_reload = true;
 		return;
 	}
@@ -103,7 +103,7 @@ void EditorDirDialog::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (must_reload && is_visible_in_tree()) {
+		if (must_reload && is_visible()) {
 			reload();
 		}
 	}
@@ -142,11 +142,11 @@ void EditorDirDialog::_make_dir() {
 	TreeItem *ti = tree->get_selected();
 	if (!ti) {
 		mkdirerr->set_text(TTR("Please select a base directory first."));
-		mkdirerr->popup_centered_minsize();
+		mkdirerr->popup_centered();
 		return;
 	}
 
-	makedialog->popup_centered_minsize(Size2(250, 80));
+	makedialog->popup_centered(Size2(250, 80));
 	makedirname->grab_focus();
 }
 
@@ -163,7 +163,7 @@ void EditorDirDialog::_make_dir_confirm() {
 	Error err = d->make_dir(makedirname->get_text());
 
 	if (err != OK) {
-		mkdirerr->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+		mkdirerr->popup_centered(Size2(250, 80) * EDSCALE);
 	} else {
 		opened_paths.insert(dir);
 		//reload(dir.plus_file(makedirname->get_text()));

@@ -310,7 +310,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 
 		if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
 			create_resource->set_text(String("No polygon resource on this node.\nCreate and assign one?"));
-			create_resource->popup_centered_minsize();
+			create_resource->popup_centered();
 		}
 		return (mb.is_valid() && mb->get_button_index() == 1);
 	}

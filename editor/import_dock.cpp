@@ -424,7 +424,7 @@ void ImportDock::_reimport_attempt() {
 
 	if (need_restart) {
 		label_warning->set_visible(used_in_resources);
-		reimport_confirm->popup_centered_minsize();
+		reimport_confirm->popup_centered();
 		return;
 	}
 

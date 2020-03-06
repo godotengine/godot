@@ -4578,7 +4578,7 @@ void VisualScriptEditor::_member_option(int p_option) {
 			} else if (p_option == MEMBER_EDIT) {
 				variable_editor->edit(name);
 				edit_variable_dialog->set_title(TTR("Editing Variable:") + " " + name);
-				edit_variable_dialog->popup_centered_minsize(Size2(400, 200) * EDSCALE);
+				edit_variable_dialog->popup_centered(Size2(400, 200) * EDSCALE);
 			}
 		} break;
 		case MEMBER_SIGNAL: {
@@ -4599,7 +4599,7 @@ void VisualScriptEditor::_member_option(int p_option) {
 			} else if (p_option == MEMBER_EDIT) {
 				signal_editor->edit(name);
 				edit_signal_dialog->set_title(TTR("Editing Signal:") + " " + name);
-				edit_signal_dialog->popup_centered_minsize(Size2(400, 300) * EDSCALE);
+				edit_signal_dialog->popup_centered(Size2(400, 300) * EDSCALE);
 			}
 		} break;
 	}
@@ -4687,10 +4687,9 @@ VisualScriptEditor::VisualScriptEditor() {
 	add_child(member_popup);
 	member_popup->connect("id_pressed", callable_mp(this, &VisualScriptEditor::_member_option));
 
-	function_name_edit = memnew(PopupDialog);
+	function_name_edit = memnew(AcceptDialog);
 	function_name_box = memnew(LineEdit);
 	function_name_edit->add_child(function_name_box);
-	function_name_edit->set_h_size_flags(SIZE_EXPAND);
 	function_name_box->connect("gui_input", callable_mp(this, &VisualScriptEditor::_fn_name_box_input));
 	function_name_box->set_expand_to_text_length(true);
 	add_child(function_name_edit);
@@ -4770,7 +4769,6 @@ VisualScriptEditor::VisualScriptEditor() {
 	func_input_scroll->add_child(func_input_vbox);
 
 	function_create_dialog = memnew(ConfirmationDialog);
-	function_create_dialog->set_v_size_flags(SIZE_EXPAND_FILL);
 	function_create_dialog->set_title(TTR("Create Function"));
 	function_create_dialog->add_child(function_vb);
 	function_create_dialog->get_ok()->set_text(TTR("Create"));
@@ -4859,7 +4857,6 @@ VisualScriptEditor::VisualScriptEditor() {
 
 	new_connect_node_select = memnew(VisualScriptPropertySelector);
 	add_child(new_connect_node_select);
-	new_connect_node_select->set_resizable(true);
 	new_connect_node_select->connect("selected", callable_mp(this, &VisualScriptEditor::_selected_connect_node));
 	new_connect_node_select->get_cancel()->connect("pressed", callable_mp(this, &VisualScriptEditor::_cancel_connect_node));
 

@@ -114,7 +114,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	UndoRedo *undo_redo;
 
 	Tree *members;
-	PopupDialog *function_name_edit;
+	AcceptDialog *function_name_edit;
 	LineEdit *function_name_box;
 
 	Label *hint_text;

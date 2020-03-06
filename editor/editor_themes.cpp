@@ -910,14 +910,16 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_window->set_border_color(tab_color);
 	style_window->set_border_width(MARGIN_TOP, 24 * EDSCALE);
 	style_window->set_expand_margin_size(MARGIN_TOP, 24 * EDSCALE);
-	theme->set_stylebox("panel", "WindowDialog", style_window);
-	theme->set_color("title_color", "WindowDialog", font_color);
-	theme->set_icon("close", "WindowDialog", theme->get_icon("GuiClose", "EditorIcons"));
-	theme->set_icon("close_highlight", "WindowDialog", theme->get_icon("GuiClose", "EditorIcons"));
-	theme->set_constant("close_h_ofs", "WindowDialog", 22 * EDSCALE);
-	theme->set_constant("close_v_ofs", "WindowDialog", 20 * EDSCALE);
-	theme->set_constant("title_height", "WindowDialog", 24 * EDSCALE);
-	theme->set_font("title_font", "WindowDialog", theme->get_font("title", "EditorFonts"));
+
+	theme->set_stylebox("panel", "AcceptDialog", style_default);
+	theme->set_stylebox("panel_window", "AcceptDialog", style_window);
+	theme->set_color("title_color", "AcceptDialog", font_color);
+	theme->set_icon("close", "AcceptDialog", theme->get_icon("GuiClose", "EditorIcons"));
+	theme->set_icon("close_highlight", "AcceptDialog", theme->get_icon("GuiClose", "EditorIcons"));
+	theme->set_constant("close_h_ofs", "AcceptDialog", 22 * EDSCALE);
+	theme->set_constant("close_v_ofs", "AcceptDialog", 20 * EDSCALE);
+	theme->set_constant("title_height", "AcceptDialog", 24 * EDSCALE);
+	theme->set_font("title_font", "AcceptDialog", theme->get_font("title", "EditorFonts"));
 
 	// complex window, for now only Editor settings and Project settings
 	Ref<StyleBoxFlat> style_complex_window = style_window->duplicate();
@@ -978,6 +980,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Panel
 	theme->set_stylebox("panel", "Panel", make_flat_stylebox(dark_color_1, 6, 4, 6, 4));
+	theme->set_stylebox("panel_fg", "Panel", style_default);
 
 	// Label
 	theme->set_stylebox("normal", "Label", style_empty);

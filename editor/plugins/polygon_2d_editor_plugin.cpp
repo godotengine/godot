@@ -110,7 +110,7 @@ void Polygon2DEditor::_sync_bones() {
 	Skeleton2D *skeleton = NULL;
 	if (!node->has_node(node->get_skeleton())) {
 		error->set_text(TTR("The skeleton property of the Polygon2D does not point to a Skeleton2D node"));
-		error->popup_centered_minsize();
+		error->popup_centered();
 	} else {
 		Node *sn = node->get_node(node->get_skeleton());
 		skeleton = Object::cast_to<Skeleton2D>(sn);
@@ -121,7 +121,7 @@ void Polygon2DEditor::_sync_bones() {
 
 	if (!skeleton) {
 		error->set_text(TTR("The skeleton property of the Polygon2D does not point to a Skeleton2D node"));
-		error->popup_centered_minsize();
+		error->popup_centered();
 	} else {
 		for (int i = 0; i < skeleton->get_bone_count(); i++) {
 			NodePath path = skeleton->get_path_to(skeleton->get_bone(i));
@@ -275,7 +275,7 @@ void Polygon2DEditor::_uv_edit_mode_select(int p_mode) {
 
 void Polygon2DEditor::_uv_edit_popup_hide() {
 
-	EditorSettings::get_singleton()->set("interface/dialogs/uv_editor_bounds", uv_edit->get_rect());
+	EditorSettings::get_singleton()->set("interface/dialogs/uv_editor_bounds", Rect2(uv_edit->get_position(), uv_edit->get_size()));
 
 	_cancel_editing();
 }
@@ -289,7 +289,7 @@ void Polygon2DEditor::_menu_option(int p_option) {
 			if (node->get_texture().is_null()) {
 
 				error->set_text(TTR("No texture in this polygon.\nSet a texture to be able to edit UV."));
-				error->popup_centered_minsize();
+				error->popup_centered();
 				return;
 			}
 
@@ -351,7 +351,7 @@ void Polygon2DEditor::_menu_option(int p_option) {
 		} break;
 		case UVEDIT_GRID_SETTINGS: {
 
-			grid_settings->popup_centered_minsize();
+			grid_settings->popup_centered();
 		} break;
 		default: {
 
@@ -683,7 +683,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 							//close
 							if (polygon_create.size() < 3) {
 								error->set_text(TTR("Invalid Polygon (need 3 different vertices)"));
-								error->popup_centered_minsize();
+								error->popup_centered();
 							} else {
 								Array polygons = node->get_polygons();
 								polygons = polygons.duplicate(); //copy because its a reference
@@ -1265,8 +1265,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_edit = memnew(AcceptDialog);
 	add_child(uv_edit);
 	uv_edit->set_title(TTR("Polygon 2D UV Editor"));
-	uv_edit->set_resizable(true);
-	uv_edit->connect("popup_hide", callable_mp(this, &Polygon2DEditor::_uv_edit_popup_hide));
+	uv_edit->connect("cancelled", callable_mp(this, &Polygon2DEditor::_uv_edit_popup_hide));
 
 	VBoxContainer *uv_main_vb = memnew(VBoxContainer);
 	uv_edit->add_child(uv_main_vb);

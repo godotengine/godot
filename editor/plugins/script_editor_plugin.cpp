@@ -215,9 +215,9 @@ void ScriptEditorQuickOpen::_notification(int p_what) {
 
 			search_box->set_clear_button_enabled(true);
 			[[fallthrough]];
-		}
-		case NOTIFICATION_THEME_CHANGED: {
-			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
+		};
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			search_box->set_right_icon(search_options->get_icon("Search", "EditorIcons"));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", callable_mp(this, &ScriptEditorQuickOpen::_confirmed));
@@ -557,7 +557,7 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 void ScriptEditor::_show_error_dialog(String p_path) {
 
 	error_dialog->set_text(vformat(TTR("Can't open '%s'. The file could have been moved or deleted."), p_path));
-	error_dialog->popup_centered_minsize();
+	error_dialog->popup_centered();
 }
 
 void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
@@ -704,7 +704,7 @@ void ScriptEditor::_close_all_tabs() {
 
 void ScriptEditor::_ask_close_current_unsaved_tab(ScriptEditorBase *current) {
 	erase_tab_confirm->set_text(TTR("Close and save changes?") + "\n\"" + current->get_name() + "\"");
-	erase_tab_confirm->popup_centered_minsize();
+	erase_tab_confirm->popup_centered();
 }
 
 void ScriptEditor::_resave_scripts(const String &p_str) {
@@ -996,7 +996,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			script_create_dialog->popup_centered();
 		} break;
 		case FILE_NEW_TEXTFILE: {
-			file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+			file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 			file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 			file_dialog_option = FILE_NEW_TEXTFILE;
 
@@ -1005,7 +1005,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			file_dialog->set_title(TTR("New Text File..."));
 		} break;
 		case FILE_OPEN: {
-			file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+			file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 			file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 			file_dialog_option = FILE_OPEN;
 
@@ -1170,7 +1170,7 @@ void ScriptEditor::_menu_option(int p_option) {
 
 				Ref<TextFile> text_file = current->get_edited_resource();
 				if (text_file != NULL) {
-					file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+					file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 					file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 					file_dialog_option = FILE_SAVE_AS;
 
@@ -1336,7 +1336,7 @@ void ScriptEditor::_menu_option(int p_option) {
 void ScriptEditor::_theme_option(int p_option) {
 	switch (p_option) {
 		case THEME_IMPORT: {
-			file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+			file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 			file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 			file_dialog_option = THEME_IMPORT;
 			file_dialog->clear_filters();
@@ -1361,7 +1361,7 @@ void ScriptEditor::_theme_option(int p_option) {
 }
 
 void ScriptEditor::_show_save_theme_as_dialog() {
-	file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_dialog_option = THEME_SAVE_AS;
 	file_dialog->clear_filters();
@@ -2953,7 +2953,7 @@ void ScriptEditor::_on_find_in_files_requested(String text) {
 
 	find_in_files_dialog->set_find_in_files_mode(FindInFilesDialog::SEARCH_MODE);
 	find_in_files_dialog->set_search_text(text);
-	find_in_files_dialog->popup_centered_minsize();
+	find_in_files_dialog->popup_centered();
 }
 
 void ScriptEditor::_on_replace_in_files_requested(String text) {
@@ -2961,7 +2961,7 @@ void ScriptEditor::_on_replace_in_files_requested(String text) {
 	find_in_files_dialog->set_find_in_files_mode(FindInFilesDialog::REPLACE_MODE);
 	find_in_files_dialog->set_search_text(text);
 	find_in_files_dialog->set_replace_text("");
-	find_in_files_dialog->popup_centered_minsize();
+	find_in_files_dialog->popup_centered();
 }
 
 void ScriptEditor::_on_find_in_files_result_selected(String fpath, int line_number, int begin, int end) {

@@ -828,7 +828,7 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 		}
 	}
 
-	file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	file->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	saving_resource = p_resource;
 
 	current_option = RESOURCE_SAVE_AS;
@@ -1472,7 +1472,7 @@ void EditorNode::_dialog_action(String p_file) {
 
 			int scene_idx = (current_option == FILE_SAVE_SCENE || current_option == FILE_SAVE_AS_SCENE) ? -1 : tab_closing;
 
-			if (file->get_mode() == EditorFileDialog::MODE_SAVE_FILE) {
+			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
 				bool same_open_scene = false;
 				for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 					if (editor_data.get_scene_path(i) == p_file && i != scene_idx)
@@ -1496,7 +1496,7 @@ void EditorNode::_dialog_action(String p_file) {
 		} break;
 
 		case FILE_SAVE_AND_RUN: {
-			if (file->get_mode() == EditorFileDialog::MODE_SAVE_FILE) {
+			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
 
 				_save_default_environment();
 				_save_scene_with_preview(p_file);
@@ -1626,7 +1626,7 @@ void EditorNode::_dialog_action(String p_file) {
 		} break;
 		default: { //save scene?
 
-			if (file->get_mode() == EditorFileDialog::MODE_SAVE_FILE) {
+			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
 				_save_scene_with_preview(p_file);
 			}
 
@@ -2091,7 +2091,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case FILE_NEW_INHERITED_SCENE:
 		case FILE_OPEN_SCENE: {
 
-			file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+			file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 			List<String> extensions;
 			ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
 			file->clear_filters();
@@ -2164,7 +2164,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					String scene_filename = editor_data.get_edited_scene_root(tab_closing)->get_filename();
 					save_confirmation->get_ok()->set_text(TTR("Save & Close"));
 					save_confirmation->set_text(vformat(TTR("Save changes to '%s' before closing?"), scene_filename != "" ? scene_filename : "unsaved scene"));
-					save_confirmation->popup_centered_minsize();
+					save_confirmation->popup_centered();
 					break;
 				}
 			} else if (p_option == FILE_CLOSE) {
@@ -2218,7 +2218,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				break;
 			}
 
-			file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+			file->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 
 			List<String> extensions;
 			Ref<PackedScene> sd = memnew(PackedScene);
@@ -2260,7 +2260,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				confirmation->get_cancel()->set_text(TTR("No"));
 				confirmation->get_ok()->set_text(TTR("Yes"));
 				confirmation->set_text(TTR("This scene has never been saved. Save before running?"));
-				confirmation->popup_centered_minsize();
+				confirmation->popup_centered();
 				break;
 			}
 
@@ -2332,7 +2332,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 				confirmation->get_ok()->set_text(TTR("Open"));
 				confirmation->set_text(TTR("Current scene not saved. Open anyway?"));
-				confirmation->popup_centered_minsize();
+				confirmation->popup_centered();
 				break;
 			}
 
@@ -2390,7 +2390,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if (unsaved_cache && !p_confirmed) {
 				confirmation->get_ok()->set_text(TTR("Revert"));
 				confirmation->set_text(TTR("This action cannot be undone. Revert anyway?"));
-				confirmation->popup_centered_minsize();
+				confirmation->popup_centered();
 				break;
 			}
 
@@ -2493,11 +2493,11 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				export_template_manager->install_android_template();
 			} else {
 				if (DirAccess::exists("res://android/build")) {
-					remove_android_build_template->popup_centered_minsize();
+					remove_android_build_template->popup_centered();
 				} else if (export_template_manager->can_install_android_template()) {
-					install_android_build_template->popup_centered_minsize();
+					install_android_build_template->popup_centered();
 				} else {
-					custom_build_manage_templates->popup_centered_minsize();
+					custom_build_manage_templates->popup_centered();
 				}
 			}
 		} break;
@@ -2519,7 +2519,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 						confirmation->get_ok()->set_text(p_option == FILE_QUIT ? TTR("Quit") : TTR("Yes"));
 						confirmation->set_text(p_option == FILE_QUIT ? TTR("Exit the editor?") : TTR("Open Project Manager?"));
-						confirmation->popup_centered_minsize();
+						confirmation->popup_centered();
 					} else {
 						_discard_changes();
 						break;
@@ -2540,7 +2540,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 						save_confirmation->get_ok()->set_text(TTR("Save & Quit"));
 						save_confirmation->set_text((p_option == FILE_QUIT ? TTR("Save changes to the following scene(s) before quitting?") : TTR("Save changes the following scene(s) before opening Project Manager?")) + unsaved_scenes);
-						save_confirmation->popup_centered_minsize();
+						save_confirmation->popup_centered();
 					}
 				}
 
@@ -2607,7 +2607,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case SETTINGS_PICK_MAIN_SCENE: {
 
-			file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+			file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 			List<String> extensions;
 			ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
 			file->clear_filters();
@@ -2640,7 +2640,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			OS::get_singleton()->shell_open("https://godotengine.org/community");
 		} break;
 		case HELP_ABOUT: {
-			about->popup_centered_minsize(Size2(780, 500) * EDSCALE);
+			about->popup_centered(Size2(780, 500) * EDSCALE);
 		} break;
 
 		case SET_VIDEO_DRIVER_SAVE_AND_RESTART: {
@@ -3275,7 +3275,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 		if (!p_force_open_imported && FileAccess::exists(p_scene + ".import")) {
 			open_imported->set_text(vformat(TTR("Scene '%s' was automatically imported, so it can't be modified.\nTo make changes to it, a new inherited scene can be created."), p_scene.get_file()));
-			open_imported->popup_centered_minsize();
+			open_imported->popup_centered();
 			new_inherited_button->grab_focus();
 			open_import_request = p_scene;
 			return OK;
@@ -3928,7 +3928,7 @@ void EditorNode::show_accept(const String &p_text, const String &p_title) {
 	current_option = -1;
 	accept->get_ok()->set_text(p_title);
 	accept->set_text(p_text);
-	accept->popup_centered_minsize();
+	accept->popup_centered();
 }
 
 void EditorNode::show_warning(const String &p_text, const String &p_title) {
@@ -3936,7 +3936,7 @@ void EditorNode::show_warning(const String &p_text, const String &p_title) {
 	if (warning->is_inside_tree()) {
 		warning->set_text(p_text);
 		warning->set_title(p_title);
-		warning->popup_centered_minsize();
+		warning->popup_centered();
 	} else {
 		WARN_PRINT(p_title + " " + p_text);
 	}
@@ -3945,6 +3945,76 @@ void EditorNode::show_warning(const String &p_text, const String &p_title) {
 void EditorNode::_copy_warning(const String &p_str) {
 
 	DisplayServer::get_singleton()->clipboard_set(warning->get_text());
+}
+
+void EditorNode::_dock_floating_close_request(Control *p_control) {
+	Window *window = (Window *)p_control->get_parent();
+	int window_slot = window->get_meta("dock_slot");
+
+	window->remove_child(p_control);
+	dock_slot[window_slot]->add_child(p_control);
+
+	window->queue_delete();
+
+	_update_dock_containers();
+
+	floating_docks.erase(p_control);
+}
+
+void EditorNode::_dock_make_float() {
+	Control *dock = dock_slot[dock_popup_selected]->get_current_tab_control();
+	ERR_FAIL_COND(!dock);
+
+	Size2 dock_size = dock->get_size(); //remember size
+	Point2 dock_screen_pos = dock->get_global_position() + get_tree()->get_root()->get_position();
+
+	dock_slot[dock_popup_selected]->remove_child(dock);
+
+	Window *window = memnew(Window);
+	window->set_title(dock->get_name());
+	Panel *p = memnew(Panel);
+	p->set_mode(Panel::MODE_FOREGROUND);
+	p->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	window->add_child(p);
+	dock->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	window->add_child(dock);
+	window->set_wrap_controls(true);
+	window->set_size(dock_size);
+	window->set_position(dock_screen_pos);
+	window->set_transient(true);
+	window->connect("close_requested", callable_mp(this, &EditorNode::_dock_floating_close_request), varray(dock));
+	window->set_meta("dock_slot", dock_popup_selected);
+	gui_base->add_child(window);
+
+	dock_select_popup->hide();
+
+	_update_dock_containers();
+
+	floating_docks.push_back(dock);
+}
+
+void EditorNode::_update_dock_containers() {
+
+	for (int i = 0; i < DOCK_SLOT_MAX; i++) {
+		if (dock_slot[i]->get_tab_count() == 0 && dock_slot[i]->is_visible()) {
+			dock_slot[i]->hide();
+		}
+		if (dock_slot[i]->get_tab_count() > 0 && !dock_slot[i]->is_visible()) {
+			dock_slot[i]->show();
+		}
+	}
+	for (int i = 0; i < vsplits.size(); i++) {
+		bool in_use = dock_slot[i * 2 + 0]->get_tab_count() || dock_slot[i * 2 + 1]->get_tab_count();
+		if (in_use)
+			vsplits[i]->show();
+		else
+			vsplits[i]->hide();
+	}
+
+	if (right_l_vsplit->is_visible() || right_r_vsplit->is_visible())
+		right_hsplit->show();
+	else
+		right_hsplit->hide();
 }
 
 void EditorNode::_dock_select_input(const Ref<InputEvent> &p_input) {
@@ -3992,18 +4062,7 @@ void EditorNode::_dock_select_input(const Ref<InputEvent> &p_input) {
 			dock_slot[nrect]->show();
 			dock_select->update();
 
-			for (int i = 0; i < vsplits.size(); i++) {
-				bool in_use = dock_slot[i * 2 + 0]->get_tab_count() || dock_slot[i * 2 + 1]->get_tab_count();
-				if (in_use)
-					vsplits[i]->show();
-				else
-					vsplits[i]->hide();
-			}
-
-			if (right_l_vsplit->is_visible() || right_r_vsplit->is_visible())
-				right_hsplit->show();
-			else
-				right_hsplit->hide();
+			_update_dock_containers();
 
 			_edit_current();
 			_save_docks();
@@ -4460,7 +4519,7 @@ bool EditorNode::ensure_main_scene(bool p_from_native) {
 
 		current_option = -1;
 		pick_main_scene->set_text(TTR("No main scene has ever been defined, select one?\nYou can change it later in \"Project Settings\" under the 'application' category."));
-		pick_main_scene->popup_centered_minsize();
+		pick_main_scene->popup_centered();
 		return false;
 	}
 
@@ -4468,7 +4527,7 @@ bool EditorNode::ensure_main_scene(bool p_from_native) {
 
 		current_option = -1;
 		pick_main_scene->set_text(vformat(TTR("Selected scene '%s' does not exist, select a valid one?\nYou can change it later in \"Project Settings\" under the 'application' category."), main_scene));
-		pick_main_scene->popup_centered_minsize();
+		pick_main_scene->popup_centered();
 		return false;
 	}
 
@@ -4476,7 +4535,7 @@ bool EditorNode::ensure_main_scene(bool p_from_native) {
 
 		current_option = -1;
 		pick_main_scene->set_text(vformat(TTR("Selected scene '%s' is not a scene file, select a valid one?\nYou can change it later in \"Project Settings\" under the 'application' category."), main_scene));
-		pick_main_scene->popup_centered_minsize();
+		pick_main_scene->popup_centered();
 		return false;
 	}
 
@@ -4596,7 +4655,7 @@ void EditorNode::_scene_tab_closed(int p_tab, int option) {
 	if (unsaved) {
 		save_confirmation->get_ok()->set_text(TTR("Save & Close"));
 		save_confirmation->set_text(vformat(TTR("Save changes to '%s' before closing?"), scene->get_filename() != "" ? scene->get_filename() : "unsaved scene"));
-		save_confirmation->popup_centered_minsize();
+		save_confirmation->popup_centered();
 	} else {
 		_discard_changes();
 	}
@@ -5300,7 +5359,7 @@ void EditorNode::_video_driver_selected(int p_which) {
 	}
 
 	video_driver_request = driver;
-	video_restart_dialog->popup_centered_minsize();
+	video_restart_dialog->popup_centered();
 	video_driver->select(video_driver_current);
 	_update_video_driver_color();
 }
@@ -5844,6 +5903,14 @@ EditorNode::EditorNode() {
 	dock_select->connect("mouse_exited", callable_mp(this, &EditorNode::_dock_popup_exit));
 	dock_select->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	dock_vb->add_child(dock_select);
+
+	dock_float = memnew(Button);
+	dock_float->set_text("Make Floating");
+	dock_float->set_focus_mode(Control::FOCUS_NONE);
+	dock_float->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	dock_float->connect("pressed", callable_mp(this, &EditorNode::_dock_make_float));
+
+	dock_vb->add_child(dock_float);
 
 	dock_select_popup->set_as_minsize();
 	dock_select_rect_over = -1;
@@ -6458,7 +6525,7 @@ EditorNode::EditorNode() {
 	file_templates->set_title(TTR("Import Templates From ZIP File"));
 
 	gui_base->add_child(file_templates);
-	file_templates->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	file_templates->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	file_templates->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_templates->clear_filters();
 	file_templates->add_filter("*.tpz ; " + TTR("Template Package"));
@@ -6469,7 +6536,7 @@ EditorNode::EditorNode() {
 
 	file_export_lib = memnew(EditorFileDialog);
 	file_export_lib->set_title(TTR("Export Library"));
-	file_export_lib->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	file_export_lib->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_export_lib->connect("file_selected", callable_mp(this, &EditorNode::_dialog_action));
 	file_export_lib_merge = memnew(CheckBox);
 	file_export_lib_merge->set_text(TTR("Merge With Existing"));
@@ -6480,7 +6547,7 @@ EditorNode::EditorNode() {
 	file_script = memnew(EditorFileDialog);
 	file_script->set_title(TTR("Open & Run a Script"));
 	file_script->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-	file_script->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	file_script->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	List<String> sexts;
 	ResourceLoader::get_recognized_extensions_for_type("Script", &sexts);
 	for (List<String>::Element *E = sexts.front(); E; E = E->next()) {

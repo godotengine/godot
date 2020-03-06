@@ -60,12 +60,12 @@ public:
 		ACCESS_FILESYSTEM
 	};
 
-	enum Mode {
-		MODE_OPEN_FILE,
-		MODE_OPEN_FILES,
-		MODE_OPEN_DIR,
-		MODE_OPEN_ANY,
-		MODE_SAVE_FILE
+	enum FileMode {
+		FILE_MODE_OPEN_FILE,
+		FILE_MODE_OPEN_FILES,
+		FILE_MODE_OPEN_DIR,
+		FILE_MODE_OPEN_ANY,
+		FILE_MODE_SAVE_FILE
 	};
 
 	typedef Ref<Texture2D> (*GetIconFunc)(const String &);
@@ -92,7 +92,7 @@ private:
 	Access access;
 	//Button *action;
 	VBoxContainer *vbox;
-	Mode mode;
+	FileMode mode;
 	bool can_create_dir;
 	LineEdit *dir;
 
@@ -221,8 +221,8 @@ public:
 	void set_display_mode(DisplayMode p_mode);
 	DisplayMode get_display_mode() const;
 
-	void set_mode(Mode p_mode);
-	Mode get_mode() const;
+	void set_file_mode(FileMode p_mode);
+	FileMode get_file_mode() const;
 
 	VBoxContainer *get_vbox();
 	LineEdit *get_line_edit() { return file; }
@@ -267,7 +267,7 @@ public:
 	EditorLineEditFileChooser();
 };
 
-VARIANT_ENUM_CAST(EditorFileDialog::Mode);
+VARIANT_ENUM_CAST(EditorFileDialog::FileMode);
 VARIANT_ENUM_CAST(EditorFileDialog::Access);
 VARIANT_ENUM_CAST(EditorFileDialog::DisplayMode);
 

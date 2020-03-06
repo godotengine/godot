@@ -32,8 +32,9 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/os/keyboard.h"
+#include "scene/gui/control.h"
 #include "scene/resources/dynamic_font.h"
-
+#include "scene/scene_string_names.h"
 void Window::set_title(const String &p_title) {
 	title = p_title;
 	if (window_id == DisplayServer::INVALID_WINDOW_ID)
@@ -73,7 +74,7 @@ Point2i Window::get_position() const {
 
 void Window::set_size(const Size2i &p_size) {
 	size = p_size;
-	if (window_id == DisplayServer::INVALID_WINDOW_ID) {
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_size(p_size, window_id);
 	}
 	_update_size();
@@ -255,12 +256,14 @@ void Window::_clear_window() {
 	}
 
 	_update_from_window();
+	print_line("deleting window bye");
 	DisplayServer::get_singleton()->delete_sub_window(window_id);
 	window_id = DisplayServer::INVALID_WINDOW_ID;
 	_update_size();
 }
 
 void Window::_resize_callback(const Size2i &p_callback) {
+
 	size = p_callback;
 	_update_size();
 }
@@ -289,14 +292,20 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 			emit_signal("mouse_exited");
 		} break;
 		case DisplayServer::WINDOW_EVENT_FOCUS_IN: {
+			focused = true;
 			_propagate_window_notification(this, NOTIFICATION_WM_FOCUS_IN);
 			emit_signal("focus_entered");
+
 		} break;
 		case DisplayServer::WINDOW_EVENT_FOCUS_OUT: {
+			focused = false;
 			_propagate_window_notification(this, NOTIFICATION_WM_FOCUS_OUT);
 			emit_signal("focus_exited");
 		} break;
 		case DisplayServer::WINDOW_EVENT_CLOSE_REQUEST: {
+			if (exclusive_child != nullptr) {
+				break; //has an exclusive child, can't get events until child is closed
+			}
 			_propagate_window_notification(this, NOTIFICATION_WM_CLOSE_REQUEST);
 			emit_signal("close_requested");
 		} break;
@@ -307,29 +316,46 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 	}
 }
 
+void Window::show() {
+	set_visible(true);
+}
+void Window::hide() {
+	set_visible(false);
+}
+
 void Window::set_visible(bool p_visible) {
+
 	if (visible == p_visible) {
 		return;
 	}
+
+	visible = p_visible;
 
 	if (!is_inside_tree()) {
 		return;
 	}
 
+	ERR_FAIL_COND_MSG(get_parent() == nullptr, "Can't change visibility of main window.");
+
 	bool subwindow = get_parent() && get_parent()->get_viewport()->is_embedding_subwindows();
 
-	visible = p_visible;
-
 	if (!subwindow) {
-		if (p_visible && window_id != DisplayServer::INVALID_WINDOW_ID) {
+		if (!p_visible && window_id != DisplayServer::INVALID_WINDOW_ID) {
 			_clear_window();
 		}
-		if (!p_visible && window_id == DisplayServer::INVALID_WINDOW_ID) {
+		if (p_visible && window_id == DisplayServer::INVALID_WINDOW_ID) {
 			_make_window();
+			_update_window_callbacks();
 		}
 	} else {
 		_update_size();
 	}
+
+	if (!visible) {
+		focused = false;
+	}
+	notification(NOTIFICATION_VISIBILITY_CHANGED);
+	emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 }
 
 void Window::_clear_transient() {
@@ -338,6 +364,9 @@ void Window::_clear_transient() {
 			DisplayServer::get_singleton()->window_set_transient(window_id, DisplayServer::INVALID_WINDOW_ID);
 		}
 		transient_parent->transient_children.erase(this);
+		if (transient_parent->exclusive_child == this) {
+			transient_parent->exclusive_child = nullptr;
+		}
 		transient_parent = nullptr;
 	}
 }
@@ -365,6 +394,13 @@ void Window::_make_transient() {
 	if (window) {
 		transient_parent = window;
 		window->transient_children.insert(this);
+		if (exclusive) {
+			if (transient_parent->exclusive_child == nullptr) {
+				transient_parent->exclusive_child = this;
+			} else if (transient_parent->exclusive_child != this) {
+				ERR_PRINT("Making child transient exclusive, but parent has another exclusive child");
+			}
+		}
 	}
 
 	//see if we can make transient
@@ -392,6 +428,30 @@ void Window::set_transient(bool p_transient) {
 }
 bool Window::is_transient() const {
 	return transient;
+}
+
+void Window::set_exclusive(bool p_exclusive) {
+
+	if (exclusive == p_exclusive) {
+		return;
+	}
+
+	exclusive = p_exclusive;
+
+	if (transient_parent) {
+		if (p_exclusive) {
+			ERR_FAIL_COND_MSG(transient_parent->exclusive_child && transient_parent->exclusive_child != this, "Transient parent has another exclusive child.");
+			transient_parent->exclusive_child = nullptr;
+		} else {
+			if (transient_parent->exclusive_child == this) {
+				transient_parent->exclusive_child = nullptr;
+			}
+		}
+	}
+}
+
+bool Window::is_exclusive() const {
+	return exclusive;
 }
 
 bool Window::is_visible() const {
@@ -524,6 +584,8 @@ void Window::_update_size() {
 			DynamicFont::update_oversampling();
 		}
 	}
+
+	notification(NOTIFICATION_WM_SIZE_CHANGED);
 }
 
 void Window::_update_window_callbacks() {
@@ -541,19 +603,33 @@ void Window::_notification(int p_what) {
 		} else {
 			if (get_parent() == nullptr) {
 				//it's the root window!
+				visible = true; //always visible
 				window_id = DisplayServer::MAIN_WINDOW_ID;
 				_update_from_window();
 				_update_size();
 				_update_window_callbacks();
 			} else {
 				//create
-				_make_window();
-				_update_window_callbacks();
+				if (visible) {
+					_make_window();
+					_update_window_callbacks();
+				}
 			}
 		}
 
 		if (transient) {
 			_make_transient();
+		}
+		if (visible) {
+			notification(NOTIFICATION_VISIBILITY_CHANGED);
+			emit_signal(SceneStringNames::get_singleton()->visibility_changed);
+		}
+	}
+
+	if (p_what == NOTIFICATION_READY) {
+
+		if (wrap_controls) {
+			_update_child_controls();
 		}
 	}
 
@@ -572,7 +648,7 @@ void Window::_notification(int p_what) {
 				_clear_window();
 			}
 		} else {
-			_update_size();
+			_update_size(); //called by clear and make, which does not happen here
 		}
 	}
 }
@@ -619,6 +695,58 @@ DisplayServer::WindowID Window::get_window_id() const {
 	return window_id;
 }
 
+void Window::set_wrap_controls(bool p_enable) {
+	wrap_controls = p_enable;
+	if (wrap_controls) {
+		child_controls_changed();
+	}
+}
+
+bool Window::is_wrapping_controls() const {
+	return wrap_controls;
+}
+
+Size2 Window::_get_contents_minimum_size() const {
+	Size2 max;
+
+	for (int i = 0; i < get_child_count(); i++) {
+		Control *c = Object::cast_to<Control>(get_child(i));
+		if (c) {
+			Point2i pos = c->get_position();
+			Size2i min = c->get_combined_minimum_size();
+
+			max.x = MAX(pos.x + min.x, max.x);
+			max.y = MAX(pos.y + min.y, max.y);
+		}
+	}
+
+	return max;
+}
+void Window::_update_child_controls() {
+
+	Size2 max = _get_contents_minimum_size();
+
+	Size2 new_size(MAX(max.x, size.x), MAX(max.y, size.y));
+
+	if (new_size != size) {
+		set_size(new_size);
+	}
+	set_min_size(max);
+	updating_child_controls = false;
+}
+void Window::child_controls_changed() {
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	if (updating_child_controls) {
+		return;
+	}
+
+	updating_child_controls = true;
+	call_deferred("_update_child_controls");
+}
+
 void Window::_window_input(const Ref<InputEvent> &p_ev) {
 
 	if (Engine::get_singleton()->is_editor_hint() && (Object::cast_to<InputEventJoypadButton>(p_ev.ptr()) || Object::cast_to<InputEventJoypadMotion>(*p_ev)))
@@ -632,6 +760,11 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 		}
 	}
 
+	if (exclusive_child != nullptr) {
+		exclusive_child->grab_focus();
+		return; //has an exclusive child, can't get events until child is closed
+	}
+	emit_signal(SceneStringNames::get_singleton()->window_input, p_ev);
 	input(p_ev);
 	if (!is_input_handled()) {
 		unhandled_input(p_ev);
@@ -642,6 +775,208 @@ void Window::_window_input_text(const String &p_text) {
 }
 void Window::_window_drop_files(const Vector<String> &p_files) {
 	emit_signal("files_dropped", p_files);
+}
+
+Viewport *Window::get_parent_viewport() const {
+
+	if (get_parent()) {
+		return get_parent()->get_viewport();
+	} else {
+		return nullptr;
+	}
+}
+
+Window *Window::get_parent_visible_window() const {
+
+	Viewport *vp = get_parent_viewport();
+	Window *window = nullptr;
+	while (vp) {
+		window = Object::cast_to<Window>(vp);
+		if (window && window->visible) {
+			break;
+		}
+		if (!vp->get_parent()) {
+			break;
+		}
+
+		vp = vp->get_parent()->get_viewport();
+	}
+	return window;
+}
+
+void Window::popup_on_parent(const Rect2 &p_parent_rect) {
+
+	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
+
+	if (!is_embedded()) {
+		Window *window = get_parent_visible_window();
+
+		if (!window) {
+			popup(p_parent_rect);
+		} else {
+			popup(Rect2(window->get_position() + p_parent_rect.position, p_parent_rect.size));
+		}
+	} else {
+		popup(p_parent_rect);
+	}
+}
+
+void Window::popup_centered_clamped(const Size2 &p_size, float p_fallback_ratio) {
+
+	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
+
+	Rect2 parent_rect;
+
+	if (is_embedded()) {
+		parent_rect = get_parent_viewport()->get_visible_rect();
+	} else {
+		DisplayServer::WindowID parent_id = get_parent_visible_window()->get_window_id();
+		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(parent_id);
+		parent_rect.position = DisplayServer::get_singleton()->screen_get_position(parent_screen);
+		parent_rect.size = DisplayServer::get_singleton()->screen_get_size(parent_screen);
+	}
+
+	Vector2 size_ratio = parent_rect.size * p_fallback_ratio;
+
+	Rect2 popup_rect;
+	popup_rect.size = Vector2(MIN(size_ratio.x, p_size.x), MIN(size_ratio.y, p_size.y));
+	popup_rect.position = (parent_rect.size - popup_rect.size) / 2;
+
+	popup(popup_rect);
+}
+
+void Window::popup_centered(const Size2 &p_minsize) {
+	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
+
+	Rect2 parent_rect;
+
+	if (is_embedded()) {
+		parent_rect = get_parent_viewport()->get_visible_rect();
+	} else {
+		DisplayServer::WindowID parent_id = get_parent_visible_window()->get_window_id();
+		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(parent_id);
+		parent_rect.position = DisplayServer::get_singleton()->screen_get_position(parent_screen);
+		parent_rect.size = DisplayServer::get_singleton()->screen_get_size(parent_screen);
+	}
+
+	Rect2 popup_rect;
+	if (p_minsize == Size2()) {
+		popup_rect.size = _get_contents_minimum_size();
+	} else {
+		popup_rect.size = p_minsize;
+	}
+	popup_rect.position = (parent_rect.size - popup_rect.size) / 2;
+
+	popup(popup_rect);
+}
+
+void Window::popup_centered_ratio(float p_ratio) {
+
+	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
+
+	Rect2 parent_rect;
+
+	if (is_embedded()) {
+		parent_rect = get_parent_viewport()->get_visible_rect();
+	} else {
+		DisplayServer::WindowID parent_id = get_parent_visible_window()->get_window_id();
+		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(parent_id);
+		parent_rect.position = DisplayServer::get_singleton()->screen_get_position(parent_screen);
+		parent_rect.size = DisplayServer::get_singleton()->screen_get_size(parent_screen);
+	}
+
+	Rect2 popup_rect;
+	popup_rect.size = parent_rect.size * p_ratio;
+	popup_rect.position = (parent_rect.size - popup_rect.size) / 2;
+
+	popup(popup_rect);
+}
+
+void Window::popup(const Rect2 &p_screen_rect) {
+	if (p_screen_rect != Rect2()) {
+		set_position(p_screen_rect.position);
+		set_size(p_screen_rect.size);
+	}
+
+	set_transient(true);
+	set_visible(true);
+	_post_popup();
+	notification(NOTIFICATION_POST_POPUP);
+}
+
+void Window::grab_focus() {
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		DisplayServer::get_singleton()->window_move_to_foreground(window_id);
+	}
+}
+
+bool Window::has_focus() const {
+	return focused;
+}
+
+void Window::add_child_notify(Node *p_child) {
+
+	Control *child_c = Object::cast_to<Control>(p_child);
+
+	if (child_c && child_c->data.theme.is_null() && (theme_owner || theme_owner_window)) {
+		Control::_propagate_theme_changed(child_c, theme_owner, theme_owner_window); //need to propagate here, since many controls may require setting up stuff
+	}
+
+	Window *child_w = Object::cast_to<Window>(p_child);
+
+	if (child_w && child_w->theme.is_null() && (theme_owner || theme_owner_window)) {
+		Control::_propagate_theme_changed(child_w, theme_owner, theme_owner_window); //need to propagate here, since many controls may require setting up stuff
+	}
+}
+
+void Window::remove_child_notify(Node *p_child) {
+
+	Control *child_c = Object::cast_to<Control>(p_child);
+
+	if (child_c && (child_c->data.theme_owner || child_c->data.theme_owner_window) && child_c->data.theme.is_null()) {
+		Control::_propagate_theme_changed(child_c, NULL, NULL);
+	}
+
+	Window *child_w = Object::cast_to<Window>(p_child);
+
+	if (child_w && (child_w->theme_owner || child_w->theme_owner_window) && child_w->theme.is_null()) {
+		Control::_propagate_theme_changed(child_w, NULL, NULL);
+	}
+}
+
+void Window::set_theme(const Ref<Theme> &p_theme) {
+
+	if (theme == p_theme)
+		return;
+
+	theme = p_theme;
+
+	if (!p_theme.is_null()) {
+
+		theme_owner = nullptr;
+		theme_owner_window = this;
+		Control::_propagate_theme_changed(this, nullptr, this);
+	} else {
+
+		Control *parent_c = cast_to<Control>(get_parent());
+		if (parent_c && (parent_c->data.theme_owner || parent_c->data.theme_owner_window)) {
+			Control::_propagate_theme_changed(this, parent_c->data.theme_owner, parent_c->data.theme_owner_window);
+		} else {
+			Window *parent_w = cast_to<Window>(get_parent());
+			if (parent_w && (parent_w->theme_owner || parent_w->theme_owner_window)) {
+				Control::_propagate_theme_changed(this, parent_w->theme_owner, parent_w->theme_owner_window);
+			} else {
+				Control::_propagate_theme_changed(this, nullptr, nullptr);
+			}
+		}
+	}
+}
+Ref<Theme> Window::get_theme() const {
+	return theme;
 }
 
 void Window::_bind_methods() {
@@ -681,10 +1016,18 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_visible", "visible"), &Window::set_visible);
 	ClassDB::bind_method(D_METHOD("is_visible"), &Window::is_visible);
 
+	ClassDB::bind_method(D_METHOD("hide"), &Window::hide);
+	ClassDB::bind_method(D_METHOD("show"), &Window::show);
+
 	ClassDB::bind_method(D_METHOD("set_transient", "transient"), &Window::set_transient);
 	ClassDB::bind_method(D_METHOD("is_transient"), &Window::is_transient);
 
+	ClassDB::bind_method(D_METHOD("set_exclusive", "exclusive"), &Window::set_exclusive);
+	ClassDB::bind_method(D_METHOD("is_exclusive"), &Window::is_exclusive);
+
 	ClassDB::bind_method(D_METHOD("can_draw"), &Window::is_transient);
+	ClassDB::bind_method(D_METHOD("has_focus"), &Window::has_focus);
+	ClassDB::bind_method(D_METHOD("grab_focus"), &Window::grab_focus);
 
 	ClassDB::bind_method(D_METHOD("set_ime_active"), &Window::set_ime_active);
 	ClassDB::bind_method(D_METHOD("set_ime_position"), &Window::set_ime_position);
@@ -703,6 +1046,15 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_font_oversampling", "enable"), &Window::set_use_font_oversampling);
 	ClassDB::bind_method(D_METHOD("is_using_font_oversampling"), &Window::is_using_font_oversampling);
 
+	ClassDB::bind_method(D_METHOD("set_wrap_controls", "enable"), &Window::set_wrap_controls);
+	ClassDB::bind_method(D_METHOD("is_wrapping_controls"), &Window::is_wrapping_controls);
+	ClassDB::bind_method(D_METHOD("child_controls_changed"), &Window::child_controls_changed);
+
+	ClassDB::bind_method(D_METHOD("_update_child_controls"), &Window::_update_child_controls);
+
+	ClassDB::bind_method(D_METHOD("set_theme", "theme"), &Window::set_theme);
+	ClassDB::bind_method(D_METHOD("get_theme"), &Window::get_theme);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "position"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size"), "set_size", "get_size");
@@ -710,7 +1062,9 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_screen"), "set_current_screen", "get_current_screen");
 	ADD_GROUP("Flags", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "wrap_controls"), "set_wrap_controls", "is_wrapping_controls");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transient"), "set_transient", "is_transient");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclusive"), "set_exclusive", "is_exclusive");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "unresizable"), "set_flag", "get_flag", FLAG_RESIZE_DISABLED);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "borderless"), "set_flag", "get_flag", FLAG_BORDERLESS);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "always_on_top"), "set_flag", "get_flag", FLAG_ALWAYS_ON_TOP);
@@ -722,7 +1076,10 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "content_scale_size"), "set_content_scale_size", "get_content_scale_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_mode", PROPERTY_HINT_ENUM, "Disabled,Object,Pixels"), "set_content_scale_mode", "get_content_scale_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_aspect", PROPERTY_HINT_ENUM, "Ignore,Keep,KeepWidth,KeepHeight,Expand"), "set_content_scale_aspect", "get_content_scale_aspect");
+	ADD_GROUP("Theme", "");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
 
+	ADD_SIGNAL(MethodInfo("window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ADD_SIGNAL(MethodInfo("files_dropped"));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
 	ADD_SIGNAL(MethodInfo("mouse_exited"));
@@ -730,6 +1087,9 @@ void Window::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("focus_exited"));
 	ADD_SIGNAL(MethodInfo("close_requested"));
 	ADD_SIGNAL(MethodInfo("go_back_requested"));
+	ADD_SIGNAL(MethodInfo("visibility_changed"));
+
+	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
 }
 
 Window::Window() {

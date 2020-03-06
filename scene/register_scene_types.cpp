@@ -350,8 +350,7 @@ void register_scene_types() {
 	ClassDB::register_class<RichTextLabel>();
 	ClassDB::register_class<RichTextEffect>();
 	ClassDB::register_class<CharFXTransform>();
-	ClassDB::register_class<PopupDialog>();
-	ClassDB::register_class<WindowDialog>();
+	;
 	ClassDB::register_class<AcceptDialog>();
 	ClassDB::register_class<ConfirmationDialog>();
 	ClassDB::register_class<MarginContainer>();

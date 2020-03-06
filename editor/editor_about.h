@@ -57,6 +57,8 @@ private:
 	RichTextLabel *_tpl_text;
 	TextureRect *_logo;
 
+	void _theme_changed();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

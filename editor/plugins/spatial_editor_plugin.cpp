@@ -3706,7 +3706,7 @@ void SpatialEditorViewport::_perform_drop_data() {
 		}
 		files_str = files_str.substr(0, files_str.length() - 1);
 		accept->set_text(vformat(TTR("Error instancing scene from %s"), files_str.c_str()));
-		accept->popup_centered_minsize();
+		accept->popup_centered();
 	}
 }
 
@@ -3786,14 +3786,14 @@ void SpatialEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p
 			list.push_back(root_node);
 		} else {
 			accept->set_text(TTR("No parent to instance a child at."));
-			accept->popup_centered_minsize();
+			accept->popup_centered();
 			_remove_preview();
 			return;
 		}
 	}
 	if (list.size() != 1) {
 		accept->set_text(TTR("This operation requires a single selected node."));
-		accept->popup_centered_minsize();
+		accept->popup_centered();
 		_remove_preview();
 		return;
 	}

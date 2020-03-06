@@ -3443,7 +3443,7 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 
 	if (insert_frame != Engine::get_singleton()->get_frames_drawn()) {
 		//clear insert list for the frame if frame changed
-		if (insert_confirm->is_visible_in_tree())
+		if (insert_confirm->is_visible())
 			return; //do nothing
 		insert_data.clear();
 		insert_query = false;
@@ -3496,7 +3496,7 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 
 			insert_confirm_bezier->set_visible(all_bezier);
 			insert_confirm->get_ok()->set_text(TTR("Create"));
-			insert_confirm->popup_centered_minsize();
+			insert_confirm->popup_centered();
 			insert_query = true;
 		} else {
 			call_deferred("_insert_delay");
@@ -5309,7 +5309,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				it->set_metadata(0, md);
 			}
 
-			track_copy_dialog->popup_centered_minsize(Size2(350, 500) * EDSCALE);
+			track_copy_dialog->popup_centered(Size2(350, 500) * EDSCALE);
 		} break;
 		case EDIT_COPY_TRACKS_CONFIRM: {
 
@@ -5578,7 +5578,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 		} break;
 		case EDIT_CLEAN_UP_ANIMATION: {
-			cleanup_dialog->popup_centered_minsize(Size2(300, 0) * EDSCALE);
+			cleanup_dialog->popup_centered(Size2(300, 0) * EDSCALE);
 
 		} break;
 		case EDIT_CLEAN_UP_ANIMATION_CONFIRM: {

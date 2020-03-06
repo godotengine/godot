@@ -705,7 +705,7 @@ void AnimationNodeBlendTreeEditor::_edit_filters(const String &p_which) {
 	if (!_update_filters(anode))
 		return;
 
-	filter_dialog->popup_centered_minsize(Size2(500, 500) * EDSCALE);
+	filter_dialog->popup_centered(Size2(500, 500) * EDSCALE);
 }
 
 void AnimationNodeBlendTreeEditor::_removed_from_graph() {
@@ -975,7 +975,7 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	open_file = memnew(EditorFileDialog);
 	add_child(open_file);
 	open_file->set_title(TTR("Open Animation Node"));
-	open_file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	open_file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	open_file->connect("file_selected", callable_mp(this, &AnimationNodeBlendTreeEditor::_file_opened));
 	undo_redo = EditorNode::get_undo_redo();
 }

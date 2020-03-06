@@ -201,6 +201,7 @@ private:
 
 	int light_mask;
 
+	Window *window;
 	bool first_draw;
 	bool visible;
 	bool pending_update;
@@ -231,6 +232,8 @@ private:
 
 	void _enter_canvas();
 	void _exit_canvas();
+
+	void _window_visibility_changed();
 
 	void _notify_transform(CanvasItem *p_node);
 

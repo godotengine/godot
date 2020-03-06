@@ -193,7 +193,7 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 		item->set_text(0, p_type + " (" + ScriptServer::get_global_class_path(p_type).get_file() + ")");
 	}
 	if (!can_instance) {
-		item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
+		item->set_custom_color(0, search_options->get_color("disabled_font_color", "Editor"));
 		item->set_selectable(0, false);
 	} else if (!(*to_select && (*to_select)->get_text(0) == search_box->get_text())) {
 		String search_term = search_box->get_text().to_lower();
@@ -310,8 +310,8 @@ void CreateDialog::_update_search() {
 	EditorData &ed = EditorNode::get_editor_data();
 
 	root->set_text(0, base_type);
-	if (has_icon(base_type, "EditorIcons")) {
-		root->set_icon(0, get_icon(base_type, "EditorIcons"));
+	if (search_options->has_icon(base_type, "EditorIcons")) {
+		root->set_icon(0, search_options->get_icon(base_type, "EditorIcons"));
 	}
 
 	TreeItem *to_select = search_box->get_text() == base_type ? root : NULL;
@@ -460,22 +460,21 @@ void CreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
-			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
+			search_box->set_right_icon(search_options->get_icon("Search", "EditorIcons"));
 			search_box->set_clear_button_enabled(true);
-			favorite->set_icon(get_icon("Favorites", "EditorIcons"));
+			favorite->set_icon(search_options->get_icon("Favorites", "EditorIcons"));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (is_visible_in_tree()) {
+			if (is_visible()) {
 				search_box->call_deferred("grab_focus"); // still not visible
 				search_box->select_all();
+			} else {
+				EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "create_new_node", Rect2(get_position(), get_size()));
+				search_loaded_scripts.clear();
 			}
-		} break;
-		case NOTIFICATION_POPUP_HIDE: {
-			EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "create_new_node", get_rect());
-			search_loaded_scripts.clear();
 		} break;
 	}
 }
@@ -562,7 +561,7 @@ void CreateDialog::_item_selected() {
 }
 
 void CreateDialog::_hide_requested() {
-	_closed(); // From WindowDialog.
+	_cancel_pressed(); // From AcceptDialog.
 }
 
 void CreateDialog::_favorite_toggled() {
@@ -662,7 +661,7 @@ Variant CreateDialog::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 		ToolButton *tb = memnew(ToolButton);
 		tb->set_icon(ti->get_icon(0));
 		tb->set_text(ti->get_text(0));
-		set_drag_preview(tb);
+		favorites->set_drag_preview(tb);
 
 		return d;
 	}
@@ -743,8 +742,6 @@ CreateDialog::CreateDialog() {
 
 	is_replace_mode = false;
 
-	set_resizable(true);
-
 	HSplitContainer *hsc = memnew(HSplitContainer);
 	add_child(hsc);
 
@@ -754,7 +751,7 @@ CreateDialog::CreateDialog() {
 	VBoxContainer *fav_vb = memnew(VBoxContainer);
 	vsc->add_child(fav_vb);
 	fav_vb->set_custom_minimum_size(Size2(150, 100) * EDSCALE);
-	fav_vb->set_v_size_flags(SIZE_EXPAND_FILL);
+	fav_vb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	favorites = memnew(Tree);
 	fav_vb->add_margin_child(TTR("Favorites:"), favorites, true);
@@ -763,13 +760,16 @@ CreateDialog::CreateDialog() {
 	favorites->set_allow_reselect(true);
 	favorites->connect("cell_selected", callable_mp(this, &CreateDialog::_favorite_selected));
 	favorites->connect("item_activated", callable_mp(this, &CreateDialog::_favorite_activated));
-	favorites->set_drag_forwarding(this);
+#ifndef _MSC_VER
+#warning cant forward drag data to a non control, must be fixed
+#endif
+	//favorites->set_drag_forwarding(this);
 	favorites->add_constant_override("draw_guides", 1);
 
 	VBoxContainer *rec_vb = memnew(VBoxContainer);
 	vsc->add_child(rec_vb);
 	rec_vb->set_custom_minimum_size(Size2(150, 100) * EDSCALE);
-	rec_vb->set_v_size_flags(SIZE_EXPAND_FILL);
+	rec_vb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	recent = memnew(Tree);
 	rec_vb->add_margin_child(TTR("Recent:"), recent, true);
@@ -783,10 +783,10 @@ CreateDialog::CreateDialog() {
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	hsc->add_child(vbc);
 	vbc->set_custom_minimum_size(Size2(300, 0) * EDSCALE);
-	vbc->set_h_size_flags(SIZE_EXPAND_FILL);
+	vbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	HBoxContainer *search_hb = memnew(HBoxContainer);
 	search_box = memnew(LineEdit);
-	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_hb->add_child(search_box);
 	favorite = memnew(Button);
 	favorite->set_flat(true);

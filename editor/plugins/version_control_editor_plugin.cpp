@@ -412,7 +412,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	set_up_dialog = memnew(AcceptDialog);
 	set_up_dialog->set_title(TTR("Set Up Version Control"));
-	set_up_dialog->set_custom_minimum_size(Size2(400, 100));
+	set_up_dialog->set_min_size(Size2(400, 100));
 	version_control_actions->add_child(set_up_dialog);
 
 	set_up_ok_button = set_up_dialog->get_ok();

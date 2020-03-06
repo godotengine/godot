@@ -32,8 +32,10 @@
 #define WINDOW_H
 
 #include "scene/main/viewport.h"
+#include "scene/resources/theme.h"
 #include "servers/display_server.h"
 
+class Control;
 class Window : public Viewport {
 	GDCLASS(Window, Viewport)
 public:
@@ -83,9 +85,15 @@ private:
 	mutable Mode mode = MODE_WINDOWED;
 	mutable bool flags[FLAG_MAX];
 	bool visible = true;
+	bool focused = false;
 
 	bool use_font_oversampling = false;
 	bool transient = false;
+	bool exclusive = false;
+	bool wrap_controls = false;
+	bool updating_child_controls = false;
+
+	void _update_child_controls();
 
 	Size2i content_scale_size;
 	ContentScaleMode content_scale_mode;
@@ -114,13 +122,31 @@ private:
 	void _clear_transient();
 	void _make_transient();
 	Window *transient_parent = nullptr;
+	Window *exclusive_child = nullptr;
 	Set<Window *> transient_children;
 
+	friend class Control;
+	Ref<Theme> theme;
+	Control *theme_owner = nullptr;
+	Window *theme_owner_window = nullptr;
+
 protected:
+	virtual void _post_popup() {}
+	virtual Size2 _get_contents_minimum_size() const;
 	static void _bind_methods();
 	void _notification(int p_what);
 
+	virtual void add_child_notify(Node *p_child);
+	virtual void remove_child_notify(Node *p_child);
+
 public:
+	enum {
+
+		NOTIFICATION_VISIBILITY_CHANGED = 30,
+		NOTIFICATION_POST_POPUP = 31,
+		NOTIFICATION_THEME_CHANGED = 32,
+	};
+
 	void set_title(const String &p_title);
 	String get_title() const;
 
@@ -155,8 +181,14 @@ public:
 	void set_visible(bool p_visible);
 	bool is_visible() const;
 
+	void show();
+	void hide();
+
 	void set_transient(bool p_transient);
 	bool is_transient() const;
+
+	void set_exclusive(bool p_exclusive);
+	bool is_exclusive() const;
 
 	bool can_draw() const;
 
@@ -176,6 +208,25 @@ public:
 
 	void set_use_font_oversampling(bool p_oversampling);
 	bool is_using_font_oversampling() const;
+
+	void set_wrap_controls(bool p_enable);
+	bool is_wrapping_controls() const;
+	void child_controls_changed();
+
+	Window *get_parent_visible_window() const;
+	Viewport *get_parent_viewport() const;
+	void popup(const Rect2 &p_rect = Rect2());
+	void popup_on_parent(const Rect2 &p_parent_rect);
+	void popup_centered_ratio(float p_ratio = 0.8);
+	void popup_centered(const Size2 &p_minsize = Size2());
+	void popup_centered_clamped(const Size2 &p_size = Size2(), float p_fallback_ratio = 0.75);
+
+	void set_theme(const Ref<Theme> &p_theme);
+	Ref<Theme> get_theme() const;
+
+	void grab_focus();
+	bool has_focus() const;
+
 	Window();
 	~Window();
 };

@@ -1413,7 +1413,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_ove
 		bool can_move = _check_existing();
 		if (!can_move) {
 			// Ask to do something.
-			overwrite_dialog->popup_centered_minsize();
+			overwrite_dialog->popup_centered();
 			return;
 		}
 	}
@@ -1677,7 +1677,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 						rename_dialog_text->set_text(name);
 						rename_dialog_text->select(0, name.length());
 					}
-					rename_dialog->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+					rename_dialog->popup_centered(Size2(250, 80) * EDSCALE);
 					rename_dialog_text->grab_focus();
 				}
 			}
@@ -1721,7 +1721,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 					duplicate_dialog_text->set_text(name);
 					duplicate_dialog_text->select(0, name.length());
 				}
-				duplicate_dialog->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+				duplicate_dialog->popup_centered(Size2(250, 80) * EDSCALE);
 				duplicate_dialog_text->grab_focus();
 			}
 		} break;
@@ -1743,14 +1743,14 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case FILE_NEW_FOLDER: {
 			make_dir_dialog_text->set_text("new folder");
 			make_dir_dialog_text->select_all();
-			make_dir_dialog->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+			make_dir_dialog->popup_centered(Size2(250, 80) * EDSCALE);
 			make_dir_dialog_text->grab_focus();
 		} break;
 
 		case FILE_NEW_SCENE: {
 			make_scene_dialog_text->set_text("new scene");
 			make_scene_dialog_text->select_all();
-			make_scene_dialog->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+			make_scene_dialog->popup_centered(Size2(250, 80) * EDSCALE);
 			make_scene_dialog_text->grab_focus();
 		} break;
 

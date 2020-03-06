@@ -349,7 +349,7 @@ void AnimationPlayerEditor::_animation_rename() {
 }
 void AnimationPlayerEditor::_animation_load() {
 	ERR_FAIL_COND(!player);
-	file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	file->clear_filters();
 	List<String> extensions;
 
@@ -392,7 +392,7 @@ void AnimationPlayerEditor::_animation_save(const Ref<Resource> &p_resource) {
 
 void AnimationPlayerEditor::_animation_save_as(const Ref<Resource> &p_resource) {
 
-	file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	file->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 
 	List<String> extensions;
 	ResourceSaver::get_recognized_extensions(p_resource, &extensions);
@@ -434,7 +434,7 @@ void AnimationPlayerEditor::_animation_remove() {
 		return;
 
 	delete_dialog->set_text(TTR("Delete Animation?"));
-	delete_dialog->popup_centered_minsize();
+	delete_dialog->popup_centered();
 }
 
 void AnimationPlayerEditor::_animation_remove_confirmed() {
@@ -501,7 +501,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 	String new_name = name->get_text();
 	if (new_name == "" || new_name.find(":") != -1 || new_name.find("/") != -1) {
 		error_dialog->set_text(TTR("Invalid animation name!"));
-		error_dialog->popup_centered_minsize();
+		error_dialog->popup_centered();
 		return;
 	}
 
@@ -512,7 +512,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 
 	if (player->has_animation(new_name)) {
 		error_dialog->set_text(TTR("Animation name already exists!"));
-		error_dialog->popup_centered_minsize();
+		error_dialog->popup_centered();
 		return;
 	}
 
@@ -1058,7 +1058,7 @@ void AnimationPlayerEditor::_animation_player_changed(Object *p_pl) {
 	if (player == p_pl && is_visible_in_tree()) {
 
 		_update_player();
-		if (blend_editor.dialog->is_visible_in_tree())
+		if (blend_editor.dialog->is_visible())
 			_animation_blend(); // Update.
 	}
 }
@@ -1152,7 +1152,7 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 
 			if (!animation->get_item_count()) {
 				error_dialog->set_text(TTR("No animation to copy!"));
-				error_dialog->popup_centered_minsize();
+				error_dialog->popup_centered();
 				return;
 			}
 
@@ -1165,7 +1165,7 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 			Ref<Animation> anim2 = EditorSettings::get_singleton()->get_resource_clipboard();
 			if (!anim2.is_valid()) {
 				error_dialog->set_text(TTR("No animation resource on clipboard!"));
-				error_dialog->popup_centered_minsize();
+				error_dialog->popup_centered();
 				return;
 			}
 
@@ -1195,7 +1195,7 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 
 			if (!animation->get_item_count()) {
 				error_dialog->set_text(TTR("No animation to edit!"));
-				error_dialog->popup_centered_minsize();
+				error_dialog->popup_centered();
 				return;
 			}
 

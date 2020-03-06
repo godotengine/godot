@@ -48,24 +48,26 @@
 #include "scene/gui/tab_container.h"
 #include "servers/display_server.h"
 
+void ProjectExportDialog::_theme_changed() {
+	duplicate_preset->set_icon(presets->get_icon("Duplicate", "EditorIcons"));
+	delete_preset->set_icon(presets->get_icon("Remove", "EditorIcons"));
+	Control *panel = custom_feature_display->get_parent_control();
+	if (panel)
+		panel->add_style_override("panel", patches->get_stylebox("bg", "Tree"));
+}
 void ProjectExportDialog::_notification(int p_what) {
 
 	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible()) {
+				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "export", Rect2(get_position(), get_size()));
+			}
+		} break;
 		case NOTIFICATION_READY: {
-			duplicate_preset->set_icon(get_icon("Duplicate", "EditorIcons"));
-			delete_preset->set_icon(get_icon("Remove", "EditorIcons"));
+			duplicate_preset->set_icon(presets->get_icon("Duplicate", "EditorIcons"));
+			delete_preset->set_icon(presets->get_icon("Remove", "EditorIcons"));
 			connect("confirmed", callable_mp(this, &ProjectExportDialog::_export_pck_zip));
-			custom_feature_display->get_parent_control()->add_style_override("panel", get_stylebox("bg", "Tree"));
-		} break;
-		case NOTIFICATION_POPUP_HIDE: {
-			EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "export", get_rect());
-		} break;
-		case NOTIFICATION_THEME_CHANGED: {
-			duplicate_preset->set_icon(get_icon("Duplicate", "EditorIcons"));
-			delete_preset->set_icon(get_icon("Remove", "EditorIcons"));
-			Control *panel = custom_feature_display->get_parent_control();
-			if (panel)
-				panel->add_style_override("panel", get_stylebox("bg", "Tree"));
+			custom_feature_display->get_parent_control()->add_style_override("panel", patches->get_stylebox("bg", "Tree"));
 		} break;
 	}
 }
@@ -248,8 +250,8 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 			patch->set_checked(0, true);
 		patch->set_tooltip(0, patchlist[i]);
 		patch->set_metadata(0, i);
-		patch->add_button(0, get_icon("Remove", "EditorIcons"), 0);
-		patch->add_button(0, get_icon("folder", "FileDialog"), 1);
+		patch->add_button(0, presets->get_icon("Remove", "EditorIcons"), 0);
+		patch->add_button(0, presets->get_icon("folder", "FileDialog"), 1);
 	}
 
 	TreeItem *patch_add = patches->create_item(patch_root);
@@ -259,7 +261,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	else
 		patch_add->set_text(0, TTR("Add previous patches..."));
 
-	patch_add->add_button(0, get_icon("folder", "FileDialog"), 1);
+	patch_add->add_button(0, presets->get_icon("folder", "FileDialog"), 1);
 
 	_fill_resource_tree();
 
@@ -300,7 +302,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	custom_features->set_text(current->get_custom_features());
 	_update_feature_list();
 	_update_export_all();
-	minimum_size_changed();
+	child_controls_changed();
 
 	int script_export_mode = current->get_script_export_mode();
 	script_mode->select(script_export_mode);
@@ -389,7 +391,7 @@ void ProjectExportDialog::_patch_button_pressed(Object *p_item, int p_column, in
 		Vector<String> patches = current->get_patches();
 		ERR_FAIL_INDEX(patch_index, patches.size());
 		patch_erase->set_text(vformat(TTR("Delete patch '%s' from list?"), patches[patch_index].get_file()));
-		patch_erase->popup_centered_minsize();
+		patch_erase->popup_centered();
 	} else {
 		patch_dialog->popup_centered_ratio();
 	}
@@ -619,7 +621,7 @@ void ProjectExportDialog::_delete_preset() {
 		return;
 
 	delete_confirm->set_text(vformat(TTR("Delete preset '%s'?"), current->get_name()));
-	delete_confirm->popup_centered_minsize();
+	delete_confirm->popup_centered();
 }
 
 void ProjectExportDialog::_delete_preset_confirm() {
@@ -650,7 +652,7 @@ Variant ProjectExportDialog::get_drag_data_fw(const Point2 &p_point, Control *p_
 			label->set_text(presets->get_item_text(pos));
 			drag->add_child(label);
 
-			set_drag_preview(drag);
+			presets->set_drag_preview(drag);
 
 			return d;
 		}
@@ -667,7 +669,7 @@ Variant ProjectExportDialog::get_drag_data_fw(const Point2 &p_point, Control *p_
 
 			Label *label = memnew(Label);
 			label->set_text(item->get_text(0));
-			set_drag_preview(label);
+			patches->set_drag_preview(label);
 
 			return d;
 		}
@@ -817,7 +819,7 @@ void ProjectExportDialog::_fill_resource_tree() {
 
 bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem *p_item, Ref<EditorExportPreset> &current, bool p_only_scenes) {
 
-	p_item->set_icon(0, get_icon("folder", "FileDialog"));
+	p_item->set_icon(0, presets->get_icon("folder", "FileDialog"));
 	p_item->set_text(0, p_dir->get_name() + "/");
 
 	bool used = false;
@@ -955,7 +957,7 @@ void ProjectExportDialog::_export_project() {
 		export_project->get_line_edit()->connect_compat("text_entered", export_project, "_file_entered");
 	}
 
-	export_project->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	export_project->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	export_project->popup_centered_ratio();
 }
 
@@ -980,14 +982,14 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 
 		ERR_PRINT(vformat("Failed to export the project for platform '%s'.", platform->get_name()));
 		error_dialog->show();
-		error_dialog->popup_centered_minsize(Size2(300, 80));
+		error_dialog->popup_centered(Size2(300, 80));
 	}
 }
 
 void ProjectExportDialog::_export_all_dialog() {
 
 	export_all_dialog->show();
-	export_all_dialog->popup_centered_minsize(Size2(300, 80));
+	export_all_dialog->popup_centered(Size2(300, 80));
 }
 
 void ProjectExportDialog::_export_all_dialog_action(const String &p_str) {
@@ -1018,7 +1020,7 @@ void ProjectExportDialog::_export_all(bool p_debug) {
 				error_dialog->set_text(TTR("Export templates for this platform are missing/corrupted:") + " " + platform->get_name());
 			}
 			error_dialog->show();
-			error_dialog->popup_centered_minsize(Size2(300, 80));
+			error_dialog->popup_centered(Size2(300, 80));
 			ERR_PRINT("Failed to export project");
 		}
 	}
@@ -1040,13 +1042,13 @@ void ProjectExportDialog::_bind_methods() {
 ProjectExportDialog::ProjectExportDialog() {
 
 	set_title(TTR("Export"));
-	set_resizable(true);
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
+	main_vb->connect("theme_changed", callable_mp(this, &ProjectExportDialog::_theme_changed));
 	add_child(main_vb);
 	HSplitContainer *hbox = memnew(HSplitContainer);
 	main_vb->add_child(hbox);
-	hbox->set_v_size_flags(SIZE_EXPAND_FILL);
+	hbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	// Presets list.
 
@@ -1065,9 +1067,12 @@ ProjectExportDialog::ProjectExportDialog() {
 	preset_hb->add_child(add_preset);
 	MarginContainer *mc = memnew(MarginContainer);
 	preset_vb->add_child(mc);
-	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	presets = memnew(ItemList);
-	presets->set_drag_forwarding(this);
+#ifndef _MSC_VER
+#warning must reimplement drag forward
+#endif
+	//presets->set_drag_forwarding(this);
 	mc->add_child(presets);
 	presets->connect("item_selected", callable_mp(this, &ProjectExportDialog::_edit_preset));
 	duplicate_preset = memnew(ToolButton);
@@ -1105,14 +1110,14 @@ ProjectExportDialog::ProjectExportDialog() {
 	sections->set_tab_align(TabContainer::ALIGN_LEFT);
 	sections->set_use_hidden_tabs_for_min_size(true);
 	settings_vb->add_child(sections);
-	sections->set_v_size_flags(SIZE_EXPAND_FILL);
+	sections->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	// Main preset parameters.
 
 	parameters = memnew(EditorInspector);
 	sections->add_child(parameters);
 	parameters->set_name(TTR("Options"));
-	parameters->set_v_size_flags(SIZE_EXPAND_FILL);
+	parameters->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	parameters->connect("property_edited", callable_mp(this, &ProjectExportDialog::_update_parameters));
 
 	// Resources export parameters.
@@ -1132,7 +1137,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	include_label->set_text(TTR("Resources to export:"));
 	resources_vb->add_child(include_label);
 	include_margin = memnew(MarginContainer);
-	include_margin->set_v_size_flags(SIZE_EXPAND_FILL);
+	include_margin->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	resources_vb->add_child(include_margin);
 
 	include_files = memnew(Tree);
@@ -1164,11 +1169,14 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	patches = memnew(Tree);
 	patch_vb->add_child(patches);
-	patches->set_v_size_flags(SIZE_EXPAND_FILL);
+	patches->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	patches->set_hide_root(true);
 	patches->connect("button_pressed", callable_mp(this, &ProjectExportDialog::_patch_button_pressed));
 	patches->connect("item_edited", callable_mp(this, &ProjectExportDialog::_patch_edited));
-	patches->set_drag_forwarding(this);
+#ifndef _MSC_VER
+#warning must reimplement drag forward
+#endif
+	//patches->set_drag_forwarding(this);
 	patches->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 
 	HBoxContainer *patches_hb = memnew(HBoxContainer);
@@ -1181,7 +1189,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	patch_dialog = memnew(EditorFileDialog);
 	patch_dialog->add_filter("*.pck ; " + TTR("Pack File"));
-	patch_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	patch_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	patch_dialog->connect("file_selected", callable_mp(this, &ProjectExportDialog::_patch_selected));
 	add_child(patch_dialog);
 
@@ -1201,7 +1209,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	custom_feature_display = memnew(RichTextLabel);
 	features_panel->add_child(custom_feature_display);
 	custom_feature_display->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 10 * EDSCALE);
-	custom_feature_display->set_v_size_flags(SIZE_EXPAND_FILL);
+	custom_feature_display->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	feature_vb->add_margin_child(TTR("Feature List:"), features_panel, true);
 	sections->add_child(feature_vb);
 
@@ -1274,7 +1282,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_pck_zip->add_filter("*.zip ; " + TTR("ZIP File"));
 	export_pck_zip->add_filter("*.pck ; " + TTR("Godot Game Pack"));
 	export_pck_zip->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-	export_pck_zip->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	export_pck_zip->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	add_child(export_pck_zip);
 	export_pck_zip->connect("file_selected", callable_mp(this, &ProjectExportDialog::_export_pck_zip_selected));
 
@@ -1300,7 +1308,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	LinkButton *download_templates = memnew(LinkButton);
 	download_templates->set_text(TTR("Manage Export Templates"));
-	download_templates->set_v_size_flags(SIZE_SHRINK_CENTER);
+	download_templates->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	export_templates_error->add_child(download_templates);
 	download_templates->connect("pressed", callable_mp(this, &ProjectExportDialog::_open_export_template_manager));
 

@@ -140,7 +140,7 @@ void InspectorDock::_new_resource() {
 }
 
 void InspectorDock::_load_resource(const String &p_type) {
-	load_resource_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	load_resource_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type(p_type, &extensions);
@@ -317,7 +317,7 @@ void InspectorDock::_transform_keyed(Object *sp, const String &p_sub, const Tran
 }
 
 void InspectorDock::_warning_pressed() {
-	warning_dialog->popup_centered_minsize();
+	warning_dialog->popup_centered();
 }
 
 Container *InspectorDock::get_addon_area() {

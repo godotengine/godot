@@ -132,17 +132,17 @@ void Popup::popup_centered_clamped(const Size2 &p_size, float p_fallback_ratio) 
 	popup_size.x = MIN(window_size.x * p_fallback_ratio, popup_size.x);
 	popup_size.y = MIN(window_size.y * p_fallback_ratio, popup_size.y);
 
-	popup_centered(popup_size);
+	popup_centered_size(popup_size);
 }
 
 void Popup::popup_centered_minsize(const Size2 &p_minsize) {
 
 	set_custom_minimum_size(p_minsize);
 	_fix_size();
-	popup_centered();
+	popup_centered_size();
 }
 
-void Popup::popup_centered(const Size2 &p_size) {
+void Popup::popup_centered_size(const Size2 &p_size) {
 
 	Rect2 rect;
 	Size2 window_size = get_viewport_rect().size;
@@ -208,7 +208,7 @@ bool Popup::is_exclusive() const {
 void Popup::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_as_minsize"), &Popup::set_as_minsize);
-	ClassDB::bind_method(D_METHOD("popup_centered", "size"), &Popup::popup_centered, DEFVAL(Size2()));
+	ClassDB::bind_method(D_METHOD("popup_centered_size", "size"), &Popup::popup_centered_size, DEFVAL(Size2()));
 	ClassDB::bind_method(D_METHOD("popup_centered_ratio", "ratio"), &Popup::popup_centered_ratio, DEFVAL(0.75));
 	ClassDB::bind_method(D_METHOD("popup_centered_minsize", "minsize"), &Popup::popup_centered_minsize, DEFVAL(Size2()));
 	ClassDB::bind_method(D_METHOD("popup_centered_clamped", "size", "fallback_ratio"), &Popup::popup_centered_clamped, DEFVAL(Size2()), DEFVAL(0.75));
