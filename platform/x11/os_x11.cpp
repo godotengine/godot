@@ -350,6 +350,9 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 			context_vulkan = NULL;
 			ERR_FAIL_V(ERR_UNAVAILABLE);
 		}
+
+		context_vulkan->set_use_vsync(get_video_mode().use_vsync);
+
 		if (context_vulkan->window_create(x11_window, x11_display, get_video_mode().width, get_video_mode().height) == -1) {
 			memdelete(context_vulkan);
 			context_vulkan = NULL;
@@ -3352,6 +3355,13 @@ void OS_X11::_set_use_vsync(bool p_enable) {
 	if (video_driver_index == VIDEO_DRIVER_GLES2) {
 		if (context_gles2)
 			context_gles2->set_use_vsync(p_enable);
+	}
+#endif
+
+#if defined(VULKAN_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_VULKAN) {
+		if (context_vulkan)
+			context_vulkan->set_use_vsync(p_enable);
 	}
 #endif
 }

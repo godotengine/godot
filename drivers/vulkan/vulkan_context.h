@@ -46,6 +46,8 @@ class VulkanContext {
 
 	bool use_validation_layers;
 
+	bool use_vsync;
+
 	VkInstance inst;
 	VkSurfaceKHR surface;
 	VkPhysicalDevice gpu;
@@ -80,6 +82,15 @@ class VulkanContext {
 	} SwapchainImageResources;
 
 	struct Window {
+		static constexpr int ratedPresModesSize = 4;
+		static constexpr VkPresentModeKHR vSyncRatedPresentModes[ratedPresModesSize] = {
+			VK_PRESENT_MODE_FIFO_KHR, ///< VSync On
+			VK_PRESENT_MODE_MAILBOX_KHR,
+			VK_PRESENT_MODE_FIFO_RELAXED_KHR,
+			VK_PRESENT_MODE_IMMEDIATE_KHR, ///< VSync Off
+			// VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR ///< Only Android, disabled for now
+			// VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR  ///< Only Android, disabled for now
+		};
 
 		bool is_minimzed;
 		VkSurfaceKHR surface;
@@ -204,6 +215,9 @@ public:
 	Error prepare_buffers();
 	Error swap_buffers();
 	Error initialize();
+
+	void set_use_vsync(bool p_use);
+	bool is_using_vsync() const;
 
 	VulkanContext();
 	virtual ~VulkanContext();

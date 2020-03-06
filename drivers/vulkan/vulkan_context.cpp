@@ -871,7 +871,6 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	}
 	// The FIFO present mode is guaranteed by the spec to be supported
 	// and to have no tearing.  It's a great default present mode to use.
-	VkPresentModeKHR swapchainPresentMode = VK_PRESENT_MODE_FIFO_KHR;
 
 	//  There are times when you may wish to use another present mode.  The
 	//  following code shows how to select them, and the comments provide some
@@ -900,16 +899,26 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	// the application wants the late image to be immediately displayed, even
 	// though that may mean some tearing.
 
-	if (window->presentMode != swapchainPresentMode) {
-		for (size_t i = 0; i < presentModeCount; ++i) {
-			if (presentModes[i] == window->presentMode) {
-				swapchainPresentMode = window->presentMode;
-				break;
+	int ratedIter = use_vsync ? 0 : Window::ratedPresModesSize - 1;
+
+	// ADVICE: If you have already set your custom Present Mode and you don't want to select the best one
+	// available, disable the entire conditional below
+	if (window->presentMode != Window::vSyncRatedPresentModes[ratedIter]) {
+		// If VSync off, loop into reverse order of the array to get VSync off modes first
+		while (use_vsync ? (ratedIter < Window::ratedPresModesSize) : (ratedIter >= 0)) {
+
+			for (size_t i = 0; i < presentModeCount; ++i) {
+				if (presentModes[i] == Window::vSyncRatedPresentModes[ratedIter])
+					goto FoundBestAvailableVSyncRatedMode;
 			}
+			// Increase index of next vsync rated mode
+			use_vsync ? ratedIter++ : ratedIter--;
 		}
+	FoundBestAvailableVSyncRatedMode:
+		window->presentMode = Window::vSyncRatedPresentModes[ratedIter];
 	}
+
 	free(presentModes);
-	ERR_FAIL_COND_V_MSG(swapchainPresentMode != window->presentMode, ERR_CANT_CREATE, "Present mode specified is not supported\n");
 
 	// Determine the number of VkImages to use in the swap chain.
 	// Application desires to acquire 3 images at a time for triple
@@ -966,7 +975,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 		/*pQueueFamilyIndices*/ NULL,
 		/*preTransform*/ (VkSurfaceTransformFlagBitsKHR)preTransform,
 		/*compositeAlpha*/ compositeAlpha,
-		/*presentMode*/ swapchainPresentMode,
+		/*presentMode*/ window->presentMode,
 		/*clipped*/ true,
 		/*oldSwapchain*/ NULL,
 	};
@@ -1513,6 +1522,15 @@ VkPhysicalDeviceLimits VulkanContext::get_device_limits() const {
 	return gpu_props.limits;
 }
 
+void VulkanContext::set_use_vsync(bool p_use) {
+
+	use_vsync = p_use;
+}
+bool VulkanContext::is_using_vsync() const {
+
+	return use_vsync;
+}
+
 VulkanContext::VulkanContext() {
 	command_buffer_count = 0;
 	instance_validation_layers = NULL;
@@ -1528,6 +1546,8 @@ VulkanContext::VulkanContext() {
 	buffers_prepared = false;
 	swapchainImageCount = 0;
 	last_window_id = 0;
+
+	use_vsync = true;
 }
 
 VulkanContext::~VulkanContext() {
