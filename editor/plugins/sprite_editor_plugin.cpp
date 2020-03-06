@@ -170,13 +170,13 @@ void SpriteEditor::_update_mesh_data() {
 	Ref<Texture2D> texture = node->get_texture();
 	if (texture.is_null()) {
 		err_dialog->set_text(TTR("Sprite is empty!"));
-		err_dialog->popup_centered_minsize();
+		err_dialog->popup_centered();
 		return;
 	}
 
 	if (node->get_hframes() > 1 || node->get_vframes() > 1) {
 		err_dialog->set_text(TTR("Can't convert a sprite using animation frames to mesh."));
-		err_dialog->popup_centered_minsize();
+		err_dialog->popup_centered();
 		return;
 	}
 
@@ -317,7 +317,7 @@ void SpriteEditor::_convert_to_mesh_2d_node() {
 
 	if (computed_vertices.size() < 3) {
 		err_dialog->set_text(TTR("Invalid geometry, can't replace by mesh."));
-		err_dialog->popup_centered_minsize();
+		err_dialog->popup_centered();
 		return;
 	}
 
@@ -348,7 +348,7 @@ void SpriteEditor::_convert_to_polygon_2d_node() {
 
 	if (computed_outline_lines.empty()) {
 		err_dialog->set_text(TTR("Invalid geometry, can't create polygon."));
-		err_dialog->popup_centered_minsize();
+		err_dialog->popup_centered();
 		return;
 	}
 
@@ -407,7 +407,7 @@ void SpriteEditor::_create_collision_polygon_2d_node() {
 
 	if (computed_outline_lines.empty()) {
 		err_dialog->set_text(TTR("Invalid geometry, can't create collision polygon."));
-		err_dialog->popup_centered_minsize();
+		err_dialog->popup_centered();
 		return;
 	}
 
@@ -431,7 +431,7 @@ void SpriteEditor::_create_light_occluder_2d_node() {
 
 	if (computed_outline_lines.empty()) {
 		err_dialog->set_text(TTR("Invalid geometry, can't create light occluder."));
-		err_dialog->popup_centered_minsize();
+		err_dialog->popup_centered();
 		return;
 	}
 

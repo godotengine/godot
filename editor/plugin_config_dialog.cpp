@@ -131,13 +131,14 @@ void PluginConfigDialog::_on_required_text_changed(const String &) {
 
 void PluginConfigDialog::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible()) {
+				name_edit->grab_focus();
+			}
+		} break;
 		case NOTIFICATION_READY: {
 			connect_compat("confirmed", this, "_on_confirmed");
 			get_cancel()->connect_compat("pressed", this, "_on_cancelled");
-		} break;
-
-		case NOTIFICATION_POST_POPUP: {
-			name_edit->grab_focus();
 		} break;
 	}
 }

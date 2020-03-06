@@ -45,12 +45,6 @@ void ReparentDialog::_notification(int p_what) {
 
 		disconnect_compat("confirmed", this, "_reparent");
 	}
-
-	if (p_what == NOTIFICATION_DRAW) {
-
-		//RID ci = get_canvas_item();
-		//get_stylebox("panel","PopupMenu")->draw(ci,Rect2(Point2(),get_size()));
-	}
 }
 
 void ReparentDialog::_cancel() {

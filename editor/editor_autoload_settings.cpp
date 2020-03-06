@@ -834,7 +834,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	autoload_add_path = memnew(EditorLineEditFileChooser);
 	autoload_add_path->set_h_size_flags(SIZE_EXPAND_FILL);
-	autoload_add_path->get_file_dialog()->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	autoload_add_path->get_file_dialog()->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	autoload_add_path->get_file_dialog()->connect_compat("file_selected", this, "_autoload_file_callback");
 	autoload_add_path->get_line_edit()->connect_compat("text_changed", this, "_autoload_path_text_changed");
 

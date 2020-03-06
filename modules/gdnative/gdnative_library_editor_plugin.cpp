@@ -141,15 +141,15 @@ void GDNativeLibraryEditor::_on_item_button(Object *item, int column, int id) {
 
 	if (id == BUTTON_SELECT_LIBRARY || id == BUTTON_SELECT_DEPENDENCES) {
 
-		EditorFileDialog::Mode mode = EditorFileDialog::MODE_OPEN_FILE;
+		EditorFileDialog::FileMode mode = EditorFileDialog::FILE_MODE_OPEN_FILE;
 		if (id == BUTTON_SELECT_DEPENDENCES)
-			mode = EditorFileDialog::MODE_OPEN_FILES;
+			mode = EditorFileDialog::FILE_MODE_OPEN_FILES;
 
 		file_dialog->set_meta("target", target);
 		file_dialog->set_meta("section", section);
 		file_dialog->clear_filters();
 		file_dialog->add_filter(Object::cast_to<TreeItem>(item)->get_parent()->get_metadata(0));
-		file_dialog->set_mode(mode);
+		file_dialog->set_file_mode(mode);
 		file_dialog->popup_centered_ratio();
 
 	} else if (id == BUTTON_CLEAR_LIBRARY) {
@@ -380,7 +380,7 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 
 	file_dialog = memnew(EditorFileDialog);
 	file_dialog->set_access(EditorFileDialog::ACCESS_RESOURCES);
-	file_dialog->set_resizable(true);
+	//file_dialog->set_resizable(true);
 	add_child(file_dialog);
 	file_dialog->connect_compat("file_selected", this, "_on_library_selected");
 	file_dialog->connect_compat("files_selected", this, "_on_dependencies_selected");
@@ -390,7 +390,7 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 	new_architecture_dialog->set_title(TTR("Add an architecture entry"));
 	new_architecture_input = memnew(LineEdit);
 	new_architecture_dialog->add_child(new_architecture_input);
-	new_architecture_dialog->set_custom_minimum_size(Vector2(300, 80) * EDSCALE);
+	//	new_architecture_dialog->set_custom_minimum_size(Vector2(300, 80) * EDSCALE);
 	new_architecture_input->set_anchors_and_margins_preset(PRESET_HCENTER_WIDE, PRESET_MODE_MINSIZE, 5 * EDSCALE);
 	new_architecture_dialog->get_ok()->connect_compat("pressed", this, "_on_create_new_entry");
 }

@@ -129,7 +129,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 			return;
 		config_err = config_err.word_wrap(80);
 		warning->set_text(config_err);
-		warning->popup_centered_minsize();
+		warning->popup_centered();
 
 	} else if (p_id == BUTTON_SIGNALS) {
 
@@ -757,7 +757,7 @@ void SceneTreeEditor::_renamed() {
 	if (!Node::_validate_node_name(new_name)) {
 
 		error->set_text(TTR("Invalid node name, the following characters are not allowed:") + "\n" + Node::invalid_character);
-		error->popup_centered_minsize();
+		error->popup_centered();
 
 		if (new_name.empty()) {
 			which->set_text(0, n->get_name());
@@ -1208,17 +1208,18 @@ SceneTreeEditor::~SceneTreeEditor() {
 void SceneTreeDialog::_notification(int p_what) {
 
 	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+
+			if (is_visible())
+				tree->update_tree();
+		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			connect_compat("confirmed", this, "_select");
-			filter->set_right_icon(get_icon("Search", "EditorIcons"));
+			filter->set_right_icon(tree->get_icon("Search", "EditorIcons"));
 			filter->set_clear_button_enabled(true);
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect_compat("confirmed", this, "_select");
-		} break;
-		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (is_visible_in_tree())
-				tree->update_tree();
 		} break;
 	}
 }
@@ -1256,14 +1257,14 @@ SceneTreeDialog::SceneTreeDialog() {
 	add_child(vbc);
 
 	filter = memnew(LineEdit);
-	filter->set_h_size_flags(SIZE_EXPAND_FILL);
+	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	filter->set_placeholder(TTR("Filter nodes"));
 	filter->add_constant_override("minimum_spaces", 0);
 	filter->connect_compat("text_changed", this, "_filter_changed");
 	vbc->add_child(filter);
 
 	tree = memnew(SceneTreeEditor(false, false, true));
-	tree->set_v_size_flags(SIZE_EXPAND_FILL);
+	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tree->get_scene_tree()->connect_compat("item_activated", this, "_select");
 	vbc->add_child(tree);
 }

@@ -157,7 +157,7 @@ GIProbeEditorPlugin::GIProbeEditorPlugin(EditorNode *p_node) {
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, bake_hb);
 	gi_probe = NULL;
 	probe_file = memnew(EditorFileDialog);
-	probe_file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	probe_file->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	probe_file->add_filter("*.res");
 	probe_file->connect_compat("file_selected", this, "_giprobe_save_path_and_bake");
 	get_editor_interface()->get_base_control()->add_child(probe_file);

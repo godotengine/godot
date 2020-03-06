@@ -183,6 +183,7 @@ private:
 		uint64_t modal_frame; //frame used to put something as modal
 		Ref<Theme> theme;
 		Control *theme_owner;
+		Window *theme_owner_window;
 		String tooltip;
 		CursorShape default_cursor;
 
@@ -218,7 +219,6 @@ private:
 	void _set_global_position(const Point2 &p_point);
 	void _set_size(const Size2 &p_size);
 
-	void _propagate_theme_changed(CanvasItem *p_at, Control *p_owner, bool p_assign = true);
 	void _theme_changed();
 
 	void _change_notify_margins();
@@ -244,6 +244,13 @@ private:
 	void _modal_set_prev_focus_owner(ObjectID p_prev);
 
 	void _update_minimum_size_cache();
+	friend class Window;
+	static void _propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_owner_window, bool p_assign = true);
+
+	template <class T>
+	_FORCE_INLINE_ bool _find_theme_item(T &, T (Theme::*get_func)(const StringName &, const StringName &) const, bool (Theme::*has_func)(const StringName &, const StringName &) const, const StringName &p_name, const StringName &p_type) const;
+
+	_FORCE_INLINE_ bool _has_theme_item(bool (Theme::*has_func)(const StringName &, const StringName &) const, const StringName &p_name, const StringName &p_type) const;
 
 protected:
 	virtual void add_child_notify(Node *p_child);

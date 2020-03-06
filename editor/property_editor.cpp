@@ -151,7 +151,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 			switch (p_which) {
 				case OBJ_MENU_LOAD: {
 
-					file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+					file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 					String type = (hint == PROPERTY_HINT_RESOURCE_TYPE) ? hint_text : String();
 
 					List<String> extensions;
@@ -1105,7 +1105,7 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 			RES res = ResourceLoader::load(p_file, type);
 			if (res.is_null()) {
 				error->set_text(TTR("Error loading file: Not a resource!"));
-				error->popup_centered_minsize();
+				error->popup_centered();
 				break;
 			}
 			v = res;
@@ -1282,7 +1282,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 					else
 						file->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 
-					file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+					file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 					file->clear_filters();
 
 					file->clear_filters();
@@ -1316,7 +1316,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 						file->set_access(EditorFileDialog::ACCESS_RESOURCES);
 					else
 						file->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-					file->set_mode(EditorFileDialog::MODE_OPEN_DIR);
+					file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
 					file->clear_filters();
 					file->popup_centered_ratio();
 				} else {
@@ -1385,7 +1385,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 			} else if (p_which == 1) {
 
 				file->set_access(EditorFileDialog::ACCESS_RESOURCES);
-				file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+				file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 				List<String> extensions;
 				String type = (hint == PROPERTY_HINT_RESOURCE_TYPE) ? hint_text : String();
 

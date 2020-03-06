@@ -249,10 +249,10 @@ void EditorPropertyPath::_path_pressed() {
 	}
 
 	if (folder) {
-		dialog->set_mode(EditorFileDialog::MODE_OPEN_DIR);
+		dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
 		dialog->set_current_dir(full_path);
 	} else {
-		dialog->set_mode(save_mode ? EditorFileDialog::MODE_SAVE_FILE : EditorFileDialog::MODE_OPEN_FILE);
+		dialog->set_file_mode(save_mode ? EditorFileDialog::FILE_MODE_SAVE_FILE : EditorFileDialog::FILE_MODE_OPEN_FILE);
 		for (int i = 0; i < extensions.size(); i++) {
 			String e = extensions[i].strip_edges();
 			if (e != String()) {
@@ -2138,7 +2138,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 				file->connect_compat("file_selected", this, "_file_selected");
 				add_child(file);
 			}
-			file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+			file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 			String type = base_type;
 
 			List<String> extensions;
