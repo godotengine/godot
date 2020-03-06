@@ -253,7 +253,7 @@ void MeshLibraryEditor::_bind_methods() {
 MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 
 	file = memnew(EditorFileDialog);
-	file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	//not for now?
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);

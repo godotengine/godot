@@ -64,6 +64,7 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	Object *instance;
 	bool virtuals_only;
 	bool seq_connect;
+	VBoxContainer *vbc;
 
 	Vector<Variant::Type> type_filter;
 

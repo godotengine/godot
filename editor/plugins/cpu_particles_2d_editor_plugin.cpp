@@ -60,7 +60,7 @@ void CPUParticles2DEditorPlugin::make_visible(bool p_visible) {
 void CPUParticles2DEditorPlugin::_file_selected(const String &p_file) {
 
 	source_emission_file = p_file;
-	emission_mask->popup_centered_minsize();
+	emission_mask->popup_centered();
 }
 
 void CPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
@@ -73,7 +73,7 @@ void CPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 		} break;
 		case MENU_CLEAR_EMISSION_MASK: {
 
-			emission_mask->popup_centered_minsize();
+			emission_mask->popup_centered();
 		} break;
 		case MENU_RESTART: {
 
@@ -276,7 +276,7 @@ CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin(EditorNode *p_node) {
 	for (List<String>::Element *E = ext.front(); E; E = E->next()) {
 		file->add_filter("*." + E->get() + "; " + E->get().to_upper());
 	}
-	file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	toolbar->add_child(file);
 
 	epoints = memnew(SpinBox);

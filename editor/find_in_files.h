@@ -120,10 +120,11 @@ public:
 	Set<String> get_filter() const;
 
 protected:
-	static void _bind_methods();
-
 	void _notification(int p_what);
+
+	void _visibility_changed();
 	void custom_action(const String &p_action);
+	static void _bind_methods();
 
 private:
 	void _on_folder_button_pressed();

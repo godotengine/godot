@@ -230,7 +230,7 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 		case ITEM_MENU_SAVE_REMOTE_NODE: {
 
 			file_dialog->set_access(EditorFileDialog::ACCESS_RESOURCES);
-			file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+			file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 
 			List<String> extensions;
 			Ref<PackedScene> sd = memnew(PackedScene);

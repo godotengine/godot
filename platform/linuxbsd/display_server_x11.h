@@ -140,7 +140,7 @@ class DisplayServerX11 : public DisplayServer {
 	Map<WindowID, WindowData> windows;
 
 	WindowID window_id_counter = MAIN_WINDOW_ID;
-	WindowID _create_window(WindowMode p_mode, const Vector2i &p_resolution);
+	WindowID _create_window(WindowMode p_mode, const Rect2i &p_rect);
 
 	String internal_clipboard;
 	Window xdnd_source_window;

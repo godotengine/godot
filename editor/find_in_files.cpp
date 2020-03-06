@@ -299,14 +299,14 @@ const char *FindInFilesDialog::SIGNAL_REPLACE_REQUESTED = "replace_requested";
 
 FindInFilesDialog::FindInFilesDialog() {
 
-	set_custom_minimum_size(Size2(500 * EDSCALE, 0));
+	set_min_size(Size2(500 * EDSCALE, 0));
 	set_title(TTR("Find in Files"));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, -8 * EDSCALE);
+	vbc->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_BEGIN, 8 * EDSCALE);
+	vbc->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, 8 * EDSCALE);
+	vbc->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -8 * EDSCALE);
+	vbc->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, -8 * EDSCALE);
 	add_child(vbc);
 
 	GridContainer *gc = memnew(GridContainer);
@@ -318,7 +318,7 @@ FindInFilesDialog::FindInFilesDialog() {
 	gc->add_child(find_label);
 
 	_search_text_line_edit = memnew(LineEdit);
-	_search_text_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
+	_search_text_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	_search_text_line_edit->connect("text_changed", callable_mp(this, &FindInFilesDialog::_on_search_text_modified));
 	_search_text_line_edit->connect("text_entered", callable_mp(this, &FindInFilesDialog::_on_search_text_entered));
 	gc->add_child(_search_text_line_edit);
@@ -329,7 +329,7 @@ FindInFilesDialog::FindInFilesDialog() {
 	gc->add_child(_replace_label);
 
 	_replace_text_line_edit = memnew(LineEdit);
-	_replace_text_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
+	_replace_text_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	_replace_text_line_edit->connect("text_entered", callable_mp(this, &FindInFilesDialog::_on_replace_text_entered));
 	_replace_text_line_edit->hide();
 	gc->add_child(_replace_text_line_edit);
@@ -362,7 +362,7 @@ FindInFilesDialog::FindInFilesDialog() {
 		hbc->add_child(prefix_label);
 
 		_folder_line_edit = memnew(LineEdit);
-		_folder_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
+		_folder_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hbc->add_child(_folder_line_edit);
 
 		Button *folder_button = memnew(Button);
@@ -371,7 +371,7 @@ FindInFilesDialog::FindInFilesDialog() {
 		hbc->add_child(folder_button);
 
 		_folder_dialog = memnew(FileDialog);
-		_folder_dialog->set_mode(FileDialog::MODE_OPEN_DIR);
+		_folder_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_DIR);
 		_folder_dialog->connect("dir_selected", callable_mp(this, &FindInFilesDialog::_on_folder_selected));
 		add_child(_folder_dialog);
 
@@ -464,6 +464,7 @@ Set<String> FindInFilesDialog::get_filter() const {
 
 void FindInFilesDialog::_notification(int p_what) {
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+
 		if (is_visible()) {
 			// Doesn't work more than once if not deferred...
 			_search_text_line_edit->call_deferred("grab_focus");

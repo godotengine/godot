@@ -117,22 +117,22 @@ private:
 
 			case MESSAGE_ERROR: {
 
-				msg->add_color_override("font_color", get_color("error_color", "Editor"));
+				msg->add_color_override("font_color", msg->get_color("error_color", "Editor"));
 				msg->set_modulate(Color(1, 1, 1, 1));
-				new_icon = get_icon("StatusError", "EditorIcons");
+				new_icon = msg->get_icon("StatusError", "EditorIcons");
 
 			} break;
 			case MESSAGE_WARNING: {
 
-				msg->add_color_override("font_color", get_color("warning_color", "Editor"));
+				msg->add_color_override("font_color", msg->get_color("warning_color", "Editor"));
 				msg->set_modulate(Color(1, 1, 1, 1));
-				new_icon = get_icon("StatusWarning", "EditorIcons");
+				new_icon = msg->get_icon("StatusWarning", "EditorIcons");
 
 			} break;
 			case MESSAGE_SUCCESS: {
 
 				msg->set_modulate(Color(1, 1, 1, 0));
-				new_icon = get_icon("StatusSuccess", "EditorIcons");
+				new_icon = msg->get_icon("StatusSuccess", "EditorIcons");
 
 			} break;
 		}
@@ -379,19 +379,19 @@ private:
 
 		if (mode == MODE_IMPORT) {
 
-			fdialog->set_mode(FileDialog::MODE_OPEN_FILE);
+			fdialog->set_file_mode(FileDialog::FILE_MODE_OPEN_FILE);
 			fdialog->clear_filters();
 			fdialog->add_filter(vformat("project.godot ; %s %s", VERSION_NAME, TTR("Project")));
 			fdialog->add_filter("*.zip ; " + TTR("ZIP File"));
 		} else {
-			fdialog->set_mode(FileDialog::MODE_OPEN_DIR);
+			fdialog->set_file_mode(FileDialog::FILE_MODE_OPEN_DIR);
 		}
 		fdialog->popup_centered_ratio();
 	}
 
 	void _browse_install_path() {
 		fdialog_install->set_current_dir(install_path->get_text());
-		fdialog_install->set_mode(FileDialog::MODE_OPEN_DIR);
+		fdialog_install->set_file_mode(FileDialog::FILE_MODE_OPEN_DIR);
 		fdialog_install->popup_centered_ratio();
 	}
 
@@ -418,12 +418,12 @@ private:
 				} else {
 
 					dialog_error->set_text(TTR("Couldn't create folder."));
-					dialog_error->popup_centered_minsize();
+					dialog_error->popup_centered();
 				}
 			} else {
 
 				dialog_error->set_text(TTR("There is already a folder in this path with the specified name."));
-				dialog_error->popup_centered_minsize();
+				dialog_error->popup_centered();
 			}
 		}
 
@@ -500,7 +500,7 @@ private:
 					if (ProjectSettings::get_singleton()->save_custom(dir.plus_file("project.godot"), initial_settings, Vector<String>(), false) != OK) {
 						set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
 					} else {
-						ResourceSaver::save(dir.plus_file("icon.png"), get_icon("DefaultProjectIcon", "EditorIcons"));
+						ResourceSaver::save(dir.plus_file("icon.png"), msg->get_icon("DefaultProjectIcon", "EditorIcons"));
 
 						FileAccess *f = FileAccess::open(dir.plus_file("default_env.tres"), FileAccess::WRITE);
 						if (!f) {
@@ -529,7 +529,7 @@ private:
 					if (!pkg) {
 
 						dialog_error->set_text(TTR("Error opening package file, not in ZIP format."));
-						dialog_error->popup_centered_minsize();
+						dialog_error->popup_centered();
 						return;
 					}
 
@@ -607,11 +607,11 @@ private:
 						}
 
 						dialog_error->set_text(msg);
-						dialog_error->popup_centered_minsize();
+						dialog_error->popup_centered();
 
 					} else if (!project_path->get_text().ends_with(".zip")) {
 						dialog_error->set_text(TTR("Package installed successfully!"));
-						dialog_error->popup_centered_minsize();
+						dialog_error->popup_centered();
 					}
 				}
 			}
@@ -649,10 +649,10 @@ private:
 		project_name->clear();
 		_text_changed("");
 
-		if (status_rect->get_texture() == get_icon("StatusError", "EditorIcons"))
+		if (status_rect->get_texture() == msg->get_icon("StatusError", "EditorIcons"))
 			msg->show();
 
-		if (install_status_rect->get_texture() == get_icon("StatusError", "EditorIcons"))
+		if (install_status_rect->get_texture() == msg->get_icon("StatusError", "EditorIcons"))
 			msg->show();
 	}
 
@@ -788,7 +788,7 @@ public:
 			_test_path();
 		}
 
-		popup_centered_minsize(Size2(500, 0) * EDSCALE);
+		popup_centered(Size2(500, 0) * EDSCALE);
 	}
 
 	ProjectDialog() {
@@ -807,7 +807,7 @@ public:
 		name_container->add_child(pnhb);
 
 		project_name = memnew(LineEdit);
-		project_name->set_h_size_flags(SIZE_EXPAND_FILL);
+		project_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		pnhb->add_child(project_name);
 
 		create_dir = memnew(Button);
@@ -826,7 +826,7 @@ public:
 		path_container->add_child(pphb);
 
 		project_path = memnew(LineEdit);
-		project_path->set_h_size_flags(SIZE_EXPAND_FILL);
+		project_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		pphb->add_child(project_path);
 
 		install_path_container = memnew(VBoxContainer);
@@ -840,7 +840,7 @@ public:
 		install_path_container->add_child(iphb);
 
 		install_path = memnew(LineEdit);
-		install_path->set_h_size_flags(SIZE_EXPAND_FILL);
+		install_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		iphb->add_child(install_path);
 
 		// status icon
@@ -878,7 +878,7 @@ public:
 		rasterizer_button_group.instance();
 
 		Container *rvb = memnew(VBoxContainer);
-		rvb->set_h_size_flags(SIZE_EXPAND_FILL);
+		rvb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		rshb->add_child(rvb);
 		Button *rs_button = memnew(CheckBox);
 		rs_button->set_button_group(rasterizer_button_group);
@@ -897,7 +897,7 @@ public:
 				TTR("The GLES2 renderer is currently unavailable, as it needs to be reworked for Godot 4.0.\nUse Godot 3.2 if you need GLES2 support.");
 
 		rvb = memnew(VBoxContainer);
-		rvb->set_h_size_flags(SIZE_EXPAND_FILL);
+		rvb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		rshb->add_child(rvb);
 		rs_button = memnew(CheckBox);
 		rs_button->set_button_group(rasterizer_button_group);
@@ -912,7 +912,7 @@ public:
 		// Also set the tooltip on the label so it appears when hovering either the checkbox or label.
 		l->set_tooltip(gles2_unsupported_tooltip);
 		// Required for the tooltip to show.
-		l->set_mouse_filter(MOUSE_FILTER_STOP);
+		l->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 		rvb->add_child(l);
 
 		l = memnew(Label);
@@ -1118,7 +1118,7 @@ ProjectList::ProjectList() {
 	_order_option = ProjectListFilter::FILTER_EDIT_DATE;
 
 	_scroll_children = memnew(VBoxContainer);
-	_scroll_children->set_h_size_flags(SIZE_EXPAND_FILL);
+	_scroll_children->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_child(_scroll_children);
 
 	_icon_load_index = 0;
@@ -1359,7 +1359,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	VBoxContainer *vb = memnew(VBoxContainer);
 	if (item.grayed)
 		vb->set_modulate(Color(1, 1, 1, 0.5));
-	vb->set_h_size_flags(SIZE_EXPAND_FILL);
+	vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->add_child(vb);
 	Control *ec = memnew(Control);
 	ec->set_custom_minimum_size(Size2(0, 1));
@@ -1372,7 +1372,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	vb->add_child(title);
 
 	HBoxContainer *path_hb = memnew(HBoxContainer);
-	path_hb->set_h_size_flags(SIZE_EXPAND_FILL);
+	path_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	vb->add_child(path_hb);
 
 	Button *show = memnew(Button);
@@ -1394,7 +1394,7 @@ void ProjectList::create_project_item_control(int p_index) {
 
 	Label *fpath = memnew(Label(item.path));
 	path_hb->add_child(fpath);
-	fpath->set_h_size_flags(SIZE_EXPAND_FILL);
+	fpath->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	fpath->set_modulate(Color(1, 1, 1, 0.5));
 	fpath->add_color_override("font_color", font_color);
 	fpath->set_clip_text(true);
@@ -1833,13 +1833,13 @@ void ProjectManager::_notification(int p_what) {
 		case NOTIFICATION_RESIZED: {
 
 			if (open_templates->is_visible()) {
-				open_templates->popup_centered_minsize();
+				open_templates->popup_centered();
 			}
 		} break;
 		case NOTIFICATION_READY: {
 
 			if (_project_list->get_project_count() == 0 && StreamPeerSSL::is_available())
-				open_templates->popup_centered_minsize();
+				open_templates->popup_centered();
 
 			if (_project_list->get_project_count() >= 1) {
 				// Focus on the search box immediately to allow the user
@@ -2059,7 +2059,7 @@ void ProjectManager::_open_selected_projects() {
 
 		if (!FileAccess::exists(conf)) {
 			dialog_error->set_text(vformat(TTR("Can't open project at '%s'."), path));
-			dialog_error->popup_centered_minsize();
+			dialog_error->popup_centered();
 			return;
 		}
 
@@ -2097,7 +2097,7 @@ void ProjectManager::_open_selected_projects_ask() {
 
 	if (selected_list.size() > 1) {
 		multi_open_ask->set_text(TTR("Are you sure to open more than one project?"));
-		multi_open_ask->popup_centered_minsize();
+		multi_open_ask->popup_centered();
 		return;
 	}
 
@@ -2113,19 +2113,19 @@ void ProjectManager::_open_selected_projects_ask() {
 	// Check if the config_version property was empty or 0
 	if (config_version == 0) {
 		ask_update_settings->set_text(vformat(TTR("The following project settings file does not specify the version of Godot through which it was created.\n\n%s\n\nIf you proceed with opening it, it will be converted to Godot's current configuration file format.\nWarning: You won't be able to open the project with previous versions of the engine anymore."), conf));
-		ask_update_settings->popup_centered_minsize();
+		ask_update_settings->popup_centered();
 		return;
 	}
 	// Check if we need to convert project settings from an earlier engine version
 	if (config_version < ProjectSettings::CONFIG_VERSION) {
 		ask_update_settings->set_text(vformat(TTR("The following project settings file was generated by an older engine version, and needs to be converted for this version:\n\n%s\n\nDo you want to convert it?\nWarning: You won't be able to open the project with previous versions of the engine anymore."), conf));
-		ask_update_settings->popup_centered_minsize();
+		ask_update_settings->popup_centered();
 		return;
 	}
 	// Check if the file was generated by a newer, incompatible engine version
 	if (config_version > ProjectSettings::CONFIG_VERSION) {
 		dialog_error->set_text(vformat(TTR("Can't open project at '%s'.") + "\n" + TTR("The project settings were created by a newer engine version, whose settings are not compatible with this version."), project.path));
-		dialog_error->popup_centered_minsize();
+		dialog_error->popup_centered();
 		return;
 	}
 
@@ -2185,7 +2185,7 @@ void ProjectManager::_run_project() {
 
 	if (selected_list.size() > 1) {
 		multi_run_ask->set_text(vformat(TTR("Are you sure to run %d projects at once?"), selected_list.size()));
-		multi_run_ask->popup_centered_minsize();
+		multi_run_ask->popup_centered();
 	} else {
 		_run_project_confirm();
 	}
@@ -2282,13 +2282,13 @@ void ProjectManager::_erase_project() {
 	}
 
 	erase_ask->set_text(confirm_message);
-	erase_ask->popup_centered_minsize();
+	erase_ask->popup_centered();
 }
 
 void ProjectManager::_erase_missing_projects() {
 
 	erase_missing_ask->set_text(TTR("Remove all missing projects from the list?\nThe project folders' contents won't be modified."));
-	erase_missing_ask->popup_centered_minsize();
+	erase_missing_ask->popup_centered();
 }
 
 void ProjectManager::_language_selected(int p_id) {
@@ -2363,7 +2363,7 @@ void ProjectManager::_files_dropped(PackedStringArray p_files, int p_screen) {
 			multi_scan_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_scan_multiple_folders), varray(folders));
 			multi_scan_ask->set_text(
 					vformat(TTR("Are you sure to scan %s folders for existing Godot projects?\nThis could take a while."), folders.size()));
-			multi_scan_ask->popup_centered_minsize();
+			multi_scan_ask->popup_centered();
 		} else {
 			_scan_multiple_folders(folders);
 		}
@@ -2468,7 +2468,7 @@ ProjectManager::ProjectManager() {
 	DisplayServer::get_singleton()->window_set_title(VERSION_NAME + String(" - ") + TTR("Project Manager") + " - " + cp + " 2007-2020 Juan Linietsky, Ariel Manzur & Godot Contributors");
 
 	Control *center_box = memnew(Control);
-	center_box->set_v_size_flags(SIZE_EXPAND_FILL);
+	center_box->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vb->add_child(center_box);
 
 	tabs = memnew(TabContainer);
@@ -2485,7 +2485,7 @@ ProjectManager::ProjectManager() {
 
 	VBoxContainer *search_tree_vb = memnew(VBoxContainer);
 	tree_hb->add_child(search_tree_vb);
-	search_tree_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+	search_tree_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	HBoxContainer *sort_filters = memnew(HBoxContainer);
 	Label *sort_label = memnew(Label);
@@ -2519,7 +2519,7 @@ ProjectManager::ProjectManager() {
 	PanelContainer *pc = memnew(PanelContainer);
 	pc->add_style_override("panel", gui_base->get_stylebox("bg", "Tree"));
 	search_tree_vb->add_child(pc);
-	pc->set_v_size_flags(SIZE_EXPAND_FILL);
+	pc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	_project_list = memnew(ProjectList);
 	_project_list->connect(ProjectList::SIGNAL_SELECTION_CHANGED, callable_mp(this, &ProjectManager::_update_project_buttons));
@@ -2553,7 +2553,7 @@ ProjectManager::ProjectManager() {
 
 	scan_dir = memnew(FileDialog);
 	scan_dir->set_access(FileDialog::ACCESS_FILESYSTEM);
-	scan_dir->set_mode(FileDialog::MODE_OPEN_DIR);
+	scan_dir->set_file_mode(FileDialog::FILE_MODE_OPEN_DIR);
 	scan_dir->set_title(TTR("Select a Folder to Scan")); // must be after mode or it's overridden
 	scan_dir->set_current_dir(EditorSettings::get_singleton()->get("filesystem/directories/default_project_path"));
 	gui_base->add_child(scan_dir);
@@ -2775,7 +2775,7 @@ void ProjectListFilter::add_search_box() {
 	search_box = memnew(LineEdit);
 	search_box->set_placeholder(TTR("Search"));
 	search_box->connect("text_changed", callable_mp(this, &ProjectListFilter::_search_text_changed));
-	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_child(search_box);
 
 	has_search_box = true;

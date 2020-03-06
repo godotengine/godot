@@ -979,7 +979,7 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 
 void ScriptEditorDebugger::_export_csv() {
 
-	file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_dialog->popup_centered_ratio();
 }

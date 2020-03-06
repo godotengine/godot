@@ -59,7 +59,7 @@ void Skeleton2DEditor::_menu_option(int p_option) {
 
 			if (node->get_bone_count() == 0) {
 				err_dialog->set_text(TTR("This skeleton has no bones, create some children Bone2D nodes."));
-				err_dialog->popup_centered_minsize();
+				err_dialog->popup_centered();
 				return;
 			}
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
@@ -75,7 +75,7 @@ void Skeleton2DEditor::_menu_option(int p_option) {
 		case MENU_OPTION_SET_REST: {
 			if (node->get_bone_count() == 0) {
 				err_dialog->set_text(TTR("This skeleton has no bones, create some children Bone2D nodes."));
-				err_dialog->popup_centered_minsize();
+				err_dialog->popup_centered();
 				return;
 			}
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();

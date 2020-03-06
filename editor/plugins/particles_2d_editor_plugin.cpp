@@ -60,7 +60,7 @@ void Particles2DEditorPlugin::make_visible(bool p_visible) {
 void Particles2DEditorPlugin::_file_selected(const String &p_file) {
 
 	source_emission_file = p_file;
-	emission_mask->popup_centered_minsize();
+	emission_mask->popup_centered();
 }
 
 void Particles2DEditorPlugin::_menu_callback(int p_idx) {
@@ -72,7 +72,7 @@ void Particles2DEditorPlugin::_menu_callback(int p_idx) {
 				generate_seconds->set_value(1.0);
 			else
 				generate_seconds->set_value(trunc(gen_time) + 1.0);
-			generate_visibility_rect->popup_centered_minsize();
+			generate_visibility_rect->popup_centered();
 		} break;
 		case MENU_LOAD_EMISSION_MASK: {
 
@@ -81,7 +81,7 @@ void Particles2DEditorPlugin::_menu_callback(int p_idx) {
 		} break;
 		case MENU_CLEAR_EMISSION_MASK: {
 
-			emission_mask->popup_centered_minsize();
+			emission_mask->popup_centered();
 		} break;
 		case MENU_OPTION_CONVERT_TO_CPU_PARTICLES: {
 
@@ -389,7 +389,7 @@ Particles2DEditorPlugin::Particles2DEditorPlugin(EditorNode *p_node) {
 	for (List<String>::Element *E = ext.front(); E; E = E->next()) {
 		file->add_filter("*." + E->get() + "; " + E->get().to_upper());
 	}
-	file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	toolbar->add_child(file);
 
 	epoints = memnew(SpinBox);

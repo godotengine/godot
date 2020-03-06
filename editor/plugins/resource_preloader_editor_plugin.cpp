@@ -67,7 +67,7 @@ void ResourcePreloaderEditor::_files_load_request(const Vector<String> &p_paths)
 			dialog->set_title(TTR("Error!"));
 			//dialog->get_cancel()->set_text("Close");
 			dialog->get_ok()->set_text(TTR("Close"));
-			dialog->popup_centered_minsize();
+			dialog->popup_centered();
 			return; ///beh should show an error i guess
 		}
 
@@ -98,7 +98,7 @@ void ResourcePreloaderEditor::_load_pressed() {
 	for (int i = 0; i < extensions.size(); i++)
 		file->add_filter("*." + extensions[i]);
 
-	file->set_mode(EditorFileDialog::MODE_OPEN_FILES);
+	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
 
 	file->popup_centered_ratio();
 }
@@ -152,7 +152,7 @@ void ResourcePreloaderEditor::_paste_pressed() {
 		dialog->set_text(TTR("Resource clipboard is empty!"));
 		dialog->set_title(TTR("Error!"));
 		dialog->get_ok()->set_text(TTR("Close"));
-		dialog->popup_centered_minsize();
+		dialog->popup_centered();
 		return; ///beh should show an error i guess
 	}
 

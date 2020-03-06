@@ -1648,7 +1648,7 @@ void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos) {
 
 	// keep dialog within window bounds
 	Size2 window_size = DisplayServer::get_singleton()->window_get_size();
-	Rect2 dialog_rect = members_dialog->get_global_rect();
+	Rect2 dialog_rect = Rect2(members_dialog->get_position(), members_dialog->get_size());
 	if (dialog_rect.position.y + dialog_rect.size.y > window_size.y) {
 		int difference = dialog_rect.position.y + dialog_rect.size.y - window_size.y;
 		members_dialog->set_position(members_dialog->get_position() - Point2(0, difference));
@@ -2490,13 +2490,10 @@ VisualShaderEditor::VisualShaderEditor() {
 	members_dialog->get_ok()->set_text(TTR("Create"));
 	members_dialog->get_ok()->connect("pressed", callable_mp(this, &VisualShaderEditor::_member_create));
 	members_dialog->get_ok()->set_disabled(true);
-	members_dialog->set_resizable(true);
-	members_dialog->set_as_minsize();
-	members_dialog->connect("hide", callable_mp(this, &VisualShaderEditor::_member_cancel));
+	members_dialog->connect("cancelled", callable_mp(this, &VisualShaderEditor::_member_cancel));
 	add_child(members_dialog);
 
 	alert = memnew(AcceptDialog);
-	alert->set_as_minsize();
 	alert->get_label()->set_autowrap(true);
 	alert->get_label()->set_align(Label::ALIGN_CENTER);
 	alert->get_label()->set_valign(Label::VALIGN_CENTER);

@@ -133,7 +133,7 @@ void SceneTreeDock::instance(const String &p_file) {
 
 		current_option = -1;
 		accept->set_text(TTR("No parent to instance a child at."));
-		accept->popup_centered_minsize();
+		accept->popup_centered();
 		return;
 	};
 
@@ -155,7 +155,7 @@ void SceneTreeDock::instance_scenes(const Vector<String> &p_files, Node *p_paren
 	if (!parent || !edited_scene) {
 
 		accept->set_text(TTR("No parent to instance the scenes at."));
-		accept->popup_centered_minsize();
+		accept->popup_centered();
 		return;
 	};
 
@@ -176,7 +176,7 @@ void SceneTreeDock::_perform_instance_scenes(const Vector<String> &p_files, Node
 		if (!sdata.is_valid()) {
 			current_option = -1;
 			accept->set_text(vformat(TTR("Error loading scene from %s"), p_files[i]));
-			accept->popup_centered_minsize();
+			accept->popup_centered();
 			error = true;
 			break;
 		}
@@ -185,7 +185,7 @@ void SceneTreeDock::_perform_instance_scenes(const Vector<String> &p_files, Node
 		if (!instanced_scene) {
 			current_option = -1;
 			accept->set_text(vformat(TTR("Error instancing scene from %s"), p_files[i]));
-			accept->popup_centered_minsize();
+			accept->popup_centered();
 			error = true;
 			break;
 		}
@@ -195,7 +195,7 @@ void SceneTreeDock::_perform_instance_scenes(const Vector<String> &p_files, Node
 			if (_cyclical_dependency_exists(edited_scene->get_filename(), instanced_scene)) {
 
 				accept->set_text(vformat(TTR("Cannot instance the scene '%s' because the current scene exists within one of its nodes."), p_files[i]));
-				accept->popup_centered_minsize();
+				accept->popup_centered();
 				error = true;
 				break;
 			}
@@ -242,14 +242,14 @@ void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base)
 	Ref<PackedScene> sdata = ResourceLoader::load(p_file);
 	if (!sdata.is_valid()) {
 		accept->set_text(vformat(TTR("Error loading scene from %s"), p_file));
-		accept->popup_centered_minsize();
+		accept->popup_centered();
 		return;
 	}
 
 	Node *instanced_scene = sdata->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
 	if (!instanced_scene) {
 		accept->set_text(vformat(TTR("Error instancing scene from %s"), p_file));
-		accept->popup_centered_minsize();
+		accept->popup_centered();
 		return;
 	}
 
@@ -473,7 +473,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 				current_option = -1;
 				accept->set_text(TTR("This operation can't be done on the tree root."));
-				accept->popup_centered_minsize();
+				accept->popup_centered();
 				break;
 			}
 
@@ -537,7 +537,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 				current_option = -1;
 				accept->set_text(TTR("This operation can't be done on the tree root."));
-				accept->popup_centered_minsize();
+				accept->popup_centered();
 				break;
 			}
 
@@ -620,7 +620,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 				current_option = -1;
 				accept->set_text(TTR("This operation can't be done on the tree root."));
-				accept->popup_centered_minsize();
+				accept->popup_centered();
 				break;
 			}
 
@@ -656,19 +656,19 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			if (root->get_scene_inherited_state().is_valid()) {
 				accept->set_text(TTR("Can't reparent nodes in inherited scenes, order of nodes can't change."));
-				accept->popup_centered_minsize();
+				accept->popup_centered();
 				return;
 			}
 
 			if (node->get_owner() != root) {
 				accept->set_text(TTR("Node must belong to the edited scene to become root."));
-				accept->popup_centered_minsize();
+				accept->popup_centered();
 				return;
 			}
 
 			if (node->get_filename() != String()) {
 				accept->set_text(TTR("Instantiated scenes can't become root"));
-				accept->popup_centered_minsize();
+				accept->popup_centered();
 				return;
 			}
 
@@ -747,7 +747,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				// This prevents the dialog from being too wide after displaying
 				// a deletion confirmation for a node with a long name.
 				delete_dialog->set_size(Size2());
-				delete_dialog->popup_centered_minsize();
+				delete_dialog->popup_centered();
 			}
 
 		} break;
@@ -769,7 +769,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			if (!scene) {
 				accept->set_text(TTR("This operation can't be done without a scene."));
-				accept->popup_centered_minsize();
+				accept->popup_centered();
 				break;
 			}
 
@@ -777,7 +777,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			if (selection.size() != 1) {
 				accept->set_text(TTR("This operation requires a single selected node."));
-				accept->popup_centered_minsize();
+				accept->popup_centered();
 				break;
 			}
 
@@ -785,17 +785,17 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			if (tocopy == scene) {
 				accept->set_text(TTR("Can not perform with the root node."));
-				accept->popup_centered_minsize();
+				accept->popup_centered();
 				break;
 			}
 
 			if (tocopy != editor_data->get_edited_scene_root() && tocopy->get_filename() != "") {
 				accept->set_text(TTR("This operation can't be done on instanced scenes."));
-				accept->popup_centered_minsize();
+				accept->popup_centered();
 				break;
 			}
 
-			new_scene_from_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+			new_scene_from_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 
 			List<String> extensions;
 			Ref<PackedScene> sd = memnew(PackedScene);
@@ -850,7 +850,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 					if (editable) {
 						editable_instance_remove_dialog->set_text(TTR("Disabling \"editable_instance\" will cause all properties of the node to be reverted to their default."));
-						editable_instance_remove_dialog->popup_centered_minsize();
+						editable_instance_remove_dialog->popup_centered();
 						break;
 					}
 					_toggle_editable_children(node);
@@ -874,7 +874,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					// Fire confirmation dialog when children are editable.
 					if (editable && !placeholder) {
 						placeholder_editable_instance_remove_dialog->set_text(TTR("Enabling \"Load As Placeholder\" will disable \"Editable Children\" and cause all properties of the node to be reverted to their default."));
-						placeholder_editable_instance_remove_dialog->popup_centered_minsize();
+						placeholder_editable_instance_remove_dialog->popup_centered();
 						break;
 					}
 
@@ -931,7 +931,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			clear_inherit_confirm->popup_centered_minsize();
+			clear_inherit_confirm->popup_centered();
 		} break;
 		case TOOL_SCENE_CLEAR_INHERITANCE_CONFIRM: {
 			if (!profile_allow_editing) {
@@ -1480,7 +1480,7 @@ bool SceneTreeDock::_validate_no_foreign() {
 		if (E->get() != edited_scene && E->get()->get_owner() != edited_scene) {
 
 			accept->set_text(TTR("Can't operate on nodes from a foreign scene!"));
-			accept->popup_centered_minsize();
+			accept->popup_centered();
 			return false;
 		}
 
@@ -1494,7 +1494,7 @@ bool SceneTreeDock::_validate_no_foreign() {
 		if (edited_scene->get_scene_inherited_state().is_valid() && edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(E->get())) >= 0) {
 
 			accept->set_text(TTR("Can't operate on nodes the current scene inherits from!"));
-			accept->popup_centered_minsize();
+			accept->popup_centered();
 			return false;
 		}
 	}
@@ -2189,13 +2189,13 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 
 	if (selection.size() != 1) {
 		accept->set_text(TTR("This operation requires a single selected node."));
-		accept->popup_centered_minsize();
+		accept->popup_centered();
 		return;
 	}
 
 	if (EditorNode::get_singleton()->is_scene_open(p_file)) {
 		accept->set_text(TTR("Can't overwrite scene that is still open!"));
-		accept->popup_centered_minsize();
+		accept->popup_centered();
 		return;
 	}
 
@@ -2212,7 +2212,7 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 
 		if (err != OK) {
 			accept->set_text(TTR("Couldn't save new scene. Likely dependencies (instances) couldn't be satisfied."));
-			accept->popup_centered_minsize();
+			accept->popup_centered();
 			return;
 		}
 
@@ -2223,13 +2223,13 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 		err = ResourceSaver::save(p_file, sdata, flg);
 		if (err != OK) {
 			accept->set_text(TTR("Error saving scene."));
-			accept->popup_centered_minsize();
+			accept->popup_centered();
 			return;
 		}
 		_replace_with_branch_scene(p_file, base);
 	} else {
 		accept->set_text(TTR("Error duplicating scene to save it."));
-		accept->popup_centered_minsize();
+		accept->popup_centered();
 		return;
 	}
 }
@@ -2941,7 +2941,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	import_subscene_dialog->connect("subscene_selected", callable_mp(this, &SceneTreeDock::_import_subscene));
 
 	new_scene_from_dialog = memnew(EditorFileDialog);
-	new_scene_from_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	new_scene_from_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	add_child(new_scene_from_dialog);
 	new_scene_from_dialog->connect("file_selected", callable_mp(this, &SceneTreeDock::_new_scene_from));
 

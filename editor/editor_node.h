@@ -350,11 +350,14 @@ private:
 	Button *new_inherited_button;
 	String open_import_request;
 
+	Vector<Control *> floating_docks;
+
 	TabContainer *dock_slot[DOCK_SLOT_MAX];
 	Rect2 dock_select_rect[DOCK_SLOT_MAX];
 	int dock_select_rect_over;
 	PopupPanel *dock_select_popup;
 	Control *dock_select;
+	Button *dock_float;
 	ToolButton *dock_tab_move_left;
 	ToolButton *dock_tab_move_right;
 	int dock_popup_selected;
@@ -562,6 +565,8 @@ private:
 
 	bool _find_scene_in_use(Node *p_node, const String &p_path) const;
 
+	void _update_dock_containers();
+
 	void _dock_select_input(const Ref<InputEvent> &p_input);
 	void _dock_move_left();
 	void _dock_move_right();
@@ -569,6 +574,8 @@ private:
 	void _dock_pre_popup(int p_which);
 	void _dock_split_dragged(int ofs);
 	void _dock_popup_exit();
+	void _dock_floating_close_request(Control *p_control);
+	void _dock_make_float();
 	void _scene_tab_changed(int p_tab);
 	void _scene_tab_closed(int p_tab, int option = SCENE_TAB_CLOSE);
 	void _scene_tab_hover(int p_tab);

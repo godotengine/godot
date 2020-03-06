@@ -55,7 +55,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 	Ref<Mesh> mesh = node->get_mesh();
 	if (mesh.is_null()) {
 		err_dialog->set_text(TTR("Mesh is empty!"));
-		err_dialog->popup_centered_minsize();
+		err_dialog->popup_centered();
 		return;
 	}
 
@@ -71,7 +71,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 				Ref<Shape> shape = mesh->create_trimesh_shape();
 				if (shape.is_null()) {
 					err_dialog->set_text(TTR("Couldn't create a Trimesh collision shape."));
-					err_dialog->popup_centered_minsize();
+					err_dialog->popup_centered();
 					return;
 				}
 
@@ -130,7 +130,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
 			if (node == get_tree()->get_edited_scene_root()) {
 				err_dialog->set_text(TTR("This doesn't work on scene root!"));
-				err_dialog->popup_centered_minsize();
+				err_dialog->popup_centered();
 				return;
 			}
 
@@ -158,7 +158,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
 			if (node == get_tree()->get_edited_scene_root()) {
 				err_dialog->set_text(TTR("Can't create a single convex collision shape for the scene root."));
-				err_dialog->popup_centered_minsize();
+				err_dialog->popup_centered();
 				return;
 			}
 
@@ -166,7 +166,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
 			if (shape.is_null()) {
 				err_dialog->set_text(TTR("Couldn't create a single convex collision shape."));
-				err_dialog->popup_centered_minsize();
+				err_dialog->popup_centered();
 				return;
 			}
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
@@ -192,7 +192,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
 			if (node == get_tree()->get_edited_scene_root()) {
 				err_dialog->set_text(TTR("Can't create multiple convex collision shapes for the scene root."));
-				err_dialog->popup_centered_minsize();
+				err_dialog->popup_centered();
 				return;
 			}
 
@@ -200,7 +200,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
 			if (!shapes.size()) {
 				err_dialog->set_text(TTR("Couldn't create any collision shapes."));
-				err_dialog->popup_centered_minsize();
+				err_dialog->popup_centered();
 				return;
 			}
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
@@ -258,14 +258,14 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 			Ref<ArrayMesh> mesh2 = node->get_mesh();
 			if (!mesh2.is_valid()) {
 				err_dialog->set_text(TTR("Contained Mesh is not of type ArrayMesh."));
-				err_dialog->popup_centered_minsize();
+				err_dialog->popup_centered();
 				return;
 			}
 
 			Error err = mesh2->lightmap_unwrap(node->get_global_transform());
 			if (err != OK) {
 				err_dialog->set_text(TTR("UV Unwrap failed, mesh may not be manifold?"));
-				err_dialog->popup_centered_minsize();
+				err_dialog->popup_centered();
 				return;
 			}
 
@@ -274,7 +274,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 			Ref<Mesh> mesh2 = node->get_mesh();
 			if (!mesh2.is_valid()) {
 				err_dialog->set_text(TTR("No mesh to debug."));
-				err_dialog->popup_centered_minsize();
+				err_dialog->popup_centered();
 				return;
 			}
 			_create_uv_lines(0);
@@ -283,7 +283,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 			Ref<Mesh> mesh2 = node->get_mesh();
 			if (!mesh2.is_valid()) {
 				err_dialog->set_text(TTR("No mesh to debug."));
-				err_dialog->popup_centered_minsize();
+				err_dialog->popup_centered();
 				return;
 			}
 			_create_uv_lines(1);
@@ -330,7 +330,7 @@ void MeshInstanceEditor::_create_uv_lines(int p_layer) {
 		Vector<Vector2> uv = a[p_layer == 0 ? Mesh::ARRAY_TEX_UV : Mesh::ARRAY_TEX_UV2];
 		if (uv.size() == 0) {
 			err_dialog->set_text(TTR("Model has no UV in this layer"));
-			err_dialog->popup_centered_minsize();
+			err_dialog->popup_centered();
 			return;
 		}
 
@@ -374,7 +374,7 @@ void MeshInstanceEditor::_create_uv_lines(int p_layer) {
 		}
 	}
 
-	debug_uv_dialog->popup_centered_minsize();
+	debug_uv_dialog->popup_centered();
 }
 
 void MeshInstanceEditor::_debug_uv_draw() {
@@ -393,17 +393,17 @@ void MeshInstanceEditor::_create_outline_mesh() {
 	Ref<Mesh> mesh = node->get_mesh();
 	if (mesh.is_null()) {
 		err_dialog->set_text(TTR("MeshInstance lacks a Mesh!"));
-		err_dialog->popup_centered_minsize();
+		err_dialog->popup_centered();
 		return;
 	}
 
 	if (mesh->get_surface_count() == 0) {
 		err_dialog->set_text(TTR("Mesh has not surface to create outlines from!"));
-		err_dialog->popup_centered_minsize();
+		err_dialog->popup_centered();
 		return;
 	} else if (mesh->get_surface_count() == 1 && mesh->surface_get_primitive_type(0) != Mesh::PRIMITIVE_TRIANGLES) {
 		err_dialog->set_text(TTR("Mesh primitive type is not PRIMITIVE_TRIANGLES!"));
-		err_dialog->popup_centered_minsize();
+		err_dialog->popup_centered();
 		return;
 	}
 
@@ -411,7 +411,7 @@ void MeshInstanceEditor::_create_outline_mesh() {
 
 	if (mesho.is_null()) {
 		err_dialog->set_text(TTR("Could not create outline!"));
-		err_dialog->popup_centered_minsize();
+		err_dialog->popup_centered();
 		return;
 	}
 

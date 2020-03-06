@@ -262,7 +262,7 @@ void SpriteFramesEditor::_file_load_request(const Vector<String> &p_path, int p_
 
 			//dialog->get_cancel()->set_text("Close");
 			dialog->get_ok()->set_text(TTR("Close"));
-			dialog->popup_centered_minsize();
+			dialog->popup_centered();
 			return; ///beh should show an error i guess
 		}
 
@@ -301,7 +301,7 @@ void SpriteFramesEditor::_load_pressed() {
 	for (int i = 0; i < extensions.size(); i++)
 		file->add_filter("*." + extensions[i]);
 
-	file->set_mode(EditorFileDialog::MODE_OPEN_FILES);
+	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
 
 	file->popup_centered_ratio();
 }
@@ -316,7 +316,7 @@ void SpriteFramesEditor::_paste_pressed() {
 		dialog->set_title(TTR("Error!"));
 		//dialog->get_cancel()->set_text("Close");
 		dialog->get_ok()->set_text(TTR("Close"));
-		dialog->popup_centered_minsize();
+		dialog->popup_centered();
 		return; ///beh should show an error i guess
 	}
 
@@ -591,7 +591,7 @@ void SpriteFramesEditor::_animation_remove() {
 		return;
 
 	delete_dialog->set_text(TTR("Delete Animation?"));
-	delete_dialog->popup_centered_minsize();
+	delete_dialog->popup_centered();
 }
 
 void SpriteFramesEditor::_animation_remove_confirmed() {
@@ -1058,7 +1058,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	file_split_sheet = memnew(EditorFileDialog);
 	file_split_sheet->set_title(TTR("Create Frames from Sprite Sheet"));
-	file_split_sheet->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	file_split_sheet->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	add_child(file_split_sheet);
 	file_split_sheet->connect("file_selected", callable_mp(this, &SpriteFramesEditor::_prepare_sprite_sheet));
 }

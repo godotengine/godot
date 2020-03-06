@@ -70,11 +70,11 @@ void EditorSubScene::_path_browse() {
 }
 
 void EditorSubScene::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 
-		if (is_visible() && scene == NULL)
+		if (is_visible() && scene == NULL) {
 			_path_browse();
+		}
 	}
 }
 
@@ -240,7 +240,7 @@ EditorSubScene::EditorSubScene() {
 	path = memnew(LineEdit);
 	path->connect("text_entered", callable_mp(this, &EditorSubScene::_path_changed));
 	hb->add_child(path);
-	path->set_h_size_flags(SIZE_EXPAND_FILL);
+	path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	Button *b = memnew(Button);
 	b->set_text(TTR("Browse"));
 	hb->add_child(b);
@@ -248,7 +248,7 @@ EditorSubScene::EditorSubScene() {
 	vb->add_margin_child(TTR("Scene Path:"), hb);
 
 	tree = memnew(Tree);
-	tree->set_v_size_flags(SIZE_EXPAND_FILL);
+	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vb->add_margin_child(TTR("Import From Node:"), tree, true);
 	tree->set_select_mode(Tree::SELECT_MULTI);
 	tree->connect("multi_selected", callable_mp(this, &EditorSubScene::_item_multi_selected));
@@ -266,7 +266,7 @@ EditorSubScene::EditorSubScene() {
 		file_dialog->add_filter("*." + E->get());
 	}
 
-	file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	add_child(file_dialog);
 	file_dialog->connect("file_selected", callable_mp(this, &EditorSubScene::_path_selected));
 }

@@ -260,7 +260,7 @@ void ParticlesEditor::_menu_option(int p_option) {
 				generate_seconds->set_value(1.0);
 			else
 				generate_seconds->set_value(trunc(gen_time) + 1.0);
-			generate_aabb->popup_centered_minsize();
+			generate_aabb->popup_centered();
 		} break;
 		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE: {
 			Ref<ParticlesMaterial> material = node->get_process_material();

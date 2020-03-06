@@ -1204,7 +1204,7 @@ void EditorAudioBuses::_select_layout() {
 
 void EditorAudioBuses::_save_as_layout() {
 
-	file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->set_title(TTR("Save Audio Bus Layout As..."));
 	file_dialog->set_current_path(edited_path);
 	file_dialog->popup_centered_ratio();
@@ -1213,7 +1213,7 @@ void EditorAudioBuses::_save_as_layout() {
 
 void EditorAudioBuses::_new_layout() {
 
-	file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->set_title(TTR("Location for New Layout..."));
 	file_dialog->set_current_path(edited_path);
 	file_dialog->popup_centered_ratio();
@@ -1222,7 +1222,7 @@ void EditorAudioBuses::_new_layout() {
 
 void EditorAudioBuses::_load_layout() {
 
-	file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	file_dialog->set_title(TTR("Open Audio Bus Layout"));
 	file_dialog->set_current_path(edited_path);
 	file_dialog->popup_centered_ratio();
@@ -1249,7 +1249,7 @@ void EditorAudioBuses::_load_default_layout() {
 
 void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 
-	if (file_dialog->get_mode() == EditorFileDialog::MODE_OPEN_FILE) {
+	if (file_dialog->get_file_mode() == EditorFileDialog::FILE_MODE_OPEN_FILE) {
 		Ref<AudioBusLayout> state = ResourceLoader::load(p_string, "", true);
 		if (state.is_null()) {
 			EditorNode::get_singleton()->show_warning(TTR("Invalid file, not an audio bus layout."));
@@ -1263,7 +1263,7 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 		EditorNode::get_singleton()->get_undo_redo()->clear_history();
 		call_deferred("_select_layout");
 
-	} else if (file_dialog->get_mode() == EditorFileDialog::MODE_SAVE_FILE) {
+	} else if (file_dialog->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
 
 		if (new_layout) {
 			Ref<AudioBusLayout> empty_state;

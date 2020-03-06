@@ -735,7 +735,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	open_file = memnew(EditorFileDialog);
 	add_child(open_file);
 	open_file->set_title(TTR("Open Animation Node"));
-	open_file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	open_file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	open_file->connect("file_selected", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_file_opened));
 	undo_redo = EditorNode::get_undo_redo();
 

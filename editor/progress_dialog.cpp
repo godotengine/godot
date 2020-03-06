@@ -163,7 +163,7 @@ void ProgressDialog::_popup() {
 	main->set_margin(MARGIN_BOTTOM, -style->get_margin(MARGIN_BOTTOM));
 
 	raise();
-	popup_centered(ms);
+	popup_centered_size(ms);
 }
 
 void ProgressDialog::add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel) {

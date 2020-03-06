@@ -479,7 +479,9 @@ static String _clipboard_get_impl(Atom p_source, Window x11_window, ::Display *x
 				ret.parse_utf8((const char *)data);
 			} else
 				printf("FAIL\n");
-			XFree(data);
+			if (data) {
+				XFree(data);
+			}
 		}
 	}
 
@@ -623,8 +625,7 @@ Vector<DisplayServer::WindowID> DisplayServerX11::get_window_list() const {
 
 DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect) {
 
-	WindowID id = _create_window(p_mode, p_rect.size);
-	window_set_position(p_rect.position, id);
+	WindowID id = _create_window(p_mode, p_rect);
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, id);
@@ -635,7 +636,7 @@ DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, u
 }
 
 void DisplayServerX11::delete_sub_window(WindowID p_id) {
-	ERR_FAIL_COND(windows.has(p_id));
+	ERR_FAIL_COND(!windows.has(p_id));
 	ERR_FAIL_COND_MSG(p_id == MAIN_WINDOW_ID, "Main window can't be deleted"); //ma
 
 	WindowData &wd = windows[p_id];
@@ -800,7 +801,7 @@ void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p
 			unsigned long remaining;
 			unsigned char *data = NULL;
 			if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, 4, False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
-				if (format == 32 && len == 4) {
+				if (format == 32 && len == 4 && data) {
 					long *extents = (long *)data;
 					x = extents[0];
 					y = extents[2];
@@ -963,7 +964,7 @@ Size2i DisplayServerX11::window_get_real_size(WindowID p_window) const {
 		unsigned long remaining;
 		unsigned char *data = NULL;
 		if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, 4, False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
-			if (format == 32 && len == 4) {
+			if (format == 32 && len == 4 && data) {
 				long *extents = (long *)data;
 				w += extents[0] + extents[1]; // left, right
 				h += extents[2] + extents[3]; // top, bottom
@@ -1000,7 +1001,7 @@ bool DisplayServerX11::window_is_maximize_allowed(WindowID p_window) const {
 			&remaining,
 			&data);
 
-	if (result == Success) {
+	if (result == Success && data) {
 		Atom *atoms = (Atom *)data;
 		Atom wm_act_max_horz = XInternAtom(x11_display, "_NET_WM_ACTION_MAXIMIZE_HORZ", False);
 		Atom wm_act_max_vert = XInternAtom(x11_display, "_NET_WM_ACTION_MAXIMIZE_VERT", False);
@@ -1280,7 +1281,7 @@ DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) c
 				&remaining,
 				&data);
 
-		if (result == Success) {
+		if (result == Success && data) {
 			Atom *atoms = (Atom *)data;
 			Atom wm_max_horz = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
 			Atom wm_max_vert = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_VERT", False);
@@ -1298,9 +1299,10 @@ DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) c
 					break;
 				}
 			}
+
+			XFree(data);
 		}
 
-		XFree(data);
 		if (retval) {
 			return WINDOW_MODE_MAXIMIZED;
 		}
@@ -1329,7 +1331,7 @@ DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) c
 				&remaining,
 				&data);
 
-		if (result == Success) {
+		if (result == Success && data) {
 			long *state = (long *)data;
 			if (state[0] == WM_IconicState)
 				return WINDOW_MODE_MINIMIZED;
@@ -1451,7 +1453,9 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 					if (data && (format == 32) && (len >= 5)) {
 						borderless = !((Hints *)data)->decorations;
 					}
-					XFree(data);
+					if (data) {
+						XFree(data);
+					}
 				}
 			}
 			return borderless;
@@ -1886,6 +1890,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 
 				_get_key_modifier_state(xkeyevent->state, k);
 
+				k->set_window_id(p_window);
 				k->set_unicode(tmp[i]);
 
 				k->set_pressed(keypress);
@@ -1967,6 +1972,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 
 	Ref<InputEventKey> k;
 	k.instance();
+	k->set_window_id(p_window);
 
 	_get_key_modifier_state(xkeyevent->state, k);
 
@@ -2085,6 +2091,7 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 		//  Not portable.
 		window_set_ime_position(Point2(0, 1));
 	}
+
 	if ((event->xconfigure.width == wd.size.width) &&
 			(event->xconfigure.height == wd.size.height))
 		return;
@@ -2861,7 +2868,7 @@ DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, W
 	return memnew(DisplayServerX11(p_rendering_driver, p_mode, p_flags, p_resolution, r_error));
 }
 
-DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, const Vector2i &p_resolution) {
+DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, const Rect2i &p_rect) {
 
 	//Create window
 
@@ -2884,8 +2891,22 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, c
 	WindowID id;
 	{
 		WindowData wd;
-		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo->screen), 0, 0, p_resolution.width, p_resolution.height, 0, visualInfo->depth, InputOutput, visualInfo->visual, valuemask, &windowAttributes);
+		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo->screen), p_rect.position.x, p_rect.position.y, p_rect.size.width, p_rect.size.height, 0, visualInfo->depth, InputOutput, visualInfo->visual, valuemask, &windowAttributes);
 
+		if (windows.size() > 0) {
+			//this is a sub window, don't let the window manager put it wherever it wants
+
+			XSizeHints my_hints = { 0 };
+
+			my_hints.flags = PPosition | PSize; /* I want to specify position and size */
+			my_hints.x = p_rect.position.x; /* The origin and size coords I want */
+			my_hints.y = p_rect.position.y;
+			my_hints.width = p_rect.size.width;
+			my_hints.height = p_rect.size.height;
+
+			XSetNormalHints(x11_display, wd.x11_window, &my_hints);
+			//its still not working :(
+		}
 		//set_class_hint(x11_display, wd.x11_window);
 		XMapWindow(x11_display, wd.x11_window);
 		XFlush(x11_display);
@@ -2897,7 +2918,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, c
 
 #if defined(VULKAN_ENABLED)
 		if (context_vulkan) {
-			Error err = context_vulkan->window_create(window_id_counter, wd.x11_window, x11_display, p_resolution.width, p_resolution.height);
+			Error err = context_vulkan->window_create(window_id_counter, wd.x11_window, x11_display, p_rect.size.width, p_rect.size.height);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a Vulkan window");
 		}
 #endif
@@ -2987,6 +3008,19 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, c
 	WindowData &wd = windows[id];
 
 	window_set_mode(p_mode, id);
+
+	//sync size
+	{
+		XWindowAttributes xwa;
+
+		XSync(x11_display, False);
+		XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
+
+		wd.size.width = xwa.width;
+		wd.size.height = xwa.height;
+
+		//print_line("created at rect: " + p_rect + " but at rect " + Rect2i(xwa.x, xwa.y, xwa.width, xwa.height));
+	}
 
 	//set cursor
 	if (cursors[current_cursor] != None) {
@@ -3225,7 +3259,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 #endif
 
-	WindowID main_window = _create_window(p_mode, p_resolution);
+	WindowID main_window = _create_window(p_mode, Rect2i(Point2(), p_resolution));
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, main_window);

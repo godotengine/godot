@@ -41,9 +41,9 @@
 #include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 
-class GroupDialog : public WindowDialog {
+class GroupDialog : public AcceptDialog {
 
-	GDCLASS(GroupDialog, WindowDialog);
+	GDCLASS(GroupDialog, AcceptDialog);
 
 	ConfirmationDialog *error;
 

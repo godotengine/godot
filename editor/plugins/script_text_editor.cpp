@@ -65,7 +65,8 @@ void ConnectionInfoDialog::popup_connections(String p_method, Vector<Node *> p_n
 			node_item->set_editable(0, false);
 
 			node_item->set_text(1, connection.signal.get_name());
-			node_item->set_icon(1, get_parent_control()->get_icon("Slot", "EditorIcons"));
+			Control *p = Object::cast_to<Control>(get_parent());
+			node_item->set_icon(1, p->get_icon("Slot", "EditorIcons"));
 			node_item->set_selectable(1, false);
 			node_item->set_editable(1, false);
 
@@ -83,10 +84,10 @@ ConnectionInfoDialog::ConnectionInfoDialog() {
 	set_title(TTR("Connections to method:"));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -8 * EDSCALE);
-	vbc->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, -8 * EDSCALE);
+	vbc->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_BEGIN, 8 * EDSCALE);
+	vbc->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, 8 * EDSCALE);
+	vbc->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -8 * EDSCALE);
+	vbc->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, -8 * EDSCALE);
 	add_child(vbc);
 
 	method = memnew(Label);
@@ -101,7 +102,7 @@ ConnectionInfoDialog::ConnectionInfoDialog() {
 	tree->set_column_title(1, TTR("Signal"));
 	tree->set_column_title(2, TTR("Target"));
 	vbc->add_child(tree);
-	tree->set_v_size_flags(SIZE_EXPAND_FILL);
+	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tree->set_allow_rmb_select(true);
 }
 
