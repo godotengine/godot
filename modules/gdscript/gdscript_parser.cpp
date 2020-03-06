@@ -3103,18 +3103,18 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 						Vector<Node *> args;
 						Vector<double> constants;
 
-						bool constant = false;
+						bool constant = true;
 
 						for (int i = 1; i < op->arguments.size(); i++) {
 							args.push_back(op->arguments[i]);
-							if (constant && op->arguments[i]->type == Node::TYPE_CONSTANT) {
+							if (op->arguments[i]->type == Node::TYPE_CONSTANT) {
 								ConstantNode *c = static_cast<ConstantNode *>(op->arguments[i]);
 								if (c->value.get_type() == Variant::REAL || c->value.get_type() == Variant::INT) {
 									constants.push_back(c->value);
-									constant = true;
 								}
 							} else {
 								constant = false;
+								break;
 							}
 						}
 
