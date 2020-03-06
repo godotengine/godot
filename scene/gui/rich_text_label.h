@@ -454,7 +454,7 @@ public:
 	void set_tab_size(int p_spaces);
 	int get_tab_size() const;
 
-	bool search(const String &p_string, bool p_from_selection = false, bool p_search_previous = false);
+	bool search(const String &p_string, bool p_from_selection = false, bool p_search_previous = false, bool p_center_result = true);
 
 	void scroll_to_line(int p_line);
 	int get_line_count() const;

@@ -2491,7 +2491,7 @@ void RichTextLabel::set_selection_enabled(bool p_enabled) {
 	}
 }
 
-bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p_search_previous) {
+bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p_search_previous, bool p_center_result) {
 
 	ERR_FAIL_COND_V(!selection.enabled, false);
 	Item *it = main;
@@ -2534,7 +2534,15 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 					}
 					item = item->parent;
 				}
-				vscroll->set_value(offset - fh);
+
+				real_t margin;
+
+				if (p_center_result)
+					margin = get_size().height / 2.0f;
+				else
+					margin = fh;
+
+				vscroll->set_value(offset - margin);
 
 				return true;
 			}
