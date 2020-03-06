@@ -657,6 +657,7 @@ void NavMap::sync() {
 					connection->get().B->edges[connection->get().B_edge].other_edge = connection->get().A_edge;
 				} else {
 					// The edge is already connected with another edge, skip.
+					ERR_PRINT("I'm trying to merge a navigation mesh triangle edge with another one already merged. This happens when the `Navigation` `cell_size` is different from the one used to generate the navigation mesh. This will cause navigation problem.");
 				}
 			}
 		}
