@@ -2193,7 +2193,7 @@ bool Main::start() {
 			//standard helpers that can be changed from main config
 
 			String stretch_mode = GLOBAL_DEF_BASIC("display/window/stretch/mode", "disabled");
-			String stretch_aspect = GLOBAL_DEF_BASIC("display/window/stretch/aspect", "ignore");
+			String stretch_aspect = GLOBAL_DEF_BASIC("display/window/stretch/aspect", "keep");
 			Size2i stretch_size = Size2i(GLOBAL_DEF_BASIC("display/window/size/width", 0),
 					GLOBAL_DEF_BASIC("display/window/size/height", 0));
 
@@ -2252,7 +2252,7 @@ bool Main::start() {
 							"display/window/stretch/mode",
 							PROPERTY_HINT_ENUM,
 							"disabled,canvas_items,viewport"));
-			GLOBAL_DEF_BASIC("display/window/stretch/aspect", "ignore");
+			GLOBAL_DEF_BASIC("display/window/stretch/aspect", "keep");
 			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/aspect",
 					PropertyInfo(Variant::STRING,
 							"display/window/stretch/aspect",
