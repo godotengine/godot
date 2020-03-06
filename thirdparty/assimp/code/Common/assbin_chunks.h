@@ -37,7 +37,7 @@ The ASSBIN file format is composed of chunks to represent the hierarchical aiSce
 This makes the format extensible and allows backward-compatibility with future data structure
 versions. The <tt>&lt;root&gt;/code/assbin_chunks.h</tt> header contains some magic constants
 for use by stand-alone ASSBIN loaders. Also, Assimp's own file writer can be found
-in <tt>&lt;root&gt;/tools/assimp_cmd/WriteDumb.cpp</tt> (yes, the 'b' is no typo ...).
+in <tt>&lt;root&gt;/tools/assimp_cmd/WriteDump.cpp</tt> (yes, the 'b' is no typo ...).
 
 @verbatim
 

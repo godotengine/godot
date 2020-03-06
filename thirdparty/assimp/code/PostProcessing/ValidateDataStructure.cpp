@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
+Copyright (c) 2006-2020, assimp team
 
 
 
@@ -603,15 +603,18 @@ void ValidateDSProcess::SearchForInvalidTextures(const aiMaterial* pMaterial,
         ReportError("%s #%i is set, but there are only %i %s textures",
             szType,iIndex,iNumIndices,szType);
     }
-    if (!iNumIndices)return;
+	if (!iNumIndices) {
+		return;
+	}
     std::vector<aiTextureMapping> mappings(iNumIndices);
 
     // Now check whether all UV indices are valid ...
     bool bNoSpecified = true;
-    for (unsigned int i = 0; i < pMaterial->mNumProperties;++i)
-    {
+    for (unsigned int i = 0; i < pMaterial->mNumProperties;++i) {
         aiMaterialProperty* prop = pMaterial->mProperties[i];
-        if (prop->mSemantic != type)continue;
+		if (prop->mSemantic != type) {
+			continue;
+		}
 
         if ((int)prop->mIndex >= iNumIndices)
         {
@@ -634,7 +637,7 @@ void ValidateDSProcess::SearchForInvalidTextures(const aiMaterial* pMaterial,
                 ReportError("Material property %s%i is expected to be 5 floats large (size is %i)",
                     prop->mKey.data,prop->mIndex, prop->mDataLength);
             }
-            mappings[prop->mIndex] = *((aiTextureMapping*)prop->mData);
+			//mappings[prop->mIndex] = ((aiUVTransform*)prop->mData);
         }
         else if (!::strcmp(prop->mKey.data,"$tex.uvwsrc")) {
             if (aiPTI_Integer != prop->mType || sizeof(int) > prop->mDataLength)
@@ -774,6 +777,12 @@ void ValidateDSProcess::Validate( const aiMaterial* pMaterial)
     SearchForInvalidTextures(pMaterial,aiTextureType_DISPLACEMENT);
     SearchForInvalidTextures(pMaterial,aiTextureType_LIGHTMAP);
     SearchForInvalidTextures(pMaterial,aiTextureType_REFLECTION);
+    SearchForInvalidTextures(pMaterial,aiTextureType_BASE_COLOR);
+    SearchForInvalidTextures(pMaterial,aiTextureType_NORMAL_CAMERA);
+    SearchForInvalidTextures(pMaterial,aiTextureType_EMISSION_COLOR);
+    SearchForInvalidTextures(pMaterial,aiTextureType_METALNESS);
+    SearchForInvalidTextures(pMaterial,aiTextureType_DIFFUSE_ROUGHNESS);
+    SearchForInvalidTextures(pMaterial,aiTextureType_AMBIENT_OCCLUSION);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -795,7 +804,7 @@ void ValidateDSProcess::Validate( const aiTexture* pTexture)
         if (!pTexture->mWidth) {
             ReportError("aiTexture::mWidth is zero (compressed texture)");
         }
-        if ('\0' != pTexture->achFormatHint[3]) {
+        if ('\0' != pTexture->achFormatHint[HINTMAXTEXTURELEN - 1]) {
             ReportWarning("aiTexture::achFormatHint must be zero-terminated");
         }
         else if ('.'  == pTexture->achFormatHint[0])    {

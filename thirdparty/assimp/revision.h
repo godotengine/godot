@@ -1,12 +1,12 @@
 #ifndef ASSIMP_REVISION_H_INC
 #define ASSIMP_REVISION_H_INC
 
-#define GitVersion 0x308db73d
+#define GitVersion 0x0201fc57
 #define GitBranch "master"
 
 #define VER_MAJOR 5
 #define VER_MINOR 0
-#define VER_PATCH 0
+#define VER_PATCH 1
 #define VER_BUILD 0
 
 #define STR_HELP(x) #x
@@ -16,7 +16,7 @@
 #if (GitVersion == 0)
 #define VER_FILEVERSION_STR         STR(VER_MAJOR) "." STR(VER_MINOR) "." STR(VER_PATCH) "." STR(VER_BUILD)
 #else
-#define VER_FILEVERSION_STR         STR(VER_MAJOR) "." STR(VER_MINOR) "." STR(VER_PATCH) "." STR(VER_BUILD) " (Commit 308db73d)"
+#define VER_FILEVERSION_STR         STR(VER_MAJOR) "." STR(VER_MINOR) "." STR(VER_PATCH) "." STR(VER_BUILD) " (Commit 0201fc57)"
 #endif
 
 #ifdef  NDEBUG
