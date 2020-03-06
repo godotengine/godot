@@ -136,6 +136,7 @@ opts.Add(BoolVariable('no_editor_splash', "Don't use the custom splash screen fo
 opts.Add('system_certs_path', "Use this path as SSL certificates default for editor (for package maintainers)", '')
 
 # Thirdparty libraries
+#opts.Add(BoolVariable('builtin_assimp', "Use the built-in Assimp library", True))
 opts.Add(BoolVariable('builtin_bullet', "Use the built-in Bullet library", True))
 opts.Add(BoolVariable('builtin_certs', "Bundle default SSL certificates to be used if you don't specify an override in the project settings", True))
 opts.Add(BoolVariable('builtin_enet', "Use the built-in ENet library", True))
