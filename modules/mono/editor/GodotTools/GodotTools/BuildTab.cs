@@ -41,7 +41,7 @@ namespace GodotTools
         public bool ErrorsVisible { get; set; } = true;
         public bool WarningsVisible { get; set; } = true;
 
-        public Texture2D IconTexture
+        public Texture IconTexture
         {
             get
             {
