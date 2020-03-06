@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
+Copyright (c) 2006-2020, assimp team
 
 All rights reserved.
 
@@ -306,7 +306,11 @@ static const ai_real ai_epsilon = (ai_real) 0.00001;
 #define AI_MAX_ALLOC(type) ((256U * 1024 * 1024) / sizeof(type))
 
 #ifndef _MSC_VER
-#  define AI_NO_EXCEPT noexcept
+#  if __cplusplus >= 201103L // C++11
+#    define AI_NO_EXCEPT noexcept
+#  else
+#    define AI_NO_EXCEPT
+#  endif
 #else
 #  if (_MSC_VER >= 1915 )
 #    define AI_NO_EXCEPT noexcept

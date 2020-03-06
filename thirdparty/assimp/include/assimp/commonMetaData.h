@@ -1,15 +1,17 @@
 /*
+---------------------------------------------------------------------------
 Open Asset Import Library (assimp)
-----------------------------------------------------------------------
+---------------------------------------------------------------------------
 
 Copyright (c) 2006-2020, assimp team
+
 
 
 All rights reserved.
 
 Redistribution and use of this software in source and binary forms,
-with or without modification, are permitted provided that the
-following conditions are met:
+with or without modification, are permitted provided that the following
+conditions are met:
 
 * Redistributions of source code must retain the above
   copyright notice, this list of conditions and the
@@ -36,33 +38,30 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-----------------------------------------------------------------------
+---------------------------------------------------------------------------
 */
 
-/** @file CreateAnimMesh.h
- *  Create AnimMesh from Mesh
+/** @file commonMetaData.h
+ *  @brief Defines a set of common scene metadata keys.
  */
 #pragma once
-#ifndef INCLUDED_AI_CREATE_ANIM_MESH_H
-#define INCLUDED_AI_CREATE_ANIM_MESH_H
+#ifndef AI_COMMONMETADATA_H_INC
+#define AI_COMMONMETADATA_H_INC
 
-#ifdef __GNUC__
-#   pragma GCC system_header
+/// Scene metadata holding the name of the importer which loaded the source asset.
+/// This is always present if the scene was created from an imported asset.
+#define AI_METADATA_SOURCE_FORMAT "SourceAsset_Format"
+
+/// Scene metadata holding the version of the source asset as a string, if available.
+/// Not all formats add this metadata.
+#define AI_METADATA_SOURCE_FORMAT_VERSION "SourceAsset_FormatVersion"
+
+/// Scene metadata holding the name of the software which generated the source asset, if available.
+/// Not all formats add this metadata.
+#define AI_METADATA_SOURCE_GENERATOR "SourceAsset_Generator"
+
+/// Scene metadata holding the source asset copyright statement, if available.
+/// Not all formats add this metadata.
+#define AI_METADATA_SOURCE_COPYRIGHT "SourceAsset_Copyright"
+
 #endif
-
-#include <assimp/mesh.h>
-
-namespace Assimp {
-
-/**
- *  Create aiAnimMesh from aiMesh.
- *  @param  mesh    The input mesh to create an animated mesh from.
- *  @return The new created animated mesh.
- */
-ASSIMP_API aiAnimMesh *aiCreateAnimMesh(const aiMesh *mesh);
-
-} // end of namespace Assimp
-
-#endif // INCLUDED_AI_CREATE_ANIM_MESH_H
-

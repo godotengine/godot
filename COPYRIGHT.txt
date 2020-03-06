@@ -112,7 +112,7 @@ License: Expat and Zlib
 
 Files: ./thirdparty/assimp/
 Comment: Open Asset Import Library (assimp)
-Copyright: 2006-2016, assimp team
+Copyright: 2006-2020, assimp team
 License: BSD-3-clause
 
 Files: ./thirdparty/bullet/
