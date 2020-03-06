@@ -1,7 +1,6 @@
 import os
 import platform
 import sys
-from methods import using_gcc, using_clang
 
 
 def is_active():
@@ -225,6 +224,10 @@ def configure(env):
             print("Bullet: System version {0} does not match minimal requirements ({1}). Aborting.".format(bullet_version, "2.89"))
             sys.exit(255)
         env.ParseConfig('pkg-config bullet --cflags --libs')
+
+    if False:  # not env['builtin_assimp']:
+        # FIXME: Add min version check
+        env.ParseConfig('pkg-config assimp --cflags --libs')
 
     if not env['builtin_enet']:
         env.ParseConfig('pkg-config libenet --cflags --libs')
