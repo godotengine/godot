@@ -281,7 +281,7 @@ File extracted from upstream release tarball (`-apache.tgz` variant):
 ## miniupnpc
 
 - Upstream: https://github.com/miniupnp/miniupnp/tree/master/miniupnpc
-- Version: git (0ab1d67, 2019)
+- Version: git (4436632, 2020)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
