@@ -102,6 +102,7 @@ private:
 	bool configure_joystick(IOHIDDeviceRef p_device_ref, joystick *p_joy);
 
 	int get_joy_index(int p_id) const;
+	int get_joy_ref(IOHIDDeviceRef p_device) const;
 
 	void poll_joysticks() const;
 	void setup_joystick_objects();
@@ -114,7 +115,7 @@ public:
 	uint32_t process_joysticks(uint32_t p_last_id);
 
 	void _device_added(IOReturn p_res, IOHIDDeviceRef p_device);
-	void _device_removed(int p_id);
+	void _device_removed(IOReturn p_res, IOHIDDeviceRef p_device);
 
 	JoystickOSX();
 	~JoystickOSX();

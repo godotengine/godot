@@ -206,9 +206,8 @@ void joystick::add_hid_elements(CFArrayRef p_array) {
 	CFArrayApplyFunction(p_array, range, hid_element_added, this);
 }
 
-static void joystick_removed_callback(void *ctx, IOReturn result, void *sender) {
-	int id = (intptr_t)ctx;
-	self->_device_removed(id);
+static void joystick_removed_callback(void *ctx, IOReturn result, void *sender, IOHIDDeviceRef ioHIDDeviceObject) {
+	self->_device_removed(result, ioHIDDeviceObject);
 }
 
 static void joystick_added_callback(void *ctx, IOReturn res, void *sender, IOHIDDeviceRef ioHIDDeviceObject) {
@@ -260,16 +259,15 @@ void JoystickOSX::_device_added(IOReturn p_res, IOHIDDeviceRef p_device) {
 #endif
 		device_list.push_back(new_joystick);
 	}
-	IOHIDDeviceRegisterRemovalCallback(p_device, joystick_removed_callback, (void *)(intptr_t)new_joystick.id);
 	IOHIDDeviceScheduleWithRunLoop(p_device, CFRunLoopGetCurrent(), GODOT_JOY_LOOP_RUN_MODE);
 }
 
-void JoystickOSX::_device_removed(int p_id) {
+void JoystickOSX::_device_removed(IOReturn p_res, IOHIDDeviceRef p_device) {
 
-	int device = get_joy_index(p_id);
+	int device = get_joy_ref(p_device);
 	ERR_FAIL_COND(device == -1);
 
-	input->joy_connection_changed(p_id, false, "");
+	input->joy_connection_changed(device_list[device].id, false, "");
 	device_list[device].free();
 	device_list.remove(device);
 }
@@ -519,6 +517,13 @@ int JoystickOSX::get_joy_index(int p_id) const {
 	return -1;
 }
 
+int JoystickOSX::get_joy_ref(IOHIDDeviceRef p_device) const {
+	for (int i = 0; i < device_list.size(); i++) {
+		if (device_list[i].device_ref == p_device) return i;
+	}
+	return -1;
+}
+
 bool JoystickOSX::have_device(IOHIDDeviceRef p_device) const {
 	for (int i = 0; i < device_list.size(); i++) {
 		if (device_list[i].device_ref == p_device) {
@@ -561,6 +566,7 @@ void JoystickOSX::config_hid_manager(CFArrayRef p_matching_array) const {
 
 	IOHIDManagerSetDeviceMatchingMultiple(hid_manager, p_matching_array);
 	IOHIDManagerRegisterDeviceMatchingCallback(hid_manager, joystick_added_callback, NULL);
+	IOHIDManagerRegisterDeviceRemovalCallback(hid_manager, joystick_removed_callback, NULL);
 	IOHIDManagerScheduleWithRunLoop(hid_manager, runloop, GODOT_JOY_LOOP_RUN_MODE);
 
 	while (CFRunLoopRunInMode(GODOT_JOY_LOOP_RUN_MODE, 0, TRUE) == kCFRunLoopRunHandledSource) {
