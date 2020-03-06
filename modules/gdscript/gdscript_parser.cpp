@@ -4834,9 +4834,10 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						OperatorNode *op = static_cast<OperatorNode *>(subexpr);
 						if (op->op == OperatorNode::OP_CALL && op->arguments[0]->type == Node::TYPE_SELF && op->arguments[1]->type == Node::TYPE_IDENTIFIER) {
 							IdentifierNode *id = static_cast<IdentifierNode *>(op->arguments[1]);
-							if (id->name == "get_node") {
+							if (id->name == "get_node" || id->name == "get_child" || id->name == "get_parent") {
 
-								_set_error("Use \"onready var " + String(member.identifier) + " = get_node(...)\" instead.");
+								_set_error("Use \"onready var " + String(member.identifier) + " = " + id->name + "(...)\" instead.");
+								error_line = op->line;
 								return;
 							}
 						}
