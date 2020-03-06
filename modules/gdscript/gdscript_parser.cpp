@@ -1721,6 +1721,20 @@ GDScriptParser::Node *GDScriptParser::_reduce_expression(Node *p_node, bool p_to
 				return op;
 
 			} else if (op->op == OperatorNode::OP_CALL) {
+
+				// range function step argument must not be 0
+				if (op->arguments[0]->type == Node::TYPE_BUILT_IN_FUNCTION) {
+					if (static_cast<BuiltInFunctionNode *>(op->arguments[0])->function == GDScriptFunctions::GEN_RANGE) {
+						if (op->arguments.size() == 4 && op->arguments[3]->type == Node::Type::TYPE_CONSTANT) {
+							ConstantNode *c = static_cast<ConstantNode *>(op->arguments[3]);
+							if (c->value.operator double() == 0) {
+								_set_error("Step argument must not be 0.");
+								error_line = op->line;
+							}
+						}
+					}
+				}
+
 				//can reduce base type constructors
 				if ((op->arguments[0]->type == Node::TYPE_TYPE || (op->arguments[0]->type == Node::TYPE_BUILT_IN_FUNCTION && GDScriptFunctions::is_deterministic(static_cast<BuiltInFunctionNode *>(op->arguments[0])->function))) && last_not_constant == 0) {
 
@@ -3114,6 +3128,14 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 								}
 							} else {
 								constant = false;
+							}
+						}
+
+						if (op->arguments.size() == 4 && op->arguments[3]->type == Node::TYPE_CONSTANT) {
+							ConstantNode *c = static_cast<ConstantNode *>(op->arguments[3]);
+							if (c->value.operator double() == 0) {
+								_set_error("Step argument must not be 0.");
+								return;
 							}
 						}
 
