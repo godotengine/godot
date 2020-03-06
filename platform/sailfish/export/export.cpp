@@ -66,50 +66,6 @@
 const String separator("/");
 // #endif
 
-// const String spec_file_tempalte =
-// "Name:       %{_gd_application_name}\n"
-// "Summary:    %{_gd_launcher_name}\n"
-// "Version:    %{_gd_version}\n"
-// "Release:    %{_gd_release}\n"
-// "Group:      Game\n"
-// "License:    LICENSE\n"
-// "BuildArch:  %{_gd_architecture}\n"
-// "URL:        http://example.org/\n"
-// "Requires:   SDL2 >= 2.0.9\n"
-// "Requires:   freetype\n"
-// "Requires:   libpng\n"
-// "Requires:   openssl\n"
-// "Requires:   zlib\n"
-// "Requires:   glib2\n"
-// "Requires:   libaudioresource\n"
-// "#Requires:   libkeepalive-glib\n"
-// "%description\n"
-// "%{_gd_description}\n"
-// "%prep\n"
-// "echo \"Nothing to do here. Skip this step\"\n"
-// "%build\n"
-// "echo \"Nothing to do here. Skip this step\"\n"
-// "%install\n"
-// "rm -rf %{buildroot}\n"
-// "mkdir -p \"%{buildroot}\"\n"
-// "mkdir -p \"%{buildroot}%{_bindir}\"\n"
-// "mkdir -p \"%{buildroot}%{_datadir}/%{name}\"\n"
-// "mkdir -p \"%{buildroot}/usr/share/applications\"\n"
-// "cp -r \"%{_gd_shared_path}%{_gd_export_path}/usr/share/applications/\"* \"%{buildroot}/usr/share/applications/\"\n"
-// "cp -r \"%{_gd_shared_path}%{_gd_export_path}%{_bindir}/\"* \"%{buildroot}%{_bindir}/\"\n"
-// "cp -r \"%{_gd_shared_path}%{_gd_export_path}%{_datadir}/%{name}/\"* \"%{buildroot}%{_datadir}/%{name}/\"\n"
-// "%files\n"
-// "%defattr(644,root,root,-)\n"
-// "%attr(755,root,root) %{_bindir}/%{name}\n"
-// "%attr(644,root,root) %{_datadir}/%{name}/%{name}.png\n"
-// "%attr(644,root,root) %{_datadir}/%{name}/%{name}.pck\n"
-// "%attr(644,root,root) /usr/share/applications/%{name}.desktop\n"
-// "%changelog\n"
-// "* %{_gd_date} Godot Game Engine\n"
-// "- application %{name} packed to RPM\n"
-// "#$changelog$"
-// ;
-
 const String spec_file_tempalte =
 		"Name:       %{_gd_application_name}\n"
 		"Summary:    %{_gd_launcher_name}\n"
@@ -188,6 +144,17 @@ static void _execute_thread(void *p_ud) {
 
 class EditorExportPlatformSailfish : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformSailfish, EditorExportPlatform)
+
+	/** On Windows, the sfdk tool works worst 
+	 * with the @godot implementation of the 
+	 * execution command in windows port, it does 
+	 * not work at all.
+	 * Ok, try use just ssh 
+	*/
+	enum SDKConnectType {
+		tool_sfdk,
+		tool_ssh
+	};
 
 	enum TargetArch {
 		arch_armv7hl,
@@ -347,6 +314,12 @@ protected:
 		const int steps = 8; // if add some step to build process, need change it
 		int current_step = 0;
 		int progress_step = progress_full / steps;
+
+		SDKConnectType sdk_tool = SDKConnectType::tool_sfdk;
+		String tool = ProjectSettings::get_singleton()->get("export/sailfish/tool");
+
+		if( tool == String("ssh") )
+			sdk_tool = SDKConnectType::tool_ssh;
 
 		List<String> args;
 		String arm_template;
@@ -550,31 +523,44 @@ protected:
 				script_file->close();
 			}
 
-			// args.clear();
-			// args.push_back("-c");
-			// args.push_back(String("target=\"") + target_string + String("\""));
-			// args.push_back("-c");
-			// args.push_back(String("output-prefix=\"") + rpm_prefix_path + String("\""));
-			// args.push_back("--specfile");
-			// args.push_back(String("\"") + spec_file_path + String("\""));
-			// args.push_back("package");
 			// try use shell -------------------------------
-			args.clear();
-			args.push_back("engine");
-			args.push_back("exec");
-			String long_parameter;
-			args.push_back("sb2");
-			args.push_back("-t");
-			args.push_back(target_string);
-			args.push_back("bash");
-			args.push_back(buid_script_path);
+
 			// ---------------------------------------------
 			String result_string;
 			for (List<String>::Element *a = args.front(); a != nullptr; a = a->next()) {
 				result_string += String(" ") + a->get();
 			}
 			print_verbose(String("sfdk") + result_string);
-			int result = EditorNode::get_singleton()->execute_and_show_output(TTR("Run sfdk tool: build rpm package for ") + target_string, sfdk_tool, args, true, false);
+			String execute_binary = sfdk_tool;
+			String long_parameter;
+			if ( sdk_tool == SDKConnectType::tool_ssh ) {
+				// here we neet to know where is RSA keys for buildengine
+				String rsa_key_path = p_preset->get(prop_sailfish_sdk_path);
+				rsa_key_path += String("/vmshare/ssh/private_keys/engine/mersdk");
+				execute_binary =  ProjectSettings::get_singleton()->get("export/sailfish/ssh_tool_path");
+				String ssh_port = ProjectSettings::get_singleton()->get("export/sailfish/ssh_port");
+				args.clear();
+				args.push_back("-o");
+				args.push_back("\"IdentitiesOnly=yes\"");
+				args.push_back("-i");
+				args.push_back( String("\"") + rsa_key_path + String("\"") );
+				args.push_back("-p");
+				args.push_back(ssh_port); // default is 2222 port
+				args.push_back("nemo@localhost");
+
+			} else { // SFDK tool
+				args.clear();
+				args.push_back("engine");
+				args.push_back("exec");
+			}
+
+			args.push_back("sb2");
+			args.push_back("-t");
+			args.push_back(target_string);
+			args.push_back("bash");
+			args.push_back(buid_script_path);
+
+			int result = EditorNode::get_singleton()->execute_and_show_output(TTR("Build rpm package for ") + target_string, execute_binary, args, true, false);
 			//                if( execute_task(sfdk_tool, args, result) != Error::OK )
 			if (result != 0) {
 				return ERR_CANT_CREATE;
@@ -681,13 +667,15 @@ public:
 		bool p_debug = false;
 
 		String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
-		//        if (driver == "GLES2") {
-		//            r_features->push_back("etc");
-		//        } else
+		SDKConnectType sdk_tool = SDKConnectType::tool_sfdk;
+		String tool = ProjectSettings::get_singleton()->get("export/sailfish/tool");
+
+		if( tool == String("ssh") )
+			sdk_tool = SDKConnectType::tool_ssh;
+
 		if (driver == "GLES3") {
 			print_error(TTR("SailfishOS dont support GLES3"));
-			//            r_error = TTR("SailfishOS dont support GLES3");
-			//            return false;
+			//return false;
 		}
 
 		if (p_debug)
@@ -700,8 +688,8 @@ public:
 		else
 			x86_template = String(p_preset->get(prop_custom_binary_x86));
 
-		// print_verbose( String("arm_binary: ") + arm_template );
-		// print_verbose( String("x86_binary: ") + x86_template );
+		print_verbose( String("arm_binary: ") + arm_template );
+		print_verbose( String("x86_binary: ") + x86_template );
 
 		if (arm_template.empty() && x86_template.empty()) {
 			r_error = TTR("Cant export without SailfishOS export templates");
@@ -727,23 +715,38 @@ public:
 					one_tamplate = true;
 			}
 			if (!one_tamplate) {
-				r_error = TTR("Template files not exists");
+				r_error = TTR("Template files not exists\n");
 				return false;
 			}
 		}
 
 		// here need check if SDK is exists
-		String sfdk_path = String(p_preset->get(prop_sailfish_sdk_path));
-		if (!DirAccess::exists(sfdk_path)) {
-			r_error = TTR("Wrong SailfishSDK path");
-			return false;
+		// String sfdk_path = String(p_preset->get(prop_sailfish_sdk_path));
+		sdk_path = ProjectSettings::get_singleton()->get("export/sailfish/sdk_path");
+		if (!DirAccess::exists(sdk_path)) {
+			sdk_path = String(p_preset->get(prop_sailfish_sdk_path));
+			if (!DirAccess::exists(sdk_path)) {
+				r_error = TTR("Wrong SailfishSDK path. Setup it in \nEditor->Settings->Export->Sailfish->SDK Path,\nor setup it for current project\n");
+				return false;
+			}
+		}
+
+		// ---- if we use ssh, we need RSA keys for build engine
+		if( sdk_tool == SDKConnectType::tool_ssh ) {
+			String rsa_key_path = sdk_path;
+			rsa_key_path += String("/vmshare/ssh/private_keys/engine/mersdk");
+			DirAccessRef da = DirAccess::open(sdk_path, &err);
+			if( !da  || !da->file_exists(rsa_key_path) ) {
+				r_error = TTR("Cant find RSA key for access to build engine:\n") + rsa_key_path;
+				return false;
+			}
 		}
 
 		// check SDK version, minimum is 3.0.7
-		FileAccessRef sdk_release_file = FileAccess::open(sfdk_path + separator + String("sdk-release"), FileAccess::READ, &err);
+		FileAccessRef sdk_release_file = FileAccess::open(sdk_path + separator + String("sdk-release"), FileAccess::READ, &err);
 
 		if (err != Error::OK) {
-			r_error = TTR("Wrong SailfishSDK path: cant find \"sdk-release\" file");
+			r_error = TTR("Wrong SailfishSDK path: cant find \"sdk-release\" file\n");
 			return false;
 		}
 		bool wrong_sdk_version = false;
@@ -792,24 +795,36 @@ public:
 			return false;
 		}
 
-		DirAccessRef da = DirAccess::open(sfdk_path, &err);
+		String sfdk_path;;
+
+		//  Chek if tool exists --------------------------------
+
+		DirAccessRef da = DirAccess::open(sdk_path, &err);
+
+		if (sdk_tool == SDKConnectType::tool_sfdk) {
+			sfdk_path = sdk_path + String("/bin/sfdk");
 #ifdef WINDOWS_ENABLED
-		sfdk_path += String("\\bin\\sfdk.exe");
-#else
-		sfdk_path += String("/bin/sfdk");
+			sfdk_path += String(".exe");
 #endif
-		if (err != Error::OK || !da || !da->file_exists(sfdk_path)) {
-			r_error = TTR("Wrong SailfishSDK path or sfdk tool not exists");
-			return false;
+			if (err != Error::OK || !da || !da->file_exists(sfdk_path)) {
+				r_error = TTR("Wrong SailfishSDK path or sfdk tool not exists");
+				return false;
+			}
+		} else {
+			sfdk_path = ProjectSettings::get_singleton()->get("export/sailfish/ssh_tool_path");
+// #ifdef WINDOWS_ENABLED
+// 			sfdk_path += String(".exe");
+// #endif
+			if (err != Error::OK || !da || !da->file_exists(sfdk_path)) {
+				r_error = TTR("Wrong SSH tool path. Setup it in Editor->Settings->Export->Sailfish");
+				return false;
+			}
 		}
 
+		/// PARSE XML ------------------------------------------
 		String xml_path;
 		String sdk_configs_path = get_sdk_config_path(p_preset);
-#ifdef WINDOWS_ENABLED
-		xml_path = sdk_configs_path + String("\\libsfdk\\");
-#else
 		xml_path = sdk_configs_path + String("/libsfdk/");
-#endif
 		xml_path += String("buildengines.xml");
 
 		XMLParser *xml_parser = memnew(XMLParser);
@@ -840,6 +855,7 @@ public:
 		}
 		xml_parser->close();
 		memdelete(xml_parser);
+		//----App Icon------------------------------------------------
 
 		String icon = ProjectSettings::get_singleton()->get("application/config/icon");
 		bool result = true;
@@ -848,7 +864,7 @@ public:
 			r_error += TTR("Icon file should be PNG. Set up custom icon for Sailfish, or change icon of project");
 			result = false;
 		}
-
+		// --- Package name ------------------------------------------
 		String packname = p_preset->get(prop_package_name);
 		// check packagename (if its set by user)
 		if (packname.find("$genname") >= 0) {
@@ -904,6 +920,14 @@ public:
 		String sdk_path = p_preset->get(prop_sailfish_sdk_path);
 		String sdk_configs_path = OS::get_singleton()->get_config_path();
 		String sfdk_tool = get_sfdk_path(p_preset);
+
+		SDKConnectType sdk_tool = SDKConnectType::tool_sfdk;
+		String tool = ProjectSettings::get_singleton()->get("export/sailfish/tool");
+
+		if( tool == String("ssh") ) {
+			sdk_tool = SDKConnectType::tool_ssh;
+		}
+
 		//        String mer_sdk_tools;
 		List<MerTarget> mer_target; // Mer targets list
 		String arm_template;
@@ -943,11 +967,27 @@ public:
 		ep.step("found export template binaries.", 10);
 		List<String> args;
 		List<String> output_list;
-		args.push_back("engine");
-		args.push_back("exec");
+
+		if ( sdk_tool == SDKConnectType::tool_sfdk ) {
+			args.push_back("engine");
+			args.push_back("exec");
+		} else { // use SSH 
+			String rsa_key_path = sdk_path;
+			rsa_key_path += String("/vmshare/ssh/private_keys/engine/mersdk");
+			sfdk_tool =  ProjectSettings::get_singleton()->get("export/sailfish/ssh_tool_path");
+			String ssh_port = ProjectSettings::get_singleton()->get("export/sailfish/ssh_port");
+			args.push_back("-o");
+			args.push_back("\"IdentitiesOnly=yes\"");
+			args.push_back("-i");
+			args.push_back( String("\"") + rsa_key_path + String("\"") );
+			args.push_back("-p");
+			args.push_back(ssh_port); // default is 2222 port
+			args.push_back("nemo@localhost");
+		}
 		args.push_back("sb2-config");
 		args.push_back("-l");
-		ep.step("check sfdk targets.", 20);
+
+		ep.step("check build targets", 20);
 		List<MerTarget> targets;
 		{// echo verbose
 			String result_cmd = sfdk_tool;
@@ -1090,6 +1130,8 @@ protected:
 	mutable String shared_home;
 	mutable String shared_src;
 	mutable String sdk_config_dir;
+	mutable String sdk_path;
+	mutable SDKConnectType sdk_connection_type;
 };
 
 void register_sailfish_exporter() {
@@ -1103,18 +1145,30 @@ void register_sailfish_exporter() {
 	logo.instance();
 	logo->create_from_image(img);
 	platform->set_logo(logo);
-	// platform->set_name("SailfishOS/SDL");
-	// p->set_extension("arm", "binary_format/arm");
-	// platform->set_extension("x86", "binary_format/i486");
-	// platform->set_release_32("godot.sailfish.opt.arm");
-	// platform->set_debug_32("godot.sailfish.opt.debug.arm");
-	// platform->set_release_64("godot.sailfish.opt.x86");
-	// platform->set_debug_64("godot.sailfish.opt.debug.x86");
-	// platform->set_os_name("SailfishOS");
-	// platform->set_chmod_flags(0755);
 
 	EDITOR_DEF("export/sailfish/sdk_path", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/sailfish/sdk_path", PROPERTY_HINT_GLOBAL_DIR));
+    String stat = ProjectSettings::get_singleton()->get("export/sailfish/sdk_path");
+#ifdef WINDOWS_ENABLED
+	EDITOR_DEF("export/sailfish/tool", "ssh");
+#else
+	EDITOR_DEF("export/sailfish/tool", "sfdk");
+#endif
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/sailfish/tool", PROPERTY_HINT_ENUM, "sfdk,ssh"));
+#ifndef WINDOWS_ENABLED
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	if ( da->file_exists("/usr/bin/ssh") )
+		EDITOR_DEF("export/sailfish/ssh_tool_path", "/usr/bin/ssh");
+	else
+		EDITOR_DEF("export/sailfish/ssh_tool_path", "");
+	// da.reset()
+#else
+	EDITOR_DEF("export/sailfish/ssh_tool_path", "");
+#endif
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/sailfish/ssh_tool_path", PROPERTY_HINT_GLOBAL_FILE));
 
+	EDITOR_DEF("export/sailfish/ssh_port", "2222");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "export/sailfish/ssh_port", PROPERTY_HINT_RANGE, "1,40096,1,false"));
+	//r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_package_prefix, PROPERTY_HINT_ENUM, "/usr,/home/nemo/.local"), "/usr"));
 	EditorExport::get_singleton()->add_export_platform(platform);
 }
