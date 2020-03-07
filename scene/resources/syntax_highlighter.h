@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gdscript_highlighter.h                                               */
+/*  syntax_highlighter.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,45 +28,36 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GDSCRIPT_HIGHLIGHTER_H
-#define GDSCRIPT_HIGHLIGHTER_H
+#ifndef SYNTAX_HIGHLIGHTER_H
+#define SYNTAX_HIGHLIGHTER_H
 
-#include "scene/gui/text_edit.h"
+#include "core/resource.h"
 
-class GDScriptSyntaxHighlighter : public SyntaxHighlighter {
-private:
-	enum Type {
-		NONE,
-		REGION,
-		NODE_PATH,
-		SYMBOL,
-		NUMBER,
-		FUNCTION,
-		KEYWORD,
-		MEMBER,
-		IDENTIFIER,
-		TYPE,
-	};
+class TextEdit;
 
-	// colours
-	Color font_color;
-	Color symbol_color;
-	Color function_color;
-	Color function_definition_color;
-	Color built_in_type_color;
-	Color number_color;
-	Color member_color;
-	Color node_path_color;
-	Color type_color;
+class SyntaxHighlighter : public Resource {
+	GDCLASS(SyntaxHighlighter, Resource)
+
+protected:
+	TextEdit *text_edit;
+
+	static void _bind_methods();
 
 public:
-	static SyntaxHighlighter *create();
+	Dictionary get_line_syntax_highlighting(int p_line);
+	virtual Dictionary _get_line_syntax_highlighting(int p_line) { return Dictionary(); }
 
-	virtual void _update_cache();
-	virtual Dictionary _get_line_syntax_highlighting(int p_line);
+	void update_cache();
+	virtual void _update_cache() {}
 
 	virtual String _get_name() const;
 	virtual Array _get_supported_languages() const;
+
+	void set_text_edit(TextEdit *p_text_edit);
+	TextEdit *get_text_edit();
+
+	SyntaxHighlighter() {}
+	virtual ~SyntaxHighlighter() {}
 };
 
-#endif // GDSCRIPT_HIGHLIGHTER_H
+#endif
