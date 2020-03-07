@@ -387,6 +387,8 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	type_color = EDITOR_GET("text_edit/highlighting/base_type_color");
 }
 
-SyntaxHighlighter *GDScriptSyntaxHighlighter::create() {
-	return memnew(GDScriptSyntaxHighlighter);
+Ref<SyntaxHighlighter> GDScriptSyntaxHighlighter::_create() const {
+	Ref<GDScriptSyntaxHighlighter> syntax_highlighter;
+	syntax_highlighter.instance();
+	return syntax_highlighter;
 }

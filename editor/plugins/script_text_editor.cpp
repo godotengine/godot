@@ -1410,6 +1410,8 @@ void ScriptTextEditor::_bind_methods() {
 	ClassDB::bind_method("get_drag_data_fw", &ScriptTextEditor::get_drag_data_fw);
 	ClassDB::bind_method("can_drop_data_fw", &ScriptTextEditor::can_drop_data_fw);
 	ClassDB::bind_method("drop_data_fw", &ScriptTextEditor::drop_data_fw);
+
+	ClassDB::bind_method(D_METHOD("add_syntax_highlighter", "highlighter"), &ScriptTextEditor::add_syntax_highlighter);
 }
 
 Control *ScriptTextEditor::get_edit_menu() {

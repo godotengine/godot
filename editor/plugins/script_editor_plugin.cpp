@@ -63,6 +63,8 @@ void ScriptEditorBase::_bind_methods() {
 	// TODO: This signal is no use for VisualScript.
 	ADD_SIGNAL(MethodInfo("search_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 	ADD_SIGNAL(MethodInfo("replace_in_files_requested", PropertyInfo(Variant::STRING, "text")));
+
+	BIND_VMETHOD(MethodInfo("add_syntax_highlighter", PropertyInfo(Variant::OBJECT, "highlighter")));
 }
 
 static bool _is_built_in_script(Script *p_script) {
@@ -2019,8 +2021,11 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 
 	if (p_resource->get_class_name() != StringName("VisualScript")) {
 		bool highlighter_set = false;
-		for (int i = 0; i < syntax_highlighters_func_count; i++) {
-			SyntaxHighlighter *highlighter = syntax_highlighters_funcs[i]();
+		for (int i = 0; i < syntax_highlighters.size(); i++) {
+			Ref<SyntaxHighlighter> highlighter = syntax_highlighters[i]->_create();
+			if (highlighter.is_null()) {
+				continue;
+			}
 			se->add_syntax_highlighter(highlighter);
 
 			if (script != nullptr && !highlighter_set) {
@@ -2768,6 +2773,18 @@ Vector<Ref<Script>> ScriptEditor::get_open_scripts() const {
 	return out_scripts;
 }
 
+Array ScriptEditor::_get_open_script_editors() const {
+	Array script_editors;
+	for (int i = 0; i < tab_container->get_child_count(); i++) {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
+		if (!se) {
+			continue;
+		}
+		script_editors.push_back(se);
+	}
+	return script_editors;
+}
+
 void ScriptEditor::set_scene_root_script(Ref<Script> p_script) {
 	bool open_dominant = EditorSettings::get_singleton()->get("text_editor/files/open_dominant_script_on_scene_change");
 
@@ -2813,12 +2830,14 @@ void ScriptEditor::_open_script_request(const String &p_path) {
 	}
 }
 
-int ScriptEditor::syntax_highlighters_func_count = 0;
-CreateSyntaxHighlighterFunc ScriptEditor::syntax_highlighters_funcs[ScriptEditor::SYNTAX_HIGHLIGHTER_FUNC_MAX];
+void ScriptEditor::register_syntax_highlighter(const Ref<SyntaxHighlighter> &p_syntax_highlighter) {
+	if (syntax_highlighters.find(p_syntax_highlighter) == -1) {
+		syntax_highlighters.push_back(p_syntax_highlighter);
+	}
+}
 
-void ScriptEditor::register_create_syntax_highlighter_function(CreateSyntaxHighlighterFunc p_func) {
-	ERR_FAIL_COND(syntax_highlighters_func_count == SYNTAX_HIGHLIGHTER_FUNC_MAX);
-	syntax_highlighters_funcs[syntax_highlighters_func_count++] = p_func;
+void ScriptEditor::unregister_syntax_highlighter(const Ref<SyntaxHighlighter> &p_syntax_highlighter) {
+	syntax_highlighters.erase(p_syntax_highlighter);
 }
 
 int ScriptEditor::script_editor_func_count = 0;
@@ -2926,6 +2945,12 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_unhandled_input", &ScriptEditor::_unhandled_input);
 	ClassDB::bind_method("_update_members_overview", &ScriptEditor::_update_members_overview);
 	ClassDB::bind_method("_update_recent_scripts", &ScriptEditor::_update_recent_scripts);
+
+	ClassDB::bind_method("get_current_editor", &ScriptEditor::_get_current_editor);
+	ClassDB::bind_method("get_open_script_editors", &ScriptEditor::_get_open_script_editors);
+
+	ClassDB::bind_method(D_METHOD("register_syntax_highlighter", "syntax_highlighter"), &ScriptEditor::register_syntax_highlighter);
+	ClassDB::bind_method(D_METHOD("unregister_syntax_highlighter", "syntax_highlighter"), &ScriptEditor::unregister_syntax_highlighter);
 
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw", "point", "from"), &ScriptEditor::get_drag_data_fw);
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw", "point", "data", "from"), &ScriptEditor::can_drop_data_fw);
