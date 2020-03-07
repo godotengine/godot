@@ -102,7 +102,7 @@ void OpenSimplexNoise::set_lacunarity(float p_lacunarity) {
 	emit_changed();
 }
 
-Ref<Image> OpenSimplexNoise::get_image(int p_width, int p_height) {
+Ref<Image> OpenSimplexNoise::get_image(int p_width, int p_height, bool p_invert) {
 	Vector<uint8_t> data;
 	data.resize(p_width * p_height * 4);
 
@@ -113,6 +113,8 @@ Ref<Image> OpenSimplexNoise::get_image(int p_width, int p_height) {
 			float v = get_noise_2d(j, i);
 			v = v * 0.5 + 0.5; // Normalize [0..1]
 			uint8_t value = uint8_t(CLAMP(v * 255.0, 0, 255));
+			if (p_invert)
+				value = 255 - value;
 			wd8[(i * p_width + j) * 4 + 0] = value;
 			wd8[(i * p_width + j) * 4 + 1] = value;
 			wd8[(i * p_width + j) * 4 + 2] = value;
@@ -124,38 +126,51 @@ Ref<Image> OpenSimplexNoise::get_image(int p_width, int p_height) {
 	return image;
 }
 
-Ref<Image> OpenSimplexNoise::get_seamless_image(int p_size) {
+Ref<Image> OpenSimplexNoise::get_seamless_image(int p_width, int p_height, bool p_invert) {
+	// Check default p_height parameter for backward compatibility
+	if (p_height == -1) {
+		p_height = p_width;
+	}
+
+	// If noise is not square, this method won't work. Call Noise's alpha blend version.
+	if (p_width != p_height) {
+		return Noise::get_seamless_image(p_width, p_height, p_invert);
+	}
+
 	Vector<uint8_t> data;
-	data.resize(p_size * p_size * 4);
+	data.resize(p_width * p_height * 4);
 
 	uint8_t *wd8 = data.ptrw();
 
-	for (int i = 0; i < p_size; i++) {
-		for (int j = 0; j < p_size; j++) {
-			float ii = (float)i / (float)p_size;
-			float jj = (float)j / (float)p_size;
+	for (int i = 0; i < p_width; i++) {
+		for (int j = 0; j < p_height; j++) {
+			float ii = (float)i / (float)p_width;
+			float jj = (float)j / (float)p_height;
 
 			ii *= 2.0 * Math_PI;
 			jj *= 2.0 * Math_PI;
 
-			float radius = p_size / (2.0 * Math_PI);
+			float radiusX = p_width / (2.0 * Math_PI);
+			float radiusY = p_height / (2.0 * Math_PI);
 
-			float x = radius * Math::sin(jj);
-			float y = radius * Math::cos(jj);
-			float z = radius * Math::sin(ii);
-			float w = radius * Math::cos(ii);
+			float x = radiusX * Math::sin(jj);
+			float y = radiusY * Math::cos(jj);
+			float z = radiusX * Math::sin(ii);
+			float w = radiusY * Math::cos(ii);
 			float v = get_noise_4d(x, y, z, w);
 
 			v = v * 0.5 + 0.5; // Normalize [0..1]
 			uint8_t value = uint8_t(CLAMP(v * 255.0, 0, 255));
-			wd8[(i * p_size + j) * 4 + 0] = value;
-			wd8[(i * p_size + j) * 4 + 1] = value;
-			wd8[(i * p_size + j) * 4 + 2] = value;
-			wd8[(i * p_size + j) * 4 + 3] = 255;
+			if (p_invert)
+				value = 255 - value;
+			wd8[(i * p_width + j) * 4 + 0] = value;
+			wd8[(i * p_width + j) * 4 + 1] = value;
+			wd8[(i * p_width + j) * 4 + 2] = value;
+			wd8[(i * p_width + j) * 4 + 3] = 255;
 		}
 	}
 
-	Ref<Image> image = memnew(Image(p_size, p_size, false, Image::FORMAT_RGBA8, data));
+	Ref<Image> image = memnew(Image(p_width, p_height, false, Image::FORMAT_RGBA8, data));
 	return image;
 }
 
@@ -175,8 +190,8 @@ void OpenSimplexNoise::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_lacunarity", "lacunarity"), &OpenSimplexNoise::set_lacunarity);
 	ClassDB::bind_method(D_METHOD("get_lacunarity"), &OpenSimplexNoise::get_lacunarity);
 
-	ClassDB::bind_method(D_METHOD("get_image", "width", "height"), &OpenSimplexNoise::get_image);
-	ClassDB::bind_method(D_METHOD("get_seamless_image", "size"), &OpenSimplexNoise::get_seamless_image);
+	ClassDB::bind_method(D_METHOD("get_image", "width", "height", "invert"), &OpenSimplexNoise::get_image, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_seamless_image", "width", "height", "invert"), &OpenSimplexNoise::get_seamless_image, DEFVAL(-1), DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("get_noise_1d", "x"), &OpenSimplexNoise::get_noise_1d);
 	ClassDB::bind_method(D_METHOD("get_noise_2d", "x", "y"), &OpenSimplexNoise::get_noise_2d);

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,14 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
-#include "noise_texture.h"
-#include "open_simplex_noise.h"
+#ifndef NOISE_REGISTER_TYPES_H
+#define NOISE_REGISTER_TYPES_H
 
-void register_opensimplex_types() {
-	ClassDB::register_class<OpenSimplexNoise>();
-	ClassDB::register_class<NoiseTexture>();
-}
+void register_noise_types();
+void unregister_noise_types();
 
-void unregister_opensimplex_types() {
-}
+#endif // NOISE_REGISTER_TYPES_H

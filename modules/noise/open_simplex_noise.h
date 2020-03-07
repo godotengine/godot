@@ -33,17 +33,18 @@
 
 #include "core/image.h"
 #include "core/reference.h"
+#include "noise.h"
 #include "scene/resources/texture.h"
 
-#include "thirdparty/misc/open-simplex-noise.h"
+#include "thirdparty/noise/open-simplex-noise.h"
 
 // The maximum number of octaves allowed. Note that these are statically allocated.
 // Higher values become exponentially slower, so this shouldn't be set too high
 // to avoid freezing the editor for long periods of time.
 #define MAX_OCTAVES 9
 
-class OpenSimplexNoise : public Resource {
-	GDCLASS(OpenSimplexNoise, Resource);
+class OpenSimplexNoise : public Noise {
+	GDCLASS(OpenSimplexNoise, Noise);
 	OBJ_SAVE_TYPE(OpenSimplexNoise);
 
 	osn_context contexts[MAX_OCTAVES];
@@ -60,7 +61,7 @@ public:
 
 	void _init_seeds();
 
-	void set_seed(int seed);
+	void set_seed(int p_seed);
 	int get_seed();
 
 	void set_octaves(int p_octaves);
@@ -75,8 +76,8 @@ public:
 	void set_lacunarity(float p_lacunarity);
 	float get_lacunarity() const { return lacunarity; }
 
-	Ref<Image> get_image(int p_width, int p_height);
-	Ref<Image> get_seamless_image(int p_size);
+	Ref<Image> get_image(int p_width, int p_height, bool p_invert = false) override;
+	Ref<Image> get_seamless_image(int p_width, int p_height = -1, bool p_invert = false) override;
 
 	float get_noise_1d(float x);
 	float get_noise_2d(float x, float y);

@@ -1,0 +1,149 @@
+--- orig/FastNoise.cpp	2020-01-13 02:32:58.061567900 +0800
++++ FastNoise.cpp	2020-03-27 00:15:19.166601000 +0800
+@@ -366,6 +366,7 @@
+ 		default:
+ 			return 0;
+ 		}
++#ifdef SIMPLEX_ENABLED
+ 	case Simplex:
+ 		return SingleSimplex(0, x, y, z);
+ 	case SimplexFractal:
+@@ -380,6 +381,7 @@
+ 		default:
+ 			return 0;
+ 		}
++#endif
+ 	case Cellular:
+ 		switch (m_cellularReturnType)
+ 		{
+@@ -440,6 +442,7 @@
+ 		case RigidMulti:
+ 			return SinglePerlinFractalRigidMulti(x, y);
+ 		}
++#ifdef SIMPLEX_ENABLED
+ 	case Simplex:
+ 		return SingleSimplex(0, x, y);
+ 	case SimplexFractal:
+@@ -452,6 +455,7 @@
+ 		case RigidMulti:
+ 			return SingleSimplexFractalRigidMulti(x, y);
+ 		}
++#endif
+ 	case Cellular:
+ 		switch (m_cellularReturnType)
+ 		{
+@@ -2100,18 +2104,20 @@
+ 	}
+ }
+ 
++// Godot: replaced m_frequency with m_gradientPerturbFreq
+ void FastNoise::GradientPerturb(FN_DECIMAL& x, FN_DECIMAL& y, FN_DECIMAL& z) const
+ {
+-	SingleGradientPerturb(0, m_gradientPerturbAmp, m_frequency, x, y, z);
++	SingleGradientPerturb(0, m_gradientPerturbAmp, m_gradientPerturbFreq, x, y, z);
+ }
+ 
++// Godot: replaced m_frequency with m_gradientPerturbFreq
+ void FastNoise::GradientPerturbFractal(FN_DECIMAL& x, FN_DECIMAL& y, FN_DECIMAL& z) const
+ {
+ 	FN_DECIMAL amp = m_gradientPerturbAmp * m_fractalBounding;
+-	FN_DECIMAL freq = m_frequency;
++	FN_DECIMAL freq = m_gradientPerturbFreq;
+ 	int i = 0;
+ 
+-	SingleGradientPerturb(m_perm[0], amp, m_frequency, x, y, z);
++	SingleGradientPerturb(m_perm[0], amp, freq, x, y, z);
+ 
+ 	while (++i < m_octaves)
+ 	{
+@@ -2192,18 +2198,20 @@
+ 	z += Lerp(lz0y, Lerp(lz0x, lz1x, ys), zs) * warpAmp;
+ }
+ 
++// Godot: replaced m_frequency with m_gradientPerturbFreq
+ void FastNoise::GradientPerturb(FN_DECIMAL& x, FN_DECIMAL& y) const
+ {
+-	SingleGradientPerturb(0, m_gradientPerturbAmp, m_frequency, x, y);
++	SingleGradientPerturb(0, m_gradientPerturbAmp, m_gradientPerturbFreq, x, y);
+ }
+ 
++// Godot: replaced m_frequency with m_gradientPerturbFreq
+ void FastNoise::GradientPerturbFractal(FN_DECIMAL& x, FN_DECIMAL& y) const
+ {
+ 	FN_DECIMAL amp = m_gradientPerturbAmp * m_fractalBounding;
+-	FN_DECIMAL freq = m_frequency;
++	FN_DECIMAL freq = m_gradientPerturbFreq;
+ 	int i = 0;
+ 
+-	SingleGradientPerturb(m_perm[0], amp, m_frequency, x, y);
++	SingleGradientPerturb(m_perm[0], amp, freq, x, y);
+ 
+ 	while (++i < m_octaves)
+ 	{
+--- orig/FastNoise.h	2020-01-13 01:32:42.640050300 +0800
++++ FastNoise.h	2020-03-27 00:15:19.155328500 +0800
+@@ -28,8 +28,14 @@
+ 
+ // VERSION: 0.4.1
+ 
+-#ifndef FASTNOISE_H
+-#define FASTNOISE_H
++#ifndef FASTNOISE_H__
++#define FASTNOISE_H__
++
++// Simplex is disabled as it is protected by a patent until 2022-01-08.
++// https://patents.google.com/patent/US6867776
++// The patent covers using the algorithm for generating textures with specific qualities.
++// Uncomment the line below to enable it and use at your own risk.
++//#define SIMPLEX_ENABLED
+ 
+ // Uncomment the line below to use doubles throughout FastNoise instead of floats
+ //#define FN_USE_DOUBLES
+@@ -48,12 +54,15 @@
+ {
+ public:
+ 	explicit FastNoise(int seed = 1337) { SetSeed(seed); CalculateFractalBounding(); }
+-
++#ifdef SIMPLEX_ENABLED
+ 	enum NoiseType { Value, ValueFractal, Perlin, PerlinFractal, Simplex, SimplexFractal, Cellular, WhiteNoise, Cubic, CubicFractal };
++#else
++	enum NoiseType { Value, ValueFractal, Perlin, PerlinFractal, Cellular, WhiteNoise, Cubic, CubicFractal };
++#endif
+ 	enum Interp { Linear, Hermite, Quintic };
+ 	enum FractalType { FBM, Billow, RigidMulti };
+ 	enum CellularDistanceFunction { Euclidean, Manhattan, Natural };
+-	enum CellularReturnType { CellValue, NoiseLookup, Distance, Distance2, Distance2Add, Distance2Sub, Distance2Mul, Distance2Div };
++	enum CellularReturnType { CellValue, Distance, Distance2, Distance2Add, Distance2Sub, Distance2Mul, Distance2Div, NoiseLookup };
+ 
+ 	// Sets seed used for all noise types
+ 	// Default: 1337
+@@ -163,6 +172,11 @@
+ 	// Returns the maximum warp distance from original location when using GradientPerturb{Fractal}(...)
+ 	FN_DECIMAL GetGradientPerturbAmp() const { return m_gradientPerturbAmp; }
+ 
++	// Godot: added to match functionality of Author's demo
++	void SetGradientPerturbFreq(FN_DECIMAL gradientPerturbFreq) { m_gradientPerturbFreq = gradientPerturbFreq; }
++	FN_DECIMAL GetGradientPerturbFreq() const { return m_gradientPerturbFreq; }
++	// Godot: end
++
+ 	//2D
+ 	FN_DECIMAL GetValue(FN_DECIMAL x, FN_DECIMAL y) const;
+ 	FN_DECIMAL GetValueFractal(FN_DECIMAL x, FN_DECIMAL y) const;
+@@ -222,7 +236,7 @@
+ 	int m_seed = 1337;
+ 	FN_DECIMAL m_frequency = FN_DECIMAL(0.01);
+ 	Interp m_interp = Quintic;
+-	NoiseType m_noiseType = Simplex;
++	NoiseType m_noiseType = Value;		// Godot: Change default away from Simplex
+ 
+ 	int m_octaves = 3;
+ 	FN_DECIMAL m_lacunarity = FN_DECIMAL(2);
+@@ -238,6 +252,8 @@
+ 	FN_DECIMAL m_cellularJitter = FN_DECIMAL(0.45);
+ 
+ 	FN_DECIMAL m_gradientPerturbAmp = FN_DECIMAL(1);
++	// Godot: added variable to match functionality of Author's demo
++	FN_DECIMAL m_gradientPerturbFreq = FN_DECIMAL(0.05);
+ 
+ 	void CalculateFractalBounding();
+ 
