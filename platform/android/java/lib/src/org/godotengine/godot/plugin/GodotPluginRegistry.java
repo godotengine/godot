@@ -139,7 +139,10 @@ public final class GodotPluginRegistry {
 					return;
 				}
 
-				enabledPluginsSet = new HashSet<>(Arrays.asList(enabledPluginsList));
+				enabledPluginsSet = new HashSet<>();
+				for (String enabledPlugin : enabledPluginsList) {
+					enabledPluginsSet.add(enabledPlugin.trim());
+				}
 			} else {
 				enabledPluginsSet = null;
 			}
@@ -148,7 +151,7 @@ public final class GodotPluginRegistry {
 			for (String metaDataName : metaData.keySet()) {
 				// Parse the meta-data looking for entry with the Godot plugin name prefix.
 				if (metaDataName.startsWith(GODOT_PLUGIN_V1_NAME_PREFIX)) {
-					String pluginName = metaDataName.substring(godotPluginV1NamePrefixLength);
+					String pluginName = metaDataName.substring(godotPluginV1NamePrefixLength).trim();
 					if (enabledPluginsSet != null && !enabledPluginsSet.contains(pluginName)) {
 						Log.w(TAG, "Plugin " + pluginName + " is listed in the dependencies but is not enabled.");
 						continue;
