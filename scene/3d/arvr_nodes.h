@@ -88,7 +88,7 @@ public:
 	String get_controller_name(void) const;
 
 	int get_joystick_id() const;
-	int is_button_pressed(int p_button) const;
+	bool is_button_pressed(int p_button) const;
 	float get_joystick_axis(int p_axis) const;
 
 	real_t get_rumble() const;
