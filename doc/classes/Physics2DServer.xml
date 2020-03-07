@@ -4,7 +4,91 @@
 		Server interface for low-level 2D physics access.
 	</brief_description>
 	<description>
-		Physics2DServer is the server responsible for all 2D physics. It can create many kinds of physics objects, but does not insert them on the node tree.
+		Physics2DServer is the server responsible for 2D physics. Physics2DServer exposes static methods that manipulate resources directly, bypassing [Node2D] and the system of classes that inherit from it. As a consequence, resources created by Physics2DServer are not attached to the node tree. Developers should reluctantly bypass the higher level of abstraction provided by Godot’s 2D API, but Physics2DServer is nonetheless sometimes unavoidable.
+		A basic understanding of Physics2DServer’s primitive types is necessary to use the class successfully. Take care not to confuse Physics2DServer’s primitive types with their [Node2D] counterparts.
+		A [code]space[/code] is a physics environment in which an [code]area[/code] or [code]body[/code] can be placed. Once attached to the same space, areas and bodies are tested for collision. Typically, the default space instantiated by Godot’s scene tree is sufficient but multiple spaces can run in parallel.
+		Anything that collides in 2D physics is either a [code]body[/code] or an [code]area[/code]. Area is the same as the resource used by an Area2D object. Body is the same as the resource used by a RigidBody2D object.
+		A [code]shape[/code] gives physical extension to [code]area[/code] and [code]body[/code] for the purpose of collision in physical [code]space[/code]. Shapes are the basis of Shape2D.
+		A [code]joint[/code] modifies the behaviour of two bodies based on their relationship to each other. They are the same as the resources used by Joint2D.
+		Godot assigns an [code]object_instance_id[/code] to a Node2D when it is instantiated. This id is unique for each object in the node tree. Because Physics2DServer does not instantiate classes as [code]Node2D[/code] objects, these resources do not have valid object instance IDs and are not suitable for attachment to the node tree. Instead, they default to zero.
+		As with object instance IDs, Physics2DServer does not create resources with a valid [code]canvas_instance_id[/code]. Instead, the canvas ID will be zero. The canvas is the same as is used by a [code]Canvaslayer[/code].
+		There is currently no supported method for casting areas or bodies created with Physics2DServer as Node2D objects. Because of this, you’re better off instantiating nodes from Node2D.new() or one of Node2D’s member classes, then using get_rid() to retrieve an RID Physics2DServer can work with.
+		Attach the following script to a Node2D in a new Godot project and run it. It demonstrates many of the basic relationships between Physics2DServer functions.
+	[codeblock]
+	extends Node2D
+
+	var aFooBody:RID
+	var aBarBody:RID
+	var gravityWell:RID
+	var positionFoo:Vector2 = Vector2(0,0)
+	var positionBar:Vector2 = Vector2(0,0)
+	var circleRadius:float = 20.0
+
+	func _ready():
+	    var aSpace:RID = get_world_2d().get_space() # get the default space
+	        
+	    # Two object bobble foolishly around a gravity well
+	    aFooBody = Physics2DServer.body_create() # create a physics body
+	    var aShapeForFoo:RID = Physics2DServer.circle_shape_create() # create a shape for the physics body
+	    Physics2DServer.shape_set_data( aShapeForFoo, circleRadius ) # give the shape extension in 2D space
+	    Physics2DServer.body_add_shape( aFooBody, aShapeForFoo, \
+	        Transform2D().translated(Vector2(0,0)), false ) # apply the shape to Foo
+	    Physics2DServer.body_set_space( aFooBody, aSpace ) # attach Foo to physics space
+	    Physics2DServer.body_set_state( aFooBody, Physics2DServer.BODY_STATE_TRANSFORM, \
+	        Transform2D().translated(Vector2(150,60)) ) # give Foo an initial transform
+	    Physics2DServer.body_set_collision_layer( aFooBody, 1 )
+	    Physics2DServer.body_set_collision_mask( aFooBody, 1 )
+	    Physics2DServer.body_add_force ( aFooBody, Vector2(0,0), Vector2(-30,0) ) # Add a force to Foo
+
+	    aBarBody = Physics2DServer.body_create() # create a physics body
+	    var aShapeForBar:RID = Physics2DServer.circle_shape_create()
+	    Physics2DServer.shape_set_data( aShapeForBar, circleRadius )
+	    Physics2DServer.body_add_shape( aBarBody, aShapeForBar, \
+	        Transform2D().translated(Vector2(0,0)), false )
+	    Physics2DServer.body_set_space( aBarBody, aSpace )
+	    Physics2DServer.body_set_state( aBarBody, Physics2DServer.BODY_STATE_TRANSFORM,
+	        Transform2D().translated(Vector2(450,30)) )
+	    Physics2DServer.body_set_collision_layer( aBarBody, 1 )
+	    Physics2DServer.body_set_collision_mask( aBarBody, 1 )
+
+	    var gravityWell:RID = Physics2DServer.area_create()
+	    var aShapeForArea:RID = Physics2DServer.circle_shape_create() # create a shape for the physics body
+	    Physics2DServer.shape_set_data( aShapeForArea, 1000 ) # give the shape extension in 2D space
+	    Physics2DServer.area_add_shape( gravityWell, aShapeForArea, \
+	        Transform2D().translated(Vector2(0,0)), false ) # apply the shape to Bar
+	    Physics2DServer.area_set_param( gravityWell,
+	        Physics2DServer.AREA_PARAM_GRAVITY, \
+	        98.0 ) # set the strength of gravity
+	    Physics2DServer.area_set_param( gravityWell,
+            Physics2DServer.AREA_PARAM_GRAVITY_IS_POINT , \
+	        true ) # make the origin the point gravitational origin
+	    Physics2DServer.area_set_space_override_mode ( gravityWell,
+	        Physics2DServer.AREA_SPACE_OVERRIDE_REPLACE \
+	        ) # override characteristics of the space this area is in
+
+	    Physics2DServer.area_set_space( gravityWell, aSpace ) # put Foo into the physics space
+	    Physics2DServer.area_set_transform( gravityWell, Transform2D().translated(Vector2(512,300)) )
+	    Physics2DServer.area_set_collision_layer( gravityWell, 1) # Set collision layer so collisions occur
+	    Physics2DServer.area_set_collision_mask( gravityWell, 1) # Set collision mask so collisions occur
+
+	    ## Add A Joint attaching aFooBody and aBarBody
+	    var foobarJoint:RID = Physics2DServer.damped_spring_joint_create ( Vector2(0,0), Vector2(0,0), aFooBody, aBarBody )
+	    Physics2DServer.damped_string_joint_set_param( foobarJoint, Physics2DServer.DAMPED_STRING_REST_LENGTH, 150.0 )
+	    Physics2DServer.damped_string_joint_set_param( foobarJoint, Physics2DServer.DAMPED_STRING_STIFFNESS, 10.0 )
+	    Physics2DServer.damped_string_joint_set_param( foobarJoint, Physics2DServer.DAMPED_STRING_DAMPING, 0.1 )
+
+	func _physics_process(delta):
+	    var aFooBodysState:Physics2DDirectBodyState = Physics2DServer.body_get_direct_state(aFooBody)
+	    if aFooBodysState:
+	        positionFoo = aFooBodysState.transform.get_origin()
+	        positionBar = Physics2DServer.body_get_direct_state(aBarBody).transform.get_origin()
+	    # Redraw Foo and Bar at their current position
+	    update()
+
+	func _draw():
+	    draw_circle(positionFoo, circleRadius, Color("#0000FF"))
+	    draw_circle(positionBar, circleRadius, Color("#FF0000"))
+	[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -21,7 +105,7 @@
 			<argument index="3" name="disabled" type="bool" default="false">
 			</argument>
 			<description>
-				Adds a shape to the area, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
+				Adds a shape to an area along with a transform matrix. An area’s shapes are referenced by their index, so you should track which shape has been assigned to which index. When shapes are freed, the index is not recycled so other indexed shapes will not shift out of order. The last parameter disables collision with other areas and bodies.
 			</description>
 		</method>
 		<method name="area_attach_canvas_instance_id">
@@ -51,14 +135,14 @@
 			<argument index="0" name="area" type="RID">
 			</argument>
 			<description>
-				Removes all shapes from an area. It does not delete the shapes, so they can be reassigned later.
+				Removes all shapes from an area. It does not delete the shape indexes, so they can be reassigned later.
 			</description>
 		</method>
 		<method name="area_create">
 			<return type="RID">
 			</return>
 			<description>
-				Creates an [Area2D].
+				Creates an area resource similar to the one that [Area2D] uses.
 			</description>
 		</method>
 		<method name="area_get_canvas_instance_id" qualifiers="const">
@@ -67,6 +151,7 @@
 			<argument index="0" name="area" type="RID">
 			</argument>
 			<description>
+				Gets the canvas ID of the object this area was instantiated as (typically [Area2D]). If this is an area resource created by Physics2Dserver, the ID will always be 0 as Physics2Dserver does not instantiate [Node2D] classes for resources it creates.
 			</description>
 		</method>
 		<method name="area_get_object_instance_id" qualifiers="const">
@@ -75,7 +160,7 @@
 			<argument index="0" name="area" type="RID">
 			</argument>
 			<description>
-				Gets the instance ID of the object the area is assigned to.
+				Gets the instance ID of the object the area is assigned to. If this is an area resource created by Physics2Dserver, the ID will always be 0 as Physics2Dserver does not instantiate [Node2D] classes for resources it creates.
 			</description>
 		</method>
 		<method name="area_get_param" qualifiers="const">
@@ -97,7 +182,7 @@
 			<argument index="1" name="shape_idx" type="int">
 			</argument>
 			<description>
-				Returns the [RID] of the nth shape of an area.
+				Returns the shape attached to an area by the supplied index.
 			</description>
 		</method>
 		<method name="area_get_shape_count" qualifiers="const">
@@ -117,7 +202,7 @@
 			<argument index="1" name="shape_idx" type="int">
 			</argument>
 			<description>
-				Returns the transform matrix of a shape within an area.
+				Returns the transform matrix of a shape attached to an area at the supplied index.
 			</description>
 		</method>
 		<method name="area_get_space" qualifiers="const">
@@ -135,7 +220,7 @@
 			<argument index="0" name="area" type="RID">
 			</argument>
 			<description>
-				Returns the space override mode for the area.
+				Returns the [enum AreaSpaceOverrideMode] for an area.
 			</description>
 		</method>
 		<method name="area_get_transform" qualifiers="const">
@@ -168,6 +253,7 @@
 			<argument index="2" name="method" type="String">
 			</argument>
 			<description>
+				This is another name for the method area_set_monitor_callback.
 			</description>
 		</method>
 		<method name="area_set_collision_layer">
@@ -218,6 +304,7 @@
 			<argument index="1" name="monitorable" type="bool">
 			</argument>
 			<description>
+				Sets whether area is detectable by other monitoring areas.
 			</description>
 		</method>
 		<method name="area_set_param">
@@ -256,7 +343,7 @@
 			<argument index="2" name="disabled" type="bool">
 			</argument>
 			<description>
-				Disables a given shape in an area.
+				Disables a given shape in an area. A disabled shape does not collide in physical space.
 			</description>
 		</method>
 		<method name="area_set_shape_transform">
@@ -280,7 +367,7 @@
 			<argument index="1" name="space" type="RID">
 			</argument>
 			<description>
-				Assigns a space to the area.
+				Assigns a space to the area. The area will enter the physics similation for the given space after this function is called.
 			</description>
 		</method>
 		<method name="area_set_space_override_mode">
@@ -313,6 +400,7 @@
 			<argument index="1" name="force" type="Vector2">
 			</argument>
 			<description>
+				Adds a constant directional force to a body without affecting rotation.
 			</description>
 		</method>
 		<method name="body_add_collision_exception">
@@ -362,6 +450,7 @@
 			<argument index="1" name="torque" type="float">
 			</argument>
 			<description>
+				Adds a constant rotational force to a body.
 			</description>
 		</method>
 		<method name="body_apply_central_impulse">
@@ -372,6 +461,7 @@
 			<argument index="1" name="impulse" type="Vector2">
 			</argument>
 			<description>
+				Applies a directional impulse without affecting rotation.
 			</description>
 		</method>
 		<method name="body_apply_impulse">
@@ -395,6 +485,7 @@
 			<argument index="1" name="impulse" type="float">
 			</argument>
 			<description>
+				Applies a rotational impulse to a body.
 			</description>
 		</method>
 		<method name="body_attach_canvas_instance_id">
@@ -440,6 +531,7 @@
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<description>
+				Returns a body’s canvas instance id. This id is the equivolent of the id returned by [method CanvasItem.get_canvas]. Resources created by Physics2DServer will have a canvas id of zero.
 			</description>
 		</method>
 		<method name="body_get_collision_layer" qualifiers="const">
@@ -466,7 +558,7 @@
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<description>
-				Returns the continuous collision detection mode.
+				Returns the continuous collision detection mode. See [enum CCDMode].
 			</description>
 		</method>
 		<method name="body_get_direct_state">
@@ -502,7 +594,7 @@
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<description>
-				Gets the instance ID of the object the area is assigned to.
+				Gets the instance ID of the object the area is a resource for. If the resource was instatiated as an Area2D, this would return the unique instance id for that Area2D object. However, if Physics2DServer created this resource its instance id will be zero.
 			</description>
 		</method>
 		<method name="body_get_param" qualifiers="const">
@@ -524,7 +616,7 @@
 			<argument index="1" name="shape_idx" type="int">
 			</argument>
 			<description>
-				Returns the [RID] of the nth shape of a body.
+				Returns the shape assigned to an area at the supplied index.
 			</description>
 		</method>
 		<method name="body_get_shape_count" qualifiers="const">
@@ -790,7 +882,7 @@
 			<argument index="1" name="space" type="RID">
 			</argument>
 			<description>
-				Assigns a space to the body (see [method space_create]).
+				Assigns a space to the body (see [method space_create]). The body will collide with bodies and areas in the given space after assignment.
 			</description>
 		</method>
 		<method name="body_set_state">
@@ -829,24 +921,28 @@
 			<return type="RID">
 			</return>
 			<description>
+				Returns a capsule shape (see also. [method shape_set_data], [method area_add_shape] and [method body_add_shape]). The capsule’s height and radius can be set using [method shape_set_data].
 			</description>
 		</method>
 		<method name="circle_shape_create">
 			<return type="RID">
 			</return>
 			<description>
+				Returns a circular shape (see also. [method shape_set_data], [method area_add_shape] and [method body_add_shape]). The circle’s radius can be set using [method shape_set_data].
 			</description>
 		</method>
 		<method name="concave_polygon_shape_create">
 			<return type="RID">
 			</return>
 			<description>
+				Returns a concave polygon shape (see also. [method shape_set_data], [method area_add_shape] and [method body_add_shape]). The polygon’s segments can be set using [method shape_set_data].
 			</description>
 		</method>
 		<method name="convex_polygon_shape_create">
 			<return type="RID">
 			</return>
 			<description>
+				Returns a convex polygon shape (see also. [method shape_set_data], [method area_add_shape] and [method body_add_shape]). The polygon’s segments can be set using [method shape_set_data].
 			</description>
 		</method>
 		<method name="damped_spring_joint_create">
@@ -960,6 +1056,7 @@
 			<return type="RID">
 			</return>
 			<description>
+				Returns a line shape (see also. [method shape_set_data], [method area_add_shape] and [method body_add_shape]). The line’s vector and length can be set using [method shape_set_data].
 			</description>
 		</method>
 		<method name="pin_joint_create">
@@ -979,18 +1076,21 @@
 			<return type="RID">
 			</return>
 			<description>
+				Returns a ray shape (see also. [method shape_set_data], [method area_add_shape] and [method body_add_shape]). The ray’s length and its slips_on_slope flag can be set using [method shape_set_data].
 			</description>
 		</method>
 		<method name="rectangle_shape_create">
 			<return type="RID">
 			</return>
 			<description>
+				Returns a rectangle shape (see also. [method shape_set_data], [method area_add_shape] and [method body_add_shape]). The rectangle’s length and width can be set using [method shape_set_data].
 			</description>
 		</method>
 		<method name="segment_shape_create">
 			<return type="RID">
 			</return>
 			<description>
+				Returns a rectangle shape (see also. [method shape_set_data], [method area_add_shape] and [method body_add_shape]). The rectangle’s length and width can be set using [method shape_set_data].
 			</description>
 		</method>
 		<method name="set_active">
@@ -1028,14 +1128,23 @@
 			<argument index="1" name="data" type="Variant">
 			</argument>
 			<description>
-				Sets the shape data that defines its shape and size. The data to be passed depends on the kind of shape created [method shape_get_type].
+				Sets the shape data that defines its shape and size. The data to be passed depends on the type of shape created (see. [method shape_get_type]). The following are the Variants required for each [enum ShapeType].
+				[b]SHAPE_LINE[/b]: [method shape_set_data] [codeblock]( RID shape, array[Vector2() , float length] )[/codeblock]
+				[b]SHAPE_RAY[/b]: [method shape_set_data] [codeblock]( RID shape, {”length”: float length, “slips_on_slope”: bool} )[/codeblock]
+				[b]SHAPE_SEGMENT[/b]: [method shape_set_data] [codeblock]( RID shape,array[float pointA.x, float pointA.y, float pointB.x, float pointB.y] )[/codeblock]
+				[b]SHAPE_CIRCLE[/b]: [method shape_set_data] [codeblock]( RID shape, float radius)[/codeblock]
+				[b]SHAPE_RECTANGLE[/b]: [method shape_set_data] [codeblock]( RID shape, array[float width, float height)] )[/codeblock]
+				[b]SHAPE_CAPSULE[/b]: [method shape_set_data] [codeblock]( RID shape, array[float height, float width] )[/codeblock]
+				[b]SHAPE_CONVEX_POLYGON[/b]: [method shape_set_data] [codeblock]( RID shape, array[Vector2(), Vector2(), ...] )[/codeblock]
+				[b]SHAPE_CONCAVE_POLYGON[/b]: [method shape_set_data] [codeblock]( RID shape, array[Vector2(), Vector2(), ...] )[/codeblock]
+				Note: SHAPE_CONVEX_POLYGON is the same type used by CollisionPolygon2D when it is set to “solids,” and SHAPE_CONCAVE_POLYGON  is used when CollisionPolygon2D is set to “segments.”
 			</description>
 		</method>
 		<method name="space_create">
 			<return type="RID">
 			</return>
 			<description>
-				Creates a space. A space is a collection of parameters for the physics engine that can be assigned to an area or a body. It can be assigned to an area with [method area_set_space], or to a body with [method body_set_space].
+				Creates a space. A space is a collection of parameters for the physics engine that can be assigned to an area or a body. It can be assigned to an area with [method area_set_space], or to a body with [method body_set_space].  A created space does not have the default properties of the default space associated with your projects settings. If you want those duplicated, you’ll need to set them explicitly.
 			</description>
 		</method>
 		<method name="space_get_direct_state">
