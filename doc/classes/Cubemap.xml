@@ -1,8 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Cubemap" inherits="TextureLayered" version="4.0">
 	<brief_description>
+		A [TextureLayered] of type [code]enum TextureLayeredType.TEXTURE_LAYERED_CUBEMAP[/code] which uses exactly 6 layers.
 	</brief_description>
 	<description>
+		Used in reflection (see [ReflectionProbe]), lighting and shadowing systems. A [Cubemap] holds exactly 6 [Image]s. One image in each layer. The 6 images are the 6 faces of the cube. They will be handled as X+, X-, Y+, Y-, Z+, Z-. See [enum VisualServer.CubeMapLayer].
+		Godot does not use the [Cubemap] to create skyboxes (see [PanoramaSky]), but rather uses its image data to influence the reflections ([ReflectionProbe]), lighting ([GIProbe], more on GI [url=https://godotengine.org/article/godot-3-0-released#pbr-gi]here[/url] ) and shadows (see [code]struct ShadowCubemap[/code] in [RasterizerSceneRD]) in the scene via the [Sky].
+		[TextureLayered]'s class reference explains how a [Cubemap] operates and how it has to be handled.
+		It is based on the class [Texture] (not [Texture2D]) and can only used as such. Its internal resource type, as well as recognized file extension, is [code].cube[/code].
+		The [Cubemap] is one cubemap level with an array of exactly 6 [Image]s. Mipmaps are optional.
+		In Godot, the [Cubemap] can be used for the [Sky]. Your [ProjectSettings] value for "rendering/quality/reflections/texture_array_reflections" is reflected in [RasterizerSceneRD]s private member [code]sky_use_cubemap_array[/code]. If this member is set to [code]false[/code], the [Sky] will use a [Cubemap]. Otherwise, the [CubemapArray] logic will be used.
+		The Sky's [code]radiance[/code] and the [RasterizerEffectsRD] [code]roughness[/code] will be a [code]CubemapRoughness[/code] with [code]CUBEMAP_ROUGHNESS_SOURCE_CUBEMAP[/code] as its [code]CubemapRoughnessSource[/code].
+		Your [ReflectionProbe]s will be affected by the [Cubemap] in your [Sky]. This can be turned off for each [ReflectionProbe], if its [code]Interior[/code] property is enabled.
+		[Cubemap] has [enum RenderingDevice.TextureType] [code]TEXTURE_TYPE_CUBE[/code].
+		Currently, [Cubemap]s cannot be created automatically. You can create them externally with a 3rd party tool or using the basisu commandline tool (see file [code]thirdparty/basis_universal/basisu_tool.cpp[/code] regarding [code]-tex_type cubemap[/code]). It can also be created manually from several [Image]s via C++ code.
+		In case you want to use a cubemap for your [Sky] (and not just some of its data), see [PanoramaSky]'s class documentation on how to convert your cubemap to a panorama.
+		More on [Cubemap] can be found [url=https://godotengine.org/article/godots-new-renderer-progress-report-2]here[/url].
 	</description>
 	<tutorials>
 	</tutorials>
