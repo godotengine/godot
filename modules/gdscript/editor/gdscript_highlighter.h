@@ -34,6 +34,8 @@
 #include "scene/gui/text_edit.h"
 
 class GDScriptSyntaxHighlighter : public SyntaxHighlighter {
+	GDCLASS(GDScriptSyntaxHighlighter, SyntaxHighlighter)
+
 private:
 	enum Type {
 		NONE,
@@ -60,13 +62,13 @@ private:
 	Color type_color;
 
 public:
-	static SyntaxHighlighter *create();
+	virtual void _update_cache() override;
+	virtual Dictionary _get_line_syntax_highlighting(int p_line) override;
 
-	virtual void _update_cache();
-	virtual Dictionary _get_line_syntax_highlighting(int p_line);
+	virtual String _get_name() const override;
+	virtual Array _get_supported_languages() const override;
 
-	virtual String _get_name() const;
-	virtual Array _get_supported_languages() const;
+	virtual Ref<SyntaxHighlighter> _create() const override;
 };
 
 #endif // GDSCRIPT_HIGHLIGHTER_H

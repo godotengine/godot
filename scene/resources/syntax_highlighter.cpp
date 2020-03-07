@@ -65,6 +65,15 @@ TextEdit *SyntaxHighlighter::get_text_edit() {
 	return text_edit;
 }
 
+Ref<SyntaxHighlighter> SyntaxHighlighter::_create() const {
+	Ref<SyntaxHighlighter> syntax_highlighter;
+	syntax_highlighter.instance();
+	if (get_script_instance()) {
+		syntax_highlighter->set_script(get_script_instance()->get_script());
+	}
+	return syntax_highlighter;
+}
+
 void SyntaxHighlighter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_line_syntax_highlighting", "p_line"), &SyntaxHighlighter::_get_line_syntax_highlighting);
 	ClassDB::bind_method(D_METHOD("_update_cache"), &SyntaxHighlighter::_update_cache);
