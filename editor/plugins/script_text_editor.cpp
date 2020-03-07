@@ -1380,28 +1380,27 @@ void ScriptTextEditor::_edit_option_toggle_inline_comment() {
 	code_editor->toggle_inline_comment(delimiter);
 }
 
-void ScriptTextEditor::add_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
-	highlighters[p_highlighter->get_name()] = p_highlighter;
-	highlighter_menu->add_radio_check_item(p_highlighter->get_name());
+void ScriptTextEditor::add_syntax_highlighter(Ref<SyntaxHighlighter> p_highlighter) {
+	highlighters[p_highlighter->_get_name()] = p_highlighter;
+	highlighter_menu->add_radio_check_item(p_highlighter->_get_name());
 }
 
-void ScriptTextEditor::set_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
+void ScriptTextEditor::set_syntax_highlighter(Ref<SyntaxHighlighter> p_highlighter) {
 	TextEdit *te = code_editor->get_text_edit();
-	te->_set_syntax_highlighting(p_highlighter);
-	if (p_highlighter != nullptr) {
-		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(p_highlighter->get_name()), true);
+	te->set_syntax_highlighting(p_highlighter);
+	if (p_highlighter.is_valid()) {
+		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(p_highlighter->_get_name()), true);
 	} else {
 		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(TTR("Standard")), true);
 	}
 }
 
 void ScriptTextEditor::_change_syntax_highlighter(int p_idx) {
-	Map<String, SyntaxHighlighter *>::Element *el = highlighters.front();
+	Map<String, Ref<SyntaxHighlighter> >::Element *el = highlighters.front();
 	while (el != nullptr) {
 		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(el->key()), false);
 		el = el->next();
 	}
-	// highlighter_menu->set_item_checked(p_idx, true);
 	set_syntax_highlighter(highlighters[highlighter_menu->get_item_text(p_idx)]);
 }
 
@@ -1825,7 +1824,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize"), KEY_MASK_SHIFT | KEY_F6), EDIT_CAPITALIZE);
 	convert_case->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
 
-	highlighters[TTR("Standard")] = nullptr;
+	highlighters[TTR("Standard")] = Ref<SyntaxHighlighter>();
 	highlighter_menu = memnew(PopupMenu);
 	highlighter_menu->set_name("highlighter_menu");
 	edit_menu->get_popup()->add_child(highlighter_menu);
@@ -1891,11 +1890,6 @@ ScriptTextEditor::ScriptTextEditor() {
 }
 
 ScriptTextEditor::~ScriptTextEditor() {
-	for (const Map<String, SyntaxHighlighter *>::Element *E = highlighters.front(); E; E = E->next()) {
-		if (E->get() != nullptr) {
-			memdelete(E->get());
-		}
-	}
 	highlighters.clear();
 }
 
