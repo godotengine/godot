@@ -106,10 +106,18 @@ void OS::add_logger(Logger *p_logger) {
 }
 
 void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, Logger::ErrorType p_type) {
+	if (!_stderr_enabled) {
+		return;
+	}
+
 	_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
 }
 
 void OS::print(const char *p_format, ...) {
+	if (!_stdout_enabled) {
+		return;
+	}
+
 	va_list argp;
 	va_start(argp, p_format);
 
@@ -119,6 +127,10 @@ void OS::print(const char *p_format, ...) {
 }
 
 void OS::printerr(const char *p_format, ...) {
+	if (!_stderr_enabled) {
+		return;
+	}
+
 	va_list argp;
 	va_start(argp, p_format);
 
@@ -161,6 +173,22 @@ bool OS::is_stdout_verbose() const {
 
 bool OS::is_stdout_debug_enabled() const {
 	return _debug_stdout;
+}
+
+bool OS::is_stdout_enabled() const {
+	return _stdout_enabled;
+}
+
+bool OS::is_stderr_enabled() const {
+	return _stderr_enabled;
+}
+
+void OS::set_stdout_enabled(bool p_enabled) {
+	_stdout_enabled = p_enabled;
+}
+
+void OS::set_stderr_enabled(bool p_enabled) {
+	_stderr_enabled = p_enabled;
 }
 
 void OS::dump_memory_to_file(const char *p_file) {
