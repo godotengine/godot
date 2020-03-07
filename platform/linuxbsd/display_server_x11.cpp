@@ -421,9 +421,27 @@ void DisplayServerX11::mouse_warp_to_position(const Point2i &p_to) {
 				0, 0, 0, 0, (int)p_to.x, (int)p_to.y);
 	}
 }
+
 Point2i DisplayServerX11::mouse_get_position() const {
 	return last_mouse_pos;
 }
+
+Point2i DisplayServerX11::mouse_get_absolute_position() const {
+	int number_of_screens = XScreenCount(x11_display);
+	for (int i = 0; i < number_of_screens; i++) {
+		Window root, child;
+		int root_x, root_y, win_x, win_y;
+		unsigned int mask;
+		if (XQueryPointer(x11_display, XRootWindow(x11_display, i), &root, &child, &root_x, &root_y, &win_x, &win_y, &mask)) {
+			XWindowAttributes root_attrs;
+			XGetWindowAttributes(x11_display, root, &root_attrs);
+
+			return Vector2i(root_attrs.x + root_x, root_attrs.y + root_y);
+		}
+	}
+	return Vector2i();
+}
+
 int DisplayServerX11::mouse_get_button_state() const {
 	return last_button_state;
 }

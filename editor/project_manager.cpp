@@ -1047,6 +1047,9 @@ public:
 	ProjectList();
 	~ProjectList();
 
+	void _global_menu_new_window(const Variant &p_tag);
+	void _global_menu_open_project(const Variant &p_tag);
+
 	void update_dock_menu();
 	void load_projects();
 	void set_search_term(String p_search_term);
@@ -1304,14 +1307,37 @@ void ProjectList::update_dock_menu() {
 				}
 				favs_added = 0;
 			}
-			DisplayServer::get_singleton()->global_menu_add_item("_dock", _projects[i].project_name + " ( " + _projects[i].path + " )", GLOBAL_OPEN_PROJECT, Variant(_projects[i].path.plus_file("project.godot")));
+			DisplayServer::get_singleton()->global_menu_add_item("_dock", _projects[i].project_name + " ( " + _projects[i].path + " )", callable_mp(this, &ProjectList::_global_menu_open_project), i);
 			total_added++;
 		}
 	}
 	if (total_added != 0) {
 		DisplayServer::get_singleton()->global_menu_add_separator("_dock");
 	}
-	DisplayServer::get_singleton()->global_menu_add_item("_dock", TTR("New Window"), GLOBAL_NEW_WINDOW, Variant());
+	DisplayServer::get_singleton()->global_menu_add_item("_dock", TTR("New Window"), callable_mp(this, &ProjectList::_global_menu_new_window));
+}
+
+void ProjectList::_global_menu_new_window(const Variant &p_tag) {
+	List<String> args;
+	args.push_back("-p");
+	String exec = OS::get_singleton()->get_executable_path();
+
+	OS::ProcessID pid = 0;
+	OS::get_singleton()->execute(exec, args, false, &pid);
+}
+
+void ProjectList::_global_menu_open_project(const Variant &p_tag) {
+	int idx = (int)p_tag;
+
+	if (idx >= 0 && idx < _projects.size()) {
+		String conf = _projects[idx].path.plus_file("project.godot");
+		List<String> args;
+		args.push_back(conf);
+		String exec = OS::get_singleton()->get_executable_path();
+
+		OS::ProcessID pid = 0;
+		OS::get_singleton()->execute(exec, args, false, &pid);
+	}
 }
 
 void ProjectList::create_project_item_control(int p_index) {
@@ -2024,30 +2050,6 @@ void ProjectManager::_confirm_update_settings() {
 	_open_selected_projects();
 }
 
-void ProjectManager::_global_menu_action(const Variant &p_id, const Variant &p_meta) {
-
-	int id = (int)p_id;
-	if (id == ProjectList::GLOBAL_NEW_WINDOW) {
-		List<String> args;
-		args.push_back("-p");
-		String exec = OS::get_singleton()->get_executable_path();
-
-		OS::ProcessID pid = 0;
-		OS::get_singleton()->execute(exec, args, false, &pid);
-	} else if (id == ProjectList::GLOBAL_OPEN_PROJECT) {
-		String conf = (String)p_meta;
-
-		if (conf != String()) {
-			List<String> args;
-			args.push_back(conf);
-			String exec = OS::get_singleton()->get_executable_path();
-
-			OS::ProcessID pid = 0;
-			OS::get_singleton()->execute(exec, args, false, &pid);
-		}
-	}
-}
-
 void ProjectManager::_open_selected_projects() {
 
 	const Set<String> &selected_list = _project_list->get_selected_project_keys();
@@ -2420,7 +2422,11 @@ ProjectManager::ProjectManager() {
 			case 0: {
 				// Try applying a suitable display scale automatically
 				const int screen = DisplayServer::get_singleton()->window_get_current_screen();
+#ifdef OSX_ENABLED
+				editor_set_scale(DisplayServer::get_singleton()->screen_get_scale(screen));
+#else
 				editor_set_scale(DisplayServer::get_singleton()->screen_get_dpi(screen) >= 192 && DisplayServer::get_singleton()->screen_get_size(screen).x > 2000 ? 2.0 : 1.0);
+#endif
 			} break;
 
 			case 1: editor_set_scale(0.75); break;
@@ -2696,7 +2702,6 @@ ProjectManager::ProjectManager() {
 	}
 
 	SceneTree::get_singleton()->get_root()->connect("files_dropped", callable_mp(this, &ProjectManager::_files_dropped));
-	SceneTree::get_singleton()->connect("global_menu_action", callable_mp(this, &ProjectManager::_global_menu_action));
 
 	run_error_diag = memnew(AcceptDialog);
 	gui_base->add_child(run_error_diag);

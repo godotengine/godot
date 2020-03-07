@@ -36,6 +36,8 @@
 #include "core/os/os.h"
 #include "core/resource.h"
 
+class Texture2D;
+
 class DisplayServer : public Object {
 	GDCLASS(DisplayServer, Object)
 
@@ -47,6 +49,7 @@ public:
 	_FORCE_INLINE_ static DisplayServer *get_singleton() {
 		return singleton;
 	}
+
 	enum WindowMode {
 		WINDOW_MODE_WINDOWED,
 		WINDOW_MODE_MINIMIZED,
@@ -103,16 +106,34 @@ public:
 		FEATURE_ORIENTATION,
 		FEATURE_SWAP_BUFFERS,
 		FEATURE_KEEP_SCREEN_ON,
-
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
 	virtual String get_name() const = 0;
 
-	virtual void global_menu_add_item(const String &p_menu, const String &p_label, const Variant &p_signal, const Variant &p_meta);
-	virtual void global_menu_add_separator(const String &p_menu);
-	virtual void global_menu_remove_item(const String &p_menu, int p_idx);
-	virtual void global_menu_clear(const String &p_menu);
+	virtual void global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Variant &p_tag = Variant());
+	virtual void global_menu_add_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Variant &p_tag = Variant());
+	virtual void global_menu_add_submenu_item(const String &p_menu_root, const String &p_label, const String &p_submenu);
+	virtual void global_menu_add_separator(const String &p_menu_root);
+
+	virtual bool global_menu_is_item_checked(const String &p_menu_root, int p_idx) const;
+	virtual bool global_menu_is_item_checkable(const String &p_menu_root, int p_idx) const;
+	virtual Callable global_menu_get_item_callback(const String &p_menu_root, int p_idx);
+	virtual Variant global_menu_get_item_tag(const String &p_menu_root, int p_idx);
+	virtual String global_menu_get_item_text(const String &p_menu_root, int p_idx);
+	virtual String global_menu_get_item_submenu(const String &p_menu_root, int p_idx);
+
+	virtual void global_menu_set_item_checked(const String &p_menu_root, int p_idx, bool p_checked);
+	virtual void global_menu_set_item_checkable(const String &p_menu_root, int p_idx, bool p_checkable);
+	virtual void global_menu_set_item_callback(const String &p_menu_root, int p_idx, const Callable &p_callback);
+	virtual void global_menu_set_item_tag(const String &p_menu_root, int p_idx, const Variant &p_tag);
+	virtual void global_menu_set_item_text(const String &p_menu_root, int p_idx, const String &p_text);
+	virtual void global_menu_set_item_submenu(const String &p_menu_root, int p_idx, const String &p_submenu);
+
+	virtual int global_menu_get_item_count(const String &p_menu_root) const;
+
+	virtual void global_menu_remove_item(const String &p_menu_root, int p_idx);
+	virtual void global_menu_clear(const String &p_menu_root);
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") = 0;
 
@@ -128,6 +149,7 @@ public:
 
 	virtual void mouse_warp_to_position(const Point2i &p_to);
 	virtual Point2i mouse_get_position() const;
+	virtual Point2i mouse_get_absolute_position() const;
 	virtual int mouse_get_button_state() const;
 
 	virtual void clipboard_set(const String &p_text);
@@ -142,6 +164,7 @@ public:
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
+	virtual float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 	enum ScreenOrientation {
 
@@ -199,6 +222,7 @@ public:
 		WINDOW_EVENT_FOCUS_OUT,
 		WINDOW_EVENT_CLOSE_REQUEST,
 		WINDOW_EVENT_GO_BACK_REQUEST,
+		WINDOW_EVENT_DPI_CHANGE,
 	};
 	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) = 0;

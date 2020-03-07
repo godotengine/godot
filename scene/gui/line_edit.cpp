@@ -913,9 +913,10 @@ void LineEdit::_notification(int p_what) {
 			}
 
 			if (has_focus()) {
-
-				DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
-				DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + Point2(using_placeholder ? 0 : x_ofs, y_ofs + caret_height), get_viewport()->get_window_id());
+				if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID) {
+					DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
+					DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + Point2(using_placeholder ? 0 : x_ofs, y_ofs + caret_height), get_viewport()->get_window_id());
+				}
 			}
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
@@ -926,9 +927,11 @@ void LineEdit::_notification(int p_what) {
 				draw_caret = true;
 			}
 
-			DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
-			Point2 cursor_pos = Point2(get_cursor_position(), 1) * get_minimum_size().height;
-			DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + cursor_pos, get_viewport()->get_window_id());
+			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID) {
+				DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
+				Point2 cursor_pos = Point2(get_cursor_position(), 1) * get_minimum_size().height;
+				DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + cursor_pos, get_viewport()->get_window_id());
+			}
 
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD))
 				DisplayServer::get_singleton()->virtual_keyboard_show(text, get_global_rect(), max_length);
@@ -940,8 +943,10 @@ void LineEdit::_notification(int p_what) {
 				caret_blink_timer->stop();
 			}
 
-			DisplayServer::get_singleton()->window_set_ime_position(Point2(), get_viewport()->get_window_id());
-			DisplayServer::get_singleton()->window_set_ime_active(false, get_viewport()->get_window_id());
+			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID) {
+				DisplayServer::get_singleton()->window_set_ime_position(Point2(), get_viewport()->get_window_id());
+				DisplayServer::get_singleton()->window_set_ime_active(false, get_viewport()->get_window_id());
+			}
 			ime_text = "";
 			ime_selection = Point2();
 

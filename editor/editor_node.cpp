@@ -199,7 +199,7 @@ void EditorNode::_update_scene_tabs() {
 		scene_tabs->add_tab(editor_data.get_scene_title(i) + (unsaved ? "(*)" : ""), icon);
 
 		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
-			DisplayServer::get_singleton()->global_menu_add_item("_dock", editor_data.get_scene_title(i) + (unsaved ? "(*)" : ""), GLOBAL_SCENE, i);
+			DisplayServer::get_singleton()->global_menu_add_item("_dock", editor_data.get_scene_title(i) + (unsaved ? "(*)" : ""), callable_mp(this, &EditorNode::_global_menu_scene), i);
 		}
 
 		if (show_rb && editor_data.get_scene_root_script(i).is_valid()) {
@@ -209,7 +209,7 @@ void EditorNode::_update_scene_tabs() {
 
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
 		DisplayServer::get_singleton()->global_menu_add_separator("_dock");
-		DisplayServer::get_singleton()->global_menu_add_item("_dock", TTR("New Window"), GLOBAL_NEW_WINDOW, Variant());
+		DisplayServer::get_singleton()->global_menu_add_item("_dock", TTR("New Window"), callable_mp(this, &EditorNode::_global_menu_new_window));
 	}
 
 	scene_tabs->set_current_tab(editor_data.get_edited_scene());
@@ -378,7 +378,6 @@ void EditorNode::_notification(int p_what) {
 			get_tree()->get_root()->set_as_audio_listener_2d(false);
 			get_tree()->set_auto_accept_quit(false);
 			get_tree()->get_root()->connect("files_dropped", callable_mp(this, &EditorNode::_dropped_files));
-			get_tree()->connect("global_menu_action", callable_mp(this, &EditorNode::_global_menu_action));
 
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
@@ -5105,21 +5104,19 @@ void EditorNode::remove_tool_menu_item(const String &p_name) {
 	}
 }
 
-void EditorNode::_global_menu_action(const Variant &p_id, const Variant &p_meta) {
+void EditorNode::_global_menu_scene(const Variant &p_tag) {
+	int idx = (int)p_tag;
+	scene_tabs->set_current_tab(idx);
+}
 
-	int id = (int)p_id;
-	if (id == GLOBAL_NEW_WINDOW) {
-		if (OS::get_singleton()->get_main_loop()) {
-			List<String> args;
-			args.push_back("-e");
-			String exec = OS::get_singleton()->get_executable_path();
+void EditorNode::_global_menu_new_window(const Variant &p_tag) {
+	if (OS::get_singleton()->get_main_loop()) {
+		List<String> args;
+		args.push_back("-p");
+		String exec = OS::get_singleton()->get_executable_path();
 
-			OS::ProcessID pid = 0;
-			OS::get_singleton()->execute(exec, args, false, &pid);
-		}
-	} else if (id == GLOBAL_SCENE) {
-		int idx = (int)p_meta;
-		scene_tabs->set_current_tab(idx);
+		OS::ProcessID pid = 0;
+		OS::get_singleton()->execute(exec, args, false, &pid);
 	}
 }
 
@@ -5439,6 +5436,7 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_update_recent_scenes", &EditorNode::_update_recent_scenes);
 
 	ClassDB::bind_method("_clear_undo_history", &EditorNode::_clear_undo_history);
+
 	ClassDB::bind_method("edit_item_resource", &EditorNode::edit_item_resource);
 
 	ClassDB::bind_method(D_METHOD("get_gui_base"), &EditorNode::get_gui_base);
@@ -5590,7 +5588,11 @@ EditorNode::EditorNode() {
 			case 0: {
 				// Try applying a suitable display scale automatically
 				const int screen = DisplayServer::get_singleton()->window_get_current_screen();
+#ifdef OSX_ENABLED
+				editor_set_scale(DisplayServer::get_singleton()->screen_get_scale(screen));
+#else
 				editor_set_scale(DisplayServer::get_singleton()->screen_get_dpi(screen) >= 192 && DisplayServer::get_singleton()->screen_get_size(screen).x > 2000 ? 2.0 : 1.0);
+#endif
 			} break;
 
 			case 1: {

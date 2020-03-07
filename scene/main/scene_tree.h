@@ -331,7 +331,6 @@ public:
 
 	static SceneTree *get_singleton() { return singleton; }
 
-	void global_menu_action(const Variant &p_id, const Variant &p_meta);
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
 
 	//network API
