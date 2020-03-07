@@ -59,6 +59,7 @@
 #define prop_package_launcher_name "package/game_name"
 #define prop_package_prefix "package/assets_prefix"
 #define prop_package_icon "package/launcher_icon"
+#define mersdk_rsa_key "/vmshare/ssh/private_keys/engine/mersdk"
 
 // #ifdef WINDOWS_ENABLED
 // const String separator("\\");
@@ -316,7 +317,7 @@ protected:
 		int progress_step = progress_full / steps;
 
 		SDKConnectType sdk_tool = SDKConnectType::tool_sfdk;
-		String tool = ProjectSettings::get_singleton()->get("export/sailfish/tool");
+		String tool = EDITOR_GET("export/sailfish/tool");
 
 		if( tool == String("ssh") )
 			sdk_tool = SDKConnectType::tool_ssh;
@@ -503,7 +504,7 @@ protected:
 			return ERR_CANT_CREATE;
 		}
 
-		ep.step(String("setup sfdk tool for ") + arch_to_text(package.target.arch) + String(" package build"), progress_from + (++current_step) * progress_step);
+		ep.step(String("setup SDK tool for ") + arch_to_text(package.target.arch) + String(" package build"), progress_from + (++current_step) * progress_step);
 		{
 			String buid_script_path = broot_path + separator + String("buildscript.sh");
 			{ //
@@ -536,9 +537,9 @@ protected:
 			if ( sdk_tool == SDKConnectType::tool_ssh ) {
 				// here we neet to know where is RSA keys for buildengine
 				String rsa_key_path = p_preset->get(prop_sailfish_sdk_path);
-				rsa_key_path += String("/vmshare/ssh/private_keys/engine/mersdk");
-				execute_binary =  ProjectSettings::get_singleton()->get("export/sailfish/ssh_tool_path");
-				String ssh_port = ProjectSettings::get_singleton()->get("export/sailfish/ssh_port");
+				rsa_key_path += String(mersdk_rsa_key);
+				execute_binary =  EDITOR_GET("export/sailfish/ssh_tool_path");
+				String ssh_port = EDITOR_GET("export/sailfish/ssh_port");
 				args.clear();
 				args.push_back("-o");
 				args.push_back("\"IdentitiesOnly=yes\"");
@@ -547,6 +548,8 @@ protected:
 				args.push_back("-p");
 				args.push_back(ssh_port); // default is 2222 port
 				args.push_back("nemo@localhost");
+                
+                buid_script_path = sdk_shared_path + export_path_part + separator + String("buildscript.sh");
 
 			} else { // SFDK tool
 				args.clear();
@@ -668,7 +671,7 @@ public:
 
 		String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
 		SDKConnectType sdk_tool = SDKConnectType::tool_sfdk;
-		String tool = ProjectSettings::get_singleton()->get("export/sailfish/tool");
+		String tool = EDITOR_GET("export/sailfish/tool");
 
 		if( tool == String("ssh") )
 			sdk_tool = SDKConnectType::tool_ssh;
@@ -722,7 +725,7 @@ public:
 
 		// here need check if SDK is exists
 		// String sfdk_path = String(p_preset->get(prop_sailfish_sdk_path));
-		sdk_path = ProjectSettings::get_singleton()->get("export/sailfish/sdk_path");
+		sdk_path = EDITOR_GET("export/sailfish/sdk_path");
 		if (!DirAccess::exists(sdk_path)) {
 			sdk_path = String(p_preset->get(prop_sailfish_sdk_path));
 			if (!DirAccess::exists(sdk_path)) {
@@ -811,7 +814,7 @@ public:
 				return false;
 			}
 		} else {
-			sfdk_path = ProjectSettings::get_singleton()->get("export/sailfish/ssh_tool_path");
+			sfdk_path = EDITOR_GET("export/sailfish/ssh_tool_path");
 // #ifdef WINDOWS_ENABLED
 // 			sfdk_path += String(".exe");
 // #endif
@@ -819,6 +822,12 @@ public:
 				r_error = TTR("Wrong SSH tool path. Setup it in Editor->Settings->Export->Sailfish");
 				return false;
 			}
+            
+            String rsa_key = sdk_path + String(mersdk_rsa_key);
+            if (!da->file_exists(rsa_key)) {
+                r_error = TTR("Cant find RSA key for acces to build engine. Try use SailfishIDE for generate keys.");
+                return false;
+            }
 		}
 
 		/// PARSE XML ------------------------------------------
@@ -922,7 +931,7 @@ public:
 		String sfdk_tool = get_sfdk_path(p_preset);
 
 		SDKConnectType sdk_tool = SDKConnectType::tool_sfdk;
-		String tool = ProjectSettings::get_singleton()->get("export/sailfish/tool");
+		String tool = EDITOR_GET("export/sailfish/tool");
 
 		if( tool == String("ssh") ) {
 			sdk_tool = SDKConnectType::tool_ssh;
@@ -974,8 +983,8 @@ public:
 		} else { // use SSH 
 			String rsa_key_path = sdk_path;
 			rsa_key_path += String("/vmshare/ssh/private_keys/engine/mersdk");
-			sfdk_tool =  ProjectSettings::get_singleton()->get("export/sailfish/ssh_tool_path");
-			String ssh_port = ProjectSettings::get_singleton()->get("export/sailfish/ssh_port");
+			sfdk_tool =  EDITOR_GET("export/sailfish/ssh_tool_path");
+			String ssh_port = EDITOR_GET("export/sailfish/ssh_port");
 			args.push_back("-o");
 			args.push_back("\"IdentitiesOnly=yes\"");
 			args.push_back("-i");
@@ -1135,6 +1144,11 @@ protected:
 };
 
 void register_sailfish_exporter() {
+    
+    String exe_ext;
+    if (OS::get_singleton()->get_name() == "Windows") {
+        exe_ext = "*.exe";
+    }
 
 	Ref<EditorExportPlatformSailfish> platform;
 	Ref<EditorExportPlatformPC> p;
@@ -1146,15 +1160,17 @@ void register_sailfish_exporter() {
 	logo->create_from_image(img);
 	platform->set_logo(logo);
 
-	EDITOR_DEF("export/sailfish/sdk_path", "");
+	EDITOR_DEF("export/sailfish/sdk_path", "halllo!");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/sailfish/sdk_path", PROPERTY_HINT_GLOBAL_DIR));
-    String stat = ProjectSettings::get_singleton()->get("export/sailfish/sdk_path");
+//    String stat = EDITOR_GET("export/sailfish/sdk_path");
+    
 #ifdef WINDOWS_ENABLED
 	EDITOR_DEF("export/sailfish/tool", "ssh");
 #else
 	EDITOR_DEF("export/sailfish/tool", "sfdk");
 #endif
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/sailfish/tool", PROPERTY_HINT_ENUM, "sfdk,ssh"));
+    
 #ifndef WINDOWS_ENABLED
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	if ( da->file_exists("/usr/bin/ssh") )
@@ -1165,7 +1181,7 @@ void register_sailfish_exporter() {
 #else
 	EDITOR_DEF("export/sailfish/ssh_tool_path", "");
 #endif
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/sailfish/ssh_tool_path", PROPERTY_HINT_GLOBAL_FILE));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/sailfish/ssh_tool_path", PROPERTY_HINT_GLOBAL_FILE, exe_ext));
 
 	EDITOR_DEF("export/sailfish/ssh_port", "2222");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "export/sailfish/ssh_port", PROPERTY_HINT_RANGE, "1,40096,1,false"));
