@@ -2024,8 +2024,8 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 			se->add_syntax_highlighter(highlighter);
 
 			if (script != nullptr && !highlighter_set) {
-				List<String> languages = highlighter->get_supported_languages();
-				if (languages.find(script->get_language()->get_name())) {
+				Array languages = highlighter->_get_supported_languages();
+				if (languages.find(script->get_language()->get_name()) > -1) {
 					se->set_syntax_highlighter(highlighter);
 					highlighter_set = true;
 				}

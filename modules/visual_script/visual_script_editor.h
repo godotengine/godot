@@ -288,8 +288,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual void add_syntax_highlighter(SyntaxHighlighter *p_highlighter) override;
-	virtual void set_syntax_highlighter(SyntaxHighlighter *p_highlighter) override;
+	virtual void add_syntax_highlighter(Ref<SyntaxHighlighter> p_highlighter) override;
+	virtual void set_syntax_highlighter(Ref<SyntaxHighlighter> p_highlighter) override;
 
 	virtual void apply_code() override;
 	virtual RES get_edited_resource() const override;
