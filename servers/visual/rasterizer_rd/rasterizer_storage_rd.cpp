@@ -4525,7 +4525,7 @@ RasterizerStorageRD::RasterizerStorageRD() {
 		default_rd_textures[DEFAULT_RD_TEXTURE_MULTIMESH_BUFFER] = RD::get_singleton()->texture_buffer_create(16, RD::DATA_FORMAT_R8G8B8A8_UNORM, pv);
 	}
 
-	{ //create default cubemap
+	{ //create default cubemap array
 
 		RD::TextureFormat tformat;
 		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
@@ -4553,7 +4553,7 @@ RasterizerStorageRD::RasterizerStorageRD() {
 		}
 	}
 
-	{ //create default cubemap array
+	{ //create default cubemap
 
 		RD::TextureFormat tformat;
 		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
