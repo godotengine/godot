@@ -31,7 +31,6 @@
 #include "gdscript_highlighter.h"
 #include "../gdscript_tokenizer.h"
 #include "editor/editor_settings.h"
-#include "scene/gui/text_edit.h"
 
 inline bool _is_symbol(CharType c) {
 	return is_symbol(c);
@@ -57,8 +56,8 @@ static bool _is_bin_symbol(CharType c) {
 	return (c == '0' || c == '1');
 }
 
-Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_highlighting(int p_line) {
-	Map<int, TextEdit::HighlighterInfo> color_map;
+Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting(int p_line) {
+	Dictionary color_map;
 
 	Type next_type = NONE;
 	Type current_type = NONE;
@@ -82,14 +81,14 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 	Color keyword_color;
 	Color color;
 
-	int in_region = text_editor->_is_line_in_region(p_line);
+	int in_region = text_edit->_is_line_in_region(p_line);
 	int deregion = 0;
 
-	const Map<int, TextEdit::Text::ColorRegionInfo> cri_map = text_editor->_get_line_color_region_info(p_line);
-	const String &str = text_editor->get_line(p_line);
+	const Map<int, TextEdit::Text::ColorRegionInfo> cri_map = text_edit->_get_line_color_region_info(p_line);
+	const String &str = text_edit->get_line(p_line);
 	Color prev_color;
 	for (int j = 0; j < str.length(); j++) {
-		TextEdit::HighlighterInfo highlighter_info;
+		Dictionary highlighter_info;
 
 		if (deregion > 0) {
 			deregion--;
@@ -101,7 +100,7 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 		if (deregion != 0) {
 			if (color != prev_color) {
 				prev_color = color;
-				highlighter_info.color = color;
+				highlighter_info["color"] = color;
 				color_map[j] = highlighter_info;
 			}
 			continue;
@@ -163,7 +162,7 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 					in_region = cri.region;
 				}
 			} else {
-				TextEdit::ColorRegion cr = text_editor->_get_color_region(cri.region);
+				TextEdit::ColorRegion cr = text_edit->_get_color_region(cri.region);
 				if (in_region == cri.region && !cr.line_only) { //ignore otherwise
 					if (cri.end || cr.eq) {
 						deregion = cr.eq ? cr.begin_key.length() : cr.end_key.length();
@@ -184,10 +183,10 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 
 			String word = str.substr(j, to - j);
 			Color col = Color();
-			if (text_editor->has_keyword_color(word)) {
-				col = text_editor->get_keyword_color(word);
-			} else if (text_editor->has_member_color(word)) {
-				col = text_editor->get_member_color(word);
+			if (text_edit->has_keyword_color(word)) {
+				col = text_edit->get_keyword_color(word);
+			} else if (text_edit->has_member_color(word)) {
+				col = text_edit->get_member_color(word);
 				for (int k = j - 1; k >= 0; k--) {
 					if (str[k] == '.') {
 						col = Color(); //member indexing not allowed
@@ -276,7 +275,7 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 
 		if (in_region >= 0) {
 			next_type = REGION;
-			color = text_editor->_get_color_region(in_region).color;
+			color = text_edit->_get_color_region(in_region).color;
 		} else if (in_node_path) {
 			next_type = NODE_PATH;
 			color = node_path_color;
@@ -335,32 +334,32 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 
 		if (color != prev_color) {
 			prev_color = color;
-			highlighter_info.color = color;
+			highlighter_info["color"] = color;
 			color_map[j] = highlighter_info;
 		}
 	}
 	return color_map;
 }
 
-String GDScriptSyntaxHighlighter::get_name() const {
+String GDScriptSyntaxHighlighter::_get_name() const {
 	return "GDScript";
 }
 
-List<String> GDScriptSyntaxHighlighter::get_supported_languages() {
-	List<String> languages;
+Array GDScriptSyntaxHighlighter::_get_supported_languages() const {
+	Array languages;
 	languages.push_back("GDScript");
 	return languages;
 }
 
 void GDScriptSyntaxHighlighter::_update_cache() {
-	font_color = text_editor->get_theme_color("font_color");
-	symbol_color = text_editor->get_theme_color("symbol_color");
-	function_color = text_editor->get_theme_color("function_color");
-	number_color = text_editor->get_theme_color("number_color");
-	member_color = text_editor->get_theme_color("member_variable_color");
+	font_color = text_edit->get_theme_color("font_color");
+	symbol_color = text_edit->get_theme_color("symbol_color");
+	function_color = text_edit->get_theme_color("function_color");
+	number_color = text_edit->get_theme_color("number_color");
+	member_color = text_edit->get_theme_color("member_variable_color");
 
-	const String text_editor_color_theme = EditorSettings::get_singleton()->get("text_editor/theme/color_theme");
-	const bool default_theme = text_editor_color_theme == "Default";
+	const String text_edit_color_theme = EditorSettings::get_singleton()->get("text_edit/theme/color_theme");
+	const bool default_theme = text_edit_color_theme == "Default";
 
 	if (default_theme || EditorSettings::get_singleton()->is_dark_theme()) {
 		function_definition_color = Color(0.4, 0.9, 1.0);
@@ -370,22 +369,22 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 		node_path_color = Color(0.32, 0.55, 0.29);
 	}
 
-	EDITOR_DEF("text_editor/highlighting/gdscript/function_definition_color", function_definition_color);
-	EDITOR_DEF("text_editor/highlighting/gdscript/node_path_color", node_path_color);
-	if (text_editor_color_theme == "Adaptive" || default_theme) {
+	EDITOR_DEF("text_edit/highlighting/gdscript/function_definition_color", function_definition_color);
+	EDITOR_DEF("text_edit/highlighting/gdscript/node_path_color", node_path_color);
+	if (text_edit_color_theme == "Adaptive" || default_theme) {
 		EditorSettings::get_singleton()->set_initial_value(
-				"text_editor/highlighting/gdscript/function_definition_color",
+				"text_edit/highlighting/gdscript/function_definition_color",
 				function_definition_color,
 				true);
 		EditorSettings::get_singleton()->set_initial_value(
-				"text_editor/highlighting/gdscript/node_path_color",
+				"text_edit/highlighting/gdscript/node_path_color",
 				node_path_color,
 				true);
 	}
 
-	function_definition_color = EDITOR_GET("text_editor/highlighting/gdscript/function_definition_color");
-	node_path_color = EDITOR_GET("text_editor/highlighting/gdscript/node_path_color");
-	type_color = EDITOR_GET("text_editor/highlighting/base_type_color");
+	function_definition_color = EDITOR_GET("text_edit/highlighting/gdscript/function_definition_color");
+	node_path_color = EDITOR_GET("text_edit/highlighting/gdscript/node_path_color");
+	type_color = EDITOR_GET("text_edit/highlighting/base_type_color");
 }
 
 SyntaxHighlighter *GDScriptSyntaxHighlighter::create() {

@@ -164,7 +164,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	Map<String, SyntaxHighlighter *> highlighters;
+	Map<String, Ref<SyntaxHighlighter> > highlighters;
 	void _change_syntax_highlighter(int p_idx);
 
 	void _edit_option(int p_op);
@@ -190,8 +190,8 @@ protected:
 public:
 	void _update_connected_methods();
 
-	virtual void add_syntax_highlighter(SyntaxHighlighter *p_highlighter) override;
-	virtual void set_syntax_highlighter(SyntaxHighlighter *p_highlighter) override;
+	virtual void add_syntax_highlighter(Ref<SyntaxHighlighter> p_highlighter) override;
+	virtual void set_syntax_highlighter(Ref<SyntaxHighlighter> p_highlighter) override;
 	void update_toggle_scripts_button();
 
 	virtual void apply_code() override;
