@@ -57,7 +57,7 @@
 			</description>
 		</method>
 		<method name="is_button_pressed" qualifiers="const">
-			<return type="int">
+			<return type="bool">
 			</return>
 			<argument index="0" name="button" type="int">
 			</argument>

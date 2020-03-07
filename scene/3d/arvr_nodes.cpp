@@ -300,7 +300,7 @@ int ARVRController::get_joystick_id() const {
 	return tracker->get_joy_id();
 };
 
-int ARVRController::is_button_pressed(int p_button) const {
+bool ARVRController::is_button_pressed(int p_button) const {
 	int joy_id = get_joystick_id();
 	if (joy_id == -1) {
 		return false;
