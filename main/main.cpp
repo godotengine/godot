@@ -57,6 +57,7 @@
 #include "main/splash.gen.h"
 #include "main/splash_editor.gen.h"
 #include "main/tests/test_main.h"
+#include "modules/register_game_module_types.h"
 #include "modules/register_module_types.h"
 #include "platform/register_platform_apis.h"
 #include "scene/main/scene_tree.h"
@@ -1213,6 +1214,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	preregister_module_types();
 	preregister_server_types();
+	preregister_game_module_types();
 
 	// Print engine name and version
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
@@ -1375,6 +1377,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	register_platform_apis();
 	register_module_types();
+	register_game_module_types();
 
 	camera_server = CameraServer::create();
 
@@ -2219,6 +2222,7 @@ void Main::cleanup() {
 
 	unregister_driver_types();
 	unregister_module_types();
+	unregister_game_module_types();
 	unregister_platform_apis();
 	unregister_scene_types();
 	unregister_server_types();

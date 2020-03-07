@@ -74,6 +74,7 @@ env_base.msvc = False
 
 env_base.__class__.disable_module = methods.disable_module
 
+env_base.__class__.init_game_module = methods.init_game_module
 env_base.__class__.add_module_version_string = methods.add_module_version_string
 
 env_base.__class__.add_source_files = methods.add_source_files
@@ -111,6 +112,7 @@ opts.Add('p', "Platform (alias for 'platform')", '')
 opts.Add('platform', "Target platform (%s)" % ('|'.join(platform_list), ), '')
 opts.Add(EnumVariable('target', "Compilation target", 'debug', ('debug', 'release_debug', 'release')))
 opts.Add(EnumVariable('optimize', "Optimization type", 'speed', ('speed', 'size')))
+opts.Add('game_module', "Game module path.", '')
 
 opts.Add(BoolVariable('tools', "Build the tools (a.k.a. the Godot editor)", True))
 opts.Add(BoolVariable('use_lto', 'Use link-time optimization', False))

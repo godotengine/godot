@@ -24,10 +24,20 @@ for module in env.module_list:
     lib = env_modules.add_library("module_%s" % module, env.modules_sources)
     env.Prepend(LIBS=[lib])
 
+# Init game modules
+game_module_scsub = env_modules.init_game_module(env["game_module"])
+
+if game_module_scsub != "":
+    env.modules_sources = []
+    SConscript(game_module_scsub)
+    lib = env_modules.add_library("game_modules", env.modules_sources)
+    env.Prepend(LIBS=[lib])
+
 # libmodules.a with only register_module_types.
 # Must be last so that all libmodule_<name>.a libraries are on the right side
 # in the linker command.
 env.modules_sources = []
 env_modules.add_source_files(env.modules_sources, "register_module_types.gen.cpp")
+env_modules.add_source_files(env.modules_sources, "register_game_module_types.gen.cpp")
 lib = env_modules.add_library("modules", env.modules_sources)
 env.Prepend(LIBS=[lib])

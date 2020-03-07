@@ -194,6 +194,55 @@ void unregister_module_types() {
     return module_list
 
 
+def init_game_module(env, game_module_path):
+
+    game_module_scsub_path = ""
+    modules_cpp = ""
+
+    if game_module_path != "":
+        game_module_scsub_path = os.path.join(game_module_path, "SCsub")
+        if os.path.exists(game_module_scsub_path) == False:
+            print("The specified `game_module` path is not a valid directory. Make sure that `" + game_module + "` contains a SCsub file.")
+            sys.exit(255)
+
+        # Generate register game module
+
+        modules_cpp = """// register_game_module_types.gen.cpp
+/* THIS FILE IS GENERATED DO NOT EDIT */
+#include "register_game_module_types.h"
+
+#include "%s/register_types.h"
+
+void preregister_game_module_types() {
+        preregister_types();
+}
+
+void register_game_module_types() {
+        register_types();
+}
+
+void unregister_game_module_types() {
+        unregister_types();
+}
+""" % (game_module_path)
+
+    else:
+        # Generate void register game module
+        modules_cpp = """// register_game_module_types.gen.cpp
+/* THIS FILE IS GENERATED DO NOT EDIT */
+#include "register_game_module_types.h"
+
+void preregister_game_module_types() {}
+void register_game_module_types() {}
+void unregister_game_module_types() {}
+"""
+
+    with open("register_game_module_types.gen.cpp", "w") as f:
+        f.write(modules_cpp)
+
+    return game_module_scsub_path
+
+
 def win32_spawn(sh, escape, cmd, args, env):
     import subprocess
     newargs = ' '.join(args[1:])
