@@ -350,6 +350,9 @@ void DisplayServerX11::_flush_mouse_motion() {
 }
 
 void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
+
+	_THREAD_SAFE_METHOD_
+
 	if (p_mode == mouse_mode)
 		return;
 
@@ -402,6 +405,9 @@ DisplayServerX11::MouseMode DisplayServerX11::mouse_get_mode() const {
 }
 
 void DisplayServerX11::mouse_warp_to_position(const Point2i &p_to) {
+
+	_THREAD_SAFE_METHOD_
+
 	if (mouse_mode == MOUSE_MODE_CAPTURED) {
 
 		last_mouse_pos = p_to;
@@ -423,6 +429,8 @@ int DisplayServerX11::mouse_get_button_state() const {
 }
 
 void DisplayServerX11::clipboard_set(const String &p_text) {
+
+	_THREAD_SAFE_METHOD_
 
 	internal_clipboard = p_text;
 	XSetSelectionOwner(x11_display, XA_PRIMARY, windows[MAIN_WINDOW_ID].x11_window, CurrentTime);
@@ -502,6 +510,8 @@ static String _clipboard_get(Atom p_source, Window x11_window, ::Display *x11_di
 
 String DisplayServerX11::clipboard_get() const {
 
+	_THREAD_SAFE_METHOD_
+
 	String ret;
 	ret = _clipboard_get(XInternAtom(x11_display, "CLIPBOARD", 0), windows[MAIN_WINDOW_ID].x11_window, x11_display, internal_clipboard);
 
@@ -513,6 +523,9 @@ String DisplayServerX11::clipboard_get() const {
 }
 
 int DisplayServerX11::get_screen_count() const {
+
+	_THREAD_SAFE_METHOD_
+
 	// Using Xinerama Extension
 	int event_base, error_base;
 	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
@@ -524,6 +537,9 @@ int DisplayServerX11::get_screen_count() const {
 	return count;
 }
 Point2i DisplayServerX11::screen_get_position(int p_screen) const {
+
+	_THREAD_SAFE_METHOD_
+
 	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
 		p_screen = window_get_current_screen();
 	}
@@ -549,6 +565,8 @@ Point2i DisplayServerX11::screen_get_position(int p_screen) const {
 }
 Size2i DisplayServerX11::screen_get_size(int p_screen) const {
 
+	_THREAD_SAFE_METHOD_
+
 	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
 		p_screen = window_get_current_screen();
 	}
@@ -567,6 +585,9 @@ Size2i DisplayServerX11::screen_get_size(int p_screen) const {
 	return size;
 }
 int DisplayServerX11::screen_get_dpi(int p_screen) const {
+
+	_THREAD_SAFE_METHOD_
+
 	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
 		p_screen = window_get_current_screen();
 	}
@@ -608,6 +629,9 @@ int DisplayServerX11::screen_get_dpi(int p_screen) const {
 	return 96;
 }
 bool DisplayServerX11::screen_is_touchscreen(int p_screen) const {
+
+	_THREAD_SAFE_METHOD_
+
 #ifndef _MSC_VER
 #warning Need to get from proper window
 #endif
@@ -616,6 +640,8 @@ bool DisplayServerX11::screen_is_touchscreen(int p_screen) const {
 }
 
 Vector<DisplayServer::WindowID> DisplayServerX11::get_window_list() const {
+	_THREAD_SAFE_METHOD_
+
 	Vector<int> ret;
 	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
 		ret.push_back(E->key());
@@ -624,6 +650,8 @@ Vector<DisplayServer::WindowID> DisplayServerX11::get_window_list() const {
 }
 
 DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect) {
+
+	_THREAD_SAFE_METHOD_
 
 	WindowID id = _create_window(p_mode, p_rect);
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
@@ -636,6 +664,9 @@ DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, u
 }
 
 void DisplayServerX11::delete_sub_window(WindowID p_id) {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND(!windows.has(p_id));
 	ERR_FAIL_COND_MSG(p_id == MAIN_WINDOW_ID, "Main window can't be deleted"); //ma
 
@@ -665,6 +696,8 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 
 void DisplayServerX11::window_set_title(const String &p_title, WindowID p_window) {
 
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
@@ -677,35 +710,52 @@ void DisplayServerX11::window_set_title(const String &p_title, WindowID p_window
 
 void DisplayServerX11::window_set_resize_callback(const Callable &p_callable, WindowID p_window) {
 
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 	wd.resize_callback = p_callable;
 }
 
 void DisplayServerX11::window_set_window_event_callback(const Callable &p_callable, WindowID p_window) {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 	wd.event_callback = p_callable;
 }
 
 void DisplayServerX11::window_set_input_event_callback(const Callable &p_callable, WindowID p_window) {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 	wd.input_event_callback = p_callable;
 }
 void DisplayServerX11::window_set_input_text_callback(const Callable &p_callable, WindowID p_window) {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 	wd.input_text_callback = p_callable;
 }
 
 void DisplayServerX11::window_set_drop_files_callback(const Callable &p_callable, WindowID p_window) {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 	wd.drop_files_callback = p_callable;
 }
 
 int DisplayServerX11::window_get_current_screen(WindowID p_window) const {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND_V(!windows.has(p_window), -1);
 	const WindowData &wd = windows[p_window];
 
@@ -723,6 +773,9 @@ int DisplayServerX11::window_get_current_screen(WindowID p_window) const {
 	return 0;
 }
 void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window) {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
@@ -743,6 +796,8 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 }
 
 void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent) {
+
+	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(p_window == p_parent);
 
@@ -777,6 +832,9 @@ void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent
 }
 
 Point2i DisplayServerX11::window_get_position(WindowID p_window) const {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND_V(!windows.has(p_window), Point2i());
 	const WindowData &wd = windows[p_window];
 	int x, y;
@@ -785,6 +843,9 @@ Point2i DisplayServerX11::window_get_position(WindowID p_window) const {
 	return Point2i(x, y);
 }
 void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p_window) {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
@@ -815,6 +876,9 @@ void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p
 }
 
 void DisplayServerX11::window_set_max_size(const Size2i p_size, WindowID p_window) {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
@@ -845,6 +909,9 @@ void DisplayServerX11::window_set_max_size(const Size2i p_size, WindowID p_windo
 	}
 }
 Size2i DisplayServerX11::window_get_max_size(WindowID p_window) const {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
 	const WindowData &wd = windows[p_window];
 
@@ -852,6 +919,9 @@ Size2i DisplayServerX11::window_get_max_size(WindowID p_window) const {
 }
 
 void DisplayServerX11::window_set_min_size(const Size2i p_size, WindowID p_window) {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
@@ -882,6 +952,9 @@ void DisplayServerX11::window_set_min_size(const Size2i p_size, WindowID p_windo
 	}
 }
 Size2i DisplayServerX11::window_get_min_size(WindowID p_window) const {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
 	const WindowData &wd = windows[p_window];
 
@@ -889,6 +962,9 @@ Size2i DisplayServerX11::window_get_min_size(WindowID p_window) const {
 }
 
 void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
@@ -943,11 +1019,17 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 	}
 }
 Size2i DisplayServerX11::window_get_size(WindowID p_window) const {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
 	const WindowData &wd = windows[p_window];
 	return wd.size;
 }
 Size2i DisplayServerX11::window_get_real_size(WindowID p_window) const {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
 	const WindowData &wd = windows[p_window];
 
@@ -976,6 +1058,8 @@ Size2i DisplayServerX11::window_get_real_size(WindowID p_window) const {
 }
 
 bool DisplayServerX11::window_is_maximize_allowed(WindowID p_window) const {
+
+	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
 	const WindowData &wd = windows[p_window];
@@ -1024,6 +1108,7 @@ bool DisplayServerX11::window_is_maximize_allowed(WindowID p_window) const {
 }
 
 void DisplayServerX11::_set_wm_maximized(WindowID p_window, bool p_enabled) {
+
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
@@ -1140,6 +1225,9 @@ void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled) {
 }
 
 void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
@@ -1251,6 +1339,9 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 }
 
 DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) const {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND_V(!windows.has(p_window), WINDOW_MODE_WINDOWED);
 	const WindowData &wd = windows[p_window];
 
@@ -1344,6 +1435,9 @@ DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) c
 }
 
 void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window) {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
@@ -1430,6 +1524,9 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 	}
 }
 bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) const {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
 	const WindowData &wd = windows[p_window];
 
@@ -1475,6 +1572,9 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 }
 
 void DisplayServerX11::window_request_attention(WindowID p_window) {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 	// Using EWMH -- Extended Window Manager Hints
@@ -1499,6 +1599,9 @@ void DisplayServerX11::window_request_attention(WindowID p_window) {
 }
 
 void DisplayServerX11::window_move_to_foreground(WindowID p_window) {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
@@ -1518,10 +1621,13 @@ void DisplayServerX11::window_move_to_foreground(WindowID p_window) {
 }
 
 bool DisplayServerX11::window_can_draw(WindowID p_window) const {
+
 	//this seems to be all that is provided by X11
 	return window_get_mode(p_window) != WINDOW_MODE_MINIMIZED;
 }
 bool DisplayServerX11::can_any_window_draw() const {
+
+	_THREAD_SAFE_METHOD_
 
 	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
 		if (window_get_mode(E->key()) != WINDOW_MODE_MINIMIZED) {
@@ -1533,6 +1639,9 @@ bool DisplayServerX11::can_any_window_draw() const {
 }
 
 void DisplayServerX11::window_set_ime_active(const bool p_active, WindowID p_window) {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
@@ -1549,6 +1658,9 @@ void DisplayServerX11::window_set_ime_active(const bool p_active, WindowID p_win
 	}
 }
 void DisplayServerX11::window_set_ime_position(const Point2i &p_pos, WindowID p_window) {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
@@ -1566,6 +1678,9 @@ void DisplayServerX11::window_set_ime_position(const Point2i &p_pos, WindowID p_
 }
 
 void DisplayServerX11::cursor_set_shape(CursorShape p_shape) {
+
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 
 	if (p_shape == current_cursor) {
@@ -1590,6 +1705,8 @@ DisplayServerX11::CursorShape DisplayServerX11::cursor_get_shape() const {
 	return current_cursor;
 }
 void DisplayServerX11::cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+
+	_THREAD_SAFE_METHOD_
 
 	if (p_cursor.is_valid()) {
 
@@ -1698,6 +1815,8 @@ void DisplayServerX11::cursor_set_custom_image(const RES &p_cursor, CursorShape 
 }
 
 DisplayServerX11::LatinKeyboardVariant DisplayServerX11::get_latin_keyboard_variant() const {
+	_THREAD_SAFE_METHOD_
+
 	XkbDescRec *xkbdesc = XkbAllocKeyboard();
 	ERR_FAIL_COND_V(!xkbdesc, LATIN_KEYBOARD_QWERTY);
 
@@ -2156,6 +2275,9 @@ void DisplayServerX11::_send_window_event(const WindowData &wd, WindowEvent p_ev
 	}
 }
 void DisplayServerX11::process_events() {
+
+	_THREAD_SAFE_METHOD_
+
 	do_mouse_warp = false;
 
 	// Is the current mouse mode one where it needs to be grabbed.
@@ -2837,6 +2959,8 @@ void DisplayServerX11::_update_context(WindowData &wd) {
 }
 void DisplayServerX11::set_context(Context p_context) {
 
+	_THREAD_SAFE_METHOD_
+
 	context = p_context;
 
 	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
@@ -3048,9 +3172,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	last_mouse_pos_valid = false;
 	last_keyrelease_time = 0;
 
-	if (OS::get_singleton()->get_render_thread_mode() == OS::RENDER_SEPARATE_THREAD) {
-		XInitThreads();
-	}
+	XInitThreads(); //always use threads
 
 	/** XLIB INITIALIZATION **/
 	x11_display = XOpenDisplay(NULL);

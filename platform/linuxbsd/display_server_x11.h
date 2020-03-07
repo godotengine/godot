@@ -90,6 +90,8 @@ class DisplayServerX11 : public DisplayServer {
 	//No need to register, it's platform-specific and nothing is added
 	//GDCLASS(DisplayServerX11, DisplayServer)
 
+	_THREAD_SAFE_CLASS_
+
 	Atom wm_delete;
 	Atom xdnd_enter;
 	Atom xdnd_position;
