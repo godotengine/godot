@@ -2740,7 +2740,8 @@ void ProjectListFilter::_filter_option_selected(int p_idx) {
 	FilterOption selected = (FilterOption)(filter_option->get_selected());
 	if (_current_filter != selected) {
 		_current_filter = selected;
-		emit_signal("filter_changed");
+		if (is_inside_tree())
+			emit_signal("filter_changed");
 	}
 }
 
