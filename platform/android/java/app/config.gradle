@@ -42,7 +42,7 @@ ext.getGodotPluginsBinaries = { ->
         String pluginsList = project.property("custom_template_plugins")
         if (pluginsList != null && !pluginsList.trim().isEmpty()) {
             for (String plugin : pluginsList.split(",")) {
-                binDeps += plugin + "*.aar"
+                binDeps += plugin.trim() + "*.aar"
             }
         }
     }
