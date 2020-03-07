@@ -1964,7 +1964,7 @@ bool Main::start() {
 #ifdef OSX_ENABLED
 				String mac_iconpath = GLOBAL_DEF("application/config/macos_native_icon", "Variant()");
 				if (mac_iconpath != "") {
-					OS::get_singleton()->set_native_icon(mac_iconpath);
+					DisplayServer::get_singleton()->set_native_icon(mac_iconpath);
 					hasicon = true;
 				}
 #endif

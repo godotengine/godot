@@ -62,8 +62,6 @@ public:
 	virtual bool idle(float p_time);
 	virtual void finish();
 
-	virtual void global_menu_action(const Variant &p_id, const Variant &p_meta);
-
 	void set_init_script(const Ref<Script> &p_init_script);
 
 	MainLoop();

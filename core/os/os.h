@@ -146,6 +146,9 @@ public:
 	virtual List<String> get_cmdline_args() const { return _cmdline; }
 	virtual String get_model_name() const;
 
+	bool is_layered_allowed() const { return _allow_layered; }
+	bool is_hidpi_allowed() const { return _allow_hidpi; }
+
 	void ensure_user_data_dir();
 
 	virtual MainLoop *get_main_loop() const = 0;
@@ -286,7 +289,6 @@ public:
 	virtual bool request_permissions() { return true; }
 	virtual Vector<String> get_granted_permissions() const { return Vector<String>(); }
 
-	bool is_hidpi_allowed() const { return _allow_hidpi; }
 	virtual void process_and_drop_events() {}
 	OS();
 	virtual ~OS();

@@ -44,8 +44,6 @@ void MainLoop::_bind_methods() {
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_idle", PropertyInfo(Variant::FLOAT, "delta")));
 	BIND_VMETHOD(MethodInfo("_finalize"));
 
-	BIND_VMETHOD(MethodInfo("_global_menu_action", PropertyInfo(Variant::NIL, "id"), PropertyInfo(Variant::NIL, "meta")));
-
 	BIND_CONSTANT(NOTIFICATION_OS_MEMORY_WARNING);
 	BIND_CONSTANT(NOTIFICATION_TRANSLATION_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_WM_ABOUT);
@@ -89,12 +87,6 @@ bool MainLoop::idle(float p_time) {
 		return get_script_instance()->call("_idle", p_time);
 
 	return false;
-}
-
-void MainLoop::global_menu_action(const Variant &p_id, const Variant &p_meta) {
-
-	if (get_script_instance())
-		get_script_instance()->call("_global_menu_action", p_id, p_meta);
 }
 
 void MainLoop::finish() {

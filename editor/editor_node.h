@@ -498,7 +498,8 @@ private:
 	void _add_to_recent_scenes(const String &p_scene);
 	void _update_recent_scenes();
 	void _open_recent_scene(int p_idx);
-	void _global_menu_action(const Variant &p_id, const Variant &p_meta);
+	void _global_menu_scene(const Variant &p_tag);
+	void _global_menu_new_window(const Variant &p_tag);
 	void _dropped_files(const Vector<String> &p_files, int p_screen);
 	void _add_dropped_files_recursive(const Vector<String> &p_files, String to_path);
 	String _recent_scene;

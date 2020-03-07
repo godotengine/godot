@@ -94,7 +94,7 @@ class JoypadOSX {
 	};
 
 private:
-	InputDefault *input;
+	InputFilter *input;
 	IOHIDManagerRef hid_manager;
 
 	Vector<joypad> device_list;
@@ -118,7 +118,7 @@ public:
 	void _device_added(IOReturn p_res, IOHIDDeviceRef p_device);
 	void _device_removed(IOReturn p_res, IOHIDDeviceRef p_device);
 
-	JoypadOSX();
+	JoypadOSX(InputFilter *in);
 	~JoypadOSX();
 };
 

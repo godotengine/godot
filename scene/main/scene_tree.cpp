@@ -1104,12 +1104,6 @@ void SceneTree::add_current_scene(Node *p_current) {
 	root->add_child(p_current);
 }
 
-void SceneTree::global_menu_action(const Variant &p_id, const Variant &p_meta) {
-
-	emit_signal("global_menu_action", p_id, p_meta);
-	MainLoop::global_menu_action(p_id, p_meta);
-}
-
 Ref<SceneTreeTimer> SceneTree::create_timer(float p_delay_sec, bool p_process_pause) {
 
 	Ref<SceneTreeTimer> stt;
@@ -1315,7 +1309,6 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("physics_frame"));
 
 	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files"), PropertyInfo(Variant::INT, "screen")));
-	ADD_SIGNAL(MethodInfo("global_menu_action", PropertyInfo(Variant::NIL, "id"), PropertyInfo(Variant::NIL, "meta")));
 	ADD_SIGNAL(MethodInfo("network_peer_connected", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("network_peer_disconnected", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("connected_to_server"));
