@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="TextureLayered" inherits="Texture" version="4.0">
 	<brief_description>
-		Base class for 3D texture types, which stores multiple [Image]s of the same size and format in layers inside itself, as it is a [Texture].
+		Base class for texture types which represent an array of [Image]s of the same size and format.
 	</brief_description>
 	<description>
 		Base class for [Texture2DArray], [Cubemap] and [CubemapArray]. Cannot be used directly, but contains all the functions necessary for accessing the derived resource types.
