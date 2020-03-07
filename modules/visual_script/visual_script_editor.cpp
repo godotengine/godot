@@ -1057,7 +1057,7 @@ void VisualScriptEditor::_member_selected() {
 	if (ti->get_parent() == members->get_root()->get_children()) {
 
 #ifdef OSX_ENABLED
-		bool held_ctrl = Input::get_singleton()->is_key_pressed(KEY_META);
+		bool held_ctrl = InputFilter::get_singleton()->is_key_pressed(KEY_META);
 #else
 		bool held_ctrl = InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL);
 #endif
@@ -1986,7 +1986,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	if (String(d["type"]) == "visual_script_variable_drag") {
 
 #ifdef OSX_ENABLED
-		bool use_set = Input::get_singleton()->is_key_pressed(KEY_META);
+		bool use_set = InputFilter::get_singleton()->is_key_pressed(KEY_META);
 #else
 		bool use_set = InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL);
 #endif
@@ -2181,7 +2181,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		}
 
 #ifdef OSX_ENABLED
-		bool use_node = Input::get_singleton()->is_key_pressed(KEY_META);
+		bool use_node = InputFilter::get_singleton()->is_key_pressed(KEY_META);
 #else
 		bool use_node = InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL);
 #endif
@@ -2265,7 +2265,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 
 		ofs /= EDSCALE;
 #ifdef OSX_ENABLED
-		bool use_get = Input::get_singleton()->is_key_pressed(KEY_META);
+		bool use_get = InputFilter::get_singleton()->is_key_pressed(KEY_META);
 #else
 		bool use_get = InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL);
 #endif

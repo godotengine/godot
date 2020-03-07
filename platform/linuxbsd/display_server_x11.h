@@ -221,6 +221,7 @@ public:
 
 	virtual void mouse_warp_to_position(const Point2i &p_to);
 	virtual Point2i mouse_get_position() const;
+	virtual Point2i mouse_get_absolute_position() const;
 	virtual int mouse_get_button_state() const;
 
 	virtual void clipboard_set(const String &p_text);
