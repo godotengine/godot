@@ -131,10 +131,12 @@ void AudioStreamEditor::_stop() {
 void AudioStreamEditor::_on_finished() {
 
 	_play_button->set_icon(get_icon("MainPlay", "EditorIcons"));
+	_current = _player->get_playback_position();
 	if (_current == _player->get_stream()->get_length()) {
 		_current = 0;
 		_indicator->update();
 	}
+	set_process(false);
 }
 
 void AudioStreamEditor::_draw_indicator() {
