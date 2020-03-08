@@ -162,22 +162,22 @@ Ref<NavigationMesh> NavigationRegion::get_navigation_mesh() const {
 }
 
 struct BakeThreadsArgs {
-	NavigationRegion *nav_mesh_instance;
+	NavigationRegion *nav_region;
 };
 
 void _bake_navigation_mesh(void *p_user_data) {
 	BakeThreadsArgs *args = static_cast<BakeThreadsArgs *>(p_user_data);
 
-	if (args->nav_mesh_instance->get_navigation_mesh().is_valid()) {
-		Ref<NavigationMesh> nav_mesh = args->nav_mesh_instance->get_navigation_mesh()->duplicate();
+	if (args->nav_region->get_navigation_mesh().is_valid()) {
+		Ref<NavigationMesh> nav_mesh = args->nav_region->get_navigation_mesh()->duplicate();
 
-		NavigationServer::get_singleton()->region_bake_navmesh(nav_mesh, args->nav_mesh_instance);
-		args->nav_mesh_instance->call_deferred("_bake_finished", nav_mesh);
+		NavigationServer::get_singleton()->region_bake_navmesh(nav_mesh, args->nav_region);
+		args->nav_region->call_deferred("_bake_finished", nav_mesh);
 		memdelete(args);
 	} else {
 
 		ERR_PRINT("Can't bake the navigation mesh if the `NavigationMesh` resource doesn't exist");
-		args->nav_mesh_instance->call_deferred("_bake_finished", Ref<NavigationMesh>());
+		args->nav_region->call_deferred("_bake_finished", Ref<NavigationMesh>());
 		memdelete(args);
 	}
 }
@@ -186,7 +186,7 @@ void NavigationRegion::bake_navigation_mesh() {
 	ERR_FAIL_COND(bake_thread != NULL);
 
 	BakeThreadsArgs *args = memnew(BakeThreadsArgs);
-	args->nav_mesh_instance = this;
+	args->nav_region = this;
 
 	bake_thread = Thread::create(_bake_navigation_mesh, args);
 	ERR_FAIL_COND(bake_thread == NULL);
