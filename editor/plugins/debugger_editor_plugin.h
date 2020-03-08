@@ -36,6 +36,7 @@
 class EditorNode;
 class EditorFileServer;
 class MenuButton;
+class PopupMenu;
 
 class DebuggerEditorPlugin : public EditorPlugin {
 
@@ -44,10 +45,9 @@ class DebuggerEditorPlugin : public EditorPlugin {
 private:
 	MenuButton *debug_menu;
 	EditorFileServer *file_server;
+	PopupMenu *instances_menu;
 
 	enum MenuOptions {
-		RUN_DEBUG_ONE,
-		RUN_DEBUG_TWO,
 		RUN_FILE_SERVER,
 		RUN_LIVE_DEBUG,
 		RUN_DEBUG_COLLISONS,
@@ -58,9 +58,10 @@ private:
 
 	void _update_debug_options();
 	void _notification(int p_what);
+	void _select_run_count(int p_index);
+	void _menu_option(int p_option);
 
 public:
-	void _menu_option(int p_option);
 	virtual String get_name() const { return "Debugger"; }
 	bool has_main_screen() const { return false; }
 
