@@ -4308,13 +4308,15 @@ void SpatialEditor::set_state(const Dictionary &p_state) {
 	}
 
 	if (d.has("translate_snap"))
-		snap_translate->set_text(d["translate_snap"]);
+		snap_translate_value = d["translate_snap"];
 
 	if (d.has("rotate_snap"))
-		snap_rotate->set_text(d["rotate_snap"]);
+		snap_rotate_value = d["rotate_snap"];
 
 	if (d.has("scale_snap"))
-		snap_scale->set_text(d["scale_snap"]);
+		snap_scale_value = d["scale_snap"];
+
+	_snap_update();
 
 	if (d.has("local_coords")) {
 		tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_pressed(d["local_coords"]);
@@ -4419,6 +4421,20 @@ void SpatialEditor::edit(Spatial *p_spatial) {
 			}
 		}
 	}
+}
+
+void SpatialEditor::_snap_changed() {
+
+	snap_translate_value = snap_translate->get_text().to_double();
+	snap_rotate_value = snap_rotate->get_text().to_double();
+	snap_scale_value = snap_scale->get_text().to_double();
+}
+
+void SpatialEditor::_snap_update() {
+
+	snap_translate->set_text(String::num(snap_translate_value));
+	snap_rotate->set_text(String::num(snap_rotate_value));
+	snap_scale->set_text(String::num(snap_scale_value));
 }
 
 void SpatialEditor::_xform_dialog_action() {
@@ -5901,24 +5917,29 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 	/* SNAP DIALOG */
 
+	snap_translate_value = 1;
+	snap_rotate_value = 15;
+	snap_scale_value = 10;
+
 	snap_dialog = memnew(ConfirmationDialog);
 	snap_dialog->set_title(TTR("Snap Settings"));
 	add_child(snap_dialog);
+	snap_dialog->connect("confirmed", callable_mp(this, &SpatialEditor::_snap_changed));
+	snap_dialog->get_cancel()->connect("pressed", callable_mp(this, &SpatialEditor::_snap_update));
 
 	VBoxContainer *snap_dialog_vbc = memnew(VBoxContainer);
 	snap_dialog->add_child(snap_dialog_vbc);
 
 	snap_translate = memnew(LineEdit);
-	snap_translate->set_text("1");
 	snap_dialog_vbc->add_margin_child(TTR("Translate Snap:"), snap_translate);
 
 	snap_rotate = memnew(LineEdit);
-	snap_rotate->set_text("15");
 	snap_dialog_vbc->add_margin_child(TTR("Rotate Snap (deg.):"), snap_rotate);
 
 	snap_scale = memnew(LineEdit);
-	snap_scale->set_text("10");
 	snap_dialog_vbc->add_margin_child(TTR("Scale Snap (%):"), snap_scale);
+
+	_snap_update();
 
 	/* SETTINGS DIALOG */
 
