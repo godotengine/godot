@@ -2022,6 +2022,38 @@ GDScriptParser::Node *GDScriptParser::_parse_and_reduce_expression(Node *p_paren
 	return expr;
 }
 
+bool GDScriptParser::_reduce_export_var_type(Variant &p_value, int p_line) {
+
+	if (p_value.get_type() == Variant::ARRAY) {
+		Array arr = p_value;
+		for (int i = 0; i < arr.size(); i++) {
+			if (!_reduce_export_var_type(arr[i], p_line)) return false;
+		}
+		return true;
+	}
+
+	if (p_value.get_type() == Variant::DICTIONARY) {
+		Dictionary dict = p_value;
+		for (int i = 0; i < dict.size(); i++) {
+			Variant value = dict.get_value_at_index(i);
+			if (!_reduce_export_var_type(value, p_line)) return false;
+		}
+		return true;
+	}
+
+	// validate type
+	DataType type = _type_from_variant(p_value);
+	if (type.kind == DataType::BUILTIN) {
+		return true;
+	} else if (type.kind == DataType::NATIVE) {
+		if (ClassDB::is_parent_class(type.native_type, "Resource")) {
+			return true;
+		}
+	}
+	_set_error("Invalid export type. Only built-in and native resource types can be exported.", p_line);
+	return false;
+}
+
 bool GDScriptParser::_recover_from_completion() {
 
 	if (!completion_found) {
@@ -4889,6 +4921,9 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 							_set_error("Can't accept a null constant expression for inferring export type.");
 							return;
 						}
+
+						if (!_reduce_export_var_type(cn->value, member.line)) return;
+
 						member._export.type = cn->value.get_type();
 						member._export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
 						if (cn->value.get_type() == Variant::OBJECT) {
