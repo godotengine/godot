@@ -3,6 +3,7 @@
 Import("env")
 
 import modules_builders
+import os
 
 env_modules = env.Clone()
 
@@ -13,16 +14,20 @@ env.CommandNoCache("modules_enabled.gen.h", Value(env.module_list), modules_buil
 
 vs_sources = []
 # libmodule_<name>.a for each active module.
-for module in env.module_list:
+for name, path in env.module_list.items():
     env.modules_sources = []
-    SConscript(module + "/SCsub")
+
+    if not os.path.isabs(path):
+        SConscript(name + "/SCsub")  # Built-in.
+    else:
+        SConscript(path + "/SCsub")  # Custom.
 
     # Some modules are not linked automatically but can be enabled optionally
     # on iOS, so we handle those specially.
-    if env["platform"] == "iphone" and module in ["arkit", "camera"]:
+    if env["platform"] == "iphone" and name in ["arkit", "camera"]:
         continue
 
-    lib = env_modules.add_library("module_%s" % module, env.modules_sources)
+    lib = env_modules.add_library("module_%s" % name, env.modules_sources)
     env.Prepend(LIBS=[lib])
     if env["vsproj"]:
         vs_sources += env.modules_sources
