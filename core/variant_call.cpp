@@ -1526,8 +1526,11 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 		PropertyInfo ret;
 #ifdef DEBUG_ENABLED
 		ret.type = fd.return_type;
-		if (fd.returns)
+		if (fd.returns) {
 			ret.name = "ret";
+			if (fd.return_type == Variant::NIL)
+				ret.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
+		}
 		mi.return_val = ret;
 #endif
 
