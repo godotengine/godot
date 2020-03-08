@@ -25,7 +25,7 @@ ext {
     sconsExt = org.gradle.internal.os.OperatingSystem.current().isWindows() ? ".bat" : ""
 
     supportedAbis = ["armv7", "arm64v8", "x86", "x86_64"]
-    supportedTargets = ['release': "release", 'debug': "release_debug"]
+    supportedTargets = ["release", "debug"]
 
     // Used by gradle to specify which architecture to build for by default when running `./gradlew build`.
     // This command is usually used by Android Studio.
@@ -136,14 +136,14 @@ task zipCustomBuild(type: Zip) {
  */
 task generateGodotTemplates(type: GradleBuild) {
     // We exclude these gradle tasks so we can run the scons command manually.
-    for (String buildType : supportedTargets.keySet()) {
+    for (String buildType : supportedTargets) {
         startParameter.excludedTaskNames += ":lib:" + getSconsTaskName(buildType)
     }
 
     tasks = ["copyGodotPaymentPluginToAppModule"]
 
     // Only build the apks and aar files for which we have native shared libraries.
-    for (String target : supportedTargets.keySet()) {
+    for (String target : supportedTargets) {
         File targetLibs = new File("lib/libs/" + target)
         if (targetLibs != null
             && targetLibs.isDirectory()

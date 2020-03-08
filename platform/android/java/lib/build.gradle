@@ -26,6 +26,7 @@ android {
     packagingOptions {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
+        doNotStrip '**/*.so'
     }
 
     sourceSets {
@@ -56,7 +57,7 @@ android {
         // files is only setup for editing support.
         gradle.startParameter.excludedTaskNames += taskPrefix + "externalNativeBuild" + buildType
 
-        def releaseTarget = supportedTargets[buildType.toLowerCase()]
+        def releaseTarget = buildType.toLowerCase()
         if (releaseTarget == null || releaseTarget == "") {
             throw new GradleException("Invalid build type: " + buildType)
         }

@@ -71,6 +71,7 @@ android {
     packagingOptions {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
+        doNotStrip '**/*.so'
     }
 
     // Both signing and zip-aligning will be done at export time
