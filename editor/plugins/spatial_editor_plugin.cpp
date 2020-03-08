@@ -3650,7 +3650,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	display_submenu->add_separator();
 	display_submenu->add_radio_check_item(TTR("Roughness Limiter"), VIEW_DISPLAY_DEBUG_ROUGHNESS_LIMITER);
 	display_submenu->set_name("display_advanced");
-	view_menu->get_popup()->add_submenu_item(TTR("Display Advanced..."), "display_advanced");
+	view_menu->get_popup()->add_submenu_item(TTR("Display Advanced..."), "display_advanced", VIEW_DISPLAY_ADVANCED);
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_environment", TTR("View Environment")), VIEW_ENVIRONMENT);
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_gizmos", TTR("View Gizmos")), VIEW_GIZMOS);
