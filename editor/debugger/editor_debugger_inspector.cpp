@@ -30,8 +30,8 @@
 
 #include "editor_debugger_inspector.h"
 
+#include "core/debugger/debugger_marshalls.h"
 #include "core/io/marshalls.h"
-#include "core/script_debugger_remote.h"
 #include "editor/editor_node.h"
 #include "scene/debugger/scene_debugger.h"
 
@@ -226,7 +226,7 @@ Object *EditorDebuggerInspector::get_object(ObjectID p_id) {
 
 void EditorDebuggerInspector::add_stack_variable(const Array &p_array) {
 
-	ScriptDebuggerRemote::ScriptStackVariable var;
+	DebuggerMarshalls::ScriptStackVariable var;
 	var.deserialize(p_array);
 	String n = var.name;
 	Variant v = var.value;

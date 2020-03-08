@@ -31,6 +31,7 @@
 #ifndef EDITORNETWORKPROFILER_H
 #define EDITORNETWORKPROFILER_H
 
+#include "core/debugger/debugger_marshalls.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
@@ -50,7 +51,7 @@ private:
 
 	Timer *frame_delay;
 
-	Map<ObjectID, MultiplayerAPI::ProfilingInfo> nodes_data;
+	Map<ObjectID, DebuggerMarshalls::MultiplayerNodeInfo> nodes_data;
 
 	void _update_frame();
 
@@ -62,7 +63,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void add_node_frame_data(const MultiplayerAPI::ProfilingInfo p_frame);
+	void add_node_frame_data(const DebuggerMarshalls::MultiplayerNodeInfo p_frame);
 	void set_bandwidth(int p_incoming, int p_outgoing);
 	bool is_profiling();
 

@@ -240,6 +240,7 @@ void EditorDebuggerNode::_notification(int p_what) {
 		stop();
 		return;
 	}
+	server->poll();
 
 	// Errors and warnings
 	int error_count = 0;

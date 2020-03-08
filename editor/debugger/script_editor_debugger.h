@@ -67,6 +67,12 @@ private:
 		MESSAGE_SUCCESS,
 	};
 
+	enum ProfilerType {
+		PROFILER_NETWORK,
+		PROFILER_VISUAL,
+		PROFILER_SCRIPTS_SERVERS
+	};
+
 	AcceptDialog *msgdialog;
 
 	LineEdit *clicked_ctrl;
@@ -121,7 +127,7 @@ private:
 	EditorDebuggerInspector *inspector;
 	SceneDebuggerTree *scene_tree;
 
-	Ref<EditorDebuggerPeer> peer;
+	Ref<RemoteDebuggerPeer> peer;
 
 	HashMap<NodePath, int> node_path_cache;
 	int last_path_id;
@@ -171,11 +177,8 @@ private:
 	void _expand_errors_list();
 	void _collapse_errors_list();
 
-	void _visual_profiler_activate(bool p_enable);
-	void _profiler_activate(bool p_enable);
+	void _profiler_activate(bool p_enable, int p_profiler);
 	void _profiler_seeked();
-
-	void _network_profiler_activate(bool p_enable);
 
 	void _clear_errors_list();
 
@@ -204,7 +207,7 @@ public:
 	void request_remote_tree();
 	const SceneDebuggerTree *get_remote_tree();
 
-	void start(Ref<EditorDebuggerPeer> p_peer);
+	void start(Ref<RemoteDebuggerPeer> p_peer);
 	void stop();
 
 	void debug_skip_breakpoints();
