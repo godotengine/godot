@@ -31,7 +31,8 @@
 #include "os_javascript.h"
 
 #include "core/io/file_access_buffered_fa.h"
-#include "drivers/gles2/rasterizer_gles2.h"
+//#include "drivers/gles2/rasterizer_gles2.h"
+#include "drivers/dummy/rasterizer_dummy.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
@@ -891,6 +892,7 @@ void OS_JavaScript::initialize_core() {
 
 Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
+#if 0
 	EmscriptenWebGLContextAttributes attributes;
 	emscripten_webgl_init_context_attributes(&attributes);
 	attributes.alpha = GLOBAL_GET("display/window/per_pixel_transparency/allowed");
@@ -947,6 +949,8 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	} else {
 		set_window_size(get_window_size());
 	}
+#endif
+	RasterizerDummy::make_current(); // TODO GLES2 in Godot 4.0... or webgpu?
 
 	char locale_ptr[16];
 	/* clang-format off */
