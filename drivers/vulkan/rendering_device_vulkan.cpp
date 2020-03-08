@@ -1252,7 +1252,7 @@ Error RenderingDeviceVulkan::_buffer_allocate(Buffer *p_buffer, uint32_t p_size,
 	allocInfo.pUserData = NULL;
 
 	VkResult err = vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &p_buffer->buffer, &p_buffer->allocation, NULL);
-	ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "Can't create buffer of size: " + itos(p_size));
+	ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "Can't create buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
 	p_buffer->size = p_size;
 	p_buffer->buffer_info.buffer = p_buffer->buffer;
 	p_buffer->buffer_info.offset = 0;
@@ -1296,7 +1296,7 @@ Error RenderingDeviceVulkan::_insert_staging_block() {
 	StagingBufferBlock block;
 
 	VkResult err = vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &block.buffer, &block.allocation, NULL);
-	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "vmaCreateBuffer failed with error " + itos(err) + ".");
 
 	block.frame_used = 0;
 	block.fill_amount = 0;
@@ -1462,9 +1462,7 @@ Error RenderingDeviceVulkan::_buffer_update(Buffer *p_buffer, size_t p_offset, c
 		void *data_ptr = NULL;
 		{
 			VkResult vkerr = vmaMapMemory(allocator, staging_buffer_blocks[staging_buffer_current].allocation, &data_ptr);
-			if (vkerr) {
-				ERR_FAIL_V(ERR_CANT_CREATE);
-			}
+			ERR_FAIL_COND_V_MSG(vkerr, ERR_CANT_CREATE, "vmaMapMemory failed with error " + itos(vkerr) + ".");
 		}
 
 		//copy to staging buffer
@@ -1752,7 +1750,7 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 	Texture texture;
 
 	VkResult err = vmaCreateImage(allocator, &image_create_info, &allocInfo, &texture.image, &texture.allocation, &texture.allocation_info);
-	ERR_FAIL_COND_V(err, RID());
+	ERR_FAIL_COND_V_MSG(err, RID(), "vmaCreateImage failed with error " + itos(err) + ".");
 
 	texture.type = p_format.type;
 	texture.format = p_format.format;
@@ -1858,7 +1856,7 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 
 	if (err) {
 		vmaDestroyImage(allocator, texture.image, texture.allocation);
-		ERR_FAIL_V(RID());
+		ERR_FAIL_V_MSG(RID(), "vkCreateImageView failed with error " + itos(err) + ".");
 	}
 
 	//barrier to set layout
@@ -1964,10 +1962,7 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 	}
 
 	VkResult err = vkCreateImageView(device, &image_view_create_info, NULL, &texture.view);
-
-	if (err) {
-		ERR_FAIL_V(RID());
-	}
+	ERR_FAIL_COND_V_MSG(err, RID(), "vkCreateImageView failed with error " + itos(err) + ".");
 
 	texture.owner = p_with_texture;
 	RID id = texture_owner.make_rid(texture);
@@ -2065,10 +2060,7 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 	}
 
 	VkResult err = vkCreateImageView(device, &image_view_create_info, NULL, &texture.view);
-
-	if (err) {
-		ERR_FAIL_V(RID());
-	}
+	ERR_FAIL_COND_V_MSG(err, RID(), "vkCreateImageView failed with error " + itos(err) + ".");
 
 	texture.owner = p_with_texture;
 	RID id = texture_owner.make_rid(texture);
@@ -2179,9 +2171,7 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 					{ //map
 						void *data_ptr = NULL;
 						VkResult vkerr = vmaMapMemory(allocator, staging_buffer_blocks[staging_buffer_current].allocation, &data_ptr);
-						if (vkerr) {
-							ERR_FAIL_V(ERR_CANT_CREATE);
-						}
+						ERR_FAIL_COND_V_MSG(vkerr, ERR_CANT_CREATE, "vmaMapMemory failed with error " + itos(vkerr) + ".");
 						write_ptr = (uint8_t *)data_ptr;
 						write_ptr += alloc_offset;
 					}
@@ -2468,9 +2458,7 @@ Vector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint32_t 
 
 		void *buffer_mem;
 		VkResult vkerr = vmaMapMemory(allocator, tmp_buffer.allocation, &buffer_mem);
-		if (vkerr) {
-			ERR_FAIL_V(Vector<uint8_t>());
-		}
+		ERR_FAIL_COND_V_MSG(vkerr, Vector<uint8_t>(), "vmaMapMemory failed with error " + itos(vkerr) + ".");
 
 		Vector<uint8_t> buffer_data;
 		{
@@ -2977,7 +2965,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 
 	VkRenderPass render_pass;
 	VkResult res = vkCreateRenderPass(device, &render_pass_create_info, NULL, &render_pass);
-	ERR_FAIL_COND_V(res, VK_NULL_HANDLE);
+	ERR_FAIL_COND_V_MSG(res, VK_NULL_HANDLE, "vkCreateRenderPass failed with error " + itos(res) + ".");
 
 	if (r_color_attachment_count) {
 		*r_color_attachment_count = color_references.size();
@@ -3126,7 +3114,7 @@ RID RenderingDeviceVulkan::sampler_create(const SamplerState &p_state) {
 
 	VkSampler sampler;
 	VkResult res = vkCreateSampler(device, &sampler_create_info, NULL, &sampler);
-	ERR_FAIL_COND_V(res, RID());
+	ERR_FAIL_COND_V_MSG(res, RID(), "vkCreateSampler failed with error " + itos(res) + ".");
 
 	return sampler_owner.make_rid(sampler);
 }
@@ -3880,7 +3868,7 @@ RID RenderingDeviceVulkan::shader_create(const Vector<ShaderStageData> &p_stages
 		VkResult res = vkCreateShaderModule(device, &shader_module_create_info, NULL, &module);
 		if (res) {
 			success = false;
-			error_text = "Error creating shader module for stage: " + String(shader_stage_names[p_stages[i].shader_stage]);
+			error_text = "Error (" + itos(res) + ") creating shader module for stage: " + String(shader_stage_names[p_stages[i].shader_stage]);
 			break;
 		}
 
@@ -3920,7 +3908,7 @@ RID RenderingDeviceVulkan::shader_create(const Vector<ShaderStageData> &p_stages
 			VkDescriptorSetLayout layout;
 			VkResult res = vkCreateDescriptorSetLayout(device, &layout_create_info, NULL, &layout);
 			if (res) {
-				error_text = "Error creating descriptor set layout for set " + itos(i);
+				error_text = "Error (" + itos(res) + ") creating descriptor set layout for set " + itos(i);
 				success = false;
 				break;
 			}
@@ -3983,7 +3971,7 @@ RID RenderingDeviceVulkan::shader_create(const Vector<ShaderStageData> &p_stages
 		VkResult err = vkCreatePipelineLayout(device, &pipeline_layout_create_info, NULL, &shader.pipeline_layout);
 
 		if (err) {
-			error_text = "Error creating pipeline layout.";
+			error_text = "Error (" + itos(err) + ") creating pipeline layout.";
 			success = false;
 		}
 	}
@@ -4088,7 +4076,7 @@ RID RenderingDeviceVulkan::texture_buffer_create(uint32_t p_size_elements, DataF
 	VkResult res = vkCreateBufferView(device, &view_create_info, NULL, &texture_buffer.view);
 	if (res) {
 		_buffer_free(&texture_buffer.buffer);
-		ERR_FAIL_V_MSG(RID(), "Unable to create buffer view");
+		ERR_FAIL_V_MSG(RID(), "Unable to create buffer view, error " + itos(res) + ".");
 	}
 
 	//allocate the view
@@ -4184,7 +4172,7 @@ RenderingDeviceVulkan::DescriptorPool *RenderingDeviceVulkan::_descriptor_pool_a
 		VkResult res = vkCreateDescriptorPool(device, &descriptor_pool_create_info, NULL, &pool->pool);
 		if (res) {
 			memdelete(pool);
-			ERR_FAIL_COND_V(res, NULL);
+			ERR_FAIL_COND_V_MSG(res, NULL, "vkCreateDescriptorPool failed with error " + itos(res) + ".");
 		}
 		descriptor_pools[p_key].insert(pool);
 	}
@@ -4600,7 +4588,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 	VkResult res = vkAllocateDescriptorSets(device, &descriptor_set_allocate_info, &descriptor_set);
 	if (res) {
 		_descriptor_pool_free(pool_key, pool); // meh
-		ERR_FAIL_V_MSG(RID(), "Cannot allocate descriptor sets.");
+		ERR_FAIL_V_MSG(RID(), "Cannot allocate descriptor sets, error " + itos(res) + ".");
 	}
 
 	UniformSet uniform_set;
@@ -4722,9 +4710,7 @@ Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 
 	void *buffer_mem;
 	VkResult vkerr = vmaMapMemory(allocator, tmp_buffer.allocation, &buffer_mem);
-	if (vkerr) {
-		ERR_FAIL_V(Vector<uint8_t>());
-	}
+	ERR_FAIL_COND_V_MSG(vkerr, Vector<uint8_t>(), "vmaMapMemory failed with error " + itos(vkerr) + ".");
 
 	Vector<uint8_t> buffer_data;
 	{
@@ -5067,7 +5053,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 
 	RenderPipeline pipeline;
 	VkResult err = vkCreateGraphicsPipelines(device, NULL, 1, &graphics_pipeline_create_info, NULL, &pipeline.pipeline);
-	ERR_FAIL_COND_V(err, RID());
+	ERR_FAIL_COND_V_MSG(err, RID(), "vkCreateGraphicsPipelines failed with error " + itos(err) + ".");
 
 	pipeline.set_formats = shader->set_formats;
 	pipeline.push_constant_stages = shader->push_constant.push_constants_vk_stage;
@@ -5140,7 +5126,7 @@ RID RenderingDeviceVulkan::compute_pipeline_create(RID p_shader) {
 
 	ComputePipeline pipeline;
 	VkResult err = vkCreateComputePipelines(device, NULL, 1, &compute_pipeline_create_info, NULL, &pipeline.pipeline);
-	ERR_FAIL_COND_V(err, RID());
+	ERR_FAIL_COND_V_MSG(err, RID(), "vkCreateComputePipelines failed with error " + itos(err) + ".");
 
 	pipeline.set_formats = shader->set_formats;
 	pipeline.push_constant_stages = shader->push_constant.push_constants_vk_stage;
@@ -5300,7 +5286,7 @@ Error RenderingDeviceVulkan::_draw_list_setup_framebuffer(Framebuffer *p_framebu
 		framebuffer_create_info.layers = 1;
 
 		VkResult err = vkCreateFramebuffer(device, &framebuffer_create_info, NULL, &version.framebuffer);
-		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+		ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "vkCreateFramebuffer failed with error " + itos(err) + ".");
 
 		p_framebuffer->framebuffers.insert(vk, version);
 	}
@@ -5561,7 +5547,7 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 			cmd_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 			VkResult res = vkCreateCommandPool(device, &cmd_pool_info, NULL, &split_draw_list_allocators.write[i].command_pool);
-			ERR_FAIL_COND_V(res, ERR_CANT_CREATE);
+			ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "vkCreateCommandPool failed with error " + itos(res) + ".");
 
 			for (int j = 0; j < frame_count; j++) {
 
@@ -5576,7 +5562,7 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 				cmdbuf.commandBufferCount = 1;
 
 				VkResult err = vkAllocateCommandBuffers(device, &cmdbuf, &command_buffer);
-				ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+				ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "vkAllocateCommandBuffers failed with error " + itos(err) + ".");
 
 				split_draw_list_allocators.write[i].command_buffers.push_back(command_buffer);
 			}
@@ -5625,14 +5611,14 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 		if (res) {
 			memdelete_arr(draw_list);
 			draw_list = NULL;
-			ERR_FAIL_V(ERR_CANT_CREATE);
+			ERR_FAIL_V_MSG(ERR_CANT_CREATE, "vkResetCommandBuffer failed with error " + itos(res) + ".");
 		}
 
 		res = vkBeginCommandBuffer(command_buffer, &cmdbuf_begin);
 		if (res) {
 			memdelete_arr(draw_list);
 			draw_list = NULL;
-			ERR_FAIL_V(ERR_CANT_CREATE);
+			ERR_FAIL_V_MSG(ERR_CANT_CREATE, "vkBeginCommandBuffer failed with error " + itos(res) + ".");
 		}
 
 		draw_list[i].command_buffer = command_buffer;
@@ -6566,13 +6552,13 @@ void RenderingDeviceVulkan::swap_buffers() {
 			cmdbuf_begin.pInheritanceInfo = NULL;
 
 			VkResult err = vkResetCommandBuffer(frames[frame].setup_command_buffer, 0);
-			ERR_FAIL_COND(err);
+			ERR_FAIL_COND_MSG(err, "vkResetCommandBuffer failed with error " + itos(err) + ".");
 
 			err = vkBeginCommandBuffer(frames[frame].setup_command_buffer, &cmdbuf_begin);
-			ERR_FAIL_COND(err);
+			ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
 			context->set_setup_buffer(frames[frame].setup_command_buffer); //append now so it's added before everything else
 			err = vkBeginCommandBuffer(frames[frame].draw_command_buffer, &cmdbuf_begin);
-			ERR_FAIL_COND(err);
+			ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
 			context->append_command_buffer(frames[frame].draw_command_buffer);
 		}
 
@@ -6727,7 +6713,7 @@ void RenderingDeviceVulkan::_flush(bool p_current_frame) {
 		cmdbuf_begin.pInheritanceInfo = NULL;
 
 		VkResult err = vkBeginCommandBuffer(frames[frame].setup_command_buffer, &cmdbuf_begin);
-		ERR_FAIL_COND(err);
+		ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
 		context->set_setup_buffer(frames[frame].setup_command_buffer); //append now so it's added before everything else
 	}
 
@@ -6739,7 +6725,7 @@ void RenderingDeviceVulkan::_flush(bool p_current_frame) {
 		cmdbuf_begin.pInheritanceInfo = NULL;
 
 		VkResult err = vkBeginCommandBuffer(frames[frame].draw_command_buffer, &cmdbuf_begin);
-		ERR_FAIL_COND(err);
+		ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
 		context->append_command_buffer(frames[frame].draw_command_buffer);
 	}
 }
@@ -6776,7 +6762,7 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context) {
 			cmd_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 			VkResult res = vkCreateCommandPool(device, &cmd_pool_info, NULL, &frames[i].command_pool);
-			ERR_FAIL_COND(res);
+			ERR_FAIL_COND_MSG(res, "vkCreateCommandPool failed with error " + itos(res) + ".");
 		}
 
 		{ //create command buffers
@@ -6790,10 +6776,10 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context) {
 			cmdbuf.commandBufferCount = 1;
 
 			VkResult err = vkAllocateCommandBuffers(device, &cmdbuf, &frames[i].setup_command_buffer);
-			ERR_CONTINUE(err);
+			ERR_CONTINUE_MSG(err, "vkAllocateCommandBuffers failed with error " + itos(err) + ".");
 
 			err = vkAllocateCommandBuffers(device, &cmdbuf, &frames[i].draw_command_buffer);
-			ERR_CONTINUE(err);
+			ERR_CONTINUE_MSG(err, "vkAllocateCommandBuffers failed with error " + itos(err) + ".");
 		}
 
 		{
@@ -6828,11 +6814,11 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context) {
 		cmdbuf_begin.pInheritanceInfo = NULL;
 
 		VkResult err = vkBeginCommandBuffer(frames[0].setup_command_buffer, &cmdbuf_begin);
-		ERR_FAIL_COND(err);
+		ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
 		context->set_setup_buffer(frames[0].setup_command_buffer); //append now so it's added before everything else
 
 		err = vkBeginCommandBuffer(frames[0].draw_command_buffer, &cmdbuf_begin);
-		ERR_FAIL_COND(err);
+		ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
 		context->append_command_buffer(frames[0].draw_command_buffer);
 	}
 
