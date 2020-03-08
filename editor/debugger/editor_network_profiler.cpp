@@ -31,8 +31,8 @@
 #include "editor_network_profiler.h"
 
 #include "core/os/os.h"
-#include "editor_scale.h"
-#include "editor_settings.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 
 void EditorNetworkProfiler::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("enable_profiling", PropertyInfo(Variant::BOOL, "enable")));
@@ -58,7 +58,7 @@ void EditorNetworkProfiler::_update_frame() {
 
 	TreeItem *root = counters_display->create_item();
 
-	for (Map<ObjectID, MultiplayerAPI::ProfilingInfo>::Element *E = nodes_data.front(); E; E = E->next()) {
+	for (Map<ObjectID, DebuggerMarshalls::MultiplayerNodeInfo>::Element *E = nodes_data.front(); E; E = E->next()) {
 
 		TreeItem *node = counters_display->create_item(root);
 
@@ -95,7 +95,7 @@ void EditorNetworkProfiler::_clear_pressed() {
 	}
 }
 
-void EditorNetworkProfiler::add_node_frame_data(const MultiplayerAPI::ProfilingInfo p_frame) {
+void EditorNetworkProfiler::add_node_frame_data(const DebuggerMarshalls::MultiplayerNodeInfo p_frame) {
 
 	if (!nodes_data.has(p_frame.node)) {
 		nodes_data.insert(p_frame.node, p_frame);
