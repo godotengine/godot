@@ -162,17 +162,9 @@ private:
 		RUN_PLAY_NATIVE,
 		RUN_PLAY_CUSTOM_SCENE,
 		RUN_SCENE_SETTINGS,
-		RUN_DEBUG_ONE,
-		RUN_DEBUG_TWO,
 		RUN_SETTINGS,
 		RUN_PROJECT_DATA_FOLDER,
 		RUN_PROJECT_MANAGER,
-		RUN_FILE_SERVER,
-		RUN_LIVE_DEBUG,
-		RUN_DEBUG_COLLISONS,
-		RUN_DEBUG_NAVIGATION,
-		RUN_DEPLOY_REMOTE_DEBUG,
-		RUN_RELOAD_SCRIPTS,
 		RUN_VCS_SETTINGS,
 		RUN_VCS_SHUT_DOWN,
 		SETTINGS_UPDATE_CONTINUOUSLY,
@@ -412,8 +404,6 @@ private:
 	EditorResourcePreview *resource_preview;
 	EditorFolding editor_folding;
 
-	EditorFileServer *file_server;
-
 	struct BottomPanelItem {
 		String name;
 		Control *control;
@@ -455,7 +445,6 @@ private:
 	void _save_screenshot(NodePath p_path);
 
 	void _tool_menu_option(int p_idx);
-	void _update_debug_options();
 	void _update_file_menu_opened();
 	void _update_file_menu_closed();
 

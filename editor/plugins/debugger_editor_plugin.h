@@ -31,19 +31,40 @@
 #ifndef DEBUGGER_EDITOR_PLUGIN_H
 #define DEBUGGER_EDITOR_PLUGIN_H
 
-#include "editor/debugger/editor_debugger_node.h"
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+
+class EditorNode;
+class EditorFileServer;
+class MenuButton;
 
 class DebuggerEditorPlugin : public EditorPlugin {
 
 	GDCLASS(DebuggerEditorPlugin, EditorPlugin);
 
+private:
+	MenuButton *debug_menu;
+	EditorFileServer *file_server;
+
+	enum MenuOptions {
+		RUN_DEBUG_ONE,
+		RUN_DEBUG_TWO,
+		RUN_FILE_SERVER,
+		RUN_LIVE_DEBUG,
+		RUN_DEBUG_COLLISONS,
+		RUN_DEBUG_NAVIGATION,
+		RUN_DEPLOY_REMOTE_DEBUG,
+		RUN_RELOAD_SCRIPTS,
+	};
+
+	void _update_debug_options();
+	void _notification(int p_what);
+
 public:
+	void _menu_option(int p_option);
 	virtual String get_name() const { return "Debugger"; }
 	bool has_main_screen() const { return false; }
 
-	DebuggerEditorPlugin(EditorNode *p_node);
+	DebuggerEditorPlugin(EditorNode *p_node, MenuButton *p_menu);
 	~DebuggerEditorPlugin();
 };
 
