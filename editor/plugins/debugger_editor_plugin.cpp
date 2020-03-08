@@ -75,33 +75,41 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(EditorNode *p_editor, MenuButton *p_d
 	p->set_item_checked(p->get_item_count() - 1, true);
 
 	// Multi-instance, start/stop
-	p->add_separator();
-	p->add_radio_check_item(TTR("Debug 1 instance"), RUN_DEBUG_ONE);
-	p->add_radio_check_item(TTR("Debug 2 instances"), RUN_DEBUG_TWO);
-	p->set_item_checked(p->get_item_index(RUN_DEBUG_ONE), true);
+	instances_menu = memnew(PopupMenu);
+	instances_menu->set_name("run_instances");
+	instances_menu->set_hide_on_checkable_item_selection(false);
 
+	p->add_child(instances_menu);
+	p->add_separator();
+	p->add_submenu_item(TTR("Run Multiple Instances"), "run_instances");
+
+	instances_menu->add_radio_check_item(TTR("Run 1 Instance"));
+	instances_menu->set_item_metadata(0, 1);
+	instances_menu->add_radio_check_item(TTR("Run 2 Instances"));
+	instances_menu->set_item_metadata(1, 2);
+	instances_menu->add_radio_check_item(TTR("Run 3 Instances"));
+	instances_menu->set_item_metadata(2, 3);
+	instances_menu->add_radio_check_item(TTR("Run 4 Instances"));
+	instances_menu->set_item_metadata(3, 4);
+	instances_menu->set_item_checked(0, true);
+	instances_menu->connect("index_pressed", callable_mp(this, &DebuggerEditorPlugin::_select_run_count));
 	p->connect("id_pressed", callable_mp(this, &DebuggerEditorPlugin::_menu_option));
 }
 
 DebuggerEditorPlugin::~DebuggerEditorPlugin() {
 	memdelete(file_server);
-	// Should delete debugger?
+}
+
+void DebuggerEditorPlugin::_select_run_count(int p_index) {
+	int len = instances_menu->get_item_count();
+	for (int idx = 0; idx < len; idx++) {
+		instances_menu->set_item_checked(idx, idx == p_index);
+	}
+	EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_instances", instances_menu->get_item_metadata(p_index));
 }
 
 void DebuggerEditorPlugin::_menu_option(int p_option) {
 	switch (p_option) {
-		case RUN_DEBUG_ONE: {
-			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_ONE), true);
-			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_TWO), false);
-			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_instances", 1);
-
-		} break;
-		case RUN_DEBUG_TWO: {
-			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_TWO), true);
-			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_ONE), false);
-			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_instances", 2);
-
-		} break;
 		case RUN_FILE_SERVER: {
 
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_FILE_SERVER));
@@ -157,13 +165,8 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 }
 
 void DebuggerEditorPlugin::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_READY:
-			_update_debug_options();
-			break;
-		default:
-			break;
-	}
+	if (p_what == NOTIFICATION_READY)
+		_update_debug_options();
 }
 
 void DebuggerEditorPlugin::_update_debug_options() {
@@ -181,12 +184,10 @@ void DebuggerEditorPlugin::_update_debug_options() {
 	if (check_debug_navigation) _menu_option(RUN_DEBUG_NAVIGATION);
 	if (check_live_debug) _menu_option(RUN_LIVE_DEBUG);
 	if (check_reload_scripts) _menu_option(RUN_RELOAD_SCRIPTS);
-	int one = false;
-	int two = false;
-	if (instances == 2)
-		two = true;
-	else
-		one = true;
-	debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_ONE), one);
-	debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_TWO), two);
+
+	int len = instances_menu->get_item_count();
+	for (int idx = 0; idx < len; idx++) {
+		bool checked = (int)instances_menu->get_item_metadata(idx) == instances;
+		instances_menu->set_item_checked(idx, checked);
+	}
 }
