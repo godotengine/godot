@@ -117,6 +117,16 @@ matrix:
           packages:
             - *linux_deps
 
+    - name: Javascript export template (release, emscripten latest)
+      stage: build
+      env: PLATFORM=javascript TOOLS=no TARGET=release CACHE_NAME=${PLATFORM}-emcc-latest EXTRA_ARGS="module_glslang_enabled=no"
+      os: linux
+      compiler: clang
+      addons:
+        apt:
+          packages:
+            - *linux_deps
+
 before_install:
   - eval "${MATRIX_EVAL}"
   - if [ "$STATIC_CHECKS" = "yes" ]; then
@@ -134,6 +144,11 @@ install:
       export PATH=/usr/lib/jvm/java-8-openjdk-amd64/jre/bin:${PATH};
       java -version;
       misc/travis/android-tools-linux.sh;
+    fi
+  - if [ "$PLATFORM" = "javascript" ]; then
+      git clone --depth 1 "https://github.com/emscripten-core/emsdk.git";
+      ./emsdk/emsdk install latest;
+      ./emsdk/emsdk activate latest;
     fi
 
 before_script:
