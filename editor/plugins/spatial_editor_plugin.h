@@ -579,6 +579,9 @@ private:
 	Ref<SpatialMaterial> plane_gizmo_color_hl[3];
 
 	int over_gizmo_handle;
+	float snap_translate_value;
+	float snap_rotate_value;
+	float snap_scale_value;
 
 	Ref<ArrayMesh> selection_box;
 	RID indicators;
@@ -658,6 +661,8 @@ private:
 	SpinBox *settings_znear;
 	SpinBox *settings_zfar;
 
+	void _snap_changed();
+	void _snap_update();
 	void _xform_dialog_action();
 	void _menu_item_pressed(int p_option);
 	void _menu_item_toggled(bool pressed, int p_option);
