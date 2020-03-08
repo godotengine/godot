@@ -61,7 +61,7 @@ protected:
 	void _notification(int p_option);
 
 public:
-	void edit(NavigationRegion *p_nav_mesh_instance);
+	void edit(NavigationRegion *p_nav_region);
 	NavigationMeshEditor();
 	~NavigationMeshEditor();
 };
