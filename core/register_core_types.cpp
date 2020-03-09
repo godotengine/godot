@@ -148,6 +148,9 @@ void register_core_types() {
 	ClassDB::register_class<InputEventScreenTouch>();
 	ClassDB::register_class<InputEventAction>();
 	ClassDB::register_virtual_class<InputEventGesture>();
+	ClassDB::register_class<InputEventMultiScreenDrag>();
+	ClassDB::register_class<InputEventTwistGesture>();
+	ClassDB::register_class<InputEventPinchGesture>();
 	ClassDB::register_class<InputEventMagnifyGesture>();
 	ClassDB::register_class<InputEventPanGesture>();
 	ClassDB::register_class<InputEventMIDI>();
