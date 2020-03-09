@@ -242,6 +242,16 @@
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
+		<method name="get_keycode_string" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="code" type="int">
+			</argument>
+			<description>
+				Returns the given keycode as a string (e.g. Return values: [code]"Escape"[/code], [code]"Shift+Escape"[/code]).
+				See also [member InputEventKey.keycode] and [method InputEventKey.get_keycode_with_modifiers].
+			</description>
+		</method>
 		<method name="get_latin_keyboard_variant" qualifiers="const">
 			<return type="String">
 			</return>
@@ -293,16 +303,6 @@
 			</return>
 			<description>
 				Returns the window size including decorations like window borders.
-			</description>
-		</method>
-		<method name="get_keycode_string" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="code" type="int">
-			</argument>
-			<description>
-				Returns the given keycode as a string (e.g. Return values: [code]"Escape"[/code], [code]"Shift+Escape"[/code]).
-				See also [member InputEventKey.keycode] and [method InputEventKey.get_keycode_with_modifiers].
 			</description>
 		</method>
 		<method name="get_screen_count" qualifiers="const">
@@ -588,13 +588,6 @@
 				To check whether the Godot binary used to run the project is an export template (debug or release), use [code]OS.has_feature("standalone")[/code] instead.
 			</description>
 		</method>
-		<method name="is_ok_left_and_cancel_right" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the [b]OK[/b] button should appear on the left and [b]Cancel[/b] on the right.
-			</description>
-		</method>
 		<method name="is_keycode_unicode" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -602,6 +595,13 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if the input keycode corresponds to a Unicode character.
+			</description>
+		</method>
+		<method name="is_ok_left_and_cancel_right" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the [b]OK[/b] button should appear on the left and [b]Cancel[/b] on the right.
 			</description>
 		</method>
 		<method name="is_stdout_verbose" qualifiers="const">
