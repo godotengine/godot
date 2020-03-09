@@ -226,6 +226,36 @@ public:
         return nullptr;
     }
 
+    // Change this block into a canonical dead merge block.  Delete instructions
+    // as necessary.  A canonical dead merge block has only an OpLabel and an
+    // OpUnreachable.
+    void rewriteAsCanonicalUnreachableMerge() {
+        assert(localVariables.empty());
+        // Delete all instructions except for the label.
+        assert(instructions.size() > 0);
+        instructions.resize(1);
+        successors.clear();
+        Instruction* unreachable = new Instruction(OpUnreachable);
+        addInstruction(std::unique_ptr<Instruction>(unreachable));
+    }
+    // Change this block into a canonical dead continue target branching to the
+    // given header ID.  Delete instructions as necessary.  A canonical dead continue
+    // target has only an OpLabel and an unconditional branch back to the corresponding
+    // header.
+    void rewriteAsCanonicalUnreachableContinue(Block* header) {
+        assert(localVariables.empty());
+        // Delete all instructions except for the label.
+        assert(instructions.size() > 0);
+        instructions.resize(1);
+        successors.clear();
+        // Add OpBranch back to the header.
+        assert(header != nullptr);
+        Instruction* branch = new Instruction(OpBranch);
+        branch->addIdOperand(header->getId());
+        addInstruction(std::unique_ptr<Instruction>(branch));
+        successors.push_back(header);
+    }
+
     bool isTerminated() const
     {
         switch (instructions.back()->getOpCode()) {
@@ -235,6 +265,7 @@ public:
         case OpKill:
         case OpReturn:
         case OpReturnValue:
+        case OpUnreachable:
             return true;
         default:
             return false;
@@ -268,10 +299,24 @@ protected:
     bool unreachable;
 };
 
+// The different reasons for reaching a block in the inReadableOrder traversal.
+enum ReachReason {
+    // Reachable from the entry block via transfers of control, i.e. branches.
+    ReachViaControlFlow = 0,
+    // A continue target that is not reachable via control flow.
+    ReachDeadContinue,
+    // A merge block that is not reachable via control flow.
+    ReachDeadMerge
+};
+
 // Traverses the control-flow graph rooted at root in an order suited for
 // readable code generation.  Invokes callback at every node in the traversal
-// order.
-void inReadableOrder(Block* root, std::function<void(Block*)> callback);
+// order.  The callback arguments are:
+// - the block,
+// - the reason we reached the block,
+// - if the reason was that block is an unreachable continue or unreachable merge block
+//   then the last parameter is the corresponding header block.
+void inReadableOrder(Block* root, std::function<void(Block*, ReachReason, Block* header)> callback);
 
 //
 // SPIR-V IR Function.
@@ -321,7 +366,7 @@ public:
             parameterInstructions[p]->dump(out);
 
         // Blocks
-        inReadableOrder(blocks[0], [&out](const Block* b) { b->dump(out); });
+        inReadableOrder(blocks[0], [&out](const Block* b, ReachReason, Block*) { b->dump(out); });
         Instruction end(0, 0, OpFunctionEnd);
         end.dump(out);
     }
@@ -436,6 +481,6 @@ __inline void Block::addInstruction(std::unique_ptr<Instruction> inst)
         parent.getParent().mapInstruction(raw_instruction);
 }
 
-};  // end spv namespace
+}  // end spv namespace
 
 #endif // spvIR_H

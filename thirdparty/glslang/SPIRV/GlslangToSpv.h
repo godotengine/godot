@@ -40,7 +40,7 @@
 #endif
 
 #include "SpvTools.h"
-#include "../glslang/Include/intermediate.h"
+#include "glslang/Include/intermediate.h"
 
 #include <string>
 #include <vector>

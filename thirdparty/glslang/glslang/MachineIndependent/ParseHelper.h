@@ -85,6 +85,7 @@ public:
             statementNestingLevel(0), loopNestingLevel(0), structNestingLevel(0), controlFlowNestingLevel(0),
             postEntryPointReturn(false),
             contextPragma(true, false),
+            beginInvocationInterlockCount(0), endInvocationInterlockCount(0),
             parsingBuiltins(parsingBuiltins), scanContext(nullptr), ppContext(nullptr),
             limits(resources.limits),
             globalUniformBlock(nullptr),
@@ -96,6 +97,7 @@ public:
     }
     virtual ~TParseContextBase() { }
 
+#if !defined(GLSLANG_WEB) || defined(GLSLANG_WEB_DEVEL)
     virtual void C_DECL   error(const TSourceLoc&, const char* szReason, const char* szToken,
                                 const char* szExtraInfoFormat, ...);
     virtual void C_DECL    warn(const TSourceLoc&, const char* szReason, const char* szToken,
@@ -104,6 +106,7 @@ public:
                                 const char* szExtraInfoFormat, ...);
     virtual void C_DECL  ppWarn(const TSourceLoc&, const char* szReason, const char* szToken,
                                 const char* szExtraInfoFormat, ...);
+#endif
 
     virtual void setLimits(const TBuiltInResource&) = 0;
 
@@ -149,8 +152,10 @@ public:
             extensionCallback(line, extension, behavior);
     }
 
+#ifdef ENABLE_HLSL
     // Manage the global uniform block (default uniforms in GLSL, $Global in HLSL)
     virtual void growGlobalUniformBlock(const TSourceLoc&, TType&, const TString& memberName, TTypeList* typeList = nullptr);
+#endif
 
     // Potentially rename shader entry point function
     void renameShaderFunction(TString*& name) const
@@ -182,6 +187,8 @@ public:
     // the statementNestingLevel the current switch statement is at, which must match the level of its case statements
     TList<int> switchLevel;
     struct TPragma contextPragma;
+    int beginInvocationInterlockCount;
+    int endInvocationInterlockCount;
 
 protected:
     TParseContextBase(TParseContextBase&);
@@ -276,7 +283,7 @@ public:
                   const TString* entryPoint = nullptr);
     virtual ~TParseContext();
 
-    bool obeyPrecisionQualifiers() const { return precisionManager.respectingPrecisionQualifiers(); };
+    bool obeyPrecisionQualifiers() const { return precisionManager.respectingPrecisionQualifiers(); }
     void setPrecisionDefaults();
 
     void setLimits(const TBuiltInResource&) override;
@@ -294,10 +301,12 @@ public:
     TIntermTyped* handleBracketDereference(const TSourceLoc&, TIntermTyped* base, TIntermTyped* index);
     void handleIndexLimits(const TSourceLoc&, TIntermTyped* base, TIntermTyped* index);
 
+#ifndef GLSLANG_WEB
     void makeEditable(TSymbol*&) override;
+    void ioArrayCheck(const TSourceLoc&, const TType&, const TString& identifier);
+#endif
     bool isIoResizeArray(const TType&) const;
     void fixIoArraySize(const TSourceLoc&, TType&);
-    void ioArrayCheck(const TSourceLoc&, const TType&, const TString& identifier);
     void handleIoResizeArrayAccess(const TSourceLoc&, TIntermTyped* base);
     void checkIoArraysConsistency(const TSourceLoc&, bool tailOnly = false);
     int getIoArrayImplicitSize(const TQualifier&, TString* featureString = nullptr) const;
@@ -401,6 +410,7 @@ public:
     TIntermTyped* addConstructor(const TSourceLoc&, TIntermNode*, const TType&);
     TIntermTyped* constructAggregate(TIntermNode*, const TType&, int, const TSourceLoc&);
     TIntermTyped* constructBuiltIn(const TType&, TOperator, TIntermTyped*, const TSourceLoc&, bool subset);
+    void inheritMemoryQualifiers(const TQualifier& from, TQualifier& to);
     void declareBlock(const TSourceLoc&, TTypeList& typeList, const TString* instanceName = 0, TArraySizes* arraySizes = 0);
     void blockStageIoCheck(const TSourceLoc&, const TQualifier&);
     void blockQualifierCheck(const TSourceLoc&, const TQualifier&, bool instanceName);
@@ -414,6 +424,7 @@ public:
     void wrapupSwitchSubsequence(TIntermAggregate* statements, TIntermNode* branchNode);
     TIntermNode* addSwitch(const TSourceLoc&, TIntermTyped* expression, TIntermAggregate* body);
 
+#ifndef GLSLANG_WEB
     TAttributeType attributeFromName(const TString& name) const;
     TAttributes* makeAttributes(const TString& identifier) const;
     TAttributes* makeAttributes(const TString& identifier, TIntermNode* node) const;
@@ -422,11 +433,11 @@ public:
     // Determine selection control from attributes
     void handleSelectionAttributes(const TAttributes& attributes, TIntermNode*);
     void handleSwitchAttributes(const TAttributes& attributes, TIntermNode*);
-
     // Determine loop control from attributes
     void handleLoopAttributes(const TAttributes& attributes, TIntermNode*);
+#endif
 
-    void resizeMeshViewDimension(const TSourceLoc&, TType&);
+    void checkAndResizeMeshViewDim(const TSourceLoc&, TType&, bool isBlockMember);
 
 protected:
     void nonInitConstCheck(const TSourceLoc&, TString& identifier, TType& type);
@@ -438,7 +449,9 @@ protected:
     bool isRuntimeLength(const TIntermTyped&) const;
     TIntermNode* executeInitializer(const TSourceLoc&, TIntermTyped* initializer, TVariable* variable);
     TIntermTyped* convertInitializerList(const TSourceLoc&, const TType&, TIntermTyped* initializer);
+#ifndef GLSLANG_WEB
     void finish() override;
+#endif
 
 public:
     //
@@ -464,10 +477,11 @@ protected:
     TQualifier globalUniformDefaults;
     TQualifier globalInputDefaults;
     TQualifier globalOutputDefaults;
-    int* atomicUintOffsets;       // to become an array of the right size to hold an offset per binding point
     TString currentCaller;        // name of last function body entered (not valid when at global scope)
-    TIdSetType inductiveLoopIds;
+#ifndef GLSLANG_WEB
+    int* atomicUintOffsets;       // to become an array of the right size to hold an offset per binding point
     bool anyIndexLimits;
+    TIdSetType inductiveLoopIds;
     TVector<TIntermTyped*> needsIndexLimitationChecking;
 
     //
@@ -503,6 +517,7 @@ protected:
     //    array-sizing declarations
     //
     TVector<TSymbol*> ioArraySymbolResizeList;
+#endif
 };
 
 } // end namespace glslang

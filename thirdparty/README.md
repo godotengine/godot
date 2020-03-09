@@ -162,11 +162,21 @@ the GLES version Godot targets.
 ## glslang
 
 - Upstream: https://github.com/KhronosGroup/glslang
-- Version: rev.3226
+- Version: git (4fc7a33910fb8e40b970d160e1b38ab3f67fe0f3, 2020)
 - License: glslang
 
-Important: File `glslang/glslang/Include/Common.h` has
-Godot-made change marked with `// -- GODOT --` comments.
+Version should be kept in sync with the one of the used Vulkan SDK (see `vulkan`
+section). Check Vulkan-ValidationLayers at the matching SDK tag for the known
+good glslang commit: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/scripts/known_good.json
+
+Files extracted from upstream source:
+
+- `glslang`, `OGLCompilersDLL`, `SPIRV`
+- `LICENSE.txt`
+- Unnecessary files like `CMakeLists.txt`, `revision.template` and
+  `updateGrammar` removed.
+
+Patches in the `patches` directory should be re-applied after updates.
 
 
 ## jpeg-compressor

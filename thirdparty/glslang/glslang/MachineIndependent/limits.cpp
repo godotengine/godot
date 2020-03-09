@@ -187,12 +187,14 @@ bool TIndexTraverser::visitAggregate(TVisit /* visit */, TIntermAggregate* node)
 //
 void TParseContext::constantIndexExpressionCheck(TIntermNode* index)
 {
+#ifndef GLSLANG_WEB
     TIndexTraverser it(inductiveLoopIds);
 
     index->traverse(&it);
 
     if (it.bad)
         error(it.badLoc, "Non-constant-index-expression", "limitations", "");
+#endif
 }
 
 } // end namespace glslang

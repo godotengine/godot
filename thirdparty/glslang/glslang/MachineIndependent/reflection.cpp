@@ -33,6 +33,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 
+#ifndef GLSLANG_WEB
+
 #include "../Include/Common.h"
 #include "reflection.h"
 #include "LiveTraverser.h"
@@ -110,6 +112,10 @@ public:
             TReflection::TMapIndexToReflection &ioItems =
                 input ? reflection.indexToPipeInput : reflection.indexToPipeOutput;
 
+
+            TReflection::TNameToIndex &ioMapper =
+                input ? reflection.pipeInNameToIndex : reflection.pipeOutNameToIndex;
+
             if (reflection.options & EShReflectionUnwrapIOBlocks) {
                 bool anonymous = IsAnonymous(name);
 
@@ -127,12 +133,13 @@ public:
                     blowUpIOAggregate(input, baseName, type);
                 }
             } else {
-                TReflection::TNameToIndex::const_iterator it = reflection.nameToIndex.find(name.c_str());
-                if (it == reflection.nameToIndex.end()) {
-                    reflection.nameToIndex[name.c_str()] = (int)ioItems.size();
+                TReflection::TNameToIndex::const_iterator it = ioMapper.find(name.c_str());
+                if (it == ioMapper.end()) {
+                    // seperate pipe i/o params from uniforms and blocks
+                    // in is only for input in first stage as out is only for last stage. check traverse in call stack.
+                    ioMapper[name.c_str()] = static_cast<int>(ioItems.size());
                     ioItems.push_back(
                         TObjectReflection(name.c_str(), type, 0, mapToGlType(type), mapToGlArraySize(type), 0));
-
                     EShLanguageMask& stages = ioItems.back().stages;
                     stages = static_cast<EShLanguageMask>(stages | 1 << intermediate.getStage());
                 } else {
@@ -396,7 +403,7 @@ public:
                     topLevelArrayStride = variables.back().arrayStride;
             }
 
-            if ((reflection.options & EShReflectionSeparateBuffers) && terminalType->getBasicType() == EbtAtomicUint)
+            if ((reflection.options & EShReflectionSeparateBuffers) && terminalType->isAtomic())
                 reflection.atomicCounterUniformIndices.push_back(uniformIndex);
 
             variables.back().topLevelArrayStride = topLevelArrayStride;
@@ -554,15 +561,18 @@ public:
                 bool blockParent = (base->getType().getBasicType() == EbtBlock && base->getQualifier().storage == EvqBuffer);
 
                 if (strictArraySuffix && blockParent) {
-                    const TTypeList& typeList = *base->getType().getStruct();
+                    TType structDerefType(base->getType(), 0);
+
+                    const TType &structType = base->getType().isArray() ? structDerefType : base->getType();
+                    const TTypeList& typeList = *structType.getStruct();
 
                     TVector<int> memberOffsets;
 
                     memberOffsets.resize(typeList.size());
-                    getOffsets(base->getType(), memberOffsets);
+                    getOffsets(structType, memberOffsets);
 
                     for (int i = 0; i < (int)typeList.size(); ++i) {
-                        TType derefType(base->getType(), i);
+                        TType derefType(structType, i);
                         TString name = baseName;
                         if (name.size() > 0)
                             name.append(".");
@@ -573,7 +583,7 @@ public:
                         if (derefType.isArray() && derefType.isStruct()) {
                             name.append("[0]");
                             blowUpActiveAggregate(TType(derefType, 0), name, derefs, derefs.end(), memberOffsets[i],
-                                                  blockIndex, 0, getArrayStride(base->getType(), derefType),
+                                                  blockIndex, 0, getArrayStride(structType, derefType),
                                                   base->getQualifier().storage, false);
                         } else {
                             blowUpActiveAggregate(derefType, name, derefs, derefs.end(), memberOffsets[i], blockIndex,
@@ -701,7 +711,6 @@ public:
                 case EsdBuffer:
                     return GL_SAMPLER_BUFFER;
                 }
-#ifdef AMD_EXTENSIONS
             case EbtFloat16:
                 switch ((int)sampler.dim) {
                 case Esd1D:
@@ -730,7 +739,6 @@ public:
                 case EsdBuffer:
                     return GL_FLOAT16_SAMPLER_BUFFER_AMD;
                 }
-#endif
             case EbtInt:
                 switch ((int)sampler.dim) {
                 case Esd1D:
@@ -793,7 +801,6 @@ public:
                 case EsdBuffer:
                     return GL_IMAGE_BUFFER;
                 }
-#ifdef AMD_EXTENSIONS
             case EbtFloat16:
                 switch ((int)sampler.dim) {
                 case Esd1D:
@@ -812,7 +819,6 @@ public:
                 case EsdBuffer:
                     return GL_FLOAT16_IMAGE_BUFFER_AMD;
                 }
-#endif
             case EbtInt:
                 switch ((int)sampler.dim) {
                 case Esd1D:
@@ -878,9 +884,7 @@ public:
             switch (type.getBasicType()) {
             case EbtFloat:      return GL_FLOAT_VEC2                  + offset;
             case EbtDouble:     return GL_DOUBLE_VEC2                 + offset;
-#ifdef AMD_EXTENSIONS
             case EbtFloat16:    return GL_FLOAT16_VEC2_NV             + offset;
-#endif
             case EbtInt:        return GL_INT_VEC2                    + offset;
             case EbtUint:       return GL_UNSIGNED_INT_VEC2           + offset;
             case EbtInt64:      return GL_INT64_ARB                   + offset;
@@ -940,7 +944,6 @@ public:
                     default:   return 0;
                     }
                 }
-#ifdef AMD_EXTENSIONS
             case EbtFloat16:
                 switch (type.getMatrixCols()) {
                 case 2:
@@ -965,7 +968,6 @@ public:
                     default:   return 0;
                     }
                 }
-#endif
             default:
                 return 0;
             }
@@ -974,9 +976,7 @@ public:
             switch (type.getBasicType()) {
             case EbtFloat:      return GL_FLOAT;
             case EbtDouble:     return GL_DOUBLE;
-#ifdef AMD_EXTENSIONS
             case EbtFloat16:    return GL_FLOAT16_NV;
-#endif
             case EbtInt:        return GL_INT;
             case EbtUint:       return GL_UNSIGNED_INT;
             case EbtInt64:      return GL_INT64_ARB;
@@ -1093,6 +1093,7 @@ void TReflection::buildAttributeReflection(EShLanguage stage, const TIntermediat
 // build counter block index associations for buffers
 void TReflection::buildCounterIndices(const TIntermediate& intermediate)
 {
+#ifdef ENABLE_HLSL
     // search for ones that have counters
     for (int i = 0; i < int(indexToUniformBlock.size()); ++i) {
         const TString counterName(intermediate.addCounterBufferName(indexToUniformBlock[i].name).c_str());
@@ -1101,6 +1102,7 @@ void TReflection::buildCounterIndices(const TIntermediate& intermediate)
         if (index >= 0)
             indexToUniformBlock[i].counterIndex = index;
     }
+#endif
 }
 
 // build Shader Stages mask for all uniforms
@@ -1198,3 +1200,5 @@ void TReflection::dump()
 }
 
 } // end namespace glslang
+
+#endif // GLSLANG_WEB

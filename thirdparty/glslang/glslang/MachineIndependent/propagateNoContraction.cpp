@@ -37,6 +37,8 @@
 // propagate the 'noContraction' qualifier.
 //
 
+#ifndef GLSLANG_WEB
+
 #include "propagateNoContraction.h"
 
 #include <cstdlib>
@@ -79,7 +81,7 @@ typedef std::unordered_set<glslang::TIntermBranch*> ReturnBranchNodeSet;
 // the node has 'noContraction' qualifier, otherwise false.
 bool isPreciseObjectNode(glslang::TIntermTyped* node)
 {
-    return node->getType().getQualifier().noContraction;
+    return node->getType().getQualifier().isNoContraction();
 }
 
 // Returns true if the opcode is a dereferencing one.
@@ -864,3 +866,5 @@ void PropagateNoContraction(const glslang::TIntermediate& intermediate)
     }
 }
 };
+
+#endif // GLSLANG_WEB
