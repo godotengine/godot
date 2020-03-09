@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2020, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -315,6 +315,12 @@ typedef std::vector <PerVertexWeight> VertexWeightTable;
 // -------------------------------------------------------------------------------
 // Compute a per-vertex bone weight table
 VertexWeightTable* ComputeVertexBoneWeightTable(const aiMesh* pMesh);
+
+
+// -------------------------------------------------------------------------------
+// Get a string for a given aiTextureType
+const char* TextureTypeToString(aiTextureType in);
+
 
 // -------------------------------------------------------------------------------
 // Get a string for a given aiTextureMapping

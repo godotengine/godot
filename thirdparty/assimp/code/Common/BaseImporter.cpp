@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2020, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 
@@ -191,7 +191,7 @@ void BaseImporter::GetExtensionList(std::set<std::string>& extensions) {
     }
 
     std::unique_ptr<IOStream> pStream (pIOHandler->Open(pFile));
-    if (pStream) {
+    if (pStream.get() ) {
         // read 200 characters from the file
         std::unique_ptr<char[]> _buffer (new char[searchBytes+1 /* for the '\0' */]);
         char *buffer( _buffer.get() );
@@ -283,6 +283,7 @@ std::string BaseImporter::GetExtension( const std::string& file ) {
         return "";
     }
 
+
     // thanks to Andy Maloney for the hint
     std::string ret = file.substr( pos + 1 );
     std::transform( ret.begin(), ret.end(), ret.begin(), ToLower<char>);
@@ -308,7 +309,7 @@ std::string BaseImporter::GetExtension( const std::string& file ) {
     };
     magic = reinterpret_cast<const char*>(_magic);
     std::unique_ptr<IOStream> pStream (pIOHandler->Open(pFile));
-    if (pStream) {
+    if (pStream.get() ) {
 
         // skip to offset
         pStream->Seek(offset,aiOrigin_SET);
@@ -602,7 +603,7 @@ unsigned int BatchLoader::AddLoadRequest(const std::string& file,
     }
 
     // no, we don't have it. So add it to the queue ...
-    m_data->requests.emplace_back(file, steps, map, m_data->next_id);
+    m_data->requests.push_back(LoadRequest(file,steps,map, m_data->next_id));
     return m_data->next_id++;
 }
 

@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2020, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 
@@ -58,7 +58,7 @@ VertexTriangleAdjacency::VertexTriangleAdjacency(aiFace *pcFaces,
 {
     // compute the number of referenced vertices if it wasn't specified by the caller
     const aiFace* const pcFaceEnd = pcFaces + iNumFaces;
-    if (0 == iNumVertices)  {
+    if (!iNumVertices)  {
         for (aiFace* pcFace = pcFaces; pcFace != pcFaceEnd; ++pcFace)   {
             ai_assert( nullptr != pcFace );
             ai_assert(3 == pcFace->mNumIndices);
@@ -68,7 +68,7 @@ VertexTriangleAdjacency::VertexTriangleAdjacency(aiFace *pcFaces,
         }
     }
 
-    mNumVertices = iNumVertices + 1;
+    mNumVertices = iNumVertices;
 
     unsigned int* pi;
 

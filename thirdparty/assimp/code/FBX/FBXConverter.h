@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2020, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -421,8 +421,6 @@ private:
         double& minTime,
         Model::RotOrder order);
 
-    // ------------------------------------------------------------------------------------------------
-    // Copy global geometric data and some information about the source asset into scene metadata.
     void ConvertGlobalSettings();
 
     // ------------------------------------------------------------------------------------------------
