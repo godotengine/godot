@@ -539,7 +539,7 @@ folder.
 ## vulkan
 
 - Upstream: https://github.com/KhronosGroup/Vulkan-Loader
-- Version: 1.1.127
+- Version: sdk-1.2.131.2
 - License: Apache 2.0
 
 Unless there is a specific reason to package a more recent version, please stick
@@ -555,10 +555,11 @@ Files extracted from upstream source:
   `loader/` folder
 - `LICENSE.txt`
 
-`vk_enum_string_helper.h` is taken from the match `Vulkan-ValidationLayers` SDK
-release: https://github.com/KhronosGroup/Vulkan-Loader/tree/master/loader/generated
+`vk_enum_string_helper.h` is taken from the matching `Vulkan-ValidationLayers`
+SDK release: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/layers/generated/vk_enum_string_helper.h
 
 `vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
+Version: 2.3.0
 
 
 ## wslay
