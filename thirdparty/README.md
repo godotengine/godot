@@ -32,7 +32,7 @@ Files extracted from upstream source:
 
 Files extracted from upstream source:
 
-- `.cpp` and `.h` files in root folder
+- `.cpp` and `.h` files in root folder except for `basisu_tool.cpp` (contains `main` and can cause link error)
 - `.cpp`, `.h` and `.inc` files in `transcoder/`, keeping folder structure
 - `LICENSE`
 

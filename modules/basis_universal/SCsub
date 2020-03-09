@@ -22,7 +22,6 @@ tool_sources = [
 	"basisu_resample_filters.cpp",
 	"basisu_resampler.cpp",
 	"basisu_ssim.cpp",
-	"basisu_tool.cpp",
 	"lodepng.cpp",
 ]
 tool_sources = [thirdparty_dir + file for file in tool_sources]
