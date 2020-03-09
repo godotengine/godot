@@ -1,8 +1,8 @@
 /*
  *
- * Copyright (c) 2014-2019 The Khronos Group Inc.
- * Copyright (c) 2014-2019 Valve Corporation
- * Copyright (c) 2014-2019 LunarG, Inc.
+ * Copyright (c) 2014-2020 The Khronos Group Inc.
+ * Copyright (c) 2014-2020 Valve Corporation
+ * Copyright (c) 2014-2020 LunarG, Inc.
  * Copyright (C) 2015 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -126,7 +126,7 @@ LOADER_PLATFORM_THREAD_ONCE_DECLARATION(once_init);
 
 // This loader supports Vulkan API version 1.1
 uint32_t loader_major_version = 1;
-uint32_t loader_minor_version = 1;
+uint32_t loader_minor_version = 2;
 
 void *loader_instance_heap_alloc(const struct loader_instance *instance, size_t size, VkSystemAllocationScope alloc_scope) {
     void *pMemory = NULL;
@@ -252,6 +252,7 @@ static inline char *loader_getenv(const char *name, const struct loader_instance
 }
 
 static inline char *loader_secure_getenv(const char *name, const struct loader_instance *inst) {
+    char *out;
 #if defined(__APPLE__)
     // Apple does not appear to have a secure getenv implementation.
     // The main difference between secure getenv and getenv is that secure getenv
@@ -263,19 +264,21 @@ static inline char *loader_secure_getenv(const char *name, const struct loader_i
     return IsHighIntegrity() ? NULL : loader_getenv(name, inst);
 #else
 // Linux
-#ifdef HAVE_SECURE_GETENV
+#if defined(HAVE_SECURE_GETENV) && !defined(USE_UNSAFE_FILE_SEARCH)
     (void)inst;
-    return secure_getenv(name);
-#elif defined(HAVE___SECURE_GETENV)
+    out = secure_getenv(name);
+#elif defined(HAVE___SECURE_GETENV) && !defined(USE_UNSAFE_FILE_SEARCH)
     (void)inst;
-    return __secure_getenv(name);
+    out = __secure_getenv(name);
 #else
-#pragma message(                                                                       \
-    "Warning:  Falling back to non-secure getenv for environmental lookups!  Consider" \
-    " updating to a different libc.")
-    return loader_getenv(name, inst);
+    out = loader_getenv(name, inst);
 #endif
 #endif
+    if (out == NULL) {
+        loader_log(inst, LOADER_INFO_BIT, 0,
+                   "Loader is running with elevated permissions. Environment variable %s will be ignored.", name);
+    }
+    return out;
 }
 
 static inline void loader_free_getenv(char *val, const struct loader_instance *inst) {
@@ -335,9 +338,13 @@ static inline char *loader_getenv(const char *name, const struct loader_instance
 }
 
 static inline char *loader_secure_getenv(const char *name, const struct loader_instance *inst) {
+#if !defined(USE_UNSAFE_FILE_SEARCH)
     if (IsHighIntegrity()) {
+        loader_log(inst, LOADER_INFO_BIT, 0,
+                   "Loader is running with elevated permissions. Environment variable %s will be ignored.", name);
         return NULL;
     }
+#endif
 
     return loader_getenv(name, inst);
 }
@@ -578,7 +585,7 @@ static bool loaderAddJsonEntry(const struct loader_instance *inst,
 //
 // This function looks for filename in given device handle, filename is then added to return list
 // function return true if filename was appended to reg_data list
-// If error occures result is updated with failure reason
+// If error occurs result is updated with failure reason
 bool loaderGetDeviceRegistryEntry(const struct loader_instance *inst, char **reg_data, PDWORD total_size, DEVINST dev_id,
                                   LPCSTR value_name, VkResult *result) {
     HKEY hkrKey = INVALID_HANDLE_VALUE;
@@ -855,7 +862,6 @@ VkResult loaderGetRegistryFiles(const struct loader_instance *inst, char *locati
     char name[2048];
     char *loc = location;
     char *next;
-    DWORD idx;
     DWORD name_size = sizeof(name);
     DWORD value;
     DWORD value_size = sizeof(value);
@@ -885,9 +891,9 @@ VkResult loaderGetRegistryFiles(const struct loader_instance *inst, char *locati
         access_flags = KEY_QUERY_VALUE;
         rtn_value = RegOpenKeyEx(hive, loc, 0, access_flags, &key);
         if (ERROR_SUCCESS == rtn_value) {
-            idx = 0;
-            while ((rtn_value = RegEnumValue(key, idx++, name, &name_size, NULL, NULL, (LPBYTE)&value, &value_size)) ==
-                   ERROR_SUCCESS) {
+            for (DWORD idx = 0;
+                 (rtn_value = RegEnumValue(key, idx++, name, &name_size, NULL, NULL, (LPBYTE)&value, &value_size)) == ERROR_SUCCESS;
+                 name_size = sizeof(name), value_size = sizeof(value)) {
                 if (value_size == sizeof(value) && value == 0) {
                     if (NULL == *reg_data) {
                         *reg_data = loader_instance_heap_alloc(inst, *reg_data_size, VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE);
@@ -960,7 +966,7 @@ VkResult loaderGetRegistryFiles(const struct loader_instance *inst, char *locati
 
                             if (!found_gpu) {
                                 loader_log(inst, VK_DEBUG_REPORT_INFORMATION_BIT_EXT, 0,
-                                           "Dropping driver %s as no corresponduing DXGI adapter was found", name);
+                                           "Dropping driver %s as no corresponding DXGI adapter was found", name);
                                 continue;
                             }
                         }
@@ -972,7 +978,7 @@ VkResult loaderGetRegistryFiles(const struct loader_instance *inst, char *locati
                         found = true;
                     } else {
                         // At this point the reg_data variable contains other JSON paths, likely from the PNP/device section
-                        // of the registry that we want to have precendence over this non-device specific section of the registry.
+                        // of the registry that we want to have precedence over this non-device specific section of the registry.
                         // To make sure we avoid enumerating old JSON files/drivers that might be present in the non-device specific
                         // area of the registry when a newer device specific JSON file is present, do a check before adding.
                         // Find the file name, without path, of the JSON file found in the non-device specific registry location.
@@ -999,8 +1005,6 @@ VkResult loaderGetRegistryFiles(const struct loader_instance *inst, char *locati
                         }
                     }
                 }
-                name_size = sizeof(name);
-                value_size = sizeof(value);
             }
             RegCloseKey(key);
         }
@@ -2045,7 +2049,7 @@ out:
     return res;
 }
 
-struct loader_icd_term *loader_get_icd_and_device(const VkDevice device, struct loader_device **found_dev, uint32_t *icd_index) {
+struct loader_icd_term *loader_get_icd_and_device(const void *device, struct loader_device **found_dev, uint32_t *icd_index) {
     *found_dev = NULL;
     for (struct loader_instance *inst = loader.instances; inst; inst = inst->next) {
         uint32_t index = 0;
@@ -2423,7 +2427,7 @@ static void loader_debug_init(void) {
 }
 
 void loader_initialize(void) {
-    // initialize mutexs
+    // initialize mutexes
     loader_platform_thread_create_mutex(&loader_lock);
     loader_platform_thread_create_mutex(&loader_json_lock);
 
@@ -2450,7 +2454,7 @@ struct loader_data_files {
 };
 
 void loader_release() {
-    // release mutexs
+    // release mutexes
     loader_platform_thread_delete_mutex(&loader_lock);
     loader_platform_thread_delete_mutex(&loader_json_lock);
 }
@@ -2576,60 +2580,6 @@ out:
     }
 
     return res;
-}
-
-const char *std_validation_str = "VK_LAYER_LUNARG_standard_validation";
-
-// Adds the legacy VK_LAYER_LUNARG_standard_validation as a meta-layer if it
-// fails to find it in the list already.  This is usually an indication that a
-// newer loader is being used with an older layer set.
-static bool loaderAddLegacyStandardValidationLayer(const struct loader_instance *inst,
-                                                   struct loader_layer_list *layer_instance_list) {
-    uint32_t i;
-    bool success = true;
-    struct loader_layer_properties *props = loaderGetNextLayerPropertySlot(inst, layer_instance_list);
-    const char std_validation_names[6][VK_MAX_EXTENSION_NAME_SIZE] = {
-        "VK_LAYER_GOOGLE_threading", "VK_LAYER_LUNARG_parameter_validation", "VK_LAYER_LUNARG_object_tracker",
-        "VK_LAYER_LUNARG_core_validation", "VK_LAYER_GOOGLE_unique_objects"};
-    uint32_t layer_count = sizeof(std_validation_names) / sizeof(std_validation_names[0]);
-
-    loader_log(inst, VK_DEBUG_REPORT_DEBUG_BIT_EXT, 0,
-               "Adding VK_LAYER_LUNARG_standard_validation using the loader legacy path.  This is"
-               " not an error.");
-
-    if (NULL == props) {
-        goto out;
-    }
-
-    memset(props, 0, sizeof(struct loader_layer_properties));
-    props->type_flags = VK_LAYER_TYPE_FLAG_INSTANCE_LAYER | VK_LAYER_TYPE_FLAG_EXPLICIT_LAYER | VK_LAYER_TYPE_FLAG_META_LAYER;
-    strncpy(props->info.description, "LunarG Standard Validation Layer", sizeof(props->info.description));
-    props->info.implementationVersion = 1;
-    strncpy(props->info.layerName, std_validation_str, sizeof(props->info.layerName));
-    props->info.specVersion = VK_MAKE_VERSION(1, 0, VK_HEADER_VERSION);
-
-    props->component_layer_names =
-        loader_instance_heap_alloc(inst, sizeof(char[MAX_STRING_SIZE]) * layer_count, VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE);
-    if (NULL == props->component_layer_names) {
-        loader_log(inst, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
-                   "Failed to allocate space for legacy VK_LAYER_LUNARG_standard_validation"
-                   " meta-layer component_layers information.");
-        success = false;
-        goto out;
-    }
-    for (i = 0; i < layer_count; i++) {
-        strncpy(props->component_layer_names[i], std_validation_names[i], MAX_STRING_SIZE - 1);
-        props->component_layer_names[i][MAX_STRING_SIZE - 1] = '\0';
-    }
-
-out:
-
-    if (!success && NULL != props && NULL != props->component_layer_names) {
-        loader_instance_heap_free(inst, props->component_layer_names);
-        props->component_layer_names = NULL;
-    }
-
-    return success;
 }
 
 // Verify that all component layers in a meta-layer are valid.
@@ -3201,7 +3151,7 @@ static VkResult loaderReadLayerJson(const struct loader_instance *inst, struct l
             if (version.major > 1 || version.minor >= 1) {
                 loader_log(inst, VK_DEBUG_REPORT_INFORMATION_BIT_EXT, 0,
                            "Layer \"%s\" using deprecated \'vkGetInstanceProcAddr\' tag which was deprecated starting with JSON "
-                           "file version 1.1.0. The new vkNegotiateLayerInterfaceVersion function is preferred, though for "
+                           "file version 1.1.0. The new vkNegotiateLoaderLayerInterfaceVersion function is preferred, though for "
                            "compatibility reasons it may be desirable to continue using the deprecated tag.",
                            name);
             }
@@ -3212,7 +3162,7 @@ static VkResult loaderReadLayerJson(const struct loader_instance *inst, struct l
             if (version.major > 1 || version.minor >= 1) {
                 loader_log(inst, VK_DEBUG_REPORT_INFORMATION_BIT_EXT, 0,
                            "Layer \"%s\" using deprecated \'vkGetDeviceProcAddr\' tag which was deprecated starting with JSON "
-                           "file version 1.1.0. The new vkNegotiateLayerInterfaceVersion function is preferred, though for "
+                           "file version 1.1.0. The new vkNegotiateLoaderLayerInterfaceVersion function is preferred, though for "
                            "compatibility reasons it may be desirable to continue using the deprecated tag.",
                            name);
             }
@@ -3949,7 +3899,7 @@ out:
 }
 
 #ifdef _WIN32
-// Read manifest JSON files uing the Windows driver interface
+// Read manifest JSON files using the Windows driver interface
 static VkResult ReadManifestsFromD3DAdapters(const struct loader_instance *inst, char **reg_data, PDWORD reg_data_size,
                                              const wchar_t *value_name) {
     VkResult result = VK_INCOMPLETE;
@@ -3994,7 +3944,7 @@ static VkResult ReadManifestsFromD3DAdapters(const struct loader_instance *inst,
             .value_type = REG_MULTI_SZ,
             .physical_adapter_index = 0,
         };
-        wcsncpy(filename_info.value_name, value_name, sizeof(filename_info.value_name) / sizeof(DWORD));
+        wcsncpy(filename_info.value_name, value_name, sizeof(filename_info.value_name) / sizeof(WCHAR));
         LoaderQueryAdapterInfo query_info = {
             .handle = adapters.adapters[i].handle,
             .type = LOADER_QUERY_TYPE_REGISTRY,
@@ -4603,23 +4553,6 @@ void loaderScanForLayers(struct loader_instance *inst, struct loader_layer_list 
         }
     }
 
-    // See if "VK_LAYER_LUNARG_standard_validation" already in list.
-    bool found_std_val = false;
-    for (uint32_t i = 0; i < instance_layers->count; i++) {
-        struct loader_layer_properties *props = &instance_layers->list[i];
-        if (strcmp(props->info.layerName, std_validation_str) == 0) {
-            found_std_val = true;
-            break;
-        }
-    }
-
-    // If we didn't find the VK_LAYER_LUNARG_standard_validation meta-layer in
-    // the list, then we need to add it manually.  This is likely because we're
-    // dealing with a new loader, but an old layer folder.
-    if (!found_std_val && !loaderAddLegacyStandardValidationLayer(inst, instance_layers)) {
-        goto out;
-    }
-
     // Verify any meta-layers in the list are valid and all the component layers are
     // actually present in the available layer list
     VerifyAllMetaLayers(inst, instance_layers, &override_layer_valid);
@@ -4851,6 +4784,32 @@ static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL loader_gpa_instance_internal(VkI
     }
     if (!strcmp(pName, "vkCreateDevice")) {
         return (PFN_vkVoidFunction)terminator_CreateDevice;
+    }
+
+    // The VK_EXT_debug_utils functions need a special case here so the terminators can still be found from vkGetInstanceProcAddr
+    if (!strcmp(pName, "vkSetDebugUtilsObjectNameEXT")) {
+        return (PFN_vkVoidFunction)terminator_SetDebugUtilsObjectNameEXT;
+    }
+    if (!strcmp(pName, "vkSetDebugUtilsObjectTagEXT")) {
+        return (PFN_vkVoidFunction)terminator_SetDebugUtilsObjectTagEXT;
+    }
+    if (!strcmp(pName, "vkQueueBeginDebugUtilsLabelEXT")) {
+        return (PFN_vkVoidFunction)terminator_QueueBeginDebugUtilsLabelEXT;
+    }
+    if (!strcmp(pName, "vkQueueEndDebugUtilsLabelEXT")) {
+        return (PFN_vkVoidFunction)terminator_QueueEndDebugUtilsLabelEXT;
+    }
+    if (!strcmp(pName, "vkQueueInsertDebugUtilsLabelEXT")) {
+        return (PFN_vkVoidFunction)terminator_QueueInsertDebugUtilsLabelEXT;
+    }
+    if (!strcmp(pName, "vkCmdBeginDebugUtilsLabelEXT")) {
+        return (PFN_vkVoidFunction)terminator_CmdBeginDebugUtilsLabelEXT;
+    }
+    if (!strcmp(pName, "vkCmdEndDebugUtilsLabelEXT")) {
+        return (PFN_vkVoidFunction)terminator_CmdEndDebugUtilsLabelEXT;
+    }
+    if (!strcmp(pName, "vkCmdInsertDebugUtilsLabelEXT")) {
+        return (PFN_vkVoidFunction)terminator_CmdInsertDebugUtilsLabelEXT;
     }
 
     // inst is not wrapped
@@ -5509,8 +5468,6 @@ VKAPI_ATTR VkResult VKAPI_CALL loader_layer_create_device(VkInstance instance, V
     VkPhysicalDevice internal_device = VK_NULL_HANDLE;
     struct loader_device *dev = NULL;
     struct loader_instance *inst = NULL;
-
-    assert(pCreateInfo->queueCreateInfoCount >= 1);
 
     if (instance != NULL) {
         inst = loader_get_instance(instance);
@@ -6187,7 +6144,7 @@ VkResult loader_validate_device_extensions(struct loader_instance *this_instance
 }
 
 // Terminator functions for the Instance chain
-// All named terminator_<Vulakn API name>
+// All named terminator_<Vulkan API name>
 VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateInstance(const VkInstanceCreateInfo *pCreateInfo,
                                                          const VkAllocationCallbacks *pAllocator, VkInstance *pInstance) {
     struct loader_icd_term *icd_term;
@@ -7204,6 +7161,10 @@ VkStringErrorFlags vk_string_validate(const int max_length, const char *utf8) {
     int num_char_bytes = 0;
     int i, j;
 
+    if (utf8 == NULL) {
+        return VK_STRING_ERROR_NULL_PTR;
+    }
+
     for (i = 0; i <= max_length; i++) {
         if (utf8[i] == 0) {
             break;
@@ -7369,7 +7330,7 @@ out:
     return result;
 }
 
-#if defined(_WIN32) && defined(LOADER_DYNAMIC_LIB)
+#if defined(_WIN32)
 BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, LPVOID reserved) {
     switch (reason) {
         case DLL_PROCESS_ATTACH:

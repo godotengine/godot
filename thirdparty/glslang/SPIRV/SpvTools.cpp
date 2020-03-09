@@ -67,6 +67,8 @@ spv_target_env MapToSpirvToolsEnv(const SpvVersion& spvVersion, spv::SpvBuildLog
             logger->missingFunctionality("Target version for SPIRV-Tools validator");
             return spv_target_env::SPV_ENV_VULKAN_1_1;
         }
+    case glslang::EShTargetVulkan_1_2:
+        return spv_target_env::SPV_ENV_VULKAN_1_2;
     default:
         break;
     }
@@ -103,7 +105,7 @@ void SpirvToolsDisassemble(std::ostream& out, const std::vector<unsigned int>& s
 
 // Apply the SPIRV-Tools validator to generated SPIR-V.
 void SpirvToolsValidate(const glslang::TIntermediate& intermediate, std::vector<unsigned int>& spirv,
-                        spv::SpvBuildLogger* logger)
+                        spv::SpvBuildLogger* logger, bool prelegalization)
 {
     // validate
     spv_context context = spvContextCreate(MapToSpirvToolsEnv(intermediate.getSpv(), logger));
@@ -111,6 +113,7 @@ void SpirvToolsValidate(const glslang::TIntermediate& intermediate, std::vector<
     spv_diagnostic diagnostic = nullptr;
     spv_validator_options options = spvValidatorOptionsCreate();
     spvValidatorOptionsSetRelaxBlockLayout(options, intermediate.usingHlslOffsets());
+    spvValidatorOptionsSetBeforeHlslLegalization(options, prelegalization);
     spvValidateWithOptions(context, options, &binary, &diagnostic);
 
     // report
@@ -172,6 +175,7 @@ void SpirvToolsLegalize(const glslang::TIntermediate&, std::vector<unsigned int>
     if (options->generateDebugInfo) {
         optimizer.RegisterPass(spvtools::CreatePropagateLineInfoPass());
     }
+    optimizer.RegisterPass(spvtools::CreateWrapOpKillPass());
     optimizer.RegisterPass(spvtools::CreateDeadBranchElimPass());
     optimizer.RegisterPass(spvtools::CreateMergeReturnPass());
     optimizer.RegisterPass(spvtools::CreateInlineExhaustivePass());
@@ -195,8 +199,6 @@ void SpirvToolsLegalize(const glslang::TIntermediate&, std::vector<unsigned int>
     optimizer.RegisterPass(spvtools::CreateDeadInsertElimPass());
     if (options->optimizeSize) {
         optimizer.RegisterPass(spvtools::CreateRedundancyEliminationPass());
-        // TODO(greg-lunarg): Add this when AMD driver issues are resolved
-        // optimizer.RegisterPass(CreateCommonUniformElimPass());
     }
     optimizer.RegisterPass(spvtools::CreateAggressiveDCEPass());
     optimizer.RegisterPass(spvtools::CreateCFGCleanupPass());

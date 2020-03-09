@@ -135,6 +135,12 @@ LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceExtensionPropert
         }
 
         loader_platform_dl_handle layer_lib = loader_platform_open_library(layers.list[i].lib_name);
+        if (layer_lib == NULL) {
+            loader_log(NULL, VK_DEBUG_REPORT_WARNING_BIT_EXT, 0, "%s: Unable to load implicit layer library \"%s\"", __FUNCTION__,
+                       layers.list[i].lib_name);
+            continue;
+        }
+
         libs[lib_count++] = layer_lib;
         void *pfn = loader_platform_get_proc_address(layer_lib,
                                                      layers.list[i].pre_instance_functions.enumerate_instance_extension_properties);
@@ -223,6 +229,12 @@ LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLayerProperties(
         }
 
         loader_platform_dl_handle layer_lib = loader_platform_open_library(layers.list[i].lib_name);
+        if (layer_lib == NULL) {
+            loader_log(NULL, VK_DEBUG_REPORT_WARNING_BIT_EXT, 0, "%s: Unable to load implicit layer library \"%s\"", __FUNCTION__,
+                       layers.list[i].lib_name);
+            continue;
+        }
+
         libs[lib_count++] = layer_lib;
         void *pfn =
             loader_platform_get_proc_address(layer_lib, layers.list[i].pre_instance_functions.enumerate_instance_layer_properties);
@@ -311,6 +323,12 @@ LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceVersion(uint32_t
         }
 
         loader_platform_dl_handle layer_lib = loader_platform_open_library(layers.list[i].lib_name);
+        if (layer_lib == NULL) {
+            loader_log(NULL, VK_DEBUG_REPORT_WARNING_BIT_EXT, 0, "%s: Unable to load implicit layer library \"%s\"", __FUNCTION__,
+                       layers.list[i].lib_name);
+            continue;
+        }
+
         libs[lib_count++] = layer_lib;
         void *pfn = loader_platform_get_proc_address(layer_lib,
                                                      layers.list[i].pre_instance_functions.enumerate_instance_version);
@@ -2477,4 +2495,99 @@ LOADER_EXPORT VKAPI_ATTR void VKAPI_CALL vkUpdateDescriptorSetWithTemplate(VkDev
                                                                            const void *pData) {
     const VkLayerDispatchTable *disp = loader_get_dispatch(device);
     disp->UpdateDescriptorSetWithTemplate(device, descriptorSet, descriptorUpdateTemplate, pData);
+}
+
+// ---- Vulkan core 1.2 trampolines
+
+LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkCreateRenderPass2(VkDevice device, const VkRenderPassCreateInfo2* pCreateInfo,
+                                                                 const VkAllocationCallbacks* pAllocator, VkRenderPass* pRenderPass)
+{
+    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
+    return disp->CreateRenderPass2(device, pCreateInfo, pAllocator, pRenderPass);
+}
+
+LOADER_EXPORT VKAPI_ATTR void VKAPI_CALL vkCmdBeginRenderPass2(VkCommandBuffer commandBuffer,
+                                                               const VkRenderPassBeginInfo* pRenderPassBegin,
+                                                               const VkSubpassBeginInfo* pSubpassBeginInfo)
+{
+    const VkLayerDispatchTable *disp = loader_get_dispatch(commandBuffer);
+    disp->CmdBeginRenderPass2(commandBuffer, pRenderPassBegin, pSubpassBeginInfo);
+}
+
+LOADER_EXPORT VKAPI_ATTR void VKAPI_CALL vkCmdNextSubpass2(VkCommandBuffer commandBuffer,
+                                                           const VkSubpassBeginInfo* pSubpassBeginInfo,
+                                                           const VkSubpassEndInfo* pSubpassEndInfo)
+{
+    const VkLayerDispatchTable *disp = loader_get_dispatch(commandBuffer);
+    disp->CmdNextSubpass2(commandBuffer, pSubpassBeginInfo, pSubpassEndInfo);
+}
+
+LOADER_EXPORT VKAPI_ATTR void VKAPI_CALL vkCmdEndRenderPass2(VkCommandBuffer commandBuffer, const VkSubpassEndInfo* pSubpassEndInfo)
+{
+    const VkLayerDispatchTable *disp = loader_get_dispatch(commandBuffer);
+    disp->CmdEndRenderPass2(commandBuffer, pSubpassEndInfo);
+}
+
+LOADER_EXPORT VKAPI_ATTR void VKAPI_CALL vkCmdDrawIndirectCount(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset,
+                                                                VkBuffer countBuffer, VkDeviceSize countBufferOffset,
+                                                                uint32_t maxDrawCount, uint32_t stride)
+{
+    const VkLayerDispatchTable *disp = loader_get_dispatch(commandBuffer);
+    disp->CmdDrawIndirectCount(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
+}
+
+LOADER_EXPORT VKAPI_ATTR void VKAPI_CALL vkCmdDrawIndexedIndirectCount(VkCommandBuffer commandBuffer, VkBuffer buffer,
+                                                                       VkDeviceSize offset, VkBuffer countBuffer,
+                                                                       VkDeviceSize countBufferOffset, uint32_t maxDrawCount,
+                                                                       uint32_t stride)
+{
+    const VkLayerDispatchTable *disp = loader_get_dispatch(commandBuffer);
+    disp->CmdDrawIndexedIndirectCount(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
+}
+
+LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkGetSemaphoreCounterValue(VkDevice device, VkSemaphore semaphore, uint64_t* pValue)
+{
+    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
+    return disp->GetSemaphoreCounterValue(device, semaphore, pValue);
+}
+
+LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkWaitSemaphores(VkDevice device, const VkSemaphoreWaitInfo* pWaitInfo,
+                                                              uint64_t timeout)
+{
+    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
+    return disp->WaitSemaphores(device, pWaitInfo, timeout);
+}
+
+LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkSignalSemaphore(VkDevice device, const VkSemaphoreSignalInfo* pSignalInfo)
+{
+    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
+    return disp->SignalSemaphore(device, pSignalInfo);
+}
+
+LOADER_EXPORT VKAPI_ATTR VkDeviceAddress VKAPI_CALL vkGetBufferDeviceAddress(VkDevice device,
+                                                                             const VkBufferDeviceAddressInfo* pInfo)
+{
+    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
+    return disp->GetBufferDeviceAddress(device, pInfo);
+}
+
+LOADER_EXPORT VKAPI_ATTR uint64_t VKAPI_CALL vkGetBufferOpaqueCaptureAddress(VkDevice device,
+                                                                             const VkBufferDeviceAddressInfo* pInfo)
+{
+    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
+    return disp->GetBufferOpaqueCaptureAddress(device, pInfo);
+}
+
+LOADER_EXPORT VKAPI_ATTR uint64_t VKAPI_CALL vkGetDeviceMemoryOpaqueCaptureAddress(VkDevice device,
+    const VkDeviceMemoryOpaqueCaptureAddressInfo* pInfo)
+{
+    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
+    return disp->GetDeviceMemoryOpaqueCaptureAddress(device, pInfo);
+}
+
+LOADER_EXPORT VKAPI_ATTR void VKAPI_CALL vkResetQueryPool(VkDevice device, VkQueryPool queryPool, uint32_t firstQuery,
+                                                          uint32_t queryCount)
+{
+    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
+    disp->ResetQueryPool(device, queryPool, firstQuery, queryCount);
 }

@@ -75,4 +75,7 @@ const char* const E_SPV_NV_shading_rate = "SPV_NV_shading_rate";
 //SPV_NV_cooperative_matrix
 const char* const E_SPV_NV_cooperative_matrix = "SPV_NV_cooperative_matrix";
 
+//SPV_NV_shader_sm_builtins
+const char* const E_SPV_NV_shader_sm_builtins = "SPV_NV_shader_sm_builtins";
+
 #endif  // #ifndef GLSLextNV_H
