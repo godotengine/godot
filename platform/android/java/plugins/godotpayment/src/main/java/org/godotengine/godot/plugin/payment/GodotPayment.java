@@ -55,7 +55,6 @@ public class GodotPayment extends GodotPlugin implements GodotPaymentInterface {
 
 	public GodotPayment(Godot godot) {
 		super(godot);
-		onGLRegisterPluginWithGodotNative();
 		mPaymentManager = godot.getPaymentsManager();
 		mPaymentManager.setBaseSingleton(this);
 	}
