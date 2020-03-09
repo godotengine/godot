@@ -3476,6 +3476,14 @@ void GDScriptParser::_parse_extends(ClassNode *p_class) {
 
 			case GDScriptTokenizer::TK_IDENTIFIER: {
 
+				completion_type = COMPLETION_EXTENDS;
+				completion_class = current_class;
+				completion_function = current_function;
+				completion_line = tokenizer->get_token_line();
+				completion_block = current_block;
+				completion_ident_is_call = false;
+				completion_found = true;
+
 				StringName identifier = tokenizer->get_token_identifier();
 				p_class->extends_class.push_back(identifier);
 			} break;
@@ -5228,6 +5236,16 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 			} break;
 
 			default: {
+
+				if (token == GDScriptTokenizer::TK_IDENTIFIER) {
+					completion_type = COMPLETION_IDENTIFIER;
+					completion_class = current_class;
+					completion_function = current_function;
+					completion_line = tokenizer->get_token_line();
+					completion_block = current_block;
+					completion_ident_is_call = false;
+					completion_found = true;
+				}
 
 				_set_error(String() + "Unexpected token: " + tokenizer->get_token_name(tokenizer->get_token()) + ":" + tokenizer->get_token_identifier());
 				return;
