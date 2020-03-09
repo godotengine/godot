@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2020, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 
@@ -52,35 +52,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace Assimp;
 
-namespace
-{
-    template<size_t sizeOfPointer>
-    size_t select_ftell(FILE* file)
-    {
-        return ::ftell(file);
-    }
-
-    template<size_t sizeOfPointer>
-    int select_fseek(FILE* file, int64_t offset, int origin)
-    {
-        return ::fseek(file, static_cast<long>(offset), origin);
-    }
-
-#if defined _WIN32 && (!defined __GNUC__ || __MSVCRT_VERSION__ >= 0x0601)
-    template<>
-    size_t select_ftell<8>(FILE* file)
-    {
-        return ::_ftelli64(file);
-    }
-
-    template<>
-    int select_fseek<8>(FILE* file, int64_t offset, int origin)
-    {
-        return ::_fseeki64(file, offset, origin);
-    }
-#endif
-}
-
 // ----------------------------------------------------------------------------------
 DefaultIOStream::~DefaultIOStream()
 {
@@ -122,7 +93,7 @@ aiReturn DefaultIOStream::Seek(size_t pOffset,
         aiOrigin_END == SEEK_END && aiOrigin_SET == SEEK_SET");
 
     // do the seek
-    return (0 == select_fseek<sizeof(void*)>(mFile, (int64_t)pOffset,(int)pOrigin) ? AI_SUCCESS : AI_FAILURE);
+    return (0 == ::fseek(mFile, (long)pOffset,(int)pOrigin) ? AI_SUCCESS : AI_FAILURE);
 }
 
 // ----------------------------------------------------------------------------------
@@ -131,7 +102,7 @@ size_t DefaultIOStream::Tell() const
     if (!mFile) {
         return 0;
     }
-    return select_ftell<sizeof(void*)>(mFile);
+    return ::ftell(mFile);
 }
 
 // ----------------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2020, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -92,8 +92,9 @@ void TextureTransformStep::PreProcessUVTransform(STransformVecInfo& info)
      *  are applied is - as always - scaling, rotation, translation.
      */
 
-	int rounded;
-	char szTemp[512];
+    char szTemp[512];
+    int rounded = 0;
+
 
     /* Optimize the rotation angle. That's slightly difficult as
      * we have an inprecise floating-point number (when comparing
@@ -184,6 +185,7 @@ void TextureTransformStep::PreProcessUVTransform(STransformVecInfo& info)
             info.mTranslation.y = out;
         }
     }
+    return;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -426,7 +428,7 @@ void TextureTransformStep::Execute( aiScene* pScene)
         // at the end of the list
         bool ref[AI_MAX_NUMBER_OF_TEXTURECOORDS];
         for (unsigned int n = 0; n < AI_MAX_NUMBER_OF_TEXTURECOORDS;++n)
-            ref[n] = !mesh->mTextureCoords[n];
+            ref[n] = (!mesh->mTextureCoords[n] ? true : false);
 
         for (it = trafo.begin();it != trafo.end(); ++it)
             ref[(*it).uvIndex] = true;

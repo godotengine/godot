@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2020, assimp team
+Copyright (c) 2006-2019, assimp team
 
 All rights reserved.
 
@@ -325,9 +325,9 @@ void FBX::Node::BeginBinary(Assimp::StreamWriterLE &s)
     this->start_pos = s.Tell();
 
     // placeholders for end pos and property section info
-    s.PutU8(0); // end pos
-    s.PutU8(0); // number of properties
-    s.PutU8(0); // total property section length
+    s.PutU4(0); // end pos
+    s.PutU4(0); // number of properties
+    s.PutU4(0); // total property section length
 
     // node name
     s.PutU1(uint8_t(name.size())); // length of node name
@@ -352,9 +352,9 @@ void FBX::Node::EndPropertiesBinary(
     size_t pos = s.Tell();
     ai_assert(pos > property_start);
     size_t property_section_size = pos - property_start;
-    s.Seek(start_pos + 8); // 8 bytes of uint64_t of end_pos
-    s.PutU8(num_properties);
-    s.PutU8(property_section_size);
+    s.Seek(start_pos + 4);
+    s.PutU4(uint32_t(num_properties));
+    s.PutU4(uint32_t(property_section_size));
     s.Seek(pos);
 }
 
@@ -375,7 +375,7 @@ void FBX::Node::EndBinary(
     // now go back and write initial pos
     this->end_pos = s.Tell();
     s.Seek(start_pos);
-    s.PutU8(end_pos);
+    s.PutU4(uint32_t(end_pos));
     s.Seek(end_pos);
 }
 

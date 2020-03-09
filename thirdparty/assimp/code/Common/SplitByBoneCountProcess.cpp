@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2020, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -51,7 +51,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <limits>
 #include <assimp/TinyFormatter.h>
-#include <assimp/Exceptional.h>
 
 using namespace Assimp;
 using namespace Assimp::Formatter;
@@ -95,10 +94,7 @@ void SplitByBoneCountProcess::Execute( aiScene* pScene)
     bool isNecessary = false;
     for( unsigned int a = 0; a < pScene->mNumMeshes; ++a)
         if( pScene->mMeshes[a]->mNumBones > mMaxBoneCount )
-        {
             isNecessary = true;
-            break;
-        }
 
     if( !isNecessary )
     {
@@ -159,9 +155,7 @@ void SplitByBoneCountProcess::SplitMesh( const aiMesh* pMesh, std::vector<aiMesh
 {
     // skip if not necessary
     if( pMesh->mNumBones <= mMaxBoneCount )
-    {
         return;
-    }
 
     // necessary optimisation: build a list of all affecting bones for each vertex
     // TODO: (thom) maybe add a custom allocator here to avoid allocating tens of thousands of small arrays
@@ -171,9 +165,7 @@ void SplitByBoneCountProcess::SplitMesh( const aiMesh* pMesh, std::vector<aiMesh
     {
         const aiBone* bone = pMesh->mBones[a];
         for( unsigned int b = 0; b < bone->mNumWeights; ++b)
-        {
             vertexBones[ bone->mWeights[b].mVertexId ].push_back( BoneWeight( a, bone->mWeights[b].mWeight));
-        }
     }
 
     unsigned int numFacesHandled = 0;
@@ -197,9 +189,7 @@ void SplitByBoneCountProcess::SplitMesh( const aiMesh* pMesh, std::vector<aiMesh
         {
             // skip if the face is already stored in a submesh
             if( isFaceHandled[a] )
-            {
                 continue;
-            }
 
             const aiFace& face = pMesh->mFaces[a];
             // check every vertex if its bones would still fit into the current submesh
@@ -211,27 +201,17 @@ void SplitByBoneCountProcess::SplitMesh( const aiMesh* pMesh, std::vector<aiMesh
                     unsigned int boneIndex = vb[c].first;
                     // if the bone is already used in this submesh, it's ok
                     if( isBoneUsed[boneIndex] )
-                    {
                         continue;
-                    }
 
                     // if it's not used, yet, we would need to add it. Store its bone index
                     if( std::find( newBonesAtCurrentFace.begin(), newBonesAtCurrentFace.end(), boneIndex) == newBonesAtCurrentFace.end() )
-                    {
                         newBonesAtCurrentFace.push_back( boneIndex);
-                    }
                 }
             }
 
-            if (newBonesAtCurrentFace.size() > mMaxBoneCount)
-            {
-                throw DeadlyImportError("SplitByBoneCountProcess: Single face requires more bones than specified max bone count!");
-            }
             // leave out the face if the new bones required for this face don't fit the bone count limit anymore
             if( numBones + newBonesAtCurrentFace.size() > mMaxBoneCount )
-            {
                 continue;
-            }
 
             // mark all new bones as necessary
             while( !newBonesAtCurrentFace.empty() )
@@ -239,9 +219,7 @@ void SplitByBoneCountProcess::SplitMesh( const aiMesh* pMesh, std::vector<aiMesh
                 unsigned int newIndex = newBonesAtCurrentFace.back();
                 newBonesAtCurrentFace.pop_back(); // this also avoids the deallocation which comes with a clear()
                 if( isBoneUsed[newIndex] )
-                {
                     continue;
-                }
 
                 isBoneUsed[newIndex] = true;
                 numBones++;
@@ -259,9 +237,7 @@ void SplitByBoneCountProcess::SplitMesh( const aiMesh* pMesh, std::vector<aiMesh
         // create a new mesh to hold this subset of the source mesh
         aiMesh* newMesh = new aiMesh;
         if( pMesh->mName.length > 0 )
-        {
             newMesh->mName.Set( format() << pMesh->mName.data << "_sub" << poNewMeshes.size());
-        }
         newMesh->mMaterialIndex = pMesh->mMaterialIndex;
         newMesh->mPrimitiveTypes = pMesh->mPrimitiveTypes;
         poNewMeshes.push_back( newMesh);
@@ -271,9 +247,7 @@ void SplitByBoneCountProcess::SplitMesh( const aiMesh* pMesh, std::vector<aiMesh
         newMesh->mNumFaces = static_cast<unsigned int>(subMeshFaces.size());
         newMesh->mVertices = new aiVector3D[newMesh->mNumVertices];
         if( pMesh->HasNormals() )
-        {
             newMesh->mNormals = new aiVector3D[newMesh->mNumVertices];
-        }
         if( pMesh->HasTangentsAndBitangents() )
         {
             newMesh->mTangents = new aiVector3D[newMesh->mNumVertices];
@@ -282,17 +256,13 @@ void SplitByBoneCountProcess::SplitMesh( const aiMesh* pMesh, std::vector<aiMesh
         for( unsigned int a = 0; a < AI_MAX_NUMBER_OF_TEXTURECOORDS; ++a )
         {
             if( pMesh->HasTextureCoords( a) )
-            {
                 newMesh->mTextureCoords[a] = new aiVector3D[newMesh->mNumVertices];
-            }
             newMesh->mNumUVComponents[a] = pMesh->mNumUVComponents[a];
         }
         for( unsigned int a = 0; a < AI_MAX_NUMBER_OF_COLOR_SETS; ++a )
         {
             if( pMesh->HasVertexColors( a) )
-            {
                 newMesh->mColors[a] = new aiColor4D[newMesh->mNumVertices];
-            }
         }
 
         // and copy over the data, generating faces with linear indices along the way
@@ -315,9 +285,7 @@ void SplitByBoneCountProcess::SplitMesh( const aiMesh* pMesh, std::vector<aiMesh
 
                 newMesh->mVertices[nvi] = pMesh->mVertices[srcIndex];
                 if( pMesh->HasNormals() )
-                {
                     newMesh->mNormals[nvi] = pMesh->mNormals[srcIndex];
-                }
                 if( pMesh->HasTangentsAndBitangents() )
                 {
                     newMesh->mTangents[nvi] = pMesh->mTangents[srcIndex];
@@ -326,16 +294,12 @@ void SplitByBoneCountProcess::SplitMesh( const aiMesh* pMesh, std::vector<aiMesh
                 for( unsigned int c = 0; c < AI_MAX_NUMBER_OF_TEXTURECOORDS; ++c )
                 {
                     if( pMesh->HasTextureCoords( c) )
-                    {
                         newMesh->mTextureCoords[c][nvi] = pMesh->mTextureCoords[c][srcIndex];
-                    }
                 }
                 for( unsigned int c = 0; c < AI_MAX_NUMBER_OF_COLOR_SETS; ++c )
                 {
                     if( pMesh->HasVertexColors( c) )
-                    {
                         newMesh->mColors[c][nvi] = pMesh->mColors[c][srcIndex];
-                    }
                 }
 
                 nvi++;
@@ -352,9 +316,7 @@ void SplitByBoneCountProcess::SplitMesh( const aiMesh* pMesh, std::vector<aiMesh
         for( unsigned int a = 0; a < pMesh->mNumBones; ++a )
         {
             if( !isBoneUsed[a] )
-            {
                 continue;
-            }
 
             // create the new bone
             const aiBone* srcBone = pMesh->mBones[a];
@@ -378,9 +340,7 @@ void SplitByBoneCountProcess::SplitMesh( const aiMesh* pMesh, std::vector<aiMesh
             {
                 unsigned int newBoneIndex = mappedBoneIndex[ bonesOnThisVertex[b].first ];
                 if( newBoneIndex != std::numeric_limits<unsigned int>::max() )
-                {
                     newMesh->mBones[newBoneIndex]->mNumWeights++;
-                }
             }
         }
 

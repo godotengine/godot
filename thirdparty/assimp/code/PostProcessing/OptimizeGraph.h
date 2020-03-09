@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2020, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -75,13 +75,13 @@ public:
     ~OptimizeGraphProcess();
 
     // -------------------------------------------------------------------
-    bool IsActive( unsigned int pFlags) const override;
+    bool IsActive( unsigned int pFlags) const;
 
     // -------------------------------------------------------------------
-    void Execute( aiScene* pScene) override;
+    void Execute( aiScene* pScene);
 
     // -------------------------------------------------------------------
-    void SetupProperties(const Importer* pImp) override;
+    void SetupProperties(const Importer* pImp);
 
     // -------------------------------------------------------------------
     /** @brief Add a list of node names to be locked and not modified.
