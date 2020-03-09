@@ -12,12 +12,14 @@
 # Mahdi <sadisticwarlock@gmail.com>, 2018.
 # hpn33 <hamed.hpn332@gmail.com>, 2019.
 # Focus <saeeddashticlash@gmail.com>, 2019.
+# anonymous <noreply@weblate.org>, 2020.
+# mohamad por <mohamad24xx@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-09-26 11:50+0000\n"
-"Last-Translator: Focus <saeeddashticlash@gmail.com>\n"
+"PO-Revision-Date: 2020-03-08 22:33+0000\n"
+"Last-Translator: mohamad por <mohamad24xx@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
@@ -25,7 +27,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.9-dev\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -37,14 +39,14 @@ msgstr ""
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr ""
+msgstr "یک رشته (string) در اندازه 1 (کاراکتر) انتظار می رود."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr ""
-"تعداد بایت های مورد نظر برای رمزگشایی بایت ها کافی نیست ،‌ و یا فرمت نامعتبر "
+"تعداد بایت های مورد نظر برای رمزگشایی بایت ها کافی نیست،‌ و یا فرمت نامعتبر "
 "است ."
 
 #: core/math/expression.cpp
@@ -127,24 +129,23 @@ msgstr "ارزش:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
-msgstr "کلید را وارد کن"
+msgstr "کلید را اینجا وارد کن"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Duplicate Selected Key(s)"
-msgstr "کلید تکراری درست کن"
+msgstr "کلیدهای انتخاب شده تکراری درست کن"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
-msgstr "کلید‌ها را پاک کن"
+msgstr "کلید‌های انخاب شده را پاک کن"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
-msgstr "Bezier Point را اضافه کنید"
+msgstr "Bezier Point را اضافه کن"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Move Bezier Points"
-msgstr "برداشتن نقطه"
+msgstr "Bezier Points را جابجا کن"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -292,7 +293,7 @@ msgstr "زمان(s): "
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
-msgstr "Toggle Track Enabled"
+msgstr "ضامن ترک فعال است"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -337,8 +338,9 @@ msgid "Insert Key"
 msgstr "درج کلید"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Duplicate Key(s)"
-msgstr "کپی کردن (Duplicate ) کلید(key)"
+msgstr "نسخه همانند (Duplicate ) کلید(key)"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
@@ -434,16 +436,15 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
-msgstr ""
+msgstr "بدون ریشه اضافه کردن مسیر امکان پذیر نیست"
 
 #: editor/animation_track_editor.cpp
 msgid "Invalid track for Bezier (no suitable sub-properties)"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Bezier Track"
-msgstr "ترک را اضافه کن"
+msgstr "ترک Bezier را اضافه کن"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
@@ -1542,6 +1543,10 @@ msgstr ""
 msgid "Singleton"
 msgstr ""
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr ""
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr ""
@@ -1849,7 +1854,7 @@ msgstr "باز شدن مدیر پروژه؟"
 msgid "New Folder..."
 msgstr "ساختن پوشه..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr ""
@@ -4102,10 +4107,6 @@ msgid "Copy Params"
 msgstr ""
 
 #: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr ""
-
-#: editor/inspector_dock.cpp
 #, fuzzy
 msgid "Edit Resource Clipboard"
 msgstr "منبع"
@@ -6104,7 +6105,7 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Single Convex Collision Siblings"
+msgid "Create Single Convex Collision Sibling"
 msgstr "انتخاب شده را تغییر مقیاس بده"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -12628,6 +12629,11 @@ msgstr ""
 msgid ""
 "Plane shapes don't work well and will be removed in future versions. Please "
 "don't use them."
+msgstr ""
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
 msgstr ""
 
 #: scene/3d/cpu_particles.cpp

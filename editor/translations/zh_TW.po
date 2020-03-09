@@ -19,12 +19,13 @@
 # Kenneth Lo <closer.tw@gmail.com>, 2019.
 # SIYU FU <1002492607@qq.com>, 2019.
 # 鄭惟中 <biglionlion06@gmail.com>, 2020.
+# Alexander Wang <zxcvb22217@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-30 03:56+0000\n"
-"Last-Translator: 鄭惟中 <biglionlion06@gmail.com>\n"
+"PO-Revision-Date: 2020-03-01 19:57+0000\n"
+"Last-Translator: Alexander Wang <zxcvb22217@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -32,7 +33,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1568,6 +1569,10 @@ msgstr "名稱"
 msgid "Singleton"
 msgstr "單例"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "貼上參數"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "更新場景"
@@ -1885,7 +1890,7 @@ msgstr "在檔案管理員內顯示"
 msgid "New Folder..."
 msgstr "新增資料夾..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "重新整理"
@@ -4186,10 +4191,6 @@ msgid "Copy Params"
 msgstr "複製參數"
 
 #: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "貼上參數"
-
-#: editor/inspector_dock.cpp
 #, fuzzy
 msgid "Edit Resource Clipboard"
 msgstr "資源路徑"
@@ -6214,7 +6215,7 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Single Convex Collision Siblings"
+msgid "Create Single Convex Collision Sibling"
 msgstr "創建碰撞多邊形"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -10178,15 +10179,15 @@ msgstr "專案"
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
-msgstr ""
+msgstr "最後修改時間"
 
 #: editor/project_manager.cpp
 msgid "Scan"
-msgstr ""
+msgstr "掃描"
 
 #: editor/project_manager.cpp
 msgid "Select a Folder to Scan"
-msgstr ""
+msgstr "選擇一個資料夾來掃描"
 
 #: editor/project_manager.cpp
 msgid "New Project"
@@ -10199,7 +10200,7 @@ msgstr "刪除點"
 
 #: editor/project_manager.cpp
 msgid "Templates"
-msgstr ""
+msgstr "模板"
 
 #: editor/project_manager.cpp
 msgid "Restart Now"
@@ -12699,6 +12700,11 @@ msgstr "CollisionShape2D必須被賦予形狀才能運作，請為它建立個�
 msgid ""
 "Plane shapes don't work well and will be removed in future versions. Please "
 "don't use them."
+msgstr ""
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
 msgstr ""
 
 #: scene/3d/cpu_particles.cpp

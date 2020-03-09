@@ -29,7 +29,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-02-16 15:21+0000\n"
+"PO-Revision-Date: 2020-03-08 22:33+0000\n"
 "Last-Translator: Sofyan Sugianto <sofyanartem@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
@@ -38,7 +38,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -708,9 +708,8 @@ msgid "Line Number:"
 msgstr "Nomor Baris:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "%d replaced."
-msgstr "Gantikan..."
+msgstr "%d telah diganti."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -1508,6 +1507,10 @@ msgstr "Nama"
 msgid "Singleton"
 msgstr "Singleton"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Tempel Parameter"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "Memperbarui Skena"
@@ -1794,7 +1797,7 @@ msgstr "Tampilkan di Manajer Berkas"
 msgid "New Folder..."
 msgstr "Buat Direktori..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Segarkan"
@@ -3973,9 +3976,8 @@ msgid "Saving..."
 msgstr "Menyimpan..."
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "%d Files"
-msgstr " Berkas"
+msgstr "%d Berkas"
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
@@ -4032,10 +4034,6 @@ msgstr "Simpan Sebagai..."
 #: editor/inspector_dock.cpp
 msgid "Copy Params"
 msgstr "Salin Parameter"
-
-#: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "Tempel Parameter"
 
 #: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
@@ -5852,9 +5850,8 @@ msgid "Mesh is empty!"
 msgstr "Mesh kosong!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create a Trimesh collision shape."
-msgstr "Buat Trimesh Collision Sibling"
+msgstr "Tidak dapat membuat bentuk collision Trimesh."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
@@ -5886,14 +5883,13 @@ msgid "Can't create multiple convex collision shapes for the scene root."
 msgstr "Tidak dapat membuat beberapa convex collision shape untuk skena root."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create any collision shapes."
-msgstr "Tidak dapat membuat folder."
+msgstr "Tidak dapat membuat bentuk collision."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
 msgid "Create Multiple Convex Shapes"
-msgstr "Buat Bentuk Cembung"
+msgstr "Buat Beberapa Bentuk Cembung"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
@@ -5969,8 +5965,8 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Single Convex Collision Siblings"
-msgstr "Buat Convex Collision Sibling"
+msgid "Create Single Convex Collision Sibling"
+msgstr "Buat Saudara Tunggal Convex Collision"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
@@ -5982,9 +5978,8 @@ msgstr ""
 "deteksi collision."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Multiple Convex Collision Siblings"
-msgstr "Buat Convex Collision Sibling"
+msgstr "Buat Beberapa Saudara Convex Collision"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
@@ -6005,6 +6000,10 @@ msgid ""
 "This can be used instead of the SpatialMaterial Grow property when using "
 "that property isn't possible."
 msgstr ""
+"Buat outline mesh statis. Outline mesh akan memiliki garis normal yang akan "
+"dibalik otomatis.\n"
+"Ini dapat digunakan sebagai pengganti properti Grow dari SpatialMaterial "
+"ketika tidak dapat menggunakan properti itu."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -9594,32 +9593,29 @@ msgid "Export With Debug"
 msgstr "Ekspor dengan Awakutu"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "The path specified doesn't exist."
-msgstr "Lokasi ini tidak ada."
+msgstr "Lokasi yang ditentukan tidak ada."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Error opening package file (it's not in ZIP format)."
-msgstr "Gagal saat membuka paket, tidak dalam bentuk zip."
+msgstr "Galat saat membuka berkas paket (tidak dalam format ZIP)."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
-msgstr "Berkas proyek '.zip' tidak valid, tidak berisi berkas 'project.godot'."
+msgstr ""
+"Berkas proyek \".zip\" tidak valid; tidak terdapat berkas \"project.godot\" "
+"di dalamnya."
 
 #: editor/project_manager.cpp
 msgid "Please choose an empty folder."
 msgstr "Silakan pilih direktori kosong."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "Silakan pilih berkas 'project.godot' atau '.zip'."
+msgstr "Silakan pilih berkas \"project.godot\" atau \".zip\"."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "This directory already contains a Godot project."
 msgstr "Direktori ini sudah berisi proyek Godot."
 
@@ -10317,9 +10313,8 @@ msgid "Suffix"
 msgstr "Akhiran"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Use Regular Expressions"
-msgstr "Ekspresi Reguler"
+msgstr "Gunakan Ekspresi Reguler"
 
 #: editor/rename_dialog.cpp
 msgid "Advanced Options"
@@ -10358,7 +10353,6 @@ msgstr ""
 "Bandingkan opsi penghitung."
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Per-level Counter"
 msgstr "Penghitung per Level"
 
@@ -10399,14 +10393,12 @@ msgid "Keep"
 msgstr "Pertahankan"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "PascalCase to snake_case"
-msgstr "CamelCase ke under_score"
+msgstr "PascalCase ke snake_case"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "snake_case to PascalCase"
-msgstr "under_score ke CamelCase"
+msgstr "snake_case ke PascalCase"
 
 #: editor/rename_dialog.cpp
 msgid "Case"
@@ -10425,14 +10417,12 @@ msgid "Reset"
 msgstr "Reset"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Regular Expression Error"
-msgstr "Ekspresi Reguler"
+msgstr "Kesalahan Ekspresi Reguler"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "At character %s"
-msgstr "Karakter sah:"
+msgstr "Pada karakter %s"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10616,6 +10606,8 @@ msgstr "Tidak dapat bekerja pada node dari skena luar!"
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes the current scene inherits from!"
 msgstr ""
+"Tidak dapat mengoperasikan perintah ini pada node skena saat ini yang "
+"mewarisi skena lain!"
 
 #: editor/scene_tree_dock.cpp
 msgid "Attach Script"
@@ -10898,9 +10890,8 @@ msgid "Invalid inherited parent name or path."
 msgstr "Nama atau lokasi parent yang diwariskan tidak valid."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Script path/name is valid."
-msgstr "Skrip valid."
+msgstr "Lokasi/nama skrip valid."
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
@@ -10991,9 +10982,8 @@ msgid "Copy Error"
 msgstr "Salin Galat"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Video RAM"
-msgstr "Memori Video"
+msgstr "RAM Video"
 
 #: editor/script_editor_debugger.cpp
 msgid "Skip Breakpoints"
@@ -11308,8 +11298,9 @@ msgid "GridMap Paste Selection"
 msgstr "Rekat(Paste) Seleksi GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "GridMap Paint"
-msgstr ""
+msgstr "Cat GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
@@ -11655,6 +11646,9 @@ msgid ""
 "Can't drop properties because script '%s' is not used in this scene.\n"
 "Drop holding 'Shift' to just copy the signature."
 msgstr ""
+"Tidak dapat drop properti karena skrip '%s' sedang tidak digunakan dalam "
+"skena ini.\n"
+"Drop dengan menekan 'Shift' untuk hanya menyalin tanda tangan (signature)."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
@@ -11726,11 +11720,11 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select at least one node with sequence port."
-msgstr ""
+msgstr "Pilih setidaknya satu node dengan port urutan."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Try to only have one sequence input in selection."
-msgstr ""
+msgstr "Usahakan hanya memiliki satu input urutan dalam pemilihan."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Create Function"
@@ -11758,7 +11752,7 @@ msgstr "Mengedit Sinyal:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Make Tool:"
-msgstr ""
+msgstr "Buat Alat:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Members:"
@@ -11798,7 +11792,7 @@ msgstr "Salin Node"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Cut Nodes"
-msgstr ""
+msgstr "Potong Node"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Make Function"
@@ -11875,15 +11869,15 @@ msgstr "Cari VisualScript"
 
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Get %s"
-msgstr ""
+msgstr "Dapatkan %s"
 
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Set %s"
-msgstr ""
+msgstr "Setel %s"
 
 #: platform/android/export/export.cpp
 msgid "Package name is missing."
-msgstr ""
+msgstr "Nama paket tidak ada."
 
 #: platform/android/export/export.cpp
 msgid "Package segments must be of non-zero length."
@@ -12359,6 +12353,11 @@ msgstr ""
 msgid ""
 "Plane shapes don't work well and will be removed in future versions. Please "
 "don't use them."
+msgstr ""
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
 msgstr ""
 
 #: scene/3d/cpu_particles.cpp

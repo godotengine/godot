@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-02-16 15:21+0000\n"
+"PO-Revision-Date: 2020-02-21 23:33+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -23,7 +23,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 3.11.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1489,6 +1489,10 @@ msgstr "Nimi"
 msgid "Singleton"
 msgstr "Singleton"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Liitä parametrit"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "Päivitetään skeneä"
@@ -1777,7 +1781,7 @@ msgstr "Näytä tiedostonhallinnassa"
 msgid "New Folder..."
 msgstr "Uusi kansio..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Päivitä"
@@ -3948,9 +3952,8 @@ msgid "Saving..."
 msgstr "Tallennetaan..."
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "%d Files"
-msgstr " Tiedostot"
+msgstr "%d tiedostoa"
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
@@ -4009,10 +4012,6 @@ msgstr "Tallenna nimellä..."
 #: editor/inspector_dock.cpp
 msgid "Copy Params"
 msgstr "Kopioi parametrit"
-
-#: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "Liitä parametrit"
 
 #: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
@@ -5946,7 +5945,8 @@ msgstr ""
 "Tämä on tarkin (mutta hitain) vaihtoehto törmäystunnistukselle."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Single Convex Collision Siblings"
+#, fuzzy
+msgid "Create Single Convex Collision Sibling"
 msgstr "Luo yksittäisen konveksin törmäysmuodon sisaret"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -12357,6 +12357,11 @@ msgid ""
 msgstr ""
 "Tasomuodot eivät toimi hyvin ja ne tullaan poistaamaan tulevissa versioissa. "
 "Ole hyvä ja älä käytä niitä."
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
+msgstr ""
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."

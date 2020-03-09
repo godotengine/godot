@@ -1557,6 +1557,10 @@ msgstr "ชื่อ"
 msgid "Singleton"
 msgstr "ซิงเกิลตัน"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "วางตัวแปร"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "อัพเดทฉาก"
@@ -1869,7 +1873,7 @@ msgstr "แสดงในตัวจัดการไฟล์"
 msgid "New Folder..."
 msgstr "สร้างโฟลเดอร์..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "รีเฟรช"
@@ -4142,10 +4146,6 @@ msgid "Copy Params"
 msgstr "คัดลอกตัวแปร"
 
 #: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "วางตัวแปร"
-
-#: editor/inspector_dock.cpp
 #, fuzzy
 msgid "Edit Resource Clipboard"
 msgstr "คลิปบอร์ดไม่มีรีซอร์ส!"
@@ -6187,7 +6187,7 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Single Convex Collision Siblings"
+msgid "Create Single Convex Collision Sibling"
 msgstr "สร้างรูปทรงตันกายภาพเป็นโหนดญาติ"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -12759,6 +12759,11 @@ msgstr "ต้องมีรูปทรงเพื่อให้ CollisionSh
 msgid ""
 "Plane shapes don't work well and will be removed in future versions. Please "
 "don't use them."
+msgstr ""
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
 msgstr ""
 
 #: scene/3d/cpu_particles.cpp

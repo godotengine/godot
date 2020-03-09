@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-02-02 08:51+0000\n"
+"PO-Revision-Date: 2020-03-08 22:32+0000\n"
 "Last-Translator: George Tsiamasiotis <gtsiam@windowslive.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -693,9 +693,8 @@ msgid "Line Number:"
 msgstr "Αρ. γραμμής:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "%d replaced."
-msgstr "Αντικατάσταση..."
+msgstr "%d αντικαταστάθηκαν."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -1497,6 +1496,10 @@ msgstr "Όνομα"
 msgid "Singleton"
 msgstr "Μονοσύνολο"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Επικόλληση παραμέτρων"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "Ενημέρωση σκηνής"
@@ -1783,7 +1786,7 @@ msgstr "Εμφάνιση στη διαχείριση αρχείων"
 msgid "New Folder..."
 msgstr "Νέος φάκελος..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Αναναίωση"
@@ -4045,10 +4048,6 @@ msgid "Copy Params"
 msgstr "Αντιγραφή παραμέτρων"
 
 #: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "Επικόλληση παραμέτρων"
-
-#: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
 msgstr "Επεξεργασία προχείρου πόρων"
 
@@ -5879,9 +5878,8 @@ msgid "Mesh is empty!"
 msgstr "Το πλέγμα είναι άδειο!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create a Trimesh collision shape."
-msgstr "Δημιουργία αδελφού σύγκρουσης πλέγατος τριγώνων"
+msgstr "Αδυναμία δημιουργίας σχήματος σύγκρουσης τριγώνων."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
@@ -5898,29 +5896,30 @@ msgstr "Δημιουργία Στατικού Σχήματος Πλέγματο�
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create a single convex collision shape for the scene root."
 msgstr ""
+"Αδυναμια δημιουργίας μοναδικού κυρτού σχήματος σύγκρουσης για την ρίζα "
+"σκηνής."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Couldn't create a single convex collision shape."
-msgstr ""
+msgstr "Αδυναμία δημιουργίας μοναδικού κυρτού σχήματος σύγκρουσης."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Shape"
-msgstr "Δημιουργία Κυρτών Σχημάτων"
+msgstr "Δημιουργία Μοναδικού Κυρτού Σχήματος"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create multiple convex collision shapes for the scene root."
 msgstr ""
+"Αδυναμία δημιουργίας πολλαπλών κυρτών σχημάτων σύγκρουσης για την ρίζα "
+"σκηνής."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create any collision shapes."
-msgstr "Αδύνατη η δημιουργία φακέλου."
+msgstr "Αδυναμία δημιουργίας σχημάτων σύγκρουσης."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Multiple Convex Shapes"
-msgstr "Δημιουργία Κυρτών Σχημάτων"
+msgstr "Δημιουργία Πολλαπλών Κυρτών Σχημάτων"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
@@ -5976,6 +5975,9 @@ msgid ""
 "automatically.\n"
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
+"Δημιουργεί ένα StaticBody και του αναθέτει αυτόματα ένα σχήμα σύγκρουσης "
+"βασισμένο σε πολύγωνα.\n"
+"Είναι η πιο ακριβής (αλλά αργότερη) επιλογή για εντοπισμό σύγκρουσης."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
@@ -5986,28 +5988,33 @@ msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
+"Δημιουργεί ένα σχήμα σύγκρουσης βασισμένο σε πολύγωνα.\n"
+"Είναι η πιο ακριβής (αλλά αργότερη) επιλογή για εντοπισμό σύγκρουσης."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Single Convex Collision Siblings"
-msgstr "Δημιουργία Κυρτού Αδελφού Σύγκρουσης"
+msgid "Create Single Convex Collision Sibling"
+msgstr "Δημιουργία Μοναδικών Κυρτών Αδελφών Σύγκρουσης"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
 "Creates a single convex collision shape.\n"
 "This is the fastest (but least accurate) option for collision detection."
 msgstr ""
+"Δημιουργεί ένα μοναδικό κυρτό σχήμα σύγκρουσης.\n"
+"Είναι η γρηγορότερη (αλλά πιο ανακριβής) επιλογή για εντοπισμό σύγκρουσης."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Multiple Convex Collision Siblings"
-msgstr "Δημιουργία Κυρτού Αδελφού Σύγκρουσης"
+msgstr "Δημιουργία Πολλαπλών Κυρτών Αδελφών Σύγκρουσης"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is a performance middle-ground between the two above options."
 msgstr ""
+"Δημιουργεί ένα σχήμα σύγκρουσης βασισμένο σε πολύγωνα.\n"
+"Είναι μια επιλογή μέσης απόδοσης σχετικά με τις παραπάνω επιλογές."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
@@ -6020,6 +6027,10 @@ msgid ""
 "This can be used instead of the SpatialMaterial Grow property when using "
 "that property isn't possible."
 msgstr ""
+"Δημιουργεί ένα στατικό πλέγμα περιγράμματος με αντίστροφα κανονικά "
+"διανύσματα.\n"
+"Είναι εναλλακτική της ιδιότητας Grow του SpatialMaterial, για όταν η "
+"τελευταία δεν είναι διαθέσιμη."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -9613,34 +9624,29 @@ msgid "Export With Debug"
 msgstr "Εξαγωγή με αποσφαλμάτωση"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "The path specified doesn't exist."
-msgstr "Η διαδρομή δεν υπάρχει."
+msgstr "Η ορισμένη διαδρομή δεν υπάρχει."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Error opening package file (it's not in ZIP format)."
-msgstr "Σφάλμα ανοίγματος αρχείου πακέτου, δεν είναι σε μορφή ZIP."
+msgstr "Σφάλμα ανοίγματος αρχείου πακέτου (δεν είναι σε μορφή ZIP)."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
-msgstr "Άκυρο αρχείο έργου «.zip», δεν περιέχει αρχείο «project.godot»."
+msgstr "Άκυρο αρχείο έργου «.zip»: Δεν περιέχει αρχείο «project.godot»."
 
 #: editor/project_manager.cpp
 msgid "Please choose an empty folder."
 msgstr "Παρακαλούμε επιλέξτε έναν άδειο φάκελο."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Please choose a \"project.godot\" or \".zip\" file."
 msgstr "Παρακαλούμε επιλέξτε ένα αρχείο «project.godot» ή «.zip»."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "This directory already contains a Godot project."
-msgstr "Ο κατάλογος περιέχει ήδη ένα έργο της Godot."
+msgstr "Ο κατάλογος αυτός περιέχει ήδη ένα έργο της Godot."
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
@@ -10339,9 +10345,8 @@ msgid "Suffix"
 msgstr "Επίθεμα"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Use Regular Expressions"
-msgstr "Κανονικές Εκφράσεις"
+msgstr "Χρήση Κανονικών Εκφράσεων"
 
 #: editor/rename_dialog.cpp
 msgid "Advanced Options"
@@ -10380,7 +10385,6 @@ msgstr ""
 "Σύγκριση επιλογών μετρητή."
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Per-level Counter"
 msgstr "Μετρητής Ανά Επίπεδο"
 
@@ -10421,14 +10425,12 @@ msgid "Keep"
 msgstr "Διατήρηση"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "PascalCase to snake_case"
-msgstr "CamelCase σε under_scored"
+msgstr "PascalCase σε snake_case"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "snake_case to PascalCase"
-msgstr "under_scored σε CamelCase"
+msgstr "snake_case σε PascalCase"
 
 #: editor/rename_dialog.cpp
 msgid "Case"
@@ -10447,14 +10449,12 @@ msgid "Reset"
 msgstr "Επαναφορά"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Regular Expression Error"
-msgstr "Κανονικές Εκφράσεις"
+msgstr "Σφάλμα Κανονικής Εκφράσεως"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "At character %s"
-msgstr "Έγκυροι χαρακτήρες:"
+msgstr "Στον χαρακτήρα %s"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10925,9 +10925,8 @@ msgid "Invalid inherited parent name or path."
 msgstr "Άκυρο όνομα κληρονομημένου γονέα ή διαδρομή."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Script path/name is valid."
-msgstr "Έγκυρη δέσμη ενεργειών."
+msgstr "Άκυρη διαδρομή/όνομα δέσμης ενεργειών."
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
@@ -11018,9 +11017,8 @@ msgid "Copy Error"
 msgstr "Αντιγραφή σφάλματος"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Video RAM"
-msgstr "Βίντεο μνήμη"
+msgstr "Βίντεο RAM"
 
 #: editor/script_editor_debugger.cpp
 msgid "Skip Breakpoints"
@@ -12443,6 +12441,11 @@ msgid ""
 msgstr ""
 "Τα επίπεδα σχήματα δεν λειτουργούν καλά και θα αφαιρεθούν σε μελλοντικές "
 "εκδόσεις. Παρακαλώ μην τα χρησιμοποιήσετε."
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
+msgstr ""
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
