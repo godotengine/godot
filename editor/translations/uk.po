@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-02-16 15:20+0000\n"
+"PO-Revision-Date: 2020-02-21 23:32+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 3.11.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1503,6 +1503,10 @@ msgstr "Назва"
 msgid "Singleton"
 msgstr "Одинак (шаблон проєктування)"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Вставити параметри"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "Оновлення сцени"
@@ -1790,7 +1794,7 @@ msgstr "Показати у менеджері файлів"
 msgid "New Folder..."
 msgstr "Створити теку..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Оновити"
@@ -3973,9 +3977,8 @@ msgid "Saving..."
 msgstr "Збереження..."
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "%d Files"
-msgstr " Файли"
+msgstr "%d файлів"
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
@@ -4032,10 +4035,6 @@ msgstr "Зберегти як..."
 #: editor/inspector_dock.cpp
 msgid "Copy Params"
 msgstr "Копіювати параметри"
-
-#: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "Вставити параметри"
 
 #: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
@@ -5975,7 +5974,8 @@ msgstr ""
 "Цей найточніший (але найповільніший) варіант для виявлення зіткнень."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Single Convex Collision Siblings"
+#, fuzzy
+msgid "Create Single Convex Collision Sibling"
 msgstr "Створити єдині опуклі області зіткнення"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -12410,6 +12410,11 @@ msgid ""
 msgstr ""
 "Форми площин не працюють як слід, їх буде вилучено у наступних версіях. Будь "
 "ласка, не використовуйте їх."
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
+msgstr ""
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."

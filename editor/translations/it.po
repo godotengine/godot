@@ -48,8 +48,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-02-18 15:09+0000\n"
-"Last-Translator: Douglas Fiedler <dognew@gmail.com>\n"
+"PO-Revision-Date: 2020-02-27 07:01+0000\n"
+"Last-Translator: Micila Micillotto <micillotto@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -57,7 +57,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.11\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1529,6 +1529,10 @@ msgstr "Nome"
 msgid "Singleton"
 msgstr "Singleton"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Incolla Parametri"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "Aggiornamento scena"
@@ -1816,7 +1820,7 @@ msgstr "Mostra nel gestore file"
 msgid "New Folder..."
 msgstr "Nuova cartella..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Aggiorna"
@@ -4075,10 +4079,6 @@ msgid "Copy Params"
 msgstr "Copia parametri"
 
 #: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "Incolla Parametri"
-
-#: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
 msgstr "Modifica Appunti Risorse"
 
@@ -5924,29 +5924,30 @@ msgstr "Crea Forma Statica Trimesh"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create a single convex collision shape for the scene root."
 msgstr ""
+"Impossibile creare una singola forma di collisione convessa per la radice "
+"della scena."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Couldn't create a single convex collision shape."
-msgstr ""
+msgstr "Impossibile creare una singola forma di collisione convessa."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Shape"
-msgstr "Crea una o più forme Convesse"
+msgstr "Crea Singola Forma di Collisione Convessa"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create multiple convex collision shapes for the scene root."
 msgstr ""
+"Impossibile creare più forme di collisione convesse per la radice della "
+"scena."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create any collision shapes."
-msgstr "Impossibile creare la cartella."
+msgstr "Impossibile creare alcuna forma di collisione."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Multiple Convex Shapes"
-msgstr "Crea una o più forme Convesse"
+msgstr "Crea Multiple Forme Covesse"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
@@ -6003,6 +6004,10 @@ msgid ""
 "automatically.\n"
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
+"Crea una StaticBody e le assegna automaticamente una forma di collisione "
+"basata sui poligoni.\n"
+"Questa é l'opzione piú accurata (anche se piú lenta) per il calcolo delle "
+"collisioni."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
@@ -6013,28 +6018,36 @@ msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
+"Crea una forma di collisione basata sui poligoni.\n"
+"Questa é l'opzione piú accurata (anche se piú lenta) per il calcolo delle "
+"collisioni."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Single Convex Collision Siblings"
-msgstr "Crea Fratello(i) di Collisione Convessa"
+msgid "Create Single Convex Collision Sibling"
+msgstr "Crea Singolo Fratello di Collisione Convessa"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
 "Creates a single convex collision shape.\n"
 "This is the fastest (but least accurate) option for collision detection."
 msgstr ""
+"Crea una singola forma di collisione convessa.\n"
+"Questa é l'opzione piú veloce (anche se meno accurata) per il calcolo delle "
+"collisioni."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Multiple Convex Collision Siblings"
-msgstr "Crea Fratello(i) di Collisione Convessa"
+msgstr "Crea Multipli Fratelli di Collsione Convessa"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is a performance middle-ground between the two above options."
 msgstr ""
+"Crea una forma di collisione basata sui poligoni.\n"
+"Questa opzione é, in termini di perfomance, un compromesso tra le due "
+"opzioni prima di questa."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
@@ -6047,6 +6060,10 @@ msgid ""
 "This can be used instead of the SpatialMaterial Grow property when using "
 "that property isn't possible."
 msgstr ""
+"Crea intorno una mesh statica. Questa mesh avrà le suoe normali invertite "
+"automaticamente.\n"
+"Questo puó essere usato come sostitutivo per la proprietà Grow (ingrandisci) "
+"delle SpatialMaterial quando questa non é disponibile."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -9636,35 +9653,31 @@ msgid "Export With Debug"
 msgstr "Esporta Con Debug"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "The path specified doesn't exist."
-msgstr "Percorso non esistente."
+msgstr "Il percorso specificato non é esistente."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Error opening package file (it's not in ZIP format)."
-msgstr "Errore nell'apertura del file package: non è in formato ZIP."
+msgstr "Errore nell'apertura del file package (non è in formato ZIP)."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr ""
-"File di progetto '.zip' non valido, non contiene un file 'project.godot'."
+"File progetto '.zip' non valido; non contiene un file denominato 'project."
+"godot'."
 
 #: editor/project_manager.cpp
 msgid "Please choose an empty folder."
 msgstr "Si prega di scegliere una cartella vuota."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "Si prega di scegliere un file 'project.godot' o '.zip'."
+msgstr "Perfavore, scegli un file 'project.godot' o '.zip'."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "This directory already contains a Godot project."
-msgstr "La Cartella contiene già un progetto di Godot."
+msgstr "Questa cartella contiene già un progetto Godot."
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
@@ -10363,9 +10376,8 @@ msgid "Suffix"
 msgstr "Suffisso"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Use Regular Expressions"
-msgstr "Espressioni Regolari"
+msgstr "Usa Espressioni Regolari"
 
 #: editor/rename_dialog.cpp
 msgid "Advanced Options"
@@ -10404,7 +10416,6 @@ msgstr ""
 "Confronta le opzioni del contatore."
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Per-level Counter"
 msgstr "Contatore per Livello"
 
@@ -10445,14 +10456,12 @@ msgid "Keep"
 msgstr "Mantieni"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "PascalCase to snake_case"
-msgstr "CamelCase a under_score"
+msgstr "PascalCase a snake_case"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "snake_case to PascalCase"
-msgstr "under_score a CamelCase"
+msgstr "snake_case a PascalCase"
 
 #: editor/rename_dialog.cpp
 msgid "Case"
@@ -10471,14 +10480,12 @@ msgid "Reset"
 msgstr "Reset"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Regular Expression Error"
-msgstr "Espressioni Regolari"
+msgstr "Errore Espressione Regolare"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "At character %s"
-msgstr "Caratteri validi:"
+msgstr "Al carattere %s"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10944,9 +10951,8 @@ msgid "Invalid inherited parent name or path."
 msgstr "Nome o percorso genitore ereditato non valido."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Script path/name is valid."
-msgstr "Lo script è valido."
+msgstr "Il nome e la path dello script sono validi."
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
@@ -11037,9 +11043,8 @@ msgid "Copy Error"
 msgstr "Errore di Copia"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Video RAM"
-msgstr "Mem Video"
+msgstr "RAM Video"
 
 #: editor/script_editor_debugger.cpp
 msgid "Skip Breakpoints"
@@ -12467,6 +12472,11 @@ msgid ""
 msgstr ""
 "Le forme planari non funzionano bene e verranno rimosse nelle versioni "
 "future. Per favore, non usarle."
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
+msgstr ""
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."

@@ -1501,6 +1501,10 @@ msgstr "Tên"
 msgid "Singleton"
 msgstr "Singleton"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Dán các đối số"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "Cập nhật Cảnh"
@@ -1782,7 +1786,7 @@ msgstr "Xem trong trình quản lý tệp"
 msgid "New Folder..."
 msgstr "Thư mục mới ..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Làm mới"
@@ -4004,10 +4008,6 @@ msgid "Copy Params"
 msgstr "Sao chép các đối số"
 
 #: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "Dán các đối số"
-
-#: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
 msgstr "Chỉnh sửa Tài nguyên trên Clipboard"
 
@@ -5956,7 +5956,7 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Single Convex Collision Siblings"
+msgid "Create Single Convex Collision Sibling"
 msgstr "Tạo"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -12269,6 +12269,11 @@ msgstr ""
 msgid ""
 "Plane shapes don't work well and will be removed in future versions. Please "
 "don't use them."
+msgstr ""
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
 msgstr ""
 
 #: scene/3d/cpu_particles.cpp

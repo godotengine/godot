@@ -18,8 +18,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-02-18 15:09+0000\n"
-"Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
+"PO-Revision-Date: 2020-02-27 07:01+0000\n"
+"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.11\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1502,6 +1502,10 @@ msgstr "Nombre"
 msgid "Singleton"
 msgstr "Singleton"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Pegar Parámetros"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "Actualizando Escena"
@@ -1791,7 +1795,7 @@ msgstr "Mostrar en Explorador de Archivos"
 msgid "New Folder..."
 msgstr "Nueva Carpeta..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Refrescar"
@@ -4049,10 +4053,6 @@ msgid "Copy Params"
 msgstr "Copiar Parámetros"
 
 #: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "Pegar Parámetros"
-
-#: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
 msgstr "Editar Portapapeles de Recursos"
 
@@ -5879,7 +5879,7 @@ msgstr "¡El Mesh está vacío!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Couldn't create a Trimesh collision shape."
-msgstr "No se pudo crear una forma de colisión Trimersh."
+msgstr "No se pudo crear una forma de colisión Trimesh."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
@@ -5904,7 +5904,7 @@ msgstr "No se pudo crear una forma de colisión única."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Single Convex Shape"
-msgstr "Crear Forma Convexa Unica"
+msgstr "Crear Forma Convexa Única"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create multiple convex collision shapes for the scene root."
@@ -5991,7 +5991,8 @@ msgstr ""
 "Esta es la opción mas exacta (pero más lenta) de detección de colisiones."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Single Convex Collision Siblings"
+#, fuzzy
+msgid "Create Single Convex Collision Sibling"
 msgstr "Crear Colisión Convexa Unica como Nodo Hermano"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -10445,7 +10446,7 @@ msgstr "Error de Expresión Regular"
 
 #: editor/rename_dialog.cpp
 msgid "At character %s"
-msgstr "En el caracter %s"
+msgstr "En el carácter %s"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10914,7 +10915,7 @@ msgstr "Ruta o nombre del padre heredado inválido."
 
 #: editor/script_create_dialog.cpp
 msgid "Script path/name is valid."
-msgstr "La ruta/nombre del script es inválida."
+msgstr "La ruta/nombre del script es correcta."
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
@@ -12429,6 +12430,11 @@ msgid ""
 msgstr ""
 "Las formas tipo plano no funcionan bien y serán removidas en versiones "
 "futuras. Evitá usarlas."
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
+msgstr ""
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."

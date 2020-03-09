@@ -1497,6 +1497,10 @@ msgstr "Nom"
 msgid "Singleton"
 msgstr "Singleton"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Enganxa els  Paràmetres"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "Actualitzant l'Escena"
@@ -1784,7 +1788,7 @@ msgstr "Mostrar en el Gestor de Fitxers"
 msgid "New Folder..."
 msgstr "Nou Directori..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Refresca"
@@ -4060,10 +4064,6 @@ msgid "Copy Params"
 msgstr "Copia els Paràmetres"
 
 #: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "Enganxa els  Paràmetres"
-
-#: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
 msgstr "Edita el Porta-retalls de Recursos"
 
@@ -6062,7 +6062,7 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Single Convex Collision Siblings"
+msgid "Create Single Convex Collision Sibling"
 msgstr "Crea col·lisions convexes entre nodes germans"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -12762,6 +12762,11 @@ msgid ""
 msgstr ""
 "Les formes de tipus pla no funcionen bé i se suprimiran en futures versions. "
 "Si us plau, no els utilitzeu."
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
+msgstr ""
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."

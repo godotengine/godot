@@ -64,8 +64,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2020-02-16 15:21+0000\n"
-"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
+"PO-Revision-Date: 2020-03-08 22:33+0000\n"
+"Last-Translator: Revan Ji <jiruifancr@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -73,7 +73,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1526,6 +1526,10 @@ msgstr "名称"
 msgid "Singleton"
 msgstr "单例"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "粘贴参数"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "更新场景"
@@ -1804,7 +1808,7 @@ msgstr "在文件管理器中显示"
 msgid "New Folder..."
 msgstr "新建文件夹..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "刷新"
@@ -3929,9 +3933,8 @@ msgid "Saving..."
 msgstr "保存中..."
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "%d Files"
-msgstr " 文件"
+msgstr "%d个文件"
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
@@ -3986,10 +3989,6 @@ msgstr "另存为..."
 #: editor/inspector_dock.cpp
 msgid "Copy Params"
 msgstr "复制参数"
-
-#: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "粘贴参数"
 
 #: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
@@ -4527,7 +4526,7 @@ msgstr "未来"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Depth"
-msgstr "深度"
+msgstr "Depth(深度)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "1 step"
@@ -5898,7 +5897,8 @@ msgstr ""
 "这是最准确（但是最慢）的碰撞检测手段。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Single Convex Collision Siblings"
+#, fuzzy
+msgid "Create Single Convex Collision Sibling"
 msgstr "创建单一凸碰撞同级"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -12148,6 +12148,11 @@ msgid ""
 "Plane shapes don't work well and will be removed in future versions. Please "
 "don't use them."
 msgstr "平面形状无法正常工作，未来版本将被删除。请勿使用。"
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
+msgstr ""
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."

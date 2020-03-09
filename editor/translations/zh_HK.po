@@ -1583,6 +1583,11 @@ msgstr "名稱"
 msgid "Singleton"
 msgstr ""
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+#, fuzzy
+msgid "Paste Params"
+msgstr "貼上參數"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "更新場景"
@@ -1891,7 +1896,7 @@ msgstr "開啟 Project Manager?"
 msgid "New Folder..."
 msgstr "新增資料夾"
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "重新整理"
@@ -4214,11 +4219,6 @@ msgstr "複製參數"
 
 #: editor/inspector_dock.cpp
 #, fuzzy
-msgid "Paste Params"
-msgstr "貼上參數"
-
-#: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Edit Resource Clipboard"
 msgstr "錯誤：剪貼簿沒有動畫！"
 
@@ -6231,7 +6231,7 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Single Convex Collision Siblings"
+msgid "Create Single Convex Collision Sibling"
 msgstr "縮放selection"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -12696,6 +12696,11 @@ msgstr ""
 msgid ""
 "Plane shapes don't work well and will be removed in future versions. Please "
 "don't use them."
+msgstr ""
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
 msgstr ""
 
 #: scene/3d/cpu_particles.cpp

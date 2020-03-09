@@ -35,7 +35,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-02-16 15:20+0000\n"
+"PO-Revision-Date: 2020-03-05 08:33+0000\n"
 "Last-Translator: Akihiro Ogoshi <technical@palsystem-game.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -44,7 +44,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1513,6 +1513,10 @@ msgstr "名前"
 msgid "Singleton"
 msgstr "シングルトン"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "パラメーターを貼り付け"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "シーンを更新"
@@ -1800,7 +1804,7 @@ msgstr "ファイルマネージャーで表示"
 msgid "New Folder..."
 msgstr "新規フォルダ..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "再読込"
@@ -2098,7 +2102,7 @@ msgstr "プロパティ:"
 
 #: editor/editor_inspector.cpp
 msgid "Set"
-msgstr "設定"
+msgstr "Set"
 
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
@@ -3975,9 +3979,8 @@ msgid "Saving..."
 msgstr "保存中..."
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "%d Files"
-msgstr " ファイル"
+msgstr "%d ファイル"
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
@@ -4034,10 +4037,6 @@ msgstr "名前を付けて保存..."
 #: editor/inspector_dock.cpp
 msgid "Copy Params"
 msgstr "パラメーターをコピー"
-
-#: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "パラメーターを貼り付け"
 
 #: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
@@ -5966,7 +5965,8 @@ msgstr ""
 "これは、衝突検出の最も正確な(ただし最も遅い)オプションです。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Single Convex Collision Siblings"
+#, fuzzy
+msgid "Create Single Convex Collision Sibling"
 msgstr "単一の凸型コリジョンの兄弟を作成"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -8520,19 +8520,19 @@ msgstr "出力を追加"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Scalar"
-msgstr "スカラー(Scaler)"
+msgstr "Scalar"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector"
-msgstr "ベクトル(Vector)"
+msgstr "Vector"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean"
-msgstr "ブール(Boolean)"
+msgstr "Boolean"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Sampler"
-msgstr "サンプラー(Sampler)"
+msgstr "Sampler"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add input port"
@@ -10907,7 +10907,7 @@ msgstr "組み込みスクリプト:"
 
 #: editor/script_create_dialog.cpp
 msgid "Attach Node Script"
-msgstr "ノードスクリプトを添付する"
+msgstr "ノードにスクリプトをアタッチする"
 
 #: editor/script_editor_debugger.cpp
 msgid "Remote "
@@ -11498,7 +11498,7 @@ msgstr "変数の型を設定"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Input Port"
-msgstr "入力ポートの追加"
+msgstr "入力ポートを追加"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Output Port"
@@ -12367,6 +12367,11 @@ msgid ""
 msgstr ""
 "平面シェイプはうまく機能せず、将来のバージョンでは削除される予定です。使わな"
 "いでください。"
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
+msgstr ""
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."

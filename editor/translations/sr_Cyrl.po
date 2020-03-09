@@ -1562,6 +1562,10 @@ msgstr "Име"
 msgid "Singleton"
 msgstr "Синглетон"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Налепи параметре"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "Ажурирање сцене"
@@ -1871,7 +1875,7 @@ msgstr "Покажи у менаџеру датотека"
 msgid "New Folder..."
 msgstr "Нови директоријум..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Освежи"
@@ -4213,10 +4217,6 @@ msgid "Copy Params"
 msgstr "Копирај параметре"
 
 #: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "Налепи параметре"
-
-#: editor/inspector_dock.cpp
 #, fuzzy
 msgid "Edit Resource Clipboard"
 msgstr "Нема ресурса за копирање!"
@@ -6265,7 +6265,7 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Single Convex Collision Siblings"
+msgid "Create Single Convex Collision Sibling"
 msgstr "Направи конвексног сударног брата"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -12780,6 +12780,11 @@ msgstr ""
 msgid ""
 "Plane shapes don't work well and will be removed in future versions. Please "
 "don't use them."
+msgstr ""
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
 msgstr ""
 
 #: scene/3d/cpu_particles.cpp

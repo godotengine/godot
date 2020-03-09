@@ -74,7 +74,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-02-18 15:09+0000\n"
+"PO-Revision-Date: 2020-02-27 07:01+0000\n"
 "Last-Translator: Pierre Caye <pierrecaye@laposte.net>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
@@ -83,7 +83,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.11\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1563,6 +1563,10 @@ msgstr "Nom"
 msgid "Singleton"
 msgstr "Singleton"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Coller les paramètres"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "Mise à jour de la scène"
@@ -1850,7 +1854,7 @@ msgstr "Montrer dans le gestionnaire de fichiers"
 msgid "New Folder..."
 msgstr "Nouveau dossier..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Rafraîchir"
@@ -4118,10 +4122,6 @@ msgid "Copy Params"
 msgstr "Copier paramètres"
 
 #: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "Coller les paramètres"
-
-#: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
 msgstr "Modifier le Presse-papiers de la ressource"
 
@@ -6071,8 +6071,8 @@ msgstr ""
 "collisions."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Single Convex Collision Siblings"
-msgstr "Créer une(des) collision(s) convexe(s) unique(s) sœur(s)"
+msgid "Create Single Convex Collision Sibling"
+msgstr "Créer une unique collision convexe sœur"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
@@ -6085,7 +6085,7 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Multiple Convex Collision Siblings"
-msgstr "Créer une(des) collision(s) convexe(s) multiple(s) sœur(s)"
+msgstr "Créer une collision convexe multiple sœur(s)"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
@@ -12538,6 +12538,11 @@ msgid ""
 msgstr ""
 "Les formes planes ne fonctionnent pas bien et seront supprimées dans les "
 "versions futures. S'il vous plaît, ne les utilisez pas."
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
+msgstr ""
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."

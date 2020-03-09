@@ -44,7 +44,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-27 07:09+0000\n"
+"PO-Revision-Date: 2020-03-08 22:33+0000\n"
 "Last-Translator: Stijn Hinlopen <f.a.hinlopen@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
@@ -53,7 +53,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -721,9 +721,8 @@ msgid "Line Number:"
 msgstr "Regelnummer:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "%d replaced."
-msgstr "Vervang..."
+msgstr "%d vervangen."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -1526,6 +1525,10 @@ msgstr "Naam"
 msgid "Singleton"
 msgstr "Singleton"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Plak Parameters"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "Scène aan het bijwerken"
@@ -1812,7 +1815,7 @@ msgstr "Weergeven in Bestandsbeheer"
 msgid "New Folder..."
 msgstr "Nieuwe map..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Verversen"
@@ -2714,7 +2717,7 @@ msgstr "Scène openen..."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Open Recent"
-msgstr "Recente Scenes Openen"
+msgstr "Onlangs geopend"
 
 #: editor/editor_node.cpp
 msgid "Save Scene"
@@ -2938,7 +2941,7 @@ msgstr "Editor-functionaliteiten Beheren..."
 
 #: editor/editor_node.cpp
 msgid "Manage Export Templates..."
-msgstr "Export Sjablonen Beheren..."
+msgstr "Exportsjablonen beheren..."
 
 #: editor/editor_node.cpp editor/plugins/shader_editor_plugin.cpp
 msgid "Help"
@@ -3771,7 +3774,7 @@ msgstr "Volgend(e) map/bestand"
 
 #: editor/filesystem_dock.cpp
 msgid "Re-Scan Filesystem"
-msgstr "Bestandssysteem Opnieuw Scannen"
+msgstr "Bestandssysteem opnieuw inlezen"
 
 #: editor/filesystem_dock.cpp
 msgid "Toggle Split Mode"
@@ -3786,8 +3789,8 @@ msgid ""
 "Scanning Files,\n"
 "Please Wait..."
 msgstr ""
-"Bestanden Scannen,\n"
-"Wacht Alstublieft..."
+"Bestanden aan het doornemen,\n"
+"Wacht alstublieft..."
 
 #: editor/filesystem_dock.cpp
 msgid "Move"
@@ -4057,10 +4060,6 @@ msgstr "Opslaan Als..."
 #: editor/inspector_dock.cpp
 msgid "Copy Params"
 msgstr "Kopieer Parameters"
-
-#: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "Plak Parameters"
 
 #: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
@@ -5069,7 +5068,7 @@ msgstr "Plugins..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Sort:"
-msgstr "Sorteren:"
+msgstr "Sorteren op:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
@@ -5885,9 +5884,8 @@ msgid "Mesh is empty!"
 msgstr "Mesh is leeg!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create a Trimesh collision shape."
-msgstr "Creëer Trimesh Botsing Broer"
+msgstr "Kon geen Trimesh-botsingsvorm maken."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
@@ -5904,29 +5902,29 @@ msgstr "Creëer Trimesh Static Shape"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create a single convex collision shape for the scene root."
 msgstr ""
+"Uit de scènewortel kan geen enkele convexe botsingsvorm gemaakt worden."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Couldn't create a single convex collision shape."
-msgstr ""
+msgstr "Kon geen enkelvoudige convexe botsingsvorm maken."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Shape"
-msgstr "Creëer Convex Shape(s)"
+msgstr "Enkele convexe vorm maken"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create multiple convex collision shapes for the scene root."
 msgstr ""
+"Uit de scènewortel kunnen niet meerdere convexe botsingsvormen gemaakt "
+"worden."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create any collision shapes."
-msgstr "Kon map niet aanmaken."
+msgstr "Kon geen enkele botsingsvormen maken."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Multiple Convex Shapes"
-msgstr "Creëer Convex Shape(s)"
+msgstr "Meerdere convexe vormen maken"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
@@ -5982,6 +5980,9 @@ msgid ""
 "automatically.\n"
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
+"Maakt een StaticBody en wijst automatisch een botsingsvorm toe op basis van "
+"polygonen.\n"
+"Dit is de meest preciese (maar langzaamste) optie voor botsingsberekeningen."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
@@ -5992,28 +5993,33 @@ msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
+"Maakt een polygoon-gebaseerde botsingsvorm.\n"
+"Dit is de meest preciese (maar langzaamste) optie voor botsingsberekeningen."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Single Convex Collision Siblings"
-msgstr "Creëer Convex Collision Sibling(s)"
+msgid "Create Single Convex Collision Sibling"
+msgstr "Een enkele convexe botsingsonderelement aanmaken"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
 "Creates a single convex collision shape.\n"
 "This is the fastest (but least accurate) option for collision detection."
 msgstr ""
+"Maakt een enkele convexe botsingsvorm.\n"
+"Dit is de snelste (maar minst precieze) optie voor botsingsberekeningen."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Multiple Convex Collision Siblings"
-msgstr "Creëer Convex Collision Sibling(s)"
+msgstr "Meerdere convexe botsingsonderelementen aanmaken"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is a performance middle-ground between the two above options."
 msgstr ""
+"Maakt een polygoon-gebaseerde botsingsvorm.\n"
+"Deze optie ligt qua prestaties tussen de twee opties hierboven."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
@@ -6026,6 +6032,10 @@ msgid ""
 "This can be used instead of the SpatialMaterial Grow property when using "
 "that property isn't possible."
 msgstr ""
+"Maakt een statische omlijningsmesh. De normaalvectoren van de omlijningsmesh "
+"worden automatisch omgekeerd.\n"
+"Dit kan gebruikt worden wanneer de Grow eigenschap van SpatialMaterial niet "
+"beschikbaar is."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -6692,7 +6702,7 @@ msgstr "Fout bij importeren"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "New Text File..."
-msgstr "Nieuw Tekst Bestand..."
+msgstr "Nieuw tekstbestand..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open File"
@@ -6757,7 +6767,7 @@ msgstr "Filter scripts"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle alphabetical sorting of the method list."
-msgstr "Schakel het alfabetisch sorteren van de methode lijst in of uit."
+msgstr "Alfabetisch sorteren van de methodelijst omschakelen."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Filter methods"
@@ -6846,7 +6856,7 @@ msgstr "Sluit Docs"
 
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 msgid "Run"
-msgstr "Opstarten"
+msgstr "Uitvoeren"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
@@ -6858,7 +6868,7 @@ msgstr "Stap Over"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Break"
-msgstr "Breek"
+msgstr "Onderbreken"
 
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 #: editor/script_editor_debugger.cpp
@@ -7113,11 +7123,11 @@ msgstr "Ga Naar Regel..."
 #: editor/plugins/script_text_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Toggle Breakpoint"
-msgstr "Breekpunt Aan- of Uitschakelen"
+msgstr "Breekpunt instellen"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Remove All Breakpoints"
-msgstr "Verwijder Alle Breekpunten"
+msgstr "Alle breekpunten verwijderen"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go to Next Breakpoint"
@@ -9619,17 +9629,14 @@ msgid "Export With Debug"
 msgstr "Exporteer Met Debug"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "The path specified doesn't exist."
 msgstr "Dit pad bestaat niet."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Error opening package file (it's not in ZIP format)."
 msgstr "Fout bij het openen van het pakketbestand, geen zip-formaat."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr "Ongeldig '.zip' projectbestand, bevat geen 'project.godot' bestand."
@@ -9639,14 +9646,12 @@ msgid "Please choose an empty folder."
 msgstr "Kies alstublieft een lege map."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "Kies alstublieft een 'project.godot' of '.zip' bestand."
+msgstr "Kies alstublieft een \"project.godot\" of \".zip\" bestand."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "This directory already contains a Godot project."
-msgstr "Map bevat al een Godot project."
+msgstr "In deze map staat al een Godot project."
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
@@ -9895,8 +9900,8 @@ msgid ""
 "Language changed.\n"
 "The interface will update after restarting the editor or project manager."
 msgstr ""
-"Taal veranderd. \n"
-"De gebruikersinterface wordt bij het herstarten van de editor of "
+"De taal is veranderd. \n"
+"De gebruikersomgeving wordt bij het herstarten van de editor of "
 "projectbeheer bijgewerkt."
 
 #: editor/project_manager.cpp
@@ -9921,7 +9926,7 @@ msgstr "Laatst bewerkt"
 
 #: editor/project_manager.cpp
 msgid "Scan"
-msgstr "Scannen"
+msgstr "Inlezen"
 
 #: editor/project_manager.cpp
 msgid "Select a Folder to Scan"
@@ -9937,11 +9942,11 @@ msgstr "Lijst opruimen"
 
 #: editor/project_manager.cpp
 msgid "Templates"
-msgstr "Templates"
+msgstr "Sjablonen"
 
 #: editor/project_manager.cpp
 msgid "Restart Now"
-msgstr "Herstart Nu"
+msgstr "Nu herstarten"
 
 #: editor/project_manager.cpp
 msgid "Can't run project"
@@ -10344,9 +10349,8 @@ msgid "Suffix"
 msgstr "Achtervoegsel"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Use Regular Expressions"
-msgstr "Reguliere Expressie"
+msgstr "Reguliere expressies gebruiken"
 
 #: editor/rename_dialog.cpp
 msgid "Advanced Options"
@@ -10385,9 +10389,8 @@ msgstr ""
 "Vergelijk tellersopties."
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Per-level Counter"
-msgstr "Per Niveau teller"
+msgstr "Per niveau teller"
 
 #: editor/rename_dialog.cpp
 msgid "If set the counter restarts for each group of child nodes"
@@ -10428,14 +10431,12 @@ msgid "Keep"
 msgstr "Houd"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "PascalCase to snake_case"
-msgstr "CamelCase naar under_scored"
+msgstr "PascalCase naar onder_streep"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "snake_case to PascalCase"
-msgstr "under_scored naar CamelCase"
+msgstr "onder_streep naar PascalCase"
 
 #: editor/rename_dialog.cpp
 msgid "Case"
@@ -10454,14 +10455,12 @@ msgid "Reset"
 msgstr "Resetten"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Regular Expression Error"
-msgstr "Reguliere Expressie"
+msgstr "Fout in reguliere expressie"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "At character %s"
-msgstr "Geldige karakters:"
+msgstr "Bij teken %s"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10927,9 +10926,8 @@ msgid "Invalid inherited parent name or path."
 msgstr "Ongeldige overgenomen oudernaam of pad."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Script path/name is valid."
-msgstr "Script is geldig."
+msgstr "Scriptpad/-naam is geldig."
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
@@ -11020,7 +11018,6 @@ msgid "Copy Error"
 msgstr "Kopieer Fout"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Video RAM"
 msgstr "Videogeheugen"
 
@@ -12433,6 +12430,11 @@ msgid ""
 msgstr ""
 "Een vlak als vorm werkt niet goed en zal verwijderd worden in toekomstige "
 "versies. Gebruik wordt afgeraden."
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
+msgstr ""
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."

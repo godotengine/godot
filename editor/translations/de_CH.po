@@ -4,35 +4,38 @@
 # This file is distributed under the same license as the Godot source code.
 # Christian Fisch <christian.fiesel@gmail.com>, 2016.
 # Nils <nfa106008@iet-gibb.ch>, 2020.
+# anonymous <noreply@weblate.org>, 2020.
+# PagDev <pag.develop@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-20 11:39+0000\n"
-"Last-Translator: Nils <nfa106008@iet-gibb.ch>\n"
-"Language-Team: German (Swiss High) <https://hosted.weblate.org/projects/"
+"PO-Revision-Date: 2020-03-08 22:33+0000\n"
+"Last-Translator: PagDev <pag.develop@gmail.com>\n"
+"Language-Team: German (Switzerland) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/de_CH/>\n"
 "Language: de_CH\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
+"Ungültiger Argument-Typ in convert()-Aufruf, TYPE_*-Konstanten benötigt."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr ""
+msgstr "Es wurde eine Zeichenfolge der Länge 1 (a character) erwartet."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr ""
+msgstr "Nicht genügend Bytes zum Decodieren von Bytes oder ungültiges Format."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
@@ -1501,6 +1504,10 @@ msgstr ""
 msgid "Singleton"
 msgstr ""
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr ""
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr ""
@@ -1796,7 +1803,7 @@ msgstr "Datei öffnen"
 msgid "New Folder..."
 msgstr ""
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr ""
@@ -4020,10 +4027,6 @@ msgid "Copy Params"
 msgstr ""
 
 #: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr ""
-
-#: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
 msgstr ""
 
@@ -6015,7 +6018,7 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Single Convex Collision Siblings"
+msgid "Create Single Convex Collision Sibling"
 msgstr "Node erstellen"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -12410,6 +12413,11 @@ msgstr ""
 msgid ""
 "Plane shapes don't work well and will be removed in future versions. Please "
 "don't use them."
+msgstr ""
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
 msgstr ""
 
 #: scene/3d/cpu_particles.cpp

@@ -1444,6 +1444,10 @@ msgstr ""
 msgid "Singleton"
 msgstr ""
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr ""
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr ""
@@ -1720,7 +1724,7 @@ msgstr ""
 msgid "New Folder..."
 msgstr ""
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr ""
@@ -3853,10 +3857,6 @@ msgid "Copy Params"
 msgstr ""
 
 #: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr ""
-
-#: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
 msgstr ""
 
@@ -5737,7 +5737,7 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Single Convex Collision Siblings"
+msgid "Create Single Convex Collision Sibling"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -11821,6 +11821,11 @@ msgstr ""
 msgid ""
 "Plane shapes don't work well and will be removed in future versions. Please "
 "don't use them."
+msgstr ""
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
 msgstr ""
 
 #: scene/3d/cpu_particles.cpp

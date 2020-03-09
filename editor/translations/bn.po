@@ -1583,6 +1583,10 @@ msgstr "নাম"
 msgid "Singleton"
 msgstr "একক-বস্তু/সিঙ্গেলটোন"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "মানসমূহ প্রতিলেপন/পেস্ট করুন"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "দৃশ্য হাল নাগাদ হচ্ছে"
@@ -1899,7 +1903,7 @@ msgstr "ফাইল-ম্যানেজারে দেখুন"
 msgid "New Folder..."
 msgstr "ফোল্ডার তৈরি করুন"
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "রিফ্রেস করুন"
@@ -4323,10 +4327,6 @@ msgid "Copy Params"
 msgstr "মানসমূহ প্রতিলিপি/কপি করুন"
 
 #: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "মানসমূহ প্রতিলেপন/পেস্ট করুন"
-
-#: editor/inspector_dock.cpp
 #, fuzzy
 msgid "Edit Resource Clipboard"
 msgstr "রিসোর্সের ক্লীপবোর্ড খালি!"
@@ -6414,7 +6414,7 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Single Convex Collision Siblings"
+msgid "Create Single Convex Collision Sibling"
 msgstr "কনভেক্স কলিশ়ন সহোদর তৈরি করুন"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -13161,6 +13161,11 @@ msgstr ""
 msgid ""
 "Plane shapes don't work well and will be removed in future versions. Please "
 "don't use them."
+msgstr ""
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
 msgstr ""
 
 #: scene/3d/cpu_particles.cpp

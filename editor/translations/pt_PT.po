@@ -1499,6 +1499,10 @@ msgstr "Nome"
 msgid "Singleton"
 msgstr "Instância única"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Colar Parâmetros"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "A atualizar Cena"
@@ -1785,7 +1789,7 @@ msgstr "Mostrar no Gestor de Ficheiros"
 msgid "New Folder..."
 msgstr "Nova Diretoria..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Atualizar"
@@ -4026,10 +4030,6 @@ msgid "Copy Params"
 msgstr "Copiar Parâmetros"
 
 #: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "Colar Parâmetros"
-
-#: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
 msgstr "Editar Área de Transferência de Recursos"
 
@@ -5958,7 +5958,8 @@ msgstr ""
 "Esta é a mais precisa (mas mais lenta) opção para deteção de colisão."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Single Convex Collision Siblings"
+#, fuzzy
+msgid "Create Single Convex Collision Sibling"
 msgstr "Criar Irmãos Únicos de Colisão Convexa"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -12357,6 +12358,11 @@ msgid ""
 msgstr ""
 "Formas planas não funcionam bem e serão removidas em futuras versões. Não as "
 "use por favor."
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
+msgstr ""
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
