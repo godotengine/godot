@@ -1,8 +1,8 @@
 /*
  *
- * Copyright (c) 2015 The Khronos Group Inc.
- * Copyright (c) 2015 Valve Corporation
- * Copyright (c) 2015 LunarG, Inc.
+ * Copyright (c) 2015-18, 2020 The Khronos Group Inc.
+ * Copyright (c) 2015-18, 2020 Valve Corporation
+ * Copyright (c) 2015-18, 2020 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -189,6 +189,21 @@ static inline void *trampolineGetProcAddr(struct loader_instance *inst, const ch
     if (!strcmp(funcName, "vkUpdateDescriptorSetWithTemplate")) return vkUpdateDescriptorSetWithTemplate;
     if (!strcmp(funcName, "vkGetImageSparseMemoryRequirements2")) return vkGetImageSparseMemoryRequirements2;
     if (!strcmp(funcName, "vkGetBufferMemoryRequirements2")) return vkGetBufferMemoryRequirements2;
+
+    // Core 1.2 functions
+    if (!strcmp(funcName, "vkCreateRenderPass2")) return vkCreateRenderPass2;
+    if (!strcmp(funcName, "vkCmdBeginRenderPass2")) return vkCmdBeginRenderPass2;
+    if (!strcmp(funcName, "vkCmdNextSubpass2")) return vkCmdNextSubpass2;
+    if (!strcmp(funcName, "vkCmdEndRenderPass2")) return vkCmdEndRenderPass2;
+    if (!strcmp(funcName, "vkCmdDrawIndirectCount")) return vkCmdDrawIndirectCount;
+    if (!strcmp(funcName, "vkCmdDrawIndexedIndirectCount")) return vkCmdDrawIndexedIndirectCount;
+    if (!strcmp(funcName, "vkGetSemaphoreCounterValue")) return vkGetSemaphoreCounterValue;
+    if (!strcmp(funcName, "vkWaitSemaphores")) return vkWaitSemaphores;
+    if (!strcmp(funcName, "vkSignalSemaphore")) return vkSignalSemaphore;
+    if (!strcmp(funcName, "vkGetBufferDeviceAddress")) return vkGetBufferDeviceAddress;
+    if (!strcmp(funcName, "vkGetBufferOpaqueCaptureAddress")) return vkGetBufferOpaqueCaptureAddress;
+    if (!strcmp(funcName, "vkGetDeviceMemoryOpaqueCaptureAddress")) return vkGetDeviceMemoryOpaqueCaptureAddress;
+    if (!strcmp(funcName, "vkResetQueryPool")) return vkResetQueryPool;
 
     // Instance extensions
     void *addr;
