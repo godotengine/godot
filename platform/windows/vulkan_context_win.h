@@ -39,7 +39,7 @@ class VulkanContextWindows : public VulkanContext {
 	virtual const char *_get_platform_surface_extension() const;
 
 public:
-	int window_create(HWND p_window, HINSTANCE p_instance, int p_width, int p_height);
+	int window_create(DisplayServer::WindowID p_window_id, HWND p_window, HINSTANCE p_instance, int p_width, int p_height);
 
 	VulkanContextWindows();
 	~VulkanContextWindows();

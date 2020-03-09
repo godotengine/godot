@@ -286,6 +286,7 @@ public:
 	virtual bool request_permissions() { return true; }
 	virtual Vector<String> get_granted_permissions() const { return Vector<String>(); }
 
+	bool is_hidpi_allowed() const { return _allow_hidpi; }
 	virtual void process_and_drop_events() {}
 	OS();
 	virtual ~OS();

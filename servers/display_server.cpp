@@ -34,6 +34,8 @@
 DisplayServer *DisplayServer::singleton = nullptr;
 DisplayServer::SwitchVSyncCallbackInThread DisplayServer::switch_vsync_function = nullptr;
 
+bool DisplayServer::hidpi_allowed = false;
+
 DisplayServer::DisplayServerCreate DisplayServer::server_create_functions[DisplayServer::MAX_SERVERS];
 int DisplayServer::server_create_count = 0;
 
