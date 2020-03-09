@@ -41,6 +41,7 @@ class DisplayServer : public Object {
 
 	static DisplayServer *singleton;
 	bool vsync_enabled = true;
+	static bool hidpi_allowed;
 
 public:
 	_FORCE_INLINE_ static DisplayServer *get_singleton() {
