@@ -31,6 +31,8 @@
 #ifndef VISUAL_SCRIPT_H
 #define VISUAL_SCRIPT_H
 
+#include "core/debugger/engine_debugger.h"
+#include "core/debugger/script_debugger.h"
 #include "core/os/thread.h"
 #include "core/script_language.h"
 
@@ -540,13 +542,13 @@ public:
 		if (Thread::get_main_id() != Thread::get_caller_id())
 			return; //no support for other threads than main for now
 
-		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0)
-			ScriptDebugger::get_singleton()->set_depth(ScriptDebugger::get_singleton()->get_depth() + 1);
+		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0)
+			EngineDebugger::get_script_debugger()->set_depth(EngineDebugger::get_script_debugger()->get_depth() + 1);
 
 		if (_debug_call_stack_pos >= _debug_max_call_stack) {
 			//stack overflow
 			_debug_error = "Stack Overflow (Stack Size: " + itos(_debug_max_call_stack) + ")";
-			ScriptDebugger::get_singleton()->debug(this);
+			EngineDebugger::get_script_debugger()->debug(this);
 			return;
 		}
 
@@ -563,13 +565,13 @@ public:
 		if (Thread::get_main_id() != Thread::get_caller_id())
 			return; //no support for other threads than main for now
 
-		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0)
-			ScriptDebugger::get_singleton()->set_depth(ScriptDebugger::get_singleton()->get_depth() - 1);
+		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0)
+			EngineDebugger::get_script_debugger()->set_depth(EngineDebugger::get_script_debugger()->get_depth() - 1);
 
 		if (_debug_call_stack_pos == 0) {
 
 			_debug_error = "Stack Underflow (Engine Bug)";
-			ScriptDebugger::get_singleton()->debug(this);
+			EngineDebugger::get_script_debugger()->debug(this);
 			return;
 		}
 

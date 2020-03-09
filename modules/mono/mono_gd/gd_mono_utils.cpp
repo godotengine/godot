@@ -32,6 +32,8 @@
 
 #include <mono/metadata/exception.h>
 
+#include "core/debugger/engine_debugger.h"
+#include "core/debugger/script_debugger.h"
 #include "core/os/dir_access.h"
 #include "core/os/mutex.h"
 #include "core/os/os.h"
@@ -39,7 +41,7 @@
 #include "core/reference.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/debugger/script_editor_debugger.h"
+#include "editor/debugger/editor_debugger_node.h"
 #endif
 
 #include "../csharp_script.h"
@@ -351,7 +353,7 @@ void debug_print_unhandled_exception(MonoException *p_exc) {
 
 void debug_send_unhandled_exception_error(MonoException *p_exc) {
 #ifdef DEBUG_ENABLED
-	if (!ScriptDebugger::get_singleton()) {
+	if (!EngineDebugger::is_active()) {
 #ifdef TOOLS_ENABLED
 		if (Engine::get_singleton()->is_editor_hint()) {
 			ERR_PRINT(GDMonoUtils::get_exception_name_and_message(p_exc));
@@ -410,7 +412,7 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 	int line = si.size() ? si[0].line : __LINE__;
 	String error_msg = "Unhandled exception";
 
-	ScriptDebugger::get_singleton()->send_error(func, file, line, error_msg, exc_msg, ERR_HANDLER_ERROR, si);
+	EngineDebugger::get_script_debugger()->send_error(func, file, line, error_msg, exc_msg, ERR_HANDLER_ERROR, si);
 #endif
 }
 

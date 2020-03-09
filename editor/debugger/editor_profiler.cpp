@@ -31,8 +31,8 @@
 #include "editor_profiler.h"
 
 #include "core/os/os.h"
-#include "editor_scale.h"
-#include "editor_settings.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 
 void EditorProfiler::_make_metric_ptrs(Metric &m) {
 

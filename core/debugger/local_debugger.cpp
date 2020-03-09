@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  script_debugger_local.cpp                                            */
+/*  local_debugger.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,28 +28,112 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "script_debugger_local.h"
+#include "local_debugger.h"
 
+#include "core/debugger/script_debugger.h"
 #include "core/os/os.h"
 #include "scene/main/scene_tree.h"
 
-void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue, bool p_is_error_breakpoint) {
+struct LocalDebugger::ScriptsProfiler {
+	struct ProfileInfoSort {
+
+		bool operator()(const ScriptLanguage::ProfilingInfo &A, const ScriptLanguage::ProfilingInfo &B) const {
+			return A.total_time > B.total_time;
+		}
+	};
+
+	float frame_time = 0;
+	uint64_t idle_accum = 0;
+	Vector<ScriptLanguage::ProfilingInfo> pinfo;
+
+	void toggle(bool p_enable, const Array &p_opts) {
+		if (p_enable) {
+			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+				ScriptServer::get_language(i)->profiling_start();
+			}
+
+			print_line("BEGIN PROFILING");
+			pinfo.resize(32768);
+		} else {
+			_print_frame_data(true);
+			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+				ScriptServer::get_language(i)->profiling_stop();
+			}
+		}
+	}
+
+	void tick(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
+		frame_time = p_frame_time;
+		_print_frame_data(false);
+	}
+
+	void _print_frame_data(bool p_accumulated) {
+		uint64_t diff = OS::get_singleton()->get_ticks_usec() - idle_accum;
+
+		if (!p_accumulated && diff < 1000000) //show every one second
+			return;
+
+		idle_accum = OS::get_singleton()->get_ticks_usec();
+
+		int ofs = 0;
+		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+			if (p_accumulated)
+				ofs += ScriptServer::get_language(i)->profiling_get_accumulated_data(&pinfo.write[ofs], pinfo.size() - ofs);
+			else
+				ofs += ScriptServer::get_language(i)->profiling_get_frame_data(&pinfo.write[ofs], pinfo.size() - ofs);
+		}
+
+		SortArray<ScriptLanguage::ProfilingInfo, ProfileInfoSort> sort;
+		sort.sort(pinfo.ptrw(), ofs);
+
+		// compute total script frame time
+		uint64_t script_time_us = 0;
+		for (int i = 0; i < ofs; i++) {
+
+			script_time_us += pinfo[i].self_time;
+		}
+		float script_time = USEC_TO_SEC(script_time_us);
+		float total_time = p_accumulated ? script_time : frame_time;
+
+		if (!p_accumulated) {
+			print_line("FRAME: total: " + rtos(total_time) + " script: " + rtos(script_time) + "/" + itos(script_time * 100 / total_time) + " %");
+		} else {
+			print_line("ACCUMULATED: total: " + rtos(total_time));
+		}
+
+		for (int i = 0; i < ofs; i++) {
+
+			print_line(itos(i) + ":" + pinfo[i].signature);
+			float tt = USEC_TO_SEC(pinfo[i].total_time);
+			float st = USEC_TO_SEC(pinfo[i].self_time);
+			print_line("\ttotal: " + rtos(tt) + "/" + itos(tt * 100 / total_time) + " % \tself: " + rtos(st) + "/" + itos(st * 100 / total_time) + " % tcalls: " + itos(pinfo[i].call_count));
+		}
+	}
+
+	ScriptsProfiler() {
+		idle_accum = OS::get_singleton()->get_ticks_usec();
+	}
+};
+
+void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
+
+	ScriptLanguage *script_lang = script_debugger->get_break_language();
 
 	if (!target_function.empty()) {
-		String current_function = p_script->debug_get_stack_level_function(0);
+		String current_function = script_lang->debug_get_stack_level_function(0);
 		if (current_function != target_function) {
-			set_depth(0);
-			set_lines_left(1);
+			script_debugger->set_depth(0);
+			script_debugger->set_lines_left(1);
 			return;
 		}
 		target_function = "";
 	}
 
-	print_line("\nDebugger Break, Reason: '" + p_script->debug_get_error() + "'");
-	print_line("*Frame " + itos(0) + " - " + p_script->debug_get_stack_level_source(0) + ":" + itos(p_script->debug_get_stack_level_line(0)) + " in function '" + p_script->debug_get_stack_level_function(0) + "'");
+	print_line("\nDebugger Break, Reason: '" + script_lang->debug_get_error() + "'");
+	print_line("*Frame " + itos(0) + " - " + script_lang->debug_get_stack_level_source(0) + ":" + itos(script_lang->debug_get_stack_level_line(0)) + " in function '" + script_lang->debug_get_stack_level_function(0) + "'");
 	print_line("Enter \"help\" for assistance.");
 	int current_frame = 0;
-	int total_frames = p_script->debug_get_stack_level_count();
+	int total_frames = script_lang->debug_get_stack_level_count();
 	while (true) {
 
 		OS::get_singleton()->print("debug> ");
@@ -59,8 +143,8 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue, b
 		String variable_prefix = options["variable_prefix"];
 
 		if (line == "") {
-			print_line("\nDebugger Break, Reason: '" + p_script->debug_get_error() + "'");
-			print_line("*Frame " + itos(current_frame) + " - " + p_script->debug_get_stack_level_source(current_frame) + ":" + itos(p_script->debug_get_stack_level_line(current_frame)) + " in function '" + p_script->debug_get_stack_level_function(current_frame) + "'");
+			print_line("\nDebugger Break, Reason: '" + script_lang->debug_get_error() + "'");
+			print_line("*Frame " + itos(current_frame) + " - " + script_lang->debug_get_stack_level_source(current_frame) + ":" + itos(script_lang->debug_get_stack_level_line(current_frame)) + " in function '" + script_lang->debug_get_stack_level_function(current_frame) + "'");
 			print_line("Enter \"help\" for assistance.");
 		} else if (line == "c" || line == "continue")
 			break;
@@ -69,20 +153,20 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue, b
 			for (int i = 0; i < total_frames; i++) {
 
 				String cfi = (current_frame == i) ? "*" : " "; //current frame indicator
-				print_line(cfi + "Frame " + itos(i) + " - " + p_script->debug_get_stack_level_source(i) + ":" + itos(p_script->debug_get_stack_level_line(i)) + " in function '" + p_script->debug_get_stack_level_function(i) + "'");
+				print_line(cfi + "Frame " + itos(i) + " - " + script_lang->debug_get_stack_level_source(i) + ":" + itos(script_lang->debug_get_stack_level_line(i)) + " in function '" + script_lang->debug_get_stack_level_function(i) + "'");
 			}
 
 		} else if (line.begins_with("fr") || line.begins_with("frame")) {
 
 			if (line.get_slice_count(" ") == 1) {
-				print_line("*Frame " + itos(current_frame) + " - " + p_script->debug_get_stack_level_source(current_frame) + ":" + itos(p_script->debug_get_stack_level_line(current_frame)) + " in function '" + p_script->debug_get_stack_level_function(current_frame) + "'");
+				print_line("*Frame " + itos(current_frame) + " - " + script_lang->debug_get_stack_level_source(current_frame) + ":" + itos(script_lang->debug_get_stack_level_line(current_frame)) + " in function '" + script_lang->debug_get_stack_level_function(current_frame) + "'");
 			} else {
 				int frame = line.get_slicec(' ', 1).to_int();
 				if (frame < 0 || frame >= total_frames) {
 					print_line("Error: Invalid frame.");
 				} else {
 					current_frame = frame;
-					print_line("*Frame " + itos(frame) + " - " + p_script->debug_get_stack_level_source(frame) + ":" + itos(p_script->debug_get_stack_level_line(frame)) + " in function '" + p_script->debug_get_stack_level_function(frame) + "'");
+					print_line("*Frame " + itos(frame) + " - " + script_lang->debug_get_stack_level_source(frame) + ":" + itos(script_lang->debug_get_stack_level_line(frame)) + " in function '" + script_lang->debug_get_stack_level_function(frame) + "'");
 				}
 			}
 
@@ -120,21 +204,21 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue, b
 
 			List<String> locals;
 			List<Variant> values;
-			p_script->debug_get_stack_level_locals(current_frame, &locals, &values);
+			script_lang->debug_get_stack_level_locals(current_frame, &locals, &values);
 			print_variables(locals, values, variable_prefix);
 
 		} else if (line == "gv" || line == "globals") {
 
 			List<String> globals;
 			List<Variant> values;
-			p_script->debug_get_globals(&globals, &values);
+			script_lang->debug_get_globals(&globals, &values);
 			print_variables(globals, values, variable_prefix);
 
 		} else if (line == "mv" || line == "members") {
 
 			List<String> members;
 			List<Variant> values;
-			p_script->debug_get_stack_level_members(current_frame, &members, &values);
+			script_lang->debug_get_stack_level_members(current_frame, &members, &values);
 			print_variables(members, values, variable_prefix);
 
 		} else if (line.begins_with("p") || line.begins_with("print")) {
@@ -144,29 +228,29 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue, b
 			} else {
 
 				String expr = line.get_slicec(' ', 2);
-				String res = p_script->debug_parse_stack_level_expression(current_frame, expr);
+				String res = script_lang->debug_parse_stack_level_expression(current_frame, expr);
 				print_line(res);
 			}
 
 		} else if (line == "s" || line == "step") {
 
-			set_depth(-1);
-			set_lines_left(1);
+			script_debugger->set_depth(-1);
+			script_debugger->set_lines_left(1);
 			break;
 		} else if (line == "n" || line == "next") {
 
-			set_depth(0);
-			set_lines_left(1);
+			script_debugger->set_depth(0);
+			script_debugger->set_lines_left(1);
 			break;
 		} else if (line == "fin" || line == "finish") {
 
-			String current_function = p_script->debug_get_stack_level_function(0);
+			String current_function = script_lang->debug_get_stack_level_function(0);
 
 			for (int i = 0; i < total_frames; i++) {
-				target_function = p_script->debug_get_stack_level_function(i);
+				target_function = script_lang->debug_get_stack_level_function(i);
 				if (target_function != current_function) {
-					set_depth(0);
-					set_lines_left(1);
+					script_debugger->set_depth(0);
+					script_debugger->set_lines_left(1);
 					return;
 				}
 			}
@@ -178,7 +262,7 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue, b
 
 			if (line.get_slice_count(" ") <= 1) {
 
-				const Map<int, Set<StringName> > &breakpoints = get_breakpoints();
+				const Map<int, Set<StringName> > &breakpoints = script_debugger->get_breakpoints();
 				if (breakpoints.size() == 0) {
 					print_line("No Breakpoints.");
 					continue;
@@ -199,7 +283,7 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue, b
 				if (source.empty())
 					continue;
 
-				insert_breakpoint(linenr, source);
+				script_debugger->insert_breakpoint(linenr, source);
 
 				print_line("Added breakpoint at " + source + ":" + itos(linenr));
 			}
@@ -207,16 +291,16 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue, b
 		} else if (line == "q" || line == "quit") {
 
 			// Do not stop again on quit
-			clear_breakpoints();
-			ScriptDebugger::get_singleton()->set_depth(-1);
-			ScriptDebugger::get_singleton()->set_lines_left(-1);
+			script_debugger->clear_breakpoints();
+			script_debugger->set_depth(-1);
+			script_debugger->set_lines_left(-1);
 
 			SceneTree::get_singleton()->quit();
 			break;
 		} else if (line.begins_with("delete")) {
 
 			if (line.get_slice_count(" ") <= 1) {
-				clear_breakpoints();
+				script_debugger->clear_breakpoints();
 			} else {
 
 				Pair<String, int> breakpoint = to_breakpoint(line);
@@ -227,7 +311,7 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue, b
 				if (source.empty())
 					continue;
 
-				remove_breakpoint(linenr, source);
+				script_debugger->remove_breakpoint(linenr, source);
 
 				print_line("Removed breakpoint at " + source + ":" + itos(linenr));
 			}
@@ -255,7 +339,7 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue, b
 	}
 }
 
-void ScriptDebuggerLocal::print_variables(const List<String> &names, const List<Variant> &values, const String &variable_prefix) {
+void LocalDebugger::print_variables(const List<String> &names, const List<Variant> &values, const String &variable_prefix) {
 
 	String value;
 	Vector<String> value_lines;
@@ -279,7 +363,7 @@ void ScriptDebuggerLocal::print_variables(const List<String> &names, const List<
 	}
 }
 
-Pair<String, int> ScriptDebuggerLocal::to_breakpoint(const String &p_line) {
+Pair<String, int> LocalDebugger::to_breakpoint(const String &p_line) {
 
 	String breakpoint_part = p_line.get_slicec(' ', 1);
 	Pair<String, int> breakpoint;
@@ -290,135 +374,43 @@ Pair<String, int> ScriptDebuggerLocal::to_breakpoint(const String &p_line) {
 		return breakpoint;
 	}
 
-	breakpoint.first = breakpoint_find_source(breakpoint_part.left(last_colon).strip_edges());
+	breakpoint.first = script_debugger->breakpoint_find_source(breakpoint_part.left(last_colon).strip_edges());
 	breakpoint.second = breakpoint_part.right(last_colon).strip_edges().to_int();
 
 	return breakpoint;
 }
 
-struct _ScriptDebuggerLocalProfileInfoSort {
-
-	bool operator()(const ScriptLanguage::ProfilingInfo &A, const ScriptLanguage::ProfilingInfo &B) const {
-		return A.total_time > B.total_time;
-	}
-};
-
-void ScriptDebuggerLocal::profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
-
-	frame_time = p_frame_time;
-	idle_time = p_idle_time;
-	physics_time = p_physics_time;
-	physics_frame_time = p_physics_frame_time;
-}
-
-void ScriptDebuggerLocal::idle_poll() {
-
-	if (!profiling)
-		return;
-
-	uint64_t diff = OS::get_singleton()->get_ticks_usec() - idle_accum;
-
-	if (diff < 1000000) //show every one second
-		return;
-
-	idle_accum = OS::get_singleton()->get_ticks_usec();
-
-	int ofs = 0;
-	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-		ofs += ScriptServer::get_language(i)->profiling_get_frame_data(&pinfo.write[ofs], pinfo.size() - ofs);
-	}
-
-	SortArray<ScriptLanguage::ProfilingInfo, _ScriptDebuggerLocalProfileInfoSort> sort;
-	sort.sort(pinfo.ptrw(), ofs);
-
-	//falta el frame time
-
-	uint64_t script_time_us = 0;
-
-	for (int i = 0; i < ofs; i++) {
-
-		script_time_us += pinfo[i].self_time;
-	}
-
-	float script_time = USEC_TO_SEC(script_time_us);
-
-	float total_time = frame_time;
-
-	//print script total
-
-	print_line("FRAME: total: " + rtos(frame_time) + " script: " + rtos(script_time) + "/" + itos(script_time * 100 / total_time) + " %");
-
-	for (int i = 0; i < ofs; i++) {
-
-		print_line(itos(i) + ":" + pinfo[i].signature);
-		float tt = USEC_TO_SEC(pinfo[i].total_time);
-		float st = USEC_TO_SEC(pinfo[i].self_time);
-		print_line("\ttotal: " + rtos(tt) + "/" + itos(tt * 100 / total_time) + " % \tself: " + rtos(st) + "/" + itos(st * 100 / total_time) + " % tcalls: " + itos(pinfo[i].call_count));
-	}
-}
-
-void ScriptDebuggerLocal::profiling_start() {
-
-	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-		ScriptServer::get_language(i)->profiling_start();
-	}
-
-	print_line("BEGIN PROFILING");
-	profiling = true;
-	pinfo.resize(32768);
-	frame_time = 0;
-	physics_time = 0;
-	idle_time = 0;
-	physics_frame_time = 0;
-}
-
-void ScriptDebuggerLocal::profiling_end() {
-
-	int ofs = 0;
-
-	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-		ofs += ScriptServer::get_language(i)->profiling_get_accumulated_data(&pinfo.write[ofs], pinfo.size() - ofs);
-	}
-
-	SortArray<ScriptLanguage::ProfilingInfo, _ScriptDebuggerLocalProfileInfoSort> sort;
-	sort.sort(pinfo.ptrw(), ofs);
-
-	uint64_t total_us = 0;
-	for (int i = 0; i < ofs; i++) {
-		total_us += pinfo[i].self_time;
-	}
-
-	float total_time = total_us / 1000000.0;
-
-	for (int i = 0; i < ofs; i++) {
-
-		print_line(itos(i) + ":" + pinfo[i].signature);
-		float tt = USEC_TO_SEC(pinfo[i].total_time);
-		float st = USEC_TO_SEC(pinfo[i].self_time);
-		print_line("\ttotal_ms: " + rtos(tt) + "\tself_ms: " + rtos(st) + "total%: " + itos(tt * 100 / total_time) + "\tself%: " + itos(st * 100 / total_time) + "\tcalls: " + itos(pinfo[i].call_count));
-	}
-
-	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-		ScriptServer::get_language(i)->profiling_stop();
-	}
-
-	profiling = false;
-}
-
-void ScriptDebuggerLocal::send_message(const String &p_message, const Array &p_args) {
+void LocalDebugger::send_message(const String &p_message, const Array &p_args) {
 
 	// This needs to be cleaned up entirely.
 	// print_line("MESSAGE: '" + p_message + "' - " + String(Variant(p_args)));
 }
 
-void ScriptDebuggerLocal::send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type, const Vector<ScriptLanguage::StackInfo> &p_stack_info) {
+void LocalDebugger::send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type) {
 
 	print_line("ERROR: '" + (p_descr.empty() ? p_err : p_descr) + "'");
 }
 
-ScriptDebuggerLocal::ScriptDebuggerLocal() {
+LocalDebugger::LocalDebugger() {
 
-	profiling = false;
-	idle_accum = OS::get_singleton()->get_ticks_usec();
 	options["variable_prefix"] = "";
+
+	// Bind scripts profiler.
+	scripts_profiler = memnew(ScriptsProfiler);
+	Profiler scr_prof(
+			scripts_profiler,
+			[](void *p_user, bool p_enable, const Array &p_opts) {
+				((ScriptsProfiler *)p_user)->toggle(p_enable, p_opts);
+			},
+			NULL,
+			[](void *p_user, float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
+				((ScriptsProfiler *)p_user)->tick(p_frame_time, p_idle_time, p_physics_time, p_physics_frame_time);
+			});
+	register_profiler("scripts", scr_prof);
+}
+
+LocalDebugger::~LocalDebugger() {
+	unregister_profiler("scripts");
+	if (scripts_profiler)
+		memdelete(scripts_profiler);
 }

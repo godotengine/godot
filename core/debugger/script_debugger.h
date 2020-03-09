@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  stream_peer_tcp.h                                                    */
+/*  script_debugger.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,69 +28,53 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef STREAM_PEER_TCP_H
-#define STREAM_PEER_TCP_H
+#ifndef SCRIPT_DEBUGGER_H
+#define SCRIPT_DEBUGGER_H
 
-#include "core/io/ip.h"
-#include "core/io/ip_address.h"
-#include "core/io/net_socket.h"
-#include "core/io/stream_peer.h"
+#include "core/map.h"
+#include "core/script_language.h"
+#include "core/set.h"
+#include "core/string_name.h"
+#include "core/vector.h"
 
-class StreamPeerTCP : public StreamPeer {
+class ScriptDebugger {
 
-	GDCLASS(StreamPeerTCP, StreamPeer);
-	OBJ_CATEGORY("Networking");
+	typedef ScriptLanguage::StackInfo StackInfo;
 
-public:
-	enum Status {
+	int lines_left = -1;
+	int depth = -1;
+	bool skip_breakpoints = false;
 
-		STATUS_NONE,
-		STATUS_CONNECTING,
-		STATUS_CONNECTED,
-		STATUS_ERROR,
-	};
+	Map<int, Set<StringName> > breakpoints;
 
-protected:
-	Ref<NetSocket> _sock;
-	uint64_t timeout;
-	Status status;
-	IP_Address peer_host;
-	uint16_t peer_port;
-
-	Error _connect(const String &p_address, int p_port);
-	Error _poll_connection();
-	Error write(const uint8_t *p_data, int p_bytes, int &r_sent, bool p_block);
-	Error read(uint8_t *p_buffer, int p_bytes, int &r_received, bool p_block);
-
-	static void _bind_methods();
+	ScriptLanguage *break_lang = NULL;
+	Vector<StackInfo> error_stack_info;
 
 public:
-	void accept_socket(Ref<NetSocket> p_sock, IP_Address p_host, uint16_t p_port);
+	void set_lines_left(int p_left);
+	int get_lines_left() const;
 
-	Error connect_to_host(const IP_Address &p_host, uint16_t p_port);
-	bool is_connected_to_host() const;
-	IP_Address get_connected_host() const;
-	uint16_t get_connected_port() const;
-	void disconnect_from_host();
+	void set_depth(int p_depth);
+	int get_depth() const;
 
-	int get_available_bytes() const;
-	Status get_status();
+	String breakpoint_find_source(const String &p_source) const;
+	void set_break_language(ScriptLanguage *p_lang) { break_lang = p_lang; }
+	ScriptLanguage *get_break_language() { return break_lang; }
+	void set_skip_breakpoints(bool p_skip_breakpoints);
+	bool is_skipping_breakpoints();
+	void insert_breakpoint(int p_line, const StringName &p_source);
+	void remove_breakpoint(int p_line, const StringName &p_source);
+	bool is_breakpoint(int p_line, const StringName &p_source) const;
+	bool is_breakpoint_line(int p_line) const;
+	void clear_breakpoints();
+	const Map<int, Set<StringName> > &get_breakpoints() const { return breakpoints; }
 
-	void set_no_delay(bool p_enabled);
+	void debug(ScriptLanguage *p_lang, bool p_can_continue = true, bool p_is_error_breakpoint = false);
+	ScriptLanguage *get_break_language() const;
 
-	// Poll functions (wait or check for writable, readable)
-	Error poll(NetSocket::PollType p_type, int timeout = 0);
-
-	// Read/Write from StreamPeer
-	Error put_data(const uint8_t *p_data, int p_bytes);
-	Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent);
-	Error get_data(uint8_t *p_buffer, int p_bytes);
-	Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
-
-	StreamPeerTCP();
-	~StreamPeerTCP();
+	void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type, const Vector<StackInfo> &p_stack_info);
+	Vector<StackInfo> get_error_stack_info() const;
+	ScriptDebugger() {}
 };
-
-VARIANT_ENUM_CAST(StreamPeerTCP::Status);
 
 #endif

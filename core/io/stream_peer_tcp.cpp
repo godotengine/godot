@@ -288,6 +288,11 @@ void StreamPeerTCP::disconnect_from_host() {
 	peer_port = 0;
 }
 
+Error StreamPeerTCP::poll(NetSocket::PollType p_type, int timeout) {
+	ERR_FAIL_COND_V(_sock.is_null() || !_sock->is_open(), ERR_UNAVAILABLE);
+	return _sock->poll(p_type, timeout);
+}
+
 Error StreamPeerTCP::put_data(const uint8_t *p_data, int p_bytes) {
 
 	int total;

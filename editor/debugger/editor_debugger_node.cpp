@@ -31,9 +31,12 @@
 #include "editor_debugger_node.h"
 
 #include "editor/debugger/editor_debugger_tree.h"
+#include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/tab_container.h"
 
 template <typename Func>
 void _for_all(TabContainer *p_node, const Func &p_func) {
@@ -49,7 +52,6 @@ EditorDebuggerNode *EditorDebuggerNode::singleton = NULL;
 EditorDebuggerNode::EditorDebuggerNode() {
 	if (!singleton)
 		singleton = this;
-	server.instance();
 
 	add_constant_override("margin_left", -EditorNode::get_singleton()->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_LEFT));
 	add_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_RIGHT));
@@ -179,10 +181,9 @@ Error EditorDebuggerNode::start() {
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
 	}
 
-	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
-	const Error err = server->listen(remote_port);
+	server = Ref<EditorDebuggerServer>(EditorDebuggerServer::create_default());
+	const Error err = server->start();
 	if (err != OK) {
-		EditorNode::get_log()->add_message(String("Error listening on port ") + itos(remote_port), EditorLog::MSG_TYPE_ERROR);
 		return err;
 	}
 	set_process(true);
@@ -191,9 +192,10 @@ Error EditorDebuggerNode::start() {
 }
 
 void EditorDebuggerNode::stop() {
-	if (server->is_listening()) {
+	if (server.is_valid()) {
 		server->stop();
 		EditorNode::get_log()->add_message("--- Debugging process stopped ---", EditorLog::MSG_TYPE_EDITOR);
+		server.unref();
 	}
 	// Also close all debugging sessions.
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
@@ -231,8 +233,14 @@ void EditorDebuggerNode::_notification(int p_what) {
 			break;
 	}
 
-	if (p_what != NOTIFICATION_PROCESS || !server->is_listening())
+	if (p_what != NOTIFICATION_PROCESS || !server.is_valid())
 		return;
+
+	if (!server.is_valid() || !server->is_active()) {
+		stop();
+		return;
+	}
+	server->poll();
 
 	// Errors and warnings
 	int error_count = 0;
@@ -293,9 +301,8 @@ void EditorDebuggerNode::_notification(int p_what) {
 			if (tabs->get_tab_count() <= 4) { // Max 4 debugging sessions active.
 				debugger = _add_debugger();
 			} else {
-				// We already have too many sessions, disconnecting new clients to prevent it from hanging.
-				// (Not keeping a reference to the connection will disconnect it)
-				server->take_connection();
+				// We already have too many sessions, disconnecting new clients to prevent them from hanging.
+				server->take_connection()->close();
 				return; // Can't add, stop here.
 			}
 		}
@@ -460,6 +467,26 @@ void EditorDebuggerNode::reload_scripts() {
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		dbg->reload_scripts();
 	});
+}
+
+void EditorDebuggerNode::debug_next() {
+	get_default_debugger()->debug_next();
+}
+
+void EditorDebuggerNode::debug_step() {
+	get_default_debugger()->debug_step();
+}
+
+void EditorDebuggerNode::debug_break() {
+	get_default_debugger()->debug_break();
+}
+
+void EditorDebuggerNode::debug_continue() {
+	get_default_debugger()->debug_continue();
+}
+
+String EditorDebuggerNode::get_var_value(const String &p_var) const {
+	return get_default_debugger()->get_var_value(p_var);
 }
 
 // LiveEdit/Inspector

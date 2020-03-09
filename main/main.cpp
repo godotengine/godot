@@ -31,6 +31,7 @@
 #include "main.h"
 
 #include "core/crypto/crypto.h"
+#include "core/debugger/engine_debugger.h"
 #include "core/input_map.h"
 #include "core/io/file_access_network.h"
 #include "core/io/file_access_pack.h"
@@ -43,9 +44,6 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "core/register_core_types.h"
-#include "core/script_debugger_local.h"
-#include "core/script_debugger_remote.h"
-#include "core/script_language.h"
 #include "core/translation.h"
 #include "core/version.h"
 #include "core/version_hash.gen.h"
@@ -96,7 +94,6 @@ static PackedData *packed_data = NULL;
 static ZipArchive *zip_packed_data = NULL;
 #endif
 static FileAccessNetworkClient *file_access_network_client = NULL;
-static ScriptDebugger *script_debugger = NULL;
 static MessageQueue *message_queue = NULL;
 
 // Initialized in setup2()
@@ -410,8 +407,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	String audio_driver = "";
 	String project_path = ".";
 	bool upwards = false;
-	String debug_mode;
-	String debug_host;
+	String debug_uri = "";
 	bool skip_breakpoints = false;
 	String main_pack;
 	bool quiet_stdout = false;
@@ -784,7 +780,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			};
 
 		} else if (I->get() == "-d" || I->get() == "--debug") {
-			debug_mode = "local";
+			debug_uri = "local://";
 #if defined(DEBUG_ENABLED) && !defined(SERVER_ENABLED)
 		} else if (I->get() == "--debug-collisions") {
 			debug_collisions = true;
@@ -794,12 +790,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--remote-debug") {
 			if (I->next()) {
 
-				debug_mode = "remote";
-				debug_host = I->next()->get();
-				if (debug_host.find(":") == -1) { // wrong address
+				debug_uri = I->next()->get();
+				if (debug_uri.find(":") == -1) { // wrong address
 					OS::get_singleton()->print("Invalid debug host address, it should be of the form <host/IP>:<port>.\n");
 					goto error;
 				}
+				debug_uri = "tcp://" + debug_uri; // will support multiple protocols eventually.
 				N = I->next()->next();
 			} else {
 				OS::get_singleton()->print("Missing remote debug host address, aborting.\n");
@@ -886,50 +882,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	GLOBAL_DEF("memory/limits/multithreaded_server/rid_pool_prealloc", 60);
 	ProjectSettings::get_singleton()->set_custom_property_info("memory/limits/multithreaded_server/rid_pool_prealloc", PropertyInfo(Variant::INT, "memory/limits/multithreaded_server/rid_pool_prealloc", PROPERTY_HINT_RANGE, "0,500,1")); // No negative and limit to 500 due to crashes
-	GLOBAL_DEF("network/limits/debugger_stdout/max_chars_per_second", 2048);
-	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger_stdout/max_chars_per_second", PropertyInfo(Variant::INT, "network/limits/debugger_stdout/max_chars_per_second", PROPERTY_HINT_RANGE, "0, 4096, 1, or_greater"));
-	GLOBAL_DEF("network/limits/debugger_stdout/max_messages_per_frame", 10);
-	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger_stdout/max_messages_per_frame", PropertyInfo(Variant::INT, "network/limits/debugger_stdout/max_messages_per_frame", PROPERTY_HINT_RANGE, "0, 20, 1, or_greater"));
-	GLOBAL_DEF("network/limits/debugger_stdout/max_errors_per_second", 100);
-	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger_stdout/max_errors_per_second", PropertyInfo(Variant::INT, "network/limits/debugger_stdout/max_errors_per_second", PROPERTY_HINT_RANGE, "0, 200, 1, or_greater"));
-	GLOBAL_DEF("network/limits/debugger_stdout/max_warnings_per_second", 100);
-	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger_stdout/max_warnings_per_second", PropertyInfo(Variant::INT, "network/limits/debugger_stdout/max_warnings_per_second", PROPERTY_HINT_RANGE, "0, 200, 1, or_greater"));
+	GLOBAL_DEF("network/limits/debugger/max_chars_per_second", 32768);
+	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger/max_chars_per_second", PropertyInfo(Variant::INT, "network/limits/debugger/max_chars_per_second", PROPERTY_HINT_RANGE, "0, 4096, 1, or_greater"));
+	GLOBAL_DEF("network/limits/debugger/max_queued_messages", 2048);
+	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger/max_queued_messages", PropertyInfo(Variant::INT, "network/limits/debugger/max_queued_messages", PROPERTY_HINT_RANGE, "0, 8192, 1, or_greater"));
+	GLOBAL_DEF("network/limits/debugger/max_errors_per_second", 400);
+	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger/max_errors_per_second", PropertyInfo(Variant::INT, "network/limits/debugger/max_errors_per_second", PROPERTY_HINT_RANGE, "0, 200, 1, or_greater"));
+	GLOBAL_DEF("network/limits/debugger/max_warnings_per_second", 400);
+	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger/max_warnings_per_second", PropertyInfo(Variant::INT, "network/limits/debugger/max_warnings_per_second", PROPERTY_HINT_RANGE, "0, 200, 1, or_greater"));
 
-	if (debug_mode == "remote") {
-
-		ScriptDebuggerRemote *sdr = memnew(ScriptDebuggerRemote);
-		uint16_t debug_port = 6007;
-		if (debug_host.find(":") != -1) {
-			int sep_pos = debug_host.find_last(":");
-			debug_port = debug_host.substr(sep_pos + 1, debug_host.length()).to_int();
-			debug_host = debug_host.substr(0, sep_pos);
-		}
-		Error derr = sdr->connect_to_host(debug_host, debug_port);
-
-		sdr->set_skip_breakpoints(skip_breakpoints);
-
-		if (derr != OK) {
-			memdelete(sdr);
-		} else {
-			script_debugger = sdr;
-		}
-	} else if (debug_mode == "local") {
-
-		script_debugger = memnew(ScriptDebuggerLocal);
-		OS::get_singleton()->initialize_debugging();
-	}
-	if (script_debugger) {
-		//there is a debugger, parse breakpoints
-
-		for (int i = 0; i < breakpoints.size(); i++) {
-
-			String bp = breakpoints[i];
-			int sp = bp.find_last(":");
-			ERR_CONTINUE_MSG(sp == -1, "Invalid breakpoint: '" + bp + "', expected file:line format.");
-
-			script_debugger->insert_breakpoint(bp.substr(sp + 1, bp.length()).to_int(), bp.substr(0, sp));
-		}
-	}
+	EngineDebugger::initialize(debug_uri, skip_breakpoints, breakpoints);
 
 #ifdef TOOLS_ENABLED
 	if (editor) {
@@ -1179,6 +1141,8 @@ error:
 	if (show_help)
 		print_help(execpath);
 
+	EngineDebugger::deinitialize();
+
 	if (performance)
 		memdelete(performance);
 	if (input_map)
@@ -1189,8 +1153,6 @@ error:
 		memdelete(globals);
 	if (engine)
 		memdelete(engine);
-	if (script_debugger)
-		memdelete(script_debugger);
 	if (packed_data)
 		memdelete(packed_data);
 	if (file_access_network_client)
@@ -1401,8 +1363,10 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	audio_server->load_default_bus_layout();
 
-	if (use_debug_profiler && script_debugger) {
-		script_debugger->profiling_start();
+	if (use_debug_profiler && EngineDebugger::is_active()) {
+		// Start the "scripts" profiler, used in local debugging.
+		// We could add more, and make the CLI arg require a comma-separated list of profilers.
+		EngineDebugger::get_singleton()->profiler_enable("scripts", true);
 	}
 	_start_success = true;
 	locale = String();
@@ -2090,12 +2054,8 @@ bool Main::iteration() {
 
 	AudioServer::get_singleton()->update();
 
-	if (script_debugger) {
-		if (script_debugger->is_profiling()) {
-			script_debugger->profiling_set_frame_times(USEC_TO_SEC(frame_time), USEC_TO_SEC(idle_process_ticks), USEC_TO_SEC(physics_process_ticks), frame_slice);
-		}
-		script_debugger->idle_poll();
-	}
+	if (EngineDebugger::is_active())
+		EngineDebugger::get_singleton()->iteration(frame_time, idle_process_ticks, physics_process_ticks, frame_slice);
 
 	frames++;
 	Engine::get_singleton()->_idle_frames++;
@@ -2173,24 +2133,13 @@ void Main::cleanup() {
 
 	ERR_FAIL_COND(!_start_success);
 
-	if (script_debugger) {
-		// Flush any remaining messages
-		script_debugger->idle_poll();
-	}
+	EngineDebugger::deinitialize();
 
 	ResourceLoader::remove_custom_loaders();
 	ResourceSaver::remove_custom_savers();
 
 	message_queue->flush();
 	memdelete(message_queue);
-
-	if (script_debugger) {
-		if (use_debug_profiler) {
-			script_debugger->profiling_end();
-		}
-
-		memdelete(script_debugger);
-	}
 
 	OS::get_singleton()->delete_main_loop();
 

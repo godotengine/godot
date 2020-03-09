@@ -315,7 +315,7 @@ ScriptInstance *GDScript::instance_create(Object *p_this) {
 	if (top->native.is_valid()) {
 		if (!ClassDB::is_parent_class(p_this->get_class_name(), top->native->get_name())) {
 
-			if (ScriptDebugger::get_singleton()) {
+			if (EngineDebugger::is_active()) {
 				GDScriptLanguage::get_singleton()->debug_break_parse(get_path(), 1, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be instanced in object of type: '" + p_this->get_class() + "'");
 			}
 			ERR_FAIL_V_MSG(NULL, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be instanced in object of type '" + p_this->get_class() + "'" + ".");
@@ -556,7 +556,7 @@ Error GDScript::reload(bool p_keep_state) {
 	GDScriptParser parser;
 	Error err = parser.parse(source, basedir, false, path);
 	if (err) {
-		if (ScriptDebugger::get_singleton()) {
+		if (EngineDebugger::is_active()) {
 			GDScriptLanguage::get_singleton()->debug_break_parse(get_path(), parser.get_error_line(), "Parser Error: " + parser.get_error());
 		}
 		_err_print_error("GDScript::reload", path.empty() ? "built-in" : (const char *)path.utf8().get_data(), parser.get_error_line(), ("Parse Error: " + parser.get_error()).utf8().get_data(), ERR_HANDLER_SCRIPT);
@@ -571,7 +571,7 @@ Error GDScript::reload(bool p_keep_state) {
 	if (err) {
 
 		if (can_run) {
-			if (ScriptDebugger::get_singleton()) {
+			if (EngineDebugger::is_active()) {
 				GDScriptLanguage::get_singleton()->debug_break_parse(get_path(), compiler.get_error_line(), "Parser Error: " + compiler.get_error());
 			}
 			_err_print_error("GDScript::reload", path.empty() ? "built-in" : (const char *)path.utf8().get_data(), compiler.get_error_line(), ("Compile Error: " + compiler.get_error()).utf8().get_data(), ERR_HANDLER_SCRIPT);
@@ -583,9 +583,9 @@ Error GDScript::reload(bool p_keep_state) {
 #ifdef DEBUG_ENABLED
 	for (const List<GDScriptWarning>::Element *E = parser.get_warnings().front(); E; E = E->next()) {
 		const GDScriptWarning &warning = E->get();
-		if (ScriptDebugger::get_singleton()) {
+		if (EngineDebugger::is_active()) {
 			Vector<ScriptLanguage::StackInfo> si;
-			ScriptDebugger::get_singleton()->send_error("", get_path(), warning.line, warning.get_name(), warning.get_message(), ERR_HANDLER_WARNING, si);
+			EngineDebugger::get_script_debugger()->send_error("", get_path(), warning.line, warning.get_name(), warning.get_message(), ERR_HANDLER_WARNING, si);
 		}
 	}
 #endif
@@ -2201,7 +2201,7 @@ GDScriptLanguage::GDScriptLanguage() {
 	int dmcs = GLOBAL_DEF("debug/settings/gdscript/max_call_stack", 1024);
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/gdscript/max_call_stack", PropertyInfo(Variant::INT, "debug/settings/gdscript/max_call_stack", PROPERTY_HINT_RANGE, "1024,4096,1,or_greater")); //minimum is 1024
 
-	if (ScriptDebugger::get_singleton()) {
+	if (EngineDebugger::is_active()) {
 		//debugging enabled!
 
 		_debug_max_call_stack = dmcs;

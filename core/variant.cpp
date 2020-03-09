@@ -31,6 +31,7 @@
 #include "variant.h"
 
 #include "core/core_string_names.h"
+#include "core/debugger/engine_debugger.h"
 #include "core/io/marshalls.h"
 #include "core/math/math_funcs.h"
 #include "core/print_string.h"
@@ -2221,7 +2222,7 @@ Variant::operator RID() const {
 		return RID();
 	} else if (type == OBJECT && _get_obj().obj) {
 #ifdef DEBUG_ENABLED
-		if (ScriptDebugger::get_singleton()) {
+		if (EngineDebugger::is_active()) {
 			ERR_FAIL_COND_V_MSG(ObjectDB::get_instance(_get_obj().id) == nullptr, RID(), "Invalid pointer (object was freed).");
 		};
 #endif

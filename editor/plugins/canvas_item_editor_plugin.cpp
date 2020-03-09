@@ -3992,7 +3992,7 @@ void CanvasItemEditor::_notification(int p_what) {
 		if (!is_visible() && override_camera_button->is_pressed()) {
 			EditorDebuggerNode *debugger = EditorDebuggerNode::get_singleton();
 
-			debugger->set_camera_override(ScriptEditorDebugger::OVERRIDE_NONE);
+			debugger->set_camera_override(EditorDebuggerNode::OVERRIDE_NONE);
 			override_camera_button->set_pressed(false);
 		}
 	}
@@ -4348,9 +4348,9 @@ void CanvasItemEditor::_button_override_camera(bool p_pressed) {
 	EditorDebuggerNode *debugger = EditorDebuggerNode::get_singleton();
 
 	if (p_pressed) {
-		debugger->set_camera_override(ScriptEditorDebugger::OVERRIDE_2D);
+		debugger->set_camera_override(EditorDebuggerNode::OVERRIDE_2D);
 	} else {
-		debugger->set_camera_override(ScriptEditorDebugger::OVERRIDE_NONE);
+		debugger->set_camera_override(EditorDebuggerNode::OVERRIDE_NONE);
 	}
 }
 

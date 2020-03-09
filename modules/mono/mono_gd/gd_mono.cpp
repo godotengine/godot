@@ -37,6 +37,7 @@
 #include <mono/metadata/mono-gc.h>
 #include <mono/metadata/profiler.h>
 
+#include "core/debugger/engine_debugger.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
@@ -1183,8 +1184,8 @@ void GDMono::unhandled_exception_hook(MonoObject *p_exc, void *) {
 
 #ifdef DEBUG_ENABLED
 	GDMonoUtils::debug_send_unhandled_exception_error((MonoException *)p_exc);
-	if (ScriptDebugger::get_singleton())
-		ScriptDebugger::get_singleton()->idle_poll();
+	if (EngineDebugger::is_active())
+		EngineDebugger::get_singleton()->poll_events(false);
 #endif
 
 	exit(mono_environment_exitcode_get());

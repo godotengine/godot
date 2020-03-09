@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  script_debugger_local.h                                              */
+/*  editor_debugger_server.cpp                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,40 +28,63 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCRIPT_DEBUGGER_LOCAL_H
-#define SCRIPT_DEBUGGER_LOCAL_H
+#include "editor_debugger_server.h"
 
-#include "core/list.h"
-#include "core/script_language.h"
+#include "core/io/marshalls.h"
+#include "core/io/tcp_server.h"
+#include "core/os/mutex.h"
+#include "core/os/thread.h"
+#include "editor/editor_log.h"
+#include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 
-class ScriptDebuggerLocal : public ScriptDebugger {
+class EditorDebuggerServerTCP : public EditorDebuggerServer {
 
-	bool profiling;
-	float frame_time, idle_time, physics_time, physics_frame_time;
-	uint64_t idle_accum;
-	String target_function;
-	Map<String, String> options;
-
-	Vector<ScriptLanguage::ProfilingInfo> pinfo;
-
-	Pair<String, int> to_breakpoint(const String &p_line);
-	void print_variables(const List<String> &names, const List<Variant> &values, const String &variable_prefix);
+private:
+	Ref<TCP_Server> server;
 
 public:
-	void debug(ScriptLanguage *p_script, bool p_can_continue, bool p_is_error_breakpoint);
-	virtual void send_message(const String &p_message, const Array &p_args);
-	virtual void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type, const Vector<ScriptLanguage::StackInfo> &p_stack_info);
+	virtual void poll() {}
+	virtual Error start();
+	virtual void stop();
+	virtual bool is_active() const;
+	virtual bool is_connection_available() const;
+	virtual Ref<RemoteDebuggerPeer> take_connection();
 
-	virtual bool is_profiling() const { return profiling; }
-	virtual void add_profiling_frame_data(const StringName &p_name, const Array &p_data) {}
-
-	virtual void idle_poll();
-
-	virtual void profiling_start();
-	virtual void profiling_end();
-	virtual void profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time);
-
-	ScriptDebuggerLocal();
+	EditorDebuggerServerTCP();
 };
 
-#endif // SCRIPT_DEBUGGER_LOCAL_H
+EditorDebuggerServerTCP::EditorDebuggerServerTCP() {
+	server.instance();
+}
+
+Error EditorDebuggerServerTCP::start() {
+	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
+	const Error err = server->listen(remote_port);
+	if (err != OK) {
+		EditorNode::get_log()->add_message(String("Error listening on port ") + itos(remote_port), EditorLog::MSG_TYPE_ERROR);
+		return err;
+	}
+	return err;
+}
+
+void EditorDebuggerServerTCP::stop() {
+	server->stop();
+}
+
+bool EditorDebuggerServerTCP::is_active() const {
+	return server->is_listening();
+}
+
+bool EditorDebuggerServerTCP::is_connection_available() const {
+	return server->is_listening() && server->is_connection_available();
+}
+
+Ref<RemoteDebuggerPeer> EditorDebuggerServerTCP::take_connection() {
+	ERR_FAIL_COND_V(!is_connection_available(), Ref<RemoteDebuggerPeer>());
+	return memnew(RemoteDebuggerPeerTCP(server->take_connection()));
+}
+
+EditorDebuggerServer *EditorDebuggerServer::create_default() {
+	return memnew(EditorDebuggerServerTCP);
+}
