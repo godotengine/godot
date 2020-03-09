@@ -1400,7 +1400,6 @@ void EditorNode::_mark_unsaved_scenes() {
 		String path = node->get_filename();
 		if (!(path == String() || FileAccess::exists(path))) {
 
-			node->set_filename("");
 			if (i == editor_data.get_edited_scene())
 				set_current_version(-1);
 			else
