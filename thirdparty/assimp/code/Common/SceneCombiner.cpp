@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2020, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -1312,6 +1312,7 @@ void SceneCombiner::Copy(aiMetadata** _dest, const aiMetadata* src) {
     aiMetadata* dest = *_dest = aiMetadata::Alloc( src->mNumProperties );
     std::copy(src->mKeys, src->mKeys + src->mNumProperties, dest->mKeys);
 
+    dest->mValues = new aiMetadataEntry[src->mNumProperties];
     for (unsigned int i = 0; i < src->mNumProperties; ++i) {
         aiMetadataEntry& in = src->mValues[i];
         aiMetadataEntry& out = dest->mValues[i];

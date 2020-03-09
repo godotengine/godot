@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2020, assimp team
+Copyright (c) 2006-2019, assimp team
 
 
 All rights reserved.
@@ -55,7 +55,7 @@ static const char* LEGAL_INFORMATION =
 "Open Asset Import Library (Assimp).\n"
 "A free C/C++ library to import various 3D file formats into applications\n\n"
 
-"(c) 2006-2020, assimp team\n"
+"(c) 2006-2019, assimp team\n"
 "License under the terms and conditions of the 3-clause BSD license\n"
 "http://assimp.org\n"
 ;
@@ -64,12 +64,6 @@ static const char* LEGAL_INFORMATION =
 // Get legal string
 ASSIMP_API const char*  aiGetLegalString  ()    {
     return LEGAL_INFORMATION;
-}
-
-// ------------------------------------------------------------------------------------------------
-// Get Assimp patch version
-ASSIMP_API unsigned int aiGetVersionPatch() {
-	return VER_PATCH;
 }
 
 // ------------------------------------------------------------------------------------------------

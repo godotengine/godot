@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2020, assimp team
+Copyright (c) 2006-2019, assimp team
 
 All rights reserved.
 
@@ -81,8 +81,8 @@ using namespace Assimp::FBX;
 // some constants that we'll use for writing metadata
 namespace Assimp {
 namespace FBX {
-    const std::string EXPORT_VERSION_STR = "7.5.0";
-    const uint32_t EXPORT_VERSION_INT = 7500; // 7.5 == 2016+
+    const std::string EXPORT_VERSION_STR = "7.4.0";
+    const uint32_t EXPORT_VERSION_INT = 7400; // 7.4 == 2014/2015
     // FBX files have some hashed values that depend on the creation time field,
     // but for now we don't actually know how to generate these.
     // what we can do is set them to a known-working version.
@@ -1860,7 +1860,6 @@ void FBXExporter::WriteObjects ()
             sdnode.AddChild("Version", int32_t(100));
             sdnode.AddChild("UserData", "", "");
 
-            std::set<int32_t> setWeightedVertex;
             // add indices and weights, if any
             if (b) {
                 std::vector<int32_t> subdef_indices;
@@ -1868,8 +1867,7 @@ void FBXExporter::WriteObjects ()
                 int32_t last_index = -1;
                 for (size_t wi = 0; wi < b->mNumWeights; ++wi) {
                     int32_t vi = vertex_indices[b->mWeights[wi].mVertexId];
-                    bool bIsWeightedAlready = (setWeightedVertex.find(vi) != setWeightedVertex.end());
-                    if (vi == last_index || bIsWeightedAlready) {
+                    if (vi == last_index) {
                         // only for vertices we exported to fbx
                         // TODO, FIXME: this assumes identically-located vertices
                         // will always deform in the same way.
@@ -1879,7 +1877,6 @@ void FBXExporter::WriteObjects ()
                         // identical vertex.
                         continue;
                     }
-                    setWeightedVertex.insert(vi);
                     subdef_indices.push_back(vi);
                     subdef_weights.push_back(b->mWeights[wi].mWeight);
                     last_index = vi;
