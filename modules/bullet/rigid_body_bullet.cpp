@@ -240,7 +240,7 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 				shapes.write[i].shape = static_cast<btConvexShape *>(shape_wrapper->shape->create_bt_shape(owner_scale * shape_wrapper->scale, safe_margin));
 			} break;
 			default:
-				WARN_PRINT("This shape is not supported to be kinematic!");
+				WARN_PRINT("This shape is not supported for kinematic collision.");
 				shapes.write[i].shape = NULL;
 		}
 	}
