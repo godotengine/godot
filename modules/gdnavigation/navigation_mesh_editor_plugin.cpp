@@ -84,13 +84,13 @@ void NavigationMeshEditor::_clear_pressed() {
 	}
 }
 
-void NavigationMeshEditor::edit(NavigationRegion *p_nav_mesh_instance) {
+void NavigationMeshEditor::edit(NavigationRegion *p_nav_region) {
 
-	if (p_nav_mesh_instance == NULL || node == p_nav_mesh_instance) {
+	if (p_nav_region == NULL || node == p_nav_region) {
 		return;
 	}
 
-	node = p_nav_mesh_instance;
+	node = p_nav_region;
 }
 
 void NavigationMeshEditor::_bind_methods() {
