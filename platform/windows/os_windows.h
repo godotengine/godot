@@ -39,7 +39,6 @@
 #include "drivers/wasapi/audio_driver_wasapi.h"
 #include "drivers/winmidi/midi_driver_winmidi.h"
 #include "key_mapping_windows.h"
-#include "core/input/input_filter.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
@@ -148,97 +147,15 @@ typedef struct {
 class JoypadWindows;
 class OS_Windows : public OS {
 
-	static GetPointerTypePtr win8p_GetPointerType;
-	static GetPointerPenInfoPtr win8p_GetPointerPenInfo;
-
-	enum {
-		KEY_EVENT_BUFFER_SIZE = 512
-	};
-
 #ifdef STDOUT_FILE
 	FILE *stdo;
 #endif
 
-	struct KeyEvent {
-
-		bool alt, shift, control, meta;
-		UINT uMsg;
-		WPARAM wParam;
-		LPARAM lParam;
-	};
-
-	KeyEvent key_event_buffer[KEY_EVENT_BUFFER_SIZE];
-	int key_event_pos;
-
 	uint64_t ticks_start;
 	uint64_t ticks_per_second;
 
-	bool old_invalid;
-	bool outside;
-	int old_x, old_y;
-	Point2i center;
-
-#if defined(OPENGL_ENABLED)
-	ContextGL_Windows *context_gles2;
-#endif
-
-#if defined(VULKAN_ENABLED)
-	VulkanContextWindows *context_vulkan;
-	RenderingDeviceVulkan *rendering_device_vulkan;
-#endif
-
-	VisualServer *visual_server;
-	int pressrc;
-	HINSTANCE hInstance; // Holds The Instance Of The Application
-	HWND hWnd;
-	Point2 last_pos;
-
-	HBITMAP hBitmap; //DIB section for layered window
-	uint8_t *dib_data;
-	Size2 dib_size;
-	HDC hDC_dib;
-	bool layered_window;
-
-	uint32_t move_timer_id;
-
-	HCURSOR hCursor;
-
-	Size2 min_size;
-	Size2 max_size;
-
-	Size2 window_rect;
-	VideoMode video_mode;
-	bool preserve_window_size = false;
-
-	MainLoop *main_loop;
-
-	WNDPROC user_proc;
-
-	// IME
-	HIMC im_himc;
-	Vector2 im_position;
-
-	MouseMode mouse_mode;
-	bool alt_mem;
-	bool gr_mem;
-	bool shift_mem;
-	bool control_mem;
-	bool meta_mem;
-	bool force_quit;
-	bool window_has_focus;
-	uint32_t last_button_state;
-	bool use_raw_input;
-	bool drop_events;
-
-	HCURSOR cursors[CURSOR_MAX] = { NULL };
-	CursorShape cursor_shape;
-	Map<CursorShape, Vector<Variant> > cursors_cache;
-
-	InputDefault *input;
 	JoypadWindows *joypad;
-	Map<int, Vector2> touch_state;
 
-	int video_driver_index;
 #ifdef WASAPI_ENABLED
 	AudioDriverWASAPI driver_wasapi;
 #endif
@@ -250,13 +167,6 @@ class OS_Windows : public OS {
 #endif
 
 	CrashHandler crash_handler;
-
-	void _drag_event(float p_x, float p_y, int idx);
-	void _touch_event(bool p_pressed, float p_x, float p_y, int idx);
-
-	void _update_window_style(bool p_repaint = true, bool p_maximized = false);
-
-	void _set_mouse_mode_impl(MouseMode p_mode);
 
 	// functions used by main to initialize/deinitialize the OS
 protected:

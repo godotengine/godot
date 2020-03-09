@@ -3377,20 +3377,7 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 
-	drop_events = false;
-	key_event_pos = 0;
-	layered_window = false;
-	hBitmap = NULL;
 	force_quit = false;
-	alt_mem = false;
-	gr_mem = false;
-	shift_mem = false;
-	control_mem = false;
-	meta_mem = false;
-	minimized = false;
-	was_maximized = false;
-	window_focused = true;
-	console_visible = IsWindowVisible(GetConsoleWindow());
 
 	//Note: Functions for pen input, available on Windows 8+
 	HMODULE user32_lib = LoadLibraryW(L"user32.dll");
@@ -3400,9 +3387,6 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	}
 
 	hInstance = _hInstance;
-	pressrc = 0;
-	old_invalid = true;
-	mouse_mode = MOUSE_MODE_VISIBLE;
 #ifdef STDOUT_FILE
 	stdo = fopen("stdout.txt", "wb");
 #endif
