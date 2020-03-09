@@ -119,7 +119,7 @@
 			</argument>
 			<argument index="2" name="v" type="float">
 			</argument>
-			<argument index="3" name="a" type="float" default="1">
+			<argument index="3" name="a" type="float" default="1.0">
 			</argument>
 			<description>
 				Constructs a color from an HSV profile. [code]h[/code], [code]s[/code], and [code]v[/code] are values between 0 and 1.
@@ -236,7 +236,7 @@
 		<method name="to_html">
 			<return type="String">
 			</return>
-			<argument index="0" name="with_alpha" type="bool" default="True">
+			<argument index="0" name="with_alpha" type="bool" default="true">
 			</argument>
 			<description>
 				Returns the color's HTML hexadecimal color string in ARGB format (ex: [code]ff34f822[/code]).

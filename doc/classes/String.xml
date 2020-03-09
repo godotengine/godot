@@ -366,7 +366,7 @@
 			</return>
 			<argument index="0" name="values" type="Variant">
 			</argument>
-			<argument index="1" name="placeholder" type="String" default="{_}">
+			<argument index="1" name="placeholder" type="String" default="&quot;{_}&quot;">
 			</argument>
 			<description>
 				Formats the string by replacing all occurrences of [code]placeholder[/code] with [code]values[/code].
@@ -512,7 +512,7 @@
 		<method name="is_valid_hex_number">
 			<return type="bool">
 			</return>
-			<argument index="0" name="with_prefix" type="bool" default="False">
+			<argument index="0" name="with_prefix" type="bool" default="false">
 			</argument>
 			<description>
 				Returns [code]true[/code] if this string contains a valid hexadecimal number. If [code]with_prefix[/code] is [code]true[/code], then a validity of the hexadecimal number is determined by [code]0x[/code] prefix, for instance: [code]0xDEADC0DE[/code].
@@ -736,7 +736,7 @@
 			</return>
 			<argument index="0" name="delimiter" type="String">
 			</argument>
-			<argument index="1" name="allow_empty" type="bool" default="True">
+			<argument index="1" name="allow_empty" type="bool" default="true">
 			</argument>
 			<argument index="2" name="maxsplit" type="int" default="0">
 			</argument>
@@ -805,7 +805,7 @@
 			</return>
 			<argument index="0" name="delimiter" type="String">
 			</argument>
-			<argument index="1" name="allow_empty" type="bool" default="True">
+			<argument index="1" name="allow_empty" type="bool" default="true">
 			</argument>
 			<argument index="2" name="maxsplit" type="int" default="0">
 			</argument>
@@ -827,7 +827,7 @@
 			</return>
 			<argument index="0" name="delimiter" type="String">
 			</argument>
-			<argument index="1" name="allow_empty" type="bool" default="True">
+			<argument index="1" name="allow_empty" type="bool" default="true">
 			</argument>
 			<description>
 				Splits the string in floats by using a delimiter string and returns an array of the substrings.
@@ -837,9 +837,9 @@
 		<method name="strip_edges">
 			<return type="String">
 			</return>
-			<argument index="0" name="left" type="bool" default="True">
+			<argument index="0" name="left" type="bool" default="true">
 			</argument>
-			<argument index="1" name="right" type="bool" default="True">
+			<argument index="1" name="right" type="bool" default="true">
 			</argument>
 			<description>
 				Returns a copy of the string stripped of any non-printable character (including tabulations, spaces and line breaks) at the beginning and the end. The optional arguments are used to toggle stripping on the left and right edges respectively.

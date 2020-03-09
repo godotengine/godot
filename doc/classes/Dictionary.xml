@@ -73,7 +73,7 @@
 		<method name="duplicate">
 			<return type="Dictionary">
 			</return>
-			<argument index="0" name="deep" type="bool" default="False">
+			<argument index="0" name="deep" type="bool" default="false">
 			</argument>
 			<description>
 				Creates a copy of the dictionary, and returns it.
@@ -100,7 +100,7 @@
 			</return>
 			<argument index="0" name="key" type="Variant">
 			</argument>
-			<argument index="1" name="default" type="Variant" default="Null">
+			<argument index="1" name="default" type="Variant" default="null">
 			</argument>
 			<description>
 				Returns the current value for the specified key in the [Dictionary]. If the key does not exist, the method returns the value of the optional default argument, or [code]null[/code] if it is omitted.
