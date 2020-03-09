@@ -40,10 +40,6 @@ class EditorRunNative : public HBoxContainer {
 
 	Map<int, MenuButton *> menus;
 	bool first;
-	bool deploy_dumb;
-	bool deploy_debug_remote;
-	bool debug_collisions;
-	bool debug_navigation;
 
 	int resume_idx;
 	int resume_platform;
@@ -55,17 +51,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void set_deploy_dumb(bool p_enabled);
-	bool is_deploy_dumb_enabled() const;
-
-	void set_deploy_debug_remote(bool p_enabled);
 	bool is_deploy_debug_remote_enabled() const;
-
-	void set_debug_collisions(bool p_debug);
-	bool get_debug_collisions() const;
-
-	void set_debug_navigation(bool p_debug);
-	bool get_debug_navigation() const;
 
 	void resume_run_native();
 

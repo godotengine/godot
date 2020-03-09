@@ -38,7 +38,7 @@ EditorRun::Status EditorRun::get_status() const {
 	return status;
 }
 
-Error EditorRun::run(const String &p_scene, const String &p_custom_args, const List<String> &p_breakpoints, const bool &p_skip_breakpoints, const int &p_instances) {
+Error EditorRun::run(const String &p_scene, const String &p_custom_args, const List<String> &p_breakpoints, const bool &p_skip_breakpoints) {
 
 	List<String> args;
 
@@ -57,6 +57,8 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 	args.push_back("--allow_focus_steal_pid");
 	args.push_back(itos(OS::get_singleton()->get_process_id()));
 
+	bool debug_collisions = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisons", false);
+	bool debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
 	if (debug_collisions) {
 		args.push_back("--debug-collisions");
 	}
@@ -187,7 +189,8 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 	};
 	printf("\n");
 
-	for (int i = 0; i < p_instances; i++) {
+	int instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
+	for (int i = 0; i < instances; i++) {
 		OS::ProcessID pid = 0;
 		Error err = OS::get_singleton()->execute(exec, args, false, &pid);
 		ERR_FAIL_COND_V(err, err);
@@ -226,29 +229,7 @@ void EditorRun::stop() {
 	status = STATUS_STOP;
 }
 
-void EditorRun::set_debug_collisions(bool p_debug) {
-
-	debug_collisions = p_debug;
-}
-
-bool EditorRun::get_debug_collisions() const {
-
-	return debug_collisions;
-}
-
-void EditorRun::set_debug_navigation(bool p_debug) {
-
-	debug_navigation = p_debug;
-}
-
-bool EditorRun::get_debug_navigation() const {
-
-	return debug_navigation;
-}
-
 EditorRun::EditorRun() {
 
 	status = STATUS_STOP;
-	debug_collisions = false;
-	debug_navigation = false;
 }

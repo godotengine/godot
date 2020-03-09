@@ -67,6 +67,7 @@
 #include "servers/physics_2d_server.h"
 
 #include "editor/audio_stream_preview.h"
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/dependency_editor.h"
 #include "editor/editor_about.h"
 #include "editor/editor_audio_buses.h"
@@ -87,7 +88,6 @@
 #include "editor/editor_spin_slider.h"
 #include "editor/editor_themes.h"
 #include "editor/export_template_manager.h"
-#include "editor/fileserver/editor_file_server.h"
 #include "editor/filesystem_dock.h"
 #include "editor/import/editor_import_collada.h"
 #include "editor/import/editor_scene_importer_gltf.h"
@@ -413,8 +413,6 @@ void EditorNode::_notification(int p_what) {
 			} else {
 				_editor_select(EDITOR_3D);
 			}
-
-			_update_debug_options();
 
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
@@ -2049,12 +2047,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	args = ProjectSettings::get_singleton()->get("editor/main_run_args");
 	skip_breakpoints = EditorDebuggerNode::get_singleton()->is_skip_breakpoints();
 
-	int instances = 1;
-	if (debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_TWO)))
-		instances = 2;
-
-	Error error = editor_run.run(run_filename, args, breakpoints, skip_breakpoints, instances);
-
+	Error error = editor_run.run(run_filename, args, breakpoints, skip_breakpoints);
 	if (error != OK) {
 
 		show_accept(TTR("Could not start subprocess!"), TTR("OK"));
@@ -2484,16 +2477,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			run_settings_dialog->popup_run_settings();
 		} break;
-		case RUN_DEBUG_ONE: {
-			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_ONE), true);
-			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_TWO), false);
-
-		} break;
-		case RUN_DEBUG_TWO: {
-			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_TWO), true);
-			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_ONE), false);
-
-		} break;
 		case RUN_SETTINGS: {
 
 			project_settings->popup_project_settings();
@@ -2563,65 +2546,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				_save_all_scenes();
 			}
 			_discard_changes();
-		} break;
-		case RUN_FILE_SERVER: {
-
-			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_FILE_SERVER));
-
-			if (ischecked) {
-				file_server->stop();
-				run_native->set_deploy_dumb(false);
-			} else {
-				file_server->start();
-				run_native->set_deploy_dumb(true);
-			}
-
-			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_FILE_SERVER), !ischecked);
-			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_file_server", !ischecked);
-		} break;
-		case RUN_LIVE_DEBUG: {
-
-			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_LIVE_DEBUG));
-
-			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_LIVE_DEBUG), !ischecked);
-			EditorDebuggerNode::get_singleton()->set_live_debugging(!ischecked);
-			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_live_debug", !ischecked);
-
-		} break;
-		case RUN_DEPLOY_REMOTE_DEBUG: {
-
-			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEPLOY_REMOTE_DEBUG));
-			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEPLOY_REMOTE_DEBUG), !ischecked);
-			run_native->set_deploy_debug_remote(!ischecked);
-			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_deploy_remote_debug", !ischecked);
-
-		} break;
-		case RUN_DEBUG_COLLISONS: {
-
-			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_COLLISONS));
-			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_COLLISONS), !ischecked);
-			run_native->set_debug_collisions(!ischecked);
-			editor_run.set_debug_collisions(!ischecked);
-			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_collisons", !ischecked);
-
-		} break;
-		case RUN_DEBUG_NAVIGATION: {
-
-			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_NAVIGATION));
-			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_NAVIGATION), !ischecked);
-			run_native->set_debug_navigation(!ischecked);
-			editor_run.set_debug_navigation(!ischecked);
-			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_navigation", !ischecked);
-
-		} break;
-		case RUN_RELOAD_SCRIPTS: {
-
-			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_RELOAD_SCRIPTS));
-			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_RELOAD_SCRIPTS), !ischecked);
-
-			ScriptEditor::get_singleton()->set_live_auto_reload_running_scripts(!ischecked);
-			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_reload_scripts", !ischecked);
-
 		} break;
 		case SETTINGS_UPDATE_CONTINUOUSLY: {
 
@@ -2866,23 +2790,6 @@ void EditorNode::_discard_changes(const String &p_str) {
 			ERR_FAIL_COND(err);
 		} break;
 	}
-}
-
-void EditorNode::_update_debug_options() {
-
-	bool check_deploy_remote = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_deploy_remote_debug", false);
-	bool check_file_server = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_file_server", false);
-	bool check_debug_collisons = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisons", false);
-	bool check_debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
-	bool check_live_debug = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_live_debug", false);
-	bool check_reload_scripts = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_reload_scripts", false);
-
-	if (check_deploy_remote) _menu_option_confirm(RUN_DEPLOY_REMOTE_DEBUG, true);
-	if (check_file_server) _menu_option_confirm(RUN_FILE_SERVER, true);
-	if (check_debug_collisons) _menu_option_confirm(RUN_DEBUG_COLLISONS, true);
-	if (check_debug_navigation) _menu_option_confirm(RUN_DEBUG_NAVIGATION, true);
-	if (check_live_debug) _menu_option_confirm(RUN_LIVE_DEBUG, true);
-	if (check_reload_scripts) _menu_option_confirm(RUN_RELOAD_SCRIPTS, true);
 }
 
 void EditorNode::_update_file_menu_opened() {
@@ -6189,42 +6096,13 @@ EditorNode::EditorNode() {
 	main_editor_button_vb = memnew(HBoxContainer);
 	menu_hb->add_child(main_editor_button_vb);
 
+	// Options are added and handled by DebuggerEditorPlugin
 	debug_menu = memnew(MenuButton);
 	debug_menu->set_flat(false);
 	debug_menu->set_switch_on_hover(true);
 	debug_menu->set_text(TTR("Debug"));
 	debug_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
 	left_menu_hb->add_child(debug_menu);
-
-	p = debug_menu->get_popup();
-	p->set_hide_on_window_lose_focus(true);
-	p->set_hide_on_checkable_item_selection(false);
-	p->add_check_shortcut(ED_SHORTCUT("editor/deploy_with_remote_debug", TTR("Deploy with Remote Debug")), RUN_DEPLOY_REMOTE_DEBUG);
-	p->set_item_tooltip(p->get_item_count() - 1, TTR("When exporting or deploying, the resulting executable will attempt to connect to the IP of this computer in order to be debugged."));
-	p->add_check_shortcut(ED_SHORTCUT("editor/small_deploy_with_network_fs", TTR("Small Deploy with Network FS")), RUN_FILE_SERVER);
-	p->set_item_tooltip(p->get_item_count() - 1, TTR("When this option is enabled, export or deploy will produce a minimal executable.\nThe filesystem will be provided from the project by the editor over the network.\nOn Android, deploy will use the USB cable for faster performance. This option speeds up testing for games with a large footprint."));
-	p->add_separator();
-	p->add_check_shortcut(ED_SHORTCUT("editor/visible_collision_shapes", TTR("Visible Collision Shapes")), RUN_DEBUG_COLLISONS);
-	p->set_item_tooltip(p->get_item_count() - 1, TTR("Collision shapes and raycast nodes (for 2D and 3D) will be visible on the running game if this option is turned on."));
-	p->add_check_shortcut(ED_SHORTCUT("editor/visible_navigation", TTR("Visible Navigation")), RUN_DEBUG_NAVIGATION);
-	p->set_item_tooltip(p->get_item_count() - 1, TTR("Navigation meshes and polygons will be visible on the running game if this option is turned on."));
-	p->add_separator();
-	//those are now on by default, since they are harmless
-	p->add_check_shortcut(ED_SHORTCUT("editor/sync_scene_changes", TTR("Sync Scene Changes")), RUN_LIVE_DEBUG);
-	p->set_item_tooltip(p->get_item_count() - 1, TTR("When this option is turned on, any changes made to the scene in the editor will be replicated in the running game.\nWhen used remotely on a device, this is more efficient with network filesystem."));
-	p->set_item_checked(p->get_item_count() - 1, true);
-	p->add_check_shortcut(ED_SHORTCUT("editor/sync_script_changes", TTR("Sync Script Changes")), RUN_RELOAD_SCRIPTS);
-	p->set_item_tooltip(p->get_item_count() - 1, TTR("When this option is turned on, any script that is saved will be reloaded on the running game.\nWhen used remotely on a device, this is more efficient with network filesystem."));
-	p->set_item_checked(p->get_item_count() - 1, true);
-
-	// Multi-instance, start/stop
-	p->add_separator();
-	p->add_radio_check_item(TTR("Debug 1 instance"), RUN_DEBUG_ONE);
-	p->add_radio_check_item(TTR("Debug 2 instances"), RUN_DEBUG_TWO);
-	p->set_item_checked(p->get_item_index(RUN_DEBUG_ONE), true);
-
-	p->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));
-
 	menu_hb->add_spacer();
 
 	settings_menu = memnew(MenuButton);
@@ -6606,9 +6484,7 @@ EditorNode::EditorNode() {
 	add_child(preview_gen);
 	//plugin stuff
 
-	file_server = memnew(EditorFileServer);
-
-	add_editor_plugin(memnew(DebuggerEditorPlugin(this)));
+	add_editor_plugin(memnew(DebuggerEditorPlugin(this, debug_menu)));
 	add_editor_plugin(memnew(AnimationPlayerEditorPlugin(this)));
 	add_editor_plugin(memnew(CanvasItemEditorPlugin(this)));
 	add_editor_plugin(memnew(SpatialEditorPlugin(this)));
@@ -6840,7 +6716,6 @@ EditorNode::~EditorNode() {
 	memdelete(editor_plugins_over);
 	memdelete(editor_plugins_force_over);
 	memdelete(editor_plugins_force_input_forwarding);
-	memdelete(file_server);
 	memdelete(progress_hb);
 
 	EditorSettings::destroy();
