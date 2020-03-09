@@ -571,6 +571,8 @@ SDK release: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master
 `vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
 Version: 2.3.0
 
+Patches in the `patches` directory should be re-applied after updates.
+
 
 ## wslay
 
