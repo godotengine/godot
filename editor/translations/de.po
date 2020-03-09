@@ -48,12 +48,13 @@
 # David May <wasser@gmail.com>, 2019.
 # Draco Drache <jan.holger.te@gmail.com>, 2019.
 # Jonas <dotchucknorris@gmx.de>, 2019.
+# PagDev <pag.develop@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-02-16 15:20+0000\n"
-"Last-Translator: So Wieso <sowieso@dukun.de>\n"
+"PO-Revision-Date: 2020-03-08 22:32+0000\n"
+"Last-Translator: PagDev <pag.develop@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -61,7 +62,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1538,6 +1539,10 @@ msgstr "Name"
 msgid "Singleton"
 msgstr "Singleton"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Parameter einfügen"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "Aktualisiere Szene"
@@ -1825,7 +1830,7 @@ msgstr "Im Dateimanager anzeigen"
 msgid "New Folder..."
 msgstr "Neuer Ordner..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Aktualisieren"
@@ -2992,7 +2997,7 @@ msgstr "Problem-Melder"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr "Internetgemeinschaft"
+msgstr "Community"
 
 #: editor/editor_node.cpp
 msgid "About"
@@ -4082,10 +4087,6 @@ msgstr "Speichern als..."
 #: editor/inspector_dock.cpp
 msgid "Copy Params"
 msgstr "Parameter kopieren"
-
-#: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "Parameter einfügen"
 
 #: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
@@ -5914,7 +5915,7 @@ msgstr "Mesh ist leer!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Couldn't create a Trimesh collision shape."
-msgstr "Konnte Trimesh-Kollisionselement nicht erzeugen."
+msgstr "Trimesh-Kollisions-Shape konnte nicht erstellt werden."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
@@ -6028,7 +6029,8 @@ msgstr ""
 "Dies ist die präziseste (aber langsamste) Methode für Kollisionsberechnungen."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Single Convex Collision Siblings"
+#, fuzzy
+msgid "Create Single Convex Collision Sibling"
 msgstr "Ein einzelnes konvexes Kollisionsunterelement erzeugen"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -10114,7 +10116,7 @@ msgstr "Ereignis hinzufügen"
 
 #: editor/project_settings_editor.cpp
 msgid "Button"
-msgstr "Knopf"
+msgstr "\"Button\""
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button."
@@ -12120,7 +12122,7 @@ msgstr "Verwende Standard-Startbildschirm-Bilddatei."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
-msgstr "Ungültiger Paketekurzname."
+msgstr "Ungültiger Paket-Kurzname."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package unique name."
@@ -12477,6 +12479,11 @@ msgid ""
 msgstr ""
 "Plane-Shapes funktionieren nicht gut und werden in einer zukünftigen Version "
 "entfernt. Von der Nutzung wird abgeraten."
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
+msgstr ""
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."

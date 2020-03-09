@@ -19,7 +19,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-02-02 08:52+0000\n"
+"PO-Revision-Date: 2020-03-05 08:33+0000\n"
 "Last-Translator: Ch. <ccwpc@hanmail.net>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -28,7 +28,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -696,9 +696,8 @@ msgid "Line Number:"
 msgstr "행 번호:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "%d replaced."
-msgstr "바꾸기..."
+msgstr "%d개가 바뀌었습니다."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -1495,6 +1494,10 @@ msgstr "이름"
 msgid "Singleton"
 msgstr "싱글톤"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "매개변수 붙여넣기"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "씬 업데이트 중"
@@ -1780,7 +1783,7 @@ msgstr "파일 탐색기에서 보기"
 msgid "New Folder..."
 msgstr "새 폴더..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "새로고침"
@@ -3256,7 +3259,7 @@ msgstr "새 스크립트"
 
 #: editor/editor_properties.cpp editor/scene_tree_dock.cpp
 msgid "Extend Script"
-msgstr "스크립트 펼치기"
+msgstr "스크립트 상속"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New %s"
@@ -3943,9 +3946,8 @@ msgid "Saving..."
 msgstr "저장 중..."
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "%d Files"
-msgstr " 파일"
+msgstr "파일 %d개"
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
@@ -4002,10 +4004,6 @@ msgstr "다른 이름으로 저장..."
 #: editor/inspector_dock.cpp
 msgid "Copy Params"
 msgstr "매개변수 복사"
-
-#: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "매개변수 붙여넣기"
 
 #: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
@@ -5814,9 +5812,8 @@ msgid "Mesh is empty!"
 msgstr "메시가 없습니다!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create a Trimesh collision shape."
-msgstr "Trimesh 충돌 형제 만들기"
+msgstr "Trimesh 충돌 모양을 만들 수 없습니다."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
@@ -5832,30 +5829,28 @@ msgstr "Trimesh Static Shape 만들기"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create a single convex collision shape for the scene root."
-msgstr ""
+msgstr "씬 루트에서 단일 convex 충돌 Shape를 만들 수 없습니다."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Couldn't create a single convex collision shape."
-msgstr ""
+msgstr "단일 convex 충돌 모양을 만들 수 없습니다."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
 msgid "Create Single Convex Shape"
-msgstr "Convex Shape 만들기"
+msgstr "Convex 모양 만들기"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create multiple convex collision shapes for the scene root."
-msgstr ""
+msgstr "씬 루트에 다중 convex 충돌 모양을 만들 수 없습니다."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create any collision shapes."
-msgstr "폴더를 만들 수 없습니다."
+msgstr "충돌 모양을 만들 수 없습니다."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Multiple Convex Shapes"
-msgstr "Convex Shape 만들기"
+msgstr "다중 Convex Shape 만들기"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
@@ -5911,6 +5906,9 @@ msgid ""
 "automatically.\n"
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
+"StaticBody를 하나 만들고 거기에 폴리곤 기반 충돌 모양을 하나 자동으로 만들어 "
+"붙입니다.\n"
+"이 방법은 가장 정확한 (하지만 가장 느린) 충돌 탐지 방법입니다."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
@@ -5921,10 +5919,12 @@ msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
+"폴리곤 기반 충돌 모양을 하나 만듭니다.\n"
+"이 방법은 가장 정확한 (하지만 가장 느린) 충돌 탐지 방법입니다."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Single Convex Collision Siblings"
+msgid "Create Single Convex Collision Sibling"
 msgstr "Convex 충돌 형제 만들기"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -5932,17 +5932,21 @@ msgid ""
 "Creates a single convex collision shape.\n"
 "This is the fastest (but least accurate) option for collision detection."
 msgstr ""
+"convex 충돌 모양을 하나 만듭니다.\n"
+"이 방법은 가장 빠른 (하지만 덜 정확한) 충돌 탐지 방법입니다."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
 msgid "Create Multiple Convex Collision Siblings"
-msgstr "Convex 충돌 형제 만들기"
+msgstr "다중 Convex 충돌 형제 만들기"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is a performance middle-ground between the two above options."
 msgstr ""
+"폴리곤 기반 충돌 모양을 하나 만듭니다.\n"
+"이 방법은 위 두 가지 옵션의 중간 정도 성능입니다."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
@@ -5955,6 +5959,8 @@ msgid ""
 "This can be used instead of the SpatialMaterial Grow property when using "
 "that property isn't possible."
 msgstr ""
+"정적 외곽선 메시를 만듭니다. 외곽선 메시의 법선 벡터는 자동으로 반전됩니다.\n"
+"SpatialMaterial의 Grow 속성을 사용할 수 없을 때 대신 사용할 수 있습니다."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -9501,30 +9507,27 @@ msgid "Export With Debug"
 msgstr "디버그와 함께 내보내기"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "The path specified doesn't exist."
-msgstr "경로가 없습니다."
+msgstr "지정한 경로가 없습니다."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Error opening package file (it's not in ZIP format)."
-msgstr "패키지 파일을 여는 중 오류. ZIP 형식이 아닙니다."
+msgstr "패키지 파일을 여는 중 오류 (ZIP 형식이 아닙니다)."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr ""
-"잘못된 '.zip' 프로젝트 파일입니다. 'project.godot' 파일을 갖고 있지 않습니다."
+"잘못된 \".zip\" 프로젝트 파일입니다. \"project.godot\" 파일이 들어있지 않습니"
+"다."
 
 #: editor/project_manager.cpp
 msgid "Please choose an empty folder."
 msgstr "비어있는 폴더를 선택해주세요."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "'project.godot' 파일 또는 '.zip' 파일을 선택해주세요."
+msgstr "\"project.godot\" 파일 또는 \".zip\" 파일을 선택해주세요."
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -10220,9 +10223,8 @@ msgid "Suffix"
 msgstr "접미사"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Use Regular Expressions"
-msgstr "정규 표현식"
+msgstr "정규 표현식 사용"
 
 #: editor/rename_dialog.cpp
 msgid "Advanced Options"
@@ -10263,7 +10265,7 @@ msgstr ""
 #: editor/rename_dialog.cpp
 #, fuzzy
 msgid "Per-level Counter"
-msgstr "단계 별 카운터"
+msgstr "단계별 카운터"
 
 #: editor/rename_dialog.cpp
 msgid "If set the counter restarts for each group of child nodes"
@@ -10302,14 +10304,12 @@ msgid "Keep"
 msgstr "유지"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "PascalCase to snake_case"
-msgstr "CamelCase를 under_scored로"
+msgstr "PascalCase를 snake_case로"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "snake_case to PascalCase"
-msgstr "under_scored를 CamelCase로"
+msgstr "snake_case를 PascalCase로"
 
 #: editor/rename_dialog.cpp
 msgid "Case"
@@ -10328,14 +10328,12 @@ msgid "Reset"
 msgstr "되돌리기"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Regular Expression Error"
-msgstr "정규 표현식"
+msgstr "정규 표현식 오류"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "At character %s"
-msgstr "올바른 문자:"
+msgstr "(문자 %s 위치)"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10795,9 +10793,8 @@ msgid "Invalid inherited parent name or path."
 msgstr "잘못된 상속된 부모 이름 또는 경로."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Script path/name is valid."
-msgstr "스크립트가 올바릅니다."
+msgstr "스크립트의 경로/이름이 올바릅니다."
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
@@ -10888,9 +10885,8 @@ msgid "Copy Error"
 msgstr "복사 오류"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Video RAM"
-msgstr "비디오 메모리"
+msgstr "비디오 RAM"
 
 #: editor/script_editor_debugger.cpp
 msgid "Skip Breakpoints"
@@ -12270,6 +12266,11 @@ msgid ""
 msgstr ""
 "평면 Shape는 잘 작동하지 않으며 이후 버전에서 제거될 예정입니다. 사용하지 말"
 "아주세요."
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
+msgstr ""
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."

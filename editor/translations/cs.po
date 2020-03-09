@@ -22,7 +22,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-02-19 08:56+0000\n"
+"PO-Revision-Date: 2020-03-01 05:50+0000\n"
 "Last-Translator: Vojtěch Šamla <auzkok@seznam.cz>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
@@ -31,7 +31,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 3.11\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -702,9 +702,8 @@ msgid "Line Number:"
 msgstr "Číslo řádku:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "%d replaced."
-msgstr "Nahradit..."
+msgstr "%d nahrazeno."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -1501,6 +1500,10 @@ msgstr "Název"
 msgid "Singleton"
 msgstr "Singleton"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Vložit parametry"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "Aktualizuji scénu"
@@ -1788,7 +1791,7 @@ msgstr "Zobrazit ve správci souborů"
 msgid "New Folder..."
 msgstr "Nová složka..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Obnovit"
@@ -2297,7 +2300,6 @@ msgstr ""
 "pochopili tento proces."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "This resource belongs to a scene that was instanced or inherited.\n"
 "Changes to it won't be kept when saving the current scene."
@@ -2314,7 +2316,6 @@ msgstr ""
 "panelu Import a znovu ho importujte."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "This scene was imported, so changes to it won't be kept.\n"
 "Instancing it or inheriting will allow making changes to it.\n"
@@ -2327,7 +2328,6 @@ msgstr ""
 "pochopili tento proces."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "This is a remote object, so changes to it won't be kept.\n"
 "Please read the documentation relevant to debugging to better understand "
@@ -2733,17 +2733,16 @@ msgid "Project Settings..."
 msgstr "Nastavení projektu..."
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Version Control"
-msgstr "Verze:"
+msgstr "Správa verzí"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Set Up Version Control"
-msgstr ""
+msgstr "Nastavit správu verzí"
 
 #: editor/editor_node.cpp
 msgid "Shut Down Version Control"
-msgstr ""
+msgstr "Vypnout správu verzí"
 
 #: editor/editor_node.cpp
 msgid "Export..."
@@ -2873,9 +2872,8 @@ msgid "Editor Layout"
 msgstr "Rozložení editoru"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Take Screenshot"
-msgstr "Dává smysl!"
+msgstr "Vytvořit snímek obrazovky"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2932,7 +2930,7 @@ msgstr "Online dokumentace"
 
 #: editor/editor_node.cpp
 msgid "Q&A"
-msgstr "Q&A"
+msgstr "Otázky a odpovědi"
 
 #: editor/editor_node.cpp
 msgid "Issue Tracker"
@@ -2996,19 +2994,16 @@ msgid "Spins when the editor window redraws."
 msgstr "Točí se, když se okno editoru překresluje."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update Continuously"
-msgstr "Spojité"
+msgstr "Aktualizovat průběžně"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update When Changed"
-msgstr "Akualizovat změny"
+msgstr "Akualizovat při změně"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Hide Update Spinner"
-msgstr "Vypnout aktualizační kolečko"
+msgstr "Schovat aktualizační kolečko"
 
 #: editor/editor_node.cpp
 msgid "FileSystem"
@@ -3118,9 +3113,8 @@ msgid "Warning!"
 msgstr "Varování!"
 
 #: editor/editor_path.cpp
-#, fuzzy
 msgid "No sub-resources found."
-msgstr "Dílčí zdroje"
+msgstr "Nebyly nalezeny žádné dílčí zdroje."
 
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
@@ -3372,7 +3366,6 @@ msgid "Import From Node:"
 msgstr "Import z uzlu:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Redownload"
 msgstr "Stáhnout znovu"
 
@@ -3434,9 +3427,8 @@ msgid "Importing:"
 msgstr "Importování:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error getting the list of mirrors."
-msgstr "Chyba při vytváření podpisového objektu."
+msgstr "Chyba při získávání seznamu zrcadel."
 
 #: editor/export_template_manager.cpp
 msgid "Error parsing JSON of mirror list. Please report this issue!"
@@ -3483,22 +3475,20 @@ msgid "Download Complete."
 msgstr "Stahování dokončeno."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Cannot remove temporary file:"
-msgstr "Nelze uložit motiv do souboru:"
+msgstr "Nelze odstranit dočasný soubor:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid ""
 "Templates installation failed.\n"
 "The problematic templates archives can be found at '%s'."
 msgstr ""
-"Instalace šablon selhala. Problémové archivy šablon lze nalézt na '%s'."
+"Instalace šablon selhala.\n"
+"Problémové archivy šablon lze nalézt na '%s'."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error requesting URL:"
-msgstr "Chyba požadavku o url: "
+msgstr "Chyba žádosti o URL:"
 
 #: editor/export_template_manager.cpp
 msgid "Connecting to Mirror..."
@@ -3568,14 +3558,12 @@ msgid "Remove Template"
 msgstr "Odstranit šablonu"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Select Template File"
 msgstr "Vybrat soubor šablony"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Godot Export Templates"
-msgstr "Spravovat exportní šablony"
+msgstr "Exportní šablony Godotu"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
@@ -3624,9 +3612,8 @@ msgid "No name provided."
 msgstr "Nebylo poskytnuto žádné jméno."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Provided name contains invalid characters."
-msgstr "Poskytnuté jméno obsahuje neplatné znaky"
+msgstr "Poskytnuté jméno obsahuje neplatné znaky."
 
 #: editor/filesystem_dock.cpp
 msgid "A file or folder with this name already exists."
@@ -3653,31 +3640,26 @@ msgid "Duplicating folder:"
 msgstr "Duplikace složky:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "New Inherited Scene"
-msgstr "Nová odvozená scéna..."
+msgstr "Nová odvozená scéna"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Set As Main Scene"
-msgstr "Hlavní scéna"
+msgstr "Nastavit jako hlavní scénu"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Open Scenes"
-msgstr "Otevřít scénu"
+msgstr "Otevřít scény"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
 msgstr "Instance"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Add to Favorites"
 msgstr "Přidat do oblíbených"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Remove from Favorites"
 msgstr "Odebrat z oblíbených"
 
@@ -3702,9 +3684,8 @@ msgid "Move To..."
 msgstr "Přesunout do..."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "New Scene..."
-msgstr "Nová scéna"
+msgstr "Nová scéna..."
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "New Script..."
@@ -3732,21 +3713,18 @@ msgid "Rename"
 msgstr "Přejmenovat"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Previous Folder/File"
-msgstr "Předchozí složka"
+msgstr "Předchozí složka/soubor"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Next Folder/File"
-msgstr "Další složka"
+msgstr "Další složka/soubor"
 
 #: editor/filesystem_dock.cpp
 msgid "Re-Scan Filesystem"
 msgstr "Znovu skenovat souborový systém"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Toggle Split Mode"
 msgstr "Přepnout režim rozdělení"
 
@@ -3775,9 +3753,8 @@ msgid "Overwrite"
 msgstr "Přepsat"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Create Scene"
-msgstr "Vytvořit ze scény"
+msgstr "Vytvořit scénu"
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Create Script"
@@ -3855,14 +3832,12 @@ msgid "Invalid group name."
 msgstr "Neplatný název skupiny."
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Rename Group"
-msgstr "Spravovat skupiny"
+msgstr "Přejmenovat skupinu"
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Delete Group"
-msgstr "Odstranit rozložení"
+msgstr "Odstranit skupinu"
 
 #: editor/groups_editor.cpp editor/node_dock.cpp
 msgid "Groups"
@@ -3887,9 +3862,8 @@ msgid "Empty groups will be automatically removed."
 msgstr ""
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Group Editor"
-msgstr "Otevřít editor skriptů"
+msgstr "Editor skupin"
 
 #: editor/groups_editor.cpp
 msgid "Manage Groups"
@@ -3973,9 +3947,8 @@ msgid "Saving..."
 msgstr "Ukládání..."
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "%d Files"
-msgstr " Soubory"
+msgstr "%d souborů"
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
@@ -4032,10 +4005,6 @@ msgstr "Uložit jako..."
 #: editor/inspector_dock.cpp
 msgid "Copy Params"
 msgstr "Kopírovat parametry"
-
-#: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "Vložit parametry"
 
 #: editor/inspector_dock.cpp
 #, fuzzy
@@ -4099,9 +4068,8 @@ msgid "MultiNode Set"
 msgstr ""
 
 #: editor/node_dock.cpp
-#, fuzzy
 msgid "Select a single node to edit its signals and groups."
-msgstr "Zvolit uzel pro editaci signálů a skupin."
+msgstr "Zvolte vybraný uzel pro editaci jeho signálů a skupin."
 
 #: editor/plugin_config_dialog.cpp
 msgid "Edit a Plugin"
@@ -4378,9 +4346,8 @@ msgid "Delete Node(s)"
 msgstr "Odstranit uzel/uzly"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Filter On/Off"
-msgstr "Aktivovat/Deaktivovat tuto stopu."
+msgstr "Aktivovat/Deaktivovat filtr"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Change Filter"
@@ -4998,11 +4965,11 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
-msgstr ""
+msgstr "Název (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (Z-A)"
-msgstr ""
+msgstr "Název (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "License (A-Z)"
@@ -5978,7 +5945,7 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Single Convex Collision Siblings"
+msgid "Create Single Convex Collision Sibling"
 msgstr "Vytvořit navigační polygon"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -6862,7 +6829,7 @@ msgstr "Otevřít online dokumentaci Godotu."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Request Docs"
-msgstr ""
+msgstr "Požádat o dokumentaci"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Help improve the Godot documentation by giving feedback."
@@ -8468,9 +8435,8 @@ msgid "Make Concave"
 msgstr "Přesunout polygon"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Collision Polygon"
-msgstr "Vytvořit navigační polygon"
+msgstr "Vytvořit kolizní polygon"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -9905,9 +9871,8 @@ msgid "Project Manager"
 msgstr "Správce projektů"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Projects"
-msgstr "Projekt"
+msgstr "Projekty"
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
@@ -9926,9 +9891,8 @@ msgid "New Project"
 msgstr "Nový projekt"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Remove Missing"
-msgstr "Odstranit bod"
+msgstr "Odstranit nenalezené"
 
 #: editor/project_manager.cpp
 msgid "Templates"
@@ -10431,14 +10395,12 @@ msgid "Keep"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "PascalCase to snake_case"
-msgstr "CamelCase na under_scored"
+msgstr "PascalCase na snake_case"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "snake_case to PascalCase"
-msgstr "under_scored na CamelCase"
+msgstr "snake_case na PascalCase"
 
 #: editor/rename_dialog.cpp
 msgid "Case"
@@ -10457,14 +10419,12 @@ msgid "Reset"
 msgstr "Resetovat"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Regular Expression Error"
-msgstr "Regulární výrazy"
+msgstr "Chyba regulárního výrazu"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "At character %s"
-msgstr "Platné znaky:"
+msgstr "Na znaku %s"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10634,9 +10594,8 @@ msgid "User Interface"
 msgstr "Uživatelské rozhraní"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Other Node"
-msgstr "Smazat uzel"
+msgstr "Jiný uzel"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes from a foreign scene!"
@@ -11505,7 +11464,7 @@ msgstr ""
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Done!"
-msgstr ""
+msgstr "Hotovo!"
 
 #: modules/visual_script/visual_script.cpp
 #, fuzzy
@@ -11811,24 +11770,20 @@ msgid "Members:"
 msgstr "Členové:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Base Type:"
-msgstr "Změnit základní typ"
+msgstr "Změnit základní typ:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Nodes..."
-msgstr "Přidat uzel..."
+msgstr "Přidat uzly..."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Function..."
-msgstr "Přidat funkci"
+msgstr "Přidat funkci..."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "function_name"
-msgstr "Funkce:"
+msgstr "název_funkce"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -11852,19 +11807,16 @@ msgid "Cut Nodes"
 msgstr "Vyjmout uzly"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Make Function"
-msgstr "Přejmenovat funkci"
+msgstr "Vytvořit funkci"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Refresh Graph"
-msgstr "Obnovit"
+msgstr "Obnovit graf"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Edit Member"
-msgstr "Členové"
+msgstr "Upravit členy"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
@@ -12418,6 +12370,11 @@ msgstr ""
 msgid ""
 "Plane shapes don't work well and will be removed in future versions. Please "
 "don't use them."
+msgstr ""
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
 msgstr ""
 
 #: scene/3d/cpu_particles.cpp

@@ -32,7 +32,7 @@
 # Vadim Vergasov <vadim.vergasov2003@gmail.com>, 2018, 2019.
 # Аслан Снупов <aslan170505@gmail.com>, 2018.
 # Alexandr Eremeev <ae125529@gmail.com>, 2019.
-# Ruaguzov Michael <miha890r@gmail.com>, 2019.
+# Ruaguzov Michael <miha890r@gmail.com>, 2019, 2020.
 # Alexander Danilov <modos189@protonmail.com>, 2019.
 # Sergey Nakhov <true.stalin.exe@gmail.com>, 2019.
 # Bumerang <it.bumerang@gmail.com>, 2019.
@@ -41,7 +41,7 @@
 # Nikita <iron-nikita@yandex.ru>, 2019.
 # LeLuCh B0й <alekx@alumni.nottingham.ac.uk>, 2019.
 # Арсений Солодков <arsen332211@gmail.com>, 2019.
-# Nikita <yakrobat@protonmail.com>, 2019.
+# Nikita <yakrobat@protonmail.com>, 2019, 2020.
 # LAT_Rio <AlSenya@yandex.ru>, 2019.
 # devnp <dev.necropan@gmail.com>, 2019.
 # Виктор <victor8632@bk.ru>, 2019.
@@ -53,7 +53,7 @@
 # Sergey <www.window1@mail.ru>, 2019.
 # Vladislav <onion.ring@mail.ru>, 2019, 2020.
 # knightpp <kotteam99@gmail.com>, 2019.
-# Константин Рин <email.to.rean@gmail.com>, 2019.
+# Константин Рин <email.to.rean@gmail.com>, 2019, 2020.
 # Maxim Samburskiy <alpacones@outlook.com>, 2019.
 # Dima Koshel <form.eater@gmail.com>, 2019.
 # Danil Alexeev <danil@alexeev.xyz>, 2019, 2020.
@@ -64,12 +64,14 @@
 # Andy <8ofproject@gmail.com>, 2020.
 # Андрей Беляков <andbelandantrus@gmail.com>, 2020.
 # Artur Tretiak <stikyt@protonmail.com>, 2020.
+# Smadjavul <o1985af@gmail.com>, 2020.
+# anonymous <noreply@weblate.org>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-02-14 03:18+0000\n"
-"Last-Translator: Artur Tretiak <stikyt@protonmail.com>\n"
+"PO-Revision-Date: 2020-03-07 21:18+0000\n"
+"Last-Translator: Smadjavul <o1985af@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -78,7 +80,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -96,8 +98,9 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Недостаточно байтов для декодирования байтов или неверный формат."
 
 #: core/math/expression.cpp
+#, fuzzy
 msgid "Invalid input %i (not passed) in expression"
-msgstr "Неправильный ввод %i (не был передан) в выражении"
+msgstr "Некорректный ввод %i (не был передан) в выражении"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -388,11 +391,11 @@ msgstr "Удалить ключ(и)"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Update Mode"
-msgstr "Изменить способ обновления анимации"
+msgstr "Изменить режим обновления анимации"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Interpolation Mode"
-msgstr "Изменить метод интерполяции анимации"
+msgstr "Изменить режим интерполяции анимации"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Loop Mode"
@@ -748,9 +751,8 @@ msgid "Line Number:"
 msgstr "Номер строки:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "%d replaced."
-msgstr "Заменить..."
+msgstr "%d заменено."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -1548,6 +1550,10 @@ msgstr "Название"
 msgid "Singleton"
 msgstr "Синглтон"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Вставить параметры"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "Обновление сцены"
@@ -1835,7 +1841,7 @@ msgstr "Просмотреть в проводнике"
 msgid "New Folder..."
 msgstr "Новая папка..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Обновить"
@@ -1929,7 +1935,7 @@ msgstr "Обновить файлы."
 
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
-msgstr "Добавить или удалить текущую папку из избранных."
+msgstr "Добавить/убрать текущую папку в избранное."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Toggle the visibility of hidden files."
@@ -3285,7 +3291,7 @@ msgstr "Назначается..."
 
 #: editor/editor_properties.cpp
 msgid "Invalid RID"
-msgstr "Неверный путь"
+msgstr "Неверный RID"
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -3400,7 +3406,7 @@ msgstr "Уже существует отредактированная сцен�
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't instance script:"
-msgstr "Скрипт не соответствует требованиям:"
+msgstr "Не удалось создать экземпляр скрипта:"
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the 'tool' keyword?"
@@ -3477,7 +3483,7 @@ msgstr "Неверный формат version.txt файла внутри шаб
 
 #: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
-msgstr "Не найден version.txt файл в шаблонах."
+msgstr "Файл version.txt не найден в шаблонах."
 
 #: editor/export_template_manager.cpp
 msgid "Error creating path for templates:"
@@ -4013,9 +4019,8 @@ msgid "Saving..."
 msgstr "Сохранение..."
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "%d Files"
-msgstr " Файлы"
+msgstr "%d файлов"
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
@@ -4039,7 +4044,7 @@ msgstr "Переимпортировать"
 
 #: editor/import_dock.cpp
 msgid "Save scenes, re-import and restart"
-msgstr "Сохранить сцены, импортировать заново и перезапустить"
+msgstr "Сохранить сцены, переимпортировать и перезапустить"
 
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
@@ -4072,10 +4077,6 @@ msgstr "Сохранить как..."
 #: editor/inspector_dock.cpp
 msgid "Copy Params"
 msgstr "Копировать параметры"
-
-#: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "Вставить параметры"
 
 #: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
@@ -5247,7 +5248,9 @@ msgstr "Предустановки для якорей и значения от�
 msgid ""
 "When active, moving Control nodes changes their anchors instead of their "
 "margins."
-msgstr "При активном движении узлы Control меняют свои якоря вместо полей."
+msgstr ""
+"Когда активно, у перемещаемых узлов Control будут изменяться значения якорей "
+"вместо отступов."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Top Left"
@@ -5897,9 +5900,8 @@ msgid "Mesh is empty!"
 msgstr "Полисетка пуста!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create a Trimesh collision shape."
-msgstr "Создать вогнутую область столкновения"
+msgstr "Невозможно создать треугольную сетку для формы столкновений."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
@@ -5930,6 +5932,7 @@ msgstr "Создать выпуклую форму(ы)"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create multiple convex collision shapes for the scene root."
 msgstr ""
+"Невозможно создать несколько выпуклых форм столкновения для корня сцены."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
@@ -5995,6 +5998,9 @@ msgid ""
 "automatically.\n"
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
+"Создает StaticBody и автоматически присваивает ему форму столкновения на "
+"основе полигона.\n"
+"Это самый точный (но самый медленный) способ обнаружения столкновений."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
@@ -6005,10 +6011,12 @@ msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
+"Создает форму столкновения на основе полигона.\n"
+"Это самый точный (но самый медленный) способ обнаружения столкновений."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Single Convex Collision Siblings"
+msgid "Create Single Convex Collision Sibling"
 msgstr "Создать выпуклую область столкновения"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -6016,6 +6024,8 @@ msgid ""
 "Creates a single convex collision shape.\n"
 "This is the fastest (but least accurate) option for collision detection."
 msgstr ""
+"Создаёт выпуклую форму столкновения.\n"
+"Это самый быстрый (но наименее точный) способ обнаружения столкновений."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
@@ -6027,6 +6037,8 @@ msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is a performance middle-ground between the two above options."
 msgstr ""
+"Создает форму столкновения на основе полигона.\n"
+"Это средний по производительности вариант между двумя предыдущими."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
@@ -9315,7 +9327,7 @@ msgstr "Вычитает вектор из вектора."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector constant."
-msgstr "Векторную константа."
+msgstr "Векторная константа."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector uniform."
@@ -9755,7 +9767,7 @@ msgid ""
 "Not recommended for web games"
 msgstr ""
 "Более высокое качество графики\n"
-"Все функции доступны\n"
+"Доступны все функции\n"
 "Несовместимо со старым оборудованием\n"
 "Не рекомендуется для веб-игр"
 
@@ -10467,7 +10479,7 @@ msgstr "Регулярное выражение"
 #: editor/rename_dialog.cpp
 #, fuzzy
 msgid "At character %s"
-msgstr "Допустимые символы:"
+msgstr "На символе %s"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -11745,7 +11757,7 @@ msgstr "Изменить размер комментария"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't copy the function node."
-msgstr "Не удаётся скопировать узел функцию."
+msgstr "Не удаётся копировать узел функции."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Clipboard is empty!"
@@ -12436,6 +12448,11 @@ msgid ""
 msgstr ""
 "Формы плоскостей не очень хорошо работают и будут удалены в последующих "
 "версиях. Пожалуйста, не используйте их."
+
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
+msgstr ""
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
