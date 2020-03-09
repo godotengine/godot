@@ -34,5 +34,6 @@ static const char* const E_SPV_EXT_shader_stencil_export        = "SPV_EXT_shade
 static const char* const E_SPV_EXT_shader_viewport_index_layer  = "SPV_EXT_shader_viewport_index_layer";
 static const char* const E_SPV_EXT_fragment_fully_covered = "SPV_EXT_fragment_fully_covered";
 static const char* const E_SPV_EXT_fragment_invocation_density = "SPV_EXT_fragment_invocation_density";
+static const char* const E_SPV_EXT_demote_to_helper_invocation = "SPV_EXT_demote_to_helper_invocation";
 
 #endif  // #ifndef GLSLextEXT_H

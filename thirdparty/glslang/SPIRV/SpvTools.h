@@ -41,10 +41,12 @@
 #ifndef GLSLANG_SPV_TOOLS_H
 #define GLSLANG_SPV_TOOLS_H
 
+#ifdef ENABLE_OPT
 #include <vector>
 #include <ostream>
+#endif
 
-#include "../glslang/MachineIndependent/localintermediate.h"
+#include "glslang/MachineIndependent/localintermediate.h"
 #include "Logger.h"
 
 namespace glslang {
@@ -59,14 +61,14 @@ struct SpvOptions {
     bool validate;
 };
 
-#if ENABLE_OPT
+#ifdef ENABLE_OPT
 
 // Use the SPIRV-Tools disassembler to print SPIR-V.
 void SpirvToolsDisassemble(std::ostream& out, const std::vector<unsigned int>& spirv);
 
 // Apply the SPIRV-Tools validator to generated SPIR-V.
 void SpirvToolsValidate(const glslang::TIntermediate& intermediate, std::vector<unsigned int>& spirv,
-                        spv::SpvBuildLogger*);
+                        spv::SpvBuildLogger*, bool prelegalization);
 
 // Apply the SPIRV-Tools optimizer to generated SPIR-V, for the purpose of
 // legalizing HLSL SPIR-V.
