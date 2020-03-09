@@ -100,7 +100,7 @@
 			</return>
 			<argument index="0" name="b" type="Basis">
 			</argument>
-			<argument index="1" name="epsilon" type="float" default="0.00001">
+			<argument index="1" name="epsilon" type="float" default="1e-05">
 			</argument>
 			<description>
 				Returns [code]true[/code] if this basis and [code]b[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.

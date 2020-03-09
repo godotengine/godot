@@ -77,7 +77,7 @@
 			</return>
 			<argument index="0" name="point" type="Vector3">
 			</argument>
-			<argument index="1" name="epsilon" type="float" default="0.00001">
+			<argument index="1" name="epsilon" type="float" default="1e-05">
 			</argument>
 			<description>
 				Returns [code]true[/code] if [code]point[/code] is inside the plane (by a very minimum [code]epsilon[/code] threshold).

@@ -127,7 +127,7 @@
 			</return>
 			<argument index="0" name="value" type="Variant">
 			</argument>
-			<argument index="1" name="before" type="bool" default="True">
+			<argument index="1" name="before" type="bool" default="true">
 			</argument>
 			<description>
 				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a [code]before[/code] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array.
@@ -143,7 +143,7 @@
 			</argument>
 			<argument index="2" name="func" type="String">
 			</argument>
-			<argument index="3" name="before" type="bool" default="True">
+			<argument index="3" name="before" type="bool" default="true">
 			</argument>
 			<description>
 				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search and a custom comparison method. Optionally, a [code]before[/code] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array. The custom method receives two arguments (an element from the array and the value searched for) and must return [code]true[/code] if the first argument is less than the second, and return [code]false[/code] otherwise.
@@ -169,7 +169,7 @@
 		<method name="duplicate">
 			<return type="Array">
 			</return>
-			<argument index="0" name="deep" type="bool" default="False">
+			<argument index="0" name="deep" type="bool" default="false">
 			</argument>
 			<description>
 				Returns a copy of the array.
@@ -357,7 +357,7 @@
 			</argument>
 			<argument index="2" name="step" type="int" default="1">
 			</argument>
-			<argument index="3" name="deep" type="bool" default="False">
+			<argument index="3" name="deep" type="bool" default="false">
 			</argument>
 			<description>
 				Duplicates the subset described in the function and returns it in an array, deeply copying the array if [code]deep[/code] is [code]true[/code]. Lower and upper index are inclusive, with the [code]step[/code] describing the change between indices while slicing.
