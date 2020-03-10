@@ -122,6 +122,7 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_FILE_SERVER), !ischecked);
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_file_server", !ischecked);
+
 		} break;
 		case RUN_LIVE_DEBUG: {
 
@@ -136,6 +137,7 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEPLOY_REMOTE_DEBUG));
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEPLOY_REMOTE_DEBUG), !ischecked);
+			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_deploy_remote_debug", !ischecked);
 
 		} break;
 		case RUN_DEBUG_COLLISONS: {
