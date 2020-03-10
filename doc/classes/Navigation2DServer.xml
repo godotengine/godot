@@ -147,7 +147,7 @@
 			<argument index="1" name="delta" type="float">
 			</argument>
 			<description>
-				Performs collision avoidance immediately for the specified agent. Please use this function as last solution because it's not optimal.
+				Performs collision avoidance immediately for the specified agent. Only use this method as a last resort, as it's relatively slow.
 			</description>
 		</method>
 		<method name="free" qualifiers="const">
