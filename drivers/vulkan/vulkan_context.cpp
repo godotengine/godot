@@ -1514,6 +1514,7 @@ VkPhysicalDeviceLimits VulkanContext::get_device_limits() const {
 }
 
 VulkanContext::VulkanContext() {
+	queue_props = NULL;
 	command_buffer_count = 0;
 	instance_validation_layers = NULL;
 	use_validation_layers = true;
