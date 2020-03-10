@@ -4,7 +4,7 @@
 		Base script that can be used to add extension functions to the editor.
 	</brief_description>
 	<description>
-		Scripts extending this class and implementing its [method _run] method can be executed from the Script Editor's [b]File &gt; Run[/b] menu option (or by pressing [code]Ctrl+Shift+X[/code]) while the editor is running. This is useful for adding custom in-editor functionality to Godot. For more complex additions, consider using [EditorPlugin]s instead.
+		Scripts extending this class and implementing its [method _run] method can be executed from the Script Editor's [b]File &gt; Run[/b] menu option (or by pressing [kbd]Ctrl + Shift + X[/kbd]) while the editor is running. This is useful for adding custom in-editor functionality to Godot. For more complex additions, consider using [EditorPlugin]s instead.
 		[b]Note:[/b] Extending scripts need to have [code]tool[/code] mode enabled.
 		[b]Example script:[/b]
 		[codeblock]

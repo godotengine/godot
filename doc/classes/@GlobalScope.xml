@@ -155,7 +155,7 @@
 			Tab key.
 		</constant>
 		<constant name="KEY_BACKTAB" value="16777219" enum="KeyList">
-			Shift+Tab key.
+			Shift + Tab key.
 		</constant>
 		<constant name="KEY_BACKSPACE" value="16777220" enum="KeyList">
 			Backspace key.
