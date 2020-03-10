@@ -151,13 +151,13 @@ def configure(env):
 
     env.Prepend(CPPPATH=['#platform/osx'])
     env.Append(CPPDEFINES=['OSX_ENABLED', 'UNIX_ENABLED', 'APPLE_STYLE_KEYS', 'COREAUDIO_ENABLED', 'COREMIDI_ENABLED'])
-    env.AppendUnique(FRAMEWORKS=['Cocoa', 'Carbon', 'AudioUnit', 'CoreAudio', 'CoreMIDI', 'IOKit', 'ForceFeedback', 'CoreVideo', 'AVFoundation', 'CoreMedia'])
+    env.Append(LINKFLAGS=['-framework', 'Cocoa', '-framework', 'Carbon', '-framework', 'AudioUnit', '-framework', 'CoreAudio', '-framework', 'CoreMIDI', '-framework', 'IOKit', '-framework', 'ForceFeedback', '-framework', 'CoreVideo', '-framework', 'AVFoundation', '-framework', 'CoreMedia'])
     env.Append(LIBS=['pthread', 'z'])
 
     env.Append(CPPDEFINES=['VULKAN_ENABLED'])
-    env.AppendUnique(FRAMEWORKS=['Metal', 'QuartzCore', 'IOSurface'])
+    env.Append(LINKFLAGS=['-framework', 'Metal', '-framework', 'QuartzCore', '-framework', 'IOSurface'])
     if (env['use_static_mvk']):
-        env.AppendUnique(FRAMEWORKS=['MoltenVK'])
+        env.Append(LINKFLAGS=['-framework', 'MoltenVK'])
         env['builtin_vulkan'] = False
     elif not env['builtin_vulkan']:
         env.Append(LIBS=['vulkan'])
