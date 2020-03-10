@@ -798,11 +798,11 @@
 			Tells Godot which node it should give keyboard focus to if the user presses the top arrow on the keyboard or top on a gamepad by default. You can change the key by editing the [code]ui_top[/code] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the bottom of this one.
 		</member>
 		<member name="focus_next" type="NodePath" setter="set_focus_next" getter="get_focus_next" default="NodePath(&quot;&quot;)">
-			Tells Godot which node it should give keyboard focus to if the user presses Tab on a keyboard by default. You can change the key by editing the [code]ui_focus_next[/code] input action.
+			Tells Godot which node it should give keyboard focus to if the user presses [kbd]Tab[/kbd] on a keyboard by default. You can change the key by editing the [code]ui_focus_next[/code] input action.
 			If this property is not set, Godot will select a "best guess" based on surrounding nodes in the scene tree.
 		</member>
 		<member name="focus_previous" type="NodePath" setter="set_focus_previous" getter="get_focus_previous" default="NodePath(&quot;&quot;)">
-			Tells Godot which node it should give keyboard focus to if the user presses Shift+Tab on a keyboard by default. You can change the key by editing the [code]ui_focus_prev[/code] input action.
+			Tells Godot which node it should give keyboard focus to if the user presses [kbd]Shift + Tab[/kbd] on a keyboard by default. You can change the key by editing the [code]ui_focus_prev[/code] input action.
 			If this property is not set, Godot will select a "best guess" based on surrounding nodes in the scene tree.
 		</member>
 		<member name="grow_horizontal" type="int" setter="set_h_grow_direction" getter="get_h_grow_direction" enum="Control.GrowDirection" default="1">

@@ -932,7 +932,7 @@
 			Implemented on all platforms.
 		</constant>
 		<constant name="NOTIFICATION_WM_CLOSE_REQUEST" value="1006">
-			Notification received from the OS when a close request is sent (e.g. closing the window with a "Close" button or Alt+F4).
+			Notification received from the OS when a close request is sent (e.g. closing the window with a "Close" button or [kbd]Alt + F4[/kbd]).
 			Implemented on desktop platforms.
 		</constant>
 		<constant name="NOTIFICATION_WM_GO_BACK_REQUEST" value="1007">
