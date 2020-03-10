@@ -543,15 +543,9 @@ Vector<Ref<Shape> > Mesh::convex_decompose() const {
 
 	ERR_FAIL_COND_V(!convex_composition_function, Vector<Ref<Shape> >());
 
-	Vector<Face3> faces = get_faces();
-	Vector<Face3> f3;
-	f3.resize(faces.size());
-	const Face3 *f = faces.ptr();
-	for (int i = 0; i < f3.size(); i++) {
-		f3.write[i] = f[i];
-	}
+	const Vector<Face3> faces = get_faces();
 
-	Vector<Vector<Face3> > decomposed = convex_composition_function(f3);
+	Vector<Vector<Face3> > decomposed = convex_composition_function(faces);
 
 	Vector<Ref<Shape> > ret;
 
