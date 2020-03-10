@@ -150,7 +150,7 @@ Array PrimitiveMesh::surface_get_blend_shape_arrays(int p_surface) const {
 uint32_t PrimitiveMesh::surface_get_format(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, 1, 0);
 
-	return VS::ARRAY_COMPRESS_DEFAULT;
+	return VS::ARRAY_FORMAT_VERTEX | VS::ARRAY_FORMAT_NORMAL | VS::ARRAY_FORMAT_TANGENT | VS::ARRAY_FORMAT_TEX_UV | VS::ARRAY_FORMAT_INDEX | VS::ARRAY_COMPRESS_DEFAULT;
 }
 
 Mesh::PrimitiveType PrimitiveMesh::surface_get_primitive_type(int p_idx) const {
