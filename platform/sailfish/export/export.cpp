@@ -547,7 +547,7 @@ protected:
 				args.push_back( String("\"") + rsa_key_path + String("\"") );
 				args.push_back("-p");
 				args.push_back(ssh_port); // default is 2222 port
-				args.push_back("nemo@localhost");
+				args.push_back("mersdk@localhost");
                 
                 buid_script_path = sdk_shared_path + export_path_part + separator + String("buildscript.sh");
 
@@ -991,7 +991,7 @@ public:
 			args.push_back( String("\"") + rsa_key_path + String("\"") );
 			args.push_back("-p");
 			args.push_back(ssh_port); // default is 2222 port
-			args.push_back("nemo@localhost");
+			args.push_back("mersdk@localhost");
 		}
 		args.push_back("sb2-config");
 		args.push_back("-l");
