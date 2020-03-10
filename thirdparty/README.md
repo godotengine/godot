@@ -274,6 +274,9 @@ File extracted from upstream release tarball (`-apache.tgz` variant):
 - LICENSE and apache-2.0.txt files
 - Applied the patch in `thirdparty/mbedtls/patches/1453.diff` (PR 1453).
   Soon to be merged upstream. Check it out at next update.
+- Applied the patch in `thirdparty/mbedtls/patches/padlock.diff`. This disables
+  VIA padlock support which defines a symbol `unsupported` which clashes with
+  a pre-defined symbol.
 - Added 2 files `godot_core_mbedtls_platform.{c,h}` providing configuration
   for light bundling with core.
 
