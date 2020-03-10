@@ -2389,11 +2389,18 @@ void SpatialEditorViewport::_notification(int p_what) {
 			if (!se)
 				continue;
 
+			Transform t = sp->get_global_gizmo_transform();
+
+			exist = true;
+			if (se->last_xform == t)
+				continue;
+			changed = true;
+			se->last_xform = t;
+
 			VisualInstance *vi = Object::cast_to<VisualInstance>(sp);
 
 			se->aabb = vi ? vi->get_aabb() : _calculate_spatial_bounds(sp);
 
-			Transform t = sp->get_global_gizmo_transform();
 			t.translate(se->aabb.position);
 
 			// apply AABB scaling before item's global transform
@@ -2401,11 +2408,6 @@ void SpatialEditorViewport::_notification(int p_what) {
 			aabb_s.scale(se->aabb.size);
 			t.basis = t.basis * aabb_s;
 
-			exist = true;
-			if (se->last_xform == t)
-				continue;
-			changed = true;
-			se->last_xform = t;
 			VisualServer::get_singleton()->instance_set_transform(se->sbox_instance, t);
 		}
 
