@@ -311,6 +311,7 @@ Color Color::html(const String &p_color) {
 		color = color.substr(1, color.length() - 1);
 	}
 	if (color.length() == 3 || color.length() == 4) {
+		// Color code is a short form like `#1234`, convert it to `#11223344`.
 		String exp_color;
 		for (int i = 0; i < color.length(); i++) {
 			exp_color += color[i];
@@ -329,20 +330,18 @@ Color Color::html(const String &p_color) {
 		ERR_FAIL_V_MSG(Color(), "Invalid color code: " + p_color + ".");
 	}
 
+	int r = _parse_col(color, 0);
+	ERR_FAIL_COND_V_MSG(r < 0, Color(), "Invalid color code: " + p_color + ".");
+	int g = _parse_col(color, 2);
+	ERR_FAIL_COND_V_MSG(g < 0, Color(), "Invalid color code: " + p_color + ".");
+	int b = _parse_col(color, 4);
+	ERR_FAIL_COND_V_MSG(b < 0, Color(), "Invalid color code: " + p_color + ".");
+
 	int a = 255;
 	if (alpha) {
-		a = _parse_col(color, 0);
+		a = _parse_col(color, 6);
 		ERR_FAIL_COND_V_MSG(a < 0, Color(), "Invalid color code: " + p_color + ".");
 	}
-
-	int from = alpha ? 2 : 0;
-
-	int r = _parse_col(color, from + 0);
-	ERR_FAIL_COND_V_MSG(r < 0, Color(), "Invalid color code: " + p_color + ".");
-	int g = _parse_col(color, from + 2);
-	ERR_FAIL_COND_V_MSG(g < 0, Color(), "Invalid color code: " + p_color + ".");
-	int b = _parse_col(color, from + 4);
-	ERR_FAIL_COND_V_MSG(b < 0, Color(), "Invalid color code: " + p_color + ".");
 
 	return Color(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
 }
@@ -367,26 +366,23 @@ bool Color::html_is_valid(const String &p_color) {
 		return false;
 	}
 
-	if (alpha) {
-		int a = _parse_col(color, 0);
-		if (a < 0) {
-			return false;
-		}
-	}
-
-	int from = alpha ? 2 : 0;
-
-	int r = _parse_col(color, from + 0);
+	int r = _parse_col(color, 0);
 	if (r < 0) {
 		return false;
 	}
-	int g = _parse_col(color, from + 2);
+	int g = _parse_col(color, 2);
 	if (g < 0) {
 		return false;
 	}
-	int b = _parse_col(color, from + 4);
+	int b = _parse_col(color, 4);
 	if (b < 0) {
 		return false;
+	}
+	if (alpha) {
+		int a = _parse_col(color, 6);
+		if (a < 0) {
+			return false;
+		}
 	}
 
 	return true;
@@ -433,13 +429,11 @@ String _to_hex(float p_val) {
 }
 
 String Color::to_html(bool p_alpha) const {
-	String txt;
-	txt += _to_hex(r);
-	txt += _to_hex(g);
-	txt += _to_hex(b);
+	String txt = _to_hex(r) + _to_hex(g) + _to_hex(b);
 	if (p_alpha) {
-		txt = _to_hex(a) + txt;
+		txt += _to_hex(a);
 	}
+
 	return txt;
 }
 
