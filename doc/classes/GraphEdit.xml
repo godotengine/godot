@@ -240,7 +240,7 @@
 		</signal>
 		<signal name="copy_nodes_request">
 			<description>
-				Emitted when the user presses [code]Ctrl + C[/code].
+				Emitted when the user presses [kbd]Ctrl + C[/kbd].
 			</description>
 		</signal>
 		<signal name="delete_nodes_request">
@@ -281,7 +281,7 @@
 		</signal>
 		<signal name="paste_nodes_request">
 			<description>
-				Emitted when the user presses [code]Ctrl + V[/code].
+				Emitted when the user presses [kbd]Ctrl + V[/kbd].
 			</description>
 		</signal>
 		<signal name="popup_request">
