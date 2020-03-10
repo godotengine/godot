@@ -146,8 +146,8 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Ve
 		return;
 
 	// There is a debugger, parse breakpoints.
-	ScriptDebugger *script_debugger = singleton->get_script_debugger();
-	script_debugger->set_skip_breakpoints(p_skip_breakpoints);
+	ScriptDebugger *singleton_script_debugger = singleton->get_script_debugger();
+	singleton_script_debugger->set_skip_breakpoints(p_skip_breakpoints);
 
 	for (int i = 0; i < p_breakpoints.size(); i++) {
 
@@ -155,7 +155,7 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Ve
 		int sp = bp.find_last(":");
 		ERR_CONTINUE_MSG(sp == -1, "Invalid breakpoint: '" + bp + "', expected file:line format.");
 
-		script_debugger->insert_breakpoint(bp.substr(sp + 1, bp.length()).to_int(), bp.substr(0, sp));
+		singleton_script_debugger->insert_breakpoint(bp.substr(sp + 1, bp.length()).to_int(), bp.substr(0, sp));
 	}
 }
 
