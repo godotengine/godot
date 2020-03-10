@@ -71,6 +71,7 @@ void NavigationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("agent_set_position", "agent", "position"), &NavigationServer::agent_set_position);
 	ClassDB::bind_method(D_METHOD("agent_is_map_changed", "agent"), &NavigationServer::agent_is_map_changed);
 	ClassDB::bind_method(D_METHOD("agent_set_callback", "agent", "receiver", "method", "userdata"), &NavigationServer::agent_set_callback, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("agent_force_process_avoidance", "agent", "delta"), &NavigationServer::agent_force_process_avoidance);
 
 	ClassDB::bind_method(D_METHOD("free", "object"), &NavigationServer::free);
 

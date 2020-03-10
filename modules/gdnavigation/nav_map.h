@@ -129,6 +129,8 @@ public:
 		return map_update_id;
 	}
 
+	void step_agent(RvoAgent *agent, real_t p_deltatime);
+
 	void sync();
 	void step(real_t p_deltatime);
 	void dispatch_callbacks();

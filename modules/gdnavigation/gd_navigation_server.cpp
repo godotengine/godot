@@ -411,6 +411,25 @@ COMMAND_4(agent_set_callback, RID, p_agent, Object *, p_receiver, StringName, p_
 	}
 }
 
+Vector3 GdNavigationServer::agent_force_process_avoidance(RID p_agent, real_t p_delta) const {
+
+	operations_mutex->lock();
+	RvoAgent *agent = agent_owner.get(p_agent);
+	if (agent == NULL || agent->get_map() == NULL) {
+		operations_mutex->unlock();
+		ERR_FAIL_COND_V(agent == NULL, Vector3());
+		ERR_FAIL_COND_V(agent->get_map() == NULL, Vector3());
+	}
+
+	agent->get_map()->step_agent(agent, p_delta);
+	operations_mutex->unlock();
+
+	return Vector3(
+			agent->get_agent()->newVelocity_.x(),
+			agent->get_agent()->newVelocity_.y(),
+			agent->get_agent()->newVelocity_.z());
+}
+
 COMMAND_1(free, RID, p_object) {
 	if (map_owner.owns(p_object)) {
 		NavMap *map = map_owner.getornull(p_object);

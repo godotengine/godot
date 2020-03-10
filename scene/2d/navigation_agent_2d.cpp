@@ -73,6 +73,7 @@ void NavigationAgent2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_final_location"), &NavigationAgent2D::get_final_location);
 
 	ClassDB::bind_method(D_METHOD("_avoidance_done", "new_velocity"), &NavigationAgent2D::_avoidance_done);
+	ClassDB::bind_method(D_METHOD("force_process_avoidance", "delta"), &NavigationAgent2D::force_process_avoidance);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "target_desired_distance", PROPERTY_HINT_RANGE, "0.1,100,0.01"), "set_target_desired_distance", "get_target_desired_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.1,500,0.01"), "set_radius", "get_radius");
@@ -275,6 +276,16 @@ void NavigationAgent2D::_avoidance_done(Vector3 p_new_velocity) {
 	velocity_submitted = false;
 
 	emit_signal("velocity_computed", velocity);
+}
+
+Vector2 NavigationAgent2D::force_process_avoidance(real_t p_delta) {
+	if (!velocity_submitted) {
+		target_velocity = Vector2();
+		return Vector2();
+	}
+	velocity_submitted = false;
+
+	return Navigation2DServer::get_singleton()->agent_force_process_avoidance(agent, p_delta);
 }
 
 String NavigationAgent2D::get_configuration_warning() const {

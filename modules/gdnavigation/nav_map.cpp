@@ -587,6 +587,11 @@ void NavMap::remove_agent_as_controlled(RvoAgent *agent) {
 	}
 }
 
+void NavMap::step_agent(RvoAgent *agent, real_t p_delta) {
+	agent->get_agent()->computeNeighbors(&rvo);
+	agent->get_agent()->computeNewVelocity(p_delta);
+}
+
 void NavMap::sync() {
 
 	if (regenerate_polygons) {
