@@ -124,6 +124,7 @@ name is available.
     Michael Alexsander (YeldhamDev)
     MichiRecRoom (LikeLakers2)
     mrezai
+    muiroc
     Nathan Warden (NathanWarden)
     Nils André-Chang (NilsIrl)
     Nuno Donato (nunodonato)
