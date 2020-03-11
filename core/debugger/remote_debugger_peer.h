@@ -42,7 +42,6 @@ protected:
 	int max_queued_messages = 4096;
 
 public:
-	static Ref<RemoteDebuggerPeer> create_from_uri(const String p_uri);
 	virtual bool is_peer_connected() = 0;
 	virtual bool has_message() = 0;
 	virtual Error put_message(const Array &p_arr) = 0;
@@ -50,6 +49,7 @@ public:
 	virtual void close() = 0;
 	virtual void poll() = 0;
 	virtual int get_max_message_size() const = 0;
+	virtual bool can_block() const { return true; } // If blocking io is allowed on main thread (debug).
 
 	RemoteDebuggerPeer();
 };
@@ -77,6 +77,8 @@ private:
 	void _read_in();
 
 public:
+	static RemoteDebuggerPeer *create(const String &p_uri);
+
 	Error connect_to_host(const String &p_host, uint16_t p_port);
 
 	void poll();
