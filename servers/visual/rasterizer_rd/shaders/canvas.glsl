@@ -416,7 +416,7 @@ FRAGMENT_SHADER_CODE
 
 	vec4 base_color = color;
 	if (bool(draw_data.flags & FLAGS_USING_LIGHT_MASK)) {
-		color = vec4(0.0); //inivisible by default due to using light mask
+		color = vec4(0.0); //invisible by default due to using light mask
 	}
 
 	color *= canvas_data.canvas_modulation;
