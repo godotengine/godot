@@ -380,12 +380,19 @@ protected:
 		String &bin_dir_native = bin_dir;
 #endif
 		Error err;
-		if (!shared_home.empty()) {
-			if (export_path.find(shared_home) == 0) {
-				export_path_part = export_path.substr(shared_home.length(), export_path.length() - shared_home.length()).replace(separator, "/") + String("_buildroot");
-				sdk_shared_path = String("/home/mersdk/share");
-			}
+		if (!shared_home.empty() && export_path.find(shared_home) == 0) {
+			export_path_part = export_path.substr(shared_home.length(), export_path.length() - shared_home.length()).replace(separator, "/") + String("_buildroot");
+			sdk_shared_path = String("/home/mersdk/share");
 		}
+		else if ( !shared_src.empty() && export_path.find(shared_src) == 0) {
+			export_path_part = export_path.substr(shared_src.length(), export_path.length() - shared_src.length()).replace(separator, "/") + String("_buildroot");
+			sdk_shared_path = String("/home/src1");
+		}
+		else {
+			print_error(String("Export path outside of SharedHome and SharedSrc:\nSharedHome: ") +shared_home + String("\nSharedSrc: ") + shared_src);
+			return ERR_CANT_CREATE;
+		}
+
 		//            DirAccessRef broot = DirAccess::open(broot_path, err);
 		DirAccessRef broot = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		// err = broot->make_dir_recursive(rpm_dir_path);
@@ -538,7 +545,6 @@ protected:
 				// here we neet to know where is RSA keys for buildengine
 				String rsa_key_path = p_preset->get(prop_sailfish_sdk_path);
 				rsa_key_path += String(mersdk_rsa_key);
-				execute_binary =  EDITOR_GET("export/sailfish/ssh_tool_path");
 				String ssh_port = EDITOR_GET("export/sailfish/ssh_port");
 				args.clear();
 				args.push_back("-o");
