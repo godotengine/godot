@@ -238,6 +238,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_runtime"), &Tween::get_runtime);
 
 	// Bind interpolation and follow methods
+	ClassDB::bind_method(D_METHOD("interpolate", "initial_val", "final_val", "weight", "trans_type", "ease_type"), &Tween::interpolate, DEFVAL(TRANS_LINEAR), DEFVAL(EASE_IN_OUT));
 	ClassDB::bind_method(D_METHOD("interpolate_property", "object", "property", "initial_val", "final_val", "duration", "trans_type", "ease_type", "delay"), &Tween::interpolate_property, DEFVAL(TRANS_LINEAR), DEFVAL(EASE_IN_OUT), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("interpolate_method", "object", "method", "initial_val", "final_val", "duration", "trans_type", "ease_type", "delay"), &Tween::interpolate_method, DEFVAL(TRANS_LINEAR), DEFVAL(EASE_IN_OUT), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("interpolate_callback", "object", "duration", "callback", "arg1", "arg2", "arg3", "arg4", "arg5"), &Tween::interpolate_callback, DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()));
@@ -1314,6 +1315,37 @@ void Tween::_build_interpolation(InterpolateType p_interpolation_type, Object *p
 
 	// Add this interpolation to the total
 	_push_interpolate_data(data);
+}
+
+Variant Tween::interpolate(Variant p_initial_val, Variant p_final_val, real_t p_weight, TransitionType p_trans_type, EaseType p_ease_type) {
+
+	// Convert any integers into REALs as they are better for interpolation.
+	if (p_initial_val.get_type() == Variant::INT) {
+		p_initial_val = p_initial_val.operator real_t();
+	}
+	if (p_final_val.get_type() == Variant::INT) {
+		p_final_val = p_final_val.operator real_t();
+	}
+
+	ERR_FAIL_COND_V(p_initial_val.get_type() == Variant::NIL, false);
+	ERR_FAIL_COND_V(p_initial_val.get_type() != p_final_val.get_type(), false);
+	ERR_FAIL_COND_V(p_weight < 0 || p_weight > 1, false);
+	ERR_FAIL_COND_V(p_trans_type < 0 || p_trans_type >= TRANS_COUNT, false);
+	ERR_FAIL_COND_V(p_ease_type < 0 || p_ease_type >= EASE_COUNT, false);
+
+	InterpolateData data;
+	data.type = INTER_PROPERTY;
+	data.elapsed = p_weight;
+	data.initial_val = p_initial_val;
+	data.final_val = p_final_val;
+	data.duration = 1.0;
+	data.trans_type = p_trans_type;
+	data.ease_type = p_ease_type;
+	data.delay = 0;
+
+	ERR_FAIL_COND_V(!_calc_delta_val(data.initial_val, data.final_val, data.delta_val), false);
+
+	return _run_equation(data);
 }
 
 void Tween::interpolate_property(Object *p_object, NodePath p_property, Variant p_initial_val, Variant p_final_val, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay) {

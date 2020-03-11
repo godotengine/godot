@@ -79,6 +79,36 @@
 				Returns the total time needed for all tweens to end. If you have two tweens, one lasting 10 seconds and the other 20 seconds, it would return 20 seconds, as by that time all tweens would have finished.
 			</description>
 		</method>
+		<method name="interpolate">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="initial_val" type="Variant">
+			</argument>
+			<argument index="1" name="final_val" type="Variant">
+			</argument>
+			<argument index="2" name="weight" type="float">
+			</argument>
+			<argument index="3" name="trans_type" type="int" enum="Tween.TransitionType" default="0">
+			</argument>
+			<argument index="4" name="ease_type" type="int" enum="Tween.EaseType" default="2">
+			</argument>
+			<description>
+				Returns an interpolated value between [code]initial_val[/code] and [code]final_val[/code], following the transition and easing curves defined in [code]trans_type[/code] and [code]ease_type[/code]. [code]weight[/code] must be between 0 and 1 (inclusive). This can be used as a lower-level alternative to [method interpolate_property].
+				[code]initial_val[/code] and [code]final_val[/code] must be of the same type. If interpolation fails, this method will return [code]false[/code].
+				[b]Note:[/b] If you only need linear interpolation, [method @GDScript.lerp], [method Vector2.linear_interpolate] or [method Vector3.linear_interpolate] may be easier to set up.
+				[codeblock]
+				var tween = Tween.new()
+				# Prints 0.5
+				print(tween.interpolate(0, 1, 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN))
+				# Prints 0.25
+				print(tween.interpolate(0, 1, 0.5, Tween.TRANS_QUAD, Tween.EASE_IN))
+				# Prints 12.5
+				print(tween.interpolate(5, 20, 0.5, Tween.TRANS_LINEAR, Tween.EASE_IN))
+				# Prints 8.75
+				print(tween.interpolate(5, 20, 0.5, Tween.TRANS_QUAD, Tween.EASE_IN))
+				[/codeblock]
+			</description>
+		</method>
 		<method name="interpolate_callback">
 			<return type="void">
 			</return>
