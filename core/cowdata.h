@@ -82,24 +82,25 @@ private:
 	}
 
 	_FORCE_INLINE_ size_t _get_alloc_size(size_t p_elements) const {
-		//return nearest_power_of_2_templated(p_elements*sizeof(T)+sizeof(SafeRefCount)+sizeof(int));
 		return next_power_of_2(p_elements * sizeof(T));
 	}
 
 	_FORCE_INLINE_ bool _get_alloc_size_checked(size_t p_elements, size_t *out) const {
-#if defined(_add_overflow) && defined(_mul_overflow)
+#if defined(__GNUC__)
 		size_t o;
 		size_t p;
-		if (_mul_overflow(p_elements, sizeof(T), &o)) {
+		if (__builtin_mul_overflow(p_elements, sizeof(T), &o)) {
 			*out = 0;
 			return false;
 		}
 		*out = next_power_of_2(o);
-		if (_add_overflow(o, static_cast<size_t>(32), &p)) return false; //no longer allocated here
+		if (__builtin_add_overflow(o, static_cast<size_t>(32), &p)) {
+			return false; // No longer allocated here.
+		}
 		return true;
 #else
 		// Speed is more important than correctness here, do the operations unchecked
-		// and hope the best
+		// and hope for the best.
 		*out = _get_alloc_size(p_elements);
 		return true;
 #endif

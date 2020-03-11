@@ -37,10 +37,10 @@
 
 #include "thirdparty/misc/pcg.h"
 
-#if defined(__GNUC__) || (_llvm_has_builtin(__builtin_clz))
+#if defined(__GNUC__)
 #define CLZ32(x) __builtin_clz(x)
 #elif defined(_MSC_VER)
-#include "intrin.h"
+#include <intrin.h>
 static int __bsr_clz32(uint32_t x) {
 	unsigned long index;
 	_BitScanReverse(&index, x);
@@ -50,11 +50,11 @@ static int __bsr_clz32(uint32_t x) {
 #else
 #endif
 
-#if defined(__GNUC__) || (_llvm_has_builtin(__builtin_ldexp) && _llvm_has_builtin(__builtin_ldexpf))
+#if defined(__GNUC__)
 #define LDEXP(s, e) __builtin_ldexp(s, e)
 #define LDEXPF(s, e) __builtin_ldexpf(s, e)
 #else
-#include "math.h"
+#include <math.h>
 #define LDEXP(s, e) ldexp(s, e)
 #define LDEXPF(s, e) ldexp(s, e)
 #endif
