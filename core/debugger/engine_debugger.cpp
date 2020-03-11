@@ -32,6 +32,7 @@
 
 #include "core/debugger/local_debugger.h"
 #include "core/debugger/remote_debugger.h"
+#include "core/debugger/remote_debugger_peer.h"
 #include "core/debugger/script_debugger.h"
 #include "core/os/os.h"
 
@@ -40,6 +41,7 @@ ScriptDebugger *EngineDebugger::script_debugger = nullptr;
 
 Map<StringName, EngineDebugger::Profiler> EngineDebugger::profilers;
 Map<StringName, EngineDebugger::Capture> EngineDebugger::captures;
+Map<String, EngineDebugger::CreatePeerFunc> EngineDebugger::protocols;
 
 void EngineDebugger::register_profiler(const StringName &p_name, const Profiler &p_func) {
 	ERR_FAIL_COND_MSG(profilers.has(p_name), "Profiler already registered: " + p_name);
@@ -64,6 +66,11 @@ void EngineDebugger::register_message_capture(const StringName &p_name, Capture 
 void EngineDebugger::unregister_message_capture(const StringName &p_name) {
 	ERR_FAIL_COND_MSG(!captures.has(p_name), "Capture not registered: " + p_name);
 	captures.erase(p_name);
+}
+
+void EngineDebugger::register_uri_handler(const String &p_protocol, CreatePeerFunc p_func) {
+	ERR_FAIL_COND_MSG(protocols.has(p_protocol), "Protocol handler already registered: " + p_protocol);
+	protocols.insert(p_protocol, p_func);
 }
 
 void EngineDebugger::profiler_enable(const StringName &p_name, bool p_enabled, const Array &p_opts) {
@@ -125,6 +132,7 @@ void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_idle_ticks, ui
 }
 
 void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Vector<String> p_breakpoints) {
+	register_uri_handler("tcp://", RemoteDebuggerPeerTCP::create); // TCP is the default protocol. Platforms/modules can add more.
 	if (p_uri.empty())
 		return;
 	if (p_uri == "local://") {
@@ -132,10 +140,14 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Ve
 		script_debugger = memnew(ScriptDebugger);
 		// Tell the OS that we want to handle termination signals.
 		OS::get_singleton()->initialize_debugging();
-	} else {
-		singleton = RemoteDebugger::create_for_uri(p_uri);
-		if (!singleton)
+	} else if (p_uri.find("://") >= 0) {
+		const String proto = p_uri.substr(0, p_uri.find("://") + 3);
+		if (!protocols.has(proto))
 			return;
+		RemoteDebuggerPeer *peer = protocols[proto](p_uri);
+		if (!peer)
+			return;
+		singleton = memnew(RemoteDebugger(Ref<RemoteDebuggerPeer>(peer)));
 		script_debugger = memnew(ScriptDebugger);
 		// Notify editor of our pid (to allow focus stealing).
 		Array msg;
@@ -160,22 +172,24 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Ve
 }
 
 void EngineDebugger::deinitialize() {
-	if (!singleton)
-		return;
+	if (singleton) {
+		// Stop all profilers
+		for (Map<StringName, Profiler>::Element *E = profilers.front(); E; E = E->next()) {
+			if (E->get().active)
+				singleton->profiler_enable(E->key(), false);
+		}
 
-	// Stop all profilers
-	for (Map<StringName, Profiler>::Element *E = profilers.front(); E; E = E->next()) {
-		if (E->get().active)
-			singleton->profiler_enable(E->key(), false);
+		// Flush any remaining message
+		singleton->poll_events(false);
+
+		memdelete(singleton);
+		singleton = nullptr;
 	}
 
-	// Flush any remaining message
-	singleton->poll_events(false);
-
-	memdelete(singleton);
-	singleton = nullptr;
+	// Clear profilers/captuers/protocol handlers.
 	profilers.clear();
 	captures.clear();
+	protocols.clear();
 }
 
 EngineDebugger::~EngineDebugger() {
