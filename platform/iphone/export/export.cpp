@@ -662,7 +662,7 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 	String pbx_resources_refs;
 
 	const String file_info_format = String("$build_id = {isa = PBXBuildFile; fileRef = $ref_id; };\n") +
-									"$ref_id = {isa = PBXFileReference; lastKnownFileType = $file_type; name = $name; path = \"$file_path\"; sourceTree = \"<group>\"; };\n";
+									"$ref_id = {isa = PBXFileReference; lastKnownFileType = $file_type; name = \"$name\"; path = \"$file_path\"; sourceTree = \"<group>\"; };\n";
 	for (int i = 0; i < p_additional_assets.size(); ++i) {
 		String build_id = (++current_id).str();
 		String ref_id = (++current_id).str();
