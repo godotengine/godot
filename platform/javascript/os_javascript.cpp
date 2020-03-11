@@ -935,6 +935,7 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	if (p_desired.fullscreen) {
 		/* clang-format off */
 		EM_ASM({
+			const canvas = Module.canvas;
 			(canvas.requestFullscreen || canvas.msRequestFullscreen ||
 				canvas.mozRequestFullScreen || canvas.mozRequestFullscreen ||
 				canvas.webkitRequestFullscreen

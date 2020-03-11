@@ -119,7 +119,7 @@ matrix:
 
     - name: Javascript export template (release, emscripten latest)
       stage: build
-      env: PLATFORM=javascript TOOLS=no TARGET=release CACHE_NAME=${PLATFORM}-emcc-latest EXTRA_ARGS="module_glslang_enabled=no"
+      env: PLATFORM=javascript TOOLS=no TARGET=release CACHE_NAME=${PLATFORM}-emcc-latest EXTRA_ARGS="use_closure_compiler=yes"
       os: linux
       compiler: clang
       addons:
