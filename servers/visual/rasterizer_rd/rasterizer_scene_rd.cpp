@@ -553,6 +553,122 @@ void RasterizerSceneRD::environment_set_tonemap(RID p_env, VS::EnvironmentToneMa
 	env->auto_exp_scale = p_auto_exp_scale;
 }
 
+void RasterizerSceneRD::environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount) {
+
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+
+	env->fog_enabled = p_enable;
+	env->fog_color = p_color;
+	env->fog_sun_color = p_sun_color;
+	env->fog_sun_amount = p_sun_amount;
+}
+
+void RasterizerSceneRD::environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve) {
+
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+
+	env->fog_depth_enabled = p_enable;
+	env->fog_depth_begin = p_depth_begin;
+	env->fog_depth_end = p_depth_end;
+	env->fog_depth_curve = p_depth_curve;
+	env->fog_transmit_enabled = p_transmit;
+	env->fog_transmit_curve = p_transmit_curve;
+}
+
+void RasterizerSceneRD::environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve) {
+
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+
+	env->fog_height_enabled = p_enable;
+	env->fog_height_min = p_min_height;
+	env->fog_height_max = p_max_height;
+	env->fog_height_curve = p_height_curve;
+}
+
+bool RasterizerSceneRD::environment_get_fog_enabled(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, false);
+	return env->fog_enabled;
+}
+
+bool RasterizerSceneRD::environment_get_fog_depth_enabled(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, false);
+	return env->fog_depth_enabled;
+}
+
+bool RasterizerSceneRD::environment_get_fog_height_enabled(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, false);
+	return env->fog_height_enabled;
+}
+
+float RasterizerSceneRD::environment_get_fog_depth_end(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, false);
+	return env->fog_depth_end;
+}
+
+Color RasterizerSceneRD::environment_get_fog_color(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, Color());
+	return env->fog_color;
+}
+
+Color RasterizerSceneRD::environment_get_fog_sun_color(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, Color());
+	return env->fog_sun_color;
+}
+
+bool RasterizerSceneRD::environment_get_fog_transmit_enabled(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, false);
+	return env->fog_transmit_enabled;
+}
+
+float RasterizerSceneRD::environment_get_fog_transmit_curve(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, false);
+	return env->fog_transmit_curve;
+}
+
+float RasterizerSceneRD::environment_get_fog_depth_begin(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, false);
+	return env->fog_depth_begin;
+}
+
+float RasterizerSceneRD::environment_get_fog_depth_curve(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, false);
+	return env->fog_depth_curve;
+}
+float RasterizerSceneRD::environment_get_fog_height_min(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, false);
+	return env->fog_height_min;
+}
+float RasterizerSceneRD::environment_get_fog_height_max(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, false);
+	return env->fog_height_max;
+}
+
+float RasterizerSceneRD::environment_get_fog_height_curve(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, false);
+	return env->fog_height_curve;
+}
+float RasterizerSceneRD::environment_get_fog_sun_amount(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, false);
+	return env->fog_sun_amount;
+}
+
 void RasterizerSceneRD::environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale) {
 
 	Environent *env = environment_owner.getornull(p_env);

@@ -314,6 +314,8 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 
 	struct SceneState {
 		struct UBO {
+			//this is a std140 compatible struct. Please read the OpenGL 3.3 Specification spec before doing any changes
+
 			float projection_matrix[16];
 			float inv_projection_matrix[16];
 
@@ -352,6 +354,23 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 			uint32_t roughness_limiter_enabled;
 
 			float ao_color[4];
+
+			float fog_color_enabled[4];
+			float fog_sun_color_amount[4];
+
+			uint32_t fog_depth_enabled;
+			float fog_depth_begin;
+			float fog_depth_end;
+			float fog_density;
+			float fog_depth_curve;
+			uint32_t fog_transmit_enabled;
+			float fog_transmit_curve;
+			uint32_t fog_height_enabled;
+			float fog_height_min;
+			float fog_height_max;
+			float fog_height_curve;
+			// make sure this struct is padded to be a multiple of 16 bytes for webgl
+			float pad;
 		};
 
 		UBO ubo;

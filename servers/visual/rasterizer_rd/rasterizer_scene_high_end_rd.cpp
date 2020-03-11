@@ -1033,6 +1033,30 @@ void RasterizerSceneHighEndRD::_setup_environment(RID p_environment, const Camer
 		scene_state.ubo.ao_color[2] = ao_color.b;
 		scene_state.ubo.ao_color[3] = ao_color.a;
 
+		Color linear_fog = environment_get_fog_color(p_environment).to_linear();
+		scene_state.ubo.fog_color_enabled[0] = linear_fog.r;
+		scene_state.ubo.fog_color_enabled[1] = linear_fog.g;
+		scene_state.ubo.fog_color_enabled[2] = linear_fog.b;
+		scene_state.ubo.fog_color_enabled[3] = (!p_no_fog && environment_get_fog_enabled(p_environment)) ? 1.0 : 0.0;
+		scene_state.ubo.fog_density = linear_fog.a;
+
+		Color linear_sun = environment_get_fog_sun_color(p_environment).to_linear();
+		scene_state.ubo.fog_sun_color_amount[0] = linear_sun.r;
+		scene_state.ubo.fog_sun_color_amount[1] = linear_sun.g;
+		scene_state.ubo.fog_sun_color_amount[2] = linear_sun.b;
+		scene_state.ubo.fog_sun_color_amount[3] = environment_get_fog_sun_amount(p_environment);
+
+		scene_state.ubo.fog_depth_enabled = environment_get_fog_depth_enabled(p_environment);
+		scene_state.ubo.fog_depth_begin = environment_get_fog_depth_begin(p_environment);
+		scene_state.ubo.fog_depth_end = environment_get_fog_depth_end(p_environment);
+		scene_state.ubo.fog_depth_curve = environment_get_fog_depth_curve(p_environment);
+		scene_state.ubo.fog_transmit_enabled = environment_get_fog_transmit_enabled(p_environment);
+		scene_state.ubo.fog_transmit_curve = environment_get_fog_transmit_curve(p_environment);
+		scene_state.ubo.fog_height_enabled = environment_get_fog_height_enabled(p_environment);
+		scene_state.ubo.fog_height_min = environment_get_fog_height_min(p_environment);
+		scene_state.ubo.fog_height_max = environment_get_fog_height_max(p_environment);
+		scene_state.ubo.fog_height_curve = environment_get_fog_height_curve(p_environment);
+
 	} else {
 
 		if (p_reflection_probe.is_valid() && storage->reflection_probe_is_interior(reflection_probe_instance_get_probe(p_reflection_probe))) {
@@ -1049,6 +1073,8 @@ void RasterizerSceneHighEndRD::_setup_environment(RID p_environment, const Camer
 
 		scene_state.ubo.use_ambient_cubemap = false;
 		scene_state.ubo.use_reflection_cubemap = false;
+
+		scene_state.ubo.fog_color_enabled[3] = 0.0;
 	}
 
 	scene_state.ubo.roughness_limiter_enabled = p_opaque_render_buffers && screen_space_roughness_limiter_is_active();

@@ -1688,6 +1688,49 @@ FRAGMENT_SHADER_CODE
 	ambient_light *= 1.0 - metallic;
 
 	//fog
+	if (scene_data.fog_color_enabled.a > 0.5) {
+
+		float fog_amount = 0.0;
+
+		vec3 fog_color = vec3(0.0, 0.0, 0.0);
+
+		// we take the first directional light
+		if (scene_data.directional_light_count > 0) {
+			vec3 dir_light_direction = -directional_lights.data[0].direction.xyz;
+
+			fog_color = mix(scene_data.fog_color_enabled.rgb, scene_data.fog_sun_color_amount.rgb, scene_data.fog_sun_color_amount.a * pow(max(dot(normalize(vertex), dir_light_direction), 0.0), 8.0));
+
+		} else {
+			fog_color = scene_data.fog_color_enabled.rgb;
+		}
+
+		//apply fog
+
+		if (scene_data.fog_depth_enabled) {
+			float fog_far = scene_data.fog_depth_end > 0.0 ? scene_data.fog_depth_end : scene_data.z_far;
+
+			float fog_z = smoothstep(scene_data.fog_depth_begin, fog_far, length(vertex));
+
+			fog_amount = pow(fog_z, scene_data.fog_depth_curve) * scene_data.fog_density;
+			if (scene_data.fog_transmit_enabled) {
+				vec3 total_light = emission + ambient_light + specular_light + diffuse_light;
+				float transmit = pow(fog_z, scene_data.fog_transmit_curve);
+				fog_color = mix(max(total_light, fog_color), fog_color, transmit);
+			}
+		}
+
+		if (scene_data.fog_height_enabled) {
+			float y = (scene_data.camera_matrix * vec4(vertex, 1.0)).y;
+			fog_amount = max(fog_amount, pow(smoothstep(scene_data.fog_height_min, scene_data.fog_height_max, y), scene_data.fog_height_curve));
+		}
+
+		float rev_amount = 1.0 - fog_amount;
+
+		emission = emission * rev_amount + fog_color * fog_amount;
+		ambient_light *= rev_amount;
+		specular_light *= rev_amount;
+		diffuse_light *= rev_amount;
+	}
 
 #ifdef MODE_MULTIPLE_RENDER_TARGETS
 

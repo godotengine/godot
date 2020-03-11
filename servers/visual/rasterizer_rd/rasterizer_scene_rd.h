@@ -513,6 +513,24 @@ private:
 		float ssao_ao_channel_affect = 0.0;
 		float ssao_blur_edge_sharpness = 4.0;
 		VS::EnvironmentSSAOBlur ssao_blur = VS::ENV_SSAO_BLUR_3x3;
+
+		/// Fog
+
+		bool fog_enabled = false;
+		Color fog_color = Color(0.5, 0.5, 0.5);
+		Color fog_sun_color = Color(0.8, 0.8, 0.0);
+		float fog_sun_amount = 0;
+
+		bool fog_depth_enabled = true;
+		float fog_depth_begin = 10;
+		float fog_depth_end = 0;
+		float fog_depth_curve = 1;
+		bool fog_transmit_enabled = true;
+		float fog_transmit_curve = 1;
+		bool fog_height_enabled = false;
+		float fog_height_min = 10;
+		float fog_height_max = 0;
+		float fog_height_curve = 1;
 	};
 
 	VS::EnvironmentSSAOQuality ssao_quality = VS::ENV_SSAO_QUALITY_MEDIUM;
@@ -697,9 +715,23 @@ public:
 	void environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale);
 	void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, RID p_ramp) {}
 
-	void environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount) {}
-	void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve) {}
-	void environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve) {}
+	void environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount);
+	void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve);
+	void environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve);
+	bool environment_get_fog_enabled(RID p_env) const;
+	bool environment_get_fog_depth_enabled(RID p_env) const;
+	bool environment_get_fog_height_enabled(RID p_env) const;
+	float environment_get_fog_depth_end(RID p_env) const;
+	Color environment_get_fog_color(RID p_env) const;
+	Color environment_get_fog_sun_color(RID p_env) const;
+	bool environment_get_fog_transmit_enabled(RID p_env) const;
+	float environment_get_fog_transmit_curve(RID p_env) const;
+	float environment_get_fog_depth_begin(RID p_env) const;
+	float environment_get_fog_depth_curve(RID p_env) const;
+	float environment_get_fog_height_min(RID p_env) const;
+	float environment_get_fog_height_max(RID p_env) const;
+	float environment_get_fog_height_curve(RID p_env) const;
+	float environment_get_fog_sun_amount(RID p_env) const;
 
 	virtual RID camera_effects_create();
 
