@@ -46,16 +46,19 @@ def find_file_in_dir(directory, names, prefixes=[''], extensions=['']):
     return ''
 
 
-def copy_file(src_dir, dst_dir, name):
+def copy_file(src_dir, dst_dir, src_name, dst_name=''):
     from shutil import copy
 
-    src_path = os.path.join(Dir(src_dir).abspath, name)
+    src_path = os.path.join(Dir(src_dir).abspath, src_name)
     dst_dir = Dir(dst_dir).abspath
 
     if not os.path.isdir(dst_dir):
         os.makedirs(dst_dir)
 
-    copy(src_path, dst_dir)
+    if dst_name:
+        copy(src_path, os.path.join(dst_dir, dst_name))
+    else:
+        copy(src_path, dst_dir)
 
 
 def is_desktop(platform):
@@ -63,11 +66,11 @@ def is_desktop(platform):
 
 
 def is_unix_like(platform):
-    return platform in ['osx', 'x11', 'server', 'android', 'haiku']
+    return platform in ['osx', 'x11', 'server', 'android', 'haiku', 'iphone']
 
 
 def module_supports_tools_on(platform):
-    return platform not in ['android', 'javascript']
+    return platform not in ['android', 'javascript', 'iphone']
 
 
 def find_wasm_src_dir(mono_root):
@@ -85,6 +88,8 @@ def configure(env, env_mono):
     bits = env['bits']
     is_android = env['platform'] == 'android'
     is_javascript = env['platform'] == 'javascript'
+    is_ios = env['platform'] == 'iphone'
+    is_ios_sim = is_ios and env['arch'] in ['x86', 'x86_64']
 
     tools_enabled = env['tools']
     mono_static = env['mono_static']
@@ -109,14 +114,29 @@ def configure(env, env_mono):
         raise RuntimeError('This module does not currently support building for this platform with tools enabled')
 
     if is_android and mono_static:
-        # Android: When static linking and doing something that requires libmono-native, we get a dlopen error as libmono-native seems to depend on libmonosgen-2.0
-        raise RuntimeError('Statically linking Mono is not currently supported on this platform')
+        # FIXME: When static linking and doing something that requires libmono-native, we get a dlopen error as 'libmono-native'
+        # seems to depend on 'libmonosgen-2.0'. Could be fixed by re-directing to '__Internal' with a dllmap or in the dlopen hook.
+        raise RuntimeError('Statically linking Mono is not currently supported for this platform')
 
-    if is_javascript:
-        mono_static = True
+    if not mono_static and (is_javascript or is_ios):
+        raise RuntimeError('Dynamically linking Mono is not currently supported for this platform')
 
     if not mono_prefix and (os.getenv('MONO32_PREFIX') or os.getenv('MONO64_PREFIX')):
         print("WARNING: The environment variables 'MONO32_PREFIX' and 'MONO64_PREFIX' are deprecated; use the 'mono_prefix' SCons parameter instead")
+
+    # Although we don't support building with tools for any platform where we currently use static AOT,
+    # if these are supported in the future, we won't be using static AOT for them as that would be
+    # too restrictive for the editor. These builds would probably be made to only use the interpreter.
+    mono_aot_static = (is_ios and not is_ios_sim) and not env['tools']
+
+    # Static AOT is only supported on the root domain
+    mono_single_appdomain = mono_aot_static
+
+    if mono_single_appdomain:
+        env_mono.Append(CPPDEFINES=['GD_MONO_SINGLE_APPDOMAIN'])
+
+    if (env['tools'] or env['target'] != 'release') and not mono_single_appdomain:
+        env_mono.Append(CPPDEFINES=['GD_MONO_HOT_RELOAD'])
 
     if env['platform'] == 'windows':
         mono_root = mono_prefix
@@ -185,6 +205,7 @@ def configure(env, env_mono):
             copy_file(mono_bin_path, '#bin', mono_dll_file)
     else:
         is_apple = env['platform'] in ['osx', 'iphone']
+        is_macos = is_apple and not is_ios
 
         sharedlib_ext = '.dylib' if is_apple else '.so'
 
@@ -192,10 +213,10 @@ def configure(env, env_mono):
         mono_lib_path = ''
         mono_so_file = ''
 
-        if not mono_root and (is_android or is_javascript):
+        if not mono_root and (is_android or is_javascript or is_ios):
             raise RuntimeError("Mono installation directory not found; specify one manually with the 'mono_prefix' SCons parameter")
 
-        if not mono_root and is_apple:
+        if not mono_root and is_macos:
             # Try with some known directories under OSX
             hint_dirs = ['/Library/Frameworks/Mono.framework/Versions/Current', '/usr/local/var/homebrew/linked/mono']
             for hint_dir in hint_dirs:
@@ -210,6 +231,9 @@ def configure(env, env_mono):
             if not mono_root:
                 raise RuntimeError("Building with mono_static=yes, but failed to find the mono prefix with pkg-config; " + \
                     "specify one manually with the 'mono_prefix' SCons parameter")
+
+        if is_ios and not is_ios_sim:
+            env_mono.Append(CPPDEFINES=['IOS_DEVICE'])
 
         if mono_root:
             print('Found Mono root directory: ' + mono_root)
@@ -232,7 +256,23 @@ def configure(env, env_mono):
                 mono_lib_file = os.path.join(mono_lib_path, 'lib' + mono_lib + '.a')
 
                 if is_apple:
-                    env.Append(LINKFLAGS=['-Wl,-force_load,' + mono_lib_file])
+                    if is_macos:
+                        env.Append(LINKFLAGS=['-Wl,-force_load,' + mono_lib_file])
+                    else:
+                        arch = env['arch']
+                        def copy_mono_lib(libname_wo_ext):
+                            copy_file(mono_lib_path, '#bin', libname_wo_ext + '.a', '%s.iphone.%s.a' % (libname_wo_ext, arch))
+
+                        # Copy Mono libraries to the output folder. These are meant to be bundled with
+                        # the export templates and added to the Xcode project when exporting a game.
+                        copy_mono_lib('lib' + mono_lib)
+                        copy_mono_lib('libmono-native')
+                        copy_mono_lib('libmono-profiler-log')
+
+                        if not is_ios_sim:
+                            copy_mono_lib('libmono-ee-interp')
+                            copy_mono_lib('libmono-icall-table')
+                            copy_mono_lib('libmono-ilgen')
                 else:
                     assert is_desktop(env['platform']) or is_android or is_javascript
                     env.Append(LINKFLAGS=['-Wl,-whole-archive', mono_lib_file, '-Wl,-no-whole-archive'])
@@ -261,10 +301,12 @@ def configure(env, env_mono):
             else:
                 env.Append(LIBS=[mono_lib])
 
-            if is_apple:
+            if is_macos:
                 env.Append(LIBS=['iconv', 'pthread'])
             elif is_android:
                 pass # Nothing
+            elif is_ios:
+                pass # Nothing, linking is delegated to the exported Xcode project
             elif is_javascript:
                 env.Append(LIBS=['m', 'rt', 'dl', 'pthread'])
             else:
@@ -318,6 +360,8 @@ def configure(env, env_mono):
             # Copy the required shared libraries
             copy_mono_shared_libs(env, mono_root, None)
         elif is_javascript:
+            pass # No data directory for this platform
+        elif is_ios:
             pass # No data directory for this platform
 
     if copy_mono_root:

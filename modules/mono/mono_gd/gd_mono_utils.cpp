@@ -128,7 +128,12 @@ void set_main_thread(MonoThread *p_thread) {
 MonoThread *attach_current_thread() {
 	ERR_FAIL_COND_V(!GDMono::get_singleton()->is_runtime_initialized(), NULL);
 	MonoDomain *scripts_domain = GDMono::get_singleton()->get_scripts_domain();
+#ifndef GD_MONO_SINGLE_APPDOMAIN
 	MonoThread *mono_thread = mono_thread_attach(scripts_domain ? scripts_domain : mono_get_root_domain());
+#else
+	// The scripts domain is the root domain
+	MonoThread *mono_thread = mono_thread_attach(scripts_domain);
+#endif
 	ERR_FAIL_NULL_V(mono_thread, NULL);
 	return mono_thread;
 }
