@@ -350,7 +350,7 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 
 	f->store_32(flags);
 	f->store_32(p_limit_mipmap);
-	//reserverd for future use
+	//reserved for future use
 	f->store_32(0);
 	f->store_32(0);
 	f->store_32(0);

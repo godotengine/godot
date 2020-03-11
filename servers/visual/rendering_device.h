@@ -418,7 +418,7 @@ public:
 
 	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type = TEXTURE_SLICE_2D) = 0;
 
-	virtual Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, bool p_sync_with_draw = false) = 0; //this function can be used from any thread and it takes effect at the begining of the frame, unless sync with draw is used, which is used to mix updates with draw calls
+	virtual Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, bool p_sync_with_draw = false) = 0; //this function can be used from any thread and it takes effect at the beginning of the frame, unless sync with draw is used, which is used to mix updates with draw calls
 	virtual Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer) = 0; // CPU textures will return immediately, while GPU textures will most likely force a flush
 
 	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, uint32_t p_usage) const = 0;
@@ -621,7 +621,7 @@ public:
 	virtual RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) = 0;
 	virtual bool uniform_set_is_valid(RID p_uniform_set) = 0;
 
-	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, bool p_sync_with_draw = false) = 0; //this function can be used from any thread and it takes effect at the begining of the frame, unless sync with draw is used, which is used to mix updates with draw calls
+	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, bool p_sync_with_draw = false) = 0; //this function can be used from any thread and it takes effect at the beginning of the frame, unless sync with draw is used, which is used to mix updates with draw calls
 	virtual Vector<uint8_t> buffer_get_data(RID p_buffer) = 0; //this causes stall, only use to retrieve large buffers for saving
 
 	/*************************/
@@ -643,7 +643,7 @@ public:
 		RENDER_PRIMITIVE_MAX
 	};
 
-	//disable optimization, tesselate control points
+	//disable optimization, tessellate control points
 
 	enum PolygonCullMode {
 		POLYGON_CULL_DISABLED,
@@ -907,7 +907,7 @@ public:
 	enum InitialAction {
 		INITIAL_ACTION_CLEAR, //start rendering and clear the framebuffer (supply params)
 		INITIAL_ACTION_KEEP, //start rendering, but keep attached color texture contents (depth will be cleared)
-		INITIAL_ACTION_CONTINUE, //continue rendering (framebuffer must have been left in "continue" state as final action prevously)
+		INITIAL_ACTION_CONTINUE, //continue rendering (framebuffer must have been left in "continue" state as final action previously)
 		INITIAL_ACTION_MAX
 	};
 

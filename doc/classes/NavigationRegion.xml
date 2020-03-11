@@ -13,7 +13,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Bakes the [NavigationMesh]. The baking is done in a seperate thread because navigation baking is not a cheap operation. This can be done at runtime. When it is completed, it automatically sets the new [NavigationMesh].
+				Bakes the [NavigationMesh]. The baking is done in a separate thread because navigation baking is not a cheap operation. This can be done at runtime. When it is completed, it automatically sets the new [NavigationMesh].
 			</description>
 		</method>
 	</methods>

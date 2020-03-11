@@ -118,7 +118,7 @@
 			The distance to search for other agents.
 		</member>
 		<member name="path_max_distance" type="float" setter="set_path_max_distance" getter="get_path_max_distance" default="3.0">
-			The maximum distance the agent is allowed away from the ideal path to the final location. This can happen due to trying to avoid collisions. When the maximum distance is exceded, it recalculates the ideal path.
+			The maximum distance the agent is allowed away from the ideal path to the final location. This can happen due to trying to avoid collisions. When the maximum distance is exceeded, it recalculates the ideal path.
 		</member>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="10.0">
 			The radius of the agent.

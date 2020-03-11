@@ -41,7 +41,7 @@
 */
 
 /// Creates a struct for each function and a function that once called creates
-/// an instance of that struct with the submited parameters.
+/// an instance of that struct with the submitted parameters.
 /// Then, that struct is stored in an array; the `sync` function consume that array.
 
 #define COMMAND_1(F_NAME, T_0, D_0)                      \

@@ -887,7 +887,7 @@ RemoteDebugger::RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer) {
 	visual_profiler = memnew(VisualProfiler);
 	_bind_profiler("visual", visual_profiler);
 
-	// Perfromance Profiler
+	// Performance Profiler
 	Object *perf = Engine::get_singleton()->get_singleton_object("Performance");
 	if (perf) {
 		performance_profiler = memnew(PerformanceProfiler(perf));
