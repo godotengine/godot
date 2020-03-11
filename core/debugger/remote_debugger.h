@@ -108,8 +108,6 @@ private:
 	Error _try_capture(const String &p_name, const Array &p_data, bool &r_captured);
 
 public:
-	static RemoteDebugger *create_for_uri(const String &p_uri);
-
 	// Overrides
 	void poll_events(bool p_is_idle);
 	void send_message(const String &p_message, const Array &p_args);
