@@ -582,6 +582,14 @@ String EditorExportPlugin::get_ios_cpp_code() const {
 	return ios_cpp_code;
 }
 
+void EditorExportPlugin::add_ios_project_static_lib(const String &p_path) {
+	ios_project_static_libs.push_back(p_path);
+}
+
+Vector<String> EditorExportPlugin::get_ios_project_static_libs() const {
+	return ios_project_static_libs;
+}
+
 void EditorExportPlugin::_export_file_script(const String &p_path, const String &p_type, const PoolVector<String> &p_features) {
 
 	if (get_script_instance()) {
@@ -617,6 +625,7 @@ void EditorExportPlugin::skip() {
 void EditorExportPlugin::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_shared_object", "path", "tags"), &EditorExportPlugin::add_shared_object);
+	ClassDB::bind_method(D_METHOD("add_ios_project_static_lib", "path"), &EditorExportPlugin::add_ios_project_static_lib);
 	ClassDB::bind_method(D_METHOD("add_file", "path", "file", "remap"), &EditorExportPlugin::add_file);
 	ClassDB::bind_method(D_METHOD("add_ios_framework", "path"), &EditorExportPlugin::add_ios_framework);
 	ClassDB::bind_method(D_METHOD("add_ios_plist_content", "plist_content"), &EditorExportPlugin::add_ios_plist_content);

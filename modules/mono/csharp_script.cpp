@@ -737,7 +737,7 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 	if (proj_assembly) {
 		String proj_asm_path = proj_assembly->get_path();
 
-		if (!FileAccess::exists(proj_assembly->get_path())) {
+		if (!FileAccess::exists(proj_asm_path)) {
 			// Maybe it wasn't loaded from the default path, so check this as well
 			proj_asm_path = GodotSharpDirs::get_res_temp_assemblies_dir().plus_file(appname_safe);
 			if (!FileAccess::exists(proj_asm_path))
