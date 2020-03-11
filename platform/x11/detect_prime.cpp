@@ -62,6 +62,7 @@ vendor vendormap[] = {
 	{ "NVIDIA Corporation", 30 },
 	{ "X.Org", 30 },
 	{ "Intel Open Source Technology Center", 20 },
+	{ "Intel", 20 },
 	{ "nouveau", 10 },
 	{ "Mesa Project", 0 },
 	{ NULL, 0 }
