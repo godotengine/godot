@@ -3760,21 +3760,32 @@ StringName EditorNode::get_object_custom_type_name(const Object *p_object) const
 	return StringName();
 }
 
-Ref<ImageTexture> EditorNode::_load_custom_class_icon(const String &p_path) const {
-	if (p_path.length()) {
-		Ref<Image> img = memnew(Image);
-		Error err = ImageLoader::load_image(p_path, img);
-		if (err == OK) {
-			Ref<ImageTexture> icon = memnew(ImageTexture);
-			img->resize(16 * EDSCALE, 16 * EDSCALE, Image::INTERPOLATE_LANCZOS);
-			icon->create_from_image(img);
-			return icon;
+Ref<ImageTexture> EditorNode::_load_custom_class_icon(const String &p_path) {
+	if (p_path.length() && p_path != "Null") {
+		Error err;
+		RES res = ResourceLoader::load(p_path, "", false, &err);
+		if (Object::cast_to<Texture2D>(*res)) {
+			res = ((Texture2D*)(*res))->get_data();
+			ERR_FAIL_COND_V(err != OK, nullptr);
+		} else if (Object::cast_to<Image>(*res)) {
+			res = ResourceLoader::load(p_path, "", false, &err);
+			ERR_FAIL_COND_V(err != OK, nullptr);
+		} else {
+			ERR_FAIL_V_MSG(nullptr, "Icon is neither an Image nor a Texture");
 		}
+		
+		Ref<Image> img = res;
+		
+		img->resize(16 * EDSCALE, 16 * EDSCALE, Image::INTERPOLATE_LANCZOS);
+
+		Ref<ImageTexture> icon = memnew(ImageTexture);
+		icon->create_from_image(img);
+		return icon;
 	}
 	return nullptr;
 }
 
-Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String &p_fallback) const {
+Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String &p_fallback) {
 	ERR_FAIL_COND_V(!p_object || !gui_base, nullptr);
 
 	Ref<Script> script = p_object->get_script();
@@ -3787,7 +3798,7 @@ Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String 
 		while (base_script.is_valid()) {
 			StringName name = EditorNode::get_editor_data().script_class_get_name(base_script->get_path());
 			String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(name);
-			Ref<ImageTexture> icon = _load_custom_class_icon(icon_path);
+			Ref<Texture2D> icon = _load_custom_class_icon(icon_path);
 			if (icon.is_valid()) {
 				return icon;
 			}
@@ -3822,11 +3833,11 @@ Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String 
 	return nullptr;
 }
 
-Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p_fallback) const {
+Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p_fallback) {
 	ERR_FAIL_COND_V_MSG(p_class.empty(), nullptr, "Class name cannot be empty.");
 
 	if (ScriptServer::is_global_class(p_class)) {
-		Ref<ImageTexture> icon;
+		Ref<Texture2D> icon;
 		Ref<Script> script = EditorNode::get_editor_data().script_class_load_script(p_class);
 		StringName name = p_class;
 
