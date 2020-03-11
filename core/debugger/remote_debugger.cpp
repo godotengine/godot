@@ -673,6 +673,9 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 	ERR_FAIL_COND_MSG(!is_peer_connected(), "Script Debugger failed to connect, but being used anyway.");
 
+	if (!peer->can_block())
+		return; // Peer does not support blocking IO. We could at least send the error though.
+
 	ScriptLanguage *script_lang = script_debugger->get_break_language();
 	const String error_str = script_lang ? script_lang->debug_get_error() : "";
 	Array msg;
@@ -884,13 +887,6 @@ Error RemoteDebugger::_profiler_capture(const String &p_cmd, const Array &p_data
 	r_captured = true;
 	profiler_enable(p_cmd, p_data[0], opts);
 	return OK;
-}
-
-RemoteDebugger *RemoteDebugger::create_for_uri(const String &p_uri) {
-	Ref<RemoteDebuggerPeer> peer = RemoteDebuggerPeer::create_from_uri(p_uri);
-	if (peer.is_valid())
-		return memnew(RemoteDebugger(peer));
-	return nullptr;
 }
 
 RemoteDebugger::RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer) {
