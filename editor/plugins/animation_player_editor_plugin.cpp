@@ -296,6 +296,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 			}
 		}
 		frame->set_max(anim->get_length());
+		_update_frame_step(anim->get_step());
 
 	} else {
 		track_editor->set_animation(Ref<Animation>());
@@ -896,6 +897,12 @@ void AnimationPlayerEditor::_update_player() {
 	_update_animation();
 }
 
+void AnimationPlayerEditor::_update_frame_step(float p_step) {
+	if (p_step <= 0)
+		p_step = 0.00001;
+	frame->set_step(p_step);
+}
+
 void AnimationPlayerEditor::edit(AnimationPlayer *p_player) {
 
 	if (player && pin->is_pressed())
@@ -1072,6 +1079,10 @@ void AnimationPlayerEditor::_list_changed() {
 void AnimationPlayerEditor::_animation_key_editor_anim_len_changed(float p_len) {
 
 	frame->set_max(p_len);
+}
+
+void AnimationPlayerEditor::_animation_key_editor_anim_step_changed(float p_step) {
+	_update_frame_step(p_step);
 }
 
 void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag) {
@@ -1595,7 +1606,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	hb->add_child(frame);
 	frame->set_custom_minimum_size(Size2(60, 0));
 	frame->set_stretch_ratio(2);
-	frame->set_step(0.0001);
+	_update_frame_step();
 	frame->set_tooltip(TTR("Animation position (in seconds)."));
 
 	hb->add_child(memnew(VSeparator));
@@ -1746,6 +1757,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	track_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	track_editor->connect("timeline_changed", callable_mp(this, &AnimationPlayerEditor::_animation_key_editor_seek));
 	track_editor->connect("animation_len_changed", callable_mp(this, &AnimationPlayerEditor::_animation_key_editor_anim_len_changed));
+	track_editor->connect("animation_step_changed", callable_mp(this, &AnimationPlayerEditor::_animation_key_editor_anim_step_changed));
 
 	_update_player();
 
