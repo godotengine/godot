@@ -31,7 +31,8 @@
 #include "os_javascript.h"
 
 #include "core/io/file_access_buffered_fa.h"
-#include "drivers/gles2/rasterizer_gles2.h"
+//#include "drivers/gles2/rasterizer_gles2.h"
+#include "drivers/dummy/rasterizer_dummy.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
@@ -539,15 +540,11 @@ void OS_JavaScript::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_s
 
 		PackedByteArray png;
 		size_t len;
-		const uint8_t *r = image->get_data().ptr();
-		ERR_FAIL_COND(!png_image_write_get_memory_size(png_meta, len, 0, r.ptr(), 0, NULL));
+		PackedByteArray data = image->get_data();
+		ERR_FAIL_COND(!png_image_write_get_memory_size(png_meta, len, 0, data.ptr(), 0, NULL));
 
 		png.resize(len);
-		uint8_t *w = png.ptrw();
-		ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, w.ptr(), &len, 0, r.ptr(), 0, NULL));
-		w = uint8_t * ();
-
-		r = png.ptr();
+		ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, png.ptrw(), &len, 0, data.ptr(), 0, NULL));
 
 		char *object_url;
 		/* clang-format off */
@@ -562,9 +559,8 @@ void OS_JavaScript::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_s
 			var string_on_wasm_heap = _malloc(length_bytes);
 			setValue(PTR, string_on_wasm_heap, '*');
 			stringToUTF8(url, string_on_wasm_heap, length_bytes);
-		}, r.ptr(), len, &object_url);
+		}, png.ptr(), len, &object_url);
 		/* clang-format on */
-		r = const uint8_t * ();
 
 		String url = String::utf8(object_url) + "?" + itos(p_hotspot.x) + " " + itos(p_hotspot.y);
 
@@ -896,6 +892,7 @@ void OS_JavaScript::initialize_core() {
 
 Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
+#if 0
 	EmscriptenWebGLContextAttributes attributes;
 	emscripten_webgl_init_context_attributes(&attributes);
 	attributes.alpha = GLOBAL_GET("display/window/per_pixel_transparency/allowed");
@@ -952,6 +949,8 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	} else {
 		set_window_size(get_window_size());
 	}
+#endif
+	RasterizerDummy::make_current(); // TODO GLES2 in Godot 4.0... or webgpu?
 
 	char locale_ptr[16];
 	/* clang-format off */
@@ -1181,15 +1180,12 @@ void OS_JavaScript::set_icon(const Ref<Image> &p_icon) {
 
 	PackedByteArray png;
 	size_t len;
-	const uint8_t *r = icon->get_data().ptr();
-	ERR_FAIL_COND(!png_image_write_get_memory_size(png_meta, len, 0, r.ptr(), 0, NULL));
+	PackedByteArray data = icon->get_data();
+	ERR_FAIL_COND(!png_image_write_get_memory_size(png_meta, len, 0, data.ptr(), 0, NULL));
 
 	png.resize(len);
-	uint8_t *w = png.ptrw();
-	ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, w.ptr(), &len, 0, r.ptr(), 0, NULL));
-	w = uint8_t * ();
+	ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, png.ptrw(), &len, 0, data.ptr(), 0, NULL));
 
-	r = png.ptr();
 	/* clang-format off */
 	EM_ASM_ARGS({
 		var PNG_PTR = $0;
@@ -1205,7 +1201,7 @@ void OS_JavaScript::set_icon(const Ref<Image> &p_icon) {
 			document.head.appendChild(link);
 		}
 		link.href = url;
-	}, r.ptr(), len);
+	}, png.ptr(), len);
 	/* clang-format on */
 }
 
