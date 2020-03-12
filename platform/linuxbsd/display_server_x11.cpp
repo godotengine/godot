@@ -534,7 +534,10 @@ Point2i DisplayServerX11::screen_get_position(int p_screen) const {
 	return position;
 }
 Size2i DisplayServerX11::screen_get_size(int p_screen) const {
+	return screen_get_usable_rect(p_screen).size;
+}
 
+Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
@@ -544,16 +547,17 @@ Size2i DisplayServerX11::screen_get_size(int p_screen) const {
 	// Using Xinerama Extension
 	int event_base, error_base;
 	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
-	if (!ext_okay) return Size2i(0, 0);
+	if (!ext_okay) return Rect2i(0, 0, 0, 0);
 
 	int count;
 	XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
-	if (p_screen >= count) return Size2i(0, 0);
+	if (p_screen >= count) return Rect2i(0, 0, 0, 0);
 
-	Size2i size = Point2i(xsi[p_screen].width, xsi[p_screen].height);
+	Rect2i rect = Rect2i(xsi[p_screen].x_org, xsi[p_screen].y_org, xsi[p_screen].width, xsi[p_screen].height);
 	XFree(xsi);
-	return size;
+	return rect;
 }
+
 int DisplayServerX11::screen_get_dpi(int p_screen) const {
 
 	_THREAD_SAFE_METHOD_
@@ -623,12 +627,7 @@ DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, u
 
 	_THREAD_SAFE_METHOD_
 
-	WindowID id = _create_window(p_mode, p_rect);
-	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
-		if (p_flags & (1 << i)) {
-			window_set_flag(WindowFlags(i), true, id);
-		}
-	}
+	WindowID id = _create_window(p_mode, p_flags, p_rect);
 
 	return id;
 }
@@ -678,13 +677,13 @@ void DisplayServerX11::window_set_title(const String &p_title, WindowID p_window
 	XChangeProperty(x11_display, wd.x11_window, _net_wm_name, utf8_string, 8, PropModeReplace, (unsigned char *)p_title.utf8().get_data(), p_title.utf8().length());
 }
 
-void DisplayServerX11::window_set_resize_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerX11::window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window) {
 
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
-	wd.resize_callback = p_callable;
+	wd.rect_changed_callback = p_callable;
 }
 
 void DisplayServerX11::window_set_window_event_callback(const Callable &p_callable, WindowID p_window) {
@@ -1024,7 +1023,7 @@ Size2i DisplayServerX11::window_get_real_size(WindowID p_window) const {
 			XFree(data);
 		}
 	}
-	return Size2(w, h);
+	return Size2i(w, h);
 }
 
 bool DisplayServerX11::window_is_maximize_allowed(WindowID p_window) const {
@@ -1159,7 +1158,7 @@ void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled) {
 
 	if (!p_enabled) {
 		// Reset the non-resizable flags if we un-set these before.
-		Size2 size = window_get_size(p_window);
+		Size2i size = window_get_size(p_window);
 		XSizeHints *xsh;
 		xsh = XAllocSizeHints();
 		if (window_get_flag(WINDOW_FLAG_RESIZE_DISABLED, p_window)) {
@@ -1170,12 +1169,12 @@ void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled) {
 			xsh->max_height = size.y;
 		} else {
 			xsh->flags = 0L;
-			if (wd.min_size != Size2()) {
+			if (wd.min_size != Size2i()) {
 				xsh->flags |= PMinSize;
 				xsh->min_width = wd.min_size.x;
 				xsh->min_height = wd.min_size.y;
 			}
-			if (wd.max_size != Size2()) {
+			if (wd.max_size != Size2i()) {
 				xsh->flags |= PMaxSize;
 				xsh->max_width = wd.max_size.x;
 				xsh->max_height = wd.max_size.y;
@@ -1416,7 +1415,7 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 			XSizeHints *xsh;
 			xsh = XAllocSizeHints();
 			if (p_enabled) {
-				Size2 size = window_get_size(p_window);
+				Size2i size = window_get_size(p_window);
 
 				xsh->flags = PMinSize | PMaxSize;
 				xsh->min_width = size.x;
@@ -1425,12 +1424,12 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 				xsh->max_height = size.y;
 			} else {
 				xsh->flags = 0L;
-				if (wd.min_size != Size2()) {
+				if (wd.min_size != Size2i()) {
 					xsh->flags |= PMinSize;
 					xsh->min_width = wd.min_size.x;
 					xsh->min_height = wd.min_size.y;
 				}
-				if (wd.max_size != Size2()) {
+				if (wd.max_size != Size2i()) {
 					xsh->flags |= PMaxSize;
 					xsh->max_width = wd.max_size.x;
 					xsh->max_height = wd.max_size.y;
@@ -1694,8 +1693,8 @@ void DisplayServerX11::cursor_set_custom_image(const RES &p_cursor, CursorShape 
 		Ref<Texture2D> texture = p_cursor;
 		Ref<AtlasTexture> atlas_texture = p_cursor;
 		Ref<Image> image;
-		Size2 texture_size;
-		Rect2 atlas_rect;
+		Size2i texture_size;
+		Rect2i atlas_rect;
 
 		if (texture.is_valid()) {
 			image = texture->get_data();
@@ -2148,7 +2147,7 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 
 	WindowID window_id = MAIN_WINDOW_ID;
 
-	//assign the event to the relevant window
+	// Assign the event to the relevant window
 	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
 		if (event->xany.window == E->get().x11_window) {
 			window_id = E->key();
@@ -2157,6 +2156,9 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	}
 
 	WindowData &wd = windows[window_id];
+	if (wd.x11_window != event->xany.window) { // Check if the correct window
+		return;
+	}
 
 	if (wd.xic) {
 		//  Not portable.
@@ -2176,12 +2178,12 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	}
 #endif
 
-	if (!wd.resize_callback.is_null()) {
-		Variant size = wd.size;
-		Variant *sizep = &size;
+	if (!wd.rect_changed_callback.is_null()) {
+		Variant rect = Rect2i(wd.im_position, wd.size);
+		Variant *rectp = &rect;
 		Variant ret;
 		Callable::CallError ce;
-		wd.resize_callback.call((const Variant **)&sizep, 1, ret, ce);
+		wd.rect_changed_callback.call((const Variant **)&rectp, 1, ret, ce);
 	}
 }
 
@@ -2241,7 +2243,7 @@ void DisplayServerX11::process_events() {
 
 		WindowID window_id = MAIN_WINDOW_ID;
 
-		//assign the event to the relevant window
+		// Assign the event to the relevant window
 		for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
 			if (event.xany.window == E->get().x11_window) {
 				window_id = E->key();
@@ -2922,8 +2924,87 @@ void DisplayServerX11::set_context(Context p_context) {
 void DisplayServerX11::set_native_icon(const String &p_filename) {
 	WARN_PRINT("Native icon not supported by this display server.");
 }
+
+bool g_set_icon_error = false;
+int set_icon_errorhandler(Display *dpy, XErrorEvent *ev) {
+	g_set_icon_error = true;
+	return 0;
+}
+
 void DisplayServerX11::set_icon(const Ref<Image> &p_icon) {
-	WARN_PRINT("Icon not supported by this display server.");
+	_THREAD_SAFE_METHOD_
+
+	WindowData &wd = windows[MAIN_WINDOW_ID];
+
+	int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler(&set_icon_errorhandler);
+
+	Atom net_wm_icon = XInternAtom(x11_display, "_NET_WM_ICON", False);
+
+	if (p_icon.is_valid()) {
+		Ref<Image> img = p_icon->duplicate();
+		img->convert(Image::FORMAT_RGBA8);
+
+		while (true) {
+			int w = img->get_width();
+			int h = img->get_height();
+
+			if (g_set_icon_error) {
+				g_set_icon_error = false;
+
+				WARN_PRINT("Icon too large, attempting to resize icon.");
+
+				int new_width, new_height;
+				if (w > h) {
+					new_width = w / 2;
+					new_height = h * new_width / w;
+				} else {
+					new_height = h / 2;
+					new_width = w * new_height / h;
+				}
+
+				w = new_width;
+				h = new_height;
+
+				if (!w || !h) {
+					WARN_PRINT("Unable to set icon.");
+					break;
+				}
+
+				img->resize(w, h, Image::INTERPOLATE_CUBIC);
+			}
+
+			// We're using long to have wordsize (32Bit build -> 32 Bits, 64 Bit build -> 64 Bits
+			Vector<long> pd;
+
+			pd.resize(2 + w * h);
+
+			pd.write[0] = w;
+			pd.write[1] = h;
+
+			const uint8_t *r = img->get_data().ptr();
+
+			long *wr = &pd.write[2];
+			uint8_t const *pr = r;
+
+			for (int i = 0; i < w * h; i++) {
+				long v = 0;
+				//    A             R             G            B
+				v |= pr[3] << 24 | pr[0] << 16 | pr[1] << 8 | pr[2];
+				*wr++ = v;
+				pr += 4;
+			}
+
+			XChangeProperty(x11_display, wd.x11_window, net_wm_icon, XA_CARDINAL, 32, PropModeReplace, (unsigned char *)pd.ptr(), pd.size());
+
+			if (!g_set_icon_error)
+				break;
+		}
+	} else {
+		XDeleteProperty(x11_display, wd.x11_window, net_wm_icon);
+	}
+
+	XFlush(x11_display);
+	XSetErrorHandler(oldHandler);
 }
 
 Vector<String> DisplayServerX11::get_rendering_drivers_func() {
@@ -2944,7 +3025,7 @@ DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, W
 	return memnew(DisplayServerX11(p_rendering_driver, p_mode, p_flags, p_resolution, r_error));
 }
 
-DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, const Rect2i &p_rect) {
+DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect) {
 
 	//Create window
 
@@ -2969,38 +3050,9 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, c
 		WindowData wd;
 		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo->screen), p_rect.position.x, p_rect.position.y, p_rect.size.width, p_rect.size.height, 0, visualInfo->depth, InputOutput, visualInfo->visual, valuemask, &windowAttributes);
 
-		if (windows.size() > 0) {
-			//this is a sub window, don't let the window manager put it wherever it wants
-
-			XSizeHints my_hints = { 0 };
-
-			my_hints.flags = PPosition | PSize; /* I want to specify position and size */
-			my_hints.x = p_rect.position.x; /* The origin and size coords I want */
-			my_hints.y = p_rect.position.y;
-			my_hints.width = p_rect.size.width;
-			my_hints.height = p_rect.size.height;
-
-			XSetNormalHints(x11_display, wd.x11_window, &my_hints);
-			//its still not working :(
-		}
-		//set_class_hint(x11_display, wd.x11_window);
 		XMapWindow(x11_display, wd.x11_window);
-		XFlush(x11_display);
-
-		XSync(x11_display, False);
-		//XSetErrorHandler(oldHandler);
-
-		XFree(visualInfo);
-
-#if defined(VULKAN_ENABLED)
-		if (context_vulkan) {
-			Error err = context_vulkan->window_create(window_id_counter, wd.x11_window, x11_display, p_rect.size.width, p_rect.size.height);
-			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a Vulkan window");
-		}
-#endif
 
 		//associate PID
-
 		// make PID known to X11
 		{
 			const long pid = OS::get_singleton()->get_process_id();
@@ -3079,6 +3131,41 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, c
 		id = window_id_counter++;
 
 		windows[id] = wd;
+
+		if (id != MAIN_WINDOW_ID) {
+			//this is a sub window, don't let the window manager put it wherever it wants
+			for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
+				if (p_flags & (1 << i)) {
+					window_set_flag(WindowFlags(i), true, id);
+				}
+			}
+
+			XSizeHints my_hints = XSizeHints();
+
+			my_hints.flags = PPosition | PSize; /* I want to specify position and size */
+			my_hints.x = p_rect.position.x; /* The origin and size coords I want */
+			my_hints.y = p_rect.position.y;
+			my_hints.width = p_rect.size.width;
+			my_hints.height = p_rect.size.height;
+
+			XSetNormalHints(x11_display, wd.x11_window, &my_hints);
+			XMoveWindow(x11_display, wd.x11_window, p_rect.position.x, p_rect.position.y);
+		}
+
+#if defined(VULKAN_ENABLED)
+		if (context_vulkan) {
+			Error err = context_vulkan->window_create(id, wd.x11_window, x11_display, p_rect.size.width, p_rect.size.height);
+			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a Vulkan window");
+		}
+#endif
+
+		//set_class_hint(x11_display, wd.x11_window);
+		XFlush(x11_display);
+
+		XSync(x11_display, False);
+		//XSetErrorHandler(oldHandler);
+
+		XFree(visualInfo);
 	}
 
 	WindowData &wd = windows[id];
@@ -3095,7 +3182,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, c
 		wd.size.width = xwa.width;
 		wd.size.height = xwa.height;
 
-		//print_line("created at rect: " + p_rect + " but at rect " + Rect2i(xwa.x, xwa.y, xwa.width, xwa.height));
+		print_line("created at rect: " + p_rect + " but at rect " + Rect2i(xwa.x, xwa.y, xwa.width, xwa.height));
 	}
 
 	//set cursor
@@ -3333,7 +3420,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 #endif
 
-	WindowID main_window = _create_window(p_mode, Rect2i(Point2(), p_resolution));
+	WindowID main_window = _create_window(p_mode, 0, Rect2i(Point2(), p_resolution));
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, main_window);
