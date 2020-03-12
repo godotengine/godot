@@ -69,15 +69,22 @@ void AcceptDialog::_notification(int p_what) {
 			} else {
 				if (parent_visible) {
 					parent_visible->disconnect("focus_entered", callable_mp(this, &AcceptDialog::_parent_focused));
+					parent_visible = nullptr;
 				}
 			}
 
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			bg->add_style_override("panel", bg->get_stylebox("panel", "AcceptDialog"));
+			bg->add_theme_style_override("panel", bg->get_theme_stylebox("panel", "AcceptDialog"));
 		} break;
 
+		case NOTIFICATION_EXIT_TREE: {
+			if (parent_visible) {
+				parent_visible->disconnect("focus_entered", callable_mp(this, &AcceptDialog::_parent_focused));
+				parent_visible = nullptr;
+			}
+		} break;
 		case NOTIFICATION_READY:
 		case NOTIFICATION_WM_SIZE_CHANGED: {
 			if (is_visible()) {
@@ -167,7 +174,7 @@ void AcceptDialog::_update_child_rects() {
 	if (label->get_text().empty()) {
 		label_size.height = 0;
 	}
-	int margin = hbc->get_constant("margin", "Dialogs");
+	int margin = hbc->get_theme_constant("margin", "Dialogs");
 	Size2 size = get_size();
 	Size2 hminsize = hbc->get_combined_minimum_size();
 
@@ -198,7 +205,7 @@ void AcceptDialog::_update_child_rects() {
 
 Size2 AcceptDialog::_get_contents_minimum_size() const {
 
-	int margin = hbc->get_constant("margin", "Dialogs");
+	int margin = hbc->get_theme_constant("margin", "Dialogs");
 	Size2 minsize = label->get_combined_minimum_size();
 
 	for (int i = 0; i < get_child_count(); i++) {
@@ -296,6 +303,7 @@ AcceptDialog::AcceptDialog() {
 
 	parent_visible = nullptr;
 
+	set_wrap_controls(true);
 	set_visible(false);
 	set_transient(true);
 
@@ -304,8 +312,8 @@ AcceptDialog::AcceptDialog() {
 
 	hbc = memnew(HBoxContainer);
 
-	int margin = hbc->get_constant("margin", "Dialogs");
-	int button_margin = hbc->get_constant("button_margin", "Dialogs");
+	int margin = hbc->get_theme_constant("margin", "Dialogs");
+	int button_margin = hbc->get_theme_constant("button_margin", "Dialogs");
 
 	label = memnew(Label);
 	label->set_anchor(MARGIN_RIGHT, Control::ANCHOR_END);

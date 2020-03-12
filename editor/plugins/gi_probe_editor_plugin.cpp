@@ -87,16 +87,16 @@ void GIProbeEditorPlugin::_notification(int p_what) {
 		Color color;
 		if (size_mb <= 16.0 + CMP_EPSILON) {
 			// Fast.
-			color = bake_info->get_color("success_color", "Editor");
+			color = bake_info->get_theme_color("success_color", "Editor");
 		} else if (size_mb <= 64.0 + CMP_EPSILON) {
 			// Medium.
-			color = bake_info->get_color("warning_color", "Editor");
+			color = bake_info->get_theme_color("warning_color", "Editor");
 		} else {
 			// Slow.
-			color = bake_info->get_color("error_color", "Editor");
+			color = bake_info->get_theme_color("error_color", "Editor");
 		}
+		bake_info->add_theme_color_override("font_color", color);
 
-		bake_info->add_color_override("font_color", color);
 		bake_info->set_text(text);
 	}
 }
@@ -153,7 +153,7 @@ GIProbeEditorPlugin::GIProbeEditorPlugin(EditorNode *p_node) {
 	bake_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	bake_hb->hide();
 	bake = memnew(ToolButton);
-	bake->set_icon(editor->get_gui_base()->get_icon("Bake", "EditorIcons"));
+	bake->set_icon(editor->get_gui_base()->get_theme_icon("Bake", "EditorIcons"));
 	bake->set_text(TTR("Bake GI Probe"));
 	bake->connect("pressed", callable_mp(this, &GIProbeEditorPlugin::_bake));
 	bake_hb->add_child(bake);

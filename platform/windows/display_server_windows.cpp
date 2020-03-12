@@ -527,9 +527,20 @@ Point2i DisplayServerWindows::window_get_position(WindowID p_window) const {
 		return wd.last_pos;
 	}
 
+	POINT point;
+	point.x = 0;
+	point.y = 0;
+
+	ClientToScreen(wd.hWnd, &point);
+
+	return Point2i(point.x, point.y);
+
+#if 0
+	//do not use this method, as it includes windows decorations
 	RECT r;
 	GetWindowRect(wd.hWnd, &r);
 	return Point2(r.left, r.top);
+#endif
 }
 void DisplayServerWindows::_update_real_mouse_position(WindowID p_window) {
 
@@ -551,10 +562,25 @@ void DisplayServerWindows::window_set_position(const Point2i &p_position, Window
 	WindowData &wd = windows[p_window];
 
 	if (wd.fullscreen) return;
+#if 0
+	//wrong needs to account properly for decorations
 	RECT r;
 	GetWindowRect(wd.hWnd, &r);
 	MoveWindow(wd.hWnd, p_position.x, p_position.y, r.right - r.left, r.bottom - r.top, TRUE);
+#else
 
+	RECT rc;
+	rc.left = p_position.x;
+	rc.right = p_position.x + wd.width;
+	rc.bottom = p_position.y + wd.height;
+	rc.top = p_position.y;
+
+	const DWORD style = GetWindowLongPtr(wd.hWnd, GWL_STYLE);
+	const DWORD exStyle = GetWindowLongPtr(wd.hWnd, GWL_EXSTYLE);
+
+	AdjustWindowRectEx(&rc, style, false, exStyle);
+	MoveWindow(wd.hWnd, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
+#endif
 	// Don't let the mouse leave the window when moved
 	if (mouse_mode == MOUSE_MODE_CONFINED) {
 		RECT rect;
@@ -2535,8 +2561,10 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 				dwExStyle,
 				L"Engine", L"",
 				dwStyle | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-				(GetSystemMetrics(SM_CXSCREEN) - WindowRect.right) / 2,
-				(GetSystemMetrics(SM_CYSCREEN) - WindowRect.bottom) / 2,
+				//				(GetSystemMetrics(SM_CXSCREEN) - WindowRect.right) / 2,
+				//				(GetSystemMetrics(SM_CYSCREEN) - WindowRect.bottom) / 2,
+				WindowRect.left,
+				WindowRect.top,
 				WindowRect.right - WindowRect.left,
 				WindowRect.bottom - WindowRect.top,
 				NULL, NULL, hInstance, NULL);

@@ -185,7 +185,7 @@ void EditorNode::_update_scene_tabs() {
 	}
 
 	scene_tabs->clear_tabs();
-	Ref<Texture2D> script_icon = gui_base->get_icon("Script", "EditorIcons");
+	Ref<Texture2D> script_icon = gui_base->get_theme_icon("Script", "EditorIcons");
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 
 		Node *type_node = editor_data.get_edited_scene_root(i);
@@ -341,7 +341,7 @@ void EditorNode::_notification(int p_what) {
 
 				// update the icon itself only when the spinner is visible
 				if (EditorSettings::get_singleton()->get("interface/editor/show_update_spinner")) {
-					update_spinner->set_icon(gui_base->get_icon("Progress" + itos(update_spinner_step + 1), "EditorIcons"));
+					update_spinner->set_icon(gui_base->get_theme_icon("Progress" + itos(update_spinner_step + 1), "EditorIcons"));
 				}
 			}
 
@@ -454,17 +454,17 @@ void EditorNode::_notification(int p_what) {
 			theme_base->set_theme(theme);
 			gui_base->set_theme(theme);
 
-			gui_base->add_style_override("panel", gui_base->get_stylebox("Background", "EditorStyles"));
-			scene_root_parent->add_style_override("panel", gui_base->get_stylebox("Content", "EditorStyles"));
-			bottom_panel->add_style_override("panel", gui_base->get_stylebox("panel", "TabContainer"));
-			scene_tabs->add_style_override("tab_fg", gui_base->get_stylebox("SceneTabFG", "EditorStyles"));
-			scene_tabs->add_style_override("tab_bg", gui_base->get_stylebox("SceneTabBG", "EditorStyles"));
+			gui_base->add_theme_style_override("panel", gui_base->get_theme_stylebox("Background", "EditorStyles"));
+			scene_root_parent->add_theme_style_override("panel", gui_base->get_theme_stylebox("Content", "EditorStyles"));
+			bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox("panel", "TabContainer"));
+			scene_tabs->add_theme_style_override("tab_fg", gui_base->get_theme_stylebox("SceneTabFG", "EditorStyles"));
+			scene_tabs->add_theme_style_override("tab_bg", gui_base->get_theme_stylebox("SceneTabBG", "EditorStyles"));
 
-			file_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
-			project_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
-			debug_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
-			settings_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
-			help_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+			file_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox("MenuHover", "EditorStyles"));
+			project_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox("MenuHover", "EditorStyles"));
+			debug_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox("MenuHover", "EditorStyles"));
+			settings_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox("MenuHover", "EditorStyles"));
+			help_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox("MenuHover", "EditorStyles"));
 
 			if (EDITOR_GET("interface/scene_tabs/resize_if_many_tabs")) {
 				scene_tabs->set_min_width(int(EDITOR_GET("interface/scene_tabs/minimum_width")) * EDSCALE);
@@ -477,7 +477,7 @@ void EditorNode::_notification(int p_what) {
 
 			// debugger area
 			if (EditorDebuggerNode::get_singleton()->is_visible())
-				bottom_panel->add_style_override("panel", gui_base->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles"));
+				bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox("BottomPanelDebuggerOverride", "EditorStyles"));
 
 			// update_icons
 			for (int i = 0; i < singleton->main_editor_buttons.size(); i++) {
@@ -488,36 +488,36 @@ void EditorNode::_notification(int p_what) {
 
 				if (icon.is_valid()) {
 					tb->set_icon(icon);
-				} else if (singleton->gui_base->has_icon(p_editor->get_name(), "EditorIcons")) {
-					tb->set_icon(singleton->gui_base->get_icon(p_editor->get_name(), "EditorIcons"));
+				} else if (singleton->gui_base->has_theme_icon(p_editor->get_name(), "EditorIcons")) {
+					tb->set_icon(singleton->gui_base->get_theme_icon(p_editor->get_name(), "EditorIcons"));
 				}
 			}
 
 			_build_icon_type_cache();
 
-			play_button->set_icon(gui_base->get_icon("MainPlay", "EditorIcons"));
-			play_scene_button->set_icon(gui_base->get_icon("PlayScene", "EditorIcons"));
-			play_custom_scene_button->set_icon(gui_base->get_icon("PlayCustom", "EditorIcons"));
-			pause_button->set_icon(gui_base->get_icon("Pause", "EditorIcons"));
-			stop_button->set_icon(gui_base->get_icon("Stop", "EditorIcons"));
+			play_button->set_icon(gui_base->get_theme_icon("MainPlay", "EditorIcons"));
+			play_scene_button->set_icon(gui_base->get_theme_icon("PlayScene", "EditorIcons"));
+			play_custom_scene_button->set_icon(gui_base->get_theme_icon("PlayCustom", "EditorIcons"));
+			pause_button->set_icon(gui_base->get_theme_icon("Pause", "EditorIcons"));
+			stop_button->set_icon(gui_base->get_theme_icon("Stop", "EditorIcons"));
 
-			prev_scene->set_icon(gui_base->get_icon("PrevScene", "EditorIcons"));
-			distraction_free->set_icon(gui_base->get_icon("DistractionFree", "EditorIcons"));
-			scene_tab_add->set_icon(gui_base->get_icon("Add", "EditorIcons"));
+			prev_scene->set_icon(gui_base->get_theme_icon("PrevScene", "EditorIcons"));
+			distraction_free->set_icon(gui_base->get_theme_icon("DistractionFree", "EditorIcons"));
+			scene_tab_add->set_icon(gui_base->get_theme_icon("Add", "EditorIcons"));
 
-			bottom_panel_raise->set_icon(gui_base->get_icon("ExpandBottomDock", "EditorIcons"));
+			bottom_panel_raise->set_icon(gui_base->get_theme_icon("ExpandBottomDock", "EditorIcons"));
 
 			// clear_button->set_icon(gui_base->get_icon("Close", "EditorIcons")); don't have access to that node. needs to become a class property
 			dock_tab_move_left->set_icon(theme->get_icon("Back", "EditorIcons"));
 			dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
 
 			PopupMenu *p = help_menu->get_popup();
-			p->set_item_icon(p->get_item_index(HELP_SEARCH), gui_base->get_icon("HelpSearch", "EditorIcons"));
-			p->set_item_icon(p->get_item_index(HELP_DOCS), gui_base->get_icon("Instance", "EditorIcons"));
-			p->set_item_icon(p->get_item_index(HELP_QA), gui_base->get_icon("Instance", "EditorIcons"));
-			p->set_item_icon(p->get_item_index(HELP_ISSUES), gui_base->get_icon("Instance", "EditorIcons"));
-			p->set_item_icon(p->get_item_index(HELP_COMMUNITY), gui_base->get_icon("Instance", "EditorIcons"));
-			p->set_item_icon(p->get_item_index(HELP_ABOUT), gui_base->get_icon("Godot", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_SEARCH), gui_base->get_theme_icon("HelpSearch", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_DOCS), gui_base->get_theme_icon("Instance", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_QA), gui_base->get_theme_icon("Instance", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_ISSUES), gui_base->get_theme_icon("Instance", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_COMMUNITY), gui_base->get_theme_icon("Instance", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_ABOUT), gui_base->get_theme_icon("Godot", "EditorIcons"));
 
 			_update_update_spinner();
 		} break;
@@ -1976,11 +1976,11 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	}
 
 	play_button->set_pressed(false);
-	play_button->set_icon(gui_base->get_icon("MainPlay", "EditorIcons"));
+	play_button->set_icon(gui_base->get_theme_icon("MainPlay", "EditorIcons"));
 	play_scene_button->set_pressed(false);
-	play_scene_button->set_icon(gui_base->get_icon("PlayScene", "EditorIcons"));
+	play_scene_button->set_icon(gui_base->get_theme_icon("PlayScene", "EditorIcons"));
 	play_custom_scene_button->set_pressed(false);
-	play_custom_scene_button->set_icon(gui_base->get_icon("PlayCustom", "EditorIcons"));
+	play_custom_scene_button->set_icon(gui_base->get_theme_icon("PlayCustom", "EditorIcons"));
 
 	String main_scene;
 	String run_filename;
@@ -2063,14 +2063,14 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	emit_signal("play_pressed");
 	if (p_current) {
 		play_scene_button->set_pressed(true);
-		play_scene_button->set_icon(gui_base->get_icon("Reload", "EditorIcons"));
+		play_scene_button->set_icon(gui_base->get_theme_icon("Reload", "EditorIcons"));
 	} else if (p_custom != "") {
 		run_custom_filename = p_custom;
 		play_custom_scene_button->set_pressed(true);
-		play_custom_scene_button->set_icon(gui_base->get_icon("Reload", "EditorIcons"));
+		play_custom_scene_button->set_icon(gui_base->get_theme_icon("Reload", "EditorIcons"));
 	} else {
 		play_button->set_pressed(true);
-		play_button->set_icon(gui_base->get_icon("Reload", "EditorIcons"));
+		play_button->set_icon(gui_base->get_theme_icon("Reload", "EditorIcons"));
 	}
 	stop_button->set_disabled(false);
 
@@ -2430,11 +2430,11 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			editor_run.stop();
 			run_custom_filename.clear();
 			play_button->set_pressed(false);
-			play_button->set_icon(gui_base->get_icon("MainPlay", "EditorIcons"));
+			play_button->set_icon(gui_base->get_theme_icon("MainPlay", "EditorIcons"));
 			play_scene_button->set_pressed(false);
-			play_scene_button->set_icon(gui_base->get_icon("PlayScene", "EditorIcons"));
+			play_scene_button->set_icon(gui_base->get_theme_icon("PlayScene", "EditorIcons"));
 			play_custom_scene_button->set_pressed(false);
-			play_custom_scene_button->set_icon(gui_base->get_icon("PlayCustom", "EditorIcons"));
+			play_custom_scene_button->set_icon(gui_base->get_theme_icon("PlayCustom", "EditorIcons"));
 			stop_button->set_disabled(true);
 
 			if (bool(EDITOR_GET("run/output/always_close_output_on_stop"))) {
@@ -2890,8 +2890,8 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 
 		if (icon.is_valid()) {
 			tb->set_icon(icon);
-		} else if (singleton->gui_base->has_icon(p_editor->get_name(), "EditorIcons")) {
-			tb->set_icon(singleton->gui_base->get_icon(p_editor->get_name(), "EditorIcons"));
+		} else if (singleton->gui_base->has_theme_icon(p_editor->get_name(), "EditorIcons")) {
+			tb->set_icon(singleton->gui_base->get_theme_icon(p_editor->get_name(), "EditorIcons"));
 		}
 
 		tb->set_name(p_editor->get_name());
@@ -3559,7 +3559,7 @@ void EditorNode::add_io_error(const String &p_error) {
 void EditorNode::_load_error_notify(void *p_ud, const String &p_text) {
 
 	EditorNode *en = (EditorNode *)p_ud;
-	en->load_errors->add_image(en->gui_base->get_icon("Error", "EditorIcons"));
+	en->load_errors->add_image(en->gui_base->get_theme_icon("Error", "EditorIcons"));
 	en->load_errors->add_text(p_text + "\n");
 	en->load_error_dialog->popup_centered_ratio(0.5);
 }
@@ -3752,11 +3752,11 @@ Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String 
 	if (p_object->has_meta("_editor_icon"))
 		return p_object->get_meta("_editor_icon");
 
-	if (gui_base->has_icon(p_object->get_class(), "EditorIcons"))
-		return gui_base->get_icon(p_object->get_class(), "EditorIcons");
+	if (gui_base->has_theme_icon(p_object->get_class(), "EditorIcons"))
+		return gui_base->get_theme_icon(p_object->get_class(), "EditorIcons");
 
 	if (p_fallback.length())
-		return gui_base->get_icon(p_fallback, "EditorIcons");
+		return gui_base->get_theme_icon(p_fallback, "EditorIcons");
 
 	return NULL;
 }
@@ -3764,8 +3764,8 @@ Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String 
 Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p_fallback) const {
 	ERR_FAIL_COND_V_MSG(p_class.empty(), NULL, "Class name cannot be empty.");
 
-	if (gui_base->has_icon(p_class, "EditorIcons")) {
-		return gui_base->get_icon(p_class, "EditorIcons");
+	if (gui_base->has_theme_icon(p_class, "EditorIcons")) {
+		return gui_base->get_theme_icon(p_class, "EditorIcons");
 	}
 
 	if (ScriptServer::is_global_class(p_class)) {
@@ -3788,7 +3788,7 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 		}
 
 		if (icon.is_null()) {
-			icon = gui_base->get_icon(ScriptServer::get_global_class_base(p_class), "EditorIcons");
+			icon = gui_base->get_theme_icon(ScriptServer::get_global_class_base(p_class), "EditorIcons");
 		}
 
 		return icon;
@@ -3806,8 +3806,8 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 		}
 	}
 
-	if (p_fallback.length() && gui_base->has_icon(p_fallback, "EditorIcons"))
-		return gui_base->get_icon(p_fallback, "EditorIcons");
+	if (p_fallback.length() && gui_base->has_theme_icon(p_fallback, "EditorIcons"))
+		return gui_base->get_theme_icon(p_fallback, "EditorIcons");
 
 	return NULL;
 }
@@ -3968,6 +3968,7 @@ void EditorNode::_dock_make_float() {
 	Size2 dock_size = dock->get_size(); //remember size
 	Point2 dock_screen_pos = dock->get_global_position() + get_tree()->get_root()->get_position();
 
+	print_line("dock pos: " + dock->get_global_position() + " window pos: " + get_tree()->get_root()->get_position());
 	dock_slot[dock_popup_selected]->remove_child(dock);
 
 	Window *window = memnew(Window);
@@ -4116,7 +4117,7 @@ void EditorNode::_dock_select_draw() {
 
 	Color used = Color(0.6, 0.6, 0.6, 0.8);
 	Color used_selected = Color(0.8, 0.8, 0.8, 0.8);
-	Color tab_selected = theme_base->get_color("mono_color", "Editor");
+	Color tab_selected = theme_base->get_theme_color("mono_color", "Editor");
 	Color unused = used;
 	unused.a = 0.4;
 	Color unusable = unused;
@@ -4879,9 +4880,9 @@ void EditorNode::_bottom_panel_switch(bool p_enable, int p_idx) {
 			bottom_panel_items[i].control->set_visible(i == p_idx);
 		}
 		if (EditorDebuggerNode::get_singleton() == bottom_panel_items[p_idx].control) { // this is the debug panel which uses tabs, so the top section should be smaller
-			bottom_panel->add_style_override("panel", gui_base->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles"));
+			bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox("BottomPanelDebuggerOverride", "EditorStyles"));
 		} else {
-			bottom_panel->add_style_override("panel", gui_base->get_stylebox("panel", "TabContainer"));
+			bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox("panel", "TabContainer"));
 		}
 		center_split->set_dragger_visibility(SplitContainer::DRAGGER_VISIBLE);
 		center_split->set_collapsed(false);
@@ -4891,7 +4892,7 @@ void EditorNode::_bottom_panel_switch(bool p_enable, int p_idx) {
 		bottom_panel_raise->show();
 
 	} else {
-		bottom_panel->add_style_override("panel", gui_base->get_stylebox("panel", "TabContainer"));
+		bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox("panel", "TabContainer"));
 		bottom_panel_items[p_idx].button->set_pressed(false);
 		bottom_panel_items[p_idx].control->set_visible(false);
 		center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
@@ -4984,7 +4985,7 @@ Variant EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from) {
 
 	{
 		//todo make proper previews
-		Ref<ImageTexture> pic = gui_base->get_icon("FileBigThumb", "EditorIcons");
+		Ref<ImageTexture> pic = gui_base->get_theme_icon("FileBigThumb", "EditorIcons");
 		Ref<Image> img = pic->get_data();
 		img = img->duplicate();
 		img->resize(48, 48); //meh
@@ -5036,10 +5037,10 @@ Variant EditorNode::drag_files_and_dirs(const Vector<String> &p_paths, Control *
 
 		if (p_paths[i].ends_with("/")) {
 			label->set_text(p_paths[i].substr(0, p_paths[i].length() - 1).get_file());
-			icon->set_texture(gui_base->get_icon("Folder", "EditorIcons"));
+			icon->set_texture(gui_base->get_theme_icon("Folder", "EditorIcons"));
 		} else {
 			label->set_text(p_paths[i].get_file());
-			icon->set_texture(gui_base->get_icon("File", "EditorIcons"));
+			icon->set_texture(gui_base->get_theme_icon("File", "EditorIcons"));
 		}
 		icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 		icon->set_size(Size2(16, 16));
@@ -5342,9 +5343,9 @@ void EditorNode::_update_video_driver_color() {
 
 	// TODO: Probably should de-hardcode this and add to editor settings.
 	if (video_driver->get_text() == "GLES2") {
-		video_driver->add_color_override("font_color", Color::hex(0x5586a4ff));
+		video_driver->add_theme_color_override("font_color", Color::hex(0x5586a4ff));
 	} else if (video_driver->get_text() == "Vulkan") {
-		video_driver->add_color_override("font_color", theme_base->get_color("vulkan_color", "Editor"));
+		video_driver->add_theme_color_override("font_color", theme_base->get_theme_color("vulkan_color", "Editor"));
 	}
 }
 
@@ -5785,7 +5786,7 @@ EditorNode::EditorNode() {
 
 	theme_base->set_theme(theme);
 	gui_base->set_theme(theme);
-	gui_base->add_style_override("panel", gui_base->get_stylebox("Background", "EditorStyles"));
+	gui_base->add_theme_style_override("panel", gui_base->get_theme_stylebox("Background", "EditorStyles"));
 
 	resource_preview = memnew(EditorResourcePreview);
 	add_child(resource_preview);
@@ -5800,7 +5801,7 @@ EditorNode::EditorNode() {
 	main_vbox = memnew(VBoxContainer);
 	gui_base->add_child(main_vbox);
 	main_vbox->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 8);
-	main_vbox->add_constant_override("separation", 8 * EDSCALE);
+	main_vbox->add_theme_constant_override("separation", 8 * EDSCALE);
 
 	menu_hb = memnew(HBoxContainer);
 	main_vbox->add_child(menu_hb);
@@ -5941,7 +5942,7 @@ EditorNode::EditorNode() {
 	VBoxContainer *srt = memnew(VBoxContainer);
 	srt->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	top_split->add_child(srt);
-	srt->add_constant_override("separation", 0);
+	srt->add_theme_constant_override("separation", 0);
 
 	tab_preview_panel = memnew(Panel);
 	tab_preview_panel->set_size(Size2(100, 100) * EDSCALE);
@@ -5956,8 +5957,8 @@ EditorNode::EditorNode() {
 	tab_preview_panel->add_child(tab_preview);
 
 	scene_tabs = memnew(Tabs);
-	scene_tabs->add_style_override("tab_fg", gui_base->get_stylebox("SceneTabFG", "EditorStyles"));
-	scene_tabs->add_style_override("tab_bg", gui_base->get_stylebox("SceneTabBG", "EditorStyles"));
+	scene_tabs->add_theme_style_override("tab_fg", gui_base->get_theme_stylebox("SceneTabFG", "EditorStyles"));
+	scene_tabs->add_theme_style_override("tab_bg", gui_base->get_theme_stylebox("SceneTabBG", "EditorStyles"));
 	scene_tabs->set_select_with_rmb(true);
 	scene_tabs->add_tab("unsaved");
 	scene_tabs->set_tab_align(Tabs::ALIGN_LEFT);
@@ -5979,7 +5980,6 @@ EditorNode::EditorNode() {
 	scene_tabs_context_menu = memnew(PopupMenu);
 	tabbar_container->add_child(scene_tabs_context_menu);
 	scene_tabs_context_menu->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));
-	scene_tabs_context_menu->set_hide_on_window_lose_focus(true);
 
 	srt->add_child(tabbar_container);
 	tabbar_container->add_child(scene_tabs);
@@ -5991,20 +5991,20 @@ EditorNode::EditorNode() {
 #endif
 	distraction_free->set_tooltip(TTR("Toggle distraction-free mode."));
 	distraction_free->connect("pressed", callable_mp(this, &EditorNode::_toggle_distraction_free_mode));
-	distraction_free->set_icon(gui_base->get_icon("DistractionFree", "EditorIcons"));
+	distraction_free->set_icon(gui_base->get_theme_icon("DistractionFree", "EditorIcons"));
 	distraction_free->set_toggle_mode(true);
 
 	scene_tab_add = memnew(ToolButton);
 	tabbar_container->add_child(scene_tab_add);
 	tabbar_container->add_child(distraction_free);
 	scene_tab_add->set_tooltip(TTR("Add a new scene."));
-	scene_tab_add->set_icon(gui_base->get_icon("Add", "EditorIcons"));
-	scene_tab_add->add_color_override("icon_color_normal", Color(0.6f, 0.6f, 0.6f, 0.8f));
+	scene_tab_add->set_icon(gui_base->get_theme_icon("Add", "EditorIcons"));
+	scene_tab_add->add_theme_color_override("icon_color_normal", Color(0.6f, 0.6f, 0.6f, 0.8f));
 	scene_tab_add->connect("pressed", callable_mp(this, &EditorNode::_menu_option), make_binds(FILE_NEW_SCENE));
 
 	scene_root_parent = memnew(PanelContainer);
 	scene_root_parent->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
-	scene_root_parent->add_style_override("panel", gui_base->get_stylebox("Content", "EditorStyles"));
+	scene_root_parent->add_theme_style_override("panel", gui_base->get_theme_stylebox("Content", "EditorStyles"));
 	scene_root_parent->set_draw_behind_parent(true);
 	srt->add_child(scene_root_parent);
 	scene_root_parent->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -6018,7 +6018,7 @@ EditorNode::EditorNode() {
 
 	viewport = memnew(VBoxContainer);
 	viewport->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	viewport->add_constant_override("separation", 0);
+	viewport->add_theme_constant_override("separation", 0);
 	scene_root_parent->add_child(viewport);
 
 	HBoxContainer *left_menu_hb = memnew(HBoxContainer);
@@ -6028,11 +6028,11 @@ EditorNode::EditorNode() {
 	file_menu->set_flat(false);
 	file_menu->set_switch_on_hover(true);
 	file_menu->set_text(TTR("Scene"));
-	file_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+	file_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox("MenuHover", "EditorStyles"));
 	left_menu_hb->add_child(file_menu);
 
 	prev_scene = memnew(ToolButton);
-	prev_scene->set_icon(gui_base->get_icon("PrevScene", "EditorIcons"));
+	prev_scene->set_icon(gui_base->get_theme_icon("PrevScene", "EditorIcons"));
 	prev_scene->set_tooltip(TTR("Go to previously opened scene."));
 	prev_scene->set_disabled(true);
 	prev_scene->connect("pressed", callable_mp(this, &EditorNode::_menu_option), make_binds(FILE_OPEN_PREV));
@@ -6084,7 +6084,7 @@ EditorNode::EditorNode() {
 	file_menu->set_tooltip(TTR("Operations with scene files."));
 
 	p = file_menu->get_popup();
-	p->set_hide_on_window_lose_focus(true);
+
 	p->add_shortcut(ED_SHORTCUT("editor/new_scene", TTR("New Scene")), FILE_NEW_SCENE);
 	p->add_shortcut(ED_SHORTCUT("editor/new_inherited_scene", TTR("New Inherited Scene...")), FILE_NEW_INHERITED_SCENE);
 	p->add_shortcut(ED_SHORTCUT("editor/open_scene", TTR("Open Scene..."), KEY_MASK_CMD + KEY_O), FILE_OPEN_SCENE);
@@ -6132,11 +6132,11 @@ EditorNode::EditorNode() {
 	project_menu->set_switch_on_hover(true);
 	project_menu->set_tooltip(TTR("Miscellaneous project or scene-wide tools."));
 	project_menu->set_text(TTR("Project"));
-	project_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+	project_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox("MenuHover", "EditorStyles"));
 	left_menu_hb->add_child(project_menu);
 
 	p = project_menu->get_popup();
-	p->set_hide_on_window_lose_focus(true);
+
 	p->add_shortcut(ED_SHORTCUT("editor/project_settings", TTR("Project Settings...")), RUN_SETTINGS);
 	p->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));
 
@@ -6182,19 +6182,20 @@ EditorNode::EditorNode() {
 	debug_menu->set_flat(false);
 	debug_menu->set_switch_on_hover(true);
 	debug_menu->set_text(TTR("Debug"));
-	debug_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+	debug_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox("MenuHover", "EditorStyles"));
 	left_menu_hb->add_child(debug_menu);
+
 	menu_hb->add_spacer();
 
 	settings_menu = memnew(MenuButton);
 	settings_menu->set_flat(false);
 	settings_menu->set_switch_on_hover(true);
 	settings_menu->set_text(TTR("Editor"));
-	settings_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+	settings_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox("MenuHover", "EditorStyles"));
 	left_menu_hb->add_child(settings_menu);
 
 	p = settings_menu->get_popup();
-	p->set_hide_on_window_lose_focus(true);
+
 	p->add_shortcut(ED_SHORTCUT("editor/editor_settings", TTR("Editor Settings...")), SETTINGS_PREFERENCES);
 	p->add_separator();
 
@@ -6238,20 +6239,19 @@ EditorNode::EditorNode() {
 	help_menu->set_flat(false);
 	help_menu->set_switch_on_hover(true);
 	help_menu->set_text(TTR("Help"));
-	help_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+	help_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox("MenuHover", "EditorStyles"));
 	left_menu_hb->add_child(help_menu);
 
 	p = help_menu->get_popup();
-	p->set_hide_on_window_lose_focus(true);
 	p->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));
-	p->add_icon_shortcut(gui_base->get_icon("HelpSearch", "EditorIcons"), ED_SHORTCUT("editor/editor_help", TTR("Search"), KEY_MASK_SHIFT | KEY_F1), HELP_SEARCH);
+	p->add_icon_shortcut(gui_base->get_theme_icon("HelpSearch", "EditorIcons"), ED_SHORTCUT("editor/editor_help", TTR("Search"), KEY_MASK_SHIFT | KEY_F1), HELP_SEARCH);
 	p->add_separator();
-	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/online_docs", TTR("Online Docs")), HELP_DOCS);
-	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/q&a", TTR("Q&A")), HELP_QA);
-	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/issue_tracker", TTR("Issue Tracker")), HELP_ISSUES);
-	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/community", TTR("Community")), HELP_COMMUNITY);
+	p->add_icon_shortcut(gui_base->get_theme_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/online_docs", TTR("Online Docs")), HELP_DOCS);
+	p->add_icon_shortcut(gui_base->get_theme_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/q&a", TTR("Q&A")), HELP_QA);
+	p->add_icon_shortcut(gui_base->get_theme_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/issue_tracker", TTR("Issue Tracker")), HELP_ISSUES);
+	p->add_icon_shortcut(gui_base->get_theme_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/community", TTR("Community")), HELP_COMMUNITY);
 	p->add_separator();
-	p->add_icon_shortcut(gui_base->get_icon("Godot", "EditorIcons"), ED_SHORTCUT("editor/about", TTR("About")), HELP_ABOUT);
+	p->add_icon_shortcut(gui_base->get_theme_icon("Godot", "EditorIcons"), ED_SHORTCUT("editor/about", TTR("About")), HELP_ABOUT);
 
 	HBoxContainer *play_hb = memnew(HBoxContainer);
 	menu_hb->add_child(play_hb);
@@ -6259,7 +6259,7 @@ EditorNode::EditorNode() {
 	play_button = memnew(ToolButton);
 	play_hb->add_child(play_button);
 	play_button->set_toggle_mode(true);
-	play_button->set_icon(gui_base->get_icon("MainPlay", "EditorIcons"));
+	play_button->set_icon(gui_base->get_theme_icon("MainPlay", "EditorIcons"));
 	play_button->set_focus_mode(Control::FOCUS_NONE);
 	play_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option), make_binds(RUN_PLAY));
 	play_button->set_tooltip(TTR("Play the project."));
@@ -6271,7 +6271,7 @@ EditorNode::EditorNode() {
 
 	pause_button = memnew(ToolButton);
 	pause_button->set_toggle_mode(true);
-	pause_button->set_icon(gui_base->get_icon("Pause", "EditorIcons"));
+	pause_button->set_icon(gui_base->get_theme_icon("Pause", "EditorIcons"));
 	pause_button->set_focus_mode(Control::FOCUS_NONE);
 	pause_button->set_tooltip(TTR("Pause the scene execution for debugging."));
 	pause_button->set_disabled(true);
@@ -6285,7 +6285,7 @@ EditorNode::EditorNode() {
 	stop_button = memnew(ToolButton);
 	play_hb->add_child(stop_button);
 	stop_button->set_focus_mode(Control::FOCUS_NONE);
-	stop_button->set_icon(gui_base->get_icon("Stop", "EditorIcons"));
+	stop_button->set_icon(gui_base->get_theme_icon("Stop", "EditorIcons"));
 	stop_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option), make_binds(RUN_STOP));
 	stop_button->set_tooltip(TTR("Stop the scene."));
 	stop_button->set_disabled(true);
@@ -6303,7 +6303,7 @@ EditorNode::EditorNode() {
 	play_hb->add_child(play_scene_button);
 	play_scene_button->set_toggle_mode(true);
 	play_scene_button->set_focus_mode(Control::FOCUS_NONE);
-	play_scene_button->set_icon(gui_base->get_icon("PlayScene", "EditorIcons"));
+	play_scene_button->set_icon(gui_base->get_theme_icon("PlayScene", "EditorIcons"));
 	play_scene_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option), make_binds(RUN_PLAY_SCENE));
 	play_scene_button->set_tooltip(TTR("Play the edited scene."));
 #ifdef OSX_ENABLED
@@ -6316,7 +6316,7 @@ EditorNode::EditorNode() {
 	play_hb->add_child(play_custom_scene_button);
 	play_custom_scene_button->set_toggle_mode(true);
 	play_custom_scene_button->set_focus_mode(Control::FOCUS_NONE);
-	play_custom_scene_button->set_icon(gui_base->get_icon("PlayCustom", "EditorIcons"));
+	play_custom_scene_button->set_icon(gui_base->get_theme_icon("PlayCustom", "EditorIcons"));
 	play_custom_scene_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option), make_binds(RUN_PLAY_CUSTOM_SCENE));
 	play_custom_scene_button->set_tooltip(TTR("Play custom scene"));
 #ifdef OSX_ENABLED
@@ -6333,7 +6333,7 @@ EditorNode::EditorNode() {
 	video_driver->set_flat(true);
 	video_driver->set_focus_mode(Control::FOCUS_NONE);
 	video_driver->connect("item_selected", callable_mp(this, &EditorNode::_video_driver_selected));
-	video_driver->add_font_override("font", gui_base->get_font("bold", "EditorFonts"));
+	video_driver->add_theme_font_override("font", gui_base->get_theme_font("bold", "EditorFonts"));
 	// TODO re-enable when GLES2 is ported
 	video_driver->set_disabled(true);
 	right_menu_hb->add_child(video_driver);
@@ -6375,7 +6375,7 @@ EditorNode::EditorNode() {
 	update_spinner = memnew(MenuButton);
 	update_spinner->set_tooltip(TTR("Spins when the editor window redraws."));
 	right_menu_hb->add_child(update_spinner);
-	update_spinner->set_icon(gui_base->get_icon("Progress1", "EditorIcons"));
+	update_spinner->set_icon(gui_base->get_theme_icon("Progress1", "EditorIcons"));
 	update_spinner->get_popup()->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));
 	p = update_spinner->get_popup();
 	p->add_radio_check_item(TTR("Update Continuously"), SETTINGS_UPDATE_CONTINUOUSLY);
@@ -6451,7 +6451,7 @@ EditorNode::EditorNode() {
 	// Bottom panels
 
 	bottom_panel = memnew(PanelContainer);
-	bottom_panel->add_style_override("panel", gui_base->get_stylebox("panel", "TabContainer"));
+	bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox("panel", "TabContainer"));
 	center_split->add_child(bottom_panel);
 	center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
 
@@ -6473,7 +6473,7 @@ EditorNode::EditorNode() {
 	bottom_panel_hb->add_child(version_label);
 
 	bottom_panel_raise = memnew(ToolButton);
-	bottom_panel_raise->set_icon(gui_base->get_icon("ExpandBottomDock", "EditorIcons"));
+	bottom_panel_raise->set_icon(gui_base->get_theme_icon("ExpandBottomDock", "EditorIcons"));
 
 	bottom_panel_raise->set_shortcut(ED_SHORTCUT("editor/bottom_panel_expand", TTR("Expand Bottom Panel"), KEY_MASK_SHIFT | KEY_F12));
 
@@ -6557,7 +6557,7 @@ EditorNode::EditorNode() {
 	file_script->connect("file_selected", callable_mp(this, &EditorNode::_dialog_action));
 
 	file_menu->get_popup()->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));
-	file_menu->connect("about_to_show", callable_mp(this, &EditorNode::_update_file_menu_opened));
+	file_menu->connect("about_to_popup", callable_mp(this, &EditorNode::_update_file_menu_opened));
 	file_menu->get_popup()->connect("popup_hide", callable_mp(this, &EditorNode::_update_file_menu_closed));
 
 	settings_menu->get_popup()->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));

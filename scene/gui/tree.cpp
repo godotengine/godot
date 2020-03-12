@@ -952,45 +952,45 @@ TreeItem::~TreeItem() {
 
 void Tree::update_cache() {
 
-	cache.font = get_font("font");
-	cache.tb_font = get_font("title_button_font");
-	cache.bg = get_stylebox("bg");
-	cache.selected = get_stylebox("selected");
-	cache.selected_focus = get_stylebox("selected_focus");
-	cache.cursor = get_stylebox("cursor");
-	cache.cursor_unfocus = get_stylebox("cursor_unfocused");
-	cache.button_pressed = get_stylebox("button_pressed");
+	cache.font = get_theme_font("font");
+	cache.tb_font = get_theme_font("title_button_font");
+	cache.bg = get_theme_stylebox("bg");
+	cache.selected = get_theme_stylebox("selected");
+	cache.selected_focus = get_theme_stylebox("selected_focus");
+	cache.cursor = get_theme_stylebox("cursor");
+	cache.cursor_unfocus = get_theme_stylebox("cursor_unfocused");
+	cache.button_pressed = get_theme_stylebox("button_pressed");
 
-	cache.checked = get_icon("checked");
-	cache.unchecked = get_icon("unchecked");
-	cache.arrow_collapsed = get_icon("arrow_collapsed");
-	cache.arrow = get_icon("arrow");
-	cache.select_arrow = get_icon("select_arrow");
-	cache.updown = get_icon("updown");
+	cache.checked = get_theme_icon("checked");
+	cache.unchecked = get_theme_icon("unchecked");
+	cache.arrow_collapsed = get_theme_icon("arrow_collapsed");
+	cache.arrow = get_theme_icon("arrow");
+	cache.select_arrow = get_theme_icon("select_arrow");
+	cache.updown = get_theme_icon("updown");
 
-	cache.custom_button = get_stylebox("custom_button");
-	cache.custom_button_hover = get_stylebox("custom_button_hover");
-	cache.custom_button_pressed = get_stylebox("custom_button_pressed");
-	cache.custom_button_font_highlight = get_color("custom_button_font_highlight");
+	cache.custom_button = get_theme_stylebox("custom_button");
+	cache.custom_button_hover = get_theme_stylebox("custom_button_hover");
+	cache.custom_button_pressed = get_theme_stylebox("custom_button_pressed");
+	cache.custom_button_font_highlight = get_theme_color("custom_button_font_highlight");
 
-	cache.font_color = get_color("font_color");
-	cache.font_color_selected = get_color("font_color_selected");
-	cache.guide_color = get_color("guide_color");
-	cache.drop_position_color = get_color("drop_position_color");
-	cache.hseparation = get_constant("hseparation");
-	cache.vseparation = get_constant("vseparation");
-	cache.item_margin = get_constant("item_margin");
-	cache.button_margin = get_constant("button_margin");
-	cache.draw_guides = get_constant("draw_guides");
-	cache.draw_relationship_lines = get_constant("draw_relationship_lines");
-	cache.relationship_line_color = get_color("relationship_line_color");
-	cache.scroll_border = get_constant("scroll_border");
-	cache.scroll_speed = get_constant("scroll_speed");
+	cache.font_color = get_theme_color("font_color");
+	cache.font_color_selected = get_theme_color("font_color_selected");
+	cache.guide_color = get_theme_color("guide_color");
+	cache.drop_position_color = get_theme_color("drop_position_color");
+	cache.hseparation = get_theme_constant("hseparation");
+	cache.vseparation = get_theme_constant("vseparation");
+	cache.item_margin = get_theme_constant("item_margin");
+	cache.button_margin = get_theme_constant("button_margin");
+	cache.draw_guides = get_theme_constant("draw_guides");
+	cache.draw_relationship_lines = get_theme_constant("draw_relationship_lines");
+	cache.relationship_line_color = get_theme_color("relationship_line_color");
+	cache.scroll_border = get_theme_constant("scroll_border");
+	cache.scroll_speed = get_theme_constant("scroll_speed");
 
-	cache.title_button = get_stylebox("title_button_normal");
-	cache.title_button_pressed = get_stylebox("title_button_pressed");
-	cache.title_button_hover = get_stylebox("title_button_hover");
-	cache.title_button_color = get_color("title_button_color");
+	cache.title_button = get_theme_stylebox("title_button_normal");
+	cache.title_button_pressed = get_theme_stylebox("title_button_pressed");
+	cache.title_button_hover = get_theme_stylebox("title_button_hover");
+	cache.title_button_color = get_theme_color("title_button_color");
 
 	v_scroll->set_custom_step(cache.font->get_height());
 }
@@ -1291,7 +1291,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				}
 			}
 
-			Color col = p_item->cells[i].custom_color ? p_item->cells[i].color : get_color(p_item->cells[i].selected ? "font_color_selected" : "font_color");
+			Color col = p_item->cells[i].custom_color ? p_item->cells[i].color : get_theme_color(p_item->cells[i].selected ? "font_color_selected" : "font_color");
 			Color icon_col = p_item->cells[i].icon_color;
 
 			Point2i text_pos = item_rect.position;
@@ -3011,7 +3011,7 @@ void Tree::_notification(int p_what) {
 		RID ci = get_canvas_item();
 
 		Ref<StyleBox> bg = cache.bg;
-		Ref<StyleBox> bg_focus = get_stylebox("bg_focus");
+		Ref<StyleBox> bg_focus = get_theme_stylebox("bg_focus");
 
 		Point2 draw_ofs;
 		draw_ofs += bg->get_offset();
@@ -4020,7 +4020,7 @@ Tree::Tree() {
 	popup_menu = memnew(PopupMenu);
 	popup_menu->hide();
 	add_child(popup_menu);
-	popup_menu->set_as_toplevel(true);
+	//	popup_menu->set_as_toplevel(true);
 	text_editor = memnew(LineEdit);
 	add_child(text_editor);
 	text_editor->set_as_toplevel(true);

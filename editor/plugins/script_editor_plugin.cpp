@@ -217,7 +217,7 @@ void ScriptEditorQuickOpen::_notification(int p_what) {
 			[[fallthrough]];
 		};
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			search_box->set_right_icon(search_options->get_icon("Search", "EditorIcons"));
+			search_box->set_right_icon(search_options->get_theme_icon("Search", "EditorIcons"));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", callable_mp(this, &ScriptEditorQuickOpen::_confirmed));
@@ -247,7 +247,7 @@ ScriptEditorQuickOpen::ScriptEditorQuickOpen() {
 	search_options->connect("item_activated", callable_mp(this, &ScriptEditorQuickOpen::_confirmed));
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
-	search_options->add_constant_override("draw_guides", 1);
+	search_options->add_theme_constant_override("draw_guides", 1);
 }
 
 /////////////////////////////////
@@ -429,7 +429,7 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 	if (Object::cast_to<ScriptEditorBase>(c)) {
 
 		script_name_label->set_text(Object::cast_to<ScriptEditorBase>(c)->get_name());
-		script_icon->set_texture(Object::cast_to<ScriptEditorBase>(c)->get_icon());
+		script_icon->set_texture(Object::cast_to<ScriptEditorBase>(c)->get_theme_icon());
 		if (is_visible_in_tree())
 			Object::cast_to<ScriptEditorBase>(c)->ensure_focus();
 
@@ -443,7 +443,7 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 	if (Object::cast_to<EditorHelp>(c)) {
 
 		script_name_label->set_text(Object::cast_to<EditorHelp>(c)->get_class());
-		script_icon->set_texture(get_icon("Help", "EditorIcons"));
+		script_icon->set_texture(get_theme_icon("Help", "EditorIcons"));
 		if (is_visible_in_tree())
 			Object::cast_to<EditorHelp>(c)->set_focused();
 	}
@@ -1396,19 +1396,19 @@ void ScriptEditor::_notification(int p_what) {
 		}
 		case NOTIFICATION_THEME_CHANGED: {
 
-			help_search->set_icon(get_icon("HelpSearch", "EditorIcons"));
-			site_search->set_icon(get_icon("Instance", "EditorIcons"));
-			request_docs->set_icon(get_icon("Issue", "EditorIcons"));
+			help_search->set_icon(get_theme_icon("HelpSearch", "EditorIcons"));
+			site_search->set_icon(get_theme_icon("Instance", "EditorIcons"));
+			request_docs->set_icon(get_theme_icon("Issue", "EditorIcons"));
 
-			script_forward->set_icon(get_icon("Forward", "EditorIcons"));
-			script_back->set_icon(get_icon("Back", "EditorIcons"));
+			script_forward->set_icon(get_theme_icon("Forward", "EditorIcons"));
+			script_back->set_icon(get_theme_icon("Back", "EditorIcons"));
 
-			members_overview_alphabeta_sort_button->set_icon(get_icon("Sort", "EditorIcons"));
+			members_overview_alphabeta_sort_button->set_icon(get_theme_icon("Sort", "EditorIcons"));
 
-			filter_scripts->set_right_icon(get_icon("Search", "EditorIcons"));
-			filter_methods->set_right_icon(get_icon("Search", "EditorIcons"));
+			filter_scripts->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+			filter_methods->set_right_icon(get_theme_icon("Search", "EditorIcons"));
 
-			filename->add_style_override("normal", editor->get_gui_base()->get_stylebox("normal", "LineEdit"));
+			filename->add_theme_style_override("normal", editor->get_gui_base()->get_theme_stylebox("normal", "LineEdit"));
 
 			recent_scripts->set_as_minsize();
 		} break;
@@ -1718,8 +1718,8 @@ void ScriptEditor::_update_script_colors() {
 	bool highlight_current = EditorSettings::get_singleton()->get("text_editor/script_list/highlight_current_script");
 
 	int hist_size = EditorSettings::get_singleton()->get("text_editor/script_list/script_temperature_history_size");
-	Color hot_color = get_color("accent_color", "Editor");
-	Color cold_color = get_color("font_color", "Editor");
+	Color hot_color = get_theme_color("accent_color", "Editor");
+	Color cold_color = get_theme_color("font_color", "Editor");
 
 	for (int i = 0; i < script_list->get_item_count(); i++) {
 
@@ -1776,7 +1776,7 @@ void ScriptEditor::_update_script_names() {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
 		if (se) {
 
-			Ref<Texture2D> icon = se->get_icon();
+			Ref<Texture2D> icon = se->get_theme_icon();
 			String path = se->get_edited_resource()->get_path();
 			bool built_in = !path.is_resource_file();
 			String name;
@@ -1837,7 +1837,7 @@ void ScriptEditor::_update_script_names() {
 		if (eh) {
 
 			String name = eh->get_class();
-			Ref<Texture2D> icon = get_icon("Help", "EditorIcons");
+			Ref<Texture2D> icon = get_theme_icon("Help", "EditorIcons");
 			String tooltip = vformat(TTR("%s Class Reference"), name);
 
 			_ScriptEditorItemData sd;
@@ -2347,12 +2347,12 @@ Variant ScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(cur_node);
 	if (se) {
 		preview_name = se->get_name();
-		preview_icon = se->get_icon();
+		preview_icon = se->get_theme_icon();
 	}
 	EditorHelp *eh = Object::cast_to<EditorHelp>(cur_node);
 	if (eh) {
 		preview_name = eh->get_class();
-		preview_icon = get_icon("Help", "EditorIcons");
+		preview_icon = get_theme_icon("Help", "EditorIcons");
 	}
 
 	if (!preview_icon.is_null()) {
@@ -3112,7 +3112,6 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
 	context_menu->connect("id_pressed", callable_mp(this, &ScriptEditor::_menu_option));
-	context_menu->set_hide_on_window_lose_focus(true);
 
 	overview_vbox = memnew(VBoxContainer);
 	overview_vbox->set_custom_minimum_size(Size2(0, 90));
@@ -3125,7 +3124,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	filename = memnew(Label);
 	filename->set_clip_text(true);
 	filename->set_h_size_flags(SIZE_EXPAND_FILL);
-	filename->add_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_stylebox("normal", "LineEdit"));
+	filename->add_theme_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("normal", "LineEdit"));
 	buttons_hbox->add_child(filename);
 
 	members_overview_alphabeta_sort_button = memnew(ToolButton);
@@ -3173,7 +3172,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	menu_hb->add_child(file_menu);
 	file_menu->set_text(TTR("File"));
 	file_menu->set_switch_on_hover(true);
-	file_menu->get_popup()->set_hide_on_window_lose_focus(true);
+
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new", TTR("New Script...")), FILE_NEW);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new_textfile", TTR("New Text File...")), FILE_NEW_TEXTFILE);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/open", TTR("Open...")), FILE_OPEN);
@@ -3230,7 +3229,6 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	menu_hb->add_child(script_search_menu);
 	script_search_menu->set_text(TTR("Search"));
 	script_search_menu->set_switch_on_hover(true);
-	script_search_menu->get_popup()->set_hide_on_window_lose_focus(true);
 	script_search_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptEditor::_menu_option));
 
 	MenuButton *debug_menu = memnew(MenuButton);
@@ -3367,8 +3365,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	ScriptServer::edit_request_func = _open_script_request;
 
-	add_style_override("panel", editor->get_gui_base()->get_stylebox("ScriptEditorPanel", "EditorStyles"));
-	tab_container->add_style_override("panel", editor->get_gui_base()->get_stylebox("ScriptEditor", "EditorStyles"));
+	add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox("ScriptEditorPanel", "EditorStyles"));
+	tab_container->add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox("ScriptEditor", "EditorStyles"));
 }
 
 ScriptEditor::~ScriptEditor() {

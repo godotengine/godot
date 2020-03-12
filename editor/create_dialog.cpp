@@ -193,7 +193,7 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 		item->set_text(0, p_type + " (" + ScriptServer::get_global_class_path(p_type).get_file() + ")");
 	}
 	if (!can_instance) {
-		item->set_custom_color(0, search_options->get_color("disabled_font_color", "Editor"));
+		item->set_custom_color(0, search_options->get_theme_color("disabled_font_color", "Editor"));
 		item->set_selectable(0, false);
 	} else if (!(*to_select && (*to_select)->get_text(0) == search_box->get_text())) {
 		String search_term = search_box->get_text().to_lower();
@@ -310,8 +310,8 @@ void CreateDialog::_update_search() {
 	EditorData &ed = EditorNode::get_editor_data();
 
 	root->set_text(0, base_type);
-	if (search_options->has_icon(base_type, "EditorIcons")) {
-		root->set_icon(0, search_options->get_icon(base_type, "EditorIcons"));
+	if (search_options->has_theme_icon(base_type, "EditorIcons")) {
+		root->set_icon(0, search_options->get_theme_icon(base_type, "EditorIcons"));
 	}
 
 	TreeItem *to_select = search_box->get_text() == base_type ? root : NULL;
@@ -460,9 +460,9 @@ void CreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
-			search_box->set_right_icon(search_options->get_icon("Search", "EditorIcons"));
+			search_box->set_right_icon(search_options->get_theme_icon("Search", "EditorIcons"));
 			search_box->set_clear_button_enabled(true);
-			favorite->set_icon(search_options->get_icon("Favorites", "EditorIcons"));
+			favorite->set_icon(search_options->get_theme_icon("Favorites", "EditorIcons"));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
@@ -764,7 +764,7 @@ CreateDialog::CreateDialog() {
 #warning cant forward drag data to a non control, must be fixed
 #endif
 	//favorites->set_drag_forwarding(this);
-	favorites->add_constant_override("draw_guides", 1);
+	favorites->add_theme_constant_override("draw_guides", 1);
 
 	VBoxContainer *rec_vb = memnew(VBoxContainer);
 	vsc->add_child(rec_vb);
@@ -778,7 +778,7 @@ CreateDialog::CreateDialog() {
 	recent->set_allow_reselect(true);
 	recent->connect("cell_selected", callable_mp(this, &CreateDialog::_history_selected));
 	recent->connect("item_activated", callable_mp(this, &CreateDialog::_history_activated));
-	recent->add_constant_override("draw_guides", 1);
+	recent->add_theme_constant_override("draw_guides", 1);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	hsc->add_child(vbc);

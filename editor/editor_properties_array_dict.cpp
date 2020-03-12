@@ -184,9 +184,9 @@ void EditorPropertyArray::_change_type(Object *p_button, int p_index) {
 
 	Button *button = Object::cast_to<Button>(p_button);
 	changing_type_idx = p_index;
-	Rect2 rect = button->get_global_rect();
+	Rect2 rect = button->get_screen_rect();
 	change_type->set_as_minsize();
-	change_type->set_global_position(rect.position + rect.size - Vector2(change_type->get_combined_minimum_size().x, 0));
+	change_type->set_position(rect.position + rect.size - Vector2(change_type->get_contents_minimum_size().x, 0));
 	change_type->popup();
 }
 
@@ -373,13 +373,13 @@ void EditorPropertyArray::update_property() {
 			if (is_untyped_array) {
 
 				Button *edit = memnew(Button);
-				edit->set_icon(get_icon("Edit", "EditorIcons"));
+				edit->set_icon(get_theme_icon("Edit", "EditorIcons"));
 				hb->add_child(edit);
 				edit->connect("pressed", callable_mp(this, &EditorPropertyArray::_change_type), varray(edit, i + offset));
 			} else {
 
 				Button *remove = memnew(Button);
-				remove->set_icon(get_icon("Remove", "EditorIcons"));
+				remove->set_icon(get_theme_icon("Remove", "EditorIcons"));
 				remove->connect("pressed", callable_mp(this, &EditorPropertyArray::_remove_pressed), varray(i + offset));
 				hb->add_child(remove);
 			}
@@ -553,9 +553,9 @@ void EditorPropertyDictionary::_change_type(Object *p_button, int p_index) {
 
 	Button *button = Object::cast_to<Button>(p_button);
 
-	Rect2 rect = button->get_global_rect();
+	Rect2 rect = button->get_screen_rect();
 	change_type->set_as_minsize();
-	change_type->set_global_position(rect.position + rect.size - Vector2(change_type->get_combined_minimum_size().x, 0));
+	change_type->set_position(rect.position + rect.size - Vector2(change_type->get_contents_minimum_size().x, 0));
 	change_type->popup();
 	changing_type_idx = p_index;
 }
@@ -909,9 +909,9 @@ void EditorPropertyDictionary::update_property() {
 				for (int j = 0; j < 4; j++) {
 					flat->set_default_margin(Margin(j), 2 * EDSCALE);
 				}
-				flat->set_bg_color(get_color("prop_subsection", "Editor"));
+				flat->set_bg_color(get_theme_color("prop_subsection", "Editor"));
 
-				pc->add_style_override("panel", flat);
+				pc->add_theme_style_override("panel", flat);
 				add_vbox = memnew(VBoxContainer);
 				pc->add_child(add_vbox);
 			}
@@ -944,7 +944,7 @@ void EditorPropertyDictionary::update_property() {
 			hb->add_child(prop);
 			prop->set_h_size_flags(SIZE_EXPAND_FILL);
 			Button *edit = memnew(Button);
-			edit->set_icon(get_icon("Edit", "EditorIcons"));
+			edit->set_icon(get_theme_icon("Edit", "EditorIcons"));
 			hb->add_child(edit);
 			edit->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_change_type), varray(edit, change_index));
 

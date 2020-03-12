@@ -577,7 +577,7 @@ FindInFilesPanel::FindInFilesPanel() {
 		hbc->add_child(find_label);
 
 		_search_text_label = memnew(Label);
-		_search_text_label->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("source", "EditorFonts"));
+		_search_text_label->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("source", "EditorFonts"));
 		hbc->add_child(_search_text_label);
 
 		_progress_bar = memnew(ProgressBar);
@@ -605,7 +605,7 @@ FindInFilesPanel::FindInFilesPanel() {
 	}
 
 	_results_display = memnew(Tree);
-	_results_display->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("source", "EditorFonts"));
+	_results_display->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("source", "EditorFonts"));
 	_results_display->set_v_size_flags(SIZE_EXPAND_FILL);
 	_results_display->connect("item_selected", callable_mp(this, &FindInFilesPanel::_on_result_selected));
 	_results_display->connect("item_edited", callable_mp(this, &FindInFilesPanel::_on_item_edited));
@@ -735,7 +735,7 @@ void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin
 	item->set_text(text_index, item_text);
 	item->set_custom_draw(text_index, this, "_draw_result_text");
 
-	Ref<Font> font = _results_display->get_font("font");
+	Ref<Font> font = _results_display->get_theme_font("font");
 
 	float raw_text_width = font->get_string_size(text).x;
 	float item_text_width = font->get_string_size(item_text).x;
@@ -781,11 +781,11 @@ void FindInFilesPanel::_on_item_edited() {
 	TreeItem *item = _results_display->get_selected();
 
 	if (item->is_checked(0)) {
-		item->set_custom_color(1, _results_display->get_color("font_color"));
+		item->set_custom_color(1, _results_display->get_theme_color("font_color"));
 
 	} else {
 		// Grey out
-		Color color = _results_display->get_color("font_color");
+		Color color = _results_display->get_theme_color("font_color");
 		color.a /= 2.0;
 		item->set_custom_color(1, color);
 	}

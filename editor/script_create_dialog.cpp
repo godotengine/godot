@@ -43,7 +43,7 @@
 void ScriptCreateDialog::_theme_changed() {
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		String lang = ScriptServer::get_language(i)->get_type();
-		Ref<Texture2D> lang_icon = gc->get_icon(lang, "EditorIcons");
+		Ref<Texture2D> lang_icon = gc->get_theme_icon(lang, "EditorIcons");
 		if (lang_icon.is_valid()) {
 			language_menu->set_item_icon(i, lang_icon);
 		}
@@ -62,10 +62,10 @@ void ScriptCreateDialog::_theme_changed() {
 		language_menu->select(default_language);
 	}
 
-	path_button->set_icon(gc->get_icon("Folder", "EditorIcons"));
-	parent_browse_button->set_icon(gc->get_icon("Folder", "EditorIcons"));
-	parent_search_button->set_icon(gc->get_icon("ClassList", "EditorIcons"));
-	status_panel->add_style_override("panel", gc->get_stylebox("bg", "Tree"));
+	path_button->set_icon(gc->get_theme_icon("Folder", "EditorIcons"));
+	parent_browse_button->set_icon(gc->get_theme_icon("Folder", "EditorIcons"));
+	parent_search_button->set_icon(gc->get_theme_icon("ClassList", "EditorIcons"));
+	status_panel->add_theme_style_override("panel", gc->get_theme_stylebox("bg", "Tree"));
 }
 void ScriptCreateDialog::_notification(int p_what) {
 
@@ -444,7 +444,7 @@ void ScriptCreateDialog::_lang_changed(int l) {
 					override_info += ", ";
 				}
 			}
-			template_menu->set_item_icon(extended.id, gc->get_icon("Override", "EditorIcons"));
+			template_menu->set_item_icon(extended.id, gc->get_theme_icon("Override", "EditorIcons"));
 			template_menu->get_popup()->set_item_tooltip(extended.id, override_info.as_string());
 		}
 		// Reselect last selected template
@@ -609,9 +609,9 @@ void ScriptCreateDialog::_msg_script_valid(bool valid, const String &p_msg) {
 
 	error_label->set_text("- " + TTR(p_msg));
 	if (valid) {
-		error_label->add_color_override("font_color", gc->get_color("success_color", "Editor"));
+		error_label->add_theme_color_override("font_color", gc->get_theme_color("success_color", "Editor"));
 	} else {
-		error_label->add_color_override("font_color", gc->get_color("error_color", "Editor"));
+		error_label->add_theme_color_override("font_color", gc->get_theme_color("error_color", "Editor"));
 	}
 }
 
@@ -619,9 +619,9 @@ void ScriptCreateDialog::_msg_path_valid(bool valid, const String &p_msg) {
 
 	path_error_label->set_text("- " + TTR(p_msg));
 	if (valid) {
-		path_error_label->add_color_override("font_color", gc->get_color("success_color", "Editor"));
+		path_error_label->add_theme_color_override("font_color", gc->get_theme_color("success_color", "Editor"));
 	} else {
-		path_error_label->add_color_override("font_color", gc->get_color("error_color", "Editor"));
+		path_error_label->add_theme_color_override("font_color", gc->get_theme_color("error_color", "Editor"));
 	}
 }
 

@@ -45,15 +45,15 @@ void ColorPicker::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 
-			btn_pick->set_icon(get_icon("screen_picker", "ColorPicker"));
-			bt_add_preset->set_icon(get_icon("add_preset"));
+			btn_pick->set_icon(get_theme_icon("screen_picker", "ColorPicker"));
+			bt_add_preset->set_icon(get_theme_icon("add_preset"));
 
 			_update_controls();
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 
-			btn_pick->set_icon(get_icon("screen_picker", "ColorPicker"));
-			bt_add_preset->set_icon(get_icon("add_preset"));
+			btn_pick->set_icon(get_theme_icon("screen_picker", "ColorPicker"));
+			bt_add_preset->set_icon(get_theme_icon("add_preset"));
 
 			_update_color();
 
@@ -70,13 +70,13 @@ void ColorPicker::_notification(int p_what) {
 		case NOTIFICATION_PARENTED: {
 
 			for (int i = 0; i < 4; i++)
-				set_margin((Margin)i, get_constant("margin"));
+				set_margin((Margin)i, get_theme_constant("margin"));
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
 			Popup *p = Object::cast_to<Popup>(get_parent());
 			if (p)
-				p->set_size(Size2(get_combined_minimum_size().width + get_constant("margin") * 2, get_combined_minimum_size().height + get_constant("margin") * 2));
+				p->set_size(Size2(get_combined_minimum_size().width + get_theme_constant("margin") * 2, get_combined_minimum_size().height + get_theme_constant("margin") * 2));
 		} break;
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
 
@@ -267,7 +267,7 @@ void ColorPicker::_text_type_toggled() {
 	text_is_constructor = !text_is_constructor;
 	if (text_is_constructor) {
 		text_type->set_text("");
-		text_type->set_icon(get_icon("Script", "EditorIcons"));
+		text_type->set_icon(get_theme_icon("Script", "EditorIcons"));
 
 		c_text->set_editable(false);
 	} else {
@@ -399,14 +399,14 @@ void ColorPicker::_sample_draw() {
 	const Rect2 r = Rect2(Point2(), Size2(uv_edit->get_size().width, sample->get_size().height * 0.95));
 
 	if (color.a < 1.0) {
-		sample->draw_texture_rect(get_icon("preset_bg", "ColorPicker"), r, true);
+		sample->draw_texture_rect(get_theme_icon("preset_bg", "ColorPicker"), r, true);
 	}
 
 	sample->draw_rect(r, color);
 
 	if (color.r > 1 || color.g > 1 || color.b > 1) {
 		// Draw an indicator to denote that the color is "overbright" and can't be displayed accurately in the preview
-		sample->draw_texture(get_icon("overbright_indicator", "ColorPicker"), Point2());
+		sample->draw_texture(get_theme_icon("overbright_indicator", "ColorPicker"), Point2());
 	}
 }
 
@@ -445,7 +445,7 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 		c->draw_line(Point2(0, y), Point2(c->get_size().x, y), col.inverted());
 		c->draw_line(Point2(x, y), Point2(x, y), Color(1, 1, 1), 2);
 	} else if (p_which == 1) {
-		Ref<Texture2D> hue = get_icon("color_hue", "ColorPicker");
+		Ref<Texture2D> hue = get_theme_icon("color_hue", "ColorPicker");
 		c->draw_texture_rect(hue, Rect2(Point2(), c->get_size()));
 		int y = c->get_size().y - c->get_size().y * (1.0 - h);
 		Color col = Color();
@@ -738,12 +738,12 @@ ColorPicker::ColorPicker() :
 	uv_edit->set_mouse_filter(MOUSE_FILTER_PASS);
 	uv_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	uv_edit->set_v_size_flags(SIZE_EXPAND_FILL);
-	uv_edit->set_custom_minimum_size(Size2(get_constant("sv_width"), get_constant("sv_height")));
+	uv_edit->set_custom_minimum_size(Size2(get_theme_constant("sv_width"), get_theme_constant("sv_height")));
 	uv_edit->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw), make_binds(0, uv_edit));
 
 	w_edit = memnew(Control);
 	hb_edit->add_child(w_edit);
-	w_edit->set_custom_minimum_size(Size2(get_constant("h_width"), 0));
+	w_edit->set_custom_minimum_size(Size2(get_theme_constant("h_width"), 0));
 	w_edit->set_h_size_flags(SIZE_FILL);
 	w_edit->set_v_size_flags(SIZE_EXPAND_FILL);
 	w_edit->connect("gui_input", callable_mp(this, &ColorPicker::_w_input));
@@ -777,7 +777,7 @@ ColorPicker::ColorPicker() :
 		HBoxContainer *hbc = memnew(HBoxContainer);
 
 		labels[i] = memnew(Label());
-		labels[i]->set_custom_minimum_size(Size2(get_constant("label_width"), 0));
+		labels[i]->set_custom_minimum_size(Size2(get_theme_constant("label_width"), 0));
 		labels[i]->set_v_size_flags(SIZE_SHRINK_CENTER);
 		hbc->add_child(labels[i]);
 
@@ -881,8 +881,8 @@ void ColorPickerButton::_modal_closed() {
 void ColorPickerButton::pressed() {
 
 	_update_picker();
-	popup->set_position(get_global_position() - picker->get_combined_minimum_size() * get_global_transform().get_scale());
-	popup->set_scale(get_global_transform().get_scale());
+	popup->set_position(get_screen_position() - picker->get_combined_minimum_size() * get_global_transform().get_scale());
+	//popup->set_scale(get_global_transform().get_scale());
 	popup->popup();
 	picker->set_focus_on_line_edit();
 }
@@ -892,14 +892,14 @@ void ColorPickerButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
 
-			const Ref<StyleBox> normal = get_stylebox("normal");
+			const Ref<StyleBox> normal = get_theme_stylebox("normal");
 			const Rect2 r = Rect2(normal->get_offset(), get_size() - normal->get_minimum_size());
-			draw_texture_rect(Control::get_icon("bg", "ColorPickerButton"), r, true);
+			draw_texture_rect(Control::get_theme_icon("bg", "ColorPickerButton"), r, true);
 			draw_rect(r, color);
 
 			if (color.r > 1 || color.g > 1 || color.b > 1) {
 				// Draw an indicator to denote that the color is "overbright" and can't be displayed accurately in the preview
-				draw_texture(Control::get_icon("overbright_indicator", "ColorPicker"), normal->get_offset());
+				draw_texture(Control::get_theme_icon("overbright_indicator", "ColorPicker"), normal->get_offset());
 			}
 		} break;
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
@@ -963,7 +963,7 @@ void ColorPickerButton::_update_picker() {
 		add_child(popup);
 		picker->connect("color_changed", callable_mp(this, &ColorPickerButton::_color_changed));
 		popup->connect("modal_closed", callable_mp(this, &ColorPickerButton::_modal_closed));
-		popup->connect("about_to_show", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(true));
+		popup->connect("about_to_popup", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(true));
 		popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(false));
 		picker->set_pick_color(color);
 		picker->set_edit_alpha(edit_alpha);

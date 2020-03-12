@@ -492,13 +492,13 @@ void ImportDock::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
-			imported->add_style_override("normal", get_stylebox("normal", "LineEdit"));
+			imported->add_theme_style_override("normal", get_theme_stylebox("normal", "LineEdit"));
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
 
 			import_opts->edit(params);
-			label_warning->add_color_override("font_color", get_color("warning_color", "Editor"));
+			label_warning->add_theme_color_override("font_color", get_theme_color("warning_color", "Editor"));
 		} break;
 	}
 }
@@ -526,7 +526,7 @@ ImportDock::ImportDock() {
 
 	set_name("Import");
 	imported = memnew(Label);
-	imported->add_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_stylebox("normal", "LineEdit"));
+	imported->add_theme_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("normal", "LineEdit"));
 	imported->set_clip_text(true);
 	add_child(imported);
 	HBoxContainer *hb = memnew(HBoxContainer);

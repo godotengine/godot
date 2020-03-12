@@ -803,9 +803,9 @@ LightSpatialGizmoPlugin::LightSpatialGizmoPlugin() {
 	create_material("lines_secondary", Color(1, 1, 1, 0.35), false, false, true);
 	create_material("lines_billboard", Color(1, 1, 1), true, false, true);
 
-	create_icon_material("light_directional_icon", SpatialEditor::get_singleton()->get_icon("GizmoDirectionalLight", "EditorIcons"));
-	create_icon_material("light_omni_icon", SpatialEditor::get_singleton()->get_icon("GizmoLight", "EditorIcons"));
-	create_icon_material("light_spot_icon", SpatialEditor::get_singleton()->get_icon("GizmoSpotLight", "EditorIcons"));
+	create_icon_material("light_directional_icon", SpatialEditor::get_singleton()->get_theme_icon("GizmoDirectionalLight", "EditorIcons"));
+	create_icon_material("light_omni_icon", SpatialEditor::get_singleton()->get_theme_icon("GizmoLight", "EditorIcons"));
+	create_icon_material("light_spot_icon", SpatialEditor::get_singleton()->get_theme_icon("GizmoSpotLight", "EditorIcons"));
 
 	create_handle_material("handles");
 	create_handle_material("handles_billboard", true);
@@ -1090,7 +1090,7 @@ AudioStreamPlayer3DSpatialGizmoPlugin::AudioStreamPlayer3DSpatialGizmoPlugin() {
 
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/stream_player_3d", Color(0.4, 0.8, 1));
 
-	create_icon_material("stream_player_3d_icon", SpatialEditor::get_singleton()->get_icon("GizmoSpatialSamplePlayer", "EditorIcons"));
+	create_icon_material("stream_player_3d_icon", SpatialEditor::get_singleton()->get_theme_icon("GizmoSpatialSamplePlayer", "EditorIcons"));
 	create_material("stream_player_3d_material_primary", gizmo_color);
 	create_material("stream_player_3d_material_secondary", gizmo_color * Color(1, 1, 1, 0.35));
 	create_handle_material("handles");
@@ -1571,12 +1571,12 @@ Position3DSpatialGizmoPlugin::Position3DSpatialGizmoPlugin() {
 	cursor_points.push_back(Vector3(0, -cs, 0));
 	cursor_points.push_back(Vector3(0, 0, +cs));
 	cursor_points.push_back(Vector3(0, 0, -cs));
-	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_color("axis_x_color", "Editor"));
-	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_color("axis_x_color", "Editor"));
-	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_color("axis_y_color", "Editor"));
-	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_color("axis_y_color", "Editor"));
-	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_color("axis_z_color", "Editor"));
-	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_color("axis_z_color", "Editor"));
+	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_theme_color("axis_x_color", "Editor"));
+	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_theme_color("axis_x_color", "Editor"));
+	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_theme_color("axis_y_color", "Editor"));
+	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_theme_color("axis_y_color", "Editor"));
+	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_theme_color("axis_z_color", "Editor"));
+	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_theme_color("axis_z_color", "Editor"));
 
 	Ref<StandardMaterial3D> mat = memnew(StandardMaterial3D);
 	mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
@@ -2343,7 +2343,7 @@ void VisibilityNotifierGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 ////
 
 CPUParticlesGizmoPlugin::CPUParticlesGizmoPlugin() {
-	create_icon_material("particles_icon", SpatialEditor::get_singleton()->get_icon("GizmoCPUParticles", "EditorIcons"));
+	create_icon_material("particles_icon", SpatialEditor::get_singleton()->get_theme_icon("GizmoCPUParticles", "EditorIcons"));
 }
 
 bool CPUParticlesGizmoPlugin::has_gizmo(Spatial *p_spatial) {
@@ -2374,7 +2374,7 @@ ParticlesGizmoPlugin::ParticlesGizmoPlugin() {
 	create_material("particles_material", gizmo_color);
 	gizmo_color.a = 0.1;
 	create_material("particles_solid_material", gizmo_color);
-	create_icon_material("particles_icon", SpatialEditor::get_singleton()->get_icon("GizmoParticles", "EditorIcons"));
+	create_icon_material("particles_icon", SpatialEditor::get_singleton()->get_theme_icon("GizmoParticles", "EditorIcons"));
 	create_handle_material("handles");
 }
 
@@ -2543,7 +2543,7 @@ ReflectionProbeGizmoPlugin::ReflectionProbeGizmoPlugin() {
 	gizmo_color.a = 0.1;
 	create_material("reflection_probe_solid_material", gizmo_color);
 
-	create_icon_material("reflection_probe_icon", SpatialEditor::get_singleton()->get_icon("GizmoReflectionProbe", "EditorIcons"));
+	create_icon_material("reflection_probe_icon", SpatialEditor::get_singleton()->get_theme_icon("GizmoReflectionProbe", "EditorIcons"));
 	create_handle_material("handles");
 }
 
@@ -2731,7 +2731,7 @@ GIProbeGizmoPlugin::GIProbeGizmoPlugin() {
 	gizmo_color.a = 0.05;
 	create_material("gi_probe_solid_material", gizmo_color);
 
-	create_icon_material("gi_probe_icon", SpatialEditor::get_singleton()->get_icon("GizmoGIProbe", "EditorIcons"));
+	create_icon_material("gi_probe_icon", SpatialEditor::get_singleton()->get_theme_icon("GizmoGIProbe", "EditorIcons"));
 	create_handle_material("handles");
 }
 

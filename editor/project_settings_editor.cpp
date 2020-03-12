@@ -108,19 +108,19 @@ void ProjectSettingsEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			globals_editor->edit(ProjectSettings::get_singleton());
 
-			search_button->set_icon(input_editor->get_icon("Search", "EditorIcons"));
-			search_box->set_right_icon(input_editor->get_icon("Search", "EditorIcons"));
+			search_button->set_icon(input_editor->get_theme_icon("Search", "EditorIcons"));
+			search_box->set_right_icon(input_editor->get_theme_icon("Search", "EditorIcons"));
 			search_box->set_clear_button_enabled(true);
 
-			action_add_error->add_color_override("font_color", input_editor->get_color("error_color", "Editor"));
+			action_add_error->add_theme_color_override("font_color", input_editor->get_theme_color("error_color", "Editor"));
 
 			translation_list->connect("button_pressed", callable_mp(this, &ProjectSettingsEditor::_translation_delete));
 			_update_actions();
-			popup_add->add_icon_item(input_editor->get_icon("Keyboard", "EditorIcons"), TTR("Key"), INPUT_KEY);
-			popup_add->add_icon_item(input_editor->get_icon("KeyboardPhysical", "EditorIcons"), TTR("Physical Key"), INPUT_KEY_PHYSICAL);
-			popup_add->add_icon_item(input_editor->get_icon("JoyButton", "EditorIcons"), TTR("Joy Button"), INPUT_JOY_BUTTON);
-			popup_add->add_icon_item(input_editor->get_icon("JoyAxis", "EditorIcons"), TTR("Joy Axis"), INPUT_JOY_MOTION);
-			popup_add->add_icon_item(input_editor->get_icon("Mouse", "EditorIcons"), TTR("Mouse Button"), INPUT_MOUSE_BUTTON);
+			popup_add->add_icon_item(input_editor->get_theme_icon("Keyboard", "EditorIcons"), TTR("Key"), INPUT_KEY);
+			popup_add->add_icon_item(input_editor->get_theme_icon("KeyboardPhysical", "EditorIcons"), TTR("Physical Key"), INPUT_KEY_PHYSICAL);
+			popup_add->add_icon_item(input_editor->get_theme_icon("JoyButton", "EditorIcons"), TTR("Joy Button"), INPUT_JOY_BUTTON);
+			popup_add->add_icon_item(input_editor->get_theme_icon("JoyAxis", "EditorIcons"), TTR("Joy Axis"), INPUT_JOY_MOTION);
+			popup_add->add_icon_item(input_editor->get_theme_icon("Mouse", "EditorIcons"), TTR("Mouse Button"), INPUT_MOUSE_BUTTON);
 
 			List<String> tfn;
 			ResourceLoader::get_recognized_extensions_for_type("Translation", &tfn);
@@ -137,22 +137,22 @@ void ProjectSettingsEditor::_notification(int p_what) {
 				translation_res_option_file_open->add_filter("*." + E->get());
 			}
 
-			restart_close_button->set_icon(input_editor->get_icon("Close", "EditorIcons"));
-			restart_container->add_style_override("panel", input_editor->get_stylebox("bg", "Tree"));
-			restart_icon->set_texture(input_editor->get_icon("StatusWarning", "EditorIcons"));
-			restart_label->add_color_override("font_color", input_editor->get_color("warning_color", "Editor"));
+			restart_close_button->set_icon(input_editor->get_theme_icon("Close", "EditorIcons"));
+			restart_container->add_theme_style_override("panel", input_editor->get_theme_stylebox("bg", "Tree"));
+			restart_icon->set_texture(input_editor->get_theme_icon("StatusWarning", "EditorIcons"));
+			restart_label->add_theme_color_override("font_color", input_editor->get_theme_color("warning_color", "Editor"));
 
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			search_button->set_icon(input_editor->get_icon("Search", "EditorIcons"));
-			search_box->set_right_icon(input_editor->get_icon("Search", "EditorIcons"));
+			search_button->set_icon(input_editor->get_theme_icon("Search", "EditorIcons"));
+			search_box->set_right_icon(input_editor->get_theme_icon("Search", "EditorIcons"));
 			search_box->set_clear_button_enabled(true);
-			action_add_error->add_color_override("font_color", input_editor->get_color("error_color", "Editor"));
-			popup_add->set_item_icon(popup_add->get_item_index(INPUT_KEY), input_editor->get_icon("Keyboard", "EditorIcons"));
-			popup_add->set_item_icon(popup_add->get_item_index(INPUT_KEY_PHYSICAL), input_editor->get_icon("KeyboardPhysical", "EditorIcons"));
-			popup_add->set_item_icon(popup_add->get_item_index(INPUT_JOY_BUTTON), input_editor->get_icon("JoyButton", "EditorIcons"));
-			popup_add->set_item_icon(popup_add->get_item_index(INPUT_JOY_MOTION), input_editor->get_icon("JoyAxis", "EditorIcons"));
-			popup_add->set_item_icon(popup_add->get_item_index(INPUT_MOUSE_BUTTON), input_editor->get_icon("Mouse", "EditorIcons"));
+			action_add_error->add_theme_color_override("font_color", input_editor->get_theme_color("error_color", "Editor"));
+			popup_add->set_item_icon(popup_add->get_item_index(INPUT_KEY), input_editor->get_theme_icon("Keyboard", "EditorIcons"));
+			popup_add->set_item_icon(popup_add->get_item_index(INPUT_KEY_PHYSICAL), input_editor->get_theme_icon("KeyboardPhysical", "EditorIcons"));
+			popup_add->set_item_icon(popup_add->get_item_index(INPUT_JOY_BUTTON), input_editor->get_theme_icon("JoyButton", "EditorIcons"));
+			popup_add->set_item_icon(popup_add->get_item_index(INPUT_JOY_MOTION), input_editor->get_theme_icon("JoyAxis", "EditorIcons"));
+			popup_add->set_item_icon(popup_add->get_item_index(INPUT_MOUSE_BUTTON), input_editor->get_theme_icon("Mouse", "EditorIcons"));
 			_update_actions();
 		} break;
 	}
@@ -740,7 +740,7 @@ void ProjectSettingsEditor::_update_actions() {
 
 		TreeItem *item = input_editor->create_item(root);
 		item->set_text(0, name);
-		item->set_custom_bg_color(0, input_editor->get_color("prop_subsection", "Editor"));
+		item->set_custom_bg_color(0, input_editor->get_theme_color("prop_subsection", "Editor"));
 		if (collapsed.has(name))
 			item->set_collapsed(collapsed[name]);
 
@@ -748,12 +748,12 @@ void ProjectSettingsEditor::_update_actions() {
 		item->set_cell_mode(1, TreeItem::CELL_MODE_RANGE);
 		item->set_range_config(1, 0.0, 1.0, 0.01);
 		item->set_range(1, action["deadzone"]);
-		item->set_custom_bg_color(1, input_editor->get_color("prop_subsection", "Editor"));
+		item->set_custom_bg_color(1, input_editor->get_theme_color("prop_subsection", "Editor"));
 
 		const bool is_builtin_input = ProjectSettings::get_singleton()->get_input_presets().find(pi.name) != NULL;
 		const String tooltip = is_builtin_input ? TTR("Built-in actions can't be removed as they're used for UI navigation.") : TTR("Remove");
-		item->add_button(2, input_editor->get_icon("Add", "EditorIcons"), 1, false, TTR("Add Event"));
-		item->add_button(2, input_editor->get_icon("Remove", "EditorIcons"), 2, false, tooltip);
+		item->add_button(2, input_editor->get_theme_icon("Add", "EditorIcons"), 1, false, TTR("Add Event"));
+		item->add_button(2, input_editor->get_theme_icon("Remove", "EditorIcons"), 2, false, tooltip);
 
 		if (is_builtin_input) {
 			// Built-in action (like `ui_up`). Make the action not removable,
@@ -780,9 +780,9 @@ void ProjectSettingsEditor::_update_actions() {
 
 				action2->set_text(0, str);
 				if ((k->get_keycode() != 0)) {
-					action2->set_icon(0, input_editor->get_icon("Keyboard", "EditorIcons"));
+					action2->set_icon(0, input_editor->get_theme_icon("Keyboard", "EditorIcons"));
 				} else {
-					action2->set_icon(0, input_editor->get_icon("KeyboardPhysical", "EditorIcons"));
+					action2->set_icon(0, input_editor->get_theme_icon("KeyboardPhysical", "EditorIcons"));
 				}
 			}
 
@@ -796,7 +796,7 @@ void ProjectSettingsEditor::_update_actions() {
 				}
 
 				action2->set_text(0, str);
-				action2->set_icon(0, input_editor->get_icon("JoyButton", "EditorIcons"));
+				action2->set_icon(0, input_editor->get_theme_icon("JoyButton", "EditorIcons"));
 			}
 
 			Ref<InputEventMouseButton> mb = event;
@@ -813,7 +813,7 @@ void ProjectSettingsEditor::_update_actions() {
 				}
 
 				action2->set_text(0, str);
-				action2->set_icon(0, input_editor->get_icon("Mouse", "EditorIcons"));
+				action2->set_icon(0, input_editor->get_theme_icon("Mouse", "EditorIcons"));
 			}
 
 			Ref<InputEventJoypadMotion> jm = event;
@@ -825,13 +825,13 @@ void ProjectSettingsEditor::_update_actions() {
 				String desc = _axis_names[n];
 				String str = _get_device_string(jm->get_device()) + ", " + TTR("Axis") + " " + itos(ax) + " " + (jm->get_axis_value() < 0 ? "-" : "+") + desc;
 				action2->set_text(0, str);
-				action2->set_icon(0, input_editor->get_icon("JoyAxis", "EditorIcons"));
+				action2->set_icon(0, input_editor->get_theme_icon("JoyAxis", "EditorIcons"));
 			}
 			action2->set_metadata(0, i);
 			action2->set_meta("__input", event);
 
-			action2->add_button(2, input_editor->get_icon("Edit", "EditorIcons"), 3, false, TTR("Edit"));
-			action2->add_button(2, input_editor->get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
+			action2->add_button(2, input_editor->get_theme_icon("Edit", "EditorIcons"), 3, false, TTR("Edit"));
+			action2->add_button(2, input_editor->get_theme_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
 			// Fade out the individual event buttons slightly to make the
 			// Add/Remove buttons stand out more.
 			action2->set_button_color(2, 0, Color(1, 1, 1, 0.75));
@@ -1549,7 +1549,7 @@ void ProjectSettingsEditor::_update_translations() {
 			t->set_text(0, translations[i].replace_first("res://", ""));
 			t->set_tooltip(0, translations[i]);
 			t->set_metadata(0, i);
-			t->add_button(0, input_editor->get_icon("Remove", "EditorIcons"), 0, false, TTR("Remove"));
+			t->add_button(0, input_editor->get_theme_icon("Remove", "EditorIcons"), 0, false, TTR("Remove"));
 		}
 	}
 
@@ -1672,7 +1672,7 @@ void ProjectSettingsEditor::_update_translations() {
 			t->set_text(0, keys[i].replace_first("res://", ""));
 			t->set_tooltip(0, keys[i]);
 			t->set_metadata(0, keys[i]);
-			t->add_button(0, input_editor->get_icon("Remove", "EditorIcons"), 0, false, TTR("Remove"));
+			t->add_button(0, input_editor->get_theme_icon("Remove", "EditorIcons"), 0, false, TTR("Remove"));
 			if (keys[i] == remap_selected) {
 				t->select(0);
 				translation_res_option_add_button->set_disabled(false);
@@ -1690,7 +1690,7 @@ void ProjectSettingsEditor::_update_translations() {
 					t2->set_text(0, path.replace_first("res://", ""));
 					t2->set_tooltip(0, path);
 					t2->set_metadata(0, j);
-					t2->add_button(0, input_editor->get_icon("Remove", "EditorIcons"), 0, false, TTR("Remove"));
+					t2->add_button(0, input_editor->get_theme_icon("Remove", "EditorIcons"), 0, false, TTR("Remove"));
 					t2->set_cell_mode(1, TreeItem::CELL_MODE_RANGE);
 					t2->set_text(1, langnames);
 					t2->set_editable(1, true);
@@ -1875,7 +1875,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	add_prop_bar->add_child(popup_copy_to_feature);
 
 	popup_copy_to_feature->get_popup()->connect("id_pressed", callable_mp(this, &ProjectSettingsEditor::_copy_to_platform));
-	popup_copy_to_feature->get_popup()->connect("about_to_show", callable_mp(this, &ProjectSettingsEditor::_copy_to_platform_about_to_show));
+	popup_copy_to_feature->get_popup()->connect("about_to_popup", callable_mp(this, &ProjectSettingsEditor::_copy_to_platform_about_to_show));
 
 	get_ok()->set_text(TTR("Close"));
 	set_hide_on_ok(true);

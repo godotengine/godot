@@ -241,7 +241,7 @@ void CPUParticles2DEditorPlugin::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
 		menu->get_popup()->connect("id_pressed", callable_mp(this, &CPUParticles2DEditorPlugin::_menu_callback));
-		menu->set_icon(menu->get_popup()->get_icon("Particles2D", "EditorIcons"));
+		menu->set_icon(epoints->get_theme_icon("Particles2D", "EditorIcons"));
 		file->connect("file_selected", callable_mp(this, &CPUParticles2DEditorPlugin::_file_selected));
 	}
 }

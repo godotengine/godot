@@ -140,9 +140,9 @@ void EditorPropertyMultilineText::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
-			Ref<Texture2D> df = get_icon("DistractionFree", "EditorIcons");
+			Ref<Texture2D> df = get_theme_icon("DistractionFree", "EditorIcons");
 			open_big_text->set_icon(df);
-			Ref<Font> font = get_font("font", "Label");
+			Ref<Font> font = get_theme_font("font", "Label");
 			text->set_custom_minimum_size(Vector2(0, font->get_height() * 6));
 
 		} break;
@@ -278,7 +278,7 @@ void EditorPropertyPath::set_save_mode() {
 void EditorPropertyPath::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		path_edit->set_icon(get_icon("Folder", "EditorIcons"));
+		path_edit->set_icon(get_theme_icon("Folder", "EditorIcons"));
 	}
 }
 
@@ -604,7 +604,7 @@ public:
 	Vector<String> tooltips;
 
 	virtual Size2 get_minimum_size() const {
-		Ref<Font> font = get_font("font", "Label");
+		Ref<Font> font = get_theme_font("font", "Label");
 		return Vector2(0, font->get_height() * 2);
 	}
 
@@ -646,7 +646,7 @@ public:
 			int h = bsize * 2 + 1;
 			int vofs = (rect.size.height - h) / 2;
 
-			Color color = get_color("highlight_color", "Editor");
+			Color color = get_theme_color("highlight_color", "Editor");
 			for (int i = 0; i < 2; i++) {
 
 				Point2 ofs(4, vofs);
@@ -749,10 +749,10 @@ void EditorPropertyLayers::_button_pressed() {
 		layers->set_item_checked(idx, grid->value & (1 << i));
 	}
 
-	Rect2 gp = button->get_global_rect();
+	Rect2 gp = button->get_screen_rect();
 	layers->set_as_minsize();
-	Vector2 popup_pos = gp.position - Vector2(layers->get_combined_minimum_size().x, 0);
-	layers->set_global_position(popup_pos);
+	Vector2 popup_pos = gp.position - Vector2(layers->get_contents_minimum_size().x, 0);
+	layers->set_position(popup_pos);
 	layers->popup();
 }
 
@@ -920,7 +920,7 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
-			preset->set_global_position(easing_draw->get_global_transform().xform(mb->get_position()));
+			preset->set_position(easing_draw->get_screen_transform().xform(mb->get_position()));
 			preset->popup();
 
 			// Ensure the easing doesn't appear as being dragged
@@ -976,13 +976,13 @@ void EditorPropertyEasing::_draw_easing() {
 	float prev = 1.0;
 	const float exp = get_edited_object()->get(get_edited_property());
 
-	const Ref<Font> f = get_font("font", "Label");
-	const Color font_color = get_color("font_color", "Label");
+	const Ref<Font> f = get_theme_font("font", "Label");
+	const Color font_color = get_theme_color("font_color", "Label");
 	Color line_color;
 	if (dragging) {
-		line_color = get_color("accent_color", "Editor");
+		line_color = get_theme_color("accent_color", "Editor");
 	} else {
-		line_color = get_color("font_color", "Label") * Color(1, 1, 1, 0.9);
+		line_color = get_theme_color("font_color", "Label") * Color(1, 1, 1, 0.9);
 	}
 
 	Vector<Point2> lines;
@@ -1058,15 +1058,15 @@ void EditorPropertyEasing::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
 			preset->clear();
-			preset->add_icon_item(get_icon("CurveConstant", "EditorIcons"), "Zero", EASING_ZERO);
-			preset->add_icon_item(get_icon("CurveLinear", "EditorIcons"), "Linear", EASING_LINEAR);
-			preset->add_icon_item(get_icon("CurveIn", "EditorIcons"), "In", EASING_IN);
-			preset->add_icon_item(get_icon("CurveOut", "EditorIcons"), "Out", EASING_OUT);
+			preset->add_icon_item(get_theme_icon("CurveConstant", "EditorIcons"), "Zero", EASING_ZERO);
+			preset->add_icon_item(get_theme_icon("CurveLinear", "EditorIcons"), "Linear", EASING_LINEAR);
+			preset->add_icon_item(get_theme_icon("CurveIn", "EditorIcons"), "In", EASING_IN);
+			preset->add_icon_item(get_theme_icon("CurveOut", "EditorIcons"), "Out", EASING_OUT);
 			if (full) {
-				preset->add_icon_item(get_icon("CurveInOut", "EditorIcons"), "In-Out", EASING_IN_OUT);
-				preset->add_icon_item(get_icon("CurveOutIn", "EditorIcons"), "Out-In", EASING_OUT_IN);
+				preset->add_icon_item(get_theme_icon("CurveInOut", "EditorIcons"), "In-Out", EASING_IN_OUT);
+				preset->add_icon_item(get_theme_icon("CurveOutIn", "EditorIcons"), "Out-In", EASING_OUT_IN);
 			}
-			easing_draw->set_custom_minimum_size(Size2(0, get_font("font", "Label")->get_height() * 2));
+			easing_draw->set_custom_minimum_size(Size2(0, get_theme_font("font", "Label")->get_height() * 2));
 		} break;
 	}
 }
@@ -1126,7 +1126,7 @@ void EditorPropertyVector2::update_property() {
 
 void EditorPropertyVector2::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_color("accent_color", "Editor");
+		Color base = get_theme_color("accent_color", "Editor");
 		for (int i = 0; i < 2; i++) {
 
 			Color c = base;
@@ -1208,7 +1208,7 @@ void EditorPropertyRect2::update_property() {
 }
 void EditorPropertyRect2::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_color("accent_color", "Editor");
+		Color base = get_theme_color("accent_color", "Editor");
 		for (int i = 0; i < 4; i++) {
 
 			Color c = base;
@@ -1288,7 +1288,7 @@ void EditorPropertyVector3::update_property() {
 }
 void EditorPropertyVector3::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_color("accent_color", "Editor");
+		Color base = get_theme_color("accent_color", "Editor");
 		for (int i = 0; i < 3; i++) {
 
 			Color c = base;
@@ -1368,7 +1368,7 @@ void EditorPropertyPlane::update_property() {
 }
 void EditorPropertyPlane::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_color("accent_color", "Editor");
+		Color base = get_theme_color("accent_color", "Editor");
 		for (int i = 0; i < 3; i++) {
 
 			Color c = base;
@@ -1450,7 +1450,7 @@ void EditorPropertyQuat::update_property() {
 }
 void EditorPropertyQuat::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_color("accent_color", "Editor");
+		Color base = get_theme_color("accent_color", "Editor");
 		for (int i = 0; i < 3; i++) {
 
 			Color c = base;
@@ -1537,7 +1537,7 @@ void EditorPropertyAABB::update_property() {
 }
 void EditorPropertyAABB::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_color("accent_color", "Editor");
+		Color base = get_theme_color("accent_color", "Editor");
 		for (int i = 0; i < 6; i++) {
 
 			Color c = base;
@@ -1611,7 +1611,7 @@ void EditorPropertyTransform2D::update_property() {
 }
 void EditorPropertyTransform2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_color("accent_color", "Editor");
+		Color base = get_theme_color("accent_color", "Editor");
 		for (int i = 0; i < 6; i++) {
 
 			Color c = base;
@@ -1690,7 +1690,7 @@ void EditorPropertyBasis::update_property() {
 }
 void EditorPropertyBasis::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_color("accent_color", "Editor");
+		Color base = get_theme_color("accent_color", "Editor");
 		for (int i = 0; i < 9; i++) {
 
 			Color c = base;
@@ -1775,7 +1775,7 @@ void EditorPropertyTransform::update_property() {
 }
 void EditorPropertyTransform::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_color("accent_color", "Editor");
+		Color base = get_theme_color("accent_color", "Editor");
 		for (int i = 0; i < 12; i++) {
 
 			Color c = base;
@@ -1983,7 +1983,7 @@ void EditorPropertyNodePath::setup(const NodePath &p_base_hint, Vector<StringNam
 void EditorPropertyNodePath::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Ref<Texture2D> t = get_icon("Clear", "EditorIcons");
+		Ref<Texture2D> t = get_theme_icon("Clear", "EditorIcons");
 		clear->set_icon(t);
 	}
 }
@@ -2294,7 +2294,7 @@ void EditorPropertyResource::_resource_preview(const String &p_path, const Ref<T
 		}
 
 		if (p_preview.is_valid()) {
-			preview->set_margin(MARGIN_LEFT, assign->get_icon()->get_width() + assign->get_stylebox("normal")->get_default_margin(MARGIN_LEFT) + get_constant("hseparation", "Button"));
+			preview->set_margin(MARGIN_LEFT, assign->get_icon()->get_width() + assign->get_theme_stylebox("normal")->get_default_margin(MARGIN_LEFT) + get_theme_constant("hseparation", "Button"));
 			if (type == "GradientTexture") {
 				preview->set_stretch_mode(TextureRect::STRETCH_SCALE);
 				assign->set_custom_minimum_size(Size2(1, 1));
@@ -2318,8 +2318,8 @@ void EditorPropertyResource::_update_menu_items() {
 	menu->clear();
 
 	if (get_edited_property() == "script" && base_type == "Script" && Object::cast_to<Node>(get_edited_object())) {
-		menu->add_icon_item(get_icon("ScriptCreate", "EditorIcons"), TTR("New Script"), OBJ_MENU_NEW_SCRIPT);
-		menu->add_icon_item(get_icon("ScriptExtend", "EditorIcons"), TTR("Extend Script"), OBJ_MENU_EXTEND_SCRIPT);
+		menu->add_icon_item(get_theme_icon("ScriptCreate", "EditorIcons"), TTR("New Script"), OBJ_MENU_NEW_SCRIPT);
+		menu->add_icon_item(get_theme_icon("ScriptExtend", "EditorIcons"), TTR("Extend Script"), OBJ_MENU_EXTEND_SCRIPT);
 		menu->add_separator();
 	} else if (base_type != "") {
 		int idx = 0;
@@ -2381,7 +2381,7 @@ void EditorPropertyResource::_update_menu_items() {
 				inheritors_array.push_back(t);
 
 				if (!icon.is_valid())
-					icon = get_icon(has_icon(t, "EditorIcons") ? t : "Object", "EditorIcons");
+					icon = get_theme_icon(has_theme_icon(t, "EditorIcons") ? t : "Object", "EditorIcons");
 
 				int id = TYPE_BASE_ID + idx;
 				menu->add_icon_item(icon, vformat(TTR("New %s"), t), id);
@@ -2394,14 +2394,14 @@ void EditorPropertyResource::_update_menu_items() {
 			menu->add_separator();
 	}
 
-	menu->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Load"), OBJ_MENU_LOAD);
+	menu->add_icon_item(get_theme_icon("Load", "EditorIcons"), TTR("Load"), OBJ_MENU_LOAD);
 
 	if (!res.is_null()) {
 
-		menu->add_icon_item(get_icon("Edit", "EditorIcons"), TTR("Edit"), OBJ_MENU_EDIT);
-		menu->add_icon_item(get_icon("Clear", "EditorIcons"), TTR("Clear"), OBJ_MENU_CLEAR);
-		menu->add_icon_item(get_icon("Duplicate", "EditorIcons"), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
-		menu->add_icon_item(get_icon("Save", "EditorIcons"), TTR("Save"), OBJ_MENU_SAVE);
+		menu->add_icon_item(get_theme_icon("Edit", "EditorIcons"), TTR("Edit"), OBJ_MENU_EDIT);
+		menu->add_icon_item(get_theme_icon("Clear", "EditorIcons"), TTR("Clear"), OBJ_MENU_CLEAR);
+		menu->add_icon_item(get_theme_icon("Duplicate", "EditorIcons"), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
+		menu->add_icon_item(get_theme_icon("Save", "EditorIcons"), TTR("Save"), OBJ_MENU_SAVE);
 		RES r = res;
 		if (r.is_valid() && r->get_path().is_resource_file()) {
 			menu->add_separator();
@@ -2445,12 +2445,12 @@ void EditorPropertyResource::_update_menu_items() {
 		for (int i = 0; i < conversions.size(); i++) {
 			String what = conversions[i]->converts_to();
 			Ref<Texture2D> icon;
-			if (has_icon(what, "EditorIcons")) {
+			if (has_theme_icon(what, "EditorIcons")) {
 
-				icon = get_icon(what, "EditorIcons");
+				icon = get_theme_icon(what, "EditorIcons");
 			} else {
 
-				icon = get_icon(what, "Resource");
+				icon = get_theme_icon(what, "Resource");
 			}
 
 			menu->add_icon_item(icon, vformat(TTR("Convert To %s"), what), CONVERT_BASE_ID + i);
@@ -2462,11 +2462,11 @@ void EditorPropertyResource::_update_menu() {
 
 	_update_menu_items();
 
-	Rect2 gt = edit->get_global_rect();
+	Rect2 gt = edit->get_screen_rect();
 	menu->set_as_minsize();
-	int ms = menu->get_combined_minimum_size().width;
+	int ms = menu->get_contents_minimum_size().width;
 	Vector2 popup_pos = gt.position + gt.size - Vector2(ms, 0);
-	menu->set_global_position(popup_pos);
+	menu->set_position(popup_pos);
 	menu->popup();
 }
 
@@ -2490,10 +2490,10 @@ void EditorPropertyResource::_button_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid()) {
 		if (mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
 			_update_menu_items();
-			Vector2 pos = mb->get_global_position();
+			Vector2 pos = get_screen_position() + mb->get_position();
 			//pos = assign->get_global_transform().xform(pos);
 			menu->set_as_minsize();
-			menu->set_global_position(pos);
+			menu->set_position(pos);
 			menu->popup();
 		}
 	}
@@ -2663,7 +2663,7 @@ void EditorPropertyResource::setup(const String &p_base_type) {
 void EditorPropertyResource::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Ref<Texture2D> t = get_icon("select_arrow", "Tree");
+		Ref<Texture2D> t = get_theme_icon("select_arrow", "Tree");
 		edit->set_icon(t);
 	}
 
@@ -2718,7 +2718,7 @@ void EditorPropertyResource::expand_all_folding() {
 void EditorPropertyResource::_button_draw() {
 
 	if (dropping) {
-		Color color = get_color("accent_color", "Editor");
+		Color color = get_theme_color("accent_color", "Editor");
 		assign->draw_rect(Rect2(Point2(), assign->get_size()), color, false);
 	}
 }

@@ -444,7 +444,7 @@ MeshInstanceEditor::MeshInstanceEditor() {
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text(TTR("Mesh"));
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("MeshInstance", "EditorIcons"));
+	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("MeshInstance", "EditorIcons"));
 
 	options->get_popup()->add_item(TTR("Create Trimesh Static Body"), MENU_OPTION_CREATE_STATIC_TRIMESH_BODY);
 	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a StaticBody and assigns a polygon-based collision shape to it automatically.\nThis is the most accurate (but slowest) option for collision detection."));

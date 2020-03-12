@@ -46,21 +46,21 @@ VBoxContainer *FileDialog::get_vbox() {
 
 void FileDialog::_theme_changed() {
 
-	Color font_color = vbc->get_color("font_color", "ToolButton");
-	Color font_color_hover = vbc->get_color("font_color_hover", "ToolButton");
-	Color font_color_pressed = vbc->get_color("font_color_pressed", "ToolButton");
+	Color font_color = vbc->get_theme_color("font_color", "ToolButton");
+	Color font_color_hover = vbc->get_theme_color("font_color_hover", "ToolButton");
+	Color font_color_pressed = vbc->get_theme_color("font_color_pressed", "ToolButton");
 
-	dir_up->add_color_override("icon_color_normal", font_color);
-	dir_up->add_color_override("icon_color_hover", font_color_hover);
-	dir_up->add_color_override("icon_color_pressed", font_color_pressed);
+	dir_up->add_theme_color_override("icon_color_normal", font_color);
+	dir_up->add_theme_color_override("icon_color_hover", font_color_hover);
+	dir_up->add_theme_color_override("icon_color_pressed", font_color_pressed);
 
-	refresh->add_color_override("icon_color_normal", font_color);
-	refresh->add_color_override("icon_color_hover", font_color_hover);
-	refresh->add_color_override("icon_color_pressed", font_color_pressed);
+	refresh->add_theme_color_override("icon_color_normal", font_color);
+	refresh->add_theme_color_override("icon_color_hover", font_color_hover);
+	refresh->add_theme_color_override("icon_color_pressed", font_color_pressed);
 
-	show_hidden->add_color_override("icon_color_normal", font_color);
-	show_hidden->add_color_override("icon_color_hover", font_color_hover);
-	show_hidden->add_color_override("icon_color_pressed", font_color_pressed);
+	show_hidden->add_theme_color_override("icon_color_normal", font_color);
+	show_hidden->add_theme_color_override("icon_color_hover", font_color_hover);
+	show_hidden->add_theme_color_override("icon_color_pressed", font_color_pressed);
 }
 
 void FileDialog::_notification(int p_what) {
@@ -73,9 +73,9 @@ void FileDialog::_notification(int p_what) {
 	}
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		dir_up->set_icon(vbc->get_icon("parent_folder"));
-		refresh->set_icon(vbc->get_icon("reload"));
-		show_hidden->set_icon(vbc->get_icon("toggle_hidden"));
+		dir_up->set_icon(vbc->get_theme_icon("parent_folder"));
+		refresh->set_icon(vbc->get_theme_icon("reload"));
+		show_hidden->set_icon(vbc->get_theme_icon("toggle_hidden"));
 		_theme_changed();
 	}
 }
@@ -429,8 +429,8 @@ void FileDialog::update_file_list() {
 	dir_access->list_dir_begin();
 
 	TreeItem *root = tree->create_item();
-	Ref<Texture2D> folder = vbc->get_icon("folder");
-	const Color folder_color = vbc->get_color("folder_icon_modulate");
+	Ref<Texture2D> folder = vbc->get_theme_icon("folder");
+	const Color folder_color = vbc->get_theme_color("folder_icon_modulate");
 	List<String> files;
 	List<String> dirs;
 
@@ -528,7 +528,7 @@ void FileDialog::update_file_list() {
 			}
 
 			if (mode == FILE_MODE_OPEN_DIR) {
-				ti->set_custom_color(0, vbc->get_color("files_disabled"));
+				ti->set_custom_color(0, vbc->get_theme_color("files_disabled"));
 				ti->set_selectable(0, false);
 			}
 			Dictionary d;

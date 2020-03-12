@@ -224,8 +224,26 @@ public:
 	void set_theme(const Ref<Theme> &p_theme);
 	Ref<Theme> get_theme() const;
 
+	Size2 get_contents_minimum_size() const;
+
 	void grab_focus();
 	bool has_focus() const;
+
+	Ref<Texture2D> get_theme_icon(const StringName &p_name, const StringName &p_type = StringName()) const;
+	Ref<Shader> get_theme_shader(const StringName &p_name, const StringName &p_type = StringName()) const;
+	Ref<StyleBox> get_theme_stylebox(const StringName &p_name, const StringName &p_type = StringName()) const;
+	Ref<Font> get_theme_font(const StringName &p_name, const StringName &p_type = StringName()) const;
+	Color get_theme_color(const StringName &p_name, const StringName &p_type = StringName()) const;
+	int get_theme_constant(const StringName &p_name, const StringName &p_type = StringName()) const;
+
+	bool has_theme_icon(const StringName &p_name, const StringName &p_type = StringName()) const;
+	bool has_theme_shader(const StringName &p_name, const StringName &p_type = StringName()) const;
+	bool has_theme_stylebox(const StringName &p_name, const StringName &p_type = StringName()) const;
+	bool has_theme_font(const StringName &p_name, const StringName &p_type = StringName()) const;
+	bool has_theme_color(const StringName &p_name, const StringName &p_type = StringName()) const;
+	bool has_theme_constant(const StringName &p_name, const StringName &p_type = StringName()) const;
+
+	Rect2i get_screen_rect() const;
 
 	Window();
 	~Window();

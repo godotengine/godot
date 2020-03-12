@@ -244,7 +244,7 @@ void ParticlesEditor::_node_removed(Node *p_node) {
 void ParticlesEditor::_notification(int p_notification) {
 
 	if (p_notification == NOTIFICATION_ENTER_TREE) {
-		options->set_icon(options->get_popup()->get_icon("Particles", "EditorIcons"));
+		options->set_icon(options->get_popup()->get_theme_icon("Particles", "EditorIcons"));
 		get_tree()->connect("node_removed", callable_mp(this, &ParticlesEditor::_node_removed));
 	}
 }
