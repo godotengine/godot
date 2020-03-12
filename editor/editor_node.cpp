@@ -6702,6 +6702,9 @@ EditorNode::EditorNode() {
 	screenshot_timer->connect("timeout", callable_mp(this, &EditorNode::_request_screenshot));
 	add_child(screenshot_timer);
 	screenshot_timer->set_owner(get_owner());
+
+	String exec = OS::get_singleton()->get_executable_path();
+	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "executable_path", exec); // Save editor executable path for third-party tools
 }
 
 EditorNode::~EditorNode() {
