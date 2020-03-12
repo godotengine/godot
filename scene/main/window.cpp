@@ -831,7 +831,7 @@ void Window::popup_centered(const Size2 &p_minsize) {
 	}
 
 	Rect2 popup_rect;
-	if (p_minsize == Size2()) {
+	if (p_minsize.width <= UNIT_EPSILON || p_minsize.height <= UNIT_EPSILON) {
 		popup_rect.size = _get_contents_minimum_size();
 	} else {
 		popup_rect.size = p_minsize;
