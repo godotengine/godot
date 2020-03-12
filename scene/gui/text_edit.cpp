@@ -5062,7 +5062,7 @@ void TextEdit::_update_caches() {
 #ifdef TOOLS_ENABLED
 	cache.line_spacing = get_theme_constant("line_spacing") * EDSCALE;
 #else
-	cache.line_spacing = get_constant("line_spacing");
+	cache.line_spacing = get_theme_constant("line_spacing");
 #endif
 	cache.row_height = cache.font->get_height() + cache.line_spacing;
 	cache.tab_icon = get_theme_icon("tab");
