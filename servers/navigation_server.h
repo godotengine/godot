@@ -54,7 +54,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	/// Thread safe, can be used accross many threads.
+	/// Thread safe, can be used across many threads.
 	static const NavigationServer *get_singleton();
 
 	/// MUST be used in single thread!

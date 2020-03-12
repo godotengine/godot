@@ -2242,14 +2242,14 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 		//non light variants
 		variants.push_back(""); //none by default is first variant
 		variants.push_back("#define USE_NINEPATCH\n"); //ninepatch is the second variant
-		variants.push_back("#define USE_PRIMITIVE\n"); //primitve is the third
+		variants.push_back("#define USE_PRIMITIVE\n"); //primitive is the third
 		variants.push_back("#define USE_PRIMITIVE\n#define USE_POINT_SIZE\n"); //points need point size
 		variants.push_back("#define USE_ATTRIBUTES\n"); // attributes for vertex arrays
 		variants.push_back("#define USE_ATTRIBUTES\n#define USE_POINT_SIZE\n"); //attributes with point size
 		//light variants
 		variants.push_back("#define USE_LIGHTING\n"); //none by default is first variant
 		variants.push_back("#define USE_LIGHTING\n#define USE_NINEPATCH\n"); //ninepatch is the second variant
-		variants.push_back("#define USE_LIGHTING\n#define USE_PRIMITIVE\n"); //primitve is the third
+		variants.push_back("#define USE_LIGHTING\n#define USE_PRIMITIVE\n"); //primitive is the third
 		variants.push_back("#define USE_LIGHTING\n#define USE_PRIMITIVE\n#define USE_POINT_SIZE\n"); //points need point size
 		variants.push_back("#define USE_LIGHTING\n#define USE_ATTRIBUTES\n"); // attributes for vertex arrays
 		variants.push_back("#define USE_LIGHTING\n#define USE_ATTRIBUTES\n#define USE_POINT_SIZE\n"); //attributes with point size
