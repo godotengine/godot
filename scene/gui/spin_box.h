@@ -50,6 +50,8 @@ class SpinBox : public Range {
 	String prefix;
 	String suffix;
 
+	bool select_all_on_focus;
+
 	void _line_edit_input(const Ref<InputEvent> &p_event);
 
 	struct Drag {
@@ -87,6 +89,9 @@ public:
 
 	void set_prefix(const String &p_prefix);
 	String get_prefix() const;
+
+	void set_select_all_on_focus(bool p_select);
+	bool is_select_all_on_focus() const;
 
 	void apply();
 

@@ -108,6 +108,8 @@ public:
 		grid_offset_x->set_allow_greater(true);
 		grid_offset_x->set_suffix("px");
 		grid_offset_x->set_h_size_flags(SIZE_EXPAND_FILL);
+		grid_offset_x->set_select_all_on_focus(true);
+		grid_offset_x->set_focus_mode(FOCUS_ALL);
 		child_container->add_child(grid_offset_x);
 
 		grid_offset_y = memnew(SpinBox);
@@ -117,6 +119,8 @@ public:
 		grid_offset_y->set_allow_greater(true);
 		grid_offset_y->set_suffix("px");
 		grid_offset_y->set_h_size_flags(SIZE_EXPAND_FILL);
+		grid_offset_y->set_select_all_on_focus(true);
+		grid_offset_y->set_focus_mode(FOCUS_ALL);
 		child_container->add_child(grid_offset_y);
 
 		label = memnew(Label);
@@ -130,6 +134,8 @@ public:
 		grid_step_x->set_allow_greater(true);
 		grid_step_x->set_suffix("px");
 		grid_step_x->set_h_size_flags(SIZE_EXPAND_FILL);
+		grid_step_x->set_select_all_on_focus(true);
+		grid_step_x->set_focus_mode(FOCUS_ALL);
 		child_container->add_child(grid_step_x);
 
 		grid_step_y = memnew(SpinBox);
@@ -138,6 +144,8 @@ public:
 		grid_step_y->set_allow_greater(true);
 		grid_step_y->set_suffix("px");
 		grid_step_y->set_h_size_flags(SIZE_EXPAND_FILL);
+		grid_step_y->set_select_all_on_focus(true);
+		grid_step_y->set_focus_mode(FOCUS_ALL);
 		child_container->add_child(grid_step_y);
 
 		child_container = memnew(GridContainer);
@@ -156,6 +164,8 @@ public:
 		primary_grid_steps->set_allow_greater(true);
 		primary_grid_steps->set_suffix(TTR("steps"));
 		primary_grid_steps->set_h_size_flags(SIZE_EXPAND_FILL);
+		primary_grid_steps->set_select_all_on_focus(true);
+		primary_grid_steps->set_focus_mode(FOCUS_ALL);
 		child_container->add_child(primary_grid_steps);
 
 		container->add_child(memnew(HSeparator));
@@ -176,6 +186,8 @@ public:
 		rotation_offset->set_max(SPIN_BOX_ROTATION_RANGE);
 		rotation_offset->set_suffix("deg");
 		rotation_offset->set_h_size_flags(SIZE_EXPAND_FILL);
+		rotation_offset->set_select_all_on_focus(true);
+		rotation_offset->set_focus_mode(FOCUS_ALL);
 		child_container->add_child(rotation_offset);
 
 		label = memnew(Label);
@@ -188,6 +200,8 @@ public:
 		rotation_step->set_max(SPIN_BOX_ROTATION_RANGE);
 		rotation_step->set_suffix("deg");
 		rotation_step->set_h_size_flags(SIZE_EXPAND_FILL);
+		rotation_step->set_select_all_on_focus(true);
+		rotation_step->set_focus_mode(FOCUS_ALL);
 		child_container->add_child(rotation_step);
 
 		container->add_child(memnew(HSeparator));
@@ -206,6 +220,8 @@ public:
 		scale_step->set_allow_greater(true);
 		scale_step->set_h_size_flags(SIZE_EXPAND_FILL);
 		scale_step->set_step(0.01f);
+		scale_step->set_select_all_on_focus(true);
+		scale_step->set_focus_mode(FOCUS_ALL);
 		child_container->add_child(scale_step);
 	}
 

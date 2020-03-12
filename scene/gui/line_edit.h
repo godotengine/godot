@@ -76,6 +76,7 @@ private:
 	Point2 ime_selection;
 
 	bool selecting_enabled;
+	bool select_all_on_focus;
 
 	bool context_menu_enabled;
 	PopupMenu *menu;
@@ -181,6 +182,9 @@ public:
 	void select_all();
 	void selection_delete();
 	void deselect();
+
+	void set_select_all_on_focus(bool p_select);
+	bool is_select_all_on_focus() const;
 
 	void delete_char();
 	void delete_text(int p_from_column, int p_to_column);

@@ -934,6 +934,9 @@ void LineEdit::_notification(int p_what) {
 			if (OS::get_singleton()->has_virtual_keyboard())
 				OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length);
 
+			if (select_all_on_focus) {
+				select_all();
+			}
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
 
@@ -949,6 +952,9 @@ void LineEdit::_notification(int p_what) {
 			if (OS::get_singleton()->has_virtual_keyboard())
 				OS::get_singleton()->hide_virtual_keyboard();
 
+			if (select_all_on_focus) {
+				deselect();
+			}
 		} break;
 		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
 
@@ -1441,6 +1447,16 @@ void LineEdit::deselect() {
 	update();
 }
 
+void LineEdit::set_select_all_on_focus(bool p_select) {
+
+	select_all_on_focus = p_select;
+}
+
+bool LineEdit::is_select_all_on_focus() const {
+
+	return select_all_on_focus;
+}
+
 void LineEdit::selection_delete() {
 
 	if (selection.enabled)
@@ -1877,6 +1893,7 @@ LineEdit::LineEdit() {
 	clear_button_status.pressing_inside = false;
 	shortcut_keys_enabled = true;
 	selecting_enabled = true;
+	select_all_on_focus = false;
 
 	deselect();
 	set_focus_mode(FOCUS_ALL);
