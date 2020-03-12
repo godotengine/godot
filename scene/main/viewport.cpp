@@ -1309,7 +1309,7 @@ Transform2D Viewport::_get_input_pre_xform() const {
 
 	Transform2D pre_xf;
 
-	if (to_screen_rect != Rect2i()) {
+	if (to_screen_rect.size.x != 0 && to_screen_rect.size.y != 0) {
 
 		pre_xf.elements[2] = -to_screen_rect.position;
 		pre_xf.scale(size / to_screen_rect.size);
@@ -1460,7 +1460,7 @@ void Viewport::_gui_show_tooltip() {
 		gui.tooltip_label = memnew(TooltipLabel);
 		gui.tooltip_popup->add_child(gui.tooltip_label);
 
-		Ref<StyleBox> ttp = gui.tooltip_label->get_stylebox("panel", "TooltipPanel");
+		Ref<StyleBox> ttp = gui.tooltip_label->get_theme_stylebox("panel", "TooltipPanel");
 
 		gui.tooltip_label->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_BEGIN, ttp->get_margin(MARGIN_LEFT));
 		gui.tooltip_label->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, ttp->get_margin(MARGIN_TOP));
@@ -1995,37 +1995,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			Control *top = gui.modal_stack.back()->get();
 
 			if (over != top && !top->is_a_parent_of(over)) {
-
-				PopupMenu *popup_menu = Object::cast_to<PopupMenu>(top);
-				MenuButton *popup_menu_parent = NULL;
-				MenuButton *menu_button = Object::cast_to<MenuButton>(over);
-
-				if (popup_menu) {
-					popup_menu_parent = Object::cast_to<MenuButton>(popup_menu->get_parent());
-					if (!popup_menu_parent) {
-						// Go through the parents to see if there's a MenuButton at the end.
-						while (Object::cast_to<PopupMenu>(popup_menu->get_parent())) {
-							popup_menu = Object::cast_to<PopupMenu>(popup_menu->get_parent());
-						}
-						popup_menu_parent = Object::cast_to<MenuButton>(popup_menu->get_parent());
-					}
-				}
-
-				// If the mouse is over a menu button, this menu will open automatically
-				// if there is already a pop-up menu open at the same hierarchical level.
-				if (popup_menu_parent && menu_button && popup_menu_parent->is_switch_on_hover() &&
-						!menu_button->is_disabled() && menu_button->is_switch_on_hover() &&
-						(popup_menu_parent->get_parent()->is_a_parent_of(menu_button) ||
-								menu_button->get_parent()->is_a_parent_of(popup_menu))) {
-
-					popup_menu->notification(Control::NOTIFICATION_MODAL_CLOSE);
-					popup_menu->_modal_stack_remove();
-					popup_menu->hide();
-
-					menu_button->pressed();
-				} else {
-					over = NULL; //nothing can be found outside the modal stack
-				}
+				over = NULL; //nothing can be found outside the modal stack
 			}
 		}
 

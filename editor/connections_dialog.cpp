@@ -341,7 +341,7 @@ void ConnectDialog::init(ConnectionData c, bool bEdit) {
 void ConnectDialog::popup_dialog(const String &p_for_signal) {
 
 	from_signal->set_text(p_for_signal);
-	error_label->add_color_override("font_color", error_label->get_color("error_color", "Editor"));
+	error_label->add_theme_color_override("font_color", error_label->get_theme_color("error_color", "Editor"));
 	if (!advanced->is_pressed())
 		error_label->set_visible(!_find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root()));
 
@@ -497,7 +497,7 @@ ConnectDialog::~ConnectDialog() {
 Control *ConnectionsDockTree::make_custom_tooltip(const String &p_text) const {
 
 	EditorHelpBit *help_bit = memnew(EditorHelpBit);
-	help_bit->add_style_override("panel", get_stylebox("panel", "TooltipPanel"));
+	help_bit->add_theme_style_override("panel", get_theme_stylebox("panel", "TooltipPanel"));
 	help_bit->get_rich_text()->set_fixed_size_to_width(360 * EDSCALE);
 
 	String text = TTR("Signal:") + " [u][b]" + p_text.get_slice("::", 0) + "[/b][/u]";
@@ -907,21 +907,21 @@ void ConnectionsDock::update_tree() {
 				else
 					name = scr->get_class();
 
-				if (has_icon(scr->get_class(), "EditorIcons")) {
-					icon = get_icon(scr->get_class(), "EditorIcons");
+				if (has_theme_icon(scr->get_class(), "EditorIcons")) {
+					icon = get_theme_icon(scr->get_class(), "EditorIcons");
 				}
 			}
 		} else {
 
 			ClassDB::get_signal_list(base, &node_signals2, true);
-			if (has_icon(base, "EditorIcons")) {
-				icon = get_icon(base, "EditorIcons");
+			if (has_theme_icon(base, "EditorIcons")) {
+				icon = get_theme_icon(base, "EditorIcons");
 			}
 			name = base;
 		}
 
 		if (!icon.is_valid()) {
-			icon = get_icon("Object", "EditorIcons");
+			icon = get_theme_icon("Object", "EditorIcons");
 		}
 
 		TreeItem *pitem = NULL;
@@ -932,7 +932,7 @@ void ConnectionsDock::update_tree() {
 			pitem->set_icon(0, icon);
 			pitem->set_selectable(0, false);
 			pitem->set_editable(0, false);
-			pitem->set_custom_bg_color(0, get_color("prop_subsection", "Editor"));
+			pitem->set_custom_bg_color(0, get_theme_color("prop_subsection", "Editor"));
 			node_signals2.sort();
 		}
 
@@ -968,7 +968,7 @@ void ConnectionsDock::update_tree() {
 			sinfo["name"] = signal_name;
 			sinfo["args"] = argnames;
 			item->set_metadata(0, sinfo);
-			item->set_icon(0, get_icon("Signal", "EditorIcons"));
+			item->set_icon(0, get_theme_icon("Signal", "EditorIcons"));
 
 			// Set tooltip with the signal's documentation.
 			{
@@ -1043,7 +1043,7 @@ void ConnectionsDock::update_tree() {
 				item2->set_text(0, path);
 				Connection cd = c;
 				item2->set_metadata(0, cd);
-				item2->set_icon(0, get_icon("Slot", "EditorIcons"));
+				item2->set_icon(0, get_theme_icon("Slot", "EditorIcons"));
 			}
 		}
 
@@ -1106,7 +1106,7 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	tree->connect("item_activated", callable_mp(this, &ConnectionsDock::_tree_item_activated));
 	tree->connect("item_rmb_selected", callable_mp(this, &ConnectionsDock::_rmb_pressed));
 
-	add_constant_override("separation", 3 * EDSCALE);
+	add_theme_constant_override("separation", 3 * EDSCALE);
 }
 
 ConnectionsDock::~ConnectionsDock() {

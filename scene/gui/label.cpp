@@ -65,7 +65,7 @@ bool Label::is_uppercase() const {
 
 int Label::get_line_height() const {
 
-	return get_font("font")->get_height();
+	return get_theme_font("font")->get_height();
 }
 
 void Label::_notification(int p_what) {
@@ -94,14 +94,14 @@ void Label::_notification(int p_what) {
 
 		Size2 string_size;
 		Size2 size = get_size();
-		Ref<StyleBox> style = get_stylebox("normal");
-		Ref<Font> font = get_font("font");
-		Color font_color = get_color("font_color");
-		Color font_color_shadow = get_color("font_color_shadow");
-		bool use_outline = get_constant("shadow_as_outline");
-		Point2 shadow_ofs(get_constant("shadow_offset_x"), get_constant("shadow_offset_y"));
-		int line_spacing = get_constant("line_spacing");
-		Color font_outline_modulate = get_color("font_outline_modulate");
+		Ref<StyleBox> style = get_theme_stylebox("normal");
+		Ref<Font> font = get_theme_font("font");
+		Color font_color = get_theme_color("font_color");
+		Color font_color_shadow = get_theme_color("font_color_shadow");
+		bool use_outline = get_theme_constant("shadow_as_outline");
+		Point2 shadow_ofs(get_theme_constant("shadow_offset_x"), get_theme_constant("shadow_offset_y"));
+		int line_spacing = get_theme_constant("line_spacing");
+		Color font_outline_modulate = get_theme_color("font_outline_modulate");
 
 		style->draw(ci, Rect2(Point2(0, 0), get_size()));
 
@@ -300,7 +300,7 @@ void Label::_notification(int p_what) {
 
 Size2 Label::get_minimum_size() const {
 
-	Size2 min_style = get_stylebox("normal")->get_minimum_size();
+	Size2 min_style = get_theme_stylebox("normal")->get_minimum_size();
 
 	// don't want to mutable everything
 	if (word_cache_dirty) {
@@ -319,7 +319,7 @@ Size2 Label::get_minimum_size() const {
 
 int Label::get_longest_line_width() const {
 
-	Ref<Font> font = get_font("font");
+	Ref<Font> font = get_theme_font("font");
 	real_t max_line_width = 0;
 	real_t line_width = 0;
 
@@ -363,9 +363,9 @@ int Label::get_line_count() const {
 
 int Label::get_visible_line_count() const {
 
-	int line_spacing = get_constant("line_spacing");
-	int font_h = get_font("font")->get_height() + line_spacing;
-	int lines_visible = (get_size().height - get_stylebox("normal")->get_minimum_size().height + line_spacing) / font_h;
+	int line_spacing = get_theme_constant("line_spacing");
+	int font_h = get_theme_font("font")->get_height() + line_spacing;
+	int lines_visible = (get_size().height - get_theme_stylebox("normal")->get_minimum_size().height + line_spacing) / font_h;
 
 	if (lines_visible > line_count)
 		lines_visible = line_count;
@@ -387,20 +387,20 @@ void Label::regenerate_word_cache() {
 
 	int width;
 	if (autowrap) {
-		Ref<StyleBox> style = get_stylebox("normal");
+		Ref<StyleBox> style = get_theme_stylebox("normal");
 		width = MAX(get_size().width, get_custom_minimum_size().width) - style->get_minimum_size().width;
 	} else {
 		width = get_longest_line_width();
 	}
 
-	Ref<Font> font = get_font("font");
+	Ref<Font> font = get_theme_font("font");
 
 	real_t current_word_size = 0;
 	int word_pos = 0;
 	real_t line_width = 0;
 	int space_count = 0;
 	real_t space_width = font->get_char_size(' ').width;
-	int line_spacing = get_constant("line_spacing");
+	int line_spacing = get_theme_constant("line_spacing");
 	line_count = 1;
 	total_char_cache = 0;
 

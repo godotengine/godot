@@ -1584,11 +1584,11 @@ void TextEdit::_notification(int p_what) {
 			bool completion_below = false;
 			if (completion_active && completion_options.size() > 0) {
 				// Code completion box.
-				Ref<StyleBox> csb = get_stylebox("completion");
-				int maxlines = get_constant("completion_lines");
-				int cmax_width = get_constant("completion_max_width") * cache.font->get_char_size('x').x;
-				int scrollw = get_constant("completion_scroll_width");
-				Color scrollc = get_color("completion_scroll_color");
+				Ref<StyleBox> csb = get_theme_stylebox("completion");
+				int maxlines = get_theme_constant("completion_lines");
+				int cmax_width = get_theme_constant("completion_max_width") * cache.font->get_char_size('x').x;
+				int scrollw = get_theme_constant("completion_scroll_width");
+				Color scrollc = get_theme_color("completion_scroll_color");
 
 				const int completion_options_size = completion_options.size();
 				int lines = MIN(completion_options_size, maxlines);
@@ -1607,7 +1607,7 @@ void TextEdit::_notification(int p_what) {
 				}
 
 				// Add space for completion icons.
-				const int icon_hsep = get_constant("hseparation", "ItemList");
+				const int icon_hsep = get_theme_constant("hseparation", "ItemList");
 				Size2 icon_area_size(get_row_height(), get_row_height());
 				w += icon_area_size.width + icon_hsep;
 
@@ -1694,9 +1694,9 @@ void TextEdit::_notification(int p_what) {
 
 			if (show_hint) {
 
-				Ref<StyleBox> sb = get_stylebox("panel", "TooltipPanel");
+				Ref<StyleBox> sb = get_theme_stylebox("panel", "TooltipPanel");
 				Ref<Font> font = cache.font;
-				Color font_color = get_color("font_color", "TooltipLabel");
+				Color font_color = get_theme_color("font_color", "TooltipLabel");
 
 				int max_w = 0;
 				int sc = completion_hint.get_slice_count("\n");
@@ -2477,9 +2477,9 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					}
 				}
 
-				menu->set_position(get_global_transform().xform(get_local_mouse_position()));
+				menu->set_position(get_screen_transform().xform(get_local_mouse_position()));
 				menu->set_size(Vector2(1, 1));
-				menu->set_scale(get_global_transform().get_scale());
+				//				menu->set_scale(get_global_transform().get_scale());
 				menu->popup();
 				grab_focus();
 			}
@@ -2634,7 +2634,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 					if (k->get_keycode() == KEY_PAGEUP) {
 
-						completion_index -= get_constant("completion_lines");
+						completion_index -= get_theme_constant("completion_lines");
 						if (completion_index < 0)
 							completion_index = 0;
 						completion_current = completion_options[completion_index];
@@ -2645,7 +2645,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 					if (k->get_keycode() == KEY_PAGEDOWN) {
 
-						completion_index += get_constant("completion_lines");
+						completion_index += get_theme_constant("completion_lines");
 						if (completion_index >= completion_options.size())
 							completion_index = completion_options.size() - 1;
 						completion_current = completion_options[completion_index];
@@ -3735,7 +3735,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				if (context_menu_enabled) {
 					menu->set_position(get_global_transform().xform(_get_cursor_pixel_pos()));
 					menu->set_size(Vector2(1, 1));
-					menu->set_scale(get_global_transform().get_scale());
+					//					menu->set_scale(get_global_transform().get_scale());
 					menu->popup();
 					menu->grab_focus();
 				}
@@ -5026,51 +5026,51 @@ void TextEdit::_toggle_draw_caret() {
 
 void TextEdit::_update_caches() {
 
-	cache.style_normal = get_stylebox("normal");
-	cache.style_focus = get_stylebox("focus");
-	cache.style_readonly = get_stylebox("read_only");
-	cache.completion_background_color = get_color("completion_background_color");
-	cache.completion_selected_color = get_color("completion_selected_color");
-	cache.completion_existing_color = get_color("completion_existing_color");
-	cache.completion_font_color = get_color("completion_font_color");
-	cache.font = get_font("font");
-	cache.caret_color = get_color("caret_color");
-	cache.caret_background_color = get_color("caret_background_color");
-	cache.line_number_color = get_color("line_number_color");
-	cache.safe_line_number_color = get_color("safe_line_number_color");
-	cache.font_color = get_color("font_color");
-	cache.font_color_selected = get_color("font_color_selected");
-	cache.font_color_readonly = get_color("font_color_readonly");
-	cache.keyword_color = get_color("keyword_color");
-	cache.function_color = get_color("function_color");
-	cache.member_variable_color = get_color("member_variable_color");
-	cache.number_color = get_color("number_color");
-	cache.selection_color = get_color("selection_color");
-	cache.mark_color = get_color("mark_color");
-	cache.current_line_color = get_color("current_line_color");
-	cache.line_length_guideline_color = get_color("line_length_guideline_color");
-	cache.bookmark_color = get_color("bookmark_color");
-	cache.breakpoint_color = get_color("breakpoint_color");
-	cache.executing_line_color = get_color("executing_line_color");
-	cache.code_folding_color = get_color("code_folding_color");
-	cache.brace_mismatch_color = get_color("brace_mismatch_color");
-	cache.word_highlighted_color = get_color("word_highlighted_color");
-	cache.search_result_color = get_color("search_result_color");
-	cache.search_result_border_color = get_color("search_result_border_color");
-	cache.symbol_color = get_color("symbol_color");
-	cache.background_color = get_color("background_color");
+	cache.style_normal = get_theme_stylebox("normal");
+	cache.style_focus = get_theme_stylebox("focus");
+	cache.style_readonly = get_theme_stylebox("read_only");
+	cache.completion_background_color = get_theme_color("completion_background_color");
+	cache.completion_selected_color = get_theme_color("completion_selected_color");
+	cache.completion_existing_color = get_theme_color("completion_existing_color");
+	cache.completion_font_color = get_theme_color("completion_font_color");
+	cache.font = get_theme_font("font");
+	cache.caret_color = get_theme_color("caret_color");
+	cache.caret_background_color = get_theme_color("caret_background_color");
+	cache.line_number_color = get_theme_color("line_number_color");
+	cache.safe_line_number_color = get_theme_color("safe_line_number_color");
+	cache.font_color = get_theme_color("font_color");
+	cache.font_color_selected = get_theme_color("font_color_selected");
+	cache.font_color_readonly = get_theme_color("font_color_readonly");
+	cache.keyword_color = get_theme_color("keyword_color");
+	cache.function_color = get_theme_color("function_color");
+	cache.member_variable_color = get_theme_color("member_variable_color");
+	cache.number_color = get_theme_color("number_color");
+	cache.selection_color = get_theme_color("selection_color");
+	cache.mark_color = get_theme_color("mark_color");
+	cache.current_line_color = get_theme_color("current_line_color");
+	cache.line_length_guideline_color = get_theme_color("line_length_guideline_color");
+	cache.bookmark_color = get_theme_color("bookmark_color");
+	cache.breakpoint_color = get_theme_color("breakpoint_color");
+	cache.executing_line_color = get_theme_color("executing_line_color");
+	cache.code_folding_color = get_theme_color("code_folding_color");
+	cache.brace_mismatch_color = get_theme_color("brace_mismatch_color");
+	cache.word_highlighted_color = get_theme_color("word_highlighted_color");
+	cache.search_result_color = get_theme_color("search_result_color");
+	cache.search_result_border_color = get_theme_color("search_result_border_color");
+	cache.symbol_color = get_theme_color("symbol_color");
+	cache.background_color = get_theme_color("background_color");
 #ifdef TOOLS_ENABLED
-	cache.line_spacing = get_constant("line_spacing") * EDSCALE;
+	cache.line_spacing = get_theme_constant("line_spacing") * EDSCALE;
 #else
 	cache.line_spacing = get_constant("line_spacing");
 #endif
 	cache.row_height = cache.font->get_height() + cache.line_spacing;
-	cache.tab_icon = get_icon("tab");
-	cache.space_icon = get_icon("space");
-	cache.folded_icon = get_icon("folded");
-	cache.can_fold_icon = get_icon("fold");
-	cache.folded_eol_icon = get_icon("GuiEllipsis", "EditorIcons");
-	cache.executing_icon = get_icon("MainPlay", "EditorIcons");
+	cache.tab_icon = get_theme_icon("tab");
+	cache.space_icon = get_theme_icon("space");
+	cache.folded_icon = get_theme_icon("folded");
+	cache.can_fold_icon = get_theme_icon("fold");
+	cache.folded_eol_icon = get_theme_icon("GuiEllipsis", "EditorIcons");
+	cache.executing_icon = get_theme_icon("MainPlay", "EditorIcons");
 	text.set_font(cache.font);
 
 	if (syntax_highlighter) {

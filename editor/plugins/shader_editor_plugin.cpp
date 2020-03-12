@@ -117,33 +117,33 @@ void ShaderTextEditor::_load_theme_settings() {
 	Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
 	Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
 
-	get_text_edit()->add_color_override("background_color", background_color);
-	get_text_edit()->add_color_override("completion_background_color", completion_background_color);
-	get_text_edit()->add_color_override("completion_selected_color", completion_selected_color);
-	get_text_edit()->add_color_override("completion_existing_color", completion_existing_color);
-	get_text_edit()->add_color_override("completion_scroll_color", completion_scroll_color);
-	get_text_edit()->add_color_override("completion_font_color", completion_font_color);
-	get_text_edit()->add_color_override("font_color", text_color);
-	get_text_edit()->add_color_override("line_number_color", line_number_color);
-	get_text_edit()->add_color_override("caret_color", caret_color);
-	get_text_edit()->add_color_override("caret_background_color", caret_background_color);
-	get_text_edit()->add_color_override("font_color_selected", text_selected_color);
-	get_text_edit()->add_color_override("selection_color", selection_color);
-	get_text_edit()->add_color_override("brace_mismatch_color", brace_mismatch_color);
-	get_text_edit()->add_color_override("current_line_color", current_line_color);
-	get_text_edit()->add_color_override("line_length_guideline_color", line_length_guideline_color);
-	get_text_edit()->add_color_override("word_highlighted_color", word_highlighted_color);
-	get_text_edit()->add_color_override("number_color", number_color);
-	get_text_edit()->add_color_override("function_color", function_color);
-	get_text_edit()->add_color_override("member_variable_color", member_variable_color);
-	get_text_edit()->add_color_override("mark_color", mark_color);
-	get_text_edit()->add_color_override("bookmark_color", bookmark_color);
-	get_text_edit()->add_color_override("breakpoint_color", breakpoint_color);
-	get_text_edit()->add_color_override("executing_line_color", executing_line_color);
-	get_text_edit()->add_color_override("code_folding_color", code_folding_color);
-	get_text_edit()->add_color_override("search_result_color", search_result_color);
-	get_text_edit()->add_color_override("search_result_border_color", search_result_border_color);
-	get_text_edit()->add_color_override("symbol_color", symbol_color);
+	get_text_edit()->add_theme_color_override("background_color", background_color);
+	get_text_edit()->add_theme_color_override("completion_background_color", completion_background_color);
+	get_text_edit()->add_theme_color_override("completion_selected_color", completion_selected_color);
+	get_text_edit()->add_theme_color_override("completion_existing_color", completion_existing_color);
+	get_text_edit()->add_theme_color_override("completion_scroll_color", completion_scroll_color);
+	get_text_edit()->add_theme_color_override("completion_font_color", completion_font_color);
+	get_text_edit()->add_theme_color_override("font_color", text_color);
+	get_text_edit()->add_theme_color_override("line_number_color", line_number_color);
+	get_text_edit()->add_theme_color_override("caret_color", caret_color);
+	get_text_edit()->add_theme_color_override("caret_background_color", caret_background_color);
+	get_text_edit()->add_theme_color_override("font_color_selected", text_selected_color);
+	get_text_edit()->add_theme_color_override("selection_color", selection_color);
+	get_text_edit()->add_theme_color_override("brace_mismatch_color", brace_mismatch_color);
+	get_text_edit()->add_theme_color_override("current_line_color", current_line_color);
+	get_text_edit()->add_theme_color_override("line_length_guideline_color", line_length_guideline_color);
+	get_text_edit()->add_theme_color_override("word_highlighted_color", word_highlighted_color);
+	get_text_edit()->add_theme_color_override("number_color", number_color);
+	get_text_edit()->add_theme_color_override("function_color", function_color);
+	get_text_edit()->add_theme_color_override("member_variable_color", member_variable_color);
+	get_text_edit()->add_theme_color_override("mark_color", mark_color);
+	get_text_edit()->add_theme_color_override("bookmark_color", bookmark_color);
+	get_text_edit()->add_theme_color_override("breakpoint_color", breakpoint_color);
+	get_text_edit()->add_theme_color_override("executing_line_color", executing_line_color);
+	get_text_edit()->add_theme_color_override("code_folding_color", code_folding_color);
+	get_text_edit()->add_theme_color_override("search_result_color", search_result_color);
+	get_text_edit()->add_theme_color_override("search_result_border_color", search_result_border_color);
+	get_text_edit()->add_theme_color_override("symbol_color", symbol_color);
 
 	List<String> keywords;
 	ShaderLanguage::get_keyword_list(&keywords);
@@ -377,7 +377,7 @@ void ShaderEditor::_editor_settings_changed() {
 	shader_editor->get_text_edit()->set_highlight_current_line(EditorSettings::get_singleton()->get("text_editor/highlighting/highlight_current_line"));
 	shader_editor->get_text_edit()->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink"));
 	shader_editor->get_text_edit()->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink_speed"));
-	shader_editor->get_text_edit()->add_constant_override("line_spacing", EditorSettings::get_singleton()->get("text_editor/theme/line_spacing"));
+	shader_editor->get_text_edit()->add_theme_constant_override("line_spacing", EditorSettings::get_singleton()->get("text_editor/theme/line_spacing"));
 	shader_editor->get_text_edit()->cursor_set_block_mode(EditorSettings::get_singleton()->get("text_editor/cursor/block_caret"));
 	shader_editor->get_text_edit()->set_smooth_scroll_enabled(EditorSettings::get_singleton()->get("text_editor/navigation/smooth_scrolling"));
 	shader_editor->get_text_edit()->set_v_scroll_speed(EditorSettings::get_singleton()->get("text_editor/navigation/v_scroll_speed"));
@@ -596,7 +596,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 
 	shader_editor = memnew(ShaderTextEditor);
 	shader_editor->set_v_size_flags(SIZE_EXPAND_FILL);
-	shader_editor->add_constant_override("separation", 0);
+	shader_editor->add_theme_constant_override("separation", 0);
 	shader_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 
 	shader_editor->connect("script_changed", callable_mp(this, &ShaderEditor::apply_shaders));
@@ -615,7 +615,6 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
 	context_menu->connect("id_pressed", callable_mp(this, &ShaderEditor::_menu_option));
-	context_menu->set_hide_on_window_lose_focus(true);
 
 	VBoxContainer *main_container = memnew(VBoxContainer);
 	HBoxContainer *hbc = memnew(HBoxContainer);
@@ -623,7 +622,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_text(TTR("Edit"));
 	edit_menu->set_switch_on_hover(true);
-	edit_menu->get_popup()->set_hide_on_window_lose_focus(true);
+
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/undo"), EDIT_UNDO);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/redo"), EDIT_REDO);
 	edit_menu->get_popup()->add_separator();
@@ -647,7 +646,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	search_menu = memnew(MenuButton);
 	search_menu->set_text(TTR("Search"));
 	search_menu->set_switch_on_hover(true);
-	search_menu->get_popup()->set_hide_on_window_lose_focus(true);
+
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
@@ -667,13 +666,13 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	goto_menu->get_popup()->add_child(bookmarks_menu);
 	goto_menu->get_popup()->add_submenu_item(TTR("Bookmarks"), "Bookmarks");
 	_update_bookmark_list();
-	bookmarks_menu->connect("about_to_show", callable_mp(this, &ShaderEditor::_update_bookmark_list));
+	bookmarks_menu->connect("about_to_popup", callable_mp(this, &ShaderEditor::_update_bookmark_list));
 	bookmarks_menu->connect("index_pressed", callable_mp(this, &ShaderEditor::_bookmark_item_pressed));
 
 	help_menu = memnew(MenuButton);
 	help_menu->set_text(TTR("Help"));
 	help_menu->set_switch_on_hover(true);
-	help_menu->get_popup()->add_icon_item(p_node->get_gui_base()->get_icon("Instance", "EditorIcons"), TTR("Online Docs"), HELP_DOCS);
+	help_menu->get_popup()->add_icon_item(p_node->get_gui_base()->get_theme_icon("Instance", "EditorIcons"), TTR("Online Docs"), HELP_DOCS);
 	help_menu->get_popup()->connect("id_pressed", callable_mp(this, &ShaderEditor::_menu_option));
 
 	add_child(main_container);
@@ -682,7 +681,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	hbc->add_child(edit_menu);
 	hbc->add_child(goto_menu);
 	hbc->add_child(help_menu);
-	hbc->add_style_override("panel", p_node->get_gui_base()->get_stylebox("ScriptEditorPanel", "EditorStyles"));
+	hbc->add_theme_style_override("panel", p_node->get_gui_base()->get_theme_stylebox("ScriptEditorPanel", "EditorStyles"));
 	main_container->add_child(shader_editor);
 
 	goto_line_dialog = memnew(GotoLineDialog);

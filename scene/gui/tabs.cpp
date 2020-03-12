@@ -37,10 +37,10 @@
 
 Size2 Tabs::get_minimum_size() const {
 
-	Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
-	Ref<StyleBox> tab_fg = get_stylebox("tab_fg");
-	Ref<StyleBox> tab_disabled = get_stylebox("tab_disabled");
-	Ref<Font> font = get_font("font");
+	Ref<StyleBox> tab_bg = get_theme_stylebox("tab_bg");
+	Ref<StyleBox> tab_fg = get_theme_stylebox("tab_fg");
+	Ref<StyleBox> tab_disabled = get_theme_stylebox("tab_disabled");
+	Ref<Font> font = get_theme_font("font");
 
 	Size2 ms(0, MAX(MAX(tab_bg->get_minimum_size().height, tab_fg->get_minimum_size().height), tab_disabled->get_minimum_size().height) + font->get_height());
 
@@ -50,7 +50,7 @@ Size2 Tabs::get_minimum_size() const {
 		if (tex.is_valid()) {
 			ms.height = MAX(ms.height, tex->get_size().height);
 			if (tabs[i].text != "")
-				ms.width += get_constant("hseparation");
+				ms.width += get_theme_constant("hseparation");
 		}
 
 		ms.width += Math::ceil(font->get_string_size(tabs[i].xl_text).width);
@@ -65,15 +65,15 @@ Size2 Tabs::get_minimum_size() const {
 		if (tabs[i].right_button.is_valid()) {
 			Ref<Texture2D> rb = tabs[i].right_button;
 			Size2 bms = rb->get_size();
-			bms.width += get_constant("hseparation");
+			bms.width += get_theme_constant("hseparation");
 			ms.width += bms.width;
 			ms.height = MAX(bms.height + tab_bg->get_minimum_size().height, ms.height);
 		}
 
 		if (cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && i == current)) {
-			Ref<Texture2D> cb = get_icon("close");
+			Ref<Texture2D> cb = get_theme_icon("close");
 			Size2 bms = cb->get_size();
-			bms.width += get_constant("hseparation");
+			bms.width += get_theme_constant("hseparation");
 			ms.width += bms.width;
 			ms.height = MAX(bms.height + tab_bg->get_minimum_size().height, ms.height);
 		}
@@ -94,8 +94,8 @@ void Tabs::_gui_input(const Ref<InputEvent> &p_event) {
 		highlight_arrow = -1;
 		if (buttons_visible) {
 
-			Ref<Texture2D> incr = get_icon("increment");
-			Ref<Texture2D> decr = get_icon("decrement");
+			Ref<Texture2D> incr = get_theme_icon("increment");
+			Ref<Texture2D> decr = get_theme_icon("decrement");
 
 			int limit = get_size().width - incr->get_width() - decr->get_width();
 
@@ -163,8 +163,8 @@ void Tabs::_gui_input(const Ref<InputEvent> &p_event) {
 
 			if (buttons_visible) {
 
-				Ref<Texture2D> incr = get_icon("increment");
-				Ref<Texture2D> decr = get_icon("decrement");
+				Ref<Texture2D> incr = get_theme_icon("increment");
+				Ref<Texture2D> decr = get_theme_icon("decrement");
 
 				int limit = get_size().width - incr->get_width() - decr->get_width();
 
@@ -238,14 +238,14 @@ void Tabs::_notification(int p_what) {
 			_update_cache();
 			RID ci = get_canvas_item();
 
-			Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
-			Ref<StyleBox> tab_fg = get_stylebox("tab_fg");
-			Ref<StyleBox> tab_disabled = get_stylebox("tab_disabled");
-			Ref<Font> font = get_font("font");
-			Color color_fg = get_color("font_color_fg");
-			Color color_bg = get_color("font_color_bg");
-			Color color_disabled = get_color("font_color_disabled");
-			Ref<Texture2D> close = get_icon("close");
+			Ref<StyleBox> tab_bg = get_theme_stylebox("tab_bg");
+			Ref<StyleBox> tab_fg = get_theme_stylebox("tab_fg");
+			Ref<StyleBox> tab_disabled = get_theme_stylebox("tab_disabled");
+			Ref<Font> font = get_theme_font("font");
+			Color color_fg = get_theme_color("font_color_fg");
+			Color color_bg = get_theme_color("font_color_bg");
+			Color color_disabled = get_theme_color("font_color_disabled");
+			Ref<Texture2D> close = get_theme_icon("close");
 
 			int h = get_size().height;
 			int w = 0;
@@ -267,10 +267,10 @@ void Tabs::_notification(int p_what) {
 				w = 0;
 			}
 
-			Ref<Texture2D> incr = get_icon("increment");
-			Ref<Texture2D> decr = get_icon("decrement");
-			Ref<Texture2D> incr_hl = get_icon("increment_highlight");
-			Ref<Texture2D> decr_hl = get_icon("decrement_highlight");
+			Ref<Texture2D> incr = get_theme_icon("increment");
+			Ref<Texture2D> decr = get_theme_icon("decrement");
+			Ref<Texture2D> incr_hl = get_theme_icon("increment_highlight");
+			Ref<Texture2D> decr_hl = get_theme_icon("decrement_highlight");
 
 			int limit = get_size().width - incr->get_size().width - decr->get_size().width;
 
@@ -318,7 +318,7 @@ void Tabs::_notification(int p_what) {
 
 					icon->draw(ci, Point2i(w, sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - icon->get_height()) / 2));
 					if (tabs[i].text != "")
-						w += icon->get_width() + get_constant("hseparation");
+						w += icon->get_width() + get_theme_constant("hseparation");
 				}
 
 				font->draw(ci, Point2i(w, sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - font->get_height()) / 2 + font->get_ascent()), tabs[i].xl_text, col, tabs[i].size_text);
@@ -327,10 +327,10 @@ void Tabs::_notification(int p_what) {
 
 				if (tabs[i].right_button.is_valid()) {
 
-					Ref<StyleBox> style = get_stylebox("button");
+					Ref<StyleBox> style = get_theme_stylebox("button");
 					Ref<Texture2D> rb = tabs[i].right_button;
 
-					w += get_constant("hseparation");
+					w += get_theme_constant("hseparation");
 
 					Rect2 rb_rect;
 					rb_rect.size = style->get_minimum_size() + rb->get_size();
@@ -339,7 +339,7 @@ void Tabs::_notification(int p_what) {
 
 					if (rb_hover == i) {
 						if (rb_pressing)
-							get_stylebox("button_pressed")->draw(ci, rb_rect);
+							get_theme_stylebox("button_pressed")->draw(ci, rb_rect);
 						else
 							style->draw(ci, rb_rect);
 					}
@@ -351,10 +351,10 @@ void Tabs::_notification(int p_what) {
 
 				if (cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && i == current)) {
 
-					Ref<StyleBox> style = get_stylebox("button");
+					Ref<StyleBox> style = get_theme_stylebox("button");
 					Ref<Texture2D> cb = close;
 
-					w += get_constant("hseparation");
+					w += get_theme_constant("hseparation");
 
 					Rect2 cb_rect;
 					cb_rect.size = style->get_minimum_size() + cb->get_size();
@@ -363,7 +363,7 @@ void Tabs::_notification(int p_what) {
 
 					if (!tabs[i].disabled && cb_hover == i) {
 						if (cb_pressing)
-							get_stylebox("button_pressed")->draw(ci, cb_rect);
+							get_theme_stylebox("button_pressed")->draw(ci, cb_rect);
 						else
 							style->draw(ci, cb_rect);
 					}
@@ -532,12 +532,12 @@ void Tabs::_update_hover() {
 }
 
 void Tabs::_update_cache() {
-	Ref<StyleBox> tab_disabled = get_stylebox("tab_disabled");
-	Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
-	Ref<StyleBox> tab_fg = get_stylebox("tab_fg");
-	Ref<Font> font = get_font("font");
-	Ref<Texture2D> incr = get_icon("increment");
-	Ref<Texture2D> decr = get_icon("decrement");
+	Ref<StyleBox> tab_disabled = get_theme_stylebox("tab_disabled");
+	Ref<StyleBox> tab_bg = get_theme_stylebox("tab_bg");
+	Ref<StyleBox> tab_fg = get_theme_stylebox("tab_fg");
+	Ref<Font> font = get_theme_font("font");
+	Ref<Texture2D> incr = get_theme_icon("increment");
+	Ref<Texture2D> decr = get_theme_icon("decrement");
 	int limit = get_size().width - incr->get_width() - decr->get_width();
 
 	int w = 0;
@@ -577,12 +577,12 @@ void Tabs::_update_cache() {
 				slen = m_width - (sb->get_margin(MARGIN_LEFT) + sb->get_margin(MARGIN_RIGHT));
 				if (tabs[i].icon.is_valid()) {
 					slen -= tabs[i].icon->get_width();
-					slen -= get_constant("hseparation");
+					slen -= get_theme_constant("hseparation");
 				}
 				if (cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && i == current)) {
-					Ref<Texture2D> cb = get_icon("close");
+					Ref<Texture2D> cb = get_theme_icon("close");
 					slen -= cb->get_width();
-					slen -= get_constant("hseparation");
+					slen -= get_theme_constant("hseparation");
 				}
 				slen = MAX(slen, 1);
 				lsize = m_width;
@@ -799,10 +799,10 @@ int Tabs::get_tab_width(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx, tabs.size(), 0);
 
-	Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
-	Ref<StyleBox> tab_fg = get_stylebox("tab_fg");
-	Ref<StyleBox> tab_disabled = get_stylebox("tab_disabled");
-	Ref<Font> font = get_font("font");
+	Ref<StyleBox> tab_bg = get_theme_stylebox("tab_bg");
+	Ref<StyleBox> tab_fg = get_theme_stylebox("tab_fg");
+	Ref<StyleBox> tab_disabled = get_theme_stylebox("tab_disabled");
+	Ref<Font> font = get_theme_font("font");
 
 	int x = 0;
 
@@ -810,7 +810,7 @@ int Tabs::get_tab_width(int p_idx) const {
 	if (tex.is_valid()) {
 		x += tex->get_width();
 		if (tabs[p_idx].text != "")
-			x += get_constant("hseparation");
+			x += get_theme_constant("hseparation");
 	}
 
 	x += Math::ceil(font->get_string_size(tabs[p_idx].xl_text).width);
@@ -825,13 +825,13 @@ int Tabs::get_tab_width(int p_idx) const {
 	if (tabs[p_idx].right_button.is_valid()) {
 		Ref<Texture2D> rb = tabs[p_idx].right_button;
 		x += rb->get_width();
-		x += get_constant("hseparation");
+		x += get_theme_constant("hseparation");
 	}
 
 	if (cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && p_idx == current)) {
-		Ref<Texture2D> cb = get_icon("close");
+		Ref<Texture2D> cb = get_theme_icon("close");
 		x += cb->get_width();
-		x += get_constant("hseparation");
+		x += get_theme_constant("hseparation");
 	}
 
 	return x;
@@ -842,8 +842,8 @@ void Tabs::_ensure_no_over_offset() {
 	if (!is_inside_tree())
 		return;
 
-	Ref<Texture2D> incr = get_icon("increment");
-	Ref<Texture2D> decr = get_icon("decrement");
+	Ref<Texture2D> incr = get_theme_icon("increment");
+	Ref<Texture2D> decr = get_theme_icon("decrement");
 
 	int limit = get_size().width - incr->get_width() - decr->get_width();
 
@@ -885,8 +885,8 @@ void Tabs::ensure_tab_visible(int p_idx) {
 	}
 
 	int prev_offset = offset;
-	Ref<Texture2D> incr = get_icon("increment");
-	Ref<Texture2D> decr = get_icon("decrement");
+	Ref<Texture2D> incr = get_theme_icon("increment");
+	Ref<Texture2D> decr = get_theme_icon("decrement");
 	int limit = get_size().width - incr->get_width() - decr->get_width();
 	for (int i = offset; i <= p_idx; i++) {
 		if (tabs[i].ofs_cache + tabs[i].size_cache > limit) {

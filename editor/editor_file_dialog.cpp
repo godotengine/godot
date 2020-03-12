@@ -59,17 +59,17 @@ void EditorFileDialog::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
 		// update icons
-		mode_thumbnails->set_icon(item_list->get_icon("FileThumbnail", "EditorIcons"));
-		mode_list->set_icon(item_list->get_icon("FileList", "EditorIcons"));
-		dir_prev->set_icon(item_list->get_icon("Back", "EditorIcons"));
-		dir_next->set_icon(item_list->get_icon("Forward", "EditorIcons"));
-		dir_up->set_icon(item_list->get_icon("ArrowUp", "EditorIcons"));
-		refresh->set_icon(item_list->get_icon("Reload", "EditorIcons"));
-		favorite->set_icon(item_list->get_icon("Favorites", "EditorIcons"));
-		show_hidden->set_icon(item_list->get_icon("GuiVisibilityVisible", "EditorIcons"));
+		mode_thumbnails->set_icon(item_list->get_theme_icon("FileThumbnail", "EditorIcons"));
+		mode_list->set_icon(item_list->get_theme_icon("FileList", "EditorIcons"));
+		dir_prev->set_icon(item_list->get_theme_icon("Back", "EditorIcons"));
+		dir_next->set_icon(item_list->get_theme_icon("Forward", "EditorIcons"));
+		dir_up->set_icon(item_list->get_theme_icon("ArrowUp", "EditorIcons"));
+		refresh->set_icon(item_list->get_theme_icon("Reload", "EditorIcons"));
+		favorite->set_icon(item_list->get_theme_icon("Favorites", "EditorIcons"));
+		show_hidden->set_icon(item_list->get_theme_icon("GuiVisibilityVisible", "EditorIcons"));
 
-		fav_up->set_icon(item_list->get_icon("MoveUp", "EditorIcons"));
-		fav_down->set_icon(item_list->get_icon("MoveDown", "EditorIcons"));
+		fav_up->set_icon(item_list->get_theme_icon("MoveUp", "EditorIcons"));
+		fav_down->set_icon(item_list->get_theme_icon("MoveDown", "EditorIcons"));
 
 	} else if (p_what == NOTIFICATION_PROCESS) {
 
@@ -79,7 +79,7 @@ void EditorFileDialog::_notification(int p_what) {
 				preview_wheel_index++;
 				if (preview_wheel_index >= 8)
 					preview_wheel_index = 0;
-				Ref<Texture2D> frame = item_list->get_icon("Progress" + itos(preview_wheel_index + 1), "EditorIcons");
+				Ref<Texture2D> frame = item_list->get_theme_icon("Progress" + itos(preview_wheel_index + 1), "EditorIcons");
 				preview->set_texture(frame);
 				preview_wheel_timeout = 0.1;
 			}
@@ -93,16 +93,16 @@ void EditorFileDialog::_notification(int p_what) {
 		set_display_mode((DisplayMode)EditorSettings::get_singleton()->get("filesystem/file_dialog/display_mode").operator int());
 
 		// update icons
-		mode_thumbnails->set_icon(item_list->get_icon("FileThumbnail", "EditorIcons"));
-		mode_list->set_icon(item_list->get_icon("FileList", "EditorIcons"));
-		dir_prev->set_icon(item_list->get_icon("Back", "EditorIcons"));
-		dir_next->set_icon(item_list->get_icon("Forward", "EditorIcons"));
-		dir_up->set_icon(item_list->get_icon("ArrowUp", "EditorIcons"));
-		refresh->set_icon(item_list->get_icon("Reload", "EditorIcons"));
-		favorite->set_icon(item_list->get_icon("Favorites", "EditorIcons"));
+		mode_thumbnails->set_icon(item_list->get_theme_icon("FileThumbnail", "EditorIcons"));
+		mode_list->set_icon(item_list->get_theme_icon("FileList", "EditorIcons"));
+		dir_prev->set_icon(item_list->get_theme_icon("Back", "EditorIcons"));
+		dir_next->set_icon(item_list->get_theme_icon("Forward", "EditorIcons"));
+		dir_up->set_icon(item_list->get_theme_icon("ArrowUp", "EditorIcons"));
+		refresh->set_icon(item_list->get_theme_icon("Reload", "EditorIcons"));
+		favorite->set_icon(item_list->get_theme_icon("Favorites", "EditorIcons"));
 
-		fav_up->set_icon(item_list->get_icon("MoveUp", "EditorIcons"));
-		fav_down->set_icon(item_list->get_icon("MoveDown", "EditorIcons"));
+		fav_up->set_icon(item_list->get_theme_icon("MoveUp", "EditorIcons"));
+		fav_down->set_icon(item_list->get_theme_icon("MoveDown", "EditorIcons"));
 		// DO NOT CALL UPDATE FILE LIST HERE, ALL HUNDREDS OF HIDDEN DIALOGS WILL RESPOND, CALL INVALIDATE INSTEAD
 		invalidate();
 	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
@@ -269,8 +269,8 @@ void EditorFileDialog::_post_popup() {
 		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
 
 	if (is_visible()) {
-		Ref<Texture2D> folder = item_list->get_icon("folder", "FileDialog");
-		const Color folder_color = item_list->get_color("folder_icon_modulate", "FileDialog");
+		Ref<Texture2D> folder = item_list->get_theme_icon("folder", "FileDialog");
+		const Color folder_color = item_list->get_theme_color("folder_icon_modulate", "FileDialog");
 		recent->clear();
 
 		bool res = access == ACCESS_RESOURCES;
@@ -589,16 +589,16 @@ void EditorFileDialog::_item_list_item_rmb_selected(int p_item, const Vector2 &p
 	}
 
 	if (single_item_selected) {
-		item_menu->add_icon_item(item_list->get_icon("ActionCopy", "EditorIcons"), TTR("Copy Path"), ITEM_MENU_COPY_PATH);
+		item_menu->add_icon_item(item_list->get_theme_icon("ActionCopy", "EditorIcons"), TTR("Copy Path"), ITEM_MENU_COPY_PATH);
 	}
 	if (allow_delete) {
-		item_menu->add_icon_item(item_list->get_icon("Remove", "EditorIcons"), TTR("Delete"), ITEM_MENU_DELETE, KEY_DELETE);
+		item_menu->add_icon_item(item_list->get_theme_icon("Remove", "EditorIcons"), TTR("Delete"), ITEM_MENU_DELETE, KEY_DELETE);
 	}
 	if (single_item_selected) {
 		item_menu->add_separator();
 		Dictionary item_meta = item_list->get_item_metadata(p_item);
 		String item_text = item_meta["dir"] ? TTR("Open in File Manager") : TTR("Show in File Manager");
-		item_menu->add_icon_item(item_list->get_icon("Filesystem", "EditorIcons"), item_text, ITEM_MENU_SHOW_IN_EXPLORER);
+		item_menu->add_icon_item(item_list->get_theme_icon("Filesystem", "EditorIcons"), item_text, ITEM_MENU_SHOW_IN_EXPLORER);
 	}
 
 	if (item_menu->get_item_count() > 0) {
@@ -618,11 +618,11 @@ void EditorFileDialog::_item_list_rmb_clicked(const Vector2 &p_pos) {
 	item_menu->set_size(Size2(1, 1));
 
 	if (can_create_dir) {
-		item_menu->add_icon_item(item_list->get_icon("folder", "FileDialog"), TTR("New Folder..."), ITEM_MENU_NEW_FOLDER, KEY_MASK_CMD | KEY_N);
+		item_menu->add_icon_item(item_list->get_theme_icon("folder", "FileDialog"), TTR("New Folder..."), ITEM_MENU_NEW_FOLDER, KEY_MASK_CMD | KEY_N);
 	}
-	item_menu->add_icon_item(item_list->get_icon("Reload", "EditorIcons"), TTR("Refresh"), ITEM_MENU_REFRESH, KEY_F5);
+	item_menu->add_icon_item(item_list->get_theme_icon("Reload", "EditorIcons"), TTR("Refresh"), ITEM_MENU_REFRESH, KEY_F5);
 	item_menu->add_separator();
-	item_menu->add_icon_item(item_list->get_icon("Filesystem", "EditorIcons"), TTR("Open in File Manager"), ITEM_MENU_SHOW_IN_EXPLORER);
+	item_menu->add_icon_item(item_list->get_theme_icon("Filesystem", "EditorIcons"), TTR("Open in File Manager"), ITEM_MENU_SHOW_IN_EXPLORER);
 
 	item_menu->set_position(item_list->get_global_position() + p_pos);
 	item_menu->popup();
@@ -727,11 +727,11 @@ void EditorFileDialog::update_file_list() {
 		item_list->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
 
 		if (thumbnail_size < 64) {
-			folder_thumbnail = item_list->get_icon("FolderMediumThumb", "EditorIcons");
-			file_thumbnail = item_list->get_icon("FileMediumThumb", "EditorIcons");
+			folder_thumbnail = item_list->get_theme_icon("FolderMediumThumb", "EditorIcons");
+			file_thumbnail = item_list->get_theme_icon("FileMediumThumb", "EditorIcons");
 		} else {
-			folder_thumbnail = item_list->get_icon("FolderBigThumb", "EditorIcons");
-			file_thumbnail = item_list->get_icon("FileBigThumb", "EditorIcons");
+			folder_thumbnail = item_list->get_theme_icon("FolderBigThumb", "EditorIcons");
+			file_thumbnail = item_list->get_theme_icon("FileBigThumb", "EditorIcons");
 		}
 
 		preview_vb->hide();
@@ -751,8 +751,8 @@ void EditorFileDialog::update_file_list() {
 
 	dir_access->list_dir_begin();
 
-	Ref<Texture2D> folder = item_list->get_icon("folder", "FileDialog");
-	const Color folder_color = item_list->get_color("folder_icon_modulate", "FileDialog");
+	Ref<Texture2D> folder = item_list->get_theme_icon("folder", "FileDialog");
+	const Color folder_color = item_list->get_theme_color("folder_icon_modulate", "FileDialog");
 	List<String> files;
 	List<String> dirs;
 
@@ -1227,8 +1227,8 @@ void EditorFileDialog::_update_favorites() {
 	bool res = access == ACCESS_RESOURCES;
 
 	String current = get_current_dir();
-	Ref<Texture2D> folder_icon = item_list->get_icon("Folder", "EditorIcons");
-	const Color folder_color = item_list->get_color("folder_icon_modulate", "FileDialog");
+	Ref<Texture2D> folder_icon = item_list->get_theme_icon("Folder", "EditorIcons");
+	const Color folder_color = item_list->get_theme_color("folder_icon_modulate", "FileDialog");
 	favorites->clear();
 
 	favorite->set_pressed(false);
@@ -1737,7 +1737,7 @@ EditorFileDialog::~EditorFileDialog() {
 void EditorLineEditFileChooser::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED)
-		button->set_icon(get_icon("Folder", "EditorIcons"));
+		button->set_icon(get_theme_icon("Folder", "EditorIcons"));
 }
 
 void EditorLineEditFileChooser::_bind_methods() {

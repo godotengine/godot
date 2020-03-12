@@ -84,7 +84,7 @@ SkeletonIKEditorPlugin::SkeletonIKEditorPlugin(EditorNode *p_node) {
 
 	editor = p_node;
 	play_btn = memnew(Button);
-	play_btn->set_icon(editor->get_gui_base()->get_icon("Play", "EditorIcons"));
+	play_btn->set_icon(editor->get_gui_base()->get_theme_icon("Play", "EditorIcons"));
 	play_btn->set_text(TTR("Play IK"));
 	play_btn->set_toggle_mode(true);
 	play_btn->hide();

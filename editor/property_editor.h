@@ -63,9 +63,9 @@ public:
 	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
 };
 
-class CustomPropertyEditor : public Popup {
+class CustomPropertyEditor : public PopupPanel {
 
-	GDCLASS(CustomPropertyEditor, Popup);
+	GDCLASS(CustomPropertyEditor, PopupPanel);
 
 	enum {
 		MAX_VALUE_EDITORS = 12,

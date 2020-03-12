@@ -86,7 +86,7 @@ void ExportTemplateManager::_update_template_list() {
 	current_hb->add_child(current);
 
 	if (templates.has(current_version)) {
-		current->add_color_override("font_color", current->get_color("success_color", "Editor"));
+		current->add_theme_color_override("font_color", current->get_theme_color("success_color", "Editor"));
 
 		// Only display a redownload button if it can be downloaded in the first place
 		if (downloads_available) {
@@ -103,7 +103,7 @@ void ExportTemplateManager::_update_template_list() {
 		uninstall->connect("pressed", callable_mp(this, &ExportTemplateManager::_uninstall_template), varray(current_version));
 
 	} else {
-		current->add_color_override("font_color", current->get_color("error_color", "Editor"));
+		current->add_theme_color_override("font_color", current->get_theme_color("error_color", "Editor"));
 		Button *redownload = memnew(Button);
 		redownload->set_text(TTR("Download"));
 
@@ -121,7 +121,7 @@ void ExportTemplateManager::_update_template_list() {
 
 		HBoxContainer *hbc = memnew(HBoxContainer);
 		Label *version = memnew(Label);
-		version->set_modulate(current->get_color("disabled_font_color", "Editor"));
+		version->set_modulate(current->get_theme_color("disabled_font_color", "Editor"));
 		String text = E->get();
 		if (text == current_version) {
 			text += " " + TTR("(Current)");

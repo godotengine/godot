@@ -43,7 +43,7 @@ void CPUParticlesEditor::_node_removed(Node *p_node) {
 void CPUParticlesEditor::_notification(int p_notification) {
 
 	if (p_notification == NOTIFICATION_ENTER_TREE) {
-		options->set_icon(options->get_popup()->get_icon("CPUParticles", "EditorIcons"));
+		options->set_icon(get_theme_icon("CPUParticles", "EditorIcons"));
 	}
 }
 

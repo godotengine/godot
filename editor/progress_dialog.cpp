@@ -138,16 +138,6 @@ void BackgroundProgress::end_task(const String &p_task) {
 ProgressDialog *ProgressDialog::singleton = NULL;
 
 void ProgressDialog::_notification(int p_what) {
-
-	switch (p_what) {
-
-		case NOTIFICATION_DRAW: {
-
-			Ref<StyleBox> style = get_stylebox("panel", "PopupMenu");
-			draw_style_box(style, Rect2(Point2(), get_size()));
-
-		} break;
-	}
 }
 
 void ProgressDialog::_popup() {
@@ -155,15 +145,15 @@ void ProgressDialog::_popup() {
 	Size2 ms = main->get_combined_minimum_size();
 	ms.width = MAX(500 * EDSCALE, ms.width);
 
-	Ref<StyleBox> style = get_stylebox("panel", "PopupMenu");
+	Ref<StyleBox> style = main->get_theme_stylebox("panel", "PopupMenu");
 	ms += style->get_minimum_size();
 	main->set_margin(MARGIN_LEFT, style->get_margin(MARGIN_LEFT));
 	main->set_margin(MARGIN_RIGHT, -style->get_margin(MARGIN_RIGHT));
 	main->set_margin(MARGIN_TOP, style->get_margin(MARGIN_TOP));
 	main->set_margin(MARGIN_BOTTOM, -style->get_margin(MARGIN_BOTTOM));
 
-	raise();
-	popup_centered_size(ms);
+	//raise();
+	popup_centered(ms);
 }
 
 void ProgressDialog::add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel) {

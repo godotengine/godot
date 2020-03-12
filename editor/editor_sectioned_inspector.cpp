@@ -257,7 +257,7 @@ void SectionedInspector::update_category_list() {
 		for (int i = 0; i < sc; i++) {
 
 			TreeItem *parent = section_map[metasection];
-			parent->set_custom_bg_color(0, get_color("prop_subsection", "Editor"));
+			parent->set_custom_bg_color(0, get_theme_color("prop_subsection", "Editor"));
 
 			if (i > 0) {
 				metasection += "/" + sectionarr[i];
@@ -309,7 +309,7 @@ SectionedInspector::SectionedInspector() :
 		filter(memnew(SectionedInspectorFilter)),
 		inspector(memnew(EditorInspector)),
 		search_box(NULL) {
-	add_constant_override("autohide", 1); // Fixes the dragger always showing up
+	add_theme_constant_override("autohide", 1); // Fixes the dragger always showing up
 
 	VBoxContainer *left_vb = memnew(VBoxContainer);
 	left_vb->set_custom_minimum_size(Size2(190, 0) * EDSCALE);

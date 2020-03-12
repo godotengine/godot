@@ -49,11 +49,11 @@
 #include "servers/display_server.h"
 
 void ProjectExportDialog::_theme_changed() {
-	duplicate_preset->set_icon(presets->get_icon("Duplicate", "EditorIcons"));
-	delete_preset->set_icon(presets->get_icon("Remove", "EditorIcons"));
+	duplicate_preset->set_icon(presets->get_theme_icon("Duplicate", "EditorIcons"));
+	delete_preset->set_icon(presets->get_theme_icon("Remove", "EditorIcons"));
 	Control *panel = custom_feature_display->get_parent_control();
 	if (panel)
-		panel->add_style_override("panel", patches->get_stylebox("bg", "Tree"));
+		panel->add_theme_style_override("panel", patches->get_theme_stylebox("bg", "Tree"));
 }
 void ProjectExportDialog::_notification(int p_what) {
 
@@ -64,10 +64,10 @@ void ProjectExportDialog::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_READY: {
-			duplicate_preset->set_icon(presets->get_icon("Duplicate", "EditorIcons"));
-			delete_preset->set_icon(presets->get_icon("Remove", "EditorIcons"));
+			duplicate_preset->set_icon(presets->get_theme_icon("Duplicate", "EditorIcons"));
+			delete_preset->set_icon(presets->get_theme_icon("Remove", "EditorIcons"));
 			connect("confirmed", callable_mp(this, &ProjectExportDialog::_export_pck_zip));
-			custom_feature_display->get_parent_control()->add_style_override("panel", patches->get_stylebox("bg", "Tree"));
+			custom_feature_display->get_parent_control()->add_theme_style_override("panel", patches->get_theme_stylebox("bg", "Tree"));
 		} break;
 	}
 }
@@ -250,8 +250,8 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 			patch->set_checked(0, true);
 		patch->set_tooltip(0, patchlist[i]);
 		patch->set_metadata(0, i);
-		patch->add_button(0, presets->get_icon("Remove", "EditorIcons"), 0);
-		patch->add_button(0, presets->get_icon("folder", "FileDialog"), 1);
+		patch->add_button(0, presets->get_theme_icon("Remove", "EditorIcons"), 0);
+		patch->add_button(0, presets->get_theme_icon("folder", "FileDialog"), 1);
 	}
 
 	TreeItem *patch_add = patches->create_item(patch_root);
@@ -261,7 +261,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	else
 		patch_add->set_text(0, TTR("Add previous patches..."));
 
-	patch_add->add_button(0, presets->get_icon("folder", "FileDialog"), 1);
+	patch_add->add_button(0, presets->get_theme_icon("folder", "FileDialog"), 1);
 
 	_fill_resource_tree();
 
@@ -819,7 +819,7 @@ void ProjectExportDialog::_fill_resource_tree() {
 
 bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem *p_item, Ref<EditorExportPreset> &current, bool p_only_scenes) {
 
-	p_item->set_icon(0, presets->get_icon("folder", "FileDialog"));
+	p_item->set_icon(0, presets->get_theme_icon("folder", "FileDialog"));
 	p_item->set_text(0, p_dir->get_name() + "/");
 
 	bool used = false;
@@ -1229,7 +1229,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	script_key->connect("text_changed", callable_mp(this, &ProjectExportDialog::_script_encryption_key_changed));
 	script_key_error = memnew(Label);
 	script_key_error->set_text("- " + TTR("Invalid Encryption Key (must be 64 characters long)"));
-	script_key_error->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
+	script_key_error->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor"));
 	script_vb->add_margin_child(TTR("Script Encryption Key (256-bits as hex):"), script_key);
 	script_vb->add_child(script_key_error);
 	sections->add_child(script_vb);
@@ -1289,7 +1289,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_error = memnew(Label);
 	main_vb->add_child(export_error);
 	export_error->hide();
-	export_error->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
+	export_error->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor"));
 
 	export_templates_error = memnew(HBoxContainer);
 	main_vb->add_child(export_templates_error);
@@ -1297,7 +1297,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	Label *export_error2 = memnew(Label);
 	export_templates_error->add_child(export_error2);
-	export_error2->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
+	export_error2->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor"));
 	export_error2->set_text(" - " + TTR("Export templates for this platform are missing:") + " ");
 
 	error_dialog = memnew(AcceptDialog);

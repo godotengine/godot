@@ -36,12 +36,12 @@ Size2 OptionButton::get_minimum_size() const {
 
 	Size2 minsize = Button::get_minimum_size();
 
-	if (has_icon("arrow")) {
-		const Size2 padding = get_stylebox("normal")->get_minimum_size();
-		const Size2 arrow_size = Control::get_icon("arrow")->get_size();
+	if (has_theme_icon("arrow")) {
+		const Size2 padding = get_theme_stylebox("normal")->get_minimum_size();
+		const Size2 arrow_size = Control::get_theme_icon("arrow")->get_size();
 
 		Size2 content_size = minsize - padding;
-		content_size.width += arrow_size.width + get_constant("hseparation");
+		content_size.width += arrow_size.width + get_theme_constant("hseparation");
 		content_size.height = MAX(content_size.height, arrow_size.height);
 
 		minsize = content_size + padding;
@@ -55,37 +55,37 @@ void OptionButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
 
-			if (!has_icon("arrow"))
+			if (!has_theme_icon("arrow"))
 				return;
 
 			RID ci = get_canvas_item();
-			Ref<Texture2D> arrow = Control::get_icon("arrow");
+			Ref<Texture2D> arrow = Control::get_theme_icon("arrow");
 			Color clr = Color(1, 1, 1);
-			if (get_constant("modulate_arrow")) {
+			if (get_theme_constant("modulate_arrow")) {
 				switch (get_draw_mode()) {
 					case DRAW_PRESSED:
-						clr = get_color("font_color_pressed");
+						clr = get_theme_color("font_color_pressed");
 						break;
 					case DRAW_HOVER:
-						clr = get_color("font_color_hover");
+						clr = get_theme_color("font_color_hover");
 						break;
 					case DRAW_DISABLED:
-						clr = get_color("font_color_disabled");
+						clr = get_theme_color("font_color_disabled");
 						break;
 					default:
-						clr = get_color("font_color");
+						clr = get_theme_color("font_color");
 				}
 			}
 
 			Size2 size = get_size();
 
-			Point2 ofs(size.width - arrow->get_width() - get_constant("arrow_margin"), int(Math::abs((size.height - arrow->get_height()) / 2)));
+			Point2 ofs(size.width - arrow->get_width() - get_theme_constant("arrow_margin"), int(Math::abs((size.height - arrow->get_height()) / 2)));
 			arrow->draw(ci, ofs, clr);
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 
-			if (has_icon("arrow")) {
-				_set_internal_margin(MARGIN_RIGHT, Control::get_icon("arrow")->get_width());
+			if (has_theme_icon("arrow")) {
+				_set_internal_margin(MARGIN_RIGHT, Control::get_theme_icon("arrow")->get_width());
 			}
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -109,9 +109,8 @@ void OptionButton::_selected(int p_which) {
 void OptionButton::pressed() {
 
 	Size2 size = get_size();
-	popup->set_global_position(get_global_position() + Size2(0, size.height * get_global_transform().get_scale().y));
+	popup->set_position(get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
 	popup->set_size(Size2(size.width, 0));
-	popup->set_scale(get_global_transform().get_scale());
 	popup->popup();
 }
 
@@ -351,15 +350,15 @@ OptionButton::OptionButton() {
 	set_toggle_mode(true);
 	set_text_align(ALIGN_LEFT);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
-	if (has_icon("arrow")) {
-		_set_internal_margin(MARGIN_RIGHT, Control::get_icon("arrow")->get_width());
+	if (has_theme_icon("arrow")) {
+		_set_internal_margin(MARGIN_RIGHT, Control::get_theme_icon("arrow")->get_width());
 	}
 
 	popup = memnew(PopupMenu);
 	popup->hide();
 	add_child(popup);
-	popup->set_pass_on_modal_close_click(false);
-	popup->set_notify_transform(true);
+	//	popup->set_pass_on_modal_close_click(false);
+	//	popup->set_notify_transform(true);
 	popup->set_allow_search(true);
 	popup->connect("index_pressed", callable_mp(this, &OptionButton::_selected));
 	popup->connect("id_focused", callable_mp(this, &OptionButton::_focused));

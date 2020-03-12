@@ -32,10 +32,10 @@
 
 Size2 MarginContainer::get_minimum_size() const {
 
-	int margin_left = get_constant("margin_left");
-	int margin_top = get_constant("margin_top");
-	int margin_right = get_constant("margin_right");
-	int margin_bottom = get_constant("margin_bottom");
+	int margin_left = get_theme_constant("margin_left");
+	int margin_top = get_theme_constant("margin_top");
+	int margin_right = get_theme_constant("margin_right");
+	int margin_bottom = get_theme_constant("margin_bottom");
 
 	Size2 max;
 
@@ -67,10 +67,10 @@ void MarginContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {
 
-			int margin_left = get_constant("margin_left");
-			int margin_top = get_constant("margin_top");
-			int margin_right = get_constant("margin_right");
-			int margin_bottom = get_constant("margin_bottom");
+			int margin_left = get_theme_constant("margin_left");
+			int margin_top = get_theme_constant("margin_top");
+			int margin_right = get_theme_constant("margin_right");
+			int margin_bottom = get_theme_constant("margin_bottom");
 
 			Size2 s = get_size();
 

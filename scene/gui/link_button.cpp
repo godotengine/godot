@@ -54,7 +54,7 @@ LinkButton::UnderlineMode LinkButton::get_underline_mode() const {
 
 Size2 LinkButton::get_minimum_size() const {
 
-	return get_font("font")->get_string_size(text);
+	return get_theme_font("font")->get_string_size(text);
 }
 
 void LinkButton::_notification(int p_what) {
@@ -72,29 +72,29 @@ void LinkButton::_notification(int p_what) {
 
 				case DRAW_NORMAL: {
 
-					color = get_color("font_color");
+					color = get_theme_color("font_color");
 					do_underline = underline_mode == UNDERLINE_MODE_ALWAYS;
 				} break;
 				case DRAW_HOVER_PRESSED:
 				case DRAW_PRESSED: {
 
-					if (has_color("font_color_pressed"))
-						color = get_color("font_color_pressed");
+					if (has_theme_color("font_color_pressed"))
+						color = get_theme_color("font_color_pressed");
 					else
-						color = get_color("font_color");
+						color = get_theme_color("font_color");
 
 					do_underline = underline_mode != UNDERLINE_MODE_NEVER;
 
 				} break;
 				case DRAW_HOVER: {
 
-					color = get_color("font_color_hover");
+					color = get_theme_color("font_color_hover");
 					do_underline = underline_mode != UNDERLINE_MODE_NEVER;
 
 				} break;
 				case DRAW_DISABLED: {
 
-					color = get_color("font_color_disabled");
+					color = get_theme_color("font_color_disabled");
 					do_underline = underline_mode == UNDERLINE_MODE_ALWAYS;
 
 				} break;
@@ -102,16 +102,16 @@ void LinkButton::_notification(int p_what) {
 
 			if (has_focus()) {
 
-				Ref<StyleBox> style = get_stylebox("focus");
+				Ref<StyleBox> style = get_theme_stylebox("focus");
 				style->draw(ci, Rect2(Point2(), size));
 			}
 
-			Ref<Font> font = get_font("font");
+			Ref<Font> font = get_theme_font("font");
 
 			draw_string(font, Vector2(0, font->get_ascent()), text, color);
 
 			if (do_underline) {
-				int underline_spacing = get_constant("underline_spacing");
+				int underline_spacing = get_theme_constant("underline_spacing");
 				int width = font->get_string_size(text).width;
 				int y = font->get_ascent() + underline_spacing;
 

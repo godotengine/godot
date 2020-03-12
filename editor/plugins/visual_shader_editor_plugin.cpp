@@ -313,8 +313,8 @@ void VisualShaderEditor::_update_options_menu() {
 
 	bool is_first_item = true;
 
-	Color unsupported_color = get_color("error_color", "Editor");
-	Color supported_color = get_color("warning_color", "Editor");
+	Color unsupported_color = get_theme_color("error_color", "Editor");
+	Color supported_color = get_theme_color("warning_color", "Editor");
 
 	static bool low_driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name") == "GLES2";
 
@@ -386,22 +386,22 @@ void VisualShaderEditor::_update_options_menu() {
 		}
 		switch (options[i].return_type) {
 			case VisualShaderNode::PORT_TYPE_SCALAR:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("float", "EditorIcons"));
+				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon("float", "EditorIcons"));
 				break;
 			case VisualShaderNode::PORT_TYPE_SCALAR_INT:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("int", "EditorIcons"));
+				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon("int", "EditorIcons"));
 				break;
 			case VisualShaderNode::PORT_TYPE_VECTOR:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("Vector3", "EditorIcons"));
+				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Vector3", "EditorIcons"));
 				break;
 			case VisualShaderNode::PORT_TYPE_BOOLEAN:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("bool", "EditorIcons"));
+				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon("bool", "EditorIcons"));
 				break;
 			case VisualShaderNode::PORT_TYPE_TRANSFORM:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("Transform", "EditorIcons"));
+				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Transform", "EditorIcons"));
 				break;
 			case VisualShaderNode::PORT_TYPE_SAMPLER:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("ImageTexture", "EditorIcons"));
+				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon("ImageTexture", "EditorIcons"));
 				break;
 			default:
 				break;
@@ -421,7 +421,7 @@ void VisualShaderEditor::_draw_color_over_button(Object *obj, Color p_color) {
 	if (!button)
 		return;
 
-	Ref<StyleBox> normal = get_stylebox("normal", "Button");
+	Ref<StyleBox> normal = get_theme_stylebox("normal", "Button");
 	button->draw_rect(Rect2(normal->get_offset(), button->get_size() - normal->get_minimum_size()), p_color);
 }
 
@@ -437,7 +437,7 @@ static Ref<StyleBoxEmpty> make_empty_stylebox(float p_margin_left = -1, float p_
 void VisualShaderEditor::_update_created_node(GraphNode *node) {
 
 	if (EditorSettings::get_singleton()->get("interface/theme/use_graph_node_headers")) {
-		Ref<StyleBoxFlat> sb = node->get_stylebox("frame", "GraphNode");
+		Ref<StyleBoxFlat> sb = node->get_theme_stylebox("frame", "GraphNode");
 		Color c = sb->get_border_color();
 		Color ic;
 		Color mono_color;
@@ -451,10 +451,10 @@ void VisualShaderEditor::_update_created_node(GraphNode *node) {
 		mono_color.a = 0.85;
 		c = mono_color;
 
-		node->add_color_override("title_color", c);
+		node->add_theme_color_override("title_color", c);
 		c.a = 0.7;
-		node->add_color_override("close_color", c);
-		node->add_color_override("resizer_color", ic);
+		node->add_theme_color_override("close_color", c);
+		node->add_theme_color_override("resizer_color", ic);
 	}
 }
 
@@ -642,7 +642,7 @@ void VisualShaderEditor::_update_graph() {
 			}
 
 			HBoxContainer *hb = memnew(HBoxContainer);
-			hb->add_constant_override("separation", 7 * EDSCALE);
+			hb->add_theme_constant_override("separation", 7 * EDSCALE);
 
 			Variant default_value;
 
@@ -706,7 +706,7 @@ void VisualShaderEditor::_update_graph() {
 						name_box->connect("focus_exited", callable_mp(this, &VisualShaderEditor::_port_name_focus_out), varray(name_box, nodes[n_i], i, false));
 
 						Button *remove_btn = memnew(Button);
-						remove_btn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Remove", "EditorIcons"));
+						remove_btn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Remove", "EditorIcons"));
 						remove_btn->set_tooltip(TTR("Remove") + " " + name_left);
 						remove_btn->connect("pressed", callable_mp(this, &VisualShaderEditor::_remove_input_port), varray(nodes[n_i], i), CONNECT_DEFERRED);
 						hb->add_child(remove_btn);
@@ -714,15 +714,15 @@ void VisualShaderEditor::_update_graph() {
 
 						Label *label = memnew(Label);
 						label->set_text(name_left);
-						label->add_style_override("normal", label_style); //more compact
+						label->add_theme_style_override("normal", label_style); //more compact
 						hb->add_child(label);
 
 						if (vsnode->get_input_port_default_hint(i) != "" && !port_left_used) {
 
 							Label *hint_label = memnew(Label);
 							hint_label->set_text("[" + vsnode->get_input_port_default_hint(i) + "]");
-							hint_label->add_color_override("font_color", get_color("font_color_readonly", "TextEdit"));
-							hint_label->add_style_override("normal", label_style);
+							hint_label->add_theme_color_override("font_color", get_theme_color("font_color_readonly", "TextEdit"));
+							hint_label->add_theme_style_override("normal", label_style);
 							hb->add_child(hint_label);
 						}
 					}
@@ -735,7 +735,7 @@ void VisualShaderEditor::_update_graph() {
 				if (valid_right) {
 					if (is_group) {
 						Button *remove_btn = memnew(Button);
-						remove_btn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Remove", "EditorIcons"));
+						remove_btn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Remove", "EditorIcons"));
 						remove_btn->set_tooltip(TTR("Remove") + " " + name_left);
 						remove_btn->connect("pressed", callable_mp(this, &VisualShaderEditor::_remove_output_port), varray(nodes[n_i], i), CONNECT_DEFERRED);
 						hb->add_child(remove_btn);
@@ -761,7 +761,7 @@ void VisualShaderEditor::_update_graph() {
 					} else {
 						Label *label = memnew(Label);
 						label->set_text(name_right);
-						label->add_style_override("normal", label_style); //more compact
+						label->add_theme_style_override("normal", label_style); //more compact
 						hb->add_child(label);
 					}
 				}
@@ -770,8 +770,8 @@ void VisualShaderEditor::_update_graph() {
 			if (valid_right && edit_type->get_selected() == VisualShader::TYPE_FRAGMENT && port_right != VisualShaderNode::PORT_TYPE_TRANSFORM && port_right != VisualShaderNode::PORT_TYPE_SAMPLER) {
 				TextureButton *preview = memnew(TextureButton);
 				preview->set_toggle_mode(true);
-				preview->set_normal_texture(get_icon("GuiVisibilityHidden", "EditorIcons"));
-				preview->set_pressed_texture(get_icon("GuiVisibilityVisible", "EditorIcons"));
+				preview->set_normal_texture(get_theme_icon("GuiVisibilityHidden", "EditorIcons"));
+				preview->set_pressed_texture(get_theme_icon("GuiVisibilityVisible", "EditorIcons"));
 				preview->set_v_size_flags(SIZE_SHRINK_CENTER);
 
 				if (vsnode->get_output_port_for_preview() == i) {
@@ -816,7 +816,7 @@ void VisualShaderEditor::_update_graph() {
 		String error = vsnode->get_warning(visual_shader->get_mode(), type);
 		if (error != String()) {
 			Label *error_label = memnew(Label);
-			error_label->add_color_override("font_color", get_color("error_color", "Editor"));
+			error_label->add_theme_color_override("font_color", get_theme_color("error_color", "Editor"));
 			error_label->set_text(error);
 			node->add_child(error_label);
 		}
@@ -834,16 +834,16 @@ void VisualShaderEditor::_update_graph() {
 			Color symbol_color = EDITOR_GET("text_editor/highlighting/symbol_color");
 
 			expression_box->set_syntax_coloring(true);
-			expression_box->add_color_override("background_color", background_color);
+			expression_box->add_theme_color_override("background_color", background_color);
 
 			for (List<String>::Element *E = keyword_list.front(); E; E = E->next()) {
 
 				expression_box->add_keyword_color(E->get(), keyword_color);
 			}
 
-			expression_box->add_font_override("font", get_font("expression", "EditorFonts"));
-			expression_box->add_color_override("font_color", text_color);
-			expression_box->add_color_override("symbol_color", symbol_color);
+			expression_box->add_theme_font_override("font", get_theme_font("expression", "EditorFonts"));
+			expression_box->add_theme_color_override("font_color", text_color);
+			expression_box->add_theme_color_override("symbol_color", symbol_color);
 			expression_box->add_color_region("/*", "*/", comment_color, false);
 			expression_box->add_color_region("//", "", comment_color, false);
 
@@ -1273,7 +1273,7 @@ void VisualShaderEditor::_edit_port_default_input(Object *p_button, int p_node, 
 	Button *button = Object::cast_to<Button>(p_button);
 	ERR_FAIL_COND(!button);
 	Variant value = vsn->get_input_port_default_value(p_port);
-	property_editor->set_global_position(button->get_global_position() + Vector2(0, button->get_size().height));
+	property_editor->set_position(button->get_screen_position() + Vector2(0, button->get_size().height));
 	property_editor->edit(NULL, "", value.get_type(), value, 0, "");
 	property_editor->popup();
 	editing_node = p_node;
@@ -1704,14 +1704,14 @@ void VisualShaderEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 
-		highend_label->set_modulate(get_color("vulkan_color", "Editor"));
+		highend_label->set_modulate(get_theme_color("vulkan_color", "Editor"));
 
-		error_panel->add_style_override("panel", get_stylebox("bg", "Tree"));
-		error_label->add_color_override("font_color", get_color("error_color", "Editor"));
+		error_panel->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
+		error_label->add_theme_color_override("font_color", get_theme_color("error_color", "Editor"));
 
-		node_filter->set_right_icon(Control::get_icon("Search", "EditorIcons"));
+		node_filter->set_right_icon(Control::get_theme_icon("Search", "EditorIcons"));
 
-		preview_shader->set_icon(Control::get_icon("Shader", "EditorIcons"));
+		preview_shader->set_icon(Control::get_theme_icon("Shader", "EditorIcons"));
 
 		{
 			Color background_color = EDITOR_GET("text_editor/highlighting/background_color");
@@ -1720,24 +1720,24 @@ void VisualShaderEditor::_notification(int p_what) {
 			Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
 			Color symbol_color = EDITOR_GET("text_editor/highlighting/symbol_color");
 
-			preview_text->add_color_override("background_color", background_color);
+			preview_text->add_theme_color_override("background_color", background_color);
 
 			for (List<String>::Element *E = keyword_list.front(); E; E = E->next()) {
 
 				preview_text->add_keyword_color(E->get(), keyword_color);
 			}
 
-			preview_text->add_font_override("font", get_font("expression", "EditorFonts"));
-			preview_text->add_color_override("font_color", text_color);
-			preview_text->add_color_override("symbol_color", symbol_color);
+			preview_text->add_theme_font_override("font", get_theme_font("expression", "EditorFonts"));
+			preview_text->add_theme_color_override("font_color", text_color);
+			preview_text->add_theme_color_override("symbol_color", symbol_color);
 			preview_text->add_color_region("/*", "*/", comment_color, false);
 			preview_text->add_color_region("//", "", comment_color, false);
 
-			error_text->add_font_override("font", get_font("status_source", "EditorFonts"));
-			error_text->add_color_override("font_color", get_color("error_color", "Editor"));
+			error_text->add_theme_font_override("font", get_theme_font("status_source", "EditorFonts"));
+			error_text->add_theme_color_override("font_color", get_theme_color("error_color", "Editor"));
 		}
 
-		tools->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Tools", "EditorIcons"));
+		tools->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Tools", "EditorIcons"));
 
 		if (p_what == NOTIFICATION_THEME_CHANGED && is_visible_in_tree())
 			_update_graph();
@@ -2980,12 +2980,12 @@ public:
 	void setup(const Ref<VisualShaderNodeInput> &p_input) {
 		input = p_input;
 		Ref<Texture2D> type_icon[6] = {
-			EditorNode::get_singleton()->get_gui_base()->get_icon("float", "EditorIcons"),
-			EditorNode::get_singleton()->get_gui_base()->get_icon("int", "EditorIcons"),
-			EditorNode::get_singleton()->get_gui_base()->get_icon("Vector3", "EditorIcons"),
-			EditorNode::get_singleton()->get_gui_base()->get_icon("bool", "EditorIcons"),
-			EditorNode::get_singleton()->get_gui_base()->get_icon("Transform", "EditorIcons"),
-			EditorNode::get_singleton()->get_gui_base()->get_icon("ImageTexture", "EditorIcons"),
+			EditorNode::get_singleton()->get_gui_base()->get_theme_icon("float", "EditorIcons"),
+			EditorNode::get_singleton()->get_gui_base()->get_theme_icon("int", "EditorIcons"),
+			EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Vector3", "EditorIcons"),
+			EditorNode::get_singleton()->get_gui_base()->get_theme_icon("bool", "EditorIcons"),
+			EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Transform", "EditorIcons"),
+			EditorNode::get_singleton()->get_gui_base()->get_theme_icon("ImageTexture", "EditorIcons"),
 		};
 
 		add_item("[None]");

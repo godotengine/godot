@@ -284,47 +284,47 @@ void TileSetEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 
-			add_constant_override("autohide", 1); // Fixes the dragger always showing up.
+			add_theme_constant_override("autohide", 1); // Fixes the dragger always showing up.
 		} break;
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 
-			tileset_toolbar_buttons[TOOL_TILESET_ADD_TEXTURE]->set_icon(get_icon("ToolAddNode", "EditorIcons"));
-			tileset_toolbar_buttons[TOOL_TILESET_REMOVE_TEXTURE]->set_icon(get_icon("Remove", "EditorIcons"));
-			tileset_toolbar_tools->set_icon(get_icon("Tools", "EditorIcons"));
+			tileset_toolbar_buttons[TOOL_TILESET_ADD_TEXTURE]->set_icon(get_theme_icon("ToolAddNode", "EditorIcons"));
+			tileset_toolbar_buttons[TOOL_TILESET_REMOVE_TEXTURE]->set_icon(get_theme_icon("Remove", "EditorIcons"));
+			tileset_toolbar_tools->set_icon(get_theme_icon("Tools", "EditorIcons"));
 
-			tool_workspacemode[WORKSPACE_EDIT]->set_icon(get_icon("Edit", "EditorIcons"));
-			tool_workspacemode[WORKSPACE_CREATE_SINGLE]->set_icon(get_icon("AddSingleTile", "EditorIcons"));
-			tool_workspacemode[WORKSPACE_CREATE_AUTOTILE]->set_icon(get_icon("AddAutotile", "EditorIcons"));
-			tool_workspacemode[WORKSPACE_CREATE_ATLAS]->set_icon(get_icon("AddAtlasTile", "EditorIcons"));
+			tool_workspacemode[WORKSPACE_EDIT]->set_icon(get_theme_icon("Edit", "EditorIcons"));
+			tool_workspacemode[WORKSPACE_CREATE_SINGLE]->set_icon(get_theme_icon("AddSingleTile", "EditorIcons"));
+			tool_workspacemode[WORKSPACE_CREATE_AUTOTILE]->set_icon(get_theme_icon("AddAutotile", "EditorIcons"));
+			tool_workspacemode[WORKSPACE_CREATE_ATLAS]->set_icon(get_theme_icon("AddAtlasTile", "EditorIcons"));
 
-			tools[TOOL_SELECT]->set_icon(get_icon("ToolSelect", "EditorIcons"));
-			tools[BITMASK_COPY]->set_icon(get_icon("Duplicate", "EditorIcons"));
-			tools[BITMASK_PASTE]->set_icon(get_icon("Override", "EditorIcons"));
-			tools[BITMASK_CLEAR]->set_icon(get_icon("Clear", "EditorIcons"));
-			tools[SHAPE_NEW_POLYGON]->set_icon(get_icon("CollisionPolygon2D", "EditorIcons"));
-			tools[SHAPE_NEW_RECTANGLE]->set_icon(get_icon("CollisionShape2D", "EditorIcons"));
-			tools[SELECT_PREVIOUS]->set_icon(get_icon("ArrowLeft", "EditorIcons"));
-			tools[SELECT_NEXT]->set_icon(get_icon("ArrowRight", "EditorIcons"));
-			tools[SHAPE_DELETE]->set_icon(get_icon("Remove", "EditorIcons"));
-			tools[SHAPE_KEEP_INSIDE_TILE]->set_icon(get_icon("Snap", "EditorIcons"));
-			tools[TOOL_GRID_SNAP]->set_icon(get_icon("SnapGrid", "EditorIcons"));
-			tools[ZOOM_OUT]->set_icon(get_icon("ZoomLess", "EditorIcons"));
-			tools[ZOOM_1]->set_icon(get_icon("ZoomReset", "EditorIcons"));
-			tools[ZOOM_IN]->set_icon(get_icon("ZoomMore", "EditorIcons"));
-			tools[VISIBLE_INFO]->set_icon(get_icon("InformationSign", "EditorIcons"));
+			tools[TOOL_SELECT]->set_icon(get_theme_icon("ToolSelect", "EditorIcons"));
+			tools[BITMASK_COPY]->set_icon(get_theme_icon("Duplicate", "EditorIcons"));
+			tools[BITMASK_PASTE]->set_icon(get_theme_icon("Override", "EditorIcons"));
+			tools[BITMASK_CLEAR]->set_icon(get_theme_icon("Clear", "EditorIcons"));
+			tools[SHAPE_NEW_POLYGON]->set_icon(get_theme_icon("CollisionPolygon2D", "EditorIcons"));
+			tools[SHAPE_NEW_RECTANGLE]->set_icon(get_theme_icon("CollisionShape2D", "EditorIcons"));
+			tools[SELECT_PREVIOUS]->set_icon(get_theme_icon("ArrowLeft", "EditorIcons"));
+			tools[SELECT_NEXT]->set_icon(get_theme_icon("ArrowRight", "EditorIcons"));
+			tools[SHAPE_DELETE]->set_icon(get_theme_icon("Remove", "EditorIcons"));
+			tools[SHAPE_KEEP_INSIDE_TILE]->set_icon(get_theme_icon("Snap", "EditorIcons"));
+			tools[TOOL_GRID_SNAP]->set_icon(get_theme_icon("SnapGrid", "EditorIcons"));
+			tools[ZOOM_OUT]->set_icon(get_theme_icon("ZoomLess", "EditorIcons"));
+			tools[ZOOM_1]->set_icon(get_theme_icon("ZoomReset", "EditorIcons"));
+			tools[ZOOM_IN]->set_icon(get_theme_icon("ZoomMore", "EditorIcons"));
+			tools[VISIBLE_INFO]->set_icon(get_theme_icon("InformationSign", "EditorIcons"));
 			_update_toggle_shape_button();
 
-			tool_editmode[EDITMODE_REGION]->set_icon(get_icon("RegionEdit", "EditorIcons"));
-			tool_editmode[EDITMODE_COLLISION]->set_icon(get_icon("StaticBody2D", "EditorIcons"));
-			tool_editmode[EDITMODE_OCCLUSION]->set_icon(get_icon("LightOccluder2D", "EditorIcons"));
-			tool_editmode[EDITMODE_NAVIGATION]->set_icon(get_icon("Navigation2D", "EditorIcons"));
-			tool_editmode[EDITMODE_BITMASK]->set_icon(get_icon("PackedDataContainer", "EditorIcons"));
-			tool_editmode[EDITMODE_PRIORITY]->set_icon(get_icon("MaterialPreviewLight1", "EditorIcons"));
-			tool_editmode[EDITMODE_ICON]->set_icon(get_icon("LargeTexture", "EditorIcons"));
-			tool_editmode[EDITMODE_Z_INDEX]->set_icon(get_icon("Sort", "EditorIcons"));
+			tool_editmode[EDITMODE_REGION]->set_icon(get_theme_icon("RegionEdit", "EditorIcons"));
+			tool_editmode[EDITMODE_COLLISION]->set_icon(get_theme_icon("StaticBody2D", "EditorIcons"));
+			tool_editmode[EDITMODE_OCCLUSION]->set_icon(get_theme_icon("LightOccluder2D", "EditorIcons"));
+			tool_editmode[EDITMODE_NAVIGATION]->set_icon(get_theme_icon("Navigation2D", "EditorIcons"));
+			tool_editmode[EDITMODE_BITMASK]->set_icon(get_theme_icon("PackedDataContainer", "EditorIcons"));
+			tool_editmode[EDITMODE_PRIORITY]->set_icon(get_theme_icon("MaterialPreviewLight1", "EditorIcons"));
+			tool_editmode[EDITMODE_ICON]->set_icon(get_theme_icon("LargeTexture", "EditorIcons"));
+			tool_editmode[EDITMODE_Z_INDEX]->set_icon(get_theme_icon("Sort", "EditorIcons"));
 
-			scroll->add_style_override("bg", get_stylebox("bg", "Tree"));
+			scroll->add_theme_style_override("bg", get_theme_stylebox("bg", "Tree"));
 		} break;
 	}
 }
@@ -1153,7 +1153,7 @@ void TileSetEditor::_on_workspace_overlay_draw() {
 			else if (tileset->tile_get_tile_mode(t_id) == TileSet::ATLAS_TILE)
 				c = COLOR_ATLAS;
 			String tile_id_name = String::num(t_id, 0) + ": " + tileset->tile_get_name(t_id);
-			Ref<Font> font = get_font("font", "Label");
+			Ref<Font> font = get_theme_font("font", "Label");
 			region.set_size(font->get_string_size(tile_id_name));
 			workspace_overlay->draw_rect(region, c);
 			region.position.y += region.size.y - 2;
@@ -1167,7 +1167,7 @@ void TileSetEditor::_on_workspace_overlay_draw() {
 	if (t_id < 0)
 		return;
 
-	Ref<Texture2D> handle = get_icon("EditorHandle", "EditorIcons");
+	Ref<Texture2D> handle = get_theme_icon("EditorHandle", "EditorIcons");
 	if (draw_handles) {
 		for (int i = 0; i < current_shape.size(); i++) {
 			workspace_overlay->draw_texture(handle, current_shape[i] * workspace->get_scale().x - handle->get_size() * 0.5);
@@ -2019,10 +2019,10 @@ void TileSetEditor::_update_toggle_shape_button() {
 		separator_shape_toggle->hide();
 		tools[SHAPE_TOGGLE_TYPE]->hide();
 	} else if (concave.is_valid()) {
-		tools[SHAPE_TOGGLE_TYPE]->set_icon(get_icon("ConvexPolygonShape2D", "EditorIcons"));
+		tools[SHAPE_TOGGLE_TYPE]->set_icon(get_theme_icon("ConvexPolygonShape2D", "EditorIcons"));
 		tools[SHAPE_TOGGLE_TYPE]->set_text(TTR("Make Convex"));
 	} else if (convex.is_valid()) {
-		tools[SHAPE_TOGGLE_TYPE]->set_icon(get_icon("ConcavePolygonShape2D", "EditorIcons"));
+		tools[SHAPE_TOGGLE_TYPE]->set_icon(get_theme_icon("ConcavePolygonShape2D", "EditorIcons"));
 		tools[SHAPE_TOGGLE_TYPE]->set_text(TTR("Make Concave"));
 	} else {
 		// Shouldn't happen

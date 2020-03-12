@@ -50,8 +50,8 @@ void NavigationMeshEditor::_notification(int p_option) {
 
 	if (p_option == NOTIFICATION_ENTER_TREE) {
 
-		button_bake->set_icon(get_icon("Bake", "EditorIcons"));
-		button_reset->set_icon(get_icon("Reload", "EditorIcons"));
+		button_bake->set_icon(get_theme_icon("Bake", "EditorIcons"));
+		button_reset->set_icon(get_theme_icon("Reload", "EditorIcons"));
 	}
 }
 

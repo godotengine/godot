@@ -394,7 +394,7 @@ void Window::_make_transient() {
 	if (window) {
 		transient_parent = window;
 		window->transient_children.insert(this);
-		if (exclusive) {
+		if (is_inside_tree() && is_visible() && exclusive) {
 			if (transient_parent->exclusive_child == nullptr) {
 				transient_parent->exclusive_child = this;
 			} else if (transient_parent->exclusive_child != this) {
@@ -439,9 +439,9 @@ void Window::set_exclusive(bool p_exclusive) {
 	exclusive = p_exclusive;
 
 	if (transient_parent) {
-		if (p_exclusive) {
+		if (p_exclusive && is_inside_tree() && is_visible()) {
 			ERR_FAIL_COND_MSG(transient_parent->exclusive_child && transient_parent->exclusive_child != this, "Transient parent has another exclusive child.");
-			transient_parent->exclusive_child = nullptr;
+			transient_parent->exclusive_child = this;
 		} else {
 			if (transient_parent->exclusive_child == this) {
 				transient_parent->exclusive_child = nullptr;
@@ -762,8 +762,10 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 
 	if (exclusive_child != nullptr) {
 		exclusive_child->grab_focus();
+		print_line("drop because of exclusive");
 		return; //has an exclusive child, can't get events until child is closed
 	}
+
 	emit_signal(SceneStringNames::get_singleton()->window_input, p_ev);
 	input(p_ev);
 	if (!is_input_handled()) {
@@ -897,6 +899,8 @@ void Window::popup_centered_ratio(float p_ratio) {
 }
 
 void Window::popup(const Rect2 &p_screen_rect) {
+
+	emit_signal("about_to_popup");
 	if (p_screen_rect != Rect2()) {
 		set_position(p_screen_rect.position);
 		set_size(p_screen_rect.size);
@@ -906,6 +910,10 @@ void Window::popup(const Rect2 &p_screen_rect) {
 	set_visible(true);
 	_post_popup();
 	notification(NOTIFICATION_POST_POPUP);
+}
+
+Size2 Window::get_contents_minimum_size() const {
+	return _get_contents_minimum_size();
 }
 
 void Window::grab_focus() {
@@ -977,6 +985,74 @@ void Window::set_theme(const Ref<Theme> &p_theme) {
 }
 Ref<Theme> Window::get_theme() const {
 	return theme;
+}
+
+Ref<Texture2D> Window::get_theme_icon(const StringName &p_name, const StringName &p_type) const {
+	return Control::get_icons(theme_owner, theme_owner_window, p_name, p_type);
+}
+Ref<Shader> Window::get_theme_shader(const StringName &p_name, const StringName &p_type) const {
+	return Control::get_shaders(theme_owner, theme_owner_window, p_name, p_type);
+}
+Ref<StyleBox> Window::get_theme_stylebox(const StringName &p_name, const StringName &p_type) const {
+	return Control::get_styleboxs(theme_owner, theme_owner_window, p_name, p_type);
+}
+Ref<Font> Window::get_theme_font(const StringName &p_name, const StringName &p_type) const {
+	return Control::get_fonts(theme_owner, theme_owner_window, p_name, p_type);
+}
+Color Window::get_theme_color(const StringName &p_name, const StringName &p_type) const {
+	return Control::get_colors(theme_owner, theme_owner_window, p_name, p_type);
+}
+int Window::get_theme_constant(const StringName &p_name, const StringName &p_type) const {
+	return Control::get_constants(theme_owner, theme_owner_window, p_name, p_type);
+}
+
+bool Window::has_theme_icon(const StringName &p_name, const StringName &p_type) const {
+	return Control::has_icons(theme_owner, theme_owner_window, p_name, p_type);
+}
+bool Window::has_theme_shader(const StringName &p_name, const StringName &p_type) const {
+	return Control::has_shaders(theme_owner, theme_owner_window, p_name, p_type);
+}
+bool Window::has_theme_stylebox(const StringName &p_name, const StringName &p_type) const {
+	return Control::has_styleboxs(theme_owner, theme_owner_window, p_name, p_type);
+}
+bool Window::has_theme_font(const StringName &p_name, const StringName &p_type) const {
+	return Control::has_fonts(theme_owner, theme_owner_window, p_name, p_type);
+}
+bool Window::has_theme_color(const StringName &p_name, const StringName &p_type) const {
+	return Control::has_colors(theme_owner, theme_owner_window, p_name, p_type);
+}
+bool Window::has_theme_constant(const StringName &p_name, const StringName &p_type) const {
+	return Control::has_constants(theme_owner, theme_owner_window, p_name, p_type);
+}
+
+Rect2i Window::get_screen_rect() const {
+	if (is_embedded()) {
+		//viewport
+		return Rect2i();
+	} else {
+		int x = get_position().x;
+		int closest_dist = 0x7FFFFFFF;
+		Rect2i closest_rect;
+		for (int i = 0; i < DisplayServer::get_singleton()->get_screen_count(); i++) {
+			Rect2i s(DisplayServer::get_singleton()->screen_get_position(i), DisplayServer::get_singleton()->screen_get_size(i));
+			int d;
+			if (x >= s.position.x && x < s.size.x) {
+				//contained
+				closest_rect = s;
+				break;
+			} else if (x < s.position.x) {
+				d = s.position.x - x;
+			} else {
+				d = x - (s.position.x + s.size.x);
+			}
+
+			if (d < closest_dist) {
+				closest_dist = d;
+				closest_rect = s;
+			}
+		}
+		return closest_rect;
+	}
 }
 
 void Window::_bind_methods() {
@@ -1055,6 +1131,18 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_theme", "theme"), &Window::set_theme);
 	ClassDB::bind_method(D_METHOD("get_theme"), &Window::get_theme);
 
+	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "type"), &Window::get_theme_icon, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "type"), &Window::get_theme_stylebox, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_theme_font", "name", "type"), &Window::get_theme_font, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_theme_color", "name", "type"), &Window::get_theme_color, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_theme_constant", "name", "type"), &Window::get_theme_constant, DEFVAL(""));
+
+	ClassDB::bind_method(D_METHOD("has_theme_icon", "name", "type"), &Window::has_theme_icon, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_theme_stylebox", "name", "type"), &Window::has_theme_stylebox, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_theme_font", "name", "type"), &Window::has_theme_font, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_theme_color", "name", "type"), &Window::has_theme_color, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_theme_constant", "name", "type"), &Window::has_theme_constant, DEFVAL(""));
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "position"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size"), "set_size", "get_size");
@@ -1080,7 +1168,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
 
 	ADD_SIGNAL(MethodInfo("window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
-	ADD_SIGNAL(MethodInfo("files_dropped"));
+	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
 	ADD_SIGNAL(MethodInfo("mouse_exited"));
 	ADD_SIGNAL(MethodInfo("focus_entered"));
@@ -1088,6 +1176,8 @@ void Window::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("close_requested"));
 	ADD_SIGNAL(MethodInfo("go_back_requested"));
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
+	ADD_SIGNAL(MethodInfo("files_dropped"));
+	ADD_SIGNAL(MethodInfo("about_to_popup"));
 
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
 }

@@ -117,22 +117,22 @@ private:
 
 			case MESSAGE_ERROR: {
 
-				msg->add_color_override("font_color", msg->get_color("error_color", "Editor"));
+				msg->add_theme_color_override("font_color", msg->get_theme_color("error_color", "Editor"));
 				msg->set_modulate(Color(1, 1, 1, 1));
-				new_icon = msg->get_icon("StatusError", "EditorIcons");
+				new_icon = msg->get_theme_icon("StatusError", "EditorIcons");
 
 			} break;
 			case MESSAGE_WARNING: {
 
-				msg->add_color_override("font_color", msg->get_color("warning_color", "Editor"));
+				msg->add_theme_color_override("font_color", msg->get_theme_color("warning_color", "Editor"));
 				msg->set_modulate(Color(1, 1, 1, 1));
-				new_icon = msg->get_icon("StatusWarning", "EditorIcons");
+				new_icon = msg->get_theme_icon("StatusWarning", "EditorIcons");
 
 			} break;
 			case MESSAGE_SUCCESS: {
 
 				msg->set_modulate(Color(1, 1, 1, 0));
-				new_icon = msg->get_icon("StatusSuccess", "EditorIcons");
+				new_icon = msg->get_theme_icon("StatusSuccess", "EditorIcons");
 
 			} break;
 		}
@@ -500,7 +500,7 @@ private:
 					if (ProjectSettings::get_singleton()->save_custom(dir.plus_file("project.godot"), initial_settings, Vector<String>(), false) != OK) {
 						set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
 					} else {
-						ResourceSaver::save(dir.plus_file("icon.png"), msg->get_icon("DefaultProjectIcon", "EditorIcons"));
+						ResourceSaver::save(dir.plus_file("icon.png"), msg->get_theme_icon("DefaultProjectIcon", "EditorIcons"));
 
 						FileAccess *f = FileAccess::open(dir.plus_file("default_env.tres"), FileAccess::WRITE);
 						if (!f) {
@@ -649,10 +649,10 @@ private:
 		project_name->clear();
 		_text_changed("");
 
-		if (status_rect->get_texture() == msg->get_icon("StatusError", "EditorIcons"))
+		if (status_rect->get_texture() == msg->get_theme_icon("StatusError", "EditorIcons"))
 			msg->show();
 
-		if (install_status_rect->get_texture() == msg->get_icon("StatusError", "EditorIcons"))
+		if (install_status_rect->get_texture() == msg->get_theme_icon("StatusError", "EditorIcons"))
 			msg->show();
 	}
 
@@ -977,7 +977,7 @@ public:
 			} break;
 			case NOTIFICATION_DRAW: {
 				if (hover) {
-					draw_style_box(get_stylebox("hover", "Tree"), Rect2(Point2(), get_size() - Size2(10, 0) * EDSCALE));
+					draw_style_box(get_theme_stylebox("hover", "Tree"), Rect2(Point2(), get_size() - Size2(10, 0) * EDSCALE));
 				}
 			} break;
 		}
@@ -1152,7 +1152,7 @@ void ProjectList::_notification(int p_what) {
 void ProjectList::load_project_icon(int p_index) {
 	Item &item = _projects.write[p_index];
 
-	Ref<Texture2D> default_icon = get_icon("DefaultProjectIcon", "EditorIcons");
+	Ref<Texture2D> default_icon = get_theme_icon("DefaultProjectIcon", "EditorIcons");
 	Ref<Texture2D> icon;
 	if (item.icon != "") {
 		Ref<Image> img;
@@ -1322,13 +1322,13 @@ void ProjectList::create_project_item_control(int p_index) {
 	Item &item = _projects.write[p_index];
 	ERR_FAIL_COND(item.control != NULL); // Already created
 
-	Ref<Texture2D> favorite_icon = get_icon("Favorites", "EditorIcons");
-	Color font_color = get_color("font_color", "Tree");
+	Ref<Texture2D> favorite_icon = get_theme_icon("Favorites", "EditorIcons");
+	Color font_color = get_theme_color("font_color", "Tree");
 
 	ProjectListItemControl *hb = memnew(ProjectListItemControl);
 	hb->connect("draw", callable_mp(this, &ProjectList::_panel_draw), varray(hb));
 	hb->connect("gui_input", callable_mp(this, &ProjectList::_panel_input), varray(hb));
-	hb->add_constant_override("separation", 10 * EDSCALE);
+	hb->add_theme_constant_override("separation", 10 * EDSCALE);
 	hb->set_tooltip(item.description);
 
 	VBoxContainer *favorite_box = memnew(VBoxContainer);
@@ -1348,7 +1348,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	TextureRect *tf = memnew(TextureRect);
 	// The project icon may not be loaded by the time the control is displayed,
 	// so use a loading placeholder.
-	tf->set_texture(get_icon("ProjectIconLoading", "EditorIcons"));
+	tf->set_texture(get_theme_icon("ProjectIconLoading", "EditorIcons"));
 	tf->set_v_size_flags(SIZE_SHRINK_CENTER);
 	if (item.missing) {
 		tf->set_modulate(Color(1, 1, 1, 0.5));
@@ -1366,8 +1366,8 @@ void ProjectList::create_project_item_control(int p_index) {
 	ec->set_mouse_filter(MOUSE_FILTER_PASS);
 	vb->add_child(ec);
 	Label *title = memnew(Label(!item.missing ? item.project_name : TTR("Missing Project")));
-	title->add_font_override("font", get_font("title", "EditorFonts"));
-	title->add_color_override("font_color", font_color);
+	title->add_theme_font_override("font", get_theme_font("title", "EditorFonts"));
+	title->add_theme_color_override("font_color", font_color);
 	title->set_clip_text(true);
 	vb->add_child(title);
 
@@ -1377,7 +1377,7 @@ void ProjectList::create_project_item_control(int p_index) {
 
 	Button *show = memnew(Button);
 	// Display a folder icon if the project directory can be opened, or a "broken file" icon if it can't
-	show->set_icon(get_icon(!item.missing ? "Load" : "FileBroken", "EditorIcons"));
+	show->set_icon(get_theme_icon(!item.missing ? "Load" : "FileBroken", "EditorIcons"));
 	show->set_flat(true);
 	if (!item.grayed) {
 		// Don't make the icon less prominent if the parent is already grayed out
@@ -1396,7 +1396,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	path_hb->add_child(fpath);
 	fpath->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	fpath->set_modulate(Color(1, 1, 1, 0.5));
-	fpath->add_color_override("font_color", font_color);
+	fpath->add_theme_color_override("font_color", font_color);
 	fpath->set_clip_text(true);
 
 	_scroll_children->add_child(hb);
@@ -1728,12 +1728,12 @@ void ProjectList::erase_selected_projects() {
 void ProjectList::_panel_draw(Node *p_hb) {
 	Control *hb = Object::cast_to<Control>(p_hb);
 
-	hb->draw_line(Point2(0, hb->get_size().y + 1), Point2(hb->get_size().x - 10, hb->get_size().y + 1), get_color("guide_color", "Tree"));
+	hb->draw_line(Point2(0, hb->get_size().y + 1), Point2(hb->get_size().x - 10, hb->get_size().y + 1), get_theme_color("guide_color", "Tree"));
 
 	String key = _projects[p_hb->get_index()].project_key;
 
 	if (_selected_project_keys.has(key)) {
-		hb->draw_style_box(get_stylebox("selected", "Tree"), Rect2(Point2(), hb->get_size() - Size2(10, 0) * EDSCALE));
+		hb->draw_style_box(get_theme_stylebox("selected", "Tree"), Rect2(Point2(), hb->get_size() - Size2(10, 0) * EDSCALE));
 	}
 }
 
@@ -2296,7 +2296,7 @@ void ProjectManager::_language_selected(int p_id) {
 	String lang = language_btn->get_item_metadata(p_id);
 	EditorSettings::get_singleton()->set("interface/editor/editor_language", lang);
 	language_btn->set_text(lang);
-	language_btn->set_icon(get_icon("Environment", "EditorIcons"));
+	language_btn->set_icon(get_theme_icon("Environment", "EditorIcons"));
 
 	language_restart_ask->set_text(TTR("Language changed.\nThe interface will update after restarting the editor or project manager."));
 	language_restart_ask->popup_centered();
@@ -2457,7 +2457,7 @@ ProjectManager::ProjectManager() {
 	Panel *panel = memnew(Panel);
 	gui_base->add_child(panel);
 	panel->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	panel->add_style_override("panel", gui_base->get_stylebox("Background", "EditorStyles"));
+	panel->add_theme_style_override("panel", gui_base->get_theme_stylebox("Background", "EditorStyles"));
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 	panel->add_child(vb);
@@ -2517,7 +2517,7 @@ ProjectManager::ProjectManager() {
 	search_tree_vb->add_child(sort_filters);
 
 	PanelContainer *pc = memnew(PanelContainer);
-	pc->add_style_override("panel", gui_base->get_stylebox("bg", "Tree"));
+	pc->add_theme_style_override("panel", gui_base->get_theme_stylebox("bg", "Tree"));
 	search_tree_vb->add_child(pc);
 	pc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
@@ -2637,7 +2637,7 @@ ProjectManager::ProjectManager() {
 			language_btn->set_text(lang);
 		}
 	}
-	language_btn->set_icon(get_icon("Environment", "EditorIcons"));
+	language_btn->set_icon(get_theme_icon("Environment", "EditorIcons"));
 
 	settings_hb->add_child(language_btn);
 	language_btn->connect("item_selected", callable_mp(this, &ProjectManager::_language_selected));
@@ -2754,7 +2754,7 @@ void ProjectListFilter::_filter_option_selected(int p_idx) {
 void ProjectListFilter::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE && has_search_box) {
-		search_box->set_right_icon(get_icon("Search", "EditorIcons"));
+		search_box->set_right_icon(get_theme_icon("Search", "EditorIcons"));
 		search_box->set_clear_button_enabled(true);
 	}
 }

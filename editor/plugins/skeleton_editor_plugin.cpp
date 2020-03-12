@@ -158,7 +158,7 @@ SkeletonEditor::SkeletonEditor() {
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text(TTR("Skeleton"));
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Skeleton", "EditorIcons"));
+	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Skeleton", "EditorIcons"));
 
 	options->get_popup()->add_item(TTR("Create physical skeleton"), MENU_OPTION_CREATE_PHYSICAL_SKELETON);
 

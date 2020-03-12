@@ -452,10 +452,10 @@ void EditorAutoloadSettings::update_autoload() {
 		item->set_editable(2, true);
 		item->set_text(2, TTR("Enable"));
 		item->set_checked(2, info.is_singleton);
-		item->add_button(3, get_icon("Load", "EditorIcons"), BUTTON_OPEN);
-		item->add_button(3, get_icon("MoveUp", "EditorIcons"), BUTTON_MOVE_UP);
-		item->add_button(3, get_icon("MoveDown", "EditorIcons"), BUTTON_MOVE_DOWN);
-		item->add_button(3, get_icon("Remove", "EditorIcons"), BUTTON_DELETE);
+		item->add_button(3, get_theme_icon("Load", "EditorIcons"), BUTTON_OPEN);
+		item->add_button(3, get_theme_icon("MoveUp", "EditorIcons"), BUTTON_MOVE_UP);
+		item->add_button(3, get_theme_icon("MoveDown", "EditorIcons"), BUTTON_MOVE_DOWN);
+		item->add_button(3, get_theme_icon("Remove", "EditorIcons"), BUTTON_DELETE);
 		item->set_selectable(3, false);
 	}
 

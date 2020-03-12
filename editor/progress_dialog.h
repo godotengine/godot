@@ -68,9 +68,9 @@ public:
 	BackgroundProgress() {}
 };
 
-class ProgressDialog : public Popup {
+class ProgressDialog : public PopupPanel {
 
-	GDCLASS(ProgressDialog, Popup);
+	GDCLASS(ProgressDialog, PopupPanel);
 	struct Task {
 
 		String task;
