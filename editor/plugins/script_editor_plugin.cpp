@@ -1778,9 +1778,11 @@ void ScriptEditor::_update_script_names() {
 			if (built_in) {
 
 				name = path.get_file();
-				String resource_name = se->get_edited_resource()->get_name();
+				const String &resource_name = se->get_edited_resource()->get_name();
 				if (resource_name != "") {
-					name = name.substr(0, name.find("::", 0) + 2) + resource_name;
+					// If the built-in script has a custom resource name defined,
+					// display the built-in script name as follows: `ResourceName (scene_file.tscn)`
+					name = vformat("%s (%s)", resource_name, name.substr(0, name.find("::", 0)));
 				}
 			} else {
 
