@@ -183,6 +183,21 @@ void EditorNode::_update_scene_tabs() {
 	OS::get_singleton()->global_menu_clear("_dock");
 
 	scene_tabs->clear_tabs();
+
+	Map<String, String> titles;
+	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
+		String title = editor_data.get_scene_title(i);
+		String path = editor_data.get_scene_path(i);
+
+		Map<String, String>::Element *E = titles.front();
+		while (E) {
+			if (E->value() == title)
+				resolve_identical_tab_path(title, path, E->value(), E->key());
+			E = E->next();
+		}
+		titles.insert(path, title);
+	}
+
 	Ref<Texture2D> script_icon = gui_base->get_icon("Script", "EditorIcons");
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 
@@ -194,7 +209,8 @@ void EditorNode::_update_scene_tabs() {
 
 		int current = editor_data.get_edited_scene();
 		bool unsaved = (i == current) ? saved_version != editor_data.get_undo_redo().get_version() : editor_data.get_scene_version(i) != 0;
-		scene_tabs->add_tab(editor_data.get_scene_title(i) + (unsaved ? "(*)" : ""), icon);
+
+		scene_tabs->add_tab(titles[editor_data.get_scene_path(i)] + (unsaved ? "(*)" : ""), icon);
 
 		OS::get_singleton()->global_menu_add_item("_dock", editor_data.get_scene_title(i) + (unsaved ? "(*)" : ""), GLOBAL_SCENE, i);
 
@@ -4683,6 +4699,35 @@ void EditorNode::_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_p
 		tab_preview_panel->set_position(rect.position + Vector2(0, rect.size.height));
 		tab_preview_panel->show();
 	}
+}
+
+#define TRIM_RES(p_path) ((p_path.begins_with("res://") ? p_path.substr(6) : p_path))
+#define TRIM_TSCN(p_path) ((p_path.ends_with(".tscn")) ? p_path.substr(0, p_path.size() - 6) : p_path)
+void EditorNode::resolve_identical_tab_path(String &p_title1, const String &p_path1, String &p_title2, const String &p_path2, int p_level) {
+	if (p_title1 != p_title2) return;
+	PackedStringArray levels1 = TRIM_TSCN(TRIM_RES(p_path1)).split("/");
+	PackedStringArray levels2 = TRIM_TSCN(TRIM_RES(p_path2)).split("/");
+
+	if (levels1.size() == 0 || levels2.size() == 0) return;
+	if (p_level == 0) {
+		p_title1 = levels1[levels1.size() - 1];
+		p_title2 = levels2[levels2.size() - 1];
+	}
+	p_level++;
+
+	bool title1_done = false, title2_done = false;
+	if (levels1.size() > p_level)
+		p_title1 = levels1[levels1.size() - 1 - p_level] + "/" + p_title1;
+	else
+		title1_done = true;
+
+	if (levels2.size() > p_level)
+		p_title2 = levels2[levels2.size() - 1 - p_level] + "/" + p_title2;
+	else
+		title2_done = true;
+
+	if (title1_done && title2_done) return;
+	resolve_identical_tab_path(p_title1, p_path1, p_title2, p_path2, p_level);
 }
 
 void EditorNode::_scene_tab_changed(int p_tab) {

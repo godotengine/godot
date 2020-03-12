@@ -1792,6 +1792,13 @@ void ScriptEditor::_update_script_names() {
 				name = se->get_name();
 			}
 
+			if (!built_in) {
+				for (int j = 0; j < sedata.size(); j++) {
+					_ScriptEditorItemData *sd_i = const_cast<_ScriptEditorItemData *>(&sedata[j]);
+					EditorNode::resolve_identical_tab_path(name, path, sd_i->name, sd_i->tooltip);
+				}
+			}
+
 			_ScriptEditorItemData sd;
 			sd.icon = icon;
 			sd.name = name;
