@@ -31,7 +31,7 @@ matrix:
 
     - name: Linux editor (debug, GCC 9, with Mono)
       stage: build
-      env: PLATFORM=x11 TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-mono-gcc-9 MATRIX_EVAL="CC=gcc-9 && CXX=g++-9" EXTRA_ARGS="module_mono_enabled=yes mono_glue=no warnings=extra werror=yes"
+      env: PLATFORM=linuxbsd TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-mono-gcc-9 MATRIX_EVAL="CC=gcc-9 && CXX=g++-9" EXTRA_ARGS="module_mono_enabled=yes mono_glue=no warnings=extra werror=yes"
       os: linux
       compiler: gcc-9
       addons:
@@ -47,7 +47,7 @@ matrix:
 
     - name: Linux export template (release, Clang 7)
       stage: build
-      env: PLATFORM=x11 TOOLS=no TARGET=release CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="warnings=extra werror=yes"
+      env: PLATFORM=linuxbsd TOOLS=no TARGET=release CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="warnings=extra werror=yes"
       os: linux
       compiler: clang
       addons:
@@ -109,7 +109,7 @@ matrix:
 
     - name: Linux export template (release_debug, GCC 7, without 3D support)
       stage: build
-      env: PLATFORM=x11 TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-gcc-7 EXTRA_ARGS="disable_3d=yes"
+      env: PLATFORM=linuxbsd TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-gcc-7 EXTRA_ARGS="disable_3d=yes"
       os: linux
       compiler: gcc
       addons:
@@ -165,7 +165,7 @@ script:
       scons -j2 CC=$CC CXX=$CXX platform=$PLATFORM tools=$TOOLS target=$TARGET $OPTIONS $EXTRA_ARGS &&
       if [ "$TEST_PROJECT" = "yes" ]; then
         git clone --depth 1 "https://github.com/godotengine/godot-tests.git";
-        sed -i "s:custom_template/release=\"\":custom_template/release=\"$(readlink -e bin/godot_server.x11.opt.tools.64)\":" godot-tests/tests/project_export/export_presets.cfg;
-        godot-tests/tests/project_export/test_project.sh "bin/godot_server.x11.opt.tools.64";
+        sed -i "s:custom_template/release=\"\":custom_template/release=\"$(readlink -e bin/godot_server.linuxbsd.opt.tools.64)\":" godot-tests/tests/project_export/export_presets.cfg;
+        godot-tests/tests/project_export/test_project.sh "bin/godot_server.linuxbsd.opt.tools.64";
       fi
     fi

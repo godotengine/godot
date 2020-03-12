@@ -3,7 +3,7 @@ def can_build(env, platform):
 
 
 def configure(env):
-    if env['platform'] not in ['windows', 'osx', 'x11', 'server', 'android', 'haiku', 'javascript']:
+    if env['platform'] not in ['windows', 'osx', 'linuxbsd', 'server', 'android', 'haiku', 'javascript']:
         raise RuntimeError('This module does not currently support building for this platform')
 
     env.use_ptrcall = True

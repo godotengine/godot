@@ -16,7 +16,7 @@ def get_name():
 def get_program_suffix():
     if (sys.platform == "darwin"):
         return "osx"
-    return "x11"
+    return "linuxbsd"
 
 
 def can_build():

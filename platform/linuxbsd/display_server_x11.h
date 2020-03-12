@@ -119,7 +119,7 @@ class DisplayServerX11 : public DisplayServer {
 		Size2i min_size;
 		Size2i max_size;
 		Size2i size;
-		Size2i im_position;
+		Point2i im_position;
 		bool im_active = false;
 		Callable rect_changed_callback;
 		Callable event_callback;

@@ -215,7 +215,7 @@ void ScriptEditorQuickOpen::_notification(int p_what) {
 
 			search_box->set_clear_button_enabled(true);
 			[[fallthrough]];
-		};
+		}
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			search_box->set_right_icon(search_options->get_theme_icon("Search", "EditorIcons"));
 		} break;
