@@ -1147,8 +1147,8 @@ void GridMapEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			options->set_icon(get_icon("GridMap", "EditorIcons"));
-			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
+			options->set_icon(get_theme_icon("GridMap", "EditorIcons"));
+			search_box->set_right_icon(get_theme_icon("Search", "EditorIcons"));
 		} break;
 	}
 }
@@ -1239,7 +1239,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	floor->set_min(-32767);
 	floor->set_max(32767);
 	floor->set_step(1);
-	floor->get_line_edit()->add_constant_override("minimum_spaces", 16);
+	floor->get_line_edit()->add_theme_constant_override("minimum_spaces", 16);
 
 	spatial_editor_hb->add_child(floor);
 	floor->connect_compat("value_changed", this, "_floor_changed");
@@ -1317,14 +1317,14 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	mode_thumbnail = memnew(ToolButton);
 	mode_thumbnail->set_toggle_mode(true);
 	mode_thumbnail->set_pressed(true);
-	mode_thumbnail->set_icon(p_editor->get_gui_base()->get_icon("FileThumbnail", "EditorIcons"));
+	mode_thumbnail->set_icon(p_editor->get_gui_base()->get_theme_icon("FileThumbnail", "EditorIcons"));
 	hb->add_child(mode_thumbnail);
 	mode_thumbnail->connect_compat("pressed", this, "_set_display_mode", varray(DISPLAY_THUMBNAIL));
 
 	mode_list = memnew(ToolButton);
 	mode_list->set_toggle_mode(true);
 	mode_list->set_pressed(false);
-	mode_list->set_icon(p_editor->get_gui_base()->get_icon("FileList", "EditorIcons"));
+	mode_list->set_icon(p_editor->get_gui_base()->get_theme_icon("FileList", "EditorIcons"));
 	hb->add_child(mode_list);
 	mode_list->connect_compat("pressed", this, "_set_display_mode", varray(DISPLAY_LIST));
 

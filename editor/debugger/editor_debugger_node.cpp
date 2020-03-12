@@ -51,8 +51,8 @@ EditorDebuggerNode::EditorDebuggerNode() {
 		singleton = this;
 	server.instance();
 
-	add_constant_override("margin_left", -EditorNode::get_singleton()->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_LEFT));
-	add_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_RIGHT));
+	add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_LEFT));
+	add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_RIGHT));
 
 	tabs = memnew(TabContainer);
 	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
@@ -62,7 +62,7 @@ EditorDebuggerNode::EditorDebuggerNode() {
 
 	Ref<StyleBoxEmpty> empty;
 	empty.instance();
-	tabs->add_style_override("panel", empty);
+	tabs->add_theme_style_override("panel", empty);
 
 	auto_switch_remote_scene_tree = EDITOR_DEF("debugger/auto_switch_to_remote_scene_tree", false);
 	_add_debugger();
@@ -108,7 +108,7 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	if (tabs->get_tab_count() > 1) {
 		node->clear_style();
 		tabs->set_tabs_visible(true);
-		tabs->add_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_stylebox("DebuggerPanel", "EditorStyles"));
+		tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("DebuggerPanel", "EditorStyles"));
 	}
 
 	return node;
@@ -238,10 +238,10 @@ void EditorDebuggerNode::_notification(int p_what) {
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (tabs->get_tab_count() > 1) {
-				add_constant_override("margin_left", -EditorNode::get_singleton()->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_LEFT));
-				add_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_RIGHT));
+				add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_LEFT));
+				add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_RIGHT));
 
-				tabs->add_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_stylebox("DebuggerPanel", "EditorStyles"));
+				tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("DebuggerPanel", "EditorStyles"));
 			}
 		} break;
 		default:
@@ -271,9 +271,9 @@ void EditorDebuggerNode::_notification(int p_what) {
 		} else {
 			debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
 			if (error_count == 0) {
-				debugger_button->set_icon(get_icon("Warning", "EditorIcons"));
+				debugger_button->set_icon(get_theme_icon("Warning", "EditorIcons"));
 			} else {
-				debugger_button->set_icon(get_icon("Error", "EditorIcons"));
+				debugger_button->set_icon(get_theme_icon("Error", "EditorIcons"));
 			}
 		}
 		last_error_count = error_count;
@@ -381,7 +381,6 @@ void EditorDebuggerNode::set_script_debug_button(MenuButton *p_button) {
 	script_menu->set_text(TTR("Debug"));
 	script_menu->set_switch_on_hover(true);
 	PopupMenu *p = script_menu->get_popup();
-	p->set_hide_on_window_lose_focus(true);
 	p->add_shortcut(ED_GET_SHORTCUT("debugger/step_into"), DEBUG_STEP);
 	p->add_shortcut(ED_GET_SHORTCUT("debugger/step_over"), DEBUG_NEXT);
 	p->add_separator();

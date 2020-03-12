@@ -281,13 +281,13 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 void GraphEdit::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		port_grab_distance_horizontal = get_constant("port_grab_distance_horizontal");
-		port_grab_distance_vertical = get_constant("port_grab_distance_vertical");
+		port_grab_distance_horizontal = get_theme_constant("port_grab_distance_horizontal");
+		port_grab_distance_vertical = get_theme_constant("port_grab_distance_vertical");
 
-		zoom_minus->set_icon(get_icon("minus"));
-		zoom_reset->set_icon(get_icon("reset"));
-		zoom_plus->set_icon(get_icon("more"));
-		snap_button->set_icon(get_icon("snap"));
+		zoom_minus->set_icon(get_theme_icon("minus"));
+		zoom_reset->set_icon(get_theme_icon("reset"));
+		zoom_plus->set_icon(get_theme_icon("more"));
+		snap_button->set_icon(get_theme_icon("snap"));
 	}
 	if (p_what == NOTIFICATION_READY) {
 		Size2 hmin = h_scroll->get_combined_minimum_size();
@@ -305,7 +305,7 @@ void GraphEdit::_notification(int p_what) {
 	}
 	if (p_what == NOTIFICATION_DRAW) {
 
-		draw_style_box(get_stylebox("bg"), Rect2(Point2(), get_size()));
+		draw_style_box(get_theme_stylebox("bg"), Rect2(Point2(), get_size()));
 
 		if (is_using_snap()) {
 			//draw grid
@@ -318,8 +318,8 @@ void GraphEdit::_notification(int p_what) {
 			Point2i from = (offset / float(snap)).floor();
 			Point2i len = (size / float(snap)).floor() + Vector2(1, 1);
 
-			Color grid_minor = get_color("grid_minor");
-			Color grid_major = get_color("grid_major");
+			Color grid_minor = get_theme_color("grid_minor");
+			Color grid_major = get_theme_color("grid_major");
 
 			for (int i = from.x; i < from.x + len.x; i++) {
 
@@ -357,7 +357,7 @@ void GraphEdit::_notification(int p_what) {
 
 bool GraphEdit::_filter_input(const Point2 &p_point) {
 
-	Ref<Texture2D> port = get_icon("port", "GraphNode");
+	Ref<Texture2D> port = get_theme_icon("port", "GraphNode");
 
 	for (int i = get_child_count() - 1; i >= 0; i--) {
 
@@ -389,7 +389,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) {
 
-		Ref<Texture2D> port = get_icon("port", "GraphNode");
+		Ref<Texture2D> port = get_theme_icon("port", "GraphNode");
 		Vector2 mpos(mb->get_position().x, mb->get_position().y);
 		for (int i = get_child_count() - 1; i >= 0; i--) {
 
@@ -501,7 +501,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 		connecting_target = false;
 		top_layer->update();
 
-		Ref<Texture2D> port = get_icon("port", "GraphNode");
+		Ref<Texture2D> port = get_theme_icon("port", "GraphNode");
 		Vector2 mpos = mm->get_position();
 		for (int i = get_child_count() - 1; i >= 0; i--) {
 
@@ -666,8 +666,8 @@ void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const
 	//cubic bezier code
 	float diff = p_to.x - p_from.x;
 	float cp_offset;
-	int cp_len = get_constant("bezier_len_pos");
-	int cp_neg_len = get_constant("bezier_len_neg");
+	int cp_len = get_theme_constant("bezier_len_pos");
+	int cp_neg_len = get_theme_constant("bezier_len_neg");
 
 	if (diff > 0) {
 		cp_offset = MIN(cp_len, diff * 0.5);
@@ -697,7 +697,7 @@ void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const
 
 void GraphEdit::_connections_layer_draw() {
 
-	Color activity_color = get_color("activity");
+	Color activity_color = get_theme_color("activity");
 	//draw connections
 	List<List<Connection>::Element *> to_erase;
 	for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
@@ -784,8 +784,8 @@ void GraphEdit::_top_layer_draw() {
 	}
 
 	if (box_selecting) {
-		top_layer->draw_rect(box_selecting_rect, get_color("selection_fill"));
-		top_layer->draw_rect(box_selecting_rect, get_color("selection_stroke"), false);
+		top_layer->draw_rect(box_selecting_rect, get_theme_color("selection_fill"));
+		top_layer->draw_rect(box_selecting_rect, get_theme_color("selection_stroke"), false);
 	}
 }
 

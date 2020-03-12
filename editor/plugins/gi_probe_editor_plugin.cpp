@@ -84,7 +84,7 @@ void GIProbeEditorPlugin::_notification(int p_what) {
 			return;
 		}
 
-		bake_info->add_color_override("font_color", bake_info->get_color("success_color", "Editor"));
+		bake_info->add_theme_color_override("font_color", bake_info->get_theme_color("success_color", "Editor"));
 
 		bake_info->set_text(text);
 	}
@@ -145,7 +145,7 @@ GIProbeEditorPlugin::GIProbeEditorPlugin(EditorNode *p_node) {
 	bake_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	bake_hb->hide();
 	bake = memnew(ToolButton);
-	bake->set_icon(editor->get_gui_base()->get_icon("Bake", "EditorIcons"));
+	bake->set_icon(editor->get_gui_base()->get_theme_icon("Bake", "EditorIcons"));
 	bake->set_text(TTR("Bake GI Probe"));
 	bake->connect_compat("pressed", this, "_bake");
 	bake_hb->add_child(bake);

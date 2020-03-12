@@ -592,7 +592,7 @@ void ThemeEditor::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			theme_menu->set_icon(get_icon("Theme", "EditorIcons"));
+			theme_menu->set_icon(get_theme_icon("Theme", "EditorIcons"));
 		} break;
 	}
 }
@@ -652,10 +652,10 @@ ThemeEditor::ThemeEditor() {
 
 	main_container = memnew(MarginContainer);
 	root_container->add_child(main_container);
-	main_container->add_constant_override("margin_right", 4 * EDSCALE);
-	main_container->add_constant_override("margin_top", 4 * EDSCALE);
-	main_container->add_constant_override("margin_left", 4 * EDSCALE);
-	main_container->add_constant_override("margin_bottom", 4 * EDSCALE);
+	main_container->add_theme_constant_override("margin_right", 4 * EDSCALE);
+	main_container->add_theme_constant_override("margin_top", 4 * EDSCALE);
+	main_container->add_theme_constant_override("margin_left", 4 * EDSCALE);
+	main_container->add_theme_constant_override("margin_bottom", 4 * EDSCALE);
 
 	HBoxContainer *main_hb = memnew(HBoxContainer);
 	main_container->add_child(main_hb);
@@ -663,7 +663,7 @@ ThemeEditor::ThemeEditor() {
 	VBoxContainer *first_vb = memnew(VBoxContainer);
 	main_hb->add_child(first_vb);
 	first_vb->set_h_size_flags(SIZE_EXPAND_FILL);
-	first_vb->add_constant_override("separation", 10 * EDSCALE);
+	first_vb->add_theme_constant_override("separation", 10 * EDSCALE);
 
 	first_vb->add_child(memnew(Label("Label")));
 
@@ -723,7 +723,7 @@ ThemeEditor::ThemeEditor() {
 	VBoxContainer *second_vb = memnew(VBoxContainer);
 	second_vb->set_h_size_flags(SIZE_EXPAND_FILL);
 	main_hb->add_child(second_vb);
-	second_vb->add_constant_override("separation", 10 * EDSCALE);
+	second_vb->add_theme_constant_override("separation", 10 * EDSCALE);
 	LineEdit *le = memnew(LineEdit);
 	le->set_text("LineEdit");
 	second_vb->add_child(le);
@@ -763,7 +763,7 @@ ThemeEditor::ThemeEditor() {
 
 	VBoxContainer *third_vb = memnew(VBoxContainer);
 	third_vb->set_h_size_flags(SIZE_EXPAND_FILL);
-	third_vb->add_constant_override("separation", 10 * EDSCALE);
+	third_vb->add_theme_constant_override("separation", 10 * EDSCALE);
 	main_hb->add_child(third_vb);
 
 	TabContainer *tc = memnew(TabContainer);
@@ -783,7 +783,7 @@ ThemeEditor::ThemeEditor() {
 	Tree *test_tree = memnew(Tree);
 	third_vb->add_child(test_tree);
 	test_tree->set_custom_minimum_size(Size2(0, 175) * EDSCALE);
-	test_tree->add_constant_override("draw_relationship_lines", 1);
+	test_tree->add_theme_constant_override("draw_relationship_lines", 1);
 
 	TreeItem *item = test_tree->create_item();
 	item->set_text(0, "Tree");
@@ -809,7 +809,7 @@ ThemeEditor::ThemeEditor() {
 	item->set_text(0, TTR("Has,Many,Options"));
 	item->set_range(0, 2);
 
-	main_hb->add_constant_override("separation", 20 * EDSCALE);
+	main_hb->add_theme_constant_override("separation", 20 * EDSCALE);
 
 	////////
 
@@ -853,7 +853,7 @@ ThemeEditor::ThemeEditor() {
 	name_menu->set_text("..");
 	name_hbc->add_child(name_menu);
 
-	name_menu->get_popup()->connect_compat("about_to_show", this, "_name_menu_about_to_show");
+	name_menu->get_popup()->connect_compat("about_to_popup", this, "_name_menu_about_to_show");
 	name_menu->get_popup()->connect_compat("id_pressed", this, "_name_menu_cbk");
 
 	type_select_label = memnew(Label);

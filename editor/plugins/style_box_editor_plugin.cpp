@@ -57,7 +57,7 @@ void StyleBoxPreview::edit(const Ref<StyleBox> &p_stylebox) {
 		stylebox->disconnect_compat("changed", this, "_sb_changed");
 	stylebox = p_stylebox;
 	if (p_stylebox.is_valid()) {
-		preview->add_style_override("panel", stylebox);
+		preview->add_theme_style_override("panel", stylebox);
 		stylebox->connect_compat("changed", this, "_sb_changed");
 	}
 	_sb_changed();

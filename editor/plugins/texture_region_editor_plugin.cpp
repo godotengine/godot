@@ -43,7 +43,7 @@
 void draw_margin_line(Control *edit_draw, Vector2 from, Vector2 to) {
 	Vector2 line = (to - from).normalized() * 10;
 	while ((to - from).length_squared() > 200) {
-		edit_draw->draw_line(from, from + line, EditorNode::get_singleton()->get_theme_base()->get_color("mono_color", "Editor"), 2);
+		edit_draw->draw_line(from, from + line, EditorNode::get_singleton()->get_theme_base()->get_theme_color("mono_color", "Editor"), 2);
 		from += line * 2;
 	}
 }
@@ -134,7 +134,7 @@ void TextureRegionEditor::_region_draw() {
 		}
 	}
 
-	Ref<Texture2D> select_handle = get_icon("EditorHandle", "EditorIcons");
+	Ref<Texture2D> select_handle = get_theme_icon("EditorHandle", "EditorIcons");
 
 	Rect2 scroll_rect(Point2(), base_tex->get_size());
 
@@ -150,7 +150,7 @@ void TextureRegionEditor::_region_draw() {
 		mtx.basis_xform(raw_endpoints[2]),
 		mtx.basis_xform(raw_endpoints[3])
 	};
-	Color color = get_color("mono_color", "Editor");
+	Color color = get_theme_color("mono_color", "Editor");
 	for (int i = 0; i < 4; i++) {
 
 		int prev = (i + 3) % 4;
@@ -741,12 +741,12 @@ void TextureRegionEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			edit_draw->add_style_override("panel", get_stylebox("bg", "Tree"));
+			edit_draw->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
 		} break;
 		case NOTIFICATION_READY: {
-			zoom_out->set_icon(get_icon("ZoomLess", "EditorIcons"));
-			zoom_reset->set_icon(get_icon("ZoomReset", "EditorIcons"));
-			zoom_in->set_icon(get_icon("ZoomMore", "EditorIcons"));
+			zoom_out->set_icon(get_theme_icon("ZoomLess", "EditorIcons"));
+			zoom_reset->set_icon(get_theme_icon("ZoomReset", "EditorIcons"));
+			zoom_in->set_icon(get_theme_icon("ZoomMore", "EditorIcons"));
 
 			vscroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
 			hscroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);

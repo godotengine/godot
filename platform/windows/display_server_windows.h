@@ -222,7 +222,7 @@ class DisplayServerWindows : public DisplayServer {
 
 	HCURSOR hCursor;
 
-	WNDPROC user_proc;
+	WNDPROC user_proc = nullptr;
 
 	void _send_window_event(const WindowData &wd, WindowEvent p_event);
 
