@@ -208,7 +208,7 @@
 			A fragment shader, operating on fragments (pixels).
 		</constant>
 		<constant name="TYPE_LIGHT" value="2" enum="Type">
-		 	A shader for light calculations.
+			A shader for light calculations.
 		</constant>
 		<constant name="TYPE_MAX" value="3" enum="Type">
 			Represents the size of the [enum Type] enum.
