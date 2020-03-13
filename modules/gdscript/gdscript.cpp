@@ -715,8 +715,8 @@ StringName GDScript::get_rset_property(const uint16_t p_rset_member_id) const {
 }
 
 MultiplayerAPI::RPCMode GDScript::get_rset_mode_by_id(const uint16_t p_rset_member_id) const {
-	ERR_FAIL_COND_V(p_rset_member_id >= rpc_functions.size(), MultiplayerAPI::RPC_MODE_DISABLED);
-	return rpc_functions[p_rset_member_id].mode;
+	ERR_FAIL_COND_V(p_rset_member_id >= rpc_variables.size(), MultiplayerAPI::RPC_MODE_DISABLED);
+	return rpc_variables[p_rset_member_id].mode;
 }
 
 MultiplayerAPI::RPCMode GDScript::get_rset_mode(const StringName &p_variable) const {

@@ -1148,8 +1148,8 @@ StringName VisualScript::get_rset_property(const uint16_t p_rset_property_id) co
 }
 
 MultiplayerAPI::RPCMode VisualScript::get_rset_mode_by_id(const uint16_t p_rset_variable_id) const {
-	ERR_FAIL_COND_V(p_rset_variable_id >= rpc_functions.size(), MultiplayerAPI::RPC_MODE_DISABLED);
-	return rpc_functions[p_rset_variable_id].mode;
+	ERR_FAIL_COND_V(p_rset_variable_id >= rpc_variables.size(), MultiplayerAPI::RPC_MODE_DISABLED);
+	return rpc_variables[p_rset_variable_id].mode;
 }
 
 MultiplayerAPI::RPCMode VisualScript::get_rset_mode(const StringName &p_variable) const {
