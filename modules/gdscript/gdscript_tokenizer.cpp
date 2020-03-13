@@ -803,19 +803,16 @@ void GDScriptTokenizerText::_advance() {
 
 						switch (next) {
 
-							case 'a': res = 7; break;
-							case 'b': res = 8; break;
-							case 't': res = 9; break;
-							case 'n': res = 10; break;
-							case 'v': res = 11; break;
-							case 'f': res = 12; break;
-							case 'r': res = 13; break;
+							case 'a': res = '\a'; break;
+							case 'b': res = '\b'; break;
+							case 't': res = '\t'; break;
+							case 'n': res = '\n'; break;
+							case 'v': res = '\v'; break;
+							case 'f': res = '\f'; break;
+							case 'r': res = '\r'; break;
 							case '\'': res = '\''; break;
 							case '\"': res = '\"'; break;
 							case '\\': res = '\\'; break;
-							case '/':
-								res = '/';
-								break; //wtf
 
 							case 'u': {
 								// hex number
@@ -847,6 +844,10 @@ void GDScriptTokenizerText::_advance() {
 								i += 3;
 
 							} break;
+							case '\n': {
+								line++;
+								column = 1;
+							} break;
 							default: {
 
 								_make_error("Invalid escape sequence");
@@ -854,7 +855,8 @@ void GDScriptTokenizerText::_advance() {
 							} break;
 						}
 
-						str += res;
+						if (next != '\n')
+							str += res;
 
 					} else {
 						if (CharType(GETCHAR(i)) == '\n') {
