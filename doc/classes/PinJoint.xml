@@ -15,6 +15,7 @@
 			<argument index="0" name="param" type="int" enum="PinJoint.Param">
 			</argument>
 			<description>
+				Returns the value of the specified parameter.
 			</description>
 		</method>
 		<method name="set_param">
@@ -25,6 +26,7 @@
 			<argument index="1" name="value" type="float">
 			</argument>
 			<description>
+				Sets the value of the specified parameter.
 			</description>
 		</method>
 	</methods>

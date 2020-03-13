@@ -133,16 +133,22 @@
 	</constants>
 	<theme_items>
 		<theme_item name="files_disabled" type="Color" default="Color( 0, 0, 0, 0.7 )">
+			The color tint for disabled files (when the [FileDialog] is used in open folder mode).
 		</theme_item>
 		<theme_item name="folder" type="Texture">
+			Custom icon for folders.
 		</theme_item>
 		<theme_item name="folder_icon_modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			The color modulation applied to the folder icon.
 		</theme_item>
 		<theme_item name="parent_folder" type="Texture">
+			Custom icon for the parent folder arrow.
 		</theme_item>
 		<theme_item name="reload" type="Texture">
+			Custom icon for the reload button.
 		</theme_item>
 		<theme_item name="toggle_hidden" type="Texture">
+			Custom icon for the toggle hidden button.
 		</theme_item>
 	</theme_items>
 </class>
