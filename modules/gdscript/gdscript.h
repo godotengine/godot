@@ -136,6 +136,7 @@ class GDScript : public Script {
 	bool _update_exports();
 
 	void _save_orphaned_subclasses();
+	void _init_rpc_methods_properties();
 
 protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;

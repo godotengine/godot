@@ -874,7 +874,8 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 		if (method_id == UINT16_MAX && p_from->get_script_instance()) {
 			method_id = p_from->get_script_instance()->get_rpc_method_id(p_name);
 		}
-		ERR_FAIL_COND_MSG(method_id == UINT16_MAX, "Unable to take the `method_id` for the function:" + p_name + ". this can happen only if this method is not marked as `remote`.");
+		ERR_FAIL_COND_MSG(method_id == UINT16_MAX,
+				vformat("Unable to take the `method_id` for the function \"%s\" at path: \"%s\". This happens when the method is not marked as `remote`.", p_name, p_from->get_path()));
 
 		if (method_id <= UINT8_MAX) {
 			// The ID fits in 1 byte
