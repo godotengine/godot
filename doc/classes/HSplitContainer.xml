@@ -14,12 +14,15 @@
 	</constants>
 	<theme_items>
 		<theme_item name="autohide" type="int" default="1">
+			Boolean value. If 1 ([code]true[/code]), the grabber will hide automatically when it isn't under the cursor. If 0 ([code]false[/code]), it's always visible.
 		</theme_item>
 		<theme_item name="bg" type="StyleBox">
 		</theme_item>
 		<theme_item name="grabber" type="Texture2D">
+			The icon used for the grabber drawn in the middle area.
 		</theme_item>
 		<theme_item name="separation" type="int" default="12">
+			The space between sides of the container.
 		</theme_item>
 	</theme_items>
 </class>

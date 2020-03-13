@@ -42,6 +42,7 @@
 			<argument index="1" name="immediate" type="bool" default="false">
 			</argument>
 			<description>
+				Replaces the texture's data with a new [code]image[/code]. If [code]immediate[/code] is [code]true[/code], it will take effect immediately after the call.
 			</description>
 		</method>
 	</methods>

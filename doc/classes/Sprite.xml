@@ -68,10 +68,13 @@
 			The region of the atlas texture to display. [member region_enabled] must be [code]true[/code].
 		</member>
 		<member name="shininess" type="float" setter="set_shininess" getter="get_shininess" default="1.0">
+			Strength of the specular light effect of this [Sprite].
 		</member>
 		<member name="specular_color" type="Color" setter="set_specular_color" getter="get_specular_color" default="Color( 1, 1, 1, 1 )">
+			The color of the specular light effect.
 		</member>
 		<member name="specular_map" type="Texture2D" setter="set_specular_map" getter="get_specular_map">
+			The specular map is used for more control on the shininess effect.
 		</member>
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			[Texture2D] object to draw.

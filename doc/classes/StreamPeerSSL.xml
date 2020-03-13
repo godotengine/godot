@@ -72,11 +72,13 @@
 			A status representing a [StreamPeerSSL] that is disconnected.
 		</constant>
 		<constant name="STATUS_HANDSHAKING" value="1" enum="Status">
+			A status representing a [StreamPeerSSL] during handshaking.
 		</constant>
 		<constant name="STATUS_CONNECTED" value="2" enum="Status">
 			A status representing a [StreamPeerSSL] that is connected to a host.
 		</constant>
 		<constant name="STATUS_ERROR" value="3" enum="Status">
+			A status representing a [StreamPeerSSL] in error state.
 		</constant>
 		<constant name="STATUS_ERROR_HOSTNAME_MISMATCH" value="4" enum="Status">
 			An error status that shows a mismatch in the SSL certificate domain presented by the host and the domain requested for validation.

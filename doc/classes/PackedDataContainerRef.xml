@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PackedDataContainerRef" inherits="Reference" version="4.0">
 	<brief_description>
+		Reference version of [PackedDataContainer].
 	</brief_description>
 	<description>
 	</description>

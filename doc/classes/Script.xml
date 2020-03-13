@@ -38,30 +38,35 @@
 			<argument index="0" name="property" type="StringName">
 			</argument>
 			<description>
+				Returns the default value of the specified property.
 			</description>
 		</method>
 		<method name="get_script_constant_map">
 			<return type="Dictionary">
 			</return>
 			<description>
+				Returns a dictionary containing constant names and their values.
 			</description>
 		</method>
 		<method name="get_script_method_list">
 			<return type="Array">
 			</return>
 			<description>
+				Returns the list of methods in this [Script].
 			</description>
 		</method>
 		<method name="get_script_property_list">
 			<return type="Array">
 			</return>
 			<description>
+				Returns the list of properties in this [Script].
 			</description>
 		</method>
 		<method name="get_script_signal_list">
 			<return type="Array">
 			</return>
 			<description>
+				Returns the list of user signals defined in this [Script].
 			</description>
 		</method>
 		<method name="has_script_signal" qualifiers="const">
