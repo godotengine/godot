@@ -3458,8 +3458,8 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			return _data._float > 0.0;
 		} break;
 		case VECTOR2: {
-			int64_t from = reinterpret_cast<const Vector2 *>(_data._mem)->x;
-			int64_t to = reinterpret_cast<const Vector2 *>(_data._mem)->y;
+			double from = reinterpret_cast<const Vector2 *>(_data._mem)->x;
+			double to = reinterpret_cast<const Vector2 *>(_data._mem)->y;
 
 			r_iter = from;
 
@@ -3474,9 +3474,9 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			return from < to;
 		} break;
 		case VECTOR3: {
-			int64_t from = reinterpret_cast<const Vector3 *>(_data._mem)->x;
-			int64_t to = reinterpret_cast<const Vector3 *>(_data._mem)->y;
-			int64_t step = reinterpret_cast<const Vector3 *>(_data._mem)->z;
+			double from = reinterpret_cast<const Vector3 *>(_data._mem)->x;
+			double to = reinterpret_cast<const Vector3 *>(_data._mem)->y;
+			double step = reinterpret_cast<const Vector3 *>(_data._mem)->z;
 
 			r_iter = from;
 
@@ -3660,9 +3660,9 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			return true;
 		} break;
 		case VECTOR2: {
-			int64_t to = reinterpret_cast<const Vector2 *>(_data._mem)->y;
+			double to = reinterpret_cast<const Vector2 *>(_data._mem)->y;
 
-			int64_t idx = r_iter;
+			double idx = r_iter;
 			idx++;
 
 			if (idx >= to)
@@ -3684,10 +3684,10 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			return true;
 		} break;
 		case VECTOR3: {
-			int64_t to = reinterpret_cast<const Vector3 *>(_data._mem)->y;
-			int64_t step = reinterpret_cast<const Vector3 *>(_data._mem)->z;
+			double to = reinterpret_cast<const Vector3 *>(_data._mem)->y;
+			double step = reinterpret_cast<const Vector3 *>(_data._mem)->z;
 
-			int64_t idx = r_iter;
+			double idx = r_iter;
 			idx += step;
 
 			if (step < 0 && idx <= to)
