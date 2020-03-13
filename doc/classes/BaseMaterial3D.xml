@@ -67,7 +67,7 @@
 			<argument index="1" name="texture" type="Texture2D">
 			</argument>
 			<description>
-				Sets the texture for the slot specified by [code]param[/code]. See [enum TextureParam] for available slots. 
+				Sets the texture for the slot specified by [code]param[/code]. See [enum TextureParam] for available slots.
 			</description>
 		</method>
 	</methods>

@@ -502,6 +502,12 @@
 			<description>
 			</description>
 		</signal>
+		<signal name="symbol_validate">
+			<argument index="0" name="symbol" type="String">
+			</argument>
+			<description>
+			</description>
+		</signal>
 		<signal name="text_changed">
 			<description>
 				Emitted when the text changes.
