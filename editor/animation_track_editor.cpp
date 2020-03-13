@@ -3495,9 +3495,9 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 			}
 
 			if (num_tracks == 1)
-				insert_confirm_text->set_text(vformat(TTR("Create NEW track for %s and insert key?"), p_id.query));
+				insert_confirm_text->set_text(vformat(TTR("Create a new track for %s and insert a key?"), p_id.query));
 			else
-				insert_confirm_text->set_text(vformat(TTR("Create %d NEW tracks and insert keys?"), num_tracks));
+				insert_confirm_text->set_text(vformat(TTR("Create %d new tracks and insert keys?"), num_tracks));
 
 			insert_confirm_bezier->set_visible(all_bezier);
 			insert_confirm->get_ok()->set_text(TTR("Create"));
