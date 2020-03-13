@@ -1059,7 +1059,7 @@ Vector2 CanvasItem::make_canvas_position_local(const Vector2 &screen_point) cons
 	return global_to_local_matrix.xform(screen_point);
 }
 
-Vector2 CanvasItem::make_local_canvas_position(const Vector2 &local_point) const {
+Vector2 CanvasItem::make_local_canvas_position_global(const Vector2 &local_point) const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(), local_point);
 
@@ -1201,7 +1201,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("force_update_transform"), &CanvasItem::force_update_transform);
 
 	ClassDB::bind_method(D_METHOD("make_canvas_position_local", "screen_point"), &CanvasItem::make_canvas_position_local);
-	ClassDB::bind_method(D_METHOD("make_local_canvas_position", "local_postion"), &CanvasItem::make_local_canvas_position);
+	ClassDB::bind_method(D_METHOD("make_local_canvas_position_global", "local_postion"), &CanvasItem::make_local_canvas_position_global);
 	ClassDB::bind_method(D_METHOD("make_input_local", "event"), &CanvasItem::make_input_local);
 
 	ClassDB::bind_method(D_METHOD("set_texture_filter", "mode"), &CanvasItem::set_texture_filter);

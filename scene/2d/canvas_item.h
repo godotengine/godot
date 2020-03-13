@@ -389,7 +389,7 @@ public:
 
 	Ref<InputEvent> make_input_local(const Ref<InputEvent> &p_event) const;
 	Vector2 make_canvas_position_local(const Vector2 &screen_point) const;
-	Vector2 make_local_canvas_position(const Vector2 &local_point) const;
+	Vector2 make_local_canvas_position_global(const Vector2 &local_point) const;
 
 	Vector2 get_global_mouse_position() const;
 	Vector2 get_local_mouse_position() const;
