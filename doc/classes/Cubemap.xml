@@ -16,7 +16,6 @@
 		[Cubemap] has [code]enum RenderingDevice.TextureType[/code] [code]TEXTURE_TYPE_CUBE[/code].
 		Currently, [Cubemap]s cannot be created automatically. You can create them externally with a 3rd party tool or using the basisu commandline tool (see file [code]thirdparty/basis_universal/basisu_tool.cpp[/code] regarding [code]-tex_type cubemap[/code]). It can also be created manually from several [Image]s via C++ code.
 		In case you want to use a cubemap for your [Sky] (and not just some of its data), see [PanoramaSky]'s class documentation on how to convert your cubemap to a panorama.
-		More on [Cubemap] can be found [url=https://godotengine.org/article/godots-new-renderer-progress-report-2]here[/url].
 	</description>
 	<tutorials>
 	</tutorials>
