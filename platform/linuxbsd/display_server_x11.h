@@ -121,7 +121,7 @@ class DisplayServerX11 : public DisplayServer {
 		Size2i size;
 		Size2i im_position;
 		bool im_active = false;
-		Callable resize_callback;
+		Callable rect_changed_callback;
 		Callable event_callback;
 		Callable input_event_callback;
 		Callable input_text_callback;
@@ -268,7 +268,7 @@ public:
 	virtual void delete_sub_window(WindowID p_id);
 
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID);
-	virtual void window_set_resize_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
+	virtual void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
 	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
 	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
 	virtual void window_set_input_text_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);

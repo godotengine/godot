@@ -158,7 +158,11 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 				name_edit->set_global_position(state_machine_draw->get_global_transform().xform(edit_rect.position));
 				name_edit->set_size(edit_rect.size);
 				name_edit->set_text(node_rects[i].node_name);
-				name_edit->show_modal();
+#ifndef _MSC_VER
+#warning no more show modal, so it must replaced by a popup
+#endif
+				//name_edit->show_modal();
+				name_edit->show();
 				name_edit->grab_focus();
 				name_edit->select_all();
 

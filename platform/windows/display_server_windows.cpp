@@ -420,6 +420,10 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 		}
 	}
 
+	ShowWindow(windows[window_id].hWnd, SW_SHOW); // Show The Window
+	SetForegroundWindow(windows[window_id].hWnd); // Slightly Higher Priority
+	SetFocus(windows[window_id].hWnd); // Sets Keyboard Focus To
+
 	return window_id;
 }
 void DisplayServerWindows::delete_sub_window(WindowID p_window) {
@@ -449,12 +453,12 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	windows.erase(p_window);
 }
 
-void DisplayServerWindows::window_set_resize_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerWindows::window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window) {
 
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
-	windows[p_window].resize_callback = p_callable;
+	windows[p_window].rect_changed_callback = p_callable;
 }
 
 void DisplayServerWindows::window_set_window_event_callback(const Callable &p_callable, WindowID p_window) {
@@ -757,19 +761,31 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
+	DWORD style = 0;
+	DWORD style_ex = WS_EX_WINDOWEDGE;
+	if (p_window == MAIN_WINDOW_ID) {
+		style_ex |= WS_EX_APPWINDOW;
+	}
+
 	if (wd.fullscreen || wd.borderless) {
-		SetWindowLongPtr(wd.hWnd, GWL_STYLE, WS_SYSMENU | WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE);
+		style = WS_SYSMENU | WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE;
+		if (wd.borderless) {
+			style_ex |= WS_EX_TOOLWINDOW;
+		}
 	} else {
 		if (wd.resizable) {
 			if (p_maximized) {
-				SetWindowLongPtr(wd.hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_MAXIMIZE);
+				style = WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_MAXIMIZE;
 			} else {
-				SetWindowLongPtr(wd.hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE);
+				style = GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE;
 			}
 		} else {
-			SetWindowLongPtr(wd.hWnd, GWL_STYLE, WS_CAPTION | WS_MINIMIZEBOX | WS_POPUPWINDOW | WS_VISIBLE);
+			style = WS_CAPTION | WS_MINIMIZEBOX | WS_POPUPWINDOW | WS_VISIBLE;
 		}
 	}
+
+	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
+	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
 
 	SetWindowPos(wd.hWnd, wd.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
 
@@ -2208,6 +2224,15 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				int x = LOWORD(lParam);
 				int y = HIWORD(lParam);
 				windows[window_id].last_pos = Point2(x, y);
+
+				if (!windows[window_id].rect_changed_callback.is_null()) {
+
+					Variant size = Rect2i(windows[window_id].last_pos.x, windows[window_id].last_pos.y, windows[window_id].width, windows[window_id].height);
+					Variant *sizep = &size;
+					Variant ret;
+					Callable::CallError ce;
+					windows[window_id].rect_changed_callback.call((const Variant **)&sizep, 1, ret, ce);
+				}
 			}
 		} break;
 
@@ -2232,13 +2257,13 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 			}
 
-			if (!windows[window_id].resize_callback.is_null()) {
+			if (!windows[window_id].rect_changed_callback.is_null()) {
 
-				Variant size = Size2(windows[window_id].width, windows[window_id].height);
+				Variant size = Rect2i(windows[window_id].last_pos.x, windows[window_id].last_pos.y, windows[window_id].width, windows[window_id].height);
 				Variant *sizep = &size;
 				Variant ret;
 				Callable::CallError ce;
-				windows[window_id].resize_callback.call((const Variant **)&sizep, 1, ret, ce);
+				windows[window_id].rect_changed_callback.call((const Variant **)&sizep, 1, ret, ce);
 			}
 
 			if (wParam == SIZE_MAXIMIZED) {
@@ -2541,8 +2566,12 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	DWORD dwExStyle;
 	DWORD dwStyle;
 
-	dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
+	dwExStyle = WS_EX_WINDOWEDGE;
 	dwStyle = WS_OVERLAPPEDWINDOW;
+
+	if (window_id_counter == MAIN_WINDOW_ID) {
+		dwExStyle |= WS_EX_APPWINDOW;
+	}
 
 	RECT WindowRect;
 
@@ -2593,10 +2622,6 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		TrackMouseEvent(&tme);
 
 		DragAcceptFiles(wd.hWnd, true);
-
-		ShowWindow(wd.hWnd, SW_SHOW); // Show The Window
-		SetForegroundWindow(wd.hWnd); // Slightly Higher Priority
-		SetFocus(wd.hWnd); // Sets Keyboard Focus To
 
 		// IME
 		wd.im_himc = ImmGetContext(wd.hWnd);
@@ -2742,6 +2767,10 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			window_set_flag(WindowFlags(i), true, main_window);
 		}
 	}
+
+	ShowWindow(windows[MAIN_WINDOW_ID].hWnd, SW_SHOW); // Show The Window
+	SetForegroundWindow(windows[MAIN_WINDOW_ID].hWnd); // Slightly Higher Priority
+	SetFocus(windows[MAIN_WINDOW_ID].hWnd); // Sets Keyboard Focus To
 
 #if defined(VULKAN_ENABLED)
 

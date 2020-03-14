@@ -2819,7 +2819,10 @@ bool Tree::edit_selected() {
 
 			value_editor->set_position(textedpos + Point2i(0, text_editor->get_size().height));
 			value_editor->set_size(Size2(rect.size.width, 1));
-			value_editor->show_modal();
+#ifndef _MSC_VER
+#warning show modal no longer works, need to replace by a popup
+#endif
+			value_editor->show();
 			updating_value_editor = true;
 			value_editor->set_min(c.min);
 			value_editor->set_max(c.max);
@@ -2828,8 +2831,10 @@ bool Tree::edit_selected() {
 			value_editor->set_exp_ratio(c.expr);
 			updating_value_editor = false;
 		}
-
-		text_editor->show_modal();
+#ifndef _MSC_VER
+#warning show modal no longer works, need to replace by a popup
+#endif
+		text_editor->show();
 		text_editor->grab_focus();
 		return true;
 	}

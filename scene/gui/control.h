@@ -168,8 +168,6 @@ private:
 		float expand;
 		Point2 custom_minimum_size;
 
-		bool pass_on_modal_close_click;
-
 		MouseFilter mouse_filter;
 
 		bool clip_contents;
@@ -179,21 +177,15 @@ private:
 
 		Control *parent;
 		ObjectID drag_owner;
-		bool modal_exclusive;
-		uint64_t modal_frame; //frame used to put something as modal
 		Ref<Theme> theme;
 		Control *theme_owner;
 		Window *theme_owner_window;
 		String tooltip;
 		CursorShape default_cursor;
 
-		List<Control *>::Element *MI; //modal item
-		List<Control *>::Element *SI;
 		List<Control *>::Element *RI;
 
 		CanvasItem *parent_canvas_item;
-
-		ObjectID modal_prev_focus_owner;
 
 		NodePath focus_neighbour[4];
 		NodePath focus_next;
@@ -240,8 +232,6 @@ private:
 	Transform2D _get_internal_transform() const;
 
 	friend class Viewport;
-	void _modal_stack_remove();
-	void _modal_set_prev_focus_owner(ObjectID p_prev);
 
 	void _update_minimum_size_cache();
 	friend class Window;
@@ -293,7 +283,6 @@ public:
 		NOTIFICATION_FOCUS_ENTER = 43,
 		NOTIFICATION_FOCUS_EXIT = 44,
 		NOTIFICATION_THEME_CHANGED = 45,
-		NOTIFICATION_MODAL_CLOSE = 46,
 		NOTIFICATION_SCROLL_BEGIN = 47,
 		NOTIFICATION_SCROLL_END = 48,
 
@@ -340,9 +329,6 @@ public:
 
 	void set_custom_minimum_size(const Size2 &p_custom);
 	Size2 get_custom_minimum_size() const;
-
-	bool is_window_modal_on_top() const;
-	uint64_t get_modal_frame() const; //frame in which this was made modal
 
 	Control *get_parent_control() const;
 
@@ -398,8 +384,6 @@ public:
 	void set_scale(const Vector2 &p_scale);
 	Vector2 get_scale() const;
 
-	void show_modal(bool p_exclusive = false);
-
 	void set_theme(const Ref<Theme> &p_theme);
 	Ref<Theme> get_theme() const;
 
@@ -437,9 +421,6 @@ public:
 
 	void set_mouse_filter(MouseFilter p_filter);
 	MouseFilter get_mouse_filter() const;
-
-	void set_pass_on_modal_close_click(bool p_pass_on);
-	bool pass_on_modal_close_click() const;
 
 	/* SKINNING */
 

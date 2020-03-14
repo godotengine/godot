@@ -592,6 +592,7 @@ public:
 		VIEWPORT_UPDATE_DISABLED,
 		VIEWPORT_UPDATE_ONCE, //then goes to disabled, must be manually updated
 		VIEWPORT_UPDATE_WHEN_VISIBLE, // default
+		VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE,
 		VIEWPORT_UPDATE_ALWAYS
 	};
 

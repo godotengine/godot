@@ -73,6 +73,8 @@ public:
 		RID shadow_atlas;
 		int shadow_atlas_size;
 
+		uint64_t last_pass = 0;
+
 		int render_info[VS::VIEWPORT_RENDER_INFO_MAX];
 		VS::ViewportDebugDraw debug_draw;
 
@@ -129,6 +131,8 @@ public:
 		}
 	};
 
+	uint64_t draw_viewports_pass = 0;
+
 	mutable RID_PtrOwner<Viewport> viewport_owner;
 
 	struct ViewportSort {
@@ -139,9 +143,9 @@ public:
 
 			if (left_to_screen == right_to_screen) {
 
-				return p_left->parent == p_right->self;
+				return p_right->parent == p_left->self;
 			}
-			return right_to_screen;
+			return (right_to_screen ? 0 : 1) < (left_to_screen ? 0 : 1);
 		}
 	};
 

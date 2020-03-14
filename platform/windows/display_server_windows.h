@@ -200,7 +200,7 @@ class DisplayServerWindows : public DisplayServer {
 
 		bool layered_window = false;
 
-		Callable resize_callback;
+		Callable rect_changed_callback;
 		Callable event_callback;
 		Callable input_event_callback;
 		Callable input_text_callback;
@@ -293,7 +293,7 @@ public:
 	virtual WindowID create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());
 	virtual void delete_sub_window(WindowID p_window);
 
-	virtual void window_set_resize_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
+	virtual void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
 
 	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
 	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);

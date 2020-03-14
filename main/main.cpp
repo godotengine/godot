@@ -120,6 +120,7 @@ static int audio_driver_idx = -1;
 
 // Engine config/tools
 
+static bool single_window = false;
 static bool editor = false;
 static bool project_manager = false;
 static String locale;
@@ -303,6 +304,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --no-window                      Disable window creation (Windows only). Useful together with --script.\n");
 	OS::get_singleton()->print("  --enable-vsync-via-compositor    When vsync is enabled, vsync via the OS' window compositor (Windows only).\n");
 	OS::get_singleton()->print("  --disable-vsync-via-compositor   Disable vsync via the OS' window compositor (Windows only).\n");
+	OS::get_singleton()->print("  --single-window                  Use a single window (no separate subwindows).\n");
 	OS::get_singleton()->print("\n");
 #endif
 
@@ -576,6 +578,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--gpu-abort") { // force windowed window
 
 			Engine::singleton->abort_on_gpu_errors = true;
+		} else if (I->get() == "--single-window") { // force single window
+
+			single_window = true;
 		} else if (I->get() == "-t" || I->get() == "--always-on-top") { // force always-on-top window
 
 			init_always_on_top = true;
@@ -1710,6 +1715,9 @@ bool Main::start() {
 		}
 #endif
 
+		if (single_window) {
+			sml->get_root()->set_embed_subwindows_hint(true);
+		}
 		ResourceLoader::add_custom_loaders();
 		ResourceSaver::add_custom_savers();
 

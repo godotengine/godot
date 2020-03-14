@@ -477,7 +477,7 @@ void CanvasItemEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 
 	Ref<InputEventKey> k = p_ev;
 
-	if (!is_visible_in_tree() || get_viewport()->gui_has_modal_stack())
+	if (!is_visible_in_tree())
 		return;
 
 	if (k->get_keycode() == KEY_CONTROL || k->get_keycode() == KEY_ALT || k->get_keycode() == KEY_SHIFT) {

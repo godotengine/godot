@@ -2853,7 +2853,10 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		Vector2 theme_ofs = path->get_theme_stylebox("normal", "LineEdit")->get_offset();
 		path->set_position(get_global_position() + path_rect.position - theme_ofs);
 		path->set_size(path_rect.size);
-		path->show_modal();
+#ifndef _MSC_VER
+#warning show modal not supported any longer, need to move this to a popup
+#endif
+		path->show();
 		path->grab_focus();
 		path->set_cursor_position(path->get_text().length());
 		clicking_on_name = false;

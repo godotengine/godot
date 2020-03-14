@@ -708,13 +708,13 @@ void DisplayServerX11::window_set_title(const String &p_title, WindowID p_window
 	XChangeProperty(x11_display, wd.x11_window, _net_wm_name, utf8_string, 8, PropModeReplace, (unsigned char *)p_title.utf8().get_data(), p_title.utf8().length());
 }
 
-void DisplayServerX11::window_set_resize_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerX11::window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window) {
 
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
-	wd.resize_callback = p_callable;
+	wd.rect_changed_callback = p_callable;
 }
 
 void DisplayServerX11::window_set_window_event_callback(const Callable &p_callable, WindowID p_window) {
@@ -2224,12 +2224,12 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	}
 #endif
 
-	if (!wd.resize_callback.is_null()) {
-		Variant size = wd.size;
-		Variant *sizep = &size;
+	if (!wd.rect_changed_callback.is_null()) {
+		Variant rect = Rect2i(wd.im_position, wd.size);
+		Variant *rectp = &rect;
 		Variant ret;
 		Callable::CallError ce;
-		wd.resize_callback.call((const Variant **)&sizep, 1, ret, ce);
+		wd.rect_changed_callback.call((const Variant **)&rectp, 1, ret, ce);
 	}
 }
 

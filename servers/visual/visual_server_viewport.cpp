@@ -316,7 +316,10 @@ void VisualServerViewport::draw_viewports() {
 	//draw viewports
 	RENDER_TIMESTAMP(">Render Viewports");
 
-	for (int i = 0; i < active_viewports.size(); i++) {
+	//determine what is visible
+	draw_viewports_pass++;
+
+	for (int i = active_viewports.size() - 1; i >= 0; i--) { //to compute parent dependency, must go in reverse draw order
 
 		Viewport *vp = active_viewports[i];
 
@@ -328,11 +331,37 @@ void VisualServerViewport::draw_viewports() {
 		}
 		//ERR_CONTINUE(!vp->render_target.is_valid());
 
-		bool visible = vp->viewport_to_screen_rect != Rect2() || vp->update_mode == VS::VIEWPORT_UPDATE_ALWAYS || vp->update_mode == VS::VIEWPORT_UPDATE_ONCE || (vp->update_mode == VS::VIEWPORT_UPDATE_WHEN_VISIBLE && VSG::storage->render_target_was_used(vp->render_target));
+		bool visible = vp->viewport_to_screen_rect != Rect2();
+
+		if (vp->update_mode == VS::VIEWPORT_UPDATE_ALWAYS || vp->update_mode == VS::VIEWPORT_UPDATE_ONCE) {
+			visible = true;
+		}
+
+		if (vp->update_mode == VS::VIEWPORT_UPDATE_WHEN_VISIBLE && VSG::storage->render_target_was_used(vp->render_target)) {
+			visible = true;
+		}
+
+		if (vp->update_mode == VS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE) {
+			Viewport *parent = viewport_owner.getornull(vp->parent);
+			if (parent && parent->last_pass == draw_viewports_pass) {
+				visible = true;
+			}
+		}
+
 		visible = visible && vp->size.x > 1 && vp->size.y > 1;
 
-		if (!visible)
-			continue;
+		if (visible) {
+			vp->last_pass = draw_viewports_pass;
+		}
+	}
+
+	for (int i = 0; i < active_viewports.size(); i++) {
+
+		Viewport *vp = active_viewports[i];
+
+		if (vp->last_pass != draw_viewports_pass) {
+			continue; //should not draw
+		}
 
 		RENDER_TIMESTAMP(">Rendering Viewport " + itos(i));
 
