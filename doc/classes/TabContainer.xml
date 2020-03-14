@@ -36,10 +36,10 @@
 		<method name="get_tab_control" qualifiers="const">
 			<return type="Control">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="tab_idx" type="int">
 			</argument>
 			<description>
-				Returns the currently visible tab's [Control] node.
+				Returns the [Control] node from the tab at index [code]tab_idx[/code].
 			</description>
 		</method>
 		<method name="get_tab_count" qualifiers="const">
