@@ -6,7 +6,7 @@
 	<description>
 		The [CubemapArray] is a [TextureLayered] of type [code]enum TextureLayeredType.TEXTURE_LAYERED_CUBEMAP_ARRAY[/code] which uses 6, or a multiple of 6, layers. [TextureLayered]'s and [Cubemap]'s class references explains how a [CubemapArray] operates and how it has to be handled.
 		It is based on the class [Texture] (not [Texture2D]) and can only used as such. Its internal resource type, as well as recognized file extension, is [code]cubearr[/code].
-		The [CubemapArray] is an array of [Image]s, not cubemap levels (ie. [Cubemap]s). In Godot, technically, the [CubemapArray] is the same as the [Cubemap]. The only difference is that the [b]cubemap array has more layers[/b].
+		Logically, the [CubemapArray] is an array of [Cubemap]s. Technically, it consists of multiple [Image]s, not cubemap levels (ie. [Cubemap]s). The [CubemapArray] is the same as the [Cubemap]. The only difference is that [b]the cubemap array has the length of 6, or a multiple of 6, images[/b].
 		The array requires that you have at least 6 images (ie. layers) or a multiple amount of 6. The layers will be handled in the following order: X+, X-, Y+, Y-, Z+, Z-. See [enum VisualServer.CubeMapLayer]. Mipmaps are optional.
 		Generally, cubemap arrays provide a more efficent way for storing multiple cubemaps, than storing multiple [Cubemap]s themselves in an array.
 		In Godot, the [CubemapArray] can be used for the [Sky]. Your [ProjectSettings] value for "rendering/quality/reflections/texture_array_reflections" is reflected in [code]RasterizerSceneRD[/code]s private member [code]sky_use_cubemap_array[/code]. If this member is set to [code]true[/code], the [Sky] uses the [CubemapArray]. Otherwise, the [Cubemap] logic will be used.
