@@ -413,7 +413,7 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 
 	_THREAD_SAFE_METHOD_
 
-	WindowID window_id = _create_window(p_mode, p_rect);
+	WindowID window_id = _create_window(p_mode, p_flags, p_rect);
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, window_id);
@@ -754,6 +754,35 @@ Size2i DisplayServerWindows::window_get_real_size(WindowID p_window) const {
 	return Size2();
 }
 
+void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscreen, bool p_borderless, bool p_resizable, bool p_maximized, DWORD &r_style, DWORD &r_style_ex) {
+
+	r_style = 0;
+	r_style_ex = WS_EX_WINDOWEDGE;
+	if (p_main_window) {
+		r_style_ex |= WS_EX_APPWINDOW;
+	}
+
+	if (p_fullscreen || p_borderless) {
+		r_style |= WS_POPUP;
+		//if (p_borderless) {
+		//	r_style_ex |= WS_EX_TOOLWINDOW;
+		//}
+	} else {
+
+		if (p_resizable) {
+			if (p_maximized) {
+				r_style = WS_OVERLAPPEDWINDOW | WS_MAXIMIZE;
+			} else {
+				r_style = WS_OVERLAPPEDWINDOW;
+			}
+		} else {
+			r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
+		}
+	}
+
+	r_style |= WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+}
+
 void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repaint, bool p_maximized) {
 
 	_THREAD_SAFE_METHOD_
@@ -762,27 +791,9 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	WindowData &wd = windows[p_window];
 
 	DWORD style = 0;
-	DWORD style_ex = WS_EX_WINDOWEDGE;
-	if (p_window == MAIN_WINDOW_ID) {
-		style_ex |= WS_EX_APPWINDOW;
-	}
+	DWORD style_ex = 0;
 
-	if (wd.fullscreen || wd.borderless) {
-		style = WS_SYSMENU | WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE;
-		if (wd.borderless) {
-			style_ex |= WS_EX_TOOLWINDOW;
-		}
-	} else {
-		if (wd.resizable) {
-			if (p_maximized) {
-				style = WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_MAXIMIZE;
-			} else {
-				style = GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE;
-			}
-		} else {
-			style = WS_CAPTION | WS_MINIMIZEBOX | WS_POPUPWINDOW | WS_VISIBLE;
-		}
-	}
+	_get_window_style(p_window == MAIN_WINDOW_ID, wd.fullscreen, wd.borderless, wd.resizable, wd.maximized, style, style_ex);
 
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
@@ -2561,17 +2572,12 @@ void DisplayServerWindows::_process_key_events() {
 	key_event_pos = 0;
 }
 
-DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, const Rect2i &p_rect) {
+DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect) {
 
 	DWORD dwExStyle;
 	DWORD dwStyle;
 
-	dwExStyle = WS_EX_WINDOWEDGE;
-	dwStyle = WS_OVERLAPPEDWINDOW;
-
-	if (window_id_counter == MAIN_WINDOW_ID) {
-		dwExStyle |= WS_EX_APPWINDOW;
-	}
+	_get_window_style(window_id_counter == MAIN_WINDOW_ID, p_mode == WINDOW_MODE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MAXIMIZED, dwStyle, dwExStyle);
 
 	RECT WindowRect;
 
@@ -2589,7 +2595,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		wd.hWnd = CreateWindowExW(
 				dwExStyle,
 				L"Engine", L"",
-				dwStyle | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+				dwStyle,
 				//				(GetSystemMetrics(SM_CXSCREEN) - WindowRect.right) / 2,
 				//				(GetSystemMetrics(SM_CYSCREEN) - WindowRect.bottom) / 2,
 				WindowRect.left,
@@ -2761,7 +2767,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 	}
 #endif
-	WindowID main_window = _create_window(p_mode, Rect2i(Point2i(), p_resolution));
+	WindowID main_window = _create_window(p_mode, 0, Rect2i(Point2i(), p_resolution));
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, main_window);
