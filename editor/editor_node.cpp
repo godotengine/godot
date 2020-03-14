@@ -264,11 +264,8 @@ void EditorNode::_update_title() {
 
 void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 
-	if (Node::get_viewport()->get_modal_stack_top())
-		return; //ignore because of modal window
-
 	Ref<InputEventKey> k = p_event;
-	if (k.is_valid() && k->is_pressed() && !k->is_echo() && !gui_base->get_viewport()->gui_has_modal_stack()) {
+	if (k.is_valid() && k->is_pressed() && !k->is_echo()) {
 
 		EditorPlugin *old_editor = editor_plugin_screen;
 

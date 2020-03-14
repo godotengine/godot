@@ -2349,8 +2349,6 @@ void FileSystemDock::_file_multi_selected(int p_index, bool p_selected) {
 }
 
 void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
-	if (get_viewport()->get_modal_stack_top())
-		return; // Ignore because of modal window.
 
 	Ref<InputEventKey> key = p_event;
 	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
@@ -2367,8 +2365,6 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 }
 
 void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
-	if (get_viewport()->get_modal_stack_top())
-		return; // Ignore because of modal window.
 
 	Ref<InputEventKey> key = p_event;
 	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {

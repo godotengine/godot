@@ -151,6 +151,10 @@ public:
 		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX,
 	};
 
+	enum {
+		SUBWINDOW_CANVAS_LAYER = 1024
+	};
+
 private:
 	friend class ViewportTexture;
 
@@ -183,6 +187,7 @@ private:
 
 	RID viewport;
 	RID current_canvas;
+	RID subwindow_canvas;
 
 	bool audio_listener;
 	RID internal_listener;
@@ -269,6 +274,31 @@ private:
 	Ref<ViewportTexture> default_texture;
 	Set<ViewportTexture *> viewport_textures;
 
+	enum SubWindowDrag {
+		SUB_WINDOW_DRAG_DISABLED,
+		SUB_WINDOW_DRAG_MOVE,
+		SUB_WINDOW_DRAG_CLOSE,
+		SUB_WINDOW_DRAG_RESIZE,
+	};
+
+	enum SubWindowResize {
+		SUB_WINDOW_RESIZE_DISABLED,
+		SUB_WINDOW_RESIZE_TOP_LEFT,
+		SUB_WINDOW_RESIZE_TOP,
+		SUB_WINDOW_RESIZE_TOP_RIGHT,
+		SUB_WINDOW_RESIZE_LEFT,
+		SUB_WINDOW_RESIZE_RIGHT,
+		SUB_WINDOW_RESIZE_BOTTOM_LEFT,
+		SUB_WINDOW_RESIZE_BOTTOM,
+		SUB_WINDOW_RESIZE_BOTTOM_RIGHT,
+		SUB_WINDOW_RESIZE_MAX
+	};
+
+	struct SubWindow {
+		Window *window;
+		RID canvas_item;
+	};
+
 	struct GUI {
 		// info used when this is a window
 
@@ -290,17 +320,24 @@ private:
 		Control *drag_preview;
 		float tooltip_timer;
 		float tooltip_delay;
-		List<Control *> modal_stack;
 		Transform2D focus_inv_xform;
-		bool subwindow_order_dirty;
-		bool subwindow_visibility_dirty;
-		List<Control *> subwindows; // visible subwindows
-		List<Control *> all_known_subwindows;
 		bool roots_order_dirty;
 		List<Control *> roots;
 		int canvas_sort_index; //for sorting items with canvas as root
 		bool dragging;
 		bool embed_subwindows_hint;
+		bool embedding_subwindows;
+
+		Window *subwindow_focused;
+		SubWindowDrag subwindow_drag;
+		Vector2 subwindow_drag_from;
+		Vector2 subwindow_drag_pos;
+		Rect2i subwindow_drag_close_rect;
+		bool subwindow_drag_close_inside;
+		SubWindowResize subwindow_resize_mode;
+		Rect2i subwindow_resize_from_rect;
+
+		Vector<SubWindow> sub_windows;
 
 		GUI();
 	} gui;
@@ -316,10 +353,7 @@ private:
 	void _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input);
 	void _gui_call_notification(Control *p_control, int p_what);
 
-	void _gui_prepare_subwindows();
-	void _gui_sort_subwindows();
 	void _gui_sort_roots();
-	void _gui_sort_modal_stack();
 	Control *_gui_find_control(const Point2 &p_global);
 	Control *_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_global, const Transform2D &p_xform, Transform2D &r_inv_xform);
 
@@ -334,15 +368,8 @@ private:
 	friend class Control;
 
 	List<Control *>::Element *_gui_add_root_control(Control *p_control);
-	List<Control *>::Element *_gui_add_subwindow_control(Control *p_control);
 
-	void _gui_set_subwindow_order_dirty();
-	void _gui_set_root_order_dirty();
-
-	void _gui_remove_modal_control(List<Control *>::Element *MI);
-	void _gui_remove_from_modal_stack(List<Control *>::Element *MI, ObjectID p_prev_focus_owner);
 	void _gui_remove_root_control(List<Control *>::Element *RI);
-	void _gui_remove_subwindow_control(List<Control *>::Element *SI);
 
 	String _gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Control **r_which = NULL);
 	void _gui_cancel_tooltip();
@@ -354,9 +381,6 @@ private:
 	void _gui_force_drag(Control *p_base, const Variant &p_data, Control *p_control);
 	void _gui_set_drag_preview(Control *p_base, Control *p_control);
 
-	bool _gui_is_modal_on_top(const Control *p_control);
-	List<Control *>::Element *_gui_show_modal(Control *p_control);
-
 	void _gui_remove_focus();
 	void _gui_unfocus_control(Control *p_control);
 	bool _gui_control_has_focus(const Control *p_control);
@@ -366,8 +390,6 @@ private:
 	void _gui_accept_event();
 
 	Control *_gui_get_focus_owner();
-
-	Vector2 _get_window_offset() const;
 
 	bool _gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_check);
 
@@ -394,7 +416,19 @@ private:
 
 	void _update_canvas_items(Node *p_node);
 
+	void _gui_set_root_order_dirty();
+
 	void _own_world_changed();
+
+	friend class Window;
+
+	void _sub_window_update_order();
+	void _sub_window_register(Window *p_window);
+	void _sub_window_update(Window *p_window);
+	void _sub_window_grab_focus(Window *p_window);
+	void _sub_window_remove(Window *p_window);
+	bool _sub_windows_forward_input(const Ref<InputEvent> &p_event);
+	SubWindowResize _sub_window_get_resize_margin(Window *p_subwindow, const Point2 &p_point);
 
 protected:
 	void _set_size(const Size2i &p_size, const Size2i &p_size_override, const Rect2i &p_to_screen_rect, const Transform2D &p_stretch_transform, bool p_allocated);
@@ -485,10 +519,7 @@ public:
 	void set_physics_object_picking(bool p_enable);
 	bool get_physics_object_picking();
 
-	bool gui_has_modal_stack() const;
-
 	Variant gui_get_drag_data() const;
-	Control *get_modal_stack_top() const;
 
 	void gui_reset_canvas_sort_index();
 	int gui_get_canvas_sort_index();
@@ -502,8 +533,6 @@ public:
 
 	void set_snap_controls_to_pixels(bool p_enable);
 	bool is_snap_controls_to_pixels_enabled() const;
-
-	void _subwindow_visibility_changed();
 
 	void set_input_as_handled();
 	bool is_input_handled() const;
@@ -546,6 +575,7 @@ public:
 		UPDATE_DISABLED,
 		UPDATE_ONCE, //then goes to disabled
 		UPDATE_WHEN_VISIBLE, // default
+		UPDATE_WHEN_PARENT_VISIBLE,
 		UPDATE_ALWAYS
 	};
 
@@ -557,6 +587,7 @@ private:
 protected:
 	static void _bind_methods();
 	virtual DisplayServer::WindowID get_window_id() const;
+	void _notification(int p_what);
 
 public:
 	void set_size(const Size2i &p_size);
