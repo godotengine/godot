@@ -345,6 +345,9 @@ void Environment::_validate_property(PropertyInfo &property) const {
 		"ssao_",
 		"glow_",
 		"adjustment_",
+		"fog_height_",
+		"fog_depth_",
+		"fog_exponential_",
 		NULL
 
 	};
@@ -674,7 +677,7 @@ bool Environment::is_glow_bicubic_upscale_enabled() const {
 void Environment::set_fog_enabled(bool p_enabled) {
 
 	fog_enabled = p_enabled;
-	VS::get_singleton()->environment_set_fog(environment, fog_enabled, fog_color, fog_sun_color, fog_sun_amount);
+	VS::get_singleton()->environment_set_fog(environment, fog_enabled, fog_color, fog_sun_color, fog_sun_amount, fog_exponential_enabled, fog_exponential_density);
 	_change_notify();
 }
 
@@ -686,7 +689,7 @@ bool Environment::is_fog_enabled() const {
 void Environment::set_fog_color(const Color &p_color) {
 
 	fog_color = p_color;
-	VS::get_singleton()->environment_set_fog(environment, fog_enabled, fog_color, fog_sun_color, fog_sun_amount);
+	VS::get_singleton()->environment_set_fog(environment, fog_enabled, fog_color, fog_sun_color, fog_sun_amount, fog_exponential_enabled, fog_exponential_density);
 }
 Color Environment::get_fog_color() const {
 
@@ -696,7 +699,7 @@ Color Environment::get_fog_color() const {
 void Environment::set_fog_sun_color(const Color &p_color) {
 
 	fog_sun_color = p_color;
-	VS::get_singleton()->environment_set_fog(environment, fog_enabled, fog_color, fog_sun_color, fog_sun_amount);
+	VS::get_singleton()->environment_set_fog(environment, fog_enabled, fog_color, fog_sun_color, fog_sun_amount, fog_exponential_enabled, fog_exponential_density);
 }
 Color Environment::get_fog_sun_color() const {
 
@@ -706,7 +709,7 @@ Color Environment::get_fog_sun_color() const {
 void Environment::set_fog_sun_amount(float p_amount) {
 
 	fog_sun_amount = p_amount;
-	VS::get_singleton()->environment_set_fog(environment, fog_enabled, fog_color, fog_sun_color, fog_sun_amount);
+	VS::get_singleton()->environment_set_fog(environment, fog_enabled, fog_color, fog_sun_color, fog_sun_amount, fog_exponential_enabled, fog_exponential_density);
 }
 float Environment::get_fog_sun_amount() const {
 
@@ -717,6 +720,7 @@ void Environment::set_fog_depth_enabled(bool p_enabled) {
 
 	fog_depth_enabled = p_enabled;
 	VS::get_singleton()->environment_set_fog_depth(environment, fog_depth_enabled, fog_depth_begin, fog_depth_end, fog_depth_curve, fog_transmit_enabled, fog_transmit_curve);
+	_change_notify();
 }
 bool Environment::is_fog_depth_enabled() const {
 
@@ -778,6 +782,7 @@ void Environment::set_fog_height_enabled(bool p_enabled) {
 
 	fog_height_enabled = p_enabled;
 	VS::get_singleton()->environment_set_fog_height(environment, fog_height_enabled, fog_height_min, fog_height_max, fog_height_curve);
+	_change_notify();
 }
 bool Environment::is_fog_height_enabled() const {
 
@@ -812,6 +817,28 @@ void Environment::set_fog_height_curve(float p_distance) {
 float Environment::get_fog_height_curve() const {
 
 	return fog_height_curve;
+}
+
+void Environment::set_fog_exponential_enabled(bool p_enabled) {
+
+	fog_exponential_enabled = p_enabled;
+	VS::get_singleton()->environment_set_fog(environment, fog_enabled, fog_color, fog_sun_color, fog_sun_amount, fog_exponential_enabled, fog_exponential_density);
+	_change_notify();
+}
+
+bool Environment::is_fog_exponential_enabled() const {
+
+	return fog_exponential_enabled;
+}
+
+void Environment::set_fog_exponential_density(float p_density) {
+
+	fog_exponential_density = p_density;
+	VS::get_singleton()->environment_set_fog(environment, fog_enabled, fog_color, fog_sun_color, fog_sun_amount, fog_exponential_enabled, fog_exponential_density);
+}
+
+float Environment::get_fog_exponential_density() const {
+	return fog_exponential_density;
 }
 
 #ifndef DISABLE_DEPRECATED
@@ -926,11 +953,19 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fog_height_curve", "curve"), &Environment::set_fog_height_curve);
 	ClassDB::bind_method(D_METHOD("get_fog_height_curve"), &Environment::get_fog_height_curve);
 
+	ClassDB::bind_method(D_METHOD("set_fog_exponential_enabled", "enabled"), &Environment::set_fog_exponential_enabled);
+	ClassDB::bind_method(D_METHOD("is_fog_exponential_enabled"), &Environment::is_fog_exponential_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_fog_exponential_density", "density"), &Environment::set_fog_exponential_density);
+	ClassDB::bind_method(D_METHOD("get_fog_exponential_density"), &Environment::get_fog_exponential_density);
+
 	ADD_GROUP("Fog", "fog_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fog_enabled"), "set_fog_enabled", "is_fog_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "fog_color"), "set_fog_color", "get_fog_color");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "fog_sun_color"), "set_fog_sun_color", "get_fog_sun_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_sun_amount", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_fog_sun_amount", "get_fog_sun_amount");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fog_exponential_enabled"), "set_fog_exponential_enabled", "is_fog_exponential_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_exponential_density", PROPERTY_HINT_EXP_RANGE, "0,50,0.001"), "set_fog_exponential_density", "get_fog_exponential_density");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fog_depth_enabled"), "set_fog_depth_enabled", "is_fog_depth_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_depth_begin", PROPERTY_HINT_RANGE, "0,4000,0.1"), "set_fog_depth_begin", "get_fog_depth_begin");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_depth_end", PROPERTY_HINT_RANGE, "0,4000,0.1,or_greater"), "set_fog_depth_end", "get_fog_depth_end");
@@ -1222,13 +1257,16 @@ Environment::Environment() :
 	fog_depth_end = 100;
 	fog_depth_curve = 1;
 
-	fog_transmit_enabled = false;
+	fog_transmit_enabled = true;
 	fog_transmit_curve = 1;
 
 	fog_height_enabled = false;
 	fog_height_min = 10;
 	fog_height_max = 0;
 	fog_height_curve = 1;
+
+	fog_exponential_enabled = true;
+	fog_exponential_density = 0.01;
 
 	set_fog_color(Color(0.5, 0.6, 0.7));
 	set_fog_sun_color(Color(1.0, 0.9, 0.7));

@@ -1707,14 +1707,27 @@ FRAGMENT_SHADER_CODE
 		//apply fog
 
 		if (scene_data.fog_depth_enabled) {
-			float fog_far = scene_data.fog_depth_end > 0.0 ? scene_data.fog_depth_end : scene_data.z_far;
 
-			float fog_z = smoothstep(scene_data.fog_depth_begin, fog_far, length(vertex));
+			float fog_z;
+			if (scene_data.fog_exponential_enabled) {
+				fog_z = length(vertex);
+				fog_amount = 1.0 - exp(-fog_z * scene_data.fog_exponential_density * scene_data.fog_density);
+			} else {
+				float fog_far = scene_data.fog_depth_end > 0.0 ? scene_data.fog_depth_end : scene_data.z_far;
+				fog_z = smoothstep(scene_data.fog_depth_begin, fog_far, length(vertex));
+				fog_amount = pow(fog_z, scene_data.fog_depth_curve) * scene_data.fog_density;
+			}
 
-			fog_amount = pow(fog_z, scene_data.fog_depth_curve) * scene_data.fog_density;
 			if (scene_data.fog_transmit_enabled) {
 				vec3 total_light = emission + ambient_light + specular_light + diffuse_light;
-				float transmit = pow(fog_z, scene_data.fog_transmit_curve);
+
+				float transmit;
+				if (scene_data.fog_exponential_enabled) {
+					transmit = pow(fog_amount, scene_data.fog_transmit_curve);
+				} else {
+					transmit = pow(fog_z, scene_data.fog_transmit_curve);
+				}
+
 				fog_color = mix(max(total_light, fog_color), fog_color, transmit);
 			}
 		}

@@ -531,6 +531,8 @@ private:
 		float fog_height_min = 10;
 		float fog_height_max = 0;
 		float fog_height_curve = 1;
+		bool fog_exponential_enabled = true;
+		float fog_exponential_density = 0.01;
 	};
 
 	VS::EnvironmentSSAOQuality ssao_quality = VS::ENV_SSAO_QUALITY_MEDIUM;
@@ -715,7 +717,7 @@ public:
 	void environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale);
 	void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, RID p_ramp) {}
 
-	void environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount);
+	void environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount, bool p_exponential_enable, float p_fog_exponential_density);
 	void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve);
 	void environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve);
 	bool environment_get_fog_enabled(RID p_env) const;
@@ -732,6 +734,8 @@ public:
 	float environment_get_fog_height_max(RID p_env) const;
 	float environment_get_fog_height_curve(RID p_env) const;
 	float environment_get_fog_sun_amount(RID p_env) const;
+	bool environment_get_fog_exponential_enabled(RID p_env) const;
+	float environment_get_fog_exponential_density(RID p_env) const;
 
 	virtual RID camera_effects_create();
 

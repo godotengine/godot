@@ -166,6 +166,9 @@ private:
 	float fog_height_max;
 	float fog_height_curve;
 
+	float fog_exponential_enabled;
+	float fog_exponential_density;
+
 protected:
 	static void _bind_methods();
 	virtual void _validate_property(PropertyInfo &property) const;
@@ -362,6 +365,12 @@ public:
 
 	void set_fog_height_curve(float p_distance);
 	float get_fog_height_curve() const;
+
+	void set_fog_exponential_enabled(bool p_enabled);
+	bool is_fog_exponential_enabled() const;
+
+	void set_fog_exponential_density(float p_density);
+	float get_fog_exponential_density() const;
 
 	virtual RID get_rid() const;
 

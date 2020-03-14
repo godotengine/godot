@@ -369,8 +369,11 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 			float fog_height_min;
 			float fog_height_max;
 			float fog_height_curve;
+			uint32_t fog_exponential_enabled;
+			float fog_exponential_density;
+
 			// make sure this struct is padded to be a multiple of 16 bytes for webgl
-			float pad;
+			float pad[3];
 		};
 
 		UBO ubo;

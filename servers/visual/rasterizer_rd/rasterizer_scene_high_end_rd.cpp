@@ -1057,6 +1057,9 @@ void RasterizerSceneHighEndRD::_setup_environment(RID p_environment, const Camer
 		scene_state.ubo.fog_height_max = environment_get_fog_height_max(p_environment);
 		scene_state.ubo.fog_height_curve = environment_get_fog_height_curve(p_environment);
 
+		scene_state.ubo.fog_exponential_enabled = environment_get_fog_exponential_enabled(p_environment);
+		scene_state.ubo.fog_exponential_density = environment_get_fog_exponential_density(p_environment);
+
 	} else {
 
 		if (p_reflection_probe.is_valid() && storage->reflection_probe_is_interior(reflection_probe_instance_get_probe(p_reflection_probe))) {

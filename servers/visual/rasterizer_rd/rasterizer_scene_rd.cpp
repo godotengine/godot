@@ -553,7 +553,7 @@ void RasterizerSceneRD::environment_set_tonemap(RID p_env, VS::EnvironmentToneMa
 	env->auto_exp_scale = p_auto_exp_scale;
 }
 
-void RasterizerSceneRD::environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount) {
+void RasterizerSceneRD::environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount, bool p_exponential_enable, float p_fog_exponential_density) {
 
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
@@ -562,6 +562,8 @@ void RasterizerSceneRD::environment_set_fog(RID p_env, bool p_enable, const Colo
 	env->fog_color = p_color;
 	env->fog_sun_color = p_sun_color;
 	env->fog_sun_amount = p_sun_amount;
+	env->fog_exponential_enabled = p_exponential_enable;
+	env->fog_exponential_density = p_fog_exponential_density;
 }
 
 void RasterizerSceneRD::environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve) {
@@ -667,6 +669,18 @@ float RasterizerSceneRD::environment_get_fog_sun_amount(RID p_env) const {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND_V(!env, false);
 	return env->fog_sun_amount;
+}
+
+bool RasterizerSceneRD::environment_get_fog_exponential_enabled(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, false);
+	return env->fog_exponential_enabled;
+}
+
+float RasterizerSceneRD::environment_get_fog_exponential_density(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, false);
+	return env->fog_exponential_density;
 }
 
 void RasterizerSceneRD::environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale) {
