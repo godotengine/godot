@@ -166,7 +166,7 @@ namespace GodotTools
             // Make sure the API assemblies are up to date before building the project.
             // We may not have had the chance to update the release API assemblies, and the debug ones
             // may have been deleted by the user at some point after they were loaded by the Godot editor.
-            string apiAssembliesUpdateError = Internal.UpdateApiAssembliesFromPrebuilt(config == "Release" ? "Release" : "Debug");
+            string apiAssembliesUpdateError = Internal.UpdateApiAssembliesFromPrebuilt(config == "ExportRelease" ? "Release" : "Debug");
 
             if (!string.IsNullOrEmpty(apiAssembliesUpdateError))
             {
@@ -242,7 +242,7 @@ namespace GodotTools
                 Internal.GodotIs32Bits() ? "32" : "64"
             };
 
-            return BuildProjectBlocking("Tools", godotDefines);
+            return BuildProjectBlocking("Debug", godotDefines);
         }
 
         public static void Initialize()
@@ -256,7 +256,7 @@ namespace GodotTools
                         : BuildTool.MsBuildVs;
 
             EditorDef("mono/builds/build_tool", msbuild);
-            
+
             editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
             {
                 ["type"] = Godot.Variant.Type.Int,
