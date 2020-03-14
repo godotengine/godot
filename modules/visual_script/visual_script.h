@@ -61,6 +61,7 @@ protected:
 
 public:
 	Ref<VisualScript> get_visual_script() const;
+	virtual void on_enter_graph(){ /* nothing */ };
 
 	virtual int get_output_sequence_port_count() const = 0;
 	virtual bool has_input_sequence_port() const = 0;

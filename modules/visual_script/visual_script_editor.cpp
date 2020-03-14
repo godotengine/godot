@@ -4631,6 +4631,8 @@ void VisualScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_update_graph_connections", &VisualScriptEditor::_update_graph_connections);
 
 	ClassDB::bind_method("_generic_search", &VisualScriptEditor::_generic_search);
+
+	ClassDB::bind_method("_update_members", &VisualScriptEditor::_update_members);
 }
 
 VisualScriptEditor::VisualScriptEditor() {

@@ -280,6 +280,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual void on_enter_graph();
+
 	virtual int get_output_sequence_port_count() const;
 	virtual bool has_input_sequence_port() const;
 
@@ -313,6 +315,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual void on_enter_graph();
+
 	virtual int get_output_sequence_port_count() const;
 	virtual bool has_input_sequence_port() const;
 

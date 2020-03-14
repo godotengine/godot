@@ -343,6 +343,7 @@ void VisualScript::add_node(const StringName &p_func, int p_id, const Ref<Visual
 	vsn->connect("ports_changed", callable_mp(this, &VisualScript::_node_ports_changed), varray(p_id));
 	vsn->scripts_used.insert(this);
 	vsn->validate_input_default_values(); // Validate when fully loaded
+	vsn->on_enter_graph(); // Enters the graph after validation
 
 	func.nodes[p_id] = nd;
 }
