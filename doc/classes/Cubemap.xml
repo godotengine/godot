@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Cubemap" inherits="TextureLayered" version="4.0">
 	<brief_description>
-		A [TextureLayered] of type [code]enum TextureLayeredType.TEXTURE_LAYERED_CUBEMAP[/code] which uses exactly 6 layers.
+		A single texture resource which consists of 6 faces. Each face is an [Image].
 	</brief_description>
 	<description>
+		A [TextureLayered] of type [code]enum TextureLayeredType.TEXTURE_LAYERED_CUBEMAP[/code] which uses exactly 6 layers.
 		Used in reflection (see [ReflectionProbe]), lighting and shadowing systems. A [Cubemap] holds exactly 6 [Image]s. One image in each layer. The 6 images are the 6 faces of the cube. They will be handled as X+, X-, Y+, Y-, Z+, Z-. See [enum VisualServer.CubeMapLayer].
 		Godot does not use the [Cubemap] to create skyboxes (see [PanoramaSky]), but rather uses its image data to influence the reflections ([ReflectionProbe]), lighting ([GIProbe], more on GI [url=https://godotengine.org/article/godot-3-0-released#pbr-gi]here[/url] ) and shadows (see [code]struct ShadowCubemap[/code] in [code]RasterizerSceneRD[/code]) in the scene via the [Sky].
 		[TextureLayered]'s class reference explains how a [Cubemap] operates and how it has to be handled.
