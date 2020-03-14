@@ -653,7 +653,7 @@ DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, u
 
 	_THREAD_SAFE_METHOD_
 
-	WindowID id = _create_window(p_mode, p_rect);
+	WindowID id = _create_window(p_mode, p_flags, p_rect);
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, id);
@@ -2992,7 +2992,7 @@ DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, W
 	return memnew(DisplayServerX11(p_rendering_driver, p_mode, p_flags, p_resolution, r_error));
 }
 
-DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, const Rect2i &p_rect) {
+DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect) {
 
 	//Create window
 
@@ -3381,7 +3381,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 #endif
 
-	WindowID main_window = _create_window(p_mode, Rect2i(Point2(), p_resolution));
+	WindowID main_window = _create_window(p_mode, p_flags, Rect2i(Point2(), p_resolution));
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, main_window);

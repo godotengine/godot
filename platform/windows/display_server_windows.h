@@ -212,7 +212,7 @@ class DisplayServerWindows : public DisplayServer {
 
 	JoypadWindows *joypad;
 
-	WindowID _create_window(WindowMode p_mode, const Rect2i &p_rect);
+	WindowID _create_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect);
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 	Map<WindowID, WindowData> windows;
 
@@ -225,6 +225,7 @@ class DisplayServerWindows : public DisplayServer {
 	WNDPROC user_proc = nullptr;
 
 	void _send_window_event(const WindowData &wd, WindowEvent p_event);
+	void _get_window_style(bool p_main_window, bool p_fullscreen, bool p_borderless, bool p_resizable, bool p_maximized, DWORD &r_style, DWORD &r_style_ex);
 
 	MouseMode mouse_mode;
 	bool alt_mem = false;
