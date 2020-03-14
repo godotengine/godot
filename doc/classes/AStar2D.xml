@@ -9,6 +9,30 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_compute_cost" qualifiers="virtual">
+			<return type="float">
+			</return>
+			<argument index="0" name="from_id" type="int">
+			</argument>
+			<argument index="1" name="to_id" type="int">
+			</argument>
+			<description>
+				Called when computing the cost between two connected points.
+				Note that this function is hidden in the default [code]AStar2D[/code] class.
+			</description>
+		</method>
+		<method name="_estimate_cost" qualifiers="virtual">
+			<return type="float">
+			</return>
+			<argument index="0" name="from_id" type="int">
+			</argument>
+			<argument index="1" name="to_id" type="int">
+			</argument>
+			<description>
+				Called when estimating the cost between a point and the path's ending point.
+				Note that this function is hidden in the default [code]AStar2D[/code] class.
+			</description>
+		</method>
 		<method name="add_point">
 			<return type="void">
 			</return>
