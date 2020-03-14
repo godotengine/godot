@@ -280,7 +280,7 @@ namespace GodotTools
                     Text = "Build Project".TTR(),
                     FocusMode = FocusModeEnum.None
                 };
-                buildProjectBtn.Connect("pressed", this, nameof(BuildProjectPressed));
+                buildProjectBtn.PressedSignal += BuildProjectPressed;
                 toolBarHBox.AddChild(buildProjectBtn);
 
                 toolBarHBox.AddSpacer(begin: false);
@@ -293,7 +293,7 @@ namespace GodotTools
                     Visible = false,
                     FocusMode = FocusModeEnum.None
                 };
-                warningsBtn.Connect("toggled", this, nameof(_WarningsToggled));
+                warningsBtn.Toggled += _WarningsToggled;
                 toolBarHBox.AddChild(warningsBtn);
 
                 errorsBtn = new ToolButton
@@ -304,7 +304,7 @@ namespace GodotTools
                     Visible = false,
                     FocusMode = FocusModeEnum.None
                 };
-                errorsBtn.Connect("toggled", this, nameof(_ErrorsToggled));
+                errorsBtn.Toggled += _ErrorsToggled;
                 toolBarHBox.AddChild(errorsBtn);
 
                 toolBarHBox.AddSpacer(begin: false);
@@ -315,7 +315,7 @@ namespace GodotTools
                     FocusMode = FocusModeEnum.None,
                     Visible = false
                 };
-                viewLogBtn.Connect("pressed", this, nameof(_ViewLogPressed));
+                viewLogBtn.PressedSignal += _ViewLogPressed;
                 toolBarHBox.AddChild(viewLogBtn);
 
                 var hsc = new HSplitContainer
@@ -326,8 +326,8 @@ namespace GodotTools
                 panelBuildsTab.AddChild(hsc);
 
                 buildTabsList = new ItemList { SizeFlagsHorizontal = (int)SizeFlags.ExpandFill };
-                buildTabsList.Connect("item_selected", this, nameof(_BuildTabsItemSelected));
-                buildTabsList.Connect("nothing_selected", this, nameof(_BuildTabsNothingSelected));
+                buildTabsList.ItemSelected += _BuildTabsItemSelected;
+                buildTabsList.NothingSelected += _BuildTabsNothingSelected;
                 hsc.AddChild(buildTabsList);
 
                 buildTabs = new TabContainer

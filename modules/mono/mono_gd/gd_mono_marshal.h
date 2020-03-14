@@ -33,6 +33,7 @@
 
 #include "core/variant.h"
 
+#include "../managed_callable.h"
 #include "gd_mono.h"
 #include "gd_mono_utils.h"
 
@@ -62,7 +63,7 @@ T *unbox_addr(MonoObject *p_obj) {
 #define BOX_PTR(x) mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(IntPtr), x)
 #define BOX_ENUM(m_enum_class, x) mono_value_box(mono_domain_get(), m_enum_class, &x)
 
-Variant::Type managed_to_variant_type(const ManagedType &p_type);
+Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_variant = NULL);
 
 bool try_get_array_element_type(const ManagedType &p_array_type, ManagedType &r_elem_type);
 bool try_get_dictionary_key_value_types(const ManagedType &p_dictionary_type, ManagedType &r_key_type, ManagedType &r_value_type);
@@ -132,6 +133,11 @@ Array mono_array_to_Array(MonoArray *p_array);
 MonoArray *PackedInt32Array_to_mono_array(const PackedInt32Array &p_array);
 PackedInt32Array mono_array_to_PackedInt32Array(MonoArray *p_array);
 
+// PackedInt64Array
+
+MonoArray *PackedInt64Array_to_mono_array(const PackedInt64Array &p_array);
+PackedInt64Array mono_array_to_PackedInt64Array(MonoArray *p_array);
+
 // PackedByteArray
 
 MonoArray *PackedByteArray_to_mono_array(const PackedByteArray &p_array);
@@ -141,6 +147,11 @@ PackedByteArray mono_array_to_PackedByteArray(MonoArray *p_array);
 
 MonoArray *PackedFloat32Array_to_mono_array(const PackedFloat32Array &p_array);
 PackedFloat32Array mono_array_to_PackedFloat32Array(MonoArray *p_array);
+
+// PackedFloat64Array
+
+MonoArray *PackedFloat64Array_to_mono_array(const PackedFloat64Array &p_array);
+PackedFloat64Array mono_array_to_PackedFloat64Array(MonoArray *p_array);
 
 // PackedStringArray
 
@@ -161,6 +172,29 @@ PackedVector2Array mono_array_to_PackedVector2Array(MonoArray *p_array);
 
 MonoArray *PackedVector3Array_to_mono_array(const PackedVector3Array &p_array);
 PackedVector3Array mono_array_to_PackedVector3Array(MonoArray *p_array);
+
+#pragma pack(push, 1)
+
+struct M_Callable {
+	MonoObject *target;
+	MonoObject *method_string_name;
+	MonoDelegate *delegate;
+};
+
+struct M_SignalInfo {
+	MonoObject *owner;
+	MonoObject *name_string_name;
+};
+
+#pragma pack(pop)
+
+// Callable
+Callable managed_to_callable(const M_Callable &p_managed_callable);
+M_Callable callable_to_managed(const Callable &p_callable);
+
+// SignalInfo
+Signal managed_to_signal_info(const M_SignalInfo &p_managed_signal);
+M_SignalInfo signal_info_to_managed(const Signal &p_signal);
 
 // Structures
 
@@ -222,8 +256,8 @@ enum {
 // In the future we may force this if we want to ref return these structs
 #ifdef GD_MONO_FORCE_INTEROP_STRUCT_COPY
 /* clang-format off */
-GD_STATIC_ASSERT(MATCHES_Vector2 && MATCHES_Rect2 && MATCHES_Transform2D && MATCHES_Vector3 &&
-				MATCHES_Basis && MATCHES_Quat && MATCHES_Transform && MATCHES_AABB && MATCHES_Color &&MATCHES_Plane);
+static_assert(MATCHES_Vector2 && MATCHES_Rect2 && MATCHES_Transform2D && MATCHES_Vector3 &&
+				MATCHES_Basis && MATCHES_Quat && MATCHES_Transform && MATCHES_AABB && MATCHES_Color && MATCHES_Plane);
 /* clang-format on */
 #endif
 

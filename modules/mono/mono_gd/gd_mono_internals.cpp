@@ -33,7 +33,6 @@
 #include "../csharp_script.h"
 #include "../mono_gc_handle.h"
 #include "../utils/macros.h"
-#include "../utils/thread_local.h"
 #include "gd_mono_class.h"
 #include "gd_mono_marshal.h"
 #include "gd_mono_utils.h"
@@ -108,9 +107,11 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 
 	CRASH_COND(script.is_null());
 
-	ScriptInstance *si = CSharpInstance::create_for_managed_type(unmanaged, script.ptr(), gchandle);
+	CSharpInstance *csharp_instance = CSharpInstance::create_for_managed_type(unmanaged, script.ptr(), gchandle);
 
-	unmanaged->set_script_and_instance(script, si);
+	unmanaged->set_script_and_instance(script, csharp_instance);
+
+	csharp_instance->connect_event_signals();
 }
 
 void unhandled_exception(MonoException *p_exc) {

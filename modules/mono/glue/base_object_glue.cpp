@@ -126,18 +126,25 @@ void godot_icall_Reference_Disposed(MonoObject *p_obj, Object *p_ptr, MonoBoolea
 	}
 }
 
-MethodBind *godot_icall_Object_ClassDB_get_method(MonoString *p_type, MonoString *p_method) {
-	StringName type(GDMonoMarshal::mono_string_to_godot(p_type));
+void godot_icall_Object_ConnectEventSignals(Object *p_ptr) {
+	CSharpInstance *csharp_instance = CAST_CSHARP_INSTANCE(p_ptr->get_script_instance());
+	if (csharp_instance) {
+		csharp_instance->connect_event_signals();
+	}
+}
+
+MethodBind *godot_icall_Object_ClassDB_get_method(StringName *p_type, MonoString *p_method) {
+	StringName type = p_type ? *p_type : StringName();
 	StringName method(GDMonoMarshal::mono_string_to_godot(p_method));
 	return ClassDB::get_method(type, method);
 }
 
-MonoObject *godot_icall_Object_weakref(Object *p_obj) {
-	if (!p_obj)
+MonoObject *godot_icall_Object_weakref(Object *p_ptr) {
+	if (!p_ptr)
 		return NULL;
 
 	Ref<WeakRef> wref;
-	Reference *ref = Object::cast_to<Reference>(p_obj);
+	Reference *ref = Object::cast_to<Reference>(p_ptr);
 
 	if (ref) {
 		REF r = ref;
@@ -148,15 +155,15 @@ MonoObject *godot_icall_Object_weakref(Object *p_obj) {
 		wref->set_ref(r);
 	} else {
 		wref.instance();
-		wref->set_obj(p_obj);
+		wref->set_obj(p_ptr);
 	}
 
 	return GDMonoUtils::unmanaged_get_managed(wref.ptr());
 }
 
-Error godot_icall_SignalAwaiter_connect(Object *p_source, MonoString *p_signal, Object *p_target, MonoObject *p_awaiter) {
-	String signal = GDMonoMarshal::mono_string_to_godot(p_signal);
-	return SignalAwaiterUtils::connect_signal_awaiter(p_source, signal, p_target, p_awaiter);
+Error godot_icall_SignalAwaiter_connect(Object *p_source, StringName *p_signal, Object *p_target, MonoObject *p_awaiter) {
+	StringName signal = p_signal ? *p_signal : StringName();
+	return gd_mono_connect_signal_awaiter(p_source, signal, p_target, p_awaiter);
 }
 
 MonoArray *godot_icall_DynamicGodotObject_SetMemberList(Object *p_ptr) {
@@ -225,8 +232,8 @@ MonoString *godot_icall_Object_ToString(Object *p_ptr) {
 	// Cannot happen in C#; would get an ObjectDisposedException instead.
 	CRASH_COND(p_ptr == NULL);
 #endif
-
-	String result = p_ptr->to_string();
+	// Can't call 'Object::to_string()' here, as that can end up calling 'ToString' again resulting in an endless circular loop.
+	String result = "[" + p_ptr->get_class() + ":" + itos(p_ptr->get_instance_id()) + "]";
 	return GDMonoMarshal::mono_string_from_godot(result);
 }
 

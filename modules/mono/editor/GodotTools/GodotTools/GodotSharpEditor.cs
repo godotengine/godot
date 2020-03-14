@@ -121,16 +121,9 @@ namespace GodotTools
             aboutDialog.PopupCenteredMinsize();
         }
 
-        private void _ToggleAboutDialogOnStart(bool enabled)
+        private void _MenuOptionPressed(int id)
         {
-            bool showOnStart = (bool)editorSettings.GetSetting("mono/editor/show_info_on_start");
-            if (showOnStart != enabled)
-                editorSettings.SetSetting("mono/editor/show_info_on_start", enabled);
-        }
-
-        private void _MenuOptionPressed(MenuOptions id)
-        {
-            switch (id)
+            switch ((MenuOptions)id)
             {
                 case MenuOptions.CreateSln:
                     CreateProjectSolution();
@@ -210,7 +203,7 @@ namespace GodotTools
                     string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
                     RiderPathManager.OpenFile(GodotSharpDirs.ProjectSlnPath, scriptPath, line);
                     return Error.Ok;
-                }        
+                }
                 case ExternalEditorId.MonoDevelop:
                 {
                     string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
@@ -395,7 +388,12 @@ namespace GodotTools
 
                 // CheckBox in main container
                 aboutDialogCheckBox = new CheckBox { Text = "Show this warning when starting the editor" };
-                aboutDialogCheckBox.Connect("toggled", this, nameof(_ToggleAboutDialogOnStart));
+                aboutDialogCheckBox.Toggled += enabled =>
+                {
+                    bool showOnStart = (bool)editorSettings.GetSetting("mono/editor/show_info_on_start");
+                    if (showOnStart != enabled)
+                        editorSettings.SetSetting("mono/editor/show_info_on_start", enabled);
+                };
                 aboutVBox.AddChild(aboutDialogCheckBox);
             }
 
@@ -424,7 +422,7 @@ namespace GodotTools
                 menuPopup.AddItem("Create C# solution".TTR(), (int)MenuOptions.CreateSln);
             }
 
-            menuPopup.Connect("id_pressed", this, nameof(_MenuOptionPressed));
+            menuPopup.IdPressed += _MenuOptionPressed;
 
             var buildButton = new ToolButton
             {
@@ -432,7 +430,7 @@ namespace GodotTools
                 HintTooltip = "Build solution",
                 FocusMode = Control.FocusModeEnum.None
             };
-            buildButton.Connect("pressed", this, nameof(_BuildSolutionPressed));
+            buildButton.PressedSignal += _BuildSolutionPressed;
             AddControlToContainer(CustomControlContainer.Toolbar, buildButton);
 
             // External editor settings

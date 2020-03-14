@@ -82,6 +82,7 @@ struct CachedData {
 	GDMonoClass *class_AABB;
 	GDMonoClass *class_Color;
 	GDMonoClass *class_Plane;
+	GDMonoClass *class_StringName;
 	GDMonoClass *class_NodePath;
 	GDMonoClass *class_RID;
 	GDMonoClass *class_GodotObject;
@@ -90,6 +91,8 @@ struct CachedData {
 	GDMonoClass *class_Control;
 	GDMonoClass *class_Spatial;
 	GDMonoClass *class_WeakRef;
+	GDMonoClass *class_Callable;
+	GDMonoClass *class_SignalInfo;
 	GDMonoClass *class_Array;
 	GDMonoClass *class_Dictionary;
 	GDMonoClass *class_MarshalUtils;
@@ -115,6 +118,7 @@ struct CachedData {
 	GDMonoField *field_GodotMethodAttribute_methodName;
 
 	GDMonoField *field_GodotObject_ptr;
+	GDMonoField *field_StringName_ptr;
 	GDMonoField *field_NodePath_ptr;
 	GDMonoField *field_Image_ptr;
 	GDMonoField *field_RID_ptr;
@@ -123,8 +127,12 @@ struct CachedData {
 	GDMonoMethodThunkR<Array *, MonoObject *> methodthunk_Array_GetPtr;
 	GDMonoMethodThunkR<Dictionary *, MonoObject *> methodthunk_Dictionary_GetPtr;
 	GDMonoMethodThunk<MonoObject *, MonoArray *> methodthunk_SignalAwaiter_SignalCallback;
-	GDMonoMethodThunk<MonoObject *> methodthunk_SignalAwaiter_FailureCallback;
 	GDMonoMethodThunk<MonoObject *> methodthunk_GodotTaskScheduler_Activate;
+
+	GDMonoMethodThunkR<MonoBoolean, MonoObject *, MonoObject *> methodthunk_Delegate_Equals;
+
+	GDMonoMethodThunkR<MonoBoolean, MonoDelegate *, MonoObject *> methodthunk_DelegateUtils_TrySerializeDelegate;
+	GDMonoMethodThunkR<MonoBoolean, MonoObject *, MonoDelegate **> methodthunk_DelegateUtils_TryDeserializeDelegate;
 
 	// Start of MarshalUtils methods
 
@@ -192,11 +200,5 @@ _FORCE_INLINE_ bool tools_godot_api_check() {
 #define CACHED_METHOD(m_class, m_method) (GDMonoCache::cached_data.method_##m_class##_##m_method)
 #define CACHED_METHOD_THUNK(m_class, m_method) (GDMonoCache::cached_data.methodthunk_##m_class##_##m_method)
 #define CACHED_PROPERTY(m_class, m_property) (GDMonoCache::cached_data.property_##m_class##_##m_property)
-
-#ifdef REAL_T_IS_DOUBLE
-#define REAL_T_MONOCLASS CACHED_CLASS_RAW(double)
-#else
-#define REAL_T_MONOCLASS CACHED_CLASS_RAW(float)
-#endif
 
 #endif // GD_MONO_CACHE_H

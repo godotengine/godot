@@ -47,21 +47,22 @@ class GDMonoField : public IMonoClassMember {
 	MonoCustomAttrInfo *attributes;
 
 public:
-	virtual GDMonoClass *get_enclosing_class() const GD_FINAL { return owner; }
+	virtual GDMonoClass *get_enclosing_class() const final { return owner; }
 
-	virtual MemberType get_member_type() const GD_FINAL { return MEMBER_TYPE_FIELD; }
+	virtual MemberType get_member_type() const final { return MEMBER_TYPE_FIELD; }
 
-	virtual StringName get_name() const GD_FINAL { return name; }
+	virtual StringName get_name() const final { return name; }
 
-	virtual bool is_static() GD_FINAL;
-	virtual Visibility get_visibility() GD_FINAL;
+	virtual bool is_static() final;
+	virtual Visibility get_visibility() final;
 
-	virtual bool has_attribute(GDMonoClass *p_attr_class) GD_FINAL;
-	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class) GD_FINAL;
+	virtual bool has_attribute(GDMonoClass *p_attr_class) final;
+	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class) final;
 	void fetch_attributes();
 
 	_FORCE_INLINE_ ManagedType get_type() const { return type; }
 
+	void set_value(MonoObject *p_object, MonoObject *p_value);
 	void set_value_raw(MonoObject *p_object, void *p_ptr);
 	void set_value_from_variant(MonoObject *p_object, const Variant &p_value);
 

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gd_mono_property.h                                                   */
+/*  string_name_glue.cpp                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,53 +28,34 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GD_MONO_PROPERTY_H
-#define GD_MONO_PROPERTY_H
+#include "string_name_glue.h"
 
-#include "gd_mono.h"
-#include "gd_mono_header.h"
-#include "i_mono_class_member.h"
+#ifdef MONO_GLUE_ENABLED
 
-class GDMonoProperty : public IMonoClassMember {
+#include "core/ustring.h"
 
-	GDMonoClass *owner;
-	MonoProperty *mono_property;
+StringName *godot_icall_StringName_Ctor(MonoString *p_path) {
+	return memnew(StringName(GDMonoMarshal::mono_string_to_godot(p_path)));
+}
 
-	StringName name;
-	ManagedType type;
+void godot_icall_StringName_Dtor(StringName *p_ptr) {
+	ERR_FAIL_NULL(p_ptr);
+	memdelete(p_ptr);
+}
 
-	bool attrs_fetched;
-	MonoCustomAttrInfo *attributes;
+MonoString *godot_icall_StringName_operator_String(StringName *p_np) {
+	return GDMonoMarshal::mono_string_from_godot(p_np->operator String());
+}
 
-public:
-	virtual GDMonoClass *get_enclosing_class() const final { return owner; }
+MonoBoolean godot_icall_StringName_is_empty(StringName *p_ptr) {
+	return (MonoBoolean)(p_ptr == StringName());
+}
 
-	virtual MemberType get_member_type() const final { return MEMBER_TYPE_PROPERTY; }
+void godot_register_string_name_icalls() {
+	mono_add_internal_call("Godot.StringName::godot_icall_StringName_Ctor", (void *)godot_icall_StringName_Ctor);
+	mono_add_internal_call("Godot.StringName::godot_icall_StringName_Dtor", (void *)godot_icall_StringName_Dtor);
+	mono_add_internal_call("Godot.StringName::godot_icall_StringName_operator_String", (void *)godot_icall_StringName_operator_String);
+	mono_add_internal_call("Godot.StringName::godot_icall_StringName_is_empty", (void *)godot_icall_StringName_is_empty);
+}
 
-	virtual StringName get_name() const final { return name; }
-
-	virtual bool is_static() final;
-	virtual Visibility get_visibility() final;
-
-	virtual bool has_attribute(GDMonoClass *p_attr_class) final;
-	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class) final;
-	void fetch_attributes();
-
-	bool has_getter();
-	bool has_setter();
-
-	_FORCE_INLINE_ ManagedType get_type() const { return type; }
-
-	void set_value(MonoObject *p_object, MonoObject *p_value, MonoException **r_exc = NULL);
-	void set_value(MonoObject *p_object, void **p_params, MonoException **r_exc = NULL);
-	MonoObject *get_value(MonoObject *p_object, MonoException **r_exc = NULL);
-
-	bool get_bool_value(MonoObject *p_object);
-	int get_int_value(MonoObject *p_object);
-	String get_string_value(MonoObject *p_object);
-
-	GDMonoProperty(MonoProperty *p_mono_property, GDMonoClass *p_owner);
-	~GDMonoProperty();
-};
-
-#endif // GD_MONO_PROPERTY_H
+#endif // MONO_GLUE_ENABLED

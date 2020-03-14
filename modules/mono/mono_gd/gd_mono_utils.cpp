@@ -162,6 +162,13 @@ void runtime_object_init(MonoObject *p_this_obj, GDMonoClass *p_class, MonoExcep
 	ctor->invoke_raw(p_this_obj, NULL, r_exc);
 }
 
+bool mono_delegate_equal(MonoDelegate *p_a, MonoDelegate *p_b) {
+	MonoException *exc = NULL;
+	MonoBoolean res = CACHED_METHOD_THUNK(Delegate, Equals).invoke((MonoObject *)p_a, (MonoObject *)p_b, &exc);
+	UNHANDLED_EXCEPTION(exc);
+	return (bool)res;
+}
+
 GDMonoClass *get_object_class(MonoObject *p_object) {
 	return GDMono::get_singleton()->get_class(mono_object_get_class(p_object));
 }
@@ -216,6 +223,18 @@ MonoObject *create_managed_for_godot_object(GDMonoClass *p_class, const StringNa
 
 	// Construct
 	GDMonoUtils::runtime_object_init(mono_object, p_class);
+
+	return mono_object;
+}
+
+MonoObject *create_managed_from(const StringName &p_from) {
+	MonoObject *mono_object = mono_object_new(mono_domain_get(), CACHED_CLASS_RAW(StringName));
+	ERR_FAIL_NULL_V(mono_object, NULL);
+
+	// Construct
+	GDMonoUtils::runtime_object_init(mono_object, CACHED_CLASS(StringName));
+
+	CACHED_FIELD(StringName, ptr)->set_value_raw(mono_object, memnew(StringName(p_from)));
 
 	return mono_object;
 }
@@ -362,7 +381,11 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 		return;
 	}
 
-	_TLS_RECURSION_GUARD_;
+	static thread_local bool _recursion_flag_ = false;
+	if (_recursion_flag_)
+		return;
+	_recursion_flag_ = true;
+	SCOPE_EXIT { _recursion_flag_ = false; };
 
 	ScriptLanguage::StackInfo separator;
 	separator.file = String();
@@ -439,8 +462,7 @@ void set_pending_exception(MonoException *p_exc) {
 #endif
 }
 
-_THREAD_LOCAL_(int)
-current_invoke_count = 0;
+thread_local int current_invoke_count = 0;
 
 MonoObject *runtime_invoke(MonoMethod *p_method, void *p_obj, void **p_params, MonoException **r_exc) {
 	GD_MONO_BEGIN_RUNTIME_INVOKE;
@@ -644,6 +666,10 @@ ScopeThreadAttach::~ScopeThreadAttach() {
 	}
 }
 
-// namespace Marshal
+StringName get_native_godot_class_name(GDMonoClass *p_class) {
+	MonoObject *native_name_obj = p_class->get_field(BINDINGS_NATIVE_NAME_FIELD)->get_value(NULL);
+	StringName *ptr = GDMonoMarshal::unbox<StringName *>(CACHED_FIELD(StringName, ptr)->get_value(native_name_obj));
+	return ptr ? *ptr : StringName();
+}
 
 } // namespace GDMonoUtils

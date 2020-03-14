@@ -36,6 +36,7 @@
 #include "nodepath_glue.h"
 #include "rid_glue.h"
 #include "string_glue.h"
+#include "string_name_glue.h"
 
 /**
  * Registers internal calls that were not generated. This function is called
@@ -44,6 +45,7 @@
 void godot_register_glue_header_icalls() {
 	godot_register_collections_icalls();
 	godot_register_gd_icalls();
+	godot_register_string_name_icalls();
 	godot_register_nodepath_icalls();
 	godot_register_object_icalls();
 	godot_register_rid_icalls();
