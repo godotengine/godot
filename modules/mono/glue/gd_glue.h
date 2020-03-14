@@ -69,7 +69,7 @@ MonoString *godot_icall_GD_str(MonoArray *p_what);
 
 MonoObject *godot_icall_GD_str2var(MonoString *p_str);
 
-MonoBoolean godot_icall_GD_type_exists(MonoString *p_type);
+MonoBoolean godot_icall_GD_type_exists(StringName *p_type);
 
 MonoArray *godot_icall_GD_var2bytes(MonoObject *p_var, MonoBoolean p_full_objects);
 

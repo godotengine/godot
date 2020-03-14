@@ -62,7 +62,6 @@
 #include "signal_awaiter_utils.h"
 #include "utils/macros.h"
 #include "utils/string_utils.h"
-#include "utils/thread_local.h"
 
 #define CACHED_STRING_NAME(m_var) (CSharpLanguage::get_singleton()->get_string_names().m_var)
 
@@ -75,7 +74,7 @@ static bool _create_project_solution_if_needed() {
 	if (!FileAccess::exists(sln_path) || !FileAccess::exists(csproj_path)) {
 		// A solution does not yet exist, create a new one
 
-		CRASH_COND(CSharpLanguage::get_singleton()->get_godotsharp_editor() == NULL);
+		CRASH_COND(CSharpLanguage::get_singleton()->get_godotsharp_editor() == nullptr);
 		return CSharpLanguage::get_singleton()->get_godotsharp_editor()->call("CreateProjectSolution");
 	}
 
@@ -83,7 +82,7 @@ static bool _create_project_solution_if_needed() {
 }
 #endif
 
-CSharpLanguage *CSharpLanguage::singleton = NULL;
+CSharpLanguage *CSharpLanguage::singleton = nullptr;
 
 String CSharpLanguage::get_name() const {
 
@@ -142,6 +141,9 @@ void CSharpLanguage::init() {
 
 void CSharpLanguage::finish() {
 
+	if (finalized)
+		return;
+
 	finalizing = true;
 
 	// Make sure all script binding gchandles are released before finalizing GDMono
@@ -175,7 +177,10 @@ void CSharpLanguage::finish() {
 	}
 #endif
 
+	memdelete(managed_callable_middleman);
+
 	finalizing = false;
+	finalized = true;
 }
 
 void CSharpLanguage::get_reserved_words(List<String> *p_words) const {
@@ -434,13 +439,12 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 		return "byte[]";
 	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_INT32_ARRAY))
 		return "int[]";
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_FLOAT32_ARRAY)) {
-#ifdef REAL_T_IS_DOUBLE
-		return "double[]";
-#else
+	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_INT64_ARRAY))
+		return "long[]";
+	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_FLOAT32_ARRAY))
 		return "float[]";
-#endif
-	}
+	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_FLOAT64_ARRAY))
+		return "double[]";
 	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_STRING_ARRAY))
 		return "string[]";
 	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_VECTOR2_ARRAY))
@@ -449,6 +453,9 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 		return "Vector3[]";
 	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_COLOR_ARRAY))
 		return "Color[]";
+
+	if (p_var_type_name == Variant::get_type_name(Variant::SIGNAL))
+		return "SignalInfo";
 
 	Variant::Type var_types[] = {
 		Variant::BOOL,
@@ -463,8 +470,10 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 		Variant::BASIS,
 		Variant::TRANSFORM,
 		Variant::COLOR,
+		Variant::STRING_NAME,
 		Variant::NODE_PATH,
-		Variant::_RID
+		Variant::_RID,
+		Variant::CALLABLE
 	};
 
 	for (unsigned int i = 0; i < sizeof(var_types) / sizeof(Variant::Type); i++) {
@@ -561,7 +570,13 @@ String CSharpLanguage::debug_get_stack_level_source(int p_level) const {
 Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info() {
 
 #ifdef DEBUG_ENABLED
-	_TLS_RECURSION_GUARD_V_(Vector<StackInfo>());
+	// Printing an error here will result in endless recursion, so we must be careful
+	static thread_local bool _recursion_flag_ = false;
+	if (_recursion_flag_)
+		return Vector<StackInfo>();
+	_recursion_flag_ = true;
+	SCOPE_EXIT { _recursion_flag_ = false; };
+
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
 	if (!gdmono->is_runtime_initialized() || !GDMono::get_singleton()->get_core_api_assembly() || !GDMonoCache::cached_data.corlib_cache_updated)
@@ -586,7 +601,13 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info()
 #ifdef DEBUG_ENABLED
 Vector<ScriptLanguage::StackInfo> CSharpLanguage::stack_trace_get_info(MonoObject *p_stack_trace) {
 
-	_TLS_RECURSION_GUARD_V_(Vector<StackInfo>());
+	// Printing an error here will result in endless recursion, so we must be careful
+	static thread_local bool _recursion_flag_ = false;
+	if (_recursion_flag_)
+		return Vector<StackInfo>();
+	_recursion_flag_ = true;
+	SCOPE_EXIT { _recursion_flag_ = false; };
+
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
 	MonoException *exc = NULL;
@@ -774,6 +795,36 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		}
 	}
 
+	scripts.sort_custom<CSharpScriptDepSort>(); // Update in inheritance dependency order
+
+	// Serialize managed callables
+	{
+		MutexLock lock(ManagedCallable::instances_mutex);
+
+		for (SelfList<ManagedCallable> *elem = ManagedCallable::instances.first(); elem; elem = elem->next()) {
+			ManagedCallable *managed_callable = elem->self();
+
+			MonoDelegate *delegate = (MonoDelegate *)managed_callable->delegate_handle->get_target();
+
+			Array serialized_data;
+			MonoObject *managed_serialized_data = GDMonoMarshal::variant_to_mono_object(serialized_data);
+
+			MonoException *exc = NULL;
+			bool success = (bool)CACHED_METHOD_THUNK(DelegateUtils, TrySerializeDelegate).invoke(delegate, managed_serialized_data, &exc);
+
+			if (exc) {
+				GDMonoUtils::debug_print_unhandled_exception(exc);
+				continue;
+			}
+
+			if (success) {
+				ManagedCallable::instances_pending_reload.insert(managed_callable, serialized_data);
+			} else if (OS::get_singleton()->is_stdout_verbose()) {
+				OS::get_singleton()->print("Failed to serialize delegate\n");
+			}
+		}
+	}
+
 	List<Ref<CSharpScript>> to_reload;
 
 	// We need to keep reference instances alive during reloading
@@ -788,8 +839,6 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	}
 
 	// As scripts are going to be reloaded, must proceed without locking here
-
-	scripts.sort_custom<CSharpScriptDepSort>(); // Update in inheritance dependency order
 
 	for (List<Ref<CSharpScript>>::Element *E = scripts.front(); E; E = E->next()) {
 		Ref<CSharpScript> &script = E->get();
@@ -845,6 +894,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 			// TODO: Proper state backup (Not only variants, serialize managed state of scripts)
 			csi->get_properties_state_for_reloading(state.properties);
+			csi->get_event_signals_state_for_reloading(state.event_signals);
 
 			owners_map[obj->get_instance_id()] = state;
 		}
@@ -957,7 +1007,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 			CSharpScript::initialize_for_managed_type(script, script_class, native);
 		}
 
-		String native_name = NATIVE_GDMONOCLASS_NAME(script->native);
+		StringName native_name = NATIVE_GDMONOCLASS_NAME(script->native);
 
 		{
 			for (Set<ObjectID>::Element *F = script->pending_reload_instances.front(); F; F = F->next()) {
@@ -1034,13 +1084,78 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 				obj->get_script_instance()->set(G->get().first, G->get().second);
 			}
 
-			// Call OnAfterDeserialization
 			CSharpInstance *csi = CAST_CSHARP_INSTANCE(obj->get_script_instance());
-			if (csi && csi->script->script_class->implements_interface(CACHED_CLASS(ISerializationListener)))
-				obj->get_script_instance()->call_multilevel(string_names.on_after_deserialize);
+
+			if (csi) {
+				for (List<Pair<StringName, Array>>::Element *G = state_backup.event_signals.front(); G; G = G->next()) {
+					const StringName &name = G->get().first;
+					const Array &serialized_data = G->get().second;
+
+					Map<StringName, CSharpScript::EventSignal>::Element *match = script->event_signals.find(name);
+
+					if (!match) {
+						// The event or its signal attribute were removed
+						continue;
+					}
+
+					const CSharpScript::EventSignal &event_signal = match->value();
+
+					MonoObject *managed_serialized_data = GDMonoMarshal::variant_to_mono_object(serialized_data);
+					MonoDelegate *delegate = NULL;
+
+					MonoException *exc = NULL;
+					bool success = (bool)CACHED_METHOD_THUNK(DelegateUtils, TryDeserializeDelegate).invoke(managed_serialized_data, &delegate, &exc);
+
+					if (exc) {
+						GDMonoUtils::debug_print_unhandled_exception(exc);
+						continue;
+					}
+
+					if (success) {
+						ERR_CONTINUE(delegate == NULL);
+						event_signal.field->set_value(csi->get_mono_object(), (MonoObject *)delegate);
+					} else if (OS::get_singleton()->is_stdout_verbose()) {
+						OS::get_singleton()->print("Failed to deserialize event signal delegate\n");
+					}
+				}
+
+				// Call OnAfterDeserialization
+				if (csi->script->script_class->implements_interface(CACHED_CLASS(ISerializationListener)))
+					obj->get_script_instance()->call_multilevel(string_names.on_after_deserialize);
+			}
 		}
 
 		script->pending_reload_instances.clear();
+	}
+
+	// Deserialize managed callables
+	{
+		MutexLock lock(ManagedCallable::instances_mutex);
+
+		for (Map<ManagedCallable *, Array>::Element *elem = ManagedCallable::instances_pending_reload.front(); elem; elem = elem->next()) {
+			ManagedCallable *managed_callable = elem->key();
+			const Array &serialized_data = elem->value();
+
+			MonoObject *managed_serialized_data = GDMonoMarshal::variant_to_mono_object(serialized_data);
+			MonoDelegate *delegate = NULL;
+
+			MonoException *exc = NULL;
+			bool success = (bool)CACHED_METHOD_THUNK(DelegateUtils, TryDeserializeDelegate).invoke(managed_serialized_data, &delegate, &exc);
+
+			if (exc) {
+				GDMonoUtils::debug_print_unhandled_exception(exc);
+				continue;
+			}
+
+			if (success) {
+				ERR_CONTINUE(delegate == NULL);
+				managed_callable->set_delegate(delegate);
+			} else if (OS::get_singleton()->is_stdout_verbose()) {
+				OS::get_singleton()->print("Failed to deserialize delegate\n");
+			}
+		}
+
+		ManagedCallable::instances_pending_reload.clear();
 	}
 
 #ifdef TOOLS_ENABLED
@@ -1166,6 +1281,16 @@ void CSharpLanguage::_on_scripts_domain_unloaded() {
 		script_binding.inited = false;
 	}
 
+	{
+		MutexLock lock(ManagedCallable::instances_mutex);
+
+		for (SelfList<ManagedCallable> *elem = ManagedCallable::instances.first(); elem; elem = elem->next()) {
+			ManagedCallable *managed_callable = elem->self();
+			managed_callable->delegate_handle.unref();
+			managed_callable->delegate_invoke = NULL;
+		}
+	}
+
 	scripts_metadata_invalidated = true;
 }
 
@@ -1236,24 +1361,12 @@ CSharpLanguage::CSharpLanguage() {
 
 	ERR_FAIL_COND_MSG(singleton, "C# singleton already exist.");
 	singleton = this;
-
-	finalizing = false;
-
-	gdmono = NULL;
-
-	lang_idx = -1;
-
-	scripts_metadata_invalidated = true;
-
-#ifdef TOOLS_ENABLED
-	godotsharp_editor = NULL;
-#endif
 }
 
 CSharpLanguage::~CSharpLanguage() {
 
 	finish();
-	singleton = NULL;
+	singleton = nullptr;
 }
 
 bool CSharpLanguage::setup_csharp_script_binding(CSharpScriptBinding &r_script_binding, Object *p_object) {
@@ -1440,12 +1553,11 @@ bool CSharpLanguage::refcount_decremented_instance_binding(Object *p_object) {
 
 CSharpInstance *CSharpInstance::create_for_managed_type(Object *p_owner, CSharpScript *p_script, const Ref<MonoGCHandle> &p_gchandle) {
 
-	CSharpInstance *instance = memnew(CSharpInstance);
+	CSharpInstance *instance = memnew(CSharpInstance(Ref<CSharpScript>(p_script)));
 
 	Reference *ref = Object::cast_to<Reference>(p_owner);
 
 	instance->base_ref = ref != NULL;
-	instance->script = Ref<CSharpScript>(p_script);
 	instance->owner = p_owner;
 	instance->gchandle = p_gchandle;
 
@@ -1606,6 +1718,37 @@ void CSharpInstance::get_properties_state_for_reloading(List<Pair<StringName, Va
 			if (get(state_pair.first, state_pair.second)) {
 				r_state.push_back(state_pair);
 			}
+		}
+	}
+}
+
+void CSharpInstance::get_event_signals_state_for_reloading(List<Pair<StringName, Array>> &r_state) {
+
+	MonoObject *owner_managed = get_mono_object();
+	ERR_FAIL_NULL(owner_managed);
+
+	for (const Map<StringName, CSharpScript::EventSignal>::Element *E = script->event_signals.front(); E; E = E->next()) {
+		const CSharpScript::EventSignal &event_signal = E->value();
+
+		MonoDelegate *delegate_field_value = (MonoDelegate *)event_signal.field->get_value(owner_managed);
+		if (!delegate_field_value)
+			continue; // Empty
+
+		Array serialized_data;
+		MonoObject *managed_serialized_data = GDMonoMarshal::variant_to_mono_object(serialized_data);
+
+		MonoException *exc = NULL;
+		bool success = (bool)CACHED_METHOD_THUNK(DelegateUtils, TrySerializeDelegate).invoke(delegate_field_value, managed_serialized_data, &exc);
+
+		if (exc) {
+			GDMonoUtils::debug_print_unhandled_exception(exc);
+			continue;
+		}
+
+		if (success) {
+			r_state.push_back(Pair<StringName, Array>(event_signal.field->get_name(), serialized_data));
+		} else if (OS::get_singleton()->is_stdout_verbose()) {
+			OS::get_singleton()->print("Failed to serialize event signal delegate\n");
 		}
 	}
 }
@@ -1847,6 +1990,8 @@ MonoObject *CSharpInstance::_internal_new_managed() {
 
 void CSharpInstance::mono_object_disposed(MonoObject *p_obj) {
 
+	disconnect_event_signals();
+
 #ifdef DEBUG_ENABLED
 	CRASH_COND(base_ref);
 	CRASH_COND(gchandle.is_null());
@@ -1885,6 +2030,33 @@ void CSharpInstance::mono_object_disposed_baseref(MonoObject *p_obj, bool p_is_f
 				r_remove_script_instance = true;
 			}
 		}
+	}
+}
+
+void CSharpInstance::connect_event_signals() {
+	for (const Map<StringName, CSharpScript::EventSignal>::Element *E = script->event_signals.front(); E; E = E->next()) {
+		const CSharpScript::EventSignal &event_signal = E->value();
+
+		StringName signal_name = event_signal.field->get_name();
+
+		// TODO: Use pooling for ManagedCallable instances.
+		auto event_signal_callable = memnew(EventSignalCallable(owner, &event_signal));
+
+		owner->connect(signal_name, Callable(event_signal_callable));
+	}
+}
+
+void CSharpInstance::disconnect_event_signals() {
+	for (const Map<StringName, CSharpScript::EventSignal>::Element *E = script->event_signals.front(); E; E = E->next()) {
+		const CSharpScript::EventSignal &event_signal = E->value();
+
+		StringName signal_name = event_signal.field->get_name();
+
+		// TODO: It would be great if we could store this EventSignalCallable on the stack.
+		// The problem is that Callable memdeletes it when it's destructed...
+		auto event_signal_callable = memnew(EventSignalCallable(owner, &event_signal));
+
+		owner->disconnect(signal_name, Callable(event_signal_callable));
 	}
 }
 
@@ -2087,13 +2259,8 @@ ScriptLanguage *CSharpInstance::get_language() {
 	return CSharpLanguage::get_singleton();
 }
 
-CSharpInstance::CSharpInstance() :
-		owner(NULL),
-		base_ref(false),
-		ref_dying(false),
-		unsafe_referenced(false),
-		predelete_notified(false),
-		destructing_script_instance(false) {
+CSharpInstance::CSharpInstance(const Ref<CSharpScript> &p_script) :
+		script(p_script) {
 }
 
 CSharpInstance::~CSharpInstance() {
@@ -2416,6 +2583,7 @@ void CSharpScript::load_script_signals(GDMonoClass *p_class, GDMonoClass *p_nati
 
 	// make sure this classes signals are empty when loading for the first time
 	_signals.clear();
+	event_signals.clear();
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
@@ -2423,12 +2591,53 @@ void CSharpScript::load_script_signals(GDMonoClass *p_class, GDMonoClass *p_nati
 	while (top && top != p_native_class) {
 		const Vector<GDMonoClass *> &delegates = top->get_all_delegates();
 		for (int i = delegates.size() - 1; i >= 0; --i) {
-			Vector<Argument> parameters;
-
 			GDMonoClass *delegate = delegates[i];
 
-			if (_get_signal(top, delegate, parameters)) {
+			if (!delegate->has_attribute(CACHED_CLASS(SignalAttribute)))
+				continue;
+
+			// Arguments are accessibles as arguments of .Invoke method
+			GDMonoMethod *invoke_method = delegate->get_method(mono_get_delegate_invoke(delegate->get_mono_ptr()));
+
+			Vector<SignalParameter> parameters;
+			if (_get_signal(top, invoke_method, parameters)) {
 				_signals[delegate->get_name()] = parameters;
+			}
+		}
+
+		List<StringName> found_event_signals;
+
+		void *iter = NULL;
+		MonoEvent *raw_event = NULL;
+		while ((raw_event = mono_class_get_events(top->get_mono_ptr(), &iter)) != NULL) {
+			MonoCustomAttrInfo *event_attrs = mono_custom_attrs_from_event(top->get_mono_ptr(), raw_event);
+			if (event_attrs) {
+				if (mono_custom_attrs_has_attr(event_attrs, CACHED_CLASS(SignalAttribute)->get_mono_ptr())) {
+					const char *event_name = mono_event_get_name(raw_event);
+					found_event_signals.push_back(StringName(event_name));
+				}
+
+				mono_custom_attrs_free(event_attrs);
+			}
+		}
+
+		const Vector<GDMonoField *> &fields = top->get_all_fields();
+		for (int i = 0; i < fields.size(); i++) {
+			GDMonoField *field = fields[i];
+
+			GDMonoClass *field_class = field->get_type().type_class;
+
+			if (!mono_class_is_delegate(field_class->get_mono_ptr()))
+				continue;
+
+			if (!found_event_signals.find(field->get_name()))
+				continue;
+
+			GDMonoMethod *invoke_method = field_class->get_method(mono_get_delegate_invoke(field_class->get_mono_ptr()));
+
+			Vector<SignalParameter> parameters;
+			if (_get_signal(top, invoke_method, parameters)) {
+				event_signals[field->get_name()] = { field, invoke_method, parameters };
 			}
 		}
 
@@ -2438,41 +2647,34 @@ void CSharpScript::load_script_signals(GDMonoClass *p_class, GDMonoClass *p_nati
 	signals_invalidated = false;
 }
 
-bool CSharpScript::_get_signal(GDMonoClass *p_class, GDMonoClass *p_delegate, Vector<Argument> &params) {
+bool CSharpScript::_get_signal(GDMonoClass *p_class, GDMonoMethod *p_delegate_invoke, Vector<SignalParameter> &params) {
 	GD_MONO_ASSERT_THREAD_ATTACHED;
 
-	if (p_delegate->has_attribute(CACHED_CLASS(SignalAttribute))) {
-		MonoType *raw_type = p_delegate->get_mono_type();
+	Vector<StringName> names;
+	Vector<ManagedType> types;
+	p_delegate_invoke->get_parameter_names(names);
+	p_delegate_invoke->get_parameter_types(types);
 
-		if (mono_type_get_type(raw_type) == MONO_TYPE_CLASS) {
-			// Arguments are accessibles as arguments of .Invoke method
-			GDMonoMethod *invoke = p_delegate->get_method("Invoke", -1);
+	for (int i = 0; i < names.size(); ++i) {
+		SignalParameter arg;
+		arg.name = names[i];
 
-			Vector<StringName> names;
-			Vector<ManagedType> types;
-			invoke->get_parameter_names(names);
-			invoke->get_parameter_types(types);
+		bool nil_is_variant = false;
+		arg.type = GDMonoMarshal::managed_to_variant_type(types[i], &nil_is_variant);
 
-			if (names.size() == types.size()) {
-				for (int i = 0; i < names.size(); ++i) {
-					Argument arg;
-					arg.name = names[i];
-					arg.type = GDMonoMarshal::managed_to_variant_type(types[i]);
-
-					if (arg.type == Variant::NIL) {
-						ERR_PRINT("Unknown type of signal parameter: '" + arg.name + "' in '" + p_class->get_full_name() + "'.");
-						return false;
-					}
-
-					params.push_back(arg);
-				}
-
-				return true;
+		if (arg.type == Variant::NIL) {
+			if (nil_is_variant) {
+				arg.nil_is_variant = true;
+			} else {
+				ERR_PRINT("Unknown type of signal parameter: '" + arg.name + "' in '" + p_class->get_full_name() + "'.");
+				return false;
 			}
 		}
+
+		params.push_back(arg);
 	}
 
-	return false;
+	return true;
 }
 
 #ifdef TOOLS_ENABLED
@@ -2523,7 +2725,8 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 		}
 	}
 
-	Variant::Type variant_type = GDMonoMarshal::managed_to_variant_type(type);
+	bool nil_is_variant = false;
+	Variant::Type variant_type = GDMonoMarshal::managed_to_variant_type(type, &nil_is_variant);
 
 	if (!p_inspect_export || !exported) {
 		r_prop_info = PropertyInfo(variant_type, (String)p_member->get_name(), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_SCRIPT_VARIABLE);
@@ -2536,7 +2739,7 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 	PropertyHint hint = PROPERTY_HINT_NONE;
 	String hint_string;
 
-	if (variant_type == Variant::NIL) {
+	if (variant_type == Variant::NIL && !nil_is_variant) {
 		ERR_PRINT("Unknown exported member type: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
 		return false;
 	}
@@ -2552,7 +2755,14 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 		hint_string = CACHED_FIELD(ExportAttribute, hintString)->get_string_value(attr);
 	}
 
-	r_prop_info = PropertyInfo(variant_type, (String)p_member->get_name(), hint, hint_string, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE);
+	uint32_t prop_usage = PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE;
+
+	if (variant_type == Variant::NIL) {
+		// System.Object (Variant)
+		prop_usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+	}
+
+	r_prop_info = PropertyInfo(variant_type, (String)p_member->get_name(), hint, hint_string, prop_usage);
 	r_exported = true;
 
 	return true;
@@ -2561,6 +2771,11 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 }
 
 int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, ManagedType p_type, Variant::Type p_variant_type, bool p_allow_generics, PropertyHint &r_hint, String &r_hint_string) {
+
+	if (p_variant_type == Variant::NIL) {
+		// System.Object (Variant)
+		return 1;
+	}
 
 	GD_MONO_ASSERT_THREAD_ATTACHED;
 
@@ -2621,7 +2836,7 @@ int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, Manage
 		CRASH_COND(field_native_class == NULL);
 
 		r_hint = PROPERTY_HINT_RESOURCE_TYPE;
-		r_hint_string = NATIVE_GDMONOCLASS_NAME(field_native_class);
+		r_hint_string = String(NATIVE_GDMONOCLASS_NAME(field_native_class));
 	} else if (p_allow_generics && p_variant_type == Variant::ARRAY) {
 		// Nested arrays are not supported in the inspector
 
@@ -2909,9 +3124,8 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 		}
 	}
 
-	CSharpInstance *instance = memnew(CSharpInstance);
+	CSharpInstance *instance = memnew(CSharpInstance(Ref<CSharpScript>(this)));
 	instance->base_ref = p_isref;
-	instance->script = Ref<CSharpScript>(this);
 	instance->owner = p_owner;
 	instance->owner->set_script_instance(instance);
 
@@ -2998,12 +3212,14 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 #endif
 
 	if (native) {
-		String native_name = NATIVE_GDMONOCLASS_NAME(native);
+		StringName native_name = NATIVE_GDMONOCLASS_NAME(native);
 		if (!ClassDB::is_parent_class(p_this->get_class_name(), native_name)) {
 			if (EngineDebugger::is_active()) {
-				CSharpLanguage::get_singleton()->debug_break_parse(get_path(), 0, "Script inherits from native type '" + native_name + "', so it can't be instanced in object of type: '" + p_this->get_class() + "'");
+				CSharpLanguage::get_singleton()->debug_break_parse(get_path(), 0,
+						"Script inherits from native type '" + String(native_name) +
+								"', so it can't be instanced in object of type: '" + p_this->get_class() + "'");
 			}
-			ERR_FAIL_V_MSG(NULL, "Script inherits from native type '" + native_name +
+			ERR_FAIL_V_MSG(NULL, "Script inherits from native type '" + String(native_name) +
 										 "', so it can't be instanced in object of type: '" + p_this->get_class() + "'.");
 		}
 	}
@@ -3290,19 +3506,45 @@ void CSharpScript::update_exports() {
 }
 
 bool CSharpScript::has_script_signal(const StringName &p_signal) const {
-	return _signals.has(p_signal);
+	return event_signals.has(p_signal) || _signals.has(p_signal);
 }
 
 void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
-	for (const Map<StringName, Vector<Argument>>::Element *E = _signals.front(); E; E = E->next()) {
-		MethodInfo mi;
 
+	for (const Map<StringName, Vector<SignalParameter>>::Element *E = _signals.front(); E; E = E->next()) {
+		MethodInfo mi;
 		mi.name = E->key();
-		for (int i = 0; i < E->get().size(); i++) {
-			PropertyInfo arg;
-			arg.name = E->get()[i].name;
-			mi.arguments.push_back(arg);
+
+		const Vector<SignalParameter> &params = E->value();
+		for (int i = 0; i < params.size(); i++) {
+			const SignalParameter &param = params[i];
+
+			PropertyInfo arg_info = PropertyInfo(param.type, param.name);
+			if (param.type == Variant::NIL && param.nil_is_variant)
+				arg_info.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+
+			mi.arguments.push_back(arg_info);
 		}
+
+		r_signals->push_back(mi);
+	}
+
+	for (const Map<StringName, EventSignal>::Element *E = event_signals.front(); E; E = E->next()) {
+		MethodInfo mi;
+		mi.name = E->key();
+
+		const EventSignal &event_signal = E->value();
+		const Vector<SignalParameter> &params = event_signal.parameters;
+		for (int i = 0; i < params.size(); i++) {
+			const SignalParameter &param = params[i];
+
+			PropertyInfo arg_info = PropertyInfo(param.type, param.name);
+			if (param.type == Variant::NIL && param.nil_is_variant)
+				arg_info.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+
+			mi.arguments.push_back(arg_info);
+		}
+
 		r_signals->push_back(mi);
 	}
 }
@@ -3420,18 +3662,9 @@ StringName CSharpScript::get_script_name() const {
 	return name;
 }
 
-CSharpScript::CSharpScript() :
-		script_list(this) {
+CSharpScript::CSharpScript() {
 
 	_clear();
-
-#ifdef TOOLS_ENABLED
-	source_changed_cache = false;
-	placeholder_fallback_enabled = false;
-	exports_invalidated = true;
-#endif
-
-	signals_invalidated = true;
 
 	_resource_path_changed();
 
@@ -3561,4 +3794,5 @@ CSharpLanguage::StringNameCache::StringNameCache() {
 	on_before_serialize = StaticCString::create("OnBeforeSerialize");
 	on_after_deserialize = StaticCString::create("OnAfterDeserialize");
 	dotctor = StaticCString::create(".ctor");
+	delegate_invoke_method_name = StaticCString::create("Invoke");
 }

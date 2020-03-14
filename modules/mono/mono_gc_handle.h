@@ -41,6 +41,8 @@ class MonoGCHandle : public Reference {
 
 	bool released;
 	bool weak;
+
+	friend class ManagedCallable;
 	uint32_t handle;
 
 public:

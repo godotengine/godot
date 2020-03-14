@@ -40,7 +40,7 @@ namespace GodotTools
                 OneShot = false,
                 WaitTime = (float)EditorDef("mono/assembly_watch_interval_sec", 0.5)
             };
-            watchTimer.Connect("timeout", this, nameof(TimerTimeout));
+            watchTimer.Timeout += TimerTimeout;
             AddChild(watchTimer);
             watchTimer.Start();
         }

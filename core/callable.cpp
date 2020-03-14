@@ -78,6 +78,12 @@ StringName Callable::get_method() const {
 	return method;
 }
 
+CallableCustom *Callable::get_custom() const {
+	ERR_FAIL_COND_V_MSG(!is_custom(), NULL,
+			vformat("Can't get custom on non-CallableCustom \"%s\".", operator String()));
+	return custom;
+}
+
 uint32_t Callable::hash() const {
 	if (is_custom()) {
 		return custom->hash();

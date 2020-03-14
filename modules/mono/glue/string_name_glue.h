@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gd_mono_property.h                                                   */
+/*  string_name_glue.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,53 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GD_MONO_PROPERTY_H
-#define GD_MONO_PROPERTY_H
+#ifndef STRING_NAME_GLUE_H
+#define STRING_NAME_GLUE_H
 
-#include "gd_mono.h"
-#include "gd_mono_header.h"
-#include "i_mono_class_member.h"
+#ifdef MONO_GLUE_ENABLED
 
-class GDMonoProperty : public IMonoClassMember {
+#include "core/string_name.h"
 
-	GDMonoClass *owner;
-	MonoProperty *mono_property;
+#include "../mono_gd/gd_mono_marshal.h"
 
-	StringName name;
-	ManagedType type;
+StringName *godot_icall_StringName_Ctor(MonoString *p_path);
 
-	bool attrs_fetched;
-	MonoCustomAttrInfo *attributes;
+void godot_icall_StringName_Dtor(StringName *p_ptr);
 
-public:
-	virtual GDMonoClass *get_enclosing_class() const final { return owner; }
+MonoString *godot_icall_StringName_operator_String(StringName *p_np);
 
-	virtual MemberType get_member_type() const final { return MEMBER_TYPE_PROPERTY; }
+MonoBoolean godot_icall_StringName_is_empty(StringName *p_ptr);
 
-	virtual StringName get_name() const final { return name; }
+// Register internal calls
 
-	virtual bool is_static() final;
-	virtual Visibility get_visibility() final;
+void godot_register_string_name_icalls();
 
-	virtual bool has_attribute(GDMonoClass *p_attr_class) final;
-	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class) final;
-	void fetch_attributes();
+#endif // MONO_GLUE_ENABLED
 
-	bool has_getter();
-	bool has_setter();
-
-	_FORCE_INLINE_ ManagedType get_type() const { return type; }
-
-	void set_value(MonoObject *p_object, MonoObject *p_value, MonoException **r_exc = NULL);
-	void set_value(MonoObject *p_object, void **p_params, MonoException **r_exc = NULL);
-	MonoObject *get_value(MonoObject *p_object, MonoException **r_exc = NULL);
-
-	bool get_bool_value(MonoObject *p_object);
-	int get_int_value(MonoObject *p_object);
-	String get_string_value(MonoObject *p_object);
-
-	GDMonoProperty(MonoProperty *p_mono_property, GDMonoClass *p_owner);
-	~GDMonoProperty();
-};
-
-#endif // GD_MONO_PROPERTY_H
+#endif // STRING_NAME_GLUE_H
