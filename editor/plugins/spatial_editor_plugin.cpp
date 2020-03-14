@@ -6243,6 +6243,10 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	settings_zfar->set_value(EDITOR_DEF("editors/3d/default_z_far", 1500));
 	settings_vbc->add_margin_child(TTR("View Z-Far:"), settings_zfar);
 
+	for (uint32_t i = 0; i < VIEWPORTS_COUNT; ++i) {
+		settings_dialog->connect("confirmed", callable_mp(viewports[i], &SpatialEditorViewport::_update_camera), varray(0.0));
+	}
+
 	/* XFORM DIALOG */
 
 	xform_dialog = memnew(ConfirmationDialog);
