@@ -494,76 +494,54 @@ void Control::_notification(int p_notification) {
 
 			data.parent = Object::cast_to<Control>(get_parent());
 
-			if (is_set_as_toplevel()) {
-				data.SI = get_viewport()->_gui_add_subwindow_control(this);
+			Node *parent = this; //meh
+			Control *parent_control = NULL;
+			bool subwindow = false;
 
-				if (data.theme.is_null() && data.parent && data.parent->data.theme_owner) {
-					data.theme_owner = data.parent->data.theme_owner;
-					notification(NOTIFICATION_THEME_CHANGED);
+			while (parent) {
+
+				parent = parent->get_parent();
+
+				if (!parent)
+					break;
+
+				CanvasItem *ci = Object::cast_to<CanvasItem>(parent);
+				if (ci && ci->is_set_as_toplevel()) {
+					subwindow = true;
+					break;
 				}
 
-			} else {
-
-				Node *parent = this; //meh
-				Control *parent_control = NULL;
-				bool subwindow = false;
-
-				while (parent) {
-
-					parent = parent->get_parent();
-
-					if (!parent)
-						break;
-
-					CanvasItem *ci = Object::cast_to<CanvasItem>(parent);
-					if (ci && ci->is_set_as_toplevel()) {
-						subwindow = true;
-						break;
-					}
-
-					parent_control = Object::cast_to<Control>(parent);
-
-					if (parent_control) {
-						break;
-					} else if (ci) {
-
-					} else {
-						break;
-					}
-				}
+				parent_control = Object::cast_to<Control>(parent);
 
 				if (parent_control) {
-					//do nothing, has a parent control
-					if (data.theme.is_null() && parent_control->data.theme_owner) {
-						data.theme_owner = parent_control->data.theme_owner;
-						notification(NOTIFICATION_THEME_CHANGED);
-					}
-				} else if (subwindow) {
-					//is a subwindow (process input before other controls for that canvas)
-					data.SI = get_viewport()->_gui_add_subwindow_control(this);
+					break;
+				} else if (ci) {
+
 				} else {
-					//is a regular root control
-					data.RI = get_viewport()->_gui_add_root_control(this);
-				}
-
-				data.parent_canvas_item = get_parent_item();
-
-				if (data.parent_canvas_item) {
-
-					data.parent_canvas_item->connect("item_rect_changed", callable_mp(this, &Control::_size_changed));
-				} else {
-					//connect viewport
-					get_viewport()->connect("size_changed", callable_mp(this, &Control::_size_changed));
+					break;
 				}
 			}
 
-			/*
-			if (data.theme.is_null() && data.parent && data.parent->data.theme_owner) {
-				data.theme_owner=data.parent->data.theme_owner;
-				notification(NOTIFICATION_THEME_CHANGED);
+			if (parent_control && !subwindow) {
+				//do nothing, has a parent control and not toplevel
+				if (data.theme.is_null() && parent_control->data.theme_owner) {
+					data.theme_owner = parent_control->data.theme_owner;
+					notification(NOTIFICATION_THEME_CHANGED);
+				}
+			} else {
+				//is a regular root control or toplevel
+				data.RI = get_viewport()->_gui_add_root_control(this);
 			}
-			*/
 
+			data.parent_canvas_item = get_parent_item();
+
+			if (data.parent_canvas_item) {
+
+				data.parent_canvas_item->connect("item_rect_changed", callable_mp(this, &Control::_size_changed));
+			} else {
+				//connect viewport
+				get_viewport()->connect("size_changed", callable_mp(this, &Control::_size_changed));
+			}
 		} break;
 		case NOTIFICATION_EXIT_CANVAS: {
 
@@ -574,16 +552,6 @@ void Control::_notification(int p_notification) {
 			} else if (!is_set_as_toplevel()) {
 				//disconnect viewport
 				get_viewport()->disconnect("size_changed", callable_mp(this, &Control::_size_changed));
-			}
-
-			if (data.MI) {
-				get_viewport()->_gui_remove_modal_control(data.MI);
-				data.MI = NULL;
-			}
-
-			if (data.SI) {
-				get_viewport()->_gui_remove_subwindow_control(data.SI);
-				data.SI = NULL;
 			}
 
 			if (data.RI) {
@@ -608,9 +576,6 @@ void Control::_notification(int p_notification) {
 				data.parent->update();
 			update();
 
-			if (data.SI) {
-				get_viewport()->_gui_set_subwindow_order_dirty();
-			}
 			if (data.RI) {
 				get_viewport()->_gui_set_root_order_dirty();
 			}
@@ -652,20 +617,12 @@ void Control::_notification(int p_notification) {
 			minimum_size_changed();
 			update();
 		} break;
-		case NOTIFICATION_MODAL_CLOSE: {
-
-			emit_signal("modal_closed");
-		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
 			if (!is_visible_in_tree()) {
 
 				if (get_viewport() != NULL)
 					get_viewport()->_gui_hid_control(this);
-
-				if (is_inside_tree()) {
-					_modal_stack_remove();
-				}
 
 				//remove key focus
 				//remove modalness
@@ -788,19 +745,6 @@ void Control::set_drag_preview(Control *p_control) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(!get_viewport()->gui_is_dragging());
 	get_viewport()->_gui_set_drag_preview(this, p_control);
-}
-
-bool Control::is_window_modal_on_top() const {
-
-	if (!is_inside_tree())
-		return false;
-
-	return get_viewport()->_gui_is_modal_on_top(this);
-}
-
-uint64_t Control::get_modal_frame() const {
-
-	return data.modal_frame;
 }
 
 Size2 Control::get_minimum_size() const {
@@ -1720,7 +1664,7 @@ Point2 Control::get_screen_position() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), Point2());
 	Point2 global_pos = get_global_position();
 	Window *w = Object::cast_to<Window>(get_viewport());
-	if (w) {
+	if (w && !w->is_embedding_subwindows()) {
 		global_pos += w->get_position();
 	}
 
@@ -1828,7 +1772,7 @@ Rect2 Control::get_screen_rect() const {
 	Rect2 r(get_global_position(), get_size());
 
 	Window *w = Object::cast_to<Window>(get_viewport());
-	if (w) {
+	if (w && !w->is_embedding_subwindows()) {
 		r.position += w->get_position();
 	}
 
@@ -2021,7 +1965,7 @@ Control *Control::find_next_valid_focus() const {
 					next_child = const_cast<Control *>(this);
 					while (next_child) {
 
-						if (next_child->data.SI || next_child->data.RI)
+						if (next_child->data.RI)
 							break;
 						next_child = next_child->get_parent_control();
 					}
@@ -2162,41 +2106,6 @@ void Control::release_focus() {
 bool Control::is_toplevel_control() const {
 
 	return is_inside_tree() && (!data.parent_canvas_item && !data.RI && is_set_as_toplevel());
-}
-
-void Control::show_modal(bool p_exclusive) {
-
-	ERR_FAIL_COND(!is_inside_tree());
-	ERR_FAIL_COND(!data.SI);
-
-	if (is_visible_in_tree())
-		hide();
-
-	ERR_FAIL_COND(data.MI != NULL);
-	show();
-	raise();
-	data.modal_exclusive = p_exclusive;
-	data.MI = get_viewport()->_gui_show_modal(this);
-	data.modal_frame = Engine::get_singleton()->get_frames_drawn();
-}
-
-void Control::_modal_set_prev_focus_owner(ObjectID p_prev) {
-	data.modal_prev_focus_owner = p_prev;
-}
-
-void Control::_modal_stack_remove() {
-
-	ERR_FAIL_COND(!is_inside_tree());
-
-	if (!data.MI)
-		return;
-
-	List<Control *>::Element *element = data.MI;
-	data.MI = NULL;
-
-	get_viewport()->_gui_remove_from_modal_stack(element, data.modal_prev_focus_owner);
-
-	data.modal_prev_focus_owner = ObjectID();
 }
 
 void Control::_propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_owner_window, bool p_assign) {
@@ -2444,8 +2353,6 @@ Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
 
 		Control *c = Object::cast_to<Control>(base);
 		if (c) {
-			if (c->data.SI)
-				break;
 			if (c->data.RI)
 				break;
 		}
@@ -2515,7 +2422,7 @@ void Control::_window_find_focus_neighbour(const Vector2 &p_dir, Node *p_at, con
 
 		Node *child = p_at->get_child(i);
 		Control *childc = Object::cast_to<Control>(child);
-		if (childc && childc->data.SI)
+		if (childc && childc->data.RI)
 			continue; //subwindow, ignore
 		_window_find_focus_neighbour(p_dir, p_at->get_child(i), p_points, p_min, r_closest_dist, r_closest);
 	}
@@ -2607,16 +2514,6 @@ void Control::set_mouse_filter(MouseFilter p_filter) {
 Control::MouseFilter Control::get_mouse_filter() const {
 
 	return data.mouse_filter;
-}
-
-void Control::set_pass_on_modal_close_click(bool p_pass_on) {
-
-	data.pass_on_modal_close_click = p_pass_on;
-}
-
-bool Control::pass_on_modal_close_click() const {
-
-	return data.pass_on_modal_close_click;
 }
 
 Control *Control::get_focus_owner() const {
@@ -2712,7 +2609,7 @@ Control *Control::get_root_parent_control() const {
 		if (c) {
 			root = c;
 
-			if (c->data.RI || c->data.MI || c->is_toplevel_control())
+			if (c->data.RI || c->is_toplevel_control())
 				break;
 		}
 
@@ -2864,7 +2761,6 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_global_position"), &Control::get_global_position);
 	ClassDB::bind_method(D_METHOD("get_rect"), &Control::get_rect);
 	ClassDB::bind_method(D_METHOD("get_global_rect"), &Control::get_global_rect);
-	ClassDB::bind_method(D_METHOD("show_modal", "exclusive"), &Control::show_modal, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_focus_mode", "mode"), &Control::set_focus_mode);
 	ClassDB::bind_method(D_METHOD("get_focus_mode"), &Control::get_focus_mode);
 	ClassDB::bind_method(D_METHOD("has_focus"), &Control::has_focus);
@@ -3024,7 +2920,6 @@ void Control::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_FOCUS_ENTER);
 	BIND_CONSTANT(NOTIFICATION_FOCUS_EXIT);
 	BIND_CONSTANT(NOTIFICATION_THEME_CHANGED);
-	BIND_CONSTANT(NOTIFICATION_MODAL_CLOSE);
 	BIND_CONSTANT(NOTIFICATION_SCROLL_BEGIN);
 	BIND_CONSTANT(NOTIFICATION_SCROLL_END);
 
@@ -3093,7 +2988,6 @@ void Control::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("focus_exited"));
 	ADD_SIGNAL(MethodInfo("size_flags_changed"));
 	ADD_SIGNAL(MethodInfo("minimum_size_changed"));
-	ADD_SIGNAL(MethodInfo("modal_closed"));
 	ADD_SIGNAL(MethodInfo("theme_changed"));
 
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "has_point", PropertyInfo(Variant::VECTOR2, "point")));
@@ -3103,14 +2997,10 @@ Control::Control() {
 	data.parent = NULL;
 
 	data.mouse_filter = MOUSE_FILTER_STOP;
-	data.pass_on_modal_close_click = true;
 
-	data.SI = NULL;
-	data.MI = NULL;
 	data.RI = NULL;
 	data.theme_owner = NULL;
 	data.theme_owner_window = NULL;
-	data.modal_exclusive = false;
 	data.default_cursor = CURSOR_ARROW;
 	data.h_size_flags = SIZE_FILL;
 	data.v_size_flags = SIZE_FILL;
@@ -3119,7 +3009,6 @@ Control::Control() {
 	data.parent_canvas_item = NULL;
 	data.scale = Vector2(1, 1);
 
-	data.modal_frame = 0;
 	data.block_minimum_size_adjust = false;
 	data.disable_visibility_clip = false;
 	data.h_grow = GROW_DIRECTION_END;

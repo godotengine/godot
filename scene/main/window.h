@@ -103,20 +103,13 @@ private:
 	void _clear_window();
 	void _update_from_window();
 
-	void _resize_callback(const Size2i &p_callback);
-	void _event_callback(DisplayServer::WindowEvent p_event);
-
-	void _update_size();
+	void _update_viewport_size();
+	void _update_window_size();
 
 	void _propagate_window_notification(Node *p_node, int p_notification);
 
 	virtual DisplayServer::WindowID get_window_id() const;
 
-	void _window_input(const Ref<InputEvent> &p_ev);
-	void _window_input_text(const String &p_text);
-	void _window_drop_files(const Vector<String> &p_files);
-
-	void _window_unhandled_input(const Ref<InputEvent> &p_ev);
 	void _update_window_callbacks();
 
 	void _clear_transient();
@@ -129,6 +122,18 @@ private:
 	Ref<Theme> theme;
 	Control *theme_owner = nullptr;
 	Window *theme_owner_window = nullptr;
+
+	Viewport *_get_embedder() const;
+
+	Viewport *embedder = nullptr;
+
+	friend class Viewport; //friend back, can call the methods below
+
+	void _window_input(const Ref<InputEvent> &p_ev);
+	void _window_input_text(const String &p_text);
+	void _window_drop_files(const Vector<String> &p_files);
+	void _rect_changed_callback(const Rect2i &p_callback);
+	void _event_callback(DisplayServer::WindowEvent p_event);
 
 protected:
 	virtual void _post_popup() {}
@@ -243,7 +248,7 @@ public:
 	bool has_theme_color(const StringName &p_name, const StringName &p_type = StringName()) const;
 	bool has_theme_constant(const StringName &p_name, const StringName &p_type = StringName()) const;
 
-	Rect2i get_screen_rect() const;
+	Rect2i get_parent_rect() const;
 
 	Window();
 	~Window();

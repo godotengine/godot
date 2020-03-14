@@ -163,7 +163,7 @@ void PopupMenu::_activate_submenu(int over) {
 	Point2 pos = p + Point2(get_size().width, items[over]._ofs_cache - style->get_offset().y);
 	Size2 size = pm->get_size();
 	// fix pos
-	if (pos.x + size.width > get_screen_rect().size.width)
+	if (pos.x + size.width > get_parent_rect().size.width)
 		pos.x = p.x - size.width;
 
 	pm->set_position(pos);
@@ -203,7 +203,7 @@ void PopupMenu::_scroll(float p_factor, const Point2 &p_over) {
 		dy = MIN(dy, limit);
 	} else if (dy < 0) {
 		const float global_bottom = get_position().y + get_size().y;
-		const float viewport_height = get_screen_rect().size.y;
+		const float viewport_height = get_parent_rect().size.y;
 		const float limit = global_bottom > viewport_height ? global_bottom - viewport_height : 0;
 		dy = -MIN(-dy, limit);
 	}
@@ -295,7 +295,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
 			case BUTTON_WHEEL_DOWN: {
 
-				if (get_position().y + get_size().y > get_screen_rect().size.y) {
+				if (get_position().y + get_size().y > get_parent_rect().size.y) {
 					_scroll(-b->get_factor(), b->get_position());
 				}
 			} break;
@@ -382,7 +382,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
-		if (get_position().y + get_size().y > get_screen_rect().size.y || get_position().y < 0) {
+		if (get_position().y + get_size().y > get_parent_rect().size.y || get_position().y < 0) {
 			_scroll(-pan_gesture->get_delta().y, pan_gesture->get_position());
 		}
 	}
@@ -591,6 +591,9 @@ void PopupMenu::_notification(int p_what) {
 
 			initial_button_mask = InputFilter::get_singleton()->get_mouse_button_mask();
 			during_grabbed_click = (bool)initial_button_mask;
+		} break;
+		case NOTIFICATION_WM_SIZE_CHANGED: {
+
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 

@@ -43,20 +43,24 @@ void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
 		if (!get_parent() || !is_visible_in_tree() || is_disabled())
 			return;
 
-		bool global_only = (get_viewport()->get_modal_stack_top() && !get_viewport()->get_modal_stack_top()->is_a_parent_of(this));
-
-		if (popup->activate_item_by_event(p_event, global_only))
+		//bool global_only = (get_viewport()->get_modal_stack_top() && !get_viewport()->get_modal_stack_top()->is_a_parent_of(this));
+		//if (popup->activate_item_by_event(p_event, global_only))
+		//	accept_event();
+		if (popup->activate_item_by_event(p_event, false))
 			accept_event();
 	}
 }
 
 void MenuButton::pressed() {
 
-	emit_signal("about_to_popup");
 	Size2 size = get_size();
 
 	Point2 gp = get_screen_position();
-	popup->set_position(gp + Size2(0, size.height * get_global_transform().get_scale().y));
+
+	gp.y += get_size().y;
+
+	popup->set_position(gp);
+
 	popup->set_size(Size2(size.width, 0));
 	popup->set_parent_rect(Rect2(Point2(gp - popup->get_position()), get_size()));
 	popup->popup();

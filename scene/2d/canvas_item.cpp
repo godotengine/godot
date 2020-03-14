@@ -460,7 +460,7 @@ Transform2D CanvasItem::get_screen_transform() const {
 	Transform2D xform = get_global_transform_with_canvas();
 
 	Window *w = Object::cast_to<Window>(get_viewport());
-	if (w) {
+	if (w && !w->is_embedding_subwindows()) {
 		Transform2D s;
 		s.set_origin(w->get_position());
 

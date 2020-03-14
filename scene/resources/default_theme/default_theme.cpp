@@ -524,18 +524,19 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// WindowDialog
 
-	theme->set_stylebox("panel", "AcceptDialog", default_style);
-	theme->set_stylebox("window_panel", "AcceptDialog", sb_expand(make_stylebox(popup_window_png, 10, 26, 10, 8), 8, 24, 8, 6));
-	theme->set_constant("scaleborder_size", "AcceptDialog", 4 * scale);
+	theme->set_stylebox("panel", "Window", default_style);
+	theme->set_stylebox("window_panel", "Window", sb_expand(make_stylebox(popup_window_png, 10, 26, 10, 8), 8, 24, 8, 6));
+	theme->set_constant("scaleborder_size", "Window", 4 * scale);
 
-	theme->set_font("title_font", "AcceptDialog", large_font);
-	theme->set_color("title_color", "AcceptDialog", Color(0, 0, 0));
-	theme->set_constant("title_height", "AcceptDialog", 20 * scale);
+	theme->set_font("title_font", "Window", large_font);
+	theme->set_color("title_color", "Window", Color(0, 0, 0));
+	theme->set_constant("title_height", "Window", 20 * scale);
+	theme->set_constant("resize_margin", "Window", 4 * scale);
 
-	theme->set_icon("close", "AcceptDialog", make_icon(close_png));
-	theme->set_icon("close_highlight", "AcceptDialog", make_icon(close_hl_png));
-	theme->set_constant("close_h_ofs", "AcceptDialog", 18 * scale);
-	theme->set_constant("close_v_ofs", "AcceptDialog", 18 * scale);
+	theme->set_icon("close", "Window", make_icon(close_png));
+	theme->set_icon("close_highlight", "Window", make_icon(close_hl_png));
+	theme->set_constant("close_h_ofs", "Window", 18 * scale);
+	theme->set_constant("close_v_ofs", "Window", 18 * scale);
 
 	// File Dialog
 

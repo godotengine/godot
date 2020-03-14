@@ -5718,7 +5718,7 @@ void SpatialEditor::snap_selected_nodes_to_floor() {
 
 void SpatialEditor::_unhandled_key_input(Ref<InputEvent> p_event) {
 
-	if (!is_visible_in_tree() || get_viewport()->gui_has_modal_stack())
+	if (!is_visible_in_tree())
 		return;
 
 	snap_key_enabled = InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL);
