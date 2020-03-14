@@ -840,18 +840,16 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			List<Node *> selection = editor_selection->get_selected_node_list();
-			List<Node *>::Element *e = selection.front();
-			if (e) {
-				Node *node = e->get();
-				if (node) {
-					bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
-
-					if (editable) {
-						editable_instance_remove_dialog->set_text(TTR("Disabling \"editable_instance\" will cause all properties of the node to be reverted to their default."));
-						editable_instance_remove_dialog->popup_centered_minsize();
-						break;
-					}
-					_toggle_editable_children(node);
+			if (selection.size() > 0) {
+				bool are_all_editable = true;
+				for (List<Node *>::Element *e = selection.front(); e; e = e->next()) {
+					are_all_editable = are_all_editable && EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(e->get());
+				}
+				if (are_all_editable) {
+					editable_instance_remove_dialog->set_text(TTR("Disabling \"editable_instance\" will cause all properties of the node to be reverted to their default."));
+					editable_instance_remove_dialog->popup_centered_minsize();
+				} else {
+					_toggle_editable_children_on_from_selection();
 				}
 			}
 		} break;
@@ -1740,13 +1738,28 @@ void SceneTreeDock::_script_creation_closed() {
 	script_create_dialog->disconnect("script_created", callable_mp(this, &SceneTreeDock::_script_created));
 }
 
-void SceneTreeDock::_toggle_editable_children_from_selection() {
+void SceneTreeDock::_toggle_editable_children_off_from_selection() {
 
 	List<Node *> selection = editor_selection->get_selected_node_list();
-	List<Node *>::Element *e = selection.front();
 
-	if (e) {
-		_toggle_editable_children(e->get());
+	for (List<Node *>::Element *e = selection.front(); e; e = e->next()) {
+		bool is_editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(e->get());
+		if (is_editable) {
+			_toggle_editable_children(e->get());
+		}
+	}
+}
+
+void SceneTreeDock::_toggle_editable_children_on_from_selection() {
+
+	List<Node *> selection = editor_selection->get_selected_node_list();
+
+	for (List<Node *>::Element *e = selection.front(); e; e = e->next()) {
+		bool is_editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(e->get());
+		if (!is_editable) {
+			Node *node = e->get();
+			_toggle_editable_children(node);
+		}
 	}
 }
 
@@ -2527,6 +2540,20 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	}
 
 	if (profile_allow_editing && selection.size() > 1) {
+		bool are_all_external = true;
+		bool are_all_non_top_level = true;
+		bool are_all_editable = true;
+		for (List<Node *>::Element *E = full_selection.front(); E; E = E->next()) {
+			are_all_external = are_all_external && (E->get()->get_filename() != "");
+			are_all_non_top_level = are_all_non_top_level && E->get()->get_owner() != NULL;
+			are_all_editable = are_all_editable && EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(E->get());
+		}
+		if (are_all_external && are_all_non_top_level) {
+			menu->add_separator();
+			menu->add_check_item(TTR("Editable Children"), TOOL_SCENE_EDITABLE_CHILDREN);
+			menu->set_item_checked(menu->get_item_idx_from_text(TTR("Editable Children")), are_all_editable);
+		}
+
 		//this is not a commonly used action, it makes no sense for it to be where it was nor always present.
 		menu->add_separator();
 		menu->add_icon_shortcut(get_icon("Rename", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/batch_rename"), TOOL_BATCH_RENAME);
@@ -2928,7 +2955,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 
 	editable_instance_remove_dialog = memnew(ConfirmationDialog);
 	add_child(editable_instance_remove_dialog);
-	editable_instance_remove_dialog->connect("confirmed", callable_mp(this, &SceneTreeDock::_toggle_editable_children_from_selection));
+	editable_instance_remove_dialog->connect("confirmed", callable_mp(this, &SceneTreeDock::_toggle_editable_children_off_from_selection));
 
 	placeholder_editable_instance_remove_dialog = memnew(ConfirmationDialog);
 	add_child(placeholder_editable_instance_remove_dialog);
