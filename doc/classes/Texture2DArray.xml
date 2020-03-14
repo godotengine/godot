@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Texture2DArray" inherits="TextureLayered" version="4.0">
 	<brief_description>
-		A [TextureLayered] of type [code]enum TextureLayeredType.TEXTURE_LAYERED_2D_ARRAY[/code].
+		A single texture resource which consists of multiple, separate images. Each image has the same dimensions and number of mipmap levels.
 	</brief_description>
 	<description>
-		[TextureLayered]'s class reference explains how a [Texture2DArray] operates and how it has to be handled.
-		It is based on the class [Texture] (not [Texture2D]) and can only used as such. Its internal resource type, as well as recognized file extension, is [code]tex2darr[/code].
+		The [Texture2DArray] is a [TextureLayered] of type [code]enum TextureLayeredType.TEXTURE_LAYERED_2D_ARRAY[/code]. [TextureLayered]'s class reference explains how a [Texture2DArray] operates and how it has to be handled.
+		This composite texture is based on the class [Texture] (not [Texture2D]) and can only used as such. Its internal resource type, as well as recognized file extension, is [code]tex2darr[/code].
 		The Texture2DArray can be used automatically via the Godot Editor: When importing an image, use the "TextureArray" preset. This preset slices the given image file horizontally and vertically in steps. The user defines the step count. The step count automatically decides the width and height of each image that is given to the [method TextureLayered.create_from_images] method.
 		This class is not to be confused with [code]texture2DArray[/code], which is used in the shading language and of [code]DataType[/code] [code]enum DataType.TYPE_SAMPLER2DARRAY[/code].
 		A Texture2DArray is different from a Texture3D: The Texture2DArray does not support trilinear interpolation between the [Image]s, ie. no blending.

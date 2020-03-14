@@ -9,7 +9,7 @@
 		All images need to have the same width, height and number of mipmap levels.
 		A [TextureLayered] can be loaded with [code]method ResourceFormatLoaderTextureLayered.load[/code].		
 		To create a [TextureLayered] texture, an image file needs to be "sliced". Internally, Godot uses the thirdparty basis_universal library by Binomial LLC for e.g. creating and reading [Texture2DArray], [Cubemap] and [CubemapArray] files.
-		Their file extension is normally [code].basis[/code]. Godot adjust this to its needs:
+		Their file extension is normally [code].basis[/code]. Godot adjusts this to its needs:
 		[codeblock]
 		- the Texture2DArray becomes a ".tex2darr"
 		- the Cubemap becomes a ".cube"
