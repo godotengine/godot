@@ -150,7 +150,7 @@ namespace GodotTools.Export
             string outputDir = new FileInfo(path).Directory?.FullName ??
                                throw new FileNotFoundException("Base directory not found");
 
-            string buildConfig = isDebug ? "Debug" : "Release";
+            string buildConfig = isDebug ? "ExportDebug" : "ExportRelease";
 
             string scriptsMetadataPath = Path.Combine(GodotSharpDirs.ResMetadataDir, $"scripts_metadata.{(isDebug ? "debug" : "release")}");
             CsProjOperations.GenerateScriptsMetadata(GodotSharpDirs.ProjectCsProjPath, scriptsMetadataPath);
