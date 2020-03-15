@@ -417,7 +417,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 				if (update_mode == Animation::UPDATE_CAPTURE) {
 
-					if (p_started) {
+					if (p_started || pa->capture.get_type() == Variant::NIL) {
 						pa->capture = pa->object->get_indexed(pa->subpath);
 					}
 
