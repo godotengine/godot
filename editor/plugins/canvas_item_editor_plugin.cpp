@@ -53,8 +53,16 @@
 #include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"
 
-#define MIN_ZOOM 0.01
-#define MAX_ZOOM 100
+// Min and Max are power of two in order to play nicely with successive increment.
+// That way, we can naturally reach a 100% zoom from boundaries.
+#define MIN_ZOOM 1. / 128
+#define MAX_ZOOM 128
+
+// Base increment factor defined as the twelveth root of two.
+// This allow a smooth geometric evolution of the zoom, with the advantage of
+// visiting all integer power of two scale factors.
+// note: this is analogous to the 'semitones' interval in the music world
+#define ZOOM_INCREMENT 0.0594630943592953 // 2**(1/12) - 1
 
 #define RULER_WIDTH (15 * EDSCALE)
 #define SCALE_HANDLE_DISTANCE 25
@@ -1203,7 +1211,8 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 				view_offset.y += int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
 				update_viewport();
 			} else {
-				_zoom_on_position(zoom * (1 - (0.05 * b->get_factor())), b->get_position());
+				double zoom_factor = 1 + ZOOM_INCREMENT * b->get_factor();
+				_zoom_on_position(zoom / zoom_factor, b->get_position());
 			}
 			return true;
 		}
@@ -1214,7 +1223,8 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 				view_offset.y -= int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
 				update_viewport();
 			} else {
-				_zoom_on_position(zoom * ((0.95 + (0.05 * b->get_factor())) / 0.95), b->get_position());
+				double zoom_factor = 1 + ZOOM_INCREMENT * b->get_factor();
+				_zoom_on_position(zoom * zoom_factor, b->get_position());
 			}
 			return true;
 		}
