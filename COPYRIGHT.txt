@@ -399,6 +399,12 @@ Comment: SPIRV-Reflect
 Copyright: 2017-2018, Google Inc.
 License: Apache-2.0
 
+Files: ./thirdparty/sqlite/spmemvfs.c
+ ./thirdparty/sqlite/spmemvfs.h
+Comment: A memory vfs implementation for SQLite
+Copyright: Copyright 2009, Stephen Liu
+License: BSD-2-clause
+
 Files: ./thirdparty/squish/
 Comment: libSquish
 Copyright: 2006, Simon Brown
