@@ -2589,8 +2589,16 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 		}
 
-		if (!k->is_pressed())
+		if (!k->is_pressed()) {
+
+			// On key-release, stop propagation of CTRL+A shortcut, also used for Add Child Node action
+			if (k->get_control() && k->get_keycode() == KEY_A) {
+
+				accept_event();
+			}
+
 			return;
+		}
 
 		if (completion_active) {
 			if (readonly)
