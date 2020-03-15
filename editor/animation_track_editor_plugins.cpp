@@ -42,12 +42,12 @@
 /// BOOL ///
 int AnimationTrackEditBool::get_key_height() const {
 
-	Ref<Texture> checked = get_icon("checked", "CheckBox");
+	Ref<Texture2D> checked = get_icon("checked", "CheckBox");
 	return checked->get_height();
 }
 Rect2 AnimationTrackEditBool::get_key_rect(int p_index, float p_pixels_sec) {
 
-	Ref<Texture> checked = get_icon("checked", "CheckBox");
+	Ref<Texture2D> checked = get_icon("checked", "CheckBox");
 	return Rect2(-checked->get_width() / 2, 0, checked->get_width(), get_size().height);
 }
 
@@ -58,7 +58,7 @@ bool AnimationTrackEditBool::is_key_selectable_by_distance() const {
 void AnimationTrackEditBool::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 
 	bool checked = get_animation()->track_get_key_value(get_track(), p_index);
-	Ref<Texture> icon = get_icon(checked ? "checked" : "unchecked", "CheckBox");
+	Ref<Texture2D> icon = get_icon(checked ? "checked" : "unchecked", "CheckBox");
 
 	Vector2 ofs(p_x - icon->get_width() / 2, int(get_size().height - icon->get_height()) / 2);
 
@@ -330,11 +330,10 @@ void AnimationTrackEditAudio::set_node(Object *p_object) {
 }
 
 void AnimationTrackEditAudio::_bind_methods() {
-	ClassDB::bind_method("_preview_changed", &AnimationTrackEditAudio::_preview_changed);
 }
 
 AnimationTrackEditAudio::AnimationTrackEditAudio() {
-	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", this, "_preview_changed");
+	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditAudio::_preview_changed));
 }
 
 /// SPRITE FRAME / FRAME_COORDS ///
@@ -360,7 +359,7 @@ Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_se
 
 	if (Object::cast_to<Sprite>(object) || Object::cast_to<Sprite3D>(object)) {
 
-		Ref<Texture> texture = object->call("get_texture");
+		Ref<Texture2D> texture = object->call("get_texture");
 		if (!texture.is_valid()) {
 			return AnimationTrackEdit::get_key_rect(p_index, p_pixels_sec);
 		}
@@ -404,7 +403,7 @@ Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_se
 			animation = get_animation()->track_get_key_value(animation_track, animaiton_index);
 		}
 
-		Ref<Texture> texture = sf->get_frame(animation, frame);
+		Ref<Texture2D> texture = sf->get_frame(animation, frame);
 		if (!texture.is_valid()) {
 			return AnimationTrackEdit::get_key_rect(p_index, p_pixels_sec);
 		}
@@ -434,7 +433,7 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 		return;
 	}
 
-	Ref<Texture> texture;
+	Ref<Texture2D> texture;
 	Rect2 region;
 
 	if (Object::cast_to<Sprite>(object) || Object::cast_to<Sprite3D>(object)) {
@@ -710,13 +709,13 @@ void AnimationTrackEditSubAnim::set_node(Object *p_object) {
 
 int AnimationTrackEditVolumeDB::get_key_height() const {
 
-	Ref<Texture> volume_texture = get_icon("ColorTrackVu", "EditorIcons");
+	Ref<Texture2D> volume_texture = get_icon("ColorTrackVu", "EditorIcons");
 	return volume_texture->get_height() * 1.2;
 }
 
 void AnimationTrackEditVolumeDB::draw_bg(int p_clip_left, int p_clip_right) {
 
-	Ref<Texture> volume_texture = get_icon("ColorTrackVu", "EditorIcons");
+	Ref<Texture2D> volume_texture = get_icon("ColorTrackVu", "EditorIcons");
 	int tex_h = volume_texture->get_height();
 
 	int y_from = (get_size().height - tex_h) / 2;
@@ -728,7 +727,7 @@ void AnimationTrackEditVolumeDB::draw_bg(int p_clip_left, int p_clip_right) {
 
 void AnimationTrackEditVolumeDB::draw_fg(int p_clip_left, int p_clip_right) {
 
-	Ref<Texture> volume_texture = get_icon("ColorTrackVu", "EditorIcons");
+	Ref<Texture2D> volume_texture = get_icon("ColorTrackVu", "EditorIcons");
 	int tex_h = volume_texture->get_height();
 	int y_from = (get_size().height - tex_h) / 2;
 	int db0 = y_from + (24 / 80.0) * tex_h;
@@ -763,7 +762,7 @@ void AnimationTrackEditVolumeDB::draw_key_link(int p_index, float p_pixels_sec, 
 		to_x = p_clip_right;
 	}
 
-	Ref<Texture> volume_texture = get_icon("ColorTrackVu", "EditorIcons");
+	Ref<Texture2D> volume_texture = get_icon("ColorTrackVu", "EditorIcons");
 	int tex_h = volume_texture->get_height();
 
 	int y_from = (get_size().height - tex_h) / 2;
@@ -945,11 +944,10 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 }
 
 void AnimationTrackEditTypeAudio::_bind_methods() {
-	ClassDB::bind_method("_preview_changed", &AnimationTrackEditTypeAudio::_preview_changed);
 }
 
 AnimationTrackEditTypeAudio::AnimationTrackEditTypeAudio() {
-	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", this, "_preview_changed");
+	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditTypeAudio::_preview_changed));
 	len_resizing = false;
 }
 

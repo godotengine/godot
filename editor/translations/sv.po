@@ -709,8 +709,9 @@ msgid "Line Number:"
 msgstr "Radnummer:"
 
 #: editor/code_editor.cpp
-msgid "Replaced %d occurrence(s)."
-msgstr "Ersatte %d förekomst(er)."
+#, fuzzy
+msgid "%d replaced."
+msgstr "Ersätt..."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -1240,8 +1241,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "Fel vid öppning av paketetfil, inte i zip-format."
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "Autoload '%s' finns redan!"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "Dekomprimerar Tillgångar"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr ""
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "%d fler filer"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 #, fuzzy
@@ -1252,6 +1267,11 @@ msgstr "Paketet installerades!"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "Klart!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "Innehåll:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1395,6 +1415,11 @@ msgid "Invalid file, not an audio bus layout."
 msgstr "Ogiltig fil, inte en Ljud-Buss Layout."
 
 #: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "Fel vid sparande av TileSet!"
+
+#: editor/editor_audio_buses.cpp
 msgid "Add Bus"
 msgstr "Lägg till Buss"
 
@@ -1527,6 +1552,10 @@ msgstr "Namn"
 #: editor/editor_autoload_settings.cpp
 msgid "Singleton"
 msgstr "Singleton"
+
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Klistra in Params"
 
 #: editor/editor_data.cpp
 msgid "Updating Scene"
@@ -1834,7 +1863,7 @@ msgstr "Visa I Filhanteraren"
 msgid "New Folder..."
 msgstr "Ny Mapp..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Uppdatera"
@@ -1999,12 +2028,26 @@ msgstr "Ärvd av:"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Brief Description"
-msgstr "Kort Beskrivning:"
+msgid "Description"
+msgstr "Beskrivning:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Online Tutorials"
+msgstr "Dokumentation Online"
 
 #: editor/editor_help.cpp
 msgid "Properties"
 msgstr "Egenskaper"
+
+#: editor/editor_help.cpp
+msgid "override:"
+msgstr ""
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Standard"
 
 #: editor/editor_help.cpp
 msgid "Methods"
@@ -2020,37 +2063,18 @@ msgid "Enumerations"
 msgstr "Uppräkningar"
 
 #: editor/editor_help.cpp
-msgid "enum  "
-msgstr "enum  "
-
-#: editor/editor_help.cpp
 msgid "Constants"
 msgstr "Konstanter"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Class Description"
-msgstr "Beskrivning"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Online Tutorials"
-msgstr "Dokumentation Online"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"Det finns för närvarande ingen beskrivning för denna metod. Snälla hjälp oss "
-"genom att [color=$color][url=$url]bidra med en[/url][/color]!"
-
-#: editor/editor_help.cpp
-#, fuzzy
 msgid "Property Descriptions"
 msgstr "Egenskapsbeskrivning:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Värde"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -2238,10 +2262,6 @@ msgstr ""
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
 msgstr ""
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr "Projekt exporten misslyckades med följande felmeddelande %d."
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -3156,10 +3176,6 @@ msgstr "Importera Mall från ZIP fil"
 msgid "Template Package"
 msgstr "Mallar"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "Exportera Projekt"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "Exportera Bibliotek"
@@ -3167,10 +3183,6 @@ msgstr "Exportera Bibliotek"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "Sammanfoga Med Existerande"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "Lösenord:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -4102,16 +4114,16 @@ msgid "Saving..."
 msgstr "Sparar..."
 
 #: editor/import_dock.cpp
+msgid "%d Files"
+msgstr "%d Filer"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "Ange som Standard för '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Rensa Standarden för '%s'"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr ""
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -4161,10 +4173,6 @@ msgstr "Spara Som..."
 #: editor/inspector_dock.cpp
 msgid "Copy Params"
 msgstr "Kopiera Params"
-
-#: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "Klistra in Params"
 
 #: editor/inspector_dock.cpp
 #, fuzzy
@@ -4701,7 +4709,6 @@ msgid "Animation Tools"
 msgstr "Animeringsverktyg"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr "Animering"
 
@@ -5805,6 +5812,11 @@ msgid "Auto Insert Key"
 msgstr "Anim Infoga Nyckel"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Animation Key and Pose Options"
+msgstr "Animation längd (i sekunder)."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
 msgstr ""
 
@@ -5914,6 +5926,22 @@ msgstr ""
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
 msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Solid Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "Kataloger & Filer:"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -6042,11 +6070,12 @@ msgid "Mesh is empty!"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Trimesh Body"
-msgstr ""
+#, fuzzy
+msgid "Couldn't create a Trimesh collision shape."
+msgstr "Kunde inte skapa mapp."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Convex Body"
+msgid "Create Static Trimesh Body"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -6058,12 +6087,30 @@ msgid "Create Trimesh Static Shape"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Failed creating shapes!"
+msgid "Can't create a single convex collision shape for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Couldn't create a single convex collision shape."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Convex Shape(s)"
+msgid "Create Single Convex Shape"
+msgstr "Skapa Ny"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Can't create multiple convex collision shapes for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Couldn't create any collision shapes."
+msgstr "Kunde inte skapa mapp."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Shapes"
 msgstr "Skapa Ny"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -6083,7 +6130,6 @@ msgid "No mesh to debug."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr ""
 
@@ -6116,16 +6162,54 @@ msgid "Create Trimesh Static Body"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a StaticBody and assigns a polygon-based collision shape to it "
+"automatically.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Convex Collision Sibling(s)"
+msgid "Create Single Convex Collision Sibling"
 msgstr "Skapa Prenumeration"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a single convex collision shape.\n"
+"This is the fastest (but least accurate) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Collision Siblings"
+msgstr "Skapa Prenumeration"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is a performance middle-ground between the two above options."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the SpatialMaterial Grow property when using "
+"that property isn't possible."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -7520,6 +7604,10 @@ msgid "Cinematic Preview"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Not available when using the GLES2 renderer."
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
 msgstr ""
 
@@ -8639,7 +8727,7 @@ msgstr "TileSet..."
 msgid "No VCS addons are available."
 msgstr ""
 
-#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
 msgstr "Fel"
 
@@ -9732,6 +9820,10 @@ msgid "Export PCK/Zip"
 msgstr "Exportera PCK/Zip"
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "Exportera Projekt"
+
+#: editor/project_export.cpp
 #, fuzzy
 msgid "Export mode?"
 msgstr "Exportera Projekt"
@@ -9763,11 +9855,18 @@ msgid "Export With Debug"
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "The path does not exist."
+#, fuzzy
+msgid "The path specified doesn't exist."
 msgstr "Sökvägen finns inte."
 
 #: editor/project_manager.cpp
-msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
+#, fuzzy
+msgid "Error opening package file (it's not in ZIP format)."
+msgstr "Fel vid öppning av paketetfil, inte i zip-format."
+
+#: editor/project_manager.cpp
+msgid ""
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -9775,11 +9874,11 @@ msgid "Please choose an empty folder."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Please choose a 'project.godot' or '.zip' file."
+msgid "Please choose a \"project.godot\" or \".zip\" file."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Directory already contains a Godot project."
+msgid "This directory already contains a Godot project."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -9824,10 +9923,6 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
-msgstr ""
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -10452,6 +10547,11 @@ msgstr ""
 
 #: editor/rename_dialog.cpp
 #, fuzzy
+msgid "Use Regular Expressions"
+msgstr "Nuvarande Version:"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
 msgid "Advanced Options"
 msgstr "Alternativ"
 
@@ -10490,7 +10590,7 @@ msgid ""
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Per Level counter"
+msgid "Per-level Counter"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10521,10 +10621,6 @@ msgid ""
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expressions"
-msgstr ""
-
-#: editor/rename_dialog.cpp
 msgid "Post-Process"
 msgstr ""
 
@@ -10533,11 +10629,11 @@ msgid "Keep"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "CamelCase to under_scored"
+msgid "PascalCase to snake_case"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "under_scored to CamelCase"
+msgid "snake_case to PascalCase"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10558,6 +10654,15 @@ msgstr "Versaler"
 #, fuzzy
 msgid "Reset"
 msgstr "Återställ Zoom"
+
+#: editor/rename_dialog.cpp
+msgid "Regular Expression Error"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "At character %s"
+msgstr "Giltiga tecken:"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -11032,7 +11137,7 @@ msgstr ""
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
-msgid "Script is valid."
+msgid "Script path/name is valid."
 msgstr "Skript giltigt"
 
 #: editor/script_create_dialog.cpp
@@ -11054,6 +11159,11 @@ msgstr "Skapa ny Skript-fil"
 #, fuzzy
 msgid "Will load an existing script file."
 msgstr "Ladda in befintlig Skript-fil"
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Script file already exists."
+msgstr "Autoload '%s' finns redan!"
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -11135,6 +11245,10 @@ msgid "Copy Error"
 msgstr "Fel"
 
 #: editor/script_editor_debugger.cpp
+msgid "Video RAM"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
 #, fuzzy
 msgid "Skip Breakpoints"
 msgstr "Radera punkter"
@@ -11182,10 +11296,6 @@ msgstr ""
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "Totalt:"
-
-#: editor/script_editor_debugger.cpp
-msgid "Video Mem"
-msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12508,6 +12618,11 @@ msgid ""
 "don't use them."
 msgstr ""
 
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
+msgstr ""
+
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr ""
@@ -12672,7 +12787,14 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Pick a color from the editor window."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
@@ -12779,6 +12901,35 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Replaced %d occurrence(s)."
+#~ msgstr "Ersatte %d förekomst(er)."
+
+#, fuzzy
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "Det finns för närvarande ingen beskrivning för denna metod. Snälla hjälp "
+#~ "oss genom att [color=$color][url=$url]bidra med en[/url][/color]!"
+
+#~ msgid "enum  "
+#~ msgstr "enum  "
+
+#, fuzzy
+#~ msgid "Brief Description"
+#~ msgstr "Kort Beskrivning:"
+
+#, fuzzy
+#~ msgid "Class Description"
+#~ msgstr "Beskrivning"
+
+#~ msgid "Project export failed with error code %d."
+#~ msgstr "Projekt exporten misslyckades med följande felmeddelande %d."
+
+#~ msgid "Password:"
+#~ msgstr "Lösenord:"
 
 #~ msgid "Pause the scene"
 #~ msgstr "Pausa scenen"
@@ -12972,10 +13123,6 @@ msgstr ""
 #~ msgstr ""
 #~ "PathFollow2D fungerar bara när den är satt som ett barn till en Path2D-"
 #~ "Node."
-
-#, fuzzy
-#~ msgid "Split already exists."
-#~ msgstr "Autoload '%s' finns redan!"
 
 #, fuzzy
 #~ msgid "Remove Split"

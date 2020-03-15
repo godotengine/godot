@@ -83,7 +83,6 @@ void JoypadLinux::Joypad::reset() {
 JoypadLinux::JoypadLinux(InputDefault *in) {
 	exit_udev = false;
 	input = in;
-	joy_mutex = Mutex::create();
 	joy_thread = Thread::create(joy_thread_func, this);
 }
 
@@ -91,7 +90,6 @@ JoypadLinux::~JoypadLinux() {
 	exit_udev = true;
 	Thread::wait_to_finish(joy_thread);
 	memdelete(joy_thread);
-	memdelete(joy_mutex);
 	close_joypad();
 }
 
@@ -137,9 +135,8 @@ void JoypadLinux::enumerate_joypads(udev *p_udev) {
 
 			String devnode_str = devnode;
 			if (devnode_str.find(ignore_str) == -1) {
-				joy_mutex->lock();
+				MutexLock lock(joy_mutex);
 				open_joypad(devnode);
-				joy_mutex->unlock();
 			}
 		}
 		udev_device_unref(dev);
@@ -176,7 +173,7 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 
 			if (dev && udev_device_get_devnode(dev) != 0) {
 
-				joy_mutex->lock();
+				MutexLock lock(joy_mutex);
 				String action = udev_device_get_action(dev);
 				const char *devnode = udev_device_get_devnode(dev);
 				if (devnode) {
@@ -192,7 +189,6 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 				}
 
 				udev_device_unref(dev);
-				joy_mutex->unlock();
 			}
 		}
 		usleep(50000);
@@ -204,15 +200,17 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 void JoypadLinux::monitor_joypads() {
 
 	while (!exit_udev) {
-		joy_mutex->lock();
-		for (int i = 0; i < 32; i++) {
-			char fname[64];
-			sprintf(fname, "/dev/input/event%d", i);
-			if (attached_devices.find(fname) == -1) {
-				open_joypad(fname);
+		{
+			MutexLock lock(joy_mutex);
+
+			for (int i = 0; i < 32; i++) {
+				char fname[64];
+				sprintf(fname, "/dev/input/event%d", i);
+				if (attached_devices.find(fname) == -1) {
+					open_joypad(fname);
+				}
 			}
 		}
-		joy_mutex->unlock();
 		usleep(1000000); // 1s
 	}
 }
@@ -457,7 +455,7 @@ InputDefault::JoyAxis JoypadLinux::axis_correct(const input_absinfo *p_abs, int 
 
 void JoypadLinux::process_joypads() {
 
-	if (joy_mutex->try_lock() != OK) {
+	if (joy_mutex.try_lock() != OK) {
 		return;
 	}
 	for (int i = 0; i < JOYPADS_MAX; i++) {
@@ -548,6 +546,6 @@ void JoypadLinux::process_joypads() {
 			}
 		}
 	}
-	joy_mutex->unlock();
+	joy_mutex.unlock();
 }
 #endif

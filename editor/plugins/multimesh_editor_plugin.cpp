@@ -124,7 +124,7 @@ void MultiMeshEditor::_populate() {
 
 	Transform geom_xform = node->get_global_transform().affine_inverse() * ss_instance->get_global_transform();
 
-	PoolVector<Face3> geometry = ss_instance->get_faces(VisualInstance::FACES_SOLID);
+	Vector<Face3> geometry = ss_instance->get_faces(VisualInstance::FACES_SOLID);
 
 	if (geometry.size() == 0) {
 
@@ -136,7 +136,7 @@ void MultiMeshEditor::_populate() {
 	//make all faces local
 
 	int gc = geometry.size();
-	PoolVector<Face3>::Write w = geometry.write();
+	Face3 *w = geometry.ptrw();
 
 	for (int i = 0; i < gc; i++) {
 		for (int j = 0; j < 3; j++) {
@@ -144,13 +144,11 @@ void MultiMeshEditor::_populate() {
 		}
 	}
 
-	w.release();
-
-	PoolVector<Face3> faces = geometry;
+	Vector<Face3> faces = geometry;
 	int facecount = faces.size();
 	ERR_FAIL_COND_MSG(!facecount, "Parent has no solid faces to populate.");
 
-	PoolVector<Face3>::Read r = faces.read();
+	const Face3 *r = faces.ptr();
 
 	float area_accum = 0;
 	Map<float, int> triangle_area_map;
@@ -172,7 +170,7 @@ void MultiMeshEditor::_populate() {
 	int instance_count = populate_amount->get_value();
 
 	multimesh->set_transform_format(MultiMesh::TRANSFORM_3D);
-	multimesh->set_color_format(MultiMesh::COLOR_NONE);
+	multimesh->set_use_colors(false);
 	multimesh->set_instance_count(instance_count);
 
 	float _tilt_random = populate_tilt_random->get_value();
@@ -280,11 +278,6 @@ void MultiMeshEditor::_browse(bool p_source) {
 }
 
 void MultiMeshEditor::_bind_methods() {
-
-	ClassDB::bind_method("_menu_option", &MultiMeshEditor::_menu_option);
-	ClassDB::bind_method("_populate", &MultiMeshEditor::_populate);
-	ClassDB::bind_method("_browsed", &MultiMeshEditor::_browsed);
-	ClassDB::bind_method("_browse", &MultiMeshEditor::_browse);
 }
 
 MultiMeshEditor::MultiMeshEditor() {
@@ -297,7 +290,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("MultiMeshInstance", "EditorIcons"));
 
 	options->get_popup()->add_item(TTR("Populate Surface"));
-	options->get_popup()->connect("id_pressed", this, "_menu_option");
+	options->get_popup()->connect("id_pressed", callable_mp(this, &MultiMeshEditor::_menu_option));
 
 	populate_dialog = memnew(ConfirmationDialog);
 	populate_dialog->set_title(TTR("Populate MultiMesh"));
@@ -315,7 +308,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	Button *b = memnew(Button);
 	hbc->add_child(b);
 	b->set_text("..");
-	b->connect("pressed", this, "_browse", make_binds(false));
+	b->connect("pressed", callable_mp(this, &MultiMeshEditor::_browse), make_binds(false));
 
 	vbc->add_margin_child(TTR("Target Surface:"), hbc);
 
@@ -327,7 +320,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	hbc->add_child(b);
 	b->set_text("..");
 	vbc->add_margin_child(TTR("Source Mesh:"), hbc);
-	b->connect("pressed", this, "_browse", make_binds(true));
+	b->connect("pressed", callable_mp(this, &MultiMeshEditor::_browse), make_binds(true));
 
 	populate_axis = memnew(OptionButton);
 	populate_axis->add_item(TTR("X-Axis"));
@@ -373,10 +366,10 @@ MultiMeshEditor::MultiMeshEditor() {
 
 	populate_dialog->get_ok()->set_text(TTR("Populate"));
 
-	populate_dialog->get_ok()->connect("pressed", this, "_populate");
+	populate_dialog->get_ok()->connect("pressed", callable_mp(this, &MultiMeshEditor::_populate));
 	std = memnew(SceneTreeDialog);
 	populate_dialog->add_child(std);
-	std->connect("selected", this, "_browsed");
+	std->connect("selected", callable_mp(this, &MultiMeshEditor::_browsed));
 
 	_last_pp_node = NULL;
 

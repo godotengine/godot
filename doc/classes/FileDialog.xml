@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="FileDialog" inherits="ConfirmationDialog" category="Core" version="3.2">
+<class name="FileDialog" inherits="ConfirmationDialog" version="4.0">
 	<brief_description>
 		Dialog for selecting files or directories in the filesystem.
 	</brief_description>
@@ -68,8 +68,8 @@
 			The currently selected file path of the file dialog.
 		</member>
 		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" override="true" default="false" />
-		<member name="filters" type="PoolStringArray" setter="set_filters" getter="get_filters" default="PoolStringArray(  )">
-			The available file type filters. For example, this shows only [code].png[/code] and [code].gd[/code] files: [code]set_filters(PoolStringArray(["*.png ; PNG Images","*.gd ; GDScript Files"]))[/code].
+		<member name="filters" type="PackedStringArray" setter="set_filters" getter="get_filters" default="PackedStringArray(  )">
+			The available file type filters. For example, this shows only [code].png[/code] and [code].gd[/code] files: [code]set_filters(PackedStringArray(["*.png ; PNG Images","*.gd ; GDScript Files"]))[/code].
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="FileDialog.Mode" default="4">
 			The dialog's open or save mode, which affects the selection behavior. See enum [code]Mode[/code] constants.
@@ -98,7 +98,7 @@
 			</description>
 		</signal>
 		<signal name="files_selected">
-			<argument index="0" name="paths" type="PoolStringArray">
+			<argument index="0" name="paths" type="PackedStringArray">
 			</argument>
 			<description>
 				Emitted when the user selects multiple files.
@@ -133,16 +133,22 @@
 	</constants>
 	<theme_items>
 		<theme_item name="files_disabled" type="Color" default="Color( 0, 0, 0, 0.7 )">
+			The color tint for disabled files (when the [FileDialog] is used in open folder mode).
 		</theme_item>
-		<theme_item name="folder" type="Texture">
+		<theme_item name="folder" type="Texture2D">
+			Custom icon for folders.
 		</theme_item>
 		<theme_item name="folder_icon_modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			The color modulation applied to the folder icon.
 		</theme_item>
-		<theme_item name="parent_folder" type="Texture">
+		<theme_item name="parent_folder" type="Texture2D">
+			Custom icon for the parent folder arrow.
 		</theme_item>
-		<theme_item name="reload" type="Texture">
+		<theme_item name="reload" type="Texture2D">
+			Custom icon for the reload button.
 		</theme_item>
-		<theme_item name="toggle_hidden" type="Texture">
+		<theme_item name="toggle_hidden" type="Texture2D">
+			Custom icon for the toggle hidden button.
 		</theme_item>
 	</theme_items>
 </class>

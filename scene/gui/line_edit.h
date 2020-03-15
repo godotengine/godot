@@ -91,7 +91,7 @@ private:
 
 	bool shortcut_keys_enabled;
 
-	Ref<Texture> right_icon;
+	Ref<Texture2D> right_icon;
 
 	struct Selection {
 
@@ -132,6 +132,7 @@ private:
 	void _emit_text_change();
 	bool expand_to_text_length;
 
+	void update_cached_width();
 	void update_placeholder_width();
 
 	bool caret_blink_enabled;
@@ -231,8 +232,8 @@ public:
 	void set_selecting_enabled(bool p_enabled);
 	bool is_selecting_enabled() const;
 
-	void set_right_icon(const Ref<Texture> &p_icon);
-	Ref<Texture> get_right_icon();
+	void set_right_icon(const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_right_icon();
 
 	virtual bool is_text_field() const;
 	LineEdit();

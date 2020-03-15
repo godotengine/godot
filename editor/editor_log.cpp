@@ -76,7 +76,7 @@ void EditorLog::_notification(int p_what) {
 void EditorLog::_clear_request() {
 
 	log->clear();
-	tool_button->set_icon(Ref<Texture>());
+	tool_button->set_icon(Ref<Texture2D>());
 }
 
 void EditorLog::_copy_request() {
@@ -102,14 +102,14 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 		} break;
 		case MSG_TYPE_ERROR: {
 			log->push_color(get_color("error_color", "Editor"));
-			Ref<Texture> icon = get_icon("Error", "EditorIcons");
+			Ref<Texture2D> icon = get_icon("Error", "EditorIcons");
 			log->add_image(icon);
 			log->add_text(" ");
 			tool_button->set_icon(icon);
 		} break;
 		case MSG_TYPE_WARNING: {
 			log->push_color(get_color("warning_color", "Editor"));
-			Ref<Texture> icon = get_icon("Warning", "EditorIcons");
+			Ref<Texture2D> icon = get_icon("Warning", "EditorIcons");
 			log->add_image(icon);
 			log->add_text(" ");
 			tool_button->set_icon(icon);
@@ -138,8 +138,6 @@ void EditorLog::_undo_redo_cbk(void *p_self, const String &p_name) {
 
 void EditorLog::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_clear_request"), &EditorLog::_clear_request);
-	ClassDB::bind_method(D_METHOD("_copy_request"), &EditorLog::_copy_request);
 	ADD_SIGNAL(MethodInfo("clear_request"));
 	ADD_SIGNAL(MethodInfo("copy_request"));
 }
@@ -159,13 +157,13 @@ EditorLog::EditorLog() {
 	hb->add_child(copybutton);
 	copybutton->set_text(TTR("Copy"));
 	copybutton->set_shortcut(ED_SHORTCUT("editor/copy_output", TTR("Copy Selection"), KEY_MASK_CMD | KEY_C));
-	copybutton->connect("pressed", this, "_copy_request");
+	copybutton->connect("pressed", callable_mp(this, &EditorLog::_copy_request));
 
 	clearbutton = memnew(Button);
 	hb->add_child(clearbutton);
 	clearbutton->set_text(TTR("Clear"));
 	clearbutton->set_shortcut(ED_SHORTCUT("editor/clear_output", TTR("Clear Output"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_K));
-	clearbutton->connect("pressed", this, "_clear_request");
+	clearbutton->connect("pressed", callable_mp(this, &EditorLog::_clear_request));
 
 	log = memnew(RichTextLabel);
 	log->set_scroll_follow(true);

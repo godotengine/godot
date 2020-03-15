@@ -107,7 +107,7 @@ static void handle_crash(int sig) {
 				output.erase(output.length() - 1, 1);
 			}
 
-			fprintf(stderr, "[%ld] %s (%ls)\n", i, fname, output.c_str());
+			fprintf(stderr, "[%ld] %s (%ls)\n", (long int)i, fname, output.c_str());
 		}
 
 		free(strings);

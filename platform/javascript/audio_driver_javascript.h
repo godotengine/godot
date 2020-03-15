@@ -37,6 +37,7 @@ class AudioDriverJavaScript : public AudioDriver {
 
 	float *internal_buffer;
 
+	int _driver_id;
 	int buffer_length;
 
 public:

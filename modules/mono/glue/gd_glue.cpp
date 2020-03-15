@@ -44,9 +44,8 @@
 
 MonoObject *godot_icall_GD_bytes2var(MonoArray *p_bytes, MonoBoolean p_allow_objects) {
 	Variant ret;
-	PoolByteArray varr = GDMonoMarshal::mono_array_to_PoolByteArray(p_bytes);
-	PoolByteArray::Read r = varr.read();
-	Error err = decode_variant(ret, r.ptr(), varr.size(), NULL, p_allow_objects);
+	PackedByteArray varr = GDMonoMarshal::mono_array_to_PackedByteArray(p_bytes);
+	Error err = decode_variant(ret, varr.ptr(), varr.size(), NULL, p_allow_objects);
 	if (err != OK) {
 		ret = RTR("Not enough bytes for decoding bytes, or invalid format.");
 	}
@@ -56,9 +55,9 @@ MonoObject *godot_icall_GD_bytes2var(MonoArray *p_bytes, MonoBoolean p_allow_obj
 MonoObject *godot_icall_GD_convert(MonoObject *p_what, int32_t p_type) {
 	Variant what = GDMonoMarshal::mono_object_to_variant(p_what);
 	const Variant *args[1] = { &what };
-	Variant::CallError ce;
+	Callable::CallError ce;
 	Variant ret = Variant::construct(Variant::Type(p_type), args, 1, ce);
-	ERR_FAIL_COND_V(ce.error != Variant::CallError::CALL_OK, NULL);
+	ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, NULL);
 	return GDMonoMarshal::variant_to_mono_object(ret);
 }
 
@@ -67,7 +66,7 @@ int godot_icall_GD_hash(MonoObject *p_var) {
 }
 
 MonoObject *godot_icall_GD_instance_from_id(uint64_t p_instance_id) {
-	return GDMonoUtils::unmanaged_get_managed(ObjectDB::get_instance(p_instance_id));
+	return GDMonoUtils::unmanaged_get_managed(ObjectDB::get_instance(ObjectID(p_instance_id)));
 }
 
 void godot_icall_GD_print(MonoArray *p_what) {
@@ -235,7 +234,7 @@ MonoObject *godot_icall_GD_str2var(MonoString *p_str) {
 	Error err = VariantParser::parse(&ss, ret, errs, line);
 	if (err != OK) {
 		String err_str = "Parse error at line " + itos(line) + ": " + errs + ".";
-		ERR_PRINTS(err_str);
+		ERR_PRINT(err_str);
 		ret = err_str;
 	}
 
@@ -247,28 +246,25 @@ MonoBoolean godot_icall_GD_type_exists(MonoString *p_type) {
 }
 
 void godot_icall_GD_pusherror(MonoString *p_str) {
-	ERR_PRINTS(GDMonoMarshal::mono_string_to_godot(p_str));
+	ERR_PRINT(GDMonoMarshal::mono_string_to_godot(p_str));
 }
 
 void godot_icall_GD_pushwarning(MonoString *p_str) {
-	WARN_PRINTS(GDMonoMarshal::mono_string_to_godot(p_str));
+	WARN_PRINT(GDMonoMarshal::mono_string_to_godot(p_str));
 }
 
 MonoArray *godot_icall_GD_var2bytes(MonoObject *p_var, MonoBoolean p_full_objects) {
 	Variant var = GDMonoMarshal::mono_object_to_variant(p_var);
 
-	PoolByteArray barr;
+	PackedByteArray barr;
 	int len;
 	Error err = encode_variant(var, NULL, len, p_full_objects);
 	ERR_FAIL_COND_V_MSG(err != OK, NULL, "Unexpected error encoding variable to bytes, likely unserializable type found (Object or RID).");
 
 	barr.resize(len);
-	{
-		PoolByteArray::Write w = barr.write();
-		encode_variant(var, w.ptr(), len, p_full_objects);
-	}
+	encode_variant(var, barr.ptrw(), len, p_full_objects);
 
-	return GDMonoMarshal::PoolByteArray_to_mono_array(barr);
+	return GDMonoMarshal::PackedByteArray_to_mono_array(barr);
 }
 
 MonoString *godot_icall_GD_var2str(MonoObject *p_var) {

@@ -61,10 +61,10 @@ bool ResourceFormatSaver::recognize(const RES &p_resource) const {
 void ResourceFormatSaver::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
 
 	if (get_script_instance() && get_script_instance()->has_method("get_recognized_extensions")) {
-		PoolStringArray exts = get_script_instance()->call("get_recognized_extensions", p_resource);
+		PackedStringArray exts = get_script_instance()->call("get_recognized_extensions", p_resource);
 
 		{
-			PoolStringArray::Read r = exts.read();
+			const String *r = exts.ptr();
 			for (int i = 0; i < exts.size(); ++i) {
 				p_extensions->push_back(r[i]);
 			}
@@ -81,7 +81,7 @@ void ResourceFormatSaver::_bind_methods() {
 		ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::INT, "save", arg0, arg1, arg2));
 	}
 
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::POOL_STRING_ARRAY, "get_recognized_extensions", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::PACKED_STRING_ARRAY, "get_recognized_extensions", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "recognize", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
 }
 
@@ -221,7 +221,7 @@ bool ResourceSaver::add_custom_resource_format_saver(String script_path) {
 	ERR_FAIL_COND_V_MSG(obj == NULL, false, "Cannot instance script as custom resource saver, expected 'ResourceFormatSaver' inheritance, got: " + String(ibt) + ".");
 
 	ResourceFormatSaver *crl = Object::cast_to<ResourceFormatSaver>(obj);
-	crl->set_script(s.get_ref_ptr());
+	crl->set_script(s);
 	ResourceSaver::add_resource_format_saver(crl);
 
 	return true;

@@ -82,7 +82,7 @@ void ProjectSettingsEditor::_unhandled_input(const Ref<InputEvent> &p_event) {
 
 	if (k.is_valid() && is_window_modal_on_top() && k->is_pressed()) {
 
-		if (k->get_scancode_with_modifiers() == (KEY_MASK_CMD | KEY_F)) {
+		if (k->get_keycode_with_modifiers() == (KEY_MASK_CMD | KEY_F)) {
 			if (search_button->is_pressed()) {
 				search_box->grab_focus();
 				search_box->select_all();
@@ -108,9 +108,10 @@ void ProjectSettingsEditor::_notification(int p_what) {
 
 			action_add_error->add_color_override("font_color", get_color("error_color", "Editor"));
 
-			translation_list->connect("button_pressed", this, "_translation_delete");
+			translation_list->connect("button_pressed", callable_mp(this, &ProjectSettingsEditor::_translation_delete));
 			_update_actions();
-			popup_add->add_icon_item(get_icon("Keyboard", "EditorIcons"), TTR("Key "), INPUT_KEY); //"Key " - because the word 'key' has already been used as a key animation
+			popup_add->add_icon_item(get_icon("Keyboard", "EditorIcons"), TTR("Key"), INPUT_KEY); //"Key " - because the word 'key' has already been used as a key animation
+			popup_add->add_icon_item(get_icon("KeyboardPhysical", "EditorIcons"), TTR("Physical Key"), INPUT_KEY_PHYSICAL);
 			popup_add->add_icon_item(get_icon("JoyButton", "EditorIcons"), TTR("Joy Button"), INPUT_JOY_BUTTON);
 			popup_add->add_icon_item(get_icon("JoyAxis", "EditorIcons"), TTR("Joy Axis"), INPUT_JOY_MOTION);
 			popup_add->add_icon_item(get_icon("Mouse", "EditorIcons"), TTR("Mouse Button"), INPUT_MOUSE_BUTTON);
@@ -146,6 +147,7 @@ void ProjectSettingsEditor::_notification(int p_what) {
 			search_box->set_clear_button_enabled(true);
 			action_add_error->add_color_override("font_color", get_color("error_color", "Editor"));
 			popup_add->set_item_icon(popup_add->get_item_index(INPUT_KEY), get_icon("Keyboard", "EditorIcons"));
+			popup_add->set_item_icon(popup_add->get_item_index(INPUT_KEY_PHYSICAL), get_icon("KeyboardPhysical", "EditorIcons"));
 			popup_add->set_item_icon(popup_add->get_item_index(INPUT_JOY_BUTTON), get_icon("JoyButton", "EditorIcons"));
 			popup_add->set_item_icon(popup_add->get_item_index(INPUT_JOY_MOTION), get_icon("JoyAxis", "EditorIcons"));
 			popup_add->set_item_icon(popup_add->get_item_index(INPUT_MOUSE_BUTTON), get_icon("Mouse", "EditorIcons"));
@@ -361,7 +363,13 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 
 	Ref<InputEventKey> ie;
 	ie.instance();
-	ie->set_scancode(last_wait_for_key->get_scancode());
+	if (press_a_key_physical) {
+		ie->set_physical_keycode(last_wait_for_key->get_physical_keycode());
+		ie->set_keycode(0);
+	} else {
+		ie->set_physical_keycode(0);
+		ie->set_keycode(last_wait_for_key->get_keycode());
+	}
 	ie->set_shift(last_wait_for_key->get_shift());
 	ie->set_alt(last_wait_for_key->get_alt());
 	ie->set_control(last_wait_for_key->get_control());
@@ -379,8 +387,14 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 		Ref<InputEventKey> aie = events[i];
 		if (aie.is_null())
 			continue;
-		if (aie->get_scancode_with_modifiers() == ie->get_scancode_with_modifiers()) {
-			return;
+		if (!press_a_key_physical) {
+			if (aie->get_keycode_with_modifiers() == ie->get_keycode_with_modifiers()) {
+				return;
+			}
+		} else {
+			if (aie->get_physical_keycode_with_modifiers() == ie->get_physical_keycode_with_modifiers()) {
+				return;
+			}
 		}
 	}
 
@@ -441,10 +455,10 @@ void ProjectSettingsEditor::_wait_for_key(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
 
-	if (k.is_valid() && k->is_pressed() && k->get_scancode() != 0) {
+	if (k.is_valid() && k->is_pressed() && k->get_keycode() != 0) {
 
 		last_wait_for_key = p_event;
-		const String str = keycode_get_string(k->get_scancode_with_modifiers());
+		const String str = (press_a_key_physical) ? keycode_get_string(k->get_physical_keycode_with_modifiers()) + TTR(" (Physical)") : keycode_get_string(k->get_keycode_with_modifiers());
 
 		press_a_key_label->set_text(str);
 		press_a_key->get_ok()->set_disabled(false);
@@ -460,8 +474,19 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 
 		case INPUT_KEY: {
 
+			press_a_key_physical = false;
 			press_a_key_label->set_text(TTR("Press a Key..."));
 			press_a_key->get_ok()->set_disabled(true);
+			last_wait_for_key = Ref<InputEvent>();
+			press_a_key->popup_centered(Size2(250, 80) * EDSCALE);
+			press_a_key->grab_focus();
+
+		} break;
+		case INPUT_KEY_PHYSICAL: {
+
+			press_a_key_physical = true;
+			press_a_key_label->set_text(TTR("Press a Key..."));
+
 			last_wait_for_key = Ref<InputEvent>();
 			press_a_key->popup_centered(Size2(250, 80) * EDSCALE);
 			press_a_key->grab_focus();
@@ -547,7 +572,11 @@ void ProjectSettingsEditor::_edit_item(Ref<InputEvent> p_exiting_event) {
 	InputType ie_type;
 
 	if ((Ref<InputEventKey>(p_exiting_event)).is_valid()) {
-		ie_type = INPUT_KEY;
+		if ((Ref<InputEventKey>(p_exiting_event))->get_keycode() != 0) {
+			ie_type = INPUT_KEY;
+		} else {
+			ie_type = INPUT_KEY_PHYSICAL;
+		}
 
 	} else if ((Ref<InputEventJoypadButton>(p_exiting_event)).is_valid()) {
 		ie_type = INPUT_JOY_BUTTON;
@@ -719,9 +748,18 @@ void ProjectSettingsEditor::_update_actions() {
 		item->set_range(1, action["deadzone"]);
 		item->set_custom_bg_color(1, get_color("prop_subsection", "Editor"));
 
+		const bool is_builtin_input = ProjectSettings::get_singleton()->get_input_presets().find(pi.name) != NULL;
+		const String tooltip = is_builtin_input ? TTR("Built-in actions can't be removed as they're used for UI navigation.") : TTR("Remove");
 		item->add_button(2, get_icon("Add", "EditorIcons"), 1, false, TTR("Add Event"));
-		if (!ProjectSettings::get_singleton()->get_input_presets().find(pi.name)) {
-			item->add_button(2, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
+		item->add_button(2, get_icon("Remove", "EditorIcons"), 2, false, tooltip);
+
+		if (is_builtin_input) {
+			// Built-in action (like `ui_up`). Make the action not removable,
+			// but still display the button so the "Add" button is at the same
+			// horizontal position as for custom actions.
+			item->set_button_disabled(2, 1, true);
+		} else {
+			// Not a built-in action. Make the action name editable.
 			item->set_editable(0, true);
 		}
 
@@ -736,10 +774,14 @@ void ProjectSettingsEditor::_update_actions() {
 			Ref<InputEventKey> k = event;
 			if (k.is_valid()) {
 
-				const String str = keycode_get_string(k->get_scancode_with_modifiers());
+				const String str = (k->get_keycode() == 0) ? keycode_get_string(k->get_physical_keycode_with_modifiers()) + TTR(" (Physical)") : keycode_get_string(k->get_keycode_with_modifiers());
 
 				action2->set_text(0, str);
-				action2->set_icon(0, get_icon("Keyboard", "EditorIcons"));
+				if ((k->get_keycode() != 0)) {
+					action2->set_icon(0, get_icon("Keyboard", "EditorIcons"));
+				} else {
+					action2->set_icon(0, get_icon("KeyboardPhysical", "EditorIcons"));
+				}
 			}
 
 			Ref<InputEventJoypadButton> jb = event;
@@ -747,10 +789,9 @@ void ProjectSettingsEditor::_update_actions() {
 			if (jb.is_valid()) {
 
 				String str = _get_device_string(jb->get_device()) + ", " + TTR("Button") + " " + itos(jb->get_button_index());
-				if (jb->get_button_index() >= 0 && jb->get_button_index() < JOY_BUTTON_MAX)
-					str += String() + " (" + _button_names[jb->get_button_index()] + ").";
-				else
-					str += ".";
+				if (jb->get_button_index() >= 0 && jb->get_button_index() < JOY_BUTTON_MAX) {
+					str += String() + " (" + _button_names[jb->get_button_index()] + ")";
+				}
 
 				action2->set_text(0, str);
 				action2->set_icon(0, get_icon("JoyButton", "EditorIcons"));
@@ -761,12 +802,12 @@ void ProjectSettingsEditor::_update_actions() {
 			if (mb.is_valid()) {
 				String str = _get_device_string(mb->get_device()) + ", ";
 				switch (mb->get_button_index()) {
-					case BUTTON_LEFT: str += TTR("Left Button."); break;
-					case BUTTON_RIGHT: str += TTR("Right Button."); break;
-					case BUTTON_MIDDLE: str += TTR("Middle Button."); break;
-					case BUTTON_WHEEL_UP: str += TTR("Wheel Up."); break;
-					case BUTTON_WHEEL_DOWN: str += TTR("Wheel Down."); break;
-					default: str += TTR("Button") + " " + itos(mb->get_button_index()) + ".";
+					case BUTTON_LEFT: str += TTR("Left Button"); break;
+					case BUTTON_RIGHT: str += TTR("Right Button"); break;
+					case BUTTON_MIDDLE: str += TTR("Middle Button"); break;
+					case BUTTON_WHEEL_UP: str += TTR("Wheel Up"); break;
+					case BUTTON_WHEEL_DOWN: str += TTR("Wheel Down"); break;
+					default: str += vformat(TTR("%d Button"), mb->get_button_index());
 				}
 
 				action2->set_text(0, str);
@@ -780,7 +821,7 @@ void ProjectSettingsEditor::_update_actions() {
 				int ax = jm->get_axis();
 				int n = 2 * ax + (jm->get_axis_value() < 0 ? 0 : 1);
 				String desc = _axis_names[n];
-				String str = _get_device_string(jm->get_device()) + ", " + TTR("Axis") + " " + itos(ax) + " " + (jm->get_axis_value() < 0 ? "-" : "+") + desc + ".";
+				String str = _get_device_string(jm->get_device()) + ", " + TTR("Axis") + " " + itos(ax) + " " + (jm->get_axis_value() < 0 ? "-" : "+") + desc;
 				action2->set_text(0, str);
 				action2->set_icon(0, get_icon("JoyAxis", "EditorIcons"));
 			}
@@ -789,6 +830,10 @@ void ProjectSettingsEditor::_update_actions() {
 
 			action2->add_button(2, get_icon("Edit", "EditorIcons"), 3, false, TTR("Edit"));
 			action2->add_button(2, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
+			// Fade out the individual event buttons slightly to make the
+			// Add/Remove buttons stand out more.
+			action2->set_button_color(2, 0, Color(1, 1, 1, 0.75));
+			action2->set_button_color(2, 1, Color(1, 1, 1, 0.75));
 		}
 	}
 
@@ -835,7 +880,7 @@ void ProjectSettingsEditor::_item_add() {
 
 	// Initialize the property with the default value for the given type.
 	// The type list starts at 1 (as we exclude Nil), so add 1 to the selected value.
-	Variant::CallError ce;
+	Callable::CallError ce;
 	const Variant value = Variant::construct(Variant::Type(type->get_selected() + 1), NULL, 0, ce);
 
 	String catname = category->get_text().strip_edges();
@@ -1176,7 +1221,7 @@ void ProjectSettingsEditor::add_translation(const String &p_translation) {
 
 void ProjectSettingsEditor::_translation_add(const String &p_path) {
 
-	PoolStringArray translations = ProjectSettings::get_singleton()->get("locale/translations");
+	PackedStringArray translations = ProjectSettings::get_singleton()->get("locale/translations");
 
 	for (int i = 0; i < translations.size(); i++) {
 
@@ -1207,7 +1252,7 @@ void ProjectSettingsEditor::_translation_delete(Object *p_item, int p_column, in
 
 	int idx = ti->get_metadata(0);
 
-	PoolStringArray translations = ProjectSettings::get_singleton()->get("locale/translations");
+	PackedStringArray translations = ProjectSettings::get_singleton()->get("locale/translations");
 
 	ERR_FAIL_INDEX(idx, translations.size());
 
@@ -1241,7 +1286,7 @@ void ProjectSettingsEditor::_translation_res_add(const String &p_path) {
 	if (remaps.has(p_path))
 		return; //pointless already has it
 
-	remaps[p_path] = PoolStringArray();
+	remaps[p_path] = PackedStringArray();
 
 	undo_redo->create_action(TTR("Add Remapped Path"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "locale/translation_remaps", remaps);
@@ -1269,7 +1314,7 @@ void ProjectSettingsEditor::_translation_res_option_add(const String &p_path) {
 	String key = k->get_metadata(0);
 
 	ERR_FAIL_COND(!remaps.has(key));
-	PoolStringArray r = remaps[key];
+	PackedStringArray r = remaps[key];
 	r.push_back(p_path + ":" + "en");
 	remaps[key] = r;
 
@@ -1316,7 +1361,7 @@ void ProjectSettingsEditor::_translation_res_option_changed() {
 	ERR_FAIL_INDEX(which, langs.size());
 
 	ERR_FAIL_COND(!remaps.has(key));
-	PoolStringArray r = remaps[key];
+	PackedStringArray r = remaps[key];
 	ERR_FAIL_INDEX(idx, r.size());
 	if (translation_locales_idxs_remap.size() > which) {
 		r.set(idx, path + ":" + langs[translation_locales_idxs_remap[which]]);
@@ -1383,7 +1428,7 @@ void ProjectSettingsEditor::_translation_res_option_delete(Object *p_item, int p
 	int idx = ed->get_metadata(0);
 
 	ERR_FAIL_COND(!remaps.has(key));
-	PoolStringArray r = remaps[key];
+	PackedStringArray r = remaps[key];
 	ERR_FAIL_INDEX(idx, r.size());
 	r.remove(idx);
 	remaps[key] = r;
@@ -1494,7 +1539,7 @@ void ProjectSettingsEditor::_update_translations() {
 	translation_list->set_hide_root(true);
 	if (ProjectSettings::get_singleton()->has_setting("locale/translations")) {
 
-		PoolStringArray translations = ProjectSettings::get_singleton()->get("locale/translations");
+		PackedStringArray translations = ProjectSettings::get_singleton()->get("locale/translations");
 		for (int i = 0; i < translations.size(); i++) {
 
 			TreeItem *t = translation_list->create_item(root);
@@ -1630,7 +1675,7 @@ void ProjectSettingsEditor::_update_translations() {
 				t->select(0);
 				translation_res_option_add_button->set_disabled(false);
 
-				PoolStringArray selected = remaps[keys[i]];
+				PackedStringArray selected = remaps[keys[i]];
 				for (int j = 0; j < selected.size(); j++) {
 
 					String s2 = selected[j];
@@ -1712,51 +1757,11 @@ void ProjectSettingsEditor::_editor_restart_close() {
 void ProjectSettingsEditor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_unhandled_input"), &ProjectSettingsEditor::_unhandled_input);
-	ClassDB::bind_method(D_METHOD("_item_selected"), &ProjectSettingsEditor::_item_selected);
-	ClassDB::bind_method(D_METHOD("_item_add"), &ProjectSettingsEditor::_item_add);
-	ClassDB::bind_method(D_METHOD("_item_adds"), &ProjectSettingsEditor::_item_adds);
-	ClassDB::bind_method(D_METHOD("_item_del"), &ProjectSettingsEditor::_item_del);
 	ClassDB::bind_method(D_METHOD("_item_checked"), &ProjectSettingsEditor::_item_checked);
 	ClassDB::bind_method(D_METHOD("_save"), &ProjectSettingsEditor::_save);
-	ClassDB::bind_method(D_METHOD("_action_add"), &ProjectSettingsEditor::_action_add);
-	ClassDB::bind_method(D_METHOD("_action_adds"), &ProjectSettingsEditor::_action_adds);
-	ClassDB::bind_method(D_METHOD("_action_check"), &ProjectSettingsEditor::_action_check);
-	ClassDB::bind_method(D_METHOD("_action_selected"), &ProjectSettingsEditor::_action_selected);
-	ClassDB::bind_method(D_METHOD("_action_edited"), &ProjectSettingsEditor::_action_edited);
-	ClassDB::bind_method(D_METHOD("_action_activated"), &ProjectSettingsEditor::_action_activated);
-	ClassDB::bind_method(D_METHOD("_action_button_pressed"), &ProjectSettingsEditor::_action_button_pressed);
 	ClassDB::bind_method(D_METHOD("_update_actions"), &ProjectSettingsEditor::_update_actions);
-	ClassDB::bind_method(D_METHOD("_wait_for_key"), &ProjectSettingsEditor::_wait_for_key);
-	ClassDB::bind_method(D_METHOD("_add_item"), &ProjectSettingsEditor::_add_item, DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("_device_input_add"), &ProjectSettingsEditor::_device_input_add);
-	ClassDB::bind_method(D_METHOD("_press_a_key_confirm"), &ProjectSettingsEditor::_press_a_key_confirm);
-	ClassDB::bind_method(D_METHOD("_settings_prop_edited"), &ProjectSettingsEditor::_settings_prop_edited);
-	ClassDB::bind_method(D_METHOD("_copy_to_platform"), &ProjectSettingsEditor::_copy_to_platform);
+
 	ClassDB::bind_method(D_METHOD("_update_translations"), &ProjectSettingsEditor::_update_translations);
-	ClassDB::bind_method(D_METHOD("_translation_delete"), &ProjectSettingsEditor::_translation_delete);
-	ClassDB::bind_method(D_METHOD("_settings_changed"), &ProjectSettingsEditor::_settings_changed);
-	ClassDB::bind_method(D_METHOD("_translation_add"), &ProjectSettingsEditor::_translation_add);
-	ClassDB::bind_method(D_METHOD("_translation_file_open"), &ProjectSettingsEditor::_translation_file_open);
-
-	ClassDB::bind_method(D_METHOD("_translation_res_add"), &ProjectSettingsEditor::_translation_res_add);
-	ClassDB::bind_method(D_METHOD("_translation_res_file_open"), &ProjectSettingsEditor::_translation_res_file_open);
-	ClassDB::bind_method(D_METHOD("_translation_res_option_add"), &ProjectSettingsEditor::_translation_res_option_add);
-	ClassDB::bind_method(D_METHOD("_translation_res_option_file_open"), &ProjectSettingsEditor::_translation_res_option_file_open);
-	ClassDB::bind_method(D_METHOD("_translation_res_select"), &ProjectSettingsEditor::_translation_res_select);
-	ClassDB::bind_method(D_METHOD("_translation_res_option_changed"), &ProjectSettingsEditor::_translation_res_option_changed);
-	ClassDB::bind_method(D_METHOD("_translation_res_delete"), &ProjectSettingsEditor::_translation_res_delete);
-	ClassDB::bind_method(D_METHOD("_translation_res_option_delete"), &ProjectSettingsEditor::_translation_res_option_delete);
-
-	ClassDB::bind_method(D_METHOD("_translation_filter_option_changed"), &ProjectSettingsEditor::_translation_filter_option_changed);
-	ClassDB::bind_method(D_METHOD("_translation_filter_mode_changed"), &ProjectSettingsEditor::_translation_filter_mode_changed);
-
-	ClassDB::bind_method(D_METHOD("_toggle_search_bar"), &ProjectSettingsEditor::_toggle_search_bar);
-
-	ClassDB::bind_method(D_METHOD("_copy_to_platform_about_to_show"), &ProjectSettingsEditor::_copy_to_platform_about_to_show);
-
-	ClassDB::bind_method(D_METHOD("_editor_restart_request"), &ProjectSettingsEditor::_editor_restart_request);
-	ClassDB::bind_method(D_METHOD("_editor_restart"), &ProjectSettingsEditor::_editor_restart);
-	ClassDB::bind_method(D_METHOD("_editor_restart_close"), &ProjectSettingsEditor::_editor_restart_close);
 
 	ClassDB::bind_method(D_METHOD("get_tabs"), &ProjectSettingsEditor::get_tabs);
 
@@ -1793,7 +1798,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	search_button->set_pressed(false);
 	search_button->set_text(TTR("Search"));
 	hbc->add_child(search_button);
-	search_button->connect("toggled", this, "_toggle_search_bar");
+	search_button->connect("toggled", callable_mp(this, &ProjectSettingsEditor::_toggle_search_bar));
 
 	hbc->add_child(memnew(VSeparator));
 
@@ -1808,7 +1813,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	category = memnew(LineEdit);
 	category->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_prop_bar->add_child(category);
-	category->connect("text_entered", this, "_item_adds");
+	category->connect("text_entered", callable_mp(this, &ProjectSettingsEditor::_item_adds));
 
 	l = memnew(Label);
 	add_prop_bar->add_child(l);
@@ -1817,7 +1822,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	property = memnew(LineEdit);
 	property->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_prop_bar->add_child(property);
-	property->connect("text_entered", this, "_item_adds");
+	property->connect("text_entered", callable_mp(this, &ProjectSettingsEditor::_item_adds));
 
 	l = memnew(Label);
 	add_prop_bar->add_child(l);
@@ -1835,7 +1840,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	Button *add = memnew(Button);
 	add_prop_bar->add_child(add);
 	add->set_text(TTR("Add"));
-	add->connect("pressed", this, "_item_add");
+	add->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_item_add));
 
 	search_bar = memnew(HBoxContainer);
 	search_bar->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1851,14 +1856,14 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	globals_editor->get_inspector()->set_undo_redo(EditorNode::get_singleton()->get_undo_redo());
 	globals_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	globals_editor->register_search_box(search_box);
-	globals_editor->get_inspector()->connect("property_selected", this, "_item_selected");
-	globals_editor->get_inspector()->connect("property_edited", this, "_settings_prop_edited");
-	globals_editor->get_inspector()->connect("restart_requested", this, "_editor_restart_request");
+	globals_editor->get_inspector()->connect("property_selected", callable_mp(this, &ProjectSettingsEditor::_item_selected));
+	globals_editor->get_inspector()->connect("property_edited", callable_mp(this, &ProjectSettingsEditor::_settings_prop_edited));
+	globals_editor->get_inspector()->connect("restart_requested", callable_mp(this, &ProjectSettingsEditor::_editor_restart_request));
 
 	Button *del = memnew(Button);
 	hbc->add_child(del);
 	del->set_text(TTR("Delete"));
-	del->connect("pressed", this, "_item_del");
+	del->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_item_del));
 
 	add_prop_bar->add_child(memnew(VSeparator));
 
@@ -1867,8 +1872,8 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	popup_copy_to_feature->set_disabled(true);
 	add_prop_bar->add_child(popup_copy_to_feature);
 
-	popup_copy_to_feature->get_popup()->connect("id_pressed", this, "_copy_to_platform");
-	popup_copy_to_feature->get_popup()->connect("about_to_show", this, "_copy_to_platform_about_to_show");
+	popup_copy_to_feature->get_popup()->connect("id_pressed", callable_mp(this, &ProjectSettingsEditor::_copy_to_platform));
+	popup_copy_to_feature->get_popup()->connect("about_to_show", callable_mp(this, &ProjectSettingsEditor::_copy_to_platform_about_to_show));
 
 	get_ok()->set_text(TTR("Close"));
 	set_hide_on_ok(true);
@@ -1885,11 +1890,11 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	restart_hb->add_child(restart_label);
 	restart_hb->add_spacer();
 	Button *restart_button = memnew(Button);
-	restart_button->connect("pressed", this, "_editor_restart");
+	restart_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_editor_restart));
 	restart_hb->add_child(restart_button);
 	restart_button->set_text(TTR("Save & Restart"));
 	restart_close_button = memnew(ToolButton);
-	restart_close_button->connect("pressed", this, "_editor_restart_close");
+	restart_close_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_editor_restart_close));
 	restart_hb->add_child(restart_close_button);
 	restart_container->hide();
 
@@ -1917,8 +1922,8 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	action_name = memnew(LineEdit);
 	action_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	hbc->add_child(action_name);
-	action_name->connect("text_entered", this, "_action_adds");
-	action_name->connect("text_changed", this, "_action_check");
+	action_name->connect("text_entered", callable_mp(this, &ProjectSettingsEditor::_action_adds));
+	action_name->connect("text_changed", callable_mp(this, &ProjectSettingsEditor::_action_check));
 
 	action_add_error = memnew(Label);
 	hbc->add_child(action_add_error);
@@ -1928,7 +1933,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	hbc->add_child(add);
 	add->set_text(TTR("Add"));
 	add->set_disabled(true);
-	add->connect("pressed", this, "_action_add");
+	add->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_action_add));
 	action_add = add;
 
 	input_editor = memnew(Tree);
@@ -1942,15 +1947,17 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	input_editor->set_column_min_width(1, 80 * EDSCALE);
 	input_editor->set_column_expand(2, false);
 	input_editor->set_column_min_width(2, 50 * EDSCALE);
-	input_editor->connect("item_edited", this, "_action_edited");
-	input_editor->connect("item_activated", this, "_action_activated");
-	input_editor->connect("cell_selected", this, "_action_selected");
-	input_editor->connect("button_pressed", this, "_action_button_pressed");
+	input_editor->connect("item_edited", callable_mp(this, &ProjectSettingsEditor::_action_edited));
+	input_editor->connect("item_activated", callable_mp(this, &ProjectSettingsEditor::_action_activated));
+	input_editor->connect("cell_selected", callable_mp(this, &ProjectSettingsEditor::_action_selected));
+	input_editor->connect("button_pressed", callable_mp(this, &ProjectSettingsEditor::_action_button_pressed));
 	input_editor->set_drag_forwarding(this);
 
 	popup_add = memnew(PopupMenu);
 	add_child(popup_add);
-	popup_add->connect("id_pressed", this, "_add_item");
+	popup_add->connect("id_pressed", callable_mp(this, &ProjectSettingsEditor::_add_item), make_binds(Ref<InputEvent>()));
+
+	press_a_key_physical = false;
 
 	press_a_key = memnew(ConfirmationDialog);
 	press_a_key->set_focus_mode(FOCUS_ALL);
@@ -1965,13 +1972,13 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	press_a_key->get_ok()->set_disabled(true);
 	press_a_key_label = l;
 	press_a_key->add_child(l);
-	press_a_key->connect("gui_input", this, "_wait_for_key");
-	press_a_key->connect("confirmed", this, "_press_a_key_confirm");
+	press_a_key->connect("gui_input", callable_mp(this, &ProjectSettingsEditor::_wait_for_key));
+	press_a_key->connect("confirmed", callable_mp(this, &ProjectSettingsEditor::_press_a_key_confirm));
 
 	device_input = memnew(ConfirmationDialog);
 	add_child(device_input);
 	device_input->get_ok()->set_text(TTR("Add"));
-	device_input->connect("confirmed", this, "_device_input_add");
+	device_input->connect("confirmed", callable_mp(this, &ProjectSettingsEditor::_device_input_add));
 
 	hbc = memnew(HBoxContainer);
 	device_input->add_child(hbc);
@@ -2022,7 +2029,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		thb->add_child(memnew(Label(TTR("Translations:"))));
 		thb->add_spacer();
 		Button *addtr = memnew(Button(TTR("Add...")));
-		addtr->connect("pressed", this, "_translation_file_open");
+		addtr->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_translation_file_open));
 		thb->add_child(addtr);
 		VBoxContainer *tmc = memnew(VBoxContainer);
 		tvb->add_child(tmc);
@@ -2034,7 +2041,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		translation_file_open = memnew(EditorFileDialog);
 		add_child(translation_file_open);
 		translation_file_open->set_mode(EditorFileDialog::MODE_OPEN_FILE);
-		translation_file_open->connect("file_selected", this, "_translation_add");
+		translation_file_open->connect("file_selected", callable_mp(this, &ProjectSettingsEditor::_translation_add));
 	}
 
 	{
@@ -2046,28 +2053,28 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		thb->add_child(memnew(Label(TTR("Resources:"))));
 		thb->add_spacer();
 		Button *addtr = memnew(Button(TTR("Add...")));
-		addtr->connect("pressed", this, "_translation_res_file_open");
+		addtr->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_translation_res_file_open));
 		thb->add_child(addtr);
 		VBoxContainer *tmc = memnew(VBoxContainer);
 		tvb->add_child(tmc);
 		tmc->set_v_size_flags(SIZE_EXPAND_FILL);
 		translation_remap = memnew(Tree);
 		translation_remap->set_v_size_flags(SIZE_EXPAND_FILL);
-		translation_remap->connect("cell_selected", this, "_translation_res_select");
+		translation_remap->connect("cell_selected", callable_mp(this, &ProjectSettingsEditor::_translation_res_select));
 		tmc->add_child(translation_remap);
-		translation_remap->connect("button_pressed", this, "_translation_res_delete");
+		translation_remap->connect("button_pressed", callable_mp(this, &ProjectSettingsEditor::_translation_res_delete));
 
 		translation_res_file_open = memnew(EditorFileDialog);
 		add_child(translation_res_file_open);
 		translation_res_file_open->set_mode(EditorFileDialog::MODE_OPEN_FILE);
-		translation_res_file_open->connect("file_selected", this, "_translation_res_add");
+		translation_res_file_open->connect("file_selected", callable_mp(this, &ProjectSettingsEditor::_translation_res_add));
 
 		thb = memnew(HBoxContainer);
 		tvb->add_child(thb);
 		thb->add_child(memnew(Label(TTR("Remaps by Locale:"))));
 		thb->add_spacer();
 		addtr = memnew(Button(TTR("Add...")));
-		addtr->connect("pressed", this, "_translation_res_option_file_open");
+		addtr->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_translation_res_option_file_open));
 		translation_res_option_add_button = addtr;
 		thb->add_child(addtr);
 		tmc = memnew(VBoxContainer);
@@ -2084,13 +2091,13 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		translation_remap_options->set_column_expand(0, true);
 		translation_remap_options->set_column_expand(1, false);
 		translation_remap_options->set_column_min_width(1, 200);
-		translation_remap_options->connect("item_edited", this, "_translation_res_option_changed");
-		translation_remap_options->connect("button_pressed", this, "_translation_res_option_delete");
+		translation_remap_options->connect("item_edited", callable_mp(this, &ProjectSettingsEditor::_translation_res_option_changed));
+		translation_remap_options->connect("button_pressed", callable_mp(this, &ProjectSettingsEditor::_translation_res_option_delete));
 
 		translation_res_option_file_open = memnew(EditorFileDialog);
 		add_child(translation_res_option_file_open);
 		translation_res_option_file_open->set_mode(EditorFileDialog::MODE_OPEN_FILE);
-		translation_res_option_file_open->connect("file_selected", this, "_translation_res_option_add");
+		translation_res_option_file_open->connect("file_selected", callable_mp(this, &ProjectSettingsEditor::_translation_res_option_add));
 	}
 
 	{
@@ -2106,20 +2113,20 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		translation_locale_filter_mode->add_item(TTR("Show Selected Locales Only"), SHOW_ONLY_SELECTED_LOCALES);
 		translation_locale_filter_mode->select(0);
 		tmc->add_margin_child(TTR("Filter mode:"), translation_locale_filter_mode);
-		translation_locale_filter_mode->connect("item_selected", this, "_translation_filter_mode_changed");
+		translation_locale_filter_mode->connect("item_selected", callable_mp(this, &ProjectSettingsEditor::_translation_filter_mode_changed));
 
 		translation_filter = memnew(Tree);
 		translation_filter->set_v_size_flags(SIZE_EXPAND_FILL);
 		translation_filter->set_columns(1);
 		tmc->add_child(memnew(Label(TTR("Locales:"))));
 		tmc->add_child(translation_filter);
-		translation_filter->connect("item_edited", this, "_translation_filter_option_changed");
+		translation_filter->connect("item_edited", callable_mp(this, &ProjectSettingsEditor::_translation_filter_option_changed));
 	}
 
 	autoload_settings = memnew(EditorAutoloadSettings);
 	autoload_settings->set_name(TTR("AutoLoad"));
 	tab_container->add_child(autoload_settings);
-	autoload_settings->connect("autoload_changed", this, "_settings_changed");
+	autoload_settings->connect("autoload_changed", callable_mp(this, &ProjectSettingsEditor::_settings_changed));
 
 	plugin_settings = memnew(EditorPluginSettings);
 	plugin_settings->set_name(TTR("Plugins"));
@@ -2127,7 +2134,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	timer = memnew(Timer);
 	timer->set_wait_time(1.5);
-	timer->connect("timeout", ProjectSettings::get_singleton(), "save");
+	timer->connect("timeout", callable_mp(ProjectSettings::get_singleton(), &ProjectSettings::save));
 	timer->set_one_shot(true);
 	add_child(timer);
 

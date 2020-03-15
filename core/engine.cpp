@@ -94,11 +94,7 @@ Dictionary Engine::get_version_info() const {
 	Dictionary dict;
 	dict["major"] = VERSION_MAJOR;
 	dict["minor"] = VERSION_MINOR;
-#ifdef VERSION_PATCH
 	dict["patch"] = VERSION_PATCH;
-#else
-	dict["patch"] = 0;
-#endif
 	dict["hex"] = VERSION_HEX;
 	dict["status"] = VERSION_STATUS;
 	dict["build"] = VERSION_BUILD;
@@ -218,6 +214,9 @@ Engine *Engine::get_singleton() {
 	return singleton;
 }
 
+bool Engine::is_abort_on_gpu_errors_enabled() const {
+	return abort_on_gpu_errors;
+}
 Engine::Engine() {
 
 	singleton = this;
@@ -236,4 +235,5 @@ Engine::Engine() {
 	_frame_ticks = 0;
 	_frame_step = 0;
 	editor_hint = false;
+	abort_on_gpu_errors = false;
 }

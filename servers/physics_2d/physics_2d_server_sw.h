@@ -31,6 +31,7 @@
 #ifndef PHYSICS_2D_SERVER_SW
 #define PHYSICS_2D_SERVER_SW
 
+#include "core/rid_owner.h"
 #include "joints_2d_sw.h"
 #include "servers/physics_2d_server.h"
 #include "shape_2d_sw.h"
@@ -61,11 +62,11 @@ class Physics2DServerSW : public Physics2DServer {
 
 	Physics2DDirectBodyStateSW *direct_state;
 
-	mutable RID_Owner<Shape2DSW> shape_owner;
-	mutable RID_Owner<Space2DSW> space_owner;
-	mutable RID_Owner<Area2DSW> area_owner;
-	mutable RID_Owner<Body2DSW> body_owner;
-	mutable RID_Owner<Joint2DSW> joint_owner;
+	mutable RID_PtrOwner<Shape2DSW> shape_owner;
+	mutable RID_PtrOwner<Space2DSW> space_owner;
+	mutable RID_PtrOwner<Area2DSW> area_owner;
+	mutable RID_PtrOwner<Body2DSW> body_owner;
+	mutable RID_PtrOwner<Joint2DSW> joint_owner;
 
 	static Physics2DServerSW *singletonsw;
 
@@ -194,11 +195,11 @@ public:
 	virtual void body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled);
 	virtual void body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable, float p_margin);
 
-	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_id);
-	virtual uint32_t body_get_object_instance_id(RID p_body) const;
+	virtual void body_attach_object_instance_id(RID p_body, ObjectID p_id);
+	virtual ObjectID body_get_object_instance_id(RID p_body) const;
 
-	virtual void body_attach_canvas_instance_id(RID p_body, uint32_t p_id);
-	virtual uint32_t body_get_canvas_instance_id(RID p_body) const;
+	virtual void body_attach_canvas_instance_id(RID p_body, ObjectID p_id);
+	virtual ObjectID body_get_canvas_instance_id(RID p_body) const;
 
 	virtual void body_set_continuous_collision_detection_mode(RID p_body, CCDMode p_mode);
 	virtual CCDMode body_get_continuous_collision_detection_mode(RID p_body) const;

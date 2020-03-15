@@ -37,6 +37,7 @@
 #include "editor/editor_scale.h"
 #endif
 
+#ifdef TOOLS_ENABLED
 Rect2 Path2D::_edit_get_rect() const {
 
 	if (!curve.is_valid() || curve->get_point_count() == 0)
@@ -85,6 +86,7 @@ bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 
 	return false;
 }
+#endif
 
 void Path2D::_notification(int p_what) {
 
@@ -110,7 +112,7 @@ void Path2D::_notification(int p_what) {
 
 				real_t frac = j / 8.0;
 				Vector2 p = curve->interpolate(i, frac);
-				draw_line(prev_p, p, color, line_width, true);
+				draw_line(prev_p, p, color, line_width);
 				prev_p = p;
 			}
 		}
@@ -118,21 +120,27 @@ void Path2D::_notification(int p_what) {
 }
 
 void Path2D::_curve_changed() {
+	if (!is_inside_tree()) {
+		return;
+	}
 
-	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint())
-		update();
+	if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_navigation_hint()) {
+		return;
+	}
+
+	update();
 }
 
 void Path2D::set_curve(const Ref<Curve2D> &p_curve) {
 
 	if (curve.is_valid()) {
-		curve->disconnect("changed", this, "_curve_changed");
+		curve->disconnect("changed", callable_mp(this, &Path2D::_curve_changed));
 	}
 
 	curve = p_curve;
 
 	if (curve.is_valid()) {
-		curve->connect("changed", this, "_curve_changed");
+		curve->connect("changed", callable_mp(this, &Path2D::_curve_changed));
 	}
 
 	_curve_changed();
@@ -147,7 +155,6 @@ void Path2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &Path2D::set_curve);
 	ClassDB::bind_method(D_METHOD("get_curve"), &Path2D::get_curve);
-	ClassDB::bind_method(D_METHOD("_curve_changed"), &Path2D::_curve_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve2D"), "set_curve", "get_curve");
 }
@@ -258,7 +265,7 @@ void PathFollow2D::_validate_property(PropertyInfo &property) const {
 		if (path && path->get_curve().is_valid())
 			max = path->get_curve()->get_baked_length();
 
-		property.hint_string = "0," + rtos(max) + ",0.01,or_lesser";
+		property.hint_string = "0," + rtos(max) + ",0.01,or_lesser,or_greater";
 	}
 }
 
@@ -300,14 +307,14 @@ void PathFollow2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_lookahead", "lookahead"), &PathFollow2D::set_lookahead);
 	ClassDB::bind_method(D_METHOD("get_lookahead"), &PathFollow2D::get_lookahead);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "offset", PROPERTY_HINT_RANGE, "0,10000,0.01,or_lesser"), "set_offset", "get_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "unit_offset", PROPERTY_HINT_RANGE, "0,1,0.0001,or_lesser", PROPERTY_USAGE_EDITOR), "set_unit_offset", "get_unit_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "h_offset"), "set_h_offset", "get_h_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "v_offset"), "set_v_offset", "get_v_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "offset", PROPERTY_HINT_RANGE, "0,10000,0.01,or_lesser,or_greater"), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "unit_offset", PROPERTY_HINT_RANGE, "0,1,0.0001,or_lesser,or_greater", PROPERTY_USAGE_EDITOR), "set_unit_offset", "get_unit_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset"), "set_h_offset", "get_h_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotate"), "set_rotate", "is_rotating");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cubic_interp"), "set_cubic_interpolation", "get_cubic_interpolation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "lookahead", PROPERTY_HINT_RANGE, "0.001,1024.0,0.001"), "set_lookahead", "get_lookahead");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lookahead", PROPERTY_HINT_RANGE, "0.001,1024.0,0.001"), "set_lookahead", "get_lookahead");
 }
 
 void PathFollow2D::set_offset(float p_offset) {

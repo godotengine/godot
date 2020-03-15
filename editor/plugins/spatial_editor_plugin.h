@@ -33,6 +33,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "editor/editor_scale.h"
 #include "scene/3d/immediate_geometry.h"
 #include "scene/3d/light.h"
 #include "scene/3d/visual_instance.h"
@@ -41,6 +42,7 @@
 class Camera;
 class SpatialEditor;
 class EditorSpatialGizmoPlugin;
+class SpatialEditorViewport;
 class ViewportContainer;
 
 class EditorSpatialGizmo : public SpatialGizmo {
@@ -138,10 +140,48 @@ public:
 	~EditorSpatialGizmo();
 };
 
+class ViewportRotationControl : public Control {
+	GDCLASS(ViewportRotationControl, Control);
+
+	struct Axis2D {
+		Vector2i screen_point;
+		float z_axis = -99.0;
+		int axis = -1;
+	};
+
+	struct Axis2DCompare {
+		_FORCE_INLINE_ bool operator()(const Axis2D &l, const Axis2D &r) const {
+			return l.z_axis < r.z_axis;
+		}
+	};
+
+	SpatialEditorViewport *viewport = nullptr;
+	Vector<Color> axis_colors;
+	Vector<int> axis_menu_options;
+	bool orbiting = false;
+	int focused_axis = -2;
+
+	const float AXIS_CIRCLE_RADIUS = 8.0f * EDSCALE;
+
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
+	void _gui_input(Ref<InputEvent> p_event);
+	void _draw();
+	void _draw_axis(const Axis2D &p_axis);
+	void _get_sorted_axis(Vector<Axis2D> &r_axis);
+	void _update_focus();
+	void _on_mouse_exited();
+
+public:
+	void set_viewport(SpatialEditorViewport *p_viewport);
+};
+
 class SpatialEditorViewport : public Control {
 
 	GDCLASS(SpatialEditorViewport, Control);
 	friend class SpatialEditor;
+	friend class ViewportRotationControl;
 	enum {
 
 		VIEW_TOP,
@@ -167,8 +207,21 @@ class SpatialEditorViewport : public Control {
 		VIEW_DISPLAY_WIREFRAME,
 		VIEW_DISPLAY_OVERDRAW,
 		VIEW_DISPLAY_SHADELESS,
+		VIEW_DISPLAY_LIGHTING,
+		VIEW_DISPLAY_ADVANCED,
+		VIEW_DISPLAY_NORMAL_BUFFER,
+		VIEW_DISPLAY_DEBUG_SHADOW_ATLAS,
+		VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS,
+		VIEW_DISPLAY_DEBUG_GIPROBE_ALBEDO,
+		VIEW_DISPLAY_DEBUG_GIPROBE_LIGHTING,
+		VIEW_DISPLAY_DEBUG_GIPROBE_EMISSION,
+		VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE,
+		VIEW_DISPLAY_DEBUG_SSAO,
+		VIEW_DISPLAY_DEBUG_ROUGHNESS_LIMITER,
 		VIEW_LOCK_ROTATION,
-		VIEW_CINEMATIC_PREVIEW
+		VIEW_CINEMATIC_PREVIEW,
+		VIEW_AUTO_ORTHOGONAL,
+		VIEW_MAX
 	};
 
 public:
@@ -188,6 +241,7 @@ private:
 	int index;
 	String name;
 	void _menu_option(int p_option);
+	void _set_auto_orthogonal();
 	Spatial *preview_node;
 	AABB *preview_bounds;
 	Vector<String> selected_files;
@@ -205,22 +259,28 @@ private:
 	ViewportContainer *viewport_container;
 
 	MenuButton *view_menu;
+	PopupMenu *display_submenu;
 
 	Control *surface;
 	Viewport *viewport;
 	Camera *camera;
 	bool transforming;
 	bool orthogonal;
+	bool auto_orthogonal;
 	bool lock_rotation;
 	float gizmo_scale;
 
 	bool freelook_active;
 	real_t freelook_speed;
 
+	TextureRect *crosshair;
 	Label *info_label;
-	Label *fps_label;
 	Label *cinema_label;
 	Label *locked_label;
+
+	VBoxContainer *top_right_vbox;
+	ViewportRotationControl *rotation_control;
+	Label *fps_label;
 
 	struct _RayResult {
 
@@ -233,7 +293,7 @@ private:
 	void _update_name();
 	void _compute_edit(const Point2 &p_point);
 	void _clear_selected();
-	void _select_clicked(bool p_append, bool p_single);
+	void _select_clicked(bool p_append, bool p_single, bool p_allow_locked = false);
 	void _select(Node *p_node, bool p_append, bool p_single);
 	ObjectID _select_ray(const Point2 &p_pos, bool p_append, bool &r_includes_current, int *r_gizmo_handle = NULL, bool p_alt_select = false);
 	void _find_items_at_pos(const Point2 &p_pos, bool &r_includes_current, Vector<_RayResult> &results, bool p_alt_select = false);
@@ -526,20 +586,23 @@ private:
 	bool grid_enabled;
 
 	Ref<ArrayMesh> move_gizmo[3], move_plane_gizmo[3], rotate_gizmo[3], scale_gizmo[3], scale_plane_gizmo[3];
-	Ref<SpatialMaterial> gizmo_color[3];
-	Ref<SpatialMaterial> plane_gizmo_color[3];
-	Ref<SpatialMaterial> gizmo_color_hl[3];
-	Ref<SpatialMaterial> plane_gizmo_color_hl[3];
+	Ref<StandardMaterial3D> gizmo_color[3];
+	Ref<StandardMaterial3D> plane_gizmo_color[3];
+	Ref<StandardMaterial3D> gizmo_color_hl[3];
+	Ref<StandardMaterial3D> plane_gizmo_color_hl[3];
 
 	int over_gizmo_handle;
+	float snap_translate_value;
+	float snap_rotate_value;
+	float snap_scale_value;
 
 	Ref<ArrayMesh> selection_box;
 	RID indicators;
 	RID indicators_instance;
 	RID cursor_mesh;
 	RID cursor_instance;
-	Ref<SpatialMaterial> indicator_mat;
-	Ref<SpatialMaterial> cursor_material;
+	Ref<StandardMaterial3D> indicator_mat;
+	Ref<StandardMaterial3D> cursor_material;
 
 	// Scene drag and drop support
 	Spatial *preview_node;
@@ -611,6 +674,8 @@ private:
 	SpinBox *settings_znear;
 	SpinBox *settings_zfar;
 
+	void _snap_changed();
+	void _snap_update();
 	void _xform_dialog_action();
 	void _menu_item_pressed(int p_option);
 	void _menu_item_toggled(bool pressed, int p_option);
@@ -775,7 +840,7 @@ public:
 private:
 	int current_state;
 	List<EditorSpatialGizmo *> current_gizmos;
-	HashMap<String, Vector<Ref<SpatialMaterial> > > materials;
+	HashMap<String, Vector<Ref<StandardMaterial3D> > > materials;
 
 protected:
 	static void _bind_methods();
@@ -784,11 +849,11 @@ protected:
 
 public:
 	void create_material(const String &p_name, const Color &p_color, bool p_billboard = false, bool p_on_top = false, bool p_use_vertex_color = false);
-	void create_icon_material(const String &p_name, const Ref<Texture> &p_texture, bool p_on_top = false, const Color &p_albedo = Color(1, 1, 1, 1));
+	void create_icon_material(const String &p_name, const Ref<Texture2D> &p_texture, bool p_on_top = false, const Color &p_albedo = Color(1, 1, 1, 1));
 	void create_handle_material(const String &p_name, bool p_billboard = false);
-	void add_material(const String &p_name, Ref<SpatialMaterial> p_material);
+	void add_material(const String &p_name, Ref<StandardMaterial3D> p_material);
 
-	Ref<SpatialMaterial> get_material(const String &p_name, const Ref<EditorSpatialGizmo> &p_gizmo = Ref<EditorSpatialGizmo>());
+	Ref<StandardMaterial3D> get_material(const String &p_name, const Ref<EditorSpatialGizmo> &p_gizmo = Ref<EditorSpatialGizmo>());
 
 	virtual String get_name() const;
 	virtual int get_priority() const;

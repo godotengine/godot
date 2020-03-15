@@ -127,7 +127,7 @@ typedef bool godot_bool;
 
 /////// int
 
-typedef int godot_int;
+typedef int64_t godot_int;
 
 /////// real
 
@@ -282,13 +282,14 @@ void GDAPI godot_print_error(const char *p_description, const char *p_function, 
 void GDAPI godot_print_warning(const char *p_description, const char *p_function, const char *p_file, int p_line);
 void GDAPI godot_print(const godot_string *p_message);
 
-// GDNATIVE CORE 1.0.1
-
-bool GDAPI godot_is_instance_valid(const godot_object *p_object);
+// GDNATIVE CORE 1.0.2?
 
 //tags used for safe dynamic casting
 void GDAPI *godot_get_class_tag(const godot_string_name *p_class);
 godot_object GDAPI *godot_object_cast_to(const godot_object *p_object, void *p_class_tag);
+
+// equivalent of GDScript's instance_from_id
+godot_object GDAPI *godot_instance_from_id(godot_int p_instance_id);
 
 #ifdef __cplusplus
 }

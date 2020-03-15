@@ -107,7 +107,7 @@ void AreaBullet::call_event(CollisionObjectBullet *p_otherObject, PhysicsServer:
 	Object *areaGodoObject = ObjectDB::get_instance(event.event_callback_id);
 
 	if (!areaGodoObject) {
-		event.event_callback_id = 0;
+		event.event_callback_id = ObjectID();
 		return;
 	}
 
@@ -117,7 +117,7 @@ void AreaBullet::call_event(CollisionObjectBullet *p_otherObject, PhysicsServer:
 	call_event_res[3] = 0; // other_body_shape ID
 	call_event_res[4] = 0; // self_shape ID
 
-	Variant::CallError outResp;
+	Callable::CallError outResp;
 	areaGodoObject->call(event.event_callback_method, (const Variant **)call_event_res_ptr, 5, outResp);
 }
 
@@ -167,7 +167,7 @@ bool AreaBullet::is_monitoring() const {
 }
 
 void AreaBullet::main_shape_changed() {
-	CRASH_COND(!get_main_shape())
+	CRASH_COND(!get_main_shape());
 	btGhost->setCollisionShape(get_main_shape());
 }
 
@@ -245,7 +245,7 @@ void AreaBullet::set_param(PhysicsServer::AreaParameter p_param, const Variant &
 			set_spOv_gravityPointAttenuation(p_value);
 			break;
 		default:
-			WARN_PRINTS("Area doesn't support this parameter in the Bullet backend: " + itos(p_param));
+			WARN_PRINT("Area doesn't support this parameter in the Bullet backend: " + itos(p_param));
 	}
 }
 
@@ -268,7 +268,7 @@ Variant AreaBullet::get_param(PhysicsServer::AreaParameter p_param) const {
 		case PhysicsServer::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
 			return spOv_gravityPointAttenuation;
 		default:
-			WARN_PRINTS("Area doesn't support this parameter in the Bullet backend: " + itos(p_param));
+			WARN_PRINT("Area doesn't support this parameter in the Bullet backend: " + itos(p_param));
 			return Variant();
 	}
 }
@@ -279,7 +279,7 @@ void AreaBullet::set_event_callback(Type p_callbackObjectType, ObjectID p_id, co
 	ev.event_callback_method = p_method;
 
 	/// Set if monitoring
-	if (eventsCallbacks[0].event_callback_id || eventsCallbacks[1].event_callback_id) {
+	if (eventsCallbacks[0].event_callback_id.is_valid() || eventsCallbacks[1].event_callback_id.is_valid()) {
 		set_godot_object_flags(get_godot_object_flags() | GOF_IS_MONITORING_AREA);
 	} else {
 		set_godot_object_flags(get_godot_object_flags() & (~GOF_IS_MONITORING_AREA));
@@ -287,7 +287,7 @@ void AreaBullet::set_event_callback(Type p_callbackObjectType, ObjectID p_id, co
 }
 
 bool AreaBullet::has_event_callback(Type p_callbackObjectType) {
-	return eventsCallbacks[static_cast<int>(p_callbackObjectType)].event_callback_id;
+	return eventsCallbacks[static_cast<int>(p_callbackObjectType)].event_callback_id.is_valid();
 }
 
 void AreaBullet::on_enter_area(AreaBullet *p_area) {

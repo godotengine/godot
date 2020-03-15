@@ -85,12 +85,12 @@ public:
 	static class btStaticPlaneShape *create_shape_plane(const btVector3 &planeNormal, btScalar planeConstant);
 	static class btSphereShape *create_shape_sphere(btScalar radius);
 	static class btBoxShape *create_shape_box(const btVector3 &boxHalfExtents);
-	static class btCapsuleShapeZ *create_shape_capsule(btScalar radius, btScalar height);
+	static class btCapsuleShape *create_shape_capsule(btScalar radius, btScalar height);
 	static class btCylinderShape *create_shape_cylinder(btScalar radius, btScalar height);
 	/// IMPORTANT: Remember to delete the shape interface by calling: delete my_shape->getMeshInterface();
 	static class btConvexPointCloudShape *create_shape_convex(btAlignedObjectArray<btVector3> &p_vertices, const btVector3 &p_local_scaling = btVector3(1, 1, 1));
 	static class btScaledBvhTriangleMeshShape *create_shape_concave(btBvhTriangleMeshShape *p_mesh_shape, const btVector3 &p_local_scaling = btVector3(1, 1, 1));
-	static class btHeightfieldTerrainShape *create_shape_height_field(PoolVector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height);
+	static class btHeightfieldTerrainShape *create_shape_height_field(Vector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height);
 	static class btRayShape *create_shape_ray(real_t p_length, bool p_slips_on_slope);
 };
 
@@ -203,7 +203,7 @@ class ConcavePolygonShapeBullet : public ShapeBullet {
 	class btBvhTriangleMeshShape *meshShape;
 
 public:
-	PoolVector<Vector3> faces;
+	Vector<Vector3> faces;
 
 	ConcavePolygonShapeBullet();
 	virtual ~ConcavePolygonShapeBullet();
@@ -214,13 +214,13 @@ public:
 	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
-	void setup(PoolVector<Vector3> p_faces);
+	void setup(Vector<Vector3> p_faces);
 };
 
 class HeightMapShapeBullet : public ShapeBullet {
 
 public:
-	PoolVector<real_t> heights;
+	Vector<real_t> heights;
 	int width;
 	int depth;
 	real_t min_height;
@@ -234,7 +234,7 @@ public:
 	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
-	void setup(PoolVector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height);
+	void setup(Vector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height);
 };
 
 class RayShapeBullet : public ShapeBullet {

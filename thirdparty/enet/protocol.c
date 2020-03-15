@@ -9,7 +9,6 @@
 #include "enet/time.h"
 #include "enet/enet.h"
 
-
 static size_t commandSizes [ENET_PROTOCOL_COMMAND_COUNT] =
 {
     0,
@@ -164,7 +163,10 @@ enet_protocol_remove_sent_unreliable_commands (ENetPeer * peer)
 {
     ENetOutgoingCommand * outgoingCommand;
 
-    while (! enet_list_empty (& peer -> sentUnreliableCommands))
+    if (enet_list_empty (& peer -> sentUnreliableCommands))
+      return;
+
+    do
     {
         outgoingCommand = (ENetOutgoingCommand *) enet_list_front (& peer -> sentUnreliableCommands);
         
@@ -183,7 +185,13 @@ enet_protocol_remove_sent_unreliable_commands (ENetPeer * peer)
         }
 
         enet_free (outgoingCommand);
-    }
+    } while (! enet_list_empty (& peer -> sentUnreliableCommands));
+
+    if (peer -> state == ENET_PEER_STATE_DISCONNECT_LATER &&
+        enet_list_empty (& peer -> outgoingReliableCommands) &&
+        enet_list_empty (& peer -> outgoingUnreliableCommands) &&
+        enet_list_empty (& peer -> sentReliableCommands))
+      enet_peer_disconnect (peer, peer -> eventData);
 }
 
 static ENetProtocolCommand
@@ -1406,7 +1414,8 @@ enet_protocol_send_unreliable_outgoing_commands (ENetHost * host, ENetPeer * pee
     if (peer -> state == ENET_PEER_STATE_DISCONNECT_LATER && 
         enet_list_empty (& peer -> outgoingReliableCommands) &&
         enet_list_empty (& peer -> outgoingUnreliableCommands) && 
-        enet_list_empty (& peer -> sentReliableCommands))
+        enet_list_empty (& peer -> sentReliableCommands) &&
+        enet_list_empty (& peer -> sentUnreliableCommands))
       enet_peer_disconnect (peer, peer -> eventData);
 }
 
@@ -1691,7 +1700,7 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
                                         & host -> buffers [1], host -> bufferCount - 1,
                                         originalSize,
                                         host -> packetData [1],
-					originalSize);
+                                        originalSize);
             if (compressedSize > 0 && compressedSize < originalSize)
             {
                 host -> headerFlags |= ENET_PROTOCOL_HEADER_FLAG_COMPRESSED;

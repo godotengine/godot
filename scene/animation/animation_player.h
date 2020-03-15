@@ -159,17 +159,15 @@ private:
 
 	struct TrackNodeCacheKey {
 
-		uint32_t id;
+		ObjectID id;
 		int bone_idx;
 
 		inline bool operator<(const TrackNodeCacheKey &p_right) const {
 
-			if (id < p_right.id)
-				return true;
-			else if (id > p_right.id)
-				return false;
-			else
+			if (id == p_right.id)
 				return bone_idx < p_right.bone_idx;
+			else
+				return id < p_right.id;
 		}
 	};
 
@@ -266,11 +264,11 @@ private:
 	void _stop_playing_caches();
 
 	// bind helpers
-	PoolVector<String> _get_animation_list() const {
+	Vector<String> _get_animation_list() const {
 
 		List<StringName> animations;
 		get_animation_list(&animations);
-		PoolVector<String> ret;
+		Vector<String> ret;
 		while (animations.size()) {
 
 			ret.push_back(animations.front()->get());
@@ -318,7 +316,7 @@ public:
 	void play(const StringName &p_name = StringName(), float p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
 	void play_backwards(const StringName &p_name = StringName(), float p_custom_blend = -1);
 	void queue(const StringName &p_name);
-	PoolVector<String> get_queue();
+	Vector<String> get_queue();
 	void clear_queue();
 	void stop(bool p_reset = true);
 	bool is_playing() const;

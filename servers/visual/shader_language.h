@@ -82,6 +82,7 @@ public:
 		TK_INTERPOLATION_FLAT,
 		TK_INTERPOLATION_SMOOTH,
 		TK_CONST,
+		TK_STRUCT,
 		TK_PRECISION_LOW,
 		TK_PRECISION_MID,
 		TK_PRECISION_HIGH,
@@ -150,11 +151,25 @@ public:
 		TK_HINT_WHITE_TEXTURE,
 		TK_HINT_BLACK_TEXTURE,
 		TK_HINT_NORMAL_TEXTURE,
+		TK_HINT_ROUGHNESS_NORMAL_TEXTURE,
+		TK_HINT_ROUGHNESS_R,
+		TK_HINT_ROUGHNESS_G,
+		TK_HINT_ROUGHNESS_B,
+		TK_HINT_ROUGHNESS_A,
+		TK_HINT_ROUGHNESS_GRAY,
 		TK_HINT_ANISO_TEXTURE,
 		TK_HINT_ALBEDO_TEXTURE,
 		TK_HINT_BLACK_ALBEDO_TEXTURE,
 		TK_HINT_COLOR,
 		TK_HINT_RANGE,
+		TK_FILTER_NEAREST,
+		TK_FILTER_LINEAR,
+		TK_FILTER_NEAREST_MIPMAP,
+		TK_FILTER_LINEAR_MIPMAP,
+		TK_FILTER_NEAREST_MIPMAP_ANISO,
+		TK_FILTER_LINEAR_MIPMAP_ANISO,
+		TK_REPEAT_ENABLE,
+		TK_REPEAT_DISABLE,
 		TK_SHADER_TYPE,
 		TK_CURSOR,
 		TK_ERROR,
@@ -200,6 +215,7 @@ public:
 		TYPE_ISAMPLER3D,
 		TYPE_USAMPLER3D,
 		TYPE_SAMPLERCUBE,
+		TYPE_STRUCT,
 	};
 
 	enum DataPrecision {
@@ -255,6 +271,7 @@ public:
 		OP_POST_DECREMENT,
 		OP_CALL,
 		OP_CONSTRUCT,
+		OP_STRUCT,
 		OP_INDEX,
 		OP_MAX
 	};
@@ -279,6 +296,27 @@ public:
 		ARGUMENT_QUALIFIER_INOUT,
 	};
 
+	enum SubClassTag {
+		TAG_GLOBAL,
+		TAG_ARRAY,
+	};
+
+	enum TextureFilter {
+		FILTER_NEAREST,
+		FILTER_LINEAR,
+		FILTER_NEAREST_MIPMAP,
+		FILTER_LINEAR_MIPMAP,
+		FILTER_NEAREST_MIPMAP_ANISO,
+		FILTER_LINEAR_MIPMAP_ANISO,
+		FILTER_DEFAULT,
+	};
+
+	enum TextureRepeat {
+		REPEAT_DISABLE,
+		REPEAT_ENABLE,
+		REPEAT_DEFAULT,
+	};
+
 	struct Node {
 		Node *next;
 
@@ -294,11 +332,15 @@ public:
 			TYPE_MEMBER,
 			TYPE_ARRAY,
 			TYPE_ARRAY_DECLARATION,
+			TYPE_ARRAY_CONSTRUCT,
+			TYPE_STRUCT,
 		};
 
 		Type type;
 
 		virtual DataType get_datatype() const { return TYPE_VOID; }
+		virtual String get_datatype_name() const { return ""; }
+
 		Node(Type t) :
 				next(NULL),
 				type(t) {}
@@ -319,20 +361,25 @@ public:
 		DataType return_cache;
 		DataPrecision return_precision_cache;
 		Operator op;
+		StringName struct_name;
 		Vector<Node *> arguments;
 		virtual DataType get_datatype() const { return return_cache; }
+		virtual String get_datatype_name() const { return String(struct_name); }
 
 		OperatorNode() :
 				Node(TYPE_OPERATOR),
 				return_cache(TYPE_VOID),
 				return_precision_cache(PRECISION_DEFAULT),
-				op(OP_EQUAL) {}
+				op(OP_EQUAL),
+				struct_name("") {}
 	};
 
 	struct VariableNode : public Node {
 		DataType datatype_cache;
 		StringName name;
+		StringName struct_name;
 		virtual DataType get_datatype() const { return datatype_cache; }
+		virtual String get_datatype_name() const { return String(struct_name); }
 		bool is_const;
 
 		VariableNode() :
@@ -344,6 +391,7 @@ public:
 	struct VariableDeclarationNode : public Node {
 		DataPrecision precision;
 		DataType datatype;
+		String struct_name;
 		bool is_const;
 
 		struct Declaration {
@@ -363,12 +411,14 @@ public:
 
 	struct ArrayNode : public Node {
 		DataType datatype_cache;
+		StringName struct_name;
 		StringName name;
 		Node *index_expression;
 		Node *call_expression;
 		bool is_const;
 
 		virtual DataType get_datatype() const { return datatype_cache; }
+		virtual String get_datatype_name() const { return String(struct_name); }
 
 		ArrayNode() :
 				Node(TYPE_ARRAY),
@@ -378,9 +428,21 @@ public:
 				is_const(false) {}
 	};
 
+	struct ArrayConstructNode : public Node {
+		DataType datatype;
+		String struct_name;
+		Vector<Node *> initializer;
+
+		ArrayConstructNode() :
+				Node(TYPE_ARRAY_CONSTRUCT),
+				datatype(TYPE_VOID) {
+		}
+	};
+
 	struct ArrayDeclarationNode : public Node {
 		DataPrecision precision;
 		DataType datatype;
+		String struct_name;
 		bool is_const;
 
 		struct Declaration {
@@ -431,9 +493,11 @@ public:
 		};
 
 		int block_type;
+		SubClassTag block_tag;
 
 		struct Variable {
 			DataType type;
+			StringName struct_name;
 			DataPrecision precision;
 			int line; //for completion
 			int array_size;
@@ -449,6 +513,7 @@ public:
 				parent_function(NULL),
 				parent_block(NULL),
 				block_type(BLOCK_TYPE_STANDART),
+				block_tag(SubClassTag::TAG_GLOBAL),
 				single_statement(false) {}
 	};
 
@@ -464,29 +529,59 @@ public:
 
 	struct MemberNode : public Node {
 		DataType basetype;
+		bool basetype_const;
+		StringName base_struct_name;
+		DataPrecision precision;
 		DataType datatype;
+		int array_size;
+		StringName struct_name;
 		StringName name;
 		Node *owner;
+		Node *index_expression;
+		bool has_swizzling_duplicates;
 
 		virtual DataType get_datatype() const { return datatype; }
+		virtual String get_datatype_name() const { return String(struct_name); }
 
 		MemberNode() :
 				Node(TYPE_MEMBER),
 				basetype(TYPE_VOID),
+				basetype_const(false),
 				datatype(TYPE_VOID),
-				owner(NULL) {}
+				array_size(0),
+				owner(NULL),
+				index_expression(NULL),
+				has_swizzling_duplicates(false) {}
+	};
+
+	struct StructNode : public Node {
+
+		List<MemberNode *> members;
+		StructNode() :
+				Node(TYPE_STRUCT) {}
 	};
 
 	struct FunctionNode : public Node {
+
 		struct Argument {
 			ArgumentQualifier qualifier;
 			StringName name;
 			DataType type;
+			StringName type_str;
 			DataPrecision precision;
+			//for passing textures as arguments
+			bool tex_argument_check;
+			TextureFilter tex_argument_filter;
+			TextureRepeat tex_argument_repeat;
+			bool tex_builtin_check;
+			StringName tex_builtin;
+
+			Map<StringName, Set<int> > tex_argument_connect;
 		};
 
 		StringName name;
 		DataType return_type;
+		StringName return_struct_name;
 		DataPrecision return_precision;
 		Vector<Argument> arguments;
 		BlockNode *body;
@@ -504,6 +599,7 @@ public:
 
 		struct Constant {
 			DataType type;
+			StringName type_str;
 			DataPrecision precision;
 			ConstantNode *initializer;
 		};
@@ -513,6 +609,11 @@ public:
 			FunctionNode *function;
 			Set<StringName> uses_function;
 			bool callable;
+		};
+
+		struct Struct {
+			StringName name;
+			StructNode *shader_struct;
 		};
 
 		struct Varying {
@@ -536,6 +637,12 @@ public:
 				HINT_ALBEDO,
 				HINT_BLACK_ALBEDO,
 				HINT_NORMAL,
+				HINT_ROUGHNESS_NORMAL,
+				HINT_ROUGHNESS_R,
+				HINT_ROUGHNESS_G,
+				HINT_ROUGHNESS_B,
+				HINT_ROUGHNESS_A,
+				HINT_ROUGHNESS_GRAY,
 				HINT_BLACK,
 				HINT_WHITE,
 				HINT_ANISO,
@@ -548,6 +655,8 @@ public:
 			DataPrecision precision;
 			Vector<ConstantNode::Value> default_value;
 			Hint hint;
+			TextureFilter filter;
+			TextureRepeat repeat;
 			float hint_range[3];
 
 			Uniform() :
@@ -555,7 +664,9 @@ public:
 					texture_order(0),
 					type(TYPE_VOID),
 					precision(PRECISION_DEFAULT),
-					hint(HINT_NONE) {
+					hint(HINT_NONE),
+					filter(FILTER_DEFAULT),
+					repeat(REPEAT_DEFAULT) {
 				hint_range[0] = 0.0f;
 				hint_range[1] = 1.0f;
 				hint_range[2] = 0.001f;
@@ -565,9 +676,11 @@ public:
 		Map<StringName, Constant> constants;
 		Map<StringName, Varying> varyings;
 		Map<StringName, Uniform> uniforms;
+		Map<StringName, Struct> structs;
 		Vector<StringName> render_modes;
 
 		Vector<Function> functions;
+		Vector<Struct> vstructs;
 
 		ShaderNode() :
 				Node(TYPE_SHADER) {}
@@ -594,6 +707,7 @@ public:
 		COMPLETION_FUNCTION_CALL,
 		COMPLETION_CALL_ARGUMENTS,
 		COMPLETION_INDEX,
+		COMPLETION_STRUCT,
 	};
 
 	struct Token {
@@ -624,6 +738,8 @@ public:
 	static bool is_scalar_type(DataType p_type);
 	static bool is_sampler_type(DataType p_type);
 	static Variant constant_value_to_variant(const Vector<ShaderLanguage::ConstantNode::Value> &p_value, DataType p_type, ShaderLanguage::ShaderNode::Uniform::Hint p_hint = ShaderLanguage::ShaderNode::Uniform::HINT_NONE);
+	static PropertyInfo uniform_to_property_info(const ShaderNode::Uniform &p_uniform);
+	static uint32_t get_type_size(DataType p_type);
 
 	static void get_keyword_list(List<String> *r_keywords);
 	static void get_builtin_funcs(List<String> *r_keywords);
@@ -708,15 +824,10 @@ private:
 		IDENTIFIER_CONSTANT,
 	};
 
-	bool _find_identifier(const BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type = NULL, IdentifierType *r_type = NULL, bool *r_is_const = NULL, int *r_array_size = NULL);
+	bool _find_identifier(const BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type = NULL, IdentifierType *r_type = NULL, bool *r_is_const = NULL, int *r_array_size = NULL, StringName *r_struct_name = NULL);
 	bool _is_operator_assign(Operator p_op) const;
 	bool _validate_assign(Node *p_node, const Map<StringName, BuiltInInfo> &p_builtin_types, String *r_message = NULL);
 	bool _validate_operator(OperatorNode *p_op, DataType *r_ret_type = NULL);
-
-	enum SubClassTag {
-		TAG_GLOBAL,
-		TAG_ARRAY,
-	};
 
 	struct BuiltinFuncDef {
 		enum { MAX_ARGS = 5 };
@@ -738,6 +849,7 @@ private:
 	DataType completion_base;
 	SubClassTag completion_class;
 	StringName completion_function;
+	StringName completion_struct;
 	int completion_argument;
 
 	bool _get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName &identifier);
@@ -745,9 +857,12 @@ private:
 	static const BuiltinFuncOutArgs builtin_func_out_args[];
 
 	Error _validate_datatype(DataType p_type);
+	bool _compare_datatypes_in_nodes(Node *a, Node *b) const;
 
-	bool _validate_function_call(BlockNode *p_block, OperatorNode *p_func, DataType *r_ret_type);
+	bool _validate_function_call(BlockNode *p_block, OperatorNode *p_func, DataType *r_ret_type, StringName *r_ret_type_str);
 	bool _parse_function_arguments(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, OperatorNode *p_func, int *r_complete_arg = NULL);
+	bool _propagate_function_call_sampler_uniform_settings(StringName p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat);
+	bool _propagate_function_call_sampler_builtin_reference(StringName p_name, int p_argument, const StringName &p_builtin);
 
 	Node *_parse_expression(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types);
 	ShaderLanguage::Node *_reduce_expression(BlockNode *p_block, ShaderLanguage::Node *p_node);
@@ -755,6 +870,7 @@ private:
 	Node *_parse_and_reduce_expression(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types);
 	Error _parse_block(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, bool p_just_one = false, bool p_can_break = false, bool p_can_continue = false);
 	String _get_shader_type_list(const Set<String> &p_shader_types) const;
+	String _get_qualifier_str(ArgumentQualifier p_qualifier) const;
 
 	Error _parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types);
 

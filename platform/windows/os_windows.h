@@ -31,7 +31,6 @@
 #ifndef OS_WINDOWS_H
 #define OS_WINDOWS_H
 
-#include "context_gl_windows.h"
 #include "core/os/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
@@ -41,12 +40,20 @@
 #include "drivers/winmidi/midi_driver_winmidi.h"
 #include "key_mapping_windows.h"
 #include "main/input_default.h"
-#include "power_windows.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 #ifdef XAUDIO2_ENABLED
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
+#endif
+
+#if defined(OPENGL_ENABLED)
+#include "context_gl_windows.h"
+#endif
+
+#if defined(VULKAN_ENABLED)
+#include "drivers/vulkan/rendering_device_vulkan.h"
+#include "platform/windows/vulkan_context_win.h"
 #endif
 
 #include <fcntl.h>
@@ -170,9 +177,16 @@ class OS_Windows : public OS {
 	bool outside;
 	int old_x, old_y;
 	Point2i center;
+
 #if defined(OPENGL_ENABLED)
-	ContextGL_Windows *gl_context;
+	ContextGL_Windows *context_gles2;
 #endif
+
+#if defined(VULKAN_ENABLED)
+	VulkanContextWindows *context_vulkan;
+	RenderingDeviceVulkan *rendering_device_vulkan;
+#endif
+
 	VisualServer *visual_server;
 	int pressrc;
 	HINSTANCE hInstance; // Holds The Instance Of The Application
@@ -224,8 +238,6 @@ class OS_Windows : public OS {
 	JoypadWindows *joypad;
 	Map<int, Vector2> touch_state;
 
-	PowerWindows *power_manager;
-
 	int video_driver_index;
 #ifdef WASAPI_ENABLED
 	AudioDriverWASAPI driver_wasapi;
@@ -274,6 +286,7 @@ protected:
 	bool maximized;
 	bool minimized;
 	bool borderless;
+	bool window_focused;
 	bool console_visible;
 	bool was_maximized;
 
@@ -322,6 +335,7 @@ public:
 	virtual bool is_window_maximized() const;
 	virtual void set_window_always_on_top(bool p_enabled);
 	virtual bool is_window_always_on_top() const;
+	virtual bool is_window_focused() const;
 	virtual void set_console_visible(bool p_enabled);
 	virtual bool is_console_visible() const;
 	virtual void request_attention();
@@ -357,7 +371,7 @@ public:
 	virtual void delay_usec(uint32_t p_usec) const;
 	virtual uint64_t get_ticks_usec() const;
 
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false, Mutex *p_pipe_mutex = NULL);
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false, Mutex *p_pipe_mutex = NULL);
 	virtual Error kill(const ProcessID &p_pid);
 	virtual int get_process_id() const;
 
@@ -415,10 +429,6 @@ public:
 
 	virtual void _set_use_vsync(bool p_enable);
 	//virtual bool is_vsync_enabled() const;
-
-	virtual OS::PowerState get_power_state();
-	virtual int get_power_seconds_left();
-	virtual int get_power_percent_left();
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
 

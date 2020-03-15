@@ -44,7 +44,7 @@
 class MIDIDriverALSAMidi : public MIDIDriver {
 
 	Thread *thread;
-	Mutex *mutex;
+	Mutex mutex;
 
 	Vector<snd_rawmidi_t *> connected_inputs;
 
@@ -59,7 +59,7 @@ public:
 	virtual Error open();
 	virtual void close();
 
-	virtual PoolStringArray get_connected_inputs();
+	virtual PackedStringArray get_connected_inputs();
 
 	MIDIDriverALSAMidi();
 	virtual ~MIDIDriverALSAMidi();

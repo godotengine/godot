@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Node" inherits="Object" category="Core" version="3.2">
+<class name="Node" inherits="Object" version="4.0">
 	<brief_description>
 		Base class for all [i]scene[/i] objects.
 	</brief_description>
@@ -33,7 +33,7 @@
 			</return>
 			<description>
 				Called when the node is about to leave the [SceneTree] (e.g. upon freeing, scene changing, or after calling [method remove_child] in a script). If the node has children, its [method _exit_tree] callback will be called last, after all its children have left the tree.
-				Corresponds to the [constant NOTIFICATION_EXIT_TREE] notification in [method Object._notification] and signal [signal tree_exiting]. To get notified when the node has already left the active tree, connect to the [signal tree_exited]
+				Corresponds to the [constant NOTIFICATION_EXIT_TREE] notification in [method Object._notification] and signal [signal tree_exiting]. To get notified when the node has already left the active tree, connect to the [signal tree_exited].
 			</description>
 		</method>
 		<method name="_get_configuration_warning" qualifiers="virtual">
@@ -129,27 +129,29 @@
 				    child_node.get_parent().remove_child(child_node)
 				add_child(child_node)
 				[/codeblock]
+				If you need the child node to be added below a specific node in the list of children, use [method add_child_below_node] instead of this method.
 				[b]Note:[/b] If you want a child to be persisted to a [PackedScene], you must set [member owner] in addition to calling [method add_child]. This is typically relevant for [url=https://godot.readthedocs.io/en/latest/tutorials/misc/running_code_in_the_editor.html]tool scripts[/url] and [url=https://godot.readthedocs.io/en/latest/tutorials/plugins/editor/index.html]editor plugins[/url]. If [method add_child] is called without setting [member owner], the newly added [Node] will not be visible in the scene tree, though it will be visible in the 2D/3D view.
 			</description>
 		</method>
 		<method name="add_child_below_node">
 			<return type="void">
 			</return>
-			<argument index="0" name="node" type="Node">
+			<argument index="0" name="preceding_node" type="Node">
 			</argument>
-			<argument index="1" name="child_node" type="Node">
+			<argument index="1" name="node" type="Node">
 			</argument>
 			<argument index="2" name="legible_unique_name" type="bool" default="false">
 			</argument>
 			<description>
-				Adds a child node. The child is placed below the given node in the list of children.
+				Adds a child node below the [code]preceding_node[/code].
 				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have an human-readable name based on the name of the node being instanced instead of its type.
+				Use [method add_child] instead of this method if you don't need the child node to be added below a specific node in the list of children.
 			</description>
 		</method>
 		<method name="add_to_group">
 			<return type="void">
 			</return>
-			<argument index="0" name="group" type="String">
+			<argument index="0" name="group" type="StringName">
 			</argument>
 			<argument index="1" name="persistent" type="bool" default="false">
 			</argument>
@@ -326,7 +328,7 @@
 			<return type="float">
 			</return>
 			<description>
-				Returns the time elapsed since the last physics-bound frame (see [method _physics_process]). This is always a constant value in physics processing unless the frames per second is changed via [member Engine.target_fps].
+				Returns the time elapsed since the last physics-bound frame (see [method _physics_process]). This is always a constant value in physics processing unless the frames per second is changed via [member Engine.iterations_per_second].
 			</description>
 		</method>
 		<method name="get_position_in_parent" qualifiers="const">
@@ -410,7 +412,7 @@
 		<method name="is_in_group" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="group" type="String">
+			<argument index="0" name="group" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if this node is in the specified group. See notes in the description, and the group methods in [SceneTree].
@@ -532,7 +534,7 @@
 		<method name="propagate_call">
 			<return type="void">
 			</return>
-			<argument index="0" name="method" type="String">
+			<argument index="0" name="method" type="StringName">
 			</argument>
 			<argument index="1" name="args" type="Array" default="[  ]">
 			</argument>
@@ -584,7 +586,7 @@
 		<method name="remove_from_group">
 			<return type="void">
 			</return>
-			<argument index="0" name="group" type="String">
+			<argument index="0" name="group" type="StringName">
 			</argument>
 			<description>
 				Removes a node from a group. See notes in the description, and the group methods in [SceneTree].
@@ -611,7 +613,7 @@
 		<method name="rpc" qualifiers="vararg">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="method" type="String">
+			<argument index="0" name="method" type="StringName">
 			</argument>
 			<description>
 				Sends a remote procedure call request for the given [code]method[/code] to peers on the network (and locally), optionally sending all additional arguments as arguments to the method called by the RPC. The call request will only be received by nodes with the same [NodePath], including the exact same node name. Behaviour depends on the RPC configuration for the given method, see [method rpc_config]. Methods are not exposed to RPCs by default. See also [method rset] and [method rset_config] for properties. Returns an empty [Variant].
@@ -619,9 +621,9 @@
 			</description>
 		</method>
 		<method name="rpc_config">
-			<return type="void">
+			<return type="int">
 			</return>
-			<argument index="0" name="method" type="String">
+			<argument index="0" name="method" type="StringName">
 			</argument>
 			<argument index="1" name="mode" type="int" enum="MultiplayerAPI.RPCMode">
 			</argument>
@@ -634,7 +636,7 @@
 			</return>
 			<argument index="0" name="peer_id" type="int">
 			</argument>
-			<argument index="1" name="method" type="String">
+			<argument index="1" name="method" type="StringName">
 			</argument>
 			<description>
 				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] (see [method NetworkedMultiplayerPeer.set_target_peer]). Returns an empty [Variant].
@@ -643,7 +645,7 @@
 		<method name="rpc_unreliable" qualifiers="vararg">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="method" type="String">
+			<argument index="0" name="method" type="StringName">
 			</argument>
 			<description>
 				Sends a [method rpc] using an unreliable protocol. Returns an empty [Variant].
@@ -654,7 +656,7 @@
 			</return>
 			<argument index="0" name="peer_id" type="int">
 			</argument>
-			<argument index="1" name="method" type="String">
+			<argument index="1" name="method" type="StringName">
 			</argument>
 			<description>
 				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] using an unreliable protocol (see [method NetworkedMultiplayerPeer.set_target_peer]). Returns an empty [Variant].
@@ -663,7 +665,7 @@
 		<method name="rset">
 			<return type="void">
 			</return>
-			<argument index="0" name="property" type="String">
+			<argument index="0" name="property" type="StringName">
 			</argument>
 			<argument index="1" name="value" type="Variant">
 			</argument>
@@ -672,9 +674,9 @@
 			</description>
 		</method>
 		<method name="rset_config">
-			<return type="void">
+			<return type="int">
 			</return>
-			<argument index="0" name="property" type="String">
+			<argument index="0" name="property" type="StringName">
 			</argument>
 			<argument index="1" name="mode" type="int" enum="MultiplayerAPI.RPCMode">
 			</argument>
@@ -687,7 +689,7 @@
 			</return>
 			<argument index="0" name="peer_id" type="int">
 			</argument>
-			<argument index="1" name="property" type="String">
+			<argument index="1" name="property" type="StringName">
 			</argument>
 			<argument index="2" name="value" type="Variant">
 			</argument>
@@ -698,7 +700,7 @@
 		<method name="rset_unreliable">
 			<return type="void">
 			</return>
-			<argument index="0" name="property" type="String">
+			<argument index="0" name="property" type="StringName">
 			</argument>
 			<argument index="1" name="value" type="Variant">
 			</argument>
@@ -711,7 +713,7 @@
 			</return>
 			<argument index="0" name="peer_id" type="int">
 			</argument>
-			<argument index="1" name="property" type="String">
+			<argument index="1" name="property" type="StringName">
 			</argument>
 			<argument index="2" name="value" type="Variant">
 			</argument>
@@ -745,7 +747,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Enables or disables physics (i.e. fixed framerate) processing. When a node is being processed, it will receive a [constant NOTIFICATION_PHYSICS_PROCESS] at a fixed (usually 60 FPS, see [member Engine.target_fps] to change) interval (and the [method _physics_process] callback will be called if exists). Enabled automatically if [method _physics_process] is overridden. Any calls to this before [method _ready] will be ignored.
+				Enables or disables physics (i.e. fixed framerate) processing. When a node is being processed, it will receive a [constant NOTIFICATION_PHYSICS_PROCESS] at a fixed (usually 60 FPS, see [member Engine.iterations_per_second] to change) interval (and the [method _physics_process] callback will be called if exists). Enabled automatically if [method _physics_process] is overridden. Any calls to this before [method _ready] will be ignored.
 			</description>
 		</method>
 		<method name="set_physics_process_internal">
@@ -830,7 +832,7 @@
 		<member name="multiplayer" type="MultiplayerAPI" setter="" getter="get_multiplayer">
 			The [MultiplayerAPI] instance associated with this node. Either the [member custom_multiplayer], or the default SceneTree one (if inside tree).
 		</member>
-		<member name="name" type="String" setter="set_name" getter="get_name">
+		<member name="name" type="StringName" setter="set_name" getter="get_name">
 			The name of the node. This name is unique among the siblings (other child nodes from the same parent). When set to an existing name, the node will be automatically renamed.
 		</member>
 		<member name="owner" type="Node" setter="set_owner" getter="get_owner">

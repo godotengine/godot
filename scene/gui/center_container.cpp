@@ -54,7 +54,13 @@ Size2 CenterContainer::get_minimum_size() const {
 
 void CenterContainer::set_use_top_left(bool p_enable) {
 
+	if (use_top_left == p_enable) {
+		return;
+	}
+
 	use_top_left = p_enable;
+
+	minimum_size_changed();
 	queue_sort();
 }
 

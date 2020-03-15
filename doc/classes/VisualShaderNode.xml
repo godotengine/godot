@@ -1,18 +1,37 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNode" inherits="Resource" category="Core" version="3.2">
+<class name="VisualShaderNode" inherits="Resource" version="4.0">
 	<brief_description>
+		Base class for nodes in a visual shader graph.
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/shading/visual_shaders.html</link>
 	</tutorials>
 	<methods>
+		<method name="get_default_input_values" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an [Array] containing default values for all of the input ports of the node in the form [code][index0, value0, index1, value1, ...][/code].
+			</description>
+		</method>
 		<method name="get_input_port_default_value" qualifiers="const">
 			<return type="Variant">
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>
 			<description>
+				Returns the default value of the input [code]port[/code].
+			</description>
+		</method>
+		<method name="set_default_input_values">
+			<return type="void">
+			</return>
+			<argument index="0" name="values" type="Array">
+			</argument>
+			<description>
+				Sets the default input ports values using an [Array] of the form [code][index0, value0, index1, value1, ...][/code]. For example: [code][0, Vector3(0, 0, 0), 1, Vector3(0, 0, 0)][/code].
 			</description>
 		</method>
 		<method name="set_input_port_default_value">
@@ -23,18 +42,19 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
+				Sets the default value for the selected input [code]port[/code].
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" default="[ 0, Vector3( 0, 0, 0 ) ]">
-		</member>
 		<member name="output_port_for_preview" type="int" setter="set_output_port_for_preview" getter="get_output_port_for_preview" default="-1">
+			Sets the output port index which will be showed for preview. If set to [code]-1[/code] no port will be open for preview.
 		</member>
 	</members>
 	<signals>
 		<signal name="editor_refresh_request">
 			<description>
+				Emitted when the node requests an editor refresh. Currently called only in setter of [member VisualShaderNodeTexture.source], [VisualShaderNodeTexture], and [VisualShaderNodeCubemap] (and their derivatives).
 			</description>
 		</signal>
 	</signals>
@@ -42,19 +62,22 @@
 		<constant name="PORT_TYPE_SCALAR" value="0" enum="PortType">
 			Floating-point scalar. Translated to [code]float[/code] type in shader code.
 		</constant>
-		<constant name="PORT_TYPE_VECTOR" value="1" enum="PortType">
+		<constant name="PORT_TYPE_SCALAR_INT" value="1" enum="PortType">
+			Integer scalar. Translated to [code]int[/code] type in shader code.
+		</constant>
+		<constant name="PORT_TYPE_VECTOR" value="2" enum="PortType">
 			3D vector of floating-point values. Translated to [code]vec3[/code] type in shader code.
 		</constant>
-		<constant name="PORT_TYPE_BOOLEAN" value="2" enum="PortType">
+		<constant name="PORT_TYPE_BOOLEAN" value="3" enum="PortType">
 			Boolean type. Translated to [code]bool[/code] type in shader code.
 		</constant>
-		<constant name="PORT_TYPE_TRANSFORM" value="3" enum="PortType">
+		<constant name="PORT_TYPE_TRANSFORM" value="4" enum="PortType">
 			Transform type. Translated to [code]mat4[/code] type in shader code.
 		</constant>
-		<constant name="PORT_TYPE_SAMPLER" value="4" enum="PortType">
+		<constant name="PORT_TYPE_SAMPLER" value="5" enum="PortType">
 			Sampler type. Translated to reference of sampler uniform in shader code. Can only be used for input ports in non-uniform nodes.
 		</constant>
-		<constant name="PORT_TYPE_MAX" value="5" enum="PortType">
+		<constant name="PORT_TYPE_MAX" value="6" enum="PortType">
 			Represents the size of the [enum PortType] enum.
 		</constant>
 	</constants>

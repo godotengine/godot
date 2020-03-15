@@ -62,7 +62,7 @@ class SpinBox : public Range {
 
 	void _line_edit_focus_exit();
 
-	inline void _adjust_width_for_icon(const Ref<Texture> &icon);
+	inline void _adjust_width_for_icon(const Ref<Texture2D> &icon);
 
 protected:
 	void _gui_input(const Ref<InputEvent> &p_event);
@@ -87,6 +87,8 @@ public:
 
 	void set_prefix(const String &p_prefix);
 	String get_prefix() const;
+
+	void apply();
 
 	SpinBox();
 };

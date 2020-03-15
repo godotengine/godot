@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeIntFunc" inherits="VisualShaderNode" version="4.0">
+	<brief_description>
+		A scalar integer function to be used within the visual shader graph.
+	</brief_description>
+	<description>
+		Accept an integer scalar ([code]x[/code]) to the input port and transform it according to [member function].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeIntFunc.Function" default="3">
+			A function to be applied to the scalar. See [enum Function] for options.
+		</member>
+	</members>
+	<constants>
+		<constant name="FUNC_ABS" value="0" enum="Function">
+			Returns the absolute value of the parameter. Translates to [code]abs(x)[/code] in the Godot Shader Language.
+		</constant>
+		<constant name="FUNC_CLAMP" value="1" enum="Function">
+			Constrains a parameter between [code]min[/code] and [code]max[/code]. Translates to [code]clamp(x, min, max)[/code] in the Godot Shader Language.
+		</constant>
+		<constant name="FUNC_NEGATE" value="2" enum="Function">
+			Negates the [code]x[/code] using [code]-(x)[/code].
+		</constant>
+		<constant name="FUNC_SIGN" value="3" enum="Function">
+			Extracts the sign of the parameter. Translates to [code]sign(x)[/code] in the Godot Shader Language.
+		</constant>
+	</constants>
+</class>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MeshInstance" inherits="GeometryInstance" category="Core" version="3.2">
+<class name="MeshInstance" inherits="GeometryInstance" version="4.0">
 	<brief_description>
 		Node that instances meshes into a scenario.
 	</brief_description>
@@ -66,6 +66,7 @@
 			[NodePath] to the [Skeleton] associated with the instance.
 		</member>
 		<member name="skin" type="Skin" setter="set_skin" getter="get_skin">
+			Sets the skin to be used by this instance.
 		</member>
 	</members>
 	<constants>

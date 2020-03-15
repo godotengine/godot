@@ -69,7 +69,7 @@ protected:
 private:
 	void _process();
 	void _iterate();
-	void _scan_dir(String path, PoolStringArray &out_folders);
+	void _scan_dir(String path, PackedStringArray &out_folders);
 	void _scan_file(String fpath);
 
 	// Config
@@ -82,7 +82,7 @@ private:
 	// State
 	bool _searching;
 	String _current_dir;
-	Vector<PoolStringArray> _folders_stack;
+	Vector<PackedStringArray> _folders_stack;
 	Vector<String> _files_to_scan;
 	int _initial_files_count;
 };
@@ -97,14 +97,23 @@ class FindInFilesDialog : public AcceptDialog {
 	GDCLASS(FindInFilesDialog, AcceptDialog);
 
 public:
+	enum FindInFilesMode {
+		SEARCH_MODE,
+		REPLACE_MODE
+	};
+
 	static const char *SIGNAL_FIND_REQUESTED;
 	static const char *SIGNAL_REPLACE_REQUESTED;
 
 	FindInFilesDialog();
 
 	void set_search_text(String text);
+	void set_replace_text(String text);
+
+	void set_find_in_files_mode(FindInFilesMode p_mode);
 
 	String get_search_text() const;
+	String get_replace_text() const;
 	bool is_match_case() const;
 	bool is_whole_words() const;
 	String get_folder() const;
@@ -121,8 +130,14 @@ private:
 	void _on_folder_selected(String path);
 	void _on_search_text_modified(String text);
 	void _on_search_text_entered(String text);
+	void _on_replace_text_entered(String text);
 
+	FindInFilesMode _mode;
 	LineEdit *_search_text_line_edit;
+
+	Label *_replace_label;
+	LineEdit *_replace_text_line_edit;
+
 	LineEdit *_folder_line_edit;
 	CheckBox *_match_case_checkbox;
 	CheckBox *_whole_words_checkbox;
@@ -151,6 +166,7 @@ public:
 	FindInFiles *get_finder() const { return _finder; }
 
 	void set_with_replace(bool with_replace);
+	void set_replace_text(String text);
 
 	void start_search();
 	void stop_search();
@@ -163,6 +179,7 @@ protected:
 private:
 	void _on_result_found(String fpath, int line_number, int begin, int end, String text);
 	void _on_finished();
+	void _on_refresh_button_clicked();
 	void _on_cancel_button_clicked();
 	void _on_result_selected();
 	void _on_item_edited();
@@ -190,6 +207,7 @@ private:
 	Label *_search_text_label;
 	Tree *_results_display;
 	Label *_status_label;
+	Button *_refresh_button;
 	Button *_cancel_button;
 	ProgressBar *_progress_bar;
 	Map<String, TreeItem *> _file_items;

@@ -327,7 +327,7 @@ Error AudioDriverWASAPI::init_render_device(bool reinit) {
 			break;
 
 		default:
-			WARN_PRINTS("WASAPI: Unsupported number of channels: " + itos(audio_output.channels));
+			WARN_PRINT("WASAPI: Unsupported number of channels: " + itos(audio_output.channels));
 			channels = 2;
 			break;
 	}
@@ -342,8 +342,8 @@ Error AudioDriverWASAPI::init_render_device(bool reinit) {
 	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
 	samples_in.resize(buffer_frames * channels);
 
-	capture_position = 0;
-	capture_size = 0;
+	input_position = 0;
+	input_size = 0;
 
 	print_verbose("WASAPI: detected " + itos(channels) + " channels");
 	print_verbose("WASAPI: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
@@ -362,7 +362,7 @@ Error AudioDriverWASAPI::init_capture_device(bool reinit) {
 	HRESULT hr = audio_input.audio_client->GetBufferSize(&max_frames);
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
-	capture_buffer_init(max_frames);
+	input_buffer_init(max_frames);
 
 	return OK;
 }
@@ -406,7 +406,6 @@ Error AudioDriverWASAPI::init() {
 	exit_thread = false;
 	thread_exited = false;
 
-	mutex = Mutex::create(true);
 	thread = Thread::create(thread_func, this);
 
 	return OK;
@@ -715,8 +714,8 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 							}
 						}
 
-						ad->capture_buffer_write(l);
-						ad->capture_buffer_write(r);
+						ad->input_buffer_write(l);
+						ad->input_buffer_write(r);
 					}
 
 					read_frames += num_frames_available;
@@ -782,14 +781,12 @@ void AudioDriverWASAPI::start() {
 
 void AudioDriverWASAPI::lock() {
 
-	if (mutex)
-		mutex->lock();
+	mutex.lock();
 }
 
 void AudioDriverWASAPI::unlock() {
 
-	if (mutex)
-		mutex->unlock();
+	mutex.unlock();
 }
 
 void AudioDriverWASAPI::finish() {
@@ -804,11 +801,6 @@ void AudioDriverWASAPI::finish() {
 
 	finish_capture_device();
 	finish_render_device();
-
-	if (mutex) {
-		memdelete(mutex);
-		mutex = NULL;
-	}
 }
 
 Error AudioDriverWASAPI::capture_start() {
@@ -863,7 +855,6 @@ String AudioDriverWASAPI::capture_get_device() {
 
 AudioDriverWASAPI::AudioDriverWASAPI() {
 
-	mutex = NULL;
 	thread = NULL;
 
 	samples_in.clear();

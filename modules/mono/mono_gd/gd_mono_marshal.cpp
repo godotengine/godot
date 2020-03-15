@@ -60,9 +60,9 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 			return Variant::INT;
 
 		case MONO_TYPE_R4:
-			return Variant::REAL;
+			return Variant::FLOAT;
 		case MONO_TYPE_R8:
-			return Variant::REAL;
+			return Variant::FLOAT;
 
 		case MONO_TYPE_STRING: {
 			return Variant::STRING;
@@ -113,25 +113,25 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 				return Variant::ARRAY;
 
 			if (array_type->eklass == CACHED_CLASS_RAW(uint8_t))
-				return Variant::POOL_BYTE_ARRAY;
+				return Variant::PACKED_BYTE_ARRAY;
 
 			if (array_type->eklass == CACHED_CLASS_RAW(int32_t))
-				return Variant::POOL_INT_ARRAY;
+				return Variant::PACKED_INT32_ARRAY;
 
 			if (array_type->eklass == REAL_T_MONOCLASS)
-				return Variant::POOL_REAL_ARRAY;
+				return Variant::PACKED_FLOAT32_ARRAY;
 
 			if (array_type->eklass == CACHED_CLASS_RAW(String))
-				return Variant::POOL_STRING_ARRAY;
+				return Variant::PACKED_STRING_ARRAY;
 
 			if (array_type->eklass == CACHED_CLASS_RAW(Vector2))
-				return Variant::POOL_VECTOR2_ARRAY;
+				return Variant::PACKED_VECTOR2_ARRAY;
 
 			if (array_type->eklass == CACHED_CLASS_RAW(Vector3))
-				return Variant::POOL_VECTOR3_ARRAY;
+				return Variant::PACKED_VECTOR3_ARRAY;
 
 			if (array_type->eklass == CACHED_CLASS_RAW(Color))
-				return Variant::POOL_COLOR_ARRAY;
+				return Variant::PACKED_COLOR_ARRAY;
 		} break;
 
 		case MONO_TYPE_CLASS: {
@@ -277,7 +277,7 @@ String mono_to_utf8_string(MonoString *p_mono_string) {
 	char *utf8 = mono_string_to_utf8_checked(p_mono_string, &error);
 
 	if (!mono_error_ok(&error)) {
-		ERR_PRINTS(String() + "Failed to convert MonoString* to UTF-8: '" + mono_error_get_message(&error) + "'.");
+		ERR_PRINT(String() + "Failed to convert MonoString* to UTF-8: '" + mono_error_get_message(&error) + "'.");
 		mono_error_cleanup(&error);
 		return String();
 	}
@@ -491,25 +491,25 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 				return (MonoObject *)Array_to_mono_array(p_var->operator Array());
 
 			if (array_type->eklass == CACHED_CLASS_RAW(uint8_t))
-				return (MonoObject *)PoolByteArray_to_mono_array(p_var->operator PoolByteArray());
+				return (MonoObject *)PackedByteArray_to_mono_array(p_var->operator PackedByteArray());
 
 			if (array_type->eklass == CACHED_CLASS_RAW(int32_t))
-				return (MonoObject *)PoolIntArray_to_mono_array(p_var->operator PoolIntArray());
+				return (MonoObject *)PackedInt32Array_to_mono_array(p_var->operator PackedInt32Array());
 
 			if (array_type->eklass == REAL_T_MONOCLASS)
-				return (MonoObject *)PoolRealArray_to_mono_array(p_var->operator PoolRealArray());
+				return (MonoObject *)PackedFloat32Array_to_mono_array(p_var->operator PackedFloat32Array());
 
 			if (array_type->eklass == CACHED_CLASS_RAW(String))
-				return (MonoObject *)PoolStringArray_to_mono_array(p_var->operator PoolStringArray());
+				return (MonoObject *)PackedStringArray_to_mono_array(p_var->operator PackedStringArray());
 
 			if (array_type->eklass == CACHED_CLASS_RAW(Vector2))
-				return (MonoObject *)PoolVector2Array_to_mono_array(p_var->operator PoolVector2Array());
+				return (MonoObject *)PackedVector2Array_to_mono_array(p_var->operator PackedVector2Array());
 
 			if (array_type->eklass == CACHED_CLASS_RAW(Vector3))
-				return (MonoObject *)PoolVector3Array_to_mono_array(p_var->operator PoolVector3Array());
+				return (MonoObject *)PackedVector3Array_to_mono_array(p_var->operator PackedVector3Array());
 
 			if (array_type->eklass == CACHED_CLASS_RAW(Color))
-				return (MonoObject *)PoolColorArray_to_mono_array(p_var->operator PoolColorArray());
+				return (MonoObject *)PackedColorArray_to_mono_array(p_var->operator PackedColorArray());
 
 			ERR_FAIL_V_MSG(NULL, "Attempted to convert Variant to a managed array of unmarshallable element type.");
 		} break;
@@ -577,7 +577,7 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 					int32_t val = p_var->operator signed int();
 					return BOX_INT32(val);
 				}
-				case Variant::REAL: {
+				case Variant::FLOAT: {
 #ifdef REAL_T_IS_DOUBLE
 					double val = p_var->operator double();
 					return BOX_DOUBLE(val);
@@ -638,20 +638,20 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 					return GDMonoUtils::create_managed_from(p_var->operator Dictionary(), CACHED_CLASS(Dictionary));
 				case Variant::ARRAY:
 					return GDMonoUtils::create_managed_from(p_var->operator Array(), CACHED_CLASS(Array));
-				case Variant::POOL_BYTE_ARRAY:
-					return (MonoObject *)PoolByteArray_to_mono_array(p_var->operator PoolByteArray());
-				case Variant::POOL_INT_ARRAY:
-					return (MonoObject *)PoolIntArray_to_mono_array(p_var->operator PoolIntArray());
-				case Variant::POOL_REAL_ARRAY:
-					return (MonoObject *)PoolRealArray_to_mono_array(p_var->operator PoolRealArray());
-				case Variant::POOL_STRING_ARRAY:
-					return (MonoObject *)PoolStringArray_to_mono_array(p_var->operator PoolStringArray());
-				case Variant::POOL_VECTOR2_ARRAY:
-					return (MonoObject *)PoolVector2Array_to_mono_array(p_var->operator PoolVector2Array());
-				case Variant::POOL_VECTOR3_ARRAY:
-					return (MonoObject *)PoolVector3Array_to_mono_array(p_var->operator PoolVector3Array());
-				case Variant::POOL_COLOR_ARRAY:
-					return (MonoObject *)PoolColorArray_to_mono_array(p_var->operator PoolColorArray());
+				case Variant::PACKED_BYTE_ARRAY:
+					return (MonoObject *)PackedByteArray_to_mono_array(p_var->operator PackedByteArray());
+				case Variant::PACKED_INT32_ARRAY:
+					return (MonoObject *)PackedInt32Array_to_mono_array(p_var->operator PackedInt32Array());
+				case Variant::PACKED_FLOAT32_ARRAY:
+					return (MonoObject *)PackedFloat32Array_to_mono_array(p_var->operator PackedFloat32Array());
+				case Variant::PACKED_STRING_ARRAY:
+					return (MonoObject *)PackedStringArray_to_mono_array(p_var->operator PackedStringArray());
+				case Variant::PACKED_VECTOR2_ARRAY:
+					return (MonoObject *)PackedVector2Array_to_mono_array(p_var->operator PackedVector2Array());
+				case Variant::PACKED_VECTOR3_ARRAY:
+					return (MonoObject *)PackedVector3Array_to_mono_array(p_var->operator PackedVector3Array());
+				case Variant::PACKED_COLOR_ARRAY:
+					return (MonoObject *)PackedColorArray_to_mono_array(p_var->operator PackedColorArray());
 				default:
 					return NULL;
 			}
@@ -785,25 +785,25 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 				return mono_array_to_Array((MonoArray *)p_obj);
 
 			if (array_type->eklass == CACHED_CLASS_RAW(uint8_t))
-				return mono_array_to_PoolByteArray((MonoArray *)p_obj);
+				return mono_array_to_PackedByteArray((MonoArray *)p_obj);
 
 			if (array_type->eklass == CACHED_CLASS_RAW(int32_t))
-				return mono_array_to_PoolIntArray((MonoArray *)p_obj);
+				return mono_array_to_PackedInt32Array((MonoArray *)p_obj);
 
 			if (array_type->eklass == REAL_T_MONOCLASS)
-				return mono_array_to_PoolRealArray((MonoArray *)p_obj);
+				return mono_array_to_PackedFloat32Array((MonoArray *)p_obj);
 
 			if (array_type->eklass == CACHED_CLASS_RAW(String))
-				return mono_array_to_PoolStringArray((MonoArray *)p_obj);
+				return mono_array_to_PackedStringArray((MonoArray *)p_obj);
 
 			if (array_type->eklass == CACHED_CLASS_RAW(Vector2))
-				return mono_array_to_PoolVector2Array((MonoArray *)p_obj);
+				return mono_array_to_PackedVector2Array((MonoArray *)p_obj);
 
 			if (array_type->eklass == CACHED_CLASS_RAW(Vector3))
-				return mono_array_to_PoolVector3Array((MonoArray *)p_obj);
+				return mono_array_to_PackedVector3Array((MonoArray *)p_obj);
 
 			if (array_type->eklass == CACHED_CLASS_RAW(Color))
-				return mono_array_to_PoolColorArray((MonoArray *)p_obj);
+				return mono_array_to_PackedColorArray((MonoArray *)p_obj);
 
 			if (p_fail_with_err) {
 				ERR_FAIL_V_MSG(Variant(), "Attempted to convert a managed array of unmarshallable element type to Variant.");
@@ -987,8 +987,8 @@ Array mono_array_to_Array(MonoArray *p_array) {
 
 // TODO: Use memcpy where possible
 
-MonoArray *PoolIntArray_to_mono_array(const PoolIntArray &p_array) {
-	PoolIntArray::Read r = p_array.read();
+MonoArray *PackedInt32Array_to_mono_array(const PackedInt32Array &p_array) {
+	const int *r = p_array.ptr();
 
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(int32_t), p_array.size());
 
@@ -999,13 +999,13 @@ MonoArray *PoolIntArray_to_mono_array(const PoolIntArray &p_array) {
 	return ret;
 }
 
-PoolIntArray mono_array_to_PoolIntArray(MonoArray *p_array) {
-	PoolIntArray ret;
+PackedInt32Array mono_array_to_PackedInt32Array(MonoArray *p_array) {
+	PackedInt32Array ret;
 	if (!p_array)
 		return ret;
 	int length = mono_array_length(p_array);
 	ret.resize(length);
-	PoolIntArray::Write w = ret.write();
+	int *w = ret.ptrw();
 
 	for (int i = 0; i < length; i++) {
 		w[i] = mono_array_get(p_array, int32_t, i);
@@ -1014,8 +1014,8 @@ PoolIntArray mono_array_to_PoolIntArray(MonoArray *p_array) {
 	return ret;
 }
 
-MonoArray *PoolByteArray_to_mono_array(const PoolByteArray &p_array) {
-	PoolByteArray::Read r = p_array.read();
+MonoArray *PackedByteArray_to_mono_array(const PackedByteArray &p_array) {
+	const uint8_t *r = p_array.ptr();
 
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(uint8_t), p_array.size());
 
@@ -1026,13 +1026,13 @@ MonoArray *PoolByteArray_to_mono_array(const PoolByteArray &p_array) {
 	return ret;
 }
 
-PoolByteArray mono_array_to_PoolByteArray(MonoArray *p_array) {
-	PoolByteArray ret;
+PackedByteArray mono_array_to_PackedByteArray(MonoArray *p_array) {
+	PackedByteArray ret;
 	if (!p_array)
 		return ret;
 	int length = mono_array_length(p_array);
 	ret.resize(length);
-	PoolByteArray::Write w = ret.write();
+	uint8_t *w = ret.ptrw();
 
 	for (int i = 0; i < length; i++) {
 		w[i] = mono_array_get(p_array, uint8_t, i);
@@ -1041,8 +1041,8 @@ PoolByteArray mono_array_to_PoolByteArray(MonoArray *p_array) {
 	return ret;
 }
 
-MonoArray *PoolRealArray_to_mono_array(const PoolRealArray &p_array) {
-	PoolRealArray::Read r = p_array.read();
+MonoArray *PackedFloat32Array_to_mono_array(const PackedFloat32Array &p_array) {
+	const real_t *r = p_array.ptr();
 
 	MonoArray *ret = mono_array_new(mono_domain_get(), REAL_T_MONOCLASS, p_array.size());
 
@@ -1053,13 +1053,13 @@ MonoArray *PoolRealArray_to_mono_array(const PoolRealArray &p_array) {
 	return ret;
 }
 
-PoolRealArray mono_array_to_PoolRealArray(MonoArray *p_array) {
-	PoolRealArray ret;
+PackedFloat32Array mono_array_to_PackedFloat32Array(MonoArray *p_array) {
+	PackedFloat32Array ret;
 	if (!p_array)
 		return ret;
 	int length = mono_array_length(p_array);
 	ret.resize(length);
-	PoolRealArray::Write w = ret.write();
+	real_t *w = ret.ptrw();
 
 	for (int i = 0; i < length; i++) {
 		w[i] = mono_array_get(p_array, real_t, i);
@@ -1068,8 +1068,8 @@ PoolRealArray mono_array_to_PoolRealArray(MonoArray *p_array) {
 	return ret;
 }
 
-MonoArray *PoolStringArray_to_mono_array(const PoolStringArray &p_array) {
-	PoolStringArray::Read r = p_array.read();
+MonoArray *PackedStringArray_to_mono_array(const PackedStringArray &p_array) {
+	const String *r = p_array.ptr();
 
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(String), p_array.size());
 
@@ -1081,13 +1081,13 @@ MonoArray *PoolStringArray_to_mono_array(const PoolStringArray &p_array) {
 	return ret;
 }
 
-PoolStringArray mono_array_to_PoolStringArray(MonoArray *p_array) {
-	PoolStringArray ret;
+PackedStringArray mono_array_to_PackedStringArray(MonoArray *p_array) {
+	PackedStringArray ret;
 	if (!p_array)
 		return ret;
 	int length = mono_array_length(p_array);
 	ret.resize(length);
-	PoolStringArray::Write w = ret.write();
+	String *w = ret.ptrw();
 
 	for (int i = 0; i < length; i++) {
 		MonoString *elem = mono_array_get(p_array, MonoString *, i);
@@ -1097,8 +1097,8 @@ PoolStringArray mono_array_to_PoolStringArray(MonoArray *p_array) {
 	return ret;
 }
 
-MonoArray *PoolColorArray_to_mono_array(const PoolColorArray &p_array) {
-	PoolColorArray::Read r = p_array.read();
+MonoArray *PackedColorArray_to_mono_array(const PackedColorArray &p_array) {
+	const Color *r = p_array.ptr();
 
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(Color), p_array.size());
 
@@ -1110,13 +1110,13 @@ MonoArray *PoolColorArray_to_mono_array(const PoolColorArray &p_array) {
 	return ret;
 }
 
-PoolColorArray mono_array_to_PoolColorArray(MonoArray *p_array) {
-	PoolColorArray ret;
+PackedColorArray mono_array_to_PackedColorArray(MonoArray *p_array) {
+	PackedColorArray ret;
 	if (!p_array)
 		return ret;
 	int length = mono_array_length(p_array);
 	ret.resize(length);
-	PoolColorArray::Write w = ret.write();
+	Color *w = ret.ptrw();
 
 	for (int i = 0; i < length; i++) {
 		w[i] = MARSHALLED_IN(Color, (M_Color *)mono_array_addr_with_size(p_array, sizeof(M_Color), i));
@@ -1125,8 +1125,8 @@ PoolColorArray mono_array_to_PoolColorArray(MonoArray *p_array) {
 	return ret;
 }
 
-MonoArray *PoolVector2Array_to_mono_array(const PoolVector2Array &p_array) {
-	PoolVector2Array::Read r = p_array.read();
+MonoArray *PackedVector2Array_to_mono_array(const PackedVector2Array &p_array) {
+	const Vector2 *r = p_array.ptr();
 
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(Vector2), p_array.size());
 
@@ -1138,13 +1138,13 @@ MonoArray *PoolVector2Array_to_mono_array(const PoolVector2Array &p_array) {
 	return ret;
 }
 
-PoolVector2Array mono_array_to_PoolVector2Array(MonoArray *p_array) {
-	PoolVector2Array ret;
+PackedVector2Array mono_array_to_PackedVector2Array(MonoArray *p_array) {
+	PackedVector2Array ret;
 	if (!p_array)
 		return ret;
 	int length = mono_array_length(p_array);
 	ret.resize(length);
-	PoolVector2Array::Write w = ret.write();
+	Vector2 *w = ret.ptrw();
 
 	for (int i = 0; i < length; i++) {
 		w[i] = MARSHALLED_IN(Vector2, (M_Vector2 *)mono_array_addr_with_size(p_array, sizeof(M_Vector2), i));
@@ -1153,8 +1153,8 @@ PoolVector2Array mono_array_to_PoolVector2Array(MonoArray *p_array) {
 	return ret;
 }
 
-MonoArray *PoolVector3Array_to_mono_array(const PoolVector3Array &p_array) {
-	PoolVector3Array::Read r = p_array.read();
+MonoArray *PackedVector3Array_to_mono_array(const PackedVector3Array &p_array) {
+	const Vector3 *r = p_array.ptr();
 
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(Vector3), p_array.size());
 
@@ -1166,13 +1166,13 @@ MonoArray *PoolVector3Array_to_mono_array(const PoolVector3Array &p_array) {
 	return ret;
 }
 
-PoolVector3Array mono_array_to_PoolVector3Array(MonoArray *p_array) {
-	PoolVector3Array ret;
+PackedVector3Array mono_array_to_PackedVector3Array(MonoArray *p_array) {
+	PackedVector3Array ret;
 	if (!p_array)
 		return ret;
 	int length = mono_array_length(p_array);
 	ret.resize(length);
-	PoolVector3Array::Write w = ret.write();
+	Vector3 *w = ret.ptrw();
 
 	for (int i = 0; i < length; i++) {
 		w[i] = MARSHALLED_IN(Vector3, (M_Vector3 *)mono_array_addr_with_size(p_array, sizeof(M_Vector3), i));

@@ -84,7 +84,7 @@ public:
 
 	_FORCE_INLINE_ Vector3 xform(const Vector3 &v) const {
 #ifdef MATH_CHECKS
-		ERR_FAIL_COND_V(!is_normalized(), v);
+		ERR_FAIL_COND_V_MSG(!is_normalized(), v, "The quaternion must be normalized.");
 #endif
 		Vector3 u(x, y, z);
 		Vector3 uv = u.cross(v);

@@ -214,23 +214,19 @@ static bool _group_face(_FaceClassify *p_faces, int len, int p_index, int p_grou
 	return true;
 }
 
-PoolVector<PoolVector<Face3> > Geometry::separate_objects(PoolVector<Face3> p_array) {
+Vector<Vector<Face3> > Geometry::separate_objects(Vector<Face3> p_array) {
 
-	PoolVector<PoolVector<Face3> > objects;
+	Vector<Vector<Face3> > objects;
 
 	int len = p_array.size();
 
-	PoolVector<Face3>::Read r = p_array.read();
+	const Face3 *arrayptr = p_array.ptr();
 
-	const Face3 *arrayptr = r.ptr();
-
-	PoolVector<_FaceClassify> fc;
+	Vector<_FaceClassify> fc;
 
 	fc.resize(len);
 
-	PoolVector<_FaceClassify>::Write fcw = fc.write();
-
-	_FaceClassify *_fcptr = fcw.ptr();
+	_FaceClassify *_fcptr = fc.ptrw();
 
 	for (int i = 0; i < len; i++) {
 
@@ -239,7 +235,7 @@ PoolVector<PoolVector<Face3> > Geometry::separate_objects(PoolVector<Face3> p_ar
 
 	bool error = _connect_faces(_fcptr, len, -1);
 
-	ERR_FAIL_COND_V_MSG(error, PoolVector<PoolVector<Face3> >(), "Invalid geometry.");
+	ERR_FAIL_COND_V_MSG(error, Vector<Vector<Face3> >(), "Invalid geometry.");
 
 	// Group connected faces in separate objects.
 
@@ -263,8 +259,7 @@ PoolVector<PoolVector<Face3> > Geometry::separate_objects(PoolVector<Face3> p_ar
 	if (group >= 0) {
 
 		objects.resize(group);
-		PoolVector<PoolVector<Face3> >::Write obw = objects.write();
-		PoolVector<Face3> *group_faces = obw.ptr();
+		Vector<Face3> *group_faces = objects.ptrw();
 
 		for (int i = 0; i < len; i++) {
 			if (!_fcptr[i].valid)
@@ -470,7 +465,7 @@ static inline void _mark_outside(uint8_t ***p_cell_status, int x, int y, int z, 
 	}
 }
 
-static inline void _build_faces(uint8_t ***p_cell_status, int x, int y, int z, int len_x, int len_y, int len_z, PoolVector<Face3> &p_faces) {
+static inline void _build_faces(uint8_t ***p_cell_status, int x, int y, int z, int len_x, int len_y, int len_z, Vector<Face3> &p_faces) {
 
 	ERR_FAIL_INDEX(x, len_x);
 	ERR_FAIL_INDEX(y, len_y);
@@ -530,14 +525,13 @@ static inline void _build_faces(uint8_t ***p_cell_status, int x, int y, int z, i
 	}
 }
 
-PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_error) {
+Vector<Face3> Geometry::wrap_geometry(Vector<Face3> p_array, real_t *p_error) {
 
 #define _MIN_SIZE 1.0
 #define _MAX_LENGTH 20
 
 	int face_count = p_array.size();
-	PoolVector<Face3>::Read facesr = p_array.read();
-	const Face3 *faces = facesr.ptr();
+	const Face3 *faces = p_array.ptr();
 
 	AABB global_aabb;
 
@@ -638,7 +632,7 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 
 	// Build faces for the inside-outside cell divisors.
 
-	PoolVector<Face3> wrapped_faces;
+	Vector<Face3> wrapped_faces;
 
 	for (int i = 0; i < div_x; i++) {
 
@@ -654,8 +648,7 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 	// Transform face vertices to global coords.
 
 	int wrapped_faces_count = wrapped_faces.size();
-	PoolVector<Face3>::Write wrapped_facesw = wrapped_faces.write();
-	Face3 *wrapped_faces_ptr = wrapped_facesw.ptr();
+	Face3 *wrapped_faces_ptr = wrapped_faces.ptrw();
 
 	for (int i = 0; i < wrapped_faces_count; i++) {
 
@@ -720,7 +713,7 @@ Vector<Vector<Vector2> > Geometry::decompose_polygon_in_convex(Vector<Point2> po
 	return decomp;
 }
 
-Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes) {
+Geometry::MeshData Geometry::build_convex_mesh(const Vector<Plane> &p_planes) {
 
 	MeshData mesh;
 
@@ -859,9 +852,9 @@ Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes
 	return mesh;
 }
 
-PoolVector<Plane> Geometry::build_box_planes(const Vector3 &p_extents) {
+Vector<Plane> Geometry::build_box_planes(const Vector3 &p_extents) {
 
-	PoolVector<Plane> planes;
+	Vector<Plane> planes;
 
 	planes.push_back(Plane(Vector3(1, 0, 0), p_extents.x));
 	planes.push_back(Plane(Vector3(-1, 0, 0), p_extents.x));
@@ -873,9 +866,9 @@ PoolVector<Plane> Geometry::build_box_planes(const Vector3 &p_extents) {
 	return planes;
 }
 
-PoolVector<Plane> Geometry::build_cylinder_planes(real_t p_radius, real_t p_height, int p_sides, Vector3::Axis p_axis) {
+Vector<Plane> Geometry::build_cylinder_planes(real_t p_radius, real_t p_height, int p_sides, Vector3::Axis p_axis) {
 
-	PoolVector<Plane> planes;
+	Vector<Plane> planes;
 
 	for (int i = 0; i < p_sides; i++) {
 
@@ -895,9 +888,9 @@ PoolVector<Plane> Geometry::build_cylinder_planes(real_t p_radius, real_t p_heig
 	return planes;
 }
 
-PoolVector<Plane> Geometry::build_sphere_planes(real_t p_radius, int p_lats, int p_lons, Vector3::Axis p_axis) {
+Vector<Plane> Geometry::build_sphere_planes(real_t p_radius, int p_lats, int p_lons, Vector3::Axis p_axis) {
 
-	PoolVector<Plane> planes;
+	Vector<Plane> planes;
 
 	Vector3 axis;
 	axis[p_axis] = 1.0;
@@ -928,9 +921,9 @@ PoolVector<Plane> Geometry::build_sphere_planes(real_t p_radius, int p_lats, int
 	return planes;
 }
 
-PoolVector<Plane> Geometry::build_capsule_planes(real_t p_radius, real_t p_height, int p_sides, int p_lats, Vector3::Axis p_axis) {
+Vector<Plane> Geometry::build_capsule_planes(real_t p_radius, real_t p_height, int p_sides, int p_lats, Vector3::Axis p_axis) {
 
-	PoolVector<Plane> planes;
+	Vector<Plane> planes;
 
 	Vector3 axis;
 	axis[p_axis] = 1.0;

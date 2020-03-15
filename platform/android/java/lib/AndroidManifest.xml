@@ -11,7 +11,7 @@
     </application>
 
     <instrumentation
-        android:icon="@drawable/icon"
+        android:icon="@mipmap/icon"
         android:label="@string/godot_project_name_string"
         android:name=".GodotInstrumentation"
         android:targetPackage="org.godotengine.godot" />

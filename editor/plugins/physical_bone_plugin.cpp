@@ -33,7 +33,6 @@
 #include "scene/3d/physics_body.h"
 
 void PhysicalBoneEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_on_toggle_button_transform_joint", "is_pressed"), &PhysicalBoneEditor::_on_toggle_button_transform_joint);
 }
 
 void PhysicalBoneEditor::_on_toggle_button_transform_joint(bool p_is_pressed) {
@@ -64,7 +63,7 @@ PhysicalBoneEditor::PhysicalBoneEditor(EditorNode *p_editor) :
 	button_transform_joint->set_text(TTR("Move Joint"));
 	button_transform_joint->set_icon(SpatialEditor::get_singleton()->get_icon("PhysicalBone", "EditorIcons"));
 	button_transform_joint->set_toggle_mode(true);
-	button_transform_joint->connect("toggled", this, "_on_toggle_button_transform_joint");
+	button_transform_joint->connect("toggled", callable_mp(this, &PhysicalBoneEditor::_on_toggle_button_transform_joint));
 
 	hide();
 }

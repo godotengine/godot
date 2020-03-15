@@ -163,7 +163,7 @@ def configure(env, env_mono):
 
             copy_file(mono_bin_path, '#bin', mono_dll_name + '.dll')
     else:
-        is_apple = (sys.platform == 'darwin' or "osxcross" in env)
+        is_apple = env['platform'] in ['osx', 'iphone']
 
         sharedlib_ext = '.dylib' if is_apple else '.so'
 

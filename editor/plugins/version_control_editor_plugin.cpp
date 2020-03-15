@@ -39,14 +39,6 @@ VersionControlEditorPlugin *VersionControlEditorPlugin::singleton = NULL;
 
 void VersionControlEditorPlugin::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_selected_a_vcs"), &VersionControlEditorPlugin::_selected_a_vcs);
-	ClassDB::bind_method(D_METHOD("_initialize_vcs"), &VersionControlEditorPlugin::_initialize_vcs);
-	ClassDB::bind_method(D_METHOD("_send_commit_msg"), &VersionControlEditorPlugin::_send_commit_msg);
-	ClassDB::bind_method(D_METHOD("_refresh_stage_area"), &VersionControlEditorPlugin::_refresh_stage_area);
-	ClassDB::bind_method(D_METHOD("_stage_all"), &VersionControlEditorPlugin::_stage_all);
-	ClassDB::bind_method(D_METHOD("_stage_selected"), &VersionControlEditorPlugin::_stage_selected);
-	ClassDB::bind_method(D_METHOD("_view_file_diff"), &VersionControlEditorPlugin::_view_file_diff);
-	ClassDB::bind_method(D_METHOD("_refresh_file_diff"), &VersionControlEditorPlugin::_refresh_file_diff);
 	ClassDB::bind_method(D_METHOD("popup_vcs_set_up_dialog"), &VersionControlEditorPlugin::popup_vcs_set_up_dialog);
 
 	// Used to track the status of files in the staging area
@@ -124,10 +116,10 @@ void VersionControlEditorPlugin::_initialize_vcs() {
 	ERR_FAIL_COND_MSG(!addon_script_instance, "Failed to create addon script instance.");
 
 	// The addon is attached as a script to the VCS interface as a proxy end-point
-	vcs_interface->set_script_and_instance(script.get_ref_ptr(), addon_script_instance);
+	vcs_interface->set_script_and_instance(script, addon_script_instance);
 
 	EditorVCSInterface::set_singleton(vcs_interface);
-	EditorFileSystem::get_singleton()->connect("filesystem_changed", this, "_refresh_stage_area");
+	EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &VersionControlEditorPlugin::_refresh_stage_area));
 
 	String res_dir = OS::get_singleton()->get_resource_dir();
 
@@ -203,7 +195,7 @@ void VersionControlEditorPlugin::_refresh_stage_area() {
 		}
 	} else {
 
-		WARN_PRINT("No VCS addon is initialized. Select a Version Control Addon from Project menu.")
+		WARN_PRINT("No VCS addon is initialized. Select a Version Control Addon from Project menu.");
 	}
 }
 
@@ -388,8 +380,8 @@ void VersionControlEditorPlugin::clear_stage_area() {
 void VersionControlEditorPlugin::shut_down() {
 
 	if (EditorVCSInterface::get_singleton()) {
-		if (EditorFileSystem::get_singleton()->is_connected("filesystem_changed", this, "_refresh_stage_area")) {
-			EditorFileSystem::get_singleton()->disconnect("filesystem_changed", this, "_refresh_stage_area");
+		if (EditorFileSystem::get_singleton()->is_connected("filesystem_changed", callable_mp(this, &VersionControlEditorPlugin::_refresh_stage_area))) {
+			EditorFileSystem::get_singleton()->disconnect("filesystem_changed", callable_mp(this, &VersionControlEditorPlugin::_refresh_stage_area));
 		}
 		EditorVCSInterface::get_singleton()->shut_down();
 		memdelete(EditorVCSInterface::get_singleton());
@@ -444,14 +436,14 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	set_up_choice = memnew(OptionButton);
 	set_up_choice->set_h_size_flags(HBoxContainer::SIZE_EXPAND_FILL);
-	set_up_choice->connect("item_selected", this, "_selected_a_vcs");
+	set_up_choice->connect("item_selected", callable_mp(this, &VersionControlEditorPlugin::_selected_a_vcs));
 	set_up_hbc->add_child(set_up_choice);
 
 	set_up_init_settings = NULL;
 
 	set_up_init_button = memnew(Button);
 	set_up_init_button->set_text(TTR("Initialize"));
-	set_up_init_button->connect("pressed", this, "_initialize_vcs");
+	set_up_init_button->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_initialize_vcs));
 	set_up_vbc->add_child(set_up_init_button);
 
 	version_control_actions->set_v_size_flags(PopupMenu::SIZE_EXPAND_FILL);
@@ -479,7 +471,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	refresh_button->set_tooltip(TTR("Detect new changes"));
 	refresh_button->set_text(TTR("Refresh"));
 	refresh_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Reload", "EditorIcons"));
-	refresh_button->connect("pressed", this, "_refresh_stage_area");
+	refresh_button->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_refresh_stage_area));
 	stage_tools->add_child(refresh_button);
 
 	stage_files = memnew(Tree);
@@ -492,7 +484,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	stage_files->set_allow_rmb_select(true);
 	stage_files->set_select_mode(Tree::SelectMode::SELECT_MULTI);
 	stage_files->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
-	stage_files->connect("cell_selected", this, "_view_file_diff");
+	stage_files->connect("cell_selected", callable_mp(this, &VersionControlEditorPlugin::_view_file_diff));
 	stage_files->create_item();
 	stage_files->set_hide_root(true);
 	commit_box_vbc->add_child(stage_files);
@@ -516,12 +508,12 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	stage_selected_button = memnew(Button);
 	stage_selected_button->set_h_size_flags(Button::SIZE_EXPAND_FILL);
 	stage_selected_button->set_text(TTR("Stage Selected"));
-	stage_selected_button->connect("pressed", this, "_stage_selected");
+	stage_selected_button->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_stage_selected));
 	stage_buttons->add_child(stage_selected_button);
 
 	stage_all_button = memnew(Button);
 	stage_all_button->set_text(TTR("Stage All"));
-	stage_all_button->connect("pressed", this, "_stage_all");
+	stage_all_button->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_stage_all));
 	stage_buttons->add_child(stage_all_button);
 
 	commit_box_vbc->add_child(memnew(HSeparator));
@@ -537,7 +529,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	commit_button = memnew(Button);
 	commit_button->set_text(TTR("Commit Changes"));
-	commit_button->connect("pressed", this, "_send_commit_msg");
+	commit_button->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_send_commit_msg));
 	commit_box_vbc->add_child(commit_button);
 
 	commit_status = memnew(Label);
@@ -571,7 +563,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	diff_refresh_button = memnew(Button);
 	diff_refresh_button->set_tooltip(TTR("Detect changes in file diff"));
 	diff_refresh_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Reload", "EditorIcons"));
-	diff_refresh_button->connect("pressed", this, "_refresh_file_diff");
+	diff_refresh_button->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_refresh_file_diff));
 	diff_hbc->add_child(diff_refresh_button);
 
 	diff = memnew(RichTextLabel);

@@ -47,11 +47,9 @@ StringName _scs_create(const char *p_chr) {
 }
 
 bool StringName::configured = false;
-Mutex *StringName::lock = NULL;
+Mutex StringName::mutex;
 
 void StringName::setup() {
-
-	lock = Mutex::create();
 
 	ERR_FAIL_COND(configured);
 	for (int i = 0; i < STRING_TABLE_LEN; i++) {
@@ -63,7 +61,7 @@ void StringName::setup() {
 
 void StringName::cleanup() {
 
-	lock->lock();
+	MutexLock lock(mutex);
 
 	int lost_strings = 0;
 	for (int i = 0; i < STRING_TABLE_LEN; i++) {
@@ -87,9 +85,6 @@ void StringName::cleanup() {
 	if (lost_strings) {
 		print_verbose("StringName: " + itos(lost_strings) + " unclaimed string names at exit.");
 	}
-	lock->unlock();
-
-	memdelete(lock);
 }
 
 void StringName::unref() {
@@ -98,7 +93,7 @@ void StringName::unref() {
 
 	if (_data && _data->refcount.unref()) {
 
-		lock->lock();
+		MutexLock lock(mutex);
 
 		if (_data->prev) {
 			_data->prev->next = _data->next;
@@ -113,7 +108,6 @@ void StringName::unref() {
 			_data->next->prev = _data->prev;
 		}
 		memdelete(_data);
-		lock->unlock();
 	}
 
 	_data = NULL;
@@ -184,7 +178,7 @@ StringName::StringName(const char *p_name) {
 	if (!p_name || p_name[0] == 0)
 		return; //empty, ignore
 
-	lock->lock();
+	MutexLock lock(mutex);
 
 	uint32_t hash = String::hash(p_name);
 
@@ -203,7 +197,6 @@ StringName::StringName(const char *p_name) {
 	if (_data) {
 		if (_data->refcount.ref()) {
 			// exists
-			lock->unlock();
 			return;
 		}
 	}
@@ -219,8 +212,6 @@ StringName::StringName(const char *p_name) {
 	if (_table[idx])
 		_table[idx]->prev = _data;
 	_table[idx] = _data;
-
-	lock->unlock();
 }
 
 StringName::StringName(const StaticCString &p_static_string) {
@@ -231,7 +222,7 @@ StringName::StringName(const StaticCString &p_static_string) {
 
 	ERR_FAIL_COND(!p_static_string.ptr || !p_static_string.ptr[0]);
 
-	lock->lock();
+	MutexLock lock(mutex);
 
 	uint32_t hash = String::hash(p_static_string.ptr);
 
@@ -250,7 +241,6 @@ StringName::StringName(const StaticCString &p_static_string) {
 	if (_data) {
 		if (_data->refcount.ref()) {
 			// exists
-			lock->unlock();
 			return;
 		}
 	}
@@ -266,8 +256,6 @@ StringName::StringName(const StaticCString &p_static_string) {
 	if (_table[idx])
 		_table[idx]->prev = _data;
 	_table[idx] = _data;
-
-	lock->unlock();
 }
 
 StringName::StringName(const String &p_name) {
@@ -279,10 +267,9 @@ StringName::StringName(const String &p_name) {
 	if (p_name == String())
 		return;
 
-	lock->lock();
+	MutexLock lock(mutex);
 
 	uint32_t hash = p_name.hash();
-
 	uint32_t idx = hash & STRING_TABLE_MASK;
 
 	_data = _table[idx];
@@ -297,7 +284,6 @@ StringName::StringName(const String &p_name) {
 	if (_data) {
 		if (_data->refcount.ref()) {
 			// exists
-			lock->unlock();
 			return;
 		}
 	}
@@ -313,8 +299,6 @@ StringName::StringName(const String &p_name) {
 	if (_table[idx])
 		_table[idx]->prev = _data;
 	_table[idx] = _data;
-
-	lock->unlock();
 }
 
 StringName StringName::search(const char *p_name) {
@@ -325,10 +309,9 @@ StringName StringName::search(const char *p_name) {
 	if (!p_name[0])
 		return StringName();
 
-	lock->lock();
+	MutexLock lock(mutex);
 
 	uint32_t hash = String::hash(p_name);
-
 	uint32_t idx = hash & STRING_TABLE_MASK;
 
 	_Data *_data = _table[idx];
@@ -342,12 +325,9 @@ StringName StringName::search(const char *p_name) {
 	}
 
 	if (_data && _data->refcount.ref()) {
-		lock->unlock();
-
 		return StringName(_data);
 	}
 
-	lock->unlock();
 	return StringName(); //does not exist
 }
 
@@ -359,7 +339,7 @@ StringName StringName::search(const CharType *p_name) {
 	if (!p_name[0])
 		return StringName();
 
-	lock->lock();
+	MutexLock lock(mutex);
 
 	uint32_t hash = String::hash(p_name);
 
@@ -376,18 +356,16 @@ StringName StringName::search(const CharType *p_name) {
 	}
 
 	if (_data && _data->refcount.ref()) {
-		lock->unlock();
 		return StringName(_data);
 	}
 
-	lock->unlock();
 	return StringName(); //does not exist
 }
 StringName StringName::search(const String &p_name) {
 
 	ERR_FAIL_COND_V(p_name == "", StringName());
 
-	lock->lock();
+	MutexLock lock(mutex);
 
 	uint32_t hash = p_name.hash();
 
@@ -404,11 +382,9 @@ StringName StringName::search(const String &p_name) {
 	}
 
 	if (_data && _data->refcount.ref()) {
-		lock->unlock();
 		return StringName(_data);
 	}
 
-	lock->unlock();
 	return StringName(); //does not exist
 }
 

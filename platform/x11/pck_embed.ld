@@ -1,9 +1,9 @@
 SECTIONS
 {
 	/* Add a zero-sized section; the exporter will patch it to enclose the data appended to the executable (embedded PCK) */
-	pck 0 (NOLOAD) :
+	pck 0 (INFO) :
 	{
-		/* Just some content to avoid the linker discarding the section */
+		/* binutils >= 2.30 allow it being zero-sized, but needs something between the braces to keep the section */
 		. = ALIGN(8);
 	}
 }

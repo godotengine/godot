@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PolygonPathFinder" inherits="Resource" category="Core" version="3.2">
+<class name="PolygonPathFinder" inherits="Resource" version="4.0">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -8,7 +8,7 @@
 	</tutorials>
 	<methods>
 		<method name="find_path">
-			<return type="PoolVector2Array">
+			<return type="PackedVector2Array">
 			</return>
 			<argument index="0" name="from" type="Vector2">
 			</argument>
@@ -32,7 +32,7 @@
 			</description>
 		</method>
 		<method name="get_intersections" qualifiers="const">
-			<return type="PoolVector2Array">
+			<return type="PackedVector2Array">
 			</return>
 			<argument index="0" name="from" type="Vector2">
 			</argument>
@@ -70,9 +70,9 @@
 		<method name="setup">
 			<return type="void">
 			</return>
-			<argument index="0" name="points" type="PoolVector2Array">
+			<argument index="0" name="points" type="PackedVector2Array">
 			</argument>
-			<argument index="1" name="connections" type="PoolIntArray">
+			<argument index="1" name="connections" type="PackedInt32Array">
 			</argument>
 			<description>
 			</description>

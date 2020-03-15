@@ -127,40 +127,40 @@ String mono_object_to_variant_string(MonoObject *p_obj, MonoException **r_exc);
 MonoArray *Array_to_mono_array(const Array &p_array);
 Array mono_array_to_Array(MonoArray *p_array);
 
-// PoolIntArray
+// PackedInt32Array
 
-MonoArray *PoolIntArray_to_mono_array(const PoolIntArray &p_array);
-PoolIntArray mono_array_to_PoolIntArray(MonoArray *p_array);
+MonoArray *PackedInt32Array_to_mono_array(const PackedInt32Array &p_array);
+PackedInt32Array mono_array_to_PackedInt32Array(MonoArray *p_array);
 
-// PoolByteArray
+// PackedByteArray
 
-MonoArray *PoolByteArray_to_mono_array(const PoolByteArray &p_array);
-PoolByteArray mono_array_to_PoolByteArray(MonoArray *p_array);
+MonoArray *PackedByteArray_to_mono_array(const PackedByteArray &p_array);
+PackedByteArray mono_array_to_PackedByteArray(MonoArray *p_array);
 
-// PoolRealArray
+// PackedFloat32Array
 
-MonoArray *PoolRealArray_to_mono_array(const PoolRealArray &p_array);
-PoolRealArray mono_array_to_PoolRealArray(MonoArray *p_array);
+MonoArray *PackedFloat32Array_to_mono_array(const PackedFloat32Array &p_array);
+PackedFloat32Array mono_array_to_PackedFloat32Array(MonoArray *p_array);
 
-// PoolStringArray
+// PackedStringArray
 
-MonoArray *PoolStringArray_to_mono_array(const PoolStringArray &p_array);
-PoolStringArray mono_array_to_PoolStringArray(MonoArray *p_array);
+MonoArray *PackedStringArray_to_mono_array(const PackedStringArray &p_array);
+PackedStringArray mono_array_to_PackedStringArray(MonoArray *p_array);
 
-// PoolColorArray
+// PackedColorArray
 
-MonoArray *PoolColorArray_to_mono_array(const PoolColorArray &p_array);
-PoolColorArray mono_array_to_PoolColorArray(MonoArray *p_array);
+MonoArray *PackedColorArray_to_mono_array(const PackedColorArray &p_array);
+PackedColorArray mono_array_to_PackedColorArray(MonoArray *p_array);
 
-// PoolVector2Array
+// PackedVector2Array
 
-MonoArray *PoolVector2Array_to_mono_array(const PoolVector2Array &p_array);
-PoolVector2Array mono_array_to_PoolVector2Array(MonoArray *p_array);
+MonoArray *PackedVector2Array_to_mono_array(const PackedVector2Array &p_array);
+PackedVector2Array mono_array_to_PackedVector2Array(MonoArray *p_array);
 
-// PoolVector3Array
+// PackedVector3Array
 
-MonoArray *PoolVector3Array_to_mono_array(const PoolVector3Array &p_array);
-PoolVector3Array mono_array_to_PoolVector3Array(MonoArray *p_array);
+MonoArray *PackedVector3Array_to_mono_array(const PackedVector3Array &p_array);
+PackedVector3Array mono_array_to_PackedVector3Array(MonoArray *p_array);
 
 // Structures
 

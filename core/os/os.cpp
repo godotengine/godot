@@ -188,7 +188,7 @@ int OS::get_process_id() const {
 
 void OS::vibrate_handheld(int p_duration_ms) {
 
-	WARN_PRINTS("vibrate_handheld() only works with Android and iOS");
+	WARN_PRINT("vibrate_handheld() only works with Android and iOS");
 }
 
 bool OS::is_stdout_verbose() const {
@@ -221,7 +221,7 @@ bool OS::has_virtual_keyboard() const {
 	return false;
 }
 
-void OS::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect) {
+void OS::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_input_length) {
 }
 
 void OS::hide_virtual_keyboard() {
@@ -343,6 +343,12 @@ String OS::get_cache_path() const {
 	return ".";
 }
 
+// Path to macOS .app bundle resources
+String OS::get_bundle_resource_dir() const {
+
+	return ".";
+};
+
 // OS specific path for user://
 String OS::get_user_data_dir() const {
 
@@ -409,10 +415,6 @@ Error OS::dialog_input_text(String p_title, String p_description, String p_parti
 uint64_t OS::get_static_memory_usage() const {
 
 	return Memory::get_mem_usage();
-}
-uint64_t OS::get_dynamic_memory_usage() const {
-
-	return MemoryPool::total_memory;
 }
 
 uint64_t OS::get_static_memory_peak_usage() const {
@@ -580,16 +582,6 @@ bool OS::is_vsync_via_compositor_enabled() const {
 	return _vsync_via_compositor;
 }
 
-OS::PowerState OS::get_power_state() {
-	return POWERSTATE_UNKNOWN;
-}
-int OS::get_power_seconds_left() {
-	return -1;
-}
-int OS::get_power_percent_left() {
-	return -1;
-}
-
 void OS::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
 
 	has_server_feature_callback = p_callback;
@@ -685,9 +677,9 @@ const char *OS::get_video_driver_name(int p_driver) const {
 	switch (p_driver) {
 		case VIDEO_DRIVER_GLES2:
 			return "GLES2";
-		case VIDEO_DRIVER_GLES3:
+		case VIDEO_DRIVER_VULKAN:
 		default:
-			return "GLES3";
+			return "Vulkan";
 	}
 }
 
@@ -716,12 +708,12 @@ List<String> OS::get_restart_on_exit_arguments() const {
 	return restart_commandline;
 }
 
-PoolStringArray OS::get_connected_midi_inputs() {
+PackedStringArray OS::get_connected_midi_inputs() {
 
 	if (MIDIDriver::get_singleton())
 		return MIDIDriver::get_singleton()->get_connected_inputs();
 
-	PoolStringArray list;
+	PackedStringArray list;
 	return list;
 }
 

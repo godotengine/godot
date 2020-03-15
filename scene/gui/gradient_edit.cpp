@@ -54,7 +54,6 @@ GradientEdit::GradientEdit() {
 
 	checker = Ref<ImageTexture>(memnew(ImageTexture));
 	Ref<Image> img = memnew(Image(checker_bg_png));
-	checker->create_from_image(img, ImageTexture::FLAG_REPEAT);
 }
 
 int GradientEdit::_get_point_from_pos(int x) {
@@ -97,7 +96,7 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
 
-	if (k.is_valid() && k->is_pressed() && k->get_scancode() == KEY_DELETE && grabbed != -1) {
+	if (k.is_valid() && k->is_pressed() && k->get_keycode() == KEY_DELETE && grabbed != -1) {
 
 		points.remove(grabbed);
 		grabbed = -1;
@@ -303,8 +302,8 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 void GradientEdit::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (!picker->is_connected("color_changed", this, "_color_changed")) {
-			picker->connect("color_changed", this, "_color_changed");
+		if (!picker->is_connected("color_changed", callable_mp(this, &GradientEdit::_color_changed))) {
+			picker->connect("color_changed", callable_mp(this, &GradientEdit::_color_changed));
 		}
 	}
 	if (p_what == NOTIFICATION_DRAW) {
@@ -491,6 +490,5 @@ Vector<Gradient::Point> &GradientEdit::get_points() {
 
 void GradientEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_gui_input"), &GradientEdit::_gui_input);
-	ClassDB::bind_method(D_METHOD("_color_changed"), &GradientEdit::_color_changed);
 	ADD_SIGNAL(MethodInfo("ramp_changed"));
 }

@@ -85,9 +85,8 @@ Vector3 ARVRCamera::project_local_ray_normal(const Point2 &p_pos) const {
 	Vector3 ray;
 
 	CameraMatrix cm = arvr_interface->get_projection_for_eye(ARVRInterface::EYE_MONO, viewport_size.aspect(), get_znear(), get_zfar());
-	float screen_w, screen_h;
-	cm.get_viewport_size(screen_w, screen_h);
-	ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_w, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_h, -get_znear()).normalized();
+	Vector2 screen_he = cm.get_viewport_half_extents();
+	ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_he.y, -get_znear()).normalized();
 
 	return ray;
 };
@@ -138,13 +137,12 @@ Vector3 ARVRCamera::project_position(const Point2 &p_point, float p_z_depth) con
 
 	CameraMatrix cm = arvr_interface->get_projection_for_eye(ARVRInterface::EYE_MONO, viewport_size.aspect(), get_znear(), get_zfar());
 
-	Size2 vp_size;
-	cm.get_viewport_size(vp_size.x, vp_size.y);
+	Vector2 vp_he = cm.get_viewport_half_extents();
 
 	Vector2 point;
 	point.x = (p_point.x / viewport_size.x) * 2.0 - 1.0;
 	point.y = (1.0 - (p_point.y / viewport_size.y)) * 2.0 - 1.0;
-	point *= vp_size;
+	point *= vp_he;
 
 	Vector3 p(point.x, point.y, -p_z_depth);
 
@@ -254,7 +252,7 @@ void ARVRController::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_rumble"), &ARVRController::get_rumble);
 	ClassDB::bind_method(D_METHOD("set_rumble", "rumble"), &ARVRController::set_rumble);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rumble", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_rumble", "get_rumble");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rumble", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_rumble", "get_rumble");
 	ADD_PROPERTY_DEFAULT("rumble", 0.0);
 
 	ClassDB::bind_method(D_METHOD("get_mesh"), &ARVRController::get_mesh);
@@ -295,13 +293,14 @@ int ARVRController::get_joystick_id() const {
 
 	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
 	if (tracker == NULL) {
-		return 0;
+		// No tracker? no joystick id... (0 is our first joystick)
+		return -1;
 	};
 
 	return tracker->get_joy_id();
 };
 
-int ARVRController::is_button_pressed(int p_button) const {
+bool ARVRController::is_button_pressed(int p_button) const {
 	int joy_id = get_joystick_id();
 	if (joy_id == -1) {
 		return false;
@@ -545,7 +544,7 @@ String ARVROrigin::get_configuration_warning() const {
 void ARVROrigin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_world_scale", "world_scale"), &ARVROrigin::set_world_scale);
 	ClassDB::bind_method(D_METHOD("get_world_scale"), &ARVROrigin::get_world_scale);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "world_scale"), "set_world_scale", "get_world_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "world_scale"), "set_world_scale", "get_world_scale");
 };
 
 void ARVROrigin::set_tracked_camera(ARVRCamera *p_tracked_camera) {

@@ -167,7 +167,7 @@ void SpriteEditor::_menu_option(int p_option) {
 
 void SpriteEditor::_update_mesh_data() {
 
-	Ref<Texture> texture = node->get_texture();
+	Ref<Texture2D> texture = node->get_texture();
 	if (texture.is_null()) {
 		err_dialog->set_text(TTR("Sprite is empty!"));
 		err_dialog->popup_centered_minsize();
@@ -330,7 +330,7 @@ void SpriteEditor::_convert_to_mesh_2d_node() {
 	a[Mesh::ARRAY_TEX_UV] = computed_uv;
 	a[Mesh::ARRAY_INDEX] = computed_indices;
 
-	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a, Array(), Mesh::ARRAY_FLAG_USE_2D_VERTICES);
+	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a, Array(), Dictionary(), Mesh::ARRAY_FLAG_USE_2D_VERTICES);
 
 	MeshInstance2D *mesh_instance = memnew(MeshInstance2D);
 	mesh_instance->set_mesh(mesh);
@@ -358,13 +358,13 @@ void SpriteEditor::_convert_to_polygon_2d_node() {
 	for (int i = 0; i < computed_outline_lines.size(); i++)
 		total_point_count += computed_outline_lines[i].size();
 
-	PoolVector2Array polygon;
+	PackedVector2Array polygon;
 	polygon.resize(total_point_count);
-	PoolVector2Array::Write polygon_write = polygon.write();
+	Vector2 *polygon_write = polygon.ptrw();
 
-	PoolVector2Array uvs;
+	PackedVector2Array uvs;
 	uvs.resize(total_point_count);
-	PoolVector2Array::Write uvs_write = uvs.write();
+	Vector2 *uvs_write = uvs.ptrw();
 
 	int current_point_index = 0;
 
@@ -376,9 +376,9 @@ void SpriteEditor::_convert_to_polygon_2d_node() {
 		Vector<Vector2> outline = computed_outline_lines[i];
 		Vector<Vector2> uv_outline = outline_lines[i];
 
-		PoolIntArray pia;
+		PackedInt32Array pia;
 		pia.resize(outline.size());
-		PoolIntArray::Write pia_write = pia.write();
+		int *pia_write = pia.ptrw();
 
 		for (int pi = 0; pi < outline.size(); pi++) {
 			polygon_write[current_point_index] = outline[pi];
@@ -442,9 +442,9 @@ void SpriteEditor::_create_light_occluder_2d_node() {
 		Ref<OccluderPolygon2D> polygon;
 		polygon.instance();
 
-		PoolVector2Array a;
+		PackedVector2Array a;
 		a.resize(outline.size());
-		PoolVector2Array::Write aw = a.write();
+		Vector2 *aw = a.ptrw();
 		for (int io = 0; io < outline.size(); io++) {
 			aw[io] = outline[io];
 		}
@@ -474,72 +474,9 @@ void SpriteEditor::_add_as_sibling_or_child(Node *p_own_node, Node *p_new_node) 
 	p_new_node->set_owner(this->get_tree()->get_edited_scene_root());
 }
 
-#if 0
-void SpriteEditor::_create_uv_lines() {
-
-	Ref<Mesh> sprite = node->get_sprite();
-	ERR_FAIL_COND(!sprite.is_valid());
-
-	Set<SpriteEditorEdgeSort> edges;
-	uv_lines.clear();
-	for (int i = 0; i < sprite->get_surface_count(); i++) {
-		if (sprite->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
-			continue;
-		Array a = sprite->surface_get_arrays(i);
-
-		PoolVector<Vector2> uv = a[p_layer == 0 ? Mesh::ARRAY_TEX_UV : Mesh::ARRAY_TEX_UV2];
-		if (uv.size() == 0) {
-			err_dialog->set_text(TTR("Model has no UV in this layer"));
-			err_dialog->popup_centered_minsize();
-			return;
-		}
-
-		PoolVector<Vector2>::Read r = uv.read();
-
-		PoolVector<int> indices = a[Mesh::ARRAY_INDEX];
-		PoolVector<int>::Read ri;
-
-		int ic;
-		bool use_indices;
-
-		if (indices.size()) {
-			ic = indices.size();
-			ri = indices.read();
-			use_indices = true;
-		} else {
-			ic = uv.size();
-			use_indices = false;
-		}
-
-		for (int j = 0; j < ic; j += 3) {
-
-			for (int k = 0; k < 3; k++) {
-
-				SpriteEditorEdgeSort edge;
-				if (use_indices) {
-					edge.a = r[ri[j + k]];
-					edge.b = r[ri[j + ((k + 1) % 3)]];
-				} else {
-					edge.a = r[j + k];
-					edge.b = r[j + ((k + 1) % 3)];
-				}
-
-				if (edges.has(edge))
-					continue;
-
-				uv_lines.push_back(edge.a);
-				uv_lines.push_back(edge.b);
-				edges.insert(edge);
-			}
-		}
-	}
-
-	debug_uv_dialog->popup_centered_minsize();
-}
-#endif
 void SpriteEditor::_debug_uv_draw() {
 
-	Ref<Texture> tex = node->get_texture();
+	Ref<Texture2D> tex = node->get_texture();
 	ERR_FAIL_COND(!tex.is_valid());
 
 	Point2 draw_pos_offset = Point2(1.0, 1.0);
@@ -567,10 +504,6 @@ void SpriteEditor::_debug_uv_draw() {
 
 void SpriteEditor::_bind_methods() {
 
-	ClassDB::bind_method("_menu_option", &SpriteEditor::_menu_option);
-	ClassDB::bind_method("_debug_uv_draw", &SpriteEditor::_debug_uv_draw);
-	ClassDB::bind_method("_update_mesh_data", &SpriteEditor::_update_mesh_data);
-	ClassDB::bind_method("_create_node", &SpriteEditor::_create_node);
 	ClassDB::bind_method("_add_as_sibling_or_child", &SpriteEditor::_add_as_sibling_or_child);
 }
 
@@ -589,7 +522,7 @@ SpriteEditor::SpriteEditor() {
 	options->get_popup()->add_item(TTR("Create LightOccluder2D Sibling"), MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D);
 	options->set_switch_on_hover(true);
 
-	options->get_popup()->connect("id_pressed", this, "_menu_option");
+	options->get_popup()->connect("id_pressed", callable_mp(this, &SpriteEditor::_menu_option));
 
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);
@@ -605,9 +538,9 @@ SpriteEditor::SpriteEditor() {
 	scroll->set_enable_v_scroll(true);
 	vb->add_margin_child(TTR("Preview:"), scroll, true);
 	debug_uv = memnew(Control);
-	debug_uv->connect("draw", this, "_debug_uv_draw");
+	debug_uv->connect("draw", callable_mp(this, &SpriteEditor::_debug_uv_draw));
 	scroll->add_child(debug_uv);
-	debug_uv_dialog->connect("confirmed", this, "_create_node");
+	debug_uv_dialog->connect("confirmed", callable_mp(this, &SpriteEditor::_create_node));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->add_child(memnew(Label(TTR("Simplification: "))));
@@ -636,7 +569,7 @@ SpriteEditor::SpriteEditor() {
 	hb->add_spacer();
 	update_preview = memnew(Button);
 	update_preview->set_text(TTR("Update Preview"));
-	update_preview->connect("pressed", this, "_update_mesh_data");
+	update_preview->connect("pressed", callable_mp(this, &SpriteEditor::_update_mesh_data));
 	hb->add_child(update_preview);
 	vb->add_margin_child(TTR("Settings:"), hb);
 

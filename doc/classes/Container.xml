@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Container" inherits="Control" category="Core" version="3.2">
+<class name="Container" inherits="Control" version="4.0">
 	<brief_description>
 		Base node for containers.
 	</brief_description>
@@ -29,6 +29,9 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" override="true" enum="Control.MouseFilter" default="1" />
+	</members>
 	<signals>
 		<signal name="sort_children">
 			<description>

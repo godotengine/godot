@@ -77,7 +77,7 @@ public:
 
 	struct ResourceParser {
 
-		void *userdata;
+		void *userdata = nullptr;
 		ParseResourceFunc func;
 		ParseResourceFunc ext_func;
 		ParseResourceFunc sub_func;
@@ -92,6 +92,7 @@ public:
 		TK_PARENTHESIS_CLOSE,
 		TK_IDENTIFIER,
 		TK_STRING,
+		TK_STRING_NAME,
 		TK_NUMBER,
 		TK_COLOR,
 		TK_COLON,

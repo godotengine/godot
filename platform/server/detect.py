@@ -32,6 +32,7 @@ def get_opts():
     return [
         BoolVariable('use_llvm', 'Use the LLVM compiler', False),
         BoolVariable('use_static_cpp', 'Link libgcc and libstdc++ statically for better portability', False),
+        BoolVariable('use_coverage', 'Test Godot coverage', False),
         BoolVariable('use_ubsan', 'Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)', False),
         BoolVariable('use_asan', 'Use LLVM/GCC compiler address sanitizer (ASAN))', False),
         BoolVariable('use_lsan', 'Use LLVM/GCC compiler leak sanitizer (LSAN))', False),
@@ -99,6 +100,9 @@ def configure(env):
         env.Append(CPPDEFINES=['TYPED_METHOD_BIND'])
         env.extra_suffix = ".llvm" + env.extra_suffix
 
+    if env['use_coverage']:
+        env.Append(CCFLAGS=['-ftest-coverage', '-fprofile-arcs'])
+        env.Append(LINKFLAGS=['-ftest-coverage', '-fprofile-arcs'])
 
     if env['use_ubsan'] or env['use_asan'] or env['use_lsan'] or env['use_tsan']:
         env.extra_suffix += "s"
@@ -159,10 +163,14 @@ def configure(env):
             sys.exit(255)
         env.ParseConfig('pkg-config bullet --cflags --libs')
 
+    if False:  # not env['builtin_assimp']:
+        # FIXME: Add min version check
+        env.ParseConfig('pkg-config assimp --cflags --libs')
+
     if not env['builtin_enet']:
         env.ParseConfig('pkg-config libenet --cflags --libs')
 
-    if not env['builtin_squish'] and env['tools']:
+    if not env['builtin_squish']:
         env.ParseConfig('pkg-config libsquish --cflags --libs')
 
     if not env['builtin_zstd']:

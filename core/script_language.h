@@ -40,6 +40,21 @@ class ScriptLanguage;
 
 typedef void (*ScriptEditRequestFunction)(const String &p_path);
 
+struct ScriptNetData {
+	StringName name;
+	MultiplayerAPI::RPCMode mode;
+	bool operator==(ScriptNetData const &p_other) const {
+		return name == p_other.name;
+	}
+};
+
+struct SortNetData {
+	StringName::AlphCompare compare;
+	bool operator()(const ScriptNetData &p_a, const ScriptNetData &p_b) const {
+		return compare(p_a.name, p_b.name);
+	}
+};
+
 class ScriptServer {
 	enum {
 
@@ -154,6 +169,18 @@ public:
 
 	virtual bool is_placeholder_fallback_enabled() const { return false; }
 
+	virtual Vector<ScriptNetData> get_rpc_methods() const = 0;
+	virtual uint16_t get_rpc_method_id(const StringName &p_method) const = 0;
+	virtual StringName get_rpc_method(const uint16_t p_rpc_method_id) const = 0;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const = 0;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const = 0;
+
+	virtual Vector<ScriptNetData> get_rset_properties() const = 0;
+	virtual uint16_t get_rset_property_id(const StringName &p_property) const = 0;
+	virtual StringName get_rset_property(const uint16_t p_rset_property_id) const = 0;
+	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(const uint16_t p_rpc_method_id) const = 0;
+	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const = 0;
+
 	Script() {}
 };
 
@@ -170,7 +197,7 @@ public:
 	virtual void get_method_list(List<MethodInfo> *p_list) const = 0;
 	virtual bool has_method(const StringName &p_method) const = 0;
 	virtual Variant call(const StringName &p_method, VARIANT_ARG_LIST);
-	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) = 0;
+	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) = 0;
 	virtual void call_multilevel(const StringName &p_method, VARIANT_ARG_LIST);
 	virtual void call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount);
 	virtual void call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount);
@@ -195,7 +222,16 @@ public:
 	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid);
 	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid);
 
+	virtual Vector<ScriptNetData> get_rpc_methods() const = 0;
+	virtual uint16_t get_rpc_method_id(const StringName &p_method) const = 0;
+	virtual StringName get_rpc_method(uint16_t p_id) const = 0;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(uint16_t p_id) const = 0;
 	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const = 0;
+
+	virtual Vector<ScriptNetData> get_rset_properties() const = 0;
+	virtual uint16_t get_rset_property_id(const StringName &p_variable) const = 0;
+	virtual StringName get_rset_property(uint16_t p_id) const = 0;
+	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(uint16_t p_id) const = 0;
 	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const = 0;
 
 	virtual ScriptLanguage *get_language() = 0;
@@ -277,7 +313,7 @@ public:
 	virtual bool supports_builtin_mode() const = 0;
 	virtual bool can_inherit_from_file() { return false; }
 	virtual int find_function(const String &p_function, const String &p_code) const = 0;
-	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const = 0;
+	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const = 0;
 	virtual Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) { return ERR_UNAVAILABLE; }
 	virtual bool overrides_external_editor() { return false; }
 
@@ -314,6 +350,11 @@ public:
 	virtual void thread_exit() {}
 
 	/* DEBUGGER FUNCTIONS */
+	struct StackInfo {
+		String file;
+		String func;
+		int line;
+	};
 
 	virtual String debug_get_error() const = 0;
 	virtual int debug_get_stack_level_count() const = 0;
@@ -325,12 +366,6 @@ public:
 	virtual ScriptInstance *debug_get_stack_level_instance(int p_level) { return NULL; }
 	virtual void debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
 	virtual String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems = -1, int p_max_depth = -1) = 0;
-
-	struct StackInfo {
-		String file;
-		String func;
-		int line;
-	};
 
 	virtual Vector<StackInfo> debug_get_current_stack_info() { return Vector<StackInfo>(); }
 
@@ -388,12 +423,12 @@ public:
 	virtual void get_method_list(List<MethodInfo> *p_list) const;
 	virtual bool has_method(const StringName &p_method) const;
 	virtual Variant call(const StringName &p_method, VARIANT_ARG_LIST) { return Variant(); }
-	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
-		r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		return Variant();
 	}
 	//virtual void call_multilevel(const StringName& p_method,VARIANT_ARG_LIST) { return Variant(); }
-	//virtual void call_multilevel(const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error) { return Variant(); }
+	//virtual void call_multilevel(const StringName& p_method,const Variant** p_args,int p_argcount,Callable::CallError &r_error) { return Variant(); }
 	virtual void notification(int p_notification) {}
 
 	virtual Ref<Script> get_script() const { return script; }
@@ -409,62 +444,19 @@ public:
 	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid = NULL);
 	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid = NULL);
 
+	virtual Vector<ScriptNetData> get_rpc_methods() const { return Vector<ScriptNetData>(); }
+	virtual uint16_t get_rpc_method_id(const StringName &p_method) const;
+	virtual StringName get_rpc_method(uint16_t p_id) const { return StringName(); }
+	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(uint16_t p_id) const { return MultiplayerAPI::RPC_MODE_DISABLED; }
 	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const { return MultiplayerAPI::RPC_MODE_DISABLED; }
+
+	virtual Vector<ScriptNetData> get_rset_properties() const { return Vector<ScriptNetData>(); }
+	virtual uint16_t get_rset_property_id(const StringName &p_variable) const;
+	virtual StringName get_rset_property(uint16_t p_id) const { return StringName(); }
+	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(uint16_t p_id) const { return MultiplayerAPI::RPC_MODE_DISABLED; }
 	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const { return MultiplayerAPI::RPC_MODE_DISABLED; }
 
 	PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner);
 	~PlaceHolderScriptInstance();
 };
-
-class ScriptDebugger {
-
-	int lines_left;
-	int depth;
-
-	static ScriptDebugger *singleton;
-	Map<int, Set<StringName> > breakpoints;
-
-	ScriptLanguage *break_lang;
-
-public:
-	_FORCE_INLINE_ static ScriptDebugger *get_singleton() { return singleton; }
-	void set_lines_left(int p_left);
-	int get_lines_left() const;
-
-	void set_depth(int p_depth);
-	int get_depth() const;
-
-	String breakpoint_find_source(const String &p_source) const;
-	void insert_breakpoint(int p_line, const StringName &p_source);
-	void remove_breakpoint(int p_line, const StringName &p_source);
-	bool is_breakpoint(int p_line, const StringName &p_source) const;
-	bool is_breakpoint_line(int p_line) const;
-	void clear_breakpoints();
-	const Map<int, Set<StringName> > &get_breakpoints() const { return breakpoints; }
-
-	virtual void debug(ScriptLanguage *p_script, bool p_can_continue = true, bool p_is_error_breakpoint = false) = 0;
-	virtual void idle_poll();
-	virtual void line_poll();
-
-	void set_break_language(ScriptLanguage *p_lang);
-	ScriptLanguage *get_break_language() const;
-
-	virtual void send_message(const String &p_message, const Array &p_args) = 0;
-	virtual void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type, const Vector<ScriptLanguage::StackInfo> &p_stack_info) = 0;
-
-	virtual bool is_remote() const { return false; }
-	virtual void request_quit() {}
-
-	virtual void set_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {}
-
-	virtual bool is_profiling() const = 0;
-	virtual void add_profiling_frame_data(const StringName &p_name, const Array &p_data) = 0;
-	virtual void profiling_start() = 0;
-	virtual void profiling_end() = 0;
-	virtual void profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) = 0;
-
-	ScriptDebugger();
-	virtual ~ScriptDebugger() { singleton = NULL; }
-};
-
 #endif

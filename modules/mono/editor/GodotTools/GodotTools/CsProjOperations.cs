@@ -32,18 +32,6 @@ namespace GodotTools
             ProjectUtils.AddItemToProjectChecked(projectPath, itemType, include);
         }
 
-        public static void FixApiHintPath(string projectPath)
-        {
-            try
-            {
-                ProjectUtils.FixApiHintPath(projectPath);
-            }
-            catch (Exception e)
-            {
-                GD.PushError(e.ToString());
-            }
-        }
-
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         private static ulong ConvertToTimestamp(this DateTime value)
@@ -81,7 +69,12 @@ namespace GodotTools
                     }
                 }
 
-                ScriptClassParser.ParseFileOrThrow(projectIncludeFile, out var classes);
+                Error parseError = ScriptClassParser.ParseFile(projectIncludeFile, out var classes, out string errorStr);
+                if (parseError != Error.Ok)
+                {
+                    GD.PushError($"Failed to determine namespace and class for script: {projectIncludeFile}. Parse error: {errorStr ?? parseError.ToString()}");
+                    continue;
+                }
 
                 string searchName = System.IO.Path.GetFileNameWithoutExtension(projectIncludeFile);
 

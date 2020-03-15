@@ -59,7 +59,7 @@ public:
 	PhysicsDirectSpaceStateSW();
 };
 
-class SpaceSW : public RID_Data {
+class SpaceSW {
 
 public:
 	enum ElapsedTime {

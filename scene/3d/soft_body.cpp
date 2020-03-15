@@ -47,7 +47,10 @@ void SoftBodyVisualServerHandler::prepare(RID p_mesh, int p_surface) {
 
 	mesh = p_mesh;
 	surface = p_surface;
-
+#ifndef _MSC_VER
+#warning Softbody is not working, needs to be redone considering that these functions no longer exist
+#endif
+#if 0
 	const uint32_t surface_format = VS::get_singleton()->mesh_surface_get_format(mesh, surface);
 	const int surface_vertex_len = VS::get_singleton()->mesh_surface_get_array_len(mesh, p_surface);
 	const int surface_index_len = VS::get_singleton()->mesh_surface_get_array_index_len(mesh, p_surface);
@@ -57,6 +60,7 @@ void SoftBodyVisualServerHandler::prepare(RID p_mesh, int p_surface) {
 	stride = VS::get_singleton()->mesh_surface_make_offsets_from_format(surface_format, surface_vertex_len, surface_index_len, surface_offsets);
 	offset_vertices = surface_offsets[VS::ARRAY_VERTEX];
 	offset_normal = surface_offsets[VS::ARRAY_NORMAL];
+#endif
 }
 
 void SoftBodyVisualServerHandler::clear() {
@@ -69,11 +73,11 @@ void SoftBodyVisualServerHandler::clear() {
 }
 
 void SoftBodyVisualServerHandler::open() {
-	write_buffer = buffer.write();
+	write_buffer = buffer.ptrw();
 }
 
 void SoftBodyVisualServerHandler::close() {
-	write_buffer.release();
+	//write_buffer.release();
 }
 
 void SoftBodyVisualServerHandler::commit_changes() {
@@ -145,7 +149,7 @@ bool SoftBody::_get(const StringName &p_name, Variant &r_ret) const {
 	if ("pinned_points" == which) {
 		Array arr_ret;
 		const int pinned_points_indices_size = pinned_points.size();
-		PoolVector<PinnedPoint>::Read r = pinned_points.read();
+		const PinnedPoint *r = pinned_points.ptr();
 		arr_ret.resize(pinned_points_indices_size);
 
 		for (int i = 0; i < pinned_points_indices_size; ++i) {
@@ -170,7 +174,7 @@ void SoftBody::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	const int pinned_points_indices_size = pinned_points.size();
 
-	p_list->push_back(PropertyInfo(Variant::POOL_INT_ARRAY, "pinned_points"));
+	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "pinned_points"));
 
 	for (int i = 0; i < pinned_points_indices_size; ++i) {
 		p_list->push_back(PropertyInfo(Variant::INT, "attachments/" + itos(i) + "/point_index"));
@@ -184,7 +188,7 @@ bool SoftBody::_set_property_pinned_points_indices(const Array &p_indices) {
 	const int p_indices_size = p_indices.size();
 
 	{ // Remove the pined points on physics server that will be removed by resize
-		PoolVector<PinnedPoint>::Read r = pinned_points.read();
+		const PinnedPoint *r = pinned_points.ptr();
 		if (p_indices_size < pinned_points.size()) {
 			for (int i = pinned_points.size() - 1; i >= p_indices_size; --i) {
 				pin_point(r[i].point_index, false);
@@ -194,7 +198,7 @@ bool SoftBody::_set_property_pinned_points_indices(const Array &p_indices) {
 
 	pinned_points.resize(p_indices_size);
 
-	PoolVector<PinnedPoint>::Write w = pinned_points.write();
+	PinnedPoint *w = pinned_points.ptrw();
 	int point_index;
 	for (int i = 0; i < p_indices_size; ++i) {
 		point_index = p_indices.get(i);
@@ -214,11 +218,11 @@ bool SoftBody::_set_property_pinned_points_attachment(int p_item, const String &
 	}
 
 	if ("spatial_attachment_path" == p_what) {
-		PoolVector<PinnedPoint>::Write w = pinned_points.write();
+		PinnedPoint *w = pinned_points.ptrw();
 		pin_point(w[p_item].point_index, true, p_value);
 		_make_cache_dirty();
 	} else if ("offset" == p_what) {
-		PoolVector<PinnedPoint>::Write w = pinned_points.write();
+		PinnedPoint *w = pinned_points.ptrw();
 		w[p_item].offset = p_value;
 	} else {
 		return false;
@@ -231,7 +235,7 @@ bool SoftBody::_get_property_pinned_points(int p_item, const String &p_what, Var
 	if (pinned_points.size() <= p_item) {
 		return false;
 	}
-	PoolVector<PinnedPoint>::Read r = pinned_points.read();
+	const PinnedPoint *r = pinned_points.ptr();
 
 	if ("point_index" == p_what) {
 		r_ret = r[p_item].point_index;
@@ -247,7 +251,7 @@ bool SoftBody::_get_property_pinned_points(int p_item, const String &p_what, Var
 }
 
 void SoftBody::_changed_callback(Object *p_changed, const char *p_prop) {
-	update_physics_server();
+	prepare_physics_server();
 	_reset_points_offsets();
 #ifdef TOOLS_ENABLED
 	if (p_changed == this) {
@@ -267,7 +271,7 @@ void SoftBody::_notification(int p_what) {
 
 			RID space = get_world()->get_space();
 			PhysicsServer::get_singleton()->soft_body_set_space(physics_rid, space);
-			update_physics_server();
+			prepare_physics_server();
 		} break;
 		case NOTIFICATION_READY: {
 			if (!parent_collision_ignore.is_empty())
@@ -289,21 +293,6 @@ void SoftBody::_notification(int p_what) {
 			set_transform(Transform());
 			set_notify_transform(true);
 
-		} break;
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-
-			if (!simulation_started)
-				return;
-
-			_update_cache_pin_points_datas();
-			// Submit bone attachment
-			const int pinned_points_indices_size = pinned_points.size();
-			PoolVector<PinnedPoint>::Read r = pinned_points.read();
-			for (int i = 0; i < pinned_points_indices_size; ++i) {
-				if (r[i].spatial_attachment) {
-					PhysicsServer::get_singleton()->soft_body_move_point(physics_rid, r[i].point_index, r[i].spatial_attachment->get_global_transform().xform(r[i].offset));
-				}
-			}
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
@@ -329,8 +318,6 @@ void SoftBody::_notification(int p_what) {
 }
 
 void SoftBody::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_draw_soft_mesh"), &SoftBody::_draw_soft_mesh);
 
 	ClassDB::bind_method(D_METHOD("set_collision_mask", "collision_mask"), &SoftBody::set_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_collision_mask"), &SoftBody::get_collision_mask);
@@ -387,14 +374,14 @@ void SoftBody::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "parent_collision_ignore", PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE, "Parent collision object"), "set_parent_collision_ignore", "get_parent_collision_ignore");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "simulation_precision", PROPERTY_HINT_RANGE, "1,100,1"), "set_simulation_precision", "get_simulation_precision");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "total_mass", PROPERTY_HINT_RANGE, "0.01,10000,1"), "set_total_mass", "get_total_mass");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "linear_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_linear_stiffness", "get_linear_stiffness");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "areaAngular_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_areaAngular_stiffness", "get_areaAngular_stiffness");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "volume_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_volume_stiffness", "get_volume_stiffness");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pressure_coefficient"), "set_pressure_coefficient", "get_pressure_coefficient");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "damping_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_damping_coefficient", "get_damping_coefficient");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "drag_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_coefficient", "get_drag_coefficient");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pose_matching_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_pose_matching_coefficient", "get_pose_matching_coefficient");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "total_mass", PROPERTY_HINT_RANGE, "0.01,10000,1"), "set_total_mass", "get_total_mass");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_linear_stiffness", "get_linear_stiffness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "areaAngular_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_areaAngular_stiffness", "get_areaAngular_stiffness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_volume_stiffness", "get_volume_stiffness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure_coefficient"), "set_pressure_coefficient", "get_pressure_coefficient");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_damping_coefficient", "get_damping_coefficient");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "drag_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_coefficient", "get_drag_coefficient");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pose_matching_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_pose_matching_coefficient", "get_pose_matching_coefficient");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ray_pickable"), "set_ray_pickable", "is_ray_pickable");
 }
@@ -421,6 +408,21 @@ String SoftBody::get_configuration_warning() const {
 	return warning;
 }
 
+void SoftBody::_update_physics_server() {
+	if (!simulation_started)
+		return;
+
+	_update_cache_pin_points_datas();
+	// Submit bone attachment
+	const int pinned_points_indices_size = pinned_points.size();
+	const PinnedPoint *r = pinned_points.ptr();
+	for (int i = 0; i < pinned_points_indices_size; ++i) {
+		if (r[i].spatial_attachment) {
+			PhysicsServer::get_singleton()->soft_body_move_point(physics_rid, r[i].point_index, r[i].spatial_attachment->get_global_transform().xform(r[i].offset));
+		}
+	}
+}
+
 void SoftBody::_draw_soft_mesh() {
 	if (get_mesh().is_null())
 		return;
@@ -435,6 +437,8 @@ void SoftBody::_draw_soft_mesh() {
 		call_deferred("set_transform", Transform());
 	}
 
+	_update_physics_server();
+
 	visual_server_handler.open();
 	PhysicsServer::get_singleton()->soft_body_update_visual_server(physics_rid, &visual_server_handler);
 	visual_server_handler.close();
@@ -442,7 +446,7 @@ void SoftBody::_draw_soft_mesh() {
 	visual_server_handler.commit_changes();
 }
 
-void SoftBody::update_physics_server() {
+void SoftBody::prepare_physics_server() {
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 
@@ -458,12 +462,12 @@ void SoftBody::update_physics_server() {
 
 		become_mesh_owner();
 		PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
-		VS::get_singleton()->connect("frame_pre_draw", this, "_draw_soft_mesh");
+		VS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &SoftBody::_draw_soft_mesh));
 	} else {
 
 		PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, NULL);
-		if (VS::get_singleton()->is_connected("frame_pre_draw", this, "_draw_soft_mesh")) {
-			VS::get_singleton()->disconnect("frame_pre_draw", this, "_draw_soft_mesh");
+		if (VS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &SoftBody::_draw_soft_mesh))) {
+			VS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &SoftBody::_draw_soft_mesh));
 		}
 	}
 }
@@ -483,14 +487,15 @@ void SoftBody::become_mesh_owner() {
 		// Get current mesh array and create new mesh array with necessary flag for softbody
 		Array surface_arrays = mesh->surface_get_arrays(0);
 		Array surface_blend_arrays = mesh->surface_get_blend_shape_arrays(0);
+		Dictionary surface_lods = mesh->surface_get_lods(0);
 		uint32_t surface_format = mesh->surface_get_format(0);
 
-		surface_format &= ~(Mesh::ARRAY_COMPRESS_VERTEX | Mesh::ARRAY_COMPRESS_NORMAL);
+		surface_format &= ~(Mesh::ARRAY_COMPRESS_NORMAL);
 		surface_format |= Mesh::ARRAY_FLAG_USE_DYNAMIC_UPDATE;
 
 		Ref<ArrayMesh> soft_mesh;
 		soft_mesh.instance();
-		soft_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surface_arrays, surface_blend_arrays, surface_format);
+		soft_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surface_arrays, surface_blend_arrays, surface_lods, surface_format);
 		soft_mesh->surface_set_material(0, mesh->surface_get_material(0));
 
 		set_mesh(soft_mesh);
@@ -552,15 +557,14 @@ const NodePath &SoftBody::get_parent_collision_ignore() const {
 	return parent_collision_ignore;
 }
 
-void SoftBody::set_pinned_points_indices(PoolVector<SoftBody::PinnedPoint> p_pinned_points_indices) {
+void SoftBody::set_pinned_points_indices(Vector<SoftBody::PinnedPoint> p_pinned_points_indices) {
 	pinned_points = p_pinned_points_indices;
-	PoolVector<PinnedPoint>::Read w = pinned_points.read();
 	for (int i = pinned_points.size() - 1; 0 <= i; --i) {
 		pin_point(p_pinned_points_indices[i].point_index, true);
 	}
 }
 
-PoolVector<SoftBody::PinnedPoint> SoftBody::get_pinned_points_indices() {
+Vector<SoftBody::PinnedPoint> SoftBody::get_pinned_points_indices() {
 	return pinned_points;
 }
 
@@ -706,8 +710,6 @@ SoftBody::SoftBody() :
 		ray_pickable(true) {
 
 	PhysicsServer::get_singleton()->body_attach_object_instance_id(physics_rid, get_instance_id());
-	//set_notify_transform(true);
-	set_physics_process_internal(true);
 }
 
 SoftBody::~SoftBody() {
@@ -716,7 +718,7 @@ SoftBody::~SoftBody() {
 
 void SoftBody::reset_softbody_pin() {
 	PhysicsServer::get_singleton()->soft_body_remove_all_pinned_points(physics_rid);
-	PoolVector<PinnedPoint>::Read pps = pinned_points.read();
+	const PinnedPoint *pps = pinned_points.ptr();
 	for (int i = pinned_points.size() - 1; 0 < i; --i) {
 		PhysicsServer::get_singleton()->soft_body_pin_point(physics_rid, pps[i].point_index, true);
 	}
@@ -732,7 +734,7 @@ void SoftBody::_update_cache_pin_points_datas() {
 
 	pinned_points_cache_dirty = false;
 
-	PoolVector<PinnedPoint>::Write w = pinned_points.write();
+	PinnedPoint *w = pinned_points.ptrw();
 	for (int i = pinned_points.size() - 1; 0 <= i; --i) {
 
 		if (!w[i].spatial_attachment_path.is_empty()) {
@@ -781,8 +783,8 @@ void SoftBody::_reset_points_offsets() {
 	if (!Engine::get_singleton()->is_editor_hint())
 		return;
 
-	PoolVector<PinnedPoint>::Read r = pinned_points.read();
-	PoolVector<PinnedPoint>::Write w = pinned_points.write();
+	const PinnedPoint *r = pinned_points.ptr();
+	PinnedPoint *w = pinned_points.ptrw();
 	for (int i = pinned_points.size() - 1; 0 <= i; --i) {
 
 		if (!r[i].spatial_attachment)
@@ -808,13 +810,13 @@ int SoftBody::_get_pinned_point(int p_point_index, SoftBody::PinnedPoint *&r_poi
 		r_point = NULL;
 		return -1;
 	} else {
-		r_point = const_cast<SoftBody::PinnedPoint *>(&pinned_points.read()[id]);
+		r_point = const_cast<SoftBody::PinnedPoint *>(&pinned_points.ptr()[id]);
 		return id;
 	}
 }
 
 int SoftBody::_has_pinned_point(int p_point_index) const {
-	PoolVector<PinnedPoint>::Read r = pinned_points.read();
+	const PinnedPoint *r = pinned_points.ptr();
 	for (int i = pinned_points.size() - 1; 0 <= i; --i) {
 		if (p_point_index == r[i].point_index) {
 			return i;

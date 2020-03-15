@@ -32,19 +32,19 @@
 
 #include "core/engine.h"
 
-void TextureProgress::set_under_texture(const Ref<Texture> &p_texture) {
+void TextureProgress::set_under_texture(const Ref<Texture2D> &p_texture) {
 
 	under = p_texture;
 	update();
 	minimum_size_changed();
 }
 
-Ref<Texture> TextureProgress::get_under_texture() const {
+Ref<Texture2D> TextureProgress::get_under_texture() const {
 
 	return under;
 }
 
-void TextureProgress::set_over_texture(const Ref<Texture> &p_texture) {
+void TextureProgress::set_over_texture(const Ref<Texture2D> &p_texture) {
 
 	over = p_texture;
 	update();
@@ -53,7 +53,7 @@ void TextureProgress::set_over_texture(const Ref<Texture> &p_texture) {
 	}
 }
 
-Ref<Texture> TextureProgress::get_over_texture() const {
+Ref<Texture2D> TextureProgress::get_over_texture() const {
 
 	return over;
 }
@@ -94,14 +94,14 @@ Size2 TextureProgress::get_minimum_size() const {
 	return Size2(1, 1);
 }
 
-void TextureProgress::set_progress_texture(const Ref<Texture> &p_texture) {
+void TextureProgress::set_progress_texture(const Ref<Texture2D> &p_texture) {
 
 	progress = p_texture;
 	update();
 	minimum_size_changed();
 }
 
-Ref<Texture> TextureProgress::get_progress_texture() const {
+Ref<Texture2D> TextureProgress::get_progress_texture() const {
 
 	return progress;
 }
@@ -201,7 +201,7 @@ Point2 TextureProgress::get_relative_center() {
 	return p;
 }
 
-void TextureProgress::draw_nine_patch_stretched(const Ref<Texture> &p_texture, FillMode p_mode, double p_ratio, const Color &p_modulate) {
+void TextureProgress::draw_nine_patch_stretched(const Ref<Texture2D> &p_texture, FillMode p_mode, double p_ratio, const Color &p_modulate) {
 	Vector2 texture_size = p_texture->get_size();
 	Vector2 topleft = Vector2(stretch_margin[MARGIN_LEFT], stretch_margin[MARGIN_TOP]);
 	Vector2 bottomright = Vector2(stretch_margin[MARGIN_RIGHT], stretch_margin[MARGIN_BOTTOM]);
@@ -501,17 +501,17 @@ void TextureProgress::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_nine_patch_stretch"), &TextureProgress::get_nine_patch_stretch);
 
 	ADD_GROUP("Textures", "texture_");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_under", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_under_texture", "get_under_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_over", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_over_texture", "get_over_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_progress", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_progress_texture", "get_progress_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_under", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_under_texture", "get_under_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_over", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_over_texture", "get_over_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_progress", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_progress_texture", "get_progress_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fill_mode", PROPERTY_HINT_ENUM, "Left to Right,Right to Left,Top to Bottom,Bottom to Top,Clockwise,Counter Clockwise,Bilinear (Left and Right),Bilinear (Top and Bottom), Clockwise and Counter Clockwise"), "set_fill_mode", "get_fill_mode");
 	ADD_GROUP("Tint", "tint_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_under"), "set_tint_under", "get_tint_under");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_over"), "set_tint_over", "get_tint_over");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_progress"), "set_tint_progress", "get_tint_progress");
 	ADD_GROUP("Radial Fill", "radial_");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radial_initial_angle", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider"), "set_radial_initial_angle", "get_radial_initial_angle");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radial_fill_degrees", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider"), "set_fill_degrees", "get_fill_degrees");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radial_initial_angle", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider"), "set_radial_initial_angle", "get_radial_initial_angle");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radial_fill_degrees", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider"), "set_fill_degrees", "get_fill_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "radial_center_offset"), "set_radial_center_offset", "get_radial_center_offset");
 	ADD_GROUP("Stretch", "stretch_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "nine_patch_stretch"), "set_nine_patch_stretch", "get_nine_patch_stretch");

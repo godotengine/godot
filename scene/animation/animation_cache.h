@@ -79,7 +79,7 @@ protected:
 public:
 	void set_track_transform(int p_idx, const Transform &p_transform);
 	void set_track_value(int p_idx, const Variant &p_value);
-	void call_track(int p_idx, const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	void call_track(int p_idx, const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	void set_all(float p_time, float p_delta = 0);
 

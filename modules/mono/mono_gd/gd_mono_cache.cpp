@@ -136,10 +136,8 @@ void CachedData::clear_godot_api_cache() {
 	class_SignalAttribute = NULL;
 	class_ToolAttribute = NULL;
 	class_RemoteAttribute = NULL;
-	class_SyncAttribute = NULL;
 	class_MasterAttribute = NULL;
 	class_PuppetAttribute = NULL;
-	class_SlaveAttribute = NULL;
 	class_RemoteSyncAttribute = NULL;
 	class_MasterSyncAttribute = NULL;
 	class_PuppetSyncAttribute = NULL;
@@ -254,10 +252,8 @@ void update_godot_api_cache() {
 	CACHE_CLASS_AND_CHECK(SignalAttribute, GODOT_API_CLASS(SignalAttribute));
 	CACHE_CLASS_AND_CHECK(ToolAttribute, GODOT_API_CLASS(ToolAttribute));
 	CACHE_CLASS_AND_CHECK(RemoteAttribute, GODOT_API_CLASS(RemoteAttribute));
-	CACHE_CLASS_AND_CHECK(SyncAttribute, GODOT_API_CLASS(SyncAttribute));
 	CACHE_CLASS_AND_CHECK(MasterAttribute, GODOT_API_CLASS(MasterAttribute));
 	CACHE_CLASS_AND_CHECK(PuppetAttribute, GODOT_API_CLASS(PuppetAttribute));
-	CACHE_CLASS_AND_CHECK(SlaveAttribute, GODOT_API_CLASS(SlaveAttribute));
 	CACHE_CLASS_AND_CHECK(RemoteSyncAttribute, GODOT_API_CLASS(RemoteSyncAttribute));
 	CACHE_CLASS_AND_CHECK(MasterSyncAttribute, GODOT_API_CLASS(MasterSyncAttribute));
 	CACHE_CLASS_AND_CHECK(PuppetSyncAttribute, GODOT_API_CLASS(PuppetSyncAttribute));

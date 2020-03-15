@@ -206,6 +206,14 @@ void btRigidBody::applyGravity()
 	applyCentralForce(m_gravity);
 }
 
+void btRigidBody::clearGravity()
+{
+    if (isStaticOrKinematicObject())
+        return;
+    
+    applyCentralForce(-m_gravity);
+}
+
 void btRigidBody::proceedToTransform(const btTransform& newTrans)
 {
 	setCenterOfMassTransform(newTrans);

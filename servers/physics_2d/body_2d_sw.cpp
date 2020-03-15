@@ -610,9 +610,9 @@ void Body2DSW::call_queries() {
 		Object *obj = ObjectDB::get_instance(fi_callback->id);
 		if (!obj) {
 
-			set_force_integration_callback(0, StringName());
+			set_force_integration_callback(ObjectID(), StringName());
 		} else {
-			Variant::CallError ce;
+			Callable::CallError ce;
 			if (fi_callback->callback_udata.get_type() != Variant::NIL) {
 
 				obj->call(fi_callback->method, vp, 2, ce);
@@ -653,7 +653,7 @@ void Body2DSW::set_force_integration_callback(ObjectID p_id, const StringName &p
 		fi_callback = NULL;
 	}
 
-	if (p_id != 0) {
+	if (p_id.is_valid()) {
 
 		fi_callback = memnew(ForceIntegrationCallback);
 		fi_callback->id = p_id;
@@ -721,7 +721,7 @@ Variant Physics2DDirectBodyStateSW::get_contact_collider_shape_metadata(int p_co
 
 		return Variant();
 	}
-	Body2DSW *other = Physics2DServerSW::singletonsw->body_owner.get(body->contacts[p_contact_idx].collider);
+	Body2DSW *other = Physics2DServerSW::singletonsw->body_owner.getornull(body->contacts[p_contact_idx].collider);
 
 	int sidx = body->contacts[p_contact_idx].collider_shape;
 	if (sidx < 0 || sidx >= other->get_shape_count()) {

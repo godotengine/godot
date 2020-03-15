@@ -69,7 +69,7 @@ static Ref<StyleBoxTexture> make_stylebox(T p_src, float p_left, float p_top, fl
 			img->resize(orig_size.x * scale, orig_size.y * scale);
 		}
 
-		texture->create_from_image(img, ImageTexture::FLAG_FILTER);
+		texture->create_from_image(img);
 		(*tex_cache)[p_src] = texture;
 	}
 
@@ -98,7 +98,7 @@ static Ref<StyleBoxTexture> sb_expand(Ref<StyleBoxTexture> p_sbox, float p_left,
 }
 
 template <class T>
-static Ref<Texture> make_icon(T p_src) {
+static Ref<Texture2D> make_icon(T p_src) {
 
 	Ref<ImageTexture> texture(memnew(ImageTexture));
 	Ref<Image> img = memnew(Image(p_src));
@@ -115,7 +115,7 @@ static Ref<Texture> make_icon(T p_src) {
 		img->convert(Image::FORMAT_RGBA8);
 		img->resize(orig_size.x * scale, orig_size.y * scale);
 	}
-	texture->create_from_image(img, ImageTexture::FLAG_FILTER);
+	texture->create_from_image(img);
 
 	return texture;
 }
@@ -169,7 +169,7 @@ static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margi
 	return style;
 }
 
-void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const Ref<Font> &large_font, Ref<Texture> &default_icon, Ref<StyleBox> &default_style, float p_scale) {
+void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const Ref<Font> &large_font, Ref<Texture2D> &default_icon, Ref<StyleBox> &default_style, float p_scale) {
 
 	scale = p_scale;
 
@@ -464,7 +464,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("completion_scroll_width", "TextEdit", 3);
 	theme->set_constant("line_spacing", "TextEdit", 4 * scale);
 
-	Ref<Texture> empty_icon = memnew(ImageTexture);
+	Ref<Texture2D> empty_icon = memnew(ImageTexture);
 
 	// HScrollBar
 
@@ -647,8 +647,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("title_button_color", "Tree", control_font_color);
 	theme->set_color("font_color", "Tree", control_font_color_low);
 	theme->set_color("font_color_selected", "Tree", control_font_color_pressed);
-	theme->set_color("selection_color", "Tree", Color(0.1, 0.1, 1, 0.8));
-	theme->set_color("cursor_color", "Tree", Color(0, 0, 0));
 	theme->set_color("guide_color", "Tree", Color(0, 0, 0, 0.1));
 	theme->set_color("drop_position_color", "Tree", Color(1, 0.3, 0.2));
 	theme->set_color("relationship_line_color", "Tree", Color(0.27, 0.27, 0.27));
@@ -708,9 +706,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color_disabled", "TabContainer", control_font_color_disabled);
 
 	theme->set_constant("side_margin", "TabContainer", 8 * scale);
-	theme->set_constant("top_margin", "TabContainer", 24 * scale);
-	theme->set_constant("label_valign_fg", "TabContainer", 0 * scale);
-	theme->set_constant("label_valign_bg", "TabContainer", 2 * scale);
 	theme->set_constant("hseparation", "TabContainer", 4 * scale);
 
 	// Tabs
@@ -734,9 +729,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color_bg", "Tabs", control_font_color_low);
 	theme->set_color("font_color_disabled", "Tabs", control_font_color_disabled);
 
-	theme->set_constant("top_margin", "Tabs", 24 * scale);
-	theme->set_constant("label_valign_fg", "Tabs", 0 * scale);
-	theme->set_constant("label_valign_bg", "Tabs", 2 * scale);
 	theme->set_constant("hseparation", "Tabs", 4 * scale);
 
 	// Separators
@@ -851,6 +843,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("bg", "GraphEdit", make_stylebox(tree_bg_png, 4, 4, 4, 5));
 	theme->set_color("grid_minor", "GraphEdit", Color(1, 1, 1, 0.05));
 	theme->set_color("grid_major", "GraphEdit", Color(1, 1, 1, 0.2));
+	theme->set_color("selection_fill", "GraphEdit", Color(1, 1, 1, 0.3));
+	theme->set_color("selection_stroke", "GraphEdit", Color(1, 1, 1, 0.8));
 	theme->set_color("activity", "GraphEdit", Color(1, 1, 1));
 	theme->set_constant("bezier_len_pos", "GraphEdit", 80 * scale);
 	theme->set_constant("bezier_len_neg", "GraphEdit", 160 * scale);
@@ -873,7 +867,7 @@ void make_default_theme(bool p_hidpi, Ref<Font> p_font) {
 	t.instance();
 
 	Ref<StyleBox> default_style;
-	Ref<Texture> default_icon;
+	Ref<Texture2D> default_icon;
 	Ref<Font> default_font;
 	if (p_font.is_valid()) {
 		default_font = p_font;

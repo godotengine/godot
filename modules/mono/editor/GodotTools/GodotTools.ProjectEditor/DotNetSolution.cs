@@ -1,6 +1,8 @@
 using GodotTools.Core;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace GodotTools.ProjectEditor
 {
@@ -118,5 +120,40 @@ EndProject";
         const string ProjectPlatformsConfig =
 @"		{{{0}}}.{1}|Any CPU.ActiveCfg = {1}|Any CPU
 		{{{0}}}.{1}|Any CPU.Build.0 = {1}|Any CPU";
+
+        public static void MigrateFromOldConfigNames(string slnPath)
+        {
+            if (!File.Exists(slnPath))
+                return;
+
+            var input = File.ReadAllText(slnPath);
+
+            if (!Regex.IsMatch(input, Regex.Escape("Tools|Any CPU")))
+                return;
+
+            // This method renames old configurations in solutions to the new ones.
+            //
+            // This is the order configs appear in the solution and what we want to rename them to:
+            //   Debug|Any CPU = Debug|Any CPU        ->    ExportDebug|Any CPU = ExportDebug|Any CPU
+            //   Tools|Any CPU = Tools|Any CPU        ->    Debug|Any CPU = Debug|Any CPU
+            //
+            // But we want to move Tools (now Debug) to the top, so it's easier to rename like this:
+            //   Debug|Any CPU = Debug|Any CPU        ->    Debug|Any CPU = Debug|Any CPU
+            //   Release|Any CPU = Release|Any CPU    ->    ExportDebug|Any CPU = ExportDebug|Any CPU
+            //   Tools|Any CPU = Tools|Any CPU        ->    ExportRelease|Any CPU = ExportRelease|Any CPU
+
+            var dict = new Dictionary<string, string>
+            {
+                {"Debug|Any CPU", "Debug|Any CPU"},
+                {"Release|Any CPU", "ExportDebug|Any CPU"},
+                {"Tools|Any CPU", "ExportRelease|Any CPU"}
+            };
+
+            var regex = new Regex(string.Join("|",dict.Keys.Select(Regex.Escape)));
+            var result = regex.Replace(input,m => dict[m.Value]);
+
+            if (result != input)
+                File.WriteAllText(slnPath, result);
+        }
     }
 }

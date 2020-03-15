@@ -119,6 +119,7 @@ private:
 		SHOW_ORIGIN,
 		SHOW_VIEWPORT,
 		SHOW_EDIT_LOCKS,
+		SHOW_TRANSFORMATION_GIZMOS,
 		LOCK_SELECTED,
 		UNLOCK_SELECTED,
 		GROUP_SELECTED,
@@ -189,7 +190,6 @@ private:
 		SKELETON_SHOW_BONES,
 		SKELETON_SET_IK_CHAIN,
 		SKELETON_CLEAR_IK_CHAIN
-
 	};
 
 	enum DragType {
@@ -209,6 +209,8 @@ private:
 		DRAG_ANCHOR_BOTTOM_LEFT,
 		DRAG_ANCHOR_ALL,
 		DRAG_MOVE,
+		DRAG_MOVE_X,
+		DRAG_MOVE_Y,
 		DRAG_SCALE_X,
 		DRAG_SCALE_Y,
 		DRAG_SCALE_BOTH,
@@ -248,6 +250,8 @@ private:
 	bool show_viewport;
 	bool show_helpers;
 	bool show_edit_locks;
+	bool show_transformation_gizmos;
+
 	float zoom;
 	Point2 view_offset;
 	Point2 previous_update_view_offset;
@@ -302,7 +306,7 @@ private:
 	struct _HoverResult {
 
 		Point2 position;
-		Ref<Texture> icon;
+		Ref<Texture2D> icon;
 		String name;
 	};
 	Vector<_HoverResult> hovering_results;
@@ -402,8 +406,8 @@ private:
 	Point2 box_selecting_to;
 
 	Ref<StyleBoxTexture> select_sb;
-	Ref<Texture> select_handle;
-	Ref<Texture> anchor_handle;
+	Ref<Texture2D> select_handle;
+	Ref<Texture2D> anchor_handle;
 
 	Ref<ShortCut> drag_pivot_shortcut;
 	Ref<ShortCut> set_pivot_shortcut;
@@ -414,7 +418,7 @@ private:
 	bool _is_node_locked(const Node *p_node);
 	bool _is_node_movable(const Node *p_node, bool p_popup_warning = false);
 	void _find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<_SelectResult> &r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
-	void _get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items);
+	void _get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items, bool p_allow_locked = false);
 	void _get_bones_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items);
 
 	void _find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_node, List<CanvasItem *> *r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());

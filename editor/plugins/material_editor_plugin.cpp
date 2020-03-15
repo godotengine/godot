@@ -59,7 +59,7 @@ void MaterialEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 
-		Ref<Texture> checkerboard = get_icon("Checkerboard", "EditorIcons");
+		Ref<Texture2D> checkerboard = get_icon("Checkerboard", "EditorIcons");
 		Size2 size = get_size();
 
 		draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
@@ -105,8 +105,6 @@ void MaterialEditor::_button_pressed(Node *p_button) {
 }
 
 void MaterialEditor::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_button_pressed"), &MaterialEditor::_button_pressed);
 }
 
 MaterialEditor::MaterialEditor() {
@@ -171,13 +169,13 @@ MaterialEditor::MaterialEditor() {
 	sphere_switch->set_toggle_mode(true);
 	sphere_switch->set_pressed(true);
 	vb_shape->add_child(sphere_switch);
-	sphere_switch->connect("pressed", this, "_button_pressed", varray(sphere_switch));
+	sphere_switch->connect("pressed", callable_mp(this, &MaterialEditor::_button_pressed), varray(sphere_switch));
 
 	box_switch = memnew(TextureButton);
 	box_switch->set_toggle_mode(true);
 	box_switch->set_pressed(false);
 	vb_shape->add_child(box_switch);
-	box_switch->connect("pressed", this, "_button_pressed", varray(box_switch));
+	box_switch->connect("pressed", callable_mp(this, &MaterialEditor::_button_pressed), varray(box_switch));
 
 	hb->add_spacer();
 
@@ -187,12 +185,12 @@ MaterialEditor::MaterialEditor() {
 	light_1_switch = memnew(TextureButton);
 	light_1_switch->set_toggle_mode(true);
 	vb_light->add_child(light_1_switch);
-	light_1_switch->connect("pressed", this, "_button_pressed", varray(light_1_switch));
+	light_1_switch->connect("pressed", callable_mp(this, &MaterialEditor::_button_pressed), varray(light_1_switch));
 
 	light_2_switch = memnew(TextureButton);
 	light_2_switch->set_toggle_mode(true);
 	vb_light->add_child(light_2_switch);
-	light_2_switch->connect("pressed", this, "_button_pressed", varray(light_2_switch));
+	light_2_switch->connect("pressed", callable_mp(this, &MaterialEditor::_button_pressed), varray(light_2_switch));
 
 	first_enter = true;
 }
@@ -225,7 +223,9 @@ EditorInspectorPluginMaterial::EditorInspectorPluginMaterial() {
 	env.instance();
 	Ref<ProceduralSky> proc_sky = memnew(ProceduralSky(true));
 	env->set_sky(proc_sky);
-	env->set_background(Environment::BG_COLOR_SKY);
+	env->set_background(Environment::BG_COLOR);
+	env->set_ambient_source(Environment::AMBIENT_SOURCE_SKY);
+	env->set_reflection_source(Environment::REFLECTION_SOURCE_SKY);
 }
 
 MaterialEditorPlugin::MaterialEditorPlugin(EditorNode *p_node) {
@@ -235,18 +235,18 @@ MaterialEditorPlugin::MaterialEditorPlugin(EditorNode *p_node) {
 	add_inspector_plugin(plugin);
 }
 
-String SpatialMaterialConversionPlugin::converts_to() const {
+String StandardMaterial3DConversionPlugin::converts_to() const {
 
 	return "ShaderMaterial";
 }
-bool SpatialMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
+bool StandardMaterial3DConversionPlugin::handles(const Ref<Resource> &p_resource) const {
 
-	Ref<SpatialMaterial> mat = p_resource;
+	Ref<StandardMaterial3D> mat = p_resource;
 	return mat.is_valid();
 }
-Ref<Resource> SpatialMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
+Ref<Resource> StandardMaterial3DConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 
-	Ref<SpatialMaterial> mat = p_resource;
+	Ref<StandardMaterial3D> mat = p_resource;
 	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
@@ -266,9 +266,9 @@ Ref<Resource> SpatialMaterialConversionPlugin::convert(const Ref<Resource> &p_re
 
 	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
 
-		// Texture parameter has to be treated specially since SpatialMaterial saved it
+		// Texture parameter has to be treated specially since StandardMaterial3D saved it
 		// as RID but ShaderMaterial needs Texture itself
-		Ref<Texture> texture = mat->get_texture_by_name(E->get().name);
+		Ref<Texture2D> texture = mat->get_texture_by_name(E->get().name);
 		if (texture.is_valid()) {
 			smat->set_shader_param(E->get().name, texture);
 		} else {

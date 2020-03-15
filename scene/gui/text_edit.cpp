@@ -753,10 +753,18 @@ void TextEdit::_notification(int p_what) {
 				}
 			}
 
-			if (line_length_guideline) {
-				int x = xmargin_beg + (int)cache.font->get_char_size('0').width * line_length_guideline_col - cursor.x_ofs;
-				if (x > xmargin_beg && x < xmargin_end) {
-					VisualServer::get_singleton()->canvas_item_add_line(ci, Point2(x, 0), Point2(x, size.height), cache.line_length_guideline_color);
+			if (line_length_guidelines) {
+				const int hard_x = xmargin_beg + (int)cache.font->get_char_size('0').width * line_length_guideline_hard_col - cursor.x_ofs;
+				if (hard_x > xmargin_beg && hard_x < xmargin_end) {
+					VisualServer::get_singleton()->canvas_item_add_line(ci, Point2(hard_x, 0), Point2(hard_x, size.height), cache.line_length_guideline_color);
+				}
+
+				// Draw a "Soft" line length guideline, less visible than the hard line length guideline.
+				// It's usually set to a lower column compared to the hard line length guideline.
+				// Only drawn if its column differs from the hard line length guideline.
+				const int soft_x = xmargin_beg + (int)cache.font->get_char_size('0').width * line_length_guideline_soft_col - cursor.x_ofs;
+				if (hard_x != soft_x && soft_x > xmargin_beg && soft_x < xmargin_end) {
+					VisualServer::get_singleton()->canvas_item_add_line(ci, Point2(soft_x, 0), Point2(soft_x, size.height), cache.line_length_guideline_color * Color(1, 1, 1, 0.5));
 				}
 			}
 
@@ -1216,7 +1224,7 @@ void TextEdit::_notification(int p_what) {
 							int horizontal_gap = (cache.info_gutter_width * 30) / 100;
 							int gutter_left = cache.style_normal->get_margin(MARGIN_LEFT) + cache.breakpoint_gutter_width;
 
-							Ref<Texture> info_icon = text.get_info_icon(line);
+							Ref<Texture2D> info_icon = text.get_info_icon(line);
 							// Ensure the icon fits the gutter size.
 							Size2i icon_size = info_icon->get_size();
 							if (icon_size.width > cache.info_gutter_width - horizontal_gap) {
@@ -1645,7 +1653,7 @@ void TextEdit::_notification(int p_what) {
 					Point2 title_pos(completion_rect.position.x, completion_rect.position.y + i * get_row_height() + cache.font->get_ascent() + yofs);
 
 					// Draw completion icon if it is valid.
-					Ref<Texture> icon = completion_options[l].icon;
+					Ref<Texture2D> icon = completion_options[l].icon;
 					Rect2 icon_area(completion_rect.position.x, completion_rect.position.y + i * get_row_height(), icon_area_size.width, icon_area_size.height);
 					if (icon.is_valid()) {
 						const real_t max_scale = 0.7f;
@@ -1842,6 +1850,54 @@ void TextEdit::_consume_pair_symbol(CharType ch) {
 			cursor_set_column(cursor_position_to_move);
 			return;
 		}
+	}
+
+	String line = text[cursor.line];
+
+	bool in_single_quote = false;
+	bool in_double_quote = false;
+	bool found_comment = false;
+
+	int c = 0;
+	while (c < line.length()) {
+		if (line[c] == '\\') {
+			c++; // Skip quoted anything.
+
+			if (cursor.column == c) {
+				break;
+			}
+		} else if (!in_single_quote && !in_double_quote && line[c] == '#') {
+			found_comment = true;
+			break;
+		} else {
+			if (line[c] == '\'' && !in_double_quote) {
+				in_single_quote = !in_single_quote;
+			} else if (line[c] == '"' && !in_single_quote) {
+				in_double_quote = !in_double_quote;
+			}
+		}
+
+		c++;
+
+		if (cursor.column == c) {
+			break;
+		}
+	}
+
+	// Do not need to duplicate quotes while in comments
+	if (found_comment) {
+		insert_text_at_cursor(ch_single);
+		cursor_set_column(cursor_position_to_move);
+
+		return;
+	}
+
+	// Disallow inserting duplicated quotes while already in string
+	if ((in_single_quote || in_double_quote) && (ch == '"' || ch == '\'')) {
+		insert_text_at_cursor(ch_single);
+		cursor_set_column(cursor_position_to_move);
+
+		return;
 	}
 
 	insert_text_at_cursor(ch_pair);
@@ -2473,13 +2529,11 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				String new_word = get_word_at_pos(mm->get_position());
 				if (new_word != highlighted_word) {
-					highlighted_word = new_word;
-					update();
+					emit_signal("symbol_validate", new_word);
 				}
 			} else {
 				if (highlighted_word != String()) {
-					highlighted_word = String();
-					update();
+					set_highlighted_word(String());
 				}
 			}
 		}
@@ -2520,21 +2574,17 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		k = k->duplicate(); // It will be modified later on.
 
 #ifdef OSX_ENABLED
-		if (k->get_scancode() == KEY_META) {
+		if (k->get_keycode() == KEY_META) {
 #else
-		if (k->get_scancode() == KEY_CONTROL) {
+		if (k->get_keycode() == KEY_CONTROL) {
 
 #endif
 			if (select_identifiers_enabled) {
 
 				if (k->is_pressed() && !dragging_minimap && !dragging_selection) {
-
-					highlighted_word = get_word_at_pos(get_local_mouse_position());
-					update();
-
+					emit_signal("symbol_validate", get_word_at_pos(get_local_mouse_position()));
 				} else {
-					highlighted_word = String();
-					update();
+					set_highlighted_word(String());
 				}
 			}
 		}
@@ -2553,7 +2603,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			if (valid) {
 
 				if (!k->get_alt()) {
-					if (k->get_scancode() == KEY_UP) {
+					if (k->get_keycode() == KEY_UP) {
 
 						if (completion_index > 0) {
 							completion_index--;
@@ -2567,7 +2617,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						return;
 					}
 
-					if (k->get_scancode() == KEY_DOWN) {
+					if (k->get_keycode() == KEY_DOWN) {
 
 						if (completion_index < completion_options.size() - 1) {
 							completion_index++;
@@ -2581,7 +2631,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						return;
 					}
 
-					if (k->get_scancode() == KEY_PAGEUP) {
+					if (k->get_keycode() == KEY_PAGEUP) {
 
 						completion_index -= get_constant("completion_lines");
 						if (completion_index < 0)
@@ -2592,7 +2642,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						return;
 					}
 
-					if (k->get_scancode() == KEY_PAGEDOWN) {
+					if (k->get_keycode() == KEY_PAGEDOWN) {
 
 						completion_index += get_constant("completion_lines");
 						if (completion_index >= completion_options.size())
@@ -2603,7 +2653,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						return;
 					}
 
-					if (k->get_scancode() == KEY_HOME && completion_index > 0) {
+					if (k->get_keycode() == KEY_HOME && completion_index > 0) {
 
 						completion_index = 0;
 						completion_current = completion_options[completion_index];
@@ -2612,7 +2662,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						return;
 					}
 
-					if (k->get_scancode() == KEY_END && completion_index < completion_options.size() - 1) {
+					if (k->get_keycode() == KEY_END && completion_index < completion_options.size() - 1) {
 
 						completion_index = completion_options.size() - 1;
 						completion_current = completion_options[completion_index];
@@ -2621,14 +2671,14 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						return;
 					}
 
-					if (k->get_scancode() == KEY_KP_ENTER || k->get_scancode() == KEY_ENTER || k->get_scancode() == KEY_TAB) {
+					if (k->get_keycode() == KEY_KP_ENTER || k->get_keycode() == KEY_ENTER || k->get_keycode() == KEY_TAB) {
 
 						_confirm_completion();
 						accept_event();
 						return;
 					}
 
-					if (k->get_scancode() == KEY_BACKSPACE) {
+					if (k->get_keycode() == KEY_BACKSPACE) {
 
 						_reset_caret_blink_timer();
 
@@ -2638,7 +2688,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						return;
 					}
 
-					if (k->get_scancode() == KEY_SHIFT) {
+					if (k->get_keycode() == KEY_SHIFT) {
 						accept_event();
 						return;
 					}
@@ -2682,20 +2732,20 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		/* TEST CONTROL FIRST! */
 
 		// Some remaps for duplicate functions.
-		if (k->get_command() && !k->get_shift() && !k->get_alt() && !k->get_metakey() && k->get_scancode() == KEY_INSERT) {
+		if (k->get_command() && !k->get_shift() && !k->get_alt() && !k->get_metakey() && k->get_keycode() == KEY_INSERT) {
 
-			k->set_scancode(KEY_C);
+			k->set_keycode(KEY_C);
 		}
-		if (!k->get_command() && k->get_shift() && !k->get_alt() && !k->get_metakey() && k->get_scancode() == KEY_INSERT) {
+		if (!k->get_command() && k->get_shift() && !k->get_alt() && !k->get_metakey() && k->get_keycode() == KEY_INSERT) {
 
-			k->set_scancode(KEY_V);
+			k->set_keycode(KEY_V);
 			k->set_command(true);
 			k->set_shift(false);
 		}
 #ifdef APPLE_STYLE_KEYS
 		if (k->get_control() && !k->get_shift() && !k->get_alt() && !k->get_command()) {
 			uint32_t remap_key = KEY_UNKNOWN;
-			switch (k->get_scancode()) {
+			switch (k->get_keycode()) {
 				case KEY_F: {
 					remap_key = KEY_RIGHT;
 				} break;
@@ -2717,7 +2767,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 
 			if (remap_key != KEY_UNKNOWN) {
-				k->set_scancode(remap_key);
+				k->set_keycode(remap_key);
 				k->set_control(false);
 			}
 		}
@@ -2735,7 +2785,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			bool unselect = false;
 			bool dobreak = false;
 
-			switch (k->get_scancode()) {
+			switch (k->get_keycode()) {
 
 				case KEY_TAB: {
 					if (k->get_shift()) {
@@ -2809,11 +2859,11 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 		selection.selecting_text = false;
 
-		bool scancode_handled = true;
+		bool keycode_handled = true;
 
-		// Special scancode test.
+		// Special keycode test.
 
-		switch (k->get_scancode()) {
+		switch (k->get_keycode()) {
 
 			case KEY_KP_ENTER:
 			case KEY_ENTER: {
@@ -2935,7 +2985,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					completion_hint = "";
 					update();
 				} else {
-					scancode_handled = false;
+					keycode_handled = false;
 				}
 			} break;
 			case KEY_TAB: {
@@ -3008,7 +3058,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				if (k->get_alt() && cursor.column > 1) {
 #else
 				if (k->get_alt()) {
-					scancode_handled = false;
+					keycode_handled = false;
 					break;
 				} else if (k->get_command() && cursor.column > 1) {
 #endif
@@ -3065,10 +3115,10 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			} break;
 			case KEY_KP_4: {
 				if (k->get_unicode() != 0) {
-					scancode_handled = false;
+					keycode_handled = false;
 					break;
 				}
-				FALLTHROUGH;
+				[[fallthrough]];
 			}
 			case KEY_LEFT: {
 
@@ -3101,7 +3151,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				} else if (k->get_alt()) {
 #else
 				if (k->get_alt()) {
-					scancode_handled = false;
+					keycode_handled = false;
 					break;
 				} else if (k->get_command()) {
 #endif
@@ -3141,10 +3191,10 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			} break;
 			case KEY_KP_6: {
 				if (k->get_unicode() != 0) {
-					scancode_handled = false;
+					keycode_handled = false;
 					break;
 				}
-				FALLTHROUGH;
+				[[fallthrough]];
 			}
 			case KEY_RIGHT: {
 
@@ -3163,7 +3213,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				} else if (k->get_alt()) {
 #else
 				if (k->get_alt()) {
-					scancode_handled = false;
+					keycode_handled = false;
 					break;
 				} else if (k->get_command()) {
 #endif
@@ -3202,15 +3252,15 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			} break;
 			case KEY_KP_8: {
 				if (k->get_unicode() != 0) {
-					scancode_handled = false;
+					keycode_handled = false;
 					break;
 				}
-				FALLTHROUGH;
+				[[fallthrough]];
 			}
 			case KEY_UP: {
 
 				if (k->get_alt()) {
-					scancode_handled = false;
+					keycode_handled = false;
 					break;
 				}
 #ifndef APPLE_STYLE_KEYS
@@ -3255,15 +3305,15 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			} break;
 			case KEY_KP_2: {
 				if (k->get_unicode() != 0) {
-					scancode_handled = false;
+					keycode_handled = false;
 					break;
 				}
-				FALLTHROUGH;
+				[[fallthrough]];
 			}
 			case KEY_DOWN: {
 
 				if (k->get_alt()) {
-					scancode_handled = false;
+					keycode_handled = false;
 					break;
 				}
 #ifndef APPLE_STYLE_KEYS
@@ -3323,7 +3373,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				if (k->get_alt() && cursor.column < curline_len - 1) {
 #else
 				if (k->get_alt()) {
-					scancode_handled = false;
+					keycode_handled = false;
 					break;
 				} else if (k->get_command() && cursor.column < curline_len - 1) {
 #endif
@@ -3378,10 +3428,10 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			} break;
 			case KEY_KP_7: {
 				if (k->get_unicode() != 0) {
-					scancode_handled = false;
+					keycode_handled = false;
 					break;
 				}
-				FALLTHROUGH;
+				[[fallthrough]];
 			}
 			case KEY_HOME: {
 #ifdef APPLE_STYLE_KEYS
@@ -3439,10 +3489,10 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			} break;
 			case KEY_KP_1: {
 				if (k->get_unicode() != 0) {
-					scancode_handled = false;
+					keycode_handled = false;
 					break;
 				}
-				FALLTHROUGH;
+				[[fallthrough]];
 			}
 			case KEY_END: {
 #ifdef APPLE_STYLE_KEYS
@@ -3486,10 +3536,10 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			} break;
 			case KEY_KP_9: {
 				if (k->get_unicode() != 0) {
-					scancode_handled = false;
+					keycode_handled = false;
 					break;
 				}
-				FALLTHROUGH;
+				[[fallthrough]];
 			}
 			case KEY_PAGEUP: {
 
@@ -3509,10 +3559,10 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			} break;
 			case KEY_KP_3: {
 				if (k->get_unicode() != 0) {
-					scancode_handled = false;
+					keycode_handled = false;
 					break;
 				}
-				FALLTHROUGH;
+				[[fallthrough]];
 			}
 			case KEY_PAGEDOWN: {
 
@@ -3534,7 +3584,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 #ifndef APPLE_STYLE_KEYS
 				if (!k->get_control() || k->get_shift() || k->get_alt()) {
-					scancode_handled = false;
+					keycode_handled = false;
 					break;
 				}
 				if (is_shortcut_keys_enabled()) {
@@ -3542,7 +3592,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				}
 #else
 				if ((!k->get_command() && !k->get_control())) {
-					scancode_handled = false;
+					keycode_handled = false;
 					break;
 				}
 				if (!k->get_shift() && k->get_command() && is_shortcut_keys_enabled())
@@ -3573,7 +3623,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			case KEY_E: {
 
 				if (!k->get_control() || k->get_command() || k->get_alt()) {
-					scancode_handled = false;
+					keycode_handled = false;
 					break;
 				}
 
@@ -3598,7 +3648,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					break;
 				}
 				if (!k->get_command() || k->get_shift() || k->get_alt()) {
-					scancode_handled = false;
+					keycode_handled = false;
 					break;
 				}
 				if (is_shortcut_keys_enabled()) {
@@ -3609,7 +3659,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			case KEY_C: {
 
 				if (!k->get_command() || k->get_shift() || k->get_alt()) {
-					scancode_handled = false;
+					keycode_handled = false;
 					break;
 				}
 
@@ -3625,7 +3675,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				}
 
 				if (!k->get_command()) {
-					scancode_handled = false;
+					keycode_handled = false;
 					break;
 				}
 
@@ -3643,7 +3693,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				}
 
 				if (!k->get_command()) {
-					scancode_handled = false;
+					keycode_handled = false;
 					break;
 				}
 
@@ -3656,7 +3706,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					break;
 				}
 				if (!k->get_command() || k->get_shift() || k->get_alt()) {
-					scancode_handled = false;
+					keycode_handled = false;
 					break;
 				}
 
@@ -3673,9 +3723,9 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 #endif
 
 					query_code_comple();
-					scancode_handled = true;
+					keycode_handled = true;
 				} else {
-					scancode_handled = false;
+					keycode_handled = false;
 				}
 
 			} break;
@@ -3692,20 +3742,20 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 			default: {
 
-				scancode_handled = false;
+				keycode_handled = false;
 			} break;
 		}
 
-		if (scancode_handled)
+		if (keycode_handled)
 			accept_event();
 
-		if (k->get_scancode() == KEY_INSERT) {
+		if (k->get_keycode() == KEY_INSERT) {
 			set_insert_mode(!insert_mode);
 			accept_event();
 			return;
 		}
 
-		if (!scancode_handled && !k->get_command()) { // For German keyboards.
+		if (!keycode_handled && !k->get_command()) { // For German keyboards.
 
 			if (k->get_unicode() >= 32) {
 
@@ -4480,7 +4530,7 @@ void TextEdit::cursor_set_line(int p_row, bool p_adjust_viewport, bool p_can_be_
 				if (p_row - move_up > 0 && !is_line_hidden(p_row - move_up)) {
 					p_row -= move_up;
 				} else {
-					WARN_PRINTS(("Cursor set to hidden line " + itos(p_row) + " and there are no nonhidden lines."));
+					WARN_PRINT(("Cursor set to hidden line " + itos(p_row) + " and there are no nonhidden lines."));
 				}
 			}
 		}
@@ -5446,11 +5496,11 @@ int TextEdit::_get_column_pos_of_word(const String &p_key, const String &p_searc
 	return col;
 }
 
-PoolVector<int> TextEdit::_search_bind(const String &p_key, uint32_t p_search_flags, int p_from_line, int p_from_column) const {
+Vector<int> TextEdit::_search_bind(const String &p_key, uint32_t p_search_flags, int p_from_line, int p_from_column) const {
 
 	int col, line;
 	if (search(p_key, p_search_flags, p_from_line, p_from_column, line, col)) {
-		PoolVector<int> result;
+		Vector<int> result;
 		result.resize(2);
 		result.set(SEARCH_RESULT_COLUMN, col);
 		result.set(SEARCH_RESULT_LINE, line);
@@ -5458,7 +5508,7 @@ PoolVector<int> TextEdit::_search_bind(const String &p_key, uint32_t p_search_fl
 
 	} else {
 
-		return PoolVector<int>();
+		return Vector<int>();
 	}
 }
 
@@ -5690,7 +5740,7 @@ void TextEdit::remove_breakpoints() {
 	}
 }
 
-void TextEdit::set_line_info_icon(int p_line, Ref<Texture> p_icon, String p_info) {
+void TextEdit::set_line_info_icon(int p_line, Ref<Texture2D> p_icon, String p_info) {
 	ERR_FAIL_INDEX(p_line, text.size());
 	text.set_info_icon(p_line, p_icon, p_info);
 	update();
@@ -6530,6 +6580,10 @@ void TextEdit::_update_completion_candidates() {
 	Vector<float> sim_cache;
 	bool single_quote = s.begins_with("'");
 	Vector<ScriptCodeCompletionOption> completion_options_casei;
+	Vector<ScriptCodeCompletionOption> completion_options_subseq;
+	Vector<ScriptCodeCompletionOption> completion_options_subseq_casei;
+
+	String s_lower = s.to_lower();
 
 	for (List<ScriptCodeCompletionOption>::Element *E = completion_sources.front(); E; E = E->next()) {
 		ScriptCodeCompletionOption &option = E->get();
@@ -6544,30 +6598,67 @@ void TextEdit::_update_completion_candidates() {
 			option.insert_text = option.insert_text.quote(quote);
 		}
 
-		if (option.display.begins_with(s)) {
+		if (option.display.length() == 0) {
+			continue;
+		} else if (s.length() == 0) {
 			completion_options.push_back(option);
-		} else if (option.display.to_lower().begins_with(s.to_lower())) {
-			completion_options_casei.push_back(option);
+		} else {
+
+			// This code works the same as:
+			/*
+			if (option.display.begins_with(s)) {
+				completion_options.push_back(option);
+			} else if (option.display.to_lower().begins_with(s.to_lower())) {
+				completion_options_casei.push_back(option);
+			} else if (s.is_subsequence_of(option.display)) {
+				completion_options_subseq.push_back(option);
+			} else if (s.is_subsequence_ofi(option.display)) {
+				completion_options_subseq_casei.push_back(option);
+			}
+			*/
+			// But is more performant due to being inlined and looping over the characters only once
+
+			String display_lower = option.display.to_lower();
+
+			const CharType *ssq = &s[0];
+			const CharType *ssq_lower = &s_lower[0];
+
+			const CharType *tgt = &option.display[0];
+			const CharType *tgt_lower = &display_lower[0];
+
+			const CharType *ssq_last_tgt = NULL;
+			const CharType *ssq_lower_last_tgt = NULL;
+
+			for (; *tgt; tgt++, tgt_lower++) {
+				if (*ssq == *tgt) {
+					ssq++;
+					ssq_last_tgt = tgt;
+				}
+				if (*ssq_lower == *tgt_lower) {
+					ssq_lower++;
+					ssq_lower_last_tgt = tgt;
+				}
+			}
+
+			if (!*ssq) { // Matched the whole subsequence in s
+				if (ssq_last_tgt == &option.display[s.length() - 1]) { // Finished matching in the first s.length() characters
+					completion_options.push_back(option);
+				} else {
+					completion_options_subseq.push_back(option);
+				}
+			} else if (!*ssq_lower) { // Matched the whole subsequence in s_lower
+				if (ssq_lower_last_tgt == &option.display[s.length() - 1]) { // Finished matching in the first s.length() characters
+					completion_options_casei.push_back(option);
+				} else {
+					completion_options_subseq_casei.push_back(option);
+				}
+			}
 		}
 	}
 
 	completion_options.append_array(completion_options_casei);
-
-	if (completion_options.size() == 0) {
-		for (int i = 0; i < completion_sources.size(); i++) {
-			if (s.is_subsequence_of(completion_sources[i].display)) {
-				completion_options.push_back(completion_sources[i]);
-			}
-		}
-	}
-
-	if (completion_options.size() == 0) {
-		for (int i = 0; i < completion_sources.size(); i++) {
-			if (s.is_subsequence_ofi(completion_sources[i].display)) {
-				completion_options.push_back(completion_sources[i]);
-			}
-		}
-	}
+	completion_options.append_array(completion_options_subseq);
+	completion_options.append_array(completion_options_subseq_casei);
 
 	if (completion_options.size() == 0) {
 		// No options to complete, cancel.
@@ -6757,13 +6848,18 @@ bool TextEdit::is_show_line_numbers_enabled() const {
 	return line_numbers;
 }
 
-void TextEdit::set_show_line_length_guideline(bool p_show) {
-	line_length_guideline = p_show;
+void TextEdit::set_show_line_length_guidelines(bool p_show) {
+	line_length_guidelines = p_show;
 	update();
 }
 
-void TextEdit::set_line_length_guideline_column(int p_column) {
-	line_length_guideline_col = p_column;
+void TextEdit::set_line_length_guideline_soft_column(int p_column) {
+	line_length_guideline_soft_col = p_column;
+	update();
+}
+
+void TextEdit::set_line_length_guideline_hard_column(int p_column) {
+	line_length_guideline_hard_col = p_column;
 	update();
 }
 
@@ -6906,6 +7002,11 @@ void TextEdit::menu_option(int p_option) {
 	}
 }
 
+void TextEdit::set_highlighted_word(const String &new_word) {
+	highlighted_word = new_word;
+	update();
+}
+
 void TextEdit::set_select_identifiers_on_hover(bool p_enable) {
 
 	select_identifiers_enabled = p_enable;
@@ -6954,13 +7055,8 @@ PopupMenu *TextEdit::get_menu() const {
 void TextEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &TextEdit::_gui_input);
-	ClassDB::bind_method(D_METHOD("_scroll_moved"), &TextEdit::_scroll_moved);
 	ClassDB::bind_method(D_METHOD("_cursor_changed_emit"), &TextEdit::_cursor_changed_emit);
 	ClassDB::bind_method(D_METHOD("_text_changed_emit"), &TextEdit::_text_changed_emit);
-	ClassDB::bind_method(D_METHOD("_push_current_op"), &TextEdit::_push_current_op);
-	ClassDB::bind_method(D_METHOD("_click_selection_held"), &TextEdit::_click_selection_held);
-	ClassDB::bind_method(D_METHOD("_toggle_draw_caret"), &TextEdit::_toggle_draw_caret);
-	ClassDB::bind_method(D_METHOD("_v_scroll_input"), &TextEdit::_v_scroll_input);
 	ClassDB::bind_method(D_METHOD("_update_wrap_at"), &TextEdit::_update_wrap_at);
 
 	BIND_ENUM_CONSTANT(SEARCH_MATCH_CASE);
@@ -7070,6 +7166,10 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_smooth_scroll_enabled"), &TextEdit::is_smooth_scroll_enabled);
 	ClassDB::bind_method(D_METHOD("set_v_scroll_speed", "speed"), &TextEdit::set_v_scroll_speed);
 	ClassDB::bind_method(D_METHOD("get_v_scroll_speed"), &TextEdit::get_v_scroll_speed);
+	ClassDB::bind_method(D_METHOD("set_v_scroll", "value"), &TextEdit::set_v_scroll);
+	ClassDB::bind_method(D_METHOD("get_v_scroll"), &TextEdit::get_v_scroll);
+	ClassDB::bind_method(D_METHOD("set_h_scroll", "value"), &TextEdit::set_h_scroll);
+	ClassDB::bind_method(D_METHOD("get_h_scroll"), &TextEdit::get_h_scroll);
 
 	ClassDB::bind_method(D_METHOD("add_keyword_color", "keyword", "color"), &TextEdit::add_keyword_color);
 	ClassDB::bind_method(D_METHOD("has_keyword_color", "keyword"), &TextEdit::has_keyword_color);
@@ -7102,9 +7202,11 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_keys_enabled"), "set_shortcut_keys_enabled", "is_shortcut_keys_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selecting_enabled"), "set_selecting_enabled", "is_selecting_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_scrolling"), "set_smooth_scroll_enable", "is_smooth_scroll_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "v_scroll_speed"), "set_v_scroll_speed", "get_v_scroll_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_scroll_speed"), "set_v_scroll_speed", "get_v_scroll_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hiding_enabled"), "set_hiding_enabled", "is_hiding_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "wrap_enabled"), "set_wrap_enabled", "is_wrap_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_vertical"), "set_v_scroll", "get_v_scroll");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_horizontal"), "set_h_scroll", "get_h_scroll");
 
 	ADD_GROUP("Minimap", "minimap_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_draw"), "draw_minimap", "is_drawing_minimap");
@@ -7113,7 +7215,7 @@ void TextEdit::_bind_methods() {
 	ADD_GROUP("Caret", "caret_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_block_mode"), "cursor_set_block_mode", "cursor_is_block_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), "cursor_set_blink_enabled", "cursor_get_blink_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "caret_blink_speed", PROPERTY_HINT_RANGE, "0.1,10,0.01"), "cursor_set_blink_speed", "cursor_get_blink_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "caret_blink_speed", PROPERTY_HINT_RANGE, "0.1,10,0.01"), "cursor_set_blink_speed", "cursor_get_blink_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_moving_by_right_click"), "set_right_click_moves_caret", "is_right_click_moving_caret");
 
 	ADD_SIGNAL(MethodInfo("cursor_changed"));
@@ -7122,6 +7224,7 @@ void TextEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo(Variant::INT, "row")));
 	ADD_SIGNAL(MethodInfo("symbol_lookup", PropertyInfo(Variant::STRING, "symbol"), PropertyInfo(Variant::INT, "row"), PropertyInfo(Variant::INT, "column")));
 	ADD_SIGNAL(MethodInfo("info_clicked", PropertyInfo(Variant::INT, "row"), PropertyInfo(Variant::STRING, "info")));
+	ADD_SIGNAL(MethodInfo("symbol_validate", PropertyInfo(Variant::STRING, "symbol")));
 
 	BIND_ENUM_CONSTANT(MENU_CUT);
 	BIND_ENUM_CONSTANT(MENU_COPY);
@@ -7133,7 +7236,7 @@ void TextEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(MENU_MAX);
 
 	GLOBAL_DEF("gui/timers/text_edit_idle_detect_sec", 3);
-	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/text_edit_idle_detect_sec", PropertyInfo(Variant::REAL, "gui/timers/text_edit_idle_detect_sec", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater")); // No negative numbers.
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/text_edit_idle_detect_sec", PropertyInfo(Variant::FLOAT, "gui/timers/text_edit_idle_detect_sec", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater")); // No negative numbers.
 }
 
 TextEdit::TextEdit() {
@@ -7176,10 +7279,10 @@ TextEdit::TextEdit() {
 	updating_scrolls = false;
 	selection.active = false;
 
-	h_scroll->connect("value_changed", this, "_scroll_moved");
-	v_scroll->connect("value_changed", this, "_scroll_moved");
+	h_scroll->connect("value_changed", callable_mp(this, &TextEdit::_scroll_moved));
+	v_scroll->connect("value_changed", callable_mp(this, &TextEdit::_scroll_moved));
 
-	v_scroll->connect("scrolling", this, "_v_scroll_input");
+	v_scroll->connect("scrolling", callable_mp(this, &TextEdit::_v_scroll_input));
 
 	cursor_changed_dirty = false;
 	text_changed_dirty = false;
@@ -7196,7 +7299,7 @@ TextEdit::TextEdit() {
 	caret_blink_timer = memnew(Timer);
 	add_child(caret_blink_timer);
 	caret_blink_timer->set_wait_time(0.65);
-	caret_blink_timer->connect("timeout", this, "_toggle_draw_caret");
+	caret_blink_timer->connect("timeout", callable_mp(this, &TextEdit::_toggle_draw_caret));
 	cursor_set_blink_enabled(false);
 	right_click_moves_caret = true;
 
@@ -7204,12 +7307,12 @@ TextEdit::TextEdit() {
 	add_child(idle_detect);
 	idle_detect->set_one_shot(true);
 	idle_detect->set_wait_time(GLOBAL_GET("gui/timers/text_edit_idle_detect_sec"));
-	idle_detect->connect("timeout", this, "_push_current_op");
+	idle_detect->connect("timeout", callable_mp(this, &TextEdit::_push_current_op));
 
 	click_select_held = memnew(Timer);
 	add_child(click_select_held);
 	click_select_held->set_wait_time(0.05);
-	click_select_held->connect("timeout", this, "_click_selection_held");
+	click_select_held->connect("timeout", callable_mp(this, &TextEdit::_click_selection_held));
 
 	current_op.type = TextOperation::TYPE_NONE;
 	undo_enabled = true;
@@ -7226,8 +7329,9 @@ TextEdit::TextEdit() {
 	tooltip_obj = NULL;
 	line_numbers = false;
 	line_numbers_zero_padded = false;
-	line_length_guideline = false;
-	line_length_guideline_col = 80;
+	line_length_guidelines = false;
+	line_length_guideline_soft_col = 80;
+	line_length_guideline_hard_col = 100;
 	draw_bookmark_gutter = false;
 	draw_breakpoint_gutter = false;
 	draw_fold_gutter = false;
@@ -7267,7 +7371,7 @@ TextEdit::TextEdit() {
 	add_child(menu);
 	readonly = true; // Initialise to opposite first, so we get past the early-out in set_readonly.
 	set_readonly(false);
-	menu->connect("id_pressed", this, "menu_option");
+	menu->connect("id_pressed", callable_mp(this, &TextEdit::menu_option));
 	first_draw = true;
 
 	executing_line = -1;

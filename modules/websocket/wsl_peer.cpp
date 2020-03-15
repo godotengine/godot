@@ -43,10 +43,10 @@ String WSLPeer::generate_key() {
 	// Random key
 	RandomNumberGenerator rng;
 	rng.set_seed(OS::get_singleton()->get_unix_time());
-	PoolVector<uint8_t> bkey;
+	Vector<uint8_t> bkey;
 	int len = 16; // 16 bytes, as per RFC
 	bkey.resize(len);
-	PoolVector<uint8_t>::Write w = bkey.write();
+	uint8_t *w = bkey.ptrw();
 	for (int i = 0; i < len; i++) {
 		w[i] = (uint8_t)rng.randi_range(0, 255);
 	}
@@ -243,6 +243,10 @@ Error WSLPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 	msg.msg_length = p_buffer_size;
 
 	wslay_event_queue_msg(_data->ctx, &msg);
+	if (wslay_event_send(_data->ctx) < 0) {
+		close_now();
+		return FAILED;
+	}
 	return OK;
 }
 
@@ -256,10 +260,10 @@ Error WSLPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 		return ERR_UNAVAILABLE;
 
 	int read = 0;
-	PoolVector<uint8_t>::Write rw = _packet_buffer.write();
-	_in_buffer.read_packet(rw.ptr(), _packet_buffer.size(), &_is_string, read);
+	uint8_t *rw = _packet_buffer.ptrw();
+	_in_buffer.read_packet(rw, _packet_buffer.size(), &_is_string, read);
 
-	*r_buffer = rw.ptr();
+	*r_buffer = rw;
 	r_buffer_size = read;
 
 	return OK;
@@ -312,6 +316,12 @@ uint16_t WSLPeer::get_connected_port() const {
 	ERR_FAIL_COND_V(!is_connected_to_host() || _data->tcp.is_null(), 0);
 
 	return _data->tcp->get_connected_port();
+}
+
+void WSLPeer::set_no_delay(bool p_enabled) {
+
+	ERR_FAIL_COND(!is_connected_to_host() || _data->tcp.is_null());
+	_data->tcp->set_no_delay(p_enabled);
 }
 
 void WSLPeer::invalidate() {

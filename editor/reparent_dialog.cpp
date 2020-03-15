@@ -38,12 +38,12 @@ void ReparentDialog::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		connect("confirmed", this, "_reparent");
+		connect("confirmed", callable_mp(this, &ReparentDialog::_reparent));
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 
-		disconnect("confirmed", this, "_reparent");
+		disconnect("confirmed", callable_mp(this, &ReparentDialog::_reparent));
 	}
 
 	if (p_what == NOTIFICATION_DRAW) {
@@ -74,7 +74,6 @@ void ReparentDialog::set_current(const Set<Node *> &p_selection) {
 
 void ReparentDialog::_bind_methods() {
 
-	ClassDB::bind_method("_reparent", &ReparentDialog::_reparent);
 	ClassDB::bind_method("_cancel", &ReparentDialog::_cancel);
 
 	ADD_SIGNAL(MethodInfo("reparent", PropertyInfo(Variant::NODE_PATH, "path"), PropertyInfo(Variant::BOOL, "keep_global_xform")));
@@ -93,7 +92,7 @@ ReparentDialog::ReparentDialog() {
 
 	vbc->add_margin_child(TTR("Reparent Location (Select new Parent):"), tree, true);
 
-	tree->get_scene_tree()->connect("item_activated", this, "_reparent");
+	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &ReparentDialog::_reparent));
 
 	//Label *label = memnew( Label );
 	//label->set_position( Point2( 15,8) );

@@ -31,6 +31,8 @@
 #ifndef VISUAL_SCRIPT_H
 #define VISUAL_SCRIPT_H
 
+#include "core/debugger/engine_debugger.h"
+#include "core/debugger/script_debugger.h"
 #include "core/os/thread.h"
 #include "core/script_language.h"
 
@@ -155,7 +157,7 @@ public:
 
 	virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) = 0; //do a step, return which sequence port to go out
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) = 0; //do a step, return which sequence port to go out
 
 	Ref<VisualScriptNode> get_base_node() { return Ref<VisualScriptNode>(base); }
 
@@ -245,6 +247,8 @@ private:
 	Map<StringName, Function> functions;
 	Map<StringName, Variable> variables;
 	Map<StringName, Vector<Argument> > custom_signals;
+	Vector<ScriptNetData> rpc_functions;
+	Vector<ScriptNetData> rpc_variables;
 
 	Map<Object *, VisualScriptInstance *> instances;
 
@@ -362,6 +366,18 @@ public:
 
 	virtual int get_member_line(const StringName &p_member) const;
 
+	virtual Vector<ScriptNetData> get_rpc_methods() const;
+	virtual uint16_t get_rpc_method_id(const StringName &p_method) const;
+	virtual StringName get_rpc_method(const uint16_t p_rpc_method_id) const;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
+
+	virtual Vector<ScriptNetData> get_rset_properties() const;
+	virtual uint16_t get_rset_property_id(const StringName &p_property) const;
+	virtual StringName get_rset_property(const uint16_t p_rset_property_id) const;
+	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(const uint16_t p_rpc_method_id) const;
+	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
+
 #ifdef TOOLS_ENABLED
 	virtual bool are_subnodes_edited() const;
 #endif
@@ -394,8 +410,8 @@ class VisualScriptInstance : public ScriptInstance {
 
 	StringName source;
 
-	void _dependency_step(VisualScriptNodeInstance *node, int p_pass, int *pass_stack, const Variant **input_args, Variant **output_args, Variant *variant_stack, Variant::CallError &r_error, String &error_str, VisualScriptNodeInstance **r_error_node);
-	Variant _call_internal(const StringName &p_method, void *p_stack, int p_stack_size, VisualScriptNodeInstance *p_node, int p_flow_stack_pos, int p_pass, bool p_resuming_yield, Variant::CallError &r_error);
+	void _dependency_step(VisualScriptNodeInstance *node, int p_pass, int *pass_stack, const Variant **input_args, Variant **output_args, Variant *variant_stack, Callable::CallError &r_error, String &error_str, VisualScriptNodeInstance **r_error_node);
+	Variant _call_internal(const StringName &p_method, void *p_stack, int p_stack_size, VisualScriptNodeInstance *p_node, int p_flow_stack_pos, int p_pass, bool p_resuming_yield, Callable::CallError &r_error);
 
 	//Map<StringName,Function> functions;
 	friend class VisualScriptFunctionState; //for yield
@@ -408,7 +424,7 @@ public:
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const;
 	virtual bool has_method(const StringName &p_method) const;
-	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	virtual void notification(int p_notification);
 	String to_string(bool *r_valid);
 
@@ -441,7 +457,16 @@ public:
 
 	virtual ScriptLanguage *get_language();
 
+	virtual Vector<ScriptNetData> get_rpc_methods() const;
+	virtual uint16_t get_rpc_method_id(const StringName &p_method) const;
+	virtual StringName get_rpc_method(const uint16_t p_rpc_method_id) const;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const;
 	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
+
+	virtual Vector<ScriptNetData> get_rset_properties() const;
+	virtual uint16_t get_rset_property_id(const StringName &p_property) const;
+	virtual StringName get_rset_property(const uint16_t p_rset_property_id) const;
+	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(const uint16_t p_rpc_method_id) const;
 	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
 
 	VisualScriptInstance();
@@ -464,7 +489,7 @@ class VisualScriptFunctionState : public Reference {
 	int flow_stack_pos;
 	int pass;
 
-	Variant _signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	Variant _signal_callback(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 protected:
 	static void _bind_methods();
@@ -507,7 +532,7 @@ public:
 
 	static VisualScriptLanguage *singleton;
 
-	Mutex *lock;
+	Mutex lock;
 
 	bool debug_break(const String &p_error, bool p_allow_continue = true);
 	bool debug_break_parse(const String &p_file, int p_node, const String &p_error);
@@ -517,13 +542,13 @@ public:
 		if (Thread::get_main_id() != Thread::get_caller_id())
 			return; //no support for other threads than main for now
 
-		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0)
-			ScriptDebugger::get_singleton()->set_depth(ScriptDebugger::get_singleton()->get_depth() + 1);
+		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0)
+			EngineDebugger::get_script_debugger()->set_depth(EngineDebugger::get_script_debugger()->get_depth() + 1);
 
 		if (_debug_call_stack_pos >= _debug_max_call_stack) {
 			//stack overflow
 			_debug_error = "Stack Overflow (Stack Size: " + itos(_debug_max_call_stack) + ")";
-			ScriptDebugger::get_singleton()->debug(this);
+			EngineDebugger::get_script_debugger()->debug(this);
 			return;
 		}
 
@@ -540,13 +565,13 @@ public:
 		if (Thread::get_main_id() != Thread::get_caller_id())
 			return; //no support for other threads than main for now
 
-		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0)
-			ScriptDebugger::get_singleton()->set_depth(ScriptDebugger::get_singleton()->get_depth() - 1);
+		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0)
+			EngineDebugger::get_script_debugger()->set_depth(EngineDebugger::get_script_debugger()->get_depth() - 1);
 
 		if (_debug_call_stack_pos == 0) {
 
 			_debug_error = "Stack Underflow (Engine Bug)";
-			ScriptDebugger::get_singleton()->debug(this);
+			EngineDebugger::get_script_debugger()->debug(this);
 			return;
 		}
 
@@ -576,7 +601,7 @@ public:
 	virtual bool has_named_classes() const;
 	virtual bool supports_builtin_mode() const;
 	virtual int find_function(const String &p_function, const String &p_code) const;
-	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const;
+	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const;
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value);
 

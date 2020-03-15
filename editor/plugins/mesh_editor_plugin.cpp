@@ -111,7 +111,6 @@ void MeshEditor::_button_pressed(Node *p_button) {
 void MeshEditor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &MeshEditor::_gui_input);
-	ClassDB::bind_method(D_METHOD("_button_pressed"), &MeshEditor::_button_pressed);
 }
 
 MeshEditor::MeshEditor() {
@@ -157,12 +156,12 @@ MeshEditor::MeshEditor() {
 	light_1_switch = memnew(TextureButton);
 	light_1_switch->set_toggle_mode(true);
 	vb_light->add_child(light_1_switch);
-	light_1_switch->connect("pressed", this, "_button_pressed", varray(light_1_switch));
+	light_1_switch->connect("pressed", callable_mp(this, &MeshEditor::_button_pressed), varray(light_1_switch));
 
 	light_2_switch = memnew(TextureButton);
 	light_2_switch->set_toggle_mode(true);
 	vb_light->add_child(light_2_switch);
-	light_2_switch->connect("pressed", this, "_button_pressed", varray(light_2_switch));
+	light_2_switch->connect("pressed", callable_mp(this, &MeshEditor::_button_pressed), varray(light_2_switch));
 
 	first_enter = true;
 

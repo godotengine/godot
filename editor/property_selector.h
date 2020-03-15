@@ -41,12 +41,12 @@ class PropertySelector : public ConfirmationDialog {
 	LineEdit *search_box;
 	Tree *search_options;
 
-	void _update_search();
-
-	void _sbox_input(const Ref<InputEvent> &p_ie);
-
-	void _confirmed();
 	void _text_changed(const String &p_newtext);
+	void _sbox_input(const Ref<InputEvent> &p_ie);
+	void _update_search();
+	void _confirmed();
+	void _item_selected();
+	void _hide_requested();
 
 	EditorHelpBit *help_bit;
 
@@ -57,8 +57,6 @@ class PropertySelector : public ConfirmationDialog {
 	ObjectID script;
 	Object *instance;
 	bool virtuals_only;
-
-	void _item_selected();
 
 	Vector<Variant::Type> type_filter;
 

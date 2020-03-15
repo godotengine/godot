@@ -63,7 +63,6 @@ public:
 		MATH_ISEQUALAPPROX,
 		MATH_ISZEROAPPROX,
 		MATH_EASE,
-		MATH_DECIMALS,
 		MATH_STEP_DECIMALS,
 		MATH_STEPIFY,
 		MATH_LERP,
@@ -130,7 +129,7 @@ public:
 	};
 
 	static const char *get_func_name(Function p_func);
-	static void call(Function p_func, const Variant **p_args, int p_arg_count, Variant &r_ret, Variant::CallError &r_error);
+	static void call(Function p_func, const Variant **p_args, int p_arg_count, Variant &r_ret, Callable::CallError &r_error);
 	static bool is_deterministic(Function p_func);
 	static MethodInfo get_info(Function p_func);
 };

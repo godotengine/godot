@@ -88,6 +88,7 @@ private:
 		SEARCH_FIND_PREV,
 		SEARCH_REPLACE,
 		SEARCH_IN_FILES,
+		REPLACE_IN_FILES,
 		SEARCH_GOTO_LINE,
 		BOOKMARK_TOGGLE,
 		BOOKMARK_GOTO_NEXT,
@@ -120,7 +121,7 @@ public:
 	virtual void set_syntax_highlighter(SyntaxHighlighter *p_highlighter);
 
 	virtual String get_name();
-	virtual Ref<Texture> get_icon();
+	virtual Ref<Texture2D> get_icon();
 	virtual RES get_edited_resource() const;
 	virtual void set_edited_resource(const RES &p_res);
 	void set_edited_file(const Ref<TextFile> &p_file);
@@ -146,7 +147,7 @@ public:
 	virtual bool can_lose_focus_on_node_selection() { return true; }
 	virtual void set_debugger_active(bool p_active);
 	virtual void set_tooltip_request_func(String p_method, Object *p_obj);
-	virtual void add_callback(const String &p_function, PoolStringArray p_args);
+	virtual void add_callback(const String &p_function, PackedStringArray p_args);
 
 	virtual Control *get_edit_menu();
 	virtual void clear_edit_menu();

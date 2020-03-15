@@ -37,11 +37,16 @@
 
 #include "thirdparty/misc/open-simplex-noise.h"
 
+// The maximum number of octaves allowed. Note that these are statically allocated.
+// Higher values become exponentially slower, so this shouldn't be set too high
+// to avoid freezing the editor for long periods of time.
+#define MAX_OCTAVES 9
+
 class OpenSimplexNoise : public Resource {
 	GDCLASS(OpenSimplexNoise, Resource);
 	OBJ_SAVE_TYPE(OpenSimplexNoise);
 
-	osn_context contexts[6];
+	osn_context contexts[MAX_OCTAVES];
 
 	int seed;
 	float persistence; // Controls details, value in [0,1]. Higher increases grain, lower increases smoothness.

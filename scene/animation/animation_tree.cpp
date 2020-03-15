@@ -49,7 +49,7 @@ void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
 
 Variant AnimationNode::get_parameter_default_value(const StringName &p_parameter) const {
 	if (get_script_instance()) {
-		return get_script_instance()->call("get_parameter_default_value");
+		return get_script_instance()->call("get_parameter_default_value", p_parameter);
 	}
 	return Variant();
 }
@@ -397,7 +397,7 @@ void AnimationNode::_validate_property(PropertyInfo &property) const {
 
 Ref<AnimationNode> AnimationNode::get_child_by_name(const StringName &p_name) {
 	if (get_script_instance()) {
-		return get_script_instance()->call("get_child_by_name");
+		return get_script_instance()->call("get_child_by_name", p_name);
 	}
 	return Ref<AnimationNode>();
 }
@@ -433,13 +433,13 @@ void AnimationNode::_bind_methods() {
 	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "get_parameter_list"));
 	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "get_child_by_name", PropertyInfo(Variant::STRING, "name")));
 	{
-		MethodInfo mi = MethodInfo(Variant::NIL, "get_parameter_default_value", PropertyInfo(Variant::STRING, "name"));
+		MethodInfo mi = MethodInfo(Variant::NIL, "get_parameter_default_value", PropertyInfo(Variant::STRING_NAME, "name"));
 		mi.return_val.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
 		BIND_VMETHOD(mi);
 	}
-	BIND_VMETHOD(MethodInfo("process", PropertyInfo(Variant::REAL, "time"), PropertyInfo(Variant::BOOL, "seek")));
+	BIND_VMETHOD(MethodInfo("process", PropertyInfo(Variant::FLOAT, "time"), PropertyInfo(Variant::BOOL, "seek")));
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "get_caption"));
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "has_filter"));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "has_filter"));
 
 	ADD_SIGNAL(MethodInfo("removed_from_graph"));
 
@@ -463,13 +463,13 @@ AnimationNode::AnimationNode() {
 void AnimationTree::set_tree_root(const Ref<AnimationNode> &p_root) {
 
 	if (root.is_valid()) {
-		root->disconnect("tree_changed", this, "_tree_changed");
+		root->disconnect("tree_changed", callable_mp(this, &AnimationTree::_tree_changed));
 	}
 
 	root = p_root;
 
 	if (root.is_valid()) {
-		root->connect("tree_changed", this, "_tree_changed");
+		root->connect("tree_changed", callable_mp(this, &AnimationTree::_tree_changed));
 	}
 
 	properties_dirty = true;
@@ -578,12 +578,12 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 				Node *child = parent->get_node_and_resource(path, resource, leftover_path);
 
 				if (!child) {
-					ERR_PRINTS("AnimationTree: '" + String(E->get()) + "', couldn't resolve track:  '" + String(path) + "'");
+					ERR_PRINT("AnimationTree: '" + String(E->get()) + "', couldn't resolve track:  '" + String(path) + "'");
 					continue;
 				}
 
-				if (!child->is_connected("tree_exited", this, "_node_removed")) {
-					child->connect("tree_exited", this, "_node_removed", varray(child));
+				if (!child->is_connected("tree_exited", callable_mp(this, &AnimationTree::_node_removed))) {
+					child->connect("tree_exited", callable_mp(this, &AnimationTree::_node_removed), varray(child));
 				}
 
 				switch (track_type) {
@@ -608,7 +608,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 						Spatial *spatial = Object::cast_to<Spatial>(child);
 
 						if (!spatial) {
-							ERR_PRINTS("AnimationTree: '" + String(E->get()) + "', transform track does not point to spatial:  '" + String(path) + "'");
+							ERR_PRINT("AnimationTree: '" + String(E->get()) + "', transform track does not point to spatial:  '" + String(path) + "'");
 							continue;
 						}
 
@@ -767,7 +767,7 @@ void AnimationTree::_process_graph(float p_delta) {
 
 	AnimationPlayer *player = Object::cast_to<AnimationPlayer>(get_node(animation_player));
 
-	ObjectID current_animation_player = 0;
+	ObjectID current_animation_player;
 
 	if (player) {
 		current_animation_player = player->get_instance_id();
@@ -775,15 +775,15 @@ void AnimationTree::_process_graph(float p_delta) {
 
 	if (last_animation_player != current_animation_player) {
 
-		if (last_animation_player) {
+		if (last_animation_player.is_valid()) {
 			Object *old_player = ObjectDB::get_instance(last_animation_player);
 			if (old_player) {
-				old_player->disconnect("caches_cleared", this, "_clear_caches");
+				old_player->disconnect("caches_cleared", callable_mp(this, &AnimationTree::_clear_caches));
 			}
 		}
 
 		if (player) {
-			player->connect("caches_cleared", this, "_clear_caches");
+			player->connect("caches_cleared", callable_mp(this, &AnimationTree::_clear_caches));
 		}
 
 		last_animation_player = current_animation_player;
@@ -1296,19 +1296,19 @@ void AnimationTree::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 		_clear_caches();
-		if (last_animation_player) {
+		if (last_animation_player.is_valid()) {
 
 			Object *player = ObjectDB::get_instance(last_animation_player);
 			if (player) {
-				player->disconnect("caches_cleared", this, "_clear_caches");
+				player->disconnect("caches_cleared", callable_mp(this, &AnimationTree::_clear_caches));
 			}
 		}
 	} else if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (last_animation_player) {
+		if (last_animation_player.is_valid()) {
 
 			Object *player = ObjectDB::get_instance(last_animation_player);
 			if (player) {
-				player->connect("caches_cleared", this, "_clear_caches");
+				player->connect("caches_cleared", callable_mp(this, &AnimationTree::_clear_caches));
 			}
 		}
 	}
@@ -1553,15 +1553,11 @@ void AnimationTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_root_motion_transform"), &AnimationTree::get_root_motion_transform);
 
-	ClassDB::bind_method(D_METHOD("_tree_changed"), &AnimationTree::_tree_changed);
 	ClassDB::bind_method(D_METHOD("_update_properties"), &AnimationTree::_update_properties);
 
 	ClassDB::bind_method(D_METHOD("rename_parameter", "old_name", "new_name"), &AnimationTree::rename_parameter);
 
 	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationTree::advance);
-
-	ClassDB::bind_method(D_METHOD("_node_removed"), &AnimationTree::_node_removed);
-	ClassDB::bind_method(D_METHOD("_clear_caches"), &AnimationTree::_clear_caches);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode"), "set_tree_root", "get_tree_root");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");
@@ -1584,7 +1580,6 @@ AnimationTree::AnimationTree() {
 	process_pass = 1;
 	started = true;
 	properties_dirty = true;
-	last_animation_player = 0;
 }
 
 AnimationTree::~AnimationTree() {

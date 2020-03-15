@@ -108,7 +108,7 @@ class BitmapFont : public Font {
 	GDCLASS(BitmapFont, Font);
 	RES_BASE_EXTENSION("font");
 
-	Vector<Ref<Texture> > textures;
+	Vector<Ref<Texture2D> > textures;
 
 public:
 	struct Character {
@@ -146,10 +146,10 @@ private:
 	float ascent;
 	bool distance_field_hint;
 
-	void _set_chars(const PoolVector<int> &p_chars);
-	PoolVector<int> _get_chars() const;
-	void _set_kernings(const PoolVector<int> &p_kernings);
-	PoolVector<int> _get_kernings() const;
+	void _set_chars(const Vector<int> &p_chars);
+	Vector<int> _get_chars() const;
+	void _set_kernings(const Vector<int> &p_kernings);
+	Vector<int> _get_kernings() const;
 	void _set_textures(const Vector<Variant> &p_textures);
 	Vector<Variant> _get_textures() const;
 
@@ -168,7 +168,7 @@ public:
 	float get_ascent() const;
 	float get_descent() const;
 
-	void add_texture(const Ref<Texture> &p_texture);
+	void add_texture(const Ref<Texture2D> &p_texture);
 	void add_char(CharType p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance = -1);
 
 	int get_character_count() const;
@@ -176,7 +176,7 @@ public:
 	Character get_character(CharType p_char) const;
 
 	int get_texture_count() const;
-	Ref<Texture> get_texture(int p_idx) const;
+	Ref<Texture2D> get_texture(int p_idx) const;
 
 	void add_kerning_pair(CharType p_A, CharType p_B, int p_kerning);
 	int get_kerning_pair(CharType p_A, CharType p_B) const;
@@ -200,7 +200,7 @@ public:
 
 class ResourceFormatLoaderBMFont : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL, bool p_use_sub_threads = false, float *r_progress = nullptr);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

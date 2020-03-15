@@ -83,7 +83,7 @@ void DocDump::dump(const String &p_file) {
 	FileAccess *f = FileAccess::open(p_file, FileAccess::WRITE);
 
 	_write_string(f, 0, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
-	_write_string(f, 0, String("<doc version=\"") + VERSION_NUMBER + "\" name=\"Engine Types\">");
+	_write_string(f, 0, String("<doc version=\"") + VERSION_BRANCH + "\" name=\"Engine Types\">");
 
 	while (class_list.size()) {
 
@@ -93,16 +93,14 @@ void DocDump::dump(const String &p_file) {
 		String inherits = ClassDB::get_parent_class(name);
 		if (inherits != "")
 			header += " inherits=\"" + inherits + "\"";
-		String category = ClassDB::get_category(name);
-		if (category == "")
-			category = "Core";
-		header += " category=\"" + category + "\"";
-		header += ">";
 		_write_string(f, 0, header);
+
 		_write_string(f, 1, "<brief_description>");
 		_write_string(f, 1, "</brief_description>");
+
 		_write_string(f, 1, "<description>");
 		_write_string(f, 1, "</description>");
+
 		_write_string(f, 1, "<methods>");
 
 		List<MethodInfo> method_list;
@@ -163,10 +161,13 @@ void DocDump::dump(const String &p_file) {
 									default_arg_text = "false";
 								break;
 							case Variant::INT:
-							case Variant::REAL:
+							case Variant::FLOAT:
 								//keep it
 								break;
 							case Variant::STRING:
+							case Variant::STRING_NAME:
+								default_arg_text = "@\"" + default_arg_text + "\"";
+								break;
 							case Variant::NODE_PATH:
 								default_arg_text = "\"" + default_arg_text + "\"";
 								break;
@@ -186,16 +187,18 @@ void DocDump::dump(const String &p_file) {
 							case Variant::AABB:
 							case Variant::BASIS:
 							case Variant::COLOR:
-							case Variant::POOL_BYTE_ARRAY:
-							case Variant::POOL_INT_ARRAY:
-							case Variant::POOL_REAL_ARRAY:
-							case Variant::POOL_STRING_ARRAY:
-							case Variant::POOL_VECTOR3_ARRAY:
-							case Variant::POOL_COLOR_ARRAY:
+							case Variant::PACKED_BYTE_ARRAY:
+							case Variant::PACKED_INT32_ARRAY:
+							case Variant::PACKED_FLOAT32_ARRAY:
+							case Variant::PACKED_INT64_ARRAY:
+							case Variant::PACKED_FLOAT64_ARRAY:
+							case Variant::PACKED_STRING_ARRAY:
+							case Variant::PACKED_VECTOR3_ARRAY:
+							case Variant::PACKED_COLOR_ARRAY:
 								default_arg_text = Variant::get_type_name(default_arg.get_type()) + "(" + default_arg_text + ")";
 								break;
 							case Variant::OBJECT:
-							case Variant::DICTIONARY: // 20
+							case Variant::DICTIONARY:
 							case Variant::ARRAY:
 							case Variant::_RID:
 

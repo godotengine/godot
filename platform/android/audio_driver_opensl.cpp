@@ -44,8 +44,8 @@ void AudioDriverOpenSL::_buffer_callback(
 
 	if (pause) {
 		mix = false;
-	} else if (mutex) {
-		mix = mutex->try_lock() == OK;
+	} else {
+		mix = mutex.try_lock() == OK;
 	}
 
 	if (mix) {
@@ -58,8 +58,8 @@ void AudioDriverOpenSL::_buffer_callback(
 		}
 	}
 
-	if (mutex && mix)
-		mutex->unlock();
+	if (mix)
+		mutex.unlock();
 
 	const int32_t *src_buff = mixdown_buffer;
 
@@ -107,7 +107,6 @@ Error AudioDriverOpenSL::init() {
 
 void AudioDriverOpenSL::start() {
 
-	mutex = Mutex::create();
 	active = false;
 
 	SLresult res;
@@ -208,8 +207,8 @@ void AudioDriverOpenSL::_record_buffer_callback(SLAndroidSimpleBufferQueueItf qu
 
 	for (int i = 0; i < rec_buffer.size(); i++) {
 		int32_t sample = rec_buffer[i] << 16;
-		capture_buffer_write(sample);
-		capture_buffer_write(sample); // call twice to convert to Stereo
+		input_buffer_write(sample);
+		input_buffer_write(sample); // call twice to convert to Stereo
 	}
 
 	SLresult res = (*recordBufferQueueItf)->Enqueue(recordBufferQueueItf, rec_buffer.ptrw(), rec_buffer.size() * sizeof(int16_t));
@@ -280,7 +279,7 @@ Error AudioDriverOpenSL::capture_init_device() {
 
 	const int rec_buffer_frames = 2048;
 	rec_buffer.resize(rec_buffer_frames);
-	capture_buffer_init(rec_buffer_frames);
+	input_buffer_init(rec_buffer_frames);
 
 	res = (*recordBufferQueueItf)->Enqueue(recordBufferQueueItf, rec_buffer.ptrw(), rec_buffer.size() * sizeof(int16_t));
 	ERR_FAIL_COND_V(res != SL_RESULT_SUCCESS, ERR_CANT_OPEN);
@@ -329,14 +328,14 @@ AudioDriver::SpeakerMode AudioDriverOpenSL::get_speaker_mode() const {
 
 void AudioDriverOpenSL::lock() {
 
-	if (active && mutex)
-		mutex->lock();
+	if (active)
+		mutex.lock();
 }
 
 void AudioDriverOpenSL::unlock() {
 
-	if (active && mutex)
-		mutex->unlock();
+	if (active)
+		mutex.unlock();
 }
 
 void AudioDriverOpenSL::finish() {
@@ -359,7 +358,6 @@ void AudioDriverOpenSL::set_pause(bool p_pause) {
 
 AudioDriverOpenSL::AudioDriverOpenSL() {
 	s_ad = this;
-	mutex = Mutex::create(); //NULL;
 	pause = false;
 	active = false;
 }

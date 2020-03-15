@@ -35,6 +35,7 @@
 #include "core/io/resource_saver.h"
 #include "core/oa_hash_map.h"
 #include "core/ordered_hash_map.h"
+#include "core/os/mutex.h"
 #include "core/os/thread_safe.h"
 #include "core/resource.h"
 #include "core/script_language.h"
@@ -44,16 +45,13 @@
 #include "modules/gdnative/gdnative.h"
 #include <nativescript/godot_nativescript.h>
 
-#ifndef NO_THREADS
-#include "core/os/mutex.h"
-#endif
-
 struct NativeScriptDesc {
 
 	struct Method {
 		godot_instance_method method;
 		MethodInfo info;
 		int rpc_mode;
+		uint16_t rpc_method_id;
 		String documentation;
 	};
 	struct Property {
@@ -62,6 +60,7 @@ struct NativeScriptDesc {
 		PropertyInfo info;
 		Variant default_value;
 		int rset_mode;
+		uint16_t rset_property_id;
 		String documentation;
 	};
 
@@ -70,7 +69,9 @@ struct NativeScriptDesc {
 		String documentation;
 	};
 
+	uint16_t rpc_count;
 	Map<StringName, Method> methods;
+	uint16_t rset_count;
 	OrderedHashMap<StringName, Property> properties;
 	Map<StringName, Signal> signals_; // QtCreator doesn't like the name signals
 	StringName base;
@@ -86,7 +87,9 @@ struct NativeScriptDesc {
 	bool is_tool;
 
 	inline NativeScriptDesc() :
+			rpc_count(0),
 			methods(),
+			rset_count(0),
 			properties(),
 			signals_(),
 			base(),
@@ -121,9 +124,7 @@ class NativeScript : public Script {
 	String script_class_name;
 	String script_class_icon_path;
 
-#ifndef NO_THREADS
-	Mutex *owners_lock;
-#endif
+	Mutex owners_lock;
 	Set<Object *> instance_owners;
 
 protected:
@@ -174,12 +175,24 @@ public:
 	virtual void get_script_method_list(List<MethodInfo> *p_list) const;
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
 
+	virtual Vector<ScriptNetData> get_rpc_methods() const;
+	virtual uint16_t get_rpc_method_id(const StringName &p_method) const;
+	virtual StringName get_rpc_method(uint16_t p_id) const;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(uint16_t p_id) const;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
+
+	virtual Vector<ScriptNetData> get_rset_properties() const;
+	virtual uint16_t get_rset_property_id(const StringName &p_variable) const;
+	virtual StringName get_rset_property(uint16_t p_id) const;
+	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(uint16_t p_id) const;
+	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
+
 	String get_class_documentation() const;
 	String get_method_documentation(const StringName &p_method) const;
 	String get_signal_documentation(const StringName &p_signal_name) const;
 	String get_property_documentation(const StringName &p_path) const;
 
-	Variant _new(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	Variant _new(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	NativeScript();
 	~NativeScript();
@@ -206,12 +219,23 @@ public:
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid) const;
 	virtual void get_method_list(List<MethodInfo> *p_list) const;
 	virtual bool has_method(const StringName &p_method) const;
-	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	virtual void notification(int p_notification);
 	String to_string(bool *r_valid);
 	virtual Ref<Script> get_script() const;
+
+	virtual Vector<ScriptNetData> get_rpc_methods() const;
+	virtual uint16_t get_rpc_method_id(const StringName &p_method) const;
+	virtual StringName get_rpc_method(uint16_t p_id) const;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(uint16_t p_id) const;
 	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
+
+	virtual Vector<ScriptNetData> get_rset_properties() const;
+	virtual uint16_t get_rset_property_id(const StringName &p_variable) const;
+	virtual StringName get_rset_property(uint16_t p_id) const;
+	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(uint16_t p_id) const;
 	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
+
 	virtual ScriptLanguage *get_language();
 
 	virtual void call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount);
@@ -237,9 +261,8 @@ private:
 
 	void _unload_stuff(bool p_reload = false);
 
+	Mutex mutex;
 #ifndef NO_THREADS
-	Mutex *mutex;
-
 	Set<Ref<GDNativeLibrary> > libs_to_init;
 	Set<NativeScript *> scripts_to_register;
 	volatile bool has_objects_to_register; // so that we don't lock mutex every frame - it's rarely needed
@@ -323,7 +346,7 @@ public:
 	virtual bool has_named_classes() const;
 	virtual bool supports_builtin_mode() const;
 	virtual int find_function(const String &p_function, const String &p_code) const;
-	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const;
+	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const;
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value);
 	virtual String debug_get_error() const;
@@ -383,7 +406,7 @@ public:
 
 class ResourceFormatLoaderNativeScript : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL, bool p_use_sub_threads = false, float *r_progress = nullptr);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

@@ -57,6 +57,8 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 	args.push_back("--allow_focus_steal_pid");
 	args.push_back(itos(OS::get_singleton()->get_process_id()));
 
+	bool debug_collisions = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisons", false);
+	bool debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
 	if (debug_collisions) {
 		args.push_back("--debug-collisions");
 	}
@@ -187,48 +189,47 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 	};
 	printf("\n");
 
-	pid = 0;
-	Error err = OS::get_singleton()->execute(exec, args, false, &pid);
-	ERR_FAIL_COND_V(err, err);
+	int instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
+	for (int i = 0; i < instances; i++) {
+		OS::ProcessID pid = 0;
+		Error err = OS::get_singleton()->execute(exec, args, false, &pid);
+		ERR_FAIL_COND_V(err, err);
+		pids.push_back(pid);
+	}
 
 	status = STATUS_PLAY;
 
 	return OK;
 }
 
+bool EditorRun::has_child_process(OS::ProcessID p_pid) const {
+	for (const List<OS::ProcessID>::Element *E = pids.front(); E; E = E->next()) {
+		if (E->get() == p_pid)
+			return true;
+	}
+	return false;
+}
+
+void EditorRun::stop_child_process(OS::ProcessID p_pid) {
+	if (has_child_process(p_pid)) {
+		OS::get_singleton()->kill(p_pid);
+		pids.erase(p_pid);
+	}
+}
+
 void EditorRun::stop() {
 
-	if (status != STATUS_STOP && pid != 0) {
+	if (status != STATUS_STOP && pids.size() > 0) {
 
-		OS::get_singleton()->kill(pid);
+		for (List<OS::ProcessID>::Element *E = pids.front(); E; E = E->next()) {
+			OS::get_singleton()->kill(E->get());
+		}
 	}
 
 	status = STATUS_STOP;
 }
 
-void EditorRun::set_debug_collisions(bool p_debug) {
-
-	debug_collisions = p_debug;
-}
-
-bool EditorRun::get_debug_collisions() const {
-
-	return debug_collisions;
-}
-
-void EditorRun::set_debug_navigation(bool p_debug) {
-
-	debug_navigation = p_debug;
-}
-
-bool EditorRun::get_debug_navigation() const {
-
-	return debug_navigation;
-}
-
 EditorRun::EditorRun() {
 
 	status = STATUS_STOP;
-	debug_collisions = false;
-	debug_navigation = false;
 }

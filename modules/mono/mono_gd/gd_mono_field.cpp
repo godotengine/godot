@@ -247,37 +247,37 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 			}
 
 			if (array_type->eklass == CACHED_CLASS_RAW(uint8_t)) {
-				SET_FROM_ARRAY(PoolByteArray);
+				SET_FROM_ARRAY(PackedByteArray);
 				break;
 			}
 
 			if (array_type->eklass == CACHED_CLASS_RAW(int32_t)) {
-				SET_FROM_ARRAY(PoolIntArray);
+				SET_FROM_ARRAY(PackedInt32Array);
 				break;
 			}
 
 			if (array_type->eklass == REAL_T_MONOCLASS) {
-				SET_FROM_ARRAY(PoolRealArray);
+				SET_FROM_ARRAY(PackedFloat32Array);
 				break;
 			}
 
 			if (array_type->eklass == CACHED_CLASS_RAW(String)) {
-				SET_FROM_ARRAY(PoolStringArray);
+				SET_FROM_ARRAY(PackedStringArray);
 				break;
 			}
 
 			if (array_type->eklass == CACHED_CLASS_RAW(Vector2)) {
-				SET_FROM_ARRAY(PoolVector2Array);
+				SET_FROM_ARRAY(PackedVector2Array);
 				break;
 			}
 
 			if (array_type->eklass == CACHED_CLASS_RAW(Vector3)) {
-				SET_FROM_ARRAY(PoolVector3Array);
+				SET_FROM_ARRAY(PackedVector3Array);
 				break;
 			}
 
 			if (array_type->eklass == CACHED_CLASS_RAW(Color)) {
-				SET_FROM_ARRAY(PoolColorArray);
+				SET_FROM_ARRAY(PackedColorArray);
 				break;
 			}
 
@@ -370,7 +370,7 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 					int32_t val = p_value.operator signed int();
 					mono_field_set_value(p_object, mono_field, &val);
 				} break;
-				case Variant::REAL: {
+				case Variant::FLOAT: {
 #ifdef REAL_T_IS_DOUBLE
 					double val = p_value.operator double();
 					mono_field_set_value(p_object, mono_field, &val);
@@ -434,26 +434,26 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 					MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Array(), CACHED_CLASS(Array));
 					mono_field_set_value(p_object, mono_field, managed);
 				} break;
-				case Variant::POOL_BYTE_ARRAY: {
-					SET_FROM_ARRAY(PoolByteArray);
+				case Variant::PACKED_BYTE_ARRAY: {
+					SET_FROM_ARRAY(PackedByteArray);
 				} break;
-				case Variant::POOL_INT_ARRAY: {
-					SET_FROM_ARRAY(PoolIntArray);
+				case Variant::PACKED_INT32_ARRAY: {
+					SET_FROM_ARRAY(PackedInt32Array);
 				} break;
-				case Variant::POOL_REAL_ARRAY: {
-					SET_FROM_ARRAY(PoolRealArray);
+				case Variant::PACKED_FLOAT32_ARRAY: {
+					SET_FROM_ARRAY(PackedFloat32Array);
 				} break;
-				case Variant::POOL_STRING_ARRAY: {
-					SET_FROM_ARRAY(PoolStringArray);
+				case Variant::PACKED_STRING_ARRAY: {
+					SET_FROM_ARRAY(PackedStringArray);
 				} break;
-				case Variant::POOL_VECTOR2_ARRAY: {
-					SET_FROM_ARRAY(PoolVector2Array);
+				case Variant::PACKED_VECTOR2_ARRAY: {
+					SET_FROM_ARRAY(PackedVector2Array);
 				} break;
-				case Variant::POOL_VECTOR3_ARRAY: {
-					SET_FROM_ARRAY(PoolVector3Array);
+				case Variant::PACKED_VECTOR3_ARRAY: {
+					SET_FROM_ARRAY(PackedVector3Array);
 				} break;
-				case Variant::POOL_COLOR_ARRAY: {
-					SET_FROM_ARRAY(PoolColorArray);
+				case Variant::PACKED_COLOR_ARRAY: {
+					SET_FROM_ARRAY(PackedColorArray);
 				} break;
 				default: break;
 			}
@@ -512,7 +512,7 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 		} break;
 
 		default: {
-			ERR_PRINTS("Attempted to set the value of a field of unexpected type encoding: " + itos(type.type_encoding) + ".");
+			ERR_PRINT("Attempted to set the value of a field of unexpected type encoding: " + itos(type.type_encoding) + ".");
 		} break;
 	}
 

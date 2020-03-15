@@ -63,6 +63,10 @@ Error FileAccessCompressed::open_after_magic(FileAccess *p_base) {
 	f = p_base;
 	cmode = (Compression::Mode)f->get_32();
 	block_size = f->get_32();
+	if (block_size == 0) {
+		f = NULL; // Let the caller to handle the FileAccess object if failed to open as compressed file.
+		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Can't open compressed file '" + p_base->get_path() + "' with block size 0, it is corrupted.");
+	}
 	read_total = f->get_32();
 	int bc = (read_total / block_size) + 1;
 	int acc_ofs = f->get_position() + bc * 4;
@@ -125,13 +129,11 @@ Error FileAccessCompressed::_open(const String &p_path, int p_mode_flags) {
 		char rmagic[5];
 		f->get_buffer((uint8_t *)rmagic, 4);
 		rmagic[4] = 0;
-		if (magic != rmagic) {
+		if (magic != rmagic || open_after_magic(f) != OK) {
 			memdelete(f);
 			f = NULL;
 			return ERR_FILE_UNRECOGNIZED;
 		}
-
-		open_after_magic(f);
 	}
 
 	return OK;

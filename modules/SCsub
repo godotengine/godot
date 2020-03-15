@@ -2,23 +2,32 @@
 
 Import('env')
 
+import modules_builders
+
 env_modules = env.Clone()
 
 Export('env_modules')
 
-env.modules_sources = []
+# Header with MODULE_*_ENABLED defines.
+env.CommandNoCache("modules_enabled.gen.h", Value(env.module_list), modules_builders.generate_modules_enabled)
 
-env_modules.add_source_files(env.modules_sources, "register_module_types.gen.cpp")
+# libmodule_<name>.a for each active module.
+for module in env.module_list:
+    env.modules_sources = []
+    SConscript(module + "/SCsub")
 
-for x in env.module_list:
-    if (x in env.disabled_modules):
+    # Some modules are not linked automatically but can be enabled optionally
+    # on iOS, so we handle those specially.
+    if env["platform"] == "iphone" and module in ["arkit", "camera"]:
         continue
-    env_modules.Append(CPPDEFINES=["MODULE_" + x.upper() + "_ENABLED"])
-    SConscript(x + "/SCsub")
 
-if env['split_libmodules']:
-    env.split_lib("modules", env_lib = env_modules)
-else:
-    lib = env_modules.add_library("modules", env.modules_sources)
-
+    lib = env_modules.add_library("module_%s" % module, env.modules_sources)
     env.Prepend(LIBS=[lib])
+
+# libmodules.a with only register_module_types.
+# Must be last so that all libmodule_<name>.a libraries are on the right side
+# in the linker command.
+env.modules_sources = []
+env_modules.add_source_files(env.modules_sources, "register_module_types.gen.cpp")
+lib = env_modules.add_library("modules", env.modules_sources)
+env.Prepend(LIBS=[lib])

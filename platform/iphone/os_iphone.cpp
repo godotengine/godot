@@ -32,8 +32,16 @@
 
 #include "os_iphone.h"
 
+#if defined(OPENGL_ENABLED)
 #include "drivers/gles2/rasterizer_gles2.h"
-#include "drivers/gles3/rasterizer_gles3.h"
+#endif
+
+#if defined(VULKAN_ENABLED)
+#include "servers/visual/rasterizer_rd/rasterizer_rd.h"
+// #import <QuartzCore/CAMetalLayer.h>
+#include <vulkan/vulkan_metal.h>
+#endif
+
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 
@@ -57,8 +65,6 @@ int OSIPhone::get_video_driver_count() const {
 const char *OSIPhone::get_video_driver_name(int p_driver) const {
 
 	switch (p_driver) {
-		case VIDEO_DRIVER_GLES3:
-			return "GLES3";
 		case VIDEO_DRIVER_GLES2:
 			return "GLES2";
 	}
@@ -94,7 +100,6 @@ String OSIPhone::get_unique_id() const {
 void OSIPhone::initialize_core() {
 
 	OS_Unix::initialize_core();
-	SemaphoreIphone::make_default();
 
 	set_data_dir(data_dir);
 };
@@ -103,62 +108,44 @@ int OSIPhone::get_current_video_driver() const {
 	return video_driver_index;
 }
 
-extern bool gles3_available; // from gl_view.mm
-
 Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+	video_driver_index = p_video_driver;
 
-	bool use_gl3 = GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES3";
+#if defined(OPENGL_ENABLED)
 	bool gl_initialization_error = false;
 
-	while (true) {
-		if (use_gl3) {
-			if (RasterizerGLES3::is_viable() == OK && gles3_available) {
-				RasterizerGLES3::register_config();
-				RasterizerGLES3::make_current();
-				break;
-			} else {
-				if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2")) {
-					p_video_driver = VIDEO_DRIVER_GLES2;
-					use_gl3 = false;
-					continue;
-				} else {
-					gl_initialization_error = true;
-					break;
-				}
-			}
-		} else {
-			if (RasterizerGLES2::is_viable() == OK) {
-				RasterizerGLES2::register_config();
-				RasterizerGLES2::make_current();
-				break;
-			} else {
-				gl_initialization_error = true;
-				break;
-			}
-		}
+	// FIXME: Add Vulkan support via MoltenVK. Add fallback code back?
+
+	if (RasterizerGLES2::is_viable() == OK) {
+		RasterizerGLES2::register_config();
+		RasterizerGLES2::make_current();
+	} else {
+		gl_initialization_error = true;
 	}
 
 	if (gl_initialization_error) {
 		OS::get_singleton()->alert("Your device does not support any of the supported OpenGL versions.",
-				"Unable to initialize Video driver");
+				"Unable to initialize video driver");
 		return ERR_UNAVAILABLE;
 	}
+#endif
 
-	video_driver_index = p_video_driver;
+#if defined(VULKAN_ENABLED)
+	RasterizerRD::make_current();
+#endif
+
 	visual_server = memnew(VisualServerRaster);
 	// FIXME: Reimplement threaded rendering
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 		visual_server = memnew(VisualServerWrapMT(visual_server, false));
 	}
-
 	visual_server->init();
 	//visual_server->cursor_set_visible(false, 0);
 
+#if defined(OPENGL_ENABLED)
 	// reset this to what it should be, it will have been set to 0 after visual_server->init() is called
-	if (use_gl3)
-		RasterizerStorageGLES3::system_fbo = gl_view_base_fb;
-	else
-		RasterizerStorageGLES2::system_fbo = gl_view_base_fb;
+	RasterizerStorageGLES2::system_fbo = gl_view_base_fb;
+#endif
 
 	AudioDriverManager::initialize(p_audio_driver);
 
@@ -223,7 +210,8 @@ void OSIPhone::key(uint32_t p_key, bool p_pressed) {
 	ev.instance();
 	ev->set_echo(false);
 	ev->set_pressed(p_pressed);
-	ev->set_scancode(p_key);
+	ev->set_keycode(p_key);
+	ev->set_physical_keycode(p_key);
 	ev->set_unicode(p_key);
 	queue_event(ev);
 };
@@ -356,14 +344,32 @@ void OSIPhone::delete_main_loop() {
 
 void OSIPhone::finalize() {
 
-	if (main_loop) // should not happen?
-		memdelete(main_loop);
+	delete_main_loop();
+
+	memdelete(input);
+	memdelete(ios);
+
+#ifdef GAME_CENTER_ENABLED
+	memdelete(game_center);
+#endif
+
+#ifdef STOREKIT_ENABLED
+	memdelete(store_kit);
+#endif
+
+#ifdef ICLOUD_ENABLED
+	memdelete(icloud);
+#endif
 
 	visual_server->finish();
 	memdelete(visual_server);
 	//	memdelete(rasterizer);
 
-	memdelete(input);
+	// Free unhandled events before close
+	for (int i = 0; i < MAX_EVENTS; i++) {
+		event_queue[i].unref();
+	};
+	event_count = 0;
 };
 
 void OSIPhone::set_mouse_show(bool p_show){};
@@ -447,9 +453,10 @@ bool OSIPhone::can_draw() const {
 };
 
 int OSIPhone::set_base_framebuffer(int p_fb) {
-
+#if defined(OPENGL_ENABLED)
 	// gl_view_base_fb has not been updated yet
-	RasterizerStorageGLES3::system_fbo = p_fb;
+	RasterizerStorageGLES2::system_fbo = p_fb;
+#endif
 
 	return 0;
 };
@@ -464,7 +471,7 @@ extern Error _shell_open(String p_uri);
 extern void _set_keep_screen_on(bool p_enabled);
 extern void _vibrate();
 
-void OSIPhone::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect) {
+void OSIPhone::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_input_length) {
 	_show_keyboard(p_existing_text);
 };
 

@@ -45,7 +45,7 @@ void PropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
 
 	if (k.is_valid()) {
 
-		switch (k->get_scancode()) {
+		switch (k->get_keycode()) {
 			case KEY_UP:
 			case KEY_DOWN:
 			case KEY_PAGEUP:
@@ -95,7 +95,7 @@ void PropertySelector::_update_search() {
 			instance->get_property_list(&props, true);
 		} else if (type != Variant::NIL) {
 			Variant v;
-			Variant::CallError ce;
+			Callable::CallError ce;
 			v = Variant::construct(type, NULL, 0, ce);
 
 			v.get_property_list(&props);
@@ -120,7 +120,7 @@ void PropertySelector::_update_search() {
 
 		bool found = false;
 
-		Ref<Texture> type_icons[Variant::VARIANT_MAX] = {
+		Ref<Texture2D> type_icons[Variant::VARIANT_MAX] = {
 			Control::get_icon("Variant", "EditorIcons"),
 			Control::get_icon("bool", "EditorIcons"),
 			Control::get_icon("int", "EditorIcons"),
@@ -141,13 +141,13 @@ void PropertySelector::_update_search() {
 			Control::get_icon("Object", "EditorIcons"),
 			Control::get_icon("Dictionary", "EditorIcons"),
 			Control::get_icon("Array", "EditorIcons"),
-			Control::get_icon("PoolByteArray", "EditorIcons"),
-			Control::get_icon("PoolIntArray", "EditorIcons"),
-			Control::get_icon("PoolRealArray", "EditorIcons"),
-			Control::get_icon("PoolStringArray", "EditorIcons"),
-			Control::get_icon("PoolVector2Array", "EditorIcons"),
-			Control::get_icon("PoolVector3Array", "EditorIcons"),
-			Control::get_icon("PoolColorArray", "EditorIcons")
+			Control::get_icon("PackedByteArray", "EditorIcons"),
+			Control::get_icon("PackedInt32Array", "EditorIcons"),
+			Control::get_icon("PackedFloat32Array", "EditorIcons"),
+			Control::get_icon("PackedStringArray", "EditorIcons"),
+			Control::get_icon("PackedVector2Array", "EditorIcons"),
+			Control::get_icon("PackedVector3Array", "EditorIcons"),
+			Control::get_icon("PackedColorArray", "EditorIcons")
 		};
 
 		for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
@@ -159,7 +159,7 @@ void PropertySelector::_update_search() {
 				category->set_text(0, E->get().name);
 				category->set_selectable(0, false);
 
-				Ref<Texture> icon;
+				Ref<Texture2D> icon;
 				if (E->get().name == "Script Variables") {
 					icon = get_icon("Script", "EditorIcons");
 				} else {
@@ -200,7 +200,7 @@ void PropertySelector::_update_search() {
 
 		if (type != Variant::NIL) {
 			Variant v;
-			Variant::CallError ce;
+			Callable::CallError ce;
 			v = Variant::construct(type, NULL, 0, ce);
 			v.get_method_list(&methods);
 		} else {
@@ -234,7 +234,7 @@ void PropertySelector::_update_search() {
 				category->set_text(0, E->get().name.replace_first("*", ""));
 				category->set_selectable(0, false);
 
-				Ref<Texture> icon;
+				Ref<Texture2D> icon;
 				script_methods = false;
 				String rep = E->get().name.replace("*", "");
 				if (E->get().name == "*Script Methods") {
@@ -389,13 +389,17 @@ void PropertySelector::_item_selected() {
 	help_bit->set_text(text);
 }
 
+void PropertySelector::_hide_requested() {
+	_closed(); // From WindowDialog.
+}
+
 void PropertySelector::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		connect("confirmed", this, "_confirmed");
+		connect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
 	} else if (p_what == NOTIFICATION_EXIT_TREE) {
-		disconnect("confirmed", this, "_confirmed");
+		disconnect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
 	}
 }
 
@@ -404,7 +408,7 @@ void PropertySelector::select_method_from_base_type(const String &p_base, const 
 	base_type = p_base;
 	selected = p_current;
 	type = Variant::NIL;
-	script = 0;
+	script = ObjectID();
 	properties = false;
 	instance = NULL;
 	virtuals_only = p_virtuals_only;
@@ -437,7 +441,7 @@ void PropertySelector::select_method_from_basic_type(Variant::Type p_type, const
 	base_type = "";
 	selected = p_current;
 	type = p_type;
-	script = 0;
+	script = ObjectID();
 	properties = false;
 	instance = NULL;
 	virtuals_only = false;
@@ -453,7 +457,7 @@ void PropertySelector::select_method_from_instance(Object *p_instance, const Str
 	base_type = p_instance->get_class();
 	selected = p_current;
 	type = Variant::NIL;
-	script = 0;
+	script = ObjectID();
 	{
 		Ref<Script> scr = p_instance->get_script();
 		if (scr.is_valid())
@@ -474,7 +478,7 @@ void PropertySelector::select_property_from_base_type(const String &p_base, cons
 	base_type = p_base;
 	selected = p_current;
 	type = Variant::NIL;
-	script = 0;
+	script = ObjectID();
 	properties = true;
 	instance = NULL;
 	virtuals_only = false;
@@ -509,7 +513,7 @@ void PropertySelector::select_property_from_basic_type(Variant::Type p_type, con
 	base_type = "";
 	selected = p_current;
 	type = p_type;
-	script = 0;
+	script = ObjectID();
 	properties = true;
 	instance = NULL;
 	virtuals_only = false;
@@ -525,7 +529,7 @@ void PropertySelector::select_property_from_instance(Object *p_instance, const S
 	base_type = "";
 	selected = p_current;
 	type = Variant::NIL;
-	script = 0;
+	script = ObjectID();
 	properties = true;
 	instance = p_instance;
 	virtuals_only = false;
@@ -542,11 +546,6 @@ void PropertySelector::set_type_filter(const Vector<Variant::Type> &p_type_filte
 
 void PropertySelector::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_text_changed"), &PropertySelector::_text_changed);
-	ClassDB::bind_method(D_METHOD("_confirmed"), &PropertySelector::_confirmed);
-	ClassDB::bind_method(D_METHOD("_sbox_input"), &PropertySelector::_sbox_input);
-	ClassDB::bind_method(D_METHOD("_item_selected"), &PropertySelector::_item_selected);
-
 	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::STRING, "name")));
 }
 
@@ -557,21 +556,21 @@ PropertySelector::PropertySelector() {
 	//set_child_rect(vbc);
 	search_box = memnew(LineEdit);
 	vbc->add_margin_child(TTR("Search:"), search_box);
-	search_box->connect("text_changed", this, "_text_changed");
-	search_box->connect("gui_input", this, "_sbox_input");
+	search_box->connect("text_changed", callable_mp(this, &PropertySelector::_text_changed));
+	search_box->connect("gui_input", callable_mp(this, &PropertySelector::_sbox_input));
 	search_options = memnew(Tree);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 	get_ok()->set_text(TTR("Open"));
 	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
-	search_options->connect("item_activated", this, "_confirmed");
-	search_options->connect("cell_selected", this, "_item_selected");
+	search_options->connect("item_activated", callable_mp(this, &PropertySelector::_confirmed));
+	search_options->connect("cell_selected", callable_mp(this, &PropertySelector::_item_selected));
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
 	virtuals_only = false;
 
 	help_bit = memnew(EditorHelpBit);
 	vbc->add_margin_child(TTR("Description:"), help_bit);
-	help_bit->connect("request_hide", this, "_closed");
+	help_bit->connect("request_hide", callable_mp(this, &PropertySelector::_hide_requested));
 }

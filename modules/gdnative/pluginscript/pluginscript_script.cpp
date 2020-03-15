@@ -34,6 +34,8 @@
 #include "pluginscript_instance.h"
 #include "pluginscript_script.h"
 
+#include <stdint.h>
+
 #ifdef DEBUG_ENABLED
 #define __ASSERT_SCRIPT_REASON "Cannot retrieve PluginScript class for this script, is your code correct?"
 #define ASSERT_SCRIPT_VALID()                                       \
@@ -53,9 +55,9 @@ void PluginScript::_bind_methods() {
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &PluginScript::_new, MethodInfo("new"));
 }
 
-PluginScriptInstance *PluginScript::_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, Variant::CallError &r_error) {
+PluginScriptInstance *PluginScript::_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, Callable::CallError &r_error) {
 
-	r_error.error = Variant::CallError::CALL_OK;
+	r_error.error = Callable::CallError::CALL_OK;
 
 	// Create instance
 	PluginScriptInstance *instance = memnew(PluginScriptInstance());
@@ -65,7 +67,7 @@ PluginScriptInstance *PluginScript::_create_instance(const Variant **p_args, int
 		_instances.insert(instance->get_owner());
 		_language->unlock();
 	} else {
-		r_error.error = Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		memdelete(instance);
 		ERR_FAIL_V(NULL);
 	}
@@ -81,12 +83,12 @@ PluginScriptInstance *PluginScript::_create_instance(const Variant **p_args, int
 	return instance;
 }
 
-Variant PluginScript::_new(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+Variant PluginScript::_new(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 
-	r_error.error = Variant::CallError::CALL_OK;
+	r_error.error = Callable::CallError::CALL_OK;
 
 	if (!_valid) {
-		r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		return Variant();
 	}
 
@@ -100,7 +102,7 @@ Variant PluginScript::_new(const Variant **p_args, int p_argcount, Variant::Call
 	}
 
 	if (!owner) {
-		r_error.error = Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		return Variant();
 	}
 
@@ -192,14 +194,14 @@ ScriptInstance *PluginScript::instance_create(Object *p_this) {
 		if (!ClassDB::is_parent_class(p_this->get_class_name(), base_type)) {
 			String msg = "Script inherits from native type '" + String(base_type) + "', so it can't be instanced in object of type: '" + p_this->get_class() + "'";
 			// TODO: implement PluginscriptLanguage::debug_break_parse
-			// if (ScriptDebugger::get_singleton()) {
+			// if (EngineDebugger::is_active()) {
 			// 	_language->debug_break_parse(get_path(), 0, msg);
 			// }
 			ERR_FAIL_V_MSG(NULL, msg);
 		}
 	}
 
-	Variant::CallError unchecked_error;
+	Callable::CallError unchecked_error;
 	return _create_instance(NULL, 0, p_this, unchecked_error);
 }
 
@@ -298,18 +300,31 @@ Error PluginScript::reload(bool p_keep_state) {
 		_member_lines[*key] = (*members)[*key];
 	}
 	Array *methods = (Array *)&manifest.methods;
+	_rpc_methods.clear();
+	_rpc_variables.clear();
+	if (_ref_base_parent.is_valid()) {
+		_rpc_methods = _ref_base_parent->get_rpc_methods();
+		_rpc_variables = _ref_base_parent->get_rset_properties();
+	}
 	for (int i = 0; i < methods->size(); ++i) {
 		Dictionary v = (*methods)[i];
 		MethodInfo mi = MethodInfo::from_dict(v);
 		_methods_info[mi.name] = mi;
 		// rpc_mode is passed as an optional field and is not part of MethodInfo
 		Variant var = v["rpc_mode"];
-		if (var == Variant()) {
-			_methods_rpc_mode[mi.name] = MultiplayerAPI::RPC_MODE_DISABLED;
-		} else {
-			_methods_rpc_mode[mi.name] = MultiplayerAPI::RPCMode(int(var));
+		if (var != Variant()) {
+			ScriptNetData nd;
+			nd.name = mi.name;
+			nd.mode = MultiplayerAPI::RPCMode(int(var));
+			if (_rpc_methods.find(nd) == -1) {
+				_rpc_methods.push_back(nd);
+			}
 		}
 	}
+
+	// Sort so we are 100% that they are always the same.
+	_rpc_methods.sort_custom<SortNetData>();
+
 	Array *signals = (Array *)&manifest.signals;
 	for (int i = 0; i < signals->size(); ++i) {
 		Variant v = (*signals)[i];
@@ -324,12 +339,18 @@ Error PluginScript::reload(bool p_keep_state) {
 		_properties_default_values[pi.name] = v["default_value"];
 		// rset_mode is passed as an optional field and is not part of PropertyInfo
 		Variant var = v["rset_mode"];
-		if (var == Variant()) {
-			_methods_rpc_mode[pi.name] = MultiplayerAPI::RPC_MODE_DISABLED;
-		} else {
-			_methods_rpc_mode[pi.name] = MultiplayerAPI::RPCMode(int(var));
+		if (var != Variant()) {
+			ScriptNetData nd;
+			nd.name = pi.name;
+			nd.mode = MultiplayerAPI::RPCMode(int(var));
+			if (_rpc_variables.find(nd) == -1) {
+				_rpc_variables.push_back(nd);
+			}
 		}
 	}
+
+	// Sort so we are 100% that they are always the same.
+	_rpc_variables.sort_custom<SortNetData>();
 
 #ifdef TOOLS_ENABLED
 /*for (Set<PlaceHolderScriptInstance*>::Element *E=placeholders.front();E;E=E->next()) {
@@ -407,22 +428,22 @@ ScriptLanguage *PluginScript::get_language() const {
 
 Error PluginScript::load_source_code(const String &p_path) {
 
-	PoolVector<uint8_t> sourcef;
+	Vector<uint8_t> sourcef;
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 	ERR_FAIL_COND_V_MSG(err, err, "Cannot open file '" + p_path + "'.");
 
 	int len = f->get_len();
 	sourcef.resize(len + 1);
-	PoolVector<uint8_t>::Write w = sourcef.write();
-	int r = f->get_buffer(w.ptr(), len);
+	uint8_t *w = sourcef.ptrw();
+	int r = f->get_buffer(w, len);
 	f->close();
 	memdelete(f);
 	ERR_FAIL_COND_V(r != len, ERR_CANT_OPEN);
 	w[len] = 0;
 
 	String s;
-	if (s.parse_utf8((const char *)w.ptr())) {
+	if (s.parse_utf8((const char *)w)) {
 		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Script '" + p_path + "' contains invalid unicode (UTF-8), so it was not loaded. Please ensure that scripts are saved in valid UTF-8 unicode.");
 	}
 
@@ -455,24 +476,70 @@ int PluginScript::get_member_line(const StringName &p_member) const {
 		return -1;
 }
 
+Vector<ScriptNetData> PluginScript::get_rpc_methods() const {
+	return _rpc_methods;
+}
+
+uint16_t PluginScript::get_rpc_method_id(const StringName &p_method) const {
+	ASSERT_SCRIPT_VALID_V(UINT16_MAX);
+	for (int i = 0; i < _rpc_methods.size(); i++) {
+		if (_rpc_methods[i].name == p_method) {
+			return i;
+		}
+	}
+	return UINT16_MAX;
+}
+
+StringName PluginScript::get_rpc_method(const uint16_t p_rpc_method_id) const {
+	ASSERT_SCRIPT_VALID_V(StringName());
+	if (p_rpc_method_id >= _rpc_methods.size())
+		return StringName();
+	return _rpc_methods[p_rpc_method_id].name;
+}
+
+MultiplayerAPI::RPCMode PluginScript::get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const {
+	ASSERT_SCRIPT_VALID_V(MultiplayerAPI::RPC_MODE_DISABLED);
+	if (p_rpc_method_id >= _rpc_methods.size())
+		return MultiplayerAPI::RPC_MODE_DISABLED;
+	return _rpc_methods[p_rpc_method_id].mode;
+}
+
 MultiplayerAPI::RPCMode PluginScript::get_rpc_mode(const StringName &p_method) const {
 	ASSERT_SCRIPT_VALID_V(MultiplayerAPI::RPC_MODE_DISABLED);
-	const Map<StringName, MultiplayerAPI::RPCMode>::Element *e = _methods_rpc_mode.find(p_method);
-	if (e != NULL) {
-		return e->get();
-	} else {
-		return MultiplayerAPI::RPC_MODE_DISABLED;
+	return get_rpc_mode_by_id(get_rpc_method_id(p_method));
+}
+
+Vector<ScriptNetData> PluginScript::get_rset_properties() const {
+	return _rpc_variables;
+}
+
+uint16_t PluginScript::get_rset_property_id(const StringName &p_property) const {
+	ASSERT_SCRIPT_VALID_V(UINT16_MAX);
+	for (int i = 0; i < _rpc_variables.size(); i++) {
+		if (_rpc_variables[i].name == p_property) {
+			return i;
+		}
 	}
+	return UINT16_MAX;
+}
+
+StringName PluginScript::get_rset_property(const uint16_t p_rset_property_id) const {
+	ASSERT_SCRIPT_VALID_V(StringName());
+	if (p_rset_property_id >= _rpc_variables.size())
+		return StringName();
+	return _rpc_variables[p_rset_property_id].name;
+}
+
+MultiplayerAPI::RPCMode PluginScript::get_rset_mode_by_id(const uint16_t p_rset_property_id) const {
+	ASSERT_SCRIPT_VALID_V(MultiplayerAPI::RPC_MODE_DISABLED);
+	if (p_rset_property_id >= _rpc_variables.size())
+		return MultiplayerAPI::RPC_MODE_DISABLED;
+	return _rpc_variables[p_rset_property_id].mode;
 }
 
 MultiplayerAPI::RPCMode PluginScript::get_rset_mode(const StringName &p_variable) const {
 	ASSERT_SCRIPT_VALID_V(MultiplayerAPI::RPC_MODE_DISABLED);
-	const Map<StringName, MultiplayerAPI::RPCMode>::Element *e = _variables_rset_mode.find(p_variable);
-	if (e != NULL) {
-		return e->get();
-	} else {
-		return MultiplayerAPI::RPC_MODE_DISABLED;
-	}
+	return get_rset_mode_by_id(get_rset_property_id(p_variable));
 }
 
 PluginScript::PluginScript() :

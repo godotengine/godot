@@ -10,12 +10,13 @@
 # Tusa Gamer <tusagamer@mailinator.com>, 2018.
 # Máté Lugosi <mate.lugosi@gmail.com>, 2019.
 # sztrovacsek <magadeve@gmail.com>, 2019.
+# Deleted User <noreply+18797@weblate.org>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-26 00:02+0000\n"
-"Last-Translator: sztrovacsek <magadeve@gmail.com>\n"
+"PO-Revision-Date: 2020-01-30 03:56+0000\n"
+"Last-Translator: Deleted User <noreply+18797@weblate.org>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -23,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.10\n"
+"X-Generator: Weblate 3.11-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -32,8 +33,9 @@ msgstr ""
 "Érvénytelen típus argumentum a convert()-hez használjon TYPE_* konstansokat."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+#, fuzzy
 msgid "Expected a string of length 1 (a character)."
-msgstr ""
+msgstr "Egy karakter hosszúságú string-et várt."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -120,7 +122,6 @@ msgid "Value:"
 msgstr "Érték:"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Insert Key Here"
 msgstr "Kulcs Beszúrása"
 
@@ -717,8 +718,9 @@ msgid "Line Number:"
 msgstr "Sor Száma:"
 
 #: editor/code_editor.cpp
-msgid "Replaced %d occurrence(s)."
-msgstr "Lecserélve %d előfordulás."
+#, fuzzy
+msgid "%d replaced."
+msgstr "Csere..."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -1243,8 +1245,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "Hiba a csomagfájl megnyitása során, nem zip formátumú."
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "Már létezik '%s' AutoLoad!"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "Eszközök Kicsomagolása"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr ""
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "%d további fájl"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 #, fuzzy
@@ -1255,6 +1271,11 @@ msgstr "A Csomag Telepítése Sikeresen Megtörtént!"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "Siker!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "Tartalom:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1395,6 +1416,11 @@ msgid "Invalid file, not an audio bus layout."
 msgstr "Érvénytelen fájl, nem egy hangbusz elrendezés."
 
 #: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "Hiba TileSet mentésekor!"
+
+#: editor/editor_audio_buses.cpp
 msgid "Add Bus"
 msgstr "Busz Hozzáadása"
 
@@ -1526,6 +1552,10 @@ msgstr "Név"
 #: editor/editor_autoload_settings.cpp
 msgid "Singleton"
 msgstr "Egyke"
+
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Paraméterek Beillesztése"
 
 #: editor/editor_data.cpp
 msgid "Updating Scene"
@@ -1833,7 +1863,7 @@ msgstr "Mutat Fájlkezelőben"
 msgid "New Folder..."
 msgstr "Új Mappa..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Frissítés"
@@ -2000,12 +2030,26 @@ msgstr "Őt örökli:"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Brief Description"
-msgstr "Rövid Leírás:"
+msgid "Description"
+msgstr "Leírás:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Online Tutorials"
+msgstr "Online Oktatóanyagok:"
 
 #: editor/editor_help.cpp
 msgid "Properties"
 msgstr "Tulajdonságok"
+
+#: editor/editor_help.cpp
+msgid "override:"
+msgstr ""
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Alapértelmezett"
 
 #: editor/editor_help.cpp
 msgid "Methods"
@@ -2021,37 +2065,18 @@ msgid "Enumerations"
 msgstr "Felsorolások"
 
 #: editor/editor_help.cpp
-msgid "enum  "
-msgstr "enum  "
-
-#: editor/editor_help.cpp
 msgid "Constants"
 msgstr "Konstansok"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Class Description"
-msgstr "Leírás"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Online Tutorials"
-msgstr "Online Oktatóanyagok:"
-
-#: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"Jelenleg nincsenek oktatóanyagok ehhez az osztályhoz. [color=$color][url="
-"$url]Hozzájárulhat eggyel[/url][/color], vagy [color=$color][url="
-"$url2]kérvényezhet egyet[/url][/color]."
-
-#: editor/editor_help.cpp
-#, fuzzy
 msgid "Property Descriptions"
 msgstr "Tulajdonság Leírása:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Érték:"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -2239,10 +2264,6 @@ msgstr ""
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
 msgstr ""
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr "Projekt export nem sikerült, hibakód %d."
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -3189,10 +3210,6 @@ msgstr "Sablonok Importálása ZIP Fájlból"
 msgid "Template Package"
 msgstr "Export Sablon Kezelő"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "Projekt Exportálása"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "Könyvtár Exportálása"
@@ -3200,10 +3217,6 @@ msgstr "Könyvtár Exportálása"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "Egyesítés Meglévővel"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "Jelszó:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -4128,16 +4141,17 @@ msgid "Saving..."
 msgstr "Mentés..."
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr " Fájlok"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "Beállítás Alapértelmezettként '%s'-hez"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Alapértelmezett Törlése '%s'-nél"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " Fájlok"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -4187,10 +4201,6 @@ msgstr "Mentés Másként..."
 #: editor/inspector_dock.cpp
 msgid "Copy Params"
 msgstr "Paraméterek Másolása"
-
-#: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "Paraméterek Beillesztése"
 
 #: editor/inspector_dock.cpp
 #, fuzzy
@@ -4734,7 +4744,6 @@ msgid "Animation Tools"
 msgstr "Animációs Eszközök"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr "Animáció"
 
@@ -5876,6 +5885,11 @@ msgid "Auto Insert Key"
 msgstr "Animáció kulcs beillesztés"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Animation Key and Pose Options"
+msgstr "Animáció hossza (másodpercben)"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
 msgstr "Kulcs Beszúrása (Meglévő Nyomvonalakra)"
 
@@ -5985,6 +5999,22 @@ msgstr "Generált Pontok Száma:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
 msgstr "Kibocsátási Maszk"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Solid Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "Könyvtárak és Fájlok:"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -6116,12 +6146,13 @@ msgid "Mesh is empty!"
 msgstr "A háló üres!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Trimesh Body"
-msgstr "Statikus Trimesh Test Létrehozása"
+#, fuzzy
+msgid "Couldn't create a Trimesh collision shape."
+msgstr "Trimesh Ütközési Testvér Létrehozása"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Convex Body"
-msgstr "Statikus Konvex Test Létrehozása"
+msgid "Create Static Trimesh Body"
+msgstr "Statikus Trimesh Test Létrehozása"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
@@ -6133,12 +6164,30 @@ msgid "Create Trimesh Static Shape"
 msgstr "Trimesh Alakzat Létrehozása"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Failed creating shapes!"
+msgid "Can't create a single convex collision shape for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Couldn't create a single convex collision shape."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Convex Shape(s)"
+msgid "Create Single Convex Shape"
+msgstr "Konvex Alakzat Létrehozása"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Can't create multiple convex collision shapes for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Couldn't create any collision shapes."
+msgstr "Körvonalkészítés sikertelen!"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Shapes"
 msgstr "Konvex Alakzat Létrehozása"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -6158,7 +6207,6 @@ msgid "No mesh to debug."
 msgstr "Nincs mesh a hibakereséshez."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr "A modellnek nincs UV-je ezen a rétegen"
 
@@ -6192,17 +6240,55 @@ msgid "Create Trimesh Static Body"
 msgstr "Trimesh Statikus Test Létrehozása"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a StaticBody and assigns a polygon-based collision shape to it "
+"automatically.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
 msgstr "Trimesh Ütközési Testvér Létrehozása"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Convex Collision Sibling(s)"
+msgid "Create Single Convex Collision Sibling"
 msgstr "Konvex Ütközési Testvér Létrehozása"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a single convex collision shape.\n"
+"This is the fastest (but least accurate) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Collision Siblings"
+msgstr "Konvex Ütközési Testvér Létrehozása"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is a performance middle-ground between the two above options."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
 msgstr "Körvonalháló Létrehozása..."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the SpatialMaterial Grow property when using "
+"that property isn't possible."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -7613,6 +7699,10 @@ msgid "Cinematic Preview"
 msgstr "Háló Előnézetek Létrehozása"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Not available when using the GLES2 renderer."
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
 msgstr ""
 
@@ -8738,7 +8828,7 @@ msgstr "TileSet-re..."
 msgid "No VCS addons are available."
 msgstr ""
 
-#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
 msgstr ""
 
@@ -9847,6 +9937,10 @@ msgid "Export PCK/Zip"
 msgstr ""
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "Projekt Exportálása"
+
+#: editor/project_export.cpp
 #, fuzzy
 msgid "Export mode?"
 msgstr "Projekt Exportálása"
@@ -9878,11 +9972,18 @@ msgid "Export With Debug"
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "The path does not exist."
-msgstr ""
+#, fuzzy
+msgid "The path specified doesn't exist."
+msgstr "A fájl nem létezik."
 
 #: editor/project_manager.cpp
-msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
+#, fuzzy
+msgid "Error opening package file (it's not in ZIP format)."
+msgstr "Hiba a csomagfájl megnyitása során, nem zip formátumú."
+
+#: editor/project_manager.cpp
+msgid ""
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -9890,11 +9991,11 @@ msgid "Please choose an empty folder."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Please choose a 'project.godot' or '.zip' file."
+msgid "Please choose a \"project.godot\" or \".zip\" file."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Directory already contains a Godot project."
+msgid "This directory already contains a Godot project."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -9937,10 +10038,6 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
-msgstr ""
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -10560,6 +10657,11 @@ msgstr ""
 
 #: editor/rename_dialog.cpp
 #, fuzzy
+msgid "Use Regular Expressions"
+msgstr "Jelenlegi Verzió:"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
 msgid "Advanced Options"
 msgstr "Illesztési beállítások"
 
@@ -10598,7 +10700,7 @@ msgid ""
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Per Level counter"
+msgid "Per-level Counter"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10629,10 +10731,6 @@ msgid ""
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expressions"
-msgstr ""
-
-#: editor/rename_dialog.cpp
 msgid "Post-Process"
 msgstr ""
 
@@ -10641,11 +10739,11 @@ msgid "Keep"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "CamelCase to under_scored"
+msgid "PascalCase to snake_case"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "under_scored to CamelCase"
+msgid "snake_case to PascalCase"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10666,6 +10764,15 @@ msgstr "Mind Nagybetű"
 #, fuzzy
 msgid "Reset"
 msgstr "Nagyítás Visszaállítása"
+
+#: editor/rename_dialog.cpp
+msgid "Regular Expression Error"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "At character %s"
+msgstr "Érvényes karakterek:"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -11135,7 +11242,7 @@ msgstr ""
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
-msgid "Script is valid."
+msgid "Script path/name is valid."
 msgstr "Az animációs fa érvényes."
 
 #: editor/script_create_dialog.cpp
@@ -11156,6 +11263,11 @@ msgstr "Új %s Létrehozása"
 #, fuzzy
 msgid "Will load an existing script file."
 msgstr "Meglévő Busz Elrendezés betöltése."
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Script file already exists."
+msgstr "Már létezik '%s' AutoLoad!"
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -11236,6 +11348,10 @@ msgid "Copy Error"
 msgstr "Hiba Másolása"
 
 #: editor/script_editor_debugger.cpp
+msgid "Video RAM"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
 #, fuzzy
 msgid "Skip Breakpoints"
 msgstr "Pontok Törlése"
@@ -11283,10 +11399,6 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
-msgstr ""
-
-#: editor/script_editor_debugger.cpp
-msgid "Video Mem"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
@@ -12587,6 +12699,11 @@ msgid ""
 "don't use them."
 msgstr ""
 
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
+msgstr ""
+
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr ""
@@ -12750,7 +12867,14 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Pick a color from the editor window."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
@@ -12860,6 +12984,38 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Replaced %d occurrence(s)."
+#~ msgstr "Lecserélve %d előfordulás."
+
+#~ msgid "Create Static Convex Body"
+#~ msgstr "Statikus Konvex Test Létrehozása"
+
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "Jelenleg nincsenek oktatóanyagok ehhez az osztályhoz. [color=$color][url="
+#~ "$url]Hozzájárulhat eggyel[/url][/color], vagy [color=$color][url="
+#~ "$url2]kérvényezhet egyet[/url][/color]."
+
+#~ msgid "enum  "
+#~ msgstr "enum  "
+
+#, fuzzy
+#~ msgid "Brief Description"
+#~ msgstr "Rövid Leírás:"
+
+#, fuzzy
+#~ msgid "Class Description"
+#~ msgstr "Leírás"
+
+#~ msgid "Project export failed with error code %d."
+#~ msgstr "Projekt export nem sikerült, hibakód %d."
+
+#~ msgid "Password:"
+#~ msgstr "Jelszó:"
 
 #~ msgid "Pause the scene"
 #~ msgstr "Szünetelteti a jelenetet"
@@ -13042,10 +13198,6 @@ msgstr ""
 
 #~ msgid "Col:"
 #~ msgstr "Oszlop:"
-
-#, fuzzy
-#~ msgid "Split already exists."
-#~ msgstr "Már létezik '%s' AutoLoad!"
 
 #, fuzzy
 #~ msgid "Add Split"

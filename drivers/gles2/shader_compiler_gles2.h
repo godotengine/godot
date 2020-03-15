@@ -54,6 +54,7 @@ public:
 		Vector<CharString> custom_defines;
 		Vector<StringName> uniforms;
 		Vector<StringName> texture_uniforms;
+		Vector<ShaderLanguage::DataType> texture_types;
 		Vector<ShaderLanguage::ShaderNode::Uniform::Hint> texture_hints;
 
 		String vertex_global;
@@ -98,4 +99,4 @@ public:
 	ShaderCompilerGLES2();
 };
 
-#endif // SHADERCOMPILERGLES3_H
+#endif // SHADERCOMPILERGLES2_H

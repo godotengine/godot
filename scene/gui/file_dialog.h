@@ -58,7 +58,7 @@ public:
 		MODE_SAVE_FILE
 	};
 
-	typedef Ref<Texture> (*GetIconFunc)(const String &);
+	typedef Ref<Texture2D> (*GetIconFunc)(const String &);
 	typedef void (*RegisterFunc)(FileDialog *);
 
 	static GetIconFunc get_icon_func;
@@ -76,6 +76,8 @@ private:
 	VBoxContainer *vbox;
 	Mode mode;
 	LineEdit *dir;
+	HBoxContainer *drives_container;
+	HBoxContainer *shortcuts_container;
 	OptionButton *drives;
 	Tree *tree;
 	HBoxContainer *file_box;

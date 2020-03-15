@@ -31,6 +31,7 @@
 #ifndef PHYSICS_SERVER_SW
 #define PHYSICS_SERVER_SW
 
+#include "core/rid_owner.h"
 #include "joints_sw.h"
 #include "servers/physics_server.h"
 #include "shape_sw.h"
@@ -58,11 +59,11 @@ class PhysicsServerSW : public PhysicsServer {
 
 	PhysicsDirectBodyStateSW *direct_state;
 
-	mutable RID_Owner<ShapeSW> shape_owner;
-	mutable RID_Owner<SpaceSW> space_owner;
-	mutable RID_Owner<AreaSW> area_owner;
-	mutable RID_Owner<BodySW> body_owner;
-	mutable RID_Owner<JointSW> joint_owner;
+	mutable RID_PtrOwner<ShapeSW> shape_owner;
+	mutable RID_PtrOwner<SpaceSW> space_owner;
+	mutable RID_PtrOwner<AreaSW> area_owner;
+	mutable RID_PtrOwner<BodySW> body_owner;
+	mutable RID_PtrOwner<JointSW> joint_owner;
 
 	//void _clear_query(QuerySW *p_query);
 	friend class CollisionObjectSW;
@@ -176,8 +177,8 @@ public:
 	virtual void body_remove_shape(RID p_body, int p_shape_idx);
 	virtual void body_clear_shapes(RID p_body);
 
-	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_id);
-	virtual uint32_t body_get_object_instance_id(RID p_body) const;
+	virtual void body_attach_object_instance_id(RID p_body, ObjectID p_id);
+	virtual ObjectID body_get_object_instance_id(RID p_body) const;
 
 	virtual void body_set_enable_continuous_collision_detection(RID p_body, bool p_enable);
 	virtual bool body_is_continuous_collision_detection_enabled(RID p_body) const;

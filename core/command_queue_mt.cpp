@@ -34,14 +34,12 @@
 
 void CommandQueueMT::lock() {
 
-	if (mutex)
-		mutex->lock();
+	mutex.lock();
 }
 
 void CommandQueueMT::unlock() {
 
-	if (mutex)
-		mutex->unlock();
+	mutex.unlock();
 }
 
 void CommandQueueMT::wait_for_flush() {
@@ -106,16 +104,14 @@ CommandQueueMT::CommandQueueMT(bool p_sync) {
 	read_ptr = 0;
 	write_ptr = 0;
 	dealloc_ptr = 0;
-	mutex = Mutex::create();
 	command_mem = (uint8_t *)memalloc(COMMAND_MEM_SIZE);
 
 	for (int i = 0; i < SYNC_SEMAPHORES; i++) {
 
-		sync_sems[i].sem = Semaphore::create();
 		sync_sems[i].in_use = false;
 	}
 	if (p_sync)
-		sync = Semaphore::create();
+		sync = memnew(Semaphore);
 	else
 		sync = NULL;
 }
@@ -124,10 +120,5 @@ CommandQueueMT::~CommandQueueMT() {
 
 	if (sync)
 		memdelete(sync);
-	memdelete(mutex);
-	for (int i = 0; i < SYNC_SEMAPHORES; i++) {
-
-		memdelete(sync_sems[i].sem);
-	}
 	memfree(command_mem);
 }

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="LargeTexture" inherits="Texture" category="Core" version="3.2">
+<class name="LargeTexture" inherits="Texture2D" version="4.0">
 	<brief_description>
-		A [Texture] capable of storing many smaller textures with offsets.
+		A [Texture2D] capable of storing many smaller textures with offsets.
 	</brief_description>
 	<description>
-		A [Texture] capable of storing many smaller textures with offsets.
-		You can dynamically add pieces ([Texture]s) to this [LargeTexture] using different offsets.
+		A [Texture2D] capable of storing many smaller textures with offsets.
+		You can dynamically add pieces ([Texture2D]s) to this [LargeTexture] using different offsets.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,7 +15,7 @@
 			</return>
 			<argument index="0" name="ofs" type="Vector2">
 			</argument>
-			<argument index="1" name="texture" type="Texture">
+			<argument index="1" name="texture" type="Texture2D">
 			</argument>
 			<description>
 				Adds [code]texture[/code] to this [LargeTexture], starting on offset [code]ofs[/code].
@@ -45,12 +45,12 @@
 			</description>
 		</method>
 		<method name="get_piece_texture" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the [Texture] of the piece with the index [code]idx[/code].
+				Returns the [Texture2D] of the piece with the index [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_piece_offset">
@@ -69,10 +69,10 @@
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="texture" type="Texture">
+			<argument index="1" name="texture" type="Texture2D">
 			</argument>
 			<description>
-				Sets the [Texture] of the piece with index [code]idx[/code] to [code]texture[/code].
+				Sets the [Texture2D] of the piece with index [code]idx[/code] to [code]texture[/code].
 			</description>
 		</method>
 		<method name="set_size">
@@ -85,9 +85,6 @@
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags" override="true" default="0" />
-	</members>
 	<constants>
 	</constants>
 </class>

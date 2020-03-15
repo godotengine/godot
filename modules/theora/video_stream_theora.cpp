@@ -87,8 +87,8 @@ void VideoStreamPlaybackTheora::video_write(void) {
 	int pitch = 4;
 	frame_data.resize(size.x * size.y * pitch);
 	{
-		PoolVector<uint8_t>::Write w = frame_data.write();
-		char *dst = (char *)w.ptr();
+		uint8_t *w = frame_data.ptrw();
+		char *dst = (char *)w;
 
 		//uv_offset=(ti.pic_x/2)+(yuv[1].stride)*(ti.pic_y/2);
 
@@ -110,7 +110,7 @@ void VideoStreamPlaybackTheora::video_write(void) {
 
 	Ref<Image> img = memnew(Image(size.x, size.y, 0, Image::FORMAT_RGBA8, frame_data)); //zero copy image creation
 
-	texture->set_data(img); //zero copy send to visual server
+	texture->update(img, true); //zero copy send to visual server
 
 	frames_pending = 1;
 }
@@ -147,7 +147,6 @@ void VideoStreamPlaybackTheora::clear() {
 	thread = NULL;
 	ring_buffer.clear();
 #endif
-	//file_name = "";
 
 	theora_p = 0;
 	vorbis_p = 0;
@@ -337,7 +336,9 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		size.x = w;
 		size.y = h;
 
-		texture->create(w, h, Image::FORMAT_RGBA8, Texture::FLAG_FILTER | Texture::FLAG_VIDEO_SURFACE);
+		Ref<Image> img;
+		img.instance();
+		img->create(w, h, false, Image::FORMAT_RGBA8);
 
 	} else {
 		/* tear down the partial theora setup */
@@ -364,11 +365,13 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 };
 
 float VideoStreamPlaybackTheora::get_time() const {
-
-	return time - AudioServer::get_singleton()->get_output_latency() - delay_compensation; //-((get_total())/(float)vi.rate);
+	// FIXME: AudioServer output latency was fixed in af9bb0e, previously it used to
+	// systematically return 0. Now that it gives a proper latency, it broke this
+	// code where the delay compensation likely never really worked.
+	return time - /* AudioServer::get_singleton()->get_output_latency() - */ delay_compensation;
 };
 
-Ref<Texture> VideoStreamPlaybackTheora::get_texture() const {
+Ref<Texture2D> VideoStreamPlaybackTheora::get_texture() const {
 
 	return texture;
 }
@@ -722,7 +725,7 @@ void VideoStreamTheora::_bind_methods() {
 
 ////////////
 
-RES ResourceFormatLoaderTheora::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES ResourceFormatLoaderTheora::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f) {

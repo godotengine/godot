@@ -53,14 +53,6 @@ void GDNativeLibraryEditor::edit(Ref<GDNativeLibrary> p_library) {
 }
 
 void GDNativeLibraryEditor::_bind_methods() {
-
-	ClassDB::bind_method("_on_item_button", &GDNativeLibraryEditor::_on_item_button);
-	ClassDB::bind_method("_on_library_selected", &GDNativeLibraryEditor::_on_library_selected);
-	ClassDB::bind_method("_on_dependencies_selected", &GDNativeLibraryEditor::_on_dependencies_selected);
-	ClassDB::bind_method("_on_filter_selected", &GDNativeLibraryEditor::_on_filter_selected);
-	ClassDB::bind_method("_on_item_collapsed", &GDNativeLibraryEditor::_on_item_collapsed);
-	ClassDB::bind_method("_on_item_activated", &GDNativeLibraryEditor::_on_item_activated);
-	ClassDB::bind_method("_on_create_new_entry", &GDNativeLibraryEditor::_on_create_new_entry);
 }
 
 void GDNativeLibraryEditor::_update_tree() {
@@ -168,7 +160,7 @@ void GDNativeLibraryEditor::_on_library_selected(const String &file) {
 	_set_target_value(file_dialog->get_meta("section"), file_dialog->get_meta("target"), file);
 }
 
-void GDNativeLibraryEditor::_on_dependencies_selected(const PoolStringArray &files) {
+void GDNativeLibraryEditor::_on_dependencies_selected(const PackedStringArray &files) {
 
 	_set_target_value(file_dialog->get_meta("section"), file_dialog->get_meta("target"), files);
 }
@@ -359,7 +351,7 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 		filter_list->set_item_checked(idx, true);
 		idx += 1;
 	}
-	filter_list->connect("index_pressed", this, "_on_filter_selected");
+	filter_list->connect("index_pressed", callable_mp(this, &GDNativeLibraryEditor::_on_filter_selected));
 
 	tree = memnew(Tree);
 	container->add_child(tree);
@@ -374,16 +366,16 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 	tree->set_column_title(2, TTR("Dependencies"));
 	tree->set_column_expand(3, false);
 	tree->set_column_min_width(3, int(110 * EDSCALE));
-	tree->connect("button_pressed", this, "_on_item_button");
-	tree->connect("item_collapsed", this, "_on_item_collapsed");
-	tree->connect("item_activated", this, "_on_item_activated");
+	tree->connect("button_pressed", callable_mp(this, &GDNativeLibraryEditor::_on_item_button));
+	tree->connect("item_collapsed", callable_mp(this, &GDNativeLibraryEditor::_on_item_collapsed));
+	tree->connect("item_activated", callable_mp(this, &GDNativeLibraryEditor::_on_item_activated));
 
 	file_dialog = memnew(EditorFileDialog);
 	file_dialog->set_access(EditorFileDialog::ACCESS_RESOURCES);
 	file_dialog->set_resizable(true);
 	add_child(file_dialog);
-	file_dialog->connect("file_selected", this, "_on_library_selected");
-	file_dialog->connect("files_selected", this, "_on_dependencies_selected");
+	file_dialog->connect("file_selected", callable_mp(this, &GDNativeLibraryEditor::_on_library_selected));
+	file_dialog->connect("files_selected", callable_mp(this, &GDNativeLibraryEditor::_on_dependencies_selected));
 
 	new_architecture_dialog = memnew(ConfirmationDialog);
 	add_child(new_architecture_dialog);
@@ -392,7 +384,7 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 	new_architecture_dialog->add_child(new_architecture_input);
 	new_architecture_dialog->set_custom_minimum_size(Vector2(300, 80) * EDSCALE);
 	new_architecture_input->set_anchors_and_margins_preset(PRESET_HCENTER_WIDE, PRESET_MODE_MINSIZE, 5 * EDSCALE);
-	new_architecture_dialog->get_ok()->connect("pressed", this, "_on_create_new_entry");
+	new_architecture_dialog->get_ok()->connect("pressed", callable_mp(this, &GDNativeLibraryEditor::_on_create_new_entry));
 }
 
 void GDNativeLibraryEditorPlugin::edit(Object *p_node) {

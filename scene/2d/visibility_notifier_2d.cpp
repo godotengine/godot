@@ -38,6 +38,16 @@
 #include "scene/main/viewport.h"
 #include "scene/scene_string_names.h"
 
+#ifdef TOOLS_ENABLED
+Rect2 VisibilityNotifier2D::_edit_get_rect() const {
+	return rect;
+}
+
+bool VisibilityNotifier2D::_edit_use_rect() const {
+	return true;
+}
+#endif
+
 void VisibilityNotifier2D::_enter_viewport(Viewport *p_viewport) {
 
 	ERR_FAIL_COND(viewports.has(p_viewport));
@@ -82,15 +92,6 @@ void VisibilityNotifier2D::set_rect(const Rect2 &p_rect) {
 	}
 
 	_change_notify("rect");
-}
-
-Rect2 VisibilityNotifier2D::_edit_get_rect() const {
-
-	return rect;
-}
-
-bool VisibilityNotifier2D::_edit_use_rect() const {
-	return true;
 }
 
 Rect2 VisibilityNotifier2D::get_rect() const {
@@ -223,7 +224,7 @@ void VisibilityEnabler2D::_find_nodes(Node *p_node) {
 
 	if (add) {
 
-		p_node->connect(SceneStringNames::get_singleton()->tree_exiting, this, "_node_removed", varray(p_node), CONNECT_ONESHOT);
+		p_node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &VisibilityEnabler2D::_node_removed), varray(p_node), CONNECT_ONESHOT);
 		nodes[p_node] = meta;
 		_change_node_state(p_node, false);
 	}
@@ -266,7 +267,7 @@ void VisibilityEnabler2D::_notification(int p_what) {
 
 			if (!visible)
 				_change_node_state(E->key(), true);
-			E->key()->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, "_node_removed");
+			E->key()->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &VisibilityEnabler2D::_node_removed));
 		}
 
 		nodes.clear();

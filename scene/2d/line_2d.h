@@ -56,14 +56,16 @@ public:
 		LINE_TEXTURE_STRETCH
 	};
 
-	Line2D();
-
+#ifdef TOOLS_ENABLED
 	virtual Rect2 _edit_get_rect() const;
 	virtual bool _edit_use_rect() const;
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+#endif
 
-	void set_points(const PoolVector<Vector2> &p_points);
-	PoolVector<Vector2> get_points() const;
+	Line2D();
+
+	void set_points(const Vector<Vector2> &p_points);
+	Vector<Vector2> get_points() const;
 
 	void set_point_position(int i, Vector2 pos);
 	Vector2 get_point_position(int i) const;
@@ -87,8 +89,8 @@ public:
 	void set_gradient(const Ref<Gradient> &gradient);
 	Ref<Gradient> get_gradient() const;
 
-	void set_texture(const Ref<Texture> &texture);
-	Ref<Texture> get_texture() const;
+	void set_texture(const Ref<Texture2D> &texture);
+	Ref<Texture2D> get_texture() const;
 
 	void set_texture_mode(const LineTextureMode mode);
 	LineTextureMode get_texture_mode() const;
@@ -122,7 +124,7 @@ private:
 	void _curve_changed();
 
 private:
-	PoolVector<Vector2> _points;
+	Vector<Vector2> _points;
 	LineJointMode _joint_mode;
 	LineCapMode _begin_cap_mode;
 	LineCapMode _end_cap_mode;
@@ -130,7 +132,7 @@ private:
 	Ref<Curve> _curve;
 	Color _default_color;
 	Ref<Gradient> _gradient;
-	Ref<Texture> _texture;
+	Ref<Texture2D> _texture;
 	LineTextureMode _texture_mode;
 	float _sharp_limit;
 	int _round_precision;

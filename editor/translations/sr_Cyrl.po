@@ -722,8 +722,9 @@ msgid "Line Number:"
 msgstr "Број линије:"
 
 #: editor/code_editor.cpp
-msgid "Replaced %d occurrence(s)."
-msgstr "Замени %d појаве/а."
+#, fuzzy
+msgid "%d replaced."
+msgstr "Замени..."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -1253,8 +1254,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "Грешка при отварању датотеку пакета. Датотека није zip формата."
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "Аутоматско учитавање '%s' већ постоји!"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "Декомпресија средства"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr ""
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "још %d датотека/е"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 #, fuzzy
@@ -1265,6 +1280,11 @@ msgstr "Пакет је инсталиран успешно!"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "Успех!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "Садржај:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1406,6 +1426,11 @@ msgid "Invalid file, not an audio bus layout."
 msgstr "Датотека не садржи распоред звучног баса."
 
 #: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "Грешка при чувању TileSet!"
+
+#: editor/editor_audio_buses.cpp
 msgid "Add Bus"
 msgstr "Додај бас"
 
@@ -1536,6 +1561,10 @@ msgstr "Име"
 #: editor/editor_autoload_settings.cpp
 msgid "Singleton"
 msgstr "Синглетон"
+
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Налепи параметре"
 
 #: editor/editor_data.cpp
 msgid "Updating Scene"
@@ -1846,7 +1875,7 @@ msgstr "Покажи у менаџеру датотека"
 msgid "New Folder..."
 msgstr "Нови директоријум..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Освежи"
@@ -2013,12 +2042,26 @@ msgstr "Наслеђено од:"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Brief Description"
-msgstr "Кратак опис:"
+msgid "Description"
+msgstr "Опис:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Online Tutorials"
+msgstr "Онлајн документација"
 
 #: editor/editor_help.cpp
 msgid "Properties"
 msgstr "Особине"
+
+#: editor/editor_help.cpp
+msgid "override:"
+msgstr ""
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Уобичајено"
 
 #: editor/editor_help.cpp
 msgid "Methods"
@@ -2034,37 +2077,18 @@ msgid "Enumerations"
 msgstr "Енумерације"
 
 #: editor/editor_help.cpp
-msgid "enum  "
-msgstr "enum  "
-
-#: editor/editor_help.cpp
 msgid "Constants"
 msgstr "Константе"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Class Description"
-msgstr "Опис"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Online Tutorials"
-msgstr "Онлајн документација"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"Тренутно нема описа ове методе. Молимо помозите нама тако што ћете [color="
-"$color][url=$url]написати једну[/url][/color]!"
-
-#: editor/editor_help.cpp
-#, fuzzy
 msgid "Property Descriptions"
 msgstr "Опис особине:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Ново име:"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -2252,10 +2276,6 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
-msgstr ""
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -3188,10 +3208,6 @@ msgstr "Увези шаблоне из ZIP датотеке"
 msgid "Template Package"
 msgstr "Менаџер извозних шаблона"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "Извези пројекат"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "Извези библиотеку"
@@ -3199,10 +3215,6 @@ msgstr "Извези библиотеку"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "Споји са постојећим"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "Лозинка:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -4143,16 +4155,17 @@ msgid "Saving..."
 msgstr "Чување..."
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr " Датотеке"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "Постави као уобичајено за „%s“"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Обриши уобичајено за „%s“"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " Датотеке"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -4202,10 +4215,6 @@ msgstr "Сачувај као..."
 #: editor/inspector_dock.cpp
 msgid "Copy Params"
 msgstr "Копирај параметре"
-
-#: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "Налепи параметре"
 
 #: editor/inspector_dock.cpp
 #, fuzzy
@@ -4749,7 +4758,6 @@ msgid "Animation Tools"
 msgstr "Анимационе алатке"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr "Анимација"
 
@@ -5885,6 +5893,11 @@ msgid "Auto Insert Key"
 msgstr "Уметни кључ"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Animation Key and Pose Options"
+msgstr "Анимациони кључ убачен."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
 msgstr "Убаци кључ (постојеће траке)"
 
@@ -5994,6 +6007,22 @@ msgstr "Број генерисаних тачака:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
 msgstr "Маска емисије"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Solid Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "Директоријуми и датотеке:"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -6125,12 +6154,13 @@ msgid "Mesh is empty!"
 msgstr "Мрежа је празна!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Trimesh Body"
-msgstr "Направи статичо тело од троуглова"
+#, fuzzy
+msgid "Couldn't create a Trimesh collision shape."
+msgstr "Направи троугластог сударног брата"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Convex Body"
-msgstr "Направи конвексно статичко тело"
+msgid "Create Static Trimesh Body"
+msgstr "Направи статичо тело од троуглова"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
@@ -6142,12 +6172,30 @@ msgid "Create Trimesh Static Shape"
 msgstr "Направи фигуру од троуглова"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Failed creating shapes!"
+msgid "Can't create a single convex collision shape for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Couldn't create a single convex collision shape."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Convex Shape(s)"
+msgid "Create Single Convex Shape"
+msgstr "Направи конвексну фигуру"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Can't create multiple convex collision shapes for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Couldn't create any collision shapes."
+msgstr "Неуспех при прављењу директоријума."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Shapes"
 msgstr "Направи конвексну фигуру"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -6167,7 +6215,6 @@ msgid "No mesh to debug."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr ""
 
@@ -6200,17 +6247,55 @@ msgid "Create Trimesh Static Body"
 msgstr "Направи троугласто статично тело"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a StaticBody and assigns a polygon-based collision shape to it "
+"automatically.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
 msgstr "Направи троугластог сударног брата"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Convex Collision Sibling(s)"
+msgid "Create Single Convex Collision Sibling"
 msgstr "Направи конвексног сударног брата"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a single convex collision shape.\n"
+"This is the fastest (but least accurate) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Collision Siblings"
+msgstr "Направи конвексног сударног брата"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is a performance middle-ground between the two above options."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
 msgstr "Направи ивичну мрежу..."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the SpatialMaterial Grow property when using "
+"that property isn't possible."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
@@ -7635,6 +7720,10 @@ msgid "Cinematic Preview"
 msgstr "Направи приказ мрежа"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Not available when using the GLES2 renderer."
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
 msgstr "Слободан поглед лево"
 
@@ -8789,7 +8878,7 @@ msgstr "TileSet..."
 msgid "No VCS addons are available."
 msgstr ""
 
-#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
 msgstr "Грешка"
 
@@ -9912,6 +10001,10 @@ msgid "Export PCK/Zip"
 msgstr "Извоз PCK/Zip"
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "Извези пројекат"
+
+#: editor/project_export.cpp
 #, fuzzy
 msgid "Export mode?"
 msgstr "Режим извоза:"
@@ -9943,11 +10036,18 @@ msgid "Export With Debug"
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "The path does not exist."
+#, fuzzy
+msgid "The path specified doesn't exist."
 msgstr "Путања не постоји."
 
 #: editor/project_manager.cpp
-msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
+#, fuzzy
+msgid "Error opening package file (it's not in ZIP format)."
+msgstr "Грешка при отварању датотеку пакета. Датотека није zip формата."
+
+#: editor/project_manager.cpp
+msgid ""
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -9955,11 +10055,11 @@ msgid "Please choose an empty folder."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Please choose a 'project.godot' or '.zip' file."
+msgid "Please choose a \"project.godot\" or \".zip\" file."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Directory already contains a Godot project."
+msgid "This directory already contains a Godot project."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -10004,10 +10104,6 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
-msgstr ""
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -10631,6 +10727,11 @@ msgstr ""
 
 #: editor/rename_dialog.cpp
 #, fuzzy
+msgid "Use Regular Expressions"
+msgstr "Постави правоугаони регион"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
 msgid "Advanced Options"
 msgstr "Поставке залепљавања"
 
@@ -10669,7 +10770,7 @@ msgid ""
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Per Level counter"
+msgid "Per-level Counter"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10700,10 +10801,6 @@ msgid ""
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expressions"
-msgstr ""
-
-#: editor/rename_dialog.cpp
 msgid "Post-Process"
 msgstr ""
 
@@ -10712,11 +10809,11 @@ msgid "Keep"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "CamelCase to under_scored"
+msgid "PascalCase to snake_case"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "under_scored to CamelCase"
+msgid "snake_case to PascalCase"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10737,6 +10834,15 @@ msgstr "Велика слова"
 #, fuzzy
 msgid "Reset"
 msgstr "Ресетуј увеличање"
+
+#: editor/rename_dialog.cpp
+msgid "Regular Expression Error"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "At character %s"
+msgstr "Важећа слова:"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -11209,7 +11315,7 @@ msgstr ""
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
-msgid "Script is valid."
+msgid "Script path/name is valid."
 msgstr "Анимационо дрво је важеће."
 
 #: editor/script_create_dialog.cpp
@@ -11230,6 +11336,11 @@ msgstr "Направи нов"
 #, fuzzy
 msgid "Will load an existing script file."
 msgstr "Учитај постојећи бас распоред."
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Script file already exists."
+msgstr "Аутоматско учитавање '%s' већ постоји!"
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -11317,6 +11428,10 @@ msgid "Copy Error"
 msgstr "Учитај грешке"
 
 #: editor/script_editor_debugger.cpp
+msgid "Video RAM"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
 #, fuzzy
 msgid "Skip Breakpoints"
 msgstr "Обриши тачке"
@@ -11364,10 +11479,6 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
-msgstr ""
-
-#: editor/script_editor_debugger.cpp
-msgid "Video Mem"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
@@ -12671,6 +12782,11 @@ msgid ""
 "don't use them."
 msgstr ""
 
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
+msgstr ""
+
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr ""
@@ -12832,7 +12948,14 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Pick a color from the editor window."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
@@ -12938,6 +13061,35 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Replaced %d occurrence(s)."
+#~ msgstr "Замени %d појаве/а."
+
+#~ msgid "Create Static Convex Body"
+#~ msgstr "Направи конвексно статичко тело"
+
+#, fuzzy
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "Тренутно нема описа ове методе. Молимо помозите нама тако што ћете [color="
+#~ "$color][url=$url]написати једну[/url][/color]!"
+
+#~ msgid "enum  "
+#~ msgstr "enum  "
+
+#, fuzzy
+#~ msgid "Brief Description"
+#~ msgstr "Кратак опис:"
+
+#, fuzzy
+#~ msgid "Class Description"
+#~ msgstr "Опис"
+
+#~ msgid "Password:"
+#~ msgstr "Лозинка:"
 
 #~ msgid "Pause the scene"
 #~ msgstr "Паузирај сцену"
@@ -13172,10 +13324,6 @@ msgstr ""
 
 #~ msgid "Col:"
 #~ msgstr "Колона:"
-
-#, fuzzy
-#~ msgid "Split already exists."
-#~ msgstr "Аутоматско учитавање '%s' већ постоји!"
 
 #, fuzzy
 #~ msgid "Add Split"

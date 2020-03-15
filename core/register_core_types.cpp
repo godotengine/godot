@@ -40,12 +40,14 @@
 #include "core/func_ref.h"
 #include "core/input_map.h"
 #include "core/io/config_file.h"
+#include "core/io/dtls_server.h"
 #include "core/io/http_client.h"
 #include "core/io/image_loader.h"
 #include "core/io/marshalls.h"
 #include "core/io/multiplayer_api.h"
 #include "core/io/networked_multiplayer_peer.h"
 #include "core/io/packet_peer.h"
+#include "core/io/packet_peer_dtls.h"
 #include "core/io/packet_peer_udp.h"
 #include "core/io/pck_packer.h"
 #include "core/io/resource_format_binary.h"
@@ -53,6 +55,7 @@
 #include "core/io/stream_peer_ssl.h"
 #include "core/io/tcp_server.h"
 #include "core/io/translation_loader_po.h"
+#include "core/io/udp_server.h"
 #include "core/io/xml_parser.h"
 #include "core/math/a_star.h"
 #include "core/math/expression.h"
@@ -87,7 +90,7 @@ static IP *ip = NULL;
 
 static _Geometry *_geometry = NULL;
 
-extern Mutex *_global_mutex;
+extern Mutex _global_mutex;
 
 extern void register_global_constants();
 extern void unregister_global_constants();
@@ -96,11 +99,11 @@ extern void unregister_variant_methods();
 
 void register_core_types() {
 
+	//consistency check
+	static_assert(sizeof(Callable) <= 16);
+
 	ObjectDB::setup();
 	ResourceCache::setup();
-	MemoryPool::setup();
-
-	_global_mutex = Mutex::create();
 
 	StringName::setup();
 	ResourceLoader::initialize();
@@ -155,6 +158,9 @@ void register_core_types() {
 	ClassDB::register_class<StreamPeerTCP>();
 	ClassDB::register_class<TCP_Server>();
 	ClassDB::register_class<PacketPeerUDP>();
+	ClassDB::register_class<UDPServer>();
+	ClassDB::register_custom_instance_class<PacketPeerDTLS>();
+	ClassDB::register_custom_instance_class<DTLSServer>();
 
 	// Crypto
 	ClassDB::register_class<HashingContext>();
@@ -179,8 +185,6 @@ void register_core_types() {
 	ClassDB::register_class<UndoRedo>();
 	ClassDB::register_class<HTTPClient>();
 	ClassDB::register_class<TriangleMesh>();
-
-	ClassDB::register_virtual_class<ResourceInteractiveLoader>();
 
 	ClassDB::register_class<ResourceFormatLoader>();
 	ClassDB::register_class<ResourceFormatSaver>();
@@ -311,11 +315,4 @@ void unregister_core_types() {
 	ResourceCache::clear();
 	CoreStringNames::free();
 	StringName::cleanup();
-
-	if (_global_mutex) {
-		memdelete(_global_mutex);
-		_global_mutex = NULL; //still needed at a few places
-	};
-
-	MemoryPool::cleanup();
 }

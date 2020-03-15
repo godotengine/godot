@@ -113,7 +113,7 @@ public:
 	static X509CertificateMbedTLS *get_default_certificates();
 	static void load_default_certificates(String p_path);
 
-	virtual PoolByteArray generate_random_bytes(int p_bytes);
+	virtual PackedByteArray generate_random_bytes(int p_bytes);
 	virtual Ref<CryptoKey> generate_rsa(int p_bytes);
 	virtual Ref<X509Certificate> generate_self_signed_certificate(Ref<CryptoKey> p_key, String p_issuer_name, String p_not_before, String p_not_after);
 

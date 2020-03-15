@@ -133,9 +133,6 @@ public:
 
 void SectionedInspector::_bind_methods() {
 
-	ClassDB::bind_method("_section_selected", &SectionedInspector::_section_selected);
-	ClassDB::bind_method("_search_changed", &SectionedInspector::_search_changed);
-
 	ClassDB::bind_method("update_category_list", &SectionedInspector::update_category_list);
 }
 
@@ -177,7 +174,7 @@ String SectionedInspector::get_full_item_path(const String &p_item) {
 void SectionedInspector::edit(Object *p_object) {
 
 	if (!p_object) {
-		obj = 0;
+		obj = ObjectID();
 		sections->clear();
 
 		filter->set_edited(NULL);
@@ -245,15 +242,15 @@ void SectionedInspector::update_category_list() {
 		if (pi.name.find(":") != -1 || pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path" || pi.name == "resource_local_to_scene" || pi.name.begins_with("_global_script"))
 			continue;
 
+		if (!filter.empty() && !filter.is_subsequence_ofi(pi.name) && !filter.is_subsequence_ofi(pi.name.replace("/", " ").capitalize()))
+			continue;
+
 		int sp = pi.name.find("/");
 		if (sp == -1)
 			pi.name = "global/" + pi.name;
 
 		Vector<String> sectionarr = pi.name.split("/");
 		String metasection;
-
-		if (!filter.empty() && !filter.is_subsequence_ofi(sectionarr[sectionarr.size() - 1].capitalize()))
-			continue;
 
 		int sc = MIN(2, sectionarr.size() - 1);
 
@@ -294,7 +291,7 @@ void SectionedInspector::register_search_box(LineEdit *p_box) {
 
 	search_box = p_box;
 	inspector->register_text_enter(p_box);
-	search_box->connect("text_changed", this, "_search_changed");
+	search_box->connect("text_changed", callable_mp(this, &SectionedInspector::_search_changed));
 }
 
 void SectionedInspector::_search_changed(const String &p_what) {
@@ -308,7 +305,6 @@ EditorInspector *SectionedInspector::get_inspector() {
 }
 
 SectionedInspector::SectionedInspector() :
-		obj(0),
 		sections(memnew(Tree)),
 		filter(memnew(SectionedInspectorFilter)),
 		inspector(memnew(EditorInspector)),
@@ -333,7 +329,7 @@ SectionedInspector::SectionedInspector() :
 	right_vb->add_child(inspector, true);
 	inspector->set_use_doc_hints(true);
 
-	sections->connect("cell_selected", this, "_section_selected");
+	sections->connect("cell_selected", callable_mp(this, &SectionedInspector::_section_selected));
 }
 
 SectionedInspector::~SectionedInspector() {

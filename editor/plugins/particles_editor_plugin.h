@@ -46,16 +46,15 @@ protected:
 	MenuButton *options;
 	HBoxContainer *particles_editor_hb;
 
-	EditorFileDialog *emission_file_dialog;
 	SceneTreeDialog *emission_tree_dialog;
 
 	ConfirmationDialog *emission_dialog;
 	SpinBox *emission_amount;
 	OptionButton *emission_fill;
 
-	PoolVector<Face3> geometry;
+	Vector<Face3> geometry;
 
-	bool _generate(PoolVector<Vector3> &points, PoolVector<Vector3> &normals);
+	bool _generate(Vector<Vector3> &points, Vector<Vector3> &normals);
 	virtual void _generate_emission_points() = 0;
 	void _node_selected(const NodePath &p_path);
 
@@ -77,7 +76,6 @@ class ParticlesEditor : public ParticlesEditorBase {
 
 		MENU_OPTION_GENERATE_AABB,
 		MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE,
-		MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH,
 		MENU_OPTION_CLEAR_EMISSION_VOLUME,
 		MENU_OPTION_CONVERT_TO_CPU_PARTICLES,
 		MENU_OPTION_RESTART,

@@ -191,8 +191,8 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
 	int vpc = 0;
 
 	{
-		PoolVector<uint8_t> data = img->get_data();
-		PoolVector<uint8_t>::Read r = data.read();
+		Vector<uint8_t> data = img->get_data();
+		const uint8_t *r = data.ptr();
 
 		for (int i = 0; i < s.width; i++) {
 			for (int j = 0; j < s.height; j++) {
@@ -270,7 +270,7 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
 
 	ERR_FAIL_COND_MSG(valid_positions.size() == 0, "No pixels with transparency > 128 in image...");
 
-	PoolVector<uint8_t> texdata;
+	Vector<uint8_t> texdata;
 
 	int w = 2048;
 	int h = (vpc / 2048) + 1;
@@ -278,8 +278,8 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
 	texdata.resize(w * h * 2 * sizeof(float));
 
 	{
-		PoolVector<uint8_t>::Write tw = texdata.write();
-		float *twf = (float *)tw.ptr();
+		uint8_t *tw = texdata.ptrw();
+		float *twf = (float *)tw;
 		for (int i = 0; i < vpc; i++) {
 
 			twf[i * 2 + 0] = valid_positions[i].x;
@@ -292,18 +292,18 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
 
 	Ref<ImageTexture> imgt;
 	imgt.instance();
-	imgt->create_from_image(img, 0);
+	imgt->create_from_image(img);
 
 	pm->set_emission_point_texture(imgt);
 	pm->set_emission_point_count(vpc);
 
 	if (capture_colors) {
 
-		PoolVector<uint8_t> colordata;
+		Vector<uint8_t> colordata;
 		colordata.resize(w * h * 4); //use RG texture
 
 		{
-			PoolVector<uint8_t>::Write tw = colordata.write();
+			uint8_t *tw = colordata.ptrw();
 			for (int i = 0; i < vpc * 4; i++) {
 
 				tw[i] = valid_colors[i];
@@ -314,19 +314,19 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
 		img->create(w, h, false, Image::FORMAT_RGBA8, colordata);
 
 		imgt.instance();
-		imgt->create_from_image(img, 0);
+		imgt->create_from_image(img);
 		pm->set_emission_color_texture(imgt);
 	}
 
 	if (valid_normals.size()) {
 		pm->set_emission_shape(ParticlesMaterial::EMISSION_SHAPE_DIRECTED_POINTS);
 
-		PoolVector<uint8_t> normdata;
+		Vector<uint8_t> normdata;
 		normdata.resize(w * h * 2 * sizeof(float)); //use RG texture
 
 		{
-			PoolVector<uint8_t>::Write tw = normdata.write();
-			float *twf = (float *)tw.ptr();
+			uint8_t *tw = normdata.ptrw();
+			float *twf = (float *)tw;
 			for (int i = 0; i < vpc; i++) {
 				twf[i * 2 + 0] = valid_normals[i].x;
 				twf[i * 2 + 1] = valid_normals[i].y;
@@ -337,7 +337,7 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
 		img->create(w, h, false, Image::FORMAT_RGF, normdata);
 
 		imgt.instance();
-		imgt->create_from_image(img, 0);
+		imgt->create_from_image(img);
 		pm->set_emission_normal_texture(imgt);
 
 	} else {
@@ -349,18 +349,13 @@ void Particles2DEditorPlugin::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		menu->get_popup()->connect("id_pressed", this, "_menu_callback");
+		menu->get_popup()->connect("id_pressed", callable_mp(this, &Particles2DEditorPlugin::_menu_callback));
 		menu->set_icon(menu->get_popup()->get_icon("Particles2D", "EditorIcons"));
-		file->connect("file_selected", this, "_file_selected");
+		file->connect("file_selected", callable_mp(this, &Particles2DEditorPlugin::_file_selected));
 	}
 }
 
 void Particles2DEditorPlugin::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_menu_callback"), &Particles2DEditorPlugin::_menu_callback);
-	ClassDB::bind_method(D_METHOD("_file_selected"), &Particles2DEditorPlugin::_file_selected);
-	ClassDB::bind_method(D_METHOD("_generate_visibility_rect"), &Particles2DEditorPlugin::_generate_visibility_rect);
-	ClassDB::bind_method(D_METHOD("_generate_emission_mask"), &Particles2DEditorPlugin::_generate_emission_mask);
 }
 
 Particles2DEditorPlugin::Particles2DEditorPlugin(EditorNode *p_node) {
@@ -416,7 +411,7 @@ Particles2DEditorPlugin::Particles2DEditorPlugin(EditorNode *p_node) {
 
 	toolbar->add_child(generate_visibility_rect);
 
-	generate_visibility_rect->connect("confirmed", this, "_generate_visibility_rect");
+	generate_visibility_rect->connect("confirmed", callable_mp(this, &Particles2DEditorPlugin::_generate_visibility_rect));
 
 	emission_mask = memnew(ConfirmationDialog);
 	emission_mask->set_title(TTR("Load Emission Mask"));
@@ -433,7 +428,7 @@ Particles2DEditorPlugin::Particles2DEditorPlugin(EditorNode *p_node) {
 
 	toolbar->add_child(emission_mask);
 
-	emission_mask->connect("confirmed", this, "_generate_emission_mask");
+	emission_mask->connect("confirmed", callable_mp(this, &Particles2DEditorPlugin::_generate_emission_mask));
 }
 
 Particles2DEditorPlugin::~Particles2DEditorPlugin() {

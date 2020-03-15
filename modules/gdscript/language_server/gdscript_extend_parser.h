@@ -83,6 +83,8 @@ public:
 	_FORCE_INLINE_ const ClassMembers &get_members() const { return members; }
 	_FORCE_INLINE_ const HashMap<String, ClassMembers> &get_inner_classes() const { return inner_classes; }
 
+	Error get_left_function_call(const lsp::Position &p_position, lsp::Position &r_func_pos, int &r_arg_index) const;
+
 	String get_text_for_completion(const lsp::Position &p_cursor) const;
 	String get_text_for_lookup_symbol(const lsp::Position &p_cursor, const String &p_symbol = "", bool p_func_requred = false) const;
 	String get_identifier_under_position(const lsp::Position &p_position, Vector2i &p_offset) const;

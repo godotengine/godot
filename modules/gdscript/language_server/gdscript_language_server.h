@@ -41,7 +41,10 @@ class GDScriptLanguageServer : public EditorPlugin {
 	GDScriptLanguageProtocol protocol;
 
 	Thread *thread;
-	bool thread_exit;
+	bool thread_running;
+	bool started;
+	bool use_thread;
+	int port;
 	static void thread_main(void *p_userdata);
 
 private:

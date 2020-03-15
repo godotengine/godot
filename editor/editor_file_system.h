@@ -145,6 +145,7 @@ class EditorFileSystem : public Node {
 	bool scanning;
 	bool importing;
 	bool first_scan;
+	bool scan_changes_pending;
 	float scan_total;
 	String filesystem_settings_version_for_import;
 	bool revalidate_import_files;

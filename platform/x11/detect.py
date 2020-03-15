@@ -1,7 +1,6 @@
 import os
 import platform
 import sys
-from methods import get_compiler_version, using_gcc, using_clang
 
 
 def is_active():
@@ -61,6 +60,7 @@ def get_opts():
         BoolVariable('use_lld', 'Use the LLD linker', False),
         BoolVariable('use_thinlto', 'Use ThinLTO', False),
         BoolVariable('use_static_cpp', 'Link libgcc and libstdc++ statically for better portability', False),
+        BoolVariable('use_coverage', 'Test Godot coverage', False),
         BoolVariable('use_ubsan', 'Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)', False),
         BoolVariable('use_asan', 'Use LLVM/GCC compiler address sanitizer (ASAN))', False),
         BoolVariable('use_lsan', 'Use LLVM/GCC compiler leak sanitizer (LSAN))', False),
@@ -141,6 +141,10 @@ def configure(env):
             print("Using LLD with GCC is not supported yet, try compiling with 'use_llvm=yes'.")
             sys.exit(255)
 
+    if env['use_coverage']:
+        env.Append(CCFLAGS=['-ftest-coverage', '-fprofile-arcs'])
+        env.Append(LINKFLAGS=['-ftest-coverage', '-fprofile-arcs'])
+
     if env['use_ubsan'] or env['use_asan'] or env['use_lsan'] or env['use_tsan']:
         env.extra_suffix += "s"
 
@@ -171,7 +175,7 @@ def configure(env):
             else:
                 env.Append(CCFLAGS=['-flto'])
                 env.Append(LINKFLAGS=['-flto'])
-        
+
         if not env['use_llvm']:
             env['RANLIB'] = 'gcc-ranlib'
             env['AR'] = 'gcc-ar'
@@ -179,18 +183,10 @@ def configure(env):
     env.Append(CCFLAGS=['-pipe'])
     env.Append(LINKFLAGS=['-pipe'])
 
-    # Check for gcc version >= 6 before adding -no-pie
-    if using_gcc(env):
-        version = get_compiler_version(env)
-        if version != None and version[0] >= '6':
-            env.Append(CCFLAGS=['-fpie'])
-            env.Append(LINKFLAGS=['-no-pie'])
-    # Do the same for clang should be fine with Clang 4 and higher
-    if using_clang(env):
-        version = get_compiler_version(env)
-        if version != None and version[0] >= '4':
-            env.Append(CCFLAGS=['-fpie'])
-            env.Append(LINKFLAGS=['-no-pie'])
+    # -fpie and -no-pie is supported on GCC 6+ and Clang 4+, both below our
+    # minimal requirements.
+    env.Append(CCFLAGS=['-fpie'])
+    env.Append(LINKFLAGS=['-no-pie'])
 
     ## Dependencies
 
@@ -229,10 +225,14 @@ def configure(env):
             sys.exit(255)
         env.ParseConfig('pkg-config bullet --cflags --libs')
 
+    if False:  # not env['builtin_assimp']:
+        # FIXME: Add min version check
+        env.ParseConfig('pkg-config assimp --cflags --libs')
+
     if not env['builtin_enet']:
         env.ParseConfig('pkg-config libenet --cflags --libs')
 
-    if not env['builtin_squish'] and env['tools']:
+    if not env['builtin_squish']:
         env.ParseConfig('pkg-config libsquish --cflags --libs')
 
     if not env['builtin_zstd']:
@@ -318,8 +318,19 @@ def configure(env):
         env.ParseConfig('pkg-config zlib --cflags --libs')
 
     env.Prepend(CPPPATH=['#platform/x11'])
-    env.Append(CPPDEFINES=['X11_ENABLED', 'UNIX_ENABLED', 'OPENGL_ENABLED', 'GLES_ENABLED'])
-    env.Append(LIBS=['GL', 'pthread'])
+    env.Append(CPPDEFINES=['X11_ENABLED', 'UNIX_ENABLED'])
+
+    env.Append(CPPDEFINES=['VULKAN_ENABLED'])
+    if not env['builtin_vulkan']:
+        env.ParseConfig('pkg-config vulkan --cflags --libs')
+    if not env['builtin_glslang']:
+        # No pkgconfig file for glslang so far
+        env.Append(LIBS=['glslang', 'SPIRV'])
+
+    #env.Append(CPPDEFINES=['OPENGL_ENABLED'])
+    env.Append(LIBS=['GL'])
+
+    env.Append(LIBS=['pthread'])
 
     if (platform.system() == "Linux"):
         env.Append(LIBS=['dl'])
@@ -329,9 +340,19 @@ def configure(env):
 
     if env["execinfo"]:
         env.Append(LIBS=['execinfo'])
-        
+
     if not env['tools']:
-        env.Append(LINKFLAGS=['-T', 'platform/x11/pck_embed.ld'])
+        import subprocess
+        import re
+        linker_version_str = subprocess.check_output([env.subst(env["LINK"]), '-Wl,--version']).decode("utf-8")
+        gnu_ld_version = re.search('^GNU ld [^$]*(\d+\.\d+)$', linker_version_str, re.MULTILINE)
+        if not gnu_ld_version:
+            print("Warning: Creating template binaries enabled for PCK embedding is currently only supported with GNU ld")
+        else:
+            if float(gnu_ld_version.group(1)) >= 2.30:
+                env.Append(LINKFLAGS=['-T', 'platform/x11/pck_embed.ld'])
+            else:
+                env.Append(LINKFLAGS=['-T', 'platform/x11/pck_embed.legacy.ld'])
 
     ## Cross-compilation
 

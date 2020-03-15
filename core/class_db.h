@@ -35,13 +35,15 @@
 #include "core/object.h"
 #include "core/print_string.h"
 
-/**	To bind more then 6 parameters include this:
+/** To bind more then 6 parameters include this:
  *  #include "core/method_bind_ext.gen.inc"
  */
 
-#define DEFVAL(m_defval) (m_defval)
+// Makes callable_mp readily available in all classes connecting signals.
+// Needs to come after method_bind and object have been included.
+#include "core/callable_method_pointer.h"
 
-//#define SIMPLE_METHODDEF
+#define DEFVAL(m_defval) (m_defval)
 
 #ifdef DEBUG_METHODS_ENABLED
 
@@ -218,6 +220,7 @@ public:
 	static void get_direct_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes);
 	static StringName get_parent_class_nocheck(const StringName &p_class);
 	static StringName get_parent_class(const StringName &p_class);
+	static StringName get_compatibility_remapped_class(const StringName &p_class);
 	static bool class_exists(const StringName &p_class);
 	static bool is_parent_class(const StringName &p_class, const StringName &p_inherits);
 	static bool can_instance(const StringName &p_class);

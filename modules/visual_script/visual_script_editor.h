@@ -277,7 +277,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _selected_method(const String &p_method, const String &p_type, const bool p_connecting);
 
 	void _draw_color_over_button(Object *obj, Color p_color);
-	void _button_resource_previewed(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, Variant p_ud);
+	void _button_resource_previewed(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, Variant p_ud);
 
 	VisualScriptNode::TypeGuess _guess_output_type(int p_port_action_node, int p_port_action_output, Set<int> &p_visited_nodes);
 
@@ -298,7 +298,7 @@ public:
 	virtual Vector<String> get_functions();
 	virtual void reload_text();
 	virtual String get_name();
-	virtual Ref<Texture> get_icon();
+	virtual Ref<Texture2D> get_icon();
 	virtual bool is_unsaved();
 	virtual Variant get_edit_state();
 	virtual void set_edit_state(const Variant &p_state);
@@ -313,7 +313,7 @@ public:
 	virtual void tag_saved_version();
 	virtual void reload(bool p_soft);
 	virtual void get_breakpoints(List<int> *p_breakpoints);
-	virtual void add_callback(const String &p_function, PoolStringArray p_args);
+	virtual void add_callback(const String &p_function, PackedStringArray p_args);
 	virtual void update_settings();
 	virtual bool show_members_overview();
 	virtual void set_debugger_active(bool p_active);
@@ -341,7 +341,7 @@ protected:
 	static void _bind_methods();
 	static _VisualScriptEditor *singleton;
 
-	static Map<String, RefPtr> custom_nodes;
+	static Map<String, REF> custom_nodes;
 	static Ref<VisualScriptNode> create_node_custom(const String &p_name);
 
 public:

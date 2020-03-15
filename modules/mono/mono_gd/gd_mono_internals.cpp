@@ -38,6 +38,9 @@
 #include "gd_mono_marshal.h"
 #include "gd_mono_utils.h"
 
+#include "core/debugger/engine_debugger.h"
+#include "core/debugger/script_debugger.h"
+
 #include <mono/metadata/exception.h>
 
 namespace GDMonoInternals {
@@ -83,7 +86,9 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 			// See: godot_icall_Reference_Dtor(MonoObject *p_obj, Object *p_ptr)
 
 			// May not me referenced yet, so we must use init_ref() instead of reference()
-			ref->init_ref();
+			if (ref->init_ref()) {
+				CSharpLanguage::get_singleton()->post_unsafe_reference(ref);
+			}
 		}
 
 		// The object was just created, no script instance binding should have been attached
@@ -105,7 +110,7 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 
 	ScriptInstance *si = CSharpInstance::create_for_managed_type(unmanaged, script.ptr(), gchandle);
 
-	unmanaged->set_script_and_instance(script.get_ref_ptr(), si);
+	unmanaged->set_script_and_instance(script, si);
 }
 
 void unhandled_exception(MonoException *p_exc) {
@@ -118,8 +123,8 @@ void unhandled_exception(MonoException *p_exc) {
 	} else {
 #ifdef DEBUG_ENABLED
 		GDMonoUtils::debug_send_unhandled_exception_error((MonoException *)p_exc);
-		if (ScriptDebugger::get_singleton())
-			ScriptDebugger::get_singleton()->idle_poll();
+		if (EngineDebugger::is_active())
+			EngineDebugger::get_singleton()->poll_events(false);
 #endif
 	}
 }

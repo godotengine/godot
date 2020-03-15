@@ -12,30 +12,6 @@ def _spaced(e):
 
 
 def _build_gdnative_api_struct_header(api):
-    gdnative_api_init_macro = [
-        '\textern const godot_gdnative_core_api_struct *_gdnative_wrapper_api_struct;'
-    ]
-
-    for ext in api['extensions']:
-        name = ext['name']
-        gdnative_api_init_macro.append(
-            '\textern const godot_gdnative_ext_{0}_api_struct *_gdnative_wrapper_{0}_api_struct;'.format(name))
-
-    gdnative_api_init_macro.append('\t_gdnative_wrapper_api_struct = options->api_struct;')
-    gdnative_api_init_macro.append('\tfor (unsigned int i = 0; i < _gdnative_wrapper_api_struct->num_extensions; i++) { ')
-    gdnative_api_init_macro.append('\t\tswitch (_gdnative_wrapper_api_struct->extensions[i]->type) {')
-
-    for ext in api['extensions']:
-        name = ext['name']
-        gdnative_api_init_macro.append(
-            '\t\t\tcase GDNATIVE_EXT_%s:' % ext['type'])
-        gdnative_api_init_macro.append(
-            '\t\t\t\t_gdnative_wrapper_{0}_api_struct = (godot_gdnative_ext_{0}_api_struct *)'
-            ' _gdnative_wrapper_api_struct->extensions[i];'.format(name))
-        gdnative_api_init_macro.append('\t\t\t\tbreak;')
-    gdnative_api_init_macro.append('\t\t}')
-    gdnative_api_init_macro.append('\t}')
-
     out = [
         '/* THIS FILE IS GENERATED DO NOT EDIT */',
         '#ifndef GODOT_GDNATIVE_API_STRUCT_H',
@@ -48,8 +24,6 @@ def _build_gdnative_api_struct_header(api):
         '#include <net/godot_net.h>',
         '#include <pluginscript/godot_pluginscript.h>',
         '#include <videodecoder/godot_videodecoder.h>',
-        '',
-        '#define GDNATIVE_API_INIT(options) do {  \\\n' + '  \\\n'.join(gdnative_api_init_macro) + '  \\\n } while (0)',
         '',
         '#ifdef __cplusplus',
         'extern "C" {',
@@ -236,77 +210,6 @@ def build_gdnative_api_struct(target, source, env):
         fd.write(_build_gdnative_api_struct_header(api))
     with open(source, 'w') as fd:
         fd.write(_build_gdnative_api_struct_source(api))
-
-
-def _build_gdnative_wrapper_code(api):
-    out = [
-        '/* THIS FILE IS GENERATED DO NOT EDIT */',
-        '',
-        '#include <gdnative/gdnative.h>',
-        '#include <nativescript/godot_nativescript.h>',
-        '#include <pluginscript/godot_pluginscript.h>',
-        '#include <arvr/godot_arvr.h>',
-        '#include <videodecoder/godot_videodecoder.h>',
-        '',
-        '#include <gdnative_api_struct.gen.h>',
-        '',
-        '#ifdef __cplusplus',
-        'extern "C" {',
-        '#endif',
-        '',
-        'godot_gdnative_core_api_struct *_gdnative_wrapper_api_struct = 0;',
-    ]
-
-    for ext in api['extensions']:
-        name = ext['name']
-        out.append('godot_gdnative_ext_' + name + '_api_struct *_gdnative_wrapper_' + name + '_api_struct = 0;')
-
-    out += ['']
-
-    for funcdef in api['core']['api']:
-        args = ', '.join(['%s%s' % (_spaced(t), n) for t, n in funcdef['arguments']])
-        out.append('%s%s(%s) {' % (_spaced(funcdef['return_type']), funcdef['name'], args))
-
-        args = ', '.join(['%s' % n for t, n in funcdef['arguments']])
-
-        return_line = '\treturn ' if funcdef['return_type'] != 'void' else '\t'
-        return_line += '_gdnative_wrapper_api_struct->' + funcdef['name'] + '(' + args + ');'
-
-        out.append(return_line)
-        out.append('}')
-        out.append('')
-
-    for ext in api['extensions']:
-        name = ext['name']
-        for funcdef in ext['api']:
-            args = ', '.join(['%s%s' % (_spaced(t), n) for t, n in funcdef['arguments']])
-            out.append('%s%s(%s) {' % (_spaced(funcdef['return_type']), funcdef['name'], args))
-
-            args = ', '.join(['%s' % n for t, n in funcdef['arguments']])
-
-            return_line = '\treturn ' if funcdef['return_type'] != 'void' else '\t'
-            return_line += '_gdnative_wrapper_' + name + '_api_struct->' + funcdef['name'] + '(' + args + ');'
-
-            out.append(return_line)
-            out.append('}')
-            out.append('')
-
-    out += [
-        '#ifdef __cplusplus',
-        '}',
-        '#endif'
-    ]
-
-    return '\n'.join(out)
-
-
-def build_gdnative_wrapper_code(target, source, env):
-    with open(source[0], 'r') as fd:
-        api = json.load(fd)
-
-    wrapper_file = target[0]
-    with open(wrapper_file, 'w') as fd:
-        fd.write(_build_gdnative_wrapper_code(api))
 
 
 if __name__ == '__main__':

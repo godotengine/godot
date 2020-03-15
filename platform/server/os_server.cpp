@@ -31,7 +31,6 @@
 #include "os_server.h"
 
 #include "core/print_string.h"
-#include "drivers/dummy/audio_driver_dummy.h"
 #include "drivers/dummy/rasterizer_dummy.h"
 #include "drivers/dummy/texture_loader_dummy.h"
 #include "servers/visual/visual_server_raster.h"
@@ -69,10 +68,6 @@ void OS_Server::initialize_core() {
 	crash_handler.initialize();
 
 	OS_Unix::initialize_core();
-
-#ifdef __APPLE__
-	SemaphoreOSX::make_default();
-#endif
 }
 
 Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
@@ -92,12 +87,6 @@ Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int 
 
 	input = memnew(InputDefault);
 
-#ifdef __APPLE__
-	power_manager = memnew(PowerOSX);
-#else
-	power_manager = memnew(PowerX11);
-#endif
-
 	_ensure_user_data_dir();
 
 	resource_loader_dummy.instance();
@@ -116,8 +105,6 @@ void OS_Server::finalize() {
 	memdelete(visual_server);
 
 	memdelete(input);
-
-	memdelete(power_manager);
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_dummy);
 	resource_loader_dummy.unref();
@@ -196,18 +183,6 @@ String OS_Server::get_name() const {
 }
 
 void OS_Server::move_window_to_foreground() {
-}
-
-OS::PowerState OS_Server::get_power_state() {
-	return power_manager->get_power_state();
-}
-
-int OS_Server::get_power_seconds_left() {
-	return power_manager->get_power_seconds_left();
-}
-
-int OS_Server::get_power_percent_left() {
-	return power_manager->get_power_percent_left();
 }
 
 bool OS_Server::_check_internal_feature_support(const String &p_feature) {

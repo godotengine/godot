@@ -30,23 +30,3 @@ _, gensource = env_gdnative.CommandNoCache(['include/gdnative_api_struct.gen.h',
 env_gdnative.add_source_files(env.modules_sources, [gensource])
 
 env.use_ptrcall = True
-
-
-if ARGUMENTS.get('gdnative_wrapper', False):
-    gensource, = env_gdnative.CommandNoCache('gdnative_wrapper_code.gen.cpp', 'gdnative_api.json', run_in_subprocess(gdnative_builders.build_gdnative_wrapper_code))
-
-    gd_wrapper_env = env.Clone()
-    gd_wrapper_env.Prepend(CPPPATH=['#modules/gdnative/include/'])
-
-    if gd_wrapper_env['use_lto']:
-        if not env.msvc:
-            gd_wrapper_env.Append(CCFLAGS=['-fno-lto'])
-            gd_wrapper_env.Append(LINKFLAGS=['-fno-lto'])
-        else:
-            gd_wrapper_env.Append(CCFLAGS=['/GL-'])
-            gd_wrapper_env.Append(LINKFLAGS=['/LTCG:OFF'])
-
-    if not env.msvc:
-        gd_wrapper_env.Append(CCFLAGS=['-fPIC'])
-
-    lib = gd_wrapper_env.add_library("#bin/gdnative_wrapper_code", [gensource])

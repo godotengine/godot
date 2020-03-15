@@ -31,13 +31,13 @@
 #ifndef RASTERIZERSTORAGEGLES2_H
 #define RASTERIZERSTORAGEGLES2_H
 
-#include "core/pool_vector.h"
 #include "core/self_list.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual/shader_language.h"
 #include "shader_compiler_gles2.h"
 #include "shader_gles2.h"
 
+#include "core/rid_owner.h"
 #include "shaders/copy.glsl.gen.h"
 #include "shaders/cubemap_filter.glsl.gen.h"
 /*
@@ -71,6 +71,8 @@ public:
 
 		Set<String> extensions;
 
+		bool texture_3d_supported;
+		bool texture_array_supported;
 		bool float_texture_supported;
 		bool s3tc_supported;
 		bool etc1_supported;
@@ -109,6 +111,8 @@ public:
 		GLuint black_tex;
 		GLuint normal_tex;
 		GLuint aniso_tex;
+		GLuint white_tex_3d;
+		GLuint white_tex_array;
 
 		GLuint mipmap_blur_fbo;
 		GLuint mipmap_blur_color;
@@ -120,7 +124,7 @@ public:
 
 		size_t skeleton_transform_buffer_size;
 		GLuint skeleton_transform_buffer;
-		PoolVector<float> skeleton_transform_cpu_buffer;
+		Vector<float> skeleton_transform_cpu_buffer;
 
 	} resources;
 
@@ -175,7 +179,7 @@ public:
 	//////////////////////////////////DATA///////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////
 
-	struct Instantiable : public RID_Data {
+	struct Instantiable {
 		SelfList<RasterizerScene::InstanceBase>::List instance_list;
 
 		_FORCE_INLINE_ void instance_change_notify(bool p_aabb, bool p_materials) {
@@ -235,7 +239,7 @@ public:
 
 	struct RenderTarget;
 
-	struct Texture : RID_Data {
+	struct Texture {
 
 		Texture *proxy;
 		Set<Texture *> proxy_owners;
@@ -336,7 +340,7 @@ public:
 		}
 	};
 
-	mutable RID_Owner<Texture> texture_owner;
+	mutable RID_PtrOwner<Texture2D> texture_owner;
 
 	Ref<Image> _get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool p_force_decompress) const;
 
@@ -378,14 +382,14 @@ public:
 
 	/* SKY API */
 
-	struct Sky : public RID_Data {
+	struct Sky {
 
 		RID panorama;
 		GLuint radiance;
 		int radiance_size;
 	};
 
-	mutable RID_Owner<Sky> sky_owner;
+	mutable RID_PtrOwner<Sky> sky_owner;
 
 	virtual RID sky_create();
 	virtual void sky_set_texture(RID p_sky, RID p_panorama, int p_radiance_size);
@@ -394,7 +398,7 @@ public:
 
 	struct Material;
 
-	struct Shader : public RID_Data {
+	struct Shader {
 
 		RID self;
 
@@ -414,6 +418,7 @@ public:
 
 		Map<StringName, RID> default_textures;
 
+		Vector<ShaderLanguage::DataType> texture_types;
 		Vector<ShaderLanguage::ShaderNode::Uniform::Hint> texture_hints;
 
 		bool valid;
@@ -511,7 +516,7 @@ public:
 		}
 	};
 
-	mutable RID_Owner<Shader> shader_owner;
+	mutable RID_PtrOwner<Shader> shader_owner;
 	mutable SelfList<Shader>::List _shader_dirty_list;
 
 	void _shader_make_dirty(Shader *p_shader);
@@ -530,7 +535,7 @@ public:
 
 	/* COMMON MATERIAL API */
 
-	struct Material : public RID_Data {
+	struct Material {
 
 		Shader *shader;
 		Map<StringName, Variant> params;
@@ -571,7 +576,7 @@ public:
 
 	void _update_material(Material *p_material);
 
-	mutable RID_Owner<Material> material_owner;
+	mutable RID_PtrOwner<Material> material_owner;
 
 	virtual RID material_create();
 
@@ -643,9 +648,9 @@ public:
 
 		bool active;
 
-		PoolVector<uint8_t> data;
-		PoolVector<uint8_t> index_data;
-		Vector<PoolVector<uint8_t> > blend_shape_data;
+		Vector<uint8_t> data;
+		Vector<uint8_t> index_data;
+		Vector<Vector<uint8_t> > blend_shape_data;
 
 		int total_data_size;
 
@@ -693,11 +698,11 @@ public:
 		}
 	};
 
-	mutable RID_Owner<Mesh> mesh_owner;
+	mutable RID_PtrOwner<Mesh> mesh_owner;
 
 	virtual RID mesh_create();
 
-	virtual void mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes = Vector<PoolVector<uint8_t> >(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>());
+	virtual void mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const Vector<uint8_t> &p_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<Vector<uint8_t> > &p_blend_shapes = Vector<Vector<uint8_t> >(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>());
 
 	virtual void mesh_set_blend_shape_count(RID p_mesh, int p_amount);
 	virtual int mesh_get_blend_shape_count(RID p_mesh) const;
@@ -705,7 +710,7 @@ public:
 	virtual void mesh_set_blend_shape_mode(RID p_mesh, VS::BlendShapeMode p_mode);
 	virtual VS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const;
 
-	virtual void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data);
+	virtual void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data);
 
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material);
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const;
@@ -713,14 +718,14 @@ public:
 	virtual int mesh_surface_get_array_len(RID p_mesh, int p_surface) const;
 	virtual int mesh_surface_get_array_index_len(RID p_mesh, int p_surface) const;
 
-	virtual PoolVector<uint8_t> mesh_surface_get_array(RID p_mesh, int p_surface) const;
-	virtual PoolVector<uint8_t> mesh_surface_get_index_array(RID p_mesh, int p_surface) const;
+	virtual Vector<uint8_t> mesh_surface_get_array(RID p_mesh, int p_surface) const;
+	virtual Vector<uint8_t> mesh_surface_get_index_array(RID p_mesh, int p_surface) const;
 
 	virtual uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const;
 	virtual VS::PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const;
 
 	virtual AABB mesh_surface_get_aabb(RID p_mesh, int p_surface) const;
-	virtual Vector<PoolVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const;
+	virtual Vector<Vector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const;
 	virtual Vector<AABB> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const;
 
 	virtual void mesh_remove_surface(RID p_mesh, int p_surface);
@@ -775,7 +780,7 @@ public:
 		}
 	};
 
-	mutable RID_Owner<MultiMesh> multimesh_owner;
+	mutable RID_PtrOwner<MultiMesh> multimesh_owner;
 
 	SelfList<MultiMesh>::List multimesh_update_list;
 
@@ -797,7 +802,7 @@ public:
 	virtual Color multimesh_instance_get_color(RID p_multimesh, int p_index) const;
 	virtual Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const;
 
-	virtual void multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array);
+	virtual void multimesh_set_as_bulk_array(RID p_multimesh, const Vector<float> &p_array);
 
 	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible);
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const;
@@ -838,7 +843,7 @@ public:
 	Vector2 chunk_uv;
 	Vector2 chunk_uv2;
 
-	mutable RID_Owner<Immediate> immediate_owner;
+	mutable RID_PtrOwner<Immediate> immediate_owner;
 
 	virtual RID immediate_create();
 	virtual void immediate_begin(RID p_immediate, VS::PrimitiveType p_primitive, RID p_texture = RID());
@@ -856,7 +861,7 @@ public:
 
 	/* SKELETON API */
 
-	struct Skeleton : RID_Data {
+	struct Skeleton {
 
 		bool use_2d;
 
@@ -881,7 +886,7 @@ public:
 		}
 	};
 
-	mutable RID_Owner<Skeleton> skeleton_owner;
+	mutable RID_PtrOwner<Skeleton> skeleton_owner;
 
 	SelfList<Skeleton>::List skeleton_update_list;
 
@@ -896,7 +901,7 @@ public:
 	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const;
 	virtual void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform);
 
-	void _update_skeleton_transform_buffer(const PoolVector<float> &p_data, size_t p_size);
+	void _update_skeleton_transform_buffer(const Vector<float> &p_data, size_t p_size);
 
 	/* Light API */
 
@@ -927,7 +932,7 @@ public:
 		uint64_t version;
 	};
 
-	mutable RID_Owner<Light> light_owner;
+	mutable RID_PtrOwner<Light> light_owner;
 
 	virtual RID light_create(VS::LightType p_type);
 
@@ -983,7 +988,7 @@ public:
 		int resolution;
 	};
 
-	mutable RID_Owner<ReflectionProbe> reflection_probe_owner;
+	mutable RID_PtrOwner<ReflectionProbe> reflection_probe_owner;
 
 	virtual RID reflection_probe_create();
 
@@ -1024,8 +1029,8 @@ public:
 	virtual void gi_probe_set_to_cell_xform(RID p_probe, const Transform &p_xform);
 	virtual Transform gi_probe_get_to_cell_xform(RID p_probe) const;
 
-	virtual void gi_probe_set_dynamic_data(RID p_probe, const PoolVector<int> &p_data);
-	virtual PoolVector<int> gi_probe_get_dynamic_data(RID p_probe) const;
+	virtual void gi_probe_set_dynamic_data(RID p_probe, const Vector<int> &p_data);
+	virtual Vector<int> gi_probe_get_dynamic_data(RID p_probe) const;
 
 	virtual void gi_probe_set_dynamic_range(RID p_probe, int p_range);
 	virtual int gi_probe_get_dynamic_range(RID p_probe) const;
@@ -1058,7 +1063,7 @@ public:
 
 	struct LightmapCapture : public Instantiable {
 
-		PoolVector<LightmapCaptureOctree> octree;
+		Vector<LightmapCaptureOctree> octree;
 		AABB bounds;
 		Transform cell_xform;
 		int cell_subdiv;
@@ -1069,20 +1074,20 @@ public:
 		}
 	};
 
-	mutable RID_Owner<LightmapCapture> lightmap_capture_data_owner;
+	mutable RID_PtrOwner<LightmapCapture> lightmap_capture_data_owner;
 
 	virtual RID lightmap_capture_create();
 	virtual void lightmap_capture_set_bounds(RID p_capture, const AABB &p_bounds);
 	virtual AABB lightmap_capture_get_bounds(RID p_capture) const;
-	virtual void lightmap_capture_set_octree(RID p_capture, const PoolVector<uint8_t> &p_octree);
-	virtual PoolVector<uint8_t> lightmap_capture_get_octree(RID p_capture) const;
+	virtual void lightmap_capture_set_octree(RID p_capture, const Vector<uint8_t> &p_octree);
+	virtual Vector<uint8_t> lightmap_capture_get_octree(RID p_capture) const;
 	virtual void lightmap_capture_set_octree_cell_transform(RID p_capture, const Transform &p_xform);
 	virtual Transform lightmap_capture_get_octree_cell_transform(RID p_capture) const;
 	virtual void lightmap_capture_set_octree_cell_subdiv(RID p_capture, int p_subdiv);
 	virtual int lightmap_capture_get_octree_cell_subdiv(RID p_capture) const;
 	virtual void lightmap_capture_set_energy(RID p_capture, float p_energy);
 	virtual float lightmap_capture_get_energy(RID p_capture) const;
-	virtual const PoolVector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const;
+	virtual const Vector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const;
 
 	/* PARTICLES */
 	void update_particles();
@@ -1132,7 +1137,7 @@ public:
 
 	/* RENDER TARGET */
 
-	struct RenderTarget : public RID_Data {
+	struct RenderTarget {
 		GLuint fbo;
 		GLuint color;
 		GLuint depth;
@@ -1228,7 +1233,7 @@ public:
 		}
 	};
 
-	mutable RID_Owner<RenderTarget> render_target_owner;
+	mutable RID_PtrOwner<RenderTarget> render_target_owner;
 
 	void _render_target_clear(RenderTarget *rt);
 	void _render_target_allocate(RenderTarget *rt);
@@ -1241,12 +1246,12 @@ public:
 
 	virtual void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value);
 	virtual bool render_target_was_used(RID p_render_target);
-	virtual void render_target_clear_used(RID p_render_target);
+	virtual void render_target_set_as_unused(RID p_render_target);
 	virtual void render_target_set_msaa(RID p_render_target, VS::ViewportMSAA p_msaa);
 
 	/* CANVAS SHADOW */
 
-	struct CanvasLightShadow : public RID_Data {
+	struct CanvasLightShadow {
 
 		int size;
 		int height;
@@ -1255,24 +1260,24 @@ public:
 		GLuint distance; //for older devices
 	};
 
-	RID_Owner<CanvasLightShadow> canvas_light_shadow_owner;
+	RID_PtrOwner<CanvasLightShadow> canvas_light_shadow_owner;
 
 	virtual RID canvas_light_shadow_buffer_create(int p_width);
 
 	/* LIGHT SHADOW MAPPING */
 
-	struct CanvasOccluder : public RID_Data {
+	struct CanvasOccluder {
 
 		GLuint vertex_id; // 0 means, unconfigured
 		GLuint index_id; // 0 means, unconfigured
-		PoolVector<Vector2> lines;
+		Vector<Vector2> lines;
 		int len;
 	};
 
-	RID_Owner<CanvasOccluder> canvas_occluder_owner;
+	RID_PtrOwner<CanvasOccluder> canvas_occluder_owner;
 
 	virtual RID canvas_light_occluder_create();
-	virtual void canvas_light_occluder_set_polylines(RID p_occluder, const PoolVector<Vector2> &p_lines);
+	virtual void canvas_light_occluder_set_polylines(RID p_occluder, const Vector<Vector2> &p_lines);
 
 	virtual VS::InstanceType get_base_type(RID p_rid) const;
 
@@ -1307,6 +1312,8 @@ public:
 	virtual int get_captured_render_info(VS::RenderInfo p_info);
 
 	virtual int get_render_info(VS::RenderInfo p_info);
+	virtual String get_video_adapter_name() const;
+	virtual String get_video_adapter_vendor() const;
 
 	RasterizerStorageGLES2();
 };

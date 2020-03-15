@@ -39,7 +39,7 @@
 #include "scene/gui/control.h"
 #include "scene/main/instance_placeholder.h"
 
-#define PACK_VERSION 2
+#define PACKED_SCENE_VERSION 2
 
 bool SceneState::can_instance() const {
 
@@ -331,7 +331,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 				binds.write[j] = props[c.binds[j]];
 		}
 
-		cfrom->connect(snames[c.signal], cto, snames[c.method], binds, CONNECT_PERSIST | c.flags);
+		cfrom->connect(snames[c.signal], Callable(cto, snames[c.method]), binds, CONNECT_PERSIST | c.flags);
 	}
 
 	//Node *s = ret_nodes[0];
@@ -532,7 +532,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 			if (exists) {
 
 				//check if already exists and did not change
-				if (value.get_type() == Variant::REAL && original.get_type() == Variant::REAL) {
+				if (value.get_type() == Variant::FLOAT && original.get_type() == Variant::FLOAT) {
 					//this must be done because, as some scenes save as text, there might be a tiny difference in floats due to numerical error
 					float a = value;
 					float b = original;
@@ -702,7 +702,7 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, Map<StringName
 			// only connections that originate or end into main saved scene are saved
 			// everything else is discarded
 
-			Node *target = Object::cast_to<Node>(c.target);
+			Node *target = Object::cast_to<Node>(c.callable.get_object());
 
 			if (!target) {
 				continue;
@@ -734,7 +734,7 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, Map<StringName
 					NodePath signal_from = common_parent->get_path_to(p_node);
 					NodePath signal_to = common_parent->get_path_to(target);
 
-					if (ps->has_connection(signal_from, c.signal, signal_to, c.method)) {
+					if (ps->has_connection(signal_from, c.signal.get_name(), signal_to, c.callable.get_method())) {
 						exists = true;
 						break;
 					}
@@ -766,7 +766,7 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, Map<StringName
 
 							if (from_node >= 0 && to_node >= 0) {
 								//this one has state for this node, save
-								if (state->is_connection(from_node, c.signal, to_node, c.method)) {
+								if (state->is_connection(from_node, c.signal.get_name(), to_node, c.callable.get_method())) {
 									exists2 = true;
 									break;
 								}
@@ -784,7 +784,7 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, Map<StringName
 
 								if (from_node >= 0 && to_node >= 0) {
 									//this one has state for this node, save
-									if (state->is_connection(from_node, c.signal, to_node, c.method)) {
+									if (state->is_connection(from_node, c.signal.get_name(), to_node, c.callable.get_method())) {
 										exists2 = true;
 										break;
 									}
@@ -831,8 +831,8 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, Map<StringName
 			ConnectionData cd;
 			cd.from = src_id;
 			cd.to = target_id;
-			cd.method = _nm_get_string(c.method, name_map);
-			cd.signal = _nm_get_string(c.signal, name_map);
+			cd.method = _nm_get_string(c.callable.get_method(), name_map);
+			cd.signal = _nm_get_string(c.signal.get_name(), name_map);
 			cd.flags = c.flags;
 			for (int i = 0; i < c.binds.size(); i++) {
 
@@ -1095,14 +1095,22 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 	if (p_dictionary.has("version"))
 		version = p_dictionary["version"];
 
-	ERR_FAIL_COND_MSG(version > PACK_VERSION, "Save format version too new.");
+	ERR_FAIL_COND_MSG(version > PACKED_SCENE_VERSION, "Save format version too new.");
 
-	PoolVector<String> snames = p_dictionary["names"];
+	const int node_count = p_dictionary["node_count"];
+	const Vector<int> snodes = p_dictionary["nodes"];
+	ERR_FAIL_COND(snodes.size() < node_count);
+
+	const int conn_count = p_dictionary["conn_count"];
+	const Vector<int> sconns = p_dictionary["conns"];
+	ERR_FAIL_COND(sconns.size() < conn_count);
+
+	Vector<String> snames = p_dictionary["names"];
 	if (snames.size()) {
 
 		int namecount = snames.size();
 		names.resize(namecount);
-		PoolVector<String>::Read r = snames.read();
+		const String *r = snames.ptr();
 		for (int i = 0; i < names.size(); i++)
 			names.write[i] = r[i];
 	}
@@ -1121,13 +1129,11 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 		variants.clear();
 	}
 
-	nodes.resize(p_dictionary["node_count"]);
-	int nc = nodes.size();
-	if (nc) {
-		PoolVector<int> snodes = p_dictionary["nodes"];
-		PoolVector<int>::Read r = snodes.read();
+	nodes.resize(node_count);
+	if (node_count) {
+		const int *r = snodes.ptr();
 		int idx = 0;
-		for (int i = 0; i < nc; i++) {
+		for (int i = 0; i < node_count; i++) {
 			NodeData &nd = nodes.write[i];
 			nd.parent = r[idx++];
 			nd.owner = r[idx++];
@@ -1151,15 +1157,11 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 		}
 	}
 
-	connections.resize(p_dictionary["conn_count"]);
-	int cc = connections.size();
-
-	if (cc) {
-
-		PoolVector<int> sconns = p_dictionary["conns"];
-		PoolVector<int>::Read r = sconns.read();
+	connections.resize(conn_count);
+	if (conn_count) {
+		const int *r = sconns.ptr();
 		int idx = 0;
-		for (int i = 0; i < cc; i++) {
+		for (int i = 0; i < conn_count; i++) {
 			ConnectionData &cd = connections.write[i];
 			cd.from = r[idx++];
 			cd.to = r[idx++];
@@ -1203,12 +1205,12 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 
 Dictionary SceneState::get_bundled_scene() const {
 
-	PoolVector<String> rnames;
+	Vector<String> rnames;
 	rnames.resize(names.size());
 
 	if (names.size()) {
 
-		PoolVector<String>::Write r = rnames.write();
+		String *r = rnames.ptrw();
 
 		for (int i = 0; i < names.size(); i++)
 			r[i] = names[i];
@@ -1283,9 +1285,7 @@ Dictionary SceneState::get_bundled_scene() const {
 		d["base_scene"] = base_scene_idx;
 	}
 
-	d["version"] = PACK_VERSION;
-
-	//d["path"]=path;
+	d["version"] = PACKED_SCENE_VERSION;
 
 	return d;
 }
@@ -1612,10 +1612,10 @@ void SceneState::add_editable_instance(const NodePath &p_path) {
 	editable_instances.push_back(p_path);
 }
 
-PoolVector<String> SceneState::_get_node_groups(int p_idx) const {
+Vector<String> SceneState::_get_node_groups(int p_idx) const {
 
 	Vector<StringName> groups = get_node_groups(p_idx);
-	PoolVector<String> ret;
+	Vector<String> ret;
 
 	for (int i = 0; i < groups.size(); i++)
 		ret.push_back(groups[i]);

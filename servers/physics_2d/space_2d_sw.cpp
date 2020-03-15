@@ -91,7 +91,7 @@ int Physics2DDirectSpaceStateSW::_intersect_point_impl(const Vector2 &p_point, S
 			continue;
 
 		r_results[cc].collider_id = col_obj->get_instance_id();
-		if (r_results[cc].collider_id != 0)
+		if (r_results[cc].collider_id.is_valid())
 			r_results[cc].collider = ObjectDB::get_instance(r_results[cc].collider_id);
 		r_results[cc].rid = col_obj->get_self();
 		r_results[cc].shape = shape_idx;
@@ -182,7 +182,7 @@ bool Physics2DDirectSpaceStateSW::intersect_ray(const Vector2 &p_from, const Vec
 		return false;
 
 	r_result.collider_id = res_obj->get_instance_id();
-	if (r_result.collider_id != 0)
+	if (r_result.collider_id.is_valid())
 		r_result.collider = ObjectDB::get_instance(r_result.collider_id);
 	r_result.normal = res_normal;
 	r_result.metadata = res_obj->get_shape_metadata(res_shape);
@@ -198,7 +198,7 @@ int Physics2DDirectSpaceStateSW::intersect_shape(const RID &p_shape, const Trans
 	if (p_result_max <= 0)
 		return 0;
 
-	Shape2DSW *shape = Physics2DServerSW::singletonsw->shape_owner.get(p_shape);
+	Shape2DSW *shape = Physics2DServerSW::singletonsw->shape_owner.getornull(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
 
 	Rect2 aabb = p_xform.xform(shape->get_aabb());
@@ -226,7 +226,7 @@ int Physics2DDirectSpaceStateSW::intersect_shape(const RID &p_shape, const Trans
 			continue;
 
 		r_results[cc].collider_id = col_obj->get_instance_id();
-		if (r_results[cc].collider_id != 0)
+		if (r_results[cc].collider_id.is_valid())
 			r_results[cc].collider = ObjectDB::get_instance(r_results[cc].collider_id);
 		r_results[cc].rid = col_obj->get_self();
 		r_results[cc].shape = shape_idx;
@@ -240,7 +240,7 @@ int Physics2DDirectSpaceStateSW::intersect_shape(const RID &p_shape, const Trans
 
 bool Physics2DDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transform2D &p_xform, const Vector2 &p_motion, real_t p_margin, real_t &p_closest_safe, real_t &p_closest_unsafe, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 
-	Shape2DSW *shape = Physics2DServerSW::singletonsw->shape_owner.get(p_shape);
+	Shape2DSW *shape = Physics2DServerSW::singletonsw->shape_owner.getornull(p_shape);
 	ERR_FAIL_COND_V(!shape, false);
 
 	Rect2 aabb = p_xform.xform(shape->get_aabb());
@@ -313,7 +313,7 @@ bool Physics2DDirectSpaceStateSW::collide_shape(RID p_shape, const Transform2D &
 	if (p_result_max <= 0)
 		return 0;
 
-	Shape2DSW *shape = Physics2DServerSW::singletonsw->shape_owner.get(p_shape);
+	Shape2DSW *shape = Physics2DServerSW::singletonsw->shape_owner.getornull(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
 
 	Rect2 aabb = p_shape_xform.xform(shape->get_aabb());
@@ -404,7 +404,7 @@ static void _rest_cbk_result(const Vector2 &p_point_A, const Vector2 &p_point_B,
 
 bool Physics2DDirectSpaceStateSW::rest_info(RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 
-	Shape2DSW *shape = Physics2DServerSW::singletonsw->shape_owner.get(p_shape);
+	Shape2DSW *shape = Physics2DServerSW::singletonsw->shape_owner.getornull(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
 
 	Rect2 aabb = p_shape_xform.xform(shape->get_aabb());
@@ -697,7 +697,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 	//but is it right? who knows at this point..
 
 	if (r_result) {
-		r_result->collider_id = 0;
+		r_result->collider_id = ObjectID();
 		r_result->collider_shape = 0;
 	}
 	Rect2 body_aabb;
@@ -1346,7 +1346,7 @@ Space2DSW::Space2DSW() {
 	body_linear_velocity_sleep_threshold = GLOBAL_DEF("physics/2d/sleep_threshold_linear", 2.0);
 	body_angular_velocity_sleep_threshold = GLOBAL_DEF("physics/2d/sleep_threshold_angular", (8.0 / 180.0 * Math_PI));
 	body_time_to_sleep = GLOBAL_DEF("physics/2d/time_before_sleep", 0.5);
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/time_before_sleep", PropertyInfo(Variant::REAL, "physics/2d/time_before_sleep", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"));
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/time_before_sleep", PropertyInfo(Variant::FLOAT, "physics/2d/time_before_sleep", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"));
 
 	broadphase = BroadPhase2DSW::create_func();
 	broadphase->set_pair_callback(_broadphase_pair, this);

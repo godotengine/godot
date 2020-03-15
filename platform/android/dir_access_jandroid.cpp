@@ -110,7 +110,6 @@ String DirAccessJAndroid::get_drive(int p_drive) {
 Error DirAccessJAndroid::change_dir(String p_dir) {
 
 	JNIEnv *env = ThreadAndroid::get_env();
-	p_dir = p_dir.simplify_path();
 
 	if (p_dir == "" || p_dir == "." || (p_dir == ".." && current_dir == ""))
 		return OK;
@@ -145,7 +144,7 @@ Error DirAccessJAndroid::change_dir(String p_dir) {
 	return OK;
 }
 
-String DirAccessJAndroid::get_current_dir() {
+String DirAccessJAndroid::get_current_dir(bool p_include_drive) {
 
 	return "res://" + current_dir;
 }

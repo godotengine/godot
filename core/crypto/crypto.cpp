@@ -82,8 +82,8 @@ void Crypto::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generate_self_signed_certificate", "key", "issuer_name", "not_before", "not_after"), &Crypto::generate_self_signed_certificate, DEFVAL("CN=myserver,O=myorganisation,C=IT"), DEFVAL("20140101000000"), DEFVAL("20340101000000"));
 }
 
-PoolByteArray Crypto::generate_random_bytes(int p_bytes) {
-	ERR_FAIL_V_MSG(PoolByteArray(), "generate_random_bytes is not available when mbedtls module is disabled.");
+PackedByteArray Crypto::generate_random_bytes(int p_bytes) {
+	ERR_FAIL_V_MSG(PackedByteArray(), "generate_random_bytes is not available when mbedtls module is disabled.");
 }
 
 Ref<CryptoKey> Crypto::generate_rsa(int p_bytes) {
@@ -99,7 +99,7 @@ Crypto::Crypto() {
 
 /// Resource loader/saver
 
-RES ResourceFormatLoaderCrypto::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES ResourceFormatLoaderCrypto::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 
 	String el = p_path.get_extension().to_lower();
 	if (el == "crt") {

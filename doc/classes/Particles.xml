@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Particles" inherits="GeometryInstance" category="Core" version="3.2">
+<class name="Particles" inherits="GeometryInstance" version="4.0">
 	<brief_description>
 		3D particle emitter.
 	</brief_description>
@@ -8,7 +8,7 @@
 		Use the [code]process_material[/code] property to add a [ParticlesMaterial] to configure particle appearance and behavior. Alternatively, you can add a [ShaderMaterial] which will be applied to all particles.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/controlling_thousands_of_fish.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/controlling_thousands_of_fish.html</link>
 	</tutorials>
 	<methods>
 		<method name="capture_aabb" qualifiers="const">
@@ -68,7 +68,7 @@
 		<member name="draw_passes" type="int" setter="set_draw_passes" getter="get_draw_passes" default="1">
 			The number of draw passes when rendering particles.
 		</member>
-		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting" default="true">
+		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting" default="false">
 			If [code]true[/code], particles are being emitted.
 		</member>
 		<member name="explosiveness" type="float" setter="set_explosiveness_ratio" getter="get_explosiveness_ratio" default="0.0">

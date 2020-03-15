@@ -33,8 +33,11 @@
 #include "../gdscript_parser.h"
 #include "core/project_settings.h"
 #include "core/script_language.h"
+#include "editor/editor_file_system.h"
 #include "editor/editor_help.h"
+#include "editor/editor_node.h"
 #include "gdscript_language_protocol.h"
+#include "scene/resources/packed_scene.h"
 
 void GDScriptWorkspace::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("symbol"), &GDScriptWorkspace::symbol);
@@ -50,7 +53,7 @@ void GDScriptWorkspace::remove_cache_parser(const String &p_path) {
 	Map<String, ExtendGDScriptParser *>::Element *parser = parse_results.find(p_path);
 	Map<String, ExtendGDScriptParser *>::Element *script = scripts.find(p_path);
 	if (parser && script) {
-		if (script->get() && script->get() == script->get()) {
+		if (script->get() && script->get() == parser->get()) {
 			memdelete(script->get());
 		} else {
 			memdelete(script->get());
@@ -252,6 +255,12 @@ Error GDScriptWorkspace::initialize() {
 			bool arg_default_value_started = false;
 			for (int j = 0; j < data.arguments.size(); j++) {
 				const DocData::ArgumentDoc &arg = data.arguments[j];
+
+				lsp::DocumentSymbol symbol_arg;
+				symbol_arg.name = arg.name;
+				symbol_arg.kind = lsp::SymbolKind::Variable;
+				symbol_arg.detail = arg.type;
+
 				if (!arg_default_value_started && !arg.default_value.empty()) {
 					arg_default_value_started = true;
 				}
@@ -263,6 +272,8 @@ Error GDScriptWorkspace::initialize() {
 					arg_str += ", ";
 				}
 				params += arg_str;
+
+				symbol.children.push_back(symbol_arg);
 			}
 			if (data.qualifiers.find("vararg") != -1) {
 				params += params.empty() ? "..." : ", ...";
@@ -365,6 +376,50 @@ void GDScriptWorkspace::publish_diagnostics(const String &p_path) {
 	GDScriptLanguageProtocol::get_singleton()->notify_client("textDocument/publishDiagnostics", params);
 }
 
+void GDScriptWorkspace::_get_owners(EditorFileSystemDirectory *efsd, String p_path, List<String> &owners) {
+	if (!efsd)
+		return;
+
+	for (int i = 0; i < efsd->get_subdir_count(); i++) {
+		_get_owners(efsd->get_subdir(i), p_path, owners);
+	}
+
+	for (int i = 0; i < efsd->get_file_count(); i++) {
+
+		Vector<String> deps = efsd->get_file_deps(i);
+		bool found = false;
+		for (int j = 0; j < deps.size(); j++) {
+			if (deps[j] == p_path) {
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+			continue;
+
+		owners.push_back(efsd->get_file_path(i));
+	}
+}
+
+Node *GDScriptWorkspace::_get_owner_scene_node(String p_path) {
+	Node *owner_scene_node = NULL;
+	List<String> owners;
+
+	_get_owners(EditorFileSystem::get_singleton()->get_filesystem(), p_path, owners);
+
+	for (int i = 0; i < owners.size(); i++) {
+		NodePath owner_path = owners[i];
+		RES owner_res = ResourceLoader::load(owner_path);
+		if (Object::cast_to<PackedScene>(owner_res.ptr())) {
+			Ref<PackedScene> owner_packed_scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*owner_res));
+			owner_scene_node = owner_packed_scene->instance();
+			break;
+		}
+	}
+
+	return owner_scene_node;
+}
+
 void GDScriptWorkspace::completion(const lsp::CompletionParams &p_params, List<ScriptCodeCompletionOption> *r_options) {
 
 	String path = get_file_path(p_params.textDocument.uri);
@@ -372,8 +427,12 @@ void GDScriptWorkspace::completion(const lsp::CompletionParams &p_params, List<S
 	bool forced = false;
 
 	if (const ExtendGDScriptParser *parser = get_parse_result(path)) {
+		Node *owner_scene_node = _get_owner_scene_node(path);
 		String code = parser->get_text_for_completion(p_params.position);
-		GDScriptLanguage::get_singleton()->complete_code(code, path, NULL, r_options, forced, call_hint);
+		GDScriptLanguage::get_singleton()->complete_code(code, path, owner_scene_node, r_options, forced, call_hint);
+		if (owner_scene_node) {
+			memdelete(owner_scene_node);
+		}
 	}
 }
 
@@ -511,6 +570,49 @@ Dictionary GDScriptWorkspace::generate_script_api(const String &p_path) {
 		api = parser->generate_api();
 	}
 	return api;
+}
+
+Error GDScriptWorkspace::resolve_signature(const lsp::TextDocumentPositionParams &p_doc_pos, lsp::SignatureHelp &r_signature) {
+	if (const ExtendGDScriptParser *parser = get_parse_result(get_file_path(p_doc_pos.textDocument.uri))) {
+
+		lsp::TextDocumentPositionParams text_pos;
+		text_pos.textDocument = p_doc_pos.textDocument;
+
+		if (parser->get_left_function_call(p_doc_pos.position, text_pos.position, r_signature.activeParameter) == OK) {
+
+			List<const lsp::DocumentSymbol *> symbols;
+
+			if (const lsp::DocumentSymbol *symbol = resolve_symbol(text_pos)) {
+				symbols.push_back(symbol);
+			} else if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
+				GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_related_symbols(text_pos, symbols);
+			}
+
+			for (List<const lsp::DocumentSymbol *>::Element *E = symbols.front(); E; E = E->next()) {
+				const lsp::DocumentSymbol *symbol = E->get();
+				if (symbol->kind == lsp::SymbolKind::Method || symbol->kind == lsp::SymbolKind::Function) {
+
+					lsp::SignatureInformation signature_info;
+					signature_info.label = symbol->detail;
+					signature_info.documentation = symbol->render();
+
+					for (int i = 0; i < symbol->children.size(); i++) {
+						const lsp::DocumentSymbol &arg = symbol->children[i];
+						lsp::ParameterInformation arg_info;
+						arg_info.label = arg.name;
+						signature_info.parameters.push_back(arg_info);
+					}
+					r_signature.signatures.push_back(signature_info);
+					break;
+				}
+			}
+
+			if (r_signature.signatures.size()) {
+				return OK;
+			}
+		}
+	}
+	return ERR_METHOD_NOT_FOUND;
 }
 
 GDScriptWorkspace::GDScriptWorkspace() {

@@ -37,6 +37,7 @@
 #include <mono/metadata/mono-gc.h>
 #include <mono/metadata/profiler.h>
 
+#include "core/debugger/engine_debugger.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
@@ -621,7 +622,7 @@ bool GDMono::copy_prebuilt_api_assembly(ApiAssemblyInfo::Type p_api_type, const 
 		memdelete(da);
 
 		if (err != OK) {
-			ERR_PRINTS("Failed to create destination directory for the API assemblies. Error: " + itos(err) + ".");
+			ERR_PRINT("Failed to create destination directory for the API assemblies. Error: " + itos(err) + ".");
 			return false;
 		}
 	}
@@ -630,15 +631,15 @@ bool GDMono::copy_prebuilt_api_assembly(ApiAssemblyInfo::Type p_api_type, const 
 
 	String xml_file = assembly_name + ".xml";
 	if (da->copy(src_dir.plus_file(xml_file), dst_dir.plus_file(xml_file)) != OK)
-		WARN_PRINTS("Failed to copy '" + xml_file + "'.");
+		WARN_PRINT("Failed to copy '" + xml_file + "'.");
 
 	String pdb_file = assembly_name + ".pdb";
 	if (da->copy(src_dir.plus_file(pdb_file), dst_dir.plus_file(pdb_file)) != OK)
-		WARN_PRINTS("Failed to copy '" + pdb_file + "'.");
+		WARN_PRINT("Failed to copy '" + pdb_file + "'.");
 
 	String assembly_file = assembly_name + ".dll";
 	if (da->copy(src_dir.plus_file(assembly_file), dst_dir.plus_file(assembly_file)) != OK) {
-		ERR_PRINTS("Failed to copy '" + assembly_file + "'.");
+		ERR_PRINT("Failed to copy '" + assembly_file + "'.");
 		return false;
 	}
 
@@ -1115,7 +1116,7 @@ Error GDMono::finalize_and_unload_domain(MonoDomain *p_domain) {
 	mono_domain_try_unload(p_domain, (MonoObject **)&exc);
 
 	if (exc) {
-		ERR_PRINTS("Exception thrown when unloading domain '" + domain_name + "'.");
+		ERR_PRINT("Exception thrown when unloading domain '" + domain_name + "'.");
 		GDMonoUtils::debug_print_unhandled_exception(exc);
 		return FAILED;
 	}
@@ -1183,8 +1184,8 @@ void GDMono::unhandled_exception_hook(MonoObject *p_exc, void *) {
 
 #ifdef DEBUG_ENABLED
 	GDMonoUtils::debug_send_unhandled_exception_error((MonoException *)p_exc);
-	if (ScriptDebugger::get_singleton())
-		ScriptDebugger::get_singleton()->idle_poll();
+	if (EngineDebugger::is_active())
+		EngineDebugger::get_singleton()->poll_events(false);
 #endif
 
 	exit(mono_environment_exitcode_get());

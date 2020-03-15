@@ -34,7 +34,7 @@
 #include "editor/editor_settings.h"
 #include "main/main.h"
 #include "scene/3d/mesh_instance.h"
-#include "scene/3d/navigation_mesh.h"
+#include "scene/3d/navigation_region.h"
 #include "scene/3d/physics_body.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"
@@ -152,9 +152,9 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 		Transform navmesh_transform;
 		for (int j = 0; j < mi->get_child_count(); j++) {
 			Node *child2 = mi->get_child(j);
-			if (!Object::cast_to<NavigationMeshInstance>(child2))
+			if (!Object::cast_to<NavigationRegion>(child2))
 				continue;
-			NavigationMeshInstance *sb = Object::cast_to<NavigationMeshInstance>(child2);
+			NavigationRegion *sb = Object::cast_to<NavigationRegion>(child2);
 			navmesh = sb->get_navigation_mesh();
 			navmesh_transform = sb->get_transform();
 			if (!navmesh.is_null())
@@ -182,7 +182,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 			}
 		}
 
-		Vector<Ref<Texture> > textures = EditorInterface::get_singleton()->make_mesh_previews(meshes, &transforms, EditorSettings::get_singleton()->get("editors/grid_map/preview_size"));
+		Vector<Ref<Texture2D> > textures = EditorInterface::get_singleton()->make_mesh_previews(meshes, &transforms, EditorSettings::get_singleton()->get("editors/grid_map/preview_size"));
 		int j = 0;
 		for (int i = 0; i < ids.size(); i++) {
 
@@ -248,10 +248,6 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 }
 
 void MeshLibraryEditor::_bind_methods() {
-
-	ClassDB::bind_method("_menu_cbk", &MeshLibraryEditor::_menu_cbk);
-	ClassDB::bind_method("_menu_confirm", &MeshLibraryEditor::_menu_confirm);
-	ClassDB::bind_method("_import_scene_cbk", &MeshLibraryEditor::_import_scene_cbk);
 }
 
 MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
@@ -268,7 +264,7 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 		file->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
 	}
 	add_child(file);
-	file->connect("file_selected", this, "_import_scene_cbk");
+	file->connect("file_selected", callable_mp(this, &MeshLibraryEditor::_import_scene_cbk));
 
 	menu = memnew(MenuButton);
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(menu);
@@ -281,13 +277,13 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 	menu->get_popup()->add_item(TTR("Import from Scene"), MENU_OPTION_IMPORT_FROM_SCENE);
 	menu->get_popup()->add_item(TTR("Update from Scene"), MENU_OPTION_UPDATE_FROM_SCENE);
 	menu->get_popup()->set_item_disabled(menu->get_popup()->get_item_index(MENU_OPTION_UPDATE_FROM_SCENE), true);
-	menu->get_popup()->connect("id_pressed", this, "_menu_cbk");
+	menu->get_popup()->connect("id_pressed", callable_mp(this, &MeshLibraryEditor::_menu_cbk));
 	menu->hide();
 
 	editor = p_editor;
 	cd = memnew(ConfirmationDialog);
 	add_child(cd);
-	cd->get_ok()->connect("pressed", this, "_menu_confirm");
+	cd->get_ok()->connect("pressed", callable_mp(this, &MeshLibraryEditor::_menu_confirm));
 }
 
 void MeshLibraryEditorPlugin::edit(Object *p_node) {

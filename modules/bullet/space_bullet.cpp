@@ -108,9 +108,9 @@ bool BulletPhysicsDirectSpaceState::intersect_ray(const Vector3 &p_from, const V
 			r_result.shape = btResult.m_shapeId;
 			r_result.rid = gObj->get_self();
 			r_result.collider_id = gObj->get_instance_id();
-			r_result.collider = 0 == r_result.collider_id ? NULL : ObjectDB::get_instance(r_result.collider_id);
+			r_result.collider = r_result.collider_id.is_null() ? NULL : ObjectDB::get_instance(r_result.collider_id);
 		} else {
-			WARN_PRINTS("The raycast performed has hit a collision object that is not part of Godot scene, please check it.");
+			WARN_PRINT("The raycast performed has hit a collision object that is not part of Godot scene, please check it.");
 		}
 		return true;
 	} else {
@@ -122,12 +122,12 @@ int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Tra
 	if (p_result_max <= 0)
 		return 0;
 
-	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
+	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->getornull(p_shape);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_xform.basis.get_scale_abs(), p_margin);
 	if (!btShape->isConvex()) {
 		bulletdelete(btShape);
-		ERR_PRINTS("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
+		ERR_PRINT("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
 		return 0;
 	}
 	btConvexShape *btConvex = static_cast<btConvexShape *>(btShape);
@@ -152,12 +152,12 @@ int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Tra
 }
 
 bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transform &p_xform, const Vector3 &p_motion, float p_margin, float &r_closest_safe, float &r_closest_unsafe, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, ShapeRestInfo *r_info) {
-	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
+	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->getornull(p_shape);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_xform.basis.get_scale(), p_margin);
 	if (!btShape->isConvex()) {
 		bulletdelete(btShape);
-		ERR_PRINTS("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
+		ERR_PRINT("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
 		return false;
 	}
 	btConvexShape *bt_convex_shape = static_cast<btConvexShape *>(btShape);
@@ -207,12 +207,12 @@ bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &
 	if (p_result_max <= 0)
 		return 0;
 
-	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
+	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->getornull(p_shape);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_shape_xform.basis.get_scale_abs(), p_margin);
 	if (!btShape->isConvex()) {
 		bulletdelete(btShape);
-		ERR_PRINTS("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
+		ERR_PRINT("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
 		return 0;
 	}
 	btConvexShape *btConvex = static_cast<btConvexShape *>(btShape);
@@ -239,12 +239,12 @@ bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &
 
 bool BulletPhysicsDirectSpaceState::rest_info(RID p_shape, const Transform &p_shape_xform, float p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 
-	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
+	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->getornull(p_shape);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_shape_xform.basis.get_scale_abs(), p_margin);
 	if (!btShape->isConvex()) {
 		bulletdelete(btShape);
-		ERR_PRINTS("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
+		ERR_PRINT("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
 		return 0;
 	}
 	btConvexShape *btConvex = static_cast<btConvexShape *>(btShape);
@@ -389,7 +389,7 @@ void SpaceBullet::set_param(PhysicsServer::AreaParameter p_param, const Variant 
 		case PhysicsServer::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
 			break;
 		default:
-			WARN_PRINTS("This set parameter (" + itos(p_param) + ") is ignored, the SpaceBullet doesn't support it.");
+			WARN_PRINT("This set parameter (" + itos(p_param) + ") is ignored, the SpaceBullet doesn't support it.");
 			break;
 	}
 }
@@ -412,7 +412,7 @@ Variant SpaceBullet::get_param(PhysicsServer::AreaParameter p_param) {
 		case PhysicsServer::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
 			return 0;
 		default:
-			WARN_PRINTS("This get parameter (" + itos(p_param) + ") is ignored, the SpaceBullet doesn't support it.");
+			WARN_PRINT("This get parameter (" + itos(p_param) + ") is ignored, the SpaceBullet doesn't support it.");
 			return Variant();
 	}
 }
@@ -428,7 +428,7 @@ void SpaceBullet::set_param(PhysicsServer::SpaceParameter p_param, real_t p_valu
 		case PhysicsServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO:
 		case PhysicsServer::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS:
 		default:
-			WARN_PRINTS("This set parameter (" + itos(p_param) + ") is ignored, the SpaceBullet doesn't support it.");
+			WARN_PRINT("This set parameter (" + itos(p_param) + ") is ignored, the SpaceBullet doesn't support it.");
 			break;
 	}
 }
@@ -444,7 +444,7 @@ real_t SpaceBullet::get_param(PhysicsServer::SpaceParameter p_param) {
 		case PhysicsServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO:
 		case PhysicsServer::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS:
 		default:
-			WARN_PRINTS("The SpaceBullet  doesn't support this get parameter (" + itos(p_param) + "), 0 is returned.");
+			WARN_PRINT("The SpaceBullet  doesn't support this get parameter (" + itos(p_param) + "), 0 is returned.");
 			return 0.f;
 	}
 }
@@ -726,9 +726,6 @@ void SpaceBullet::check_ghost_overlaps() {
 
 					other_body_shape = static_cast<btCollisionShape *>(otherObject->get_bt_shape(z));
 
-					if (other_body_shape->isConcave())
-						continue;
-
 					btTransform other_shape_transform(otherObject->get_bt_shape_transform(z));
 					other_shape_transform.getOrigin() *= other_body_scale;
 
@@ -890,8 +887,8 @@ void SpaceBullet::update_gravity() {
 
 static ImmediateGeometry *motionVec(NULL);
 static ImmediateGeometry *normalLine(NULL);
-static Ref<SpatialMaterial> red_mat;
-static Ref<SpatialMaterial> blue_mat;
+static Ref<StandardMaterial3D> red_mat;
+static Ref<StandardMaterial3D> blue_mat;
 #endif
 
 bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, PhysicsServer::MotionResult *r_result, bool p_exclude_raycast_shapes) {
@@ -908,21 +905,21 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 		motionVec->set_as_toplevel(true);
 		normalLine->set_as_toplevel(true);
 
-		red_mat = Ref<SpatialMaterial>(memnew(SpatialMaterial));
-		red_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+		red_mat = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+		red_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 		red_mat->set_line_width(20.0);
-		red_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-		red_mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-		red_mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+		red_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+		red_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		red_mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 		red_mat->set_albedo(Color(1, 0, 0, 1));
 		motionVec->set_material_override(red_mat);
 
-		blue_mat = Ref<SpatialMaterial>(memnew(SpatialMaterial));
-		blue_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+		blue_mat = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+		blue_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 		blue_mat->set_line_width(20.0);
-		blue_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-		blue_mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-		blue_mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+		blue_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+		blue_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		blue_mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 		blue_mat->set_albedo(Color(0, 0, 1, 1));
 		normalLine->set_material_override(blue_mat);
 	}
@@ -945,7 +942,7 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 
 	btVector3 motion;
 	G_TO_B(p_motion, motion);
-	if (!motion.fuzzyZero()) {
+	{
 		// Phase two - sweep test, from a secure position without margin
 
 		const int shape_count(p_body->get_shape_count());
@@ -960,7 +957,7 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 		motionVec->end();
 #endif
 
-		for (int shIndex = 0; shIndex < shape_count; ++shIndex) {
+		for (int shIndex = 0; shIndex < shape_count && !motion.fuzzyZero(); ++shIndex) {
 			if (p_body->is_shape_disabled(shIndex)) {
 				continue;
 			}

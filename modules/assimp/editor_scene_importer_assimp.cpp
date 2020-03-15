@@ -167,8 +167,7 @@ struct EditorSceneImporterAssetImportInterpolate {
 		float t2 = t * t;
 		float t3 = t2 * t;
 
-		return 0.5f * ((2.0f * p1) + (-p0 + p2) * t + (2.0f * p0 - 5.0f * p1 + 4 * p2 - p3) * t2 +
-							  (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
+		return 0.5f * ((2.0f * p1) + (-p0 + p2) * t + (2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3) * t2 + (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
 	}
 
 	T bezier(T start, T control_1, T control_2, T end, float t) {
@@ -188,22 +187,22 @@ template <>
 struct EditorSceneImporterAssetImportInterpolate<Quat> {
 
 	Quat lerp(const Quat &a, const Quat &b, float c) const {
-		ERR_FAIL_COND_V(!a.is_normalized(), Quat());
-		ERR_FAIL_COND_V(!b.is_normalized(), Quat());
+		ERR_FAIL_COND_V_MSG(!a.is_normalized(), Quat(), "The quaternion \"a\" must be normalized.");
+		ERR_FAIL_COND_V_MSG(!b.is_normalized(), Quat(), "The quaternion \"b\" must be normalized.");
 
 		return a.slerp(b, c).normalized();
 	}
 
 	Quat catmull_rom(const Quat &p0, const Quat &p1, const Quat &p2, const Quat &p3, float c) {
-		ERR_FAIL_COND_V(!p1.is_normalized(), Quat());
-		ERR_FAIL_COND_V(!p2.is_normalized(), Quat());
+		ERR_FAIL_COND_V_MSG(!p1.is_normalized(), Quat(), "The quaternion \"p1\" must be normalized.");
+		ERR_FAIL_COND_V_MSG(!p2.is_normalized(), Quat(), "The quaternion \"p2\" must be normalized.");
 
 		return p1.slerp(p2, c).normalized();
 	}
 
 	Quat bezier(Quat start, Quat control_1, Quat control_2, Quat end, float t) {
-		ERR_FAIL_COND_V(!start.is_normalized(), Quat());
-		ERR_FAIL_COND_V(!end.is_normalized(), Quat());
+		ERR_FAIL_COND_V_MSG(!start.is_normalized(), Quat(), "The start quaternion must be normalized.");
+		ERR_FAIL_COND_V_MSG(!end.is_normalized(), Quat(), "The end quaternion must be normalized.");
 
 		return start.slerp(end, t).normalized();
 	}
@@ -389,7 +388,7 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 				Spatial *parent_node = parent_lookup->value();
 
 				ERR_FAIL_COND_V_MSG(parent_node == NULL, state.root,
-						"Parent node invalid even though lookup successful, out of ram?")
+						"Parent node invalid even though lookup successful, out of ram?");
 
 				if (spatial != state.root) {
 					parent_node->add_child(spatial);
@@ -732,6 +731,10 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 	animation->set_name(name);
 	animation->set_length(anim->mDuration / ticks_per_second);
 
+	if (name.begins_with("loop") || name.ends_with("loop") || name.begins_with("cycle") || name.ends_with("cycle")) {
+		animation->set_loop(true);
+	}
+
 	// generate bone stack for animation import
 	RegenerateBoneStack(state);
 
@@ -991,15 +994,15 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 		}
 
 		aiMaterial *ai_material = state.assimp_scene->mMaterials[ai_mesh->mMaterialIndex];
-		Ref<SpatialMaterial> mat;
+		Ref<StandardMaterial3D> mat;
 		mat.instance();
 
 		int32_t mat_two_sided = 0;
 		if (AI_SUCCESS == ai_material->Get(AI_MATKEY_TWOSIDED, mat_two_sided)) {
 			if (mat_two_sided > 0) {
-				mat->set_cull_mode(SpatialMaterial::CULL_DISABLED);
+				mat->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
 			} else {
-				mat->set_cull_mode(SpatialMaterial::CULL_BACK);
+				mat->set_cull_mode(StandardMaterial3D::CULL_BACK);
 			}
 		}
 
@@ -1011,7 +1014,7 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 		// Culling handling for meshes
 
 		// cull all back faces
-		mat->set_cull_mode(SpatialMaterial::CULL_DISABLED);
+		mat->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
 
 		// Now process materials
 		aiTextureType base_color = aiTextureType_BASE_COLOR;
@@ -1024,13 +1027,11 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 
 				// anything transparent must be culled
 				if (image_data.raw_image->detect_alpha() != Image::ALPHA_NONE) {
-					mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-					mat->set_depth_draw_mode(SpatialMaterial::DepthDrawMode::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
-					mat->set_cull_mode(
-							SpatialMaterial::CULL_DISABLED); // since you can see both sides in transparent mode
+					mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS);
+					mat->set_cull_mode(StandardMaterial3D::CULL_DISABLED); // since you can see both sides in transparent mode
 				}
 
-				mat->set_texture(SpatialMaterial::TEXTURE_ALBEDO, image_data.texture);
+				mat->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, image_data.texture);
 			}
 		}
 
@@ -1044,22 +1045,18 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 
 				// anything transparent must be culled
 				if (image_data.raw_image->detect_alpha() != Image::ALPHA_NONE) {
-					mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-					mat->set_depth_draw_mode(SpatialMaterial::DepthDrawMode::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
-					mat->set_cull_mode(
-							SpatialMaterial::CULL_DISABLED); // since you can see both sides in transparent mode
+					mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS);
+					mat->set_cull_mode(StandardMaterial3D::CULL_DISABLED); // since you can see both sides in transparent mode
 				}
 
-				mat->set_texture(SpatialMaterial::TEXTURE_ALBEDO, image_data.texture);
+				mat->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, image_data.texture);
 			}
 
 			aiColor4D clr_diffuse;
 			if (AI_SUCCESS == ai_material->Get(AI_MATKEY_COLOR_DIFFUSE, clr_diffuse)) {
 				if (Math::is_equal_approx(clr_diffuse.a, 1.0f) == false) {
-					mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-					mat->set_depth_draw_mode(SpatialMaterial::DepthDrawMode::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
-					mat->set_cull_mode(
-							SpatialMaterial::CULL_DISABLED); // since you can see both sides in transparent mode
+					mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS);
+					mat->set_cull_mode(StandardMaterial3D::CULL_DISABLED); // since you can see both sides in transparent mode
 				}
 				mat->set_albedo(Color(clr_diffuse.r, clr_diffuse.g, clr_diffuse.b, clr_diffuse.a));
 			}
@@ -1074,14 +1071,14 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 			// Process texture normal map
 			if (AssimpUtils::GetAssimpTexture(state, ai_material, tex_normal, filename, path, image_data)) {
 				AssimpUtils::set_texture_mapping_mode(image_data.map_mode, image_data.texture);
-				mat->set_feature(SpatialMaterial::Feature::FEATURE_NORMAL_MAPPING, true);
-				mat->set_texture(SpatialMaterial::TEXTURE_NORMAL, image_data.texture);
+				mat->set_feature(StandardMaterial3D::Feature::FEATURE_NORMAL_MAPPING, true);
+				mat->set_texture(StandardMaterial3D::TEXTURE_NORMAL, image_data.texture);
 			} else {
 				aiString texture_path;
 				if (AI_SUCCESS == ai_material->Get(AI_MATKEY_FBX_NORMAL_TEXTURE, AI_PROPERTIES, texture_path)) {
 					if (AssimpUtils::CreateAssimpTexture(state, texture_path, filename, path, image_data)) {
-						mat->set_feature(SpatialMaterial::Feature::FEATURE_NORMAL_MAPPING, true);
-						mat->set_texture(SpatialMaterial::TEXTURE_NORMAL, image_data.texture);
+						mat->set_feature(StandardMaterial3D::Feature::FEATURE_NORMAL_MAPPING, true);
+						mat->set_texture(StandardMaterial3D::TEXTURE_NORMAL, image_data.texture);
 					}
 				}
 			}
@@ -1096,8 +1093,8 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 			// Process texture normal map
 			if (AssimpUtils::GetAssimpTexture(state, ai_material, tex_normal_camera, filename, path, image_data)) {
 				AssimpUtils::set_texture_mapping_mode(image_data.map_mode, image_data.texture);
-				mat->set_feature(SpatialMaterial::Feature::FEATURE_NORMAL_MAPPING, true);
-				mat->set_texture(SpatialMaterial::TEXTURE_NORMAL, image_data.texture);
+				mat->set_feature(StandardMaterial3D::Feature::FEATURE_NORMAL_MAPPING, true);
+				mat->set_texture(StandardMaterial3D::TEXTURE_NORMAL, image_data.texture);
 			}
 		}
 
@@ -1110,8 +1107,8 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 			// Process texture normal map
 			if (AssimpUtils::GetAssimpTexture(state, ai_material, tex_emission_color, filename, path, image_data)) {
 				AssimpUtils::set_texture_mapping_mode(image_data.map_mode, image_data.texture);
-				mat->set_feature(SpatialMaterial::Feature::FEATURE_NORMAL_MAPPING, true);
-				mat->set_texture(SpatialMaterial::TEXTURE_NORMAL, image_data.texture);
+				mat->set_feature(StandardMaterial3D::Feature::FEATURE_NORMAL_MAPPING, true);
+				mat->set_texture(StandardMaterial3D::TEXTURE_NORMAL, image_data.texture);
 			}
 		}
 
@@ -1124,7 +1121,7 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 			// Process texture normal map
 			if (AssimpUtils::GetAssimpTexture(state, ai_material, tex_metalness, filename, path, image_data)) {
 				AssimpUtils::set_texture_mapping_mode(image_data.map_mode, image_data.texture);
-				mat->set_texture(SpatialMaterial::TEXTURE_METALLIC, image_data.texture);
+				mat->set_texture(StandardMaterial3D::TEXTURE_METALLIC, image_data.texture);
 			}
 		}
 
@@ -1137,7 +1134,7 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 			// Process texture normal map
 			if (AssimpUtils::GetAssimpTexture(state, ai_material, tex_roughness, filename, path, image_data)) {
 				AssimpUtils::set_texture_mapping_mode(image_data.map_mode, image_data.texture);
-				mat->set_texture(SpatialMaterial::TEXTURE_ROUGHNESS, image_data.texture);
+				mat->set_texture(StandardMaterial3D::TEXTURE_ROUGHNESS, image_data.texture);
 			}
 		}
 
@@ -1150,16 +1147,16 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 
 			if (AssimpUtils::GetAssimpTexture(state, ai_material, tex_emissive, filename, path, image_data)) {
 				AssimpUtils::set_texture_mapping_mode(image_data.map_mode, image_data.texture);
-				mat->set_feature(SpatialMaterial::FEATURE_EMISSION, true);
-				mat->set_texture(SpatialMaterial::TEXTURE_EMISSION, image_data.texture);
+				mat->set_feature(StandardMaterial3D::FEATURE_EMISSION, true);
+				mat->set_texture(StandardMaterial3D::TEXTURE_EMISSION, image_data.texture);
 			} else {
 				// Process emission textures
 				aiString texture_emissive_path;
 				if (AI_SUCCESS ==
 						ai_material->Get(AI_MATKEY_FBX_MAYA_EMISSION_TEXTURE, AI_PROPERTIES, texture_emissive_path)) {
 					if (AssimpUtils::CreateAssimpTexture(state, texture_emissive_path, filename, path, image_data)) {
-						mat->set_feature(SpatialMaterial::FEATURE_EMISSION, true);
-						mat->set_texture(SpatialMaterial::TEXTURE_EMISSION, image_data.texture);
+						mat->set_feature(StandardMaterial3D::FEATURE_EMISSION, true);
+						mat->set_texture(StandardMaterial3D::TEXTURE_EMISSION, image_data.texture);
 					}
 				} else {
 					float pbr_emission = 0.0f;
@@ -1179,7 +1176,7 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 			// Process texture normal map
 			if (AssimpUtils::GetAssimpTexture(state, ai_material, tex_specular, filename, path, image_data)) {
 				AssimpUtils::set_texture_mapping_mode(image_data.map_mode, image_data.texture);
-				mat->set_texture(SpatialMaterial::TEXTURE_METALLIC, image_data.texture);
+				mat->set_texture(StandardMaterial3D::TEXTURE_METALLIC, image_data.texture);
 			}
 		}
 
@@ -1192,8 +1189,8 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 			// Process texture normal map
 			if (AssimpUtils::GetAssimpTexture(state, ai_material, tex_ao_map, filename, path, image_data)) {
 				AssimpUtils::set_texture_mapping_mode(image_data.map_mode, image_data.texture);
-				mat->set_feature(SpatialMaterial::FEATURE_AMBIENT_OCCLUSION, true);
-				mat->set_texture(SpatialMaterial::TEXTURE_AMBIENT_OCCLUSION, image_data.texture);
+				mat->set_feature(StandardMaterial3D::FEATURE_AMBIENT_OCCLUSION, true);
+				mat->set_texture(StandardMaterial3D::TEXTURE_AMBIENT_OCCLUSION, image_data.texture);
 			}
 		}
 
@@ -1220,17 +1217,17 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 			const size_t num_vertices = ai_mesh->mAnimMeshes[j]->mNumVertices;
 			array_copy[Mesh::ARRAY_INDEX] = Variant();
 			if (ai_mesh->mAnimMeshes[j]->HasPositions()) {
-				PoolVector3Array vertices;
+				PackedVector3Array vertices;
 				vertices.resize(num_vertices);
 				for (size_t l = 0; l < num_vertices; l++) {
 					const aiVector3D ai_pos = ai_mesh->mAnimMeshes[j]->mVertices[l];
 					Vector3 position = Vector3(ai_pos.x, ai_pos.y, ai_pos.z);
-					vertices.write()[l] = position;
+					vertices.ptrw()[l] = position;
 				}
-				PoolVector3Array new_vertices = array_copy[VisualServer::ARRAY_VERTEX].duplicate(true);
+				PackedVector3Array new_vertices = array_copy[VisualServer::ARRAY_VERTEX].duplicate(true);
 				ERR_CONTINUE(vertices.size() != new_vertices.size());
 				for (int32_t l = 0; l < new_vertices.size(); l++) {
-					PoolVector3Array::Write w = new_vertices.write();
+					Vector3 *w = new_vertices.ptrw();
 					w[l] = vertices[l];
 				}
 				array_copy[VisualServer::ARRAY_VERTEX] = new_vertices;
@@ -1238,53 +1235,53 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 
 			int32_t color_set = 0;
 			if (ai_mesh->mAnimMeshes[j]->HasVertexColors(color_set)) {
-				PoolColorArray colors;
+				PackedColorArray colors;
 				colors.resize(num_vertices);
 				for (size_t l = 0; l < num_vertices; l++) {
 					const aiColor4D ai_color = ai_mesh->mAnimMeshes[j]->mColors[color_set][l];
 					Color color = Color(ai_color.r, ai_color.g, ai_color.b, ai_color.a);
-					colors.write()[l] = color;
+					colors.ptrw()[l] = color;
 				}
-				PoolColorArray new_colors = array_copy[VisualServer::ARRAY_COLOR].duplicate(true);
+				PackedColorArray new_colors = array_copy[VisualServer::ARRAY_COLOR].duplicate(true);
 				ERR_CONTINUE(colors.size() != new_colors.size());
 				for (int32_t l = 0; l < colors.size(); l++) {
-					PoolColorArray::Write w = new_colors.write();
+					Color *w = new_colors.ptrw();
 					w[l] = colors[l];
 				}
 				array_copy[VisualServer::ARRAY_COLOR] = new_colors;
 			}
 
 			if (ai_mesh->mAnimMeshes[j]->HasNormals()) {
-				PoolVector3Array normals;
+				PackedVector3Array normals;
 				normals.resize(num_vertices);
 				for (size_t l = 0; l < num_vertices; l++) {
 					const aiVector3D ai_normal = ai_mesh->mAnimMeshes[j]->mNormals[l];
 					Vector3 normal = Vector3(ai_normal.x, ai_normal.y, ai_normal.z);
-					normals.write()[l] = normal;
+					normals.ptrw()[l] = normal;
 				}
-				PoolVector3Array new_normals = array_copy[VisualServer::ARRAY_NORMAL].duplicate(true);
+				PackedVector3Array new_normals = array_copy[VisualServer::ARRAY_NORMAL].duplicate(true);
 				ERR_CONTINUE(normals.size() != new_normals.size());
 				for (int l = 0; l < normals.size(); l++) {
-					PoolVector3Array::Write w = new_normals.write();
+					Vector3 *w = new_normals.ptrw();
 					w[l] = normals[l];
 				}
 				array_copy[VisualServer::ARRAY_NORMAL] = new_normals;
 			}
 
 			if (ai_mesh->mAnimMeshes[j]->HasTangentsAndBitangents()) {
-				PoolColorArray tangents;
+				PackedColorArray tangents;
 				tangents.resize(num_vertices);
-				PoolColorArray::Write w = tangents.write();
+				Color *w = tangents.ptrw();
 				for (size_t l = 0; l < num_vertices; l++) {
 					AssimpUtils::calc_tangent_from_mesh(ai_mesh, j, l, l, w);
 				}
-				PoolRealArray new_tangents = array_copy[VisualServer::ARRAY_TANGENT].duplicate(true);
+				PackedFloat32Array new_tangents = array_copy[VisualServer::ARRAY_TANGENT].duplicate(true);
 				ERR_CONTINUE(new_tangents.size() != tangents.size() * 4);
 				for (int32_t l = 0; l < tangents.size(); l++) {
-					new_tangents.write()[l + 0] = tangents[l].r;
-					new_tangents.write()[l + 1] = tangents[l].g;
-					new_tangents.write()[l + 2] = tangents[l].b;
-					new_tangents.write()[l + 3] = tangents[l].a;
+					new_tangents.ptrw()[l + 0] = tangents[l].r;
+					new_tangents.ptrw()[l + 1] = tangents[l].g;
+					new_tangents.ptrw()[l + 2] = tangents[l].b;
+					new_tangents.ptrw()[l + 3] = tangents[l].a;
 				}
 				array_copy[VisualServer::ARRAY_TANGENT] = new_tangents;
 			}

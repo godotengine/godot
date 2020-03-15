@@ -59,7 +59,7 @@ void ColorPicker::_notification(int p_what) {
 
 #ifdef TOOLS_ENABLED
 			if (Engine::get_singleton()->is_editor_hint()) {
-				PoolColorArray saved_presets = EditorSettings::get_singleton()->get_project_metadata("color_picker", "presets", PoolColorArray());
+				PackedColorArray saved_presets = EditorSettings::get_singleton()->get_project_metadata("color_picker", "presets", PackedColorArray());
 
 				for (int i = 0; i < saved_presets.size(); i++) {
 					add_preset(saved_presets[i]);
@@ -295,7 +295,7 @@ void ColorPicker::add_preset(const Color &p_color) {
 
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		PoolColorArray arr_to_save = get_presets();
+		PackedColorArray arr_to_save = get_presets();
 		EditorSettings::get_singleton()->set_project_metadata("color_picker", "presets", arr_to_save);
 	}
 #endif
@@ -309,16 +309,16 @@ void ColorPicker::erase_preset(const Color &p_color) {
 
 #ifdef TOOLS_ENABLED
 		if (Engine::get_singleton()->is_editor_hint()) {
-			PoolColorArray arr_to_save = get_presets();
+			PackedColorArray arr_to_save = get_presets();
 			EditorSettings::get_singleton()->set_project_metadata("color_picker", "presets", arr_to_save);
 		}
 #endif
 	}
 }
 
-PoolColorArray ColorPicker::get_presets() const {
+PackedColorArray ColorPicker::get_presets() const {
 
-	PoolColorArray arr;
+	PackedColorArray arr;
 	arr.resize(presets.size());
 	for (int i = 0; i < presets.size(); i++) {
 		arr.set(i, presets[i]);
@@ -445,7 +445,7 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 		c->draw_line(Point2(0, y), Point2(c->get_size().x, y), col.inverted());
 		c->draw_line(Point2(x, y), Point2(x, y), Color(1, 1, 1), 2);
 	} else if (p_which == 1) {
-		Ref<Texture> hue = get_icon("color_hue", "ColorPicker");
+		Ref<Texture2D> hue = get_icon("color_hue", "ColorPicker");
 		c->draw_texture_rect(hue, Rect2(Point2(), c->get_size()));
 		int y = c->get_size().y - c->get_size().y * (1.0 - h);
 		Color col = Color();
@@ -593,10 +593,10 @@ void ColorPicker::_screen_input(const Ref<InputEvent> &p_event) {
 
 		Ref<Image> img = r->get_texture()->get_data();
 		if (img.is_valid() && !img->empty()) {
-			img->lock();
+
 			Vector2 ofs = mev->get_global_position() - r->get_visible_rect().get_position();
 			Color c = img->get_pixel(ofs.x, r->get_visible_rect().size.height - ofs.y);
-			img->unlock();
+
 			set_pick_color(c);
 		}
 	}
@@ -615,9 +615,9 @@ void ColorPicker::_screen_pick_pressed() {
 		screen->set_as_toplevel(true);
 		screen->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 		screen->set_default_cursor_shape(CURSOR_POINTING_HAND);
-		screen->connect("gui_input", this, "_screen_input");
+		screen->connect("gui_input", callable_mp(this, &ColorPicker::_screen_input));
 		// It immediately toggles off in the first press otherwise.
-		screen->call_deferred("connect", "hide", btn_pick, "set_pressed", varray(false));
+		screen->call_deferred("connect", "hide", Callable(btn_pick, "set_pressed"), varray(false));
 	}
 	screen->raise();
 	screen->show_modal();
@@ -667,6 +667,7 @@ void ColorPicker::set_presets_visible(bool p_visible) {
 	presets_visible = p_visible;
 	preset_separator->set_visible(p_visible);
 	preset_container->set_visible(p_visible);
+	preset_container2->set_visible(p_visible);
 }
 
 bool ColorPicker::are_presets_visible() const {
@@ -677,9 +678,9 @@ void ColorPicker::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_pick_color", "color"), &ColorPicker::set_pick_color);
 	ClassDB::bind_method(D_METHOD("get_pick_color"), &ColorPicker::get_pick_color);
-	ClassDB::bind_method(D_METHOD("set_hsv_mode", "mode"), &ColorPicker::set_hsv_mode);
+	ClassDB::bind_method(D_METHOD("set_hsv_mode"), &ColorPicker::set_hsv_mode);
 	ClassDB::bind_method(D_METHOD("is_hsv_mode"), &ColorPicker::is_hsv_mode);
-	ClassDB::bind_method(D_METHOD("set_raw_mode", "mode"), &ColorPicker::set_raw_mode);
+	ClassDB::bind_method(D_METHOD("set_raw_mode"), &ColorPicker::set_raw_mode);
 	ClassDB::bind_method(D_METHOD("is_raw_mode"), &ColorPicker::is_raw_mode);
 	ClassDB::bind_method(D_METHOD("set_deferred_mode", "mode"), &ColorPicker::set_deferred_mode);
 	ClassDB::bind_method(D_METHOD("is_deferred_mode"), &ColorPicker::is_deferred_mode);
@@ -692,21 +693,6 @@ void ColorPicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_preset", "color"), &ColorPicker::add_preset);
 	ClassDB::bind_method(D_METHOD("erase_preset", "color"), &ColorPicker::erase_preset);
 	ClassDB::bind_method(D_METHOD("get_presets"), &ColorPicker::get_presets);
-	ClassDB::bind_method(D_METHOD("_value_changed"), &ColorPicker::_value_changed);
-	ClassDB::bind_method(D_METHOD("_html_entered"), &ColorPicker::_html_entered);
-	ClassDB::bind_method(D_METHOD("_text_type_toggled"), &ColorPicker::_text_type_toggled);
-	ClassDB::bind_method(D_METHOD("_add_preset_pressed"), &ColorPicker::_add_preset_pressed);
-	ClassDB::bind_method(D_METHOD("_screen_pick_pressed"), &ColorPicker::_screen_pick_pressed);
-	ClassDB::bind_method(D_METHOD("_sample_draw"), &ColorPicker::_sample_draw);
-	ClassDB::bind_method(D_METHOD("_update_presets"), &ColorPicker::_update_presets);
-	ClassDB::bind_method(D_METHOD("_hsv_draw"), &ColorPicker::_hsv_draw);
-	ClassDB::bind_method(D_METHOD("_uv_input"), &ColorPicker::_uv_input);
-	ClassDB::bind_method(D_METHOD("_w_input"), &ColorPicker::_w_input);
-	ClassDB::bind_method(D_METHOD("_preset_input"), &ColorPicker::_preset_input);
-	ClassDB::bind_method(D_METHOD("_screen_input"), &ColorPicker::_screen_input);
-	ClassDB::bind_method(D_METHOD("_focus_enter"), &ColorPicker::_focus_enter);
-	ClassDB::bind_method(D_METHOD("_focus_exit"), &ColorPicker::_focus_exit);
-	ClassDB::bind_method(D_METHOD("_html_focus_exit"), &ColorPicker::_html_focus_exit);
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_pick_color", "get_pick_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
@@ -741,20 +727,20 @@ ColorPicker::ColorPicker() :
 
 	uv_edit = memnew(Control);
 	hb_edit->add_child(uv_edit);
-	uv_edit->connect("gui_input", this, "_uv_input");
+	uv_edit->connect("gui_input", callable_mp(this, &ColorPicker::_uv_input));
 	uv_edit->set_mouse_filter(MOUSE_FILTER_PASS);
 	uv_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	uv_edit->set_v_size_flags(SIZE_EXPAND_FILL);
 	uv_edit->set_custom_minimum_size(Size2(get_constant("sv_width"), get_constant("sv_height")));
-	uv_edit->connect("draw", this, "_hsv_draw", make_binds(0, uv_edit));
+	uv_edit->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw), make_binds(0, uv_edit));
 
 	w_edit = memnew(Control);
 	hb_edit->add_child(w_edit);
 	w_edit->set_custom_minimum_size(Size2(get_constant("h_width"), 0));
 	w_edit->set_h_size_flags(SIZE_FILL);
 	w_edit->set_v_size_flags(SIZE_EXPAND_FILL);
-	w_edit->connect("gui_input", this, "_w_input");
-	w_edit->connect("draw", this, "_hsv_draw", make_binds(1, w_edit));
+	w_edit->connect("gui_input", callable_mp(this, &ColorPicker::_w_input));
+	w_edit->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw), make_binds(1, w_edit));
 
 	HBoxContainer *hb_smpl = memnew(HBoxContainer);
 	add_child(hb_smpl);
@@ -762,13 +748,13 @@ ColorPicker::ColorPicker() :
 	sample = memnew(TextureRect);
 	hb_smpl->add_child(sample);
 	sample->set_h_size_flags(SIZE_EXPAND_FILL);
-	sample->connect("draw", this, "_sample_draw");
+	sample->connect("draw", callable_mp(this, &ColorPicker::_sample_draw));
 
 	btn_pick = memnew(ToolButton);
 	hb_smpl->add_child(btn_pick);
 	btn_pick->set_toggle_mode(true);
 	btn_pick->set_tooltip(TTR("Pick a color from the editor window."));
-	btn_pick->connect("pressed", this, "_screen_pick_pressed");
+	btn_pick->connect("pressed", callable_mp(this, &ColorPicker::_screen_pick_pressed));
 
 	VBoxContainer *vbl = memnew(VBoxContainer);
 	add_child(vbl);
@@ -796,14 +782,14 @@ ColorPicker::ColorPicker() :
 		values[i] = memnew(SpinBox);
 		scroll[i]->share(values[i]);
 		hbc->add_child(values[i]);
-		values[i]->get_line_edit()->connect("focus_entered", this, "_focus_enter");
-		values[i]->get_line_edit()->connect("focus_exited", this, "_focus_exit");
+		values[i]->get_line_edit()->connect("focus_entered", callable_mp(this, &ColorPicker::_focus_enter));
+		values[i]->get_line_edit()->connect("focus_exited", callable_mp(this, &ColorPicker::_focus_exit));
 
 		scroll[i]->set_min(0);
 		scroll[i]->set_page(0);
 		scroll[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 
-		scroll[i]->connect("value_changed", this, "_value_changed");
+		scroll[i]->connect("value_changed", callable_mp(this, &ColorPicker::_value_changed));
 
 		vbr->add_child(hbc);
 	}
@@ -815,12 +801,12 @@ ColorPicker::ColorPicker() :
 	btn_hsv = memnew(CheckButton);
 	hhb->add_child(btn_hsv);
 	btn_hsv->set_text(TTR("HSV"));
-	btn_hsv->connect("toggled", this, "set_hsv_mode");
+	btn_hsv->connect("toggled", callable_mp(this, &ColorPicker::set_hsv_mode));
 
 	btn_raw = memnew(CheckButton);
 	hhb->add_child(btn_raw);
 	btn_raw->set_text(TTR("Raw"));
-	btn_raw->connect("toggled", this, "set_raw_mode");
+	btn_raw->connect("toggled", callable_mp(this, &ColorPicker::set_raw_mode));
 
 	text_type = memnew(Button);
 	hhb->add_child(text_type);
@@ -831,7 +817,7 @@ ColorPicker::ColorPicker() :
 #ifdef TOOLS_ENABLED
 		text_type->set_custom_minimum_size(Size2(28 * EDSCALE, 0)); // Adjust for the width of the "Script" icon.
 #endif
-		text_type->connect("pressed", this, "_text_type_toggled");
+		text_type->connect("pressed", callable_mp(this, &ColorPicker::_text_type_toggled));
 	} else {
 
 		text_type->set_flat(true);
@@ -841,9 +827,9 @@ ColorPicker::ColorPicker() :
 	c_text = memnew(LineEdit);
 	hhb->add_child(c_text);
 	c_text->set_h_size_flags(SIZE_EXPAND_FILL);
-	c_text->connect("text_entered", this, "_html_entered");
-	c_text->connect("focus_entered", this, "_focus_enter");
-	c_text->connect("focus_exited", this, "_html_focus_exit");
+	c_text->connect("text_entered", callable_mp(this, &ColorPicker::_html_entered));
+	c_text->connect("focus_entered", callable_mp(this, &ColorPicker::_focus_enter));
+	c_text->connect("focus_exited", callable_mp(this, &ColorPicker::_html_focus_exit));
 
 	_update_controls();
 	updating = false;
@@ -859,8 +845,8 @@ ColorPicker::ColorPicker() :
 
 	preset = memnew(TextureRect);
 	preset_container->add_child(preset);
-	preset->connect("gui_input", this, "_preset_input");
-	preset->connect("draw", this, "_update_presets");
+	preset->connect("gui_input", callable_mp(this, &ColorPicker::_preset_input));
+	preset->connect("draw", callable_mp(this, &ColorPicker::_update_presets));
 
 	preset_container2 = memnew(HBoxContainer);
 	preset_container2->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -868,7 +854,7 @@ ColorPicker::ColorPicker() :
 	bt_add_preset = memnew(Button);
 	preset_container2->add_child(bt_add_preset);
 	bt_add_preset->set_tooltip(TTR("Add current color as a preset."));
-	bt_add_preset->connect("pressed", this, "_add_preset_pressed");
+	bt_add_preset->connect("pressed", callable_mp(this, &ColorPicker::_add_preset_pressed));
 }
 
 /////////////////
@@ -968,10 +954,10 @@ void ColorPickerButton::_update_picker() {
 		picker = memnew(ColorPicker);
 		popup->add_child(picker);
 		add_child(popup);
-		picker->connect("color_changed", this, "_color_changed");
-		popup->connect("modal_closed", this, "_modal_closed");
-		popup->connect("about_to_show", this, "set_pressed", varray(true));
-		popup->connect("popup_hide", this, "set_pressed", varray(false));
+		picker->connect("color_changed", callable_mp(this, &ColorPickerButton::_color_changed));
+		popup->connect("modal_closed", callable_mp(this, &ColorPickerButton::_modal_closed));
+		popup->connect("about_to_show", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(true));
+		popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(false));
 		picker->set_pick_color(color);
 		picker->set_edit_alpha(edit_alpha);
 		emit_signal("picker_created");
@@ -986,8 +972,6 @@ void ColorPickerButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_popup"), &ColorPickerButton::get_popup);
 	ClassDB::bind_method(D_METHOD("set_edit_alpha", "show"), &ColorPickerButton::set_edit_alpha);
 	ClassDB::bind_method(D_METHOD("is_editing_alpha"), &ColorPickerButton::is_editing_alpha);
-	ClassDB::bind_method(D_METHOD("_color_changed"), &ColorPickerButton::_color_changed);
-	ClassDB::bind_method(D_METHOD("_modal_closed"), &ColorPickerButton::_modal_closed);
 
 	ADD_SIGNAL(MethodInfo("color_changed", PropertyInfo(Variant::COLOR, "color")));
 	ADD_SIGNAL(MethodInfo("popup_closed"));

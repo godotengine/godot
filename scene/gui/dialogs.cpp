@@ -247,8 +247,10 @@ void WindowDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_POPUP_HIDE: {
-			if (get_tree() && Engine::get_singleton()->is_editor_hint() && EditorNode::get_singleton() && !was_editor_dimmed)
+			if (get_tree() && Engine::get_singleton()->is_editor_hint() && EditorNode::get_singleton() && !was_editor_dimmed) {
 				EditorNode::get_singleton()->dim_editor(false);
+				set_pass_on_modal_close_click(false);
+			}
 		} break;
 #endif
 	}
@@ -334,7 +336,6 @@ void WindowDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_title"), &WindowDialog::get_title);
 	ClassDB::bind_method(D_METHOD("set_resizable", "resizable"), &WindowDialog::set_resizable);
 	ClassDB::bind_method(D_METHOD("get_resizable"), &WindowDialog::get_resizable);
-	ClassDB::bind_method(D_METHOD("_closed"), &WindowDialog::_closed);
 	ClassDB::bind_method(D_METHOD("get_close_button"), &WindowDialog::get_close_button);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "window_title", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT_INTL), "set_title", "get_title");
@@ -347,7 +348,7 @@ WindowDialog::WindowDialog() {
 	resizable = false;
 	close_button = memnew(TextureButton);
 	add_child(close_button);
-	close_button->connect("pressed", this, "_closed");
+	close_button->connect("pressed", callable_mp(this, &WindowDialog::_closed));
 
 #ifdef TOOLS_ENABLED
 	was_editor_dimmed = false;
@@ -395,7 +396,7 @@ void AcceptDialog::_notification(int p_what) {
 	}
 }
 
-void AcceptDialog::_builtin_text_entered(const String &p_text) {
+void AcceptDialog::_text_entered(const String &p_text) {
 
 	_ok_pressed();
 }
@@ -407,9 +408,16 @@ void AcceptDialog::_ok_pressed() {
 	ok_pressed();
 	emit_signal("confirmed");
 }
+
 void AcceptDialog::_close_pressed() {
 
 	cancel_pressed();
+}
+
+// FIXME: This is redundant with _closed_pressed, but there's a slight behavior
+// change (WindowDialog's _closed() also calls hide()) which should be assessed.
+void AcceptDialog::_on_close_pressed() {
+	_closed(); // From WindowDialog.
 }
 
 String AcceptDialog::get_text() const {
@@ -446,7 +454,7 @@ void AcceptDialog::register_text_enter(Node *p_line_edit) {
 	ERR_FAIL_NULL(p_line_edit);
 	LineEdit *line_edit = Object::cast_to<LineEdit>(p_line_edit);
 	if (line_edit)
-		line_edit->connect("text_entered", this, "_builtin_text_entered");
+		line_edit->connect("text_entered", callable_mp(this, &AcceptDialog::_text_entered));
 }
 
 void AcceptDialog::_update_child_rects() {
@@ -531,7 +539,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 	}
 
 	if (p_action != "") {
-		button->connect("pressed", this, "_custom_action", varray(p_action));
+		button->connect("pressed", callable_mp(this, &AcceptDialog::_custom_action), varray(p_action));
 	}
 
 	return button;
@@ -543,29 +551,26 @@ Button *AcceptDialog::add_cancel(const String &p_cancel) {
 	if (p_cancel == "")
 		c = RTR("Cancel");
 	Button *b = swap_ok_cancel ? add_button(c, true) : add_button(c);
-	b->connect("pressed", this, "_closed");
+	b->connect("pressed", callable_mp(this, &AcceptDialog::_on_close_pressed));
 	return b;
 }
 
 void AcceptDialog::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_ok"), &AcceptDialog::_ok_pressed);
 	ClassDB::bind_method(D_METHOD("get_ok"), &AcceptDialog::get_ok);
 	ClassDB::bind_method(D_METHOD("get_label"), &AcceptDialog::get_label);
 	ClassDB::bind_method(D_METHOD("set_hide_on_ok", "enabled"), &AcceptDialog::set_hide_on_ok);
 	ClassDB::bind_method(D_METHOD("get_hide_on_ok"), &AcceptDialog::get_hide_on_ok);
 	ClassDB::bind_method(D_METHOD("add_button", "text", "right", "action"), &AcceptDialog::add_button, DEFVAL(false), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("add_cancel", "name"), &AcceptDialog::add_cancel);
-	ClassDB::bind_method(D_METHOD("_builtin_text_entered"), &AcceptDialog::_builtin_text_entered);
 	ClassDB::bind_method(D_METHOD("register_text_enter", "line_edit"), &AcceptDialog::register_text_enter);
-	ClassDB::bind_method(D_METHOD("_custom_action"), &AcceptDialog::_custom_action);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &AcceptDialog::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &AcceptDialog::get_text);
 	ClassDB::bind_method(D_METHOD("set_autowrap", "autowrap"), &AcceptDialog::set_autowrap);
 	ClassDB::bind_method(D_METHOD("has_autowrap"), &AcceptDialog::has_autowrap);
 
 	ADD_SIGNAL(MethodInfo("confirmed"));
-	ADD_SIGNAL(MethodInfo("custom_action", PropertyInfo(Variant::STRING, "action")));
+	ADD_SIGNAL(MethodInfo("custom_action", PropertyInfo(Variant::STRING_NAME, "action")));
 
 	ADD_GROUP("Dialog", "dialog");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "dialog_text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
@@ -600,7 +605,7 @@ AcceptDialog::AcceptDialog() {
 	hbc->add_child(ok);
 	hbc->add_spacer();
 
-	ok->connect("pressed", this, "_ok");
+	ok->connect("pressed", callable_mp(this, &AcceptDialog::_ok_pressed));
 	set_as_toplevel(true);
 
 	hide_on_ok = true;

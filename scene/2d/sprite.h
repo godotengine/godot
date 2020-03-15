@@ -38,8 +38,11 @@ class Sprite : public Node2D {
 
 	GDCLASS(Sprite, Node2D);
 
-	Ref<Texture> texture;
-	Ref<Texture> normal_map;
+	Ref<Texture2D> texture;
+	Ref<Texture2D> normal_map;
+	Ref<Texture2D> specular;
+	Color specular_color;
+	float shininess;
 
 	bool centered;
 	Point2 offset;
@@ -67,6 +70,7 @@ protected:
 	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
+#ifdef TOOLS_ENABLED
 	virtual Dictionary _edit_get_state() const;
 	virtual void _edit_set_state(const Dictionary &p_state);
 
@@ -75,16 +79,26 @@ public:
 	virtual bool _edit_use_pivot() const;
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
 
-	bool is_pixel_opaque(const Point2 &p_point) const;
-
 	virtual Rect2 _edit_get_rect() const;
 	virtual bool _edit_use_rect() const;
+#endif
 
-	void set_texture(const Ref<Texture> &p_texture);
-	Ref<Texture> get_texture() const;
+	bool is_pixel_opaque(const Point2 &p_point) const;
 
-	void set_normal_map(const Ref<Texture> &p_texture);
-	Ref<Texture> get_normal_map() const;
+	void set_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_texture() const;
+
+	void set_normal_map(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_normal_map() const;
+
+	void set_specular_map(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_specular_map() const;
+
+	void set_specular_color(const Color &p_color);
+	Color get_specular_color() const;
+
+	void set_shininess(float p_shininess);
+	float get_shininess() const;
 
 	void set_centered(bool p_center);
 	bool is_centered() const;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeCustom" inherits="VisualShaderNode" category="Core" version="3.2">
+<class name="VisualShaderNodeCustom" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
 		Virtual class to define custom [VisualShaderNode]s for use in the Visual Shader Editor.
 	</brief_description>
@@ -13,15 +13,15 @@
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/latest/tutorials/plugins/editor/visual_shader_plugins.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/plugins/editor/visual_shader_plugins.html</link>
 	</tutorials>
 	<methods>
 		<method name="_get_category" qualifiers="virtual">
 			<return type="String">
 			</return>
 			<description>
-				Override this method to define the category of the associated custom node in the Visual Shader Editor's members dialog.
-				Defining this method is [b]optional[/b]. If not overridden, the node will be filed under the "Custom" category.
+				Override this method to define the path to the associated custom node in the Visual Shader Editor's members dialog. The path may looks like [code]"MyGame/MyFunctions/Noise"[/code].
+				Defining this method is [b]optional[/b]. If not overridden, the node will be filed under the "Addons" category.
 			</description>
 		</method>
 		<method name="_get_code" qualifiers="virtual">
@@ -72,7 +72,7 @@
 			</description>
 		</method>
 		<method name="_get_input_port_name" qualifiers="virtual">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>
@@ -108,7 +108,7 @@
 			</description>
 		</method>
 		<method name="_get_output_port_name" qualifiers="virtual">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>
@@ -135,18 +135,15 @@
 				Defining this method is [b]optional[/b]. If not overridden, no return icon is shown.
 			</description>
 		</method>
-		<method name="_get_subcategory" qualifiers="virtual">
-			<return type="String">
+		<method name="_is_highend" qualifiers="virtual">
+			<return type="bool">
 			</return>
 			<description>
-				Override this method to define the subcategory of the associated custom node in the Visual Shader Editor's members dialog.
-				Defining this method is [b]optional[/b]. If not overridden, the node will be filed under the root of the main category (see [method _get_category]).
+				Override this method to enable high-end mark in the Visual Shader Editor's members dialog.
+				Defining this method is [b]optional[/b]. If not overridden, it's false.
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" override="true" default="[  ]" />
-	</members>
 	<constants>
 	</constants>
 </class>

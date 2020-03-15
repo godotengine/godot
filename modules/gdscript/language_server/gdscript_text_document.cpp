@@ -50,6 +50,7 @@ void GDScriptTextDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("hover"), &GDScriptTextDocument::hover);
 	ClassDB::bind_method(D_METHOD("definition"), &GDScriptTextDocument::definition);
 	ClassDB::bind_method(D_METHOD("declaration"), &GDScriptTextDocument::declaration);
+	ClassDB::bind_method(D_METHOD("signatureHelp"), &GDScriptTextDocument::signatureHelp);
 	ClassDB::bind_method(D_METHOD("show_native_symbol_in_editor"), &GDScriptTextDocument::show_native_symbol_in_editor);
 }
 
@@ -268,7 +269,7 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 
 	if ((item.kind == lsp::CompletionItemKind::Method || item.kind == lsp::CompletionItemKind::Function) && !item.label.ends_with("):")) {
 		item.insertText = item.label + "(";
-		if (symbol && symbol->detail.find(",") == -1) {
+		if (symbol && symbol->children.empty()) {
 			item.insertText += ")";
 		}
 	} else if (item.kind == lsp::CompletionItemKind::Event) {
@@ -320,6 +321,8 @@ Variant GDScriptTextDocument::hover(const Dictionary &p_params) {
 
 		lsp::Hover hover;
 		hover.contents = symbol->render();
+		hover.range.start = params.position;
+		hover.range.end = params.position;
 		return hover.to_json();
 
 	} else if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
@@ -385,6 +388,20 @@ Variant GDScriptTextDocument::declaration(const Dictionary &p_params) {
 		}
 	}
 	return arr;
+}
+
+Variant GDScriptTextDocument::signatureHelp(const Dictionary &p_params) {
+	Variant ret;
+
+	lsp::TextDocumentPositionParams params;
+	params.load(p_params);
+
+	lsp::SignatureHelp s;
+	if (OK == GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_signature(params, s)) {
+		ret = s.to_json();
+	}
+
+	return ret;
 }
 
 GDScriptTextDocument::GDScriptTextDocument() {

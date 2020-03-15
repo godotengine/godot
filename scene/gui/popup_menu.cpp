@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "popup_menu.h"
+
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -467,9 +468,9 @@ void PopupMenu::_notification(int p_what) {
 			Ref<StyleBox> hover = get_stylebox("hover");
 			Ref<Font> font = get_font("font");
 			// In Item::checkable_type enum order (less the non-checkable member)
-			Ref<Texture> check[] = { get_icon("checked"), get_icon("radio_checked") };
-			Ref<Texture> uncheck[] = { get_icon("unchecked"), get_icon("radio_unchecked") };
-			Ref<Texture> submenu = get_icon("submenu");
+			Ref<Texture2D> check[] = { get_icon("checked"), get_icon("radio_checked") };
+			Ref<Texture2D> uncheck[] = { get_icon("unchecked"), get_icon("radio_unchecked") };
+			Ref<Texture2D> submenu = get_icon("submenu");
 			Ref<StyleBox> separator = get_stylebox("separator");
 			Ref<StyleBox> labeled_separator_left = get_stylebox("labeled_separator_left");
 			Ref<StyleBox> labeled_separator_right = get_stylebox("labeled_separator_right");
@@ -549,7 +550,7 @@ void PopupMenu::_notification(int p_what) {
 				Color icon_color(1, 1, 1, items[i].disabled ? 0.5 : 1);
 
 				if (items[i].checkable_type) {
-					Texture *icon = (items[i].checked ? check[items[i].checkable_type - 1] : uncheck[items[i].checkable_type - 1]).ptr();
+					Texture2D *icon = (items[i].checked ? check[items[i].checkable_type - 1] : uncheck[items[i].checkable_type - 1]).ptr();
 					icon->draw(ci, item_ofs + Point2(0, Math::floor((h - icon->get_height()) / 2.0)), icon_color);
 				}
 
@@ -651,7 +652,7 @@ void PopupMenu::add_item(const String &p_label, int p_id, uint32_t p_accel) {
 	minimum_size_changed();
 }
 
-void PopupMenu::add_icon_item(const Ref<Texture> &p_icon, const String &p_label, int p_id, uint32_t p_accel) {
+void PopupMenu::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id, uint32_t p_accel) {
 
 	Item item;
 	ITEM_SETUP_WITH_ACCEL(p_label, p_id, p_accel);
@@ -671,7 +672,7 @@ void PopupMenu::add_check_item(const String &p_label, int p_id, uint32_t p_accel
 	minimum_size_changed();
 }
 
-void PopupMenu::add_icon_check_item(const Ref<Texture> &p_icon, const String &p_label, int p_id, uint32_t p_accel) {
+void PopupMenu::add_icon_check_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id, uint32_t p_accel) {
 
 	Item item;
 	ITEM_SETUP_WITH_ACCEL(p_label, p_id, p_accel);
@@ -692,7 +693,7 @@ void PopupMenu::add_radio_check_item(const String &p_label, int p_id, uint32_t p
 	minimum_size_changed();
 }
 
-void PopupMenu::add_icon_radio_check_item(const Ref<Texture> &p_icon, const String &p_label, int p_id, uint32_t p_accel) {
+void PopupMenu::add_icon_radio_check_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id, uint32_t p_accel) {
 
 	Item item;
 	ITEM_SETUP_WITH_ACCEL(p_label, p_id, p_accel);
@@ -732,7 +733,7 @@ void PopupMenu::add_shortcut(const Ref<ShortCut> &p_shortcut, int p_id, bool p_g
 	minimum_size_changed();
 }
 
-void PopupMenu::add_icon_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id, bool p_global) {
+void PopupMenu::add_icon_shortcut(const Ref<Texture2D> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id, bool p_global) {
 
 	Item item;
 	ITEM_SETUP_WITH_SHORTCUT(p_shortcut, p_id, p_global);
@@ -752,7 +753,7 @@ void PopupMenu::add_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_id, bo
 	minimum_size_changed();
 }
 
-void PopupMenu::add_icon_check_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id, bool p_global) {
+void PopupMenu::add_icon_check_shortcut(const Ref<Texture2D> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id, bool p_global) {
 
 	Item item;
 	ITEM_SETUP_WITH_SHORTCUT(p_shortcut, p_id, p_global);
@@ -773,7 +774,7 @@ void PopupMenu::add_radio_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_
 	minimum_size_changed();
 }
 
-void PopupMenu::add_icon_radio_check_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id, bool p_global) {
+void PopupMenu::add_icon_radio_check_shortcut(const Ref<Texture2D> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id, bool p_global) {
 
 	Item item;
 	ITEM_SETUP_WITH_SHORTCUT(p_shortcut, p_id, p_global);
@@ -810,7 +811,7 @@ void PopupMenu::set_item_text(int p_idx, const String &p_text) {
 	update();
 	minimum_size_changed();
 }
-void PopupMenu::set_item_icon(int p_idx, const Ref<Texture> &p_icon) {
+void PopupMenu::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
 	items.write[p_idx].icon = p_icon;
@@ -893,9 +894,9 @@ int PopupMenu::get_item_idx_from_text(const String &text) const {
 	return -1;
 }
 
-Ref<Texture> PopupMenu::get_item_icon(int p_idx) const {
+Ref<Texture2D> PopupMenu::get_item_icon(int p_idx) const {
 
-	ERR_FAIL_INDEX_V(p_idx, items.size(), Ref<Texture>());
+	ERR_FAIL_INDEX_V(p_idx, items.size(), Ref<Texture2D>());
 	return items[p_idx].icon;
 }
 
@@ -1074,7 +1075,7 @@ bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_fo
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid()) {
-		code = k->get_scancode();
+		code = k->get_keycode();
 		if (code == 0)
 			code = k->get_unicode();
 		if (k->get_control())
@@ -1233,7 +1234,7 @@ void PopupMenu::_ref_shortcut(Ref<ShortCut> p_sc) {
 
 	if (!shortcut_refcount.has(p_sc)) {
 		shortcut_refcount[p_sc] = 1;
-		p_sc->connect("changed", this, "update");
+		p_sc->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::update));
 	} else {
 		shortcut_refcount[p_sc] += 1;
 	}
@@ -1244,7 +1245,7 @@ void PopupMenu::_unref_shortcut(Ref<ShortCut> p_sc) {
 	ERR_FAIL_COND(!shortcut_refcount.has(p_sc));
 	shortcut_refcount[p_sc]--;
 	if (shortcut_refcount[p_sc] == 0) {
-		p_sc->disconnect("changed", this, "update");
+		p_sc->disconnect("changed", callable_mp((CanvasItem *)this, &CanvasItem::update));
 		shortcut_refcount.erase(p_sc);
 	}
 }
@@ -1257,7 +1258,7 @@ void PopupMenu::_set_items(const Array &p_items) {
 	for (int i = 0; i < p_items.size(); i += 10) {
 
 		String text = p_items[i + 0];
-		Ref<Texture> icon = p_items[i + 1];
+		Ref<Texture2D> icon = p_items[i + 1];
 		// For compatibility, use false/true for no/checkbox and integers for other values
 		bool checkable = p_items[i + 2];
 		bool radio_checkable = (int)p_items[i + 2] == Item::CHECKABLE_TYPE_RADIO_BUTTON;
@@ -1471,13 +1472,11 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_allow_search", "allow"), &PopupMenu::set_allow_search);
 	ClassDB::bind_method(D_METHOD("get_allow_search"), &PopupMenu::get_allow_search);
 
-	ClassDB::bind_method(D_METHOD("_submenu_timeout"), &PopupMenu::_submenu_timeout);
-
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_items", "_get_items");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_item_selection"), "set_hide_on_item_selection", "is_hide_on_item_selection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_checkable_item_selection"), "set_hide_on_checkable_item_selection", "is_hide_on_checkable_item_selection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_state_item_selection"), "set_hide_on_state_item_selection", "is_hide_on_state_item_selection");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "submenu_popup_delay"), "set_submenu_popup_delay", "get_submenu_popup_delay");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "submenu_popup_delay"), "set_submenu_popup_delay", "get_submenu_popup_delay");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_search"), "set_allow_search", "get_allow_search");
 
 	ADD_SIGNAL(MethodInfo("id_pressed", PropertyInfo(Variant::INT, "id")));
@@ -1514,7 +1513,7 @@ PopupMenu::PopupMenu() {
 	submenu_timer = memnew(Timer);
 	submenu_timer->set_wait_time(0.3);
 	submenu_timer->set_one_shot(true);
-	submenu_timer->connect("timeout", this, "_submenu_timeout");
+	submenu_timer->connect("timeout", callable_mp(this, &PopupMenu::_submenu_timeout));
 	add_child(submenu_timer);
 }
 

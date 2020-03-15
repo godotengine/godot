@@ -174,7 +174,7 @@ void DependencyEditor::_update_list() {
 
 	TreeItem *root = tree->create_item();
 
-	Ref<Texture> folder = get_icon("folder", "FileDialog");
+	Ref<Texture2D> folder = get_icon("folder", "FileDialog");
 
 	bool broken = false;
 
@@ -195,7 +195,7 @@ void DependencyEditor::_update_list() {
 		}
 		String name = path.get_file();
 
-		Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(type);
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(type);
 		item->set_text(0, name);
 		item->set_icon(0, icon);
 		item->set_metadata(0, type);
@@ -229,10 +229,6 @@ void DependencyEditor::edit(const String &p_path) {
 }
 
 void DependencyEditor::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_searched"), &DependencyEditor::_searched);
-	ClassDB::bind_method(D_METHOD("_load_pressed"), &DependencyEditor::_load_pressed);
-	ClassDB::bind_method(D_METHOD("_fix_all"), &DependencyEditor::_fix_all);
 }
 
 DependencyEditor::DependencyEditor() {
@@ -247,7 +243,7 @@ DependencyEditor::DependencyEditor() {
 	tree->set_column_title(0, TTR("Resource"));
 	tree->set_column_title(1, TTR("Path"));
 	tree->set_hide_root(true);
-	tree->connect("button_pressed", this, "_load_pressed");
+	tree->connect("button_pressed", callable_mp(this, &DependencyEditor::_load_pressed));
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	Label *label = memnew(Label(TTR("Dependencies:")));
@@ -255,7 +251,7 @@ DependencyEditor::DependencyEditor() {
 	hbc->add_spacer();
 	fixdeps = memnew(Button(TTR("Fix Broken")));
 	hbc->add_child(fixdeps);
-	fixdeps->connect("pressed", this, "_fix_all");
+	fixdeps->connect("pressed", callable_mp(this, &DependencyEditor::_fix_all));
 
 	vb->add_child(hbc);
 
@@ -267,7 +263,7 @@ DependencyEditor::DependencyEditor() {
 
 	set_title(TTR("Dependency Editor"));
 	search = memnew(EditorFileDialog);
-	search->connect("file_selected", this, "_searched");
+	search->connect("file_selected", callable_mp(this, &DependencyEditor::_searched));
 	search->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	search->set_title(TTR("Search Replacement Resource:"));
 	add_child(search);
@@ -310,10 +306,6 @@ void DependencyEditorOwners::_file_option(int p_option) {
 }
 
 void DependencyEditorOwners::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_list_rmb_select"), &DependencyEditorOwners::_list_rmb_select);
-	ClassDB::bind_method(D_METHOD("_file_option"), &DependencyEditorOwners::_file_option);
-	ClassDB::bind_method(D_METHOD("_select_file"), &DependencyEditorOwners::_select_file);
 }
 
 void DependencyEditorOwners::_fill_owners(EditorFileSystemDirectory *efsd) {
@@ -338,7 +330,7 @@ void DependencyEditorOwners::_fill_owners(EditorFileSystemDirectory *efsd) {
 		if (!found)
 			continue;
 
-		Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(efsd->get_file_type(i));
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(efsd->get_file_type(i));
 
 		owners->add_item(efsd->get_file_path(i), icon);
 	}
@@ -360,12 +352,12 @@ DependencyEditorOwners::DependencyEditorOwners(EditorNode *p_editor) {
 
 	file_options = memnew(PopupMenu);
 	add_child(file_options);
-	file_options->connect("id_pressed", this, "_file_option");
+	file_options->connect("id_pressed", callable_mp(this, &DependencyEditorOwners::_file_option));
 
 	owners = memnew(ItemList);
 	owners->set_select_mode(ItemList::SELECT_SINGLE);
-	owners->connect("item_rmb_selected", this, "_list_rmb_select");
-	owners->connect("item_activated", this, "_select_file");
+	owners->connect("item_rmb_selected", callable_mp(this, &DependencyEditorOwners::_list_rmb_select));
+	owners->connect("item_activated", callable_mp(this, &DependencyEditorOwners::_select_file));
 	owners->set_allow_rmb_select(true);
 	add_child(owners);
 }
@@ -446,7 +438,7 @@ void DependencyRemoveDialog::_build_removed_dependency_tree(const Vector<Removed
 		}
 
 		//List this file under this dependency
-		Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(rd.file_type);
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(rd.file_type);
 		TreeItem *file_item = owners->create_item(tree_items[rd.dependency]);
 		file_item->set_text(0, rd.file);
 		file_item->set_icon(0, icon);
@@ -609,7 +601,7 @@ void DependencyErrorDialog::show(Mode p_mode, const String &p_for_file, const Ve
 		if (report[i].get_slice_count("::") > 0)
 			type = report[i].get_slice("::", 1);
 
-		Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(type);
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(type);
 
 		TreeItem *ti = files->create_item(root);
 		ti->set_text(0, dep);
@@ -720,7 +712,7 @@ bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMa
 
 				String type = efsd->get_file_type(i);
 
-				Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(type);
+				Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(type);
 				ti->set_icon(0, icon);
 				int ds = efsd->get_file_deps(i).size();
 				ti->set_text(1, itos(ds));
@@ -787,9 +779,6 @@ void OrphanResourcesDialog::_button_pressed(Object *p_item, int p_column, int p_
 }
 
 void OrphanResourcesDialog::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_delete_confirm"), &OrphanResourcesDialog::_delete_confirm);
-	ClassDB::bind_method(D_METHOD("_button_pressed"), &OrphanResourcesDialog::_button_pressed);
 }
 
 OrphanResourcesDialog::OrphanResourcesDialog() {
@@ -800,7 +789,7 @@ OrphanResourcesDialog::OrphanResourcesDialog() {
 	add_child(delete_confirm);
 	dep_edit = memnew(DependencyEditor);
 	add_child(dep_edit);
-	delete_confirm->connect("confirmed", this, "_delete_confirm");
+	delete_confirm->connect("confirmed", callable_mp(this, &OrphanResourcesDialog::_delete_confirm));
 	set_hide_on_ok(false);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
@@ -816,5 +805,5 @@ OrphanResourcesDialog::OrphanResourcesDialog() {
 	files->set_column_title(1, TTR("Owns"));
 	files->set_hide_root(true);
 	vbc->add_margin_child(TTR("Resources Without Explicit Ownership:"), files, true);
-	files->connect("button_pressed", this, "_button_pressed");
+	files->connect("button_pressed", callable_mp(this, &OrphanResourcesDialog::_button_pressed));
 }

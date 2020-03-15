@@ -258,7 +258,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 
 		draw_line(Point2(right_limit, 0), Point2(right_limit, get_size().height), linecolor);
 
-		Ref<Texture> close_icon = get_icon("Close", "EditorIcons");
+		Ref<Texture2D> close_icon = get_icon("Close", "EditorIcons");
 
 		close_icon_rect.position = Vector2(get_size().width - close_icon->get_width() - hsep, hsep);
 		close_icon_rect.size = close_icon->get_size();
@@ -290,7 +290,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			if (node) {
 				int ofs = 0;
 
-				Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(node, "Node");
+				Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node, "Node");
 
 				h = MAX(h, icon->get_height());
 
@@ -391,7 +391,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 		{ //draw OTHER curves
 
 			float scale = timeline->get_zoom_scale();
-			Ref<Texture> point = get_icon("KeyValue", "EditorIcons");
+			Ref<Texture2D> point = get_icon("KeyValue", "EditorIcons");
 			for (Map<int, Color>::Element *E = subtrack_colors.front(); E; E = E->next()) {
 
 				_draw_track(E->key(), E->get());
@@ -491,26 +491,6 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			}
 			draw_rect(Rect2(bs_from, bs_to - bs_from), bs);
 		}
-
-#if 0
-		// KEYFAMES //
-
-		{
-
-			float scale = timeline->get_zoom_scale();
-			int limit_end = get_size().width - timeline->get_buttons_width();
-
-			for (int i = 0; i < animation->track_get_key_count(track); i++) {
-
-				float offset = animation->track_get_key_time(track, i) - timeline->get_value();
-				if (editor->is_key_selected(track, i) && editor->is_moving_selection()) {
-					offset += editor->get_moving_selection_offset();
-				}
-				offset = offset * scale + limit;
-				draw_key(i, scale, int(offset), editor->is_key_selected(track, i), limit, limit_end);
-			}
-		}
-#endif
 	}
 }
 
@@ -522,12 +502,12 @@ void AnimationBezierTrackEdit::set_animation_and_track(const Ref<Animation> &p_a
 
 	animation = p_animation;
 	track = p_track;
-	if (is_connected("select_key", editor, "_key_selected"))
-		disconnect("select_key", editor, "_key_selected");
-	if (is_connected("deselect_key", editor, "_key_deselected"))
-		disconnect("deselect_key", editor, "_key_deselected");
-	connect("select_key", editor, "_key_selected", varray(p_track), CONNECT_DEFERRED);
-	connect("deselect_key", editor, "_key_deselected", varray(p_track), CONNECT_DEFERRED);
+	if (is_connected_compat("select_key", editor, "_key_selected"))
+		disconnect_compat("select_key", editor, "_key_selected");
+	if (is_connected_compat("deselect_key", editor, "_key_deselected"))
+		disconnect_compat("deselect_key", editor, "_key_deselected");
+	connect_compat("select_key", editor, "_key_selected", varray(p_track), CONNECT_DEFERRED);
+	connect_compat("deselect_key", editor, "_key_deselected", varray(p_track), CONNECT_DEFERRED);
 	update();
 }
 
@@ -542,11 +522,11 @@ void AnimationBezierTrackEdit::set_undo_redo(UndoRedo *p_undo_redo) {
 
 void AnimationBezierTrackEdit::set_timeline(AnimationTimelineEdit *p_timeline) {
 	timeline = p_timeline;
-	timeline->connect("zoom_changed", this, "_zoom_changed");
+	timeline->connect("zoom_changed", callable_mp(this, &AnimationBezierTrackEdit::_zoom_changed));
 }
 void AnimationBezierTrackEdit::set_editor(AnimationTrackEditor *p_editor) {
 	editor = p_editor;
-	connect("clear_selection", editor, "_clear_selection", varray(false));
+	connect_compat("clear_selection", editor, "_clear_selection", varray(false));
 }
 
 void AnimationBezierTrackEdit::_play_position_draw() {
@@ -1161,25 +1141,22 @@ void AnimationBezierTrackEdit::set_block_animation_update_ptr(bool *p_block_ptr)
 
 void AnimationBezierTrackEdit::_bind_methods() {
 
-	ClassDB::bind_method("_zoom_changed", &AnimationBezierTrackEdit::_zoom_changed);
-	ClassDB::bind_method("_menu_selected", &AnimationBezierTrackEdit::_menu_selected);
 	ClassDB::bind_method("_gui_input", &AnimationBezierTrackEdit::_gui_input);
-	ClassDB::bind_method("_play_position_draw", &AnimationBezierTrackEdit::_play_position_draw);
 
 	ClassDB::bind_method("_clear_selection", &AnimationBezierTrackEdit::_clear_selection);
 	ClassDB::bind_method("_clear_selection_for_anim", &AnimationBezierTrackEdit::_clear_selection_for_anim);
 	ClassDB::bind_method("_select_at_anim", &AnimationBezierTrackEdit::_select_at_anim);
 
-	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::REAL, "position"), PropertyInfo(Variant::BOOL, "drag")));
+	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag")));
 	ADD_SIGNAL(MethodInfo("remove_request", PropertyInfo(Variant::INT, "track")));
-	ADD_SIGNAL(MethodInfo("insert_key", PropertyInfo(Variant::REAL, "ofs")));
+	ADD_SIGNAL(MethodInfo("insert_key", PropertyInfo(Variant::FLOAT, "ofs")));
 	ADD_SIGNAL(MethodInfo("select_key", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "single")));
 	ADD_SIGNAL(MethodInfo("deselect_key", PropertyInfo(Variant::INT, "index")));
 	ADD_SIGNAL(MethodInfo("clear_selection"));
 	ADD_SIGNAL(MethodInfo("close_request"));
 
 	ADD_SIGNAL(MethodInfo("move_selection_begin"));
-	ADD_SIGNAL(MethodInfo("move_selection", PropertyInfo(Variant::REAL, "ofs")));
+	ADD_SIGNAL(MethodInfo("move_selection", PropertyInfo(Variant::FLOAT, "ofs")));
 	ADD_SIGNAL(MethodInfo("move_selection_commit"));
 	ADD_SIGNAL(MethodInfo("move_selection_cancel"));
 }
@@ -1204,7 +1181,7 @@ AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 	play_position->set_mouse_filter(MOUSE_FILTER_PASS);
 	add_child(play_position);
 	play_position->set_anchors_and_margins_preset(PRESET_WIDE);
-	play_position->connect("draw", this, "_play_position_draw");
+	play_position->connect("draw", callable_mp(this, &AnimationBezierTrackEdit::_play_position_draw));
 	set_focus_mode(FOCUS_CLICK);
 
 	v_scroll = 0;
@@ -1218,7 +1195,7 @@ AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
-	menu->connect("id_pressed", this, "_menu_selected");
+	menu->connect("id_pressed", callable_mp(this, &AnimationBezierTrackEdit::_menu_selected));
 
 	//set_mouse_filter(MOUSE_FILTER_PASS); //scroll has to work too for selection
 }

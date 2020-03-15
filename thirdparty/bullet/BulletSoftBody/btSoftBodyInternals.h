@@ -25,7 +25,43 @@ subject to the following restrictions:
 #include "BulletCollision/CollisionDispatch/btCollisionDispatcher.h"
 #include "BulletCollision/CollisionShapes/btConvexInternalShape.h"
 #include "BulletCollision/NarrowPhaseCollision/btGjkEpa2.h"
+#include "BulletDynamics/Featherstone/btMultiBodyLinkCollider.h"
+#include "BulletDynamics/Featherstone/btMultiBodyConstraint.h"
 #include <string.h>  //for memset
+#include <cmath>
+
+// Given a multibody link, a contact point and a contact direction, fill in the jacobian data needed to calculate the velocity change given an impulse in the contact direction
+static void findJacobian(const btMultiBodyLinkCollider* multibodyLinkCol,
+                         btMultiBodyJacobianData& jacobianData,
+                         const btVector3& contact_point,
+                         const btVector3& dir)
+{
+    const int ndof = multibodyLinkCol->m_multiBody->getNumDofs() + 6;
+    jacobianData.m_jacobians.resize(ndof);
+    jacobianData.m_deltaVelocitiesUnitImpulse.resize(ndof);
+    btScalar* jac = &jacobianData.m_jacobians[0];
+    
+    multibodyLinkCol->m_multiBody->fillContactJacobianMultiDof(multibodyLinkCol->m_link, contact_point, dir, jac, jacobianData.scratch_r, jacobianData.scratch_v, jacobianData.scratch_m);
+    multibodyLinkCol->m_multiBody->calcAccelerationDeltasMultiDof(&jacobianData.m_jacobians[0], &jacobianData.m_deltaVelocitiesUnitImpulse[0], jacobianData.scratch_r, jacobianData.scratch_v);
+}
+static btVector3 generateUnitOrthogonalVector(const btVector3& u)
+{
+    btScalar ux = u.getX();
+    btScalar uy = u.getY();
+    btScalar uz = u.getZ();
+    btScalar ax = std::abs(ux);
+    btScalar ay = std::abs(uy);
+    btScalar az = std::abs(uz);
+    btVector3 v;
+    if (ax <= ay && ax <= az)
+        v = btVector3(0, -uz, uy);
+    else if (ay <= ax && ay <= az)
+        v = btVector3(-uz, 0, ux);
+    else
+        v = btVector3(-uy, ux, 0);
+    v.normalize();
+    return v;
+}
 //
 // btSymMatrix
 //
@@ -298,6 +334,46 @@ static inline btMatrix3x3 Diagonal(btScalar x)
 	m[2] = btVector3(0, 0, x);
 	return (m);
 }
+
+static inline btMatrix3x3 Diagonal(const btVector3& v)
+{
+    btMatrix3x3 m;
+    m[0] = btVector3(v.getX(), 0, 0);
+    m[1] = btVector3(0, v.getY(), 0);
+    m[2] = btVector3(0, 0, v.getZ());
+    return (m);
+}
+
+static inline btScalar Dot(const btScalar* a,const btScalar* b, int ndof)
+{
+    btScalar result = 0;
+    for (int i = 0; i < ndof; ++i)
+        result += a[i] * b[i];
+    return result;
+}
+
+static inline btMatrix3x3 OuterProduct(const btScalar* v1,const btScalar* v2,const btScalar* v3,
+                                       const btScalar* u1, const btScalar* u2, const btScalar* u3, int ndof)
+{
+    btMatrix3x3 m;
+    btScalar a11 = Dot(v1,u1,ndof);
+    btScalar a12 = Dot(v1,u2,ndof);
+    btScalar a13 = Dot(v1,u3,ndof);
+    
+    btScalar a21 = Dot(v2,u1,ndof);
+    btScalar a22 = Dot(v2,u2,ndof);
+    btScalar a23 = Dot(v2,u3,ndof);
+    
+    btScalar a31 = Dot(v3,u1,ndof);
+    btScalar a32 = Dot(v3,u2,ndof);
+    btScalar a33 = Dot(v3,u3,ndof);
+    m[0] = btVector3(a11, a12, a13);
+    m[1] = btVector3(a21, a22, a23);
+    m[2] = btVector3(a31, a32, a33);
+    return (m);
+}
+
+
 //
 static inline btMatrix3x3 Add(const btMatrix3x3& a,
 							  const btMatrix3x3& b)
@@ -426,6 +502,77 @@ static inline void ProjectOrigin(const btVector3& a,
 		}
 	}
 }
+
+//
+static inline bool rayIntersectsTriangle(const btVector3& origin, const btVector3& dir, const btVector3& v0, const btVector3& v1, const btVector3& v2, btScalar& t)
+{
+    btScalar a, f, u, v;
+    
+    btVector3 e1 = v1 - v0;
+    btVector3 e2 = v2 - v0;
+    btVector3 h = dir.cross(e2);
+    a = e1.dot(h);
+    
+    if (a > -0.00001 && a < 0.00001)
+        return (false);
+    
+    f = btScalar(1) / a;
+    btVector3 s = origin - v0;
+    u = f * s.dot(h);
+    
+    if (u < 0.0 || u > 1.0)
+        return (false);
+    
+    btVector3 q = s.cross(e1);
+    v = f * dir.dot(q);
+    if (v < 0.0 || u + v > 1.0)
+        return (false);
+    // at this stage we can compute t to find out where
+    // the intersection point is on the line
+    t = f * e2.dot(q);
+    if (t > 0)  // ray intersection
+        return (true);
+    else  // this means that there is a line intersection
+        // but not a ray intersection
+        return (false);
+}
+
+static inline bool lineIntersectsTriangle(const btVector3& rayStart, const btVector3& rayEnd, const btVector3& p1, const btVector3& p2, const btVector3& p3, btVector3& sect, btVector3& normal)
+{
+    btVector3 dir = rayEnd - rayStart;
+    btScalar dir_norm = dir.norm();
+    if (dir_norm < SIMD_EPSILON)
+        return false;
+    dir.normalize();
+
+    btScalar t;
+    
+    bool ret = rayIntersectsTriangle(rayStart, dir, p1, p2, p3, t);
+    
+    if (ret)
+    {
+        if (t <= dir_norm)
+        {
+            sect = rayStart + dir * t;
+        }
+        else
+        {
+            ret = false;
+        }
+    }
+    
+    if (ret)
+    {
+        btVector3 n = (p3-p1).cross(p2-p1);
+        n.safeNormalize();
+        if (n.dot(dir) < 0)
+            normal = n;
+        else
+            normal = -n;
+    }
+    return ret;
+}
+
 
 //
 template <typename T>
@@ -854,10 +1001,62 @@ struct btSoftColliders
 			psa->m_cdbvt.collideTT(psa->m_cdbvt.m_root, psb->m_cdbvt.m_root, *this);
 		}
 	};
+    //
+    // CollideSDF_RS
+    //
+    struct CollideSDF_RS : btDbvt::ICollide
+    {
+        void Process(const btDbvtNode* leaf)
+        {
+            btSoftBody::Node* node = (btSoftBody::Node*)leaf->data;
+            DoNode(*node);
+        }
+        void DoNode(btSoftBody::Node& n) const
+        {
+            const btScalar m = n.m_im > 0 ? dynmargin : stamargin;
+            btSoftBody::RContact c;
+            
+            if ((!n.m_battach) &&
+                psb->checkContact(m_colObj1Wrap, n.m_x, m, c.m_cti))
+            {
+                const btScalar ima = n.m_im;
+                const btScalar imb = m_rigidBody ? m_rigidBody->getInvMass() : 0.f;
+                const btScalar ms = ima + imb;
+                if (ms > 0)
+                {
+                    const btTransform& wtr = m_rigidBody ? m_rigidBody->getWorldTransform() : m_colObj1Wrap->getCollisionObject()->getWorldTransform();
+                    static const btMatrix3x3 iwiStatic(0, 0, 0, 0, 0, 0, 0, 0, 0);
+                    const btMatrix3x3& iwi = m_rigidBody ? m_rigidBody->getInvInertiaTensorWorld() : iwiStatic;
+                    const btVector3 ra = n.m_x - wtr.getOrigin();
+                    const btVector3 va = m_rigidBody ? m_rigidBody->getVelocityInLocalPoint(ra) * psb->m_sst.sdt : btVector3(0, 0, 0);
+                    const btVector3 vb = n.m_x - n.m_q;
+                    const btVector3 vr = vb - va;
+                    const btScalar dn = btDot(vr, c.m_cti.m_normal);
+                    const btVector3 fv = vr - c.m_cti.m_normal * dn;
+                    const btScalar fc = psb->m_cfg.kDF * m_colObj1Wrap->getCollisionObject()->getFriction();
+                    c.m_node = &n;
+                    c.m_c0 = ImpulseMatrix(psb->m_sst.sdt, ima, imb, iwi, ra);
+                    c.m_c1 = ra;
+                    c.m_c2 = ima * psb->m_sst.sdt;
+                    c.m_c3 = fv.length2() < (dn * fc * dn * fc) ? 0 : 1 - fc;
+                    c.m_c4 = m_colObj1Wrap->getCollisionObject()->isStaticOrKinematicObject() ? psb->m_cfg.kKHR : psb->m_cfg.kCHR;
+                    psb->m_rcontacts.push_back(c);
+                    if (m_rigidBody)
+                        m_rigidBody->activate();
+                }
+            }
+        }
+        btSoftBody* psb;
+        const btCollisionObjectWrapper* m_colObj1Wrap;
+        btRigidBody* m_rigidBody;
+        btScalar dynmargin;
+        btScalar stamargin;
+    };
+
 	//
-	// CollideSDF_RS
+	// CollideSDF_RD
 	//
-	struct CollideSDF_RS : btDbvt::ICollide
+	struct CollideSDF_RD : btDbvt::ICollide
 	{
 		void Process(const btDbvtNode* leaf)
 		{
@@ -867,36 +1066,75 @@ struct btSoftColliders
 		void DoNode(btSoftBody::Node& n) const
 		{
 			const btScalar m = n.m_im > 0 ? dynmargin : stamargin;
-			btSoftBody::RContact c;
+			btSoftBody::DeformableNodeRigidContact c;
 
-			if ((!n.m_battach) &&
-				psb->checkContact(m_colObj1Wrap, n.m_x, m, c.m_cti))
-			{
-				const btScalar ima = n.m_im;
-				const btScalar imb = m_rigidBody ? m_rigidBody->getInvMass() : 0.f;
-				const btScalar ms = ima + imb;
-				if (ms > 0)
-				{
-					const btTransform& wtr = m_rigidBody ? m_rigidBody->getWorldTransform() : m_colObj1Wrap->getCollisionObject()->getWorldTransform();
-					static const btMatrix3x3 iwiStatic(0, 0, 0, 0, 0, 0, 0, 0, 0);
-					const btMatrix3x3& iwi = m_rigidBody ? m_rigidBody->getInvInertiaTensorWorld() : iwiStatic;
-					const btVector3 ra = n.m_x - wtr.getOrigin();
-					const btVector3 va = m_rigidBody ? m_rigidBody->getVelocityInLocalPoint(ra) * psb->m_sst.sdt : btVector3(0, 0, 0);
-					const btVector3 vb = n.m_x - n.m_q;
-					const btVector3 vr = vb - va;
-					const btScalar dn = btDot(vr, c.m_cti.m_normal);
-					const btVector3 fv = vr - c.m_cti.m_normal * dn;
-					const btScalar fc = psb->m_cfg.kDF * m_colObj1Wrap->getCollisionObject()->getFriction();
-					c.m_node = &n;
-					c.m_c0 = ImpulseMatrix(psb->m_sst.sdt, ima, imb, iwi, ra);
-					c.m_c1 = ra;
-					c.m_c2 = ima * psb->m_sst.sdt;
-					c.m_c3 = fv.length2() < (dn * fc * dn * fc) ? 0 : 1 - fc;
-					c.m_c4 = m_colObj1Wrap->getCollisionObject()->isStaticOrKinematicObject() ? psb->m_cfg.kKHR : psb->m_cfg.kCHR;
-					psb->m_rcontacts.push_back(c);
-					if (m_rigidBody)
-						m_rigidBody->activate();
-				}
+			if (!n.m_battach)
+            {
+                // check for collision at x_{n+1}^* as well at x_n
+                if (psb->checkDeformableContact(m_colObj1Wrap, n.m_x, m, c.m_cti, /*predict = */ true) || psb->checkDeformableContact(m_colObj1Wrap, n.m_q, m, c.m_cti, /*predict = */ true))
+                {
+                    const btScalar ima = n.m_im;
+                    // todo: collision between multibody and fixed deformable node will be missed.
+                    const btScalar imb = m_rigidBody ? m_rigidBody->getInvMass() : 0.f;
+                    const btScalar ms = ima + imb;
+                    if (ms > 0)
+                    {
+                        // resolve contact at x_n
+                        psb->checkDeformableContact(m_colObj1Wrap, n.m_x, m, c.m_cti, /*predict = */ false);
+                        btSoftBody::sCti& cti = c.m_cti;
+                        c.m_node = &n;
+                        const btScalar fc = psb->m_cfg.kDF * m_colObj1Wrap->getCollisionObject()->getFriction();
+                        c.m_c2 = ima;
+                        c.m_c3 = fc;
+                        c.m_c4 = m_colObj1Wrap->getCollisionObject()->isStaticOrKinematicObject() ? psb->m_cfg.kKHR : psb->m_cfg.kCHR;
+                        
+                        if (cti.m_colObj->getInternalType() == btCollisionObject::CO_RIGID_BODY)
+                        {
+                            const btTransform& wtr = m_rigidBody ? m_rigidBody->getWorldTransform() : m_colObj1Wrap->getCollisionObject()->getWorldTransform();
+                            static const btMatrix3x3 iwiStatic(0, 0, 0, 0, 0, 0, 0, 0, 0);
+                            const btMatrix3x3& iwi = m_rigidBody ? m_rigidBody->getInvInertiaTensorWorld() : iwiStatic;
+                            const btVector3 ra = n.m_x - wtr.getOrigin();
+                            
+                            c.m_c0 = ImpulseMatrix(1, ima, imb, iwi, ra);
+                            c.m_c1 = ra;
+                        }
+                        else if (cti.m_colObj->getInternalType() == btCollisionObject::CO_FEATHERSTONE_LINK)
+                        {
+                            btMultiBodyLinkCollider* multibodyLinkCol = (btMultiBodyLinkCollider*)btMultiBodyLinkCollider::upcast(cti.m_colObj);
+                            if (multibodyLinkCol)
+                            {
+                                btVector3 normal = cti.m_normal;
+                                btVector3 t1 = generateUnitOrthogonalVector(normal);
+                                btVector3 t2 = btCross(normal, t1);
+                                btMultiBodyJacobianData jacobianData_normal, jacobianData_t1, jacobianData_t2;
+                                findJacobian(multibodyLinkCol, jacobianData_normal, c.m_node->m_x, normal);
+                                findJacobian(multibodyLinkCol, jacobianData_t1, c.m_node->m_x, t1);
+                                findJacobian(multibodyLinkCol, jacobianData_t2, c.m_node->m_x, t2);
+                                
+                                btScalar* J_n = &jacobianData_normal.m_jacobians[0];
+                                btScalar* J_t1 = &jacobianData_t1.m_jacobians[0];
+                                btScalar* J_t2 = &jacobianData_t2.m_jacobians[0];
+                                
+                                btScalar* u_n = &jacobianData_normal.m_deltaVelocitiesUnitImpulse[0];
+                                btScalar* u_t1 = &jacobianData_t1.m_deltaVelocitiesUnitImpulse[0];
+                                btScalar* u_t2 = &jacobianData_t2.m_deltaVelocitiesUnitImpulse[0];
+                                
+                                btMatrix3x3 rot(normal.getX(), normal.getY(), normal.getZ(),
+                                                t1.getX(), t1.getY(), t1.getZ(),
+                                                t2.getX(), t2.getY(), t2.getZ()); // world frame to local frame
+                                const int ndof = multibodyLinkCol->m_multiBody->getNumDofs() + 6;
+                                btMatrix3x3 local_impulse_matrix = (Diagonal(n.m_im) + OuterProduct(J_n, J_t1, J_t2, u_n, u_t1, u_t2, ndof)).inverse();
+                                c.m_c0 =  rot.transpose() * local_impulse_matrix * rot;
+                                c.jacobianData_normal = jacobianData_normal;
+                                c.jacobianData_t1 = jacobianData_t1;
+                                c.jacobianData_t2 = jacobianData_t2;
+                                c.t1 = t1;
+                                c.t2 = t2;
+                            }
+                        }
+                        psb->m_nodeRigidContacts.push_back(c);
+                    }
+                }
 			}
 		}
 		btSoftBody* psb;
@@ -905,6 +1143,112 @@ struct btSoftColliders
 		btScalar dynmargin;
 		btScalar stamargin;
 	};
+    
+    //
+    // CollideSDF_RDF
+    //
+    struct CollideSDF_RDF : btDbvt::ICollide
+    {
+        void Process(const btDbvtNode* leaf)
+        {
+            btSoftBody::Face* face = (btSoftBody::Face*)leaf->data;
+            DoNode(*face);
+        }
+        void DoNode(btSoftBody::Face& f) const
+        {
+            btSoftBody::Node* n0 = f.m_n[0];
+            btSoftBody::Node* n1 = f.m_n[1];
+            btSoftBody::Node* n2 = f.m_n[2];
+            
+            const btScalar m = (n0->m_im > 0 && n1->m_im > 0 && n2->m_im > 0 )? dynmargin : stamargin;
+            btSoftBody::DeformableFaceRigidContact c;
+            btVector3 contact_point;
+            btVector3 bary;
+            if (psb->checkDeformableFaceContact(m_colObj1Wrap, f, contact_point, bary, m, c.m_cti, true))
+            {
+                f.m_pcontact[3] = 1;
+                btScalar ima = n0->m_im + n1->m_im + n2->m_im;
+                const btScalar imb = m_rigidBody ? m_rigidBody->getInvMass() : 0.f;
+                // todo: collision between multibody and fixed deformable face will be missed.
+                const btScalar ms = ima + imb;
+                if (ms > 0)
+                {
+                    // resolve contact at x_n
+                    psb->checkDeformableFaceContact(m_colObj1Wrap, f, contact_point, bary, m, c.m_cti, /*predict = */ false);
+                    btSoftBody::sCti& cti = c.m_cti;
+                    c.m_contactPoint = contact_point;
+                    c.m_bary = bary;
+                    // todo xuchenhan@: this is assuming mass of all vertices are the same. Need to modify if mass are different for distinct vertices
+                    c.m_weights = btScalar(2)/(btScalar(1) + bary.length2()) * bary;
+                    c.m_face = &f;
+                    const btScalar fc = psb->m_cfg.kDF * m_colObj1Wrap->getCollisionObject()->getFriction();
+                    
+                    // the effective inverse mass of the face as in https://graphics.stanford.edu/papers/cloth-sig02/cloth.pdf
+                    ima = bary.getX()*c.m_weights.getX() * n0->m_im + bary.getY()*c.m_weights.getY() * n1->m_im + bary.getZ()*c.m_weights.getZ() * n2->m_im;
+                    
+                    c.m_c2 = ima;
+                    c.m_c3 = fc;
+                    c.m_c4 = m_colObj1Wrap->getCollisionObject()->isStaticOrKinematicObject() ? psb->m_cfg.kKHR : psb->m_cfg.kCHR;
+                    if (cti.m_colObj->getInternalType() == btCollisionObject::CO_RIGID_BODY)
+                    {
+                        const btTransform& wtr = m_rigidBody ? m_rigidBody->getWorldTransform() : m_colObj1Wrap->getCollisionObject()->getWorldTransform();
+                        static const btMatrix3x3 iwiStatic(0, 0, 0, 0, 0, 0, 0, 0, 0);
+                        const btMatrix3x3& iwi = m_rigidBody ? m_rigidBody->getInvInertiaTensorWorld() : iwiStatic;
+                        const btVector3 ra = contact_point - wtr.getOrigin();
+                        
+                        // we do not scale the impulse matrix by dt
+                        c.m_c0 = ImpulseMatrix(1, ima, imb, iwi, ra);
+                        c.m_c1 = ra;
+                    }
+                    else if (cti.m_colObj->getInternalType() == btCollisionObject::CO_FEATHERSTONE_LINK)
+                    {
+                        btMultiBodyLinkCollider* multibodyLinkCol = (btMultiBodyLinkCollider*)btMultiBodyLinkCollider::upcast(cti.m_colObj);
+                        if (multibodyLinkCol)
+                        {
+                            btVector3 normal = cti.m_normal;
+                            btVector3 t1 = generateUnitOrthogonalVector(normal);
+                            btVector3 t2 = btCross(normal, t1);
+                            btMultiBodyJacobianData jacobianData_normal, jacobianData_t1, jacobianData_t2;
+                            findJacobian(multibodyLinkCol, jacobianData_normal, contact_point, normal);
+                            findJacobian(multibodyLinkCol, jacobianData_t1, contact_point, t1);
+                            findJacobian(multibodyLinkCol, jacobianData_t2, contact_point, t2);
+                            
+                            btScalar* J_n = &jacobianData_normal.m_jacobians[0];
+                            btScalar* J_t1 = &jacobianData_t1.m_jacobians[0];
+                            btScalar* J_t2 = &jacobianData_t2.m_jacobians[0];
+                            
+                            btScalar* u_n = &jacobianData_normal.m_deltaVelocitiesUnitImpulse[0];
+                            btScalar* u_t1 = &jacobianData_t1.m_deltaVelocitiesUnitImpulse[0];
+                            btScalar* u_t2 = &jacobianData_t2.m_deltaVelocitiesUnitImpulse[0];
+                            
+                            btMatrix3x3 rot(normal.getX(), normal.getY(), normal.getZ(),
+                                            t1.getX(), t1.getY(), t1.getZ(),
+                                            t2.getX(), t2.getY(), t2.getZ()); // world frame to local frame
+                            const int ndof = multibodyLinkCol->m_multiBody->getNumDofs() + 6;
+                            btMatrix3x3 local_impulse_matrix = (Diagonal(ima) + OuterProduct(J_n, J_t1, J_t2, u_n, u_t1, u_t2, ndof)).inverse();
+                            c.m_c0 =  rot.transpose() * local_impulse_matrix * rot;
+                            c.jacobianData_normal = jacobianData_normal;
+                            c.jacobianData_t1 = jacobianData_t1;
+                            c.jacobianData_t2 = jacobianData_t2;
+                            c.t1 = t1;
+                            c.t2 = t2;
+                        }
+                    }
+                    psb->m_faceRigidContacts.push_back(c);
+                }
+            }
+            else
+            {
+                f.m_pcontact[3] = 0;
+            }
+        }
+        btSoftBody* psb;
+        const btCollisionObjectWrapper* m_colObj1Wrap;
+        btRigidBody* m_rigidBody;
+        btScalar dynmargin;
+        btScalar stamargin;
+    };
+    
 	//
 	// CollideVF_SS
 	//
@@ -915,6 +1259,12 @@ struct btSoftColliders
 		{
 			btSoftBody::Node* node = (btSoftBody::Node*)lnode->data;
 			btSoftBody::Face* face = (btSoftBody::Face*)lface->data;
+            for (int i = 0; i < 3; ++i)
+            {
+                if (face->m_n[i] == node)
+                    continue;
+            }
+            
 			btVector3 o = node->m_x;
 			btVector3 p;
 			btScalar d = SIMD_INFINITY;
@@ -944,7 +1294,7 @@ struct btSoftColliders
 					c.m_node = node;
 					c.m_face = face;
 					c.m_weights = w;
-					c.m_friction = btMax(psb[0]->m_cfg.kDF, psb[1]->m_cfg.kDF);
+					c.m_friction = btMax (psb[0]->m_cfg.kDF, psb[1]->m_cfg.kDF);
 					c.m_cfm[0] = ma / ms * psb[0]->m_cfg.kSHR;
 					c.m_cfm[1] = mb / ms * psb[1]->m_cfg.kSHR;
 					psb[0]->m_scontacts.push_back(c);
@@ -954,6 +1304,137 @@ struct btSoftColliders
 		btSoftBody* psb[2];
 		btScalar mrg;
 	};
+    
+    
+    //
+    // CollideVF_DD
+    //
+    struct CollideVF_DD : btDbvt::ICollide
+    {
+        void Process(const btDbvtNode* lnode,
+                     const btDbvtNode* lface)
+        {
+            btSoftBody::Node* node = (btSoftBody::Node*)lnode->data;
+            btSoftBody::Face* face = (btSoftBody::Face*)lface->data;
+            
+            btVector3 o = node->m_x;
+            btVector3 p;
+            btScalar d = SIMD_INFINITY;
+            ProjectOrigin(face->m_n[0]->m_x - o,
+                          face->m_n[1]->m_x - o,
+                          face->m_n[2]->m_x - o,
+                          p, d);
+            const btScalar m = mrg + (o - node->m_q).safeNorm() * 2;
+            if (d < (m * m))
+            {
+                const btSoftBody::Node* n[] = {face->m_n[0], face->m_n[1], face->m_n[2]};
+                const btVector3 w = BaryCoord(n[0]->m_x, n[1]->m_x, n[2]->m_x, p + o);
+                const btScalar ma = node->m_im;
+                btScalar mb = BaryEval(n[0]->m_im, n[1]->m_im, n[2]->m_im, w);
+                if ((n[0]->m_im <= 0) ||
+                    (n[1]->m_im <= 0) ||
+                    (n[2]->m_im <= 0))
+                {
+                    mb = 0;
+                }
+                const btScalar ms = ma + mb;
+                if (ms > 0)
+                {
+                    btSoftBody::DeformableFaceNodeContact c;
+                    if (useFaceNormal)
+                        c.m_normal = face->m_normal;
+                    else
+                        c.m_normal = p / -btSqrt(d);
+                    c.m_margin = mrg;
+                    c.m_node = node;
+                    c.m_face = face;
+                    c.m_bary = w;
+                    // todo xuchenhan@: this is assuming mass of all vertices are the same. Need to modify if mass are different for distinct vertices
+                    c.m_weights = btScalar(2)/(btScalar(1) + w.length2()) * w;
+                    c.m_friction = psb[0]->m_cfg.kDF * psb[1]->m_cfg.kDF;
+                    // the effective inverse mass of the face as in https://graphics.stanford.edu/papers/cloth-sig02/cloth.pdf
+                    c.m_imf = c.m_bary[0]*c.m_weights[0] * n[0]->m_im + c.m_bary[1]*c.m_weights[1] * n[1]->m_im + c.m_bary[2]*c.m_weights[2] * n[2]->m_im;
+                    c.m_c0 = btScalar(1)/(ma + c.m_imf);
+                    psb[0]->m_faceNodeContacts.push_back(c);
+                }
+            }
+        }
+        btSoftBody* psb[2];
+        btScalar mrg;
+        bool useFaceNormal;
+    };
+    
+    //
+    // CollideFF_DD
+    //
+    struct CollideFF_DD : btDbvt::ICollide
+    {
+        void Process(const btDbvntNode* lface1,
+                     const btDbvntNode* lface2)
+        {
+            btSoftBody::Face* f = (btSoftBody::Face*)lface1->data;
+            btSoftBody::Face* face = (btSoftBody::Face*)lface2->data;
+            for (int node_id = 0; node_id < 3; ++node_id)
+            {
+                btSoftBody::Node* node = f->m_n[node_id];
+                bool skip = false;
+                for (int i = 0; i < 3; ++i)
+                {
+                    if (face->m_n[i] == node)
+                    {
+                        skip = true;
+                        break;
+                    }
+                }
+                if (skip)
+                    continue;
+                btVector3 o = node->m_x;
+                btVector3 p;
+                btScalar d = SIMD_INFINITY;
+                ProjectOrigin(face->m_n[0]->m_x - o,
+                              face->m_n[1]->m_x - o,
+                              face->m_n[2]->m_x - o,
+                              p, d);
+                const btScalar m = mrg + (o - node->m_q).safeNorm() * 2;
+                if (d < (m * m))
+                {
+                    const btSoftBody::Node* n[] = {face->m_n[0], face->m_n[1], face->m_n[2]};
+                    const btVector3 w = BaryCoord(n[0]->m_x, n[1]->m_x, n[2]->m_x, p + o);
+                    const btScalar ma = node->m_im;
+                    btScalar mb = BaryEval(n[0]->m_im, n[1]->m_im, n[2]->m_im, w);
+                    if ((n[0]->m_im <= 0) ||
+                        (n[1]->m_im <= 0) ||
+                        (n[2]->m_im <= 0))
+                    {
+                        mb = 0;
+                    }
+                    const btScalar ms = ma + mb;
+                    if (ms > 0)
+                    {
+                        btSoftBody::DeformableFaceNodeContact c;
+                        if (useFaceNormal)
+                            c.m_normal = face->m_normal;
+                        else
+                            c.m_normal = p / -btSqrt(d);
+                        c.m_margin = mrg;
+                        c.m_node = node;
+                        c.m_face = face;
+                        c.m_bary = w;
+                        // todo xuchenhan@: this is assuming mass of all vertices are the same. Need to modify if mass are different for distinct vertices
+                        c.m_weights = btScalar(2)/(btScalar(1) + w.length2()) * w;
+                        c.m_friction = psb[0]->m_cfg.kDF * psb[1]->m_cfg.kDF;
+                        // the effective inverse mass of the face as in https://graphics.stanford.edu/papers/cloth-sig02/cloth.pdf
+                        c.m_imf = c.m_bary[0]*c.m_weights[0] * n[0]->m_im + c.m_bary[1]*c.m_weights[1] * n[1]->m_im + c.m_bary[2]*c.m_weights[2] * n[2]->m_im;
+                        c.m_c0 = btScalar(1)/(ma + c.m_imf);
+                        psb[0]->m_faceNodeContacts.push_back(c);
+                    }
+                }
+            }
+        }
+        btSoftBody* psb[2];
+        btScalar mrg;
+        bool useFaceNormal;
+    };
 };
 
 #endif  //_BT_SOFT_BODY_INTERNALS_H

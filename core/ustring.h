@@ -258,6 +258,7 @@ public:
 	String capitalize() const;
 	String camelcase_to_underscore(bool lowercase = true) const;
 
+	String get_with_code_lines() const;
 	int get_slice_count(String p_splitter) const;
 	String get_slice(String p_splitter, int p_slice) const;
 	String get_slicec(CharType p_splitter, int p_slice) const;

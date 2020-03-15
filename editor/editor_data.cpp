@@ -156,8 +156,8 @@ bool EditorHistory::is_history_obj_inspector_only(int p_obj) const {
 }
 
 ObjectID EditorHistory::get_history_obj(int p_obj) const {
-	ERR_FAIL_INDEX_V(p_obj, history.size(), 0);
-	ERR_FAIL_INDEX_V(history[p_obj].level, history[p_obj].path.size(), 0);
+	ERR_FAIL_INDEX_V(p_obj, history.size(), ObjectID());
+	ERR_FAIL_INDEX_V(history[p_obj].level, history[p_obj].path.size(), ObjectID());
 	return history[p_obj].path[history[p_obj].level].object;
 }
 
@@ -204,12 +204,12 @@ bool EditorHistory::is_current_inspector_only() const {
 ObjectID EditorHistory::get_current() {
 
 	if (current < 0 || current >= history.size())
-		return 0;
+		return ObjectID();
 
 	History &h = history.write[current];
 	Object *obj = ObjectDB::get_instance(h.path[h.level].object);
 	if (!obj)
-		return 0;
+		return ObjectID();
 
 	return obj->get_instance_id();
 }
@@ -226,15 +226,15 @@ int EditorHistory::get_path_size() const {
 ObjectID EditorHistory::get_path_object(int p_index) const {
 
 	if (current < 0 || current >= history.size())
-		return 0;
+		return ObjectID();
 
 	const History &h = history[current];
 
-	ERR_FAIL_INDEX_V(p_index, h.path.size(), 0);
+	ERR_FAIL_INDEX_V(p_index, h.path.size(), ObjectID());
 
 	Object *obj = ObjectDB::get_instance(h.path[p_index].object);
 	if (!obj)
-		return 0;
+		return ObjectID();
 
 	return obj->get_instance_id();
 }
@@ -314,7 +314,7 @@ void EditorData::copy_object_params(Object *p_object) {
 
 	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 
-		if (!(E->get().usage & PROPERTY_USAGE_EDITOR))
+		if (!(E->get().usage & PROPERTY_USAGE_EDITOR) || E->get().name == "script" || E->get().name == "scripts")
 			continue;
 
 		PropertyData pd;
@@ -435,10 +435,14 @@ void EditorData::restore_editor_global_states() {
 
 void EditorData::paste_object_params(Object *p_object) {
 
+	ERR_FAIL_NULL(p_object);
+	undo_redo.create_action(TTR("Paste Params"));
 	for (List<PropertyData>::Element *E = clipboard.front(); E; E = E->next()) {
-
-		p_object->set(E->get().name, E->get().value);
+		String name = E->get().name;
+		undo_redo.add_do_property(p_object, name, E->get().value);
+		undo_redo.add_undo_property(p_object, name, p_object->get(name));
 	}
+	undo_redo.commit_action();
 }
 
 bool EditorData::call_build() {
@@ -479,7 +483,7 @@ EditorPlugin *EditorData::get_editor_plugin(int p_idx) {
 	return editor_plugins[p_idx];
 }
 
-void EditorData::add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture> &p_icon) {
+void EditorData::add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon) {
 
 	ERR_FAIL_COND_MSG(p_script.is_null(), "It's not a reference to a valid Script object.");
 	CustomType ct;
@@ -506,7 +510,7 @@ Object *EditorData::instance_custom_type(const String &p_type, const String &p_i
 				if (ob->is_class("Node")) {
 					ob->call("set_name", p_type);
 				}
-				ob->set_script(script.get_ref_ptr());
+				ob->set_script(script);
 				return ob;
 			}
 		}
@@ -907,7 +911,7 @@ Object *EditorData::script_class_instance(const String &p_class) {
 		if (obj) {
 			Ref<Script> script = script_class_load_script(p_class);
 			if (script.is_valid())
-				obj->set_script(script.get_ref_ptr());
+				obj->set_script(script);
 			return obj;
 		}
 	}
@@ -1024,7 +1028,7 @@ void EditorSelection::add_node(Node *p_node) {
 	}
 	selection[p_node] = meta;
 
-	p_node->connect("tree_exiting", this, "_node_removed", varray(p_node), CONNECT_ONESHOT);
+	p_node->connect("tree_exiting", callable_mp(this, &EditorSelection::_node_removed), varray(p_node), CONNECT_ONESHOT);
 
 	//emit_signal("selection_changed");
 }
@@ -1042,7 +1046,7 @@ void EditorSelection::remove_node(Node *p_node) {
 	if (meta)
 		memdelete(meta);
 	selection.erase(p_node);
-	p_node->disconnect("tree_exiting", this, "_node_removed");
+	p_node->disconnect("tree_exiting", callable_mp(this, &EditorSelection::_node_removed));
 	//emit_signal("selection_changed");
 }
 bool EditorSelection::is_selected(Node *p_node) const {
@@ -1076,7 +1080,6 @@ Array EditorSelection::get_selected_nodes() {
 
 void EditorSelection::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_node_removed"), &EditorSelection::_node_removed);
 	ClassDB::bind_method(D_METHOD("clear"), &EditorSelection::clear);
 	ClassDB::bind_method(D_METHOD("add_node", "node"), &EditorSelection::add_node);
 	ClassDB::bind_method(D_METHOD("remove_node", "node"), &EditorSelection::remove_node);

@@ -141,8 +141,8 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 	hash_table.resize(size);
 	bucket_table.resize(bucket_table_size);
 
-	PoolVector<int>::Write htwb = hash_table.write();
-	PoolVector<int>::Write btwb = bucket_table.write();
+	int *htwb = hash_table.ptrw();
+	int *btwb = bucket_table.ptrw();
 
 	uint32_t *htw = (uint32_t *)&htwb[0];
 	uint32_t *btw = (uint32_t *)&btwb[0];
@@ -174,7 +174,7 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 	}
 
 	strings.resize(total_compression_size);
-	PoolVector<uint8_t>::Write cw = strings.write();
+	uint8_t *cw = strings.ptrw();
 
 	for (int i = 0; i < compressed.size(); i++) {
 		memcpy(&cw[compressed[i].offset], compressed[i].compressed.get_data(), compressed[i].compressed.size());
@@ -228,11 +228,11 @@ StringName PHashTranslation::get_message(const StringName &p_src_text) const {
 	CharString str = p_src_text.operator String().utf8();
 	uint32_t h = hash(0, str.get_data());
 
-	PoolVector<int>::Read htr = hash_table.read();
+	const int *htr = hash_table.ptr();
 	const uint32_t *htptr = (const uint32_t *)&htr[0];
-	PoolVector<int>::Read btr = bucket_table.read();
+	const int *btr = bucket_table.ptr();
 	const uint32_t *btptr = (const uint32_t *)&btr[0];
-	PoolVector<uint8_t>::Read sr = strings.read();
+	const uint8_t *sr = strings.ptr();
 	const char *sptr = (const char *)&sr[0];
 
 	uint32_t p = htptr[h % htsize];
@@ -279,9 +279,9 @@ StringName PHashTranslation::get_message(const StringName &p_src_text) const {
 
 void PHashTranslation::_get_property_list(List<PropertyInfo> *p_list) const {
 
-	p_list->push_back(PropertyInfo(Variant::POOL_INT_ARRAY, "hash_table"));
-	p_list->push_back(PropertyInfo(Variant::POOL_INT_ARRAY, "bucket_table"));
-	p_list->push_back(PropertyInfo(Variant::POOL_BYTE_ARRAY, "strings"));
+	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "hash_table"));
+	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "bucket_table"));
+	p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "strings"));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "load_from", PROPERTY_HINT_RESOURCE_TYPE, "Translation", PROPERTY_USAGE_EDITOR));
 }
 void PHashTranslation::_bind_methods() {

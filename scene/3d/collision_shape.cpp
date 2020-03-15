@@ -33,9 +33,9 @@
 #include "scene/resources/capsule_shape.h"
 #include "scene/resources/concave_polygon_shape.h"
 #include "scene/resources/convex_polygon_shape.h"
-#include "scene/resources/plane_shape.h"
 #include "scene/resources/ray_shape.h"
 #include "scene/resources/sphere_shape.h"
+#include "scene/resources/world_margin_shape.h"
 #include "servers/visual_server.h"
 //TODO: Implement CylinderShape and HeightMapShape?
 #include "core/math/quick_hull.h"
@@ -123,8 +123,12 @@ String CollisionShape::get_configuration_warning() const {
 		return TTR("A shape must be provided for CollisionShape to function. Please create a shape resource for it.");
 	}
 
-	if (shape->is_class("PlaneShape")) {
-		return TTR("Plane shapes don't work well and will be removed in future versions. Please don't use them.");
+	if (Object::cast_to<RigidBody>(get_parent())) {
+		if (Object::cast_to<ConcavePolygonShape>(*shape)) {
+			if (Object::cast_to<RigidBody>(get_parent())->get_mode() != RigidBody::MODE_STATIC) {
+				return TTR("ConcavePolygonShape doesn't support RigidBody in another mode than static.");
+			}
+		}
 	}
 
 	return String();
@@ -141,7 +145,6 @@ void CollisionShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_convex_from_brothers"), &CollisionShape::make_convex_from_brothers);
 	ClassDB::set_method_flags("CollisionShape", "make_convex_from_brothers", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
-	ClassDB::bind_method(D_METHOD("_shape_changed"), &CollisionShape::_shape_changed);
 	ClassDB::bind_method(D_METHOD("_update_debug_shape"), &CollisionShape::_update_debug_shape);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape"), "set_shape", "get_shape");
@@ -152,12 +155,12 @@ void CollisionShape::set_shape(const Ref<Shape> &p_shape) {
 
 	if (!shape.is_null()) {
 		shape->unregister_owner(this);
-		shape->disconnect("changed", this, "_shape_changed");
+		shape->disconnect("changed", callable_mp(this, &CollisionShape::_shape_changed));
 	}
 	shape = p_shape;
 	if (!shape.is_null()) {
 		shape->register_owner(this);
-		shape->connect("changed", this, "_shape_changed");
+		shape->connect("changed", callable_mp(this, &CollisionShape::_shape_changed));
 	}
 	update_gizmo();
 	if (parent) {

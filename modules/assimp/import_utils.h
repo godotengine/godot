@@ -98,7 +98,7 @@ public:
 	/**
 	 * calculate tangents for mesh data from assimp data
 	 */
-	static void calc_tangent_from_mesh(const aiMesh *ai_mesh, int i, int tri_index, int index, PoolColorArray::Write &w) {
+	static void calc_tangent_from_mesh(const aiMesh *ai_mesh, int i, int tri_index, int index, Color *w) {
 		const aiVector3D normals = ai_mesh->mAnimMeshes[i]->mNormals[tri_index];
 		const Vector3 godot_normal = Vector3(normals.x, normals.y, normals.z);
 		const aiVector3D tangent = ai_mesh->mAnimMeshes[i]->mTangents[tri_index];
@@ -189,7 +189,7 @@ public:
 	}
 
 	/**
-     * Converts aiMatrix4x4 to godot Transform 
+     * Converts aiMatrix4x4 to godot Transform
     */
 	static const Transform assimp_matrix_transform(const aiMatrix4x4 p_matrix) {
 		aiMatrix4x4 matrix = p_matrix;
@@ -320,17 +320,20 @@ public:
 	static void set_texture_mapping_mode(aiTextureMapMode *map_mode, Ref<ImageTexture> texture) {
 		ERR_FAIL_COND(texture.is_null());
 		ERR_FAIL_COND(map_mode == NULL);
+		// FIXME: Commented out during Vulkan port.
+		/*
 		aiTextureMapMode tex_mode = map_mode[0];
 
-		int32_t flags = Texture::FLAGS_DEFAULT;
+		int32_t flags = Texture2D::FLAGS_DEFAULT;
 		if (tex_mode == aiTextureMapMode_Wrap) {
 			//Default
 		} else if (tex_mode == aiTextureMapMode_Clamp) {
-			flags = flags & ~Texture::FLAG_REPEAT;
+			flags = flags & ~Texture2D::FLAG_REPEAT;
 		} else if (tex_mode == aiTextureMapMode_Mirror) {
-			flags = flags | Texture::FLAG_MIRRORED_REPEAT;
+			flags = flags | Texture2D::FLAG_MIRRORED_REPEAT;
 		}
 		texture->set_flags(flags);
+		*/
 	}
 
 	/**
@@ -355,11 +358,13 @@ public:
 			print_verbose("Open Asset Import: Loading embedded texture " + filename);
 			if (tex->mHeight == 0) {
 				if (tex->CheckFormat("png")) {
+					ERR_FAIL_COND_V(Image::_png_mem_loader_func == NULL, Ref<Image>());
 					Ref<Image> img = Image::_png_mem_loader_func((uint8_t *)tex->pcData, tex->mWidth);
 					ERR_FAIL_COND_V(img.is_null(), Ref<Image>());
 					state.path_to_image_cache.insert(p_path, img);
 					return img;
 				} else if (tex->CheckFormat("jpg")) {
+					ERR_FAIL_COND_V(Image::_jpg_mem_loader_func == NULL, Ref<Image>());
 					Ref<Image> img = Image::_jpg_mem_loader_func((uint8_t *)tex->pcData, tex->mWidth);
 					ERR_FAIL_COND_V(img.is_null(), Ref<Image>());
 					state.path_to_image_cache.insert(p_path, img);
@@ -370,17 +375,17 @@ public:
 			} else {
 				Ref<Image> img;
 				img.instance();
-				PoolByteArray arr;
+				PackedByteArray arr;
 				uint32_t size = tex->mWidth * tex->mHeight;
 				arr.resize(size);
-				memcpy(arr.write().ptr(), tex->pcData, size);
+				memcpy(arr.ptrw(), tex->pcData, size);
 				ERR_FAIL_COND_V(arr.size() % 4 != 0, Ref<Image>());
 				//ARGB8888 to RGBA8888
 				for (int32_t i = 0; i < arr.size() / 4; i++) {
-					arr.write().ptr()[(4 * i) + 3] = arr[(4 * i) + 0];
-					arr.write().ptr()[(4 * i) + 0] = arr[(4 * i) + 1];
-					arr.write().ptr()[(4 * i) + 1] = arr[(4 * i) + 2];
-					arr.write().ptr()[(4 * i) + 2] = arr[(4 * i) + 3];
+					arr.ptrw()[(4 * i) + 3] = arr[(4 * i) + 0];
+					arr.ptrw()[(4 * i) + 0] = arr[(4 * i) + 1];
+					arr.ptrw()[(4 * i) + 1] = arr[(4 * i) + 2];
+					arr.ptrw()[(4 * i) + 2] = arr[(4 * i) + 3];
 				}
 				img->create(tex->mWidth, tex->mHeight, true, Image::FORMAT_RGBA8, arr);
 				ERR_FAIL_COND_V(img.is_null(), Ref<Image>());
@@ -389,7 +394,7 @@ public:
 			}
 			return Ref<Image>();
 		} else {
-			Ref<Texture> texture = ResourceLoader::load(p_path);
+			Ref<Texture2D> texture = ResourceLoader::load(p_path);
 			ERR_FAIL_COND_V(texture.is_null(), Ref<Image>());
 			Ref<Image> image = texture->get_data();
 			ERR_FAIL_COND_V(image.is_null(), Ref<Image>());
@@ -416,7 +421,8 @@ public:
 			if (image_state.raw_image.is_valid()) {
 				image_state.texture.instance();
 				image_state.texture->create_from_image(image_state.raw_image);
-				image_state.texture->set_storage(ImageTexture::STORAGE_COMPRESS_LOSSY);
+				// FIXME: Commented out during Vulkan port.
+				//image_state.texture->set_storage(ImageTexture::STORAGE_COMPRESS_LOSSY);
 				return true;
 			}
 		}

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorFileDialog" inherits="ConfirmationDialog" category="Core" version="3.2">
+<class name="EditorFileDialog" inherits="ConfirmationDialog" version="4.0">
 	<brief_description>
+		A modified version of [FileDialog] used by the editor.
 	</brief_description>
 	<description>
 	</description>
@@ -84,7 +85,7 @@
 			</description>
 		</signal>
 		<signal name="files_selected">
-			<argument index="0" name="paths" type="PoolStringArray">
+			<argument index="0" name="paths" type="PackedStringArray">
 			</argument>
 			<description>
 				Emitted when multiple files are selected.

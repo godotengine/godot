@@ -110,7 +110,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		ret = unzGoToNextFile(pkg);
 	}
 
-	Map<String, Ref<Texture> > extension_guess;
+	Map<String, Ref<Texture2D> > extension_guess;
 	{
 		extension_guess["png"] = get_icon("ImageTexture", "EditorIcons");
 		extension_guess["jpg"] = get_icon("ImageTexture", "EditorIcons");
@@ -122,7 +122,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		extension_guess["vs"] = get_icon("VisualScript", "EditorIcons");
 	}
 
-	Ref<Texture> generic_extension = get_icon("Object", "EditorIcons");
+	Ref<Texture2D> generic_extension = get_icon("Object", "EditorIcons");
 
 	unzClose(pkg);
 
@@ -307,8 +307,6 @@ void EditorAssetInstaller::ok_pressed() {
 }
 
 void EditorAssetInstaller::_bind_methods() {
-
-	ClassDB::bind_method("_item_edited", &EditorAssetInstaller::_item_edited);
 }
 
 EditorAssetInstaller::EditorAssetInstaller() {
@@ -318,7 +316,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 
 	tree = memnew(Tree);
 	vb->add_margin_child(TTR("Package Contents:"), tree, true);
-	tree->connect("item_edited", this, "_item_edited");
+	tree->connect("item_edited", callable_mp(this, &EditorAssetInstaller::_item_edited));
 
 	error = memnew(AcceptDialog);
 	add_child(error);

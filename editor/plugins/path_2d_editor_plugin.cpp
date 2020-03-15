@@ -373,12 +373,12 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
-	const Ref<Texture> path_sharp_handle = get_icon("EditorPathSharpHandle", "EditorIcons");
-	const Ref<Texture> path_smooth_handle = get_icon("EditorPathSmoothHandle", "EditorIcons");
+	const Ref<Texture2D> path_sharp_handle = get_icon("EditorPathSharpHandle", "EditorIcons");
+	const Ref<Texture2D> path_smooth_handle = get_icon("EditorPathSmoothHandle", "EditorIcons");
 	// Both handle icons must be of the same size
 	const Size2 handle_size = path_sharp_handle->get_size();
 
-	const Ref<Texture> curve_handle = get_icon("EditorCurveHandle", "EditorIcons");
+	const Ref<Texture2D> curve_handle = get_icon("EditorCurveHandle", "EditorIcons");
 	const Size2 curve_handle_size = curve_handle->get_size();
 
 	Ref<Curve2D> curve = node->get_curve();
@@ -396,8 +396,8 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 			if (point != pointout) {
 				smooth = true;
 				// Draw the line with a dark and light color to be visible on all backgrounds
-				vpc->draw_line(point, pointout, Color(0, 0, 0, 0.5), Math::round(EDSCALE), true);
-				vpc->draw_line(point, pointout, Color(1, 1, 1, 0.5), Math::round(EDSCALE), true);
+				vpc->draw_line(point, pointout, Color(0, 0, 0, 0.5), Math::round(EDSCALE));
+				vpc->draw_line(point, pointout, Color(1, 1, 1, 0.5), Math::round(EDSCALE));
 				vpc->draw_texture_rect(curve_handle, Rect2(pointout - curve_handle_size * 0.5, curve_handle_size), false, Color(1, 1, 1, 0.75));
 			}
 		}
@@ -407,8 +407,8 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 			if (point != pointin) {
 				smooth = true;
 				// Draw the line with a dark and light color to be visible on all backgrounds
-				vpc->draw_line(point, pointin, Color(0, 0, 0, 0.5), Math::round(EDSCALE), true);
-				vpc->draw_line(point, pointin, Color(1, 1, 1, 0.5), Math::round(EDSCALE), true);
+				vpc->draw_line(point, pointin, Color(0, 0, 0, 0.5), Math::round(EDSCALE));
+				vpc->draw_line(point, pointin, Color(1, 1, 1, 0.5), Math::round(EDSCALE));
 				vpc->draw_texture_rect(curve_handle, Rect2(pointin - curve_handle_size * 0.5, curve_handle_size), false, Color(1, 1, 1, 0.75));
 			}
 		}
@@ -420,7 +420,7 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	}
 
 	if (on_edge) {
-		Ref<Texture> add_handle = get_icon("EditorHandleAdd", "EditorIcons");
+		Ref<Texture2D> add_handle = get_icon("EditorHandleAdd", "EditorIcons");
 		p_overlay->draw_texture(add_handle, edge_point - add_handle->get_size() * 0.5);
 	}
 }
@@ -441,14 +441,14 @@ void Path2DEditor::edit(Node *p_path2d) {
 	if (p_path2d) {
 
 		node = Object::cast_to<Path2D>(p_path2d);
-		if (!node->is_connected("visibility_changed", this, "_node_visibility_changed"))
-			node->connect("visibility_changed", this, "_node_visibility_changed");
+		if (!node->is_connected("visibility_changed", callable_mp(this, &Path2DEditor::_node_visibility_changed)))
+			node->connect("visibility_changed", callable_mp(this, &Path2DEditor::_node_visibility_changed));
 
 	} else {
 
 		// node may have been deleted at this point
-		if (node && node->is_connected("visibility_changed", this, "_node_visibility_changed"))
-			node->disconnect("visibility_changed", this, "_node_visibility_changed");
+		if (node && node->is_connected("visibility_changed", callable_mp(this, &Path2DEditor::_node_visibility_changed)))
+			node->disconnect("visibility_changed", callable_mp(this, &Path2DEditor::_node_visibility_changed));
 		node = NULL;
 	}
 }
@@ -456,9 +456,6 @@ void Path2DEditor::edit(Node *p_path2d) {
 void Path2DEditor::_bind_methods() {
 
 	//ClassDB::bind_method(D_METHOD("_menu_option"),&Path2DEditor::_menu_option);
-	ClassDB::bind_method(D_METHOD("_node_visibility_changed"), &Path2DEditor::_node_visibility_changed);
-	ClassDB::bind_method(D_METHOD("_mode_selected"), &Path2DEditor::_mode_selected);
-	ClassDB::bind_method(D_METHOD("_handle_option_pressed"), &Path2DEditor::_handle_option_pressed);
 }
 
 void Path2DEditor::_mode_selected(int p_mode) {
@@ -555,34 +552,34 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	curve_edit->set_toggle_mode(true);
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit->set_tooltip(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string(KEY_MASK_CMD) + TTR("Click: Add Point") + "\n" + TTR("Left Click: Split Segment (in curve)") + "\n" + TTR("Right Click: Delete Point"));
-	curve_edit->connect("pressed", this, "_mode_selected", varray(MODE_EDIT));
+	curve_edit->connect("pressed", callable_mp(this, &Path2DEditor::_mode_selected), varray(MODE_EDIT));
 	base_hb->add_child(curve_edit);
 	curve_edit_curve = memnew(ToolButton);
 	curve_edit_curve->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("CurveCurve", "EditorIcons"));
 	curve_edit_curve->set_toggle_mode(true);
 	curve_edit_curve->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit_curve->set_tooltip(TTR("Select Control Points (Shift+Drag)"));
-	curve_edit_curve->connect("pressed", this, "_mode_selected", varray(MODE_EDIT_CURVE));
+	curve_edit_curve->connect("pressed", callable_mp(this, &Path2DEditor::_mode_selected), varray(MODE_EDIT_CURVE));
 	base_hb->add_child(curve_edit_curve);
 	curve_create = memnew(ToolButton);
 	curve_create->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("CurveCreate", "EditorIcons"));
 	curve_create->set_toggle_mode(true);
 	curve_create->set_focus_mode(Control::FOCUS_NONE);
 	curve_create->set_tooltip(TTR("Add Point (in empty space)"));
-	curve_create->connect("pressed", this, "_mode_selected", varray(MODE_CREATE));
+	curve_create->connect("pressed", callable_mp(this, &Path2DEditor::_mode_selected), varray(MODE_CREATE));
 	base_hb->add_child(curve_create);
 	curve_del = memnew(ToolButton);
 	curve_del->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("CurveDelete", "EditorIcons"));
 	curve_del->set_toggle_mode(true);
 	curve_del->set_focus_mode(Control::FOCUS_NONE);
 	curve_del->set_tooltip(TTR("Delete Point"));
-	curve_del->connect("pressed", this, "_mode_selected", varray(MODE_DELETE));
+	curve_del->connect("pressed", callable_mp(this, &Path2DEditor::_mode_selected), varray(MODE_DELETE));
 	base_hb->add_child(curve_del);
 	curve_close = memnew(ToolButton);
 	curve_close->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("CurveClose", "EditorIcons"));
 	curve_close->set_focus_mode(Control::FOCUS_NONE);
 	curve_close->set_tooltip(TTR("Close Curve"));
-	curve_close->connect("pressed", this, "_mode_selected", varray(ACTION_CLOSE));
+	curve_close->connect("pressed", callable_mp(this, &Path2DEditor::_mode_selected), varray(ACTION_CLOSE));
 	base_hb->add_child(curve_close);
 
 	PopupMenu *menu;
@@ -596,7 +593,7 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	menu->set_item_checked(HANDLE_OPTION_ANGLE, mirror_handle_angle);
 	menu->add_check_item(TTR("Mirror Handle Lengths"));
 	menu->set_item_checked(HANDLE_OPTION_LENGTH, mirror_handle_length);
-	menu->connect("id_pressed", this, "_handle_option_pressed");
+	menu->connect("id_pressed", callable_mp(this, &Path2DEditor::_handle_option_pressed));
 
 	base_hb->hide();
 

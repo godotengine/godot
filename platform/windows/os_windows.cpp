@@ -33,15 +33,22 @@
 
 #include "os_windows.h"
 
+#include "core/debugger/engine_debugger.h"
+#include "core/debugger/script_debugger.h"
 #include "core/io/marshalls.h"
 #include "core/version_generated.gen.h"
+
+#if defined(OPENGL_ENABLED)
 #include "drivers/gles2/rasterizer_gles2.h"
-#include "drivers/gles3/rasterizer_gles3.h"
+#endif
+
+#if defined(VULKAN_ENABLED)
+#include "servers/visual/rasterizer_rd/rasterizer_rd.h"
+#endif
+
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
-#include "drivers/windows/mutex_windows.h"
 #include "drivers/windows/rw_lock_windows.h"
-#include "drivers/windows/semaphore_windows.h"
 #include "drivers/windows/thread_windows.h"
 #include "joypad_windows.h"
 #include "lang_table.h"
@@ -72,6 +79,11 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 
 #ifndef WM_POINTERUPDATE
 #define WM_POINTERUPDATE 0x0245
+#endif
+
+#if defined(__GNUC__)
+// Workaround GCC warning from -Wcast-function-type.
+#define GetProcAddress (void *)GetProcAddress
 #endif
 
 typedef struct {
@@ -183,13 +195,13 @@ void RedirectIOToConsole() {
 }
 
 BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
-	if (ScriptDebugger::get_singleton() == NULL)
+	if (!EngineDebugger::is_active())
 		return FALSE;
 
 	switch (dwCtrlType) {
 		case CTRL_C_EVENT:
-			ScriptDebugger::get_singleton()->set_depth(-1);
-			ScriptDebugger::get_singleton()->set_lines_left(1);
+			EngineDebugger::get_script_debugger()->set_depth(-1);
+			EngineDebugger::get_script_debugger()->set_lines_left(1);
 			return TRUE;
 		default:
 			return FALSE;
@@ -216,8 +228,6 @@ void OS_Windows::initialize_core() {
 	borderless = false;
 
 	ThreadWindows::make_default();
-	SemaphoreWindows::make_default();
-	MutexWindows::make_default();
 	RWLockWindows::make_default();
 
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
@@ -352,12 +362,14 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			if (LOWORD(wParam) == WA_ACTIVE || LOWORD(wParam) == WA_CLICKACTIVE) {
 
 				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
+				window_focused = true;
 				alt_mem = false;
 				control_mem = false;
 				shift_mem = false;
 			} else { // WM_INACTIVE
 				input->release_pressed_events();
 				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+				window_focused = false;
 				alt_mem = false;
 			};
 
@@ -694,7 +706,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					break;
 				}
 			}
-			FALLTHROUGH;
+			[[fallthrough]];
 		case WM_MBUTTONDOWN:
 		case WM_MBUTTONUP:
 		case WM_RBUTTONDOWN:
@@ -886,6 +898,11 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					preserve_window_size = false;
 					set_window_size(Size2(video_mode.width, video_mode.height));
 				}
+#if defined(VULKAN_ENABLED)
+				if (video_driver_index == VIDEO_DRIVER_VULKAN) {
+					context_vulkan->window_resize(0, video_mode.width, video_mode.height);
+				}
+#endif
 			}
 
 			if (wParam == SIZE_MAXIMIZED) {
@@ -964,7 +981,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			if (wParam==VK_WIN) TODO wtf is this?
 				meta_mem=uMsg==WM_KEYDOWN;
 			*/
-			FALLTHROUGH;
+			[[fallthrough]];
 		}
 		case WM_CHAR: {
 
@@ -1115,7 +1132,8 @@ void OS_Windows::process_key_events() {
 					k->set_control(ke.control);
 					k->set_metakey(ke.meta);
 					k->set_pressed(true);
-					k->set_scancode(KeyMappingWindows::get_keysym(ke.wParam));
+					k->set_keycode(KeyMappingWindows::get_keysym(ke.wParam));
+					k->set_physical_keycode(KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24)));
 					k->set_unicode(ke.wParam);
 					if (k->get_unicode() && gr_mem) {
 						k->set_alt(false);
@@ -1145,10 +1163,12 @@ void OS_Windows::process_key_events() {
 
 				if ((ke.lParam & (1 << 24)) && (ke.wParam == VK_RETURN)) {
 					// Special case for Numpad Enter key
-					k->set_scancode(KEY_KP_ENTER);
+					k->set_keycode(KEY_KP_ENTER);
 				} else {
-					k->set_scancode(KeyMappingWindows::get_keysym(ke.wParam));
+					k->set_keycode(KeyMappingWindows::get_keysym(ke.wParam));
 				}
+
+				k->set_physical_keycode(KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24)));
 
 				if (i + 1 < key_event_pos && key_event_buffer[i + 1].uMsg == WM_CHAR) {
 					k->set_unicode(key_event_buffer[i + 1].wParam);
@@ -1409,78 +1429,58 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 		SetWindowPos(hWnd, video_mode.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 	}
 
-#if defined(OPENGL_ENABLED)
-
-	bool gles3_context = true;
-	if (p_video_driver == VIDEO_DRIVER_GLES2) {
-		gles3_context = false;
-	}
-
-	bool editor = Engine::get_singleton()->is_editor_hint();
-	bool gl_initialization_error = false;
-
-	gl_context = NULL;
-	while (!gl_context) {
-		gl_context = memnew(ContextGL_Windows(hWnd, gles3_context));
-
-		if (gl_context->initialize() != OK) {
-			memdelete(gl_context);
-			gl_context = NULL;
-
-			if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2") || editor) {
-				if (p_video_driver == VIDEO_DRIVER_GLES2) {
-					gl_initialization_error = true;
-					break;
-				}
-
-				p_video_driver = VIDEO_DRIVER_GLES2;
-				gles3_context = false;
-			} else {
-				gl_initialization_error = true;
-				break;
-			}
-		}
-	}
-
-	while (true) {
-		if (gles3_context) {
-			if (RasterizerGLES3::is_viable() == OK) {
-				RasterizerGLES3::register_config();
-				RasterizerGLES3::make_current();
-				break;
-			} else {
-				if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2") || editor) {
-					p_video_driver = VIDEO_DRIVER_GLES2;
-					gles3_context = false;
-					continue;
-				} else {
-					gl_initialization_error = true;
-					break;
-				}
-			}
-		} else {
-			if (RasterizerGLES2::is_viable() == OK) {
-				RasterizerGLES2::register_config();
-				RasterizerGLES2::make_current();
-				break;
-			} else {
-				gl_initialization_error = true;
-				break;
-			}
-		}
-	}
-
-	if (gl_initialization_error) {
-		OS::get_singleton()->alert("Your video card driver does not support any of the supported OpenGL versions.\n"
-								   "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
-				"Unable to initialize Video driver");
-		return ERR_UNAVAILABLE;
-	}
-
+	//!!!!!!!!!!!!!!!!!!!!!!!!!!
+	//TODO - do Vulkan and GLES2 support checks, driver selection and fallback
 	video_driver_index = p_video_driver;
+	print_verbose("Driver: " + String(get_video_driver_name(video_driver_index)) + " [" + itos(video_driver_index) + "]");
+	//!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-	gl_context->set_use_vsync(video_mode.use_vsync);
-	set_vsync_via_compositor(video_mode.vsync_via_compositor);
+	// Init context and rendering device
+#if defined(OPENGL_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+
+		context_gles2 = memnew(ContextGL_Windows(hWnd, false));
+
+		if (context_gles2->initialize() != OK) {
+			memdelete(context_gles2);
+			context_gles2 = NULL;
+			ERR_FAIL_V(ERR_UNAVAILABLE);
+		}
+
+		context_gles2->set_use_vsync(video_mode.use_vsync);
+		set_vsync_via_compositor(video_mode.vsync_via_compositor);
+
+		if (RasterizerGLES2::is_viable() == OK) {
+			RasterizerGLES2::register_config();
+			RasterizerGLES2::make_current();
+		} else {
+			memdelete(context_gles2);
+			context_gles2 = NULL;
+			ERR_FAIL_V(ERR_UNAVAILABLE);
+		}
+	}
+#endif
+#if defined(VULKAN_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_VULKAN) {
+
+		context_vulkan = memnew(VulkanContextWindows);
+		if (context_vulkan->initialize() != OK) {
+			memdelete(context_vulkan);
+			context_vulkan = NULL;
+			ERR_FAIL_V(ERR_UNAVAILABLE);
+		}
+		if (context_vulkan->window_create(hWnd, hInstance, get_video_mode().width, get_video_mode().height) == -1) {
+			memdelete(context_vulkan);
+			context_vulkan = NULL;
+			ERR_FAIL_V(ERR_UNAVAILABLE);
+		}
+
+		//temporary
+		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
+		rendering_device_vulkan->initialize(context_vulkan);
+
+		RasterizerRD::make_current();
+	}
 #endif
 
 	visual_server = memnew(VisualServerRaster);
@@ -1492,8 +1492,6 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 
 	input = memnew(InputDefault);
 	joypad = memnew(JoypadWindows(input, &hWnd));
-
-	power_manager = memnew(PowerWindows);
 
 	AudioDriverManager::initialize(p_audio_driver);
 
@@ -1653,9 +1651,25 @@ void OS_Windows::finalize() {
 	cursors_cache.clear();
 	visual_server->finish();
 	memdelete(visual_server);
-#ifdef OPENGL_ENABLED
-	if (gl_context)
-		memdelete(gl_context);
+
+#if defined(OPENGL_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+
+		if (context_gles2)
+			memdelete(context_gles2);
+	}
+#endif
+#if defined(VULKAN_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_VULKAN) {
+
+		if (rendering_device_vulkan) {
+			rendering_device_vulkan->finalize();
+			memdelete(rendering_device_vulkan);
+		}
+
+		if (context_vulkan)
+			memdelete(context_vulkan);
+	}
 #endif
 
 	if (user_proc) {
@@ -1957,6 +1971,11 @@ void OS_Windows::set_window_size(const Size2 p_size) {
 
 	video_mode.width = w;
 	video_mode.height = h;
+#if defined(VULKAN_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_VULKAN) {
+		context_vulkan->window_resize(0, video_mode.width, video_mode.height);
+	}
+#endif
 
 	if (video_mode.fullscreen) {
 		return;
@@ -2093,6 +2112,11 @@ void OS_Windows::set_window_always_on_top(bool p_enabled) {
 
 bool OS_Windows::is_window_always_on_top() const {
 	return video_mode.always_on_top;
+}
+
+bool OS_Windows::is_window_focused() const {
+
+	return window_focused;
 }
 
 void OS_Windows::set_console_visible(bool p_enabled) {
@@ -2505,7 +2529,7 @@ void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shap
 			cursors_cache.erase(p_shape);
 		}
 
-		Ref<Texture> texture = p_cursor;
+		Ref<Texture2D> texture = p_cursor;
 		Ref<AtlasTexture> atlas_texture = p_cursor;
 		Ref<Image> image;
 		Size2 texture_size;
@@ -2544,7 +2568,6 @@ void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shap
 		// Create the BITMAP with alpha channel
 		COLORREF *buffer = (COLORREF *)memalloc(sizeof(COLORREF) * image_size);
 
-		image->lock();
 		for (UINT index = 0; index < image_size; index++) {
 			int row_index = floor(index / texture_size.width) + atlas_rect.position.y;
 			int column_index = (index % int(texture_size.width)) + atlas_rect.position.x;
@@ -2556,7 +2579,6 @@ void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shap
 
 			*(buffer + index) = image->get_pixel(column_index, row_index).to_argb32();
 		}
-		image->unlock();
 
 		// Using 4 channels, so 4 * 8 bits
 		HBITMAP bitmap = CreateBitmap(texture_size.width, texture_size.height, 1, 4 * 8, buffer);
@@ -2701,7 +2723,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 			if (p_pipe_mutex) {
 				p_pipe_mutex->lock();
 			}
-			(*r_pipe) += buf;
+			(*r_pipe) += String::utf8(buf);
 			if (p_pipe_mutex) {
 				p_pipe_mutex->unlock();
 			}
@@ -2842,7 +2864,7 @@ void OS_Windows::set_native_icon(const String &p_filename) {
 	ERR_FAIL_COND_MSG(big_icon_index == -1, "No valid icons found!");
 
 	if (small_icon_index == -1) {
-		WARN_PRINTS("No small icon found, reusing " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon!");
+		WARN_PRINT("No small icon found, reusing " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon!");
 		small_icon_index = big_icon_index;
 		small_icon_cc = big_icon_cc;
 	}
@@ -2911,7 +2933,7 @@ void OS_Windows::set_icon(const Ref<Image> &p_icon) {
 	encode_uint32(0, &icon_bmp[36]);
 
 	uint8_t *wr = &icon_bmp[40];
-	PoolVector<uint8_t>::Read r = icon->get_data().read();
+	const uint8_t *r = icon->get_data().ptr();
 
 	for (int i = 0; i < h; i++) {
 
@@ -3109,18 +3131,32 @@ OS::LatinKeyboardVariant OS_Windows::get_latin_keyboard_variant() const {
 }
 
 void OS_Windows::release_rendering_thread() {
-
-	gl_context->release_current();
+#if defined(OPENGL_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+		context_gles2->release_current();
+	}
+#endif
 }
 
 void OS_Windows::make_rendering_thread() {
-
-	gl_context->make_current();
+#if defined(OPENGL_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+		context_gles2->make_current();
+	}
+#endif
 }
 
 void OS_Windows::swap_buffers() {
-
-	gl_context->swap_buffers();
+#if defined(OPENGL_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+		context_gles2->swap_buffers();
+	}
+#endif
+#if defined(VULKAN_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_VULKAN) {
+		context_vulkan->swap_buffers();
+	}
+#endif
 }
 
 void OS_Windows::force_process_input() {
@@ -3287,29 +3323,12 @@ String OS_Windows::get_joy_guid(int p_device) const {
 }
 
 void OS_Windows::_set_use_vsync(bool p_enable) {
-
-	if (gl_context)
-		gl_context->set_use_vsync(p_enable);
-}
-/*
-bool OS_Windows::is_vsync_enabled() const {
-
-	if (gl_context)
-		return gl_context->is_using_vsync();
-
-	return true;
-}*/
-
-OS::PowerState OS_Windows::get_power_state() {
-	return power_manager->get_power_state();
-}
-
-int OS_Windows::get_power_seconds_left() {
-	return power_manager->get_power_seconds_left();
-}
-
-int OS_Windows::get_power_percent_left() {
-	return power_manager->get_power_percent_left();
+#if defined(OPENGL_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+		if (context_gles2)
+			context_gles2->set_use_vsync(p_enable);
+	}
+#endif
 }
 
 bool OS_Windows::_check_internal_feature_support(const String &p_feature) {
@@ -3351,7 +3370,7 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 	delete[] from;
 
 	if (ret) {
-		ERR_PRINTS("SHFileOperation error: " + itos(ret));
+		ERR_PRINT("SHFileOperation error: " + itos(ret));
 		return FAILED;
 	}
 
@@ -3372,6 +3391,7 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	meta_mem = false;
 	minimized = false;
 	was_maximized = false;
+	window_focused = true;
 	console_visible = IsWindowVisible(GetConsoleWindow());
 
 	//Note: Functions for pen input, available on Windows 8+

@@ -78,7 +78,7 @@ bool RayCast2D::is_colliding() const {
 }
 Object *RayCast2D::get_collider() const {
 
-	if (against == 0)
+	if (against.is_null())
 		return NULL;
 
 	return ObjectDB::get_instance(against);
@@ -176,7 +176,7 @@ void RayCast2D::_notification(int p_what) {
 				draw_col.g = g;
 				draw_col.b = g;
 			}
-			draw_line(Vector2(), cast_to, draw_col, 2, true);
+			draw_line(Vector2(), cast_to, draw_col, 2);
 			Vector<Vector2> pts;
 			float tsize = 8;
 			pts.push_back(xf.xform(Vector2(tsize, 0)));
@@ -225,7 +225,7 @@ void RayCast2D::_update_raycast_state() {
 		against_shape = rr.shape;
 	} else {
 		collided = false;
-		against = 0;
+		against = ObjectID();
 		against_shape = 0;
 	}
 }
@@ -339,7 +339,7 @@ void RayCast2D::_bind_methods() {
 RayCast2D::RayCast2D() {
 
 	enabled = false;
-	against = 0;
+
 	collided = false;
 	against_shape = 0;
 	collision_mask = 1;

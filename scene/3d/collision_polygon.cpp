@@ -53,11 +53,11 @@ void CollisionPolygon::_build_polygon() {
 
 	for (int i = 0; i < decomp.size(); i++) {
 		Ref<ConvexPolygonShape> convex = memnew(ConvexPolygonShape);
-		PoolVector<Vector3> cp;
+		Vector<Vector3> cp;
 		int cs = decomp[i].size();
 		cp.resize(cs * 2);
 		{
-			PoolVector<Vector3>::Write w = cp.write();
+			Vector3 *w = cp.ptrw();
 			int idx = 0;
 			for (int j = 0; j < cs; j++) {
 
@@ -191,9 +191,9 @@ void CollisionPolygon::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_is_editable_3d_polygon"), &CollisionPolygon::_is_editable_3d_polygon);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "depth"), "set_depth", "get_depth");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth"), "set_depth", "get_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
 }
 
 CollisionPolygon::CollisionPolygon() {

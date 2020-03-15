@@ -252,79 +252,75 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
 
     fd.write("""\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Transform& p_transform) {  _FU
 
-		const Transform &tr = p_transform;
+        const Transform &tr = p_transform;
 
-		GLfloat matrix[16]={ /* build a 16x16 matrix */
-			tr.basis.elements[0][0],
-			tr.basis.elements[1][0],
-			tr.basis.elements[2][0],
-			0,
-			tr.basis.elements[0][1],
-			tr.basis.elements[1][1],
-			tr.basis.elements[2][1],
-			0,
-			tr.basis.elements[0][2],
-			tr.basis.elements[1][2],
-			tr.basis.elements[2][2],
-			0,
-			tr.origin.x,
-			tr.origin.y,
-			tr.origin.z,
-			1
-		};
+        GLfloat matrix[16]={ /* build a 16x16 matrix */
+            tr.basis.elements[0][0],
+            tr.basis.elements[1][0],
+            tr.basis.elements[2][0],
+            0,
+            tr.basis.elements[0][1],
+            tr.basis.elements[1][1],
+            tr.basis.elements[2][1],
+            0,
+            tr.basis.elements[0][2],
+            tr.basis.elements[1][2],
+            tr.basis.elements[2][2],
+            0,
+            tr.origin.x,
+            tr.origin.y,
+            tr.origin.z,
+            1
+        };
 
+        glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
+    }
 
-                glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
-
-
-	}
-
-	""")
+    """)
 
     fd.write("""_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Transform2D& p_transform) {  _FU
 
-		const Transform2D &tr = p_transform;
+        const Transform2D &tr = p_transform;
 
-		GLfloat matrix[16]={ /* build a 16x16 matrix */
-			tr.elements[0][0],
-			tr.elements[0][1],
-			0,
-			0,
-			tr.elements[1][0],
-			tr.elements[1][1],
-			0,
-			0,
-			0,
-			0,
-			1,
-			0,
-			tr.elements[2][0],
-			tr.elements[2][1],
-			0,
-			1
-		};
-
+        GLfloat matrix[16]={ /* build a 16x16 matrix */
+            tr.elements[0][0],
+            tr.elements[0][1],
+            0,
+            0,
+            tr.elements[1][0],
+            tr.elements[1][1],
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            tr.elements[2][0],
+            tr.elements[2][1],
+            0,
+            1
+        };
 
         glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
+    }
 
-
-	}
-
-	""")
+    """)
 
     fd.write("""_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const CameraMatrix& p_matrix) {  _FU
 
-		GLfloat matrix[16];
+        GLfloat matrix[16];
 
-		for (int i=0;i<4;i++) {
-			for (int j=0;j<4;j++) {
+        for (int i=0;i<4;i++) {
+            for (int j=0;j<4;j++) {
 
-				matrix[i*4+j]=p_matrix.matrix[i][j];
-			}
-		}
+                matrix[i*4+j]=p_matrix.matrix[i][j];
+            }
+        }
 
-		glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
-}""")
+        glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
+    }
+
+    """)
 
     fd.write("\n\n#undef _FU\n\n\n")
 
@@ -497,14 +493,161 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
     fd.close()
 
 
-def build_gles3_headers(target, source, env):
-    for x in source:
-        build_legacygl_header(str(x), include="drivers/gles3/shader_gles3.h", class_suffix="GLES3", output_attribs=True)
-
-
 def build_gles2_headers(target, source, env):
     for x in source:
         build_legacygl_header(str(x), include="drivers/gles2/shader_gles2.h", class_suffix="GLES2", output_attribs=True, gles2=True)
+
+
+
+class RDHeaderStruct:
+
+    def __init__(self):
+        self.vertex_lines = []
+        self.fragment_lines = []
+        self.compute_lines = []
+
+        self.vertex_included_files = []
+        self.fragment_included_files = []
+
+        self.reading = ""
+        self.line_offset = 0
+        self.vertex_offset = 0
+        self.fragment_offset = 0
+        self.compute_offset = 0
+
+
+def include_file_in_rd_header(filename, header_data, depth):
+    fs = open(filename, "r")
+    line = fs.readline()
+
+    while line:
+
+        if line.find("[vertex]") != -1:
+            header_data.reading = "vertex"
+            line = fs.readline()
+            header_data.line_offset += 1
+            header_data.vertex_offset = header_data.line_offset
+            continue
+
+        if line.find("[fragment]") != -1:
+            header_data.reading = "fragment"
+            line = fs.readline()
+            header_data.line_offset += 1
+            header_data.fragment_offset = header_data.line_offset
+            continue
+
+        if line.find("[compute]") != -1:
+            header_data.reading = "compute"
+            line = fs.readline()
+            header_data.line_offset += 1
+            header_data.compute_offset = header_data.line_offset
+            continue
+
+        while line.find("#include ") != -1:
+            includeline = line.replace("#include ", "").strip()[1:-1]
+
+            import os.path
+
+            included_file = os.path.relpath(os.path.dirname(filename) + "/" + includeline)
+            if not included_file in header_data.vertex_included_files and header_data.reading == "vertex":
+                header_data.vertex_included_files += [included_file]
+                if include_file_in_rd_header(included_file, header_data, depth + 1) is None:
+                    print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
+            elif not included_file in header_data.fragment_included_files and header_data.reading == "fragment":
+                header_data.fragment_included_files += [included_file]
+                if include_file_in_rd_header(included_file, header_data, depth + 1) is None:
+                    print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
+            elif not included_file in header_data.compute_included_files and header_data.reading == "compute":
+                header_data.compute_included_files += [included_file]
+                if include_file_in_rd_header(included_file, header_data, depth + 1) is None:
+                    print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
+
+            line = fs.readline()
+
+        line = line.replace("\r", "")
+        line = line.replace("\n", "")
+
+        if header_data.reading == "vertex":
+            header_data.vertex_lines += [line]
+        if header_data.reading == "fragment":
+            header_data.fragment_lines += [line]
+        if header_data.reading == "compute":
+            header_data.compute_lines += [line]
+
+        line = fs.readline()
+        header_data.line_offset += 1
+
+    fs.close()
+
+    return header_data
+
+
+def build_rd_header(filename):
+    header_data = RDHeaderStruct()
+    include_file_in_rd_header(filename, header_data, 0)
+
+    out_file = filename + ".gen.h"
+    fd = open(out_file, "w")
+
+    enum_constants = []
+
+    fd.write("/* WARNING, THIS FILE WAS GENERATED, DO NOT EDIT */\n")
+
+    out_file_base = out_file
+    out_file_base = out_file_base[out_file_base.rfind("/") + 1:]
+    out_file_base = out_file_base[out_file_base.rfind("\\") + 1:]
+    out_file_ifdef = out_file_base.replace(".", "_").upper()
+    fd.write("#ifndef " + out_file_ifdef + "_RD\n")
+    fd.write("#define " + out_file_ifdef + "_RD\n")
+
+    out_file_class = out_file_base.replace(".glsl.gen.h", "").title().replace("_", "").replace(".", "") + "ShaderRD"
+    fd.write("\n")
+    fd.write("#include \"servers/visual/rasterizer_rd/shader_rd.h\"\n\n")
+    fd.write("class " + out_file_class + " : public ShaderRD {\n\n")
+    fd.write("public:\n\n")
+
+    fd.write("\t" + out_file_class + "() {\n\n")
+
+    if (len(header_data.compute_lines)):
+
+        fd.write("\t\tstatic const char _compute_code[] = {\n")
+        for x in header_data.compute_lines:
+            for c in x:
+                fd.write(str(ord(c)) + ",")
+            fd.write(str(ord('\n')) + ",")
+        fd.write("\t\t0};\n\n")
+
+        fd.write("\t\tsetup(nullptr, nullptr, _compute_code, \"" + out_file_class + "\");\n")
+        fd.write("\t}\n")
+
+    else:
+
+        fd.write("\t\tstatic const char _vertex_code[] = {\n")
+        for x in header_data.vertex_lines:
+            for c in x:
+                fd.write(str(ord(c)) + ",")
+            fd.write(str(ord('\n')) + ",")
+        fd.write("\t\t0};\n\n")
+    
+        fd.write("\t\tstatic const char _fragment_code[]={\n")
+        for x in header_data.fragment_lines:
+            for c in x:
+                fd.write(str(ord(c)) + ",")
+            fd.write(str(ord('\n')) + ",")
+        fd.write("\t\t0};\n\n")
+
+        fd.write("\t\tsetup(_vertex_code, _fragment_code, nullptr, \"" + out_file_class + "\");\n")
+        fd.write("\t}\n")
+
+    fd.write("};\n\n")
+
+    fd.write("#endif\n")
+    fd.close()
+
+
+def build_rd_headers(target, source, env):
+    for x in source:
+        build_rd_header(str(x))
 
 
 if __name__ == '__main__':

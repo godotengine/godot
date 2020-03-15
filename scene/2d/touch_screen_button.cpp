@@ -34,24 +34,24 @@
 #include "core/os/input.h"
 #include "core/os/os.h"
 
-void TouchScreenButton::set_texture(const Ref<Texture> &p_texture) {
+void TouchScreenButton::set_texture(const Ref<Texture2D> &p_texture) {
 
 	texture = p_texture;
 	update();
 }
 
-Ref<Texture> TouchScreenButton::get_texture() const {
+Ref<Texture2D> TouchScreenButton::get_texture() const {
 
 	return texture;
 }
 
-void TouchScreenButton::set_texture_pressed(const Ref<Texture> &p_texture_pressed) {
+void TouchScreenButton::set_texture_pressed(const Ref<Texture2D> &p_texture_pressed) {
 
 	texture_pressed = p_texture_pressed;
 	update();
 }
 
-Ref<Texture> TouchScreenButton::get_texture_pressed() const {
+Ref<Texture2D> TouchScreenButton::get_texture_pressed() const {
 
 	return texture_pressed;
 }
@@ -69,12 +69,12 @@ Ref<BitMap> TouchScreenButton::get_bitmask() const {
 void TouchScreenButton::set_shape(const Ref<Shape2D> &p_shape) {
 
 	if (shape.is_valid())
-		shape->disconnect("changed", this, "update");
+		shape->disconnect("changed", callable_mp((CanvasItem *)this, &CanvasItem::update));
 
 	shape = p_shape;
 
 	if (shape.is_valid())
-		shape->connect("changed", this, "update");
+		shape->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::update));
 
 	update();
 }
@@ -135,7 +135,9 @@ void TouchScreenButton::_notification(int p_what) {
 				return;
 			if (shape.is_valid()) {
 				Color draw_col = get_tree()->get_debug_collisions_color();
-				Vector2 pos = shape_centered ? _edit_get_rect().size * 0.5f : Vector2();
+
+				Vector2 size = texture.is_null() ? shape->get_rect().size : texture->get_size();
+				Vector2 pos = shape_centered ? size * 0.5f : Vector2();
 				draw_set_transform_matrix(get_canvas_transform().translated(pos));
 				shape->draw(get_canvas_item(), draw_col);
 			}
@@ -251,9 +253,7 @@ void TouchScreenButton::_input(const Ref<InputEvent> &p_event) {
 }
 
 bool TouchScreenButton::_is_point_inside(const Point2 &p_point) {
-
 	Point2 coord = (get_global_transform_with_canvas()).affine_inverse().xform(p_point);
-	Rect2 item_rect = _edit_get_rect();
 
 	bool touched = false;
 	bool check_rect = true;
@@ -261,7 +261,7 @@ bool TouchScreenButton::_is_point_inside(const Point2 &p_point) {
 	if (shape.is_valid()) {
 
 		check_rect = false;
-		Transform2D xform = shape_centered ? Transform2D().translated(item_rect.size * 0.5f) : Transform2D();
+		Transform2D xform = shape_centered ? Transform2D().translated(shape->get_rect().size * 0.5f) : Transform2D();
 		touched = shape->collide(xform, unit_rect, Transform2D(0, coord + Vector2(0.5, 0.5)));
 	}
 
@@ -277,7 +277,7 @@ bool TouchScreenButton::_is_point_inside(const Point2 &p_point) {
 
 	if (!touched && check_rect) {
 		if (texture.is_valid())
-			touched = item_rect.has_point(coord);
+			touched = Rect2(Size2(), texture->get_size()).has_point(coord);
 	}
 
 	return touched;
@@ -324,6 +324,7 @@ void TouchScreenButton::_release(bool p_exiting_tree) {
 	}
 }
 
+#ifdef TOOLS_ENABLED
 Rect2 TouchScreenButton::_edit_get_rect() const {
 	if (texture.is_null())
 		return CanvasItem::_edit_get_rect();
@@ -334,6 +335,7 @@ Rect2 TouchScreenButton::_edit_get_rect() const {
 bool TouchScreenButton::_edit_use_rect() const {
 	return !texture.is_null();
 }
+#endif
 
 Rect2 TouchScreenButton::get_anchorable_rect() const {
 	if (texture.is_null())
@@ -395,14 +397,14 @@ void TouchScreenButton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_input"), &TouchScreenButton::_input);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "pressed", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture_pressed", "get_texture_pressed");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "pressed", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture_pressed", "get_texture_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "bitmask", PROPERTY_HINT_RESOURCE_TYPE, "BitMap"), "set_bitmask", "get_bitmask");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shape_centered"), "set_shape_centered", "is_shape_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shape_visible"), "set_shape_visible", "is_shape_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "passby_press"), "set_passby_press", "is_passby_press_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "action"), "set_action", "get_action");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action"), "set_action", "get_action");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_mode", PROPERTY_HINT_ENUM, "Always,TouchScreen Only"), "set_visibility_mode", "get_visibility_mode");
 
 	ADD_SIGNAL(MethodInfo("pressed"));

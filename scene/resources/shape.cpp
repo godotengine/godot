@@ -35,7 +35,7 @@
 #include "scene/resources/mesh.h"
 #include "servers/physics_server.h"
 
-void Shape::add_vertices_to_array(PoolVector<Vector3> &array, const Transform &p_xform) {
+void Shape::add_vertices_to_array(Vector<Vector3> &array, const Transform &p_xform) {
 
 	Vector<Vector3> toadd = get_debug_mesh_lines();
 
@@ -43,7 +43,7 @@ void Shape::add_vertices_to_array(PoolVector<Vector3> &array, const Transform &p
 
 		int base = array.size();
 		array.resize(base + toadd.size());
-		PoolVector<Vector3>::Write w = array.write();
+		Vector3 *w = array.ptrw();
 		for (int i = 0; i < toadd.size(); i++) {
 			w[i + base] = p_xform.xform(toadd[i]);
 		}
@@ -70,11 +70,11 @@ Ref<ArrayMesh> Shape::get_debug_mesh() {
 
 	if (!lines.empty()) {
 		//make mesh
-		PoolVector<Vector3> array;
+		Vector<Vector3> array;
 		array.resize(lines.size());
 		{
 
-			PoolVector<Vector3>::Write w = array.write();
+			Vector3 *w = array.ptrw();
 			for (int i = 0; i < lines.size(); i++) {
 				w[i] = lines[i];
 			}
@@ -106,7 +106,7 @@ void Shape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &Shape::set_margin);
 	ClassDB::bind_method(D_METHOD("get_margin"), &Shape::get_margin);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "margin", PROPERTY_HINT_RANGE, "0.001,10,0.001"), "set_margin", "get_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0.001,10,0.001"), "set_margin", "get_margin");
 }
 
 Shape::Shape() :

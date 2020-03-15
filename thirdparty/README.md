@@ -1,17 +1,46 @@
 # Third party libraries
 
+Please keep categories (`##` level) listed alphabetically and matching their
+respective folder names. Use two empty lines to separate categories for
+readability.
+Subcategories (`###` level) where needed are separated by a single empty line.
+
 
 ## assimp
 
 - Upstream: http://github.com/assimp/assimp
-- Version: git (308db73d0b3c2d1870cd3e465eaa283692a4cf23)
+- Version: git (308db73d0b3c2d1870cd3e465eaa283692a4cf23, 2019)
 - License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- Run `cmake .` in root folder to generate files
+- `code/{CApi,Common,FBX,Material,PostProcessing}/`
+- `contrib/utf8cpp/source/`
+- `include/`
+- `revision.h`
+- `CREDITS` and `LICENSE` files
+- `rm -f code/Common/ZipArchiveIOSystem.cpp include/assimp/ZipArchiveIOSystem.h
+   include/assimp/irrXMLWrapper.h`
+
+
+## basis_universal
+
+- Upstream: https://github.com/BinomialLLC/basis_universal
+- Version: git (895ee8e, 2020)
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- `.cpp` and `.h` files in root folder except for `basisu_tool.cpp` (contains `main` and can cause link error)
+- `.cpp`, `.h` and `.inc` files in `transcoder/`, keeping folder structure
+- `LICENSE`
 
 
 ## bullet
 
 - Upstream: https://github.com/bulletphysics/bullet3
-- Version: git (5ec8339, 2019)
+- Version: 2.89
 - License: zlib
 
 Files extracted from upstream source:
@@ -46,7 +75,7 @@ Files extracted from upstream source:
 ## enet
 
 - Upstream: http://enet.bespin.org
-- Version: 1.3.13
+- Version: 1.3.14 (0eaf48e, 2019)
 - License: MIT
 
 Files extracted from upstream source:
@@ -57,12 +86,14 @@ Files extracted from upstream source:
 
 Important: enet.h, host.c, protocol.c have been slightly modified
 to be usable by godot socket implementation and allow IPv6.
+Apply the patch in the `patches/` folder when syncing on newer upstream
+commits.
+
 Two files (godot.cpp and enet/godot.h) have been added to provide
 enet socket implementation using Godot classes.
+
 It is still possible to build against a system wide ENet but doing so
 will limit it's functionality to IPv4 only.
-Check the diff of enet.h, protocol.c, and host.c with the 1.3.13
-tarball before the next update.
 
 
 ## etc2comp
@@ -126,6 +157,26 @@ Files extracted from upstream source:
 The files we package are automatically generated.
 See the header of glad.c for instructions on how to generate them for
 the GLES version Godot targets.
+
+
+## glslang
+
+- Upstream: https://github.com/KhronosGroup/glslang
+- Version: git (4fc7a33910fb8e40b970d160e1b38ab3f67fe0f3, 2020)
+- License: glslang
+
+Version should be kept in sync with the one of the used Vulkan SDK (see `vulkan`
+section). Check Vulkan-ValidationLayers at the matching SDK tag for the known
+good glslang commit: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/scripts/known_good.json
+
+Files extracted from upstream source:
+
+- `glslang`, `OGLCompilersDLL`, `SPIRV`
+- `LICENSE.txt`
+- Unnecessary files like `CMakeLists.txt`, `revision.template` and
+  `updateGrammar` removed.
+
+Patches in the `patches` directory should be re-applied after updates.
 
 
 ## jpeg-compressor
@@ -235,7 +286,7 @@ from the Android NDK r18.
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 1.0.3
+- Version: 1.1.0
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -251,18 +302,19 @@ changes are marked with `// -- GODOT --` comments.
 ## mbedtls
 
 - Upstream: https://tls.mbed.org/
-- Version: 2.16.3
+- Version: 2.16.5
 - License: Apache 2.0
 
 File extracted from upstream release tarball (`-apache.tgz` variant):
+
 - All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/`
 - All `*.c` from `library/` to `thirdparty/mbedtls/library/`
 - LICENSE and apache-2.0.txt files
 - Applied the patch in `thirdparty/mbedtls/patches/1453.diff` (PR 1453).
   Soon to be merged upstream. Check it out at next update.
-- Applied the patch in `thirdparty/mbedtls/patches/padlock.diff`. This disables VIA
-  padlock support which defines a symbol `unsupported` which clashes with
-  a symbol in libwebsockets.
+- Applied the patch in `thirdparty/mbedtls/patches/padlock.diff`. This disables
+  VIA padlock support which defines a symbol `unsupported` which clashes with
+  a pre-defined symbol.
 - Added 2 files `godot_core_mbedtls_platform.{c,h}` providing configuration
   for light bundling with core.
 
@@ -270,7 +322,7 @@ File extracted from upstream release tarball (`-apache.tgz` variant):
 ## miniupnpc
 
 - Upstream: https://github.com/miniupnp/miniupnp/tree/master/miniupnpc
-- Version: git (0ab1d67, 2019)
+- Version: git (4436632, 2020)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -278,6 +330,7 @@ Files extracted from upstream source:
 - All `*.c` and `*.h` files from `miniupnpc` to `thirdparty/miniupnpc/miniupnpc`
 - Remove `test*`, `minihttptestserver.c` and `wingenminiupnpcstrings.c`
 
+The patch `windows_fix.diff` is applied to `minissdpc.c` to fix an upstream issue.
 The only modified file is miniupnpcstrings.h, which was created for Godot
 (it is usually autogenerated by cmake).
 
@@ -428,13 +481,29 @@ Files extracted from upstream source:
 ## recastnavigation
 
 - Upstream: https://github.com/recastnavigation/recastnavigation
-- version: git (ef3ea40f, 2017)
+- Version: git (ef3ea40f, 2017)
 - License: zlib
 
 Files extracted from upstream source:
 
 - `Recast/` folder
 - License.txt
+
+
+## Rvo2
+
+- Upstream: http://gamma.cs.unc.edu/RVO2/
+- Version: 3D - 1.0.1
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- All .cpp and .h files in the `src/` folder except for RVO.h, RVOSimulator.cpp and RVOSimulator.h
+- LICENSE
+
+Important: Some files have Godot-made changes; so to enrich the features
+originally proposed by this library and better integrate this library with
+Godot. Please check the file to know what's new.
 
 
 ## squish
@@ -480,6 +549,34 @@ They can be reapplied using the patches included in the `vhacd`
 folder.
 
 
+## vulkan
+
+- Upstream: https://github.com/KhronosGroup/Vulkan-Loader
+- Version: sdk-1.2.131.2
+- License: Apache 2.0
+
+Unless there is a specific reason to package a more recent version, please stick
+to Vulkan SDK releases (prefixed by `sdk-`) for all components.
+
+NOTE: Use `scripts/update_deps.py --ref <version>` in the Loader git repository
+to retrieve the `Vulkan-Headers` repository matching the loader version.
+
+Files extracted from upstream source:
+
+- `Vulkan-Headers/include/` as `include/`
+- All `.c` and `.h` files in `loader/` and `loader/generated/`, put in a common
+  `loader/` folder
+- `LICENSE.txt`
+
+`vk_enum_string_helper.h` is taken from the matching `Vulkan-ValidationLayers`
+SDK release: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/layers/generated/vk_enum_string_helper.h
+
+`vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
+Version: 2.3.0
+
+Patches in the `patches` directory should be re-applied after updates.
+
+
 ## wslay
 
 - Upstream: https://github.com/tatsuhiro-t/wslay
@@ -496,15 +593,13 @@ File extracted from upstream release tarball:
 ## xatlas
 
 - Upstream: https://github.com/jpcy/xatlas
-- Version: git (b4b5426, 2019)
+- Version: git (e12ea82, 2019)
 - License: MIT
 
 Files extracted from upstream source:
 
 - `xatlas.{cpp,h}`
-
-Note: License is marked as Public Domain in the files, but it was
-later clarified upstream to MIT license.
+- `LICENSE`
 
 
 ## zlib

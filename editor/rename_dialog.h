@@ -75,7 +75,7 @@ class RenameDialog : public ConfirmationDialog {
 	TabContainer *tabc_features;
 
 	CheckBox *cbut_substitute;
-	CheckBox *cbut_regex;
+	CheckButton *cbut_regex;
 	CheckBox *cbut_process;
 	CheckBox *chk_per_level_counter;
 

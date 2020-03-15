@@ -125,10 +125,10 @@ class GridMapEditor : public VBoxContainer {
 
 	List<ClipboardItem> clipboard_items;
 
-	Ref<SpatialMaterial> indicator_mat;
-	Ref<SpatialMaterial> inner_mat;
-	Ref<SpatialMaterial> outer_mat;
-	Ref<SpatialMaterial> selection_floor_mat;
+	Ref<StandardMaterial3D> indicator_mat;
+	Ref<StandardMaterial3D> inner_mat;
+	Ref<StandardMaterial3D> outer_mat;
+	Ref<StandardMaterial3D> selection_floor_mat;
 
 	bool updating;
 
@@ -214,6 +214,7 @@ class GridMapEditor : public VBoxContainer {
 
 	void _text_changed(const String &p_text);
 	void _sbox_input(const Ref<InputEvent> &p_ie);
+	void _mesh_library_palette_input(const Ref<InputEvent> &p_ie);
 
 	void _icon_size_changed(float p_value);
 

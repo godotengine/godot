@@ -59,7 +59,7 @@ private:
 
 		String text;
 		String xl_text;
-		Ref<Texture> icon;
+		Ref<Texture2D> icon;
 		int ofs_cache;
 		bool disabled;
 		int size_cache;
@@ -67,7 +67,7 @@ private:
 		int x_cache;
 		int x_size_cache;
 
-		Ref<Texture> right_button;
+		Ref<Texture2D> right_button;
 		Rect2 rb_rect;
 		Rect2 cb_rect;
 	};
@@ -115,19 +115,19 @@ protected:
 	int get_tab_idx_at_point(const Point2 &p_point) const;
 
 public:
-	void add_tab(const String &p_str = "", const Ref<Texture> &p_icon = Ref<Texture>());
+	void add_tab(const String &p_str = "", const Ref<Texture2D> &p_icon = Ref<Texture2D>());
 
 	void set_tab_title(int p_tab, const String &p_title);
 	String get_tab_title(int p_tab) const;
 
-	void set_tab_icon(int p_tab, const Ref<Texture> &p_icon);
-	Ref<Texture> get_tab_icon(int p_tab) const;
+	void set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_tab_icon(int p_tab) const;
 
 	void set_tab_disabled(int p_tab, bool p_disabled);
 	bool get_tab_disabled(int p_tab) const;
 
-	void set_tab_right_button(int p_tab, const Ref<Texture> &p_right_button);
-	Ref<Texture> get_tab_right_button(int p_tab) const;
+	void set_tab_right_button(int p_tab, const Ref<Texture2D> &p_right_button);
+	Ref<Texture2D> get_tab_right_button(int p_tab) const;
 
 	void set_tab_align(TabAlign p_align);
 	TabAlign get_tab_align() const;

@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#if 0
 #ifndef BAKED_INDIRECT_LIGHT_H
 #define BAKED_INDIRECT_LIGHT_H
 
@@ -47,7 +48,7 @@ class BakedLightmapData : public Resource {
 	struct User {
 
 		NodePath path;
-		Ref<Texture> lightmap;
+		Ref<Texture2D> lightmap;
 		int instance_index;
 	};
 
@@ -63,8 +64,8 @@ public:
 	void set_bounds(const AABB &p_bounds);
 	AABB get_bounds() const;
 
-	void set_octree(const PoolVector<uint8_t> &p_octree);
-	PoolVector<uint8_t> get_octree() const;
+	void set_octree(const Vector<uint8_t> &p_octree);
+	Vector<uint8_t> get_octree() const;
 
 	void set_cell_space_transform(const Transform &p_xform);
 	Transform get_cell_space_transform() const;
@@ -75,10 +76,10 @@ public:
 	void set_energy(float p_energy);
 	float get_energy() const;
 
-	void add_user(const NodePath &p_path, const Ref<Texture> &p_lightmap, int p_instance = -1);
+	void add_user(const NodePath &p_path, const Ref<Texture2D> &p_lightmap, int p_instance = -1);
 	int get_user_count() const;
 	NodePath get_user_path(int p_user) const;
-	Ref<Texture> get_user_lightmap(int p_user) const;
+	Ref<Texture2D> get_user_lightmap(int p_user) const;
 	int get_user_instance(int p_user) const;
 	void clear_users();
 
@@ -201,7 +202,7 @@ public:
 	String get_image_path() const;
 
 	AABB get_aabb() const;
-	PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
+	Vector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	BakeError bake(Node *p_from_node, bool p_create_visual_debug = false);
 	BakedLightmap();
@@ -211,4 +212,5 @@ VARIANT_ENUM_CAST(BakedLightmap::BakeQuality);
 VARIANT_ENUM_CAST(BakedLightmap::BakeMode);
 VARIANT_ENUM_CAST(BakedLightmap::BakeError);
 
+#endif
 #endif // BAKED_INDIRECT_LIGHT_H

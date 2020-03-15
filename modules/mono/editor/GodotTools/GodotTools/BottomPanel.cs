@@ -166,13 +166,13 @@ namespace GodotTools
                 Internal.GodotIs32Bits() ? "32" : "64"
             };
 
-            bool buildSuccess = BuildManager.BuildProjectBlocking("Tools", godotDefines);
+            bool buildSuccess = BuildManager.BuildProjectBlocking("Debug", godotDefines);
 
             if (!buildSuccess)
                 return;
 
             // Notify running game for hot-reload
-            Internal.ScriptEditorDebuggerReloadScripts();
+            Internal.EditorDebuggerNodeReloadScripts();
 
             // Hot-reload in the editor
             GodotSharpEditor.Instance.GetNode<HotReloadAssemblyWatcher>("HotReloadAssemblyWatcher").RestartTimer();

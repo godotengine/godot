@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Viewport" inherits="Node" category="Core" version="3.2">
+<class name="Viewport" inherits="Node" version="4.0">
 	<brief_description>
 		Creates a sub-view into the screen.
 	</brief_description>
@@ -73,6 +73,7 @@
 			<argument index="0" name="quadrant" type="int">
 			</argument>
 			<description>
+				Returns the [enum ShadowAtlasQuadrantSubdiv] of the specified quadrant.
 			</description>
 		</method>
 		<method name="get_size_override" qualifiers="const">
@@ -87,7 +88,7 @@
 			</return>
 			<description>
 				Returns the viewport's texture.
-				[b]Note:[/b] Due to the way OpenGL works, the resulting [ViewportTexture] is flipped vertically. You can use [method Image.flip_y] on the result of [method Texture.get_data] to flip it back, for example:
+				[b]Note:[/b] Due to the way OpenGL works, the resulting [ViewportTexture] is flipped vertically. You can use [method Image.flip_y] on the result of [method Texture2D.get_data] to flip it back, for example:
 				[codeblock]
 				var img = get_viewport().get_texture().get_data()
 				img.flip_y()
@@ -156,12 +157,14 @@
 			<argument index="0" name="rect" type="Rect2">
 			</argument>
 			<description>
+				Attaches this [Viewport] to the root [Viewport] with the specified rectangle. This bypasses the need for another node to display this [Viewport] but makes you responsible for updating the position of this [Viewport] manually.
 			</description>
 		</method>
 		<method name="set_input_as_handled">
 			<return type="void">
 			</return>
 			<description>
+				Stops the input from propagating further down the [SceneTree].
 			</description>
 		</method>
 		<method name="set_shadow_atlas_quadrant_subdiv">
@@ -172,6 +175,7 @@
 			<argument index="1" name="subdiv" type="int" enum="Viewport.ShadowAtlasQuadrantSubdiv">
 			</argument>
 			<description>
+				Sets the number of subdivisions to use in the specified quadrant. A higher number of subdivisions allows you to have more shadows in the scene at once, but reduces the quality of the shadows. A good practice is to have quadrants with a varying number of subdivisions and to have as few subdivisions as possible.
 			</description>
 		</method>
 		<method name="set_size_override">
@@ -222,14 +226,15 @@
 		<member name="audio_listener_enable_3d" type="bool" setter="set_as_audio_listener" getter="is_audio_listener" default="false">
 			If [code]true[/code], the viewport will process 3D audio streams.
 		</member>
+		<member name="canvas_item_default_texture_filter" type="int" setter="set_default_canvas_item_texture_filter" getter="get_default_canvas_item_texture_filter" enum="Viewport.DefaultCanvasItemTextureFilter" default="1">
+		</member>
+		<member name="canvas_item_default_texture_repeat" type="int" setter="set_default_canvas_item_texture_repeat" getter="get_default_canvas_item_texture_repeat" enum="Viewport.DefaultCanvasItemTextureRepeat" default="0">
+		</member>
 		<member name="canvas_transform" type="Transform2D" setter="set_canvas_transform" getter="get_canvas_transform">
 			The canvas transform of the viewport, useful for changing the on-screen positions of all child [CanvasItem]s. This is relative to the global canvas transform of the viewport.
 		</member>
 		<member name="debug_draw" type="int" setter="set_debug_draw" getter="get_debug_draw" enum="Viewport.DebugDraw" default="0">
 			The overlay mode for test rendered geometry in debug purposes.
-		</member>
-		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled" default="false">
-			If [code]true[/code], the viewport will disable 3D rendering. For actual disabling use [code]usage[/code].
 		</member>
 		<member name="global_canvas_transform" type="Transform2D" setter="set_global_canvas_transform" getter="get_global_canvas_transform">
 			The global canvas transform of the viewport. The canvas transform is relative to this.
@@ -242,14 +247,8 @@
 		</member>
 		<member name="handle_input_locally" type="bool" setter="set_handle_input_locally" getter="is_handling_input_locally" default="true">
 		</member>
-		<member name="hdr" type="bool" setter="set_hdr" getter="get_hdr" default="true">
-			If [code]true[/code], the viewport rendering will receive benefits from High Dynamic Range algorithm.
-		</member>
-		<member name="keep_3d_linear" type="bool" setter="set_keep_3d_linear" getter="get_keep_3d_linear" default="false">
-			If [code]true[/code], the result after 3D rendering will not have a linear to sRGB color conversion applied. This is important when the viewport is used as a render target where the result is used as a texture on a 3D object rendered in another viewport. It is also important if the viewport is used to create data that is not color based (noise, heightmaps, pickmaps, etc.). Do not enable this when the viewport is used as a texture on a 2D object or if the viewport is your final output.
-		</member>
 		<member name="msaa" type="int" setter="set_msaa" getter="get_msaa" enum="Viewport.MSAA" default="0">
-			The multisample anti-aliasing mode.
+			The multisample anti-aliasing mode. A higher number results in smoother edges at the cost of significantly worse performance. A value of 4 is best unless targeting very high-end systems.
 		</member>
 		<member name="own_world" type="bool" setter="set_use_own_world" getter="is_using_own_world" default="false">
 			If [code]true[/code], the viewport will use [World] defined in [code]world[/code] property.
@@ -266,20 +265,17 @@
 		<member name="render_target_update_mode" type="int" setter="set_update_mode" getter="get_update_mode" enum="Viewport.UpdateMode" default="2">
 			The update mode when viewport used as a render target.
 		</member>
-		<member name="render_target_v_flip" type="bool" setter="set_vflip" getter="get_vflip" default="false">
-			If [code]true[/code], the result of rendering will be flipped vertically.
-		</member>
 		<member name="shadow_atlas_quad_0" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="2">
-			The subdivision amount of first quadrant on shadow atlas.
+			The subdivision amount of the first quadrant on the shadow atlas.
 		</member>
 		<member name="shadow_atlas_quad_1" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="2">
-			The subdivision amount of second quadrant on shadow atlas.
+			The subdivision amount of the second quadrant on the shadow atlas.
 		</member>
 		<member name="shadow_atlas_quad_2" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="3">
-			The subdivision amount of third quadrant on shadow atlas.
+			The subdivision amount of the third quadrant on the shadow atlas.
 		</member>
 		<member name="shadow_atlas_quad_3" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="4">
-			The subdivision amount of fourth quadrant on shadow atlas.
+			The subdivision amount of the fourth quadrant on the shadow atlas.
 		</member>
 		<member name="shadow_atlas_size" type="int" setter="set_shadow_atlas_size" getter="get_shadow_atlas_size" default="0">
 			The shadow atlas' resolution (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
@@ -293,9 +289,6 @@
 		</member>
 		<member name="transparent_bg" type="bool" setter="set_transparent_background" getter="has_transparent_background" default="false">
 			If [code]true[/code], the viewport should render its background as transparent.
-		</member>
-		<member name="usage" type="int" setter="set_usage" getter="get_usage" enum="Viewport.Usage" default="2">
-			The rendering mode of viewport.
 		</member>
 		<member name="world" type="World" setter="set_world" getter="get_world">
 			The custom [World] which can be used as 3D environment source.
@@ -332,18 +325,25 @@
 			Always update the render target.
 		</constant>
 		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED" value="0" enum="ShadowAtlasQuadrantSubdiv">
+			This quadrant will not be used.
 		</constant>
 		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_1" value="1" enum="ShadowAtlasQuadrantSubdiv">
+			This quadrant will only be used by one shadow map.
 		</constant>
 		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_4" value="2" enum="ShadowAtlasQuadrantSubdiv">
+			This quadrant will be split in 4 and used by up to 4 shadow maps.
 		</constant>
 		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_16" value="3" enum="ShadowAtlasQuadrantSubdiv">
+			This quadrant will be split 16 ways and used by up to 16 shadow maps.
 		</constant>
 		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_64" value="4" enum="ShadowAtlasQuadrantSubdiv">
+			This quadrant will be split 64 ways and used by up to 64 shadow maps.
 		</constant>
 		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_256" value="5" enum="ShadowAtlasQuadrantSubdiv">
+			This quadrant will be split 256 ways and used by up to 256 shadow maps. Unless the [member shadow_atlas_size] is very high, the shadows in this quadrant will be very low resolution.
 		</constant>
 		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_1024" value="6" enum="ShadowAtlasQuadrantSubdiv">
+			This quadrant will be split 1024 ways and used by up to 1024 shadow maps. Unless the [member shadow_atlas_size] is very high, the shadows in this quadrant will be very low resolution.
 		</constant>
 		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_MAX" value="7" enum="ShadowAtlasQuadrantSubdiv">
 			Represents the size of the [enum ShadowAtlasQuadrantSubdiv] enum.
@@ -375,30 +375,40 @@
 		<constant name="DEBUG_DRAW_UNSHADED" value="1" enum="DebugDraw">
 			Objects are displayed without light information.
 		</constant>
-		<constant name="DEBUG_DRAW_OVERDRAW" value="2" enum="DebugDraw">
+		<constant name="DEBUG_DRAW_OVERDRAW" value="3" enum="DebugDraw">
 			Objected are displayed semi-transparent with additive blending so you can see where they intersect.
 		</constant>
-		<constant name="DEBUG_DRAW_WIREFRAME" value="3" enum="DebugDraw">
+		<constant name="DEBUG_DRAW_WIREFRAME" value="4" enum="DebugDraw">
 			Objects are displayed in wireframe style.
+		</constant>
+		<constant name="DEBUG_DRAW_GI_PROBE_ALBEDO" value="6" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_GI_PROBE_LIGHTING" value="7" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_GI_PROBE_EMISSION" value="8" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_SHADOW_ATLAS" value="9" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS" value="10" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_SCENE_LUMINANCE" value="11" enum="DebugDraw">
+		</constant>
+		<constant name="DEBUG_DRAW_SSAO" value="12" enum="DebugDraw">
 		</constant>
 		<constant name="MSAA_DISABLED" value="0" enum="MSAA">
 			Multisample anti-aliasing mode disabled. This is the default value.
 		</constant>
 		<constant name="MSAA_2X" value="1" enum="MSAA">
+			Use 2x Multisample Antialiasing.
 		</constant>
 		<constant name="MSAA_4X" value="2" enum="MSAA">
+			Use 4x Multisample Antialiasing.
 		</constant>
 		<constant name="MSAA_8X" value="3" enum="MSAA">
+			Use 8x Multisample Antialiasing. Likely unsupported on low-end and older hardware.
 		</constant>
 		<constant name="MSAA_16X" value="4" enum="MSAA">
-		</constant>
-		<constant name="USAGE_2D" value="0" enum="Usage">
-		</constant>
-		<constant name="USAGE_2D_NO_SAMPLING" value="1" enum="Usage">
-		</constant>
-		<constant name="USAGE_3D" value="2" enum="Usage">
-		</constant>
-		<constant name="USAGE_3D_NO_EFFECTS" value="3" enum="Usage">
+			Use 16x Multisample Antialiasing. Likely unsupported on medium and low-end hardware.
 		</constant>
 		<constant name="CLEAR_MODE_ALWAYS" value="0" enum="ClearMode">
 			Always clear the render target before drawing.
@@ -408,6 +418,24 @@
 		</constant>
 		<constant name="CLEAR_MODE_ONLY_NEXT_FRAME" value="2" enum="ClearMode">
 			Clear the render target next frame, then switch to [constant CLEAR_MODE_NEVER].
+		</constant>
+		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="0" enum="DefaultCanvasItemTextureFilter">
+		</constant>
+		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR" value="1" enum="DefaultCanvasItemTextureFilter">
+		</constant>
+		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" value="2" enum="DefaultCanvasItemTextureFilter">
+		</constant>
+		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="3" enum="DefaultCanvasItemTextureFilter">
+		</constant>
+		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_MAX" value="4" enum="DefaultCanvasItemTextureFilter">
+		</constant>
+		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED" value="0" enum="DefaultCanvasItemTextureRepeat">
+		</constant>
+		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED" value="1" enum="DefaultCanvasItemTextureRepeat">
+		</constant>
+		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR" value="2" enum="DefaultCanvasItemTextureRepeat">
+		</constant>
+		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX" value="3" enum="DefaultCanvasItemTextureRepeat">
 		</constant>
 	</constants>
 </class>

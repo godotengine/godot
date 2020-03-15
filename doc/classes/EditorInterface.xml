@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorInterface" inherits="Node" category="Core" version="3.2">
+<class name="EditorInterface" inherits="Node" version="4.0">
 	<brief_description>
 		Godot editor's interface.
 	</brief_description>
@@ -127,7 +127,7 @@
 			<argument index="1" name="preview_size" type="int">
 			</argument>
 			<description>
-				Returns mesh previews rendered at the given size as an [Array] of [Texture]s.
+				Returns mesh previews rendered at the given size as an [Array] of [Texture2D]s.
 			</description>
 		</method>
 		<method name="open_scene_from_path">

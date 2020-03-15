@@ -245,7 +245,6 @@ void ProgressDialog::_cancel_pressed() {
 }
 
 void ProgressDialog::_bind_methods() {
-	ClassDB::bind_method("_cancel_pressed", &ProgressDialog::_cancel_pressed);
 }
 
 ProgressDialog::ProgressDialog() {
@@ -264,5 +263,5 @@ ProgressDialog::ProgressDialog() {
 	cancel_hb->add_child(cancel);
 	cancel->set_text(TTR("Cancel"));
 	cancel_hb->add_spacer();
-	cancel->connect("pressed", this, "_cancel_pressed");
+	cancel->connect("pressed", callable_mp(this, &ProgressDialog::_cancel_pressed));
 }

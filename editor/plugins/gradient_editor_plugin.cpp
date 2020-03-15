@@ -62,15 +62,12 @@ void GradientEditor::_ramp_changed() {
 }
 
 void GradientEditor::_bind_methods() {
-
-	ClassDB::bind_method("_gradient_changed", &GradientEditor::_gradient_changed);
-	ClassDB::bind_method("_ramp_changed", &GradientEditor::_ramp_changed);
 }
 
 void GradientEditor::set_gradient(const Ref<Gradient> &p_gradient) {
 	gradient = p_gradient;
-	connect("ramp_changed", this, "_ramp_changed");
-	gradient->connect("changed", this, "_gradient_changed");
+	connect("ramp_changed", callable_mp(this, &GradientEditor::_ramp_changed));
+	gradient->connect("changed", callable_mp(this, &GradientEditor::_gradient_changed));
 	set_points(gradient->get_points());
 }
 

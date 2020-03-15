@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Input" inherits="Object" category="Core" version="3.2">
+<class name="Input" inherits="Object" version="4.0">
 	<brief_description>
-		A Singleton that deals with inputs.
+		A singleton that deals with inputs.
 	</brief_description>
 	<description>
-		A Singleton that deals with inputs. This includes key presses, mouse buttons and movement, joypads, and input actions. Actions and their events can be set in the [b]Input Map[/b] tab in the [b]Project &gt; Project Settings[/b], or with the [InputMap] class.
+		A singleton that deals with inputs. This includes key presses, mouse buttons and movement, joypads, and input actions. Actions and their events can be set in the [b]Input Map[/b] tab in the [b]Project &gt; Project Settings[/b], or with the [InputMap] class.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/index.html</link>
@@ -13,7 +13,7 @@
 		<method name="action_press">
 			<return type="void">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<argument index="1" name="strength" type="float" default="1.0">
 			</argument>
@@ -26,7 +26,7 @@
 		<method name="action_release">
 			<return type="void">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<description>
 				If the specified action is already pressed, this will release it.
@@ -54,7 +54,7 @@
 		<method name="get_action_strength" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<description>
 				Returns a value between 0 and 1 representing the intensity of the given action. In a joypad, for example, the further away the axis (analog sticks or L2, R2 triggers) is from the dead zone, the closer the value will be to 1. If the action is mapped to a control that has no axis as the keyboard, the value returned will be 0 or 1.
@@ -202,7 +202,7 @@
 		<method name="is_action_just_pressed" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] when the user starts pressing the action event, meaning it's [code]true[/code] only on the frame that the user pressed down the button.
@@ -212,7 +212,7 @@
 		<method name="is_action_just_released" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] when the user stops pressing the action event, meaning it's [code]true[/code] only on the frame that the user released the button.
@@ -221,7 +221,7 @@
 		<method name="is_action_pressed" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if you are pressing the action event. Note that if an action has multiple buttons assigned and more than one of them is pressed, releasing one button will release the action, even if some other button assigned to this action is still pressed.
@@ -250,10 +250,10 @@
 		<method name="is_key_pressed" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="scancode" type="int">
+			<argument index="0" name="keycode" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if you are pressing the key. You can pass a [enum KeyList] constant.
+				Returns [code]true[/code] if you are pressing the key in the current keyboard layout. You can pass a [enum KeyList] constant.
 			</description>
 		</method>
 		<method name="is_mouse_button_pressed" qualifiers="const">
@@ -277,6 +277,8 @@
 			<argument index="3" name="guid" type="String">
 			</argument>
 			<description>
+				Notifies the [Input] singleton that a connection has changed, to update the state for the [code]device[/code] index.
+				This is used internally and should not have to be called from user scripts. See [signal joy_connection_changed] for the signal emitted when this is triggered internally.
 			</description>
 		</method>
 		<method name="parse_input_event">
@@ -347,7 +349,8 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Whether to accumulate similar input events sent by the operating system. Enabled by default.
+				Enables or disables the accumulation of similar input events sent by the operating system. When input accumulation is enabled, all input events generated during a frame will be merged and emitted when the frame is done rendering. Therefore, this limits the number of input method calls per second to the rendering FPS.
+				Input accumulation is enabled by default. It can be disabled to get slightly more precise/reactive input at the cost of increased CPU usage. In applications where drawing freehand lines is required, input accumulation should generally be disabled while the user is drawing the line to get results that closely follow the actual input.
 			</description>
 		</method>
 		<method name="start_joy_vibration">

@@ -35,9 +35,17 @@
 
 void Label::set_autowrap(bool p_autowrap) {
 
+	if (autowrap == p_autowrap) {
+		return;
+	}
+
 	autowrap = p_autowrap;
 	word_cache_dirty = true;
 	update();
+
+	if (clip) {
+		minimum_size_changed();
+	}
 }
 bool Label::has_autowrap() const {
 
@@ -103,8 +111,7 @@ void Label::_notification(int p_what) {
 
 		int lines_visible = (size.y + line_spacing) / font_h;
 
-		// ceiling to ensure autowrapping does not cut text
-		int space_w = Math::ceil(font->get_char_size(' ').width);
+		real_t space_w = font->get_char_size(' ').width;
 		int chars_total = 0;
 
 		int vbegin = 0, vsep = 0;
@@ -390,10 +397,9 @@ void Label::regenerate_word_cache() {
 
 	real_t current_word_size = 0;
 	int word_pos = 0;
-	int line_width = 0;
+	real_t line_width = 0;
 	int space_count = 0;
-	// ceiling to ensure autowrapping does not cut text
-	int space_width = Math::ceil(font->get_char_size(' ').width);
+	real_t space_width = font->get_char_size(' ').width;
 	int line_spacing = get_constant("line_spacing");
 	line_count = 1;
 	total_char_cache = 0;
@@ -454,10 +460,9 @@ void Label::regenerate_word_cache() {
 			if (current_word_size == 0) {
 				word_pos = i;
 			}
-			// ceiling to ensure autowrapping does not cut text
 			char_width = font->get_char_size(current, xl_text[i + 1]).width;
 			current_word_size += char_width;
-			line_width += Math::ceil(char_width);
+			line_width += char_width;
 			total_char_cache++;
 
 			// allow autowrap to cut words when they exceed line width
@@ -682,7 +687,7 @@ void Label::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "is_clipping_text");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters", PROPERTY_HINT_RANGE, "-1,128000,1", PROPERTY_USAGE_EDITOR), "set_visible_characters", "get_visible_characters");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "percent_visible", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_percent_visible", "get_percent_visible");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "percent_visible", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_percent_visible", "get_percent_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "lines_skipped", PROPERTY_HINT_RANGE, "0,999,1"), "set_lines_skipped", "get_lines_skipped");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_lines_visible", PROPERTY_HINT_RANGE, "-1,999,1"), "set_max_lines_visible", "get_max_lines_visible");
 }

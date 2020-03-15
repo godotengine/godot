@@ -237,19 +237,31 @@ bool InputEventKey::is_pressed() const {
 	return pressed;
 }
 
-void InputEventKey::set_scancode(uint32_t p_scancode) {
+void InputEventKey::set_keycode(uint32_t p_keycode) {
 
-	scancode = p_scancode;
+	keycode = p_keycode;
 }
-uint32_t InputEventKey::get_scancode() const {
 
-	return scancode;
+uint32_t InputEventKey::get_keycode() const {
+
+	return keycode;
+}
+
+void InputEventKey::set_physical_keycode(uint32_t p_keycode) {
+
+	physical_keycode = p_keycode;
+}
+
+uint32_t InputEventKey::get_physical_keycode() const {
+
+	return physical_keycode;
 }
 
 void InputEventKey::set_unicode(uint32_t p_unicode) {
 
 	unicode = p_unicode;
 }
+
 uint32_t InputEventKey::get_unicode() const {
 
 	return unicode;
@@ -259,14 +271,30 @@ void InputEventKey::set_echo(bool p_enable) {
 
 	echo = p_enable;
 }
+
 bool InputEventKey::is_echo() const {
 
 	return echo;
 }
 
-uint32_t InputEventKey::get_scancode_with_modifiers() const {
+uint32_t InputEventKey::get_keycode_with_modifiers() const {
 
-	uint32_t sc = scancode;
+	uint32_t sc = keycode;
+	if (get_control())
+		sc |= KEY_MASK_CTRL;
+	if (get_alt())
+		sc |= KEY_MASK_ALT;
+	if (get_shift())
+		sc |= KEY_MASK_SHIFT;
+	if (get_metakey())
+		sc |= KEY_MASK_META;
+
+	return sc;
+}
+
+uint32_t InputEventKey::get_physical_keycode_with_modifiers() const {
+
+	uint32_t sc = physical_keycode;
 	if (get_control())
 		sc |= KEY_MASK_CTRL;
 	if (get_alt())
@@ -281,7 +309,7 @@ uint32_t InputEventKey::get_scancode_with_modifiers() const {
 
 String InputEventKey::as_text() const {
 
-	String kc = keycode_get_string(scancode);
+	String kc = keycode_get_string(keycode);
 	if (kc == String())
 		return kc;
 
@@ -306,10 +334,18 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool *p_pressed
 	if (key.is_null())
 		return false;
 
-	uint32_t code = get_scancode_with_modifiers();
-	uint32_t event_code = key->get_scancode_with_modifiers();
+	bool match = false;
+	if (get_keycode() == 0) {
+		uint32_t code = get_physical_keycode_with_modifiers();
+		uint32_t event_code = key->get_physical_keycode_with_modifiers();
 
-	bool match = get_scancode() == key->get_scancode() && (!key->is_pressed() || (code & event_code) == code);
+		match = get_physical_keycode() == key->get_physical_keycode() && (!key->is_pressed() || (code & event_code) == code);
+	} else {
+		uint32_t code = get_keycode_with_modifiers();
+		uint32_t event_code = key->get_keycode_with_modifiers();
+
+		match = get_keycode() == key->get_keycode() && (!key->is_pressed() || (code & event_code) == code);
+	}
 	if (match) {
 		if (p_pressed != NULL)
 			*p_pressed = key->is_pressed();
@@ -325,8 +361,8 @@ bool InputEventKey::shortcut_match(const Ref<InputEvent> &p_event) const {
 	if (key.is_null())
 		return false;
 
-	uint32_t code = get_scancode_with_modifiers();
-	uint32_t event_code = key->get_scancode_with_modifiers();
+	uint32_t code = get_keycode_with_modifiers();
+	uint32_t event_code = key->get_keycode_with_modifiers();
 
 	return code == event_code;
 }
@@ -335,26 +371,32 @@ void InputEventKey::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventKey::set_pressed);
 
-	ClassDB::bind_method(D_METHOD("set_scancode", "scancode"), &InputEventKey::set_scancode);
-	ClassDB::bind_method(D_METHOD("get_scancode"), &InputEventKey::get_scancode);
+	ClassDB::bind_method(D_METHOD("set_keycode", "keycode"), &InputEventKey::set_keycode);
+	ClassDB::bind_method(D_METHOD("get_keycode"), &InputEventKey::get_keycode);
+
+	ClassDB::bind_method(D_METHOD("set_physical_keycode", "physical_keycode"), &InputEventKey::set_physical_keycode);
+	ClassDB::bind_method(D_METHOD("get_physical_keycode"), &InputEventKey::get_physical_keycode);
 
 	ClassDB::bind_method(D_METHOD("set_unicode", "unicode"), &InputEventKey::set_unicode);
 	ClassDB::bind_method(D_METHOD("get_unicode"), &InputEventKey::get_unicode);
 
 	ClassDB::bind_method(D_METHOD("set_echo", "echo"), &InputEventKey::set_echo);
 
-	ClassDB::bind_method(D_METHOD("get_scancode_with_modifiers"), &InputEventKey::get_scancode_with_modifiers);
+	ClassDB::bind_method(D_METHOD("get_keycode_with_modifiers"), &InputEventKey::get_keycode_with_modifiers);
+	ClassDB::bind_method(D_METHOD("get_physical_keycode_with_modifiers"), &InputEventKey::get_physical_keycode_with_modifiers);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "scancode"), "set_scancode", "get_scancode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "keycode"), "set_keycode", "get_keycode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "physical_keycode"), "set_physical_keycode", "get_physical_keycode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "unicode"), "set_unicode", "get_unicode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "echo"), "set_echo", "is_echo");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "echo"), "set_echo", "is_echo");
 }
 
 InputEventKey::InputEventKey() {
 
 	pressed = false;
-	scancode = 0;
+	keycode = 0;
+	physical_keycode = 0;
 	unicode = 0; ///unicode
 	echo = false;
 }
@@ -541,7 +583,7 @@ void InputEventMouseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_doubleclick", "doubleclick"), &InputEventMouseButton::set_doubleclick);
 	ClassDB::bind_method(D_METHOD("is_doubleclick"), &InputEventMouseButton::is_doubleclick);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "factor"), "set_factor", "get_factor");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "factor"), "set_factor", "get_factor");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_index"), "set_button_index", "get_button_index");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "doubleclick"), "set_doubleclick", "is_doubleclick");
@@ -702,7 +744,7 @@ void InputEventMouseMotion::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_speed"), &InputEventMouseMotion::get_speed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "tilt"), "set_tilt", "get_tilt");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pressure"), "set_pressure", "get_pressure");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure"), "set_pressure", "get_pressure");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative"), "set_relative", "get_relative");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "speed"), "set_speed", "get_speed");
 }
@@ -780,7 +822,7 @@ void InputEventJoypadMotion::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_axis_value"), &InputEventJoypadMotion::get_axis_value);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis"), "set_axis", "get_axis");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "axis_value"), "set_axis_value", "get_axis_value");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "axis_value"), "set_axis_value", "get_axis_value");
 }
 
 InputEventJoypadMotion::InputEventJoypadMotion() {
@@ -861,7 +903,7 @@ void InputEventJoypadButton::_bind_methods() {
 	//	ClassDB::bind_method(D_METHOD("is_pressed"), &InputEventJoypadButton::is_pressed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_index"), "set_button_index", "get_button_index");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pressure"), "set_pressure", "get_pressure");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure"), "set_pressure", "get_pressure");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 }
 
@@ -1098,9 +1140,9 @@ void InputEventAction::_bind_methods() {
 
 	//	ClassDB::bind_method(D_METHOD("is_action", "name"), &InputEventAction::is_action);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "action"), "set_action", "get_action");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action"), "set_action", "get_action");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_strength", "get_strength");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_strength", "get_strength");
 }
 
 InputEventAction::InputEventAction() {
@@ -1162,7 +1204,7 @@ void InputEventMagnifyGesture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_factor", "factor"), &InputEventMagnifyGesture::set_factor);
 	ClassDB::bind_method(D_METHOD("get_factor"), &InputEventMagnifyGesture::get_factor);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "factor"), "set_factor", "get_factor");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "factor"), "set_factor", "get_factor");
 }
 
 InputEventMagnifyGesture::InputEventMagnifyGesture() {

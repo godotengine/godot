@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsServer" inherits="Object" category="Core" version="3.2">
+<class name="PhysicsServer" inherits="Object" version="4.0">
 	<brief_description>
 		Server interface for low-level physics access.
 	</brief_description>
@@ -156,7 +156,7 @@
 			</argument>
 			<argument index="1" name="receiver" type="Object">
 			</argument>
-			<argument index="2" name="method" type="String">
+			<argument index="2" name="method" type="StringName">
 			</argument>
 			<description>
 			</description>
@@ -190,7 +190,7 @@
 			</argument>
 			<argument index="1" name="receiver" type="Object">
 			</argument>
-			<argument index="2" name="method" type="String">
+			<argument index="2" name="method" type="StringName">
 			</argument>
 			<description>
 				Sets the function to call when any body/area enters or exits the area. This callback will be called for any object interacting with the area, and takes five parameters:
@@ -678,7 +678,7 @@
 			</argument>
 			<argument index="1" name="receiver" type="Object">
 			</argument>
-			<argument index="2" name="method" type="String">
+			<argument index="2" name="method" type="StringName">
 			</argument>
 			<argument index="3" name="userdata" type="Variant" default="null">
 			</argument>
@@ -1315,7 +1315,7 @@
 			If [code]true[/code], the Hinge has a maximum and a minimum rotation.
 		</constant>
 		<constant name="HINGE_JOINT_FLAG_ENABLE_MOTOR" value="1" enum="HingeJointFlag">
-			If [code]true[/code], a motor turns the Hinge
+			If [code]true[/code], a motor turns the Hinge.
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_LIMIT_UPPER" value="0" enum="SliderJointParam">
 			The maximum difference between the pivot points on their X axis before damping happens.
@@ -1388,7 +1388,7 @@
 		</constant>
 		<constant name="CONE_TWIST_JOINT_SWING_SPAN" value="0" enum="ConeTwistJointParam">
 			Swing is rotation from side to side, around the axis perpendicular to the twist axis.
-			The swing span defines, how much rotation will not get corrected allong the swing axis.
+			The swing span defines, how much rotation will not get corrected along the swing axis.
 			Could be defined as looseness in the [ConeTwistJoint].
 			If below 0.05, this behavior is locked.
 		</constant>
@@ -1467,7 +1467,7 @@
 			If [code]set[/code] there is a linear motor on this axis that targets a specific velocity.
 		</constant>
 		<constant name="SHAPE_PLANE" value="0" enum="ShapeType">
-			The [Shape] is a [PlaneShape].
+			The [Shape] is a [WorldMarginShape].
 		</constant>
 		<constant name="SHAPE_RAY" value="1" enum="ShapeType">
 			The [Shape] is a [RayShape].

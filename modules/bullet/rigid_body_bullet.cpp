@@ -240,7 +240,7 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 				shapes.write[i].shape = static_cast<btConvexShape *>(shape_wrapper->shape->create_bt_shape(owner_scale * shape_wrapper->scale, safe_margin));
 			} break;
 			default:
-				WARN_PRINT("This shape is not supported to be kinematic!");
+				WARN_PRINT("This shape is not supported for kinematic collision.");
 				shapes.write[i].shape = NULL;
 		}
 	}
@@ -320,7 +320,7 @@ void RigidBodyBullet::destroy_kinematic_utilities() {
 }
 
 void RigidBodyBullet::main_shape_changed() {
-	CRASH_COND(!get_main_shape())
+	CRASH_COND(!get_main_shape());
 	btBody->setCollisionShape(get_main_shape());
 	set_continuous_collision_detection(is_continuous_collision_detection_enabled()); // Reset
 }
@@ -366,11 +366,11 @@ void RigidBodyBullet::dispatch_callbacks() {
 		Object *obj = ObjectDB::get_instance(force_integration_callback->id);
 		if (!obj) {
 			// Remove integration callback
-			set_force_integration_callback(0, StringName());
+			set_force_integration_callback(ObjectID(), StringName());
 		} else {
 			const Variant *vp[2] = { &variantBodyDirect, &force_integration_callback->udata };
 
-			Variant::CallError responseCallError;
+			Callable::CallError responseCallError;
 			int argc = (force_integration_callback->udata.get_type() == Variant::NIL) ? 1 : 2;
 			obj->call(force_integration_callback->method, vp, argc, responseCallError);
 		}
@@ -395,7 +395,7 @@ void RigidBodyBullet::set_force_integration_callback(ObjectID p_id, const String
 		force_integration_callback = NULL;
 	}
 
-	if (p_id != 0) {
+	if (p_id.is_valid()) {
 		force_integration_callback = memnew(ForceIntegrationCallback);
 		force_integration_callback->id = p_id;
 		force_integration_callback->method = p_method;
@@ -515,7 +515,7 @@ void RigidBodyBullet::set_param(PhysicsServer::BodyParameter p_param, real_t p_v
 			scratch_space_override_modificator();
 			break;
 		default:
-			WARN_PRINTS("Parameter " + itos(p_param) + " not supported by bullet. Value: " + itos(p_value));
+			WARN_PRINT("Parameter " + itos(p_param) + " not supported by bullet. Value: " + itos(p_value));
 	}
 }
 
@@ -536,7 +536,7 @@ real_t RigidBodyBullet::get_param(PhysicsServer::BodyParameter p_param) const {
 		case PhysicsServer::BODY_PARAM_GRAVITY_SCALE:
 			return gravity_scale;
 		default:
-			WARN_PRINTS("Parameter " + itos(p_param) + " not supported by bullet");
+			WARN_PRINT("Parameter " + itos(p_param) + " not supported by bullet");
 			return 0;
 	}
 }
@@ -619,7 +619,7 @@ Variant RigidBodyBullet::get_state(PhysicsServer::BodyState p_state) const {
 		case PhysicsServer::BODY_STATE_CAN_SLEEP:
 			return can_sleep;
 		default:
-			WARN_PRINTS("This state " + itos(p_state) + " is not supported by Bullet");
+			WARN_PRINT("This state " + itos(p_state) + " is not supported by Bullet");
 			return Variant();
 	}
 }
@@ -795,12 +795,12 @@ Vector3 RigidBodyBullet::get_angular_velocity() const {
 
 void RigidBodyBullet::set_transform__bullet(const btTransform &p_global_transform) {
 	if (mode == PhysicsServer::BODY_MODE_KINEMATIC) {
-		if (space)
+		if (space && space->get_delta_time() != 0)
 			btBody->setLinearVelocity((p_global_transform.getOrigin() - btBody->getWorldTransform().getOrigin()) / space->get_delta_time());
 		// The kinematic use MotionState class
 		godotMotionState->moveBody(p_global_transform);
 	} else {
-		// Is necesasry to avoid wrong location on the rendering side on the next frame
+		// Is necessary to avoid wrong location on the rendering side on the next frame
 		godotMotionState->setWorldTransform(p_global_transform);
 	}
 	CollisionObjectBullet::set_transform__bullet(p_global_transform);

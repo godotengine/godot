@@ -131,6 +131,10 @@ void EditorSubScene::_item_multi_selected(Object *p_object, int p_cell, bool p_s
 	}
 }
 
+void EditorSubScene::_item_activated() {
+	_ok_pressed(); // From AcceptDialog.
+}
+
 void EditorSubScene::_remove_selection_child(Node *p_node) {
 	if (p_node->get_child_count() > 0) {
 		for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -217,11 +221,6 @@ void EditorSubScene::clear() {
 
 void EditorSubScene::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_path_selected"), &EditorSubScene::_path_selected);
-	ClassDB::bind_method(D_METHOD("_path_changed"), &EditorSubScene::_path_changed);
-	ClassDB::bind_method(D_METHOD("_path_browse"), &EditorSubScene::_path_browse);
-	ClassDB::bind_method(D_METHOD("_item_multi_selected"), &EditorSubScene::_item_multi_selected);
-	ClassDB::bind_method(D_METHOD("_selected_changed"), &EditorSubScene::_selected_changed);
 	ADD_SIGNAL(MethodInfo("subscene_selected"));
 }
 
@@ -239,24 +238,24 @@ EditorSubScene::EditorSubScene() {
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	path = memnew(LineEdit);
-	path->connect("text_entered", this, "_path_changed");
+	path->connect("text_entered", callable_mp(this, &EditorSubScene::_path_changed));
 	hb->add_child(path);
 	path->set_h_size_flags(SIZE_EXPAND_FILL);
 	Button *b = memnew(Button);
 	b->set_text(TTR("Browse"));
 	hb->add_child(b);
-	b->connect("pressed", this, "_path_browse");
+	b->connect("pressed", callable_mp(this, &EditorSubScene::_path_browse));
 	vb->add_margin_child(TTR("Scene Path:"), hb);
 
 	tree = memnew(Tree);
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	vb->add_margin_child(TTR("Import From Node:"), tree, true);
 	tree->set_select_mode(Tree::SELECT_MULTI);
-	tree->connect("multi_selected", this, "_item_multi_selected");
+	tree->connect("multi_selected", callable_mp(this, &EditorSubScene::_item_multi_selected));
 	//tree->connect("nothing_selected", this, "_deselect_items");
-	tree->connect("cell_selected", this, "_selected_changed");
+	tree->connect("cell_selected", callable_mp(this, &EditorSubScene::_selected_changed));
 
-	tree->connect("item_activated", this, "_ok", make_binds(), CONNECT_DEFERRED);
+	tree->connect("item_activated", callable_mp(this, &EditorSubScene::_item_activated), make_binds(), CONNECT_DEFERRED);
 
 	file_dialog = memnew(EditorFileDialog);
 	List<String> extensions;
@@ -269,5 +268,5 @@ EditorSubScene::EditorSubScene() {
 
 	file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	add_child(file_dialog);
-	file_dialog->connect("file_selected", this, "_path_selected");
+	file_dialog->connect("file_selected", callable_mp(this, &EditorSubScene::_path_selected));
 }

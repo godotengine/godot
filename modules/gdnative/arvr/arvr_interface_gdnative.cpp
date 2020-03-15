@@ -277,7 +277,9 @@ godot_transform GDAPI godot_arvr_get_reference_frame() {
 void GDAPI godot_arvr_blit(godot_int p_eye, godot_rid *p_render_target, godot_rect2 *p_rect) {
 	// blits out our texture as is, handy for preview display of one of the eyes that is already rendered with lens distortion on an external HMD
 	ARVRInterface::Eyes eye = (ARVRInterface::Eyes)p_eye;
+#if 0
 	RID *render_target = (RID *)p_render_target;
+#endif
 	Rect2 screen_rect = *(Rect2 *)p_rect;
 
 	if (eye == ARVRInterface::EYE_LEFT) {
@@ -286,18 +288,27 @@ void GDAPI godot_arvr_blit(godot_int p_eye, godot_rid *p_render_target, godot_re
 		screen_rect.size.x /= 2.0;
 		screen_rect.position.x += screen_rect.size.x;
 	}
-
-	VSG::rasterizer->set_current_render_target(RID());
+#ifndef _MSC_VER
+#warning this needs to be redone
+#endif
+#if 0
 	VSG::rasterizer->blit_render_target_to_screen(*render_target, screen_rect, 0);
+#endif
 }
 
 godot_int GDAPI godot_arvr_get_texid(godot_rid *p_render_target) {
 	// In order to send off our textures to display on our hardware we need the opengl texture ID instead of the render target RID
 	// This is a handy function to expose that.
+#if 0
 	RID *render_target = (RID *)p_render_target;
 
 	RID eye_texture = VSG::storage->render_target_get_texture(*render_target);
-	uint32_t texid = VS::get_singleton()->texture_get_texid(eye_texture);
+#endif
+
+#ifndef _MSC_VER
+#warning need to obtain this ID again
+#endif
+	uint32_t texid = 0; //VS::get_singleton()->texture_get_texid(eye_texture);
 
 	return texid;
 }

@@ -87,14 +87,14 @@ public:
 	void set_tab_align(TabAlign p_align);
 	TabAlign get_tab_align() const;
 
-	void set_tabs_visible(bool p_visibe);
+	void set_tabs_visible(bool p_visible);
 	bool are_tabs_visible() const;
 
 	void set_tab_title(int p_tab, const String &p_title);
 	String get_tab_title(int p_tab) const;
 
-	void set_tab_icon(int p_tab, const Ref<Texture> &p_icon);
-	Ref<Texture> get_tab_icon(int p_tab) const;
+	void set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_tab_icon(int p_tab) const;
 
 	void set_tab_disabled(int p_tab, bool p_disabled);
 	bool get_tab_disabled(int p_tab) const;

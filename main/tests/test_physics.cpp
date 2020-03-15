@@ -110,13 +110,13 @@ protected:
 
 		PhysicsServer *ps = PhysicsServer::get_singleton();
 
-		RID plane_shape = ps->shape_create(PhysicsServer::SHAPE_PLANE);
-		ps->shape_set_data(plane_shape, p_plane);
+		RID world_margin_shape = ps->shape_create(PhysicsServer::SHAPE_PLANE);
+		ps->shape_set_data(world_margin_shape, p_plane);
 
 		RID b = ps->body_create(PhysicsServer::BODY_MODE_STATIC);
 		ps->body_set_space(b, space);
 		//todo set space
-		ps->body_add_shape(b, plane_shape);
+		ps->body_add_shape(b, world_margin_shape);
 		return b;
 	}
 
@@ -143,7 +143,7 @@ protected:
 
 		/* BOX SHAPE */
 
-		PoolVector<Plane> box_planes = Geometry::build_box_planes(Vector3(0.5, 0.5, 0.5));
+		Vector<Plane> box_planes = Geometry::build_box_planes(Vector3(0.5, 0.5, 0.5));
 		RID box_mesh = vs->mesh_create();
 		Geometry::MeshData box_data = Geometry::build_convex_mesh(box_planes);
 		vs->mesh_add_surface_from_mesh_data(box_mesh, box_data);
@@ -155,7 +155,7 @@ protected:
 
 		/* CAPSULE SHAPE */
 
-		PoolVector<Plane> capsule_planes = Geometry::build_capsule_planes(0.5, 0.7, 12, Vector3::AXIS_Z);
+		Vector<Plane> capsule_planes = Geometry::build_capsule_planes(0.5, 0.7, 12, Vector3::AXIS_Z);
 
 		RID capsule_mesh = vs->mesh_create();
 		Geometry::MeshData capsule_data = Geometry::build_convex_mesh(capsule_planes);
@@ -172,7 +172,7 @@ protected:
 
 		/* CONVEX SHAPE */
 
-		PoolVector<Plane> convex_planes = Geometry::build_cylinder_planes(0.5, 0.7, 5, Vector3::AXIS_Z);
+		Vector<Plane> convex_planes = Geometry::build_cylinder_planes(0.5, 0.7, 5, Vector3::AXIS_Z);
 
 		RID convex_mesh = vs->mesh_create();
 		Geometry::MeshData convex_data = Geometry::build_convex_mesh(convex_planes);
@@ -363,7 +363,7 @@ public:
 		VisualServer *vs = VisualServer::get_singleton();
 		PhysicsServer *ps = PhysicsServer::get_singleton();
 
-		PoolVector<Plane> capsule_planes = Geometry::build_capsule_planes(0.5, 1, 12, 5, Vector3::AXIS_Y);
+		Vector<Plane> capsule_planes = Geometry::build_capsule_planes(0.5, 1, 12, 5, Vector3::AXIS_Y);
 
 		RID capsule_mesh = vs->mesh_create();
 		Geometry::MeshData capsule_data = Geometry::build_convex_mesh(capsule_planes);

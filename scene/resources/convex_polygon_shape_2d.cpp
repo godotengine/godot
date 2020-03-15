@@ -74,7 +74,7 @@ void ConvexPolygonShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_points", "points"), &ConvexPolygonShape2D::set_points);
 	ClassDB::bind_method(D_METHOD("get_points"), &ConvexPolygonShape2D::get_points);
 
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "points"), "set_points", "get_points");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "points"), "set_points", "get_points");
 }
 
 void ConvexPolygonShape2D::draw(const RID &p_to_rid, const Color &p_color) {
@@ -95,6 +95,14 @@ Rect2 ConvexPolygonShape2D::get_rect() const {
 	}
 
 	return rect;
+}
+
+real_t ConvexPolygonShape2D::get_enclosing_radius() const {
+	real_t r = 0;
+	for (int i(0); i < get_points().size(); i++) {
+		r = MAX(get_points()[i].length_squared(), r);
+	}
+	return Math::sqrt(r);
 }
 
 ConvexPolygonShape2D::ConvexPolygonShape2D() :

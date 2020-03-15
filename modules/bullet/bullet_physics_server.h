@@ -33,13 +33,13 @@
 
 #include "area_bullet.h"
 #include "core/rid.h"
+#include "core/rid_owner.h"
 #include "joint_bullet.h"
 #include "rigid_body_bullet.h"
 #include "servers/physics_server.h"
 #include "shape_bullet.h"
 #include "soft_body_bullet.h"
 #include "space_bullet.h"
-
 /**
 	@author AndreaCatania
 */
@@ -53,12 +53,12 @@ class BulletPhysicsServer : public PhysicsServer {
 	char active_spaces_count;
 	Vector<SpaceBullet *> active_spaces;
 
-	mutable RID_Owner<SpaceBullet> space_owner;
-	mutable RID_Owner<ShapeBullet> shape_owner;
-	mutable RID_Owner<AreaBullet> area_owner;
-	mutable RID_Owner<RigidBodyBullet> rigid_body_owner;
-	mutable RID_Owner<SoftBodyBullet> soft_body_owner;
-	mutable RID_Owner<JointBullet> joint_owner;
+	mutable RID_PtrOwner<SpaceBullet> space_owner;
+	mutable RID_PtrOwner<ShapeBullet> shape_owner;
+	mutable RID_PtrOwner<AreaBullet> area_owner;
+	mutable RID_PtrOwner<RigidBodyBullet> rigid_body_owner;
+	mutable RID_PtrOwner<SoftBodyBullet> soft_body_owner;
+	mutable RID_PtrOwner<JointBullet> joint_owner;
 
 protected:
 	static void _bind_methods();
@@ -67,22 +67,22 @@ public:
 	BulletPhysicsServer();
 	~BulletPhysicsServer();
 
-	_FORCE_INLINE_ RID_Owner<SpaceBullet> *get_space_owner() {
+	_FORCE_INLINE_ RID_PtrOwner<SpaceBullet> *get_space_owner() {
 		return &space_owner;
 	}
-	_FORCE_INLINE_ RID_Owner<ShapeBullet> *get_shape_owner() {
+	_FORCE_INLINE_ RID_PtrOwner<ShapeBullet> *get_shape_owner() {
 		return &shape_owner;
 	}
-	_FORCE_INLINE_ RID_Owner<AreaBullet> *get_area_owner() {
+	_FORCE_INLINE_ RID_PtrOwner<AreaBullet> *get_area_owner() {
 		return &area_owner;
 	}
-	_FORCE_INLINE_ RID_Owner<RigidBodyBullet> *get_rigid_body_owner() {
+	_FORCE_INLINE_ RID_PtrOwner<RigidBodyBullet> *get_rigid_body_owner() {
 		return &rigid_body_owner;
 	}
-	_FORCE_INLINE_ RID_Owner<SoftBodyBullet> *get_soft_body_owner() {
+	_FORCE_INLINE_ RID_PtrOwner<SoftBodyBullet> *get_soft_body_owner() {
 		return &soft_body_owner;
 	}
-	_FORCE_INLINE_ RID_Owner<JointBullet> *get_joint_owner() {
+	_FORCE_INLINE_ RID_PtrOwner<JointBullet> *get_joint_owner() {
 		return &joint_owner;
 	}
 
@@ -189,8 +189,8 @@ public:
 	virtual void body_clear_shapes(RID p_body);
 
 	// Used for Rigid and Soft Bodies
-	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_id);
-	virtual uint32_t body_get_object_instance_id(RID p_body) const;
+	virtual void body_attach_object_instance_id(RID p_body, ObjectID p_id);
+	virtual ObjectID body_get_object_instance_id(RID p_body) const;
 
 	virtual void body_set_enable_continuous_collision_detection(RID p_body, bool p_enable);
 	virtual bool body_is_continuous_collision_detection_enabled(RID p_body) const;

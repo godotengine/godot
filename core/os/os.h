@@ -41,8 +41,6 @@
 
 #include <stdarg.h>
 
-class Mutex;
-
 class OS {
 
 	static OS *singleton;
@@ -77,14 +75,6 @@ protected:
 public:
 	typedef void (*ImeCallback)(void *p_inp, String p_text, Point2 p_selection);
 	typedef bool (*HasServerFeatureCallback)(const String &p_feature);
-
-	enum PowerState {
-		POWERSTATE_UNKNOWN, /**< cannot determine power status */
-		POWERSTATE_ON_BATTERY, /**< Not plugged in, running on the battery */
-		POWERSTATE_NO_BATTERY, /**< Plugged in, no battery available */
-		POWERSTATE_CHARGING, /**< Plugged in, charging battery */
-		POWERSTATE_CHARGED /**< Plugged in, battery charged */
-	};
 
 	enum RenderThreadMode {
 
@@ -181,7 +171,7 @@ public:
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const = 0;
 
 	enum VideoDriver {
-		VIDEO_DRIVER_GLES3,
+		VIDEO_DRIVER_VULKAN,
 		VIDEO_DRIVER_GLES2,
 		VIDEO_DRIVER_MAX,
 	};
@@ -193,7 +183,7 @@ public:
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
-	virtual PoolStringArray get_connected_midi_inputs();
+	virtual PackedStringArray get_connected_midi_inputs();
 	virtual void open_midi_inputs();
 	virtual void close_midi_inputs();
 
@@ -222,6 +212,7 @@ public:
 	virtual bool is_window_maximized() const { return true; }
 	virtual void set_window_always_on_top(bool p_enabled) {}
 	virtual bool is_window_always_on_top() const { return false; }
+	virtual bool is_window_focused() const { return true; }
 	virtual void set_console_visible(bool p_enabled) {}
 	virtual bool is_console_visible() const { return false; }
 	virtual void request_attention() {}
@@ -266,7 +257,7 @@ public:
 	virtual int get_low_processor_usage_mode_sleep_usec() const;
 
 	virtual String get_executable_path() const;
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false, Mutex *p_pipe_mutex = NULL) = 0;
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false, Mutex *p_pipe_mutex = NULL) = 0;
 	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_id() const;
 	virtual void vibrate_handheld(int p_duration_ms = 500);
@@ -379,7 +370,7 @@ public:
 	};
 
 	virtual bool has_virtual_keyboard() const;
-	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2());
+	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), int p_max_input_length = -1);
 	virtual void hide_virtual_keyboard();
 
 	// returns height of the currently shown virtual keyboard (0 if keyboard is hidden)
@@ -397,7 +388,6 @@ public:
 
 	virtual uint64_t get_static_memory_usage() const;
 	virtual uint64_t get_static_memory_peak_usage() const;
-	virtual uint64_t get_dynamic_memory_usage() const;
 	virtual uint64_t get_free_static_memory() const;
 
 	RenderThreadMode get_render_thread_mode() const { return _render_thread_mode; }
@@ -410,6 +400,7 @@ public:
 	virtual String get_data_path() const;
 	virtual String get_config_path() const;
 	virtual String get_cache_path() const;
+	virtual String get_bundle_resource_dir() const;
 
 	virtual String get_user_data_dir() const;
 	virtual String get_resource_dir() const;
@@ -515,10 +506,6 @@ public:
 	void set_vsync_via_compositor(bool p_enable);
 	bool is_vsync_via_compositor_enabled() const;
 
-	virtual OS::PowerState get_power_state();
-	virtual int get_power_seconds_left();
-	virtual int get_power_percent_left();
-
 	virtual void force_process_input(){};
 	bool has_feature(const String &p_feature);
 
@@ -539,7 +526,5 @@ public:
 	OS();
 	virtual ~OS();
 };
-
-VARIANT_ENUM_CAST(OS::PowerState);
 
 #endif

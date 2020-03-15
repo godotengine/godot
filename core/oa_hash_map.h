@@ -240,6 +240,22 @@ public:
 		return false;
 	}
 
+	/**
+	 * returns true if the value was found, false otherwise.
+	 *
+	 * if r_data is not NULL then the value will be written to the object
+	 * it points to.
+	 */
+	TValue *lookup_ptr(const TKey &p_key) const {
+		uint32_t pos = 0;
+		bool exists = _lookup_pos(p_key, pos);
+
+		if (exists) {
+			return &values[pos];
+		}
+		return NULL;
+	}
+
 	_FORCE_INLINE_ bool has(const TKey &p_key) const {
 		uint32_t _pos = 0;
 		return _lookup_pos(p_key, _pos);

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AStar" inherits="Reference" category="Core" version="3.2">
+<class name="AStar" inherits="Reference" version="4.0">
 	<brief_description>
 		An implementation of A* to find shortest paths among connected points in space.
 	</brief_description>
@@ -152,7 +152,7 @@
 			</description>
 		</method>
 		<method name="get_id_path">
-			<return type="PoolIntArray">
+			<return type="PackedInt32Array">
 			</return>
 			<argument index="0" name="from_id" type="int">
 			</argument>
@@ -185,7 +185,7 @@
 			</description>
 		</method>
 		<method name="get_point_connections">
-			<return type="PoolIntArray">
+			<return type="PackedInt32Array">
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
@@ -213,7 +213,7 @@
 			</description>
 		</method>
 		<method name="get_point_path">
-			<return type="PoolVector3Array">
+			<return type="PackedVector3Array">
 			</return>
 			<argument index="0" name="from_id" type="int">
 			</argument>

@@ -35,8 +35,8 @@
 
 Size2 CheckButton::get_icon_size() const {
 
-	Ref<Texture> on = Control::get_icon(is_disabled() ? "on_disabled" : "on");
-	Ref<Texture> off = Control::get_icon(is_disabled() ? "off_disabled" : "off");
+	Ref<Texture2D> on = Control::get_icon(is_disabled() ? "on_disabled" : "on");
+	Ref<Texture2D> off = Control::get_icon(is_disabled() ? "off_disabled" : "off");
 	Size2 tex_size = Size2(0, 0);
 	if (!on.is_null())
 		tex_size = Size2(on->get_width(), on->get_height());
@@ -68,8 +68,8 @@ void CheckButton::_notification(int p_what) {
 
 		RID ci = get_canvas_item();
 
-		Ref<Texture> on = Control::get_icon(is_disabled() ? "on_disabled" : "on");
-		Ref<Texture> off = Control::get_icon(is_disabled() ? "off_disabled" : "off");
+		Ref<Texture2D> on = Control::get_icon(is_disabled() ? "on_disabled" : "on");
+		Ref<Texture2D> off = Control::get_icon(is_disabled() ? "off_disabled" : "off");
 
 		Ref<StyleBox> sb = get_stylebox("normal");
 		Vector2 ofs;

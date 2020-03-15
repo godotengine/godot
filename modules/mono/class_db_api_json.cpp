@@ -71,6 +71,13 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			while ((k = t->method_map.next(k))) {
 
+				String name = k->operator String();
+
+				ERR_CONTINUE(name.empty());
+
+				if (name[0] == '_')
+					continue; // Ignore non-virtual methods that start with an underscore
+
 				snames.push_back(*k);
 			}
 

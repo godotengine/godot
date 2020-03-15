@@ -70,7 +70,7 @@ void NinePatchRect::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_center"), "set_draw_center", "is_draw_center_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
 
@@ -88,7 +88,7 @@ void NinePatchRect::_bind_methods() {
 	BIND_ENUM_CONSTANT(AXIS_STRETCH_MODE_TILE_FIT);
 }
 
-void NinePatchRect::set_texture(const Ref<Texture> &p_tex) {
+void NinePatchRect::set_texture(const Ref<Texture2D> &p_tex) {
 
 	if (texture == p_tex)
 		return;
@@ -103,7 +103,7 @@ void NinePatchRect::set_texture(const Ref<Texture> &p_tex) {
 	_change_notify("texture");
 }
 
-Ref<Texture> NinePatchRect::get_texture() const {
+Ref<Texture2D> NinePatchRect::get_texture() const {
 
 	return texture;
 }

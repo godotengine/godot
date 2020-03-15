@@ -130,7 +130,7 @@ void CollisionShape2D::_notification(int p_what) {
 					draw_col = draw_col.darkened(0.25);
 				}
 				Vector2 line_to(0, 20);
-				draw_line(Vector2(), line_to, draw_col, 2, true);
+				draw_line(Vector2(), line_to, draw_col, 2);
 				Vector<Vector2> pts;
 				float tsize = 8;
 				pts.push_back(line_to + (Vector2(0, tsize)));
@@ -149,7 +149,7 @@ void CollisionShape2D::_notification(int p_what) {
 void CollisionShape2D::set_shape(const Ref<Shape2D> &p_shape) {
 
 	if (shape.is_valid())
-		shape->disconnect("changed", this, "_shape_changed");
+		shape->disconnect("changed", callable_mp(this, &CollisionShape2D::_shape_changed));
 	shape = p_shape;
 	update();
 	if (parent) {
@@ -160,7 +160,7 @@ void CollisionShape2D::set_shape(const Ref<Shape2D> &p_shape) {
 	}
 
 	if (shape.is_valid())
-		shape->connect("changed", this, "_shape_changed");
+		shape->connect("changed", callable_mp(this, &CollisionShape2D::_shape_changed));
 
 	update_configuration_warning();
 }
@@ -237,12 +237,11 @@ void CollisionShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_one_way_collision_enabled"), &CollisionShape2D::is_one_way_collision_enabled);
 	ClassDB::bind_method(D_METHOD("set_one_way_collision_margin", "margin"), &CollisionShape2D::set_one_way_collision_margin);
 	ClassDB::bind_method(D_METHOD("get_one_way_collision_margin"), &CollisionShape2D::get_one_way_collision_margin);
-	ClassDB::bind_method(D_METHOD("_shape_changed"), &CollisionShape2D::_shape_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1"), "set_one_way_collision_margin", "get_one_way_collision_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1"), "set_one_way_collision_margin", "get_one_way_collision_margin");
 }
 
 CollisionShape2D::CollisionShape2D() {

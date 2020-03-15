@@ -67,15 +67,17 @@ protected:
 	static void _bind_methods();
 
 public:
+#ifdef TOOLS_ENABLED
+	virtual Rect2 _edit_get_rect() const;
+	virtual bool _edit_use_rect() const;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+#endif
+
 	void set_build_mode(BuildMode p_mode);
 	BuildMode get_build_mode() const;
 
 	void set_polygon(const Vector<Point2> &p_polygon);
 	Vector<Point2> get_polygon() const;
-
-	virtual Rect2 _edit_get_rect() const;
-	virtual bool _edit_use_rect() const;
-	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
 
 	virtual String get_configuration_warning() const;
 

@@ -58,7 +58,7 @@ String ResourceImporterTextureAtlas::get_save_extension() const {
 
 String ResourceImporterTextureAtlas::get_resource_type() const {
 
-	return "Texture";
+	return "Texture2D";
 }
 
 bool ResourceImporterTextureAtlas::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
@@ -143,8 +143,8 @@ static void _plot_triangle(Vector2 *vertices, const Vector2 &p_offset, bool p_tr
 
 				int px = xi, py = yi;
 				int sx = px, sy = py;
-				sx = CLAMP(sx, 0, src_width);
-				sy = CLAMP(sy, 0, src_height);
+				sx = CLAMP(sx, 0, src_width - 1);
+				sy = CLAMP(sy, 0, src_height - 1);
 				Color color = p_src_image->get_pixel(sx, sy);
 				if (p_transposed) {
 					SWAP(px, py);
@@ -165,8 +165,8 @@ static void _plot_triangle(Vector2 *vertices, const Vector2 &p_offset, bool p_tr
 			for (int xi = (xf < width ? int(xf) : width - 1); xi >= (xt > 0 ? xt : 0); xi--) {
 				int px = xi, py = yi;
 				int sx = px, sy = py;
-				sx = CLAMP(sx, 0, src_width);
-				sy = CLAMP(sy, 0, src_height);
+				sx = CLAMP(sx, 0, src_width - 1);
+				sy = CLAMP(sy, 0, src_height - 1);
 				Color color = p_src_image->get_pixel(sx, sy);
 				if (p_transposed) {
 					SWAP(px, py);
@@ -286,12 +286,10 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 	new_atlas.instance();
 	new_atlas->create(atlas_width, atlas_height, false, Image::FORMAT_RGBA8);
 
-	new_atlas->lock();
-
 	for (int i = 0; i < pack_data_files.size(); i++) {
 
 		PackData &pack_data = pack_data_files.write[i];
-		pack_data.image->lock();
+
 		for (int j = 0; j < pack_data.chart_pieces.size(); j++) {
 			const EditorAtlasPacker::Chart &chart = charts[pack_data.chart_pieces[j]];
 			for (int k = 0; k < chart.faces.size(); k++) {
@@ -304,16 +302,14 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 				_plot_triangle(positions, chart.final_offset, chart.transposed, new_atlas, pack_data.image);
 			}
 		}
-		pack_data.image->unlock();
 	}
-	new_atlas->unlock();
 
 	//save the atlas
 
 	new_atlas->save_png(p_group_file);
 
 	//update cache if existing, else create
-	Ref<Texture> cache;
+	Ref<Texture2D> cache;
 	if (ResourceCache::has(p_group_file)) {
 		Resource *resptr = ResourceCache::get(p_group_file);
 		cache.reference_ptr(resptr);
@@ -331,7 +327,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 
 		PackData &pack_data = pack_data_files.write[idx];
 
-		Ref<Texture> texture;
+		Ref<Texture2D> texture;
 
 		if (!pack_data.is_mesh) {
 			Vector2 offset = charts[pack_data.chart_pieces[0]].vertices[0] + charts[pack_data.chart_pieces[0]].final_offset;
@@ -350,9 +346,9 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 
 			for (int i = 0; i < pack_data.chart_pieces.size(); i++) {
 				const EditorAtlasPacker::Chart &chart = charts[pack_data.chart_pieces[i]];
-				PoolVector<Vector2> vertices;
-				PoolVector<int> indices;
-				PoolVector<Vector2> uvs;
+				Vector<Vector2> vertices;
+				Vector<int> indices;
+				Vector<Vector2> uvs;
 				int vc = chart.vertices.size();
 				int fc = chart.faces.size();
 				vertices.resize(vc);
@@ -360,9 +356,9 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 				indices.resize(fc * 3);
 
 				{
-					PoolVector<Vector2>::Write vw = vertices.write();
-					PoolVector<int>::Write iw = indices.write();
-					PoolVector<Vector2>::Write uvw = uvs.write();
+					Vector2 *vw = vertices.ptrw();
+					int *iw = indices.ptrw();
+					Vector2 *uvw = uvs.ptrw();
 
 					for (int j = 0; j < vc; j++) {
 						vw[j] = chart.vertices[j];

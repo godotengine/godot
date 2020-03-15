@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "editor_layouts_dialog.h"
+
 #include "core/class_db.h"
 #include "core/io/config_file.h"
 #include "core/os/keyboard.h"
@@ -44,7 +45,7 @@ void EditorLayoutsDialog::_line_gui_input(const Ref<InputEvent> &p_event) {
 		if (!k->is_pressed())
 			return;
 
-		switch (k->get_scancode()) {
+		switch (k->get_keycode()) {
 			case KEY_KP_ENTER:
 			case KEY_ENTER: {
 
@@ -63,7 +64,6 @@ void EditorLayoutsDialog::_line_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorLayoutsDialog::_bind_methods() {
-	ClassDB::bind_method("_line_gui_input", &EditorLayoutsDialog::_line_gui_input);
 
 	ADD_SIGNAL(MethodInfo("name_confirmed", PropertyInfo(Variant::STRING, "name")));
 }
@@ -128,8 +128,8 @@ EditorLayoutsDialog::EditorLayoutsDialog() {
 	name->set_margin(MARGIN_TOP, 5);
 	name->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 5);
 	name->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -5);
-	name->connect("gui_input", this, "_line_gui_input");
-	name->connect("focus_entered", layout_names, "unselect_all");
+	name->connect("gui_input", callable_mp(this, &EditorLayoutsDialog::_line_gui_input));
+	name->connect("focus_entered", callable_mp(layout_names, &ItemList::unselect_all));
 }
 
 void EditorLayoutsDialog::set_name_line_enabled(bool p_enabled) {

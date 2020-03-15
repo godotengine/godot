@@ -42,7 +42,7 @@ void Panel::_notification(int p_what) {
 }
 
 Panel::Panel() {
-
+	// Has visible stylebox, so stop by default.
 	set_mouse_filter(MOUSE_FILTER_STOP);
 }
 

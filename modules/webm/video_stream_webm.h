@@ -61,7 +61,7 @@ class VideoStreamPlaybackWebm : public VideoStreamPlayback {
 	double delay_compensation;
 	double time, video_frame_delay, video_pos;
 
-	PoolVector<uint8_t> frame_data;
+	Vector<uint8_t> frame_data;
 	Ref<ImageTexture> texture;
 
 	float *pcm;
@@ -90,7 +90,7 @@ public:
 
 	virtual void set_audio_track(int p_idx);
 
-	virtual Ref<Texture> get_texture() const;
+	virtual Ref<Texture2D> get_texture() const;
 	virtual void update(float p_delta);
 
 	virtual void set_mix_callback(AudioMixCallback p_callback, void *p_userdata);
@@ -128,7 +128,7 @@ public:
 
 class ResourceFormatLoaderWebm : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL, bool p_use_sub_threads = false, float *r_progress = nullptr);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

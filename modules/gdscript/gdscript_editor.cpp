@@ -221,12 +221,12 @@ Script *GDScriptLanguage::create_script() const {
 bool GDScriptLanguage::debug_break_parse(const String &p_file, int p_line, const String &p_error) {
 	//break because of parse error
 
-	if (ScriptDebugger::get_singleton() && Thread::get_caller_id() == Thread::get_main_id()) {
+	if (EngineDebugger::is_active() && Thread::get_caller_id() == Thread::get_main_id()) {
 
 		_debug_parse_err_line = p_line;
 		_debug_parse_err_file = p_file;
 		_debug_error = p_error;
-		ScriptDebugger::get_singleton()->debug(this, false, true);
+		EngineDebugger::get_script_debugger()->debug(this, false, true);
 		return true;
 	} else {
 		return false;
@@ -235,13 +235,13 @@ bool GDScriptLanguage::debug_break_parse(const String &p_file, int p_line, const
 
 bool GDScriptLanguage::debug_break(const String &p_error, bool p_allow_continue) {
 
-	if (ScriptDebugger::get_singleton() && Thread::get_caller_id() == Thread::get_main_id()) {
+	if (EngineDebugger::is_active() && Thread::get_caller_id() == Thread::get_main_id()) {
 
 		_debug_parse_err_line = -1;
 		_debug_parse_err_file = "";
 		_debug_error = p_error;
 		bool is_error_breakpoint = p_error != "Breakpoint";
-		ScriptDebugger::get_singleton()->debug(this, p_allow_continue, is_error_breakpoint);
+		EngineDebugger::get_script_debugger()->debug(this, p_allow_continue, is_error_breakpoint);
 		return true;
 	} else {
 		return false;
@@ -335,7 +335,9 @@ void GDScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *
 
 ScriptInstance *GDScriptLanguage::debug_get_stack_level_instance(int p_level) {
 
-	ERR_FAIL_COND_V(_debug_parse_err_line >= 0, NULL);
+	if (_debug_parse_err_line >= 0)
+		return NULL;
+
 	ERR_FAIL_INDEX_V(p_level, _debug_call_stack_pos, NULL);
 
 	int l = _debug_call_stack_pos - p_level - 1;
@@ -455,7 +457,7 @@ void GDScriptLanguage::get_public_constants(List<Pair<String, Variant> > *p_cons
 	p_constants->push_back(nan);
 }
 
-String GDScriptLanguage::make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const {
+String GDScriptLanguage::make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const {
 
 #ifdef TOOLS_ENABLED
 	bool th = EditorSettings::get_singleton()->get_setting("text_editor/completion/add_type_hints");
@@ -555,7 +557,7 @@ static String _get_visual_datatype(const PropertyInfo &p_info, bool p_isarg = tr
 	}
 	if (p_info.type == Variant::NIL) {
 		if (p_isarg || (p_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT)) {
-			return "var";
+			return "Variant";
 		} else {
 			return "void";
 		}
@@ -903,10 +905,10 @@ static bool _guess_expression_type(GDScriptCompletionContext &p_context, const G
 											argptr.push_back(&args[i]);
 										}
 
-										Variant::CallError ce;
+										Callable::CallError ce;
 										Variant ret = mb->call(baseptr, (const Variant **)argptr.ptr(), argptr.size(), ce);
 
-										if (ce.error == Variant::CallError::CALL_OK && ret.get_type() != Variant::NIL) {
+										if (ce.error == Callable::CallError::CALL_OK && ret.get_type() != Variant::NIL) {
 											if (ret.get_type() != Variant::OBJECT || ret.operator Object *() != NULL) {
 												r_type = _type_from_variant(ret);
 												found = true;
@@ -1058,7 +1060,7 @@ static bool _guess_expression_type(GDScriptCompletionContext &p_context, const G
 						StringName id = index.value;
 						found = _guess_identifier_type_from_base(c, base, id, r_type);
 					} else if (!found && index.type.kind == GDScriptParser::DataType::BUILTIN) {
-						Variant::CallError err;
+						Callable::CallError err;
 						Variant base_val = Variant::construct(base.type.builtin_type, NULL, 0, err);
 						bool valid = false;
 						Variant res = base_val.get(index.value, &valid);
@@ -1112,7 +1114,7 @@ static bool _guess_expression_type(GDScriptCompletionContext &p_context, const G
 						break;
 					}
 
-					Variant::CallError ce;
+					Callable::CallError ce;
 					bool v1_use_value = p1.value.get_type() != Variant::NIL && p1.value.get_type() != Variant::OBJECT;
 					Variant v1 = (v1_use_value) ? p1.value : Variant::construct(p1.type.builtin_type, NULL, 0, ce);
 					bool v2_use_value = p2.value.get_type() != Variant::NIL && p2.value.get_type() != Variant::OBJECT;
@@ -1122,7 +1124,7 @@ static bool _guess_expression_type(GDScriptCompletionContext &p_context, const G
 						v2 = 1;
 						v2_use_value = false;
 					}
-					if (vop == Variant::OP_DIVIDE && v2.get_type() == Variant::REAL) {
+					if (vop == Variant::OP_DIVIDE && v2.get_type() == Variant::FLOAT) {
 						v2 = 1.0;
 						v2_use_value = false;
 					}
@@ -1531,10 +1533,10 @@ static bool _guess_identifier_type_from_base(GDScriptCompletionContext &p_contex
 				return false;
 			} break;
 			case GDScriptParser::DataType::BUILTIN: {
-				Variant::CallError err;
+				Callable::CallError err;
 				Variant tmp = Variant::construct(base_type.builtin_type, NULL, 0, err);
 
-				if (err.error != Variant::CallError::CALL_OK) {
+				if (err.error != Callable::CallError::CALL_OK) {
 					return false;
 				}
 				bool valid = false;
@@ -1701,9 +1703,9 @@ static bool _guess_method_return_type_from_base(GDScriptCompletionContext &p_con
 				return false;
 			} break;
 			case GDScriptParser::DataType::BUILTIN: {
-				Variant::CallError err;
+				Callable::CallError err;
 				Variant tmp = Variant::construct(base_type.builtin_type, NULL, 0, err);
-				if (err.error != Variant::CallError::CALL_OK) {
+				if (err.error != Callable::CallError::CALL_OK) {
 					return false;
 				}
 
@@ -1736,14 +1738,12 @@ static String _make_arguments_hint(const MethodInfo &p_info, int p_arg_idx) {
 	for (const List<PropertyInfo>::Element *E = p_info.arguments.front(); E; E = E->next()) {
 		if (i > 0) {
 			arghint += ", ";
-		} else {
-			arghint += " ";
 		}
 
 		if (i == p_arg_idx) {
 			arghint += String::chr(0xFFFF);
 		}
-		arghint += _get_visual_datatype(E->get(), true) + " " + E->get().name;
+		arghint += E->get().name + ": " + _get_visual_datatype(E->get(), true);
 
 		if (i - def_args >= 0) {
 			arghint += String(" = ") + p_info.default_arguments[i - def_args].get_construct_string();
@@ -1759,8 +1759,6 @@ static String _make_arguments_hint(const MethodInfo &p_info, int p_arg_idx) {
 	if (p_info.flags & METHOD_FLAG_VARARG) {
 		if (p_info.arguments.size() > 0) {
 			arghint += ", ";
-		} else {
-			arghint += " ";
 		}
 		if (p_arg_idx >= p_info.arguments.size()) {
 			arghint += String::chr(0xFFFF);
@@ -1769,9 +1767,6 @@ static String _make_arguments_hint(const MethodInfo &p_info, int p_arg_idx) {
 		if (p_arg_idx >= p_info.arguments.size()) {
 			arghint += String::chr(0xFFFF);
 		}
-	}
-	if (p_info.arguments.size() > 0 || (p_info.flags & METHOD_FLAG_VARARG)) {
-		arghint += " ";
 	}
 
 	arghint += ")";
@@ -1787,14 +1782,12 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 	for (int i = 0; i < p_function->arguments.size(); i++) {
 		if (i > 0) {
 			arghint += ", ";
-		} else {
-			arghint += " ";
 		}
 
 		if (i == p_arg_idx) {
 			arghint += String::chr(0xFFFF);
 		}
-		arghint += p_function->argument_types[i].to_string() + " " + p_function->arguments[i].operator String();
+		arghint += p_function->arguments[i].operator String() + ": " + p_function->argument_types[i].to_string();
 
 		if (i - def_args >= 0) {
 			String def_val = "<unknown>";
@@ -1818,9 +1811,6 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 		}
 	}
 
-	if (p_function->arguments.size() > 0) {
-		arghint += " ";
-	}
 	arghint += ")";
 
 	return arghint;
@@ -2098,9 +2088,9 @@ static void _find_identifiers_in_base(const GDScriptCompletionContext &p_context
 				return;
 			} break;
 			case GDScriptParser::DataType::BUILTIN: {
-				Variant::CallError err;
+				Callable::CallError err;
 				Variant tmp = Variant::construct(base_type.builtin_type, NULL, 0, err);
-				if (err.error != Variant::CallError::CALL_OK) {
+				if (err.error != Callable::CallError::CALL_OK) {
 					return;
 				}
 
@@ -2182,9 +2172,9 @@ static void _find_identifiers(const GDScriptCompletionContext &p_context, bool p
 	}
 
 	static const char *_type_names[Variant::VARIANT_MAX] = {
-		"null", "bool", "int", "float", "String", "Vector2", "Rect2", "Vector3", "Transform2D", "Plane", "Quat", "AABB", "Basis", "Transform",
-		"Color", "NodePath", "RID", "Object", "Dictionary", "Array", "PoolByteArray", "PoolIntArray", "PoolRealArray", "PoolStringArray",
-		"PoolVector2Array", "PoolVector3Array", "PoolColorArray"
+		"null", "bool", "int", "float", "String", "Vector2", "Vector2i", "Rect2", "Rect2i", "Vector3", "Vector3i", "Transform2D", "Plane", "Quat", "AABB", "Basis", "Transform",
+		"Color", "StringName", "NodePath", "RID", "Object", "Callable", "Signal", "Dictionary", "Array", "PackedByteArray", "PackedInt32Array", "PackedInt64Array", "PackedFloat32Array", "PackedFloat64Array", "PackedStringArray",
+		"PackedVector2Array", "PackedVector3Array", "PackedColorArray"
 	};
 
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
@@ -2196,7 +2186,7 @@ static void _find_identifiers(const GDScriptCompletionContext &p_context, bool p
 		"and", "in", "not", "or", "false", "PI", "TAU", "INF", "NAN", "self", "true", "as", "assert",
 		"breakpoint", "class", "extends", "is", "func", "preload", "setget", "signal", "tool", "yield",
 		"const", "enum", "export", "onready", "static", "var", "break", "continue", "if", "elif",
-		"else", "for", "pass", "return", "match", "while", "remote", "sync", "master", "puppet", "slave",
+		"else", "for", "pass", "return", "match", "while", "remote", "master", "puppet",
 		"remotesync", "mastersync", "puppetsync",
 		0
 	};
@@ -2382,9 +2372,9 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 			} break;
 			case GDScriptParser::DataType::BUILTIN: {
 				if (base.get_type() == Variant::NIL) {
-					Variant::CallError err;
+					Callable::CallError err;
 					base = Variant::construct(base_type.builtin_type, NULL, 0, err);
-					if (err.error != Variant::CallError::CALL_OK) {
+					if (err.error != Callable::CallError::CALL_OK) {
 						return;
 					}
 				}
@@ -2575,7 +2565,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 		} break;
 		case GDScriptParser::COMPLETION_FUNCTION: {
 			is_function = true;
-			FALLTHROUGH;
+			[[fallthrough]];
 		}
 		case GDScriptParser::COMPLETION_IDENTIFIER: {
 			_find_identifiers(context, is_function, options);
@@ -2618,7 +2608,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 		} break;
 		case GDScriptParser::COMPLETION_METHOD: {
 			is_function = true;
-			FALLTHROUGH;
+			[[fallthrough]];
 		}
 		case GDScriptParser::COMPLETION_INDEX: {
 			const GDScriptParser::Node *node = parser.get_completion_node();
@@ -3229,9 +3219,9 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 					v_ref.instance();
 					v = v_ref;
 				} else {
-					Variant::CallError err;
+					Callable::CallError err;
 					v = Variant::construct(base_type.builtin_type, NULL, 0, err);
-					if (err.error != Variant::CallError::CALL_OK) {
+					if (err.error != Callable::CallError::CALL_OK) {
 						break;
 					}
 				}
@@ -3340,7 +3330,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 		case GDScriptParser::COMPLETION_PARENT_FUNCTION:
 		case GDScriptParser::COMPLETION_FUNCTION: {
 			is_function = true;
-			FALLTHROUGH;
+			[[fallthrough]];
 		}
 		case GDScriptParser::COMPLETION_IDENTIFIER: {
 
@@ -3472,7 +3462,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 		} break;
 		case GDScriptParser::COMPLETION_METHOD: {
 			is_function = true;
-			FALLTHROUGH;
+			[[fallthrough]];
 		}
 		case GDScriptParser::COMPLETION_INDEX: {
 			const GDScriptParser::Node *node = parser.get_completion_node();

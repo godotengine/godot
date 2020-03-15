@@ -129,7 +129,7 @@ MonoAssembly *GDMonoAssembly::_search_hook(MonoAssemblyName *aname, void *user_d
 
 	(void)user_data; // UNUSED
 
-	String name = mono_assembly_name_get_name(aname);
+	String name = String::utf8(mono_assembly_name_get_name(aname));
 	bool has_extension = name.ends_with(".dll") || name.ends_with(".exe");
 
 	if (no_search)
@@ -176,7 +176,7 @@ MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **, vo
 	no_search = true;
 	in_preload = true;
 
-	String name = mono_assembly_name_get_name(aname);
+	String name = String::utf8(mono_assembly_name_get_name(aname));
 	bool has_extension = name.ends_with(".dll");
 
 	GDMonoAssembly *res = NULL;
@@ -276,7 +276,7 @@ GDMonoAssembly *GDMonoAssembly::_load_assembly_from(const String &p_name, const 
 }
 
 void GDMonoAssembly::_wrap_mono_assembly(MonoAssembly *assembly) {
-	String name = mono_assembly_name_get_name(mono_assembly_get_name(assembly));
+	String name = String::utf8(mono_assembly_name_get_name(mono_assembly_get_name(assembly)));
 
 	MonoImage *image = mono_assembly_get_image(assembly);
 

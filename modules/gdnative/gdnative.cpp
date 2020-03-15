@@ -339,7 +339,7 @@ bool GDNative::initialize() {
 	if (err || !library_init) {
 		OS::get_singleton()->close_dynamic_library(native_handle);
 		native_handle = NULL;
-		ERR_PRINTS("Failed to obtain " + library->get_symbol_prefix() + "gdnative_init symbol");
+		ERR_PRINT("Failed to obtain " + library->get_symbol_prefix() + "gdnative_init symbol");
 		return false;
 	}
 
@@ -493,7 +493,7 @@ Error GDNative::get_symbol(StringName p_procedure_name, void *&r_handle, bool p_
 	return result;
 }
 
-RES GDNativeLibraryResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES GDNativeLibraryResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 	Ref<GDNativeLibrary> lib;
 	lib.instance();
 

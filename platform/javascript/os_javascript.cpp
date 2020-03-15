@@ -31,8 +31,8 @@
 #include "os_javascript.h"
 
 #include "core/io/file_access_buffered_fa.h"
-#include "drivers/gles2/rasterizer_gles2.h"
-#include "drivers/gles3/rasterizer_gles3.h"
+//#include "drivers/gles2/rasterizer_gles2.h"
+#include "drivers/dummy/rasterizer_dummy.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
@@ -49,6 +49,7 @@
 #define DOM_BUTTON_RIGHT 2
 #define DOM_BUTTON_XBUTTON1 3
 #define DOM_BUTTON_XBUTTON2 4
+#define GODOT_CANVAS_SELECTOR "#canvas"
 
 // Window (canvas)
 
@@ -70,18 +71,23 @@ static bool is_canvas_focused() {
 	/* clang-format on */
 }
 
-static Point2 correct_canvas_position(int x, int y) {
+static Point2 compute_position_in_canvas(int x, int y) {
+	int canvas_x = EM_ASM_INT({
+		return document.getElementById('canvas').getBoundingClientRect().x;
+	});
+	int canvas_y = EM_ASM_INT({
+		return document.getElementById('canvas').getBoundingClientRect().y;
+	});
 	int canvas_width;
 	int canvas_height;
-	emscripten_get_canvas_element_size(NULL, &canvas_width, &canvas_height);
+	emscripten_get_canvas_element_size(GODOT_CANVAS_SELECTOR, &canvas_width, &canvas_height);
 
 	double element_width;
 	double element_height;
-	emscripten_get_element_css_size(NULL, &element_width, &element_height);
+	emscripten_get_element_css_size(GODOT_CANVAS_SELECTOR, &element_width, &element_height);
 
-	x = (int)(canvas_width / element_width * x);
-	y = (int)(canvas_height / element_height * y);
-	return Point2(x, y);
+	return Point2((int)(canvas_width / element_width * (x - canvas_x)),
+			(int)(canvas_height / element_height * (y - canvas_y)));
 }
 
 static bool cursor_inside_canvas = true;
@@ -135,14 +141,14 @@ void OS_JavaScript::set_window_size(const Size2 p_size) {
 			emscripten_exit_soft_fullscreen();
 			window_maximized = false;
 		}
-		emscripten_set_canvas_element_size(NULL, p_size.x, p_size.y);
+		emscripten_set_canvas_element_size(GODOT_CANVAS_SELECTOR, p_size.x, p_size.y);
 	}
 }
 
 Size2 OS_JavaScript::get_window_size() const {
 
 	int canvas[2];
-	emscripten_get_canvas_element_size(NULL, canvas, canvas + 1);
+	emscripten_get_canvas_element_size(GODOT_CANVAS_SELECTOR, canvas, canvas + 1);
 	return Size2(canvas[0], canvas[1]);
 }
 
@@ -162,7 +168,7 @@ void OS_JavaScript::set_window_maximized(bool p_enabled) {
 		strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
 		strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
 		strategy.canvasResizedCallback = NULL;
-		emscripten_enter_soft_fullscreen(NULL, &strategy);
+		emscripten_enter_soft_fullscreen(GODOT_CANVAS_SELECTOR, &strategy);
 		window_maximized = p_enabled;
 	}
 }
@@ -191,7 +197,7 @@ void OS_JavaScript::set_window_fullscreen(bool p_enabled) {
 		strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
 		strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
 		strategy.canvasResizedCallback = NULL;
-		EMSCRIPTEN_RESULT result = emscripten_request_fullscreen_strategy(NULL, false, &strategy);
+		EMSCRIPTEN_RESULT result = emscripten_request_fullscreen_strategy(GODOT_CANVAS_SELECTOR, false, &strategy);
 		ERR_FAIL_COND_MSG(result == EMSCRIPTEN_RESULT_FAILED_NOT_DEFERRED, "Enabling fullscreen is only possible from an input callback for the HTML5 platform.");
 		ERR_FAIL_COND_MSG(result != EMSCRIPTEN_RESULT_SUCCESS, "Enabling fullscreen is only possible from an input callback for the HTML5 platform.");
 		// Not fullscreen yet, so prevent "windowed" canvas dimensions from
@@ -214,6 +220,20 @@ void OS_JavaScript::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_scre
 	p_list->push_back(OS::VideoMode(screen.width, screen.height, true));
 }
 
+bool OS_JavaScript::get_window_per_pixel_transparency_enabled() const {
+	if (!is_layered_allowed()) {
+		return false;
+	}
+	return transparency_enabled;
+}
+
+void OS_JavaScript::set_window_per_pixel_transparency_enabled(bool p_enabled) {
+	if (!is_layered_allowed()) {
+		return;
+	}
+	transparency_enabled = p_enabled;
+}
+
 // Keys
 
 template <typename T>
@@ -231,7 +251,8 @@ static Ref<InputEventKey> setup_key_event(const EmscriptenKeyboardEvent *emscrip
 	ev.instance();
 	ev->set_echo(emscripten_event->repeat);
 	dom2godot_mod(emscripten_event, ev);
-	ev->set_scancode(dom2godot_scancode(emscripten_event->keyCode));
+	ev->set_keycode(dom2godot_keycode(emscripten_event->keyCode));
+	ev->set_physical_keycode(dom2godot_keycode(emscripten_event->keyCode));
 
 	String unicode = String::utf8(emscripten_event->key);
 	// Check if empty or multi-character (e.g. `CapsLock`).
@@ -251,7 +272,7 @@ EM_BOOL OS_JavaScript::keydown_callback(int p_event_type, const EmscriptenKeyboa
 	OS_JavaScript *os = get_singleton();
 	Ref<InputEventKey> ev = setup_key_event(p_event);
 	ev->set_pressed(true);
-	if (ev->get_unicode() == 0 && keycode_has_unicode(ev->get_scancode())) {
+	if (ev->get_unicode() == 0 && keycode_has_unicode(ev->get_keycode())) {
 		// Defer to keypress event for legacy unicode retrieval.
 		os->deferred_key_event = ev;
 		// Do not suppress keypress event.
@@ -276,7 +297,7 @@ EM_BOOL OS_JavaScript::keyup_callback(int p_event_type, const EmscriptenKeyboard
 	Ref<InputEventKey> ev = setup_key_event(p_event);
 	ev->set_pressed(false);
 	get_singleton()->input->parse_input_event(ev);
-	return ev->get_scancode() != KEY_UNKNOWN && ev->get_scancode() != 0;
+	return ev->get_keycode() != KEY_UNKNOWN && ev->get_keycode() != 0;
 }
 
 // Mouse
@@ -298,9 +319,10 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 	Ref<InputEventMouseButton> ev;
 	ev.instance();
 	ev->set_pressed(p_event_type == EMSCRIPTEN_EVENT_MOUSEDOWN);
-	ev->set_position(correct_canvas_position(p_event->canvasX, p_event->canvasY));
+	ev->set_position(compute_position_in_canvas(p_event->clientX, p_event->clientY));
 	ev->set_global_position(ev->get_position());
 	dom2godot_mod(p_event, ev);
+
 	switch (p_event->button) {
 		case DOM_BUTTON_LEFT: ev->set_button_index(BUTTON_LEFT); break;
 		case DOM_BUTTON_MIDDLE: ev->set_button_index(BUTTON_MIDDLE); break;
@@ -312,7 +334,7 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 
 	if (ev->is_pressed()) {
 
-		uint64_t diff = p_event->timestamp - os->last_click_ms;
+		double diff = emscripten_get_now() - os->last_click_ms;
 
 		if (ev->get_button_index() == os->last_click_button_index) {
 
@@ -362,7 +384,7 @@ EM_BOOL OS_JavaScript::mousemove_callback(int p_event_type, const EmscriptenMous
 	OS_JavaScript *os = get_singleton();
 
 	int input_mask = os->input->get_mouse_button_mask();
-	Point2 pos = correct_canvas_position(p_event->canvasX, p_event->canvasY);
+	Point2 pos = compute_position_in_canvas(p_event->clientX, p_event->clientY);
 	// For motion outside the canvas, only read mouse movement if dragging
 	// started inside the canvas; imitating desktop app behaviour.
 	if (!cursor_inside_canvas && !input_mask)
@@ -459,7 +481,7 @@ void OS_JavaScript::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_s
 			cursors_cache.erase(p_shape);
 		}
 
-		Ref<Texture> texture = p_cursor;
+		Ref<Texture2D> texture = p_cursor;
 		Ref<AtlasTexture> atlas_texture = p_cursor;
 		Ref<Image> image;
 		Size2 texture_size;
@@ -516,17 +538,13 @@ void OS_JavaScript::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_s
 		png_meta.height = texture_size.height;
 		png_meta.format = PNG_FORMAT_RGBA;
 
-		PoolByteArray png;
+		PackedByteArray png;
 		size_t len;
-		PoolByteArray::Read r = image->get_data().read();
-		ERR_FAIL_COND(!png_image_write_get_memory_size(png_meta, len, 0, r.ptr(), 0, NULL));
+		PackedByteArray data = image->get_data();
+		ERR_FAIL_COND(!png_image_write_get_memory_size(png_meta, len, 0, data.ptr(), 0, NULL));
 
 		png.resize(len);
-		PoolByteArray::Write w = png.write();
-		ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, w.ptr(), &len, 0, r.ptr(), 0, NULL));
-		w = PoolByteArray::Write();
-
-		r = png.read();
+		ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, png.ptrw(), &len, 0, data.ptr(), 0, NULL));
 
 		char *object_url;
 		/* clang-format off */
@@ -541,9 +559,8 @@ void OS_JavaScript::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_s
 			var string_on_wasm_heap = _malloc(length_bytes);
 			setValue(PTR, string_on_wasm_heap, '*');
 			stringToUTF8(url, string_on_wasm_heap, length_bytes);
-		}, r.ptr(), len, &object_url);
+		}, png.ptr(), len, &object_url);
 		/* clang-format on */
-		r = PoolByteArray::Read();
 
 		String url = String::utf8(object_url) + "?" + itos(p_hotspot.x) + " " + itos(p_hotspot.y);
 
@@ -696,7 +713,7 @@ EM_BOOL OS_JavaScript::touch_press_callback(int p_event_type, const EmscriptenTo
 		if (!touch.isChanged)
 			continue;
 		ev->set_index(touch.identifier);
-		ev->set_position(correct_canvas_position(touch.canvasX, touch.canvasY));
+		ev->set_position(compute_position_in_canvas(touch.clientX, touch.clientY));
 		os->touches[i] = ev->get_position();
 		ev->set_pressed(p_event_type == EMSCRIPTEN_EVENT_TOUCHSTART);
 
@@ -721,7 +738,7 @@ EM_BOOL OS_JavaScript::touchmove_callback(int p_event_type, const EmscriptenTouc
 		if (!touch.isChanged)
 			continue;
 		ev->set_index(touch.identifier);
-		ev->set_position(correct_canvas_position(touch.canvasX, touch.canvasY));
+		ev->set_position(compute_position_in_canvas(touch.clientX, touch.clientY));
 		Point2 &prev = os->touches[i];
 		ev->set_relative(ev->get_position() - prev);
 		prev = ev->get_position();
@@ -804,8 +821,6 @@ int OS_JavaScript::get_video_driver_count() const {
 const char *OS_JavaScript::get_video_driver_name(int p_driver) const {
 
 	switch (p_driver) {
-		case VIDEO_DRIVER_GLES3:
-			return "GLES3";
 		case VIDEO_DRIVER_GLES2:
 			return "GLES2";
 	}
@@ -877,58 +892,35 @@ void OS_JavaScript::initialize_core() {
 
 Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
+#if 0
 	EmscriptenWebGLContextAttributes attributes;
 	emscripten_webgl_init_context_attributes(&attributes);
-	attributes.alpha = false;
+	attributes.alpha = GLOBAL_GET("display/window/per_pixel_transparency/allowed");
 	attributes.antialias = false;
 	ERR_FAIL_INDEX_V(p_video_driver, VIDEO_DRIVER_MAX, ERR_INVALID_PARAMETER);
 
-	bool gles3 = true;
-	if (p_video_driver == VIDEO_DRIVER_GLES2) {
-		gles3 = false;
+	if (p_desired.layered) {
+		set_window_per_pixel_transparency_enabled(true);
 	}
 
 	bool gl_initialization_error = false;
 
-	while (true) {
-		if (gles3) {
-			if (RasterizerGLES3::is_viable() == OK) {
-				attributes.majorVersion = 2;
-				RasterizerGLES3::register_config();
-				RasterizerGLES3::make_current();
-				break;
-			} else {
-				if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2")) {
-					p_video_driver = VIDEO_DRIVER_GLES2;
-					gles3 = false;
-					continue;
-				} else {
-					gl_initialization_error = true;
-					break;
-				}
-			}
-		} else {
-			if (RasterizerGLES2::is_viable() == OK) {
-				attributes.majorVersion = 1;
-				RasterizerGLES2::register_config();
-				RasterizerGLES2::make_current();
-				break;
-			} else {
-				gl_initialization_error = true;
-				break;
-			}
-		}
+	if (RasterizerGLES2::is_viable() == OK) {
+		attributes.majorVersion = 1;
+		RasterizerGLES2::register_config();
+		RasterizerGLES2::make_current();
+	} else {
+		gl_initialization_error = true;
 	}
 
-	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(NULL, &attributes);
+	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(GODOT_CANVAS_SELECTOR, &attributes);
 	if (emscripten_webgl_make_context_current(ctx) != EMSCRIPTEN_RESULT_SUCCESS) {
 		gl_initialization_error = true;
 	}
 
 	if (gl_initialization_error) {
-		OS::get_singleton()->alert("Your browser does not support any of the supported WebGL versions.\n"
-								   "Please update your browser version.",
-				"Unable to initialize Video driver");
+		OS::get_singleton()->alert("Your browser does not seem to support WebGL. Please update your browser version.",
+				"Unable to initialize video driver");
 		return ERR_UNAVAILABLE;
 	}
 
@@ -943,6 +935,7 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	if (p_desired.fullscreen) {
 		/* clang-format off */
 		EM_ASM({
+			const canvas = Module.canvas;
 			(canvas.requestFullscreen || canvas.msRequestFullscreen ||
 				canvas.mozRequestFullScreen || canvas.mozRequestFullscreen ||
 				canvas.webkitRequestFullscreen
@@ -957,6 +950,8 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	} else {
 		set_window_size(get_window_size());
 	}
+#endif
+	RasterizerDummy::make_current(); // TODO GLES2 in Godot 4.0... or webgpu?
 
 	char locale_ptr[16];
 	/* clang-format off */
@@ -973,7 +968,7 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	EMSCRIPTEN_RESULT result;
 #define EM_CHECK(ev)                         \
 	if (result != EMSCRIPTEN_RESULT_SUCCESS) \
-	ERR_PRINTS("Error while setting " #ev " callback: Code " + itos(result))
+		ERR_PRINT("Error while setting " #ev " callback: Code " + itos(result));
 #define SET_EM_CALLBACK(target, ev, cb)                               \
 	result = emscripten_set_##ev##_callback(target, NULL, true, &cb); \
 	EM_CHECK(ev)
@@ -983,21 +978,21 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	// These callbacks from Emscripten's html5.h suffice to access most
 	// JavaScript APIs. For APIs that are not (sufficiently) exposed, EM_ASM
 	// is used below.
-	SET_EM_CALLBACK("#window", mousemove, mousemove_callback)
-	SET_EM_CALLBACK("#canvas", mousedown, mouse_button_callback)
-	SET_EM_CALLBACK("#window", mouseup, mouse_button_callback)
-	SET_EM_CALLBACK("#window", wheel, wheel_callback)
-	SET_EM_CALLBACK("#window", touchstart, touch_press_callback)
-	SET_EM_CALLBACK("#window", touchmove, touchmove_callback)
-	SET_EM_CALLBACK("#window", touchend, touch_press_callback)
-	SET_EM_CALLBACK("#window", touchcancel, touch_press_callback)
-	SET_EM_CALLBACK("#canvas", keydown, keydown_callback)
-	SET_EM_CALLBACK("#canvas", keypress, keypress_callback)
-	SET_EM_CALLBACK("#canvas", keyup, keyup_callback)
-	SET_EM_CALLBACK(NULL, fullscreenchange, fullscreen_change_callback)
+	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_WINDOW, mousemove, mousemove_callback)
+	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, mousedown, mouse_button_callback)
+	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_WINDOW, mouseup, mouse_button_callback)
+	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_WINDOW, wheel, wheel_callback)
+	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, touchstart, touch_press_callback)
+	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, touchmove, touchmove_callback)
+	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, touchend, touch_press_callback)
+	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, touchcancel, touch_press_callback)
+	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, keydown, keydown_callback)
+	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, keypress, keypress_callback)
+	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, keyup, keyup_callback)
+	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, fullscreenchange, fullscreen_change_callback)
 	SET_EM_CALLBACK_NOTARGET(gamepadconnected, gamepad_change_callback)
 	SET_EM_CALLBACK_NOTARGET(gamepaddisconnected, gamepad_change_callback)
-#undef SET_EM_CALLBACK_NODATA
+#undef SET_EM_CALLBACK_NOTARGET
 #undef SET_EM_CALLBACK
 #undef EM_CHECK
 
@@ -1078,15 +1073,15 @@ bool OS_JavaScript::main_loop_iterate() {
 			strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
 			strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
 			strategy.canvasResizedCallback = NULL;
-			emscripten_enter_soft_fullscreen(NULL, &strategy);
+			emscripten_enter_soft_fullscreen(GODOT_CANVAS_SELECTOR, &strategy);
 		} else {
-			emscripten_set_canvas_element_size(NULL, windowed_size.width, windowed_size.height);
+			emscripten_set_canvas_element_size(GODOT_CANVAS_SELECTOR, windowed_size.width, windowed_size.height);
 		}
 		just_exited_fullscreen = false;
 	}
 
 	int canvas[2];
-	emscripten_get_canvas_element_size(NULL, canvas, canvas + 1);
+	emscripten_get_canvas_element_size(GODOT_CANVAS_SELECTOR, canvas, canvas + 1);
 	video_mode.width = canvas[0];
 	video_mode.height = canvas[1];
 	if (!window_maximized && !video_mode.fullscreen && !just_exited_fullscreen && !entering_fullscreen) {
@@ -1184,17 +1179,14 @@ void OS_JavaScript::set_icon(const Ref<Image> &p_icon) {
 	png_meta.height = icon->get_height();
 	png_meta.format = PNG_FORMAT_RGBA;
 
-	PoolByteArray png;
+	PackedByteArray png;
 	size_t len;
-	PoolByteArray::Read r = icon->get_data().read();
-	ERR_FAIL_COND(!png_image_write_get_memory_size(png_meta, len, 0, r.ptr(), 0, NULL));
+	PackedByteArray data = icon->get_data();
+	ERR_FAIL_COND(!png_image_write_get_memory_size(png_meta, len, 0, data.ptr(), 0, NULL));
 
 	png.resize(len);
-	PoolByteArray::Write w = png.write();
-	ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, w.ptr(), &len, 0, r.ptr(), 0, NULL));
-	w = PoolByteArray::Write();
+	ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, png.ptrw(), &len, 0, data.ptr(), 0, NULL));
 
-	r = png.read();
 	/* clang-format off */
 	EM_ASM_ARGS({
 		var PNG_PTR = $0;
@@ -1210,7 +1202,7 @@ void OS_JavaScript::set_icon(const Ref<Image> &p_icon) {
 			document.head.appendChild(link);
 		}
 		link.href = url;
-	}, r.ptr(), len);
+	}, png.ptr(), len);
 	/* clang-format on */
 }
 
@@ -1248,24 +1240,6 @@ String OS_JavaScript::get_user_data_dir() const {
 String OS_JavaScript::get_resource_dir() const {
 
 	return "/";
-}
-
-OS::PowerState OS_JavaScript::get_power_state() {
-
-	WARN_PRINT("Power management is not supported for the HTML5 platform, defaulting to POWERSTATE_UNKNOWN");
-	return OS::POWERSTATE_UNKNOWN;
-}
-
-int OS_JavaScript::get_power_seconds_left() {
-
-	WARN_PRINT("Power management is not supported for the HTML5 platform, defaulting to -1");
-	return -1;
-}
-
-int OS_JavaScript::get_power_percent_left() {
-
-	WARN_PRINT("Power management is not supported for the HTML5 platform, defaulting to -1");
-	return -1;
 }
 
 void OS_JavaScript::file_access_close_callback(const String &p_file, int p_flags) {
@@ -1308,6 +1282,7 @@ OS_JavaScript::OS_JavaScript(int p_argc, char *p_argv[]) {
 	window_maximized = false;
 	entering_fullscreen = false;
 	just_exited_fullscreen = false;
+	transparency_enabled = false;
 
 	main_loop = NULL;
 

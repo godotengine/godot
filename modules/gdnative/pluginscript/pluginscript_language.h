@@ -53,7 +53,7 @@ class PluginScriptLanguage : public ScriptLanguage {
 	const godot_pluginscript_language_desc _desc;
 	godot_pluginscript_language_data *_data;
 
-	Mutex *_lock;
+	Mutex _lock;
 	SelfList<PluginScript>::List _script_list;
 
 public:
@@ -80,7 +80,7 @@ public:
 	virtual bool supports_builtin_mode() const;
 	virtual bool can_inherit_from_file() { return true; }
 	virtual int find_function(const String &p_function, const String &p_code) const;
-	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const;
+	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const;
 	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptCodeCompletionOption> *r_options, bool &r_force, String &r_call_hint);
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value);

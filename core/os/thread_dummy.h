@@ -31,7 +31,6 @@
 #ifndef THREAD_DUMMY_H
 #define THREAD_DUMMY_H
 
-#include "core/os/mutex.h"
 #include "core/os/rw_lock.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
@@ -42,30 +41,6 @@ class ThreadDummy : public Thread {
 
 public:
 	virtual ID get_id() const { return 0; };
-
-	static void make_default();
-};
-
-class MutexDummy : public Mutex {
-
-	static Mutex *create(bool p_recursive);
-
-public:
-	virtual void lock(){};
-	virtual void unlock(){};
-	virtual Error try_lock() { return OK; };
-
-	static void make_default();
-};
-
-class SemaphoreDummy : public Semaphore {
-
-	static Semaphore *create();
-
-public:
-	virtual Error wait() { return OK; };
-	virtual Error post() { return OK; };
-	virtual int get() const { return 0; }; ///< get semaphore value
 
 	static void make_default();
 };

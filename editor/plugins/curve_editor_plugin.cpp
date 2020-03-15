@@ -49,7 +49,7 @@ CurveEditor::CurveEditor() {
 	set_clip_contents(true);
 
 	_context_menu = memnew(PopupMenu);
-	_context_menu->connect("id_pressed", this, "_on_context_menu_item_selected");
+	_context_menu->connect("id_pressed", callable_mp(this, &CurveEditor::on_context_menu_item_selected));
 	add_child(_context_menu);
 
 	_presets_menu = memnew(PopupMenu);
@@ -60,7 +60,7 @@ CurveEditor::CurveEditor() {
 	_presets_menu->add_item(TTR("Ease In"), PRESET_EASE_IN);
 	_presets_menu->add_item(TTR("Ease Out"), PRESET_EASE_OUT);
 	_presets_menu->add_item(TTR("Smoothstep"), PRESET_SMOOTHSTEP);
-	_presets_menu->connect("id_pressed", this, "_on_preset_item_selected");
+	_presets_menu->connect("id_pressed", callable_mp(this, &CurveEditor::on_preset_item_selected));
 	_context_menu->add_child(_presets_menu);
 }
 
@@ -70,15 +70,15 @@ void CurveEditor::set_curve(Ref<Curve> curve) {
 		return;
 
 	if (_curve_ref.is_valid()) {
-		_curve_ref->disconnect(CoreStringNames::get_singleton()->changed, this, "_curve_changed");
-		_curve_ref->disconnect(Curve::SIGNAL_RANGE_CHANGED, this, "_curve_changed");
+		_curve_ref->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveEditor::_curve_changed));
+		_curve_ref->disconnect(Curve::SIGNAL_RANGE_CHANGED, callable_mp(this, &CurveEditor::_curve_changed));
 	}
 
 	_curve_ref = curve;
 
 	if (_curve_ref.is_valid()) {
-		_curve_ref->connect(CoreStringNames::get_singleton()->changed, this, "_curve_changed");
-		_curve_ref->connect(Curve::SIGNAL_RANGE_CHANGED, this, "_curve_changed");
+		_curve_ref->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveEditor::_curve_changed));
+		_curve_ref->connect(Curve::SIGNAL_RANGE_CHANGED, callable_mp(this, &CurveEditor::_curve_changed));
 	}
 
 	_selected_point = -1;
@@ -238,7 +238,7 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 		const InputEventKey &key = **key_ref;
 
 		if (key.is_pressed() && _selected_point != -1) {
-			if (key.get_scancode() == KEY_DELETE)
+			if (key.get_keycode() == KEY_DELETE)
 				remove_point(_selected_point);
 		}
 	}
@@ -612,7 +612,7 @@ struct CanvasItemPlotCurve {
 
 	void operator()(Vector2 pos0, Vector2 pos1, bool in_definition) {
 		// FIXME: Using a line width greater than 1 breaks curve rendering
-		ci.draw_line(pos0, pos1, in_definition ? color1 : color2, 1, true);
+		ci.draw_line(pos0, pos1, in_definition ? color1 : color2, 1);
 	}
 };
 
@@ -693,13 +693,13 @@ void CurveEditor::_draw() {
 
 		if (i != 0) {
 			Vector2 control_pos = get_tangent_view_pos(i, TANGENT_LEFT);
-			draw_line(get_view_pos(pos), control_pos, tangent_color, Math::round(EDSCALE), true);
+			draw_line(get_view_pos(pos), control_pos, tangent_color, Math::round(EDSCALE));
 			draw_rect(Rect2(control_pos, Vector2(1, 1)).grow(2), tangent_color);
 		}
 
 		if (i != curve.get_point_count() - 1) {
 			Vector2 control_pos = get_tangent_view_pos(i, TANGENT_RIGHT);
-			draw_line(get_view_pos(pos), control_pos, tangent_color, Math::round(EDSCALE), true);
+			draw_line(get_view_pos(pos), control_pos, tangent_color, Math::round(EDSCALE));
 			draw_rect(Rect2(control_pos, Vector2(1, 1)).grow(2), tangent_color);
 		}
 	}
@@ -749,9 +749,6 @@ void CurveEditor::_draw() {
 
 void CurveEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_gui_input"), &CurveEditor::on_gui_input);
-	ClassDB::bind_method(D_METHOD("_on_preset_item_selected"), &CurveEditor::on_preset_item_selected);
-	ClassDB::bind_method(D_METHOD("_curve_changed"), &CurveEditor::_curve_changed);
-	ClassDB::bind_method(D_METHOD("_on_context_menu_item_selected"), &CurveEditor::on_context_menu_item_selected);
 }
 
 //---------------
@@ -787,10 +784,10 @@ bool CurvePreviewGenerator::handles(const String &p_type) const {
 	return p_type == "Curve";
 }
 
-Ref<Texture> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
+Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
 
 	Ref<Curve> curve_ref = p_from;
-	ERR_FAIL_COND_V_MSG(curve_ref.is_null(), Ref<Texture>(), "It's not a reference to a valid Resource object.");
+	ERR_FAIL_COND_V_MSG(curve_ref.is_null(), Ref<Texture2D>(), "It's not a reference to a valid Resource object.");
 	Curve &curve = **curve_ref;
 
 	// FIXME: Should be ported to use p_size as done in b2633a97
@@ -801,8 +798,6 @@ Ref<Texture> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, const 
 	Image &im = **img_ref;
 
 	im.create(thumbnail_size, thumbnail_size / 2, 0, Image::FORMAT_RGBA8);
-
-	im.lock();
 
 	Color bg_color(0.1, 0.1, 0.1, 1.0);
 	for (int i = 0; i < thumbnail_size; i++) {
@@ -844,10 +839,8 @@ Ref<Texture> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, const 
 		prev_y = y;
 	}
 
-	im.unlock();
-
 	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
 
-	ptex->create_from_image(img_ref, 0);
+	ptex->create_from_image(img_ref);
 	return ptex;
 }

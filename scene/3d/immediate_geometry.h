@@ -41,7 +41,7 @@ class ImmediateGeometry : public GeometryInstance {
 	RID im;
 	//a list of textures drawn need to be kept, to avoid references
 	// in VisualServer from becoming invalid if the texture is no longer used
-	List<Ref<Texture> > cached_textures;
+	List<Ref<Texture2D> > cached_textures;
 	bool empty;
 	AABB aabb;
 
@@ -49,7 +49,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void begin(Mesh::PrimitiveType p_primitive, const Ref<Texture> &p_texture = Ref<Texture>());
+	void begin(Mesh::PrimitiveType p_primitive, const Ref<Texture2D> &p_texture = Ref<Texture2D>());
 	void set_normal(const Vector3 &p_normal);
 	void set_tangent(const Plane &p_tangent);
 	void set_color(const Color &p_color);
@@ -64,7 +64,7 @@ public:
 	void add_sphere(int p_lats, int p_lons, float p_radius, bool p_add_uv = true);
 
 	virtual AABB get_aabb() const;
-	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	ImmediateGeometry();
 	~ImmediateGeometry();

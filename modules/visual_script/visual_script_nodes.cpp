@@ -285,7 +285,7 @@ public:
 
 	//virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		int ac = node->get_argument_count();
 
@@ -294,7 +294,7 @@ public:
 			Variant::Type expected = node->get_argument_type(i);
 			if (expected != Variant::NIL) {
 				if (!Variant::can_convert_strict(p_inputs[i]->get_type(), expected)) {
-					r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 					r_error.expected = expected;
 					r_error.argument = i;
 					return 0;
@@ -762,7 +762,7 @@ public:
 	int input_count = 0;
 	virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		if (input_count > 0) {
 			Array arr;
@@ -1031,7 +1031,7 @@ public:
 
 	//virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		bool valid;
 		if (unary) {
@@ -1043,7 +1043,7 @@ public:
 
 		if (!valid) {
 
-			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			if (p_outputs[0]->get_type() == Variant::STRING) {
 				r_error_str = *p_outputs[0];
 			} else {
@@ -1165,7 +1165,7 @@ class VisualScriptNodeInstanceSelect : public VisualScriptNodeInstance {
 public:
 	//virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		bool cond = *p_inputs[0];
 		if (cond)
@@ -1285,10 +1285,10 @@ public:
 	VisualScriptInstance *instance;
 	StringName variable;
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		if (!instance->get_variable(variable, p_outputs[0])) {
-			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			r_error_str = RTR("VariableGet not found in script: ") + "'" + String(variable) + "'";
 			return 0;
 		}
@@ -1407,11 +1407,11 @@ public:
 
 	//virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		if (!instance->set_variable(variable, *p_inputs[0])) {
 
-			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			r_error_str = RTR("VariableSet not found in script: ") + "'" + String(variable) + "'";
 		}
 
@@ -1482,7 +1482,7 @@ void VisualScriptConstant::set_constant_type(Variant::Type p_type) {
 		return;
 
 	type = p_type;
-	Variant::CallError ce;
+	Callable::CallError ce;
 	value = Variant::construct(type, NULL, 0, ce);
 	ports_changed_notify();
 	_change_notify();
@@ -1537,7 +1537,7 @@ public:
 	Variant constant;
 	//virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		*p_outputs[0] = constant;
 		return 0;
@@ -1642,7 +1642,7 @@ public:
 	Ref<Resource> preload;
 	//virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		*p_outputs[0] = preload;
 		return 0;
@@ -1710,13 +1710,13 @@ class VisualScriptNodeInstanceIndexGet : public VisualScriptNodeInstance {
 public:
 	//virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		bool valid;
 		*p_outputs[0] = p_inputs[0]->get(*p_inputs[1], &valid);
 
 		if (!valid) {
-			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			r_error_str = "Invalid get: " + p_inputs[0]->get_construct_string();
 		}
 		return 0;
@@ -1785,14 +1785,14 @@ class VisualScriptNodeInstanceIndexSet : public VisualScriptNodeInstance {
 public:
 	//virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		bool valid;
 		*p_outputs[0] = *p_inputs[0];
 		p_outputs[0]->set(*p_inputs[1], *p_inputs[2], &valid);
 
 		if (!valid) {
-			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			r_error_str = "Invalid set: " + p_inputs[1]->get_construct_string();
 		}
 		return 0;
@@ -1842,7 +1842,7 @@ PropertyInfo VisualScriptGlobalConstant::get_input_value_port_info(int p_idx) co
 
 PropertyInfo VisualScriptGlobalConstant::get_output_value_port_info(int p_idx) const {
 	String name = GlobalConstants::get_global_constant_name(index);
-	return PropertyInfo(Variant::REAL, name);
+	return PropertyInfo(Variant::INT, name);
 }
 
 String VisualScriptGlobalConstant::get_caption() const {
@@ -1866,7 +1866,7 @@ public:
 	int index;
 	//virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		*p_outputs[0] = GlobalConstants::get_global_constant_value(index);
 		return 0;
@@ -1935,8 +1935,11 @@ PropertyInfo VisualScriptClassConstant::get_input_value_port_info(int p_idx) con
 }
 
 PropertyInfo VisualScriptClassConstant::get_output_value_port_info(int p_idx) const {
-
-	return PropertyInfo(Variant::INT, String(base_type) + "." + String(name));
+	if (name == "") {
+		return PropertyInfo(Variant::INT, String(base_type));
+	} else {
+		return PropertyInfo(Variant::INT, String(base_type) + "." + String(name));
+	}
 }
 
 String VisualScriptClassConstant::get_caption() const {
@@ -1958,6 +1961,22 @@ StringName VisualScriptClassConstant::get_class_constant() {
 void VisualScriptClassConstant::set_base_type(const StringName &p_which) {
 
 	base_type = p_which;
+	List<String> constants;
+	ClassDB::get_integer_constant_list(base_type, &constants, true);
+	if (constants.size() > 0) {
+		bool found_name = false;
+		for (List<String>::Element *E = constants.front(); E; E = E->next()) {
+			if (E->get() == name) {
+				found_name = true;
+				break;
+			}
+		}
+		if (!found_name) {
+			name = constants[0];
+		}
+	} else {
+		name = "";
+	}
 	_change_notify();
 	ports_changed_notify();
 }
@@ -1972,11 +1991,11 @@ public:
 	bool valid;
 	//virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		if (!valid) {
 			r_error_str = "Invalid constant name, pick a valid class constant.";
-			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		}
 
 		*p_outputs[0] = value;
@@ -2060,7 +2079,7 @@ PropertyInfo VisualScriptBasicTypeConstant::get_input_value_port_info(int p_idx)
 
 PropertyInfo VisualScriptBasicTypeConstant::get_output_value_port_info(int p_idx) const {
 
-	return PropertyInfo(Variant::INT, "value");
+	return PropertyInfo(type, "value");
 }
 
 String VisualScriptBasicTypeConstant::get_caption() const {
@@ -2069,8 +2088,11 @@ String VisualScriptBasicTypeConstant::get_caption() const {
 }
 
 String VisualScriptBasicTypeConstant::get_text() const {
-
-	return Variant::get_type_name(type) + "." + String(name);
+	if (name == "") {
+		return Variant::get_type_name(type);
+	} else {
+		return Variant::get_type_name(type) + "." + String(name);
+	}
 }
 
 void VisualScriptBasicTypeConstant::set_basic_type_constant(const StringName &p_which) {
@@ -2087,6 +2109,23 @@ StringName VisualScriptBasicTypeConstant::get_basic_type_constant() const {
 void VisualScriptBasicTypeConstant::set_basic_type(Variant::Type p_which) {
 
 	type = p_which;
+
+	List<StringName> constants;
+	Variant::get_constants_for_type(type, &constants);
+	if (constants.size() > 0) {
+		bool found_name = false;
+		for (List<StringName>::Element *E = constants.front(); E; E = E->next()) {
+			if (E->get() == name) {
+				found_name = true;
+				break;
+			}
+		}
+		if (!found_name) {
+			name = constants[0];
+		}
+	} else {
+		name = "";
+	}
 	_change_notify();
 	ports_changed_notify();
 }
@@ -2101,11 +2140,11 @@ public:
 	bool valid;
 	//virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		if (!valid) {
 			r_error_str = "Invalid constant name, pick a valid basic type constant.";
-			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		}
 
 		*p_outputs[0] = value;
@@ -2220,7 +2259,7 @@ PropertyInfo VisualScriptMathConstant::get_input_value_port_info(int p_idx) cons
 
 PropertyInfo VisualScriptMathConstant::get_output_value_port_info(int p_idx) const {
 
-	return PropertyInfo(Variant::REAL, const_name[constant]);
+	return PropertyInfo(Variant::FLOAT, const_name[constant]);
 }
 
 String VisualScriptMathConstant::get_caption() const {
@@ -2244,7 +2283,7 @@ public:
 	float value;
 	//virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		*p_outputs[0] = value;
 		return 0;
@@ -2350,7 +2389,7 @@ public:
 
 	//virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		*p_outputs[0] = singleton;
 		return 0;
@@ -2377,10 +2416,7 @@ VisualScriptEngineSingleton::TypeGuess VisualScriptEngineSingleton::guess_output
 	return tg;
 }
 
-void VisualScriptEngineSingleton::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("set_singleton", "name"), &VisualScriptEngineSingleton::set_singleton);
-	ClassDB::bind_method(D_METHOD("get_singleton"), &VisualScriptEngineSingleton::get_singleton);
+void VisualScriptEngineSingleton::_validate_property(PropertyInfo &property) const {
 
 	String cc;
 
@@ -2397,7 +2433,16 @@ void VisualScriptEngineSingleton::_bind_methods() {
 		cc += E->get().name;
 	}
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "constant", PROPERTY_HINT_ENUM, cc), "set_singleton", "get_singleton");
+	property.hint = PROPERTY_HINT_ENUM;
+	property.hint_string = cc;
+}
+
+void VisualScriptEngineSingleton::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_singleton", "name"), &VisualScriptEngineSingleton::set_singleton);
+	ClassDB::bind_method(D_METHOD("get_singleton"), &VisualScriptEngineSingleton::get_singleton);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "constant"), "set_singleton", "get_singleton");
 }
 
 VisualScriptEngineSingleton::VisualScriptEngineSingleton() {
@@ -2467,18 +2512,18 @@ public:
 
 	//virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		Node *node = Object::cast_to<Node>(instance->get_owner_ptr());
 		if (!node) {
-			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			r_error_str = "Base object is not a Node!";
 			return 0;
 		}
 
 		Node *another = node->get_node(path);
 		if (!another) {
-			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			r_error_str = "Path does not lead Node!";
 			return 0;
 		}
@@ -2651,18 +2696,18 @@ public:
 
 	//virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		Node *node = Object::cast_to<Node>(instance->get_owner_ptr());
 		if (!node) {
-			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			r_error_str = "Base object is not a Node!";
 			return 0;
 		}
 
 		SceneTree *tree = node->get_tree();
 		if (!tree) {
-			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			r_error_str = "Attempt to get SceneTree while node is not in the active tree.";
 			return 0;
 		}
@@ -2758,7 +2803,7 @@ public:
 
 	//virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		*p_outputs[0] = path;
 		return 0;
@@ -2840,7 +2885,7 @@ public:
 
 	//virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		*p_outputs[0] = instance->get_owner_ptr();
 		return 0;
@@ -2977,13 +3022,13 @@ public:
 	int work_mem_size;
 
 	virtual int get_working_memory_size() const { return work_mem_size; }
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		if (node->get_script_instance()) {
 #ifdef DEBUG_ENABLED
 			if (!node->get_script_instance()->has_method(VisualScriptLanguage::singleton->_step)) {
 				r_error_str = RTR("Custom node has no _step() method, can't process graph.");
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 				return 0;
 			}
 #endif
@@ -3010,13 +3055,13 @@ public:
 			Variant ret = node->get_script_instance()->call(VisualScriptLanguage::singleton->_step, in_values, out_values, p_start_mode, work_mem);
 			if (ret.get_type() == Variant::STRING) {
 				r_error_str = ret;
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 				return 0;
 			} else if (ret.is_num()) {
 				ret_out = ret;
 			} else {
 				r_error_str = RTR("Invalid return value from _step(), must be integer (seq out), or string (error).");
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 				return 0;
 			}
 
@@ -3085,8 +3130,6 @@ void VisualScriptCustomNode::_bind_methods() {
 	stepmi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 	BIND_VMETHOD(stepmi);
 
-	ClassDB::bind_method(D_METHOD("_script_changed"), &VisualScriptCustomNode::_script_changed);
-
 	BIND_ENUM_CONSTANT(START_MODE_BEGIN_SEQUENCE);
 	BIND_ENUM_CONSTANT(START_MODE_CONTINUE_SEQUENCE);
 	BIND_ENUM_CONSTANT(START_MODE_RESUME_YIELD);
@@ -3099,7 +3142,7 @@ void VisualScriptCustomNode::_bind_methods() {
 }
 
 VisualScriptCustomNode::VisualScriptCustomNode() {
-	connect("script_changed", this, "_script_changed");
+	connect("script_changed", callable_mp(this, &VisualScriptCustomNode::_script_changed));
 }
 
 //////////////////////////////////////////
@@ -3192,11 +3235,11 @@ public:
 
 	//virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		if (!valid) {
 			r_error_str = "Node requires a script with a _subcall(<args>) method to work.";
-			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			return 0;
 		}
 		*p_outputs[0] = subcall->call(VisualScriptLanguage::singleton->_subcall, p_inputs, input_args, r_error);
@@ -3323,7 +3366,7 @@ public:
 
 	//virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		return 0;
 	}
@@ -3438,11 +3481,11 @@ public:
 
 	//virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
-		Variant::CallError ce;
+		Callable::CallError ce;
 		*p_outputs[0] = Variant::construct(type, p_inputs, argcount, ce);
-		if (ce.error != Variant::CallError::CALL_OK) {
+		if (ce.error != Callable::CallError::CALL_OK) {
 			r_error_str = "Invalid arguments for constructor";
 		}
 
@@ -3567,7 +3610,7 @@ public:
 	StringName name;
 
 	virtual int get_working_memory_size() const { return 1; }
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		*p_outputs[0] = *p_working_mem;
 		return 0;
@@ -3688,7 +3731,7 @@ public:
 	StringName name;
 
 	virtual int get_working_memory_size() const { return 1; }
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		*p_working_mem = *p_inputs[0];
 		*p_outputs[0] = *p_working_mem;
@@ -3823,7 +3866,7 @@ public:
 	StringName action;
 	VisualScriptInputAction::Mode mode;
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		switch (mode) {
 			case VisualScriptInputAction::MODE_PRESSED: {
@@ -3962,7 +4005,7 @@ void VisualScriptDeconstruct::_update_elements() {
 
 	elements.clear();
 	Variant v;
-	Variant::CallError ce;
+	Callable::CallError ce;
 	v = Variant::construct(type, NULL, 0, ce);
 
 	List<PropertyInfo> pinfo;
@@ -4020,7 +4063,7 @@ public:
 
 	//virtual int get_working_memory_size() const { return 0; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		Variant in = *p_inputs[0];
 
@@ -4029,7 +4072,7 @@ public:
 			*p_outputs[i] = in.get(outputs[i], &valid);
 			if (!valid) {
 				r_error_str = "Can't obtain element '" + String(outputs[i]) + "' from " + Variant::get_type_name(in.get_type());
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 				return 0;
 			}
 		}

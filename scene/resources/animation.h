@@ -242,11 +242,11 @@ private:
 		return ret;
 	}
 
-	PoolVector<int> _value_track_get_key_indices(int p_track, float p_time, float p_delta) const {
+	Vector<int> _value_track_get_key_indices(int p_track, float p_time, float p_delta) const {
 
 		List<int> idxs;
 		value_track_get_key_indices(p_track, p_time, p_delta, &idxs);
-		PoolVector<int> idxr;
+		Vector<int> idxr;
 
 		for (List<int>::Element *E = idxs.front(); E; E = E->next()) {
 
@@ -254,11 +254,11 @@ private:
 		}
 		return idxr;
 	}
-	PoolVector<int> _method_track_get_key_indices(int p_track, float p_time, float p_delta) const {
+	Vector<int> _method_track_get_key_indices(int p_track, float p_time, float p_delta) const {
 
 		List<int> idxs;
 		method_track_get_key_indices(p_track, p_time, p_delta, &idxs);
-		PoolVector<int> idxr;
+		Vector<int> idxr;
 
 		for (List<int>::Element *E = idxs.front(); E; E = E->next()) {
 

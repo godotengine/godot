@@ -8,13 +8,13 @@ import platform_windows_builders
 
 common_win = [
     "godot_windows.cpp",
-    "context_gl_windows.cpp",
     "crash_handler_windows.cpp",
     "os_windows.cpp",
     "key_mapping_windows.cpp",
     "joypad_windows.cpp",
-    "power_windows.cpp",
-    "windows_terminal_logger.cpp"
+    "windows_terminal_logger.cpp",
+    "vulkan_context_win.cpp",
+    "context_gl_windows.cpp"
 ]
 
 res_file = 'godot_res.rc'

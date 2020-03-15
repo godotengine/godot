@@ -33,11 +33,13 @@
 #include "core/engine.h"
 
 #define LINE_GRAB_WIDTH 8
+
+#ifdef TOOLS_ENABLED
 Rect2 OccluderPolygon2D::_edit_get_rect() const {
 
 	if (rect_cache_dirty) {
 		if (closed) {
-			PoolVector<Vector2>::Read r = polygon.read();
+			const Vector2 *r = polygon.ptr();
 			item_rect = Rect2();
 			for (int i = 0; i < polygon.size(); i++) {
 				Vector2 pos = r[i];
@@ -70,7 +72,7 @@ bool OccluderPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, double
 		return Geometry::is_point_in_polygon(p_point, Variant(polygon));
 	} else {
 		const real_t d = LINE_GRAB_WIDTH / 2 + p_tolerance;
-		PoolVector<Vector2>::Read points = polygon.read();
+		const Vector2 *points = polygon.ptr();
 		for (int i = 0; i < polygon.size() - 1; i++) {
 			Vector2 p = Geometry::get_closest_point_to_segment_2d(p_point, &points[i]);
 			if (p.distance_to(p_point) <= d)
@@ -80,8 +82,9 @@ bool OccluderPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, double
 		return false;
 	}
 }
+#endif
 
-void OccluderPolygon2D::set_polygon(const PoolVector<Vector2> &p_polygon) {
+void OccluderPolygon2D::set_polygon(const Vector<Vector2> &p_polygon) {
 
 	polygon = p_polygon;
 	rect_cache_dirty = true;
@@ -89,7 +92,7 @@ void OccluderPolygon2D::set_polygon(const PoolVector<Vector2> &p_polygon) {
 	emit_changed();
 }
 
-PoolVector<Vector2> OccluderPolygon2D::get_polygon() const {
+Vector<Vector2> OccluderPolygon2D::get_polygon() const {
 
 	return polygon;
 }
@@ -138,7 +141,7 @@ void OccluderPolygon2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "closed"), "set_closed", "is_closed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mode", PROPERTY_HINT_ENUM, "Disabled,ClockWise,CounterClockWise"), "set_cull_mode", "get_cull_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
 
 	BIND_ENUM_CONSTANT(CULL_DISABLED);
 	BIND_ENUM_CONSTANT(CULL_CLOCKWISE);
@@ -188,7 +191,7 @@ void LightOccluder2D::_notification(int p_what) {
 
 			if (occluder_polygon.is_valid()) {
 
-				PoolVector<Vector2> poly = occluder_polygon->get_polygon();
+				Vector<Vector2> poly = occluder_polygon->get_polygon();
 
 				if (poly.size()) {
 					if (occluder_polygon->is_closed()) {
@@ -198,7 +201,7 @@ void LightOccluder2D::_notification(int p_what) {
 					} else {
 
 						int ps = poly.size();
-						PoolVector<Vector2>::Read r = poly.read();
+						const Vector2 *r = poly.ptr();
 						for (int i = 0; i < ps - 1; i++) {
 
 							draw_line(r[i], r[i + 1], Color(0, 0, 0, 0.6), 3);
@@ -215,6 +218,7 @@ void LightOccluder2D::_notification(int p_what) {
 	}
 }
 
+#ifdef TOOLS_ENABLED
 Rect2 LightOccluder2D::_edit_get_rect() const {
 
 	return occluder_polygon.is_valid() ? occluder_polygon->_edit_get_rect() : Rect2();
@@ -224,12 +228,13 @@ bool LightOccluder2D::_edit_is_selected_on_click(const Point2 &p_point, double p
 
 	return occluder_polygon.is_valid() ? occluder_polygon->_edit_is_selected_on_click(p_point, p_tolerance) : false;
 }
+#endif
 
 void LightOccluder2D::set_occluder_polygon(const Ref<OccluderPolygon2D> &p_polygon) {
 
 #ifdef DEBUG_ENABLED
 	if (occluder_polygon.is_valid())
-		occluder_polygon->disconnect("changed", this, "_poly_changed");
+		occluder_polygon->disconnect("changed", callable_mp(this, &LightOccluder2D::_poly_changed));
 #endif
 	occluder_polygon = p_polygon;
 
@@ -240,7 +245,7 @@ void LightOccluder2D::set_occluder_polygon(const Ref<OccluderPolygon2D> &p_polyg
 
 #ifdef DEBUG_ENABLED
 	if (occluder_polygon.is_valid())
-		occluder_polygon->connect("changed", this, "_poly_changed");
+		occluder_polygon->connect("changed", callable_mp(this, &LightOccluder2D::_poly_changed));
 	update();
 #endif
 }
@@ -281,8 +286,6 @@ void LightOccluder2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_occluder_light_mask", "mask"), &LightOccluder2D::set_occluder_light_mask);
 	ClassDB::bind_method(D_METHOD("get_occluder_light_mask"), &LightOccluder2D::get_occluder_light_mask);
-
-	ClassDB::bind_method("_poly_changed", &LightOccluder2D::_poly_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "occluder", PROPERTY_HINT_RESOURCE_TYPE, "OccluderPolygon2D"), "set_occluder_polygon", "get_occluder_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_occluder_light_mask", "get_occluder_light_mask");

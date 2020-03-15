@@ -36,7 +36,10 @@ void Sky::set_radiance_size(RadianceSize p_size) {
 	ERR_FAIL_INDEX(p_size, RADIANCE_SIZE_MAX);
 
 	radiance_size = p_size;
-	_radiance_changed();
+	static const int size[RADIANCE_SIZE_MAX] = {
+		32, 64, 128, 256, 512, 1024, 2048
+	};
+	VS::get_singleton()->sky_set_radiance_size(sky, size[radiance_size]);
 }
 
 Sky::RadianceSize Sky::get_radiance_size() const {
@@ -44,12 +47,30 @@ Sky::RadianceSize Sky::get_radiance_size() const {
 	return radiance_size;
 }
 
+void Sky::set_process_mode(ProcessMode p_mode) {
+	mode = p_mode;
+	VS::get_singleton()->sky_set_mode(sky, VS::SkyMode(mode));
+}
+
+Sky::ProcessMode Sky::get_process_mode() const {
+	return mode;
+}
+
+RID Sky::get_rid() const {
+
+	return sky;
+}
+
 void Sky::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_radiance_size", "size"), &Sky::set_radiance_size);
 	ClassDB::bind_method(D_METHOD("get_radiance_size"), &Sky::get_radiance_size);
 
+	ClassDB::bind_method(D_METHOD("set_process_mode", "mode"), &Sky::set_process_mode);
+	ClassDB::bind_method(D_METHOD("get_process_mode"), &Sky::get_process_mode);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radiance_size", PROPERTY_HINT_ENUM, "32,64,128,256,512,1024,2048"), "set_radiance_size", "get_radiance_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "HighQuality,RealTime"), "set_process_mode", "get_process_mode");
 
 	BIND_ENUM_CONSTANT(RADIANCE_SIZE_32);
 	BIND_ENUM_CONSTANT(RADIANCE_SIZE_64);
@@ -59,45 +80,35 @@ void Sky::_bind_methods() {
 	BIND_ENUM_CONSTANT(RADIANCE_SIZE_1024);
 	BIND_ENUM_CONSTANT(RADIANCE_SIZE_2048);
 	BIND_ENUM_CONSTANT(RADIANCE_SIZE_MAX);
+
+	BIND_ENUM_CONSTANT(PROCESS_MODE_QUALITY);
+	BIND_ENUM_CONSTANT(PROCESS_MODE_REALTIME);
 }
 
 Sky::Sky() {
+	mode = PROCESS_MODE_QUALITY;
 	radiance_size = RADIANCE_SIZE_128;
+	sky = VS::get_singleton()->sky_create();
+}
+
+Sky::~Sky() {
+
+	VS::get_singleton()->free(sky);
 }
 
 /////////////////////////////////////////
 
-void PanoramaSky::_radiance_changed() {
-
-	if (panorama.is_valid()) {
-		static const int size[RADIANCE_SIZE_MAX] = {
-			32, 64, 128, 256, 512, 1024, 2048
-		};
-		VS::get_singleton()->sky_set_texture(sky, panorama->get_rid(), size[get_radiance_size()]);
-	}
-}
-
-void PanoramaSky::set_panorama(const Ref<Texture> &p_panorama) {
+void PanoramaSky::set_panorama(const Ref<Texture2D> &p_panorama) {
 
 	panorama = p_panorama;
 
-	if (panorama.is_valid()) {
-
-		_radiance_changed();
-
-	} else {
-		VS::get_singleton()->sky_set_texture(sky, RID(), 0);
-	}
+	RID rid = p_panorama.is_valid() ? p_panorama->get_rid() : RID();
+	VS::get_singleton()->sky_set_texture(get_rid(), rid);
 }
 
-Ref<Texture> PanoramaSky::get_panorama() const {
+Ref<Texture2D> PanoramaSky::get_panorama() const {
 
 	return panorama;
-}
-
-RID PanoramaSky::get_rid() const {
-
-	return sky;
 }
 
 void PanoramaSky::_bind_methods() {
@@ -105,36 +116,21 @@ void PanoramaSky::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_panorama", "texture"), &PanoramaSky::set_panorama);
 	ClassDB::bind_method(D_METHOD("get_panorama"), &PanoramaSky::get_panorama);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "panorama", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_panorama", "get_panorama");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "panorama", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_panorama", "get_panorama");
 }
 
 PanoramaSky::PanoramaSky() {
-
-	sky = VS::get_singleton()->sky_create();
 }
 
 PanoramaSky::~PanoramaSky() {
-
-	VS::get_singleton()->free(sky);
 }
 //////////////////////////////////
-
-void ProceduralSky::_radiance_changed() {
-
-	if (update_queued)
-		return; //do nothing yet
-
-	static const int size[RADIANCE_SIZE_MAX] = {
-		32, 64, 128, 256, 512, 1024, 2048
-	};
-	VS::get_singleton()->sky_set_texture(sky, texture, size[get_radiance_size()]);
-}
 
 Ref<Image> ProceduralSky::_generate_sky() {
 
 	update_queued = false;
 
-	PoolVector<uint8_t> imgdata;
+	Vector<uint8_t> imgdata;
 
 	static const int size[TEXTURE_SIZE_MAX] = {
 		256, 512, 1024, 2048, 4096
@@ -146,9 +142,9 @@ Ref<Image> ProceduralSky::_generate_sky() {
 	imgdata.resize(w * h * 4); //RGBE
 
 	{
-		PoolVector<uint8_t>::Write dataw = imgdata.write();
+		uint8_t *dataw = imgdata.ptrw();
 
-		uint32_t *ptr = (uint32_t *)dataw.ptr();
+		uint32_t *ptr = (uint32_t *)dataw;
 
 		Color sky_top_linear = sky_top_color.to_linear();
 		Color sky_horizon_linear = sky_horizon_color.to_linear();
@@ -390,10 +386,6 @@ ProceduralSky::TextureSize ProceduralSky::get_texture_size() const {
 	return texture_size;
 }
 
-RID ProceduralSky::get_rid() const {
-	return sky;
-}
-
 void ProceduralSky::_update_sky() {
 
 	bool use_thread = true;
@@ -415,9 +407,13 @@ void ProceduralSky::_update_sky() {
 
 	} else {
 		Ref<Image> image = _generate_sky();
-		VS::get_singleton()->texture_allocate(texture, image->get_width(), image->get_height(), 0, Image::FORMAT_RGBE9995, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER | VS::TEXTURE_FLAG_REPEAT);
-		VS::get_singleton()->texture_set_data(texture, image);
-		_radiance_changed();
+		if (texture.is_valid()) {
+			RID new_texture = VS::get_singleton()->texture_2d_create(image);
+			VS::get_singleton()->texture_replace(texture, new_texture);
+		} else {
+			texture = VS::get_singleton()->texture_2d_create(image);
+		}
+		VS::get_singleton()->sky_set_texture(get_rid(), texture);
 	}
 }
 
@@ -432,9 +428,15 @@ void ProceduralSky::_queue_update() {
 
 void ProceduralSky::_thread_done(const Ref<Image> &p_image) {
 
-	VS::get_singleton()->texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, Image::FORMAT_RGBE9995, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER | VS::TEXTURE_FLAG_REPEAT);
-	VS::get_singleton()->texture_set_data(texture, p_image);
-	_radiance_changed();
+	if (texture.is_valid()) {
+		RID new_texture = VS::get_singleton()->texture_2d_create(p_image);
+		VS::get_singleton()->texture_replace(texture, new_texture);
+	} else {
+		texture = VS::get_singleton()->texture_2d_create(p_image);
+	}
+
+	VS::get_singleton()->sky_set_texture(get_rid(), texture);
+
 	Thread::wait_to_finish(sky_thread);
 	memdelete(sky_thread);
 	sky_thread = NULL;
@@ -507,25 +509,25 @@ void ProceduralSky::_bind_methods() {
 	ADD_GROUP("Sky", "sky_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "sky_top_color"), "set_sky_top_color", "get_sky_top_color");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "sky_horizon_color"), "set_sky_horizon_color", "get_sky_horizon_color");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "sky_curve", PROPERTY_HINT_EXP_EASING), "set_sky_curve", "get_sky_curve");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "sky_energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_sky_energy", "get_sky_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sky_curve", PROPERTY_HINT_EXP_EASING), "set_sky_curve", "get_sky_curve");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sky_energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_sky_energy", "get_sky_energy");
 
 	ADD_GROUP("Ground", "ground_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ground_bottom_color"), "set_ground_bottom_color", "get_ground_bottom_color");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ground_horizon_color"), "set_ground_horizon_color", "get_ground_horizon_color");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ground_curve", PROPERTY_HINT_EXP_EASING), "set_ground_curve", "get_ground_curve");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ground_energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_ground_energy", "get_ground_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ground_curve", PROPERTY_HINT_EXP_EASING), "set_ground_curve", "get_ground_curve");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ground_energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_ground_energy", "get_ground_energy");
 
 	ADD_GROUP("Sun", "sun_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "sun_color"), "set_sun_color", "get_sun_color");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "sun_latitude", PROPERTY_HINT_RANGE, "-180,180,0.01"), "set_sun_latitude", "get_sun_latitude");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "sun_longitude", PROPERTY_HINT_RANGE, "-180,180,0.01"), "set_sun_longitude", "get_sun_longitude");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "sun_angle_min", PROPERTY_HINT_RANGE, "0,360,0.01"), "set_sun_angle_min", "get_sun_angle_min");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "sun_angle_max", PROPERTY_HINT_RANGE, "0,360,0.01"), "set_sun_angle_max", "get_sun_angle_max");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "sun_curve", PROPERTY_HINT_EXP_EASING), "set_sun_curve", "get_sun_curve");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "sun_energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_sun_energy", "get_sun_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sun_latitude", PROPERTY_HINT_RANGE, "-180,180,0.01"), "set_sun_latitude", "get_sun_latitude");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sun_longitude", PROPERTY_HINT_RANGE, "-180,180,0.01"), "set_sun_longitude", "get_sun_longitude");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sun_angle_min", PROPERTY_HINT_RANGE, "0,360,0.01"), "set_sun_angle_min", "get_sun_angle_min");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sun_angle_max", PROPERTY_HINT_RANGE, "0,360,0.01"), "set_sun_angle_max", "get_sun_angle_max");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sun_curve", PROPERTY_HINT_EXP_EASING), "set_sun_curve", "get_sun_curve");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sun_energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_sun_energy", "get_sun_energy");
 
-	ADD_GROUP("Texture", "texture_");
+	ADD_GROUP("Texture2D", "texture_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_size", PROPERTY_HINT_ENUM, "256,512,1024,2048,4096"), "set_texture_size", "get_texture_size");
 
 	BIND_ENUM_CONSTANT(TEXTURE_SIZE_256);
@@ -537,9 +539,6 @@ void ProceduralSky::_bind_methods() {
 }
 
 ProceduralSky::ProceduralSky(bool p_desaturate) {
-
-	sky = VS::get_singleton()->sky_create();
-	texture = VS::get_singleton()->texture_create();
 
 	update_queued = false;
 	sky_top_color = Color::hex(0xa5d6f1ff);
@@ -581,6 +580,7 @@ ProceduralSky::~ProceduralSky() {
 		memdelete(sky_thread);
 		sky_thread = NULL;
 	}
-	VS::get_singleton()->free(sky);
-	VS::get_singleton()->free(texture);
+	if (texture.is_valid()) {
+		VS::get_singleton()->free(texture);
+	}
 }

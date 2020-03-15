@@ -103,4 +103,6 @@ void PanelContainer::_notification(int p_what) {
 }
 
 PanelContainer::PanelContainer() {
+	// Has visible stylebox, so stop by default.
+	set_mouse_filter(MOUSE_FILTER_STOP);
 }

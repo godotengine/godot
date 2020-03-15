@@ -42,8 +42,12 @@ class GIProbeEditorPlugin : public EditorPlugin {
 
 	GIProbe *gi_probe;
 
+	HBoxContainer *bake_hb;
+	Label *bake_info;
 	ToolButton *bake;
 	EditorNode *editor;
+
+	EditorFileDialog *probe_file;
 
 	static EditorProgress *tmp_progress;
 	static void bake_func_begin(int p_steps);
@@ -51,9 +55,11 @@ class GIProbeEditorPlugin : public EditorPlugin {
 	static void bake_func_end();
 
 	void _bake();
+	void _giprobe_save_path_and_bake(const String &p_path);
 
 protected:
 	static void _bind_methods();
+	void _notification(int p_what);
 
 public:
 	virtual String get_name() const { return "GIProbe"; }

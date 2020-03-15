@@ -68,7 +68,10 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 		if (p_take_over) {
 
 			ResourceCache::lock->write_lock();
-			ResourceCache::resources.get(p_path)->set_name("");
+			Resource **res = ResourceCache::resources.getptr(p_path);
+			if (res) {
+				(*res)->set_name("");
+			}
 			ResourceCache::lock->write_unlock();
 		} else {
 			ResourceCache::lock->read_lock();
@@ -420,7 +423,7 @@ void Resource::_bind_methods() {
 	ADD_GROUP("Resource", "resource_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resource_local_to_scene"), "set_local_to_scene", "is_local_to_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_path", "get_path");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_name"), "set_name", "get_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "resource_name"), "set_name", "get_name");
 
 	BIND_VMETHOD(MethodInfo("_setup_local_to_scene"));
 }

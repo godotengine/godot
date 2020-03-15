@@ -32,6 +32,7 @@
 
 #include "core/io/resource_loader.h"
 #include "core/project_settings.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 
 void ResourcePreloaderEditor::_gui_input(Ref<InputEvent> p_event) {
@@ -346,12 +347,7 @@ void ResourcePreloaderEditor::drop_data_fw(const Point2 &p_point, const Variant 
 void ResourcePreloaderEditor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &ResourcePreloaderEditor::_gui_input);
-	ClassDB::bind_method(D_METHOD("_load_pressed"), &ResourcePreloaderEditor::_load_pressed);
-	ClassDB::bind_method(D_METHOD("_item_edited"), &ResourcePreloaderEditor::_item_edited);
-	ClassDB::bind_method(D_METHOD("_paste_pressed"), &ResourcePreloaderEditor::_paste_pressed);
-	ClassDB::bind_method(D_METHOD("_files_load_request"), &ResourcePreloaderEditor::_files_load_request);
 	ClassDB::bind_method(D_METHOD("_update_library"), &ResourcePreloaderEditor::_update_library);
-	ClassDB::bind_method(D_METHOD("_cell_button_pressed"), &ResourcePreloaderEditor::_cell_button_pressed);
 	ClassDB::bind_method(D_METHOD("_remove_resource", "to_remove"), &ResourcePreloaderEditor::_remove_resource);
 
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &ResourcePreloaderEditor::get_drag_data_fw);
@@ -381,7 +377,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	add_child(file);
 
 	tree = memnew(Tree);
-	tree->connect("button_pressed", this, "_cell_button_pressed");
+	tree->connect("button_pressed", callable_mp(this, &ResourcePreloaderEditor::_cell_button_pressed));
 	tree->set_columns(2);
 	tree->set_column_min_width(0, 2);
 	tree->set_column_min_width(1, 3);
@@ -395,10 +391,10 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	dialog = memnew(AcceptDialog);
 	add_child(dialog);
 
-	load->connect("pressed", this, "_load_pressed");
-	paste->connect("pressed", this, "_paste_pressed");
-	file->connect("files_selected", this, "_files_load_request");
-	tree->connect("item_edited", this, "_item_edited");
+	load->connect("pressed", callable_mp(this, &ResourcePreloaderEditor::_load_pressed));
+	paste->connect("pressed", callable_mp(this, &ResourcePreloaderEditor::_paste_pressed));
+	file->connect("files_selected", callable_mp(this, &ResourcePreloaderEditor::_files_load_request));
+	tree->connect("item_edited", callable_mp(this, &ResourcePreloaderEditor::_item_edited));
 	loading_scene = false;
 }
 
@@ -438,7 +434,7 @@ ResourcePreloaderEditorPlugin::ResourcePreloaderEditorPlugin(EditorNode *p_node)
 
 	editor = p_node;
 	preloader_editor = memnew(ResourcePreloaderEditor);
-	preloader_editor->set_custom_minimum_size(Size2(0, 250));
+	preloader_editor->set_custom_minimum_size(Size2(0, 250) * EDSCALE);
 
 	button = editor->add_bottom_panel_item(TTR("ResourcePreloader"), preloader_editor);
 	button->hide();

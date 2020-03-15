@@ -1361,7 +1361,8 @@ static void RD4_NEON(uint8_t* dst) {   // Down-right
   const uint32_t J = dst[-1 + 1 * BPS];
   const uint32_t K = dst[-1 + 2 * BPS];
   const uint32_t L = dst[-1 + 3 * BPS];
-  const uint64x1_t LKJI____ = vcreate_u64(L | (K << 8) | (J << 16) | (I << 24));
+  const uint64x1_t LKJI____ =
+      vcreate_u64((uint64_t)L | (K << 8) | (J << 16) | (I << 24));
   const uint64x1_t LKJIXABC = vorr_u64(LKJI____, ____XABC);
   const uint8x8_t KJIXABC_ = vreinterpret_u8_u64(vshr_n_u64(LKJIXABC, 8));
   const uint8x8_t JIXABC__ = vreinterpret_u8_u64(vshr_n_u64(LKJIXABC, 16));
@@ -1427,10 +1428,16 @@ static WEBP_INLINE void DC8_NEON(uint8_t* dst, int do_top, int do_left) {
 
   if (do_top) {
     const uint8x8_t A = vld1_u8(dst - BPS);  // top row
+#if defined(__aarch64__)
+    const uint16x8_t B = vmovl_u8(A);
+    const uint16_t p2 = vaddvq_u16(B);
+    sum_top = vdupq_n_u16(p2);
+#else
     const uint16x4_t p0 = vpaddl_u8(A);  // cascading summation of the top
     const uint16x4_t p1 = vpadd_u16(p0, p0);
     const uint16x4_t p2 = vpadd_u16(p1, p1);
     sum_top = vcombine_u16(p2, p2);
+#endif
   }
 
   if (do_left) {

@@ -45,7 +45,7 @@ class Physics2DDirectSpaceStateSW : public Physics2DDirectSpaceState {
 
 	GDCLASS(Physics2DDirectSpaceStateSW, Physics2DDirectSpaceState);
 
-	int _intersect_point_impl(const Vector2 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, bool p_pick_point, bool p_filter_by_canvas = false, ObjectID p_canvas_instance_id = 0);
+	int _intersect_point_impl(const Vector2 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, bool p_pick_point, bool p_filter_by_canvas = false, ObjectID p_canvas_instance_id = ObjectID());
 
 public:
 	Space2DSW *space;
@@ -61,7 +61,7 @@ public:
 	Physics2DDirectSpaceStateSW();
 };
 
-class Space2DSW : public RID_Data {
+class Space2DSW {
 
 public:
 	enum ElapsedTime {

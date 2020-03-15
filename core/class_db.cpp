@@ -335,6 +335,19 @@ StringName ClassDB::get_parent_class_nocheck(const StringName &p_class) {
 	return ti->inherits;
 }
 
+StringName ClassDB::get_compatibility_remapped_class(const StringName &p_class) {
+
+	if (classes.has(p_class)) {
+		return p_class;
+	}
+
+	if (compat_classes.has(p_class)) {
+		return compat_classes[p_class];
+	}
+
+	return p_class;
+}
+
 StringName ClassDB::get_parent_class(const StringName &p_class) {
 
 	OBJTYPE_RLOCK;
@@ -388,6 +401,13 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 			k = NULL;
 
 			while ((k = t->method_map.next(k))) {
+
+				String name = k->operator String();
+
+				ERR_CONTINUE(name.empty());
+
+				if (name[0] == '_')
+					continue; // Ignore non-virtual methods that start with an underscore
 
 				snames.push_back(*k);
 			}
@@ -534,7 +554,7 @@ Object *ClassDB::instance(const StringName &p_class) {
 	}
 #ifdef TOOLS_ENABLED
 	if (ti->api == API_EDITOR && !Engine::get_singleton()->is_editor_hint()) {
-		ERR_PRINTS("Class '" + String(p_class) + "' can only be instantiated by editor.");
+		ERR_PRINT("Class '" + String(p_class) + "' can only be instantiated by editor.");
 		return NULL;
 	}
 #endif
@@ -1013,7 +1033,7 @@ bool ClassDB::set_property(Object *p_object, const StringName &p_property, const
 				return true; //return true but do nothing
 			}
 
-			Variant::CallError ce;
+			Callable::CallError ce;
 
 			if (psg->index >= 0) {
 				Variant index = psg->index;
@@ -1035,7 +1055,7 @@ bool ClassDB::set_property(Object *p_object, const StringName &p_property, const
 			}
 
 			if (r_valid)
-				*r_valid = ce.error == Variant::CallError::CALL_OK;
+				*r_valid = ce.error == Callable::CallError::CALL_OK;
 
 			return true;
 		}
@@ -1058,12 +1078,12 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 			if (psg->index >= 0) {
 				Variant index = psg->index;
 				const Variant *arg[1] = { &index };
-				Variant::CallError ce;
+				Callable::CallError ce;
 				r_value = p_object->call(psg->getter, arg, 1, ce);
 
 			} else {
 
-				Variant::CallError ce;
+				Callable::CallError ce;
 				if (psg->_getptr) {
 
 					r_value = psg->_getptr->call(p_object, NULL, 0, ce);
@@ -1074,10 +1094,20 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 			return true;
 		}
 
-		const int *c = check->constant_map.getptr(p_property);
+		const int *c = check->constant_map.getptr(p_property); //constants count
 		if (c) {
 
 			r_value = *c;
+			return true;
+		}
+
+		if (check->method_map.has(p_property)) { //methods count
+			r_value = Callable(p_object, p_property);
+			return true;
+		}
+
+		if (check->signal_map.has(p_property)) { //signals count
+			r_value = Signal(p_object, p_property);
 			return true;
 		}
 

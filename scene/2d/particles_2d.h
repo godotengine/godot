@@ -64,8 +64,8 @@ private:
 
 	DrawOrder draw_order;
 
-	Ref<Texture> texture;
-	Ref<Texture> normal_map;
+	Ref<Texture2D> texture;
+	Ref<Texture2D> normal_map;
 
 	void _update_particle_emission_transform();
 
@@ -108,11 +108,11 @@ public:
 	void set_draw_order(DrawOrder p_order);
 	DrawOrder get_draw_order() const;
 
-	void set_texture(const Ref<Texture> &p_texture);
-	Ref<Texture> get_texture() const;
+	void set_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_texture() const;
 
-	void set_normal_map(const Ref<Texture> &p_normal_map);
-	Ref<Texture> get_normal_map() const;
+	void set_normal_map(const Ref<Texture2D> &p_normal_map);
+	Ref<Texture2D> get_normal_map() const;
 
 	virtual String get_configuration_warning() const;
 

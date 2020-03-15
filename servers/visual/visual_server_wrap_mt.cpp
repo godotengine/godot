@@ -136,7 +136,6 @@ void VisualServerWrapMT::finish() {
 		visual_server->finish();
 	}
 
-	texture_free_cached_ids();
 	sky_free_cached_ids();
 	shader_free_cached_ids();
 	material_free_cached_ids();
@@ -154,6 +153,7 @@ void VisualServerWrapMT::finish() {
 	camera_free_cached_ids();
 	viewport_free_cached_ids();
 	environment_free_cached_ids();
+	camera_effects_free_cached_ids();
 	scenario_free_cached_ids();
 	instance_free_cached_ids();
 	canvas_free_cached_ids();
@@ -180,7 +180,6 @@ VisualServerWrapMT::VisualServerWrapMT(VisualServer *p_contained, bool p_create_
 	thread = NULL;
 	draw_pending = 0;
 	draw_thread_up = false;
-	alloc_mutex = Mutex::create();
 	pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
 
 	if (!p_create_thread) {
@@ -193,6 +192,5 @@ VisualServerWrapMT::VisualServerWrapMT(VisualServer *p_contained, bool p_create_
 VisualServerWrapMT::~VisualServerWrapMT() {
 
 	memdelete(visual_server);
-	memdelete(alloc_mutex);
 	//finish();
 }

@@ -107,7 +107,7 @@ Font::Font() {
 
 /////////////////////////////////////////////////////////////////
 
-void BitmapFont::_set_chars(const PoolVector<int> &p_chars) {
+void BitmapFont::_set_chars(const Vector<int> &p_chars) {
 
 	int len = p_chars.size();
 	//char 1 charsize 1 texture, 4 rect, 2 align, advance 1
@@ -116,7 +116,7 @@ void BitmapFont::_set_chars(const PoolVector<int> &p_chars) {
 		return; //none to do
 	int chars = len / 9;
 
-	PoolVector<int>::Read r = p_chars.read();
+	const int *r = p_chars.ptr();
 	for (int i = 0; i < chars; i++) {
 
 		const int *data = &r[i * 9];
@@ -124,16 +124,16 @@ void BitmapFont::_set_chars(const PoolVector<int> &p_chars) {
 	}
 }
 
-PoolVector<int> BitmapFont::_get_chars() const {
+Vector<int> BitmapFont::_get_chars() const {
 
-	PoolVector<int> chars;
+	Vector<int> chars;
 
 	const CharType *key = NULL;
 
 	while ((key = char_map.next(key))) {
 
 		const Character *c = char_map.getptr(*key);
-		ERR_FAIL_COND_V(!c, PoolVector<int>());
+		ERR_FAIL_COND_V(!c, Vector<int>());
 		chars.push_back(*key);
 		chars.push_back(c->texture_idx);
 		chars.push_back(c->rect.position.x);
@@ -149,13 +149,13 @@ PoolVector<int> BitmapFont::_get_chars() const {
 	return chars;
 }
 
-void BitmapFont::_set_kernings(const PoolVector<int> &p_kernings) {
+void BitmapFont::_set_kernings(const Vector<int> &p_kernings) {
 
 	int len = p_kernings.size();
 	ERR_FAIL_COND(len % 3);
 	if (!len)
 		return;
-	PoolVector<int>::Read r = p_kernings.read();
+	const int *r = p_kernings.ptr();
 
 	for (int i = 0; i < len / 3; i++) {
 
@@ -164,9 +164,9 @@ void BitmapFont::_set_kernings(const PoolVector<int> &p_kernings) {
 	}
 }
 
-PoolVector<int> BitmapFont::_get_kernings() const {
+Vector<int> BitmapFont::_get_kernings() const {
 
-	PoolVector<int> kernings;
+	Vector<int> kernings;
 
 	for (Map<KerningPairKey, int>::Element *E = kerning_map.front(); E; E = E->next()) {
 
@@ -182,7 +182,7 @@ void BitmapFont::_set_textures(const Vector<Variant> &p_textures) {
 
 	textures.clear();
 	for (int i = 0; i < p_textures.size(); i++) {
-		Ref<Texture> tex = p_textures[i];
+		Ref<Texture2D> tex = p_textures[i];
 		ERR_CONTINUE(!tex.is_valid());
 		add_texture(tex);
 	}
@@ -192,7 +192,7 @@ Vector<Variant> BitmapFont::_get_textures() const {
 
 	Vector<Variant> rtextures;
 	for (int i = 0; i < textures.size(); i++)
-		rtextures.push_back(textures[i].get_ref_ptr());
+		rtextures.push_back(textures[i]);
 	return rtextures;
 }
 
@@ -270,7 +270,7 @@ Error BitmapFont::create_from_fnt(const String &p_file) {
 
 				String base_dir = p_file.get_base_dir();
 				String file = base_dir.plus_file(keys["file"]);
-				Ref<Texture> tex = ResourceLoader::load(file);
+				Ref<Texture2D> tex = ResourceLoader::load(file);
 				if (tex.is_null()) {
 					ERR_PRINT("Can't load font texture!");
 				} else {
@@ -356,7 +356,7 @@ float BitmapFont::get_descent() const {
 	return height - ascent;
 }
 
-void BitmapFont::add_texture(const Ref<Texture> &p_texture) {
+void BitmapFont::add_texture(const Ref<Texture2D> &p_texture) {
 
 	ERR_FAIL_COND_MSG(p_texture.is_null(), "It's not a reference to a valid Texture object.");
 	textures.push_back(p_texture);
@@ -367,9 +367,9 @@ int BitmapFont::get_texture_count() const {
 	return textures.size();
 };
 
-Ref<Texture> BitmapFont::get_texture(int p_idx) const {
+Ref<Texture2D> BitmapFont::get_texture(int p_idx) const {
 
-	ERR_FAIL_INDEX_V(p_idx, textures.size(), Ref<Texture>());
+	ERR_FAIL_INDEX_V(p_idx, textures.size(), Ref<Texture2D>());
 	return textures[p_idx];
 };
 
@@ -556,7 +556,7 @@ float BitmapFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_c
 		cpos.x += c->h_align;
 		cpos.y -= ascent;
 		cpos.y += c->v_align;
-		VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx]->get_rid(), c->rect, p_modulate, false, RID(), false);
+		VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx]->get_rid(), c->rect, p_modulate, false, RID(), RID(), Color(1, 1, 1, 1), false);
 	}
 
 	return get_char_size(p_char, p_next).width;
@@ -625,11 +625,11 @@ void BitmapFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fallback"), &BitmapFont::get_fallback);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "textures", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_textures", "_get_textures");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_INT_ARRAY, "chars", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_chars", "_get_chars");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_INT_ARRAY, "kernings", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_kernings", "_get_kernings");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "chars", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_chars", "_get_chars");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "kernings", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_kernings", "_get_kernings");
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "height", PROPERTY_HINT_RANGE, "-1024,1024,1"), "set_height", "get_height");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ascent", PROPERTY_HINT_RANGE, "-1024,1024,1"), "set_ascent", "get_ascent");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "1,1024,1"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ascent", PROPERTY_HINT_RANGE, "0,1024,1"), "set_ascent", "get_ascent");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distance_field"), "set_distance_field_hint", "is_distance_field_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback", PROPERTY_HINT_RESOURCE_TYPE, "BitmapFont"), "set_fallback", "get_fallback");
 }
@@ -646,7 +646,7 @@ BitmapFont::~BitmapFont() {
 
 ////////////
 
-RES ResourceFormatLoaderBMFont::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES ResourceFormatLoaderBMFont::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 
 	if (r_error)
 		*r_error = ERR_FILE_CANT_OPEN;

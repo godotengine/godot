@@ -503,9 +503,9 @@ void btConvexConvexAlgorithm ::processCollision(const btCollisionObjectWrapper* 
 
 					gjkPairDetector.getClosestPoints(input, withoutMargin, dispatchInfo.m_debugDraw);
 					//gjkPairDetector.getClosestPoints(input,dummy,dispatchInfo.m_debugDraw);
-#endif  //ZERO_MARGIN                                                    \
-	//btScalar l2 = gjkPairDetector.getCachedSeparatingAxis().length2(); \
-	//if (l2>SIMD_EPSILON)
+#endif  //ZERO_MARGIN
+					//btScalar l2 = gjkPairDetector.getCachedSeparatingAxis().length2();
+					//if (l2>SIMD_EPSILON)
 					{
 						sepNormalWorldSpace = withoutMargin.m_reportedNormalOnWorld;  //gjkPairDetector.getCachedSeparatingAxis()*(1.f/l2);
 						//minDist = -1e30f;//gjkPairDetector.getCachedSeparatingDistance();

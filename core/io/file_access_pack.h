@@ -37,6 +37,11 @@
 #include "core/os/file_access.h"
 #include "core/print_string.h"
 
+// Godot's packed file magic header ("GDPC" in ASCII).
+#define PACK_HEADER_MAGIC 0x43504447
+// The current packed file format version number.
+#define PACK_FORMAT_VERSION 1
+
 class PackSource;
 
 class PackedData {
@@ -211,7 +216,7 @@ public:
 	virtual String get_drive(int p_drive);
 
 	virtual Error change_dir(String p_dir);
-	virtual String get_current_dir();
+	virtual String get_current_dir(bool p_include_drive = true);
 
 	virtual bool file_exists(String p_file);
 	virtual bool dir_exists(String p_dir);

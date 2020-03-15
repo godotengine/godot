@@ -73,10 +73,10 @@ InputDefault::SpeedTrack::SpeedTrack() {
 	reset();
 }
 
-bool InputDefault::is_key_pressed(int p_scancode) const {
+bool InputDefault::is_key_pressed(int p_keycode) const {
 
 	_THREAD_SAFE_METHOD_
-	return keys_pressed.has(p_scancode);
+	return keys_pressed.has(p_keycode);
 }
 
 bool InputDefault::is_mouse_button_pressed(int p_button) const {
@@ -271,11 +271,11 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 	_THREAD_SAFE_METHOD_
 
 	Ref<InputEventKey> k = p_event;
-	if (k.is_valid() && !k->is_echo() && k->get_scancode() != 0) {
+	if (k.is_valid() && !k->is_echo() && k->get_keycode() != 0) {
 		if (k->is_pressed())
-			keys_pressed.insert(k->get_scancode());
+			keys_pressed.insert(k->get_keycode());
 		else
-			keys_pressed.erase(k->get_scancode());
+			keys_pressed.erase(k->get_keycode());
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -727,21 +727,23 @@ InputDefault::InputDefault() {
 
 	fallback_mapping = -1;
 
+	// Parse default mappings.
+	{
+		int i = 0;
+		while (DefaultControllerMappings::mappings[i]) {
+			parse_mapping(DefaultControllerMappings::mappings[i++]);
+		}
+	}
+
+	// If defined, parse SDL_GAMECONTROLLERCONFIG for possible new mappings/overrides.
 	String env_mapping = OS::get_singleton()->get_environment("SDL_GAMECONTROLLERCONFIG");
 	if (env_mapping != "") {
-
 		Vector<String> entries = env_mapping.split("\n");
 		for (int i = 0; i < entries.size(); i++) {
 			if (entries[i] == "")
 				continue;
 			parse_mapping(entries[i]);
 		}
-	}
-
-	int i = 0;
-	while (DefaultControllerMappings::mappings[i]) {
-
-		parse_mapping(DefaultControllerMappings::mappings[i++]);
 	}
 }
 

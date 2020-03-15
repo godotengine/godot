@@ -107,7 +107,7 @@ public:
 		List<String> args;
 		String output;
 		Thread *execute_output_thread;
-		Mutex *execute_output_mutex;
+		Mutex execute_output_mutex;
 		int exitcode;
 		volatile bool done;
 	};
@@ -165,12 +165,6 @@ private:
 		RUN_SETTINGS,
 		RUN_PROJECT_DATA_FOLDER,
 		RUN_PROJECT_MANAGER,
-		RUN_FILE_SERVER,
-		RUN_LIVE_DEBUG,
-		RUN_DEBUG_COLLISONS,
-		RUN_DEBUG_NAVIGATION,
-		RUN_DEPLOY_REMOTE_DEBUG,
-		RUN_RELOAD_SCRIPTS,
 		RUN_VCS_SETTINGS,
 		RUN_VCS_SHUT_DOWN,
 		SETTINGS_UPDATE_CONTINUOUSLY,
@@ -325,18 +319,13 @@ private:
 	ExportTemplateManager *export_template_manager;
 	EditorFeatureProfileManager *feature_profile_manager;
 	EditorFileDialog *file_templates;
-	EditorFileDialog *file_export;
 	EditorFileDialog *file_export_lib;
 	EditorFileDialog *file_script;
 	CheckBox *file_export_lib_merge;
-	LineEdit *file_export_password;
 	String current_path;
 	MenuButton *update_spinner;
 
 	String defer_load_scene;
-	String defer_export;
-	String defer_export_platform;
-	bool defer_export_debug;
 	Node *_last_instanced_scene;
 
 	EditorLog *log;
@@ -415,8 +404,6 @@ private:
 	EditorResourcePreview *resource_preview;
 	EditorFolding editor_folding;
 
-	EditorFileServer *file_server;
-
 	struct BottomPanelItem {
 		String name;
 		Control *control;
@@ -458,7 +445,6 @@ private:
 	void _save_screenshot(NodePath p_path);
 
 	void _tool_menu_option(int p_idx);
-	void _update_debug_options();
 	void _update_file_menu_opened();
 	void _update_file_menu_closed();
 
@@ -527,13 +513,13 @@ private:
 	Set<FileDialog *> file_dialogs;
 	Set<EditorFileDialog *> editor_file_dialogs;
 
-	Map<String, Ref<Texture> > icon_type_cache;
+	Map<String, Ref<Texture2D> > icon_type_cache;
 	void _build_icon_type_cache();
 
 	bool _initializing_addons;
 	Map<String, EditorPlugin *> plugin_addons;
 
-	static Ref<Texture> _file_dialog_get_icon(const String &p_path);
+	static Ref<Texture2D> _file_dialog_get_icon(const String &p_path);
 	static void _file_dialog_register(FileDialog *p_dialog);
 	static void _file_dialog_unregister(FileDialog *p_dialog);
 	static void _editor_file_dialog_register(EditorFileDialog *p_dialog);
@@ -563,11 +549,10 @@ private:
 		String preset;
 		String path;
 		bool debug;
-		String password;
-
+		bool pack_only;
 	} export_defer;
 
-	bool disable_progress_dialog;
+	bool cmdline_export_mode;
 
 	static EditorNode *singleton;
 
@@ -588,7 +573,7 @@ private:
 	void _scene_tab_exit();
 	void _scene_tab_input(const Ref<InputEvent> &p_input);
 	void _reposition_active_tab(int idx_to);
-	void _thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata);
+	void _thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
 	void _scene_tab_script_edited(int p_tab);
 
 	Dictionary _get_main_scene_state();
@@ -645,7 +630,7 @@ private:
 	static void _resource_saved(RES p_resource, const String &p_path);
 	static void _resource_loaded(RES p_resource, const String &p_path);
 
-	void _resources_changed(const PoolVector<String> &p_resources);
+	void _resources_changed(const Vector<String> &p_resources);
 
 	void _feature_profile_changed();
 	bool _is_class_editor_disabled_by_feature_profile(const StringName &p_class);
@@ -770,23 +755,23 @@ public:
 
 	void set_convert_old_scene(bool p_old) { convert_old = p_old; }
 
-	void notify_child_process_exited();
+	void notify_all_debug_sessions_exited();
 
-	OS::ProcessID get_child_process_id() const { return editor_run.get_pid(); }
-	void stop_child_process();
+	OS::ProcessID has_child_process(OS::ProcessID p_pid) const { return editor_run.has_child_process(p_pid); }
+	void stop_child_process(OS::ProcessID p_pid);
 
 	Ref<Theme> get_editor_theme() const { return theme; }
 	Ref<Script> get_object_custom_type_base(const Object *p_object) const;
 	StringName get_object_custom_type_name(const Object *p_object) const;
-	Ref<Texture> get_object_icon(const Object *p_object, const String &p_fallback = "Object") const;
-	Ref<Texture> get_class_icon(const String &p_class, const String &p_fallback = "Object") const;
+	Ref<Texture2D> get_object_icon(const Object *p_object, const String &p_fallback = "Object") const;
+	Ref<Texture2D> get_class_icon(const String &p_class, const String &p_fallback = "Object") const;
 
 	void show_accept(const String &p_text, const String &p_title);
 	void show_warning(const String &p_text, const String &p_title = TTR("Warning!"));
 
 	void _copy_warning(const String &p_str);
 
-	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, const String &p_password, bool p_quit_after = false);
+	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only);
 
 	static void register_editor_types();
 	static void unregister_editor_types();

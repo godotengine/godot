@@ -47,11 +47,11 @@ Error HashingContext::start(HashType p_type) {
 	return ERR_UNAVAILABLE;
 }
 
-Error HashingContext::update(PoolByteArray p_chunk) {
+Error HashingContext::update(PackedByteArray p_chunk) {
 	ERR_FAIL_COND_V(ctx == NULL, ERR_UNCONFIGURED);
 	size_t len = p_chunk.size();
 	ERR_FAIL_COND_V(len == 0, FAILED);
-	PoolByteArray::Read r = p_chunk.read();
+	const uint8_t *r = p_chunk.ptr();
 	switch (type) {
 		case HASH_MD5:
 			return ((CryptoCore::MD5Context *)ctx)->update(&r[0], len);
@@ -63,26 +63,26 @@ Error HashingContext::update(PoolByteArray p_chunk) {
 	return ERR_UNAVAILABLE;
 }
 
-PoolByteArray HashingContext::finish() {
-	ERR_FAIL_COND_V(ctx == NULL, PoolByteArray());
-	PoolByteArray out;
+PackedByteArray HashingContext::finish() {
+	ERR_FAIL_COND_V(ctx == NULL, PackedByteArray());
+	PackedByteArray out;
 	Error err = FAILED;
 	switch (type) {
 		case HASH_MD5:
 			out.resize(16);
-			err = ((CryptoCore::MD5Context *)ctx)->finish(out.write().ptr());
+			err = ((CryptoCore::MD5Context *)ctx)->finish(out.ptrw());
 			break;
 		case HASH_SHA1:
 			out.resize(20);
-			err = ((CryptoCore::SHA1Context *)ctx)->finish(out.write().ptr());
+			err = ((CryptoCore::SHA1Context *)ctx)->finish(out.ptrw());
 			break;
 		case HASH_SHA256:
 			out.resize(32);
-			err = ((CryptoCore::SHA256Context *)ctx)->finish(out.write().ptr());
+			err = ((CryptoCore::SHA256Context *)ctx)->finish(out.ptrw());
 			break;
 	}
 	_delete_ctx();
-	ERR_FAIL_COND_V(err != OK, PoolByteArray());
+	ERR_FAIL_COND_V(err != OK, PackedByteArray());
 	return out;
 }
 

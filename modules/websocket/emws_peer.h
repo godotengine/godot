@@ -48,7 +48,7 @@ private:
 	int peer_sock;
 	WriteMode write_mode;
 
-	PoolVector<uint8_t> _packet_buffer;
+	Vector<uint8_t> _packet_buffer;
 	PacketBuffer<uint8_t> _in_buffer;
 	uint8_t _is_string;
 
@@ -68,6 +68,7 @@ public:
 	virtual WriteMode get_write_mode() const;
 	virtual void set_write_mode(WriteMode p_mode);
 	virtual bool was_string_packet() const;
+	virtual void set_no_delay(bool p_enabled);
 
 	EMWSPeer();
 	~EMWSPeer();

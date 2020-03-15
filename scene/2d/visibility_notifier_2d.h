@@ -55,8 +55,10 @@ protected:
 	static void _bind_methods();
 
 public:
+#ifdef TOOLS_ENABLED
 	virtual Rect2 _edit_get_rect() const;
 	virtual bool _edit_use_rect() const;
+#endif
 
 	void set_rect(const Rect2 &p_rect);
 	Rect2 get_rect() const;

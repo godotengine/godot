@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Gradient" inherits="Resource" category="Core" version="3.2">
+<class name="Gradient" inherits="Resource" version="4.0">
 	<brief_description>
 		A color interpolator resource which can be used to generate colors between user-defined color points.
 	</brief_description>
@@ -87,11 +87,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="colors" type="PoolColorArray" setter="set_colors" getter="get_colors" default="PoolColorArray( 0, 0, 0, 1, 1, 1, 1, 1 )">
-			Gradient's colors returned as a [PoolColorArray].
+		<member name="colors" type="PackedColorArray" setter="set_colors" getter="get_colors" default="PackedColorArray( 0, 0, 0, 1, 1, 1, 1, 1 )">
+			Gradient's colors returned as a [PackedColorArray].
 		</member>
-		<member name="offsets" type="PoolRealArray" setter="set_offsets" getter="get_offsets" default="PoolRealArray( 0, 1 )">
-			Gradient's offsets returned as a [PoolRealArray].
+		<member name="offsets" type="PackedFloat32Array" setter="set_offsets" getter="get_offsets" default="PackedFloat32Array( 0, 1 )">
+			Gradient's offsets returned as a [PackedFloat32Array].
 		</member>
 	</members>
 	<constants>

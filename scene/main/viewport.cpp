@@ -30,6 +30,8 @@
 
 #include "viewport.h"
 
+#include "core/core_string_names.h"
+#include "core/debugger/engine_debugger.h"
 #include "core/os/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
@@ -73,10 +75,13 @@ void ViewportTexture::setup_local_to_scene() {
 
 	vp->viewport_textures.insert(this);
 
-	VS::get_singleton()->texture_set_proxy(proxy, vp->texture_rid);
-
-	vp->texture_flags = flags;
-	VS::get_singleton()->texture_set_flags(vp->texture_rid, flags);
+	if (proxy_ph.is_valid()) {
+		VS::get_singleton()->texture_proxy_update(proxy, vp->texture_rid);
+		VS::get_singleton()->free(proxy_ph);
+	} else {
+		ERR_FAIL_COND(proxy.is_valid()); //should be invalid
+		proxy = VS::get_singleton()->texture_proxy_create(vp->texture_rid);
+	}
 }
 
 void ViewportTexture::set_viewport_path_in_scene(const NodePath &p_path) {
@@ -114,6 +119,10 @@ Size2 ViewportTexture::get_size() const {
 RID ViewportTexture::get_rid() const {
 
 	//ERR_FAIL_COND_V_MSG(!vp, RID(), "Viewport Texture must be set to use it.");
+	if (proxy.is_null()) {
+		proxy_ph = VS::get_singleton()->texture_2d_placeholder_create();
+		proxy = VS::get_singleton()->texture_proxy_create(proxy_ph);
+	}
 	return proxy;
 }
 
@@ -124,21 +133,7 @@ bool ViewportTexture::has_alpha() const {
 Ref<Image> ViewportTexture::get_data() const {
 
 	ERR_FAIL_COND_V_MSG(!vp, Ref<Image>(), "Viewport Texture must be set to use it.");
-	return VS::get_singleton()->texture_get_data(vp->texture_rid);
-}
-void ViewportTexture::set_flags(uint32_t p_flags) {
-	flags = p_flags;
-
-	if (!vp)
-		return;
-
-	vp->texture_flags = flags;
-	VS::get_singleton()->texture_set_flags(vp->texture_rid, flags);
-}
-
-uint32_t ViewportTexture::get_flags() const {
-
-	return flags;
+	return VS::get_singleton()->texture_2d_get(vp->texture_rid);
 }
 
 void ViewportTexture::_bind_methods() {
@@ -152,9 +147,7 @@ void ViewportTexture::_bind_methods() {
 ViewportTexture::ViewportTexture() {
 
 	vp = NULL;
-	flags = 0;
 	set_local_to_scene(true);
-	proxy = VS::get_singleton()->texture_create();
 }
 
 ViewportTexture::~ViewportTexture() {
@@ -163,7 +156,12 @@ ViewportTexture::~ViewportTexture() {
 		vp->viewport_textures.erase(this);
 	}
 
-	VS::get_singleton()->free(proxy);
+	if (proxy_ph.is_valid()) {
+		VS::get_singleton()->free(proxy_ph);
+	}
+	if (proxy.is_valid()) {
+		VS::get_singleton()->free(proxy);
+	}
 }
 
 /////////////////////////////////////
@@ -251,6 +249,27 @@ void Viewport::_collision_object_input_event(CollisionObject *p_object, Camera *
 	physics_last_id = id;
 }
 
+void Viewport::_own_world_changed() {
+	ERR_FAIL_COND(world.is_null());
+	ERR_FAIL_COND(own_world.is_null());
+
+	if (is_inside_tree()) {
+		_propagate_exit_world(this);
+	}
+
+	own_world = world->duplicate();
+
+	if (is_inside_tree()) {
+		_propagate_enter_world(this);
+	}
+
+	if (is_inside_tree()) {
+		VisualServer::get_singleton()->viewport_set_scenario(viewport, find_world()->get_scenario());
+	}
+
+	_update_listener();
+}
+
 void Viewport::_notification(int p_what) {
 
 	switch (p_what) {
@@ -282,7 +301,7 @@ void Viewport::_notification(int p_what) {
 				//3D
 				PhysicsServer::get_singleton()->space_set_debug_contacts(find_world()->get_space(), get_tree()->get_collision_debug_contact_count());
 				contact_3d_debug_multimesh = VisualServer::get_singleton()->multimesh_create();
-				VisualServer::get_singleton()->multimesh_allocate(contact_3d_debug_multimesh, get_tree()->get_collision_debug_contact_count(), VS::MULTIMESH_TRANSFORM_3D, VS::MULTIMESH_COLOR_8BIT);
+				VisualServer::get_singleton()->multimesh_allocate(contact_3d_debug_multimesh, get_tree()->get_collision_debug_contact_count(), VS::MULTIMESH_TRANSFORM_3D, true);
 				VisualServer::get_singleton()->multimesh_set_visible_instances(contact_3d_debug_multimesh, 0);
 				VisualServer::get_singleton()->multimesh_set_mesh(contact_3d_debug_multimesh, get_tree()->get_debug_contact_mesh()->get_rid());
 				contact_3d_debug_instance = VisualServer::get_singleton()->instance_create();
@@ -394,7 +413,7 @@ void Viewport::_notification(int p_what) {
 #ifndef _3D_DISABLED
 				Vector2 last_pos(1e20, 1e20);
 				CollisionObject *last_object = NULL;
-				ObjectID last_id = 0;
+				ObjectID last_id;
 #endif
 				PhysicsDirectSpaceState::RayResult result;
 				Physics2DDirectSpaceState *ss2d = Physics2DServer::get_singleton()->space_get_direct_state(find_world_2d()->get_space());
@@ -514,7 +533,7 @@ void Viewport::_notification(int p_what) {
 							} else {
 								// This Viewport's builtin canvas
 								canvas_transform = get_canvas_transform();
-								canvas_layer_id = 0;
+								canvas_layer_id = ObjectID();
 							}
 
 							Vector2 point = canvas_transform.affine_inverse().xform(pos);
@@ -522,7 +541,7 @@ void Viewport::_notification(int p_what) {
 							int rc = ss2d->intersect_point_on_canvas(point, canvas_layer_id, res, 64, Set<RID>(), 0xFFFFFFFF, true, true, true);
 							for (int i = 0; i < rc; i++) {
 
-								if (res[i].collider_id && res[i].collider) {
+								if (res[i].collider_id.is_valid() && res[i].collider) {
 									CollisionObject2D *co = Object::cast_to<CollisionObject2D>(res[i].collider);
 									if (co) {
 										bool send_event = true;
@@ -576,18 +595,18 @@ void Viewport::_notification(int p_what) {
 #ifndef _3D_DISABLED
 					bool captured = false;
 
-					if (physics_object_capture != 0) {
+					if (physics_object_capture.is_valid()) {
 
 						CollisionObject *co = Object::cast_to<CollisionObject>(ObjectDB::get_instance(physics_object_capture));
 						if (co && camera) {
 							_collision_object_input_event(co, camera, ev, Vector3(), Vector3(), 0);
 							captured = true;
 							if (mb.is_valid() && mb->get_button_index() == 1 && !mb->is_pressed()) {
-								physics_object_capture = 0;
+								physics_object_capture = ObjectID();
 							}
 
 						} else {
-							physics_object_capture = 0;
+							physics_object_capture = ObjectID();
 						}
 					}
 
@@ -595,7 +614,7 @@ void Viewport::_notification(int p_what) {
 						//none
 					} else if (pos == last_pos) {
 
-						if (last_id) {
+						if (last_id.is_valid()) {
 							if (ObjectDB::get_instance(last_id) && last_object) {
 								//good, exists
 								_collision_object_input_event(last_object, camera, ev, result.position, result.normal, result.shape);
@@ -615,7 +634,7 @@ void Viewport::_notification(int p_what) {
 							if (space) {
 
 								bool col = space->intersect_ray(from, from + dir * 10000, result, Set<RID>(), 0xFFFFFFFF, true, true, true);
-								ObjectID new_collider = 0;
+								ObjectID new_collider;
 								if (col) {
 
 									CollisionObject *co = Object::cast_to<CollisionObject>(result.collider);
@@ -633,7 +652,7 @@ void Viewport::_notification(int p_what) {
 
 								if (is_mouse && new_collider != physics_object_over) {
 
-									if (physics_object_over) {
+									if (physics_object_over.is_valid()) {
 
 										CollisionObject *co = Object::cast_to<CollisionObject>(ObjectDB::get_instance(physics_object_over));
 										if (co) {
@@ -641,7 +660,7 @@ void Viewport::_notification(int p_what) {
 										}
 									}
 
-									if (new_collider) {
+									if (new_collider.is_valid()) {
 
 										CollisionObject *co = Object::cast_to<CollisionObject>(ObjectDB::get_instance(new_collider));
 										if (co) {
@@ -1105,7 +1124,20 @@ void Viewport::set_world(const Ref<World> &p_world) {
 	if (is_inside_tree())
 		_propagate_exit_world(this);
 
+	if (own_world.is_valid() && world.is_valid()) {
+		world->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Viewport::_own_world_changed));
+	}
+
 	world = p_world;
+
+	if (own_world.is_valid()) {
+		if (world.is_valid()) {
+			own_world = world->duplicate();
+			world->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Viewport::_own_world_changed));
+		} else {
+			own_world = Ref<World>(memnew(World));
+		}
+	}
 
 	if (is_inside_tree())
 		_propagate_enter_world(this);
@@ -1297,17 +1329,6 @@ Viewport::UpdateMode Viewport::get_update_mode() const {
 Ref<ViewportTexture> Viewport::get_texture() const {
 
 	return default_texture;
-}
-
-void Viewport::set_vflip(bool p_enable) {
-
-	vflip = p_enable;
-	VisualServer::get_singleton()->viewport_set_vflip(viewport, p_enable);
-}
-
-bool Viewport::get_vflip() const {
-
-	return vflip;
 }
 
 void Viewport::set_clear_mode(ClearMode p_mode) {
@@ -1810,7 +1831,7 @@ bool Viewport::_gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_che
 
 void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
-	ERR_FAIL_COND(p_event.is_null())
+	ERR_FAIL_COND(p_event.is_null());
 
 	//?
 	/*
@@ -1907,12 +1928,12 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			mb->set_position(pos);
 
 #ifdef DEBUG_ENABLED
-			if (ScriptDebugger::get_singleton() && gui.mouse_focus) {
+			if (EngineDebugger::get_singleton() && gui.mouse_focus) {
 
 				Array arr;
 				arr.push_back(gui.mouse_focus->get_path());
 				arr.push_back(gui.mouse_focus->get_class());
-				ScriptDebugger::get_singleton()->send_message("click_ctrl", arr);
+				EngineDebugger::get_singleton()->send_message("scene:click_ctrl", arr);
 			}
 #endif
 
@@ -2453,7 +2474,7 @@ List<Control *>::Element *Viewport::_gui_add_root_control(Control *p_control) {
 
 List<Control *>::Element *Viewport::_gui_add_subwindow_control(Control *p_control) {
 
-	p_control->connect("visibility_changed", this, "_subwindow_visibility_changed");
+	p_control->connect("visibility_changed", callable_mp(this, &Viewport::_subwindow_visibility_changed));
 
 	if (p_control->is_visible_in_tree()) {
 		gui.subwindow_order_dirty = true;
@@ -2484,7 +2505,7 @@ void Viewport::_gui_remove_from_modal_stack(List<Control *>::Element *MI, Object
 
 	gui.modal_stack.erase(MI);
 
-	if (p_prev_focus_owner) {
+	if (p_prev_focus_owner.is_valid()) {
 
 		// for previous window in stack, pass the focus so it feels more
 		// natural
@@ -2548,7 +2569,7 @@ void Viewport::_gui_remove_subwindow_control(List<Control *>::Element *SI) {
 
 	Control *control = SI->get();
 
-	control->disconnect("visibility_changed", this, "_subwindow_visibility_changed");
+	control->disconnect("visibility_changed", callable_mp(this, &Viewport::_subwindow_visibility_changed));
 
 	List<Control *>::Element *E = gui.subwindows.find(control);
 	if (E)
@@ -2681,14 +2702,15 @@ void Viewport::_drop_physics_mouseover() {
 	}
 
 #ifndef _3D_DISABLED
-	if (physics_object_over) {
+	if (physics_object_over.is_valid()) {
 		CollisionObject *co = Object::cast_to<CollisionObject>(ObjectDB::get_instance(physics_object_over));
 		if (co) {
 			co->_mouse_exit();
 		}
 	}
 
-	physics_object_over = physics_object_capture = 0;
+	physics_object_over = ObjectID();
+	physics_object_capture = ObjectID();
 #endif
 }
 
@@ -2698,7 +2720,7 @@ List<Control *>::Element *Viewport::_gui_show_modal(Control *p_control) {
 	if (gui.key_focus)
 		p_control->_modal_set_prev_focus_owner(gui.key_focus->get_instance_id());
 	else
-		p_control->_modal_set_prev_focus_owner(0);
+		p_control->_modal_set_prev_focus_owner(ObjectID());
 
 	if (gui.mouse_focus && !p_control->is_a_parent_of(gui.mouse_focus) && !gui.mouse_click_grabber) {
 
@@ -2826,10 +2848,19 @@ void Viewport::set_use_own_world(bool p_world) {
 	if (is_inside_tree())
 		_propagate_exit_world(this);
 
-	if (!p_world)
+	if (!p_world) {
 		own_world = Ref<World>();
-	else
-		own_world = Ref<World>(memnew(World));
+		if (world.is_valid()) {
+			world->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Viewport::_own_world_changed));
+		}
+	} else {
+		if (world.is_valid()) {
+			own_world = world->duplicate();
+			world->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Viewport::_own_world_changed));
+		} else {
+			own_world = Ref<World>(memnew(World));
+		}
+	}
 
 	if (is_inside_tree())
 		_propagate_enter_world(this);
@@ -2908,26 +2939,6 @@ bool Viewport::is_input_disabled() const {
 	return disable_input;
 }
 
-void Viewport::set_disable_3d(bool p_disable) {
-	disable_3d = p_disable;
-	VS::get_singleton()->viewport_set_disable_3d(viewport, p_disable);
-}
-
-bool Viewport::is_3d_disabled() const {
-
-	return disable_3d;
-}
-
-void Viewport::set_keep_3d_linear(bool p_keep_3d_linear) {
-	keep_3d_linear = p_keep_3d_linear;
-	VS::get_singleton()->viewport_set_keep_3d_linear(viewport, keep_3d_linear);
-}
-
-bool Viewport::get_keep_3d_linear() const {
-
-	return keep_3d_linear;
-}
-
 Variant Viewport::gui_get_drag_data() const {
 	return gui.drag_data;
 }
@@ -2966,30 +2977,6 @@ void Viewport::set_msaa(MSAA p_msaa) {
 Viewport::MSAA Viewport::get_msaa() const {
 
 	return msaa;
-}
-
-void Viewport::set_hdr(bool p_hdr) {
-
-	if (hdr == p_hdr)
-		return;
-
-	hdr = p_hdr;
-	VS::get_singleton()->viewport_set_hdr(viewport, p_hdr);
-}
-
-bool Viewport::get_hdr() const {
-
-	return hdr;
-}
-
-void Viewport::set_usage(Usage p_usage) {
-
-	usage = p_usage;
-	VS::get_singleton()->viewport_set_usage(viewport, VS::ViewportUsage(p_usage));
-}
-
-Viewport::Usage Viewport::get_usage() const {
-	return usage;
 }
 
 void Viewport::set_debug_draw(DebugDraw p_debug_draw) {
@@ -3050,9 +3037,50 @@ bool Viewport::is_handling_input_locally() const {
 }
 
 void Viewport::_validate_property(PropertyInfo &property) const {
+}
 
-	if (VisualServer::get_singleton()->is_low_end() && property.name == "hdr") {
-		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+void Viewport::set_default_canvas_item_texture_filter(DefaultCanvasItemTextureFilter p_filter) {
+	if (default_canvas_item_texture_filter == p_filter) {
+		return;
+	}
+	default_canvas_item_texture_filter = p_filter;
+	_propagate_update_default_filter(this);
+}
+
+Viewport::DefaultCanvasItemTextureFilter Viewport::get_default_canvas_item_texture_filter() const {
+	return default_canvas_item_texture_filter;
+}
+
+void Viewport::set_default_canvas_item_texture_repeat(DefaultCanvasItemTextureRepeat p_repeat) {
+	if (default_canvas_item_texture_repeat == p_repeat) {
+		return;
+	}
+	default_canvas_item_texture_repeat = p_repeat;
+	_propagate_update_default_repeat(this);
+}
+Viewport::DefaultCanvasItemTextureRepeat Viewport::get_default_canvas_item_texture_repeat() const {
+	return default_canvas_item_texture_repeat;
+}
+
+void Viewport::_propagate_update_default_filter(Node *p_node) {
+	CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
+	if (ci) {
+		ci->_update_texture_filter_changed(false);
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_propagate_update_default_filter(p_node->get_child(i));
+	}
+}
+
+void Viewport::_propagate_update_default_repeat(Node *p_node) {
+	CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
+	if (ci) {
+		ci->_update_texture_repeat_changed(false);
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_propagate_update_default_repeat(p_node->get_child(i));
 	}
 }
 
@@ -3091,9 +3119,6 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size_override_stretch", "enabled"), &Viewport::set_size_override_stretch);
 	ClassDB::bind_method(D_METHOD("is_size_override_stretch_enabled"), &Viewport::is_size_override_stretch_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_vflip", "enable"), &Viewport::set_vflip);
-	ClassDB::bind_method(D_METHOD("get_vflip"), &Viewport::get_vflip);
-
 	ClassDB::bind_method(D_METHOD("set_clear_mode", "mode"), &Viewport::set_clear_mode);
 	ClassDB::bind_method(D_METHOD("get_clear_mode"), &Viewport::get_clear_mode);
 
@@ -3102,12 +3127,6 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_msaa", "msaa"), &Viewport::set_msaa);
 	ClassDB::bind_method(D_METHOD("get_msaa"), &Viewport::get_msaa);
-
-	ClassDB::bind_method(D_METHOD("set_hdr", "enable"), &Viewport::set_hdr);
-	ClassDB::bind_method(D_METHOD("get_hdr"), &Viewport::get_hdr);
-
-	ClassDB::bind_method(D_METHOD("set_usage", "usage"), &Viewport::set_usage);
-	ClassDB::bind_method(D_METHOD("get_usage"), &Viewport::get_usage);
 
 	ClassDB::bind_method(D_METHOD("set_debug_draw", "debug_draw"), &Viewport::set_debug_draw);
 	ClassDB::bind_method(D_METHOD("get_debug_draw"), &Viewport::get_debug_draw);
@@ -3151,12 +3170,6 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disable_input", "disable"), &Viewport::set_disable_input);
 	ClassDB::bind_method(D_METHOD("is_input_disabled"), &Viewport::is_input_disabled);
 
-	ClassDB::bind_method(D_METHOD("set_disable_3d", "disable"), &Viewport::set_disable_3d);
-	ClassDB::bind_method(D_METHOD("is_3d_disabled"), &Viewport::is_3d_disabled);
-
-	ClassDB::bind_method(D_METHOD("set_keep_3d_linear", "keep_3d_linear"), &Viewport::set_keep_3d_linear);
-	ClassDB::bind_method(D_METHOD("get_keep_3d_linear"), &Viewport::get_keep_3d_linear);
-
 	ClassDB::bind_method(D_METHOD("_gui_show_tooltip"), &Viewport::_gui_show_tooltip);
 	ClassDB::bind_method(D_METHOD("_gui_remove_focus"), &Viewport::_gui_remove_focus);
 	ClassDB::bind_method(D_METHOD("_post_gui_grab_click_focus"), &Viewport::_post_gui_grab_click_focus);
@@ -3176,7 +3189,11 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_handle_input_locally", "enable"), &Viewport::set_handle_input_locally);
 	ClassDB::bind_method(D_METHOD("is_handling_input_locally"), &Viewport::is_handling_input_locally);
 
-	ClassDB::bind_method(D_METHOD("_subwindow_visibility_changed"), &Viewport::_subwindow_visibility_changed);
+	ClassDB::bind_method(D_METHOD("set_default_canvas_item_texture_filter", "mode"), &Viewport::set_default_canvas_item_texture_filter);
+	ClassDB::bind_method(D_METHOD("get_default_canvas_item_texture_filter"), &Viewport::get_default_canvas_item_texture_filter);
+
+	ClassDB::bind_method(D_METHOD("set_default_canvas_item_texture_repeat", "mode"), &Viewport::set_default_canvas_item_texture_repeat);
+	ClassDB::bind_method(D_METHOD("get_default_canvas_item_texture_repeat"), &Viewport::get_default_canvas_item_texture_repeat);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "arvr"), "set_use_arvr", "use_arvr");
 
@@ -3189,16 +3206,14 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "handle_input_locally"), "set_handle_input_locally", "is_handling_input_locally");
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x,AndroidVR 2x,AndroidVR 4x"), "set_msaa", "get_msaa");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hdr"), "set_hdr", "get_hdr");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_3d_linear"), "set_keep_3d_linear", "get_keep_3d_linear");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "usage", PROPERTY_HINT_ENUM, "2D,2D No-Sampling,3D,3D No-Effects"), "set_usage", "get_usage");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "render_direct_to_screen"), "set_use_render_direct_to_screen", "is_using_render_direct_to_screen");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_draw", PROPERTY_HINT_ENUM, "Disabled,Unshaded,Overdraw,Wireframe"), "set_debug_draw", "get_debug_draw");
 	ADD_GROUP("Render Target", "render_target_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "render_target_v_flip"), "set_vflip", "get_vflip");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_clear_mode", PROPERTY_HINT_ENUM, "Always,Never,Next Frame"), "set_clear_mode", "get_clear_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_update_mode", PROPERTY_HINT_ENUM, "Disabled,Once,When Visible,Always"), "set_update_mode", "get_update_mode");
+	ADD_GROUP("Canvas Items", "canvas_item_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,MipmapLinear,MipmapNearest"), "set_default_canvas_item_texture_filter", "get_default_canvas_item_texture_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_repeat", PROPERTY_HINT_ENUM, "Disabled,Enabled,Mirror"), "set_default_canvas_item_texture_repeat", "get_default_canvas_item_texture_repeat");
 	ADD_GROUP("Audio Listener", "audio_listener_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_listener_enable_2d"), "set_as_audio_listener_2d", "is_audio_listener_2d");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_listener_enable_3d"), "set_as_audio_listener", "is_audio_listener");
@@ -3246,20 +3261,34 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_OVERDRAW);
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_WIREFRAME);
 
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_GI_PROBE_ALBEDO);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_GI_PROBE_LIGHTING);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_GI_PROBE_EMISSION);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_SHADOW_ATLAS);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_SCENE_LUMINANCE);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_SSAO);
+
 	BIND_ENUM_CONSTANT(MSAA_DISABLED);
 	BIND_ENUM_CONSTANT(MSAA_2X);
 	BIND_ENUM_CONSTANT(MSAA_4X);
 	BIND_ENUM_CONSTANT(MSAA_8X);
 	BIND_ENUM_CONSTANT(MSAA_16X);
 
-	BIND_ENUM_CONSTANT(USAGE_2D);
-	BIND_ENUM_CONSTANT(USAGE_2D_NO_SAMPLING);
-	BIND_ENUM_CONSTANT(USAGE_3D);
-	BIND_ENUM_CONSTANT(USAGE_3D_NO_EFFECTS);
-
 	BIND_ENUM_CONSTANT(CLEAR_MODE_ALWAYS);
 	BIND_ENUM_CONSTANT(CLEAR_MODE_NEVER);
 	BIND_ENUM_CONSTANT(CLEAR_MODE_ONLY_NEXT_FRAME);
+
+	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
+	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS);
+	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+
+	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_MAX);
+	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR);
+	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX);
 }
 
 void Viewport::_subwindow_visibility_changed() {
@@ -3275,14 +3304,13 @@ Viewport::Viewport() {
 
 	viewport = VisualServer::get_singleton()->viewport_create();
 	texture_rid = VisualServer::get_singleton()->viewport_get_texture(viewport);
-	texture_flags = 0;
 
 	render_direct_to_screen = false;
 
 	default_texture.instance();
 	default_texture->vp = const_cast<Viewport *>(this);
 	viewport_textures.insert(default_texture.ptr());
-	VS::get_singleton()->texture_set_proxy(default_texture->proxy, texture_rid);
+	default_texture->proxy = VS::get_singleton()->texture_proxy_create(texture_rid);
 
 	//internal_listener = SpatialSoundServer::get_singleton()->listener_create();
 	audio_listener = false;
@@ -3300,14 +3328,10 @@ Viewport::Viewport() {
 	size_override_size = Size2(1, 1);
 	gen_mipmaps = false;
 
-	vflip = false;
-
 	//clear=true;
 	update_mode = UPDATE_WHEN_VISIBLE;
 
 	physics_object_picking = false;
-	physics_object_capture = 0;
-	physics_object_over = 0;
 	physics_has_last_mousepos = false;
 	physics_last_mousepos = Vector2(Math_INF, Math_INF);
 
@@ -3327,15 +3351,13 @@ Viewport::Viewport() {
 	unhandled_key_input_group = "_vp_unhandled_key_input" + id;
 
 	disable_input = false;
-	disable_3d = false;
-	keep_3d_linear = false;
 
 	//window tooltip
 	gui.tooltip_timer = -1;
 
 	//gui.tooltip_timer->force_parent_owned();
 	gui.tooltip_delay = GLOBAL_DEF("gui/timers/tooltip_delay_sec", 0.5);
-	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/tooltip_delay_sec", PropertyInfo(Variant::REAL, "gui/timers/tooltip_delay_sec", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater")); // No negative numbers
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/tooltip_delay_sec", PropertyInfo(Variant::FLOAT, "gui/timers/tooltip_delay_sec", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater")); // No negative numbers
 
 	gui.tooltip = NULL;
 	gui.tooltip_label = NULL;
@@ -3347,9 +3369,7 @@ Viewport::Viewport() {
 	gui.last_mouse_focus = NULL;
 
 	msaa = MSAA_DISABLED;
-	hdr = true;
 
-	usage = USAGE_3D;
 	debug_draw = DEBUG_DRAW_DISABLED;
 	clear_mode = CLEAR_MODE_ALWAYS;
 
@@ -3361,7 +3381,9 @@ Viewport::Viewport() {
 	physics_last_mouse_state.mouse_mask = 0;
 	local_input_handled = false;
 	handle_input_locally = true;
-	physics_last_id = 0; //ensures first time there will be a check
+
+	default_canvas_item_texture_filter = DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
+	default_canvas_item_texture_repeat = DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 }
 
 Viewport::~Viewport() {

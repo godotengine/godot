@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MainLoop" inherits="Object" category="Core" version="3.2">
+<class name="MainLoop" inherits="Object" version="4.0">
 	<brief_description>
 		Abstract base class for the game's main loop.
 	</brief_description>
@@ -26,9 +26,9 @@
 		func _input_event(event):
 		    # Record keys.
 		    if event is InputEventKey and event.pressed and !event.echo:
-		        keys_typed.append(OS.get_scancode_string(event.scancode))
+		        keys_typed.append(OS.get_keycode_string(event.keycode))
 		        # Quit on Escape press.
-		        if event.scancode == KEY_ESCAPE:
+		        if event.keycode == KEY_ESCAPE:
 		            quit = true
 		    # Quit on any mouse click.
 		    if event is InputEventMouseButton:
@@ -46,7 +46,7 @@
 		<method name="_drop_files" qualifiers="virtual">
 			<return type="void">
 			</return>
-			<argument index="0" name="files" type="PoolStringArray">
+			<argument index="0" name="files" type="PackedStringArray">
 			</argument>
 			<argument index="1" name="from_screen" type="int">
 			</argument>
@@ -69,6 +69,7 @@
 			<argument index="1" name="meta" type="Variant">
 			</argument>
 			<description>
+				Called when the user performs an action in the system global menu (e.g. the Mac OS menu bar).
 			</description>
 		</method>
 		<method name="_idle" qualifiers="virtual">
@@ -174,7 +175,7 @@
 			<argument index="1" name="granted" type="bool">
 			</argument>
 			<description>
-				Emitted when an user responds to permission request.
+				Emitted when a user responds to a permission request.
 			</description>
 		</signal>
 	</signals>

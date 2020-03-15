@@ -92,8 +92,8 @@ private:
 	float expand_margin[4];
 	float margin[4];
 	Rect2 region_rect;
-	Ref<Texture> texture;
-	Ref<Texture> normal_map;
+	Ref<Texture2D> texture;
+	Ref<Texture2D> normal_map;
 	bool draw_center;
 	Color modulate;
 	AxisStretchMode axis_h;
@@ -115,11 +115,11 @@ public:
 	void set_region_rect(const Rect2 &p_region_rect);
 	Rect2 get_region_rect() const;
 
-	void set_texture(Ref<Texture> p_texture);
-	Ref<Texture> get_texture() const;
+	void set_texture(Ref<Texture2D> p_texture);
+	Ref<Texture2D> get_texture() const;
 
-	void set_normal_map(Ref<Texture> p_normal_map);
-	Ref<Texture> get_normal_map() const;
+	void set_normal_map(Ref<Texture2D> p_normal_map);
+	Ref<Texture2D> get_normal_map() const;
 
 	void set_draw_center(bool p_enabled);
 	bool is_draw_center_enabled() const;

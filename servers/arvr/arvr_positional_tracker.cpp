@@ -38,6 +38,7 @@ void ARVRPositionalTracker::_bind_methods() {
 
 	// this class is read only from GDScript, so we only have access to getters..
 	ClassDB::bind_method(D_METHOD("get_type"), &ARVRPositionalTracker::get_type);
+	ClassDB::bind_method(D_METHOD("get_tracker_id"), &ARVRPositionalTracker::get_tracker_id);
 	ClassDB::bind_method(D_METHOD("get_name"), &ARVRPositionalTracker::get_name);
 	ClassDB::bind_method(D_METHOD("get_joy_id"), &ARVRPositionalTracker::get_joy_id);
 	ClassDB::bind_method(D_METHOD("get_tracks_orientation"), &ARVRPositionalTracker::get_tracks_orientation);
@@ -58,7 +59,7 @@ void ARVRPositionalTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rumble"), &ARVRPositionalTracker::get_rumble);
 	ClassDB::bind_method(D_METHOD("set_rumble", "rumble"), &ARVRPositionalTracker::set_rumble);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rumble"), "set_rumble", "get_rumble");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rumble"), "set_rumble", "get_rumble");
 };
 
 void ARVRPositionalTracker::set_type(ARVRServer::TrackerType p_type) {

@@ -74,7 +74,7 @@ void SplitContainer::_resort() {
 	bool second_expanded = (vertical ? second->get_v_size_flags() : second->get_h_size_flags()) & SIZE_EXPAND;
 
 	// Determine the separation between items
-	Ref<Texture> g = get_icon("grabber");
+	Ref<Texture2D> g = get_icon("grabber");
 	int sep = get_constant("separation");
 	sep = (dragger_visibility != DRAGGER_HIDDEN_COLLAPSED) ? MAX(sep, vertical ? g->get_height() : g->get_width()) : 0;
 
@@ -123,7 +123,7 @@ Size2 SplitContainer::get_minimum_size() const {
 	/* Calculate MINIMUM SIZE */
 
 	Size2i minimum;
-	Ref<Texture> g = get_icon("grabber");
+	Ref<Texture2D> g = get_icon("grabber");
 	int sep = get_constant("separation");
 	sep = (dragger_visibility != DRAGGER_HIDDEN_COLLAPSED) ? MAX(sep, vertical ? g->get_height() : g->get_width()) : 0;
 
@@ -182,7 +182,7 @@ void SplitContainer::_notification(int p_what) {
 				return;
 
 			int sep = dragger_visibility != DRAGGER_HIDDEN_COLLAPSED ? get_constant("separation") : 0;
-			Ref<Texture> tex = get_icon("grabber");
+			Ref<Texture2D> tex = get_icon("grabber");
 			Size2 size = get_size();
 
 			if (vertical)
@@ -266,7 +266,7 @@ void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 Control::CursorShape SplitContainer::get_cursor_shape(const Point2 &p_pos) const {
 
 	if (dragging)
-		return (vertical ? CURSOR_VSIZE : CURSOR_HSIZE);
+		return (vertical ? CURSOR_VSPLIT : CURSOR_HSPLIT);
 
 	if (!collapsed && _getch(0) && _getch(1) && dragger_visibility == DRAGGER_VISIBLE) {
 
@@ -275,11 +275,11 @@ Control::CursorShape SplitContainer::get_cursor_shape(const Point2 &p_pos) const
 		if (vertical) {
 
 			if (p_pos.y > middle_sep && p_pos.y < middle_sep + sep)
-				return CURSOR_VSIZE;
+				return CURSOR_VSPLIT;
 		} else {
 
 			if (p_pos.x > middle_sep && p_pos.x < middle_sep + sep)
-				return CURSOR_HSIZE;
+				return CURSOR_HSPLIT;
 		}
 	}
 

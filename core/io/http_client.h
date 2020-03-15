@@ -191,7 +191,7 @@ private:
 #include "platform/javascript/http_client.h.inc"
 #endif
 
-	PoolStringArray _get_response_headers();
+	PackedStringArray _get_response_headers();
 	Dictionary _get_response_headers_as_dictionary();
 
 	static void _bind_methods();
@@ -202,7 +202,7 @@ public:
 	void set_connection(const Ref<StreamPeer> &p_connection);
 	Ref<StreamPeer> get_connection() const;
 
-	Error request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const PoolVector<uint8_t> &p_body);
+	Error request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const Vector<uint8_t> &p_body);
 	Error request(Method p_method, const String &p_url, const Vector<String> &p_headers, const String &p_body = String());
 
 	void close();
@@ -215,7 +215,7 @@ public:
 	Error get_response_headers(List<String> *r_response);
 	int get_response_body_length() const;
 
-	PoolByteArray read_response_body_chunk(); // Can't get body as partial text because of most encodings UTF8, gzip, etc.
+	PackedByteArray read_response_body_chunk(); // Can't get body as partial text because of most encodings UTF8, gzip, etc.
 
 	void set_blocking_mode(bool p_enable); // Useful mostly if running in a thread
 	bool is_blocking_mode_enabled() const;

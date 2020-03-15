@@ -42,11 +42,9 @@ public:
 		STATUS_STOP
 	};
 
-	OS::ProcessID pid;
+	List<OS::ProcessID> pids;
 
 private:
-	bool debug_collisions;
-	bool debug_navigation;
 	Status status;
 
 public:
@@ -55,13 +53,9 @@ public:
 	void run_native_notify() { status = STATUS_PLAY; }
 	void stop();
 
-	OS::ProcessID get_pid() const { return pid; }
-
-	void set_debug_collisions(bool p_debug);
-	bool get_debug_collisions() const;
-
-	void set_debug_navigation(bool p_debug);
-	bool get_debug_navigation() const;
+	void stop_child_process(OS::ProcessID p_pid);
+	bool has_child_process(OS::ProcessID p_pid) const;
+	int get_child_process_count() const { return pids.size(); }
 
 	EditorRun();
 };

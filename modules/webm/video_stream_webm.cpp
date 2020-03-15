@@ -30,21 +30,22 @@
 
 #include "video_stream_webm.h"
 
-#include "OpusVorbisDecoder.hpp"
-#include "VPXDecoder.hpp"
-#include <vpx/vpx_image.h>
-
-#include "mkvparser/mkvparser.h"
-
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "servers/audio_server.h"
 
 #include "thirdparty/misc/yuv2rgb.h"
 
-#include "servers/audio_server.h"
+// libsimplewebm
+#include <OpusVorbisDecoder.hpp>
+#include <VPXDecoder.hpp>
 
-#include <string.h>
+// libvpx
+#include <vpx/vpx_image.h>
+
+// libwebm
+#include <mkvparser/mkvparser.h>
 
 class MkvReader : public mkvparser::IMkvReader {
 
@@ -140,7 +141,10 @@ bool VideoStreamPlaybackWebm::open_file(const String &p_file) {
 			}
 
 			frame_data.resize((webm->getWidth() * webm->getHeight()) << 2);
-			texture->create(webm->getWidth(), webm->getHeight(), Image::FORMAT_RGBA8, Texture::FLAG_FILTER | Texture::FLAG_VIDEO_SURFACE);
+			Ref<Image> img;
+			img.instance();
+			img->create(webm->getWidth(), webm->getHeight(), false, Image::FORMAT_RGBA8);
+			texture->create_from_image(img);
 
 			return true;
 		}
@@ -230,7 +234,7 @@ void VideoStreamPlaybackWebm::set_audio_track(int p_idx) {
 	audio_track = p_idx;
 }
 
-Ref<Texture> VideoStreamPlaybackWebm::get_texture() const {
+Ref<Texture2D> VideoStreamPlaybackWebm::get_texture() const {
 
 	return texture;
 }
@@ -311,12 +315,12 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 
 					if (err == VPXDecoder::NO_ERROR && image.w == webm->getWidth() && image.h == webm->getHeight()) {
 
-						PoolVector<uint8_t>::Write w = frame_data.write();
+						uint8_t *w = frame_data.ptrw();
 						bool converted = false;
 
 						if (image.chromaShiftW == 0 && image.chromaShiftH == 0 && image.cs == VPX_CS_SRGB) {
 
-							uint8_t *wp = w.ptr();
+							uint8_t *wp = w;
 							unsigned char *rRow = image.planes[2];
 							unsigned char *gRow = image.planes[0];
 							unsigned char *bRow = image.planes[1];
@@ -334,28 +338,28 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 							converted = true;
 						} else if (image.chromaShiftW == 1 && image.chromaShiftH == 1) {
 
-							yuv420_2_rgb8888(w.ptr(), image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
-							// 								libyuv::I420ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
+							yuv420_2_rgb8888(w, image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
+							//libyuv::I420ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
 							converted = true;
 						} else if (image.chromaShiftW == 1 && image.chromaShiftH == 0) {
 
-							yuv422_2_rgb8888(w.ptr(), image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
-							// 								libyuv::I422ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
+							yuv422_2_rgb8888(w, image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
+							//libyuv::I422ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
 							converted = true;
 						} else if (image.chromaShiftW == 0 && image.chromaShiftH == 0) {
 
-							yuv444_2_rgb8888(w.ptr(), image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
-							// 								libyuv::I444ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
+							yuv444_2_rgb8888(w, image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
+							//libyuv::I444ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
 							converted = true;
 						} else if (image.chromaShiftW == 2 && image.chromaShiftH == 0) {
 
-							// 								libyuv::I411ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
-							// 								converted = true;
+							//libyuv::I411ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2] image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
+							//converted = true;
 						}
 
 						if (converted) {
 							Ref<Image> img = memnew(Image(image.w, image.h, 0, Image::FORMAT_RGBA8, frame_data));
-							texture->set_data(img); //Zero copy send to visual server
+							texture->update(img); //Zero copy send to visual server
 							video_frame_done = true;
 						}
 					}
@@ -392,17 +396,22 @@ int VideoStreamPlaybackWebm::get_mix_rate() const {
 
 inline bool VideoStreamPlaybackWebm::has_enough_video_frames() const {
 	if (video_frames_pos > 0) {
-
-		const double audio_delay = AudioServer::get_singleton()->get_output_latency();
+		// FIXME: AudioServer output latency was fixed in af9bb0e, previously it used to
+		// systematically return 0. Now that it gives a proper latency, it broke this
+		// code where the delay compensation likely never really worked.
+		//const double audio_delay = AudioServer::get_singleton()->get_output_latency();
 		const double video_time = video_frames[video_frames_pos - 1]->time;
-		return video_time >= time + audio_delay + delay_compensation;
+		return video_time >= time + /* audio_delay + */ delay_compensation;
 	}
 	return false;
 }
 
 bool VideoStreamPlaybackWebm::should_process(WebMFrame &video_frame) {
-	const double audio_delay = AudioServer::get_singleton()->get_output_latency();
-	return video_frame.time >= time + audio_delay + delay_compensation;
+	// FIXME: AudioServer output latency was fixed in af9bb0e, previously it used to
+	// systematically return 0. Now that it gives a proper latency, it broke this
+	// code where the delay compensation likely never really worked.
+	//const double audio_delay = AudioServer::get_singleton()->get_output_latency();
+	return video_frame.time >= time + /* audio_delay + */ delay_compensation;
 }
 
 void VideoStreamPlaybackWebm::delete_pointers() {
@@ -465,7 +474,7 @@ void VideoStreamWebm::set_audio_track(int p_track) {
 
 ////////////
 
-RES ResourceFormatLoaderWebm::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES ResourceFormatLoaderWebm::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f) {

@@ -108,6 +108,7 @@ void godot_icall_Reference_Disposed(MonoObject *p_obj, Object *p_ptr, MonoBoolea
 
 	// Unsafe refcount decrement. The managed instance also counts as a reference.
 	// See: CSharpLanguage::alloc_instance_binding_data(Object *p_object)
+	CSharpLanguage::get_singleton()->pre_unsafe_unreference(ref);
 	if (ref->unreference()) {
 		memdelete(ref);
 	} else {
@@ -188,12 +189,12 @@ MonoBoolean godot_icall_DynamicGodotObject_InvokeMember(Object *p_ptr, MonoStrin
 		args.set(i, &arg_store.get(i));
 	}
 
-	Variant::CallError error;
+	Callable::CallError error;
 	Variant result = p_ptr->call(StringName(name), args.ptr(), argc, error);
 
 	*r_result = GDMonoMarshal::variant_to_mono_object(result);
 
-	return error.error == Variant::CallError::CALL_OK;
+	return error.error == Callable::CallError::CALL_OK;
 }
 
 MonoBoolean godot_icall_DynamicGodotObject_GetMember(Object *p_ptr, MonoString *p_name, MonoObject **r_result) {
@@ -223,14 +224,9 @@ MonoString *godot_icall_Object_ToString(Object *p_ptr) {
 #ifdef DEBUG_ENABLED
 	// Cannot happen in C#; would get an ObjectDisposedException instead.
 	CRASH_COND(p_ptr == NULL);
-
-	if (ScriptDebugger::get_singleton() && !Object::cast_to<Reference>(p_ptr)) { // Only if debugging!
-		// Cannot happen either in C#; the handle is nullified when the object is destroyed
-		CRASH_COND(!ObjectDB::instance_validate(p_ptr));
-	}
 #endif
 
-	String result = "[" + p_ptr->get_class() + ":" + itos(p_ptr->get_instance_id()) + "]";
+	String result = p_ptr->to_string();
 	return GDMonoMarshal::mono_string_from_godot(result);
 }
 

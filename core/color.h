@@ -56,7 +56,6 @@ struct Color {
 	uint64_t to_rgba64() const;
 	uint64_t to_argb64() const;
 	uint64_t to_abgr64() const;
-	float gray() const;
 	float get_h() const;
 	float get_s() const;
 	float get_v() const;
@@ -70,7 +69,12 @@ struct Color {
 	}
 
 	Color operator+(const Color &p_color) const;
-	void operator+=(const Color &p_color);
+	_FORCE_INLINE_ void operator+=(const Color &p_color) {
+		r = r + p_color.r;
+		g = g + p_color.g;
+		b = b + p_color.b;
+		a = a + p_color.a;
+	}
 
 	Color operator-() const;
 	Color operator-(const Color &p_color) const;

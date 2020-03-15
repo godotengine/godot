@@ -58,7 +58,7 @@ class Physics2DServerWrapMT : public Physics2DServer {
 	volatile bool step_thread_up;
 	bool create_thread;
 
-	Semaphore *step_sem;
+	Semaphore step_sem;
 	int step_pending;
 	void thread_step(real_t p_delta);
 	void thread_flush();
@@ -67,7 +67,7 @@ class Physics2DServerWrapMT : public Physics2DServer {
 
 	bool first_frame;
 
-	Mutex *alloc_mutex;
+	Mutex alloc_mutex;
 	int pool_max_size;
 
 public:
@@ -199,11 +199,11 @@ public:
 	FUNC2(body_remove_shape, RID, int);
 	FUNC1(body_clear_shapes, RID);
 
-	FUNC2(body_attach_object_instance_id, RID, uint32_t);
-	FUNC1RC(uint32_t, body_get_object_instance_id, RID);
+	FUNC2(body_attach_object_instance_id, RID, ObjectID);
+	FUNC1RC(ObjectID, body_get_object_instance_id, RID);
 
-	FUNC2(body_attach_canvas_instance_id, RID, uint32_t);
-	FUNC1RC(uint32_t, body_get_canvas_instance_id, RID);
+	FUNC2(body_attach_canvas_instance_id, RID, ObjectID);
+	FUNC1RC(ObjectID, body_get_canvas_instance_id, RID);
 
 	FUNC2(body_set_continuous_collision_detection_mode, RID, CCDMode);
 	FUNC1RC(CCDMode, body_get_continuous_collision_detection_mode, RID);

@@ -491,9 +491,9 @@ public class GodotIO {
 		return (int)(metrics.density * 160f);
 	}
 
-	public void showKeyboard(String p_existing_text) {
+	public void showKeyboard(String p_existing_text, int p_max_input_length) {
 		if (edit != null)
-			edit.showKeyboard(p_existing_text);
+			edit.showKeyboard(p_existing_text, p_max_input_length);
 
 		//InputMethodManager inputMgr = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
 		//inputMgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);

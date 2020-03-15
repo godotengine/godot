@@ -37,6 +37,11 @@
 #define __builtin_bswap32 _byteswap_ulong
 #endif
 
+#if defined(__GNUC__)
+// Workaround GCC warning from -Wcast-function-type.
+#define GetProcAddress (void *)GetProcAddress
+#endif
+
 DWORD WINAPI _xinput_get_state(DWORD dwUserIndex, XINPUT_STATE *pState) {
 	return ERROR_DEVICE_NOT_CONNECTED;
 }

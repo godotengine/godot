@@ -41,21 +41,12 @@ void SkeletonIKEditorPlugin::_play() {
 		return;
 
 	if (play_btn->is_pressed()) {
-
-		initial_bone_poses.resize(skeleton_ik->get_parent_skeleton()->get_bone_count());
-		for (int i = 0; i < skeleton_ik->get_parent_skeleton()->get_bone_count(); ++i) {
-			initial_bone_poses.write[i] = skeleton_ik->get_parent_skeleton()->get_bone_pose(i);
-		}
-
 		skeleton_ik->start();
 	} else {
 		skeleton_ik->stop();
 
-		if (initial_bone_poses.size() != skeleton_ik->get_parent_skeleton()->get_bone_count())
-			return;
-
 		for (int i = 0; i < skeleton_ik->get_parent_skeleton()->get_bone_count(); ++i) {
-			skeleton_ik->get_parent_skeleton()->set_bone_pose(i, initial_bone_poses[i]);
+			skeleton_ik->get_parent_skeleton()->set_bone_global_pose_override(i, Transform(), 0);
 		}
 	}
 }
@@ -90,8 +81,6 @@ void SkeletonIKEditorPlugin::make_visible(bool p_visible) {
 }
 
 void SkeletonIKEditorPlugin::_bind_methods() {
-
-	ClassDB::bind_method("_play", &SkeletonIKEditorPlugin::_play);
 }
 
 SkeletonIKEditorPlugin::SkeletonIKEditorPlugin(EditorNode *p_node) {
@@ -102,7 +91,7 @@ SkeletonIKEditorPlugin::SkeletonIKEditorPlugin(EditorNode *p_node) {
 	play_btn->set_text(TTR("Play IK"));
 	play_btn->set_toggle_mode(true);
 	play_btn->hide();
-	play_btn->connect("pressed", this, "_play");
+	play_btn->connect("pressed", callable_mp(this, &SkeletonIKEditorPlugin::_play));
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, play_btn);
 	skeleton_ik = NULL;
 }

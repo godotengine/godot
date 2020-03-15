@@ -19,7 +19,7 @@ local.properties
 .gradletasknamecache
 project.properties
 platform/android/java/libs/*
-platform/android/java/assets
+platform/android/java/app/libs/*
 
 # General c++ generated files
 *.lib
@@ -346,3 +346,23 @@ compile_commands.json
 
 # Cppcheck
 *.cppcheck
+cppcheck-cppcheck-build-dir/
+
+# Gcov and Lcov code coverage
+*.gcno
+*.gcda
+*.gcov.html
+*.func.html
+*.func-sort-c.html
+*index-sort-f.html
+*index-sort-l.html
+*index.html
+MachineIndependent/
+godot.info
+amber.png
+emerald.png
+glass.png
+ruby.png
+snow.png
+updown.png
+gcov.css

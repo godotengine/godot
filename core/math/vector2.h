@@ -228,7 +228,7 @@ Vector2 Vector2::linear_interpolate(const Vector2 &p_b, real_t p_t) const {
 Vector2 Vector2::slerp(const Vector2 &p_b, real_t p_t) const {
 
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(!is_normalized(), Vector2());
+	ERR_FAIL_COND_V_MSG(!is_normalized(), Vector2(), "The start Vector2 must be normalized.");
 #endif
 	real_t theta = angle_to(p_b);
 	return rotated(theta * p_t);
@@ -303,7 +303,9 @@ struct Vector2i {
 	bool operator==(const Vector2i &p_vec2) const { return !(*this < p_vec2) && !(p_vec2 < *this); }
 	bool operator!=(const Vector2i &p_vec2) const { return !(*this == p_vec2); }
 
-	real_t get_aspect() const { return width / (real_t)height; }
+	real_t aspect() const { return width / (real_t)height; }
+	Vector2i sign() const { return Vector2i(SGN(x), SGN(y)); }
+	Vector2i abs() const { return Vector2i(ABS(x), ABS(y)); }
 
 	operator String() const { return String::num(x) + ", " + String::num(y); }
 

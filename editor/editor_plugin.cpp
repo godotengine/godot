@@ -51,7 +51,7 @@ Array EditorInterface::_make_mesh_previews(const Array &p_meshes, int p_preview_
 		meshes.push_back(p_meshes[i]);
 	}
 
-	Vector<Ref<Texture> > textures = make_mesh_previews(meshes, NULL, p_preview_size);
+	Vector<Ref<Texture2D> > textures = make_mesh_previews(meshes, NULL, p_preview_size);
 	Array ret;
 	for (int i = 0; i < textures.size(); i++) {
 		ret.push_back(textures[i]);
@@ -60,7 +60,7 @@ Array EditorInterface::_make_mesh_previews(const Array &p_meshes, int p_preview_
 	return ret;
 }
 
-Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh> > &p_meshes, Vector<Transform> *p_transforms, int p_preview_size) {
+Vector<Ref<Texture2D> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh> > &p_meshes, Vector<Transform> *p_transforms, int p_preview_size) {
 
 	int size = p_preview_size;
 
@@ -68,7 +68,6 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 
 	RID viewport = VS::get_singleton()->viewport_create();
 	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ALWAYS);
-	VS::get_singleton()->viewport_set_vflip(viewport, true);
 	VS::get_singleton()->viewport_set_scenario(viewport, scenario);
 	VS::get_singleton()->viewport_set_size(viewport, size, size);
 	VS::get_singleton()->viewport_set_transparent_background(viewport, true);
@@ -87,13 +86,13 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 
 	EditorProgress ep("mlib", TTR("Creating Mesh Previews"), p_meshes.size());
 
-	Vector<Ref<Texture> > textures;
+	Vector<Ref<Texture2D> > textures;
 
 	for (int i = 0; i < p_meshes.size(); i++) {
 
 		Ref<Mesh> mesh = p_meshes[i];
 		if (!mesh.is_valid()) {
-			textures.push_back(Ref<Texture>());
+			textures.push_back(Ref<Texture2D>());
 			continue;
 		}
 
@@ -114,7 +113,7 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 		AABB rot_aabb = xform.xform(aabb);
 		float m = MAX(rot_aabb.size.x, rot_aabb.size.y) * 0.5;
 		if (m == 0) {
-			textures.push_back(Ref<Texture>());
+			textures.push_back(Ref<Texture2D>());
 			continue;
 		}
 		xform.origin = -xform.basis.xform(ofs); //-ofs*m;
@@ -131,7 +130,7 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 		ep.step(TTR("Thumbnail..."), i);
 		Main::iteration();
 		Main::iteration();
-		Ref<Image> img = VS::get_singleton()->texture_get_data(viewport_texture);
+		Ref<Image> img = VS::get_singleton()->texture_2d_get(viewport_texture);
 		ERR_CONTINUE(!img.is_valid() || img->empty());
 		Ref<ImageTexture> it(memnew(ImageTexture));
 		it->create_from_image(img);
@@ -314,7 +313,7 @@ EditorInterface::EditorInterface() {
 }
 
 ///////////////////////////////////////////
-void EditorPlugin::add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture> &p_icon) {
+void EditorPlugin::add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon) {
 
 	EditorNode::get_editor_data().add_custom_type(p_type, p_base, p_script, p_icon);
 }
@@ -605,13 +604,13 @@ String EditorPlugin::get_name() const {
 
 	return String();
 }
-const Ref<Texture> EditorPlugin::get_icon() const {
+const Ref<Texture2D> EditorPlugin::get_icon() const {
 
 	if (get_script_instance() && get_script_instance()->has_method("get_plugin_icon")) {
 		return get_script_instance()->call("get_plugin_icon");
 	}
 
-	return Ref<Texture>();
+	return Ref<Texture2D>();
 }
 bool EditorPlugin::has_main_screen() const {
 
@@ -689,7 +688,7 @@ void EditorPlugin::apply_changes() {
 void EditorPlugin::get_breakpoints(List<String> *p_breakpoints) {
 
 	if (get_script_instance() && get_script_instance()->has_method("get_breakpoints")) {
-		PoolStringArray arr = get_script_instance()->call("get_breakpoints");
+		PackedStringArray arr = get_script_instance()->call("get_breakpoints");
 		for (int i = 0; i < arr.size(); i++)
 			p_breakpoints->push_back(arr[i]);
 	}
@@ -744,8 +743,8 @@ void EditorPlugin::remove_scene_import_plugin(const Ref<EditorSceneImporter> &p_
 	ResourceImporterScene::get_singleton()->remove_importer(p_importer);
 }
 
-int find(const PoolStringArray &a, const String &v) {
-	PoolStringArray::Read r = a.read();
+int find(const PackedStringArray &a, const String &v) {
+	const String *r = a.ptr();
 	for (int j = 0; j < a.size(); ++j) {
 		if (r[j] == v) {
 			return j;
@@ -863,7 +862,7 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_canvas_force_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_spatial_gui_input", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "get_plugin_name"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::OBJECT, "get_plugin_icon"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "get_plugin_icon"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "has_main_screen"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("make_visible", PropertyInfo(Variant::BOOL, "visible")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("edit", PropertyInfo(Variant::OBJECT, "object")));
@@ -873,7 +872,7 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("clear"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("save_external_data"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("apply_changes"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::POOL_STRING_ARRAY, "get_breakpoints"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::PACKED_STRING_ARRAY, "get_breakpoints"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("set_window_layout", PropertyInfo(Variant::OBJECT, "layout", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("get_window_layout", PropertyInfo(Variant::OBJECT, "layout", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "build"));

@@ -74,7 +74,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 			memdelete(f);
 			return OK;
 		} else if (err != OK) {
-			ERR_PRINTS("ResourceFormatImporter::load - " + p_path + ".import:" + itos(lines) + " error: " + error_text);
+			ERR_PRINT("ResourceFormatImporter::load - " + p_path + ".import:" + itos(lines) + " error: " + error_text);
 			memdelete(f);
 			return err;
 		}
@@ -117,7 +117,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 	return OK;
 }
 
-RES ResourceFormatImporter::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES ResourceFormatImporter::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 
 	PathAndType pat;
 	Error err = _get_path_and_type(p_path, pat);
@@ -130,7 +130,7 @@ RES ResourceFormatImporter::load(const String &p_path, const String &p_original_
 		return RES();
 	}
 
-	RES res = ResourceLoader::_load(pat.path, p_path, pat.type, false, r_error);
+	RES res = ResourceLoader::_load(pat.path, p_path, pat.type, false, r_error, p_use_sub_threads, r_progress);
 
 #ifdef TOOLS_ENABLED
 	if (res.is_valid()) {
@@ -279,7 +279,7 @@ void ResourceFormatImporter::get_internal_resource_path_list(const String &p_pat
 			memdelete(f);
 			return;
 		} else if (err != OK) {
-			ERR_PRINTS("ResourceFormatImporter::get_internal_resource_path_list - " + p_path + ".import:" + itos(lines) + " error: " + error_text);
+			ERR_PRINT("ResourceFormatImporter::get_internal_resource_path_list - " + p_path + ".import:" + itos(lines) + " error: " + error_text);
 			memdelete(f);
 			return;
 		}

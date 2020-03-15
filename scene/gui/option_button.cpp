@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "option_button.h"
+
 #include "core/print_string.h"
 
 Size2 OptionButton::get_minimum_size() const {
@@ -36,7 +37,14 @@ Size2 OptionButton::get_minimum_size() const {
 	Size2 minsize = Button::get_minimum_size();
 
 	if (has_icon("arrow")) {
-		minsize.width += Control::get_icon("arrow")->get_width() + get_constant("hseparation");
+		const Size2 padding = get_stylebox("normal")->get_minimum_size();
+		const Size2 arrow_size = Control::get_icon("arrow")->get_size();
+
+		Size2 content_size = minsize - padding;
+		content_size.width += arrow_size.width + get_constant("hseparation");
+		content_size.height = MAX(content_size.height, arrow_size.height);
+
+		minsize = content_size + padding;
 	}
 
 	return minsize;
@@ -51,7 +59,7 @@ void OptionButton::_notification(int p_what) {
 				return;
 
 			RID ci = get_canvas_item();
-			Ref<Texture> arrow = Control::get_icon("arrow");
+			Ref<Texture2D> arrow = Control::get_icon("arrow");
 			Color clr = Color(1, 1, 1);
 			if (get_constant("modulate_arrow")) {
 				switch (get_draw_mode()) {
@@ -107,7 +115,7 @@ void OptionButton::pressed() {
 	popup->popup();
 }
 
-void OptionButton::add_icon_item(const Ref<Texture> &p_icon, const String &p_label, int p_id) {
+void OptionButton::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id) {
 
 	popup->add_icon_radio_check_item(p_icon, p_label, p_id);
 	if (popup->get_item_count() == 1)
@@ -127,7 +135,7 @@ void OptionButton::set_item_text(int p_idx, const String &p_text) {
 	if (current == p_idx)
 		set_text(p_text);
 }
-void OptionButton::set_item_icon(int p_idx, const Ref<Texture> &p_icon) {
+void OptionButton::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 
 	popup->set_item_icon(p_idx, p_icon);
 
@@ -154,7 +162,7 @@ String OptionButton::get_item_text(int p_idx) const {
 	return popup->get_item_text(p_idx);
 }
 
-Ref<Texture> OptionButton::get_item_icon(int p_idx) const {
+Ref<Texture2D> OptionButton::get_item_icon(int p_idx) const {
 
 	return popup->get_item_icon(p_idx);
 }
@@ -282,7 +290,7 @@ void OptionButton::_set_items(const Array &p_items) {
 	for (int i = 0; i < p_items.size(); i += 5) {
 
 		String text = p_items[i + 0];
-		Ref<Texture> icon = p_items[i + 1];
+		Ref<Texture2D> icon = p_items[i + 1];
 		bool disabled = p_items[i + 2];
 		int id = p_items[i + 3];
 		Variant meta = p_items[i + 4];
@@ -301,9 +309,6 @@ void OptionButton::get_translatable_strings(List<String> *p_strings) const {
 }
 
 void OptionButton::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_selected"), &OptionButton::_selected);
-	ClassDB::bind_method(D_METHOD("_focused"), &OptionButton::_focused);
 
 	ClassDB::bind_method(D_METHOD("add_item", "label", "id"), &OptionButton::add_item, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("add_icon_item", "texture", "label", "id"), &OptionButton::add_icon_item, DEFVAL(-1));
@@ -356,9 +361,9 @@ OptionButton::OptionButton() {
 	popup->set_pass_on_modal_close_click(false);
 	popup->set_notify_transform(true);
 	popup->set_allow_search(true);
-	popup->connect("index_pressed", this, "_selected");
-	popup->connect("id_focused", this, "_focused");
-	popup->connect("popup_hide", this, "set_pressed", varray(false));
+	popup->connect("index_pressed", callable_mp(this, &OptionButton::_selected));
+	popup->connect("id_focused", callable_mp(this, &OptionButton::_focused));
+	popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(false));
 }
 
 OptionButton::~OptionButton() {

@@ -66,7 +66,7 @@ void EditorHelpSearch::_search_box_gui_input(const Ref<InputEvent> &p_event) {
 	// Redirect up and down navigational key events to the results list.
 	Ref<InputEventKey> key = p_event;
 	if (key.is_valid()) {
-		switch (key->get_scancode()) {
+		switch (key->get_keycode()) {
 			case KEY_UP:
 			case KEY_DOWN:
 			case KEY_PAGEUP:
@@ -111,7 +111,7 @@ void EditorHelpSearch::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 
-			connect("confirmed", this, "_confirmed");
+			connect("confirmed", callable_mp(this, &EditorHelpSearch::_confirmed));
 			_update_icons();
 		} break;
 		case NOTIFICATION_POPUP_HIDE: {
@@ -147,11 +147,6 @@ void EditorHelpSearch::_notification(int p_what) {
 
 void EditorHelpSearch::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_update_results"), &EditorHelpSearch::_update_results);
-	ClassDB::bind_method(D_METHOD("_search_box_gui_input"), &EditorHelpSearch::_search_box_gui_input);
-	ClassDB::bind_method(D_METHOD("_search_box_text_changed"), &EditorHelpSearch::_search_box_text_changed);
-	ClassDB::bind_method(D_METHOD("_filter_combo_item_selected"), &EditorHelpSearch::_filter_combo_item_selected);
-	ClassDB::bind_method(D_METHOD("_confirmed"), &EditorHelpSearch::_confirmed);
 	ADD_SIGNAL(MethodInfo("go_to_help"));
 }
 
@@ -206,21 +201,21 @@ EditorHelpSearch::EditorHelpSearch() {
 	search_box = memnew(LineEdit);
 	search_box->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
-	search_box->connect("gui_input", this, "_search_box_gui_input");
-	search_box->connect("text_changed", this, "_search_box_text_changed");
+	search_box->connect("gui_input", callable_mp(this, &EditorHelpSearch::_search_box_gui_input));
+	search_box->connect("text_changed", callable_mp(this, &EditorHelpSearch::_search_box_text_changed));
 	register_text_enter(search_box);
 	hbox->add_child(search_box);
 
 	case_sensitive_button = memnew(ToolButton);
 	case_sensitive_button->set_tooltip(TTR("Case Sensitive"));
-	case_sensitive_button->connect("pressed", this, "_update_results");
+	case_sensitive_button->connect("pressed", callable_mp(this, &EditorHelpSearch::_update_results));
 	case_sensitive_button->set_toggle_mode(true);
 	case_sensitive_button->set_focus_mode(FOCUS_NONE);
 	hbox->add_child(case_sensitive_button);
 
 	hierarchy_button = memnew(ToolButton);
 	hierarchy_button->set_tooltip(TTR("Show Hierarchy"));
-	hierarchy_button->connect("pressed", this, "_update_results");
+	hierarchy_button->connect("pressed", callable_mp(this, &EditorHelpSearch::_update_results));
 	hierarchy_button->set_toggle_mode(true);
 	hierarchy_button->set_pressed(true);
 	hierarchy_button->set_focus_mode(FOCUS_NONE);
@@ -237,7 +232,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	filter_combo->add_item(TTR("Constants Only"), SEARCH_CONSTANTS);
 	filter_combo->add_item(TTR("Properties Only"), SEARCH_PROPERTIES);
 	filter_combo->add_item(TTR("Theme Properties Only"), SEARCH_THEME_ITEMS);
-	filter_combo->connect("item_selected", this, "_filter_combo_item_selected");
+	filter_combo->connect("item_selected", callable_mp(this, &EditorHelpSearch::_filter_combo_item_selected));
 	hbox->add_child(filter_combo);
 
 	// Create the results tree.
@@ -251,8 +246,8 @@ EditorHelpSearch::EditorHelpSearch() {
 	results_tree->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
 	results_tree->set_hide_root(true);
 	results_tree->set_select_mode(Tree::SELECT_ROW);
-	results_tree->connect("item_activated", this, "_confirmed");
-	results_tree->connect("item_selected", get_ok(), "set_disabled", varray(false));
+	results_tree->connect("item_activated", callable_mp(this, &EditorHelpSearch::_confirmed));
+	results_tree->connect("item_selected", callable_mp((BaseButton *)get_ok(), &BaseButton::set_disabled), varray(false));
 	vbox->add_child(results_tree, true);
 }
 
@@ -307,7 +302,7 @@ bool EditorHelpSearch::Runner::_slice() {
 		case PHASE_MAX:
 			return true;
 		default:
-			WARN_PRINTS("Invalid or unhandled phase in EditorHelpSearch::Runner, aborting search.");
+			WARN_PRINT("Invalid or unhandled phase in EditorHelpSearch::Runner, aborting search.");
 			return true;
 	};
 
@@ -483,7 +478,7 @@ TreeItem *EditorHelpSearch::Runner::_create_class_hierarchy(const ClassMatch &p_
 
 TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray) {
 
-	Ref<Texture> icon = empty_icon;
+	Ref<Texture2D> icon = empty_icon;
 	if (ui_service->has_icon(p_doc->name, "EditorIcons"))
 		icon = ui_service->get_icon(p_doc->name, "EditorIcons");
 	else if (ClassDB::class_exists(p_doc->name) && ClassDB::is_parent_class(p_doc->name, "Object"))
@@ -559,7 +554,7 @@ TreeItem *EditorHelpSearch::Runner::_create_theme_property_item(TreeItem *p_pare
 
 TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_type, const String &p_metatype, const String &p_tooltip) {
 
-	Ref<Texture> icon;
+	Ref<Texture2D> icon;
 	String text;
 	if (search_flags & SEARCH_SHOW_HIERARCHY) {
 		icon = ui_service->get_icon(p_icon, "EditorIcons");

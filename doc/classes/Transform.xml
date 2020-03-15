@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Transform" category="Built-In Types" version="3.2">
+<class name="Transform" version="4.0">
 	<brief_description>
 		3D transformation (3×4 matrix).
 	</brief_description>
@@ -149,21 +149,21 @@
 			</description>
 		</method>
 		<method name="xform">
-			<return type="Variant">
+			<return type="void">
 			</return>
 			<argument index="0" name="v" type="Variant">
 			</argument>
 			<description>
-				Transforms the given [Vector3], [Plane], [AABB], or [PoolVector3Array] by this transform.
+				Transforms the given [Vector3], [Plane], [AABB], or [PackedVector3Array] by this transform.
 			</description>
 		</method>
 		<method name="xform_inv">
-			<return type="Variant">
+			<return type="void">
 			</return>
 			<argument index="0" name="v" type="Variant">
 			</argument>
 			<description>
-				Inverse-transforms the given [Vector3], [Plane], [AABB], or [PoolVector3Array] by this transform.
+				Inverse-transforms the given [Vector3], [Plane], [AABB], or [PackedVector3Array] by this transform.
 			</description>
 		</method>
 	</methods>

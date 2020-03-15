@@ -44,6 +44,7 @@ class Node;
 class Viewport;
 class Material;
 class Mesh;
+class SceneDebugger;
 
 class SceneTreeTimer : public Reference {
 	GDCLASS(SceneTreeTimer, Reference);
@@ -208,8 +209,8 @@ private:
 
 	void _notify_group_pause(const StringName &p_group, int p_notification);
 	void _call_input_pause(const StringName &p_group, const StringName &p_method, const Ref<InputEvent> &p_input);
-	Variant _call_group_flags(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
-	Variant _call_group(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	Variant _call_group_flags(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	Variant _call_group(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	void _flush_delete_queue();
 	//optimization
@@ -219,39 +220,8 @@ private:
 
 	SelfList<Node>::List xform_change_list;
 
-	friend class ScriptDebuggerRemote;
-#ifdef DEBUG_ENABLED
-
-	Map<int, NodePath> live_edit_node_path_cache;
-	Map<int, String> live_edit_resource_cache;
-
-	NodePath live_edit_root;
-	String live_edit_scene;
-
-	Map<String, Set<Node *> > live_scene_edit_cache;
-	Map<Node *, Map<ObjectID, Node *> > live_edit_remove_list;
-
-	void _debugger_request_tree();
-
-	void _live_edit_node_path_func(const NodePath &p_path, int p_id);
-	void _live_edit_res_path_func(const String &p_path, int p_id);
-
-	void _live_edit_node_set_func(int p_id, const StringName &p_prop, const Variant &p_value);
-	void _live_edit_node_set_res_func(int p_id, const StringName &p_prop, const String &p_value);
-	void _live_edit_node_call_func(int p_id, const StringName &p_method, VARIANT_ARG_DECLARE);
-	void _live_edit_res_set_func(int p_id, const StringName &p_prop, const Variant &p_value);
-	void _live_edit_res_set_res_func(int p_id, const StringName &p_prop, const String &p_value);
-	void _live_edit_res_call_func(int p_id, const StringName &p_method, VARIANT_ARG_DECLARE);
-	void _live_edit_root_func(const NodePath &p_scene_path, const String &p_scene_from);
-
-	void _live_edit_create_node_func(const NodePath &p_parent, const String &p_type, const String &p_name);
-	void _live_edit_instance_node_func(const NodePath &p_parent, const String &p_path, const String &p_name);
-	void _live_edit_remove_node_func(const NodePath &p_at);
-	void _live_edit_remove_and_keep_node_func(const NodePath &p_at, ObjectID p_keep_id);
-	void _live_edit_restore_node_func(ObjectID p_id, const NodePath &p_at, int p_at_pos);
-	void _live_edit_duplicate_node_func(const NodePath &p_at, const String &p_new_name);
-	void _live_edit_reparent_node_func(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos);
-
+#ifdef DEBUG_ENABLED // No live editor in release build.
+	friend class LiveEditor;
 #endif
 
 	enum {
@@ -411,6 +381,9 @@ public:
 	bool is_refusing_new_network_connections() const;
 
 	static void add_idle_callback(IdleCallback p_callback);
+
+	//default texture settings
+
 	SceneTree();
 	~SceneTree();
 };

@@ -58,7 +58,6 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	Button *path_button;
 	EditorFileDialog *file_browse;
 	CheckBox *internal;
-	Label *internal_label;
 	VBoxContainer *path_vb;
 	AcceptDialog *alert;
 	CreateDialog *select_class;
@@ -75,6 +74,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	bool is_class_name_valid;
 	bool is_built_in;
 	bool built_in_enabled;
+	bool load_enabled;
 	int current_language;
 	int default_language;
 	bool re_check_path;
@@ -127,7 +127,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void config(const String &p_base_name, const String &p_base_path, bool p_built_in_enabled = true);
+	void config(const String &p_base_name, const String &p_base_path, bool p_built_in_enabled = true, bool p_load_enabled = true);
 	void set_inheritance_base_type(const String &p_base);
 	ScriptCreateDialog();
 };

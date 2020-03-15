@@ -47,6 +47,7 @@
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #endif
 
+#ifdef TOOLS_ENABLED
 Dictionary Control::_edit_get_state() const {
 
 	Dictionary s;
@@ -155,6 +156,11 @@ bool Control::_edit_use_pivot() const {
 	return true;
 }
 
+Size2 Control::_edit_get_minimum_size() const {
+	return get_combined_minimum_size();
+}
+#endif
+
 void Control::set_custom_minimum_size(const Size2 &p_custom) {
 
 	if (p_custom == data.custom_minimum_size)
@@ -193,11 +199,6 @@ Size2 Control::get_combined_minimum_size() const {
 	return data.minimum_size_cache;
 }
 
-Size2 Control::_edit_get_minimum_size() const {
-
-	return get_combined_minimum_size();
-}
-
 Transform2D Control::_get_internal_transform() const {
 
 	Transform2D rot_scale;
@@ -220,28 +221,28 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 		if (name.begins_with("custom_icons/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.icon_override.has(dname)) {
-				data.icon_override[dname]->disconnect("changed", this, "_override_changed");
+				data.icon_override[dname]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 			}
 			data.icon_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_shaders/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.shader_override.has(dname)) {
-				data.shader_override[dname]->disconnect("changed", this, "_override_changed");
+				data.shader_override[dname]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 			}
 			data.shader_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_styles/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.style_override.has(dname)) {
-				data.style_override[dname]->disconnect("changed", this, "_override_changed");
+				data.style_override[dname]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 			}
 			data.style_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_fonts/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.font_override.has(dname)) {
-				data.font_override[dname]->disconnect("changed", this, "_override_changed");
+				data.font_override[dname]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 			}
 			data.font_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
@@ -357,7 +358,7 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 			if (data.icon_override.has(E->get()))
 				hint |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "custom_icons/" + E->get(), PROPERTY_HINT_RESOURCE_TYPE, "Texture", hint));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "custom_icons/" + E->get(), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", hint));
 		}
 	}
 	{
@@ -461,11 +462,6 @@ void Control::_update_canvas_item_transform() {
 	Transform2D xform = _get_internal_transform();
 	xform[2] += get_position();
 
-	// We use a little workaround to avoid flickering when moving the pivot with _edit_set_pivot()
-	if (is_inside_tree() && Math::abs(Math::sin(data.rotation * 4.0f)) < 0.00001f && get_viewport()->is_snap_controls_to_pixels_enabled()) {
-		xform[2] = xform[2].round();
-	}
-
 	VisualServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), xform);
 }
 
@@ -546,10 +542,10 @@ void Control::_notification(int p_notification) {
 
 				if (data.parent_canvas_item) {
 
-					data.parent_canvas_item->connect("item_rect_changed", this, "_size_changed");
+					data.parent_canvas_item->connect("item_rect_changed", callable_mp(this, &Control::_size_changed));
 				} else {
 					//connect viewport
-					get_viewport()->connect("size_changed", this, "_size_changed");
+					get_viewport()->connect("size_changed", callable_mp(this, &Control::_size_changed));
 				}
 			}
 
@@ -565,11 +561,11 @@ void Control::_notification(int p_notification) {
 
 			if (data.parent_canvas_item) {
 
-				data.parent_canvas_item->disconnect("item_rect_changed", this, "_size_changed");
+				data.parent_canvas_item->disconnect("item_rect_changed", callable_mp(this, &Control::_size_changed));
 				data.parent_canvas_item = NULL;
 			} else if (!is_set_as_toplevel()) {
 				//disconnect viewport
-				get_viewport()->disconnect("size_changed", this, "_size_changed");
+				get_viewport()->disconnect("size_changed", callable_mp(this, &Control::_size_changed));
 			}
 
 			if (data.MI) {
@@ -691,9 +687,9 @@ bool Control::has_point(const Point2 &p_point) const {
 	if (get_script_instance()) {
 		Variant v = p_point;
 		const Variant *p = &v;
-		Variant::CallError ce;
+		Callable::CallError ce;
 		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->has_point, &p, 1, ce);
-		if (ce.error == Variant::CallError::CALL_OK) {
+		if (ce.error == Callable::CallError::CALL_OK) {
 			return ret;
 		}
 	}
@@ -709,12 +705,12 @@ void Control::set_drag_forwarding(Control *p_target) {
 	if (p_target)
 		data.drag_owner = p_target->get_instance_id();
 	else
-		data.drag_owner = 0;
+		data.drag_owner = ObjectID();
 }
 
 Variant Control::get_drag_data(const Point2 &p_point) {
 
-	if (data.drag_owner) {
+	if (data.drag_owner.is_valid()) {
 		Object *obj = ObjectDB::get_instance(data.drag_owner);
 		if (obj) {
 			Control *c = Object::cast_to<Control>(obj);
@@ -725,9 +721,9 @@ Variant Control::get_drag_data(const Point2 &p_point) {
 	if (get_script_instance()) {
 		Variant v = p_point;
 		const Variant *p = &v;
-		Variant::CallError ce;
+		Callable::CallError ce;
 		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->get_drag_data, &p, 1, ce);
-		if (ce.error == Variant::CallError::CALL_OK)
+		if (ce.error == Callable::CallError::CALL_OK)
 			return ret;
 	}
 
@@ -736,7 +732,7 @@ Variant Control::get_drag_data(const Point2 &p_point) {
 
 bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
 
-	if (data.drag_owner) {
+	if (data.drag_owner.is_valid()) {
 		Object *obj = ObjectDB::get_instance(data.drag_owner);
 		if (obj) {
 			Control *c = Object::cast_to<Control>(obj);
@@ -747,9 +743,9 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 	if (get_script_instance()) {
 		Variant v = p_point;
 		const Variant *p[2] = { &v, &p_data };
-		Variant::CallError ce;
+		Callable::CallError ce;
 		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->can_drop_data, p, 2, ce);
-		if (ce.error == Variant::CallError::CALL_OK)
+		if (ce.error == Callable::CallError::CALL_OK)
 			return ret;
 	}
 
@@ -757,7 +753,7 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 }
 void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
 
-	if (data.drag_owner) {
+	if (data.drag_owner.is_valid()) {
 		Object *obj = ObjectDB::get_instance(data.drag_owner);
 		if (obj) {
 			Control *c = Object::cast_to<Control>(obj);
@@ -769,9 +765,9 @@ void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
 	if (get_script_instance()) {
 		Variant v = p_point;
 		const Variant *p[2] = { &v, &p_data };
-		Variant::CallError ce;
+		Callable::CallError ce;
 		Variant ret = get_script_instance()->call(SceneStringNames::get_singleton()->drop_data, p, 2, ce);
-		if (ce.error == Variant::CallError::CALL_OK)
+		if (ce.error == Callable::CallError::CALL_OK)
 			return;
 	}
 }
@@ -809,19 +805,19 @@ Size2 Control::get_minimum_size() const {
 	ScriptInstance *si = const_cast<Control *>(this)->get_script_instance();
 	if (si) {
 
-		Variant::CallError ce;
+		Callable::CallError ce;
 		Variant s = si->call(SceneStringNames::get_singleton()->_get_minimum_size, NULL, 0, ce);
-		if (ce.error == Variant::CallError::CALL_OK)
+		if (ce.error == Callable::CallError::CALL_OK)
 			return s;
 	}
 	return Size2();
 }
 
-Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_type) const {
+Ref<Texture2D> Control::get_icon(const StringName &p_name, const StringName &p_type) const {
 
 	if (p_type == StringName() || p_type == get_class_name()) {
 
-		const Ref<Texture> *tex = data.icon_override.getptr(p_name);
+		const Ref<Texture2D> *tex = data.icon_override.getptr(p_name);
 		if (tex)
 			return *tex;
 	}
@@ -1067,7 +1063,7 @@ int Control::get_constant(const StringName &p_name, const StringName &p_type) co
 
 bool Control::has_icon_override(const StringName &p_name) const {
 
-	const Ref<Texture> *tex = data.icon_override.getptr(p_name);
+	const Ref<Texture2D> *tex = data.icon_override.getptr(p_name);
 	return tex != NULL;
 }
 
@@ -1884,10 +1880,10 @@ Rect2 Control::get_anchorable_rect() const {
 	return Rect2(Point2(), get_size());
 }
 
-void Control::add_icon_override(const StringName &p_name, const Ref<Texture> &p_icon) {
+void Control::add_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon) {
 
 	if (data.icon_override.has(p_name)) {
-		data.icon_override[p_name]->disconnect("changed", this, "_override_changed");
+		data.icon_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 	}
 
 	// clear if "null" is passed instead of a icon
@@ -1896,7 +1892,7 @@ void Control::add_icon_override(const StringName &p_name, const Ref<Texture> &p_
 	} else {
 		data.icon_override[p_name] = p_icon;
 		if (data.icon_override[p_name].is_valid()) {
-			data.icon_override[p_name]->connect("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+			data.icon_override[p_name]->connect("changed", callable_mp(this, &Control::_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
 		}
 	}
 	notification(NOTIFICATION_THEME_CHANGED);
@@ -1905,7 +1901,7 @@ void Control::add_icon_override(const StringName &p_name, const Ref<Texture> &p_
 void Control::add_shader_override(const StringName &p_name, const Ref<Shader> &p_shader) {
 
 	if (data.shader_override.has(p_name)) {
-		data.shader_override[p_name]->disconnect("changed", this, "_override_changed");
+		data.shader_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 	}
 
 	// clear if "null" is passed instead of a shader
@@ -1914,7 +1910,7 @@ void Control::add_shader_override(const StringName &p_name, const Ref<Shader> &p
 	} else {
 		data.shader_override[p_name] = p_shader;
 		if (data.shader_override[p_name].is_valid()) {
-			data.shader_override[p_name]->connect("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+			data.shader_override[p_name]->connect("changed", callable_mp(this, &Control::_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
 		}
 	}
 	notification(NOTIFICATION_THEME_CHANGED);
@@ -1922,7 +1918,7 @@ void Control::add_shader_override(const StringName &p_name, const Ref<Shader> &p
 void Control::add_style_override(const StringName &p_name, const Ref<StyleBox> &p_style) {
 
 	if (data.style_override.has(p_name)) {
-		data.style_override[p_name]->disconnect("changed", this, "_override_changed");
+		data.style_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 	}
 
 	// clear if "null" is passed instead of a style
@@ -1931,7 +1927,7 @@ void Control::add_style_override(const StringName &p_name, const Ref<StyleBox> &
 	} else {
 		data.style_override[p_name] = p_style;
 		if (data.style_override[p_name].is_valid()) {
-			data.style_override[p_name]->connect("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+			data.style_override[p_name]->connect("changed", callable_mp(this, &Control::_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
 		}
 	}
 	notification(NOTIFICATION_THEME_CHANGED);
@@ -1940,7 +1936,7 @@ void Control::add_style_override(const StringName &p_name, const Ref<StyleBox> &
 void Control::add_font_override(const StringName &p_name, const Ref<Font> &p_font) {
 
 	if (data.font_override.has(p_name)) {
-		data.font_override[p_name]->disconnect("changed", this, "_override_changed");
+		data.font_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 	}
 
 	// clear if "null" is passed instead of a font
@@ -1949,7 +1945,7 @@ void Control::add_font_override(const StringName &p_name, const Ref<Font> &p_fon
 	} else {
 		data.font_override[p_name] = p_font;
 		if (data.font_override[p_name].is_valid()) {
-			data.font_override[p_name]->connect("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+			data.font_override[p_name]->connect("changed", callable_mp(this, &Control::_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
 		}
 	}
 	notification(NOTIFICATION_THEME_CHANGED);
@@ -2228,7 +2224,7 @@ void Control::_modal_stack_remove() {
 
 	get_viewport()->_gui_remove_from_modal_stack(element, data.modal_prev_focus_owner);
 
-	data.modal_prev_focus_owner = 0;
+	data.modal_prev_focus_owner = ObjectID();
 }
 
 void Control::_propagate_theme_changed(CanvasItem *p_at, Control *p_owner, bool p_assign) {
@@ -2266,7 +2262,7 @@ void Control::set_theme(const Ref<Theme> &p_theme) {
 		return;
 
 	if (data.theme.is_valid()) {
-		data.theme->disconnect("changed", this, "_theme_changed");
+		data.theme->disconnect("changed", callable_mp(this, &Control::_theme_changed));
 	}
 
 	data.theme = p_theme;
@@ -2286,7 +2282,7 @@ void Control::set_theme(const Ref<Theme> &p_theme) {
 	}
 
 	if (data.theme.is_valid()) {
-		data.theme->connect("changed", this, "_theme_changed", varray(), CONNECT_DEFERRED);
+		data.theme->connect("changed", callable_mp(this, &Control::_theme_changed), varray(), CONNECT_DEFERRED);
 	}
 }
 
@@ -2474,9 +2470,9 @@ void Control::_window_find_focus_neighbour(const Vector2 &p_dir, Node *p_at, con
 		Transform2D xform = c->get_global_transform();
 
 		points[0] = xform.xform(Point2());
-		points[1] = xform.xform(Point2(get_size().x, 0));
-		points[2] = xform.xform(get_size());
-		points[3] = xform.xform(Point2(0, get_size().y));
+		points[1] = xform.xform(Point2(c->get_size().x, 0));
+		points[2] = xform.xform(c->get_size());
+		points[3] = xform.xform(Point2(0, c->get_size().y));
 
 		float min = 1e7;
 
@@ -2629,9 +2625,9 @@ bool Control::is_text_field() const {
     if (get_script_instance()) {
         Variant v=p_point;
         const Variant *p[2]={&v,&p_data};
-        Variant::CallError ce;
+        Callable::CallError ce;
         Variant ret = get_script_instance()->call("is_text_field",p,2,ce);
-        if (ce.error==Variant::CallError::CALL_OK)
+        if (ce.error==Callable::CallError::CALL_OK)
             return ret;
     }
   */
@@ -2681,6 +2677,11 @@ Vector2 Control::get_pivot_offset() const {
 void Control::set_scale(const Vector2 &p_scale) {
 
 	data.scale = p_scale;
+	// Avoid having 0 scale values, can lead to errors in physics and rendering.
+	if (data.scale.x == 0)
+		data.scale.x = CMP_EPSILON;
+	if (data.scale.y == 0)
+		data.scale.y = CMP_EPSILON;
 	update();
 	_notify_transform();
 }
@@ -2812,7 +2813,6 @@ Control::GrowDirection Control::get_v_grow_direction() const {
 void Control::_bind_methods() {
 
 	//ClassDB::bind_method(D_METHOD("_window_resize_event"),&Control::_window_resize_event);
-	ClassDB::bind_method(D_METHOD("_size_changed"), &Control::_size_changed);
 	ClassDB::bind_method(D_METHOD("_update_minimum_size"), &Control::_update_minimum_size);
 
 	ClassDB::bind_method(D_METHOD("accept_event"), &Control::accept_event);
@@ -2941,10 +2941,6 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("minimum_size_changed"), &Control::minimum_size_changed);
 
-	ClassDB::bind_method(D_METHOD("_theme_changed"), &Control::_theme_changed);
-
-	ClassDB::bind_method(D_METHOD("_override_changed"), &Control::_override_changed);
-
 	BIND_VMETHOD(MethodInfo("_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo(Variant::VECTOR2, "_get_minimum_size"));
 
@@ -2958,10 +2954,10 @@ void Control::_bind_methods() {
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_clips_input"));
 
 	ADD_GROUP("Anchor", "anchor_");
-	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "anchor_left", PROPERTY_HINT_RANGE, "0,1,0.001,or_lesser,or_greater"), "_set_anchor", "get_anchor", MARGIN_LEFT);
-	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "anchor_top", PROPERTY_HINT_RANGE, "0,1,0.001,or_lesser,or_greater"), "_set_anchor", "get_anchor", MARGIN_TOP);
-	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "anchor_right", PROPERTY_HINT_RANGE, "0,1,0.001,or_lesser,or_greater"), "_set_anchor", "get_anchor", MARGIN_RIGHT);
-	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "anchor_bottom", PROPERTY_HINT_RANGE, "0,1,0.001,or_lesser,or_greater"), "_set_anchor", "get_anchor", MARGIN_BOTTOM);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anchor_left", PROPERTY_HINT_RANGE, "0,1,0.001,or_lesser,or_greater"), "_set_anchor", "get_anchor", MARGIN_LEFT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anchor_top", PROPERTY_HINT_RANGE, "0,1,0.001,or_lesser,or_greater"), "_set_anchor", "get_anchor", MARGIN_TOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anchor_right", PROPERTY_HINT_RANGE, "0,1,0.001,or_lesser,or_greater"), "_set_anchor", "get_anchor", MARGIN_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anchor_bottom", PROPERTY_HINT_RANGE, "0,1,0.001,or_lesser,or_greater"), "_set_anchor", "get_anchor", MARGIN_BOTTOM);
 
 	ADD_GROUP("Margin", "margin_");
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "margin_left", PROPERTY_HINT_RANGE, "-4096,4096"), "set_margin", "get_margin", MARGIN_LEFT);
@@ -2978,7 +2974,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_global_position", PROPERTY_HINT_NONE, "", 0), "_set_global_position", "get_global_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_min_size"), "set_custom_minimum_size", "get_custom_minimum_size");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rect_rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater"), "set_rotation_degrees", "get_rotation_degrees");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rect_rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater"), "set_rotation_degrees", "get_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_scale"), "set_scale", "get_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_pivot_offset"), "set_pivot_offset", "get_pivot_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rect_clip_content"), "set_clip_contents", "is_clipping_contents");
@@ -3002,7 +2998,7 @@ void Control::_bind_methods() {
 	ADD_GROUP("Size Flags", "size_flags_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_horizontal", PROPERTY_HINT_FLAGS, "Fill,Expand,Shrink Center,Shrink End"), "set_h_size_flags", "get_h_size_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_vertical", PROPERTY_HINT_FLAGS, "Fill,Expand,Shrink Center,Shrink End"), "set_v_size_flags", "get_v_size_flags");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "size_flags_stretch_ratio", PROPERTY_HINT_RANGE, "0,128,0.01"), "set_stretch_ratio", "get_stretch_ratio");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size_flags_stretch_ratio", PROPERTY_HINT_RANGE, "0,128,0.01"), "set_stretch_ratio", "get_stretch_ratio");
 	ADD_GROUP("Theme", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
 	ADD_GROUP("", "");
@@ -3109,7 +3105,7 @@ Control::Control() {
 	data.rotation = 0;
 	data.parent_canvas_item = NULL;
 	data.scale = Vector2(1, 1);
-	data.drag_owner = 0;
+
 	data.modal_frame = 0;
 	data.block_minimum_size_adjust = false;
 	data.disable_visibility_clip = false;
@@ -3124,7 +3120,6 @@ Control::Control() {
 		data.margin[i] = 0;
 	}
 	data.focus_mode = FOCUS_NONE;
-	data.modal_prev_focus_owner = 0;
 }
 
 Control::~Control() {

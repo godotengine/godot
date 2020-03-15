@@ -244,6 +244,18 @@ void Basis::scale_local(const Vector3 &p_scale) {
 	*this = scaled_local(p_scale);
 }
 
+float Basis::get_uniform_scale() const {
+	return (elements[0].length() + elements[1].length() + elements[2].length()) / 3.0;
+}
+
+void Basis::make_scale_uniform() {
+	float l = (elements[0].length() + elements[1].length() + elements[2].length()) / 3.0;
+	for (int i = 0; i < 3; i++) {
+		elements[i].normalize();
+		elements[i] *= l;
+	}
+}
+
 Basis Basis::scaled_local(const Vector3 &p_scale) const {
 	Basis b;
 	b.set_diagonal(p_scale);
@@ -800,7 +812,7 @@ void Basis::set_quat(const Quat &p_quat) {
 void Basis::set_axis_angle(const Vector3 &p_axis, real_t p_phi) {
 // Rotation matrix from axis and angle, see https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_angle
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_MSG(!p_axis.is_normalized(), "Axis must be normalized.");
+	ERR_FAIL_COND_MSG(!p_axis.is_normalized(), "The axis Vector3 must be normalized.");
 #endif
 	Vector3 axis_sq(p_axis.x * p_axis.x, p_axis.y * p_axis.y, p_axis.z * p_axis.z);
 	real_t cosine = Math::cos(p_phi);

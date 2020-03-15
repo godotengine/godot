@@ -49,7 +49,7 @@ void draw_margin_line(Control *edit_draw, Vector2 from, Vector2 to) {
 }
 
 void TextureRegionEditor::_region_draw() {
-	Ref<Texture> base_tex = NULL;
+	Ref<Texture2D> base_tex = NULL;
 	if (node_sprite)
 		base_tex = node_sprite->get_texture();
 	else if (node_sprite_3d)
@@ -134,7 +134,7 @@ void TextureRegionEditor::_region_draw() {
 		}
 	}
 
-	Ref<Texture> select_handle = get_icon("EditorHandle", "EditorIcons");
+	Ref<Texture2D> select_handle = get_icon("EditorHandle", "EditorIcons");
 
 	Rect2 scroll_rect(Point2(), base_tex->get_size());
 
@@ -178,6 +178,7 @@ void TextureRegionEditor::_region_draw() {
 	scroll_rect.size += scroll_margin * 2;
 
 	updating_scroll = true;
+
 	hscroll->set_min(scroll_rect.position.x);
 	hscroll->set_max(scroll_rect.position.x + scroll_rect.size.x);
 	if (ABS(scroll_rect.position.x - (scroll_rect.position.x + scroll_rect.size.x)) <= scroll_margin.x) {
@@ -198,6 +199,14 @@ void TextureRegionEditor::_region_draw() {
 		vscroll->set_page(scroll_margin.y);
 		vscroll->set_value(draw_ofs.y);
 	}
+
+	Size2 hmin = hscroll->get_combined_minimum_size();
+	Size2 vmin = vscroll->get_combined_minimum_size();
+
+	// Avoid scrollbar overlapping.
+	hscroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, vscroll->is_visible() ? -vmin.width : 0);
+	vscroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, hscroll->is_visible() ? -hmin.height : 0);
+
 	updating_scroll = false;
 
 	if (node_ninepatch || obj_styleBox.is_valid()) {
@@ -233,15 +242,19 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 	mtx.elements[2] = -draw_ofs * draw_zoom;
 	mtx.scale_basis(Vector2(draw_zoom, draw_zoom));
 
-	Vector2 endpoints[8] = {
-		mtx.xform(rect.position) + Vector2(-4, -4),
-		mtx.xform(rect.position + Vector2(rect.size.x / 2, 0)) + Vector2(0, -4),
-		mtx.xform(rect.position + Vector2(rect.size.x, 0)) + Vector2(4, -4),
-		mtx.xform(rect.position + Vector2(rect.size.x, rect.size.y / 2)) + Vector2(4, 0),
-		mtx.xform(rect.position + rect.size) + Vector2(4, 4),
-		mtx.xform(rect.position + Vector2(rect.size.x / 2, rect.size.y)) + Vector2(0, 4),
-		mtx.xform(rect.position + Vector2(0, rect.size.y)) + Vector2(-4, 4),
-		mtx.xform(rect.position + Vector2(0, rect.size.y / 2)) + Vector2(-4, 0)
+	const real_t handle_radius = 8 * EDSCALE;
+	const real_t handle_offset = 4 * EDSCALE;
+
+	// Position of selection handles.
+	const Vector2 endpoints[8] = {
+		mtx.xform(rect.position) + Vector2(-handle_offset, -handle_offset),
+		mtx.xform(rect.position + Vector2(rect.size.x / 2, 0)) + Vector2(0, -handle_offset),
+		mtx.xform(rect.position + Vector2(rect.size.x, 0)) + Vector2(handle_offset, -handle_offset),
+		mtx.xform(rect.position + Vector2(rect.size.x, rect.size.y / 2)) + Vector2(handle_offset, 0),
+		mtx.xform(rect.position + rect.size) + Vector2(handle_offset, handle_offset),
+		mtx.xform(rect.position + Vector2(rect.size.x / 2, rect.size.y)) + Vector2(0, handle_offset),
+		mtx.xform(rect.position + Vector2(0, rect.size.y)) + Vector2(-handle_offset, handle_offset),
+		mtx.xform(rect.position + Vector2(0, rect.size.y / 2)) + Vector2(-handle_offset, 0)
 	};
 
 	Ref<InputEventMouseButton> mb = p_input;
@@ -354,7 +367,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 
 					for (int i = 0; i < 8; i++) {
 						Vector2 tuv = endpoints[i];
-						if (tuv.distance_to(Vector2(mb->get_position().x, mb->get_position().y)) < 8) {
+						if (tuv.distance_to(Vector2(mb->get_position().x, mb->get_position().y)) < handle_radius) {
 							drag_index = i;
 						}
 					}
@@ -533,6 +546,17 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 			edit_draw->update();
 		}
 	}
+
+	Ref<InputEventMagnifyGesture> magnify_gesture = p_input;
+	if (magnify_gesture.is_valid()) {
+		_zoom_on_position(draw_zoom * magnify_gesture->get_factor(), magnify_gesture->get_position());
+	}
+
+	Ref<InputEventPanGesture> pan_gesture = p_input;
+	if (pan_gesture.is_valid()) {
+		hscroll->set_value(hscroll->get_value() + hscroll->get_page() * pan_gesture->get_delta().x / 8);
+		vscroll->set_value(vscroll->get_value() + vscroll->get_page() * pan_gesture->get_delta().y / 8);
+	}
 }
 
 void TextureRegionEditor::_scroll_changed(float) {
@@ -648,7 +672,7 @@ void TextureRegionEditor::_update_autoslice() {
 	autoslice_is_dirty = false;
 	autoslice_cache.clear();
 
-	Ref<Texture> texture = NULL;
+	Ref<Texture2D> texture = NULL;
 	if (node_sprite)
 		texture = node_sprite->get_texture();
 	else if (node_sprite_3d)
@@ -723,6 +747,9 @@ void TextureRegionEditor::_notification(int p_what) {
 			zoom_out->set_icon(get_icon("ZoomLess", "EditorIcons"));
 			zoom_reset->set_icon(get_icon("ZoomReset", "EditorIcons"));
 			zoom_in->set_icon(get_icon("ZoomMore", "EditorIcons"));
+
+			vscroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
+			hscroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (snap_mode == SNAP_AUTOSLICE && is_visible() && autoslice_is_dirty) {
@@ -751,21 +778,8 @@ void TextureRegionEditor::_node_removed(Object *p_obj) {
 
 void TextureRegionEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_edit_region"), &TextureRegionEditor::_edit_region);
-	ClassDB::bind_method(D_METHOD("_region_draw"), &TextureRegionEditor::_region_draw);
-	ClassDB::bind_method(D_METHOD("_region_input"), &TextureRegionEditor::_region_input);
-	ClassDB::bind_method(D_METHOD("_scroll_changed"), &TextureRegionEditor::_scroll_changed);
 	ClassDB::bind_method(D_METHOD("_node_removed"), &TextureRegionEditor::_node_removed);
-	ClassDB::bind_method(D_METHOD("_set_snap_mode"), &TextureRegionEditor::_set_snap_mode);
-	ClassDB::bind_method(D_METHOD("_set_snap_off_x"), &TextureRegionEditor::_set_snap_off_x);
-	ClassDB::bind_method(D_METHOD("_set_snap_off_y"), &TextureRegionEditor::_set_snap_off_y);
-	ClassDB::bind_method(D_METHOD("_set_snap_step_x"), &TextureRegionEditor::_set_snap_step_x);
-	ClassDB::bind_method(D_METHOD("_set_snap_step_y"), &TextureRegionEditor::_set_snap_step_y);
-	ClassDB::bind_method(D_METHOD("_set_snap_sep_x"), &TextureRegionEditor::_set_snap_sep_x);
-	ClassDB::bind_method(D_METHOD("_set_snap_sep_y"), &TextureRegionEditor::_set_snap_sep_y);
 	ClassDB::bind_method(D_METHOD("_zoom_on_position"), &TextureRegionEditor::_zoom_on_position);
-	ClassDB::bind_method(D_METHOD("_zoom_in"), &TextureRegionEditor::_zoom_in);
-	ClassDB::bind_method(D_METHOD("_zoom_reset"), &TextureRegionEditor::_zoom_reset);
-	ClassDB::bind_method(D_METHOD("_zoom_out"), &TextureRegionEditor::_zoom_out);
 	ClassDB::bind_method(D_METHOD("_update_rect"), &TextureRegionEditor::_update_rect);
 }
 
@@ -836,7 +850,7 @@ void TextureRegionEditor::_changed_callback(Object *p_changed, const char *p_pro
 }
 
 void TextureRegionEditor::_edit_region() {
-	Ref<Texture> texture = NULL;
+	Ref<Texture2D> texture = NULL;
 	if (node_sprite)
 		texture = node_sprite->get_texture();
 	else if (node_sprite_3d)
@@ -908,7 +922,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	snap_mode_button->add_item(TTR("Grid Snap"), 2);
 	snap_mode_button->add_item(TTR("Auto Slice"), 3);
 	snap_mode_button->select(0);
-	snap_mode_button->connect("item_selected", this, "_set_snap_mode");
+	snap_mode_button->connect("item_selected", callable_mp(this, &TextureRegionEditor::_set_snap_mode));
 
 	hb_grid = memnew(HBoxContainer);
 	hb_tools->add_child(hb_grid);
@@ -922,7 +936,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	sb_off_x->set_step(1);
 	sb_off_x->set_value(snap_offset.x);
 	sb_off_x->set_suffix("px");
-	sb_off_x->connect("value_changed", this, "_set_snap_off_x");
+	sb_off_x->connect("value_changed", callable_mp(this, &TextureRegionEditor::_set_snap_off_x));
 	hb_grid->add_child(sb_off_x);
 
 	sb_off_y = memnew(SpinBox);
@@ -931,7 +945,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	sb_off_y->set_step(1);
 	sb_off_y->set_value(snap_offset.y);
 	sb_off_y->set_suffix("px");
-	sb_off_y->connect("value_changed", this, "_set_snap_off_y");
+	sb_off_y->connect("value_changed", callable_mp(this, &TextureRegionEditor::_set_snap_off_y));
 	hb_grid->add_child(sb_off_y);
 
 	hb_grid->add_child(memnew(VSeparator));
@@ -943,7 +957,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	sb_step_x->set_step(1);
 	sb_step_x->set_value(snap_step.x);
 	sb_step_x->set_suffix("px");
-	sb_step_x->connect("value_changed", this, "_set_snap_step_x");
+	sb_step_x->connect("value_changed", callable_mp(this, &TextureRegionEditor::_set_snap_step_x));
 	hb_grid->add_child(sb_step_x);
 
 	sb_step_y = memnew(SpinBox);
@@ -952,7 +966,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	sb_step_y->set_step(1);
 	sb_step_y->set_value(snap_step.y);
 	sb_step_y->set_suffix("px");
-	sb_step_y->connect("value_changed", this, "_set_snap_step_y");
+	sb_step_y->connect("value_changed", callable_mp(this, &TextureRegionEditor::_set_snap_step_y));
 	hb_grid->add_child(sb_step_y);
 
 	hb_grid->add_child(memnew(VSeparator));
@@ -964,7 +978,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	sb_sep_x->set_step(1);
 	sb_sep_x->set_value(snap_separation.x);
 	sb_sep_x->set_suffix("px");
-	sb_sep_x->connect("value_changed", this, "_set_snap_sep_x");
+	sb_sep_x->connect("value_changed", callable_mp(this, &TextureRegionEditor::_set_snap_sep_x));
 	hb_grid->add_child(sb_sep_x);
 
 	sb_sep_y = memnew(SpinBox);
@@ -973,7 +987,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	sb_sep_y->set_step(1);
 	sb_sep_y->set_value(snap_separation.y);
 	sb_sep_y->set_suffix("px");
-	sb_sep_y->connect("value_changed", this, "_set_snap_sep_y");
+	sb_sep_y->connect("value_changed", callable_mp(this, &TextureRegionEditor::_set_snap_sep_y));
 	hb_grid->add_child(sb_sep_y);
 
 	hb_grid->hide();
@@ -981,8 +995,8 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	edit_draw = memnew(Panel);
 	add_child(edit_draw);
 	edit_draw->set_v_size_flags(SIZE_EXPAND_FILL);
-	edit_draw->connect("draw", this, "_region_draw");
-	edit_draw->connect("gui_input", this, "_region_input");
+	edit_draw->connect("draw", callable_mp(this, &TextureRegionEditor::_region_draw));
+	edit_draw->connect("gui_input", callable_mp(this, &TextureRegionEditor::_region_input));
 
 	draw_zoom = 1.0;
 	edit_draw->set_clip_contents(true);
@@ -993,30 +1007,27 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 
 	zoom_out = memnew(ToolButton);
 	zoom_out->set_tooltip(TTR("Zoom Out"));
-	zoom_out->connect("pressed", this, "_zoom_out");
+	zoom_out->connect("pressed", callable_mp(this, &TextureRegionEditor::_zoom_out));
 	zoom_hb->add_child(zoom_out);
 
 	zoom_reset = memnew(ToolButton);
-	zoom_out->set_tooltip(TTR("Zoom Reset"));
-	zoom_reset->connect("pressed", this, "_zoom_reset");
+	zoom_reset->set_tooltip(TTR("Zoom Reset"));
+	zoom_reset->connect("pressed", callable_mp(this, &TextureRegionEditor::_zoom_reset));
 	zoom_hb->add_child(zoom_reset);
 
 	zoom_in = memnew(ToolButton);
-	zoom_out->set_tooltip(TTR("Zoom In"));
-	zoom_in->connect("pressed", this, "_zoom_in");
+	zoom_in->set_tooltip(TTR("Zoom In"));
+	zoom_in->connect("pressed", callable_mp(this, &TextureRegionEditor::_zoom_in));
 	zoom_hb->add_child(zoom_in);
 
 	vscroll = memnew(VScrollBar);
 	vscroll->set_step(0.001);
 	edit_draw->add_child(vscroll);
-	vscroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
-	vscroll->connect("value_changed", this, "_scroll_changed");
+	vscroll->connect("value_changed", callable_mp(this, &TextureRegionEditor::_scroll_changed));
 	hscroll = memnew(HScrollBar);
 	hscroll->set_step(0.001);
 	edit_draw->add_child(hscroll);
-	hscroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
-	hscroll->set_margin(MARGIN_RIGHT, -vscroll->get_size().x * EDSCALE);
-	hscroll->connect("value_changed", this, "_scroll_changed");
+	hscroll->connect("value_changed", callable_mp(this, &TextureRegionEditor::_scroll_changed));
 
 	updating_scroll = false;
 }
@@ -1091,7 +1102,6 @@ void TextureRegionEditorPlugin::set_state(const Dictionary &p_state) {
 }
 
 void TextureRegionEditorPlugin::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_editor_visiblity_changed"), &TextureRegionEditorPlugin::_editor_visiblity_changed);
 }
 
 TextureRegionEditorPlugin::TextureRegionEditorPlugin(EditorNode *p_node) {
@@ -1101,7 +1111,7 @@ TextureRegionEditorPlugin::TextureRegionEditorPlugin(EditorNode *p_node) {
 	region_editor = memnew(TextureRegionEditor(p_node));
 	region_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	region_editor->hide();
-	region_editor->connect("visibility_changed", this, "_editor_visiblity_changed");
+	region_editor->connect("visibility_changed", callable_mp(this, &TextureRegionEditorPlugin::_editor_visiblity_changed));
 
 	texture_region_button = p_node->add_bottom_panel_item(TTR("TextureRegion"), region_editor);
 	texture_region_button->hide();

@@ -98,7 +98,7 @@ public:
 	Error save_scene();
 	void save_scene_as(const String &p_scene, bool p_with_preview = true);
 
-	Vector<Ref<Texture> > make_mesh_previews(const Vector<Ref<Mesh> > &p_meshes, Vector<Transform> *p_transforms, int p_preview_size);
+	Vector<Ref<Texture2D> > make_mesh_previews(const Vector<Ref<Mesh> > &p_meshes, Vector<Transform> *p_transforms, int p_preview_size);
 
 	void set_main_screen_editor(const String &p_name);
 	void set_distraction_free_mode(bool p_enter);
@@ -123,7 +123,7 @@ protected:
 	static void _bind_methods();
 	UndoRedo &get_undo_redo() { return *undo_redo; }
 
-	void add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture> &p_icon);
+	void add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
 	void remove_custom_type(const String &p_type);
 
 public:
@@ -187,7 +187,7 @@ public:
 	virtual void forward_spatial_force_draw_over_viewport(Control *p_overlay);
 
 	virtual String get_name() const;
-	virtual const Ref<Texture> get_icon() const;
+	virtual const Ref<Texture2D> get_icon() const;
 	virtual bool has_main_screen() const;
 	virtual void make_visible(bool p_visible);
 	virtual void selected_notify() {} //notify that it was raised by the user, not the editor

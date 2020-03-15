@@ -256,76 +256,76 @@ void InputMap::load_default() {
 
 	add_action("ui_accept");
 	key.instance();
-	key->set_scancode(KEY_ENTER);
+	key->set_keycode(KEY_ENTER);
 	action_add_event("ui_accept", key);
 
 	key.instance();
-	key->set_scancode(KEY_KP_ENTER);
+	key->set_keycode(KEY_KP_ENTER);
 	action_add_event("ui_accept", key);
 
 	key.instance();
-	key->set_scancode(KEY_SPACE);
+	key->set_keycode(KEY_SPACE);
 	action_add_event("ui_accept", key);
 
 	add_action("ui_select");
 	key.instance();
-	key->set_scancode(KEY_SPACE);
+	key->set_keycode(KEY_SPACE);
 	action_add_event("ui_select", key);
 
 	add_action("ui_cancel");
 	key.instance();
-	key->set_scancode(KEY_ESCAPE);
+	key->set_keycode(KEY_ESCAPE);
 	action_add_event("ui_cancel", key);
 
 	add_action("ui_focus_next");
 	key.instance();
-	key->set_scancode(KEY_TAB);
+	key->set_keycode(KEY_TAB);
 	action_add_event("ui_focus_next", key);
 
 	add_action("ui_focus_prev");
 	key.instance();
-	key->set_scancode(KEY_TAB);
+	key->set_keycode(KEY_TAB);
 	key->set_shift(true);
 	action_add_event("ui_focus_prev", key);
 
 	add_action("ui_left");
 	key.instance();
-	key->set_scancode(KEY_LEFT);
+	key->set_keycode(KEY_LEFT);
 	action_add_event("ui_left", key);
 
 	add_action("ui_right");
 	key.instance();
-	key->set_scancode(KEY_RIGHT);
+	key->set_keycode(KEY_RIGHT);
 	action_add_event("ui_right", key);
 
 	add_action("ui_up");
 	key.instance();
-	key->set_scancode(KEY_UP);
+	key->set_keycode(KEY_UP);
 	action_add_event("ui_up", key);
 
 	add_action("ui_down");
 	key.instance();
-	key->set_scancode(KEY_DOWN);
+	key->set_keycode(KEY_DOWN);
 	action_add_event("ui_down", key);
 
 	add_action("ui_page_up");
 	key.instance();
-	key->set_scancode(KEY_PAGEUP);
+	key->set_keycode(KEY_PAGEUP);
 	action_add_event("ui_page_up", key);
 
 	add_action("ui_page_down");
 	key.instance();
-	key->set_scancode(KEY_PAGEDOWN);
+	key->set_keycode(KEY_PAGEDOWN);
 	action_add_event("ui_page_down", key);
 
 	add_action("ui_home");
 	key.instance();
-	key->set_scancode(KEY_HOME);
+	key->set_keycode(KEY_HOME);
 	action_add_event("ui_home", key);
 
 	add_action("ui_end");
 	key.instance();
-	key->set_scancode(KEY_END);
+	key->set_keycode(KEY_END);
 	action_add_event("ui_end", key);
 
 	//set("display/window/handheld/orientation", "landscape");
