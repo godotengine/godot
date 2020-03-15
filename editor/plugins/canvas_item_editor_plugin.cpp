@@ -4301,7 +4301,8 @@ void CanvasItemEditor::_set_anchors_preset(Control::LayoutPreset p_preset) {
 }
 
 void CanvasItemEditor::_zoom_on_position(float p_zoom, Point2 p_position) {
-	if (p_zoom < MIN_ZOOM || p_zoom > MAX_ZOOM)
+	p_zoom = CLAMP(p_zoom, MIN_ZOOM, MAX_ZOOM);
+	if (p_zoom == zoom)
 		return;
 
 	float prev_zoom = zoom;
