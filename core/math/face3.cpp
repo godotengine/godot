@@ -169,7 +169,7 @@ Vector3 Face3::get_median_point() const {
 }
 
 real_t Face3::get_area() const {
-	return vec3_cross(vertex[0] - vertex[1], vertex[0] - vertex[2]).length();
+	return vec3_cross(vertex[0] - vertex[1], vertex[0] - vertex[2]).length() * 0.5;
 }
 
 ClockDirection Face3::get_clock_dir() const {
