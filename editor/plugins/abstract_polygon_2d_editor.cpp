@@ -466,7 +466,26 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 					}
 				}
 			} else if (mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed() && wip_active) {
-				_wip_cancel();
+				if (wip_active && selected_point.polygon == -1) {
+
+					if (wip.size() > selected_point.vertex) {
+
+						wip.remove(selected_point.vertex);
+						_wip_changed();
+						selected_point = wip.size() - 1;
+						canvas_item_editor->update_viewport();
+						return true;
+					}
+				} else {
+
+					const Vertex active_point = get_active_point();
+
+					if (active_point.valid()) {
+
+						remove_point(active_point);
+						return true;
+					}
+				}
 			}
 		}
 	}
@@ -533,7 +552,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 
 	if (k.is_valid() && k->is_pressed()) {
 
-		if (k->get_keycode() == KEY_DELETE || k->get_keycode() == KEY_BACKSPACE) {
+		if (k->get_keycode() == KEY_BACKSPACE) {
 
 			if (wip_active && selected_point.polygon == -1) {
 
@@ -555,6 +574,8 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 					return true;
 				}
 			}
+		} else if (k->get_keycode() == KEY_DELETE) {
+			_wip_cancel();
 		} else if (wip_active && k->get_keycode() == KEY_ENTER) {
 
 			_wip_close();
