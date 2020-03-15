@@ -320,12 +320,13 @@ void PathFollow::set_offset(float p_offset) {
 			float path_length = path->get_curve()->get_baked_length();
 
 			if (loop) {
-				while (offset > path_length)
-					offset -= path_length;
+				real_t wrapped_offset = Math::fposmod(offset, path_length);
 
-				while (offset < 0)
-					offset += path_length;
+				if (offset > 0 && wrapped_offset == 0) {
+					wrapped_offset = path_length;
+				}
 
+				offset = wrapped_offset;
 			} else {
 				offset = CLAMP(offset, 0, path_length);
 			}
