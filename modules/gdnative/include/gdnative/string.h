@@ -121,6 +121,8 @@ godot_string GDAPI godot_string_insert(const godot_string *p_self, godot_int p_a
 godot_bool GDAPI godot_string_is_numeric(const godot_string *p_self);
 godot_bool GDAPI godot_string_is_subsequence_of(const godot_string *p_self, const godot_string *p_string);
 godot_bool GDAPI godot_string_is_subsequence_ofi(const godot_string *p_self, const godot_string *p_string);
+godot_bool GDAPI godot_string_is_substring_of(const godot_string *p_self, const godot_string *p_string);
+godot_bool GDAPI godot_string_is_substring_ofi(const godot_string *p_self, const godot_string *p_string);
 godot_string GDAPI godot_string_lpad(const godot_string *p_self, godot_int p_min_length);
 godot_string GDAPI godot_string_lpad_with_custom_character(const godot_string *p_self, godot_int p_min_length, const godot_string *p_character);
 godot_bool GDAPI godot_string_match(const godot_string *p_self, const godot_string *p_wildcard);

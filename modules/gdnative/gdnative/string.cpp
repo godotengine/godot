@@ -346,6 +346,20 @@ godot_bool GDAPI godot_string_is_subsequence_ofi(const godot_string *p_self, con
 	return self->is_subsequence_ofi(*string);
 }
 
+godot_bool GDAPI godot_string_is_substring_of(const godot_string *p_self, const godot_string *p_string) {
+	const String *self = (const String *)p_self;
+	const String *string = (const String *)p_string;
+
+	return self->is_substring_of(*string);
+}
+
+godot_bool GDAPI godot_string_is_substring_ofi(const godot_string *p_self, const godot_string *p_string) {
+	const String *self = (const String *)p_self;
+	const String *string = (const String *)p_string;
+
+	return self->is_substring_ofi(*string);
+}
+
 godot_string GDAPI godot_string_lpad(const godot_string *p_self, godot_int p_min_length) {
 	const String *self = (const String *)p_self;
 	godot_string result;

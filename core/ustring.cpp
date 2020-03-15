@@ -2759,12 +2759,22 @@ bool String::is_enclosed_in(const String &p_string) const {
 
 bool String::is_subsequence_of(const String &p_string) const {
 
-	return _base_is_subsequence_of(p_string, false);
+	return _base_is_subsequence_of(p_string, false, false);
 }
 
 bool String::is_subsequence_ofi(const String &p_string) const {
 
-	return _base_is_subsequence_of(p_string, true);
+	return _base_is_subsequence_of(p_string, true, false);
+}
+
+bool String::is_substring_of(const String &p_string) const {
+
+	return _base_is_subsequence_of(p_string, false, true);
+}
+
+bool String::is_substring_ofi(const String &p_string) const {
+
+	return _base_is_subsequence_of(p_string, true, true);
 }
 
 bool String::is_quoted() const {
@@ -2817,7 +2827,7 @@ int String::countn(const String &p_string, int p_from, int p_to) const {
 	return _count(p_string, p_from, p_to, true);
 }
 
-bool String::_base_is_subsequence_of(const String &p_string, bool case_insensitive) const {
+bool String::_base_is_subsequence_of(const String &p_string, bool case_insensitive, bool p_continuous) const {
 
 	int len = length();
 	if (len == 0) {
@@ -2828,6 +2838,8 @@ bool String::_base_is_subsequence_of(const String &p_string, bool case_insensiti
 	if (len > p_string.length()) {
 		return false;
 	}
+
+	bool was_matched = false;
 
 	const CharType *src = &operator[](0);
 	const CharType *tgt = &p_string[0];
@@ -2842,9 +2854,15 @@ bool String::_base_is_subsequence_of(const String &p_string, bool case_insensiti
 			match = *src == *tgt;
 		}
 		if (match) {
+			was_matched = true;
+
 			src++;
 			if (!*src) {
 				return true;
+			}
+		} else {
+			if (was_matched && p_continuous) {
+				return false;
 			}
 		}
 	}

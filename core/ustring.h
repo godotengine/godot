@@ -132,7 +132,7 @@ class String {
 	void copy_from(const CharType *p_cstr, const int p_clip_to = -1);
 	void copy_from(const CharType &p_char);
 	void copy_from_unchecked(const CharType *p_char, const int p_length);
-	bool _base_is_subsequence_of(const String &p_string, bool case_insensitive) const;
+	bool _base_is_subsequence_of(const String &p_string, bool case_insensitive, bool p_continuous = false) const;
 	int _count(const String &p_string, int p_from, int p_to, bool p_case_insensitive) const;
 
 public:
@@ -215,6 +215,8 @@ public:
 	bool is_enclosed_in(const String &p_string) const;
 	bool is_subsequence_of(const String &p_string) const;
 	bool is_subsequence_ofi(const String &p_string) const;
+	bool is_substring_of(const String &p_string) const;
+	bool is_substring_ofi(const String &p_string) const;
 	bool is_quoted() const;
 	Vector<String> bigrams() const;
 	float similarity(const String &p_string) const;
