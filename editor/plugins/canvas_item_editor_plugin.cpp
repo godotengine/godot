@@ -53,8 +53,10 @@
 #include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"
 
-#define MIN_ZOOM 0.01
-#define MAX_ZOOM 100
+// Min and Max are power of two in order to play nicely with successive increment.
+// That way, we can naturally reach a 100% zoom from boundaries.
+#define MIN_ZOOM 1. / 128
+#define MAX_ZOOM 128
 
 #define RULER_WIDTH (15 * EDSCALE)
 #define SCALE_HANDLE_DISTANCE 25
@@ -1191,7 +1193,11 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 				view_offset.y += int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
 				update_viewport();
 			} else {
-				_zoom_on_position(zoom * (1 - (0.05 * b->get_factor())), b->get_position());
+				float new_zoom = _get_next_zoom_value(-1);
+				if (b->get_factor() != 1.f) {
+					new_zoom = zoom * ((new_zoom / zoom - 1.f) * b->get_factor() + 1.f);
+				}
+				_zoom_on_position(new_zoom, b->get_position());
 			}
 			return true;
 		}
@@ -1202,7 +1208,11 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 				view_offset.y -= int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
 				update_viewport();
 			} else {
-				_zoom_on_position(zoom * ((0.95 + (0.05 * b->get_factor())) / 0.95), b->get_position());
+				float new_zoom = _get_next_zoom_value(1);
+				if (b->get_factor() != 1.f) {
+					new_zoom = zoom * ((new_zoom / zoom - 1.f) * b->get_factor() + 1.f);
+				}
+				_zoom_on_position(new_zoom, b->get_position());
 			}
 			return true;
 		}
@@ -4216,8 +4226,37 @@ void CanvasItemEditor::_set_anchors_preset(Control::LayoutPreset p_preset) {
 	undo_redo->commit_action();
 }
 
+float CanvasItemEditor::_get_next_zoom_value(int p_increment_count) const {
+	// Base increment factor defined as the twelveth root of two.
+	// This allow a smooth geometric evolution of the zoom, with the advantage of
+	// visiting all integer power of two scale factors.
+	// note: this is analogous to the 'semitones' interval in the music world
+	// In order to avoid numerical imprecisions, we compute and edit a zoom index
+	// with the following relation: zoom = 2 ^ (index / 12)
+
+	if (zoom < CMP_EPSILON || p_increment_count == 0) {
+		return 1.f;
+	}
+
+	// Remove Editor scale from the index computation
+	float zoom_noscale = zoom / MAX(1, EDSCALE);
+
+	// zoom = 2**(index/12) => log2(zoom) = index/12
+	float closest_zoom_index = Math::round(Math::log(zoom_noscale) * 12.f / Math::log(2.f));
+
+	float new_zoom_index = closest_zoom_index + p_increment_count;
+	float new_zoom = Math::pow(2.f, new_zoom_index / 12.f);
+
+	// Restore Editor scale transformation
+	new_zoom *= MAX(1, EDSCALE);
+
+	return new_zoom;
+}
+
 void CanvasItemEditor::_zoom_on_position(float p_zoom, Point2 p_position) {
-	if (p_zoom < MIN_ZOOM || p_zoom > MAX_ZOOM)
+	p_zoom = CLAMP(p_zoom, MIN_ZOOM, MAX_ZOOM);
+
+	if (p_zoom == zoom)
 		return;
 
 	float prev_zoom = zoom;
@@ -4258,7 +4297,7 @@ void CanvasItemEditor::_update_zoom_label() {
 }
 
 void CanvasItemEditor::_button_zoom_minus() {
-	_zoom_on_position(zoom / Math_SQRT2, viewport_scrollable->get_size() / 2.0);
+	_zoom_on_position(_get_next_zoom_value(-6), viewport_scrollable->get_size() / 2.0);
 }
 
 void CanvasItemEditor::_button_zoom_reset() {
@@ -4266,7 +4305,7 @@ void CanvasItemEditor::_button_zoom_reset() {
 }
 
 void CanvasItemEditor::_button_zoom_plus() {
-	_zoom_on_position(zoom * Math_SQRT2, viewport_scrollable->get_size() / 2.0);
+	_zoom_on_position(_get_next_zoom_value(6), viewport_scrollable->get_size() / 2.0);
 }
 
 void CanvasItemEditor::_button_toggle_smart_snap(bool p_status) {
