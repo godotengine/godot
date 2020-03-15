@@ -121,6 +121,7 @@ private:
 	int last_warning_count;
 
 	bool hide_on_stop;
+	int remote_port;
 	bool enable_external_editor;
 
 	bool skip_breakpoints_value = false;
@@ -275,6 +276,7 @@ public:
 	void set_hide_on_stop(bool p_hide);
 
 	bool get_debug_with_external_editor() const;
+	String get_connection_string() const;
 	void set_debug_with_external_editor(bool p_enabled);
 
 	Ref<Script> get_dump_stack_script() const;

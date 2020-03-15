@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "script_editor_debugger.h"
-
 #include "core/io/marshalls.h"
+#include "core/os/os.h"
 #include "core/project_settings.h"
 #include "core/ustring.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
@@ -1476,13 +1476,25 @@ void ScriptEditorDebugger::start() {
 		perf_max.write[i] = 0;
 	}
 
-	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
-	if (server->listen(remote_port) != OK) {
-		EditorNode::get_log()->add_message(String("Error listening on port ") + itos(remote_port), EditorLog::MSG_TYPE_ERROR);
-		return;
+	const int max_tries = 6;
+	remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
+	int current_try = 0;
+	// Find first available port.
+	Error err = server->listen(remote_port);
+	while (err != OK && current_try < max_tries) {
+		EditorNode::get_log()->add_message(String("Remote debugger failed listening on port: ") + itos(remote_port) + String(" Retrying on new port: " + itos(remote_port + 1)), EditorLog::MSG_TYPE_WARNING);
+		current_try++;
+		remote_port++;
+		OS::get_singleton()->delay_usec(1000);
+		err = server->listen(remote_port);
 	}
-
+	// No suitable port found.
+	if (err != OK) {
+		EditorNode::get_log()->add_message(String("Error listening on port ") + itos(remote_port), EditorLog::MSG_TYPE_ERROR);
+		EditorNode::get_log()->add_message(String("Remote debugger error listening for connections. No free port"), EditorLog::MSG_TYPE_ERROR);
+	}
 	EditorNode::get_singleton()->get_scene_tree_dock()->show_tab_buttons();
+
 	auto_switch_remote_scene_tree = (bool)EditorSettings::get_singleton()->get("debugger/auto_switch_to_remote_scene_tree");
 	if (auto_switch_remote_scene_tree) {
 		EditorNode::get_singleton()->get_scene_tree_dock()->show_remote_tree();
@@ -1517,6 +1529,7 @@ void ScriptEditorDebugger::stop() {
 		reason->set_tooltip("");
 	}
 
+	remote_port = 0;
 	pending_in_queue = 0;
 	message.clear();
 
@@ -2057,6 +2070,11 @@ void ScriptEditorDebugger::set_hide_on_stop(bool p_hide) {
 bool ScriptEditorDebugger::get_debug_with_external_editor() const {
 
 	return enable_external_editor;
+}
+
+String ScriptEditorDebugger::get_connection_string() const {
+	String remote_host = EditorSettings::get_singleton()->get("network/debug/remote_host");
+	return remote_port ? remote_host + ":" + itos(remote_port) : "";
 }
 
 void ScriptEditorDebugger::set_debug_with_external_editor(bool p_enabled) {
@@ -2625,6 +2643,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	enable_external_editor = false;
 	last_error_count = 0;
 	last_warning_count = 0;
+	remote_port = 0;
 
 	EditorNode::get_singleton()->get_pause_button()->connect("pressed", this, "_paused");
 }
