@@ -173,7 +173,7 @@ ScriptEditorDebugger *EditorDebuggerNode::get_default_debugger() const {
 	return Object::cast_to<ScriptEditorDebugger>(tabs->get_tab_control(0));
 }
 
-Error EditorDebuggerNode::start() {
+Error EditorDebuggerNode::start(const String &p_protocol) {
 	stop();
 	if (EDITOR_GET("run/output/always_open_output_on_play")) {
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(EditorNode::get_log());
@@ -181,7 +181,7 @@ Error EditorDebuggerNode::start() {
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
 	}
 
-	server = Ref<EditorDebuggerServer>(EditorDebuggerServer::create_default());
+	server = Ref<EditorDebuggerServer>(EditorDebuggerServer::create(p_protocol));
 	const Error err = server->start();
 	if (err != OK) {
 		return err;
@@ -213,14 +213,6 @@ void EditorDebuggerNode::stop() {
 
 void EditorDebuggerNode::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			EditorNode::get_singleton()->connect("play_pressed", callable_mp(this, &EditorDebuggerNode::start));
-			EditorNode::get_singleton()->connect("stop_pressed", callable_mp(this, &EditorDebuggerNode::stop));
-		} break;
-		case NOTIFICATION_EXIT_TREE: {
-			EditorNode::get_singleton()->disconnect("play_pressed", callable_mp(this, &EditorDebuggerNode::start));
-			EditorNode::get_singleton()->disconnect("stop_pressed", callable_mp(this, &EditorDebuggerNode::stop));
-		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (tabs->get_tab_count() > 1) {
 				add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_LEFT));

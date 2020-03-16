@@ -37,7 +37,17 @@
 class EditorDebuggerServer : public Reference {
 
 public:
-	static EditorDebuggerServer *create_default();
+	typedef EditorDebuggerServer *(*CreateServerFunc)(const String &p_uri);
+
+private:
+	static Map<StringName, CreateServerFunc> protocols;
+
+public:
+	static void initialize();
+	static void deinitialize();
+
+	static void register_protocol_handler(const String &p_protocol, CreateServerFunc p_func);
+	static EditorDebuggerServer *create(const String &p_protocol);
 	virtual void poll() = 0;
 	virtual Error start() = 0;
 	virtual void stop() = 0;
