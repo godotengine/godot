@@ -2072,9 +2072,11 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	args = ProjectSettings::get_singleton()->get("editor/main_run_args");
 	skip_breakpoints = EditorDebuggerNode::get_singleton()->is_skip_breakpoints();
 
+	EditorDebuggerNode::get_singleton()->start();
 	Error error = editor_run.run(run_filename, args, breakpoints, skip_breakpoints);
 	if (error != OK) {
 
+		EditorDebuggerNode::get_singleton()->stop();
 		show_accept(TTR("Could not start subprocess!"), TTR("OK"));
 		return;
 	}
@@ -2094,6 +2096,24 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	stop_button->set_disabled(false);
 
 	_playing_edited = p_current;
+}
+
+void EditorNode::_run_native(const Ref<EditorExportPreset> &p_preset) {
+
+	bool autosave = EDITOR_GET("run/auto_save/save_before_running");
+	if (autosave) {
+		_menu_option_confirm(FILE_SAVE_ALL_SCENES, false);
+	}
+	if (run_native->is_deploy_debug_remote_enabled()) {
+		_menu_option_confirm(RUN_STOP, true);
+
+		if (!call_build())
+			return; // build failed
+
+		EditorDebuggerNode::get_singleton()->start(p_preset->get_platform()->get_debug_protocol());
+		emit_signal("play_pressed");
+		editor_run.run_native_notify();
+	}
 }
 
 void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
@@ -2464,6 +2484,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					}
 				}
 			}
+			EditorDebuggerNode::get_singleton()->stop();
 			emit_signal("stop_pressed");
 
 		} break;
@@ -2481,22 +2502,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			_menu_option_confirm(RUN_STOP, true);
 			_run(true);
 
-		} break;
-		case RUN_PLAY_NATIVE: {
-
-			bool autosave = EDITOR_GET("run/auto_save/save_before_running");
-			if (autosave) {
-				_menu_option_confirm(FILE_SAVE_ALL_SCENES, false);
-			}
-			if (run_native->is_deploy_debug_remote_enabled()) {
-				_menu_option_confirm(RUN_STOP, true);
-
-				if (!call_build())
-					break; // build failed
-
-				emit_signal("play_pressed");
-				editor_run.run_native_notify();
-			}
 		} break;
 		case RUN_SCENE_SETTINGS: {
 
@@ -6346,7 +6351,7 @@ EditorNode::EditorNode() {
 
 	run_native = memnew(EditorRunNative);
 	play_hb->add_child(run_native);
-	run_native->connect("native_run", callable_mp(this, &EditorNode::_menu_option), varray(RUN_PLAY_NATIVE));
+	run_native->connect("native_run", callable_mp(this, &EditorNode::_run_native));
 
 	play_scene_button = memnew(ToolButton);
 	play_hb->add_child(play_scene_button);

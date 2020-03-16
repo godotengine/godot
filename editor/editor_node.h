@@ -32,6 +32,7 @@
 #define EDITOR_NODE_H
 
 #include "editor/editor_data.h"
+#include "editor/editor_export.h"
 #include "editor/editor_folding.h"
 #include "editor/editor_run.h"
 #include "editor/inspector_dock.h"
@@ -161,7 +162,6 @@ private:
 
 		RUN_STOP,
 		RUN_PLAY_SCENE,
-		RUN_PLAY_NATIVE,
 		RUN_PLAY_CUSTOM_SCENE,
 		RUN_SCENE_SETTINGS,
 		RUN_SETTINGS,
@@ -492,6 +492,7 @@ private:
 	void _quick_run();
 
 	void _run(bool p_current = false, const String &p_custom = "");
+	void _run_native(const Ref<EditorExportPreset> &p_preset);
 
 	void _save_optimized();
 	void _import_action(const String &p_action);
