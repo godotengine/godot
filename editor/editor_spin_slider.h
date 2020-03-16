@@ -77,6 +77,8 @@ class EditorSpinSlider : public Range {
 
 	void _evaluate_input_text();
 
+	void _ungrabbed();
+
 protected:
 	void _notification(int p_what);
 	void _gui_input(const Ref<InputEvent> &p_event);
@@ -107,6 +109,9 @@ public:
 	LineEdit *get_line_edit() { return value_input; }
 
 	virtual Size2 get_minimum_size() const;
+
+	bool is_grabbing();
+
 	EditorSpinSlider();
 };
 

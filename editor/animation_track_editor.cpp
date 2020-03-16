@@ -1416,6 +1416,9 @@ void AnimationTimelineEdit::_anim_length_changed(double p_new_len) {
 	if (editing)
 		return;
 
+	if (length->is_grabbing())
+		return;
+
 	p_new_len = MAX(0.001, p_new_len);
 	if (use_fps && animation->get_step() > 0) {
 		p_new_len *= animation->get_step();
