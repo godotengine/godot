@@ -66,7 +66,7 @@ void ColorPicker::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_PARENTED: {
 			for (int i = 0; i < 4; i++) {
-				set_margin((Margin)i, get_theme_constant("margin"));
+				set_margin((Margin)i, get_margin((Margin)i) + get_theme_constant("margin"));
 			}
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
