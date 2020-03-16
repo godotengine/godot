@@ -162,7 +162,7 @@ void AnimationBezierTrackEdit::_draw_track(int p_track, const Color &p_color) {
 
 				float c = (t - low_pos.x) / (high_pos.x - low_pos.x);
 
-				h = low_pos.linear_interpolate(high_pos, c).y;
+				h = low_pos.lerp(high_pos, c).y;
 			}
 
 			h = _bezier_h_to_pixel(h);
@@ -201,12 +201,12 @@ void AnimationBezierTrackEdit::_draw_line_clipped(const Vector2 &p_from, const V
 
 	if (to.x > p_clip_right) {
 		float c = (p_clip_right - from.x) / (to.x - from.x);
-		to = from.linear_interpolate(to, c);
+		to = from.lerp(to, c);
 	}
 
 	if (from.x < p_clip_left) {
 		float c = (p_clip_left - from.x) / (to.x - from.x);
-		from = from.linear_interpolate(to, c);
+		from = from.lerp(to, c);
 	}
 
 	draw_line(from, to, p_color);

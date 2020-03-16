@@ -106,11 +106,11 @@ godot_vector3 GDAPI godot_vector3_rotated(const godot_vector3 *p_self, const god
 	return dest;
 }
 
-godot_vector3 GDAPI godot_vector3_linear_interpolate(const godot_vector3 *p_self, const godot_vector3 *p_b, const godot_real p_t) {
+godot_vector3 GDAPI godot_vector3_lerp(const godot_vector3 *p_self, const godot_vector3 *p_b, const godot_real p_t) {
 	godot_vector3 dest;
 	const Vector3 *self = (const Vector3 *)p_self;
 	const Vector3 *b = (const Vector3 *)p_b;
-	*((Vector3 *)&dest) = self->linear_interpolate(*b, p_t);
+	*((Vector3 *)&dest) = self->lerp(*b, p_t);
 	return dest;
 }
 

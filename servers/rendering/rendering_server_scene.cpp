@@ -1348,15 +1348,15 @@ _FORCE_INLINE_ static void _light_capture_sample_octree(const RasterizerStorage:
 
 	for (int i = 0; i < 2; i++) {
 
-		Vector3 color_x00 = color[i][0].linear_interpolate(color[i][1], pos_fract[i].x);
-		Vector3 color_xy0 = color[i][2].linear_interpolate(color[i][3], pos_fract[i].x);
-		Vector3 blend_z0 = color_x00.linear_interpolate(color_xy0, pos_fract[i].y);
+		Vector3 color_x00 = color[i][0].lerp(color[i][1], pos_fract[i].x);
+		Vector3 color_xy0 = color[i][2].lerp(color[i][3], pos_fract[i].x);
+		Vector3 blend_z0 = color_x00.lerp(color_xy0, pos_fract[i].y);
 
-		Vector3 color_x0z = color[i][4].linear_interpolate(color[i][5], pos_fract[i].x);
-		Vector3 color_xyz = color[i][6].linear_interpolate(color[i][7], pos_fract[i].x);
-		Vector3 blend_z1 = color_x0z.linear_interpolate(color_xyz, pos_fract[i].y);
+		Vector3 color_x0z = color[i][4].lerp(color[i][5], pos_fract[i].x);
+		Vector3 color_xyz = color[i][6].lerp(color[i][7], pos_fract[i].x);
+		Vector3 blend_z1 = color_x0z.lerp(color_xyz, pos_fract[i].y);
 
-		color_interp[i] = blend_z0.linear_interpolate(blend_z1, pos_fract[i].z);
+		color_interp[i] = blend_z0.lerp(blend_z1, pos_fract[i].z);
 
 		float alpha_x00 = Math::lerp(alpha[i][0], alpha[i][1], pos_fract[i].x);
 		float alpha_xy0 = Math::lerp(alpha[i][2], alpha[i][3], pos_fract[i].x);
@@ -1369,7 +1369,7 @@ _FORCE_INLINE_ static void _light_capture_sample_octree(const RasterizerStorage:
 		alpha_interp[i] = Math::lerp(alpha_z0, alpha_z1, pos_fract[i].z);
 	}
 
-	r_color = color_interp[0].linear_interpolate(color_interp[1], level_filter);
+	r_color = color_interp[0].lerp(color_interp[1], level_filter);
 	r_alpha = Math::lerp(alpha_interp[0], alpha_interp[1], level_filter);
 
 	//print_line("pos: " + p_posf + " level " + rtos(p_level) + " down to " + itos(target_level) + "." + rtos(level_filter) + " color " + r_color + " alpha " + rtos(r_alpha));

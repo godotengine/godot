@@ -97,7 +97,7 @@ struct Color {
 	Color inverted() const;
 	Color contrasted() const;
 
-	_FORCE_INLINE_ Color linear_interpolate(const Color &p_b, float p_t) const {
+	_FORCE_INLINE_ Color lerp(const Color &p_b, float p_t) const {
 
 		Color res = *this;
 

@@ -175,7 +175,7 @@ void Input::SpeedTrack::update(const Vector2 &p_delta_p) {
 		accum = accum - slice;
 		accum_t -= min_ref_frame;
 
-		speed = (slice / min_ref_frame).linear_interpolate(speed, min_ref_frame / max_ref_frame);
+		speed = (slice / min_ref_frame).lerp(speed, min_ref_frame / max_ref_frame);
 	}
 }
 

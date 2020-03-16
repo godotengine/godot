@@ -267,7 +267,7 @@ Transform2D Transform2D::interpolate_with(const Transform2D &p_transform, real_t
 	Vector2 v;
 
 	if (dot > 0.9995) {
-		v = Vector2::linear_interpolate(v1, v2, p_c).normalized(); //linearly interpolate to avoid numerical precision issues
+		v = v1.lerp(v2, p_c).normalized(); //linearly interpolate to avoid numerical precision issues
 	} else {
 		real_t angle = p_c * Math::acos(dot);
 		Vector2 v3 = (v2 - v1 * dot).normalized();
@@ -275,8 +275,8 @@ Transform2D Transform2D::interpolate_with(const Transform2D &p_transform, real_t
 	}
 
 	//construct matrix
-	Transform2D res(Math::atan2(v.y, v.x), Vector2::linear_interpolate(p1, p2, p_c));
-	res.scale_basis(Vector2::linear_interpolate(s1, s2, p_c));
+	Transform2D res(Math::atan2(v.y, v.x), p1.lerp(p2, p_c));
+	res.scale_basis(s1.lerp(s2, p_c));
 	return res;
 }
 

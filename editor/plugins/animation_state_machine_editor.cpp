@@ -885,7 +885,7 @@ void AnimationNodeStateMachineEditor::_state_machine_pos_draw() {
 
 	state_machine_play_pos->draw_line(from, to, bg, 2);
 
-	to = from.linear_interpolate(to, c);
+	to = from.lerp(to, c);
 
 	state_machine_play_pos->draw_line(from, to, fg, 2);
 }

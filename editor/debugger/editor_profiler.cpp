@@ -136,7 +136,7 @@ Color EditorProfiler::_get_color_from_signature(const StringName &p_signature) c
 	double rot = ABS(double(p_signature.hash()) / double(0x7FFFFFFF));
 	Color c;
 	c.set_hsv(rot, bc.get_s(), bc.get_v());
-	return c.linear_interpolate(get_theme_color("base_color", "Editor"), 0.07);
+	return c.lerp(get_theme_color("base_color", "Editor"), 0.07);
 }
 
 void EditorProfiler::_item_edited() {

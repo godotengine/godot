@@ -568,7 +568,7 @@
 			<description>
 				Linearly interpolates between two values by a normalized value. This is the opposite of [method inverse_lerp].
 				If the [code]from[/code] and [code]to[/code] arguments are of type [int] or [float], the return value is a [float].
-				If both are of the same vector type ([Vector2], [Vector3] or [Color]), the return value will be of the same type ([code]lerp[/code] then calls the vector type's [code]linear_interpolate[/code] method).
+				If both are of the same vector type ([Vector2], [Vector3] or [Color]), the return value will be of the same type ([code]lerp[/code] then calls the vector type's [code]lerp[/code] method).
 				[codeblock]
 				lerp(0, 4, 0.75) # Returns 3.0
 				lerp(Vector2(1, 5), Vector2(3, 2), 0.5) # Returns Vector2(2, 3.5)

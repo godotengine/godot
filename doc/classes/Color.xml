@@ -149,20 +149,7 @@
 				Returns [code]true[/code] if this color and [code]color[/code] are approximately equal, by running [method @GDScript.is_equal_approx] on each component.
 			</description>
 		</method>
-		<method name="lightened">
-			<return type="Color">
-			</return>
-			<argument index="0" name="amount" type="float">
-			</argument>
-			<description>
-				Returns a new color resulting from making this color lighter by the specified percentage (ratio from 0 to 1).
-				[codeblock]
-				var green = Color(0.0, 1.0, 0.0)
-				var lightgreen = green.lightened(0.2) # 20% lighter than regular green
-				[/codeblock]
-			</description>
-		</method>
-		<method name="linear_interpolate">
+		<method name="lerp">
 			<return type="Color">
 			</return>
 			<argument index="0" name="b" type="Color">
@@ -174,7 +161,20 @@
 				[codeblock]
 				var c1 = Color(1.0, 0.0, 0.0)
 				var c2 = Color(0.0, 1.0, 0.0)
-				var li_c = c1.linear_interpolate(c2, 0.5) # A color of an RGBA(128, 128, 0, 255)
+				var li_c = c1.lerp(c2, 0.5) # A color of an RGBA(128, 128, 0, 255)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="lightened">
+			<return type="Color">
+			</return>
+			<argument index="0" name="amount" type="float">
+			</argument>
+			<description>
+				Returns a new color resulting from making this color lighter by the specified percentage (ratio from 0 to 1).
+				[codeblock]
+				var green = Color(0.0, 1.0, 0.0)
+				var lightgreen = green.lightened(0.2) # 20% lighter than regular green
 				[/codeblock]
 			</description>
 		</method>

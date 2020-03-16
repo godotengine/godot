@@ -403,7 +403,7 @@ void RenameDialog::_update_preview(String new_text) {
 			// New name is identical to the old one. Don't color it as much to avoid distracting the user.
 			const Color accent_color = EditorNode::get_singleton()->get_gui_base()->get_theme_color("accent_color", "Editor");
 			const Color text_color = EditorNode::get_singleton()->get_gui_base()->get_theme_color("default_color", "RichTextLabel");
-			lbl_preview->add_theme_color_override("font_color", accent_color.linear_interpolate(text_color, 0.5));
+			lbl_preview->add_theme_color_override("font_color", accent_color.lerp(text_color, 0.5));
 		} else {
 			lbl_preview->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("success_color", "Editor"));
 		}

@@ -653,7 +653,7 @@ void GraphEdit::_bake_segment2d(Vector<Vector2> &points, Vector<Color> &colors, 
 	if (p_depth >= p_min_depth && (dp < p_tol || p_depth >= p_max_depth)) {
 
 		points.push_back((beg + end) * 0.5);
-		colors.push_back(p_color.linear_interpolate(p_to_color, mp));
+		colors.push_back(p_color.lerp(p_to_color, mp));
 		lines++;
 	} else {
 		_bake_segment2d(points, colors, p_begin, mp, p_a, p_out, p_b, p_in, p_depth + 1, p_min_depth, p_max_depth, p_tol, p_color, p_to_color, lines);
@@ -737,8 +737,8 @@ void GraphEdit::_connections_layer_draw() {
 		Color tocolor = gto->get_connection_input_color(E->get().to_port);
 
 		if (E->get().activity > 0) {
-			color = color.linear_interpolate(activity_color, E->get().activity);
-			tocolor = tocolor.linear_interpolate(activity_color, E->get().activity);
+			color = color.lerp(activity_color, E->get().activity);
+			tocolor = tocolor.lerp(activity_color, E->get().activity);
 		}
 		_draw_cos_line(connections_layer, frompos, topos, color, tocolor);
 	}

@@ -2827,10 +2827,10 @@ void DecalGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			lines.push_back(a);
 			lines.push_back(b);
 		} else {
-			Vector3 ah = a.linear_interpolate(b, 0.2);
+			Vector3 ah = a.lerp(b, 0.2);
 			lines.push_back(a);
 			lines.push_back(ah);
-			Vector3 bh = b.linear_interpolate(a, 0.2);
+			Vector3 bh = b.lerp(a, 0.2);
 			lines.push_back(b);
 			lines.push_back(bh);
 		}
