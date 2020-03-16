@@ -452,6 +452,7 @@ class _File : public Reference {
 
 	GDCLASS(_File, Reference);
 	FileAccess *f;
+	int mode_flags;
 	bool eswap;
 
 protected:
