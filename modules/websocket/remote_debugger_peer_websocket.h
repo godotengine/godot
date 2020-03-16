@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  script_debugger_websocket.h                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,42 +28,39 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
-#include "core/error_macros.h"
-#include "core/project_settings.h"
+#ifndef SCRIPT_DEBUGGER_WEBSOCKET_H
+#define SCRIPT_DEBUGGER_WEBSOCKET_H
+
 #ifdef JAVASCRIPT_ENABLED
-#include "emscripten.h"
-#include "emws_client.h"
-#include "emws_peer.h"
-#include "emws_server.h"
+#include "modules/websocket/emws_client.h"
 #else
-#include "wsl_client.h"
-#include "wsl_server.h"
+#include "modules/websocket/wsl_client.h"
 #endif
-#ifdef TOOLS_ENABLED
-#include "editor/debugger/editor_debugger_server.h"
-#include "editor_debugger_server_websocket.h"
-#endif
+#include "core/debugger/remote_debugger_peer.h"
 
-void register_websocket_types() {
-#ifdef JAVASCRIPT_ENABLED
-	EMWSPeer::make_default();
-	EMWSClient::make_default();
-	EMWSServer::make_default();
-#else
-	WSLPeer::make_default();
-	WSLClient::make_default();
-	WSLServer::make_default();
-#endif
+class RemoteDebuggerPeerWebSocket : public RemoteDebuggerPeer {
 
-	ClassDB::register_virtual_class<WebSocketMultiplayerPeer>();
-	ClassDB::register_custom_instance_class<WebSocketServer>();
-	ClassDB::register_custom_instance_class<WebSocketClient>();
-	ClassDB::register_custom_instance_class<WebSocketPeer>();
+	Ref<WebSocketClient> ws_client;
+	Ref<WebSocketPeer> ws_peer;
+	List<Array> in_queue;
+	List<Array> out_queue;
 
-#ifdef TOOLS_ENABLED
-	EditorDebuggerServer::register_protocol_handler("ws://", EditorDebuggerServerWebSocket::create);
-#endif
-}
+	int max_queued_messages;
 
-void unregister_websocket_types() {}
+public:
+	static RemoteDebuggerPeer *create(const String &p_uri);
+
+	Error connect_to_host(const String &p_uri);
+	bool is_peer_connected();
+	int get_max_message_size() const;
+	bool has_message();
+	Error put_message(const Array &p_arr);
+	Array get_message();
+	void close();
+	void poll();
+	bool can_block() const;
+
+	RemoteDebuggerPeerWebSocket(Ref<WebSocketPeer> p_peer = Ref<WebSocketPeer>());
+};
+
+#endif // SCRIPT_DEBUGGER_WEBSOCKET_H
