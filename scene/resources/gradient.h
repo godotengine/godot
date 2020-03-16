@@ -120,7 +120,7 @@ public:
 			return points[0].color;
 		const Point &pointFirst = points[first];
 		const Point &pointSecond = points[second];
-		return pointFirst.color.linear_interpolate(pointSecond.color, (p_offset - pointFirst.offset) / (pointSecond.offset - pointFirst.offset));
+		return pointFirst.color.lerp(pointSecond.color, (p_offset - pointFirst.offset) / (pointSecond.offset - pointFirst.offset));
 	}
 
 	int get_points_count() const;

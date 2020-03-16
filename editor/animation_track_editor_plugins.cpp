@@ -112,13 +112,13 @@ void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int
 
 	if (x_from < p_clip_left) {
 		float c = float(p_clip_left - x_from) / (x_to - x_from);
-		color = color.linear_interpolate(color_next, c);
+		color = color.lerp(color_next, c);
 		x_from = p_clip_left;
 	}
 
 	if (x_to > p_clip_right) {
 		float c = float(p_clip_right - x_from) / (x_to - x_from);
-		color_next = color.linear_interpolate(color_next, c);
+		color_next = color.lerp(color_next, c);
 		x_to = p_clip_right;
 	}
 

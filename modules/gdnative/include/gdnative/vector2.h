@@ -81,7 +81,7 @@ godot_real GDAPI godot_vector2_angle_to(const godot_vector2 *p_self, const godot
 
 godot_real GDAPI godot_vector2_angle_to_point(const godot_vector2 *p_self, const godot_vector2 *p_to);
 
-godot_vector2 GDAPI godot_vector2_linear_interpolate(const godot_vector2 *p_self, const godot_vector2 *p_b, const godot_real p_t);
+godot_vector2 GDAPI godot_vector2_lerp(const godot_vector2 *p_self, const godot_vector2 *p_b, const godot_real p_t);
 
 godot_vector2 GDAPI godot_vector2_cubic_interpolate(const godot_vector2 *p_self, const godot_vector2 *p_b, const godot_vector2 *p_pre_a, const godot_vector2 *p_post_b, const godot_real p_t);
 

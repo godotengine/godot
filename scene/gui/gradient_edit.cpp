@@ -207,7 +207,7 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 			prev = points[pos];
 		}
 
-		newPoint.color = prev.color.linear_interpolate(next.color, (newPoint.offset - prev.offset) / (next.offset - prev.offset));
+		newPoint.color = prev.color.lerp(next.color, (newPoint.offset - prev.offset) / (next.offset - prev.offset));
 
 		points.push_back(newPoint);
 		points.sort();
