@@ -183,7 +183,7 @@ public:
 	void set_camera_override(CameraOverride p_override) { camera_override = p_override; }
 	CameraOverride get_camera_override() { return camera_override; }
 
-	Error start();
+	Error start(const String &p_protocol = "tcp://");
 
 	void stop();
 };

@@ -846,6 +846,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 			if (is_session_active()) {
 
+				peer->poll();
+
 				if (camera_override == CameraOverride::OVERRIDE_2D) {
 					CanvasItemEditor *editor = CanvasItemEditor::get_singleton();
 

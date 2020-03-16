@@ -133,7 +133,7 @@ void EditorRunNative::_run_native(int p_idx, int p_platform) {
 		return;
 	}
 
-	emit_signal("native_run");
+	emit_signal("native_run", preset);
 
 	int flags = 0;
 
@@ -160,7 +160,7 @@ void EditorRunNative::resume_run_native() {
 
 void EditorRunNative::_bind_methods() {
 
-	ADD_SIGNAL(MethodInfo("native_run"));
+	ADD_SIGNAL(MethodInfo("native_run", PropertyInfo(Variant::OBJECT, "preset", PROPERTY_HINT_RESOURCE_TYPE, "EditorExportPreset")));
 }
 
 bool EditorRunNative::is_deploy_debug_remote_enabled() const {
