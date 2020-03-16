@@ -76,6 +76,7 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"stepify",
 		"lerp",
 		"lerp_angle",
+		"angle_diff",
 		"inverse_lerp",
 		"range_lerp",
 		"smoothstep",
@@ -383,6 +384,12 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
 			r_ret = Math::lerp_angle((double)*p_args[0], (double)*p_args[1], (double)*p_args[2]);
+		} break;
+		case MATH_ANGLE_DIFF: {
+			VALIDATE_ARG_COUNT(2);
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			r_ret = Math::angle_diff((double)*p_args[0], (double)*p_args[1]);
 		} break;
 		case MATH_INVERSE_LERP: {
 			VALIDATE_ARG_COUNT(3);
@@ -1693,6 +1700,11 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 		} break;
 		case MATH_LERP_ANGLE: {
 			MethodInfo mi("lerp_angle", PropertyInfo(Variant::FLOAT, "from"), PropertyInfo(Variant::FLOAT, "to"), PropertyInfo(Variant::FLOAT, "weight"));
+			mi.return_val.type = Variant::FLOAT;
+			return mi;
+		} break;
+		case MATH_ANGLE_DIFF: {
+			MethodInfo mi("angle_diff", PropertyInfo(Variant::FLOAT, "from"), PropertyInfo(Variant::FLOAT, "to"));
 			mi.return_val.type = Variant::FLOAT;
 			return mi;
 		} break;

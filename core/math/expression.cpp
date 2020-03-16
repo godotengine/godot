@@ -68,6 +68,7 @@ const char *Expression::func_name[Expression::FUNC_MAX] = {
 	"stepify",
 	"lerp",
 	"lerp_angle",
+	"angle_diff",
 	"inverse_lerp",
 	"range_lerp",
 	"smoothstep",
@@ -184,6 +185,7 @@ int Expression::get_func_argument_count(BuiltinFunc p_func) {
 		case MATH_RANDOM:
 		case MATH_POLAR2CARTESIAN:
 		case MATH_CARTESIAN2POLAR:
+		case MATH_ANGLE_DIFF:
 		case LOGIC_MAX:
 		case LOGIC_MIN:
 		case FUNC_FUNCREF:
@@ -398,6 +400,12 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
 			*r_return = Math::lerp_angle((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
+		} break;
+		case MATH_ANGLE_DIFF: {
+
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			*r_return = Math::angle_diff((double)*p_inputs[0], (double)*p_inputs[1]);
 		} break;
 		case MATH_INVERSE_LERP: {
 

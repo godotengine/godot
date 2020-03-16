@@ -594,6 +594,22 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="angle_diff">
+			<return type="float">
+			</return>
+			<argument index="0" name="minuend" type="float">
+			</argument>
+			<argument index="1" name="subtrahend" type="float">
+			</argument>
+			<description>
+				Returns the angle difference (within the range of -PI to PI) between [b]to[/b] and [b]from[/b]. All angles
+				are in radian.
+				[codeblock]
+				angle_diff(0, PI * 1.5) # Returns -1.570796 same as -PI * 0.5
+				rad2deg(angle_diff(0, deg2rad(270))) # Returns -90
+				[/codeblock]
+			</description>
+		</method>
 		<method name="linear2db">
 			<return type="float">
 			</return>
