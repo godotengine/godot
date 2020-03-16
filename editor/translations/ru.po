@@ -66,12 +66,13 @@
 # Artur Tretiak <stikyt@protonmail.com>, 2020.
 # Smadjavul <o1985af@gmail.com>, 2020.
 # anonymous <noreply@weblate.org>, 2020.
+# Vinsent Insaider_red <vinsent.in7aider@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-03-07 21:18+0000\n"
-"Last-Translator: Smadjavul <o1985af@gmail.com>\n"
+"PO-Revision-Date: 2020-03-11 12:20+0000\n"
+"Last-Translator: Vinsent Insaider_red <vinsent.in7aider@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -98,9 +99,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Недостаточно байтов для декодирования байтов или неверный формат."
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid input %i (not passed) in expression"
-msgstr "Некорректный ввод %i (не был передан) в выражении"
+msgstr "Некорректный ввод %i (не подходит) в выражении"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"

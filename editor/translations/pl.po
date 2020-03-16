@@ -42,7 +42,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-03-08 22:33+0000\n"
+"PO-Revision-Date: 2020-03-16 09:43+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -5981,7 +5981,6 @@ msgstr ""
 "To jest najdokładniejsza (ale najwolniejsza) opcja do detekcji kolizji."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Collision Sibling"
 msgstr "Utwórz pojedynczego wypukłego sąsiada kolizji"
 
@@ -12400,6 +12399,8 @@ msgstr ""
 msgid ""
 "ConcavePolygonShape doesn't support RigidBody in another mode than static."
 msgstr ""
+"ConcavePolygonShape nie obsługuje węzła RigidBody w innym trybie niż "
+"statyczny."
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."

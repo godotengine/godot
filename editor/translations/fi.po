@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-02-21 23:33+0000\n"
+"PO-Revision-Date: 2020-03-14 15:05+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -23,7 +23,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.11.1\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -5945,9 +5945,8 @@ msgstr ""
 "Tämä on tarkin (mutta hitain) vaihtoehto törmäystunnistukselle."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Collision Sibling"
-msgstr "Luo yksittäisen konveksin törmäysmuodon sisaret"
+msgstr "Luo yksittäisen konveksin törmäyksen sisar"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
@@ -12362,6 +12361,7 @@ msgstr ""
 msgid ""
 "ConcavePolygonShape doesn't support RigidBody in another mode than static."
 msgstr ""
+"ConcavePolygonShape ei tue RigidBody solmua muussa kuin staattisessa tilassa."
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."

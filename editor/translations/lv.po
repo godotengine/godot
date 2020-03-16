@@ -4,12 +4,13 @@
 # This file is distributed under the same license as the Godot source code.
 # Gustavs Porietis (pg829-) <porietisgustavs@gmail.com>, 2018.
 # Martch Zagorski <martchzagorski@gmail.com>, 2018.
+# Jānis Ondzuls <janisond@inbox.lv>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:41+0100\n"
-"Last-Translator: Martch Zagorski <martchzagorski@gmail.com>\n"
+"PO-Revision-Date: 2020-03-11 12:20+0000\n"
+"Last-Translator: Jānis Ondzuls <janisond@inbox.lv>\n"
 "Language-Team: Latvian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/lv/>\n"
 "Language: lv\n"
@@ -18,7 +19,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n % 10 == 0 || n % 100 >= 11 && n % 100 <= "
 "19) ? 0 : ((n % 10 == 1 && n % 100 != 11) ? 1 : 2);\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -65,31 +66,31 @@ msgstr ""
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "B"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "KiB"
 
 #: core/ustring.cpp
 msgid "MiB"
-msgstr ""
+msgstr "MiB"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "GiB"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "TiB"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "PiB"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
@@ -101,29 +102,27 @@ msgstr "Balancēts"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr ""
+msgstr "Spogulis"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
-msgstr ""
+msgstr "Laiks:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Value:"
-msgstr ""
+msgstr "Vērtība:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
-msgstr ""
+msgstr "Ievadiet vērtību šeit"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Duplicate Selected Key(s)"
-msgstr "Dublikāta Izvēle"
+msgstr "Dublikāta Vērtības"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Delete Selected Key(s)"
-msgstr "Izdzēst izvēlētos failus?"
+msgstr "Izdzēst izvēlēto(ās) vērtību(as)?"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
@@ -682,7 +681,7 @@ msgstr ""
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value"
-msgstr ""
+msgstr "Izmainīt masīva vērtību"
 
 #: editor/code_editor.cpp
 msgid "Go to Line"
@@ -690,20 +689,19 @@ msgstr "Doties uz Rindu"
 
 #: editor/code_editor.cpp
 msgid "Line Number:"
-msgstr ""
+msgstr "Rindas Numurs:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "%d replaced."
-msgstr "Aizvietot"
+msgstr "%d aizvietots."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
-msgstr ""
+msgstr "%d sakritība."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d matches."
-msgstr ""
+msgstr "%d sakritības."
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
@@ -719,16 +717,16 @@ msgstr "Aizvietot"
 
 #: editor/code_editor.cpp
 msgid "Replace All"
-msgstr ""
+msgstr "Aizvietot visu"
 
 #: editor/code_editor.cpp
 msgid "Selection Only"
-msgstr ""
+msgstr "Tikai izvēlētais"
 
 #: editor/code_editor.cpp editor/plugins/script_text_editor.cpp
 #: editor/plugins/text_editor.cpp
 msgid "Standard"
-msgstr ""
+msgstr "Standarts"
 
 #: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Scripts Panel"

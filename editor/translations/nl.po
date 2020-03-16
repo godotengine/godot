@@ -44,7 +44,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-03-08 22:33+0000\n"
+"PO-Revision-Date: 2020-03-16 09:43+0000\n"
 "Last-Translator: Stijn Hinlopen <f.a.hinlopen@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
@@ -12434,7 +12434,7 @@ msgstr ""
 #: scene/3d/collision_shape.cpp
 msgid ""
 "ConcavePolygonShape doesn't support RigidBody in another mode than static."
-msgstr ""
+msgstr "ConcavePolygonShape ondersteunt RigidBody alleen in statische modus."
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."

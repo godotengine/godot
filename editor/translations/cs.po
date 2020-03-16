@@ -22,7 +22,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-03-01 05:50+0000\n"
+"PO-Revision-Date: 2020-03-12 23:33+0000\n"
 "Last-Translator: Vojtěch Šamla <auzkok@seznam.cz>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
@@ -1117,7 +1117,7 @@ msgstr "Děkujeme za komunitu Godotu!"
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
-msgstr "Přispívající do Godot Enginu"
+msgstr "Přispěvatelé do Godot Enginu"
 
 #: editor/editor_about.cpp
 msgid "Project Founders"
@@ -9907,7 +9907,6 @@ msgid "Can't run project"
 msgstr "Nelze spustit projekt"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "You currently don't have any projects.\n"
 "Would you like to explore official example projects in the Asset Library?"

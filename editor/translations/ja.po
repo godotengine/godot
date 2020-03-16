@@ -35,7 +35,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-03-05 08:33+0000\n"
+"PO-Revision-Date: 2020-03-16 09:43+0000\n"
 "Last-Translator: Akihiro Ogoshi <technical@palsystem-game.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -908,7 +908,7 @@ msgstr "切断"
 
 #: editor/connections_dialog.cpp
 msgid "Connect a Signal to a Method"
-msgstr "メソッドにシグナルを接続する"
+msgstr "メソッドにシグナルを接続"
 
 #: editor/connections_dialog.cpp
 msgid "Edit Connection:"
@@ -5834,7 +5834,7 @@ msgstr "グラデーション編集"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
-msgstr "アイテム%d"
+msgstr "アイテム %d"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Items"
@@ -5854,7 +5854,7 @@ msgstr "メッシュがありません!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Couldn't create a Trimesh collision shape."
-msgstr "トライメッシュコリジョンシェイプを作成できませんでした。"
+msgstr "三角形メッシュ コリジョンシェイプを作成できませんでした。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
@@ -5954,7 +5954,7 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
-msgstr "三角形メッシュ兄弟コリジョンを生成"
+msgstr "三角形メッシュ コリジョンの兄弟を作成"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
@@ -5965,7 +5965,6 @@ msgstr ""
 "これは、衝突検出の最も正確な(ただし最も遅い)オプションです。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Collision Sibling"
 msgstr "単一の凸型コリジョンの兄弟を作成"
 
@@ -5979,7 +5978,7 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Multiple Convex Collision Siblings"
-msgstr "複数の凸型コリジョンの兄弟を作成する"
+msgstr "複数の凸型コリジョンの兄弟を作成"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
@@ -7654,7 +7653,7 @@ msgstr "ジオメトリが無効です。衝突ポリゴンを作成できませ
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D Sibling"
-msgstr "CollisionPolygon2Dの兄弟を作成する"
+msgstr "CollisionPolygon2Dの兄弟を作成"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create light occluder."
@@ -7662,7 +7661,7 @@ msgstr "ジオメトリが無効です。ライトオクールダーを作成で
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D Sibling"
-msgstr "LightOccluder2Dの兄弟を作成する"
+msgstr "LightOccluder2Dの兄弟を作成"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
@@ -11936,9 +11935,9 @@ msgid ""
 "   Godot Version: %s\n"
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
-"Androidビルドバージョンの不一致:\n"
-"インストールされたテンプレート:%s\n"
-"ゴドーバージョン:%s\n"
+"Androidビルド バージョンの不一致:\n"
+"  インストールされたテンプレート: %s\n"
+"  Godot バージョン: %s\n"
 "「プロジェクト 」メニューからAndroidビルドテンプレートを再インストールしてく"
 "ださい。"
 
@@ -11952,7 +11951,7 @@ msgid ""
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
 "Androidプロジェクトのビルドに失敗しました。エラーの出力を確認してください。\n"
-"あるいは、Androidビルドドキュメントについてはdocs.godotengine.orgをご覧くださ"
+"また、Androidビルドについてのドキュメントは docs.godotengine.org をご覧くださ"
 "い。"
 
 #: platform/android/export/export.cpp
@@ -12372,6 +12371,8 @@ msgstr ""
 msgid ""
 "ConcavePolygonShape doesn't support RigidBody in another mode than static."
 msgstr ""
+"ConcavePolygonShape は、Static 以外のモードの RigidBody をサポートしていませ"
+"ん。"
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."

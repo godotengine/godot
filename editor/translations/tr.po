@@ -42,12 +42,13 @@
 # Muhammet Mustafa Tozlu <m.mustafatozlu@gmail.com>, 2019.
 # HALİL ATAŞ <halillatass@gmail.com>, 2019.
 # Zsosu Ktosu <zktosu@gmail.com>, 2020.
+# Mesut Aslan <kontinyu@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-30 03:56+0000\n"
-"Last-Translator: Zsosu Ktosu <zktosu@gmail.com>\n"
+"PO-Revision-Date: 2020-03-11 12:20+0000\n"
+"Last-Translator: Mesut Aslan <kontinyu@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -55,7 +56,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -726,9 +727,8 @@ msgid "Line Number:"
 msgstr "Satır Numarası:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "%d replaced."
-msgstr "Değiştir..."
+msgstr "%d değiştirildi."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -3989,9 +3989,8 @@ msgid "Saving..."
 msgstr "Kaydediliyor..."
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "%d Files"
-msgstr " Dosyalar"
+msgstr "%d Dosya"
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
@@ -5870,9 +5869,8 @@ msgid "Mesh is empty!"
 msgstr "Örüntü boş!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create a Trimesh collision shape."
-msgstr "Üçlü Örüntü Çarpışma Kardeşi Oluştur"
+msgstr "Trimesh çarpışma şekli oluşturulamadı."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
@@ -5888,25 +5886,23 @@ msgstr "Üçlü Örüntü Yüzeyi Oluştur"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create a single convex collision shape for the scene root."
-msgstr ""
+msgstr "Sahne kökü için tek bir dışbükey çarpışma şekli oluşturulamaz."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Couldn't create a single convex collision shape."
-msgstr ""
+msgstr "Tek dışbükey çarpışma şekli oluşturulamadı."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Shape"
-msgstr "Dışbükey Şekil[ler] Oluştur"
+msgstr "Tekil Dışbükey Şekil Oluştur"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create multiple convex collision shapes for the scene root."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't create any collision shapes."
-msgstr "Klasör oluşturulamadı."
+msgstr "Herhangi bir çarpışma şekli oluşturulamadı."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
@@ -5977,6 +5973,8 @@ msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
+"Poligon bazlı bir çarpışma şekli oluştur.\n"
+"Bu en hassas (fakat en yavaş) çarpışma algılama seçeneğidir."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
