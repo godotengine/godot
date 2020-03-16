@@ -28,6 +28,17 @@
 				Adds a new node to the graph. The [code]position[/code] is used for display in the editor.
 			</description>
 		</method>
+		<method name="replace_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="node" type="AnimationNode">
+			</argument>
+			<description>
+				Replaces the node and keeps its transitions unchanged.
+			</description>
+		</method>
 		<method name="add_transition">
 			<return type="void">
 			</return>
