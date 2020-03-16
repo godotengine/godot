@@ -19,7 +19,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-02-18 15:09+0000\n"
+"PO-Revision-Date: 2020-03-16 09:43+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
@@ -28,7 +28,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.11\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -5958,7 +5958,6 @@ msgstr ""
 "Esta é a mais precisa (mas mais lenta) opção para deteção de colisão."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Collision Sibling"
 msgstr "Criar Irmãos Únicos de Colisão Convexa"
 
@@ -12362,7 +12361,7 @@ msgstr ""
 #: scene/3d/collision_shape.cpp
 msgid ""
 "ConcavePolygonShape doesn't support RigidBody in another mode than static."
-msgstr ""
+msgstr "ConcavePolygonShape apenas suporta RigidBody no modo estático."
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
