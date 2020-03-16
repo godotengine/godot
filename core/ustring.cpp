@@ -1402,7 +1402,7 @@ String String::utf8(const char *p_utf8, int p_len) {
 
 bool String::parse_utf8(const char *p_utf8, int p_len) {
 
-#define _UNICERROR(m_err) print_line("Unicode error: " + String(m_err));
+#define _UNICERROR(m_err) print_line("Unicode parsing error: " + String(m_err) + ". Is the string valid UTF-8?");
 
 	if (!p_utf8)
 		return true;
