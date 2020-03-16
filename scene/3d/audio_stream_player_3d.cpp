@@ -556,7 +556,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 								for (int i = 0; i < vol_index_max; i++) {
 
-									output.reverb_vol[i] = output.reverb_vol[i].linear_interpolate(center_frame, attenuation);
+									output.reverb_vol[i] = output.reverb_vol[i].lerp(center_frame, attenuation);
 								}
 							} else {
 								for (int i = 0; i < vol_index_max; i++) {
@@ -567,7 +567,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 							for (int i = 0; i < vol_index_max; i++) {
 
-								output.reverb_vol[i] = output.vol[i].linear_interpolate(output.reverb_vol[i] * attenuation, uniformity);
+								output.reverb_vol[i] = output.vol[i].lerp(output.reverb_vol[i] * attenuation, uniformity);
 								output.reverb_vol[i] *= area_send;
 							}
 

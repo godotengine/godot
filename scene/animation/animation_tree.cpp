@@ -958,7 +958,7 @@ void AnimationTree::_process_graph(float p_delta) {
 							if (err != OK)
 								continue;
 
-							t->loc = t->loc.linear_interpolate(loc, blend);
+							t->loc = t->loc.lerp(loc, blend);
 							if (t->rot_blend_accum == 0) {
 								t->rot = rot;
 								t->rot_blend_accum = blend;
@@ -967,7 +967,7 @@ void AnimationTree::_process_graph(float p_delta) {
 								t->rot = rot.slerp(t->rot, t->rot_blend_accum / rot_total).normalized();
 								t->rot_blend_accum = rot_total;
 							}
-							t->scale = t->scale.linear_interpolate(scale, blend);
+							t->scale = t->scale.lerp(scale, blend);
 						}
 
 					} break;

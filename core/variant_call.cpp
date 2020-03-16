@@ -362,7 +362,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM1R(Vector2, angle_to);
 	VCALL_LOCALMEM1R(Vector2, angle_to_point);
 	VCALL_LOCALMEM1R(Vector2, direction_to);
-	VCALL_LOCALMEM2R(Vector2, linear_interpolate);
+	VCALL_LOCALMEM2R(Vector2, lerp);
 	VCALL_LOCALMEM2R(Vector2, slerp);
 	VCALL_LOCALMEM4R(Vector2, cubic_interpolate);
 	VCALL_LOCALMEM2R(Vector2, move_toward);
@@ -426,7 +426,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Vector3, inverse);
 	VCALL_LOCALMEM1R(Vector3, snapped);
 	VCALL_LOCALMEM2R(Vector3, rotated);
-	VCALL_LOCALMEM2R(Vector3, linear_interpolate);
+	VCALL_LOCALMEM2R(Vector3, lerp);
 	VCALL_LOCALMEM2R(Vector3, slerp);
 	VCALL_LOCALMEM4R(Vector3, cubic_interpolate);
 	VCALL_LOCALMEM2R(Vector3, move_toward);
@@ -509,7 +509,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Color, to_rgba64);
 	VCALL_LOCALMEM0R(Color, inverted);
 	VCALL_LOCALMEM0R(Color, contrasted);
-	VCALL_LOCALMEM2R(Color, linear_interpolate);
+	VCALL_LOCALMEM2R(Color, lerp);
 	VCALL_LOCALMEM1R(Color, blend);
 	VCALL_LOCALMEM1R(Color, lightened);
 	VCALL_LOCALMEM1R(Color, darkened);
@@ -1801,7 +1801,7 @@ void register_variant_methods() {
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, posmod, FLOAT, "mod", varray());
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, posmodv, VECTOR2, "modv", varray());
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, project, VECTOR2, "b", varray());
-	ADDFUNC2R(VECTOR2, VECTOR2, Vector2, linear_interpolate, VECTOR2, "b", FLOAT, "t", varray());
+	ADDFUNC2R(VECTOR2, VECTOR2, Vector2, lerp, VECTOR2, "b", FLOAT, "t", varray());
 	ADDFUNC2R(VECTOR2, VECTOR2, Vector2, slerp, VECTOR2, "b", FLOAT, "t", varray());
 	ADDFUNC4R(VECTOR2, VECTOR2, Vector2, cubic_interpolate, VECTOR2, "b", VECTOR2, "pre_a", VECTOR2, "post_b", FLOAT, "t", varray());
 	ADDFUNC2R(VECTOR2, VECTOR2, Vector2, move_toward, VECTOR2, "to", FLOAT, "delta", varray());
@@ -1866,7 +1866,7 @@ void register_variant_methods() {
 	ADDFUNC0R(VECTOR3, VECTOR3, Vector3, inverse, varray());
 	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, snapped, VECTOR3, "by", varray());
 	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, rotated, VECTOR3, "axis", FLOAT, "phi", varray());
-	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, linear_interpolate, VECTOR3, "b", FLOAT, "t", varray());
+	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, lerp, VECTOR3, "b", FLOAT, "t", varray());
 	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, slerp, VECTOR3, "b", FLOAT, "t", varray());
 	ADDFUNC4R(VECTOR3, VECTOR3, Vector3, cubic_interpolate, VECTOR3, "b", VECTOR3, "pre_a", VECTOR3, "post_b", FLOAT, "t", varray());
 	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, move_toward, VECTOR3, "to", FLOAT, "delta", varray());
@@ -1925,7 +1925,7 @@ void register_variant_methods() {
 	ADDFUNC0R(COLOR, INT, Color, to_rgba64, varray());
 	ADDFUNC0R(COLOR, COLOR, Color, inverted, varray());
 	ADDFUNC0R(COLOR, COLOR, Color, contrasted, varray());
-	ADDFUNC2R(COLOR, COLOR, Color, linear_interpolate, COLOR, "b", FLOAT, "t", varray());
+	ADDFUNC2R(COLOR, COLOR, Color, lerp, COLOR, "b", FLOAT, "t", varray());
 	ADDFUNC1R(COLOR, COLOR, Color, blend, COLOR, "over", varray());
 	ADDFUNC1R(COLOR, COLOR, Color, lightened, FLOAT, "amount", varray());
 	ADDFUNC1R(COLOR, COLOR, Color, darkened, FLOAT, "amount", varray());

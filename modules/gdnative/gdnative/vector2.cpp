@@ -109,11 +109,11 @@ godot_real GDAPI godot_vector2_angle_to_point(const godot_vector2 *p_self, const
 	return self->angle_to_point(*to);
 }
 
-godot_vector2 GDAPI godot_vector2_linear_interpolate(const godot_vector2 *p_self, const godot_vector2 *p_b, const godot_real p_t) {
+godot_vector2 GDAPI godot_vector2_lerp(const godot_vector2 *p_self, const godot_vector2 *p_b, const godot_real p_t) {
 	godot_vector2 dest;
 	const Vector2 *self = (const Vector2 *)p_self;
 	const Vector2 *b = (const Vector2 *)p_b;
-	*((Vector2 *)&dest) = self->linear_interpolate(*b, p_t);
+	*((Vector2 *)&dest) = self->lerp(*b, p_t);
 	return dest;
 }
 

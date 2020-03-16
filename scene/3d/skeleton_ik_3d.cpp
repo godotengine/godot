@@ -294,7 +294,7 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 	update_chain(p_task->skeleton, &p_task->chain.chain_root);
 
 	if (p_use_magnet && p_task->chain.middle_chain_item) {
-		p_task->chain.magnet_position = p_task->chain.middle_chain_item->initial_transform.origin.linear_interpolate(p_magnet_position, blending_delta);
+		p_task->chain.magnet_position = p_task->chain.middle_chain_item->initial_transform.origin.lerp(p_magnet_position, blending_delta);
 		solve_simple(p_task, true);
 	}
 	solve_simple(p_task, false);

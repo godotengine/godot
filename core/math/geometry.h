@@ -117,8 +117,8 @@ public:
 		if (mub < 0) mub = 0;
 		if (mua > 1) mua = 1;
 		if (mub > 1) mub = 1;
-		c1 = p1.linear_interpolate(p2, mua);
-		c2 = q1.linear_interpolate(q2, mub);
+		c1 = p1.lerp(p2, mua);
+		c2 = q1.lerp(q2, mub);
 	}
 
 	static real_t get_closest_distance_between_segments(const Vector3 &p_from_a, const Vector3 &p_to_a, const Vector3 &p_from_b, const Vector3 &p_to_b) {

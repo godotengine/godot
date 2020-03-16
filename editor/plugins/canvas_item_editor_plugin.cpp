@@ -1437,13 +1437,13 @@ void CanvasItemEditor::_solve_IK(Node2D *leaf_node, Point2 target_position) {
 					Vector2 direction = (joints_pos[node_id + 1] - joints_pos[node_id]).normalized();
 					int len = E->get();
 					if (E == se->pre_drag_bones_length.front()) {
-						joints_pos[1] = joints_pos[1].linear_interpolate(joints_pos[0] + len * direction, solver_k);
+						joints_pos[1] = joints_pos[1].lerp(joints_pos[0] + len * direction, solver_k);
 					} else if (E == se->pre_drag_bones_length.back()) {
-						joints_pos[node_id] = joints_pos[node_id].linear_interpolate(joints_pos[node_id + 1] - len * direction, solver_k);
+						joints_pos[node_id] = joints_pos[node_id].lerp(joints_pos[node_id + 1] - len * direction, solver_k);
 					} else {
 						Vector2 center = (joints_pos[node_id + 1] + joints_pos[node_id]) / 2.0;
-						joints_pos[node_id] = joints_pos[node_id].linear_interpolate(center - (direction * len) / 2.0, solver_k);
-						joints_pos[node_id + 1] = joints_pos[node_id + 1].linear_interpolate(center + (direction * len) / 2.0, solver_k);
+						joints_pos[node_id] = joints_pos[node_id].lerp(center - (direction * len) / 2.0, solver_k);
+						joints_pos[node_id + 1] = joints_pos[node_id + 1].lerp(center + (direction * len) / 2.0, solver_k);
 					}
 					node_id++;
 				}
@@ -2698,7 +2698,7 @@ void CanvasItemEditor::_draw_smart_snapping() {
 
 void CanvasItemEditor::_draw_rulers() {
 	Color bg_color = get_theme_color("dark_color_2", "Editor");
-	Color graduation_color = get_theme_color("font_color", "Editor").linear_interpolate(bg_color, 0.5);
+	Color graduation_color = get_theme_color("font_color", "Editor").lerp(bg_color, 0.5);
 	Color font_color = get_theme_color("font_color", "Editor");
 	font_color.a = 0.8;
 	Ref<Font> font = get_theme_font("rulers", "EditorFonts");
@@ -3072,8 +3072,8 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 			Vector2 line_ends[4];
 			for (int i = 0; i < 4; i++) {
 				float anchor_val = (i >= 2) ? ANCHOR_END - anchors_values[i] : anchors_values[i];
-				line_starts[i] = Vector2::linear_interpolate(corners_pos[i], corners_pos[(i + 1) % 4], anchor_val);
-				line_ends[i] = Vector2::linear_interpolate(corners_pos[(i + 3) % 4], corners_pos[(i + 2) % 4], anchor_val);
+				line_starts[i] = corners_pos[i].lerp(corners_pos[(i + 1) % 4], anchor_val);
+				line_ends[i] = corners_pos[(i + 3) % 4].lerp(corners_pos[(i + 2) % 4], anchor_val);
 				anchor_snapped = anchors_values[i] == 0.0 || anchors_values[i] == 0.5 || anchors_values[i] == 1.0;
 				viewport->draw_line(line_starts[i], line_ends[i], anchor_snapped ? color_snapped : color_base, (i == dragged_anchor || (i + 3) % 4 == dragged_anchor) ? 2 : 1);
 			}

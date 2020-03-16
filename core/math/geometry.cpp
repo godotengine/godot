@@ -911,7 +911,7 @@ Vector<Plane> Geometry::build_sphere_planes(real_t p_radius, int p_lats, int p_l
 		for (int j = 1; j <= p_lats; j++) {
 
 			// FIXME: This is stupid.
-			Vector3 angle = normal.linear_interpolate(axis, j / (real_t)p_lats).normalized();
+			Vector3 angle = normal.lerp(axis, j / (real_t)p_lats).normalized();
 			Vector3 pos = angle * p_radius;
 			planes.push_back(Plane(pos, angle));
 			planes.push_back(Plane(pos * axis_neg, angle * axis_neg));
@@ -943,7 +943,7 @@ Vector<Plane> Geometry::build_capsule_planes(real_t p_radius, real_t p_height, i
 
 		for (int j = 1; j <= p_lats; j++) {
 
-			Vector3 angle = normal.linear_interpolate(axis, j / (real_t)p_lats).normalized();
+			Vector3 angle = normal.lerp(axis, j / (real_t)p_lats).normalized();
 			Vector3 pos = axis * p_height * 0.5 + angle * p_radius;
 			planes.push_back(Plane(pos, angle));
 			planes.push_back(Plane(pos * axis_neg, angle * axis_neg));

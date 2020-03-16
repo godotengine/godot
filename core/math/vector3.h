@@ -89,7 +89,7 @@ struct Vector3 {
 
 	/* Static Methods between 2 vector3s */
 
-	_FORCE_INLINE_ Vector3 linear_interpolate(const Vector3 &p_b, real_t p_t) const;
+	_FORCE_INLINE_ Vector3 lerp(const Vector3 &p_b, real_t p_t) const;
 	_FORCE_INLINE_ Vector3 slerp(const Vector3 &p_b, real_t p_t) const;
 	Vector3 cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_t) const;
 	Vector3 cubic_interpolaten(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_t) const;
@@ -206,7 +206,7 @@ Vector3 Vector3::round() const {
 	return Vector3(Math::round(x), Math::round(y), Math::round(z));
 }
 
-Vector3 Vector3::linear_interpolate(const Vector3 &p_b, real_t p_t) const {
+Vector3 Vector3::lerp(const Vector3 &p_b, real_t p_t) const {
 
 	return Vector3(
 			x + (p_t * (p_b.x - x)),
