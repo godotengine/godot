@@ -32,11 +32,14 @@
 
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/debugger/editor_debugger_server.h"
 #include "editor/editor_node.h"
 #include "editor/fileserver/editor_file_server.h"
 #include "scene/gui/menu_button.h"
 
 DebuggerEditorPlugin::DebuggerEditorPlugin(EditorNode *p_editor, MenuButton *p_debug_menu) {
+	EditorDebuggerServer::initialize();
+
 	ED_SHORTCUT("debugger/step_into", TTR("Step Into"), KEY_F11);
 	ED_SHORTCUT("debugger/step_over", TTR("Step Over"), KEY_F10);
 	ED_SHORTCUT("debugger/break", TTR("Break"));
@@ -96,6 +99,7 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(EditorNode *p_editor, MenuButton *p_d
 }
 
 DebuggerEditorPlugin::~DebuggerEditorPlugin() {
+	EditorDebuggerServer::deinitialize();
 	memdelete(file_server);
 }
 

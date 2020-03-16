@@ -270,6 +270,7 @@ public:
 	virtual Error export_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
 	virtual void get_platform_features(List<String> *r_features) = 0;
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) = 0;
+	virtual String get_debug_protocol() const { return "tcp://"; }
 
 	EditorExportPlatform();
 };
