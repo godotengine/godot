@@ -190,6 +190,10 @@ public:
 	BIND3(shader_set_default_texture_param, RID, const StringName &, RID)
 	BIND2RC(RID, shader_get_default_texture_param, RID, const StringName &)
 
+	BIND2(shader_add_custom_define, RID, const String &)
+	BIND2C(shader_get_custom_defines, RID, Vector<String> *)
+	BIND1(shader_clear_custom_defines, RID)
+
 	/* COMMON MATERIAL API */
 
 	BIND0R(RID, material_create)

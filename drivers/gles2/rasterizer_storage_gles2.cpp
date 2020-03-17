@@ -69,6 +69,8 @@ GLuint RasterizerStorageGLES2::system_fbo = 0;
 #define _EXT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT 0x8E8E
 #define _EXT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT 0x8E8F
 
+#define _GL_TEXTURE_EXTERNAL_OES 0x8D65
+
 #ifdef GLES_OVER_GL
 #define _GL_HALF_FLOAT_OES 0x140B
 #else
@@ -562,6 +564,10 @@ void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_
 			texture->target = GL_TEXTURE_2D;
 			texture->images.resize(1);
 		} break;
+		case VS::TEXTURE_TYPE_EXTERNAL: {
+			texture->target = _GL_TEXTURE_EXTERNAL_OES;
+			texture->images.resize(0);
+		} break;
 		case VS::TEXTURE_TYPE_CUBEMAP: {
 			texture->target = GL_TEXTURE_CUBE_MAP;
 			texture->images.resize(6);
@@ -578,44 +584,59 @@ void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_
 		}
 	}
 
-	texture->alloc_width = texture->width;
-	texture->alloc_height = texture->height;
-	texture->resize_to_po2 = false;
-	if (!config.support_npot_repeat_mipmap) {
-		int po2_width = next_power_of_2(p_width);
-		int po2_height = next_power_of_2(p_height);
+	if (p_type != VS::TEXTURE_TYPE_EXTERNAL) {
+		texture->alloc_width = texture->width;
+		texture->alloc_height = texture->height;
+		texture->resize_to_po2 = false;
+		if (!config.support_npot_repeat_mipmap) {
+			int po2_width = next_power_of_2(p_width);
+			int po2_height = next_power_of_2(p_height);
 
-		bool is_po2 = p_width == po2_width && p_height == po2_height;
+			bool is_po2 = p_width == po2_width && p_height == po2_height;
 
-		if (!is_po2 && (p_flags & VS::TEXTURE_FLAG_REPEAT || p_flags & VS::TEXTURE_FLAG_MIPMAPS)) {
+			if (!is_po2 && (p_flags & VS::TEXTURE_FLAG_REPEAT || p_flags & VS::TEXTURE_FLAG_MIPMAPS)) {
 
-			if (p_flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING) {
-				//not supported
-				ERR_PRINTS("Streaming texture for non power of 2 or has mipmaps on this hardware: " + texture->path + "'. Mipmaps and repeat disabled.");
-				texture->flags &= ~(VS::TEXTURE_FLAG_REPEAT | VS::TEXTURE_FLAG_MIPMAPS);
-			} else {
-				texture->alloc_height = po2_height;
-				texture->alloc_width = po2_width;
-				texture->resize_to_po2 = true;
+				if (p_flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING) {
+					//not supported
+					ERR_PRINT("Streaming texture for non power of 2 or has mipmaps on this hardware: " + texture->path + "'. Mipmaps and repeat disabled.");
+					texture->flags &= ~(VS::TEXTURE_FLAG_REPEAT | VS::TEXTURE_FLAG_MIPMAPS);
+				} else {
+					texture->alloc_height = po2_height;
+					texture->alloc_width = po2_width;
+					texture->resize_to_po2 = true;
+				}
 			}
 		}
+
+		Image::Format real_format;
+		_get_gl_image_and_format(Ref<Image>(),
+				texture->format,
+				texture->flags,
+				real_format,
+				format,
+				internal_format,
+				type,
+				compressed,
+				texture->resize_to_po2);
+
+		texture->gl_format_cache = format;
+		texture->gl_type_cache = type;
+		texture->gl_internal_format_cache = internal_format;
+		texture->data_size = 0;
+		texture->mipmaps = 1;
+
+		texture->compressed = compressed;
 	}
-
-	Image::Format real_format;
-	_get_gl_image_and_format(Ref<Image>(), texture->format, texture->flags, real_format, format, internal_format, type, compressed, texture->resize_to_po2);
-
-	texture->gl_format_cache = format;
-	texture->gl_type_cache = type;
-	texture->gl_internal_format_cache = internal_format;
-	texture->data_size = 0;
-	texture->mipmaps = 1;
-
-	texture->compressed = compressed;
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
 
-	if (p_flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING) {
+	if (p_type == VS::TEXTURE_TYPE_EXTERNAL) {
+		glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(texture->target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(texture->target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	} else if (p_flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING) {
 		//prealloc if video
 		glTexImage2D(texture->target, 0, internal_format, texture->alloc_width, texture->alloc_height, 0, format, type, NULL);
 	}
@@ -635,6 +656,7 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 	ERR_FAIL_COND(texture->render_target);
 	ERR_FAIL_COND(texture->format != p_image->get_format());
 	ERR_FAIL_COND(p_image.is_null());
+	ERR_FAIL_COND(texture->type == VS::TEXTURE_TYPE_EXTERNAL);
 
 	GLenum type;
 	GLenum format;
@@ -1624,6 +1646,7 @@ void RasterizerStorageGLES2::shader_get_param_list(RID p_shader, List<PropertyIn
 			} break;
 
 			case ShaderLanguage::TYPE_SAMPLER2D:
+			case ShaderLanguage::TYPE_SAMPLEREXT:
 			case ShaderLanguage::TYPE_ISAMPLER2D:
 			case ShaderLanguage::TYPE_USAMPLER2D: {
 				pi.type = Variant::OBJECT;
@@ -1678,6 +1701,34 @@ RID RasterizerStorageGLES2::shader_get_default_texture_param(RID p_shader, const
 	}
 
 	return E->get();
+}
+
+void RasterizerStorageGLES2::shader_add_custom_define(RID p_shader, const String &p_define) {
+
+	Shader *shader = shader_owner.get(p_shader);
+	ERR_FAIL_COND(!shader);
+
+	shader->shader->add_custom_define(p_define);
+
+	_shader_make_dirty(shader);
+}
+
+void RasterizerStorageGLES2::shader_get_custom_defines(RID p_shader, Vector<String> *p_defines) const {
+
+	Shader *shader = shader_owner.get(p_shader);
+	ERR_FAIL_COND(!shader);
+
+	shader->shader->get_custom_defines(p_defines);
+}
+
+void RasterizerStorageGLES2::shader_clear_custom_defines(RID p_shader) {
+
+	Shader *shader = shader_owner.get(p_shader);
+	ERR_FAIL_COND(!shader);
+
+	shader->shader->clear_custom_defines();
+
+	_shader_make_dirty(shader);
 }
 
 /* COMMON MATERIAL API */

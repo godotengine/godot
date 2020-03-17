@@ -262,6 +262,10 @@ public:
 	void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture) {}
 	RID shader_get_default_texture_param(RID p_shader, const StringName &p_name) const { return RID(); }
 
+	void shader_add_custom_define(RID p_shader, const String &p_define) {}
+	void shader_get_custom_defines(RID p_shader, Vector<String> *p_defines) const {}
+	void shader_clear_custom_defines(RID p_shader) {}
+
 	/* COMMON MATERIAL API */
 
 	RID material_create() { return RID(); }
