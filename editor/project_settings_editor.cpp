@@ -2006,6 +2006,8 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	device_index_label = l;
 
 	device_index = memnew(OptionButton);
+	device_index->set_clip_text(true);
+
 	vbc_right->add_child(device_index);
 
 	setting = false;
