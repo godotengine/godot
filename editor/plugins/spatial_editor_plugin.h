@@ -33,6 +33,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "editor/editor_scale.h"
 #include "scene/3d/immediate_geometry.h"
 #include "scene/3d/light.h"
 #include "scene/3d/visual_instance.h"
@@ -42,6 +43,7 @@ class Camera;
 class SpatialEditor;
 class EditorSpatialGizmoPlugin;
 class ViewportContainer;
+class SpatialEditorViewport;
 
 class EditorSpatialGizmo : public SpatialGizmo {
 
@@ -138,10 +140,48 @@ public:
 	~EditorSpatialGizmo();
 };
 
+class ViewportRotationControl : public Control {
+	GDCLASS(ViewportRotationControl, Control);
+
+	struct Axis2D {
+		Vector2 screen_point;
+		float z_axis = -99.0;
+		int axis = -1;
+	};
+
+	struct Axis2DCompare {
+		_FORCE_INLINE_ bool operator()(const Axis2D &l, const Axis2D &r) const {
+			return l.z_axis < r.z_axis;
+		}
+	};
+
+	SpatialEditorViewport *viewport = nullptr;
+	Vector<Color> axis_colors;
+	Vector<int> axis_menu_options;
+	bool orbiting = false;
+	int focused_axis = -2;
+
+	const float AXIS_CIRCLE_RADIUS = 8.0f * EDSCALE;
+
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
+	void _gui_input(Ref<InputEvent> p_event);
+	void _draw();
+	void _draw_axis(const Axis2D &p_axis);
+	void _get_sorted_axis(Vector<Axis2D> &r_axis);
+	void _update_focus();
+	void _on_mouse_exited();
+
+public:
+	void set_viewport(SpatialEditorViewport *p_viewport);
+};
+
 class SpatialEditorViewport : public Control {
 
 	GDCLASS(SpatialEditorViewport, Control);
 	friend class SpatialEditor;
+	friend class ViewportRotationControl;
 	enum {
 
 		VIEW_TOP,
@@ -168,7 +208,8 @@ class SpatialEditorViewport : public Control {
 		VIEW_DISPLAY_OVERDRAW,
 		VIEW_DISPLAY_SHADELESS,
 		VIEW_LOCK_ROTATION,
-		VIEW_CINEMATIC_PREVIEW
+		VIEW_CINEMATIC_PREVIEW,
+		VIEW_AUTO_ORTHOGONAL
 	};
 
 public:
@@ -188,6 +229,7 @@ private:
 	int index;
 	String name;
 	void _menu_option(int p_option);
+	void _set_auto_orthogonal();
 	Spatial *preview_node;
 	AABB *preview_bounds;
 	Vector<String> selected_files;
@@ -211,6 +253,7 @@ private:
 	Camera *camera;
 	bool transforming;
 	bool orthogonal;
+	bool auto_orthogonal;
 	bool lock_rotation;
 	float gizmo_scale;
 
@@ -219,9 +262,12 @@ private:
 
 	TextureRect *crosshair;
 	Label *info_label;
-	Label *fps_label;
 	Label *cinema_label;
 	Label *locked_label;
+
+	VBoxContainer *top_right_vbox;
+	ViewportRotationControl *rotation_control;
+	Label *fps_label;
 
 	struct _RayResult {
 
