@@ -2344,10 +2344,10 @@ Error _Directory::change_dir(String p_dir) {
 	ERR_FAIL_COND_V_MSG(!d, ERR_UNCONFIGURED, "Directory must be opened before use.");
 	return d->change_dir(p_dir);
 }
-String _Directory::get_current_dir(bool p_include_drive) {
+String _Directory::get_current_dir() {
 
 	ERR_FAIL_COND_V_MSG(!d, "", "Directory must be opened before use.");
-	return d->get_current_dir(p_include_drive);
+	return d->get_current_dir();
 }
 Error _Directory::make_dir(String p_dir) {
 
