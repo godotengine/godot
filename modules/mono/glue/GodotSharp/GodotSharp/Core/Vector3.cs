@@ -400,20 +400,20 @@ namespace Godot
             return left;
         }
 
-        public static Vector3 operator /(Vector3 vec, real_t scale)
+        public static Vector3 operator /(Vector3 vec, real_t divisor)
         {
-            vec.x /= scale;
-            vec.y /= scale;
-            vec.z /= scale;
+            vec.x /= divisor;
+            vec.y /= divisor;
+            vec.z /= divisor;
             return vec;
         }
 
-        public static Vector3 operator /(Vector3 left, Vector3 right)
+        public static Vector3 operator /(Vector3 vec, Vector3 divisorv)
         {
-            left.x /= right.x;
-            left.y /= right.y;
-            left.z /= right.z;
-            return left;
+            vec.x /= divisorv.x;
+            vec.y /= divisorv.y;
+            vec.z /= divisorv.z;
+            return vec;
         }
 
         public static Vector3 operator %(Vector3 vec, real_t divisor)

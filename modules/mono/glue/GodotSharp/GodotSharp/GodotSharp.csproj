@@ -67,6 +67,7 @@
     <Compile Include="Core\Plane.cs" />
     <Compile Include="Core\Quat.cs" />
     <Compile Include="Core\Rect2.cs" />
+    <Compile Include="Core\Rect2i.cs" />
     <Compile Include="Core\RID.cs" />
     <Compile Include="Core\SignalInfo.cs" />
     <Compile Include="Core\SignalAwaiter.cs" />
@@ -75,7 +76,9 @@
     <Compile Include="Core\Transform.cs" />
     <Compile Include="Core\Transform2D.cs" />
     <Compile Include="Core\Vector2.cs" />
+    <Compile Include="Core\Vector2i.cs" />
     <Compile Include="Core\Vector3.cs" />
+    <Compile Include="Core\Vector3i.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <!--
