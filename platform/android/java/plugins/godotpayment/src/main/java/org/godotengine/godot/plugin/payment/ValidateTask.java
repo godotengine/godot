@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-package org.godotengine.godot.payments;
+package org.godotengine.godot.plugin.payment;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -42,7 +42,7 @@ import org.json.JSONObject;
 abstract public class ValidateTask {
 
 	private Activity context;
-	private GodotPaymentInterface godotPayments;
+	private GodotPayment godotPayments;
 	private ProgressDialog dialog;
 	private String mSku;
 
@@ -79,7 +79,7 @@ abstract public class ValidateTask {
 		}
 	}
 
-	public ValidateTask(Activity context, GodotPaymentInterface godotPayments) {
+	public ValidateTask(Activity context, GodotPayment godotPayments) {
 		this.context = context;
 		this.godotPayments = godotPayments;
 	}

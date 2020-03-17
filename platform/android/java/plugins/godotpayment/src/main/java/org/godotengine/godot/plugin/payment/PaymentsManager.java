@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-package org.godotengine.godot.payments;
+package org.godotengine.godot.plugin.payment;
 
 import android.app.Activity;
 import android.content.ComponentName;
@@ -52,20 +52,13 @@ public class PaymentsManager {
 	public static final int REQUEST_CODE_FOR_PURCHASE = 0x1001;
 	private static boolean auto_consume = true;
 
-	private Activity activity;
+	private final Activity activity;
+	private final GodotPayment godotPayment;
 	IInAppBillingService mService;
 
-	public void setActivity(Activity activity) {
+	PaymentsManager(Activity activity, GodotPayment godotPayment) {
 		this.activity = activity;
-	}
-
-	public static PaymentsManager createManager(Activity activity) {
-		PaymentsManager manager = new PaymentsManager(activity);
-		return manager;
-	}
-
-	private PaymentsManager(Activity activity) {
-		this.activity = activity;
+		this.godotPayment = godotPayment;
 	}
 
 	public PaymentsManager initService() {
@@ -408,11 +401,5 @@ public class PaymentsManager {
 			}
 		}))
 				.start();
-	}
-
-	private GodotPaymentInterface godotPayment;
-
-	public void setBaseSingleton(GodotPaymentInterface godotPaymentInterface) {
-		this.godotPayment = godotPaymentInterface;
 	}
 }

@@ -98,7 +98,6 @@ import java.util.List;
 import java.util.Locale;
 import javax.microedition.khronos.opengles.GL10;
 import org.godotengine.godot.input.GodotEditText;
-import org.godotengine.godot.payments.PaymentsManager;
 import org.godotengine.godot.plugin.GodotPlugin;
 import org.godotengine.godot.plugin.GodotPluginRegistry;
 import org.godotengine.godot.utils.GodotNetUtils;
@@ -261,16 +260,12 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 	}
 	public ResultCallback result_callback;
 
-	private PaymentsManager mPaymentsManager = null;
-
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == PaymentsManager.REQUEST_CODE_FOR_PURCHASE) {
-			mPaymentsManager.processPurchaseResponse(resultCode, data);
-		} else if (result_callback != null) {
+		if (result_callback != null) {
 			result_callback.callback(requestCode, resultCode, data);
 			result_callback = null;
-		};
+		}
 
 		for (int i = 0; i < singleton_count; i++) {
 
@@ -279,7 +274,7 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
 			plugin.onMainActivityResult(requestCode, resultCode, data);
 		}
-	};
+	}
 
 	@Override
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
@@ -555,8 +550,6 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 
 		result_callback = null;
 
-		mPaymentsManager = PaymentsManager.createManager(this).initService();
-
 		godot_initialized = true;
 	}
 
@@ -713,7 +706,6 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 	@Override
 	protected void onDestroy() {
 
-		if (mPaymentsManager != null) mPaymentsManager.destroy();
 		for (int i = 0; i < singleton_count; i++) {
 			singletons[i].onMainDestroy();
 		}
@@ -1061,10 +1053,6 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 			}
 		});
 		return true;
-	}
-
-	public PaymentsManager getPaymentsManager() {
-		return mPaymentsManager;
 	}
 
 	public boolean requestPermission(String p_name) {

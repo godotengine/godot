@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  GodotPaymentInterface.java                                           */
+/*  PaymentsCache.java                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,70 +28,44 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-package org.godotengine.godot.payments;
+package org.godotengine.godot.plugin.payment;
 
-public interface GodotPaymentInterface {
-	void purchase(String sku, String transactionId);
+import android.content.Context;
+import android.content.SharedPreferences;
 
-	void consumeUnconsumedPurchases();
+public class PaymentsCache {
 
-	String getSignature();
+	public Context context;
 
-	void callbackSuccess(String ticket, String signature, String sku);
+	public PaymentsCache(Context context) {
+		this.context = context;
+	}
 
-	void callbackSuccessProductMassConsumed(String ticket, String signature, String sku);
+	public void setConsumableFlag(String set, String sku, Boolean flag) {
+		SharedPreferences sharedPref = context.getSharedPreferences("consumables_" + set, Context.MODE_PRIVATE);
+		SharedPreferences.Editor editor = sharedPref.edit();
+		editor.putBoolean(sku, flag);
+		editor.apply();
+	}
 
-	void callbackSuccessNoUnconsumedPurchases();
+	public boolean getConsumableFlag(String set, String sku) {
+		SharedPreferences sharedPref = context.getSharedPreferences(
+				"consumables_" + set, Context.MODE_PRIVATE);
+		return sharedPref.getBoolean(sku, false);
+	}
 
-	void callbackFailConsume(String message);
+	public void setConsumableValue(String set, String sku, String value) {
+		SharedPreferences sharedPref = context.getSharedPreferences("consumables_" + set, Context.MODE_PRIVATE);
+		SharedPreferences.Editor editor = sharedPref.edit();
+		editor.putString(sku, value);
+		//Log.d("XXX", "Setting asset: consumables_" + set + ":" + sku);
+		editor.apply();
+	}
 
-	void callbackFail(String message);
-
-	void callbackCancel();
-
-	void callbackAlreadyOwned(String sku);
-
-	int getPurchaseCallbackId();
-
-	void setPurchaseCallbackId(int purchaseCallbackId);
-
-	String getPurchaseValidationUrlPrefix();
-
-	void setPurchaseValidationUrlPrefix(String url);
-
-	String getAccessToken();
-
-	void setAccessToken(String accessToken);
-
-	void setTransactionId(String transactionId);
-
-	String getTransactionId();
-
-	// request purchased items are not consumed
-	void requestPurchased();
-
-	// callback for requestPurchased()
-	void callbackPurchased(String receipt, String signature, String sku);
-
-	void callbackDisconnected();
-
-	void callbackConnected();
-
-	// true if connected, false otherwise
-	boolean isConnected();
-
-	// consume item automatically after purchase. default is true.
-	void setAutoConsume(boolean autoConsume);
-
-	// consume a specific item
-	void consume(String sku);
-
-	// query in app item detail info
-	void querySkuDetails(String[] list);
-
-	void addSkuDetail(String itemJson);
-
-	void completeSkuDetail();
-
-	void errorSkuDetail(String errorMessage);
+	public String getConsumableValue(String set, String sku) {
+		SharedPreferences sharedPref = context.getSharedPreferences(
+				"consumables_" + set, Context.MODE_PRIVATE);
+		//Log.d("XXX", "Getting asset: consumables_" + set + ":" + sku);
+		return sharedPref.getString(sku, null);
+	}
 }
