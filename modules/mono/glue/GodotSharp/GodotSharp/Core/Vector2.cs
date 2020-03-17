@@ -76,11 +76,6 @@ namespace Godot
             }
         }
 
-        public real_t Cross(Vector2 b)
-        {
-            return x * b.y - y * b.x;
-        }
-
         public Vector2 Abs()
         {
             return new Vector2(Mathf.Abs(x), Mathf.Abs(y));
@@ -128,6 +123,11 @@ namespace Godot
             }
 
             return v;
+        }
+
+        public real_t Cross(Vector2 b)
+        {
+            return x * b.y - y * b.x;
         }
 
         public Vector2 CubicInterpolate(Vector2 b, Vector2 preA, Vector2 postB, real_t t)
@@ -234,7 +234,7 @@ namespace Godot
 
         public Vector2 Reflect(Vector2 n)
         {
-            return 2.0f * n * Dot(n) - this;
+            return 2 * Dot(n) * n - this;
         }
 
         public Vector2 Rotated(real_t phi)
@@ -352,18 +352,18 @@ namespace Godot
             return left;
         }
 
-        public static Vector2 operator /(Vector2 vec, real_t scale)
+        public static Vector2 operator /(Vector2 vec, real_t divisor)
         {
-            vec.x /= scale;
-            vec.y /= scale;
+            vec.x /= divisor;
+            vec.y /= divisor;
             return vec;
         }
 
-        public static Vector2 operator /(Vector2 left, Vector2 right)
+        public static Vector2 operator /(Vector2 vec, Vector2 divisorv)
         {
-            left.x /= right.x;
-            left.y /= right.y;
-            return left;
+            vec.x /= divisorv.x;
+            vec.y /= divisorv.y;
+            return vec;
         }
 
         public static Vector2 operator %(Vector2 vec, real_t divisor)
