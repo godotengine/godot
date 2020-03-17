@@ -88,6 +88,11 @@ private:
 	PopupMenu *item_menu;
 
 	EditorFileDialog *file_dialog;
+	enum FileDialogPurpose {
+		SAVE_MONITORS_CSV,
+		SAVE_VRAM_CSV,
+	};
+	FileDialogPurpose file_dialog_purpose;
 
 	int error_count;
 	int warning_count;
@@ -121,6 +126,7 @@ private:
 
 	Tree *vmem_tree;
 	Button *vmem_refresh;
+	Button *vmem_export;
 	LineEdit *vmem_total;
 
 	Tree *stack_dump;
@@ -160,6 +166,7 @@ private:
 	void _remote_object_property_updated(ObjectID p_id, const String &p_property);
 
 	void _video_mem_request();
+	void _video_mem_export();
 
 	int _get_node_path_cache(const NodePath &p_path);
 
