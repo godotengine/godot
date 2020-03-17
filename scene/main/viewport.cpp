@@ -2954,7 +2954,7 @@ String Viewport::get_configuration_warning() const {
 	}*/
 
 	if (size.x == 0 || size.y == 0) {
-		return TTR("This viewport can't render anything.\nConsider increasing the size.");
+		return TTR("Viewport size must be greater than 0 to render anything.");
 	}
 	return String();
 }
