@@ -66,6 +66,16 @@ int DirAccess::get_current_drive() {
 	return 0;
 }
 
+bool DirAccess::drives_are_shortcuts() {
+
+	return false;
+}
+
+String DirAccess::get_current_dir_without_drive() {
+
+	return get_current_dir();
+}
+
 static Error _erase_recursive(DirAccess *da) {
 
 	List<String> dirs;
