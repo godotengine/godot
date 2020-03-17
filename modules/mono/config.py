@@ -9,7 +9,7 @@ def configure(env):
     env.use_ptrcall = True
     env.add_module_version_string('mono')
 
-    from SCons.Script import BoolVariable, PathVariable, Variables
+    from SCons.Script import BoolVariable, PathVariable, Variables, Help
 
     envvars = Variables()
     envvars.Add(PathVariable('mono_prefix', 'Path to the mono installation directory for the target platform and architecture', '', PathVariable.PathAccept))
@@ -18,6 +18,7 @@ def configure(env):
     envvars.Add(BoolVariable('copy_mono_root', 'Make a copy of the mono installation directory to bundle with the editor', False))
     envvars.Add(BoolVariable('xbuild_fallback', 'If MSBuild is not found, fallback to xbuild', False))
     envvars.Update(env)
+    Help(envvars.GenerateHelpText(env))
 
     if env['platform'] == 'javascript':
         # Mono wasm already has zlib builtin, so we need this workaround to avoid symbol collisions
