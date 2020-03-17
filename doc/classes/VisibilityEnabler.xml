@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		The VisibilityEnabler will disable [RigidBody] and [AnimationPlayer] nodes when they are not visible. It will only affect other nodes within the same scene as the VisibilityEnabler itself.
+		Note that VisibilityEnabler will not affect nodes added after scene initialization.
 	</description>
 	<tutorials>
 	</tutorials>
