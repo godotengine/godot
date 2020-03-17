@@ -1687,13 +1687,11 @@ void LineEdit::update_cached_width() {
 }
 
 void LineEdit::update_placeholder_width() {
-	if ((max_length <= 0) || (placeholder_translated.length() <= max_length)) {
-		Ref<Font> font = get_font("font");
-		cached_placeholder_width = 0;
-		if (font != NULL) {
-			for (int i = 0; i < placeholder_translated.length(); i++) {
-				cached_placeholder_width += font->get_char_size(placeholder_translated[i]).width;
-			}
+	Ref<Font> font = get_font("font");
+	cached_placeholder_width = 0;
+	if (font != NULL) {
+		for (int i = 0; i < placeholder_translated.length(); i++) {
+			cached_placeholder_width += font->get_char_size(placeholder_translated[i]).width;
 		}
 	}
 }
