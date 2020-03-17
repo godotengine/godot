@@ -77,11 +77,8 @@
 		<method name="get_current_dir">
 			<return type="String">
 			</return>
-			<argument index="0" name="include_drive" type="bool" default="true">
-			</argument>
 			<description>
 				Returns the absolute path to the currently opened directory (e.g. [code]res://folder[/code] or [code]C:\tmp\folder[/code]).
-				On Windows, if [code]include_drive[/code] is [code]false[/code], the leading drive specificator is omitted from the returned value (e.g. [code]\tmp\folder[/code]).
 			</description>
 		</method>
 		<method name="get_current_drive">
