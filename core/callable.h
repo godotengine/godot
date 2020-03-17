@@ -84,6 +84,7 @@ public:
 	Object *get_object() const;
 	ObjectID get_object_id() const;
 	StringName get_method() const;
+	CallableCustom *get_custom() const;
 
 	uint32_t hash() const;
 

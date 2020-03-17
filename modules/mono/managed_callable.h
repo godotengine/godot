@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  thread_local.cpp                                                     */
+/*  managed_callable.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,80 +28,52 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "thread_local.h"
+#ifndef MANAGED_CALLABLE_H
+#define MANAGED_CALLABLE_H
 
-#ifdef WINDOWS_ENABLED
-#include <windows.h>
-#else
-#include <pthread.h>
+#include <mono/metadata/object.h>
+
+#include "core/callable.h"
+#include "core/os/mutex.h"
+#include "core/self_list.h"
+
+#include "mono_gc_handle.h"
+#include "mono_gd/gd_mono_method.h"
+
+class ManagedCallable : public CallableCustom {
+	friend class CSharpLanguage;
+	Ref<MonoGCHandle> delegate_handle;
+	GDMonoMethod *delegate_invoke;
+
+#ifdef GD_MONO_HOT_RELOAD
+	SelfList<ManagedCallable> self_instance = this;
+	static SelfList<ManagedCallable>::List instances;
+	static Map<ManagedCallable *, Array> instances_pending_reload;
+	static Mutex instances_mutex;
 #endif
 
-#include "core/os/memory.h"
-#include "core/print_string.h"
+public:
+	uint32_t hash() const override;
+	String get_as_text() const override;
+	CompareEqualFunc get_compare_equal_func() const override;
+	CompareLessFunc get_compare_less_func() const override;
+	ObjectID get_object() const override;
+	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 
-struct ThreadLocalStorage::Impl {
+	_FORCE_INLINE_ MonoDelegate *get_delegate() { return (MonoDelegate *)delegate_handle->get_target(); }
 
-#ifdef WINDOWS_ENABLED
-	DWORD dwFlsIndex;
-#else
-	pthread_key_t key;
+	void set_delegate(MonoDelegate *p_delegate);
+
+	static bool compare_equal(const CallableCustom *p_a, const CallableCustom *p_b);
+	static bool compare_less(const CallableCustom *p_a, const CallableCustom *p_b);
+
+	static constexpr CompareEqualFunc compare_equal_func_ptr = &ManagedCallable::compare_equal;
+	static constexpr CompareEqualFunc compare_less_func_ptr = &ManagedCallable::compare_less;
+
+	ManagedCallable(MonoDelegate *p_delegate);
+#ifdef GD_MONO_HOT_RELOAD
+	~ManagedCallable();
 #endif
-
-	void *get_value() const {
-#ifdef WINDOWS_ENABLED
-		return FlsGetValue(dwFlsIndex);
-#else
-		return pthread_getspecific(key);
-#endif
-	}
-
-	void set_value(void *p_value) const {
-#ifdef WINDOWS_ENABLED
-		FlsSetValue(dwFlsIndex, p_value);
-#else
-		pthread_setspecific(key, p_value);
-#endif
-	}
-
-#ifdef WINDOWS_ENABLED
-#define _CALLBACK_FUNC_ __stdcall
-#else
-#define _CALLBACK_FUNC_
-#endif
-
-	Impl(void(_CALLBACK_FUNC_ *p_destr_callback_func)(void *)) {
-#ifdef WINDOWS_ENABLED
-		dwFlsIndex = FlsAlloc(p_destr_callback_func);
-		ERR_FAIL_COND(dwFlsIndex == FLS_OUT_OF_INDEXES);
-#else
-		pthread_key_create(&key, p_destr_callback_func);
-#endif
-	}
-
-	~Impl() {
-#ifdef WINDOWS_ENABLED
-		FlsFree(dwFlsIndex);
-#else
-		pthread_key_delete(key);
-#endif
-	}
 };
 
-void *ThreadLocalStorage::get_value() const {
-	return pimpl->get_value();
-}
-
-void ThreadLocalStorage::set_value(void *p_value) const {
-	pimpl->set_value(p_value);
-}
-
-void ThreadLocalStorage::alloc(void(_CALLBACK_FUNC_ *p_destr_callback)(void *)) {
-	pimpl = memnew(ThreadLocalStorage::Impl(p_destr_callback));
-}
-
-#undef _CALLBACK_FUNC_
-
-void ThreadLocalStorage::free() {
-	memdelete(pimpl);
-	pimpl = NULL;
-}
+#endif // MANAGED_CALLABLE_H

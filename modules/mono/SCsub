@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import build_scripts.tls_configure as tls_configure
 import build_scripts.mono_configure as mono_configure
 
 Import('env')
@@ -23,12 +22,6 @@ if env_mono['mono_glue']:
 
 if env_mono['tools'] or env_mono['target'] != 'release':
     env_mono.Append(CPPDEFINES=['GD_MONO_HOT_RELOAD'])
-
-# Configure Thread Local Storage
-
-conf = Configure(env_mono)
-tls_configure.configure(conf)
-env_mono = conf.Finish()
 
 # Configure Mono
 
