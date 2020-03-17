@@ -350,7 +350,7 @@ Error HTTPClient::poll() {
 							handshaking = true;
 						} else {
 							// We are already handshaking, which means we can use your already active SSL connection
-							ssl = static_cast<Ref<StreamPeerSSL> >(connection);
+							ssl = static_cast<Ref<StreamPeerSSL>>(connection);
 							if (ssl.is_null()) {
 								close();
 								status = STATUS_SSL_HANDSHAKE_ERROR;

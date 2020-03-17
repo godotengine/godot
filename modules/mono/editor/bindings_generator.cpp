@@ -2484,7 +2484,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		List<String> constants;
 		ClassDB::get_integer_constant_list(type_cname, &constants, true);
 
-		const HashMap<StringName, List<StringName> > &enum_map = class_info->enum_map;
+		const HashMap<StringName, List<StringName>> &enum_map = class_info->enum_map;
 		const StringName *k = NULL;
 
 		while ((k = enum_map.next(k))) {

@@ -80,7 +80,7 @@ void thread_process_array(uint32_t p_elements, C *p_instance, M p_method, U p_us
 	threads.resize(OS::get_singleton()->get_processor_count());
 
 	for (int i = 0; i < threads.size(); i++) {
-		threads.write[i] = Thread::create(process_array_thread<ThreadArrayProcessData<C, U> >, &data);
+		threads.write[i] = Thread::create(process_array_thread<ThreadArrayProcessData<C, U>>, &data);
 	}
 
 	for (int i = 0; i < threads.size(); i++) {

@@ -157,7 +157,7 @@ private:
 
 	List<ObjectID> delete_queue;
 
-	Map<UGCall, Vector<Variant> > unique_group_calls;
+	Map<UGCall, Vector<Variant>> unique_group_calls;
 	bool ugc_locked;
 	void _flush_ugc();
 
@@ -181,7 +181,7 @@ private:
 	void _change_scene(Node *p_to);
 	//void _call_group(uint32_t p_call_flags,const StringName& p_group,const StringName& p_function,const Variant& p_arg1,const Variant& p_arg2);
 
-	List<Ref<SceneTreeTimer> > timers;
+	List<Ref<SceneTreeTimer>> timers;
 
 	///network///
 

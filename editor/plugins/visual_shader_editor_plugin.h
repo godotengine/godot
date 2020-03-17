@@ -228,7 +228,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _copy_nodes();
 	void _paste_nodes(bool p_use_custom_position = false, const Vector2 &p_custom_position = Vector2());
 
-	Vector<Ref<VisualShaderNodePlugin> > plugins;
+	Vector<Ref<VisualShaderNodePlugin>> plugins;
 
 	void _mode_selected(int p_id);
 	void _rebuild();

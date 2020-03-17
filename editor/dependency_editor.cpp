@@ -63,7 +63,7 @@ void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button) {
 	search->popup_centered_ratio(0.65); // So it doesn't completely cover the dialog below it.
 }
 
-void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<String, Map<String, String> > &candidates) {
+void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<String, Map<String, String>> &candidates) {
 
 	for (int i = 0; i < efsd->get_subdir_count(); i++) {
 		_fix_and_find(efsd->get_subdir(i), candidates);
@@ -124,7 +124,7 @@ void DependencyEditor::_fix_all() {
 	if (!EditorFileSystem::get_singleton()->get_filesystem())
 		return;
 
-	Map<String, Map<String, String> > candidates;
+	Map<String, Map<String, String>> candidates;
 
 	for (List<String>::Element *E = missing.front(); E; E = E->next()) {
 
@@ -140,7 +140,7 @@ void DependencyEditor::_fix_all() {
 
 	Map<String, String> remaps;
 
-	for (Map<String, Map<String, String> >::Element *E = candidates.front(); E; E = E->next()) {
+	for (Map<String, Map<String, String>>::Element *E = candidates.front(); E; E = E->next()) {
 
 		for (Map<String, String>::Element *F = E->get().front(); F; F = F->next()) {
 

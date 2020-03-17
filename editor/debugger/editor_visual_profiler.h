@@ -146,7 +146,7 @@ public:
 
 	void clear();
 
-	Vector<Vector<String> > get_data_as_csv() const;
+	Vector<Vector<String>> get_data_as_csv() const;
 
 	EditorVisualProfiler();
 };

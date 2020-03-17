@@ -230,8 +230,8 @@ void SceneDebugger::remove_from_cache(const String &p_filename, Node *p_node) {
 	if (!debugger)
 		return;
 
-	Map<String, Set<Node *> > &edit_cache = debugger->live_scene_edit_cache;
-	Map<String, Set<Node *> >::Element *E = edit_cache.find(p_filename);
+	Map<String, Set<Node *>> &edit_cache = debugger->live_scene_edit_cache;
+	Map<String, Set<Node *>>::Element *E = edit_cache.find(p_filename);
 	if (E) {
 		E->get().erase(p_node);
 		if (E->get().size() == 0) {
@@ -239,8 +239,8 @@ void SceneDebugger::remove_from_cache(const String &p_filename, Node *p_node) {
 		}
 	}
 
-	Map<Node *, Map<ObjectID, Node *> > &remove_list = debugger->live_edit_remove_list;
-	Map<Node *, Map<ObjectID, Node *> >::Element *F = remove_list.find(p_node);
+	Map<Node *, Map<ObjectID, Node *>> &remove_list = debugger->live_edit_remove_list;
+	Map<Node *, Map<ObjectID, Node *>>::Element *F = remove_list.find(p_node);
 	if (F) {
 		for (Map<ObjectID, Node *>::Element *G = F->get().front(); G; G = G->next()) {
 
@@ -293,8 +293,8 @@ SceneDebuggerObject::SceneDebuggerObject(ObjectID p_id) {
 }
 
 void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInstance *p_instance) {
-	typedef Map<const Script *, Set<StringName> > ScriptMemberMap;
-	typedef Map<const Script *, Map<StringName, Variant> > ScriptConstantsMap;
+	typedef Map<const Script *, Set<StringName>> ScriptMemberMap;
+	typedef Map<const Script *, Map<StringName, Variant>> ScriptConstantsMap;
 
 	ScriptMemberMap members;
 	if (p_instance) {
@@ -519,7 +519,7 @@ void LiveEditor::_node_set_func(int p_id, const StringName &p_prop, const Varian
 	if (scene_tree->root->has_node(live_edit_root))
 		base = scene_tree->root->get_node(live_edit_root);
 
-	Map<String, Set<Node *> >::Element *E = live_scene_edit_cache.find(live_edit_scene);
+	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
 		return; //scene not editable
 
@@ -557,7 +557,7 @@ void LiveEditor::_node_call_func(int p_id, const StringName &p_method, VARIANT_A
 	if (scene_tree->root->has_node(live_edit_root))
 		base = scene_tree->root->get_node(live_edit_root);
 
-	Map<String, Set<Node *> >::Element *E = live_scene_edit_cache.find(live_edit_scene);
+	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
 		return; //scene not editable
 
@@ -630,7 +630,7 @@ void LiveEditor::_create_node_func(const NodePath &p_parent, const String &p_typ
 	if (scene_tree->root->has_node(live_edit_root))
 		base = scene_tree->root->get_node(live_edit_root);
 
-	Map<String, Set<Node *> >::Element *E = live_scene_edit_cache.find(live_edit_scene);
+	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
 		return; //scene not editable
 
@@ -668,7 +668,7 @@ void LiveEditor::_instance_node_func(const NodePath &p_parent, const String &p_p
 	if (scene_tree->root->has_node(live_edit_root))
 		base = scene_tree->root->get_node(live_edit_root);
 
-	Map<String, Set<Node *> >::Element *E = live_scene_edit_cache.find(live_edit_scene);
+	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
 		return; //scene not editable
 
@@ -701,7 +701,7 @@ void LiveEditor::_remove_node_func(const NodePath &p_at) {
 	if (scene_tree->root->has_node(live_edit_root))
 		base = scene_tree->root->get_node(live_edit_root);
 
-	Map<String, Set<Node *> >::Element *E = live_scene_edit_cache.find(live_edit_scene);
+	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
 		return; //scene not editable
 
@@ -732,7 +732,7 @@ void LiveEditor::_remove_and_keep_node_func(const NodePath &p_at, ObjectID p_kee
 	if (scene_tree->root->has_node(live_edit_root))
 		base = scene_tree->root->get_node(live_edit_root);
 
-	Map<String, Set<Node *> >::Element *E = live_scene_edit_cache.find(live_edit_scene);
+	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
 		return; //scene not editable
 
@@ -766,7 +766,7 @@ void LiveEditor::_restore_node_func(ObjectID p_id, const NodePath &p_at, int p_a
 	if (scene_tree->root->has_node(live_edit_root))
 		base = scene_tree->root->get_node(live_edit_root);
 
-	Map<String, Set<Node *> >::Element *E = live_scene_edit_cache.find(live_edit_scene);
+	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
 		return; //scene not editable
 
@@ -783,7 +783,7 @@ void LiveEditor::_restore_node_func(ObjectID p_id, const NodePath &p_at, int p_a
 			continue;
 		Node *n2 = n->get_node(p_at);
 
-		Map<Node *, Map<ObjectID, Node *> >::Element *EN = live_edit_remove_list.find(n);
+		Map<Node *, Map<ObjectID, Node *>>::Element *EN = live_edit_remove_list.find(n);
 
 		if (!EN)
 			continue;
@@ -812,7 +812,7 @@ void LiveEditor::_duplicate_node_func(const NodePath &p_at, const String &p_new_
 	if (scene_tree->root->has_node(live_edit_root))
 		base = scene_tree->root->get_node(live_edit_root);
 
-	Map<String, Set<Node *> >::Element *E = live_scene_edit_cache.find(live_edit_scene);
+	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
 		return; //scene not editable
 
@@ -845,7 +845,7 @@ void LiveEditor::_reparent_node_func(const NodePath &p_at, const NodePath &p_new
 	if (scene_tree->root->has_node(live_edit_root))
 		base = scene_tree->root->get_node(live_edit_root);
 
-	Map<String, Set<Node *> >::Element *E = live_scene_edit_cache.find(live_edit_scene);
+	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
 		return; //scene not editable
 

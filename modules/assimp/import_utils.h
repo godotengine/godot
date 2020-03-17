@@ -341,7 +341,7 @@ public:
 	  */
 	static Ref<Image> load_image(ImportState &state, const aiScene *p_scene, String p_path) {
 
-		Map<String, Ref<Image> >::Element *match = state.path_to_image_cache.find(p_path);
+		Map<String, Ref<Image>>::Element *match = state.path_to_image_cache.find(p_path);
 
 		// if our cache contains this image then don't bother
 		if (match) {

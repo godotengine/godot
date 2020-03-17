@@ -113,8 +113,8 @@ private:
 	NodePath live_edit_root;
 	String live_edit_scene;
 
-	Map<String, Set<Node *> > live_scene_edit_cache;
-	Map<Node *, Map<ObjectID, Node *> > live_edit_remove_list;
+	Map<String, Set<Node *>> live_scene_edit_cache;
+	Map<Node *, Map<ObjectID, Node *>> live_edit_remove_list;
 
 	void _send_tree();
 

@@ -40,7 +40,7 @@ class ConfigFile : public Reference {
 
 	GDCLASS(ConfigFile, Reference);
 
-	OrderedHashMap<String, OrderedHashMap<String, Variant> > values;
+	OrderedHashMap<String, OrderedHashMap<String, Variant>> values;
 
 	PackedStringArray _get_sections() const;
 	PackedStringArray _get_section_keys(const String &p_section) const;

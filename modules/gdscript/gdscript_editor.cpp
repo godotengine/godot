@@ -299,10 +299,10 @@ void GDScriptLanguage::debug_get_stack_level_locals(int p_level, List<String> *p
 
 	GDScriptFunction *f = _call_stack[l].function;
 
-	List<Pair<StringName, int> > locals;
+	List<Pair<StringName, int>> locals;
 
 	f->debug_get_stack_member_state(*_call_stack[l].line, &locals);
-	for (List<Pair<StringName, int> >::Element *E = locals.front(); E; E = E->next()) {
+	for (List<Pair<StringName, int>>::Element *E = locals.front(); E; E = E->next()) {
 
 		p_locals->push_back(E->get().first);
 		p_values->push_back(_call_stack[l].stack[E->get().second]);
@@ -351,7 +351,7 @@ void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> 
 	const Map<StringName, int> &name_idx = GDScriptLanguage::get_singleton()->get_global_map();
 	const Variant *globals = GDScriptLanguage::get_singleton()->get_global_array();
 
-	List<Pair<String, Variant> > cinfo;
+	List<Pair<String, Variant>> cinfo;
 	get_public_constants(&cinfo);
 
 	for (const Map<StringName, int>::Element *E = name_idx.front(); E; E = E->next()) {
@@ -360,7 +360,7 @@ void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> 
 			continue;
 
 		bool is_script_constant = false;
-		for (List<Pair<String, Variant> >::Element *CE = cinfo.front(); CE; CE = CE->next()) {
+		for (List<Pair<String, Variant>>::Element *CE = cinfo.front(); CE; CE = CE->next()) {
 			if (CE->get().first == E->key()) {
 				is_script_constant = true;
 				break;
@@ -434,7 +434,7 @@ void GDScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const
 	}
 }
 
-void GDScriptLanguage::get_public_constants(List<Pair<String, Variant> > *p_constants) const {
+void GDScriptLanguage::get_public_constants(List<Pair<String, Variant>> *p_constants) const {
 
 	Pair<String, Variant> pi;
 	pi.first = "PI";
@@ -1972,7 +1972,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionContext &p_context
 						}
 					}
 					if (!p_only_functions) {
-						for (const Map<StringName, Ref<GDScript> >::Element *E = script->get_subclasses().front(); E; E = E->next()) {
+						for (const Map<StringName, Ref<GDScript>>::Element *E = script->get_subclasses().front(); E; E = E->next()) {
 							ScriptCodeCompletionOption option(E->key().operator String(), ScriptCodeCompletionOption::KIND_CLASS);
 							r_result.insert(option.display, option);
 						}

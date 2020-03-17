@@ -98,8 +98,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	VkDevice device;
 
-	Map<RID, Set<RID> > dependency_map; //IDs to IDs that depend on it
-	Map<RID, Set<RID> > reverse_dependency_map; //same as above, but in reverse
+	Map<RID, Set<RID>> dependency_map; //IDs to IDs that depend on it
+	Map<RID, Set<RID>> reverse_dependency_map; //same as above, but in reverse
 
 	void _add_dependency(RID p_id, RID p_depends_on);
 	void _free_dependencies(RID p_id);
@@ -602,7 +602,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		uint32_t usage;
 	};
 
-	Map<DescriptorPoolKey, Set<DescriptorPool *> > descriptor_pools;
+	Map<DescriptorPoolKey, Set<DescriptorPool *>> descriptor_pools;
 	uint32_t max_descriptors_per_pool;
 
 	DescriptorPool *_descriptor_pool_allocate(const DescriptorPoolKey &p_key);
@@ -968,7 +968,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	void _free_rids(T &p_owner, const char *p_type);
 
 public:
-	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t> > &p_data = Vector<Vector<uint8_t> >());
+	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>());
 	virtual RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
 
 	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type = TEXTURE_SLICE_2D);

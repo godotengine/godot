@@ -108,7 +108,7 @@ class BitmapFont : public Font {
 	GDCLASS(BitmapFont, Font);
 	RES_BASE_EXTENSION("font");
 
-	Vector<Ref<Texture2D> > textures;
+	Vector<Ref<Texture2D>> textures;
 
 public:
 	struct Character {

@@ -48,7 +48,7 @@ static const bool default_reloadable = true;
 // Defined in gdnative_api_struct.gen.cpp
 extern const godot_gdnative_core_api_struct api_struct;
 
-Map<String, Vector<Ref<GDNative> > > GDNativeLibrary::loaded_libraries;
+Map<String, Vector<Ref<GDNative>>> GDNativeLibrary::loaded_libraries;
 
 GDNativeLibrary::GDNativeLibrary() {
 	config_file.instance();
@@ -373,7 +373,7 @@ bool GDNative::initialize() {
 	initialized = true;
 
 	if (library->should_load_once() && !GDNativeLibrary::loaded_libraries.has(lib_path)) {
-		Vector<Ref<GDNative> > gdnatives;
+		Vector<Ref<GDNative>> gdnatives;
 		gdnatives.resize(1);
 		gdnatives.write[0] = Ref<GDNative>(this);
 		GDNativeLibrary::loaded_libraries.insert(lib_path, gdnatives);
@@ -390,7 +390,7 @@ bool GDNative::terminate() {
 	}
 
 	if (library->should_load_once()) {
-		Vector<Ref<GDNative> > *gdnatives = &GDNativeLibrary::loaded_libraries[library->get_current_library_path()];
+		Vector<Ref<GDNative>> *gdnatives = &GDNativeLibrary::loaded_libraries[library->get_current_library_path()];
 		if (gdnatives->size() > 1) {
 			// there are other GDNative's still using this library, so we actually don't terminate
 			gdnatives->erase(Ref<GDNative>(this));

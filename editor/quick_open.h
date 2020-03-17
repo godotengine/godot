@@ -49,8 +49,8 @@ class EditorQuickOpen : public ConfirmationDialog {
 	void _update_search();
 
 	void _sbox_input(const Ref<InputEvent> &p_ie);
-	void _parse_fs(EditorFileSystemDirectory *efsd, Vector<Pair<String, Ref<Texture2D> > > &list);
-	Vector<Pair<String, Ref<Texture2D> > > _sort_fs(Vector<Pair<String, Ref<Texture2D> > > &list);
+	void _parse_fs(EditorFileSystemDirectory *efsd, Vector<Pair<String, Ref<Texture2D>>> &list);
+	Vector<Pair<String, Ref<Texture2D>>> _sort_fs(Vector<Pair<String, Ref<Texture2D>>> &list);
 	float _path_cmp(String search, String path) const;
 
 	void _confirmed();

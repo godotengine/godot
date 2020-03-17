@@ -576,7 +576,7 @@ public:
 			bool tex_builtin_check;
 			StringName tex_builtin;
 
-			Map<StringName, Set<int> > tex_argument_connect;
+			Map<StringName, Set<int>> tex_argument_connect;
 		};
 
 		StringName name;

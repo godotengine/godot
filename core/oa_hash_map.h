@@ -48,7 +48,7 @@
  */
 template <class TKey, class TValue,
 		class Hasher = HashMapHasherDefault,
-		class Comparator = HashMapComparatorDefault<TKey> >
+		class Comparator = HashMapComparatorDefault<TKey>>
 class OAHashMap {
 
 private:

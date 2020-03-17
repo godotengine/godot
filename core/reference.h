@@ -285,7 +285,7 @@ public:
 #ifdef PTRCALL_ENABLED
 
 template <class T>
-struct PtrToArg<Ref<T> > {
+struct PtrToArg<Ref<T>> {
 
 	_FORCE_INLINE_ static Ref<T> convert(const void *p_ptr) {
 
@@ -312,7 +312,7 @@ struct PtrToArg<const Ref<T> &> {
 #ifdef DEBUG_METHODS_ENABLED
 
 template <class T>
-struct GetTypeInfo<Ref<T> > {
+struct GetTypeInfo<Ref<T>> {
 	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 
