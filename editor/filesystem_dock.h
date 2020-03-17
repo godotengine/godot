@@ -210,8 +210,8 @@ private:
 	void _update_favorites_list_after_move(const Map<String, String> &p_files_renames, const Map<String, String> &p_folders_renames) const;
 	void _update_project_settings_after_move(const Map<String, String> &p_renames) const;
 
-	void _file_deleted(String p_file);
-	void _folder_deleted(String p_folder);
+	void _file_removed(String p_file);
+	void _folder_removed(String p_folder);
 	void _files_moved(String p_old_file, String p_new_file);
 	void _folder_moved(String p_old_folder, String p_new_folder);
 
