@@ -1401,7 +1401,7 @@ void ClassDB::get_extensions_for_type(const StringName &p_class, List<String> *p
 	}
 }
 
-HashMap<StringName, HashMap<StringName, Variant> > ClassDB::default_values;
+HashMap<StringName, HashMap<StringName, Variant>> ClassDB::default_values;
 Set<StringName> ClassDB::default_values_cached;
 
 Variant ClassDB::class_get_default_property_value(const StringName &p_class, const StringName &p_property, bool *r_valid) {

@@ -652,7 +652,7 @@ Error ProjectSettings::save() {
 	return save_custom(get_resource_path().plus_file("project.godot"));
 }
 
-Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom, const String &p_custom_features) {
+Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
 
 	Error err;
 	FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
@@ -663,7 +663,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 
 	int count = 0;
 
-	for (Map<String, List<String> >::Element *E = props.front(); E; E = E->next()) {
+	for (Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
 
 		for (List<String>::Element *F = E->get().front(); F; F = F->next()) {
 
@@ -700,7 +700,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 		file->store_32(count); //store how many properties are saved
 	}
 
-	for (Map<String, List<String> >::Element *E = props.front(); E; E = E->next()) {
+	for (Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
 
 		for (List<String>::Element *F = E->get().front(); F; F = F->next()) {
 
@@ -740,7 +740,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 	return OK;
 }
 
-Error ProjectSettings::_save_settings_text(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom, const String &p_custom_features) {
+Error ProjectSettings::_save_settings_text(const String &p_file, const Map<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
 
 	Error err;
 	FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
@@ -761,7 +761,7 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 		file->store_string("custom_features=\"" + p_custom_features + "\"\n");
 	file->store_string("\n");
 
-	for (Map<String, List<String> >::Element *E = props.front(); E; E = E->next()) {
+	for (Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
 
 		if (E != props.front())
 			file->store_string("\n");
@@ -838,7 +838,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		vclist.insert(vc);
 	}
 
-	Map<String, List<String> > props;
+	Map<String, List<String>> props;
 
 	for (Set<_VCSort>::Element *E = vclist.front(); E; E = E->next()) {
 

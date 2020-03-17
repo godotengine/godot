@@ -214,7 +214,7 @@ static godot_variant cb_standard_varcall(void *p_procedure_handle, godot_array *
 
 GDNativeCallRegistry *GDNativeCallRegistry::singleton;
 
-Vector<Ref<GDNative> > singleton_gdnatives;
+Vector<Ref<GDNative>> singleton_gdnatives;
 
 Ref<GDNativeLibraryResourceLoader> resource_loader_gdnlib;
 Ref<GDNativeLibraryResourceSaver> resource_saver_gdnlib;

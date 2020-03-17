@@ -262,14 +262,14 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 			if (line.get_slice_count(" ") <= 1) {
 
-				const Map<int, Set<StringName> > &breakpoints = script_debugger->get_breakpoints();
+				const Map<int, Set<StringName>> &breakpoints = script_debugger->get_breakpoints();
 				if (breakpoints.size() == 0) {
 					print_line("No Breakpoints.");
 					continue;
 				}
 
 				print_line("Breakpoint(s): " + itos(breakpoints.size()));
-				for (Map<int, Set<StringName> >::Element *E = breakpoints.front(); E; E = E->next()) {
+				for (Map<int, Set<StringName>>::Element *E = breakpoints.front(); E; E = E->next()) {
 					print_line("\t" + String(E->value().front()->get()) + ":" + itos(E->key()));
 				}
 

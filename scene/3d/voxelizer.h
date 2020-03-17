@@ -125,7 +125,7 @@ private:
 
 public:
 	void begin_bake(int p_subdiv, const AABB &p_bounds);
-	void plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material> > &p_materials, const Ref<Material> &p_override_material);
+	void plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material);
 	void end_bake();
 
 	int get_gi_probe_octree_depth() const;

@@ -521,7 +521,7 @@ Object *EditorData::instance_custom_type(const String &p_type, const String &p_i
 
 void EditorData::remove_custom_type(const String &p_type) {
 
-	for (Map<String, Vector<CustomType> >::Element *E = custom_types.front(); E; E = E->next()) {
+	for (Map<String, Vector<CustomType>>::Element *E = custom_types.front(); E; E = E->next()) {
 
 		for (int i = 0; i < E->get().size(); i++) {
 			if (E->get()[i].name == p_type) {

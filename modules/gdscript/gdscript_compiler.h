@@ -48,11 +48,11 @@ class GDScriptCompiler {
 		const GDScriptParser::FunctionNode *function_node;
 		bool debug_stack;
 
-		List<Map<StringName, int> > stack_id_stack;
+		List<Map<StringName, int>> stack_id_stack;
 		Map<StringName, int> stack_identifiers;
 
 		List<GDScriptFunction::StackDebug> stack_debug;
-		List<Map<StringName, int> > block_identifier_stack;
+		List<Map<StringName, int>> block_identifier_stack;
 		Map<StringName, int> block_identifiers;
 
 		void add_stack_identifier(const StringName &p_id, int p_stackpos) {

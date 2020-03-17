@@ -493,7 +493,7 @@ static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_
 	print_verbose("BitMap: Max stack size: " + itos(stack.size()));
 }
 
-Vector<Vector<Vector2> > BitMap::clip_opaque_to_polygons(const Rect2 &p_rect, float p_epsilon) const {
+Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2 &p_rect, float p_epsilon) const {
 
 	Rect2i r = Rect2i(0, 0, width, height).clip(p_rect);
 	print_verbose("BitMap: Rect: " + r);
@@ -503,7 +503,7 @@ Vector<Vector<Vector2> > BitMap::clip_opaque_to_polygons(const Rect2 &p_rect, fl
 	fill.instance();
 	fill->create(get_size());
 
-	Vector<Vector<Vector2> > polygons;
+	Vector<Vector<Vector2>> polygons;
 	for (int i = r.position.y; i < r.position.y + r.size.height; i++) {
 		for (int j = r.position.x; j < r.position.x + r.size.width; j++) {
 			if (!fill->get_bit(Point2(j, i)) && get_bit(Point2(j, i))) {
@@ -591,7 +591,7 @@ void BitMap::shrink_mask(int p_pixels, const Rect2 &p_rect) {
 
 Array BitMap::_opaque_to_polygons_bind(const Rect2 &p_rect, float p_epsilon) const {
 
-	Vector<Vector<Vector2> > result = clip_opaque_to_polygons(p_rect, p_epsilon);
+	Vector<Vector<Vector2>> result = clip_opaque_to_polygons(p_rect, p_epsilon);
 
 	// Convert result to bindable types
 

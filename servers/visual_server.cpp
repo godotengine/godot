@@ -1020,7 +1020,7 @@ Error VisualServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surface_
 	Error err = _surface_set_data(p_arrays, format, offsets, total_elem_size, vertex_array, array_len, index_array, index_array_len, aabb, bone_aabb);
 	ERR_FAIL_COND_V_MSG(err != OK, ERR_INVALID_DATA, "Invalid array format for surface.");
 
-	Vector<Vector<uint8_t> > blend_shape_data;
+	Vector<Vector<uint8_t>> blend_shape_data;
 
 	for (int i = 0; i < p_blend_shapes.size(); i++) {
 
@@ -1517,7 +1517,7 @@ Array VisualServer::mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surfac
 	SurfaceData sd = mesh_get_surface(p_mesh, p_surface);
 	ERR_FAIL_COND_V(sd.vertex_count == 0, Array());
 
-	Vector<Vector<uint8_t> > blend_shape_data = sd.blend_shapes;
+	Vector<Vector<uint8_t>> blend_shape_data = sd.blend_shapes;
 
 	if (blend_shape_data.size() > 0) {
 		int vertex_len = sd.vertex_count;

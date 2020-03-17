@@ -1773,12 +1773,12 @@ void Collada::_parse_animation(XMLParser &parser) {
 		return;
 	}
 
-	Map<String, Vector<float> > float_sources;
-	Map<String, Vector<String> > string_sources;
+	Map<String, Vector<float>> float_sources;
+	Map<String, Vector<String>> string_sources;
 	Map<String, int> source_strides;
-	Map<String, Map<String, String> > samplers;
-	Map<String, Vector<String> > source_param_names;
-	Map<String, Vector<String> > source_param_types;
+	Map<String, Map<String, String>> samplers;
+	Map<String, Vector<String>> source_param_names;
+	Map<String, Vector<String>> source_param_types;
 
 	String id = "";
 	if (parser.has_attribute("id"))

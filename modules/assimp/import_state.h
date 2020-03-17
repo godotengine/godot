@@ -61,15 +61,15 @@ struct ImportState {
 	const aiScene *assimp_scene;
 	uint32_t max_bone_weights;
 
-	Map<String, Ref<Mesh> > mesh_cache;
-	Map<int, Ref<Material> > material_cache;
+	Map<String, Ref<Mesh>> mesh_cache;
+	Map<int, Ref<Material>> material_cache;
 	Map<String, int> light_cache;
 	Map<String, int> camera_cache;
 
 	// very useful for when you need to ask assimp for the bone mesh
 
 	Map<const aiNode *, Node *> assimp_node_map;
-	Map<String, Ref<Image> > path_to_image_cache;
+	Map<String, Ref<Image>> path_to_image_cache;
 
 	// Generation 3 - determinisitic iteration
 	// to lower potential recursion errors

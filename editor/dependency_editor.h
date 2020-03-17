@@ -52,7 +52,7 @@ class DependencyEditor : public AcceptDialog {
 	String editing;
 	List<String> missing;
 
-	void _fix_and_find(EditorFileSystemDirectory *efsd, Map<String, Map<String, String> > &candidates);
+	void _fix_and_find(EditorFileSystemDirectory *efsd, Map<String, Map<String, String>> &candidates);
 
 	void _searched(const String &p_path);
 	void _load_pressed(Object *p_item, int p_cell, int p_button);

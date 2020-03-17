@@ -370,7 +370,7 @@ Ref<Image> StreamTexture::load_image_from_file(FileAccess *f, int p_size_limit) 
 		int sh = h;
 
 		//mipmaps need to be read independently, they will be later combined
-		Vector<Ref<Image> > mipmap_images;
+		Vector<Ref<Image>> mipmap_images;
 		int total_size = 0;
 
 		bool first = true;
@@ -1899,7 +1899,7 @@ uint32_t TextureLayered::get_layers() const {
 }
 
 Error TextureLayered::_create_from_images(const Array &p_images) {
-	Vector<Ref<Image> > images;
+	Vector<Ref<Image>> images;
 	for (int i = 0; i < p_images.size(); i++) {
 		Ref<Image> img = p_images[i];
 		ERR_FAIL_COND_V(img.is_null(), ERR_INVALID_PARAMETER);
@@ -1917,7 +1917,7 @@ Array TextureLayered::_get_images() const {
 	return images;
 }
 
-Error TextureLayered::create_from_images(Vector<Ref<Image> > p_images) {
+Error TextureLayered::create_from_images(Vector<Ref<Image>> p_images) {
 
 	int new_layers = p_images.size();
 	ERR_FAIL_COND_V(new_layers == 0, ERR_INVALID_PARAMETER);
@@ -2077,7 +2077,7 @@ RES ResourceFormatLoaderTextureLayered::load(const String &p_path, const String 
 	Image::Format format = Image::Format(f->get_32());
 	uint32_t compression = f->get_32(); // 0 - lossless (PNG), 1 - vram, 2 - uncompressed
 
-	Vector<Ref<Image> > images;
+	Vector<Ref<Image>> images;
 	for (int layer = 0; layer < td; layer++) {
 
 		Ref<Image> image;
@@ -2087,7 +2087,7 @@ RES ResourceFormatLoaderTextureLayered::load(const String &p_path, const String 
 			//look for a PNG file inside
 
 			int mipmaps = f->get_32();
-			Vector<Ref<Image> > mipmap_images;
+			Vector<Ref<Image>> mipmap_images;
 
 			for (int i = 0; i < mipmaps; i++) {
 				uint32_t size = f->get_32();

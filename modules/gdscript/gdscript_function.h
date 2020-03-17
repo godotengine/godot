@@ -321,7 +321,7 @@ public:
 	GDScript *get_script() const { return _script; }
 	StringName get_source() const { return source; }
 
-	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int> > *r_stackvars) const;
+	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int>> *r_stackvars) const;
 
 	_FORCE_INLINE_ bool is_empty() const { return _code_size == 0; }
 

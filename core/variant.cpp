@@ -2325,31 +2325,31 @@ inline DA _convert_array_from_variant(const Variant &p_variant) {
 			return _convert_array<DA, Array>(p_variant.operator Array());
 		}
 		case Variant::PACKED_BYTE_ARRAY: {
-			return _convert_array<DA, Vector<uint8_t> >(p_variant.operator Vector<uint8_t>());
+			return _convert_array<DA, Vector<uint8_t>>(p_variant.operator Vector<uint8_t>());
 		}
 		case Variant::PACKED_INT32_ARRAY: {
-			return _convert_array<DA, Vector<int32_t> >(p_variant.operator Vector<int32_t>());
+			return _convert_array<DA, Vector<int32_t>>(p_variant.operator Vector<int32_t>());
 		}
 		case Variant::PACKED_INT64_ARRAY: {
-			return _convert_array<DA, Vector<int64_t> >(p_variant.operator Vector<int64_t>());
+			return _convert_array<DA, Vector<int64_t>>(p_variant.operator Vector<int64_t>());
 		}
 		case Variant::PACKED_FLOAT32_ARRAY: {
-			return _convert_array<DA, Vector<float> >(p_variant.operator Vector<float>());
+			return _convert_array<DA, Vector<float>>(p_variant.operator Vector<float>());
 		}
 		case Variant::PACKED_FLOAT64_ARRAY: {
-			return _convert_array<DA, Vector<double> >(p_variant.operator Vector<double>());
+			return _convert_array<DA, Vector<double>>(p_variant.operator Vector<double>());
 		}
 		case Variant::PACKED_STRING_ARRAY: {
-			return _convert_array<DA, Vector<String> >(p_variant.operator Vector<String>());
+			return _convert_array<DA, Vector<String>>(p_variant.operator Vector<String>());
 		}
 		case Variant::PACKED_VECTOR2_ARRAY: {
-			return _convert_array<DA, Vector<Vector2> >(p_variant.operator Vector<Vector2>());
+			return _convert_array<DA, Vector<Vector2>>(p_variant.operator Vector<Vector2>());
 		}
 		case Variant::PACKED_VECTOR3_ARRAY: {
-			return _convert_array<DA, Vector<Vector3> >(p_variant.operator Vector<Vector3>());
+			return _convert_array<DA, Vector<Vector3>>(p_variant.operator Vector<Vector3>());
 		}
 		case Variant::PACKED_COLOR_ARRAY: {
-			return _convert_array<DA, Vector<Color> >(p_variant.operator Vector<Color>());
+			return _convert_array<DA, Vector<Color>>(p_variant.operator Vector<Color>());
 		}
 		default: {
 			return DA();
@@ -2370,21 +2370,21 @@ Variant::operator Vector<uint8_t>() const {
 	if (type == PACKED_BYTE_ARRAY)
 		return static_cast<PackedArrayRef<uint8_t> *>(_data.packed_array)->array;
 	else
-		return _convert_array_from_variant<Vector<uint8_t> >(*this);
+		return _convert_array_from_variant<Vector<uint8_t>>(*this);
 }
 Variant::operator Vector<int32_t>() const {
 
 	if (type == PACKED_INT32_ARRAY)
 		return static_cast<PackedArrayRef<int32_t> *>(_data.packed_array)->array;
 	else
-		return _convert_array_from_variant<Vector<int> >(*this);
+		return _convert_array_from_variant<Vector<int>>(*this);
 }
 Variant::operator Vector<int64_t>() const {
 
 	if (type == PACKED_INT64_ARRAY)
 		return static_cast<PackedArrayRef<int64_t> *>(_data.packed_array)->array;
 	else
-		return _convert_array_from_variant<Vector<int64_t> >(*this);
+		return _convert_array_from_variant<Vector<int64_t>>(*this);
 }
 
 Variant::operator Vector<float>() const {
@@ -2392,7 +2392,7 @@ Variant::operator Vector<float>() const {
 	if (type == PACKED_FLOAT32_ARRAY)
 		return static_cast<PackedArrayRef<float> *>(_data.packed_array)->array;
 	else
-		return _convert_array_from_variant<Vector<float> >(*this);
+		return _convert_array_from_variant<Vector<float>>(*this);
 }
 
 Variant::operator Vector<double>() const {
@@ -2400,7 +2400,7 @@ Variant::operator Vector<double>() const {
 	if (type == PACKED_FLOAT64_ARRAY)
 		return static_cast<PackedArrayRef<double> *>(_data.packed_array)->array;
 	else
-		return _convert_array_from_variant<Vector<double> >(*this);
+		return _convert_array_from_variant<Vector<double>>(*this);
 }
 
 Variant::operator Vector<String>() const {
@@ -2408,21 +2408,21 @@ Variant::operator Vector<String>() const {
 	if (type == PACKED_STRING_ARRAY)
 		return static_cast<PackedArrayRef<String> *>(_data.packed_array)->array;
 	else
-		return _convert_array_from_variant<Vector<String> >(*this);
+		return _convert_array_from_variant<Vector<String>>(*this);
 }
 Variant::operator Vector<Vector3>() const {
 
 	if (type == PACKED_VECTOR3_ARRAY)
 		return static_cast<PackedArrayRef<Vector3> *>(_data.packed_array)->array;
 	else
-		return _convert_array_from_variant<Vector<Vector3> >(*this);
+		return _convert_array_from_variant<Vector<Vector3>>(*this);
 }
 Variant::operator Vector<Vector2>() const {
 
 	if (type == PACKED_VECTOR2_ARRAY)
 		return static_cast<PackedArrayRef<Vector2> *>(_data.packed_array)->array;
 	else
-		return _convert_array_from_variant<Vector<Vector2> >(*this);
+		return _convert_array_from_variant<Vector<Vector2>>(*this);
 }
 
 Variant::operator Vector<Color>() const {
@@ -2430,7 +2430,7 @@ Variant::operator Vector<Color>() const {
 	if (type == PACKED_COLOR_ARRAY)
 		return static_cast<PackedArrayRef<Color> *>(_data.packed_array)->array;
 	else
-		return _convert_array_from_variant<Vector<Color> >(*this);
+		return _convert_array_from_variant<Vector<Color>>(*this);
 }
 
 /* helpers */

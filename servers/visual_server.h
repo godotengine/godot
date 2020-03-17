@@ -94,8 +94,8 @@ public:
 	};
 
 	virtual RID texture_2d_create(const Ref<Image> &p_image) = 0;
-	virtual RID texture_2d_layered_create(const Vector<Ref<Image> > &p_layers, TextureLayeredType p_layered_type) = 0;
-	virtual RID texture_3d_create(const Vector<Ref<Image> > &p_slices) = 0; //all slices, then all the mipmaps, must be coherent
+	virtual RID texture_2d_layered_create(const Vector<Ref<Image>> &p_layers, TextureLayeredType p_layered_type) = 0;
+	virtual RID texture_3d_create(const Vector<Ref<Image>> &p_slices) = 0; //all slices, then all the mipmaps, must be coherent
 	virtual RID texture_proxy_create(RID p_base) = 0;
 
 	virtual void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0; //mostly used for video and streaming
@@ -262,7 +262,7 @@ public:
 		Vector<LOD> lods;
 		Vector<AABB> bone_aabbs;
 
-		Vector<Vector<uint8_t> > blend_shapes;
+		Vector<Vector<uint8_t>> blend_shapes;
 
 		RID material;
 	};

@@ -3038,7 +3038,7 @@ bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(StringNam
 				arg->tex_argument_check = true;
 				arg->tex_argument_filter = p_filter;
 				arg->tex_argument_repeat = p_repeat;
-				for (Map<StringName, Set<int> >::Element *E = arg->tex_argument_connect.front(); E; E = E->next()) {
+				for (Map<StringName, Set<int>>::Element *E = arg->tex_argument_connect.front(); E; E = E->next()) {
 					for (Set<int>::Element *F = E->get().front(); F; F = F->next()) {
 						if (!_propagate_function_call_sampler_uniform_settings(E->key(), F->get(), p_filter, p_repeat)) {
 							return false;
@@ -3073,7 +3073,7 @@ bool ShaderLanguage::_propagate_function_call_sampler_builtin_reference(StringNa
 				arg->tex_builtin_check = true;
 				arg->tex_builtin = p_builtin;
 
-				for (Map<StringName, Set<int> >::Element *E = arg->tex_argument_connect.front(); E; E = E->next()) {
+				for (Map<StringName, Set<int>>::Element *E = arg->tex_argument_connect.front(); E; E = E->next()) {
 					for (Set<int>::Element *F = E->get().front(); F; F = F->next()) {
 						if (!_propagate_function_call_sampler_builtin_reference(E->key(), F->get(), p_builtin)) {
 							return false;

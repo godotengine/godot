@@ -1558,7 +1558,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 
 	String importer_name;
 
-	Map<String, Map<StringName, Variant> > source_file_options;
+	Map<String, Map<StringName, Variant>> source_file_options;
 	Map<String, String> base_paths;
 	for (int i = 0; i < p_files.size(); i++) {
 
@@ -1610,7 +1610,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 	Error err = importer->import_group_file(p_group_file, source_file_options, base_paths);
 
 	//all went well, overwrite config files with proper remaps and md5s
-	for (Map<String, Map<StringName, Variant> >::Element *E = source_file_options.front(); E; E = E->next()) {
+	for (Map<String, Map<StringName, Variant>>::Element *E = source_file_options.front(); E; E = E->next()) {
 
 		const String &file = E->key();
 		String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(file);
@@ -1921,7 +1921,7 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 	EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
 }
 
-void EditorFileSystem::_find_group_files(EditorFileSystemDirectory *efd, Map<String, Vector<String> > &group_files, Set<String> &groups_to_reimport) {
+void EditorFileSystem::_find_group_files(EditorFileSystemDirectory *efd, Map<String, Vector<String>> &group_files, Set<String> &groups_to_reimport) {
 
 	int fc = efd->files.size();
 	const EditorFileSystemDirectory::FileInfo *const *files = efd->files.ptr();
@@ -1998,9 +1998,9 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	//reimport groups
 
 	if (groups_to_reimport.size()) {
-		Map<String, Vector<String> > group_files;
+		Map<String, Vector<String>> group_files;
 		_find_group_files(filesystem, group_files, groups_to_reimport);
-		for (Map<String, Vector<String> >::Element *E = group_files.front(); E; E = E->next()) {
+		for (Map<String, Vector<String>>::Element *E = group_files.front(); E; E = E->next()) {
 
 			Error err = _reimport_group(E->key(), E->get());
 			if (err == OK) {

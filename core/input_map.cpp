@@ -99,9 +99,9 @@ List<StringName> InputMap::get_actions() const {
 	return actions;
 }
 
-List<Ref<InputEvent> >::Element *InputMap::_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength) const {
+List<Ref<InputEvent>>::Element *InputMap::_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength) const {
 
-	for (List<Ref<InputEvent> >::Element *E = p_action.inputs.front(); E; E = E->next()) {
+	for (List<Ref<InputEvent>>::Element *E = p_action.inputs.front(); E; E = E->next()) {
 
 		const Ref<InputEvent> e = E->get();
 
@@ -151,7 +151,7 @@ void InputMap::action_erase_event(const StringName &p_action, const Ref<InputEve
 
 	ERR_FAIL_COND_MSG(!input_map.has(p_action), "Request for nonexistent InputMap action '" + String(p_action) + "'.");
 
-	List<Ref<InputEvent> >::Element *E = _find_event(input_map[p_action], p_event);
+	List<Ref<InputEvent>>::Element *E = _find_event(input_map[p_action], p_event);
 	if (E)
 		input_map[p_action].inputs.erase(E);
 }
@@ -166,9 +166,9 @@ void InputMap::action_erase_events(const StringName &p_action) {
 Array InputMap::_get_action_list(const StringName &p_action) {
 
 	Array ret;
-	const List<Ref<InputEvent> > *al = get_action_list(p_action);
+	const List<Ref<InputEvent>> *al = get_action_list(p_action);
 	if (al) {
-		for (const List<Ref<InputEvent> >::Element *E = al->front(); E; E = E->next()) {
+		for (const List<Ref<InputEvent>>::Element *E = al->front(); E; E = E->next()) {
 
 			ret.push_back(E->get());
 		}
@@ -177,7 +177,7 @@ Array InputMap::_get_action_list(const StringName &p_action) {
 	return ret;
 }
 
-const List<Ref<InputEvent> > *InputMap::get_action_list(const StringName &p_action) {
+const List<Ref<InputEvent>> *InputMap::get_action_list(const StringName &p_action) {
 
 	const Map<StringName, Action>::Element *E = input_map.find(p_action);
 	if (!E)
@@ -205,7 +205,7 @@ bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const Str
 
 	bool pressed;
 	float strength;
-	List<Ref<InputEvent> >::Element *event = _find_event(E->get(), p_event, &pressed, &strength);
+	List<Ref<InputEvent>>::Element *event = _find_event(E->get(), p_event, &pressed, &strength);
 	if (event != NULL) {
 		if (p_pressed != NULL)
 			*p_pressed = pressed;

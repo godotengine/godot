@@ -198,7 +198,7 @@ private:
 			bool active;
 			AudioFrame peak_volume;
 			Vector<AudioFrame> buffer;
-			Vector<Ref<AudioEffectInstance> > effect_instances;
+			Vector<Ref<AudioEffectInstance>> effect_instances;
 			uint64_t last_mix_with_audio;
 			Channel() {
 				last_mix_with_audio = 0;
@@ -224,7 +224,7 @@ private:
 		int index_cache;
 	};
 
-	Vector<Vector<AudioFrame> > temp_buffer; //temp_buffer for each level
+	Vector<Vector<AudioFrame>> temp_buffer; //temp_buffer for each level
 	Vector<Bus *> buses;
 	Map<StringName, Bus *> bus_map;
 

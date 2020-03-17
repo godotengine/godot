@@ -362,7 +362,7 @@ Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_name(const String 
 	return Ref<ResourceImporter>();
 }
 
-void ResourceFormatImporter::get_importers_for_extension(const String &p_extension, List<Ref<ResourceImporter> > *r_importers) {
+void ResourceFormatImporter::get_importers_for_extension(const String &p_extension, List<Ref<ResourceImporter>> *r_importers) {
 
 	for (int i = 0; i < importers.size(); i++) {
 		List<String> local_exts;
@@ -423,7 +423,7 @@ bool ResourceFormatImporter::are_import_settings_valid(const String &p_path) con
 
 String ResourceFormatImporter::get_import_settings_hash() const {
 
-	Vector<Ref<ResourceImporter> > sorted_importers = importers;
+	Vector<Ref<ResourceImporter>> sorted_importers = importers;
 
 	sorted_importers.sort_custom<SortImporterByName>();
 

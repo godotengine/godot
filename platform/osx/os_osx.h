@@ -124,7 +124,7 @@ public:
 
 	CursorShape cursor_shape;
 	NSCursor *cursors[CURSOR_MAX];
-	Map<CursorShape, Vector<Variant> > cursors_cache;
+	Map<CursorShape, Vector<Variant>> cursors_cache;
 	MouseMode mouse_mode;
 
 	String title;
@@ -180,7 +180,7 @@ public:
 		}
 	};
 
-	Map<String, Vector<GlobalMenuItem> > global_menus;
+	Map<String, Vector<GlobalMenuItem>> global_menus;
 
 	void _update_global_menu();
 

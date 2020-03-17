@@ -905,7 +905,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 		return Variant(); //not editable tree
 
 	Vector<Node *> selected;
-	Vector<Ref<Texture2D> > icons;
+	Vector<Ref<Texture2D>> icons;
 	TreeItem *next = tree->get_next_selected(NULL);
 	while (next) {
 

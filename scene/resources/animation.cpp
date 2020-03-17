@@ -1705,7 +1705,7 @@ float Animation::_cubic_interpolate(const float &p_pre_a, const float &p_a, cons
 }
 
 template <class T>
-T Animation::_interpolate(const Vector<TKey<T> > &p_keys, float p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok) const {
+T Animation::_interpolate(const Vector<TKey<T>> &p_keys, float p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok) const {
 
 	int len = _find(p_keys, length) + 1; // try to find last key (there may be more past the end)
 

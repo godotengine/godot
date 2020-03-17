@@ -2270,7 +2270,7 @@ static Vector<uint8_t> _unpack_half_floats(const Vector<uint8_t> &array, uint32_
 	return ret;
 }
 
-void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const Vector<uint8_t> &p_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<Vector<uint8_t> > &p_blend_shapes, const Vector<AABB> &p_bone_aabbs) {
+void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const Vector<uint8_t> &p_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<Vector<uint8_t>> &p_blend_shapes, const Vector<AABB> &p_bone_aabbs) {
 
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
@@ -2737,10 +2737,10 @@ AABB RasterizerStorageGLES2::mesh_surface_get_aabb(RID p_mesh, int p_surface) co
 	return mesh->surfaces[p_surface]->aabb;
 }
 
-Vector<Vector<uint8_t> > RasterizerStorageGLES2::mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const {
+Vector<Vector<uint8_t>> RasterizerStorageGLES2::mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const {
 	const Mesh *mesh = mesh_owner.getornull(p_mesh);
-	ERR_FAIL_COND_V(!mesh, Vector<Vector<uint8_t> >());
-	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), Vector<Vector<uint8_t> >());
+	ERR_FAIL_COND_V(!mesh, Vector<Vector<uint8_t>>());
+	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), Vector<Vector<uint8_t>>());
 #ifndef TOOLS_ENABLED
 	ERR_PRINT("OpenGL ES 2.0 does not allow retrieving mesh array data");
 #endif

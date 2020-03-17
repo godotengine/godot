@@ -95,7 +95,7 @@ private:
 	int last_order;
 
 	Ref<Resource> clipboard;
-	Map<String, Ref<ShortCut> > shortcuts;
+	Map<String, Ref<ShortCut>> shortcuts;
 
 	String resource_path;
 	String settings_dir;

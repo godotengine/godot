@@ -1458,7 +1458,7 @@ void VisualScriptEditor::_remove_output_port(int p_id, int p_port) {
 	List<VisualScript::DataConnection> data_connections;
 	script->get_data_connection_list(func, &data_connections);
 
-	HashMap<int, Set<int> > conn_map;
+	HashMap<int, Set<int>> conn_map;
 	for (const List<VisualScript::DataConnection>::Element *E = data_connections.front(); E; E = E->next()) {
 		if (E->get().from_node == p_id && E->get().from_port == p_port) {
 			// push into the connections map
@@ -3078,8 +3078,8 @@ void VisualScriptEditor::_graph_disconnected(const String &p_from, int p_from_sl
 void VisualScriptEditor::_move_nodes_with_rescan(const StringName &p_func_from, const StringName &p_func_to, int p_id) {
 
 	Set<int> nodes_to_move;
-	HashMap<int, Map<int, int> > seqconns_to_move; // from => List(outp, to)
-	HashMap<int, Map<int, Pair<int, int> > > dataconns_to_move; // to => List(inp_p => from, outp)
+	HashMap<int, Map<int, int>> seqconns_to_move; // from => List(outp, to)
+	HashMap<int, Map<int, Pair<int, int>>> dataconns_to_move; // to => List(inp_p => from, outp)
 
 	nodes_to_move.insert(p_id);
 	Set<int> sequence_connections;
@@ -3087,7 +3087,7 @@ void VisualScriptEditor::_move_nodes_with_rescan(const StringName &p_func_from, 
 		List<VisualScript::SequenceConnection> sequence_conns;
 		script->get_sequence_connection_list(p_func_from, &sequence_conns);
 
-		HashMap<int, Map<int, int> > seqcons; // from => List(out_p => to)
+		HashMap<int, Map<int, int>> seqcons; // from => List(out_p => to)
 
 		for (List<VisualScript::SequenceConnection>::Element *E = sequence_conns.front(); E; E = E->next()) {
 			int from = E->get().from_node;
@@ -3102,7 +3102,7 @@ void VisualScriptEditor::_move_nodes_with_rescan(const StringName &p_func_from, 
 
 		int conn = p_id;
 		List<int> stack;
-		HashMap<int, Set<int> > seen; // from, outp
+		HashMap<int, Set<int>> seen; // from, outp
 		while (seqcons.has(conn)) {
 			for (auto E = seqcons[conn].front(); E; E = E->next()) {
 				if (seen.has(conn) && seen[conn].has(E->key())) {
@@ -3139,7 +3139,7 @@ void VisualScriptEditor::_move_nodes_with_rescan(const StringName &p_func_from, 
 		List<VisualScript::DataConnection> data_connections;
 		script->get_data_connection_list(p_func_from, &data_connections);
 
-		HashMap<int, Map<int, Pair<int, int> > > connections;
+		HashMap<int, Map<int, Pair<int, int>>> connections;
 
 		for (List<VisualScript::DataConnection>::Element *E = data_connections.front(); E; E = E->next()) {
 			int from = E->get().from_node;
@@ -3148,14 +3148,14 @@ void VisualScriptEditor::_move_nodes_with_rescan(const StringName &p_func_from, 
 			int in_p = E->get().to_port;
 
 			if (!connections.has(to))
-				connections.set(to, Map<int, Pair<int, int> >());
+				connections.set(to, Map<int, Pair<int, int>>());
 			connections[to].insert(in_p, Pair<int, int>(from, out_p));
 		}
 
 		// go through the HashMap and do all sorts of crazy ass stuff now...
 		Set<int> nodes_to_be_added;
 		for (Set<int>::Element *F = nodes_to_move.front(); F; F = F->next()) {
-			HashMap<int, Set<int> > seen;
+			HashMap<int, Set<int>> seen;
 			List<int> stack;
 			int id = F->get();
 			while (connections.has(id)) {
@@ -3190,7 +3190,7 @@ void VisualScriptEditor::_move_nodes_with_rescan(const StringName &p_func_from, 
 					seen[id].insert(E->key());
 					stack.push_back(id);
 					if (!dataconns_to_move.has(id))
-						dataconns_to_move.set(id, Map<int, Pair<int, int> >());
+						dataconns_to_move.set(id, Map<int, Pair<int, int>>());
 					dataconns_to_move[id].insert(E->key(), Pair<int, int>(E->get().first, E->get().second));
 					id = E->get().first;
 					nodes_to_be_added.insert(id);
@@ -3261,7 +3261,7 @@ void VisualScriptEditor::_move_nodes_with_rescan(const StringName &p_func_from, 
 	dataconns_to_move.get_key_list(&keys);
 	for (List<int>::Element *E = keys.front(); E; E = E->next()) {
 		int to_node = E->get(); // to_node
-		for (Map<int, Pair<int, int> >::Element *F = dataconns_to_move[E->get()].front(); F; F = F->next()) {
+		for (Map<int, Pair<int, int>>::Element *F = dataconns_to_move[E->get()].front(); F; F = F->next()) {
 			int inp_p = F->key();
 			Pair<int, int> fro = F->get();
 
@@ -3933,7 +3933,7 @@ void VisualScriptEditor::_notification(int p_what) {
 
 			bool dark_theme = tm->get_constant("dark_theme", "Editor");
 
-			List<Pair<String, Color> > colors;
+			List<Pair<String, Color>> colors;
 			if (dark_theme) {
 				colors.push_back(Pair<String, Color>("flow_control", Color(0.96, 0.96, 0.96)));
 				colors.push_back(Pair<String, Color>("functions", Color(0.96, 0.52, 0.51)));
@@ -3950,7 +3950,7 @@ void VisualScriptEditor::_notification(int p_what) {
 				colors.push_back(Pair<String, Color>("constants", Color(0.94, 0.18, 0.49)));
 			}
 
-			for (List<Pair<String, Color> >::Element *E = colors.front(); E; E = E->next()) {
+			for (List<Pair<String, Color>>::Element *E = colors.front(); E; E = E->next()) {
 				Ref<StyleBoxFlat> sb = tm->get_stylebox("frame", "GraphNode");
 				if (!sb.is_null()) {
 					Ref<StyleBoxFlat> frame_style = sb->duplicate();
@@ -4149,7 +4149,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 				}
 			}
 
-			for (Map<int, Ref<VisualScriptNode> >::Element *E = clipboard->nodes.front(); E; E = E->next()) {
+			for (Map<int, Ref<VisualScriptNode>>::Element *E = clipboard->nodes.front(); E; E = E->next()) {
 
 				Ref<VisualScriptNode> node = E->get()->duplicate();
 
@@ -4196,7 +4196,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 		case EDIT_CREATE_FUNCTION: {
 
 			StringName function = "";
-			Map<int, Ref<VisualScriptNode> > nodes;
+			Map<int, Ref<VisualScriptNode>> nodes;
 			Set<int> selections;
 			for (int i = 0; i < graph->get_child_count(); i++) {
 				GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
@@ -4252,7 +4252,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 					// the user wants to connect the nodes
 					int top_nd = -1;
 					Vector2 top;
-					for (Map<int, Ref<VisualScriptNode> >::Element *E = nodes.front(); E; E = E->next()) {
+					for (Map<int, Ref<VisualScriptNode>>::Element *E = nodes.front(); E; E = E->next()) {
 						Ref<VisualScriptNode> nd = script->get_node(function, E->key());
 						if (nd.is_valid() && nd->has_input_sequence_port()) {
 							if (top_nd < 0) {
@@ -4316,7 +4316,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 			}
 
 			List<Variant::Type> inputs; // input types
-			List<Pair<int, int> > input_connections;
+			List<Pair<int, int>> input_connections;
 			{
 				List<VisualScript::DataConnection> dats;
 				script->get_data_connection_list(function, &dats);
@@ -4359,7 +4359,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 
 			// Move the nodes
 
-			for (Map<int, Ref<VisualScriptNode> >::Element *E = nodes.front(); E; E = E->next()) {
+			for (Map<int, Ref<VisualScriptNode>>::Element *E = nodes.front(); E; E = E->next()) {
 				undo_redo->add_do_method(script.ptr(), "remove_node", function, E->key());
 				undo_redo->add_do_method(script.ptr(), "add_node", new_fn, E->key(), E->get(), script->get_node_position(function, E->key()));
 
@@ -4414,7 +4414,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 
 			// * might make the system more intelligent by checking port from info.
 			int i = 0;
-			List<Pair<int, int> >::Element *F = input_connections.front();
+			List<Pair<int, int>>::Element *F = input_connections.front();
 			for (List<Variant::Type>::Element *E = inputs.front(); E && F; E = E->next(), F = F->next()) {
 				func_node->add_argument(E->get(), "arg_" + String::num_int64(i), i);
 				undo_redo->add_do_method(script.ptr(), "data_connect", new_fn, fn_id, i, F->get().first, F->get().second);

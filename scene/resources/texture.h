@@ -376,7 +376,7 @@ public:
 	uint32_t get_layers() const;
 	bool has_mipmaps() const;
 
-	Error create_from_images(Vector<Ref<Image> > p_images);
+	Error create_from_images(Vector<Ref<Image>> p_images);
 	void update_layer(const Ref<Image> &p_image, int p_layer);
 	Ref<Image> get_layer_data(int p_layer) const;
 

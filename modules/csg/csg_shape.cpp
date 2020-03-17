@@ -665,7 +665,7 @@ CSGCombiner::CSGCombiner() {
 
 /////////////////////
 
-CSGBrush *CSGPrimitive::_create_brush_from_arrays(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uv, const Vector<bool> &p_smooth, const Vector<Ref<Material> > &p_materials) {
+CSGBrush *CSGPrimitive::_create_brush_from_arrays(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uv, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials) {
 
 	CSGBrush *brush = memnew(CSGBrush);
 
@@ -717,7 +717,7 @@ CSGBrush *CSGMesh::_build_brush() {
 
 	Vector<Vector3> vertices;
 	Vector<bool> smooth;
-	Vector<Ref<Material> > materials;
+	Vector<Ref<Material>> materials;
 	Vector<Vector2> uvs;
 	Ref<Material> material = get_material();
 
@@ -927,7 +927,7 @@ CSGBrush *CSGSphere::_build_brush() {
 	Vector<Vector3> faces;
 	Vector<Vector2> uvs;
 	Vector<bool> smooth;
-	Vector<Ref<Material> > materials;
+	Vector<Ref<Material>> materials;
 	Vector<bool> invert;
 
 	faces.resize(face_count * 3);
@@ -1130,7 +1130,7 @@ CSGBrush *CSGBox::_build_brush() {
 	Vector<Vector3> faces;
 	Vector<Vector2> uvs;
 	Vector<bool> smooth;
-	Vector<Ref<Material> > materials;
+	Vector<Ref<Material>> materials;
 	Vector<bool> invert;
 
 	faces.resize(face_count * 3);
@@ -1308,7 +1308,7 @@ CSGBrush *CSGCylinder::_build_brush() {
 	Vector<Vector3> faces;
 	Vector<Vector2> uvs;
 	Vector<bool> smooth;
-	Vector<Ref<Material> > materials;
+	Vector<Ref<Material>> materials;
 	Vector<bool> invert;
 
 	faces.resize(face_count * 3);
@@ -1557,7 +1557,7 @@ CSGBrush *CSGTorus::_build_brush() {
 	Vector<Vector3> faces;
 	Vector<Vector2> uvs;
 	Vector<bool> smooth;
-	Vector<Ref<Material> > materials;
+	Vector<Ref<Material>> materials;
 	Vector<bool> invert;
 
 	faces.resize(face_count * 3);
@@ -1851,7 +1851,7 @@ CSGBrush *CSGPolygon::_build_brush() {
 	Vector<Vector3> faces;
 	Vector<Vector2> uvs;
 	Vector<bool> smooth;
-	Vector<Ref<Material> > materials;
+	Vector<Ref<Material>> materials;
 	Vector<bool> invert;
 
 	faces.resize(face_count * 3);

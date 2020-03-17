@@ -872,7 +872,7 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 		const unsigned int mesh_idx = p_surface_indices[i];
 		const aiMesh *ai_mesh = state.assimp_scene->mMeshes[mesh_idx];
 
-		Map<uint32_t, Vector<BoneInfo> > vertex_weights;
+		Map<uint32_t, Vector<BoneInfo>> vertex_weights;
 
 		if (ai_mesh->mNumBones > 0) {
 			for (size_t b = 0; b < ai_mesh->mNumBones; b++) {

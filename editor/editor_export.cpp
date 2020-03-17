@@ -664,7 +664,7 @@ EditorExportPlatform::FeatureContainers EditorExportPlatform::get_feature_contai
 
 EditorExportPlatform::ExportNotifier::ExportNotifier(EditorExportPlatform &p_platform, const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	FeatureContainers features = p_platform.get_feature_containers(p_preset);
-	Vector<Ref<EditorExportPlugin> > export_plugins = EditorExport::get_singleton()->get_export_plugins();
+	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
 	//initial export plugin callback
 	for (int i = 0; i < export_plugins.size(); i++) {
 		if (export_plugins[i]->get_script_instance()) { //script based
@@ -676,7 +676,7 @@ EditorExportPlatform::ExportNotifier::ExportNotifier(EditorExportPlatform &p_pla
 }
 
 EditorExportPlatform::ExportNotifier::~ExportNotifier() {
-	Vector<Ref<EditorExportPlugin> > export_plugins = EditorExport::get_singleton()->get_export_plugins();
+	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
 	for (int i = 0; i < export_plugins.size(); i++) {
 		if (export_plugins[i]->get_script_instance()) {
 			export_plugins.write[i]->_export_end_script();
@@ -712,7 +712,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	_edit_filter_list(paths, p_preset->get_include_filter(), false);
 	_edit_filter_list(paths, p_preset->get_exclude_filter(), true);
 
-	Vector<Ref<EditorExportPlugin> > export_plugins = EditorExport::get_singleton()->get_export_plugins();
+	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
 	for (int i = 0; i < export_plugins.size(); i++) {
 
 		export_plugins.write[i]->set_export_preset(p_preset);
@@ -1284,7 +1284,7 @@ void EditorExport::remove_export_plugin(const Ref<EditorExportPlugin> &p_plugin)
 	export_plugins.erase(p_plugin);
 }
 
-Vector<Ref<EditorExportPlugin> > EditorExport::get_export_plugins() {
+Vector<Ref<EditorExportPlugin>> EditorExport::get_export_plugins() {
 
 	return export_plugins;
 }

@@ -161,7 +161,7 @@ class DynamicFontAtSize : public Reference {
 		int y;
 	};
 
-	const Pair<const Character *, DynamicFontAtSize *> _find_char_with_font(CharType p_char, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks) const;
+	const Pair<const Character *, DynamicFontAtSize *> _find_char_with_font(CharType p_char, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks) const;
 	Character _make_outline_char(CharType p_char);
 	TexturePosition _find_texture_pos_for_glyph(int p_color_size, Image::Format p_image_format, int p_width, int p_height);
 	Character _bitmap_to_character(FT_Bitmap bitmap, int yofs, int xofs, float advance);
@@ -177,7 +177,7 @@ class DynamicFontAtSize : public Reference {
 	Ref<DynamicFontData> font;
 	DynamicFontData::CacheID id;
 
-	static HashMap<String, Vector<uint8_t> > _fontdata;
+	static HashMap<String, Vector<uint8_t>> _fontdata;
 	Error _load();
 
 public:
@@ -188,9 +188,9 @@ public:
 	float get_ascent() const;
 	float get_descent() const;
 
-	Size2 get_char_size(CharType p_char, CharType p_next, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks) const;
+	Size2 get_char_size(CharType p_char, CharType p_next, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks) const;
 
-	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks, bool p_advance_only = false, bool p_outline = false) const;
+	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks, bool p_advance_only = false, bool p_outline = false) const;
 
 	void set_texture_flags(uint32_t p_flags);
 	void update_oversampling();
@@ -218,9 +218,9 @@ private:
 	Ref<DynamicFontAtSize> data_at_size;
 	Ref<DynamicFontAtSize> outline_data_at_size;
 
-	Vector<Ref<DynamicFontData> > fallbacks;
-	Vector<Ref<DynamicFontAtSize> > fallback_data_at_size;
-	Vector<Ref<DynamicFontAtSize> > fallback_outline_data_at_size;
+	Vector<Ref<DynamicFontData>> fallbacks;
+	Vector<Ref<DynamicFontAtSize>> fallback_data_at_size;
+	Vector<Ref<DynamicFontAtSize>> fallback_outline_data_at_size;
 
 	DynamicFontData::CacheID cache_id;
 	DynamicFontData::CacheID outline_cache_id;

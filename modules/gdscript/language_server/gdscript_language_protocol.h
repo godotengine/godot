@@ -68,7 +68,7 @@ private:
 
 	static GDScriptLanguageProtocol *singleton;
 
-	HashMap<int, Ref<LSPeer> > clients;
+	HashMap<int, Ref<LSPeer>> clients;
 	Ref<TCP_Server> server;
 	int latest_client_id;
 	int next_client_id;

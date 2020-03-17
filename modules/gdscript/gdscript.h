@@ -84,8 +84,8 @@ class GDScript : public Script {
 	Map<StringName, Variant> constants;
 	Map<StringName, GDScriptFunction *> member_functions;
 	Map<StringName, MemberInfo> member_indices; //members are just indices to the instanced script.
-	Map<StringName, Ref<GDScript> > subclasses;
-	Map<StringName, Vector<StringName> > _signals;
+	Map<StringName, Ref<GDScript>> subclasses;
+	Map<StringName, Vector<StringName>> _signals;
 	Vector<ScriptNetData> rpc_functions;
 	Vector<ScriptNetData> rpc_variables;
 
@@ -129,7 +129,7 @@ class GDScript : public Script {
 
 #ifdef DEBUG_ENABLED
 
-	Map<ObjectID, List<Pair<StringName, Variant> > > pending_reload_state;
+	Map<ObjectID, List<Pair<StringName, Variant>>> pending_reload_state;
 
 #endif
 
@@ -151,7 +151,7 @@ protected:
 public:
 	virtual bool is_valid() const { return valid; }
 
-	const Map<StringName, Ref<GDScript> > &get_subclasses() const { return subclasses; }
+	const Map<StringName, Ref<GDScript>> &get_subclasses() const { return subclasses; }
 	const Map<StringName, Variant> &get_constants() const { return constants; }
 	const Set<StringName> &get_members() const { return members; }
 	const GDScriptDataType &get_member_type(const StringName &p_member) const {
@@ -519,7 +519,7 @@ public:
 	virtual void frame();
 
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const;
-	virtual void get_public_constants(List<Pair<String, Variant> > *p_constants) const;
+	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const;
 
 	virtual void profiling_start();
 	virtual void profiling_stop();

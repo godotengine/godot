@@ -91,7 +91,7 @@ void OS_Android::initialize_core() {
 		FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
 	else {
 #ifdef USE_JAVA_FILE_ACCESS
-		FileAccess::make_default<FileAccessBufferedFA<FileAccessJAndroid> >(FileAccess::ACCESS_RESOURCES);
+		FileAccess::make_default<FileAccessBufferedFA<FileAccessJAndroid>>(FileAccess::ACCESS_RESOURCES);
 #else
 		//FileAccess::make_default<FileAccessBufferedFA<FileAccessAndroid> >(FileAccess::ACCESS_RESOURCES);
 		FileAccess::make_default<FileAccessAndroid>(FileAccess::ACCESS_RESOURCES);

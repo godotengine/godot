@@ -178,7 +178,7 @@ public:
 		}
 
 		void clean_up_dependencies() {
-			List<Pair<InstanceDependency *, Map<InstanceBase *, uint32_t>::Element *> > to_clean_up;
+			List<Pair<InstanceDependency *, Map<InstanceBase *, uint32_t>::Element *>> to_clean_up;
 			for (Set<InstanceDependency *>::Element *E = dependencies.front(); E; E = E->next()) {
 				InstanceDependency *dep = E->get();
 				Map<InstanceBase *, uint32_t>::Element *F = dep->instances.find(this);
@@ -277,8 +277,8 @@ public:
 	/* TEXTURE API */
 
 	virtual RID texture_2d_create(const Ref<Image> &p_image) = 0;
-	virtual RID texture_2d_layered_create(const Vector<Ref<Image> > &p_layers, VS::TextureLayeredType p_layered_type) = 0;
-	virtual RID texture_3d_create(const Vector<Ref<Image> > &p_slices) = 0; //all slices, then all the mipmaps, must be coherent
+	virtual RID texture_2d_layered_create(const Vector<Ref<Image>> &p_layers, VS::TextureLayeredType p_layered_type) = 0;
+	virtual RID texture_3d_create(const Vector<Ref<Image>> &p_slices) = 0; //all slices, then all the mipmaps, must be coherent
 	virtual RID texture_proxy_create(RID p_base) = 0; //all slices, then all the mipmaps, must be coherent
 
 	virtual void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0; //mostly used for video and streaming

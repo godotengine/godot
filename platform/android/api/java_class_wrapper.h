@@ -163,7 +163,7 @@ class JavaClass : public Reference {
 	bool _call_method(JavaObject *p_instance, const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error, Variant &ret);
 
 	friend class JavaClassWrapper;
-	Map<StringName, List<MethodInfo> > methods;
+	Map<StringName, List<MethodInfo>> methods;
 	jclass _class;
 #endif
 
@@ -198,7 +198,7 @@ class JavaClassWrapper : public Object {
 	GDCLASS(JavaClassWrapper, Object);
 
 #ifdef ANDROID_ENABLED
-	Map<String, Ref<JavaClass> > class_cache;
+	Map<String, Ref<JavaClass>> class_cache;
 	friend class JavaClass;
 	jclass activityClass;
 	jmethodID findClass;

@@ -284,7 +284,7 @@ void ScriptServer::save_global_classes() {
 }
 
 ////////////////////
-void ScriptInstance::get_property_state(List<Pair<StringName, Variant> > &state) {
+void ScriptInstance::get_property_state(List<Pair<StringName, Variant>> &state) {
 
 	List<PropertyInfo> pinfo;
 	get_property_list(&pinfo);

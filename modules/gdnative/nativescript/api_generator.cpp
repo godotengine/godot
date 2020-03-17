@@ -98,7 +98,7 @@ struct SignalAPI {
 
 struct EnumAPI {
 	String name;
-	List<Pair<int, String> > values;
+	List<Pair<int, String>> values;
 };
 
 struct ClassAPI {
@@ -395,7 +395,7 @@ List<ClassAPI> generate_c_api_classes() {
 					int int_val = ClassDB::get_integer_constant(class_name, val_e->get(), NULL);
 					enum_api.values.push_back(Pair<int, String>(int_val, val_e->get()));
 				}
-				enum_api.values.sort_custom<PairSort<int, String> >();
+				enum_api.values.sort_custom<PairSort<int, String>>();
 				class_api.enums.push_back(enum_api);
 			}
 		}
@@ -497,7 +497,7 @@ static List<String> generate_c_api_json(const List<ClassAPI> &p_api) {
 			source.push_back("\t\t\t{\n");
 			source.push_back("\t\t\t\t\"name\": \"" + e->get().name + "\",\n");
 			source.push_back("\t\t\t\t\"values\": {\n");
-			for (List<Pair<int, String> >::Element *val_e = e->get().values.front(); val_e; val_e = val_e->next()) {
+			for (List<Pair<int, String>>::Element *val_e = e->get().values.front(); val_e; val_e = val_e->next()) {
 				source.push_back("\t\t\t\t\t\"" + val_e->get().second + "\": " + itos(val_e->get().first));
 				source.push_back(String((val_e->next() ? "," : "")) + "\n");
 			}

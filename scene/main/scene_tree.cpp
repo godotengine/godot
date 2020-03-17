@@ -172,7 +172,7 @@ void SceneTree::_flush_ugc() {
 
 	while (unique_group_calls.size()) {
 
-		Map<UGCall, Vector<Variant> >::Element *E = unique_group_calls.front();
+		Map<UGCall, Vector<Variant>>::Element *E = unique_group_calls.front();
 
 		Variant v[VARIANT_ARG_MAX];
 		for (int i = 0; i < E->get().size(); i++)
@@ -546,11 +546,11 @@ bool SceneTree::idle(float p_time) {
 
 	//go through timers
 
-	List<Ref<SceneTreeTimer> >::Element *L = timers.back(); //last element
+	List<Ref<SceneTreeTimer>>::Element *L = timers.back(); //last element
 
-	for (List<Ref<SceneTreeTimer> >::Element *E = timers.front(); E;) {
+	for (List<Ref<SceneTreeTimer>>::Element *E = timers.front(); E;) {
 
-		List<Ref<SceneTreeTimer> >::Element *N = E->next();
+		List<Ref<SceneTreeTimer>>::Element *N = E->next();
 		if (pause && !E->get()->is_pause_mode_process()) {
 			if (E == L) {
 				break; //break on last, so if new timers were added during list traversal, ignore them.
@@ -625,7 +625,7 @@ void SceneTree::finish() {
 	}
 
 	// cleanup timers
-	for (List<Ref<SceneTreeTimer> >::Element *E = timers.front(); E; E = E->next()) {
+	for (List<Ref<SceneTreeTimer>>::Element *E = timers.front(); E; E = E->next()) {
 		E->get()->release_connections();
 	}
 	timers.clear();

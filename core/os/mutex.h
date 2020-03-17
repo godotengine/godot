@@ -76,8 +76,8 @@ using BinaryMutex = MutexImpl<std::mutex>; // Non-recursive, handle with care
 
 extern template class MutexImpl<std::recursive_mutex>;
 extern template class MutexImpl<std::mutex>;
-extern template class MutexLock<MutexImpl<std::recursive_mutex> >;
-extern template class MutexLock<MutexImpl<std::mutex> >;
+extern template class MutexLock<MutexImpl<std::recursive_mutex>>;
+extern template class MutexLock<MutexImpl<std::mutex>>;
 
 #else
 

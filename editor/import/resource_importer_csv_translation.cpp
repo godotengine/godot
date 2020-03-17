@@ -96,7 +96,7 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 	ERR_FAIL_COND_V(line.size() <= 1, ERR_PARSE_ERROR);
 
 	Vector<String> locales;
-	Vector<Ref<Translation> > translations;
+	Vector<Ref<Translation>> translations;
 
 	for (int i = 1; i < line.size(); i++) {
 
