@@ -648,7 +648,6 @@ static int frame_count = 0;
 	view_controller = [[ViewController alloc] init];
 	view_controller.view = glView;
 
-
 	_set_keep_screen_on(bool(GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true)) ? YES : NO);
 	glView.useCADisplayLink =
 			bool(GLOBAL_DEF("display.iOS/use_cadisplaylink", true)) ? YES : NO;

@@ -186,7 +186,7 @@ void RayCast::_notification(int p_what) {
 			_update_raycast_state();
 			if (prev_collision_state != collided && get_tree()->is_debugging_collisions_hint()) {
 				if (debug_material.is_valid()) {
-					Ref<StandardMaterial3D> line_material = static_cast<Ref<StandardMaterial3D> >(debug_material);
+					Ref<StandardMaterial3D> line_material = static_cast<Ref<StandardMaterial3D>>(debug_material);
 					line_material->set_albedo(collided ? Color(1.0, 0, 0) : Color(1.0, 0.8, 0.6));
 				}
 			}
@@ -335,7 +335,7 @@ void RayCast::_create_debug_shape() {
 	if (!debug_material.is_valid()) {
 		debug_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
 
-		Ref<StandardMaterial3D> line_material = static_cast<Ref<StandardMaterial3D> >(debug_material);
+		Ref<StandardMaterial3D> line_material = static_cast<Ref<StandardMaterial3D>>(debug_material);
 		line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 		line_material->set_albedo(Color(1.0, 0.8, 0.6));
 	}

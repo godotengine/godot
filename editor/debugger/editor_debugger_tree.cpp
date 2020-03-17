@@ -132,7 +132,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 	const String filter = EditorNode::get_singleton()->get_scene_tree_dock()->get_filter();
 
 	// Nodes are in a flatten list, depth first. Use a stack of parents, avoid recursion.
-	List<Pair<TreeItem *, int> > parents;
+	List<Pair<TreeItem *, int>> parents;
 	for (int i = 0; i < p_tree->nodes.size(); i++) {
 		TreeItem *parent = NULL;
 		if (parents.size()) { // Find last parent.

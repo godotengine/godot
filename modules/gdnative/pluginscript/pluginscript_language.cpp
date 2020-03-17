@@ -210,7 +210,7 @@ void PluginScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) c
 	}
 }
 
-void PluginScriptLanguage::get_public_constants(List<Pair<String, Variant> > *p_constants) const {
+void PluginScriptLanguage::get_public_constants(List<Pair<String, Variant>> *p_constants) const {
 	// TODO: provide this statically in `godot_pluginscript_language_desc` ?
 	if (_desc.get_public_constants) {
 		Dictionary constants;

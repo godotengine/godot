@@ -214,9 +214,9 @@ static bool _group_face(_FaceClassify *p_faces, int len, int p_index, int p_grou
 	return true;
 }
 
-Vector<Vector<Face3> > Geometry::separate_objects(Vector<Face3> p_array) {
+Vector<Vector<Face3>> Geometry::separate_objects(Vector<Face3> p_array) {
 
-	Vector<Vector<Face3> > objects;
+	Vector<Vector<Face3>> objects;
 
 	int len = p_array.size();
 
@@ -235,7 +235,7 @@ Vector<Vector<Face3> > Geometry::separate_objects(Vector<Face3> p_array) {
 
 	bool error = _connect_faces(_fcptr, len, -1);
 
-	ERR_FAIL_COND_V_MSG(error, Vector<Vector<Face3> >(), "Invalid geometry.");
+	ERR_FAIL_COND_V_MSG(error, Vector<Vector<Face3>>(), "Invalid geometry.");
 
 	// Group connected faces in separate objects.
 
@@ -679,8 +679,8 @@ Vector<Face3> Geometry::wrap_geometry(Vector<Face3> p_array, real_t *p_error) {
 	return wrapped_faces;
 }
 
-Vector<Vector<Vector2> > Geometry::decompose_polygon_in_convex(Vector<Point2> polygon) {
-	Vector<Vector<Vector2> > decomp;
+Vector<Vector<Vector2>> Geometry::decompose_polygon_in_convex(Vector<Point2> polygon) {
+	Vector<Vector<Vector2>> decomp;
 	List<TriangulatorPoly> in_poly, out_poly;
 
 	TriangulatorPoly inp;
@@ -1076,7 +1076,7 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 	r_size = Size2(results[best].max_w, results[best].max_h);
 }
 
-Vector<Vector<Point2> > Geometry::_polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open) {
+Vector<Vector<Point2>> Geometry::_polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open) {
 
 	using namespace ClipperLib;
 
@@ -1111,7 +1111,7 @@ Vector<Vector<Point2> > Geometry::_polypaths_do_operation(PolyBooleanOperation p
 		clp.Execute(op, paths); // Works on closed polygons only.
 	}
 	// Have to scale points down now.
-	Vector<Vector<Point2> > polypaths;
+	Vector<Vector<Point2>> polypaths;
 
 	for (Paths::size_type i = 0; i < paths.size(); ++i) {
 		Vector<Vector2> polypath;
@@ -1128,7 +1128,7 @@ Vector<Vector<Point2> > Geometry::_polypaths_do_operation(PolyBooleanOperation p
 	return polypaths;
 }
 
-Vector<Vector<Point2> > Geometry::_polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
+Vector<Vector<Point2>> Geometry::_polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
 
 	using namespace ClipperLib;
 
@@ -1162,7 +1162,7 @@ Vector<Vector<Point2> > Geometry::_polypath_offset(const Vector<Point2> &p_polyp
 	co.Execute(paths, p_delta * SCALE_FACTOR); // Inflate/deflate.
 
 	// Have to scale points down now.
-	Vector<Vector<Point2> > polypaths;
+	Vector<Vector<Point2>> polypaths;
 
 	for (Paths::size_type i = 0; i < paths.size(); ++i) {
 		Vector<Vector2> polypath;

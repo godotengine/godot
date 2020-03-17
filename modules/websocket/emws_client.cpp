@@ -181,7 +181,7 @@ Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port,
 	if (peer_sock == -1)
 		return FAILED;
 
-	static_cast<Ref<EMWSPeer> >(_peer)->set_sock(peer_sock, _in_buf_size, _in_pkt_size);
+	static_cast<Ref<EMWSPeer>>(_peer)->set_sock(peer_sock, _in_buf_size, _in_pkt_size);
 
 	return OK;
 };

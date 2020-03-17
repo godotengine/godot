@@ -44,7 +44,7 @@ void _global_unlock() {
 
 template class MutexImpl<std::recursive_mutex>;
 template class MutexImpl<std::mutex>;
-template class MutexLock<MutexImpl<std::recursive_mutex> >;
-template class MutexLock<MutexImpl<std::mutex> >;
+template class MutexLock<MutexImpl<std::recursive_mutex>>;
+template class MutexLock<MutexImpl<std::mutex>>;
 
 #endif

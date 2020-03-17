@@ -312,7 +312,7 @@ void VisualServerViewport::draw_viewports() {
 	//sort viewports
 	active_viewports.sort_custom<ViewportSort>();
 
-	Map<int, Vector<Rasterizer::BlitToScreen> > blit_to_screen_list;
+	Map<int, Vector<Rasterizer::BlitToScreen>> blit_to_screen_list;
 	//draw viewports
 	RENDER_TIMESTAMP(">Render Viewports");
 
@@ -415,7 +415,7 @@ void VisualServerViewport::draw_viewports() {
 	//this needs to be called to make screen swapping more efficient
 	VSG::rasterizer->prepare_for_blitting_render_targets();
 
-	for (Map<int, Vector<Rasterizer::BlitToScreen> >::Element *E = blit_to_screen_list.front(); E; E = E->next()) {
+	for (Map<int, Vector<Rasterizer::BlitToScreen>>::Element *E = blit_to_screen_list.front(); E; E = E->next()) {
 		VSG::rasterizer->blit_render_targets_to_screen(E->key(), E->get().ptr(), E->get().size());
 	}
 }

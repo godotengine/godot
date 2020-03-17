@@ -284,7 +284,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 			Channel<Vector3> translation_track;
 			Channel<Quat> rotation_track;
 			Channel<Vector3> scale_track;
-			Vector<Channel<float> > weight_tracks;
+			Vector<Channel<float>> weight_tracks;
 		};
 
 		String name;
@@ -302,18 +302,18 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		bool use_named_skin_binds;
 
 		Vector<GLTFNode *> nodes;
-		Vector<Vector<uint8_t> > buffers;
+		Vector<Vector<uint8_t>> buffers;
 		Vector<GLTFBufferView> buffer_views;
 		Vector<GLTFAccessor> accessors;
 
 		Vector<GLTFMesh> meshes; //meshes are loaded directly, no reason not to.
-		Vector<Ref<Material> > materials;
+		Vector<Ref<Material>> materials;
 
 		String scene_name;
 		Vector<int> root_nodes;
 
 		Vector<GLTFTexture> textures;
-		Vector<Ref<Texture2D> > images;
+		Vector<Ref<Texture2D>> images;
 
 		Vector<GLTFSkin> skins;
 		Vector<GLTFCamera> cameras;

@@ -1365,7 +1365,7 @@ void OS_OSX::_update_global_menu() {
 	for (int i = 1; i < [main_menu numberOfItems]; i++) {
 		[main_menu removeItemAtIndex:i];
 	}
-	for (Map<String, Vector<GlobalMenuItem> >::Element *E = global_menus.front(); E; E = E->next()) {
+	for (Map<String, Vector<GlobalMenuItem>>::Element *E = global_menus.front(); E; E = E->next()) {
 		if (E->key() != "_dock") {
 			NSMenu *menu = [[[NSMenu alloc] initWithTitle:[NSString stringWithUTF8String:E->key().utf8().get_data()]] autorelease];
 			for (int i = 0; i < E->get().size(); i++) {
@@ -1835,7 +1835,7 @@ void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 
 	if (p_cursor.is_valid()) {
 
-		Map<CursorShape, Vector<Variant> >::Element *cursor_c = cursors_cache.find(p_shape);
+		Map<CursorShape, Vector<Variant>>::Element *cursor_c = cursors_cache.find(p_shape);
 
 		if (cursor_c) {
 			if (cursor_c->get()[0] == p_cursor && cursor_c->get()[1] == p_hotspot) {

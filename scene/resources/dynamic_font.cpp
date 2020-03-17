@@ -115,7 +115,7 @@ DynamicFontData::~DynamicFontData() {
 }
 
 ////////////////////
-HashMap<String, Vector<uint8_t> > DynamicFontAtSize::_fontdata;
+HashMap<String, Vector<uint8_t>> DynamicFontAtSize::_fontdata;
 
 Error DynamicFontAtSize::_load() {
 
@@ -243,7 +243,7 @@ float DynamicFontAtSize::get_descent() const {
 	return descent;
 }
 
-const Pair<const DynamicFontAtSize::Character *, DynamicFontAtSize *> DynamicFontAtSize::_find_char_with_font(CharType p_char, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks) const {
+const Pair<const DynamicFontAtSize::Character *, DynamicFontAtSize *> DynamicFontAtSize::_find_char_with_font(CharType p_char, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks) const {
 	const Character *chr = char_map.getptr(p_char);
 	ERR_FAIL_COND_V(!chr, (Pair<const Character *, DynamicFontAtSize *>(NULL, NULL)));
 
@@ -275,7 +275,7 @@ const Pair<const DynamicFontAtSize::Character *, DynamicFontAtSize *> DynamicFon
 	return Pair<const Character *, DynamicFontAtSize *>(chr, const_cast<DynamicFontAtSize *>(this));
 }
 
-Size2 DynamicFontAtSize::get_char_size(CharType p_char, CharType p_next, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks) const {
+Size2 DynamicFontAtSize::get_char_size(CharType p_char, CharType p_next, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks) const {
 
 	if (!valid)
 		return Size2(1, 1);
@@ -294,7 +294,7 @@ Size2 DynamicFontAtSize::get_char_size(CharType p_char, CharType p_next, const V
 	return ret;
 }
 
-float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks, bool p_advance_only, bool p_outline) const {
+float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks, bool p_advance_only, bool p_outline) const {
 
 	if (!valid)
 		return 0;
@@ -850,7 +850,7 @@ float DynamicFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_
 	if (!font_at_size.is_valid())
 		return 0;
 
-	const Vector<Ref<DynamicFontAtSize> > &fallbacks = p_outline && outline_cache_id.outline_size > 0 ? fallback_outline_data_at_size : fallback_data_at_size;
+	const Vector<Ref<DynamicFontAtSize>> &fallbacks = p_outline && outline_cache_id.outline_size > 0 ? fallback_outline_data_at_size : fallback_data_at_size;
 	Color color = p_outline && outline_cache_id.outline_size > 0 ? p_modulate * outline_color : p_modulate;
 
 	// If requested outline draw, but no outline is present, simply return advance without drawing anything
@@ -1025,7 +1025,7 @@ void DynamicFont::finish_dynamic_fonts() {
 
 void DynamicFont::update_oversampling() {
 
-	Vector<Ref<DynamicFont> > changed;
+	Vector<Ref<DynamicFont>> changed;
 	{
 		MutexLock lock(dynamic_font_mutex);
 

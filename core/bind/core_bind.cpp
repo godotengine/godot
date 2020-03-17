@@ -964,10 +964,10 @@ void _OS::print_all_textures_by_size() {
 	List<_OSCoreBindImg> imgs;
 	int total = 0;
 	{
-		List<Ref<Resource> > rsrc;
+		List<Ref<Resource>> rsrc;
 		ResourceCache::get_cached_resources(&rsrc);
 
-		for (List<Ref<Resource> >::Element *E = rsrc.front(); E; E = E->next()) {
+		for (List<Ref<Resource>>::Element *E = rsrc.front(); E; E = E->next()) {
 
 			if (!E->get()->is_class("ImageTexture"))
 				continue;
@@ -998,13 +998,13 @@ void _OS::print_resources_by_type(const Vector<String> &p_types) {
 
 	Map<String, int> type_count;
 
-	List<Ref<Resource> > resources;
+	List<Ref<Resource>> resources;
 	ResourceCache::get_cached_resources(&resources);
 
-	List<Ref<Resource> > rsrc;
+	List<Ref<Resource>> rsrc;
 	ResourceCache::get_cached_resources(&rsrc);
 
-	for (List<Ref<Resource> >::Element *E = rsrc.front(); E; E = E->next()) {
+	for (List<Ref<Resource>>::Element *E = rsrc.front(); E; E = E->next()) {
 
 		Ref<Resource> r = E->get();
 
@@ -1633,7 +1633,7 @@ Vector<Vector3> _Geometry::clip_polygon(const Vector<Vector3> &p_points, const P
 
 Array _Geometry::merge_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
 
-	Vector<Vector<Point2> > polys = Geometry::merge_polygons_2d(p_polygon_a, p_polygon_b);
+	Vector<Vector<Point2>> polys = Geometry::merge_polygons_2d(p_polygon_a, p_polygon_b);
 
 	Array ret;
 
@@ -1645,7 +1645,7 @@ Array _Geometry::merge_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vec
 
 Array _Geometry::clip_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
 
-	Vector<Vector<Point2> > polys = Geometry::clip_polygons_2d(p_polygon_a, p_polygon_b);
+	Vector<Vector<Point2>> polys = Geometry::clip_polygons_2d(p_polygon_a, p_polygon_b);
 
 	Array ret;
 
@@ -1657,7 +1657,7 @@ Array _Geometry::clip_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vect
 
 Array _Geometry::intersect_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
 
-	Vector<Vector<Point2> > polys = Geometry::intersect_polygons_2d(p_polygon_a, p_polygon_b);
+	Vector<Vector<Point2>> polys = Geometry::intersect_polygons_2d(p_polygon_a, p_polygon_b);
 
 	Array ret;
 
@@ -1669,7 +1669,7 @@ Array _Geometry::intersect_polygons_2d(const Vector<Vector2> &p_polygon_a, const
 
 Array _Geometry::exclude_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
 
-	Vector<Vector<Point2> > polys = Geometry::exclude_polygons_2d(p_polygon_a, p_polygon_b);
+	Vector<Vector<Point2>> polys = Geometry::exclude_polygons_2d(p_polygon_a, p_polygon_b);
 
 	Array ret;
 
@@ -1681,7 +1681,7 @@ Array _Geometry::exclude_polygons_2d(const Vector<Vector2> &p_polygon_a, const V
 
 Array _Geometry::clip_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
 
-	Vector<Vector<Point2> > polys = Geometry::clip_polyline_with_polygon_2d(p_polyline, p_polygon);
+	Vector<Vector<Point2>> polys = Geometry::clip_polyline_with_polygon_2d(p_polyline, p_polygon);
 
 	Array ret;
 
@@ -1693,7 +1693,7 @@ Array _Geometry::clip_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline
 
 Array _Geometry::intersect_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
 
-	Vector<Vector<Point2> > polys = Geometry::intersect_polyline_with_polygon_2d(p_polyline, p_polygon);
+	Vector<Vector<Point2>> polys = Geometry::intersect_polyline_with_polygon_2d(p_polyline, p_polygon);
 
 	Array ret;
 
@@ -1705,7 +1705,7 @@ Array _Geometry::intersect_polyline_with_polygon_2d(const Vector<Vector2> &p_pol
 
 Array _Geometry::offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type) {
 
-	Vector<Vector<Point2> > polys = Geometry::offset_polygon_2d(p_polygon, p_delta, Geometry::PolyJoinType(p_join_type));
+	Vector<Vector<Point2>> polys = Geometry::offset_polygon_2d(p_polygon, p_delta, Geometry::PolyJoinType(p_join_type));
 
 	Array ret;
 
@@ -1717,7 +1717,7 @@ Array _Geometry::offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_de
 
 Array _Geometry::offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
 
-	Vector<Vector<Point2> > polys = Geometry::offset_polyline_2d(p_polygon, p_delta, Geometry::PolyJoinType(p_join_type), Geometry::PolyEndType(p_end_type));
+	Vector<Vector<Point2>> polys = Geometry::offset_polyline_2d(p_polygon, p_delta, Geometry::PolyJoinType(p_join_type), Geometry::PolyEndType(p_end_type));
 
 	Array ret;
 

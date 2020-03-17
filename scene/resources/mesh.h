@@ -142,11 +142,11 @@ public:
 	Size2 get_lightmap_size_hint() const;
 	void clear_cache() const;
 
-	typedef Vector<Vector<Face3> > (*ConvexDecompositionFunc)(const Vector<Face3> &);
+	typedef Vector<Vector<Face3>> (*ConvexDecompositionFunc)(const Vector<Face3> &);
 
 	static ConvexDecompositionFunc convex_composition_function;
 
-	Vector<Ref<Shape> > convex_decompose() const;
+	Vector<Ref<Shape>> convex_decompose() const;
 
 	Mesh();
 };
@@ -193,7 +193,7 @@ protected:
 public:
 	void add_surface_from_arrays(PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint32_t p_flags = ARRAY_COMPRESS_DEFAULT);
 
-	void add_surface(uint32_t p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<Vector<uint8_t> > &p_blend_shapes = Vector<Vector<uint8_t> >(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>(), const Vector<VS::SurfaceData::LOD> &p_lods = Vector<VS::SurfaceData::LOD>());
+	void add_surface(uint32_t p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<Vector<uint8_t>> &p_blend_shapes = Vector<Vector<uint8_t>>(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>(), const Vector<VS::SurfaceData::LOD> &p_lods = Vector<VS::SurfaceData::LOD>());
 
 	Array surface_get_arrays(int p_surface) const;
 	Array surface_get_blend_shape_arrays(int p_surface) const;

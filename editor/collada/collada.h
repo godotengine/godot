@@ -570,8 +570,8 @@ public:
 
 		Vector<AnimationClip> animation_clips;
 		Vector<AnimationTrack> animation_tracks;
-		Map<String, Vector<int> > referenced_tracks;
-		Map<String, Vector<int> > by_id_tracks;
+		Map<String, Vector<int>> referenced_tracks;
+		Map<String, Vector<int>> by_id_tracks;
 
 		float animation_length;
 

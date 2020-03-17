@@ -285,7 +285,7 @@ private:
 	void _tree_changed();
 	void _update_properties();
 	List<PropertyInfo> properties;
-	HashMap<StringName, HashMap<StringName, StringName> > property_parent_map;
+	HashMap<StringName, HashMap<StringName, StringName>> property_parent_map;
 	HashMap<StringName, Variant> property_map;
 
 	struct Activity {
@@ -293,7 +293,7 @@ private:
 		float activity;
 	};
 
-	HashMap<StringName, Vector<Activity> > input_activity_map;
+	HashMap<StringName, Vector<Activity>> input_activity_map;
 	HashMap<StringName, Vector<Activity> *> input_activity_map_get;
 
 	void _update_properties_for_node(const String &p_base_path, Ref<AnimationNode> node);

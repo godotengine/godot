@@ -57,7 +57,7 @@ void RenderingDeviceVulkan::_free_dependencies(RID p_id) {
 
 	//direct dependencies must be freed
 
-	Map<RID, Set<RID> >::Element *E = dependency_map.find(p_id);
+	Map<RID, Set<RID>>::Element *E = dependency_map.find(p_id);
 	if (E) {
 
 		while (E->get().size()) {
@@ -72,7 +72,7 @@ void RenderingDeviceVulkan::_free_dependencies(RID p_id) {
 	if (E) {
 
 		for (Set<RID>::Element *F = E->get().front(); F; F = F->next()) {
-			Map<RID, Set<RID> >::Element *G = dependency_map.find(F->get());
+			Map<RID, Set<RID>>::Element *G = dependency_map.find(F->get());
 			ERR_CONTINUE(!G);
 			ERR_CONTINUE(!G->get().has(p_id));
 			G->get().erase(p_id);
@@ -1555,7 +1555,7 @@ void RenderingDeviceVulkan::_buffer_memory_barrier(VkBuffer buffer, uint64_t p_f
 /**** TEXTURE ****/
 /*****************/
 
-RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t> > &p_data) {
+RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -3568,8 +3568,8 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 RID RenderingDeviceVulkan::shader_create(const Vector<ShaderStageData> &p_stages) {
 
 	//descriptor layouts
-	Vector<Vector<VkDescriptorSetLayoutBinding> > set_bindings;
-	Vector<Vector<UniformInfo> > uniform_info;
+	Vector<Vector<VkDescriptorSetLayoutBinding>> set_bindings;
+	Vector<Vector<UniformInfo>> uniform_info;
 	Shader::PushConstant push_constant;
 	push_constant.push_constant_size = 0;
 	push_constant.push_constants_vk_stage = 0;
@@ -4223,9 +4223,9 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 	DescriptorPoolKey pool_key;
 
 	//to keep them alive until update call
-	List<Vector<VkDescriptorBufferInfo> > buffer_infos;
-	List<Vector<VkBufferView> > buffer_views;
-	List<Vector<VkDescriptorImageInfo> > image_infos;
+	List<Vector<VkDescriptorBufferInfo>> buffer_infos;
+	List<Vector<VkBufferView>> buffer_views;
+	List<Vector<VkDescriptorImageInfo>> image_infos;
 	//used for verification to make sure a uniform set does not use a framebuffer bound texture
 	Vector<RID> attachable_textures;
 	Vector<Texture *> mutable_sampled_textures;

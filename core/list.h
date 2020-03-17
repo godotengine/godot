@@ -576,7 +576,7 @@ public:
 
 	void sort() {
 
-		sort_custom<Comparator<T> >();
+		sort_custom<Comparator<T>>();
 	}
 
 	template <class C>
@@ -657,7 +657,7 @@ public:
 			idx++;
 		}
 
-		SortArray<Element *, AuxiliaryComparator<C> > sort;
+		SortArray<Element *, AuxiliaryComparator<C>> sort;
 		sort.sort(aux_buffer, s);
 
 		_data->first = aux_buffer[0];

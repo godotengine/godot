@@ -687,10 +687,10 @@ void DocData::generate(bool p_basic_types) {
 				c.methods.push_back(md);
 			}
 
-			List<Pair<String, Variant> > cinfo;
+			List<Pair<String, Variant>> cinfo;
 			lang->get_public_constants(&cinfo);
 
-			for (List<Pair<String, Variant> >::Element *E = cinfo.front(); E; E = E->next()) {
+			for (List<Pair<String, Variant>>::Element *E = cinfo.front(); E; E = E->next()) {
 
 				ConstantDoc cd;
 				cd.name = E->get().first;

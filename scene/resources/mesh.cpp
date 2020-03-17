@@ -541,15 +541,15 @@ void Mesh::clear_cache() const {
 	debug_lines.clear();
 }
 
-Vector<Ref<Shape> > Mesh::convex_decompose() const {
+Vector<Ref<Shape>> Mesh::convex_decompose() const {
 
-	ERR_FAIL_COND_V(!convex_composition_function, Vector<Ref<Shape> >());
+	ERR_FAIL_COND_V(!convex_composition_function, Vector<Ref<Shape>>());
 
 	const Vector<Face3> faces = get_faces();
 
-	Vector<Vector<Face3> > decomposed = convex_composition_function(faces);
+	Vector<Vector<Face3>> decomposed = convex_composition_function(faces);
 
-	Vector<Ref<Shape> > ret;
+	Vector<Ref<Shape>> ret;
 
 	for (int i = 0; i < decomposed.size(); i++) {
 		Set<Vector3> points;
@@ -788,7 +788,7 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 			if (d.has("index_count"))
 				index_count = d["index_count"];
 
-			Vector<Vector<uint8_t> > blend_shapes;
+			Vector<Vector<uint8_t>> blend_shapes;
 
 			if (d.has("blend_shape_data")) {
 				Array blend_shape_data = d["blend_shape_data"];
@@ -910,7 +910,7 @@ void ArrayMesh::_create_if_empty() const {
 void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 
 	Vector<VS::SurfaceData> surface_data;
-	Vector<Ref<Material> > surface_materials;
+	Vector<Ref<Material>> surface_materials;
 	Vector<String> surface_names;
 	Vector<bool> surface_2d;
 
@@ -1102,7 +1102,7 @@ void ArrayMesh::_recompute_aabb() {
 #ifndef _MSC_VER
 #warning need to add binding to add_surface using future MeshSurfaceData object
 #endif
-void ArrayMesh::add_surface(uint32_t p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<Vector<uint8_t> > &p_blend_shapes, const Vector<AABB> &p_bone_aabb, const Vector<VS::SurfaceData::LOD> &p_lods) {
+void ArrayMesh::add_surface(uint32_t p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<Vector<uint8_t>> &p_blend_shapes, const Vector<AABB> &p_bone_aabb, const Vector<VS::SurfaceData::LOD> &p_lods) {
 
 	_create_if_empty();
 
@@ -1341,7 +1341,7 @@ void ArrayMesh::regen_normalmaps() {
 	if (surfaces.size() == 0) {
 		return;
 	}
-	Vector<Ref<SurfaceTool> > surfs;
+	Vector<Ref<SurfaceTool>> surfs;
 	for (int i = 0; i < get_surface_count(); i++) {
 
 		Ref<SurfaceTool> st = memnew(SurfaceTool);
@@ -1379,7 +1379,7 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 	Vector<int> indices;
 	Vector<int> face_materials;
 	Vector<float> uv;
-	Vector<Pair<int, int> > uv_index;
+	Vector<Pair<int, int>> uv_index;
 
 	Vector<ArrayMeshLightmapSurface> surfaces;
 	for (int i = 0; i < get_surface_count(); i++) {
@@ -1472,7 +1472,7 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 	clear_surfaces();
 
 	//create surfacetools for each surface..
-	Vector<Ref<SurfaceTool> > surfaces_tools;
+	Vector<Ref<SurfaceTool>> surfaces_tools;
 
 	for (int i = 0; i < surfaces.size(); i++) {
 		Ref<SurfaceTool> st;

@@ -79,8 +79,8 @@ public:
 
 	//these go pass-through, as they can be called from any thread
 	virtual RID texture_2d_create(const Ref<Image> &p_image) { return visual_server->texture_2d_create(p_image); }
-	virtual RID texture_2d_layered_create(const Vector<Ref<Image> > &p_layers, TextureLayeredType p_layered_type) { return visual_server->texture_2d_layered_create(p_layers, p_layered_type); }
-	virtual RID texture_3d_create(const Vector<Ref<Image> > &p_slices) { return visual_server->texture_3d_create(p_slices); }
+	virtual RID texture_2d_layered_create(const Vector<Ref<Image>> &p_layers, TextureLayeredType p_layered_type) { return visual_server->texture_2d_layered_create(p_layers, p_layered_type); }
+	virtual RID texture_3d_create(const Vector<Ref<Image>> &p_slices) { return visual_server->texture_3d_create(p_slices); }
 	virtual RID texture_proxy_create(RID p_base) { return visual_server->texture_proxy_create(p_base); }
 
 	//goes pass-through
