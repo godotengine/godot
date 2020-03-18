@@ -53,6 +53,7 @@ class EditorSpatialGizmoPlugin;
 class EditorResourcePreview;
 class EditorFileSystem;
 class EditorToolAddons;
+class FileSystemDock;
 class ScriptEditor;
 
 class EditorInterface : public Node {
@@ -87,6 +88,8 @@ public:
 	Ref<EditorSettings> get_editor_settings();
 	EditorResourcePreview *get_resource_previewer();
 	EditorFileSystem *get_resource_file_system();
+
+	FileSystemDock *get_file_system_dock();
 
 	Control *get_base_control();
 
