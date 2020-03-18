@@ -34,6 +34,7 @@
 #include "core/core_string_names.h"
 #include "core/crypto/crypto.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/error/error_call_stack.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/io/file_access_network.h"
@@ -522,6 +523,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	GLOBAL_DEF("debug/settings/crash_handler/message",
 			String("Please include this when reporting the bug on https://github.com/godotengine/godot/issues"));
+
+#ifdef DEBUG_ENABLED
+	ErrorCallStack::initialize();
+#endif
 
 	MAIN_PRINT("Main: Parse CMDLine");
 
@@ -2565,6 +2570,10 @@ void Main::cleanup() {
 	if (camera_server) {
 		memdelete(camera_server);
 	}
+
+#ifdef DEBUG_ENABLED
+	ErrorCallStack::finalize();
+#endif
 
 	OS::get_singleton()->finalize();
 

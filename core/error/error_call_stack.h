@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  crash_handler_linuxbsd.cpp                                           */
+/*  error_call_stack.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,80 +28,26 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "crash_handler_linuxbsd.h"
-
-#include "core/config/project_settings.h"
-#include "core/os/os.h"
-#include "main/main.h"
+#ifndef ERROR_CALL_STACK_H
+#define ERROR_CALL_STACK_H
 
 #ifdef DEBUG_ENABLED
-#define CRASH_HANDLER_ENABLED 1
+#include "error_macros.h"
+
+class ErrorCallStack {
+public:
+	static void initialize();
+	static void finalize();
+
+private:
+	static ErrorCallStack *singleton;
+
+	ErrorHandlerList handler;
+	bool processing = false;
+
+	static void _err_handler(void *p_ud, const char *p_func, const char *p_file, int p_line, const char *p_err, const char *p_descr, ErrorHandlerType p_type);
+	void _err_handler_internal(void *p_ud, const char *p_func, const char *p_file, int p_line, const char *p_err, const char *p_descr, ErrorHandlerType p_type);
+};
 #endif
 
-#ifdef CRASH_HANDLER_ENABLED
-#include <signal.h>
-
-static void handle_crash(int sig) {
-	if (OS::get_singleton() == nullptr) {
-		abort();
-	}
-
-	String msg;
-	const ProjectSettings *proj_settings = ProjectSettings::get_singleton();
-	if (proj_settings) {
-		msg = proj_settings->get("debug/settings/crash_handler/message");
-	}
-
-	// Dump the backtrace to stderr with a message to the user
-	fprintf(stderr, "%s: Program crashed with signal %d\n", __FUNCTION__, sig);
-
-	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
-	}
-
-	fprintf(stderr, "Dumping the backtrace. %s\n", msg.utf8().get_data());
-
-	LocalVector<OS::StackFrame> stack;
-	OS::get_singleton()->get_stack_trace(stack, 2, 256);
-
-	int frame_count = stack.size();
-	for (int frame_index = 0; frame_index < frame_count; ++frame_index) {
-		OS::StackFrame const &frame = stack[frame_index];
-		fprintf(stderr, "[%d] %s (%s:%u)\n", frame_index, frame.function.utf8().get_data(), frame.file.utf8().get_data(), frame.line);
-	}
-	fprintf(stderr, "-- END OF BACKTRACE --\n");
-
-	// Abort to pass the error to the OS
-	abort();
-}
 #endif
-
-CrashHandler::CrashHandler() {
-	disabled = false;
-}
-
-CrashHandler::~CrashHandler() {
-	disable();
-}
-
-void CrashHandler::disable() {
-	if (disabled) {
-		return;
-	}
-
-#ifdef CRASH_HANDLER_ENABLED
-	signal(SIGSEGV, nullptr);
-	signal(SIGFPE, nullptr);
-	signal(SIGILL, nullptr);
-#endif
-
-	disabled = true;
-}
-
-void CrashHandler::initialize() {
-#ifdef CRASH_HANDLER_ENABLED
-	signal(SIGSEGV, handle_crash);
-	signal(SIGFPE, handle_crash);
-	signal(SIGILL, handle_crash);
-#endif
-}

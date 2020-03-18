@@ -45,7 +45,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <cxxabi.h>
 #include <dlfcn.h>
+#include <execinfo.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -265,6 +267,72 @@ void OS_LinuxBSD::run() {
 
 	main_loop->finish();
 }
+
+#ifdef DEBUG_ENABLED
+void OS_LinuxBSD::get_stack_trace(LocalVector<StackFrame> &p_frames, int p_skip_frames, int p_max_frames, void *p_context) const {
+	void *bt_buffer[256];
+	size_t size = backtrace(bt_buffer, 256);
+
+	String _execpath = OS::get_singleton()->get_executable_path();
+
+	char **strings = backtrace_symbols(bt_buffer, size);
+	if (strings) {
+		int frame_count = 0;
+		for (size_t i = p_skip_frames; i < size; i++) {
+			char fname[1024];
+			snprintf(fname, 1024, "%s", strings[i]);
+
+			// Try to demangle the function name to provide a more readable one
+			Dl_info info;
+			if (dladdr(bt_buffer[i], &info) && info.dli_sname) {
+				if (info.dli_sname[0] == '_') {
+					int status;
+					char *demangled = abi::__cxa_demangle(info.dli_sname, nullptr, nullptr, &status);
+
+					if (status == 0 && demangled) {
+						snprintf(fname, 1024, "%s", demangled);
+					}
+
+					if (demangled) {
+						free(demangled);
+					}
+				}
+			}
+
+			List<String> args;
+
+			char str[1024];
+			snprintf(str, 1024, "%p", bt_buffer[i]);
+			args.push_back(str);
+			args.push_back("-e");
+			args.push_back(_execpath);
+
+			StackFrame f = {};
+			f.function = fname;
+
+			// Try to get the file/line number using addr2line
+			int ret;
+			Error err = OS::get_singleton()->execute(String("addr2line"), args, true, nullptr, &f.file, &ret);
+			if (err == OK) {
+				f.file.erase(f.file.length() - 1, 1);
+
+				int sep_index = f.file.find(":");
+				if (sep_index > -1) {
+					f.line = (unsigned int)f.file.substr(sep_index + 1).to_int();
+					f.file = f.file.substr(0, sep_index);
+				}
+			}
+
+			p_frames.push_back(f);
+			if (++frame_count > p_max_frames) {
+				break;
+			}
+		}
+
+		free(strings);
+	}
+}
+#endif
 
 void OS_LinuxBSD::disable_crash_handler() {
 	crash_handler.disable();

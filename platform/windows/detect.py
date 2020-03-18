@@ -271,6 +271,9 @@ def configure_msvc(env, manual_msvc_config):
         "dwmapi",
     ]
 
+    if env["target"] == "debug" or env["target"] == "release_debug":
+        LIBS += ["dbghelp"]
+
     env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
     if not env["builtin_vulkan"]:
         LIBS += ["vulkan"]
@@ -440,6 +443,9 @@ def configure_mingw(env):
             "dwmapi",
         ]
     )
+
+    if env["target"] == "debug" or env["target"] == "release_debug":
+        env.Append(LIBS=["dbghelp"])
 
     env.Append(CPPDEFINES=["VULKAN_ENABLED"])
     if not env["builtin_vulkan"]:

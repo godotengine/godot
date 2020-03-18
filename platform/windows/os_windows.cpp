@@ -57,6 +57,10 @@
 #include <regstr.h>
 #include <shlobj.h>
 
+#ifdef DEBUG_ENABLED
+#include <dbghelp.h>
+#endif
+
 static const WORD MAX_CONSOLE_LINES = 1500;
 
 extern "C" {
@@ -242,6 +246,110 @@ void OS_Windows::finalize_core() {
 	memdelete(process_map);
 	NetSocketPosix::cleanup();
 }
+
+#ifdef DEBUG_ENABLED
+void OS_Windows::get_stack_trace(LocalVector<StackFrame> &p_frames, int p_skip_frames, int p_max_frames, void *p_context) const {
+#ifdef _M_X64
+	DWORD machine = IMAGE_FILE_MACHINE_AMD64;
+#else
+	DWORD machine = IMAGE_FILE_MACHINE_I386;
+#endif
+	HANDLE process = GetCurrentProcess();
+	HANDLE thread = GetCurrentThread();
+
+	if (SymInitialize(process, nullptr, TRUE) == FALSE) {
+		fprintf(stderr, "%s: Failed to call SymInitialize.\n", __FUNCTION__);
+		return;
+	}
+
+	SymSetOptions(SymGetOptions() | SYMOPT_LOAD_LINES | SYMOPT_UNDNAME);
+
+	CONTEXT context = {};
+	if (p_context) {
+		context = *(CONTEXT *)p_context;
+	} else {
+		context.ContextFlags = CONTEXT_FULL;
+		RtlCaptureContext(&context);
+	}
+
+#ifdef _M_X64
+	STACKFRAME frame = {};
+	frame.AddrPC.Offset = context.Rip;
+	frame.AddrPC.Mode = AddrModeFlat;
+	frame.AddrFrame.Offset = context.Rbp;
+	frame.AddrFrame.Mode = AddrModeFlat;
+	frame.AddrStack.Offset = context.Rsp;
+	frame.AddrStack.Mode = AddrModeFlat;
+#else
+	STACKFRAME frame = {};
+	frame.AddrPC.Offset = context.Eip;
+	frame.AddrPC.Mode = AddrModeFlat;
+	frame.AddrFrame.Offset = context.Ebp;
+	frame.AddrFrame.Mode = AddrModeFlat;
+	frame.AddrStack.Offset = context.Esp;
+	frame.AddrStack.Mode = AddrModeFlat;
+#endif
+
+	int frame_count = 0;
+	while (StackWalk(machine, process, thread, &frame, &context, nullptr, SymFunctionTableAccess, SymGetModuleBase, nullptr)) {
+		if (p_skip_frames > 0) {
+			--p_skip_frames;
+			continue;
+		}
+
+		StackFrame f = {};
+
+		DWORD64 module_base = SymGetModuleBase(process, frame.AddrPC.Offset);
+
+		char module_buff[MAX_PATH];
+		if (module_base && GetModuleFileNameA((HINSTANCE)module_base, module_buff, MAX_PATH)) {
+			f.module = module_buff;
+			int last_separator = f.module.rfind("\\");
+			if (last_separator > 0) {
+				f.module = f.module.substr(last_separator + 1);
+			}
+
+		} else {
+			f.module = "Unknown Module";
+		}
+
+		char symbol_buffer[sizeof(IMAGEHLP_SYMBOL) + 255];
+		PIMAGEHLP_SYMBOL symbol = (PIMAGEHLP_SYMBOL)symbol_buffer;
+		symbol->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL) + 255;
+		symbol->MaxNameLength = 254;
+
+#ifdef _M_X64
+		DWORD64 offset = 0;
+#else
+		DWORD offset = 0;
+#endif
+
+		if (SymGetSymFromAddr(process, frame.AddrPC.Offset, &offset, symbol)) {
+			f.function = symbol->Name;
+		} else {
+			f.function = "Unknown Function";
+		}
+
+		IMAGEHLP_LINE line;
+		line.SizeOfStruct = sizeof(IMAGEHLP_LINE);
+
+		DWORD offset_line = 0;
+		if (SymGetLineFromAddr(process, frame.AddrPC.Offset, &offset_line, &line)) {
+			f.file = line.FileName;
+			f.line = line.LineNumber;
+		} else {
+			f.line = 0;
+		}
+
+		p_frames.push_back(f);
+		if (++frame_count > p_max_frames) {
+			break;
+		}
+	}
+
+	SymCleanup(process);
+}
+#endif
 
 Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
 	String path = p_path.replace("/", "\\");
