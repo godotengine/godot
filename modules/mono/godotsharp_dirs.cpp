@@ -49,13 +49,13 @@ namespace GodotSharpDirs {
 
 String _get_expected_build_config() {
 #ifdef TOOLS_ENABLED
-	return "Tools";
+	return "Debug";
 #else
 
 #ifdef DEBUG_ENABLED
-	return "Debug";
+	return "ExportDebug";
 #else
-	return "Release";
+	return "ExportRelease";
 #endif
 
 #endif
