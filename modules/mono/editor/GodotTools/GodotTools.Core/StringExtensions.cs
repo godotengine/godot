@@ -30,7 +30,7 @@ namespace GodotTools.Core
 
             path = string.Join(Path.DirectorySeparatorChar.ToString(), parts).Trim();
 
-            return rooted ? Path.DirectorySeparatorChar.ToString() + path : path;
+            return rooted ? Path.DirectorySeparatorChar + path : path;
         }
 
         private static readonly string driveRoot = Path.GetPathRoot(Environment.CurrentDirectory);

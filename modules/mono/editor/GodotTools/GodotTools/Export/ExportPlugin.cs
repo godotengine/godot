@@ -96,7 +96,7 @@ namespace GodotTools.Export
             if (type != Internal.CSharpLanguageType)
                 return;
 
-            if (Path.GetExtension(path) != $".{Internal.CSharpLanguageExtension}")
+            if (Path.GetExtension(path) != Internal.CSharpLanguageExtension)
                 throw new ArgumentException($"Resource of type {Internal.CSharpLanguageType} has an invalid file extension: {path}", nameof(path));
 
             // TODO What if the source file is not part of the game's C# project

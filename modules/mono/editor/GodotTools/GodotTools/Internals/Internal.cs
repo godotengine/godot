@@ -8,7 +8,7 @@ namespace GodotTools.Internals
     public static class Internal
     {
         public const string CSharpLanguageType = "CSharpScript";
-        public const string CSharpLanguageExtension = "cs";
+        public const string CSharpLanguageExtension = ".cs";
 
         public static string UpdateApiAssembliesFromPrebuilt(string config) =>
             internal_UpdateApiAssembliesFromPrebuilt(config);
