@@ -151,7 +151,7 @@
 			</description>
 		</method>
 		<method name="xform">
-			<return type="void">
+			<return type="Variant">
 			</return>
 			<argument index="0" name="v" type="Variant">
 			</argument>
@@ -160,7 +160,7 @@
 			</description>
 		</method>
 		<method name="xform_inv">
-			<return type="void">
+			<return type="Variant">
 			</return>
 			<argument index="0" name="v" type="Variant">
 			</argument>

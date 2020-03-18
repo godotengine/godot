@@ -98,7 +98,7 @@
 			</description>
 		</method>
 		<method name="get">
-			<return type="void">
+			<return type="Variant">
 			</return>
 			<argument index="0" name="key" type="Variant">
 			</argument>
