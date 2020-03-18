@@ -22,6 +22,79 @@ namespace GodotTools.ProjectEditor
                 root.Save();
         }
 
+        public static void RenameItemInProjectChecked(string projectPath, string itemType, string oldInclude, string newInclude)
+        {
+            var dir = Directory.GetParent(projectPath).FullName;
+            var root = ProjectRootElement.Open(projectPath);
+            Debug.Assert(root != null);
+
+            var normalizedOldInclude = oldInclude.NormalizePath();
+            var normalizedNewInclude = newInclude.NormalizePath();
+
+            var item = root.FindItemOrNullAbs(itemType, normalizedOldInclude);
+
+            if (item == null)
+                return;
+
+            item.Include = normalizedNewInclude.RelativeToPath(dir).Replace("/", "\\");
+            root.Save();
+        }
+
+        public static void RemoveItemFromProjectChecked(string projectPath, string itemType, string include)
+        {
+            var dir = Directory.GetParent(projectPath).FullName;
+            var root = ProjectRootElement.Open(projectPath);
+            Debug.Assert(root != null);
+
+            var normalizedInclude = include.NormalizePath();
+
+            if (root.RemoveItemChecked(itemType, normalizedInclude))
+                root.Save();
+        }
+
+        public static void RenameItemsToNewFolderInProjectChecked(string projectPath, string itemType, string oldFolder, string newFolder)
+        {
+            var dir = Directory.GetParent(projectPath).FullName;
+            var root = ProjectRootElement.Open(projectPath);
+            Debug.Assert(root != null);
+
+            bool dirty = false;
+
+            var oldFolderNormalized = oldFolder.NormalizePath();
+            var newFolderNormalized = newFolder.NormalizePath();
+            string absOldFolderNormalized = Path.GetFullPath(oldFolderNormalized).NormalizePath();
+            string absNewFolderNormalized = Path.GetFullPath(newFolderNormalized).NormalizePath();
+
+            foreach (var item in root.FindAllItemsInFolder(itemType, oldFolderNormalized))
+            {
+                string absPathNormalized = Path.GetFullPath(item.Include).NormalizePath();
+                string absNewIncludeNormalized = absNewFolderNormalized + absPathNormalized.Substring(absOldFolderNormalized.Length);
+                item.Include = absNewIncludeNormalized.RelativeToPath(dir).Replace("/", "\\");
+                dirty = true;
+            }
+
+            if (dirty)
+                root.Save();
+        }
+
+        public static void RemoveItemsInFolderFromProjectChecked(string projectPath, string itemType, string folder)
+        {
+            var root = ProjectRootElement.Open(projectPath);
+            Debug.Assert(root != null);
+
+            var folderNormalized = folder.NormalizePath();
+
+            var itemsToRemove = root.FindAllItemsInFolder(itemType, folderNormalized).ToList();
+
+            if (itemsToRemove.Count > 0)
+            {
+                foreach (var item in itemsToRemove)
+                    item.Parent.RemoveChild(item);
+
+                root.Save();
+            }
+        }
+
         private static string[] GetAllFilesRecursive(string rootDirectory, string mask)
         {
             string[] files = Directory.GetFiles(rootDirectory, mask, SearchOption.AllDirectories);

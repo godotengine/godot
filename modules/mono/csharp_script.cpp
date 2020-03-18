@@ -2882,22 +2882,6 @@ void CSharpScript::initialize_for_managed_type(Ref<CSharpScript> p_script, GDMon
 bool CSharpScript::can_instance() const {
 
 #ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
-
-		// Hack to lower the risk of attached scripts not being added to the C# project
-		if (!get_path().empty() && get_path().find("::") == -1) { // Ignore if built-in script. Can happen if the file is deleted...
-			if (_create_project_solution_if_needed()) {
-				CSharpProject::add_item(GodotSharpDirs::get_project_csproj_path(),
-						"Compile",
-						ProjectSettings::get_singleton()->globalize_path(get_path()));
-			} else {
-				ERR_PRINTS("C# project could not be created; cannot add file: '" + get_path() + "'.");
-			}
-		}
-	}
-#endif
-
-#ifdef TOOLS_ENABLED
 	bool extra_cond = tool || ScriptServer::is_scripting_enabled();
 #else
 	bool extra_cond = true;
