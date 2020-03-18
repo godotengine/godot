@@ -6805,6 +6805,14 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 							calltip += CharType(0xFFFF);
 						}
 
+						if (shader->functions[i].function->arguments[j].qualifier != ArgumentQualifier::ARGUMENT_QUALIFIER_IN) {
+							if (shader->functions[i].function->arguments[j].qualifier == ArgumentQualifier::ARGUMENT_QUALIFIER_OUT) {
+								calltip += "out ";
+							} else { // ArgumentQualifier::ARGUMENT_QUALIFIER_INOUT
+								calltip += "inout ";
+							}
+						}
+
 						calltip += get_datatype_name(shader->functions[i].function->arguments[j].type);
 						calltip += " ";
 						calltip += shader->functions[i].function->arguments[j].name;
@@ -6835,6 +6843,16 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 					continue;
 				}
 
+				int idx2 = 0;
+				int out_arg = -1;
+				while (builtin_func_out_args[idx2].name != nullptr) {
+					if (builtin_func_out_args[idx2].name == builtin_func_defs[idx].name) {
+						out_arg = builtin_func_out_args[idx2].argument;
+						break;
+					}
+					idx2++;
+				}
+
 				if (completion_function == builtin_func_defs[idx].name) {
 
 					if (builtin_func_defs[idx].tag != completion_class) {
@@ -6863,6 +6881,10 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 
 						if (i == completion_argument) {
 							calltip += CharType(0xFFFF);
+						}
+
+						if (out_arg >= 0 && i == out_arg) {
+							calltip += "out ";
 						}
 
 						calltip += get_datatype_name(builtin_func_defs[idx].args[i]);
