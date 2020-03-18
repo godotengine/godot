@@ -423,7 +423,7 @@ void EditorHelp::_update_doc() {
 		class_desc->push_color(text_color);
 		class_desc->push_font(doc_bold_font);
 		class_desc->push_indent(1);
-		_add_text(cd.brief_description);
+		_add_text(DTR(cd.brief_description));
 		class_desc->pop();
 		class_desc->pop();
 		class_desc->pop();
@@ -447,7 +447,7 @@ void EditorHelp::_update_doc() {
 		class_desc->push_color(text_color);
 		class_desc->push_font(doc_font);
 		class_desc->push_indent(1);
-		_add_text(cd.description);
+		_add_text(DTR(cd.description));
 		class_desc->pop();
 		class_desc->pop();
 		class_desc->pop();
@@ -469,8 +469,8 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 
 		for (int i = 0; i < cd.tutorials.size(); i++) {
-			const String link = cd.tutorials[i].link;
-			String linktxt = (cd.tutorials[i].title.empty()) ? link : cd.tutorials[i].title;
+			const String link = DTR(cd.tutorials[i].link);
+			String linktxt = (cd.tutorials[i].title.empty()) ? link : DTR(cd.tutorials[i].title);
 			const int seppos = linktxt.find("//");
 			if (seppos != -1) {
 				linktxt = link.right(seppos + 2);
@@ -712,7 +712,7 @@ void EditorHelp::_update_doc() {
 				class_desc->push_font(doc_font);
 				class_desc->add_text("  ");
 				class_desc->push_color(comment_color);
-				_add_text(cd.theme_properties[i].description);
+				_add_text(DTR(cd.theme_properties[i].description));
 				class_desc->pop();
 				class_desc->pop();
 			}
@@ -779,7 +779,7 @@ void EditorHelp::_update_doc() {
 				class_desc->push_font(doc_font);
 				class_desc->push_color(comment_color);
 				class_desc->push_indent(1);
-				_add_text(cd.signals[i].description);
+				_add_text(DTR(cd.signals[i].description));
 				class_desc->pop(); // indent
 				class_desc->pop();
 				class_desc->pop(); // font
@@ -872,7 +872,7 @@ void EditorHelp::_update_doc() {
 						//class_desc->add_text("  ");
 						class_desc->push_indent(1);
 						class_desc->push_color(comment_color);
-						_add_text(enum_list[i].description);
+						_add_text(DTR(enum_list[i].description));
 						class_desc->pop();
 						class_desc->pop();
 						class_desc->pop(); // indent
@@ -937,7 +937,7 @@ void EditorHelp::_update_doc() {
 					class_desc->push_font(doc_font);
 					class_desc->push_indent(1);
 					class_desc->push_color(comment_color);
-					_add_text(constants[i].description);
+					_add_text(DTR(constants[i].description));
 					class_desc->pop();
 					class_desc->pop();
 					class_desc->pop(); // indent
@@ -1066,7 +1066,7 @@ void EditorHelp::_update_doc() {
 			class_desc->push_font(doc_font);
 			class_desc->push_indent(1);
 			if (cd.properties[i].description.strip_edges() != String()) {
-				_add_text(cd.properties[i].description);
+				_add_text(DTR(cd.properties[i].description));
 			} else {
 				class_desc->add_image(get_icon("Error", "EditorIcons"));
 				class_desc->add_text(" ");
@@ -1117,7 +1117,7 @@ void EditorHelp::_update_doc() {
 				class_desc->push_font(doc_font);
 				class_desc->push_indent(1);
 				if (methods_filtered[i].description.strip_edges() != String()) {
-					_add_text(methods_filtered[i].description);
+					_add_text(DTR(methods_filtered[i].description));
 				} else {
 					class_desc->add_image(get_icon("Error", "EditorIcons"));
 					class_desc->add_text(" ");

@@ -74,15 +74,15 @@ def make_fonts_header(target, source, env):
     g.close()
 
 
-def make_translations_header(target, source, env):
+def make_translations_header(target, source, env, category):
 
     dst = target[0]
 
     g = open_utf8(dst, "w")
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    g.write("#ifndef _EDITOR_TRANSLATIONS_H\n")
-    g.write("#define _EDITOR_TRANSLATIONS_H\n")
+    g.write("#ifndef _{}_TRANSLATIONS_H\n".format(category.upper()))
+    g.write("#define _{}_TRANSLATIONS_H\n".format(category.upper()))
 
     import zlib
     import os.path
@@ -97,7 +97,7 @@ def make_translations_header(target, source, env):
         buf = zlib.compress(buf)
         name = os.path.splitext(os.path.basename(sorted_paths[i]))[0]
 
-        g.write("static const unsigned char _translation_" + name + "_compressed[] = {\n")
+        g.write("static const unsigned char _{}_translation_{}_compressed[] = {{\n".format(category, name))
         for j in range(len(buf)):
             g.write("\t" + byte_to_str(buf[j]) + ",\n")
 
@@ -105,21 +105,31 @@ def make_translations_header(target, source, env):
 
         xl_names.append([name, len(buf), str(decomp_size)])
 
-    g.write("struct EditorTranslationList {\n")
+    g.write("struct {}TranslationList {{\n".format(category.capitalize()))
     g.write("\tconst char* lang;\n")
     g.write("\tint comp_size;\n")
     g.write("\tint uncomp_size;\n")
     g.write("\tconst unsigned char* data;\n")
     g.write("};\n\n")
-    g.write("static EditorTranslationList _editor_translations[] = {\n")
+    g.write("static {}TranslationList _{}_translations[] = {{\n".format(category.capitalize(), category))
     for x in xl_names:
-        g.write('\t{ "' + x[0] + '", ' + str(x[1]) + ", " + str(x[2]) + ", _translation_" + x[0] + "_compressed},\n")
+        g.write(
+            '\t{{ "{}", {}, {}, _{}_translation_{}_compressed }},\n'.format(x[0], str(x[1]), str(x[2]), category, x[0])
+        )
     g.write("\t{NULL, 0, 0, NULL}\n")
     g.write("};\n")
 
     g.write("#endif")
 
     g.close()
+
+
+def make_editor_translations_header(target, source, env):
+    make_translations_header(target, source, env, "editor")
+
+
+def make_doc_translations_header(target, source, env):
+    make_translations_header(target, source, env, "doc")
 
 
 if __name__ == "__main__":
