@@ -30,6 +30,7 @@
 
 package org.godotengine.godot.plugin.payment;
 
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import java.util.ArrayList;
@@ -38,28 +39,40 @@ import java.util.List;
 import org.godotengine.godot.Dictionary;
 import org.godotengine.godot.Godot;
 import org.godotengine.godot.GodotLib;
-import org.godotengine.godot.payments.GodotPaymentInterface;
-import org.godotengine.godot.payments.PaymentsManager;
 import org.godotengine.godot.plugin.GodotPlugin;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class GodotPayment extends GodotPlugin implements GodotPaymentInterface {
+public class GodotPayment extends GodotPlugin {
 
 	private Integer purchaseCallbackId = 0;
 	private String accessToken;
 	private String purchaseValidationUrlPrefix;
 	private String transactionId;
-	private PaymentsManager mPaymentManager;
-	private Dictionary mSkuDetails = new Dictionary();
+	private final PaymentsManager mPaymentManager;
+	private final Dictionary mSkuDetails = new Dictionary();
 
 	public GodotPayment(Godot godot) {
 		super(godot);
-		mPaymentManager = godot.getPaymentsManager();
-		mPaymentManager.setBaseSingleton(this);
+		mPaymentManager = new PaymentsManager(godot, this);
+		mPaymentManager.initService();
 	}
 
 	@Override
+	public void onMainActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == PaymentsManager.REQUEST_CODE_FOR_PURCHASE) {
+			mPaymentManager.processPurchaseResponse(resultCode, data);
+		}
+	}
+
+	@Override
+	public void onMainDestroy() {
+		super.onMainDestroy();
+		if (mPaymentManager != null) {
+			mPaymentManager.destroy();
+		}
+	}
+
 	public void purchase(final String sku, final String transactionId) {
 		runOnUiThread(new Runnable() {
 			@Override
@@ -69,7 +82,6 @@ public class GodotPayment extends GodotPlugin implements GodotPaymentInterface {
 		});
 	}
 
-	@Override
 	public void consumeUnconsumedPurchases() {
 		runOnUiThread(new Runnable() {
 			@Override
@@ -81,89 +93,72 @@ public class GodotPayment extends GodotPlugin implements GodotPaymentInterface {
 
 	private String signature;
 
-	@Override
 	public String getSignature() {
 		return this.signature;
 	}
 
-	@Override
 	public void callbackSuccess(String ticket, String signature, String sku) {
 		GodotLib.calldeferred(purchaseCallbackId, "purchase_success", new Object[] { ticket, signature, sku });
 	}
 
-	@Override
 	public void callbackSuccessProductMassConsumed(String ticket, String signature, String sku) {
 		Log.d(this.getClass().getName(), "callbackSuccessProductMassConsumed > " + ticket + "," + signature + "," + sku);
 		GodotLib.calldeferred(purchaseCallbackId, "consume_success", new Object[] { ticket, signature, sku });
 	}
 
-	@Override
 	public void callbackSuccessNoUnconsumedPurchases() {
 		GodotLib.calldeferred(purchaseCallbackId, "consume_not_required", new Object[] {});
 	}
 
-	@Override
 	public void callbackFailConsume(String message) {
 		GodotLib.calldeferred(purchaseCallbackId, "consume_fail", new Object[] { message });
 	}
 
-	@Override
 	public void callbackFail(String message) {
 		GodotLib.calldeferred(purchaseCallbackId, "purchase_fail", new Object[] { message });
 	}
 
-	@Override
 	public void callbackCancel() {
 		GodotLib.calldeferred(purchaseCallbackId, "purchase_cancel", new Object[] {});
 	}
 
-	@Override
 	public void callbackAlreadyOwned(String sku) {
 		GodotLib.calldeferred(purchaseCallbackId, "purchase_owned", new Object[] { sku });
 	}
 
-	@Override
 	public int getPurchaseCallbackId() {
 		return purchaseCallbackId;
 	}
 
-	@Override
 	public void setPurchaseCallbackId(int purchaseCallbackId) {
 		this.purchaseCallbackId = purchaseCallbackId;
 	}
 
-	@Override
 	public String getPurchaseValidationUrlPrefix() {
 		return this.purchaseValidationUrlPrefix;
 	}
 
-	@Override
 	public void setPurchaseValidationUrlPrefix(String url) {
 		this.purchaseValidationUrlPrefix = url;
 	}
 
-	@Override
 	public String getAccessToken() {
 		return accessToken;
 	}
 
-	@Override
 	public void setAccessToken(String accessToken) {
 		this.accessToken = accessToken;
 	}
 
-	@Override
 	public void setTransactionId(String transactionId) {
 		this.transactionId = transactionId;
 	}
 
-	@Override
 	public String getTransactionId() {
 		return this.transactionId;
 	}
 
 	// request purchased items are not consumed
-	@Override
 	public void requestPurchased() {
 		runOnUiThread(new Runnable() {
 			@Override
@@ -174,41 +169,34 @@ public class GodotPayment extends GodotPlugin implements GodotPaymentInterface {
 	}
 
 	// callback for requestPurchased()
-	@Override
 	public void callbackPurchased(String receipt, String signature, String sku) {
 		GodotLib.calldeferred(purchaseCallbackId, "has_purchased", new Object[] { receipt, signature, sku });
 	}
 
-	@Override
 	public void callbackDisconnected() {
 		GodotLib.calldeferred(purchaseCallbackId, "iap_disconnected", new Object[] {});
 	}
 
-	@Override
 	public void callbackConnected() {
 		GodotLib.calldeferred(purchaseCallbackId, "iap_connected", new Object[] {});
 	}
 
 	// true if connected, false otherwise
-	@Override
 	public boolean isConnected() {
 		return mPaymentManager.isConnected();
 	}
 
 	// consume item automatically after purchase. default is true.
-	@Override
 	public void setAutoConsume(boolean autoConsume) {
 		mPaymentManager.setAutoConsume(autoConsume);
 	}
 
 	// consume a specific item
-	@Override
 	public void consume(String sku) {
 		mPaymentManager.consume(sku);
 	}
 
 	// query in app item detail info
-	@Override
 	public void querySkuDetails(String[] list) {
 		List<String> nKeys = Arrays.asList(list);
 		List<String> cKeys = Arrays.asList(mSkuDetails.get_keys());
@@ -225,7 +213,6 @@ public class GodotPayment extends GodotPlugin implements GodotPaymentInterface {
 		}
 	}
 
-	@Override
 	public void addSkuDetail(String itemJson) {
 		JSONObject o = null;
 		try {
@@ -244,12 +231,10 @@ public class GodotPayment extends GodotPlugin implements GodotPaymentInterface {
 		}
 	}
 
-	@Override
 	public void completeSkuDetail() {
 		GodotLib.calldeferred(purchaseCallbackId, "sku_details_complete", new Object[] { mSkuDetails });
 	}
 
-	@Override
 	public void errorSkuDetail(String errorMessage) {
 		GodotLib.calldeferred(purchaseCallbackId, "sku_details_error", new Object[] { errorMessage });
 	}
@@ -263,6 +248,8 @@ public class GodotPayment extends GodotPlugin implements GodotPaymentInterface {
 	@NonNull
 	@Override
 	public List<String> getPluginMethods() {
-		return Arrays.asList("purchase", "setPurchaseCallbackId", "setPurchaseValidationUrlPrefix", "setTransactionId", "getSignature", "consumeUnconsumedPurchases", "requestPurchased", "setAutoConsume", "consume", "querySkuDetails", "isConnected");
+		return Arrays.asList("purchase", "setPurchaseCallbackId", "setPurchaseValidationUrlPrefix",
+				"setTransactionId", "getSignature", "consumeUnconsumedPurchases", "requestPurchased",
+				"setAutoConsume", "consume", "querySkuDetails", "isConnected");
 	}
 }
