@@ -116,7 +116,7 @@
 			</description>
 		</method>
 		<method name="back">
-			<return type="void">
+			<return type="Variant">
 			</return>
 			<description>
 				Returns the last element of the array, or [code]null[/code] if the array is empty.
@@ -213,7 +213,7 @@
 			</description>
 		</method>
 		<method name="front">
-			<return type="void">
+			<return type="Variant">
 			</return>
 			<description>
 				Returns the first element of the array, or [code]null[/code] if the array is empty.
@@ -260,28 +260,28 @@
 			</description>
 		</method>
 		<method name="max">
-			<return type="void">
+			<return type="Variant">
 			</return>
 			<description>
 				Returns the maximum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
 			</description>
 		</method>
 		<method name="min">
-			<return type="void">
+			<return type="Variant">
 			</return>
 			<description>
 				Returns the minimum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
 			</description>
 		</method>
 		<method name="pop_back">
-			<return type="void">
+			<return type="Variant">
 			</return>
 			<description>
 				Removes and returns the last element of the array. Returns [code]null[/code] if the array is empty.
 			</description>
 		</method>
 		<method name="pop_front">
-			<return type="void">
+			<return type="Variant">
 			</return>
 			<description>
 				Removes and returns the first element of the array. Returns [code]null[/code] if the array is empty.
