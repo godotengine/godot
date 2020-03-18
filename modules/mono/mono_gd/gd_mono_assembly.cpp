@@ -78,7 +78,7 @@ void GDMonoAssembly::fill_search_dirs(Vector<String> &r_search_dirs, const Strin
 	if (p_custom_config.empty()) {
 		r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_dir());
 	} else {
-		String api_config = p_custom_config == "Release" ? "Release" : "Debug";
+		String api_config = p_custom_config == "ExportRelease" ? "Release" : "Debug";
 		r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_base_dir().plus_file(api_config));
 	}
 
