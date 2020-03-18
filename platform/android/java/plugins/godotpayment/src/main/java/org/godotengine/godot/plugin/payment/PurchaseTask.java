@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  ConsumeTask.java                                                     */
+/*  PurchaseTask.java                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,89 +28,91 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-package org.godotengine.godot.payments;
+package org.godotengine.godot.plugin.payment;
 
-import android.content.Context;
-import android.os.AsyncTask;
+import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.content.IntentSender.SendIntentException;
+import android.os.Bundle;
 import android.os.RemoteException;
+import android.util.Log;
 import com.android.vending.billing.IInAppBillingService;
-import java.lang.ref.WeakReference;
 
-abstract public class ConsumeTask {
+abstract public class PurchaseTask {
 
-	private Context context;
+	private Activity context;
+
 	private IInAppBillingService mService;
-
-	private String mSku;
-	private String mToken;
-
-	private static class ConsumeAsyncTask extends AsyncTask<String, String, String> {
-
-		private WeakReference<ConsumeTask> mTask;
-
-		ConsumeAsyncTask(ConsumeTask consume) {
-			mTask = new WeakReference<>(consume);
-		}
-
-		@Override
-		protected String doInBackground(String... strings) {
-			ConsumeTask consume = mTask.get();
-			if (consume != null) {
-				return consume.doInBackground(strings);
-			}
-			return null;
-		}
-
-		@Override
-		protected void onPostExecute(String param) {
-			ConsumeTask consume = mTask.get();
-			if (consume != null) {
-				consume.onPostExecute(param);
-			}
-		}
-	}
-
-	public ConsumeTask(IInAppBillingService mService, Context context) {
+	public PurchaseTask(IInAppBillingService mService, Activity context) {
 		this.context = context;
 		this.mService = mService;
 	}
 
-	public void consume(final String sku) {
-		mSku = sku;
+	private boolean isLooping = false;
+
+	public void purchase(final String sku, final String transactionId) {
+		Log.d("XXX", "Starting purchase for: " + sku);
 		PaymentsCache pc = new PaymentsCache(context);
 		Boolean isBlocked = pc.getConsumableFlag("block", sku);
-		mToken = pc.getConsumableValue("token", sku);
-		if (!isBlocked && mToken == null) {
-			// Consuming task is processing
-		} else if (!isBlocked) {
-			return;
-		} else if (mToken == null) {
-			this.error("No token for sku:" + sku);
+		/*
+		if(isBlocked){
+			Log.d("XXX", "Is awaiting payment confirmation");
+			error("Awaiting payment confirmation");
 			return;
 		}
-		new ConsumeAsyncTask(this).execute();
-	}
+		*/
+		final String hash = transactionId;
 
-	private String doInBackground(String... params) {
+		Bundle buyIntentBundle;
 		try {
-			int response = mService.consumePurchase(3, context.getPackageName(), mToken);
-			if (response == 0 || response == 8) {
-				return null;
-			}
+			buyIntentBundle = mService.getBuyIntent(3, context.getApplicationContext().getPackageName(), sku, "inapp", hash);
 		} catch (RemoteException e) {
-			return e.getMessage();
+			//Log.d("XXX", "Error: " + e.getMessage());
+			error(e.getMessage());
+			return;
 		}
-		return "Some error";
+		Object rc = buyIntentBundle.get("RESPONSE_CODE");
+		int responseCode = 0;
+		if (rc == null) {
+			responseCode = PaymentsManager.BILLING_RESPONSE_RESULT_OK;
+		} else if (rc instanceof Integer) {
+			responseCode = ((Integer)rc).intValue();
+		} else if (rc instanceof Long) {
+			responseCode = (int)((Long)rc).longValue();
+		}
+		//Log.d("XXX", "Buy intent response code: " + responseCode);
+		if (responseCode == 1 || responseCode == 3 || responseCode == 4) {
+			canceled();
+			return;
+		}
+		if (responseCode == 7) {
+			alreadyOwned();
+			return;
+		}
+
+		PendingIntent pendingIntent = buyIntentBundle.getParcelable("BUY_INTENT");
+		pc.setConsumableValue("validation_hash", sku, hash);
+		try {
+			if (context == null) {
+				//Log.d("XXX", "No context!");
+			}
+			if (pendingIntent == null) {
+				//Log.d("XXX", "No pending intent");
+			}
+			//Log.d("XXX", "Starting activity for purchase!");
+			context.startIntentSenderForResult(
+					pendingIntent.getIntentSender(),
+					PaymentsManager.REQUEST_CODE_FOR_PURCHASE,
+					new Intent(),
+					Integer.valueOf(0), Integer.valueOf(0),
+					Integer.valueOf(0));
+		} catch (SendIntentException e) {
+			error(e.getMessage());
+		}
 	}
 
-	private void onPostExecute(String param) {
-		if (param == null) {
-			success(new PaymentsCache(context).getConsumableValue("ticket", mSku));
-		} else {
-			error(param);
-		}
-	}
-
-	abstract protected void success(String ticket);
 	abstract protected void error(String message);
+	abstract protected void canceled();
+	abstract protected void alreadyOwned();
 }
