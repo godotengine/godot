@@ -2114,7 +2114,7 @@ const ShaderLanguage::BuiltinFuncOutArgs ShaderLanguage::builtin_func_out_args[]
 	{ NULL, 0 }
 };
 
-bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p_func, DataType *r_ret_type, StringName *r_ret_type_str) {
+bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, OperatorNode *p_func, DataType *r_ret_type, StringName *r_ret_type_str) {
 
 	ERR_FAIL_COND_V(p_func->op != OP_CALL && p_func->op != OP_CONSTRUCT, false);
 
@@ -2185,16 +2185,68 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p
 
 							if (arg_idx < argcount) {
 
-								if (p_func->arguments[arg_idx + 1]->type != Node::TYPE_VARIABLE) {
-									_set_error("Argument " + itos(arg_idx + 1) + " of function '" + String(name) + "' is not a variable");
+								if (p_func->arguments[arg_idx + 1]->type != Node::TYPE_VARIABLE && p_func->arguments[arg_idx + 1]->type != Node::TYPE_MEMBER && p_func->arguments[arg_idx + 1]->type != Node::TYPE_ARRAY) {
+									_set_error("Argument " + itos(arg_idx + 1) + " of function '" + String(name) + "' is not a variable, array or member.");
 									return false;
 								}
-								StringName var_name = static_cast<const VariableNode *>(p_func->arguments[arg_idx + 1])->name;
 
+								if (p_func->arguments[arg_idx + 1]->type == Node::TYPE_ARRAY) {
+									ArrayNode *mn = static_cast<ArrayNode *>(p_func->arguments[arg_idx + 1]);
+									if (mn->is_const) {
+										fail = true;
+									}
+								} else if (p_func->arguments[arg_idx + 1]->type == Node::TYPE_MEMBER) {
+									MemberNode *mn = static_cast<MemberNode *>(p_func->arguments[arg_idx + 1]);
+									if (mn->basetype_const) {
+										fail = true;
+									}
+								} else { // TYPE_VARIABLE
+									VariableNode *vn = static_cast<VariableNode *>(p_func->arguments[arg_idx + 1]);
+									if (vn->is_const) {
+										fail = true;
+									} else {
+										StringName varname = vn->name;
+										if (shader->uniforms.has(varname)) {
+											fail = true;
+										} else {
+											if (p_builtin_types.has(varname)) {
+												BuiltInInfo info = p_builtin_types[varname];
+												if (info.constant) {
+													fail = true;
+												}
+											}
+										}
+									}
+								}
+								if (fail) {
+									_set_error(vformat("Constant value cannot be passed for '%s' parameter!", "out"));
+									return false;
+								}
+
+								StringName var_name;
+								if (p_func->arguments[arg_idx + 1]->type == Node::TYPE_ARRAY) {
+									var_name = static_cast<const ArrayNode *>(p_func->arguments[arg_idx + 1])->name;
+								} else if (p_func->arguments[arg_idx + 1]->type == Node::TYPE_MEMBER) {
+									Node *n = static_cast<const MemberNode *>(p_func->arguments[arg_idx + 1])->owner;
+									while (n->type == Node::TYPE_MEMBER) {
+										n = static_cast<const MemberNode *>(n)->owner;
+									}
+									if (n->type != Node::TYPE_VARIABLE && n->type != Node::TYPE_ARRAY) {
+										_set_error("Argument " + itos(arg_idx + 1) + " of function '" + String(name) + "' is not a variable, array or member.");
+										return false;
+									}
+									if (n->type == Node::TYPE_VARIABLE) {
+										var_name = static_cast<const VariableNode *>(n)->name;
+									} else { // TYPE_ARRAY
+										var_name = static_cast<const ArrayNode *>(n)->name;
+									}
+								} else { // TYPE_VARIABLE
+									var_name = static_cast<const VariableNode *>(p_func->arguments[arg_idx + 1])->name;
+								}
 								const BlockNode *b = p_block;
 								bool valid = false;
 								while (b) {
-									if (b->variables.has(var_name)) {
+									if (b->variables.has(var_name) || p_builtin_types.has(var_name)) {
 										valid = true;
 										break;
 									}
@@ -2210,7 +2262,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p
 								}
 
 								if (!valid) {
-									_set_error("Argument " + itos(arg_idx + 1) + " of function '" + String(name) + "' can only take a local variable");
+									_set_error("Argument " + itos(arg_idx + 1) + " of function '" + String(name) + "' can only take a local variable, array or member.");
 									return false;
 								}
 							}
@@ -3197,7 +3249,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			if (!ok)
 				return NULL;
 
-			if (!_validate_function_call(p_block, func, &func->return_cache, &func->struct_name)) {
+			if (!_validate_function_call(p_block, p_builtin_types, func, &func->return_cache, &func->struct_name)) {
 				_set_error("No matching constructor found for: '" + String(funcname->name) + "'");
 				return NULL;
 			}
@@ -3461,7 +3513,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					if (!ok)
 						return NULL;
 
-					if (!_validate_function_call(p_block, func, &func->return_cache, &func->struct_name)) {
+					if (!_validate_function_call(p_block, p_builtin_types, func, &func->return_cache, &func->struct_name)) {
 						_set_error("No matching function found for: '" + String(funcname->name) + "'");
 						return NULL;
 					}
