@@ -4412,7 +4412,6 @@ String String::unquote() const {
 
 #ifdef TOOLS_ENABLED
 String TTR(const String &p_text) {
-
 	if (TranslationServer::get_singleton()) {
 		return TranslationServer::get_singleton()->tool_translate(p_text);
 	}
@@ -4420,10 +4419,18 @@ String TTR(const String &p_text) {
 	return p_text;
 }
 
+String DTR(const String &p_text) {
+	if (TranslationServer::get_singleton()) {
+		// Comes straight from the XML, so remove indentation and any trailing whitespace.
+		const String text = p_text.dedent().strip_edges();
+		return TranslationServer::get_singleton()->doc_translate(text);
+	}
+
+	return p_text;
+}
 #endif
 
 String RTR(const String &p_text) {
-
 	if (TranslationServer::get_singleton()) {
 		String rtr = TranslationServer::get_singleton()->tool_translate(p_text);
 		if (rtr == String() || rtr == p_text) {
