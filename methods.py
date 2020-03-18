@@ -193,25 +193,6 @@ void unregister_module_types() {
     return module_list
 
 
-def win32_spawn(sh, escape, cmd, args, env):
-    import subprocess
-    newargs = ' '.join(args[1:])
-    cmdline = cmd + " " + newargs
-    startupinfo = subprocess.STARTUPINFO()
-    for e in env:
-        if type(env[e]) != type(""):
-            env[e] = str(env[e])
-    proc = subprocess.Popen(cmdline, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE, startupinfo=startupinfo, shell=False, env=env)
-    _, err = proc.communicate()
-    rv = proc.wait()
-    if rv:
-        print("=====")
-        print(err)
-        print("=====")
-    return rv
-
-
 def disable_module(self):
     self.disabled_modules.append(self.current_module)
 
