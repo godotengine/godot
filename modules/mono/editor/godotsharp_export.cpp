@@ -92,7 +92,8 @@ Error get_assembly_dependencies(GDMonoAssembly *p_assembly, const Vector<String>
 
 		ERR_FAIL_COND_V_MSG(!ref_assembly, ERR_CANT_RESOLVE, "Cannot load assembly (refonly): '" + ref_name + "'.");
 
-		r_dependencies[ref_name] = ref_assembly->get_path();
+		// Use the path we got from the search. Don't try to get the path from the loaded assembly as we can't trust it will be from the selected BCL dir.
+		r_dependencies[ref_name] = path;
 
 		Error err = get_assembly_dependencies(ref_assembly, p_search_dirs, r_dependencies);
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot load one of the dependencies for the assembly: '" + ref_name + "'.");

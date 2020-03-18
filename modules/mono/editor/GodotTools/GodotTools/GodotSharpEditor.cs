@@ -36,6 +36,17 @@ namespace GodotTools
 
         public BottomPanel BottomPanel { get; private set; }
 
+        public static string ProjectAssemblyName
+        {
+            get
+            {
+                var projectAssemblyName = (string)ProjectSettings.GetSetting("application/config/name");
+                if (string.IsNullOrEmpty(projectAssemblyName))
+                    projectAssemblyName = "UnnamedProject";
+                return projectAssemblyName;
+            }
+        }
+
         private bool CreateProjectSolution()
         {
             using (var pr = new EditorProgress("create_csharp_solution", "Generating solution...".TTR(), 3))
@@ -45,9 +56,7 @@ namespace GodotTools
                 string resourceDir = ProjectSettings.GlobalizePath("res://");
 
                 string path = resourceDir;
-                string name = (string)ProjectSettings.GetSetting("application/config/name");
-                if (name.Empty())
-                    name = "UnnamedProject";
+                string name = ProjectAssemblyName;
 
                 string guid = CsProjOperations.GenerateGameProject(path, name);
 
