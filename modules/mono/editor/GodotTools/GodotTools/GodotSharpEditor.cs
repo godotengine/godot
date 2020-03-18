@@ -13,6 +13,7 @@ using JetBrains.Annotations;
 using static GodotTools.Internals.Globals;
 using File = GodotTools.Utils.File;
 using OS = GodotTools.Utils.OS;
+using Path = System.IO.Path;
 
 namespace GodotTools
 {
@@ -61,7 +62,7 @@ namespace GodotTools
                     {
                         Guid = guid,
                         PathRelativeToSolution = name + ".csproj",
-                        Configs = new List<string> { "Debug", "Release", "Tools" }
+                        Configs = new List<string> {"Debug", "Release", "Tools"}
                     };
 
                     solution.AddNewProject(name, projectInfo);
@@ -154,6 +155,34 @@ namespace GodotTools
             Instance.BottomPanel.BuildProjectPressed();
         }
 
+        private void _FileSystemDockFileMoved(string file, string newFile)
+        {
+            if (Path.GetExtension(file) == Internal.CSharpLanguageExtension)
+            {
+                ProjectUtils.RenameItemInProjectChecked(GodotSharpDirs.ProjectCsProjPath, "Compile",
+                    ProjectSettings.GlobalizePath(file), ProjectSettings.GlobalizePath(newFile));
+            }
+        }
+
+        private void _FileSystemDockFileRemoved(string file)
+        {
+            if (Path.GetExtension(file) == Internal.CSharpLanguageExtension)
+                ProjectUtils.RemoveItemFromProjectChecked(GodotSharpDirs.ProjectCsProjPath, "Compile",
+                    ProjectSettings.GlobalizePath(file));
+        }
+
+        private void _FileSystemDockFolderMoved(string oldFolder, string newFolder)
+        {
+            ProjectUtils.RenameItemsToNewFolderInProjectChecked(GodotSharpDirs.ProjectCsProjPath, "Compile",
+                ProjectSettings.GlobalizePath(oldFolder), ProjectSettings.GlobalizePath(newFolder));
+        }
+
+        private void _FileSystemDockFolderRemoved(string oldFolder)
+        {
+            ProjectUtils.RemoveItemsInFolderFromProjectChecked(GodotSharpDirs.ProjectCsProjPath, "Compile",
+                ProjectSettings.GlobalizePath(oldFolder));
+        }
+
         public override void _Notification(int what)
         {
             base._Notification(what);
@@ -168,6 +197,13 @@ namespace GodotTools
                     // Once shown a first time, it can be seen again via the Mono menu - it doesn't have to be exclusive from that time on.
                     aboutDialog.PopupExclusive = false;
                 }
+
+                var fileSystemDock = GetEditorInterface().GetFileSystemDock();
+
+                fileSystemDock.Connect("files_moved", this, nameof(_FileSystemDockFileMoved));
+                fileSystemDock.Connect("file_removed", this, nameof(_FileSystemDockFileRemoved));
+                fileSystemDock.Connect("folder_moved", this, nameof(_FileSystemDockFolderMoved));
+                fileSystemDock.Connect("folder_removed", this, nameof(_FileSystemDockFolderRemoved));
             }
         }
 
@@ -210,7 +246,7 @@ namespace GodotTools
                     string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
                     RiderPathManager.OpenFile(GodotSharpDirs.ProjectSlnPath, scriptPath, line);
                     return Error.Ok;
-                }        
+                }
                 case ExternalEditorId.MonoDevelop:
                 {
                     string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
@@ -346,7 +382,7 @@ namespace GodotTools
 
             bottomPanelBtn = AddControlToBottomPanel(BottomPanel, "Mono".TTR());
 
-            AddChild(new HotReloadAssemblyWatcher { Name = "HotReloadAssemblyWatcher" });
+            AddChild(new HotReloadAssemblyWatcher {Name = "HotReloadAssemblyWatcher"});
 
             menuPopup = new PopupMenu();
             menuPopup.Hide();
@@ -394,7 +430,7 @@ namespace GodotTools
                 EditorDef("mono/editor/show_info_on_start", true);
 
                 // CheckBox in main container
-                aboutDialogCheckBox = new CheckBox { Text = "Show this warning when starting the editor" };
+                aboutDialogCheckBox = new CheckBox {Text = "Show this warning when starting the editor"};
                 aboutDialogCheckBox.Connect("toggled", this, nameof(_ToggleAboutDialogOnStart));
                 aboutVBox.AddChild(aboutDialogCheckBox);
             }
