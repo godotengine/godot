@@ -3,7 +3,9 @@
 Import('env')
 Import('env_modules')
 
-stub = True
+# Only kept to build the thirdparty library used by the webm module.
+# AudioStreamOpus was dropped in 3.0 due to incompatibility with the new audio
+# engine. If you want to port it, fetch it from the Git history.
 
 env_opus = env_modules.Clone()
 
@@ -235,9 +237,5 @@ if env['builtin_opus']:
     env_thirdparty.disable_warnings()
     env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
 
-if not stub:
-    # Module files
-    env_opus.add_source_files(env.modules_sources, "*.cpp")
-else:
-    # Module files
-    env_opus.add_source_files(env.modules_sources, "stub/register_types.cpp")
+# Module files
+env_opus.add_source_files(env.modules_sources, "register_types.cpp")
