@@ -13,6 +13,7 @@ using JetBrains.Annotations;
 using static GodotTools.Internals.Globals;
 using File = GodotTools.Utils.File;
 using OS = GodotTools.Utils.OS;
+using Path = System.IO.Path;
 
 namespace GodotTools
 {
@@ -61,7 +62,7 @@ namespace GodotTools
                     {
                         Guid = guid,
                         PathRelativeToSolution = name + ".csproj",
-                        Configs = new List<string> { "Debug", "ExportDebug", "ExportRelease" }
+                        Configs = new List<string> {"Debug", "ExportDebug", "ExportRelease"}
                     };
 
                     solution.AddNewProject(name, projectInfo);
@@ -161,6 +162,36 @@ namespace GodotTools
                     // Once shown a first time, it can be seen again via the Mono menu - it doesn't have to be exclusive from that time on.
                     aboutDialog.PopupExclusive = false;
                 }
+
+                var fileSystemDock = GetEditorInterface().GetFileSystemDock();
+
+                fileSystemDock.FilesMoved += (file, newFile) =>
+                {
+                    if (Path.GetExtension(file) == Internal.CSharpLanguageExtension)
+                    {
+                        ProjectUtils.RenameItemInProjectChecked(GodotSharpDirs.ProjectCsProjPath, "Compile",
+                            ProjectSettings.GlobalizePath(file), ProjectSettings.GlobalizePath(newFile));
+                    }
+                };
+
+                fileSystemDock.FileRemoved += file =>
+                {
+                    if (Path.GetExtension(file) == Internal.CSharpLanguageExtension)
+                        ProjectUtils.RemoveItemFromProjectChecked(GodotSharpDirs.ProjectCsProjPath, "Compile",
+                            ProjectSettings.GlobalizePath(file));
+                };
+
+                fileSystemDock.FolderMoved += (oldFolder, newFolder) =>
+                {
+                    ProjectUtils.RenameItemsToNewFolderInProjectChecked(GodotSharpDirs.ProjectCsProjPath, "Compile",
+                        ProjectSettings.GlobalizePath(oldFolder), ProjectSettings.GlobalizePath(newFolder));
+                };
+
+                fileSystemDock.FolderRemoved += oldFolder =>
+                {
+                    ProjectUtils.RemoveItemsInFolderFromProjectChecked(GodotSharpDirs.ProjectCsProjPath, "Compile",
+                        ProjectSettings.GlobalizePath(oldFolder));
+                };
             }
         }
 
@@ -339,7 +370,7 @@ namespace GodotTools
 
             bottomPanelBtn = AddControlToBottomPanel(BottomPanel, "Mono".TTR());
 
-            AddChild(new HotReloadAssemblyWatcher { Name = "HotReloadAssemblyWatcher" });
+            AddChild(new HotReloadAssemblyWatcher {Name = "HotReloadAssemblyWatcher"});
 
             menuPopup = new PopupMenu();
             menuPopup.Hide();
@@ -387,7 +418,7 @@ namespace GodotTools
                 EditorDef("mono/editor/show_info_on_start", true);
 
                 // CheckBox in main container
-                aboutDialogCheckBox = new CheckBox { Text = "Show this warning when starting the editor" };
+                aboutDialogCheckBox = new CheckBox {Text = "Show this warning when starting the editor"};
                 aboutDialogCheckBox.Toggled += enabled =>
                 {
                     bool showOnStart = (bool)editorSettings.GetSetting("mono/editor/show_info_on_start");
