@@ -44,8 +44,9 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "core/version.h"
+#include "editor/doc_translations.gen.h"
 #include "editor/editor_node.h"
-#include "editor/translations.gen.h"
+#include "editor/editor_translations.gen.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
@@ -982,14 +983,12 @@ void EditorSettings::setup_language() {
 
 	String lang = get("interface/editor/editor_language");
 	if (lang == "en")
-		return; //none to do
+		return; // Default, nothing to do.
 
+	// Load editor translation for configured/detected locale.
 	EditorTranslationList *etl = _editor_translations;
-
 	while (etl->data) {
-
 		if (etl->lang == lang) {
-
 			Vector<uint8_t> data;
 			data.resize(etl->uncomp_size);
 			Compression::decompress(data.ptrw(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
@@ -997,7 +996,7 @@ void EditorSettings::setup_language() {
 			FileAccessMemory *fa = memnew(FileAccessMemory);
 			fa->open_custom(data.ptr(), data.size());
 
-			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa, NULL, "translation_" + String(etl->lang));
+			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
 
 			if (tr.is_valid()) {
 				tr->set_locale(etl->lang);
@@ -1007,6 +1006,29 @@ void EditorSettings::setup_language() {
 		}
 
 		etl++;
+	}
+
+	// Load class reference translation.
+	DocTranslationList *dtl = _doc_translations;
+	while (dtl->data) {
+		if (dtl->lang == lang) {
+			Vector<uint8_t> data;
+			data.resize(dtl->uncomp_size);
+			Compression::decompress(data.ptrw(), dtl->uncomp_size, dtl->data, dtl->comp_size, Compression::MODE_DEFLATE);
+
+			FileAccessMemory *fa = memnew(FileAccessMemory);
+			fa->open_custom(data.ptr(), data.size());
+
+			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
+
+			if (tr.is_valid()) {
+				tr->set_locale(dtl->lang);
+				TranslationServer::get_singleton()->set_doc_translation(tr);
+				break;
+			}
+		}
+
+		dtl++;
 	}
 }
 

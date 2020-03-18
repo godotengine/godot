@@ -415,25 +415,25 @@ _FORCE_INLINE_ bool is_str_less(const L *l_ptr, const R *r_ptr) {
 
 /* end of namespace */
 
-//tool translate
+// Tool translate (TTR and variants) for the editor UI,
+// and doc translate for the class reference (DTR).
 #ifdef TOOLS_ENABLED
-
-//gets parsed
+// Gets parsed.
 String TTR(const String &);
-//use for C strings
+String DTR(const String &);
+// Use for C strings.
 #define TTRC(m_value) (m_value)
-//use to avoid parsing (for use later with C strings)
+// Use to avoid parsing (for use later with C strings).
 #define TTRGET(m_value) TTR(m_value)
 
 #else
-
 #define TTR(m_value) (String())
+#define DTR(m_value) (String())
 #define TTRC(m_value) (m_value)
 #define TTRGET(m_value) (m_value)
-
 #endif
 
-//tool or regular translate
+// Runtime translate for the public node API.
 String RTR(const String &);
 
 bool is_symbol(CharType c);

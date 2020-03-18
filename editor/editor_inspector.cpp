@@ -1551,7 +1551,7 @@ void EditorInspector::update_tree() {
 					if (E) {
 						descr = E->get().brief_description;
 					}
-					class_descr_cache[type2] = descr;
+					class_descr_cache[type2] = DTR(descr);
 				}
 
 				category->set_tooltip(p.name + "::" + (class_descr_cache[type2] == "" ? "" : class_descr_cache[type2]));
@@ -1703,7 +1703,7 @@ void EditorInspector::update_tree() {
 				while (F && descr == String()) {
 					for (int i = 0; i < F->get().properties.size(); i++) {
 						if (F->get().properties[i].name == propname.operator String()) {
-							descr = F->get().properties[i].description.strip_edges();
+							descr = DTR(F->get().properties[i].description.strip_edges());
 							break;
 						}
 					}
@@ -1713,7 +1713,7 @@ void EditorInspector::update_tree() {
 						// Likely a theme property.
 						for (int i = 0; i < F->get().theme_properties.size(); i++) {
 							if (F->get().theme_properties[i].name == slices[1]) {
-								descr = F->get().theme_properties[i].description.strip_edges();
+								descr = DTR(F->get().theme_properties[i].description.strip_edges());
 								break;
 							}
 						}
