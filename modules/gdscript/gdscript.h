@@ -135,7 +135,7 @@ class GDScript : public Script {
 
 #endif
 
-	bool _update_exports();
+	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false);
 
 	void _save_orphaned_subclasses();
 	void _init_rpc_methods_properties();
