@@ -589,23 +589,17 @@ public:
 		return true;
 	}
 
-	const V &operator[](const K &p_key) const {
+	inline const V &operator[](const K &p_key) const {
 
-		CRASH_COND(!_data._root);
 		const Element *e = find(p_key);
-		CRASH_COND(!e);
+		CRASH_COND_MSG(!e, "Map key not found.");
 		return e->_value;
 	}
 
-	V &operator[](const K &p_key) {
-
-		if (!_data._root)
-			_data._create_root();
+	inline V &operator[](const K &p_key) {
 
 		Element *e = find(p_key);
-		if (!e)
-			e = insert(p_key, V());
-
+		CRASH_COND_MSG(!e, "Map key not found.");
 		return e->_value;
 	}
 

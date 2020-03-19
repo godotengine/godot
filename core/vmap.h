@@ -186,20 +186,15 @@ public:
 	inline const V &operator[](const T &p_key) const {
 
 		int pos = _find_exact(p_key);
-
-		CRASH_COND(pos < 0);
-
-		return _cowdata.get(pos).value;
+		CRASH_COND_MSG(pos < 0, "Map key not found.");
+		return getv(pos);
 	}
 
 	inline V &operator[](const T &p_key) {
 
 		int pos = _find_exact(p_key);
-		if (pos < 0) {
-			pos = insert(p_key, V());
-		}
-
-		return _cowdata.get_m(pos).value;
+		CRASH_COND_MSG(pos < 0, "Map key not found.");
+		return getv(pos);
 	}
 
 	_FORCE_INLINE_ VMap(){};

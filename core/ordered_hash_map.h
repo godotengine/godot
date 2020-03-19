@@ -240,18 +240,17 @@ public:
 		return map.has(p_key);
 	}
 
-	const V &operator[](const K &p_key) const {
+	inline const V &operator[](const K &p_key) const {
+
 		ConstElement e = find(p_key);
-		CRASH_COND(!e);
+		CRASH_COND_MSG(!e, "Map key not found.");
 		return e.value();
 	}
 
-	V &operator[](const K &p_key) {
+	inline V &operator[](const K &p_key) {
+
 		Element e = find(p_key);
-		if (!e) {
-			// consistent with Map behaviour
-			e = insert(p_key, V());
-		}
+		CRASH_COND_MSG(!e, "Map key not found.");
 		return e.value();
 	}
 

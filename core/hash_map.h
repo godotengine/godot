@@ -437,27 +437,18 @@ public:
 		return false;
 	}
 
-	inline const TData &operator[](const TKey &p_key) const { //constref
+	inline const TData &operator[](const TKey &p_key) const {
 
-		return get(p_key);
+		const TData *res = getptr(p_key);
+		CRASH_COND_MSG(!res, "Map key not found.");
+		return *res;
 	}
-	inline TData &operator[](const TKey &p_key) { //assignment
 
-		Element *e = NULL;
-		if (!hash_table)
-			make_hash_table(); // if no table, make one
-		else
-			e = const_cast<Element *>(get_element(p_key));
+	inline TData &operator[](const TKey &p_key) {
 
-		/* if we made it up to here, the pair doesn't exist, create */
-		if (!e) {
-
-			e = create_element(p_key);
-			CRASH_COND(!e);
-			check_hash_table(); // perform mantenience routine
-		}
-
-		return e->pair.data;
+		TData *res = getptr(p_key);
+		CRASH_COND_MSG(!res, "Map key not found.");
+		return *res;
 	}
 
 	/**
