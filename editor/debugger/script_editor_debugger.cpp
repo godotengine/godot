@@ -810,7 +810,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 			const uint64_t until = OS::get_singleton()->get_ticks_msec() + 20;
 
-			while (peer->has_message()) {
+			while (peer.is_valid() && peer->has_message()) {
 
 				Array arr = peer->get_message();
 				if (arr.size() != 2 || arr[0].get_type() != Variant::STRING || arr[1].get_type() != Variant::ARRAY) {
