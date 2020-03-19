@@ -469,10 +469,14 @@ public:
 	Transform original; // original location when moving
 	Transform original_local;
 	Transform last_xform; // last transform
+	bool last_xform_dirty;
 	Spatial *sp;
 	RID sbox_instance;
 
-	SpatialEditorSelectedItem() { sp = NULL; }
+	SpatialEditorSelectedItem() {
+		sp = NULL;
+		last_xform_dirty = true;
+	}
 	~SpatialEditorSelectedItem();
 };
 

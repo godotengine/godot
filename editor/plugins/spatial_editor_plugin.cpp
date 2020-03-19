@@ -2392,9 +2392,10 @@ void SpatialEditorViewport::_notification(int p_what) {
 			Transform t = sp->get_global_gizmo_transform();
 
 			exist = true;
-			if (se->last_xform == t)
+			if (se->last_xform == t && !se->last_xform_dirty)
 				continue;
 			changed = true;
+			se->last_xform_dirty = false;
 			se->last_xform = t;
 
 			VisualInstance *vi = Object::cast_to<VisualInstance>(sp);
