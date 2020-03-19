@@ -16,7 +16,8 @@
 			Represents the pressure the user puts on the pen. Ranges from [code]0.0[/code] to [code]1.0[/code].
 		</member>
 		<member name="relative" type="Vector2" setter="set_relative" getter="get_relative" default="Vector2( 0, 0 )">
-			The mouse position relative to the previous position (position at the last frame).
+			The mouse position relative to the previous position (position at the last frame). 
+			[b]Note:[/b] Since [InputEventMouseMotion] is only emitted when the mouse moves, the last event won't have a relative position of [code]Vector2(0, 0)[/code] when the user stops moving the mouse.
 		</member>
 		<member name="speed" type="Vector2" setter="set_speed" getter="get_speed" default="Vector2( 0, 0 )">
 			The mouse speed in pixels per second.
