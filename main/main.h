@@ -37,6 +37,9 @@
 
 class Main {
 
+	static void print_help_copyright(const char *p_notice);
+	static void print_help_title(const char *p_title);
+	static void print_help_option(const char *p_option, const char *p_description);
 	static void print_help(const char *p_binary);
 	static uint64_t last_ticks;
 	static uint64_t target_ticks;
