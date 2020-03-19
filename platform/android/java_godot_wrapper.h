@@ -61,7 +61,7 @@ private:
 	jmethodID _is_activity_resumed = 0;
 	jmethodID _vibrate = 0;
 	jmethodID _get_input_fallback_mapping = 0;
-	jmethodID _on_gl_godot_main_loop_started = 0;
+	jmethodID _on_godot_main_loop_started = 0;
 
 public:
 	GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance);
@@ -74,7 +74,7 @@ public:
 
 	void gfx_init(bool gl2);
 	void on_video_init(JNIEnv *p_env = NULL);
-	void on_gl_godot_main_loop_started(JNIEnv *p_env = NULL);
+	void on_godot_main_loop_started(JNIEnv *p_env = NULL);
 	void restart(JNIEnv *p_env = NULL);
 	void force_quit(JNIEnv *p_env = NULL);
 	void set_keep_screen_on(bool p_enabled);

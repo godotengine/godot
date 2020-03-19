@@ -84,8 +84,10 @@ public abstract class GodotPlugin {
 
 	/**
 	 * Register the plugin with Godot native code.
+	 *
+	 * This method is invoked on the render thread.
 	 */
-	public final void onGLRegisterPluginWithGodotNative() {
+	public final void onRegisterPluginWithGodotNative() {
 		nativeRegisterSingleton(getPluginName(), this);
 
 		Class clazz = getClass();
@@ -169,9 +171,9 @@ public abstract class GodotPlugin {
 	public boolean onMainBackPressed() { return false; }
 
 	/**
-	 * Invoked on the GL thread when the Godot main loop has started.
+	 * Invoked on the render thread when the Godot main loop has started.
 	 */
-	public void onGLGodotMainLoopStarted() {}
+	public void onGodotMainLoopStarted() {}
 
 	/**
 	 * Invoked once per frame on the GL thread after the frame is drawn.
@@ -225,12 +227,12 @@ public abstract class GodotPlugin {
 	}
 
 	/**
-	 * Queue the specified action to be run on the GL thread.
+	 * Queue the specified action to be run on the render thread.
 	 *
-	 * @param action the action to run on the GL thread
+	 * @param action the action to run on the render thread
 	 */
-	protected void runOnGLThread(Runnable action) {
-		godot.runOnGLThread(action);
+	protected void runOnRenderThread(Runnable action) {
+		godot.runOnRenderThread(action);
 	}
 
 	/**

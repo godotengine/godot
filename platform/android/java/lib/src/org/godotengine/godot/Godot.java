@@ -291,12 +291,12 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 	};
 
 	/**
-	 * Invoked on the GL thread when the Godot main loop has started.
+	 * Invoked on the render thread when the Godot main loop has started.
 	 */
 	@CallSuper
-	protected void onGLGodotMainLoopStarted() {
+	protected void onGodotMainLoopStarted() {
 		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
-			plugin.onGLGodotMainLoopStarted();
+			plugin.onGodotMainLoopStarted();
 		}
 	}
 
@@ -343,7 +343,7 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 
 				// Must occur after GodotLib.setup has completed.
 				for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
-					plugin.onGLRegisterPluginWithGodotNative();
+					plugin.onRegisterPluginWithGodotNative();
 				}
 
 				setKeepScreenOn("True".equals(GodotLib.getGlobal("display/window/energy_saving/keep_screen_on")));
@@ -912,11 +912,11 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 	}
 
 	/**
-	 * Queue a runnable to be run on the GL thread.
+	 * Queue a runnable to be run on the render thread.
 	 * <p>
-	 * This must be called after the GL thread has started.
+	 * This must be called after the render thread has started.
 	 */
-	public final void runOnGLThread(@NonNull Runnable action) {
+	public final void runOnRenderThread(@NonNull Runnable action) {
 		if (mView != null) {
 			mView.queueEvent(action);
 		}
