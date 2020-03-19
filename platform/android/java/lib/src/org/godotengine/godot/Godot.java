@@ -55,8 +55,6 @@ import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.Messenger;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
@@ -64,7 +62,6 @@ import android.provider.Settings.Secure;
 import android.support.annotation.CallSuper;
 import android.support.annotation.Keep;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.view.Display;
 import android.view.KeyEvent;
@@ -197,12 +194,12 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 	};
 
 	/**
-	 * Invoked on the GL thread when the Godot main loop has started.
+	 * Invoked on the render thread when the Godot main loop has started.
 	 */
 	@CallSuper
-	protected void onGLGodotMainLoopStarted() {
+	protected void onGodotMainLoopStarted() {
 		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
-			plugin.onGLGodotMainLoopStarted();
+			plugin.onGodotMainLoopStarted();
 		}
 	}
 
@@ -247,7 +244,7 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 
 				// Must occur after GodotLib.setup has completed.
 				for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
-					plugin.onGLRegisterPluginWithGodotNative();
+					plugin.onRegisterPluginWithGodotNative();
 				}
 
 				setKeepScreenOn("True".equals(GodotLib.getGlobal("display/window/energy_saving/keep_screen_on")));
@@ -787,11 +784,11 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 	}
 
 	/**
-	 * Queue a runnable to be run on the GL thread.
+	 * Queue a runnable to be run on the render thread.
 	 * <p>
-	 * This must be called after the GL thread has started.
+	 * This must be called after the render thread has started.
 	 */
-	public final void runOnGLThread(@NonNull Runnable action) {
+	public final void runOnRenderThread(@NonNull Runnable action) {
 		if (mView != null) {
 			mView.queueEvent(action);
 		}
