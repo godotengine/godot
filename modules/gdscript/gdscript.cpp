@@ -390,9 +390,14 @@ void GDScript::_update_exports_values(Map<StringName, Variant> &values, List<Pro
 }
 #endif
 
-bool GDScript::_update_exports() {
+bool GDScript::_update_exports(bool *r_err, bool p_recursive_call) {
 
 #ifdef TOOLS_ENABLED
+
+	static Vector<GDScript *> base_caches;
+	if (!p_recursive_call)
+		base_caches.clear();
+	base_caches.push_back(this);
 
 	bool changed = false;
 
@@ -487,7 +492,22 @@ bool GDScript::_update_exports() {
 	placeholder_fallback_enabled = false;
 
 	if (base_cache.is_valid() && base_cache->is_valid()) {
-		if (base_cache->_update_exports()) {
+		for (int i = 0; i < base_caches.size(); i++) {
+			if (base_caches[i] == base_cache.ptr()) {
+				if (r_err)
+					*r_err = true;
+				valid = false; // to show error in the editor
+				base_cache->valid = false;
+				base_cache->inheriters_cache.clear(); // to prevent future stackoverflows
+				base_cache.unref();
+				base.unref();
+				_base = nullptr;
+				ERR_FAIL_V_MSG(false, "Cyclic inheritance in script class.");
+			}
+		}
+		if (base_cache->_update_exports(r_err, true)) {
+			if (r_err && *r_err)
+				return false;
 			changed = true;
 		}
 	}
@@ -515,7 +535,10 @@ void GDScript::update_exports() {
 
 #ifdef TOOLS_ENABLED
 
-	_update_exports();
+	bool cyclic_error = false;
+	_update_exports(&cyclic_error);
+	if (cyclic_error)
+		return;
 
 	Set<ObjectID> copy = inheriters_cache; //might get modified
 
