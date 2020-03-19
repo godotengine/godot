@@ -93,14 +93,13 @@ void Button::_notification(int p_what) {
 				} break;
 				case DRAW_HOVER_PRESSED: {
 
-					if (has_stylebox("hover_pressed") && has_stylebox_override("hover_pressed")) {
+					// Edge case for CheckButton and CheckBox.
+					if (has_stylebox("hover_pressed")) {
 						style = get_stylebox("hover_pressed");
 						if (!flat)
 							style->draw(ci, Rect2(Point2(0, 0), size));
 						if (has_color("font_color_hover_pressed"))
 							color = get_color("font_color_hover_pressed");
-						else
-							color = get_color("font_color");
 						if (has_color("icon_color_hover_pressed"))
 							color_icon = get_color("icon_color_hover_pressed");
 
