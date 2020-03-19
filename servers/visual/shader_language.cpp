@@ -6284,6 +6284,12 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					builtin_types = p_functions[name].built_ins;
 				}
 
+				if (p_functions.has("global")) { // Adds global variables: 'TIME'
+					for (Map<StringName, BuiltInInfo>::Element *E = p_functions["global"].built_ins.front(); E; E = E->next()) {
+						builtin_types.insert(E->key(), E->value());
+					}
+				}
+
 				ShaderNode::Function function;
 
 				function.callable = !p_functions.has(name);
