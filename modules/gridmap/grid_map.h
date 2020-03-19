@@ -267,6 +267,8 @@ public:
 	Array get_bake_meshes();
 	RID get_bake_mesh_instance(int p_idx);
 
+	void fix_invalid_cells();
+
 	GridMap();
 	~GridMap();
 };
