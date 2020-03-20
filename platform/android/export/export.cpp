@@ -1188,14 +1188,32 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	static String _parse_string(const uint8_t *p_bytes, bool p_utf8) {
 
 		uint32_t offset = 0;
-		uint32_t len = decode_uint16(&p_bytes[offset]);
+		uint32_t len = 0;
 
 		if (p_utf8) {
-			//don't know how to read extended utf8, this will have to be for now
-			len >>= 8;
+			uint8_t byte = p_bytes[offset];
+			if (byte & 0x80)
+				offset += 2;
+			else
+				offset += 1;
+			byte = p_bytes[offset];
+			offset++;
+			if (byte & 0x80) {
+				len = byte & 0x7F;
+				len = (len << 8) + p_bytes[offset];
+				offset++;
+			} else {
+				len = byte;
+			}
+		} else {
+			len = decode_uint16(&p_bytes[offset]);
+			offset += 2;
+			if (len & 0x8000) {
+				len &= 0x7FFF;
+				len = (len << 16) + decode_uint16(&p_bytes[offset]);
+				offset += 2;
+			}
 		}
-		offset += 2;
-		//printf("len %i, unicode: %i\n",len,int(p_utf8));
 
 		if (p_utf8) {
 
