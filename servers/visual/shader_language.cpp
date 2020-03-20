@@ -896,7 +896,7 @@ void ShaderLanguage::clear() {
 	}
 }
 
-bool ShaderLanguage::_find_identifier(const BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type, IdentifierType *r_type, bool *r_is_const, int *r_array_size, StringName *r_struct_name) {
+bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_reassign, const Map<StringName, BuiltInInfo> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type, IdentifierType *r_type, bool *r_is_const, int *r_array_size, StringName *r_struct_name) {
 
 	if (p_builtin_types.has(p_identifier)) {
 
@@ -941,6 +941,9 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, const Map<String
 			function = p_block->parent_function;
 			break;
 		} else {
+			if (p_allow_reassign) {
+				break;
+			}
 			ERR_FAIL_COND_V(!p_block->parent_block, false);
 			p_block = p_block->parent_block;
 		}
@@ -3654,7 +3657,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					}
 				} else {
 
-					if (!_find_identifier(p_block, p_builtin_types, identifier, &data_type, &ident_type, &is_const, &array_size, &struct_name)) {
+					if (!_find_identifier(p_block, false, p_builtin_types, identifier, &data_type, &ident_type, &is_const, &array_size, &struct_name)) {
 						_set_error("Unknown identifier in expression: " + String(identifier));
 						return NULL;
 					}
@@ -4749,7 +4752,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 
 				StringName name = tk.text;
 				ShaderLanguage::IdentifierType itype;
-				if (_find_identifier(p_block, p_builtin_types, name, (ShaderLanguage::DataType *)0, &itype)) {
+				if (_find_identifier(p_block, true, p_builtin_types, name, (ShaderLanguage::DataType *)0, &itype)) {
 					if (itype != IDENTIFIER_FUNCTION) {
 						_set_error("Redefinition of '" + String(name) + "'");
 						return ERR_PARSE_ERROR;
@@ -5888,7 +5891,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 				name = tk.text;
 
-				if (_find_identifier(NULL, Map<StringName, BuiltInInfo>(), name)) {
+				if (_find_identifier(NULL, false, Map<StringName, BuiltInInfo>(), name)) {
 					_set_error("Redefinition of '" + String(name) + "'");
 					return ERR_PARSE_ERROR;
 				}
@@ -6188,7 +6191,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					return ERR_PARSE_ERROR;
 				}
 
-				if (_find_identifier(NULL, Map<StringName, BuiltInInfo>(), name)) {
+				if (_find_identifier(NULL, false, Map<StringName, BuiltInInfo>(), name)) {
 					_set_error("Redefinition of '" + String(name) + "'");
 					return ERR_PARSE_ERROR;
 				}
@@ -6256,7 +6259,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 							}
 
 							name = tk.text;
-							if (_find_identifier(NULL, Map<StringName, BuiltInInfo>(), name)) {
+							if (_find_identifier(NULL, false, Map<StringName, BuiltInInfo>(), name)) {
 								_set_error("Redefinition of '" + String(name) + "'");
 								return ERR_PARSE_ERROR;
 							}
@@ -6395,7 +6398,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					pname = tk.text;
 
 					ShaderLanguage::IdentifierType itype;
-					if (_find_identifier(func_node->body, builtin_types, pname, (ShaderLanguage::DataType *)0, &itype)) {
+					if (_find_identifier(func_node->body, false, builtin_types, pname, (ShaderLanguage::DataType *)0, &itype)) {
 						if (itype != IDENTIFIER_FUNCTION) {
 							_set_error("Redefinition of '" + String(pname) + "'");
 							return ERR_PARSE_ERROR;

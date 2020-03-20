@@ -824,7 +824,7 @@ private:
 		IDENTIFIER_CONSTANT,
 	};
 
-	bool _find_identifier(const BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type = NULL, IdentifierType *r_type = NULL, bool *r_is_const = NULL, int *r_array_size = NULL, StringName *r_struct_name = NULL);
+	bool _find_identifier(const BlockNode *p_block, bool p_allow_reassign, const Map<StringName, BuiltInInfo> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type = NULL, IdentifierType *r_type = NULL, bool *r_is_const = NULL, int *r_array_size = NULL, StringName *r_struct_name = NULL);
 	bool _is_operator_assign(Operator p_op) const;
 	bool _validate_assign(Node *p_node, const Map<StringName, BuiltInInfo> &p_builtin_types, String *r_message = NULL);
 	bool _validate_operator(OperatorNode *p_op, DataType *r_ret_type = NULL);
