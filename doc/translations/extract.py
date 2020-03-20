@@ -235,7 +235,7 @@ def _generate_translation_catalog_file(unique_msgs, output):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--path", "-p", default=".", help="The directory containing XML files to collect.")
+    parser.add_argument("--path", "-p", nargs="+", default=".", help="The directory or directories containing XML files to collect.")
     parser.add_argument("--output", "-o", default="translation_catalog.pot", help="The path to the output file.")
     args = parser.parse_args()
 
@@ -243,16 +243,20 @@ def main():
     if not os.path.isdir(os.path.dirname(output)) or not output.endswith('.pot'):
         print_error("Invalid output path: {}".format(output))
         exit(1)
-    if not os.path.isdir(args.path):
-        print_error("Invalid working directory path: {}".format(args.path))
-        exit(1)
 
-    os.chdir(args.path)
-    print("Current working dir: {}\n".format(os.getcwd()))
+    classes = OrderedDict()
+    for path in args.path:
+        if not os.path.isdir(path):
+            print_error("Invalid working directory path: {}".format(path))
+            exit(1)
 
-    classes = OrderedDict() ## dictionary of key=class_name, value=DescList objects
-    _collect_classes_dir('.', classes)
-    classes = OrderedDict(sorted(classes.items(), key = lambda kv: kv[0].lower() ))
+        print("\nCurrent working dir: {}".format(path))
+
+        path_classes = OrderedDict() ## dictionary of key=class_name, value=DescList objects
+        _collect_classes_dir(path, path_classes)
+        classes.update(path_classes)
+
+    classes = OrderedDict(sorted(classes.items(), key = lambda kv: kv[0].lower()))
     unique_msgs = _make_translation_catalog(classes)
     _generate_translation_catalog_file(unique_msgs, output)
 
