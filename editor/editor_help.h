@@ -200,6 +200,8 @@ class EditorHelpBit : public PanelContainer {
 	void _go_to_help(String p_what);
 	void _meta_clicked(String p_select);
 
+	String text;
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);

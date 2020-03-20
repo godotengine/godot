@@ -1647,6 +1647,10 @@ void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline)
 	p_item->line = current_frame->lines.size() - 1;
 
 	_invalidate_current_line(current_frame);
+
+	if (fixed_width != -1) {
+		minimum_size_changed();
+	}
 }
 
 void RichTextLabel::_remove_item(Item *p_item, const int p_line, const int p_subitem_line) {
@@ -1968,6 +1972,10 @@ void RichTextLabel::clear() {
 	selection.click = NULL;
 	selection.active = false;
 	current_idx = 1;
+
+	if (fixed_width != -1) {
+		minimum_size_changed();
+	}
 }
 
 void RichTextLabel::set_tab_size(int p_spaces) {

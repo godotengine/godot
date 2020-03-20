@@ -181,6 +181,7 @@ class DisplayServerWindows : public DisplayServer {
 		bool window_focused = false;
 		bool was_maximized = false;
 		bool always_on_top = false;
+		bool no_focus = false;
 		bool window_has_focus = false;
 
 		HBITMAP hBitmap; //DIB section for layered window
@@ -225,7 +226,7 @@ class DisplayServerWindows : public DisplayServer {
 	WNDPROC user_proc = nullptr;
 
 	void _send_window_event(const WindowData &wd, WindowEvent p_event);
-	void _get_window_style(bool p_main_window, bool p_fullscreen, bool p_borderless, bool p_resizable, bool p_maximized, DWORD &r_style, DWORD &r_style_ex);
+	void _get_window_style(bool p_main_window, bool p_fullscreen, bool p_borderless, bool p_resizable, bool p_maximized, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex);
 
 	MouseMode mouse_mode;
 	bool alt_mem = false;

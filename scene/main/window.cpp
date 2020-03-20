@@ -1061,7 +1061,6 @@ Rect2i Window::get_usable_parent_rect() const {
 	Rect2i parent;
 	if (is_embedded()) {
 		parent = _get_embedder()->get_visible_rect();
-		print_line("using embedded " + parent);
 	} else {
 
 		const Window *w = is_visible() ? this : get_parent_visible_window();
@@ -1069,7 +1068,6 @@ Rect2i Window::get_usable_parent_rect() const {
 		ERR_FAIL_COND_V(!w, Rect2());
 
 		parent = DisplayServer::get_singleton()->screen_get_usable_rect(DisplayServer::get_singleton()->window_get_current_screen(w->get_window_id()));
-		print_line("using windowid " + parent);
 	}
 	return parent;
 }
@@ -1337,6 +1335,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "borderless"), "set_flag", "get_flag", FLAG_BORDERLESS);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "always_on_top"), "set_flag", "get_flag", FLAG_ALWAYS_ON_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transparent"), "set_flag", "get_flag", FLAG_TRANSPARENT);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "unfocusable"), "set_flag", "get_flag", FLAG_NO_FOCUS);
 	ADD_GROUP("Limits", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "min_size"), "set_min_size", "get_min_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "max_size"), "set_max_size", "get_max_size");
@@ -1360,6 +1359,28 @@ void Window::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("about_to_popup"));
 
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
+
+	BIND_ENUM_CONSTANT(MODE_WINDOWED);
+	BIND_ENUM_CONSTANT(MODE_MINIMIZED);
+	BIND_ENUM_CONSTANT(MODE_MAXIMIZED);
+	BIND_ENUM_CONSTANT(MODE_FULLSCREEN);
+
+	BIND_ENUM_CONSTANT(FLAG_RESIZE_DISABLED);
+	BIND_ENUM_CONSTANT(FLAG_BORDERLESS);
+	BIND_ENUM_CONSTANT(FLAG_ALWAYS_ON_TOP);
+	BIND_ENUM_CONSTANT(FLAG_TRANSPARENT);
+	BIND_ENUM_CONSTANT(FLAG_NO_FOCUS);
+	BIND_ENUM_CONSTANT(FLAG_MAX);
+
+	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_DISABLED);
+	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_OBJECTS);
+	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_PIXELS);
+
+	BIND_ENUM_CONSTANT(CONTENT_SCALE_ASPECT_IGNORE);
+	BIND_ENUM_CONSTANT(CONTENT_SCALE_ASPECT_KEEP);
+	BIND_ENUM_CONSTANT(CONTENT_SCALE_ASPECT_KEEP_WIDTH);
+	BIND_ENUM_CONSTANT(CONTENT_SCALE_ASPECT_KEEP_HEIGHT);
+	BIND_ENUM_CONSTANT(CONTENT_SCALE_ASPECT_EXPAND);
 }
 
 Window::Window() {

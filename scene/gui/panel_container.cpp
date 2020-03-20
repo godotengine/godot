@@ -43,7 +43,7 @@ Size2 PanelContainer::get_minimum_size() const {
 	for (int i = 0; i < get_child_count(); i++) {
 
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c || !c->is_visible_in_tree())
+		if (!c || !c->is_visible())
 			continue;
 		if (c->is_set_as_toplevel())
 			continue;

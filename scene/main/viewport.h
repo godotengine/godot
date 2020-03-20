@@ -311,7 +311,7 @@ private:
 		Control *key_focus;
 		Control *mouse_over;
 		Control *tooltip;
-		Control *tooltip_popup;
+		Window *tooltip_popup;
 		Label *tooltip_label;
 		Point2 tooltip_pos;
 		Point2 last_mouse_pos;

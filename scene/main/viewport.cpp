@@ -168,9 +168,9 @@ ViewportTexture::~ViewportTexture() {
 
 /////////////////////////////////////
 
-class TooltipPanel : public PanelContainer {
+class TooltipPanel : public PopupPanel {
 
-	GDCLASS(TooltipPanel, PanelContainer);
+	GDCLASS(TooltipPanel, PopupPanel);
 
 public:
 	TooltipPanel(){};
@@ -328,6 +328,7 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 
 		return;
 	}
+
 	int index = -1;
 	for (int i = 0; i < gui.sub_windows.size(); i++) {
 		if (gui.sub_windows[i].window == p_window) {
@@ -337,6 +338,16 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 	}
 
 	ERR_FAIL_COND(index == -1);
+
+	if (p_window->get_flag(Window::FLAG_NO_FOCUS)) {
+		//can only move to foreground, but no focus granted
+		SubWindow sw = gui.sub_windows[index];
+		gui.sub_windows.remove(index);
+		gui.sub_windows.push_back(sw);
+		index = gui.sub_windows.size() - 1;
+		_sub_window_update_order();
+		return; //i guess not...
+	}
 
 	if (gui.subwindow_focused) {
 		if (gui.subwindow_focused == p_window) {
@@ -1587,47 +1598,49 @@ void Viewport::_gui_show_tooltip() {
 
 	Control *rp = which;
 
-	gui.tooltip_popup = which->make_custom_tooltip(tooltip);
+	Control *base_tooltip = which->make_custom_tooltip(tooltip);
 
-	if (!gui.tooltip_popup) {
-		gui.tooltip_popup = memnew(TooltipPanel);
-
+	if (!base_tooltip) {
 		gui.tooltip_label = memnew(TooltipLabel);
-		gui.tooltip_popup->add_child(gui.tooltip_label);
-
-		Ref<StyleBox> ttp = gui.tooltip_label->get_theme_stylebox("panel", "TooltipPanel");
-
-		gui.tooltip_label->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_BEGIN, ttp->get_margin(MARGIN_LEFT));
-		gui.tooltip_label->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, ttp->get_margin(MARGIN_TOP));
-		gui.tooltip_label->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -ttp->get_margin(MARGIN_RIGHT));
-		gui.tooltip_label->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, -ttp->get_margin(MARGIN_BOTTOM));
 		gui.tooltip_label->set_text(tooltip);
+		base_tooltip = gui.tooltip_label;
 	}
 
+	base_tooltip->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+
+	TooltipPanel *panel = memnew(TooltipPanel);
+	panel->set_transient(false);
+	panel->set_flag(Window::FLAG_NO_FOCUS, true);
+	panel->set_wrap_controls(true);
+	panel->add_child(base_tooltip);
+
+	gui.tooltip_popup = panel;
+
 	rp->add_child(gui.tooltip_popup);
-	gui.tooltip_popup->force_parent_owned();
-	gui.tooltip_popup->set_as_toplevel(true);
-	if (gui.tooltip) // Avoids crash when rapidly switching controls.
-		gui.tooltip_popup->set_scale(gui.tooltip->get_global_transform().get_scale());
+
+	//if (gui.tooltip) // Avoids crash when rapidly switching controls.
+	//	gui.tooltip_popup->set_scale(gui.tooltip->get_global_transform().get_scale());
 
 	Point2 tooltip_offset = ProjectSettings::get_singleton()->get("display/mouse_cursor/tooltip_position_offset");
-	Rect2 r(gui.tooltip_pos + tooltip_offset, gui.tooltip_popup->get_minimum_size());
-	Rect2 vr = gui.tooltip_popup->get_viewport_rect();
-	if (r.size.x * gui.tooltip_popup->get_scale().x + r.position.x > vr.size.x)
-		r.position.x = vr.size.x - r.size.x * gui.tooltip_popup->get_scale().x;
-	else if (r.position.x < 0)
-		r.position.x = 0;
+	Rect2 r(gui.tooltip_pos + tooltip_offset, gui.tooltip_popup->get_contents_minimum_size());
 
-	if (r.size.y * gui.tooltip_popup->get_scale().y + r.position.y > vr.size.y)
-		r.position.y = vr.size.y - r.size.y * gui.tooltip_popup->get_scale().y;
-	else if (r.position.y < 0)
-		r.position.y = 0;
+	Rect2i vr = gui.tooltip_popup->get_parent_visible_window()->get_usable_parent_rect();
 
-	gui.tooltip_popup->set_global_position(r.position);
+	if (r.size.x + r.position.x > vr.size.x + vr.position.x)
+		r.position.x = vr.position.x + vr.size.x - r.size.x;
+	else if (r.position.x < vr.position.x)
+		r.position.x = vr.position.x;
+
+	if (r.size.y + r.position.y > vr.size.y + vr.position.y)
+		r.position.y = vr.position.y + vr.size.y - r.size.y;
+	else if (r.position.y < vr.position.y)
+		r.position.y = vr.position.y;
+
+	gui.tooltip_popup->set_position(r.position);
 	gui.tooltip_popup->set_size(r.size);
 
-	gui.tooltip_popup->raise();
 	gui.tooltip_popup->show();
+	gui.tooltip_popup->child_controls_changed();
 }
 
 void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_input) {
@@ -1760,9 +1773,6 @@ Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_
 	if (!c || !c->clips_input() || c->has_point(matrix.affine_inverse().xform(p_global))) {
 
 		for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
-
-			if (p_node == gui.tooltip_popup)
-				continue;
 
 			CanvasItem *ci = Object::cast_to<CanvasItem>(p_node->get_child(i));
 			if (!ci || ci->is_set_as_toplevel())
@@ -2125,8 +2135,17 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 						if (tooltip == gui.tooltip_label->get_text()) {
 							is_tooltip_shown = true;
 						}
-					} else if (tooltip == String(gui.tooltip_popup->call("get_tooltip_text"))) {
-						is_tooltip_shown = true;
+					} else {
+
+						Variant t = gui.tooltip_popup->call("get_tooltip_text");
+
+						if (t.get_type() == Variant::STRING) {
+							if (tooltip == String(t)) {
+								is_tooltip_shown = true;
+							}
+						} else {
+							is_tooltip_shown = true; //well, nothing to compare against, likely using custom control, so if it changes there is nothing we can do
+						}
 					}
 				} else
 					_gui_cancel_tooltip();
@@ -2135,7 +2154,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			if (can_tooltip && !is_tooltip_shown) {
 
 				gui.tooltip = over;
-				gui.tooltip_pos = mpos; //(parent_xform * get_transform()).affine_inverse().xform(pos);
+				gui.tooltip_pos = over->get_screen_transform().xform(pos); //(parent_xform * get_transform()).affine_inverse().xform(pos);
 				gui.tooltip_timer = gui.tooltip_delay;
 			}
 		}
@@ -2444,9 +2463,6 @@ void Viewport::_gui_remove_control(Control *p_control) {
 		gui.mouse_over = NULL;
 	if (gui.tooltip == p_control)
 		gui.tooltip = NULL;
-	if (gui.tooltip_popup == p_control) {
-		_gui_cancel_tooltip();
-	}
 }
 
 void Viewport::_gui_remove_focus() {
