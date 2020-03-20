@@ -190,6 +190,7 @@ Viewport::GUI::GUI() {
 
 	dragging = false;
 	mouse_focus = NULL;
+	forced_mouse_focus = false;
 	mouse_click_grabber = NULL;
 	mouse_focus_mask = 0;
 	key_focus = NULL;
@@ -594,6 +595,7 @@ void Viewport::_notification(int p_what) {
 					if (!has_mouse_event) {
 						Ref<InputEventMouseMotion> mm;
 						mm.instance();
+
 						mm->set_device(InputEvent::DEVICE_ID_INTERNAL);
 						mm->set_global_position(physics_last_mousepos);
 						mm->set_position(physics_last_mousepos);
@@ -846,8 +848,7 @@ void Viewport::_notification(int p_what) {
 
 			_drop_physics_mouseover();
 
-			if (gui.mouse_focus) {
-				//if mouse is being pressed, send a release event
+			if (gui.mouse_focus && !gui.forced_mouse_focus) {
 				_drop_mouse_focus();
 			}
 		} break;
@@ -1106,7 +1107,9 @@ void Viewport::_camera_set(Camera *p_camera) {
 	if (camera) {
 		camera->notification(Camera::NOTIFICATION_LOST_CURRENT);
 	}
+
 	camera = p_camera;
+
 	if (!camera_override) {
 		if (camera)
 			VisualServer::get_singleton()->viewport_attach_camera(viewport, camera->get_camera());
@@ -1983,6 +1986,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			//disable mouse focus if needed before calling input, this makes popups on mouse press event work better, as the release will never be received otherwise
 			if (gui.mouse_focus_mask == 0) {
 				gui.mouse_focus = NULL;
+				gui.forced_mouse_focus = false;
 			}
 
 			if (mouse_focus && mouse_focus->can_process()) {
@@ -2028,6 +2032,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 							if (gui.drag_data.get_type() != Variant::NIL) {
 
 								gui.mouse_focus = NULL;
+								gui.forced_mouse_focus = false;
 								gui.mouse_focus_mask = 0;
 								break;
 							} else {
@@ -2426,6 +2431,7 @@ void Viewport::_gui_remove_control(Control *p_control) {
 
 	if (gui.mouse_focus == p_control) {
 		gui.mouse_focus = NULL;
+		gui.forced_mouse_focus = false;
 		gui.mouse_focus_mask = 0;
 	}
 	if (gui.last_mouse_focus == p_control) {
@@ -2480,6 +2486,7 @@ void Viewport::_drop_mouse_focus() {
 	Control *c = gui.mouse_focus;
 	int mask = gui.mouse_focus_mask;
 	gui.mouse_focus = NULL;
+	gui.forced_mouse_focus = false;
 	gui.mouse_focus_mask = 0;
 
 	for (int i = 0; i < 3; i++) {
@@ -3230,6 +3237,22 @@ bool Viewport::is_embedding_subwindows() const {
 	return gui.embed_subwindows_hint;
 }
 
+void Viewport::pass_mouse_focus_to(Viewport *p_viewport, Control *p_control) {
+	ERR_FAIL_NULL(p_viewport);
+	ERR_FAIL_NULL(p_control);
+
+	if (gui.mouse_focus) {
+		p_viewport->gui.mouse_focus = p_control;
+		p_viewport->gui.mouse_focus_mask = gui.mouse_focus_mask;
+		p_viewport->gui.key_focus = p_control;
+		p_viewport->gui.forced_mouse_focus = true;
+
+		gui.mouse_focus = nullptr;
+		gui.forced_mouse_focus = false;
+		gui.mouse_focus_mask = 0;
+	}
+}
+
 void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_world_2d", "world_2d"), &Viewport::set_world_2d);
@@ -3463,6 +3486,7 @@ Viewport::Viewport() {
 	gui.canvas_sort_index = 0;
 	gui.roots_order_dirty = false;
 	gui.mouse_focus = NULL;
+	gui.forced_mouse_focus = false;
 	gui.last_mouse_focus = NULL;
 	gui.subwindow_focused = nullptr;
 	gui.subwindow_drag = SUB_WINDOW_DRAG_DISABLED;

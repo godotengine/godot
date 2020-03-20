@@ -290,6 +290,8 @@ public:
 VARIANT_ENUM_CAST(TreeItem::TreeCellMode);
 VARIANT_ENUM_CAST(TreeItem::TextAlign);
 
+class VBoxContainer;
+
 class Tree : public Control {
 
 	GDCLASS(Tree, Control);
@@ -359,6 +361,10 @@ private:
 	};
 
 	bool show_column_titles;
+
+	VBoxContainer *popup_editor_vb;
+
+	PopupPanel *popup_editor;
 	LineEdit *text_editor;
 	HSlider *value_editor;
 	bool updating_value_editor;
