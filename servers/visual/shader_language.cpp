@@ -5083,7 +5083,9 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			//a sub block, just because..
 			BlockNode *block = alloc_node<BlockNode>();
 			block->parent_block = p_block;
-			_parse_block(block, p_builtin_types, false, p_can_break, p_can_continue);
+			if (_parse_block(block, p_builtin_types, false, p_can_break, p_can_continue) != OK) {
+				return ERR_PARSE_ERROR;
+			}
 			p_block->statements.push_back(block);
 		} else if (tk.type == TK_CF_IF) {
 			//if () {}
