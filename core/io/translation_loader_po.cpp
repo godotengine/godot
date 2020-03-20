@@ -118,17 +118,26 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 		ERR_FAIL_COND_V_MSG(!l.begins_with("\"") || status == STATUS_NONE, RES(), f->get_path() + ":" + itos(line) + " Invalid line '" + l + "' while parsing: ");
 
 		l = l.substr(1, l.length());
-		//find final quote
+		// Find final quote, ignoring escaped ones (\").
+		// The escape_next logic is necessary to properly parse things like \\"
+		// where the blackslash is the one being escaped, not the quote.
 		int end_pos = -1;
+		bool escape_next = false;
 		for (int i = 0; i < l.length(); i++) {
+			if (l[i] == '\\' && !escape_next) {
+				escape_next = true;
+				continue;
+			}
 
-			if (l[i] == '"' && (i == 0 || l[i - 1] != '\\')) {
+			if (l[i] == '"' && !escape_next) {
 				end_pos = i;
 				break;
 			}
+
+			escape_next = false;
 		}
 
-		ERR_FAIL_COND_V_MSG(end_pos == -1, RES(), f->get_path() + ":" + itos(line) + " Expected '\"' at end of message while parsing file: ");
+		ERR_FAIL_COND_V_MSG(end_pos == -1, RES(), f->get_path() + ":" + itos(line) + ": Expected '\"' at end of message while parsing file.");
 
 		l = l.substr(0, end_pos);
 		l = l.c_unescape();
