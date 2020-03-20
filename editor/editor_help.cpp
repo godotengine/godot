@@ -1610,6 +1610,11 @@ void EditorHelpBit::_bind_methods() {
 void EditorHelpBit::_notification(int p_what) {
 
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			rich_text->clear();
+			_add_text_to_rt(text, rich_text);
+
+		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
 			rich_text->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
@@ -1620,8 +1625,9 @@ void EditorHelpBit::_notification(int p_what) {
 
 void EditorHelpBit::set_text(const String &p_text) {
 
+	text = p_text;
 	rich_text->clear();
-	_add_text_to_rt(p_text, rich_text);
+	_add_text_to_rt(text, rich_text);
 }
 
 EditorHelpBit::EditorHelpBit() {

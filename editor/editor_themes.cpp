@@ -977,6 +977,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("focus", "RichTextLabel", make_empty_stylebox());
 	theme->set_stylebox("normal", "RichTextLabel", style_tree_bg);
 
+	theme->set_stylebox("panel", "EditorHelpBit", make_flat_stylebox(dark_color_1, 6, 4, 6, 4));
+
 	theme->set_color("headline_color", "EditorHelp", mono_color);
 
 	// Panel

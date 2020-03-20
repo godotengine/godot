@@ -776,13 +776,14 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 
 	tooltip_text = p_text;
 	EditorHelpBit *help_bit = memnew(EditorHelpBit);
-	help_bit->add_theme_style_override("panel", get_theme_stylebox("panel", "TooltipPanel"));
+	//help_bit->add_theme_style_override("panel", get_theme_stylebox("panel", "TooltipPanel"));
 	help_bit->get_rich_text()->set_fixed_size_to_width(360 * EDSCALE);
 
+	String text;
 	PackedStringArray slices = p_text.split("::", false);
 	if (!slices.empty()) {
 		String property_name = slices[0].strip_edges();
-		String text = TTR("Property:") + " [u][b]" + property_name + "[/b][/u]";
+		text = TTR("Property:") + " [u][b]" + property_name + "[/b][/u]";
 
 		if (slices.size() > 1) {
 			String property_doc = slices[1].strip_edges();
@@ -790,7 +791,7 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 				text += "\n" + property_doc;
 			}
 		}
-		help_bit->call_deferred("set_text", text); //hack so it uses proper theme once inside scene
+		help_bit->set_text(text);
 	}
 
 	return help_bit;
@@ -1026,7 +1027,7 @@ Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) cons
 				text += "\n" + property_doc;
 			}
 		}
-		help_bit->call_deferred("set_text", text); //hack so it uses proper theme once inside scene
+		help_bit->set_text(text); //hack so it uses proper theme once inside scene
 	}
 
 	return help_bit;

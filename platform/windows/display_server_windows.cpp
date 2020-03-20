@@ -451,15 +451,29 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 	_THREAD_SAFE_METHOD_
 
 	WindowID window_id = _create_window(p_mode, p_flags, p_rect);
-	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
-		if (p_flags & (1 << i)) {
-			window_set_flag(WindowFlags(i), true, window_id);
-		}
+
+	WindowData &wd = windows[window_id];
+
+	if (p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT) {
+		wd.resizable = false;
+	}
+	if (p_flags & WINDOW_FLAG_BORDERLESS_BIT) {
+		wd.borderless = true;
+	}
+	if (p_flags & WINDOW_FLAG_ALWAYS_ON_TOP_BIT && p_mode != WINDOW_MODE_FULLSCREEN) {
+		wd.always_on_top = true;
+	}
+	if (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) {
+		wd.no_focus = true;
 	}
 
-	ShowWindow(windows[window_id].hWnd, SW_SHOW); // Show The Window
-	SetForegroundWindow(windows[window_id].hWnd); // Slightly Higher Priority
-	SetFocus(windows[window_id].hWnd); // Sets Keyboard Focus To
+	_update_window_style(window_id);
+
+	ShowWindow(wd.hWnd, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) ? SW_SHOWNOACTIVATE : SW_SHOW); // Show The Window
+	if (!(p_flags & WINDOW_FLAG_NO_FOCUS_BIT)) {
+		SetForegroundWindow(wd.hWnd); // Slightly Higher Priority
+		SetFocus(wd.hWnd); // Sets Keyboard Focus To
+	}
 
 	return window_id;
 }
@@ -792,7 +806,7 @@ Size2i DisplayServerWindows::window_get_real_size(WindowID p_window) const {
 	return Size2();
 }
 
-void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscreen, bool p_borderless, bool p_resizable, bool p_maximized, DWORD &r_style, DWORD &r_style_ex) {
+void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscreen, bool p_borderless, bool p_resizable, bool p_maximized, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex) {
 
 	r_style = 0;
 	r_style_ex = WS_EX_WINDOWEDGE;
@@ -818,6 +832,9 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 		}
 	}
 
+	if (p_no_activate_focus) {
+		r_style_ex |= WS_EX_TOPMOST | WS_EX_NOACTIVATE;
+	}
 	r_style |= WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 }
 
@@ -831,12 +848,12 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	DWORD style = 0;
 	DWORD style_ex = 0;
 
-	_get_window_style(p_window == MAIN_WINDOW_ID, wd.fullscreen, wd.borderless, wd.resizable, wd.maximized, style, style_ex);
+	_get_window_style(p_window == MAIN_WINDOW_ID, wd.fullscreen, wd.borderless, wd.resizable, wd.maximized, wd.no_focus, style, style_ex);
 
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
 
-	SetWindowPos(wd.hWnd, wd.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
+	SetWindowPos(wd.hWnd, wd.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | (wd.no_focus ? SWP_NOACTIVATE : 0));
 
 	if (p_repaint) {
 		RECT rect;
@@ -971,6 +988,11 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
 
+		} break;
+		case WINDOW_FLAG_NO_FOCUS: {
+
+			wd.no_focus = p_enabled;
+			_update_window_style(p_window);
 		} break;
 	}
 }
@@ -2615,7 +2637,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	DWORD dwExStyle;
 	DWORD dwStyle;
 
-	_get_window_style(window_id_counter == MAIN_WINDOW_ID, p_mode == WINDOW_MODE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MAXIMIZED, dwStyle, dwExStyle);
+	_get_window_style(window_id_counter == MAIN_WINDOW_ID, p_mode == WINDOW_MODE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MAXIMIZED, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT), dwStyle, dwExStyle);
 
 	RECT WindowRect;
 
