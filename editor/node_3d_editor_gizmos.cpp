@@ -4219,6 +4219,21 @@ Joint3DGizmoPlugin::Joint3DGizmoPlugin() {
 	create_material("joint_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/joint", Color(0.5, 0.8, 1)));
 	create_material("joint_body_a_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/joint_body_a", Color(0.6, 0.8, 1)));
 	create_material("joint_body_b_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/joint_body_b", Color(0.6, 0.9, 1)));
+
+	update_timer = memnew(Timer);
+	update_timer->set_name("JointGizmoUpdateTimer");
+	update_timer->set_wait_time(1.0 / 120.0);
+	update_timer->connect("timeout", callable_mp(this, &Joint3DGizmoPlugin::incremental_update_gizmos));
+	update_timer->set_autostart(true);
+	EditorNode::get_singleton()->call_deferred("add_child", update_timer);
+}
+
+void Joint3DGizmoPlugin::incremental_update_gizmos() {
+	if (!current_gizmos.empty()) {
+		update_idx++;
+		update_idx = update_idx % current_gizmos.size();
+		redraw(current_gizmos[update_idx]);
+	}
 }
 
 bool Joint3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
