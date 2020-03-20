@@ -1615,6 +1615,11 @@ void EditorHelpBit::_bind_methods() {
 void EditorHelpBit::_notification(int p_what) {
 
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			rich_text->clear();
+			_add_text_to_rt(text, rich_text);
+
+		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
 			rich_text->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
@@ -1625,8 +1630,9 @@ void EditorHelpBit::_notification(int p_what) {
 
 void EditorHelpBit::set_text(const String &p_text) {
 
+	text = p_text;
 	rich_text->clear();
-	_add_text_to_rt(p_text, rich_text);
+	_add_text_to_rt(text, rich_text);
 }
 
 EditorHelpBit::EditorHelpBit() {
@@ -1634,6 +1640,9 @@ EditorHelpBit::EditorHelpBit() {
 	rich_text = memnew(RichTextLabel);
 	add_child(rich_text);
 	rich_text->connect_compat("meta_clicked", this, "_meta_clicked");
+	Ref<StyleBoxEmpty> empty_sb;
+	/*empty_sb.instance();
+	rich_text->add_theme_style_override("normal", empty_sb);*/
 	rich_text->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 	rich_text->set_override_selected_font_color(false);
 	set_custom_minimum_size(Size2(0, 70 * EDSCALE));
