@@ -234,6 +234,7 @@ void NavigationAgent::set_target_location(Vector3 p_location) {
 	navigation_path.clear();
 	target_reached = false;
 	navigation_finished = false;
+	update_frame_id = 0;
 }
 
 Vector3 NavigationAgent::get_target_location() const {
