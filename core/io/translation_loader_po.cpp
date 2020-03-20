@@ -117,13 +117,23 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 		}
 
 		l = l.substr(1, l.length());
-		//find final quote
+		// Find final quote, ignoring escaped ones (\").
+		// The escape_next logic is necessary to properly parse things like \\"
+		// where the blackslash is the one being escaped, not the quote.
 		int end_pos = -1;
+		bool escape_next = false;
 		for (int i = 0; i < l.length(); i++) {
-			if (l[i] == '"' && (i == 0 || l[i - 1] != '\\')) {
+			if (l[i] == '\\' && !escape_next) {
+				escape_next = true;
+				continue;
+			}
+
+			if (l[i] == '"' && !escape_next) {
 				end_pos = i;
 				break;
 			}
+
+			escape_next = false;
 		}
 
 		if (end_pos == -1) {
