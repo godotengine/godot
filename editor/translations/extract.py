@@ -45,6 +45,8 @@ main_po = """
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\\n"
+"MIME-Version: 1.0\\n"
 "Content-Type: text/plain; charset=UTF-8\\n"
 "Content-Transfer-Encoding: 8-bit\\n"\n
 """
