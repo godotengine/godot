@@ -533,7 +533,17 @@
 			<argument index="0" name="screen_point" type="Vector2">
 			</argument>
 			<description>
-				Assigns [code]screen_point[/code] as this node's new local transform.
+				Transforms [code]screen_point[/code] to this node's local transform.
+			</description>
+		</method>
+		<method name="make_local_canvas_position" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="local_point" type="Vector2">
+			</argument>
+			<description>
+				Transforms [code]local_point[/code] to a screen point. 
+				Basically the reverse of [code] make_canvas_position_local [/code]
 			</description>
 		</method>
 		<method name="make_input_local" qualifiers="const">
