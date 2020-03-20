@@ -302,6 +302,7 @@ private:
 	struct GUI {
 		// info used when this is a window
 
+		bool forced_mouse_focus; //used for menu buttons
 		bool key_event_accepted;
 		Control *mouse_focus;
 		Control *last_mouse_focus;
@@ -555,6 +556,9 @@ public:
 	bool is_embedding_subwindows() const;
 
 	Viewport *get_parent_viewport() const;
+
+	void pass_mouse_focus_to(Viewport *p_viewport, Control *p_control);
+
 	Viewport();
 	~Viewport();
 };

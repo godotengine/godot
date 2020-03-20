@@ -140,6 +140,7 @@ class AnimationTrackEdit : public Control {
 	};
 	AnimationTimelineEdit *timeline;
 	UndoRedo *undo_redo;
+	Popup *path_popup;
 	LineEdit *path;
 	Node *root;
 	Control *play_position; //separate control used to draw so updates for only position changed are much faster

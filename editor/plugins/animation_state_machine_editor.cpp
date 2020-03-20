@@ -155,14 +155,10 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 				edit_rect.position -= line_sb->get_offset();
 				edit_rect.size += line_sb->get_minimum_size();
 
-				name_edit->set_global_position(state_machine_draw->get_global_transform().xform(edit_rect.position));
-				name_edit->set_size(edit_rect.size);
+				name_edit_popup->set_position(state_machine_draw->get_screen_transform().xform(edit_rect.position));
+				name_edit_popup->set_size(edit_rect.size);
 				name_edit->set_text(node_rects[i].node_name);
-#ifndef _MSC_VER
-#warning no more show modal, so it must replaced by a popup
-#endif
-				//name_edit->show_modal();
-				name_edit->show();
+				name_edit_popup->popup();
 				name_edit->grab_focus();
 				name_edit->select_all();
 
@@ -1114,7 +1110,7 @@ void AnimationNodeStateMachineEditor::_name_edited(const String &p_text) {
 	undo_redo->add_do_method(this, "_update_graph");
 	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
-	name_edit->hide();
+	name_edit_popup->hide();
 	updating = false;
 
 	state_machine_draw->update();
@@ -1361,12 +1357,14 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	animations_menu->set_name("animations");
 	animations_menu->connect("index_pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_add_animation_type));
 
+	name_edit_popup = memnew(Popup);
+	add_child(name_edit_popup);
 	name_edit = memnew(LineEdit);
-	state_machine_draw->add_child(name_edit);
-	name_edit->hide();
+	name_edit_popup->add_child(name_edit);
+	name_edit->set_anchors_and_margins_preset(PRESET_WIDE);
+	name_edit_popup->add_child(name_edit);
 	name_edit->connect("text_entered", callable_mp(this, &AnimationNodeStateMachineEditor::_name_edited));
 	name_edit->connect("focus_exited", callable_mp(this, &AnimationNodeStateMachineEditor::_name_edited_focus_out));
-	name_edit->set_as_toplevel(true);
 
 	open_file = memnew(EditorFileDialog);
 	add_child(open_file);

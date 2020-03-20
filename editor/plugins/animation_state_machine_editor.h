@@ -50,6 +50,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	ToolButton *tool_select;
 	ToolButton *tool_create;
 	ToolButton *tool_connect;
+	Popup *name_edit_popup;
 	LineEdit *name_edit;
 
 	HBoxContainer *tool_erase_hb;

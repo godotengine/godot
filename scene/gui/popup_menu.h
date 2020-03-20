@@ -215,6 +215,8 @@ public:
 
 	virtual void popup(const Rect2 &p_bounds = Rect2());
 
+	void take_mouse_focus();
+
 	PopupMenu();
 	~PopupMenu();
 };

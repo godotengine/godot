@@ -35,6 +35,7 @@
 #include "scene/gui/control.h"
 #include "scene/resources/dynamic_font.h"
 #include "scene/scene_string_names.h"
+
 void Window::set_title(const String &p_title) {
 	title = p_title;
 
@@ -207,8 +208,8 @@ void Window::set_ime_position(const Point2i &p_pos) {
 
 bool Window::is_embedded() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
-	Viewport *parent_vp = get_parent_viewport();
-	return parent_vp && parent_vp->is_embedding_subwindows();
+
+	return _get_embedder() != nullptr;
 }
 
 void Window::_make_window() {
@@ -1027,6 +1028,12 @@ void Window::popup(const Rect2 &p_screen_rect) {
 		set_size(p_screen_rect.size);
 	}
 
+	Rect2i adjust = _popup_adjust_rect();
+	if (adjust != Rect2i()) {
+		set_position(adjust.position);
+		set_size(adjust.size);
+	}
+
 	set_transient(true);
 	set_visible(true);
 	_post_popup();
@@ -1047,6 +1054,24 @@ void Window::grab_focus() {
 
 bool Window::has_focus() const {
 	return focused;
+}
+
+Rect2i Window::get_usable_parent_rect() const {
+	ERR_FAIL_COND_V(!is_inside_tree(), Rect2());
+	Rect2i parent;
+	if (is_embedded()) {
+		parent = _get_embedder()->get_visible_rect();
+		print_line("using embedded " + parent);
+	} else {
+
+		const Window *w = is_visible() ? this : get_parent_visible_window();
+		//find a parent that can contain us
+		ERR_FAIL_COND_V(!w, Rect2());
+
+		parent = DisplayServer::get_singleton()->screen_get_usable_rect(DisplayServer::get_singleton()->window_get_current_screen(w->get_window_id()));
+		print_line("using windowid " + parent);
+	}
+	return parent;
 }
 
 void Window::add_child_notify(Node *p_child) {
@@ -1291,6 +1316,12 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_theme_font", "name", "type"), &Window::has_theme_font, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("has_theme_color", "name", "type"), &Window::has_theme_color, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("has_theme_constant", "name", "type"), &Window::has_theme_constant, DEFVAL(""));
+
+	ClassDB::bind_method(D_METHOD("popup", "rect"), &Window::popup, DEFVAL(Rect2i()));
+	ClassDB::bind_method(D_METHOD("popup_on_parent", "parent_rect"), &Window::popup_on_parent);
+	ClassDB::bind_method(D_METHOD("popup_centered_ratio", "ratio"), &Window::popup_centered_ratio, DEFVAL(0.8));
+	ClassDB::bind_method(D_METHOD("popup_centered", "minsize"), &Window::popup_centered, DEFVAL(Size2i()));
+	ClassDB::bind_method(D_METHOD("popup_centered_clamped", "minsize", "fallback_ratio"), &Window::popup_centered, DEFVAL(Size2i()), DEFVAL(0.75));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "position"), "set_position", "get_position");

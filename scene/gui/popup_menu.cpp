@@ -185,6 +185,9 @@ void PopupMenu::_activate_submenu(int over) {
 
 void PopupMenu::_submenu_timeout() {
 
+	//if (!has_focus()) {
+	//	return; //do not activate if not has focus
+	//}
 	if (mouse_over == submenu_over)
 		_activate_submenu(mouse_over);
 
@@ -196,17 +199,24 @@ void PopupMenu::_scroll(float p_factor, const Point2 &p_over) {
 	int vseparation = get_theme_constant("vseparation");
 	Ref<Font> font = get_theme_font("font");
 
-	float dy = (vseparation + font->get_height()) * 3 * p_factor;
+	Rect2 visible_rect = get_usable_parent_rect();
+
+	int dy = (vseparation + font->get_height()) * 3 * p_factor;
 	if (dy > 0) {
 		const float global_top = get_position().y;
-		const float limit = global_top < 0 ? -global_top : 0;
+		const float limit = global_top < visible_rect.position.y ? visible_rect.position.y - global_top : 0;
 		dy = MIN(dy, limit);
 	} else if (dy < 0) {
 		const float global_bottom = get_position().y + get_size().y;
-		const float viewport_height = get_parent_rect().size.y;
+		const float viewport_height = visible_rect.position.y + visible_rect.size.y;
 		const float limit = global_bottom > viewport_height ? global_bottom - viewport_height : 0;
 		dy = -MIN(-dy, limit);
 	}
+
+	if (dy == 0) {
+		return;
+	}
+
 	set_position(get_position() + Vector2(0, dy));
 
 	Ref<InputEventMouseMotion> ie;
@@ -295,15 +305,11 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
 			case BUTTON_WHEEL_DOWN: {
 
-				if (get_position().y + get_size().y > get_parent_rect().size.y) {
-					_scroll(-b->get_factor(), b->get_position());
-				}
+				_scroll(-b->get_factor(), b->get_position());
 			} break;
 			case BUTTON_WHEEL_UP: {
 
-				if (get_position().y < 0) {
-					_scroll(b->get_factor(), b->get_position());
-				}
+				_scroll(b->get_factor(), b->get_position());
 			} break;
 			default: {
 				// Allow activating item by releasing the LMB or any that was down when the popup appeared
@@ -355,7 +361,8 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 		for (List<Rect2>::Element *E = autohide_areas.front(); E; E = E->next()) {
 
 			if (!Rect2(Point2(), get_size()).has_point(m->get_position()) && E->get().has_point(m->get_position())) {
-				call_deferred("hide");
+
+				_close_pressed();
 				return;
 			}
 		}
@@ -382,9 +389,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
-		if (get_position().y + get_size().y > get_parent_rect().size.y || get_position().y < 0) {
-			_scroll(-pan_gesture->get_delta().y, pan_gesture->get_position());
-		}
+		_scroll(-pan_gesture->get_delta().y, pan_gesture->get_position());
 	}
 
 	Ref<InputEventKey> k = p_event;
@@ -578,7 +583,7 @@ void PopupMenu::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_WM_MOUSE_ENTER: {
 
-			grab_focus();
+			//grab_focus();
 		} break;
 		case NOTIFICATION_WM_MOUSE_EXIT: {
 
@@ -594,6 +599,21 @@ void PopupMenu::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_WM_SIZE_CHANGED: {
 
+		} break;
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			//only used when using operating system windows
+			if (get_window_id() != DisplayServer::INVALID_WINDOW_ID && autohide_areas.size()) {
+				Point2 mouse_pos = DisplayServer::get_singleton()->mouse_get_position();
+				mouse_pos -= get_position();
+
+				for (List<Rect2>::Element *E = autohide_areas.front(); E; E = E->next()) {
+
+					if (!Rect2(Point2(), get_size()).has_point(mouse_pos) && E->get().has_point(mouse_pos)) {
+						_close_pressed();
+						return;
+					}
+				}
+			}
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
@@ -616,6 +636,12 @@ void PopupMenu::_notification(int p_what) {
 						continue;
 
 					pm->hide();
+				}
+
+				set_process_internal(false);
+			} else {
+				if (get_window_id() != DisplayServer::INVALID_WINDOW_ID) {
+					set_process_internal(true);
 				}
 			}
 		} break;
@@ -1366,6 +1392,14 @@ void PopupMenu::clear_autohide_areas() {
 	autohide_areas.clear();
 }
 
+void PopupMenu::take_mouse_focus() {
+	ERR_FAIL_COND(!is_inside_tree());
+
+	if (get_parent()) {
+		get_parent()->get_viewport()->pass_mouse_focus_to(this, control);
+	}
+}
+
 void PopupMenu::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &PopupMenu::_gui_input);
@@ -1473,7 +1507,7 @@ PopupMenu::PopupMenu() {
 	add_child(control);
 
 	control->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	control->connect("gui_input", callable_mp(this, &PopupMenu::_gui_input));
+	connect("window_input", callable_mp(this, &PopupMenu::_gui_input));
 	control->connect("draw", callable_mp(this, &PopupMenu::_draw));
 
 	mouse_over = -1;

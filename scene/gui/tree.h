@@ -290,6 +290,8 @@ public:
 VARIANT_ENUM_CAST(TreeItem::TreeCellMode);
 VARIANT_ENUM_CAST(TreeItem::TextAlign);
 
+class VBoxContainer;
+
 class Tree : public Control {
 
 	GDCLASS(Tree, Control);
@@ -359,6 +361,10 @@ private:
 	};
 
 	bool show_column_titles;
+
+	VBoxContainer *popup_editor_vb;
+
+	PopupPanel *popup_editor;
 	LineEdit *text_editor;
 	HSlider *value_editor;
 	bool updating_value_editor;
@@ -379,7 +385,7 @@ private:
 	int draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item);
 	void select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev = NULL, bool *r_in_range = NULL, bool p_force_deselect = false);
 	int propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool p_doubleclick, TreeItem *p_item, int p_button, const Ref<InputEventWithModifiers> &p_mod);
-	void text_editor_enter(String p_text);
+	void _text_editor_enter(String p_text);
 	void _text_editor_modal_close();
 	void value_editor_changed(double p_value);
 

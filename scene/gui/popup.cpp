@@ -42,6 +42,7 @@ void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
 }
 
 void Popup::_parent_focused() {
+
 	_close_pressed();
 }
 void Popup::_notification(int p_what) {
@@ -72,6 +73,7 @@ void Popup::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
 			_close_pressed();
+
 		} break;
 	}
 }
@@ -99,6 +101,35 @@ void Popup::set_as_minsize() {
 void Popup::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("popup_hide"));
+}
+
+Rect2i Popup::_popup_adjust_rect() const {
+	ERR_FAIL_COND_V(!is_inside_tree(), Rect2());
+	Rect2i parent = get_usable_parent_rect();
+
+	if (parent == Rect2i()) {
+		return Rect2i();
+	}
+
+	Rect2i current(get_position(), get_size());
+
+	if (current.position.x + current.size.x > parent.position.x + parent.size.x) {
+		current.position.x = parent.position.x + parent.size.x - current.size.x;
+	}
+
+	if (current.position.x < parent.position.x) {
+		current.position.x = parent.position.x;
+	}
+
+	if (current.position.y + current.size.y > parent.position.y + parent.size.y) {
+		current.position.y = parent.position.y + parent.size.y - current.size.y;
+	}
+
+	if (current.position.y < parent.position.y) {
+		current.position.y = parent.position.y;
+	}
+
+	return current;
 }
 
 Popup::Popup() {
@@ -166,7 +197,9 @@ void PopupPanel::_update_child_rects() {
 
 void PopupPanel::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_READY || p_what == NOTIFICATION_ENTER_TREE) {
+	if (p_what == NOTIFICATION_THEME_CHANGED) {
+		panel->add_theme_style_override("panel", get_theme_stylebox("panel", "PopupPanel"));
+	} else if (p_what == NOTIFICATION_READY || p_what == NOTIFICATION_ENTER_TREE) {
 
 		panel->add_theme_style_override("panel", get_theme_stylebox("panel", "PopupPanel"));
 		_update_child_rects();

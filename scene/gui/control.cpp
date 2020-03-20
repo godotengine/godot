@@ -625,7 +625,7 @@ void Control::_notification(int p_notification) {
 					get_viewport()->_gui_hid_control(this);
 
 				//remove key focus
-				//remove modalness
+
 			} else {
 				data.minimum_size_valid = false;
 				_size_changed();
@@ -2116,9 +2116,6 @@ void Control::_propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_o
 		return;
 
 	Window *w = c == nullptr ? Object::cast_to<Window>(p_at) : nullptr;
-
-	if (c && c != p_owner && c->data.theme.is_valid()) // has a theme, this can't be propagated
-		return;
 
 	if (w && w != p_owner_window && w->theme.is_valid()) // has a theme, this can't be propagated
 		return;

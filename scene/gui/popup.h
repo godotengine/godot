@@ -41,9 +41,11 @@ class Popup : public Window {
 
 	void _input_from_window(const Ref<InputEvent> &p_event);
 	void _parent_focused();
-	void _close_pressed();
 
 protected:
+	void _close_pressed();
+	virtual Rect2i _popup_adjust_rect() const;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 

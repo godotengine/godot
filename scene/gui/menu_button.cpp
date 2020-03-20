@@ -63,6 +63,7 @@ void MenuButton::pressed() {
 
 	popup->set_size(Size2(size.width, 0));
 	popup->set_parent_rect(Rect2(Point2(gp - popup->get_position()), get_size()));
+	popup->take_mouse_focus();
 	popup->popup();
 }
 

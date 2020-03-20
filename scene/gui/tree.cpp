@@ -38,6 +38,8 @@
 #include "core/project_settings.h"
 #include "scene/main/window.h"
 
+#include "box_container.h"
+
 #ifdef TOOLS_ENABLED
 #include "editor/editor_scale.h"
 #endif
@@ -2056,13 +2058,12 @@ void Tree::_text_editor_modal_close() {
 	if (value_editor->has_point(value_editor->get_local_mouse_position()))
 		return;
 
-	text_editor_enter(text_editor->get_text());
+	_text_editor_enter(text_editor->get_text());
 }
 
-void Tree::text_editor_enter(String p_text) {
+void Tree::_text_editor_enter(String p_text) {
 
-	text_editor->hide();
-	value_editor->hide();
+	popup_editor->hide();
 
 	if (!popup_edited_item)
 		return;
@@ -2806,22 +2807,22 @@ bool Tree::edit_selected() {
 
 	} else if (c.mode == TreeItem::CELL_MODE_STRING || c.mode == TreeItem::CELL_MODE_RANGE) {
 
+		Rect2 popup_rect;
+
 		Vector2 ofs(0, (text_editor->get_size().height - rect.size.height) / 2);
-		Point2i textedpos = get_global_position() + rect.position - ofs;
+
+		Point2i textedpos = get_screen_position() + rect.position - ofs;
 		cache.text_editor_position = textedpos;
-		text_editor->set_position(textedpos);
-		text_editor->set_size(rect.size);
+		popup_rect.position = textedpos;
+		popup_rect.size = rect.size;
 		text_editor->clear();
 		text_editor->set_text(c.mode == TreeItem::CELL_MODE_STRING ? c.text : String::num(c.val, Math::range_step_decimals(c.step)));
 		text_editor->select_all();
 
 		if (c.mode == TreeItem::CELL_MODE_RANGE) {
 
-			value_editor->set_position(textedpos + Point2i(0, text_editor->get_size().height));
-			value_editor->set_size(Size2(rect.size.width, 1));
-#ifndef _MSC_VER
-#warning show modal no longer works, need to replace by a popup
-#endif
+			popup_rect.size.y += value_editor->get_minimum_size().height;
+
 			value_editor->show();
 			updating_value_editor = true;
 			value_editor->set_min(c.min);
@@ -2830,12 +2831,17 @@ bool Tree::edit_selected() {
 			value_editor->set_value(c.val);
 			value_editor->set_exp_ratio(c.expr);
 			updating_value_editor = false;
+		} else {
+			value_editor->hide();
 		}
-#ifndef _MSC_VER
-#warning show modal no longer works, need to replace by a popup
-#endif
-		text_editor->show();
+
+		popup_editor->set_position(popup_rect.position);
+		popup_editor->set_size(popup_rect.size);
+		popup_editor->popup();
+		popup_editor->child_controls_changed();
+
 		text_editor->grab_focus();
+
 		return true;
 	}
 
@@ -4026,13 +4032,22 @@ Tree::Tree() {
 	popup_menu->hide();
 	add_child(popup_menu);
 	//	popup_menu->set_as_toplevel(true);
+
+	popup_editor = memnew(PopupPanel);
+	popup_editor->set_wrap_controls(true);
+	add_child(popup_editor);
+	popup_editor_vb = memnew(VBoxContainer);
+	popup_editor->add_child(popup_editor_vb);
+	popup_editor_vb->add_theme_constant_override("separation", 0);
+	popup_editor_vb->set_anchors_and_margins_preset(PRESET_WIDE);
 	text_editor = memnew(LineEdit);
-	add_child(text_editor);
-	text_editor->set_as_toplevel(true);
-	text_editor->hide();
+	popup_editor_vb->add_child(text_editor);
+	text_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+	text_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 	value_editor = memnew(HSlider);
-	add_child(value_editor);
-	value_editor->set_as_toplevel(true);
+	value_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+	value_editor->set_h_size_flags(SIZE_EXPAND_FILL);
+	popup_editor_vb->add_child(value_editor);
 	value_editor->hide();
 
 	h_scroll = memnew(HScrollBar);
@@ -4047,13 +4062,11 @@ Tree::Tree() {
 
 	h_scroll->connect("value_changed", callable_mp(this, &Tree::_scroll_moved));
 	v_scroll->connect("value_changed", callable_mp(this, &Tree::_scroll_moved));
-	text_editor->connect("text_entered", callable_mp(this, &Tree::text_editor_enter));
-	text_editor->connect("modal_closed", callable_mp(this, &Tree::_text_editor_modal_close));
+	text_editor->connect("text_entered", callable_mp(this, &Tree::_text_editor_enter));
+	popup_editor->connect("popup_hide", callable_mp(this, &Tree::_text_editor_modal_close));
 	popup_menu->connect("id_pressed", callable_mp(this, &Tree::popup_select));
 	value_editor->connect("value_changed", callable_mp(this, &Tree::value_editor_changed));
 
-	value_editor->set_as_toplevel(true);
-	text_editor->set_as_toplevel(true);
 	set_notify_transform(true);
 
 	updating_value_editor = false;
