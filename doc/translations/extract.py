@@ -8,7 +8,7 @@ from collections import OrderedDict
 
 EXTRACT_TAGS = ["description", "brief_description", "member", "constant", "theme_item", "link"]
 HEADER = '''\
-# LANGUAGE translation of the Godot Engine class reference
+# LANGUAGE translation of the Godot Engine class reference.
 # Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
@@ -19,10 +19,26 @@ HEADER = '''\
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\\n"
+"MIME-Version: 1.0\\n"
 "Content-Type: text/plain; charset=UTF-8\\n"
 "Content-Transfer-Encoding: 8-bit\\n"
 
 '''
+# Some strings used by makerst.py are normally part of the editor translations,
+# so we need to include them manually here for the online docs.
+BASE_STRINGS = [
+    "Description",
+    "Tutorials",
+    "Properties",
+    "Methods",
+    "Theme Properties",
+    "Signals",
+    "Enumerations",
+    "Constants",
+    "Property Descriptions",
+    "Method Descriptions",
+]
 
 ## <xml-line-number-hack from="https://stackoverflow.com/a/36430270/10846399">
 import sys
@@ -166,7 +182,7 @@ def _strip_and_split_desc(desc, code_block_regions):
             total_indent = 0
     return desc_strip
 
-## make catlog strings from xml elements
+## make catalog strings from xml elements
 def _make_translation_catalog(classes):
     unique_msgs = OrderedDict()
     for class_name in classes:
@@ -187,12 +203,17 @@ def _make_translation_catalog(classes):
                     unique_msgs[desc_msg].append(desc_obj)
     return unique_msgs
 
-## generate the catlog file
+## generate the catalog file
 def _generate_translation_catalog_file(unique_msgs, output):
     with open(output, 'w', encoding='utf8') as f:
         f.write(HEADER)
+        for msg in BASE_STRINGS:
+            f.write('#: doc/tools/makerst.py\n')
+            f.write('msgid "{}"\n'.format(msg))
+            f.write('msgstr ""\n\n')
         for msg in unique_msgs:
-            if len(msg) == 0: continue ## ignore
+            if len(msg) == 0 or msg in BASE_STRINGS:
+                continue
 
             f.write('#:')
             desc_list = unique_msgs[msg]
@@ -214,24 +235,28 @@ def _generate_translation_catalog_file(unique_msgs, output):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--path", "-p", default=".", help="The directory containing XML files to collect.")
-    parser.add_argument("--output", "-o", default="translation_catlog.pot", help="The path to the output file.")
+    parser.add_argument("--path", "-p", nargs="+", default=".", help="The directory or directories containing XML files to collect.")
+    parser.add_argument("--output", "-o", default="translation_catalog.pot", help="The path to the output file.")
     args = parser.parse_args()
 
     output = os.path.abspath(args.output)
     if not os.path.isdir(os.path.dirname(output)) or not output.endswith('.pot'):
         print_error("Invalid output path: {}".format(output))
         exit(1)
-    if not os.path.isdir(args.path):
-        print_error("Invalid working directory path: {}".format(args.path))
-        exit(1)
 
-    os.chdir(args.path)
-    print("Current working dir: {}\n".format(os.getcwd()))
+    classes = OrderedDict()
+    for path in args.path:
+        if not os.path.isdir(path):
+            print_error("Invalid working directory path: {}".format(path))
+            exit(1)
 
-    classes = OrderedDict() ## dictionary of key=class_name, value=DescList objects
-    _collect_classes_dir('.', classes)
-    classes = OrderedDict(sorted(classes.items(), key = lambda kv: kv[0].lower() ))
+        print("\nCurrent working dir: {}".format(path))
+
+        path_classes = OrderedDict() ## dictionary of key=class_name, value=DescList objects
+        _collect_classes_dir(path, path_classes)
+        classes.update(path_classes)
+
+    classes = OrderedDict(sorted(classes.items(), key = lambda kv: kv[0].lower()))
     unique_msgs = _make_translation_catalog(classes)
     _generate_translation_catalog_file(unique_msgs, output)
 
