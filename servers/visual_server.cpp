@@ -1578,7 +1578,7 @@ void VisualServer::_bind_methods() {
 
 #ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("sky_create"), &VisualServer::sky_create);
-	ClassDB::bind_method(D_METHOD("sky_set_texture", "sky", "panorama"), &VisualServer::sky_set_texture);
+	ClassDB::bind_method(D_METHOD("sky_set_material", "sky", "material"), &VisualServer::sky_set_material);
 #endif
 	ClassDB::bind_method(D_METHOD("shader_create"), &VisualServer::shader_create);
 	ClassDB::bind_method(D_METHOD("shader_set_code", "shader", "code"), &VisualServer::shader_set_code);
@@ -1797,7 +1797,6 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_sky", "env", "sky"), &VisualServer::environment_set_sky);
 	ClassDB::bind_method(D_METHOD("environment_set_sky_custom_fov", "env", "scale"), &VisualServer::environment_set_sky_custom_fov);
 	ClassDB::bind_method(D_METHOD("environment_set_sky_orientation", "env", "orientation"), &VisualServer::environment_set_sky_orientation);
-	ClassDB::bind_method(D_METHOD("environment_set_bg_material", "env", "material"), &VisualServer::environment_set_bg_material);
 	ClassDB::bind_method(D_METHOD("environment_set_bg_color", "env", "color"), &VisualServer::environment_set_bg_color);
 	ClassDB::bind_method(D_METHOD("environment_set_bg_energy", "env", "energy"), &VisualServer::environment_set_bg_energy);
 	ClassDB::bind_method(D_METHOD("environment_set_canvas_max_layer", "env", "max_layer"), &VisualServer::environment_set_canvas_max_layer);
@@ -2313,13 +2312,13 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF("rendering/quality/shadows/filter_mode.mobile", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadows/filter_mode", PropertyInfo(Variant::INT, "rendering/quality/shadows/filter_mode", PROPERTY_HINT_ENUM, "Disabled (Fastest),PCF5,PCF13 (Slowest)"));
 
-	GLOBAL_DEF("rendering/quality/reflections/roughness_layers", 6);
+	GLOBAL_DEF("rendering/quality/reflections/roughness_layers", 8);
 	GLOBAL_DEF("rendering/quality/reflections/texture_array_reflections", true);
 	GLOBAL_DEF("rendering/quality/reflections/texture_array_reflections.mobile", false);
 	GLOBAL_DEF("rendering/quality/reflections/ggx_samples", 1024);
 	GLOBAL_DEF("rendering/quality/reflections/ggx_samples.mobile", 128);
 	GLOBAL_DEF("rendering/quality/reflections/fast_filter_high_quality", false);
-	GLOBAL_DEF("rendering/quality/reflection_atlas/reflection_size", 128);
+	GLOBAL_DEF("rendering/quality/reflection_atlas/reflection_size", 256);
 	GLOBAL_DEF("rendering/quality/reflection_atlas/reflection_size.mobile", 128);
 	GLOBAL_DEF("rendering/quality/reflection_atlas/reflection_count", 64);
 

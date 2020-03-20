@@ -248,32 +248,6 @@ void RasterizerEffectsRD::gaussian_glow(RID p_source_rd_texture, RID p_framebuff
 	RD::get_singleton()->draw_list_end();
 }
 
-void RasterizerEffectsRD::cubemap_roughness(RID p_source_rd_texture, bool p_source_is_panorama, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size) {
-
-	zeromem(&roughness.push_constant, sizeof(CubemapRoughnessPushConstant));
-
-	roughness.push_constant.face_id = p_face_id > 9 ? 0 : p_face_id;
-	roughness.push_constant.roughness = p_roughness;
-	roughness.push_constant.sample_count = p_sample_count;
-	roughness.push_constant.use_direct_write = p_roughness == 0.0;
-	roughness.push_constant.face_size = p_size;
-
-	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, roughness.pipelines[p_source_is_panorama ? CUBEMAP_ROUGHNESS_SOURCE_PANORAMA : CUBEMAP_ROUGHNESS_SOURCE_CUBEMAP]);
-
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_rd_texture), 0);
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_dest_framebuffer), 1);
-
-	RD::get_singleton()->compute_list_set_push_constant(compute_list, &roughness.push_constant, sizeof(CubemapRoughnessPushConstant));
-
-	int x_groups = (p_size - 1) / 8 + 1;
-	int y_groups = (p_size - 1) / 8 + 1;
-
-	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, p_face_id > 9 ? 6 : 1);
-
-	RD::get_singleton()->compute_list_end();
-}
-
 void RasterizerEffectsRD::make_mipmap(RID p_source_rd_texture, RID p_dest_framebuffer, const Vector2 &p_pixel_size) {
 
 	zeromem(&blur.push_constant, sizeof(BlurPushConstant));
@@ -731,12 +705,38 @@ void RasterizerEffectsRD::roughness_limit(RID p_source_normal, RID p_roughness, 
 	RD::get_singleton()->compute_list_end();
 }
 
-void RasterizerEffectsRD::cubemap_downsample(RID p_source_cubemap, bool p_source_is_panorama, RID p_dest_cubemap, const Size2i &p_size) {
+void RasterizerEffectsRD::cubemap_roughness(RID p_source_rd_texture, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size) {
+
+	zeromem(&roughness.push_constant, sizeof(CubemapRoughnessPushConstant));
+
+	roughness.push_constant.face_id = p_face_id > 9 ? 0 : p_face_id;
+	roughness.push_constant.roughness = p_roughness;
+	roughness.push_constant.sample_count = p_sample_count;
+	roughness.push_constant.use_direct_write = p_roughness == 0.0;
+	roughness.push_constant.face_size = p_size;
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, roughness.pipeline);
+
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_rd_texture), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_dest_framebuffer), 1);
+
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &roughness.push_constant, sizeof(CubemapRoughnessPushConstant));
+
+	int x_groups = (p_size - 1) / 8 + 1;
+	int y_groups = (p_size - 1) / 8 + 1;
+
+	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, p_face_id > 9 ? 6 : 1);
+
+	RD::get_singleton()->compute_list_end();
+}
+
+void RasterizerEffectsRD::cubemap_downsample(RID p_source_cubemap, RID p_dest_cubemap, const Size2i &p_size) {
 
 	cubemap_downsampler.push_constant.face_size = p_size.x;
 
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, cubemap_downsampler.pipelines[p_source_is_panorama ? CUBEMAP_DOWNSAMPLER_SOURCE_PANORAMA : CUBEMAP_DOWNSAMPLER_SOURCE_CUBEMAP]);
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, cubemap_downsampler.pipeline);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_cubemap), 0);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_dest_cubemap), 1);
 
@@ -780,6 +780,41 @@ void RasterizerEffectsRD::cubemap_filter(RID p_source_cubemap, Vector<RID> p_des
 	RD::get_singleton()->compute_list_end();
 }
 
+void RasterizerEffectsRD::render_sky(RD::DrawListID p_list, float p_time, RID p_fb, RID p_samplers, RID p_lights, RenderPipelineVertexFormatCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const CameraMatrix &p_camera, const Basis &p_orientation, float p_multiplier, const Vector3 &p_position) {
+
+	SkyPushConstant sky_push_constant;
+
+	zeromem(&sky_push_constant, sizeof(SkyPushConstant));
+
+	sky_push_constant.proj[0] = p_camera.matrix[2][0];
+	sky_push_constant.proj[1] = p_camera.matrix[0][0];
+	sky_push_constant.proj[2] = p_camera.matrix[2][1];
+	sky_push_constant.proj[3] = p_camera.matrix[1][1];
+	sky_push_constant.position[0] = p_position.x;
+	sky_push_constant.position[1] = p_position.y;
+	sky_push_constant.position[2] = p_position.z;
+	sky_push_constant.multiplier = p_multiplier;
+	sky_push_constant.time = p_time;
+	store_transform_3x3(p_orientation, sky_push_constant.orientation);
+
+	RenderingDevice::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(p_fb);
+
+	RD::DrawListID draw_list = p_list;
+
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, p_pipeline->get_render_pipeline(RD::INVALID_ID, fb_format));
+
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_samplers, 0);
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_uniform_set, 1);
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_texture_set, 2);
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_lights, 3);
+
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &sky_push_constant, sizeof(SkyPushConstant));
+
+	RD::get_singleton()->draw_list_draw(draw_list, true);
+}
+
 RasterizerEffectsRD::RasterizerEffectsRD() {
 
 	{
@@ -813,15 +848,12 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 	{
 		// Initialize roughness
 		Vector<String> cubemap_roughness_modes;
-		cubemap_roughness_modes.push_back("\n#define MODE_SOURCE_PANORAMA\n");
-		cubemap_roughness_modes.push_back("\n#define MODE_SOURCE_CUBEMAP\n");
+		cubemap_roughness_modes.push_back("");
 		roughness.shader.initialize(cubemap_roughness_modes);
 
 		roughness.shader_version = roughness.shader.version_create();
 
-		for (int i = 0; i < CUBEMAP_ROUGHNESS_SOURCE_MAX; i++) {
-			roughness.pipelines[i] = RD::get_singleton()->compute_pipeline_create(roughness.shader.version_get_shader(roughness.shader_version, i));
-		}
+		roughness.pipeline = RD::get_singleton()->compute_pipeline_create(roughness.shader.version_get_shader(roughness.shader_version, 0));
 	}
 
 	{
@@ -958,15 +990,12 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 	{
 		//Initialize cubemap downsampler
 		Vector<String> cubemap_downsampler_modes;
-		cubemap_downsampler_modes.push_back("\n#define MODE_SOURCE_PANORAMA\n");
-		cubemap_downsampler_modes.push_back("\n#define MODE_SOURCE_CUBEMAP\n");
+		cubemap_downsampler_modes.push_back("");
 		cubemap_downsampler.shader.initialize(cubemap_downsampler_modes);
 
 		cubemap_downsampler.shader_version = cubemap_downsampler.shader.version_create();
 
-		for (int i = 0; i < CUBEMAP_DOWNSAMPLER_SOURCE_MAX; i++) {
-			cubemap_downsampler.pipelines[i] = RD::get_singleton()->compute_pipeline_create(cubemap_downsampler.shader.version_get_shader(cubemap_downsampler.shader_version, i));
-		}
+		cubemap_downsampler.pipeline = RD::get_singleton()->compute_pipeline_create(cubemap_downsampler.shader.version_get_shader(cubemap_downsampler.shader_version, 0));
 	}
 
 	{
@@ -1050,7 +1079,6 @@ RasterizerEffectsRD::~RasterizerEffectsRD() {
 	RD::get_singleton()->free(filter.coefficient_buffer);
 	blur.shader.version_free(blur.shader_version);
 	roughness.shader.version_free(roughness.shader_version);
-	sky.shader.version_free(sky.shader_version);
 	tonemap.shader.version_free(tonemap.shader_version);
 	luminance_reduce.shader.version_free(luminance_reduce.shader_version);
 	copy.shader.version_free(copy.shader_version);

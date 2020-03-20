@@ -58,6 +58,7 @@ public:
 	void sky_set_mode(RID p_sky, VS::SkyMode p_samples) {}
 	void sky_set_texture(RID p_sky, RID p_panorama) {}
 	void sky_set_texture(RID p_sky, RID p_cube_map, int p_radiance_size) {}
+	void sky_set_material(RID p_sky, RID p_material) {}
 
 	/* ENVIRONMENT API */
 
@@ -67,7 +68,6 @@ public:
 	void environment_set_sky(RID p_env, RID p_sky) {}
 	void environment_set_sky_custom_fov(RID p_env, float p_scale) {}
 	void environment_set_sky_orientation(RID p_env, const Basis &p_orientation) {}
-	void environment_set_bg_material(RID p_env, RID p_material) {}
 	void environment_set_bg_color(RID p_env, const Color &p_color) {}
 	void environment_set_bg_energy(RID p_env, float p_energy) {}
 	void environment_set_canvas_max_layer(RID p_env, int p_max_layer) {}
@@ -313,6 +313,11 @@ public:
 	virtual Size2 texture_size_with_proxy(RID p_texture) const { return Size2(); }
 	void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) {}
 #endif
+
+	/* SKY API */
+
+	RID sky_create() { return RID(); }
+	void sky_set_texture(RID p_sky, RID p_cube_map, int p_radiance_size) {}
 
 	/* SHADER API */
 

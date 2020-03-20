@@ -522,255 +522,6 @@ RasterizerStorageRD::MaterialData *RasterizerSceneHighEndRD::_create_material_fu
 	return material_data;
 }
 
-/* SKY SHADER */
-
-void RasterizerSceneHighEndRD::SkyShaderData::set_code(const String &p_code) {
-	//compile
-
-	code = p_code;
-	valid = false;
-	ubo_size = 0;
-	uniforms.clear();
-
-	if (code == String()) {
-		return; //just invalid, but no error
-	}
-
-	ShaderCompilerRD::GeneratedCode gen_code;
-	ShaderCompilerRD::IdentifierActions actions;
-
-	//	actions.render_mode_values["blend_add"] = Pair<int *, int>(&blend_mode, BLEND_MODE_ADD);
-	//	actions.usage_flag_pointers["ALPHA"] = &uses_alpha;
-
-	actions.uniforms = &uniforms;
-
-	RasterizerSceneHighEndRD *scene_singleton = (RasterizerSceneHighEndRD *)RasterizerSceneHighEndRD::singleton;
-
-	Error err = scene_singleton->sky_shader.compiler.compile(VS::SHADER_SKY, code, &actions, path, gen_code);
-
-	ERR_FAIL_COND(err != OK);
-
-	if (version.is_null()) {
-		version = scene_singleton->sky_shader.shader.version_create();
-	}
-
-#if 0
-	print_line("**compiling shader:");
-	print_line("**defines:\n");
-	for (int i = 0; i < gen_code.defines.size(); i++) {
-		print_line(gen_code.defines[i]);
-	}
-	print_line("\n**uniforms:\n" + gen_code.uniforms);
-//	print_line("\n**vertex_globals:\n" + gen_code.vertex_global);
-//	print_line("\n**vertex_code:\n" + gen_code.vertex);
-	print_line("\n**fragment_globals:\n" + gen_code.fragment_global);
-	print_line("\n**fragment_code:\n" + gen_code.fragment);
-	print_line("\n**light_code:\n" + gen_code.light);
-#endif
-
-	scene_singleton->sky_shader.shader.version_set_code(version, gen_code.uniforms, gen_code.vertex_global, gen_code.vertex, gen_code.fragment_global, gen_code.light, gen_code.fragment, gen_code.defines);
-	ERR_FAIL_COND(!scene_singleton->sky_shader.shader.version_is_valid(version));
-
-	ubo_size = gen_code.uniform_total_size;
-	ubo_offsets = gen_code.uniform_offsets;
-	texture_uniforms = gen_code.texture_uniforms;
-
-	//update pipelines
-
-	for (int i = 0; i < SKY_VERSION_MAX; i++) {
-
-		RD::PipelineDepthStencilState depth_stencil_state;
-		depth_stencil_state.enable_depth_test = false;
-
-		RID shader_variant = scene_singleton->sky_shader.shader.version_get_shader(version, i);
-		pipelines[i].setup(shader_variant, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), depth_stencil_state, RD::PipelineColorBlendState::create_disabled(), 0);
-	}
-
-	valid = true;
-}
-
-void RasterizerSceneHighEndRD::SkyShaderData::set_default_texture_param(const StringName &p_name, RID p_texture) {
-	if (!p_texture.is_valid()) {
-		default_texture_params.erase(p_name);
-	} else {
-		default_texture_params[p_name] = p_texture;
-	}
-}
-
-void RasterizerSceneHighEndRD::SkyShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
-
-	Map<int, StringName> order;
-
-	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
-
-		if (E->get().texture_order >= 0) {
-			order[E->get().texture_order + 100000] = E->key();
-		} else {
-			order[E->get().order] = E->key();
-		}
-	}
-
-	for (Map<int, StringName>::Element *E = order.front(); E; E = E->next()) {
-
-		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniforms[E->get()]);
-		pi.name = E->get();
-		p_param_list->push_back(pi);
-	}
-}
-
-bool RasterizerSceneHighEndRD::SkyShaderData::is_param_texture(const StringName &p_param) const {
-	if (!uniforms.has(p_param)) {
-		return false;
-	}
-
-	return uniforms[p_param].texture_order >= 0;
-}
-
-bool RasterizerSceneHighEndRD::SkyShaderData::is_animated() const {
-	return false;
-}
-
-bool RasterizerSceneHighEndRD::SkyShaderData::casts_shadows() const {
-	return false;
-}
-
-Variant RasterizerSceneHighEndRD::SkyShaderData::get_default_parameter(const StringName &p_parameter) const {
-	if (uniforms.has(p_parameter)) {
-		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
-		Vector<ShaderLanguage::ConstantNode::Value> default_value = uniform.default_value;
-		return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.hint);
-	}
-	return Variant();
-}
-
-RasterizerSceneHighEndRD::SkyShaderData::SkyShaderData() {
-	valid = false;
-}
-
-RasterizerSceneHighEndRD::SkyShaderData::~SkyShaderData() {
-	RasterizerSceneHighEndRD *scene_singleton = (RasterizerSceneHighEndRD *)RasterizerSceneHighEndRD::singleton;
-	ERR_FAIL_COND(!scene_singleton);
-	//pipeline variants will clear themselves if shader is gone
-	if (version.is_valid()) {
-		scene_singleton->sky_shader.shader.version_free(version);
-	}
-}
-
-RasterizerStorageRD::ShaderData *RasterizerSceneHighEndRD::_create_sky_shader_func() {
-	SkyShaderData *shader_data = memnew(SkyShaderData);
-	return shader_data;
-}
-
-void RasterizerSceneHighEndRD::SkyMaterialData::set_render_priority(int p_priority) {
-	priority = p_priority - VS::MATERIAL_RENDER_PRIORITY_MIN; //8 bits
-}
-
-void RasterizerSceneHighEndRD::SkyMaterialData::set_next_pass(RID p_pass) {
-	next_pass = p_pass;
-}
-
-void RasterizerSceneHighEndRD::SkyMaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
-
-	RasterizerSceneHighEndRD *scene_singleton = (RasterizerSceneHighEndRD *)RasterizerSceneHighEndRD::singleton;
-
-	if ((uint32_t)ubo_data.size() != shader_data->ubo_size) {
-		p_uniform_dirty = true;
-		if (uniform_buffer.is_valid()) {
-			RD::get_singleton()->free(uniform_buffer);
-			uniform_buffer = RID();
-		}
-
-		ubo_data.resize(shader_data->ubo_size);
-		if (ubo_data.size()) {
-			uniform_buffer = RD::get_singleton()->uniform_buffer_create(ubo_data.size());
-			memset(ubo_data.ptrw(), 0, ubo_data.size()); //clear
-		}
-
-		//clear previous uniform set
-		if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
-			RD::get_singleton()->free(uniform_set);
-			uniform_set = RID();
-		}
-	}
-
-	//check whether buffer changed
-	if (p_uniform_dirty && ubo_data.size()) {
-
-		update_uniform_buffer(shader_data->uniforms, shader_data->ubo_offsets.ptr(), p_parameters, ubo_data.ptrw(), ubo_data.size(), false);
-		RD::get_singleton()->buffer_update(uniform_buffer, 0, ubo_data.size(), ubo_data.ptrw());
-	}
-
-	uint32_t tex_uniform_count = shader_data->texture_uniforms.size();
-
-	if ((uint32_t)texture_cache.size() != tex_uniform_count) {
-		texture_cache.resize(tex_uniform_count);
-		p_textures_dirty = true;
-
-		//clear previous uniform set
-		if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
-			RD::get_singleton()->free(uniform_set);
-			uniform_set = RID();
-		}
-	}
-
-	if (p_textures_dirty && tex_uniform_count) {
-
-		update_textures(p_parameters, shader_data->default_texture_params, shader_data->texture_uniforms, texture_cache.ptrw(), true);
-	}
-
-	if (shader_data->ubo_size == 0 && shader_data->texture_uniforms.size() == 0) {
-		// This material does not require an uniform set, so don't create it.
-		return;
-	}
-
-	if (!p_textures_dirty && uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
-		//no reason to update uniform set, only UBO (or nothing) was needed to update
-		return;
-	}
-
-	Vector<RD::Uniform> uniforms;
-
-	{
-
-		if (shader_data->ubo_size) {
-			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-			u.binding = 0;
-			u.ids.push_back(uniform_buffer);
-			uniforms.push_back(u);
-		}
-
-		const RID *textures = texture_cache.ptrw();
-		for (uint32_t i = 0; i < tex_uniform_count; i++) {
-			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 1 + i;
-			u.ids.push_back(textures[i]);
-			uniforms.push_back(u);
-		}
-	}
-
-	uniform_set = RD::get_singleton()->uniform_set_create(uniforms, scene_singleton->sky_shader.shader.version_get_shader(shader_data->version, 0), 2);
-}
-
-RasterizerSceneHighEndRD::SkyMaterialData::~SkyMaterialData() {
-	if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
-		RD::get_singleton()->free(uniform_set);
-	}
-
-	if (uniform_buffer.is_valid()) {
-		RD::get_singleton()->free(uniform_buffer);
-	}
-}
-
-RasterizerStorageRD::MaterialData *RasterizerSceneHighEndRD::_create_sky_material_func(SkyShaderData *p_shader) {
-	SkyMaterialData *material_data = memnew(SkyMaterialData);
-	material_data->shader_data = p_shader;
-	material_data->last_frame = false;
-	//update will happen later anyway so do nothing.
-	return material_data;
-}
-
 RasterizerSceneHighEndRD::RenderBufferDataHighEnd::~RenderBufferDataHighEnd() {
 	clear();
 }
@@ -1544,72 +1295,6 @@ void RasterizerSceneHighEndRD::_fill_render_list(InstanceBase **p_cull_result, i
 	}
 }
 
-void RasterizerSceneHighEndRD::_draw_sky(RD::DrawListID p_draw_list, RD::FramebufferFormatID p_fb_format, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform, float p_alpha) {
-
-	ERR_FAIL_COND(!is_environment(p_environment));
-
-	RID env_material = environment_get_bg_material(p_environment);
-	ERR_FAIL_COND(!env_material.is_valid());
-
-	SkyMaterialData *material = NULL;
-
-	if (env_material.is_valid()) {
-		material = (SkyMaterialData *)storage->material_get_data(env_material, RasterizerStorageRD::SHADER_TYPE_SKY);
-		if (!material || !material->shader_data->valid) {
-			material = NULL;
-		}
-	}
-
-	if (!material) {
-		env_material = sky_shader.default_material;
-		material = (SkyMaterialData *)storage->material_get_data(env_material, RasterizerStorageRD::SHADER_TYPE_SKY);
-	}
-
-	ERR_FAIL_COND(!material);
-
-	SkyShaderData *shader_data = material->shader_data;
-
-	ERR_FAIL_COND(!shader_data);
-
-	RenderPipelineVertexFormatCacheRD *pipeline = &shader_data->pipelines[SKY_VERSION_BACKGROUND];
-
-
-	//@TODO need to gather parameters we source from our environment settings and feed into our material/shader
-	// such as bg energy, sky transform, etc.
-	// some we should remove and make part of our material settings instead of environment settings
-
-	/*
-	TODO need to change this to use our sky shader instead
-
-	RID sky = environment_get_sky(p_environment);
-	ERR_FAIL_COND(!sky.is_valid());
-	RID panorama = sky_get_panorama_texture_rd(sky);
-	ERR_FAIL_COND(!panorama.is_valid());
-	Basis sky_transform = environment_get_sky_orientation(p_environment);
-	sky_transform.invert();
-
-	float multiplier = environment_get_bg_energy(p_environment);
-	float custom_fov = environment_get_sky_custom_fov(p_environment);
-	// Camera
-	CameraMatrix camera;
-
-	if (custom_fov) {
-
-		float near_plane = p_projection.get_z_near();
-		float far_plane = p_projection.get_z_far();
-		float aspect = p_projection.get_aspect();
-
-		camera.set_perspective(custom_fov, aspect, near_plane, far_plane);
-
-	} else {
-		camera = p_projection;
-	}
-
-	sky_transform = p_transform.basis * sky_transform;
-	storage->get_effects()->render_panorama(p_draw_list, p_fb_format, panorama, camera, sky_transform, 1.0, multiplier);
-*/
-}
-
 void RasterizerSceneHighEndRD::_setup_reflections(RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, const Transform &p_camera_inverse_transform, RID p_environment) {
 
 	for (int i = 0; i < p_reflection_probe_cull_count; i++) {
@@ -1748,6 +1433,7 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 
 	uint32_t light_count = 0;
 	scene_state.ubo.directional_light_count = 0;
+	sky_scene_state.directional_light_count = 0;
 
 	for (int i = 0; i < p_light_cull_count; i++) {
 
@@ -1821,6 +1507,27 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 					float fade_start = storage->light_get_param(base, VS::LIGHT_PARAM_SHADOW_FADE_START);
 					light_data.fade_from = -light_data.shadow_split_offsets[3] * MIN(fade_start, 0.999); //using 1.0 would break smoothstep
 					light_data.fade_to = -light_data.shadow_split_offsets[3];
+				}
+
+				//	Copy to SkyDirectionalLightData
+				if (sky_scene_state.directional_light_count < sky_scene_state.max_directional_lights) {
+
+					SkyDirectionalLightData &sky_light_data = sky_scene_state.directional_lights[sky_scene_state.directional_light_count];
+
+					Vector3 world_direction = light_transform.basis.xform(Vector3(0, 0, 1)).normalized();
+
+					sky_light_data.direction[0] = world_direction.x;
+					sky_light_data.direction[1] = world_direction.y;
+					sky_light_data.direction[2] = -world_direction.z;
+
+					sky_light_data.energy = light_data.energy / Math_PI;
+
+					sky_light_data.color[0] = light_data.color[0];
+					sky_light_data.color[1] = light_data.color[1];
+					sky_light_data.color[2] = light_data.color[2];
+
+					sky_light_data.enabled = true;
+					sky_scene_state.directional_light_count++;
 				}
 
 				scene_state.ubo.directional_light_count++;
@@ -1993,6 +1700,7 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 	scene_state.ubo.viewport_size[1] = vp_he.y;
 
 	Size2 screen_pixel_size;
+	Size2i screen_size;
 	RID opaque_framebuffer;
 	RID depth_framebuffer;
 	RID alpha_framebuffer;
@@ -2003,6 +1711,8 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 	if (render_buffer) {
 		screen_pixel_size.width = 1.0 / render_buffer->width;
 		screen_pixel_size.height = 1.0 / render_buffer->height;
+		screen_size.x = render_buffer->width;
+		screen_size.y = render_buffer->height;
 
 		opaque_framebuffer = render_buffer->color_fb;
 
@@ -2043,6 +1753,8 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 		uint32_t resolution = reflection_probe_instance_get_resolution(p_reflection_probe);
 		screen_pixel_size.width = 1.0 / resolution;
 		screen_pixel_size.height = 1.0 / resolution;
+		screen_size.x = resolution;
+		screen_size.y = resolution;
 
 		opaque_framebuffer = reflection_probe_instance_get_framebuffer(p_reflection_probe, p_reflection_probe_pass);
 		depth_framebuffer = reflection_probe_instance_get_depth_framebuffer(p_reflection_probe, p_reflection_probe_pass);
@@ -2097,7 +1809,17 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 			case VS::ENV_BG_SKY: {
 				RID sky = environment_get_sky(p_environment);
 				if (sky.is_valid()) {
-					// TODO: change this, we need to check if our radiance texture is dirty and needs updating...
+
+					RENDER_TIMESTAMP("Setup Sky");
+					CameraMatrix projection = p_cam_projection;
+					if (p_reflection_probe.is_valid()) {
+						CameraMatrix correction;
+						correction.set_depth_correction(true);
+						projection = correction * p_cam_projection;
+					}
+
+					_setup_sky(p_environment, p_cam_transform.origin, screen_size);
+					_update_sky(p_environment, projection, p_cam_transform);
 					radiance_uniform_set = sky_get_radiance_uniform_set_rd(sky, default_shader_rd, RADIANCE_UNIFORM_SET);
 
 					draw_sky = true;
@@ -2192,9 +1914,7 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 			projection = correction * p_cam_projection;
 		}
 
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(opaque_framebuffer, RD::INITIAL_ACTION_CONTINUE, can_continue ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, can_continue ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ);
-		_draw_sky(draw_list, RD::get_singleton()->framebuffer_get_format(opaque_framebuffer), p_environment, projection, p_cam_transform, 1.0);
-		RD::get_singleton()->draw_list_end();
+		_draw_sky(can_continue, opaque_framebuffer, p_environment, projection, p_cam_transform);
 
 		if (using_separate_specular && !can_continue) {
 			//can't continue, so close the buffers
@@ -2886,41 +2606,6 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 		shader.compiler.initialize(actions);
 	}
 
-	/* SKY SHADER */
-	{
-		// Initialize sky, we may need two modes here
-		Vector<String> sky_modes;
-		sky_modes.push_back(""); // background
-		sky_shader.shader.initialize(sky_modes);
-	}
-
-	// register our shader funds
-	storage->shader_set_data_request_function(RasterizerStorageRD::SHADER_TYPE_SKY, _create_sky_shader_funcs);
-	storage->material_set_data_request_function(RasterizerStorageRD::SHADER_TYPE_SKY, _create_sky_material_funcs);
-
-	{
-		ShaderCompilerRD::DefaultIdentifierActions actions;
-
-		actions.renames["COLOR"] = "color";
-		actions.renames["EYEDIR"] = "cube_normal";
-
-		// actions.usage_defines["TANGENT"] = "#define TANGENT_USED\n";
-
-		// actions.render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
-
-		// are these correct?
-		actions.sampler_array_name = "material_samplers";
-		actions.base_texture_binding_index = 1;
-		actions.texture_layout_set = 2;
-		actions.base_uniform_string = "material.";
-		actions.base_varying_index = 10;
-
-		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
-		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
-
-		sky_shader.compiler.initialize(actions);
-	}
-
 	//render list
 	render_list.max_elements = GLOBAL_DEF_RST("rendering/limits/rendering/max_renderable_elements", (int)128000);
 	render_list.init();
@@ -2944,17 +2629,6 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 
 		MaterialData *md = (MaterialData *)storage->material_get_data(default_material, RasterizerStorageRD::SHADER_TYPE_3D);
 		default_shader_rd = shader.scene_shader.version_get_shader(md->shader_data->version, SHADER_VERSION_COLOR_PASS);
-	}
-
-	{
-		// default material and shader for sky shader
-		sky_shader.default_shader = storage->shader_create();
-		storage->shader_set_code(sky_shader.default_shader, "shader_type sky; void fragment() { COLOR = vec3(0.0, 0.0, 0.0); } \n");
-		sky_shader.default_material = storage->material_create();
-		storage->material_set_shader(sky_shader.default_material, sky_shader.default_shader);
-
-		MaterialData *md = (MaterialData *)storage->material_get_data(sky_shader.default_material, RasterizerStorageRD::SHADER_TYPE_SKY);
-		sky_shader.default_shader_rd = sky_shader.shader.version_get_shader(md->shader_data->version, SKY_VERSION_BACKGROUND);
 	}
 
 	{

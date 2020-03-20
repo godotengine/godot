@@ -507,7 +507,7 @@ public:
 	BIND0R(RID, sky_create)
 	BIND2(sky_set_radiance_size, RID, int)
 	BIND2(sky_set_mode, RID, SkyMode)
-	BIND2(sky_set_texture, RID, RID)
+	BIND2(sky_set_material, RID, RID)
 
 	BIND0R(RID, environment_create)
 
@@ -515,7 +515,6 @@ public:
 	BIND2(environment_set_sky, RID, RID)
 	BIND2(environment_set_sky_custom_fov, RID, float)
 	BIND2(environment_set_sky_orientation, RID, const Basis &)
-	BIND2(environment_set_bg_material, RID, RID)
 	BIND2(environment_set_bg_color, RID, const Color &)
 	BIND2(environment_set_bg_energy, RID, float)
 	BIND2(environment_set_canvas_max_layer, RID, int)

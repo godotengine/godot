@@ -419,7 +419,7 @@ public:
 	FUNCRID(sky)
 	FUNC2(sky_set_radiance_size, RID, int)
 	FUNC2(sky_set_mode, RID, SkyMode)
-	FUNC2(sky_set_texture, RID, RID)
+	FUNC2(sky_set_material, RID, RID)
 
 	/* ENVIRONMENT API */
 
@@ -429,7 +429,6 @@ public:
 	FUNC2(environment_set_sky, RID, RID)
 	FUNC2(environment_set_sky_custom_fov, RID, float)
 	FUNC2(environment_set_sky_orientation, RID, const Basis &)
-	FUNC2(environment_set_bg_material, RID, RID)
 	FUNC2(environment_set_bg_color, RID, const Color &)
 	FUNC2(environment_set_bg_energy, RID, float)
 	FUNC2(environment_set_canvas_max_layer, RID, int)

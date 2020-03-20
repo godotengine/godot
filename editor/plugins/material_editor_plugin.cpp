@@ -33,6 +33,7 @@
 #include "editor/editor_scale.h"
 #include "scene/gui/viewport_container.h"
 #include "scene/resources/particles_material.h"
+#include "scene/resources/sky_material.h"
 
 void MaterialEditor::_notification(int p_what) {
 
@@ -221,8 +222,8 @@ void EditorInspectorPluginMaterial::parse_begin(Object *p_object) {
 
 EditorInspectorPluginMaterial::EditorInspectorPluginMaterial() {
 	env.instance();
-	Ref<ProceduralSky> proc_sky = memnew(ProceduralSky(true));
-	env->set_sky(proc_sky);
+	Ref<Sky> sky = memnew(Sky());
+	env->set_sky(sky);
 	env->set_background(Environment::BG_COLOR);
 	env->set_ambient_source(Environment::AMBIENT_SOURCE_SKY);
 	env->set_reflection_source(Environment::REFLECTION_SOURCE_SKY);
@@ -331,6 +332,120 @@ bool CanvasItemMaterialConversionPlugin::handles(const Ref<Resource> &p_resource
 Ref<Resource> CanvasItemMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 
 	Ref<CanvasItemMaterial> mat = p_resource;
+	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+
+	Ref<ShaderMaterial> smat;
+	smat.instance();
+
+	Ref<Shader> shader;
+	shader.instance();
+
+	String code = VS::get_singleton()->shader_get_code(mat->get_shader_rid());
+
+	shader->set_code(code);
+
+	smat->set_shader(shader);
+
+	List<PropertyInfo> params;
+	VS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
+
+	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
+		Variant value = VS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
+		smat->set_shader_param(E->get().name, value);
+	}
+
+	smat->set_render_priority(mat->get_render_priority());
+	return smat;
+}
+
+String ProceduralSkyMaterialConversionPlugin::converts_to() const {
+
+	return "ShaderMaterial";
+}
+bool ProceduralSkyMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
+
+	Ref<ProceduralSkyMaterial> mat = p_resource;
+	return mat.is_valid();
+}
+Ref<Resource> ProceduralSkyMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
+
+	Ref<ProceduralSkyMaterial> mat = p_resource;
+	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+
+	Ref<ShaderMaterial> smat;
+	smat.instance();
+
+	Ref<Shader> shader;
+	shader.instance();
+
+	String code = VS::get_singleton()->shader_get_code(mat->get_shader_rid());
+
+	shader->set_code(code);
+
+	smat->set_shader(shader);
+
+	List<PropertyInfo> params;
+	VS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
+
+	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
+		Variant value = VS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
+		smat->set_shader_param(E->get().name, value);
+	}
+
+	smat->set_render_priority(mat->get_render_priority());
+	return smat;
+}
+
+String PanoramaSkyMaterialConversionPlugin::converts_to() const {
+
+	return "ShaderMaterial";
+}
+bool PanoramaSkyMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
+
+	Ref<PanoramaSkyMaterial> mat = p_resource;
+	return mat.is_valid();
+}
+Ref<Resource> PanoramaSkyMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
+
+	Ref<PanoramaSkyMaterial> mat = p_resource;
+	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+
+	Ref<ShaderMaterial> smat;
+	smat.instance();
+
+	Ref<Shader> shader;
+	shader.instance();
+
+	String code = VS::get_singleton()->shader_get_code(mat->get_shader_rid());
+
+	shader->set_code(code);
+
+	smat->set_shader(shader);
+
+	List<PropertyInfo> params;
+	VS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
+
+	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
+		Variant value = VS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
+		smat->set_shader_param(E->get().name, value);
+	}
+
+	smat->set_render_priority(mat->get_render_priority());
+	return smat;
+}
+
+String PhysicalSkyMaterialConversionPlugin::converts_to() const {
+
+	return "ShaderMaterial";
+}
+bool PhysicalSkyMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
+
+	Ref<PhysicalSkyMaterial> mat = p_resource;
+	return mat.is_valid();
+}
+Ref<Resource> PhysicalSkyMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
+
+	Ref<PhysicalSkyMaterial> mat = p_resource;
 	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
