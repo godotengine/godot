@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Texture2DArray" inherits="TextureLayered" version="4.0">
 	<brief_description>
+		A single texture resource which consists of multiple, separate images. Each image has the same dimensions and number of mipmap levels.
 	</brief_description>
 	<description>
+		The [Texture2DArray] is a [TextureLayered] of type [code]enum TextureLayeredType.TEXTURE_LAYERED_2D_ARRAY[/code]. [TextureLayered]'s class reference explains how a [Texture2DArray] operates and how it has to be handled.
+		This composite texture is based on the class [Texture] (not [Texture2D]) and can only used as such. Its internal resource type, as well as recognized file extension, is [code]tex2darr[/code].
+		The Texture2DArray can be used automatically via the Godot Editor: When importing an image, use the "TextureArray" preset. This preset slices the given image file horizontally and vertically in steps. The user defines the step count. The step count automatically decides the width and height of each image that is given to the [method TextureLayered.create_from_images] method.
+		A Texture2DArray is different from a Texture3D: The Texture2DArray does not support trilinear interpolation between the [Image]s, ie. no blending.
+		A Texture2DArray is also different from an [AtlasTexture]: In a Texture2DArray, all images are treated separately. In an atlas, the regions (ie. the single images) can be of different sizes. Furthermore, you usually need to add a padding around the regions, to prevent accidental UV mapping to more than one region. The same goes for mipmapping: Mipmap chains are handled separately for each layer. In an atlas, the slicing has to be done manually in the fragment shader.
+		More on atlases [url=https://godotengine.org/article/atlas-support-returns-godot-3-2]here[/url].
+		There are some technical limitations to Texture2DArray: There is a maximum counter of allowed layers (e.g. constant GL_MAX_ARRAY_TEXTURE_LAYERS in OpenGL).
+		Currently, [Texture2DArray]s can only be created automatically during import via the Godot Editor or using the basisu commandline tool. It can also be created manually from several [Image]s via C++ code.
+		The only practical application of the Texture2DArray is custom shaders. Currently, it cannot be accessed in the [VisualShader].
+		You can access the images insde the [Texture2DArray] using [method TextureLayered._get_images].
 	</description>
 	<tutorials>
 	</tutorials>

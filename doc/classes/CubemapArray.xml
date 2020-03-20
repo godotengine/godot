@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CubemapArray" inherits="TextureLayered" version="4.0">
 	<brief_description>
+		A single texture resource which consists of multiple [Cubemap]s.
 	</brief_description>
 	<description>
+		The [CubemapArray] is a [TextureLayered] of type [code]enum TextureLayeredType.TEXTURE_LAYERED_CUBEMAP_ARRAY[/code] which uses 6, or a multiple of 6, layers. [TextureLayered]'s and [Cubemap]'s class references explains how a [CubemapArray] operates and how it has to be handled.
+		It is based on the class [Texture] (not [Texture2D]) and can only used as such. Its internal resource type, as well as recognized file extension, is [code]cubearr[/code].
+		Logically, the [CubemapArray] is an array of [Cubemap]s. Technically, it consists of multiple [Image]s, not cubemap levels (ie. [Cubemap]s). The [CubemapArray] is the same as the [Cubemap]. The only difference is that [b]the cubemap array has the length of 6, or a multiple of 6, images[/b].
+		The array requires that you have at least 6 images (ie. layers) or a multiple amount of 6. The layers will be handled in the following order: X+, X-, Y+, Y-, Z+, Z-. See [enum VisualServer.CubeMapLayer]. Mipmaps are optional.
+		Generally, cubemap arrays provide a more efficent way for storing multiple cubemaps, than storing multiple [Cubemap]s themselves in an array.
+		In Godot, the [CubemapArray] can be used for the [Sky]. Your [ProjectSettings] value for "rendering/quality/reflections/texture_array_reflections" is reflected in [code]RasterizerSceneRD[/code]s private member [code]sky_use_cubemap_array[/code]. If this member is set to [code]true[/code], the [Sky] uses the [CubemapArray]. Otherwise, the [Cubemap] logic will be used.
+		The Sky's [code]radiance[/code] and the [code]RasterizerEffectsRD's roughness[/code] will be a [code]CubemapRoughness[/code] with [code]CUBEMAP_ROUGHNESS_SOURCE_CUBEMAP[/code] as its [code]CubemapRoughnessSource[/code].
+		Your [ReflectionProbe]s will be affected by the [CubemapArray] in your [Sky]. This can be turned off for each [ReflectionProbe], if its [code]Interior[/code] property is enabled.
+		[CubemapArray] has [code]enum RenderingDevice.TextureType TEXTURE_TYPE_CUBE_ARRAY[/code].
+		[CubemapArray] is supported in OpenGL 4.0 and later, Metal (macOS), D3D10.1 and later, PS4.
 	</description>
 	<tutorials>
 	</tutorials>

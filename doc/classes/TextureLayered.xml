@@ -1,10 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="TextureLayered" inherits="Texture" version="4.0">
 	<brief_description>
-		Base class for 3D texture types.
+		Base class for texture types which contain the data of multiple [Image]s. Each image is of the same size and format.
 	</brief_description>
 	<description>
-		Base class for [Texture2DArray], [Cubemap] and [CubemapArray]. Cannot be used directly, but contains all the functions necessary for accessing the derived resource types. Data is set on a per-layer basis. For [Texture2DArray]s, the layer specifies the array layer.
+		Base class for [Texture2DArray], [Cubemap] and [CubemapArray]. Cannot be used directly, but contains all the functions necessary for accessing the derived resource types.
+		Data is set on a per-layer basis. For [Texture2DArray]s, the layer specifies the array layer.
+		All images need to have the same width, height and number of mipmap levels.
+		A [TextureLayered] can be loaded with [code]method ResourceFormatLoaderTextureLayered.load[/code].		
+		To create a [TextureLayered] texture, an image file needs to be "sliced". Internally, Godot uses the thirdparty basis_universal library by Binomial LLC for e.g. creating and reading [Texture2DArray], [Cubemap] and [CubemapArray] files.
+		Their file extension is normally [code].basis[/code]. Godot adjusts this to its needs:
+		[codeblock]
+		- the Texture2DArray becomes a ".tex2darr"
+		- the Cubemap becomes a ".cube"
+		- the CubemapArray becomes a ".cubearr" 
+		[/codeblock]
+		[b]Engine Excursion[/b]
+		The [code]*.basis[/code] file remembers how to apply the slicing.
+		basis_universal can be accessed via the Godot Editor (during the image file import) and the basisu commandline tool (see file [code]thirdparty/basis_universal/basisu_tool.cpp[/code] regarding [code]-tex_type 2darray[/code]). With this library you combine several image files (e.g. png) to one *.basis file. This file will be read and sliced when you load it (see [code]basisu_backend.compute_slice_crcs[/code]).
+		Godot makes use of the loaded slices using the [code]method RenderingDevice.texture_create_shared_from_slice[/code] method using the [code]enum RenderingDevice.TextureSliceType[/code].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,6 +29,15 @@
 			<argument index="0" name="images" type="Array">
 			</argument>
 			<description>
+				Creates an array of referenced [Image]s. The first image decides the width, height, image format and mipmapping setting for this [TextureLayered]. The other images must have the same width, height, image format and mipmapping setting.
+				Each [Image] represents one [code]layer[/code].
+			</description>
+		</method>
+		<method name="_get_images" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an [Array] of [Image] resources, taken from all [code]layers[/code].
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
@@ -44,6 +67,7 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of referenced [Image]s.
 			</description>
 		</method>
 		<method name="get_width" qualifiers="const">
@@ -61,6 +85,10 @@
 			<argument index="1" name="layer" type="int">
 			</argument>
 			<description>
+				Replaces the existing [Image] data at the given [code]layer[/code] with this new image.
+				The given [Image] must have the same width, height, image format and mipmapping setting (a [code]bool[/code] value) as the rest of the referenced images.
+				If the image format is unsupported, it will be decompressed and converted to a similar and supported [enum Image.Format].
+				The update is immediate: synced with the draw.
 			</description>
 		</method>
 	</methods>
