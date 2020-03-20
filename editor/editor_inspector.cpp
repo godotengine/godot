@@ -32,6 +32,8 @@
 
 #include "array_property_edit.h"
 #include "dictionary_property_edit.h"
+#include "editor/plugins/animation_player_editor_plugin.h"
+#include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor_feature_profile.h"
 #include "editor_node.h"
 #include "editor_scale.h"
@@ -2091,6 +2093,11 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		for (List<EditorProperty *>::Element *E = editor_property_map[p_name].front(); E; E = E->next()) {
 			E->get()->update_reload_status();
 		}
+	}
+
+	if (Object::cast_to<Node>(object) &&
+			CanvasItemEditor::singleton->key_auto_insert_button->is_pressed()) {
+		AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(Object::cast_to<Node>(object), p_name, p_value, true);
 	}
 }
 
