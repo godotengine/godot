@@ -34,98 +34,157 @@
 #ifndef SKY_MATERIAL_H
 #define SKY_MATERIAL_H
 
-class SkyMaterial : public Material {
+class ProceduralSkyMaterial : public Material {
 
-	GDCLASS(SkyMaterial, Material);
-
-public:
+	GDCLASS(ProceduralSkyMaterial, Material);
 
 private:
-	union MaterialKey {
+	Color sky_top_color;
+	Color sky_horizon_color;
+	float sky_curve;
+	float sky_energy;
 
-		struct {
-			uint32_t texture_mask : 16;
-			uint32_t texture_color : 1;
-			uint32_t flags : 4;
-			uint32_t emission_shape : 2;
-			uint32_t trail_size_texture : 1;
-			uint32_t trail_color_texture : 1;
-			uint32_t invalid_key : 1;
-			uint32_t has_emission_color : 1;
-		};
+	Color ground_bottom_color;
+	Color ground_horizon_color;
+	float ground_curve;
+	float ground_energy;
 
-		uint32_t key;
+	float sun_angle_min;
+	float sun_angle_max;
+	float sun_curve;
 
-		bool operator<(const MaterialKey &p_key) const {
-			return key < p_key.key;
-		}
-	};
-
-	struct ShaderData {
-		RID shader;
-		int users;
-	};
-
-	static Map<MaterialKey, ShaderData> shader_map;
-
-	MaterialKey current_key;
-
-	_FORCE_INLINE_ MaterialKey _compute_key() const {
-
-		MaterialKey mk;
-		mk.key = 0;
-		/*
-		for (int i = 0; i < PARAM_MAX; i++) {
-			if (tex_parameters[i].is_valid()) {
-				mk.texture_mask |= (1 << i);
-			}
-		}
-		for (int i = 0; i < FLAG_MAX; i++) {
-			if (flags[i]) {
-				mk.flags |= (1 << i);
-			}
-		}
-
-		mk.texture_color = color_ramp.is_valid() ? 1 : 0;
-		mk.emission_shape = emission_shape;
-		mk.trail_color_texture = trail_color_modifier.is_valid() ? 1 : 0;
-		mk.trail_size_texture = trail_size_modifier.is_valid() ? 1 : 0;
-		mk.has_emission_color = emission_shape >= EMISSION_SHAPE_POINTS && emission_color_texture.is_valid();
-		*/
-
-		return mk;
-	}
-
-	static Mutex *material_mutex;
-	static SelfList<SkyMaterial>::List *dirty_materials;
-
-	struct ShaderNames {
-		StringName placeholder;
-	};
-
-	static ShaderNames *shader_names;
-
-	SelfList<SkyMaterial> element;
-
-	void _update_shader();
-	_FORCE_INLINE_ void _queue_shader_change();
-	_FORCE_INLINE_ bool _is_shader_dirty() const;
+	RID shader;
 
 protected:
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual bool _can_do_next_pass() const;
 
 public:
-	static void init_shaders();
-	static void finish_shaders();
-	static void flush_changes();
+	void set_sky_top_color(const Color &p_sky_top);
+	Color get_sky_top_color() const;
 
-	RID get_shader_rid() const;
+	void set_sky_horizon_color(const Color &p_sky_horizon);
+	Color get_sky_horizon_color() const;
+
+	void set_sky_curve(float p_curve);
+	float get_sky_curve() const;
+
+	void set_sky_energy(float p_energy);
+	float get_sky_energy() const;
+
+	void set_ground_bottom_color(const Color &p_ground_bottom);
+	Color get_ground_bottom_color() const;
+
+	void set_ground_horizon_color(const Color &p_ground_horizon);
+	Color get_ground_horizon_color() const;
+
+	void set_ground_curve(float p_curve);
+	float get_ground_curve() const;
+
+	void set_ground_energy(float p_energy);
+	float get_ground_energy() const;
+
+	void set_sun_angle_min(float p_angle);
+	float get_sun_angle_min() const;
+
+	void set_sun_angle_max(float p_angle);
+	float get_sun_angle_max() const;
+
+	void set_sun_curve(float p_curve);
+	float get_sun_curve() const;
 
 	virtual Shader::Mode get_shader_mode() const;
+	RID get_shader_rid() const;
 
-	SkyMaterial();
-	~SkyMaterial();
+	ProceduralSkyMaterial();
+	~ProceduralSkyMaterial();
+};
+
+//////////////////////////////////////////////////////
+/* PanoramaSkyMaterial */
+
+class PanoramaSkyMaterial : public Material {
+	GDCLASS(PanoramaSkyMaterial, Material);
+
+private:
+	Ref<Texture2D> panorama;
+	RID shader;
+
+protected:
+	static void _bind_methods();
+	virtual bool _can_do_next_pass() const;
+
+public:
+	void set_panorama(const Ref<Texture2D> &p_panorama);
+	Ref<Texture2D> get_panorama() const;
+
+	virtual Shader::Mode get_shader_mode() const;
+	RID get_shader_rid() const;
+
+	PanoramaSkyMaterial();
+	~PanoramaSkyMaterial();
+};
+
+//////////////////////////////////////////////////////
+/* PanoramaSkyMaterial */
+
+class PhysicalSkyMaterial : public Material {
+	GDCLASS(PhysicalSkyMaterial, Material);
+
+private:
+	RID shader;
+
+	float rayleigh;
+	Color rayleigh_color;
+	float mie;
+	float mie_eccentricity;
+	Color mie_color;
+	float turbidity;
+	float sun_disk_scale;
+	Color ground_color;
+	float exposure;
+	float dither_strength;
+
+protected:
+	static void _bind_methods();
+	virtual bool _can_do_next_pass() const;
+
+public:
+	void set_rayleigh_coefficient(float p_rayleigh);
+	float get_rayleigh_coefficient() const;
+
+	void set_rayleigh_color(Color p_rayleigh_color);
+	Color get_rayleigh_color() const;
+
+	void set_turbidity(float p_turbidity);
+	float get_turbidity() const;
+
+	void set_mie_coefficient(float p_mie);
+	float get_mie_coefficient() const;
+
+	void set_mie_eccentricity(float p_eccentricity);
+	float get_mie_eccentricity() const;
+
+	void set_mie_color(Color p_mie_color);
+	Color get_mie_color() const;
+
+	void set_sun_disk_scale(float p_sun_disk_scale);
+	float get_sun_disk_scale() const;
+
+	void set_ground_color(Color p_ground_color);
+	Color get_ground_color() const;
+
+	void set_exposure(float p_exposure);
+	float get_exposure() const;
+
+	void set_dither_strength(float p_dither_strength);
+	float get_dither_strength() const;
+
+	virtual Shader::Mode get_shader_mode() const;
+	RID get_shader_rid() const;
+
+	PhysicalSkyMaterial();
+	~PhysicalSkyMaterial();
 };
 
 #endif /* !SKY_MATERIAL_H */

@@ -127,4 +127,31 @@ public:
 	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
 };
 
+class ProceduralSkyMaterialConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(ProceduralSkyMaterialConversionPlugin, EditorResourceConversionPlugin);
+
+public:
+	virtual String converts_to() const;
+	virtual bool handles(const Ref<Resource> &p_resource) const;
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
+};
+
+class PanoramaSkyMaterialConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(PanoramaSkyMaterialConversionPlugin, EditorResourceConversionPlugin);
+
+public:
+	virtual String converts_to() const;
+	virtual bool handles(const Ref<Resource> &p_resource) const;
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
+};
+
+class PhysicalSkyMaterialConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(PhysicalSkyMaterialConversionPlugin, EditorResourceConversionPlugin);
+
+public:
+	virtual String converts_to() const;
+	virtual bool handles(const Ref<Resource> &p_resource) const;
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
+};
+
 #endif // MATERIAL_EDITOR_PLUGIN_H

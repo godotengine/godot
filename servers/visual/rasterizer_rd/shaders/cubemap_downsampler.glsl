@@ -30,13 +30,7 @@ VERSION_DEFINES
 layout(local_size_x = BLOCK_SIZE, local_size_y = BLOCK_SIZE, local_size_z = 1) in;
 /* clang-format on */
 
-#ifdef MODE_SOURCE_PANORAMA
-layout(set = 0, binding = 0) uniform sampler2D source_panorama;
-#endif
-
-#ifdef MODE_SOURCE_CUBEMAP
 layout(set = 0, binding = 0) uniform samplerCube source_cubemap;
-#endif
 
 layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly imageCube dest_cubemap;
 
@@ -83,32 +77,6 @@ float calcWeight(float u, float v) {
 	return val * sqrt(val);
 }
 
-#ifdef MODE_SOURCE_PANORAMA
-
-vec4 texturePanorama(vec3 normal, sampler2D pano) {
-
-	vec2 st = vec2(
-			atan(normal.x, -normal.z),
-			acos(normal.y));
-
-	if (st.x < 0.0)
-		st.x += M_PI * 2.0;
-
-	st /= vec2(M_PI * 2.0, M_PI);
-
-	return textureLod(pano, st, 0.0);
-}
-
-#endif
-
-vec4 get_texture(vec3 p_dir) {
-#ifdef MODE_SOURCE_PANORAMA
-	return texturePanorama(normalize(p_dir), source_panorama);
-#else
-	return textureLod(source_cubemap, normalize(p_dir), 0.0);
-#endif
-}
-
 void main() {
 	uvec3 id = gl_GlobalInvocationID;
 	uint face_size = params.face_size;
@@ -138,81 +106,81 @@ void main() {
 		switch (id.z) {
 			case 0:
 				get_dir_0(dir, u0, v0);
-				color = get_texture(dir) * weights[0];
+				color = textureLod(source_cubemap, normalize(dir), 0.0) * weights[0];
 
 				get_dir_0(dir, u1, v0);
-				color += get_texture(dir) * weights[1];
+				color += textureLod(source_cubemap, normalize(dir), 0.0) * weights[1];
 
 				get_dir_0(dir, u0, v1);
-				color += get_texture(dir) * weights[2];
+				color += textureLod(source_cubemap, normalize(dir), 0.0) * weights[2];
 
 				get_dir_0(dir, u1, v1);
-				color += get_texture(dir) * weights[3];
+				color += textureLod(source_cubemap, normalize(dir), 0.0) * weights[3];
 				break;
 			case 1:
 				get_dir_1(dir, u0, v0);
-				color = get_texture(dir) * weights[0];
+				color = textureLod(source_cubemap, normalize(dir), 0.0) * weights[0];
 
 				get_dir_1(dir, u1, v0);
-				color += get_texture(dir) * weights[1];
+				color += textureLod(source_cubemap, normalize(dir), 0.0) * weights[1];
 
 				get_dir_1(dir, u0, v1);
-				color += get_texture(dir) * weights[2];
+				color += textureLod(source_cubemap, normalize(dir), 0.0) * weights[2];
 
 				get_dir_1(dir, u1, v1);
-				color += get_texture(dir) * weights[3];
+				color += textureLod(source_cubemap, normalize(dir), 0.0) * weights[3];
 				break;
 			case 2:
 				get_dir_2(dir, u0, v0);
-				color = get_texture(dir) * weights[0];
+				color = textureLod(source_cubemap, normalize(dir), 0.0) * weights[0];
 
 				get_dir_2(dir, u1, v0);
-				color += get_texture(dir) * weights[1];
+				color += textureLod(source_cubemap, normalize(dir), 0.0) * weights[1];
 
 				get_dir_2(dir, u0, v1);
-				color += get_texture(dir) * weights[2];
+				color += textureLod(source_cubemap, normalize(dir), 0.0) * weights[2];
 
 				get_dir_2(dir, u1, v1);
-				color += get_texture(dir) * weights[3];
+				color += textureLod(source_cubemap, normalize(dir), 0.0) * weights[3];
 				break;
 			case 3:
 				get_dir_3(dir, u0, v0);
-				color = get_texture(dir) * weights[0];
+				color = textureLod(source_cubemap, normalize(dir), 0.0) * weights[0];
 
 				get_dir_3(dir, u1, v0);
-				color += get_texture(dir) * weights[1];
+				color += textureLod(source_cubemap, normalize(dir), 0.0) * weights[1];
 
 				get_dir_3(dir, u0, v1);
-				color += get_texture(dir) * weights[2];
+				color += textureLod(source_cubemap, normalize(dir), 0.0) * weights[2];
 
 				get_dir_3(dir, u1, v1);
-				color += get_texture(dir) * weights[3];
+				color += textureLod(source_cubemap, normalize(dir), 0.0) * weights[3];
 				break;
 			case 4:
 				get_dir_4(dir, u0, v0);
-				color = get_texture(dir) * weights[0];
+				color = textureLod(source_cubemap, normalize(dir), 0.0) * weights[0];
 
 				get_dir_4(dir, u1, v0);
-				color += get_texture(dir) * weights[1];
+				color += textureLod(source_cubemap, normalize(dir), 0.0) * weights[1];
 
 				get_dir_4(dir, u0, v1);
-				color += get_texture(dir) * weights[2];
+				color += textureLod(source_cubemap, normalize(dir), 0.0) * weights[2];
 
 				get_dir_4(dir, u1, v1);
-				color += get_texture(dir) * weights[3];
+				color += textureLod(source_cubemap, normalize(dir), 0.0) * weights[3];
 				break;
 			default:
 				get_dir_5(dir, u0, v0);
-				color = get_texture(dir) * weights[0];
+				color = textureLod(source_cubemap, normalize(dir), 0.0) * weights[0];
 
 				get_dir_5(dir, u1, v0);
-				color += get_texture(dir) * weights[1];
+				color += textureLod(source_cubemap, normalize(dir), 0.0) * weights[1];
 
 				get_dir_5(dir, u0, v1);
-				color += get_texture(dir) * weights[2];
+				color += textureLod(source_cubemap, normalize(dir), 0.0) * weights[2];
 
 				get_dir_5(dir, u1, v1);
-				color += get_texture(dir) * weights[3];
+				color += textureLod(source_cubemap, normalize(dir), 0.0) * weights[3];
 				break;
 		}
 		imageStore(dest_cubemap, ivec3(id), color);

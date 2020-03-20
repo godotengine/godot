@@ -10,13 +10,7 @@ VERSION_DEFINES
 layout(local_size_x = GROUP_SIZE, local_size_y = GROUP_SIZE, local_size_z = 1) in;
 /* clang-format on */
 
-#ifdef MODE_SOURCE_PANORAMA
-layout(set = 0, binding = 0) uniform sampler2D source_panorama;
-#endif
-
-#ifdef MODE_SOURCE_CUBEMAP
 layout(set = 0, binding = 0) uniform samplerCube source_cube;
-#endif
 
 layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly imageCube dest_cubemap;
 
@@ -115,24 +109,6 @@ vec2 Hammersley(uint i, uint N) {
 	return vec2(float(i) / float(N), radicalInverse_VdC(i));
 }
 
-#ifdef MODE_SOURCE_PANORAMA
-
-vec4 texturePanorama(vec3 normal, sampler2D pano) {
-
-	vec2 st = vec2(
-			atan(normal.x, -normal.z),
-			acos(normal.y));
-
-	if (st.x < 0.0)
-		st.x += M_PI * 2.0;
-
-	st /= vec2(M_PI * 2.0, M_PI);
-
-	return textureLod(pano, st, 0.0);
-}
-
-#endif
-
 void main() {
 	uvec3 id = gl_GlobalInvocationID;
 	id.z += params.face_id;
@@ -144,15 +120,7 @@ void main() {
 
 	if (params.use_direct_write) {
 
-#ifdef MODE_SOURCE_PANORAMA
-		imageStore(dest_cubemap, ivec3(id), vec4(texturePanorama(N, source_panorama).rgb, 1.0));
-#endif
-
-#ifdef MODE_SOURCE_CUBEMAP
 		imageStore(dest_cubemap, ivec3(id), vec4(texture(source_cube, N).rgb, 1.0));
-
-#endif
-
 	} else {
 
 		vec4 sum = vec4(0.0, 0.0, 0.0, 0.0);
@@ -167,13 +135,8 @@ void main() {
 			float ndotl = clamp(dot(N, L), 0.0, 1.0);
 
 			if (ndotl > 0.0) {
-#ifdef MODE_SOURCE_PANORAMA
-				sum.rgb += texturePanorama(L, source_panorama).rgb * ndotl;
-#endif
 
-#ifdef MODE_SOURCE_CUBEMAP
 				sum.rgb += textureLod(source_cube, L, 0.0).rgb * ndotl;
-#endif
 				sum.a += ndotl;
 			}
 		}
