@@ -37,6 +37,7 @@
 #include "editor_node.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
+#include "scene/resources/dynamic_font.h"
 
 #define CONTRIBUTE_URL "https://docs.godotengine.org/en/latest/community/contributing/updating_the_class_reference.html"
 #define CONTRIBUTE2_URL "https://github.com/godotengine/godot-docs"
@@ -168,6 +169,121 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 }
 
 void EditorHelp::_class_desc_input(const Ref<InputEvent> &p_input) {
+
+	Ref<InputEventMouseButton> mb = p_input;
+
+	if (mb.is_valid()) {
+
+		if (mb->get_command()) {
+			if (mb->is_pressed()) {
+
+				if (mb->get_button_index() == BUTTON_WHEEL_UP) {
+					_zoom_in();
+					accept_event();
+				} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+					_zoom_out();
+					accept_event();
+				}
+			} else {
+				// Prevent of button's 'released' event propagation, causing RichTextLabel scroll while zooming
+				if (mb->get_button_index() == BUTTON_WHEEL_UP || mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+					accept_event();
+				}
+			}
+		}
+	}
+
+	Ref<InputEventMagnifyGesture> magnify_gesture = p_input;
+	if (magnify_gesture.is_valid()) {
+
+		real_t magnify_factor = magnify_gesture->get_factor();
+
+		_resize_magnify_doc_font("doc", "text_editor/help/help_font_size", magnify_factor);
+		_resize_magnify_doc_font("doc_bold", "text_editor/help/help_font_size", magnify_factor);
+		_resize_magnify_doc_font("doc_title", "text_editor/help/help_title_font_size", magnify_factor);
+		_resize_magnify_doc_font("doc_source", "text_editor/help/help_source_font_size", magnify_factor);
+
+		return;
+	}
+
+	Ref<InputEventKey> k = p_input;
+
+	if (k.is_valid()) {
+
+		if (k->is_pressed()) {
+			if (ED_IS_SHORTCUT("script_editor/zoom_in", p_input)) {
+				_zoom_in();
+			}
+			if (ED_IS_SHORTCUT("script_editor/zoom_out", p_input)) {
+				_zoom_out();
+			}
+			if (ED_IS_SHORTCUT("script_editor/reset_zoom", p_input)) {
+				_reset_zoom();
+			}
+		}
+	}
+}
+
+void EditorHelp::_zoom_in() {
+	font_resize_val = MAX(EDSCALE, 1.0f);
+	_zoom_changed();
+}
+
+void EditorHelp::_zoom_out() {
+	font_resize_val = -MAX(EDSCALE, 1.0f);
+	_zoom_changed();
+}
+
+void EditorHelp::_reset_zoom() {
+	_set_dafault_doc_font_size("doc", "text_editor/help/help_font_size", 15);
+	_set_dafault_doc_font_size("doc_bold", "text_editor/help/help_font_size", 15);
+	_set_dafault_doc_font_size("doc_title", "text_editor/help/help_title_font_size", 23);
+	_set_dafault_doc_font_size("doc_source", "text_editor/help/help_source_font_size", 14);
+}
+
+void EditorHelp::_zoom_changed() {
+	if (font_resize_timer->get_time_left() == 0)
+		font_resize_timer->start();
+}
+
+void EditorHelp::_set_dafault_doc_font_size(const String &p_name, const String &p_config_path, int size) {
+	Ref<DynamicFont> font = get_font(p_name, "EditorFonts");
+
+	if (font.is_valid()) {
+
+		EditorSettings::get_singleton()->set(p_config_path, size);
+		font->set_size(size);
+	}
+}
+
+void EditorHelp::_resize_doc_font(const String &p_name, const String &p_config_path, int p_delta) {
+	Ref<DynamicFont> font = get_font(p_name, "EditorFonts");
+
+	int new_font_size = CLAMP(font->get_size() + p_delta, 8 * EDSCALE, 96 * EDSCALE);
+	if (new_font_size != font->get_size()) {
+
+		EditorSettings::get_singleton()->set(p_config_path, new_font_size / EDSCALE);
+		font->set_size(new_font_size);
+	}
+}
+
+void EditorHelp::_resize_magnify_doc_font(const String &p_name, const String &p_config_path, real_t magnify_factor) {
+	Ref<DynamicFont> font = get_font(p_name, "EditorFonts");
+
+	if (font.is_valid()) {
+
+		int font_size = font->get_size();
+		font_size *= powf(magnify_factor, 0.25);
+
+		_resize_doc_font(p_name, p_config_path, font_size - font->get_size());
+	}
+}
+
+void EditorHelp::_font_resize_timeout() {
+	_resize_doc_font("doc", "text_editor/help/help_font_size", font_resize_val);
+	_resize_doc_font("doc_bold", "text_editor/help/help_font_size", font_resize_val);
+	_resize_doc_font("doc_title", "text_editor/help/help_title_font_size", font_resize_val);
+	_resize_doc_font("doc_source", "text_editor/help/help_source_font_size", font_resize_val);
 }
 
 void EditorHelp::_class_desc_resized() {
@@ -372,7 +488,6 @@ void EditorHelp::_update_doc() {
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_font);
 		class_desc->add_text(TTR("Inherits:") + " ");
-		class_desc->pop();
 
 		String inherits = cd.inherits;
 
@@ -386,6 +501,7 @@ void EditorHelp::_update_doc() {
 			}
 		}
 
+		class_desc->pop();
 		class_desc->pop();
 		class_desc->add_newline();
 	}
@@ -404,7 +520,6 @@ void EditorHelp::_update_doc() {
 					class_desc->push_color(title_color);
 					class_desc->push_font(doc_font);
 					class_desc->add_text(TTR("Inherited by:") + " ");
-					class_desc->pop();
 					found = true;
 				}
 
@@ -419,6 +534,7 @@ void EditorHelp::_update_doc() {
 		}
 
 		if (found) {
+			class_desc->pop();
 			class_desc->pop();
 			class_desc->add_newline();
 		}
@@ -1542,6 +1658,12 @@ EditorHelp::EditorHelp() {
 
 	EDITOR_DEF("text_editor/help/sort_functions_alphabetically", true);
 
+	ED_SHORTCUT("script_editor/zoom_in", TTR("Zoom In"), KEY_MASK_CMD | KEY_EQUAL);
+	ED_SHORTCUT("script_editor/zoom_out", TTR("Zoom Out"), KEY_MASK_CMD | KEY_MINUS);
+	ED_SHORTCUT("script_editor/reset_zoom", TTR("Reset Zoom"), KEY_MASK_CMD | KEY_0);
+
+	font_resize_val = 0;
+
 	class_desc = memnew(RichTextLabel);
 	add_child(class_desc);
 	class_desc->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1563,6 +1685,12 @@ EditorHelp::EditorHelp() {
 	scroll_locked = false;
 	select_locked = false;
 	class_desc->hide();
+
+	font_resize_timer = memnew(Timer);
+	add_child(font_resize_timer);
+	font_resize_timer->set_one_shot(true);
+	font_resize_timer->set_wait_time(0.07);
+	font_resize_timer->connect("timeout", callable_mp(this, &EditorHelp::_font_resize_timeout));
 }
 
 EditorHelp::~EditorHelp() {

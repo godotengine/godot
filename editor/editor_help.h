@@ -118,6 +118,9 @@ class EditorHelp : public VBoxContainer {
 	Map<String, Map<String, int>> enum_values_line;
 	int description_line;
 
+	Timer *font_resize_timer;
+	int font_resize_val;
+
 	RichTextLabel *class_desc;
 	HSplitContainer *h_split;
 	static DocData *doc;
@@ -163,6 +166,15 @@ class EditorHelp : public VBoxContainer {
 	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
 
 	String _fix_constant(const String &p_constant) const;
+
+	void _zoom_in();
+	void _zoom_out();
+	void _reset_zoom();
+	void _zoom_changed();
+	void _set_dafault_doc_font_size(const String &p_name, const String &p_config_path, int size);
+	void _resize_doc_font(const String &p_name, const String &p_config_path, int p_delta);
+	void _resize_magnify_doc_font(const String &p_name, const String &p_config_path, real_t magnify_factor);
+	void _font_resize_timeout();
 
 protected:
 	void _notification(int p_what);
