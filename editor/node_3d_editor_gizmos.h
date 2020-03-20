@@ -409,6 +409,11 @@ class Joint3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 	GDCLASS(Joint3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
+	Timer *update_timer;
+	uint64_t update_idx = 0;
+
+	void incremental_update_gizmos();
+
 public:
 	bool has_gizmo(Node3D *p_spatial);
 	String get_name() const;
