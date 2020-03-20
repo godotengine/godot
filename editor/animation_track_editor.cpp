@@ -2471,6 +2471,7 @@ void AnimationTrackEdit::_path_entered(const String &p_text) {
 	undo_redo->add_do_method(animation.ptr(), "track_set_path", track, p_text);
 	undo_redo->add_undo_method(animation.ptr(), "track_set_path", track, animation->track_get_path(track));
 	undo_redo->commit_action();
+	path_popup->hide();
 }
 
 bool AnimationTrackEdit::_is_value_key_valid(const Variant &p_key_value, Variant::Type &r_valid_type) const {
@@ -2843,20 +2844,20 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && clicking_on_name) {
 
 		if (!path) {
+			path_popup = memnew(Popup);
+			path_popup->set_wrap_controls(true);
+			add_child(path_popup);
 			path = memnew(LineEdit);
-			add_child(path);
-			path->set_as_toplevel(true);
+			path_popup->add_child(path);
+			path->set_anchors_and_margins_preset(PRESET_WIDE);
 			path->connect("text_entered", callable_mp(this, &AnimationTrackEdit::_path_entered));
 		}
 
 		path->set_text(animation->track_get_path(track));
 		Vector2 theme_ofs = path->get_theme_stylebox("normal", "LineEdit")->get_offset();
-		path->set_position(get_global_position() + path_rect.position - theme_ofs);
-		path->set_size(path_rect.size);
-#ifndef _MSC_VER
-#warning show modal not supported any longer, need to move this to a popup
-#endif
-		path->show();
+		path_popup->set_position(get_screen_position() + path_rect.position - theme_ofs);
+		path_popup->set_size(path_rect.size);
+		path_popup->popup();
 		path->grab_focus();
 		path->set_cursor_position(path->get_text().length());
 		clicking_on_name = false;
@@ -3093,6 +3094,7 @@ AnimationTrackEdit::AnimationTrackEdit() {
 	timeline = NULL;
 	root = NULL;
 	path = NULL;
+	path_popup = NULL;
 	menu = NULL;
 	clicking_on_name = false;
 	dropping_at = 0;

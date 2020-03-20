@@ -563,8 +563,12 @@ Point2i DisplayServerX11::screen_get_position(int p_screen) const {
 
 	return position;
 }
-Size2i DisplayServerX11::screen_get_size(int p_screen) const {
 
+Size2i DisplayServerX11::screen_get_size(int p_screen) const {
+	return screen_get_usable_rect(p_screen).size;
+}
+
+Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
@@ -574,16 +578,17 @@ Size2i DisplayServerX11::screen_get_size(int p_screen) const {
 	// Using Xinerama Extension
 	int event_base, error_base;
 	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
-	if (!ext_okay) return Size2i(0, 0);
+	if (!ext_okay) return Rect2i(0, 0, 0, 0);
 
 	int count;
 	XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
-	if (p_screen >= count) return Size2i(0, 0);
+	if (p_screen >= count) return Rect2i(0, 0, 0, 0);
 
-	Size2i size = Point2i(xsi[p_screen].width, xsi[p_screen].height);
+	Rect2i rect = Rect2i(xsi[p_screen].x_org, xsi[p_screen].y_org, xsi[p_screen].width, xsi[p_screen].height);
 	XFree(xsi);
-	return size;
+	return rect;
 }
+
 int DisplayServerX11::screen_get_dpi(int p_screen) const {
 
 	_THREAD_SAFE_METHOD_

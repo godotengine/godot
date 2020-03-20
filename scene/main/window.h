@@ -108,8 +108,6 @@ private:
 
 	void _propagate_window_notification(Node *p_node, int p_notification);
 
-	virtual DisplayServer::WindowID get_window_id() const;
-
 	void _update_window_callbacks();
 
 	void _clear_transient();
@@ -123,8 +121,6 @@ private:
 	Control *theme_owner = nullptr;
 	Window *theme_owner_window = nullptr;
 
-	Viewport *_get_embedder() const;
-
 	Viewport *embedder = nullptr;
 
 	friend class Viewport; //friend back, can call the methods below
@@ -136,6 +132,10 @@ private:
 	void _event_callback(DisplayServer::WindowEvent p_event);
 
 protected:
+	Viewport *_get_embedder() const;
+
+	virtual Rect2i _popup_adjust_rect() const { return Rect2i(); }
+
 	virtual void _post_popup() {}
 	virtual Size2 _get_contents_minimum_size() const;
 	static void _bind_methods();
@@ -234,6 +234,8 @@ public:
 	void grab_focus();
 	bool has_focus() const;
 
+	Rect2i get_usable_parent_rect() const;
+
 	Ref<Texture2D> get_theme_icon(const StringName &p_name, const StringName &p_type = StringName()) const;
 	Ref<Shader> get_theme_shader(const StringName &p_name, const StringName &p_type = StringName()) const;
 	Ref<StyleBox> get_theme_stylebox(const StringName &p_name, const StringName &p_type = StringName()) const;
@@ -249,6 +251,7 @@ public:
 	bool has_theme_constant(const StringName &p_name, const StringName &p_type = StringName()) const;
 
 	Rect2i get_parent_rect() const;
+	virtual DisplayServer::WindowID get_window_id() const;
 
 	Window();
 	~Window();

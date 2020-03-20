@@ -125,7 +125,10 @@ void DisplayServerWindows::mouse_warp_to_position(const Point2i &p_to) {
 	}
 }
 Point2i DisplayServerWindows::mouse_get_position() const {
-	return Point2(old_x, old_y);
+	POINT p;
+	GetCursorPos(&p);
+	return Point2i(p.x, p.y);
+	//return Point2(old_x, old_y);
 }
 int DisplayServerWindows::mouse_get_button_state() const {
 	return last_button_state;
@@ -280,6 +283,12 @@ typedef struct {
 	Size2 size;
 } EnumSizeData;
 
+typedef struct {
+	int count;
+	int screen;
+	Rect2i rect;
+} EnumRectData;
+
 static BOOL CALLBACK _MonitorEnumProcSize(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
 
 	EnumSizeData *data = (EnumSizeData *)dwData;
@@ -299,6 +308,34 @@ Size2i DisplayServerWindows::screen_get_size(int p_screen) const {
 	EnumSizeData data = { 0, p_screen == SCREEN_OF_MAIN_WINDOW ? window_get_current_screen() : p_screen, Size2() };
 	EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcSize, (LPARAM)&data);
 	return data.size;
+}
+
+static BOOL CALLBACK _MonitorEnumProcUsableSize(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
+
+	EnumRectData *data = (EnumRectData *)dwData;
+	if (data->count == data->screen) {
+		MONITORINFO minfo;
+		zeromem(&minfo, sizeof(MONITORINFO));
+		minfo.cbSize = sizeof(MONITORINFO);
+		GetMonitorInfoA(hMonitor, &minfo);
+
+		data->rect.position.x = minfo.rcWork.left;
+		data->rect.position.y = minfo.rcWork.top;
+		data->rect.size.x = minfo.rcWork.right - minfo.rcWork.left;
+		data->rect.size.y = minfo.rcWork.bottom - minfo.rcWork.top;
+	}
+
+	data->count++;
+	return TRUE;
+}
+
+Rect2i DisplayServerWindows::screen_get_usable_rect(int p_screen) const {
+
+	_THREAD_SAFE_METHOD_
+
+	EnumRectData data = { 0, p_screen == SCREEN_OF_MAIN_WINDOW ? window_get_current_screen() : p_screen, Rect2i() };
+	EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcUsableSize, (LPARAM)&data);
+	return data.rect;
 }
 
 typedef struct {
@@ -691,6 +728,7 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 
 	wd.width = w;
 	wd.height = h;
+
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
 		context_vulkan->window_resize(p_window, w, h);
@@ -2232,8 +2270,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 		case WM_MOVE: {
 			if (!IsIconic(windows[window_id].hWnd)) {
-				int x = LOWORD(lParam);
-				int y = HIWORD(lParam);
+				int x = int16_t(LOWORD(lParam));
+				int y = int16_t(HIWORD(lParam));
 				windows[window_id].last_pos = Point2(x, y);
 
 				if (!windows[window_id].rect_changed_callback.is_null()) {

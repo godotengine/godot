@@ -273,7 +273,7 @@ void EditorSpinSlider::_notification(int p_what) {
 			Rect2 grabber_rect = Rect2(ofs + gofs, svofs + 1, grabber_w, 2 * EDSCALE);
 			draw_rect(grabber_rect, c);
 
-			bool display_grabber = (mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !value_input->is_visible();
+			bool display_grabber = (mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !value_input_popup->is_visible();
 			if (grabber->is_visible() != display_grabber) {
 				if (display_grabber) {
 					grabber->show();
@@ -371,7 +371,7 @@ void EditorSpinSlider::_evaluate_input_text() {
 //text_entered signal
 void EditorSpinSlider::_value_input_entered(const String &p_text) {
 	value_input_just_closed = true;
-	value_input->hide();
+	value_input_popup->hide();
 }
 
 //modal_closed signal
@@ -394,7 +394,7 @@ void EditorSpinSlider::_value_focus_exited() {
 	// -> modal_close was not called
 	// -> need to close/hide manually
 	if (!value_input_just_closed) { //value_input_just_closed should do the same
-		value_input->hide();
+		value_input_popup->hide();
 		//tab was pressed
 	} else {
 		//enter, click, esc
@@ -437,11 +437,11 @@ void EditorSpinSlider::set_custom_label_color(bool p_use_custom_label_color, Col
 }
 
 void EditorSpinSlider::_focus_entered() {
-	Rect2 gr = get_global_rect();
+	Rect2 gr = get_screen_rect();
 	value_input->set_text(get_text_value());
-	value_input->set_position(gr.position);
-	value_input->set_size(gr.size);
-	value_input->call_deferred("show_modal");
+	value_input_popup->set_position(gr.position);
+	value_input_popup->set_size(gr.size);
+	value_input_popup->call_deferred("popup");
 	value_input->call_deferred("grab_focus");
 	value_input->call_deferred("select_all");
 	value_input->set_focus_next(find_next_valid_focus()->get_path());
@@ -488,11 +488,13 @@ EditorSpinSlider::EditorSpinSlider() {
 	mousewheel_over_grabber = false;
 	grabbing_grabber = false;
 	grabber_range = 1;
+	value_input_popup = memnew(Popup);
+	add_child(value_input_popup);
 	value_input = memnew(LineEdit);
-	add_child(value_input);
-	value_input->set_as_toplevel(true);
-	value_input->hide();
-	value_input->connect("modal_closed", callable_mp(this, &EditorSpinSlider::_value_input_closed));
+	value_input_popup->add_child(value_input);
+	value_input_popup->set_wrap_controls(true);
+	value_input->set_anchors_and_margins_preset(PRESET_WIDE);
+	value_input_popup->connect("popup_hide", callable_mp(this, &EditorSpinSlider::_value_input_closed));
 	value_input->connect("text_entered", callable_mp(this, &EditorSpinSlider::_value_input_entered));
 	value_input->connect("focus_exited", callable_mp(this, &EditorSpinSlider::_value_focus_exited));
 	value_input_just_closed = false;

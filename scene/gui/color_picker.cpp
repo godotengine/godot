@@ -247,6 +247,9 @@ void ColorPicker::_update_color(bool p_update_sliders) {
 }
 
 void ColorPicker::_update_presets() {
+	return;
+	//presets should be shown using buttons or something else, this method is not a good idea
+
 	presets_per_row = 10;
 	Size2 size = bt_add_preset->get_size();
 	Size2 preset_size = Size2(MIN(size.width * presets.size(), presets_per_row * size.width), size.height * (Math::ceil((float)presets.size() / presets_per_row)));
@@ -884,8 +887,32 @@ void ColorPickerButton::_modal_closed() {
 void ColorPickerButton::pressed() {
 
 	_update_picker();
-	popup->set_position(get_screen_position() - picker->get_combined_minimum_size() * get_global_transform().get_scale());
-	//popup->set_scale(get_global_transform().get_scale());
+
+	popup->set_as_minsize();
+
+	Rect2i usable_rect = popup->get_usable_parent_rect();
+	//let's try different positions to see which one we can use
+
+	Rect2i cp_rect(Point2i(), popup->get_size());
+	for (int i = 0; i < 4; i++) {
+		if (i > 1) {
+			cp_rect.position.y = get_screen_position().y - cp_rect.size.y;
+		} else {
+			cp_rect.position.y = get_screen_position().y + get_size().height;
+		}
+
+		if (i & 1) {
+			cp_rect.position.x = get_screen_position().x;
+		} else {
+
+			cp_rect.position.x = get_screen_position().x - MAX(0, (cp_rect.size.x - get_size().x));
+		}
+
+		if (usable_rect.encloses(cp_rect)) {
+			break;
+		}
+	}
+	popup->set_position(cp_rect.position);
 	popup->popup();
 	picker->set_focus_on_line_edit();
 }
@@ -961,7 +988,9 @@ PopupPanel *ColorPickerButton::get_popup() {
 void ColorPickerButton::_update_picker() {
 	if (!picker) {
 		popup = memnew(PopupPanel);
+		popup->set_wrap_controls(true);
 		picker = memnew(ColorPicker);
+		picker->set_anchors_and_margins_preset(PRESET_WIDE);
 		popup->add_child(picker);
 		add_child(popup);
 		picker->connect("color_changed", callable_mp(this, &ColorPickerButton::_color_changed));
