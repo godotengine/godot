@@ -837,3 +837,14 @@ def show_progress(env):
 
     progress_finish_command = Command("progress_finish", [], progress_finish)
     AlwaysBuild(progress_finish_command)
+
+
+def dump(env):
+    # Dumps latest build information for debugging purposes and external tools.
+    from json import dump
+
+    def non_serializable(obj):
+        return "<<non-serializable: %s>>" % (type(obj).__qualname__)
+
+    with open(".scons_env.json", "w") as f:
+        dump(env.Dictionary(), f, indent=4, default=non_serializable)

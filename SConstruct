@@ -641,6 +641,9 @@ elif selected_platform != "":
     else:
         sys.exit(255)
 
-# The following only makes sense when the env is defined, and assumes it is
+# The following only makes sense when the 'env' is defined, and assumes it is.
 if "env" in locals():
     methods.show_progress(env)
+    # TODO: replace this with `env.Dump(format="json")`
+    # once we start requiring SCons 4.0 as min version.
+    methods.dump(env)
