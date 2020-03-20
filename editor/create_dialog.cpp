@@ -248,7 +248,7 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 		item->set_collapsed(collapse);
 	}
 
-	const String &description = EditorHelp::get_doc_data()->class_list[p_type].brief_description;
+	const String &description = DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description);
 	item->set_tooltip(0, description);
 
 	item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, base_type));
@@ -556,7 +556,7 @@ void CreateDialog::_item_selected() {
 	if (!EditorHelp::get_doc_data()->class_list.has(name))
 		return;
 
-	help_bit->set_text(EditorHelp::get_doc_data()->class_list[name].brief_description);
+	help_bit->set_text(DTR(EditorHelp::get_doc_data()->class_list[name].brief_description));
 
 	get_ok()->set_disabled(false);
 }
