@@ -55,6 +55,11 @@ namespace GodotTools.Ides.Rider
             }
         }
 
+        public static bool IsExternalEditorSetToRider(EditorSettings editorSettings)
+        {
+            return editorSettings.HasSetting(EditorPathSettingName) && IsRider((string) editorSettings.GetSetting(EditorPathSettingName));
+        }
+
         public static bool IsRider(string path)
         {
             if (string.IsNullOrEmpty(path))
