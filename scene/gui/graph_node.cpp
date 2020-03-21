@@ -504,8 +504,7 @@ void GraphNode::_connpos_update() {
 			}
 		}
 
-		if (vofs > 0)
-			vofs += sep;
+		vofs += sep;
 		vofs += size.y;
 		idx++;
 	}
