@@ -113,6 +113,7 @@ private:
 	OptionButton *filter;
 	AcceptDialog *mkdirerr;
 	AcceptDialog *exterr;
+	AcceptDialog *patherr;
 	DirAccess *dir_access;
 	ConfirmationDialog *confirm_save;
 	DependencyRemoveDialog *remove_dialog;
