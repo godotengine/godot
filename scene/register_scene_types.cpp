@@ -136,6 +136,7 @@
 #include "scene/resources/circle_shape_2d.h"
 #include "scene/resources/concave_polygon_shape.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
+#include "scene/resources/cone_shape.h"
 #include "scene/resources/convex_polygon_shape.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 #include "scene/resources/cylinder_shape.h"
@@ -642,6 +643,7 @@ void register_scene_types() {
 	ClassDB::register_class<BoxShape>();
 	ClassDB::register_class<CapsuleShape>();
 	ClassDB::register_class<CylinderShape>();
+	ClassDB::register_class<ConeShape>();
 	ClassDB::register_class<HeightMapShape>();
 	ClassDB::register_class<WorldMarginShape>();
 	ClassDB::register_class<ConvexPolygonShape>();
