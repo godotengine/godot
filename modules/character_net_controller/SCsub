@@ -1,0 +1,7 @@
+
+Import('env')
+Import('env_modules')
+
+env_character_net_controller = env_modules.Clone()
+
+env_character_net_controller.add_source_files(env.modules_sources, '*.cpp')
