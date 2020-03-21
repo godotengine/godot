@@ -273,6 +273,15 @@
 				Returns the minimum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
 			</description>
 		</method>
+		<method name="pop_at">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="position" type="int">
+			</argument>
+			<description>
+				Removes and returns the element of the array at index [code]position[/code]. If negative, [code]position[/code] is considered relative to the end of the array. Leaves the array untouched and returns [code]null[/code] if the array is empty or if it's accessed out of bounds.
+			</description>
+		</method>
 		<method name="pop_back">
 			<return type="Variant">
 			</return>

@@ -397,8 +397,8 @@ void Array::push_front(const Variant &p_value) {
 Variant Array::pop_back() {
 
 	if (!_p->array.empty()) {
-		int n = _p->array.size() - 1;
-		Variant ret = _p->array.get(n);
+		const int n = _p->array.size() - 1;
+		const Variant ret = _p->array.get(n);
 		_p->array.resize(n);
 		return ret;
 	}
@@ -408,8 +408,32 @@ Variant Array::pop_back() {
 Variant Array::pop_front() {
 
 	if (!_p->array.empty()) {
-		Variant ret = _p->array.get(0);
+		const Variant ret = _p->array.get(0);
 		_p->array.remove(0);
+		return ret;
+	}
+	return Variant();
+}
+
+Variant Array::pop_at(int p_pos) {
+
+	if (p_pos < 0) {
+		// Relative offset from the end
+		p_pos = _p->array.size() + p_pos;
+	}
+
+	ERR_FAIL_INDEX_V_MSG(
+			p_pos,
+			_p->array.size(),
+			Variant(),
+			vformat(
+					"The calculated index %s is out of bounds (the array has %s elements). Leaving the array untouched and returning `null`.",
+					p_pos,
+					_p->array.size()));
+
+	if (!_p->array.empty()) {
+		const Variant ret = _p->array.get(p_pos);
+		_p->array.remove(p_pos);
 		return ret;
 	}
 	return Variant();
