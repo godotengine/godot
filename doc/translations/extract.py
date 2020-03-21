@@ -126,60 +126,15 @@ def _collect_classes_file(path, classes):
     else:
         print_error('Unknown XML file {}, skipping'.format(path))
 
-
-## regions are list of tuples with size 3 (start_index, end_index, indent)
-## indication in string where the codeblock starts, ends, and it's indent
-## if i inside the region returns the indent, else returns -1
-def _get_xml_indent(i, regions):
-    for region in regions:
-        if region[0] < i < region[1] :
-            return region[2]
-    return -1
-
-## find and build all regions of codeblock which we need later
-def _make_codeblock_regions(desc, path=''):
-    code_block_end = False
-    code_block_index = 0
-    code_block_regions = []
-    while not code_block_end:
-        code_block_index = desc.find("[codeblock]", code_block_index)
-        if code_block_index < 0: break
-        xml_indent=0
-        while True :
-            ## [codeblock] always have a trailing new line and some tabs
-            ## those tabs are belongs to xml indentations not code indent
-            if desc[code_block_index+len("[codeblock]\n")+xml_indent] == '\t':
-                xml_indent+=1
-            else: break
-        end_index = desc.find("[/codeblock]", code_block_index)
-        if end_index < 0 :
-            print_error('Non terminating codeblock: {}'.format(path))
-            exit(1)
-        code_block_regions.append( (code_block_index, end_index, xml_indent) )
-        code_block_index += 1
-    return code_block_regions
-
-def _strip_and_split_desc(desc, code_block_regions):
+def _strip_and_split_desc(desc):
     desc_strip = ''   ## a stripped desc msg
-    total_indent = 0  ## code indent = total indent - xml indent
     for i in range(len(desc)):
         c = desc[i]
         if c == '\n' : c = '\\n'
         if c == '"': c = '\\"'
-        if c == '\\': c = '\\\\' ## <element \> is invalid for msgmerge
-        if c == '\t':
-            xml_indent = _get_xml_indent(i, code_block_regions)
-            if xml_indent >= 0:
-                total_indent += 1
-                if xml_indent < total_indent:
-                    c = '\\t'
-                else:
-                    continue
-            else:
-                continue
+        if c == '\\': c = '\\\\'
+        if c == '\t': continue
         desc_strip += c
-        if c == '\\n':
-            total_indent = 0
     return desc_strip
 
 ## make catalog strings from xml elements
@@ -192,8 +147,7 @@ def _make_translation_catalog(classes):
                 if not elem.text or len(elem.text) == 0 : continue
                 line_no = elem._start_line_number if elem.text[0]!='\n' else elem._start_line_number+1
                 desc_str = elem.text.strip()
-                code_block_regions = _make_codeblock_regions(desc_str, desc_list.path)
-                desc_msg = _strip_and_split_desc(desc_str, code_block_regions)
+                desc_msg = _strip_and_split_desc(desc_str)
                 desc_obj = Desc(line_no, desc_msg, desc_list)
                 desc_list.list.append(desc_obj)
 
