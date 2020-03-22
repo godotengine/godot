@@ -251,7 +251,7 @@ namespace GodotTools
             var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
             var msbuild = BuildTool.MsBuildMono;
             if (OS.IsWindows)
-                msbuild = RiderPathManager.IsRider((string) editorSettings.GetSetting(RiderPathManager.EditorPathSettingName))
+                msbuild = RiderPathManager.IsExternalEditorSetToRider(editorSettings)
                         ? BuildTool.JetBrainsMsBuild
                         : BuildTool.MsBuildVs;
 
