@@ -316,6 +316,9 @@
 		<member name="occluder_light_mask" type="int" setter="set_occluder_light_mask" getter="get_occluder_light_mask" default="1">
 			The light mask assigned to all light occluders in the TileMap. The TileSet's light occluders will cast shadows only from Light2D(s) that have the same light mask(s).
 		</member>
+		<member name="show_collision" type="bool" setter="set_show_collision" getter="is_show_collision_enabled" default="true">
+			If [code]true[/code], it shows collision shape in-editor and in-game. It requires show collision shape option to be on in debug menu to work in-game.  
+		</member>
 		<member name="tile_set" type="TileSet" setter="set_tileset" getter="get_tileset">
 			The assigned [TileSet].
 		</member>

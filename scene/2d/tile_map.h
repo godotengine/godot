@@ -79,6 +79,7 @@ private:
 	CollisionObject2D *collision_parent = nullptr;
 	bool use_kinematic = false;
 	Navigation2D *navigation = nullptr;
+	bool show_collision = true;
 
 	union PosKey {
 		struct {
@@ -270,6 +271,9 @@ public:
 	void update_dirty_bitmask();
 
 	void update_dirty_quadrants();
+
+	void set_show_collision(bool p_value);
+	bool is_show_collision_enabled();
 
 	void set_collision_layer(uint32_t p_layer);
 	uint32_t get_collision_layer() const;
