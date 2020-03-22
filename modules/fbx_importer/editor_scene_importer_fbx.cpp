@@ -116,19 +116,21 @@ Node *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flag
 
 	const uint8_t *file_read = data.ptr();
 	uint8_t *file_write = data.ptrw();
-	const uint8_t *header_read = fbx_header.ptr();
-	uint8_t *header_write = fbx_header.ptrw();
 
 	fbx_header.resize(18);
+
+	uint8_t *header_write = fbx_header.ptrw();
 	for (int32_t byte_i = 0; byte_i < 18; byte_i++) {
 		header_write[byte_i] = file_read[byte_i];
 	}
+
+	const uint8_t *header_read = fbx_header.ptr();
 	String fbx_header_string = String((const char *)header_read);
 	if (fbx_header_string == String("Kaydara FBX Binary")) {
 		is_binary = true;
-		Assimp::FBX::TokenizeBinary(tokens, (const char *) file_write, (size_t)data.size());
+		Assimp::FBX::TokenizeBinary(tokens, (const char *)file_write, (size_t)data.size());
 	} else {
-		Assimp::FBX::Tokenize(tokens, (const char *) file_write);
+		Assimp::FBX::Tokenize(tokens, (const char *)file_write);
 	}
 
 	// use this information to construct a very rudimentary
@@ -415,8 +417,8 @@ MeshInstance *EditorSceneImporterFBX::create_fbx_mesh(Ref<FBXMeshVertexData> ren
 
 		// stream in vertexes
 		for (int x = 0; x < mesh_vertex_ids.size(); x++) {
-            size_t vertex_id = mapping.vertex_id[x];
-            GenFBXWeightInfo(renderer_mesh_data, mesh_geometry, st, vertex_id);
+			size_t vertex_id = mapping.vertex_id[x];
+			GenFBXWeightInfo(renderer_mesh_data, mesh_geometry, st, vertex_id);
 			st->add_vertex(verticies[vertex_id]);
 		}
 
@@ -441,7 +443,7 @@ MeshInstance *EditorSceneImporterFBX::create_fbx_mesh(Ref<FBXMeshVertexData> ren
 
 		// stream in vertexes
 		for (int x = 0; x < mesh_vertex_ids.size(); x++) {
-            size_t vertex_id = mesh_vertex_ids[x];
+			size_t vertex_id = mesh_vertex_ids[x];
 			GenFBXWeightInfo(renderer_mesh_data, mesh_geometry, st, vertex_id);
 
 			//print_verbose("vert: " + quads[x]);
@@ -485,43 +487,9 @@ MeshInstance *EditorSceneImporterFBX::create_fbx_mesh(Ref<FBXMeshVertexData> ren
 		Array triangle_mesh = st->commit_to_arrays();
 		triangle_mesh.resize(VS::ARRAY_MAX);
 		Array morphs;
-		mesh->add_surface_from_arrays(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, triangle_mesh, morphs);
+		mesh->add_surface_from_arrays()
+				mesh->add_surface_from_arrays(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, triangle_mesh, morphs);
 	}
-
-	// quads
-
-	// st->generate_normals();
-	// st->generate_tangents();
-
-	// const std::vector<uint32_t> &face_primitives = mesh_geometry->GetFaceIndexCounts();
-
-	// uint32_t cursor;
-	// for (uint32_t indice_count : face_primitives) {
-	// 	if (indice_count == 1) {
-	// 		st->add_index(0 + cursor);
-	// 		cursor++;
-	// 	} else if (indice_count == 2) {
-	// 		st->add_index(0 + cursor);
-	// 		st->add_index(1 + cursor);
-	// 		cursor += 2;
-	// 	} else if (indice_count == 3) {
-	// 		st->add_index(0 + cursor);
-	// 		st->add_index(1 + cursor);
-	// 		st->add_index(2 + cursor);
-	// 		cursor += 3;
-	// 	} else if (indice_count == 4) {
-	// 		// two triangles...
-	// 		st->add_index(0 + cursor);
-	// 		st->add_index(1 + cursor);
-	// 		st->add_index(2 + cursor);
-
-	// 		st->add_index(0 + cursor);
-	// 		st->add_index(3 + cursor);
-	// 		st->add_index(2 + cursor);
-
-	// 		cursor += 6;
-	// 	}
-	// }
 
 	// Ref<SpatialMaterial> material;
 	// material.instance();
@@ -539,49 +507,52 @@ MeshInstance *EditorSceneImporterFBX::create_fbx_mesh(Ref<FBXMeshVertexData> ren
 }
 
 void EditorSceneImporterFBX::GenFBXWeightInfo(const Ref<FBXMeshVertexData> &renderer_mesh_data,
-                                              const Assimp::FBX::MeshGeometry *mesh_geometry, Ref<SurfaceTool> &st,
-                                              size_t vertex_id) const {
-    unsigned int vertex_index_count;
-    const unsigned int * weightIdx = mesh_geometry->ToOutputVertexIndex(vertex_id, vertex_index_count);
+		const Assimp::FBX::MeshGeometry *mesh_geometry, Ref<SurfaceTool> &st,
+		size_t vertex_id) const {
+	unsigned int vertex_index_count;
+	const unsigned int *weightIdx = mesh_geometry->ToOutputVertexIndex(vertex_id, vertex_index_count);
 
+	// check for valid mesh weight data mapping - this stores our vertex data
+	// it's precached in the skin caching so we need to read that before we make our meshes
+	// which is currently the case.
+	if (renderer_mesh_data.is_valid() && weightIdx != nullptr) {
+		unsigned int converted_weight_vertex_id = *weightIdx;
+		if (renderer_mesh_data->vertex_weights.has(converted_weight_vertex_id)) {
+			Ref<VertexMapping> VertexWeights = renderer_mesh_data->vertex_weights[converted_weight_vertex_id];
+			unsigned int weight_size = VertexWeights->weights.size();
+			int max_weight_count = renderer_mesh_data->max_weight_count;
 
-    // check for valid mesh weight data mapping - this stores our vertex data
-// it's precached in the skin caching so we need to read that before we make our meshes
-// which is currently the case.
-    if (renderer_mesh_data.is_valid() && weightIdx != nullptr) {
-        unsigned int converted_weight_vertex_id = *weightIdx;
-        if (renderer_mesh_data->vertex_weights.has(converted_weight_vertex_id)) {
-            Ref<VertexMapping> VertexWeights = renderer_mesh_data->vertex_weights[converted_weight_vertex_id];
-            unsigned int weight_size = VertexWeights->weights.size();
-            int max_weight_count = renderer_mesh_data->max_weight_count;
+			if (weight_size > 0) {
 
-            if (weight_size > 0) {
+				//print_error("initial count: " + itos(weight_size));
+				if (VertexWeights->weights.size() < max_weight_count) {
+					// missing weight count - how many do we not have?
+					int missing_count = max_weight_count - weight_size;
+					//print_verbose("adding missing count : " + itos(missing_count));
+					for (int empty_weight_id = 0; empty_weight_id < missing_count; empty_weight_id++) {
+						VertexWeights->weights.push_back(0); // no weight
+						VertexWeights->bones.push_back(Ref<FBXBone>()); // invalid entry on purpose
+					}
+				} else if (VertexWeights->weights.size() > max_weight_count) {
+					VertexWeights->weights.resize(max_weight_count);
+					VertexWeights->bones.resize(max_weight_count);
+					print_verbose("weight truncation has been executed down to: " + itos(max_weight_count));
+				}
 
-                //print_error("initial count: " + itos(weight_size));
-                if (VertexWeights->weights.size() < max_weight_count) {
-                    // missing weight count - how many do we not have?
-                    int missing_count = max_weight_count - weight_size;
-                    //print_verbose("adding missing count : " + itos(missing_count));
-                    for (int empty_weight_id = 0; empty_weight_id < missing_count; empty_weight_id++) {
-                        VertexWeights->weights.push_back(0); // no weight
-                        VertexWeights->bones.push_back(Ref<FBXBone>()); // invalid entry on purpose
-                    }
-                }
+				//print_error("final count: " + itos(VertexWeights->weights.size()));
 
-                //print_error("final count: " + itos(VertexWeights->weights.size()));
+				Vector<float> valid_weights;
+				Vector<int> valid_bone_ids;
 
-                Vector<float> valid_weights;
-                Vector<int> valid_bone_ids;
+				VertexWeights->GetValidatedBoneWeightInfo(valid_bone_ids, valid_weights);
 
-                VertexWeights->GetValidatedBoneWeightInfo(valid_bone_ids, valid_weights);
+				st->add_weights(valid_weights);
+				st->add_bones(valid_bone_ids);
 
-                st->add_weights(valid_weights);
-                st->add_bones(valid_bone_ids);
-
-                print_verbose("[doc] triangle added weights to mesh for bones");
-            }
-        }
-    }
+				print_verbose("[doc] triangle added weights to mesh for bones");
+			}
+		}
+	}
 }
 
 void set_owner_recursive(Node *root, Node *current_node) {
@@ -677,7 +648,7 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 		// however this would lose valuable information
 		// for skinning and joint informations and target ID.
 		// required stacks and this ended up being too complex.
-		for (Map<uint64_t, Ref<FBXBone> >::Element *bone_element = state.fbx_bone_map.front(); bone_element; bone_element = bone_element->next()) {
+		for (Map<uint64_t, Ref<FBXBone>>::Element *bone_element = state.fbx_bone_map.front(); bone_element; bone_element = bone_element->next()) {
 			Ref<FBXBone> bone = bone_element->value();
 			if (bone->valid_armature_id && bone->armature_id != 0) {
 				if (state.fbx_target_map.has(bone->armature_id)) {
@@ -705,7 +676,7 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 		// these are literally just a number which indicates what bone connects where.
 		// we actually can grab this from the FBX file directly but this is done when the state.fbx_bone_map is populated
 		// so we populate the parent bone ID for very fast lookup.
-		for (Map<uint64_t, Ref<FBXBone> >::Element *bone_element = state.fbx_bone_map.front(); bone_element; bone_element = bone_element->next()) {
+		for (Map<uint64_t, Ref<FBXBone>>::Element *bone_element = state.fbx_bone_map.front(); bone_element; bone_element = bone_element->next()) {
 			Ref<FBXBone> bone = bone_element->value();
 			int bone_index = skeleton->find_bone(bone->bone_name + "-" + itos(bone_element->key()));
 			ERR_CONTINUE_MSG(bone_index == -1, "Bone invalid something fundamentally wrong");
@@ -735,7 +706,7 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 		// these are literally just a number which indicates what bone connects where.
 		// we actually can grab this from the FBX file directly but this is done when the state.fbx_bone_map is populated
 		// so we populate the parent bone ID for very fast lookup.
-		for (Map<uint64_t, Ref<FBXBone> >::Element *bone_element = state.fbx_bone_map.front(); bone_element; bone_element = bone_element->next()) {
+		for (Map<uint64_t, Ref<FBXBone>>::Element *bone_element = state.fbx_bone_map.front(); bone_element; bone_element = bone_element->next()) {
 			Ref<FBXBone> bone = bone_element->value();
 			int bone_index = state.skeleton->find_bone(bone->bone_name + "-" + itos(bone_element->key()));
 			ERR_CONTINUE_MSG(bone_index == -1, "Bone invalid something fundamentally wrong");
@@ -760,14 +731,14 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 		// a skin will never contain locator bones (kLocators from maya)
 		// therefore the distinction is we need both, non negotiable.
 		// this is what assimp cannot handle unfortunately (yet)
-		for (Map<uint64_t, List<Ref<FBXBone> > >::Element *skin_element = state.skin_bone_map.front(); skin_element; skin_element = skin_element->next()) {
-			List<Ref<FBXBone> > &mesh_skin_poses = skin_element->value();
+		for (Map<uint64_t, List<Ref<FBXBone>>>::Element *skin_element = state.skin_bone_map.front(); skin_element; skin_element = skin_element->next()) {
+			List<Ref<FBXBone>> &mesh_skin_poses = skin_element->value();
 
 			print_verbose("[doc] Creating godot skin for mesh id: " + itos(skin_element->key()) + " pose count: " + itos(mesh_skin_poses.size()));
 			Ref<Skin> skin;
 			skin.instance();
 
-			for (List<Ref<FBXBone> >::Element *element = mesh_skin_poses.front(); element; element = element->next()) {
+			for (List<Ref<FBXBone>>::Element *element = mesh_skin_poses.front(); element; element = element->next()) {
 				Ref<FBXBone> bone = element->get();
 				ERR_CONTINUE_MSG(!bone->valid_skin_pose, "something is seriously wrong with importing mesh_skin_poses");
 				ERR_CONTINUE_MSG(bone->godot_bone_id == -2, "bone was not configured with proper ID in skeleton, look at skeleton configuration for godot_bone_id");
@@ -783,7 +754,7 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 
 	// build godot node tree
 	if (state.fbx_node_list.size() > 0) {
-		for (List<Ref<FBXNode> >::Element *node_element = state.fbx_node_list.front();
+		for (List<Ref<FBXNode>>::Element *node_element = state.fbx_node_list.front();
 				node_element;
 				node_element = node_element->next()) {
 			Ref<FBXNode> fbx_node = node_element->get();
@@ -1043,7 +1014,7 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 					// to do this we need to know which track is what?
 
 					// target id, [ track name, [time index, vector] ]
-					std::map<uint64_t, std::map<StringName, std::map<uint64_t, Vector3> > > AnimCurveNodes;
+					std::map<uint64_t, std::map<StringName, std::map<uint64_t, Vector3>>> AnimCurveNodes;
 
 					// struct AnimTrack {
 					// 	// Animation track can be
@@ -1192,7 +1163,7 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 					// add this animation track here
 
 					// target id, [ track name, [time index, vector] ]
-					for (std::pair<uint64_t, std::map<StringName, std::map<uint64_t, Vector3> > > track_element : AnimCurveNodes) {
+					for (std::pair<uint64_t, std::map<StringName, std::map<uint64_t, Vector3>>> track_element : AnimCurveNodes) {
 
 						// 5 tracks
 						// current track index
@@ -1657,8 +1628,8 @@ void EditorSceneImporterFBX::CacheNodeInformation(Transform p_parent_transform, 
 							}
 
 							if (mesh_vertex_data.is_valid()) {
-								if (mesh_vertex_data->max_weight_count > 8) {
-									print_error("[doc] serious: maximum bone influences is 8 in this branch");
+								if (mesh_vertex_data->max_weight_count > 4) {
+									print_error("[doc] serious: maximum bone influences is 4 in this branch");
 								}
 								if (mesh_vertex_data->max_weight_count > 4) {
 									mesh_vertex_data->max_weight_count = 8; // clamp to 8 bone vertex influences
@@ -1682,7 +1653,7 @@ void EditorSceneImporterFBX::CacheNodeInformation(Transform p_parent_transform, 
 							state.skin_bone_map[mesh_target_id].push_back(bone_element);
 						} else {
 							// create new list for mesh skin pose list
-							List<Ref<FBXBone> > list;
+							List<Ref<FBXBone>> list;
 							list.push_back(bone_element);
 							state.skin_bone_map.insert(mesh_target_id, list);
 						}
