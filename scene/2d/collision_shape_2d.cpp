@@ -180,18 +180,29 @@ bool CollisionShape2D::_edit_is_selected_on_click(const Point2 &p_point, double 
 
 String CollisionShape2D::get_configuration_warning() const {
 
+	String warning = Node2D::get_configuration_warning();
 	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
-		return TTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");
 	}
 	if (!shape.is_valid()) {
-		return TTR("A shape must be provided for CollisionShape2D to function. Please create a shape resource for it!");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("A shape must be provided for CollisionShape2D to function. Please create a shape resource for it!");
 	}
+
 	Ref<ConvexPolygonShape2D> convex = shape;
 	Ref<ConcavePolygonShape2D> concave = shape;
 	if (convex.is_valid() || concave.is_valid()) {
-		return TTR("Polygon-based shapes are not meant be used nor edited directly through the CollisionShape2D node. Please use the CollisionPolygon2D node instead.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("Polygon-based shapes are not meant be used nor edited directly through the CollisionShape2D node. Please use the CollisionPolygon2D node instead.");
 	}
-	return String();
+	return warning;
 }
 
 void CollisionShape2D::set_disabled(bool p_disabled) {

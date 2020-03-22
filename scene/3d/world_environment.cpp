@@ -79,8 +79,13 @@ Ref<Environment> WorldEnvironment::get_environment() const {
 
 String WorldEnvironment::get_configuration_warning() const {
 
+	String warning = Node::get_configuration_warning();
 	if (!environment.is_valid()) {
-		return TTR("WorldEnvironment requires its \"Environment\" property to contain an Environment to have a visible effect.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("WorldEnvironment requires its \"Environment\" property to contain an Environment to have a visible effect.");
+		return warning;
 	}
 
 	if (/*!is_visible_in_tree() ||*/ !is_inside_tree())
@@ -90,7 +95,10 @@ String WorldEnvironment::get_configuration_warning() const {
 	get_tree()->get_nodes_in_group("_world_environment_" + itos(get_viewport()->find_world()->get_scenario().get_id()), &nodes);
 
 	if (nodes.size() > 1) {
-		return TTR("Only one WorldEnvironment is allowed per scene (or set of instanced scenes).");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("Only one WorldEnvironment is allowed per scene (or set of instanced scenes).");
 	}
 
 	// Commenting this warning for now, I think it makes no sense. If anyone can figure out what its supposed to do, feedback welcome. Else it should be deprecated.
@@ -98,7 +106,7 @@ String WorldEnvironment::get_configuration_warning() const {
 	//	return TTR("This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set this environment's Background Mode to Canvas (for 2D scenes).");
 	//}
 
-	return String();
+	return warning;
 }
 
 void WorldEnvironment::_bind_methods() {

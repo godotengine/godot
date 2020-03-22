@@ -490,11 +490,14 @@ PoolVector<Face3> GIProbe::get_faces(uint32_t p_usage_flags) const {
 }
 
 String GIProbe::get_configuration_warning() const {
-
+	String warning = VisualInstance::get_configuration_warning();
 	if (OS::get_singleton()->get_current_video_driver() == OS::VIDEO_DRIVER_GLES2) {
-		return TTR("GIProbes are not supported by the GLES2 video driver.\nUse a BakedLightmap instead.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("GIProbes are not supported by the GLES2 video driver.\nUse a BakedLightmap instead.");
 	}
-	return String();
+	return warning;
 }
 
 void GIProbe::_bind_methods() {

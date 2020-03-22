@@ -104,11 +104,15 @@ void VehicleWheel::_notification(int p_what) {
 }
 
 String VehicleWheel::get_configuration_warning() const {
+	String warning = Spatial::get_configuration_warning();
 	if (!Object::cast_to<VehicleBody>(get_parent())) {
-		return TTR("VehicleWheel serves to provide a wheel system to a VehicleBody. Please use it as a child of a VehicleBody.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("VehicleWheel serves to provide a wheel system to a VehicleBody. Please use it as a child of a VehicleBody.");
 	}
 
-	return String();
+	return warning;
 }
 
 void VehicleWheel::_update(PhysicsDirectBodyState *s) {

@@ -2986,10 +2986,14 @@ String Viewport::get_configuration_warning() const {
 		return TTR("This viewport is not set as render target. If you intend for it to display its contents directly to the screen, make it a child of a Control so it can obtain a size. Otherwise, make it a RenderTarget and assign its internal texture to some node for display.");
 	}*/
 
+	String warning = Node::get_configuration_warning();
+
 	if (size.x == 0 || size.y == 0) {
-		return TTR("Viewport size must be greater than 0 to render anything.");
+		if (warning != String())
+			warning += "\n\n";
+		warning += TTR("Viewport size must be greater than 0 to render anything.");
 	}
-	return String();
+	return warning;
 }
 
 void Viewport::gui_reset_canvas_sort_index() {

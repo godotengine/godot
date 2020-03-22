@@ -164,15 +164,22 @@ bool CollisionPolygon::is_disabled() const {
 
 String CollisionPolygon::get_configuration_warning() const {
 
+	String warning = Spatial::get_configuration_warning();
 	if (!Object::cast_to<CollisionObject>(get_parent())) {
-		return TTR("CollisionPolygon only serves to provide a collision shape to a CollisionObject derived node. Please only use it as a child of Area, StaticBody, RigidBody, KinematicBody, etc. to give them a shape.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("CollisionPolygon only serves to provide a collision shape to a CollisionObject derived node. Please only use it as a child of Area, StaticBody, RigidBody, KinematicBody, etc. to give them a shape.");
 	}
 
 	if (polygon.empty()) {
-		return TTR("An empty CollisionPolygon has no effect on collision.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("An empty CollisionPolygon has no effect on collision.");
 	}
 
-	return String();
+	return warning;
 }
 
 bool CollisionPolygon::_is_editable_3d_polygon() const {

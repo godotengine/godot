@@ -227,17 +227,19 @@ bool Particles2D::get_fractional_delta() const {
 }
 
 String Particles2D::get_configuration_warning() const {
-
+	String warning = Node2D::get_configuration_warning();
 	if (OS::get_singleton()->get_current_video_driver() == OS::VIDEO_DRIVER_GLES2) {
-		return TTR("GPU-based particles are not supported by the GLES2 video driver.\nUse the CPUParticles2D node instead. You can use the \"Convert to CPUParticles\" option for this purpose.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("GPU-based particles are not supported by the GLES2 video driver.\nUse the CPUParticles2D node instead. You can use the \"Convert to CPUParticles\" option for this purpose.");
+		return warning;
 	}
 
-	String warnings;
-
 	if (process_material.is_null()) {
-		if (warnings != String())
-			warnings += "\n";
-		warnings += "- " + TTR("A material to process the particles is not assigned, so no behavior is imprinted.");
+		if (warning != String())
+			warning += "\n\n";
+		warning += "- " + TTR("A material to process the particles is not assigned, so no behavior is imprinted.");
 	} else {
 
 		CanvasItemMaterial *mat = Object::cast_to<CanvasItemMaterial>(get_material().ptr());
@@ -247,14 +249,14 @@ String Particles2D::get_configuration_warning() const {
 			if (process &&
 					(process->get_param(ParticlesMaterial::PARAM_ANIM_SPEED) != 0.0 || process->get_param(ParticlesMaterial::PARAM_ANIM_OFFSET) != 0.0 ||
 							process->get_param_texture(ParticlesMaterial::PARAM_ANIM_SPEED).is_valid() || process->get_param_texture(ParticlesMaterial::PARAM_ANIM_OFFSET).is_valid())) {
-				if (warnings != String())
-					warnings += "\n";
-				warnings += "- " + TTR("Particles2D animation requires the usage of a CanvasItemMaterial with \"Particles Animation\" enabled.");
+				if (warning != String())
+					warning += "\n\n";
+				warning += "- " + TTR("Particles2D animation requires the usage of a CanvasItemMaterial with \"Particles Animation\" enabled.");
 			}
 		}
 	}
 
-	return warnings;
+	return warning;
 }
 
 Rect2 Particles2D::capture_rect() const {
