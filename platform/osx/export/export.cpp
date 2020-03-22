@@ -401,6 +401,7 @@ Error EditorExportPlatformOSX::_notarize(const Ref<EditorExportPreset> &p_preset
 	args.push_back("--primary-bundle-id");
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 	args.push_back(p_preset->get("application/identifier"));
 =======
 	args.push_back(p_preset->get("application/bundle_identifier"));
@@ -408,6 +409,9 @@ Error EditorExportPlatformOSX::_notarize(const Ref<EditorExportPreset> &p_preset
 =======
 	args.push_back(p_preset->get("application/identifier"));
 >>>>>>> f5c856ea40... macOS export, add notarization support and id / signing / notarization config check.
+=======
+	args.push_back(p_preset->get("application/bundle_identifier"));
+>>>>>>> fdb89a3f9a... Rename "Identifier" to "Bundle Identifier" in macOS/iOS export presets
 
 	args.push_back("--username");
 	args.push_back(p_preset->get("notarization/apple_id_name"));
@@ -898,6 +902,7 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 	String identifier = p_preset->get("application/identifier");
 =======
 	String identifier = p_preset->get("application/bundle_identifier");
@@ -905,6 +910,9 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 =======
 	String identifier = p_preset->get("application/identifier");
 >>>>>>> f5c856ea40... macOS export, add notarization support and id / signing / notarization config check.
+=======
+	String identifier = p_preset->get("application/bundle_identifier");
+>>>>>>> fdb89a3f9a... Rename "Identifier" to "Bundle Identifier" in macOS/iOS export presets
 	String pn_err;
 	if (!is_package_name_valid(identifier, &pn_err)) {
 		err += TTR("Invalid bundle identifier:") + " " + pn_err + "\n";
