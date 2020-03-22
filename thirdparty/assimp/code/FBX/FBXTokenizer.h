@@ -48,117 +48,112 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FBXCompileConfig.h"
 #include <assimp/ai_assert.h>
-#include <vector>
+#include <core/ustring.h>
 #include <string>
+#include <vector>
 
 namespace Assimp {
 namespace FBX {
 
 /** Rough classification for text FBX tokens used for constructing the
  *  basic scope hierarchy. */
-enum TokenType
-{
-    // {
-    TokenType_OPEN_BRACKET = 0,
+enum TokenType {
+	// {
+	TokenType_OPEN_BRACKET = 0,
 
-    // }
-    TokenType_CLOSE_BRACKET,
+	// }
+	TokenType_CLOSE_BRACKET,
 
-    // '"blablubb"', '2', '*14' - very general token class,
-    // further processing happens at a later stage.
-    TokenType_DATA,
+	// '"blablubb"', '2', '*14' - very general token class,
+	// further processing happens at a later stage.
+	TokenType_DATA,
 
-    //
-    TokenType_BINARY_DATA,
+	//
+	TokenType_BINARY_DATA,
 
-    // ,
-    TokenType_COMMA,
+	// ,
+	TokenType_COMMA,
 
-    // blubb:
-    TokenType_KEY
+	// blubb:
+	TokenType_KEY
 };
-
 
 /** Represents a single token in a FBX file. Tokens are
  *  classified by the #TokenType enumerated types.
  *
  *  Offers iterator protocol. Tokens are immutable. */
-class Token
-{
+class Token {
 private:
-    static const unsigned int BINARY_MARKER = static_cast<unsigned int>(-1);
+	static const unsigned int BINARY_MARKER = static_cast<unsigned int>(-1);
 
 public:
-    /** construct a textual token */
-    Token(const char* sbegin, const char* send, TokenType type, unsigned int line, unsigned int column);
+	/** construct a textual token */
+	Token(const char *sbegin, const char *send, TokenType type, unsigned int line, unsigned int column);
 
-    /** construct a binary token */
-    Token(const char* sbegin, const char* send, TokenType type, size_t offset);
+	/** construct a binary token */
+	Token(const char *sbegin, const char *send, TokenType type, size_t offset);
 
-    ~Token();
+	~Token();
 
 public:
-    std::string StringContents() const {
-        return std::string(begin(),end());
-    }
+	std::string StringContents() const {
+		return std::string(begin(), end());
+	}
 
-    bool IsBinary() const {
-        return column == BINARY_MARKER;
-    }
+	bool IsBinary() const {
+		return column == BINARY_MARKER;
+	}
 
-    const char* begin() const {
-        return sbegin;
-    }
+	const char *begin() const {
+		return sbegin;
+	}
 
-    const char* end() const {
-        return send;
-    }
+	const char *end() const {
+		return send;
+	}
 
-    TokenType Type() const {
-        return type;
-    }
+	TokenType Type() const {
+		return type;
+	}
 
-    size_t Offset() const {
-        ai_assert(IsBinary());
-        return offset;
-    }
+	size_t Offset() const {
+		ai_assert(IsBinary());
+		return offset;
+	}
 
-    unsigned int Line() const {
-        ai_assert(!IsBinary());
-        return static_cast<unsigned int>(line);
-    }
+	unsigned int Line() const {
+		ai_assert(!IsBinary());
+		return static_cast<unsigned int>(line);
+	}
 
-    unsigned int Column() const {
-        ai_assert(!IsBinary());
-        return column;
-    }
+	unsigned int Column() const {
+		ai_assert(!IsBinary());
+		return column;
+	}
 
 private:
-
 #ifdef DEBUG
-    // full string copy for the sole purpose that it nicely appears
-    // in msvc's debugger window.
-    const std::string contents;
+	// full string copy for the sole purpose that it nicely appears
+	// in msvc's debugger window.
+	const std::string contents;
 #endif
 
+	const char *const sbegin;
+	const char *const send;
+	const TokenType type;
 
-    const char* const sbegin;
-    const char* const send;
-    const TokenType type;
-
-    union {
-        size_t line;
-        size_t offset;
-    };
-    const unsigned int column;
+	union {
+		size_t line;
+		size_t offset;
+	};
+	const unsigned int column;
 };
 
 // XXX should use C++11's unique_ptr - but assimp's need to keep working with 03
-typedef const Token* TokenPtr;
-typedef std::vector< TokenPtr > TokenList;
+typedef const Token *TokenPtr;
+typedef std::vector<TokenPtr> TokenList;
 
 #define new_Token new Token
-
 
 /** Main FBX tokenizer function. Transform input buffer into a list of preprocessed tokens.
  *
@@ -166,9 +161,8 @@ typedef std::vector< TokenPtr > TokenList;
  *
  * @param output_tokens Receives a list of all tokens in the input data.
  * @param input_buffer Textual input buffer to be processed, 0-terminated.
- * @throw DeadlyImportError if something goes wrong */
-void Tokenize(TokenList& output_tokens, const char* input);
-
+ * @print_error if something goes wrong */
+void Tokenize(TokenList &output_tokens, const char *input);
 
 /** Tokenizer function for binary FBX files.
  *
@@ -177,11 +171,10 @@ void Tokenize(TokenList& output_tokens, const char* input);
  * @param output_tokens Receives a list of all tokens in the input data.
  * @param input_buffer Binary input buffer to be processed.
  * @param length Length of input buffer, in bytes. There is no 0-terminal.
- * @throw DeadlyImportError if something goes wrong */
-void TokenizeBinary(TokenList& output_tokens, const char* input, size_t length);
+ * @print_error if something goes wrong */
+void TokenizeBinary(TokenList &output_tokens, const char *input, size_t length);
 
-
-} // ! FBX
-} // ! Assimp
+} // namespace FBX
+} // namespace Assimp
 
 #endif // ! INCLUDED_AI_FBX_PARSER_H

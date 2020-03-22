@@ -53,51 +53,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace Assimp {
 namespace FBX {
 
-
 namespace Util {
 
-
 /** helper for std::for_each to delete all heap-allocated items in a container */
-template<typename T>
-struct delete_fun
-{
-    void operator()(const volatile T* del) {
-        delete del;
-    }
+template <typename T>
+struct delete_fun {
+	void operator()(const volatile T *del) {
+		delete del;
+	}
 };
 
 /** Get a string representation for a #TokenType. */
-const char* TokenTypeString(TokenType t);
-
-
-
-/** Format log/error messages using a given offset in the source binary file
- *
- *  @param prefix Message prefix to be preprended to the location info.
- *  @param text Message text
- *  @param line Line index, 1-based
- *  @param column Column index, 1-based
- *  @return A string of the following format: {prefix} (offset 0x{offset}) {text}*/
-std::string AddOffset(const std::string& prefix, const std::string& text, size_t offset);
-
-
-/** Format log/error messages using a given line location in the source file.
- *
- *  @param prefix Message prefix to be preprended to the location info.
- *  @param text Message text
- *  @param line Line index, 1-based
- *  @param column Column index, 1-based
- *  @return A string of the following format: {prefix} (line {line}, col {column}) {text}*/
-std::string AddLineAndColumn(const std::string& prefix, const std::string& text, unsigned int line, unsigned int column);
-
-
-/** Format log/error messages using a given cursor token.
- *
- *  @param prefix Message prefix to be preprended to the location info.
- *  @param text Message text
- *  @param tok Token where parsing/processing stopped
- *  @return A string of the following format: {prefix} ({token-type}, line {line}, col {column}) {text}*/
-std::string AddTokenText(const std::string& prefix, const std::string& text, const Token* tok);
+const char *TokenTypeString(TokenType t);
 
 /** Decode a single Base64-encoded character.
 *
@@ -110,7 +77,7 @@ uint8_t DecodeBase64(char ch);
 *  @param in Characters to decode.
 *  @param inLength Number of characters to decode.
 *  @return size of the decoded data (number of bytes)*/
-size_t ComputeDecodedSizeBase64(const char* in, size_t inLength);
+size_t ComputeDecodedSizeBase64(const char *in, size_t inLength);
 
 /** Decode a Base64-encoded string
 *
@@ -119,7 +86,7 @@ size_t ComputeDecodedSizeBase64(const char* in, size_t inLength);
 *  @param out Pointer where we will store the decoded data.
 *  @param maxOutLength Size of output buffer.
 *  @return size of the decoded data (number of bytes)*/
-size_t DecodeBase64(const char* in, size_t inLength, uint8_t* out, size_t maxOutLength);
+size_t DecodeBase64(const char *in, size_t inLength, uint8_t *out, size_t maxOutLength);
 
 char EncodeBase64(char byte);
 
@@ -128,10 +95,10 @@ char EncodeBase64(char byte);
 *  @param data Binary data to encode.
 *  @param inLength Number of bytes to encode.
 *  @return base64-encoded string*/
-std::string EncodeBase64(const char* data, size_t length);
+std::string EncodeBase64(const char *data, size_t length);
 
-}
-}
-}
+} // namespace Util
+} // namespace FBX
+} // namespace Assimp
 
 #endif // ! INCLUDED_AI_FBX_UTIL_H

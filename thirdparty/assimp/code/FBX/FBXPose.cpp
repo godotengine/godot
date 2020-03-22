@@ -40,29 +40,39 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ----------------------------------------------------------------------
 */
 
-/** @file CreateAnimMesh.h
- *  Create AnimMesh from Mesh
+/** @file  FBXNoteAttribute.cpp
+ *  @brief Assimp::FBX::NodeAttribute (and subclasses) implementation
  */
-#pragma once
-#ifndef INCLUDED_AI_CREATE_ANIM_MESH_H
-#define INCLUDED_AI_CREATE_ANIM_MESH_H
 
-#ifdef __GNUC__
-#   pragma GCC system_header
-#endif
+#ifndef ASSIMP_BUILD_NO_FBX_IMPORTER
 
-#include <assimp/mesh.h>
+#include "FBXDocument.h"
+#include "FBXDocumentUtil.h"
+#include "FBXParser.h"
+#include <iostream>
 
 namespace Assimp {
+namespace FBX {
 
-/**
- *  Create aiAnimMesh from aiMesh.
- *  @param  mesh    The input mesh to create an animated mesh from.
- *  @return The new created animated mesh.
- */
-ASSIMP_API aiAnimMesh *aiCreateAnimMesh(const aiMesh *mesh);
+using namespace Util;
 
-} // end of namespace Assimp
+// ------------------------------------------------------------------------------------------------
+FbxPose::FbxPose(uint64_t id, const Element &element, const Document &doc, const std::string &name) :
+		Object(id, element, name) {
+	const Scope &sc = GetRequiredScope(element);
+	std::cout << "pose name: " << name << std::endl;
+	for (auto element : sc.Elements()) {
+		std::cout << "pose element: " << element.first << std::endl;
+	}
+	const std::string &classname = ParseTokenAsString(GetRequiredToken(element, 2));
+}
 
-#endif // INCLUDED_AI_CREATE_ANIM_MESH_H
+// ------------------------------------------------------------------------------------------------
+FbxPose::~FbxPose() {
+	// empty
+}
 
+} // namespace FBX
+} // namespace Assimp
+
+#endif

@@ -50,7 +50,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assimp/types.h>
 
 #ifdef __GNUC__
-#   pragma GCC system_header
+#pragma GCC system_header
 #endif
 
 #ifdef __cplusplus
@@ -69,11 +69,10 @@ extern "C" {
  *  @see aiImportFileEx
  */
 // -----------------------------------------------------------------------------------
-enum aiPostProcessSteps
-{
+enum aiPostProcessSteps : long int {
 
-    // -------------------------------------------------------------------------
-    /** <hr>Calculates the tangents and bitangents for the imported meshes.
+	// -------------------------------------------------------------------------
+	/** <hr>Calculates the tangents and bitangents for the imported meshes.
      *
      * Does nothing if a mesh does not have normals. You might want this post
      * processing step to be executed if you plan to use tangent space calculations
@@ -82,10 +81,10 @@ enum aiPostProcessSteps
      * a maximum smoothing angle for the algorithm. However, usually you'll
      * want to leave it at the default value.
      */
-    aiProcess_CalcTangentSpace = 0x1,
+	aiProcess_CalcTangentSpace = 0x1,
 
-    // -------------------------------------------------------------------------
-    /** <hr>Identifies and joins identical vertex data sets within all
+	// -------------------------------------------------------------------------
+	/** <hr>Identifies and joins identical vertex data sets within all
      *  imported meshes.
      *
      * After this step is run, each mesh contains unique vertices,
@@ -95,10 +94,10 @@ enum aiPostProcessSteps
      * time. <b>If this flag is not specified</b>, no vertices are referenced by
      * more than one face and <b>no index buffer is required</b> for rendering.
      */
-    aiProcess_JoinIdenticalVertices = 0x2,
+	aiProcess_JoinIdenticalVertices = 0x2,
 
-    // -------------------------------------------------------------------------
-    /** <hr>Converts all the imported data to a left-handed coordinate space.
+	// -------------------------------------------------------------------------
+	/** <hr>Converts all the imported data to a left-handed coordinate space.
      *
      * By default the data is returned in a right-handed coordinate space (which
      * OpenGL prefers). In this space, +X points to the right,
@@ -111,10 +110,10 @@ enum aiPostProcessSteps
      * setting and bundles all conversions typically required for D3D-based
      * applications.
      */
-    aiProcess_MakeLeftHanded = 0x4,
+	aiProcess_MakeLeftHanded = 0x4,
 
-    // -------------------------------------------------------------------------
-    /** <hr>Triangulates all faces of all meshes.
+	// -------------------------------------------------------------------------
+	/** <hr>Triangulates all faces of all meshes.
      *
      * By default the imported mesh data might contain faces with more than 3
      * indices. For rendering you'll usually want all faces to be triangles.
@@ -127,10 +126,10 @@ enum aiPostProcessSteps
      * <li>Ignore all point and line meshes when you process assimp's output</li>
      * </ul>
      */
-    aiProcess_Triangulate = 0x8,
+	aiProcess_Triangulate = 0x8,
 
-    // -------------------------------------------------------------------------
-    /** <hr>Removes some parts of the data structure (animations, materials,
+	// -------------------------------------------------------------------------
+	/** <hr>Removes some parts of the data structure (animations, materials,
      *  light sources, cameras, textures, vertex components).
      *
      * The  components to be removed are specified in a separate
@@ -153,10 +152,10 @@ enum aiPostProcessSteps
      * this step, unneeded components are excluded as early as possible
      * thus opening more room for internal optimizations.
      */
-    aiProcess_RemoveComponent = 0x10,
+	aiProcess_RemoveComponent = 0x10,
 
-    // -------------------------------------------------------------------------
-    /** <hr>Generates normals for all faces of all meshes.
+	// -------------------------------------------------------------------------
+	/** <hr>Generates normals for all faces of all meshes.
      *
      * This is ignored if normals are already there at the time this flag
      * is evaluated. Model importers try to load them from the source file, so
@@ -167,10 +166,10 @@ enum aiPostProcessSteps
      *
      * This flag may not be specified together with #aiProcess_GenSmoothNormals.
      */
-    aiProcess_GenNormals = 0x20,
+	aiProcess_GenNormals = 0x20,
 
-    // -------------------------------------------------------------------------
-    /** <hr>Generates smooth normals for all vertices in the mesh.
+	// -------------------------------------------------------------------------
+	/** <hr>Generates smooth normals for all vertices in the mesh.
     *
     * This is ignored if normals are already there at the time this flag
     * is evaluated. Model importers try to load them from the source file, so
@@ -184,10 +183,10 @@ enum aiPostProcessSteps
     * Using a decent angle here (e.g. 80 degrees) results in very good visual
     * appearance.
     */
-    aiProcess_GenSmoothNormals = 0x40,
+	aiProcess_GenSmoothNormals = 0x40,
 
-    // -------------------------------------------------------------------------
-    /** <hr>Splits large meshes into smaller sub-meshes.
+	// -------------------------------------------------------------------------
+	/** <hr>Splits large meshes into smaller sub-meshes.
     *
     * This is quite useful for real-time rendering, where the number of triangles
     * which can be maximally processed in a single draw-call is limited
@@ -203,10 +202,10 @@ enum aiPostProcessSteps
     * Note that splitting is generally a time-consuming task, but only if there's
     * something to split. The use of this step is recommended for most users.
     */
-    aiProcess_SplitLargeMeshes = 0x80,
+	aiProcess_SplitLargeMeshes = 0x80,
 
-    // -------------------------------------------------------------------------
-    /** <hr>Removes the node graph and pre-transforms all vertices with
+	// -------------------------------------------------------------------------
+	/** <hr>Removes the node graph and pre-transforms all vertices with
     * the local transformation matrices of their nodes.
     *
     * The output scene still contains nodes, however there is only a
@@ -224,10 +223,10 @@ enum aiPostProcessSteps
     * can be set to normalize the scene's spatial dimension to the -1...1
     * range.
     */
-    aiProcess_PreTransformVertices = 0x100,
+	aiProcess_PreTransformVertices = 0x100,
 
-    // -------------------------------------------------------------------------
-    /** <hr>Limits the number of bones simultaneously affecting a single vertex
+	// -------------------------------------------------------------------------
+	/** <hr>Limits the number of bones simultaneously affecting a single vertex
     *  to a maximum value.
     *
     * If any vertex is affected by more than the maximum number of bones, the least
@@ -240,10 +239,10 @@ enum aiPostProcessSteps
     * If you intend to perform the skinning in hardware, this post processing
     * step might be of interest to you.
     */
-    aiProcess_LimitBoneWeights = 0x200,
+	aiProcess_LimitBoneWeights = 0x200,
 
-    // -------------------------------------------------------------------------
-    /** <hr>Validates the imported scene data structure.
+	// -------------------------------------------------------------------------
+	/** <hr>Validates the imported scene data structure.
      * This makes sure that all indices are valid, all animations and
      * bones are linked correctly, all material references are correct .. etc.
      *
@@ -268,10 +267,10 @@ enum aiPostProcessSteps
      * This post-processing step is not time-consuming. Its use is not
      * compulsory, but recommended.
     */
-    aiProcess_ValidateDataStructure = 0x400,
+	aiProcess_ValidateDataStructure = 0x400,
 
-    // -------------------------------------------------------------------------
-    /** <hr>Reorders triangles for better vertex cache locality.
+	// -------------------------------------------------------------------------
+	/** <hr>Reorders triangles for better vertex cache locality.
      *
      * The step tries to improve the ACMR (average post-transform vertex cache
      * miss ratio) for all meshes. The implementation runs in O(n) and is
@@ -283,10 +282,10 @@ enum aiPostProcessSteps
      * be of interest to you. The <tt>#AI_CONFIG_PP_ICL_PTCACHE_SIZE</tt>
      * importer property can be used to fine-tune the cache optimization.
      */
-    aiProcess_ImproveCacheLocality = 0x800,
+	aiProcess_ImproveCacheLocality = 0x800,
 
-    // -------------------------------------------------------------------------
-    /** <hr>Searches for redundant/unreferenced materials and removes them.
+	// -------------------------------------------------------------------------
+	/** <hr>Searches for redundant/unreferenced materials and removes them.
      *
      * This is especially useful in combination with the
      * #aiProcess_PreTransformVertices and #aiProcess_OptimizeMeshes flags.
@@ -304,10 +303,10 @@ enum aiPostProcessSteps
      * specify this flag. Alternatively take a look at the
      * <tt>#AI_CONFIG_PP_RRM_EXCLUDE_LIST</tt> importer property.
      */
-    aiProcess_RemoveRedundantMaterials = 0x1000,
+	aiProcess_RemoveRedundantMaterials = 0x1000,
 
-    // -------------------------------------------------------------------------
-    /** <hr>This step tries to determine which meshes have normal vectors
+	// -------------------------------------------------------------------------
+	/** <hr>This step tries to determine which meshes have normal vectors
      * that are facing inwards and inverts them.
      *
      * The algorithm is simple but effective:
@@ -318,12 +317,10 @@ enum aiPostProcessSteps
      * The step inverts all in-facing normals. Generally it is recommended
      * to enable this step, although the result is not always correct.
     */
-    aiProcess_FixInfacingNormals = 0x2000,
+	aiProcess_FixInfacingNormals = 0x2000,
 
-
-
-    // -------------------------------------------------------------------------
-    /** 
+	// -------------------------------------------------------------------------
+	/** 
      * This step generically populates aiBone->mArmature and aiBone->mNode generically
      * The point of these is it saves you later having to calculate these elements
      * This is useful when handling rest information or skin information
@@ -331,10 +328,10 @@ enum aiPostProcessSteps
      * Instead of writing your own multi-root, multi-armature lookups we have done the 
      * hard work for you :)
    */
-    aiProcess_PopulateArmatureData = 0x4000,
+	aiProcess_PopulateArmatureData = 0x4000,
 
-    // -------------------------------------------------------------------------
-    /** <hr>This step splits meshes with more than one primitive type in
+	// -------------------------------------------------------------------------
+	/** <hr>This step splits meshes with more than one primitive type in
      *  homogeneous sub-meshes.
      *
      *  The step is executed after the triangulation step. After the step
@@ -345,10 +342,10 @@ enum aiPostProcessSteps
      *  specify which primitive types you need. This can be used to easily
      *  exclude lines and points, which are rarely used, from the import.
     */
-    aiProcess_SortByPType = 0x8000,
+	aiProcess_SortByPType = 0x8000,
 
-    // -------------------------------------------------------------------------
-    /** <hr>This step searches all meshes for degenerate primitives and
+	// -------------------------------------------------------------------------
+	/** <hr>This step searches all meshes for degenerate primitives and
      *  converts them to proper lines or points.
      *
      * A face is 'degenerate' if one or more of its points are identical.
@@ -388,10 +385,10 @@ enum aiPostProcessSteps
      * don't support lines or points, and some exporters bypass the
      * format specification and write them as degenerate triangles instead.
     */
-    aiProcess_FindDegenerates = 0x10000,
+	aiProcess_FindDegenerates = 0x10000,
 
-    // -------------------------------------------------------------------------
-    /** <hr>This step searches all meshes for invalid data, such as zeroed
+	// -------------------------------------------------------------------------
+	/** <hr>This step searches all meshes for invalid data, such as zeroed
      *  normal vectors or invalid UV coords and removes/fixes them. This is
      *  intended to get rid of some common exporter errors.
      *
@@ -403,10 +400,10 @@ enum aiPostProcessSteps
      * key. The <tt>AI_CONFIG_PP_FID_ANIM_ACCURACY</tt> config property decides
      * the accuracy of the check for duplicate animation tracks.
     */
-    aiProcess_FindInvalidData = 0x20000,
+	aiProcess_FindInvalidData = 0x20000,
 
-    // -------------------------------------------------------------------------
-    /** <hr>This step converts non-UV mappings (such as spherical or
+	// -------------------------------------------------------------------------
+	/** <hr>This step converts non-UV mappings (such as spherical or
      *  cylindrical mapping) to proper texture coordinate channels.
      *
      * Most applications will support UV mapping only, so you will
@@ -420,10 +417,10 @@ enum aiPostProcessSteps
      * <tt>#AI_MATKEY_MAPPING</tt> material property in order to display all assets
      * properly.
      */
-    aiProcess_GenUVCoords = 0x40000,
+	aiProcess_GenUVCoords = 0x40000,
 
-    // -------------------------------------------------------------------------
-    /** <hr>This step applies per-texture UV transformations and bakes
+	// -------------------------------------------------------------------------
+	/** <hr>This step applies per-texture UV transformations and bakes
      *  them into stand-alone vtexture coordinate channels.
      *
      * UV transformations are specified per-texture - see the
@@ -437,10 +434,10 @@ enum aiPostProcessSteps
      * transforming texture coordinates at vertex shader stage with a 3x3
      * (homogenous) transformation matrix.
     */
-    aiProcess_TransformUVCoords = 0x80000,
+	aiProcess_TransformUVCoords = 0x80000,
 
-    // -------------------------------------------------------------------------
-    /** <hr>This step searches for duplicate meshes and replaces them
+	// -------------------------------------------------------------------------
+	/** <hr>This step searches for duplicate meshes and replaces them
      *  with references to the first mesh.
      *
      *  This step takes a while, so don't use it if speed is a concern.
@@ -452,10 +449,10 @@ enum aiPostProcessSteps
      *  different materials are currently *not* joined, although this is
      *  planned for future versions.
      */
-    aiProcess_FindInstances = 0x100000,
+	aiProcess_FindInstances = 0x100000,
 
-    // -------------------------------------------------------------------------
-    /** <hr>A post-processing step to reduce the number of meshes.
+	// -------------------------------------------------------------------------
+	/** <hr>A post-processing step to reduce the number of meshes.
      *
      *  This will, in fact, reduce the number of draw calls.
      *
@@ -463,11 +460,10 @@ enum aiPostProcessSteps
      *  together with #aiProcess_OptimizeGraph, if possible. The flag is fully
      *  compatible with both #aiProcess_SplitLargeMeshes and #aiProcess_SortByPType.
     */
-    aiProcess_OptimizeMeshes  = 0x200000,
+	aiProcess_OptimizeMeshes = 0x200000,
 
-
-    // -------------------------------------------------------------------------
-    /** <hr>A post-processing step to optimize the scene hierarchy.
+	// -------------------------------------------------------------------------
+	/** <hr>A post-processing step to optimize the scene hierarchy.
      *
      *  Nodes without animations, bones, lights or cameras assigned are
      *  collapsed and joined.
@@ -492,10 +488,10 @@ enum aiPostProcessSteps
      *  #aiProcess_OptimizeMeshes in combination with #aiProcess_OptimizeGraph
      *  usually fixes them all and makes them renderable.
     */
-    aiProcess_OptimizeGraph  = 0x400000,
+	aiProcess_OptimizeGraph = 0x400000,
 
-    // -------------------------------------------------------------------------
-    /** <hr>This step flips all UV coordinates along the y-axis and adjusts
+	// -------------------------------------------------------------------------
+	/** <hr>This step flips all UV coordinates along the y-axis and adjusts
      * material settings and bitangents accordingly.
      *
      * <b>Output UV coordinate system:</b>
@@ -512,10 +508,10 @@ enum aiPostProcessSteps
      * setting and bundles all conversions typically required for D3D-based
      * applications.
     */
-    aiProcess_FlipUVs = 0x800000,
+	aiProcess_FlipUVs = 0x800000,
 
-    // -------------------------------------------------------------------------
-    /** <hr>This step adjusts the output face winding order to be CW.
+	// -------------------------------------------------------------------------
+	/** <hr>This step adjusts the output face winding order to be CW.
      *
      * The default face winding order is counter clockwise (CCW).
      *
@@ -527,16 +523,16 @@ enum aiPostProcessSteps
      *  x1
      * @endcode
     */
-    aiProcess_FlipWindingOrder  = 0x1000000,
+	aiProcess_FlipWindingOrder = 0x1000000,
 
-    // -------------------------------------------------------------------------
-    /** <hr>This step splits meshes with many bones into sub-meshes so that each
+	// -------------------------------------------------------------------------
+	/** <hr>This step splits meshes with many bones into sub-meshes so that each
      * sub-mesh has fewer or as many bones as a given limit.
     */
-    aiProcess_SplitByBoneCount  = 0x2000000,
+	aiProcess_SplitByBoneCount = 0x2000000,
 
-    // -------------------------------------------------------------------------
-    /** <hr>This step removes bones losslessly or according to some threshold.
+	// -------------------------------------------------------------------------
+	/** <hr>This step removes bones losslessly or according to some threshold.
      *
      *  In some cases (i.e. formats that require it) exporters are forced to
      *  assign dummy bone weights to otherwise static meshes assigned to
@@ -548,12 +544,10 @@ enum aiPostProcessSteps
      *  Use <tt>#AI_CONFIG_PP_DB_ALL_OR_NONE</tt> if you want bones removed if and
      *  only if all bones within the scene qualify for removal.
     */
-    aiProcess_Debone  = 0x4000000,
+	aiProcess_Debone = 0x4000000,
 
-
-
-    // -------------------------------------------------------------------------
-    /** <hr>This step will perform a global scale of the model.
+	// -------------------------------------------------------------------------
+	/** <hr>This step will perform a global scale of the model.
     *
     *  Some importers are providing a mechanism to define a scaling unit for the
     *  model. This post processing step can be used to do so. You need to get the
@@ -562,10 +556,10 @@ enum aiPostProcessSteps
     *
     *  Use <tt>#AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY</tt> to setup the global scaling factor.
     */
-    aiProcess_GlobalScale = 0x8000000,
+	aiProcess_GlobalScale = 0x8000000,
 
-    // -------------------------------------------------------------------------
-    /** <hr>A postprocessing step to embed of textures.
+	// -------------------------------------------------------------------------
+	/** <hr>A postprocessing step to embed of textures.
      *
      *  This will remove external data dependencies for textures.
      *  If a texture's file does not exist at the specified path
@@ -573,17 +567,16 @@ enum aiPostProcessSteps
      *  it will check if a file with the same name exists at the root folder
      *  of the imported model. And if so, it uses that.
      */
-    aiProcess_EmbedTextures  = 0x10000000,
-        
-    // aiProcess_GenEntityMeshes = 0x100000,
-    // aiProcess_OptimizeAnimations = 0x200000
-    // aiProcess_FixTexturePaths = 0x200000
+	aiProcess_EmbedTextures = 0x10000000,
 
+	// aiProcess_GenEntityMeshes = 0x100000,
+	// aiProcess_OptimizeAnimations = 0x200000
+	// aiProcess_FixTexturePaths = 0x200000
 
-    aiProcess_ForceGenNormals = 0x20000000,
+	aiProcess_ForceGenNormals = 0x20000000,
 
-    // -------------------------------------------------------------------------
-    /** <hr>Drops normals for all faces of all meshes.
+	// -------------------------------------------------------------------------
+	/** <hr>Drops normals for all faces of all meshes.
      *
      * This is ignored if no normals are present.
      * Face normals are shared between all points of a single face,
@@ -592,14 +585,14 @@ enum aiPostProcessSteps
      * #aiProcess_JoinIdenticalVertices is *senseless* then.
      * This process gives sense back to aiProcess_JoinIdenticalVertices
      */
-    aiProcess_DropNormals = 0x40000000,
+	aiProcess_DropNormals = 0x40000000,
 
-    // -------------------------------------------------------------------------
-    /**
+	// -------------------------------------------------------------------------
+	/**
      */
-    aiProcess_GenBoundingBoxes = 0x80000000
+	aiProcess_GenBoundingBoxes = 0x80000000,
+	aiProcess_NormalizeWeights = 0x100000000
 };
-
 
 // ---------------------------------------------------------------------------------------
 /** @def aiProcess_ConvertToLeftHanded
@@ -613,11 +606,10 @@ enum aiPostProcessSteps
  *  @deprecated
  */
 #define aiProcess_ConvertToLeftHanded ( \
-    aiProcess_MakeLeftHanded     | \
-    aiProcess_FlipUVs            | \
-    aiProcess_FlipWindingOrder   | \
-    0 )
-
+		aiProcess_MakeLeftHanded |      \
+		aiProcess_FlipUVs |             \
+		aiProcess_FlipWindingOrder |    \
+		0)
 
 // ---------------------------------------------------------------------------------------
 /** @def aiProcessPreset_TargetRealtime_Fast
@@ -634,16 +626,16 @@ enum aiPostProcessSteps
  *  use for you so it might be better to not specify them.
  */
 #define aiProcessPreset_TargetRealtime_Fast ( \
-    aiProcess_CalcTangentSpace      |  \
-    aiProcess_GenNormals            |  \
-    aiProcess_JoinIdenticalVertices |  \
-    aiProcess_Triangulate           |  \
-    aiProcess_GenUVCoords           |  \
-    aiProcess_SortByPType           |  \
-    0 )
+		aiProcess_CalcTangentSpace |          \
+		aiProcess_GenNormals |                \
+		aiProcess_JoinIdenticalVertices |     \
+		aiProcess_Triangulate |               \
+		aiProcess_GenUVCoords |               \
+		aiProcess_SortByPType |               \
+		0)
 
- // ---------------------------------------------------------------------------------------
- /** @def aiProcessPreset_TargetRealtime_Quality
+// ---------------------------------------------------------------------------------------
+/** @def aiProcessPreset_TargetRealtime_Quality
   *  @brief Default postprocess configuration optimizing the data for real-time rendering.
   *
   *  Unlike #aiProcessPreset_TargetRealtime_Fast, this configuration
@@ -659,22 +651,22 @@ enum aiPostProcessSteps
   *  of use for you so it might be better to not specify them.
   */
 #define aiProcessPreset_TargetRealtime_Quality ( \
-    aiProcess_CalcTangentSpace              |  \
-    aiProcess_GenSmoothNormals              |  \
-    aiProcess_JoinIdenticalVertices         |  \
-    aiProcess_ImproveCacheLocality          |  \
-    aiProcess_LimitBoneWeights              |  \
-    aiProcess_RemoveRedundantMaterials      |  \
-    aiProcess_SplitLargeMeshes              |  \
-    aiProcess_Triangulate                   |  \
-    aiProcess_GenUVCoords                   |  \
-    aiProcess_SortByPType                   |  \
-    aiProcess_FindDegenerates               |  \
-    aiProcess_FindInvalidData               |  \
-    0 )
+		aiProcess_CalcTangentSpace |             \
+		aiProcess_GenSmoothNormals |             \
+		aiProcess_JoinIdenticalVertices |        \
+		aiProcess_ImproveCacheLocality |         \
+		aiProcess_LimitBoneWeights |             \
+		aiProcess_RemoveRedundantMaterials |     \
+		aiProcess_SplitLargeMeshes |             \
+		aiProcess_Triangulate |                  \
+		aiProcess_GenUVCoords |                  \
+		aiProcess_SortByPType |                  \
+		aiProcess_FindDegenerates |              \
+		aiProcess_FindInvalidData |              \
+		0)
 
- // ---------------------------------------------------------------------------------------
- /** @def aiProcessPreset_TargetRealtime_MaxQuality
+// ---------------------------------------------------------------------------------------
+/** @def aiProcessPreset_TargetRealtime_MaxQuality
   *  @brief Default postprocess configuration optimizing the data for real-time rendering.
   *
   *  This preset enables almost every optimization step to achieve perfectly
@@ -689,12 +681,11 @@ enum aiPostProcessSteps
   *  of use for you so it might be better to not specify them.
   */
 #define aiProcessPreset_TargetRealtime_MaxQuality ( \
-    aiProcessPreset_TargetRealtime_Quality   |  \
-    aiProcess_FindInstances                  |  \
-    aiProcess_ValidateDataStructure          |  \
-    aiProcess_OptimizeMeshes                 |  \
-    0 )
-
+		aiProcessPreset_TargetRealtime_Quality |    \
+		aiProcess_FindInstances |                   \
+		aiProcess_ValidateDataStructure |           \
+		aiProcess_OptimizeMeshes |                  \
+		0)
 
 #ifdef __cplusplus
 } // end of extern "C"

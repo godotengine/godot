@@ -48,12 +48,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define AI_INCLUDED_PROFILER_H
 
 #ifdef __GNUC__
-#   pragma GCC system_header
+#pragma GCC system_header
 #endif
 
-#include <chrono>
-#include <assimp/DefaultLogger.hpp>
 #include <assimp/TinyFormatter.h>
+#include <chrono>
 
 #include <map>
 
@@ -68,36 +67,33 @@ using namespace Formatter;
  */
 class Profiler {
 public:
-    Profiler() {
-        // empty
-    }
+	Profiler() {
+		// empty
+	}
 
+	/** Start a named timer */
+	void BeginRegion(const std::string &region) {
+		regions[region] = std::chrono::system_clock::now();
+		ASSIMP_LOG_DEBUG((format("START `"), region, "`"));
+	}
 
-    /** Start a named timer */
-    void BeginRegion(const std::string& region) {
-        regions[region] = std::chrono::system_clock::now();
-        ASSIMP_LOG_DEBUG((format("START `"),region,"`"));
-    }
+	/** End a specific named timer and write its end time to the log */
+	void EndRegion(const std::string &region) {
+		RegionMap::const_iterator it = regions.find(region);
+		if (it == regions.end()) {
+			return;
+		}
 
-
-    /** End a specific named timer and write its end time to the log */
-    void EndRegion(const std::string& region) {
-        RegionMap::const_iterator it = regions.find(region);
-        if (it == regions.end()) {
-            return;
-        }
-
-        std::chrono::duration<double> elapsedSeconds = std::chrono::system_clock::now() - regions[region];
-        ASSIMP_LOG_DEBUG((format("END   `"),region,"`, dt= ", elapsedSeconds.count()," s"));
-    }
+		std::chrono::duration<double> elapsedSeconds = std::chrono::system_clock::now() - regions[region];
+		ASSIMP_LOG_DEBUG((format("END   `"), region, "`, dt= ", elapsedSeconds.count(), " s"));
+	}
 
 private:
-    typedef std::map<std::string,std::chrono::time_point<std::chrono::system_clock>> RegionMap;
-    RegionMap regions;
+	typedef std::map<std::string, std::chrono::time_point<std::chrono::system_clock> > RegionMap;
+	RegionMap regions;
 };
 
-}
-}
+} // namespace Profiling
+} // namespace Assimp
 
 #endif // AI_INCLUDED_PROFILER_H
-

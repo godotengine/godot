@@ -46,11 +46,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ASSIMP_BUILD_NO_FBX_IMPORTER
 
-#include "FBXParser.h"
-#include "FBXMeshGeometry.h"
 #include "FBXDocument.h"
-#include "FBXImporter.h"
 #include "FBXDocumentUtil.h"
+#include "FBXMeshGeometry.h"
+#include "FBXParser.h"
 
 namespace Assimp {
 namespace FBX {
@@ -58,96 +57,97 @@ namespace FBX {
 using namespace Util;
 
 // ------------------------------------------------------------------------------------------------
-Model::Model(uint64_t id, const Element& element, const Document& doc, const std::string& name)
-    : Object(id,element,name)
-    , shading("Y")
-{
-    const Scope& sc = GetRequiredScope(element);
-    const Element* const Shading = sc["Shading"];
-    const Element* const Culling = sc["Culling"];
+Model::Model(uint64_t id, const Element &element, const Document &doc, const std::string &name) :
+		Object(id, element, name), shading("Y") {
+	const Scope &sc = GetRequiredScope(element);
+	const Element *const Shading = sc["Shading"];
+	const Element *const Culling = sc["Culling"];
 
-    if(Shading) {
-        shading = GetRequiredToken(*Shading,0).StringContents();
-    }
+	if (Shading) {
+		shading = GetRequiredToken(*Shading, 0).StringContents();
+	}
 
-    if (Culling) {
-        culling = ParseTokenAsString(GetRequiredToken(*Culling,0));
-    }
+	if (Culling) {
+		culling = ParseTokenAsString(GetRequiredToken(*Culling, 0));
+	}
 
-    props = GetPropertyTable(doc,"Model.FbxNode",element,sc);
-    ResolveLinks(element,doc);
+	props = GetPropertyTable(doc, "Model.FbxNode", element, sc);
+	ResolveLinks(element, doc);
 }
 
 // ------------------------------------------------------------------------------------------------
-Model::~Model()
-{
+Model::~Model() {
+}
 
+LimbNodeMaya::LimbNodeMaya(uint64_t id, const Element &element, const Document &doc, const std::string &name) :
+		Model(id, element, doc, name){
+
+		};
+
+LimbNodeMaya::~LimbNodeMaya() {
 }
 
 // ------------------------------------------------------------------------------------------------
-void Model::ResolveLinks(const Element& element, const Document& doc)
-{
-    const char* const arr[] = {"Geometry","Material","NodeAttribute"};
+void Model::ResolveLinks(const Element &element, const Document &doc) {
+	const char *const arr[] = { "Geometry", "Material", "NodeAttribute" };
 
-    // resolve material
-    const std::vector<const Connection*>& conns = doc.GetConnectionsByDestinationSequenced(ID(),arr, 3);
+	// resolve material
+	const std::vector<const Connection *> &conns = doc.GetConnectionsByDestinationSequenced(ID(), arr, 3);
 
-    materials.reserve(conns.size());
-    geometry.reserve(conns.size());
-    attributes.reserve(conns.size());
-    for(const Connection* con : conns) {
+	materials.reserve(conns.size());
+	geometry.reserve(conns.size());
+	attributes.reserve(conns.size());
+	for (const Connection *con : conns) {
 
-        // material and geometry links should be Object-Object connections
-        if (con->PropertyName().length()) {
-            continue;
-        }
+		// material and geometry links should be Object-Object connections
+		if (con->PropertyName().length()) {
+			continue;
+		}
 
-        const Object* const ob = con->SourceObject();
-        if(!ob) {
-            DOMWarning("failed to read source object for incoming Model link, ignoring",&element);
-            continue;
-        }
+		const Object *const ob = con->SourceObject();
+		if (!ob) {
+			//DOMWarning("failed to read source object for incoming Model link, ignoring",&element);
+			continue;
+		}
 
-        const Material* const mat = dynamic_cast<const Material*>(ob);
-        if(mat) {
-            materials.push_back(mat);
-            continue;
-        }
+		const Material *const mat = dynamic_cast<const Material *>(ob);
+		if (mat) {
+			materials.push_back(mat);
+			continue;
+		}
 
-        const Geometry* const geo = dynamic_cast<const Geometry*>(ob);
-        if(geo) {
-            geometry.push_back(geo);
-            continue;
-        }
+		const Geometry *const geo = dynamic_cast<const Geometry *>(ob);
+		if (geo) {
+			geometry.push_back(geo);
+			continue;
+		}
 
-        const NodeAttribute* const att = dynamic_cast<const NodeAttribute*>(ob);
-        if(att) {
-            attributes.push_back(att);
-            continue;
-        }
+		const NodeAttribute *const att = dynamic_cast<const NodeAttribute *>(ob);
+		if (att) {
+			attributes.push_back(att);
+			continue;
+		}
 
-        DOMWarning("source object for model link is neither Material, NodeAttribute nor Geometry, ignoring",&element);
-        continue;
-    }
+		DOMWarning("source object for model link is neither Material, NodeAttribute nor Geometry, ignoring", &element);
+		continue;
+	}
 }
 
 // ------------------------------------------------------------------------------------------------
-bool Model::IsNull() const
-{
-    const std::vector<const NodeAttribute*>& attrs = GetAttributes();
-    for(const NodeAttribute* att : attrs) {
+bool Model::IsNull() const {
+	const std::vector<const NodeAttribute *> &attrs = GetAttributes();
+	for (const NodeAttribute *att : attrs) {
 
-        const Null* null_tag = dynamic_cast<const Null*>(att);
-        if(null_tag) {
-            return true;
-        }
-    }
+		const Null *null_tag = dynamic_cast<const Null *>(att);
+		if (null_tag) {
+			return true;
+		}
+	}
 
-    return false;
+	return false;
 }
 
-
-} //!FBX
-} //!Assimp
+} // namespace FBX
+} // namespace Assimp
 
 #endif

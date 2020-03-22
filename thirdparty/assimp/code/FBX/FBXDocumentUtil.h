@@ -44,10 +44,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDED_AI_FBX_DOCUMENT_UTIL_H
 #define INCLUDED_AI_FBX_DOCUMENT_UTIL_H
 
-#include <assimp/defs.h>
-#include <string>
-#include <memory>
 #include "FBXDocument.h"
+#include <assimp/defs.h>
+#include <memory>
+#include <string>
 
 struct Token;
 struct Element;
@@ -57,64 +57,58 @@ namespace FBX {
 namespace Util {
 
 /* DOM/Parse error reporting - does not return */
-AI_WONT_RETURN void DOMError(const std::string& message, const Token& token) AI_WONT_RETURN_SUFFIX;
-AI_WONT_RETURN void DOMError(const std::string& message, const Element* element = NULL) AI_WONT_RETURN_SUFFIX;
+AI_WONT_RETURN void DOMError(const std::string &message, const Token &token) AI_WONT_RETURN_SUFFIX;
+AI_WONT_RETURN void DOMError(const std::string &message, const Element *element = NULL) AI_WONT_RETURN_SUFFIX;
 
 // does return
-void DOMWarning(const std::string& message, const Token& token);
-void DOMWarning(const std::string& message, const Element* element = NULL);
-
+void DOMWarning(const std::string &message, const Token &token);
+void DOMWarning(const std::string &message, const Element *element = NULL);
 
 // fetch a property table and the corresponding property template
-std::shared_ptr<const PropertyTable> GetPropertyTable(const Document& doc,
-    const std::string& templateName,
-    const Element &element,
-    const Scope& sc,
-    bool no_warn = false);
+std::shared_ptr<const PropertyTable> GetPropertyTable(const Document &doc,
+		const std::string &templateName,
+		const Element &element,
+		const Scope &sc,
+		bool no_warn = false);
 
 // ------------------------------------------------------------------------------------------------
 template <typename T>
-inline
-const T* ProcessSimpleConnection(const Connection& con,
-    bool is_object_property_conn,
-    const char* name,
-    const Element& element,
-    const char** propNameOut = nullptr)
-{
-    if (is_object_property_conn && !con.PropertyName().length()) {
-        DOMWarning("expected incoming " + std::string(name) +
-            " link to be an object-object connection, ignoring",
-            &element
-            );
-        return nullptr;
-    }
-    else if (!is_object_property_conn && con.PropertyName().length()) {
-        DOMWarning("expected incoming " + std::string(name) +
-            " link to be an object-property connection, ignoring",
-            &element
-            );
-        return nullptr;
-    }
+inline const T *ProcessSimpleConnection(const Connection &con,
+		bool is_object_property_conn,
+		const char *name,
+		const Element &element,
+		const char **propNameOut = nullptr) {
+	if (is_object_property_conn && !con.PropertyName().length()) {
+		DOMWarning("expected incoming " + std::string(name) +
+						   " link to be an object-object connection, ignoring",
+				&element);
+		return nullptr;
+	} else if (!is_object_property_conn && con.PropertyName().length()) {
+		DOMWarning("expected incoming " + std::string(name) +
+						   " link to be an object-property connection, ignoring",
+				&element);
+		return nullptr;
+	}
 
-    if(is_object_property_conn && propNameOut) {
-        // note: this is ok, the return value of PropertyValue() is guaranteed to
-        // remain valid and unchanged as long as the document exists.
-        *propNameOut = con.PropertyName().c_str();
-    }
+	if (is_object_property_conn && propNameOut) {
+		// note: this is ok, the return value of PropertyValue() is guaranteed to
+		// remain valid and unchanged as long as the document exists.
+		*propNameOut = con.PropertyName().c_str();
+	}
 
-    const Object* const ob = con.SourceObject();
-    if(!ob) {
-        DOMWarning("failed to read source object for incoming " + std::string(name) +
-            " link, ignoring",
-            &element);
-        return nullptr;
-    }
+	const Object *const ob = con.SourceObject();
+	if (!ob) {
+		// DOMWarning("failed to read source object for incoming " + std::string(name) +
+		//     " link, ignoring",
+		//     &element);
+		return nullptr;
+	}
 
-    return dynamic_cast<const T*>(ob);
+	return dynamic_cast<const T *>(ob);
 }
 
-} //!Util
-} //!FBX
-} //!Assimp
+} // namespace Util
+} // namespace FBX
+} // namespace Assimp
 
 #endif
