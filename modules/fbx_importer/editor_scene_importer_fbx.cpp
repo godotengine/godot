@@ -101,7 +101,7 @@ Node *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flag
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 	ERR_FAIL_COND_V(!f, NULL);
 
-	PoolByteArray data;
+	PackedByteArray data;
 	// broadphase tokenizing pass in which we identify the core
 	// syntax elements of FBX (brackets, commas, key:value mappings)
 	Assimp::FBX::TokenList tokens;
@@ -111,18 +111,24 @@ Node *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flag
 	if (data.size() < 18) {
 		return NULL;
 	}
-	f->get_buffer(data.write().ptr(), data.size());
-	PoolByteArray fbx_header;
+	f->get_buffer(data.ptrw(), data.size());
+	PackedByteArray fbx_header;
+
+	const uint8_t *file_read = data.ptr();
+	uint8_t *file_write = data.ptrw();
+	const uint8_t *header_read = fbx_header.ptr();
+	uint8_t *header_write = fbx_header.ptrw();
+
 	fbx_header.resize(18);
 	for (int32_t byte_i = 0; byte_i < 18; byte_i++) {
-		fbx_header.write()[byte_i] = data.read()[byte_i];
+		header_write[byte_i] = file_read[byte_i];
 	}
-	String fbx_header_string = String((const char *)fbx_header.read().ptr());
+	String fbx_header_string = String((const char *)header_read);
 	if (fbx_header_string == String("Kaydara FBX Binary")) {
 		is_binary = true;
-		Assimp::FBX::TokenizeBinary(tokens, (const char *)data.write().ptr(), (size_t)data.size());
+		Assimp::FBX::TokenizeBinary(tokens, (const char *) file_write, (size_t)data.size());
 	} else {
-		Assimp::FBX::Tokenize(tokens, (const char *)data.write().ptr());
+		Assimp::FBX::Tokenize(tokens, (const char *) file_write);
 	}
 
 	// use this information to construct a very rudimentary
