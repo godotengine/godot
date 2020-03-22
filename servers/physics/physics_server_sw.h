@@ -237,6 +237,9 @@ public:
 	virtual void body_set_ray_pickable(RID p_body, bool p_enable);
 	virtual bool body_is_ray_pickable(RID p_body) const;
 
+	virtual real_t body_test_motion_light(RID p_body, const Transform &p_transform, const Vector3 &p_motion, bool p_infinite_inertia, bool p_use_margin, LightMotionResult &r_result) { return 0; }
+	virtual bool body_test_motion_depenetrate(RID p_body, const Transform &p_transform, real_t p_depenetration_scale, bool p_infinite_inertia, real_t p_max_penetration, bool p_use_margin, Vector3 &r_delta_recover_movement, LightMotionResult *r_result = NULL) { return false; }
+
 	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = NULL, bool p_exclude_raycast_shapes = true);
 	virtual int body_test_ray_separation(RID p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin = 0.001);
 

@@ -525,6 +525,9 @@ void PhysicsServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_set_ray_pickable", "body", "enable"), &PhysicsServer::body_set_ray_pickable);
 	ClassDB::bind_method(D_METHOD("body_is_ray_pickable", "body"), &PhysicsServer::body_is_ray_pickable);
 
+	ClassDB::bind_method(D_METHOD("body_test_motion_light", "body", "transform", "motion", "infinite_inertia", "use_margin"), &PhysicsServer::_body_test_motion_light);
+	ClassDB::bind_method(D_METHOD("body_test_motion_depenetrate", "body", "transform", "depenetration_scale", "infinite_inertia", "max_penetration", "use_margin"), &PhysicsServer::_body_test_motion_depenetrate);
+
 	ClassDB::bind_method(D_METHOD("body_get_direct_state", "body"), &PhysicsServer::body_get_direct_state);
 
 	/* JOINT API */
@@ -732,6 +735,45 @@ PhysicsServer::PhysicsServer() {
 PhysicsServer::~PhysicsServer() {
 
 	singleton = NULL;
+}
+
+Dictionary PhysicsServer::_body_test_motion_light(RID p_body, Transform p_transform, Vector3 p_motion, bool p_infinite_inertia, bool p_use_margin) {
+	LightMotionResult r;
+	const real_t hit_fraction = body_test_motion_light(p_body, p_transform, p_motion, p_infinite_inertia, p_use_margin, r);
+
+	Dictionary d;
+	d["hit_fractin"] = hit_fraction;
+	if (hit_fraction < 1.0) {
+		d["collision_point"] = r.collision_point;
+		d["collision_normal"] = r.collision_normal;
+		d["collision_local_shape"] = r.collision_local_shape;
+		d["collider_id"] = r.collider_id;
+		d["collider"] = r.collider;
+		d["collider_shape"] = r.collider_shape;
+	}
+	return d;
+}
+
+Dictionary PhysicsServer::_body_test_motion_depenetrate(RID p_body, Transform p_transform, real_t p_depenetration_scale, bool p_infinite_inertia, real_t p_max_penetration, bool p_use_margin) {
+
+	LightMotionResult r;
+	Vector3 recover_movement;
+	const bool penetrated = body_test_motion_depenetrate(p_body, p_transform, p_depenetration_scale, p_infinite_inertia, p_max_penetration, p_use_margin, recover_movement, &r);
+
+	Dictionary d;
+	d["penetrated"] = penetrated;
+	d["recover_movement"] = recover_movement;
+
+	if (penetrated) {
+		d["collision_point"] = r.collision_point;
+		d["collision_normal"] = r.collision_normal;
+		d["collision_local_shape"] = r.collision_local_shape;
+		d["collider_id"] = r.collider_id;
+		d["collider"] = r.collider;
+		d["collider_shape"] = r.collider_shape;
+	}
+
+	return d;
 }
 
 Vector<PhysicsServerManager::ClassInfo> PhysicsServerManager::physics_servers;

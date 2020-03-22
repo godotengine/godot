@@ -480,6 +480,21 @@ public:
 	// this function only works on physics process, errors and returns null otherwise
 	virtual PhysicsDirectBodyState *body_get_direct_state(RID p_body) = 0;
 
+	struct LightMotionResult {
+		Vector3 collision_point;
+		Vector3 collision_normal;
+		int collision_local_shape;
+		ObjectID collider_id;
+		RID collider;
+		int collider_shape;
+	};
+
+	Dictionary _body_test_motion_light(RID p_body, Transform p_transform, Vector3 p_motion, bool p_infinite_inertia, bool p_use_margin);
+	Dictionary _body_test_motion_depenetrate(RID p_body, Transform p_transform, real_t p_depenetration_scale, bool p_infinite_inertia, real_t p_max_penetration, bool p_use_margin);
+
+	virtual real_t body_test_motion_light(RID p_body, const Transform &p_transform, const Vector3 &p_motion, bool p_infinite_inertia, bool p_use_margin, LightMotionResult &r_result) = 0;
+	virtual bool body_test_motion_depenetrate(RID p_body, const Transform &p_transform, real_t p_depenetration_scale, bool p_infinite_inertia, real_t p_max_penetration, bool p_use_margin, Vector3 &r_delta_recover_movement, LightMotionResult *r_result = NULL) = 0;
+
 	struct MotionResult {
 
 		Vector3 motion;
