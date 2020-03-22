@@ -30,6 +30,10 @@
 	<members>
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false">
 			A disabled collision shape has no effect in the world.
+			Note: If you attempt to change this value during physics processing, it will fail with the following error: "Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead". Use [method]Object.set_deferred[/method] instead.
+			[codeblock]
+				$CollisionShape2D.set_deferred("disabled", false)
+			[/codeblock]
 		</member>
 		<member name="shape" type="Shape" setter="set_shape" getter="get_shape">
 			The actual shape owned by this collision shape.
