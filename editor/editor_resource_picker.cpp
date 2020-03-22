@@ -137,6 +137,10 @@ void EditorResourcePicker::_file_selected(const String &p_path) {
 	_update_resource();
 }
 
+void EditorResourcePicker::_file_quick_selected() {
+	_file_selected(quick_open->get_selected());
+}
+
 void EditorResourcePicker::_update_menu() {
 	_update_menu_items();
 
@@ -154,7 +158,10 @@ void EditorResourcePicker::_update_menu_items() {
 	// Add options for creating specific subtypes of the base resource type.
 	set_create_options(edit_menu);
 
-	// Add an option to load a resource from a file.
+	// Add an option to load a resource from a file using the QuickOpen dialog.
+	edit_menu->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Quick Load"), OBJ_MENU_QUICKLOAD);
+
+	// Add an option to load a resource from a file using the regular file dialog.
 	edit_menu->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Load"), OBJ_MENU_LOAD);
 
 	// Add options for changing existing value of the resource.
@@ -245,6 +252,17 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			}
 
 			file_dialog->popup_centered_ratio();
+		} break;
+
+		case OBJ_MENU_QUICKLOAD: {
+			if (!quick_open) {
+				quick_open = memnew(EditorQuickOpen);
+				add_child(quick_open);
+				quick_open->connect("quick_open", this, "_file_quick_selected");
+			}
+
+			quick_open->popup_dialog(base_type);
+			quick_open->set_title(TTR("Resource"));
 		} break;
 
 		case OBJ_MENU_EDIT: {
@@ -644,6 +662,7 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 void EditorResourcePicker::_bind_methods() {
 	// Internal binds.
 	ClassDB::bind_method(D_METHOD("_file_selected"), &EditorResourcePicker::_file_selected);
+	ClassDB::bind_method(D_METHOD("_file_quick_selected"), &EditorResourcePicker::_file_quick_selected);
 	ClassDB::bind_method(D_METHOD("_resource_selected"), &EditorResourcePicker::_resource_selected);
 	ClassDB::bind_method(D_METHOD("_button_draw"), &EditorResourcePicker::_button_draw);
 	ClassDB::bind_method(D_METHOD("_button_input"), &EditorResourcePicker::_button_input);
