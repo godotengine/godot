@@ -166,7 +166,6 @@ const Object *LazyObject::Get(bool dieOnError) {
 				object.reset(new BlendShapeChannel(id, element, doc, name));
 			}
 		} else if (!strncmp(obtype, "Model", length)) {
-			std::cout << "classtag: " << classtag << std::endl;
 			if (!strcmp(classtag.c_str(), "LimbNode")) {
 				//std::cout << "created limb node maya!" << std::endl;
 				object.reset(new LimbNodeMaya(id, element, doc, name));
