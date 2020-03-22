@@ -6,7 +6,7 @@
 /*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IMPORT_UTILS_IMPORTER_ASSIMP_H
-#define IMPORT_UTILS_IMPORTER_ASSIMP_H
+#ifndef IMPORT_UTILS_FBX_IMPORTER_H
+#define IMPORT_UTILS_FBX_IMPORTER_H
 
 #include "core/io/image_loader.h"
 #include "import_state.h"
@@ -40,12 +40,13 @@
 #include <assimp/matrix4x4.h>
 #include <assimp/pbrmaterial.h>
 #include <assimp/postprocess.h>
-#include <assimp/scene.h>
-#include <assimp/DefaultLogger.hpp>
-#include <assimp/Importer.hpp>
-#include <assimp/LogStream.hpp>
-#include <assimp/Logger.hpp>
+
 #include <string>
+
+#include <FBXDocument.h>
+#include <FBXParser.h>
+#include <FBXTokenizer.h>
+#include <FBXUtil.h>
 
 using namespace AssimpImporter;
 
@@ -95,21 +96,6 @@ using namespace AssimpImporter;
 */
 class AssimpUtils {
 public:
-	/**
-	 * calculate tangents for mesh data from assimp data
-	 */
-	static void calc_tangent_from_mesh(const aiMesh *ai_mesh, int i, int tri_index, int index, Color *w) {
-		const aiVector3D normals = ai_mesh->mAnimMeshes[i]->mNormals[tri_index];
-		const Vector3 godot_normal = Vector3(normals.x, normals.y, normals.z);
-		const aiVector3D tangent = ai_mesh->mAnimMeshes[i]->mTangents[tri_index];
-		const Vector3 godot_tangent = Vector3(tangent.x, tangent.y, tangent.z);
-		const aiVector3D bitangent = ai_mesh->mAnimMeshes[i]->mBitangents[tri_index];
-		const Vector3 godot_bitangent = Vector3(bitangent.x, bitangent.y, bitangent.z);
-		float d = godot_normal.cross(godot_tangent).dot(godot_bitangent) > 0.0f ? 1.0f : -1.0f;
-		Color plane_tangent = Color(tangent.x, tangent.y, tangent.z, d);
-		w[index] = plane_tangent;
-	}
-
 	struct AssetImportFbx {
 		enum ETimeMode {
 			TIME_MODE_DEFAULT = 0,
@@ -188,21 +174,11 @@ public:
 		return Ref<Animation>();
 	}
 
-	/**
-     * Converts aiMatrix4x4 to godot Transform
-    */
-	static const Transform assimp_matrix_transform(const aiMatrix4x4 p_matrix) {
-		aiMatrix4x4 matrix = p_matrix;
-		Transform xform;
-		xform.set(matrix.a1, matrix.a2, matrix.a3, matrix.b1, matrix.b2, matrix.b3, matrix.c1, matrix.c2, matrix.c3, matrix.a4, matrix.b4, matrix.c4);
-		return xform;
-	}
-
 	/** Get fbx fps for time mode meta data
      */
-	static float get_fbx_fps(int32_t time_mode, const aiScene *p_scene) {
+	static float get_fbx_fps(int32_t time_mode) {
 		switch (time_mode) {
-			case AssetImportFbx::TIME_MODE_DEFAULT: return 24; //hack
+			case AssetImportFbx::TIME_MODE_DEFAULT: return 24;
 			case AssetImportFbx::TIME_MODE_120: return 120;
 			case AssetImportFbx::TIME_MODE_100: return 100;
 			case AssetImportFbx::TIME_MODE_60: return 60;
@@ -216,28 +192,28 @@ public:
 			case AssetImportFbx::TIME_MODE_CINEMA: return 24;
 			case AssetImportFbx::TIME_MODE_1000: return 1000;
 			case AssetImportFbx::TIME_MODE_CINEMA_ND: return 23.976f;
-			case AssetImportFbx::TIME_MODE_CUSTOM:
-				int32_t frame_rate = -1;
-				p_scene->mMetaData->Get("FrameRate", frame_rate);
-				return frame_rate;
+			case AssetImportFbx::TIME_MODE_CUSTOM: return -1;
 		}
 		return 0;
 	}
 
-	/**
-      * Get global transform for the current node - so we can use world space rather than
-      * local space coordinates
-      * useful if you need global - although recommend using local wherever possible over global
-      * as you could break fbx scaling :)
-      */
-	static Transform _get_global_assimp_node_transform(const aiNode *p_current_node) {
-		aiNode const *current_node = p_current_node;
-		Transform xform;
-		while (current_node != NULL) {
-			xform = assimp_matrix_transform(current_node->mTransformation) * xform;
-			current_node = current_node->mParent;
+	static float get_fbx_fps(const Assimp::FBX::FileGlobalSettings *FBXSettings) {
+		int time_mode = FBXSettings->TimeMode();
+
+		// get the animation FPS
+		float frames_per_second = get_fbx_fps(time_mode);
+
+		// handle animation custom FPS time.
+		if (time_mode == AssimpUtils::AssetImportFbx::TIME_MODE_CUSTOM) {
+			print_verbose("FBX Animation has custom FPS setting");
+			frames_per_second = FBXSettings->CustomFrameRate();
+
+			// not our problem this is the modeller, we can print as an error so they can fix the source.
+			if (frames_per_second == 0) {
+				print_error("Custom animation time in file is set to 0 value, animation won't play, please edit your file to correct the FPS value");
+			}
 		}
-		return xform;
+		return frames_per_second;
 	}
 
 	/**
@@ -317,135 +293,130 @@ public:
 	  * set_texture_mapping_mode
 	  * Helper to check the mapping mode of the texture (repeat, clamp and mirror)
 	  */
-	static void set_texture_mapping_mode(aiTextureMapMode *map_mode, Ref<ImageTexture> texture) {
-		ERR_FAIL_COND(texture.is_null());
-		ERR_FAIL_COND(map_mode == NULL);
-		// FIXME: Commented out during Vulkan port.
-		/*
-		aiTextureMapMode tex_mode = map_mode[0];
+	// static void set_texture_mapping_mode(aiTextureMapMode *map_mode, Ref<ImageTexture> texture) {
+	// 	ERR_FAIL_COND(texture.is_null());
+	// 	ERR_FAIL_COND(map_mode == NULL);
+	// 	aiTextureMapMode tex_mode = map_mode[0];
 
-		int32_t flags = Texture2D::FLAGS_DEFAULT;
-		if (tex_mode == aiTextureMapMode_Wrap) {
-			//Default
-		} else if (tex_mode == aiTextureMapMode_Clamp) {
-			flags = flags & ~Texture2D::FLAG_REPEAT;
-		} else if (tex_mode == aiTextureMapMode_Mirror) {
-			flags = flags | Texture2D::FLAG_MIRRORED_REPEAT;
-		}
-		texture->set_flags(flags);
-		*/
-	}
+	// 	int32_t flags = Texture::FLAGS_DEFAULT;
+	// 	if (tex_mode == aiTextureMapMode_Wrap) {
+	// 		//Default
+	// 	} else if (tex_mode == aiTextureMapMode_Clamp) {
+	// 		flags = flags & ~Texture::FLAG_REPEAT;
+	// 	} else if (tex_mode == aiTextureMapMode_Mirror) {
+	// 		flags = flags | Texture::FLAG_MIRRORED_REPEAT;
+	// 	}
+	// 	texture->set_flags(flags);
+	// }
 
 	/**
 	  * Load or load from cache image :)
+	  * We need to upgrade this in the later version :) should not be hard
 	  */
-	static Ref<Image> load_image(ImportState &state, const aiScene *p_scene, String p_path) {
+	//static Ref<Image> load_image(ImportState &state, const aiScene *p_scene, String p_path){
 
-		Map<String, Ref<Image>>::Element *match = state.path_to_image_cache.find(p_path);
+	// Map<String, Ref<Image> >::Element *match = state.path_to_image_cache.find(p_path);
 
-		// if our cache contains this image then don't bother
-		if (match) {
-			return match->get();
-		}
+	// // if our cache contains this image then don't bother
+	// if (match) {
+	// 	return match->get();
+	// }
 
-		Vector<String> split_path = p_path.get_basename().split("*");
-		if (split_path.size() == 2) {
-			size_t texture_idx = split_path[1].to_int();
-			ERR_FAIL_COND_V(texture_idx >= p_scene->mNumTextures, Ref<Image>());
-			aiTexture *tex = p_scene->mTextures[texture_idx];
-			String filename = AssimpUtils::get_raw_string_from_assimp(tex->mFilename);
-			filename = filename.get_file();
-			print_verbose("Open Asset Import: Loading embedded texture " + filename);
-			if (tex->mHeight == 0) {
-				if (tex->CheckFormat("png")) {
-					ERR_FAIL_COND_V(Image::_png_mem_loader_func == NULL, Ref<Image>());
-					Ref<Image> img = Image::_png_mem_loader_func((uint8_t *)tex->pcData, tex->mWidth);
-					ERR_FAIL_COND_V(img.is_null(), Ref<Image>());
-					state.path_to_image_cache.insert(p_path, img);
-					return img;
-				} else if (tex->CheckFormat("jpg")) {
-					ERR_FAIL_COND_V(Image::_jpg_mem_loader_func == NULL, Ref<Image>());
-					Ref<Image> img = Image::_jpg_mem_loader_func((uint8_t *)tex->pcData, tex->mWidth);
-					ERR_FAIL_COND_V(img.is_null(), Ref<Image>());
-					state.path_to_image_cache.insert(p_path, img);
-					return img;
-				} else if (tex->CheckFormat("dds")) {
-					ERR_FAIL_COND_V_MSG(true, Ref<Image>(), "Open Asset Import: Embedded dds not implemented");
-				}
-			} else {
-				Ref<Image> img;
-				img.instance();
-				PackedByteArray arr;
-				uint32_t size = tex->mWidth * tex->mHeight;
-				arr.resize(size);
-				memcpy(arr.ptrw(), tex->pcData, size);
-				ERR_FAIL_COND_V(arr.size() % 4 != 0, Ref<Image>());
-				//ARGB8888 to RGBA8888
-				for (int32_t i = 0; i < arr.size() / 4; i++) {
-					arr.ptrw()[(4 * i) + 3] = arr[(4 * i) + 0];
-					arr.ptrw()[(4 * i) + 0] = arr[(4 * i) + 1];
-					arr.ptrw()[(4 * i) + 1] = arr[(4 * i) + 2];
-					arr.ptrw()[(4 * i) + 2] = arr[(4 * i) + 3];
-				}
-				img->create(tex->mWidth, tex->mHeight, true, Image::FORMAT_RGBA8, arr);
-				ERR_FAIL_COND_V(img.is_null(), Ref<Image>());
-				state.path_to_image_cache.insert(p_path, img);
-				return img;
-			}
-			return Ref<Image>();
-		} else {
-			Ref<Texture2D> texture = ResourceLoader::load(p_path);
-			ERR_FAIL_COND_V(texture.is_null(), Ref<Image>());
-			Ref<Image> image = texture->get_data();
-			ERR_FAIL_COND_V(image.is_null(), Ref<Image>());
-			state.path_to_image_cache.insert(p_path, image);
-			return image;
-		}
+	// Vector<String> split_path = p_path.get_basename().split("*");
+	// if (split_path.size() == 2) {
+	// 	size_t texture_idx = split_path[1].to_int();
+	// 	ERR_FAIL_COND_V(texture_idx >= p_scene->mNumTextures, Ref<Image>());
+	// 	aiTexture *tex = p_scene->mTextures[texture_idx];
+	// 	String filename = AssimpUtils::get_raw_string_from_assimp(tex->mFilename);
+	// 	filename = filename.get_file();
+	// 	print_verbose("Open Asset Import: Loading embedded texture " + filename);
+	// 	if (tex->mHeight == 0) {
+	// 		if (tex->CheckFormat("png")) {
+	// 			Ref<Image> img = Image::_png_mem_loader_func((uint8_t *)tex->pcData, tex->mWidth);
+	// 			ERR_FAIL_COND_V(img.is_null(), Ref<Image>());
+	// 			state.path_to_image_cache.insert(p_path, img);
+	// 			return img;
+	// 		} else if (tex->CheckFormat("jpg")) {
+	// 			Ref<Image> img = Image::_jpg_mem_loader_func((uint8_t *)tex->pcData, tex->mWidth);
+	// 			ERR_FAIL_COND_V(img.is_null(), Ref<Image>());
+	// 			state.path_to_image_cache.insert(p_path, img);
+	// 			return img;
+	// 		} else if (tex->CheckFormat("dds")) {
+	// 			ERR_FAIL_COND_V_MSG(true, Ref<Image>(), "Open Asset Import: Embedded dds not implemented");
+	// 		}
+	// 	} else {
+	// 		Ref<Image> img;
+	// 		img.instance();
+	// 		PoolByteArray arr;
+	// 		uint32_t size = tex->mWidth * tex->mHeight;
+	// 		arr.resize(size);
+	// 		memcpy(arr.write().ptr(), tex->pcData, size);
+	// 		ERR_FAIL_COND_V(arr.size() % 4 != 0, Ref<Image>());
+	// 		//ARGB8888 to RGBA8888
+	// 		for (int32_t i = 0; i < arr.size() / 4; i++) {
+	// 			arr.write().ptr()[(4 * i) + 3] = arr[(4 * i) + 0];
+	// 			arr.write().ptr()[(4 * i) + 0] = arr[(4 * i) + 1];
+	// 			arr.write().ptr()[(4 * i) + 1] = arr[(4 * i) + 2];
+	// 			arr.write().ptr()[(4 * i) + 2] = arr[(4 * i) + 3];
+	// 		}
+	// 		img->create(tex->mWidth, tex->mHeight, true, Image::FORMAT_RGBA8, arr);
+	// 		ERR_FAIL_COND_V(img.is_null(), Ref<Image>());
+	// 		state.path_to_image_cache.insert(p_path, img);
+	// 		return img;
+	// 	}
+	// 	return Ref<Image>();
+	// } else {
+	// 	Ref<Texture> texture = ResourceLoader::load(p_path);
+	// 	ERR_FAIL_COND_V(texture.is_null(), Ref<Image>());
+	// 	Ref<Image> image = texture->get_data();
+	// 	ERR_FAIL_COND_V(image.is_null(), Ref<Image>());
+	// 	state.path_to_image_cache.insert(p_path, image);
+	// 	return image;
+	// }
 
-		return Ref<Image>();
-	}
+	// return Ref<Image>();
+	//}
 
-	/* create texture from assimp data, if found in path */
-	static bool CreateAssimpTexture(
-			AssimpImporter::ImportState &state,
-			aiString texture_path,
-			String &filename,
-			String &path,
-			AssimpImageData &image_state) {
-		filename = get_raw_string_from_assimp(texture_path);
-		path = state.path.get_base_dir().plus_file(filename.replace("\\", "/"));
-		bool found = false;
-		find_texture_path(state.path, path, found);
-		if (found) {
-			image_state.raw_image = AssimpUtils::load_image(state, state.assimp_scene, path);
-			if (image_state.raw_image.is_valid()) {
-				image_state.texture.instance();
-				image_state.texture->create_from_image(image_state.raw_image);
-				// FIXME: Commented out during Vulkan port.
-				//image_state.texture->set_storage(ImageTexture::STORAGE_COMPRESS_LOSSY);
-				return true;
-			}
-		}
+	// /* create texture from assimp data, if found in path */
+	// static bool CreateAssimpTexture(
+	// 		AssimpImporter::ImportState &state,
+	// 		aiString texture_path,
+	// 		String &filename,
+	// 		String &path,
+	// 		AssimpImageData &image_state) {
+	// 	filename = get_raw_string_from_assimp(texture_path);
+	// 	path = state.path.get_base_dir().plus_file(filename.replace("\\", "/"));
+	// 	bool found = false;
+	// 	find_texture_path(state.path, path, found);
+	// 	if (found) {
+	// 		image_state.raw_image = AssimpUtils::load_image(state, state.assimp_scene, path);
+	// 		if (image_state.raw_image.is_valid()) {
+	// 			image_state.texture.instance();
+	// 			image_state.texture->create_from_image(image_state.raw_image);
+	// 			image_state.texture->set_storage(ImageTexture::STORAGE_COMPRESS_LOSSY);
+	// 			return true;
+	// 		}
+	// 	}
 
-		return false;
-	}
-	/** GetAssimpTexture
-	  * Designed to retrieve textures for you
-	  */
-	static bool GetAssimpTexture(
-			AssimpImporter::ImportState &state,
-			aiMaterial *ai_material,
-			aiTextureType texture_type,
-			String &filename,
-			String &path,
-			AssimpImageData &image_state) {
-		aiString ai_filename = aiString();
-		if (AI_SUCCESS == ai_material->GetTexture(texture_type, 0, &ai_filename, NULL, NULL, NULL, NULL, image_state.map_mode)) {
-			return CreateAssimpTexture(state, ai_filename, filename, path, image_state);
-		}
+	// 	return false;
+	// }
+	// /** GetAssimpTexture
+	//   * Designed to retrieve textures for you
+	//   */
+	// static bool GetAssimpTexture(
+	// 		AssimpImporter::ImportState &state,
+	// 		aiMaterial *ai_material,
+	// 		aiTextureType texture_type,
+	// 		String &filename,
+	// 		String &path,
+	// 		AssimpImageData &image_state) {
+	// 	aiString ai_filename = aiString();
+	// 	if (AI_SUCCESS == ai_material->GetTexture(texture_type, 0, &ai_filename, NULL, NULL, NULL, NULL, image_state.map_mode)) {
+	// 		return CreateAssimpTexture(state, ai_filename, filename, path, image_state);
+	// 	}
 
-		return false;
-	}
+	// 	return false;
+	// }
 };
 
-#endif // IMPORT_UTILS_IMPORTER_ASSIMP_H
+#endif // IMPORT_UTILS_FBX_IMPORTER_H

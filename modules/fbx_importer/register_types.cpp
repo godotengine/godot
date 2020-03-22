@@ -6,7 +6,7 @@
 /*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,23 +31,23 @@
 #include "register_types.h"
 
 #include "editor/editor_node.h"
-#include "editor_scene_importer_assimp.h"
+#include "editor_scene_importer_fbx.h"
 
 #ifdef TOOLS_ENABLED
 static void _editor_init() {
-	Ref<EditorSceneImporterAssimp> import_assimp;
+	Ref<EditorSceneImporterFBX> import_assimp;
 	import_assimp.instance();
 	ResourceImporterScene::get_singleton()->add_importer(import_assimp);
 }
 #endif
 
-void register_assimp_types() {
+void register_fbx_importer_types() {
 
 #ifdef TOOLS_ENABLED
 	ClassDB::APIType prev_api = ClassDB::get_current_api();
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
 
-	ClassDB::register_class<EditorSceneImporterAssimp>();
+	ClassDB::register_class<EditorSceneImporterFBX>();
 
 	ClassDB::set_current_api(prev_api);
 
@@ -55,5 +55,5 @@ void register_assimp_types() {
 #endif
 }
 
-void unregister_assimp_types() {
+void unregister_fbx_importer_types() {
 }
