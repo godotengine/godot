@@ -58,6 +58,7 @@ public:
 	void sky_set_mode(RID p_sky, VS::SkyMode p_samples) {}
 	void sky_set_texture(RID p_sky, RID p_panorama) {}
 	void sky_set_texture(RID p_sky, RID p_cube_map, int p_radiance_size) {}
+	void sky_set_material(RID p_sky, RID p_material) {}
 
 	/* ENVIRONMENT API */
 
@@ -312,6 +313,11 @@ public:
 	virtual Size2 texture_size_with_proxy(RID p_texture) const { return Size2(); }
 	void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) {}
 #endif
+
+	/* SKY API */
+
+	RID sky_create() { return RID(); }
+	void sky_set_texture(RID p_sky, RID p_cube_map, int p_radiance_size) {}
 
 	/* SHADER API */
 

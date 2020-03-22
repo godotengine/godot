@@ -76,6 +76,8 @@ static _FORCE_INLINE_ void store_camera(const CameraMatrix &p_mtx, float *p_arra
 		}
 	}
 }
+
+/* SCENE SHADER */
 void RasterizerSceneHighEndRD::ShaderData::set_code(const String &p_code) {
 	//compile
 
@@ -345,6 +347,7 @@ void RasterizerSceneHighEndRD::ShaderData::set_default_texture_param(const Strin
 		default_texture_params[p_name] = p_texture;
 	}
 }
+
 void RasterizerSceneHighEndRD::ShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
 
 	Map<int, StringName> order;
@@ -377,6 +380,7 @@ bool RasterizerSceneHighEndRD::ShaderData::is_param_texture(const StringName &p_
 bool RasterizerSceneHighEndRD::ShaderData::is_animated() const {
 	return false;
 }
+
 bool RasterizerSceneHighEndRD::ShaderData::casts_shadows() const {
 	return false;
 }
@@ -499,6 +503,7 @@ void RasterizerSceneHighEndRD::MaterialData::update_parameters(const Map<StringN
 
 	uniform_set = RD::get_singleton()->uniform_set_create(uniforms, scene_singleton->shader.scene_shader.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET);
 }
+
 RasterizerSceneHighEndRD::MaterialData::~MaterialData() {
 	if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
 		RD::get_singleton()->free(uniform_set);
@@ -1290,38 +1295,6 @@ void RasterizerSceneHighEndRD::_fill_render_list(InstanceBase **p_cull_result, i
 	}
 }
 
-void RasterizerSceneHighEndRD::_draw_sky(RD::DrawListID p_draw_list, RD::FramebufferFormatID p_fb_format, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform, float p_alpha) {
-
-	ERR_FAIL_COND(!is_environment(p_environment));
-
-	RID sky = environment_get_sky(p_environment);
-	ERR_FAIL_COND(!sky.is_valid());
-	RID panorama = sky_get_panorama_texture_rd(sky);
-	ERR_FAIL_COND(!panorama.is_valid());
-	Basis sky_transform = environment_get_sky_orientation(p_environment);
-	sky_transform.invert();
-
-	float multiplier = environment_get_bg_energy(p_environment);
-	float custom_fov = environment_get_sky_custom_fov(p_environment);
-	// Camera
-	CameraMatrix camera;
-
-	if (custom_fov) {
-
-		float near_plane = p_projection.get_z_near();
-		float far_plane = p_projection.get_z_far();
-		float aspect = p_projection.get_aspect();
-
-		camera.set_perspective(custom_fov, aspect, near_plane, far_plane);
-
-	} else {
-		camera = p_projection;
-	}
-
-	sky_transform = p_transform.basis * sky_transform;
-	storage->get_effects()->render_panorama(p_draw_list, p_fb_format, panorama, camera, sky_transform, 1.0, multiplier);
-}
-
 void RasterizerSceneHighEndRD::_setup_reflections(RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, const Transform &p_camera_inverse_transform, RID p_environment) {
 
 	for (int i = 0; i < p_reflection_probe_cull_count; i++) {
@@ -1460,6 +1433,7 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 
 	uint32_t light_count = 0;
 	scene_state.ubo.directional_light_count = 0;
+	sky_scene_state.directional_light_count = 0;
 
 	for (int i = 0; i < p_light_cull_count; i++) {
 
@@ -1533,6 +1507,27 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 					float fade_start = storage->light_get_param(base, VS::LIGHT_PARAM_SHADOW_FADE_START);
 					light_data.fade_from = -light_data.shadow_split_offsets[3] * MIN(fade_start, 0.999); //using 1.0 would break smoothstep
 					light_data.fade_to = -light_data.shadow_split_offsets[3];
+				}
+
+				//	Copy to SkyDirectionalLightData
+				if (sky_scene_state.directional_light_count < sky_scene_state.max_directional_lights) {
+
+					SkyDirectionalLightData &sky_light_data = sky_scene_state.directional_lights[sky_scene_state.directional_light_count];
+
+					Vector3 world_direction = light_transform.basis.xform(Vector3(0, 0, 1)).normalized();
+
+					sky_light_data.direction[0] = world_direction.x;
+					sky_light_data.direction[1] = world_direction.y;
+					sky_light_data.direction[2] = -world_direction.z;
+
+					sky_light_data.energy = light_data.energy / Math_PI;
+
+					sky_light_data.color[0] = light_data.color[0];
+					sky_light_data.color[1] = light_data.color[1];
+					sky_light_data.color[2] = light_data.color[2];
+
+					sky_light_data.enabled = true;
+					sky_scene_state.directional_light_count++;
 				}
 
 				scene_state.ubo.directional_light_count++;
@@ -1705,6 +1700,7 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 	scene_state.ubo.viewport_size[1] = vp_he.y;
 
 	Size2 screen_pixel_size;
+	Size2i screen_size;
 	RID opaque_framebuffer;
 	RID depth_framebuffer;
 	RID alpha_framebuffer;
@@ -1715,6 +1711,8 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 	if (render_buffer) {
 		screen_pixel_size.width = 1.0 / render_buffer->width;
 		screen_pixel_size.height = 1.0 / render_buffer->height;
+		screen_size.x = render_buffer->width;
+		screen_size.y = render_buffer->height;
 
 		opaque_framebuffer = render_buffer->color_fb;
 
@@ -1755,6 +1753,8 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 		uint32_t resolution = reflection_probe_instance_get_resolution(p_reflection_probe);
 		screen_pixel_size.width = 1.0 / resolution;
 		screen_pixel_size.height = 1.0 / resolution;
+		screen_size.x = resolution;
+		screen_size.y = resolution;
 
 		opaque_framebuffer = reflection_probe_instance_get_framebuffer(p_reflection_probe, p_reflection_probe_pass);
 		depth_framebuffer = reflection_probe_instance_get_depth_framebuffer(p_reflection_probe, p_reflection_probe_pass);
@@ -1809,7 +1809,19 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 			case VS::ENV_BG_SKY: {
 				RID sky = environment_get_sky(p_environment);
 				if (sky.is_valid()) {
+
+					RENDER_TIMESTAMP("Setup Sky");
+					CameraMatrix projection = p_cam_projection;
+					if (p_reflection_probe.is_valid()) {
+						CameraMatrix correction;
+						correction.set_depth_correction(true);
+						projection = correction * p_cam_projection;
+					}
+
+					_setup_sky(p_environment, p_cam_transform.origin, screen_size);
+					_update_sky(p_environment, projection, p_cam_transform);
 					radiance_uniform_set = sky_get_radiance_uniform_set_rd(sky, default_shader_rd, RADIANCE_UNIFORM_SET);
+
 					draw_sky = true;
 				}
 			} break;
@@ -1902,9 +1914,7 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 			projection = correction * p_cam_projection;
 		}
 
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(opaque_framebuffer, RD::INITIAL_ACTION_CONTINUE, can_continue ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, can_continue ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ);
-		_draw_sky(draw_list, RD::get_singleton()->framebuffer_get_format(opaque_framebuffer), p_environment, projection, p_cam_transform, 1.0);
-		RD::get_singleton()->draw_list_end();
+		_draw_sky(can_continue, opaque_framebuffer, p_environment, projection, p_cam_transform);
 
 		if (using_separate_specular && !can_continue) {
 			//can't continue, so close the buffers
@@ -2371,7 +2381,7 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 	singleton = this;
 	storage = p_storage;
 
-	/* SHADER */
+	/* SCENE SHADER */
 
 	{
 		String defines;

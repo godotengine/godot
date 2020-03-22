@@ -66,5 +66,8 @@
 		<constant name="MODE_PARTICLES" value="2" enum="Mode">
 			Mode used to calculate particle information on a per-particle basis. Not used for drawing.
 		</constant>
+		<constant name="MODE_SKY" value="3" enum="Mode">
+			Mode used for drawing skies. Only works with shaders attached to [Sky] objects.
+		</constant>
 	</constants>
 </class>

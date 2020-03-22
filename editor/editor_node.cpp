@@ -6584,6 +6584,18 @@ EditorNode::EditorNode() {
 		particles_mat_convert.instance();
 		resource_conversion_plugins.push_back(particles_mat_convert);
 
+		Ref<ProceduralSkyMaterialConversionPlugin> procedural_sky_mat_convert;
+		procedural_sky_mat_convert.instance();
+		resource_conversion_plugins.push_back(procedural_sky_mat_convert);
+
+		Ref<PanoramaSkyMaterialConversionPlugin> panorama_sky_mat_convert;
+		panorama_sky_mat_convert.instance();
+		resource_conversion_plugins.push_back(panorama_sky_mat_convert);
+
+		Ref<PhysicalSkyMaterialConversionPlugin> physical_sky_mat_convert;
+		physical_sky_mat_convert.instance();
+		resource_conversion_plugins.push_back(physical_sky_mat_convert);
+
 		Ref<VisualShaderConversionPlugin> vshader_convert;
 		vshader_convert.instance();
 		resource_conversion_plugins.push_back(vshader_convert);

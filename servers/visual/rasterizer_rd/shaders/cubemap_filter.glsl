@@ -262,28 +262,66 @@ void main() {
 	// write color
 	color.xyz = max(vec3(0.0), color.xyz);
 	color.w = 1.0;
+#ifdef USE_TEXTURE_ARRAY
+	id.xy *= uvec2(2, 2);
+#endif
 
 	switch (level) {
 		case 0:
 			imageStore(dest_cubemap0, ivec3(id), color);
+#ifdef USE_TEXTURE_ARRAY
+			imageStore(dest_cubemap0, ivec3(id) + ivec3(1.0, 0.0, 0.0), color);
+			imageStore(dest_cubemap0, ivec3(id) + ivec3(0.0, 1.0, 0.0), color);
+			imageStore(dest_cubemap0, ivec3(id) + ivec3(1.0, 1.0, 0.0), color);
+#endif
 			break;
 		case 1:
 			imageStore(dest_cubemap1, ivec3(id), color);
+#ifdef USE_TEXTURE_ARRAY
+			imageStore(dest_cubemap1, ivec3(id) + ivec3(1.0, 0.0, 0.0), color);
+			imageStore(dest_cubemap1, ivec3(id) + ivec3(0.0, 1.0, 0.0), color);
+			imageStore(dest_cubemap1, ivec3(id) + ivec3(1.0, 1.0, 0.0), color);
+#endif
 			break;
 		case 2:
 			imageStore(dest_cubemap2, ivec3(id), color);
+#ifdef USE_TEXTURE_ARRAY
+			imageStore(dest_cubemap2, ivec3(id) + ivec3(1.0, 0.0, 0.0), color);
+			imageStore(dest_cubemap2, ivec3(id) + ivec3(0.0, 1.0, 0.0), color);
+			imageStore(dest_cubemap2, ivec3(id) + ivec3(1.0, 1.0, 0.0), color);
+#endif
 			break;
 		case 3:
 			imageStore(dest_cubemap3, ivec3(id), color);
+#ifdef USE_TEXTURE_ARRAY
+			imageStore(dest_cubemap3, ivec3(id) + ivec3(1.0, 0.0, 0.0), color);
+			imageStore(dest_cubemap3, ivec3(id) + ivec3(0.0, 1.0, 0.0), color);
+			imageStore(dest_cubemap3, ivec3(id) + ivec3(1.0, 1.0, 0.0), color);
+#endif
 			break;
 		case 4:
 			imageStore(dest_cubemap4, ivec3(id), color);
+#ifdef USE_TEXTURE_ARRAY
+			imageStore(dest_cubemap4, ivec3(id) + ivec3(1.0, 0.0, 0.0), color);
+			imageStore(dest_cubemap4, ivec3(id) + ivec3(0.0, 1.0, 0.0), color);
+			imageStore(dest_cubemap4, ivec3(id) + ivec3(1.0, 1.0, 0.0), color);
+#endif
 			break;
 		case 5:
 			imageStore(dest_cubemap5, ivec3(id), color);
+#ifdef USE_TEXTURE_ARRAY
+			imageStore(dest_cubemap5, ivec3(id) + ivec3(1.0, 0.0, 0.0), color);
+			imageStore(dest_cubemap5, ivec3(id) + ivec3(0.0, 1.0, 0.0), color);
+			imageStore(dest_cubemap5, ivec3(id) + ivec3(1.0, 1.0, 0.0), color);
+#endif
 			break;
 		default:
 			imageStore(dest_cubemap6, ivec3(id), color);
+#ifdef USE_TEXTURE_ARRAY
+			imageStore(dest_cubemap6, ivec3(id) + ivec3(1.0, 0.0, 0.0), color);
+			imageStore(dest_cubemap6, ivec3(id) + ivec3(0.0, 1.0, 0.0), color);
+			imageStore(dest_cubemap6, ivec3(id) + ivec3(1.0, 1.0, 0.0), color);
+#endif
 			break;
 	}
 }

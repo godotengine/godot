@@ -419,7 +419,7 @@ public:
 	FUNCRID(sky)
 	FUNC2(sky_set_radiance_size, RID, int)
 	FUNC2(sky_set_mode, RID, SkyMode)
-	FUNC2(sky_set_texture, RID, RID)
+	FUNC2(sky_set_material, RID, RID)
 
 	/* ENVIRONMENT API */
 

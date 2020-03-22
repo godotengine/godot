@@ -55,7 +55,7 @@ void RasterizerSceneRD::_update_reflection_data(ReflectionData &rd, int p_size, 
 	uint32_t w = p_size, h = p_size;
 
 	if (p_use_array) {
-		int layers = p_low_quality ? 7 : roughness_layers;
+		int layers = p_low_quality ? 8 : roughness_layers;
 
 		for (int i = 0; i < layers; i++) {
 			ReflectionData::Layer layer;
@@ -84,7 +84,7 @@ void RasterizerSceneRD::_update_reflection_data(ReflectionData &rd, int p_size, 
 		}
 
 	} else {
-		mipmaps = p_low_quality ? 7 : mipmaps;
+		mipmaps = p_low_quality ? 8 : mipmaps;
 		//regular cubemap, lower quality (aliasing, less memory)
 		ReflectionData::Layer layer;
 		uint32_t mmw = w;
@@ -139,87 +139,41 @@ void RasterizerSceneRD::_update_reflection_data(ReflectionData &rd, int p_size, 
 	}
 }
 
-void RasterizerSceneRD::_create_reflection_from_panorama(ReflectionData &rd, RID p_panorama, bool p_quality) {
+void RasterizerSceneRD::_create_reflection_fast_filter(ReflectionData &rd, bool p_use_arrays) {
 
-	if (sky_use_cubemap_array) {
+	storage->get_effects()->cubemap_downsample(rd.radiance_base_cubemap, rd.downsampled_layer.mipmaps[0].view, rd.downsampled_layer.mipmaps[0].size);
 
-		if (p_quality) {
-			//render directly to the layers
-			for (int i = 0; i < rd.layers.size(); i++) {
-				storage->get_effects()->cubemap_roughness(p_panorama, true, rd.layers[i].views[0], 10, sky_ggx_samples_quality, float(i) / (rd.layers.size() - 1.0), rd.layers[i].mipmaps[0].size.x);
-			}
-		} else {
-			// Use fast filtering. Render directly to base mip levels
-			storage->get_effects()->cubemap_downsample(p_panorama, true, rd.downsampled_layer.mipmaps[0].view, rd.downsampled_layer.mipmaps[0].size);
+	for (int i = 1; i < rd.downsampled_layer.mipmaps.size(); i++) {
+		storage->get_effects()->cubemap_downsample(rd.downsampled_layer.mipmaps[i - 1].view, rd.downsampled_layer.mipmaps[i].view, rd.downsampled_layer.mipmaps[i].size);
+	}
 
-			for (int i = 1; i < rd.downsampled_layer.mipmaps.size(); i++) {
-				storage->get_effects()->cubemap_downsample(rd.downsampled_layer.mipmaps[i - 1].view, false, rd.downsampled_layer.mipmaps[i].view, rd.downsampled_layer.mipmaps[i].size);
-			}
-			Vector<RID> views;
-			for (int i = 0; i < rd.layers.size(); i++) {
-				views.push_back(rd.layers[i].views[0]);
-			}
-
-			storage->get_effects()->cubemap_filter(rd.downsampled_radiance_cubemap, views, true);
+	Vector<RID> views;
+	if (p_use_arrays) {
+		for (int i = 1; i < rd.layers.size(); i++) {
+			views.push_back(rd.layers[i].views[0]);
 		}
 	} else {
-
-		if (p_quality) {
-			//render directly to the layers
-			for (int i = 0; i < rd.layers[0].mipmaps.size(); i++) {
-				storage->get_effects()->cubemap_roughness(p_panorama, true, rd.layers[0].views[i], 10, sky_ggx_samples_quality, float(i) / (rd.layers[0].mipmaps.size() - 1.0), rd.layers[0].mipmaps[i].size.x);
-			}
-		} else {
-			// Use fast filtering. Render directly to each mip level
-			storage->get_effects()->cubemap_downsample(p_panorama, true, rd.downsampled_layer.mipmaps[0].view, rd.downsampled_layer.mipmaps[0].size);
-
-			for (int i = 1; i < rd.downsampled_layer.mipmaps.size(); i++) {
-				storage->get_effects()->cubemap_downsample(rd.downsampled_layer.mipmaps[i - 1].view, false, rd.downsampled_layer.mipmaps[i].view, rd.downsampled_layer.mipmaps[i].size);
-			}
-			storage->get_effects()->cubemap_filter(rd.downsampled_radiance_cubemap, rd.layers[0].views, false);
+		for (int i = 1; i < rd.layers[0].views.size(); i++) {
+			views.push_back(rd.layers[0].views[i]);
 		}
 	}
+
+	storage->get_effects()->cubemap_filter(rd.downsampled_radiance_cubemap, views, p_use_arrays);
 }
 
-void RasterizerSceneRD::_create_reflection_from_base_mipmap(ReflectionData &rd, bool p_use_arrays, bool p_quality, int p_cube_side, int p_base_layer) {
+void RasterizerSceneRD::_create_reflection_importance_sample(ReflectionData &rd, bool p_use_arrays, int p_cube_side, int p_base_layer) {
 
 	if (p_use_arrays) {
 
-		if (p_quality) {
-			//render directly to the layers
-			storage->get_effects()->cubemap_roughness(rd.radiance_base_cubemap, false, rd.layers[p_base_layer].views[0], p_cube_side, sky_ggx_samples_quality, float(p_base_layer) / (rd.layers.size() - 1.0), rd.layers[p_base_layer].mipmaps[0].size.x);
-		} else {
-
-			storage->get_effects()->cubemap_downsample(rd.radiance_base_cubemap, false, rd.downsampled_layer.mipmaps[0].view, rd.downsampled_layer.mipmaps[0].size);
-
-			for (int i = 1; i < rd.downsampled_layer.mipmaps.size(); i++) {
-				storage->get_effects()->cubemap_downsample(rd.downsampled_layer.mipmaps[i - 1].view, false, rd.downsampled_layer.mipmaps[i].view, rd.downsampled_layer.mipmaps[i].size);
-			}
-			Vector<RID> views;
-			for (int i = 0; i < rd.layers.size(); i++) {
-				views.push_back(rd.layers[i].views[0]);
-			}
-
-			storage->get_effects()->cubemap_filter(rd.downsampled_radiance_cubemap, views, true);
-		}
+		//render directly to the layers
+		storage->get_effects()->cubemap_roughness(rd.radiance_base_cubemap, rd.layers[p_base_layer].views[0], p_cube_side, sky_ggx_samples_quality, float(p_base_layer) / (rd.layers.size() - 1.0), rd.layers[p_base_layer].mipmaps[0].size.x);
 	} else {
 
-		if (p_quality) {
-
-			storage->get_effects()->cubemap_roughness(rd.layers[0].views[p_base_layer - 1], false, rd.layers[0].views[p_base_layer], p_cube_side, sky_ggx_samples_quality, float(p_base_layer) / (rd.layers[0].mipmaps.size() - 1.0), rd.layers[0].mipmaps[p_base_layer].size.x);
-		} else {
-
-			storage->get_effects()->cubemap_downsample(rd.radiance_base_cubemap, false, rd.downsampled_layer.mipmaps[0].view, rd.downsampled_layer.mipmaps[0].size);
-
-			for (int i = 1; i < rd.downsampled_layer.mipmaps.size(); i++) {
-				storage->get_effects()->cubemap_downsample(rd.downsampled_layer.mipmaps[i - 1].view, false, rd.downsampled_layer.mipmaps[i].view, rd.downsampled_layer.mipmaps[i].size);
-			}
-			storage->get_effects()->cubemap_filter(rd.downsampled_radiance_cubemap, rd.layers[0].views, false);
-		}
+		storage->get_effects()->cubemap_roughness(rd.layers[0].views[p_base_layer - 1], rd.layers[0].views[p_base_layer], p_cube_side, sky_ggx_samples_quality, float(p_base_layer) / (rd.layers[0].mipmaps.size() - 1.0), rd.layers[0].mipmaps[p_base_layer].size.x);
 	}
 }
 
-void RasterizerSceneRD::_update_reflection_mipmaps(ReflectionData &rd, bool p_quality) {
+void RasterizerSceneRD::_update_reflection_mipmaps(ReflectionData &rd) {
 
 	if (sky_use_cubemap_array) {
 
@@ -258,9 +212,9 @@ void RasterizerSceneRD::sky_set_radiance_size(RID p_sky, int p_radiance_size) {
 	}
 	sky->radiance_size = p_radiance_size;
 
-	if (sky->mode == VS::SKY_MODE_REALTIME && sky->radiance_size != 128) {
-		WARN_PRINT("Realtime Skies can only use a radiance size of 128. Radiance size will be set to 128 internally.");
-		sky->radiance_size = 128;
+	if (sky->mode == VS::SKY_MODE_REALTIME && sky->radiance_size != 256) {
+		WARN_PRINT("Realtime Skies can only use a radiance size of 256. Radiance size will be set to 256 internally.");
+		sky->radiance_size = 256;
 	}
 
 	_sky_invalidate(sky);
@@ -281,9 +235,9 @@ void RasterizerSceneRD::sky_set_mode(RID p_sky, VS::SkyMode p_mode) {
 
 	sky->mode = p_mode;
 
-	if (sky->mode == VS::SKY_MODE_REALTIME && sky->radiance_size != 128) {
-		WARN_PRINT("Realtime Skies can only use a radiance size of 128. Radiance size will be set to 128 internally.");
-		sky_set_radiance_size(p_sky, 128);
+	if (sky->mode == VS::SKY_MODE_REALTIME && sky->radiance_size != 256) {
+		WARN_PRINT("Realtime Skies can only use a radiance size of 256. Radiance size will be set to 256 internally.");
+		sky_set_radiance_size(p_sky, 256);
 	}
 
 	_sky_invalidate(sky);
@@ -294,26 +248,10 @@ void RasterizerSceneRD::sky_set_mode(RID p_sky, VS::SkyMode p_mode) {
 	_clear_reflection_data(sky->reflection);
 }
 
-void RasterizerSceneRD::sky_set_texture(RID p_sky, RID p_panorama) {
-
+void RasterizerSceneRD::sky_set_material(RID p_sky, RID p_material) {
 	Sky *sky = sky_owner.getornull(p_sky);
 	ERR_FAIL_COND(!sky);
-
-	if (sky->panorama.is_valid()) {
-		sky->panorama = RID();
-		if (sky->radiance.is_valid()) {
-			RD::get_singleton()->free(sky->radiance);
-			sky->radiance = RID();
-		}
-		_clear_reflection_data(sky->reflection);
-	}
-
-	sky->panorama = p_panorama;
-
-	if (!sky->panorama.is_valid())
-		return; //cleared
-
-	_sky_invalidate(sky);
+	sky->material = p_material;
 }
 void RasterizerSceneRD::_update_dirty_skys() {
 
@@ -321,13 +259,20 @@ void RasterizerSceneRD::_update_dirty_skys() {
 
 	while (sky) {
 
+		bool texture_set_dirty = false;
 		//update sky configuration if texture is missing
 
 		if (sky->radiance.is_null()) {
 			int mipmaps = Image::get_image_required_mipmaps(sky->radiance_size, sky->radiance_size, Image::FORMAT_RGBAH) + 1;
 
 			uint32_t w = sky->radiance_size, h = sky->radiance_size;
-			int layers = sky->mode == VS::SKY_MODE_REALTIME ? 7 : roughness_layers;
+			int layers = roughness_layers;
+			if (sky->mode == VS::SKY_MODE_REALTIME) {
+				layers = 8;
+				if (roughness_layers != 8) {
+					WARN_PRINT("When using REALTIME skies, roughness_layers should be set to 8 in the project settings for best quality reflections");
+				}
+			}
 
 			if (sky_use_cubemap_array) {
 				//array (higher quality, 6 times more memory)
@@ -359,15 +304,50 @@ void RasterizerSceneRD::_update_dirty_skys() {
 
 				_update_reflection_data(sky->reflection, sky->radiance_size, MIN(mipmaps, layers), false, sky->radiance, 0, sky->mode == VS::SKY_MODE_REALTIME);
 			}
+			texture_set_dirty = true;
 		}
 
-		RID panorama_texture = storage->texture_get_rd_texture(sky->panorama);
+		// Create subpass buffers if they havent been created already
+		if (sky->half_res_pass.is_null() && !RD::get_singleton()->texture_is_valid(sky->half_res_pass) && sky->screen_size.x >= 4 && sky->screen_size.y >= 4) {
+			RD::TextureFormat tformat;
+			tformat.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+			tformat.width = sky->screen_size.x / 2;
+			tformat.height = sky->screen_size.y / 2;
+			tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+			tformat.type = RD::TEXTURE_TYPE_2D;
 
-		if (panorama_texture.is_valid()) {
-			//is there a panorama texture?
-			_create_reflection_from_panorama(sky->reflection, panorama_texture, sky->mode == VS::SKY_MODE_QUALITY);
-			_update_reflection_mipmaps(sky->reflection, sky->mode == VS::SKY_MODE_QUALITY);
+			sky->half_res_pass = RD::get_singleton()->texture_create(tformat, RD::TextureView());
+			Vector<RID> texs;
+			texs.push_back(sky->half_res_pass);
+			sky->half_res_framebuffer = RD::get_singleton()->framebuffer_create(texs);
+			texture_set_dirty = true;
 		}
+
+		if (sky->quarter_res_pass.is_null() && !RD::get_singleton()->texture_is_valid(sky->quarter_res_pass) && sky->screen_size.x >= 4 && sky->screen_size.y >= 4) {
+			RD::TextureFormat tformat;
+			tformat.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+			tformat.width = sky->screen_size.x / 4;
+			tformat.height = sky->screen_size.y / 4;
+			tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+			tformat.type = RD::TEXTURE_TYPE_2D;
+
+			sky->quarter_res_pass = RD::get_singleton()->texture_create(tformat, RD::TextureView());
+			Vector<RID> texs;
+			texs.push_back(sky->quarter_res_pass);
+			sky->quarter_res_framebuffer = RD::get_singleton()->framebuffer_create(texs);
+			texture_set_dirty = true;
+		}
+
+		if (texture_set_dirty) {
+			for (int i = 0; i < SKY_TEXTURE_SET_MAX; i++) {
+				if (sky->texture_uniform_sets[i].is_valid() && RD::get_singleton()->uniform_set_is_valid(sky->texture_uniform_sets[i])) {
+					RD::get_singleton()->free(sky->texture_uniform_sets[i]);
+					sky->texture_uniform_sets[i] = RID();
+				}
+			}
+		}
+
+		sky->reflection.dirty = true;
 
 		Sky *next = sky->dirty_list;
 		sky->dirty_list = nullptr;
@@ -378,16 +358,6 @@ void RasterizerSceneRD::_update_dirty_skys() {
 	dirty_sky_list = nullptr;
 }
 
-RID RasterizerSceneRD::sky_get_panorama_texture_rd(RID p_sky) const {
-
-	Sky *sky = sky_owner.getornull(p_sky);
-	ERR_FAIL_COND_V(!sky, RID());
-	if (sky->panorama.is_null()) {
-		return RID();
-	}
-
-	return storage->texture_get_rd_texture(sky->panorama, true);
-}
 RID RasterizerSceneRD::sky_get_radiance_texture_rd(RID p_sky) const {
 	Sky *sky = sky_owner.getornull(p_sky);
 	ERR_FAIL_COND_V(!sky, RID());
@@ -417,6 +387,693 @@ RID RasterizerSceneRD::sky_get_radiance_uniform_set_rd(RID p_sky, RID p_shader, 
 	}
 
 	return sky->uniform_set;
+}
+
+RID RasterizerSceneRD::_get_sky_textures(Sky *p_sky, SkyTextureSetVersion p_version) {
+
+	if (p_sky->texture_uniform_sets[p_version].is_valid() && RD::get_singleton()->uniform_set_is_valid(p_sky->texture_uniform_sets[p_version])) {
+		return p_sky->texture_uniform_sets[p_version];
+	}
+	Vector<RD::Uniform> uniforms;
+	{
+		RD::Uniform u;
+		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		u.binding = 0;
+		if (p_sky->radiance.is_valid() && p_version <= SKY_TEXTURE_SET_QUARTER_RES) {
+			u.ids.push_back(p_sky->radiance);
+		} else {
+			u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
+		}
+		uniforms.push_back(u);
+	}
+	{
+		RD::Uniform u;
+		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		u.binding = 1; // half res
+		if (p_sky->half_res_pass.is_valid() && (p_version != SKY_TEXTURE_SET_HALF_RES) && (p_version < SKY_TEXTURE_SET_CUBEMAP_HALF_RES0 || p_version > SKY_TEXTURE_SET_CUBEMAP_HALF_RES5)) {
+			if (p_version >= SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES0) {
+				u.ids.push_back(p_sky->reflection.layers[0].mipmaps[1].views[p_version - SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES0]);
+			} else if (p_version >= SKY_TEXTURE_SET_CUBEMAP0) {
+				u.ids.push_back(p_sky->reflection.layers[0].mipmaps[1].views[p_version - SKY_TEXTURE_SET_CUBEMAP0]);
+			} else {
+				u.ids.push_back(p_sky->half_res_pass);
+			}
+		} else {
+			u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE));
+		}
+		uniforms.push_back(u);
+	}
+	{
+		RD::Uniform u;
+		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		u.binding = 2; // quarter res
+		if (p_sky->quarter_res_pass.is_valid() && (p_version != SKY_TEXTURE_SET_QUARTER_RES) && (p_version < SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES0 || p_version > SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES5)) {
+			if (p_version >= SKY_TEXTURE_SET_CUBEMAP_HALF_RES0) {
+				u.ids.push_back(p_sky->reflection.layers[0].mipmaps[2].views[p_version - SKY_TEXTURE_SET_CUBEMAP_HALF_RES0]);
+			} else if (p_version >= SKY_TEXTURE_SET_CUBEMAP0) {
+				u.ids.push_back(p_sky->reflection.layers[0].mipmaps[2].views[p_version - SKY_TEXTURE_SET_CUBEMAP0]);
+			} else {
+				u.ids.push_back(p_sky->quarter_res_pass);
+			}
+		} else {
+			u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE));
+		}
+		uniforms.push_back(u);
+	}
+
+	p_sky->texture_uniform_sets[p_version] = RD::get_singleton()->uniform_set_create(uniforms, sky_shader.default_shader_rd, SKY_SET_TEXTURES);
+	return p_sky->texture_uniform_sets[p_version];
+}
+
+RID RasterizerSceneRD::sky_get_material(RID p_sky) const {
+	Sky *sky = sky_owner.getornull(p_sky);
+	ERR_FAIL_COND_V(!sky, RID());
+
+	return sky->material;
+}
+
+void RasterizerSceneRD::_draw_sky(bool p_can_continue, RID p_fb, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform) {
+
+	ERR_FAIL_COND(!is_environment(p_environment));
+
+	Sky *sky = sky_owner.getornull(environment_get_sky(p_environment));
+	ERR_FAIL_COND(!sky);
+
+	RID sky_material = sky_get_material(environment_get_sky(p_environment));
+
+	SkyMaterialData *material = NULL;
+
+	if (sky_material.is_valid()) {
+		material = (SkyMaterialData *)storage->material_get_data(sky_material, RasterizerStorageRD::SHADER_TYPE_SKY);
+		if (!material || !material->shader_data->valid) {
+			material = NULL;
+		}
+	}
+
+	if (!material) {
+		sky_material = sky_shader.default_material;
+		material = (SkyMaterialData *)storage->material_get_data(sky_material, RasterizerStorageRD::SHADER_TYPE_SKY);
+	}
+
+	ERR_FAIL_COND(!material);
+
+	SkyShaderData *shader_data = material->shader_data;
+
+	ERR_FAIL_COND(!shader_data);
+
+	Basis sky_transform = environment_get_sky_orientation(p_environment);
+	sky_transform.invert();
+
+	float multiplier = environment_get_bg_energy(p_environment);
+	float custom_fov = environment_get_sky_custom_fov(p_environment);
+	// Camera
+	CameraMatrix camera;
+
+	if (custom_fov) {
+
+		float near_plane = p_projection.get_z_near();
+		float far_plane = p_projection.get_z_far();
+		float aspect = p_projection.get_aspect();
+
+		camera.set_perspective(custom_fov, aspect, near_plane, far_plane);
+
+	} else {
+		camera = p_projection;
+	}
+
+	sky_transform = p_transform.basis * sky_transform;
+
+	if (shader_data->uses_quarter_res) {
+		RenderPipelineVertexFormatCacheRD *pipeline = &shader_data->pipelines[SKY_VERSION_QUARTER_RES];
+
+		RID texture_uniform_set = _get_sky_textures(sky, SKY_TEXTURE_SET_QUARTER_RES);
+
+		Vector<Color> clear_colors;
+		clear_colors.push_back(Color(0.0, 0.0, 0.0));
+
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(sky->quarter_res_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, clear_colors);
+		storage->get_effects()->render_sky(draw_list, time, sky->quarter_res_framebuffer, sky_scene_state.sampler_uniform_set, sky_scene_state.light_uniform_set, pipeline, material->uniform_set, texture_uniform_set, camera, sky_transform, multiplier, p_transform.origin);
+		RD::get_singleton()->draw_list_end();
+	}
+
+	if (shader_data->uses_half_res) {
+		RenderPipelineVertexFormatCacheRD *pipeline = &shader_data->pipelines[SKY_VERSION_HALF_RES];
+
+		RID texture_uniform_set = _get_sky_textures(sky, SKY_TEXTURE_SET_HALF_RES);
+
+		Vector<Color> clear_colors;
+		clear_colors.push_back(Color(0.0, 0.0, 0.0));
+
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(sky->half_res_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, clear_colors);
+		storage->get_effects()->render_sky(draw_list, time, sky->half_res_framebuffer, sky_scene_state.sampler_uniform_set, sky_scene_state.light_uniform_set, pipeline, material->uniform_set, texture_uniform_set, camera, sky_transform, multiplier, p_transform.origin);
+		RD::get_singleton()->draw_list_end();
+	}
+
+	RenderPipelineVertexFormatCacheRD *pipeline = &shader_data->pipelines[SKY_VERSION_BACKGROUND];
+
+	RID texture_uniform_set = _get_sky_textures(sky, SKY_TEXTURE_SET_BACKGROUND);
+
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_fb, RD::INITIAL_ACTION_CONTINUE, p_can_continue ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, p_can_continue ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ);
+	storage->get_effects()->render_sky(draw_list, time, p_fb, sky_scene_state.sampler_uniform_set, sky_scene_state.light_uniform_set, pipeline, material->uniform_set, texture_uniform_set, camera, sky_transform, multiplier, p_transform.origin);
+	RD::get_singleton()->draw_list_end();
+}
+
+void RasterizerSceneRD::_setup_sky(RID p_environment, const Vector3 &p_position, const Size2i p_screen_size) {
+
+	ERR_FAIL_COND(!is_environment(p_environment));
+
+	Sky *sky = sky_owner.getornull(environment_get_sky(p_environment));
+	ERR_FAIL_COND(!sky);
+
+	RID sky_material = sky_get_material(environment_get_sky(p_environment));
+
+	SkyMaterialData *material = NULL;
+
+	if (sky_material.is_valid()) {
+		material = (SkyMaterialData *)storage->material_get_data(sky_material, RasterizerStorageRD::SHADER_TYPE_SKY);
+		if (!material || !material->shader_data->valid) {
+			material = NULL;
+		}
+	}
+
+	if (!material) {
+		sky_material = sky_shader.default_material;
+		material = (SkyMaterialData *)storage->material_get_data(sky_material, RasterizerStorageRD::SHADER_TYPE_SKY);
+	}
+
+	ERR_FAIL_COND(!material);
+
+	SkyShaderData *shader_data = material->shader_data;
+
+	ERR_FAIL_COND(!shader_data);
+
+	// Invalidate supbass buffers if screen size changes
+	if (sky->screen_size != p_screen_size) {
+		sky->screen_size = p_screen_size;
+		sky->screen_size.x = sky->screen_size.x < 4 ? 4 : sky->screen_size.x;
+		sky->screen_size.y = sky->screen_size.y < 4 ? 4 : sky->screen_size.y;
+		if (shader_data->uses_half_res) {
+			if (sky->half_res_pass.is_valid()) {
+				RD::get_singleton()->free(sky->half_res_pass);
+				sky->half_res_pass = RID();
+			}
+			_sky_invalidate(sky);
+		}
+		if (shader_data->uses_quarter_res) {
+			if (sky->quarter_res_pass.is_valid()) {
+				RD::get_singleton()->free(sky->quarter_res_pass);
+				sky->quarter_res_pass = RID();
+			}
+			_sky_invalidate(sky);
+		}
+	}
+
+	// Create new subpass buffers if necessary
+	if ((shader_data->uses_half_res && sky->half_res_pass.is_null()) ||
+			(shader_data->uses_quarter_res && sky->quarter_res_pass.is_null()) ||
+			sky->radiance.is_null()) {
+		_sky_invalidate(sky);
+		_update_dirty_skys();
+	}
+
+	if (shader_data->uses_time && time - sky->prev_time > 0.00001) {
+
+		sky->prev_time = time;
+		sky->reflection.dirty = true;
+		VisualServerRaster::redraw_request();
+	}
+
+	if (material != sky->prev_material) {
+
+		sky->prev_material = material;
+		sky->reflection.dirty = true;
+	}
+
+	if (material->uniform_set_updated) {
+
+		material->uniform_set_updated = false;
+		sky->reflection.dirty = true;
+	}
+
+	if (!p_position.is_equal_approx(sky->prev_position) && shader_data->uses_position) {
+
+		sky->prev_position = p_position;
+		sky->reflection.dirty = true;
+	}
+
+	if (shader_data->uses_light || sky_scene_state.light_uniform_set.is_null()) {
+		// Check whether the directional_light_buffer changes
+		bool light_data_dirty = false;
+
+		if (sky_scene_state.directional_light_count != sky_scene_state.last_frame_directional_light_count) {
+			light_data_dirty = true;
+			for (uint32_t i = sky_scene_state.directional_light_count; i < sky_scene_state.max_directional_lights; i++) {
+				sky_scene_state.directional_lights[i].enabled = false;
+			}
+		}
+		if (!light_data_dirty) {
+			for (uint32_t i = 0; i < sky_scene_state.directional_light_count; i++) {
+				if (sky_scene_state.directional_lights[i].direction[0] != sky_scene_state.last_frame_directional_lights[i].direction[0] ||
+						sky_scene_state.directional_lights[i].direction[1] != sky_scene_state.last_frame_directional_lights[i].direction[1] ||
+						sky_scene_state.directional_lights[i].direction[2] != sky_scene_state.last_frame_directional_lights[i].direction[2] ||
+						sky_scene_state.directional_lights[i].energy != sky_scene_state.last_frame_directional_lights[i].energy ||
+						sky_scene_state.directional_lights[i].color[0] != sky_scene_state.last_frame_directional_lights[i].color[0] ||
+						sky_scene_state.directional_lights[i].color[1] != sky_scene_state.last_frame_directional_lights[i].color[1] ||
+						sky_scene_state.directional_lights[i].color[2] != sky_scene_state.last_frame_directional_lights[i].color[2] ||
+						sky_scene_state.directional_lights[i].enabled != sky_scene_state.last_frame_directional_lights[i].enabled) {
+					light_data_dirty = true;
+					break;
+				}
+			}
+		}
+
+		if (light_data_dirty || sky_scene_state.light_uniform_set.is_null()) {
+
+			RD::get_singleton()->buffer_update(sky_scene_state.directional_light_buffer, 0, sizeof(SkyDirectionalLightData) * sky_scene_state.max_directional_lights, sky_scene_state.directional_lights, true);
+
+			if (sky_scene_state.light_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky_scene_state.light_uniform_set)) {
+				RD::get_singleton()->free(sky_scene_state.light_uniform_set);
+			}
+
+			Vector<RD::Uniform> uniforms;
+			{
+				RD::Uniform u;
+				u.binding = 0;
+				u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+				u.ids.push_back(sky_scene_state.directional_light_buffer);
+				uniforms.push_back(u);
+			}
+
+			sky_scene_state.light_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sky_shader.default_shader_rd, SKY_SET_LIGHTS);
+
+			RasterizerSceneRD::SkyDirectionalLightData *temp = sky_scene_state.last_frame_directional_lights;
+			sky_scene_state.last_frame_directional_lights = sky_scene_state.directional_lights;
+			sky_scene_state.directional_lights = temp;
+			sky_scene_state.last_frame_directional_light_count = sky_scene_state.directional_light_count;
+			sky->reflection.dirty = true;
+		}
+	}
+}
+
+void RasterizerSceneRD::_update_sky(RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform) {
+
+	ERR_FAIL_COND(!is_environment(p_environment));
+
+	Sky *sky = sky_owner.getornull(environment_get_sky(p_environment));
+	ERR_FAIL_COND(!sky);
+
+	RID sky_material = sky_get_material(environment_get_sky(p_environment));
+
+	SkyMaterialData *material = NULL;
+
+	if (sky_material.is_valid()) {
+		material = (SkyMaterialData *)storage->material_get_data(sky_material, RasterizerStorageRD::SHADER_TYPE_SKY);
+		if (!material || !material->shader_data->valid) {
+			material = NULL;
+		}
+	}
+
+	if (!material) {
+		sky_material = sky_shader.default_material;
+		material = (SkyMaterialData *)storage->material_get_data(sky_material, RasterizerStorageRD::SHADER_TYPE_SKY);
+	}
+
+	ERR_FAIL_COND(!material);
+
+	SkyShaderData *shader_data = material->shader_data;
+
+	ERR_FAIL_COND(!shader_data);
+
+	float multiplier = environment_get_bg_energy(p_environment);
+
+	// Update radiance cubemap
+	if (sky->reflection.dirty) {
+
+		static const Vector3 view_normals[6] = {
+			Vector3(+1, 0, 0),
+			Vector3(-1, 0, 0),
+			Vector3(0, +1, 0),
+			Vector3(0, -1, 0),
+			Vector3(0, 0, +1),
+			Vector3(0, 0, -1)
+		};
+		static const Vector3 view_up[6] = {
+			Vector3(0, -1, 0),
+			Vector3(0, -1, 0),
+			Vector3(0, 0, +1),
+			Vector3(0, 0, -1),
+			Vector3(0, -1, 0),
+			Vector3(0, -1, 0)
+		};
+
+		CameraMatrix cm;
+		cm.set_perspective(90, 1, 0.01, 10.0);
+		CameraMatrix correction;
+		correction.set_depth_correction(true);
+		cm = correction * cm;
+
+		if (shader_data->uses_quarter_res) {
+			RenderPipelineVertexFormatCacheRD *pipeline = &shader_data->pipelines[SKY_VERSION_QUARTER_RES];
+
+			Vector<Color> clear_colors;
+			clear_colors.push_back(Color(0.0, 0.0, 0.0));
+			RD::DrawListID cubemap_draw_list;
+
+			for (int i = 0; i < 6; i++) {
+				Transform local_view;
+				local_view.set_look_at(Vector3(0, 0, 0), view_normals[i], view_up[i]);
+				RID texture_uniform_set = _get_sky_textures(sky, SkyTextureSetVersion(SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES0 + i));
+
+				cubemap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[2].framebuffers[i], RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
+				storage->get_effects()->render_sky(cubemap_draw_list, time, sky->reflection.layers[0].mipmaps[2].framebuffers[i], sky_scene_state.sampler_uniform_set, sky_scene_state.light_uniform_set, pipeline, material->uniform_set, texture_uniform_set, cm, local_view.basis, multiplier, p_transform.origin);
+				RD::get_singleton()->draw_list_end();
+			}
+		}
+
+		if (shader_data->uses_half_res) {
+			RenderPipelineVertexFormatCacheRD *pipeline = &shader_data->pipelines[SKY_VERSION_HALF_RES];
+
+			Vector<Color> clear_colors;
+			clear_colors.push_back(Color(0.0, 0.0, 0.0));
+			RD::DrawListID cubemap_draw_list;
+
+			for (int i = 0; i < 6; i++) {
+				Transform local_view;
+				local_view.set_look_at(Vector3(0, 0, 0), view_normals[i], view_up[i]);
+				RID texture_uniform_set = _get_sky_textures(sky, SkyTextureSetVersion(SKY_TEXTURE_SET_CUBEMAP_HALF_RES0 + i));
+
+				cubemap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[1].framebuffers[i], RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
+				storage->get_effects()->render_sky(cubemap_draw_list, time, sky->reflection.layers[0].mipmaps[1].framebuffers[i], sky_scene_state.sampler_uniform_set, sky_scene_state.light_uniform_set, pipeline, material->uniform_set, texture_uniform_set, cm, local_view.basis, multiplier, p_transform.origin);
+				RD::get_singleton()->draw_list_end();
+			}
+		}
+
+		RD::DrawListID cubemap_draw_list;
+		RenderPipelineVertexFormatCacheRD *pipeline = &shader_data->pipelines[SKY_VERSION_CUBEMAP];
+
+		for (int i = 0; i < 6; i++) {
+			Transform local_view;
+			local_view.set_look_at(Vector3(0, 0, 0), view_normals[i], view_up[i]);
+			RID texture_uniform_set = _get_sky_textures(sky, SkyTextureSetVersion(SKY_TEXTURE_SET_CUBEMAP0 + i));
+
+			cubemap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[0].framebuffers[i], RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
+			storage->get_effects()->render_sky(cubemap_draw_list, time, sky->reflection.layers[0].mipmaps[0].framebuffers[i], sky_scene_state.sampler_uniform_set, sky_scene_state.light_uniform_set, pipeline, material->uniform_set, texture_uniform_set, cm, local_view.basis, multiplier, p_transform.origin);
+			RD::get_singleton()->draw_list_end();
+		}
+		if (sky_use_cubemap_array) {
+			if (sky->mode == VS::SKY_MODE_QUALITY) {
+				for (int i = 1; i < sky->reflection.layers.size(); i++) {
+					_create_reflection_importance_sample(sky->reflection, sky_use_cubemap_array, 10, i);
+				}
+			} else {
+				_create_reflection_fast_filter(sky->reflection, sky_use_cubemap_array);
+			}
+
+			_update_reflection_mipmaps(sky->reflection);
+		} else {
+			if (sky->mode == VS::SKY_MODE_QUALITY) {
+				for (int i = 1; i < sky->reflection.layers[0].mipmaps.size(); i++) {
+					_create_reflection_importance_sample(sky->reflection, sky_use_cubemap_array, 10, i);
+				}
+			} else {
+				_create_reflection_fast_filter(sky->reflection, sky_use_cubemap_array);
+			}
+		}
+
+		sky->reflection.dirty = false;
+	}
+}
+
+/* SKY SHADER */
+
+void RasterizerSceneRD::SkyShaderData::set_code(const String &p_code) {
+	//compile
+
+	code = p_code;
+	valid = false;
+	ubo_size = 0;
+	uniforms.clear();
+
+	if (code == String()) {
+		return; //just invalid, but no error
+	}
+
+	ShaderCompilerRD::GeneratedCode gen_code;
+	ShaderCompilerRD::IdentifierActions actions;
+
+	uses_time = false;
+	uses_half_res = false;
+	uses_quarter_res = false;
+	uses_position = false;
+	uses_light = false;
+
+	actions.render_mode_flags["use_half_res_pass"] = &uses_half_res;
+	actions.render_mode_flags["use_quarter_res_pass"] = &uses_quarter_res;
+	// TODO: Consider using usage flags instead
+	//actions.usage_flag_pointers["HALF_RES_TEXTURE"] = &uses_half_res;
+	//actions.usage_flag_pointers["QUARTER_RES_TEXTURE"] = &uses_quarter_res;
+
+	actions.usage_flag_pointers["TIME"] = &uses_time;
+	actions.usage_flag_pointers["POSITION"] = &uses_position;
+	actions.usage_flag_pointers["LIGHT0_ENABLED"] = &uses_light;
+	actions.usage_flag_pointers["LIGHT0_ENERGY"] = &uses_light;
+	actions.usage_flag_pointers["LIGHT0_DIRECTION"] = &uses_light;
+	actions.usage_flag_pointers["LIGHT0_COLOR"] = &uses_light;
+	actions.usage_flag_pointers["LIGHT1_ENABLED"] = &uses_light;
+	actions.usage_flag_pointers["LIGHT1_ENERGY"] = &uses_light;
+	actions.usage_flag_pointers["LIGHT1_DIRECTION"] = &uses_light;
+	actions.usage_flag_pointers["LIGHT1_COLOR"] = &uses_light;
+	actions.usage_flag_pointers["LIGHT2_ENABLED"] = &uses_light;
+	actions.usage_flag_pointers["LIGHT2_ENERGY"] = &uses_light;
+	actions.usage_flag_pointers["LIGHT2_DIRECTION"] = &uses_light;
+	actions.usage_flag_pointers["LIGHT2_COLOR"] = &uses_light;
+	actions.usage_flag_pointers["LIGHT3_ENABLED"] = &uses_light;
+	actions.usage_flag_pointers["LIGHT3_ENERGY"] = &uses_light;
+	actions.usage_flag_pointers["LIGHT3_DIRECTION"] = &uses_light;
+	actions.usage_flag_pointers["LIGHT3_COLOR"] = &uses_light;
+
+	actions.uniforms = &uniforms;
+
+	RasterizerSceneRD *scene_singleton = (RasterizerSceneRD *)RasterizerSceneRD::singleton;
+
+	Error err = scene_singleton->sky_shader.compiler.compile(VS::SHADER_SKY, code, &actions, path, gen_code);
+
+	ERR_FAIL_COND(err != OK);
+
+	if (version.is_null()) {
+		version = scene_singleton->sky_shader.shader.version_create();
+	}
+
+#if 0
+	print_line("**compiling shader:");
+	print_line("**defines:\n");
+	for (int i = 0; i < gen_code.defines.size(); i++) {
+		print_line(gen_code.defines[i]);
+	}
+	print_line("\n**uniforms:\n" + gen_code.uniforms);
+	//	print_line("\n**vertex_globals:\n" + gen_code.vertex_global);
+	//	print_line("\n**vertex_code:\n" + gen_code.vertex);
+	print_line("\n**fragment_globals:\n" + gen_code.fragment_global);
+	print_line("\n**fragment_code:\n" + gen_code.fragment);
+	print_line("\n**light_code:\n" + gen_code.light);
+#endif
+
+	scene_singleton->sky_shader.shader.version_set_code(version, gen_code.uniforms, gen_code.vertex_global, gen_code.vertex, gen_code.fragment_global, gen_code.light, gen_code.fragment, gen_code.defines);
+	ERR_FAIL_COND(!scene_singleton->sky_shader.shader.version_is_valid(version));
+
+	ubo_size = gen_code.uniform_total_size;
+	ubo_offsets = gen_code.uniform_offsets;
+	texture_uniforms = gen_code.texture_uniforms;
+
+	//update pipelines
+
+	for (int i = 0; i < SKY_VERSION_MAX; i++) {
+
+		RD::PipelineDepthStencilState depth_stencil_state;
+		depth_stencil_state.enable_depth_test = true;
+		depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_LESS_OR_EQUAL;
+
+		RID shader_variant = scene_singleton->sky_shader.shader.version_get_shader(version, i);
+		pipelines[i].setup(shader_variant, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), depth_stencil_state, RD::PipelineColorBlendState::create_disabled(), 0);
+	}
+
+	valid = true;
+}
+
+void RasterizerSceneRD::SkyShaderData::set_default_texture_param(const StringName &p_name, RID p_texture) {
+	if (!p_texture.is_valid()) {
+		default_texture_params.erase(p_name);
+	} else {
+		default_texture_params[p_name] = p_texture;
+	}
+}
+
+void RasterizerSceneRD::SkyShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
+
+	Map<int, StringName> order;
+
+	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
+
+		if (E->get().texture_order >= 0) {
+			order[E->get().texture_order + 100000] = E->key();
+		} else {
+			order[E->get().order] = E->key();
+		}
+	}
+
+	for (Map<int, StringName>::Element *E = order.front(); E; E = E->next()) {
+
+		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniforms[E->get()]);
+		pi.name = E->get();
+		p_param_list->push_back(pi);
+	}
+}
+
+bool RasterizerSceneRD::SkyShaderData::is_param_texture(const StringName &p_param) const {
+	if (!uniforms.has(p_param)) {
+		return false;
+	}
+
+	return uniforms[p_param].texture_order >= 0;
+}
+
+bool RasterizerSceneRD::SkyShaderData::is_animated() const {
+	return false;
+}
+
+bool RasterizerSceneRD::SkyShaderData::casts_shadows() const {
+	return false;
+}
+
+Variant RasterizerSceneRD::SkyShaderData::get_default_parameter(const StringName &p_parameter) const {
+	if (uniforms.has(p_parameter)) {
+		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
+		Vector<ShaderLanguage::ConstantNode::Value> default_value = uniform.default_value;
+		return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.hint);
+	}
+	return Variant();
+}
+
+RasterizerSceneRD::SkyShaderData::SkyShaderData() {
+	valid = false;
+}
+
+RasterizerSceneRD::SkyShaderData::~SkyShaderData() {
+	RasterizerSceneRD *scene_singleton = (RasterizerSceneRD *)RasterizerSceneRD::singleton;
+	ERR_FAIL_COND(!scene_singleton);
+	//pipeline variants will clear themselves if shader is gone
+	if (version.is_valid()) {
+		scene_singleton->sky_shader.shader.version_free(version);
+	}
+}
+
+RasterizerStorageRD::ShaderData *RasterizerSceneRD::_create_sky_shader_func() {
+	SkyShaderData *shader_data = memnew(SkyShaderData);
+	return shader_data;
+}
+
+void RasterizerSceneRD::SkyMaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
+
+	RasterizerSceneRD *scene_singleton = (RasterizerSceneRD *)RasterizerSceneRD::singleton;
+
+	uniform_set_updated = true;
+
+	if ((uint32_t)ubo_data.size() != shader_data->ubo_size) {
+		p_uniform_dirty = true;
+		if (uniform_buffer.is_valid()) {
+			RD::get_singleton()->free(uniform_buffer);
+			uniform_buffer = RID();
+		}
+
+		ubo_data.resize(shader_data->ubo_size);
+		if (ubo_data.size()) {
+			uniform_buffer = RD::get_singleton()->uniform_buffer_create(ubo_data.size());
+			memset(ubo_data.ptrw(), 0, ubo_data.size()); //clear
+		}
+
+		//clear previous uniform set
+		if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+			RD::get_singleton()->free(uniform_set);
+			uniform_set = RID();
+		}
+	}
+
+	//check whether buffer changed
+	if (p_uniform_dirty && ubo_data.size()) {
+
+		update_uniform_buffer(shader_data->uniforms, shader_data->ubo_offsets.ptr(), p_parameters, ubo_data.ptrw(), ubo_data.size(), false);
+		RD::get_singleton()->buffer_update(uniform_buffer, 0, ubo_data.size(), ubo_data.ptrw());
+	}
+
+	uint32_t tex_uniform_count = shader_data->texture_uniforms.size();
+
+	if ((uint32_t)texture_cache.size() != tex_uniform_count) {
+		texture_cache.resize(tex_uniform_count);
+		p_textures_dirty = true;
+
+		//clear previous uniform set
+		if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+			RD::get_singleton()->free(uniform_set);
+			uniform_set = RID();
+		}
+	}
+
+	if (p_textures_dirty && tex_uniform_count) {
+
+		update_textures(p_parameters, shader_data->default_texture_params, shader_data->texture_uniforms, texture_cache.ptrw(), true);
+	}
+
+	if (shader_data->ubo_size == 0 && shader_data->texture_uniforms.size() == 0) {
+		// This material does not require an uniform set, so don't create it.
+		return;
+	}
+
+	if (!p_textures_dirty && uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+		//no reason to update uniform set, only UBO (or nothing) was needed to update
+		return;
+	}
+
+	Vector<RD::Uniform> uniforms;
+
+	{
+
+		if (shader_data->ubo_size) {
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.binding = 0;
+			u.ids.push_back(uniform_buffer);
+			uniforms.push_back(u);
+		}
+
+		const RID *textures = texture_cache.ptrw();
+		for (uint32_t i = 0; i < tex_uniform_count; i++) {
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 1 + i;
+			u.ids.push_back(textures[i]);
+			uniforms.push_back(u);
+		}
+	}
+
+	uniform_set = RD::get_singleton()->uniform_set_create(uniforms, scene_singleton->sky_shader.shader.version_get_shader(shader_data->version, 0), SKY_SET_MATERIAL);
+}
+
+RasterizerSceneRD::SkyMaterialData::~SkyMaterialData() {
+	if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+		RD::get_singleton()->free(uniform_set);
+	}
+
+	if (uniform_buffer.is_valid()) {
+		RD::get_singleton()->free(uniform_buffer);
+	}
+}
+
+RasterizerStorageRD::MaterialData *RasterizerSceneRD::_create_sky_material_func(SkyShaderData *p_shader) {
+	SkyMaterialData *material_data = memnew(SkyMaterialData);
+	material_data->shader_data = p_shader;
+	material_data->last_frame = false;
+	//update will happen later anyway so do nothing.
+	return material_data;
 }
 
 RID RasterizerSceneRD::environment_create() {
@@ -729,12 +1386,12 @@ bool RasterizerSceneRD::reflection_probe_instance_begin_render(RID p_instance, R
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
 	ERR_FAIL_COND_V(!rpi, false);
 
-	if (storage->reflection_probe_get_update_mode(rpi->probe) == VS::REFLECTION_PROBE_UPDATE_ALWAYS && atlas->reflection.is_valid() && atlas->size != 128) {
-		WARN_PRINT("ReflectionProbes set to UPDATE_ALWAYS must have an atlas size of 128. Please update the atlas size in the ProjectSettings.");
-		reflection_atlas_set_size(p_reflection_atlas, 128, atlas->count);
+	if (storage->reflection_probe_get_update_mode(rpi->probe) == VS::REFLECTION_PROBE_UPDATE_ALWAYS && atlas->reflection.is_valid() && atlas->size != 256) {
+		WARN_PRINT("ReflectionProbes set to UPDATE_ALWAYS must have an atlas size of 256. Please update the atlas size in the ProjectSettings.");
+		reflection_atlas_set_size(p_reflection_atlas, 256, atlas->count);
 	}
 
-	if (storage->reflection_probe_get_update_mode(rpi->probe) == VS::REFLECTION_PROBE_UPDATE_ALWAYS && atlas->reflection.is_valid() && atlas->reflections[0].data.layers[0].mipmaps.size() != 7) {
+	if (storage->reflection_probe_get_update_mode(rpi->probe) == VS::REFLECTION_PROBE_UPDATE_ALWAYS && atlas->reflection.is_valid() && atlas->reflections[0].data.layers[0].mipmaps.size() != 8) {
 		// Invalidate reflection atlas, need to regenerate
 		RD::get_singleton()->free(atlas->reflection);
 		atlas->reflection = RID();
@@ -751,7 +1408,7 @@ bool RasterizerSceneRD::reflection_probe_instance_begin_render(RID p_instance, R
 
 	if (atlas->reflection.is_null()) {
 		int mipmaps = MIN(roughness_layers, Image::get_image_required_mipmaps(atlas->size, atlas->size, Image::FORMAT_RGBAH) + 1);
-		mipmaps = storage->reflection_probe_get_update_mode(rpi->probe) == VS::REFLECTION_PROBE_UPDATE_ALWAYS ? 7 : mipmaps; // always use 7 mipmaps with real time filtering
+		mipmaps = storage->reflection_probe_get_update_mode(rpi->probe) == VS::REFLECTION_PROBE_UPDATE_ALWAYS ? 8 : mipmaps; // always use 8 mipmaps with real time filtering
 		{
 			//reflection atlas was unused, create:
 			RD::TextureFormat tf;
@@ -835,8 +1492,17 @@ bool RasterizerSceneRD::reflection_probe_instance_postprocess_step(RID p_instanc
 		return false;
 	}
 
+	if (storage->reflection_probe_get_update_mode(rpi->probe) == VS::REFLECTION_PROBE_UPDATE_ALWAYS) {
+		// Using real time reflections, all roughness is done in one step
+		_create_reflection_fast_filter(atlas->reflections.write[rpi->atlas_index].data, false);
+		rpi->rendering = false;
+		rpi->processing_side = 0;
+		rpi->processing_layer = 1;
+		return true;
+	}
+
 	if (rpi->processing_layer > 1) {
-		_create_reflection_from_base_mipmap(atlas->reflections.write[rpi->atlas_index].data, false, storage->reflection_probe_get_update_mode(rpi->probe) == VS::REFLECTION_PROBE_UPDATE_ONCE, 10, rpi->processing_layer);
+		_create_reflection_importance_sample(atlas->reflections.write[rpi->atlas_index].data, false, 10, rpi->processing_layer);
 		rpi->processing_layer++;
 		if (rpi->processing_layer == atlas->reflections[rpi->atlas_index].data.layers[0].mipmaps.size()) {
 			rpi->rendering = false;
@@ -847,15 +1513,7 @@ bool RasterizerSceneRD::reflection_probe_instance_postprocess_step(RID p_instanc
 		return false;
 
 	} else {
-		_create_reflection_from_base_mipmap(atlas->reflections.write[rpi->atlas_index].data, false, storage->reflection_probe_get_update_mode(rpi->probe) == VS::REFLECTION_PROBE_UPDATE_ONCE, rpi->processing_side, rpi->processing_layer);
-	}
-
-	if (storage->reflection_probe_get_update_mode(rpi->probe) == VS::REFLECTION_PROBE_UPDATE_ALWAYS) {
-		// Using real time reflections, all roughness is done in one step
-		rpi->rendering = false;
-		rpi->processing_side = 0;
-		rpi->processing_layer = 1;
-		return true;
+		_create_reflection_importance_sample(atlas->reflections.write[rpi->atlas_index].data, false, rpi->processing_side, rpi->processing_layer);
 	}
 
 	rpi->processing_side++;
@@ -3053,11 +3711,32 @@ bool RasterizerSceneRD::free(RID p_rid) {
 	} else if (sky_owner.owns(p_rid)) {
 		_update_dirty_skys();
 		Sky *sky = sky_owner.getornull(p_rid);
+
 		if (sky->radiance.is_valid()) {
 			RD::get_singleton()->free(sky->radiance);
 			sky->radiance = RID();
 		}
 		_clear_reflection_data(sky->reflection);
+
+		if (sky->uniform_buffer.is_valid()) {
+			RD::get_singleton()->free(sky->uniform_buffer);
+			sky->uniform_buffer = RID();
+		}
+
+		if (sky->half_res_pass.is_valid()) {
+			RD::get_singleton()->free(sky->half_res_pass);
+			sky->half_res_pass = RID();
+		}
+
+		if (sky->quarter_res_pass.is_valid()) {
+			RD::get_singleton()->free(sky->quarter_res_pass);
+			sky->quarter_res_pass = RID();
+		}
+
+		if (sky->material.is_valid()) {
+			storage->free(sky->material);
+		}
+
 		sky_owner.free(p_rid);
 	} else if (light_instance_owner.owns(p_rid)) {
 
@@ -3098,6 +3777,7 @@ void RasterizerSceneRD::update() {
 }
 
 void RasterizerSceneRD::set_time(double p_time, double p_step) {
+	time = p_time;
 	time_step = p_step;
 }
 
@@ -3114,8 +3794,11 @@ float RasterizerSceneRD::screen_space_roughness_limiter_get_curve() const {
 	return screen_space_roughness_limiter_curve;
 }
 
+RasterizerSceneRD *RasterizerSceneRD::singleton = NULL;
+
 RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 	storage = p_storage;
+	singleton = this;
 
 	roughness_layers = GLOBAL_GET("rendering/quality/reflections/roughness_layers");
 	sky_ggx_samples_quality = GLOBAL_GET("rendering/quality/reflections/ggx_samples");
@@ -3207,6 +3890,116 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 		}
 	}
 
+	/* SKY SHADER */
+
+	{
+		// Start with the directional lights for the sky
+		sky_scene_state.max_directional_lights = 4;
+		uint32_t directional_light_buffer_size = sky_scene_state.max_directional_lights * sizeof(SkyDirectionalLightData);
+		sky_scene_state.directional_lights = memnew_arr(SkyDirectionalLightData, sky_scene_state.max_directional_lights);
+		sky_scene_state.last_frame_directional_lights = memnew_arr(SkyDirectionalLightData, sky_scene_state.max_directional_lights);
+		sky_scene_state.last_frame_directional_light_count = sky_scene_state.max_directional_lights + 1;
+		sky_scene_state.directional_light_buffer = RD::get_singleton()->uniform_buffer_create(directional_light_buffer_size);
+
+		String defines = "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(sky_scene_state.max_directional_lights) + "\n";
+
+		// Initialize sky
+		Vector<String> sky_modes;
+		sky_modes.push_back("\n#define AT_CUBEMAP_PASS false\n#define AT_HALF_RES_PASS false\n#define AT_QUARTER_RES_PASS false\n"); // Full size
+		sky_modes.push_back("\n#define AT_CUBEMAP_PASS false\n#define AT_HALF_RES_PASS true\n#define AT_QUARTER_RES_PASS false\n"); // Half Res
+		sky_modes.push_back("\n#define AT_CUBEMAP_PASS false\n#define AT_HALF_RES_PASS false\n#define AT_QUARTER_RES_PASS true\n"); // Quarter res
+		sky_modes.push_back("\n#define AT_CUBEMAP_PASS true\n#define AT_HALF_RES_PASS false\n#define AT_QUARTER_RES_PASS false\n"); // Cubemap
+		sky_shader.shader.initialize(sky_modes, defines);
+	}
+
+	// register our shader funds
+	storage->shader_set_data_request_function(RasterizerStorageRD::SHADER_TYPE_SKY, _create_sky_shader_funcs);
+	storage->material_set_data_request_function(RasterizerStorageRD::SHADER_TYPE_SKY, _create_sky_material_funcs);
+
+	{
+		ShaderCompilerRD::DefaultIdentifierActions actions;
+
+		actions.renames["COLOR"] = "color";
+		actions.renames["ALPHA"] = "alpha";
+		actions.renames["EYEDIR"] = "cube_normal";
+		actions.renames["POSITION"] = "params.position_multiplier.xyz";
+		actions.renames["SKY_COORDS"] = "panorama_coords";
+		actions.renames["SCREEN_UV"] = "uv";
+		actions.renames["TIME"] = "params.time";
+		actions.renames["HALF_RES_TEXTURE"] = "half_res";
+		actions.renames["QUARTER_RES_TEXTURE"] = "quarter_res";
+		actions.renames["RADIANCE"] = "radiance";
+		actions.renames["LIGHT0_ENABLED"] = "directional_lights.data[0].enabled";
+		actions.renames["LIGHT0_DIRECTION"] = "directional_lights.data[0].direction";
+		actions.renames["LIGHT0_ENERGY"] = "directional_lights.data[0].energy";
+		actions.renames["LIGHT0_COLOR"] = "directional_lights.data[0].color";
+		actions.renames["LIGHT1_ENABLED"] = "directional_lights.data[1].enabled";
+		actions.renames["LIGHT1_DIRECTION"] = "directional_lights.data[1].direction";
+		actions.renames["LIGHT1_ENERGY"] = "directional_lights.data[1].energy";
+		actions.renames["LIGHT1_COLOR"] = "directional_lights.data[1].color";
+		actions.renames["LIGHT2_ENABLED"] = "directional_lights.data[2].enabled";
+		actions.renames["LIGHT2_DIRECTION"] = "directional_lights.data[2].direction";
+		actions.renames["LIGHT2_ENERGY"] = "directional_lights.data[2].energy";
+		actions.renames["LIGHT2_COLOR"] = "directional_lights.data[2].color";
+		actions.renames["LIGHT3_ENABLED"] = "directional_lights.data[3].enabled";
+		actions.renames["LIGHT3_DIRECTION"] = "directional_lights.data[3].direction";
+		actions.renames["LIGHT3_ENERGY"] = "directional_lights.data[3].energy";
+		actions.renames["LIGHT3_COLOR"] = "directional_lights.data[3].color";
+		actions.renames["AT_CUBEMAP_PASS"] = "AT_CUBEMAP_PASS";
+		actions.renames["AT_HALF_RES_PASS"] = "AT_HALF_RES_PASS";
+		actions.renames["AT_QUARTER_RES_PASS"] = "AT_QUARTER_RES_PASS";
+		actions.custom_samplers["RADIANCE"] = "material_samplers[3]";
+		actions.custom_samplers["SUBPASS2"] = "material_samplers[1]";
+		actions.custom_samplers["SUBPASS4"] = "material_samplers[1]";
+
+		actions.sampler_array_name = "material_samplers";
+		actions.base_texture_binding_index = 1;
+		actions.texture_layout_set = 1;
+		actions.base_uniform_string = "material.";
+		actions.base_varying_index = 10;
+
+		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
+		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
+
+		sky_shader.compiler.initialize(actions);
+	}
+
+	{
+		// default material and shader for sky shader
+		sky_shader.default_shader = storage->shader_create();
+		storage->shader_set_code(sky_shader.default_shader, "shader_type sky; void fragment() { COLOR = mix(vec3(0.3), vec3(0.2, 0.4, 0.9), smoothstep(0.0, 0.05, EYEDIR.y)); } \n");
+		sky_shader.default_material = storage->material_create();
+		storage->material_set_shader(sky_shader.default_material, sky_shader.default_shader);
+
+		SkyMaterialData *md = (SkyMaterialData *)storage->material_get_data(sky_shader.default_material, RasterizerStorageRD::SHADER_TYPE_SKY);
+		sky_shader.default_shader_rd = sky_shader.shader.version_get_shader(md->shader_data->version, SKY_VERSION_BACKGROUND);
+
+		Vector<RD::Uniform> uniforms;
+
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_SAMPLER;
+			u.binding = 0;
+			u.ids.resize(12);
+			RID *ids_ptr = u.ids.ptrw();
+			ids_ptr[0] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+			ids_ptr[1] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+			ids_ptr[2] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+			ids_ptr[3] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+			ids_ptr[4] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+			ids_ptr[5] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+			ids_ptr[6] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+			ids_ptr[7] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+			ids_ptr[8] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+			ids_ptr[9] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+			ids_ptr[10] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+			ids_ptr[11] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+			uniforms.push_back(u);
+		}
+
+		sky_scene_state.sampler_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sky_shader.default_shader_rd, SKY_SET_SAMPLERS);
+	}
+
 	camera_effects_set_dof_blur_bokeh_shape(VS::DOFBokehShape(int(GLOBAL_GET("rendering/quality/filters/depth_of_field_bokeh_shape"))));
 	camera_effects_set_dof_blur_quality(VS::DOFBlurQuality(int(GLOBAL_GET("rendering/quality/filters/depth_of_field_bokeh_quality"))), GLOBAL_GET("rendering/quality/filters/depth_of_field_use_jitter"));
 	environment_set_ssao_quality(VS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/quality/ssao/quality"))), GLOBAL_GET("rendering/quality/ssao/half_size"));
@@ -3222,8 +4015,22 @@ RasterizerSceneRD::~RasterizerSceneRD() {
 		RD::get_singleton()->free(E->get().cubemap);
 	}
 
+	if (sky_scene_state.sampler_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky_scene_state.sampler_uniform_set)) {
+		RD::get_singleton()->free(sky_scene_state.sampler_uniform_set);
+	}
+	if (sky_scene_state.light_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky_scene_state.light_uniform_set)) {
+		RD::get_singleton()->free(sky_scene_state.light_uniform_set);
+	}
+
 	RD::get_singleton()->free(gi_probe_lights_uniform);
 	giprobe_debug_shader.version_free(giprobe_debug_shader_version);
 	giprobe_shader.version_free(giprobe_lighting_shader_version);
 	memdelete_arr(gi_probe_lights);
+	SkyMaterialData *md = (SkyMaterialData *)storage->material_get_data(sky_shader.default_material, RasterizerStorageRD::SHADER_TYPE_SKY);
+	sky_shader.shader.version_free(md->shader_data->version);
+	RD::get_singleton()->free(sky_scene_state.directional_light_buffer);
+	memdelete_arr(sky_scene_state.directional_lights);
+	memdelete_arr(sky_scene_state.last_frame_directional_lights);
+	storage->free(sky_shader.default_shader);
+	storage->free(sky_shader.default_material);
 }

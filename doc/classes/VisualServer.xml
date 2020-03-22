@@ -2744,14 +2744,15 @@
 				Once finished with your RID, you will want to free the RID using the VisualServer's [method free_rid] static method.
 			</description>
 		</method>
-		<method name="sky_set_texture">
+		<method name="sky_set_material">
 			<return type="void">
 			</return>
 			<argument index="0" name="sky" type="RID">
 			</argument>
-			<argument index="1" name="panorama" type="RID">
+			<argument index="1" name="material" type="RID">
 			</argument>
 			<description>
+				Sets the material that the sky uses to render the background and reflection maps.
 			</description>
 		</method>
 		<method name="spot_light_create">
@@ -3155,7 +3156,10 @@
 		<constant name="SHADER_PARTICLES" value="2" enum="ShaderMode">
 			Shader is a particle shader.
 		</constant>
-		<constant name="SHADER_MAX" value="3" enum="ShaderMode">
+		<constant name="SHADER_SKY" value="3" enum="ShaderMode">
+			Shader is a sky shader.
+		</constant>
+		<constant name="SHADER_MAX" value="4" enum="ShaderMode">
 			Represents the size of the [enum ShaderMode] enum.
 		</constant>
 		<constant name="ARRAY_VERTEX" value="0" enum="ArrayType">

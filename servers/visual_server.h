@@ -160,6 +160,7 @@ public:
 		SHADER_SPATIAL,
 		SHADER_CANVAS_ITEM,
 		SHADER_PARTICLES,
+		SHADER_SKY,
 		SHADER_MAX
 	};
 
@@ -681,7 +682,7 @@ public:
 	virtual RID sky_create() = 0;
 	virtual void sky_set_radiance_size(RID p_sky, int p_radiance_size) = 0;
 	virtual void sky_set_mode(RID p_sky, SkyMode p_mode) = 0;
-	virtual void sky_set_texture(RID p_sky, RID p_panorama) = 0;
+	virtual void sky_set_material(RID p_sky, RID p_material) = 0;
 
 	/* ENVIRONMENT API */
 

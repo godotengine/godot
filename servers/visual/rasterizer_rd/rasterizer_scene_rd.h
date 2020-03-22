@@ -36,6 +36,7 @@
 #include "servers/visual/rasterizer_rd/rasterizer_storage_rd.h"
 #include "servers/visual/rasterizer_rd/shaders/giprobe.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/giprobe_debug.glsl.gen.h"
+#include "servers/visual/rasterizer_rd/shaders/sky.glsl.gen.h"
 #include "servers/visual/rendering_device.h"
 
 class RasterizerSceneRD : public RasterizerScene {
@@ -47,6 +48,29 @@ public:
 	};
 
 protected:
+	double time;
+
+	// Skys need less info from Directional Lights than the normal shaders
+	struct SkyDirectionalLightData {
+
+		float direction[3];
+		float energy;
+		float color[3];
+		uint32_t enabled;
+	};
+
+	struct SkySceneState {
+
+		SkyDirectionalLightData *directional_lights;
+		SkyDirectionalLightData *last_frame_directional_lights;
+		uint32_t max_directional_lights;
+		uint32_t directional_light_count;
+		uint32_t last_frame_directional_light_count;
+		RID directional_light_buffer;
+		RID sampler_uniform_set;
+		RID light_uniform_set;
+	} sky_scene_state;
+
 	struct RenderBufferData {
 
 		virtual void configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, VS::ViewportMSAA p_msaa) = 0;
@@ -69,9 +93,14 @@ protected:
 
 	void _process_ssao(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const CameraMatrix &p_projection);
 
+	void _setup_sky(RID p_environment, const Vector3 &p_position, const Size2i p_screen_size);
+	void _update_sky(RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform);
+	void _draw_sky(bool p_can_continue, RID p_fb, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform);
+
 private:
 	VS::ViewportDebugDraw debug_draw = VS::VIEWPORT_DEBUG_DRAW_DISABLED;
 	double time_step = 0;
+	static RasterizerSceneRD *singleton;
 
 	int roughness_layers;
 
@@ -102,31 +131,160 @@ private:
 		DownsampleLayer downsampled_layer;
 		RID coefficient_buffer;
 
+		bool dirty = true;
+
 		Vector<Layer> layers;
 	};
 
 	void _clear_reflection_data(ReflectionData &rd);
 	void _update_reflection_data(ReflectionData &rd, int p_size, int p_mipmaps, bool p_use_array, RID p_base_cube, int p_base_layer, bool p_low_quality);
-	void _create_reflection_from_panorama(ReflectionData &rd, RID p_panorama, bool p_quality);
-	void _create_reflection_from_base_mipmap(ReflectionData &rd, bool p_use_arrays, bool p_quality, int p_cube_side, int p_base_layer);
-	void _update_reflection_mipmaps(ReflectionData &rd, bool p_quality);
+	void _create_reflection_fast_filter(ReflectionData &rd, bool p_use_arrays);
+	void _create_reflection_importance_sample(ReflectionData &rd, bool p_use_arrays, int p_cube_side, int p_base_layer);
+	void _update_reflection_mipmaps(ReflectionData &rd);
+
+	/* Sky shader */
+
+	enum SkyVersion {
+		SKY_VERSION_BACKGROUND,
+		SKY_VERSION_HALF_RES,
+		SKY_VERSION_QUARTER_RES,
+		SKY_VERSION_CUBEMAP,
+		SKY_VERSION_MAX
+	};
+
+	struct SkyShader {
+		SkyShaderRD shader;
+		ShaderCompilerRD compiler;
+
+		RID default_shader;
+		RID default_material;
+		RID default_shader_rd;
+	} sky_shader;
+
+	struct SkyShaderData : public RasterizerStorageRD::ShaderData {
+		bool valid;
+		RID version;
+
+		RenderPipelineVertexFormatCacheRD pipelines[SKY_VERSION_MAX];
+		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
+		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
+
+		Vector<uint32_t> ubo_offsets;
+		uint32_t ubo_size;
+
+		String path;
+		String code;
+		Map<StringName, RID> default_texture_params;
+
+		bool uses_time;
+		bool uses_position;
+		bool uses_half_res;
+		bool uses_quarter_res;
+		bool uses_light;
+
+		virtual void set_code(const String &p_Code);
+		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
+		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
+		virtual bool is_param_texture(const StringName &p_param) const;
+		virtual bool is_animated() const;
+		virtual bool casts_shadows() const;
+		virtual Variant get_default_parameter(const StringName &p_parameter) const;
+		SkyShaderData();
+		virtual ~SkyShaderData();
+	};
+
+	RasterizerStorageRD::ShaderData *_create_sky_shader_func();
+	static RasterizerStorageRD::ShaderData *_create_sky_shader_funcs() {
+		return static_cast<RasterizerSceneRD *>(singleton)->_create_sky_shader_func();
+	};
+
+	struct SkyMaterialData : public RasterizerStorageRD::MaterialData {
+		uint64_t last_frame;
+		SkyShaderData *shader_data;
+		RID uniform_buffer;
+		RID uniform_set;
+		Vector<RID> texture_cache;
+		Vector<uint8_t> ubo_data;
+		bool uniform_set_updated;
+
+		virtual void set_render_priority(int p_priority) {}
+		virtual void set_next_pass(RID p_pass) {}
+		virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+		virtual ~SkyMaterialData();
+	};
+
+	RasterizerStorageRD::MaterialData *_create_sky_material_func(SkyShaderData *p_shader);
+	static RasterizerStorageRD::MaterialData *_create_sky_material_funcs(RasterizerStorageRD::ShaderData *p_shader) {
+		return static_cast<RasterizerSceneRD *>(singleton)->_create_sky_material_func(static_cast<SkyShaderData *>(p_shader));
+	};
+
+	enum SkyTextureSetVersion {
+		SKY_TEXTURE_SET_BACKGROUND,
+		SKY_TEXTURE_SET_HALF_RES,
+		SKY_TEXTURE_SET_QUARTER_RES,
+		SKY_TEXTURE_SET_CUBEMAP0,
+		SKY_TEXTURE_SET_CUBEMAP1,
+		SKY_TEXTURE_SET_CUBEMAP2,
+		SKY_TEXTURE_SET_CUBEMAP3,
+		SKY_TEXTURE_SET_CUBEMAP4,
+		SKY_TEXTURE_SET_CUBEMAP5,
+		SKY_TEXTURE_SET_CUBEMAP_HALF_RES0,
+		SKY_TEXTURE_SET_CUBEMAP_HALF_RES1,
+		SKY_TEXTURE_SET_CUBEMAP_HALF_RES2,
+		SKY_TEXTURE_SET_CUBEMAP_HALF_RES3,
+		SKY_TEXTURE_SET_CUBEMAP_HALF_RES4,
+		SKY_TEXTURE_SET_CUBEMAP_HALF_RES5,
+		SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES0,
+		SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES1,
+		SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES2,
+		SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES3,
+		SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES4,
+		SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES5,
+		SKY_TEXTURE_SET_MAX
+	};
+
+	enum SkySet {
+		SKY_SET_SAMPLERS,
+		SKY_SET_MATERIAL,
+		SKY_SET_TEXTURES,
+		SKY_SET_LIGHTS,
+		SKY_SET_MAX
+	};
 
 	/* SKY */
 	struct Sky {
 		RID radiance;
+		RID half_res_pass;
+		RID half_res_framebuffer;
+		RID quarter_res_pass;
+		RID quarter_res_framebuffer;
+		Size2i screen_size;
+
+		RID texture_uniform_sets[SKY_TEXTURE_SET_MAX];
 		RID uniform_set;
-		int radiance_size = 128;
+
+		RID material;
+		RID uniform_buffer;
+
+		int radiance_size = 256;
+
 		VS::SkyMode mode = VS::SKY_MODE_QUALITY;
-		RID panorama;
+
 		ReflectionData reflection;
 		bool dirty = false;
 		Sky *dirty_list = nullptr;
+
+		//State to track when radiance cubemap needs updating
+		SkyMaterialData *prev_material;
+		Vector3 prev_position;
+		float prev_time;
 	};
 
 	Sky *dirty_sky_list = nullptr;
 
 	void _sky_invalidate(Sky *p_sky);
 	void _update_dirty_skys();
+	RID _get_sky_textures(Sky *p_sky, SkyTextureSetVersion p_version);
 
 	uint32_t sky_ggx_samples_quality;
 	bool sky_use_cubemap_array;
@@ -647,11 +805,11 @@ public:
 	RID sky_create();
 	void sky_set_radiance_size(RID p_sky, int p_radiance_size);
 	void sky_set_mode(RID p_sky, VS::SkyMode p_mode);
-	void sky_set_texture(RID p_sky, RID p_panorama);
+	void sky_set_material(RID p_sky, RID p_material);
 
-	RID sky_get_panorama_texture_rd(RID p_sky) const;
 	RID sky_get_radiance_texture_rd(RID p_sky) const;
 	RID sky_get_radiance_uniform_set_rd(RID p_sky, RID p_shader, int p_set) const;
+	RID sky_get_material(RID p_sky) const;
 
 	/* ENVIRONMENT API */
 
