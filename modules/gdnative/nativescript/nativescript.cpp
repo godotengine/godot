@@ -1687,7 +1687,9 @@ void NativeScriptLanguage::init_library(const Ref<GDNativeLibrary> &lib) {
 		gdn->set_library(lib);
 
 		// TODO check the return value?
-		gdn->initialize();
+		if(!gdn->initialize()){
+            ERR_PRINT("Cannot initialize gdn library, see erron above.");
+		};
 
 		library_gdnatives.insert(lib_path, gdn);
 

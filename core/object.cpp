@@ -846,6 +846,15 @@ void Object::call_multilevel(const StringName &p_name, VARIANT_ARG_DECLARE) {
 	call_multilevel(p_name, argptr, argc);
 }
 
+template <typename R, typename ... Types> constexpr size_t getArgumentCount( R(*f)(Types ...))
+{
+    return sizeof...(Types);
+}
+
+int Object::get_call_arg_count(const StringName &p_method) {
+    return ClassDB::get_method(get_class_name(), p_method)->get_argument_count();
+}
+
 Variant Object::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 
 	r_error.error = Callable::CallError::CALL_OK;
@@ -881,19 +890,16 @@ Variant Object::call(const StringName &p_method, const Variant **p_args, int p_a
 	OBJ_DEBUG_LOCK
 	if (script_instance) {
 		ret = script_instance->call(p_method, p_args, p_argcount, r_error);
-		//force jumptable
+		//force jumptablevide
 		switch (r_error.error) {
-
-			case Callable::CallError::CALL_OK:
-				return ret;
-			case Callable::CallError::CALL_ERROR_INVALID_METHOD:
-				break;
-			case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT:
-			case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
-			case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
-				return ret;
-			case Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL: {
-			}
+            case Callable::CallError::CALL_ERROR_INVALID_METHOD:
+            case Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL:
+                break;
+            case Callable::CallError::CALL_OK:
+            case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT:
+            case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
+            case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
+                return ret;
 		}
 	}
 

@@ -3746,6 +3746,33 @@ String Variant::get_call_error_text(Object *p_base, const StringName &p_method, 
 
 	String err_text;
 
+	switch(ce.error){
+	    case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT: {
+            int errorarg = ce.argument;
+            if (p_argptrs) {
+                err_text = "Cannot convert argument " + itos(errorarg + 1) +
+                        " from " + Variant::get_type_name(p_argptrs[errorarg]->get_type()) +
+                        " to " + Variant::get_type_name(Variant::Type(ce.expected)) + ".";
+            } else {
+                err_text = "Cannot convert argument " + itos(errorarg + 1) +
+                        " from [missing argptr, type unknown] to " + Variant::get_type_name(Variant::Type(ce.expected)) + ".";
+            }
+        } break;
+	    case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
+	    case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS: {
+            err_text = "Method expected " + itos(ce.argument) + " arguments, but called with " + itos(p_argcount) + ".";
+        } break;
+	    case Callable::CallError::CALL_ERROR_INVALID_METHOD: {
+            err_text = "Method not found.";
+        } break;
+	    case Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL: {
+	        err_text = "Instance is null.";
+        } break;
+        default: { //Callable::CallError::CALL_OK
+            return "Call OK.";
+        }
+	}
+/*
 	if (ce.error == Callable::CallError::CALL_ERROR_INVALID_ARGUMENT) {
 		int errorarg = ce.argument;
 		if (p_argptrs) {
@@ -3764,6 +3791,7 @@ String Variant::get_call_error_text(Object *p_base, const StringName &p_method, 
 	} else if (ce.error == Callable::CallError::CALL_OK) {
 		return "Call OK";
 	}
+*/
 
 	String class_name = p_base->get_class();
 	Ref<Script> script = p_base->get_script();
