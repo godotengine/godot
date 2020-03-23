@@ -68,6 +68,11 @@ android {
     compileSdkVersion versions.compileSdk
     buildToolsVersion versions.buildTools
 
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
+
     defaultConfig {
         // Feel free to modify the application id to your own.
         applicationId getExportPackageName()
