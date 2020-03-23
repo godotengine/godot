@@ -268,6 +268,14 @@
 				Returns the host OS locale.
 			</description>
 		</method>
+		<method name="get_standardized_locale" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the host OS locale as a string of the form [code]locale[_VARIANT][/code] (e.g. [code]en_US[/code] for American English). The returned String will not depend on the OS or user configuration. See [url=https://docs.godotengine.org/en/latest/tutorials/i18n/locales.html]this page[/url] for examples of locale codes that can be returned.
+				[b]Note:[/b] This method returns [code]en[/code] if the host OS locale can't be detected for any reason.
+			</description>
+		</method>
 		<method name="get_model_name" qualifiers="const">
 			<return type="String">
 			</return>
