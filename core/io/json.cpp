@@ -467,5 +467,15 @@ Error JSON::parse(const String &p_json, Variant &r_ret, String &r_err_str, int &
 
 	err = _parse_value(r_ret, token, str, idx, len, r_err_line, r_err_str);
 
+#define IS_WHITE_SPACE(c) (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\v')
+
+	while ((idx < len) && IS_WHITE_SPACE(str[idx]))
+		idx++;
+
+	if (idx != len) {
+		r_err_str = "Extra data found after parsing expression.";
+		return ERR_PARSE_ERROR;
+	}
+
 	return err;
 }
