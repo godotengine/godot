@@ -73,7 +73,8 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Converts a localized path ([code]res://[/code]) to a full native OS path.
+				Converts a localized path ([code]res://[/code]) to a full native OS path. 
+				If using this function to get the executable path for an exported game, please use [code] OS.get_executable_path() [code] instead.
 			</description>
 		</method>
 		<method name="has_setting" qualifiers="const">
