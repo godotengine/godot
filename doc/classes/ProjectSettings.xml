@@ -74,7 +74,7 @@
 			</argument>
 			<description>
 				Converts a localized path ([code]res://[/code]) to a full native OS path. 
-				If using this function to get the executable path for an exported game, please use [code] OS.get_executable_path() [code] instead.
+				[b]Note:[/b] This method doesn't work in an exported project. To load files outside the PCK in an exported project, append the file path to the result of [method OS.get_executable_path] instead.
 			</description>
 		</method>
 		<method name="has_setting" qualifiers="const">
