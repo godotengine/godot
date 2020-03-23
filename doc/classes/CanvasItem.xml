@@ -9,6 +9,7 @@
 		Canvas items are drawn in tree order. By default, children are on top of their parents so a root [CanvasItem] will be drawn behind everything. This behavior can be changed on a per-item basis.
 		A [CanvasItem] can also be hidden, which will also hide its children. It provides many ways to change parameters such as modulation (for itself and its children) and self modulation (only for itself), as well as its blend mode.
 		Ultimately, a transform notification can be requested, which will notify the node that its global position changed in case the parent tree changed.
+		Unless explictly mentioned all angle inputs are in radians.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
