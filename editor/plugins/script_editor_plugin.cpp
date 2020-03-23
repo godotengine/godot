@@ -1557,6 +1557,8 @@ void ScriptEditor::_update_members_overview() {
 	for (int i = 0; i < functions.size(); i++) {
 		String filter = filter_methods->get_text();
 		String name = functions[i].get_slice(":", 0);
+		String argc = functions[i].get_slice(":", 2);
+		EditorNode::get_undo_redo()->argument_count[name] = (argc == "") ? 0 : argc.to_int();
 		if (filter == "" || filter.is_subsequence_ofi(name)) {
 			members_overview->add_item(name);
 			members_overview->set_item_metadata(members_overview->get_item_count() - 1, functions[i].get_slice(":", 1).to_int() - 1);
