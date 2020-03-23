@@ -59,6 +59,7 @@ private:
 	Control *_getch(int p_idx) const;
 
 	void _resort();
+	int _get_separation() const;
 
 protected:
 	void _gui_input(const Ref<InputEvent> &p_event);

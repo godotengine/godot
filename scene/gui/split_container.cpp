@@ -118,14 +118,20 @@ void SplitContainer::_resort() {
 	update();
 }
 
+int SplitContainer::_get_separation() const {
+	Ref<Texture2D> g = get_icon("grabber");
+	int sep = get_constant("separation");
+	sep = (dragger_visibility != DRAGGER_HIDDEN_COLLAPSED) ? MAX(sep, vertical ? g->get_height() : g->get_width()) : 0;
+	return sep;
+}
+
 Size2 SplitContainer::get_minimum_size() const {
 
 	/* Calculate MINIMUM SIZE */
 
-	Size2i minimum;
-	Ref<Texture2D> g = get_icon("grabber");
-	int sep = get_constant("separation");
-	sep = (dragger_visibility != DRAGGER_HIDDEN_COLLAPSED) ? MAX(sep, vertical ? g->get_height() : g->get_width()) : 0;
+	Ref<StyleBox> bg = get_stylebox("bg");
+	Size2i minimum = bg->get_minimum_size();
+	int sep = _get_separation();
 
 	for (int i = 0; i < 2; i++) {
 
@@ -175,16 +181,24 @@ void SplitContainer::_notification(int p_what) {
 			if (!_getch(0) || !_getch(1))
 				return;
 
+			int sep = _get_separation();
+			Size2 size = get_size();
+
+			if (dragger_visibility != DRAGGER_HIDDEN_COLLAPSED) {
+				Ref<StyleBox> bg = get_stylebox("bg");
+				if (vertical)
+					draw_style_box(bg, Rect2(Point2(0, middle_sep), Size2(size.x, sep)));
+				else
+					draw_style_box(bg, Rect2(Point2(middle_sep, 0), Size2(sep, size.y)));
+			}
+
 			if (collapsed || (!dragging && !mouse_inside && get_constant("autohide")))
 				return;
 
 			if (dragger_visibility != DRAGGER_VISIBLE)
 				return;
 
-			int sep = dragger_visibility != DRAGGER_HIDDEN_COLLAPSED ? get_constant("separation") : 0;
 			Ref<Texture2D> tex = get_icon("grabber");
-			Size2 size = get_size();
-
 			if (vertical)
 				draw_texture(tex, Point2i((size.x - tex->get_width()) / 2, middle_sep + (sep - tex->get_height()) / 2));
 			else
@@ -203,14 +217,13 @@ void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 		return;
 
 	Ref<InputEventMouseButton> mb = p_event;
+	int sep = _get_separation();
 
 	if (mb.is_valid()) {
 
 		if (mb->get_button_index() == BUTTON_LEFT) {
 
 			if (mb->is_pressed()) {
-
-				int sep = get_constant("separation");
 
 				if (vertical) {
 
@@ -242,9 +255,9 @@ void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 
 		bool mouse_inside_state = false;
 		if (vertical)
-			mouse_inside_state = mm->get_position().y > middle_sep && mm->get_position().y < middle_sep + get_constant("separation");
+			mouse_inside_state = mm->get_position().y > middle_sep && mm->get_position().y < middle_sep + sep;
 		else
-			mouse_inside_state = mm->get_position().x > middle_sep && mm->get_position().x < middle_sep + get_constant("separation");
+			mouse_inside_state = mm->get_position().x > middle_sep && mm->get_position().x < middle_sep + sep;
 
 		if (mouse_inside != mouse_inside_state) {
 
@@ -270,7 +283,7 @@ Control::CursorShape SplitContainer::get_cursor_shape(const Point2 &p_pos) const
 
 	if (!collapsed && _getch(0) && _getch(1) && dragger_visibility == DRAGGER_VISIBLE) {
 
-		int sep = get_constant("separation");
+		int sep = _get_separation();
 
 		if (vertical) {
 
