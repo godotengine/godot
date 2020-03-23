@@ -184,13 +184,23 @@ namespace Godot
             return x2 + y2 + z2;
         }
 
-        public Vector3 LinearInterpolate(Vector3 b, real_t t)
+        public Vector3 Lerp(Vector3 to, real_t weight)
         {
             return new Vector3
             (
-                x + t * (b.x - x),
-                y + t * (b.y - y),
-                z + t * (b.z - z)
+                Mathf.Lerp(x, to.x, weight),
+                Mathf.Lerp(y, to.y, weight),
+                Mathf.Lerp(z, to.z, weight)
+            );
+        }
+
+        public Vector3 Lerp(Vector3 to, Vector3 weight)
+        {
+            return new Vector3
+            (
+                Mathf.Lerp(x, to.x, weight.x),
+                Mathf.Lerp(y, to.y, weight.y),
+                Mathf.Lerp(z, to.z, weight.z)
             );
         }
 

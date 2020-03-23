@@ -172,7 +172,7 @@ namespace Godot
             if (dot > 0.9995f)
             {
                 // Linearly interpolate to avoid numerical precision issues
-                v = v1.LinearInterpolate(v2, c).Normalized();
+                v = v1.Lerp(v2, c).Normalized();
             }
             else
             {
@@ -186,8 +186,8 @@ namespace Godot
             Vector2 p2 = m.origin;
 
             // Construct matrix
-            var res = new Transform2D(Mathf.Atan2(v.y, v.x), p1.LinearInterpolate(p2, c));
-            Vector2 scale = s1.LinearInterpolate(s2, c);
+            var res = new Transform2D(Mathf.Atan2(v.y, v.x), p1.Lerp(p2, c));
+            Vector2 scale = s1.Lerp(s2, c);
             res.x *= scale;
             res.y *= scale;
 
