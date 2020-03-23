@@ -90,10 +90,15 @@ float SpringArm::get_length() const {
 }
 
 void SpringArm::set_length(float p_length) {
+	if (p_length == spring_length) {
+		return;
+	}
+
 	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_collisions_hint()))
 		update_gizmo();
 
 	spring_length = p_length;
+	process_spring();
 }
 
 void SpringArm::set_shape(Ref<Shape> p_shape) {
