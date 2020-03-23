@@ -745,6 +745,8 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("SpatialMaterial", "StandardMaterial3D");
 	ClassDB::add_compatibility_class("Mesh", "ArrayMesh");
 	ClassDB::add_compatibility_class("AnimationTreePlayer", "AnimationTree");
+	ClassDB::add_compatibility_class("PanoramaSky", "PanoramaSkyMaterial");
+	ClassDB::add_compatibility_class("ProceduralSky", "ProceduralSkyMaterial");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarConstant", "VisualShaderNodeFloatConstant");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarUniform", "VisualShaderNodeFloatUniform");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarOp", "VisualShaderNodeFloatOp");
