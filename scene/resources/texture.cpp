@@ -1743,7 +1743,7 @@ Ref<Texture2D> AnimatedTexture::get_frame_texture(int p_frame) const {
 void AnimatedTexture::set_frame_delay(int p_frame, float p_delay_sec) {
 	ERR_FAIL_INDEX(p_frame, MAX_FRAMES);
 
-	RWLockRead r(rw_lock);
+	RWLockWrite r(rw_lock);
 
 	frames[p_frame].delay_sec = p_delay_sec;
 }
@@ -1757,6 +1757,8 @@ float AnimatedTexture::get_frame_delay(int p_frame) const {
 
 void AnimatedTexture::set_fps(float p_fps) {
 	ERR_FAIL_COND(p_fps < 0 || p_fps >= 1000);
+
+	RWLockWrite r(rw_lock);
 
 	fps = p_fps;
 }
