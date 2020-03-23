@@ -512,6 +512,22 @@ uint16_t Node::rset_config(const StringName &p_property, MultiplayerAPI::RPCMode
 	}
 }
 
+MultiplayerAPI::RPCMode Node::get_rpc_config(const StringName &p_method) {
+
+	if (get_script_instance()) {
+		return get_script_instance()->get_rpc_mode(p_method);
+	}
+	return MultiplayerAPI::RPC_MODE_DISABLED;
+}
+
+MultiplayerAPI::RPCMode Node::get_rset_config(const StringName &p_property) {
+
+	if (get_script_instance()) {
+		return get_script_instance()->get_rset_mode(p_property);
+	}
+	return MultiplayerAPI::RPC_MODE_DISABLED;
+}
+
 /***** RPC FUNCTIONS ********/
 
 void Node::rpc(const StringName &p_method, VARIANT_ARG_DECLARE) {
@@ -2895,6 +2911,8 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_multiplayer", "api"), &Node::set_custom_multiplayer);
 	ClassDB::bind_method(D_METHOD("rpc_config", "method", "mode"), &Node::rpc_config);
 	ClassDB::bind_method(D_METHOD("rset_config", "property", "mode"), &Node::rset_config);
+	ClassDB::bind_method(D_METHOD("get_rpc_config", "method"), &Node::get_rpc_config);
+	ClassDB::bind_method(D_METHOD("get_rset_config", "property"), &Node::get_rset_config);
 
 	ClassDB::bind_method(D_METHOD("_set_editor_description", "editor_description"), &Node::set_editor_description);
 	ClassDB::bind_method(D_METHOD("_get_editor_description"), &Node::get_editor_description);

@@ -434,6 +434,8 @@ public:
 
 	uint16_t rpc_config(const StringName &p_method, MultiplayerAPI::RPCMode p_mode); // config a local method for RPC
 	uint16_t rset_config(const StringName &p_property, MultiplayerAPI::RPCMode p_mode); // config a local property for RPC
+	MultiplayerAPI::RPCMode get_rpc_config(const StringName &p_method); // return the RPC mode for a local method
+	MultiplayerAPI::RPCMode get_rset_config(const StringName &p_property); // return the RPC mode for a local property
 
 	void rpc(const StringName &p_method, VARIANT_ARG_LIST); //rpc call, honors RPCMode
 	void rpc_unreliable(const StringName &p_method, VARIANT_ARG_LIST); //rpc call, honors RPCMode

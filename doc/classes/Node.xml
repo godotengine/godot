@@ -631,6 +631,15 @@
 				Changes the RPC mode for the given [code]method[/code] to the given [code]mode[/code]. See [enum MultiplayerAPI.RPCMode]. An alternative is annotating methods and properties with the corresponding keywords ([code]remote[/code], [code]master[/code], [code]puppet[/code], [code]remotesync[/code], [code]mastersync[/code], [code]puppetsync[/code]). By default, methods are not exposed to networking (and RPCs). See also [method rset] and [method rset_config] for properties.
 			</description>
 		</method>
+		<method name="get_rpc_config">
+		        <return type="MultiplayerAPI.RPCMode">
+			</return>
+			<argument index="0" name="method" type="String">
+			</argument>
+			<description>
+			        Retrieves the RPC mode for the given [code]method[/code]. See also [enum MultiplayerAPI.RPCMode] and [method rpc_config].
+			</description>
+		</method>
 		<method name="rpc_id" qualifiers="vararg">
 			<return type="Variant">
 			</return>
@@ -682,6 +691,15 @@
 			</argument>
 			<description>
 				Changes the RPC mode for the given [code]property[/code] to the given [code]mode[/code]. See [enum MultiplayerAPI.RPCMode]. An alternative is annotating methods and properties with the corresponding keywords ([code]remote[/code], [code]master[/code], [code]puppet[/code], [code]remotesync[/code], [code]mastersync[/code], [code]puppetsync[/code]). By default, properties are not exposed to networking (and RPCs). See also [method rpc] and [method rpc_config] for methods.
+			</description>
+		</method>
+		<method name="get_rset_config">
+		        <return type="MultiplayerAPI.RPCMode">
+			</return>
+			<argument index="0" name="property" type="String">
+			</argument>
+			<description>
+			        Retrieves the RPC mode for the given [code]property[/code]. See also [enum MultiplayerAPI.RPCMode] and [method rset_config].
 			</description>
 		</method>
 		<method name="rset_id">
