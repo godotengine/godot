@@ -104,8 +104,8 @@ namespace Godot
             Vector3 destinationLocation = transform.origin;
 
             var interpolated = new Transform();
-            interpolated.basis.SetQuatScale(sourceRotation.Slerp(destinationRotation, c).Normalized(), sourceScale.LinearInterpolate(destinationScale, c));
-            interpolated.origin = sourceLocation.LinearInterpolate(destinationLocation, c);
+            interpolated.basis.SetQuatScale(sourceRotation.Slerp(destinationRotation, c).Normalized(), sourceScale.Lerp(destinationScale, c));
+            interpolated.origin = sourceLocation.Lerp(destinationLocation, c);
 
             return interpolated;
         }
