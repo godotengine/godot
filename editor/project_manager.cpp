@@ -1856,7 +1856,7 @@ void ProjectManager::_update_project_buttons() {
 	rename_btn->set_disabled(empty_selection || is_missing_project_selected);
 	run_btn->set_disabled(empty_selection || is_missing_project_selected);
 
-	erase_missing_btn->set_visible(_project_list->is_any_project_missing());
+	erase_missing_btn->set_disabled(!_project_list->is_any_project_missing());
 }
 
 void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
@@ -2525,6 +2525,7 @@ ProjectManager::ProjectManager() {
 	_project_list->set_enable_h_scroll(false);
 
 	VBoxContainer *tree_vb = memnew(VBoxContainer);
+	tree_vb->set_custom_minimum_size(Size2(120, 120));
 	tree_hb->add_child(tree_vb);
 
 	Button *open = memnew(Button);
