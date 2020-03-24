@@ -28,8 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "test_main.h"
+
 #include "core/list.h"
-#include "core/os/main_loop.h"
 
 #ifdef DEBUG_ENABLED
 
