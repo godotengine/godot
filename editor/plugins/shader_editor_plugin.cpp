@@ -221,12 +221,12 @@ void ShaderTextEditor::_validate_script() {
 		set_error(error_text);
 		set_error_pos(sl.get_error_line() - 1, 0);
 		for (int i = 0; i < get_text_edit()->get_line_count(); i++)
-			get_text_edit()->set_line_as_marked(i, false);
-		get_text_edit()->set_line_as_marked(sl.get_error_line() - 1, true);
+			get_text_edit()->set_line_mark_position(i, false);
+		get_text_edit()->set_line_mark_position(sl.get_error_line() - 1, true);
 
 	} else {
 		for (int i = 0; i < get_text_edit()->get_line_count(); i++)
-			get_text_edit()->set_line_as_marked(i, false);
+			get_text_edit()->set_line_mark_position(i, false);
 		set_error("");
 	}
 
