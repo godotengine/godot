@@ -2502,7 +2502,7 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 		if (it->type == ITEM_TEXT) {
 
 			ItemText *t = static_cast<ItemText *>(it);
-			int sp = t->text.find(p_string, charidx);
+			int sp = t->text.findn(p_string, charidx);
 			if (sp != -1) {
 				selection.from = it;
 				selection.from_char = sp;
