@@ -2787,6 +2787,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 					return;
 				}
 
+				_mark_line_as_safe(line);
 				NewLineNode *nl2 = alloc_node<NewLineNode>();
 				nl2->line = line;
 				p_block->statements.push_back(nl2);
@@ -3300,6 +3301,8 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 					return;
 				}
 
+				int assert_line = tokenizer->get_token_line();
+
 				tokenizer->advance();
 
 				Vector<Node *> args;
@@ -3313,8 +3316,14 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 					return;
 				}
 
+#ifdef DEBUG_ENABLED
+				// Mark as safe, let type check mark as unsafe if needed
+				_mark_line_as_safe(assert_line);
+				_reduce_node_type(args[0]);
+#endif
 				AssertNode *an = alloc_node<AssertNode>();
 				an->condition = _reduce_expression(args[0], p_static);
+				an->line = assert_line;
 
 				if (args.size() == 2) {
 					an->message = _reduce_expression(args[1], p_static);
