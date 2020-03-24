@@ -310,6 +310,8 @@ private:
 		int mouse_focus_mask;
 		Control *key_focus;
 		Control *mouse_over;
+		Control *drag_mouse_over;
+		Vector2 drag_mouse_over_pos;
 		Control *tooltip;
 		Window *tooltip_popup;
 		Label *tooltip_label;
