@@ -204,9 +204,13 @@ void SpinBox::_notification(int p_what) {
 
 		updown->draw(ci, Point2i(size.width - updown->get_width(), (size.height - updown->get_height()) / 2));
 
-	} else if (p_what == NOTIFICATION_FOCUS_EXIT) {
+	} else if (p_what == NOTIFICATION_FOCUS_ENTER) {
 
-		//_value_changed(0);
+		if (select_all_on_focus) {
+			line_edit->select_all();
+		}
+
+		line_edit->grab_focus();
 	} else if (p_what == NOTIFICATION_ENTER_TREE) {
 
 		_adjust_width_for_icon(get_icon("updown"));
@@ -248,6 +252,16 @@ void SpinBox::set_prefix(const String &p_prefix) {
 String SpinBox::get_prefix() const {
 
 	return prefix;
+}
+
+void SpinBox::set_select_all_on_focus(bool p_select) {
+
+	select_all_on_focus = p_select;
+}
+
+bool SpinBox::is_select_all_on_focus() const {
+
+	return select_all_on_focus;
 }
 
 void SpinBox::set_editable(bool p_editable) {
@@ -301,4 +315,6 @@ SpinBox::SpinBox() {
 	range_click_timer = memnew(Timer);
 	range_click_timer->connect("timeout", callable_mp(this, &SpinBox::_range_click_timeout));
 	add_child(range_click_timer);
+
+	select_all_on_focus = false;
 }

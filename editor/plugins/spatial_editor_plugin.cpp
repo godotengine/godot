@@ -6204,12 +6204,15 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	snap_dialog->add_child(snap_dialog_vbc);
 
 	snap_translate = memnew(LineEdit);
+	snap_translate->set_select_all_on_focus(true);
 	snap_dialog_vbc->add_margin_child(TTR("Translate Snap:"), snap_translate);
 
 	snap_rotate = memnew(LineEdit);
+	snap_rotate->set_select_all_on_focus(true);
 	snap_dialog_vbc->add_margin_child(TTR("Rotate Snap (deg.):"), snap_rotate);
 
 	snap_scale = memnew(LineEdit);
+	snap_scale->set_select_all_on_focus(true);
 	snap_dialog_vbc->add_margin_child(TTR("Scale Snap (%):"), snap_scale);
 
 	_snap_update();
@@ -6228,6 +6231,8 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	settings_fov->set_min(MIN_FOV);
 	settings_fov->set_step(0.01);
 	settings_fov->set_value(EDITOR_DEF("editors/3d/default_fov", 70.0));
+	settings_fov->set_select_all_on_focus(true);
+	settings_fov->set_focus_mode(FOCUS_ALL);
 	settings_vbc->add_margin_child(TTR("Perspective FOV (deg.):"), settings_fov);
 
 	settings_znear = memnew(SpinBox);
@@ -6235,6 +6240,8 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	settings_znear->set_min(MIN_Z);
 	settings_znear->set_step(0.01);
 	settings_znear->set_value(EDITOR_DEF("editors/3d/default_z_near", 0.05));
+	settings_znear->set_select_all_on_focus(true);
+	settings_znear->set_focus_mode(FOCUS_ALL);
 	settings_vbc->add_margin_child(TTR("View Z-Near:"), settings_znear);
 
 	settings_zfar = memnew(SpinBox);
@@ -6242,6 +6249,8 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	settings_zfar->set_min(MIN_Z);
 	settings_zfar->set_step(0.01);
 	settings_zfar->set_value(EDITOR_DEF("editors/3d/default_z_far", 1500));
+	settings_zfar->set_select_all_on_focus(true);
+	settings_zfar->set_focus_mode(FOCUS_ALL);
 	settings_vbc->add_margin_child(TTR("View Z-Far:"), settings_zfar);
 
 	for (uint32_t i = 0; i < VIEWPORTS_COUNT; ++i) {
@@ -6267,6 +6276,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	for (int i = 0; i < 3; i++) {
 
 		xform_translate[i] = memnew(LineEdit);
+		xform_translate[i]->set_select_all_on_focus(true);
 		xform_translate[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		xform_hbc->add_child(xform_translate[i]);
 	}
@@ -6280,6 +6290,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 	for (int i = 0; i < 3; i++) {
 		xform_rotate[i] = memnew(LineEdit);
+		xform_rotate[i]->set_select_all_on_focus(true);
 		xform_rotate[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		xform_hbc->add_child(xform_rotate[i]);
 	}
@@ -6293,6 +6304,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 	for (int i = 0; i < 3; i++) {
 		xform_scale[i] = memnew(LineEdit);
+		xform_scale[i]->set_select_all_on_focus(true);
 		xform_scale[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		xform_hbc->add_child(xform_scale[i]);
 	}
