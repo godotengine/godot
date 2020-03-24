@@ -75,6 +75,8 @@ void CharacterNetController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_state_notify_interval", "interval"), &CharacterNetController::set_state_notify_interval);
 	ClassDB::bind_method(D_METHOD("get_state_notify_interval"), &CharacterNetController::get_state_notify_interval);
 
+	ClassDB::bind_method(D_METHOD("get_current_snapshot_id"), &CharacterNetController::get_current_snapshot_id);
+
 	ClassDB::bind_method(D_METHOD("input_buffer_add_bool", "bool", "compression_level"), &CharacterNetController::input_buffer_add_bool, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("input_buffer_read_bool", "compression_level"), &CharacterNetController::input_buffer_read_bool, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
 
@@ -205,6 +207,10 @@ void CharacterNetController::set_state_notify_interval(real_t p_interval) {
 
 real_t CharacterNetController::get_state_notify_interval() const {
 	return state_notify_interval;
+}
+
+uint64_t CharacterNetController::get_current_snapshot_id() const {
+	return controller->get_current_snapshot_id();
 }
 
 bool CharacterNetController::input_buffer_add_bool(bool p_input, InputCompressionLevel _p_compression) {
@@ -614,6 +620,10 @@ void ServerController::replay_snapshots() {
 	ERR_PRINT("The method `replay_snapshots` must not be called on server. Be sure why it happened.");
 }
 
+uint64_t ServerController::get_current_snapshot_id() const {
+	return current_packet_id;
+}
+
 bool ServerController::fetch_next_input() {
 	bool is_new_input = true;
 
@@ -924,6 +934,10 @@ void PlayerController::replay_snapshots() {
 	}
 }
 
+uint64_t PlayerController::get_current_snapshot_id() const {
+	return snapshot_counter;
+}
+
 real_t PlayerController::get_pretended_delta() const {
 	return 1.0 / (static_cast<real_t>(Engine::get_singleton()->get_iterations_per_second()) + tick_additional_speed);
 }
@@ -1150,6 +1164,10 @@ void DollController::replay_snapshots() {
 	player_controller.replay_snapshots();
 }
 
+uint64_t DollController::get_current_snapshot_id() const {
+	return server_controller.current_packet_id;
+}
+
 void DollController::open_flow() {
 	if (is_flow_open == true)
 		return;
@@ -1205,7 +1223,8 @@ void DollController::hard_reset_to_server_state() {
 }
 
 NoNetController::NoNetController(CharacterNetController *p_node) :
-		Controller(p_node) {
+		Controller(p_node),
+		frame_id(0) {
 }
 
 void NoNetController::physics_process(real_t p_delta) {
@@ -1214,6 +1233,7 @@ void NoNetController::physics_process(real_t p_delta) {
 	node->get_inputs_buffer_mut().dry();
 	node->get_inputs_buffer_mut().begin_read();
 	node->call("controller_process", p_delta);
+	frame_id += 1;
 }
 
 void NoNetController::receive_snapshots(Vector<uint8_t> p_data) {
@@ -1226,4 +1246,8 @@ void NoNetController::player_state_check(uint64_t p_snapshot_id, Variant p_data)
 
 void NoNetController::replay_snapshots() {
 	// Nothing to do.
+}
+
+uint64_t NoNetController::get_current_snapshot_id() const {
+	return frame_id;
 }

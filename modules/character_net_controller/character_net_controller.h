@@ -147,6 +147,8 @@ public:
 	void set_state_notify_interval(real_t p_interval);
 	real_t get_state_notify_interval() const;
 
+	uint64_t get_current_snapshot_id() const;
+
 	/// Set bool
 	/// Returns the same data.
 	bool input_buffer_add_bool(bool p_input, InputCompressionLevel p_compression = INPUT_COMPRESSION_LEVEL_1);
@@ -302,6 +304,7 @@ struct Controller {
 	/// recover its player state.
 	virtual void player_state_check(uint64_t p_id, Variant p_data) = 0;
 	virtual void replay_snapshots() = 0;
+	virtual uint64_t get_current_snapshot_id() const = 0;
 };
 
 struct ServerController : public Controller {
@@ -321,6 +324,7 @@ struct ServerController : public Controller {
 	virtual void receive_snapshots(Vector<uint8_t> p_data);
 	virtual void player_state_check(uint64_t p_snapshot_id, Variant p_data);
 	virtual void replay_snapshots();
+	virtual uint64_t get_current_snapshot_id() const;
 
 	/// Fetch the next inputs, returns true if the input is new.
 	bool fetch_next_input();
@@ -362,6 +366,7 @@ struct PlayerController : public Controller {
 	virtual void receive_snapshots(Vector<uint8_t> p_data);
 	virtual void player_state_check(uint64_t p_snapshot_id, Variant p_data);
 	virtual void replay_snapshots();
+	virtual uint64_t get_current_snapshot_id() const;
 
 	real_t get_pretended_delta() const;
 
@@ -401,6 +406,7 @@ struct DollController : public Controller {
 	virtual void receive_snapshots(Vector<uint8_t> p_data);
 	virtual void player_state_check(uint64_t p_snapshot_id, Variant p_data);
 	virtual void replay_snapshots();
+	virtual uint64_t get_current_snapshot_id() const;
 
 	void open_flow();
 	void close_flow();
@@ -415,12 +421,15 @@ struct DollController : public Controller {
 /// This controller keeps the workflow as usual so it's possible to use the
 /// `CharacterNetController` even without network.
 struct NoNetController : public Controller {
+	uint64_t frame_id;
+
 	NoNetController(CharacterNetController *p_node);
 
 	virtual void physics_process(real_t p_delta);
 	virtual void receive_snapshots(Vector<uint8_t> p_data);
 	virtual void player_state_check(uint64_t p_snapshot_id, Variant p_data);
 	virtual void replay_snapshots();
+	virtual uint64_t get_current_snapshot_id() const;
 };
 
 #endif
