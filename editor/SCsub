@@ -56,7 +56,7 @@ if env['tools']:
         except OSError:
             pass
 
-    _make_doc_data_class_path(os.path.join(env.Dir('#').abspath, "editor/doc"))
+    _make_doc_data_class_path(os.path.join(env.Dir('#').abspath, "editor"))
 
     docs = sorted(docs)
     env.Depends("#editor/doc_data_compressed.gen.h", docs)
@@ -85,8 +85,6 @@ if env['tools']:
 
     env.add_source_files(env.editor_sources, "*.cpp")
 
-    SConscript('collada/SCsub')
-    SConscript('doc/SCsub')
     SConscript('debugger/SCsub')
     SConscript('fileserver/SCsub')
     SConscript('icons/SCsub')

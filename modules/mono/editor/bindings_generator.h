@@ -33,7 +33,7 @@
 
 #include "core/class_db.h"
 #include "core/string_builder.h"
-#include "editor/doc/doc_data.h"
+#include "editor/doc_data.h"
 #include "editor/editor_help.h"
 
 #if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)

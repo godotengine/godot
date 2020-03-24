@@ -33,7 +33,7 @@
 
 #include "core/class_db.h"
 #include "core/list.h"
-#include "editor/doc/doc_data.h"
+#include "editor/doc_data.h"
 
 namespace lsp {
 
