@@ -71,8 +71,8 @@
 #include "servers/register_server_types.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/doc/doc_data.h"
-#include "editor/doc/doc_data_class_path.gen.h"
+#include "editor/doc_data.h"
+#include "editor/doc_data_class_path.gen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/progress_dialog.h"
