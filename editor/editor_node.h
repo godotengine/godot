@@ -576,6 +576,10 @@ private:
 	void _thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
 	void _scene_tab_script_edited(int p_tab);
 
+public:
+	static void resolve_identical_tab_path(String &p_title1, const String &p_path1, String &p_title2, const String &p_path2, int p_level = 0);
+
+private:
 	Dictionary _get_main_scene_state();
 	void _set_main_scene_state(Dictionary p_state, Node *p_for_scene);
 
