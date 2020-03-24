@@ -410,16 +410,18 @@ RID RasterizerSceneRD::_get_sky_textures(Sky *p_sky, SkyTextureSetVersion p_vers
 		RD::Uniform u;
 		u.type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 1; // half res
-		if (p_sky->half_res_pass.is_valid() && (p_version != SKY_TEXTURE_SET_HALF_RES) && (p_version < SKY_TEXTURE_SET_CUBEMAP_HALF_RES0 || p_version > SKY_TEXTURE_SET_CUBEMAP_HALF_RES5)) {
-			if (p_version >= SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES0) {
-				u.ids.push_back(p_sky->reflection.layers[0].mipmaps[1].views[p_version - SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES0]);
-			} else if (p_version >= SKY_TEXTURE_SET_CUBEMAP0) {
-				u.ids.push_back(p_sky->reflection.layers[0].mipmaps[1].views[p_version - SKY_TEXTURE_SET_CUBEMAP0]);
+		if (p_sky->half_res_pass.is_valid() && p_version != SKY_TEXTURE_SET_HALF_RES && p_version != SKY_TEXTURE_SET_CUBEMAP_HALF_RES) {
+			if (p_version >= SKY_TEXTURE_SET_CUBEMAP) {
+				u.ids.push_back(p_sky->reflection.layers[0].views[1]);
 			} else {
 				u.ids.push_back(p_sky->half_res_pass);
 			}
 		} else {
-			u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE));
+			if (p_version < SKY_TEXTURE_SET_CUBEMAP) {
+				u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE));
+			} else {
+				u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
+			}
 		}
 		uniforms.push_back(u);
 	}
@@ -427,16 +429,18 @@ RID RasterizerSceneRD::_get_sky_textures(Sky *p_sky, SkyTextureSetVersion p_vers
 		RD::Uniform u;
 		u.type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 2; // quarter res
-		if (p_sky->quarter_res_pass.is_valid() && (p_version != SKY_TEXTURE_SET_QUARTER_RES) && (p_version < SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES0 || p_version > SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES5)) {
-			if (p_version >= SKY_TEXTURE_SET_CUBEMAP_HALF_RES0) {
-				u.ids.push_back(p_sky->reflection.layers[0].mipmaps[2].views[p_version - SKY_TEXTURE_SET_CUBEMAP_HALF_RES0]);
-			} else if (p_version >= SKY_TEXTURE_SET_CUBEMAP0) {
-				u.ids.push_back(p_sky->reflection.layers[0].mipmaps[2].views[p_version - SKY_TEXTURE_SET_CUBEMAP0]);
+		if (p_sky->quarter_res_pass.is_valid() && p_version != SKY_TEXTURE_SET_QUARTER_RES && p_version != SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES) {
+			if (p_version >= SKY_TEXTURE_SET_CUBEMAP) {
+				u.ids.push_back(p_sky->reflection.layers[0].views[2]);
 			} else {
 				u.ids.push_back(p_sky->quarter_res_pass);
 			}
 		} else {
-			u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE));
+			if (p_version < SKY_TEXTURE_SET_CUBEMAP) {
+				u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE));
+			} else {
+				u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
+			}
 		}
 		uniforms.push_back(u);
 	}
@@ -733,7 +737,7 @@ void RasterizerSceneRD::_update_sky(RID p_environment, const CameraMatrix &p_pro
 		cm = correction * cm;
 
 		if (shader_data->uses_quarter_res) {
-			RenderPipelineVertexFormatCacheRD *pipeline = &shader_data->pipelines[SKY_VERSION_QUARTER_RES];
+			RenderPipelineVertexFormatCacheRD *pipeline = &shader_data->pipelines[SKY_VERSION_CUBEMAP_QUARTER_RES];
 
 			Vector<Color> clear_colors;
 			clear_colors.push_back(Color(0.0, 0.0, 0.0));
@@ -742,7 +746,7 @@ void RasterizerSceneRD::_update_sky(RID p_environment, const CameraMatrix &p_pro
 			for (int i = 0; i < 6; i++) {
 				Transform local_view;
 				local_view.set_look_at(Vector3(0, 0, 0), view_normals[i], view_up[i]);
-				RID texture_uniform_set = _get_sky_textures(sky, SkyTextureSetVersion(SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES0 + i));
+				RID texture_uniform_set = _get_sky_textures(sky, SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES);
 
 				cubemap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[2].framebuffers[i], RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
 				storage->get_effects()->render_sky(cubemap_draw_list, time, sky->reflection.layers[0].mipmaps[2].framebuffers[i], sky_scene_state.sampler_uniform_set, sky_scene_state.light_uniform_set, pipeline, material->uniform_set, texture_uniform_set, cm, local_view.basis, multiplier, p_transform.origin);
@@ -751,7 +755,7 @@ void RasterizerSceneRD::_update_sky(RID p_environment, const CameraMatrix &p_pro
 		}
 
 		if (shader_data->uses_half_res) {
-			RenderPipelineVertexFormatCacheRD *pipeline = &shader_data->pipelines[SKY_VERSION_HALF_RES];
+			RenderPipelineVertexFormatCacheRD *pipeline = &shader_data->pipelines[SKY_VERSION_CUBEMAP_HALF_RES];
 
 			Vector<Color> clear_colors;
 			clear_colors.push_back(Color(0.0, 0.0, 0.0));
@@ -760,7 +764,7 @@ void RasterizerSceneRD::_update_sky(RID p_environment, const CameraMatrix &p_pro
 			for (int i = 0; i < 6; i++) {
 				Transform local_view;
 				local_view.set_look_at(Vector3(0, 0, 0), view_normals[i], view_up[i]);
-				RID texture_uniform_set = _get_sky_textures(sky, SkyTextureSetVersion(SKY_TEXTURE_SET_CUBEMAP_HALF_RES0 + i));
+				RID texture_uniform_set = _get_sky_textures(sky, SKY_TEXTURE_SET_CUBEMAP_HALF_RES);
 
 				cubemap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[1].framebuffers[i], RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
 				storage->get_effects()->render_sky(cubemap_draw_list, time, sky->reflection.layers[0].mipmaps[1].framebuffers[i], sky_scene_state.sampler_uniform_set, sky_scene_state.light_uniform_set, pipeline, material->uniform_set, texture_uniform_set, cm, local_view.basis, multiplier, p_transform.origin);
@@ -774,7 +778,7 @@ void RasterizerSceneRD::_update_sky(RID p_environment, const CameraMatrix &p_pro
 		for (int i = 0; i < 6; i++) {
 			Transform local_view;
 			local_view.set_look_at(Vector3(0, 0, 0), view_normals[i], view_up[i]);
-			RID texture_uniform_set = _get_sky_textures(sky, SkyTextureSetVersion(SKY_TEXTURE_SET_CUBEMAP0 + i));
+			RID texture_uniform_set = _get_sky_textures(sky, SKY_TEXTURE_SET_CUBEMAP);
 
 			cubemap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[0].framebuffers[i], RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
 			storage->get_effects()->render_sky(cubemap_draw_list, time, sky->reflection.layers[0].mipmaps[0].framebuffers[i], sky_scene_state.sampler_uniform_set, sky_scene_state.light_uniform_set, pipeline, material->uniform_set, texture_uniform_set, cm, local_view.basis, multiplier, p_transform.origin);
@@ -829,9 +833,6 @@ void RasterizerSceneRD::SkyShaderData::set_code(const String &p_code) {
 
 	actions.render_mode_flags["use_half_res_pass"] = &uses_half_res;
 	actions.render_mode_flags["use_quarter_res_pass"] = &uses_quarter_res;
-	// TODO: Consider using usage flags instead
-	//actions.usage_flag_pointers["HALF_RES_TEXTURE"] = &uses_half_res;
-	//actions.usage_flag_pointers["QUARTER_RES_TEXTURE"] = &uses_quarter_res;
 
 	actions.usage_flag_pointers["TIME"] = &uses_time;
 	actions.usage_flag_pointers["POSITION"] = &uses_position;
@@ -3905,10 +3906,12 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 
 		// Initialize sky
 		Vector<String> sky_modes;
-		sky_modes.push_back("\n#define AT_CUBEMAP_PASS false\n#define AT_HALF_RES_PASS false\n#define AT_QUARTER_RES_PASS false\n"); // Full size
-		sky_modes.push_back("\n#define AT_CUBEMAP_PASS false\n#define AT_HALF_RES_PASS true\n#define AT_QUARTER_RES_PASS false\n"); // Half Res
-		sky_modes.push_back("\n#define AT_CUBEMAP_PASS false\n#define AT_HALF_RES_PASS false\n#define AT_QUARTER_RES_PASS true\n"); // Quarter res
-		sky_modes.push_back("\n#define AT_CUBEMAP_PASS true\n#define AT_HALF_RES_PASS false\n#define AT_QUARTER_RES_PASS false\n"); // Cubemap
+		sky_modes.push_back(""); // Full size
+		sky_modes.push_back("\n#define USE_HALF_RES_PASS\n"); // Half Res
+		sky_modes.push_back("\n#define USE_QUARTER_RES_PASS\n"); // Quarter res
+		sky_modes.push_back("\n#define USE_CUBEMAP_PASS\n"); // Cubemap
+		sky_modes.push_back("\n#define USE_CUBEMAP_PASS\n#define USE_HALF_RES_PASS\n"); // Half Res Cubemap
+		sky_modes.push_back("\n#define USE_CUBEMAP_PASS\n#define USE_QUARTER_RES_PASS\n"); // Quarter res Cubemap
 		sky_shader.shader.initialize(sky_modes, defines);
 	}
 
@@ -3926,8 +3929,8 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 		actions.renames["SKY_COORDS"] = "panorama_coords";
 		actions.renames["SCREEN_UV"] = "uv";
 		actions.renames["TIME"] = "params.time";
-		actions.renames["HALF_RES_TEXTURE"] = "half_res";
-		actions.renames["QUARTER_RES_TEXTURE"] = "quarter_res";
+		actions.renames["HALF_RES_COLOR"] = "half_res_color";
+		actions.renames["QUARTER_RES_COLOR"] = "quarter_res_color";
 		actions.renames["RADIANCE"] = "radiance";
 		actions.renames["LIGHT0_ENABLED"] = "directional_lights.data[0].enabled";
 		actions.renames["LIGHT0_DIRECTION"] = "directional_lights.data[0].direction";
@@ -3949,8 +3952,8 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 		actions.renames["AT_HALF_RES_PASS"] = "AT_HALF_RES_PASS";
 		actions.renames["AT_QUARTER_RES_PASS"] = "AT_QUARTER_RES_PASS";
 		actions.custom_samplers["RADIANCE"] = "material_samplers[3]";
-		actions.custom_samplers["SUBPASS2"] = "material_samplers[1]";
-		actions.custom_samplers["SUBPASS4"] = "material_samplers[1]";
+		actions.usage_defines["HALF_RES_COLOR"] = "\n#define USES_HALF_RES_COLOR\n";
+		actions.usage_defines["QUARTER_RES_COLOR"] = "\n#define USES_QUARTER_RES_COLOR\n";
 
 		actions.sampler_array_name = "material_samplers";
 		actions.base_texture_binding_index = 1;

@@ -43,6 +43,19 @@ layout(push_constant, binding = 1, std430) uniform Params {
 }
 params;
 
+#define SAMPLER_NEAREST_CLAMP 0
+#define SAMPLER_LINEAR_CLAMP 1
+#define SAMPLER_NEAREST_WITH_MIPMAPS_CLAMP 2
+#define SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP 3
+#define SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_CLAMP 4
+#define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_CLAMP 5
+#define SAMPLER_NEAREST_REPEAT 6
+#define SAMPLER_LINEAR_REPEAT 7
+#define SAMPLER_NEAREST_WITH_MIPMAPS_REPEAT 8
+#define SAMPLER_LINEAR_WITH_MIPMAPS_REPEAT 9
+#define SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT 10
+#define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT 11
+
 layout(set = 0, binding = 0) uniform sampler material_samplers[12];
 
 #ifdef USE_MATERIAL_UNIFORMS
@@ -56,8 +69,31 @@ MATERIAL_UNIFORMS
 #endif
 
 layout(set = 2, binding = 0) uniform textureCube radiance;
+#ifdef USE_CUBEMAP_PASS
+layout(set = 2, binding = 1) uniform textureCube half_res;
+layout(set = 2, binding = 2) uniform textureCube quarter_res;
+#else
 layout(set = 2, binding = 1) uniform texture2D half_res;
 layout(set = 2, binding = 2) uniform texture2D quarter_res;
+#endif
+
+#ifdef USE_CUBEMAP_PASS
+#define AT_CUBEMAP_PASS true
+#else
+#define AT_CUBEMAP_PASS false
+#endif
+
+#ifdef USE_HALF_RES_PASS
+#define AT_HALF_RES_PASS true
+#else
+#define AT_HALF_RES_PASS false
+#endif
+
+#ifdef USE_QUARTER_RES_PASS
+#define AT_QUARTER_RES_PASS true
+#else
+#define AT_QUARTER_RES_PASS false
+#endif
 
 struct DirectionalLightData {
 	vec3 direction;
@@ -101,6 +137,26 @@ void main() {
 
 	vec3 color = vec3(0.0, 0.0, 0.0);
 	float alpha = 1.0; // Only available to subpasses
+	vec4 half_res_color = vec4(1.0);
+	vec4 quarter_res_color = vec4(1.0);
+
+#ifdef USE_CUBEMAP_PASS
+	float using_cubemap = 1.0;
+#ifdef USES_HALF_RES_COLOR
+	half_res_color = texture(samplerCube(half_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), cube_normal);
+#endif
+#ifdef USES_QUARTER_RES_COLOR
+	quarter_res_color = texture(samplerCube(quarter_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), cube_normal);
+#endif
+#else
+	float using_cubemap = 0.0;
+#ifdef USES_HALF_RES_COLOR
+	half_res_color = textureLod(sampler2D(half_res, material_samplers[SAMPLER_LINEAR_CLAMP]), uv, 0.0);
+#endif
+#ifdef USES_QUARTER_RES_COLOR
+	quarter_res_color = textureLod(sampler2D(quarter_res, material_samplers[SAMPLER_LINEAR_CLAMP]), uv, 0.0);
+#endif
+#endif
 
 // unused, just here to make our compiler happy, make sure we don't execute any light code the user adds in..
 #ifndef REALLYINCLUDETHIS
