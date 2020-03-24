@@ -37,4 +37,5 @@ namespace TestOAHashMap {
 
 MainLoop *test();
 }
+
 #endif // TEST_OA_HASH_MAP_H
