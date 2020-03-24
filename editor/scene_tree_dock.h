@@ -185,7 +185,8 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _delete_confirm();
 
-	void _toggle_editable_children_from_selection();
+	void _toggle_editable_children_off_from_selection();
+	void _toggle_editable_children_on_from_selection();
 	void _toggle_editable_children(Node *p_node);
 
 	void _toggle_placeholder_from_selection();
