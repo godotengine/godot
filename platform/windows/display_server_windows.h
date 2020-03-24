@@ -195,6 +195,8 @@ class DisplayServerWindows : public DisplayServer {
 		Size2 window_rect;
 		Point2 last_pos;
 
+		ObjectID instance_id;
+
 		// IME
 		HIMC im_himc;
 		Vector2 im_position;
@@ -291,10 +293,15 @@ public:
 	virtual void screen_set_keep_on(bool p_enable); //disable screensaver
 	virtual bool screen_is_kept_on() const;
 
-	virtual Vector<int> get_window_list() const;
+	virtual Vector<DisplayServer::WindowID> get_window_list() const;
 
 	virtual WindowID create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());
 	virtual void delete_sub_window(WindowID p_window);
+
+	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const;
+
+	virtual void window_attach_instance_id(ObjectID p_instance, WindowID p_window = MAIN_WINDOW_ID);
+	virtual ObjectID window_get_attached_instance_id(WindowID p_window = MAIN_WINDOW_ID) const;
 
 	virtual void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
 

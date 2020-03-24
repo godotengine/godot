@@ -196,6 +196,7 @@ Viewport::GUI::GUI() {
 	mouse_focus_mask = 0;
 	key_focus = NULL;
 	mouse_over = NULL;
+	drag_mouse_over = NULL;
 
 	tooltip = NULL;
 	tooltip_popup = NULL;
@@ -1960,11 +1961,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			if (gui.drag_data.get_type() != Variant::NIL && mb->get_button_index() == BUTTON_LEFT) {
 
-				if (gui.mouse_over) {
-					Size2 pos = mpos;
-					pos = gui.focus_inv_xform.xform(pos);
-
-					_gui_drop(gui.mouse_over, pos, false);
+				if (gui.drag_mouse_over) {
+					_gui_drop(gui.drag_mouse_over, gui.drag_mouse_over_pos, false);
 				}
 
 				if (gui.drag_preview && mb->get_button_index() == BUTTON_LEFT) {
@@ -1974,6 +1972,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 				gui.drag_data = Variant();
 				gui.dragging = false;
+				gui.drag_mouse_over = nullptr;
 				_propagate_viewport_notification(this, NOTIFICATION_DRAG_END);
 				//change mouse accordingly
 			}
@@ -2098,107 +2097,195 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		gui.mouse_over = over;
 
-		if (gui.drag_preview) {
-			gui.drag_preview->set_position(mpos);
-		}
+		DisplayServer::CursorShape ds_cursor_shape = (DisplayServer::CursorShape)InputFilter::get_singleton()->get_default_cursor_shape();
 
-		if (!over) {
-			DisplayServer::get_singleton()->cursor_set_shape((DisplayServer::CursorShape)InputFilter::get_singleton()->get_default_cursor_shape());
-			return;
-		}
+		if (over) {
 
-		Transform2D localizer = over->get_global_transform_with_canvas().affine_inverse();
-		Size2 pos = localizer.xform(mpos);
-		Vector2 speed = localizer.basis_xform(mm->get_speed());
-		Vector2 rel = localizer.basis_xform(mm->get_relative());
+			Transform2D localizer = over->get_global_transform_with_canvas().affine_inverse();
+			Size2 pos = localizer.xform(mpos);
+			Vector2 speed = localizer.basis_xform(mm->get_speed());
+			Vector2 rel = localizer.basis_xform(mm->get_relative());
 
-		mm = mm->xformed_by(Transform2D()); //make a copy
+			mm = mm->xformed_by(Transform2D()); //make a copy
 
-		mm->set_global_position(mpos);
-		mm->set_speed(speed);
-		mm->set_relative(rel);
+			mm->set_global_position(mpos);
+			mm->set_speed(speed);
+			mm->set_relative(rel);
 
-		if (mm->get_button_mask() == 0) {
-			//nothing pressed
+			if (mm->get_button_mask() == 0) {
+				//nothing pressed
 
-			bool can_tooltip = true;
+				bool can_tooltip = true;
 
-			bool is_tooltip_shown = false;
+				bool is_tooltip_shown = false;
 
-			if (gui.tooltip_popup) {
-				if (can_tooltip && gui.tooltip) {
-					String tooltip = _gui_get_tooltip(over, gui.tooltip->get_global_transform().xform_inv(mpos));
+				if (gui.tooltip_popup) {
+					if (can_tooltip && gui.tooltip) {
+						String tooltip = _gui_get_tooltip(over, gui.tooltip->get_global_transform().xform_inv(mpos));
 
-					if (tooltip.length() == 0)
-						_gui_cancel_tooltip();
-					else if (gui.tooltip_label) {
-						if (tooltip == gui.tooltip_label->get_text()) {
-							is_tooltip_shown = true;
-						}
-					} else {
-
-						Variant t = gui.tooltip_popup->call("get_tooltip_text");
-
-						if (t.get_type() == Variant::STRING) {
-							if (tooltip == String(t)) {
+						if (tooltip.length() == 0)
+							_gui_cancel_tooltip();
+						else if (gui.tooltip_label) {
+							if (tooltip == gui.tooltip_label->get_text()) {
 								is_tooltip_shown = true;
 							}
 						} else {
-							is_tooltip_shown = true; //well, nothing to compare against, likely using custom control, so if it changes there is nothing we can do
+
+							Variant t = gui.tooltip_popup->call("get_tooltip_text");
+
+							if (t.get_type() == Variant::STRING) {
+								if (tooltip == String(t)) {
+									is_tooltip_shown = true;
+								}
+							} else {
+								is_tooltip_shown = true; //well, nothing to compare against, likely using custom control, so if it changes there is nothing we can do
+							}
+						}
+					} else
+						_gui_cancel_tooltip();
+				}
+
+				if (can_tooltip && !is_tooltip_shown) {
+
+					gui.tooltip = over;
+					gui.tooltip_pos = over->get_screen_transform().xform(pos); //(parent_xform * get_transform()).affine_inverse().xform(pos);
+					gui.tooltip_timer = gui.tooltip_delay;
+				}
+			}
+
+			//pos = gui.focus_inv_xform.xform(pos);
+
+			mm->set_position(pos);
+
+			Control::CursorShape cursor_shape = Control::CURSOR_ARROW;
+			{
+				Control *c = over;
+				Vector2 cpos = pos;
+				while (c) {
+					cursor_shape = c->get_cursor_shape(cpos);
+					cpos = c->get_transform().xform(cpos);
+					if (cursor_shape != Control::CURSOR_ARROW)
+						break;
+					if (c->data.mouse_filter == Control::MOUSE_FILTER_STOP)
+						break;
+					if (c->is_set_as_toplevel())
+						break;
+					c = c->get_parent_control();
+				}
+			}
+
+			ds_cursor_shape = (DisplayServer::CursorShape)cursor_shape;
+
+			if (over && over->can_process()) {
+				_gui_call_input(over, mm);
+			}
+
+			set_input_as_handled();
+		}
+
+		if (gui.drag_data.get_type() != Variant::NIL) {
+			//handle dragandrop
+
+			if (gui.drag_preview) {
+				gui.drag_preview->set_position(mpos);
+			}
+
+			gui.drag_mouse_over = over;
+			gui.drag_mouse_over_pos = Vector2();
+
+			//find the window this is above of
+
+			//see if there is an embedder
+			Viewport *embedder = nullptr;
+			Vector2 viewport_pos;
+
+			if (is_embedding_subwindows()) {
+				embedder = this;
+				viewport_pos = mpos;
+			} else {
+				//not an embeder, but may be a subwindow of an embedder
+				Window *w = Object::cast_to<Window>(this);
+				if (w) {
+					if (w->is_embedded()) {
+						embedder = w->_get_embedder();
+
+						Transform2D ai = (get_final_transform().affine_inverse() * _get_input_pre_xform()).affine_inverse();
+
+						viewport_pos = ai.xform(mpos) + w->get_position(); //to parent coords
+					}
+				}
+			}
+
+			Viewport *viewport_under = nullptr;
+
+			if (embedder) {
+				//use embedder logic
+
+				for (int i = embedder->gui.sub_windows.size() - 1; i >= 0; i--) {
+					Window *sw = embedder->gui.sub_windows[i].window;
+					Rect2 swrect = Rect2i(sw->get_position(), sw->get_size());
+					if (!sw->get_flag(Window::FLAG_BORDERLESS)) {
+						int title_height = sw->get_theme_constant("title_height");
+						swrect.position.y -= title_height;
+						swrect.size.y += title_height;
+					}
+
+					if (swrect.has_point(viewport_pos)) {
+						viewport_under = sw;
+						viewport_pos -= sw->get_position();
+					}
+				}
+
+				if (!viewport_under) {
+					//not in a subwindow, likely in embedder
+					viewport_under = embedder;
+				}
+			} else {
+				//use displayserver logic
+				Vector2i screen_mouse_pos = DisplayServer::get_singleton()->mouse_get_position();
+
+				DisplayServer::WindowID window_id = DisplayServer::get_singleton()->get_window_at_screen_position(screen_mouse_pos);
+
+				if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+					ObjectID object_under = DisplayServer::get_singleton()->window_get_attached_instance_id(window_id);
+
+					if (object_under != ObjectID()) { //fetch window
+						Window *w = Object::cast_to<Window>(ObjectDB::get_instance(object_under));
+						if (w) {
+							viewport_under = w;
+							viewport_pos = screen_mouse_pos - w->get_position();
 						}
 					}
-				} else
-					_gui_cancel_tooltip();
+				}
 			}
 
-			if (can_tooltip && !is_tooltip_shown) {
+			if (viewport_under) {
+				Transform2D ai = (viewport_under->get_final_transform().affine_inverse() * viewport_under->_get_input_pre_xform());
+				viewport_pos = ai.xform(viewport_pos);
+				//find control under at pos
+				gui.drag_mouse_over = viewport_under->_gui_find_control(viewport_pos);
+				if (gui.drag_mouse_over) {
+					Transform2D localizer = gui.drag_mouse_over->get_global_transform_with_canvas().affine_inverse();
+					gui.drag_mouse_over_pos = localizer.xform(viewport_pos);
 
-				gui.tooltip = over;
-				gui.tooltip_pos = over->get_screen_transform().xform(pos); //(parent_xform * get_transform()).affine_inverse().xform(pos);
-				gui.tooltip_timer = gui.tooltip_delay;
-			}
-		}
+					if (mm->get_button_mask() & BUTTON_MASK_LEFT) {
 
-		//pos = gui.focus_inv_xform.xform(pos);
+						bool can_drop = _gui_drop(gui.drag_mouse_over, gui.drag_mouse_over_pos, true);
 
-		mm->set_position(pos);
+						if (!can_drop) {
+							ds_cursor_shape = DisplayServer::CURSOR_FORBIDDEN;
+						} else {
+							ds_cursor_shape = DisplayServer::CURSOR_CAN_DROP;
+						}
+					}
+				}
 
-		Control::CursorShape cursor_shape = Control::CURSOR_ARROW;
-		{
-			Control *c = over;
-			Vector2 cpos = pos;
-			while (c) {
-				cursor_shape = c->get_cursor_shape(cpos);
-				cpos = c->get_transform().xform(cpos);
-				if (cursor_shape != Control::CURSOR_ARROW)
-					break;
-				if (c->data.mouse_filter == Control::MOUSE_FILTER_STOP)
-					break;
-				if (c->is_set_as_toplevel())
-					break;
-				c = c->get_parent_control();
-			}
-		}
-
-		DisplayServer::get_singleton()->cursor_set_shape((DisplayServer::CursorShape)cursor_shape);
-
-		if (over && over->can_process()) {
-			_gui_call_input(over, mm);
-		}
-
-		set_input_as_handled();
-
-		if (gui.drag_data.get_type() != Variant::NIL && mm->get_button_mask() & BUTTON_MASK_LEFT) {
-
-			bool can_drop = _gui_drop(over, pos, true);
-
-			if (!can_drop) {
-				DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CURSOR_FORBIDDEN);
 			} else {
-				DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CURSOR_CAN_DROP);
+				gui.drag_mouse_over = nullptr;
 			}
-			//change mouse accordingly i guess
 		}
+
+		DisplayServer::get_singleton()->cursor_set_shape(ds_cursor_shape);
 	}
 
 	Ref<InputEventScreenTouch> touch_event = p_event;
@@ -2443,6 +2530,8 @@ void Viewport::_gui_hid_control(Control *p_control) {
 		_gui_remove_focus();
 	if (gui.mouse_over == p_control)
 		gui.mouse_over = NULL;
+	if (gui.drag_mouse_over == p_control)
+		gui.drag_mouse_over = NULL;
 	if (gui.tooltip == p_control)
 		_gui_cancel_tooltip();
 }
@@ -2461,6 +2550,8 @@ void Viewport::_gui_remove_control(Control *p_control) {
 		gui.key_focus = NULL;
 	if (gui.mouse_over == p_control)
 		gui.mouse_over = NULL;
+	if (gui.drag_mouse_over == p_control)
+		gui.drag_mouse_over = NULL;
 	if (gui.tooltip == p_control)
 		gui.tooltip = NULL;
 }
@@ -2852,7 +2943,7 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 
 					_sub_window_update(sw.window);
 				} else {
-					gui.subwindow_resize_mode = _sub_window_get_resize_margin(gui.subwindow_focused, mb->get_position());
+					gui.subwindow_resize_mode = _sub_window_get_resize_margin(sw.window, mb->get_position());
 					if (gui.subwindow_resize_mode != SUB_WINDOW_RESIZE_DISABLED) {
 						gui.subwindow_resize_from_rect = r;
 						gui.subwindow_drag_from = mb->get_position();
