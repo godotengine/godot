@@ -1075,24 +1075,15 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 				array[Mesh::ARRAY_INDEX] = indices;
 			}
 
-			bool generated_tangents = false;
-			Variant erased_indices;
+			bool generate_tangents = (primitive == Mesh::PRIMITIVE_TRIANGLES && !a.has("TANGENT") && a.has("TEXCOORD_0") && a.has("NORMAL"));
 
-			if (primitive == Mesh::PRIMITIVE_TRIANGLES && !a.has("TANGENT") && a.has("TEXCOORD_0") && a.has("NORMAL")) {
+			if (generate_tangents) {
 				//must generate mikktspace tangents.. ergh..
 				Ref<SurfaceTool> st;
 				st.instance();
 				st->create_from_triangle_arrays(array);
-				if (!p.has("targets")) {
-					//morph targets should not be reindexed, as array size might differ
-					//removing indices is the best bet here
-					st->deindex();
-					erased_indices = a[Mesh::ARRAY_INDEX];
-					a[Mesh::ARRAY_INDEX] = Variant();
-				}
 				st->generate_tangents();
 				array = st->commit_to_arrays();
-				generated_tangents = true;
 			}
 
 			Array morphs;
@@ -1207,10 +1198,9 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 						array_copy[Mesh::ARRAY_TANGENT] = tangents_v4;
 					}
 
-					if (generated_tangents) {
+					if (generate_tangents) {
 						Ref<SurfaceTool> st;
 						st.instance();
-						array_copy[Mesh::ARRAY_INDEX] = erased_indices; //needed for tangent generation, erased by deindex
 						st->create_from_triangle_arrays(array_copy);
 						st->deindex();
 						st->generate_tangents();
