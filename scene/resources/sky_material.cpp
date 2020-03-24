@@ -293,6 +293,8 @@ ProceduralSkyMaterial::ProceduralSkyMaterial() {
 }
 
 ProceduralSkyMaterial::~ProceduralSkyMaterial() {
+	VS::get_singleton()->free(shader);
+	VS::get_singleton()->material_set_shader(_get_material(), RID());
 }
 
 /////////////////////////////////////////
