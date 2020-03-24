@@ -699,6 +699,26 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	windows.erase(p_id);
 }
 
+void DisplayServerX11::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	wd.instance_id = p_instance;
+}
+
+ObjectID DisplayServerX11::window_get_attached_instance_id(WindowID p_window) const {
+
+	ERR_FAIL_COND_V(!windows.has(p_window), ObjectID());
+	const WindowData &wd = windows[p_window];
+	return wd.instance_id;
+}
+
+DisplayServerX11::WindowID DisplayServerX11::get_window_at_screen_position(const Point2i &p_position) const {
+
+	return INVALID_WINDOW_ID;
+}
+
 void DisplayServerX11::window_set_title(const String &p_title, WindowID p_window) {
 
 	_THREAD_SAFE_METHOD_

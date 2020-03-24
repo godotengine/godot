@@ -228,6 +228,7 @@ void Window::_make_window() {
 	DisplayServer::get_singleton()->window_set_max_size(max_size, window_id);
 	DisplayServer::get_singleton()->window_set_min_size(min_size, window_id);
 	DisplayServer::get_singleton()->window_set_title(title, window_id);
+	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 
 	_update_window_size();
 
@@ -715,6 +716,7 @@ void Window::_notification(int p_what) {
 				//it's the root window!
 				visible = true; //always visible
 				window_id = DisplayServer::MAIN_WINDOW_ID;
+				DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 				_update_from_window();
 				//since this window already exists (created on start), we must update pos and size from it
 				{
@@ -869,7 +871,6 @@ void Window::child_controls_changed() {
 }
 
 void Window::_window_input(const Ref<InputEvent> &p_ev) {
-
 	if (Engine::get_singleton()->is_editor_hint() && (Object::cast_to<InputEventJoypadButton>(p_ev.ptr()) || Object::cast_to<InputEventJoypadMotion>(*p_ev)))
 		return; //avoid joy input on editor
 

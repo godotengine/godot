@@ -435,15 +435,30 @@ bool DisplayServerWindows::screen_is_kept_on() const {
 	return false;
 }
 
-Vector<int> DisplayServerWindows::get_window_list() const {
+Vector<DisplayServer::WindowID> DisplayServerWindows::get_window_list() const {
 
 	_THREAD_SAFE_METHOD_
 
-	Vector<int> ret;
+	Vector<DisplayServer::WindowID> ret;
 	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
 		ret.push_back(E->key());
 	}
 	return ret;
+}
+
+DisplayServer::WindowID DisplayServerWindows::get_window_at_screen_position(const Point2i &p_position) const {
+
+	POINT p;
+	p.x = p_position.x;
+	p.y = p_position.y;
+	HWND hwnd = WindowFromPoint(p);
+	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+		if (E->get().hWnd == hwnd) {
+			return E->key();
+		}
+	}
+
+	return INVALID_WINDOW_ID;
 }
 
 DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect) {
@@ -502,6 +517,22 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 
 	DestroyWindow(windows[p_window].hWnd);
 	windows.erase(p_window);
+}
+
+void DisplayServerWindows::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
+
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	windows[p_window].instance_id = p_instance;
+}
+
+ObjectID DisplayServerWindows::window_get_attached_instance_id(WindowID p_window) const {
+
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), ObjectID());
+	return windows[p_window].instance_id;
 }
 
 void DisplayServerWindows::window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window) {

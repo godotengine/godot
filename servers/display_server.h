@@ -166,7 +166,7 @@ public:
 
 	typedef int WindowID;
 
-	virtual Vector<int> get_window_list() const = 0;
+	virtual Vector<DisplayServer::WindowID> get_window_list() const = 0;
 
 	enum WindowFlags {
 		WINDOW_FLAG_RESIZE_DISABLED,
@@ -184,6 +184,11 @@ public:
 
 	virtual WindowID create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i & = Rect2i());
 	virtual void delete_sub_window(WindowID p_id);
+
+	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const = 0;
+
+	virtual void window_attach_instance_id(ObjectID p_instance, WindowID p_window = MAIN_WINDOW_ID) = 0;
+	virtual ObjectID window_get_attached_instance_id(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
 	virtual void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) = 0;
 
