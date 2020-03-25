@@ -347,9 +347,9 @@ def configure(env):
             print("Warning: Creating template binaries enabled for PCK embedding is currently only supported with GNU ld")
         else:
             if float(gnu_ld_version.group(1)) >= 2.30:
-		env.Append(LINKFLAGS=['-T', 'platform/linuxbsd/pck_embed.ld'])
+                env.Append(LINKFLAGS=['-T', 'platform/linuxbsd/pck_embed.ld'])
             else:
-		env.Append(LINKFLAGS=['-T', 'platform/linuxbsd/pck_embed.legacy.ld'])
+                env.Append(LINKFLAGS=['-T', 'platform/linuxbsd/pck_embed.legacy.ld'])
 
     ## Cross-compilation
 

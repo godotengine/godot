@@ -67,7 +67,9 @@ Size2i Window::get_real_size() const {
 
 void Window::set_max_size(const Size2i &p_max_size) {
 	max_size = p_max_size;
-	DisplayServer::get_singleton()->window_set_min_size(max_size, window_id);
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		DisplayServer::get_singleton()->window_set_max_size(max_size, window_id);
+	}
 	_update_window_size();
 }
 Size2i Window::get_max_size() const {
@@ -78,7 +80,9 @@ Size2i Window::get_max_size() const {
 void Window::set_min_size(const Size2i &p_min_size) {
 
 	min_size = p_min_size;
-	DisplayServer::get_singleton()->window_set_max_size(max_size, window_id);
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		DisplayServer::get_singleton()->window_set_min_size(max_size, window_id);
+	}
 	_update_window_size();
 }
 Size2i Window::get_min_size() const {
@@ -238,8 +242,8 @@ void Window::_clear_window() {
 
 	DisplayServer::get_singleton()->delete_sub_window(window_id);
 	window_id = DisplayServer::INVALID_WINDOW_ID;
-	_update_viewport_size();
 
+	_update_viewport_size();
 	VS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), VS::VIEWPORT_UPDATE_DISABLED);
 }
 
@@ -955,7 +959,7 @@ void Window::popup_centered(const Size2 &p_minsize) {
 	}
 
 	Rect2 popup_rect;
-	if (p_minsize == Size2()) {
+	if (p_minsize.width <= UNIT_EPSILON || p_minsize.height <= UNIT_EPSILON) {
 		popup_rect.size = _get_contents_minimum_size();
 	} else {
 		popup_rect.size = p_minsize;

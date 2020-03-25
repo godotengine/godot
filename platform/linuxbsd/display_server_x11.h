@@ -89,9 +89,9 @@ class DisplayServerX11 : public DisplayServer {
 		Size2i min_size;
 		Size2i max_size;
 		Size2i size;
-		Size2i im_position;
+		Point2i im_position;
 		bool im_active = false;
-		Callable resize_callback;
+		Callable rect_changed_callback;
 		Callable event_callback;
 		Callable input_event_callback;
 		Callable input_text_callback;
@@ -112,7 +112,7 @@ class DisplayServerX11 : public DisplayServer {
 	Map<WindowID, WindowData> windows;
 
 	WindowID window_id_counter = MAIN_WINDOW_ID;
-	WindowID _create_window(WindowMode p_mode, const Rect2i &p_rect);
+	WindowID _create_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect);
 
 	String internal_clipboard;
 	Window xdnd_source_window;
@@ -229,6 +229,7 @@ public:
 	virtual int get_screen_count() const;
 	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
+	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 
@@ -238,7 +239,7 @@ public:
 	virtual void delete_sub_window(WindowID p_id);
 
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID);
-	virtual void window_set_resize_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
+	virtual void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
 	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
 	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
 	virtual void window_set_input_text_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
