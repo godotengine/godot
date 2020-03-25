@@ -52,6 +52,12 @@
 				Returns the editor [Viewport].
 			</description>
 		</method>
+		<method name="get_file_system_dock">
+			<return type="FileSystemDock">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_inspector" qualifiers="const">
 			<return type="EditorInspector">
 			</return>
