@@ -553,19 +553,24 @@ if selected_platform in platform_list:
 
     Export('env')
 
-    # build subdirs, the build order is dependent on link order.
-
-    SConscript("core/SCsub")
-    SConscript("servers/SCsub")
-    SConscript("scene/SCsub")
-    SConscript("editor/SCsub")
-    SConscript("drivers/SCsub")
-
-    SConscript("platform/SCsub")
-    SConscript("modules/SCsub")
-    SConscript("main/SCsub")
-
-    SConscript("platform/" + selected_platform + "/SCsub")  # build selected platform
+    # Build subdirs, the build order is dependent on the link order.
+    subdirs = [
+        "core",
+        "servers",
+        "scene",
+        "editor",
+        "drivers",
+        "platform",
+        "modules",
+        "main",
+        "platform/" + selected_platform,
+    ]
+    for d in subdirs:
+        if GetOption("help") and d != "modules":
+            # Platform options are handled above. It's safe to skip everything
+            # except for the modules which can define their own options in SCsub.
+            continue
+        SConscript(d + "/SCsub")
 
     # Microsoft Visual Studio Project Generation
     if env['vsproj']:
