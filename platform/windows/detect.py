@@ -1,6 +1,9 @@
 import methods
 import os
 
+# To match other platforms
+STACK_SIZE = 8388608
+
 
 def is_active():
     return True
@@ -249,6 +252,8 @@ def configure_msvc(env, manual_msvc_config):
     env['BUILDERS']['ProgramOriginal'] = env['BUILDERS']['Program']
     env['BUILDERS']['Program'] = methods.precious_program
 
+    env.AppendUnique(LINKFLAGS=['/STACK:' + str(STACK_SIZE)])
+
 def configure_mingw(env):
     # Workaround for MinGW. See:
     # http://www.scons.org/wiki/LongCmdLinesOnWin32
@@ -346,6 +351,7 @@ def configure_mingw(env):
                 env.Append(CCFLAGS=['-flto'])
                 env.Append(LINKFLAGS=['-flto'])
 
+    env.Append(LINKFLAGS=['-Wl,--stack,' + str(STACK_SIZE)])
 
     ## Compile flags
 

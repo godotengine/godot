@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  reverb_sw.h                                                          */
+/*  PaymentsCache.java                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,61 +28,44 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef REVERB_SW_H
-#define REVERB_SW_H
+package org.godotengine.godot.plugin.payment;
 
-#include "core/os/memory.h"
-#include "core/typedefs.h"
+import android.content.Context;
+import android.content.SharedPreferences;
 
-struct ReverbParamsSW;
+public class PaymentsCache {
 
-class ReverbSW {
-public:
-	enum ReverbMode {
-		REVERB_MODE_ROOM,
-		REVERB_MODE_STUDIO_SMALL,
-		REVERB_MODE_STUDIO_MEDIUM,
-		REVERB_MODE_STUDIO_LARGE,
-		REVERB_MODE_HALL,
-		REVERB_MODE_SPACE_ECHO,
-		REVERB_MODE_ECHO,
-		REVERB_MODE_DELAY,
-		REVERB_MODE_HALF_ECHO
-	};
+	public Context context;
 
-private:
-	struct State {
-		int lwl;
-		int lwr;
-		int rwl;
-		int rwr;
-		unsigned int Offset;
-		void reset() {
-			lwl = 0;
-			lwr = 0;
-			rwl = 0;
-			rwr = 0;
-			Offset = 0;
-		}
-		State() { reset(); }
-	} state;
+	public PaymentsCache(Context context) {
+		this.context = context;
+	}
 
-	ReverbParamsSW *current_params;
+	public void setConsumableFlag(String set, String sku, Boolean flag) {
+		SharedPreferences sharedPref = context.getSharedPreferences("consumables_" + set, Context.MODE_PRIVATE);
+		SharedPreferences.Editor editor = sharedPref.edit();
+		editor.putBoolean(sku, flag);
+		editor.apply();
+	}
 
-	int *reverb_buffer;
-	unsigned int reverb_buffer_size;
-	ReverbMode mode;
-	int mix_rate;
+	public boolean getConsumableFlag(String set, String sku) {
+		SharedPreferences sharedPref = context.getSharedPreferences(
+				"consumables_" + set, Context.MODE_PRIVATE);
+		return sharedPref.getBoolean(sku, false);
+	}
 
-	void adjust_current_params();
+	public void setConsumableValue(String set, String sku, String value) {
+		SharedPreferences sharedPref = context.getSharedPreferences("consumables_" + set, Context.MODE_PRIVATE);
+		SharedPreferences.Editor editor = sharedPref.edit();
+		editor.putString(sku, value);
+		//Log.d("XXX", "Setting asset: consumables_" + set + ":" + sku);
+		editor.apply();
+	}
 
-public:
-	void set_mode(ReverbMode p_mode);
-	bool process(int *p_input, int *p_output, int p_frames, int p_stereo_stride = 1); // return tru if audio was created
-	void set_mix_rate(int p_mix_rate);
-
-	ReverbSW();
-	~ReverbSW();
-};
-
-#endif
+	public String getConsumableValue(String set, String sku) {
+		SharedPreferences sharedPref = context.getSharedPreferences(
+				"consumables_" + set, Context.MODE_PRIVATE);
+		//Log.d("XXX", "Getting asset: consumables_" + set + ":" + sku);
+		return sharedPref.getString(sku, null);
+	}
+}

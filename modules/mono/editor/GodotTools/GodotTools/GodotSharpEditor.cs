@@ -62,7 +62,7 @@ namespace GodotTools
                     {
                         Guid = guid,
                         PathRelativeToSolution = name + ".csproj",
-                        Configs = new List<string> {"Debug", "Release", "Tools"}
+                        Configs = new List<string> { "Debug", "ExportDebug", "ExportRelease" }
                     };
 
                     solution.AddNewProject(name, projectInfo);
@@ -437,8 +437,22 @@ namespace GodotTools
 
             if (File.Exists(GodotSharpDirs.ProjectSlnPath) && File.Exists(GodotSharpDirs.ProjectCsProjPath))
             {
-                // Make sure the existing project has Api assembly references configured correctly
-                CsProjOperations.FixApiHintPath(GodotSharpDirs.ProjectCsProjPath);
+                try
+                {
+                    // Migrate solution from old configuration names to: Debug, ExportDebug and ExportRelease
+                    DotNetSolution.MigrateFromOldConfigNames(GodotSharpDirs.ProjectSlnPath);
+                    // Migrate csproj from old configuration names to: Debug, ExportDebug and ExportRelease
+                    ProjectUtils.MigrateFromOldConfigNames(GodotSharpDirs.ProjectCsProjPath);
+
+                    // Apply the other fixes after configurations are migrated
+
+                    // Make sure the existing project has Api assembly references configured correctly
+                    ProjectUtils.FixApiHintPath(GodotSharpDirs.ProjectCsProjPath);
+                }
+                catch (Exception e)
+                {
+                    GD.PushError(e.ToString());
+                }
             }
             else
             {

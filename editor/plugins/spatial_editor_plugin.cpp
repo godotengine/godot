@@ -2389,11 +2389,19 @@ void SpatialEditorViewport::_notification(int p_what) {
 			if (!se)
 				continue;
 
+			Transform t = sp->get_global_gizmo_transform();
+
+			exist = true;
+			if (se->last_xform == t && !se->last_xform_dirty)
+				continue;
+			changed = true;
+			se->last_xform_dirty = false;
+			se->last_xform = t;
+
 			VisualInstance *vi = Object::cast_to<VisualInstance>(sp);
 
 			se->aabb = vi ? vi->get_aabb() : _calculate_spatial_bounds(sp);
 
-			Transform t = sp->get_global_gizmo_transform();
 			t.translate(se->aabb.position);
 
 			// apply AABB scaling before item's global transform
@@ -2401,11 +2409,6 @@ void SpatialEditorViewport::_notification(int p_what) {
 			aabb_s.scale(se->aabb.size);
 			t.basis = t.basis * aabb_s;
 
-			exist = true;
-			if (se->last_xform == t)
-				continue;
-			changed = true;
-			se->last_xform = t;
 			VisualServer::get_singleton()->instance_set_transform(se->sbox_instance, t);
 		}
 
@@ -3360,6 +3363,7 @@ void SpatialEditorViewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_menu_option"), &SpatialEditorViewport::_menu_option);
 	ClassDB::bind_method(D_METHOD("_toggle_camera_preview"), &SpatialEditorViewport::_toggle_camera_preview);
 	ClassDB::bind_method(D_METHOD("_preview_exited_scene"), &SpatialEditorViewport::_preview_exited_scene);
+	ClassDB::bind_method(D_METHOD("_update_camera"), &SpatialEditorViewport::_update_camera);
 	ClassDB::bind_method(D_METHOD("update_transform_gizmo_view"), &SpatialEditorViewport::update_transform_gizmo_view);
 	ClassDB::bind_method(D_METHOD("_selection_result_pressed"), &SpatialEditorViewport::_selection_result_pressed);
 	ClassDB::bind_method(D_METHOD("_selection_menu_hide"), &SpatialEditorViewport::_selection_menu_hide);
@@ -4504,13 +4508,15 @@ void SpatialEditor::set_state(const Dictionary &p_state) {
 	}
 
 	if (d.has("translate_snap"))
-		snap_translate->set_text(d["translate_snap"]);
+		snap_translate_value = d["translate_snap"];
 
 	if (d.has("rotate_snap"))
-		snap_rotate->set_text(d["rotate_snap"]);
+		snap_rotate_value = d["rotate_snap"];
 
 	if (d.has("scale_snap"))
-		snap_scale->set_text(d["scale_snap"]);
+		snap_scale_value = d["scale_snap"];
+
+	_snap_update();
 
 	if (d.has("local_coords")) {
 		tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_pressed(d["local_coords"]);
@@ -4615,6 +4621,20 @@ void SpatialEditor::edit(Spatial *p_spatial) {
 			}
 		}
 	}
+}
+
+void SpatialEditor::_snap_changed() {
+
+	snap_translate_value = snap_translate->get_text().to_double();
+	snap_rotate_value = snap_rotate->get_text().to_double();
+	snap_scale_value = snap_scale->get_text().to_double();
+}
+
+void SpatialEditor::_snap_update() {
+
+	snap_translate->set_text(String::num(snap_translate_value));
+	snap_rotate->set_text(String::num(snap_rotate_value));
+	snap_scale->set_text(String::num(snap_scale_value));
 }
 
 void SpatialEditor::_xform_dialog_action() {
@@ -5848,6 +5868,8 @@ void SpatialEditor::_bind_methods() {
 	ClassDB::bind_method("_refresh_menu_icons", &SpatialEditor::_refresh_menu_icons);
 	ClassDB::bind_method("_update_camera_override_button", &SpatialEditor::_update_camera_override_button);
 	ClassDB::bind_method("_update_camera_override_viewport", &SpatialEditor::_update_camera_override_viewport);
+	ClassDB::bind_method("_snap_changed", &SpatialEditor::_snap_changed);
+	ClassDB::bind_method("_snap_update", &SpatialEditor::_snap_update);
 
 	ADD_SIGNAL(MethodInfo("transform_key_request"));
 	ADD_SIGNAL(MethodInfo("item_lock_status_changed"));
@@ -6106,24 +6128,29 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 	/* SNAP DIALOG */
 
+	snap_translate_value = 1;
+	snap_rotate_value = 15;
+	snap_scale_value = 10;
+
 	snap_dialog = memnew(ConfirmationDialog);
 	snap_dialog->set_title(TTR("Snap Settings"));
 	add_child(snap_dialog);
+	snap_dialog->connect("confirmed", this, "_snap_changed");
+	snap_dialog->get_cancel()->connect("pressed", this, "_snap_update");
 
 	VBoxContainer *snap_dialog_vbc = memnew(VBoxContainer);
 	snap_dialog->add_child(snap_dialog_vbc);
 
 	snap_translate = memnew(LineEdit);
-	snap_translate->set_text("1");
 	snap_dialog_vbc->add_margin_child(TTR("Translate Snap:"), snap_translate);
 
 	snap_rotate = memnew(LineEdit);
-	snap_rotate->set_text("15");
 	snap_dialog_vbc->add_margin_child(TTR("Rotate Snap (deg.):"), snap_rotate);
 
 	snap_scale = memnew(LineEdit);
-	snap_scale->set_text("10");
 	snap_dialog_vbc->add_margin_child(TTR("Scale Snap (%):"), snap_scale);
+
+	_snap_update();
 
 	/* SETTINGS DIALOG */
 
@@ -6154,6 +6181,10 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	settings_zfar->set_step(0.01);
 	settings_zfar->set_value(EDITOR_DEF("editors/3d/default_z_far", 1500));
 	settings_vbc->add_margin_child(TTR("View Z-Far:"), settings_zfar);
+
+	for (uint32_t i = 0; i < VIEWPORTS_COUNT; ++i) {
+		settings_dialog->connect("confirmed", viewports[i], "_update_camera", varray(0.0));
+	}
 
 	/* XFORM DIALOG */
 

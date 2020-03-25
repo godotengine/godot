@@ -4279,13 +4279,13 @@
 		<constant name="TEXTURE_TYPE_2D" value="0" enum="TextureType">
 			Normal texture with 2 dimensions, width and height.
 		</constant>
-		<constant name="TEXTURE_TYPE_CUBEMAP" value="1" enum="TextureType">
+		<constant name="TEXTURE_TYPE_CUBEMAP" value="2" enum="TextureType">
 			Texture made up of six faces, can be looked up with a [code]vec3[/code] in shader.
 		</constant>
-		<constant name="TEXTURE_TYPE_2D_ARRAY" value="2" enum="TextureType">
+		<constant name="TEXTURE_TYPE_2D_ARRAY" value="3" enum="TextureType">
 			An array of 2-dimensional textures.
 		</constant>
-		<constant name="TEXTURE_TYPE_3D" value="3" enum="TextureType">
+		<constant name="TEXTURE_TYPE_3D" value="4" enum="TextureType">
 			A 3-dimensional texture with width, height, and depth.
 		</constant>
 		<constant name="TEXTURE_FLAG_MIPMAPS" value="1" enum="TextureFlags">

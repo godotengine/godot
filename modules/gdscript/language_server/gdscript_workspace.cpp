@@ -33,8 +33,11 @@
 #include "../gdscript_parser.h"
 #include "core/project_settings.h"
 #include "core/script_language.h"
+#include "editor/editor_file_system.h"
 #include "editor/editor_help.h"
+#include "editor/editor_node.h"
 #include "gdscript_language_protocol.h"
+#include "scene/resources/packed_scene.h"
 
 void GDScriptWorkspace::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("symbol"), &GDScriptWorkspace::symbol);
@@ -373,6 +376,50 @@ void GDScriptWorkspace::publish_diagnostics(const String &p_path) {
 	GDScriptLanguageProtocol::get_singleton()->notify_client("textDocument/publishDiagnostics", params);
 }
 
+void GDScriptWorkspace::_get_owners(EditorFileSystemDirectory *efsd, String p_path, List<String> &owners) {
+	if (!efsd)
+		return;
+
+	for (int i = 0; i < efsd->get_subdir_count(); i++) {
+		_get_owners(efsd->get_subdir(i), p_path, owners);
+	}
+
+	for (int i = 0; i < efsd->get_file_count(); i++) {
+
+		Vector<String> deps = efsd->get_file_deps(i);
+		bool found = false;
+		for (int j = 0; j < deps.size(); j++) {
+			if (deps[j] == p_path) {
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+			continue;
+
+		owners.push_back(efsd->get_file_path(i));
+	}
+}
+
+Node *GDScriptWorkspace::_get_owner_scene_node(String p_path) {
+	Node *owner_scene_node = NULL;
+	List<String> owners;
+
+	_get_owners(EditorFileSystem::get_singleton()->get_filesystem(), p_path, owners);
+
+	for (int i = 0; i < owners.size(); i++) {
+		NodePath owner_path = owners[i];
+		RES owner_res = ResourceLoader::load(owner_path);
+		if (Object::cast_to<PackedScene>(owner_res.ptr())) {
+			Ref<PackedScene> owner_packed_scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*owner_res));
+			owner_scene_node = owner_packed_scene->instance();
+			break;
+		}
+	}
+
+	return owner_scene_node;
+}
+
 void GDScriptWorkspace::completion(const lsp::CompletionParams &p_params, List<ScriptCodeCompletionOption> *r_options) {
 
 	String path = get_file_path(p_params.textDocument.uri);
@@ -380,8 +427,12 @@ void GDScriptWorkspace::completion(const lsp::CompletionParams &p_params, List<S
 	bool forced = false;
 
 	if (const ExtendGDScriptParser *parser = get_parse_result(path)) {
+		Node *owner_scene_node = _get_owner_scene_node(path);
 		String code = parser->get_text_for_completion(p_params.position);
-		GDScriptLanguage::get_singleton()->complete_code(code, path, NULL, r_options, forced, call_hint);
+		GDScriptLanguage::get_singleton()->complete_code(code, path, owner_scene_node, r_options, forced, call_hint);
+		if (owner_scene_node) {
+			memdelete(owner_scene_node);
+		}
 	}
 }
 

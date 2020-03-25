@@ -166,7 +166,7 @@ namespace GodotTools
                 Internal.GodotIs32Bits() ? "32" : "64"
             };
 
-            bool buildSuccess = BuildManager.BuildProjectBlocking("Tools", godotDefines);
+            bool buildSuccess = BuildManager.BuildProjectBlocking("Debug", godotDefines);
 
             if (!buildSuccess)
                 return;

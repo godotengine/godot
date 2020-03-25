@@ -1574,7 +1574,7 @@ void TextEdit::_notification(int p_what) {
 			}
 
 			bool completion_below = false;
-			if (completion_active) {
+			if (completion_active && completion_options.size() > 0) {
 				// Code completion box.
 				Ref<StyleBox> csb = get_stylebox("completion");
 				int maxlines = get_constant("completion_lines");
@@ -1582,13 +1582,14 @@ void TextEdit::_notification(int p_what) {
 				int scrollw = get_constant("completion_scroll_width");
 				Color scrollc = get_color("completion_scroll_color");
 
-				int lines = MIN(completion_options.size(), maxlines);
+				const int completion_options_size = completion_options.size();
+				int lines = MIN(completion_options_size, maxlines);
 				int w = 0;
 				int h = lines * get_row_height();
 				int nofs = cache.font->get_string_size(completion_base).width;
 
-				if (completion_options.size() < 50) {
-					for (int i = 0; i < completion_options.size(); i++) {
+				if (completion_options_size < 50) {
+					for (int i = 0; i < completion_options_size; i++) {
 						int w2 = MIN(cache.font->get_string_size(completion_options[i].display).x, cmax_width);
 						if (w2 > w)
 							w = w2;
@@ -1619,7 +1620,7 @@ void TextEdit::_notification(int p_what) {
 
 				completion_rect.size.width = w + 2;
 				completion_rect.size.height = h;
-				if (completion_options.size() <= maxlines)
+				if (completion_options_size <= maxlines)
 					scrollw = 0;
 
 				draw_style_box(csb, Rect2(completion_rect.position - csb->get_offset(), completion_rect.size + csb->get_minimum_size() + Size2(scrollw, 0)));
@@ -1627,14 +1628,14 @@ void TextEdit::_notification(int p_what) {
 				if (cache.completion_background_color.a > 0.01) {
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(completion_rect.position, completion_rect.size + Size2(scrollw, 0)), cache.completion_background_color);
 				}
-				int line_from = CLAMP(completion_index - lines / 2, 0, completion_options.size() - lines);
+				int line_from = CLAMP(completion_index - lines / 2, 0, completion_options_size - lines);
 				VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(completion_rect.position.x, completion_rect.position.y + (completion_index - line_from) * get_row_height()), Size2(completion_rect.size.width, get_row_height())), cache.completion_selected_color);
 				draw_rect(Rect2(completion_rect.position + Vector2(icon_area_size.x + icon_hsep, 0), Size2(MIN(nofs, completion_rect.size.width - (icon_area_size.x + icon_hsep)), completion_rect.size.height)), cache.completion_existing_color);
 
 				for (int i = 0; i < lines; i++) {
 
 					int l = line_from + i;
-					ERR_CONTINUE(l < 0 || l >= completion_options.size());
+					ERR_CONTINUE(l < 0 || l >= completion_options_size);
 					Color text_color = cache.completion_font_color;
 					for (int j = 0; j < color_regions.size(); j++) {
 						if (completion_options[l].insert_text.begins_with(color_regions[j].begin_key)) {
@@ -1661,8 +1662,8 @@ void TextEdit::_notification(int p_what) {
 
 				if (scrollw) {
 					// Draw a small scroll rectangle to show a position in the options.
-					float r = maxlines / (float)completion_options.size();
-					float o = line_from / (float)completion_options.size();
+					float r = (float)maxlines / completion_options_size;
+					float o = (float)line_from / completion_options_size;
 					draw_rect(Rect2(completion_rect.position.x + completion_rect.size.width, completion_rect.position.y + o * completion_rect.size.y, scrollw, completion_rect.size.y * r), scrollc);
 				}
 
@@ -1848,6 +1849,7 @@ void TextEdit::_consume_pair_symbol(CharType ch) {
 
 	bool in_single_quote = false;
 	bool in_double_quote = false;
+	bool found_comment = false;
 
 	int c = 0;
 	while (c < line.length()) {
@@ -1857,6 +1859,9 @@ void TextEdit::_consume_pair_symbol(CharType ch) {
 			if (cursor.column == c) {
 				break;
 			}
+		} else if (!in_single_quote && !in_double_quote && line[c] == '#') {
+			found_comment = true;
+			break;
 		} else {
 			if (line[c] == '\'' && !in_double_quote) {
 				in_single_quote = !in_single_quote;
@@ -1872,7 +1877,15 @@ void TextEdit::_consume_pair_symbol(CharType ch) {
 		}
 	}
 
-	//	Disallow inserting duplicated quotes while already in string
+	// Do not need to duplicate quotes while in comments
+	if (found_comment) {
+		insert_text_at_cursor(ch_single);
+		cursor_set_column(cursor_position_to_move);
+
+		return;
+	}
+
+	// Disallow inserting duplicated quotes while already in string
 	if ((in_single_quote || in_double_quote) && (ch == '"' || ch == '\'')) {
 		insert_text_at_cursor(ch_single);
 		cursor_set_column(cursor_position_to_move);

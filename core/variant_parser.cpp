@@ -518,6 +518,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			value = false;
 		else if (id == "null" || id == "nil")
 			value = Variant();
+		else if (id == "inf")
+			value = Math_INF;
+		else if (id == "nan")
+			value = Math_NAN;
 		else if (id == "Vector2") {
 
 			Vector<float> args;
@@ -1592,8 +1596,10 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		case Variant::REAL: {
 
 			String s = rtosfix(p_variant.operator real_t());
-			if (s.find(".") == -1 && s.find("e") == -1)
-				s += ".0";
+			if (s != "inf" && s != "nan") {
+				if (s.find(".") == -1 && s.find("e") == -1)
+					s += ".0";
+			}
 			p_store_string_func(p_store_string_ud, s);
 		} break;
 		case Variant::STRING: {

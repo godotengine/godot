@@ -565,6 +565,27 @@ void AnimationNodeStateMachine::add_node(const StringName &p_name, Ref<Animation
 	p_node->connect("tree_changed", this, "_tree_changed", varray(), CONNECT_REFERENCE_COUNTED);
 }
 
+void AnimationNodeStateMachine::replace_node(const StringName &p_name, Ref<AnimationNode> p_node) {
+
+	ERR_FAIL_COND(states.has(p_name) == false);
+	ERR_FAIL_COND(p_node.is_null());
+	ERR_FAIL_COND(String(p_name).find("/") != -1);
+
+	{
+		Ref<AnimationNode> node = states[p_name].node;
+		if (node.is_valid()) {
+			node->disconnect("tree_changed", this, "_tree_changed");
+		}
+	}
+
+	states[p_name].node = p_node;
+
+	emit_changed();
+	emit_signal("tree_changed");
+
+	p_node->connect("tree_changed", this, "_tree_changed", varray(), CONNECT_REFERENCE_COUNTED);
+}
+
 Ref<AnimationNode> AnimationNodeStateMachine::get_node(const StringName &p_name) const {
 
 	ERR_FAIL_COND_V(!states.has(p_name), Ref<AnimationNode>());
@@ -949,6 +970,7 @@ void AnimationNodeStateMachine::_tree_changed() {
 void AnimationNodeStateMachine::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_node", "name", "node", "position"), &AnimationNodeStateMachine::add_node, DEFVAL(Vector2()));
+	ClassDB::bind_method(D_METHOD("replace_node", "name", "node"), &AnimationNodeStateMachine::replace_node);
 	ClassDB::bind_method(D_METHOD("get_node", "name"), &AnimationNodeStateMachine::get_node);
 	ClassDB::bind_method(D_METHOD("remove_node", "name"), &AnimationNodeStateMachine::remove_node);
 	ClassDB::bind_method(D_METHOD("rename_node", "name", "new_name"), &AnimationNodeStateMachine::rename_node);

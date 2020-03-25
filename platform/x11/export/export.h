@@ -28,4 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef X11_EXPORT_H
+#define X11_EXPORT_H
+
 void register_x11_exporter();
+
+#endif // X11_EXPORT_H

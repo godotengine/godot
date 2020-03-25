@@ -313,13 +313,22 @@
 				Returns [code]true[/code] if the object contains the given [code]method[/code].
 			</description>
 		</method>
+		<method name="has_signal" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="signal" type="String">
+			</argument>
+			<description>
+				Returns [code]true[/code] if the given [code]signal[/code] exists.
+			</description>
+		</method>
 		<method name="has_user_signal" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="signal" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the given user-defined [code]signal[/code] exists.
+				Returns [code]true[/code] if the given user-defined [code]signal[/code] exists. Only signals added using [method add_user_signal] are taken into account.
 			</description>
 		</method>
 		<method name="is_blocking_signals" qualifiers="const">

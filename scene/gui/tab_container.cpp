@@ -785,23 +785,25 @@ TabContainer::TabAlign TabContainer::get_tab_align() const {
 	return align;
 }
 
-void TabContainer::set_tabs_visible(bool p_visibe) {
+void TabContainer::set_tabs_visible(bool p_visible) {
 
-	if (p_visibe == tabs_visible)
+	if (p_visible == tabs_visible)
 		return;
 
-	tabs_visible = p_visibe;
+	tabs_visible = p_visible;
 
 	Vector<Control *> tabs = _get_tabs();
 	for (int i = 0; i < tabs.size(); i++) {
 
 		Control *c = tabs[i];
-		if (p_visibe)
+		if (p_visible)
 			c->set_margin(MARGIN_TOP, _get_top_margin());
 		else
 			c->set_margin(MARGIN_TOP, 0);
 	}
+
 	update();
+	minimum_size_changed();
 }
 
 bool TabContainer::are_tabs_visible() const {
@@ -936,8 +938,10 @@ Size2 TabContainer::get_minimum_size() const {
 	Ref<StyleBox> tab_disabled = get_stylebox("tab_disabled");
 	Ref<Font> font = get_font("font");
 
-	ms.y += MAX(MAX(tab_bg->get_minimum_size().y, tab_fg->get_minimum_size().y), tab_disabled->get_minimum_size().y);
-	ms.y += font->get_height();
+	if (tabs_visible) {
+		ms.y += MAX(MAX(tab_bg->get_minimum_size().y, tab_fg->get_minimum_size().y), tab_disabled->get_minimum_size().y);
+		ms.y += font->get_height();
+	}
 
 	Ref<StyleBox> sb = get_stylebox("panel");
 	ms += sb->get_minimum_size();

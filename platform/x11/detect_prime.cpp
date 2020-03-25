@@ -31,6 +31,8 @@
 #ifdef X11_ENABLED
 #if defined(OPENGL_ENABLED)
 
+#include "detect_prime.h"
+
 #include "core/print_string.h"
 #include "core/ustring.h"
 
@@ -62,6 +64,7 @@ vendor vendormap[] = {
 	{ "NVIDIA Corporation", 30 },
 	{ "X.Org", 30 },
 	{ "Intel Open Source Technology Center", 20 },
+	{ "Intel", 20 },
 	{ "nouveau", 10 },
 	{ "Mesa Project", 0 },
 	{ NULL, 0 }

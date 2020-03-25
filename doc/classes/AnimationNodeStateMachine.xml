@@ -183,6 +183,17 @@
 				Renames the given node.
 			</description>
 		</method>
+		<method name="replace_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="node" type="AnimationNode">
+			</argument>
+			<description>
+				Replaces the node and keeps its transitions unchanged.
+			</description>
+		</method>
 		<method name="set_end_node">
 			<return type="void">
 			</return>

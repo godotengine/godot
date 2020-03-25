@@ -2167,6 +2167,14 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p
 										valid = true;
 										break;
 									}
+									if (b->parent_function) {
+										for (int i = 0; i < b->parent_function->arguments.size(); i++) {
+											if (b->parent_function->arguments[i].name == var_name) {
+												valid = true;
+												break;
+											}
+										}
+									}
 									b = b->parent_block;
 								}
 
