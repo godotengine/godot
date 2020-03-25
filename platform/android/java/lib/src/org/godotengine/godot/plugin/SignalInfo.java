@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  api.cpp                                                              */
+/*  SignalInfo.java                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,64 +28,71 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "api.h"
+package org.godotengine.godot.plugin;
 
-#include "core/engine.h"
-#include "java_class_wrapper.h"
-#include "jni_singleton.h"
+import android.support.annotation.NonNull;
+import android.text.TextUtils;
+import java.util.Arrays;
 
-#if !defined(ANDROID_ENABLED)
-static JavaClassWrapper *java_class_wrapper = nullptr;
-#endif
+/**
+ * Store information about a {@link GodotPlugin}'s signal.
+ */
+public final class SignalInfo {
 
-void register_android_api() {
+	private final String name;
+	private final Class<?>[] paramTypes;
+	private final String[] paramTypesNames;
 
-#if !defined(ANDROID_ENABLED)
-	// On Android platforms, the `java_class_wrapper` instantiation and the
-	// `JNISingleton` registration occurs in
-	// `platform/android/java_godot_lib_jni.cpp#Java_org_godotengine_godot_GodotLib_setup`
-	java_class_wrapper = memnew(JavaClassWrapper); // Dummy
-	ClassDB::register_class<JNISingleton>();
-#endif
+	public SignalInfo(@NonNull String signalName, Class<?>... paramTypes) {
+		if (TextUtils.isEmpty(signalName)) {
+			throw new IllegalArgumentException("Invalid signal name: " + signalName);
+		}
 
-	ClassDB::register_class<JavaClass>();
-	ClassDB::register_class<JavaClassWrapper>();
-	Engine::get_singleton()->add_singleton(Engine::Singleton("JavaClassWrapper", JavaClassWrapper::get_singleton()));
+		this.name = signalName;
+		this.paramTypes = paramTypes == null ? new Class<?>[ 0 ] : paramTypes;
+		this.paramTypesNames = new String[this.paramTypes.length];
+		for (int i = 0; i < this.paramTypes.length; i++) {
+			this.paramTypesNames[i] = this.paramTypes[i].getName();
+		}
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	Class<?>[] getParamTypes() {
+		return paramTypes;
+	}
+
+	String[] getParamTypesNames() {
+		return paramTypesNames;
+	}
+
+	@Override
+	public String toString() {
+		return "SignalInfo{"
+				+
+				"name='" + name + '\'' +
+				", paramsTypes=" + Arrays.toString(paramTypes) +
+				'}';
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof SignalInfo)) {
+			return false;
+		}
+
+		SignalInfo that = (SignalInfo)o;
+
+		return name.equals(that.name);
+	}
+
+	@Override
+	public int hashCode() {
+		return name.hashCode();
+	}
 }
-
-void unregister_android_api() {
-
-#if !defined(ANDROID_ENABLED)
-	memdelete(java_class_wrapper);
-#endif
-}
-
-void JavaClassWrapper::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("wrap", "name"), &JavaClassWrapper::wrap);
-}
-
-#if !defined(ANDROID_ENABLED)
-
-Variant JavaClass::call(const StringName &, const Variant **, int, Callable::CallError &) {
-	return Variant();
-}
-
-JavaClass::JavaClass() {
-}
-
-Variant JavaObject::call(const StringName &, const Variant **, int, Callable::CallError &) {
-	return Variant();
-}
-
-JavaClassWrapper *JavaClassWrapper::singleton = nullptr;
-
-Ref<JavaClass> JavaClassWrapper::wrap(const String &) {
-	return Ref<JavaClass>();
-}
-
-JavaClassWrapper::JavaClassWrapper() {
-	singleton = this;
-}
-
-#endif
