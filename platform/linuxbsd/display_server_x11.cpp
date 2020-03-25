@@ -862,11 +862,10 @@ Point2i DisplayServerX11::window_get_position(WindowID p_window) const {
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Point2i());
 	const WindowData &wd = windows[p_window];
-	int x, y;
-	Window child;
-	XTranslateCoordinates(x11_display, wd.x11_window, DefaultRootWindow(x11_display), 0, 0, &x, &y, &child);
-	return Point2i(x, y);
+
+	return wd.position;
 }
+
 void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p_window) {
 
 	_THREAD_SAFE_METHOD_
@@ -991,9 +990,14 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
+
+	Size2i size = p_size;
+	size.x = MAX(1, size.x);
+	size.y = MAX(1, size.y);
+
 	WindowData &wd = windows[p_window];
 
-	if (wd.size.width == p_size.width && wd.size.height == p_size.height)
+	if (wd.size.width == size.width && wd.size.height == size.height)
 		return;
 
 	XWindowAttributes xwa;
@@ -1007,10 +1011,10 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 	xsh = XAllocSizeHints();
 	if (!window_get_flag(WINDOW_FLAG_RESIZE_DISABLED, p_window)) {
 		xsh->flags = PMinSize | PMaxSize;
-		xsh->min_width = p_size.x;
-		xsh->max_width = p_size.x;
-		xsh->min_height = p_size.y;
-		xsh->max_height = p_size.y;
+		xsh->min_width = size.x;
+		xsh->max_width = size.x;
+		xsh->min_height = size.y;
+		xsh->max_height = size.y;
 	} else {
 		xsh->flags = 0L;
 		if (wd.min_size != Size2i()) {
@@ -1028,10 +1032,10 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 	XFree(xsh);
 
 	// Resize the window
-	XResizeWindow(x11_display, wd.x11_window, p_size.x, p_size.y);
+	XResizeWindow(x11_display, wd.x11_window, size.x, size.y);
 
 	// Update our videomode width and height
-	wd.size = p_size;
+	wd.size = size;
 
 	for (int timeout = 0; timeout < 50; ++timeout) {
 		XSync(x11_display, False);
@@ -1348,7 +1352,7 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 		} break;
 		case WINDOW_MODE_FULLSCREEN: {
-			wd.last_position_before_fs = window_get_position(p_window);
+			wd.last_position_before_fs = wd.position;
 			if (window_get_flag(WINDOW_FLAG_ALWAYS_ON_TOP, p_window)) {
 				_set_wm_maximized(p_window, true);
 			}
@@ -2229,22 +2233,35 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 		}
 	}
 
+	Rect2i new_rect;
+
 	WindowData &wd = windows[window_id];
-	if (wd.x11_window != event->xany.window) { // Check if the correct window
+	if (wd.x11_window != event->xany.window) { // Check if the correct window, in case it was not main window or anything else
 		return;
 	}
 
+	{
+		//the position in xconfigure is not useful here, obtain it manually
+		int x, y;
+		Window child;
+		XTranslateCoordinates(x11_display, wd.x11_window, DefaultRootWindow(x11_display), 0, 0, &x, &y, &child);
+		new_rect.position.x = x;
+		new_rect.position.y = y;
+
+		new_rect.size.width = event->xconfigure.width;
+		new_rect.size.height = event->xconfigure.height;
+	}
+
+	if (new_rect == Rect2i(wd.position, wd.size)) {
+		return;
+	}
 	if (wd.xic) {
 		//  Not portable.
 		window_set_ime_position(Point2(0, 1));
 	}
 
-	if ((event->xconfigure.width == wd.size.width) &&
-			(event->xconfigure.height == wd.size.height))
-		return;
-
-	wd.size.width = event->xconfigure.width;
-	wd.size.height = event->xconfigure.height;
+	wd.position = new_rect.position;
+	wd.size = new_rect.size;
 
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
@@ -2252,8 +2269,12 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	}
 #endif
 
+	print_line("DisplayServer::_window_changed: " + itos(window_id) + " rect: " + new_rect);
 	if (!wd.rect_changed_callback.is_null()) {
-		Variant rect = Rect2i(wd.im_position, wd.size);
+		Rect2i r = new_rect;
+
+		Variant rect = r;
+
 		Variant *rectp = &rect;
 		Variant ret;
 		Callable::CallError ce;
@@ -3122,7 +3143,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 	WindowID id;
 	{
 		WindowData wd;
-		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo->screen), p_rect.position.x, p_rect.position.y, p_rect.size.width, p_rect.size.height, 0, visualInfo->depth, InputOutput, visualInfo->visual, valuemask, &windowAttributes);
+		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo->screen), p_rect.position.x, p_rect.position.y, p_rect.size.width > 0 ? p_rect.size.width : 1, p_rect.size.height > 0 ? p_rect.size.height : 1, 0, visualInfo->depth, InputOutput, visualInfo->visual, valuemask, &windowAttributes);
 
 		XMapWindow(x11_display, wd.x11_window);
 
@@ -3206,13 +3227,73 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 
 		windows[id] = wd;
 
-		if (id != MAIN_WINDOW_ID) {
-			//this is a sub window, don't let the window manager put it wherever it wants
-			for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
-				if (p_flags & (1 << i)) {
-					window_set_flag(WindowFlags(i), true, id);
-				}
+		{
+
+			if (p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT) {
+
+				XSizeHints *xsh;
+				xsh = XAllocSizeHints();
+
+				xsh->flags = PMinSize | PMaxSize;
+				xsh->min_width = p_rect.size.width;
+				xsh->max_width = p_rect.size.width;
+				xsh->min_height = p_rect.size.height;
+				xsh->max_height = p_rect.size.height;
+
+				XSetWMNormalHints(x11_display, wd.x11_window, xsh);
+				XFree(xsh);
 			}
+
+			bool make_utility = false;
+
+			if (p_flags & WINDOW_FLAG_BORDERLESS_BIT) {
+				Hints hints;
+				Atom property;
+				hints.flags = 2;
+				hints.decorations = 0;
+				property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
+				XChangeProperty(x11_display, wd.x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
+
+				make_utility = true;
+			}
+			if (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) {
+				make_utility = true;
+			}
+
+			if (make_utility) {
+				//this one seems to disable the fade animations for regular windows
+				//but has the drawback that will not get focus by default, so
+				//we need fo force it, unless no focus requested
+
+				Atom type_atom = XInternAtom(x11_display, "_NET_WM_WINDOW_TYPE_UTILITY", False);
+				Atom wt_atom = XInternAtom(x11_display, "_NET_WM_WINDOW_TYPE", False);
+
+				XChangeProperty(x11_display, wd.x11_window, wt_atom, XA_ATOM, 32, PropModeReplace, (unsigned char *)&type_atom, 1);
+
+				if (!(p_flags & WINDOW_FLAG_NO_FOCUS_BIT)) {
+					//but as utility appears unfocused, it needs to be forcefuly focused, unless no focus requested
+					XEvent xev;
+					Atom net_active_window = XInternAtom(x11_display, "_NET_ACTIVE_WINDOW", False);
+
+					memset(&xev, 0, sizeof(xev));
+					xev.type = ClientMessage;
+					xev.xclient.window = wd.x11_window;
+					xev.xclient.message_type = net_active_window;
+					xev.xclient.format = 32;
+					xev.xclient.data.l[0] = 1;
+					xev.xclient.data.l[1] = CurrentTime;
+
+					XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+				}
+			} else {
+				Atom type_atom = XInternAtom(x11_display, "_NET_WM_WINDOW_TYPE_NORMAL", False);
+				Atom wt_atom = XInternAtom(x11_display, "_NET_WM_WINDOW_TYPE", False);
+
+				XChangeProperty(x11_display, wd.x11_window, wt_atom, XA_ATOM, 32, PropModeReplace, (unsigned char *)&type_atom, 1);
+			}
+		}
+
+		if (id != MAIN_WINDOW_ID) {
 
 			XSizeHints my_hints = XSizeHints();
 
@@ -3253,10 +3334,12 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 		XSync(x11_display, False);
 		XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
 
+		wd.position.x = xwa.x;
+		wd.position.y = xwa.y;
 		wd.size.width = xwa.width;
 		wd.size.height = xwa.height;
 
-		print_line("created at rect: " + p_rect + " but at rect " + Rect2i(xwa.x, xwa.y, xwa.width, xwa.height));
+		print_line("DisplayServer::_create_window " + itos(id) + " want rect: " + p_rect + " got rect " + Rect2i(xwa.x, xwa.y, xwa.width, xwa.height));
 	}
 
 	//set cursor

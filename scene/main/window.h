@@ -221,11 +221,11 @@ public:
 
 	Window *get_parent_visible_window() const;
 	Viewport *get_parent_viewport() const;
-	void popup(const Rect2 &p_rect = Rect2());
-	void popup_on_parent(const Rect2 &p_parent_rect);
+	void popup(const Rect2i &p_rect = Rect2i());
+	void popup_on_parent(const Rect2i &p_parent_rect);
 	void popup_centered_ratio(float p_ratio = 0.8);
-	void popup_centered(const Size2 &p_minsize = Size2());
-	void popup_centered_clamped(const Size2 &p_size = Size2(), float p_fallback_ratio = 0.75);
+	void popup_centered(const Size2i &p_minsize = Size2i());
+	void popup_centered_clamped(const Size2i &p_size = Size2i(), float p_fallback_ratio = 0.75);
 
 	void set_theme(const Ref<Theme> &p_theme);
 	Ref<Theme> get_theme() const;
