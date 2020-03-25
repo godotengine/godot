@@ -79,4 +79,4 @@ public:
 	virtual String get_resource_type(const String &p_path) const;
 };
 
-#endif
+#endif // IMAGE_LOADER_H

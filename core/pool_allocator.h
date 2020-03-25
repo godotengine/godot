@@ -148,4 +148,4 @@ public:
 	virtual ~PoolAllocator();
 };
 
-#endif
+#endif // POOL_ALLOCATOR_H

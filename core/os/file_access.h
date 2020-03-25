@@ -196,4 +196,4 @@ struct FileAccessRef {
 	}
 };
 
-#endif
+#endif // FILE_ACCESS_H

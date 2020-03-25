@@ -28,6 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef INT_TYPES_H
+#define INT_TYPES_H
+
 #ifdef _MSC_VER
 
 typedef signed __int8 int8_t;
@@ -54,4 +57,6 @@ typedef unsigned long long uint64_t;
 #include <stdint.h>
 #endif
 
-#endif
+#endif // _MSC_VER
+
+#endif // INT_TYPES_H
