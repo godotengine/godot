@@ -118,6 +118,7 @@ class DisplayServerX11 : public DisplayServer {
 
 		Size2i min_size;
 		Size2i max_size;
+		Point2i position;
 		Size2i size;
 		Point2i im_position;
 		bool im_active = false;

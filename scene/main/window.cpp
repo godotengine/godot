@@ -932,7 +932,7 @@ Window *Window::get_parent_visible_window() const {
 	return window;
 }
 
-void Window::popup_on_parent(const Rect2 &p_parent_rect) {
+void Window::popup_on_parent(const Rect2i &p_parent_rect) {
 
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
@@ -943,14 +943,14 @@ void Window::popup_on_parent(const Rect2 &p_parent_rect) {
 		if (!window) {
 			popup(p_parent_rect);
 		} else {
-			popup(Rect2(window->get_position() + p_parent_rect.position, p_parent_rect.size));
+			popup(Rect2i(window->get_position() + p_parent_rect.position, p_parent_rect.size));
 		}
 	} else {
 		popup(p_parent_rect);
 	}
 }
 
-void Window::popup_centered_clamped(const Size2 &p_size, float p_fallback_ratio) {
+void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio) {
 
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
@@ -966,16 +966,16 @@ void Window::popup_centered_clamped(const Size2 &p_size, float p_fallback_ratio)
 		parent_rect.size = DisplayServer::get_singleton()->screen_get_size(parent_screen);
 	}
 
-	Vector2 size_ratio = parent_rect.size * p_fallback_ratio;
+	Vector2i size_ratio = parent_rect.size * p_fallback_ratio;
 
-	Rect2 popup_rect;
-	popup_rect.size = Vector2(MIN(size_ratio.x, p_size.x), MIN(size_ratio.y, p_size.y));
+	Rect2i popup_rect;
+	popup_rect.size = Vector2i(MIN(size_ratio.x, p_size.x), MIN(size_ratio.y, p_size.y));
 	popup_rect.position = (parent_rect.size - popup_rect.size) / 2;
 
 	popup(popup_rect);
 }
 
-void Window::popup_centered(const Size2 &p_minsize) {
+void Window::popup_centered(const Size2i &p_minsize) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
 
@@ -990,8 +990,8 @@ void Window::popup_centered(const Size2 &p_minsize) {
 		parent_rect.size = DisplayServer::get_singleton()->screen_get_size(parent_screen);
 	}
 
-	Rect2 popup_rect;
-	if (p_minsize == Size2()) {
+	Rect2i popup_rect;
+	if (p_minsize == Size2i()) {
 		popup_rect.size = _get_contents_minimum_size();
 	} else {
 		popup_rect.size = p_minsize;
@@ -1006,7 +1006,7 @@ void Window::popup_centered_ratio(float p_ratio) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
 
-	Rect2 parent_rect;
+	Rect2i parent_rect;
 
 	if (is_embedded()) {
 		parent_rect = get_parent_viewport()->get_visible_rect();
@@ -1017,18 +1017,18 @@ void Window::popup_centered_ratio(float p_ratio) {
 		parent_rect.size = DisplayServer::get_singleton()->screen_get_size(parent_screen);
 	}
 
-	Rect2 popup_rect;
+	Rect2i popup_rect;
 	popup_rect.size = parent_rect.size * p_ratio;
 	popup_rect.position = (parent_rect.size - popup_rect.size) / 2;
 
 	popup(popup_rect);
 }
 
-void Window::popup(const Rect2 &p_screen_rect) {
+void Window::popup(const Rect2i &p_screen_rect) {
 
 	emit_signal("about_to_popup");
 
-	if (p_screen_rect != Rect2()) {
+	if (p_screen_rect != Rect2i()) {
 		set_position(p_screen_rect.position);
 		set_size(p_screen_rect.size);
 	}
