@@ -77,4 +77,4 @@ public:
 	virtual ~Thread();
 };
 
-#endif
+#endif // THREAD_H

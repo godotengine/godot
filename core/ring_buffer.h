@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RINGBUFFER_H
-#define RINGBUFFER_H
+#ifndef RING_BUFFER_H
+#define RING_BUFFER_H
 
 #include "core/vector.h"
 
@@ -221,4 +221,4 @@ public:
 	~RingBuffer<T>(){};
 };
 
-#endif
+#endif // RING_BUFFER_H

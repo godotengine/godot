@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_VERSION_H
-#define GODOT_VERSION_H
+#ifndef VERSION_H
+#define VERSION_H
 
 #include "core/version_generated.gen.h"
 
@@ -68,4 +68,4 @@
 // Example: "Godot v3.1.4.stable.official.mono"
 #define VERSION_FULL_NAME "" VERSION_NAME " v" VERSION_FULL_BUILD
 
-#endif // GODOT_VERSION_H
+#endif // VERSION_H

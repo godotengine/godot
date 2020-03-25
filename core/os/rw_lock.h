@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RWLOCK_H
-#define RWLOCK_H
+#ifndef RW_LOCK_H
+#define RW_LOCK_H
 
 #include "core/error_list.h"
 
@@ -79,4 +79,4 @@ public:
 	}
 };
 
-#endif // RWLOCK_H
+#endif // RW_LOCK_H

@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef COWDATA_H_
-#define COWDATA_H_
-
-#include <string.h>
+#ifndef COWDATA_H
+#define COWDATA_H
 
 #include "core/error_macros.h"
 #include "core/os/memory.h"
 #include "core/safe_refcount.h"
+
+#include <string.h>
 
 template <class T>
 class Vector;
@@ -371,4 +371,4 @@ CowData<T>::~CowData() {
 	_unref(_ptr);
 }
 
-#endif /* COW_H_ */
+#endif // COWDATA_H

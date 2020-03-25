@@ -459,4 +459,5 @@ public:
 	PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner);
 	~PlaceHolderScriptInstance();
 };
-#endif
+
+#endif // SCRIPT_LANGUAGE_H

@@ -105,4 +105,4 @@ using BinaryMutex = MutexImpl<FakeMutex>; // Non-recursive, handle with care
 
 #endif // !NO_THREADS
 
-#endif
+#endif // MUTEX_H

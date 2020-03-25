@@ -622,4 +622,4 @@ public:
 	InputEventMIDI();
 };
 
-#endif
+#endif // INPUT_EVENT_H

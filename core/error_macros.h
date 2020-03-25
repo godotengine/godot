@@ -623,4 +623,4 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 	} else                                                                                                      \
 		((void)0)
 
-#endif
+#endif // ERROR_MACROS_H

@@ -90,4 +90,4 @@ public:
 	static void remove_custom_savers();
 };
 
-#endif
+#endif // RESOURCE_SAVER_H

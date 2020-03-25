@@ -77,4 +77,4 @@ public:
 	ScriptDebugger() {}
 };
 
-#endif
+#endif // SCRIPT_DEBUGGER_H

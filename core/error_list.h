@@ -90,4 +90,4 @@ enum Error {
 	ERR_PRINTER_ON_FIRE, /// the parallel port printer is engulfed in flames
 };
 
-#endif
+#endif // ERROR_LIST_H

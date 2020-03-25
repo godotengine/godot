@@ -58,4 +58,4 @@ public:
 	virtual ~MIDIDriver() {}
 };
 
-#endif
+#endif // MIDI_DRIVER_H

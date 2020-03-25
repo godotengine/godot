@@ -107,4 +107,4 @@ public:
 	virtual ~CompositeLogger();
 };
 
-#endif
+#endif // LOGGER_H

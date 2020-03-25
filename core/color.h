@@ -239,4 +239,4 @@ bool Color::operator<(const Color &p_color) const {
 		return r < p_color.r;
 }
 
-#endif
+#endif // COLOR_H

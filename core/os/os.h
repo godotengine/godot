@@ -527,4 +527,4 @@ public:
 	virtual ~OS();
 };
 
-#endif
+#endif // OS_H

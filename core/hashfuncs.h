@@ -38,6 +38,7 @@
 #include "core/string_name.h"
 #include "core/typedefs.h"
 #include "core/ustring.h"
+
 /**
  * Hashing functions
  */
@@ -171,4 +172,4 @@ struct HashMapComparatorDefault {
 	}
 };
 
-#endif
+#endif // HASHFUNCS_H

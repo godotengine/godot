@@ -1413,4 +1413,5 @@ static int _find_lower(int ch) {
 
 	return ch;
 }
-#endif
+
+#endif // UCAPS_H

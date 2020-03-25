@@ -61,4 +61,4 @@ public:
 	static void make_default();
 };
 
-#endif
+#endif // THREAD_DUMMY_H

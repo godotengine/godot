@@ -817,4 +817,4 @@ public:
 //needed by macros
 #include "core/class_db.h"
 
-#endif
+#endif // OBJECT_H

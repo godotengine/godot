@@ -1375,4 +1375,4 @@ Octree<T, use_pairs, AL>::Octree(real_t p_unit_size) {
 	unpair_callback_userdata = NULL;
 }
 
-#endif
+#endif // OCTREE_H

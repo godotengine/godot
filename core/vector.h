@@ -181,4 +181,4 @@ bool Vector<T>::push_back(T p_elem) {
 	return false;
 }
 
-#endif
+#endif // VECTOR_H
