@@ -1,9 +1,9 @@
 ext.versions = [
-    androidGradlePlugin: '3.4.2',
-    compileSdk         : 28,
+    androidGradlePlugin: '3.6.0',
+    compileSdk         : 29,
     minSdk             : 18,
-    targetSdk          : 28,
-    buildTools         : '28.0.3',
+    targetSdk          : 29,
+    buildTools         : '29.0.1',
     supportCoreUtils   : '28.0.0',
     v4Support          : '28.0.0'
 
