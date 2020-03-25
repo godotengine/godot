@@ -81,36 +81,6 @@ private:
 	bool use_kinematic;
 	Navigation2D *navigation;
 
-	union PosKey {
-
-		struct {
-			int16_t x;
-			int16_t y;
-		};
-		uint32_t key;
-
-		//using a more precise comparison so the regions can be sorted later
-		bool operator<(const PosKey &p_k) const { return (y == p_k.y) ? x < p_k.x : y < p_k.y; }
-
-		bool operator==(const PosKey &p_k) const { return (y == p_k.y && x == p_k.x); }
-
-		PosKey to_quadrant(const int &p_quadrant_size) const {
-			// rounding down, instead of simply rounding towards zero (truncating)
-			return PosKey(
-					x > 0 ? x / p_quadrant_size : (x - (p_quadrant_size - 1)) / p_quadrant_size,
-					y > 0 ? y / p_quadrant_size : (y - (p_quadrant_size - 1)) / p_quadrant_size);
-		}
-
-		PosKey(int16_t p_x, int16_t p_y) {
-			x = p_x;
-			y = p_y;
-		}
-		PosKey() {
-			x = 0;
-			y = 0;
-		}
-	};
-
 	union Cell {
 
 		struct {
@@ -126,8 +96,8 @@ private:
 		Cell() { _u64t = 0; }
 	};
 
-	Map<PosKey, Cell> tile_map;
-	List<PosKey> dirty_bitmask;
+	Map<Vector2i, Cell> tile_map;
+	List<Vector2i> dirty_bitmask;
 
 	struct Quadrant {
 
@@ -148,10 +118,10 @@ private:
 			Transform2D xform;
 		};
 
-		Map<PosKey, NavPoly> navpoly_ids;
-		Map<PosKey, Occluder> occluder_instances;
+		Map<Vector2i, NavPoly> navpoly_ids;
+		Map<Vector2i, Occluder> occluder_instances;
 
-		VSet<PosKey> cells;
+		VSet<Vector2i> cells;
 
 		void operator=(const Quadrant &q) {
 			pos = q.pos;
@@ -176,7 +146,7 @@ private:
 				dirty_list(this) {}
 	};
 
-	Map<PosKey, Quadrant> quadrant_map;
+	Map<Vector2i, Quadrant> quadrant_map;
 
 	SelfList<Quadrant>::List dirty_quadrant_list;
 
@@ -206,9 +176,9 @@ private:
 
 	void _add_shape(int &shape_idx, const Quadrant &p_q, const Ref<Shape2D> &p_shape, const TileSet::ShapeData &p_shape_data, const Transform2D &p_xform, const Vector2 &p_metadata);
 
-	Map<PosKey, Quadrant>::Element *_create_quadrant(const PosKey &p_qk);
-	void _erase_quadrant(Map<PosKey, Quadrant>::Element *Q);
-	void _make_quadrant_dirty(Map<PosKey, Quadrant>::Element *Q, bool update = true);
+	Map<Vector2i, Quadrant>::Element *_create_quadrant(const Vector2i &p_qk);
+	void _erase_quadrant(Map<Vector2i, Quadrant>::Element *Q);
+	void _make_quadrant_dirty(Map<Vector2i, Quadrant>::Element *Q, bool update = true);
 	void _recreate_quadrants();
 	void _clear_quadrants();
 	void _update_quadrant_space(const RID &p_space);
@@ -225,6 +195,7 @@ private:
 
 	void _set_old_cell_size(int p_size) { set_cell_size(Size2(p_size, p_size)); }
 	int _get_old_cell_size() const { return cell_size.x; }
+	Vector2i _map_to_quadrant(const Vector2i &v, const int &p_quadrant_size) const;
 
 	_FORCE_INLINE_ Vector2 _map_to_world(int p_x, int p_y, bool p_ignore_ofs = false) const;
 
