@@ -35,6 +35,7 @@
 #include "android/asset_manager_jni.h"
 #include "android_keys_utils.h"
 #include "api/java_class_wrapper.h"
+#include "api/jni_singleton.h"
 #include "audio_driver_jandroid.h"
 #include "core/engine.h"
 #include "core/project_settings.h"
@@ -198,6 +199,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jc
 	}
 
 	java_class_wrapper = memnew(JavaClassWrapper(godot_java->get_activity()));
+	ClassDB::register_class<JNISingleton>();
 	_initialize_java_modules();
 }
 
