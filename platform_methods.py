@@ -7,10 +7,7 @@ import subprocess
 
 # NOTE: The multiprocessing module is not compatible with SCons due to conflict on cPickle
 
-if sys.version_info[0] < 3:
-    JSON_SERIALIZABLE_TYPES = (bool, int, long, float, basestring)
-else:
-    JSON_SERIALIZABLE_TYPES = (bool, int, float, str)
+JSON_SERIALIZABLE_TYPES = (bool, int, float, str)
 
 
 def run_in_subprocess(builder_function):

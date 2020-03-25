@@ -3,9 +3,10 @@
 All such functions are invoked in a subprocess on Windows to prevent build flakiness.
 
 """
+
 import os
+from io import StringIO
 from platform_methods import subprocess_main
-from compat import StringIO
 
 
 def make_editor_icons_action(target, source, env):
