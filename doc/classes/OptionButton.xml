@@ -214,14 +214,14 @@
 	</members>
 	<signals>
 		<signal name="item_focused">
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
 				Emitted the when user navigates to an item using the [code]ui_up[/code] or [code]ui_down[/code] actions. The index of the item selected is passed as argument.
 			</description>
 		</signal>
 		<signal name="item_selected">
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
 				Emitted when the current item has been changed by the user. The index of the item selected is passed as argument.

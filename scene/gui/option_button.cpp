@@ -340,8 +340,8 @@ void OptionButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_items", "_get_items");
 	// "selected" property must come after "items", otherwise GH-10213 occurs.
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
-	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));
+	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "index")));
 }
 
 OptionButton::OptionButton() {
