@@ -84,7 +84,7 @@ static void set_class_hint(Display *p_display, Window p_window) {
 	XFree(classHint);
 }
 
-Error ContextGL_X11::initialize() {
+Error ContextGL_X11::initialize(Atom &wm_delete) {
 
 	//const char *extensions = glXQueryExtensionsString(x11_display, DefaultScreen(x11_display));
 
@@ -198,6 +198,8 @@ Error ContextGL_X11::initialize() {
 	ERR_FAIL_COND_V(!x11_window, ERR_UNCONFIGURED);
 	set_class_hint(x11_display, x11_window);
 	XMapWindow(x11_display, x11_window);
+
+	XSetWMProtocols(x11_display, x11_window, &wm_delete, 1);
 
 	XSync(x11_display, False);
 	XSetErrorHandler(oldHandler);

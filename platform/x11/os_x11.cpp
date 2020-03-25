@@ -193,6 +193,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	}
 
 	xim = XOpenIM(x11_display, NULL, NULL, NULL);
+	wm_delete = XInternAtom(x11_display, "WM_DELETE_WINDOW", true);
 
 	if (xim == NULL) {
 		WARN_PRINT("XOpenIM failed");
@@ -301,7 +302,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	while (!context_gl) {
 		context_gl = memnew(ContextGL_X11(x11_display, x11_window, current_videomode, opengl_api_type));
 
-		if (context_gl->initialize() != OK) {
+		if (context_gl->initialize(wm_delete) != OK) {
 			memdelete(context_gl);
 			context_gl = NULL;
 
@@ -474,9 +475,6 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	/* set the titlebar name */
 	XStoreName(x11_display, x11_window, "Godot");
-
-	wm_delete = XInternAtom(x11_display, "WM_DELETE_WINDOW", true);
-	XSetWMProtocols(x11_display, x11_window, &wm_delete, 1);
 
 	im_active = false;
 	im_position = Vector2();

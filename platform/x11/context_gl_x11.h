@@ -69,7 +69,7 @@ public:
 	int get_window_width();
 	int get_window_height();
 
-	Error initialize();
+	Error initialize(Atom &wm_delete);
 
 	void set_use_vsync(bool p_use);
 	bool is_using_vsync() const;
