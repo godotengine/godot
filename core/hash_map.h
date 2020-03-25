@@ -599,4 +599,4 @@ public:
 	}
 };
 
-#endif
+#endif // HASH_MAP_H

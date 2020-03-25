@@ -75,4 +75,4 @@ public:
 	}
 };
 
-#endif
+#endif // RID_H
