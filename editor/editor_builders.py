@@ -6,24 +6,23 @@ All such functions are invoked in a subprocess on Windows to prevent build flaki
 import os
 import os.path
 from platform_methods import subprocess_main
-from compat import encode_utf8, byte_to_str, open_utf8
 
 
 def make_doc_header(target, source, env):
 
     dst = target[0]
-    g = open_utf8(dst, "w")
+    g = open(dst, "w", encoding="utf-8")
     buf = ""
     docbegin = ""
     docend = ""
     for src in source:
         if not src.endswith(".xml"):
             continue
-        with open_utf8(src, "r") as f:
+        with open(src, "r", encoding="utf-8") as f:
             content = f.read()
         buf += content
 
-    buf = encode_utf8(docbegin + buf + docend)
+    buf = (docbegin + buf + docend).encode("utf-8")
     decomp_size = len(buf)
     import zlib
     buf = zlib.compress(buf)
@@ -35,7 +34,7 @@ def make_doc_header(target, source, env):
     g.write("static const int _doc_data_uncompressed_size = " + str(decomp_size) + ";\n")
     g.write("static const unsigned char _doc_data_compressed[] = {\n")
     for i in range(len(buf)):
-        g.write("\t" + byte_to_str(buf[i]) + ",\n")
+        g.write("\t" + str(buf[i]) + ",\n")
     g.write("};\n")
 
     g.write("#endif")
@@ -47,7 +46,7 @@ def make_fonts_header(target, source, env):
 
     dst = target[0]
 
-    g = open_utf8(dst, "w")
+    g = open(dst, "w", encoding="utf-8")
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("#ifndef _EDITOR_FONTS_H\n")
@@ -64,7 +63,7 @@ def make_fonts_header(target, source, env):
         g.write("static const int _font_" + name + "_size = " + str(len(buf)) + ";\n")
         g.write("static const unsigned char _font_" + name + "[] = {\n")
         for j in range(len(buf)):
-            g.write("\t" + byte_to_str(buf[j]) + ",\n")
+            g.write("\t" + str(buf[j]) + ",\n")
 
         g.write("};\n")
 
@@ -77,7 +76,7 @@ def make_translations_header(target, source, env, category):
 
     dst = target[0]
 
-    g = open_utf8(dst, "w")
+    g = open(dst, "w", encoding="utf-8")
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("#ifndef _{}_TRANSLATIONS_H\n".format(category.upper()))
@@ -98,7 +97,7 @@ def make_translations_header(target, source, env, category):
 
         g.write("static const unsigned char _{}_translation_{}_compressed[] = {{\n".format(category, name))
         for j in range(len(buf)):
-            g.write("\t" + byte_to_str(buf[j]) + ",\n")
+            g.write("\t" + str(buf[j]) + ",\n")
 
         g.write("};\n")
 

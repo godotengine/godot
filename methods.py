@@ -2,12 +2,11 @@ import os
 import re
 import glob
 import subprocess
-from compat import iteritems, isbasestring, decode_utf8
 
 
 def add_source_files(self, sources, files, warn_duplicates=True):
     # Convert string to list of absolute paths (including expanding wildcard)
-    if isbasestring(files):
+    if isinstance(files, (str, bytes)):
         # Keep SCons project-absolute path as they are (no wildcard support)
         if files.startswith('#'):
             if '*' in files:
@@ -240,7 +239,7 @@ def use_windows_spawn_fix(self, platform=None):
         cmdline = cmd + " " + newargs
 
         rv = 0
-        env = {str(key): str(value) for key, value in iteritems(env)}
+        env = {str(key): str(value) for key, value in iter(env.items())}
         if len(cmdline) > 32000 and cmd.endswith("ar"):
             cmdline = cmd + " " + args[1] + " " + args[2] + " "
             for i in range(3, len(args)):
@@ -530,7 +529,7 @@ def detect_darwin_sdk_path(platform, env):
 
     if not env[var_name]:
         try:
-            sdk_path = decode_utf8(subprocess.check_output(['xcrun', '--sdk', sdk_name, '--show-sdk-path']).strip())
+            sdk_path = subprocess.check_output(['xcrun', '--sdk', sdk_name, '--show-sdk-path']).strip().decode("utf-8")
             if sdk_path:
                 env[var_name] = sdk_path
         except (subprocess.CalledProcessError, OSError):
@@ -540,7 +539,7 @@ def detect_darwin_sdk_path(platform, env):
 def is_vanilla_clang(env):
     if not using_clang(env):
         return False
-    version = decode_utf8(subprocess.check_output([env['CXX'], '--version']).strip())
+    version = subprocess.check_output([env['CXX'], '--version']).strip().decode("utf-8")
     return not version.startswith("Apple")
 
 
@@ -553,7 +552,7 @@ def get_compiler_version(env):
         # Not using -dumpversion as some GCC distros only return major, and
         # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
         try:
-            version = decode_utf8(subprocess.check_output([env.subst(env['CXX']), '--version']).strip())
+            version = subprocess.check_output([env.subst(env['CXX']), '--version']).strip().decode("utf-8")
         except (subprocess.CalledProcessError, OSError):
             print("Couldn't parse CXX environment variable to infer compiler version.")
             return None

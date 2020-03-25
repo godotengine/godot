@@ -4,7 +4,6 @@ All such functions are invoked in a subprocess on Windows to prevent build flaki
 
 """
 from platform_methods import subprocess_main
-from compat import byte_to_str
 from collections import OrderedDict
 
 
@@ -22,7 +21,7 @@ def make_splash(target, source, env):
         g.write('static const Color boot_splash_bg_color = Color(0.14, 0.14, 0.14);\n')
         g.write("static const unsigned char boot_splash_png[] = {\n")
         for i in range(len(buf)):
-            g.write(byte_to_str(buf[i]) + ",\n")
+            g.write(str(buf[i]) + ",\n")
         g.write("};\n")
         g.write("#endif")
 
@@ -41,7 +40,7 @@ def make_splash_editor(target, source, env):
         g.write('static const Color boot_splash_editor_bg_color = Color(0.14, 0.14, 0.14);\n')
         g.write("static const unsigned char boot_splash_editor_png[] = {\n")
         for i in range(len(buf)):
-            g.write(byte_to_str(buf[i]) + ",\n")
+            g.write(str(buf[i]) + ",\n")
         g.write("};\n")
         g.write("#endif")
 
@@ -59,7 +58,7 @@ def make_app_icon(target, source, env):
         g.write("#define APP_ICON_H\n")
         g.write("static const unsigned char app_icon_png[] = {\n")
         for i in range(len(buf)):
-            g.write(byte_to_str(buf[i]) + ",\n")
+            g.write(str(buf[i]) + ",\n")
         g.write("};\n")
         g.write("#endif")
 
