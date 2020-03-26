@@ -2134,6 +2134,10 @@ void PhysicalBone3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_joint_offset", "offset"), &PhysicalBone3D::set_joint_offset);
 	ClassDB::bind_method(D_METHOD("get_joint_offset"), &PhysicalBone3D::get_joint_offset);
+	ClassDB::bind_method(D_METHOD("set_joint_rotation", "euler"), &PhysicalBone3D::set_joint_rotation);
+	ClassDB::bind_method(D_METHOD("get_joint_rotation"), &PhysicalBone3D::get_joint_rotation);
+	ClassDB::bind_method(D_METHOD("set_joint_rotation_degrees", "euler_degrees"), &PhysicalBone3D::set_joint_rotation_degrees);
+	ClassDB::bind_method(D_METHOD("get_joint_rotation_degrees"), &PhysicalBone3D::get_joint_rotation_degrees);
 
 	ClassDB::bind_method(D_METHOD("set_body_offset", "offset"), &PhysicalBone3D::set_body_offset);
 	ClassDB::bind_method(D_METHOD("get_body_offset"), &PhysicalBone3D::get_body_offset);
@@ -2159,9 +2163,23 @@ void PhysicalBone3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_gravity_scale", "gravity_scale"), &PhysicalBone3D::set_gravity_scale);
 	ClassDB::bind_method(D_METHOD("get_gravity_scale"), &PhysicalBone3D::get_gravity_scale);
 
+	ClassDB::bind_method(D_METHOD("set_linear_damp", "linear_damp"), &PhysicalBone3D::set_linear_damp);
+	ClassDB::bind_method(D_METHOD("get_linear_damp"), &PhysicalBone3D::get_linear_damp);
+
+	ClassDB::bind_method(D_METHOD("set_angular_damp", "angular_damp"), &PhysicalBone3D::set_angular_damp);
+	ClassDB::bind_method(D_METHOD("get_angular_damp"), &PhysicalBone3D::get_angular_damp);
+
+	ClassDB::bind_method(D_METHOD("set_can_sleep", "able_to_sleep"), &PhysicalBone3D::set_can_sleep);
+	ClassDB::bind_method(D_METHOD("is_able_to_sleep"), &PhysicalBone3D::is_able_to_sleep);
+
+	ClassDB::bind_method(D_METHOD("set_axis_lock", "axis", "lock"), &PhysicalBone3D::set_axis_lock);
+	ClassDB::bind_method(D_METHOD("get_axis_lock", "axis"), &PhysicalBone3D::get_axis_lock);
+
 	ADD_GROUP("Joint", "joint_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "joint_type", PROPERTY_HINT_ENUM, "None,PinJoint,ConeJoint,HingeJoint,SliderJoint,6DOFJoint"), "set_joint_type", "get_joint_type");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "joint_offset"), "set_joint_offset", "get_joint_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "joint_rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_joint_rotation_degrees", "get_joint_rotation_degrees");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "joint_rotation", PROPERTY_HINT_NONE, "", 0), "set_joint_rotation", "get_joint_rotation");
 
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "body_offset"), "set_body_offset", "get_body_offset");
 
@@ -2170,6 +2188,17 @@ void PhysicalBone3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "friction", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_friction", "get_friction");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_bounce", "get_bounce");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_scale", PROPERTY_HINT_RANGE, "-10,10,0.01"), "set_gravity_scale", "get_gravity_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_linear_damp", "get_linear_damp");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "can_sleep"), "set_can_sleep", "is_able_to_sleep");
+
+	ADD_GROUP("Axis Lock", "axis_lock_");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_x"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_LINEAR_X);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_y"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_LINEAR_Y);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_z"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_LINEAR_Z);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_x"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_ANGULAR_X);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_y"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_ANGULAR_Y);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_z"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_ANGULAR_Z);
 
 	BIND_ENUM_CONSTANT(JOINT_TYPE_NONE);
 	BIND_ENUM_CONSTANT(JOINT_TYPE_PIN);
@@ -2185,6 +2214,19 @@ Skeleton3D *PhysicalBone3D::find_skeleton_parent(Node *p_parent) {
 	}
 	Skeleton3D *s = Object::cast_to<Skeleton3D>(p_parent);
 	return s ? s : find_skeleton_parent(p_parent->get_parent());
+}
+
+void PhysicalBone3D::_update_joint_offset() {
+	_fix_joint_offset();
+
+	set_ignore_transform_notification(true);
+	reset_to_rest_position();
+	set_ignore_transform_notification(false);
+
+#ifdef TOOLS_ENABLED
+	if (get_gizmo().is_valid())
+		get_gizmo()->redraw();
+#endif
 }
 
 void PhysicalBone3D::_fix_joint_offset() {
@@ -2370,16 +2412,31 @@ PhysicalBone3D::JointType PhysicalBone3D::get_joint_type() const {
 void PhysicalBone3D::set_joint_offset(const Transform &p_offset) {
 	joint_offset = p_offset;
 
-	_fix_joint_offset();
+	_update_joint_offset();
+	_change_notify("joint_rotation_degrees");
+}
 
-	set_ignore_transform_notification(true);
-	reset_to_rest_position();
-	set_ignore_transform_notification(false);
+const Transform &PhysicalBone3D::get_joint_offset() const {
+	return joint_offset;
+}
 
-#ifdef TOOLS_ENABLED
-	if (get_gizmo().is_valid())
-		get_gizmo()->redraw();
-#endif
+void PhysicalBone3D::set_joint_rotation(const Vector3 &p_euler_rad) {
+	joint_offset.basis.set_euler_scale(p_euler_rad, joint_offset.basis.get_scale());
+
+	_update_joint_offset();
+	_change_notify("joint_offset");
+}
+
+Vector3 PhysicalBone3D::get_joint_rotation() const {
+	return joint_offset.basis.get_rotation();
+}
+
+void PhysicalBone3D::set_joint_rotation_degrees(const Vector3 &p_euler_deg) {
+	set_joint_rotation(p_euler_deg * Math_PI / 180.0);
+}
+
+Vector3 PhysicalBone3D::get_joint_rotation_degrees() const {
+	return get_joint_rotation() * 180.0 / Math_PI;
 }
 
 const Transform &PhysicalBone3D::get_body_offset() const {
@@ -2390,20 +2447,7 @@ void PhysicalBone3D::set_body_offset(const Transform &p_offset) {
 	body_offset = p_offset;
 	body_offset_inverse = body_offset.affine_inverse();
 
-	_fix_joint_offset();
-
-	set_ignore_transform_notification(true);
-	reset_to_rest_position();
-	set_ignore_transform_notification(false);
-
-#ifdef TOOLS_ENABLED
-	if (get_gizmo().is_valid())
-		get_gizmo()->redraw();
-#endif
-}
-
-const Transform &PhysicalBone3D::get_joint_offset() const {
-	return joint_offset;
+	_update_joint_offset();
 }
 
 void PhysicalBone3D::set_simulate_physics(bool p_simulate) {
@@ -2496,6 +2540,43 @@ real_t PhysicalBone3D::get_gravity_scale() const {
 	return gravity_scale;
 }
 
+void PhysicalBone3D::set_linear_damp(real_t p_linear_damp) {
+	ERR_FAIL_COND(p_linear_damp < -1);
+	linear_damp = p_linear_damp;
+	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_LINEAR_DAMP, linear_damp);
+}
+
+real_t PhysicalBone3D::get_linear_damp() const {
+	return linear_damp;
+}
+
+void PhysicalBone3D::set_angular_damp(real_t p_angular_damp) {
+	ERR_FAIL_COND(p_angular_damp < -1);
+	angular_damp = p_angular_damp;
+	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP, angular_damp);
+}
+
+real_t PhysicalBone3D::get_angular_damp() const {
+	return angular_damp;
+}
+
+void PhysicalBone3D::set_can_sleep(bool p_active) {
+	can_sleep = p_active;
+	PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_CAN_SLEEP, p_active);
+}
+
+bool PhysicalBone3D::is_able_to_sleep() const {
+	return can_sleep;
+}
+
+void PhysicalBone3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock) {
+	PhysicsServer3D::get_singleton()->body_set_axis_lock(get_rid(), p_axis, p_lock);
+}
+
+bool PhysicalBone3D::get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const {
+	return PhysicsServer3D::get_singleton()->body_is_axis_locked(get_rid(), p_axis);
+}
+
 PhysicalBone3D::PhysicalBone3D() :
 		PhysicsBody3D(PhysicsServer3D::BODY_MODE_STATIC),
 #ifdef TOOLS_ENABLED
@@ -2510,7 +2591,10 @@ PhysicalBone3D::PhysicalBone3D() :
 		bounce(0),
 		mass(1),
 		friction(1),
-		gravity_scale(1) {
+		gravity_scale(1),
+		linear_damp(-1),
+		angular_damp(-1),
+		can_sleep(true) {
 
 	reset_physics_simulation_state();
 }
