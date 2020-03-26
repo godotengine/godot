@@ -427,10 +427,9 @@ bool BodyPair2DSW::setup(real_t p_step) {
 			// Apply normal + friction impulse
 			Vector2 P = c.acc_normal_impulse * c.normal + c.acc_tangent_impulse * tangent;
 
-			A->apply_impulse(c.rA, -P);
-			B->apply_impulse(c.rB, P);
+			A->apply_impulse(-P, c.rA);
+			B->apply_impulse(P, c.rB);
 		}
-
 #endif
 
 		c.bounce = combine_bounce(A, B);
@@ -497,8 +496,8 @@ void BodyPair2DSW::solve(real_t p_step) {
 
 		Vector2 j = c.normal * (c.acc_normal_impulse - jnOld) + tangent * (c.acc_tangent_impulse - jtOld);
 
-		A->apply_impulse(c.rA, -j);
-		B->apply_impulse(c.rB, j);
+		A->apply_impulse(-j, c.rA);
+		B->apply_impulse(j, c.rB);
 	}
 }
 

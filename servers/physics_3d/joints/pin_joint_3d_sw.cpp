@@ -119,8 +119,8 @@ void PinJoint3DSW::solve(real_t p_step) {
 
 		m_appliedImpulse += impulse;
 		Vector3 impulse_vector = normal * impulse;
-		A->apply_impulse(pivotAInW - A->get_transform().origin, impulse_vector);
-		B->apply_impulse(pivotBInW - B->get_transform().origin, -impulse_vector);
+		A->apply_impulse(impulse_vector, pivotAInW - A->get_transform().origin);
+		B->apply_impulse(-impulse_vector, pivotBInW - B->get_transform().origin);
 
 		normal[i] = 0;
 	}

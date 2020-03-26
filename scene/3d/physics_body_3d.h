@@ -234,11 +234,11 @@ public:
 	Array get_colliding_bodies() const;
 
 	void add_central_force(const Vector3 &p_force);
-	void add_force(const Vector3 &p_force, const Vector3 &p_pos);
+	void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3());
 	void add_torque(const Vector3 &p_torque);
 
 	void apply_central_impulse(const Vector3 &p_impulse);
-	void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse);
+	void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3());
 	void apply_torque_impulse(const Vector3 &p_impulse);
 
 	virtual String get_configuration_warning() const;
@@ -597,7 +597,7 @@ public:
 	bool get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const;
 
 	void apply_central_impulse(const Vector3 &p_impulse);
-	void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse);
+	void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3());
 
 	void reset_physics_simulation_state();
 	void reset_to_rest_position();
