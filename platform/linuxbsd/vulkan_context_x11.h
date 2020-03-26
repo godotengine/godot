@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_x11.cpp                                                        */
+/*  vulkan_context_x11.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,40 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include <limits.h>
-#include <locale.h>
-#include <stdlib.h>
-#include <unistd.h>
+#ifndef VULKAN_DEVICE_X11_H
+#define VULKAN_DEVICE_X11_H
 
-#include "main/main.h"
-#include "os_x11.h"
+#include "drivers/vulkan/vulkan_context.h"
+#include <X11/Xlib.h>
 
-int main(int argc, char *argv[]) {
+class VulkanContextX11 : public VulkanContext {
 
-	OS_X11 os;
+	virtual const char *_get_platform_surface_extension() const;
 
-	setlocale(LC_CTYPE, "");
+public:
+	Error window_create(DisplayServer::WindowID p_window_id, ::Window p_window, Display *p_display, int p_width, int p_height);
 
-	char *cwd = (char *)malloc(PATH_MAX);
-	ERR_FAIL_COND_V(!cwd, ERR_OUT_OF_MEMORY);
-	char *ret = getcwd(cwd, PATH_MAX);
+	VulkanContextX11();
+	~VulkanContextX11();
+};
 
-	Error err = Main::setup(argv[0], argc - 1, &argv[1]);
-	if (err != OK) {
-		free(cwd);
-		return 255;
-	}
-
-	if (Main::start())
-		os.run(); // it is actually the OS that decides how to run
-	Main::cleanup();
-
-	if (ret) { // Previous getcwd was successful
-		if (chdir(cwd) != 0) {
-			ERR_PRINT("Couldn't return to previous working directory.");
-		}
-	}
-	free(cwd);
-
-	return os.get_exit_code();
-}
+#endif // VULKAN_DEVICE_X11_H

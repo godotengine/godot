@@ -30,8 +30,8 @@
 
 #include "asset_library_editor_plugin.h"
 
+#include "core/input/input_filter.h"
 #include "core/io/json.h"
-#include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
@@ -62,10 +62,10 @@ void EditorAssetLibraryItem::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		icon->set_normal_texture(get_icon("ProjectIconLoading", "EditorIcons"));
-		category->add_color_override("font_color", Color(0.5, 0.5, 0.5));
-		author->add_color_override("font_color", Color(0.5, 0.5, 0.5));
-		price->add_color_override("font_color", Color(0.5, 0.5, 0.5));
+		icon->set_normal_texture(get_theme_icon("ProjectIconLoading", "EditorIcons"));
+		category->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
+		author->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
+		price->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
 	}
 }
 
@@ -99,11 +99,11 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	border->set_default_margin(MARGIN_RIGHT, 5 * EDSCALE);
 	border->set_default_margin(MARGIN_BOTTOM, 5 * EDSCALE);
 	border->set_default_margin(MARGIN_TOP, 5 * EDSCALE);
-	add_style_override("panel", border);
+	add_theme_style_override("panel", border);
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	// Add some spacing to visually separate the icon from the asset details.
-	hb->add_constant_override("separation", 15 * EDSCALE);
+	hb->add_theme_constant_override("separation", 15 * EDSCALE);
 	add_child(hb);
 
 	icon = memnew(TextureButton);
@@ -116,7 +116,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	VBoxContainer *vb = memnew(VBoxContainer);
 
 	hb->add_child(vb);
-	vb->set_h_size_flags(SIZE_EXPAND_FILL);
+	vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	title = memnew(LinkButton);
 	title->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
@@ -137,7 +137,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	vb->add_child(price);
 
 	set_custom_minimum_size(Size2(250, 100) * EDSCALE);
-	set_h_size_flags(SIZE_EXPAND_FILL);
+	set_h_size_flags(Control::SIZE_EXPAND_FILL);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -156,7 +156,7 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 			for (int i = 0; i < preview_images.size(); i++) {
 				if (preview_images[i].id == p_index) {
 					if (preview_images[i].is_video) {
-						Ref<Image> overlay = get_icon("PlayOverlay", "EditorIcons")->get_data();
+						Ref<Image> overlay = previews->get_theme_icon("PlayOverlay", "EditorIcons")->get_data();
 						Ref<Image> thumbnail = p_image->get_data();
 						thumbnail = thumbnail->duplicate();
 						Point2 overlay_pos = Point2((thumbnail->get_width() - overlay->get_width()) / 2, (thumbnail->get_height() - overlay->get_height()) / 2);
@@ -172,7 +172,7 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 
 						preview_images[i].button->set_icon(tex);
 						// Make it clearer that clicking it will open an external link
-						preview_images[i].button->set_default_cursor_shape(CURSOR_POINTING_HAND);
+						preview_images[i].button->set_default_cursor_shape(Control::CURSOR_POINTING_HAND);
 					} else {
 						preview_images[i].button->set_icon(p_image);
 					}
@@ -198,7 +198,7 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 void EditorAssetLibraryItemDescription::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			previews_bg->add_style_override("panel", get_stylebox("normal", "TextEdit"));
+			previews_bg->add_theme_style_override("panel", previews->get_theme_stylebox("normal", "TextEdit"));
 		} break;
 	}
 }
@@ -219,7 +219,7 @@ void EditorAssetLibraryItemDescription::_preview_click(int p_id) {
 			if (!preview_images[i].is_video) {
 				if (preview_images[i].image.is_valid()) {
 					preview->set_texture(preview_images[i].image);
-					minimum_size_changed();
+					child_controls_changed();
 				}
 			} else {
 				_link_click(preview_images[i].video_link);
@@ -256,12 +256,12 @@ void EditorAssetLibraryItemDescription::add_preview(int p_id, bool p_video, cons
 	preview.is_video = p_video;
 	preview.button = memnew(Button);
 	preview.button->set_flat(true);
-	preview.button->set_icon(get_icon("ThumbnailWait", "EditorIcons"));
+	preview.button->set_icon(previews->get_theme_icon("ThumbnailWait", "EditorIcons"));
 	preview.button->set_toggle_mode(true);
 	preview.button->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDescription::_preview_click), varray(p_id));
 	preview_hb->add_child(preview.button);
 	if (!p_video) {
-		preview.image = get_icon("ThumbnailWait", "EditorIcons");
+		preview.image = previews->get_theme_icon("ThumbnailWait", "EditorIcons");
 	}
 	preview_images.push_back(preview);
 	if (preview_images.size() == 1 && !p_video) {
@@ -275,7 +275,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	add_child(hbox);
 	VBoxContainer *desc_vbox = memnew(VBoxContainer);
 	hbox->add_child(desc_vbox);
-	hbox->add_constant_override("separation", 15 * EDSCALE);
+	hbox->add_theme_constant_override("separation", 15 * EDSCALE);
 
 	item = memnew(EditorAssetLibraryItem);
 
@@ -284,14 +284,14 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 
 	description = memnew(RichTextLabel);
 	desc_vbox->add_child(description);
-	description->set_v_size_flags(SIZE_EXPAND_FILL);
+	description->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	description->connect("meta_clicked", callable_mp(this, &EditorAssetLibraryItemDescription::_link_click));
-	description->add_constant_override("line_separation", Math::round(5 * EDSCALE));
+	description->add_theme_constant_override("line_separation", Math::round(5 * EDSCALE));
 
 	VBoxContainer *previews_vbox = memnew(VBoxContainer);
 	hbox->add_child(previews_vbox);
-	previews_vbox->add_constant_override("separation", 15 * EDSCALE);
-	previews_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
+	previews_vbox->add_theme_constant_override("separation", 15 * EDSCALE);
+	previews_vbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	preview = memnew(TextureRect);
 	previews_vbox->add_child(preview);
@@ -308,7 +308,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	previews->set_enable_v_scroll(false);
 	previews->set_enable_h_scroll(true);
 	preview_hb = memnew(HBoxContainer);
-	preview_hb->set_v_size_flags(SIZE_EXPAND_FILL);
+	preview_hb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	previews->add_child(preview_hb);
 	get_ok()->set_text(TTR("Download"));
@@ -375,7 +375,7 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 
 	if (error_text != String()) {
 		download_error->set_text(TTR("Asset Download Error:") + "\n" + error_text);
-		download_error->popup_centered_minsize();
+		download_error->popup_centered();
 		return;
 	}
 
@@ -393,7 +393,7 @@ void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asse
 	icon->set_texture(p_preview);
 	asset_id = p_asset_id;
 	if (!p_preview.is_valid())
-		icon->set_texture(get_icon("FileBrokenBigThumb", "EditorIcons"));
+		icon->set_texture(get_theme_icon("FileBrokenBigThumb", "EditorIcons"));
 	host = p_download_url;
 	sha256 = p_sha256_hash;
 	_make_request();
@@ -406,8 +406,8 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 		// FIXME: The editor crashes if 'NOTICATION_THEME_CHANGED' is used.
 		case NOTIFICATION_ENTER_TREE: {
 
-			add_style_override("panel", get_stylebox("panel", "TabContainer"));
-			dismiss->set_normal_texture(get_icon("Close", "EditorIcons"));
+			add_theme_style_override("panel", get_theme_stylebox("panel", "TabContainer"));
+			dismiss->set_normal_texture(get_theme_icon("Close", "EditorIcons"));
 		} break;
 		case NOTIFICATION_PROCESS: {
 
@@ -507,13 +507,13 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 	hb->add_child(vb);
-	vb->set_h_size_flags(SIZE_EXPAND_FILL);
+	vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	HBoxContainer *title_hb = memnew(HBoxContainer);
 	vb->add_child(title_hb);
 	title = memnew(Label);
 	title_hb->add_child(title);
-	title->set_h_size_flags(SIZE_EXPAND_FILL);
+	title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	dismiss = memnew(TextureButton);
 	dismiss->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDownload::_close));
@@ -525,7 +525,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	status = memnew(Label(TTR("Idle")));
 	vb->add_child(status);
-	status->add_color_override("font_color", Color(0.5, 0.5, 0.5));
+	status->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
 	progress = memnew(ProgressBar);
 	vb->add_child(progress);
 
@@ -571,8 +571,8 @@ void EditorAssetLibrary::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 
-			error_tr->set_texture(get_icon("Error", "EditorIcons"));
-			filter->set_right_icon(get_icon("Search", "EditorIcons"));
+			error_tr->set_texture(get_theme_icon("Error", "EditorIcons"));
+			filter->set_right_icon(get_theme_icon("Search", "EditorIcons"));
 			filter->set_clear_button_enabled(true);
 
 			error_label->raise();
@@ -602,10 +602,10 @@ void EditorAssetLibrary::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 
-			library_scroll_bg->add_style_override("panel", get_stylebox("bg", "Tree"));
-			downloads_scroll->add_style_override("bg", get_stylebox("bg", "Tree"));
-			error_tr->set_texture(get_icon("Error", "EditorIcons"));
-			filter->set_right_icon(get_icon("Search", "EditorIcons"));
+			library_scroll_bg->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
+			downloads_scroll->add_theme_style_override("bg", get_theme_stylebox("bg", "Tree"));
+			error_tr->set_texture(get_theme_icon("Error", "EditorIcons"));
+			filter->set_right_icon(get_theme_icon("Search", "EditorIcons"));
 			filter->set_clear_button_enabled(true);
 		} break;
 	}
@@ -774,7 +774,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedB
 		}
 
 		if (!image_set && final) {
-			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("FileBrokenBigThumb", "EditorIcons"));
+			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_theme_icon("FileBrokenBigThumb", "EditorIcons"));
 		}
 	}
 }
@@ -819,7 +819,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		WARN_PRINT("Error getting image file from URL: " + image_queue[p_queue_id].image_url);
 		Object *obj = ObjectDB::get_instance(image_queue[p_queue_id].target);
 		if (obj) {
-			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("FileBrokenBigThumb", "EditorIcons"));
+			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_theme_icon("FileBrokenBigThumb", "EditorIcons"));
 		}
 	}
 
@@ -976,7 +976,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		to = p_page_count;
 
 	hbc->add_spacer();
-	hbc->add_constant_override("separation", 5 * EDSCALE);
+	hbc->add_theme_constant_override("separation", 5 * EDSCALE);
 
 	Button *first = memnew(Button);
 	first->set_text(TTR("First"));
@@ -1191,8 +1191,8 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			asset_items = memnew(GridContainer);
 			asset_items->set_columns(2);
-			asset_items->add_constant_override("hseparation", 10 * EDSCALE);
-			asset_items->add_constant_override("vseparation", 10 * EDSCALE);
+			asset_items->add_theme_constant_override("hseparation", 10 * EDSCALE);
+			asset_items->add_theme_constant_override("vseparation", 10 * EDSCALE);
 
 			library_vb->add_child(asset_items);
 
@@ -1260,7 +1260,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			description = memnew(EditorAssetLibraryItemDescription);
 			add_child(description);
-			description->popup_centered_minsize();
+			description->popup_centered();
 			description->connect("confirmed", callable_mp(this, &EditorAssetLibrary::_install_asset));
 
 			description->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"], r["version"], r["version_string"], r["description"], r["download_url"], r["browse_url"], r["download_hash"]);
@@ -1353,11 +1353,11 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	HBoxContainer *search_hb = memnew(HBoxContainer);
 
 	library_main->add_child(search_hb);
-	library_main->add_constant_override("separation", 10 * EDSCALE);
+	library_main->add_theme_constant_override("separation", 10 * EDSCALE);
 
 	filter = memnew(LineEdit);
 	search_hb->add_child(filter);
-	filter->set_h_size_flags(SIZE_EXPAND_FILL);
+	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	filter->connect("text_entered", callable_mp(this, &EditorAssetLibrary::_search_text_entered));
 	search = memnew(Button(TTR("Search")));
 	search->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), make_binds(0));
@@ -1392,7 +1392,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	search_hb2->add_child(sort);
 
-	sort->set_h_size_flags(SIZE_EXPAND_FILL);
+	sort->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	sort->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_rerun_search));
 
 	search_hb2->add_child(memnew(VSeparator));
@@ -1401,7 +1401,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	categories = memnew(OptionButton);
 	categories->add_item(TTR("All"));
 	search_hb2->add_child(categories);
-	categories->set_h_size_flags(SIZE_EXPAND_FILL);
+	categories->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	categories->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_rerun_search));
 
 	search_hb2->add_child(memnew(VSeparator));
@@ -1417,7 +1417,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	repository->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_repository_changed));
 
 	search_hb2->add_child(repository);
-	repository->set_h_size_flags(SIZE_EXPAND_FILL);
+	repository->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	search_hb2->add_child(memnew(VSeparator));
 
@@ -1435,7 +1435,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	library_scroll_bg = memnew(PanelContainer);
 	library_main->add_child(library_scroll_bg);
-	library_scroll_bg->set_v_size_flags(SIZE_EXPAND_FILL);
+	library_scroll_bg->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	library_scroll = memnew(ScrollContainer);
 	library_scroll->set_enable_v_scroll(true);
@@ -1452,11 +1452,11 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	PanelContainer *library_vb_border = memnew(PanelContainer);
 	library_scroll->add_child(library_vb_border);
-	library_vb_border->add_style_override("panel", border2);
-	library_vb_border->set_h_size_flags(SIZE_EXPAND_FILL);
+	library_vb_border->add_theme_style_override("panel", border2);
+	library_vb_border->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	library_vb = memnew(VBoxContainer);
-	library_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+	library_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	library_vb_border->add_child(library_vb);
 
@@ -1474,8 +1474,8 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	asset_items = memnew(GridContainer);
 	asset_items->set_columns(2);
-	asset_items->add_constant_override("hseparation", 10 * EDSCALE);
-	asset_items->add_constant_override("vseparation", 10 * EDSCALE);
+	asset_items->add_theme_constant_override("hseparation", 10 * EDSCALE);
+	asset_items->add_theme_constant_override("vseparation", 10 * EDSCALE);
 
 	library_vb->add_child(asset_items);
 
@@ -1489,12 +1489,12 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	last_queue_id = 0;
 
-	library_vb->add_constant_override("separation", 20 * EDSCALE);
+	library_vb->add_theme_constant_override("separation", 20 * EDSCALE);
 
 	error_hb = memnew(HBoxContainer);
 	library_main->add_child(error_hb);
 	error_label = memnew(Label);
-	error_label->add_color_override("color", get_color("error_color", "Editor"));
+	error_label->add_theme_color_override("color", get_theme_color("error_color", "Editor"));
 	error_hb->add_child(error_label);
 	error_tr = memnew(TextureRect);
 	error_tr->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
@@ -1516,7 +1516,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	asset_open->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	asset_open->add_filter("*.zip ; " + TTR("Assets ZIP File"));
-	asset_open->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	asset_open->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	add_child(asset_open);
 	asset_open->connect("file_selected", callable_mp(this, &EditorAssetLibrary::_asset_file_selected));
 

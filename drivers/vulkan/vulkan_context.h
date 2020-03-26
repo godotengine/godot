@@ -34,6 +34,7 @@
 #include "core/error_list.h"
 #include "core/map.h"
 #include "core/ustring.h"
+#include "servers/display_server.h"
 #include <vulkan/vulkan.h>
 
 class VulkanContext {
@@ -106,8 +107,7 @@ class VulkanContext {
 		}
 	};
 
-	Map<int, Window> windows;
-	int last_window_id;
+	Map<DisplayServer::WindowID, Window> windows;
 	uint32_t swapchainImageCount;
 
 	//commands
@@ -173,7 +173,7 @@ protected:
 	virtual const char *_get_platform_surface_extension() const = 0;
 	//	virtual VkResult _create_surface(VkSurfaceKHR *surface, VkInstance p_instance) = 0;
 
-	virtual int _window_create(VkSurfaceKHR p_surface, int p_width, int p_height);
+	virtual Error _window_create(DisplayServer::WindowID p_window_id, VkSurfaceKHR p_surface, int p_width, int p_height);
 
 	VkInstance _get_instance() {
 		return inst;
@@ -187,12 +187,12 @@ public:
 	int get_swapchain_image_count() const;
 	uint32_t get_graphics_queue() const;
 
-	void window_resize(int p_window_id, int p_width, int p_height);
-	int window_get_width(int p_window = 0);
-	int window_get_height(int p_window = 0);
-	void window_destroy(int p_window_id);
-	VkFramebuffer window_get_framebuffer(int p_window = 0);
-	VkRenderPass window_get_render_pass(int p_window = 0);
+	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
+	int window_get_width(DisplayServer::WindowID p_window = 0);
+	int window_get_height(DisplayServer::WindowID p_window = 0);
+	void window_destroy(DisplayServer::WindowID p_window_id);
+	VkFramebuffer window_get_framebuffer(DisplayServer::WindowID p_window = 0);
+	VkRenderPass window_get_render_pass(DisplayServer::WindowID p_window = 0);
 
 	VkFormat get_screen_format() const;
 	VkPhysicalDeviceLimits get_device_limits() const;

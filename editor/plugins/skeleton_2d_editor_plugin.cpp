@@ -59,7 +59,7 @@ void Skeleton2DEditor::_menu_option(int p_option) {
 
 			if (node->get_bone_count() == 0) {
 				err_dialog->set_text(TTR("This skeleton has no bones, create some children Bone2D nodes."));
-				err_dialog->popup_centered_minsize();
+				err_dialog->popup_centered();
 				return;
 			}
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
@@ -75,7 +75,7 @@ void Skeleton2DEditor::_menu_option(int p_option) {
 		case MENU_OPTION_SET_REST: {
 			if (node->get_bone_count() == 0) {
 				err_dialog->set_text(TTR("This skeleton has no bones, create some children Bone2D nodes."));
-				err_dialog->popup_centered_minsize();
+				err_dialog->popup_centered();
 				return;
 			}
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
@@ -101,7 +101,7 @@ Skeleton2DEditor::Skeleton2DEditor() {
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text(TTR("Skeleton2D"));
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Skeleton2D", "EditorIcons"));
+	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Skeleton2D", "EditorIcons"));
 
 	options->get_popup()->add_item(TTR("Make Rest Pose (From Bones)"), MENU_OPTION_MAKE_REST);
 	options->get_popup()->add_separator();

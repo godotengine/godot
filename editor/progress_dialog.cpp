@@ -34,6 +34,7 @@
 #include "core/os/os.h"
 #include "editor_scale.h"
 #include "main/main.h"
+#include "servers/display_server.h"
 
 void BackgroundProgress::_add_task(const String &p_task, const String &p_label, int p_steps) {
 
@@ -137,16 +138,6 @@ void BackgroundProgress::end_task(const String &p_task) {
 ProgressDialog *ProgressDialog::singleton = NULL;
 
 void ProgressDialog::_notification(int p_what) {
-
-	switch (p_what) {
-
-		case NOTIFICATION_DRAW: {
-
-			Ref<StyleBox> style = get_stylebox("panel", "PopupMenu");
-			draw_style_box(style, Rect2(Point2(), get_size()));
-
-		} break;
-	}
 }
 
 void ProgressDialog::_popup() {
@@ -154,14 +145,14 @@ void ProgressDialog::_popup() {
 	Size2 ms = main->get_combined_minimum_size();
 	ms.width = MAX(500 * EDSCALE, ms.width);
 
-	Ref<StyleBox> style = get_stylebox("panel", "PopupMenu");
+	Ref<StyleBox> style = main->get_theme_stylebox("panel", "PopupMenu");
 	ms += style->get_minimum_size();
 	main->set_margin(MARGIN_LEFT, style->get_margin(MARGIN_LEFT));
 	main->set_margin(MARGIN_RIGHT, -style->get_margin(MARGIN_RIGHT));
 	main->set_margin(MARGIN_TOP, style->get_margin(MARGIN_TOP));
 	main->set_margin(MARGIN_BOTTOM, -style->get_margin(MARGIN_BOTTOM));
 
-	raise();
+	//raise();
 	popup_centered(ms);
 }
 
@@ -219,7 +210,7 @@ bool ProgressDialog::task_step(const String &p_task, const String &p_state, int 
 	t.state->set_text(p_state);
 	last_progress_tick = OS::get_singleton()->get_ticks_usec();
 	if (cancel_hb->is_visible()) {
-		OS::get_singleton()->force_process_input();
+		DisplayServer::get_singleton()->process_events();
 	}
 
 	Main::iteration(); // this will not work on a lot of platforms, so it's only meant for the editor

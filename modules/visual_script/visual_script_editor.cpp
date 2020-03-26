@@ -30,15 +30,15 @@
 
 #include "visual_script_editor.h"
 
+#include "core/input/input_filter.h"
 #include "core/object.h"
-#include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/script_language.h"
 #include "core/variant.h"
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 #include "visual_script_expression.h"
 #include "visual_script_flow_control.h"
 #include "visual_script_func_nodes.h"
@@ -504,36 +504,36 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 	select_func_text->hide();
 
 	Ref<Texture2D> type_icons[Variant::VARIANT_MAX] = {
-		Control::get_icon("Variant", "EditorIcons"),
-		Control::get_icon("bool", "EditorIcons"),
-		Control::get_icon("int", "EditorIcons"),
-		Control::get_icon("float", "EditorIcons"),
-		Control::get_icon("String", "EditorIcons"),
-		Control::get_icon("Vector2", "EditorIcons"),
-		Control::get_icon("Rect2", "EditorIcons"),
-		Control::get_icon("Vector3", "EditorIcons"),
-		Control::get_icon("Transform2D", "EditorIcons"),
-		Control::get_icon("Plane", "EditorIcons"),
-		Control::get_icon("Quat", "EditorIcons"),
-		Control::get_icon("AABB", "EditorIcons"),
-		Control::get_icon("Basis", "EditorIcons"),
-		Control::get_icon("Transform", "EditorIcons"),
-		Control::get_icon("Color", "EditorIcons"),
-		Control::get_icon("NodePath", "EditorIcons"),
-		Control::get_icon("RID", "EditorIcons"),
-		Control::get_icon("MiniObject", "EditorIcons"),
-		Control::get_icon("Dictionary", "EditorIcons"),
-		Control::get_icon("Array", "EditorIcons"),
-		Control::get_icon("PackedByteArray", "EditorIcons"),
-		Control::get_icon("PackedInt32Array", "EditorIcons"),
-		Control::get_icon("PackedFloat32Array", "EditorIcons"),
-		Control::get_icon("PackedStringArray", "EditorIcons"),
-		Control::get_icon("PackedVector2Array", "EditorIcons"),
-		Control::get_icon("PackedVector3Array", "EditorIcons"),
-		Control::get_icon("PackedColorArray", "EditorIcons")
+		Control::get_theme_icon("Variant", "EditorIcons"),
+		Control::get_theme_icon("bool", "EditorIcons"),
+		Control::get_theme_icon("int", "EditorIcons"),
+		Control::get_theme_icon("float", "EditorIcons"),
+		Control::get_theme_icon("String", "EditorIcons"),
+		Control::get_theme_icon("Vector2", "EditorIcons"),
+		Control::get_theme_icon("Rect2", "EditorIcons"),
+		Control::get_theme_icon("Vector3", "EditorIcons"),
+		Control::get_theme_icon("Transform2D", "EditorIcons"),
+		Control::get_theme_icon("Plane", "EditorIcons"),
+		Control::get_theme_icon("Quat", "EditorIcons"),
+		Control::get_theme_icon("AABB", "EditorIcons"),
+		Control::get_theme_icon("Basis", "EditorIcons"),
+		Control::get_theme_icon("Transform", "EditorIcons"),
+		Control::get_theme_icon("Color", "EditorIcons"),
+		Control::get_theme_icon("NodePath", "EditorIcons"),
+		Control::get_theme_icon("RID", "EditorIcons"),
+		Control::get_theme_icon("MiniObject", "EditorIcons"),
+		Control::get_theme_icon("Dictionary", "EditorIcons"),
+		Control::get_theme_icon("Array", "EditorIcons"),
+		Control::get_theme_icon("PackedByteArray", "EditorIcons"),
+		Control::get_theme_icon("PackedInt32Array", "EditorIcons"),
+		Control::get_theme_icon("PackedFloat32Array", "EditorIcons"),
+		Control::get_theme_icon("PackedStringArray", "EditorIcons"),
+		Control::get_theme_icon("PackedVector2Array", "EditorIcons"),
+		Control::get_theme_icon("PackedVector3Array", "EditorIcons"),
+		Control::get_theme_icon("PackedColorArray", "EditorIcons")
 	};
 
-	Ref<Texture2D> seq_port = Control::get_icon("VisualShaderPort", "EditorIcons");
+	Ref<Texture2D> seq_port = Control::get_theme_icon("VisualShaderPort", "EditorIcons");
 
 	for (List<StringName>::Element *F = funcs.front(); F; F = F->next()) { // loop through all the functions
 
@@ -596,7 +596,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 				LineEdit *line_edit = memnew(LineEdit);
 				line_edit->set_text(node->get_text());
 				line_edit->set_expand_to_text_length(true);
-				line_edit->add_font_override("font", get_font("source", "EditorFonts"));
+				line_edit->add_theme_font_override("font", get_theme_font("source", "EditorFonts"));
 				gnode->add_child(line_edit);
 				line_edit->connect("text_changed", callable_mp(this, &VisualScriptEditor::_expression_text_changed), varray(E->get()));
 			} else {
@@ -637,14 +637,14 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 					mono_color.a = 0.85;
 					c = mono_color;
 				}
-				gnode->add_color_override("title_color", c);
+				gnode->add_theme_color_override("title_color", c);
 				c.a = 0.7;
-				gnode->add_color_override("close_color", c);
-				gnode->add_color_override("resizer_color", ic);
-				gnode->add_style_override("frame", sbf);
+				gnode->add_theme_color_override("close_color", c);
+				gnode->add_theme_color_override("resizer_color", ic);
+				gnode->add_theme_style_override("frame", sbf);
 			}
 
-			const Color mono_color = get_color("mono_color", "Editor");
+			const Color mono_color = get_theme_color("mono_color", "Editor");
 
 			int slot_idx = 0;
 
@@ -750,7 +750,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 						}
 
 						Button *rmbtn = memnew(Button);
-						rmbtn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Remove", "EditorIcons"));
+						rmbtn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Remove", "EditorIcons"));
 						hbc->add_child(rmbtn);
 						rmbtn->connect("pressed", callable_mp(this, &VisualScriptEditor::_remove_input_port), varray(E->get(), i), CONNECT_DEFERRED);
 					} else {
@@ -812,7 +812,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 					if (is_vslist) {
 						Button *rmbtn = memnew(Button);
-						rmbtn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Remove", "EditorIcons"));
+						rmbtn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Remove", "EditorIcons"));
 						hbc->add_child(rmbtn);
 						rmbtn->connect("pressed", callable_mp(this, &VisualScriptEditor::_remove_output_port), varray(E->get(), i), CONNECT_DEFERRED);
 
@@ -856,7 +856,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 				gnode->add_child(vbc);
 
-				bool dark_theme = get_constant("dark_theme", "Editor");
+				bool dark_theme = get_theme_constant("dark_theme", "Editor");
 				if (i < mixed_seq_ports) {
 					gnode->set_slot(slot_idx, left_ok, left_type, _color_from_type(left_type, dark_theme), true, TYPE_SEQUENCE, mono_color, Ref<Texture2D>(), seq_port);
 				} else {
@@ -940,9 +940,9 @@ void VisualScriptEditor::_update_members() {
 	TreeItem *functions = members->create_item(root);
 	functions->set_selectable(0, false);
 	functions->set_text(0, TTR("Functions:"));
-	functions->add_button(0, Control::get_icon("Override", "EditorIcons"), 1, false, TTR("Override an existing built-in function."));
-	functions->add_button(0, Control::get_icon("Add", "EditorIcons"), 0, false, TTR("Create a new function."));
-	functions->set_custom_color(0, Control::get_color("mono_color", "Editor"));
+	functions->add_button(0, Control::get_theme_icon("Override", "EditorIcons"), 1, false, TTR("Override an existing built-in function."));
+	functions->add_button(0, Control::get_theme_icon("Add", "EditorIcons"), 0, false, TTR("Create a new function."));
+	functions->set_custom_color(0, Control::get_theme_color("mono_color", "Editor"));
 
 	List<StringName> func_names;
 	script->get_function_list(&func_names);
@@ -956,7 +956,7 @@ void VisualScriptEditor::_update_members() {
 		ti->set_text(0, E->get());
 		ti->set_selectable(0, true);
 		ti->set_metadata(0, E->get());
-		ti->add_button(0, Control::get_icon("Edit", "EditorIcons"), 0);
+		ti->add_button(0, Control::get_theme_icon("Edit", "EditorIcons"), 0);
 		if (selected == E->get())
 			ti->select(0);
 	}
@@ -964,37 +964,37 @@ void VisualScriptEditor::_update_members() {
 	TreeItem *variables = members->create_item(root);
 	variables->set_selectable(0, false);
 	variables->set_text(0, TTR("Variables:"));
-	variables->add_button(0, Control::get_icon("Add", "EditorIcons"), -1, false, TTR("Create a new variable."));
-	variables->set_custom_color(0, Control::get_color("mono_color", "Editor"));
+	variables->add_button(0, Control::get_theme_icon("Add", "EditorIcons"), -1, false, TTR("Create a new variable."));
+	variables->set_custom_color(0, Control::get_theme_color("mono_color", "Editor"));
 
 	Ref<Texture2D> type_icons[Variant::VARIANT_MAX] = {
-		Control::get_icon("Variant", "EditorIcons"),
-		Control::get_icon("bool", "EditorIcons"),
-		Control::get_icon("int", "EditorIcons"),
-		Control::get_icon("float", "EditorIcons"),
-		Control::get_icon("String", "EditorIcons"),
-		Control::get_icon("Vector2", "EditorIcons"),
-		Control::get_icon("Rect2", "EditorIcons"),
-		Control::get_icon("Vector3", "EditorIcons"),
-		Control::get_icon("Transform2D", "EditorIcons"),
-		Control::get_icon("Plane", "EditorIcons"),
-		Control::get_icon("Quat", "EditorIcons"),
-		Control::get_icon("AABB", "EditorIcons"),
-		Control::get_icon("Basis", "EditorIcons"),
-		Control::get_icon("Transform", "EditorIcons"),
-		Control::get_icon("Color", "EditorIcons"),
-		Control::get_icon("NodePath", "EditorIcons"),
-		Control::get_icon("RID", "EditorIcons"),
-		Control::get_icon("MiniObject", "EditorIcons"),
-		Control::get_icon("Dictionary", "EditorIcons"),
-		Control::get_icon("Array", "EditorIcons"),
-		Control::get_icon("PackedByteArray", "EditorIcons"),
-		Control::get_icon("PackedInt32Array", "EditorIcons"),
-		Control::get_icon("PackedFloat32Array", "EditorIcons"),
-		Control::get_icon("PackedStringArray", "EditorIcons"),
-		Control::get_icon("PackedVector2Array", "EditorIcons"),
-		Control::get_icon("PackedVector3Array", "EditorIcons"),
-		Control::get_icon("PackedColorArray", "EditorIcons")
+		Control::get_theme_icon("Variant", "EditorIcons"),
+		Control::get_theme_icon("bool", "EditorIcons"),
+		Control::get_theme_icon("int", "EditorIcons"),
+		Control::get_theme_icon("float", "EditorIcons"),
+		Control::get_theme_icon("String", "EditorIcons"),
+		Control::get_theme_icon("Vector2", "EditorIcons"),
+		Control::get_theme_icon("Rect2", "EditorIcons"),
+		Control::get_theme_icon("Vector3", "EditorIcons"),
+		Control::get_theme_icon("Transform2D", "EditorIcons"),
+		Control::get_theme_icon("Plane", "EditorIcons"),
+		Control::get_theme_icon("Quat", "EditorIcons"),
+		Control::get_theme_icon("AABB", "EditorIcons"),
+		Control::get_theme_icon("Basis", "EditorIcons"),
+		Control::get_theme_icon("Transform", "EditorIcons"),
+		Control::get_theme_icon("Color", "EditorIcons"),
+		Control::get_theme_icon("NodePath", "EditorIcons"),
+		Control::get_theme_icon("RID", "EditorIcons"),
+		Control::get_theme_icon("MiniObject", "EditorIcons"),
+		Control::get_theme_icon("Dictionary", "EditorIcons"),
+		Control::get_theme_icon("Array", "EditorIcons"),
+		Control::get_theme_icon("PackedByteArray", "EditorIcons"),
+		Control::get_theme_icon("PackedInt32Array", "EditorIcons"),
+		Control::get_theme_icon("PackedFloat32Array", "EditorIcons"),
+		Control::get_theme_icon("PackedStringArray", "EditorIcons"),
+		Control::get_theme_icon("PackedVector2Array", "EditorIcons"),
+		Control::get_theme_icon("PackedVector3Array", "EditorIcons"),
+		Control::get_theme_icon("PackedColorArray", "EditorIcons")
 	};
 
 	List<StringName> var_names;
@@ -1017,8 +1017,8 @@ void VisualScriptEditor::_update_members() {
 	TreeItem *_signals = members->create_item(root);
 	_signals->set_selectable(0, false);
 	_signals->set_text(0, TTR("Signals:"));
-	_signals->add_button(0, Control::get_icon("Add", "EditorIcons"), -1, false, TTR("Create a new signal."));
-	_signals->set_custom_color(0, Control::get_color("mono_color", "Editor"));
+	_signals->add_button(0, Control::get_theme_icon("Add", "EditorIcons"), -1, false, TTR("Create a new signal."));
+	_signals->set_custom_color(0, Control::get_theme_color("mono_color", "Editor"));
 
 	List<StringName> signal_names;
 	script->get_custom_signal_list(&signal_names);
@@ -1034,12 +1034,12 @@ void VisualScriptEditor::_update_members() {
 
 	String base_type = script->get_instance_base_type();
 	String icon_type = base_type;
-	if (!Control::has_icon(base_type, "EditorIcons")) {
+	if (!Control::has_theme_icon(base_type, "EditorIcons")) {
 		icon_type = "Object";
 	}
 
 	base_type_select->set_text(base_type);
-	base_type_select->set_icon(Control::get_icon(icon_type, "EditorIcons"));
+	base_type_select->set_icon(Control::get_theme_icon(icon_type, "EditorIcons"));
 
 	updating_members = false;
 }
@@ -1057,9 +1057,9 @@ void VisualScriptEditor::_member_selected() {
 	if (ti->get_parent() == members->get_root()->get_children()) {
 
 #ifdef OSX_ENABLED
-		bool held_ctrl = Input::get_singleton()->is_key_pressed(KEY_META);
+		bool held_ctrl = InputFilter::get_singleton()->is_key_pressed(KEY_META);
 #else
-		bool held_ctrl = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+		bool held_ctrl = InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL);
 #endif
 		if (held_ctrl) {
 			ERR_FAIL_COND(!script->has_function(selected));
@@ -1252,7 +1252,7 @@ void VisualScriptEditor::_add_func_input() {
 	hbox->add_child(type_box);
 
 	Button *delete_button = memnew(Button);
-	delete_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Remove", "EditorIcons"));
+	delete_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Remove", "EditorIcons"));
 	delete_button->set_tooltip(vformat(TTR("Delete input port")));
 	hbox->add_child(delete_button);
 
@@ -1360,7 +1360,7 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 		}
 	} else if (ti->get_parent() == root->get_children()) {
 		selected = ti->get_text(0);
-		function_name_edit->set_position(Input::get_singleton()->get_mouse_position() - Vector2(60, -10));
+		function_name_edit->set_position(InputFilter::get_singleton()->get_mouse_position() - Vector2(60, -10));
 		function_name_edit->popup();
 		function_name_box->set_text(selected);
 		function_name_box->select_all();
@@ -1722,7 +1722,7 @@ void VisualScriptEditor::_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> key = p_event;
 
 	if (key.is_valid() && !key->is_pressed()) {
-		mouse_up_position = Input::get_singleton()->get_mouse_position();
+		mouse_up_position = InputFilter::get_singleton()->get_mouse_position();
 	}
 }
 
@@ -1732,7 +1732,7 @@ void VisualScriptEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 	if (key.is_valid() && key->is_pressed() && key->get_button_mask() == BUTTON_RIGHT) {
 		saved_position = graph->get_local_mouse_position();
 
-		Point2 gpos = Input::get_singleton()->get_mouse_position();
+		Point2 gpos = InputFilter::get_singleton()->get_mouse_position();
 		_generic_search(script->get_instance_base_type(), gpos);
 	}
 }
@@ -1986,9 +1986,9 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	if (String(d["type"]) == "visual_script_variable_drag") {
 
 #ifdef OSX_ENABLED
-		bool use_set = Input::get_singleton()->is_key_pressed(KEY_META);
+		bool use_set = InputFilter::get_singleton()->is_key_pressed(KEY_META);
 #else
-		bool use_set = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+		bool use_set = InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL);
 #endif
 		Vector2 ofs = graph->get_scroll_ofs() + p_point;
 		if (graph->is_using_snap()) {
@@ -2181,9 +2181,9 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		}
 
 #ifdef OSX_ENABLED
-		bool use_node = Input::get_singleton()->is_key_pressed(KEY_META);
+		bool use_node = InputFilter::get_singleton()->is_key_pressed(KEY_META);
 #else
-		bool use_node = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+		bool use_node = InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL);
 #endif
 
 		Array nodes = d["nodes"];
@@ -2245,7 +2245,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 
 		Node *sn = _find_script_node(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root(), script);
 
-		if (!sn && !Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		if (!sn && !InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 			EditorNode::get_singleton()->show_warning(vformat(TTR("Can't drop properties because script '%s' is not used in this scene.\nDrop holding 'Shift' to just copy the signature."), get_name()));
 			return;
 		}
@@ -2265,12 +2265,12 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 
 		ofs /= EDSCALE;
 #ifdef OSX_ENABLED
-		bool use_get = Input::get_singleton()->is_key_pressed(KEY_META);
+		bool use_get = InputFilter::get_singleton()->is_key_pressed(KEY_META);
 #else
-		bool use_get = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+		bool use_get = InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL);
 #endif
 
-		if (!node || Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		if (!node || InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 
 			if (use_get)
 				undo_redo->create_action(TTR("Add Getter Property"));
@@ -2377,7 +2377,7 @@ void VisualScriptEditor::_draw_color_over_button(Object *obj, Color p_color) {
 	if (!button)
 		return;
 
-	Ref<StyleBox> normal = get_stylebox("normal", "Button");
+	Ref<StyleBox> normal = get_theme_stylebox("normal", "Button");
 	button->draw_rect(Rect2(normal->get_offset(), button->get_size() - normal->get_minimum_size()), p_color);
 }
 
@@ -2459,9 +2459,9 @@ String VisualScriptEditor::get_name() {
 	return name;
 }
 
-Ref<Texture2D> VisualScriptEditor::get_icon() {
+Ref<Texture2D> VisualScriptEditor::get_theme_icon() {
 
-	return Control::get_icon("VisualScript", "EditorIcons");
+	return Control::get_theme_icon("VisualScript", "EditorIcons");
 }
 
 bool VisualScriptEditor::is_unsaved() {
@@ -3925,9 +3925,9 @@ void VisualScriptEditor::_notification(int p_what) {
 				return;
 			}
 
-			edit_variable_edit->add_style_override("bg", get_stylebox("bg", "Tree"));
-			edit_signal_edit->add_style_override("bg", get_stylebox("bg", "Tree"));
-			func_input_scroll->add_style_override("bg", get_stylebox("bg", "Tree"));
+			edit_variable_edit->add_theme_style_override("bg", get_theme_stylebox("bg", "Tree"));
+			edit_signal_edit->add_theme_style_override("bg", get_theme_stylebox("bg", "Tree"));
+			func_input_scroll->add_theme_style_override("bg", get_theme_stylebox("bg", "Tree"));
 
 			Ref<Theme> tm = EditorNode::get_singleton()->get_theme_base()->get_theme();
 
@@ -4479,9 +4479,9 @@ void VisualScriptEditor::_member_rmb_selected(const Vector2 &p_pos) {
 
 	TreeItem *root = members->get_root();
 
-	Ref<Texture2D> del_icon = Control::get_icon("Remove", "EditorIcons");
+	Ref<Texture2D> del_icon = Control::get_theme_icon("Remove", "EditorIcons");
 
-	Ref<Texture2D> edit_icon = Control::get_icon("Edit", "EditorIcons");
+	Ref<Texture2D> edit_icon = Control::get_theme_icon("Edit", "EditorIcons");
 
 	if (ti->get_parent() == root->get_children()) {
 
@@ -4578,7 +4578,7 @@ void VisualScriptEditor::_member_option(int p_option) {
 			} else if (p_option == MEMBER_EDIT) {
 				variable_editor->edit(name);
 				edit_variable_dialog->set_title(TTR("Editing Variable:") + " " + name);
-				edit_variable_dialog->popup_centered_minsize(Size2(400, 200) * EDSCALE);
+				edit_variable_dialog->popup_centered(Size2(400, 200) * EDSCALE);
 			}
 		} break;
 		case MEMBER_SIGNAL: {
@@ -4599,7 +4599,7 @@ void VisualScriptEditor::_member_option(int p_option) {
 			} else if (p_option == MEMBER_EDIT) {
 				signal_editor->edit(name);
 				edit_signal_dialog->set_title(TTR("Editing Signal:") + " " + name);
-				edit_signal_dialog->popup_centered_minsize(Size2(400, 300) * EDSCALE);
+				edit_signal_dialog->popup_centered(Size2(400, 300) * EDSCALE);
 			}
 		} break;
 	}
@@ -4687,10 +4687,9 @@ VisualScriptEditor::VisualScriptEditor() {
 	add_child(member_popup);
 	member_popup->connect("id_pressed", callable_mp(this, &VisualScriptEditor::_member_option));
 
-	function_name_edit = memnew(PopupDialog);
+	function_name_edit = memnew(AcceptDialog);
 	function_name_box = memnew(LineEdit);
 	function_name_edit->add_child(function_name_box);
-	function_name_edit->set_h_size_flags(SIZE_EXPAND);
 	function_name_box->connect("gui_input", callable_mp(this, &VisualScriptEditor::_fn_name_box_input));
 	function_name_box->set_expand_to_text_length(true);
 	add_child(function_name_edit);
@@ -4770,7 +4769,6 @@ VisualScriptEditor::VisualScriptEditor() {
 	func_input_scroll->add_child(func_input_vbox);
 
 	function_create_dialog = memnew(ConfirmationDialog);
-	function_create_dialog->set_v_size_flags(SIZE_EXPAND_FILL);
 	function_create_dialog->set_title(TTR("Create Function"));
 	function_create_dialog->add_child(function_vb);
 	function_create_dialog->get_ok()->set_text(TTR("Create"));
@@ -4859,7 +4857,6 @@ VisualScriptEditor::VisualScriptEditor() {
 
 	new_connect_node_select = memnew(VisualScriptPropertySelector);
 	add_child(new_connect_node_select);
-	new_connect_node_select->set_resizable(true);
 	new_connect_node_select->connect("selected", callable_mp(this, &VisualScriptEditor::_selected_connect_node));
 	new_connect_node_select->get_cancel()->connect("pressed", callable_mp(this, &VisualScriptEditor::_cancel_connect_node));
 

@@ -244,7 +244,7 @@ void ParticlesEditor::_node_removed(Node *p_node) {
 void ParticlesEditor::_notification(int p_notification) {
 
 	if (p_notification == NOTIFICATION_ENTER_TREE) {
-		options->set_icon(options->get_popup()->get_icon("Particles", "EditorIcons"));
+		options->set_icon(options->get_popup()->get_theme_icon("Particles", "EditorIcons"));
 		get_tree()->connect("node_removed", callable_mp(this, &ParticlesEditor::_node_removed));
 	}
 }
@@ -260,7 +260,7 @@ void ParticlesEditor::_menu_option(int p_option) {
 				generate_seconds->set_value(1.0);
 			else
 				generate_seconds->set_value(trunc(gen_time) + 1.0);
-			generate_aabb->popup_centered_minsize();
+			generate_aabb->popup_centered();
 		} break;
 		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE: {
 			Ref<ParticlesMaterial> material = node->get_process_material();

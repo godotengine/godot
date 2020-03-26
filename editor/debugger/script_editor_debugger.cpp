@@ -58,6 +58,7 @@
 #include "scene/gui/texture_button.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/packed_scene.h"
+#include "servers/display_server.h"
 
 using CameraOverride = EditorDebuggerNode::CameraOverride;
 
@@ -73,15 +74,15 @@ void ScriptEditorDebugger::_put_msg(String p_message, Array p_data) {
 void ScriptEditorDebugger::debug_copy() {
 	String msg = reason->get_text();
 	if (msg == "") return;
-	OS::get_singleton()->set_clipboard(msg);
+	DisplayServer::get_singleton()->clipboard_set(msg);
 }
 
 void ScriptEditorDebugger::debug_skip_breakpoints() {
 	skip_breakpoints_value = !skip_breakpoints_value;
 	if (skip_breakpoints_value)
-		skip_breakpoints->set_icon(get_icon("DebugSkipBreakpointsOn", "EditorIcons"));
+		skip_breakpoints->set_icon(get_theme_icon("DebugSkipBreakpointsOn", "EditorIcons"));
 	else
-		skip_breakpoints->set_icon(get_icon("DebugSkipBreakpointsOff", "EditorIcons"));
+		skip_breakpoints->set_icon(get_theme_icon("DebugSkipBreakpointsOff", "EditorIcons"));
 
 	Array msg;
 	msg.push_back(skip_breakpoints_value);
@@ -116,7 +117,7 @@ void ScriptEditorDebugger::debug_continue() {
 
 	// Allow focus stealing only if we actually run this client for security.
 	if (remote_pid && EditorNode::get_singleton()->has_child_process(remote_pid))
-		OS::get_singleton()->enable_for_stealing_focus(remote_pid);
+		DisplayServer::get_singleton()->enable_for_stealing_focus(remote_pid);
 
 	_clear_execution();
 	_put_msg("continue", Array());
@@ -129,15 +130,15 @@ void ScriptEditorDebugger::update_tabs() {
 	} else {
 		errors_tab->set_name(TTR("Errors") + " (" + itos(error_count + warning_count) + ")");
 		if (error_count == 0) {
-			tabs->set_tab_icon(errors_tab->get_index(), get_icon("Warning", "EditorIcons"));
+			tabs->set_tab_icon(errors_tab->get_index(), get_theme_icon("Warning", "EditorIcons"));
 		} else {
-			tabs->set_tab_icon(errors_tab->get_index(), get_icon("Error", "EditorIcons"));
+			tabs->set_tab_icon(errors_tab->get_index(), get_theme_icon("Error", "EditorIcons"));
 		}
 	}
 }
 
 void ScriptEditorDebugger::clear_style() {
-	tabs->add_style_override("panel", NULL);
+	tabs->add_theme_style_override("panel", NULL);
 }
 
 void ScriptEditorDebugger::save_node(ObjectID p_id, const String &p_file) {
@@ -253,7 +254,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		_update_buttons_state();
 		_set_reason_text(error, MESSAGE_ERROR);
 		emit_signal("breaked", true, can_continue);
-		OS::get_singleton()->move_window_to_foreground();
+		DisplayServer::get_singleton()->window_move_to_foreground();
 		if (error != "") {
 			tabs->set_current_tab(0);
 		}
@@ -310,8 +311,8 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			it->set_text(3, String::humanize_size(bytes));
 			total += bytes;
 
-			if (has_icon(type, "EditorIcons"))
-				it->set_icon(0, get_icon(type, "EditorIcons"));
+			if (has_theme_icon(type, "EditorIcons"))
+				it->set_icon(0, get_theme_icon(type, "EditorIcons"));
 		}
 
 		vmem_total->set_tooltip(TTR("Bytes:") + " " + itos(total));
@@ -442,7 +443,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		TreeItem *error = error_tree->create_item(r);
 		error->set_collapsed(true);
 
-		error->set_icon(0, get_icon(oe.warning ? "Warning" : "Error", "EditorIcons"));
+		error->set_icon(0, get_theme_icon(oe.warning ? "Warning" : "Error", "EditorIcons"));
 		error->set_text(0, time);
 		error->set_text_align(0, TreeItem::ALIGN_LEFT);
 
@@ -660,13 +661,13 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType p_type) {
 	switch (p_type) {
 		case MESSAGE_ERROR:
-			reason->add_color_override("font_color", get_color("error_color", "Editor"));
+			reason->add_theme_color_override("font_color", get_theme_color("error_color", "Editor"));
 			break;
 		case MESSAGE_WARNING:
-			reason->add_color_override("font_color", get_color("warning_color", "Editor"));
+			reason->add_theme_color_override("font_color", get_theme_color("warning_color", "Editor"));
 			break;
 		default:
-			reason->add_color_override("font_color", get_color("success_color", "Editor"));
+			reason->add_theme_color_override("font_color", get_theme_color("success_color", "Editor"));
 	}
 	reason->set_text(p_reason);
 	reason->set_tooltip(p_reason.word_wrap(80));
@@ -693,8 +694,8 @@ void ScriptEditorDebugger::_performance_draw() {
 
 	info_message->hide();
 
-	Ref<StyleBox> graph_sb = get_stylebox("normal", "TextEdit");
-	Ref<Font> graph_font = get_font("font", "TextEdit");
+	Ref<StyleBox> graph_sb = get_theme_stylebox("normal", "TextEdit");
+	Ref<Font> graph_font = get_theme_font("font", "TextEdit");
 
 	int cols = Math::ceil(Math::sqrt((float)which.size()));
 	int rows = Math::ceil((float)which.size() / cols);
@@ -714,7 +715,7 @@ void ScriptEditorDebugger::_performance_draw() {
 		r.position += graph_sb->get_offset();
 		r.size -= graph_sb->get_minimum_size();
 		int pi = which[i];
-		Color c = get_color("accent_color", "Editor");
+		Color c = get_theme_color("accent_color", "Editor");
 		float h = (float)which[i] / (float)(perf_items.size());
 		// Use a darker color on light backgrounds for better visibility
 		float value_multiplier = EditorSettings::get_singleton()->is_dark_theme() ? 1.4 : 0.55;
@@ -753,20 +754,20 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-			skip_breakpoints->set_icon(get_icon("DebugSkipBreakpointsOff", "EditorIcons"));
-			copy->set_icon(get_icon("ActionCopy", "EditorIcons"));
+			skip_breakpoints->set_icon(get_theme_icon("DebugSkipBreakpointsOff", "EditorIcons"));
+			copy->set_icon(get_theme_icon("ActionCopy", "EditorIcons"));
 
-			step->set_icon(get_icon("DebugStep", "EditorIcons"));
-			next->set_icon(get_icon("DebugNext", "EditorIcons"));
-			dobreak->set_icon(get_icon("Pause", "EditorIcons"));
-			docontinue->set_icon(get_icon("DebugContinue", "EditorIcons"));
+			step->set_icon(get_theme_icon("DebugStep", "EditorIcons"));
+			next->set_icon(get_theme_icon("DebugNext", "EditorIcons"));
+			dobreak->set_icon(get_theme_icon("Pause", "EditorIcons"));
+			docontinue->set_icon(get_theme_icon("DebugContinue", "EditorIcons"));
 			le_set->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_live_edit_set));
 			le_clear->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_live_edit_clear));
 			error_tree->connect("item_selected", callable_mp(this, &ScriptEditorDebugger::_error_selected));
 			error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_activated));
-			vmem_refresh->set_icon(get_icon("Reload", "EditorIcons"));
+			vmem_refresh->set_icon(get_theme_icon("Reload", "EditorIcons"));
 
-			reason->add_color_override("font_color", get_color("error_color", "Editor"));
+			reason->add_theme_color_override("font_color", get_theme_color("error_color", "Editor"));
 
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -829,16 +830,16 @@ void ScriptEditorDebugger::_notification(int p_what) {
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
-			if (tabs->has_stylebox_override("panel")) {
-				tabs->add_style_override("panel", editor->get_gui_base()->get_stylebox("DebuggerPanel", "EditorStyles"));
+			if (tabs->has_theme_stylebox_override("panel")) {
+				tabs->add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox("DebuggerPanel", "EditorStyles"));
 			}
 
-			copy->set_icon(get_icon("ActionCopy", "EditorIcons"));
-			step->set_icon(get_icon("DebugStep", "EditorIcons"));
-			next->set_icon(get_icon("DebugNext", "EditorIcons"));
-			dobreak->set_icon(get_icon("Pause", "EditorIcons"));
-			docontinue->set_icon(get_icon("DebugContinue", "EditorIcons"));
-			vmem_refresh->set_icon(get_icon("Reload", "EditorIcons"));
+			copy->set_icon(get_theme_icon("ActionCopy", "EditorIcons"));
+			step->set_icon(get_theme_icon("DebugStep", "EditorIcons"));
+			next->set_icon(get_theme_icon("DebugNext", "EditorIcons"));
+			dobreak->set_icon(get_theme_icon("Pause", "EditorIcons"));
+			docontinue->set_icon(get_theme_icon("DebugContinue", "EditorIcons"));
+			vmem_refresh->set_icon(get_theme_icon("Reload", "EditorIcons"));
 		} break;
 	}
 }
@@ -978,7 +979,7 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 
 void ScriptEditorDebugger::_export_csv() {
 
-	file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_dialog->popup_centered_ratio();
 }
@@ -1388,7 +1389,7 @@ void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos) {
 	item_menu->set_size(Size2(1, 1));
 
 	if (error_tree->is_anything_selected()) {
-		item_menu->add_icon_item(get_icon("ActionCopy", "EditorIcons"), TTR("Copy Error"), 0);
+		item_menu->add_icon_item(get_theme_icon("ActionCopy", "EditorIcons"), TTR("Copy Error"), 0);
 	}
 
 	if (item_menu->get_item_count() > 0) {
@@ -1404,9 +1405,9 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 
 	String type;
 
-	if (ti->get_icon(0) == get_icon("Warning", "EditorIcons")) {
+	if (ti->get_icon(0) == get_theme_icon("Warning", "EditorIcons")) {
 		type = "W ";
-	} else if (ti->get_icon(0) == get_icon("Error", "EditorIcons")) {
+	} else if (ti->get_icon(0) == get_theme_icon("Error", "EditorIcons")) {
 		type = "E ";
 	}
 
@@ -1420,7 +1421,7 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 		ci = ci->get_next();
 	}
 
-	OS::get_singleton()->set_clipboard(text);
+	DisplayServer::get_singleton()->clipboard_set(text);
 }
 
 void ScriptEditorDebugger::_tab_changed(int p_tab) {
@@ -1461,7 +1462,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 
 	tabs = memnew(TabContainer);
 	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
-	tabs->add_style_override("panel", editor->get_gui_base()->get_stylebox("DebuggerPanel", "EditorStyles"));
+	tabs->add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox("DebuggerPanel", "EditorStyles"));
 	tabs->connect("tab_changed", callable_mp(this, &ScriptEditorDebugger::_tab_changed));
 
 	add_child(tabs);

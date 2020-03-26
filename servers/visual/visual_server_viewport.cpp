@@ -312,11 +312,14 @@ void VisualServerViewport::draw_viewports() {
 	//sort viewports
 	active_viewports.sort_custom<ViewportSort>();
 
-	Map<int, Vector<Rasterizer::BlitToScreen>> blit_to_screen_list;
+	Map<DisplayServer::WindowID, Vector<Rasterizer::BlitToScreen>> blit_to_screen_list;
 	//draw viewports
 	RENDER_TIMESTAMP(">Render Viewports");
 
-	for (int i = 0; i < active_viewports.size(); i++) {
+	//determine what is visible
+	draw_viewports_pass++;
+
+	for (int i = active_viewports.size() - 1; i >= 0; i--) { //to compute parent dependency, must go in reverse draw order
 
 		Viewport *vp = active_viewports[i];
 
@@ -328,11 +331,37 @@ void VisualServerViewport::draw_viewports() {
 		}
 		//ERR_CONTINUE(!vp->render_target.is_valid());
 
-		bool visible = vp->viewport_to_screen_rect != Rect2() || vp->update_mode == VS::VIEWPORT_UPDATE_ALWAYS || vp->update_mode == VS::VIEWPORT_UPDATE_ONCE || (vp->update_mode == VS::VIEWPORT_UPDATE_WHEN_VISIBLE && VSG::storage->render_target_was_used(vp->render_target));
+		bool visible = vp->viewport_to_screen_rect != Rect2();
+
+		if (vp->update_mode == VS::VIEWPORT_UPDATE_ALWAYS || vp->update_mode == VS::VIEWPORT_UPDATE_ONCE) {
+			visible = true;
+		}
+
+		if (vp->update_mode == VS::VIEWPORT_UPDATE_WHEN_VISIBLE && VSG::storage->render_target_was_used(vp->render_target)) {
+			visible = true;
+		}
+
+		if (vp->update_mode == VS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE) {
+			Viewport *parent = viewport_owner.getornull(vp->parent);
+			if (parent && parent->last_pass == draw_viewports_pass) {
+				visible = true;
+			}
+		}
+
 		visible = visible && vp->size.x > 1 && vp->size.y > 1;
 
-		if (!visible)
-			continue;
+		if (visible) {
+			vp->last_pass = draw_viewports_pass;
+		}
+	}
+
+	for (int i = 0; i < active_viewports.size(); i++) {
+
+		Viewport *vp = active_viewports[i];
+
+		if (vp->last_pass != draw_viewports_pass) {
+			continue; //should not draw
+		}
 
 		RENDER_TIMESTAMP(">Rendering Viewport " + itos(i));
 
@@ -389,11 +418,16 @@ void VisualServerViewport::draw_viewports() {
 			vp->render_info[VS::VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_SURFACE_CHANGES_IN_FRAME);
 			vp->render_info[VS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_DRAW_CALLS_IN_FRAME);
 
-			if (vp->viewport_to_screen_rect != Rect2() && (!vp->viewport_render_direct_to_screen || !VSG::rasterizer->is_low_end())) {
+			if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID && (!vp->viewport_render_direct_to_screen || !VSG::rasterizer->is_low_end())) {
 				//copy to screen if set as such
 				Rasterizer::BlitToScreen blit;
 				blit.render_target = vp->render_target;
-				blit.rect = vp->viewport_to_screen_rect;
+				if (vp->viewport_to_screen_rect != Rect2()) {
+					blit.rect = vp->viewport_to_screen_rect;
+				} else {
+					blit.rect.position = Vector2();
+					blit.rect.size = vp->size;
+				}
 
 				if (!blit_to_screen_list.has(vp->viewport_to_screen)) {
 					blit_to_screen_list[vp->viewport_to_screen] = Vector<Rasterizer::BlitToScreen>();
@@ -450,13 +484,15 @@ void VisualServerViewport::viewport_set_size(RID p_viewport, int p_width, int p_
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
-	//	if (viewport->size.width == p_width && viewport->size.height == p_height) {
-	//		return; //nothing to do
-	//	}
 	viewport->size = Size2(p_width, p_height);
 	VSG::storage->render_target_set_size(viewport->render_target, p_width, p_height);
 	if (viewport->render_buffers.is_valid()) {
-		VSG::scene_render->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, viewport->msaa);
+		if (p_width == 0 || p_height == 0) {
+			VSG::scene_render->free(viewport->render_buffers);
+			viewport->render_buffers = RID();
+		} else {
+			VSG::scene_render->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, viewport->msaa);
+		}
 	}
 }
 
@@ -489,21 +525,34 @@ void VisualServerViewport::viewport_set_clear_mode(RID p_viewport, VS::ViewportC
 	viewport->clear_mode = p_clear_mode;
 }
 
-void VisualServerViewport::viewport_attach_to_screen(RID p_viewport, const Rect2 &p_rect, int p_screen) {
+void VisualServerViewport::viewport_attach_to_screen(RID p_viewport, const Rect2 &p_rect, DisplayServer::WindowID p_screen) {
 
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
-	// If using GLES2 we can optimize this operation by rendering directly to system_fbo
-	// instead of rendering to fbo and copying to system_fbo after
-	if (VSG::rasterizer->is_low_end() && viewport->viewport_render_direct_to_screen) {
+	if (p_screen != DisplayServer::INVALID_WINDOW_ID) {
+		// If using GLES2 we can optimize this operation by rendering directly to system_fbo
+		// instead of rendering to fbo and copying to system_fbo after
+		if (VSG::rasterizer->is_low_end() && viewport->viewport_render_direct_to_screen) {
 
-		VSG::storage->render_target_set_size(viewport->render_target, p_rect.size.x, p_rect.size.y);
-		VSG::storage->render_target_set_position(viewport->render_target, p_rect.position.x, p_rect.position.y);
+			VSG::storage->render_target_set_size(viewport->render_target, p_rect.size.x, p_rect.size.y);
+			VSG::storage->render_target_set_position(viewport->render_target, p_rect.position.x, p_rect.position.y);
+		}
+
+		viewport->viewport_to_screen_rect = p_rect;
+		viewport->viewport_to_screen = p_screen;
+	} else {
+
+		// if render_direct_to_screen was used, reset size and position
+		if (VSG::rasterizer->is_low_end() && viewport->viewport_render_direct_to_screen) {
+
+			VSG::storage->render_target_set_position(viewport->render_target, 0, 0);
+			VSG::storage->render_target_set_size(viewport->render_target, viewport->size.x, viewport->size.y);
+		}
+
+		viewport->viewport_to_screen_rect = Rect2();
+		viewport->viewport_to_screen = DisplayServer::INVALID_WINDOW_ID;
 	}
-
-	viewport->viewport_to_screen_rect = p_rect;
-	viewport->viewport_to_screen = p_screen;
 }
 
 void VisualServerViewport::viewport_set_render_direct_to_screen(RID p_viewport, bool p_enable) {
@@ -529,22 +578,6 @@ void VisualServerViewport::viewport_set_render_direct_to_screen(RID p_viewport, 
 		VSG::storage->render_target_set_size(viewport->render_target, viewport->viewport_to_screen_rect.size.x, viewport->viewport_to_screen_rect.size.y);
 		VSG::storage->render_target_set_position(viewport->render_target, viewport->viewport_to_screen_rect.position.x, viewport->viewport_to_screen_rect.position.y);
 	}
-}
-
-void VisualServerViewport::viewport_detach(RID p_viewport) {
-
-	Viewport *viewport = viewport_owner.getornull(p_viewport);
-	ERR_FAIL_COND(!viewport);
-
-	// if render_direct_to_screen was used, reset size and position
-	if (VSG::rasterizer->is_low_end() && viewport->viewport_render_direct_to_screen) {
-
-		VSG::storage->render_target_set_position(viewport->render_target, 0, 0);
-		VSG::storage->render_target_set_size(viewport->render_target, viewport->size.x, viewport->size.y);
-	}
-
-	viewport->viewport_to_screen_rect = Rect2();
-	viewport->viewport_to_screen = 0;
 }
 
 void VisualServerViewport::viewport_set_update_mode(RID p_viewport, VS::ViewportUpdateMode p_mode) {

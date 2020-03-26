@@ -36,7 +36,7 @@
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/navigation_region.h"
 #include "scene/3d/physics_body.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "spatial_editor_plugin.h"
 
@@ -253,7 +253,7 @@ void MeshLibraryEditor::_bind_methods() {
 MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 
 	file = memnew(EditorFileDialog);
-	file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	//not for now?
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
@@ -270,7 +270,7 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(menu);
 	menu->set_position(Point2(1, 1));
 	menu->set_text(TTR("Mesh Library"));
-	menu->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("MeshLibrary", "EditorIcons"));
+	menu->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("MeshLibrary", "EditorIcons"));
 	menu->get_popup()->add_item(TTR("Add Item"), MENU_OPTION_ADD_ITEM);
 	menu->get_popup()->add_item(TTR("Remove Selected Item"), MENU_OPTION_REMOVE_ITEM);
 	menu->get_popup()->add_separator();

@@ -128,6 +128,7 @@
 #include "scene/main/scene_tree.h"
 #include "scene/main/timer.h"
 #include "scene/main/viewport.h"
+#include "scene/main/window.h"
 #include "scene/resources/audio_stream_sample.h"
 #include "scene/resources/bit_map.h"
 #include "scene/resources/box_shape.h"
@@ -267,13 +268,14 @@ void register_scene_types() {
 	ClassDB::register_class<Node>();
 	ClassDB::register_virtual_class<InstancePlaceholder>();
 
-	ClassDB::register_class<Viewport>();
+	ClassDB::register_virtual_class<Viewport>();
 	ClassDB::register_class<ViewportTexture>();
 	ClassDB::register_class<HTTPRequest>();
 	ClassDB::register_class<Timer>();
 	ClassDB::register_class<CanvasLayer>();
 	ClassDB::register_class<CanvasModulate>();
 	ClassDB::register_class<ResourcePreloader>();
+	ClassDB::register_class<Window>();
 
 	/* REGISTER GUI */
 	ClassDB::register_class<ButtonGroup>();
@@ -348,8 +350,7 @@ void register_scene_types() {
 	ClassDB::register_class<RichTextLabel>();
 	ClassDB::register_class<RichTextEffect>();
 	ClassDB::register_class<CharFXTransform>();
-	ClassDB::register_class<PopupDialog>();
-	ClassDB::register_class<WindowDialog>();
+	;
 	ClassDB::register_class<AcceptDialog>();
 	ClassDB::register_class<ConfirmationDialog>();
 	ClassDB::register_class<MarginContainer>();
@@ -480,7 +481,7 @@ void register_scene_types() {
 #endif
 	ClassDB::register_class<NavigationMesh>();
 
-	AcceptDialog::set_swap_ok_cancel(GLOBAL_DEF("gui/common/swap_ok_cancel", bool(OS::get_singleton()->get_swap_ok_cancel())));
+	AcceptDialog::set_swap_ok_cancel(GLOBAL_DEF("gui/common/swap_ok_cancel", bool(DisplayServer::get_singleton()->get_swap_ok_cancel())));
 
 	ClassDB::register_class<Shader>();
 	ClassDB::register_class<VisualShader>();

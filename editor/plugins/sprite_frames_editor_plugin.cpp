@@ -81,7 +81,7 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 		return;
 	}
 
-	Color accent = get_color("accent_color", "Editor");
+	Color accent = get_theme_color("accent_color", "Editor");
 
 	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
 		int idx = E->get();
@@ -223,24 +223,24 @@ void SpriteFramesEditor::_notification(int p_what) {
 
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			load->set_icon(get_icon("Load", "EditorIcons"));
-			load_sheet->set_icon(get_icon("SpriteSheet", "EditorIcons"));
-			copy->set_icon(get_icon("ActionCopy", "EditorIcons"));
-			paste->set_icon(get_icon("ActionPaste", "EditorIcons"));
-			empty->set_icon(get_icon("InsertBefore", "EditorIcons"));
-			empty2->set_icon(get_icon("InsertAfter", "EditorIcons"));
-			move_up->set_icon(get_icon("MoveLeft", "EditorIcons"));
-			move_down->set_icon(get_icon("MoveRight", "EditorIcons"));
-			_delete->set_icon(get_icon("Remove", "EditorIcons"));
-			new_anim->set_icon(get_icon("New", "EditorIcons"));
-			remove_anim->set_icon(get_icon("Remove", "EditorIcons"));
+			load->set_icon(get_theme_icon("Load", "EditorIcons"));
+			load_sheet->set_icon(get_theme_icon("SpriteSheet", "EditorIcons"));
+			copy->set_icon(get_theme_icon("ActionCopy", "EditorIcons"));
+			paste->set_icon(get_theme_icon("ActionPaste", "EditorIcons"));
+			empty->set_icon(get_theme_icon("InsertBefore", "EditorIcons"));
+			empty2->set_icon(get_theme_icon("InsertAfter", "EditorIcons"));
+			move_up->set_icon(get_theme_icon("MoveLeft", "EditorIcons"));
+			move_down->set_icon(get_theme_icon("MoveRight", "EditorIcons"));
+			_delete->set_icon(get_theme_icon("Remove", "EditorIcons"));
+			new_anim->set_icon(get_theme_icon("New", "EditorIcons"));
+			remove_anim->set_icon(get_theme_icon("Remove", "EditorIcons"));
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
-			splite_sheet_scroll->add_style_override("bg", get_stylebox("bg", "Tree"));
+			splite_sheet_scroll->add_theme_style_override("bg", get_theme_stylebox("bg", "Tree"));
 		} break;
 		case NOTIFICATION_READY: {
-			add_constant_override("autohide", 1); // Fixes the dragger always showing up.
+			add_theme_constant_override("autohide", 1); // Fixes the dragger always showing up.
 		} break;
 	}
 }
@@ -262,7 +262,7 @@ void SpriteFramesEditor::_file_load_request(const Vector<String> &p_path, int p_
 
 			//dialog->get_cancel()->set_text("Close");
 			dialog->get_ok()->set_text(TTR("Close"));
-			dialog->popup_centered_minsize();
+			dialog->popup_centered();
 			return; ///beh should show an error i guess
 		}
 
@@ -301,7 +301,7 @@ void SpriteFramesEditor::_load_pressed() {
 	for (int i = 0; i < extensions.size(); i++)
 		file->add_filter("*." + extensions[i]);
 
-	file->set_mode(EditorFileDialog::MODE_OPEN_FILES);
+	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
 
 	file->popup_centered_ratio();
 }
@@ -316,7 +316,7 @@ void SpriteFramesEditor::_paste_pressed() {
 		dialog->set_title(TTR("Error!"));
 		//dialog->get_cancel()->set_text("Close");
 		dialog->get_ok()->set_text(TTR("Close"));
-		dialog->popup_centered_minsize();
+		dialog->popup_centered();
 		return; ///beh should show an error i guess
 	}
 
@@ -591,7 +591,7 @@ void SpriteFramesEditor::_animation_remove() {
 		return;
 
 	delete_dialog->set_text(TTR("Delete Animation?"));
-	delete_dialog->popup_centered_minsize();
+	delete_dialog->popup_centered();
 }
 
 void SpriteFramesEditor::_animation_remove_confirmed() {
@@ -1058,7 +1058,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	file_split_sheet = memnew(EditorFileDialog);
 	file_split_sheet->set_title(TTR("Create Frames from Sprite Sheet"));
-	file_split_sheet->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	file_split_sheet->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	add_child(file_split_sheet);
 	file_split_sheet->connect("file_selected", callable_mp(this, &SpriteFramesEditor::_prepare_sprite_sheet));
 }

@@ -30,13 +30,15 @@
 
 #include "tree.h"
 
+#include "core/input/input_filter.h"
 #include "core/math/math_funcs.h"
-#include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
 #include "core/project_settings.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
+
+#include "box_container.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_scale.h"
@@ -952,45 +954,45 @@ TreeItem::~TreeItem() {
 
 void Tree::update_cache() {
 
-	cache.font = get_font("font");
-	cache.tb_font = get_font("title_button_font");
-	cache.bg = get_stylebox("bg");
-	cache.selected = get_stylebox("selected");
-	cache.selected_focus = get_stylebox("selected_focus");
-	cache.cursor = get_stylebox("cursor");
-	cache.cursor_unfocus = get_stylebox("cursor_unfocused");
-	cache.button_pressed = get_stylebox("button_pressed");
+	cache.font = get_theme_font("font");
+	cache.tb_font = get_theme_font("title_button_font");
+	cache.bg = get_theme_stylebox("bg");
+	cache.selected = get_theme_stylebox("selected");
+	cache.selected_focus = get_theme_stylebox("selected_focus");
+	cache.cursor = get_theme_stylebox("cursor");
+	cache.cursor_unfocus = get_theme_stylebox("cursor_unfocused");
+	cache.button_pressed = get_theme_stylebox("button_pressed");
 
-	cache.checked = get_icon("checked");
-	cache.unchecked = get_icon("unchecked");
-	cache.arrow_collapsed = get_icon("arrow_collapsed");
-	cache.arrow = get_icon("arrow");
-	cache.select_arrow = get_icon("select_arrow");
-	cache.updown = get_icon("updown");
+	cache.checked = get_theme_icon("checked");
+	cache.unchecked = get_theme_icon("unchecked");
+	cache.arrow_collapsed = get_theme_icon("arrow_collapsed");
+	cache.arrow = get_theme_icon("arrow");
+	cache.select_arrow = get_theme_icon("select_arrow");
+	cache.updown = get_theme_icon("updown");
 
-	cache.custom_button = get_stylebox("custom_button");
-	cache.custom_button_hover = get_stylebox("custom_button_hover");
-	cache.custom_button_pressed = get_stylebox("custom_button_pressed");
-	cache.custom_button_font_highlight = get_color("custom_button_font_highlight");
+	cache.custom_button = get_theme_stylebox("custom_button");
+	cache.custom_button_hover = get_theme_stylebox("custom_button_hover");
+	cache.custom_button_pressed = get_theme_stylebox("custom_button_pressed");
+	cache.custom_button_font_highlight = get_theme_color("custom_button_font_highlight");
 
-	cache.font_color = get_color("font_color");
-	cache.font_color_selected = get_color("font_color_selected");
-	cache.guide_color = get_color("guide_color");
-	cache.drop_position_color = get_color("drop_position_color");
-	cache.hseparation = get_constant("hseparation");
-	cache.vseparation = get_constant("vseparation");
-	cache.item_margin = get_constant("item_margin");
-	cache.button_margin = get_constant("button_margin");
-	cache.draw_guides = get_constant("draw_guides");
-	cache.draw_relationship_lines = get_constant("draw_relationship_lines");
-	cache.relationship_line_color = get_color("relationship_line_color");
-	cache.scroll_border = get_constant("scroll_border");
-	cache.scroll_speed = get_constant("scroll_speed");
+	cache.font_color = get_theme_color("font_color");
+	cache.font_color_selected = get_theme_color("font_color_selected");
+	cache.guide_color = get_theme_color("guide_color");
+	cache.drop_position_color = get_theme_color("drop_position_color");
+	cache.hseparation = get_theme_constant("hseparation");
+	cache.vseparation = get_theme_constant("vseparation");
+	cache.item_margin = get_theme_constant("item_margin");
+	cache.button_margin = get_theme_constant("button_margin");
+	cache.draw_guides = get_theme_constant("draw_guides");
+	cache.draw_relationship_lines = get_theme_constant("draw_relationship_lines");
+	cache.relationship_line_color = get_theme_color("relationship_line_color");
+	cache.scroll_border = get_theme_constant("scroll_border");
+	cache.scroll_speed = get_theme_constant("scroll_speed");
 
-	cache.title_button = get_stylebox("title_button_normal");
-	cache.title_button_pressed = get_stylebox("title_button_pressed");
-	cache.title_button_hover = get_stylebox("title_button_hover");
-	cache.title_button_color = get_color("title_button_color");
+	cache.title_button = get_theme_stylebox("title_button_normal");
+	cache.title_button_pressed = get_theme_stylebox("title_button_pressed");
+	cache.title_button_hover = get_theme_stylebox("title_button_hover");
+	cache.title_button_color = get_theme_color("title_button_color");
 
 	v_scroll->set_custom_step(cache.font->get_height());
 }
@@ -1291,7 +1293,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				}
 			}
 
-			Color col = p_item->cells[i].custom_color ? p_item->cells[i].color : get_color(p_item->cells[i].selected ? "font_color_selected" : "font_color");
+			Color col = p_item->cells[i].custom_color ? p_item->cells[i].color : get_theme_color(p_item->cells[i].selected ? "font_color_selected" : "font_color");
 			Color icon_col = p_item->cells[i].icon_color;
 
 			Point2i text_pos = item_rect.position;
@@ -1423,7 +1425,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 					if (p_item->cells[i].custom_button) {
 						if (cache.hover_item == p_item && cache.hover_cell == i) {
-							if (Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
+							if (InputFilter::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
 								draw_style_box(cache.custom_button_pressed, ir);
 							} else {
 								draw_style_box(cache.custom_button_hover, ir);
@@ -1659,7 +1661,7 @@ Rect2 Tree::search_item_rect(TreeItem *p_from, TreeItem *p_item) {
 
 void Tree::_range_click_timeout() {
 
-	if (range_item_last && !range_drag_enabled && Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
+	if (range_item_last && !range_drag_enabled && InputFilter::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
 
 		Point2 pos = get_local_mouse_position() - cache.bg->get_offset();
 		if (show_column_titles) {
@@ -2046,9 +2048,9 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 
 void Tree::_text_editor_modal_close() {
 
-	if (Input::get_singleton()->is_key_pressed(KEY_ESCAPE) ||
-			Input::get_singleton()->is_key_pressed(KEY_KP_ENTER) ||
-			Input::get_singleton()->is_key_pressed(KEY_ENTER)) {
+	if (InputFilter::get_singleton()->is_key_pressed(KEY_ESCAPE) ||
+			InputFilter::get_singleton()->is_key_pressed(KEY_KP_ENTER) ||
+			InputFilter::get_singleton()->is_key_pressed(KEY_ENTER)) {
 
 		return;
 	}
@@ -2056,13 +2058,12 @@ void Tree::_text_editor_modal_close() {
 	if (value_editor->has_point(value_editor->get_local_mouse_position()))
 		return;
 
-	text_editor_enter(text_editor->get_text());
+	_text_editor_enter(text_editor->get_text());
 }
 
-void Tree::text_editor_enter(String p_text) {
+void Tree::_text_editor_enter(String p_text) {
 
-	text_editor->hide();
-	value_editor->hide();
+	popup_editor->hide();
 
 	if (!popup_edited_item)
 		return;
@@ -2531,7 +2532,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 					range_drag_enabled = true;
 					range_drag_capture_pos = cpos;
 					range_drag_base = popup_edited_item->get_range(popup_edited_item_col);
-					Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+					InputFilter::get_singleton()->set_mouse_mode(InputFilter::MOUSE_MODE_CAPTURED);
 				}
 			} else {
 
@@ -2593,7 +2594,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 					if (range_drag_enabled) {
 
 						range_drag_enabled = false;
-						Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+						InputFilter::get_singleton()->set_mouse_mode(InputFilter::MOUSE_MODE_VISIBLE);
 						warp_mouse(range_drag_capture_pos);
 					} else {
 						Rect2 rect = get_selected()->get_meta("__focus_rect");
@@ -2703,7 +2704,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 					drag_accum = 0;
 					//last_drag_accum=0;
 					drag_from = v_scroll->get_value();
-					drag_touching = OS::get_singleton()->has_touchscreen_ui_hint();
+					drag_touching = !DisplayServer::get_singleton()->screen_is_touchscreen(DisplayServer::get_singleton()->window_get_current_screen(get_viewport()->get_window_id()));
 					drag_touching_deaccel = false;
 					if (drag_touching) {
 						set_physics_process_internal(true);
@@ -2806,20 +2807,23 @@ bool Tree::edit_selected() {
 
 	} else if (c.mode == TreeItem::CELL_MODE_STRING || c.mode == TreeItem::CELL_MODE_RANGE) {
 
+		Rect2 popup_rect;
+
 		Vector2 ofs(0, (text_editor->get_size().height - rect.size.height) / 2);
-		Point2i textedpos = get_global_position() + rect.position - ofs;
+
+		Point2i textedpos = get_screen_position() + rect.position - ofs;
 		cache.text_editor_position = textedpos;
-		text_editor->set_position(textedpos);
-		text_editor->set_size(rect.size);
+		popup_rect.position = textedpos;
+		popup_rect.size = rect.size;
 		text_editor->clear();
 		text_editor->set_text(c.mode == TreeItem::CELL_MODE_STRING ? c.text : String::num(c.val, Math::range_step_decimals(c.step)));
 		text_editor->select_all();
 
 		if (c.mode == TreeItem::CELL_MODE_RANGE) {
 
-			value_editor->set_position(textedpos + Point2i(0, text_editor->get_size().height));
-			value_editor->set_size(Size2(rect.size.width, 1));
-			value_editor->show_modal();
+			popup_rect.size.y += value_editor->get_minimum_size().height;
+
+			value_editor->show();
 			updating_value_editor = true;
 			value_editor->set_min(c.min);
 			value_editor->set_max(c.max);
@@ -2827,10 +2831,17 @@ bool Tree::edit_selected() {
 			value_editor->set_value(c.val);
 			value_editor->set_exp_ratio(c.expr);
 			updating_value_editor = false;
+		} else {
+			value_editor->hide();
 		}
 
-		text_editor->show_modal();
+		popup_editor->set_position(popup_rect.position);
+		popup_editor->set_size(popup_rect.size);
+		popup_editor->popup();
+		popup_editor->child_controls_changed();
+
 		text_editor->grab_focus();
+
 		return true;
 	}
 
@@ -3011,7 +3022,7 @@ void Tree::_notification(int p_what) {
 		RID ci = get_canvas_item();
 
 		Ref<StyleBox> bg = cache.bg;
-		Ref<StyleBox> bg_focus = get_stylebox("bg_focus");
+		Ref<StyleBox> bg_focus = get_theme_stylebox("bg_focus");
 
 		Point2 draw_ofs;
 		draw_ofs += bg->get_offset();
@@ -3234,7 +3245,7 @@ void Tree::clear() {
 	if (pressing_for_editor) {
 		if (range_drag_enabled) {
 			range_drag_enabled = false;
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+			InputFilter::get_singleton()->set_mouse_mode(InputFilter::MOUSE_MODE_VISIBLE);
 			warp_mouse(range_drag_capture_pos);
 		}
 		pressing_for_editor = false;
@@ -4020,14 +4031,23 @@ Tree::Tree() {
 	popup_menu = memnew(PopupMenu);
 	popup_menu->hide();
 	add_child(popup_menu);
-	popup_menu->set_as_toplevel(true);
+	//	popup_menu->set_as_toplevel(true);
+
+	popup_editor = memnew(PopupPanel);
+	popup_editor->set_wrap_controls(true);
+	add_child(popup_editor);
+	popup_editor_vb = memnew(VBoxContainer);
+	popup_editor->add_child(popup_editor_vb);
+	popup_editor_vb->add_theme_constant_override("separation", 0);
+	popup_editor_vb->set_anchors_and_margins_preset(PRESET_WIDE);
 	text_editor = memnew(LineEdit);
-	add_child(text_editor);
-	text_editor->set_as_toplevel(true);
-	text_editor->hide();
+	popup_editor_vb->add_child(text_editor);
+	text_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+	text_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 	value_editor = memnew(HSlider);
-	add_child(value_editor);
-	value_editor->set_as_toplevel(true);
+	value_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+	value_editor->set_h_size_flags(SIZE_EXPAND_FILL);
+	popup_editor_vb->add_child(value_editor);
 	value_editor->hide();
 
 	h_scroll = memnew(HScrollBar);
@@ -4042,13 +4062,11 @@ Tree::Tree() {
 
 	h_scroll->connect("value_changed", callable_mp(this, &Tree::_scroll_moved));
 	v_scroll->connect("value_changed", callable_mp(this, &Tree::_scroll_moved));
-	text_editor->connect("text_entered", callable_mp(this, &Tree::text_editor_enter));
-	text_editor->connect("modal_closed", callable_mp(this, &Tree::_text_editor_modal_close));
+	text_editor->connect("text_entered", callable_mp(this, &Tree::_text_editor_enter));
+	popup_editor->connect("popup_hide", callable_mp(this, &Tree::_text_editor_modal_close));
 	popup_menu->connect("id_pressed", callable_mp(this, &Tree::popup_select));
 	value_editor->connect("value_changed", callable_mp(this, &Tree::value_editor_changed));
 
-	value_editor->set_as_toplevel(true);
-	text_editor->set_as_toplevel(true);
 	set_notify_transform(true);
 
 	updating_value_editor = false;

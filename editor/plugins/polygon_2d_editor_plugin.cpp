@@ -31,8 +31,8 @@
 #include "polygon_2d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
+#include "core/input/input_filter.h"
 #include "core/os/file_access.h"
-#include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -70,28 +70,28 @@ void Polygon2DEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 
-			uv_edit_draw->add_style_override("panel", get_stylebox("bg", "Tree"));
-			bone_scroll->add_style_override("bg", get_stylebox("bg", "Tree"));
+			uv_edit_draw->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
+			bone_scroll->add_theme_style_override("bg", get_theme_stylebox("bg", "Tree"));
 		} break;
 		case NOTIFICATION_READY: {
 
-			button_uv->set_icon(get_icon("Uv", "EditorIcons"));
+			button_uv->set_icon(get_theme_icon("Uv", "EditorIcons"));
 
-			uv_button[UV_MODE_CREATE]->set_icon(get_icon("Edit", "EditorIcons"));
-			uv_button[UV_MODE_CREATE_INTERNAL]->set_icon(get_icon("EditInternal", "EditorIcons"));
-			uv_button[UV_MODE_REMOVE_INTERNAL]->set_icon(get_icon("RemoveInternal", "EditorIcons"));
-			uv_button[UV_MODE_EDIT_POINT]->set_icon(get_icon("ToolSelect", "EditorIcons"));
-			uv_button[UV_MODE_MOVE]->set_icon(get_icon("ToolMove", "EditorIcons"));
-			uv_button[UV_MODE_ROTATE]->set_icon(get_icon("ToolRotate", "EditorIcons"));
-			uv_button[UV_MODE_SCALE]->set_icon(get_icon("ToolScale", "EditorIcons"));
-			uv_button[UV_MODE_ADD_POLYGON]->set_icon(get_icon("Edit", "EditorIcons"));
-			uv_button[UV_MODE_REMOVE_POLYGON]->set_icon(get_icon("Close", "EditorIcons"));
-			uv_button[UV_MODE_PAINT_WEIGHT]->set_icon(get_icon("PaintVertex", "EditorIcons"));
-			uv_button[UV_MODE_CLEAR_WEIGHT]->set_icon(get_icon("UnpaintVertex", "EditorIcons"));
+			uv_button[UV_MODE_CREATE]->set_icon(get_theme_icon("Edit", "EditorIcons"));
+			uv_button[UV_MODE_CREATE_INTERNAL]->set_icon(get_theme_icon("EditInternal", "EditorIcons"));
+			uv_button[UV_MODE_REMOVE_INTERNAL]->set_icon(get_theme_icon("RemoveInternal", "EditorIcons"));
+			uv_button[UV_MODE_EDIT_POINT]->set_icon(get_theme_icon("ToolSelect", "EditorIcons"));
+			uv_button[UV_MODE_MOVE]->set_icon(get_theme_icon("ToolMove", "EditorIcons"));
+			uv_button[UV_MODE_ROTATE]->set_icon(get_theme_icon("ToolRotate", "EditorIcons"));
+			uv_button[UV_MODE_SCALE]->set_icon(get_theme_icon("ToolScale", "EditorIcons"));
+			uv_button[UV_MODE_ADD_POLYGON]->set_icon(get_theme_icon("Edit", "EditorIcons"));
+			uv_button[UV_MODE_REMOVE_POLYGON]->set_icon(get_theme_icon("Close", "EditorIcons"));
+			uv_button[UV_MODE_PAINT_WEIGHT]->set_icon(get_theme_icon("PaintVertex", "EditorIcons"));
+			uv_button[UV_MODE_CLEAR_WEIGHT]->set_icon(get_theme_icon("UnpaintVertex", "EditorIcons"));
 
-			b_snap_grid->set_icon(get_icon("Grid", "EditorIcons"));
-			b_snap_enable->set_icon(get_icon("SnapGrid", "EditorIcons"));
-			uv_icon_zoom->set_texture(get_icon("Zoom", "EditorIcons"));
+			b_snap_grid->set_icon(get_theme_icon("Grid", "EditorIcons"));
+			b_snap_enable->set_icon(get_theme_icon("SnapGrid", "EditorIcons"));
+			uv_icon_zoom->set_texture(get_theme_icon("Zoom", "EditorIcons"));
 
 			uv_vscroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
 			uv_hscroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
@@ -110,7 +110,7 @@ void Polygon2DEditor::_sync_bones() {
 	Skeleton2D *skeleton = NULL;
 	if (!node->has_node(node->get_skeleton())) {
 		error->set_text(TTR("The skeleton property of the Polygon2D does not point to a Skeleton2D node"));
-		error->popup_centered_minsize();
+		error->popup_centered();
 	} else {
 		Node *sn = node->get_node(node->get_skeleton());
 		skeleton = Object::cast_to<Skeleton2D>(sn);
@@ -121,7 +121,7 @@ void Polygon2DEditor::_sync_bones() {
 
 	if (!skeleton) {
 		error->set_text(TTR("The skeleton property of the Polygon2D does not point to a Skeleton2D node"));
-		error->popup_centered_minsize();
+		error->popup_centered();
 	} else {
 		for (int i = 0; i < skeleton->get_bone_count(); i++) {
 			NodePath path = skeleton->get_path_to(skeleton->get_bone(i));
@@ -275,7 +275,7 @@ void Polygon2DEditor::_uv_edit_mode_select(int p_mode) {
 
 void Polygon2DEditor::_uv_edit_popup_hide() {
 
-	EditorSettings::get_singleton()->set("interface/dialogs/uv_editor_bounds", uv_edit->get_rect());
+	EditorSettings::get_singleton()->set("interface/dialogs/uv_editor_bounds", Rect2(uv_edit->get_position(), uv_edit->get_size()));
 
 	_cancel_editing();
 }
@@ -289,7 +289,7 @@ void Polygon2DEditor::_menu_option(int p_option) {
 			if (node->get_texture().is_null()) {
 
 				error->set_text(TTR("No texture in this polygon.\nSet a texture to be able to edit UV."));
-				error->popup_centered_minsize();
+				error->popup_centered();
 				return;
 			}
 
@@ -351,7 +351,7 @@ void Polygon2DEditor::_menu_option(int p_option) {
 		} break;
 		case UVEDIT_GRID_SETTINGS: {
 
-			grid_settings->popup_centered_minsize();
+			grid_settings->popup_centered();
 		} break;
 		default: {
 
@@ -683,7 +683,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 							//close
 							if (polygon_create.size() < 3) {
 								error->set_text(TTR("Invalid Polygon (need 3 different vertices)"));
-								error->popup_centered_minsize();
+								error->popup_centered();
 							} else {
 								Array polygons = node->get_polygons();
 								polygons = polygons.duplicate(); //copy because its a reference
@@ -810,7 +810,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 	if (mm.is_valid()) {
 
-		if ((mm->get_button_mask() & BUTTON_MASK_MIDDLE) || Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
+		if ((mm->get_button_mask() & BUTTON_MASK_MIDDLE) || InputFilter::get_singleton()->is_key_pressed(KEY_SPACE)) {
 
 			Vector2 drag(mm->get_relative().x, mm->get_relative().y);
 			uv_hscroll->set_value(uv_hscroll->get_value() - drag.x);
@@ -1050,7 +1050,7 @@ void Polygon2DEditor::_uv_draw() {
 	}
 
 	// All UV points are sharp, so use the sharp handle icon
-	Ref<Texture2D> handle = get_icon("EditorPathSharpHandle", "EditorIcons");
+	Ref<Texture2D> handle = get_theme_icon("EditorPathSharpHandle", "EditorIcons");
 
 	Color poly_line_color = Color(0.9, 0.5, 0.5);
 	if (polygons.size() || polygon_create.size()) {
@@ -1265,8 +1265,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_edit = memnew(AcceptDialog);
 	add_child(uv_edit);
 	uv_edit->set_title(TTR("Polygon 2D UV Editor"));
-	uv_edit->set_resizable(true);
-	uv_edit->connect("popup_hide", callable_mp(this, &Polygon2DEditor::_uv_edit_popup_hide));
+	uv_edit->connect("cancelled", callable_mp(this, &Polygon2DEditor::_uv_edit_popup_hide));
 
 	VBoxContainer *uv_main_vb = memnew(VBoxContainer);
 	uv_edit->add_child(uv_main_vb);

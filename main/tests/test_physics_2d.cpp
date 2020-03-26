@@ -35,6 +35,7 @@
 #include "core/os/os.h"
 #include "core/print_string.h"
 #include "scene/resources/texture.h"
+#include "servers/display_server.h"
 #include "servers/physics_2d_server.h"
 #include "servers/visual_server.h"
 
@@ -354,7 +355,7 @@ public:
 			RID vp = vs->viewport_create();
 			canvas = vs->canvas_create();
 
-			Size2i screen_size = OS::get_singleton()->get_window_size();
+			Size2i screen_size = DisplayServer::get_singleton()->window_get_size();
 			vs->viewport_attach_canvas(vp, canvas);
 			vs->viewport_set_size(vp, screen_size.x, screen_size.y);
 			vs->viewport_attach_to_screen(vp, Rect2(Vector2(), screen_size));

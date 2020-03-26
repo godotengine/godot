@@ -32,13 +32,12 @@
 #define OS_UWP_H
 
 #include "context_egl_uwp.h"
+#include "core/input/input_filter.h"
 #include "core/math/transform_2d.h"
-#include "core/os/input.h"
 #include "core/os/os.h"
 #include "core/ustring.h"
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #include "joypad_uwp.h"
-#include "main/input_default.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"

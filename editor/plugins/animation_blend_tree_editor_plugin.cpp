@@ -30,8 +30,8 @@
 
 #include "animation_blend_tree_editor_plugin.h"
 
+#include "core/input/input_filter.h"
 #include "core/io/resource_loader.h"
-#include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "editor/editor_inspector.h"
@@ -40,7 +40,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/progress_bar.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 
 void AnimationNodeBlendTreeEditor::add_custom_type(const String &p_name, const Ref<Script> &p_script) {
 
@@ -145,7 +145,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			name->set_text(E->get());
 			name->set_expand_to_text_length(true);
 			node->add_child(name);
-			node->set_slot(0, false, 0, Color(), true, 0, get_color("font_color", "Label"));
+			node->set_slot(0, false, 0, Color(), true, 0, get_theme_color("font_color", "Label"));
 			name->connect("text_entered", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed), varray(agnode));
 			name->connect("focus_exited", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out), varray(name, agnode), CONNECT_DEFERRED);
 			base = 1;
@@ -157,7 +157,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			Label *in_name = memnew(Label);
 			node->add_child(in_name);
 			in_name->set_text(agnode->get_input_name(i));
-			node->set_slot(base + i, true, 0, get_color("font_color", "Label"), false, 0, Color());
+			node->set_slot(base + i, true, 0, get_theme_color("font_color", "Label"), false, 0, Color());
 		}
 
 		List<PropertyInfo> pinfo;
@@ -185,7 +185,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			node->add_child(memnew(HSeparator));
 			Button *open_in_editor = memnew(Button);
 			open_in_editor->set_text(TTR("Open Editor"));
-			open_in_editor->set_icon(get_icon("Edit", "EditorIcons"));
+			open_in_editor->set_icon(get_theme_icon("Edit", "EditorIcons"));
 			node->add_child(open_in_editor);
 			open_in_editor->connect("pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_open_in_editor), varray(E->get()), CONNECT_DEFERRED);
 			open_in_editor->set_h_size_flags(SIZE_SHRINK_CENTER);
@@ -196,7 +196,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			node->add_child(memnew(HSeparator));
 			Button *edit_filters = memnew(Button);
 			edit_filters->set_text(TTR("Edit Filters"));
-			edit_filters->set_icon(get_icon("AnimationFilter", "EditorIcons"));
+			edit_filters->set_icon(get_theme_icon("AnimationFilter", "EditorIcons"));
 			node->add_child(edit_filters);
 			edit_filters->connect("pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_edit_filters), varray(E->get()), CONNECT_DEFERRED);
 			edit_filters->set_h_size_flags(SIZE_SHRINK_CENTER);
@@ -207,7 +207,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 
 			MenuButton *mb = memnew(MenuButton);
 			mb->set_text(anim->get_animation());
-			mb->set_icon(get_icon("Animation", "EditorIcons"));
+			mb->set_icon(get_theme_icon("Animation", "EditorIcons"));
 			Array options;
 
 			node->add_child(memnew(HSeparator));
@@ -242,16 +242,16 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 		}
 
 		if (EditorSettings::get_singleton()->get("interface/theme/use_graph_node_headers")) {
-			Ref<StyleBoxFlat> sb = node->get_stylebox("frame", "GraphNode");
+			Ref<StyleBoxFlat> sb = node->get_theme_stylebox("frame", "GraphNode");
 			Color c = sb->get_border_color();
 			Color mono_color = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0) : Color(0.0, 0.0, 0.0);
 			mono_color.a = 0.85;
 			c = mono_color;
 
-			node->add_color_override("title_color", c);
+			node->add_theme_color_override("title_color", c);
 			c.a = 0.7;
-			node->add_color_override("close_color", c);
-			node->add_color_override("resizer_color", c);
+			node->add_theme_color_override("close_color", c);
+			node->add_theme_color_override("resizer_color", c);
 		}
 	}
 
@@ -643,7 +643,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 						ti->set_text(0, F->get());
 						ti->set_selectable(0, false);
 						ti->set_editable(0, false);
-						ti->set_icon(0, get_icon("BoneAttachment", "EditorIcons"));
+						ti->set_icon(0, get_theme_icon("BoneAttachment", "EditorIcons"));
 					} else {
 						ti = parenthood[accum];
 					}
@@ -654,7 +654,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 				ti->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 				ti->set_text(0, concat);
 				ti->set_checked(0, anode->is_path_filtered(path));
-				ti->set_icon(0, get_icon("BoneAttachment", "EditorIcons"));
+				ti->set_icon(0, get_theme_icon("BoneAttachment", "EditorIcons"));
 				ti->set_metadata(0, path);
 
 			} else {
@@ -705,7 +705,7 @@ void AnimationNodeBlendTreeEditor::_edit_filters(const String &p_which) {
 	if (!_update_filters(anode))
 		return;
 
-	filter_dialog->popup_centered_minsize(Size2(500, 500) * EDSCALE);
+	filter_dialog->popup_centered(Size2(500, 500) * EDSCALE);
 }
 
 void AnimationNodeBlendTreeEditor::_removed_from_graph() {
@@ -718,8 +718,8 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 
-		error_panel->add_style_override("panel", get_stylebox("bg", "Tree"));
-		error_label->add_color_override("font_color", get_color("error_color", "Editor"));
+		error_panel->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
+		error_label->add_theme_color_override("font_color", get_theme_color("error_color", "Editor"));
 
 		if (p_what == NOTIFICATION_THEME_CHANGED && is_visible_in_tree())
 			_update_graph();
@@ -931,7 +931,7 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	add_node->set_text(TTR("Add Node..."));
 	graph->get_zoom_hbox()->move_child(add_node, 0);
 	add_node->get_popup()->connect("id_pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_add_node));
-	add_node->connect("about_to_show", callable_mp(this, &AnimationNodeBlendTreeEditor::_update_options_menu));
+	add_node->connect("about_to_popup", callable_mp(this, &AnimationNodeBlendTreeEditor::_update_options_menu));
 
 	add_options.push_back(AddOption("Animation", "AnimationNodeAnimation"));
 	add_options.push_back(AddOption("OneShot", "AnimationNodeOneShot"));
@@ -975,7 +975,7 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	open_file = memnew(EditorFileDialog);
 	add_child(open_file);
 	open_file->set_title(TTR("Open Animation Node"));
-	open_file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	open_file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	open_file->connect("file_selected", callable_mp(this, &AnimationNodeBlendTreeEditor::_file_opened));
 	undo_redo = EditorNode::get_undo_redo();
 }

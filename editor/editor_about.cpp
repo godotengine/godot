@@ -37,20 +37,23 @@
 #include "core/version.h"
 #include "core/version_hash.gen.h"
 
+void EditorAbout::_theme_changed() {
+
+	Control *base = EditorNode::get_singleton()->get_gui_base();
+	Ref<Font> font = base->get_theme_font("source", "EditorFonts");
+	_tpl_text->add_theme_font_override("normal_font", font);
+	_tpl_text->add_theme_constant_override("line_separation", 6 * EDSCALE);
+	_license_text->add_theme_font_override("normal_font", font);
+	_license_text->add_theme_constant_override("line_separation", 6 * EDSCALE);
+	_logo->set_texture(base->get_theme_icon("Logo", "EditorIcons"));
+}
+
 void EditorAbout::_notification(int p_what) {
 
 	switch (p_what) {
 
-		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED: {
-
-			Control *base = EditorNode::get_singleton()->get_gui_base();
-			Ref<Font> font = base->get_font("source", "EditorFonts");
-			_tpl_text->add_font_override("normal_font", font);
-			_tpl_text->add_constant_override("line_separation", 6 * EDSCALE);
-			_license_text->add_font_override("normal_font", font);
-			_license_text->add_constant_override("line_separation", 6 * EDSCALE);
-			_logo->set_texture(base->get_icon("Logo", "EditorIcons"));
+		case NOTIFICATION_ENTER_TREE: {
+			_theme_changed();
 		} break;
 	}
 }
@@ -95,7 +98,7 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 			il->set_same_column_width(true);
 			il->set_auto_height(true);
 			il->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-			il->add_constant_override("hseparation", 16 * EDSCALE);
+			il->add_theme_constant_override("hseparation", 16 * EDSCALE);
 			while (*names_ptr) {
 				il->add_item(String::utf8(*names_ptr++), NULL, false);
 			}
@@ -115,13 +118,13 @@ EditorAbout::EditorAbout() {
 
 	set_title(TTR("Thanks from the Godot community!"));
 	set_hide_on_ok(true);
-	set_resizable(true);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
+	vbc->connect("theme_changed", callable_mp(this, &EditorAbout::_theme_changed));
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->set_alignment(BoxContainer::ALIGN_CENTER);
-	hbc->add_constant_override("separation", 30 * EDSCALE);
+	hbc->add_theme_constant_override("separation", 30 * EDSCALE);
 	add_child(vbc);
 	vbc->add_child(hbc);
 

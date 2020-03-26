@@ -217,12 +217,12 @@ void VersionControlEditorPlugin::_stage_selected() {
 			if (file_entry->is_checked(0)) {
 
 				EditorVCSInterface::get_singleton()->stage_file(file_entry->get_metadata(0));
-				file_entry->set_icon_modulate(0, EditorNode::get_singleton()->get_gui_base()->get_color("success_color", "Editor"));
+				file_entry->set_icon_modulate(0, EditorNode::get_singleton()->get_gui_base()->get_theme_color("success_color", "Editor"));
 				staged_files_count++;
 			} else {
 
 				EditorVCSInterface::get_singleton()->unstage_file(file_entry->get_metadata(0));
-				file_entry->set_icon_modulate(0, EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
+				file_entry->set_icon_modulate(0, EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor"));
 			}
 
 			file_entry = file_entry->get_next();
@@ -248,7 +248,7 @@ void VersionControlEditorPlugin::_stage_all() {
 		while (file_entry) {
 
 			EditorVCSInterface::get_singleton()->stage_file(file_entry->get_metadata(0));
-			file_entry->set_icon_modulate(0, EditorNode::get_singleton()->get_gui_base()->get_color("success_color", "Editor"));
+			file_entry->set_icon_modulate(0, EditorNode::get_singleton()->get_gui_base()->get_theme_color("success_color", "Editor"));
 			file_entry->set_checked(0, true);
 			staged_files_count++;
 
@@ -275,20 +275,20 @@ void VersionControlEditorPlugin::_display_file_diff(String p_file_path) {
 	diff_file_name->set_text(p_file_path);
 
 	diff->clear();
-	diff->push_font(EditorNode::get_singleton()->get_gui_base()->get_font("source", "EditorFonts"));
+	diff->push_font(EditorNode::get_singleton()->get_gui_base()->get_theme_font("source", "EditorFonts"));
 	for (int i = 0; i < diff_content.size(); i++) {
 
 		Dictionary line_result = diff_content[i];
 
 		if (line_result["status"] == "+") {
 
-			diff->push_color(EditorNode::get_singleton()->get_gui_base()->get_color("success_color", "Editor"));
+			diff->push_color(EditorNode::get_singleton()->get_gui_base()->get_theme_color("success_color", "Editor"));
 		} else if (line_result["status"] == "-") {
 
-			diff->push_color(EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
+			diff->push_color(EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor"));
 		} else {
 
-			diff->push_color(EditorNode::get_singleton()->get_gui_base()->get_color("font_color", "Label"));
+			diff->push_color(EditorNode::get_singleton()->get_gui_base()->get_theme_color("font_color", "Label"));
 		}
 
 		diff->add_text((String)line_result["content"]);
@@ -408,11 +408,10 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	staged_files_count = 0;
 
 	version_control_actions = memnew(PopupMenu);
-	version_control_actions->set_v_size_flags(BoxContainer::SIZE_SHRINK_CENTER);
 
 	set_up_dialog = memnew(AcceptDialog);
 	set_up_dialog->set_title(TTR("Set Up Version Control"));
-	set_up_dialog->set_custom_minimum_size(Size2(400, 100));
+	set_up_dialog->set_min_size(Size2(400, 100));
 	version_control_actions->add_child(set_up_dialog);
 
 	set_up_ok_button = set_up_dialog->get_ok();
@@ -446,9 +445,6 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_init_button->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_initialize_vcs));
 	set_up_vbc->add_child(set_up_init_button);
 
-	version_control_actions->set_v_size_flags(PopupMenu::SIZE_EXPAND_FILL);
-	version_control_actions->set_h_size_flags(PopupMenu::SIZE_EXPAND_FILL);
-
 	version_commit_dock = memnew(VBoxContainer);
 	version_commit_dock->set_visible(false);
 
@@ -470,7 +466,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	refresh_button = memnew(Button);
 	refresh_button->set_tooltip(TTR("Detect new changes"));
 	refresh_button->set_text(TTR("Refresh"));
-	refresh_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Reload", "EditorIcons"));
+	refresh_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Reload", "EditorIcons"));
 	refresh_button->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_refresh_stage_area));
 	stage_tools->add_child(refresh_button);
 
@@ -495,11 +491,11 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	change_type_to_strings[CHANGE_TYPE_DELETED] = TTR("Deleted");
 	change_type_to_strings[CHANGE_TYPE_TYPECHANGE] = TTR("Typechange");
 
-	change_type_to_color[CHANGE_TYPE_NEW] = EditorNode::get_singleton()->get_gui_base()->get_color("success_color", "Editor");
-	change_type_to_color[CHANGE_TYPE_MODIFIED] = EditorNode::get_singleton()->get_gui_base()->get_color("warning_color", "Editor");
-	change_type_to_color[CHANGE_TYPE_RENAMED] = EditorNode::get_singleton()->get_gui_base()->get_color("disabled_font_color", "Editor");
-	change_type_to_color[CHANGE_TYPE_DELETED] = EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor");
-	change_type_to_color[CHANGE_TYPE_TYPECHANGE] = EditorNode::get_singleton()->get_gui_base()->get_color("font_color", "Editor");
+	change_type_to_color[CHANGE_TYPE_NEW] = EditorNode::get_singleton()->get_gui_base()->get_theme_color("success_color", "Editor");
+	change_type_to_color[CHANGE_TYPE_MODIFIED] = EditorNode::get_singleton()->get_gui_base()->get_theme_color("warning_color", "Editor");
+	change_type_to_color[CHANGE_TYPE_RENAMED] = EditorNode::get_singleton()->get_gui_base()->get_theme_color("disabled_font_color", "Editor");
+	change_type_to_color[CHANGE_TYPE_DELETED] = EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor");
+	change_type_to_color[CHANGE_TYPE_TYPECHANGE] = EditorNode::get_singleton()->get_gui_base()->get_theme_color("font_color", "Editor");
 
 	stage_buttons = memnew(HSplitContainer);
 	stage_buttons->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN_COLLAPSED);
@@ -562,7 +558,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	diff_refresh_button = memnew(Button);
 	diff_refresh_button->set_tooltip(TTR("Detect changes in file diff"));
-	diff_refresh_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Reload", "EditorIcons"));
+	diff_refresh_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Reload", "EditorIcons"));
 	diff_refresh_button->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_refresh_file_diff));
 	diff_hbc->add_child(diff_refresh_button);
 

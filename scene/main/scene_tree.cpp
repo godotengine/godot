@@ -31,6 +31,7 @@
 #include "scene_tree.h"
 
 #include "core/debugger/engine_debugger.h"
+#include "core/input/input_filter.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/message_queue.h"
@@ -39,7 +40,6 @@
 #include "core/os/os.h"
 #include "core/print_string.h"
 #include "core/project_settings.h"
-#include "main/input_default.h"
 #include "node.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/resources/dynamic_font.h"
@@ -47,10 +47,11 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
+#include "servers/display_server.h"
 #include "servers/navigation_server.h"
 #include "servers/physics_2d_server.h"
 #include "servers/physics_server.h"
-#include "viewport.h"
+#include "window.h"
 
 #include <stdio.h>
 
@@ -397,69 +398,6 @@ void SceneTree::set_group(const StringName &p_group, const String &p_name, const
 	set_group_flags(0, p_group, p_name, p_value);
 }
 
-void SceneTree::set_input_as_handled() {
-
-	input_handled = true;
-}
-
-void SceneTree::input_text(const String &p_text) {
-
-	root_lock++;
-
-	call_group_flags(GROUP_CALL_REALTIME, "_viewports", "_vp_input_text", p_text); //special one for GUI, as controls use their own process check
-
-	root_lock--;
-}
-
-bool SceneTree::is_input_handled() {
-	return input_handled;
-}
-
-void SceneTree::input_event(const Ref<InputEvent> &p_event) {
-
-	if (Engine::get_singleton()->is_editor_hint() && (Object::cast_to<InputEventJoypadButton>(p_event.ptr()) || Object::cast_to<InputEventJoypadMotion>(*p_event)))
-		return; //avoid joy input on editor
-
-	current_event++;
-	root_lock++;
-
-	input_handled = false;
-
-	// Don't make const ref unless you can find and fix what caused GH-34691.
-	Ref<InputEvent> ev = p_event;
-
-	MainLoop::input_event(ev);
-
-	call_group_flags(GROUP_CALL_REALTIME, "_viewports", "_vp_input", ev); //special one for GUI, as controls use their own process check
-
-	if (EngineDebugger::is_active()) {
-		//quit from game window using F8
-		Ref<InputEventKey> k = ev;
-		if (k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == KEY_F8) {
-			EngineDebugger::get_singleton()->send_message("request_quit", Array());
-		}
-	}
-
-	_flush_ugc();
-	root_lock--;
-	//MessageQueue::get_singleton()->flush(); //flushing here causes UI and other places slowness
-
-	root_lock++;
-
-	if (!input_handled) {
-		call_group_flags(GROUP_CALL_REALTIME, "_viewports", "_vp_unhandled_input", ev); //special one for GUI, as controls use their own process check
-		_flush_ugc();
-		//		input_handled = true; - no reason to set this as handled
-		root_lock--;
-		//MessageQueue::get_singleton()->flush(); //flushing here causes UI and other places slowness
-	} else {
-		//		input_handled = true; - no reason to set this as handled
-		root_lock--;
-	}
-
-	_call_idle_callbacks();
-}
-
 void SceneTree::init() {
 	initialized = true;
 	root->_set_tree(this);
@@ -493,14 +431,6 @@ bool SceneTree::iteration(float p_time) {
 	return _quit;
 }
 
-void SceneTree::_update_font_oversampling(float p_ratio) {
-
-	if (use_font_oversampling) {
-		DynamicFontAtSize::font_oversampling = p_ratio;
-		DynamicFont::update_oversampling();
-	}
-}
-
 bool SceneTree::idle(float p_time) {
 
 	//print_line("ram: "+itos(OS::get_singleton()->get_static_memory_usage())+" sram: "+itos(OS::get_singleton()->get_dynamic_memory_usage()));
@@ -525,15 +455,6 @@ bool SceneTree::idle(float p_time) {
 
 	_notify_group_pause("idle_process_internal", Node::NOTIFICATION_INTERNAL_PROCESS);
 	_notify_group_pause("idle_process", Node::NOTIFICATION_PROCESS);
-
-	Size2 win_size = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
-
-	if (win_size != last_screen_size) {
-
-		last_screen_size = win_size;
-		_update_root_rect();
-		emit_signal("screen_resized");
-	}
 
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
@@ -642,59 +563,36 @@ void SceneTree::quit(int p_exit_code) {
 	_quit = true;
 }
 
+void SceneTree::_main_window_close() {
+
+	if (accept_quit) {
+		_quit = true;
+	}
+}
+void SceneTree::_main_window_go_back() {
+	if (quit_on_go_back) {
+		_quit = true;
+	}
+}
+
+void SceneTree::_main_window_focus_in() {
+	InputFilter *id = InputFilter::get_singleton();
+	if (id) {
+		id->ensure_touch_mouse_raised();
+	}
+}
+
 void SceneTree::_notification(int p_notification) {
 
 	switch (p_notification) {
-
-		case NOTIFICATION_WM_QUIT_REQUEST: {
-
-			get_root()->propagate_notification(p_notification);
-
-			if (accept_quit) {
-				_quit = true;
-				break;
-			}
-		} break;
-
-		case NOTIFICATION_WM_GO_BACK_REQUEST: {
-
-			get_root()->propagate_notification(p_notification);
-
-			if (quit_on_go_back) {
-				_quit = true;
-				break;
-			}
-		} break;
-
-		case NOTIFICATION_WM_FOCUS_IN: {
-
-			InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
-			if (id) {
-				id->ensure_touch_mouse_raised();
-			}
-
-			get_root()->propagate_notification(p_notification);
-		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (!Engine::get_singleton()->is_editor_hint()) {
 				get_root()->propagate_notification(p_notification);
 			}
 		} break;
-
-		case NOTIFICATION_WM_UNFOCUS_REQUEST: {
-
-			notify_group_flags(GROUP_CALL_REALTIME | GROUP_CALL_MULTILEVEL, "input", NOTIFICATION_WM_UNFOCUS_REQUEST);
-
-			get_root()->propagate_notification(p_notification);
-
-		} break;
-
 		case NOTIFICATION_OS_MEMORY_WARNING:
 		case NOTIFICATION_OS_IME_UPDATE:
-		case NOTIFICATION_WM_MOUSE_ENTER:
-		case NOTIFICATION_WM_MOUSE_EXIT:
-		case NOTIFICATION_WM_FOCUS_OUT:
 		case NOTIFICATION_WM_ABOUT:
 		case NOTIFICATION_CRASH:
 		case NOTIFICATION_APP_RESUMED:
@@ -910,50 +808,6 @@ bool SceneTree::is_paused() const {
 	return pause;
 }
 
-void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p_method, const Ref<InputEvent> &p_input) {
-
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
-	if (!E)
-		return;
-	Group &g = E->get();
-	if (g.nodes.empty())
-		return;
-
-	_update_group_order(g);
-
-	//copy, so copy on write happens in case something is removed from process while being called
-	//performance is not lost because only if something is added/removed the vector is copied.
-	Vector<Node *> nodes_copy = g.nodes;
-
-	int node_count = nodes_copy.size();
-	Node **nodes = nodes_copy.ptrw();
-
-	Variant arg = p_input;
-	const Variant *v[1] = { &arg };
-
-	call_lock++;
-
-	for (int i = node_count - 1; i >= 0; i--) {
-
-		if (input_handled)
-			break;
-
-		Node *n = nodes[i];
-		if (call_lock && call_skip.has(n))
-			continue;
-
-		if (!n->can_process())
-			continue;
-
-		n->call_multilevel(p_method, (const Variant **)v, 1);
-		//ERR_FAIL_COND(node_count != g.nodes.size());
-	}
-
-	call_lock--;
-	if (call_lock == 0)
-		call_skip.clear();
-}
-
 void SceneTree::_notify_group_pause(const StringName &p_group, int p_notification) {
 
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
@@ -1005,6 +859,49 @@ void SceneMainLoop::_update_listener_2d() {
 }
 */
 
+void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p_method, const Ref<InputEvent> &p_input, Viewport *p_viewport) {
+
+	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	if (!E)
+		return;
+	Group &g = E->get();
+	if (g.nodes.empty())
+		return;
+
+	_update_group_order(g);
+
+	//copy, so copy on write happens in case something is removed from process while being called
+	//performance is not lost because only if something is added/removed the vector is copied.
+	Vector<Node *> nodes_copy = g.nodes;
+
+	int node_count = nodes_copy.size();
+	Node **nodes = nodes_copy.ptrw();
+
+	Variant arg = p_input;
+	const Variant *v[1] = { &arg };
+
+	call_lock++;
+
+	for (int i = node_count - 1; i >= 0; i--) {
+
+		if (p_viewport->is_input_handled())
+			break;
+
+		Node *n = nodes[i];
+		if (call_lock && call_skip.has(n))
+			continue;
+
+		if (!n->can_process())
+			continue;
+
+		n->call_multilevel(p_method, (const Variant **)v, 1);
+		//ERR_FAIL_COND(node_count != g.nodes.size());
+	}
+
+	call_lock--;
+	if (call_lock == 0)
+		call_skip.clear();
+}
 Variant SceneTree::_call_group_flags(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 
 	r_error.error = Callable::CallError::CALL_OK;
@@ -1129,129 +1026,6 @@ int SceneTree::get_node_count() const {
 	return node_count;
 }
 
-void SceneTree::_update_root_rect() {
-
-	if (stretch_mode == STRETCH_MODE_DISABLED) {
-
-		_update_font_oversampling(1.0);
-		root->set_size((last_screen_size / stretch_shrink).floor());
-		root->set_attach_to_screen_rect(Rect2(Point2(), last_screen_size));
-		root->set_size_override_stretch(false);
-		root->set_size_override(false, Size2());
-		root->update_canvas_items();
-		return; //user will take care
-	}
-
-	//actual screen video mode
-	Size2 video_mode = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
-	Size2 desired_res = stretch_min;
-
-	Size2 viewport_size;
-	Size2 screen_size;
-
-	float viewport_aspect = desired_res.aspect();
-	float video_mode_aspect = video_mode.aspect();
-
-	if (use_font_oversampling && stretch_aspect == STRETCH_ASPECT_IGNORE) {
-		WARN_PRINT("Font oversampling only works with the resize modes 'Keep Width', 'Keep Height', and 'Expand'.");
-	}
-
-	if (stretch_aspect == STRETCH_ASPECT_IGNORE || Math::is_equal_approx(viewport_aspect, video_mode_aspect)) {
-		//same aspect or ignore aspect
-		viewport_size = desired_res;
-		screen_size = video_mode;
-	} else if (viewport_aspect < video_mode_aspect) {
-		// screen ratio is smaller vertically
-
-		if (stretch_aspect == STRETCH_ASPECT_KEEP_HEIGHT || stretch_aspect == STRETCH_ASPECT_EXPAND) {
-
-			//will stretch horizontally
-			viewport_size.x = desired_res.y * video_mode_aspect;
-			viewport_size.y = desired_res.y;
-			screen_size = video_mode;
-
-		} else {
-			//will need black bars
-			viewport_size = desired_res;
-			screen_size.x = video_mode.y * viewport_aspect;
-			screen_size.y = video_mode.y;
-		}
-	} else {
-		//screen ratio is smaller horizontally
-		if (stretch_aspect == STRETCH_ASPECT_KEEP_WIDTH || stretch_aspect == STRETCH_ASPECT_EXPAND) {
-
-			//will stretch horizontally
-			viewport_size.x = desired_res.x;
-			viewport_size.y = desired_res.x / video_mode_aspect;
-			screen_size = video_mode;
-
-		} else {
-			//will need black bars
-			viewport_size = desired_res;
-			screen_size.x = video_mode.x;
-			screen_size.y = video_mode.x / viewport_aspect;
-		}
-	}
-
-	screen_size = screen_size.floor();
-	viewport_size = viewport_size.floor();
-
-	Size2 margin;
-	Size2 offset;
-	//black bars and margin
-	if (stretch_aspect != STRETCH_ASPECT_EXPAND && screen_size.x < video_mode.x) {
-		margin.x = Math::round((video_mode.x - screen_size.x) / 2.0);
-		VisualServer::get_singleton()->black_bars_set_margins(margin.x, 0, margin.x, 0);
-		offset.x = Math::round(margin.x * viewport_size.y / screen_size.y);
-	} else if (stretch_aspect != STRETCH_ASPECT_EXPAND && screen_size.y < video_mode.y) {
-		margin.y = Math::round((video_mode.y - screen_size.y) / 2.0);
-		VisualServer::get_singleton()->black_bars_set_margins(0, margin.y, 0, margin.y);
-		offset.y = Math::round(margin.y * viewport_size.x / screen_size.x);
-	} else {
-		VisualServer::get_singleton()->black_bars_set_margins(0, 0, 0, 0);
-	}
-
-	switch (stretch_mode) {
-		case STRETCH_MODE_DISABLED: {
-			// Already handled above
-			_update_font_oversampling(1.0);
-		} break;
-		case STRETCH_MODE_2D: {
-
-			_update_font_oversampling(screen_size.x / viewport_size.x); //screen / viewport radio drives oversampling
-			root->set_size((screen_size / stretch_shrink).floor());
-			root->set_attach_to_screen_rect(Rect2(margin, screen_size));
-			root->set_size_override_stretch(true);
-			root->set_size_override(true, (viewport_size / stretch_shrink).floor());
-			root->update_canvas_items(); //force them to update just in case
-
-		} break;
-		case STRETCH_MODE_VIEWPORT: {
-
-			_update_font_oversampling(1.0);
-			root->set_size((viewport_size / stretch_shrink).floor());
-			root->set_attach_to_screen_rect(Rect2(margin, screen_size));
-			root->set_size_override_stretch(false);
-			root->set_size_override(false, Size2());
-			root->update_canvas_items(); //force them to update just in case
-
-			if (use_font_oversampling) {
-				WARN_PRINT("Font oversampling does not work in 'Viewport' stretch mode, only '2D'.");
-			}
-
-		} break;
-	}
-}
-
-void SceneTree::set_screen_stretch(StretchMode p_mode, StretchAspect p_aspect, const Size2 &p_minsize, real_t p_shrink) {
-
-	stretch_mode = p_mode;
-	stretch_aspect = p_aspect;
-	stretch_min = p_minsize;
-	stretch_shrink = p_shrink;
-	_update_root_rect();
-}
-
 void SceneTree::set_edited_scene_root(Node *p_node) {
 #ifdef TOOLS_ENABLED
 	edited_scene_root = p_node;
@@ -1328,18 +1102,6 @@ void SceneTree::add_current_scene(Node *p_current) {
 
 	current_scene = p_current;
 	root->add_child(p_current);
-}
-
-void SceneTree::drop_files(const Vector<String> &p_files, int p_from_screen) {
-
-	emit_signal("files_dropped", p_files, p_from_screen);
-	MainLoop::drop_files(p_files, p_from_screen);
-}
-
-void SceneTree::global_menu_action(const Variant &p_id, const Variant &p_meta) {
-
-	emit_signal("global_menu_action", p_id, p_meta);
-	MainLoop::global_menu_action(p_id, p_meta);
 }
 
 Ref<SceneTreeTimer> SceneTree::create_timer(float p_delay_sec, bool p_process_pause) {
@@ -1469,16 +1231,12 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_pause", "enable"), &SceneTree::set_pause);
 	ClassDB::bind_method(D_METHOD("is_paused"), &SceneTree::is_paused);
-	ClassDB::bind_method(D_METHOD("set_input_as_handled"), &SceneTree::set_input_as_handled);
-	ClassDB::bind_method(D_METHOD("is_input_handled"), &SceneTree::is_input_handled);
 
 	ClassDB::bind_method(D_METHOD("create_timer", "time_sec", "pause_mode_process"), &SceneTree::create_timer, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("get_node_count"), &SceneTree::get_node_count);
 	ClassDB::bind_method(D_METHOD("get_frame"), &SceneTree::get_frame);
 	ClassDB::bind_method(D_METHOD("quit", "exit_code"), &SceneTree::quit, DEFVAL(-1));
-
-	ClassDB::bind_method(D_METHOD("set_screen_stretch", "mode", "aspect", "minsize", "shrink"), &SceneTree::set_screen_stretch, DEFVAL(1));
 
 	ClassDB::bind_method(D_METHOD("queue_delete", "obj"), &SceneTree::queue_delete);
 
@@ -1529,15 +1287,11 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_refuse_new_network_connections", "refuse"), &SceneTree::set_refuse_new_network_connections);
 	ClassDB::bind_method(D_METHOD("is_refusing_new_network_connections"), &SceneTree::is_refusing_new_network_connections);
 
-	ClassDB::bind_method(D_METHOD("set_use_font_oversampling", "enable"), &SceneTree::set_use_font_oversampling);
-	ClassDB::bind_method(D_METHOD("is_using_font_oversampling"), &SceneTree::is_using_font_oversampling);
-
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_collisions_hint"), "set_debug_collisions_hint", "is_debugging_collisions_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_navigation_hint"), "set_debug_navigation_hint", "is_debugging_navigation_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused"), "set_pause", "is_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_network_connections"), "set_refuse_new_network_connections", "is_refusing_new_network_connections");
 	ADD_PROPERTY_DEFAULT("refuse_new_network_connections", false);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_font_oversampling"), "set_use_font_oversampling", "is_using_font_oversampling");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_scene_root", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_edited_scene_root", "get_edited_scene_root");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "current_scene", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_current_scene", "get_current_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "network_peer", PROPERTY_HINT_RESOURCE_TYPE, "NetworkedMultiplayerPeer", 0), "set_network_peer", "get_network_peer");
@@ -1549,14 +1303,12 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("node_added", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_removed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_renamed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
-	ADD_SIGNAL(MethodInfo("screen_resized"));
 	ADD_SIGNAL(MethodInfo("node_configuration_warning_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 
 	ADD_SIGNAL(MethodInfo("idle_frame"));
 	ADD_SIGNAL(MethodInfo("physics_frame"));
 
 	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files"), PropertyInfo(Variant::INT, "screen")));
-	ADD_SIGNAL(MethodInfo("global_menu_action", PropertyInfo(Variant::NIL, "id"), PropertyInfo(Variant::NIL, "meta")));
 	ADD_SIGNAL(MethodInfo("network_peer_connected", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("network_peer_disconnected", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("connected_to_server"));
@@ -1567,16 +1319,6 @@ void SceneTree::_bind_methods() {
 	BIND_ENUM_CONSTANT(GROUP_CALL_REVERSE);
 	BIND_ENUM_CONSTANT(GROUP_CALL_REALTIME);
 	BIND_ENUM_CONSTANT(GROUP_CALL_UNIQUE);
-
-	BIND_ENUM_CONSTANT(STRETCH_MODE_DISABLED);
-	BIND_ENUM_CONSTANT(STRETCH_MODE_2D);
-	BIND_ENUM_CONSTANT(STRETCH_MODE_VIEWPORT);
-
-	BIND_ENUM_CONSTANT(STRETCH_ASPECT_IGNORE);
-	BIND_ENUM_CONSTANT(STRETCH_ASPECT_KEEP);
-	BIND_ENUM_CONSTANT(STRETCH_ASPECT_KEEP_WIDTH);
-	BIND_ENUM_CONSTANT(STRETCH_ASPECT_KEEP_HEIGHT);
-	BIND_ENUM_CONSTANT(STRETCH_ASPECT_EXPAND);
 }
 
 SceneTree *SceneTree::singleton = NULL;
@@ -1594,19 +1336,6 @@ void SceneTree::_call_idle_callbacks() {
 void SceneTree::add_idle_callback(IdleCallback p_callback) {
 	ERR_FAIL_COND(idle_callback_count >= MAX_IDLE_CALLBACKS);
 	idle_callbacks[idle_callback_count++] = p_callback;
-}
-
-void SceneTree::set_use_font_oversampling(bool p_oversampling) {
-
-	if (use_font_oversampling == p_oversampling)
-		return;
-
-	use_font_oversampling = p_oversampling;
-	_update_root_rect();
-}
-
-bool SceneTree::is_using_font_oversampling() const {
-	return use_font_oversampling;
 }
 
 void SceneTree::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
@@ -1648,7 +1377,6 @@ SceneTree::SceneTree() {
 	accept_quit = true;
 	quit_on_go_back = true;
 	initialized = false;
-	use_font_oversampling = false;
 #ifdef DEBUG_ENABLED
 	debug_collisions_hint = false;
 	debug_navigation_hint = false;
@@ -1665,7 +1393,6 @@ SceneTree::SceneTree() {
 	idle_process_time = 1;
 
 	root = NULL;
-	input_handled = false;
 	pause = false;
 	current_frame = 0;
 	current_event = 0;
@@ -1680,9 +1407,8 @@ SceneTree::SceneTree() {
 
 	//create with mainloop
 
-	root = memnew(Viewport);
+	root = memnew(Window);
 	root->set_name("root");
-	root->set_handle_input_locally(false);
 	if (!root->get_world().is_valid())
 		root->set_world(Ref<World>(memnew(World)));
 
@@ -1730,14 +1456,11 @@ SceneTree::SceneTree() {
 		}
 	}
 
-	stretch_mode = STRETCH_MODE_DISABLED;
-	stretch_aspect = STRETCH_ASPECT_IGNORE;
-	stretch_shrink = 1;
-
-	last_screen_size = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
-	_update_root_rect();
-
 	root->set_physics_object_picking(GLOBAL_DEF("physics/common/enable_object_picking", true));
+
+	root->connect("close_requested", callable_mp(this, &SceneTree::_main_window_close));
+	root->connect("go_back_requested", callable_mp(this, &SceneTree::_main_window_go_back));
+	root->connect("focus_entered", callable_mp(this, &SceneTree::_main_window_focus_in));
 
 #ifdef TOOLS_ENABLED
 	edited_scene_root = NULL;

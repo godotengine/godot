@@ -121,33 +121,33 @@ void PropertySelector::_update_search() {
 		bool found = false;
 
 		Ref<Texture2D> type_icons[Variant::VARIANT_MAX] = {
-			Control::get_icon("Variant", "EditorIcons"),
-			Control::get_icon("bool", "EditorIcons"),
-			Control::get_icon("int", "EditorIcons"),
-			Control::get_icon("float", "EditorIcons"),
-			Control::get_icon("String", "EditorIcons"),
-			Control::get_icon("Vector2", "EditorIcons"),
-			Control::get_icon("Rect2", "EditorIcons"),
-			Control::get_icon("Vector3", "EditorIcons"),
-			Control::get_icon("Transform2D", "EditorIcons"),
-			Control::get_icon("Plane", "EditorIcons"),
-			Control::get_icon("Quat", "EditorIcons"),
-			Control::get_icon("AABB", "EditorIcons"),
-			Control::get_icon("Basis", "EditorIcons"),
-			Control::get_icon("Transform", "EditorIcons"),
-			Control::get_icon("Color", "EditorIcons"),
-			Control::get_icon("Path", "EditorIcons"),
-			Control::get_icon("RID", "EditorIcons"),
-			Control::get_icon("Object", "EditorIcons"),
-			Control::get_icon("Dictionary", "EditorIcons"),
-			Control::get_icon("Array", "EditorIcons"),
-			Control::get_icon("PackedByteArray", "EditorIcons"),
-			Control::get_icon("PackedInt32Array", "EditorIcons"),
-			Control::get_icon("PackedFloat32Array", "EditorIcons"),
-			Control::get_icon("PackedStringArray", "EditorIcons"),
-			Control::get_icon("PackedVector2Array", "EditorIcons"),
-			Control::get_icon("PackedVector3Array", "EditorIcons"),
-			Control::get_icon("PackedColorArray", "EditorIcons")
+			search_options->get_theme_icon("Variant", "EditorIcons"),
+			search_options->get_theme_icon("bool", "EditorIcons"),
+			search_options->get_theme_icon("int", "EditorIcons"),
+			search_options->get_theme_icon("float", "EditorIcons"),
+			search_options->get_theme_icon("String", "EditorIcons"),
+			search_options->get_theme_icon("Vector2", "EditorIcons"),
+			search_options->get_theme_icon("Rect2", "EditorIcons"),
+			search_options->get_theme_icon("Vector3", "EditorIcons"),
+			search_options->get_theme_icon("Transform2D", "EditorIcons"),
+			search_options->get_theme_icon("Plane", "EditorIcons"),
+			search_options->get_theme_icon("Quat", "EditorIcons"),
+			search_options->get_theme_icon("AABB", "EditorIcons"),
+			search_options->get_theme_icon("Basis", "EditorIcons"),
+			search_options->get_theme_icon("Transform", "EditorIcons"),
+			search_options->get_theme_icon("Color", "EditorIcons"),
+			search_options->get_theme_icon("Path", "EditorIcons"),
+			search_options->get_theme_icon("RID", "EditorIcons"),
+			search_options->get_theme_icon("Object", "EditorIcons"),
+			search_options->get_theme_icon("Dictionary", "EditorIcons"),
+			search_options->get_theme_icon("Array", "EditorIcons"),
+			search_options->get_theme_icon("PackedByteArray", "EditorIcons"),
+			search_options->get_theme_icon("PackedInt32Array", "EditorIcons"),
+			search_options->get_theme_icon("PackedFloat32Array", "EditorIcons"),
+			search_options->get_theme_icon("PackedStringArray", "EditorIcons"),
+			search_options->get_theme_icon("PackedVector2Array", "EditorIcons"),
+			search_options->get_theme_icon("PackedVector3Array", "EditorIcons"),
+			search_options->get_theme_icon("PackedColorArray", "EditorIcons")
 		};
 
 		for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
@@ -161,7 +161,7 @@ void PropertySelector::_update_search() {
 
 				Ref<Texture2D> icon;
 				if (E->get().name == "Script Variables") {
-					icon = get_icon("Script", "EditorIcons");
+					icon = search_options->get_theme_icon("Script", "EditorIcons");
 				} else {
 					icon = EditorNode::get_singleton()->get_class_icon(E->get().name);
 				}
@@ -238,7 +238,7 @@ void PropertySelector::_update_search() {
 				script_methods = false;
 				String rep = E->get().name.replace("*", "");
 				if (E->get().name == "*Script Methods") {
-					icon = get_icon("Script", "EditorIcons");
+					icon = search_options->get_theme_icon("Script", "EditorIcons");
 					script_methods = true;
 				} else {
 					icon = EditorNode::get_singleton()->get_class_icon(rep);
@@ -390,7 +390,7 @@ void PropertySelector::_item_selected() {
 }
 
 void PropertySelector::_hide_requested() {
-	_closed(); // From WindowDialog.
+	_cancel_pressed(); // From AcceptDialog.
 }
 
 void PropertySelector::_notification(int p_what) {

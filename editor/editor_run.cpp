@@ -32,6 +32,7 @@
 
 #include "core/project_settings.h"
 #include "editor_settings.h"
+#include "servers/display_server.h"
 
 EditorRun::Status EditorRun::get_status() const {
 
@@ -70,19 +71,19 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 	int screen = EditorSettings::get_singleton()->get("run/window_placement/screen");
 	if (screen == 0) {
 		// Same as editor
-		screen = OS::get_singleton()->get_current_screen();
+		screen = DisplayServer::get_singleton()->window_get_current_screen();
 	} else if (screen == 1) {
 		// Previous monitor (wrap to the other end if needed)
 		screen = Math::wrapi(
-				OS::get_singleton()->get_current_screen() - 1,
+				DisplayServer::get_singleton()->window_get_current_screen() - 1,
 				0,
-				OS::get_singleton()->get_screen_count());
+				DisplayServer::get_singleton()->get_screen_count());
 	} else if (screen == 2) {
 		// Next monitor (wrap to the other end if needed)
 		screen = Math::wrapi(
-				OS::get_singleton()->get_current_screen() + 1,
+				DisplayServer::get_singleton()->window_get_current_screen() + 1,
 				0,
-				OS::get_singleton()->get_screen_count());
+				DisplayServer::get_singleton()->get_screen_count());
 	} else {
 		// Fixed monitor ID
 		// There are 3 special options, so decrement the option ID by 3 to get the monitor ID
@@ -94,8 +95,8 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 	}
 
 	Rect2 screen_rect;
-	screen_rect.position = OS::get_singleton()->get_screen_position(screen);
-	screen_rect.size = OS::get_singleton()->get_screen_size(screen);
+	screen_rect.position = DisplayServer::get_singleton()->screen_get_position(screen);
+	screen_rect.size = DisplayServer::get_singleton()->screen_get_size(screen);
 
 	Size2 desired_size;
 	desired_size.x = ProjectSettings::get_singleton()->get("display/window/size/width");
@@ -120,7 +121,9 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 		case 1: { // centered
 			int display_scale = 1;
 #ifdef OSX_ENABLED
-			if (OS::get_singleton()->get_screen_dpi(screen) >= 192 && OS::get_singleton()->get_screen_size(screen).x > 2000) {
+			display_scale = DisplayServer::get_singleton()->screen_get_scale(screen);
+#else
+			if (DisplayServer::get_singleton()->screen_get_dpi(screen) >= 192 && DisplayServer::get_singleton()->screen_get_size(screen).x > 2000) {
 				display_scale = 2;
 			}
 #endif

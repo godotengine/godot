@@ -30,7 +30,7 @@
 
 #include "scroll_container.h"
 #include "core/os/os.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 
 bool ScrollContainer::clips_input() const {
 
@@ -39,7 +39,7 @@ bool ScrollContainer::clips_input() const {
 
 Size2 ScrollContainer::get_minimum_size() const {
 
-	Ref<StyleBox> sb = get_stylebox("bg");
+	Ref<StyleBox> sb = get_theme_stylebox("bg");
 	Size2 min_size;
 
 	for (int i = 0; i < get_child_count(); i++) {
@@ -129,7 +129,7 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll)
 			accept_event(); //accept event if scroll changed
 
-		if (!OS::get_singleton()->has_touchscreen_ui_hint())
+		if (!DisplayServer::get_singleton()->screen_is_touchscreen(DisplayServer::get_singleton()->window_get_current_screen(get_viewport()->get_window_id())))
 			return;
 
 		if (mb->get_button_index() != BUTTON_LEFT)
@@ -145,7 +145,7 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			drag_accum = Vector2();
 			last_drag_accum = Vector2();
 			drag_from = Vector2(h_scroll->get_value(), v_scroll->get_value());
-			drag_touching = OS::get_singleton()->has_touchscreen_ui_hint();
+			drag_touching = !DisplayServer::get_singleton()->screen_is_touchscreen(DisplayServer::get_singleton()->window_get_current_screen(get_viewport()->get_window_id()));
 			drag_touching_deaccel = false;
 			beyond_deadzone = false;
 			time_since_motion = 0;
@@ -276,7 +276,7 @@ void ScrollContainer::_notification(int p_what) {
 		Size2 size = get_size();
 		Point2 ofs;
 
-		Ref<StyleBox> sb = get_stylebox("bg");
+		Ref<StyleBox> sb = get_theme_stylebox("bg");
 		size -= sb->get_minimum_size();
 		ofs += sb->get_offset();
 
@@ -323,7 +323,7 @@ void ScrollContainer::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 
-		Ref<StyleBox> sb = get_stylebox("bg");
+		Ref<StyleBox> sb = get_theme_stylebox("bg");
 		draw_style_box(sb, Rect2(Vector2(), get_size()));
 
 		update_scrollbars();
@@ -404,7 +404,7 @@ void ScrollContainer::_notification(int p_what) {
 void ScrollContainer::update_scrollbars() {
 
 	Size2 size = get_size();
-	Ref<StyleBox> sb = get_stylebox("bg");
+	Ref<StyleBox> sb = get_theme_stylebox("bg");
 	size -= sb->get_minimum_size();
 
 	Size2 hmin;

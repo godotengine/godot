@@ -39,7 +39,7 @@
 #include "modules/visual_script/visual_script_func_nodes.h"
 #include "modules/visual_script/visual_script_nodes.h"
 #include "scene/main/node.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 
 void VisualScriptPropertySelector::_text_changed(const String &p_newtext) {
 	_update_search();
@@ -99,35 +99,35 @@ void VisualScriptPropertySelector::_update_search() {
 		List<PropertyInfo> props;
 		TreeItem *category = NULL;
 		Ref<Texture2D> type_icons[Variant::VARIANT_MAX] = {
-			Control::get_icon("Variant", "EditorIcons"),
-			Control::get_icon("bool", "EditorIcons"),
-			Control::get_icon("int", "EditorIcons"),
-			Control::get_icon("float", "EditorIcons"),
-			Control::get_icon("String", "EditorIcons"),
-			Control::get_icon("Vector2", "EditorIcons"),
-			Control::get_icon("Rect2", "EditorIcons"),
-			Control::get_icon("Vector3", "EditorIcons"),
-			Control::get_icon("Transform2D", "EditorIcons"),
-			Control::get_icon("Plane", "EditorIcons"),
-			Control::get_icon("Quat", "EditorIcons"),
-			Control::get_icon("AABB", "EditorIcons"),
-			Control::get_icon("Basis", "EditorIcons"),
-			Control::get_icon("Transform", "EditorIcons"),
-			Control::get_icon("Color", "EditorIcons"),
-			Control::get_icon("Path", "EditorIcons"),
-			Control::get_icon("RID", "EditorIcons"),
-			Control::get_icon("Object", "EditorIcons"),
-			Control::get_icon("Dictionary", "EditorIcons"),
-			Control::get_icon("Array", "EditorIcons"),
-			Control::get_icon("PackedByteArray", "EditorIcons"),
-			Control::get_icon("PackedInt32Array", "EditorIcons"),
-			Control::get_icon("PackedFloat32Array", "EditorIcons"),
-			Control::get_icon("PackedInt64Array", "EditorIcons"),
-			Control::get_icon("PackedFloat64Array", "EditorIcons"),
-			Control::get_icon("PackedStringArray", "EditorIcons"),
-			Control::get_icon("PackedVector2Array", "EditorIcons"),
-			Control::get_icon("PackedVector3Array", "EditorIcons"),
-			Control::get_icon("PackedColorArray", "EditorIcons")
+			vbc->get_theme_icon("Variant", "EditorIcons"),
+			vbc->get_theme_icon("bool", "EditorIcons"),
+			vbc->get_theme_icon("int", "EditorIcons"),
+			vbc->get_theme_icon("float", "EditorIcons"),
+			vbc->get_theme_icon("String", "EditorIcons"),
+			vbc->get_theme_icon("Vector2", "EditorIcons"),
+			vbc->get_theme_icon("Rect2", "EditorIcons"),
+			vbc->get_theme_icon("Vector3", "EditorIcons"),
+			vbc->get_theme_icon("Transform2D", "EditorIcons"),
+			vbc->get_theme_icon("Plane", "EditorIcons"),
+			vbc->get_theme_icon("Quat", "EditorIcons"),
+			vbc->get_theme_icon("AABB", "EditorIcons"),
+			vbc->get_theme_icon("Basis", "EditorIcons"),
+			vbc->get_theme_icon("Transform", "EditorIcons"),
+			vbc->get_theme_icon("Color", "EditorIcons"),
+			vbc->get_theme_icon("Path", "EditorIcons"),
+			vbc->get_theme_icon("RID", "EditorIcons"),
+			vbc->get_theme_icon("Object", "EditorIcons"),
+			vbc->get_theme_icon("Dictionary", "EditorIcons"),
+			vbc->get_theme_icon("Array", "EditorIcons"),
+			vbc->get_theme_icon("PackedByteArray", "EditorIcons"),
+			vbc->get_theme_icon("PackedInt32Array", "EditorIcons"),
+			vbc->get_theme_icon("PackedFloat32Array", "EditorIcons"),
+			vbc->get_theme_icon("PackedInt64Array", "EditorIcons"),
+			vbc->get_theme_icon("PackedFloat64Array", "EditorIcons"),
+			vbc->get_theme_icon("PackedStringArray", "EditorIcons"),
+			vbc->get_theme_icon("PackedVector2Array", "EditorIcons"),
+			vbc->get_theme_icon("PackedVector3Array", "EditorIcons"),
+			vbc->get_theme_icon("PackedColorArray", "EditorIcons")
 		};
 		{
 			String b = String(E->get());
@@ -252,7 +252,7 @@ void VisualScriptPropertySelector::_update_search() {
 
 			TreeItem *item = search_options->create_item(category ? category : root);
 			item->set_text(0, desc);
-			item->set_icon(0, get_icon("MemberMethod", "EditorIcons"));
+			item->set_icon(0, vbc->get_theme_icon("MemberMethod", "EditorIcons"));
 			item->set_metadata(0, name);
 			item->set_selectable(0, true);
 
@@ -316,7 +316,7 @@ void VisualScriptPropertySelector::create_visualscript_item(const String &name, 
 	if (search_input == String() || text.findn(search_input) != -1) {
 		TreeItem *item = search_options->create_item(root);
 		item->set_text(0, text);
-		item->set_icon(0, get_icon("VisualScript", "EditorIcons"));
+		item->set_icon(0, vbc->get_theme_icon("VisualScript", "EditorIcons"));
 		item->set_metadata(0, name);
 		item->set_metadata(1, "action");
 		item->set_selectable(0, true);
@@ -399,7 +399,7 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 		}
 
 		item->set_text(0, type_name + String("").join(desc));
-		item->set_icon(0, get_icon("VisualScript", "EditorIcons"));
+		item->set_icon(0, vbc->get_theme_icon("VisualScript", "EditorIcons"));
 		item->set_selectable(0, true);
 		item->set_metadata(0, E->get());
 		item->set_selectable(0, true);
@@ -416,7 +416,7 @@ void VisualScriptPropertySelector::_confirmed() {
 	if (!ti)
 		return;
 	emit_signal("selected", ti->get_metadata(0), ti->get_metadata(1), ti->get_metadata(2));
-	hide();
+	set_visible(false);
 }
 
 void VisualScriptPropertySelector::_item_selected() {
@@ -519,7 +519,7 @@ void VisualScriptPropertySelector::_item_selected() {
 }
 
 void VisualScriptPropertySelector::_hide_requested() {
-	_closed(); // From WindowDialog.
+	_cancel_pressed(); // From AcceptDialog.
 }
 
 void VisualScriptPropertySelector::_notification(int p_what) {
@@ -684,12 +684,8 @@ void VisualScriptPropertySelector::select_from_visual_script(const String &p_bas
 }
 
 void VisualScriptPropertySelector::show_window(float p_screen_ratio) {
-	Rect2 rect;
-	Point2 window_size = get_viewport_rect().size;
-	rect.size = (window_size * p_screen_ratio).floor();
-	rect.size.x = rect.size.x / 2.2f;
-	rect.position = ((window_size - rect.size) / 2.0f).floor();
-	popup(rect);
+
+	popup_centered_ratio(p_screen_ratio);
 }
 
 void VisualScriptPropertySelector::_bind_methods() {
@@ -699,7 +695,7 @@ void VisualScriptPropertySelector::_bind_methods() {
 
 VisualScriptPropertySelector::VisualScriptPropertySelector() {
 
-	VBoxContainer *vbc = memnew(VBoxContainer);
+	vbc = memnew(VBoxContainer);
 	add_child(vbc);
 	//set_child_rect(vbc);
 	search_box = memnew(LineEdit);

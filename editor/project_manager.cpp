@@ -51,6 +51,8 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tool_button.h"
+#include "scene/main/window.h"
+#include "servers/display_server.h"
 
 static inline String get_project_key_from_path(const String &dir) {
 	return dir.replace("/", "::");
@@ -115,22 +117,22 @@ private:
 
 			case MESSAGE_ERROR: {
 
-				msg->add_color_override("font_color", get_color("error_color", "Editor"));
+				msg->add_theme_color_override("font_color", msg->get_theme_color("error_color", "Editor"));
 				msg->set_modulate(Color(1, 1, 1, 1));
-				new_icon = get_icon("StatusError", "EditorIcons");
+				new_icon = msg->get_theme_icon("StatusError", "EditorIcons");
 
 			} break;
 			case MESSAGE_WARNING: {
 
-				msg->add_color_override("font_color", get_color("warning_color", "Editor"));
+				msg->add_theme_color_override("font_color", msg->get_theme_color("warning_color", "Editor"));
 				msg->set_modulate(Color(1, 1, 1, 1));
-				new_icon = get_icon("StatusWarning", "EditorIcons");
+				new_icon = msg->get_theme_icon("StatusWarning", "EditorIcons");
 
 			} break;
 			case MESSAGE_SUCCESS: {
 
 				msg->set_modulate(Color(1, 1, 1, 0));
-				new_icon = get_icon("StatusSuccess", "EditorIcons");
+				new_icon = msg->get_theme_icon("StatusSuccess", "EditorIcons");
 
 			} break;
 		}
@@ -141,7 +143,7 @@ private:
 			install_status_rect->set_texture(new_icon);
 		}
 
-		set_size(Size2(500, 0) * EDSCALE);
+		set_size(Size2i(500, 0) * EDSCALE);
 	}
 
 	String _test_path() {
@@ -377,19 +379,19 @@ private:
 
 		if (mode == MODE_IMPORT) {
 
-			fdialog->set_mode(FileDialog::MODE_OPEN_FILE);
+			fdialog->set_file_mode(FileDialog::FILE_MODE_OPEN_FILE);
 			fdialog->clear_filters();
 			fdialog->add_filter(vformat("project.godot ; %s %s", VERSION_NAME, TTR("Project")));
 			fdialog->add_filter("*.zip ; " + TTR("ZIP File"));
 		} else {
-			fdialog->set_mode(FileDialog::MODE_OPEN_DIR);
+			fdialog->set_file_mode(FileDialog::FILE_MODE_OPEN_DIR);
 		}
 		fdialog->popup_centered_ratio();
 	}
 
 	void _browse_install_path() {
 		fdialog_install->set_current_dir(install_path->get_text());
-		fdialog_install->set_mode(FileDialog::MODE_OPEN_DIR);
+		fdialog_install->set_file_mode(FileDialog::FILE_MODE_OPEN_DIR);
 		fdialog_install->popup_centered_ratio();
 	}
 
@@ -416,12 +418,12 @@ private:
 				} else {
 
 					dialog_error->set_text(TTR("Couldn't create folder."));
-					dialog_error->popup_centered_minsize();
+					dialog_error->popup_centered();
 				}
 			} else {
 
 				dialog_error->set_text(TTR("There is already a folder in this path with the specified name."));
-				dialog_error->popup_centered_minsize();
+				dialog_error->popup_centered();
 			}
 		}
 
@@ -498,7 +500,7 @@ private:
 					if (ProjectSettings::get_singleton()->save_custom(dir.plus_file("project.godot"), initial_settings, Vector<String>(), false) != OK) {
 						set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
 					} else {
-						ResourceSaver::save(dir.plus_file("icon.png"), get_icon("DefaultProjectIcon", "EditorIcons"));
+						ResourceSaver::save(dir.plus_file("icon.png"), msg->get_theme_icon("DefaultProjectIcon", "EditorIcons"));
 
 						FileAccess *f = FileAccess::open(dir.plus_file("default_env.tres"), FileAccess::WRITE);
 						if (!f) {
@@ -527,7 +529,7 @@ private:
 					if (!pkg) {
 
 						dialog_error->set_text(TTR("Error opening package file, not in ZIP format."));
-						dialog_error->popup_centered_minsize();
+						dialog_error->popup_centered();
 						return;
 					}
 
@@ -605,11 +607,11 @@ private:
 						}
 
 						dialog_error->set_text(msg);
-						dialog_error->popup_centered_minsize();
+						dialog_error->popup_centered();
 
 					} else if (!project_path->get_text().ends_with(".zip")) {
 						dialog_error->set_text(TTR("Package installed successfully!"));
-						dialog_error->popup_centered_minsize();
+						dialog_error->popup_centered();
 					}
 				}
 			}
@@ -647,16 +649,16 @@ private:
 		project_name->clear();
 		_text_changed("");
 
-		if (status_rect->get_texture() == get_icon("StatusError", "EditorIcons"))
+		if (status_rect->get_texture() == msg->get_theme_icon("StatusError", "EditorIcons"))
 			msg->show();
 
-		if (install_status_rect->get_texture() == get_icon("StatusError", "EditorIcons"))
+		if (install_status_rect->get_texture() == msg->get_theme_icon("StatusError", "EditorIcons"))
 			msg->show();
 	}
 
 	void _notification(int p_what) {
 
-		if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST)
+		if (p_what == NOTIFICATION_WM_CLOSE_REQUEST)
 			_remove_created_folder();
 	}
 
@@ -786,7 +788,7 @@ public:
 			_test_path();
 		}
 
-		popup_centered_minsize(Size2(500, 0) * EDSCALE);
+		popup_centered(Size2i(500, 0) * EDSCALE);
 	}
 
 	ProjectDialog() {
@@ -805,7 +807,7 @@ public:
 		name_container->add_child(pnhb);
 
 		project_name = memnew(LineEdit);
-		project_name->set_h_size_flags(SIZE_EXPAND_FILL);
+		project_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		pnhb->add_child(project_name);
 
 		create_dir = memnew(Button);
@@ -824,7 +826,7 @@ public:
 		path_container->add_child(pphb);
 
 		project_path = memnew(LineEdit);
-		project_path->set_h_size_flags(SIZE_EXPAND_FILL);
+		project_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		pphb->add_child(project_path);
 
 		install_path_container = memnew(VBoxContainer);
@@ -838,7 +840,7 @@ public:
 		install_path_container->add_child(iphb);
 
 		install_path = memnew(LineEdit);
-		install_path->set_h_size_flags(SIZE_EXPAND_FILL);
+		install_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		iphb->add_child(install_path);
 
 		// status icon
@@ -876,7 +878,7 @@ public:
 		rasterizer_button_group.instance();
 
 		Container *rvb = memnew(VBoxContainer);
-		rvb->set_h_size_flags(SIZE_EXPAND_FILL);
+		rvb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		rshb->add_child(rvb);
 		Button *rs_button = memnew(CheckBox);
 		rs_button->set_button_group(rasterizer_button_group);
@@ -895,7 +897,7 @@ public:
 				TTR("The GLES2 renderer is currently unavailable, as it needs to be reworked for Godot 4.0.\nUse Godot 3.2 if you need GLES2 support.");
 
 		rvb = memnew(VBoxContainer);
-		rvb->set_h_size_flags(SIZE_EXPAND_FILL);
+		rvb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		rshb->add_child(rvb);
 		rs_button = memnew(CheckBox);
 		rs_button->set_button_group(rasterizer_button_group);
@@ -910,7 +912,7 @@ public:
 		// Also set the tooltip on the label so it appears when hovering either the checkbox or label.
 		l->set_tooltip(gles2_unsupported_tooltip);
 		// Required for the tooltip to show.
-		l->set_mouse_filter(MOUSE_FILTER_STOP);
+		l->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 		rvb->add_child(l);
 
 		l = memnew(Label);
@@ -975,7 +977,7 @@ public:
 			} break;
 			case NOTIFICATION_DRAW: {
 				if (hover) {
-					draw_style_box(get_stylebox("hover", "Tree"), Rect2(Point2(), get_size() - Size2(10, 0) * EDSCALE));
+					draw_style_box(get_theme_stylebox("hover", "Tree"), Rect2(Point2(), get_size() - Size2(10, 0) * EDSCALE));
 				}
 			} break;
 		}
@@ -1044,6 +1046,9 @@ public:
 
 	ProjectList();
 	~ProjectList();
+
+	void _global_menu_new_window(const Variant &p_tag);
+	void _global_menu_open_project(const Variant &p_tag);
 
 	void update_dock_menu();
 	void load_projects();
@@ -1116,7 +1121,7 @@ ProjectList::ProjectList() {
 	_order_option = ProjectListFilter::FILTER_EDIT_DATE;
 
 	_scroll_children = memnew(VBoxContainer);
-	_scroll_children->set_h_size_flags(SIZE_EXPAND_FILL);
+	_scroll_children->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_child(_scroll_children);
 
 	_icon_load_index = 0;
@@ -1150,7 +1155,7 @@ void ProjectList::_notification(int p_what) {
 void ProjectList::load_project_icon(int p_index) {
 	Item &item = _projects.write[p_index];
 
-	Ref<Texture2D> default_icon = get_icon("DefaultProjectIcon", "EditorIcons");
+	Ref<Texture2D> default_icon = get_theme_icon("DefaultProjectIcon", "EditorIcons");
 	Ref<Texture2D> icon;
 	if (item.icon != "") {
 		Ref<Image> img;
@@ -1284,7 +1289,11 @@ void ProjectList::load_projects() {
 }
 
 void ProjectList::update_dock_menu() {
-	OS::get_singleton()->global_menu_clear("_dock");
+
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
+		return;
+	}
+	DisplayServer::get_singleton()->global_menu_clear("_dock");
 
 	int favs_added = 0;
 	int total_added = 0;
@@ -1294,18 +1303,41 @@ void ProjectList::update_dock_menu() {
 				favs_added++;
 			} else {
 				if (favs_added != 0) {
-					OS::get_singleton()->global_menu_add_separator("_dock");
+					DisplayServer::get_singleton()->global_menu_add_separator("_dock");
 				}
 				favs_added = 0;
 			}
-			OS::get_singleton()->global_menu_add_item("_dock", _projects[i].project_name + " ( " + _projects[i].path + " )", GLOBAL_OPEN_PROJECT, Variant(_projects[i].path.plus_file("project.godot")));
+			DisplayServer::get_singleton()->global_menu_add_item("_dock", _projects[i].project_name + " ( " + _projects[i].path + " )", callable_mp(this, &ProjectList::_global_menu_open_project), i);
 			total_added++;
 		}
 	}
 	if (total_added != 0) {
-		OS::get_singleton()->global_menu_add_separator("_dock");
+		DisplayServer::get_singleton()->global_menu_add_separator("_dock");
 	}
-	OS::get_singleton()->global_menu_add_item("_dock", TTR("New Window"), GLOBAL_NEW_WINDOW, Variant());
+	DisplayServer::get_singleton()->global_menu_add_item("_dock", TTR("New Window"), callable_mp(this, &ProjectList::_global_menu_new_window));
+}
+
+void ProjectList::_global_menu_new_window(const Variant &p_tag) {
+	List<String> args;
+	args.push_back("-p");
+	String exec = OS::get_singleton()->get_executable_path();
+
+	OS::ProcessID pid = 0;
+	OS::get_singleton()->execute(exec, args, false, &pid);
+}
+
+void ProjectList::_global_menu_open_project(const Variant &p_tag) {
+	int idx = (int)p_tag;
+
+	if (idx >= 0 && idx < _projects.size()) {
+		String conf = _projects[idx].path.plus_file("project.godot");
+		List<String> args;
+		args.push_back(conf);
+		String exec = OS::get_singleton()->get_executable_path();
+
+		OS::ProcessID pid = 0;
+		OS::get_singleton()->execute(exec, args, false, &pid);
+	}
 }
 
 void ProjectList::create_project_item_control(int p_index) {
@@ -1316,13 +1348,13 @@ void ProjectList::create_project_item_control(int p_index) {
 	Item &item = _projects.write[p_index];
 	ERR_FAIL_COND(item.control != NULL); // Already created
 
-	Ref<Texture2D> favorite_icon = get_icon("Favorites", "EditorIcons");
-	Color font_color = get_color("font_color", "Tree");
+	Ref<Texture2D> favorite_icon = get_theme_icon("Favorites", "EditorIcons");
+	Color font_color = get_theme_color("font_color", "Tree");
 
 	ProjectListItemControl *hb = memnew(ProjectListItemControl);
 	hb->connect("draw", callable_mp(this, &ProjectList::_panel_draw), varray(hb));
 	hb->connect("gui_input", callable_mp(this, &ProjectList::_panel_input), varray(hb));
-	hb->add_constant_override("separation", 10 * EDSCALE);
+	hb->add_theme_constant_override("separation", 10 * EDSCALE);
 	hb->set_tooltip(item.description);
 
 	VBoxContainer *favorite_box = memnew(VBoxContainer);
@@ -1342,7 +1374,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	TextureRect *tf = memnew(TextureRect);
 	// The project icon may not be loaded by the time the control is displayed,
 	// so use a loading placeholder.
-	tf->set_texture(get_icon("ProjectIconLoading", "EditorIcons"));
+	tf->set_texture(get_theme_icon("ProjectIconLoading", "EditorIcons"));
 	tf->set_v_size_flags(SIZE_SHRINK_CENTER);
 	if (item.missing) {
 		tf->set_modulate(Color(1, 1, 1, 0.5));
@@ -1353,25 +1385,25 @@ void ProjectList::create_project_item_control(int p_index) {
 	VBoxContainer *vb = memnew(VBoxContainer);
 	if (item.grayed)
 		vb->set_modulate(Color(1, 1, 1, 0.5));
-	vb->set_h_size_flags(SIZE_EXPAND_FILL);
+	vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->add_child(vb);
 	Control *ec = memnew(Control);
 	ec->set_custom_minimum_size(Size2(0, 1));
 	ec->set_mouse_filter(MOUSE_FILTER_PASS);
 	vb->add_child(ec);
 	Label *title = memnew(Label(!item.missing ? item.project_name : TTR("Missing Project")));
-	title->add_font_override("font", get_font("title", "EditorFonts"));
-	title->add_color_override("font_color", font_color);
+	title->add_theme_font_override("font", get_theme_font("title", "EditorFonts"));
+	title->add_theme_color_override("font_color", font_color);
 	title->set_clip_text(true);
 	vb->add_child(title);
 
 	HBoxContainer *path_hb = memnew(HBoxContainer);
-	path_hb->set_h_size_flags(SIZE_EXPAND_FILL);
+	path_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	vb->add_child(path_hb);
 
 	Button *show = memnew(Button);
 	// Display a folder icon if the project directory can be opened, or a "broken file" icon if it can't
-	show->set_icon(get_icon(!item.missing ? "Load" : "FileBroken", "EditorIcons"));
+	show->set_icon(get_theme_icon(!item.missing ? "Load" : "FileBroken", "EditorIcons"));
 	show->set_flat(true);
 	if (!item.grayed) {
 		// Don't make the icon less prominent if the parent is already grayed out
@@ -1388,9 +1420,9 @@ void ProjectList::create_project_item_control(int p_index) {
 
 	Label *fpath = memnew(Label(item.path));
 	path_hb->add_child(fpath);
-	fpath->set_h_size_flags(SIZE_EXPAND_FILL);
+	fpath->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	fpath->set_modulate(Color(1, 1, 1, 0.5));
-	fpath->add_color_override("font_color", font_color);
+	fpath->add_theme_color_override("font_color", font_color);
 	fpath->set_clip_text(true);
 
 	_scroll_children->add_child(hb);
@@ -1722,12 +1754,12 @@ void ProjectList::erase_selected_projects() {
 void ProjectList::_panel_draw(Node *p_hb) {
 	Control *hb = Object::cast_to<Control>(p_hb);
 
-	hb->draw_line(Point2(0, hb->get_size().y + 1), Point2(hb->get_size().x - 10, hb->get_size().y + 1), get_color("guide_color", "Tree"));
+	hb->draw_line(Point2(0, hb->get_size().y + 1), Point2(hb->get_size().x - 10, hb->get_size().y + 1), get_theme_color("guide_color", "Tree"));
 
 	String key = _projects[p_hb->get_index()].project_key;
 
 	if (_selected_project_keys.has(key)) {
-		hb->draw_style_box(get_stylebox("selected", "Tree"), Rect2(Point2(), hb->get_size() - Size2(10, 0) * EDSCALE));
+		hb->draw_style_box(get_theme_stylebox("selected", "Tree"), Rect2(Point2(), hb->get_size() - Size2(10, 0) * EDSCALE));
 	}
 }
 
@@ -1827,13 +1859,13 @@ void ProjectManager::_notification(int p_what) {
 		case NOTIFICATION_RESIZED: {
 
 			if (open_templates->is_visible()) {
-				open_templates->popup_centered_minsize();
+				open_templates->popup_centered();
 			}
 		} break;
 		case NOTIFICATION_READY: {
 
 			if (_project_list->get_project_count() == 0 && StreamPeerSSL::is_available())
-				open_templates->popup_centered_minsize();
+				open_templates->popup_centered();
 
 			if (_project_list->get_project_count() >= 1) {
 				// Focus on the search box immediately to allow the user
@@ -1845,7 +1877,7 @@ void ProjectManager::_notification(int p_what) {
 
 			set_process_unhandled_input(is_visible_in_tree());
 		} break;
-		case NOTIFICATION_WM_QUIT_REQUEST: {
+		case NOTIFICATION_WM_CLOSE_REQUEST: {
 
 			_dim_window();
 		} break;
@@ -2018,30 +2050,6 @@ void ProjectManager::_confirm_update_settings() {
 	_open_selected_projects();
 }
 
-void ProjectManager::_global_menu_action(const Variant &p_id, const Variant &p_meta) {
-
-	int id = (int)p_id;
-	if (id == ProjectList::GLOBAL_NEW_WINDOW) {
-		List<String> args;
-		args.push_back("-p");
-		String exec = OS::get_singleton()->get_executable_path();
-
-		OS::ProcessID pid = 0;
-		OS::get_singleton()->execute(exec, args, false, &pid);
-	} else if (id == ProjectList::GLOBAL_OPEN_PROJECT) {
-		String conf = (String)p_meta;
-
-		if (conf != String()) {
-			List<String> args;
-			args.push_back(conf);
-			String exec = OS::get_singleton()->get_executable_path();
-
-			OS::ProcessID pid = 0;
-			OS::get_singleton()->execute(exec, args, false, &pid);
-		}
-	}
-}
-
 void ProjectManager::_open_selected_projects() {
 
 	const Set<String> &selected_list = _project_list->get_selected_project_keys();
@@ -2053,7 +2061,7 @@ void ProjectManager::_open_selected_projects() {
 
 		if (!FileAccess::exists(conf)) {
 			dialog_error->set_text(vformat(TTR("Can't open project at '%s'."), path));
-			dialog_error->popup_centered_minsize();
+			dialog_error->popup_centered();
 			return;
 		}
 
@@ -2091,7 +2099,7 @@ void ProjectManager::_open_selected_projects_ask() {
 
 	if (selected_list.size() > 1) {
 		multi_open_ask->set_text(TTR("Are you sure to open more than one project?"));
-		multi_open_ask->popup_centered_minsize();
+		multi_open_ask->popup_centered();
 		return;
 	}
 
@@ -2107,19 +2115,19 @@ void ProjectManager::_open_selected_projects_ask() {
 	// Check if the config_version property was empty or 0
 	if (config_version == 0) {
 		ask_update_settings->set_text(vformat(TTR("The following project settings file does not specify the version of Godot through which it was created.\n\n%s\n\nIf you proceed with opening it, it will be converted to Godot's current configuration file format.\nWarning: You won't be able to open the project with previous versions of the engine anymore."), conf));
-		ask_update_settings->popup_centered_minsize();
+		ask_update_settings->popup_centered();
 		return;
 	}
 	// Check if we need to convert project settings from an earlier engine version
 	if (config_version < ProjectSettings::CONFIG_VERSION) {
 		ask_update_settings->set_text(vformat(TTR("The following project settings file was generated by an older engine version, and needs to be converted for this version:\n\n%s\n\nDo you want to convert it?\nWarning: You won't be able to open the project with previous versions of the engine anymore."), conf));
-		ask_update_settings->popup_centered_minsize();
+		ask_update_settings->popup_centered();
 		return;
 	}
 	// Check if the file was generated by a newer, incompatible engine version
 	if (config_version > ProjectSettings::CONFIG_VERSION) {
 		dialog_error->set_text(vformat(TTR("Can't open project at '%s'.") + "\n" + TTR("The project settings were created by a newer engine version, whose settings are not compatible with this version."), project.path));
-		dialog_error->popup_centered_minsize();
+		dialog_error->popup_centered();
 		return;
 	}
 
@@ -2179,7 +2187,7 @@ void ProjectManager::_run_project() {
 
 	if (selected_list.size() > 1) {
 		multi_run_ask->set_text(vformat(TTR("Are you sure to run %d projects at once?"), selected_list.size()));
-		multi_run_ask->popup_centered_minsize();
+		multi_run_ask->popup_centered();
 	} else {
 		_run_project_confirm();
 	}
@@ -2276,13 +2284,13 @@ void ProjectManager::_erase_project() {
 	}
 
 	erase_ask->set_text(confirm_message);
-	erase_ask->popup_centered_minsize();
+	erase_ask->popup_centered();
 }
 
 void ProjectManager::_erase_missing_projects() {
 
 	erase_missing_ask->set_text(TTR("Remove all missing projects from the list?\nThe project folders' contents won't be modified."));
-	erase_missing_ask->popup_centered_minsize();
+	erase_missing_ask->popup_centered();
 }
 
 void ProjectManager::_language_selected(int p_id) {
@@ -2290,7 +2298,7 @@ void ProjectManager::_language_selected(int p_id) {
 	String lang = language_btn->get_item_metadata(p_id);
 	EditorSettings::get_singleton()->set("interface/editor/editor_language", lang);
 	language_btn->set_text(lang);
-	language_btn->set_icon(get_icon("Environment", "EditorIcons"));
+	language_btn->set_icon(get_theme_icon("Environment", "EditorIcons"));
 
 	language_restart_ask->set_text(TTR("Language changed.\nThe interface will update after restarting the editor or project manager."));
 	language_restart_ask->popup_centered();
@@ -2357,7 +2365,7 @@ void ProjectManager::_files_dropped(PackedStringArray p_files, int p_screen) {
 			multi_scan_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_scan_multiple_folders), varray(folders));
 			multi_scan_ask->set_text(
 					vformat(TTR("Are you sure to scan %s folders for existing Godot projects?\nThis could take a while."), folders.size()));
-			multi_scan_ask->popup_centered_minsize();
+			multi_scan_ask->popup_centered();
 		} else {
 			_scan_multiple_folders(folders);
 		}
@@ -2413,8 +2421,12 @@ ProjectManager::ProjectManager() {
 		switch (display_scale) {
 			case 0: {
 				// Try applying a suitable display scale automatically
-				const int screen = OS::get_singleton()->get_current_screen();
-				editor_set_scale(OS::get_singleton()->get_screen_dpi(screen) >= 192 && OS::get_singleton()->get_screen_size(screen).x > 2000 ? 2.0 : 1.0);
+				const int screen = DisplayServer::get_singleton()->window_get_current_screen();
+#ifdef OSX_ENABLED
+				editor_set_scale(DisplayServer::get_singleton()->screen_get_scale(screen));
+#else
+				editor_set_scale(DisplayServer::get_singleton()->screen_get_dpi(screen) >= 192 && DisplayServer::get_singleton()->screen_get_size(screen).x > 2000 ? 2.0 : 1.0);
+#endif
 			} break;
 
 			case 1: editor_set_scale(0.75); break;
@@ -2430,12 +2442,12 @@ ProjectManager::ProjectManager() {
 		}
 
 		// Define a minimum window size to prevent UI elements from overlapping or being cut off
-		OS::get_singleton()->set_min_window_size(Size2(750, 420) * EDSCALE);
+		DisplayServer::get_singleton()->window_set_min_size(Size2(750, 420) * EDSCALE);
 
 #ifndef OSX_ENABLED
 		// The macOS platform implementation uses its own hiDPI window resizing code
 		// TODO: Resize windows on hiDPI displays on Windows and Linux and remove the line below
-		OS::get_singleton()->set_window_size(OS::get_singleton()->get_window_size() * MAX(1, EDSCALE));
+		DisplayServer::get_singleton()->window_set_size(DisplayServer::get_singleton()->window_get_size() * MAX(1, EDSCALE));
 #endif
 	}
 
@@ -2451,7 +2463,7 @@ ProjectManager::ProjectManager() {
 	Panel *panel = memnew(Panel);
 	gui_base->add_child(panel);
 	panel->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	panel->add_style_override("panel", gui_base->get_stylebox("Background", "EditorStyles"));
+	panel->add_theme_style_override("panel", gui_base->get_theme_stylebox("Background", "EditorStyles"));
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 	panel->add_child(vb);
@@ -2459,10 +2471,10 @@ ProjectManager::ProjectManager() {
 
 	String cp;
 	cp += 0xA9;
-	OS::get_singleton()->set_window_title(VERSION_NAME + String(" - ") + TTR("Project Manager") + " - " + cp + " 2007-2020 Juan Linietsky, Ariel Manzur & Godot Contributors");
+	DisplayServer::get_singleton()->window_set_title(VERSION_NAME + String(" - ") + TTR("Project Manager") + " - " + cp + " 2007-2020 Juan Linietsky, Ariel Manzur & Godot Contributors");
 
 	Control *center_box = memnew(Control);
-	center_box->set_v_size_flags(SIZE_EXPAND_FILL);
+	center_box->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vb->add_child(center_box);
 
 	tabs = memnew(TabContainer);
@@ -2479,7 +2491,7 @@ ProjectManager::ProjectManager() {
 
 	VBoxContainer *search_tree_vb = memnew(VBoxContainer);
 	tree_hb->add_child(search_tree_vb);
-	search_tree_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+	search_tree_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	HBoxContainer *sort_filters = memnew(HBoxContainer);
 	Label *sort_label = memnew(Label);
@@ -2511,9 +2523,9 @@ ProjectManager::ProjectManager() {
 	search_tree_vb->add_child(sort_filters);
 
 	PanelContainer *pc = memnew(PanelContainer);
-	pc->add_style_override("panel", gui_base->get_stylebox("bg", "Tree"));
+	pc->add_theme_style_override("panel", gui_base->get_theme_stylebox("bg", "Tree"));
 	search_tree_vb->add_child(pc);
-	pc->set_v_size_flags(SIZE_EXPAND_FILL);
+	pc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	_project_list = memnew(ProjectList);
 	_project_list->connect(ProjectList::SIGNAL_SELECTION_CHANGED, callable_mp(this, &ProjectManager::_update_project_buttons));
@@ -2547,7 +2559,7 @@ ProjectManager::ProjectManager() {
 
 	scan_dir = memnew(FileDialog);
 	scan_dir->set_access(FileDialog::ACCESS_FILESYSTEM);
-	scan_dir->set_mode(FileDialog::MODE_OPEN_DIR);
+	scan_dir->set_file_mode(FileDialog::FILE_MODE_OPEN_DIR);
 	scan_dir->set_title(TTR("Select a Folder to Scan")); // must be after mode or it's overridden
 	scan_dir->set_current_dir(EditorSettings::get_singleton()->get("filesystem/directories/default_project_path"));
 	gui_base->add_child(scan_dir);
@@ -2631,7 +2643,7 @@ ProjectManager::ProjectManager() {
 			language_btn->set_text(lang);
 		}
 	}
-	language_btn->set_icon(get_icon("Environment", "EditorIcons"));
+	language_btn->set_icon(get_theme_icon("Environment", "EditorIcons"));
 
 	settings_hb->add_child(language_btn);
 	language_btn->connect("item_selected", callable_mp(this, &ProjectManager::_language_selected));
@@ -2689,8 +2701,7 @@ ProjectManager::ProjectManager() {
 		_scan_begin(EditorSettings::get_singleton()->get("filesystem/directories/autoscan_project_path"));
 	}
 
-	SceneTree::get_singleton()->connect("files_dropped", callable_mp(this, &ProjectManager::_files_dropped));
-	SceneTree::get_singleton()->connect("global_menu_action", callable_mp(this, &ProjectManager::_global_menu_action));
+	SceneTree::get_singleton()->get_root()->connect("files_dropped", callable_mp(this, &ProjectManager::_files_dropped));
 
 	run_error_diag = memnew(AcceptDialog);
 	gui_base->add_child(run_error_diag);
@@ -2748,7 +2759,7 @@ void ProjectListFilter::_filter_option_selected(int p_idx) {
 void ProjectListFilter::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE && has_search_box) {
-		search_box->set_right_icon(get_icon("Search", "EditorIcons"));
+		search_box->set_right_icon(get_theme_icon("Search", "EditorIcons"));
 		search_box->set_clear_button_enabled(true);
 	}
 }
@@ -2769,7 +2780,7 @@ void ProjectListFilter::add_search_box() {
 	search_box = memnew(LineEdit);
 	search_box->set_placeholder(TTR("Search"));
 	search_box->connect("text_changed", callable_mp(this, &ProjectListFilter::_search_text_changed));
-	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_child(search_box);
 
 	has_search_box = true;

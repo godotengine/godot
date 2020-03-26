@@ -33,11 +33,12 @@
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
-#include "core/os/input.h"
+#include "core/input/input_filter.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "core/script_language.h"
 #include "scene/main/node.h"
+#include "servers/display_server.h"
 
 template <typename T>
 void RemoteDebugger::_bind_profiler(const String &p_name, T *p_prof) {
@@ -658,9 +659,9 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 	servers_profiler->skip_profile_frame = true; // Avoid frame time spike in debug.
 
-	Input::MouseMode mouse_mode = Input::get_singleton()->get_mouse_mode();
-	if (mouse_mode != Input::MOUSE_MODE_VISIBLE)
-		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+	InputFilter::MouseMode mouse_mode = InputFilter::get_singleton()->get_mouse_mode();
+	if (mouse_mode != InputFilter::MOUSE_MODE_VISIBLE)
+		InputFilter::get_singleton()->set_mouse_mode(InputFilter::MOUSE_MODE_VISIBLE);
 
 	uint64_t loop_begin_usec = 0;
 	uint64_t loop_time_sec = 0;
@@ -694,7 +695,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			} else if (command == "continue") {
 				script_debugger->set_depth(-1);
 				script_debugger->set_lines_left(-1);
-				OS::get_singleton()->move_window_to_foreground();
+				DisplayServer::get_singleton()->window_move_to_foreground();
 				break;
 
 			} else if (command == "break") {
@@ -778,8 +779,8 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 	send_message("debug_exit", Array());
 
-	if (mouse_mode != Input::MOUSE_MODE_VISIBLE)
-		Input::get_singleton()->set_mouse_mode(mouse_mode);
+	if (mouse_mode != InputFilter::MOUSE_MODE_VISIBLE)
+		InputFilter::get_singleton()->set_mouse_mode(mouse_mode);
 }
 
 void RemoteDebugger::poll_events(bool p_is_idle) {

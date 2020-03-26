@@ -29,8 +29,9 @@
 /*************************************************************************/
 
 #include "mobile_vr_interface.h"
-#include "core/os/input.h"
+#include "core/input/input_filter.h"
 #include "core/os/os.h"
+#include "servers/display_server.h"
 #include "servers/visual/visual_server_globals.h"
 
 StringName MobileVRInterface::get_name() const {
@@ -117,7 +118,7 @@ void MobileVRInterface::set_position_from_sensors() {
 	float delta_time = (double)ticks_elapsed / 1000000.0;
 
 	// few things we need
-	Input *input = Input::get_singleton();
+	InputFilter *input = InputFilter::get_singleton();
 	Vector3 down(0.0, -1.0, 0.0); // Down is Y negative
 	Vector3 north(0.0, 0.0, 1.0); // North is Z positive
 
@@ -339,7 +340,7 @@ Size2 MobileVRInterface::get_render_targetsize() {
 	_THREAD_SAFE_METHOD_
 
 	// we use half our window size
-	Size2 target_size = OS::get_singleton()->get_window_size();
+	Size2 target_size = DisplayServer::get_singleton()->window_get_size();
 
 	target_size.x *= 0.5 * oversample;
 	target_size.y *= oversample;

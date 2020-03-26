@@ -32,6 +32,7 @@
 #define POPUP_MENU_H
 
 #include "scene/gui/popup.h"
+#include "scene/gui/shortcut.h"
 
 class PopupMenu : public Popup {
 
@@ -87,7 +88,7 @@ class PopupMenu : public Popup {
 	Rect2 parent_rect;
 	String _get_accel_text(int p_item) const;
 	int _get_mouse_over(const Point2 &p_over) const;
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 _get_contents_minimum_size() const;
 	void _scroll(float p_factor, const Point2 &p_over);
 	void _gui_input(const Ref<InputEvent> &p_event);
 	void _activate_submenu(int over);
@@ -97,7 +98,6 @@ class PopupMenu : public Popup {
 	bool hide_on_item_selection;
 	bool hide_on_checkable_item_selection;
 	bool hide_on_multistate_item_selection;
-	bool hide_on_window_lose_focus;
 	Vector2 moved;
 
 	Array _get_items() const;
@@ -112,9 +112,11 @@ class PopupMenu : public Popup {
 	uint64_t search_time_msec;
 	String search_string;
 
-protected:
-	virtual bool has_point(const Point2 &p_point) const;
+	Control *control;
 
+	void _draw();
+
+protected:
 	friend class MenuButton;
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -213,8 +215,7 @@ public:
 
 	virtual void popup(const Rect2 &p_bounds = Rect2());
 
-	void set_hide_on_window_lose_focus(bool p_enabled);
-	bool is_hide_on_window_lose_focus() const;
+	void take_mouse_focus();
 
 	PopupMenu();
 	~PopupMenu();

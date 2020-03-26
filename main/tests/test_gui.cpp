@@ -54,7 +54,7 @@
 #include "scene/main/scene_tree.h"
 
 #include "scene/3d/camera.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 
 namespace TestGUI {
 
@@ -220,7 +220,7 @@ public:
 		richtext->add_text("faeries.\n");
 		richtext->pop();
 		richtext->add_text("In this new episode, we will attempt to ");
-		richtext->push_font(richtext->get_font("mono_font", "Fonts"));
+		richtext->push_font(richtext->get_theme_font("mono_font", "Fonts"));
 		richtext->push_color(Color(0.7, 0.5, 1.0));
 		richtext->add_text("deliver something nice");
 		richtext->pop();

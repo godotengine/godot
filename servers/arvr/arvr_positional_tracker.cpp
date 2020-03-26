@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "arvr_positional_tracker.h"
-#include "core/os/input.h"
+#include "core/input/input_filter.h"
 
 void ARVRPositionalTracker::_bind_methods() {
 	BIND_ENUM_CONSTANT(TRACKER_HAND_UNKNOWN);

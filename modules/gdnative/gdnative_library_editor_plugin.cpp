@@ -77,9 +77,9 @@ void GDNativeLibraryEditor::_update_tree() {
 		platform->set_text(0, E->get().name);
 		platform->set_metadata(0, E->get().library_extension);
 
-		platform->set_custom_bg_color(0, get_color("prop_category", "Editor"));
-		platform->set_custom_bg_color(1, get_color("prop_category", "Editor"));
-		platform->set_custom_bg_color(2, get_color("prop_category", "Editor"));
+		platform->set_custom_bg_color(0, get_theme_color("prop_category", "Editor"));
+		platform->set_custom_bg_color(1, get_theme_color("prop_category", "Editor"));
+		platform->set_custom_bg_color(2, get_theme_color("prop_category", "Editor"));
 		platform->set_selectable(0, false);
 		platform->set_expand_right(0, true);
 
@@ -91,31 +91,31 @@ void GDNativeLibraryEditor::_update_tree() {
 			bit->set_text(0, it->get());
 			bit->set_metadata(0, target);
 			bit->set_selectable(0, false);
-			bit->set_custom_bg_color(0, get_color("prop_subsection", "Editor"));
+			bit->set_custom_bg_color(0, get_theme_color("prop_subsection", "Editor"));
 
-			bit->add_button(1, get_icon("Folder", "EditorIcons"), BUTTON_SELECT_LIBRARY, false, TTR("Select the dynamic library for this entry"));
+			bit->add_button(1, get_theme_icon("Folder", "EditorIcons"), BUTTON_SELECT_LIBRARY, false, TTR("Select the dynamic library for this entry"));
 			String file = entry_configs[target].library;
 			if (!file.empty()) {
-				bit->add_button(1, get_icon("Clear", "EditorIcons"), BUTTON_CLEAR_LIBRARY, false, TTR("Clear"));
+				bit->add_button(1, get_theme_icon("Clear", "EditorIcons"), BUTTON_CLEAR_LIBRARY, false, TTR("Clear"));
 			}
 			bit->set_text(1, file);
 
-			bit->add_button(2, get_icon("Folder", "EditorIcons"), BUTTON_SELECT_DEPENDENCES, false, TTR("Select dependencies of the library for this entry"));
+			bit->add_button(2, get_theme_icon("Folder", "EditorIcons"), BUTTON_SELECT_DEPENDENCES, false, TTR("Select dependencies of the library for this entry"));
 			Array files = entry_configs[target].dependencies;
 			if (files.size()) {
-				bit->add_button(2, get_icon("Clear", "EditorIcons"), BUTTON_CLEAR_DEPENDENCES, false, TTR("Clear"));
+				bit->add_button(2, get_theme_icon("Clear", "EditorIcons"), BUTTON_CLEAR_DEPENDENCES, false, TTR("Clear"));
 			}
 			bit->set_text(2, Variant(files));
 
-			bit->add_button(3, get_icon("MoveUp", "EditorIcons"), BUTTON_MOVE_UP, false, TTR("Move Up"));
-			bit->add_button(3, get_icon("MoveDown", "EditorIcons"), BUTTON_MOVE_DOWN, false, TTR("Move Down"));
-			bit->add_button(3, get_icon("Remove", "EditorIcons"), BUTTON_ERASE_ENTRY, false, TTR("Remove current entry"));
+			bit->add_button(3, get_theme_icon("MoveUp", "EditorIcons"), BUTTON_MOVE_UP, false, TTR("Move Up"));
+			bit->add_button(3, get_theme_icon("MoveDown", "EditorIcons"), BUTTON_MOVE_DOWN, false, TTR("Move Down"));
+			bit->add_button(3, get_theme_icon("Remove", "EditorIcons"), BUTTON_ERASE_ENTRY, false, TTR("Remove current entry"));
 		}
 
 		TreeItem *new_arch = tree->create_item(platform);
 		new_arch->set_text(0, TTR("Double click to create a new entry"));
 		new_arch->set_text_align(0, TreeItem::ALIGN_CENTER);
-		new_arch->set_custom_color(0, get_color("accent_color", "Editor"));
+		new_arch->set_custom_color(0, get_theme_color("accent_color", "Editor"));
 		new_arch->set_expand_right(0, true);
 		new_arch->set_metadata(1, E->key());
 
@@ -133,15 +133,15 @@ void GDNativeLibraryEditor::_on_item_button(Object *item, int column, int id) {
 
 	if (id == BUTTON_SELECT_LIBRARY || id == BUTTON_SELECT_DEPENDENCES) {
 
-		EditorFileDialog::Mode mode = EditorFileDialog::MODE_OPEN_FILE;
+		EditorFileDialog::FileMode mode = EditorFileDialog::FILE_MODE_OPEN_FILE;
 		if (id == BUTTON_SELECT_DEPENDENCES)
-			mode = EditorFileDialog::MODE_OPEN_FILES;
+			mode = EditorFileDialog::FILE_MODE_OPEN_FILES;
 
 		file_dialog->set_meta("target", target);
 		file_dialog->set_meta("section", section);
 		file_dialog->clear_filters();
 		file_dialog->add_filter(Object::cast_to<TreeItem>(item)->get_parent()->get_metadata(0));
-		file_dialog->set_mode(mode);
+		file_dialog->set_file_mode(mode);
 		file_dialog->popup_centered_ratio();
 
 	} else if (id == BUTTON_CLEAR_LIBRARY) {
@@ -372,7 +372,7 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 
 	file_dialog = memnew(EditorFileDialog);
 	file_dialog->set_access(EditorFileDialog::ACCESS_RESOURCES);
-	file_dialog->set_resizable(true);
+	//file_dialog->set_resizable(true);
 	add_child(file_dialog);
 	file_dialog->connect("file_selected", callable_mp(this, &GDNativeLibraryEditor::_on_library_selected));
 	file_dialog->connect("files_selected", callable_mp(this, &GDNativeLibraryEditor::_on_dependencies_selected));
@@ -382,7 +382,7 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 	new_architecture_dialog->set_title(TTR("Add an architecture entry"));
 	new_architecture_input = memnew(LineEdit);
 	new_architecture_dialog->add_child(new_architecture_input);
-	new_architecture_dialog->set_custom_minimum_size(Vector2(300, 80) * EDSCALE);
+	//	new_architecture_dialog->set_custom_minimum_size(Vector2(300, 80) * EDSCALE);
 	new_architecture_input->set_anchors_and_margins_preset(PRESET_HCENTER_WIDE, PRESET_MODE_MINSIZE, 5 * EDSCALE);
 	new_architecture_dialog->get_ok()->connect("pressed", callable_mp(this, &GDNativeLibraryEditor::_on_create_new_entry));
 }

@@ -50,8 +50,8 @@ void NavigationMeshEditor::_notification(int p_option) {
 
 	if (p_option == NOTIFICATION_ENTER_TREE) {
 
-		button_bake->set_icon(get_icon("Bake", "EditorIcons"));
-		button_reset->set_icon(get_icon("Reload", "EditorIcons"));
+		button_bake->set_icon(get_theme_icon("Bake", "EditorIcons"));
+		button_reset->set_icon(get_theme_icon("Reload", "EditorIcons"));
 	}
 }
 
@@ -61,7 +61,7 @@ void NavigationMeshEditor::_bake_pressed() {
 	ERR_FAIL_COND(!node);
 	if (!node->get_navigation_mesh().is_valid()) {
 		err_dialog->set_text(TTR("A NavigationMesh resource must be set or created for this node to work."));
-		err_dialog->popup_centered_minsize();
+		err_dialog->popup_centered();
 		return;
 	}
 

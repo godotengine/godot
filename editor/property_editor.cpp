@@ -31,11 +31,11 @@
 #include "property_editor.h"
 
 #include "core/class_db.h"
+#include "core/input/input_filter.h"
 #include "core/io/image_loader.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/math/expression.h"
-#include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/pair.h"
 #include "core/print_string.h"
@@ -53,7 +53,7 @@
 #include "editor/multi_node_edit.h"
 #include "editor/property_selector.h"
 #include "scene/gui/label.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 #include "scene/resources/font.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
@@ -103,12 +103,7 @@ Ref<Resource> EditorResourceConversionPlugin::convert(const Ref<Resource> &p_res
 
 void CustomPropertyEditor::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_DRAW) {
-
-		RID ci = get_canvas_item();
-		get_stylebox("panel", "PopupMenu")->draw(ci, Rect2(Point2(), get_size()));
-	}
-	if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST) {
+	if (p_what == NOTIFICATION_WM_CLOSE_REQUEST) {
 		hide();
 	}
 }
@@ -151,7 +146,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 			switch (p_which) {
 				case OBJ_MENU_LOAD: {
 
-					file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+					file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 					String type = (hint == PROPERTY_HINT_RESOURCE_TYPE) ? hint_text : String();
 
 					List<String> extensions;
@@ -493,14 +488,14 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 			} else if (hint == PROPERTY_HINT_EXP_EASING) {
 
-				easing_draw->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 5 * EDSCALE);
-				easing_draw->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -5 * EDSCALE);
-				easing_draw->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 5 * EDSCALE);
-				easing_draw->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, -30 * EDSCALE);
-				type_button->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 3 * EDSCALE);
-				type_button->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -3 * EDSCALE);
-				type_button->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -25 * EDSCALE);
-				type_button->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, -7 * EDSCALE);
+				easing_draw->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_BEGIN, 5 * EDSCALE);
+				easing_draw->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -5 * EDSCALE);
+				easing_draw->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, 5 * EDSCALE);
+				easing_draw->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, -30 * EDSCALE);
+				type_button->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_BEGIN, 3 * EDSCALE);
+				type_button->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -3 * EDSCALE);
+				type_button->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_END, -25 * EDSCALE);
+				type_button->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, -7 * EDSCALE);
 				type_button->set_text(TTR("Preset..."));
 				type_button->get_popup()->clear();
 				type_button->get_popup()->add_item(TTR("Linear"), EASING_LINEAR);
@@ -573,13 +568,13 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				text_edit->set_text(v);
 				text_edit->deselect();
 
-				int button_margin = get_constant("button_margin", "Dialogs");
-				int margin = get_constant("margin", "Dialogs");
+				int button_margin = text_edit->get_theme_constant("button_margin", "Dialogs");
+				int margin = text_edit->get_theme_constant("margin", "Dialogs");
 
-				action_buttons[0]->set_anchor(MARGIN_LEFT, ANCHOR_END);
-				action_buttons[0]->set_anchor(MARGIN_TOP, ANCHOR_END);
-				action_buttons[0]->set_anchor(MARGIN_RIGHT, ANCHOR_END);
-				action_buttons[0]->set_anchor(MARGIN_BOTTOM, ANCHOR_END);
+				action_buttons[0]->set_anchor(MARGIN_LEFT, Control::ANCHOR_END);
+				action_buttons[0]->set_anchor(MARGIN_TOP, Control::ANCHOR_END);
+				action_buttons[0]->set_anchor(MARGIN_RIGHT, Control::ANCHOR_END);
+				action_buttons[0]->set_anchor(MARGIN_BOTTOM, Control::ANCHOR_END);
 				action_buttons[0]->set_begin(Point2(-70 * EDSCALE, -button_margin + 5 * EDSCALE));
 				action_buttons[0]->set_end(Point2(-margin, -margin));
 				action_buttons[0]->set_text(TTR("Close"));
@@ -900,7 +895,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				break;
 
 			if (p_name == "script" && hint_text == "Script" && Object::cast_to<Node>(owner)) {
-				menu->add_icon_item(get_icon("Script", "EditorIcons"), TTR("New Script"), OBJ_MENU_NEW_SCRIPT);
+				menu->add_item(TTR("New Script"), OBJ_MENU_NEW_SCRIPT);
 				menu->add_separator();
 			} else if (hint_text != "") {
 				int idx = 0;
@@ -953,17 +948,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 						int id = TYPE_BASE_ID + idx;
 
-						if (!icon.is_valid() && has_icon(t, "EditorIcons")) {
-							icon = get_icon(t, "EditorIcons");
-						}
-
-						if (icon.is_valid()) {
-
-							menu->add_icon_item(icon, vformat(TTR("New %s"), t), id);
-						} else {
-
-							menu->add_item(vformat(TTR("New %s"), t), id);
-						}
+						menu->add_item(vformat(TTR("New %s"), t), id);
 
 						idx++;
 					}
@@ -973,13 +958,14 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 					menu->add_separator();
 			}
 
-			menu->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Load"), OBJ_MENU_LOAD);
+			menu->add_item(TTR("Load"), OBJ_MENU_LOAD);
 
 			if (!RES(v).is_null()) {
 
-				menu->add_icon_item(get_icon("Edit", "EditorIcons"), TTR("Edit"), OBJ_MENU_EDIT);
-				menu->add_icon_item(get_icon("Clear", "EditorIcons"), TTR("Clear"), OBJ_MENU_CLEAR);
-				menu->add_icon_item(get_icon("Duplicate", "EditorIcons"), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
+				menu->add_item(TTR("Edit"), OBJ_MENU_EDIT);
+				menu->add_item(TTR("Clear"), OBJ_MENU_CLEAR);
+				menu->add_item(TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
+
 				RES r = v;
 				if (r.is_valid() && r->get_path().is_resource_file()) {
 					menu->add_separator();
@@ -1022,16 +1008,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				}
 				for (int i = 0; i < conversions.size(); i++) {
 					String what = conversions[i]->converts_to();
-					Ref<Texture2D> icon;
-					if (has_icon(what, "EditorIcons")) {
-
-						icon = get_icon(what, "EditorIcons");
-					} else {
-
-						icon = get_icon(what, "Resource");
-					}
-
-					menu->add_icon_item(icon, vformat(TTR("Convert To %s"), what), CONVERT_BASE_ID + i);
+					menu->add_item(vformat(TTR("Convert To %s"), what), CONVERT_BASE_ID + i);
 				}
 			}
 
@@ -1105,7 +1082,7 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 			RES res = ResourceLoader::load(p_file, type);
 			if (res.is_null()) {
 				error->set_text(TTR("Error loading file: Not a resource!"));
-				error->popup_centered_minsize();
+				error->popup_centered();
 				break;
 			}
 			v = res;
@@ -1282,7 +1259,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 					else
 						file->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 
-					file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+					file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 					file->clear_filters();
 
 					file->clear_filters();
@@ -1316,7 +1293,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 						file->set_access(EditorFileDialog::ACCESS_RESOURCES);
 					else
 						file->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-					file->set_mode(EditorFileDialog::MODE_OPEN_DIR);
+					file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
 					file->clear_filters();
 					file->popup_centered_ratio();
 				} else {
@@ -1385,7 +1362,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 			} else if (p_which == 1) {
 
 				file->set_access(EditorFileDialog::ACCESS_RESOURCES);
-				file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+				file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 				List<String> extensions;
 				String type = (hint == PROPERTY_HINT_RESOURCE_TYPE) ? hint_text : String();
 
@@ -1500,7 +1477,7 @@ void CustomPropertyEditor::_draw_easing() {
 	Size2 s = easing_draw->get_size();
 	Rect2 r(Point2(), s);
 	r = r.grow(3);
-	get_stylebox("normal", "LineEdit")->draw(ci, r);
+	easing_draw->get_theme_stylebox("normal", "LineEdit")->draw(ci, r);
 
 	int points = 48;
 
@@ -1508,8 +1485,8 @@ void CustomPropertyEditor::_draw_easing() {
 	float exp = v;
 	bool flip = hint_text == "attenuation";
 
-	Ref<Font> f = get_font("font", "Label");
-	Color color = get_color("font_color", "Label");
+	Ref<Font> f = easing_draw->get_theme_font("font", "Label");
+	Color color = easing_draw->get_theme_color("font_color", "Label");
 
 	for (int i = 1; i <= points; i++) {
 
@@ -1743,7 +1720,7 @@ real_t CustomPropertyEditor::_parse_real_expression(String text) {
 
 void CustomPropertyEditor::_emit_changed_whole_or_field() {
 
-	if (!Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	if (!InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 		emit_signal("variant_changed");
 	} else {
 		emit_signal("variant_field_changed", field_names[focused_value_editor]);
@@ -1805,7 +1782,7 @@ void CustomPropertyEditor::_focus_exit() {
 
 void CustomPropertyEditor::config_action_buttons(const List<String> &p_strings) {
 
-	Ref<StyleBox> sb = get_stylebox("panel");
+	Ref<StyleBox> sb = action_buttons[0]->get_theme_stylebox("panel");
 	int margin_top = sb->get_margin(MARGIN_TOP);
 	int margin_left = sb->get_margin(MARGIN_LEFT);
 	int margin_bottom = sb->get_margin(MARGIN_BOTTOM);
@@ -1921,7 +1898,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 
 		checks20[i] = memnew(CheckBox);
 		checks20[i]->set_toggle_mode(true);
-		checks20[i]->set_focus_mode(FOCUS_NONE);
+		checks20[i]->set_focus_mode(Control::FOCUS_NONE);
 		checks20gc->add_child(checks20[i]);
 		checks20[i]->hide();
 		checks20[i]->connect("pressed", callable_mp(this, &CustomPropertyEditor::_action_pressed), make_binds(i));
@@ -1949,7 +1926,6 @@ CustomPropertyEditor::CustomPropertyEditor() {
 
 	color_picker = NULL;
 
-	set_as_toplevel(true);
 	file = memnew(EditorFileDialog);
 	add_child(file);
 	file->hide();
@@ -1983,7 +1959,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	type_button->get_popup()->connect("id_pressed", callable_mp(this, &CustomPropertyEditor::_type_create_selected));
 
 	menu = memnew(PopupMenu);
-	menu->set_pass_on_modal_close_click(false);
+	//	menu->set_pass_on_modal_close_click(false);
 	add_child(menu);
 	menu->connect("id_pressed", callable_mp(this, &CustomPropertyEditor::_menu_option));
 

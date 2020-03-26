@@ -142,7 +142,7 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector<Pair<Str
 			if (search_text.is_subsequence_ofi(path)) {
 				Pair<String, Ref<Texture2D>> pair;
 				pair.first = path;
-				pair.second = get_icon("folder", "FileDialog");
+				pair.second = search_options->get_theme_icon("folder", "FileDialog");
 
 				if (search_text != String() && list.size() > 0) {
 
@@ -171,7 +171,7 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector<Pair<Str
 		if (ClassDB::is_parent_class(efsd->get_file_type(i), base_type) && (search_text.is_subsequence_ofi(file))) {
 			Pair<String, Ref<Texture2D>> pair;
 			pair.first = file;
-			pair.second = get_icon((has_icon(efsd->get_file_type(i), ei) ? efsd->get_file_type(i) : ot), ei);
+			pair.second = search_options->get_theme_icon((search_options->has_theme_icon(efsd->get_file_type(i), ei) ? efsd->get_file_type(i) : ot), ei);
 			list.push_back(pair);
 		}
 	}
@@ -253,6 +253,11 @@ void EditorQuickOpen::_confirmed() {
 	hide();
 }
 
+void EditorQuickOpen::_theme_changed() {
+
+	search_box->set_right_icon(search_options->get_theme_icon("Search", "EditorIcons"));
+}
+
 void EditorQuickOpen::_notification(int p_what) {
 
 	switch (p_what) {
@@ -262,9 +267,6 @@ void EditorQuickOpen::_notification(int p_what) {
 			search_box->set_clear_button_enabled(true);
 			[[fallthrough]];
 		}
-		case NOTIFICATION_THEME_CHANGED: {
-			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
-		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", callable_mp(this, &EditorQuickOpen::_confirmed));
 		} break;
@@ -284,6 +286,8 @@ void EditorQuickOpen::_bind_methods() {
 EditorQuickOpen::EditorQuickOpen() {
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
+	vbc->connect("theme_changed", callable_mp(this, &EditorQuickOpen::_theme_changed));
+
 	add_child(vbc);
 	search_box = memnew(LineEdit);
 	vbc->add_margin_child(TTR("Search:"), search_box);
@@ -298,7 +302,7 @@ EditorQuickOpen::EditorQuickOpen() {
 	search_options->connect("item_activated", callable_mp(this, &EditorQuickOpen::_confirmed));
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
-	search_options->add_constant_override("draw_guides", 1);
+	search_options->add_theme_constant_override("draw_guides", 1);
 	ei = "EditorIcons";
 	ot = "Object";
 	add_directories = false;

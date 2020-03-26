@@ -31,7 +31,7 @@
 #include "texture_region_editor_plugin.h"
 
 #include "core/core_string_names.h"
-#include "core/os/input.h"
+#include "core/input/input_filter.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
 #include "scene/gui/check_box.h"
@@ -43,7 +43,7 @@
 void draw_margin_line(Control *edit_draw, Vector2 from, Vector2 to) {
 	Vector2 line = (to - from).normalized() * 10;
 	while ((to - from).length_squared() > 200) {
-		edit_draw->draw_line(from, from + line, EditorNode::get_singleton()->get_theme_base()->get_color("mono_color", "Editor"), 2);
+		edit_draw->draw_line(from, from + line, EditorNode::get_singleton()->get_theme_base()->get_theme_color("mono_color", "Editor"), 2);
 		from += line * 2;
 	}
 }
@@ -134,7 +134,7 @@ void TextureRegionEditor::_region_draw() {
 		}
 	}
 
-	Ref<Texture2D> select_handle = get_icon("EditorHandle", "EditorIcons");
+	Ref<Texture2D> select_handle = get_theme_icon("EditorHandle", "EditorIcons");
 
 	Rect2 scroll_rect(Point2(), base_tex->get_size());
 
@@ -150,7 +150,7 @@ void TextureRegionEditor::_region_draw() {
 		mtx.basis_xform(raw_endpoints[2]),
 		mtx.basis_xform(raw_endpoints[3])
 	};
-	Color color = get_color("mono_color", "Editor");
+	Color color = get_theme_color("mono_color", "Editor");
 	for (int i = 0; i < 4; i++) {
 
 		int prev = (i + 3) % 4;
@@ -307,7 +307,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 					for (List<Rect2>::Element *E = autoslice_cache.front(); E; E = E->next()) {
 						if (E->get().has_point(point)) {
 							rect = E->get();
-							if (Input::get_singleton()->is_key_pressed(KEY_CONTROL) && !(Input::get_singleton()->is_key_pressed(KEY_SHIFT | KEY_ALT))) {
+							if (InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL) && !(InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT | KEY_ALT))) {
 								Rect2 r;
 								if (node_sprite)
 									r = node_sprite->get_region_rect();
@@ -449,7 +449,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 
 	if (mm.is_valid()) {
 
-		if (mm->get_button_mask() & BUTTON_MASK_MIDDLE || Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
+		if (mm->get_button_mask() & BUTTON_MASK_MIDDLE || InputFilter::get_singleton()->is_key_pressed(KEY_SPACE)) {
 
 			Vector2 dragged(mm->get_relative().x / draw_zoom, mm->get_relative().y / draw_zoom);
 			hscroll->set_value(hscroll->get_value() - dragged.x);
@@ -741,12 +741,12 @@ void TextureRegionEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			edit_draw->add_style_override("panel", get_stylebox("bg", "Tree"));
+			edit_draw->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
 		} break;
 		case NOTIFICATION_READY: {
-			zoom_out->set_icon(get_icon("ZoomLess", "EditorIcons"));
-			zoom_reset->set_icon(get_icon("ZoomReset", "EditorIcons"));
-			zoom_in->set_icon(get_icon("ZoomMore", "EditorIcons"));
+			zoom_out->set_icon(get_theme_icon("ZoomLess", "EditorIcons"));
+			zoom_reset->set_icon(get_theme_icon("ZoomReset", "EditorIcons"));
+			zoom_in->set_icon(get_theme_icon("ZoomMore", "EditorIcons"));
 
 			vscroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
 			hscroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
@@ -756,7 +756,7 @@ void TextureRegionEditor::_notification(int p_what) {
 				_update_autoslice();
 			}
 		} break;
-		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
+		case NOTIFICATION_WM_FOCUS_IN: {
 			// This happens when the user leaves the Editor and returns,
 			// they could have changed the textures, so the cache is cleared.
 			cache_map.clear();

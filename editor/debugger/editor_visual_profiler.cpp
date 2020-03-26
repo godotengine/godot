@@ -128,11 +128,11 @@ String EditorVisualProfiler::_get_time_as_text(float p_time) {
 
 Color EditorVisualProfiler::_get_color_from_signature(const StringName &p_signature) const {
 
-	Color bc = get_color("error_color", "Editor");
+	Color bc = get_theme_color("error_color", "Editor");
 	double rot = ABS(double(p_signature.hash()) / double(0x7FFFFFFF));
 	Color c;
 	c.set_hsv(rot, bc.get_s(), bc.get_v());
-	return c.linear_interpolate(get_color("base_color", "Editor"), 0.07);
+	return c.linear_interpolate(get_theme_color("base_color", "Editor"), 0.07);
 }
 
 void EditorVisualProfiler::_item_selected() {
@@ -327,7 +327,7 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 
 	int cursor_metric = _get_cursor_index();
 
-	Ref<Texture> track_icon = get_icon("TrackColor", "EditorIcons");
+	Ref<Texture> track_icon = get_theme_icon("TrackColor", "EditorIcons");
 
 	ERR_FAIL_INDEX(cursor_metric, frame_metrics.size());
 
@@ -418,11 +418,11 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 void EditorVisualProfiler::_activate_pressed() {
 
 	if (activate->is_pressed()) {
-		activate->set_icon(get_icon("Stop", "EditorIcons"));
+		activate->set_icon(get_theme_icon("Stop", "EditorIcons"));
 		activate->set_text(TTR("Stop"));
 		_clear_pressed(); //always clear on start
 	} else {
-		activate->set_icon(get_icon("Play", "EditorIcons"));
+		activate->set_icon(get_theme_icon("Play", "EditorIcons"));
 		activate->set_text(TTR("Start"));
 	}
 	emit_signal("enable_profiling", activate->is_pressed());
@@ -437,8 +437,8 @@ void EditorVisualProfiler::_clear_pressed() {
 void EditorVisualProfiler::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		activate->set_icon(get_icon("Play", "EditorIcons"));
-		clear_button->set_icon(get_icon("Clear", "EditorIcons"));
+		activate->set_icon(get_theme_icon("Play", "EditorIcons"));
+		clear_button->set_icon(get_theme_icon("Clear", "EditorIcons"));
 	}
 }
 
@@ -446,7 +446,7 @@ void EditorVisualProfiler::_graph_tex_draw() {
 
 	if (last_metric < 0)
 		return;
-	Ref<Font> font = get_font("font", "Label");
+	Ref<Font> font = get_theme_font("font", "Label");
 	if (seeking) {
 
 		int max_frames = frame_metrics.size();
@@ -777,7 +777,7 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	hb->add_child(cursor_metric_edit);
 	cursor_metric_edit->connect("value_changed", callable_mp(this, &EditorVisualProfiler::_cursor_metric_changed));
 
-	hb->add_constant_override("separation", 8 * EDSCALE);
+	hb->add_theme_constant_override("separation", 8 * EDSCALE);
 
 	h_split = memnew(HSplitContainer);
 	add_child(h_split);

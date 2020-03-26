@@ -31,8 +31,8 @@
 #include "tile_map_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
+#include "core/input/input_filter.h"
 #include "core/math/math_funcs.h"
-#include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -60,24 +60,24 @@ void TileMapEditor::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-			paint_button->set_icon(get_icon("Edit", "EditorIcons"));
-			bucket_fill_button->set_icon(get_icon("Bucket", "EditorIcons"));
-			picker_button->set_icon(get_icon("ColorPick", "EditorIcons"));
-			select_button->set_icon(get_icon("ActionCopy", "EditorIcons"));
+			paint_button->set_icon(get_theme_icon("Edit", "EditorIcons"));
+			bucket_fill_button->set_icon(get_theme_icon("Bucket", "EditorIcons"));
+			picker_button->set_icon(get_theme_icon("ColorPick", "EditorIcons"));
+			select_button->set_icon(get_theme_icon("ActionCopy", "EditorIcons"));
 
-			rotate_left_button->set_icon(get_icon("RotateLeft", "EditorIcons"));
-			rotate_right_button->set_icon(get_icon("RotateRight", "EditorIcons"));
-			flip_horizontal_button->set_icon(get_icon("MirrorX", "EditorIcons"));
-			flip_vertical_button->set_icon(get_icon("MirrorY", "EditorIcons"));
-			clear_transform_button->set_icon(get_icon("Clear", "EditorIcons"));
+			rotate_left_button->set_icon(get_theme_icon("RotateLeft", "EditorIcons"));
+			rotate_right_button->set_icon(get_theme_icon("RotateRight", "EditorIcons"));
+			flip_horizontal_button->set_icon(get_theme_icon("MirrorX", "EditorIcons"));
+			flip_vertical_button->set_icon(get_theme_icon("MirrorY", "EditorIcons"));
+			clear_transform_button->set_icon(get_theme_icon("Clear", "EditorIcons"));
 
-			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
+			search_box->set_right_icon(get_theme_icon("Search", "EditorIcons"));
 			search_box->set_clear_button_enabled(true);
 
 			PopupMenu *p = options->get_popup();
-			p->set_item_icon(p->get_item_index(OPTION_CUT), get_icon("ActionCut", "EditorIcons"));
-			p->set_item_icon(p->get_item_index(OPTION_COPY), get_icon("Duplicate", "EditorIcons"));
-			p->set_item_icon(p->get_item_index(OPTION_ERASE_SELECTION), get_icon("Remove", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(OPTION_CUT), get_theme_icon("ActionCut", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(OPTION_COPY), get_theme_icon("Duplicate", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(OPTION_ERASE_SELECTION), get_theme_icon("Remove", "EditorIcons"));
 
 		} break;
 	}
@@ -421,7 +421,7 @@ void TileMapEditor::_update_palette() {
 	bool show_tile_ids = bool(EDITOR_DEF("editors/tile_map/show_tile_ids", false));
 	bool sort_by_name = bool(EDITOR_DEF("editors/tile_map/sort_tiles_by_name", true));
 
-	palette->add_constant_override("hseparation", hseparation * EDSCALE);
+	palette->add_theme_constant_override("hseparation", hseparation * EDSCALE);
 
 	palette->set_fixed_icon_size(Size2(min_size, min_size));
 	palette->set_fixed_column_width(min_size * MAX(size_slider->get_value(), 1));
@@ -984,7 +984,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 			if (mb->is_pressed()) {
 
-				if (Input::get_singleton()->is_key_pressed(KEY_SPACE))
+				if (InputFilter::get_singleton()->is_key_pressed(KEY_SPACE))
 					return false; // Drag.
 
 				if (tool == TOOL_NONE) {
@@ -1365,7 +1365,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 			return true;
 		}
-		if (tool == TOOL_PICKING && Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
+		if (tool == TOOL_PICKING && InputFilter::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
 
 			_pick_tile(over_tile);
 
@@ -1960,7 +1960,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	palette->set_icon_mode(ItemList::ICON_MODE_TOP);
 	palette->set_max_text_lines(2);
 	palette->set_select_mode(ItemList::SELECT_MULTI);
-	palette->add_constant_override("vseparation", 8 * EDSCALE);
+	palette->add_theme_constant_override("vseparation", 8 * EDSCALE);
 	palette->connect("item_selected", callable_mp(this, &TileMapEditor::_palette_selected));
 	palette->connect("multi_selected", callable_mp(this, &TileMapEditor::_palette_multi_selected));
 	palette_container->add_child(palette);
@@ -2031,7 +2031,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	tile_info = memnew(Label);
 	tile_info->set_modulate(Color(1, 1, 1, 0.8));
 	tile_info->set_mouse_filter(MOUSE_FILTER_IGNORE);
-	tile_info->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("main", "EditorFonts"));
+	tile_info->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("main", "EditorFonts"));
 	// The tile info is only displayed after a tile has been hovered.
 	tile_info->hide();
 	CanvasItemEditor::get_singleton()->add_control_to_info_overlay(tile_info);
@@ -2039,7 +2039,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	// Menu.
 	options = memnew(MenuButton);
 	options->set_text("TileMap");
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("TileMap", "EditorIcons"));
+	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("TileMap", "EditorIcons"));
 	options->set_process_unhandled_key_input(false);
 	toolbar_right->add_child(options);
 

@@ -75,7 +75,7 @@ if True:  # env['builtin_assimp']:
     if(env['platform'] == 'windows'):
         env_assimp.Append(CPPDEFINES=['PLATFORM_WINDOWS'])
         env_assimp.Append(CPPDEFINES=[('PLATFORM', 'WINDOWS')])
-    elif(env['platform'] == 'x11'):
+    elif(env['platform'] == 'linuxbsd'):
         env_assimp.Append(CPPDEFINES=['PLATFORM_LINUX'])
         env_assimp.Append(CPPDEFINES=[('PLATFORM', 'LINUX')])
     elif(env['platform'] == 'osx'):

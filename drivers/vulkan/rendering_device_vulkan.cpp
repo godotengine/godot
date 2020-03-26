@@ -5150,12 +5150,12 @@ bool RenderingDeviceVulkan::compute_pipeline_is_valid(RID p_pipeline) {
 /**** SCREEN ****/
 /****************/
 
-int RenderingDeviceVulkan::screen_get_width(int p_screen) const {
+int RenderingDeviceVulkan::screen_get_width(DisplayServer::WindowID p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	return context->window_get_width(p_screen);
 }
-int RenderingDeviceVulkan::screen_get_height(int p_screen) const {
+int RenderingDeviceVulkan::screen_get_height(DisplayServer::WindowID p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	return context->window_get_height(p_screen);
@@ -5189,7 +5189,7 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::screen_get_framebuff
 /**** DRAW LIST ****/
 /*******************/
 
-RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin_for_screen(int p_screen, const Color &p_clear_color) {
+RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin_for_screen(DisplayServer::WindowID p_screen, const Color &p_clear_color) {
 
 	_THREAD_SAFE_METHOD_
 

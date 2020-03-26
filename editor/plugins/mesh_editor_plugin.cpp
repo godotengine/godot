@@ -57,10 +57,10 @@ void MeshEditor::_notification(int p_what) {
 		if (first_enter) {
 			//it's in propertyeditor so. could be moved around
 
-			light_1_switch->set_normal_texture(get_icon("MaterialPreviewLight1", "EditorIcons"));
-			light_1_switch->set_pressed_texture(get_icon("MaterialPreviewLight1Off", "EditorIcons"));
-			light_2_switch->set_normal_texture(get_icon("MaterialPreviewLight2", "EditorIcons"));
-			light_2_switch->set_pressed_texture(get_icon("MaterialPreviewLight2Off", "EditorIcons"));
+			light_1_switch->set_normal_texture(get_theme_icon("MaterialPreviewLight1", "EditorIcons"));
+			light_1_switch->set_pressed_texture(get_theme_icon("MaterialPreviewLight1Off", "EditorIcons"));
+			light_2_switch->set_normal_texture(get_theme_icon("MaterialPreviewLight2", "EditorIcons"));
+			light_2_switch->set_pressed_texture(get_theme_icon("MaterialPreviewLight2Off", "EditorIcons"));
 			first_enter = false;
 		}
 	}
@@ -115,7 +115,7 @@ void MeshEditor::_bind_methods() {
 
 MeshEditor::MeshEditor() {
 
-	viewport = memnew(Viewport);
+	viewport = memnew(SubViewport);
 	Ref<World> world;
 	world.instance();
 	viewport->set_world(world); //use own world

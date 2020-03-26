@@ -29,8 +29,9 @@
 /*************************************************************************/
 
 #include "spin_box.h"
+
+#include "core/input/input_filter.h"
 #include "core/math/expression.h"
-#include "core/os/input.h"
 
 Size2 SpinBox::get_minimum_size() const {
 
@@ -76,7 +77,7 @@ void SpinBox::_line_edit_input(const Ref<InputEvent> &p_event) {
 
 void SpinBox::_range_click_timeout() {
 
-	if (!drag.enabled && Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
+	if (!drag.enabled && InputFilter::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
 
 		bool up = get_local_mouse_position().y < (get_size().height / 2);
 		set_value(get_value() + (up ? get_step() : -get_step()));
@@ -148,7 +149,7 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (drag.enabled) {
 			drag.enabled = false;
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+			InputFilter::get_singleton()->set_mouse_mode(InputFilter::MOUSE_MODE_VISIBLE);
 			warp_mouse(drag.capture_pos);
 		}
 		drag.allowed = false;
@@ -165,7 +166,7 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 			set_value(CLAMP(drag.base_val + get_step() * diff_y, get_min(), get_max()));
 		} else if (drag.allowed && drag.capture_pos.distance_to(mm->get_position()) > 2) {
 
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+			InputFilter::get_singleton()->set_mouse_mode(InputFilter::MOUSE_MODE_CAPTURED);
 			drag.enabled = true;
 			drag.base_val = get_value();
 			drag.diff_y = 0;
@@ -195,7 +196,7 @@ void SpinBox::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 
-		Ref<Texture2D> updown = get_icon("updown");
+		Ref<Texture2D> updown = get_theme_icon("updown");
 
 		_adjust_width_for_icon(updown);
 
@@ -209,7 +210,7 @@ void SpinBox::_notification(int p_what) {
 		//_value_changed(0);
 	} else if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		_adjust_width_for_icon(get_icon("updown"));
+		_adjust_width_for_icon(get_theme_icon("updown"));
 		_value_changed(0);
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
 

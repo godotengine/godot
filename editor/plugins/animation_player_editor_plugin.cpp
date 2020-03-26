@@ -30,9 +30,9 @@
 
 #include "animation_player_editor_plugin.h"
 
+#include "core/input/input_filter.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "editor/animation_track_editor.h"
@@ -40,7 +40,7 @@
 #include "editor/editor_settings.h"
 #include "editor/plugins/canvas_item_editor_plugin.h" // For onion skinning.
 #include "editor/plugins/spatial_editor_plugin.h" // For onion skinning.
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 #include "servers/visual_server.h"
 
 void AnimationPlayerEditor::_node_removed(Node *p_node) {
@@ -105,33 +105,33 @@ void AnimationPlayerEditor::_notification(int p_what) {
 
 			get_tree()->connect("node_removed", callable_mp(this, &AnimationPlayerEditor::_node_removed));
 
-			add_style_override("panel", editor->get_gui_base()->get_stylebox("panel", "Panel"));
+			add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox("panel", "Panel"));
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
-			add_style_override("panel", editor->get_gui_base()->get_stylebox("panel", "Panel"));
+			add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox("panel", "Panel"));
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 
-			autoplay->set_icon(get_icon("AutoPlay", "EditorIcons"));
+			autoplay->set_icon(get_theme_icon("AutoPlay", "EditorIcons"));
 
-			play->set_icon(get_icon("PlayStart", "EditorIcons"));
-			play_from->set_icon(get_icon("Play", "EditorIcons"));
-			play_bw->set_icon(get_icon("PlayStartBackwards", "EditorIcons"));
-			play_bw_from->set_icon(get_icon("PlayBackwards", "EditorIcons"));
+			play->set_icon(get_theme_icon("PlayStart", "EditorIcons"));
+			play_from->set_icon(get_theme_icon("Play", "EditorIcons"));
+			play_bw->set_icon(get_theme_icon("PlayStartBackwards", "EditorIcons"));
+			play_bw_from->set_icon(get_theme_icon("PlayBackwards", "EditorIcons"));
 
-			autoplay_icon = get_icon("AutoPlay", "EditorIcons");
-			stop->set_icon(get_icon("Stop", "EditorIcons"));
+			autoplay_icon = get_theme_icon("AutoPlay", "EditorIcons");
+			stop->set_icon(get_theme_icon("Stop", "EditorIcons"));
 
-			onion_toggle->set_icon(get_icon("Onion", "EditorIcons"));
-			onion_skinning->set_icon(get_icon("GuiTabMenu", "EditorIcons"));
+			onion_toggle->set_icon(get_theme_icon("Onion", "EditorIcons"));
+			onion_skinning->set_icon(get_theme_icon("GuiTabMenu", "EditorIcons"));
 
-			pin->set_icon(get_icon("Pin", "EditorIcons"));
+			pin->set_icon(get_theme_icon("Pin", "EditorIcons"));
 
-			tool_anim->add_style_override("normal", get_stylebox("normal", "Button"));
-			track_editor->get_edit_menu()->add_style_override("normal", get_stylebox("normal", "Button"));
+			tool_anim->add_theme_style_override("normal", get_theme_stylebox("normal", "Button"));
+			track_editor->get_edit_menu()->add_theme_style_override("normal", get_theme_stylebox("normal", "Button"));
 
-#define ITEM_ICON(m_item, m_icon) tool_anim->get_popup()->set_item_icon(tool_anim->get_popup()->get_item_index(m_item), get_icon(m_icon, "EditorIcons"))
+#define ITEM_ICON(m_item, m_icon) tool_anim->get_popup()->set_item_icon(tool_anim->get_popup()->get_item_index(m_item), get_theme_icon(m_icon, "EditorIcons"))
 
 			ITEM_ICON(TOOL_NEW_ANIM, "New");
 			ITEM_ICON(TOOL_LOAD_ANIM, "Load");
@@ -349,7 +349,7 @@ void AnimationPlayerEditor::_animation_rename() {
 }
 void AnimationPlayerEditor::_animation_load() {
 	ERR_FAIL_COND(!player);
-	file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	file->clear_filters();
 	List<String> extensions;
 
@@ -392,7 +392,7 @@ void AnimationPlayerEditor::_animation_save(const Ref<Resource> &p_resource) {
 
 void AnimationPlayerEditor::_animation_save_as(const Ref<Resource> &p_resource) {
 
-	file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	file->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 
 	List<String> extensions;
 	ResourceSaver::get_recognized_extensions(p_resource, &extensions);
@@ -434,7 +434,7 @@ void AnimationPlayerEditor::_animation_remove() {
 		return;
 
 	delete_dialog->set_text(TTR("Delete Animation?"));
-	delete_dialog->popup_centered_minsize();
+	delete_dialog->popup_centered();
 }
 
 void AnimationPlayerEditor::_animation_remove_confirmed() {
@@ -488,7 +488,7 @@ double AnimationPlayerEditor::_get_editor_step() const {
 		ERR_FAIL_COND_V(!anim.is_valid(), 0.0);
 
 		// Use more precise snapping when holding Shift
-		return Input::get_singleton()->is_key_pressed(KEY_SHIFT) ? anim->get_step() * 0.25 : anim->get_step();
+		return InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT) ? anim->get_step() * 0.25 : anim->get_step();
 	}
 
 	return 0.0;
@@ -501,7 +501,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 	String new_name = name->get_text();
 	if (new_name == "" || new_name.find(":") != -1 || new_name.find("/") != -1) {
 		error_dialog->set_text(TTR("Invalid animation name!"));
-		error_dialog->popup_centered_minsize();
+		error_dialog->popup_centered();
 		return;
 	}
 
@@ -512,7 +512,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 
 	if (player->has_animation(new_name)) {
 		error_dialog->set_text(TTR("Animation name already exists!"));
-		error_dialog->popup_centered_minsize();
+		error_dialog->popup_centered();
 		return;
 	}
 
@@ -1058,7 +1058,7 @@ void AnimationPlayerEditor::_animation_player_changed(Object *p_pl) {
 	if (player == p_pl && is_visible_in_tree()) {
 
 		_update_player();
-		if (blend_editor.dialog->is_visible_in_tree())
+		if (blend_editor.dialog->is_visible())
 			_animation_blend(); // Update.
 	}
 }
@@ -1152,7 +1152,7 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 
 			if (!animation->get_item_count()) {
 				error_dialog->set_text(TTR("No animation to copy!"));
-				error_dialog->popup_centered_minsize();
+				error_dialog->popup_centered();
 				return;
 			}
 
@@ -1165,7 +1165,7 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 			Ref<Animation> anim2 = EditorSettings::get_singleton()->get_resource_clipboard();
 			if (!anim2.is_valid()) {
 				error_dialog->set_text(TTR("No animation resource on clipboard!"));
-				error_dialog->popup_centered_minsize();
+				error_dialog->popup_centered();
 				return;
 			}
 
@@ -1195,7 +1195,7 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 
 			if (!animation->get_item_count()) {
 				error_dialog->set_text(TTR("No animation to edit!"));
-				error_dialog->popup_centered_minsize();
+				error_dialog->popup_centered();
 				return;
 			}
 
@@ -1420,7 +1420,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 
 	// Tweak the root viewport to ensure it's rendered before our target.
 	RID root_vp = get_tree()->get_root()->get_viewport_rid();
-	Rect2 root_vp_screen_rect = get_tree()->get_root()->get_attach_to_screen_rect();
+	Rect2 root_vp_screen_rect = Rect2(Vector2(), get_tree()->get_root()->get_size());
 	VS::get_singleton()->viewport_attach_to_screen(root_vp, Rect2());
 	VS::get_singleton()->viewport_set_update_mode(root_vp, VS::VIEWPORT_UPDATE_ALWAYS);
 

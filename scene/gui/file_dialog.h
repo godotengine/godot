@@ -50,12 +50,12 @@ public:
 		ACCESS_FILESYSTEM
 	};
 
-	enum Mode {
-		MODE_OPEN_FILE,
-		MODE_OPEN_FILES,
-		MODE_OPEN_DIR,
-		MODE_OPEN_ANY,
-		MODE_SAVE_FILE
+	enum FileMode {
+		FILE_MODE_OPEN_FILE,
+		FILE_MODE_OPEN_FILES,
+		FILE_MODE_OPEN_DIR,
+		FILE_MODE_OPEN_ANY,
+		FILE_MODE_SAVE_FILE
 	};
 
 	typedef Ref<Texture2D> (*GetIconFunc)(const String &);
@@ -70,11 +70,12 @@ private:
 	ConfirmationDialog *makedialog;
 	LineEdit *makedirname;
 
+	VBoxContainer *vbc;
 	Button *makedir;
 	Access access;
 	//Button *action;
 	VBoxContainer *vbox;
-	Mode mode;
+	FileMode mode;
 	LineEdit *dir;
 	HBoxContainer *drives_container;
 	HBoxContainer *shortcuts_container;
@@ -131,6 +132,8 @@ private:
 	virtual void _post_popup();
 
 protected:
+	void _theme_changed();
+
 	void _notification(int p_what);
 	static void _bind_methods();
 	//bind helpers
@@ -153,8 +156,8 @@ public:
 	void set_mode_overrides_title(bool p_override);
 	bool is_mode_overriding_title() const;
 
-	void set_mode(Mode p_mode);
-	Mode get_mode() const;
+	void set_file_mode(FileMode p_mode);
+	FileMode get_file_mode() const;
 
 	VBoxContainer *get_vbox();
 	LineEdit *get_line_edit() { return file; }
@@ -196,7 +199,7 @@ public:
 	LineEditFileChooser();
 };
 
-VARIANT_ENUM_CAST(FileDialog::Mode);
+VARIANT_ENUM_CAST(FileDialog::FileMode);
 VARIANT_ENUM_CAST(FileDialog::Access);
 
 #endif

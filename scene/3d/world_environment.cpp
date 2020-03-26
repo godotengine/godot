@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "world_environment.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 
 void WorldEnvironment::_notification(int p_what) {
 

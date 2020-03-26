@@ -29,11 +29,13 @@
 /*************************************************************************/
 
 #include "canvas_item.h"
+
+#include "core/input/input_filter.h"
 #include "core/message_queue.h"
 #include "core/method_bind_ext.gen.inc"
-#include "core/os/input.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/viewport.h"
+#include "scene/main/window.h"
 #include "scene/resources/font.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
@@ -347,6 +349,9 @@ bool CanvasItem::is_visible_in_tree() const {
 	while (p) {
 		if (!p->visible)
 			return false;
+		if (p->window && !p->window->is_visible()) {
+			return false;
+		}
 		p = p->get_parent_item();
 	}
 
@@ -450,6 +455,21 @@ Transform2D CanvasItem::get_global_transform_with_canvas() const {
 		return get_global_transform();
 }
 
+Transform2D CanvasItem::get_screen_transform() const {
+	ERR_FAIL_COND_V(!is_inside_tree(), Transform2D());
+	Transform2D xform = get_global_transform_with_canvas();
+
+	Window *w = Object::cast_to<Window>(get_viewport());
+	if (w && !w->is_embedding_subwindows()) {
+		Transform2D s;
+		s.set_origin(w->get_position());
+
+		xform = s * xform;
+	}
+
+	return xform;
+}
+
 Transform2D CanvasItem::get_global_transform() const {
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_V(!is_inside_tree(), get_transform());
@@ -548,10 +568,30 @@ void CanvasItem::_notification(int p_what) {
 			_update_texture_repeat_changed(false);
 
 			first_draw = true;
-			if (get_parent()) {
-				CanvasItem *ci = Object::cast_to<CanvasItem>(get_parent());
+			Node *parent = get_parent();
+			if (parent) {
+				CanvasItem *ci = Object::cast_to<CanvasItem>(parent);
 				if (ci)
 					C = ci->children_items.push_back(this);
+				if (!ci) {
+					//look for a window
+					Viewport *viewport = nullptr;
+
+					while (parent) {
+						viewport = Object::cast_to<Viewport>(parent);
+						if (viewport) {
+							break;
+						}
+						parent = parent->get_parent();
+					}
+
+					ERR_FAIL_COND(!viewport);
+
+					window = Object::cast_to<Window>(viewport);
+					if (window) {
+						window->connect(SceneStringNames::get_singleton()->visibility_changed, callable_mp(this, &CanvasItem::_window_visibility_changed));
+					}
+				}
 			}
 			_enter_canvas();
 			if (!block_transform_notify && !xform_change.in_list()) {
@@ -580,6 +620,9 @@ void CanvasItem::_notification(int p_what) {
 				Object::cast_to<CanvasItem>(get_parent())->children_items.erase(C);
 				C = NULL;
 			}
+			if (window) {
+				window->disconnect(SceneStringNames::get_singleton()->visibility_changed, callable_mp(this, &CanvasItem::_window_visibility_changed));
+			}
 			global_invalid = true;
 		} break;
 		case NOTIFICATION_DRAW:
@@ -600,6 +643,14 @@ void CanvasItem::set_visible(bool p_visible) {
 	else
 		hide();
 }
+
+void CanvasItem::_window_visibility_changed() {
+
+	if (visible) {
+		_propagate_visibility_changed(window->is_visible());
+	}
+}
+
 bool CanvasItem::is_visible() const {
 
 	return visible;
@@ -1408,6 +1459,7 @@ CanvasItem::TextureRepeat CanvasItem::get_texture_repeat() const {
 CanvasItem::CanvasItem() :
 		xform_change(this) {
 
+	window = nullptr;
 	canvas_item = VisualServer::get_singleton()->canvas_item_create();
 	visible = true;
 	pending_update = false;

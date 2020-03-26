@@ -696,7 +696,9 @@ Error VulkanContext::_create_semaphores() {
 	return OK;
 }
 
-int VulkanContext::_window_create(VkSurfaceKHR p_surface, int p_width, int p_height) {
+Error VulkanContext::_window_create(DisplayServer::WindowID p_window_id, VkSurfaceKHR p_surface, int p_width, int p_height) {
+
+	ERR_FAIL_COND_V(windows.has(p_window_id), ERR_INVALID_PARAMETER);
 
 	if (!queues_initialized) {
 		// We use a single GPU, but we need a surface to initialize the
@@ -710,39 +712,37 @@ int VulkanContext::_window_create(VkSurfaceKHR p_surface, int p_width, int p_hei
 	window.width = p_width;
 	window.height = p_height;
 	Error err = _update_swap_chain(&window);
-	ERR_FAIL_COND_V(err != OK, -1);
+	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
 
-	int id = last_window_id;
-	windows[id] = window;
-	last_window_id++;
-	return id;
+	windows[p_window_id] = window;
+	return OK;
 }
 
-void VulkanContext::window_resize(int p_window, int p_width, int p_height) {
+void VulkanContext::window_resize(DisplayServer::WindowID p_window, int p_width, int p_height) {
 	ERR_FAIL_COND(!windows.has(p_window));
 	windows[p_window].width = p_width;
 	windows[p_window].height = p_height;
 	_update_swap_chain(&windows[p_window]);
 }
 
-int VulkanContext::window_get_width(int p_window) {
+int VulkanContext::window_get_width(DisplayServer::WindowID p_window) {
 	ERR_FAIL_COND_V(!windows.has(p_window), -1);
 	return windows[p_window].width;
 }
 
-int VulkanContext::window_get_height(int p_window) {
+int VulkanContext::window_get_height(DisplayServer::WindowID p_window) {
 	ERR_FAIL_COND_V(!windows.has(p_window), -1);
 	return windows[p_window].height;
 }
 
-VkRenderPass VulkanContext::window_get_render_pass(int p_window) {
+VkRenderPass VulkanContext::window_get_render_pass(DisplayServer::WindowID p_window) {
 	ERR_FAIL_COND_V(!windows.has(p_window), VK_NULL_HANDLE);
 	Window *w = &windows[p_window];
 	//vulkan use of currentbuffer
 	return w->render_pass;
 }
 
-VkFramebuffer VulkanContext::window_get_framebuffer(int p_window) {
+VkFramebuffer VulkanContext::window_get_framebuffer(DisplayServer::WindowID p_window) {
 	ERR_FAIL_COND_V(!windows.has(p_window), VK_NULL_HANDLE);
 	ERR_FAIL_COND_V(!buffers_prepared, VK_NULL_HANDLE);
 	Window *w = &windows[p_window];
@@ -750,7 +750,7 @@ VkFramebuffer VulkanContext::window_get_framebuffer(int p_window) {
 	return w->swapchain_image_resources[w->current_buffer].framebuffer;
 }
 
-void VulkanContext::window_destroy(int p_window_id) {
+void VulkanContext::window_destroy(DisplayServer::WindowID p_window_id) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	_clean_up_swap_chain(&windows[p_window_id]);
 	vkDestroySurfaceKHR(inst, windows[p_window_id].surface, NULL);
@@ -1497,7 +1497,6 @@ VulkanContext::VulkanContext() {
 
 	buffers_prepared = false;
 	swapchainImageCount = 0;
-	last_window_id = 0;
 }
 
 VulkanContext::~VulkanContext() {

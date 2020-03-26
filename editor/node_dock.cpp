@@ -55,8 +55,8 @@ void NodeDock::_bind_methods() {
 void NodeDock::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		connections_button->set_icon(get_icon("Signals", "EditorIcons"));
-		groups_button->set_icon(get_icon("Groups", "EditorIcons"));
+		connections_button->set_icon(get_theme_icon("Signals", "EditorIcons"));
+		groups_button->set_icon(get_theme_icon("Groups", "EditorIcons"));
 	}
 }
 

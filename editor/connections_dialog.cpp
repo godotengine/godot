@@ -115,7 +115,7 @@ void ConnectDialog::ok_pressed() {
 
 	if (dst_method->get_text() == "") {
 		error->set_text(TTR("Method in target node must be specified."));
-		error->popup_centered_minsize();
+		error->popup_centered();
 		return;
 	}
 	Node *target = tree->get_selected();
@@ -125,7 +125,7 @@ void ConnectDialog::ok_pressed() {
 	if (target->get_script().is_null()) {
 		if (!target->has_method(dst_method->get_text())) {
 			error->set_text(TTR("Target method not found. Specify a valid method or attach a script to the target node."));
-			error->popup_centered_minsize();
+			error->popup_centered();
 			return;
 		}
 	}
@@ -341,7 +341,7 @@ void ConnectDialog::init(ConnectionData c, bool bEdit) {
 void ConnectDialog::popup_dialog(const String &p_for_signal) {
 
 	from_signal->set_text(p_for_signal);
-	error_label->add_color_override("font_color", get_color("error_color", "Editor"));
+	error_label->add_theme_color_override("font_color", error_label->get_theme_color("error_color", "Editor"));
 	if (!advanced->is_pressed())
 		error_label->set_visible(!_find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root()));
 
@@ -351,14 +351,14 @@ void ConnectDialog::popup_dialog(const String &p_for_signal) {
 void ConnectDialog::_advanced_pressed() {
 
 	if (advanced->is_pressed()) {
-		set_custom_minimum_size(Size2(900, 500) * EDSCALE);
+		set_min_size(Size2(900, 500) * EDSCALE);
 		connect_to_label->set_text(TTR("Connect to Node:"));
 		tree->set_connect_to_script_mode(false);
 
 		vbc_right->show();
 		error_label->hide();
 	} else {
-		set_custom_minimum_size(Size2(600, 500) * EDSCALE);
+		set_min_size(Size2(600, 500) * EDSCALE);
 		set_size(Size2());
 		connect_to_label->set_text(TTR("Connect to Script:"));
 		tree->set_connect_to_script_mode(true);
@@ -369,23 +369,23 @@ void ConnectDialog::_advanced_pressed() {
 
 	_update_ok_enabled();
 
-	set_position((get_viewport_rect().size - get_custom_minimum_size()) / 2);
+	popup_centered();
 }
 
 ConnectDialog::ConnectDialog() {
 
-	set_custom_minimum_size(Size2(600, 500) * EDSCALE);
+	set_min_size(Size2(600, 500) * EDSCALE);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
 
 	HBoxContainer *main_hb = memnew(HBoxContainer);
 	vbc->add_child(main_hb);
-	main_hb->set_v_size_flags(SIZE_EXPAND_FILL);
+	main_hb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	VBoxContainer *vbc_left = memnew(VBoxContainer);
 	main_hb->add_child(vbc_left);
-	vbc_left->set_h_size_flags(SIZE_EXPAND_FILL);
+	vbc_left->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	from_signal = memnew(LineEdit);
 	from_signal->set_editable(false);
@@ -407,13 +407,13 @@ ConnectDialog::ConnectDialog() {
 
 	vbc_right = memnew(VBoxContainer);
 	main_hb->add_child(vbc_right);
-	vbc_right->set_h_size_flags(SIZE_EXPAND_FILL);
+	vbc_right->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc_right->hide();
 
 	HBoxContainer *add_bind_hb = memnew(HBoxContainer);
 
 	type_list = memnew(OptionButton);
-	type_list->set_h_size_flags(SIZE_EXPAND_FILL);
+	type_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_bind_hb->add_child(type_list);
 	type_list->add_item("bool", Variant::BOOL);
 	type_list->add_item("int", Variant::INT);
@@ -451,7 +451,7 @@ ConnectDialog::ConnectDialog() {
 	vbc_left->add_margin_child(TTR("Receiver Method:"), dstm_hb);
 
 	dst_method = memnew(LineEdit);
-	dst_method->set_h_size_flags(SIZE_EXPAND_FILL);
+	dst_method->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	dst_method->connect("text_entered", callable_mp(this, &ConnectDialog::_text_entered));
 	dstm_hb->add_child(dst_method);
 
@@ -477,8 +477,6 @@ ConnectDialog::ConnectDialog() {
 	oneshot->set_tooltip(TTR("Disconnects the signal after its first emission."));
 	vbc_right->add_child(oneshot);
 
-	set_as_toplevel(true);
-
 	cdbinds = memnew(ConnectDialogBinds);
 
 	error = memnew(AcceptDialog);
@@ -499,7 +497,7 @@ ConnectDialog::~ConnectDialog() {
 Control *ConnectionsDockTree::make_custom_tooltip(const String &p_text) const {
 
 	EditorHelpBit *help_bit = memnew(EditorHelpBit);
-	help_bit->add_style_override("panel", get_stylebox("panel", "TooltipPanel"));
+	help_bit->add_theme_style_override("panel", get_theme_stylebox("panel", "TooltipPanel"));
 	help_bit->get_rich_text()->set_fixed_size_to_width(360 * EDSCALE);
 
 	String text = TTR("Signal:") + " [u][b]" + p_text.get_slice("::", 0) + "[/b][/u]";
@@ -909,21 +907,21 @@ void ConnectionsDock::update_tree() {
 				else
 					name = scr->get_class();
 
-				if (has_icon(scr->get_class(), "EditorIcons")) {
-					icon = get_icon(scr->get_class(), "EditorIcons");
+				if (has_theme_icon(scr->get_class(), "EditorIcons")) {
+					icon = get_theme_icon(scr->get_class(), "EditorIcons");
 				}
 			}
 		} else {
 
 			ClassDB::get_signal_list(base, &node_signals2, true);
-			if (has_icon(base, "EditorIcons")) {
-				icon = get_icon(base, "EditorIcons");
+			if (has_theme_icon(base, "EditorIcons")) {
+				icon = get_theme_icon(base, "EditorIcons");
 			}
 			name = base;
 		}
 
 		if (!icon.is_valid()) {
-			icon = get_icon("Object", "EditorIcons");
+			icon = get_theme_icon("Object", "EditorIcons");
 		}
 
 		TreeItem *pitem = NULL;
@@ -934,7 +932,7 @@ void ConnectionsDock::update_tree() {
 			pitem->set_icon(0, icon);
 			pitem->set_selectable(0, false);
 			pitem->set_editable(0, false);
-			pitem->set_custom_bg_color(0, get_color("prop_subsection", "Editor"));
+			pitem->set_custom_bg_color(0, get_theme_color("prop_subsection", "Editor"));
 			node_signals2.sort();
 		}
 
@@ -970,7 +968,7 @@ void ConnectionsDock::update_tree() {
 			sinfo["name"] = signal_name;
 			sinfo["args"] = argnames;
 			item->set_metadata(0, sinfo);
-			item->set_icon(0, get_icon("Signal", "EditorIcons"));
+			item->set_icon(0, get_theme_icon("Signal", "EditorIcons"));
 
 			// Set tooltip with the signal's documentation.
 			{
@@ -1045,7 +1043,7 @@ void ConnectionsDock::update_tree() {
 				item2->set_text(0, path);
 				Connection cd = c;
 				item2->set_metadata(0, cd);
-				item2->set_icon(0, get_icon("Slot", "EditorIcons"));
+				item2->set_icon(0, get_theme_icon("Slot", "EditorIcons"));
 			}
 		}
 
@@ -1072,7 +1070,7 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	tree->set_select_mode(Tree::SELECT_ROW);
 	tree->set_hide_root(true);
 	vbc->add_child(tree);
-	tree->set_v_size_flags(SIZE_EXPAND_FILL);
+	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tree->set_allow_rmb_select(true);
 
 	connect_button = memnew(Button);
@@ -1083,11 +1081,9 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	connect_button->connect("pressed", callable_mp(this, &ConnectionsDock::_connect_pressed));
 
 	connect_dialog = memnew(ConnectDialog);
-	connect_dialog->set_as_toplevel(true);
 	add_child(connect_dialog);
 
 	disconnect_all_dialog = memnew(ConfirmationDialog);
-	disconnect_all_dialog->set_as_toplevel(true);
 	add_child(disconnect_all_dialog);
 	disconnect_all_dialog->connect("confirmed", callable_mp(this, &ConnectionsDock::_disconnect_all));
 	disconnect_all_dialog->set_text(TTR("Are you sure you want to remove all connections from this signal?"));
@@ -1110,7 +1106,7 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	tree->connect("item_activated", callable_mp(this, &ConnectionsDock::_tree_item_activated));
 	tree->connect("item_rmb_selected", callable_mp(this, &ConnectionsDock::_rmb_pressed));
 
-	add_constant_override("separation", 3 * EDSCALE);
+	add_theme_constant_override("separation", 3 * EDSCALE);
 }
 
 ConnectionsDock::~ConnectionsDock() {

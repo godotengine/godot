@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  input_default.h                                                      */
+/*  input_filter.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,16 +28,78 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef INPUT_DEFAULT_H
-#define INPUT_DEFAULT_H
+#ifndef INPUT_H
+#define INPUT_H
 
-#include "core/os/input.h"
+#include "core/input/input_event.h"
+#include "core/object.h"
+#include "core/os/thread_safe.h"
 
-class InputDefault : public Input {
+class InputFilter : public Object {
 
-	GDCLASS(InputDefault, Input);
+	GDCLASS(InputFilter, Object);
 	_THREAD_SAFE_CLASS_
 
+	static InputFilter *singleton;
+
+public:
+	enum MouseMode {
+		MOUSE_MODE_VISIBLE,
+		MOUSE_MODE_HIDDEN,
+		MOUSE_MODE_CAPTURED,
+		MOUSE_MODE_CONFINED
+	};
+
+#undef CursorShape
+	enum CursorShape {
+		CURSOR_ARROW,
+		CURSOR_IBEAM,
+		CURSOR_POINTING_HAND,
+		CURSOR_CROSS,
+		CURSOR_WAIT,
+		CURSOR_BUSY,
+		CURSOR_DRAG,
+		CURSOR_CAN_DROP,
+		CURSOR_FORBIDDEN,
+		CURSOR_VSIZE,
+		CURSOR_HSIZE,
+		CURSOR_BDIAGSIZE,
+		CURSOR_FDIAGSIZE,
+		CURSOR_MOVE,
+		CURSOR_VSPLIT,
+		CURSOR_HSPLIT,
+		CURSOR_HELP,
+		CURSOR_MAX
+	};
+
+	enum HatMask {
+		HAT_MASK_CENTER = 0,
+		HAT_MASK_UP = 1,
+		HAT_MASK_RIGHT = 2,
+		HAT_MASK_DOWN = 4,
+		HAT_MASK_LEFT = 8,
+	};
+
+	enum HatDir {
+		HAT_UP,
+		HAT_RIGHT,
+		HAT_DOWN,
+		HAT_LEFT,
+		HAT_MAX,
+	};
+
+	enum {
+		JOYPADS_MAX = 16,
+	};
+
+	struct JoyAxis {
+		int min;
+		float value;
+	};
+
+	typedef void (*EventDispatchFunc)(const Ref<InputEvent> &p_event);
+
+private:
 	int mouse_button_mask;
 
 	Set<int> keys_pressed;
@@ -49,7 +111,7 @@ class InputDefault : public Input {
 	Vector3 magnetometer;
 	Vector3 gyroscope;
 	Vector2 mouse_pos;
-	MainLoop *main_loop;
+	int64_t mouse_window;
 
 	struct Action {
 		uint64_t physics_frame;
@@ -123,33 +185,6 @@ class InputDefault : public Input {
 
 	CursorShape default_shape;
 
-public:
-	enum HatMask {
-		HAT_MASK_CENTER = 0,
-		HAT_MASK_UP = 1,
-		HAT_MASK_RIGHT = 2,
-		HAT_MASK_DOWN = 4,
-		HAT_MASK_LEFT = 8,
-	};
-
-	enum HatDir {
-		HAT_UP,
-		HAT_RIGHT,
-		HAT_DOWN,
-		HAT_LEFT,
-		HAT_MAX,
-	};
-
-	enum {
-		JOYPADS_MAX = 16,
-	};
-
-	struct JoyAxis {
-		int min;
-		float value;
-	};
-
-private:
 	enum JoyType {
 		TYPE_BUTTON,
 		TYPE_AXIS,
@@ -185,38 +220,57 @@ private:
 
 	List<Ref<InputEvent>> accumulated_events;
 	bool use_accumulated_input;
+	friend class DisplayServer;
+
+	static void (*set_mouse_mode_func)(MouseMode);
+	static MouseMode (*get_mouse_mode_func)();
+	static void (*warp_mouse_func)(const Vector2 &p_to_pos);
+
+	static CursorShape (*get_current_cursor_shape_func)();
+	static void (*set_custom_mouse_cursor_func)(const RES &, CursorShape, const Vector2 &);
+
+	EventDispatchFunc event_dispatch_function;
+
+protected:
+	static void _bind_methods();
 
 public:
-	virtual bool is_key_pressed(int p_keycode) const;
-	virtual bool is_mouse_button_pressed(int p_button) const;
-	virtual bool is_joy_button_pressed(int p_device, int p_button) const;
-	virtual bool is_action_pressed(const StringName &p_action) const;
-	virtual bool is_action_just_pressed(const StringName &p_action) const;
-	virtual bool is_action_just_released(const StringName &p_action) const;
-	virtual float get_action_strength(const StringName &p_action) const;
+	void set_mouse_mode(MouseMode p_mode);
+	MouseMode get_mouse_mode() const;
+	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
 
-	virtual float get_joy_axis(int p_device, int p_axis) const;
+	static InputFilter *get_singleton();
+
+	bool is_key_pressed(int p_keycode) const;
+	bool is_mouse_button_pressed(int p_button) const;
+	bool is_joy_button_pressed(int p_device, int p_button) const;
+	bool is_action_pressed(const StringName &p_action) const;
+	bool is_action_just_pressed(const StringName &p_action) const;
+	bool is_action_just_released(const StringName &p_action) const;
+	float get_action_strength(const StringName &p_action) const;
+
+	float get_joy_axis(int p_device, int p_axis) const;
 	String get_joy_name(int p_idx);
-	virtual Array get_connected_joypads();
-	virtual Vector2 get_joy_vibration_strength(int p_device);
-	virtual float get_joy_vibration_duration(int p_device);
-	virtual uint64_t get_joy_vibration_timestamp(int p_device);
+	Array get_connected_joypads();
+	Vector2 get_joy_vibration_strength(int p_device);
+	float get_joy_vibration_duration(int p_device);
+	uint64_t get_joy_vibration_timestamp(int p_device);
 	void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid = "");
 	void parse_joypad_mapping(String p_mapping, bool p_update_existing);
 
-	virtual Vector3 get_gravity() const;
-	virtual Vector3 get_accelerometer() const;
-	virtual Vector3 get_magnetometer() const;
-	virtual Vector3 get_gyroscope() const;
+	Vector3 get_gravity() const;
+	Vector3 get_accelerometer() const;
+	Vector3 get_magnetometer() const;
+	Vector3 get_gyroscope() const;
 
-	virtual Point2 get_mouse_position() const;
-	virtual Point2 get_last_mouse_speed() const;
-	virtual int get_mouse_button_mask() const;
+	Point2 get_mouse_position() const;
+	Point2 get_last_mouse_speed() const;
+	int get_mouse_button_mask() const;
 
-	virtual void warp_mouse_position(const Vector2 &p_to);
-	virtual Point2i warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect);
+	void warp_mouse_position(const Vector2 &p_to);
+	Point2i warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect);
 
-	virtual void parse_input_event(const Ref<InputEvent> &p_event);
+	void parse_input_event(const Ref<InputEvent> &p_event);
 
 	void set_gravity(const Vector3 &p_gravity);
 	void set_accelerometer(const Vector3 &p_accel);
@@ -224,11 +278,10 @@ public:
 	void set_gyroscope(const Vector3 &p_gyroscope);
 	void set_joy_axis(int p_device, int p_axis, float p_value);
 
-	virtual void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);
-	virtual void stop_joy_vibration(int p_device);
-	virtual void vibrate_handheld(int p_duration_ms = 500);
+	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);
+	void stop_joy_vibration(int p_device);
+	void vibrate_handheld(int p_duration_ms = 500);
 
-	void set_main_loop(MainLoop *p_main_loop);
 	void set_mouse_position(const Point2 &p_posf);
 
 	void action_press(const StringName &p_action, float p_strength = 1.f);
@@ -237,44 +290,48 @@ public:
 	void iteration(float p_step);
 
 	void set_emulate_touch_from_mouse(bool p_emulate);
-	virtual bool is_emulating_touch_from_mouse() const;
+	bool is_emulating_touch_from_mouse() const;
 	void ensure_touch_mouse_raised();
 
 	void set_emulate_mouse_from_touch(bool p_emulate);
-	virtual bool is_emulating_mouse_from_touch() const;
+	bool is_emulating_mouse_from_touch() const;
 
-	virtual CursorShape get_default_cursor_shape() const;
-	virtual void set_default_cursor_shape(CursorShape p_shape);
-	virtual CursorShape get_current_cursor_shape() const;
-	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape = Input::CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
+	CursorShape get_default_cursor_shape() const;
+	void set_default_cursor_shape(CursorShape p_shape);
+	CursorShape get_current_cursor_shape() const;
+	void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape = InputFilter::CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
 
 	void parse_mapping(String p_mapping);
 	void joy_button(int p_device, int p_button, bool p_pressed);
 	void joy_axis(int p_device, int p_axis, const JoyAxis &p_value);
 	void joy_hat(int p_device, int p_val);
 
-	virtual void add_joy_mapping(String p_mapping, bool p_update_existing = false);
-	virtual void remove_joy_mapping(String p_guid);
-	virtual bool is_joy_known(int p_device);
-	virtual String get_joy_guid(int p_device) const;
+	void add_joy_mapping(String p_mapping, bool p_update_existing = false);
+	void remove_joy_mapping(String p_guid);
 
-	virtual String get_joy_button_string(int p_button);
-	virtual String get_joy_axis_string(int p_axis);
-	virtual int get_joy_axis_index_from_string(String p_axis);
-	virtual int get_joy_button_index_from_string(String p_button);
+	String get_joy_button_string(int p_button);
+	String get_joy_axis_string(int p_axis);
+	int get_joy_axis_index_from_string(String p_axis);
+	int get_joy_button_index_from_string(String p_button);
 
 	int get_unused_joy_id();
 
-	bool is_joy_mapped(int p_device);
-	String get_joy_guid_remapped(int p_device) const;
+	bool is_joy_known(int p_device);
+	String get_joy_guid(int p_device) const;
 	void set_fallback_mapping(String p_guid);
 
-	virtual void accumulate_input_event(const Ref<InputEvent> &p_event);
-	virtual void flush_accumulated_events();
-	virtual void set_use_accumulated_input(bool p_enable);
+	void accumulate_input_event(const Ref<InputEvent> &p_event);
+	void flush_accumulated_events();
+	void set_use_accumulated_input(bool p_enable);
 
-	virtual void release_pressed_events();
-	InputDefault();
+	void release_pressed_events();
+
+	void set_event_dispatch_function(EventDispatchFunc p_function);
+
+	InputFilter();
 };
 
-#endif // INPUT_DEFAULT_H
+VARIANT_ENUM_CAST(InputFilter::MouseMode);
+VARIANT_ENUM_CAST(InputFilter::CursorShape);
+
+#endif // INPUT_H

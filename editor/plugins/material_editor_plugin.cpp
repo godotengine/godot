@@ -44,15 +44,15 @@ void MaterialEditor::_notification(int p_what) {
 		if (first_enter) {
 			//it's in propertyeditor so.. could be moved around
 
-			light_1_switch->set_normal_texture(get_icon("MaterialPreviewLight1", "EditorIcons"));
-			light_1_switch->set_pressed_texture(get_icon("MaterialPreviewLight1Off", "EditorIcons"));
-			light_2_switch->set_normal_texture(get_icon("MaterialPreviewLight2", "EditorIcons"));
-			light_2_switch->set_pressed_texture(get_icon("MaterialPreviewLight2Off", "EditorIcons"));
+			light_1_switch->set_normal_texture(get_theme_icon("MaterialPreviewLight1", "EditorIcons"));
+			light_1_switch->set_pressed_texture(get_theme_icon("MaterialPreviewLight1Off", "EditorIcons"));
+			light_2_switch->set_normal_texture(get_theme_icon("MaterialPreviewLight2", "EditorIcons"));
+			light_2_switch->set_pressed_texture(get_theme_icon("MaterialPreviewLight2Off", "EditorIcons"));
 
-			sphere_switch->set_normal_texture(get_icon("MaterialPreviewSphereOff", "EditorIcons"));
-			sphere_switch->set_pressed_texture(get_icon("MaterialPreviewSphere", "EditorIcons"));
-			box_switch->set_normal_texture(get_icon("MaterialPreviewCubeOff", "EditorIcons"));
-			box_switch->set_pressed_texture(get_icon("MaterialPreviewCube", "EditorIcons"));
+			sphere_switch->set_normal_texture(get_theme_icon("MaterialPreviewSphereOff", "EditorIcons"));
+			sphere_switch->set_pressed_texture(get_theme_icon("MaterialPreviewSphere", "EditorIcons"));
+			box_switch->set_normal_texture(get_theme_icon("MaterialPreviewCubeOff", "EditorIcons"));
+			box_switch->set_pressed_texture(get_theme_icon("MaterialPreviewCube", "EditorIcons"));
 
 			first_enter = false;
 		}
@@ -60,7 +60,7 @@ void MaterialEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 
-		Ref<Texture2D> checkerboard = get_icon("Checkerboard", "EditorIcons");
+		Ref<Texture2D> checkerboard = get_theme_icon("Checkerboard", "EditorIcons");
 		Size2 size = get_size();
 
 		draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
@@ -114,7 +114,7 @@ MaterialEditor::MaterialEditor() {
 	vc->set_stretch(true);
 	add_child(vc);
 	vc->set_anchors_and_margins_preset(PRESET_WIDE);
-	viewport = memnew(Viewport);
+	viewport = memnew(SubViewport);
 	Ref<World> world;
 	world.instance();
 	viewport->set_world(world); //use own world

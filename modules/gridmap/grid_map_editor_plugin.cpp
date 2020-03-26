@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "grid_map_editor_plugin.h"
-#include "core/os/input.h"
+#include "core/input/input_filter.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/spatial_editor_plugin.h"
@@ -37,6 +37,7 @@
 
 #include "core/math/geometry.h"
 #include "core/os/keyboard.h"
+#include "scene/main/window.h"
 
 void GridMapEditor::_node_removed(Node *p_node) {
 
@@ -1146,8 +1147,8 @@ void GridMapEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			options->set_icon(get_icon("GridMap", "EditorIcons"));
-			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
+			options->set_icon(get_theme_icon("GridMap", "EditorIcons"));
+			search_box->set_right_icon(get_theme_icon("Search", "EditorIcons"));
 		} break;
 	}
 }
@@ -1226,7 +1227,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	floor->set_min(-32767);
 	floor->set_max(32767);
 	floor->set_step(1);
-	floor->get_line_edit()->add_constant_override("minimum_spaces", 16);
+	floor->get_line_edit()->add_theme_constant_override("minimum_spaces", 16);
 
 	spatial_editor_hb->add_child(floor);
 	floor->connect("value_changed", callable_mp(this, &GridMapEditor::_floor_changed));
@@ -1304,14 +1305,14 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	mode_thumbnail = memnew(ToolButton);
 	mode_thumbnail->set_toggle_mode(true);
 	mode_thumbnail->set_pressed(true);
-	mode_thumbnail->set_icon(p_editor->get_gui_base()->get_icon("FileThumbnail", "EditorIcons"));
+	mode_thumbnail->set_icon(p_editor->get_gui_base()->get_theme_icon("FileThumbnail", "EditorIcons"));
 	hb->add_child(mode_thumbnail);
 	mode_thumbnail->connect("pressed", callable_mp(this, &GridMapEditor::_set_display_mode), varray(DISPLAY_THUMBNAIL));
 
 	mode_list = memnew(ToolButton);
 	mode_list->set_toggle_mode(true);
 	mode_list->set_pressed(false);
-	mode_list->set_icon(p_editor->get_gui_base()->get_icon("FileList", "EditorIcons"));
+	mode_list->set_icon(p_editor->get_gui_base()->get_theme_icon("FileList", "EditorIcons"));
 	hb->add_child(mode_list);
 	mode_list->connect("pressed", callable_mp(this, &GridMapEditor::_set_display_mode), varray(DISPLAY_LIST));
 
