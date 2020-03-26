@@ -32,8 +32,8 @@
 
 #include "core/io/resource_saver.h"
 #include "core/os/file_access.h"
-#include "scene/3d/mesh_instance.h"
-#include "scene/3d/spatial.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/node_3d.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/surface_tool.h"
 
@@ -431,11 +431,11 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, in
 		return NULL;
 	}
 
-	Spatial *scene = memnew(Spatial);
+	Node3D *scene = memnew(Node3D);
 
 	for (List<Ref<Mesh>>::Element *E = meshes.front(); E; E = E->next()) {
 
-		MeshInstance *mi = memnew(MeshInstance);
+		MeshInstance3D *mi = memnew(MeshInstance3D);
 		mi->set_mesh(E->get());
 		mi->set_name(E->get()->get_name());
 		scene->add_child(mi);

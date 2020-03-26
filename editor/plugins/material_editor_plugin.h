@@ -36,9 +36,9 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "scene/3d/camera.h"
-#include "scene/3d/light.h"
-#include "scene/3d/mesh_instance.h"
+#include "scene/3d/camera_3d.h"
+#include "scene/3d/light_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/material.h"
 
 class ViewportContainer;
@@ -49,11 +49,11 @@ class MaterialEditor : public Control {
 
 	ViewportContainer *vc;
 	SubViewport *viewport;
-	MeshInstance *sphere_instance;
-	MeshInstance *box_instance;
-	DirectionalLight *light1;
-	DirectionalLight *light2;
-	Camera *camera;
+	MeshInstance3D *sphere_instance;
+	MeshInstance3D *box_instance;
+	DirectionalLight3D *light1;
+	DirectionalLight3D *light2;
+	Camera3D *camera;
 
 	Ref<SphereMesh> sphere_mesh;
 	Ref<CubeMesh> box_mesh;

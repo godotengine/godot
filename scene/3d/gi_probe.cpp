@@ -33,7 +33,7 @@
 #include "core/os/os.h"
 
 #include "core/method_bind_ext.gen.inc"
-#include "mesh_instance.h"
+#include "mesh_instance_3d.h"
 #include "voxelizer.h"
 
 void GIProbeData::_set_data(const Dictionary &p_data) {
@@ -347,8 +347,8 @@ Vector3 GIProbe::get_extents() const {
 
 void GIProbe::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 
-	MeshInstance *mi = Object::cast_to<MeshInstance>(p_at_node);
-	if (mi && mi->get_flag(GeometryInstance::FLAG_USE_BAKED_LIGHT) && mi->is_visible_in_tree()) {
+	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_at_node);
+	if (mi && mi->get_flag(GeometryInstance3D::FLAG_USE_BAKED_LIGHT) && mi->is_visible_in_tree()) {
 		Ref<Mesh> mesh = mi->get_mesh();
 		if (mesh.is_valid()) {
 
@@ -369,7 +369,7 @@ void GIProbe::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 		}
 	}
 
-	Spatial *s = Object::cast_to<Spatial>(p_at_node);
+	Node3D *s = Object::cast_to<Node3D>(p_at_node);
 	if (s) {
 
 		if (s->is_visible_in_tree()) {
@@ -468,7 +468,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 	//create the data for visual server
 
 	if (p_create_visual_debug) {
-		MultiMeshInstance *mmi = memnew(MultiMeshInstance);
+		MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
 		mmi->set_multimesh(baker.create_debug_multimesh());
 		add_child(mmi);
 #ifdef TOOLS_ENABLED

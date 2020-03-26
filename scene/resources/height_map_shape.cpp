@@ -89,7 +89,7 @@ void HeightMapShape::_update_shape() {
 	d["min_height"] = min_height;
 	d["max_height"] = max_height;
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(), d);
-	Shape::_update_shape();
+	Shape3D::_update_shape();
 }
 
 void HeightMapShape::set_map_width(int p_new) {
@@ -192,7 +192,7 @@ void HeightMapShape::_bind_methods() {
 }
 
 HeightMapShape::HeightMapShape() :
-		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_HEIGHTMAP)) {
+		Shape3D(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_HEIGHTMAP)) {
 
 	map_width = 2;
 	map_depth = 2;

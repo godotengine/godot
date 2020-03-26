@@ -92,7 +92,7 @@ struct CachedData {
 	GDMonoClass *class_GodotResource;
 	GDMonoClass *class_Node;
 	GDMonoClass *class_Control;
-	GDMonoClass *class_Spatial;
+	GDMonoClass *class_Node3D;
 	GDMonoClass *class_WeakRef;
 	GDMonoClass *class_Callable;
 	GDMonoClass *class_SignalInfo;

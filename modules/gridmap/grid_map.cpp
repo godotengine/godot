@@ -32,7 +32,7 @@
 
 #include "core/io/marshalls.h"
 #include "core/message_queue.h"
-#include "scene/3d/light.h"
+#include "scene/3d/light_3d.h"
 #include "scene/resources/mesh_library.h"
 #include "scene/resources/surface_tool.h"
 #include "scene/scene_string_names.h"
@@ -667,14 +667,14 @@ void GridMap::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_WORLD: {
 
-			Spatial *c = this;
+			Node3D *c = this;
 			while (c) {
-				navigation = Object::cast_to<Navigation>(c);
+				navigation = Object::cast_to<Navigation3D>(c);
 				if (navigation) {
 					break;
 				}
 
-				c = Object::cast_to<Spatial>(c->get_parent());
+				c = Object::cast_to<Node3D>(c->get_parent());
 			}
 
 			last_transform = get_global_transform();

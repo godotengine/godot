@@ -30,7 +30,7 @@
 
 #include "physical_bone_plugin.h"
 #include "editor/plugins/spatial_editor_plugin.h"
-#include "scene/3d/physics_body.h"
+#include "scene/3d/physics_body_3d.h"
 
 void PhysicalBoneEditor::_bind_methods() {
 }
@@ -53,7 +53,7 @@ PhysicalBoneEditor::PhysicalBoneEditor(EditorNode *p_editor) :
 	spatial_editor_hb = memnew(HBoxContainer);
 	spatial_editor_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	spatial_editor_hb->set_alignment(BoxContainer::ALIGN_BEGIN);
-	SpatialEditor::get_singleton()->add_control_to_menu_panel(spatial_editor_hb);
+	Node3DEditor::get_singleton()->add_control_to_menu_panel(spatial_editor_hb);
 
 	spatial_editor_hb->add_child(memnew(VSeparator));
 
@@ -61,7 +61,7 @@ PhysicalBoneEditor::PhysicalBoneEditor(EditorNode *p_editor) :
 	spatial_editor_hb->add_child(button_transform_joint);
 
 	button_transform_joint->set_text(TTR("Move Joint"));
-	button_transform_joint->set_icon(SpatialEditor::get_singleton()->get_theme_icon("PhysicalBone", "EditorIcons"));
+	button_transform_joint->set_icon(Node3DEditor::get_singleton()->get_theme_icon("PhysicalBone", "EditorIcons"));
 	button_transform_joint->set_toggle_mode(true);
 	button_transform_joint->connect("toggled", callable_mp(this, &PhysicalBoneEditor::_on_toggle_button_transform_joint));
 
@@ -70,7 +70,7 @@ PhysicalBoneEditor::PhysicalBoneEditor(EditorNode *p_editor) :
 
 PhysicalBoneEditor::~PhysicalBoneEditor() {}
 
-void PhysicalBoneEditor::set_selected(PhysicalBone *p_pb) {
+void PhysicalBoneEditor::set_selected(PhysicalBone3D *p_pb) {
 
 	button_transform_joint->set_pressed(false);
 
@@ -105,7 +105,7 @@ void PhysicalBonePlugin::make_visible(bool p_visible) {
 }
 
 void PhysicalBonePlugin::edit(Object *p_node) {
-	selected = static_cast<PhysicalBone *>(p_node); // Trust it
+	selected = static_cast<PhysicalBone3D *>(p_node); // Trust it
 	ERR_FAIL_COND(!selected);
 
 	physical_bone_editor.set_selected(selected);

@@ -43,7 +43,7 @@ void Particles2DEditorPlugin::edit(Object *p_object) {
 
 bool Particles2DEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_class("Particles2D");
+	return p_object->is_class("GPUParticles2D");
 }
 
 void Particles2DEditorPlugin::make_visible(bool p_visible) {

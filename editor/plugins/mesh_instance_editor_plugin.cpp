@@ -31,9 +31,9 @@
 #include "mesh_instance_editor_plugin.h"
 
 #include "editor/editor_scale.h"
-#include "scene/3d/collision_shape.h"
-#include "scene/3d/navigation_region.h"
-#include "scene/3d/physics_body.h"
+#include "scene/3d/collision_shape_3d.h"
+#include "scene/3d/navigation_region_3d.h"
+#include "scene/3d/physics_body_3d.h"
 #include "scene/gui/box_container.h"
 #include "spatial_editor_plugin.h"
 
@@ -45,7 +45,7 @@ void MeshInstanceEditor::_node_removed(Node *p_node) {
 	}
 }
 
-void MeshInstanceEditor::edit(MeshInstance *p_mesh) {
+void MeshInstanceEditor::edit(MeshInstance3D *p_mesh) {
 
 	node = p_mesh;
 }
@@ -68,16 +68,16 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 			List<Node *> selection = editor_selection->get_selected_node_list();
 
 			if (selection.empty()) {
-				Ref<Shape> shape = mesh->create_trimesh_shape();
+				Ref<Shape3D> shape = mesh->create_trimesh_shape();
 				if (shape.is_null()) {
 					err_dialog->set_text(TTR("Couldn't create a Trimesh collision shape."));
 					err_dialog->popup_centered();
 					return;
 				}
 
-				CollisionShape *cshape = memnew(CollisionShape);
+				CollisionShape3D *cshape = memnew(CollisionShape3D);
 				cshape->set_shape(shape);
-				StaticBody *body = memnew(StaticBody);
+				StaticBody3D *body = memnew(StaticBody3D);
 				body->add_child(cshape);
 
 				Node *owner = node == get_tree()->get_edited_scene_root() ? node : node->get_owner();
@@ -96,7 +96,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
-				MeshInstance *instance = Object::cast_to<MeshInstance>(E->get());
+				MeshInstance3D *instance = Object::cast_to<MeshInstance3D>(E->get());
 				if (!instance)
 					continue;
 
@@ -104,13 +104,13 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 				if (m.is_null())
 					continue;
 
-				Ref<Shape> shape = m->create_trimesh_shape();
+				Ref<Shape3D> shape = m->create_trimesh_shape();
 				if (shape.is_null())
 					continue;
 
-				CollisionShape *cshape = memnew(CollisionShape);
+				CollisionShape3D *cshape = memnew(CollisionShape3D);
 				cshape->set_shape(shape);
-				StaticBody *body = memnew(StaticBody);
+				StaticBody3D *body = memnew(StaticBody3D);
 				body->add_child(cshape);
 
 				Node *owner = instance == get_tree()->get_edited_scene_root() ? instance : instance->get_owner();
@@ -134,11 +134,11 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			Ref<Shape> shape = mesh->create_trimesh_shape();
+			Ref<Shape3D> shape = mesh->create_trimesh_shape();
 			if (shape.is_null())
 				return;
 
-			CollisionShape *cshape = memnew(CollisionShape);
+			CollisionShape3D *cshape = memnew(CollisionShape3D);
 			cshape->set_shape(shape);
 
 			Node *owner = node->get_owner();
@@ -162,7 +162,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			Ref<Shape> shape = mesh->create_convex_shape();
+			Ref<Shape3D> shape = mesh->create_convex_shape();
 
 			if (shape.is_null()) {
 				err_dialog->set_text(TTR("Couldn't create a single convex collision shape."));
@@ -173,7 +173,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
 			ur->create_action(TTR("Create Single Convex Shape"));
 
-			CollisionShape *cshape = memnew(CollisionShape);
+			CollisionShape3D *cshape = memnew(CollisionShape3D);
 			cshape->set_shape(shape);
 			cshape->set_transform(node->get_transform());
 
@@ -196,7 +196,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			Vector<Ref<Shape>> shapes = mesh->convex_decompose();
+			Vector<Ref<Shape3D>> shapes = mesh->convex_decompose();
 
 			if (!shapes.size()) {
 				err_dialog->set_text(TTR("Couldn't create any collision shapes."));
@@ -209,7 +209,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
 			for (int i = 0; i < shapes.size(); i++) {
 
-				CollisionShape *cshape = memnew(CollisionShape);
+				CollisionShape3D *cshape = memnew(CollisionShape3D);
 				cshape->set_shape(shapes[i]);
 				cshape->set_transform(node->get_transform());
 
@@ -233,7 +233,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 				return;
 
 			nmesh->create_from_mesh(mesh);
-			NavigationRegion *nmi = memnew(NavigationRegion);
+			NavigationRegion3D *nmi = memnew(NavigationRegion3D);
 			nmi->set_navigation_mesh(nmesh);
 
 			Node *owner = node == get_tree()->get_edited_scene_root() ? node : node->get_owner();
@@ -415,7 +415,7 @@ void MeshInstanceEditor::_create_outline_mesh() {
 		return;
 	}
 
-	MeshInstance *mi = memnew(MeshInstance);
+	MeshInstance3D *mi = memnew(MeshInstance3D);
 	mi->set_mesh(mesho);
 	Node *owner = node->get_owner();
 	if (get_tree()->get_edited_scene_root() == node) {
@@ -441,10 +441,10 @@ MeshInstanceEditor::MeshInstanceEditor() {
 
 	options = memnew(MenuButton);
 	options->set_switch_on_hover(true);
-	SpatialEditor::get_singleton()->add_control_to_menu_panel(options);
+	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text(TTR("Mesh"));
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("MeshInstance", "EditorIcons"));
+	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("MeshInstance3D", "EditorIcons"));
 
 	options->get_popup()->add_item(TTR("Create Trimesh Static Body"), MENU_OPTION_CREATE_STATIC_TRIMESH_BODY);
 	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a StaticBody and assigns a polygon-based collision shape to it automatically.\nThis is the most accurate (but slowest) option for collision detection."));
@@ -459,7 +459,7 @@ MeshInstanceEditor::MeshInstanceEditor() {
 	options->get_popup()->add_item(TTR("Create Navigation Mesh"), MENU_OPTION_CREATE_NAVMESH);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Outline Mesh..."), MENU_OPTION_CREATE_OUTLINE_MESH);
-	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a static outline mesh. The outline mesh will have its normals flipped automatically.\nThis can be used instead of the SpatialMaterial Grow property when using that property isn't possible."));
+	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a static outline mesh. The outline mesh will have its normals flipped automatically.\nThis can be used instead of the StandardMaterial Grow property when using that property isn't possible."));
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("View UV1"), MENU_OPTION_DEBUG_UV1);
 	options->get_popup()->add_item(TTR("View UV2"), MENU_OPTION_DEBUG_UV2);
@@ -499,12 +499,12 @@ MeshInstanceEditor::MeshInstanceEditor() {
 
 void MeshInstanceEditorPlugin::edit(Object *p_object) {
 
-	mesh_editor->edit(Object::cast_to<MeshInstance>(p_object));
+	mesh_editor->edit(Object::cast_to<MeshInstance3D>(p_object));
 }
 
 bool MeshInstanceEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_class("MeshInstance");
+	return p_object->is_class("MeshInstance3D");
 }
 
 void MeshInstanceEditorPlugin::make_visible(bool p_visible) {

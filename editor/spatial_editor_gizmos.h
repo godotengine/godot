@@ -32,328 +32,328 @@
 #define SPATIAL_EDITOR_GIZMOS_H
 
 #include "editor/plugins/spatial_editor_plugin.h"
-#include "scene/3d/camera.h"
+#include "scene/3d/camera_3d.h"
 
-class Camera;
+class Camera3D;
 
-class LightSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
+class LightNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(LightSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
+	GDCLASS(LightNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
-	bool has_gizmo(Spatial *p_spatial);
+	bool has_gizmo(Node3D *p_spatial);
 	String get_name() const;
 	int get_priority() const;
 
-	String get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const;
-	Variant get_handle_value(EditorSpatialGizmo *p_gizmo, int p_idx) const;
-	void set_handle(EditorSpatialGizmo *p_gizmo, int p_idx, Camera *p_camera, const Point2 &p_point);
-	void commit_handle(EditorSpatialGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
-	void redraw(EditorSpatialGizmo *p_gizmo);
+	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	Variant get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point);
+	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
+	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	LightSpatialGizmoPlugin();
+	LightNode3DGizmoPlugin();
 };
 
-class AudioStreamPlayer3DSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
+class AudioStreamPlayer3DNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(AudioStreamPlayer3DSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
+	GDCLASS(AudioStreamPlayer3DNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
-	bool has_gizmo(Spatial *p_spatial);
+	bool has_gizmo(Node3D *p_spatial);
 	String get_name() const;
 	int get_priority() const;
 
-	String get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const;
-	Variant get_handle_value(EditorSpatialGizmo *p_gizmo, int p_idx) const;
-	void set_handle(EditorSpatialGizmo *p_gizmo, int p_idx, Camera *p_camera, const Point2 &p_point);
-	void commit_handle(EditorSpatialGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
-	void redraw(EditorSpatialGizmo *p_gizmo);
+	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	Variant get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point);
+	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
+	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	AudioStreamPlayer3DSpatialGizmoPlugin();
+	AudioStreamPlayer3DNode3DGizmoPlugin();
 };
 
-class CameraSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
+class CameraNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(CameraSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
+	GDCLASS(CameraNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
-	bool has_gizmo(Spatial *p_spatial);
+	bool has_gizmo(Node3D *p_spatial);
 	String get_name() const;
 	int get_priority() const;
 
-	String get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const;
-	Variant get_handle_value(EditorSpatialGizmo *p_gizmo, int p_idx) const;
-	void set_handle(EditorSpatialGizmo *p_gizmo, int p_idx, Camera *p_camera, const Point2 &p_point);
-	void commit_handle(EditorSpatialGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
-	void redraw(EditorSpatialGizmo *p_gizmo);
+	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	Variant get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point);
+	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
+	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	CameraSpatialGizmoPlugin();
+	CameraNode3DGizmoPlugin();
 };
 
-class MeshInstanceSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
+class MeshInstanceNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(MeshInstanceSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
-
-public:
-	bool has_gizmo(Spatial *p_spatial);
-	String get_name() const;
-	int get_priority() const;
-	bool can_be_hidden() const;
-	void redraw(EditorSpatialGizmo *p_gizmo);
-
-	MeshInstanceSpatialGizmoPlugin();
-};
-
-class Sprite3DSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
-	GDCLASS(Sprite3DSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
+	GDCLASS(MeshInstanceNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
-	bool has_gizmo(Spatial *p_spatial);
+	bool has_gizmo(Node3D *p_spatial);
 	String get_name() const;
 	int get_priority() const;
 	bool can_be_hidden() const;
-	void redraw(EditorSpatialGizmo *p_gizmo);
+	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	Sprite3DSpatialGizmoPlugin();
+	MeshInstanceNode3DGizmoPlugin();
 };
 
-class Position3DSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
+class Sprite3DNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(Position3DSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
+	GDCLASS(Sprite3DNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
+
+public:
+	bool has_gizmo(Node3D *p_spatial);
+	String get_name() const;
+	int get_priority() const;
+	bool can_be_hidden() const;
+	void redraw(EditorNode3DGizmo *p_gizmo);
+
+	Sprite3DNode3DGizmoPlugin();
+};
+
+class Position3DNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+
+	GDCLASS(Position3DNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 	Ref<ArrayMesh> pos3d_mesh;
 	Vector<Vector3> cursor_points;
 
 public:
-	bool has_gizmo(Spatial *p_spatial);
+	bool has_gizmo(Node3D *p_spatial);
 	String get_name() const;
 	int get_priority() const;
-	void redraw(EditorSpatialGizmo *p_gizmo);
+	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	Position3DSpatialGizmoPlugin();
+	Position3DNode3DGizmoPlugin();
 };
 
-class SkeletonSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
+class SkeletonNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(SkeletonSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
+	GDCLASS(SkeletonNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
-	bool has_gizmo(Spatial *p_spatial);
+	bool has_gizmo(Node3D *p_spatial);
 	String get_name() const;
 	int get_priority() const;
-	void redraw(EditorSpatialGizmo *p_gizmo);
+	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	SkeletonSpatialGizmoPlugin();
+	SkeletonNode3DGizmoPlugin();
 };
 
-class PhysicalBoneSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
+class PhysicalBoneNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(PhysicalBoneSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
+	GDCLASS(PhysicalBoneNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
-	bool has_gizmo(Spatial *p_spatial);
+	bool has_gizmo(Node3D *p_spatial);
 	String get_name() const;
 	int get_priority() const;
-	void redraw(EditorSpatialGizmo *p_gizmo);
+	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	PhysicalBoneSpatialGizmoPlugin();
+	PhysicalBoneNode3DGizmoPlugin();
 };
 
-class RayCastSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
+class RayCastNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(RayCastSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
+	GDCLASS(RayCastNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
-	bool has_gizmo(Spatial *p_spatial);
+	bool has_gizmo(Node3D *p_spatial);
 	String get_name() const;
 	int get_priority() const;
-	void redraw(EditorSpatialGizmo *p_gizmo);
+	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	RayCastSpatialGizmoPlugin();
+	RayCastNode3DGizmoPlugin();
 };
 
-class SpringArmSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
+class SpringArmNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(SpringArmSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
+	GDCLASS(SpringArmNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
-	bool has_gizmo(Spatial *p_spatial);
+	bool has_gizmo(Node3D *p_spatial);
 	String get_name() const;
 	int get_priority() const;
-	void redraw(EditorSpatialGizmo *p_gizmo);
+	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	SpringArmSpatialGizmoPlugin();
+	SpringArmNode3DGizmoPlugin();
 };
 
-class VehicleWheelSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
+class VehicleWheelNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(VehicleWheelSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
+	GDCLASS(VehicleWheelNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
-	bool has_gizmo(Spatial *p_spatial);
+	bool has_gizmo(Node3D *p_spatial);
 	String get_name() const;
 	int get_priority() const;
-	void redraw(EditorSpatialGizmo *p_gizmo);
+	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	VehicleWheelSpatialGizmoPlugin();
+	VehicleWheelNode3DGizmoPlugin();
 };
 
-class SoftBodySpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
+class SoftBodyNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(SoftBodySpatialGizmoPlugin, EditorSpatialGizmoPlugin);
+	GDCLASS(SoftBodyNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
-	bool has_gizmo(Spatial *p_spatial);
+	bool has_gizmo(Node3D *p_spatial);
 	String get_name() const;
 	int get_priority() const;
 	bool is_selectable_when_hidden() const;
-	void redraw(EditorSpatialGizmo *p_gizmo);
+	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	String get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const;
-	Variant get_handle_value(EditorSpatialGizmo *p_gizmo, int p_idx) const;
-	void commit_handle(EditorSpatialGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel);
-	bool is_handle_highlighted(const EditorSpatialGizmo *p_gizmo, int idx) const;
+	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	Variant get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel);
+	bool is_handle_highlighted(const EditorNode3DGizmo *p_gizmo, int idx) const;
 
-	SoftBodySpatialGizmoPlugin();
+	SoftBodyNode3DGizmoPlugin();
 };
 
-class VisibilityNotifierGizmoPlugin : public EditorSpatialGizmoPlugin {
+class VisibilityNotifierGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(VisibilityNotifierGizmoPlugin, EditorSpatialGizmoPlugin);
+	GDCLASS(VisibilityNotifierGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
-	bool has_gizmo(Spatial *p_spatial);
+	bool has_gizmo(Node3D *p_spatial);
 	String get_name() const;
 	int get_priority() const;
-	void redraw(EditorSpatialGizmo *p_gizmo);
+	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	String get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const;
-	Variant get_handle_value(EditorSpatialGizmo *p_gizmo, int p_idx) const;
-	void set_handle(EditorSpatialGizmo *p_gizmo, int p_idx, Camera *p_camera, const Point2 &p_point);
-	void commit_handle(EditorSpatialGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
+	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	Variant get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point);
+	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
 
 	VisibilityNotifierGizmoPlugin();
 };
 
-class CPUParticlesGizmoPlugin : public EditorSpatialGizmoPlugin {
-	GDCLASS(CPUParticlesGizmoPlugin, EditorSpatialGizmoPlugin);
+class CPUParticlesGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(CPUParticlesGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
-	bool has_gizmo(Spatial *p_spatial);
+	bool has_gizmo(Node3D *p_spatial);
 	String get_name() const;
 	int get_priority() const;
 	bool is_selectable_when_hidden() const;
-	void redraw(EditorSpatialGizmo *p_gizmo);
+	void redraw(EditorNode3DGizmo *p_gizmo);
 	CPUParticlesGizmoPlugin();
 };
 
-class ParticlesGizmoPlugin : public EditorSpatialGizmoPlugin {
+class ParticlesGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(ParticlesGizmoPlugin, EditorSpatialGizmoPlugin);
+	GDCLASS(ParticlesGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
-	bool has_gizmo(Spatial *p_spatial);
+	bool has_gizmo(Node3D *p_spatial);
 	String get_name() const;
 	int get_priority() const;
 	bool is_selectable_when_hidden() const;
-	void redraw(EditorSpatialGizmo *p_gizmo);
+	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	String get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const;
-	Variant get_handle_value(EditorSpatialGizmo *p_gizmo, int p_idx) const;
-	void set_handle(EditorSpatialGizmo *p_gizmo, int p_idx, Camera *p_camera, const Point2 &p_point);
-	void commit_handle(EditorSpatialGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
+	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	Variant get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point);
+	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
 
 	ParticlesGizmoPlugin();
 };
 
-class ReflectionProbeGizmoPlugin : public EditorSpatialGizmoPlugin {
+class ReflectionProbeGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(ReflectionProbeGizmoPlugin, EditorSpatialGizmoPlugin);
+	GDCLASS(ReflectionProbeGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
-	bool has_gizmo(Spatial *p_spatial);
+	bool has_gizmo(Node3D *p_spatial);
 	String get_name() const;
 	int get_priority() const;
-	void redraw(EditorSpatialGizmo *p_gizmo);
+	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	String get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const;
-	Variant get_handle_value(EditorSpatialGizmo *p_gizmo, int p_idx) const;
-	void set_handle(EditorSpatialGizmo *p_gizmo, int p_idx, Camera *p_camera, const Point2 &p_point);
-	void commit_handle(EditorSpatialGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
+	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	Variant get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point);
+	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
 
 	ReflectionProbeGizmoPlugin();
 };
 
-class GIProbeGizmoPlugin : public EditorSpatialGizmoPlugin {
+class GIProbeGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(GIProbeGizmoPlugin, EditorSpatialGizmoPlugin);
+	GDCLASS(GIProbeGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
-	bool has_gizmo(Spatial *p_spatial);
+	bool has_gizmo(Node3D *p_spatial);
 	String get_name() const;
 	int get_priority() const;
-	void redraw(EditorSpatialGizmo *p_gizmo);
+	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	String get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const;
-	Variant get_handle_value(EditorSpatialGizmo *p_gizmo, int p_idx) const;
-	void set_handle(EditorSpatialGizmo *p_gizmo, int p_idx, Camera *p_camera, const Point2 &p_point);
-	void commit_handle(EditorSpatialGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
+	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	Variant get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point);
+	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
 
 	GIProbeGizmoPlugin();
 };
 
 #if 0
-class BakedIndirectLightGizmoPlugin : public EditorSpatialGizmoPlugin {
+class BakedIndirectLightGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(BakedIndirectLightGizmoPlugin, EditorSpatialGizmoPlugin);
+	GDCLASS(BakedIndirectLightGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
 	int get_priority() const;
-	void redraw(EditorSpatialGizmo *p_gizmo);
+	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	String get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const;
-	Variant get_handle_value(EditorSpatialGizmo *p_gizmo, int p_idx) const;
-	void set_handle(EditorSpatialGizmo *p_gizmo, int p_idx, Camera *p_camera, const Point2 &p_point);
-	void commit_handle(EditorSpatialGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
+	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	Variant get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera *p_camera, const Point2 &p_point);
+	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
 
 	BakedIndirectLightGizmoPlugin();
 };
 #endif
-class CollisionShapeSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
+class CollisionShapeNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(CollisionShapeSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
-
-public:
-	bool has_gizmo(Spatial *p_spatial);
-	String get_name() const;
-	int get_priority() const;
-	void redraw(EditorSpatialGizmo *p_gizmo);
-
-	String get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const;
-	Variant get_handle_value(EditorSpatialGizmo *p_gizmo, int p_idx) const;
-	void set_handle(EditorSpatialGizmo *p_gizmo, int p_idx, Camera *p_camera, const Point2 &p_point);
-	void commit_handle(EditorSpatialGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
-
-	CollisionShapeSpatialGizmoPlugin();
-};
-
-class CollisionPolygonSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-	GDCLASS(CollisionPolygonSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
+	GDCLASS(CollisionShapeNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
-	bool has_gizmo(Spatial *p_spatial);
+	bool has_gizmo(Node3D *p_spatial);
 	String get_name() const;
 	int get_priority() const;
-	void redraw(EditorSpatialGizmo *p_gizmo);
-	CollisionPolygonSpatialGizmoPlugin();
+	void redraw(EditorNode3DGizmo *p_gizmo);
+
+	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	Variant get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point);
+	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
+
+	CollisionShapeNode3DGizmoPlugin();
 };
 
-class NavigationMeshSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
+class CollisionPolygonNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(CollisionPolygonNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
-	GDCLASS(NavigationMeshSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
+public:
+	bool has_gizmo(Node3D *p_spatial);
+	String get_name() const;
+	int get_priority() const;
+	void redraw(EditorNode3DGizmo *p_gizmo);
+	CollisionPolygonNode3DGizmoPlugin();
+};
+
+class NavigationMeshNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+
+	GDCLASS(NavigationMeshNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 	struct _EdgeKey {
 
@@ -364,12 +364,12 @@ class NavigationMeshSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 	};
 
 public:
-	bool has_gizmo(Spatial *p_spatial);
+	bool has_gizmo(Node3D *p_spatial);
 	String get_name() const;
 	int get_priority() const;
-	void redraw(EditorSpatialGizmo *p_gizmo);
+	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	NavigationMeshSpatialGizmoPlugin();
+	NavigationMeshNode3DGizmoPlugin();
 };
 
 class JointGizmosDrawer {
@@ -387,15 +387,15 @@ public:
 	static void draw_cone(const Transform &p_offset, const Basis &p_base, real_t p_swing, real_t p_twist, Vector<Vector3> &r_points);
 };
 
-class JointSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
+class JointNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(JointSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
+	GDCLASS(JointNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
-	bool has_gizmo(Spatial *p_spatial);
+	bool has_gizmo(Node3D *p_spatial);
 	String get_name() const;
 	int get_priority() const;
-	void redraw(EditorSpatialGizmo *p_gizmo);
+	void redraw(EditorNode3DGizmo *p_gizmo);
 
 	static void CreatePinJointGizmo(const Transform &p_offset, Vector<Vector3> &r_cursor_points);
 	static void CreateHingeJointGizmo(const Transform &p_offset, const Transform &p_trs_joint, const Transform &p_trs_body_a, const Transform &p_trs_body_b, real_t p_limit_lower, real_t p_limit_upper, bool p_use_limit, Vector<Vector3> &r_common_points, Vector<Vector3> *r_body_a_points, Vector<Vector3> *r_body_b_points);
@@ -428,7 +428,7 @@ public:
 			Vector<Vector3> *r_body_a_points,
 			Vector<Vector3> *r_body_b_points);
 
-	JointSpatialGizmoPlugin();
+	JointNode3DGizmoPlugin();
 };
 
 #endif // SPATIAL_EDITOR_GIZMOS_H

@@ -33,7 +33,7 @@
 
 void WorldEnvironment::_notification(int p_what) {
 
-	if (p_what == Spatial::NOTIFICATION_ENTER_WORLD || p_what == Spatial::NOTIFICATION_ENTER_TREE) {
+	if (p_what == Node3D::NOTIFICATION_ENTER_WORLD || p_what == Node3D::NOTIFICATION_ENTER_TREE) {
 
 		if (environment.is_valid()) {
 			if (get_viewport()->find_world()->get_environment().is_valid()) {
@@ -51,7 +51,7 @@ void WorldEnvironment::_notification(int p_what) {
 			add_to_group("_world_camera_effects_" + itos(get_viewport()->find_world()->get_scenario().get_id()));
 		}
 
-	} else if (p_what == Spatial::NOTIFICATION_EXIT_WORLD || p_what == Spatial::NOTIFICATION_EXIT_TREE) {
+	} else if (p_what == Node3D::NOTIFICATION_EXIT_WORLD || p_what == Node3D::NOTIFICATION_EXIT_TREE) {
 
 		if (environment.is_valid() && get_viewport()->find_world()->get_environment() == environment) {
 			get_viewport()->find_world()->set_environment(Ref<Environment>());

@@ -33,7 +33,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "scene/3d/particles.h"
+#include "scene/3d/gpu_particles_3d.h"
 #include "scene/gui/spin_box.h"
 
 class ParticlesEditorBase : public Control {
@@ -41,7 +41,7 @@ class ParticlesEditorBase : public Control {
 	GDCLASS(ParticlesEditorBase, Control);
 
 protected:
-	Spatial *base_node;
+	Node3D *base_node;
 	Panel *panel;
 	MenuButton *options;
 	HBoxContainer *particles_editor_hb;
@@ -70,7 +70,7 @@ class ParticlesEditor : public ParticlesEditorBase {
 
 	ConfirmationDialog *generate_aabb;
 	SpinBox *generate_seconds;
-	Particles *node;
+	GPUParticles3D *node;
 
 	enum Menu {
 
@@ -96,7 +96,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void edit(Particles *p_particles);
+	void edit(GPUParticles3D *p_particles);
 	ParticlesEditor();
 };
 

@@ -39,7 +39,7 @@
 #include "main/main.h"
 #include "plugins/canvas_item_editor_plugin.h"
 #include "plugins/spatial_editor_plugin.h"
-#include "scene/3d/camera.h"
+#include "scene/3d/camera_3d.h"
 #include "scene/gui/popup_menu.h"
 #include "servers/visual_server.h"
 
@@ -371,24 +371,24 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location, C
 
 		case CONTAINER_SPATIAL_EDITOR_MENU: {
 
-			SpatialEditor::get_singleton()->add_control_to_menu_panel(p_control);
+			Node3DEditor::get_singleton()->add_control_to_menu_panel(p_control);
 
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_SIDE_LEFT: {
 
-			SpatialEditor::get_singleton()->get_palette_split()->add_child(p_control);
-			SpatialEditor::get_singleton()->get_palette_split()->move_child(p_control, 0);
+			Node3DEditor::get_singleton()->get_palette_split()->add_child(p_control);
+			Node3DEditor::get_singleton()->get_palette_split()->move_child(p_control, 0);
 
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT: {
 
-			SpatialEditor::get_singleton()->get_palette_split()->add_child(p_control);
-			SpatialEditor::get_singleton()->get_palette_split()->move_child(p_control, 1);
+			Node3DEditor::get_singleton()->get_palette_split()->add_child(p_control);
+			Node3DEditor::get_singleton()->get_palette_split()->move_child(p_control, 1);
 
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_BOTTOM: {
 
-			SpatialEditor::get_singleton()->get_shader_split()->add_child(p_control);
+			Node3DEditor::get_singleton()->get_shader_split()->add_child(p_control);
 
 		} break;
 		case CONTAINER_CANVAS_EDITOR_MENU: {
@@ -445,18 +445,18 @@ void EditorPlugin::remove_control_from_container(CustomControlContainer p_locati
 
 		case CONTAINER_SPATIAL_EDITOR_MENU: {
 
-			SpatialEditor::get_singleton()->remove_control_from_menu_panel(p_control);
+			Node3DEditor::get_singleton()->remove_control_from_menu_panel(p_control);
 
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_SIDE_LEFT:
 		case CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT: {
 
-			SpatialEditor::get_singleton()->get_palette_split()->remove_child(p_control);
+			Node3DEditor::get_singleton()->get_palette_split()->remove_child(p_control);
 
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_BOTTOM: {
 
-			SpatialEditor::get_singleton()->get_shader_split()->remove_child(p_control);
+			Node3DEditor::get_singleton()->get_shader_split()->remove_child(p_control);
 
 		} break;
 		case CONTAINER_CANVAS_EDITOR_MENU: {
@@ -562,10 +562,10 @@ void EditorPlugin::forward_canvas_force_draw_over_viewport(Control *p_overlay) {
 // Updates the overlays of the 2D viewport or, if in 3D mode, of every 3D viewport.
 int EditorPlugin::update_overlays() const {
 
-	if (SpatialEditor::get_singleton()->is_visible()) {
+	if (Node3DEditor::get_singleton()->is_visible()) {
 		int count = 0;
-		for (uint32_t i = 0; i < SpatialEditor::VIEWPORTS_COUNT; i++) {
-			SpatialEditorViewport *vp = SpatialEditor::get_singleton()->get_editor_viewport(i);
+		for (uint32_t i = 0; i < Node3DEditor::VIEWPORTS_COUNT; i++) {
+			Node3DEditorViewport *vp = Node3DEditor::get_singleton()->get_editor_viewport(i);
 			if (vp->is_visible()) {
 				vp->update_surface();
 				count++;
@@ -579,7 +579,7 @@ int EditorPlugin::update_overlays() const {
 	}
 }
 
-bool EditorPlugin::forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event) {
+bool EditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
 
 	if (get_script_instance() && get_script_instance()->has_method("forward_spatial_gui_input")) {
 		return get_script_instance()->call("forward_spatial_gui_input", p_camera, p_event);
@@ -724,12 +724,12 @@ void EditorPlugin::remove_export_plugin(const Ref<EditorExportPlugin> &p_exporte
 	EditorExport::get_singleton()->remove_export_plugin(p_exporter);
 }
 
-void EditorPlugin::add_spatial_gizmo_plugin(const Ref<EditorSpatialGizmoPlugin> &p_gizmo_plugin) {
-	SpatialEditor::get_singleton()->add_gizmo_plugin(p_gizmo_plugin);
+void EditorPlugin::add_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin) {
+	Node3DEditor::get_singleton()->add_gizmo_plugin(p_gizmo_plugin);
 }
 
-void EditorPlugin::remove_spatial_gizmo_plugin(const Ref<EditorSpatialGizmoPlugin> &p_gizmo_plugin) {
-	SpatialEditor::get_singleton()->remove_gizmo_plugin(p_gizmo_plugin);
+void EditorPlugin::remove_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin) {
+	Node3DEditor::get_singleton()->remove_gizmo_plugin(p_gizmo_plugin);
 }
 
 void EditorPlugin::add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
@@ -865,7 +865,7 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_canvas_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_canvas_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_canvas_force_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_spatial_gui_input", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_spatial_gui_input", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera3D"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "get_plugin_name"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "get_plugin_icon"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "has_main_screen"));

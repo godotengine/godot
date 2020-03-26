@@ -30,7 +30,7 @@
 
 #include "multimesh_editor_plugin.h"
 
-#include "scene/3d/mesh_instance.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/box_container.h"
 #include "spatial_editor_plugin.h"
 
@@ -78,7 +78,7 @@ void MultiMeshEditor::_populate() {
 			return;
 		}
 
-		MeshInstance *ms_instance = Object::cast_to<MeshInstance>(ms_node);
+		MeshInstance3D *ms_instance = Object::cast_to<MeshInstance3D>(ms_node);
 
 		if (!ms_instance) {
 
@@ -113,7 +113,7 @@ void MultiMeshEditor::_populate() {
 		return;
 	}
 
-	GeometryInstance *ss_instance = Object::cast_to<MeshInstance>(ss_node);
+	GeometryInstance3D *ss_instance = Object::cast_to<MeshInstance3D>(ss_node);
 
 	if (!ss_instance) {
 
@@ -124,7 +124,7 @@ void MultiMeshEditor::_populate() {
 
 	Transform geom_xform = node->get_global_transform().affine_inverse() * ss_instance->get_global_transform();
 
-	Vector<Face3> geometry = ss_instance->get_faces(VisualInstance::FACES_SOLID);
+	Vector<Face3> geometry = ss_instance->get_faces(VisualInstance3D::FACES_SOLID);
 
 	if (geometry.size() == 0) {
 
@@ -261,7 +261,7 @@ void MultiMeshEditor::_menu_option(int p_option) {
 	}
 }
 
-void MultiMeshEditor::edit(MultiMeshInstance *p_multimesh) {
+void MultiMeshEditor::edit(MultiMeshInstance3D *p_multimesh) {
 
 	node = p_multimesh;
 }
@@ -284,7 +284,7 @@ MultiMeshEditor::MultiMeshEditor() {
 
 	options = memnew(MenuButton);
 	options->set_switch_on_hover(true);
-	SpatialEditor::get_singleton()->add_control_to_menu_panel(options);
+	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text("MultiMesh");
 	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("MultiMeshInstance", "EditorIcons"));
@@ -379,12 +379,12 @@ MultiMeshEditor::MultiMeshEditor() {
 
 void MultiMeshEditorPlugin::edit(Object *p_object) {
 
-	multimesh_editor->edit(Object::cast_to<MultiMeshInstance>(p_object));
+	multimesh_editor->edit(Object::cast_to<MultiMeshInstance3D>(p_object));
 }
 
 bool MultiMeshEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_class("MultiMeshInstance");
+	return p_object->is_class("MultiMeshInstance3D");
 }
 
 void MultiMeshEditorPlugin::make_visible(bool p_visible) {

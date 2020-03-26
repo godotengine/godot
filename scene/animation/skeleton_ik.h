@@ -38,7 +38,7 @@
  */
 
 #include "core/math/transform.h"
-#include "scene/3d/skeleton.h"
+#include "scene/3d/skeleton_3d.h"
 
 class FabrikInverseKinematic {
 
@@ -54,7 +54,7 @@ class FabrikInverseKinematic {
 
 		// Bone info
 		BoneId bone;
-		PhysicalBone *pb;
+		PhysicalBone3D *pb;
 
 		real_t length;
 		/// Positions relative to root bone
@@ -100,7 +100,7 @@ class FabrikInverseKinematic {
 public:
 	struct Task {
 		RID self;
-		Skeleton *skeleton;
+		Skeleton3D *skeleton;
 
 		Chain chain;
 
@@ -125,7 +125,7 @@ private:
 	/// Init a chain that starts from the root to tip
 	static bool build_chain(Task *p_task, bool p_force_simple_chain = true);
 
-	static void update_chain(const Skeleton *p_sk, ChainItem *p_chain_item);
+	static void update_chain(const Skeleton3D *p_sk, ChainItem *p_chain_item);
 
 	static void solve_simple(Task *p_task, bool p_solve_magnet);
 	/// Special solvers that solve only chains with one end effector
@@ -133,7 +133,7 @@ private:
 	static void solve_simple_forwards(Chain &r_chain, bool p_solve_magnet);
 
 public:
-	static Task *create_simple_task(Skeleton *p_sk, BoneId root_bone, BoneId tip_bone, const Transform &goal_transform);
+	static Task *create_simple_task(Skeleton3D *p_sk, BoneId root_bone, BoneId tip_bone, const Transform &goal_transform);
 	static void free_task(Task *p_task);
 	// The goal of chain should be always in local space
 	static void set_goal(Task *p_task, const Transform &p_goal);
@@ -141,8 +141,8 @@ public:
 	static void solve(Task *p_task, real_t blending_delta, bool override_tip_basis, bool p_use_magnet, const Vector3 &p_magnet_position);
 };
 
-class SkeletonIK : public Node {
-	GDCLASS(SkeletonIK, Node);
+class SkeletonIK3D : public Node {
+	GDCLASS(SkeletonIK3D, Node);
 
 	StringName root_bone;
 	StringName tip_bone;
@@ -156,8 +156,8 @@ class SkeletonIK : public Node {
 	real_t min_distance;
 	int max_iterations;
 
-	Skeleton *skeleton;
-	Spatial *target_node_override;
+	Skeleton3D *skeleton;
+	Node3D *target_node_override;
 	FabrikInverseKinematic::Task *task;
 
 protected:
@@ -168,8 +168,8 @@ protected:
 	virtual void _notification(int p_what);
 
 public:
-	SkeletonIK();
-	virtual ~SkeletonIK();
+	SkeletonIK3D();
+	virtual ~SkeletonIK3D();
 
 	void set_root_bone(const StringName &p_root_bone);
 	StringName get_root_bone() const;
@@ -201,7 +201,7 @@ public:
 	void set_max_iterations(int p_iterations);
 	int get_max_iterations() const { return max_iterations; }
 
-	Skeleton *get_parent_skeleton() const { return skeleton; }
+	Skeleton3D *get_parent_skeleton() const { return skeleton; }
 
 	bool is_running();
 

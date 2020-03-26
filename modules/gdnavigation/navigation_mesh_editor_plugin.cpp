@@ -34,7 +34,7 @@
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
 #include "navigation_mesh_generator.h"
-#include "scene/3d/mesh_instance.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/box_container.h"
 
 void NavigationMeshEditor::_node_removed(Node *p_node) {
@@ -84,7 +84,7 @@ void NavigationMeshEditor::_clear_pressed() {
 	}
 }
 
-void NavigationMeshEditor::edit(NavigationRegion *p_nav_region) {
+void NavigationMeshEditor::edit(NavigationRegion3D *p_nav_region) {
 
 	if (p_nav_region == NULL || node == p_nav_region) {
 		return;
@@ -125,12 +125,12 @@ NavigationMeshEditor::~NavigationMeshEditor() {
 
 void NavigationMeshEditorPlugin::edit(Object *p_object) {
 
-	navigation_mesh_editor->edit(Object::cast_to<NavigationRegion>(p_object));
+	navigation_mesh_editor->edit(Object::cast_to<NavigationRegion3D>(p_object));
 }
 
 bool NavigationMeshEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_class("NavigationRegion");
+	return p_object->is_class("NavigationRegion3D");
 }
 
 void NavigationMeshEditorPlugin::make_visible(bool p_visible) {

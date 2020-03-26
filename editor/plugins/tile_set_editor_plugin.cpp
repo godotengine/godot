@@ -35,7 +35,7 @@
 #include "editor/editor_scale.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "scene/2d/physics_body_2d.h"
-#include "scene/2d/sprite.h"
+#include "scene/2d/sprite_2d.h"
 
 void TileSetEditor::edit(const Ref<TileSet> &p_tileset) {
 
@@ -53,7 +53,7 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 
 		Node *child = p_node->get_child(i);
 
-		if (!Object::cast_to<Sprite>(child)) {
+		if (!Object::cast_to<Sprite2D>(child)) {
 			if (child->get_child_count() > 0) {
 				_import_node(child, p_library);
 			}
@@ -61,7 +61,7 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 			continue;
 		}
 
-		Sprite *mi = Object::cast_to<Sprite>(child);
+		Sprite2D *mi = Object::cast_to<Sprite2D>(child);
 		Ref<Texture2D> texture = mi->get_texture();
 		Ref<Texture2D> normal_map = mi->get_normal_map();
 		Ref<ShaderMaterial> material = mi->get_material();
@@ -601,7 +601,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	workspace->set_draw_behind_parent(true);
 	workspace_overlay->add_child(workspace);
 
-	preview = memnew(Sprite);
+	preview = memnew(Sprite2D);
 	workspace->add_child(preview);
 	preview->set_centered(false);
 	preview->set_draw_behind_parent(true);

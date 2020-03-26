@@ -30,11 +30,11 @@
 
 #include "skeleton_editor_plugin.h"
 
-#include "scene/3d/collision_shape.h"
-#include "scene/3d/physics_body.h"
-#include "scene/3d/physics_joint.h"
-#include "scene/resources/capsule_shape.h"
-#include "scene/resources/sphere_shape.h"
+#include "scene/3d/collision_shape_3d.h"
+#include "scene/3d/physics_body_3d.h"
+#include "scene/3d/physics_joint_3d.h"
+#include "scene/resources/capsule_shape_3d.h"
+#include "scene/resources/sphere_shape_3d.h"
 #include "spatial_editor_plugin.h"
 
 void SkeletonEditor::_on_click_option(int p_option) {
@@ -94,25 +94,25 @@ void SkeletonEditor::create_physical_skeleton() {
 				/// Create joint between parent of parent
 				if (-1 != parent_parent) {
 
-					bones_infos[parent].physical_bone->set_joint_type(PhysicalBone::JOINT_TYPE_PIN);
+					bones_infos[parent].physical_bone->set_joint_type(PhysicalBone3D::JOINT_TYPE_PIN);
 				}
 			}
 		}
 	}
 }
 
-PhysicalBone *SkeletonEditor::create_physical_bone(int bone_id, int bone_child_id, const Vector<BoneInfo> &bones_infos) {
+PhysicalBone3D *SkeletonEditor::create_physical_bone(int bone_id, int bone_child_id, const Vector<BoneInfo> &bones_infos) {
 
 	const Transform child_rest = skeleton->get_bone_rest(bone_child_id);
 
 	const real_t half_height(child_rest.origin.length() * 0.5);
 	const real_t radius(half_height * 0.2);
 
-	CapsuleShape *bone_shape_capsule = memnew(CapsuleShape);
+	CapsuleShape3D *bone_shape_capsule = memnew(CapsuleShape3D);
 	bone_shape_capsule->set_height((half_height - radius) * 2);
 	bone_shape_capsule->set_radius(radius);
 
-	CollisionShape *bone_shape = memnew(CollisionShape);
+	CollisionShape3D *bone_shape = memnew(CollisionShape3D);
 	bone_shape->set_shape(bone_shape_capsule);
 
 	Transform body_transform;
@@ -122,7 +122,7 @@ PhysicalBone *SkeletonEditor::create_physical_bone(int bone_id, int bone_child_i
 	Transform joint_transform;
 	joint_transform.origin = Vector3(0, 0, half_height);
 
-	PhysicalBone *physical_bone = memnew(PhysicalBone);
+	PhysicalBone3D *physical_bone = memnew(PhysicalBone3D);
 	physical_bone->add_child(bone_shape);
 	physical_bone->set_name("Physical Bone " + skeleton->get_bone_name(bone_id));
 	physical_bone->set_body_offset(body_transform);
@@ -130,7 +130,7 @@ PhysicalBone *SkeletonEditor::create_physical_bone(int bone_id, int bone_child_i
 	return physical_bone;
 }
 
-void SkeletonEditor::edit(Skeleton *p_node) {
+void SkeletonEditor::edit(Skeleton3D *p_node) {
 
 	skeleton = p_node;
 }
@@ -155,10 +155,10 @@ void SkeletonEditor::_bind_methods() {
 SkeletonEditor::SkeletonEditor() {
 	skeleton = NULL;
 	options = memnew(MenuButton);
-	SpatialEditor::get_singleton()->add_control_to_menu_panel(options);
+	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text(TTR("Skeleton"));
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Skeleton", "EditorIcons"));
+	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Skeleton3D", "EditorIcons"));
 
 	options->get_popup()->add_item(TTR("Create physical skeleton"), MENU_OPTION_CREATE_PHYSICAL_SKELETON);
 
@@ -169,11 +169,11 @@ SkeletonEditor::SkeletonEditor() {
 SkeletonEditor::~SkeletonEditor() {}
 
 void SkeletonEditorPlugin::edit(Object *p_object) {
-	skeleton_editor->edit(Object::cast_to<Skeleton>(p_object));
+	skeleton_editor->edit(Object::cast_to<Skeleton3D>(p_object));
 }
 
 bool SkeletonEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("Skeleton");
+	return p_object->is_class("Skeleton3D");
 }
 
 void SkeletonEditorPlugin::make_visible(bool p_visible) {

@@ -31,8 +31,8 @@
 #include "mesh.h"
 
 #include "core/pair.h"
-#include "scene/resources/concave_polygon_shape.h"
-#include "scene/resources/convex_polygon_shape.h"
+#include "scene/resources/concave_polygon_shape_3d.h"
+#include "scene/resources/convex_polygon_shape_3d.h"
 #include "surface_tool.h"
 
 #include <stdlib.h>
@@ -226,28 +226,28 @@ Vector<Face3> Mesh::get_faces() const {
 */
 }
 
-Ref<Shape> Mesh::create_convex_shape() const {
+Ref<Shape3D> Mesh::create_convex_shape() const {
 
 	Vector<Vector3> vertices;
 
 	for (int i = 0; i < get_surface_count(); i++) {
 
 		Array a = surface_get_arrays(i);
-		ERR_FAIL_COND_V(a.empty(), Ref<ConvexPolygonShape>());
+		ERR_FAIL_COND_V(a.empty(), Ref<ConvexPolygonShape3D>());
 		Vector<Vector3> v = a[ARRAY_VERTEX];
 		vertices.append_array(v);
 	}
 
-	Ref<ConvexPolygonShape> shape = memnew(ConvexPolygonShape);
+	Ref<ConvexPolygonShape3D> shape = memnew(ConvexPolygonShape3D);
 	shape->set_points(vertices);
 	return shape;
 }
 
-Ref<Shape> Mesh::create_trimesh_shape() const {
+Ref<Shape3D> Mesh::create_trimesh_shape() const {
 
 	Vector<Face3> faces = get_faces();
 	if (faces.size() == 0)
-		return Ref<Shape>();
+		return Ref<Shape3D>();
 
 	Vector<Vector3> face_points;
 	face_points.resize(faces.size() * 3);
@@ -260,7 +260,7 @@ Ref<Shape> Mesh::create_trimesh_shape() const {
 		face_points.set(i + 2, f.vertex[2]);
 	}
 
-	Ref<ConcavePolygonShape> shape = memnew(ConcavePolygonShape);
+	Ref<ConcavePolygonShape3D> shape = memnew(ConcavePolygonShape3D);
 	shape->set_faces(face_points);
 	return shape;
 }
@@ -541,15 +541,15 @@ void Mesh::clear_cache() const {
 	debug_lines.clear();
 }
 
-Vector<Ref<Shape>> Mesh::convex_decompose() const {
+Vector<Ref<Shape3D>> Mesh::convex_decompose() const {
 
-	ERR_FAIL_COND_V(!convex_composition_function, Vector<Ref<Shape>>());
+	ERR_FAIL_COND_V(!convex_composition_function, Vector<Ref<Shape3D>>());
 
 	const Vector<Face3> faces = get_faces();
 
 	Vector<Vector<Face3>> decomposed = convex_composition_function(faces);
 
-	Vector<Ref<Shape>> ret;
+	Vector<Ref<Shape3D>> ret;
 
 	for (int i = 0; i < decomposed.size(); i++) {
 		Set<Vector3> points;
@@ -569,7 +569,7 @@ Vector<Ref<Shape>> Mesh::convex_decompose() const {
 			}
 		}
 
-		Ref<ConvexPolygonShape> shape;
+		Ref<ConvexPolygonShape3D> shape;
 		shape.instance();
 		shape->set_points(convex_points);
 		ret.push_back(shape);

@@ -34,7 +34,7 @@
 #include "nav_rid.h"
 
 #include "nav_utils.h"
-#include "scene/3d/navigation.h"
+#include "scene/3d/navigation_3d.h"
 #include <vector>
 
 /**

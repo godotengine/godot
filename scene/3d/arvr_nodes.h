@@ -31,8 +31,8 @@
 #ifndef ARVR_NODES_H
 #define ARVR_NODES_H
 
-#include "scene/3d/camera.h"
-#include "scene/3d/spatial.h"
+#include "scene/3d/camera_3d.h"
+#include "scene/3d/node_3d.h"
 #include "scene/resources/mesh.h"
 #include "servers/arvr/arvr_positional_tracker.h"
 
@@ -43,9 +43,9 @@
 /*
 	ARVRCamera is a subclass of camera which will register itself with its parent ARVROrigin and as a result is automatically positioned
 */
-class ARVRCamera : public Camera {
+class ARVRCamera : public Camera3D {
 
-	GDCLASS(ARVRCamera, Camera);
+	GDCLASS(ARVRCamera, Camera3D);
 
 protected:
 	void _notification(int p_what);
@@ -68,9 +68,9 @@ public:
 	It must be a child node of our ARVROrigin node
 */
 
-class ARVRController : public Spatial {
+class ARVRController : public Node3D {
 
-	GDCLASS(ARVRController, Spatial);
+	GDCLASS(ARVRController, Node3D);
 
 private:
 	int controller_id;
@@ -110,8 +110,8 @@ public:
 	It must be a child node of our ARVROrigin node
 */
 
-class ARVRAnchor : public Spatial {
-	GDCLASS(ARVRAnchor, Spatial);
+class ARVRAnchor : public Node3D {
+	GDCLASS(ARVRAnchor, Node3D);
 
 private:
 	int anchor_id;
@@ -149,9 +149,9 @@ public:
 	Our camera and controllers will always be child nodes and thus place relative to this origin point.
 	This node will automatically locate any camera child nodes and update its position while our ARVRController node will handle tracked controllers.
 */
-class ARVROrigin : public Spatial {
+class ARVROrigin : public Node3D {
 
-	GDCLASS(ARVROrigin, Spatial);
+	GDCLASS(ARVROrigin, Node3D);
 
 private:
 	ARVRCamera *tracked_camera;

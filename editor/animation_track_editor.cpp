@@ -3554,7 +3554,7 @@ void AnimationTrackEditor::_insert_delay() {
 	insert_queue = false;
 }
 
-void AnimationTrackEditor::insert_transform_key(Spatial *p_node, const String &p_sub, const Transform &p_xform) {
+void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_sub, const Transform &p_xform) {
 
 	if (!keying)
 		return;
@@ -4446,8 +4446,8 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 	ERR_FAIL_COND(!node);
 	NodePath path_to = root->get_path_to(node);
 
-	if (adding_track_type == Animation::TYPE_TRANSFORM && !node->is_class("Spatial")) {
-		EditorNode::get_singleton()->show_warning(TTR("Transform tracks only apply to Spatial-based nodes."));
+	if (adding_track_type == Animation::TYPE_TRANSFORM && !node->is_class("Node3D")) {
+		EditorNode::get_singleton()->show_warning(TTR("Transform tracks only apply to 3D-based nodes."));
 		return;
 	}
 
@@ -4638,10 +4638,10 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 				EditorNode::get_singleton()->show_warning(TTR("Track path is invalid, so can't add a key."));
 				return;
 			}
-			Spatial *base = Object::cast_to<Spatial>(root->get_node(animation->track_get_path(p_track)));
+			Node3D *base = Object::cast_to<Node3D>(root->get_node(animation->track_get_path(p_track)));
 
 			if (!base) {
-				EditorNode::get_singleton()->show_warning(TTR("Track is not of type Spatial, can't insert key"));
+				EditorNode::get_singleton()->show_warning(TTR("Track is not of type Node3D, can't insert key"));
 				return;
 			}
 

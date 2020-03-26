@@ -30,11 +30,11 @@
 
 #ifndef RAY_SHAPE_H
 #define RAY_SHAPE_H
-#include "scene/resources/shape.h"
+#include "scene/resources/shape_3d.h"
 
-class RayShape : public Shape {
+class RayShape3D : public Shape3D {
 
-	GDCLASS(RayShape, Shape);
+	GDCLASS(RayShape3D, Shape3D);
 	float length;
 	bool slips_on_slope;
 
@@ -52,6 +52,6 @@ public:
 	virtual Vector<Vector3> get_debug_mesh_lines();
 	virtual real_t get_enclosing_radius() const;
 
-	RayShape();
+	RayShape3D();
 };
 #endif // RAY_SHAPE_H
