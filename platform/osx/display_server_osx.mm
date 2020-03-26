@@ -286,8 +286,15 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 		DS_OSX->window_set_transient(wd.transient_children.front()->get(), DisplayServerOSX::INVALID_WINDOW_ID);
 	}
 
+	DS_OSX->windows.erase(window_id);
+
 	if (wd.transient_parent != DisplayServerOSX::INVALID_WINDOW_ID) {
+		DisplayServerOSX::WindowData &pwd = DS_OSX->windows[wd.transient_parent];
+		[pwd.window_object makeKeyAndOrderFront:nil]; // Move focus back to parent.
 		DS_OSX->window_set_transient(window_id, DisplayServerOSX::INVALID_WINDOW_ID);
+	} else if ((window_id != DisplayServerOSX::MAIN_WINDOW_ID) && (DS_OSX->windows.size() == 1)) {
+		DisplayServerOSX::WindowData &pwd = DS_OSX->windows[DisplayServerOSX::MAIN_WINDOW_ID];
+		[pwd.window_object makeKeyAndOrderFront:nil]; // Move focus back to main window if there is no parent or other windows left.
 	}
 
 #ifdef VULKAN_ENABLED
@@ -295,7 +302,6 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 		DS_OSX->context_vulkan->window_destroy(window_id);
 	}
 #endif
-	DS_OSX->windows.erase(window_id);
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification *)notification {
@@ -414,9 +420,7 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 }
 
 - (void)windowDidMove:(NSNotification *)notification {
-	if (InputFilter::get_singleton()) {
-		InputFilter::get_singleton()->release_pressed_events();
-	}
+	DS_OSX->_release_pressed_events();
 }
 
 - (void)windowDidBecomeKey:(NSNotification *)notification {
@@ -437,7 +441,7 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 
 	DS_OSX->window_focused = false;
 
-	InputFilter::get_singleton()->release_pressed_events();
+	DS_OSX->_release_pressed_events();
 	DS_OSX->_send_window_event(wd, DisplayServerOSX::WINDOW_EVENT_FOCUS_OUT);
 }
 
@@ -447,7 +451,7 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 
 	DS_OSX->window_focused = false;
 
-	InputFilter::get_singleton()->release_pressed_events();
+	DS_OSX->_release_pressed_events();
 	DS_OSX->_send_window_event(wd, DisplayServerOSX::WINDOW_EVENT_FOCUS_OUT);
 }
 
@@ -2139,7 +2143,7 @@ Rect2i DisplayServerOSX::screen_get_usable_rect(int p_screen) const {
 
 		Point2i position = Point2i(nsrect.origin.x, nsrect.origin.y + nsrect.size.height) * displayScale - _get_screens_origin();
 		position.y *= -1;
-		Size2i size = Size2i(nsrect.size.width, nsrect.size.height) * displayScale;
+		Size2i size = Size2i(nsrect.size.width, nsrect.size.height) / displayScale;
 
 		return Rect2i(position, size);
 	}
@@ -2172,6 +2176,8 @@ DisplayServer::WindowID DisplayServerOSX::create_sub_window(WindowMode p_mode, u
 }
 
 void DisplayServerOSX::_send_window_event(const WindowData &wd, WindowEvent p_event) {
+	_THREAD_SAFE_METHOD_
+
 	if (!wd.event_callback.is_null()) {
 		Variant event = int(p_event);
 		Variant *eventp = &event;
@@ -2222,20 +2228,8 @@ void DisplayServerOSX::delete_sub_window(WindowID p_id) {
 
 	WindowData &wd = windows[p_id];
 
-	while (wd.transient_children.size()) {
-		window_set_transient(wd.transient_children.front()->get(), INVALID_WINDOW_ID);
-	}
-
-	if (wd.transient_parent != INVALID_WINDOW_ID) {
-		WindowData &pwd = windows[wd.transient_parent];
-		[pwd.window_object makeKeyAndOrderFront:nil]; // Move focus back to parent.
-		window_set_transient(p_id, INVALID_WINDOW_ID);
-	}
-
 	[wd.window_object setContentView:nil];
 	[wd.window_object close];
-
-	windows.erase(p_id);
 }
 
 void DisplayServerOSX::window_set_title(const String &p_title, WindowID p_window) {
@@ -3011,6 +3005,13 @@ void DisplayServerOSX::_push_input(const Ref<InputEvent> &p_event) {
 	InputFilter::get_singleton()->accumulate_input_event(ev);
 }
 
+void DisplayServerOSX::_release_pressed_events() {
+	_THREAD_SAFE_METHOD_
+	if (InputFilter::get_singleton()) {
+		InputFilter::get_singleton()->release_pressed_events();
+	}
+}
+
 void DisplayServerOSX::_process_key_events() {
 	Ref<InputEventKey> k;
 	for (int i = 0; i < key_event_pos; i++) {
@@ -3337,30 +3338,37 @@ void DisplayServerOSX::_dispatch_input_events(const Ref<InputEvent> &p_event) {
 }
 
 void DisplayServerOSX::_dispatch_input_event(const Ref<InputEvent> &p_event) {
-	Variant ev = p_event;
-	Variant *evp = &ev;
-	Variant ret;
-	Callable::CallError ce;
+	_THREAD_SAFE_METHOD_
+	if (!in_dispatch_input_event) {
+		in_dispatch_input_event = true;
 
-	Ref<InputEventFromWindow> event_from_window = p_event;
-	if (event_from_window.is_valid() && event_from_window->get_window_id() != INVALID_WINDOW_ID) {
-		//send to a window
-		if (windows.has(event_from_window->get_window_id())) {
-			Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
-			if (callable.is_null()) {
-				return;
+		Variant ev = p_event;
+		Variant *evp = &ev;
+		Variant ret;
+		Callable::CallError ce;
+
+		Ref<InputEventFromWindow> event_from_window = p_event;
+		if (event_from_window.is_valid() && event_from_window->get_window_id() != INVALID_WINDOW_ID) {
+			//send to a window
+			if (windows.has(event_from_window->get_window_id())) {
+				Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
+				if (callable.is_null()) {
+					return;
+				}
+				callable.call((const Variant **)&evp, 1, ret, ce);
 			}
-			callable.call((const Variant **)&evp, 1, ret, ce);
-		}
-	} else {
-		//send to all windows
-		for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-			Callable callable = E->get().input_event_callback;
-			if (callable.is_null()) {
-				continue;
+		} else {
+			//send to all windows
+			for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+				Callable callable = E->get().input_event_callback;
+				if (callable.is_null()) {
+					continue;
+				}
+				callable.call((const Variant **)&evp, 1, ret, ce);
 			}
-			callable.call((const Variant **)&evp, 1, ret, ce);
 		}
+
+		in_dispatch_input_event = false;
 	}
 }
 
