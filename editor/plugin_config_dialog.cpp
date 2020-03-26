@@ -53,7 +53,10 @@ void PluginConfigDialog::_clear_fields() {
 
 void PluginConfigDialog::_on_confirmed() {
 
-	String path = "res://addons/" + subfolder_edit->get_text();
+	// Default to the plugin name converted to `snake_case` if left empty.
+	const String subfolder =
+			subfolder_edit->get_text() != String() ? subfolder_edit->get_text() : name_edit->get_text().replace(" ", "_").to_lower();
+	const String path = "res://addons/" + subfolder;
 
 	if (!_edit_mode) {
 		DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
@@ -66,7 +69,13 @@ void PluginConfigDialog::_on_confirmed() {
 	cf->set_value("plugin", "description", desc_edit->get_text());
 	cf->set_value("plugin", "author", author_edit->get_text());
 	cf->set_value("plugin", "version", version_edit->get_text());
-	cf->set_value("plugin", "script", script_edit->get_text());
+
+	// The "Script Name" field is optional; default to "plugin" with the matching
+	// script language extension if it's empty.
+	const int lang_idx = script_option_edit->get_selected();
+	const String ext = ScriptServer::get_language(lang_idx)->get_extension();
+	const String script_name = script_edit->get_text() != String() ? script_edit->get_text() : vformat("plugin.%s", ext);
+	cf->set_value("plugin", "script", script_name);
 
 	cf->save(path.plus_file("plugin.cfg"));
 
@@ -97,13 +106,13 @@ void PluginConfigDialog::_on_confirmed() {
 					"func _exit_tree()%VOID_RETURN%:\n"
 					"%TS%pass\n");
 			GDScriptLanguage::get_singleton()->make_template("", "", gdscript);
-			String script_path = path.plus_file(script_edit->get_text());
+			String script_path = path.plus_file(script_name);
 			gdscript->set_path(script_path);
 			ResourceSaver::save(script_path, gdscript);
 			script = gdscript;
 		} else {
 #endif
-			String script_path = path.plus_file(script_edit->get_text());
+			String script_path = path.plus_file(script_name);
 			String class_name = script_path.get_file().get_basename();
 			script = ScriptServer::get_language(lang_idx)->get_template(class_name, "EditorPlugin");
 			script->set_path(script_path);
@@ -112,9 +121,9 @@ void PluginConfigDialog::_on_confirmed() {
 		}
 #endif
 
-		emit_signal("plugin_ready", script.operator->(), active_edit->is_pressed() ? subfolder_edit->get_text() : "");
+		emit_signal("plugin_ready", script.operator->(), active_edit->is_pressed() ? subfolder : "");
 	} else {
-		EditorNode::get_singleton()->get_project_settings()->update_plugins();
+		EditorNode::get_singleton()->get_project_settings()->refresh_plugins();
 	}
 	_clear_fields();
 }
@@ -124,9 +133,13 @@ void PluginConfigDialog::_on_cancelled() {
 }
 
 void PluginConfigDialog::_on_required_text_changed(const String &) {
-	int lang_idx = script_option_edit->get_selected();
-	String ext = ScriptServer::get_language(lang_idx)->get_extension();
-	get_ok()->set_disabled(script_edit->get_text().get_basename().empty() || script_edit->get_text().get_extension() != ext || name_edit->get_text().empty());
+	const int lang_idx = script_option_edit->get_selected();
+	const String ext = ScriptServer::get_language(lang_idx)->get_extension();
+	// Allow empty script names (will fallback to "plugin.<ext>"), but not invalid names
+	// like ".plugin" or "plugin.invalid_ext".
+	get_ok()->set_disabled(
+			name_edit->get_text().empty() ||
+			(!script_edit->get_text().empty() && (script_edit->get_text().get_basename().empty() || script_edit->get_text().get_extension() != ext)));
 }
 
 void PluginConfigDialog::_notification(int p_what) {
@@ -188,47 +201,58 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	Label *name_lb = memnew(Label);
 	name_lb->set_text(TTR("Plugin Name:"));
+	name_lb->set_align(Label::ALIGN_RIGHT);
 	grid->add_child(name_lb);
 
 	name_edit = memnew(LineEdit);
 	name_edit->connect("text_changed", callable_mp(this, &PluginConfigDialog::_on_required_text_changed));
 	name_edit->set_placeholder("MyPlugin");
+	name_edit->set_tooltip(TTR("Required. This name will be displayed in the list of plugins."));
 	grid->add_child(name_edit);
 
 	Label *subfolder_lb = memnew(Label);
 	subfolder_lb->set_text(TTR("Subfolder:"));
+	subfolder_lb->set_align(Label::ALIGN_RIGHT);
 	grid->add_child(subfolder_lb);
 
 	subfolder_edit = memnew(LineEdit);
-	subfolder_edit->set_placeholder("\"my_plugin\" -> res://addons/my_plugin");
+	subfolder_edit->set_placeholder("\"my_plugin\" -> res://addons/my_plugin/");
+	subfolder_edit->set_tooltip(TTR("Optional. The folder name should generally use `snake_case` naming (avoid spaces and special characters).\nIf left empty, the folder will be named after the plugin name converted to `snake_case`."));
 	grid->add_child(subfolder_edit);
 
 	Label *desc_lb = memnew(Label);
 	desc_lb->set_text(TTR("Description:"));
+	desc_lb->set_align(Label::ALIGN_RIGHT);
 	grid->add_child(desc_lb);
 
 	desc_edit = memnew(TextEdit);
 	desc_edit->set_custom_minimum_size(Size2(400, 80) * EDSCALE);
+	desc_edit->set_tooltip(TTR("Optional. This description should be kept relatively short (up to 5 lines).\nIt will display when hovering the plugin in the list of plugins."));
 	grid->add_child(desc_edit);
 
 	Label *author_lb = memnew(Label);
 	author_lb->set_text(TTR("Author:"));
+	author_lb->set_align(Label::ALIGN_RIGHT);
 	grid->add_child(author_lb);
 
 	author_edit = memnew(LineEdit);
 	author_edit->set_placeholder("Godette");
+	author_edit->set_tooltip(TTR("Optional. The author's username, full name, or organization name."));
 	grid->add_child(author_edit);
 
 	Label *version_lb = memnew(Label);
 	version_lb->set_text(TTR("Version:"));
+	version_lb->set_align(Label::ALIGN_RIGHT);
 	grid->add_child(version_lb);
 
 	version_edit = memnew(LineEdit);
 	version_edit->set_placeholder("1.0");
+	version_edit->set_tooltip(TTR("Optional. An human-readable version identifier used for informational purposes only."));
 	grid->add_child(version_edit);
 
 	Label *script_option_lb = memnew(Label);
 	script_option_lb->set_text(TTR("Language:"));
+	script_option_lb->set_align(Label::ALIGN_RIGHT);
 	grid->add_child(script_option_lb);
 
 	script_option_edit = memnew(OptionButton);
@@ -243,24 +267,29 @@ PluginConfigDialog::PluginConfigDialog() {
 #endif
 	}
 	script_option_edit->select(default_lang);
+	script_option_edit->set_tooltip(TTR("Required. The scripting language to use for the script.\nNote that a plugin may use several languages at once by adding more scripts to the plugin."));
 	grid->add_child(script_option_edit);
 
 	Label *script_lb = memnew(Label);
 	script_lb->set_text(TTR("Script Name:"));
+	script_lb->set_align(Label::ALIGN_RIGHT);
 	grid->add_child(script_lb);
 
 	script_edit = memnew(LineEdit);
 	script_edit->connect("text_changed", callable_mp(this, &PluginConfigDialog::_on_required_text_changed));
 	script_edit->set_placeholder("\"plugin.gd\" -> res://addons/my_plugin/plugin.gd");
+	script_edit->set_tooltip(TTR("Optional. The path to the script (relative to the add-on folder). If left empty, will default to \"plugin.gd\"."));
 	grid->add_child(script_edit);
 
 	// TODO Make this option work better with languages like C#. Right now, it does not work because the C# project must be compiled first.
 	Label *active_lb = memnew(Label);
 	active_lb->set_text(TTR("Activate now?"));
+	active_lb->set_align(Label::ALIGN_RIGHT);
 	grid->add_child(active_lb);
 
 	active_edit = memnew(CheckBox);
 	active_edit->set_pressed(true);
+	active_edit->set_tooltip(TTR("If checked, the plugin will be enabled immediately after creating it."));
 	grid->add_child(active_edit);
 }
 
