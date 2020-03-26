@@ -1107,7 +1107,7 @@ void EditorNode::_find_node_types(Node *p_node, int &count_2d, int &count_3d) {
 
 	if (p_node->is_class("CanvasItem"))
 		count_2d++;
-	else if (p_node->is_class("Spatial"))
+	else if (p_node->is_class("Node3D"))
 		count_3d++;
 
 	for (int i = 0; i < p_node->get_child_count(); i++)
@@ -1139,7 +1139,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 		if (is2d) {
 			img = scene_root->get_texture()->get_data();
 		} else {
-			img = SpatialEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_data();
+			img = Node3DEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_data();
 		}
 
 		if (img.is_valid()) {
@@ -3595,8 +3595,8 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<EditorSelection>();
 	ClassDB::register_class<EditorFileDialog>();
 	ClassDB::register_virtual_class<EditorSettings>();
-	ClassDB::register_class<EditorSpatialGizmo>();
-	ClassDB::register_class<EditorSpatialGizmoPlugin>();
+	ClassDB::register_class<EditorNode3DGizmo>();
+	ClassDB::register_class<EditorNode3DGizmoPlugin>();
 	ClassDB::register_virtual_class<EditorResourcePreview>();
 	ClassDB::register_class<EditorResourcePreviewGenerator>();
 	ClassDB::register_virtual_class<EditorFileSystem>();
@@ -6571,7 +6571,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(DebuggerEditorPlugin(this, debug_menu)));
 	add_editor_plugin(memnew(AnimationPlayerEditorPlugin(this)));
 	add_editor_plugin(memnew(CanvasItemEditorPlugin(this)));
-	add_editor_plugin(memnew(SpatialEditorPlugin(this)));
+	add_editor_plugin(memnew(Node3DEditorPlugin(this)));
 	add_editor_plugin(memnew(ScriptEditorPlugin(this)));
 
 	EditorAudioBuses *audio_bus_editor = EditorAudioBuses::register_editor();
@@ -6851,7 +6851,7 @@ bool EditorPluginList::forward_gui_input(const Ref<InputEvent> &p_event) {
 	return discard;
 }
 
-bool EditorPluginList::forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event, bool serve_when_force_input_enabled) {
+bool EditorPluginList::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event, bool serve_when_force_input_enabled) {
 	bool discard = false;
 
 	for (int i = 0; i < plugins_list.size(); i++) {

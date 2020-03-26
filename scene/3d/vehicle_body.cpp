@@ -463,7 +463,7 @@ real_t VehicleBody::_ray_cast(int p_idx, PhysicsDirectBodyState *s) {
 
 		wheel.m_raycastInfo.m_isInContact = true;
 		if (rr.collider)
-			wheel.m_raycastInfo.m_groundObject = Object::cast_to<PhysicsBody>(rr.collider);
+			wheel.m_raycastInfo.m_groundObject = Object::cast_to<PhysicsBody3D>(rr.collider);
 
 		real_t hitDistance = param * raylen;
 		wheel.m_raycastInfo.m_suspensionLength = hitDistance - wheel.m_wheelRadius;
@@ -559,7 +559,7 @@ void VehicleBody::_update_suspension(PhysicsDirectBodyState *s) {
 
 //bilateral constraint between two dynamic objects
 void VehicleBody::_resolve_single_bilateral(PhysicsDirectBodyState *s, const Vector3 &pos1,
-		PhysicsBody *body2, const Vector3 &pos2, const Vector3 &normal, real_t &impulse, const real_t p_rollInfluence) {
+		PhysicsBody3D *body2, const Vector3 &pos2, const Vector3 &normal, real_t &impulse, const real_t p_rollInfluence) {
 
 	real_t normalLenSqr = normal.length_squared();
 	//ERR_FAIL_COND( normalLenSqr < real_t(1.1));
@@ -636,7 +636,7 @@ void VehicleBody::_resolve_single_bilateral(PhysicsDirectBodyState *s, const Vec
 #endif
 }
 
-VehicleBody::btVehicleWheelContactPoint::btVehicleWheelContactPoint(PhysicsDirectBodyState *s, PhysicsBody *body1, const Vector3 &frictionPosWorld, const Vector3 &frictionDirectionWorld, real_t maxImpulse) :
+VehicleBody::btVehicleWheelContactPoint::btVehicleWheelContactPoint(PhysicsDirectBodyState *s, PhysicsBody3D *body1, const Vector3 &frictionPosWorld, const Vector3 &frictionDirectionWorld, real_t maxImpulse) :
 		m_s(s),
 		m_body1(body1),
 		m_frictionPositionWorld(frictionPosWorld),
@@ -825,7 +825,7 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 				s->apply_impulse(rel_pos, m_forwardWS[wheel] * (m_forwardImpulse[wheel]));
 			}
 			if (m_sideImpulse[wheel] != real_t(0.)) {
-				PhysicsBody *groundObject = wheelInfo.m_raycastInfo.m_groundObject;
+				PhysicsBody3D *groundObject = wheelInfo.m_raycastInfo.m_groundObject;
 
 				Vector3 rel_pos2;
 				if (groundObject) {
@@ -852,7 +852,7 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 
 void VehicleBody::_direct_state_changed(Object *p_state) {
 
-	RigidBody::_direct_state_changed(p_state);
+	RigidBody3D::_direct_state_changed(p_state);
 
 	state = Object::cast_to<PhysicsDirectBodyState>(p_state);
 

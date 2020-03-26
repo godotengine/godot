@@ -33,12 +33,12 @@
 #include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/import/collada.h"
-#include "scene/3d/camera.h"
-#include "scene/3d/light.h"
-#include "scene/3d/mesh_instance.h"
-#include "scene/3d/path.h"
-#include "scene/3d/skeleton.h"
-#include "scene/3d/spatial.h"
+#include "scene/3d/camera_3d.h"
+#include "scene/3d/light_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/node_3d.h"
+#include "scene/3d/path_3d.h"
+#include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/packed_scene.h"
@@ -47,13 +47,13 @@
 struct ColladaImport {
 
 	Collada collada;
-	Spatial *scene;
+	Node3D *scene;
 
 	Vector<Ref<Animation>> animations;
 
 	struct NodeMap {
 		//String path;
-		Spatial *node;
+		Node3D *node;
 		int bone;
 		List<int> anim_tracks;
 
@@ -76,17 +76,17 @@ struct ColladaImport {
 	Map<String, Ref<ArrayMesh>> mesh_cache;
 	Map<String, Ref<Curve3D>> curve_cache;
 	Map<String, Ref<Material>> material_cache;
-	Map<Collada::Node *, Skeleton *> skeleton_map;
+	Map<Collada::Node *, Skeleton3D *> skeleton_map;
 
-	Map<Skeleton *, Map<String, int>> skeleton_bone_map;
+	Map<Skeleton3D *, Map<String, int>> skeleton_bone_map;
 
 	Set<String> valid_animated_nodes;
 	Vector<int> valid_animated_properties;
 	Map<String, bool> bones_with_animation;
 
-	Error _populate_skeleton(Skeleton *p_skeleton, Collada::Node *p_node, int &r_bone, int p_parent);
+	Error _populate_skeleton(Skeleton3D *p_skeleton, Collada::Node *p_node, int &r_bone, int p_parent);
 	Error _create_scene_skeletons(Collada::Node *p_node);
-	Error _create_scene(Collada::Node *p_node, Spatial *p_parent);
+	Error _create_scene(Collada::Node *p_node, Node3D *p_parent);
 	Error _create_resources(Collada::Node *p_node, bool p_use_compression);
 	Error _create_material(const String &p_target);
 	Error _create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_mesh, const Map<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<ArrayMesh>> p_morph_meshes = Vector<Ref<ArrayMesh>>(), bool p_use_compression = false, bool p_use_mesh_material = false);
@@ -110,7 +110,7 @@ struct ColladaImport {
 	}
 };
 
-Error ColladaImport::_populate_skeleton(Skeleton *p_skeleton, Collada::Node *p_node, int &r_bone, int p_parent) {
+Error ColladaImport::_populate_skeleton(Skeleton3D *p_skeleton, Collada::Node *p_node, int &r_bone, int p_parent) {
 
 	if (p_node->type != Collada::Node::TYPE_JOINT)
 		return OK;
@@ -174,7 +174,7 @@ Error ColladaImport::_create_scene_skeletons(Collada::Node *p_node) {
 
 	if (p_node->type == Collada::Node::TYPE_SKELETON) {
 
-		Skeleton *sk = memnew(Skeleton);
+		Skeleton3D *sk = memnew(Skeleton3D);
 		int bone = 0;
 		for (int i = 0; i < p_node->children.size(); i++) {
 
@@ -193,15 +193,15 @@ Error ColladaImport::_create_scene_skeletons(Collada::Node *p_node) {
 	return OK;
 }
 
-Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
+Error ColladaImport::_create_scene(Collada::Node *p_node, Node3D *p_parent) {
 
-	Spatial *node = NULL;
+	Node3D *node = NULL;
 
 	switch (p_node->type) {
 
 		case Collada::Node::TYPE_NODE: {
 
-			node = memnew(Spatial);
+			node = memnew(Node3D);
 		} break;
 		case Collada::Node::TYPE_JOINT: {
 
@@ -223,7 +223,7 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 					if (!bool(GLOBAL_DEF("collada/use_ambient", false)))
 						return OK;
 					//well, it's an ambient light..
-					Light *l = memnew(DirectionalLight);
+					Light3D *l = memnew(DirectionalLight3D);
 					//l->set_color(Light::COLOR_AMBIENT,ld.color);
 					//l->set_color(Light::COLOR_DIFFUSE,Color(0,0,0));
 					//l->set_color(Light::COLOR_SPECULAR,Color(0,0,0));
@@ -232,7 +232,7 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 				} else if (ld.mode == Collada::LightData::MODE_DIRECTIONAL) {
 
 					//well, it's an ambient light..
-					Light *l = memnew(DirectionalLight);
+					Light3D *l = memnew(DirectionalLight3D);
 					/*
 					if (found_ambient) //use it here
 						l->set_color(Light::COLOR_AMBIENT,ambient);
@@ -243,12 +243,12 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 					node = l;
 				} else {
 
-					Light *l;
+					Light3D *l;
 
 					if (ld.mode == Collada::LightData::MODE_OMNI)
-						l = memnew(OmniLight);
+						l = memnew(OmniLight3D);
 					else {
-						l = memnew(SpotLight);
+						l = memnew(SpotLight3D);
 						//l->set_parameter(Light::PARAM_SPOT_ANGLE,ld.spot_angle);
 						//l->set_parameter(Light::PARAM_SPOT_ATTENUATION,ld.spot_exp);
 					}
@@ -262,13 +262,13 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 
 			} else {
 
-				node = memnew(Spatial);
+				node = memnew(Node3D);
 			}
 		} break;
 		case Collada::Node::TYPE_CAMERA: {
 
 			Collada::NodeCamera *cam = static_cast<Collada::NodeCamera *>(p_node);
-			Camera *camera = memnew(Camera);
+			Camera3D *camera = memnew(Camera3D);
 
 			if (collada.state.camera_data_map.has(cam->camera)) {
 
@@ -280,12 +280,12 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 
 						if (cd.orthogonal.y_mag) {
 
-							camera->set_keep_aspect_mode(Camera::KEEP_HEIGHT);
+							camera->set_keep_aspect_mode(Camera3D::KEEP_HEIGHT);
 							camera->set_orthogonal(cd.orthogonal.y_mag * 2.0, cd.z_near, cd.z_far);
 
 						} else if (!cd.orthogonal.y_mag && cd.orthogonal.x_mag) {
 
-							camera->set_keep_aspect_mode(Camera::KEEP_WIDTH);
+							camera->set_keep_aspect_mode(Camera3D::KEEP_WIDTH);
 							camera->set_orthogonal(cd.orthogonal.x_mag * 2.0, cd.z_near, cd.z_far);
 						}
 
@@ -314,17 +314,17 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 
 			if (collada.state.curve_data_map.has(ng->source)) {
 
-				node = memnew(Path);
+				node = memnew(Path3D);
 			} else {
 				//mesh since nothing else
-				node = memnew(MeshInstance);
+				node = memnew(MeshInstance3D);
 				//Object::cast_to<MeshInstance>(node)->set_flag(GeometryInstance::FLAG_USE_BAKED_LIGHT, true);
 			}
 		} break;
 		case Collada::Node::TYPE_SKELETON: {
 
 			ERR_FAIL_COND_V(!skeleton_map.has(p_node), ERR_CANT_CREATE);
-			Skeleton *sk = skeleton_map[p_node];
+			Skeleton3D *sk = skeleton_map[p_node];
 			node = sk;
 		} break;
 	}
@@ -1010,12 +1010,12 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 
 	if (p_node->type == Collada::Node::TYPE_GEOMETRY && node_map.has(p_node->id)) {
 
-		Spatial *node = node_map[p_node->id].node;
+		Node3D *node = node_map[p_node->id].node;
 		Collada::NodeGeometry *ng = static_cast<Collada::NodeGeometry *>(p_node);
 
-		if (Object::cast_to<Path>(node)) {
+		if (Object::cast_to<Path3D>(node)) {
 
-			Path *path = Object::cast_to<Path>(node);
+			Path3D *path = Object::cast_to<Path3D>(node);
 
 			if (curve_cache.has(ng->source)) {
 
@@ -1083,11 +1083,11 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 			}
 		}
 
-		if (Object::cast_to<MeshInstance>(node)) {
+		if (Object::cast_to<MeshInstance3D>(node)) {
 
 			Collada::NodeGeometry *ng2 = static_cast<Collada::NodeGeometry *>(p_node);
 
-			MeshInstance *mi = Object::cast_to<MeshInstance>(node);
+			MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(node);
 
 			ERR_FAIL_COND_V(!mi, ERR_BUG);
 
@@ -1114,7 +1114,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					String skname = skeletons[0];
 					ERR_FAIL_COND_V(!node_map.has(skname), ERR_INVALID_DATA);
 					NodeMap nmsk = node_map[skname];
-					Skeleton *sk = Object::cast_to<Skeleton>(nmsk.node);
+					Skeleton3D *sk = Object::cast_to<Skeleton3D>(nmsk.node);
 					ERR_FAIL_COND_V(!sk, ERR_INVALID_DATA);
 					ERR_FAIL_COND_V(!skeleton_bone_map.has(sk), ERR_INVALID_DATA);
 					Map<String, int> &bone_remap_map = skeleton_bone_map[sk];
@@ -1265,7 +1265,7 @@ Error ColladaImport::load(const String &p_path, int p_flags, bool p_force_make_t
 	ERR_FAIL_COND_V(!collada.state.visual_scene_map.has(collada.state.root_visual_scene), ERR_INVALID_DATA);
 	Collada::VisualScene &vs = collada.state.visual_scene_map[collada.state.root_visual_scene];
 
-	scene = memnew(Spatial); // root
+	scene = memnew(Node3D); // root
 
 	//determine what's going on with the lights
 	for (int i = 0; i < vs.root_nodes.size(); i++) {
@@ -1530,7 +1530,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 		String path = scene->get_path_to(nm.node);
 
 		if (nm.bone >= 0) {
-			Skeleton *sk = static_cast<Skeleton *>(nm.node);
+			Skeleton3D *sk = static_cast<Skeleton3D *>(nm.node);
 			String name = sk->get_bone_name(nm.bone);
 			path = path + ":" + name;
 		}
@@ -1621,7 +1621,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 
 			if (nm.bone >= 0) {
 				//make bone transform relative to rest (in case of skeleton)
-				Skeleton *sk = Object::cast_to<Skeleton>(nm.node);
+				Skeleton3D *sk = Object::cast_to<Skeleton3D>(nm.node);
 				if (sk) {
 
 					xform = sk->get_bone_rest(nm.bone).affine_inverse() * xform;
@@ -1662,7 +1662,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 			NodeMap &nm = node_map[E->key()];
 			String path = scene->get_path_to(nm.node);
 			ERR_CONTINUE(nm.bone < 0);
-			Skeleton *sk = static_cast<Skeleton *>(nm.node);
+			Skeleton3D *sk = static_cast<Skeleton3D *>(nm.node);
 			String name = sk->get_bone_name(nm.bone);
 			path = path + ":" + name;
 

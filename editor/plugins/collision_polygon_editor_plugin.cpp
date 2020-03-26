@@ -35,7 +35,7 @@
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_settings.h"
-#include "scene/3d/camera.h"
+#include "scene/3d/camera_3d.h"
 #include "spatial_editor_plugin.h"
 
 void Polygon3DEditor::_notification(int p_what) {
@@ -109,7 +109,7 @@ void Polygon3DEditor::_wip_close() {
 	undo_redo->commit_action();
 }
 
-bool Polygon3DEditor::forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event) {
+bool Polygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
 
 	if (!node)
 		return false;
@@ -346,10 +346,10 @@ bool Polygon3DEditor::forward_spatial_gui_input(Camera *p_camera, const Ref<Inpu
 				snap_ignore = false;
 			}
 
-			if (!snap_ignore && SpatialEditor::get_singleton()->is_snap_enabled()) {
+			if (!snap_ignore && Node3DEditor::get_singleton()->is_snap_enabled()) {
 				cpoint = cpoint.snapped(Vector2(
-						SpatialEditor::get_singleton()->get_translate_snap(),
-						SpatialEditor::get_singleton()->get_translate_snap()));
+						Node3DEditor::get_singleton()->get_translate_snap(),
+						Node3DEditor::get_singleton()->get_translate_snap()));
 			}
 			edited_point_pos = cpoint;
 
@@ -493,7 +493,7 @@ void Polygon3DEditor::edit(Node *p_collision_polygon) {
 
 	if (p_collision_polygon) {
 
-		node = Object::cast_to<Spatial>(p_collision_polygon);
+		node = Object::cast_to<Node3D>(p_collision_polygon);
 		//Enable the pencil tool if the polygon is empty
 		if (Vector<Vector2>(node->call("get_polygon")).size() == 0) {
 			_menu_option(MODE_CREATE);
@@ -540,7 +540,7 @@ Polygon3DEditor::Polygon3DEditor(EditorNode *p_editor) {
 
 	mode = MODE_EDIT;
 	wip_active = false;
-	imgeom = memnew(ImmediateGeometry);
+	imgeom = memnew(ImmediateGeometry3D);
 	imgeom->set_transform(Transform(Basis(), Vector3(0, 0, 0.00001)));
 
 	line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
@@ -560,7 +560,7 @@ Polygon3DEditor::Polygon3DEditor(EditorNode *p_editor) {
 	handle_material->set_point_size(handle->get_width());
 	handle_material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, handle);
 
-	pointsm = memnew(MeshInstance);
+	pointsm = memnew(MeshInstance3D);
 	imgeom->add_child(pointsm);
 	m.instance();
 	pointsm->set_mesh(m);
@@ -581,7 +581,7 @@ void Polygon3DEditorPlugin::edit(Object *p_object) {
 
 bool Polygon3DEditorPlugin::handles(Object *p_object) const {
 
-	return Object::cast_to<Spatial>(p_object) && bool(p_object->call("_is_editable_3d_polygon"));
+	return Object::cast_to<Node3D>(p_object) && bool(p_object->call("_is_editable_3d_polygon"));
 }
 
 void Polygon3DEditorPlugin::make_visible(bool p_visible) {
@@ -599,7 +599,7 @@ Polygon3DEditorPlugin::Polygon3DEditorPlugin(EditorNode *p_node) {
 
 	editor = p_node;
 	collision_polygon_editor = memnew(Polygon3DEditor(p_node));
-	SpatialEditor::get_singleton()->add_control_to_menu_panel(collision_polygon_editor);
+	Node3DEditor::get_singleton()->add_control_to_menu_panel(collision_polygon_editor);
 
 	collision_polygon_editor->hide();
 }

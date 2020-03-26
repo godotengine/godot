@@ -36,10 +36,10 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "scene/2d/collision_object_2d.h"
-#include "scene/3d/camera.h"
-#include "scene/3d/collision_object.h"
-#include "scene/3d/listener.h"
-#include "scene/3d/spatial.h"
+#include "scene/3d/camera_3d.h"
+#include "scene/3d/collision_object_3d.h"
+#include "scene/3d/listener_3d.h"
+#include "scene/3d/node_3d.h"
 #include "scene/3d/world_environment.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
@@ -218,7 +218,7 @@ void Viewport::update_worlds() {
 	find_world()->_update(get_tree()->get_frame());
 }
 
-void Viewport::_collision_object_input_event(CollisionObject *p_object, Camera *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape) {
+void Viewport::_collision_object_input_event(CollisionObject3D *p_object, Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape) {
 
 	Transform object_transform = p_object->get_global_transform();
 	Transform camera_transform = p_camera->get_global_transform();
@@ -489,8 +489,8 @@ void Viewport::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 #ifndef _3D_DISABLED
 			if (listeners.size() && !listener) {
-				Listener *first = NULL;
-				for (Set<Listener *>::Element *E = listeners.front(); E; E = E->next()) {
+				Listener3D *first = NULL;
+				for (Set<Listener3D *>::Element *E = listeners.front(); E; E = E->next()) {
 
 					if (first == NULL || first->is_greater_than(E->get())) {
 						first = E->get();
@@ -503,8 +503,8 @@ void Viewport::_notification(int p_what) {
 
 			if (cameras.size() && !camera) {
 				//there are cameras but no current camera, pick first in tree and make it current
-				Camera *first = NULL;
-				for (Set<Camera *>::Element *E = cameras.front(); E; E = E->next()) {
+				Camera3D *first = NULL;
+				for (Set<Camera3D *>::Element *E = cameras.front(); E; E = E->next()) {
 
 					if (first == NULL || first->is_greater_than(E->get())) {
 						first = E->get();
@@ -528,7 +528,6 @@ void Viewport::_notification(int p_what) {
 				world_2d->_remove_viewport(this);
 
 			VisualServer::get_singleton()->viewport_set_scenario(viewport, RID());
-			//			SpatialSoundServer::get_singleton()->listener_set_space(internal_listener, RID());
 			VisualServer::get_singleton()->viewport_remove_canvas(viewport, current_canvas);
 			if (contact_2d_debug.is_valid()) {
 				VisualServer::get_singleton()->free(contact_2d_debug);
@@ -587,7 +586,7 @@ void Viewport::_notification(int p_what) {
 
 #ifndef _3D_DISABLED
 				Vector2 last_pos(1e20, 1e20);
-				CollisionObject *last_object = NULL;
+				CollisionObject3D *last_object = NULL;
 				ObjectID last_id;
 #endif
 				PhysicsDirectSpaceState::RayResult result;
@@ -773,7 +772,7 @@ void Viewport::_notification(int p_what) {
 
 					if (physics_object_capture.is_valid()) {
 
-						CollisionObject *co = Object::cast_to<CollisionObject>(ObjectDB::get_instance(physics_object_capture));
+						CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_capture));
 						if (co && camera) {
 							_collision_object_input_event(co, camera, ev, Vector3(), Vector3(), 0);
 							captured = true;
@@ -813,7 +812,7 @@ void Viewport::_notification(int p_what) {
 								ObjectID new_collider;
 								if (col) {
 
-									CollisionObject *co = Object::cast_to<CollisionObject>(result.collider);
+									CollisionObject3D *co = Object::cast_to<CollisionObject3D>(result.collider);
 									if (co) {
 
 										_collision_object_input_event(co, camera, ev, result.position, result.normal, result.shape);
@@ -830,7 +829,7 @@ void Viewport::_notification(int p_what) {
 
 									if (physics_object_over.is_valid()) {
 
-										CollisionObject *co = Object::cast_to<CollisionObject>(ObjectDB::get_instance(physics_object_over));
+										CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_over));
 										if (co) {
 											co->_mouse_exit();
 										}
@@ -838,7 +837,7 @@ void Viewport::_notification(int p_what) {
 
 									if (new_collider.is_valid()) {
 
-										CollisionObject *co = Object::cast_to<CollisionObject>(ObjectDB::get_instance(new_collider));
+										CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(new_collider));
 										if (co) {
 											co->_mouse_enter();
 										}
@@ -927,13 +926,6 @@ Rect2 Viewport::get_visible_rect() const {
 }
 
 void Viewport::_update_listener() {
-	/*
-	if (is_inside_tree() && audio_listener && (camera || listener) && (!get_parent() || (Object::cast_to<Control>(get_parent()) && Object::cast_to<Control>(get_parent())->is_visible_in_tree())))  {
-		SpatialSoundServer::get_singleton()->listener_set_space(internal_listener, find_world()->get_sound_space());
-	} else {
-		SpatialSoundServer::get_singleton()->listener_set_space(internal_listener, RID());
-	}
-*/
 }
 
 void Viewport::_update_listener_2d() {
@@ -1041,14 +1033,9 @@ Transform2D Viewport::get_global_canvas_transform() const {
 }
 
 void Viewport::_listener_transform_changed_notify() {
-
-#ifndef _3D_DISABLED
-//if (listener)
-//		SpatialSoundServer::get_singleton()->listener_set_transform(internal_listener, listener->get_listener_transform());
-#endif
 }
 
-void Viewport::_listener_set(Listener *p_listener) {
+void Viewport::_listener_set(Listener3D *p_listener) {
 
 #ifndef _3D_DISABLED
 
@@ -1062,13 +1049,13 @@ void Viewport::_listener_set(Listener *p_listener) {
 #endif
 }
 
-bool Viewport::_listener_add(Listener *p_listener) {
+bool Viewport::_listener_add(Listener3D *p_listener) {
 
 	listeners.insert(p_listener);
 	return listeners.size() == 1;
 }
 
-void Viewport::_listener_remove(Listener *p_listener) {
+void Viewport::_listener_remove(Listener3D *p_listener) {
 
 	listeners.erase(p_listener);
 	if (listener == p_listener) {
@@ -1077,10 +1064,10 @@ void Viewport::_listener_remove(Listener *p_listener) {
 }
 
 #ifndef _3D_DISABLED
-void Viewport::_listener_make_next_current(Listener *p_exclude) {
+void Viewport::_listener_make_next_current(Listener3D *p_exclude) {
 
 	if (listeners.size() > 0) {
-		for (Set<Listener *>::Element *E = listeners.front(); E; E = E->next()) {
+		for (Set<Listener3D *>::Element *E = listeners.front(); E; E = E->next()) {
 
 			if (p_exclude == E->get())
 				continue;
@@ -1104,13 +1091,10 @@ void Viewport::_listener_make_next_current(Listener *p_exclude) {
 void Viewport::_camera_transform_changed_notify() {
 
 #ifndef _3D_DISABLED
-// If there is an active listener in the scene, it takes priority over the camera
-//	if (camera && !listener)
-//		SpatialSoundServer::get_singleton()->listener_set_transform(internal_listener, camera->get_camera_transform());
 #endif
 }
 
-void Viewport::_camera_set(Camera *p_camera) {
+void Viewport::_camera_set(Camera3D *p_camera) {
 
 #ifndef _3D_DISABLED
 
@@ -1118,7 +1102,7 @@ void Viewport::_camera_set(Camera *p_camera) {
 		return;
 
 	if (camera) {
-		camera->notification(Camera::NOTIFICATION_LOST_CURRENT);
+		camera->notification(Camera3D::NOTIFICATION_LOST_CURRENT);
 	}
 
 	camera = p_camera;
@@ -1131,7 +1115,7 @@ void Viewport::_camera_set(Camera *p_camera) {
 	}
 
 	if (camera) {
-		camera->notification(Camera::NOTIFICATION_BECAME_CURRENT);
+		camera->notification(Camera3D::NOTIFICATION_BECAME_CURRENT);
 	}
 
 	_update_listener();
@@ -1139,25 +1123,25 @@ void Viewport::_camera_set(Camera *p_camera) {
 #endif
 }
 
-bool Viewport::_camera_add(Camera *p_camera) {
+bool Viewport::_camera_add(Camera3D *p_camera) {
 
 	cameras.insert(p_camera);
 	return cameras.size() == 1;
 }
 
-void Viewport::_camera_remove(Camera *p_camera) {
+void Viewport::_camera_remove(Camera3D *p_camera) {
 
 	cameras.erase(p_camera);
 	if (camera == p_camera) {
-		camera->notification(Camera::NOTIFICATION_LOST_CURRENT);
+		camera->notification(Camera3D::NOTIFICATION_LOST_CURRENT);
 		camera = NULL;
 	}
 }
 
 #ifndef _3D_DISABLED
-void Viewport::_camera_make_next_current(Camera *p_exclude) {
+void Viewport::_camera_make_next_current(Camera3D *p_exclude) {
 
-	for (Set<Camera *>::Element *E = cameras.front(); E; E = E->next()) {
+	for (Set<Camera3D *>::Element *E = cameras.front(); E; E = E->next()) {
 
 		if (p_exclude == E->get())
 			continue;
@@ -1239,9 +1223,9 @@ void Viewport::_propagate_enter_world(Node *p_node) {
 		if (!p_node->is_inside_tree()) //may not have entered scene yet
 			return;
 
-		if (Object::cast_to<Spatial>(p_node) || Object::cast_to<WorldEnvironment>(p_node)) {
+		if (Object::cast_to<Node3D>(p_node) || Object::cast_to<WorldEnvironment>(p_node)) {
 
-			p_node->notification(Spatial::NOTIFICATION_ENTER_WORLD);
+			p_node->notification(Node3D::NOTIFICATION_ENTER_WORLD);
 		} else {
 			Viewport *v = Object::cast_to<Viewport>(p_node);
 			if (v) {
@@ -1276,9 +1260,9 @@ void Viewport::_propagate_exit_world(Node *p_node) {
 		if (!p_node->is_inside_tree()) //may have exited scene already
 			return;
 
-		if (Object::cast_to<Spatial>(p_node) || Object::cast_to<WorldEnvironment>(p_node)) {
+		if (Object::cast_to<Node3D>(p_node) || Object::cast_to<WorldEnvironment>(p_node)) {
 
-			p_node->notification(Spatial::NOTIFICATION_EXIT_WORLD);
+			p_node->notification(Node3D::NOTIFICATION_EXIT_WORLD);
 		} else {
 			Viewport *v = Object::cast_to<Viewport>(p_node);
 			if (v) {
@@ -1350,12 +1334,12 @@ Ref<World> Viewport::find_world() const {
 		return Ref<World>();
 }
 
-Listener *Viewport::get_listener() const {
+Listener3D *Viewport::get_listener() const {
 
 	return listener;
 }
 
-Camera *Viewport::get_camera() const {
+Camera3D *Viewport::get_camera() const {
 	return camera;
 }
 
@@ -2626,7 +2610,7 @@ void Viewport::_drop_physics_mouseover() {
 
 #ifndef _3D_DISABLED
 	if (physics_object_over.is_valid()) {
-		CollisionObject *co = Object::cast_to<CollisionObject>(ObjectDB::get_instance(physics_object_over));
+		CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_over));
 		if (co) {
 			co->_mouse_exit();
 		}
@@ -3545,7 +3529,6 @@ Viewport::Viewport() {
 	viewport_textures.insert(default_texture.ptr());
 	default_texture->proxy = VS::get_singleton()->texture_proxy_create(texture_rid);
 
-	//internal_listener = SpatialSoundServer::get_singleton()->listener_create();
 	audio_listener = false;
 	//internal_listener_2d = SpatialSound2DServer::get_singleton()->listener_create();
 	audio_listener_2d = false;
@@ -3626,8 +3609,6 @@ Viewport::~Viewport() {
 		E->get()->vp = NULL;
 	}
 	VisualServer::get_singleton()->free(viewport);
-	//SpatialSoundServer::get_singleton()->free(internal_listener);
-	//SpatialSound2DServer::get_singleton()->free(internal_listener_2d);
 }
 
 /////////////////////////////////

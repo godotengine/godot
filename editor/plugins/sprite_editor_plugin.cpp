@@ -47,7 +47,7 @@ void SpriteEditor::_node_removed(Node *p_node) {
 	}
 }
 
-void SpriteEditor::edit(Sprite *p_sprite) {
+void SpriteEditor::edit(Sprite2D *p_sprite) {
 
 	node = p_sprite;
 }
@@ -578,12 +578,12 @@ SpriteEditor::SpriteEditor() {
 
 void SpriteEditorPlugin::edit(Object *p_object) {
 
-	sprite_editor->edit(Object::cast_to<Sprite>(p_object));
+	sprite_editor->edit(Object::cast_to<Sprite2D>(p_object));
 }
 
 bool SpriteEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_class("Sprite");
+	return p_object->is_class("Sprite2D");
 }
 
 void SpriteEditorPlugin::make_visible(bool p_visible) {

@@ -33,7 +33,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "scene/2d/sprite.h"
+#include "scene/2d/sprite_2d.h"
 #include "scene/gui/spin_box.h"
 
 class SpriteEditor : public Control {
@@ -49,7 +49,7 @@ class SpriteEditor : public Control {
 
 	Menu selected_menu_item;
 
-	Sprite *node;
+	Sprite2D *node;
 
 	MenuButton *options;
 
@@ -92,7 +92,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void edit(Sprite *p_sprite);
+	void edit(Sprite2D *p_sprite);
 	SpriteEditor();
 };
 

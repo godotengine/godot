@@ -45,7 +45,7 @@
 #include "editor/plugins/spatial_editor_plugin.h"
 #include "editor/property_editor.h"
 #include "main/performance.h"
-#include "scene/3d/camera.h"
+#include "scene/3d/camera_3d.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
@@ -791,12 +791,12 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 				} else if (camera_override >= CameraOverride::OVERRIDE_3D_1) {
 					int viewport_idx = camera_override - CameraOverride::OVERRIDE_3D_1;
-					SpatialEditorViewport *viewport = SpatialEditor::get_singleton()->get_editor_viewport(viewport_idx);
-					Camera *const cam = viewport->get_camera();
+					Node3DEditorViewport *viewport = Node3DEditor::get_singleton()->get_editor_viewport(viewport_idx);
+					Camera3D *const cam = viewport->get_camera();
 
 					Array msg;
 					msg.push_back(cam->get_camera_transform());
-					if (cam->get_projection() == Camera::PROJECTION_ORTHOGONAL) {
+					if (cam->get_projection() == Camera3D::PROJECTION_ORTHOGONAL) {
 						msg.push_back(false);
 						msg.push_back(cam->get_size());
 					} else {

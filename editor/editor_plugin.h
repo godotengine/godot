@@ -42,14 +42,14 @@
 #include "scene/resources/texture.h"
 
 class EditorNode;
-class Spatial;
-class Camera;
+class Node3D;
+class Camera3D;
 class EditorSelection;
 class EditorExport;
 class EditorSettings;
 class EditorImportPlugin;
 class EditorExportPlugin;
-class EditorSpatialGizmoPlugin;
+class EditorNode3DGizmoPlugin;
 class EditorResourcePreview;
 class EditorFileSystem;
 class EditorToolAddons;
@@ -185,7 +185,7 @@ public:
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay);
 	virtual void forward_canvas_force_draw_over_viewport(Control *p_overlay);
 
-	virtual bool forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event);
+	virtual bool forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event);
 	virtual void forward_spatial_draw_over_viewport(Control *p_overlay);
 	virtual void forward_spatial_force_draw_over_viewport(Control *p_overlay);
 
@@ -227,8 +227,8 @@ public:
 	void add_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
 	void remove_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
 
-	void add_spatial_gizmo_plugin(const Ref<EditorSpatialGizmoPlugin> &p_gizmo_plugin);
-	void remove_spatial_gizmo_plugin(const Ref<EditorSpatialGizmoPlugin> &p_gizmo_plugin);
+	void add_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
+	void remove_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
 
 	void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);

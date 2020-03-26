@@ -32,8 +32,8 @@
 #define ANIMATION_GRAPH_PLAYER_H
 
 #include "animation_player.h"
-#include "scene/3d/skeleton.h"
-#include "scene/3d/spatial.h"
+#include "scene/3d/node_3d.h"
+#include "scene/3d/skeleton_3d.h"
 #include "scene/resources/animation.h"
 
 class AnimationNodeBlendTree;
@@ -192,8 +192,8 @@ private:
 	};
 
 	struct TrackCacheTransform : public TrackCache {
-		Spatial *spatial;
-		Skeleton *skeleton;
+		Node3D *spatial;
+		Skeleton3D *skeleton;
 		int bone_idx;
 		Vector3 loc;
 		Quat rot;

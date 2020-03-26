@@ -32,7 +32,7 @@
 
 #include "core/io/resource_loader.h"
 #include "editor/plugins/spatial_editor_plugin.h"
-#include "scene/3d/cpu_particles.h"
+#include "scene/3d/cpu_particles_3d.h"
 #include "scene/resources/particles_material.h"
 
 bool ParticlesEditorBase::_generate(Vector<Vector3> &points, Vector<Vector3> &normals) {
@@ -167,20 +167,20 @@ void ParticlesEditorBase::_node_selected(const NodePath &p_path) {
 	if (!sel)
 		return;
 
-	if (!sel->is_class("Spatial")) {
+	if (!sel->is_class("Node3D")) {
 
-		EditorNode::get_singleton()->show_warning(vformat(TTR("\"%s\" doesn't inherit from Spatial."), sel->get_name()));
+		EditorNode::get_singleton()->show_warning(vformat(TTR("\"%s\" doesn't inherit from Node3D."), sel->get_name()));
 		return;
 	}
 
-	VisualInstance *vi = Object::cast_to<VisualInstance>(sel);
+	VisualInstance3D *vi = Object::cast_to<VisualInstance3D>(sel);
 	if (!vi) {
 
 		EditorNode::get_singleton()->show_warning(vformat(TTR("\"%s\" doesn't contain geometry."), sel->get_name()));
 		return;
 	}
 
-	geometry = vi->get_faces(VisualInstance::FACES_SOLID);
+	geometry = vi->get_faces(VisualInstance3D::FACES_SOLID);
 
 	if (geometry.size() == 0) {
 
@@ -274,7 +274,7 @@ void ParticlesEditor::_menu_option(int p_option) {
 		} break;
 		case MENU_OPTION_CONVERT_TO_CPU_PARTICLES: {
 
-			CPUParticles *cpu_particles = memnew(CPUParticles);
+			CPUParticles3D *cpu_particles = memnew(CPUParticles3D);
 			cpu_particles->convert_from_particles(node);
 			cpu_particles->set_name(node->get_name());
 			cpu_particles->set_transform(node->get_transform());
@@ -340,7 +340,7 @@ void ParticlesEditor::_generate_aabb() {
 	ur->commit_action();
 }
 
-void ParticlesEditor::edit(Particles *p_particles) {
+void ParticlesEditor::edit(GPUParticles3D *p_particles) {
 
 	base_node = p_particles;
 	node = p_particles;
@@ -426,7 +426,7 @@ ParticlesEditor::ParticlesEditor() {
 
 	node = NULL;
 	particles_editor_hb = memnew(HBoxContainer);
-	SpatialEditor::get_singleton()->add_control_to_menu_panel(particles_editor_hb);
+	Node3DEditor::get_singleton()->add_control_to_menu_panel(particles_editor_hb);
 	options = memnew(MenuButton);
 	options->set_switch_on_hover(true);
 	particles_editor_hb->add_child(options);
@@ -460,12 +460,12 @@ ParticlesEditor::ParticlesEditor() {
 
 void ParticlesEditorPlugin::edit(Object *p_object) {
 
-	particles_editor->edit(Object::cast_to<Particles>(p_object));
+	particles_editor->edit(Object::cast_to<GPUParticles3D>(p_object));
 }
 
 bool ParticlesEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_class("Particles");
+	return p_object->is_class("GPUParticles3D");
 }
 
 void ParticlesEditorPlugin::make_visible(bool p_visible) {

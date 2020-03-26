@@ -34,13 +34,13 @@
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 
-class SkeletonIK;
+class SkeletonIK3D;
 
 class SkeletonIKEditorPlugin : public EditorPlugin {
 
 	GDCLASS(SkeletonIKEditorPlugin, EditorPlugin);
 
-	SkeletonIK *skeleton_ik;
+	SkeletonIK3D *skeleton_ik;
 
 	Button *play_btn;
 	EditorNode *editor;

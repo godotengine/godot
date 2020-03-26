@@ -31,13 +31,13 @@
 #ifndef VEHICLE_BODY_H
 #define VEHICLE_BODY_H
 
-#include "scene/3d/physics_body.h"
+#include "scene/3d/physics_body_3d.h"
 
 class VehicleBody;
 
-class VehicleWheel : public Spatial {
+class VehicleWheel : public Node3D {
 
-	GDCLASS(VehicleWheel, Spatial);
+	GDCLASS(VehicleWheel, Node3D);
 
 	friend class VehicleBody;
 
@@ -88,7 +88,7 @@ class VehicleWheel : public Spatial {
 		Vector3 m_wheelDirectionWS; //direction in worldspace
 		Vector3 m_wheelAxleWS; // axle in worldspace
 		bool m_isInContact;
-		PhysicsBody *m_groundObject; //could be general void* ptr
+		PhysicsBody3D *m_groundObject; //could be general void* ptr
 	} m_raycastInfo;
 
 	void _update(PhysicsDirectBodyState *s);
@@ -151,9 +151,9 @@ public:
 	VehicleWheel();
 };
 
-class VehicleBody : public RigidBody {
+class VehicleBody : public RigidBody3D {
 
-	GDCLASS(VehicleBody, RigidBody);
+	GDCLASS(VehicleBody, RigidBody3D);
 
 	float engine_force;
 	float brake;
@@ -171,16 +171,16 @@ class VehicleBody : public RigidBody {
 
 	struct btVehicleWheelContactPoint {
 		PhysicsDirectBodyState *m_s;
-		PhysicsBody *m_body1;
+		PhysicsBody3D *m_body1;
 		Vector3 m_frictionPositionWorld;
 		Vector3 m_frictionDirectionWorld;
 		real_t m_jacDiagABInv;
 		real_t m_maxImpulse;
 
-		btVehicleWheelContactPoint(PhysicsDirectBodyState *s, PhysicsBody *body1, const Vector3 &frictionPosWorld, const Vector3 &frictionDirectionWorld, real_t maxImpulse);
+		btVehicleWheelContactPoint(PhysicsDirectBodyState *s, PhysicsBody3D *body1, const Vector3 &frictionPosWorld, const Vector3 &frictionDirectionWorld, real_t maxImpulse);
 	};
 
-	void _resolve_single_bilateral(PhysicsDirectBodyState *s, const Vector3 &pos1, PhysicsBody *body2, const Vector3 &pos2, const Vector3 &normal, real_t &impulse, const real_t p_rollInfluence);
+	void _resolve_single_bilateral(PhysicsDirectBodyState *s, const Vector3 &pos1, PhysicsBody3D *body2, const Vector3 &pos2, const Vector3 &normal, real_t &impulse, const real_t p_rollInfluence);
 	real_t _calc_rolling_friction(btVehicleWheelContactPoint &contactPoint);
 
 	void _update_friction(PhysicsDirectBodyState *s);

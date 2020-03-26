@@ -36,7 +36,7 @@ void CameraEditor::_node_removed(Node *p_node) {
 
 	if (p_node == node) {
 		node = NULL;
-		SpatialEditor::get_singleton()->set_custom_camera(NULL);
+		Node3DEditor::get_singleton()->set_custom_camera(NULL);
 		hide();
 	}
 }
@@ -44,7 +44,7 @@ void CameraEditor::_node_removed(Node *p_node) {
 void CameraEditor::_pressed() {
 
 	Node *sn = (node && preview->is_pressed()) ? node : NULL;
-	SpatialEditor::get_singleton()->set_custom_camera(sn);
+	Node3DEditor::get_singleton()->set_custom_camera(sn);
 }
 
 void CameraEditor::_bind_methods() {
@@ -56,13 +56,13 @@ void CameraEditor::edit(Node *p_camera) {
 
 	if (!node) {
 		preview->set_pressed(false);
-		SpatialEditor::get_singleton()->set_custom_camera(NULL);
+		Node3DEditor::get_singleton()->set_custom_camera(NULL);
 	} else {
 
 		if (preview->is_pressed())
-			SpatialEditor::get_singleton()->set_custom_camera(p_camera);
+			Node3DEditor::get_singleton()->set_custom_camera(p_camera);
 		else
-			SpatialEditor::get_singleton()->set_custom_camera(NULL);
+			Node3DEditor::get_singleton()->set_custom_camera(NULL);
 	}
 }
 
@@ -84,21 +84,21 @@ CameraEditor::CameraEditor() {
 
 void CameraEditorPlugin::edit(Object *p_object) {
 
-	SpatialEditor::get_singleton()->set_can_preview(Object::cast_to<Camera>(p_object));
+	Node3DEditor::get_singleton()->set_can_preview(Object::cast_to<Camera3D>(p_object));
 	//camera_editor->edit(Object::cast_to<Node>(p_object));
 }
 
 bool CameraEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_class("Camera");
+	return p_object->is_class("Camera3D");
 }
 
 void CameraEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		//SpatialEditor::get_singleton()->set_can_preview(Object::cast_to<Camera>(p_object));
+		//Node3DEditor::get_singleton()->set_can_preview(Object::cast_to<Camera>(p_object));
 	} else {
-		SpatialEditor::get_singleton()->set_can_preview(NULL);
+		Node3DEditor::get_singleton()->set_can_preview(NULL);
 	}
 }
 

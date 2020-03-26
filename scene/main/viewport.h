@@ -38,9 +38,9 @@
 #include "servers/display_server.h"
 #include "servers/visual_server.h"
 
-class Camera;
+class Camera3D;
 class Camera2D;
-class Listener;
+class Listener3D;
 class Control;
 class CanvasItem;
 class CanvasLayer;
@@ -48,7 +48,7 @@ class Panel;
 class Label;
 class Timer;
 class Viewport;
-class CollisionObject;
+class CollisionObject3D;
 
 class ViewportTexture : public Texture2D {
 
@@ -160,8 +160,8 @@ private:
 
 	Viewport *parent;
 
-	Listener *listener;
-	Set<Listener *> listeners;
+	Listener3D *listener;
+	Set<Listener3D *> listeners;
 
 	struct CameraOverrideData {
 		Transform transform;
@@ -181,8 +181,8 @@ private:
 		}
 	} camera_override;
 
-	Camera *camera;
-	Set<Camera *> cameras;
+	Camera3D *camera;
+	Set<Camera3D *> cameras;
 	Set<CanvasLayer *> canvas_layers;
 
 	RID viewport;
@@ -237,7 +237,7 @@ private:
 
 	} physics_last_mouse_state;
 
-	void _collision_object_input_event(CollisionObject *p_object, Camera *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape);
+	void _collision_object_input_event(CollisionObject3D *p_object, Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape);
 
 	bool handle_input_locally;
 	bool local_input_handled;
@@ -396,19 +396,19 @@ private:
 
 	bool _gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_check);
 
-	friend class Listener;
+	friend class Listener3D;
 	void _listener_transform_changed_notify();
-	void _listener_set(Listener *p_listener);
-	bool _listener_add(Listener *p_listener); //true if first
-	void _listener_remove(Listener *p_listener);
-	void _listener_make_next_current(Listener *p_exclude);
+	void _listener_set(Listener3D *p_listener);
+	bool _listener_add(Listener3D *p_listener); //true if first
+	void _listener_remove(Listener3D *p_listener);
+	void _listener_make_next_current(Listener3D *p_exclude);
 
-	friend class Camera;
+	friend class Camera3D;
 	void _camera_transform_changed_notify();
-	void _camera_set(Camera *p_camera);
-	bool _camera_add(Camera *p_camera); //true if first
-	void _camera_remove(Camera *p_camera);
-	void _camera_make_next_current(Camera *p_exclude);
+	void _camera_set(Camera3D *p_camera);
+	bool _camera_add(Camera3D *p_camera); //true if first
+	void _camera_remove(Camera3D *p_camera);
+	void _camera_make_next_current(Camera3D *p_exclude);
 
 	friend class CanvasLayer;
 	void _canvas_layer_add(CanvasLayer *p_canvas_layer);
@@ -444,8 +444,8 @@ protected:
 	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
-	Listener *get_listener() const;
-	Camera *get_camera() const;
+	Listener3D *get_listener() const;
+	Camera3D *get_camera() const;
 
 	void enable_camera_override(bool p_enable);
 	bool is_camera_override_enabled() const;

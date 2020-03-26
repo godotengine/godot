@@ -31,10 +31,10 @@
 #ifndef HEIGHT_MAP_SHAPE_H
 #define HEIGHT_MAP_SHAPE_H
 
-#include "scene/resources/shape.h"
+#include "scene/resources/shape_3d.h"
 
-class HeightMapShape : public Shape {
-	GDCLASS(HeightMapShape, Shape);
+class HeightMapShape : public Shape3D {
+	GDCLASS(HeightMapShape, Shape3D);
 
 	int map_width;
 	int map_depth;

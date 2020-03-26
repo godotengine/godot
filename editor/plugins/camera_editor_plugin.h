@@ -33,7 +33,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "scene/3d/camera.h"
+#include "scene/3d/camera_3d.h"
 
 class CameraEditor : public Control {
 
@@ -62,7 +62,7 @@ class CameraEditorPlugin : public EditorPlugin {
 	EditorNode *editor;
 
 public:
-	virtual String get_name() const { return "Camera"; }
+	virtual String get_name() const { return "Camera3D"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_object);
 	virtual bool handles(Object *p_object) const;

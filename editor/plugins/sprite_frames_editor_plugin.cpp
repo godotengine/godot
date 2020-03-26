@@ -485,7 +485,7 @@ static void _find_anim_sprites(Node *p_node, List<Node *> *r_nodes, Ref<SpriteFr
 		return;
 
 	{
-		AnimatedSprite *as = Object::cast_to<AnimatedSprite>(p_node);
+		AnimatedSprite2D *as = Object::cast_to<AnimatedSprite2D>(p_node);
 		if (as && as->get_sprite_frames() == p_sfames) {
 			r_nodes->push_back(p_node);
 		}
@@ -1068,11 +1068,17 @@ void SpriteFramesEditorPlugin::edit(Object *p_object) {
 	frames_editor->set_undo_redo(&get_undo_redo());
 
 	SpriteFrames *s;
-	AnimatedSprite *animated_sprite = Object::cast_to<AnimatedSprite>(p_object);
+	AnimatedSprite2D *animated_sprite = Object::cast_to<AnimatedSprite2D>(p_object);
 	if (animated_sprite) {
 		s = *animated_sprite->get_sprite_frames();
 	} else {
-		s = Object::cast_to<SpriteFrames>(p_object);
+		AnimatedSprite3D *animated_sprite_3d = Object::cast_to<AnimatedSprite3D>(p_object);
+		if (animated_sprite_3d) {
+			s = *animated_sprite_3d->get_sprite_frames();
+		} else {
+
+			s = Object::cast_to<SpriteFrames>(p_object);
+		}
 	}
 
 	frames_editor->edit(s);
@@ -1080,8 +1086,11 @@ void SpriteFramesEditorPlugin::edit(Object *p_object) {
 
 bool SpriteFramesEditorPlugin::handles(Object *p_object) const {
 
-	AnimatedSprite *animated_sprite = Object::cast_to<AnimatedSprite>(p_object);
+	AnimatedSprite2D *animated_sprite = Object::cast_to<AnimatedSprite2D>(p_object);
+	AnimatedSprite3D *animated_sprite_3d = Object::cast_to<AnimatedSprite3D>(p_object);
 	if (animated_sprite && *animated_sprite->get_sprite_frames()) {
+		return true;
+	} else if (animated_sprite_3d && *animated_sprite_3d->get_sprite_frames()) {
 		return true;
 	} else {
 		return p_object->is_class("SpriteFrames");

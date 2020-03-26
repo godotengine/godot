@@ -30,9 +30,9 @@
 
 #include "audio_stream_player_3d.h"
 #include "core/engine.h"
-#include "scene/3d/area.h"
-#include "scene/3d/camera.h"
-#include "scene/3d/listener.h"
+#include "scene/3d/area_3d.h"
+#include "scene/3d/camera_3d.h"
+#include "scene/3d/listener_3d.h"
 #include "scene/main/window.h"
 
 // Based on "A Novel Multichannel Panning Method for Standard and Arbitrary Loudspeaker Configurations" by Ramy Sadek and Chris Kyriakakis (2004)
@@ -400,13 +400,13 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 			PhysicsDirectSpaceState::ShapeResult sr[MAX_INTERSECT_AREAS];
 
 			int areas = space_state->intersect_point(global_pos, sr, MAX_INTERSECT_AREAS, Set<RID>(), area_mask, false, true);
-			Area *area = NULL;
+			Area3D *area = NULL;
 
 			for (int i = 0; i < areas; i++) {
 				if (!sr[i].collider)
 					continue;
 
-				Area *tarea = Object::cast_to<Area>(sr[i].collider);
+				Area3D *tarea = Object::cast_to<Area3D>(sr[i].collider);
 				if (!tarea)
 					continue;
 
@@ -417,20 +417,20 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				break;
 			}
 
-			List<Camera *> cameras;
+			List<Camera3D *> cameras;
 			world->get_camera_list(&cameras);
 
-			for (List<Camera *>::Element *E = cameras.front(); E; E = E->next()) {
+			for (List<Camera3D *>::Element *E = cameras.front(); E; E = E->next()) {
 
-				Camera *camera = E->get();
+				Camera3D *camera = E->get();
 				Viewport *vp = camera->get_viewport();
 				if (!vp->is_audio_listener())
 					continue;
 
 				bool listener_is_camera = true;
-				Spatial *listener_node = camera;
+				Node3D *listener_node = camera;
 
-				Listener *listener = vp->get_listener();
+				Listener3D *listener = vp->get_listener();
 				if (listener) {
 					listener_node = listener;
 					listener_is_camera = false;

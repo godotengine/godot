@@ -44,7 +44,7 @@
 #include "scene/2d/particles_2d.h"
 #include "scene/2d/polygon_2d.h"
 #include "scene/2d/skeleton_2d.h"
-#include "scene/2d/sprite.h"
+#include "scene/2d/sprite_2d.h"
 #include "scene/2d/touch_screen_button.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/nine_patch_rect.h"
@@ -5888,7 +5888,7 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
 		if (texture != NULL || scene != NULL) {
 			if (texture != NULL) {
-				Sprite *sprite = memnew(Sprite);
+				Sprite2D *sprite = memnew(Sprite2D);
 				sprite->set_texture(texture);
 				sprite->set_modulate(Color(1, 1, 1, 0.7f));
 				preview_node->add_child(sprite);
@@ -6094,7 +6094,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 				else if (default_type == "NinePatchRect")
 					child = memnew(NinePatchRect);
 				else
-					child = memnew(Sprite); // default
+					child = memnew(Sprite2D); // default
 
 				_create_nodes(target_node, child, path, drop_pos);
 			}

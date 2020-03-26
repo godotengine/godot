@@ -34,8 +34,8 @@
 #include "core/map.h"
 #include "core/resource.h"
 #include "mesh.h"
-#include "scene/3d/navigation_region.h"
-#include "shape.h"
+#include "scene/3d/navigation_region_3d.h"
+#include "shape_3d.h"
 
 class MeshLibrary : public Resource {
 
@@ -44,7 +44,7 @@ class MeshLibrary : public Resource {
 
 public:
 	struct ShapeData {
-		Ref<Shape> shape;
+		Ref<Shape3D> shape;
 		Transform local_transform;
 	};
 	struct Item {

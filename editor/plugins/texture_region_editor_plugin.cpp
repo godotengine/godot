@@ -800,7 +800,7 @@ Sprite3D *TextureRegionEditor::get_sprite_3d() {
 	return node_sprite_3d;
 }
 
-Sprite *TextureRegionEditor::get_sprite() {
+Sprite2D *TextureRegionEditor::get_sprite() {
 	return node_sprite;
 }
 
@@ -816,7 +816,7 @@ void TextureRegionEditor::edit(Object *p_obj) {
 	if (atlas_tex.is_valid())
 		atlas_tex->remove_change_receptor(this);
 	if (p_obj) {
-		node_sprite = Object::cast_to<Sprite>(p_obj);
+		node_sprite = Object::cast_to<Sprite2D>(p_obj);
 		node_sprite_3d = Object::cast_to<Sprite3D>(p_obj);
 		node_ninepatch = Object::cast_to<NinePatchRect>(p_obj);
 		if (Object::cast_to<StyleBoxTexture>(p_obj))
@@ -1037,7 +1037,7 @@ void TextureRegionEditorPlugin::edit(Object *p_object) {
 }
 
 bool TextureRegionEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("Sprite") || p_object->is_class("Sprite3D") || p_object->is_class("NinePatchRect") || p_object->is_class("StyleBoxTexture") || p_object->is_class("AtlasTexture");
+	return p_object->is_class("Sprite2D") || p_object->is_class("Sprite3D") || p_object->is_class("NinePatchRect") || p_object->is_class("StyleBoxTexture") || p_object->is_class("AtlasTexture");
 }
 
 void TextureRegionEditorPlugin::_editor_visiblity_changed() {
