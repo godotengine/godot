@@ -503,15 +503,18 @@ void RigidBodyBullet::set_param(PhysicsServer3D::BodyParameter p_param, real_t p
 		}
 		case PhysicsServer3D::BODY_PARAM_LINEAR_DAMP:
 			linearDamp = p_value;
-			btBody->setDamping(linearDamp, angularDamp);
+			// Mark for updating total linear damping.
+			scratch_space_override_modificator();
 			break;
 		case PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP:
 			angularDamp = p_value;
-			btBody->setDamping(linearDamp, angularDamp);
+			// Mark for updating total angular damping.
+			scratch_space_override_modificator();
 			break;
 		case PhysicsServer3D::BODY_PARAM_GRAVITY_SCALE:
 			gravity_scale = p_value;
-			/// The Bullet gravity will be is set by reload_space_override_modificator
+			// The Bullet gravity will be is set by reload_space_override_modificator.
+			// Mark for updating total gravity scale.
 			scratch_space_override_modificator();
 			break;
 		default:
@@ -902,21 +905,20 @@ void RigidBodyBullet::on_exit_area(AreaBullet *p_area) {
 }
 
 void RigidBodyBullet::reload_space_override_modificator() {
-
 	// Make sure that kinematic bodies have their total gravity calculated
 	if (!is_active() && PhysicsServer3D::BODY_MODE_KINEMATIC != mode)
 		return;
 
-	Vector3 newGravity(space->get_gravity_direction() * space->get_gravity_magnitude());
-	real_t newLinearDamp(linearDamp);
-	real_t newAngularDamp(angularDamp);
+	Vector3 newGravity(0.0, 0.0, 0.0);
+	real_t newLinearDamp = MAX(0.0, linearDamp);
+	real_t newAngularDamp = MAX(0.0, angularDamp);
 
 	AreaBullet *currentArea;
 	// Variable used to calculate new gravity for gravity point areas, it is pointed by currentGravity pointer
 	Vector3 support_gravity(0, 0, 0);
 
-	int countCombined(0);
-	for (int i = areaWhereIamCount - 1; 0 <= i; --i) {
+	bool stopped = false;
+	for (int i = areaWhereIamCount - 1; (0 <= i) && !stopped; --i) {
 
 		currentArea = areasWhereIam[i];
 
@@ -965,7 +967,6 @@ void RigidBodyBullet::reload_space_override_modificator() {
 				newGravity += support_gravity;
 				newLinearDamp += currentArea->get_spOv_linearDamp();
 				newAngularDamp += currentArea->get_spOv_angularDamp();
-				++countCombined;
 				break;
 			case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE:
 				/// This area adds its gravity/damp values to whatever has been calculated
@@ -974,32 +975,31 @@ void RigidBodyBullet::reload_space_override_modificator() {
 				newGravity += support_gravity;
 				newLinearDamp += currentArea->get_spOv_linearDamp();
 				newAngularDamp += currentArea->get_spOv_angularDamp();
-				++countCombined;
-				goto endAreasCycle;
+				stopped = true;
+				break;
 			case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
 				/// This area replaces any gravity/damp, even the default one, and
 				/// stops taking into account the rest of the areas.
 				newGravity = support_gravity;
 				newLinearDamp = currentArea->get_spOv_linearDamp();
 				newAngularDamp = currentArea->get_spOv_angularDamp();
-				countCombined = 1;
-				goto endAreasCycle;
+				stopped = true;
+				break;
 			case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE:
 				/// This area replaces any gravity/damp calculated so far, but keeps
 				/// calculating the rest of the areas, down to the default one.
 				newGravity = support_gravity;
 				newLinearDamp = currentArea->get_spOv_linearDamp();
 				newAngularDamp = currentArea->get_spOv_angularDamp();
-				countCombined = 1;
 				break;
 		}
 	}
-endAreasCycle:
 
-	if (1 < countCombined) {
-		newGravity /= countCombined;
-		newLinearDamp /= countCombined;
-		newAngularDamp /= countCombined;
+	// Add default gravity and damping from space.
+	if (!stopped) {
+		newGravity += space->get_gravity_direction() * space->get_gravity_magnitude();
+		newLinearDamp += space->get_linear_damp();
+		newAngularDamp += space->get_angular_damp();
 	}
 
 	btVector3 newBtGravity;

@@ -342,6 +342,8 @@ SpaceBullet::SpaceBullet() :
 		godotFilterCallback(nullptr),
 		gravityDirection(0, -1, 0),
 		gravityMagnitude(10),
+		linear_damp(0.0),
+		angular_damp(0.0),
 		contactDebugCount(0),
 		delta_time(0.) {
 
@@ -379,8 +381,11 @@ void SpaceBullet::set_param(PhysicsServer3D::AreaParameter p_param, const Varian
 			update_gravity();
 			break;
 		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP:
+			linear_damp = p_value;
+			break;
 		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP:
-			break; // No damp
+			angular_damp = p_value;
+			break;
 		case PhysicsServer3D::AREA_PARAM_PRIORITY:
 			// Priority is always 0, the lower
 			break;
@@ -401,8 +406,9 @@ Variant SpaceBullet::get_param(PhysicsServer3D::AreaParameter p_param) {
 		case PhysicsServer3D::AREA_PARAM_GRAVITY_VECTOR:
 			return gravityDirection;
 		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP:
+			return linear_damp;
 		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP:
-			return 0; // No damp
+			return angular_damp;
 		case PhysicsServer3D::AREA_PARAM_PRIORITY:
 			return 0; // Priority is always 0, the lower
 		case PhysicsServer3D::AREA_PARAM_GRAVITY_IS_POINT:
