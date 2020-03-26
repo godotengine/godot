@@ -16,6 +16,7 @@ android_files = [
     'java_godot_wrapper.cpp',
     'java_godot_io_wrapper.cpp',
     'jni_utils.cpp',
+    'android_keys_utils.cpp',
     'plugin/godot_plugin_jni.cpp',
     #'power_android.cpp'
 ]
