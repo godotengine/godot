@@ -492,6 +492,7 @@ private:
 	bool _gui_input_hover(const Ref<InputEvent> &p_event);
 
 	void _gui_input_viewport(const Ref<InputEvent> &p_event);
+	void _update_cursor();
 
 	void _selection_changed();
 
