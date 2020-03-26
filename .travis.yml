@@ -67,17 +67,17 @@ matrix:
 #          packages:
 #            - openjdk-8-jdk
 
-#    - name: macOS editor (debug, Clang)
-#      stage: build
-#      env: PLATFORM=osx TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-clang EXTRA_ARGS="warnings=extra werror=yes"
-#      os: osx
-#      osx_image: xcode11.3
-#      compiler: clang
-#      addons:
-#        homebrew:
-#          packages:
-#            - scons
-#          update: true
+    - name: macOS editor (debug, Clang)
+      stage: build
+      env: PLATFORM=osx TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-clang EXTRA_ARGS="warnings=extra werror=yes"
+      os: osx
+      osx_image: xcode11.3
+      compiler: clang
+      addons:
+        homebrew:
+          packages:
+            - scons
+          update: true
 
 # TODO: iOS MoltenVK support
 
@@ -117,15 +117,15 @@ matrix:
           packages:
             - *linux_deps
 
-    - name: Javascript export template (release, emscripten latest)
-      stage: build
-      env: PLATFORM=javascript TOOLS=no TARGET=release CACHE_NAME=${PLATFORM}-emcc-latest EXTRA_ARGS="use_closure_compiler=yes"
-      os: linux
-      compiler: clang
-      addons:
-        apt:
-          packages:
-            - *linux_deps
+#    - name: Javascript export template (release, emscripten latest)
+#      stage: build
+#      env: PLATFORM=javascript TOOLS=no TARGET=release CACHE_NAME=${PLATFORM}-emcc-latest EXTRA_ARGS="use_closure_compiler=yes"
+#      os: linux
+#      compiler: clang
+#      addons:
+#        apt:
+#          packages:
+#            - *linux_deps
 
 before_install:
   - eval "${MATRIX_EVAL}"
