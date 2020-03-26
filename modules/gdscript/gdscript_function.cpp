@@ -337,15 +337,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					}
 
 					if (!argument_types[i].is_type(*p_args[i], true)) {
-						if (argument_types[i].is_type(Variant(), true)) {
-							memnew_placement(&stack[i], Variant);
-							continue;
-						} else {
-							r_err.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-							r_err.argument = i;
-							r_err.expected = argument_types[i].kind == GDScriptDataType::BUILTIN ? argument_types[i].builtin_type : Variant::OBJECT;
-							return Variant();
-						}
+						r_err.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+						r_err.argument = i;
+						r_err.expected = argument_types[i].kind == GDScriptDataType::BUILTIN ? argument_types[i].builtin_type : Variant::OBJECT;
+						return Variant();
 					}
 					if (argument_types[i].kind == GDScriptDataType::BUILTIN) {
 						Variant arg = Variant::construct(argument_types[i].builtin_type, &p_args[i], 1, r_err);
