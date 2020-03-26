@@ -1298,6 +1298,13 @@ void Control::_size_changed() {
 	}
 }
 
+void Control::reparent_with_transform(Node *p_parent) {
+
+	Transform2D temp = get_global_transform();
+	reparent(p_parent);
+	set_global_position(temp.get_origin());
+}
+
 void Control::set_anchor(Margin p_margin, float p_anchor, bool p_keep_margin, bool p_push_opposite_anchor) {
 
 	ERR_FAIL_INDEX((int)p_margin, 4);
@@ -2738,6 +2745,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size", "keep_margins"), &Control::set_size, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("_set_size", "size"), &Control::_set_size);
 	ClassDB::bind_method(D_METHOD("set_custom_minimum_size", "size"), &Control::set_custom_minimum_size);
+	ClassDB::bind_method(D_METHOD("reparent_with_transform", "new_parent"), &Control::reparent_with_transform);
 	ClassDB::bind_method(D_METHOD("set_global_position", "position", "keep_margins"), &Control::set_global_position, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("_set_global_position", "position"), &Control::_set_global_position);
 	ClassDB::bind_method(D_METHOD("set_rotation", "radians"), &Control::set_rotation);

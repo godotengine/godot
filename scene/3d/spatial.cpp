@@ -230,6 +230,13 @@ void Spatial::_notification(int p_what) {
 	}
 }
 
+void Spatial::reparent_with_transform(Node *p_parent) {
+
+	Transform temp = get_global_transform();
+	reparent(p_parent);
+	set_global_transform(temp);
+}
+
 void Spatial::set_transform(const Transform &p_transform) {
 
 	data.local_transform = p_transform;
@@ -738,6 +745,7 @@ void Spatial::force_update_transform() {
 
 void Spatial::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("reparent_with_transform", "new_parent"), &Spatial::reparent_with_transform);
 	ClassDB::bind_method(D_METHOD("set_transform", "local"), &Spatial::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform"), &Spatial::get_transform);
 	ClassDB::bind_method(D_METHOD("set_translation", "translation"), &Spatial::set_translation);

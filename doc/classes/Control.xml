@@ -550,6 +550,15 @@
 				Give up the focus. No other control will be able to receive keyboard input.
 			</description>
 		</method>
+		<method name="reparent_with_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="new_parent" type="Node">
+			</argument>
+			<description>
+				Changes parent of this [Control] to [code]new_parent[/code], while keeping the global position. The node needs to already have parent to use this.
+			</description>
+		</method>
 		<method name="set_anchor">
 			<return type="void">
 			</return>

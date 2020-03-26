@@ -100,6 +100,7 @@ public:
 	void set_global_rotation(float p_radians);
 	void set_global_rotation_degrees(float p_degrees);
 	void set_global_scale(const Size2 &p_scale);
+	void reparent_with_transform(Node *p_parent);
 
 	void set_z_index(int p_z);
 	int get_z_index() const;

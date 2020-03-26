@@ -136,6 +136,7 @@ public:
 	Vector3 get_rotation_degrees() const;
 	Vector3 get_scale() const;
 
+	void reparent_with_transform(Node *p_parent);
 	void set_transform(const Transform &p_transform);
 	void set_global_transform(const Transform &p_transform);
 

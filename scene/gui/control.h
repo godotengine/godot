@@ -206,6 +206,7 @@ private:
 	void _window_find_focus_neighbour(const Vector2 &p_dir, Node *p_at, const Point2 *p_points, float p_min, float &r_closest_dist, Control **r_closest);
 	Control *_get_focus_neighbour(Margin p_margin, int p_count = 0);
 
+	void reparent_with_transform(Node *p_parent);
 	void _set_anchor(Margin p_margin, float p_anchor);
 	void _set_position(const Point2 &p_point);
 	void _set_global_position(const Point2 &p_point);

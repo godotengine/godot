@@ -136,6 +136,15 @@
 				Resets this node's transformations (like scale, skew and taper) preserving its rotation and translation by performing Gram-Schmidt orthonormalization on this node's [Transform].
 			</description>
 		</method>
+		<method name="reparent_with_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="new_parent" type="Node">
+			</argument>
+			<description>
+				Changes parent of this [Spatial] to [code]new_parent[/code], while keeping the global transform (i.e. translation, rotation and scale). The node needs to already have parent to use this.
+			</description>
+		</method>
 		<method name="rotate">
 			<return type="void">
 			</return>

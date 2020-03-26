@@ -283,6 +283,7 @@ public:
 	Node *get_node_and_resource(const NodePath &p_path, RES &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property = true) const;
 
 	Node *get_parent() const;
+	void reparent(Node *p_parent);
 	Node *find_parent(const String &p_mask) const;
 
 	_FORCE_INLINE_ SceneTree *get_tree() const {

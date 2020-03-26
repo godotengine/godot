@@ -1490,6 +1490,14 @@ Node *Node::get_parent() const {
 	return data.parent;
 }
 
+void Node::reparent(Node *p_parent) {
+
+	ERR_FAIL_COND(!p_parent);
+	ERR_FAIL_COND_MSG(!data.parent, "Node needs parent to be reparented.");
+	data.parent->remove_child(this);
+	p_parent->add_child(this);
+}
+
 Node *Node::find_parent(const String &p_mask) const {
 
 	Node *p = data.parent;
@@ -2809,6 +2817,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
 	ClassDB::bind_method(D_METHOD("add_child", "node", "legible_unique_name"), &Node::add_child, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
+	ClassDB::bind_method(D_METHOD("reparent", "new_parent"), &Node::reparent);
 	ClassDB::bind_method(D_METHOD("get_child_count"), &Node::get_child_count);
 	ClassDB::bind_method(D_METHOD("get_children"), &Node::_get_children);
 	ClassDB::bind_method(D_METHOD("get_child", "idx"), &Node::get_child);

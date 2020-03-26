@@ -592,6 +592,16 @@
 				Removes a node from a group. See notes in the description, and the group methods in [SceneTree].
 			</description>
 		</method>
+		<method name="reparent">
+			<return type="void">
+			</return>
+			<argument index="0" name="new_parent" type="Node">
+			</argument>
+			<description>
+				Changes parent of this [Node] to [code]new_parent[/code]. The node needs to already have parent to use this.
+				[b]Note:[/b] Global transform of [CanvasItem] and [Spatial] nodes is not preserved in the process. If you want to keep global transform, use [method Spatial.reparent_with_transform], [method Node2D.reparent_with_transform] or [method Control.reparent_with_transform].
+			</description>
+		</method>
 		<method name="replace_by">
 			<return type="void">
 			</return>
