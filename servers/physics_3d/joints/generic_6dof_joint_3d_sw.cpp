@@ -205,8 +205,8 @@ real_t G6DOFTranslationalLimitMotor3DSW::solveLinearAxis(
 	normalImpulse = m_accumulatedImpulse[limit_index] - oldNormalImpulse;
 
 	Vector3 impulse_vector = axis_normal_on_a * normalImpulse;
-	body1->apply_impulse(rel_pos1, impulse_vector);
-	body2->apply_impulse(rel_pos2, -impulse_vector);
+	body1->apply_impulse(impulse_vector, rel_pos1);
+	body2->apply_impulse(-impulse_vector, rel_pos2);
 	return normalImpulse;
 }
 

@@ -118,8 +118,8 @@ void BulletPhysicsDirectBodyState3D::add_central_force(const Vector3 &p_force) {
 	body->apply_central_force(p_force);
 }
 
-void BulletPhysicsDirectBodyState3D::add_force(const Vector3 &p_force, const Vector3 &p_pos) {
-	body->apply_force(p_force, p_pos);
+void BulletPhysicsDirectBodyState3D::add_force(const Vector3 &p_force, const Vector3 &p_position) {
+	body->apply_force(p_force, p_position);
 }
 
 void BulletPhysicsDirectBodyState3D::add_torque(const Vector3 &p_torque) {
@@ -130,8 +130,8 @@ void BulletPhysicsDirectBodyState3D::apply_central_impulse(const Vector3 &p_impu
 	body->apply_central_impulse(p_impulse);
 }
 
-void BulletPhysicsDirectBodyState3D::apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse) {
-	body->apply_impulse(p_pos, p_impulse);
+void BulletPhysicsDirectBodyState3D::apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position) {
+	body->apply_impulse(p_impulse, p_position);
 }
 
 void BulletPhysicsDirectBodyState3D::apply_torque_impulse(const Vector3 &p_impulse) {
@@ -604,23 +604,23 @@ Variant RigidBodyBullet::get_state(PhysicsServer3D::BodyState p_state) const {
 }
 
 void RigidBodyBullet::apply_central_impulse(const Vector3 &p_impulse) {
-	btVector3 btImpu;
-	G_TO_B(p_impulse, btImpu);
+	btVector3 btImpulse;
+	G_TO_B(p_impulse, btImpulse);
 	if (Vector3() != p_impulse) {
 		btBody->activate();
 	}
-	btBody->applyCentralImpulse(btImpu);
+	btBody->applyCentralImpulse(btImpulse);
 }
 
-void RigidBodyBullet::apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse) {
-	btVector3 btImpu;
-	btVector3 btPos;
-	G_TO_B(p_impulse, btImpu);
-	G_TO_B(p_pos, btPos);
+void RigidBodyBullet::apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position) {
+	btVector3 btImpulse;
+	btVector3 btPosition;
+	G_TO_B(p_impulse, btImpulse);
+	G_TO_B(p_position, btPosition);
 	if (Vector3() != p_impulse) {
 		btBody->activate();
 	}
-	btBody->applyImpulse(btImpu, btPos);
+	btBody->applyImpulse(btImpulse, btPosition);
 }
 
 void RigidBodyBullet::apply_torque_impulse(const Vector3 &p_impulse) {
@@ -632,15 +632,15 @@ void RigidBodyBullet::apply_torque_impulse(const Vector3 &p_impulse) {
 	btBody->applyTorqueImpulse(btImp);
 }
 
-void RigidBodyBullet::apply_force(const Vector3 &p_force, const Vector3 &p_pos) {
+void RigidBodyBullet::apply_force(const Vector3 &p_force, const Vector3 &p_position) {
 	btVector3 btForce;
-	btVector3 btPos;
+	btVector3 btPosition;
 	G_TO_B(p_force, btForce);
-	G_TO_B(p_pos, btPos);
+	G_TO_B(p_position, btPosition);
 	if (Vector3() != p_force) {
 		btBody->activate();
 	}
-	btBody->applyForce(btForce, btPos);
+	btBody->applyForce(btForce, btPosition);
 }
 
 void RigidBodyBullet::apply_central_force(const Vector3 &p_force) {

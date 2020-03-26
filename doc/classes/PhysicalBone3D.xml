@@ -18,9 +18,9 @@
 		<method name="apply_impulse">
 			<return type="void">
 			</return>
-			<argument index="0" name="position" type="Vector3">
+			<argument index="0" name="impulse" type="Vector3">
 			</argument>
-			<argument index="1" name="impulse" type="Vector3">
+			<argument index="1" name="position" type="Vector3" default="Vector3( 0, 0, 0 )">
 			</argument>
 			<description>
 			</description>

@@ -92,12 +92,12 @@ void PhysicsDirectBodyState3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transform", "transform"), &PhysicsDirectBodyState3D::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform"), &PhysicsDirectBodyState3D::get_transform);
 
-	ClassDB::bind_method(D_METHOD("add_central_force", "force"), &PhysicsDirectBodyState3D::add_central_force);
-	ClassDB::bind_method(D_METHOD("add_force", "force", "position"), &PhysicsDirectBodyState3D::add_force);
+	ClassDB::bind_method(D_METHOD("add_central_force", "force"), &PhysicsDirectBodyState3D::add_central_force, Vector3());
+	ClassDB::bind_method(D_METHOD("add_force", "force", "position"), &PhysicsDirectBodyState3D::add_force, Vector3());
 	ClassDB::bind_method(D_METHOD("add_torque", "torque"), &PhysicsDirectBodyState3D::add_torque);
-	ClassDB::bind_method(D_METHOD("apply_central_impulse", "j"), &PhysicsDirectBodyState3D::apply_central_impulse);
-	ClassDB::bind_method(D_METHOD("apply_impulse", "position", "j"), &PhysicsDirectBodyState3D::apply_impulse);
-	ClassDB::bind_method(D_METHOD("apply_torque_impulse", "j"), &PhysicsDirectBodyState3D::apply_torque_impulse);
+	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &PhysicsDirectBodyState3D::apply_central_impulse, Vector3());
+	ClassDB::bind_method(D_METHOD("apply_impulse", "impulse", "position"), &PhysicsDirectBodyState3D::apply_impulse, Vector3());
+	ClassDB::bind_method(D_METHOD("apply_torque_impulse", "impulse"), &PhysicsDirectBodyState3D::apply_torque_impulse);
 
 	ClassDB::bind_method(D_METHOD("set_sleep_state", "enabled"), &PhysicsDirectBodyState3D::set_sleep_state);
 	ClassDB::bind_method(D_METHOD("is_sleeping"), &PhysicsDirectBodyState3D::is_sleeping);
@@ -495,11 +495,11 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_get_state", "body", "state"), &PhysicsServer3D::body_get_state);
 
 	ClassDB::bind_method(D_METHOD("body_add_central_force", "body", "force"), &PhysicsServer3D::body_add_central_force);
-	ClassDB::bind_method(D_METHOD("body_add_force", "body", "force", "position"), &PhysicsServer3D::body_add_force);
+	ClassDB::bind_method(D_METHOD("body_add_force", "body", "force", "position"), &PhysicsServer3D::body_add_force, Vector3());
 	ClassDB::bind_method(D_METHOD("body_add_torque", "body", "torque"), &PhysicsServer3D::body_add_torque);
 
 	ClassDB::bind_method(D_METHOD("body_apply_central_impulse", "body", "impulse"), &PhysicsServer3D::body_apply_central_impulse);
-	ClassDB::bind_method(D_METHOD("body_apply_impulse", "body", "position", "impulse"), &PhysicsServer3D::body_apply_impulse);
+	ClassDB::bind_method(D_METHOD("body_apply_impulse", "body", "impulse", "position"), &PhysicsServer3D::body_apply_impulse, Vector3());
 	ClassDB::bind_method(D_METHOD("body_apply_torque_impulse", "body", "impulse"), &PhysicsServer3D::body_apply_torque_impulse);
 	ClassDB::bind_method(D_METHOD("body_set_axis_velocity", "body", "axis_velocity"), &PhysicsServer3D::body_set_axis_velocity);
 

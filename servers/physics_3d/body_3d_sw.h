@@ -216,23 +216,23 @@ public:
 	_FORCE_INLINE_ const Vector3 &get_biased_linear_velocity() const { return biased_linear_velocity; }
 	_FORCE_INLINE_ const Vector3 &get_biased_angular_velocity() const { return biased_angular_velocity; }
 
-	_FORCE_INLINE_ void apply_central_impulse(const Vector3 &p_j) {
-		linear_velocity += p_j * _inv_mass;
+	_FORCE_INLINE_ void apply_central_impulse(const Vector3 &p_impulse) {
+		linear_velocity += p_impulse * _inv_mass;
 	}
 
-	_FORCE_INLINE_ void apply_impulse(const Vector3 &p_pos, const Vector3 &p_j) {
-		linear_velocity += p_j * _inv_mass;
-		angular_velocity += _inv_inertia_tensor.xform((p_pos - center_of_mass).cross(p_j));
+	_FORCE_INLINE_ void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3()) {
+		linear_velocity += p_impulse * _inv_mass;
+		angular_velocity += _inv_inertia_tensor.xform((p_position - center_of_mass).cross(p_impulse));
 	}
 
-	_FORCE_INLINE_ void apply_torque_impulse(const Vector3 &p_j) {
-		angular_velocity += _inv_inertia_tensor.xform(p_j);
+	_FORCE_INLINE_ void apply_torque_impulse(const Vector3 &p_impulse) {
+		angular_velocity += _inv_inertia_tensor.xform(p_impulse);
 	}
 
-	_FORCE_INLINE_ void apply_bias_impulse(const Vector3 &p_pos, const Vector3 &p_j, real_t p_max_delta_av = -1.0) {
-		biased_linear_velocity += p_j * _inv_mass;
+	_FORCE_INLINE_ void apply_bias_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3(), real_t p_max_delta_av = -1.0) {
+		biased_linear_velocity += p_impulse * _inv_mass;
 		if (p_max_delta_av != 0.0) {
-			Vector3 delta_av = _inv_inertia_tensor.xform((p_pos - center_of_mass).cross(p_j));
+			Vector3 delta_av = _inv_inertia_tensor.xform((p_position - center_of_mass).cross(p_impulse));
 			if (p_max_delta_av > 0 && delta_av.length() > p_max_delta_av) {
 				delta_av = delta_av.normalized() * p_max_delta_av;
 			}
@@ -240,17 +240,17 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ void apply_bias_torque_impulse(const Vector3 &p_j) {
-		biased_angular_velocity += _inv_inertia_tensor.xform(p_j);
+	_FORCE_INLINE_ void apply_bias_torque_impulse(const Vector3 &p_impulse) {
+		biased_angular_velocity += _inv_inertia_tensor.xform(p_impulse);
 	}
 
 	_FORCE_INLINE_ void add_central_force(const Vector3 &p_force) {
 		applied_force += p_force;
 	}
 
-	_FORCE_INLINE_ void add_force(const Vector3 &p_force, const Vector3 &p_pos) {
+	_FORCE_INLINE_ void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) {
 		applied_force += p_force;
-		applied_torque += (p_pos - center_of_mass).cross(p_force);
+		applied_torque += (p_position - center_of_mass).cross(p_force);
 	}
 
 	_FORCE_INLINE_ void add_torque(const Vector3 &p_torque) {
@@ -403,11 +403,15 @@ public:
 	virtual Transform get_transform() const { return body->get_transform(); }
 
 	virtual void add_central_force(const Vector3 &p_force) { body->add_central_force(p_force); }
-	virtual void add_force(const Vector3 &p_force, const Vector3 &p_pos) { body->add_force(p_force, p_pos); }
+	virtual void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) {
+		body->add_force(p_force, p_position);
+	}
 	virtual void add_torque(const Vector3 &p_torque) { body->add_torque(p_torque); }
-	virtual void apply_central_impulse(const Vector3 &p_j) { body->apply_central_impulse(p_j); }
-	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_j) { body->apply_impulse(p_pos, p_j); }
-	virtual void apply_torque_impulse(const Vector3 &p_j) { body->apply_torque_impulse(p_j); }
+	virtual void apply_central_impulse(const Vector3 &p_impulse) { body->apply_central_impulse(p_impulse); }
+	virtual void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3()) {
+		body->apply_impulse(p_impulse, p_position);
+	}
+	virtual void apply_torque_impulse(const Vector3 &p_impulse) { body->apply_torque_impulse(p_impulse); }
 
 	virtual void set_sleep_state(bool p_sleep) { body->set_active(!p_sleep); }
 	virtual bool is_sleeping() const { return !body->is_active(); }

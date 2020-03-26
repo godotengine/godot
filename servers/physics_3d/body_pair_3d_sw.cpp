@@ -321,8 +321,8 @@ bool BodyPair3DSW::setup(real_t p_step) {
 		c.depth = depth;
 
 		Vector3 j_vec = c.normal * c.acc_normal_impulse + c.acc_tangent_impulse;
-		A->apply_impulse(c.rA + A->get_center_of_mass(), -j_vec);
-		B->apply_impulse(c.rB + B->get_center_of_mass(), j_vec);
+		A->apply_impulse(-j_vec, c.rA + A->get_center_of_mass());
+		B->apply_impulse(j_vec, c.rB + B->get_center_of_mass());
 		c.acc_bias_impulse = 0;
 		c.acc_bias_impulse_center_of_mass = 0;
 
@@ -404,8 +404,8 @@ void BodyPair3DSW::solve(real_t p_step) {
 
 			Vector3 j = c.normal * (c.acc_normal_impulse - jnOld);
 
-			A->apply_impulse(c.rA + A->get_center_of_mass(), -j);
-			B->apply_impulse(c.rB + B->get_center_of_mass(), j);
+			A->apply_impulse(-j, c.rA + A->get_center_of_mass());
+			B->apply_impulse(j, c.rB + B->get_center_of_mass());
 
 			c.active = true;
 		}
@@ -447,8 +447,8 @@ void BodyPair3DSW::solve(real_t p_step) {
 
 			jt = c.acc_tangent_impulse - jtOld;
 
-			A->apply_impulse(c.rA + A->get_center_of_mass(), -jt);
-			B->apply_impulse(c.rB + B->get_center_of_mass(), jt);
+			A->apply_impulse(-jt, c.rA + A->get_center_of_mass());
+			B->apply_impulse(jt, c.rB + B->get_center_of_mass());
 
 			c.active = true;
 		}

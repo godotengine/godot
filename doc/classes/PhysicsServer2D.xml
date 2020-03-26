@@ -331,9 +331,9 @@
 			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
-			<argument index="1" name="offset" type="Vector2">
+			<argument index="1" name="force" type="Vector2">
 			</argument>
-			<argument index="2" name="force" type="Vector2">
+			<argument index="2" name="position" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
 				Adds a positioned force to the applied force and torque. As with [method body_apply_impulse], both the force and the offset from the body origin are in global coordinates. A force differs from an impulse in that, while the two are forces, the impulse clears itself after being applied.
@@ -379,9 +379,9 @@
 			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
-			<argument index="1" name="position" type="Vector2">
+			<argument index="1" name="impulse" type="Vector2">
 			</argument>
-			<argument index="2" name="impulse" type="Vector2">
+			<argument index="2" name="position" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
 				Adds a positioned impulse to the applied force and torque. Both the force and the offset from the body origin are in global coordinates.
