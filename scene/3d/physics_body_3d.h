@@ -562,6 +562,9 @@ private:
 	real_t mass;
 	real_t friction;
 	real_t gravity_scale;
+	real_t linear_damp;
+	real_t angular_damp;
+	bool can_sleep;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -575,6 +578,7 @@ protected:
 private:
 	static Skeleton3D *find_skeleton_parent(Node *p_parent);
 
+	void _update_joint_offset();
 	void _fix_joint_offset();
 	void _reload_joint();
 
@@ -598,6 +602,12 @@ public:
 
 	void set_joint_offset(const Transform &p_offset);
 	const Transform &get_joint_offset() const;
+
+	void set_joint_rotation(const Vector3 &p_euler_rad);
+	Vector3 get_joint_rotation() const;
+
+	void set_joint_rotation_degrees(const Vector3 &p_euler_deg);
+	Vector3 get_joint_rotation_degrees() const;
 
 	void set_body_offset(const Transform &p_offset);
 	const Transform &get_body_offset() const;
@@ -623,6 +633,18 @@ public:
 
 	void set_gravity_scale(real_t p_gravity_scale);
 	real_t get_gravity_scale() const;
+
+	void set_linear_damp(real_t p_linear_damp);
+	real_t get_linear_damp() const;
+
+	void set_angular_damp(real_t p_angular_damp);
+	real_t get_angular_damp() const;
+
+	void set_can_sleep(bool p_active);
+	bool is_able_to_sleep() const;
+
+	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock);
+	bool get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const;
 
 	void apply_central_impulse(const Vector3 &p_impulse);
 	void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse);
