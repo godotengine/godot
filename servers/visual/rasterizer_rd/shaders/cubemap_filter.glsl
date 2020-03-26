@@ -94,35 +94,36 @@ void main() {
 
 	// determine which texel this is
 #ifndef USE_TEXTURE_ARRAY
-	int level = 0;
+	// NOTE (macOS/MoltenVK): Do not rename, "level" variable name conflicts with the Metal "level(float lod)" mipmap sampling function name.
+	int mip_level = 0;
 	if (id.x < (128 * 128)) {
-		level = 0;
+		mip_level = 0;
 	} else if (id.x < (128 * 128 + 64 * 64)) {
-		level = 1;
+		mip_level = 1;
 		id.x -= (128 * 128);
 	} else if (id.x < (128 * 128 + 64 * 64 + 32 * 32)) {
-		level = 2;
+		mip_level = 2;
 		id.x -= (128 * 128 + 64 * 64);
 	} else if (id.x < (128 * 128 + 64 * 64 + 32 * 32 + 16 * 16)) {
-		level = 3;
+		mip_level = 3;
 		id.x -= (128 * 128 + 64 * 64 + 32 * 32);
 	} else if (id.x < (128 * 128 + 64 * 64 + 32 * 32 + 16 * 16 + 8 * 8)) {
-		level = 4;
+		mip_level = 4;
 		id.x -= (128 * 128 + 64 * 64 + 32 * 32 + 16 * 16);
 	} else if (id.x < (128 * 128 + 64 * 64 + 32 * 32 + 16 * 16 + 8 * 8 + 4 * 4)) {
-		level = 5;
+		mip_level = 5;
 		id.x -= (128 * 128 + 64 * 64 + 32 * 32 + 16 * 16 + 8 * 8);
 	} else if (id.x < (128 * 128 + 64 * 64 + 32 * 32 + 16 * 16 + 8 * 8 + 4 * 4 + 2 * 2)) {
-		level = 6;
+		mip_level = 6;
 		id.x -= (128 * 128 + 64 * 64 + 32 * 32 + 16 * 16 + 8 * 8 + 4 * 4);
 	} else {
 		return;
 	}
-	int res = BASE_RESOLUTION >> level;
+	int res = BASE_RESOLUTION >> mip_level;
 #else // Using Texture Arrays so all levels are the same resolution
 	int res = BASE_RESOLUTION;
-	int level = int(id.x / (BASE_RESOLUTION * BASE_RESOLUTION));
-	id.x -= level * BASE_RESOLUTION * BASE_RESOLUTION;
+	int mip_level = int(id.x / (BASE_RESOLUTION * BASE_RESOLUTION));
+	id.x -= mip_level * BASE_RESOLUTION * BASE_RESOLUTION;
 #endif
 
 	// determine dir / pos for the texel
@@ -212,29 +213,29 @@ void main() {
 				vec4 coeffsWeight[3];
 
 				for (int iCoeff = 0; iCoeff < 3; iCoeff++) {
-					coeffsDir0[iCoeff] = data.coeffs[level][0][iCoeff][index];
-					coeffsDir1[iCoeff] = data.coeffs[level][1][iCoeff][index];
-					coeffsDir2[iCoeff] = data.coeffs[level][2][iCoeff][index];
-					coeffsLevel[iCoeff] = data.coeffs[level][3][iCoeff][index];
-					coeffsWeight[iCoeff] = data.coeffs[level][4][iCoeff][index];
+					coeffsDir0[iCoeff] = data.coeffs[mip_level][0][iCoeff][index];
+					coeffsDir1[iCoeff] = data.coeffs[mip_level][1][iCoeff][index];
+					coeffsDir2[iCoeff] = data.coeffs[mip_level][2][iCoeff][index];
+					coeffsLevel[iCoeff] = data.coeffs[mip_level][3][iCoeff][index];
+					coeffsWeight[iCoeff] = data.coeffs[mip_level][4][iCoeff][index];
 				}
 
 				for (int iSubTap = 0; iSubTap < 4; iSubTap++) {
-					// determine sample attributes (dir, weight, level)
+					// determine sample attributes (dir, weight, mip_level)
 					vec3 sample_dir = frameX * (coeffsDir0[0][iSubTap] + coeffsDir0[1][iSubTap] * theta2 + coeffsDir0[2][iSubTap] * phi2) + frameY * (coeffsDir1[0][iSubTap] + coeffsDir1[1][iSubTap] * theta2 + coeffsDir1[2][iSubTap] * phi2) + frameZ * (coeffsDir2[0][iSubTap] + coeffsDir2[1][iSubTap] * theta2 + coeffsDir2[2][iSubTap] * phi2);
 
 					float sample_level = coeffsLevel[0][iSubTap] + coeffsLevel[1][iSubTap] * theta2 + coeffsLevel[2][iSubTap] * phi2;
 
 					float sample_weight = coeffsWeight[0][iSubTap] + coeffsWeight[1][iSubTap] * theta2 + coeffsWeight[2][iSubTap] * phi2;
 #else
-				vec4 coeffsDir0 = data.coeffs[level][0][index];
-				vec4 coeffsDir1 = data.coeffs[level][1][index];
-				vec4 coeffsDir2 = data.coeffs[level][2][index];
-				vec4 coeffsLevel = data.coeffs[level][3][index];
-				vec4 coeffsWeight = data.coeffs[level][4][index];
+				vec4 coeffsDir0 = data.coeffs[mip_level][0][index];
+				vec4 coeffsDir1 = data.coeffs[mip_level][1][index];
+				vec4 coeffsDir2 = data.coeffs[mip_level][2][index];
+				vec4 coeffsLevel = data.coeffs[mip_level][3][index];
+				vec4 coeffsWeight = data.coeffs[mip_level][4][index];
 
 				for (int iSubTap = 0; iSubTap < 4; iSubTap++) {
-					// determine sample attributes (dir, weight, level)
+					// determine sample attributes (dir, weight, mip_level)
 					vec3 sample_dir = frameX * coeffsDir0[iSubTap] + frameY * coeffsDir1[iSubTap] + frameZ * coeffsDir2[iSubTap];
 
 					float sample_level = coeffsLevel[iSubTap];
@@ -248,7 +249,7 @@ void main() {
 					sample_dir /= max(abs(sample_dir[0]), max(abs(sample_dir[1]), abs(sample_dir[2])));
 					sample_level += 0.75 * log2(dot(sample_dir, sample_dir));
 #ifndef USE_TEXTURE_ARRAY
-					sample_level += float(level) / 6.0; // Hack to increase the perceived roughness and reduce upscaling artifacts
+					sample_level += float(mip_level) / 6.0; // Hack to increase the perceived roughness and reduce upscaling artifacts
 #endif
 					// sample cubemap
 					color.xyz += textureLod(source_cubemap, normalize(sample_dir), sample_level).xyz * sample_weight;
@@ -266,7 +267,7 @@ void main() {
 	id.xy *= uvec2(2, 2);
 #endif
 
-	switch (level) {
+	switch (mip_level) {
 		case 0:
 			imageStore(dest_cubemap0, ivec3(id), color);
 #ifdef USE_TEXTURE_ARRAY
