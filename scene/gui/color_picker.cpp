@@ -624,26 +624,33 @@ void ColorPicker::_screen_pick_pressed() {
 }
 
 void ColorPicker::_focus_enter() {
-	if (c_text->has_focus()) {
+	bool has_ctext_focus = c_text->has_focus();
+	if (has_ctext_focus) {
 		c_text->select_all();
-		return;
+	} else {
+		c_text->select(0, 0);
 	}
+
 	for (int i = 0; i < 4; i++) {
-		if (values[i]->get_line_edit()->has_focus()) {
+		if (values[i]->get_line_edit()->has_focus() && !has_ctext_focus) {
 			values[i]->get_line_edit()->select_all();
-			break;
+		} else {
+			values[i]->get_line_edit()->select(0, 0);
 		}
 	}
 }
 
 void ColorPicker::_focus_exit() {
 	for (int i = 0; i < 4; i++) {
-		values[i]->get_line_edit()->select(0, 0);
+		if (!values[i]->get_line_edit()->get_menu()->is_visible())
+			values[i]->get_line_edit()->select(0, 0);
 	}
 	c_text->select(0, 0);
 }
 
 void ColorPicker::_html_focus_exit() {
+	if (c_text->get_menu()->is_visible())
+		return;
 	_html_entered(c_text->get_text());
 	_focus_exit();
 }
