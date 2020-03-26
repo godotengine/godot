@@ -621,7 +621,6 @@
 				# Load a scene called main located in the root of the project directory.
 				var main = load("res://main.tscn")
 				[/codeblock]
-				[b]Important:[/b] The path must be absolute, a local path will just return [code]null[/code].
 			</description>
 		</method>
 		<method name="log">

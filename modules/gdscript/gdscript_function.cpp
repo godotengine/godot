@@ -1163,6 +1163,17 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				Callable::CallError err;
 
+				if (func == GDScriptFunctions::RESOURCE_LOAD) {
+					if (argptrs[0]->get_type() == Variant::STRING) {
+						String path = *argptrs[0];
+						if (!path.is_abs_path() && p_instance->script.ptr()->path != "") {
+							path = p_instance->script.ptr()->path.get_base_dir().plus_file(path);
+							path = path.replace("///", "//").simplify_path();
+							Variant *const_override = const_cast<Variant *>(argptrs[0]);
+							*const_override = path;
+						}
+					}
+				}
 				GDScriptFunctions::call(func, (const Variant **)argptrs, argc, *dst, err);
 
 #ifdef DEBUG_ENABLED
