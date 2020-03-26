@@ -275,8 +275,8 @@ void HingeJoint3DSW::solve(real_t p_step) {
 			real_t impulse = depth * tau / p_step * jacDiagABInv - rel_vel * jacDiagABInv;
 			m_appliedImpulse += impulse;
 			Vector3 impulse_vector = normal * impulse;
-			A->apply_impulse(pivotAInW - A->get_transform().origin, impulse_vector);
-			B->apply_impulse(pivotBInW - B->get_transform().origin, -impulse_vector);
+			A->apply_impulse(impulse_vector, pivotAInW - A->get_transform().origin);
+			B->apply_impulse(-impulse_vector, pivotBInW - B->get_transform().origin);
 		}
 	}
 

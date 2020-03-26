@@ -203,18 +203,18 @@ public:
 		linear_velocity += p_impulse * _inv_mass;
 	}
 
-	_FORCE_INLINE_ void apply_impulse(const Vector2 &p_offset, const Vector2 &p_impulse) {
+	_FORCE_INLINE_ void apply_impulse(const Vector2 &p_impulse, const Vector2 &p_position = Vector2()) {
 		linear_velocity += p_impulse * _inv_mass;
-		angular_velocity += _inv_inertia * p_offset.cross(p_impulse);
+		angular_velocity += _inv_inertia * p_position.cross(p_impulse);
 	}
 
 	_FORCE_INLINE_ void apply_torque_impulse(real_t p_torque) {
 		angular_velocity += _inv_inertia * p_torque;
 	}
 
-	_FORCE_INLINE_ void apply_bias_impulse(const Vector2 &p_pos, const Vector2 &p_j) {
-		biased_linear_velocity += p_j * _inv_mass;
-		biased_angular_velocity += _inv_inertia * p_pos.cross(p_j);
+	_FORCE_INLINE_ void apply_bias_impulse(const Vector2 &p_impulse, const Vector2 &p_position = Vector2()) {
+		biased_linear_velocity += p_impulse * _inv_mass;
+		biased_angular_velocity += _inv_inertia * p_position.cross(p_impulse);
 	}
 
 	void set_active(bool p_active);
@@ -246,9 +246,9 @@ public:
 		applied_force += p_force;
 	}
 
-	_FORCE_INLINE_ void add_force(const Vector2 &p_offset, const Vector2 &p_force) {
+	_FORCE_INLINE_ void add_force(const Vector2 &p_force, const Vector2 &p_position = Vector2()) {
 		applied_force += p_force;
-		applied_torque += p_offset.cross(p_force);
+		applied_torque += p_position.cross(p_force);
 	}
 
 	_FORCE_INLINE_ void add_torque(real_t p_torque) {
@@ -360,10 +360,10 @@ public:
 	virtual Transform2D get_transform() const { return body->get_transform(); }
 
 	virtual void add_central_force(const Vector2 &p_force) { body->add_central_force(p_force); }
-	virtual void add_force(const Vector2 &p_offset, const Vector2 &p_force) { body->add_force(p_offset, p_force); }
+	virtual void add_force(const Vector2 &p_force, const Vector2 &p_position = Vector2()) { body->add_force(p_force, p_position); }
 	virtual void add_torque(real_t p_torque) { body->add_torque(p_torque); }
 	virtual void apply_central_impulse(const Vector2 &p_impulse) { body->apply_central_impulse(p_impulse); }
-	virtual void apply_impulse(const Vector2 &p_offset, const Vector2 &p_force) { body->apply_impulse(p_offset, p_force); }
+	virtual void apply_impulse(const Vector2 &p_impulse, const Vector2 &p_position = Vector2()) { body->apply_impulse(p_impulse, p_position); }
 	virtual void apply_torque_impulse(real_t p_torque) { body->apply_torque_impulse(p_torque); }
 
 	virtual void set_sleep_state(bool p_enable) { body->set_active(!p_enable); }

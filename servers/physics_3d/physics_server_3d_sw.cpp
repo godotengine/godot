@@ -710,11 +710,11 @@ void PhysicsServer3DSW::body_add_central_force(RID p_body, const Vector3 &p_forc
 	body->wakeup();
 }
 
-void PhysicsServer3DSW::body_add_force(RID p_body, const Vector3 &p_force, const Vector3 &p_pos) {
+void PhysicsServer3DSW::body_add_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position) {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->add_force(p_force, p_pos);
+	body->add_force(p_force, p_position);
 	body->wakeup();
 };
 
@@ -736,13 +736,13 @@ void PhysicsServer3DSW::body_apply_central_impulse(RID p_body, const Vector3 &p_
 	body->wakeup();
 }
 
-void PhysicsServer3DSW::body_apply_impulse(RID p_body, const Vector3 &p_pos, const Vector3 &p_impulse) {
+void PhysicsServer3DSW::body_apply_impulse(RID p_body, const Vector3 &p_impulse, const Vector3 &p_position) {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
 	_update_shapes();
 
-	body->apply_impulse(p_pos, p_impulse);
+	body->apply_impulse(p_impulse, p_position);
 	body->wakeup();
 };
 

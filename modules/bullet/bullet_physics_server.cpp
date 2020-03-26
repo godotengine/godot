@@ -707,11 +707,11 @@ void BulletPhysicsServer3D::body_add_central_force(RID p_body, const Vector3 &p_
 	body->apply_central_force(p_force);
 }
 
-void BulletPhysicsServer3D::body_add_force(RID p_body, const Vector3 &p_force, const Vector3 &p_pos) {
+void BulletPhysicsServer3D::body_add_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position) {
 	RigidBodyBullet *body = rigid_body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->apply_force(p_force, p_pos);
+	body->apply_force(p_force, p_position);
 }
 
 void BulletPhysicsServer3D::body_add_torque(RID p_body, const Vector3 &p_torque) {
@@ -728,11 +728,11 @@ void BulletPhysicsServer3D::body_apply_central_impulse(RID p_body, const Vector3
 	body->apply_central_impulse(p_impulse);
 }
 
-void BulletPhysicsServer3D::body_apply_impulse(RID p_body, const Vector3 &p_pos, const Vector3 &p_impulse) {
+void BulletPhysicsServer3D::body_apply_impulse(RID p_body, const Vector3 &p_impulse, const Vector3 &p_position) {
 	RigidBodyBullet *body = rigid_body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->apply_impulse(p_pos, p_impulse);
+	body->apply_impulse(p_impulse, p_position);
 }
 
 void BulletPhysicsServer3D::body_apply_torque_impulse(RID p_body, const Vector3 &p_impulse) {
