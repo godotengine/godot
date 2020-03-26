@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-EnsureSConsVersion(0, 98, 1)
+EnsureSConsVersion(3, 0, 0)
+EnsurePythonVersion(3, 5)
 
 # System
 import glob
@@ -13,7 +14,7 @@ import methods
 import gles_builders
 from platform_methods import run_in_subprocess
 
-# scan possible build platforms
+# Scan possible build platforms
 
 platform_list = []  # list of platforms
 platform_opts = {}  # options for each platform

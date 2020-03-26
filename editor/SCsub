@@ -7,13 +7,12 @@ env.editor_sources = []
 import os
 import os.path
 from platform_methods import run_in_subprocess
-from compat import open_utf8
 import editor_builders
 
 
 def _make_doc_data_class_path(to_path):
     # NOTE: It is safe to generate this file here, since this is still executed serially
-    g = open_utf8(os.path.join(to_path, "doc_data_class_path.gen.h"), "w")
+    g = open(os.path.join(to_path, "doc_data_class_path.gen.h"), "w", encoding="utf-8")
     g.write("static const int _doc_data_class_path_count = " + str(len(env.doc_class_path)) + ";\n")
     g.write("struct _DocDataClassPath { const char* name; const char* path; };\n")
 
@@ -37,7 +36,7 @@ if env['tools']:
     reg_exporters += '}\n'
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
-    with open_utf8("register_exporters.gen.cpp", "w") as f:
+    with open("register_exporters.gen.cpp", "w", encoding="utf-8") as f:
         f.write(reg_exporters_inc)
         f.write(reg_exporters)
 
