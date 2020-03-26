@@ -129,8 +129,19 @@ void SoftBodyBullet::set_soft_mesh(const Ref<Mesh> &p_mesh) {
 	}
 
 	Array arrays = soft_mesh->surface_get_arrays(0);
-	ERR_FAIL_COND(!(soft_mesh->surface_get_format(0) & VS::ARRAY_FORMAT_INDEX));
-	set_trimesh_body_shape(arrays[VS::ARRAY_INDEX], arrays[VS::ARRAY_VERTEX]);
+
+	if (soft_mesh->surface_get_format(0) & VS::ARRAY_FORMAT_INDEX) {
+		set_trimesh_body_shape(arrays[VS::ARRAY_INDEX], arrays[VS::ARRAY_VERTEX]);
+	} else {
+		Vector<Vector3> verts = Vector<Vector3>(arrays[VS::ARRAY_VERTEX]);
+		Vector<int> inds = Vector<int>();
+
+		for (int i = 0; i < verts.size(); i++) {
+			inds.push_back(i);
+		}
+
+		set_trimesh_body_shape(inds, arrays[VS::ARRAY_VERTEX]);
+	}
 }
 
 void SoftBodyBullet::destroy_soft_body() {
