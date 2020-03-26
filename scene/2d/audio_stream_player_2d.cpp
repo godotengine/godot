@@ -87,7 +87,7 @@ void AudioStreamPlayer2D::_mix_audio() {
 		AudioFrame target_volume = stream_paused_fade_out ? AudioFrame(0.f, 0.f) : current.vol;
 		AudioFrame vol_prev = stream_paused_fade_in ? AudioFrame(0.f, 0.f) : prev_outputs[i].vol;
 		AudioFrame vol_inc = (target_volume - vol_prev) / float(buffer_size);
-		AudioFrame vol = stream_paused_fade_in ? AudioFrame(0.f, 0.f) : current.vol;
+		AudioFrame vol = vol_prev;
 
 		int cc = AudioServer::get_singleton()->get_channel_count();
 
