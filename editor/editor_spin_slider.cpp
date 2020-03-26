@@ -75,14 +75,15 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 
 					if (grabbing_spinner) {
 
+						grabbing_spinner = false;
 						Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 						Input::get_singleton()->warp_mouse_position(grabbing_spinner_mouse_pos);
 						update();
+						_ungrabbed();
 					} else {
 						_focus_entered();
 					}
 
-					grabbing_spinner = false;
 					grabbing_spinner_attempt = false;
 				}
 			}
@@ -153,6 +154,7 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 		if (mb->is_pressed()) {
 
 			grabbing_grabber = true;
+			pre_grab_value = get_value();
 			if (!mousewheel_over_grabber) {
 				grabbing_ratio = get_as_ratio();
 				grabbing_from = grabber->get_transform().xform(mb->get_position()).x;
@@ -160,6 +162,7 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 		} else {
 			grabbing_grabber = false;
 			mousewheel_over_grabber = false;
+			_ungrabbed();
 		}
 	}
 
@@ -372,6 +375,13 @@ void EditorSpinSlider::_evaluate_input_text() {
 	set_value(v);
 }
 
+void EditorSpinSlider::_ungrabbed() {
+	if (get_value() != pre_grab_value) {
+		emit_signal("value_changed", get_value());
+		pre_grab_value = get_value();
+	}
+}
+
 //text_entered signal
 void EditorSpinSlider::_value_input_entered(const String &p_text) {
 	value_input_just_closed = true;
@@ -467,6 +477,10 @@ void EditorSpinSlider::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
+}
+
+bool EditorSpinSlider::is_grabbing() {
+	return grabbing_grabber || grabbing_spinner;
 }
 
 EditorSpinSlider::EditorSpinSlider() {
