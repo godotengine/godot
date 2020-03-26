@@ -794,7 +794,7 @@ void VehicleBody3D::_update_friction(PhysicsDirectBodyState3D *s) {
 							  s->get_transform().origin;
 
 			if (m_forwardImpulse[wheel] != real_t(0.)) {
-				s->apply_impulse(rel_pos, m_forwardWS[wheel] * (m_forwardImpulse[wheel]));
+				s->apply_impulse(m_forwardWS[wheel] * (m_forwardImpulse[wheel]), rel_pos);
 			}
 			if (m_sideImpulse[wheel] != real_t(0.)) {
 				PhysicsBody3D *groundObject = wheelInfo.m_raycastInfo.m_groundObject;
@@ -812,7 +812,7 @@ void VehicleBody3D::_update_friction(PhysicsDirectBodyState3D *s) {
 #else
 				rel_pos[1] *= wheelInfo.m_rollInfluence; //?
 #endif
-				s->apply_impulse(rel_pos, sideImp);
+				s->apply_impulse(sideImp, rel_pos);
 
 				//apply friction impulse on the ground
 				//todo
@@ -850,10 +850,9 @@ void VehicleBody3D::_direct_state_changed(Object *p_state) {
 			suspensionForce = wheel.m_maxSuspensionForce;
 		}
 		Vector3 impulse = wheel.m_raycastInfo.m_contactNormalWS * suspensionForce * step;
-		Vector3 relpos = wheel.m_raycastInfo.m_contactPointWS - state->get_transform().origin;
+		Vector3 relative_position = wheel.m_raycastInfo.m_contactPointWS - state->get_transform().origin;
 
-		state->apply_impulse(relpos, impulse);
-		//getRigidBody()->applyImpulse(impulse, relpos);
+		state->apply_impulse(impulse, relative_position);
 	}
 
 	_update_friction(state);

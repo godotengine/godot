@@ -197,8 +197,8 @@ void SliderJoint3DSW::solve(real_t p_step) {
 		// calcutate and apply impulse
 		real_t normalImpulse = softness * (restitution * depth / p_step - damping * rel_vel) * m_jacLinDiagABInv[i];
 		Vector3 impulse_vector = normal * normalImpulse;
-		A->apply_impulse(m_relPosA, impulse_vector);
-		B->apply_impulse(m_relPosB, -impulse_vector);
+		A->apply_impulse(impulse_vector, m_relPosA);
+		B->apply_impulse(-impulse_vector, m_relPosB);
 		if (m_poweredLinMotor && (!i)) { // apply linear motor
 			if (m_accumulatedLinMotorImpulse < m_maxLinMotorForce) {
 				real_t desiredMotorVel = m_targetLinMotorVelocity;
@@ -218,8 +218,8 @@ void SliderJoint3DSW::solve(real_t p_step) {
 				m_accumulatedLinMotorImpulse = new_acc;
 				// apply clamped impulse
 				impulse_vector = normal * normalImpulse;
-				A->apply_impulse(m_relPosA, impulse_vector);
-				B->apply_impulse(m_relPosB, -impulse_vector);
+				A->apply_impulse(impulse_vector, m_relPosA);
+				B->apply_impulse(-impulse_vector, m_relPosB);
 			}
 		}
 	}
