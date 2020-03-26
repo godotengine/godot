@@ -371,6 +371,21 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 		}
 	}
 
+	Ref<InputEventMultiScreenDrag> smd = p_event;
+
+	if (smd.is_valid()) {
+		Point2 speed = Point2();
+		int moving = 0;
+		for (int i = 0; i < touch_speed_track.size(); i++) {
+			SpeedTrack &track = touch_speed_track[i];
+			if (track.speed.x > 0 || track.speed.y > 0) {
+				speed += track.speed;
+				moving++;
+			}
+		}
+		smd->set_speed(speed / moving);
+	}
+
 	Ref<InputEventScreenDrag> sd = p_event;
 
 	if (sd.is_valid()) {

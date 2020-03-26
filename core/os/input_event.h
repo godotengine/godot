@@ -541,6 +541,72 @@ public:
 	Vector2 get_position() const;
 };
 
+class InputEventMultiScreenDrag : public InputEvent {
+
+	GDCLASS(InputEventMultiScreenDrag, InputEvent);
+	Vector2 pos;
+	Vector2 relative;
+	Vector2 speed;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_position(const Vector2 &p_pos);
+	Vector2 get_position() const;
+
+	void set_relative(const Vector2 &p_relative);
+	Vector2 get_relative() const;
+
+	void set_speed(const Vector2 &p_speed);
+	Vector2 get_speed() const;
+
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
+	virtual String as_text() const;
+
+	InputEventMultiScreenDrag();
+};
+
+class InputEventTwistGesture : public InputEventGesture {
+
+	GDCLASS(InputEventTwistGesture, InputEventGesture);
+	real_t relative;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_relative(real_t p_relative);
+	real_t get_relative() const;
+
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
+	virtual String as_text() const;
+
+	InputEventTwistGesture();
+};
+
+class InputEventPinchGesture : public InputEventGesture {
+
+	GDCLASS(InputEventPinchGesture, InputEventGesture);
+	real_t distance;
+	real_t relative;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_relative(real_t p_relative);
+	real_t get_relative() const;
+
+	void set_distance(real_t p_relative);
+	real_t get_distance() const;
+
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
+	virtual String as_text() const;
+
+	InputEventPinchGesture();
+};
+
 class InputEventMagnifyGesture : public InputEventGesture {
 
 	GDCLASS(InputEventMagnifyGesture, InputEventGesture);

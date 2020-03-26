@@ -1170,6 +1170,169 @@ Vector2 InputEventGesture::get_position() const {
 }
 /////////////////////////////
 
+void InputEventMultiScreenDrag::set_position(const Vector2 &p_pos) {
+
+	pos = p_pos;
+}
+Vector2 InputEventMultiScreenDrag::get_position() const {
+
+	return pos;
+}
+
+void InputEventMultiScreenDrag::set_relative(const Vector2 &p_relative) {
+
+	relative = p_relative;
+}
+Vector2 InputEventMultiScreenDrag::get_relative() const {
+
+	return relative;
+}
+
+void InputEventMultiScreenDrag::set_speed(const Vector2 &p_speed) {
+
+	speed = p_speed;
+}
+Vector2 InputEventMultiScreenDrag::get_speed() const {
+
+	return speed;
+}
+
+Ref<InputEvent> InputEventMultiScreenDrag::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+
+	Ref<InputEventMultiScreenDrag> sd;
+
+	sd.instance();
+
+	sd->set_device(get_device());
+
+	sd->set_position(p_xform.xform(pos + p_local_ofs));
+	sd->set_relative(p_xform.basis_xform(relative));
+	sd->set_speed(p_xform.basis_xform(speed));
+
+	return sd;
+}
+
+String InputEventMultiScreenDrag::as_text() const {
+
+	return "InputEventMultiScreenDrag : position=(" + String(get_position()) + "), relative=(" + String(get_relative()) + "), speed=(" + String(get_speed()) + ")";
+}
+
+void InputEventMultiScreenDrag::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_position", "position"), &InputEventMultiScreenDrag::set_position);
+	ClassDB::bind_method(D_METHOD("get_position"), &InputEventMultiScreenDrag::get_position);
+
+	ClassDB::bind_method(D_METHOD("set_relative", "relative"), &InputEventMultiScreenDrag::set_relative);
+	ClassDB::bind_method(D_METHOD("get_relative"), &InputEventMultiScreenDrag::get_relative);
+
+	ClassDB::bind_method(D_METHOD("set_speed", "speed"), &InputEventMultiScreenDrag::set_speed);
+	ClassDB::bind_method(D_METHOD("get_speed"), &InputEventMultiScreenDrag::get_speed);
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative"), "set_relative", "get_relative");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "speed"), "set_speed", "get_speed");
+}
+
+InputEventMultiScreenDrag::InputEventMultiScreenDrag() {
+}
+/////////////////////////////
+
+void InputEventTwistGesture::set_relative(real_t p_relative) {
+
+	relative = p_relative;
+}
+
+real_t InputEventTwistGesture::get_relative() const {
+
+	return relative;
+}
+
+Ref<InputEvent> InputEventTwistGesture::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+
+	Ref<InputEventTwistGesture> ev;
+	ev.instance();
+
+	ev->set_device(get_device());
+	ev->set_modifiers_from_event(this);
+
+	ev->set_position(p_xform.xform(get_position() + p_local_ofs));
+	ev->set_relative(get_relative());
+
+	return ev;
+}
+
+String InputEventTwistGesture::as_text() const {
+
+	return "InputEventTwistGesture : relative=(" + rtos(get_relative()) + ", position=(" + String(get_position()) + ")";
+}
+
+void InputEventTwistGesture::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_relative", "relative"), &InputEventTwistGesture::set_relative);
+	ClassDB::bind_method(D_METHOD("get_relative"), &InputEventTwistGesture::get_relative);
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "relative"), "set_relative", "get_relative");
+}
+
+InputEventTwistGesture::InputEventTwistGesture() {
+}
+/////////////////////////////
+void InputEventPinchGesture::set_distance(real_t p_distance) {
+
+	distance = p_distance;
+}
+
+real_t InputEventPinchGesture::get_distance() const {
+
+	return distance;
+}
+
+void InputEventPinchGesture::set_relative(real_t p_relative) {
+
+	relative = p_relative;
+}
+
+real_t InputEventPinchGesture::get_relative() const {
+
+	return relative;
+}
+
+Ref<InputEvent> InputEventPinchGesture::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+
+	Ref<InputEventPinchGesture> ev;
+	ev.instance();
+
+	ev->set_device(get_device());
+	ev->set_modifiers_from_event(this);
+
+	ev->set_position(p_xform.xform(get_position() + p_local_ofs));
+	ev->set_distance(get_distance());
+	ev->set_relative(get_relative());
+
+	return ev;
+}
+
+String InputEventPinchGesture::as_text() const {
+
+	return "InputEventPinchGesture : distance=" + rtos(get_distance()) + ", relative=(" + rtos(get_relative()) + ", position=(" + String(get_position()) + ")";
+}
+
+void InputEventPinchGesture::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_distance", "distance"), &InputEventPinchGesture::set_distance);
+	ClassDB::bind_method(D_METHOD("get_distance"), &InputEventPinchGesture::get_distance);
+
+	ClassDB::bind_method(D_METHOD("set_relative", "relative"), &InputEventPinchGesture::set_relative);
+	ClassDB::bind_method(D_METHOD("get_relative"), &InputEventPinchGesture::get_relative);
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance"), "set_distance", "get_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "relative"), "set_relative", "get_relative");
+}
+
+InputEventPinchGesture::InputEventPinchGesture() {
+}
+/////////////////////////////
+
 void InputEventMagnifyGesture::set_factor(real_t p_factor) {
 
 	factor = p_factor;
