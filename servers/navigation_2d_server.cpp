@@ -158,6 +158,7 @@ void Navigation2DServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("agent_set_position", "agent", "position"), &Navigation2DServer::agent_set_position);
 	ClassDB::bind_method(D_METHOD("agent_is_map_changed", "agent"), &Navigation2DServer::agent_is_map_changed);
 	ClassDB::bind_method(D_METHOD("agent_set_callback", "agent", "receiver", "method", "userdata"), &Navigation2DServer::agent_set_callback, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("agent_force_process_avoidance", "agent", "delta"), &Navigation2DServer::agent_force_process_avoidance);
 
 	ClassDB::bind_method(D_METHOD("free", "object"), &Navigation2DServer::free);
 }
@@ -225,5 +226,7 @@ void FORWARD_2_C(agent_set_ignore_y, RID, p_agent, bool, p_ignore, rid_to_rid, b
 bool FORWARD_1_C(agent_is_map_changed, RID, p_agent, rid_to_rid);
 
 void FORWARD_4_C(agent_set_callback, RID, p_agent, Object *, p_receiver, StringName, p_method, Variant, p_udata, rid_to_rid, obj_to_obj, sn_to_sn, var_to_var);
+
+Vector2 FORWARD_2_R_C(v3_to_v2, agent_force_process_avoidance, RID, p_agent, real_t, p_delta, rid_to_rid, real_to_real);
 
 void FORWARD_1_C(free, RID, p_object, rid_to_rid);

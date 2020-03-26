@@ -139,6 +139,17 @@
 				Sets the current velocity of the agent.
 			</description>
 		</method>
+		<method name="agent_force_process_avoidance" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="agent" type="RID">
+			</argument>
+			<argument index="1" name="delta" type="float">
+			</argument>
+			<description>
+				Performs collision avoidance immediately for the specified agent. Only use this method as a last resort, as it's relatively slow.
+			</description>
+		</method>
 		<method name="free" qualifiers="const">
 			<return type="void">
 			</return>

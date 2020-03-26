@@ -153,6 +153,8 @@ public:
 	void set_velocity(Vector3 p_velocity);
 	void _avoidance_done(Vector3 p_new_velocity);
 
+	Vector3 force_process_avoidance(real_t p_delta);
+
 	virtual String get_configuration_warning() const;
 
 private:

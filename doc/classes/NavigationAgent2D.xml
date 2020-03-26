@@ -106,6 +106,15 @@
 				Sends the passed in velocity to the collision avoidance algorithm. It will adjust the velocity to avoid collisions. Once the adjustment to the velocity is complete, it will emit the [signal velocity_computed] signal.
 			</description>
 		</method>
+		<method name="force_process_avoidance">                                 
+			<return type="Vector2">
+			</return>
+			<argument index="1" name="delta" type="float">
+			</argument>
+			<description>
+				Performs collision avoidance immediately for this agent. Please use this function     as last solution because it's not optimal.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="max_neighbors" type="int" setter="set_max_neighbors" getter="get_max_neighbors" default="10">

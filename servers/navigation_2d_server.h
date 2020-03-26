@@ -153,6 +153,10 @@ public:
 	/// Callback called at the end of the RVO process
 	virtual void agent_set_callback(RID p_agent, Object *p_receiver, StringName p_method, Variant p_udata = Variant()) const;
 
+	/// Force collision avoidance now.
+	/// When possible it's better to avoid this function.
+	virtual Vector2 agent_force_process_avoidance(RID p_agent, real_t p_delta) const;
+
 	/// Destroy the `RID`
 	virtual void free(RID p_object) const;
 
