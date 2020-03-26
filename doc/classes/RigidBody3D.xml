@@ -146,7 +146,7 @@
 			Lock the body's movement in the Z axis.
 		</member>
 		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep" default="true">
-			If [code]true[/code], the RigidBody3D will not calculate forces and will act as a static body while there is no movement. It will wake up when forces are applied through other collisions or when the [code]apply_impulse[/code] method is used.
+			If [code]true[/code], the body is deactivated when there is no movement, so it will not take part in the simulation until it is awaken by an external force.
 		</member>
 		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled" default="false">
 			If [code]true[/code], the RigidBody3D will emit signals when it collides with another RigidBody3D.
