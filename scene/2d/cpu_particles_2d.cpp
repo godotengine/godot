@@ -31,8 +31,8 @@
 #include "cpu_particles_2d.h"
 
 #include "core/core_string_names.h"
-#include "scene/2d/canvas_item.h"
-#include "scene/2d/particles_2d.h"
+#include "scene/2d/gpu_particles_2d.h"
+#include "scene/main/canvas_item.h"
 #include "scene/resources/particles_material.h"
 #include "servers/visual_server.h"
 
@@ -1144,7 +1144,7 @@ void CPUParticles2D::_notification(int p_what) {
 
 void CPUParticles2D::convert_from_particles(Node *p_particles) {
 
-	Particles2D *particles = Object::cast_to<Particles2D>(p_particles);
+	GPUParticles2D *particles = Object::cast_to<GPUParticles2D>(p_particles);
 	ERR_FAIL_COND_MSG(!particles, "Only Particles2D nodes can be converted to CPUParticles2D.");
 
 	set_emitting(particles->is_emitting());

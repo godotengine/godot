@@ -41,7 +41,7 @@
 #include "servers/navigation_server.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/plugins/spatial_editor_plugin.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
 #endif
 
 Vector3 PhysicsBody3D::get_linear_velocity() const {

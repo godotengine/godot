@@ -33,7 +33,7 @@
 
 #include "csg_shape.h"
 #include "editor/editor_plugin.h"
-#include "editor/spatial_editor_gizmos.h"
+#include "editor/node_3d_editor_gizmos.h"
 
 class CSGShapeNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 

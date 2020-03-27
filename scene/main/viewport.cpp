@@ -1285,7 +1285,7 @@ void Viewport::_propagate_exit_world(Node *p_node) {
 	}
 }
 
-void Viewport::set_world(const Ref<World> &p_world) {
+void Viewport::set_world(const Ref<World3D> &p_world) {
 
 	if (world == p_world)
 		return;
@@ -1304,7 +1304,7 @@ void Viewport::set_world(const Ref<World> &p_world) {
 			own_world = world->duplicate();
 			world->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Viewport::_own_world_changed));
 		} else {
-			own_world = Ref<World>(memnew(World));
+			own_world = Ref<World3D>(memnew(World3D));
 		}
 	}
 
@@ -1318,7 +1318,7 @@ void Viewport::set_world(const Ref<World> &p_world) {
 	_update_listener();
 }
 
-Ref<World> Viewport::get_world() const {
+Ref<World3D> Viewport::get_world() const {
 
 	return world;
 }
@@ -1328,7 +1328,7 @@ Ref<World2D> Viewport::get_world_2d() const {
 	return world_2d;
 }
 
-Ref<World> Viewport::find_world() const {
+Ref<World3D> Viewport::find_world() const {
 
 	if (own_world.is_valid())
 		return own_world;
@@ -1337,7 +1337,7 @@ Ref<World> Viewport::find_world() const {
 	else if (parent)
 		return parent->find_world();
 	else
-		return Ref<World>();
+		return Ref<World3D>();
 }
 
 Listener3D *Viewport::get_listener() const {
@@ -3092,7 +3092,7 @@ void Viewport::set_use_own_world(bool p_world) {
 		_propagate_exit_world(this);
 
 	if (!p_world) {
-		own_world = Ref<World>();
+		own_world = Ref<World3D>();
 		if (world.is_valid()) {
 			world->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Viewport::_own_world_changed));
 		}
@@ -3101,7 +3101,7 @@ void Viewport::set_use_own_world(bool p_world) {
 			own_world = world->duplicate();
 			world->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Viewport::_own_world_changed));
 		} else {
-			own_world = Ref<World>(memnew(World));
+			own_world = Ref<World3D>(memnew(World3D));
 		}
 	}
 

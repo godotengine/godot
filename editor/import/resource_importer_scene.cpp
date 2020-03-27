@@ -36,12 +36,12 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_3d.h"
 #include "scene/3d/physics_body_3d.h"
-#include "scene/3d/vehicle_body.h"
+#include "scene/3d/vehicle_body_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/box_shape_3d.h"
 #include "scene/resources/packed_scene.h"
-#include "scene/resources/ray_shape.h"
+#include "scene/resources/ray_shape_3d.h"
 #include "scene/resources/resource_format_text.h"
 #include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/world_margin_shape_3d.h"
@@ -576,7 +576,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 
 		Node *owner = p_node->get_owner();
 		Node3D *s = Object::cast_to<Node3D>(p_node);
-		VehicleBody *bv = memnew(VehicleBody);
+		VehicleBody3D *bv = memnew(VehicleBody3D);
 		String n = _fixstr(p_node->get_name(), "vehicle");
 		bv->set_name(n);
 		p_node->replace_by(bv);
@@ -596,7 +596,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 
 		Node *owner = p_node->get_owner();
 		Node3D *s = Object::cast_to<Node3D>(p_node);
-		VehicleWheel *bv = memnew(VehicleWheel);
+		VehicleWheel3D *bv = memnew(VehicleWheel3D);
 		String n = _fixstr(p_node->get_name(), "wheel");
 		bv->set_name(n);
 		p_node->replace_by(bv);

@@ -42,7 +42,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
-#include "editor/plugins/spatial_editor_plugin.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/property_editor.h"
 #include "main/performance.h"
 #include "scene/3d/camera_3d.h"

@@ -32,7 +32,7 @@
 #include "core/input/input_filter.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
-#include "editor/plugins/spatial_editor_plugin.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
 
 #include "core/math/geometry.h"

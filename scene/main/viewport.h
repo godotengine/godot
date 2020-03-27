@@ -245,8 +245,8 @@ private:
 	Map<ObjectID, uint64_t> physics_2d_mouseover;
 
 	Ref<World2D> world_2d;
-	Ref<World> world;
-	Ref<World> own_world;
+	Ref<World3D> world;
+	Ref<World3D> own_world;
 
 	Rect2i to_screen_rect;
 	StringName input_group;
@@ -467,10 +467,10 @@ public:
 	Rect2 get_visible_rect() const;
 	RID get_viewport_rid() const;
 
-	void set_world(const Ref<World> &p_world);
+	void set_world(const Ref<World3D> &p_world);
 	void set_world_2d(const Ref<World2D> &p_world_2d);
-	Ref<World> get_world() const;
-	Ref<World> find_world() const;
+	Ref<World3D> get_world() const;
+	Ref<World3D> find_world() const;
 
 	Ref<World2D> get_world_2d() const;
 	Ref<World2D> find_world_2d() const;

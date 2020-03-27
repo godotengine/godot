@@ -1410,7 +1410,7 @@ SceneTree::SceneTree() {
 	root = memnew(Window);
 	root->set_name("root");
 	if (!root->get_world().is_valid())
-		root->set_world(Ref<World>(memnew(World)));
+		root->set_world(Ref<World3D>(memnew(World3D)));
 
 	// Initialize network state
 	multiplayer_poll = true;

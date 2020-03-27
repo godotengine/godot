@@ -39,7 +39,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/canvas_item_editor_plugin.h" // For onion skinning.
-#include "editor/plugins/spatial_editor_plugin.h" // For onion skinning.
+#include "editor/plugins/node_3d_editor_plugin.h" // For onion skinning.
 #include "scene/main/window.h"
 #include "servers/visual_server.h"
 

@@ -33,12 +33,12 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "main/main.h"
+#include "node_3d_editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
-#include "spatial_editor_plugin.h"
 
 void MeshLibraryEditor::edit(const Ref<MeshLibrary> &p_mesh_library) {
 

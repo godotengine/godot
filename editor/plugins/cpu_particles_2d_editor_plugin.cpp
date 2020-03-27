@@ -241,7 +241,7 @@ void CPUParticles2DEditorPlugin::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
 		menu->get_popup()->connect("id_pressed", callable_mp(this, &CPUParticles2DEditorPlugin::_menu_callback));
-		menu->set_icon(epoints->get_theme_icon("Particles2D", "EditorIcons"));
+		menu->set_icon(epoints->get_theme_icon("CPUParticles2D", "EditorIcons"));
 		file->connect("file_selected", callable_mp(this, &CPUParticles2DEditorPlugin::_file_selected));
 	}
 }
@@ -265,8 +265,7 @@ CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin(EditorNode *p_node) {
 	menu->get_popup()->add_item(TTR("Load Emission Mask"), MENU_LOAD_EMISSION_MASK);
 	menu->get_popup()->add_separator();
 	menu->get_popup()->add_item(TTR("Restart"), MENU_RESTART);
-	//	menu->get_popup()->add_item(TTR("Clear Emission Mask"), MENU_CLEAR_EMISSION_MASK);
-	menu->set_text(TTR("Particles"));
+	menu->set_text(TTR("CPUParticles2D"));
 	menu->set_switch_on_hover(true);
 	toolbar->add_child(menu);
 
