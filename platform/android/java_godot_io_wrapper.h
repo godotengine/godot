@@ -54,11 +54,8 @@ private:
 	jmethodID _show_keyboard = 0;
 	jmethodID _hide_keyboard = 0;
 	jmethodID _set_screen_orientation = 0;
+	jmethodID _get_screen_orientation = 0;
 	jmethodID _get_system_dir = 0;
-	jmethodID _play_video = 0;
-	jmethodID _is_video_playing = 0;
-	jmethodID _pause_video = 0;
-	jmethodID _stop_video = 0;
 
 public:
 	GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instance);
@@ -78,11 +75,8 @@ public:
 	int get_vk_height();
 	void set_vk_height(int p_height);
 	void set_screen_orientation(int p_orient);
+	int get_screen_orientation();
 	String get_system_dir(int p_dir);
-	void play_video(const String &p_path);
-	bool is_video_playing();
-	void pause_video();
-	void stop_video();
 };
 
 #endif /* !JAVA_GODOT_IO_WRAPPER_H */

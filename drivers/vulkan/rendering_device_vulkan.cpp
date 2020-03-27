@@ -1564,7 +1564,10 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 	image_create_info.pNext = nullptr;
 	image_create_info.flags = 0;
 
-	// TODO: vkCreateImage fails with format list on Android (VK_ERROR_OUT_OF_HOST_MEMORY)
+#ifndef _MSC_VER
+#warning TODO check for support via RenderingDevice to enable on mobile when possible
+#endif
+	// vkCreateImage fails with format list on Android (VK_ERROR_OUT_OF_HOST_MEMORY)
 #ifndef ANDROID_ENABLED
 	if (p_format.shareable_formats.size()) {
 		image_create_info.flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;

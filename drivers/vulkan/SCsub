@@ -7,7 +7,12 @@ env.add_source_files(env.drivers_sources, "*.cpp")
 if env["platform"] == "android":
     # Use NDK Vulkan headers
     thirdparty_dir = env["ANDROID_NDK_ROOT"] + "/sources/third_party/vulkan/src"
-    thirdparty_includes = [thirdparty_dir, thirdparty_dir + "/include", thirdparty_dir + "/layers", thirdparty_dir + "/layers/generated"]
+    thirdparty_includes = [
+        thirdparty_dir,
+        thirdparty_dir + "/include",
+        thirdparty_dir + "/layers",
+        thirdparty_dir + "/layers/generated",
+    ]
     env.Prepend(CPPPATH=thirdparty_includes)
 elif env["builtin_vulkan"]:
     # Use bundled Vulkan headers
