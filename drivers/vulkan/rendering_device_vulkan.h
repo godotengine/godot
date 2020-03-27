@@ -37,7 +37,9 @@
 #include "servers/rendering/rendering_device.h"
 
 #ifdef DEBUG_ENABLED
+#ifndef _DEBUG
 #define _DEBUG
+#endif
 #endif
 #include "vk_mem_alloc.h"
 #include <vulkan/vulkan.h>

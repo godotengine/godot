@@ -180,7 +180,7 @@ public:
 	};
 
 	virtual void screen_set_orientation(ScreenOrientation p_orientation, int p_screen = SCREEN_OF_MAIN_WINDOW);
-	ScreenOrientation screen_get_orientation(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
+	virtual ScreenOrientation screen_get_orientation(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 
 	virtual void screen_set_keep_on(bool p_enable); //disable screensaver
 	virtual bool screen_is_kept_on() const;

@@ -33,7 +33,7 @@
 
 #define VMA_IMPLEMENTATION
 #ifdef DEBUG_ENABLED
-#ifndef _MSC_VER
+#ifndef _DEBUG
 #define _DEBUG
 #endif
 #endif
@@ -46,17 +46,17 @@ const char *VulkanContextAndroid::_get_platform_surface_extension() const {
 int VulkanContextAndroid::window_create(ANativeWindow *p_window, int p_width, int p_height) {
 	VkAndroidSurfaceCreateInfoKHR createInfo;
 	createInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
-	createInfo.pNext = NULL;
+	createInfo.pNext = nullptr;
 	createInfo.flags = 0;
 	createInfo.window = p_window;
 
 	VkSurfaceKHR surface;
-	VkResult err = vkCreateAndroidSurfaceKHR(_get_instance(), &createInfo, NULL, &surface);
+	VkResult err = vkCreateAndroidSurfaceKHR(_get_instance(), &createInfo, nullptr, &surface);
 	if (err != VK_SUCCESS) {
 		ERR_FAIL_V_MSG(-1, "vkCreateAndroidSurfaceKHR failed with error " + itos(err));
 	}
 
-	return _window_create(surface, p_width, p_height);
+	return _window_create(DisplayServer::MAIN_WINDOW_ID, surface, p_width, p_height);
 }
 
 VulkanContextAndroid::VulkanContextAndroid() {
