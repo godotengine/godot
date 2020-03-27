@@ -45,8 +45,8 @@
 #include "main/main.h"
 #include "platform/windows/windows_terminal_logger.h"
 #include "servers/audio_server.h"
-#include "servers/visual/visual_server_raster.h"
-#include "servers/visual/visual_server_wrap_mt.h"
+#include "servers/rendering/rendering_server_raster.h"
+#include "servers/rendering/rendering_server_wrap_mt.h"
 #include "thread_uwp.h"
 
 #include <ppltasks.h>
@@ -254,13 +254,13 @@ Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	set_video_mode(vm);
 
-	visual_server = memnew(VisualServerRaster);
+	rendering_server = memnew(RenderingServerRaster);
 	// FIXME: Reimplement threaded rendering
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-		visual_server = memnew(VisualServerWrapMT(visual_server, false));
+		rendering_server = memnew(RenderingServerWrapMT(rendering_server, false));
 	}
 
-	visual_server->init();
+	rendering_server->init();
 
 	input = memnew(InputDefault);
 
@@ -349,8 +349,8 @@ void OS_UWP::finalize() {
 
 	main_loop = NULL;
 
-	visual_server->finish();
-	memdelete(visual_server);
+	rendering_server->finish();
+	memdelete(rendering_server);
 #ifdef OPENGL_ENABLED
 	if (gl_context)
 		memdelete(gl_context);

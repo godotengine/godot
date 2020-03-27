@@ -62,7 +62,7 @@ SkinReference::~SkinReference() {
 		skeleton_node->skin_bindings.erase(this);
 	}
 
-	VS::get_singleton()->free(skeleton);
+	RS::get_singleton()->free(skeleton);
 }
 
 bool Skeleton3D::_set(const StringName &p_path, const Variant &p_value) {
@@ -227,7 +227,7 @@ void Skeleton3D::_notification(int p_what) {
 
 		case NOTIFICATION_UPDATE_SKELETON: {
 
-			VisualServer *vs = VisualServer::get_singleton();
+			RenderingServer *vs = RenderingServer::get_singleton();
 			Bone *bonesptr = bones.ptrw();
 			int len = bones.size();
 
@@ -320,7 +320,7 @@ void Skeleton3D::_notification(int p_what) {
 				uint32_t bind_count = skin->get_bind_count();
 
 				if (E->get()->bind_count != bind_count) {
-					VS::get_singleton()->skeleton_allocate(skeleton, bind_count);
+					RS::get_singleton()->skeleton_allocate(skeleton, bind_count);
 					E->get()->bind_count = bind_count;
 					E->get()->skin_bone_indices.resize(bind_count);
 					E->get()->skin_bone_indices_ptrs = E->get()->skin_bone_indices.ptrw();
@@ -802,9 +802,9 @@ void _physical_bones_add_remove_collision_exception(bool p_add, Node *p_node, RI
 	CollisionObject3D *co = Object::cast_to<CollisionObject3D>(p_node);
 	if (co) {
 		if (p_add) {
-			PhysicsServer::get_singleton()->body_add_collision_exception(co->get_rid(), p_exception);
+			PhysicsServer3D::get_singleton()->body_add_collision_exception(co->get_rid(), p_exception);
 		} else {
-			PhysicsServer::get_singleton()->body_remove_collision_exception(co->get_rid(), p_exception);
+			PhysicsServer3D::get_singleton()->body_remove_collision_exception(co->get_rid(), p_exception);
 		}
 	}
 }
@@ -871,7 +871,7 @@ Ref<SkinReference> Skeleton3D::register_skin(const Ref<Skin> &p_skin) {
 
 	skin_ref->skeleton_node = this;
 	skin_ref->bind_count = 0;
-	skin_ref->skeleton = VisualServer::get_singleton()->skeleton_create();
+	skin_ref->skeleton = RenderingServer::get_singleton()->skeleton_create();
 	skin_ref->skeleton_node = this;
 	skin_ref->skin = skin;
 

@@ -61,9 +61,9 @@
 #include "scene/gui/texture_progress.h"
 #include "scene/gui/tool_button.h"
 #include "scene/resources/packed_scene.h"
-#include "servers/navigation_2d_server.h"
-#include "servers/navigation_server.h"
-#include "servers/physics_2d_server.h"
+#include "servers/navigation_server_2d.h"
+#include "servers/navigation_server_3d.h"
+#include "servers/physics_server_2d.h"
 
 #include "editor/audio_stream_preview.h"
 #include "editor/debugger/editor_debugger_node.h"
@@ -358,13 +358,13 @@ void EditorNode::_notification(int p_what) {
 					scene_root->set_default_canvas_item_texture_repeat(tr);
 				}
 
-				VS::DOFBokehShape dof_shape = VS::DOFBokehShape(int(GLOBAL_GET("rendering/quality/filters/depth_of_field_bokeh_shape")));
-				VS::get_singleton()->camera_effects_set_dof_blur_bokeh_shape(dof_shape);
-				VS::DOFBlurQuality dof_quality = VS::DOFBlurQuality(int(GLOBAL_GET("rendering/quality/filters/depth_of_field_bokeh_quality")));
+				RS::DOFBokehShape dof_shape = RS::DOFBokehShape(int(GLOBAL_GET("rendering/quality/filters/depth_of_field_bokeh_shape")));
+				RS::get_singleton()->camera_effects_set_dof_blur_bokeh_shape(dof_shape);
+				RS::DOFBlurQuality dof_quality = RS::DOFBlurQuality(int(GLOBAL_GET("rendering/quality/filters/depth_of_field_bokeh_quality")));
 				bool dof_jitter = GLOBAL_GET("rendering/quality/filters/depth_of_field_use_jitter");
-				VS::get_singleton()->camera_effects_set_dof_blur_quality(dof_quality, dof_jitter);
-				VS::get_singleton()->environment_set_ssao_quality(VS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/quality/ssao/quality"))), GLOBAL_GET("rendering/quality/ssao/half_size"));
-				VS::get_singleton()->screen_space_roughness_limiter_set_active(GLOBAL_GET("rendering/quality/filters/screen_space_roughness_limiter"), GLOBAL_GET("rendering/quality/filters/screen_space_roughness_limiter_curve"));
+				RS::get_singleton()->camera_effects_set_dof_blur_quality(dof_quality, dof_jitter);
+				RS::get_singleton()->environment_set_ssao_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/quality/ssao/quality"))), GLOBAL_GET("rendering/quality/ssao/half_size"));
+				RS::get_singleton()->screen_space_roughness_limiter_set_active(GLOBAL_GET("rendering/quality/filters/screen_space_roughness_limiter"), GLOBAL_GET("rendering/quality/filters/screen_space_roughness_limiter_curve"));
 			}
 
 			ResourceImporterTexture::get_singleton()->update_imports();
@@ -404,9 +404,9 @@ void EditorNode::_notification(int p_what) {
 				_initializing_addons = false;
 			}
 
-			VisualServer::get_singleton()->viewport_set_hide_scenario(get_scene_root()->get_viewport_rid(), true);
-			VisualServer::get_singleton()->viewport_set_hide_canvas(get_scene_root()->get_viewport_rid(), true);
-			VisualServer::get_singleton()->viewport_set_disable_environment(get_viewport()->get_viewport_rid(), true);
+			RenderingServer::get_singleton()->viewport_set_hide_scenario(get_scene_root()->get_viewport_rid(), true);
+			RenderingServer::get_singleton()->viewport_set_hide_canvas(get_scene_root()->get_viewport_rid(), true);
+			RenderingServer::get_singleton()->viewport_set_disable_environment(get_viewport()->get_viewport_rid(), true);
 
 			feature_profile_manager->notify_changed();
 
@@ -5530,12 +5530,12 @@ EditorNode::EditorNode() {
 	InputFilter::get_singleton()->set_use_accumulated_input(true);
 	Resource::_get_local_scene_func = _resource_get_edited_scene;
 
-	VisualServer::get_singleton()->set_debug_generate_wireframes(true);
+	RenderingServer::get_singleton()->set_debug_generate_wireframes(true);
 
-	NavigationServer::get_singleton()->set_active(false); // no nav by default if editor
+	NavigationServer3D::get_singleton()->set_active(false); // no nav by default if editor
 
-	PhysicsServer::get_singleton()->set_active(false); // no physics by default if editor
-	Physics2DServer::get_singleton()->set_active(false); // no physics by default if editor
+	PhysicsServer3D::get_singleton()->set_active(false); // no physics by default if editor
+	PhysicsServer2D::get_singleton()->set_active(false); // no physics by default if editor
 	ScriptServer::set_scripting_enabled(false); // no scripting by default if editor
 
 	EditorHelp::generate_doc(); //before any editor classes are created
@@ -6011,7 +6011,7 @@ EditorNode::EditorNode() {
 	scene_root = memnew(SubViewport);
 	//scene_root->set_usage(Viewport::USAGE_2D); canvas BG mode prevents usage of this as 2D
 
-	VisualServer::get_singleton()->viewport_set_hide_scenario(scene_root->get_viewport_rid(), true);
+	RenderingServer::get_singleton()->viewport_set_hide_scenario(scene_root->get_viewport_rid(), true);
 	scene_root->set_disable_input(true);
 	scene_root->set_as_audio_listener_2d(true);
 

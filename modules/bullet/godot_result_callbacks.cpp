@@ -107,7 +107,7 @@ btScalar GodotAllConvexResultCallback::addSingleResult(btCollisionWorld::LocalCo
 
 	CollisionObjectBullet *gObj = static_cast<CollisionObjectBullet *>(convexResult.m_hitCollisionObject->getUserPointer());
 
-	PhysicsDirectSpaceState::ShapeResult &result = m_results[count];
+	PhysicsDirectSpaceState3D::ShapeResult &result = m_results[count];
 
 	result.shape = convexResult.m_localShapeInfo->m_triangleIndex; // "m_triangleIndex" Is a odd name but contains the compound shape ID
 	result.rid = gObj->get_self();
@@ -207,7 +207,7 @@ btScalar GodotAllContactResultCallback::addSingleResult(btManifoldPoint &cp, con
 
 	if (cp.getDistance() <= 0) {
 
-		PhysicsDirectSpaceState::ShapeResult &result = m_results[m_count];
+		PhysicsDirectSpaceState3D::ShapeResult &result = m_results[m_count];
 		// Penetrated
 
 		CollisionObjectBullet *colObj;

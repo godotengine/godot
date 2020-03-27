@@ -30,7 +30,7 @@
 
 #include "world_margin_shape_3d.h"
 
-#include "servers/physics_server.h"
+#include "servers/physics_server_3d.h"
 
 Vector<Vector3> WorldMarginShape3D::get_debug_mesh_lines() {
 
@@ -63,7 +63,7 @@ Vector<Vector3> WorldMarginShape3D::get_debug_mesh_lines() {
 
 void WorldMarginShape3D::_update_shape() {
 
-	PhysicsServer::get_singleton()->shape_set_data(get_shape(), plane);
+	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), plane);
 	Shape3D::_update_shape();
 }
 
@@ -89,7 +89,7 @@ void WorldMarginShape3D::_bind_methods() {
 }
 
 WorldMarginShape3D::WorldMarginShape3D() :
-		Shape3D(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_PLANE)) {
+		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_PLANE)) {
 
 	set_plane(Plane(0, 1, 0, 0));
 }

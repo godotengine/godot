@@ -3427,7 +3427,7 @@ void CanvasItemEditor::_draw_straight_line(Point2 p_from, Point2 p_to, Color p_c
 		}
 	}
 	if (points.size() >= 2) {
-		VisualServer::get_singleton()->canvas_item_add_line(ci, points[0], points[1], p_color);
+		RenderingServer::get_singleton()->canvas_item_add_line(ci, points[0], points[1], p_color);
 	}
 }
 
@@ -3455,7 +3455,7 @@ void CanvasItemEditor::_draw_axis() {
 		};
 
 		for (int i = 0; i < 4; i++) {
-			VisualServer::get_singleton()->canvas_item_add_line(ci, screen_endpoints[i], screen_endpoints[(i + 1) % 4], area_axis_color);
+			RenderingServer::get_singleton()->canvas_item_add_line(ci, screen_endpoints[i], screen_endpoints[(i + 1) % 4], area_axis_color);
 		}
 	}
 }
@@ -3512,8 +3512,8 @@ void CanvasItemEditor::_draw_bones() {
 				outline_colors.push_back(bone_outline_color);
 			}
 
-			VisualServer::get_singleton()->canvas_item_add_polygon(ci, bone_shape_outline, outline_colors);
-			VisualServer::get_singleton()->canvas_item_add_primitive(ci, bone_shape, colors, Vector<Vector2>(), RID());
+			RenderingServer::get_singleton()->canvas_item_add_polygon(ci, bone_shape_outline, outline_colors);
+			RenderingServer::get_singleton()->canvas_item_add_primitive(ci, bone_shape, colors, Vector<Vector2>(), RID());
 		}
 	}
 }
@@ -3744,7 +3744,7 @@ void CanvasItemEditor::_draw_viewport() {
 	}
 
 	RID ci = viewport->get_canvas_item();
-	VisualServer::get_singleton()->canvas_item_add_set_transform(ci, Transform2D());
+	RenderingServer::get_singleton()->canvas_item_add_set_transform(ci, Transform2D());
 
 	EditorPluginList *over_plugin_list = editor->get_editor_plugins_over();
 	if (!over_plugin_list->empty()) {
@@ -4911,7 +4911,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 			bool preview = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(PREVIEW_CANVAS_SCALE));
 			preview = !preview;
-			VS::get_singleton()->canvas_set_disable_scale(!preview);
+			RS::get_singleton()->canvas_set_disable_scale(!preview);
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(PREVIEW_CANVAS_SCALE), preview);
 
 		} break;
@@ -5818,13 +5818,13 @@ void CanvasItemEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		canvas_item_editor->show();
 		canvas_item_editor->set_physics_process(true);
-		VisualServer::get_singleton()->viewport_set_hide_canvas(editor->get_scene_root()->get_viewport_rid(), false);
+		RenderingServer::get_singleton()->viewport_set_hide_canvas(editor->get_scene_root()->get_viewport_rid(), false);
 
 	} else {
 
 		canvas_item_editor->hide();
 		canvas_item_editor->set_physics_process(false);
-		VisualServer::get_singleton()->viewport_set_hide_canvas(editor->get_scene_root()->get_viewport_rid(), true);
+		RenderingServer::get_singleton()->viewport_set_hide_canvas(editor->get_scene_root()->get_viewport_rid(), true);
 	}
 }
 
@@ -6307,7 +6307,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 	label_desc->hide();
 	canvas_item_editor->get_controls_container()->add_child(label_desc);
 
-	VS::get_singleton()->canvas_set_disable_scale(true);
+	RS::get_singleton()->canvas_set_disable_scale(true);
 }
 
 CanvasItemEditorViewport::~CanvasItemEditorViewport() {

@@ -79,7 +79,7 @@ void RootMotionView::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		VS::get_singleton()->immediate_set_material(immediate, StandardMaterial3D::get_material_rid_for_2d(false, true, false, false, false));
+		RS::get_singleton()->immediate_set_material(immediate, StandardMaterial3D::get_material_rid_for_2d(false, true, false, false, false));
 		first = true;
 	}
 
@@ -122,11 +122,11 @@ void RootMotionView::_notification(int p_what) {
 		}
 		accumulated.origin.z = Math::fposmod(accumulated.origin.z, cell_size);
 
-		VS::get_singleton()->immediate_clear(immediate);
+		RS::get_singleton()->immediate_clear(immediate);
 
 		int cells_in_radius = int((radius / cell_size) + 1.0);
 
-		VS::get_singleton()->immediate_begin(immediate, VS::PRIMITIVE_LINES);
+		RS::get_singleton()->immediate_begin(immediate, RS::PRIMITIVE_LINES);
 		for (int i = -cells_in_radius; i < cells_in_radius; i++) {
 			for (int j = -cells_in_radius; j < cells_in_radius; j++) {
 
@@ -142,21 +142,21 @@ void RootMotionView::_notification(int p_what) {
 				c_i.a *= MAX(0, 1.0 - from_i.length() / radius);
 				c_j.a *= MAX(0, 1.0 - from_j.length() / radius);
 
-				VS::get_singleton()->immediate_color(immediate, c);
-				VS::get_singleton()->immediate_vertex(immediate, from);
+				RS::get_singleton()->immediate_color(immediate, c);
+				RS::get_singleton()->immediate_vertex(immediate, from);
 
-				VS::get_singleton()->immediate_color(immediate, c_i);
-				VS::get_singleton()->immediate_vertex(immediate, from_i);
+				RS::get_singleton()->immediate_color(immediate, c_i);
+				RS::get_singleton()->immediate_vertex(immediate, from_i);
 
-				VS::get_singleton()->immediate_color(immediate, c);
-				VS::get_singleton()->immediate_vertex(immediate, from);
+				RS::get_singleton()->immediate_color(immediate, c);
+				RS::get_singleton()->immediate_vertex(immediate, from);
 
-				VS::get_singleton()->immediate_color(immediate, c_j);
-				VS::get_singleton()->immediate_vertex(immediate, from_j);
+				RS::get_singleton()->immediate_color(immediate, c_j);
+				RS::get_singleton()->immediate_vertex(immediate, from_j);
 			}
 		}
 
-		VS::get_singleton()->immediate_end(immediate);
+		RS::get_singleton()->immediate_end(immediate);
 	}
 }
 
@@ -197,12 +197,12 @@ RootMotionView::RootMotionView() {
 	radius = 10;
 	cell_size = 1;
 	set_process_internal(true);
-	immediate = VisualServer::get_singleton()->immediate_create();
+	immediate = RenderingServer::get_singleton()->immediate_create();
 	set_base(immediate);
 	color = Color(0.5, 0.5, 1.0);
 }
 
 RootMotionView::~RootMotionView() {
 	set_base(RID());
-	VisualServer::get_singleton()->free(immediate);
+	RenderingServer::get_singleton()->free(immediate);
 }

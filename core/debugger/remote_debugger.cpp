@@ -354,18 +354,18 @@ struct RemoteDebugger::VisualProfiler {
 	Map<StringName, ServerInfo> server_data;
 
 	void toggle(bool p_enable, const Array &p_opts) {
-		VS::get_singleton()->set_frame_profiling_enabled(p_enable);
+		RS::get_singleton()->set_frame_profiling_enabled(p_enable);
 	}
 
 	void add(const Array &p_data) {}
 
 	void tick(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
-		Vector<VS::FrameProfileArea> profile_areas = VS::get_singleton()->get_frame_profile();
+		Vector<RS::FrameProfileArea> profile_areas = RS::get_singleton()->get_frame_profile();
 		DebuggerMarshalls::VisualProfilerFrame frame;
 		if (!profile_areas.size())
 			return;
 
-		frame.frame_number = VS::get_singleton()->get_frame_profile_frame();
+		frame.frame_number = RS::get_singleton()->get_frame_profile_frame();
 		frame.areas.append_array(profile_areas);
 		EngineDebugger::get_singleton()->send_message("visual:profile_frame", frame.serialize());
 	}
@@ -404,10 +404,10 @@ void RemoteDebugger::_send_resource_usage() {
 
 	DebuggerMarshalls::ResourceUsage usage;
 
-	List<VS::TextureInfo> tinfo;
-	VS::get_singleton()->texture_debug_usage(&tinfo);
+	List<RS::TextureInfo> tinfo;
+	RS::get_singleton()->texture_debug_usage(&tinfo);
 
-	for (List<VS::TextureInfo>::Element *E = tinfo.front(); E; E = E->next()) {
+	for (List<RS::TextureInfo>::Element *E = tinfo.front(); E; E = E->next()) {
 
 		DebuggerMarshalls::ResourceInfo info;
 		info.path = E->get().path;
@@ -771,9 +771,9 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 		// This is for the camera override to stay live even when the game is paused from the editor
 		loop_time_sec = (OS::get_singleton()->get_ticks_usec() - loop_begin_usec) / 1000000.0f;
-		VisualServer::get_singleton()->sync();
-		if (VisualServer::get_singleton()->has_changed()) {
-			VisualServer::get_singleton()->draw(true, loop_time_sec * Engine::get_singleton()->get_time_scale());
+		RenderingServer::get_singleton()->sync();
+		if (RenderingServer::get_singleton()->has_changed()) {
+			RenderingServer::get_singleton()->draw(true, loop_time_sec * Engine::get_singleton()->get_time_scale());
 		}
 	}
 

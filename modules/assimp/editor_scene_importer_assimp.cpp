@@ -1208,9 +1208,9 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 			}
 
 			Array array_copy;
-			array_copy.resize(VisualServer::ARRAY_MAX);
+			array_copy.resize(RenderingServer::ARRAY_MAX);
 
-			for (int l = 0; l < VisualServer::ARRAY_MAX; l++) {
+			for (int l = 0; l < RenderingServer::ARRAY_MAX; l++) {
 				array_copy[l] = array_mesh[l].duplicate(true);
 			}
 
@@ -1224,13 +1224,13 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 					Vector3 position = Vector3(ai_pos.x, ai_pos.y, ai_pos.z);
 					vertices.ptrw()[l] = position;
 				}
-				PackedVector3Array new_vertices = array_copy[VisualServer::ARRAY_VERTEX].duplicate(true);
+				PackedVector3Array new_vertices = array_copy[RenderingServer::ARRAY_VERTEX].duplicate(true);
 				ERR_CONTINUE(vertices.size() != new_vertices.size());
 				for (int32_t l = 0; l < new_vertices.size(); l++) {
 					Vector3 *w = new_vertices.ptrw();
 					w[l] = vertices[l];
 				}
-				array_copy[VisualServer::ARRAY_VERTEX] = new_vertices;
+				array_copy[RenderingServer::ARRAY_VERTEX] = new_vertices;
 			}
 
 			int32_t color_set = 0;
@@ -1242,13 +1242,13 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 					Color color = Color(ai_color.r, ai_color.g, ai_color.b, ai_color.a);
 					colors.ptrw()[l] = color;
 				}
-				PackedColorArray new_colors = array_copy[VisualServer::ARRAY_COLOR].duplicate(true);
+				PackedColorArray new_colors = array_copy[RenderingServer::ARRAY_COLOR].duplicate(true);
 				ERR_CONTINUE(colors.size() != new_colors.size());
 				for (int32_t l = 0; l < colors.size(); l++) {
 					Color *w = new_colors.ptrw();
 					w[l] = colors[l];
 				}
-				array_copy[VisualServer::ARRAY_COLOR] = new_colors;
+				array_copy[RenderingServer::ARRAY_COLOR] = new_colors;
 			}
 
 			if (ai_mesh->mAnimMeshes[j]->HasNormals()) {
@@ -1259,13 +1259,13 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 					Vector3 normal = Vector3(ai_normal.x, ai_normal.y, ai_normal.z);
 					normals.ptrw()[l] = normal;
 				}
-				PackedVector3Array new_normals = array_copy[VisualServer::ARRAY_NORMAL].duplicate(true);
+				PackedVector3Array new_normals = array_copy[RenderingServer::ARRAY_NORMAL].duplicate(true);
 				ERR_CONTINUE(normals.size() != new_normals.size());
 				for (int l = 0; l < normals.size(); l++) {
 					Vector3 *w = new_normals.ptrw();
 					w[l] = normals[l];
 				}
-				array_copy[VisualServer::ARRAY_NORMAL] = new_normals;
+				array_copy[RenderingServer::ARRAY_NORMAL] = new_normals;
 			}
 
 			if (ai_mesh->mAnimMeshes[j]->HasTangentsAndBitangents()) {
@@ -1275,7 +1275,7 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 				for (size_t l = 0; l < num_vertices; l++) {
 					AssimpUtils::calc_tangent_from_mesh(ai_mesh, j, l, l, w);
 				}
-				PackedFloat32Array new_tangents = array_copy[VisualServer::ARRAY_TANGENT].duplicate(true);
+				PackedFloat32Array new_tangents = array_copy[RenderingServer::ARRAY_TANGENT].duplicate(true);
 				ERR_CONTINUE(new_tangents.size() != tangents.size() * 4);
 				for (int32_t l = 0; l < tangents.size(); l++) {
 					new_tangents.ptrw()[l + 0] = tangents[l].r;
@@ -1283,7 +1283,7 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 					new_tangents.ptrw()[l + 2] = tangents[l].b;
 					new_tangents.ptrw()[l + 3] = tangents[l].a;
 				}
-				array_copy[VisualServer::ARRAY_TANGENT] = new_tangents;
+				array_copy[RenderingServer::ARRAY_TANGENT] = new_tangents;
 			}
 
 			morphs[j] = array_copy;

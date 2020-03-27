@@ -40,8 +40,8 @@
 #include "drivers/winmidi/midi_driver_winmidi.h"
 #include "key_mapping_windows.h"
 #include "servers/audio_server.h"
-#include "servers/visual/rasterizer.h"
-#include "servers/visual_server.h"
+#include "servers/rendering/rasterizer.h"
+#include "servers/rendering_server.h"
 #ifdef XAUDIO2_ENABLED
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #endif

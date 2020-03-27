@@ -32,7 +32,7 @@
 #include "core/engine.h"
 #include "scene/3d/collision_object_3d.h"
 #include "scene/resources/sphere_shape_3d.h"
-#include "servers/physics_server.h"
+#include "servers/physics_server_3d.h"
 
 SpringArm3D::SpringArm3D() :
 		spring_length(1),
@@ -146,7 +146,7 @@ void SpringArm3D::process_spring() {
 
 	if (shape.is_null()) {
 		motion = Vector3(cast_direction * (spring_length));
-		PhysicsDirectSpaceState::RayResult r;
+		PhysicsDirectSpaceState3D::RayResult r;
 		bool intersected = get_world()->get_direct_space_state()->intersect_ray(get_global_transform().origin, get_global_transform().origin + motion, r, excluded_objects, mask);
 		if (intersected) {
 			float dist = get_global_transform().origin.distance_to(r.position);

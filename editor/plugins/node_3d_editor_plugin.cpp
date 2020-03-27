@@ -496,7 +496,7 @@ ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, b
 	Vector3 pos = _get_ray_pos(p_pos);
 	Vector2 shrinked_pos = p_pos / viewport_container->get_stretch_shrink();
 
-	Vector<ObjectID> instances = VisualServer::get_singleton()->instances_cull_ray(pos, ray, get_tree()->get_root()->get_world()->get_scenario());
+	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_ray(pos, ray, get_tree()->get_root()->get_world()->get_scenario());
 	Set<Ref<EditorNode3DGizmo>> found_gizmos;
 
 	Node *edited_scene = get_tree()->get_edited_scene_root();
@@ -563,7 +563,7 @@ void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, bool &r_inclu
 	Vector3 ray = _get_ray(p_pos);
 	Vector3 pos = _get_ray_pos(p_pos);
 
-	Vector<ObjectID> instances = VisualServer::get_singleton()->instances_cull_ray(pos, ray, get_tree()->get_root()->get_world()->get_scenario());
+	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_ray(pos, ray, get_tree()->get_root()->get_world()->get_scenario());
 	Set<Ref<EditorNode3DGizmo>> found_gizmos;
 
 	r_includes_current = false;
@@ -686,7 +686,7 @@ void Node3DEditorViewport::_select_region() {
 		frustum.push_back(far);
 	}
 
-	Vector<ObjectID> instances = VisualServer::get_singleton()->instances_cull_convex(frustum, get_tree()->get_root()->get_world()->get_scenario());
+	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_convex(frustum, get_tree()->get_root()->get_world()->get_scenario());
 	Vector<Node *> selected;
 
 	Node *edited_scene = get_tree()->get_edited_scene_root();
@@ -2395,7 +2395,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				}
 				previewing = cam;
 				previewing->connect("tree_exited", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
-				VS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), cam->get_camera());
+				RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), cam->get_camera());
 				surface->update();
 			}
 		}
@@ -2437,7 +2437,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 			aabb_s.scale(se->aabb.size);
 			t.basis = t.basis * aabb_s;
 
-			VisualServer::get_singleton()->instance_set_transform(se->sbox_instance, t);
+			RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance, t);
 		}
 
 		if (changed || (spatial_editor->is_gizmo_visible() && !exist)) {
@@ -2643,7 +2643,7 @@ void Node3DEditorViewport::_draw() {
 	if (_edit.mode == TRANSFORM_ROTATE) {
 
 		Point2 center = _point_to_screen(_edit.center);
-		VisualServer::get_singleton()->canvas_item_add_line(
+		RenderingServer::get_singleton()->canvas_item_add_line(
 				ci,
 				_edit.mouse_pos,
 				center,
@@ -3082,51 +3082,51 @@ void Node3DEditorViewport::_init_gizmo_instance(int p_idx) {
 	uint32_t layer = 1 << (GIZMO_BASE_LAYER + p_idx);
 
 	for (int i = 0; i < 3; i++) {
-		move_gizmo_instance[i] = VS::get_singleton()->instance_create();
-		VS::get_singleton()->instance_set_base(move_gizmo_instance[i], spatial_editor->get_move_gizmo(i)->get_rid());
-		VS::get_singleton()->instance_set_scenario(move_gizmo_instance[i], get_tree()->get_root()->get_world()->get_scenario());
-		VS::get_singleton()->instance_set_visible(move_gizmo_instance[i], false);
-		VS::get_singleton()->instance_geometry_set_cast_shadows_setting(move_gizmo_instance[i], VS::SHADOW_CASTING_SETTING_OFF);
-		VS::get_singleton()->instance_set_layer_mask(move_gizmo_instance[i], layer);
+		move_gizmo_instance[i] = RS::get_singleton()->instance_create();
+		RS::get_singleton()->instance_set_base(move_gizmo_instance[i], spatial_editor->get_move_gizmo(i)->get_rid());
+		RS::get_singleton()->instance_set_scenario(move_gizmo_instance[i], get_tree()->get_root()->get_world()->get_scenario());
+		RS::get_singleton()->instance_set_visible(move_gizmo_instance[i], false);
+		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(move_gizmo_instance[i], RS::SHADOW_CASTING_SETTING_OFF);
+		RS::get_singleton()->instance_set_layer_mask(move_gizmo_instance[i], layer);
 
-		move_plane_gizmo_instance[i] = VS::get_singleton()->instance_create();
-		VS::get_singleton()->instance_set_base(move_plane_gizmo_instance[i], spatial_editor->get_move_plane_gizmo(i)->get_rid());
-		VS::get_singleton()->instance_set_scenario(move_plane_gizmo_instance[i], get_tree()->get_root()->get_world()->get_scenario());
-		VS::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], false);
-		VS::get_singleton()->instance_geometry_set_cast_shadows_setting(move_plane_gizmo_instance[i], VS::SHADOW_CASTING_SETTING_OFF);
-		VS::get_singleton()->instance_set_layer_mask(move_plane_gizmo_instance[i], layer);
+		move_plane_gizmo_instance[i] = RS::get_singleton()->instance_create();
+		RS::get_singleton()->instance_set_base(move_plane_gizmo_instance[i], spatial_editor->get_move_plane_gizmo(i)->get_rid());
+		RS::get_singleton()->instance_set_scenario(move_plane_gizmo_instance[i], get_tree()->get_root()->get_world()->get_scenario());
+		RS::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], false);
+		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(move_plane_gizmo_instance[i], RS::SHADOW_CASTING_SETTING_OFF);
+		RS::get_singleton()->instance_set_layer_mask(move_plane_gizmo_instance[i], layer);
 
-		rotate_gizmo_instance[i] = VS::get_singleton()->instance_create();
-		VS::get_singleton()->instance_set_base(rotate_gizmo_instance[i], spatial_editor->get_rotate_gizmo(i)->get_rid());
-		VS::get_singleton()->instance_set_scenario(rotate_gizmo_instance[i], get_tree()->get_root()->get_world()->get_scenario());
-		VS::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], false);
-		VS::get_singleton()->instance_geometry_set_cast_shadows_setting(rotate_gizmo_instance[i], VS::SHADOW_CASTING_SETTING_OFF);
-		VS::get_singleton()->instance_set_layer_mask(rotate_gizmo_instance[i], layer);
+		rotate_gizmo_instance[i] = RS::get_singleton()->instance_create();
+		RS::get_singleton()->instance_set_base(rotate_gizmo_instance[i], spatial_editor->get_rotate_gizmo(i)->get_rid());
+		RS::get_singleton()->instance_set_scenario(rotate_gizmo_instance[i], get_tree()->get_root()->get_world()->get_scenario());
+		RS::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], false);
+		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(rotate_gizmo_instance[i], RS::SHADOW_CASTING_SETTING_OFF);
+		RS::get_singleton()->instance_set_layer_mask(rotate_gizmo_instance[i], layer);
 
-		scale_gizmo_instance[i] = VS::get_singleton()->instance_create();
-		VS::get_singleton()->instance_set_base(scale_gizmo_instance[i], spatial_editor->get_scale_gizmo(i)->get_rid());
-		VS::get_singleton()->instance_set_scenario(scale_gizmo_instance[i], get_tree()->get_root()->get_world()->get_scenario());
-		VS::get_singleton()->instance_set_visible(scale_gizmo_instance[i], false);
-		VS::get_singleton()->instance_geometry_set_cast_shadows_setting(scale_gizmo_instance[i], VS::SHADOW_CASTING_SETTING_OFF);
-		VS::get_singleton()->instance_set_layer_mask(scale_gizmo_instance[i], layer);
+		scale_gizmo_instance[i] = RS::get_singleton()->instance_create();
+		RS::get_singleton()->instance_set_base(scale_gizmo_instance[i], spatial_editor->get_scale_gizmo(i)->get_rid());
+		RS::get_singleton()->instance_set_scenario(scale_gizmo_instance[i], get_tree()->get_root()->get_world()->get_scenario());
+		RS::get_singleton()->instance_set_visible(scale_gizmo_instance[i], false);
+		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(scale_gizmo_instance[i], RS::SHADOW_CASTING_SETTING_OFF);
+		RS::get_singleton()->instance_set_layer_mask(scale_gizmo_instance[i], layer);
 
-		scale_plane_gizmo_instance[i] = VS::get_singleton()->instance_create();
-		VS::get_singleton()->instance_set_base(scale_plane_gizmo_instance[i], spatial_editor->get_scale_plane_gizmo(i)->get_rid());
-		VS::get_singleton()->instance_set_scenario(scale_plane_gizmo_instance[i], get_tree()->get_root()->get_world()->get_scenario());
-		VS::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], false);
-		VS::get_singleton()->instance_geometry_set_cast_shadows_setting(scale_plane_gizmo_instance[i], VS::SHADOW_CASTING_SETTING_OFF);
-		VS::get_singleton()->instance_set_layer_mask(scale_plane_gizmo_instance[i], layer);
+		scale_plane_gizmo_instance[i] = RS::get_singleton()->instance_create();
+		RS::get_singleton()->instance_set_base(scale_plane_gizmo_instance[i], spatial_editor->get_scale_plane_gizmo(i)->get_rid());
+		RS::get_singleton()->instance_set_scenario(scale_plane_gizmo_instance[i], get_tree()->get_root()->get_world()->get_scenario());
+		RS::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], false);
+		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(scale_plane_gizmo_instance[i], RS::SHADOW_CASTING_SETTING_OFF);
+		RS::get_singleton()->instance_set_layer_mask(scale_plane_gizmo_instance[i], layer);
 	}
 }
 
 void Node3DEditorViewport::_finish_gizmo_instances() {
 
 	for (int i = 0; i < 3; i++) {
-		VS::get_singleton()->free(move_gizmo_instance[i]);
-		VS::get_singleton()->free(move_plane_gizmo_instance[i]);
-		VS::get_singleton()->free(rotate_gizmo_instance[i]);
-		VS::get_singleton()->free(scale_gizmo_instance[i]);
-		VS::get_singleton()->free(scale_plane_gizmo_instance[i]);
+		RS::get_singleton()->free(move_gizmo_instance[i]);
+		RS::get_singleton()->free(move_plane_gizmo_instance[i]);
+		RS::get_singleton()->free(rotate_gizmo_instance[i]);
+		RS::get_singleton()->free(scale_gizmo_instance[i]);
+		RS::get_singleton()->free(scale_plane_gizmo_instance[i]);
 	}
 }
 void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
@@ -3138,7 +3138,7 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 
 		previewing->disconnect("tree_exiting", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
 		previewing = NULL;
-		VS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), camera->get_camera()); //restore
+		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), camera->get_camera()); //restore
 		if (!preview)
 			preview_camera->hide();
 		view_menu->set_disabled(false);
@@ -3148,7 +3148,7 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 
 		previewing = preview;
 		previewing->connect("tree_exiting", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
-		VS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), preview->get_camera()); //replace
+		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), preview->get_camera()); //replace
 		view_menu->set_disabled(true);
 		surface->update();
 	}
@@ -3161,7 +3161,7 @@ void Node3DEditorViewport::_toggle_cinema_preview(bool p_activate) {
 			previewing->disconnect("tree_exited", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
 
 		previewing = NULL;
-		VS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), camera->get_camera()); //restore
+		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), camera->get_camera()); //restore
 		preview_camera->set_pressed(false);
 		if (!preview) {
 			preview_camera->hide();
@@ -3212,11 +3212,11 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 
 	if (xform.origin.distance_squared_to(camera_xform.origin) < 0.01) {
 		for (int i = 0; i < 3; i++) {
-			VisualServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], false);
-			VisualServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], false);
-			VisualServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], false);
-			VisualServer::get_singleton()->instance_set_visible(scale_gizmo_instance[i], false);
-			VisualServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], false);
+			RenderingServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], false);
+			RenderingServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], false);
+			RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], false);
+			RenderingServer::get_singleton()->instance_set_visible(scale_gizmo_instance[i], false);
+			RenderingServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], false);
 		}
 		return;
 	}
@@ -3244,16 +3244,16 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	xform.basis.scale(scale);
 
 	for (int i = 0; i < 3; i++) {
-		VisualServer::get_singleton()->instance_set_transform(move_gizmo_instance[i], xform);
-		VisualServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
-		VisualServer::get_singleton()->instance_set_transform(move_plane_gizmo_instance[i], xform);
-		VisualServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
-		VisualServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[i], xform);
-		VisualServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE));
-		VisualServer::get_singleton()->instance_set_transform(scale_gizmo_instance[i], xform);
-		VisualServer::get_singleton()->instance_set_visible(scale_gizmo_instance[i], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
-		VisualServer::get_singleton()->instance_set_transform(scale_plane_gizmo_instance[i], xform);
-		VisualServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
+		RenderingServer::get_singleton()->instance_set_transform(move_gizmo_instance[i], xform);
+		RenderingServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
+		RenderingServer::get_singleton()->instance_set_transform(move_plane_gizmo_instance[i], xform);
+		RenderingServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
+		RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[i], xform);
+		RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE));
+		RenderingServer::get_singleton()->instance_set_transform(scale_gizmo_instance[i], xform);
+		RenderingServer::get_singleton()->instance_set_visible(scale_gizmo_instance[i], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
+		RenderingServer::get_singleton()->instance_set_transform(scale_plane_gizmo_instance[i], xform);
+		RenderingServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
 	}
 }
 
@@ -3363,7 +3363,7 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 		if (Object::cast_to<Camera3D>(pv)) {
 			previewing = Object::cast_to<Camera3D>(pv);
 			previewing->connect("tree_exiting", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
-			VS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), previewing->get_camera()); //replace
+			RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), previewing->get_camera()); //replace
 			view_menu->set_disabled(true);
 			surface->update();
 			preview_camera->set_pressed(true);
@@ -3478,7 +3478,7 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos) const 
 	Vector3 world_ray = _get_ray(p_pos);
 	Vector3 world_pos = _get_ray_pos(p_pos);
 
-	Vector<ObjectID> instances = VisualServer::get_singleton()->instances_cull_ray(world_pos, world_ray, get_tree()->get_root()->get_world()->get_scenario());
+	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_ray(world_pos, world_ray, get_tree()->get_root()->get_world()->get_scenario());
 	Set<Ref<EditorNode3DGizmo>> found_gizmos;
 
 	float closest_dist = MAX_DISTANCE;
@@ -4398,7 +4398,7 @@ Node3DEditor *Node3DEditor::singleton = NULL;
 Node3DEditorSelectedItem::~Node3DEditorSelectedItem() {
 
 	if (sbox_instance.is_valid())
-		VisualServer::get_singleton()->free(sbox_instance);
+		RenderingServer::get_singleton()->free(sbox_instance);
 }
 
 void Node3DEditor::select_gizmo_highlight_axis(int p_axis) {
@@ -4484,8 +4484,8 @@ Object *Node3DEditor::_get_editor_data(Object *p_what) {
 	Node3DEditorSelectedItem *si = memnew(Node3DEditorSelectedItem);
 
 	si->sp = sp;
-	si->sbox_instance = VisualServer::get_singleton()->instance_create2(selection_box->get_rid(), sp->get_world()->get_scenario());
-	VS::get_singleton()->instance_geometry_set_cast_shadows_setting(si->sbox_instance, VS::SHADOW_CASTING_SETTING_OFF);
+	si->sbox_instance = RenderingServer::get_singleton()->instance_create2(selection_box->get_rid(), sp->get_world()->get_scenario());
+	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(si->sbox_instance, RS::SHADOW_CASTING_SETTING_OFF);
 
 	return si;
 }
@@ -4649,7 +4649,7 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 
 		if (use != view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN))) {
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN), use);
-			VisualServer::get_singleton()->instance_set_visible(origin_instance, use);
+			RenderingServer::get_singleton()->instance_set_visible(origin_instance, use);
 		}
 	}
 
@@ -4954,7 +4954,7 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			bool is_checked = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(p_option));
 
 			origin_enabled = !is_checked;
-			VisualServer::get_singleton()->instance_set_visible(origin_instance, origin_enabled);
+			RenderingServer::get_singleton()->instance_set_visible(origin_instance, origin_enabled);
 			// Update the grid since its appearance depends on whether the origin is enabled
 			_finish_grid();
 			_init_grid();
@@ -4969,7 +4969,7 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 
 			for (int i = 0; i < 3; ++i) {
 				if (grid_enable[i]) {
-					VisualServer::get_singleton()->instance_set_visible(grid_instance[i], grid_enabled);
+					RenderingServer::get_singleton()->instance_set_visible(grid_instance[i], grid_enabled);
 					grid_visible[i] = grid_enabled;
 				}
 			}
@@ -5129,19 +5129,19 @@ void Node3DEditor::_init_indicators() {
 
 		_init_grid();
 
-		origin = VisualServer::get_singleton()->mesh_create();
+		origin = RenderingServer::get_singleton()->mesh_create();
 		Array d;
-		d.resize(VS::ARRAY_MAX);
-		d[VisualServer::ARRAY_VERTEX] = origin_points;
-		d[VisualServer::ARRAY_COLOR] = origin_colors;
+		d.resize(RS::ARRAY_MAX);
+		d[RenderingServer::ARRAY_VERTEX] = origin_points;
+		d[RenderingServer::ARRAY_COLOR] = origin_colors;
 
-		VisualServer::get_singleton()->mesh_add_surface_from_arrays(origin, VisualServer::PRIMITIVE_LINES, d);
-		VisualServer::get_singleton()->mesh_surface_set_material(origin, 0, indicator_mat->get_rid());
+		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(origin, RenderingServer::PRIMITIVE_LINES, d);
+		RenderingServer::get_singleton()->mesh_surface_set_material(origin, 0, indicator_mat->get_rid());
 
-		origin_instance = VisualServer::get_singleton()->instance_create2(origin, get_tree()->get_root()->get_world()->get_scenario());
-		VS::get_singleton()->instance_set_layer_mask(origin_instance, 1 << Node3DEditorViewport::GIZMO_GRID_LAYER);
+		origin_instance = RenderingServer::get_singleton()->instance_create2(origin, get_tree()->get_root()->get_world()->get_scenario());
+		RS::get_singleton()->instance_set_layer_mask(origin_instance, 1 << Node3DEditorViewport::GIZMO_GRID_LAYER);
 
-		VisualServer::get_singleton()->instance_geometry_set_cast_shadows_setting(origin_instance, VS::SHADOW_CASTING_SETTING_OFF);
+		RenderingServer::get_singleton()->instance_geometry_set_cast_shadows_setting(origin_instance, RS::SHADOW_CASTING_SETTING_OFF);
 	}
 
 	{
@@ -5506,33 +5506,33 @@ void Node3DEditor::_init_grid() {
 			grid_colors[i].push_back(line_color);
 		}
 
-		grid[i] = VisualServer::get_singleton()->mesh_create();
+		grid[i] = RenderingServer::get_singleton()->mesh_create();
 		Array d;
-		d.resize(VS::ARRAY_MAX);
-		d[VisualServer::ARRAY_VERTEX] = grid_points[i];
-		d[VisualServer::ARRAY_COLOR] = grid_colors[i];
-		VisualServer::get_singleton()->mesh_add_surface_from_arrays(grid[i], VisualServer::PRIMITIVE_LINES, d);
-		VisualServer::get_singleton()->mesh_surface_set_material(grid[i], 0, indicator_mat->get_rid());
-		grid_instance[i] = VisualServer::get_singleton()->instance_create2(grid[i], get_tree()->get_root()->get_world()->get_scenario());
+		d.resize(RS::ARRAY_MAX);
+		d[RenderingServer::ARRAY_VERTEX] = grid_points[i];
+		d[RenderingServer::ARRAY_COLOR] = grid_colors[i];
+		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(grid[i], RenderingServer::PRIMITIVE_LINES, d);
+		RenderingServer::get_singleton()->mesh_surface_set_material(grid[i], 0, indicator_mat->get_rid());
+		grid_instance[i] = RenderingServer::get_singleton()->instance_create2(grid[i], get_tree()->get_root()->get_world()->get_scenario());
 
-		VisualServer::get_singleton()->instance_set_visible(grid_instance[i], grid_visible[i]);
-		VisualServer::get_singleton()->instance_geometry_set_cast_shadows_setting(grid_instance[i], VS::SHADOW_CASTING_SETTING_OFF);
-		VS::get_singleton()->instance_set_layer_mask(grid_instance[i], 1 << Node3DEditorViewport::GIZMO_GRID_LAYER);
+		RenderingServer::get_singleton()->instance_set_visible(grid_instance[i], grid_visible[i]);
+		RenderingServer::get_singleton()->instance_geometry_set_cast_shadows_setting(grid_instance[i], RS::SHADOW_CASTING_SETTING_OFF);
+		RS::get_singleton()->instance_set_layer_mask(grid_instance[i], 1 << Node3DEditorViewport::GIZMO_GRID_LAYER);
 	}
 }
 
 void Node3DEditor::_finish_indicators() {
 
-	VisualServer::get_singleton()->free(origin_instance);
-	VisualServer::get_singleton()->free(origin);
+	RenderingServer::get_singleton()->free(origin_instance);
+	RenderingServer::get_singleton()->free(origin);
 
 	_finish_grid();
 }
 
 void Node3DEditor::_finish_grid() {
 	for (int i = 0; i < 3; i++) {
-		VisualServer::get_singleton()->free(grid_instance[i]);
-		VisualServer::get_singleton()->free(grid[i]);
+		RenderingServer::get_singleton()->free(grid_instance[i]);
+		RenderingServer::get_singleton()->free(grid[i]);
 	}
 }
 
@@ -5658,8 +5658,8 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 		}
 	}
 
-	PhysicsDirectSpaceState *ss = get_tree()->get_root()->get_world()->get_direct_space_state();
-	PhysicsDirectSpaceState::RayResult result;
+	PhysicsDirectSpaceState3D *ss = get_tree()->get_root()->get_world()->get_direct_space_state();
+	PhysicsDirectSpaceState3D::RayResult result;
 
 	Array keys = snap_data.keys();
 
@@ -5952,11 +5952,11 @@ void Node3DEditor::clear() {
 		viewports[i]->reset();
 	}
 
-	VisualServer::get_singleton()->instance_set_visible(origin_instance, true);
+	RenderingServer::get_singleton()->instance_set_visible(origin_instance, true);
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN), true);
 	for (int i = 0; i < 3; ++i) {
 		if (grid_enable[i]) {
-			VisualServer::get_singleton()->instance_set_visible(grid_instance[i], true);
+			RenderingServer::get_singleton()->instance_set_visible(grid_instance[i], true);
 			grid_visible[i] = true;
 		}
 	}
@@ -6313,7 +6313,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 
 	xform_dialog->connect("confirmed", callable_mp(this, &Node3DEditor::_xform_dialog_action));
 
-	scenario_debug = VisualServer::SCENARIO_DEBUG_DISABLED;
+	scenario_debug = RenderingServer::SCENARIO_DEBUG_DISABLED;
 
 	selected = NULL;
 

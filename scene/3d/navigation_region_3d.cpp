@@ -32,7 +32,7 @@
 #include "core/os/thread.h"
 #include "mesh_instance_3d.h"
 #include "navigation_3d.h"
-#include "servers/navigation_server.h"
+#include "servers/navigation_server_3d.h"
 
 void NavigationRegion3D::set_enabled(bool p_enabled) {
 
@@ -45,12 +45,12 @@ void NavigationRegion3D::set_enabled(bool p_enabled) {
 
 	if (!enabled) {
 
-		NavigationServer::get_singleton()->region_set_map(region, RID());
+		NavigationServer3D::get_singleton()->region_set_map(region, RID());
 	} else {
 
 		if (navigation) {
 
-			NavigationServer::get_singleton()->region_set_map(region, navigation->get_rid());
+			NavigationServer3D::get_singleton()->region_set_map(region, navigation->get_rid());
 		}
 	}
 
@@ -86,7 +86,7 @@ void NavigationRegion3D::_notification(int p_what) {
 
 					if (enabled) {
 
-						NavigationServer::get_singleton()->region_set_map(region, navigation->get_rid());
+						NavigationServer3D::get_singleton()->region_set_map(region, navigation->get_rid());
 					}
 					break;
 				}
@@ -110,14 +110,14 @@ void NavigationRegion3D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
-			NavigationServer::get_singleton()->region_set_transform(region, get_global_transform());
+			NavigationServer3D::get_singleton()->region_set_transform(region, get_global_transform());
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
 			if (navigation) {
 
-				NavigationServer::get_singleton()->region_set_map(region, RID());
+				NavigationServer3D::get_singleton()->region_set_map(region, RID());
 			}
 
 			if (debug_view) {
@@ -144,7 +144,7 @@ void NavigationRegion3D::set_navigation_mesh(const Ref<NavigationMesh> &p_navmes
 		navmesh->add_change_receptor(this);
 	}
 
-	NavigationServer::get_singleton()->region_set_navmesh(region, p_navmesh);
+	NavigationServer3D::get_singleton()->region_set_navmesh(region, p_navmesh);
 
 	if (debug_view && navmesh.is_valid()) {
 		Object::cast_to<MeshInstance3D>(debug_view)->set_mesh(navmesh->get_debug_mesh());
@@ -171,7 +171,7 @@ void _bake_navigation_mesh(void *p_user_data) {
 	if (args->nav_region->get_navigation_mesh().is_valid()) {
 		Ref<NavigationMesh> nav_mesh = args->nav_region->get_navigation_mesh()->duplicate();
 
-		NavigationServer::get_singleton()->region_bake_navmesh(nav_mesh, args->nav_region);
+		NavigationServer3D::get_singleton()->region_bake_navmesh(nav_mesh, args->nav_region);
 		args->nav_region->call_deferred("_bake_finished", nav_mesh);
 		memdelete(args);
 	} else {
@@ -244,7 +244,7 @@ NavigationRegion3D::NavigationRegion3D() {
 
 	enabled = true;
 	set_notify_transform(true);
-	region = NavigationServer::get_singleton()->region_create();
+	region = NavigationServer3D::get_singleton()->region_create();
 
 	navigation = NULL;
 	debug_view = NULL;
@@ -254,5 +254,5 @@ NavigationRegion3D::NavigationRegion3D() {
 NavigationRegion3D::~NavigationRegion3D() {
 	if (navmesh.is_valid())
 		navmesh->remove_change_receptor(this);
-	NavigationServer::get_singleton()->free(region);
+	NavigationServer3D::get_singleton()->free(region);
 }

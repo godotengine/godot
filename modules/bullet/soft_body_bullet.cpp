@@ -76,7 +76,7 @@ void SoftBodyBullet::on_enter_area(AreaBullet *p_area) {}
 
 void SoftBodyBullet::on_exit_area(AreaBullet *p_area) {}
 
-void SoftBodyBullet::update_visual_server(SoftBodyVisualServerHandler *p_visual_server_handler) {
+void SoftBodyBullet::update_rendering_server(SoftBodyRenderingServerHandler *p_rendering_server_handler) {
 	if (!bt_soft_body)
 		return;
 
@@ -96,8 +96,8 @@ void SoftBodyBullet::update_visual_server(SoftBodyVisualServerHandler *p_visual_
 
 		const int vs_indices_size(vs_indices->size());
 		for (int x = 0; x < vs_indices_size; ++x) {
-			p_visual_server_handler->set_vertex((*vs_indices)[x], vertex_position);
-			p_visual_server_handler->set_normal((*vs_indices)[x], vertex_normal);
+			p_rendering_server_handler->set_vertex((*vs_indices)[x], vertex_position);
+			p_rendering_server_handler->set_normal((*vs_indices)[x], vertex_normal);
 		}
 	}
 
@@ -112,7 +112,7 @@ void SoftBodyBullet::update_visual_server(SoftBodyVisualServerHandler *p_visual_
 	B_TO_G(aabb_min, aabb.position);
 	B_TO_G(size, aabb.size);
 
-	p_visual_server_handler->set_aabb(aabb);
+	p_rendering_server_handler->set_aabb(aabb);
 }
 
 void SoftBodyBullet::set_soft_mesh(const Ref<Mesh> &p_mesh) {
@@ -129,8 +129,8 @@ void SoftBodyBullet::set_soft_mesh(const Ref<Mesh> &p_mesh) {
 	}
 
 	Array arrays = soft_mesh->surface_get_arrays(0);
-	ERR_FAIL_COND(!(soft_mesh->surface_get_format(0) & VS::ARRAY_FORMAT_INDEX));
-	set_trimesh_body_shape(arrays[VS::ARRAY_INDEX], arrays[VS::ARRAY_VERTEX]);
+	ERR_FAIL_COND(!(soft_mesh->surface_get_format(0) & RS::ARRAY_FORMAT_INDEX));
+	set_trimesh_body_shape(arrays[RS::ARRAY_INDEX], arrays[RS::ARRAY_VERTEX]);
 }
 
 void SoftBodyBullet::destroy_soft_body() {
@@ -184,7 +184,7 @@ void SoftBodyBullet::get_node_offset(int p_node_index, Vector3 &r_offset) const 
 		return;
 
 	Array arrays = soft_mesh->surface_get_arrays(0);
-	Vector<Vector3> vertices(arrays[VS::ARRAY_VERTEX]);
+	Vector<Vector3> vertices(arrays[RS::ARRAY_VERTEX]);
 
 	if (0 <= p_node_index && vertices.size() > p_node_index) {
 		r_offset = vertices[p_node_index];
@@ -230,7 +230,7 @@ void SoftBodyBullet::reset_all_node_positions() {
 		return;
 
 	Array arrays = soft_mesh->surface_get_arrays(0);
-	Vector<Vector3> vs_vertices(arrays[VS::ARRAY_VERTEX]);
+	Vector<Vector3> vs_vertices(arrays[RS::ARRAY_VERTEX]);
 	const Vector3 *vs_vertices_read = vs_vertices.ptr();
 
 	for (int vertex_index = bt_soft_body->m_nodes.size() - 1; 0 <= vertex_index; --vertex_index) {

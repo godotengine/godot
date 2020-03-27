@@ -30,7 +30,7 @@
 
 #include "ray_shape_3d.h"
 
-#include "servers/physics_server.h"
+#include "servers/physics_server_3d.h"
 
 Vector<Vector3> RayShape3D::get_debug_mesh_lines() {
 
@@ -50,7 +50,7 @@ void RayShape3D::_update_shape() {
 	Dictionary d;
 	d["length"] = length;
 	d["slips_on_slope"] = slips_on_slope;
-	PhysicsServer::get_singleton()->shape_set_data(get_shape(), d);
+	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), d);
 	Shape3D::_update_shape();
 }
 
@@ -92,7 +92,7 @@ void RayShape3D::_bind_methods() {
 }
 
 RayShape3D::RayShape3D() :
-		Shape3D(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_RAY)) {
+		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_RAY)) {
 
 	length = 1.0;
 	slips_on_slope = false;

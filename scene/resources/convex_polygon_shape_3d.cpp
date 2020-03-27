@@ -30,7 +30,7 @@
 
 #include "convex_polygon_shape_3d.h"
 #include "core/math/quick_hull.h"
-#include "servers/physics_server.h"
+#include "servers/physics_server_3d.h"
 
 Vector<Vector3> ConvexPolygonShape3D::get_debug_mesh_lines() {
 
@@ -67,7 +67,7 @@ real_t ConvexPolygonShape3D::get_enclosing_radius() const {
 
 void ConvexPolygonShape3D::_update_shape() {
 
-	PhysicsServer::get_singleton()->shape_set_data(get_shape(), points);
+	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), points);
 	Shape3D::_update_shape();
 }
 
@@ -92,5 +92,5 @@ void ConvexPolygonShape3D::_bind_methods() {
 }
 
 ConvexPolygonShape3D::ConvexPolygonShape3D() :
-		Shape3D(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CONVEX_POLYGON)) {
+		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_CONVEX_POLYGON)) {
 }

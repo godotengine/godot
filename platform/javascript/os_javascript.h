@@ -35,7 +35,7 @@
 #include "core/input/input_filter.h"
 #include "drivers/unix/os_unix.h"
 #include "servers/audio_server.h"
-#include "servers/visual/rasterizer.h"
+#include "servers/rendering/rasterizer.h"
 
 #include <emscripten/html5.h>
 

@@ -36,7 +36,7 @@
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
-#include "servers/visual/visual_server_raster.h"
+#include "servers/rendering/rendering_server_raster.h"
 
 #include <emscripten.h>
 #include <png.h>
@@ -962,7 +962,7 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	setenv("LANG", locale_ptr, true);
 
 	AudioDriverManager::initialize(p_audio_driver);
-	VisualServer *visual_server = memnew(VisualServerRaster());
+	RenderingServer *rendering_server = memnew(RenderingServerRaster());
 	input = memnew(InputDefault);
 
 	EMSCRIPTEN_RESULT result;
@@ -1016,7 +1016,7 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	);
 	/* clang-format on */
 
-	visual_server->init();
+	rendering_server->init();
 
 	return OK;
 }

@@ -114,7 +114,7 @@
 	void GdNavigationServer::MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3)
 
 GdNavigationServer::GdNavigationServer() :
-		NavigationServer(),
+		NavigationServer3D(),
 		active(true) {
 }
 

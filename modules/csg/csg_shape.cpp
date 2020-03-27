@@ -43,16 +43,16 @@ void CSGShape3D::set_use_collision(bool p_enable) {
 
 	if (use_collision) {
 		root_collision_shape.instance();
-		root_collision_instance = PhysicsServer::get_singleton()->body_create(PhysicsServer::BODY_MODE_STATIC);
-		PhysicsServer::get_singleton()->body_set_state(root_collision_instance, PhysicsServer::BODY_STATE_TRANSFORM, get_global_transform());
-		PhysicsServer::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
-		PhysicsServer::get_singleton()->body_set_space(root_collision_instance, get_world()->get_space());
-		PhysicsServer::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
+		root_collision_instance = PhysicsServer3D::get_singleton()->body_create(PhysicsServer3D::BODY_MODE_STATIC);
+		PhysicsServer3D::get_singleton()->body_set_state(root_collision_instance, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
+		PhysicsServer3D::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
+		PhysicsServer3D::get_singleton()->body_set_space(root_collision_instance, get_world()->get_space());
+		PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
 		set_collision_layer(collision_layer);
 		set_collision_mask(collision_mask);
 		_make_dirty(); //force update
 	} else {
-		PhysicsServer::get_singleton()->free(root_collision_instance);
+		PhysicsServer3D::get_singleton()->free(root_collision_instance);
 		root_collision_instance = RID();
 		root_collision_shape.unref();
 	}
@@ -66,7 +66,7 @@ bool CSGShape3D::is_using_collision() const {
 void CSGShape3D::set_collision_layer(uint32_t p_layer) {
 	collision_layer = p_layer;
 	if (root_collision_instance.is_valid()) {
-		PhysicsServer::get_singleton()->body_set_collision_layer(root_collision_instance, p_layer);
+		PhysicsServer3D::get_singleton()->body_set_collision_layer(root_collision_instance, p_layer);
 	}
 }
 
@@ -79,7 +79,7 @@ void CSGShape3D::set_collision_mask(uint32_t p_mask) {
 
 	collision_mask = p_mask;
 	if (root_collision_instance.is_valid()) {
-		PhysicsServer::get_singleton()->body_set_collision_mask(root_collision_instance, p_mask);
+		PhysicsServer3D::get_singleton()->body_set_collision_mask(root_collision_instance, p_mask);
 	}
 }
 
@@ -506,11 +506,11 @@ void CSGShape3D::_notification(int p_what) {
 
 		if (use_collision && is_root_shape()) {
 			root_collision_shape.instance();
-			root_collision_instance = PhysicsServer::get_singleton()->body_create(PhysicsServer::BODY_MODE_STATIC);
-			PhysicsServer::get_singleton()->body_set_state(root_collision_instance, PhysicsServer::BODY_STATE_TRANSFORM, get_global_transform());
-			PhysicsServer::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
-			PhysicsServer::get_singleton()->body_set_space(root_collision_instance, get_world()->get_space());
-			PhysicsServer::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
+			root_collision_instance = PhysicsServer3D::get_singleton()->body_create(PhysicsServer3D::BODY_MODE_STATIC);
+			PhysicsServer3D::get_singleton()->body_set_state(root_collision_instance, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
+			PhysicsServer3D::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
+			PhysicsServer3D::get_singleton()->body_set_space(root_collision_instance, get_world()->get_space());
+			PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
 			set_collision_layer(collision_layer);
 			set_collision_mask(collision_mask);
 		}
@@ -539,7 +539,7 @@ void CSGShape3D::_notification(int p_what) {
 		parent = NULL;
 
 		if (use_collision && is_root_shape() && root_collision_instance.is_valid()) {
-			PhysicsServer::get_singleton()->free(root_collision_instance);
+			PhysicsServer3D::get_singleton()->free(root_collision_instance);
 			root_collision_instance = RID();
 			root_collision_shape.unref();
 		}

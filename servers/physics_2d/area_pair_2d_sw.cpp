@@ -45,14 +45,14 @@ bool AreaPair2DSW::setup(real_t p_step) {
 
 		if (result) {
 
-			if (area->get_space_override_mode() != Physics2DServer::AREA_SPACE_OVERRIDE_DISABLED)
+			if (area->get_space_override_mode() != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED)
 				body->add_area(area);
 			if (area->has_monitor_callback())
 				area->add_body_to_query(body, body_shape, area_shape);
 
 		} else {
 
-			if (area->get_space_override_mode() != Physics2DServer::AREA_SPACE_OVERRIDE_DISABLED)
+			if (area->get_space_override_mode() != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED)
 				body->remove_area(area);
 			if (area->has_monitor_callback())
 				area->remove_body_from_query(body, body_shape, area_shape);
@@ -76,7 +76,7 @@ AreaPair2DSW::AreaPair2DSW(Body2DSW *p_body, int p_body_shape, Area2DSW *p_area,
 	colliding = false;
 	body->add_constraint(this, 0);
 	area->add_constraint(this);
-	if (p_body->get_mode() == Physics2DServer::BODY_MODE_KINEMATIC) //need to be active to process pair
+	if (p_body->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC) //need to be active to process pair
 		p_body->set_active(true);
 }
 
@@ -84,7 +84,7 @@ AreaPair2DSW::~AreaPair2DSW() {
 
 	if (colliding) {
 
-		if (area->get_space_override_mode() != Physics2DServer::AREA_SPACE_OVERRIDE_DISABLED)
+		if (area->get_space_override_mode() != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED)
 			body->remove_area(area);
 		if (area->has_monitor_callback())
 			area->remove_body_from_query(body, body_shape, area_shape);
