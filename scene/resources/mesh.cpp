@@ -372,7 +372,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 	ERR_FAIL_COND_V(arrays.size() != ARRAY_MAX, Ref<ArrayMesh>());
 
 	{
-		int *ir;
+		int *ir = NULL;
 		Vector<int> indices = arrays[ARRAY_INDEX];
 		bool has_indices = false;
 		Vector<Vector3> vertices = arrays[ARRAY_VERTEX];

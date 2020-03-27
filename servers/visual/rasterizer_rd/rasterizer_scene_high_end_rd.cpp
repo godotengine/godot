@@ -809,7 +809,7 @@ void RasterizerSceneHighEndRD::_render_list(RenderingDevice::DrawListID p_draw_l
 			}
 		}
 
-		ShaderVersion shader_version;
+		ShaderVersion shader_version = SHADER_VERSION_MAX;
 
 		switch (p_pass_mode) {
 			case PASS_MODE_COLOR:
@@ -855,7 +855,7 @@ void RasterizerSceneHighEndRD::_render_list(RenderingDevice::DrawListID p_draw_l
 
 		pipeline = &shader->pipelines[cull_variant][primitive][shader_version];
 
-		RD::VertexFormatID vertex_format;
+		RD::VertexFormatID vertex_format = -1;
 		RID vertex_array_rd;
 		RID index_array_rd;
 
