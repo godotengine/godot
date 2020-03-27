@@ -232,14 +232,6 @@ private:
 
 	static AudioServer *singleton;
 
-	// TODO create an audiodata pool to optimize memory
-
-	Map<void *, uint32_t> audio_data;
-	size_t audio_data_total_mem;
-	size_t audio_data_max_mem;
-
-	Mutex audio_data_lock;
-
 	void init_channels_and_buffers();
 
 	void _mix_step();
@@ -349,12 +341,6 @@ public:
 	virtual double get_output_latency() const;
 	virtual double get_time_to_next_mix() const;
 	virtual double get_time_since_last_mix() const;
-
-	void *audio_data_alloc(uint32_t p_data_len, const uint8_t *p_from_data = NULL);
-	void audio_data_free(void *p_data);
-
-	size_t audio_data_get_total_memory_usage() const;
-	size_t audio_data_get_max_memory_usage() const;
 
 	void add_callback(AudioCallback p_callback, void *p_userdata);
 	void remove_callback(AudioCallback p_callback, void *p_userdata);

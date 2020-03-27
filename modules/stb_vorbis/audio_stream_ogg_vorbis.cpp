@@ -122,7 +122,7 @@ void AudioStreamPlaybackOGGVorbis::seek(float p_time) {
 AudioStreamPlaybackOGGVorbis::~AudioStreamPlaybackOGGVorbis() {
 	if (ogg_alloc.alloc_buffer) {
 		stb_vorbis_close(ogg_stream);
-		AudioServer::get_singleton()->audio_data_free(ogg_alloc.alloc_buffer);
+		memfree(ogg_alloc.alloc_buffer);
 	}
 }
 
@@ -134,7 +134,7 @@ Ref<AudioStreamPlayback> AudioStreamOGGVorbis::instance_playback() {
 
 	ovs.instance();
 	ovs->vorbis_stream = Ref<AudioStreamOGGVorbis>(this);
-	ovs->ogg_alloc.alloc_buffer = (char *)AudioServer::get_singleton()->audio_data_alloc(decode_mem_size);
+	ovs->ogg_alloc.alloc_buffer = (char *)memalloc(decode_mem_size);
 	ovs->ogg_alloc.alloc_buffer_length_in_bytes = decode_mem_size;
 	ovs->frames_mixed = 0;
 	ovs->active = false;
@@ -143,7 +143,7 @@ Ref<AudioStreamPlayback> AudioStreamOGGVorbis::instance_playback() {
 	ovs->ogg_stream = stb_vorbis_open_memory((const unsigned char *)data, data_len, &error, &ovs->ogg_alloc);
 	if (!ovs->ogg_stream) {
 
-		AudioServer::get_singleton()->audio_data_free(ovs->ogg_alloc.alloc_buffer);
+		memfree(ovs->ogg_alloc.alloc_buffer);
 		ovs->ogg_alloc.alloc_buffer = NULL;
 		ERR_FAIL_COND_V(!ovs->ogg_stream, Ref<AudioStreamPlaybackOGGVorbis>());
 	}
@@ -158,7 +158,7 @@ String AudioStreamOGGVorbis::get_stream_name() const {
 
 void AudioStreamOGGVorbis::clear_data() {
 	if (data) {
-		AudioServer::get_singleton()->audio_data_free(data);
+		memfree(data);
 		data = NULL;
 		data_len = 0;
 	}
@@ -210,7 +210,8 @@ void AudioStreamOGGVorbis::set_data(const Vector<uint8_t> &p_data) {
 			// free any existing data
 			clear_data();
 
-			data = AudioServer::get_singleton()->audio_data_alloc(src_data_len, src_datar);
+			data = memalloc(src_data_len);
+			copymem(data, src_datar, src_data_len);
 			data_len = src_data_len;
 
 			break;
