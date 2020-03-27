@@ -333,7 +333,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 	uint8_t *vw = r_vertex_array.ptrw();
 
-	uint8_t *iw;
+	uint8_t *iw = NULL;
 	if (r_index_array.size()) {
 		iw = r_index_array.ptrw();
 	}
