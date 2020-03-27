@@ -31,10 +31,10 @@
 #ifndef ROOT_MOTION_VIEW_H
 #define ROOT_MOTION_VIEW_H
 
-#include "scene/3d/visual_instance.h"
+#include "scene/3d/visual_instance_3d.h"
 
-class RootMotionView : public VisualInstance {
-	GDCLASS(RootMotionView, VisualInstance);
+class RootMotionView : public VisualInstance3D {
+	GDCLASS(RootMotionView, VisualInstance3D);
 
 public:
 	RID immediate;

@@ -36,8 +36,8 @@
 #include "core/os/thread_safe.h"
 #include "core/self_list.h"
 #include "scene/resources/mesh.h"
-#include "scene/resources/world.h"
 #include "scene/resources/world_2d.h"
+#include "scene/resources/world_3d.h"
 
 #undef Window
 
@@ -189,7 +189,7 @@ private:
 	void _flush_delete_queue();
 	//optimization
 	friend class CanvasItem;
-	friend class Spatial;
+	friend class Node3D;
 	friend class Viewport;
 
 	SelfList<Node>::List xform_change_list;

@@ -34,12 +34,12 @@
 #define CSGJS_HEADER_ONLY
 
 #include "csg.h"
-#include "scene/3d/visual_instance.h"
-#include "scene/resources/concave_polygon_shape.h"
+#include "scene/3d/visual_instance_3d.h"
+#include "scene/resources/concave_polygon_shape_3d.h"
 #include "thirdparty/misc/mikktspace.h"
 
-class CSGShape : public GeometryInstance {
-	GDCLASS(CSGShape, GeometryInstance);
+class CSGShape3D : public GeometryInstance3D {
+	GDCLASS(CSGShape3D, GeometryInstance3D);
 
 public:
 	enum Operation {
@@ -51,7 +51,7 @@ public:
 
 private:
 	Operation operation;
-	CSGShape *parent;
+	CSGShape3D *parent;
 
 	CSGBrush *brush;
 
@@ -63,7 +63,7 @@ private:
 	bool use_collision;
 	uint32_t collision_layer;
 	uint32_t collision_mask;
-	Ref<ConcavePolygonShape> root_collision_shape;
+	Ref<ConcavePolygonShape3D> root_collision_shape;
 	RID root_collision_instance;
 
 	bool calculate_tangents;
@@ -111,7 +111,7 @@ protected:
 
 	static void _bind_methods();
 
-	friend class CSGCombiner;
+	friend class CSGCombiner3D;
 	CSGBrush *_get_brush();
 
 	virtual void _validate_property(PropertyInfo &property) const;
@@ -149,24 +149,24 @@ public:
 	bool is_calculating_tangents() const;
 
 	bool is_root_shape() const;
-	CSGShape();
-	~CSGShape();
+	CSGShape3D();
+	~CSGShape3D();
 };
 
-VARIANT_ENUM_CAST(CSGShape::Operation)
+VARIANT_ENUM_CAST(CSGShape3D::Operation)
 
-class CSGCombiner : public CSGShape {
-	GDCLASS(CSGCombiner, CSGShape);
+class CSGCombiner3D : public CSGShape3D {
+	GDCLASS(CSGCombiner3D, CSGShape3D);
 
 private:
 	virtual CSGBrush *_build_brush();
 
 public:
-	CSGCombiner();
+	CSGCombiner3D();
 };
 
-class CSGPrimitive : public CSGShape {
-	GDCLASS(CSGPrimitive, CSGShape);
+class CSGPrimitive3D : public CSGShape3D {
+	GDCLASS(CSGPrimitive3D, CSGShape3D);
 
 private:
 	bool invert_faces;
@@ -179,11 +179,11 @@ public:
 	void set_invert_faces(bool p_invert);
 	bool is_inverting_faces();
 
-	CSGPrimitive();
+	CSGPrimitive3D();
 };
 
-class CSGMesh : public CSGPrimitive {
-	GDCLASS(CSGMesh, CSGPrimitive);
+class CSGMesh3D : public CSGPrimitive3D {
+	GDCLASS(CSGMesh3D, CSGPrimitive3D);
 
 	virtual CSGBrush *_build_brush();
 
@@ -203,9 +203,9 @@ public:
 	Ref<Material> get_material() const;
 };
 
-class CSGSphere : public CSGPrimitive {
+class CSGSphere3D : public CSGPrimitive3D {
 
-	GDCLASS(CSGSphere, CSGPrimitive);
+	GDCLASS(CSGSphere3D, CSGPrimitive3D);
 	virtual CSGBrush *_build_brush();
 
 	Ref<Material> material;
@@ -233,12 +233,12 @@ public:
 	void set_smooth_faces(bool p_smooth_faces);
 	bool get_smooth_faces() const;
 
-	CSGSphere();
+	CSGSphere3D();
 };
 
-class CSGBox : public CSGPrimitive {
+class CSGBox3D : public CSGPrimitive3D {
 
-	GDCLASS(CSGBox, CSGPrimitive);
+	GDCLASS(CSGBox3D, CSGPrimitive3D);
 	virtual CSGBrush *_build_brush();
 
 	Ref<Material> material;
@@ -262,12 +262,12 @@ public:
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 
-	CSGBox();
+	CSGBox3D();
 };
 
-class CSGCylinder : public CSGPrimitive {
+class CSGCylinder3D : public CSGPrimitive3D {
 
-	GDCLASS(CSGCylinder, CSGPrimitive);
+	GDCLASS(CSGCylinder3D, CSGPrimitive3D);
 	virtual CSGBrush *_build_brush();
 
 	Ref<Material> material;
@@ -299,12 +299,12 @@ public:
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 
-	CSGCylinder();
+	CSGCylinder3D();
 };
 
-class CSGTorus : public CSGPrimitive {
+class CSGTorus3D : public CSGPrimitive3D {
 
-	GDCLASS(CSGTorus, CSGPrimitive);
+	GDCLASS(CSGTorus3D, CSGPrimitive3D);
 	virtual CSGBrush *_build_brush();
 
 	Ref<Material> material;
@@ -336,12 +336,12 @@ public:
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 
-	CSGTorus();
+	CSGTorus3D();
 };
 
-class CSGPolygon : public CSGPrimitive {
+class CSGPolygon3D : public CSGPrimitive3D {
 
-	GDCLASS(CSGPolygon, CSGPrimitive);
+	GDCLASS(CSGPolygon3D, CSGPrimitive3D);
 
 public:
 	enum Mode {
@@ -431,10 +431,10 @@ public:
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 
-	CSGPolygon();
+	CSGPolygon3D();
 };
 
-VARIANT_ENUM_CAST(CSGPolygon::Mode)
-VARIANT_ENUM_CAST(CSGPolygon::PathRotation)
+VARIANT_ENUM_CAST(CSGPolygon3D::Mode)
+VARIANT_ENUM_CAST(CSGPolygon3D::PathRotation)
 
 #endif // CSG_SHAPE_H

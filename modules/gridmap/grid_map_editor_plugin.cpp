@@ -32,8 +32,8 @@
 #include "core/input/input_filter.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
-#include "editor/plugins/spatial_editor_plugin.h"
-#include "scene/3d/camera.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
+#include "scene/3d/camera_3d.h"
 
 #include "core/math/geometry.h"
 #include "core/os/keyboard.h"
@@ -362,7 +362,7 @@ void GridMapEditor::_set_selection(bool p_active, const Vector3 &p_begin, const 
 	options->get_popup()->set_item_disabled(options->get_popup()->get_item_index(MENU_OPTION_SELECTION_FILL), !selection.active);
 }
 
-bool GridMapEditor::do_input_action(Camera *p_camera, const Point2 &p_point, bool p_click) {
+bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, bool p_click) {
 
 	if (!spatial_editor)
 		return false;
@@ -375,7 +375,7 @@ bool GridMapEditor::do_input_action(Camera *p_camera, const Point2 &p_point, boo
 	if (input_action != INPUT_PICK && input_action != INPUT_SELECT && input_action != INPUT_PASTE && !mesh_library->has_item(selected_palette))
 		return false;
 
-	Camera *camera = p_camera;
+	Camera3D *camera = p_camera;
 	Vector3 from = camera->project_ray_origin(p_point);
 	Vector3 normal = camera->project_ray_normal(p_point);
 	Transform local_xform = node->get_global_transform().affine_inverse();
@@ -639,7 +639,7 @@ void GridMapEditor::_do_paste() {
 	_clear_clipboard_data();
 }
 
-bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<InputEvent> &p_event) {
+bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
 	if (!node) {
 		return false;
 	}
@@ -660,8 +660,8 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 		}
 
 		if (mb->is_pressed()) {
-			SpatialEditorViewport::NavigationScheme nav_scheme = (SpatialEditorViewport::NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
-			if ((nav_scheme == SpatialEditorViewport::NAVIGATION_MAYA || nav_scheme == SpatialEditorViewport::NAVIGATION_MODO) && mb->get_alt()) {
+			Node3DEditorViewport::NavigationScheme nav_scheme = (Node3DEditorViewport::NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
+			if ((nav_scheme == Node3DEditorViewport::NAVIGATION_MAYA || nav_scheme == Node3DEditorViewport::NAVIGATION_MODO) && mb->get_alt()) {
 				input_action = INPUT_NONE;
 			} else if (mb->get_button_index() == BUTTON_LEFT) {
 
@@ -964,7 +964,7 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 	_update_selection_transform();
 	_update_paste_indicator();
 
-	spatial_editor = Object::cast_to<SpatialEditorPlugin>(editor->get_editor_plugin_screen());
+	spatial_editor = Object::cast_to<Node3DEditorPlugin>(editor->get_editor_plugin_screen());
 
 	if (!node) {
 		set_process(false);
@@ -1140,7 +1140,7 @@ void GridMapEditor::_notification(int p_what) {
 				p.d = edit_floor[edit_axis] * node->get_cell_size()[edit_axis];
 				p = node->get_transform().xform(p); // plane to snap
 
-				SpatialEditorPlugin *sep = Object::cast_to<SpatialEditorPlugin>(editor->get_editor_plugin_screen());
+				Node3DEditorPlugin *sep = Object::cast_to<Node3DEditorPlugin>(editor->get_editor_plugin_screen());
 				if (sep)
 					sep->snap_cursor_to_plane(p);
 			}
@@ -1217,7 +1217,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	spatial_editor_hb = memnew(HBoxContainer);
 	spatial_editor_hb->set_h_size_flags(SIZE_EXPAND_FILL);
 	spatial_editor_hb->set_alignment(BoxContainer::ALIGN_END);
-	SpatialEditor::get_singleton()->add_control_to_menu_panel(spatial_editor_hb);
+	Node3DEditor::get_singleton()->add_control_to_menu_panel(spatial_editor_hb);
 
 	spin_box_label = memnew(Label);
 	spin_box_label->set_text(TTR("Floor:"));
@@ -1519,10 +1519,10 @@ void GridMapEditorPlugin::_notification(int p_what) {
 
 		switch ((int)EditorSettings::get_singleton()->get("editors/grid_map/editor_side")) {
 			case 0: { // Left.
-				SpatialEditor::get_singleton()->get_palette_split()->move_child(grid_map_editor, 0);
+				Node3DEditor::get_singleton()->get_palette_split()->move_child(grid_map_editor, 0);
 			} break;
 			case 1: { // Right.
-				SpatialEditor::get_singleton()->get_palette_split()->move_child(grid_map_editor, 1);
+				Node3DEditor::get_singleton()->get_palette_split()->move_child(grid_map_editor, 1);
 			} break;
 		}
 	}

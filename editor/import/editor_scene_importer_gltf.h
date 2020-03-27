@@ -32,12 +32,12 @@
 #define EDITOR_SCENE_IMPORTER_GLTF_H
 
 #include "editor/import/resource_importer_scene.h"
-#include "scene/3d/skeleton.h"
-#include "scene/3d/spatial.h"
+#include "scene/3d/node_3d.h"
+#include "scene/3d/skeleton_3d.h"
 
 class AnimationPlayer;
-class BoneAttachment;
-class MeshInstance;
+class BoneAttachment3D;
+class MeshInstance3D;
 
 class EditorSceneImporterGLTF : public EditorSceneImporter {
 
@@ -192,7 +192,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		Vector<GLTFNodeIndex> roots;
 
 		// The created Skeleton for the scene
-		Skeleton *godot_skeleton;
+		Skeleton3D *godot_skeleton;
 
 		// Set of unique bone names for the skeleton
 		Set<String> unique_names;
@@ -395,15 +395,15 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 	Error _parse_animations(GLTFState &state);
 
-	BoneAttachment *_generate_bone_attachment(GLTFState &state, Skeleton *skeleton, const GLTFNodeIndex node_index);
-	MeshInstance *_generate_mesh_instance(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
-	Camera *_generate_camera(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
-	Spatial *_generate_spatial(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
+	BoneAttachment3D *_generate_bone_attachment(GLTFState &state, Skeleton3D *skeleton, const GLTFNodeIndex node_index);
+	MeshInstance3D *_generate_mesh_instance(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
+	Camera3D *_generate_camera(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
+	Node3D *_generate_spatial(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
 
-	void _generate_scene_node(GLTFState &state, Node *scene_parent, Spatial *scene_root, const GLTFNodeIndex node_index);
-	Spatial *_generate_scene(GLTFState &state, const int p_bake_fps);
+	void _generate_scene_node(GLTFState &state, Node *scene_parent, Node3D *scene_root, const GLTFNodeIndex node_index);
+	Node3D *_generate_scene(GLTFState &state, const int p_bake_fps);
 
-	void _process_mesh_instances(GLTFState &state, Spatial *scene_root);
+	void _process_mesh_instances(GLTFState &state, Node3D *scene_root);
 
 	void _assign_scene_names(GLTFState &state);
 

@@ -34,7 +34,7 @@
 #include "core/array.h"
 #include "core/resource.h"
 #include "scene/2d/light_occluder_2d.h"
-#include "scene/2d/navigation_polygon.h"
+#include "scene/2d/navigation_region_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 #include "scene/resources/shape_2d.h"
 #include "scene/resources/texture.h"

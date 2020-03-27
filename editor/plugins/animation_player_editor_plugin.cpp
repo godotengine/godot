@@ -39,7 +39,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/canvas_item_editor_plugin.h" // For onion skinning.
-#include "editor/plugins/spatial_editor_plugin.h" // For onion skinning.
+#include "editor/plugins/node_3d_editor_plugin.h" // For onion skinning.
 #include "scene/main/window.h"
 #include "servers/visual_server.h"
 
@@ -1385,9 +1385,9 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 	// Hide superfluous elements that would make the overlay unnecessary cluttered.
 	Dictionary canvas_edit_state;
 	Dictionary spatial_edit_state;
-	if (SpatialEditor::get_singleton()->is_visible()) {
+	if (Node3DEditor::get_singleton()->is_visible()) {
 		// 3D
-		spatial_edit_state = SpatialEditor::get_singleton()->get_state();
+		spatial_edit_state = Node3DEditor::get_singleton()->get_state();
 		Dictionary new_state = spatial_edit_state.duplicate();
 		new_state["show_grid"] = false;
 		new_state["show_origin"] = false;
@@ -1404,7 +1404,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 		}
 		new_state["viewports"] = vp;
 		// TODO: Save/restore only affected entries.
-		SpatialEditor::get_singleton()->set_state(new_state);
+		Node3DEditor::get_singleton()->set_state(new_state);
 	} else { // CanvasItemEditor
 		// 2D
 		canvas_edit_state = CanvasItemEditor::get_singleton()->get_state();
@@ -1465,7 +1465,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 		onion.captures_valid.write[cidx] = valid;
 		if (valid) {
 			player->seek(pos, true);
-			get_tree()->flush_transform_notifications(); // Needed for transforms of Spatials.
+			get_tree()->flush_transform_notifications(); // Needed for transforms of Node3Ds.
 			values_backup.update_skeletons(); // Needed for Skeletons (2D & 3D).
 
 			VS::get_singleton()->viewport_set_active(onion.captures[cidx], true);
@@ -1489,9 +1489,9 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 	player->restore_animated_values(values_backup);
 
 	// Restore state of main editors.
-	if (SpatialEditor::get_singleton()->is_visible()) {
+	if (Node3DEditor::get_singleton()->is_visible()) {
 		// 3D
-		SpatialEditor::get_singleton()->set_state(spatial_edit_state);
+		Node3DEditor::get_singleton()->set_state(spatial_edit_state);
 	} else { // CanvasItemEditor
 		// 2D
 		CanvasItemEditor::get_singleton()->set_state(canvas_edit_state);

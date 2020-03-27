@@ -32,9 +32,9 @@
 #include "core/io/image_loader.h"
 #include "editor/import/resource_importer_scene.h"
 #include "import_utils.h"
-#include "scene/3d/camera.h"
-#include "scene/3d/light.h"
-#include "scene/3d/mesh_instance.h"
+#include "scene/3d/camera_3d.h"
+#include "scene/3d/light_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/main/node.h"
 #include "scene/resources/material.h"
 #include "scene/resources/surface_tool.h"
@@ -297,7 +297,7 @@ aiBone *EditorSceneImporterAssimp::get_bone_from_stack(ImportState &state, aiStr
 	return NULL;
 }
 
-Spatial *
+Node3D *
 EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene, const uint32_t p_flags, int p_bake_fps,
 		const int32_t p_max_bone_weights) {
 	ERR_FAIL_COND_V(scene == NULL, NULL);
@@ -343,7 +343,7 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 			String node_name = AssimpUtils::get_assimp_string(element_assimp_node->mName);
 			//print_verbose("node: " + node_name);
 
-			Spatial *spatial = NULL;
+			Node3D *spatial = NULL;
 			Transform transform = AssimpUtils::assimp_matrix_transform(element_assimp_node->mTransformation);
 
 			// retrieve this node bone
@@ -356,7 +356,7 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 			} else if (state.armature_nodes.find(element_assimp_node)) {
 				// create skeleton
 				print_verbose("Making skeleton: " + node_name);
-				Skeleton *skeleton = memnew(Skeleton);
+				Skeleton3D *skeleton = memnew(Skeleton3D);
 				spatial = skeleton;
 				if (!state.armature_skeletons.has(element_assimp_node)) {
 					state.armature_skeletons.insert(element_assimp_node, skeleton);
@@ -364,7 +364,7 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 			} else if (bone != NULL) {
 				continue;
 			} else {
-				spatial = memnew(Spatial);
+				spatial = memnew(Node3D);
 			}
 
 			ERR_CONTINUE_MSG(spatial == NULL, "FBX Import - are we out of ram?");
@@ -381,11 +381,11 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 			// flat node map parent lookup tool
 			state.flat_node_map.insert(element_assimp_node, spatial);
 
-			Map<const aiNode *, Spatial *>::Element *parent_lookup = state.flat_node_map.find(parent_assimp_node);
+			Map<const aiNode *, Node3D *>::Element *parent_lookup = state.flat_node_map.find(parent_assimp_node);
 
 			// note: this always fails on the root node :) keep that in mind this is by design
 			if (parent_lookup) {
-				Spatial *parent_node = parent_lookup->value();
+				Node3D *parent_node = parent_lookup->value();
 
 				ERR_FAIL_COND_V_MSG(parent_node == NULL, state.root,
 						"Parent node invalid even though lookup successful, out of ram?");
@@ -435,7 +435,7 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 
 			String bone_name = AssimpUtils::get_anim_string_from_assimp(bone->mName);
 			ERR_CONTINUE_MSG(armature_for_bone == NULL, "Armature for bone invalid: " + bone_name);
-			Skeleton *skeleton = state.armature_skeletons[armature_for_bone];
+			Skeleton3D *skeleton = state.armature_skeletons[armature_for_bone];
 
 			state.skeleton_bone_map[bone] = skeleton;
 
@@ -464,11 +464,11 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 
 		print_verbose("generating mesh phase from skeletal mesh");
 
-		List<Spatial *> cleanup_template_nodes;
+		List<Node3D *> cleanup_template_nodes;
 
-		for (Map<const aiNode *, Spatial *>::Element *key_value_pair = state.flat_node_map.front(); key_value_pair; key_value_pair = key_value_pair->next()) {
+		for (Map<const aiNode *, Node3D *>::Element *key_value_pair = state.flat_node_map.front(); key_value_pair; key_value_pair = key_value_pair->next()) {
 			const aiNode *assimp_node = key_value_pair->key();
-			Spatial *mesh_template = key_value_pair->value();
+			Node3D *mesh_template = key_value_pair->value();
 
 			ERR_CONTINUE(assimp_node == NULL);
 			ERR_CONTINUE(mesh_template == NULL);
@@ -488,7 +488,7 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 			Transform node_transform = AssimpUtils::assimp_matrix_transform(assimp_node->mTransformation);
 
 			if (assimp_node->mNumMeshes > 0) {
-				MeshInstance *mesh = create_mesh(state, assimp_node, node_name, parent_node, node_transform);
+				MeshInstance3D *mesh = create_mesh(state, assimp_node, node_name, parent_node, node_transform);
 				if (mesh) {
 
 					parent_node->remove_child(mesh_template);
@@ -522,7 +522,7 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 			}
 		}
 
-		for (List<Spatial *>::Element *element = cleanup_template_nodes.front(); element; element = element->next()) {
+		for (List<Node3D *>::Element *element = cleanup_template_nodes.front(); element; element = element->next()) {
 			if (element->get()) {
 				memdelete(element->get());
 			}
@@ -559,7 +559,7 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 
 void EditorSceneImporterAssimp::_insert_animation_track(ImportState &scene, const aiAnimation *assimp_anim, int track_id,
 		int anim_fps, Ref<Animation> animation, float ticks_per_second,
-		Skeleton *skeleton, const NodePath &node_path,
+		Skeleton3D *skeleton, const NodePath &node_path,
 		const String &node_name, aiBone *track_bone) {
 	const aiNodeAnim *assimp_track = assimp_anim->mChannels[track_id];
 	//make transform track
@@ -652,9 +652,9 @@ void EditorSceneImporterAssimp::_insert_animation_track(ImportState &scene, cons
 
 // I really do not like this but need to figure out a better way of removing it later.
 Node *EditorSceneImporterAssimp::get_node_by_name(ImportState &state, String name) {
-	for (Map<const aiNode *, Spatial *>::Element *key_value_pair = state.flat_node_map.front(); key_value_pair; key_value_pair = key_value_pair->next()) {
+	for (Map<const aiNode *, Node3D *>::Element *key_value_pair = state.flat_node_map.front(); key_value_pair; key_value_pair = key_value_pair->next()) {
 		const aiNode *assimp_node = key_value_pair->key();
-		Spatial *node = key_value_pair->value();
+		Node3D *node = key_value_pair->value();
 
 		String node_name = AssimpUtils::get_assimp_string(assimp_node->mName);
 		if (name == node_name && node) {
@@ -747,7 +747,7 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 			continue; //do not bother
 		}
 
-		Skeleton *skeleton = NULL;
+		Skeleton3D *skeleton = NULL;
 		NodePath node_path;
 		aiBone *bone = NULL;
 
@@ -805,7 +805,7 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 
 		Node *item = get_node_by_name(state, mesh_name);
 		ERR_CONTINUE_MSG(!item, "failed to look up node by name");
-		const MeshInstance *mesh_instance = Object::cast_to<MeshInstance>(item);
+		const MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(item);
 		ERR_CONTINUE(mesh_instance == NULL);
 
 		String base_path = state.root->get_path_to(mesh_instance);
@@ -842,7 +842,7 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 Ref<Mesh>
 EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &state, const Vector<int> &p_surface_indices,
 		const aiNode *assimp_node, Ref<Skin> &skin,
-		Skeleton *&skeleton_assigned) {
+		Skeleton3D *&skeleton_assigned) {
 
 	Ref<ArrayMesh> mesh;
 	mesh.instance();
@@ -1299,7 +1299,7 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 /**
  * Create a new mesh for the node supplied
  */
-MeshInstance *
+MeshInstance3D *
 EditorSceneImporterAssimp::create_mesh(ImportState &state, const aiNode *assimp_node, const String &node_name, Node *active_node, Transform node_transform) {
 	/* MESH NODE */
 	Ref<Mesh> mesh;
@@ -1325,7 +1325,7 @@ EditorSceneImporterAssimp::create_mesh(ImportState &state, const aiNode *assimp_
 		mesh_key += itos(surface_indices[i]);
 	}
 
-	Skeleton *skeleton = NULL;
+	Skeleton3D *skeleton = NULL;
 	aiNode *armature = NULL;
 
 	if (!state.mesh_cache.has(mesh_key)) {
@@ -1333,7 +1333,7 @@ EditorSceneImporterAssimp::create_mesh(ImportState &state, const aiNode *assimp_
 		state.mesh_cache[mesh_key] = mesh;
 	}
 
-	MeshInstance *mesh_node = memnew(MeshInstance);
+	MeshInstance3D *mesh_node = memnew(MeshInstance3D);
 	mesh = state.mesh_cache[mesh_key];
 	mesh_node->set_mesh(mesh);
 
@@ -1407,20 +1407,20 @@ EditorSceneImporterAssimp::create_mesh(ImportState &state, const aiNode *assimp_
  * Create a light for the scene
  * Automatically caches lights for lookup later
  */
-Spatial *EditorSceneImporterAssimp::create_light(
+Node3D *EditorSceneImporterAssimp::create_light(
 		ImportState &state,
 		const String &node_name,
 		Transform &look_at_transform) {
-	Light *light = NULL;
+	Light3D *light = NULL;
 	aiLight *assimp_light = state.assimp_scene->mLights[state.light_cache[node_name]];
 	ERR_FAIL_COND_V(!assimp_light, NULL);
 
 	if (assimp_light->mType == aiLightSource_DIRECTIONAL) {
-		light = memnew(DirectionalLight);
+		light = memnew(DirectionalLight3D);
 	} else if (assimp_light->mType == aiLightSource_POINT) {
-		light = memnew(OmniLight);
+		light = memnew(OmniLight3D);
 	} else if (assimp_light->mType == aiLightSource_SPOT) {
-		light = memnew(SpotLight);
+		light = memnew(SpotLight3D);
 	}
 	ERR_FAIL_COND_V(light == NULL, NULL);
 
@@ -1453,14 +1453,14 @@ Spatial *EditorSceneImporterAssimp::create_light(
 /**
  * Create camera for the scene
  */
-Spatial *EditorSceneImporterAssimp::create_camera(
+Node3D *EditorSceneImporterAssimp::create_camera(
 		ImportState &state,
 		const String &node_name,
 		Transform &look_at_transform) {
 	aiCamera *camera = state.assimp_scene->mCameras[state.camera_cache[node_name]];
 	ERR_FAIL_COND_V(!camera, NULL);
 
-	Camera *camera_node = memnew(Camera);
+	Camera3D *camera_node = memnew(Camera3D);
 	ERR_FAIL_COND_V(!camera_node, NULL);
 	float near = camera->mClipPlaneNear;
 	if (Math::is_equal_approx(near, 0.0f)) {

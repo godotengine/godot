@@ -32,7 +32,7 @@
 #define TILE_SET_EDITOR_PLUGIN_H
 
 #include "editor/editor_node.h"
-#include "scene/2d/sprite.h"
+#include "scene/2d/sprite_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 #include "scene/resources/tile_set.h"
@@ -136,7 +136,7 @@ class TileSetEditor : public HSplitContainer {
 	Ref<NavigationPolygon> edited_navigation_shape;
 
 	int current_item_index;
-	Sprite *preview;
+	Sprite2D *preview;
 	ScrollContainer *scroll;
 	Label *empty_message;
 	Control *workspace_container;

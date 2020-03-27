@@ -122,7 +122,7 @@ void CachedData::clear_godot_api_cache() {
 	class_GodotResource = NULL;
 	class_Node = NULL;
 	class_Control = NULL;
-	class_Spatial = NULL;
+	class_Node3D = NULL;
 	class_WeakRef = NULL;
 	class_Callable = NULL;
 	class_SignalInfo = NULL;
@@ -251,7 +251,7 @@ void update_godot_api_cache() {
 	CACHE_CLASS_AND_CHECK(GodotResource, GODOT_API_CLASS(Resource));
 	CACHE_CLASS_AND_CHECK(Node, GODOT_API_CLASS(Node));
 	CACHE_CLASS_AND_CHECK(Control, GODOT_API_CLASS(Control));
-	CACHE_CLASS_AND_CHECK(Spatial, GODOT_API_CLASS(Spatial));
+	CACHE_CLASS_AND_CHECK(Node3D, GODOT_API_CLASS(Node3Dshou));
 	CACHE_CLASS_AND_CHECK(WeakRef, GODOT_API_CLASS(WeakRef));
 	CACHE_CLASS_AND_CHECK(Callable, GODOT_API_CLASS(Callable));
 	CACHE_CLASS_AND_CHECK(SignalInfo, GODOT_API_CLASS(SignalInfo));

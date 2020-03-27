@@ -605,7 +605,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 					} break;
 					case Animation::TYPE_TRANSFORM: {
 
-						Spatial *spatial = Object::cast_to<Spatial>(child);
+						Node3D *spatial = Object::cast_to<Node3D>(child);
 
 						if (!spatial) {
 							ERR_PRINT("AnimationTree: '" + String(E->get()) + "', transform track does not point to spatial:  '" + String(path) + "'");
@@ -618,9 +618,9 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 						track_xform->skeleton = NULL;
 						track_xform->bone_idx = -1;
 
-						if (path.get_subname_count() == 1 && Object::cast_to<Skeleton>(spatial)) {
+						if (path.get_subname_count() == 1 && Object::cast_to<Skeleton3D>(spatial)) {
 
-							Skeleton *sk = Object::cast_to<Skeleton>(spatial);
+							Skeleton3D *sk = Object::cast_to<Skeleton3D>(spatial);
 							int bone_idx = sk->find_bone(path.get_subname(0));
 							if (bone_idx != -1) {
 

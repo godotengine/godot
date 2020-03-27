@@ -32,8 +32,8 @@
 #define ANIMATION_PLAYER_H
 
 #include "scene/2d/node_2d.h"
-#include "scene/3d/skeleton.h"
-#include "scene/3d/spatial.h"
+#include "scene/3d/node_3d.h"
+#include "scene/3d/skeleton_3d.h"
 #include "scene/resources/animation.h"
 
 #ifdef TOOLS_ENABLED
@@ -90,9 +90,9 @@ private:
 		uint32_t id;
 		RES resource;
 		Node *node;
-		Spatial *spatial;
+		Node3D *spatial;
 		Node2D *node_2d;
-		Skeleton *skeleton;
+		Skeleton3D *skeleton;
 		int bone_idx;
 		// accumulated transforms
 

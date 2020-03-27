@@ -33,12 +33,12 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "main/main.h"
-#include "scene/3d/mesh_instance.h"
-#include "scene/3d/navigation_region.h"
-#include "scene/3d/physics_body.h"
+#include "node_3d_editor_plugin.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/navigation_region_3d.h"
+#include "scene/3d/physics_body_3d.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
-#include "spatial_editor_plugin.h"
 
 void MeshLibraryEditor::edit(const Ref<MeshLibrary> &p_mesh_library) {
 
@@ -71,16 +71,16 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 	if (!p_merge)
 		p_library->clear();
 
-	Map<int, MeshInstance *> mesh_instances;
+	Map<int, MeshInstance3D *> mesh_instances;
 
 	for (int i = 0; i < p_scene->get_child_count(); i++) {
 
 		Node *child = p_scene->get_child(i);
 
-		if (!Object::cast_to<MeshInstance>(child)) {
+		if (!Object::cast_to<MeshInstance3D>(child)) {
 			if (child->get_child_count() > 0) {
 				child = child->get_child(0);
-				if (!Object::cast_to<MeshInstance>(child)) {
+				if (!Object::cast_to<MeshInstance3D>(child)) {
 					continue;
 				}
 
@@ -88,7 +88,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 				continue;
 		}
 
-		MeshInstance *mi = Object::cast_to<MeshInstance>(child);
+		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(child);
 		Ref<Mesh> mesh = mi->get_mesh();
 		if (mesh.is_null())
 			continue;
@@ -118,10 +118,10 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 		for (int j = 0; j < mi->get_child_count(); j++) {
 
 			Node *child2 = mi->get_child(j);
-			if (!Object::cast_to<StaticBody>(child2))
+			if (!Object::cast_to<StaticBody3D>(child2))
 				continue;
 
-			StaticBody *sb = Object::cast_to<StaticBody>(child2);
+			StaticBody3D *sb = Object::cast_to<StaticBody3D>(child2);
 			List<uint32_t> shapes;
 			sb->get_shape_owners(&shapes);
 
@@ -135,7 +135,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 
 				for (int k = 0; k < sb->shape_owner_get_shape_count(E->get()); k++) {
 
-					Ref<Shape> collision = sb->shape_owner_get_shape(E->get(), k);
+					Ref<Shape3D> collision = sb->shape_owner_get_shape(E->get(), k);
 					if (!collision.is_valid())
 						continue;
 					MeshLibrary::ShapeData shape_data;
@@ -152,9 +152,9 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 		Transform navmesh_transform;
 		for (int j = 0; j < mi->get_child_count(); j++) {
 			Node *child2 = mi->get_child(j);
-			if (!Object::cast_to<NavigationRegion>(child2))
+			if (!Object::cast_to<NavigationRegion3D>(child2))
 				continue;
-			NavigationRegion *sb = Object::cast_to<NavigationRegion>(child2);
+			NavigationRegion3D *sb = Object::cast_to<NavigationRegion3D>(child2);
 			navmesh = sb->get_navigation_mesh();
 			navmesh_transform = sb->get_transform();
 			if (!navmesh.is_null())
@@ -267,7 +267,7 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 	file->connect("file_selected", callable_mp(this, &MeshLibraryEditor::_import_scene_cbk));
 
 	menu = memnew(MenuButton);
-	SpatialEditor::get_singleton()->add_control_to_menu_panel(menu);
+	Node3DEditor::get_singleton()->add_control_to_menu_panel(menu);
 	menu->set_position(Point2(1, 1));
 	menu->set_text(TTR("Mesh Library"));
 	menu->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("MeshLibrary", "EditorIcons"));

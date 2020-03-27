@@ -35,7 +35,7 @@
 #include "core/math/triangle_mesh.h"
 #include "core/resource.h"
 #include "scene/resources/material.h"
-#include "scene/resources/shape.h"
+#include "scene/resources/shape_3d.h"
 #include "servers/visual_server.h"
 
 class Mesh : public Resource {
@@ -131,8 +131,8 @@ public:
 	void generate_debug_mesh_lines(Vector<Vector3> &r_lines);
 	void generate_debug_mesh_indices(Vector<Vector3> &r_points);
 
-	Ref<Shape> create_trimesh_shape() const;
-	Ref<Shape> create_convex_shape() const;
+	Ref<Shape3D> create_trimesh_shape() const;
+	Ref<Shape3D> create_convex_shape() const;
 
 	Ref<Mesh> create_outline(float p_margin) const;
 
@@ -146,7 +146,7 @@ public:
 
 	static ConvexDecompositionFunc convex_composition_function;
 
-	Vector<Ref<Shape>> convex_decompose() const;
+	Vector<Ref<Shape3D>> convex_decompose() const;
 
 	Mesh();
 };

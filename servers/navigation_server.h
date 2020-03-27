@@ -37,7 +37,7 @@
 
 #include "core/object.h"
 #include "core/rid.h"
-#include "scene/3d/navigation_region.h"
+#include "scene/3d/navigation_region_3d.h"
 
 /// This server uses the concept of internal mutability.
 /// All the constant functions can be called in multithread because internally

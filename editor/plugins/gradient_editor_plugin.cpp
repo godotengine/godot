@@ -32,7 +32,7 @@
 
 #include "canvas_item_editor_plugin.h"
 #include "editor/editor_scale.h"
-#include "spatial_editor_plugin.h"
+#include "node_3d_editor_plugin.h"
 
 Size2 GradientEditor::get_minimum_size() const {
 	return Size2(0, 60) * EDSCALE;
