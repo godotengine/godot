@@ -1223,17 +1223,20 @@ void Viewport::_propagate_enter_world(Node *p_node) {
 		if (!p_node->is_inside_tree()) //may not have entered scene yet
 			return;
 
+#ifndef _3D_DISABLED
 		if (Object::cast_to<Node3D>(p_node) || Object::cast_to<WorldEnvironment>(p_node)) {
-
 			p_node->notification(Node3D::NOTIFICATION_ENTER_WORLD);
 		} else {
+#endif
 			Viewport *v = Object::cast_to<Viewport>(p_node);
 			if (v) {
 
 				if (v->world.is_valid() || v->own_world.is_valid())
 					return;
 			}
+#ifndef _3D_DISABLED
 		}
+#endif
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -1260,17 +1263,20 @@ void Viewport::_propagate_exit_world(Node *p_node) {
 		if (!p_node->is_inside_tree()) //may have exited scene already
 			return;
 
+#ifndef _3D_DISABLED
 		if (Object::cast_to<Node3D>(p_node) || Object::cast_to<WorldEnvironment>(p_node)) {
-
 			p_node->notification(Node3D::NOTIFICATION_EXIT_WORLD);
 		} else {
+#endif
 			Viewport *v = Object::cast_to<Viewport>(p_node);
 			if (v) {
 
 				if (v->world.is_valid() || v->own_world.is_valid())
 					return;
 			}
+#ifndef _3D_DISABLED
 		}
+#endif
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
