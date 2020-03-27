@@ -174,7 +174,8 @@ static Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer) {
 				//format = basist::transcoder_texture_format::cTFETC1; // get this from renderer
 				//imgfmt = Image::FORMAT_RGTC_RG;
 			} else {
-				//decompress
+				// FIXME: There wasn't anything here, but then imgformat is used uninitialized.
+				ERR_FAIL_V(image);
 			}
 		} break;
 		case BASIS_DECOMPRESS_RGB: {

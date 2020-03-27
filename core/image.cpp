@@ -1680,7 +1680,7 @@ Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, con
 				int pixel_ofs = y * w + x;
 				Color c = _get_color_at_ofs(ptr, pixel_ofs);
 
-				float roughness;
+				float roughness = 0;
 
 				switch (p_roughness_channel) {
 					case ROUGHNESS_CHANNEL_R: {
