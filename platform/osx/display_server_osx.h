@@ -148,6 +148,7 @@ public:
 
 	void _push_input(const Ref<InputEvent> &p_event);
 	void _process_key_events();
+	void _release_pressed_events();
 
 	String rendering_driver;
 
@@ -165,6 +166,7 @@ public:
 
 	bool window_focused;
 	bool drop_events;
+	bool in_dispatch_input_event = false;
 
 public:
 	virtual bool has_feature(Feature p_feature) const;
