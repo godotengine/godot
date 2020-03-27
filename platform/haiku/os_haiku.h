@@ -38,7 +38,7 @@
 #include "haiku_application.h"
 #include "haiku_direct_window.h"
 #include "servers/audio_server.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 class OS_Haiku : public OS_Unix {
 private:
@@ -46,7 +46,7 @@ private:
 	HaikuDirectWindow *window;
 	MainLoop *main_loop;
 	InputDefault *input;
-	VisualServer *visual_server;
+	RenderingServer *rendering_server;
 	VideoMode current_video_mode;
 	int video_driver_index;
 

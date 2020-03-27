@@ -40,7 +40,7 @@
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
@@ -470,7 +470,7 @@ void Control::_update_canvas_item_transform() {
 	Transform2D xform = _get_internal_transform();
 	xform[2] += get_position();
 
-	VisualServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), xform);
+	RenderingServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), xform);
 }
 
 void Control::_notification(int p_notification) {
@@ -588,8 +588,8 @@ void Control::_notification(int p_notification) {
 		case NOTIFICATION_DRAW: {
 
 			_update_canvas_item_transform();
-			VisualServer::get_singleton()->canvas_item_set_custom_rect(get_canvas_item(), !data.disable_visibility_clip, Rect2(Point2(), get_size()));
-			VisualServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), data.clip_contents);
+			RenderingServer::get_singleton()->canvas_item_set_custom_rect(get_canvas_item(), !data.disable_visibility_clip, Rect2(Point2(), get_size()));
+			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), data.clip_contents);
 			//emit_signal(SceneStringNames::get_singleton()->draw);
 
 		} break;

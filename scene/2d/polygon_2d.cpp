@@ -111,10 +111,10 @@ void Polygon2D::_notification(int p_what) {
 			ObjectID new_skeleton_id;
 
 			if (skeleton_node) {
-				VS::get_singleton()->canvas_item_attach_skeleton(get_canvas_item(), skeleton_node->get_skeleton());
+				RS::get_singleton()->canvas_item_attach_skeleton(get_canvas_item(), skeleton_node->get_skeleton());
 				new_skeleton_id = skeleton_node->get_instance_id();
 			} else {
-				VS::get_singleton()->canvas_item_attach_skeleton(get_canvas_item(), RID());
+				RS::get_singleton()->canvas_item_attach_skeleton(get_canvas_item(), RID());
 			}
 
 			if (new_skeleton_id != current_skeleton_id) {
@@ -307,7 +307,7 @@ void Polygon2D::_notification(int p_what) {
 			if (invert || polygons.size() == 0) {
 				Vector<int> indices = Geometry::triangulate_polygon(points);
 				if (indices.size()) {
-					VS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, points, colors, uvs, bones, weights, texture.is_valid() ? texture->get_rid() : RID(), -1, normal_map.is_valid() ? normal_map->get_rid() : RID(), specular_map.is_valid() ? specular_map->get_rid() : RID(), Color(specular_color.r, specular_color.g, specular_color.b, shininess));
+					RS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, points, colors, uvs, bones, weights, texture.is_valid() ? texture->get_rid() : RID(), -1, normal_map.is_valid() ? normal_map->get_rid() : RID(), specular_map.is_valid() ? specular_map->get_rid() : RID(), Color(specular_color.r, specular_color.g, specular_color.b, shininess));
 				}
 			} else {
 				//draw individual polygons
@@ -341,7 +341,7 @@ void Polygon2D::_notification(int p_what) {
 				}
 
 				if (total_indices.size()) {
-					VS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), total_indices, points, colors, uvs, bones, weights, texture.is_valid() ? texture->get_rid() : RID());
+					RS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), total_indices, points, colors, uvs, bones, weights, texture.is_valid() ? texture->get_rid() : RID());
 				}
 			}
 

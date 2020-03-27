@@ -47,7 +47,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display_server.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 void SceneTreeDock::_nodes_drag_begin() {
 

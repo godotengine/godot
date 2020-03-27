@@ -44,7 +44,7 @@
 #endif
 
 #if defined(VULKAN_ENABLED)
-#include "servers/visual/rasterizer_rd/rasterizer_rd.h"
+#include "servers/rendering/rasterizer_rd/rasterizer_rd.h"
 #endif
 
 #include "scene/resources/texture.h"
@@ -3615,9 +3615,9 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 #endif
 
 	/*
-	visual_server = memnew(VisualServerRaster);
+	rendering_server = memnew(RenderingServerRaster);
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
+		rendering_server = memnew(RenderingServerWrapMT(rendering_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
 	}
 	*/
 

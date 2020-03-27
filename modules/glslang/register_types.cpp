@@ -30,7 +30,7 @@
 
 #include "register_types.h"
 
-#include "servers/visual/rendering_device.h"
+#include "servers/rendering/rendering_device.h"
 
 #include <SPIRV/GlslangToSpv.h>
 #include <glslang/Include/Types.h>

@@ -34,7 +34,7 @@
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/texture.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 class ReflectionProbe : public VisualInstance3D {
 	GDCLASS(ReflectionProbe, VisualInstance3D);

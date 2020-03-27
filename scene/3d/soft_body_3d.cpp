@@ -36,11 +36,11 @@
 #include "scene/3d/collision_object_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/3d/skeleton_3d.h"
-#include "servers/physics_server.h"
+#include "servers/physics_server_3d.h"
 
-SoftBodyVisualServerHandler::SoftBodyVisualServerHandler() {}
+SoftBodyRenderingServerHandler::SoftBodyRenderingServerHandler() {}
 
-void SoftBodyVisualServerHandler::prepare(RID p_mesh, int p_surface) {
+void SoftBodyRenderingServerHandler::prepare(RID p_mesh, int p_surface) {
 	clear();
 
 	ERR_FAIL_COND(!p_mesh.is_valid());
@@ -51,19 +51,19 @@ void SoftBodyVisualServerHandler::prepare(RID p_mesh, int p_surface) {
 #warning Softbody is not working, needs to be redone considering that these functions no longer exist
 #endif
 #if 0
-	const uint32_t surface_format = VS::get_singleton()->mesh_surface_get_format(mesh, surface);
-	const int surface_vertex_len = VS::get_singleton()->mesh_surface_get_array_len(mesh, p_surface);
-	const int surface_index_len = VS::get_singleton()->mesh_surface_get_array_index_len(mesh, p_surface);
-	uint32_t surface_offsets[VS::ARRAY_MAX];
+	const uint32_t surface_format = RS::get_singleton()->mesh_surface_get_format(mesh, surface);
+	const int surface_vertex_len = RS::get_singleton()->mesh_surface_get_array_len(mesh, p_surface);
+	const int surface_index_len = RS::get_singleton()->mesh_surface_get_array_index_len(mesh, p_surface);
+	uint32_t surface_offsets[RS::ARRAY_MAX];
 
-	buffer = VS::get_singleton()->mesh_surface_get_array(mesh, surface);
-	stride = VS::get_singleton()->mesh_surface_make_offsets_from_format(surface_format, surface_vertex_len, surface_index_len, surface_offsets);
-	offset_vertices = surface_offsets[VS::ARRAY_VERTEX];
-	offset_normal = surface_offsets[VS::ARRAY_NORMAL];
+	buffer = RS::get_singleton()->mesh_surface_get_array(mesh, surface);
+	stride = RS::get_singleton()->mesh_surface_make_offsets_from_format(surface_format, surface_vertex_len, surface_index_len, surface_offsets);
+	offset_vertices = surface_offsets[RS::ARRAY_VERTEX];
+	offset_normal = surface_offsets[RS::ARRAY_NORMAL];
 #endif
 }
 
-void SoftBodyVisualServerHandler::clear() {
+void SoftBodyRenderingServerHandler::clear() {
 
 	if (mesh.is_valid()) {
 		buffer.resize(0);
@@ -72,28 +72,28 @@ void SoftBodyVisualServerHandler::clear() {
 	mesh = RID();
 }
 
-void SoftBodyVisualServerHandler::open() {
+void SoftBodyRenderingServerHandler::open() {
 	write_buffer = buffer.ptrw();
 }
 
-void SoftBodyVisualServerHandler::close() {
+void SoftBodyRenderingServerHandler::close() {
 	//write_buffer.release();
 }
 
-void SoftBodyVisualServerHandler::commit_changes() {
-	VS::get_singleton()->mesh_surface_update_region(mesh, surface, 0, buffer);
+void SoftBodyRenderingServerHandler::commit_changes() {
+	RS::get_singleton()->mesh_surface_update_region(mesh, surface, 0, buffer);
 }
 
-void SoftBodyVisualServerHandler::set_vertex(int p_vertex_id, const void *p_vector3) {
+void SoftBodyRenderingServerHandler::set_vertex(int p_vertex_id, const void *p_vector3) {
 	copymem(&write_buffer[p_vertex_id * stride + offset_vertices], p_vector3, sizeof(float) * 3);
 }
 
-void SoftBodyVisualServerHandler::set_normal(int p_vertex_id, const void *p_vector3) {
+void SoftBodyRenderingServerHandler::set_normal(int p_vertex_id, const void *p_vector3) {
 	copymem(&write_buffer[p_vertex_id * stride + offset_normal], p_vector3, sizeof(float) * 3);
 }
 
-void SoftBodyVisualServerHandler::set_aabb(const AABB &p_aabb) {
-	VS::get_singleton()->mesh_set_custom_aabb(mesh, p_aabb);
+void SoftBodyRenderingServerHandler::set_aabb(const AABB &p_aabb) {
+	RS::get_singleton()->mesh_set_custom_aabb(mesh, p_aabb);
 }
 
 SoftBody3D::PinnedPoint::PinnedPoint() :
@@ -120,7 +120,7 @@ void SoftBody3D::_update_pickable() {
 	if (!is_inside_tree())
 		return;
 	bool pickable = ray_pickable && is_visible_in_tree();
-	PhysicsServer::get_singleton()->soft_body_set_ray_pickable(physics_rid, pickable);
+	PhysicsServer3D::get_singleton()->soft_body_set_ray_pickable(physics_rid, pickable);
 }
 
 bool SoftBody3D::_set(const StringName &p_name, const Variant &p_value) {
@@ -270,7 +270,7 @@ void SoftBody3D::_notification(int p_what) {
 			}
 
 			RID space = get_world()->get_space();
-			PhysicsServer::get_singleton()->soft_body_set_space(physics_rid, space);
+			PhysicsServer3D::get_singleton()->soft_body_set_space(physics_rid, space);
 			prepare_physics_server();
 		} break;
 		case NOTIFICATION_READY: {
@@ -285,10 +285,10 @@ void SoftBody3D::_notification(int p_what) {
 				return;
 			}
 
-			PhysicsServer::get_singleton()->soft_body_set_transform(physics_rid, get_global_transform());
+			PhysicsServer3D::get_singleton()->soft_body_set_transform(physics_rid, get_global_transform());
 
 			set_notify_transform(false);
-			// Required to be top level with Transform at center of world in order to modify VisualServer only to support custom Transform
+			// Required to be top level with Transform at center of world in order to modify RenderingServer only to support custom Transform
 			set_as_toplevel(true);
 			set_transform(Transform());
 			set_notify_transform(true);
@@ -301,7 +301,7 @@ void SoftBody3D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
 
-			PhysicsServer::get_singleton()->soft_body_set_space(physics_rid, RID());
+			PhysicsServer3D::get_singleton()->soft_body_set_space(physics_rid, RID());
 
 		} break;
 	}
@@ -418,7 +418,7 @@ void SoftBody3D::_update_physics_server() {
 	const PinnedPoint *r = pinned_points.ptr();
 	for (int i = 0; i < pinned_points_indices_size; ++i) {
 		if (r[i].spatial_attachment) {
-			PhysicsServer::get_singleton()->soft_body_move_point(physics_rid, r[i].point_index, r[i].spatial_attachment->get_global_transform().xform(r[i].offset));
+			PhysicsServer3D::get_singleton()->soft_body_move_point(physics_rid, r[i].point_index, r[i].spatial_attachment->get_global_transform().xform(r[i].offset));
 		}
 	}
 }
@@ -427,9 +427,9 @@ void SoftBody3D::_draw_soft_mesh() {
 	if (get_mesh().is_null())
 		return;
 
-	if (!visual_server_handler.is_ready()) {
+	if (!rendering_server_handler.is_ready()) {
 
-		visual_server_handler.prepare(get_mesh()->get_rid(), 0);
+		rendering_server_handler.prepare(get_mesh()->get_rid(), 0);
 
 		/// Necessary in order to render the mesh correctly (Soft body nodes are in global space)
 		simulation_started = true;
@@ -439,11 +439,11 @@ void SoftBody3D::_draw_soft_mesh() {
 
 	_update_physics_server();
 
-	visual_server_handler.open();
-	PhysicsServer::get_singleton()->soft_body_update_visual_server(physics_rid, &visual_server_handler);
-	visual_server_handler.close();
+	rendering_server_handler.open();
+	PhysicsServer3D::get_singleton()->soft_body_update_rendering_server(physics_rid, &rendering_server_handler);
+	rendering_server_handler.close();
 
-	visual_server_handler.commit_changes();
+	rendering_server_handler.commit_changes();
 }
 
 void SoftBody3D::prepare_physics_server() {
@@ -451,9 +451,9 @@ void SoftBody3D::prepare_physics_server() {
 	if (Engine::get_singleton()->is_editor_hint()) {
 
 		if (get_mesh().is_valid())
-			PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
+			PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
 		else
-			PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, NULL);
+			PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, NULL);
 
 		return;
 	}
@@ -461,13 +461,13 @@ void SoftBody3D::prepare_physics_server() {
 	if (get_mesh().is_valid()) {
 
 		become_mesh_owner();
-		PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
-		VS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &SoftBody3D::_draw_soft_mesh));
+		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
+		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &SoftBody3D::_draw_soft_mesh));
 	} else {
 
-		PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, NULL);
-		if (VS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &SoftBody3D::_draw_soft_mesh))) {
-			VS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &SoftBody3D::_draw_soft_mesh));
+		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, NULL);
+		if (RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &SoftBody3D::_draw_soft_mesh))) {
+			RS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &SoftBody3D::_draw_soft_mesh));
 		}
 	}
 }
@@ -508,7 +508,7 @@ void SoftBody3D::become_mesh_owner() {
 
 void SoftBody3D::set_collision_mask(uint32_t p_mask) {
 	collision_mask = p_mask;
-	PhysicsServer::get_singleton()->soft_body_set_collision_mask(physics_rid, p_mask);
+	PhysicsServer3D::get_singleton()->soft_body_set_collision_mask(physics_rid, p_mask);
 }
 
 uint32_t SoftBody3D::get_collision_mask() const {
@@ -516,7 +516,7 @@ uint32_t SoftBody3D::get_collision_mask() const {
 }
 void SoftBody3D::set_collision_layer(uint32_t p_layer) {
 	collision_layer = p_layer;
-	PhysicsServer::get_singleton()->soft_body_set_collision_layer(physics_rid, p_layer);
+	PhysicsServer3D::get_singleton()->soft_body_set_collision_layer(physics_rid, p_layer);
 }
 
 uint32_t SoftBody3D::get_collision_layer() const {
@@ -570,11 +570,11 @@ Vector<SoftBody3D::PinnedPoint> SoftBody3D::get_pinned_points_indices() {
 
 Array SoftBody3D::get_collision_exceptions() {
 	List<RID> exceptions;
-	PhysicsServer::get_singleton()->soft_body_get_collision_exceptions(physics_rid, &exceptions);
+	PhysicsServer3D::get_singleton()->soft_body_get_collision_exceptions(physics_rid, &exceptions);
 	Array ret;
 	for (List<RID>::Element *E = exceptions.front(); E; E = E->next()) {
 		RID body = E->get();
-		ObjectID instance_id = PhysicsServer::get_singleton()->body_get_object_instance_id(body);
+		ObjectID instance_id = PhysicsServer3D::get_singleton()->body_get_object_instance_id(body);
 		Object *obj = ObjectDB::get_instance(instance_id);
 		PhysicsBody3D *physics_body = Object::cast_to<PhysicsBody3D>(obj);
 		ret.append(physics_body);
@@ -586,90 +586,90 @@ void SoftBody3D::add_collision_exception_with(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	CollisionObject3D *collision_object = Object::cast_to<CollisionObject3D>(p_node);
 	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject.");
-	PhysicsServer::get_singleton()->soft_body_add_collision_exception(physics_rid, collision_object->get_rid());
+	PhysicsServer3D::get_singleton()->soft_body_add_collision_exception(physics_rid, collision_object->get_rid());
 }
 
 void SoftBody3D::remove_collision_exception_with(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	CollisionObject3D *collision_object = Object::cast_to<CollisionObject3D>(p_node);
 	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject.");
-	PhysicsServer::get_singleton()->soft_body_remove_collision_exception(physics_rid, collision_object->get_rid());
+	PhysicsServer3D::get_singleton()->soft_body_remove_collision_exception(physics_rid, collision_object->get_rid());
 }
 
 int SoftBody3D::get_simulation_precision() {
-	return PhysicsServer::get_singleton()->soft_body_get_simulation_precision(physics_rid);
+	return PhysicsServer3D::get_singleton()->soft_body_get_simulation_precision(physics_rid);
 }
 
 void SoftBody3D::set_simulation_precision(int p_simulation_precision) {
-	PhysicsServer::get_singleton()->soft_body_set_simulation_precision(physics_rid, p_simulation_precision);
+	PhysicsServer3D::get_singleton()->soft_body_set_simulation_precision(physics_rid, p_simulation_precision);
 }
 
 real_t SoftBody3D::get_total_mass() {
-	return PhysicsServer::get_singleton()->soft_body_get_total_mass(physics_rid);
+	return PhysicsServer3D::get_singleton()->soft_body_get_total_mass(physics_rid);
 }
 
 void SoftBody3D::set_total_mass(real_t p_total_mass) {
-	PhysicsServer::get_singleton()->soft_body_set_total_mass(physics_rid, p_total_mass);
+	PhysicsServer3D::get_singleton()->soft_body_set_total_mass(physics_rid, p_total_mass);
 }
 
 void SoftBody3D::set_linear_stiffness(real_t p_linear_stiffness) {
-	PhysicsServer::get_singleton()->soft_body_set_linear_stiffness(physics_rid, p_linear_stiffness);
+	PhysicsServer3D::get_singleton()->soft_body_set_linear_stiffness(physics_rid, p_linear_stiffness);
 }
 
 real_t SoftBody3D::get_linear_stiffness() {
-	return PhysicsServer::get_singleton()->soft_body_get_linear_stiffness(physics_rid);
+	return PhysicsServer3D::get_singleton()->soft_body_get_linear_stiffness(physics_rid);
 }
 
 void SoftBody3D::set_areaAngular_stiffness(real_t p_areaAngular_stiffness) {
-	PhysicsServer::get_singleton()->soft_body_set_areaAngular_stiffness(physics_rid, p_areaAngular_stiffness);
+	PhysicsServer3D::get_singleton()->soft_body_set_areaAngular_stiffness(physics_rid, p_areaAngular_stiffness);
 }
 
 real_t SoftBody3D::get_areaAngular_stiffness() {
-	return PhysicsServer::get_singleton()->soft_body_get_areaAngular_stiffness(physics_rid);
+	return PhysicsServer3D::get_singleton()->soft_body_get_areaAngular_stiffness(physics_rid);
 }
 
 void SoftBody3D::set_volume_stiffness(real_t p_volume_stiffness) {
-	PhysicsServer::get_singleton()->soft_body_set_volume_stiffness(physics_rid, p_volume_stiffness);
+	PhysicsServer3D::get_singleton()->soft_body_set_volume_stiffness(physics_rid, p_volume_stiffness);
 }
 
 real_t SoftBody3D::get_volume_stiffness() {
-	return PhysicsServer::get_singleton()->soft_body_get_volume_stiffness(physics_rid);
+	return PhysicsServer3D::get_singleton()->soft_body_get_volume_stiffness(physics_rid);
 }
 
 real_t SoftBody3D::get_pressure_coefficient() {
-	return PhysicsServer::get_singleton()->soft_body_get_pressure_coefficient(physics_rid);
+	return PhysicsServer3D::get_singleton()->soft_body_get_pressure_coefficient(physics_rid);
 }
 
 void SoftBody3D::set_pose_matching_coefficient(real_t p_pose_matching_coefficient) {
-	PhysicsServer::get_singleton()->soft_body_set_pose_matching_coefficient(physics_rid, p_pose_matching_coefficient);
+	PhysicsServer3D::get_singleton()->soft_body_set_pose_matching_coefficient(physics_rid, p_pose_matching_coefficient);
 }
 
 real_t SoftBody3D::get_pose_matching_coefficient() {
-	return PhysicsServer::get_singleton()->soft_body_get_pose_matching_coefficient(physics_rid);
+	return PhysicsServer3D::get_singleton()->soft_body_get_pose_matching_coefficient(physics_rid);
 }
 
 void SoftBody3D::set_pressure_coefficient(real_t p_pressure_coefficient) {
-	PhysicsServer::get_singleton()->soft_body_set_pressure_coefficient(physics_rid, p_pressure_coefficient);
+	PhysicsServer3D::get_singleton()->soft_body_set_pressure_coefficient(physics_rid, p_pressure_coefficient);
 }
 
 real_t SoftBody3D::get_damping_coefficient() {
-	return PhysicsServer::get_singleton()->soft_body_get_damping_coefficient(physics_rid);
+	return PhysicsServer3D::get_singleton()->soft_body_get_damping_coefficient(physics_rid);
 }
 
 void SoftBody3D::set_damping_coefficient(real_t p_damping_coefficient) {
-	PhysicsServer::get_singleton()->soft_body_set_damping_coefficient(physics_rid, p_damping_coefficient);
+	PhysicsServer3D::get_singleton()->soft_body_set_damping_coefficient(physics_rid, p_damping_coefficient);
 }
 
 real_t SoftBody3D::get_drag_coefficient() {
-	return PhysicsServer::get_singleton()->soft_body_get_drag_coefficient(physics_rid);
+	return PhysicsServer3D::get_singleton()->soft_body_get_drag_coefficient(physics_rid);
 }
 
 void SoftBody3D::set_drag_coefficient(real_t p_drag_coefficient) {
-	PhysicsServer::get_singleton()->soft_body_set_drag_coefficient(physics_rid, p_drag_coefficient);
+	PhysicsServer3D::get_singleton()->soft_body_set_drag_coefficient(physics_rid, p_drag_coefficient);
 }
 
 Vector3 SoftBody3D::get_point_transform(int p_point_index) {
-	return PhysicsServer::get_singleton()->soft_body_get_point_global_position(physics_rid, p_point_index);
+	return PhysicsServer3D::get_singleton()->soft_body_get_point_global_position(physics_rid, p_point_index);
 }
 
 void SoftBody3D::pin_point_toggle(int p_point_index) {
@@ -701,7 +701,7 @@ bool SoftBody3D::is_ray_pickable() const {
 }
 
 SoftBody3D::SoftBody3D() :
-		physics_rid(PhysicsServer::get_singleton()->soft_body_create()),
+		physics_rid(PhysicsServer3D::get_singleton()->soft_body_create()),
 		mesh_owner(false),
 		collision_mask(1),
 		collision_layer(1),
@@ -709,18 +709,18 @@ SoftBody3D::SoftBody3D() :
 		pinned_points_cache_dirty(true),
 		ray_pickable(true) {
 
-	PhysicsServer::get_singleton()->body_attach_object_instance_id(physics_rid, get_instance_id());
+	PhysicsServer3D::get_singleton()->body_attach_object_instance_id(physics_rid, get_instance_id());
 }
 
 SoftBody3D::~SoftBody3D() {
-	PhysicsServer::get_singleton()->free(physics_rid);
+	PhysicsServer3D::get_singleton()->free(physics_rid);
 }
 
 void SoftBody3D::reset_softbody_pin() {
-	PhysicsServer::get_singleton()->soft_body_remove_all_pinned_points(physics_rid);
+	PhysicsServer3D::get_singleton()->soft_body_remove_all_pinned_points(physics_rid);
 	const PinnedPoint *pps = pinned_points.ptr();
 	for (int i = pinned_points.size() - 1; 0 < i; --i) {
-		PhysicsServer::get_singleton()->soft_body_pin_point(physics_rid, pps[i].point_index, true);
+		PhysicsServer3D::get_singleton()->soft_body_pin_point(physics_rid, pps[i].point_index, true);
 	}
 }
 
@@ -747,7 +747,7 @@ void SoftBody3D::_update_cache_pin_points_datas() {
 }
 
 void SoftBody3D::_pin_point_on_physics_server(int p_point_index, bool pin) {
-	PhysicsServer::get_singleton()->soft_body_pin_point(physics_rid, p_point_index, pin);
+	PhysicsServer3D::get_singleton()->soft_body_pin_point(physics_rid, p_point_index, pin);
 }
 
 void SoftBody3D::_add_pinned_point(int p_point_index, const NodePath &p_spatial_attachment_path) {
@@ -761,7 +761,7 @@ void SoftBody3D::_add_pinned_point(int p_point_index, const NodePath &p_spatial_
 
 		if (!p_spatial_attachment_path.is_empty() && has_node(p_spatial_attachment_path)) {
 			pp.spatial_attachment = Object::cast_to<Node3D>(get_node(p_spatial_attachment_path));
-			pp.offset = (pp.spatial_attachment->get_global_transform().affine_inverse() * get_global_transform()).xform(PhysicsServer::get_singleton()->soft_body_get_point_global_position(physics_rid, pp.point_index));
+			pp.offset = (pp.spatial_attachment->get_global_transform().affine_inverse() * get_global_transform()).xform(PhysicsServer3D::get_singleton()->soft_body_get_point_global_position(physics_rid, pp.point_index));
 		}
 
 		pinned_points.push_back(pp);
@@ -773,7 +773,7 @@ void SoftBody3D::_add_pinned_point(int p_point_index, const NodePath &p_spatial_
 
 		if (!p_spatial_attachment_path.is_empty() && has_node(p_spatial_attachment_path)) {
 			pinned_point->spatial_attachment = Object::cast_to<Node3D>(get_node(p_spatial_attachment_path));
-			pinned_point->offset = (pinned_point->spatial_attachment->get_global_transform().affine_inverse() * get_global_transform()).xform(PhysicsServer::get_singleton()->soft_body_get_point_global_position(physics_rid, pinned_point->point_index));
+			pinned_point->offset = (pinned_point->spatial_attachment->get_global_transform().affine_inverse() * get_global_transform()).xform(PhysicsServer3D::get_singleton()->soft_body_get_point_global_position(physics_rid, pinned_point->point_index));
 		}
 	}
 }
@@ -793,7 +793,7 @@ void SoftBody3D::_reset_points_offsets() {
 		if (!r[i].spatial_attachment)
 			continue;
 
-		w[i].offset = (r[i].spatial_attachment->get_global_transform().affine_inverse() * get_global_transform()).xform(PhysicsServer::get_singleton()->soft_body_get_point_global_position(physics_rid, r[i].point_index));
+		w[i].offset = (r[i].spatial_attachment->get_global_transform().affine_inverse() * get_global_transform()).xform(PhysicsServer3D::get_singleton()->soft_body_get_point_global_position(physics_rid, r[i].point_index));
 	}
 }
 

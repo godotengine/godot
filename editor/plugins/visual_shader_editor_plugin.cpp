@@ -45,7 +45,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/visual_shader_nodes.h"
 #include "servers/display_server.h"
-#include "servers/visual/shader_types.h"
+#include "servers/rendering/shader_types.h"
 
 Control *VisualShaderNodePlugin::create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node) {
 
@@ -2263,7 +2263,7 @@ void VisualShaderEditor::_update_preview() {
 
 	ShaderLanguage sl;
 
-	Error err = sl.compile(code, ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(visual_shader->get_mode())), ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(visual_shader->get_mode())), ShaderTypes::get_singleton()->get_types());
+	Error err = sl.compile(code, ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(visual_shader->get_mode())), ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(visual_shader->get_mode())), ShaderTypes::get_singleton()->get_types());
 
 	for (int i = 0; i < preview_text->get_line_count(); i++) {
 		preview_text->set_line_as_marked(i, false);

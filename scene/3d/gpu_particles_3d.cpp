@@ -33,7 +33,7 @@
 #include "core/os/os.h"
 #include "scene/resources/particles_material.h"
 
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 AABB GPUParticles3D::get_aabb() const {
 
@@ -46,7 +46,7 @@ Vector<Face3> GPUParticles3D::get_faces(uint32_t p_usage_flags) const {
 
 void GPUParticles3D::set_emitting(bool p_emitting) {
 
-	VS::get_singleton()->particles_set_emitting(particles, p_emitting);
+	RS::get_singleton()->particles_set_emitting(particles, p_emitting);
 
 	if (p_emitting && one_shot) {
 		set_process_internal(true);
@@ -59,25 +59,25 @@ void GPUParticles3D::set_amount(int p_amount) {
 
 	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of particles cannot be smaller than 1.");
 	amount = p_amount;
-	VS::get_singleton()->particles_set_amount(particles, amount);
+	RS::get_singleton()->particles_set_amount(particles, amount);
 }
 void GPUParticles3D::set_lifetime(float p_lifetime) {
 
 	ERR_FAIL_COND_MSG(p_lifetime <= 0, "Particles lifetime must be greater than 0.");
 	lifetime = p_lifetime;
-	VS::get_singleton()->particles_set_lifetime(particles, lifetime);
+	RS::get_singleton()->particles_set_lifetime(particles, lifetime);
 }
 
 void GPUParticles3D::set_one_shot(bool p_one_shot) {
 
 	one_shot = p_one_shot;
-	VS::get_singleton()->particles_set_one_shot(particles, one_shot);
+	RS::get_singleton()->particles_set_one_shot(particles, one_shot);
 
 	if (is_emitting()) {
 
 		set_process_internal(true);
 		if (!one_shot)
-			VisualServer::get_singleton()->particles_restart(particles);
+			RenderingServer::get_singleton()->particles_restart(particles);
 	}
 
 	if (!one_shot)
@@ -87,29 +87,29 @@ void GPUParticles3D::set_one_shot(bool p_one_shot) {
 void GPUParticles3D::set_pre_process_time(float p_time) {
 
 	pre_process_time = p_time;
-	VS::get_singleton()->particles_set_pre_process_time(particles, pre_process_time);
+	RS::get_singleton()->particles_set_pre_process_time(particles, pre_process_time);
 }
 void GPUParticles3D::set_explosiveness_ratio(float p_ratio) {
 
 	explosiveness_ratio = p_ratio;
-	VS::get_singleton()->particles_set_explosiveness_ratio(particles, explosiveness_ratio);
+	RS::get_singleton()->particles_set_explosiveness_ratio(particles, explosiveness_ratio);
 }
 void GPUParticles3D::set_randomness_ratio(float p_ratio) {
 
 	randomness_ratio = p_ratio;
-	VS::get_singleton()->particles_set_randomness_ratio(particles, randomness_ratio);
+	RS::get_singleton()->particles_set_randomness_ratio(particles, randomness_ratio);
 }
 void GPUParticles3D::set_visibility_aabb(const AABB &p_aabb) {
 
 	visibility_aabb = p_aabb;
-	VS::get_singleton()->particles_set_custom_aabb(particles, visibility_aabb);
+	RS::get_singleton()->particles_set_custom_aabb(particles, visibility_aabb);
 	update_gizmo();
 	_change_notify("visibility_aabb");
 }
 void GPUParticles3D::set_use_local_coordinates(bool p_enable) {
 
 	local_coords = p_enable;
-	VS::get_singleton()->particles_set_use_local_coordinates(particles, local_coords);
+	RS::get_singleton()->particles_set_use_local_coordinates(particles, local_coords);
 }
 void GPUParticles3D::set_process_material(const Ref<Material> &p_material) {
 
@@ -117,7 +117,7 @@ void GPUParticles3D::set_process_material(const Ref<Material> &p_material) {
 	RID material_rid;
 	if (process_material.is_valid())
 		material_rid = process_material->get_rid();
-	VS::get_singleton()->particles_set_process_material(particles, material_rid);
+	RS::get_singleton()->particles_set_process_material(particles, material_rid);
 
 	update_configuration_warning();
 }
@@ -125,12 +125,12 @@ void GPUParticles3D::set_process_material(const Ref<Material> &p_material) {
 void GPUParticles3D::set_speed_scale(float p_scale) {
 
 	speed_scale = p_scale;
-	VS::get_singleton()->particles_set_speed_scale(particles, p_scale);
+	RS::get_singleton()->particles_set_speed_scale(particles, p_scale);
 }
 
 bool GPUParticles3D::is_emitting() const {
 
-	return VS::get_singleton()->particles_get_emitting(particles);
+	return RS::get_singleton()->particles_get_emitting(particles);
 }
 int GPUParticles3D::get_amount() const {
 
@@ -178,7 +178,7 @@ float GPUParticles3D::get_speed_scale() const {
 void GPUParticles3D::set_draw_order(DrawOrder p_order) {
 
 	draw_order = p_order;
-	VS::get_singleton()->particles_set_draw_order(particles, VS::ParticlesDrawOrder(p_order));
+	RS::get_singleton()->particles_set_draw_order(particles, RS::ParticlesDrawOrder(p_order));
 }
 
 GPUParticles3D::DrawOrder GPUParticles3D::get_draw_order() const {
@@ -190,7 +190,7 @@ void GPUParticles3D::set_draw_passes(int p_count) {
 
 	ERR_FAIL_COND(p_count < 1);
 	draw_passes.resize(p_count);
-	VS::get_singleton()->particles_set_draw_passes(particles, p_count);
+	RS::get_singleton()->particles_set_draw_passes(particles, p_count);
 	_change_notify();
 }
 int GPUParticles3D::get_draw_passes() const {
@@ -208,7 +208,7 @@ void GPUParticles3D::set_draw_pass_mesh(int p_pass, const Ref<Mesh> &p_mesh) {
 	if (p_mesh.is_valid())
 		mesh_rid = p_mesh->get_rid();
 
-	VS::get_singleton()->particles_set_draw_pass_mesh(particles, p_pass, mesh_rid);
+	RS::get_singleton()->particles_set_draw_pass_mesh(particles, p_pass, mesh_rid);
 
 	update_configuration_warning();
 }
@@ -222,7 +222,7 @@ Ref<Mesh> GPUParticles3D::get_draw_pass_mesh(int p_pass) const {
 
 void GPUParticles3D::set_fixed_fps(int p_count) {
 	fixed_fps = p_count;
-	VS::get_singleton()->particles_set_fixed_fps(particles, p_count);
+	RS::get_singleton()->particles_set_fixed_fps(particles, p_count);
 }
 
 int GPUParticles3D::get_fixed_fps() const {
@@ -231,7 +231,7 @@ int GPUParticles3D::get_fixed_fps() const {
 
 void GPUParticles3D::set_fractional_delta(bool p_enable) {
 	fractional_delta = p_enable;
-	VS::get_singleton()->particles_set_fractional_delta(particles, p_enable);
+	RS::get_singleton()->particles_set_fractional_delta(particles, p_enable);
 }
 
 bool GPUParticles3D::get_fractional_delta() const {
@@ -240,7 +240,7 @@ bool GPUParticles3D::get_fractional_delta() const {
 
 String GPUParticles3D::get_configuration_warning() const {
 
-	if (VisualServer::get_singleton()->is_low_end()) {
+	if (RenderingServer::get_singleton()->is_low_end()) {
 		return TTR("GPU-based particles are not supported by the GLES2 video driver.\nUse the CPUParticles node instead. You can use the \"Convert to CPUParticles\" option for this purpose.");
 	}
 
@@ -291,13 +291,13 @@ String GPUParticles3D::get_configuration_warning() const {
 
 void GPUParticles3D::restart() {
 
-	VisualServer::get_singleton()->particles_restart(particles);
-	VisualServer::get_singleton()->particles_set_emitting(particles, true);
+	RenderingServer::get_singleton()->particles_restart(particles);
+	RenderingServer::get_singleton()->particles_set_emitting(particles, true);
 }
 
 AABB GPUParticles3D::capture_aabb() const {
 
-	return VS::get_singleton()->particles_get_current_aabb(particles);
+	return RS::get_singleton()->particles_get_current_aabb(particles);
 }
 
 void GPUParticles3D::_validate_property(PropertyInfo &property) const {
@@ -315,10 +315,10 @@ void GPUParticles3D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_PAUSED || p_what == NOTIFICATION_UNPAUSED) {
 		if (can_process()) {
-			VS::get_singleton()->particles_set_speed_scale(particles, speed_scale);
+			RS::get_singleton()->particles_set_speed_scale(particles, speed_scale);
 		} else {
 
-			VS::get_singleton()->particles_set_speed_scale(particles, 0);
+			RS::get_singleton()->particles_set_speed_scale(particles, 0);
 		}
 	}
 
@@ -334,8 +334,8 @@ void GPUParticles3D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		// make sure particles are updated before rendering occurs if they were active before
-		if (is_visible_in_tree() && !VS::get_singleton()->particles_is_inactive(particles)) {
-			VS::get_singleton()->particles_request_process(particles);
+		if (is_visible_in_tree() && !RS::get_singleton()->particles_is_inactive(particles)) {
+			RS::get_singleton()->particles_request_process(particles);
 		}
 	}
 }
@@ -416,7 +416,7 @@ void GPUParticles3D::_bind_methods() {
 
 GPUParticles3D::GPUParticles3D() {
 
-	particles = VS::get_singleton()->particles_create();
+	particles = RS::get_singleton()->particles_create();
 	set_base(particles);
 	one_shot = false; // Needed so that set_emitting doesn't access uninitialized values
 	set_emitting(true);
@@ -437,5 +437,5 @@ GPUParticles3D::GPUParticles3D() {
 
 GPUParticles3D::~GPUParticles3D() {
 
-	VS::get_singleton()->free(particles);
+	RS::get_singleton()->free(particles);
 }

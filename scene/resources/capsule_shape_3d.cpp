@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "capsule_shape_3d.h"
-#include "servers/physics_server.h"
+#include "servers/physics_server_3d.h"
 
 Vector<Vector3> CapsuleShape3D::get_debug_mesh_lines() {
 
@@ -78,7 +78,7 @@ void CapsuleShape3D::_update_shape() {
 	Dictionary d;
 	d["radius"] = radius;
 	d["height"] = height;
-	PhysicsServer::get_singleton()->shape_set_data(get_shape(), d);
+	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), d);
 	Shape3D::_update_shape();
 }
 
@@ -120,7 +120,7 @@ void CapsuleShape3D::_bind_methods() {
 }
 
 CapsuleShape3D::CapsuleShape3D() :
-		Shape3D(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CAPSULE)) {
+		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_CAPSULE)) {
 
 	radius = 1.0;
 	height = 1.0;

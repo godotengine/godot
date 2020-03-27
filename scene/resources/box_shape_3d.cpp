@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "box_shape_3d.h"
-#include "servers/physics_server.h"
+#include "servers/physics_server_3d.h"
 
 Vector<Vector3> BoxShape3D::get_debug_mesh_lines() {
 
@@ -54,7 +54,7 @@ real_t BoxShape3D::get_enclosing_radius() const {
 
 void BoxShape3D::_update_shape() {
 
-	PhysicsServer::get_singleton()->shape_set_data(get_shape(), extents);
+	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), extents);
 	Shape3D::_update_shape();
 }
 
@@ -80,7 +80,7 @@ void BoxShape3D::_bind_methods() {
 }
 
 BoxShape3D::BoxShape3D() :
-		Shape3D(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_BOX)) {
+		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_BOX)) {
 
 	set_extents(Vector3(1, 1, 1));
 }

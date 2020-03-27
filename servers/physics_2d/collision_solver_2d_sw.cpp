@@ -37,7 +37,7 @@
 bool CollisionSolver2DSW::solve_static_line(const Shape2DSW *p_shape_A, const Transform2D &p_transform_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result) {
 
 	const LineShape2DSW *line = static_cast<const LineShape2DSW *>(p_shape_A);
-	if (p_shape_B->get_type() == Physics2DServer::SHAPE_LINE)
+	if (p_shape_B->get_type() == PhysicsServer2D::SHAPE_LINE)
 		return false;
 
 	Vector2 n = p_transform_A.basis_xform(line->get_normal()).normalized();
@@ -75,7 +75,7 @@ bool CollisionSolver2DSW::solve_static_line(const Shape2DSW *p_shape_A, const Tr
 bool CollisionSolver2DSW::solve_raycast(const Shape2DSW *p_shape_A, const Vector2 &p_motion_A, const Transform2D &p_transform_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, Vector2 *sep_axis) {
 
 	const RayShape2DSW *ray = static_cast<const RayShape2DSW *>(p_shape_A);
-	if (p_shape_B->get_type() == Physics2DServer::SHAPE_RAY)
+	if (p_shape_B->get_type() == PhysicsServer2D::SHAPE_RAY)
 		return false;
 
 	Vector2 from = p_transform_A.get_origin();
@@ -195,8 +195,8 @@ bool CollisionSolver2DSW::solve_concave(const Shape2DSW *p_shape_A, const Transf
 
 bool CollisionSolver2DSW::solve(const Shape2DSW *p_shape_A, const Transform2D &p_transform_A, const Vector2 &p_motion_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, const Vector2 &p_motion_B, CallbackResult p_result_callback, void *p_userdata, Vector2 *sep_axis, real_t p_margin_A, real_t p_margin_B) {
 
-	Physics2DServer::ShapeType type_A = p_shape_A->get_type();
-	Physics2DServer::ShapeType type_B = p_shape_B->get_type();
+	PhysicsServer2D::ShapeType type_A = p_shape_A->get_type();
+	PhysicsServer2D::ShapeType type_B = p_shape_B->get_type();
 	bool concave_A = p_shape_A->is_concave();
 	bool concave_B = p_shape_B->is_concave();
 	real_t margin_A = p_margin_A, margin_B = p_margin_B;
@@ -210,9 +210,9 @@ bool CollisionSolver2DSW::solve(const Shape2DSW *p_shape_A, const Transform2D &p
 		swap = true;
 	}
 
-	if (type_A == Physics2DServer::SHAPE_LINE) {
+	if (type_A == PhysicsServer2D::SHAPE_LINE) {
 
-		if (type_B == Physics2DServer::SHAPE_LINE || type_B == Physics2DServer::SHAPE_RAY) {
+		if (type_B == PhysicsServer2D::SHAPE_LINE || type_B == PhysicsServer2D::SHAPE_RAY) {
 			return false;
 		}
 
@@ -222,9 +222,9 @@ bool CollisionSolver2DSW::solve(const Shape2DSW *p_shape_A, const Transform2D &p
 			return solve_static_line(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false);
 		}
 
-	} else if (type_A == Physics2DServer::SHAPE_RAY) {
+	} else if (type_A == PhysicsServer2D::SHAPE_RAY) {
 
-		if (type_B == Physics2DServer::SHAPE_RAY) {
+		if (type_B == PhysicsServer2D::SHAPE_RAY) {
 
 			return false; //no ray-ray
 		}

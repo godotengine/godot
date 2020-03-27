@@ -34,7 +34,7 @@
 #include "core/oa_hash_map.h"
 #include "core/os/thread_safe.h"
 #include "core/rid_owner.h"
-#include "servers/visual/rendering_device.h"
+#include "servers/rendering/rendering_device.h"
 
 #ifdef DEBUG_ENABLED
 #define _DEBUG

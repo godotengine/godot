@@ -150,7 +150,7 @@ btHeightfieldTerrainShape *ShapeBullet::create_shape_height_field(Vector<real_t>
 
 	btHeightfieldTerrainShape *heightfield = bulletnew(btHeightfieldTerrainShape(p_width, p_depth, heightsPtr, ignoredHeightScale, p_min_height, p_max_height, YAxis, PHY_FLOAT, flipQuadEdges));
 
-	// The shape can be created without params when you do PhysicsServer.shape_create(PhysicsServer.SHAPE_HEIGHTMAP)
+	// The shape can be created without params when you do PhysicsServer3D.shape_create(PhysicsServer3D.SHAPE_HEIGHTMAP)
 	if (heightsPtr)
 		heightfield->buildAccelerator(16);
 
@@ -176,8 +176,8 @@ Variant PlaneShapeBullet::get_data() const {
 	return plane;
 }
 
-PhysicsServer::ShapeType PlaneShapeBullet::get_type() const {
-	return PhysicsServer::SHAPE_PLANE;
+PhysicsServer3D::ShapeType PlaneShapeBullet::get_type() const {
+	return PhysicsServer3D::SHAPE_PLANE;
 }
 
 void PlaneShapeBullet::setup(const Plane &p_plane) {
@@ -204,8 +204,8 @@ Variant SphereShapeBullet::get_data() const {
 	return radius;
 }
 
-PhysicsServer::ShapeType SphereShapeBullet::get_type() const {
-	return PhysicsServer::SHAPE_SPHERE;
+PhysicsServer3D::ShapeType SphereShapeBullet::get_type() const {
+	return PhysicsServer3D::SHAPE_SPHERE;
 }
 
 void SphereShapeBullet::setup(real_t p_radius) {
@@ -231,8 +231,8 @@ Variant BoxShapeBullet::get_data() const {
 	return g_half_extents;
 }
 
-PhysicsServer::ShapeType BoxShapeBullet::get_type() const {
-	return PhysicsServer::SHAPE_BOX;
+PhysicsServer3D::ShapeType BoxShapeBullet::get_type() const {
+	return PhysicsServer3D::SHAPE_BOX;
 }
 
 void BoxShapeBullet::setup(const Vector3 &p_half_extents) {
@@ -263,8 +263,8 @@ Variant CapsuleShapeBullet::get_data() const {
 	return d;
 }
 
-PhysicsServer::ShapeType CapsuleShapeBullet::get_type() const {
-	return PhysicsServer::SHAPE_CAPSULE;
+PhysicsServer3D::ShapeType CapsuleShapeBullet::get_type() const {
+	return PhysicsServer3D::SHAPE_CAPSULE;
 }
 
 void CapsuleShapeBullet::setup(real_t p_height, real_t p_radius) {
@@ -296,8 +296,8 @@ Variant CylinderShapeBullet::get_data() const {
 	return d;
 }
 
-PhysicsServer::ShapeType CylinderShapeBullet::get_type() const {
-	return PhysicsServer::SHAPE_CYLINDER;
+PhysicsServer3D::ShapeType CylinderShapeBullet::get_type() const {
+	return PhysicsServer3D::SHAPE_CYLINDER;
 }
 
 void CylinderShapeBullet::setup(real_t p_height, real_t p_radius) {
@@ -334,8 +334,8 @@ Variant ConvexPolygonShapeBullet::get_data() const {
 	return out_vertices;
 }
 
-PhysicsServer::ShapeType ConvexPolygonShapeBullet::get_type() const {
-	return PhysicsServer::SHAPE_CONVEX_POLYGON;
+PhysicsServer3D::ShapeType ConvexPolygonShapeBullet::get_type() const {
+	return PhysicsServer3D::SHAPE_CONVEX_POLYGON;
 }
 
 void ConvexPolygonShapeBullet::setup(const Vector<Vector3> &p_vertices) {
@@ -381,8 +381,8 @@ Variant ConcavePolygonShapeBullet::get_data() const {
 	return faces;
 }
 
-PhysicsServer::ShapeType ConcavePolygonShapeBullet::get_type() const {
-	return PhysicsServer::SHAPE_CONCAVE_POLYGON;
+PhysicsServer3D::ShapeType ConcavePolygonShapeBullet::get_type() const {
+	return PhysicsServer3D::SHAPE_CONCAVE_POLYGON;
 }
 
 void ConcavePolygonShapeBullet::setup(Vector<Vector3> p_faces) {
@@ -536,8 +536,8 @@ Variant HeightMapShapeBullet::get_data() const {
 	ERR_FAIL_V(Variant());
 }
 
-PhysicsServer::ShapeType HeightMapShapeBullet::get_type() const {
-	return PhysicsServer::SHAPE_HEIGHTMAP;
+PhysicsServer3D::ShapeType HeightMapShapeBullet::get_type() const {
+	return PhysicsServer3D::SHAPE_HEIGHTMAP;
 }
 
 void HeightMapShapeBullet::setup(Vector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height) {
@@ -580,8 +580,8 @@ Variant RayShapeBullet::get_data() const {
 	return d;
 }
 
-PhysicsServer::ShapeType RayShapeBullet::get_type() const {
-	return PhysicsServer::SHAPE_RAY;
+PhysicsServer3D::ShapeType RayShapeBullet::get_type() const {
+	return PhysicsServer3D::SHAPE_RAY;
 }
 
 void RayShapeBullet::setup(real_t p_length, bool p_slips_on_slope) {

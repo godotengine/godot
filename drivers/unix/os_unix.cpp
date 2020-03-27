@@ -41,7 +41,7 @@
 #include "drivers/unix/net_socket_posix.h"
 #include "drivers/unix/rw_lock_posix.h"
 #include "drivers/unix/thread_posix.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h>

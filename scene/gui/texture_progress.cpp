@@ -300,7 +300,7 @@ void TextureProgress::draw_nine_patch_stretched(const Ref<Texture2D> &p_texture,
 	p_texture->get_rect_region(dst_rect, src_rect, dst_rect, src_rect);
 
 	RID ci = get_canvas_item();
-	VS::get_singleton()->canvas_item_add_nine_patch(ci, dst_rect, src_rect, p_texture->get_rid(), topleft, bottomright, VS::NINE_PATCH_STRETCH, VS::NINE_PATCH_STRETCH, true, p_modulate);
+	RS::get_singleton()->canvas_item_add_nine_patch(ci, dst_rect, src_rect, p_texture->get_rid(), topleft, bottomright, RS::NINE_PATCH_STRETCH, RS::NINE_PATCH_STRETCH, true, p_modulate);
 }
 
 void TextureProgress::_notification(int p_what) {

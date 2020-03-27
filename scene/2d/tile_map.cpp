@@ -35,8 +35,8 @@
 #include "core/method_bind_ext.gen.inc"
 #include "core/os/os.h"
 #include "scene/2d/area_2d.h"
-#include "servers/navigation_2d_server.h"
-#include "servers/physics_2d_server.h"
+#include "servers/navigation_server_2d.h"
+#include "servers/physics_server_2d.h"
 
 int TileMap::_get_quadrant_size() const {
 
@@ -87,7 +87,7 @@ void TileMap::_notification(int p_what) {
 				if (navigation) {
 					for (Map<PosKey, Quadrant::NavPoly>::Element *F = q.navpoly_ids.front(); F; F = F->next()) {
 
-						Navigation2DServer::get_singleton()->region_set_map(F->get().region, RID());
+						NavigationServer2D::get_singleton()->region_set_map(F->get().region, RID());
 					}
 					q.navpoly_ids.clear();
 				}
@@ -98,7 +98,7 @@ void TileMap::_notification(int p_what) {
 				}
 
 				for (Map<PosKey, Quadrant::Occluder>::Element *F = q.occluder_instances.front(); F; F = F->next()) {
-					VS::get_singleton()->free(F->get().id);
+					RS::get_singleton()->free(F->get().id);
 				}
 				q.occluder_instances.clear();
 			}
@@ -130,7 +130,7 @@ void TileMap::_update_quadrant_space(const RID &p_space) {
 		for (Map<PosKey, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
 
 			Quadrant &q = E->get();
-			Physics2DServer::get_singleton()->body_set_space(q.body, p_space);
+			PhysicsServer2D::get_singleton()->body_set_space(q.body, p_space);
 		}
 	}
 }
@@ -158,18 +158,18 @@ void TileMap::_update_quadrant_transform() {
 
 		if (!use_parent) {
 			xform = global_transform * xform;
-			Physics2DServer::get_singleton()->body_set_state(q.body, Physics2DServer::BODY_STATE_TRANSFORM, xform);
+			PhysicsServer2D::get_singleton()->body_set_state(q.body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
 		}
 
 		if (navigation) {
 			for (Map<PosKey, Quadrant::NavPoly>::Element *F = q.navpoly_ids.front(); F; F = F->next()) {
 
-				Navigation2DServer::get_singleton()->region_set_transform(F->get().region, nav_rel * F->get().xform);
+				NavigationServer2D::get_singleton()->region_set_transform(F->get().region, nav_rel * F->get().xform);
 			}
 		}
 
 		for (Map<PosKey, Quadrant::Occluder>::Element *F = q.occluder_instances.front(); F; F = F->next()) {
-			VS::get_singleton()->canvas_light_occluder_set_transform(F->get().id, global_transform * F->get().xform);
+			RS::get_singleton()->canvas_light_occluder_set_transform(F->get().id, global_transform * F->get().xform);
 		}
 	}
 }
@@ -298,7 +298,7 @@ void TileMap::_fix_cell_transform(Transform2D &xform, const Cell &p_cell, const 
 }
 
 void TileMap::_add_shape(int &shape_idx, const Quadrant &p_q, const Ref<Shape2D> &p_shape, const TileSet::ShapeData &p_shape_data, const Transform2D &p_xform, const Vector2 &p_metadata) {
-	Physics2DServer *ps = Physics2DServer::get_singleton();
+	PhysicsServer2D *ps = PhysicsServer2D::get_singleton();
 
 	if (!use_parent) {
 		ps->body_add_shape(p_q.body, p_shape->get_rid(), p_xform);
@@ -334,8 +334,8 @@ void TileMap::update_dirty_quadrants() {
 		return;
 	}
 
-	VisualServer *vs = VisualServer::get_singleton();
-	Physics2DServer *ps = Physics2DServer::get_singleton();
+	RenderingServer *vs = RenderingServer::get_singleton();
+	PhysicsServer2D *ps = PhysicsServer2D::get_singleton();
 	Vector2 tofs = get_cell_draw_offset();
 	Transform2D nav_rel;
 	if (navigation)
@@ -378,13 +378,13 @@ void TileMap::update_dirty_quadrants() {
 		if (navigation) {
 			for (Map<PosKey, Quadrant::NavPoly>::Element *E = q.navpoly_ids.front(); E; E = E->next()) {
 
-				Navigation2DServer::get_singleton()->region_set_map(E->get().region, RID());
+				NavigationServer2D::get_singleton()->region_set_map(E->get().region, RID());
 			}
 			q.navpoly_ids.clear();
 		}
 
 		for (Map<PosKey, Quadrant::Occluder>::Element *E = q.occluder_instances.front(); E; E = E->next()) {
-			VS::get_singleton()->free(E->get().id);
+			RS::get_singleton()->free(E->get().id);
 		}
 		q.occluder_instances.clear();
 		Ref<ShaderMaterial> prev_material;
@@ -439,7 +439,7 @@ void TileMap::update_dirty_quadrants() {
 					debug_canvas_item = vs->canvas_item_create();
 					vs->canvas_item_set_parent(debug_canvas_item, canvas_item);
 					vs->canvas_item_set_z_as_relative_to_parent(debug_canvas_item, false);
-					vs->canvas_item_set_z_index(debug_canvas_item, VS::CANVAS_ITEM_Z_MAX - 1);
+					vs->canvas_item_set_z_index(debug_canvas_item, RS::CANVAS_ITEM_Z_MAX - 1);
 					q.canvas_items.push_back(debug_canvas_item);
 					prev_debug_canvas_item = debug_canvas_item;
 				}
@@ -550,7 +550,7 @@ void TileMap::update_dirty_quadrants() {
 			if (r == Rect2()) {
 				tex->draw_rect(canvas_item, rect, false, modulate, c.transpose, normal_map);
 			} else {
-				tex->draw_rect_region(canvas_item, rect, r, modulate, c.transpose, normal_map, Ref<Texture2D>(), Color(1, 1, 1, 1), VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, clip_uv);
+				tex->draw_rect_region(canvas_item, rect, r, modulate, c.transpose, normal_map, Ref<Texture2D>(), Color(1, 1, 1, 1), RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, clip_uv);
 			}
 
 			Vector<TileSet::ShapeData> shapes = tile_set->tile_get_shapes(c.id);
@@ -612,10 +612,10 @@ void TileMap::update_dirty_quadrants() {
 					xform.set_origin(offset.floor() + q.pos);
 					_fix_cell_transform(xform, c, npoly_ofs, s);
 
-					RID region = Navigation2DServer::get_singleton()->region_create();
-					Navigation2DServer::get_singleton()->region_set_map(region, navigation->get_rid());
-					Navigation2DServer::get_singleton()->region_set_transform(region, nav_rel * xform);
-					Navigation2DServer::get_singleton()->region_set_navpoly(region, navpoly);
+					RID region = NavigationServer2D::get_singleton()->region_create();
+					NavigationServer2D::get_singleton()->region_set_map(region, navigation->get_rid());
+					NavigationServer2D::get_singleton()->region_set_transform(region, nav_rel * xform);
+					NavigationServer2D::get_singleton()->region_set_navpoly(region, navpoly);
 
 					Quadrant::NavPoly np;
 					np.region = region;
@@ -626,7 +626,7 @@ void TileMap::update_dirty_quadrants() {
 						RID debug_navigation_item = vs->canvas_item_create();
 						vs->canvas_item_set_parent(debug_navigation_item, canvas_item);
 						vs->canvas_item_set_z_as_relative_to_parent(debug_navigation_item, false);
-						vs->canvas_item_set_z_index(debug_navigation_item, VS::CANVAS_ITEM_Z_MAX - 2); // Display one below collision debug
+						vs->canvas_item_set_z_index(debug_navigation_item, RS::CANVAS_ITEM_Z_MAX - 2); // Display one below collision debug
 
 						if (debug_navigation_item.is_valid()) {
 							Vector<Vector2> navigation_polygon_vertices = navpoly->get_vertices();
@@ -685,11 +685,11 @@ void TileMap::update_dirty_quadrants() {
 				xform.set_origin(offset.floor() + q.pos);
 				_fix_cell_transform(xform, c, occluder_ofs, s);
 
-				RID orid = VS::get_singleton()->canvas_light_occluder_create();
-				VS::get_singleton()->canvas_light_occluder_set_transform(orid, get_global_transform() * xform);
-				VS::get_singleton()->canvas_light_occluder_set_polygon(orid, occluder->get_rid());
-				VS::get_singleton()->canvas_light_occluder_attach_to_canvas(orid, get_canvas());
-				VS::get_singleton()->canvas_light_occluder_set_light_mask(orid, occluder_light_mask);
+				RID orid = RS::get_singleton()->canvas_light_occluder_create();
+				RS::get_singleton()->canvas_light_occluder_set_transform(orid, get_global_transform() * xform);
+				RS::get_singleton()->canvas_light_occluder_set_polygon(orid, occluder->get_rid());
+				RS::get_singleton()->canvas_light_occluder_attach_to_canvas(orid, get_canvas());
+				RS::get_singleton()->canvas_light_occluder_set_light_mask(orid, occluder_light_mask);
 				Quadrant::Occluder oc;
 				oc.xform = xform;
 				oc.id = orid;
@@ -711,7 +711,7 @@ void TileMap::update_dirty_quadrants() {
 			Quadrant &q = E->get();
 			for (List<RID>::Element *F = q.canvas_items.front(); F; F = F->next()) {
 
-				VS::get_singleton()->canvas_item_set_draw_index(F->get(), index++);
+				RS::get_singleton()->canvas_item_set_draw_index(F->get(), index++);
 			}
 		}
 
@@ -763,24 +763,24 @@ Map<TileMap::PosKey, TileMap::Quadrant>::Element *TileMap::_create_quadrant(cons
 		q.pos.y += cell_size.y;
 
 	xform.set_origin(q.pos);
-	//q.canvas_item = VisualServer::get_singleton()->canvas_item_create();
+	//q.canvas_item = RenderingServer::get_singleton()->canvas_item_create();
 	if (!use_parent) {
-		q.body = Physics2DServer::get_singleton()->body_create();
-		Physics2DServer::get_singleton()->body_set_mode(q.body, use_kinematic ? Physics2DServer::BODY_MODE_KINEMATIC : Physics2DServer::BODY_MODE_STATIC);
+		q.body = PhysicsServer2D::get_singleton()->body_create();
+		PhysicsServer2D::get_singleton()->body_set_mode(q.body, use_kinematic ? PhysicsServer2D::BODY_MODE_KINEMATIC : PhysicsServer2D::BODY_MODE_STATIC);
 
-		Physics2DServer::get_singleton()->body_attach_object_instance_id(q.body, get_instance_id());
-		Physics2DServer::get_singleton()->body_set_collision_layer(q.body, collision_layer);
-		Physics2DServer::get_singleton()->body_set_collision_mask(q.body, collision_mask);
-		Physics2DServer::get_singleton()->body_set_param(q.body, Physics2DServer::BODY_PARAM_FRICTION, friction);
-		Physics2DServer::get_singleton()->body_set_param(q.body, Physics2DServer::BODY_PARAM_BOUNCE, bounce);
+		PhysicsServer2D::get_singleton()->body_attach_object_instance_id(q.body, get_instance_id());
+		PhysicsServer2D::get_singleton()->body_set_collision_layer(q.body, collision_layer);
+		PhysicsServer2D::get_singleton()->body_set_collision_mask(q.body, collision_mask);
+		PhysicsServer2D::get_singleton()->body_set_param(q.body, PhysicsServer2D::BODY_PARAM_FRICTION, friction);
+		PhysicsServer2D::get_singleton()->body_set_param(q.body, PhysicsServer2D::BODY_PARAM_BOUNCE, bounce);
 
 		if (is_inside_tree()) {
 			xform = get_global_transform() * xform;
 			RID space = get_world_2d()->get_space();
-			Physics2DServer::get_singleton()->body_set_space(q.body, space);
+			PhysicsServer2D::get_singleton()->body_set_space(q.body, space);
 		}
 
-		Physics2DServer::get_singleton()->body_set_state(q.body, Physics2DServer::BODY_STATE_TRANSFORM, xform);
+		PhysicsServer2D::get_singleton()->body_set_state(q.body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
 	} else if (collision_parent) {
 		xform = get_transform() * xform;
 		q.shape_owner_id = collision_parent->create_shape_owner(this);
@@ -797,14 +797,14 @@ void TileMap::_erase_quadrant(Map<PosKey, Quadrant>::Element *Q) {
 
 	Quadrant &q = Q->get();
 	if (!use_parent) {
-		Physics2DServer::get_singleton()->free(q.body);
+		PhysicsServer2D::get_singleton()->free(q.body);
 	} else if (collision_parent) {
 		collision_parent->remove_shape_owner(q.shape_owner_id);
 	}
 
 	for (List<RID>::Element *E = q.canvas_items.front(); E; E = E->next()) {
 
-		VisualServer::get_singleton()->free(E->get());
+		RenderingServer::get_singleton()->free(E->get());
 	}
 	q.canvas_items.clear();
 	if (q.dirty_list.in_list())
@@ -813,13 +813,13 @@ void TileMap::_erase_quadrant(Map<PosKey, Quadrant>::Element *Q) {
 	if (navigation) {
 		for (Map<PosKey, Quadrant::NavPoly>::Element *E = q.navpoly_ids.front(); E; E = E->next()) {
 
-			Navigation2DServer::get_singleton()->region_set_map(E->get().region, RID());
+			NavigationServer2D::get_singleton()->region_set_map(E->get().region, RID());
 		}
 		q.navpoly_ids.clear();
 	}
 
 	for (Map<PosKey, Quadrant::Occluder>::Element *E = q.occluder_instances.front(); E; E = E->next()) {
-		VS::get_singleton()->free(E->get().id);
+		RS::get_singleton()->free(E->get().id);
 	}
 	q.occluder_instances.clear();
 
@@ -1197,7 +1197,7 @@ void TileMap::_update_all_items_material_state() {
 
 void TileMap::_update_item_material_state(const RID &p_canvas_item) {
 
-	VS::get_singleton()->canvas_item_set_use_parent_material(p_canvas_item, get_use_parent_material() || get_material().is_valid());
+	RS::get_singleton()->canvas_item_set_use_parent_material(p_canvas_item, get_use_parent_material() || get_material().is_valid());
 }
 
 void TileMap::clear() {
@@ -1302,7 +1302,7 @@ void TileMap::set_collision_layer(uint32_t p_layer) {
 		for (Map<PosKey, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
 
 			Quadrant &q = E->get();
-			Physics2DServer::get_singleton()->body_set_collision_layer(q.body, collision_layer);
+			PhysicsServer2D::get_singleton()->body_set_collision_layer(q.body, collision_layer);
 		}
 	}
 }
@@ -1314,7 +1314,7 @@ void TileMap::set_collision_mask(uint32_t p_mask) {
 		for (Map<PosKey, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
 
 			Quadrant &q = E->get();
-			Physics2DServer::get_singleton()->body_set_collision_mask(q.body, collision_mask);
+			PhysicsServer2D::get_singleton()->body_set_collision_mask(q.body, collision_mask);
 		}
 	}
 }
@@ -1383,7 +1383,7 @@ void TileMap::set_collision_friction(float p_friction) {
 		for (Map<PosKey, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
 
 			Quadrant &q = E->get();
-			Physics2DServer::get_singleton()->body_set_param(q.body, Physics2DServer::BODY_PARAM_FRICTION, p_friction);
+			PhysicsServer2D::get_singleton()->body_set_param(q.body, PhysicsServer2D::BODY_PARAM_FRICTION, p_friction);
 		}
 	}
 }
@@ -1400,7 +1400,7 @@ void TileMap::set_collision_bounce(float p_bounce) {
 		for (Map<PosKey, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
 
 			Quadrant &q = E->get();
-			Physics2DServer::get_singleton()->body_set_param(q.body, Physics2DServer::BODY_PARAM_BOUNCE, p_bounce);
+			PhysicsServer2D::get_singleton()->body_set_param(q.body, PhysicsServer2D::BODY_PARAM_BOUNCE, p_bounce);
 		}
 	}
 }
@@ -1655,7 +1655,7 @@ void TileMap::set_y_sort_mode(bool p_enable) {
 
 	_clear_quadrants();
 	y_sort_mode = p_enable;
-	VS::get_singleton()->canvas_item_set_sort_children_by_y(get_canvas_item(), y_sort_mode);
+	RS::get_singleton()->canvas_item_set_sort_children_by_y(get_canvas_item(), y_sort_mode);
 	_recreate_quadrants();
 	emit_signal("settings_changed");
 }
@@ -1746,7 +1746,7 @@ void TileMap::set_occluder_light_mask(int p_mask) {
 	for (Map<PosKey, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
 
 		for (Map<PosKey, Quadrant::Occluder>::Element *F = E->get().occluder_instances.front(); F; F = F->next()) {
-			VisualServer::get_singleton()->canvas_light_occluder_set_light_mask(F->get().id, occluder_light_mask);
+			RenderingServer::get_singleton()->canvas_light_occluder_set_light_mask(F->get().id, occluder_light_mask);
 		}
 	}
 }
@@ -1762,7 +1762,7 @@ void TileMap::set_light_mask(int p_light_mask) {
 	for (Map<PosKey, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
 
 		for (List<RID>::Element *F = E->get().canvas_items.front(); F; F = F->next()) {
-			VisualServer::get_singleton()->canvas_item_set_light_mask(F->get(), get_light_mask());
+			RenderingServer::get_singleton()->canvas_item_set_light_mask(F->get(), get_light_mask());
 		}
 	}
 }

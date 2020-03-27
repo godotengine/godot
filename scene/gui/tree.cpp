@@ -1220,7 +1220,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			}
 
 			if (cache.draw_guides) {
-				VisualServer::get_singleton()->canvas_item_add_line(ci, Point2i(cell_rect.position.x, cell_rect.position.y + cell_rect.size.height), cell_rect.position + cell_rect.size, cache.guide_color, 1);
+				RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(cell_rect.position.x, cell_rect.position.y + cell_rect.size.height), cell_rect.position + cell_rect.size, cache.guide_color, 1);
 			}
 
 			if (i == 0) {
@@ -1266,12 +1266,12 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					r.size.x += cache.hseparation;
 				}
 				if (p_item->cells[i].custom_bg_outline) {
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, r.size.x, 1), p_item->cells[i].bg_color);
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y + r.size.y - 1, r.size.x, 1), p_item->cells[i].bg_color);
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, 1, r.size.y), p_item->cells[i].bg_color);
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x + r.size.x - 1, r.position.y, 1, r.size.y), p_item->cells[i].bg_color);
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, r.size.x, 1), p_item->cells[i].bg_color);
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y + r.size.y - 1, r.size.x, 1), p_item->cells[i].bg_color);
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, 1, r.size.y), p_item->cells[i].bg_color);
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x + r.size.x - 1, r.position.y, 1, r.size.y), p_item->cells[i].bg_color);
 				} else {
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, r, p_item->cells[i].bg_color);
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, r, p_item->cells[i].bg_color);
 				}
 			}
 
@@ -1280,16 +1280,16 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				Rect2 r = cell_rect;
 
 				if (drop_mode_section == -1 || drop_mode_section == 0) {
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, r.size.x, 1), cache.drop_position_color);
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, r.size.x, 1), cache.drop_position_color);
 				}
 
 				if (drop_mode_section == 0) {
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, 1, r.size.y), cache.drop_position_color);
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x + r.size.x - 1, r.position.y, 1, r.size.y), cache.drop_position_color);
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, 1, r.size.y), cache.drop_position_color);
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x + r.size.x - 1, r.position.y, 1, r.size.y), cache.drop_position_color);
 				}
 
 				if (drop_mode_section == 1 || drop_mode_section == 0) {
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y + r.size.y, r.size.x, 1), cache.drop_position_color);
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y + r.size.y, r.size.x, 1), cache.drop_position_color);
 				}
 			}
 
@@ -1509,8 +1509,8 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				Point2i parent_pos = Point2i(parent_ofs - cache.arrow->get_width() / 2, p_pos.y + label_h / 2 + cache.arrow->get_height() / 2) - cache.offset + p_draw_ofs;
 
 				if (root_pos.y + line_width >= 0) {
-					VisualServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x - Math::floor(line_width / 2), root_pos.y), cache.relationship_line_color, line_width);
-					VisualServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y), Point2i(parent_pos.x, prev_ofs), cache.relationship_line_color, line_width);
+					RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x - Math::floor(line_width / 2), root_pos.y), cache.relationship_line_color, line_width);
+					RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y), Point2i(parent_pos.x, prev_ofs), cache.relationship_line_color, line_width);
 				}
 
 				if (htotal < 0) {
@@ -3030,9 +3030,9 @@ void Tree::_notification(int p_what) {
 
 		bg->draw(ci, Rect2(Point2(), get_size()));
 		if (has_focus()) {
-			VisualServer::get_singleton()->canvas_item_add_clip_ignore(ci, true);
+			RenderingServer::get_singleton()->canvas_item_add_clip_ignore(ci, true);
 			bg_focus->draw(ci, Rect2(Point2(), get_size()));
-			VisualServer::get_singleton()->canvas_item_add_clip_ignore(ci, false);
+			RenderingServer::get_singleton()->canvas_item_add_clip_ignore(ci, false);
 		}
 
 		int tbh = _get_title_button_height();

@@ -213,8 +213,8 @@ private:
 	bool notify_local_transform;
 	bool notify_transform;
 
-	VS::CanvasItemTextureFilter texture_filter_cache;
-	VS::CanvasItemTextureRepeat texture_repeat_cache;
+	RS::CanvasItemTextureFilter texture_filter_cache;
+	RS::CanvasItemTextureRepeat texture_repeat_cache;
 
 	TextureFilter texture_filter;
 	TextureRepeat texture_repeat;
