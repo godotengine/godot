@@ -115,6 +115,7 @@ private:
 	struct Action {
 		uint64_t physics_frame;
 		uint64_t idle_frame;
+		uint64_t timestamp;
 		bool pressed;
 		float strength;
 	};
@@ -266,6 +267,7 @@ public:
 	bool is_action_just_pressed(const StringName &p_action) const;
 	bool is_action_just_released(const StringName &p_action) const;
 	float get_action_strength(const StringName &p_action) const;
+	float get_action_duration(const StringName &p_action) const;
 
 	float get_joy_axis(int p_device, int p_axis) const;
 	String get_joy_name(int p_idx);

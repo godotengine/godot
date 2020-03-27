@@ -51,6 +51,27 @@
 				Note this method returns an empty [Vector3] when running from the editor even when your device has an accelerometer. You must export your project to a supported device to read values from the accelerometer.
 			</description>
 		</method>
+		<method name="get_action_duration" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="action" type="StringName">
+			</argument>
+			<description>
+				Returns the time in seconds for how long the given action has been pressed or kept in the released state. It means that the time resets to [code]0.0[/code] whenever the action's [code]pressed[/code] state is changed. Use [method is_action_pressed] to distinguish between pressed and released durations.
+				[b]Note:[/b] if the action has not been pressed nor released during the game at all, the method returns [code]0.0[/code] instead.
+				Example usage of implementing weapon charging mechanics:
+				[codeblock]
+				const CHARGE_TIME = 1.0
+				var shooting = false
+
+				func _physics_process(_delta):
+				    if Input.is_action_pressed("shoot"):
+				        shooting = Input.get_action_duration("shoot") >= CHARGE_TIME
+				    else:
+				        shooting = false
+				[/codeblock]
+			</description>
+		</method>
 		<method name="get_action_strength" qualifiers="const">
 			<return type="float">
 			</return>

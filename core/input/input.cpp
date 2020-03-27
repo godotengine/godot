@@ -149,6 +149,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_action_just_pressed", "action"), &Input::is_action_just_pressed);
 	ClassDB::bind_method(D_METHOD("is_action_just_released", "action"), &Input::is_action_just_released);
 	ClassDB::bind_method(D_METHOD("get_action_strength", "action"), &Input::get_action_strength);
+	ClassDB::bind_method(D_METHOD("get_action_duration", "action"), &Input::get_action_duration);
 	ClassDB::bind_method(D_METHOD("add_joy_mapping", "mapping", "update_existing"), &Input::add_joy_mapping, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_joy_mapping", "guid"), &Input::remove_joy_mapping);
 	ClassDB::bind_method(D_METHOD("joy_connection_changed", "device", "connected", "name", "guid"), &Input::joy_connection_changed);
@@ -324,6 +325,13 @@ float Input::get_action_strength(const StringName &p_action) const {
 	}
 
 	return E->get().strength;
+}
+
+float Input::get_action_duration(const StringName &p_action) const {
+	const Map<StringName, Action>::Element *E = action_state.find(p_action);
+	if (!E)
+		return 0.0f;
+	return (OS::get_singleton()->get_ticks_usec() - E->get().timestamp) / 1000000.0f;
 }
 
 float Input::get_joy_axis(int p_device, int p_axis) const {
@@ -602,6 +610,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 				Action action;
 				action.physics_frame = Engine::get_singleton()->get_physics_frames();
 				action.idle_frame = Engine::get_singleton()->get_idle_frames();
+				action.timestamp = OS::get_singleton()->get_ticks_usec();
 				action.pressed = p_event->is_action_pressed(E->key());
 				action.strength = 0.f;
 				action_state[E->key()] = action;
