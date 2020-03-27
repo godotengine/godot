@@ -2411,6 +2411,19 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF("rendering/quality/depth_prepass/disable_for_vendors", "PowerVR,Mali,Adreno,Apple");
 
 	GLOBAL_DEF("rendering/quality/filters/use_nearest_mipmap_filter", false);
+
+	GLOBAL_DEF("rendering/gles2/batching/use_batching", true);
+	GLOBAL_DEF("rendering/gles2/batching/max_join_item_commands", 16);
+	GLOBAL_DEF("rendering/gles2/batching/colored_vertex_format_threshold", 0.25f);
+	GLOBAL_DEF("rendering/gles2/batching/light_scissor_area_threshold", 1.0f);
+	GLOBAL_DEF("rendering/gles2/batching/batch_buffer_size", 16384);
+	GLOBAL_DEF("rendering/gles2/debug/flash_batching", false);
+	GLOBAL_DEF_RST("rendering/gles2/debug/use_batching_in_editor", false);
+
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/gles2/batching/max_join_item_commands", PropertyInfo(Variant::INT, "rendering/gles2/batching/max_join_item_commands", PROPERTY_HINT_RANGE, "0,65535"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/gles2/batching/colored_vertex_format_threshold", PropertyInfo(Variant::REAL, "rendering/gles2/batching/colored_vertex_format_threshold", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/gles2/batching/batch_buffer_size", PropertyInfo(Variant::INT, "rendering/gles2/batching/batch_buffer_size", PROPERTY_HINT_RANGE, "1024,65535,1024"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/gles2/batching/light_scissor_area_threshold", PropertyInfo(Variant::REAL, "rendering/gles2/batching/light_scissor_area_threshold", PROPERTY_HINT_RANGE, "0.0,1.0"));
 }
 
 VisualServer::~VisualServer() {
