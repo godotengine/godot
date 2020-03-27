@@ -230,7 +230,7 @@ real_t combine_friction(Body2DSW *A, Body2DSW *B) {
 bool BodyPair2DSW::setup(real_t p_step) {
 
 	//cannot collide
-	if (!A->test_collision_mask(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode() <= Physics2DServer::BODY_MODE_KINEMATIC && B->get_mode() <= Physics2DServer::BODY_MODE_KINEMATIC && A->get_max_contacts_reported() == 0 && B->get_max_contacts_reported() == 0)) {
+	if (!A->test_collision_mask(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode() <= PhysicsServer2D::BODY_MODE_KINEMATIC && B->get_mode() <= PhysicsServer2D::BODY_MODE_KINEMATIC && A->get_max_contacts_reported() == 0 && B->get_max_contacts_reported() == 0)) {
 		collided = false;
 		return false;
 	}
@@ -258,10 +258,10 @@ bool BodyPair2DSW::setup(real_t p_step) {
 
 	Vector2 motion_A, motion_B;
 
-	if (A->get_continuous_collision_detection_mode() == Physics2DServer::CCD_MODE_CAST_SHAPE) {
+	if (A->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_SHAPE) {
 		motion_A = A->get_motion();
 	}
-	if (B->get_continuous_collision_detection_mode() == Physics2DServer::CCD_MODE_CAST_SHAPE) {
+	if (B->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_SHAPE) {
 		motion_B = B->get_motion();
 	}
 	//faster to set than to check..
@@ -273,12 +273,12 @@ bool BodyPair2DSW::setup(real_t p_step) {
 
 		//test ccd (currently just a raycast)
 
-		if (A->get_continuous_collision_detection_mode() == Physics2DServer::CCD_MODE_CAST_RAY && A->get_mode() > Physics2DServer::BODY_MODE_KINEMATIC) {
+		if (A->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_RAY && A->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC) {
 			if (_test_ccd(p_step, A, shape_A, xform_A, B, shape_B, xform_B))
 				collided = true;
 		}
 
-		if (B->get_continuous_collision_detection_mode() == Physics2DServer::CCD_MODE_CAST_RAY && B->get_mode() > Physics2DServer::BODY_MODE_KINEMATIC) {
+		if (B->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_RAY && B->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC) {
 			if (_test_ccd(p_step, B, shape_B, xform_B, A, shape_A, xform_A, true))
 				collided = true;
 		}
@@ -405,7 +405,7 @@ bool BodyPair2DSW::setup(real_t p_step) {
 			}
 		}
 
-		if ((A->get_mode() <= Physics2DServer::BODY_MODE_KINEMATIC && B->get_mode() <= Physics2DServer::BODY_MODE_KINEMATIC)) {
+		if ((A->get_mode() <= PhysicsServer2D::BODY_MODE_KINEMATIC && B->get_mode() <= PhysicsServer2D::BODY_MODE_KINEMATIC)) {
 			c.active = false;
 			collided = false;
 			continue;

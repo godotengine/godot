@@ -33,7 +33,7 @@
 
 #include "core/rid.h"
 #include "core/rid_owner.h"
-#include "servers/navigation_server.h"
+#include "servers/navigation_server_3d.h"
 
 #include "nav_map.h"
 #include "nav_region.h"
@@ -67,7 +67,7 @@ struct SetCommand {
 	virtual void exec(GdNavigationServer *server) = 0;
 };
 
-class GdNavigationServer : public NavigationServer {
+class GdNavigationServer : public NavigationServer3D {
 	Mutex commands_mutex;
 	/// Mutex used to make any operation threadsafe.
 	Mutex operations_mutex;

@@ -30,7 +30,7 @@
 
 #include "camera_feed.h"
 
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 void CameraFeed::_bind_methods() {
 // FIXME: Disabled during Vulkan refactoring, should be ported.
@@ -148,7 +148,7 @@ CameraFeed::CameraFeed() {
 // FIXME: Disabled during Vulkan refactoring, should be ported.
 #if 0
 	// create a texture object
-	VisualServer *vs = VisualServer::get_singleton();
+	RenderingServer *vs = RenderingServer::get_singleton();
 	texture[CameraServer::FEED_Y_IMAGE] = vs->texture_create(); // also used for RGBA
 	texture[CameraServer::FEED_CBCR_IMAGE] = vs->texture_create();
 #endif
@@ -168,7 +168,7 @@ CameraFeed::CameraFeed(String p_name, FeedPosition p_position) {
 // FIXME: Disabled during Vulkan refactoring, should be ported.
 #if 0
 	// create a texture object
-	VisualServer *vs = VisualServer::get_singleton();
+	RenderingServer *vs = RenderingServer::get_singleton();
 	texture[CameraServer::FEED_Y_IMAGE] = vs->texture_create(); // also used for RGBA
 	texture[CameraServer::FEED_CBCR_IMAGE] = vs->texture_create();
 #endif
@@ -178,7 +178,7 @@ CameraFeed::~CameraFeed() {
 // FIXME: Disabled during Vulkan refactoring, should be ported.
 #if 0
 	// Free our textures
-	VisualServer *vs = VisualServer::get_singleton();
+	RenderingServer *vs = RenderingServer::get_singleton();
 	vs->free(texture[CameraServer::FEED_Y_IMAGE]);
 	vs->free(texture[CameraServer::FEED_CBCR_IMAGE]);
 #endif
@@ -188,7 +188,7 @@ void CameraFeed::set_RGB_img(Ref<Image> p_rgb_img) {
 // FIXME: Disabled during Vulkan refactoring, should be ported.
 #if 0
 	if (active) {
-		VisualServer *vs = VisualServer::get_singleton();
+		RenderingServer *vs = RenderingServer::get_singleton();
 
 		int new_width = p_rgb_img->get_width();
 		int new_height = p_rgb_img->get_height();
@@ -198,7 +198,7 @@ void CameraFeed::set_RGB_img(Ref<Image> p_rgb_img) {
 			base_width = new_width;
 			base_height = new_height;
 
-			vs->texture_allocate(texture[CameraServer::FEED_RGBA_IMAGE], new_width, new_height, 0, Image::FORMAT_RGB8, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAGS_DEFAULT);
+			vs->texture_allocate(texture[CameraServer::FEED_RGBA_IMAGE], new_width, new_height, 0, Image::FORMAT_RGB8, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAGS_DEFAULT);
 		}
 
 		vs->texture_set_data(texture[CameraServer::FEED_RGBA_IMAGE], p_rgb_img);
@@ -211,7 +211,7 @@ void CameraFeed::set_YCbCr_img(Ref<Image> p_ycbcr_img) {
 // FIXME: Disabled during Vulkan refactoring, should be ported.
 #if 0
 	if (active) {
-		VisualServer *vs = VisualServer::get_singleton();
+		RenderingServer *vs = RenderingServer::get_singleton();
 
 		int new_width = p_ycbcr_img->get_width();
 		int new_height = p_ycbcr_img->get_height();
@@ -221,7 +221,7 @@ void CameraFeed::set_YCbCr_img(Ref<Image> p_ycbcr_img) {
 			base_width = new_width;
 			base_height = new_height;
 
-			vs->texture_allocate(texture[CameraServer::FEED_RGBA_IMAGE], new_width, new_height, 0, Image::FORMAT_RGB8, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAGS_DEFAULT);
+			vs->texture_allocate(texture[CameraServer::FEED_RGBA_IMAGE], new_width, new_height, 0, Image::FORMAT_RGB8, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAGS_DEFAULT);
 		}
 
 		vs->texture_set_data(texture[CameraServer::FEED_RGBA_IMAGE], p_ycbcr_img);
@@ -234,7 +234,7 @@ void CameraFeed::set_YCbCr_imgs(Ref<Image> p_y_img, Ref<Image> p_cbcr_img) {
 // FIXME: Disabled during Vulkan refactoring, should be ported.
 #if 0
 	if (active) {
-		VisualServer *vs = VisualServer::get_singleton();
+		RenderingServer *vs = RenderingServer::get_singleton();
 
 		///@TODO investigate whether we can use thirdparty/misc/yuv2rgb.h here to convert our YUV data to RGB, our shader approach is potentially faster though..
 		// Wondering about including that into multiple projects, may cause issues.
@@ -250,10 +250,10 @@ void CameraFeed::set_YCbCr_imgs(Ref<Image> p_y_img, Ref<Image> p_cbcr_img) {
 			base_width = new_y_width;
 			base_height = new_y_height;
 
-			vs->texture_allocate(texture[CameraServer::FEED_Y_IMAGE], new_y_width, new_y_height, 0, Image::FORMAT_R8, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_USED_FOR_STREAMING);
+			vs->texture_allocate(texture[CameraServer::FEED_Y_IMAGE], new_y_width, new_y_height, 0, Image::FORMAT_R8, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAG_USED_FOR_STREAMING);
 
 			///@TODO GLES2 doesn't support FORMAT_RG8, need to do some form of conversion
-			vs->texture_allocate(texture[CameraServer::FEED_CBCR_IMAGE], new_cbcr_width, new_cbcr_height, 0, Image::FORMAT_RG8, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_USED_FOR_STREAMING);
+			vs->texture_allocate(texture[CameraServer::FEED_CBCR_IMAGE], new_cbcr_width, new_cbcr_height, 0, Image::FORMAT_RG8, RS::TEXTURE_TYPE_2D, RS::TEXTURE_FLAG_USED_FOR_STREAMING);
 		}
 
 		vs->texture_set_data(texture[CameraServer::FEED_Y_IMAGE], p_y_img);
@@ -265,15 +265,15 @@ void CameraFeed::set_YCbCr_imgs(Ref<Image> p_y_img, Ref<Image> p_cbcr_img) {
 
 // FIXME: Disabled during Vulkan refactoring, should be ported.
 #if 0
-void CameraFeed::allocate_texture(int p_width, int p_height, Image::Format p_format, VisualServer::TextureType p_texture_type, FeedDataType p_data_type) {
-	VisualServer *vs = VisualServer::get_singleton();
+void CameraFeed::allocate_texture(int p_width, int p_height, Image::Format p_format, RenderingServer::TextureType p_texture_type, FeedDataType p_data_type) {
+	RenderingServer *vs = RenderingServer::get_singleton();
 
 	if ((base_width != p_width) || (base_height != p_height)) {
 		// We're assuming here that our camera image doesn't change around formats etc, allocate the whole lot...
 		base_width = p_width;
 		base_height = p_height;
 
-		vs->texture_allocate(texture[0], p_width, p_height, 0, p_format, p_texture_type, VS::TEXTURE_FLAGS_DEFAULT);
+		vs->texture_allocate(texture[0], p_width, p_height, 0, p_format, p_texture_type, RS::TEXTURE_FLAGS_DEFAULT);
 	}
 
 	datatype = p_data_type;

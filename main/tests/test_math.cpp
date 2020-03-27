@@ -43,7 +43,7 @@
 #include "core/vmap.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
-#include "servers/visual/shader_language.h"
+#include "servers/rendering/shader_language.h"
 
 #include "core/method_ptrcall.h"
 

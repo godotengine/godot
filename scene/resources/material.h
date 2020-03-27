@@ -35,8 +35,8 @@
 #include "core/self_list.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
-#include "servers/visual/shader_language.h"
-#include "servers/visual_server.h"
+#include "servers/rendering/shader_language.h"
+#include "servers/rendering_server.h"
 
 class Material : public Resource {
 
@@ -57,8 +57,8 @@ protected:
 
 public:
 	enum {
-		RENDER_PRIORITY_MAX = VS::MATERIAL_RENDER_PRIORITY_MAX,
-		RENDER_PRIORITY_MIN = VS::MATERIAL_RENDER_PRIORITY_MIN,
+		RENDER_PRIORITY_MAX = RS::MATERIAL_RENDER_PRIORITY_MAX,
+		RENDER_PRIORITY_MIN = RS::MATERIAL_RENDER_PRIORITY_MIN,
 	};
 	void set_next_pass(const Ref<Material> &p_pass);
 	Ref<Material> get_next_pass() const;

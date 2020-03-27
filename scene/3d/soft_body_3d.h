@@ -35,7 +35,7 @@
 
 class SoftBody3D;
 
-class SoftBodyVisualServerHandler {
+class SoftBodyRenderingServerHandler {
 
 	friend class SoftBody3D;
 
@@ -49,7 +49,7 @@ class SoftBodyVisualServerHandler {
 	uint8_t *write_buffer;
 
 private:
-	SoftBodyVisualServerHandler();
+	SoftBodyRenderingServerHandler();
 	bool is_ready() { return mesh.is_valid(); }
 	void prepare(RID p_mesh_rid, int p_surface);
 	void clear();
@@ -79,7 +79,7 @@ public:
 	};
 
 private:
-	SoftBodyVisualServerHandler visual_server_handler;
+	SoftBodyRenderingServerHandler rendering_server_handler;
 
 	RID physics_rid;
 

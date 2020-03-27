@@ -32,7 +32,7 @@
 #define MULTIMESH_H
 
 #include "scene/resources/mesh.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 class MultiMesh : public Resource {
 
@@ -41,8 +41,8 @@ class MultiMesh : public Resource {
 
 public:
 	enum TransformFormat {
-		TRANSFORM_2D = VS::MULTIMESH_TRANSFORM_2D,
-		TRANSFORM_3D = VS::MULTIMESH_TRANSFORM_3D
+		TRANSFORM_2D = RS::MULTIMESH_TRANSFORM_2D,
+		TRANSFORM_3D = RS::MULTIMESH_TRANSFORM_3D
 	};
 
 private:

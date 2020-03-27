@@ -48,9 +48,9 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
 #include "servers/display_server.h"
-#include "servers/navigation_server.h"
-#include "servers/physics_2d_server.h"
-#include "servers/physics_server.h"
+#include "servers/navigation_server_3d.h"
+#include "servers/physics_server_2d.h"
+#include "servers/physics_server_3d.h"
 #include "window.h"
 
 #include <stdio.h>
@@ -435,7 +435,7 @@ bool SceneTree::idle(float p_time) {
 
 	//print_line("ram: "+itos(OS::get_singleton()->get_static_memory_usage())+" sram: "+itos(OS::get_singleton()->get_dynamic_memory_usage()));
 	//print_line("node count: "+itos(get_node_count()));
-	//print_line("TEXTURE RAM: "+itos(VS::get_singleton()->get_render_info(VS::INFO_TEXTURE_MEM_USED)));
+	//print_line("TEXTURE RAM: "+itos(RS::get_singleton()->get_render_info(RS::INFO_TEXTURE_MEM_USED)));
 
 	root_lock++;
 
@@ -796,9 +796,9 @@ void SceneTree::set_pause(bool p_enabled) {
 	if (p_enabled == pause)
 		return;
 	pause = p_enabled;
-	NavigationServer::get_singleton()->set_active(!p_enabled);
-	PhysicsServer::get_singleton()->set_active(!p_enabled);
-	Physics2DServer::get_singleton()->set_active(!p_enabled);
+	NavigationServer3D::get_singleton()->set_active(!p_enabled);
+	PhysicsServer3D::get_singleton()->set_active(!p_enabled);
+	PhysicsServer2D::get_singleton()->set_active(!p_enabled);
 	if (get_root())
 		get_root()->propagate_notification(p_enabled ? Node::NOTIFICATION_PAUSED : Node::NOTIFICATION_UNPAUSED);
 }

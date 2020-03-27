@@ -39,8 +39,8 @@
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #include "joypad_uwp.h"
 #include "servers/audio_server.h"
-#include "servers/visual/rasterizer.h"
-#include "servers/visual_server.h"
+#include "servers/rendering/rasterizer.h"
+#include "servers/rendering_server.h"
 
 #include <fcntl.h>
 #include <io.h>
@@ -88,7 +88,7 @@ private:
 	bool outside;
 	int old_x, old_y;
 	Point2i center;
-	VisualServer *visual_server;
+	RenderingServer *rendering_server;
 	int pressrc;
 
 	ContextEGL_UWP *gl_context;

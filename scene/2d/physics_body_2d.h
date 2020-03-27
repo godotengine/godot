@@ -34,7 +34,7 @@
 #include "core/vset.h"
 #include "scene/2d/collision_object_2d.h"
 #include "scene/resources/physics_material.h"
-#include "servers/physics_2d_server.h"
+#include "servers/physics_server_2d.h"
 
 class KinematicCollision2D;
 
@@ -50,7 +50,7 @@ class PhysicsBody2D : public CollisionObject2D {
 
 protected:
 	void _notification(int p_what);
-	PhysicsBody2D(Physics2DServer::BodyMode p_mode);
+	PhysicsBody2D(PhysicsServer2D::BodyMode p_mode);
 
 	static void _bind_methods();
 
@@ -123,7 +123,7 @@ public:
 
 private:
 	bool can_sleep;
-	Physics2DDirectBodyState *state;
+	PhysicsDirectBodyState2D *state;
 	Mode mode;
 
 	real_t mass;
@@ -303,7 +303,7 @@ private:
 	Vector<Ref<KinematicCollision2D>> slide_colliders;
 	Ref<KinematicCollision2D> motion_cache;
 
-	_FORCE_INLINE_ bool _ignores_mode(Physics2DServer::BodyMode) const;
+	_FORCE_INLINE_ bool _ignores_mode(PhysicsServer2D::BodyMode) const;
 
 	Ref<KinematicCollision2D> _move(const Vector2 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
 	Ref<KinematicCollision2D> _get_slide_collision(int p_bounce);

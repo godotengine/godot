@@ -578,7 +578,7 @@ private:
 	ToolMode tool_mode;
 	bool orthogonal;
 
-	VisualServer::ScenarioDebugMode scenario_debug;
+	RenderingServer::ScenarioDebugMode scenario_debug;
 
 	RID origin;
 	RID origin_instance;

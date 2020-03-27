@@ -31,7 +31,7 @@
 #include "light_2d.h"
 
 #include "core/engine.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 #ifdef TOOLS_ENABLED
 Dictionary Light2D::_edit_get_state() const {
@@ -100,7 +100,7 @@ void Light2D::_update_light_visibility() {
 	}
 #endif
 
-	VS::get_singleton()->canvas_light_set_enabled(canvas_light, enabled && is_visible_in_tree() && editor_ok);
+	RS::get_singleton()->canvas_light_set_enabled(canvas_light, enabled && is_visible_in_tree() && editor_ok);
 }
 
 void Light2D::set_enabled(bool p_enabled) {
@@ -129,9 +129,9 @@ void Light2D::set_texture(const Ref<Texture2D> &p_texture) {
 
 	texture = p_texture;
 	if (texture.is_valid())
-		VS::get_singleton()->canvas_light_set_texture(canvas_light, texture->get_rid());
+		RS::get_singleton()->canvas_light_set_texture(canvas_light, texture->get_rid());
 	else
-		VS::get_singleton()->canvas_light_set_texture(canvas_light, RID());
+		RS::get_singleton()->canvas_light_set_texture(canvas_light, RID());
 
 	update_configuration_warning();
 }
@@ -144,7 +144,7 @@ Ref<Texture2D> Light2D::get_texture() const {
 void Light2D::set_texture_offset(const Vector2 &p_offset) {
 
 	texture_offset = p_offset;
-	VS::get_singleton()->canvas_light_set_texture_offset(canvas_light, texture_offset);
+	RS::get_singleton()->canvas_light_set_texture_offset(canvas_light, texture_offset);
 	item_rect_changed();
 	_change_notify("offset");
 }
@@ -157,7 +157,7 @@ Vector2 Light2D::get_texture_offset() const {
 void Light2D::set_color(const Color &p_color) {
 
 	color = p_color;
-	VS::get_singleton()->canvas_light_set_color(canvas_light, color);
+	RS::get_singleton()->canvas_light_set_color(canvas_light, color);
 }
 Color Light2D::get_color() const {
 
@@ -167,7 +167,7 @@ Color Light2D::get_color() const {
 void Light2D::set_height(float p_height) {
 
 	height = p_height;
-	VS::get_singleton()->canvas_light_set_height(canvas_light, height);
+	RS::get_singleton()->canvas_light_set_height(canvas_light, height);
 }
 
 float Light2D::get_height() const {
@@ -178,7 +178,7 @@ float Light2D::get_height() const {
 void Light2D::set_energy(float p_energy) {
 
 	energy = p_energy;
-	VS::get_singleton()->canvas_light_set_energy(canvas_light, energy);
+	RS::get_singleton()->canvas_light_set_energy(canvas_light, energy);
 }
 
 float Light2D::get_energy() const {
@@ -193,7 +193,7 @@ void Light2D::set_texture_scale(float p_scale) {
 	if (_scale == 0) {
 		_scale = CMP_EPSILON;
 	}
-	VS::get_singleton()->canvas_light_set_scale(canvas_light, _scale);
+	RS::get_singleton()->canvas_light_set_scale(canvas_light, _scale);
 	item_rect_changed();
 }
 
@@ -205,7 +205,7 @@ float Light2D::get_texture_scale() const {
 void Light2D::set_z_range_min(int p_min_z) {
 
 	z_min = p_min_z;
-	VS::get_singleton()->canvas_light_set_z_range(canvas_light, z_min, z_max);
+	RS::get_singleton()->canvas_light_set_z_range(canvas_light, z_min, z_max);
 }
 int Light2D::get_z_range_min() const {
 
@@ -215,7 +215,7 @@ int Light2D::get_z_range_min() const {
 void Light2D::set_z_range_max(int p_max_z) {
 
 	z_max = p_max_z;
-	VS::get_singleton()->canvas_light_set_z_range(canvas_light, z_min, z_max);
+	RS::get_singleton()->canvas_light_set_z_range(canvas_light, z_min, z_max);
 }
 int Light2D::get_z_range_max() const {
 
@@ -225,7 +225,7 @@ int Light2D::get_z_range_max() const {
 void Light2D::set_layer_range_min(int p_min_layer) {
 
 	layer_min = p_min_layer;
-	VS::get_singleton()->canvas_light_set_layer_range(canvas_light, layer_min, layer_max);
+	RS::get_singleton()->canvas_light_set_layer_range(canvas_light, layer_min, layer_max);
 }
 int Light2D::get_layer_range_min() const {
 
@@ -235,7 +235,7 @@ int Light2D::get_layer_range_min() const {
 void Light2D::set_layer_range_max(int p_max_layer) {
 
 	layer_max = p_max_layer;
-	VS::get_singleton()->canvas_light_set_layer_range(canvas_light, layer_min, layer_max);
+	RS::get_singleton()->canvas_light_set_layer_range(canvas_light, layer_min, layer_max);
 }
 int Light2D::get_layer_range_max() const {
 
@@ -245,7 +245,7 @@ int Light2D::get_layer_range_max() const {
 void Light2D::set_item_cull_mask(int p_mask) {
 
 	item_mask = p_mask;
-	VS::get_singleton()->canvas_light_set_item_cull_mask(canvas_light, item_mask);
+	RS::get_singleton()->canvas_light_set_item_cull_mask(canvas_light, item_mask);
 }
 
 int Light2D::get_item_cull_mask() const {
@@ -256,7 +256,7 @@ int Light2D::get_item_cull_mask() const {
 void Light2D::set_item_shadow_cull_mask(int p_mask) {
 
 	item_shadow_mask = p_mask;
-	VS::get_singleton()->canvas_light_set_item_shadow_cull_mask(canvas_light, item_shadow_mask);
+	RS::get_singleton()->canvas_light_set_item_shadow_cull_mask(canvas_light, item_shadow_mask);
 }
 
 int Light2D::get_item_shadow_cull_mask() const {
@@ -267,7 +267,7 @@ int Light2D::get_item_shadow_cull_mask() const {
 void Light2D::set_mode(Mode p_mode) {
 
 	mode = p_mode;
-	VS::get_singleton()->canvas_light_set_mode(canvas_light, VS::CanvasLightMode(p_mode));
+	RS::get_singleton()->canvas_light_set_mode(canvas_light, RS::CanvasLightMode(p_mode));
 }
 
 Light2D::Mode Light2D::get_mode() const {
@@ -278,7 +278,7 @@ Light2D::Mode Light2D::get_mode() const {
 void Light2D::set_shadow_enabled(bool p_enabled) {
 
 	shadow = p_enabled;
-	VS::get_singleton()->canvas_light_set_shadow_enabled(canvas_light, shadow);
+	RS::get_singleton()->canvas_light_set_shadow_enabled(canvas_light, shadow);
 }
 bool Light2D::is_shadow_enabled() const {
 
@@ -288,7 +288,7 @@ bool Light2D::is_shadow_enabled() const {
 void Light2D::set_shadow_buffer_size(int p_size) {
 
 	shadow_buffer_size = p_size;
-	VS::get_singleton()->canvas_light_set_shadow_buffer_size(canvas_light, shadow_buffer_size);
+	RS::get_singleton()->canvas_light_set_shadow_buffer_size(canvas_light, shadow_buffer_size);
 }
 
 int Light2D::get_shadow_buffer_size() const {
@@ -299,7 +299,7 @@ int Light2D::get_shadow_buffer_size() const {
 void Light2D::set_shadow_filter(ShadowFilter p_filter) {
 	ERR_FAIL_INDEX(p_filter, SHADOW_FILTER_MAX);
 	shadow_filter = p_filter;
-	VS::get_singleton()->canvas_light_set_shadow_filter(canvas_light, VS::CanvasLightShadowFilter(p_filter));
+	RS::get_singleton()->canvas_light_set_shadow_filter(canvas_light, RS::CanvasLightShadowFilter(p_filter));
 }
 
 Light2D::ShadowFilter Light2D::get_shadow_filter() const {
@@ -309,7 +309,7 @@ Light2D::ShadowFilter Light2D::get_shadow_filter() const {
 
 void Light2D::set_shadow_color(const Color &p_shadow_color) {
 	shadow_color = p_shadow_color;
-	VS::get_singleton()->canvas_light_set_shadow_color(canvas_light, shadow_color);
+	RS::get_singleton()->canvas_light_set_shadow_color(canvas_light, shadow_color);
 }
 
 Color Light2D::get_shadow_color() const {
@@ -320,13 +320,13 @@ void Light2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		VS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, get_canvas());
+		RS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, get_canvas());
 		_update_light_visibility();
 	}
 
 	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
 
-		VS::get_singleton()->canvas_light_set_transform(canvas_light, get_global_transform());
+		RS::get_singleton()->canvas_light_set_transform(canvas_light, get_global_transform());
 	}
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 
@@ -335,7 +335,7 @@ void Light2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 
-		VS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, RID());
+		RS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, RID());
 		_update_light_visibility();
 	}
 }
@@ -352,7 +352,7 @@ String Light2D::get_configuration_warning() const {
 void Light2D::set_shadow_smooth(float p_amount) {
 
 	shadow_smooth = p_amount;
-	VS::get_singleton()->canvas_light_set_shadow_smooth(canvas_light, shadow_smooth);
+	RS::get_singleton()->canvas_light_set_shadow_smooth(canvas_light, shadow_smooth);
 }
 
 float Light2D::get_shadow_smooth() const {
@@ -432,8 +432,8 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Add,Sub,Mix,Mask"), "set_mode", "get_mode");
 	ADD_GROUP("Range", "range_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "range_height", PROPERTY_HINT_RANGE, "-2048,2048,0.1,or_lesser,or_greater"), "set_height", "get_height");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_z_min", PROPERTY_HINT_RANGE, itos(VS::CANVAS_ITEM_Z_MIN) + "," + itos(VS::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_range_min", "get_z_range_min");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_z_max", PROPERTY_HINT_RANGE, itos(VS::CANVAS_ITEM_Z_MIN) + "," + itos(VS::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_range_max", "get_z_range_max");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_z_min", PROPERTY_HINT_RANGE, itos(RS::CANVAS_ITEM_Z_MIN) + "," + itos(RS::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_range_min", "get_z_range_min");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_z_max", PROPERTY_HINT_RANGE, itos(RS::CANVAS_ITEM_Z_MIN) + "," + itos(RS::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_range_max", "get_z_range_max");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_layer_min", PROPERTY_HINT_RANGE, "-512,512,1"), "set_layer_range_min", "get_layer_range_min");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_layer_max", PROPERTY_HINT_RANGE, "-512,512,1"), "set_layer_range_max", "get_layer_range_max");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_item_cull_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_item_cull_mask", "get_item_cull_mask");
@@ -458,7 +458,7 @@ void Light2D::_bind_methods() {
 
 Light2D::Light2D() {
 
-	canvas_light = VisualServer::get_singleton()->canvas_light_create();
+	canvas_light = RenderingServer::get_singleton()->canvas_light_create();
 	enabled = true;
 	editor_only = false;
 	shadow = false;
@@ -483,5 +483,5 @@ Light2D::Light2D() {
 
 Light2D::~Light2D() {
 
-	VisualServer::get_singleton()->free(canvas_light);
+	RenderingServer::get_singleton()->free(canvas_light);
 }

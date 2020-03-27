@@ -86,7 +86,7 @@ void EditorNode3DGizmo::clear() {
 	for (int i = 0; i < instances.size(); i++) {
 
 		if (instances[i].instance.is_valid())
-			VS::get_singleton()->free(instances[i].instance);
+			RS::get_singleton()->free(instances[i].instance);
 	}
 
 	billboard_handle = false;
@@ -168,16 +168,16 @@ void EditorNode3DGizmo::set_spatial_node(Node3D *p_node) {
 
 void EditorNode3DGizmo::Instance::create_instance(Node3D *p_base, bool p_hidden) {
 
-	instance = VS::get_singleton()->instance_create2(mesh->get_rid(), p_base->get_world()->get_scenario());
-	VS::get_singleton()->instance_attach_object_instance_id(instance, p_base->get_instance_id());
+	instance = RS::get_singleton()->instance_create2(mesh->get_rid(), p_base->get_world()->get_scenario());
+	RS::get_singleton()->instance_attach_object_instance_id(instance, p_base->get_instance_id());
 	if (skin_reference.is_valid()) {
-		VS::get_singleton()->instance_attach_skeleton(instance, skin_reference->get_skeleton());
+		RS::get_singleton()->instance_attach_skeleton(instance, skin_reference->get_skeleton());
 	}
 	if (extra_margin)
-		VS::get_singleton()->instance_set_extra_visibility_margin(instance, 1);
-	VS::get_singleton()->instance_geometry_set_cast_shadows_setting(instance, VS::SHADOW_CASTING_SETTING_OFF);
+		RS::get_singleton()->instance_set_extra_visibility_margin(instance, 1);
+	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(instance, RS::SHADOW_CASTING_SETTING_OFF);
 	int layer = p_hidden ? 0 : 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER;
-	VS::get_singleton()->instance_set_layer_mask(instance, layer); //gizmos are 26
+	RS::get_singleton()->instance_set_layer_mask(instance, layer); //gizmos are 26
 }
 
 void EditorNode3DGizmo::add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard, const Ref<SkinReference> &p_skin_reference, const Ref<Material> &p_material) {
@@ -191,9 +191,9 @@ void EditorNode3DGizmo::add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard,
 	ins.material = p_material;
 	if (valid) {
 		ins.create_instance(spatial_node, hidden);
-		VS::get_singleton()->instance_set_transform(ins.instance, spatial_node->get_global_transform());
+		RS::get_singleton()->instance_set_transform(ins.instance, spatial_node->get_global_transform());
 		if (ins.material.is_valid()) {
-			VS::get_singleton()->instance_geometry_set_material_override(ins.instance, p_material->get_rid());
+			RS::get_singleton()->instance_geometry_set_material_override(ins.instance, p_material->get_rid());
 		}
 	}
 
@@ -246,7 +246,7 @@ void EditorNode3DGizmo::add_lines(const Vector<Vector3> &p_lines, const Ref<Mate
 	ins.mesh = mesh;
 	if (valid) {
 		ins.create_instance(spatial_node, hidden);
-		VS::get_singleton()->instance_set_transform(ins.instance, spatial_node->get_global_transform());
+		RS::get_singleton()->instance_set_transform(ins.instance, spatial_node->get_global_transform());
 	}
 
 	instances.push_back(ins);
@@ -310,7 +310,7 @@ void EditorNode3DGizmo::add_unscaled_billboard(const Ref<Material> &p_material, 
 	ins.billboard = true;
 	if (valid) {
 		ins.create_instance(spatial_node, hidden);
-		VS::get_singleton()->instance_set_transform(ins.instance, spatial_node->get_global_transform());
+		RS::get_singleton()->instance_set_transform(ins.instance, spatial_node->get_global_transform());
 	}
 
 	selectable_icon_size = p_scale;
@@ -346,8 +346,8 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
 
 	Array a;
-	a.resize(VS::ARRAY_MAX);
-	a[VS::ARRAY_VERTEX] = p_handles;
+	a.resize(RS::ARRAY_MAX);
+	a[RS::ARRAY_VERTEX] = p_handles;
 	Vector<Color> colors;
 	{
 		colors.resize(p_handles.size());
@@ -364,7 +364,7 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 			w[i] = col;
 		}
 	}
-	a[VS::ARRAY_COLOR] = colors;
+	a[RS::ARRAY_COLOR] = colors;
 	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_POINTS, a);
 	mesh->surface_set_material(0, p_material);
 
@@ -384,7 +384,7 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 	ins.extra_margin = true;
 	if (valid) {
 		ins.create_instance(spatial_node, hidden);
-		VS::get_singleton()->instance_set_transform(ins.instance, spatial_node->get_global_transform());
+		RS::get_singleton()->instance_set_transform(ins.instance, spatial_node->get_global_transform());
 	}
 	instances.push_back(ins);
 	if (!p_secondary) {
@@ -410,14 +410,14 @@ void EditorNode3DGizmo::add_solid_box(Ref<Material> &p_material, Vector3 p_size,
 	cubem.set_size(p_size);
 
 	Array arrays = cubem.surface_get_arrays(0);
-	PackedVector3Array vertex = arrays[VS::ARRAY_VERTEX];
+	PackedVector3Array vertex = arrays[RS::ARRAY_VERTEX];
 	Vector3 *w = vertex.ptrw();
 
 	for (int i = 0; i < vertex.size(); ++i) {
 		w[i] += p_position;
 	}
 
-	arrays[VS::ARRAY_VERTEX] = vertex;
+	arrays[RS::ARRAY_VERTEX] = vertex;
 
 	Ref<ArrayMesh> m = memnew(ArrayMesh);
 	m->add_surface_from_arrays(cubem.surface_get_primitive_type(0), arrays);
@@ -708,7 +708,7 @@ void EditorNode3DGizmo::transform() {
 	ERR_FAIL_COND(!spatial_node);
 	ERR_FAIL_COND(!valid);
 	for (int i = 0; i < instances.size(); i++) {
-		VS::get_singleton()->instance_set_transform(instances[i].instance, spatial_node->get_global_transform());
+		RS::get_singleton()->instance_set_transform(instances[i].instance, spatial_node->get_global_transform());
 	}
 }
 
@@ -720,7 +720,7 @@ void EditorNode3DGizmo::free() {
 	for (int i = 0; i < instances.size(); i++) {
 
 		if (instances[i].instance.is_valid())
-			VS::get_singleton()->free(instances[i].instance);
+			RS::get_singleton()->free(instances[i].instance);
 		instances.write[i].instance = RID();
 	}
 
@@ -733,7 +733,7 @@ void EditorNode3DGizmo::set_hidden(bool p_hidden) {
 	hidden = p_hidden;
 	int layer = hidden ? 0 : 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER;
 	for (int i = 0; i < instances.size(); ++i) {
-		VS::get_singleton()->instance_set_layer_mask(instances[i].instance, layer);
+		RS::get_singleton()->instance_set_layer_mask(instances[i].instance, layer);
 	}
 }
 
@@ -1585,7 +1585,7 @@ Position3DNode3DGizmoPlugin::Position3DNode3DGizmoPlugin() {
 	mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 
 	Array d;
-	d.resize(VS::ARRAY_MAX);
+	d.resize(RS::ARRAY_MAX);
 	d[Mesh::ARRAY_VERTEX] = cursor_points;
 	d[Mesh::ARRAY_COLOR] = cursor_colors;
 	pos3d_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, d);

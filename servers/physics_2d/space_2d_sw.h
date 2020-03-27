@@ -41,9 +41,9 @@
 #include "core/project_settings.h"
 #include "core/typedefs.h"
 
-class Physics2DDirectSpaceStateSW : public Physics2DDirectSpaceState {
+class Physics2DDirectSpaceStateSW : public PhysicsDirectSpaceState2D {
 
-	GDCLASS(Physics2DDirectSpaceStateSW, Physics2DDirectSpaceState);
+	GDCLASS(Physics2DDirectSpaceStateSW, PhysicsDirectSpaceState2D);
 
 	int _intersect_point_impl(const Vector2 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, bool p_pick_point, bool p_filter_by_canvas = false, ObjectID p_canvas_instance_id = ObjectID());
 
@@ -175,8 +175,8 @@ public:
 	void lock();
 	void unlock();
 
-	void set_param(Physics2DServer::SpaceParameter p_param, real_t p_value);
-	real_t get_param(Physics2DServer::SpaceParameter p_param) const;
+	void set_param(PhysicsServer2D::SpaceParameter p_param, real_t p_value);
+	real_t get_param(PhysicsServer2D::SpaceParameter p_param) const;
 
 	void set_island_count(int p_island_count) { island_count = p_island_count; }
 	int get_island_count() const { return island_count; }
@@ -186,8 +186,8 @@ public:
 
 	int get_collision_pairs() const { return collision_pairs; }
 
-	bool test_body_motion(Body2DSW *p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, Physics2DServer::MotionResult *r_result, bool p_exclude_raycast_shapes = true);
-	int test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, Physics2DServer::SeparationResult *r_results, int p_result_max, real_t p_margin);
+	bool test_body_motion(Body2DSW *p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, PhysicsServer2D::MotionResult *r_result, bool p_exclude_raycast_shapes = true);
+	int test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, PhysicsServer2D::SeparationResult *r_results, int p_result_max, real_t p_margin);
 
 	void set_debug_contacts(int p_amount) { contact_debug.resize(p_amount); }
 	_FORCE_INLINE_ bool is_debugging_contacts() const { return !contact_debug.empty(); }

@@ -46,7 +46,7 @@
 AreaBullet::AreaBullet() :
 		RigidCollisionObjectBullet(CollisionObjectBullet::TYPE_AREA),
 		monitorable(true),
-		spOv_mode(PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED),
+		spOv_mode(PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED),
 		spOv_gravityPoint(false),
 		spOv_gravityPointDistanceScale(0),
 		spOv_gravityPointAttenuation(1),
@@ -86,11 +86,11 @@ void AreaBullet::dispatch_callbacks() {
 		switch (otherObj.state) {
 			case OVERLAP_STATE_ENTER:
 				otherObj.state = OVERLAP_STATE_INSIDE;
-				call_event(otherObj.object, PhysicsServer::AREA_BODY_ADDED);
+				call_event(otherObj.object, PhysicsServer3D::AREA_BODY_ADDED);
 				otherObj.object->on_enter_area(this);
 				break;
 			case OVERLAP_STATE_EXIT:
-				call_event(otherObj.object, PhysicsServer::AREA_BODY_REMOVED);
+				call_event(otherObj.object, PhysicsServer3D::AREA_BODY_REMOVED);
 				otherObj.object->on_exit_area(this);
 				overlappingObjects.remove(i); // Remove after callback
 				break;
@@ -101,7 +101,7 @@ void AreaBullet::dispatch_callbacks() {
 	}
 }
 
-void AreaBullet::call_event(CollisionObjectBullet *p_otherObject, PhysicsServer::AreaBodyStatus p_status) {
+void AreaBullet::call_event(CollisionObjectBullet *p_otherObject, PhysicsServer3D::AreaBodyStatus p_status) {
 
 	InOutEventCallback &event = eventsCallbacks[static_cast<int>(p_otherObject->getType())];
 	Object *areaGodoObject = ObjectDB::get_instance(event.event_callback_id);
@@ -130,7 +130,7 @@ void AreaBullet::scratch() {
 void AreaBullet::clear_overlaps(bool p_notify) {
 	for (int i = overlappingObjects.size() - 1; 0 <= i; --i) {
 		if (p_notify)
-			call_event(overlappingObjects[i].object, PhysicsServer::AREA_BODY_REMOVED);
+			call_event(overlappingObjects[i].object, PhysicsServer3D::AREA_BODY_REMOVED);
 		overlappingObjects[i].object->on_exit_area(this);
 	}
 	overlappingObjects.clear();
@@ -140,7 +140,7 @@ void AreaBullet::remove_overlap(CollisionObjectBullet *p_object, bool p_notify) 
 	for (int i = overlappingObjects.size() - 1; 0 <= i; --i) {
 		if (overlappingObjects[i].object == p_object) {
 			if (p_notify)
-				call_event(overlappingObjects[i].object, PhysicsServer::AREA_BODY_REMOVED);
+				call_event(overlappingObjects[i].object, PhysicsServer3D::AREA_BODY_REMOVED);
 			overlappingObjects[i].object->on_exit_area(this);
 			overlappingObjects.remove(i);
 			break;
@@ -218,30 +218,30 @@ void AreaBullet::put_overlap_as_inside(int p_index) {
 	}
 }
 
-void AreaBullet::set_param(PhysicsServer::AreaParameter p_param, const Variant &p_value) {
+void AreaBullet::set_param(PhysicsServer3D::AreaParameter p_param, const Variant &p_value) {
 	switch (p_param) {
-		case PhysicsServer::AREA_PARAM_GRAVITY:
+		case PhysicsServer3D::AREA_PARAM_GRAVITY:
 			set_spOv_gravityMag(p_value);
 			break;
-		case PhysicsServer::AREA_PARAM_GRAVITY_VECTOR:
+		case PhysicsServer3D::AREA_PARAM_GRAVITY_VECTOR:
 			set_spOv_gravityVec(p_value);
 			break;
-		case PhysicsServer::AREA_PARAM_LINEAR_DAMP:
+		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP:
 			set_spOv_linearDump(p_value);
 			break;
-		case PhysicsServer::AREA_PARAM_ANGULAR_DAMP:
+		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP:
 			set_spOv_angularDump(p_value);
 			break;
-		case PhysicsServer::AREA_PARAM_PRIORITY:
+		case PhysicsServer3D::AREA_PARAM_PRIORITY:
 			set_spOv_priority(p_value);
 			break;
-		case PhysicsServer::AREA_PARAM_GRAVITY_IS_POINT:
+		case PhysicsServer3D::AREA_PARAM_GRAVITY_IS_POINT:
 			set_spOv_gravityPoint(p_value);
 			break;
-		case PhysicsServer::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
+		case PhysicsServer3D::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
 			set_spOv_gravityPointDistanceScale(p_value);
 			break;
-		case PhysicsServer::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
+		case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
 			set_spOv_gravityPointAttenuation(p_value);
 			break;
 		default:
@@ -249,23 +249,23 @@ void AreaBullet::set_param(PhysicsServer::AreaParameter p_param, const Variant &
 	}
 }
 
-Variant AreaBullet::get_param(PhysicsServer::AreaParameter p_param) const {
+Variant AreaBullet::get_param(PhysicsServer3D::AreaParameter p_param) const {
 	switch (p_param) {
-		case PhysicsServer::AREA_PARAM_GRAVITY:
+		case PhysicsServer3D::AREA_PARAM_GRAVITY:
 			return spOv_gravityMag;
-		case PhysicsServer::AREA_PARAM_GRAVITY_VECTOR:
+		case PhysicsServer3D::AREA_PARAM_GRAVITY_VECTOR:
 			return spOv_gravityVec;
-		case PhysicsServer::AREA_PARAM_LINEAR_DAMP:
+		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP:
 			return spOv_linearDump;
-		case PhysicsServer::AREA_PARAM_ANGULAR_DAMP:
+		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP:
 			return spOv_angularDump;
-		case PhysicsServer::AREA_PARAM_PRIORITY:
+		case PhysicsServer3D::AREA_PARAM_PRIORITY:
 			return spOv_priority;
-		case PhysicsServer::AREA_PARAM_GRAVITY_IS_POINT:
+		case PhysicsServer3D::AREA_PARAM_GRAVITY_IS_POINT:
 			return spOv_gravityPoint;
-		case PhysicsServer::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
+		case PhysicsServer3D::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
 			return spOv_gravityPointDistanceScale;
-		case PhysicsServer::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
+		case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
 			return spOv_gravityPointAttenuation;
 		default:
 			WARN_PRINT("Area doesn't support this parameter in the Bullet backend: " + itos(p_param));

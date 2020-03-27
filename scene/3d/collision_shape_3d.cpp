@@ -36,7 +36,7 @@
 #include "scene/resources/ray_shape_3d.h"
 #include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/world_margin_shape_3d.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 //TODO: Implement CylinderShape and HeightMapShape?
 #include "core/math/quick_hull.h"
 #include "mesh_instance_3d.h"
@@ -196,7 +196,7 @@ bool CollisionShape3D::is_disabled() const {
 
 CollisionShape3D::CollisionShape3D() {
 
-	//indicator = VisualServer::get_singleton()->mesh_create();
+	//indicator = RenderingServer::get_singleton()->mesh_create();
 	disabled = false;
 	debug_shape = NULL;
 	parent = NULL;
@@ -207,7 +207,7 @@ CollisionShape3D::CollisionShape3D() {
 CollisionShape3D::~CollisionShape3D() {
 	if (!shape.is_null())
 		shape->unregister_owner(this);
-	//VisualServer::get_singleton()->free(indicator);
+	//RenderingServer::get_singleton()->free(indicator);
 }
 
 void CollisionShape3D::_update_debug_shape() {

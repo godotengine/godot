@@ -39,8 +39,8 @@
 #include "drivers/unix/file_access_unix.h"
 #include "file_access_android.h"
 #include "main/main.h"
-#include "servers/visual/visual_server_raster.h"
-#include "servers/visual/visual_server_wrap_mt.h"
+#include "servers/rendering/rendering_server_raster.h"
+#include "servers/rendering/rendering_server_wrap_mt.h"
 
 #include "dir_access_jandroid.h"
 #include "file_access_jandroid.h"
@@ -146,12 +146,12 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 
 	video_driver_index = p_video_driver;
 
-	visual_server = memnew(VisualServerRaster);
+	rendering_server = memnew(RenderingServerRaster);
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-		visual_server = memnew(VisualServerWrapMT(visual_server, false));
+		rendering_server = memnew(RenderingServerWrapMT(rendering_server, false));
 	}
 
-	visual_server->init();
+	rendering_server->init();
 
 	AudioDriverManager::initialize(p_audio_driver);
 
@@ -759,7 +759,7 @@ OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_god
 	//rasterizer = NULL;
 	use_gl2 = false;
 
-	visual_server = NULL;
+	rendering_server = NULL;
 
 	godot_java = p_godot_java;
 	godot_io_java = p_godot_io_java;

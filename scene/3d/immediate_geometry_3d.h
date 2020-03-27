@@ -40,7 +40,7 @@ class ImmediateGeometry3D : public GeometryInstance3D {
 
 	RID im;
 	//a list of textures drawn need to be kept, to avoid references
-	// in VisualServer from becoming invalid if the texture is no longer used
+	// in RenderingServer from becoming invalid if the texture is no longer used
 	List<Ref<Texture2D>> cached_textures;
 	bool empty;
 	AABB aabb;

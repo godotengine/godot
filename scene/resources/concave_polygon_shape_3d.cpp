@@ -30,7 +30,7 @@
 
 #include "concave_polygon_shape_3d.h"
 
-#include "servers/physics_server.h"
+#include "servers/physics_server_3d.h"
 
 Vector<Vector3> ConcavePolygonShape3D::get_debug_mesh_lines() {
 
@@ -80,13 +80,13 @@ void ConcavePolygonShape3D::_update_shape() {
 
 void ConcavePolygonShape3D::set_faces(const Vector<Vector3> &p_faces) {
 
-	PhysicsServer::get_singleton()->shape_set_data(get_shape(), p_faces);
+	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), p_faces);
 	notify_change_to_owners();
 }
 
 Vector<Vector3> ConcavePolygonShape3D::get_faces() const {
 
-	return PhysicsServer::get_singleton()->shape_get_data(get_shape());
+	return PhysicsServer3D::get_singleton()->shape_get_data(get_shape());
 }
 
 void ConcavePolygonShape3D::_bind_methods() {
@@ -97,7 +97,7 @@ void ConcavePolygonShape3D::_bind_methods() {
 }
 
 ConcavePolygonShape3D::ConcavePolygonShape3D() :
-		Shape3D(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CONCAVE_POLYGON)) {
+		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_CONCAVE_POLYGON)) {
 
 	//set_planes(Vector3(1,1,1));
 }

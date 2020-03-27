@@ -34,7 +34,7 @@
 #include "core/vset.h"
 #include "scene/3d/collision_object_3d.h"
 #include "scene/resources/physics_material.h"
-#include "servers/physics_server.h"
+#include "servers/physics_server_3d.h"
 #include "skeleton_3d.h"
 
 class PhysicsBody3D : public CollisionObject3D {
@@ -49,7 +49,7 @@ class PhysicsBody3D : public CollisionObject3D {
 
 protected:
 	static void _bind_methods();
-	PhysicsBody3D(PhysicsServer::BodyMode p_mode);
+	PhysicsBody3D(PhysicsServer3D::BodyMode p_mode);
 
 public:
 	virtual Vector3 get_linear_velocity() const;
@@ -118,7 +118,7 @@ public:
 
 protected:
 	bool can_sleep;
-	PhysicsDirectBodyState *state;
+	PhysicsDirectBodyState3D *state;
 	Mode mode;
 
 	real_t mass;
@@ -234,8 +234,8 @@ public:
 	void set_use_continuous_collision_detection(bool p_enable);
 	bool is_using_continuous_collision_detection() const;
 
-	void set_axis_lock(PhysicsServer::BodyAxis p_axis, bool p_lock);
-	bool get_axis_lock(PhysicsServer::BodyAxis p_axis) const;
+	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock);
+	bool get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const;
 
 	Array get_colliding_bodies() const;
 
@@ -296,7 +296,7 @@ private:
 	Vector<Ref<KinematicCollision3D>> slide_colliders;
 	Ref<KinematicCollision3D> motion_cache;
 
-	_FORCE_INLINE_ bool _ignores_mode(PhysicsServer::BodyMode) const;
+	_FORCE_INLINE_ bool _ignores_mode(PhysicsServer3D::BodyMode) const;
 
 	Ref<KinematicCollision3D> _move(const Vector3 &p_motion, bool p_infinite_inertia = true, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
 	Ref<KinematicCollision3D> _get_slide_collision(int p_bounce);
@@ -316,8 +316,8 @@ public:
 
 	bool separate_raycast_shapes(bool p_infinite_inertia, Collision &r_collision);
 
-	void set_axis_lock(PhysicsServer::BodyAxis p_axis, bool p_lock);
-	bool get_axis_lock(PhysicsServer::BodyAxis p_axis) const;
+	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock);
+	bool get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const;
 
 	void set_safe_margin(float p_margin);
 	float get_safe_margin() const;
@@ -381,7 +381,7 @@ public:
 	struct JointData {
 		virtual JointType get_joint_type() { return JOINT_TYPE_NONE; }
 
-		/// "j" is used to set the parameter inside the PhysicsServer
+		/// "j" is used to set the parameter inside the PhysicsServer3D
 		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;

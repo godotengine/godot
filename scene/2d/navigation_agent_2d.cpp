@@ -32,7 +32,7 @@
 
 #include "core/engine.h"
 #include "scene/2d/navigation_2d.h"
-#include "servers/navigation_2d_server.h"
+#include "servers/navigation_server_2d.h"
 
 void NavigationAgent2D::_bind_methods() {
 
@@ -94,7 +94,7 @@ void NavigationAgent2D::_notification(int p_what) {
 
 			agent_parent = Object::cast_to<Node2D>(get_parent());
 
-			Navigation2DServer::get_singleton()->agent_set_callback(agent, this, "_avoidance_done");
+			NavigationServer2D::get_singleton()->agent_set_callback(agent, this, "_avoidance_done");
 
 			// Search the navigation node and set it
 			{
@@ -121,7 +121,7 @@ void NavigationAgent2D::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (agent_parent) {
 
-				Navigation2DServer::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().get_origin());
+				NavigationServer2D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().get_origin());
 				if (!target_reached) {
 					if (distance_to_target() < target_desired_distance) {
 						emit_signal("target_reached");
@@ -142,7 +142,7 @@ NavigationAgent2D::NavigationAgent2D() :
 		velocity_submitted(false),
 		target_reached(false),
 		navigation_finished(true) {
-	agent = Navigation2DServer::get_singleton()->agent_create();
+	agent = NavigationServer2D::get_singleton()->agent_create();
 	set_neighbor_dist(500.0);
 	set_max_neighbors(10);
 	set_time_horizon(20.0);
@@ -151,7 +151,7 @@ NavigationAgent2D::NavigationAgent2D() :
 }
 
 NavigationAgent2D::~NavigationAgent2D() {
-	Navigation2DServer::get_singleton()->free(agent);
+	NavigationServer2D::get_singleton()->free(agent);
 	agent = RID(); // Pointless
 }
 
@@ -160,7 +160,7 @@ void NavigationAgent2D::set_navigation(Navigation2D *p_nav) {
 		return; // Pointless
 
 	navigation = p_nav;
-	Navigation2DServer::get_singleton()->agent_set_map(agent, navigation == NULL ? RID() : navigation->get_rid());
+	NavigationServer2D::get_singleton()->agent_set_map(agent, navigation == NULL ? RID() : navigation->get_rid());
 }
 
 void NavigationAgent2D::set_navigation_node(Node *p_nav) {
@@ -179,27 +179,27 @@ void NavigationAgent2D::set_target_desired_distance(real_t p_dd) {
 
 void NavigationAgent2D::set_radius(real_t p_radius) {
 	radius = p_radius;
-	Navigation2DServer::get_singleton()->agent_set_radius(agent, radius);
+	NavigationServer2D::get_singleton()->agent_set_radius(agent, radius);
 }
 
 void NavigationAgent2D::set_neighbor_dist(real_t p_dist) {
 	neighbor_dist = p_dist;
-	Navigation2DServer::get_singleton()->agent_set_neighbor_dist(agent, neighbor_dist);
+	NavigationServer2D::get_singleton()->agent_set_neighbor_dist(agent, neighbor_dist);
 }
 
 void NavigationAgent2D::set_max_neighbors(int p_count) {
 	max_neighbors = p_count;
-	Navigation2DServer::get_singleton()->agent_set_max_neighbors(agent, max_neighbors);
+	NavigationServer2D::get_singleton()->agent_set_max_neighbors(agent, max_neighbors);
 }
 
 void NavigationAgent2D::set_time_horizon(real_t p_time) {
 	time_horizon = p_time;
-	Navigation2DServer::get_singleton()->agent_set_time_horizon(agent, time_horizon);
+	NavigationServer2D::get_singleton()->agent_set_time_horizon(agent, time_horizon);
 }
 
 void NavigationAgent2D::set_max_speed(real_t p_max_speed) {
 	max_speed = p_max_speed;
-	Navigation2DServer::get_singleton()->agent_set_max_speed(agent, max_speed);
+	NavigationServer2D::get_singleton()->agent_set_max_speed(agent, max_speed);
 }
 
 void NavigationAgent2D::set_path_max_distance(real_t p_pmd) {
@@ -260,8 +260,8 @@ Vector2 NavigationAgent2D::get_final_location() {
 
 void NavigationAgent2D::set_velocity(Vector2 p_velocity) {
 	target_velocity = p_velocity;
-	Navigation2DServer::get_singleton()->agent_set_target_velocity(agent, target_velocity);
-	Navigation2DServer::get_singleton()->agent_set_velocity(agent, prev_safe_velocity);
+	NavigationServer2D::get_singleton()->agent_set_target_velocity(agent, target_velocity);
+	NavigationServer2D::get_singleton()->agent_set_velocity(agent, prev_safe_velocity);
 	velocity_submitted = true;
 }
 
@@ -298,7 +298,7 @@ void NavigationAgent2D::update_navigation() {
 
 	bool reload_path = false;
 
-	if (Navigation2DServer::get_singleton()->agent_is_map_changed(agent)) {
+	if (NavigationServer2D::get_singleton()->agent_is_map_changed(agent)) {
 		reload_path = true;
 	} else if (navigation_path.size() == 0) {
 		reload_path = true;
@@ -317,7 +317,7 @@ void NavigationAgent2D::update_navigation() {
 	}
 
 	if (reload_path) {
-		navigation_path = Navigation2DServer::get_singleton()->map_get_path(navigation->get_rid(), o, target_location, true);
+		navigation_path = NavigationServer2D::get_singleton()->map_get_path(navigation->get_rid(), o, target_location, true);
 		navigation_finished = false;
 		nav_path_index = 0;
 		emit_signal("path_changed");

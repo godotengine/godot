@@ -39,7 +39,7 @@
 void BakedLightmapData::set_bounds(const AABB &p_bounds) {
 
 	bounds = p_bounds;
-	VS::get_singleton()->lightmap_capture_set_bounds(baked_light, p_bounds);
+	RS::get_singleton()->lightmap_capture_set_bounds(baked_light, p_bounds);
 }
 
 AABB BakedLightmapData::get_bounds() const {
@@ -49,18 +49,18 @@ AABB BakedLightmapData::get_bounds() const {
 
 void BakedLightmapData::set_octree(const Vector<uint8_t> &p_octree) {
 
-	VS::get_singleton()->lightmap_capture_set_octree(baked_light, p_octree);
+	RS::get_singleton()->lightmap_capture_set_octree(baked_light, p_octree);
 }
 
 Vector<uint8_t> BakedLightmapData::get_octree() const {
 
-	return VS::get_singleton()->lightmap_capture_get_octree(baked_light);
+	return RS::get_singleton()->lightmap_capture_get_octree(baked_light);
 }
 
 void BakedLightmapData::set_cell_space_transform(const Transform &p_xform) {
 
 	cell_space_xform = p_xform;
-	VS::get_singleton()->lightmap_capture_set_octree_cell_transform(baked_light, p_xform);
+	RS::get_singleton()->lightmap_capture_set_octree_cell_transform(baked_light, p_xform);
 }
 
 Transform BakedLightmapData::get_cell_space_transform() const {
@@ -69,7 +69,7 @@ Transform BakedLightmapData::get_cell_space_transform() const {
 
 void BakedLightmapData::set_cell_subdiv(int p_cell_subdiv) {
 	cell_subdiv = p_cell_subdiv;
-	VS::get_singleton()->lightmap_capture_set_octree_cell_subdiv(baked_light, p_cell_subdiv);
+	RS::get_singleton()->lightmap_capture_set_octree_cell_subdiv(baked_light, p_cell_subdiv);
 }
 
 int BakedLightmapData::get_cell_subdiv() const {
@@ -79,7 +79,7 @@ int BakedLightmapData::get_cell_subdiv() const {
 void BakedLightmapData::set_energy(float p_energy) {
 
 	energy = p_energy;
-	VS::get_singleton()->lightmap_capture_set_energy(baked_light, energy);
+	RS::get_singleton()->lightmap_capture_set_energy(baked_light, energy);
 }
 
 float BakedLightmapData::get_energy() const {
@@ -181,14 +181,14 @@ void BakedLightmapData::_bind_methods() {
 
 BakedLightmapData::BakedLightmapData() {
 
-	baked_light = VS::get_singleton()->lightmap_capture_create();
+	baked_light = RS::get_singleton()->lightmap_capture_create();
 	energy = 1;
 	cell_subdiv = 1;
 }
 
 BakedLightmapData::~BakedLightmapData() {
 
-	VS::get_singleton()->free(baked_light);
+	RS::get_singleton()->free(baked_light);
 }
 
 ///////////////////////////
@@ -425,13 +425,13 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 		pmc++;
 		PlotLight pl = E->get();
 		switch (pl.light->get_light_type()) {
-			case VS::LIGHT_DIRECTIONAL: {
+			case RS::LIGHT_DIRECTIONAL: {
 				baker.plot_light_directional(-pl.local_xform.basis.get_axis(2), pl.light->get_color(), pl.light->get_param(Light::PARAM_ENERGY), pl.light->get_param(Light::PARAM_INDIRECT_ENERGY), pl.light->get_bake_mode() == Light::BAKE_ALL);
 			} break;
-			case VS::LIGHT_OMNI: {
+			case RS::LIGHT_OMNI: {
 				baker.plot_light_omni(pl.local_xform.origin, pl.light->get_color(), pl.light->get_param(Light::PARAM_ENERGY), pl.light->get_param(Light::PARAM_INDIRECT_ENERGY), pl.light->get_param(Light::PARAM_RANGE), pl.light->get_param(Light::PARAM_ATTENUATION), pl.light->get_bake_mode() == Light::BAKE_ALL);
 			} break;
-			case VS::LIGHT_SPOT: {
+			case RS::LIGHT_SPOT: {
 				baker.plot_light_spot(pl.local_xform.origin, pl.local_xform.basis.get_axis(2), pl.light->get_color(), pl.light->get_param(Light::PARAM_ENERGY), pl.light->get_param(Light::PARAM_INDIRECT_ENERGY), pl.light->get_param(Light::PARAM_RANGE), pl.light->get_param(Light::PARAM_ATTENUATION), pl.light->get_param(Light::PARAM_SPOT_ANGLE), pl.light->get_param(Light::PARAM_SPOT_ATTENUATION), pl.light->get_bake_mode() == Light::BAKE_ALL);
 
 			} break;
@@ -675,12 +675,12 @@ void BakedLightmap::_assign_lightmaps() {
 		if (instance_idx >= 0) {
 			RID instance = node->call("get_bake_mesh_instance", instance_idx);
 			if (instance.is_valid()) {
-				VS::get_singleton()->instance_set_use_lightmap(instance, get_instance(), lightmap->get_rid());
+				RS::get_singleton()->instance_set_use_lightmap(instance, get_instance(), lightmap->get_rid());
 			}
 		} else {
 			VisualInstance *vi = Object::cast_to<VisualInstance>(node);
 			ERR_CONTINUE(!vi);
-			VS::get_singleton()->instance_set_use_lightmap(vi->get_instance(), get_instance(), lightmap->get_rid());
+			RS::get_singleton()->instance_set_use_lightmap(vi->get_instance(), get_instance(), lightmap->get_rid());
 		}
 	}
 }
@@ -693,12 +693,12 @@ void BakedLightmap::_clear_lightmaps() {
 		if (instance_idx >= 0) {
 			RID instance = node->call("get_bake_mesh_instance", instance_idx);
 			if (instance.is_valid()) {
-				VS::get_singleton()->instance_set_use_lightmap(instance, get_instance(), RID());
+				RS::get_singleton()->instance_set_use_lightmap(instance, get_instance(), RID());
 			}
 		} else {
 			VisualInstance *vi = Object::cast_to<VisualInstance>(node);
 			ERR_CONTINUE(!vi);
-			VS::get_singleton()->instance_set_use_lightmap(vi->get_instance(), get_instance(), RID());
+			RS::get_singleton()->instance_set_use_lightmap(vi->get_instance(), get_instance(), RID());
 		}
 	}
 }

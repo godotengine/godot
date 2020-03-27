@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "sphere_shape_3d.h"
-#include "servers/physics_server.h"
+#include "servers/physics_server_3d.h"
 
 Vector<Vector3> SphereShape3D::get_debug_mesh_lines() {
 
@@ -61,7 +61,7 @@ real_t SphereShape3D::get_enclosing_radius() const {
 
 void SphereShape3D::_update_shape() {
 
-	PhysicsServer::get_singleton()->shape_set_data(get_shape(), radius);
+	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), radius);
 	Shape3D::_update_shape();
 }
 
@@ -87,7 +87,7 @@ void SphereShape3D::_bind_methods() {
 }
 
 SphereShape3D::SphereShape3D() :
-		Shape3D(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_SPHERE)) {
+		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_SPHERE)) {
 
 	set_radius(1.0);
 }

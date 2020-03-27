@@ -58,30 +58,30 @@
 #include "camera/camera_feed.h"
 #include "camera_server.h"
 #include "display_server.h"
-#include "navigation_2d_server.h"
-#include "navigation_server.h"
-#include "physics/physics_server_sw.h"
-#include "physics_2d/physics_2d_server_sw.h"
-#include "physics_2d/physics_2d_server_wrap_mt.h"
-#include "physics_2d_server.h"
-#include "physics_server.h"
-#include "visual/shader_types.h"
-#include "visual_server.h"
+#include "navigation_server_2d.h"
+#include "navigation_server_3d.h"
+#include "physics_2d/physics_server_2d_sw.h"
+#include "physics_2d/physics_server_2d_wrap_mt.h"
+#include "physics_3d/physics_server_3d_sw.h"
+#include "physics_server_2d.h"
+#include "physics_server_3d.h"
+#include "rendering_server.h"
+#include "servers/rendering/shader_types.h"
 
 ShaderTypes *shader_types = NULL;
 
-PhysicsServer *_createGodotPhysicsCallback() {
-	return memnew(PhysicsServerSW);
+PhysicsServer3D *_createGodotPhysicsCallback() {
+	return memnew(PhysicsServer3DSW);
 }
 
-Physics2DServer *_createGodotPhysics2DCallback() {
-	return Physics2DServerWrapMT::init_server<Physics2DServerSW>();
+PhysicsServer2D *_createGodotPhysics2DCallback() {
+	return PhysicsServer2DWrapMT::init_server<PhysicsServer2DSW>();
 }
 
 static bool has_server_feature_callback(const String &p_feature) {
 
-	if (VisualServer::get_singleton()) {
-		if (VisualServer::get_singleton()->has_os_feature(p_feature)) {
+	if (RenderingServer::get_singleton()) {
+		if (RenderingServer::get_singleton()->has_os_feature(p_feature)) {
 			return true;
 		}
 	}
@@ -98,10 +98,10 @@ void register_server_types() {
 	OS::get_singleton()->set_has_server_feature_callback(has_server_feature_callback);
 
 	ClassDB::register_virtual_class<DisplayServer>();
-	ClassDB::register_virtual_class<VisualServer>();
+	ClassDB::register_virtual_class<RenderingServer>();
 	ClassDB::register_class<AudioServer>();
-	ClassDB::register_virtual_class<PhysicsServer>();
-	ClassDB::register_virtual_class<Physics2DServer>();
+	ClassDB::register_virtual_class<PhysicsServer3D>();
+	ClassDB::register_virtual_class<PhysicsServer2D>();
 	ClassDB::register_class<ARVRServer>();
 	ClassDB::register_class<CameraServer>();
 
@@ -159,30 +159,30 @@ void register_server_types() {
 
 	ClassDB::register_class<CameraFeed>();
 
-	ClassDB::register_virtual_class<Physics2DDirectBodyState>();
-	ClassDB::register_virtual_class<Physics2DDirectSpaceState>();
-	ClassDB::register_virtual_class<Physics2DShapeQueryResult>();
+	ClassDB::register_virtual_class<PhysicsDirectBodyState2D>();
+	ClassDB::register_virtual_class<PhysicsDirectSpaceState2D>();
+	ClassDB::register_virtual_class<PhysicsShapeQueryResult2D>();
 	ClassDB::register_class<Physics2DTestMotionResult>();
-	ClassDB::register_class<Physics2DShapeQueryParameters>();
+	ClassDB::register_class<PhysicsShapeQueryParameters2D>();
 
-	ClassDB::register_class<PhysicsShapeQueryParameters>();
-	ClassDB::register_virtual_class<PhysicsDirectBodyState>();
-	ClassDB::register_virtual_class<PhysicsDirectSpaceState>();
-	ClassDB::register_virtual_class<PhysicsShapeQueryResult>();
+	ClassDB::register_class<PhysicsShapeQueryParameters3D>();
+	ClassDB::register_virtual_class<PhysicsDirectBodyState3D>();
+	ClassDB::register_virtual_class<PhysicsDirectSpaceState3D>();
+	ClassDB::register_virtual_class<PhysicsShapeQueryResult3D>();
 
 	// Physics 2D
-	GLOBAL_DEF(Physics2DServerManager::setting_property_name, "DEFAULT");
-	ProjectSettings::get_singleton()->set_custom_property_info(Physics2DServerManager::setting_property_name, PropertyInfo(Variant::STRING, Physics2DServerManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"));
+	GLOBAL_DEF(PhysicsServer2DManager::setting_property_name, "DEFAULT");
+	ProjectSettings::get_singleton()->set_custom_property_info(PhysicsServer2DManager::setting_property_name, PropertyInfo(Variant::STRING, PhysicsServer2DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"));
 
-	Physics2DServerManager::register_server("GodotPhysics", &_createGodotPhysics2DCallback);
-	Physics2DServerManager::set_default_server("GodotPhysics");
+	PhysicsServer2DManager::register_server("GodotPhysics", &_createGodotPhysics2DCallback);
+	PhysicsServer2DManager::set_default_server("GodotPhysics");
 
 	// Physics 3D
-	GLOBAL_DEF(PhysicsServerManager::setting_property_name, "DEFAULT");
-	ProjectSettings::get_singleton()->set_custom_property_info(PhysicsServerManager::setting_property_name, PropertyInfo(Variant::STRING, PhysicsServerManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"));
+	GLOBAL_DEF(PhysicsServer3DManager::setting_property_name, "DEFAULT");
+	ProjectSettings::get_singleton()->set_custom_property_info(PhysicsServer3DManager::setting_property_name, PropertyInfo(Variant::STRING, PhysicsServer3DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"));
 
-	PhysicsServerManager::register_server("GodotPhysics", &_createGodotPhysicsCallback);
-	PhysicsServerManager::set_default_server("GodotPhysics");
+	PhysicsServer3DManager::register_server("GodotPhysics", &_createGodotPhysicsCallback);
+	PhysicsServer3DManager::set_default_server("GodotPhysics");
 }
 
 void unregister_server_types() {
@@ -192,12 +192,12 @@ void unregister_server_types() {
 
 void register_server_singletons() {
 
-	Engine::get_singleton()->add_singleton(Engine::Singleton("VisualServer", VisualServer::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("RenderingServer", RenderingServer::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("AudioServer", AudioServer::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer", PhysicsServer::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Physics2DServer", Physics2DServer::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer", NavigationServer::get_singleton_mut()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Navigation2DServer", Navigation2DServer::get_singleton_mut()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer3D", PhysicsServer3D::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer2D", PhysicsServer2D::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer", NavigationServer3D::get_singleton_mut()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer2D", NavigationServer2D::get_singleton_mut()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ARVRServer", ARVRServer::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("CameraServer", CameraServer::get_singleton()));
 }

@@ -31,7 +31,7 @@
 #include "visual_shader.h"
 
 #include "core/vmap.h"
-#include "servers/visual/shader_types.h"
+#include "servers/rendering/shader_types.h"
 #include "visual_shader_nodes.h"
 
 bool VisualShaderNode::is_simple_decl() const {
@@ -1040,8 +1040,8 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 	Map<String, String> blend_mode_enums;
 	Set<String> toggles;
 
-	for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader_mode)).size(); i++) {
-		String mode = ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader_mode))[i];
+	for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode)).size(); i++) {
+		String mode = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode))[i];
 		int idx = 0;
 		bool in_enum = false;
 		while (render_mode_enums[idx].string) {
@@ -1317,8 +1317,8 @@ void VisualShader::_update_shader() const {
 
 					int which = modes[render_mode_enums[idx].string];
 					int count = 0;
-					for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader_mode)).size(); i++) {
-						String mode = ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader_mode))[i];
+					for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode)).size(); i++) {
+						String mode = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode))[i];
 						if (mode.begins_with(render_mode_enums[idx].string)) {
 							if (count == which) {
 								if (render_mode != String()) {
@@ -1336,9 +1336,9 @@ void VisualShader::_update_shader() const {
 		}
 
 		//fill render mode flags
-		for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader_mode)).size(); i++) {
+		for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode)).size(); i++) {
 
-			String mode = ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader_mode))[i];
+			String mode = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode))[i];
 			if (flags.has(mode)) {
 				if (render_mode != String()) {
 					render_mode += ", ";
@@ -1358,7 +1358,7 @@ void VisualShader::_update_shader() const {
 	String global_expressions;
 	for (int i = 0, index = 0; i < TYPE_MAX; i++) {
 
-		if (!ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader_mode)).has(func_name[i])) {
+		if (!ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader_mode)).has(func_name[i])) {
 			continue;
 		}
 
@@ -1378,7 +1378,7 @@ void VisualShader::_update_shader() const {
 
 	for (int i = 0; i < TYPE_MAX; i++) {
 
-		if (!ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader_mode)).has(func_name[i])) {
+		if (!ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader_mode)).has(func_name[i])) {
 			continue;
 		}
 
@@ -1417,7 +1417,7 @@ void VisualShader::_update_shader() const {
 	final_code += global_expressions;
 	String tcode = code;
 	for (int i = 0; i < TYPE_MAX; i++) {
-		if (!ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader_mode)).has(func_name[i])) {
+		if (!ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader_mode)).has(func_name[i])) {
 			continue;
 		}
 		tcode = tcode.insert(insertion_pos[i], global_code_per_func[Type(i)]);

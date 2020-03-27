@@ -922,10 +922,10 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 				if (has_weights) {
 					Vector<float> weights;
 					Vector<int> bones;
-					weights.resize(VS::ARRAY_WEIGHTS_SIZE);
-					bones.resize(VS::ARRAY_WEIGHTS_SIZE);
+					weights.resize(RS::ARRAY_WEIGHTS_SIZE);
+					bones.resize(RS::ARRAY_WEIGHTS_SIZE);
 					//float sum=0.0;
-					for (int l = 0; l < VS::ARRAY_WEIGHTS_SIZE; l++) {
+					for (int l = 0; l < RS::ARRAY_WEIGHTS_SIZE; l++) {
 						if (l < vertex_array[k].weights.size()) {
 							weights.write[l] = vertex_array[k].weights[l].weight;
 							bones.write[l] = vertex_array[k].weights[l].bone_idx;
@@ -963,7 +963,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 			////////////////////////////
 
 			Array d = surftool->commit_to_arrays();
-			d.resize(VS::ARRAY_MAX);
+			d.resize(RS::ARRAY_MAX);
 
 			Array mr;
 

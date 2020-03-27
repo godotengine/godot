@@ -30,33 +30,33 @@
 
 #include "navigation_3d.h"
 
-#include "servers/navigation_server.h"
+#include "servers/navigation_server_3d.h"
 
 Vector<Vector3> Navigation3D::get_simple_path(const Vector3 &p_start, const Vector3 &p_end, bool p_optimize) const {
 
-	return NavigationServer::get_singleton()->map_get_path(map, p_start, p_end, p_optimize);
+	return NavigationServer3D::get_singleton()->map_get_path(map, p_start, p_end, p_optimize);
 }
 
 Vector3 Navigation3D::get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision) const {
-	return NavigationServer::get_singleton()->map_get_closest_point_to_segment(map, p_from, p_to, p_use_collision);
+	return NavigationServer3D::get_singleton()->map_get_closest_point_to_segment(map, p_from, p_to, p_use_collision);
 }
 
 Vector3 Navigation3D::get_closest_point(const Vector3 &p_point) const {
-	return NavigationServer::get_singleton()->map_get_closest_point(map, p_point);
+	return NavigationServer3D::get_singleton()->map_get_closest_point(map, p_point);
 }
 
 Vector3 Navigation3D::get_closest_point_normal(const Vector3 &p_point) const {
-	return NavigationServer::get_singleton()->map_get_closest_point_normal(map, p_point);
+	return NavigationServer3D::get_singleton()->map_get_closest_point_normal(map, p_point);
 }
 
 RID Navigation3D::get_closest_point_owner(const Vector3 &p_point) const {
-	return NavigationServer::get_singleton()->map_get_closest_point_owner(map, p_point);
+	return NavigationServer3D::get_singleton()->map_get_closest_point_owner(map, p_point);
 }
 
 void Navigation3D::set_up_vector(const Vector3 &p_up) {
 
 	up = p_up;
-	NavigationServer::get_singleton()->map_set_up(map, up);
+	NavigationServer3D::get_singleton()->map_set_up(map, up);
 }
 
 Vector3 Navigation3D::get_up_vector() const {
@@ -66,12 +66,12 @@ Vector3 Navigation3D::get_up_vector() const {
 
 void Navigation3D::set_cell_size(float p_cell_size) {
 	cell_size = p_cell_size;
-	NavigationServer::get_singleton()->map_set_cell_size(map, cell_size);
+	NavigationServer3D::get_singleton()->map_set_cell_size(map, cell_size);
 }
 
 void Navigation3D::set_edge_connection_margin(float p_edge_connection_margin) {
 	edge_connection_margin = p_edge_connection_margin;
-	NavigationServer::get_singleton()->map_set_edge_connection_margin(map, edge_connection_margin);
+	NavigationServer3D::get_singleton()->map_set_edge_connection_margin(map, edge_connection_margin);
 }
 
 void Navigation3D::_bind_methods() {
@@ -101,18 +101,18 @@ void Navigation3D::_bind_methods() {
 void Navigation3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			NavigationServer::get_singleton()->map_set_active(map, true);
+			NavigationServer3D::get_singleton()->map_set_active(map, true);
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
-			NavigationServer::get_singleton()->map_set_active(map, false);
+			NavigationServer3D::get_singleton()->map_set_active(map, false);
 		} break;
 	}
 }
 
 Navigation3D::Navigation3D() {
 
-	map = NavigationServer::get_singleton()->map_create();
+	map = NavigationServer3D::get_singleton()->map_create();
 
 	set_cell_size(0.3);
 	set_edge_connection_margin(5.0); // Five meters, depends alot on the agents radius
@@ -121,5 +121,5 @@ Navigation3D::Navigation3D() {
 }
 
 Navigation3D::~Navigation3D() {
-	NavigationServer::get_singleton()->free(map);
+	NavigationServer3D::get_singleton()->free(map);
 }

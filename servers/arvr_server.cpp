@@ -343,7 +343,7 @@ uint64_t ARVRServer::get_last_frame_usec() {
 };
 
 void ARVRServer::_process() {
-	/* called from visual_server_viewport.draw_viewports right before we start drawing our viewports */
+	/* called from rendering_server_viewport.draw_viewports right before we start drawing our viewports */
 
 	/* mark for our frame timing */
 	last_process_usec = OS::get_singleton()->get_ticks_usec();

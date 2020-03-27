@@ -37,7 +37,7 @@
 #include "core/os/main_loop.h"
 #include "drivers/unix/os_unix.h"
 #include "servers/audio_server.h"
-#include "servers/visual/rasterizer.h"
+#include "servers/rendering/rasterizer.h"
 
 class GodotJavaWrapper;
 class GodotIOJavaWrapper;
@@ -75,7 +75,7 @@ private:
 
 	bool use_16bits_fbo;
 
-	VisualServer *visual_server;
+	RenderingServer *rendering_server;
 
 	mutable String data_dir_cache;
 

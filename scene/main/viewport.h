@@ -36,7 +36,7 @@
 #include "scene/resources/texture.h"
 #include "scene/resources/world_2d.h"
 #include "servers/display_server.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 class Camera3D;
 class Camera2D;

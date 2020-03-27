@@ -41,7 +41,7 @@
 #include "editor/plugins/canvas_item_editor_plugin.h" // For onion skinning.
 #include "editor/plugins/node_3d_editor_plugin.h" // For onion skinning.
 #include "scene/main/window.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 void AnimationPlayerEditor::_node_removed(Node *p_node) {
 
@@ -947,8 +947,8 @@ void AnimationPlayerEditor::forward_canvas_force_draw_over_viewport(Control *p_o
 			alpha += alpha_step;
 
 			if (onion.captures_valid[cidx]) {
-				VS::get_singleton()->canvas_item_add_texture_rect_region(
-						ci, dst_rect, VS::get_singleton()->viewport_get_texture(onion.captures[cidx]), src_rect, Color(1, 1, 1, alpha));
+				RS::get_singleton()->canvas_item_add_texture_rect_region(
+						ci, dst_rect, RS::get_singleton()->viewport_get_texture(onion.captures[cidx]), src_rect, Color(1, 1, 1, alpha));
 			}
 
 			cidx++;
@@ -961,8 +961,8 @@ void AnimationPlayerEditor::forward_canvas_force_draw_over_viewport(Control *p_o
 			alpha -= alpha_step;
 
 			if (onion.captures_valid[cidx]) {
-				VS::get_singleton()->canvas_item_add_texture_rect_region(
-						ci, dst_rect, VS::get_singleton()->viewport_get_texture(onion.captures[cidx]), src_rect, Color(1, 1, 1, alpha));
+				RS::get_singleton()->canvas_item_add_texture_rect_region(
+						ci, dst_rect, RS::get_singleton()->viewport_get_texture(onion.captures[cidx]), src_rect, Color(1, 1, 1, alpha));
 			}
 
 			cidx++;
@@ -1318,17 +1318,17 @@ void AnimationPlayerEditor::_allocate_onion_layers() {
 		bool is_present = onion.differences_only && i == captures - 1;
 
 		// Each capture is a viewport with a canvas item attached that renders a full-size rect with the contents of the main viewport.
-		onion.captures.write[i] = VS::get_singleton()->viewport_create();
+		onion.captures.write[i] = RS::get_singleton()->viewport_create();
 
-		VS::get_singleton()->viewport_set_size(onion.captures[i], capture_size.width, capture_size.height);
-		VS::get_singleton()->viewport_set_update_mode(onion.captures[i], VS::VIEWPORT_UPDATE_ALWAYS);
-		VS::get_singleton()->viewport_set_transparent_background(onion.captures[i], !is_present);
-		VS::get_singleton()->viewport_attach_canvas(onion.captures[i], onion.capture.canvas);
+		RS::get_singleton()->viewport_set_size(onion.captures[i], capture_size.width, capture_size.height);
+		RS::get_singleton()->viewport_set_update_mode(onion.captures[i], RS::VIEWPORT_UPDATE_ALWAYS);
+		RS::get_singleton()->viewport_set_transparent_background(onion.captures[i], !is_present);
+		RS::get_singleton()->viewport_attach_canvas(onion.captures[i], onion.capture.canvas);
 	}
 
 	// Reset the capture canvas item to the current root viewport texture (defensive).
-	VS::get_singleton()->canvas_item_clear(onion.capture.canvas_item);
-	VS::get_singleton()->canvas_item_add_texture_rect(onion.capture.canvas_item, Rect2(Point2(), capture_size), get_tree()->get_root()->get_texture()->get_rid());
+	RS::get_singleton()->canvas_item_clear(onion.capture.canvas_item);
+	RS::get_singleton()->canvas_item_add_texture_rect(onion.capture.canvas_item, Rect2(Point2(), capture_size), get_tree()->get_root()->get_texture()->get_rid());
 
 	onion.capture_size = capture_size;
 }
@@ -1337,7 +1337,7 @@ void AnimationPlayerEditor::_free_onion_layers() {
 
 	for (int i = 0; i < onion.captures.size(); i++) {
 		if (onion.captures[i].is_valid()) {
-			VS::get_singleton()->free(onion.captures[i]);
+			RS::get_singleton()->free(onion.captures[i]);
 		}
 	}
 	onion.captures.clear();
@@ -1421,18 +1421,18 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 	// Tweak the root viewport to ensure it's rendered before our target.
 	RID root_vp = get_tree()->get_root()->get_viewport_rid();
 	Rect2 root_vp_screen_rect = Rect2(Vector2(), get_tree()->get_root()->get_size());
-	VS::get_singleton()->viewport_attach_to_screen(root_vp, Rect2());
-	VS::get_singleton()->viewport_set_update_mode(root_vp, VS::VIEWPORT_UPDATE_ALWAYS);
+	RS::get_singleton()->viewport_attach_to_screen(root_vp, Rect2());
+	RS::get_singleton()->viewport_set_update_mode(root_vp, RS::VIEWPORT_UPDATE_ALWAYS);
 
 	RID present_rid;
 	if (onion.differences_only) {
 		// Capture present scene as it is.
-		VS::get_singleton()->canvas_item_set_material(onion.capture.canvas_item, RID());
+		RS::get_singleton()->canvas_item_set_material(onion.capture.canvas_item, RID());
 		present_rid = onion.captures[onion.captures.size() - 1];
-		VS::get_singleton()->viewport_set_active(present_rid, true);
-		VS::get_singleton()->viewport_set_parent_viewport(root_vp, present_rid);
-		VS::get_singleton()->draw(false);
-		VS::get_singleton()->viewport_set_active(present_rid, false);
+		RS::get_singleton()->viewport_set_active(present_rid, true);
+		RS::get_singleton()->viewport_set_parent_viewport(root_vp, present_rid);
+		RS::get_singleton()->draw(false);
+		RS::get_singleton()->viewport_set_active(present_rid, false);
 	}
 
 	// Backup current animation state.
@@ -1441,10 +1441,10 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 
 	// Render every past/future step with the capture shader.
 
-	VS::get_singleton()->canvas_item_set_material(onion.capture.canvas_item, onion.capture.material->get_rid());
+	RS::get_singleton()->canvas_item_set_material(onion.capture.canvas_item, onion.capture.material->get_rid());
 	onion.capture.material->set_shader_param("bkg_color", GLOBAL_GET("rendering/environment/default_clear_color"));
 	onion.capture.material->set_shader_param("differences_only", onion.differences_only);
-	onion.capture.material->set_shader_param("present", onion.differences_only ? VS::get_singleton()->viewport_get_texture(present_rid) : RID());
+	onion.capture.material->set_shader_param("present", onion.differences_only ? RS::get_singleton()->viewport_get_texture(present_rid) : RID());
 
 	int step_off_a = onion.past ? -onion.steps : 0;
 	int step_off_b = onion.future ? onion.steps : 0;
@@ -1468,19 +1468,19 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 			get_tree()->flush_transform_notifications(); // Needed for transforms of Node3Ds.
 			values_backup.update_skeletons(); // Needed for Skeletons (2D & 3D).
 
-			VS::get_singleton()->viewport_set_active(onion.captures[cidx], true);
-			VS::get_singleton()->viewport_set_parent_viewport(root_vp, onion.captures[cidx]);
-			VS::get_singleton()->draw(false);
-			VS::get_singleton()->viewport_set_active(onion.captures[cidx], false);
+			RS::get_singleton()->viewport_set_active(onion.captures[cidx], true);
+			RS::get_singleton()->viewport_set_parent_viewport(root_vp, onion.captures[cidx]);
+			RS::get_singleton()->draw(false);
+			RS::get_singleton()->viewport_set_active(onion.captures[cidx], false);
 		}
 
 		cidx++;
 	}
 
 	// Restore root viewport.
-	VS::get_singleton()->viewport_set_parent_viewport(root_vp, RID());
-	VS::get_singleton()->viewport_attach_to_screen(root_vp, root_vp_screen_rect);
-	VS::get_singleton()->viewport_set_update_mode(root_vp, VS::VIEWPORT_UPDATE_WHEN_VISIBLE);
+	RS::get_singleton()->viewport_set_parent_viewport(root_vp, RID());
+	RS::get_singleton()->viewport_attach_to_screen(root_vp, root_vp_screen_rect);
+	RS::get_singleton()->viewport_set_update_mode(root_vp, RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
 
 	// Restore animation state
 	// (Seeking with update=true wouldn't do the trick because the current value of the properties
@@ -1764,9 +1764,9 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	onion.last_frame = 0;
 	onion.can_overlay = false;
 	onion.capture_size = Size2();
-	onion.capture.canvas = VS::get_singleton()->canvas_create();
-	onion.capture.canvas_item = VS::get_singleton()->canvas_item_create();
-	VS::get_singleton()->canvas_item_set_parent(onion.capture.canvas_item, onion.capture.canvas);
+	onion.capture.canvas = RS::get_singleton()->canvas_create();
+	onion.capture.canvas_item = RS::get_singleton()->canvas_item_create();
+	RS::get_singleton()->canvas_item_set_parent(onion.capture.canvas_item, onion.capture.canvas);
 
 	onion.capture.material = Ref<ShaderMaterial>(memnew(ShaderMaterial));
 
@@ -1792,14 +1792,14 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 			COLOR = vec4(capture_samp.rgb * dir_color.rgb, bkg_mask * diff_mask); \
 		} \
 	");
-	VS::get_singleton()->material_set_shader(onion.capture.material->get_rid(), onion.capture.shader->get_rid());
+	RS::get_singleton()->material_set_shader(onion.capture.material->get_rid(), onion.capture.shader->get_rid());
 }
 
 AnimationPlayerEditor::~AnimationPlayerEditor() {
 
 	_free_onion_layers();
-	VS::get_singleton()->free(onion.capture.canvas);
-	VS::get_singleton()->free(onion.capture.canvas_item);
+	RS::get_singleton()->free(onion.capture.canvas);
+	RS::get_singleton()->free(onion.capture.canvas_item);
 }
 
 void AnimationPlayerEditorPlugin::_notification(int p_what) {

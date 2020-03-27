@@ -47,7 +47,7 @@ bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 	Map<StringName, BlendShapeTrack>::Element *E = blend_shape_tracks.find(p_name);
 	if (E) {
 		E->get().value = p_value;
-		VisualServer::get_singleton()->instance_set_blend_shape_weight(get_instance(), E->get().idx, E->get().value);
+		RenderingServer::get_singleton()->instance_set_blend_shape_weight(get_instance(), E->get().idx, E->get().value);
 		return true;
 	}
 
@@ -165,9 +165,9 @@ void MeshInstance3D::_resolve_skeleton_path() {
 	skin_ref = new_skin_reference;
 
 	if (skin_ref.is_valid()) {
-		VisualServer::get_singleton()->instance_attach_skeleton(get_instance(), skin_ref->get_skeleton());
+		RenderingServer::get_singleton()->instance_attach_skeleton(get_instance(), skin_ref->get_skeleton());
 	} else {
-		VisualServer::get_singleton()->instance_attach_skeleton(get_instance(), RID());
+		RenderingServer::get_singleton()->instance_attach_skeleton(get_instance(), RID());
 	}
 }
 
@@ -293,9 +293,9 @@ void MeshInstance3D::set_surface_material(int p_surface, const Ref<Material> &p_
 	materials.write[p_surface] = p_material;
 
 	if (materials[p_surface].is_valid())
-		VS::get_singleton()->instance_set_surface_material(get_instance(), p_surface, materials[p_surface]->get_rid());
+		RS::get_singleton()->instance_set_surface_material(get_instance(), p_surface, materials[p_surface]->get_rid());
 	else
-		VS::get_singleton()->instance_set_surface_material(get_instance(), p_surface, RID());
+		RS::get_singleton()->instance_set_surface_material(get_instance(), p_surface, RID());
 }
 
 Ref<Material> MeshInstance3D::get_surface_material(int p_surface) const {

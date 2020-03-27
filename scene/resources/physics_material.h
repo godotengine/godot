@@ -32,7 +32,7 @@
 #define physics_material_override_H
 
 #include "core/resource.h"
-#include "servers/physics_server.h"
+#include "servers/physics_server_3d.h"
 
 class PhysicsMaterial : public Resource {
 

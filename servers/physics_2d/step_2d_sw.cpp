@@ -50,7 +50,7 @@ void Step2DSW::_populate_island(Body2DSW *p_body, Body2DSW **p_island, Constrain
 			if (i == E->get())
 				continue;
 			Body2DSW *b = c->get_body_ptr()[i];
-			if (b->get_island_step() == _step || b->get_mode() == Physics2DServer::BODY_MODE_STATIC || b->get_mode() == Physics2DServer::BODY_MODE_KINEMATIC)
+			if (b->get_island_step() == _step || b->get_mode() == PhysicsServer2D::BODY_MODE_STATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC)
 				continue; //no go
 			_populate_island(c->get_body_ptr()[i], p_island, p_constraint_island);
 		}
@@ -101,7 +101,7 @@ void Step2DSW::_check_suspend(Body2DSW *p_island, real_t p_delta) {
 	Body2DSW *b = p_island;
 	while (b) {
 
-		if (b->get_mode() == Physics2DServer::BODY_MODE_STATIC || b->get_mode() == Physics2DServer::BODY_MODE_KINEMATIC) {
+		if (b->get_mode() == PhysicsServer2D::BODY_MODE_STATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC) {
 			b = b->get_island_next();
 			continue; //ignore for static
 		}
@@ -117,7 +117,7 @@ void Step2DSW::_check_suspend(Body2DSW *p_island, real_t p_delta) {
 	b = p_island;
 	while (b) {
 
-		if (b->get_mode() == Physics2DServer::BODY_MODE_STATIC || b->get_mode() == Physics2DServer::BODY_MODE_KINEMATIC) {
+		if (b->get_mode() == PhysicsServer2D::BODY_MODE_STATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC) {
 			b = b->get_island_next();
 			continue; //ignore for static
 		}

@@ -31,7 +31,7 @@
 #include "visual_instance_3d.h"
 
 #include "scene/scene_string_names.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 #include "skeleton_3d.h"
 
 AABB VisualInstance3D::get_transformed_aabb() const {
@@ -45,7 +45,7 @@ void VisualInstance3D::_update_visibility() {
 		return;
 
 	_change_notify("visible");
-	VS::get_singleton()->instance_set_visible(get_instance(), is_visible_in_tree());
+	RS::get_singleton()->instance_set_visible(get_instance(), is_visible_in_tree());
 }
 
 void VisualInstance3D::_notification(int p_what) {
@@ -58,23 +58,23 @@ void VisualInstance3D::_notification(int p_what) {
 			/*
 			Skeleton *skeleton=Object::cast_to<Skeleton>(get_parent());
 			if (skeleton)
-				VisualServer::get_singleton()->instance_attach_skeleton( instance, skeleton->get_skeleton() );
+				RenderingServer::get_singleton()->instance_attach_skeleton( instance, skeleton->get_skeleton() );
 			*/
 			ERR_FAIL_COND(get_world().is_null());
-			VisualServer::get_singleton()->instance_set_scenario(instance, get_world()->get_scenario());
+			RenderingServer::get_singleton()->instance_set_scenario(instance, get_world()->get_scenario());
 			_update_visibility();
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
 			Transform gt = get_global_transform();
-			VisualServer::get_singleton()->instance_set_transform(instance, gt);
+			RenderingServer::get_singleton()->instance_set_transform(instance, gt);
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
 
-			VisualServer::get_singleton()->instance_set_scenario(instance, RID());
-			VisualServer::get_singleton()->instance_attach_skeleton(instance, RID());
-			//VS::get_singleton()->instance_geometry_set_baked_light_sampler(instance, RID() );
+			RenderingServer::get_singleton()->instance_set_scenario(instance, RID());
+			RenderingServer::get_singleton()->instance_attach_skeleton(instance, RID());
+			//RS::get_singleton()->instance_geometry_set_baked_light_sampler(instance, RID() );
 
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -97,7 +97,7 @@ RID VisualInstance3D::_get_visual_instance_rid() const {
 void VisualInstance3D::set_layer_mask(uint32_t p_mask) {
 
 	layers = p_mask;
-	VisualServer::get_singleton()->instance_set_layer_mask(instance, p_mask);
+	RenderingServer::get_singleton()->instance_set_layer_mask(instance, p_mask);
 }
 
 uint32_t VisualInstance3D::get_layer_mask() const {
@@ -137,7 +137,7 @@ void VisualInstance3D::_bind_methods() {
 
 void VisualInstance3D::set_base(const RID &p_base) {
 
-	VisualServer::get_singleton()->instance_set_base(instance, p_base);
+	RenderingServer::get_singleton()->instance_set_base(instance, p_base);
 	base = p_base;
 }
 
@@ -148,21 +148,21 @@ RID VisualInstance3D::get_base() const {
 
 VisualInstance3D::VisualInstance3D() {
 
-	instance = VisualServer::get_singleton()->instance_create();
-	VisualServer::get_singleton()->instance_attach_object_instance_id(instance, get_instance_id());
+	instance = RenderingServer::get_singleton()->instance_create();
+	RenderingServer::get_singleton()->instance_attach_object_instance_id(instance, get_instance_id());
 	layers = 1;
 	set_notify_transform(true);
 }
 
 VisualInstance3D::~VisualInstance3D() {
 
-	VisualServer::get_singleton()->free(instance);
+	RenderingServer::get_singleton()->free(instance);
 }
 
 void GeometryInstance3D::set_material_override(const Ref<Material> &p_material) {
 
 	material_override = p_material;
-	VS::get_singleton()->instance_geometry_set_material_override(get_instance(), p_material.is_valid() ? p_material->get_rid() : RID());
+	RS::get_singleton()->instance_geometry_set_material_override(get_instance(), p_material.is_valid() ? p_material->get_rid() : RID());
 }
 
 Ref<Material> GeometryInstance3D::get_material_override() const {
@@ -173,7 +173,7 @@ Ref<Material> GeometryInstance3D::get_material_override() const {
 void GeometryInstance3D::set_lod_min_distance(float p_dist) {
 
 	lod_min_distance = p_dist;
-	VS::get_singleton()->instance_geometry_set_draw_range(get_instance(), lod_min_distance, lod_max_distance, lod_min_hysteresis, lod_max_hysteresis);
+	RS::get_singleton()->instance_geometry_set_draw_range(get_instance(), lod_min_distance, lod_max_distance, lod_min_hysteresis, lod_max_hysteresis);
 }
 
 float GeometryInstance3D::get_lod_min_distance() const {
@@ -184,7 +184,7 @@ float GeometryInstance3D::get_lod_min_distance() const {
 void GeometryInstance3D::set_lod_max_distance(float p_dist) {
 
 	lod_max_distance = p_dist;
-	VS::get_singleton()->instance_geometry_set_draw_range(get_instance(), lod_min_distance, lod_max_distance, lod_min_hysteresis, lod_max_hysteresis);
+	RS::get_singleton()->instance_geometry_set_draw_range(get_instance(), lod_min_distance, lod_max_distance, lod_min_hysteresis, lod_max_hysteresis);
 }
 
 float GeometryInstance3D::get_lod_max_distance() const {
@@ -195,7 +195,7 @@ float GeometryInstance3D::get_lod_max_distance() const {
 void GeometryInstance3D::set_lod_min_hysteresis(float p_dist) {
 
 	lod_min_hysteresis = p_dist;
-	VS::get_singleton()->instance_geometry_set_draw_range(get_instance(), lod_min_distance, lod_max_distance, lod_min_hysteresis, lod_max_hysteresis);
+	RS::get_singleton()->instance_geometry_set_draw_range(get_instance(), lod_min_distance, lod_max_distance, lod_min_hysteresis, lod_max_hysteresis);
 }
 
 float GeometryInstance3D::get_lod_min_hysteresis() const {
@@ -206,7 +206,7 @@ float GeometryInstance3D::get_lod_min_hysteresis() const {
 void GeometryInstance3D::set_lod_max_hysteresis(float p_dist) {
 
 	lod_max_hysteresis = p_dist;
-	VS::get_singleton()->instance_geometry_set_draw_range(get_instance(), lod_min_distance, lod_max_distance, lod_min_hysteresis, lod_max_hysteresis);
+	RS::get_singleton()->instance_geometry_set_draw_range(get_instance(), lod_min_distance, lod_max_distance, lod_min_hysteresis, lod_max_hysteresis);
 }
 
 float GeometryInstance3D::get_lod_max_hysteresis() const {
@@ -224,7 +224,7 @@ void GeometryInstance3D::set_flag(Flags p_flag, bool p_value) {
 		return;
 
 	flags[p_flag] = p_value;
-	VS::get_singleton()->instance_geometry_set_flag(get_instance(), (VS::InstanceFlags)p_flag, p_value);
+	RS::get_singleton()->instance_geometry_set_flag(get_instance(), (RS::InstanceFlags)p_flag, p_value);
 }
 
 bool GeometryInstance3D::get_flag(Flags p_flag) const {
@@ -238,7 +238,7 @@ void GeometryInstance3D::set_cast_shadows_setting(ShadowCastingSetting p_shadow_
 
 	shadow_casting_setting = p_shadow_casting_setting;
 
-	VS::get_singleton()->instance_geometry_set_cast_shadows_setting(get_instance(), (VS::ShadowCastingSetting)p_shadow_casting_setting);
+	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(get_instance(), (RS::ShadowCastingSetting)p_shadow_casting_setting);
 }
 
 GeometryInstance3D::ShadowCastingSetting GeometryInstance3D::get_cast_shadows_setting() const {
@@ -250,7 +250,7 @@ void GeometryInstance3D::set_extra_cull_margin(float p_margin) {
 
 	ERR_FAIL_COND(p_margin < 0);
 	extra_cull_margin = p_margin;
-	VS::get_singleton()->instance_set_extra_visibility_margin(get_instance(), extra_cull_margin);
+	RS::get_singleton()->instance_set_extra_visibility_margin(get_instance(), extra_cull_margin);
 }
 
 float GeometryInstance3D::get_extra_cull_margin() const {
@@ -260,7 +260,7 @@ float GeometryInstance3D::get_extra_cull_margin() const {
 
 void GeometryInstance3D::set_custom_aabb(AABB aabb) {
 
-	VS::get_singleton()->instance_set_custom_aabb(get_instance(), aabb);
+	RS::get_singleton()->instance_set_custom_aabb(get_instance(), aabb);
 }
 
 void GeometryInstance3D::_bind_methods() {
@@ -331,5 +331,5 @@ GeometryInstance3D::GeometryInstance3D() {
 
 	shadow_casting_setting = SHADOW_CASTING_SETTING_ON;
 	extra_cull_margin = 0;
-	//VS::get_singleton()->instance_geometry_set_baked_light_texture_index(get_instance(),0);
+	//RS::get_singleton()->instance_geometry_set_baked_light_texture_index(get_instance(),0);
 }

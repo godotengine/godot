@@ -1500,7 +1500,7 @@ void CustomPropertyEditor::_draw_easing() {
 			iflp = 1.0 - iflp;
 		}
 
-		VisualServer::get_singleton()->canvas_item_add_line(ci, Point2(iflp * s.width, prev * s.height), Point2(ifl * s.width, h * s.height), color);
+		RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(iflp * s.width, prev * s.height), Point2(ifl * s.width, h * s.height), color);
 		prev = h;
 	}
 

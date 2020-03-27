@@ -35,7 +35,7 @@
 #include "core/io/resource_importer.h"
 #include "core/os/file_access.h"
 #include "scene/resources/texture.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 class StreamTexture;
 
@@ -63,16 +63,16 @@ protected:
 
 		int flags;
 		String normal_path_for_roughness;
-		VS::TextureDetectRoughnessChannel channel_for_roughness;
+		RS::TextureDetectRoughnessChannel channel_for_roughness;
 		MakeInfo() {
 			flags = 0;
-			channel_for_roughness = VS::TEXTURE_DETECT_ROUGNHESS_R;
+			channel_for_roughness = RS::TEXTURE_DETECT_ROUGNHESS_R;
 		}
 	};
 
 	Map<StringName, MakeInfo> make_flags;
 
-	static void _texture_reimport_roughness(const Ref<StreamTexture> &p_tex, const String &p_normal_path, VisualServer::TextureDetectRoughnessChannel p_channel);
+	static void _texture_reimport_roughness(const Ref<StreamTexture> &p_tex, const String &p_normal_path, RenderingServer::TextureDetectRoughnessChannel p_channel);
 	static void _texture_reimport_3d(const Ref<StreamTexture> &p_tex);
 	static void _texture_reimport_normal(const Ref<StreamTexture> &p_tex);
 

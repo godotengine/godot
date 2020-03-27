@@ -31,7 +31,7 @@
 #include "arvr_interface_gdnative.h"
 #include "core/input/input_filter.h"
 #include "servers/arvr/arvr_positional_tracker.h"
-#include "servers/visual/visual_server_globals.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 void ARVRInterfaceGDNative::_bind_methods() {
 	ADD_PROPERTY_DEFAULT("interface_is_initialized", false);
@@ -292,7 +292,7 @@ void GDAPI godot_arvr_blit(godot_int p_eye, godot_rid *p_render_target, godot_re
 #warning this needs to be redone
 #endif
 #if 0
-	VSG::rasterizer->blit_render_target_to_screen(*render_target, screen_rect, 0);
+	RSG::rasterizer->blit_render_target_to_screen(*render_target, screen_rect, 0);
 #endif
 }
 
@@ -302,13 +302,13 @@ godot_int GDAPI godot_arvr_get_texid(godot_rid *p_render_target) {
 #if 0
 	RID *render_target = (RID *)p_render_target;
 
-	RID eye_texture = VSG::storage->render_target_get_texture(*render_target);
+	RID eye_texture = RSG::storage->render_target_get_texture(*render_target);
 #endif
 
 #ifndef _MSC_VER
 #warning need to obtain this ID again
 #endif
-	uint32_t texid = 0; //VS::get_singleton()->texture_get_texid(eye_texture);
+	uint32_t texid = 0; //RS::get_singleton()->texture_get_texid(eye_texture);
 
 	return texid;
 }

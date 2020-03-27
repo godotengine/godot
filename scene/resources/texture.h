@@ -41,7 +41,7 @@
 #include "scene/resources/curve.h"
 #include "scene/resources/gradient.h"
 #include "servers/camera_server.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 class Texture : public Resource {
 	GDCLASS(Texture, Resource);
@@ -68,9 +68,9 @@ public:
 
 	virtual bool has_alpha() const = 0;
 
-	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), VS::CanvasItemTextureFilter p_texture_filter = VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, VS::CanvasItemTextureRepeat p_texture_repeat = VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
-	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), VS::CanvasItemTextureFilter p_texture_filter = VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, VS::CanvasItemTextureRepeat p_texture_repeat = VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
-	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), VS::CanvasItemTextureFilter p_texture_filter = VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, VS::CanvasItemTextureRepeat p_texture_repeat = VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, bool p_clip_uv = true) const;
+	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), RS::CanvasItemTextureFilter p_texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
+	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), RS::CanvasItemTextureFilter p_texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
+	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), RS::CanvasItemTextureFilter p_texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, bool p_clip_uv = true) const;
 	virtual bool get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const;
 
 	virtual Ref<Image> get_data() const { return Ref<Image>(); }
@@ -118,9 +118,9 @@ public:
 	virtual RID get_rid() const;
 
 	bool has_alpha() const;
-	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), VS::CanvasItemTextureFilter p_texture_filter = VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, VS::CanvasItemTextureRepeat p_texture_repeat = VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
-	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), VS::CanvasItemTextureFilter p_texture_filter = VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, VS::CanvasItemTextureRepeat p_texture_repeat = VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
-	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), VS::CanvasItemTextureFilter p_texture_filter = VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, VS::CanvasItemTextureRepeat p_texture_repeat = VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, bool p_clip_uv = true) const;
+	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), RS::CanvasItemTextureFilter p_texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
+	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), RS::CanvasItemTextureFilter p_texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
+	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), RS::CanvasItemTextureFilter p_texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, bool p_clip_uv = true) const;
 
 	bool is_pixel_opaque(int p_x, int p_y) const;
 
@@ -171,7 +171,7 @@ private:
 	virtual void reload_from_file();
 
 	static void _requested_3d(void *p_ud);
-	static void _requested_roughness(void *p_ud, const String &p_normal_path, VS::TextureDetectRoughnessChannel p_roughness_channel);
+	static void _requested_roughness(void *p_ud, const String &p_normal_path, RS::TextureDetectRoughnessChannel p_roughness_channel);
 	static void _requested_normal(void *p_ud);
 
 protected:
@@ -182,7 +182,7 @@ public:
 	static Ref<Image> load_image_from_file(FileAccess *p_file, int p_size_limit);
 
 	typedef void (*TextureFormatRequestCallback)(const Ref<StreamTexture> &);
-	typedef void (*TextureFormatRoughnessRequestCallback)(const Ref<StreamTexture> &, const String &p_normal_path, VS::TextureDetectRoughnessChannel p_roughness_channel);
+	typedef void (*TextureFormatRoughnessRequestCallback)(const Ref<StreamTexture> &, const String &p_normal_path, RS::TextureDetectRoughnessChannel p_roughness_channel);
 
 	static TextureFormatRequestCallback request_3d_callback;
 	static TextureFormatRoughnessRequestCallback request_roughness_callback;
@@ -198,9 +198,9 @@ public:
 
 	virtual void set_path(const String &p_path, bool p_take_over);
 
-	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), VS::CanvasItemTextureFilter p_texture_filter = VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, VS::CanvasItemTextureRepeat p_texture_repeat = VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
-	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), VS::CanvasItemTextureFilter p_texture_filter = VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, VS::CanvasItemTextureRepeat p_texture_repeat = VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
-	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), VS::CanvasItemTextureFilter p_texture_filter = VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, VS::CanvasItemTextureRepeat p_texture_repeat = VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, bool p_clip_uv = true) const;
+	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), RS::CanvasItemTextureFilter p_texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
+	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), RS::CanvasItemTextureFilter p_texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
+	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), RS::CanvasItemTextureFilter p_texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, bool p_clip_uv = true) const;
 
 	virtual bool has_alpha() const;
 	bool is_pixel_opaque(int p_x, int p_y) const;
@@ -251,9 +251,9 @@ public:
 	void set_filter_clip(const bool p_enable);
 	bool has_filter_clip() const;
 
-	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), VS::CanvasItemTextureFilter p_texture_filter = VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, VS::CanvasItemTextureRepeat p_texture_repeat = VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
-	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), VS::CanvasItemTextureFilter p_texture_filter = VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, VS::CanvasItemTextureRepeat p_texture_repeat = VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
-	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), VS::CanvasItemTextureFilter p_texture_filter = VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, VS::CanvasItemTextureRepeat p_texture_repeat = VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, bool p_clip_uv = true) const;
+	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), RS::CanvasItemTextureFilter p_texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
+	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), RS::CanvasItemTextureFilter p_texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
+	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), RS::CanvasItemTextureFilter p_texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, bool p_clip_uv = true) const;
 	virtual bool get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const;
 
 	bool is_pixel_opaque(int p_x, int p_y) const;
@@ -291,9 +291,9 @@ public:
 	void set_base_texture(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_base_texture() const;
 
-	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), VS::CanvasItemTextureFilter p_texture_filter = VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, VS::CanvasItemTextureRepeat p_texture_repeat = VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
-	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), VS::CanvasItemTextureFilter p_texture_filter = VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, VS::CanvasItemTextureRepeat p_texture_repeat = VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
-	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), VS::CanvasItemTextureFilter p_texture_filter = VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, VS::CanvasItemTextureRepeat p_texture_repeat = VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, bool p_clip_uv = true) const;
+	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), RS::CanvasItemTextureFilter p_texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
+	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), RS::CanvasItemTextureFilter p_texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
+	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), RS::CanvasItemTextureFilter p_texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, bool p_clip_uv = true) const;
 	virtual bool get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const;
 
 	bool is_pixel_opaque(int p_x, int p_y) const;
@@ -339,9 +339,9 @@ public:
 	Ref<Texture2D> get_piece_texture(int p_idx) const;
 	Ref<Image> to_image() const;
 
-	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), VS::CanvasItemTextureFilter p_texture_filter = VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, VS::CanvasItemTextureRepeat p_texture_repeat = VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
-	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), VS::CanvasItemTextureFilter p_texture_filter = VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, VS::CanvasItemTextureRepeat p_texture_repeat = VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
-	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), VS::CanvasItemTextureFilter p_texture_filter = VS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, VS::CanvasItemTextureRepeat p_texture_repeat = VS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, bool p_clip_uv = true) const;
+	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), RS::CanvasItemTextureFilter p_texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
+	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), RS::CanvasItemTextureFilter p_texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) const;
+	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), RS::CanvasItemTextureFilter p_texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, bool p_clip_uv = true) const;
 
 	bool is_pixel_opaque(int p_x, int p_y) const;
 
@@ -352,7 +352,7 @@ class TextureLayered : public Texture {
 
 	GDCLASS(TextureLayered, Texture);
 
-	VS::TextureLayeredType layered_type;
+	RS::TextureLayeredType layered_type;
 
 	mutable RID texture;
 	Image::Format format;
@@ -383,7 +383,7 @@ public:
 	virtual RID get_rid() const;
 	virtual void set_path(const String &p_path, bool p_take_over = false);
 
-	TextureLayered(VS::TextureLayeredType p_layered_type);
+	TextureLayered(RS::TextureLayeredType p_layered_type);
 	~TextureLayered();
 };
 
@@ -392,7 +392,7 @@ class Texture2DArray : public TextureLayered {
 	GDCLASS(Texture2DArray, TextureLayered)
 public:
 	Texture2DArray() :
-			TextureLayered(VS::TEXTURE_LAYERED_2D_ARRAY) {}
+			TextureLayered(RS::TEXTURE_LAYERED_2D_ARRAY) {}
 };
 
 class Cubemap : public TextureLayered {
@@ -401,7 +401,7 @@ class Cubemap : public TextureLayered {
 
 public:
 	Cubemap() :
-			TextureLayered(VS::TEXTURE_LAYERED_CUBEMAP) {}
+			TextureLayered(RS::TEXTURE_LAYERED_CUBEMAP) {}
 };
 
 class CubemapArray : public TextureLayered {
@@ -410,7 +410,7 @@ class CubemapArray : public TextureLayered {
 
 public:
 	CubemapArray() :
-			TextureLayered(VS::TEXTURE_LAYERED_CUBEMAP_ARRAY) {}
+			TextureLayered(RS::TEXTURE_LAYERED_CUBEMAP_ARRAY) {}
 };
 
 class ResourceFormatLoaderTextureLayered : public ResourceFormatLoader {

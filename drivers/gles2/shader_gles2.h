@@ -44,7 +44,7 @@
 #include "core/math/camera_matrix.h"
 #include "core/pair.h"
 #include "core/variant.h"
-#include "servers/visual/shader_language.h"
+#include "servers/rendering/shader_language.h"
 
 #include <stdio.h>
 

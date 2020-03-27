@@ -33,7 +33,7 @@
 
 #include "broad_phase_2d_sw.h"
 #include "core/self_list.h"
-#include "servers/physics_2d_server.h"
+#include "servers/physics_server_2d.h"
 #include "shape_2d_sw.h"
 
 class Space2DSW;
