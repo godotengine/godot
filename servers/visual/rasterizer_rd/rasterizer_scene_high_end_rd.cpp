@@ -749,7 +749,6 @@ void RasterizerSceneHighEndRD::_render_list(RenderingDevice::DrawListID p_draw_l
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, default_vec4_xform_uniform_set, TRANSFORMS_UNIFORM_SET);
 
 	MaterialData *prev_material = nullptr;
-	//	ShaderData *prev_shader = nullptr;
 
 	RID prev_vertex_array_rd;
 	RID prev_index_array_rd;
@@ -809,12 +808,11 @@ void RasterizerSceneHighEndRD::_render_list(RenderingDevice::DrawListID p_draw_l
 			}
 		}
 
-		ShaderVersion shader_version = SHADER_VERSION_MAX;
+		ShaderVersion shader_version = SHADER_VERSION_MAX; // Assigned to silence wrong -Wmaybe-initialized.
 
 		switch (p_pass_mode) {
 			case PASS_MODE_COLOR:
 			case PASS_MODE_COLOR_TRANSPARENT: {
-
 				if (e->uses_lightmap) {
 					shader_version = SHADER_VERSION_LIGHTMAP_COLOR_PASS;
 				} else if (e->uses_vct) {
@@ -822,7 +820,6 @@ void RasterizerSceneHighEndRD::_render_list(RenderingDevice::DrawListID p_draw_l
 				} else {
 					shader_version = SHADER_VERSION_COLOR_PASS;
 				}
-
 			} break;
 			case PASS_MODE_COLOR_SPECULAR: {
 				if (e->uses_lightmap) {
