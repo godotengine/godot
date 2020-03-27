@@ -3944,11 +3944,14 @@ void EditorNode::_copy_warning(const String &p_str) {
 }
 
 void EditorNode::_dock_floating_close_request(Control *p_control) {
-	Window *window = (Window *)p_control->get_parent();
+	// Through the MarginContainer to the Window.
+	Window *window = (Window *)p_control->get_parent()->get_parent();
 	int window_slot = window->get_meta("dock_slot");
 
-	window->remove_child(p_control);
+	p_control->get_parent()->remove_child(p_control);
 	dock_slot[window_slot]->add_child(p_control);
+	dock_slot[window_slot]->move_child(p_control, MIN((int)window->get_meta("dock_index"), dock_slot[window_slot]->get_child_count()));
+	dock_slot[window_slot]->set_current_tab(window->get_meta("dock_index"));
 
 	window->queue_delete();
 
@@ -3965,6 +3968,7 @@ void EditorNode::_dock_make_float() {
 	Point2 dock_screen_pos = dock->get_global_position() + get_tree()->get_root()->get_position();
 
 	print_line("dock pos: " + dock->get_global_position() + " window pos: " + get_tree()->get_root()->get_position());
+	int dock_index = dock->get_index();
 	dock_slot[dock_popup_selected]->remove_child(dock);
 
 	Window *window = memnew(Window);
@@ -3973,14 +3977,22 @@ void EditorNode::_dock_make_float() {
 	p->set_mode(Panel::MODE_FOREGROUND);
 	p->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	window->add_child(p);
+	MarginContainer *margin = memnew(MarginContainer);
+	margin->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	margin->add_theme_constant_override("margin_right", 4 * EDSCALE);
+	margin->add_theme_constant_override("margin_top", 4 * EDSCALE);
+	margin->add_theme_constant_override("margin_left", 4 * EDSCALE);
+	margin->add_theme_constant_override("margin_bottom", 4 * EDSCALE);
+	window->add_child(margin);
 	dock->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	window->add_child(dock);
+	margin->add_child(dock);
 	window->set_wrap_controls(true);
 	window->set_size(dock_size);
 	window->set_position(dock_screen_pos);
 	window->set_transient(true);
 	window->connect("close_requested", callable_mp(this, &EditorNode::_dock_floating_close_request), varray(dock));
 	window->set_meta("dock_slot", dock_popup_selected);
+	window->set_meta("dock_index", dock_index);
 	gui_base->add_child(window);
 
 	dock_select_popup->hide();
@@ -5905,7 +5917,7 @@ EditorNode::EditorNode() {
 	dock_vb->add_child(dock_select);
 
 	dock_float = memnew(Button);
-	dock_float->set_text("Make Floating");
+	dock_float->set_text(TTR("Make Floating"));
 	dock_float->set_focus_mode(Control::FOCUS_NONE);
 	dock_float->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	dock_float->connect("pressed", callable_mp(this, &EditorNode::_dock_make_float));
