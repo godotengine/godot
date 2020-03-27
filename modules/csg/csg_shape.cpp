@@ -741,7 +741,7 @@ CSGBrush *CSGMesh::_build_brush() {
 		const Vector3 *vr = avertices.ptr();
 
 		Vector<Vector3> anormals = arrays[Mesh::ARRAY_NORMAL];
-		const Vector3 *nr;
+		const Vector3 *nr = NULL;
 		bool nr_used = false;
 		if (anormals.size()) {
 			nr = anormals.ptr();
@@ -749,7 +749,7 @@ CSGBrush *CSGMesh::_build_brush() {
 		}
 
 		Vector<Vector2> auvs = arrays[Mesh::ARRAY_TEX_UV];
-		const Vector2 *uvr;
+		const Vector2 *uvr = NULL;
 		bool uvr_used = false;
 		if (auvs.size()) {
 			uvr = auvs.ptr();
