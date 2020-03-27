@@ -209,6 +209,12 @@
 				[b]Note:[/b] Due to keyboard ghosting, [method is_action_pressed] may return [code]false[/code] even if one of the action's keys is pressed. See [url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input examples[/url] in the documentation for more information.
 			</description>
 		</method>
+		<method name="is_anything_pressed" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if any action, key, joypad button, or mouse button is being pressed. This will also return [code]true[/code] if any action is simulated via code by calling [method action_press].
+			</description>
+		</method>
 		<method name="is_joy_button_pressed" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="device" type="int" />
