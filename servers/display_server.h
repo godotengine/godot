@@ -57,8 +57,9 @@ public:
 		WINDOW_MODE_FULLSCREEN
 	};
 
-	typedef DisplayServer *(*CreateFunction)(const String &, WindowMode, uint32_t, const Size2i &, Error &r_error); //video driver, window mode, resolution
-	typedef Vector<String> (*GetVideoDriversFunction)(); //video driver, window mode, resolution
+	typedef DisplayServer *(*CreateFunction)(const String &, WindowMode, uint32_t, const Size2i &, Error &r_error);
+	typedef Vector<String> (*GetRenderingDriversFunction)();
+
 private:
 	static void _input_set_mouse_mode(InputFilter::MouseMode p_mode);
 	static InputFilter::MouseMode _input_get_mouse_mode();
@@ -68,14 +69,15 @@ private:
 
 protected:
 	static void _bind_methods();
+
 	enum {
 		MAX_SERVERS = 64
 	};
 
 	struct DisplayServerCreate {
 		const char *name;
-		GetVideoDriversFunction get_rendering_drivers_function;
 		CreateFunction create_function;
+		GetRenderingDriversFunction get_rendering_drivers_function;
 	};
 
 	static DisplayServerCreate server_create_functions[MAX_SERVERS];
@@ -361,7 +363,7 @@ public:
 
 	virtual void set_context(Context p_context);
 
-	static void register_create_function(const char *p_name, CreateFunction p_function, GetVideoDriversFunction p_get_drivers);
+	static void register_create_function(const char *p_name, CreateFunction p_function, GetRenderingDriversFunction p_get_drivers);
 	static int get_create_function_count();
 	static const char *get_create_function_name(int p_index);
 	static Vector<String> get_create_function_rendering_drivers(int p_index);
