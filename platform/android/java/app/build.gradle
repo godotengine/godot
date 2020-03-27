@@ -15,6 +15,7 @@ buildscript {
     }
     dependencies {
         classpath libraries.androidGradlePlugin
+        classpath libraries.kotlinGradlePlugin
 //CHUNK_BUILDSCRIPT_DEPENDENCIES_BEGIN
 //CHUNK_BUILDSCRIPT_DEPENDENCIES_END
     }
@@ -34,6 +35,7 @@ allprojects {
 
 dependencies {
     implementation libraries.supportCoreUtils
+    implementation libraries.kotlinStdLib
     implementation libraries.v4Support
 
     if (rootProject.findProject(":lib")) {
