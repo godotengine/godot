@@ -507,10 +507,10 @@ bool Node3D::is_set_as_toplevel() const {
 	return data.toplevel;
 }
 
-Ref<World> Node3D::get_world() const {
+Ref<World3D> Node3D::get_world() const {
 
-	ERR_FAIL_COND_V(!is_inside_world(), Ref<World>());
-	ERR_FAIL_COND_V(!data.viewport, Ref<World>());
+	ERR_FAIL_COND_V(!is_inside_world(), Ref<World3D>());
+	ERR_FAIL_COND_V(!data.viewport, Ref<World3D>());
 
 	return data.viewport->find_world();
 }

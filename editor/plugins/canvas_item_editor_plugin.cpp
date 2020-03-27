@@ -40,8 +40,8 @@
 #include "editor/editor_settings.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "scene/2d/gpu_particles_2d.h"
 #include "scene/2d/light_2d.h"
-#include "scene/2d/particles_2d.h"
 #include "scene/2d/polygon_2d.h"
 #include "scene/2d/skeleton_2d.h"
 #include "scene/2d/sprite_2d.h"
@@ -6083,8 +6083,8 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 				Node *child;
 				if (default_type == "Light2D")
 					child = memnew(Light2D);
-				else if (default_type == "Particles2D")
-					child = memnew(Particles2D);
+				else if (default_type == "GPUParticles2D")
+					child = memnew(GPUParticles2D);
 				else if (default_type == "Polygon2D")
 					child = memnew(Polygon2D);
 				else if (default_type == "TouchScreenButton")
@@ -6247,11 +6247,11 @@ void CanvasItemEditorViewport::_bind_methods() {
 }
 
 CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasItemEditor *p_canvas_item_editor) {
-	default_type = "Sprite";
+	default_type = "Sprite2D";
 	// Node2D
-	types.push_back("Sprite");
+	types.push_back("Sprite2D");
 	types.push_back("Light2D");
-	types.push_back("Particles2D");
+	types.push_back("GPUParticles2D");
 	types.push_back("Polygon2D");
 	types.push_back("TouchScreenButton");
 	// Control

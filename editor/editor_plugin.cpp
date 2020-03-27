@@ -38,7 +38,7 @@
 #include "editor_resource_preview.h"
 #include "main/main.h"
 #include "plugins/canvas_item_editor_plugin.h"
-#include "plugins/spatial_editor_plugin.h"
+#include "plugins/node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/popup_menu.h"
 #include "servers/visual_server.h"

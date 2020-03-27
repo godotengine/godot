@@ -114,32 +114,33 @@
 #include "editor/plugins/asset_library_editor_plugin.h"
 #include "editor/plugins/audio_stream_editor_plugin.h"
 #include "editor/plugins/baked_lightmap_editor_plugin.h"
-#include "editor/plugins/camera_editor_plugin.h"
+#include "editor/plugins/camera_3d_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/collision_polygon_2d_editor_plugin.h"
-#include "editor/plugins/collision_polygon_editor_plugin.h"
+#include "editor/plugins/collision_polygon_3d_editor_plugin.h"
 #include "editor/plugins/collision_shape_2d_editor_plugin.h"
 #include "editor/plugins/cpu_particles_2d_editor_plugin.h"
-#include "editor/plugins/cpu_particles_editor_plugin.h"
+#include "editor/plugins/cpu_particles_3d_editor_plugin.h"
 #include "editor/plugins/curve_editor_plugin.h"
 #include "editor/plugins/debugger_editor_plugin.h"
 #include "editor/plugins/editor_preview_plugins.h"
 #include "editor/plugins/gi_probe_editor_plugin.h"
+#include "editor/plugins/gpu_particles_2d_editor_plugin.h"
+#include "editor/plugins/gpu_particles_3d_editor_plugin.h"
 #include "editor/plugins/gradient_editor_plugin.h"
 #include "editor/plugins/item_list_editor_plugin.h"
 #include "editor/plugins/light_occluder_2d_editor_plugin.h"
 #include "editor/plugins/line_2d_editor_plugin.h"
 #include "editor/plugins/material_editor_plugin.h"
 #include "editor/plugins/mesh_editor_plugin.h"
-#include "editor/plugins/mesh_instance_editor_plugin.h"
+#include "editor/plugins/mesh_instance_3d_editor_plugin.h"
 #include "editor/plugins/mesh_library_editor_plugin.h"
 #include "editor/plugins/multimesh_editor_plugin.h"
 #include "editor/plugins/navigation_polygon_editor_plugin.h"
-#include "editor/plugins/particles_2d_editor_plugin.h"
-#include "editor/plugins/particles_editor_plugin.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/plugins/path_2d_editor_plugin.h"
-#include "editor/plugins/path_editor_plugin.h"
-#include "editor/plugins/physical_bone_plugin.h"
+#include "editor/plugins/path_3d_editor_plugin.h"
+#include "editor/plugins/physical_bone_3d_editor_plugin.h"
 #include "editor/plugins/polygon_2d_editor_plugin.h"
 #include "editor/plugins/resource_preloader_editor_plugin.h"
 #include "editor/plugins/root_motion_editor_plugin.h"
@@ -147,10 +148,9 @@
 #include "editor/plugins/script_text_editor.h"
 #include "editor/plugins/shader_editor_plugin.h"
 #include "editor/plugins/skeleton_2d_editor_plugin.h"
-#include "editor/plugins/skeleton_editor_plugin.h"
-#include "editor/plugins/skeleton_ik_editor_plugin.h"
-#include "editor/plugins/spatial_editor_plugin.h"
-#include "editor/plugins/sprite_editor_plugin.h"
+#include "editor/plugins/skeleton_3d_editor_plugin.h"
+#include "editor/plugins/skeleton_ik_3d_editor_plugin.h"
+#include "editor/plugins/sprite_2d_editor_plugin.h"
 #include "editor/plugins/sprite_frames_editor_plugin.h"
 #include "editor/plugins/style_box_editor_plugin.h"
 #include "editor/plugins/text_editor.h"
@@ -6597,18 +6597,19 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(ShaderEditorPlugin(this)));
 	add_editor_plugin(memnew(VisualShaderEditorPlugin(this)));
 
-	add_editor_plugin(memnew(CameraEditorPlugin(this)));
+	add_editor_plugin(memnew(Camera3DEditorPlugin(this)));
 	add_editor_plugin(memnew(ThemeEditorPlugin(this)));
 	add_editor_plugin(memnew(MultiMeshEditorPlugin(this)));
-	add_editor_plugin(memnew(MeshInstanceEditorPlugin(this)));
+	add_editor_plugin(memnew(MeshInstance3DEditorPlugin(this)));
 	add_editor_plugin(memnew(AnimationTreeEditorPlugin(this)));
 	add_editor_plugin(memnew(MeshLibraryEditorPlugin(this)));
 	add_editor_plugin(memnew(StyleBoxEditorPlugin(this)));
-	add_editor_plugin(memnew(SpriteEditorPlugin(this)));
+	add_editor_plugin(memnew(Sprite2DEditorPlugin(this)));
 	add_editor_plugin(memnew(Skeleton2DEditorPlugin(this)));
-	add_editor_plugin(memnew(ParticlesEditorPlugin(this)));
+	add_editor_plugin(memnew(GPUParticles2DEditorPlugin(this)));
+	add_editor_plugin(memnew(GPUParticles3DEditorPlugin(this)));
 	add_editor_plugin(memnew(CPUParticles2DEditorPlugin(this)));
-	add_editor_plugin(memnew(CPUParticlesEditorPlugin(this)));
+	add_editor_plugin(memnew(CPUParticles3DEditorPlugin(this)));
 	add_editor_plugin(memnew(ResourcePreloaderEditorPlugin(this)));
 	add_editor_plugin(memnew(ItemListEditorPlugin(this)));
 	add_editor_plugin(memnew(Polygon3DEditorPlugin(this)));
@@ -6617,11 +6618,10 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(TileMapEditorPlugin(this)));
 	add_editor_plugin(memnew(SpriteFramesEditorPlugin(this)));
 	add_editor_plugin(memnew(TextureRegionEditorPlugin(this)));
-	add_editor_plugin(memnew(Particles2DEditorPlugin(this)));
 	add_editor_plugin(memnew(GIProbeEditorPlugin(this)));
-	//	add_editor_plugin(memnew(BakedLightmapEditorPlugin(this)));
+	//add_editor_plugin(memnew(BakedLightmapEditorPlugin(this)));
 	add_editor_plugin(memnew(Path2DEditorPlugin(this)));
-	add_editor_plugin(memnew(PathEditorPlugin(this)));
+	add_editor_plugin(memnew(Path3DEditorPlugin(this)));
 	add_editor_plugin(memnew(Line2DEditorPlugin(this)));
 	add_editor_plugin(memnew(Polygon2DEditorPlugin(this)));
 	add_editor_plugin(memnew(LightOccluder2DEditorPlugin(this)));
@@ -6632,9 +6632,9 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(TextureEditorPlugin(this)));
 	add_editor_plugin(memnew(AudioStreamEditorPlugin(this)));
 	add_editor_plugin(memnew(AudioBusesEditorPlugin(audio_bus_editor)));
-	add_editor_plugin(memnew(SkeletonEditorPlugin(this)));
-	add_editor_plugin(memnew(SkeletonIKEditorPlugin(this)));
-	add_editor_plugin(memnew(PhysicalBonePlugin(this)));
+	add_editor_plugin(memnew(Skeleton3DEditorPlugin(this)));
+	add_editor_plugin(memnew(SkeletonIK3DEditorPlugin(this)));
+	add_editor_plugin(memnew(PhysicalBone3DEditorPlugin(this)));
 	add_editor_plugin(memnew(MeshEditorPlugin(this)));
 	add_editor_plugin(memnew(MaterialEditorPlugin(this)));
 

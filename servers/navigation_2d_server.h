@@ -37,7 +37,7 @@
 
 #include "core/object.h"
 #include "core/rid.h"
-#include "scene/2d/navigation_polygon.h"
+#include "scene/2d/navigation_region_2d.h"
 
 // This server exposes the 3D `NavigationServer` features in the 2D world.
 class Navigation2DServer : public Object {

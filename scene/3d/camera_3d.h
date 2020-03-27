@@ -48,10 +48,8 @@ public:
 		PROJECTION_FRUSTUM
 	};
 
-	enum KeepAspect {
-		KEEP_WIDTH,
-		KEEP_HEIGHT
-	};
+	enum KeepAspect { KEEP_WIDTH,
+		KEEP_HEIGHT };
 
 	enum DopplerTracking {
 		DOPPLER_TRACKING_DISABLED,
@@ -77,7 +75,7 @@ private:
 	RID camera;
 	RID scenario_id;
 
-	//String camera_group;
+	// String camera_group;
 
 	uint32_t layers;
 
@@ -86,7 +84,7 @@ private:
 
 	virtual bool _can_gizmo_scale() const;
 
-	//void _camera_make_current(Node *p_camera);
+	// void _camera_make_current(Node *p_camera);
 	friend class Viewport;
 	void _update_audio_listener_state();
 
@@ -112,7 +110,8 @@ public:
 
 	void set_perspective(float p_fovy_degrees, float p_z_near, float p_z_far);
 	void set_orthogonal(float p_size, float p_z_near, float p_z_far);
-	void set_frustum(float p_size, Vector2 p_offset, float p_z_near, float p_z_far);
+	void set_frustum(float p_size, Vector2 p_offset, float p_z_near,
+			float p_z_far);
 	void set_projection(Camera3D::Projection p_mode);
 
 	void make_current();
@@ -143,7 +142,8 @@ public:
 	virtual Vector3 project_local_ray_normal(const Point2 &p_pos) const;
 	virtual Point2 unproject_position(const Vector3 &p_pos) const;
 	bool is_position_behind(const Vector3 &p_pos) const;
-	virtual Vector3 project_position(const Point2 &p_point, float p_z_depth) const;
+	virtual Vector3 project_position(const Point2 &p_point,
+			float p_z_depth) const;
 
 	Vector<Vector3> get_near_plane_points() const;
 
@@ -183,9 +183,9 @@ VARIANT_ENUM_CAST(Camera3D::Projection);
 VARIANT_ENUM_CAST(Camera3D::KeepAspect);
 VARIANT_ENUM_CAST(Camera3D::DopplerTracking);
 
-class ClippedCamera : public Camera3D {
+class ClippedCamera3D : public Camera3D {
 
-	GDCLASS(ClippedCamera, Camera3D);
+	GDCLASS(ClippedCamera3D, Camera3D);
 
 public:
 	enum ProcessMode {
@@ -238,9 +238,9 @@ public:
 
 	float get_clip_offset() const;
 
-	ClippedCamera();
-	~ClippedCamera();
+	ClippedCamera3D();
+	~ClippedCamera3D();
 };
 
-VARIANT_ENUM_CAST(ClippedCamera::ProcessMode);
+VARIANT_ENUM_CAST(ClippedCamera3D::ProcessMode);
 #endif

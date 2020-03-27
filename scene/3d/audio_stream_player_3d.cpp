@@ -384,7 +384,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				linear_velocity = velocity_tracker->get_tracked_linear_velocity();
 			}
 
-			Ref<World> world = get_world();
+			Ref<World3D> world = get_world();
 			ERR_FAIL_COND(world.is_null());
 
 			int new_output_count = 0;
