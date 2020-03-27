@@ -55,6 +55,7 @@
 #include "scene/resources/box_shape.h"
 #include "scene/resources/capsule_shape.h"
 #include "scene/resources/concave_polygon_shape.h"
+#include "scene/resources/cone_shape.h"
 #include "scene/resources/convex_polygon_shape.h"
 #include "scene/resources/cylinder_shape.h"
 #include "scene/resources/height_map_shape.h"
@@ -3083,6 +3084,11 @@ String CollisionShapeSpatialGizmoPlugin::get_handle_name(const EditorSpatialGizm
 		return p_idx == 0 ? "Radius" : "Height";
 	}
 
+	if (Object::cast_to<ConeShape>(*s)) {
+
+		return p_idx == 0 ? "Radius" : "Height";
+	}
+
 	if (Object::cast_to<RayShape>(*s)) {
 
 		return "Length";
@@ -3121,6 +3127,12 @@ Variant CollisionShapeSpatialGizmoPlugin::get_handle_value(EditorSpatialGizmo *p
 
 		Ref<CylinderShape> cs2 = s;
 		return p_idx == 0 ? cs2->get_radius() : cs2->get_height();
+	}
+
+	if (Object::cast_to<ConeShape>(*s)) {
+
+		Ref<ConeShape> cs3 = s;
+		return p_idx == 0 ? cs3->get_radius() : cs3->get_height();
 	}
 
 	if (Object::cast_to<RayShape>(*s)) {
@@ -3243,6 +3255,27 @@ void CollisionShapeSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, i
 		else if (p_idx == 1)
 			cs2->set_height(d * 2.0);
 	}
+
+	if (Object::cast_to<ConeShape>(*s)) {
+
+		Vector3 axis;
+		axis[p_idx == 0 ? 0 : 1] = 1.0;
+		Ref<ConeShape> cs3 = s;
+		Vector3 ra, rb;
+		Geometry::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
+		float d = axis.dot(ra);
+		if (SpatialEditor::get_singleton()->is_snap_enabled()) {
+			d = Math::stepify(d, SpatialEditor::get_singleton()->get_translate_snap());
+		}
+
+		if (d < 0.001)
+			d = 0.001;
+
+		if (p_idx == 0)
+			cs3->set_radius(d);
+		else if (p_idx == 1)
+			cs3->set_height(d * 2.0);
+	}
 }
 void CollisionShapeSpatialGizmoPlugin::commit_handle(EditorSpatialGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
 
@@ -3331,6 +3364,31 @@ void CollisionShapeSpatialGizmoPlugin::commit_handle(EditorSpatialGizmo *p_gizmo
 					TTR("Change Cylinder Shape Height"));
 			ur->add_do_method(ss.ptr(), "set_height", ss->get_height());
 			ur->add_undo_method(ss.ptr(), "set_height", p_restore);
+		}
+
+		ur->commit_action();
+	}
+
+	if (Object::cast_to<ConeShape>(*s)) {
+
+		Ref<ConeShape> cs3 = s;
+		if (p_cancel) {
+			if (p_idx == 0)
+				cs3->set_radius(p_restore);
+			else
+				cs3->set_height(p_restore);
+			return;
+		}
+
+		UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
+		if (p_idx == 0) {
+			ur->create_action(TTR("Change Cone Shape Radius"));
+			ur->add_do_method(cs3.ptr(), "set_radius", cs3->get_radius());
+			ur->add_undo_method(cs3.ptr(), "set_radius", p_restore);
+		} else {
+			ur->create_action(TTR("Change Cone Shape Height"));
+			ur->add_do_method(cs3.ptr(), "set_height", cs3->get_height());
+			ur->add_undo_method(cs3.ptr(), "set_height", p_restore);
 		}
 
 		ur->commit_action();
@@ -3573,6 +3631,61 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 		Vector<Vector3> handles;
 		handles.push_back(Vector3(cs2->get_radius(), 0, 0));
 		handles.push_back(Vector3(0, cs2->get_height() * 0.5, 0));
+		p_gizmo->add_handles(handles, handles_material);
+	}
+
+	if (Object::cast_to<ConeShape>(*s)) {
+
+		Ref<ConeShape> cs3 = s;
+		float radius = cs3->get_radius();
+		float height = cs3->get_height();
+
+		Vector<Vector3> points;
+
+		Vector3 d(0, height * 0.5, 0);
+		for (int i = 0; i < 360; i++) {
+
+			float ra = Math::deg2rad((float)i);
+			float rb = Math::deg2rad((float)i + 1);
+			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * radius;
+			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * radius;
+
+			points.push_back(Vector3(a.x, 0, a.y) - d);
+			points.push_back(Vector3(b.x, 0, b.y) - d);
+
+			if (i % 90 == 0) {
+
+				points.push_back(Vector3(0, 0, 0) + d);
+				points.push_back(Vector3(a.x, 0, a.y) - d);
+			}
+		}
+
+		p_gizmo->add_lines(points, material);
+
+		Vector<Vector3> collision_segments;
+
+		for (int i = 0; i < 64; i++) {
+
+			float ra = i * Math_PI * 2.0 / 64.0;
+			float rb = (i + 1) * Math_PI * 2.0 / 64.0;
+			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * radius;
+			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * radius;
+
+			collision_segments.push_back(Vector3(a.x, 0, a.y) - d);
+			collision_segments.push_back(Vector3(b.x, 0, b.y) - d);
+
+			if (i % 16 == 0) {
+
+				collision_segments.push_back(Vector3(0, 0, 0) + d);
+				collision_segments.push_back(Vector3(a.x, 0, a.y) - d);
+			}
+		}
+
+		p_gizmo->add_collision_segments(collision_segments);
+
+		Vector<Vector3> handles;
+		handles.push_back(Vector3(cs3->get_radius(), -cs3->get_height() * 0.5, 0));
+		handles.push_back(Vector3(0, cs3->get_height() * 0.5, 0));
 		p_gizmo->add_handles(handles, handles_material);
 	}
 

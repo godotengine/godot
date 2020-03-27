@@ -1484,16 +1484,19 @@
 		<constant name="SHAPE_CYLINDER" value="5" enum="ShapeType">
 			The [Shape] is a [CylinderShape].
 		</constant>
-		<constant name="SHAPE_CONVEX_POLYGON" value="6" enum="ShapeType">
+		<constant name="SHAPE_CONE" value="6" enum="ShapeType">
+			The [Shape] is a [ConeShape].
+		</constant>
+		<constant name="SHAPE_CONVEX_POLYGON" value="7" enum="ShapeType">
 			The [Shape] is a [ConvexPolygonShape].
 		</constant>
-		<constant name="SHAPE_CONCAVE_POLYGON" value="7" enum="ShapeType">
+		<constant name="SHAPE_CONCAVE_POLYGON" value="8" enum="ShapeType">
 			The [Shape] is a [ConcavePolygonShape].
 		</constant>
-		<constant name="SHAPE_HEIGHTMAP" value="8" enum="ShapeType">
+		<constant name="SHAPE_HEIGHTMAP" value="9" enum="ShapeType">
 			The [Shape] is a [HeightMapShape].
 		</constant>
-		<constant name="SHAPE_CUSTOM" value="9" enum="ShapeType">
+		<constant name="SHAPE_CUSTOM" value="10" enum="ShapeType">
 			This constant is used internally by the engine. Any attempt to create this kind of shape results in an error.
 		</constant>
 		<constant name="AREA_PARAM_GRAVITY" value="0" enum="AreaParameter">
