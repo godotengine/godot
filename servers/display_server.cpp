@@ -540,15 +540,18 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_DPI_CHANGE);
 }
 
-void DisplayServer::register_create_function(const char *p_name, CreateFunction p_function, GetVideoDriversFunction p_get_drivers) {
+void DisplayServer::register_create_function(const char *p_name, CreateFunction p_function, GetRenderingDriversFunction p_get_drivers) {
 	ERR_FAIL_COND(server_create_count == MAX_SERVERS);
-	server_create_functions[server_create_count].create_function = p_function;
 	server_create_functions[server_create_count].name = p_name;
+	server_create_functions[server_create_count].create_function = p_function;
+	server_create_functions[server_create_count].get_rendering_drivers_function = p_get_drivers;
 	server_create_count++;
 }
+
 int DisplayServer::get_create_function_count() {
 	return server_create_count;
 }
+
 const char *DisplayServer::get_create_function_name(int p_index) {
 	ERR_FAIL_INDEX_V(p_index, server_create_count, nullptr);
 	return server_create_functions[p_index].name;

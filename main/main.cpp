@@ -271,16 +271,22 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --render-thread <mode>           Render thread mode ('unsafe', 'safe', 'separate').\n");
 	OS::get_singleton()->print("  --remote-fs <address>            Remote filesystem (<host/IP>[:<port>] address).\n");
 	OS::get_singleton()->print("  --remote-fs-password <password>  Password for remote filesystem.\n");
-	OS::get_singleton()->print("  --audio-driver <driver>          Audio driver (");
+
+	OS::get_singleton()->print("  --audio-driver <driver>          Audio driver [");
 	for (int i = 0; i < AudioDriverManager::get_driver_count(); i++) {
-		if (i != 0)
+		if (i > 0) {
 			OS::get_singleton()->print(", ");
+		}
 		OS::get_singleton()->print("'%s'", AudioDriverManager::get_driver(i)->get_name());
 	}
-	OS::get_singleton()->print(").\n");
-	OS::get_singleton()->print("  --display-driver <driver>          Display driver (and rendering driver):\n");
+	OS::get_singleton()->print("].\n");
+
+	OS::get_singleton()->print("  --display-driver <driver>        Display driver (and rendering driver) [");
 	for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
-		OS::get_singleton()->print("\t\t'%s' (", DisplayServer::get_create_function_name(i));
+		if (i > 0) {
+			OS::get_singleton()->print(", ");
+		}
+		OS::get_singleton()->print("'%s' (", DisplayServer::get_create_function_name(i));
 		Vector<String> rd = DisplayServer::get_create_function_rendering_drivers(i);
 		for (int j = 0; j < rd.size(); j++) {
 			if (j > 0) {
@@ -288,9 +294,11 @@ void Main::print_help(const char *p_binary) {
 			}
 			OS::get_singleton()->print("'%s'", rd[j].utf8().get_data());
 		}
-		OS::get_singleton()->print(")\n");
+		OS::get_singleton()->print(")");
 	}
-	OS::get_singleton()->print("  --rendering-driver <driver>          Rendering driver (depends on display driver).\n");
+	OS::get_singleton()->print("].\n");
+	OS::get_singleton()->print("  --rendering-driver <driver>      Rendering driver (depends on display driver).\n");
+	OS::get_singleton()->print("\n");
 
 #ifndef SERVER_ENABLED
 	OS::get_singleton()->print("Display options:\n");
@@ -340,7 +348,7 @@ void Main::print_help(const char *p_binary) {
 #ifdef DEBUG_METHODS_ENABLED
 	OS::get_singleton()->print("  --gdnative-generate-json-api     Generate JSON dump of the Godot API for GDNative bindings.\n");
 #endif
-	OS::get_singleton()->print("  --test <test>                    Run a unit test (");
+	OS::get_singleton()->print("  --test <test>                    Run a unit test [");
 	const char **test_names = tests_get_names();
 	const char *comma = "";
 	while (*test_names) {
@@ -348,7 +356,7 @@ void Main::print_help(const char *p_binary) {
 		test_names++;
 		comma = ", ";
 	}
-	OS::get_singleton()->print(").\n");
+	OS::get_singleton()->print("].\n");
 #endif
 }
 
