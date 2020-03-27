@@ -1,7 +1,9 @@
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 
 dependencies {
     implementation libraries.supportCoreUtils
+    implementation libraries.kotlinStdLib
     implementation libraries.v4Support
 }
 
