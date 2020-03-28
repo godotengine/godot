@@ -275,6 +275,7 @@ void Window::_clear_window() {
 
 	_update_from_window();
 
+	_drop_mouse_focus();
 	DisplayServer::get_singleton()->delete_sub_window(window_id);
 	window_id = DisplayServer::INVALID_WINDOW_ID;
 
