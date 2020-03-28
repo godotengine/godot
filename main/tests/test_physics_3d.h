@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_physics.h                                                       */
+/*  test_physics_3d.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -33,7 +33,7 @@
 
 #include "core/os/main_loop.h"
 
-namespace TestPhysics {
+namespace TestPhysics3D {
 
 MainLoop *test();
 }

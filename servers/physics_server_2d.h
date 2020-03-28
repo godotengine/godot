@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  physics_2d_server.h                                                  */
+/*  physics_server_2d.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -227,7 +227,7 @@ public:
 	PhysicsShapeQueryResult2D();
 };
 
-class Physics2DTestMotionResult;
+class PhysicsTestMotionResult2D;
 
 class PhysicsServer2D : public Object {
 
@@ -235,7 +235,7 @@ class PhysicsServer2D : public Object {
 
 	static PhysicsServer2D *singleton;
 
-	virtual bool _body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, float p_margin = 0.08, const Ref<Physics2DTestMotionResult> &p_result = Ref<Physics2DTestMotionResult>());
+	virtual bool _body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, float p_margin = 0.08, const Ref<PhysicsTestMotionResult2D> &p_result = Ref<PhysicsTestMotionResult2D>());
 
 protected:
 	static void _bind_methods();
@@ -606,9 +606,9 @@ public:
 	~PhysicsServer2D();
 };
 
-class Physics2DTestMotionResult : public Reference {
+class PhysicsTestMotionResult2D : public Reference {
 
-	GDCLASS(Physics2DTestMotionResult, Reference);
+	GDCLASS(PhysicsTestMotionResult2D, Reference);
 
 	PhysicsServer2D::MotionResult result;
 	bool colliding;
@@ -632,7 +632,7 @@ public:
 	Object *get_collider() const;
 	int get_collider_shape() const;
 
-	Physics2DTestMotionResult();
+	PhysicsTestMotionResult2D();
 };
 
 typedef PhysicsServer2D *(*CreatePhysicsServer2DCallback)();

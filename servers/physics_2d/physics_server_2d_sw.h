@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  physics_2d_server_sw.h                                               */
+/*  physics_server_2d_sw.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -42,8 +42,8 @@ class PhysicsServer2DSW : public PhysicsServer2D {
 
 	GDCLASS(PhysicsServer2DSW, PhysicsServer2D);
 
-	friend class Physics2DDirectSpaceStateSW;
-	friend class Physics2DDirectBodyStateSW;
+	friend class PhysicsDirectSpaceState2DSW;
+	friend class PhysicsDirectBodyState2DSW;
 	bool active;
 	int iterations;
 	bool doing_sync;
@@ -60,7 +60,7 @@ class PhysicsServer2DSW : public PhysicsServer2D {
 	Step2DSW *stepper;
 	Set<const Space2DSW *> active_spaces;
 
-	Physics2DDirectBodyStateSW *direct_state;
+	PhysicsDirectBodyState2DSW *direct_state;
 
 	mutable RID_PtrOwner<Shape2DSW> shape_owner;
 	mutable RID_PtrOwner<Space2DSW> space_owner;

@@ -70,7 +70,7 @@
 
 ShaderTypes *shader_types = NULL;
 
-PhysicsServer3D *_createGodotPhysicsCallback() {
+PhysicsServer3D *_createGodotPhysics3DCallback() {
 	return memnew(PhysicsServer3DSW);
 }
 
@@ -162,7 +162,7 @@ void register_server_types() {
 	ClassDB::register_virtual_class<PhysicsDirectBodyState2D>();
 	ClassDB::register_virtual_class<PhysicsDirectSpaceState2D>();
 	ClassDB::register_virtual_class<PhysicsShapeQueryResult2D>();
-	ClassDB::register_class<Physics2DTestMotionResult>();
+	ClassDB::register_class<PhysicsTestMotionResult2D>();
 	ClassDB::register_class<PhysicsShapeQueryParameters2D>();
 
 	ClassDB::register_class<PhysicsShapeQueryParameters3D>();
@@ -181,7 +181,7 @@ void register_server_types() {
 	GLOBAL_DEF(PhysicsServer3DManager::setting_property_name, "DEFAULT");
 	ProjectSettings::get_singleton()->set_custom_property_info(PhysicsServer3DManager::setting_property_name, PropertyInfo(Variant::STRING, PhysicsServer3DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"));
 
-	PhysicsServer3DManager::register_server("GodotPhysics", &_createGodotPhysicsCallback);
+	PhysicsServer3DManager::register_server("GodotPhysics", &_createGodotPhysics3DCallback);
 	PhysicsServer3DManager::set_default_server("GodotPhysics");
 }
 

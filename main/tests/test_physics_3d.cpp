@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_physics.cpp                                                     */
+/*  test_physics_3d.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "test_physics.h"
+#include "test_physics_3d.h"
 
 #include "core/map.h"
 #include "core/math/math_funcs.h"
@@ -40,9 +40,9 @@
 #include "servers/physics_server_3d.h"
 #include "servers/rendering_server.h"
 
-class TestPhysicsMainLoop : public MainLoop {
+class TestPhysics3DMainLoop : public MainLoop {
 
-	GDCLASS(TestPhysicsMainLoop, MainLoop);
+	GDCLASS(TestPhysics3DMainLoop, MainLoop);
 
 	enum {
 		LINK_COUNT = 20,
@@ -81,7 +81,7 @@ class TestPhysicsMainLoop : public MainLoop {
 protected:
 	static void _bind_methods() {
 
-		ClassDB::bind_method("body_changed_transform", &TestPhysicsMainLoop::body_changed_transform);
+		ClassDB::bind_method("body_changed_transform", &TestPhysics3DMainLoop::body_changed_transform);
 	}
 
 	RID create_body(PhysicsServer3D::ShapeType p_shape, PhysicsServer3D::BodyMode p_body, const Transform p_location, bool p_active_default = true, const Transform &p_shape_xform = Transform()) {
@@ -426,14 +426,14 @@ public:
 		return false;
 	}
 
-	TestPhysicsMainLoop() {
+	TestPhysics3DMainLoop() {
 	}
 };
 
-namespace TestPhysics {
+namespace TestPhysics3D {
 
 MainLoop *test() {
 
-	return memnew(TestPhysicsMainLoop);
+	return memnew(TestPhysics3DMainLoop);
 }
-} // namespace TestPhysics
+} // namespace TestPhysics3D

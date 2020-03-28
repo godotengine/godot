@@ -789,7 +789,20 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("Path", "Path3D");
 	ClassDB::add_compatibility_class("PathFollow", "PathFollow3D");
 	ClassDB::add_compatibility_class("PhysicalBone", "PhysicalBone3D");
+	ClassDB::add_compatibility_class("Physics2DDirectBodyStateSW", "PhysicsDirectBodyState2DSW");
+	ClassDB::add_compatibility_class("Physics2DDirectBodyState", "PhysicsDirectBodyState2D");
+	ClassDB::add_compatibility_class("Physics2DDirectSpaceState", "PhysicsDirectSpaceState2D");
+	ClassDB::add_compatibility_class("Physics2DServerSW", "PhysicsServer2DSW");
+	ClassDB::add_compatibility_class("Physics2DServer", "PhysicsServer2D");
+	ClassDB::add_compatibility_class("Physics2DShapeQueryParameters", "PhysicsShapeQueryParameters2D");
+	ClassDB::add_compatibility_class("Physics2DShapeQueryResult", "PhysicsShapeQueryResult2D");
+	ClassDB::add_compatibility_class("Physics2DTestMotionResult", "PhysicsTestMotionResult2D");
 	ClassDB::add_compatibility_class("PhysicsBody", "PhysicsBody3D");
+	ClassDB::add_compatibility_class("PhysicsDirectBodyState", "PhysicsDirectBodyState3D");
+	ClassDB::add_compatibility_class("PhysicsDirectSpaceState", "PhysicsDirectSpaceState3D");
+	ClassDB::add_compatibility_class("PhysicsServer", "PhysicsServer3D");
+	ClassDB::add_compatibility_class("PhysicsShapeQueryParameters", "PhysicsShapeQueryParameters3D");
+	ClassDB::add_compatibility_class("PhysicsShapeQueryResult", "PhysicsShapeQueryResult3D");
 	ClassDB::add_compatibility_class("PinJoint", "PinJoint3D");
 	ClassDB::add_compatibility_class("PlaneShape", "WorldMarginShape3D");
 	ClassDB::add_compatibility_class("ProximityGroup", "ProximityGroup3D");
@@ -814,6 +827,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VehicleWheel", "VehicleWheel3D");
 	ClassDB::add_compatibility_class("VisibilityEnabler", "VisibilityEnabler3D");
 	ClassDB::add_compatibility_class("VisibilityNotifier", "VisibilityNotifier3D");
+	ClassDB::add_compatibility_class("VisualServer", "RenderingServer");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarConstant", "VisualShaderNodeFloatConstant");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarFunc", "VisualShaderNodeFloatFunc");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarOp", "VisualShaderNodeFloatOp");

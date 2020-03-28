@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  physics_2d_server.cpp                                                */
+/*  physics_server_2d.cpp                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -458,56 +458,56 @@ void PhysicsShapeQueryResult2D::_bind_methods() {
 
 ///////////////////////////////
 
-Vector2 Physics2DTestMotionResult::get_motion() const {
+Vector2 PhysicsTestMotionResult2D::get_motion() const {
 
 	return result.motion;
 }
-Vector2 Physics2DTestMotionResult::get_motion_remainder() const {
+Vector2 PhysicsTestMotionResult2D::get_motion_remainder() const {
 
 	return result.remainder;
 }
 
-Vector2 Physics2DTestMotionResult::get_collision_point() const {
+Vector2 PhysicsTestMotionResult2D::get_collision_point() const {
 
 	return result.collision_point;
 }
-Vector2 Physics2DTestMotionResult::get_collision_normal() const {
+Vector2 PhysicsTestMotionResult2D::get_collision_normal() const {
 
 	return result.collision_normal;
 }
-Vector2 Physics2DTestMotionResult::get_collider_velocity() const {
+Vector2 PhysicsTestMotionResult2D::get_collider_velocity() const {
 
 	return result.collider_velocity;
 }
-ObjectID Physics2DTestMotionResult::get_collider_id() const {
+ObjectID PhysicsTestMotionResult2D::get_collider_id() const {
 
 	return result.collider_id;
 }
-RID Physics2DTestMotionResult::get_collider_rid() const {
+RID PhysicsTestMotionResult2D::get_collider_rid() const {
 
 	return result.collider;
 }
 
-Object *Physics2DTestMotionResult::get_collider() const {
+Object *PhysicsTestMotionResult2D::get_collider() const {
 	return ObjectDB::get_instance(result.collider_id);
 }
 
-int Physics2DTestMotionResult::get_collider_shape() const {
+int PhysicsTestMotionResult2D::get_collider_shape() const {
 
 	return result.collider_shape;
 }
 
-void Physics2DTestMotionResult::_bind_methods() {
+void PhysicsTestMotionResult2D::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("get_motion"), &Physics2DTestMotionResult::get_motion);
-	ClassDB::bind_method(D_METHOD("get_motion_remainder"), &Physics2DTestMotionResult::get_motion_remainder);
-	ClassDB::bind_method(D_METHOD("get_collision_point"), &Physics2DTestMotionResult::get_collision_point);
-	ClassDB::bind_method(D_METHOD("get_collision_normal"), &Physics2DTestMotionResult::get_collision_normal);
-	ClassDB::bind_method(D_METHOD("get_collider_velocity"), &Physics2DTestMotionResult::get_collider_velocity);
-	ClassDB::bind_method(D_METHOD("get_collider_id"), &Physics2DTestMotionResult::get_collider_id);
-	ClassDB::bind_method(D_METHOD("get_collider_rid"), &Physics2DTestMotionResult::get_collider_rid);
-	ClassDB::bind_method(D_METHOD("get_collider"), &Physics2DTestMotionResult::get_collider);
-	ClassDB::bind_method(D_METHOD("get_collider_shape"), &Physics2DTestMotionResult::get_collider_shape);
+	ClassDB::bind_method(D_METHOD("get_motion"), &PhysicsTestMotionResult2D::get_motion);
+	ClassDB::bind_method(D_METHOD("get_motion_remainder"), &PhysicsTestMotionResult2D::get_motion_remainder);
+	ClassDB::bind_method(D_METHOD("get_collision_point"), &PhysicsTestMotionResult2D::get_collision_point);
+	ClassDB::bind_method(D_METHOD("get_collision_normal"), &PhysicsTestMotionResult2D::get_collision_normal);
+	ClassDB::bind_method(D_METHOD("get_collider_velocity"), &PhysicsTestMotionResult2D::get_collider_velocity);
+	ClassDB::bind_method(D_METHOD("get_collider_id"), &PhysicsTestMotionResult2D::get_collider_id);
+	ClassDB::bind_method(D_METHOD("get_collider_rid"), &PhysicsTestMotionResult2D::get_collider_rid);
+	ClassDB::bind_method(D_METHOD("get_collider"), &PhysicsTestMotionResult2D::get_collider);
+	ClassDB::bind_method(D_METHOD("get_collider_shape"), &PhysicsTestMotionResult2D::get_collider_shape);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion"), "", "get_motion");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion_remainder"), "", "get_motion_remainder");
@@ -520,7 +520,7 @@ void Physics2DTestMotionResult::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_shape"), "", "get_collider_shape");
 }
 
-Physics2DTestMotionResult::Physics2DTestMotionResult() {
+PhysicsTestMotionResult2D::PhysicsTestMotionResult2D() {
 
 	colliding = false;
 
@@ -529,7 +529,7 @@ Physics2DTestMotionResult::Physics2DTestMotionResult() {
 
 ///////////////////////////////////////
 
-bool PhysicsServer2D::_body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, float p_margin, const Ref<Physics2DTestMotionResult> &p_result) {
+bool PhysicsServer2D::_body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, float p_margin, const Ref<PhysicsTestMotionResult2D> &p_result) {
 
 	MotionResult *r = NULL;
 	if (p_result.is_valid())
