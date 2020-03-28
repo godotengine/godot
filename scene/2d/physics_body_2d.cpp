@@ -373,7 +373,7 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 #ifdef DEBUG_ENABLED
 	state = Object::cast_to<PhysicsDirectBodyState2D>(p_state);
 #else
-	state = (Physics2DDirectBodyState *)p_state; //trust it
+	state = (PhysicsDirectBodyState2D *)p_state; //trust it
 #endif
 
 	set_block_transform_notify(true); // don't want notify (would feedback loop)

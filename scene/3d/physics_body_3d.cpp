@@ -374,7 +374,7 @@ void RigidBody3D::_direct_state_changed(Object *p_state) {
 #ifdef DEBUG_ENABLED
 	state = Object::cast_to<PhysicsDirectBodyState3D>(p_state);
 #else
-	state = (PhysicsDirectBodyState *)p_state; //trust it
+	state = (PhysicsDirectBodyState3D *)p_state; //trust it
 #endif
 
 	set_ignore_transform_notification(true);
@@ -1300,7 +1300,7 @@ void KinematicBody3D::_direct_state_changed(Object *p_state) {
 #ifdef DEBUG_ENABLED
 	PhysicsDirectBodyState3D *state = Object::cast_to<PhysicsDirectBodyState3D>(p_state);
 #else
-	PhysicsDirectBodyState *state = (PhysicsDirectBodyState *)p_state; //trust it
+	PhysicsDirectBodyState3D *state = (PhysicsDirectBodyState3D *)p_state; //trust it
 #endif
 
 	linear_velocity = state->get_linear_velocity();
@@ -2106,7 +2106,7 @@ void PhysicalBone3D::_direct_state_changed(Object *p_state) {
 #ifdef DEBUG_ENABLED
 	state = Object::cast_to<PhysicsDirectBodyState3D>(p_state);
 #else
-	state = (PhysicsDirectBodyState *)p_state; //trust it
+	state = (PhysicsDirectBodyState3D *)p_state; //trust it
 #endif
 
 	Transform global_transform(state->get_transform());

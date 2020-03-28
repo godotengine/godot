@@ -50,7 +50,7 @@
 #endif
 
 #if defined(VULKAN_ENABLED)
-#include "servers/visual/rasterizer_rd/rasterizer_rd.h"
+#include "servers/rendering/rasterizer_rd/rasterizer_rd.h"
 
 #include <QuartzCore/CAMetalLayer.h>
 #endif
