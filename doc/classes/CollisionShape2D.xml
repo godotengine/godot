@@ -14,9 +14,13 @@
 	<members>
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false">
 			A disabled collision shape has no effect in the world.
+			Note: If you attempt to change this value during physics processing, it will fail with the following error: "Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead". Use [method]Object.set_deferred[/method] instead.
+			[codeblock]
+				$CollisionShape2D.set_deferred("disabled", false)
+			[/codeblock]
 		</member>
 		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled" default="false">
-			Sets whether this collision shape should only detect collision on one side (top or bottom).
+			If [code]true[/code], the shape only detects collisions on one side (top or bottom).
 		</member>
 		<member name="one_way_collision_margin" type="float" setter="set_one_way_collision_margin" getter="get_one_way_collision_margin" default="1.0">
 			The margin used for one-way collision (in pixels). Higher values will make the shape thicker, and work better for colliders that enter the shape at a high velocity.
