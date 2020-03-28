@@ -1093,6 +1093,7 @@ bool DisplayServerWindows::can_any_window_draw() const {
 	_THREAD_SAFE_METHOD_
 
 	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+		if (E->key() == INVALID_WINDOW_ID) continue;
 		if (!E->get().minimized) {
 			return true;
 		}

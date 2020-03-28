@@ -745,6 +745,8 @@ VkRenderPass VulkanContext::window_get_render_pass(DisplayServer::WindowID p_win
 VkFramebuffer VulkanContext::window_get_framebuffer(DisplayServer::WindowID p_window) {
 	ERR_FAIL_COND_V(!windows.has(p_window), VK_NULL_HANDLE);
 	ERR_FAIL_COND_V(!buffers_prepared, VK_NULL_HANDLE);
+	ERR_FAIL_COND_V(!windows[p_window].swapchain_image_resources, VK_NULL_HANDLE);
+
 	Window *w = &windows[p_window];
 	//vulkan use of currentbuffer
 	return w->swapchain_image_resources[w->current_buffer].framebuffer;
@@ -1215,11 +1217,11 @@ Error VulkanContext::prepare_buffers() {
 
 		Window *w = &E->get();
 
-		if (w->swapchain == VK_NULL_HANDLE) {
-			continue;
-		}
-
 		do {
+
+			if (w->swapchain == VK_NULL_HANDLE) {
+				break;
+			}
 			// Get the index of the next available swapchain image:
 			err =
 					fpAcquireNextImageKHR(device, w->swapchain, UINT64_MAX,

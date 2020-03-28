@@ -5195,6 +5195,7 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin_for_screen(Di
 
 	ERR_FAIL_COND_V_MSG(draw_list != NULL, INVALID_ID, "Only one draw list can be active at the same time.");
 	ERR_FAIL_COND_V_MSG(compute_list != NULL, INVALID_ID, "Only one draw/compute list can be active at the same time.");
+	ERR_FAIL_COND_V_MSG(context->window_get_framebuffer(p_screen) == NULL, INVALID_ID, "Window frame buffer was NULL (window might be minimized).");
 
 	VkCommandBuffer command_buffer = frames[frame].draw_command_buffer;
 	draw_list = memnew(DrawList);
