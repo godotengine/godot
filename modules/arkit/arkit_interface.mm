@@ -31,7 +31,7 @@
 #include "core/input/input_filter.h"
 #include "core/os/os.h"
 #include "scene/resources/surface_tool.h"
-#include "servers/visual/visual_server_globals.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 #import <ARKit/ARKit.h>
 #import <UIKit/UIKit.h>
