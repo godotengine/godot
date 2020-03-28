@@ -1723,7 +1723,9 @@ bool Main::start() {
 		}
 #endif
 
-		if (single_window) {
+		bool embed_subwindows = GLOBAL_DEF("display/window/subwindows/embed_subwindows", false);
+
+		if (single_window || (!project_manager && !editor && embed_subwindows)) {
 			sml->get_root()->set_embed_subwindows_hint(true);
 		}
 		ResourceLoader::add_custom_loaders();
@@ -1941,6 +1943,12 @@ bool Main::start() {
 
 #ifdef TOOLS_ENABLED
 			if (editor) {
+
+				bool editor_embed_subwindows = EditorSettings::get_singleton()->get_setting("interface/editor/single_window_mode");
+
+				if (editor_embed_subwindows) {
+					sml->get_root()->set_embed_subwindows_hint(true);
+				}
 
 				if (game_path != GLOBAL_GET("application/run/main_scene") || !editor_node->has_scenes_in_session()) {
 					Error serr = editor_node->load_scene(local_game_path);
