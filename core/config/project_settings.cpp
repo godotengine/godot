@@ -1232,6 +1232,8 @@ ProjectSettings::ProjectSettings() {
 
 	GLOBAL_DEF("debug/settings/profiler/max_functions", 16384);
 	custom_prop_info["debug/settings/profiler/max_functions"] = PropertyInfo(Variant::INT, "debug/settings/profiler/max_functions", PROPERTY_HINT_RANGE, "128,65535,1");
+	GLOBAL_DEF("debug/settings/warnings/invalid_scale_set", true);
+	custom_prop_info["debug/settings/warnings/invalid_scale_set"] = PropertyInfo(Variant::BOOL, "debug/settings/warnings/invalid_scale_set");
 
 	GLOBAL_DEF("compression/formats/zstd/long_distance_matching", Compression::zstd_long_distance_matching);
 	custom_prop_info["compression/formats/zstd/long_distance_matching"] = PropertyInfo(Variant::BOOL, "compression/formats/zstd/long_distance_matching");

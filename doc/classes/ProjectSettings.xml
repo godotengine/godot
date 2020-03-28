@@ -479,6 +479,9 @@
 		<member name="debug/settings/visual_script/max_call_stack" type="int" setter="" getter="" default="1024">
 			Maximum call stack in visual scripting, to avoid infinite recursion.
 		</member>
+		<member name="debug/settings/warnings/invalid_scale_set" type="bool" setter="" getter="" default="true">
+			Negative X scales in 2D are not decomposable from the transformation matrix and are often not desired. If enabled, a warning will be displayed when the X scale set to a negative value.
+		</member>
 		<member name="debug/shapes/collision/contact_color" type="Color" setter="" getter="" default="Color(1, 0.2, 0.1, 0.8)">
 			Color of the contact points between collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
