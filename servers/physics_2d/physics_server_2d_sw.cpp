@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  physics_2d_server_sw.cpp                                             */
+/*  physics_server_2d_sw.cpp                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "physics_server_2d_sw.h"
+
 #include "broad_phase_2d_basic.h"
 #include "broad_phase_2d_hash_grid.h"
 #include "collision_solver_2d_sw.h"
@@ -1321,7 +1322,7 @@ void PhysicsServer2DSW::init() {
 	last_step = 0.001;
 	iterations = 8; // 8?
 	stepper = memnew(Step2DSW);
-	direct_state = memnew(Physics2DDirectBodyStateSW);
+	direct_state = memnew(PhysicsDirectBodyState2DSW);
 };
 
 void PhysicsServer2DSW::step(real_t p_step) {
@@ -1334,7 +1335,7 @@ void PhysicsServer2DSW::step(real_t p_step) {
 	doing_sync = false;
 
 	last_step = p_step;
-	Physics2DDirectBodyStateSW::singleton->step = p_step;
+	PhysicsDirectBodyState2DSW::singleton->step = p_step;
 	island_count = 0;
 	active_objects = 0;
 	collision_pairs = 0;

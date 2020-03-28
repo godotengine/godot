@@ -132,7 +132,7 @@ class Body2DSW : public CollisionObject2DSW {
 
 	_FORCE_INLINE_ void _compute_area_gravity_and_dampenings(const Area2DSW *p_area);
 
-	friend class Physics2DDirectBodyStateSW; // i give up, too many functions to expose
+	friend class PhysicsDirectBodyState2DSW; // i give up, too many functions to expose
 
 public:
 	void set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata = Variant());
@@ -341,12 +341,12 @@ void Body2DSW::add_contact(const Vector2 &p_local_pos, const Vector2 &p_local_no
 	c[idx].collider_velocity_at_pos = p_collider_velocity_at_pos;
 }
 
-class Physics2DDirectBodyStateSW : public PhysicsDirectBodyState2D {
+class PhysicsDirectBodyState2DSW : public PhysicsDirectBodyState2D {
 
-	GDCLASS(Physics2DDirectBodyStateSW, PhysicsDirectBodyState2D);
+	GDCLASS(PhysicsDirectBodyState2DSW, PhysicsDirectBodyState2D);
 
 public:
-	static Physics2DDirectBodyStateSW *singleton;
+	static PhysicsDirectBodyState2DSW *singleton;
 	Body2DSW *body;
 	real_t step;
 
@@ -417,7 +417,7 @@ public:
 	virtual PhysicsDirectSpaceState2D *get_space_state();
 
 	virtual real_t get_step() const { return step; }
-	Physics2DDirectBodyStateSW() {
+	PhysicsDirectBodyState2DSW() {
 		singleton = this;
 		body = NULL;
 	}

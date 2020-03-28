@@ -601,7 +601,7 @@ void Body2DSW::call_queries() {
 
 	if (fi_callback) {
 
-		Physics2DDirectBodyStateSW *dbs = Physics2DDirectBodyStateSW::singleton;
+		PhysicsDirectBodyState2DSW *dbs = PhysicsDirectBodyState2DSW::singleton;
 		dbs->body = this;
 
 		Variant v = dbs;
@@ -706,14 +706,14 @@ Body2DSW::~Body2DSW() {
 		memdelete(fi_callback);
 }
 
-Physics2DDirectBodyStateSW *Physics2DDirectBodyStateSW::singleton = NULL;
+PhysicsDirectBodyState2DSW *PhysicsDirectBodyState2DSW::singleton = NULL;
 
-PhysicsDirectSpaceState2D *Physics2DDirectBodyStateSW::get_space_state() {
+PhysicsDirectSpaceState2D *PhysicsDirectBodyState2DSW::get_space_state() {
 
 	return body->get_space()->get_direct_state();
 }
 
-Variant Physics2DDirectBodyStateSW::get_contact_collider_shape_metadata(int p_contact_idx) const {
+Variant PhysicsDirectBodyState2DSW::get_contact_collider_shape_metadata(int p_contact_idx) const {
 
 	ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Variant());
 
