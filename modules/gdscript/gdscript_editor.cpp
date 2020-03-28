@@ -1425,6 +1425,7 @@ static bool _guess_identifier_type_from_base(GDScriptCompletionContext &p_contex
 									// Variable used in the same expression
 									return false;
 								}
+
 								if (_guess_expression_type(p_context, m.expression, r_type)) {
 									return true;
 								}
@@ -3482,6 +3483,17 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 			GDScriptParser::DataType base_type = context._class->base_type;
 
 			if (_lookup_symbol_from_base(base_type, p_symbol, true, r_result) == OK) {
+				return OK;
+			}
+		} break;
+		case GDScriptParser::COMPLETION_TYPE_HINT: {
+
+			GDScriptParser::DataType base_type = context._class->base_type;
+			base_type.has_type = true;
+			base_type.kind = GDScriptParser::DataType::CLASS;
+			base_type.class_type = const_cast<GDScriptParser::ClassNode *>(context._class);
+
+			if (_lookup_symbol_from_base(base_type, p_symbol, false, r_result) == OK) {
 				return OK;
 			}
 		} break;
