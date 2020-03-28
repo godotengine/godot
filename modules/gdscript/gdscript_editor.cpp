@@ -3490,6 +3490,17 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 				return OK;
 			}
 		} break;
+		case GDScriptParser::COMPLETION_TYPE_HINT: {
+
+			GDScriptParser::DataType base_type = context._class->base_type;
+			base_type.has_type = true;
+			base_type.kind = GDScriptParser::DataType::CLASS;
+			base_type.class_type = const_cast<GDScriptParser::ClassNode *>(context._class);
+
+			if (_lookup_symbol_from_base(base_type, p_symbol, false, r_result) == OK) {
+				return OK;
+			}
+		} break;
 		default: {
 		}
 	}

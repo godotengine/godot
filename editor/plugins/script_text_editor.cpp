@@ -970,7 +970,33 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 				emit_signal("go_to_help", "class_global:" + result.class_name + ":" + result.class_member);
 			} break;
 		}
+	} else if (ProjectSettings::get_singleton()->has_setting("autoload/" + p_symbol)) {
+		//check for Autoload scenes
+		String path = ProjectSettings::get_singleton()->get("autoload/" + p_symbol);
+		if (path.begins_with("*")) {
+			path = path.substr(1, path.length());
+			EditorNode::get_singleton()->load_scene(path);
+		}
+	} else if (p_symbol.is_rel_path()) {
+		// Every symbol other than absolute path is relative path so keep this condition at last.
+		String path = _get_absolute_path(p_symbol);
+		if (FileAccess::exists(path)) {
+			List<String> scene_extensions;
+			ResourceLoader::get_recognized_extensions_for_type("PackedScene", &scene_extensions);
+
+			if (scene_extensions.find(path.get_extension())) {
+				EditorNode::get_singleton()->load_scene(path);
+			} else {
+				EditorNode::get_singleton()->load_resource(path);
+			}
+		}
 	}
+}
+
+String ScriptTextEditor::_get_absolute_path(const String &rel_path) {
+	String base_path = script->get_path().get_base_dir();
+	String path = base_path.plus_file(rel_path);
+	return path.replace("///", "//").simplify_path();
 }
 
 void ScriptTextEditor::update_toggle_scripts_button() {
