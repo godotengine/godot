@@ -1131,47 +1131,6 @@ double AudioServer::get_time_since_last_mix() const {
 
 AudioServer *AudioServer::singleton = NULL;
 
-void *AudioServer::audio_data_alloc(uint32_t p_data_len, const uint8_t *p_from_data) {
-
-	void *ad = memalloc(p_data_len);
-	ERR_FAIL_COND_V(!ad, NULL);
-	if (p_from_data) {
-		copymem(ad, p_from_data, p_data_len);
-	}
-
-	{
-		MutexLock lock(audio_data_lock);
-
-		audio_data[ad] = p_data_len;
-		audio_data_total_mem += p_data_len;
-		audio_data_max_mem = MAX(audio_data_total_mem, audio_data_max_mem);
-	}
-
-	return ad;
-}
-
-void AudioServer::audio_data_free(void *p_data) {
-
-	MutexLock lock(audio_data_lock);
-
-	if (!audio_data.has(p_data)) {
-		ERR_FAIL();
-	}
-
-	audio_data_total_mem -= audio_data[p_data];
-	audio_data.erase(p_data);
-	memfree(p_data);
-}
-
-size_t AudioServer::audio_data_get_total_memory_usage() const {
-
-	return audio_data_total_mem;
-}
-size_t AudioServer::audio_data_get_max_memory_usage() const {
-
-	return audio_data_max_mem;
-}
-
 void AudioServer::add_callback(AudioCallback p_callback, void *p_userdata) {
 	lock();
 	CallbackItem ci;
@@ -1400,8 +1359,6 @@ void AudioServer::_bind_methods() {
 AudioServer::AudioServer() {
 
 	singleton = this;
-	audio_data_total_mem = 0;
-	audio_data_max_mem = 0;
 	mix_frames = 0;
 	channel_count = 0;
 	to_mix = 0;
