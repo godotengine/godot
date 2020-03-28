@@ -29,9 +29,11 @@
 /*************************************************************************/
 
 #include "rasterizer_effects_rd.h"
+
 #include "core/os/os.h"
 #include "core/project_settings.h"
-#include "cubemap_coeffs.h"
+
+#include "thirdparty/misc/cubemap_coeffs.h"
 
 static _FORCE_INLINE_ void store_transform_3x3(const Basis &p_basis, float *p_array) {
 	p_array[0] = p_basis.elements[0][0];
