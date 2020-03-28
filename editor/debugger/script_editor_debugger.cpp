@@ -881,6 +881,7 @@ void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 	tabs->set_current_tab(0);
 	_set_reason_text(TTR("Debug session started."), MESSAGE_SUCCESS);
 	_update_buttons_state();
+	export_csv->set_disabled(true);
 }
 
 void ScriptEditorDebugger::_update_buttons_state() {
@@ -925,6 +926,7 @@ void ScriptEditorDebugger::stop() {
 
 	inspector->edit(NULL);
 	_update_buttons_state();
+	export_csv->set_disabled(false);
 }
 
 void ScriptEditorDebugger::_profiler_activate(bool p_enable, int p_type) {
