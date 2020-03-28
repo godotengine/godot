@@ -5070,6 +5070,10 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 				p_block->variables[name] = var;
 
 				if (tk.type == TK_COMMA) {
+					if (p_block->block_type == BlockNode::BLOCK_TYPE_FOR) {
+						_set_error("Multiple declarations in 'for' loop are not implemented yet.");
+						return ERR_PARSE_ERROR;
+					}
 					tk = _get_token();
 					//another variable
 				} else if (tk.type == TK_SEMICOLON) {
@@ -5394,6 +5398,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			cf->flow_op = FLOW_OP_FOR;
 
 			BlockNode *init_block = alloc_node<BlockNode>();
+			init_block->block_type = BlockNode::BLOCK_TYPE_FOR;
 			init_block->parent_block = p_block;
 			init_block->single_statement = true;
 			cf->blocks.push_back(init_block);
