@@ -1052,6 +1052,7 @@ void EditorHelp::_update_doc() {
 				class_desc->pop(); // color
 				class_desc->pop(); // font
 				class_desc->pop(); // cell
+				method_line[cd.properties[i].setter] = property_line[cd.properties[i].name];
 			}
 
 			if (cd.properties[i].getter != "") {
@@ -1069,6 +1070,7 @@ void EditorHelp::_update_doc() {
 				class_desc->pop(); //color
 				class_desc->pop(); //font
 				class_desc->pop(); //cell
+				method_line[cd.properties[i].getter] = property_line[cd.properties[i].name];
 			}
 
 			class_desc->pop(); // table
