@@ -3113,7 +3113,6 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 								}
 							} else {
 								constant = false;
-								break;
 							}
 						}
 
