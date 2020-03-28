@@ -426,6 +426,9 @@
 		<member name="display/window/ios/hide_home_indicator" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the home indicator is hidden automatically. This only affects iOS devices without a physical home button.
 		</member>
+		<member name="display/window/subwindows/embed_subwindows" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], uses subwindows (windows rendered entirely by engine) instead of OS-specific windows.
+		</member>
 		<member name="display/window/size/always_on_top" type="bool" setter="" getter="" default="false">
 			Force the window to be always on top.
 		</member>
