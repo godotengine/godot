@@ -30,7 +30,6 @@
 
 package org.godotengine.godot.input;
 
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import org.godotengine.godot.GodotLib;
@@ -53,32 +52,15 @@ public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener
 	}
 
 	@Override
-	public boolean onDown(MotionEvent event) {
-		super.onDown(event);
-		//Log.i("GodotGesture", "onDown");
-		return true;
-	}
-
-	@Override
-	public boolean onSingleTapConfirmed(MotionEvent event) {
-		super.onSingleTapConfirmed(event);
-		return true;
-	}
-
-	@Override
-	public void onLongPress(MotionEvent event) {
-		//Log.i("GodotGesture", "onLongPress");
-	}
-
-	@Override
 	public boolean onDoubleTap(MotionEvent event) {
-		//Log.i("GodotGesture", "onDoubleTap");
 		final int x = Math.round(event.getX());
 		final int y = Math.round(event.getY());
+		final int toolType = event.getToolType(0);
+		final int buttonState = event.getButtonState();
 		queueEvent(new Runnable() {
 			@Override
 			public void run() {
-				GodotLib.doubletap(x, y);
+				GodotLib.doubleTap(toolType, buttonState, x, y);
 			}
 		});
 		return true;
@@ -86,21 +68,19 @@ public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener
 
 	@Override
 	public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-		//Log.i("GodotGesture", "onScroll");
-		final int x = Math.round(distanceX);
-		final int y = Math.round(distanceY);
+		final int toolType = e1.getToolType(0);
+		final int startX = Math.round(e1.getX());
+		final int startY = Math.round(e1.getY());
+		final int endX = Math.round(e2.getX());
+		final int endY = Math.round(e2.getY());
+		final int xScroll = Math.round(distanceX);
+		final int yScroll = Math.round(distanceY);
 		queueEvent(new Runnable() {
 			@Override
 			public void run() {
-				GodotLib.scroll(x, y);
+				GodotLib.scroll(toolType, startX, startY, endX, endY, xScroll, yScroll);
 			}
 		});
-		return true;
-	}
-
-	@Override
-	public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
-		//Log.i("GodotGesture", "onFling");
 		return true;
 	}
 }

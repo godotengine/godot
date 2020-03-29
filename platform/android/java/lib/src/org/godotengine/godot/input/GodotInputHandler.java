@@ -50,6 +50,36 @@ import org.godotengine.godot.input.InputManagerCompat.InputDeviceListener;
  */
 public class GodotInputHandler implements InputDeviceListener {
 
+	/**
+	 * Size of the array containing information about a `onTouchDown` {@link MotionEvent}'s pointer.
+	 * Must match OS_Android::TOUCH_POINTER_INFO_SIZE.
+	 */
+	private static final int POINTER_INFO_SIZE = 4;
+
+	/**
+	 * Offset in the array to access the pointer's id.
+	 * Must match OS_Android::TOUCH_POINTER_INFO_ID_OFFSET.
+	 */
+	private static final int POINTER_INFO_ID_OFFSET = 0;
+
+	/**
+	 * Offset in the array to access the pointer's X position.
+	 * Must match OS_Android::TOUCH_POINTER_INFO_X_OFFSET.
+	 */
+	private static final int POINTER_INFO_X_OFFSET = 1;
+
+	/**
+	 * Offset in the array to access the pointer's Y position.
+	 * Must match OS_Android::TOUCH_POINTER_INFO_Y_OFFSET.
+	 */
+	private static final int POINTER_INFO_Y_OFFSET = 2;
+
+	/**
+	 * Offset in the array to access the pointer's tool type.
+	 * Must match OS_Android::TOUCH_POINTER_INFO_TOOL_TYPE_OFFSET.
+	 */
+	private static final int POINTER_INFO_TOOL_TYPE_OFFSET = 3;
+
 	private final ArrayList<Joystick> joysticksDevices = new ArrayList<Joystick>();
 
 	private final GodotView godotView;
@@ -163,36 +193,38 @@ public class GodotInputHandler implements InputDeviceListener {
 			return true;
 
 		if (godotView != null) {
-			final int[] pointerIdAndPositions = new int[pointerCount * 3];
+			final int[] pointersInfo = new int[pointerCount * POINTER_INFO_SIZE];
 
 			for (int i = 0; i < pointerCount; i++) {
 
-				pointerIdAndPositions[i * 3 + 0] = (int)event.getPointerId(i);
-				pointerIdAndPositions[i * 3 + 1] = (int)event.getX(i);
-				pointerIdAndPositions[i * 3 + 2] = (int)event.getY(i);
+				pointersInfo[i * POINTER_INFO_SIZE + POINTER_INFO_ID_OFFSET] = (int)event.getPointerId(i);
+				pointersInfo[i * POINTER_INFO_SIZE + POINTER_INFO_X_OFFSET] = (int)event.getX(i);
+				pointersInfo[i * POINTER_INFO_SIZE + POINTER_INFO_Y_OFFSET] = (int)event.getY(i);
+				pointersInfo[i * POINTER_INFO_SIZE + POINTER_INFO_TOOL_TYPE_OFFSET] = event.getToolType(i);
 			}
-			final int pointer_idx = event.getPointerId(event.getActionIndex());
+			final int pointerIndex = event.getPointerId(event.getActionIndex());
 
-			final int action = event.getAction() & MotionEvent.ACTION_MASK;
+			final int action = event.getActionMasked();
+			final int buttonState = event.getButtonState();
 			godotView.queueEvent(new Runnable() {
 				@Override
 				public void run() {
 					switch (action) {
 						case MotionEvent.ACTION_DOWN: {
-							GodotLib.touch(0, 0, pointerCount, pointerIdAndPositions);
+							GodotLib.touch(buttonState, 0, 0, pointerCount, pointersInfo);
 						} break;
 						case MotionEvent.ACTION_MOVE: {
-							GodotLib.touch(1, 0, pointerCount, pointerIdAndPositions);
+							GodotLib.touch(buttonState,1, 0, pointerCount, pointersInfo);
 						} break;
 						case MotionEvent.ACTION_POINTER_UP: {
-							GodotLib.touch(4, pointer_idx, pointerCount, pointerIdAndPositions);
+							GodotLib.touch(buttonState,4, pointerIndex, pointerCount, pointersInfo);
 						} break;
 						case MotionEvent.ACTION_POINTER_DOWN: {
-							GodotLib.touch(3, pointer_idx, pointerCount, pointerIdAndPositions);
+							GodotLib.touch(buttonState,3, pointerIndex, pointerCount, pointersInfo);
 						} break;
 						case MotionEvent.ACTION_CANCEL:
 						case MotionEvent.ACTION_UP: {
-							GodotLib.touch(2, 0, pointerCount, pointerIdAndPositions);
+							GodotLib.touch(buttonState,2, 0, pointerCount, pointersInfo);
 						} break;
 					}
 				}
@@ -231,8 +263,17 @@ public class GodotInputHandler implements InputDeviceListener {
 
 
 	public boolean onGenericMotionEvent(MotionEvent event) {
-		if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK && event.getAction() == MotionEvent.ACTION_MOVE) {
+		if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK) {
+			return handleJoystickEvent(event);
+		} else if ((event.getSource() & InputDevice.SOURCE_STYLUS) == InputDevice.SOURCE_STYLUS) {
+			return handleStylusEvent(event);
+		}
 
+		return false;
+	}
+
+	private boolean handleJoystickEvent(MotionEvent event) {
+		if (event.getAction() == MotionEvent.ACTION_MOVE) {
 			final int device_id = findJoystickDevice(event.getDeviceId());
 
 			// Check if the device exists
@@ -263,20 +304,22 @@ public class GodotInputHandler implements InputDeviceListener {
 				}
 				return true;
 			}
-		} else if ((event.getSource() & InputDevice.SOURCE_STYLUS) == InputDevice.SOURCE_STYLUS) {
-			final int x = Math.round(event.getX());
-			final int y = Math.round(event.getY());
-			final int type = event.getAction();
-			queueEvent(new Runnable() {
-				@Override
-				public void run() {
-					GodotLib.hover(type, x, y);
-				}
-			});
-			return true;
 		}
-
 		return false;
+	}
+
+	private boolean handleStylusEvent(MotionEvent event) {
+		final int x = Math.round(event.getX());
+		final int y = Math.round(event.getY());
+		final int eventType = event.getAction();
+		final int toolType = event.getToolType(0);
+		queueEvent(new Runnable() {
+			@Override
+			public void run() {
+				GodotLib.hover(toolType, eventType, x, y);
+			}
+		});
+		return true;
 	}
 
 	public void initInputDevices() {

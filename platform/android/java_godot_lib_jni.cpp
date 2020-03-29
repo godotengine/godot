@@ -224,49 +224,45 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jcl
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_touch(JNIEnv *env, jclass clazz, jint ev, jint pointer, jint count, jintArray positions) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_touch(JNIEnv *env, jclass clazz, jint button_state, jint event_type, jint pointer_index, jint pointers_count, jintArray j_pointers_info) {
 
 	if (step == 0)
 		return;
 
 	Vector<OS_Android::TouchPos> points;
-	for (int i = 0; i < count; i++) {
+	for (int i = 0; i < pointers_count; i++) {
 
-		jint p[3];
-		env->GetIntArrayRegion(positions, i * 3, 3, p);
-		OS_Android::TouchPos tp;
-		tp.pos = Point2(p[1], p[2]);
-		tp.id = p[0];
-		points.push_back(tp);
+		jint pointer_info[OS_Android::TOUCH_POINTER_INFO_SIZE];
+		env->GetIntArrayRegion(j_pointers_info, i * OS_Android::TOUCH_POINTER_INFO_SIZE, OS_Android::TOUCH_POINTER_INFO_SIZE, pointer_info);
+		OS_Android::TouchPos touch_pos;
+		touch_pos.pos = Point2(pointer_info[OS_Android::TOUCH_POINTER_INFO_X_OFFSET], pointer_info[OS_Android::TOUCH_POINTER_INFO_Y_OFFSET]);
+		touch_pos.id = pointer_info[OS_Android::TOUCH_POINTER_INFO_ID_OFFSET];
+		touch_pos.tool_type = pointer_info[OS_Android::TOUCH_POINTER_INFO_TOOL_TYPE_OFFSET];
+		points.push_back(touch_pos);
 	}
 
-	os_android->process_touch(ev, pointer, points);
-
-	/*
-	if (os_android)
-		os_android->process_touch(ev,pointer,points);
-	*/
+	os_android->process_touch(event_type, pointer_index, points);
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_hover(JNIEnv *env, jclass clazz, jint p_type, jint p_x, jint p_y) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_hover(JNIEnv *env, jclass clazz, jint tool_type, jint event_type, jint p_x, jint p_y) {
 	if (step == 0)
 		return;
 
-	os_android->process_hover(p_type, Point2(p_x, p_y));
+	os_android->process_hover(event_type, Point2(p_x, p_y));
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_doubletap(JNIEnv *env, jclass clazz, jint p_x, jint p_y) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_doubleTap(JNIEnv *env, jclass clazz, jint tool_type, jint button_state, jint p_x, jint p_y) {
 	if (step == 0)
 		return;
 
 	os_android->process_double_tap(Point2(p_x, p_y));
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_scroll(JNIEnv *env, jclass clazz, jint p_x, jint p_y) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_scroll(JNIEnv *env, jclass clazz, jint tool_type, jint start_x, jint start_y, jint end_x, jint end_y, jfloat x_scroll, jfloat y_scroll) {
 	if (step == 0)
 		return;
 
-	os_android->process_scroll(Point2(p_x, p_y));
+	os_android->process_scroll(Point2(x_scroll, y_scroll));
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joybutton(JNIEnv *env, jclass clazz, jint p_device, jint p_button, jboolean p_pressed) {
