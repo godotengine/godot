@@ -46,9 +46,25 @@ class GodotIOJavaWrapper;
 
 class OS_Android : public OS_Unix {
 public:
+	// Touch pointer info constants.
+	// Note: These values must match the one in org.godotengine.godot.input.GodotInputHandler.java
+	enum {
+		// Must match org.godotengine.godot.input.GodotInputHandler#POINTER_INFO_ID_OFFSET
+		TOUCH_POINTER_INFO_ID_OFFSET = 0,
+		// Must match org.godotengine.godot.input.GodotInputHandler#POINTER_INFO_X_OFFSET
+		TOUCH_POINTER_INFO_X_OFFSET = 1,
+		// Must match org.godotengine.godot.input.GodotInputHandler#POINTER_INFO_Y_OFFSET
+		TOUCH_POINTER_INFO_Y_OFFSET = 2,
+		// Must match org.godotengine.godot.input.GodotInputHandler#POINTER_INFO_TOOL_TYPE_OFFSET
+		TOUCH_POINTER_INFO_TOOL_TYPE_OFFSET = 3,
+		// Must match org.godotengine.godot.input.GodotInputHandler#POINTER_INFO_SIZE
+		TOUCH_POINTER_INFO_SIZE = 4
+	};
+
 	struct TouchPos {
 		int id;
 		Point2 pos;
+		int tool_type;
 	};
 
 	enum {
