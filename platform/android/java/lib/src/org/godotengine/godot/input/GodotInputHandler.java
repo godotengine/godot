@@ -267,13 +267,50 @@ public class GodotInputHandler implements InputDeviceListener {
 			return handleJoystickEvent(event);
 		} else if ((event.getSource() & InputDevice.SOURCE_STYLUS) == InputDevice.SOURCE_STYLUS) {
 			return handleStylusEvent(event);
+		} else if ((event.getSource() & InputDevice.SOURCE_MOUSE) == InputDevice.SOURCE_MOUSE) {
+			return handleMouseEvent(event);
 		}
 
 		return false;
 	}
 
+	private boolean handleMouseEvent(final MotionEvent event) {
+		final int eventType = event.getActionMasked();
+		switch(eventType) {
+			case MotionEvent.ACTION_HOVER_ENTER:
+			case MotionEvent.ACTION_HOVER_MOVE:
+			case MotionEvent.ACTION_HOVER_EXIT: {
+				final int toolType = event.getToolType(0);
+				final int x = Math.round(event.getX());
+				final int y = Math.round(event.getY());
+				queueEvent(new Runnable() {
+					@Override
+					public void run() {
+						GodotLib.hover(toolType, eventType, x, y);
+					}
+				});
+				return true;
+			}
+
+			case MotionEvent.ACTION_SCROLL: {
+				final int toolType = event.getToolType(0);
+				final int x = Math.round(event.getX());
+				final int y = Math.round(event.getY());
+				queueEvent(new Runnable() {
+					@Override
+					public void run() {
+						GodotLib.scroll(toolType, x, y, x, y, event.getAxisValue(MotionEvent.AXIS_HSCROLL),
+							event.getAxisValue(MotionEvent.AXIS_VSCROLL));
+					}
+				});
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private boolean handleJoystickEvent(MotionEvent event) {
-		if (event.getAction() == MotionEvent.ACTION_MOVE) {
+		if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
 			final int device_id = findJoystickDevice(event.getDeviceId());
 
 			// Check if the device exists
@@ -311,7 +348,7 @@ public class GodotInputHandler implements InputDeviceListener {
 	private boolean handleStylusEvent(MotionEvent event) {
 		final int x = Math.round(event.getX());
 		final int y = Math.round(event.getY());
-		final int eventType = event.getAction();
+		final int eventType = event.getActionMasked();
 		final int toolType = event.getToolType(0);
 		queueEvent(new Runnable() {
 			@Override
