@@ -38,6 +38,13 @@
 #include "editor/editor_settings.h"
 #include "scene/gui/split_container.h"
 
+void TileMapEditor::_node_removed(Node *p_node) {
+
+	if (p_node == node) {
+		node = NULL;
+	}
+}
+
 void TileMapEditor::_notification(int p_what) {
 
 	switch (p_what) {
@@ -60,6 +67,7 @@ void TileMapEditor::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
+			get_tree()->connect("node_removed", this, "_node_removed");
 			paint_button->set_icon(get_icon("Edit", "EditorIcons"));
 			bucket_fill_button->set_icon(get_icon("Bucket", "EditorIcons"));
 			picker_button->set_icon(get_icon("ColorPick", "EditorIcons"));
@@ -79,6 +87,10 @@ void TileMapEditor::_notification(int p_what) {
 			p->set_item_icon(p->get_item_index(OPTION_COPY), get_icon("Duplicate", "EditorIcons"));
 			p->set_item_icon(p->get_item_index(OPTION_ERASE_SELECTION), get_icon("Remove", "EditorIcons"));
 
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			get_tree()->disconnect("node_removed", this, "_node_removed");
 		} break;
 	}
 }
@@ -1826,6 +1838,7 @@ void TileMapEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_erase_points"), &TileMapEditor::_erase_points);
 
 	ClassDB::bind_method(D_METHOD("_icon_size_changed"), &TileMapEditor::_icon_size_changed);
+	ClassDB::bind_method(D_METHOD("_node_removed"), &TileMapEditor::_node_removed);
 }
 
 TileMapEditor::CellOp TileMapEditor::_get_op_from_cell(const Point2i &p_pos) {
