@@ -157,6 +157,79 @@ public class GodotInputHandler implements InputDeviceListener {
 		return true;
 	}
 
+	public boolean onTouchEvent(MotionEvent event) {
+		final int pointerCount = event.getPointerCount();
+		if (pointerCount == 0)
+			return true;
+
+		if (godotView != null) {
+			final int[] pointerIdAndPositions = new int[pointerCount * 3];
+
+			for (int i = 0; i < pointerCount; i++) {
+
+				pointerIdAndPositions[i * 3 + 0] = (int)event.getPointerId(i);
+				pointerIdAndPositions[i * 3 + 1] = (int)event.getX(i);
+				pointerIdAndPositions[i * 3 + 2] = (int)event.getY(i);
+			}
+			final int pointer_idx = event.getPointerId(event.getActionIndex());
+
+			final int action = event.getAction() & MotionEvent.ACTION_MASK;
+			godotView.queueEvent(new Runnable() {
+				@Override
+				public void run() {
+					switch (action) {
+						case MotionEvent.ACTION_DOWN: {
+							GodotLib.touch(0, 0, pointerCount, pointerIdAndPositions);
+						} break;
+						case MotionEvent.ACTION_MOVE: {
+							GodotLib.touch(1, 0, pointerCount, pointerIdAndPositions);
+						} break;
+						case MotionEvent.ACTION_POINTER_UP: {
+							GodotLib.touch(4, pointer_idx, pointerCount, pointerIdAndPositions);
+						} break;
+						case MotionEvent.ACTION_POINTER_DOWN: {
+							GodotLib.touch(3, pointer_idx, pointerCount, pointerIdAndPositions);
+						} break;
+						case MotionEvent.ACTION_CANCEL:
+						case MotionEvent.ACTION_UP: {
+							GodotLib.touch(2, 0, pointerCount, pointerIdAndPositions);
+						} break;
+					}
+				}
+			});
+		}
+		return true;
+	}
+
+	public boolean onKeyMultiple(final int inKeyCode, int repeatCount, KeyEvent event) {
+		String s = event.getCharacters();
+		if (s == null || s.length() == 0)
+			return false;
+
+		final char[] cc = s.toCharArray();
+		int cnt = 0;
+		for (int i = cc.length -1; i >= 0; i--) {
+			cnt += (cc[i] != 0) ? 1 : 0;
+		}
+
+		if (cnt == 0) return false;
+		godotView.queueEvent(new Runnable() {
+			// This method will be called on the rendering thread:
+			public void run() {
+				for (char c : cc) {
+					int keyCode;
+					if ((keyCode = c) != 0) {
+						// Simulate key down and up...
+						GodotLib.key(0, 0, keyCode, true);
+						GodotLib.key(0, 0, keyCode, false);
+					}
+				}
+			}
+		});
+		return true;
+	}
+
+
 	public boolean onGenericMotionEvent(MotionEvent event) {
 		if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK && event.getAction() == MotionEvent.ACTION_MOVE) {
 

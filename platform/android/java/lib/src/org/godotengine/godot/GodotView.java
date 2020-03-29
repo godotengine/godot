@@ -94,7 +94,12 @@ public class GodotView extends GLSurfaceView {
 	public boolean onTouchEvent(MotionEvent event) {
 		super.onTouchEvent(event);
 		this.detector.onTouchEvent(event);
-		return activity.gotTouchEvent(event);
+		return inputHandler.onTouchEvent(event);
+	}
+
+	@Override
+	public boolean onKeyMultiple(final int inKeyCode, int repeatCount, KeyEvent event) {
+		return inputHandler.onKeyMultiple(inKeyCode, repeatCount, event) || super.onKeyMultiple(inKeyCode, repeatCount, event);
 	}
 
 	@Override
