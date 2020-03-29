@@ -1404,6 +1404,8 @@ void ProjectList::create_project_item_control(int p_index) {
 	Button *show = memnew(Button);
 	// Display a folder icon if the project directory can be opened, or a "broken file" icon if it can't
 	show->set_icon(get_theme_icon(!item.missing ? "Load" : "FileBroken", "EditorIcons"));
+	// Use a pointing hand cursor to make it more obvious that the button is clickable.
+	show->set_default_cursor_shape(Control::CURSOR_POINTING_HAND);
 	show->set_flat(true);
 	if (!item.grayed) {
 		// Don't make the icon less prominent if the parent is already grayed out
