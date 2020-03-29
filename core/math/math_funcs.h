@@ -291,18 +291,6 @@ public:
 	static float random(float from, float to);
 	static real_t random(int from, int to) { return (real_t)random((real_t)from, (real_t)to); }
 
-	static _ALWAYS_INLINE_ bool is_equal_approx_ratio(real_t a, real_t b, real_t epsilon = CMP_EPSILON, real_t min_epsilon = CMP_EPSILON) {
-		// this is an approximate way to check that numbers are close, as a ratio of their average size
-		// helps compare approximate numbers that may be very big or very small
-		real_t diff = abs(a - b);
-		if (diff == 0.0 || diff < min_epsilon) {
-			return true;
-		}
-		real_t avg_size = (abs(a) + abs(b)) / 2.0;
-		diff /= avg_size;
-		return diff < epsilon;
-	}
-
 	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b) {
 		// Check for exact equality first, required to handle "infinity" values.
 		if (a == b) {

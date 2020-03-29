@@ -113,19 +113,22 @@ bool Basis::is_rotation() const {
 	return Math::is_equal_approx(determinant(), 1, UNIT_EPSILON) && is_orthogonal();
 }
 
+#ifdef MATH_CHECKS
+// This method is only used once, in diagonalize. If it's desired elsewhere, feel free to remove the #ifdef.
 bool Basis::is_symmetric() const {
-	if (!Math::is_equal_approx_ratio(elements[0][1], elements[1][0], UNIT_EPSILON)) {
+	if (!Math::is_equal_approx(elements[0][1], elements[1][0])) {
 		return false;
 	}
-	if (!Math::is_equal_approx_ratio(elements[0][2], elements[2][0], UNIT_EPSILON)) {
+	if (!Math::is_equal_approx(elements[0][2], elements[2][0])) {
 		return false;
 	}
-	if (!Math::is_equal_approx_ratio(elements[1][2], elements[2][1], UNIT_EPSILON)) {
+	if (!Math::is_equal_approx(elements[1][2], elements[2][1])) {
 		return false;
 	}
 
 	return true;
 }
+#endif
 
 Basis Basis::diagonalize() {
 //NOTE: only implemented for symmetric matrices
@@ -735,18 +738,6 @@ void Basis::set_euler_zyx(const Vector3 &p_euler) {
 
 bool Basis::is_equal_approx(const Basis &p_basis) const {
 	return elements[0].is_equal_approx(p_basis.elements[0]) && elements[1].is_equal_approx(p_basis.elements[1]) && elements[2].is_equal_approx(p_basis.elements[2]);
-}
-
-bool Basis::is_equal_approx_ratio(const Basis &a, const Basis &b, real_t p_epsilon) const {
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			if (!Math::is_equal_approx_ratio(a.elements[i][j], b.elements[i][j], p_epsilon)) {
-				return false;
-			}
-		}
-	}
-
-	return true;
 }
 
 bool Basis::operator==(const Basis &p_matrix) const {
