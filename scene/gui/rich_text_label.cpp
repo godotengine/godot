@@ -576,13 +576,14 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 									} else {
 										cw = drawer.draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent) + fx_offset, fx_char, c[i + 1], fx_color);
 									}
-								} else if (previously_visible) {
+								} else if (previously_visible && c[i] != '\t') {
 									backtrack += font->get_char_size(fx_char, c[i + 1]).x;
 								}
 
 								p_char_count++;
 								if (c[i] == '\t') {
 									cw = tab_size * font->get_char_size(' ').width;
+									backtrack = MAX(0, backtrack - cw);
 								}
 
 								ofs += cw;
