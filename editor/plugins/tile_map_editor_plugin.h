@@ -211,6 +211,7 @@ class TileMapEditor : public VBoxContainer {
 
 protected:
 	void _notification(int p_what);
+	void _node_removed(Node *p_node);
 	static void _bind_methods();
 	CellOp _get_op_from_cell(const Point2i &p_pos);
 

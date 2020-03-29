@@ -39,6 +39,13 @@
 #include "scene/resources/rectangle_shape_2d.h"
 #include "scene/resources/segment_shape_2d.h"
 
+void CollisionShape2DEditor::_node_removed(Node *p_node) {
+
+	if (p_node == node) {
+		node = NULL;
+	}
+}
+
 Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 
 	switch (shape_type) {
@@ -521,6 +528,20 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
 			p_overlay->draw_texture(h, gt.xform(handles[1]) - size);
 
+		} break;
+	}
+}
+
+void CollisionShape2DEditor::_notification(int p_what) {
+
+	switch (p_what) {
+
+		case NOTIFICATION_ENTER_TREE: {
+			get_tree()->connect("node_removed", callable_mp(this, &CollisionShape2DEditor::_node_removed));
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			get_tree()->disconnect("node_removed", callable_mp(this, &CollisionShape2DEditor::_node_removed));
 		} break;
 	}
 }
