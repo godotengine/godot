@@ -365,6 +365,9 @@ void EditorNode::_notification(int p_what) {
 				RS::get_singleton()->camera_effects_set_dof_blur_quality(dof_quality, dof_jitter);
 				RS::get_singleton()->environment_set_ssao_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/quality/ssao/quality"))), GLOBAL_GET("rendering/quality/ssao/half_size"));
 				RS::get_singleton()->screen_space_roughness_limiter_set_active(GLOBAL_GET("rendering/quality/filters/screen_space_roughness_limiter"), GLOBAL_GET("rendering/quality/filters/screen_space_roughness_limiter_curve"));
+
+				bool glow_bicubic = int(GLOBAL_GET("rendering/quality/glow/upscale_mode")) > 0;
+				RS::get_singleton()->environment_glow_set_use_bicubic_upscale(glow_bicubic);
 			}
 
 			ResourceImporterTexture::get_singleton()->update_imports();

@@ -442,7 +442,8 @@ public:
 
 	FUNC2(environment_set_ssao_quality, EnvironmentSSAOQuality, bool)
 
-	FUNC12(environment_set_glow, RID, bool, int, float, float, float, float, EnvironmentGlowBlendMode, float, float, float, bool)
+	FUNC11(environment_set_glow, RID, bool, int, float, float, float, float, EnvironmentGlowBlendMode, float, float, float)
+	FUNC1(environment_glow_set_use_bicubic_upscale, bool)
 
 	FUNC9(environment_set_tonemap, RID, EnvironmentToneMapper, float, float, bool, float, float, float, float)
 

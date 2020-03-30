@@ -2355,6 +2355,10 @@ RenderingServer::RenderingServer() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/screen_space_roughness_limiter", PropertyInfo(Variant::INT, "rendering/quality/filters/screen_space_roughness_limiter", PROPERTY_HINT_ENUM, "Disabled,Enabled (Small Cost)"));
 	GLOBAL_DEF("rendering/quality/filters/screen_space_roughness_limiter_curve", 1.0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/screen_space_roughness_limiter_curve", PropertyInfo(Variant::FLOAT, "rendering/quality/filters/screen_space_roughness_limiter_curve", PROPERTY_HINT_EXP_EASING, "0.01,8,0.01"));
+
+	GLOBAL_DEF("rendering/quality/glow/upscale_mode", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/glow/upscale_mode", PropertyInfo(Variant::INT, "rendering/quality/glow/upscale_mode", PROPERTY_HINT_ENUM, "Linear (Fast),Bicubic (Slower)"));
+	GLOBAL_DEF("rendering/quality/glow/upscale_mode.mobile", 0);
 }
 
 RenderingServer::~RenderingServer() {

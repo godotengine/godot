@@ -1211,7 +1211,7 @@ void RasterizerSceneRD::environment_set_tonemap(RID p_env, RS::EnvironmentToneMa
 	env->auto_exp_scale = p_auto_exp_scale;
 }
 
-void RasterizerSceneRD::environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale) {
+void RasterizerSceneRD::environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap) {
 
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
@@ -1225,7 +1225,10 @@ void RasterizerSceneRD::environment_set_glow(RID p_env, bool p_enable, int p_lev
 	env->glow_hdr_bleed_threshold = p_hdr_bleed_threshold;
 	env->glow_hdr_bleed_scale = p_hdr_bleed_scale;
 	env->glow_hdr_luminance_cap = p_hdr_luminance_cap;
-	env->glow_bicubic_upscale = p_bicubic_upscale;
+}
+
+void RasterizerSceneRD::environment_glow_set_use_bicubic_upscale(bool p_enable) {
+	glow_bicubic_upscale = p_enable;
 }
 
 void RasterizerSceneRD::environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_bias, float p_light_affect, float p_ao_channel_affect, RS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) {
@@ -3339,7 +3342,7 @@ void RasterizerSceneRD::_render_buffers_post_process_and_tonemap(RID p_render_bu
 			tonemap.glow_level_flags = glow_mask;
 			tonemap.glow_texture_size.x = rb->blur[1].mipmaps[0].width;
 			tonemap.glow_texture_size.y = rb->blur[1].mipmaps[0].height;
-			tonemap.glow_use_bicubic_upscale = env->glow_bicubic_upscale;
+			tonemap.glow_use_bicubic_upscale = glow_bicubic_upscale;
 			tonemap.glow_texture = rb->blur[1].texture;
 		} else {
 			tonemap.glow_texture = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_BLACK);
@@ -4008,6 +4011,7 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 	environment_set_ssao_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/quality/ssao/quality"))), GLOBAL_GET("rendering/quality/ssao/half_size"));
 	screen_space_roughness_limiter = GLOBAL_GET("rendering/quality/filters/screen_space_roughness_limiter");
 	screen_space_roughness_limiter_curve = GLOBAL_GET("rendering/quality/filters/screen_space_roughness_limiter_curve");
+	glow_bicubic_upscale = int(GLOBAL_GET("rendering/quality/glow/upscale_mode")) > 0;
 }
 
 RasterizerSceneRD::~RasterizerSceneRD() {
