@@ -20,7 +20,18 @@ contributors to make sure they comply with our requirements.
 Copy all the files from this folder into your `.git/hooks` folder, and make
 sure the hooks and helper scripts are executable.
 
+#### Linux/MacOS
+
 The hooks rely on bash scripts and tools which should be in the system `PATH`,
-so they should work out of the box on Linux/macOS, and might work on Windows
-when using `git-bash.exe` with `clang-format`, Python, `black`, etc. in the
-`PATH`.
+so they should work out of the box on Linux/macOS.
+
+#### Windows
+
+##### clang-format
+- Download LLVM for Windows (version 8 or later) from
+  <https://releases.llvm.org/download.html>
+- Make sure LLVM is added to the `PATH` during installation
+
+##### black
+- Python installation: make sure Python is added to the `PATH`
+- Install `black` - in any console: `pip3 install black`
