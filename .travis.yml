@@ -129,9 +129,6 @@ matrix:
 
 before_install:
   - eval "${MATRIX_EVAL}"
-  - if [ "$STATIC_CHECKS" = "yes" ]; then
-      unset SCONS_CACHE;
-    fi
 
 install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
@@ -150,6 +147,10 @@ install:
       ./emsdk/emsdk install latest;
       ./emsdk/emsdk activate latest;
     fi
+  - if [ "$STATIC_CHECKS" = "yes" ]; then
+      unset SCONS_CACHE;
+      pip3 install --user black pygments;
+    fi
 
 before_script:
   - if [ "$PLATFORM" = "android" ]; then
@@ -160,6 +161,7 @@ before_script:
 script:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
       sh ./misc/travis/clang-format.sh &&
+      sh ./misc/travis/black-format.sh &&
       doc/tools/makerst.py --dry-run doc/classes modules;
     else
       scons -j2 CC=$CC CXX=$CXX platform=$PLATFORM tools=$TOOLS target=$TARGET $OPTIONS $EXTRA_ARGS &&
