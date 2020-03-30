@@ -103,9 +103,7 @@ public:
 	static Path3DEditorPlugin *singleton;
 	virtual bool forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event);
 
-	//virtual bool forward_gui_input(const InputEvent& p_event) { return collision_polygon_editor->forward_gui_input(p_event); }
-	//virtual Ref<Node3DEditorGizmo> create_spatial_gizmo(Spatial *p_spatial);
-	virtual String get_name() const { return "Path"; }
+	virtual String get_name() const { return "Path3D"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_object);
 	virtual bool handles(Object *p_object) const;

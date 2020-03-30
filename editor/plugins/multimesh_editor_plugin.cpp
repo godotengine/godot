@@ -82,7 +82,7 @@ void MultiMeshEditor::_populate() {
 
 		if (!ms_instance) {
 
-			err_dialog->set_text(TTR("Mesh source is invalid (not a MeshInstance)."));
+			err_dialog->set_text(TTR("Mesh source is invalid (not a MeshInstance3D)."));
 			err_dialog->popup_centered();
 			return;
 		}

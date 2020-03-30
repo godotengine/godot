@@ -165,11 +165,11 @@ bool CollisionPolygon3D::is_disabled() const {
 String CollisionPolygon3D::get_configuration_warning() const {
 
 	if (!Object::cast_to<CollisionObject3D>(get_parent())) {
-		return TTR("CollisionPolygon only serves to provide a collision shape to a CollisionObject derived node. Please only use it as a child of Area, StaticBody, RigidBody, KinematicBody, etc. to give them a shape.");
+		return TTR("CollisionPolygon3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, KinematicBody3D, etc. to give them a shape.");
 	}
 
 	if (polygon.empty()) {
-		return TTR("An empty CollisionPolygon has no effect on collision.");
+		return TTR("An empty CollisionPolygon3D has no effect on collision.");
 	}
 
 	return String();

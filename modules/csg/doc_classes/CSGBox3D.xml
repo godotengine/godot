@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CSGBox3D" inherits="CSGPrimitive3D" version="4.0">
+	<brief_description>
+		A CSG Box shape.
+	</brief_description>
+	<description>
+		This node allows you to create a box for use with the CSG system.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="depth" type="float" setter="set_depth" getter="get_depth" default="2.0">
+			Depth of the box measured from the center of the box.
+		</member>
+		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
+			Height of the box measured from the center of the box.
+		</member>
+		<member name="material" type="Material" setter="set_material" getter="get_material">
+			The material used to render the box.
+		</member>
+		<member name="width" type="float" setter="set_width" getter="get_width" default="2.0">
+			Width of the box measured from the center of the box.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

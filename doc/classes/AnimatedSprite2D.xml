@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimatedSprite2D" inherits="Node2D" version="4.0">
+	<brief_description>
+		Sprite node that can use multiple textures for animation.
+	</brief_description>
+	<description>
+		Animations are created using a [SpriteFrames] resource, which can be configured in the editor via the SpriteFrames panel.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="is_playing" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if an animation is currently being played.
+			</description>
+		</method>
+		<method name="play">
+			<return type="void">
+			</return>
+			<argument index="0" name="anim" type="StringName" default="@&quot;&quot;">
+			</argument>
+			<argument index="1" name="backwards" type="bool" default="false">
+			</argument>
+			<description>
+				Plays the animation named [code]anim[/code]. If no [code]anim[/code] is provided, the current animation is played. If [code]backwards[/code] is [code]true[/code], the animation will be played in reverse.
+			</description>
+		</method>
+		<method name="stop">
+			<return type="void">
+			</return>
+			<description>
+				Stops the current animation (does not reset the frame counter).
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="animation" type="StringName" setter="set_animation" getter="get_animation" default="@&quot;default&quot;">
+			The current animation from the [code]frames[/code] resource. If this value changes, the [code]frame[/code] counter is reset.
+		</member>
+		<member name="centered" type="bool" setter="set_centered" getter="is_centered" default="true">
+			If [code]true[/code], texture will be centered.
+		</member>
+		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" default="false">
+			If [code]true[/code], texture is flipped horizontally.
+		</member>
+		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" default="false">
+			If [code]true[/code], texture is flipped vertically.
+		</member>
+		<member name="frame" type="int" setter="set_frame" getter="get_frame" default="0">
+			The displayed animation frame's index.
+		</member>
+		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames">
+			The [SpriteFrames] resource containing the animation(s).
+		</member>
+		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
+			The texture's drawing offset.
+		</member>
+		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing" default="false">
+			If [code]true[/code], the [member animation] is currently playing.
+		</member>
+		<member name="shininess" type="float" setter="set_shininess" getter="get_shininess" default="1.0">
+			Strength of the specular light effect of this [AnimatedSprite2D].
+		</member>
+		<member name="specular_color" type="Color" setter="set_specular_color" getter="get_specular_color" default="Color( 1, 1, 1, 1 )">
+			The color of the specular light effect.
+		</member>
+		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
+			The animation speed is multiplied by this value.
+		</member>
+	</members>
+	<signals>
+		<signal name="animation_finished">
+			<description>
+				Emitted when the animation is finished (when it plays the last frame). If the animation is looping, this signal is emitted every time the last frame is drawn.
+			</description>
+		</signal>
+		<signal name="frame_changed">
+			<description>
+				Emitted when [member frame] changed.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

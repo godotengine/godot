@@ -96,7 +96,7 @@ bool Camera3DEditorPlugin::handles(Object *p_object) const {
 void Camera3DEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		//Node3DEditor::get_singleton()->set_can_preview(Object::cast_to<Camera>(p_object));
+		//Node3DEditor::get_singleton()->set_can_preview(Object::cast_to<Camera3D>(p_object));
 	} else {
 		Node3DEditor::get_singleton()->set_can_preview(NULL);
 	}
