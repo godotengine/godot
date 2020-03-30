@@ -372,7 +372,7 @@ void DocData::generate(bool p_basic_types) {
 			if (skip_setter_getter_methods && setters_getters.has(E->get().name)) {
 				// Don't skip parametric setters and getters, i.e. method which require
 				// one or more parameters to define what property should be set or retrieved.
-				// E.g. CPUParticles::set_param(Parameter param, float value).
+				// E.g. CPUParticles3D::set_param(Parameter param, float value).
 				if (E->get().arguments.size() == 0 /* getter */ || (E->get().arguments.size() == 1 && E->get().return_val.type == Variant::NIL /* setter */)) {
 					continue;
 				}

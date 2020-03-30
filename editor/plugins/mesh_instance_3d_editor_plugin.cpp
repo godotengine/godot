@@ -392,17 +392,17 @@ void MeshInstance3DEditor::_create_outline_mesh() {
 
 	Ref<Mesh> mesh = node->get_mesh();
 	if (mesh.is_null()) {
-		err_dialog->set_text(TTR("MeshInstance lacks a Mesh!"));
+		err_dialog->set_text(TTR("MeshInstance3D lacks a Mesh."));
 		err_dialog->popup_centered();
 		return;
 	}
 
 	if (mesh->get_surface_count() == 0) {
-		err_dialog->set_text(TTR("Mesh has not surface to create outlines from!"));
+		err_dialog->set_text(TTR("Mesh has not surface to create outlines from."));
 		err_dialog->popup_centered();
 		return;
 	} else if (mesh->get_surface_count() == 1 && mesh->surface_get_primitive_type(0) != Mesh::PRIMITIVE_TRIANGLES) {
-		err_dialog->set_text(TTR("Mesh primitive type is not PRIMITIVE_TRIANGLES!"));
+		err_dialog->set_text(TTR("Mesh primitive type is not PRIMITIVE_TRIANGLES."));
 		err_dialog->popup_centered();
 		return;
 	}
@@ -410,7 +410,7 @@ void MeshInstance3DEditor::_create_outline_mesh() {
 	Ref<Mesh> mesho = mesh->create_outline(outline_size->get_value());
 
 	if (mesho.is_null()) {
-		err_dialog->set_text(TTR("Could not create outline!"));
+		err_dialog->set_text(TTR("Could not create outline."));
 		err_dialog->popup_centered();
 		return;
 	}
@@ -447,7 +447,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("MeshInstance3D", "EditorIcons"));
 
 	options->get_popup()->add_item(TTR("Create Trimesh Static Body"), MENU_OPTION_CREATE_STATIC_TRIMESH_BODY);
-	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a StaticBody and assigns a polygon-based collision shape to it automatically.\nThis is the most accurate (but slowest) option for collision detection."));
+	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a StaticBody3D and assigns a polygon-based collision shape to it automatically.\nThis is the most accurate (but slowest) option for collision detection."));
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Trimesh Collision Sibling"), MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE);
 	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a polygon-based collision shape.\nThis is the most accurate (but slowest) option for collision detection."));

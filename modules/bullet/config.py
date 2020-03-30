@@ -8,8 +8,8 @@ def configure(env):
 
 def get_doc_classes():
     return [
-        "BulletPhysicsDirectBodyState",
-        "BulletPhysicsServer",
+        "BulletPhysicsDirectBodyState3D",
+        "BulletPhysicsServer3D",
     ]
 
 

@@ -47,15 +47,6 @@ void register_csg_types() {
 	ClassDB::register_class<CSGPolygon3D>();
 	ClassDB::register_class<CSGCombiner3D>();
 
-	ClassDB::add_compatibility_class("CSGShape", "CSGShape3D");
-	ClassDB::add_compatibility_class("CSGMesh", "CSGMesh3D");
-	ClassDB::add_compatibility_class("CSGSphere", "CSGSphere3D");
-	ClassDB::add_compatibility_class("CSGBox", "CSGBox3D");
-	ClassDB::add_compatibility_class("CSGCylinder", "CSGCylinder3D");
-	ClassDB::add_compatibility_class("CSGTorus", "CSGTorus3D");
-	ClassDB::add_compatibility_class("CSGPolygon", "CSGPolygon3D");
-	ClassDB::add_compatibility_class("CSGCombiner", "CSGCombiner3D");
-
 #ifdef TOOLS_ENABLED
 	EditorPlugins::add_by_type<EditorPluginCSG>();
 #endif

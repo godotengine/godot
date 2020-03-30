@@ -241,7 +241,7 @@ bool GPUParticles3D::get_fractional_delta() const {
 String GPUParticles3D::get_configuration_warning() const {
 
 	if (RenderingServer::get_singleton()->is_low_end()) {
-		return TTR("GPU-based particles are not supported by the GLES2 video driver.\nUse the CPUParticles node instead. You can use the \"Convert to CPUParticles\" option for this purpose.");
+		return TTR("GPU-based particles are not supported by the GLES2 video driver.\nUse the CPUParticles3D node instead. You can use the \"Convert to CPUParticles3D\" option for this purpose.");
 	}
 
 	String warnings;
