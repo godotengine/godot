@@ -54,7 +54,7 @@ public class GodotInputHandler implements InputDeviceListener {
 	 * Size of the array containing information about a `onTouchDown` {@link MotionEvent}'s pointer.
 	 * Must match OS_Android::TOUCH_POINTER_INFO_SIZE.
 	 */
-	private static final int POINTER_INFO_SIZE = 4;
+	private static final int POINTER_INFO_SIZE = 2;
 
 	/**
 	 * Offset in the array to access the pointer's id.
@@ -63,22 +63,10 @@ public class GodotInputHandler implements InputDeviceListener {
 	private static final int POINTER_INFO_ID_OFFSET = 0;
 
 	/**
-	 * Offset in the array to access the pointer's X position.
-	 * Must match OS_Android::TOUCH_POINTER_INFO_X_OFFSET.
-	 */
-	private static final int POINTER_INFO_X_OFFSET = 1;
-
-	/**
-	 * Offset in the array to access the pointer's Y position.
-	 * Must match OS_Android::TOUCH_POINTER_INFO_Y_OFFSET.
-	 */
-	private static final int POINTER_INFO_Y_OFFSET = 2;
-
-	/**
 	 * Offset in the array to access the pointer's tool type.
 	 * Must match OS_Android::TOUCH_POINTER_INFO_TOOL_TYPE_OFFSET.
 	 */
-	private static final int POINTER_INFO_TOOL_TYPE_OFFSET = 3;
+	private static final int POINTER_INFO_TOOL_TYPE_OFFSET = 1;
 
 	private final ArrayList<Joystick> joysticksDevices = new ArrayList<Joystick>();
 
@@ -192,13 +180,15 @@ public class GodotInputHandler implements InputDeviceListener {
 
 		if (godotView != null) {
 			final int[] pointersInfo = new int[pointerCount * POINTER_INFO_SIZE];
+			final float[] pointersPosition = new float[pointerCount * 2];
 
 			for (int i = 0; i < pointerCount; i++) {
 
-				pointersInfo[i * POINTER_INFO_SIZE + POINTER_INFO_ID_OFFSET] = (int)event.getPointerId(i);
-				pointersInfo[i * POINTER_INFO_SIZE + POINTER_INFO_X_OFFSET] = (int)event.getX(i);
-				pointersInfo[i * POINTER_INFO_SIZE + POINTER_INFO_Y_OFFSET] = (int)event.getY(i);
+				pointersInfo[i * POINTER_INFO_SIZE + POINTER_INFO_ID_OFFSET] = event.getPointerId(i);
 				pointersInfo[i * POINTER_INFO_SIZE + POINTER_INFO_TOOL_TYPE_OFFSET] = event.getToolType(i);
+
+				pointersPosition[i * 2] = event.getX(i);
+				pointersPosition[i * 2 + 1] = event.getY(i);
 			}
 			final int pointerIndex = event.getPointerId(event.getActionIndex());
 
@@ -209,20 +199,20 @@ public class GodotInputHandler implements InputDeviceListener {
 				public void run() {
 					switch (action) {
 						case MotionEvent.ACTION_DOWN: {
-							GodotLib.touch(buttonState, 0, 0, pointerCount, pointersInfo);
+							GodotLib.touch(buttonState, 0, 0, pointerCount, pointersInfo, pointersPosition);
 						} break;
 						case MotionEvent.ACTION_MOVE: {
-							GodotLib.touch(buttonState,1, 0, pointerCount, pointersInfo);
+							GodotLib.touch(buttonState,1, 0, pointerCount, pointersInfo, pointersPosition);
 						} break;
 						case MotionEvent.ACTION_POINTER_UP: {
-							GodotLib.touch(buttonState,4, pointerIndex, pointerCount, pointersInfo);
+							GodotLib.touch(buttonState,4, pointerIndex, pointerCount, pointersInfo, pointersPosition);
 						} break;
 						case MotionEvent.ACTION_POINTER_DOWN: {
-							GodotLib.touch(buttonState,3, pointerIndex, pointerCount, pointersInfo);
+							GodotLib.touch(buttonState,3, pointerIndex, pointerCount, pointersInfo, pointersPosition);
 						} break;
 						case MotionEvent.ACTION_CANCEL:
 						case MotionEvent.ACTION_UP: {
-							GodotLib.touch(buttonState,2, 0, pointerCount, pointersInfo);
+							GodotLib.touch(buttonState,2, 0, pointerCount, pointersInfo, pointersPosition);
 						} break;
 					}
 				}
@@ -279,12 +269,10 @@ public class GodotInputHandler implements InputDeviceListener {
 			case MotionEvent.ACTION_HOVER_MOVE:
 			case MotionEvent.ACTION_HOVER_EXIT: {
 				final int toolType = event.getToolType(0);
-				final int x = Math.round(event.getX());
-				final int y = Math.round(event.getY());
 				queueEvent(new Runnable() {
 					@Override
 					public void run() {
-						GodotLib.hover(toolType, eventType, x, y);
+						GodotLib.hover(toolType, eventType, event.getX(), event.getY());
 					}
 				});
 				return true;
@@ -292,8 +280,8 @@ public class GodotInputHandler implements InputDeviceListener {
 
 			case MotionEvent.ACTION_SCROLL: {
 				final int toolType = event.getToolType(0);
-				final int x = Math.round(event.getX());
-				final int y = Math.round(event.getY());
+				final float x = event.getX();
+				final float y = event.getY();
 				queueEvent(new Runnable() {
 					@Override
 					public void run() {
@@ -343,15 +331,13 @@ public class GodotInputHandler implements InputDeviceListener {
 		return false;
 	}
 
-	private boolean handleStylusEvent(MotionEvent event) {
-		final int x = Math.round(event.getX());
-		final int y = Math.round(event.getY());
+	private boolean handleStylusEvent(final MotionEvent event) {
 		final int eventType = event.getActionMasked();
 		final int toolType = event.getToolType(0);
 		queueEvent(new Runnable() {
 			@Override
 			public void run() {
-				GodotLib.hover(toolType, eventType, x, y);
+				GodotLib.hover(toolType, eventType, event.getX(), event.getY());
 			}
 		});
 		return true;

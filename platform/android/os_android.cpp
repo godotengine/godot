@@ -252,12 +252,12 @@ bool OS_Android::is_mouse_grab_enabled() const {
 
 Point2 OS_Android::get_mouse_position() const {
 
-	return Point2();
+	return last_mouse_position;
 }
 
 int OS_Android::get_mouse_button_state() const {
 
-	return 0;
+	return last_mouse_buttons_state;
 }
 
 void OS_Android::set_window_title(const String &p_title) {
@@ -364,9 +364,9 @@ void OS_Android::process_event(Ref<InputEvent> p_event) {
 	input->parse_input_event(p_event);
 }
 
-void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos> &p_points) {
+void OS_Android::process_touch(int event_type, int p_pointer, const Vector<TouchPos> &p_points) {
 
-	switch (p_what) {
+	switch (event_type) {
 		case 0: { //gesture begin
 
 			if (touch.size()) {
@@ -485,7 +485,7 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 	}
 }
 
-void OS_Android::process_hover(int p_type, Point2 p_pos) {
+void OS_Android::process_hover(int tool_type, int p_type, Point2 p_pos) {
 	// https://developer.android.com/reference/android/view/MotionEvent.html#ACTION_HOVER_ENTER
 	switch (p_type) {
 		case 7: // hover move
@@ -496,29 +496,96 @@ void OS_Android::process_hover(int p_type, Point2 p_pos) {
 			ev->set_position(p_pos);
 			ev->set_global_position(p_pos);
 			ev->set_relative(p_pos - hover_prev_pos);
+			if (tool_type == TOOL_TYPE_MOUSE) {
+				ev->set_button_mask(last_mouse_buttons_state);
+				last_mouse_position = p_pos;
+			}
 			input->parse_input_event(ev);
 			hover_prev_pos = p_pos;
 		} break;
 	}
 }
 
-void OS_Android::process_double_tap(Point2 p_pos) {
+void OS_Android::process_double_tap(int tool_type, int button_state, Point2 p_pos) {
 	Ref<InputEventMouseButton> ev;
 	ev.instance();
 	ev->set_position(p_pos);
 	ev->set_global_position(p_pos);
-	ev->set_pressed(false);
 	ev->set_doubleclick(true);
+	ev->set_pressed(false);
+
+	switch(tool_type) {
+		case TOOL_TYPE_MOUSE:
+			// Since this is a double tap, only one of the mouse button was active.
+			int button_index;
+			if ((button_state & BUTTON_PRIMARY) != 0) {
+				button_index = BUTTON_LEFT;
+			} else if ((button_state & BUTTON_SECONDARY) != 0) {
+				button_index = BUTTON_RIGHT;
+			} else if ((button_state & BUTTON_TERTIARY) != 0) {
+				button_index = BUTTON_MIDDLE;
+			} else if ((button_state & BUTTON_FORWARD) != 0) {
+				button_index = BUTTON_XBUTTON1;
+			} else if ((button_state & BUTTON_BACK) != 0) {
+				button_index = BUTTON_XBUTTON2;
+			} else {
+				// Unsupported mouse button.
+				button_index = 0;
+			}
+			ev->set_button_index(button_index);
+			ev->set_button_mask(last_mouse_buttons_state);
+			last_mouse_position = p_pos;
+			break;
+
+		default:
+			break;
+	}
+
 	input->parse_input_event(ev);
 }
 
-void OS_Android::process_scroll(Point2 p_pos) {
-	Ref<InputEventPanGesture> ev;
-	ev.instance();
-	ev->set_position(p_pos);
-	ev->set_delta(p_pos - scroll_prev_pos);
-	input->parse_input_event(ev);
-	scroll_prev_pos = p_pos;
+void OS_Android::process_scroll(int tool_type, Point2 start, Point2 end, Vector2 scroll_delta) {
+	if (tool_type == TOOL_TYPE_MOUSE) {
+		// For a mouse scroll, `start` and `end` are the same.
+		Point2 event_position = start;
+
+		// Identify the BUTTON_WHEEL index.
+		int button_index;
+		float scroll_factor;
+		if (abs(scroll_delta.x) > abs(scroll_delta.y)) {
+			// Horizontal scroll
+			button_index = (scroll_delta.x > 0.0f) ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_LEFT;
+			scroll_factor = scroll_delta.x;
+		} else {
+			// Vertical scroll
+			button_index = (scroll_delta.y > 0.0f) ? BUTTON_WHEEL_UP : BUTTON_WHEEL_DOWN;
+			scroll_factor = scroll_delta.y;
+		}
+
+		// We dispatch pressed and released events for mouse scrolling
+		Ref<InputEventMouseButton> ev;
+		ev.instance();
+		ev->set_position(event_position);
+		ev->set_global_position(event_position);
+		ev->set_button_index(button_index);
+		ev->set_factor(scroll_factor);
+		ev->set_pressed(true);
+		ev->set_button_mask(last_mouse_buttons_state | button_index);
+		input->parse_input_event(ev);
+
+		// Send release event
+		ev->set_pressed(false);
+		ev->set_button_mask(last_mouse_buttons_state & ~button_index);
+		input->parse_input_event(ev);
+
+		last_mouse_position = event_position;
+	} else {
+		Ref<InputEventPanGesture> ev;
+		ev.instance();
+		ev->set_position(end);
+		ev->set_delta(scroll_delta);
+		input->parse_input_event(ev);
+	}
 }
 
 void OS_Android::process_accelerometer(const Vector3 &p_accelerometer) {
