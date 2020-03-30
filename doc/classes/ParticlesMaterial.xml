@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ParticlesMaterial" inherits="Material" version="4.0">
 	<brief_description>
-		Particle properties for [Particles] and [Particles2D] nodes.
+		Particle properties for [GPUParticles3D] and [GPUParticles2D] nodes.
 	</brief_description>
 	<description>
-		ParticlesMaterial defines particle properties and behavior. It is used in the [code]process_material[/code] of [Particles] and [Particles2D] emitter nodes.
+		ParticlesMaterial defines particle properties and behavior. It is used in the [code]process_material[/code] of [GPUParticles3D] and [GPUParticles2D] emitter nodes.
 		Some of this material's properties are applied to each particle when emitted, while others can have a [CurveTexture] applied to vary values over the lifetime of the particle.
 		When a randomness ratio is applied to a property it is used to scale that property by a random amount. The random ratio is used to interpolate between [code]1.0[/code] and a random number less than one, the result is multiplied by the property to obtain the randomized property. For example a random ratio of [code]0.4[/code] would scale the original property between [code]0.4-1.0[/code] of its original value.
 	</description>
@@ -132,7 +132,7 @@
 			Animation speed randomness ratio.
 		</member>
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color( 1, 1, 1, 1 )">
-			Each particle's initial color. If the [Particles2D]'s [code]texture[/code] is defined, it will be multiplied by this color. To have particle display color in a [BaseMaterial3D] make sure to set [member BaseMaterial3D.vertex_color_use_as_albedo] to [code]true[/code].
+			Each particle's initial color. If the [GPUParticles2D]'s [code]texture[/code] is defined, it will be multiplied by this color. To have particle display color in a [BaseMaterial3D] make sure to set [member BaseMaterial3D.vertex_color_use_as_albedo] to [code]true[/code].
 		</member>
 		<member name="color_ramp" type="Texture2D" setter="set_color_ramp" getter="get_color_ramp">
 			Each particle's color will vary along this [GradientTexture].

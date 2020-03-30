@@ -128,7 +128,7 @@ void PhysicsBody3D::add_collision_exception_with(Node *p_node) {
 
 	ERR_FAIL_NULL(p_node);
 	CollisionObject3D *collision_object = Object::cast_to<CollisionObject3D>(p_node);
-	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject.");
+	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject3Ds.");
 	PhysicsServer3D::get_singleton()->body_add_collision_exception(get_rid(), collision_object->get_rid());
 }
 
@@ -136,7 +136,7 @@ void PhysicsBody3D::remove_collision_exception_with(Node *p_node) {
 
 	ERR_FAIL_NULL(p_node);
 	CollisionObject3D *collision_object = Object::cast_to<CollisionObject3D>(p_node);
-	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject.");
+	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject3Ds.");
 	PhysicsServer3D::get_singleton()->body_remove_collision_exception(get_rid(), collision_object->get_rid());
 }
 
@@ -406,7 +406,7 @@ void RigidBody3D::_direct_state_changed(Object *p_state) {
 
 		_RigidBodyInOut *toadd = (_RigidBodyInOut *)alloca(state->get_contact_count() * sizeof(_RigidBodyInOut));
 		int toadd_count = 0; //state->get_contact_count();
-		RigidBody_RemoveAction *toremove = (RigidBody_RemoveAction *)alloca(rc * sizeof(RigidBody_RemoveAction));
+		RigidBody3D_RemoveAction *toremove = (RigidBody3D_RemoveAction *)alloca(rc * sizeof(RigidBody3D_RemoveAction));
 		int toremove_count = 0;
 
 		//put the ones to add
@@ -794,7 +794,7 @@ String RigidBody3D::get_configuration_warning() const {
 		if (warning != String()) {
 			warning += "\n\n";
 		}
-		warning += TTR("Size changes to RigidBody (in character or rigid modes) will be overridden by the physics engine when running.\nChange the size in children collision shapes instead.");
+		warning += TTR("Size changes to RigidBody3D (in character or rigid modes) will be overridden by the physics engine when running.\nChange the size in children collision shapes instead.");
 	}
 
 	return warning;

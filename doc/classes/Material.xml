@@ -4,7 +4,7 @@
 		Abstract base [Resource] for coloring and shading geometry.
 	</brief_description>
 	<description>
-		Material is a base [Resource] used for coloring and shading geometry. All materials inherit from it and almost all [VisualInstance] derived nodes carry a Material. A few flags and parameters are shared between all material types and are configured here.
+		Material is a base [Resource] used for coloring and shading geometry. All materials inherit from it and almost all [VisualInstance3D] derived nodes carry a Material. A few flags and parameters are shared between all material types and are configured here.
 	</description>
 	<tutorials>
 	</tutorials>

@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Area3D" inherits="CollisionObject3D" version="4.0">
+	<brief_description>
+		General-purpose area node for detection and 3D physics influence.
+	</brief_description>
+	<description>
+		3D area that detects [CollisionObject3D] nodes overlapping, entering, or exiting. Can also alter or override local physics parameters (gravity, damping).
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_collision_layer_bit" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<description>
+				Returns an individual bit on the layer mask.
+			</description>
+		</method>
+		<method name="get_collision_mask_bit" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<description>
+				Returns an individual bit on the collision mask.
+			</description>
+		</method>
+		<method name="get_overlapping_areas" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Returns a list of intersecting [Area3D]s. For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
+			</description>
+		</method>
+		<method name="get_overlapping_bodies" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Returns a list of intersecting [PhysicsBody3D]s. For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
+			</description>
+		</method>
+		<method name="overlaps_area" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="area" type="Node">
+			</argument>
+			<description>
+				If [code]true[/code], the given area overlaps the Area3D.
+				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
+			</description>
+		</method>
+		<method name="overlaps_body" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="body" type="Node">
+			</argument>
+			<description>
+				If [code]true[/code], the given physics body overlaps the Area3D.
+				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
+				The [code]body[/code] argument can either be a [PhysicsBody3D] or a [GridMap] instance (while GridMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body).
+			</description>
+		</method>
+		<method name="set_collision_layer_bit">
+			<return type="void">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<argument index="1" name="value" type="bool">
+			</argument>
+			<description>
+				Set/clear individual bits on the layer mask. This simplifies editing this [Area3D]'s layers.
+			</description>
+		</method>
+		<method name="set_collision_mask_bit">
+			<return type="void">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<argument index="1" name="value" type="bool">
+			</argument>
+			<description>
+				Set/clear individual bits on the collision mask. This simplifies editing which [Area3D] layers this [Area3D] scans.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="0.1">
+			The rate at which objects stop spinning in this area. Represents the angular velocity lost per second. Values range from [code]0[/code] (no damping) to [code]1[/code] (full damping).
+		</member>
+		<member name="audio_bus_name" type="StringName" setter="set_audio_bus" getter="get_audio_bus" default="@&quot;Master&quot;">
+			The name of the area's audio bus.
+		</member>
+		<member name="audio_bus_override" type="bool" setter="set_audio_bus_override" getter="is_overriding_audio_bus" default="false">
+			If [code]true[/code], the area's audio bus overrides the default audio bus.
+		</member>
+		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
+			The area's physics layer(s). Collidable objects can exist in any of 32 different layers. A contact is detected if object A is in any of the layers that object B scans, or object B is in any layers that object A scans. See also [member collision_mask].
+		</member>
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
+			The physics layers this area scans to determine collision detection.
+		</member>
+		<member name="gravity" type="float" setter="set_gravity" getter="get_gravity" default="9.8">
+			The area's gravity intensity (ranges from -1024 to 1024). This value multiplies the gravity vector. This is useful to alter the force of gravity without altering its direction.
+		</member>
+		<member name="gravity_distance_scale" type="float" setter="set_gravity_distance_scale" getter="get_gravity_distance_scale" default="0.0">
+			The falloff factor for point gravity. The greater the value, the faster gravity decreases with distance.
+		</member>
+		<member name="gravity_point" type="bool" setter="set_gravity_is_point" getter="is_gravity_a_point" default="false">
+			If [code]true[/code], gravity is calculated from a point (set via [member gravity_vec]). See also [member space_override].
+		</member>
+		<member name="gravity_vec" type="Vector3" setter="set_gravity_vector" getter="get_gravity_vector" default="Vector3( 0, -1, 0 )">
+			The area's gravity vector (not normalized). If gravity is a point (see [member gravity_point]), this will be the point of attraction.
+		</member>
+		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="0.1">
+			The rate at which objects stop moving in this area. Represents the linear velocity lost per second. Values range from [code]0[/code] (no damping) to [code]1[/code] (full damping).
+		</member>
+		<member name="monitorable" type="bool" setter="set_monitorable" getter="is_monitorable" default="true">
+			If [code]true[/code], other monitoring areas can detect this area.
+		</member>
+		<member name="monitoring" type="bool" setter="set_monitoring" getter="is_monitoring" default="true">
+			If [code]true[/code], the area detects bodies or areas entering and exiting it.
+		</member>
+		<member name="priority" type="float" setter="set_priority" getter="get_priority" default="0.0">
+			The area's priority. Higher priority areas are processed first.
+		</member>
+		<member name="reverb_bus_amount" type="float" setter="set_reverb_amount" getter="get_reverb_amount" default="0.0">
+			The degree to which this area applies reverb to its associated audio. Ranges from [code]0[/code] to [code]1[/code] with [code]0.1[/code] precision.
+		</member>
+		<member name="reverb_bus_enable" type="bool" setter="set_use_reverb_bus" getter="is_using_reverb_bus" default="false">
+			If [code]true[/code], the area applies reverb to its associated audio.
+		</member>
+		<member name="reverb_bus_name" type="StringName" setter="set_reverb_bus" getter="get_reverb_bus" default="@&quot;Master&quot;">
+			The reverb bus name to use for this area's associated audio.
+		</member>
+		<member name="reverb_bus_uniformity" type="float" setter="set_reverb_uniformity" getter="get_reverb_uniformity" default="0.0">
+			The degree to which this area's reverb is a uniform effect. Ranges from [code]0[/code] to [code]1[/code] with [code]0.1[/code] precision.
+		</member>
+		<member name="space_override" type="int" setter="set_space_override_mode" getter="get_space_override_mode" enum="Area3D.SpaceOverride" default="0">
+			Override mode for gravity and damping calculations within this area. See [enum SpaceOverride] for possible values.
+		</member>
+	</members>
+	<signals>
+		<signal name="area_entered">
+			<argument index="0" name="area" type="Area3D">
+			</argument>
+			<description>
+				Emitted when another area enters.
+			</description>
+		</signal>
+		<signal name="area_exited">
+			<argument index="0" name="area" type="Area3D">
+			</argument>
+			<description>
+				Emitted when another area exits.
+			</description>
+		</signal>
+		<signal name="area_shape_entered">
+			<argument index="0" name="area_id" type="int">
+			</argument>
+			<argument index="1" name="area" type="Area3D">
+			</argument>
+			<argument index="2" name="area_shape" type="int">
+			</argument>
+			<argument index="3" name="self_shape" type="int">
+			</argument>
+			<description>
+				Emitted when another area enters, reporting which areas overlapped. [code]shape_owner_get_owner(shape_find_owner(shape))[/code] returns the parent object of the owner of the [code]shape[/code].
+			</description>
+		</signal>
+		<signal name="area_shape_exited">
+			<argument index="0" name="area_id" type="int">
+			</argument>
+			<argument index="1" name="area" type="Area3D">
+			</argument>
+			<argument index="2" name="area_shape" type="int">
+			</argument>
+			<argument index="3" name="self_shape" type="int">
+			</argument>
+			<description>
+				Emitted when another area exits, reporting which areas were overlapping.
+			</description>
+		</signal>
+		<signal name="body_entered">
+			<argument index="0" name="body" type="Node">
+			</argument>
+			<description>
+				Emitted when a physics body enters.
+				The [code]body[/code] argument can either be a [PhysicsBody3D] or a [GridMap] instance (while GridMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body).
+			</description>
+		</signal>
+		<signal name="body_exited">
+			<argument index="0" name="body" type="Node">
+			</argument>
+			<description>
+				Emitted when a physics body exits.
+				The [code]body[/code] argument can either be a [PhysicsBody3D] or a [GridMap] instance (while GridMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body).
+			</description>
+		</signal>
+		<signal name="body_shape_entered">
+			<argument index="0" name="body_id" type="int">
+			</argument>
+			<argument index="1" name="body" type="Node">
+			</argument>
+			<argument index="2" name="body_shape" type="int">
+			</argument>
+			<argument index="3" name="area_shape" type="int">
+			</argument>
+			<description>
+				Emitted when a physics body enters, reporting which shapes overlapped.
+				The [code]body[/code] argument can either be a [PhysicsBody3D] or a [GridMap] instance (while GridMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body).
+			</description>
+		</signal>
+		<signal name="body_shape_exited">
+			<argument index="0" name="body_id" type="int">
+			</argument>
+			<argument index="1" name="body" type="Node">
+			</argument>
+			<argument index="2" name="body_shape" type="int">
+			</argument>
+			<argument index="3" name="area_shape" type="int">
+			</argument>
+			<description>
+				Emitted when a physics body exits, reporting which shapes were overlapping.
+				The [code]body[/code] argument can either be a [PhysicsBody3D] or a [GridMap] instance (while GridMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body).
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="SPACE_OVERRIDE_DISABLED" value="0" enum="SpaceOverride">
+			This area does not affect gravity/damping.
+		</constant>
+		<constant name="SPACE_OVERRIDE_COMBINE" value="1" enum="SpaceOverride">
+			This area adds its gravity/damping values to whatever has been calculated so far (in [member priority] order).
+		</constant>
+		<constant name="SPACE_OVERRIDE_COMBINE_REPLACE" value="2" enum="SpaceOverride">
+			This area adds its gravity/damping values to whatever has been calculated so far (in [member priority] order), ignoring any lower priority areas.
+		</constant>
+		<constant name="SPACE_OVERRIDE_REPLACE" value="3" enum="SpaceOverride">
+			This area replaces any gravity/damping, even the defaults, ignoring any lower priority areas.
+		</constant>
+		<constant name="SPACE_OVERRIDE_REPLACE_COMBINE" value="4" enum="SpaceOverride">
+			This area replaces any gravity/damping calculated so far (in [member priority] order), but keeps calculating the rest of the areas.
+		</constant>
+	</constants>
+</class>

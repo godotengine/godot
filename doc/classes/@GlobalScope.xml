@@ -36,8 +36,8 @@
 		<member name="IP" type="IP" setter="" getter="">
 			The [IP] singleton.
 		</member>
-		<member name="Input" type="Input" setter="" getter="">
-			The [Input] singleton.
+		<member name="Input" type="InputFilter" setter="" getter="">
+			The [InputFilter] singleton.
 		</member>
 		<member name="InputMap" type="InputMap" setter="" getter="">
 			The [InputMap] singleton.
@@ -56,14 +56,14 @@
 		<member name="Marshalls" type="Marshalls" setter="" getter="">
 			The [Marshalls] singleton.
 		</member>
-		<member name="Navigation2DServer" type="Navigation2DServer" setter="" getter="">
-			The [Navigation2DServer] singleton.
-		</member>
 		<member name="NavigationMeshGenerator" type="NavigationMeshGenerator" setter="" getter="">
 			The [NavigationMeshGenerator] singleton.
 		</member>
-		<member name="NavigationServer" type="NavigationServer" setter="" getter="">
-			The [NavigationServer] singleton.
+		<member name="NavigationServer2D" type="NavigationServer2D" setter="" getter="">
+			The [NavigationServer2D] singleton.
+		</member>
+		<member name="NavigationServer3D" type="NavigationServer3D" setter="" getter="">
+			The [NavigationServer2D] singleton.
 		</member>
 		<member name="OS" type="OS" setter="" getter="">
 			The [OS] singleton.
@@ -71,14 +71,17 @@
 		<member name="Performance" type="Performance" setter="" getter="">
 			The [Performance] singleton.
 		</member>
-		<member name="Physics2DServer" type="Physics2DServer" setter="" getter="">
-			The [Physics2DServer] singleton.
+		<member name="PhysicsServer2D" type="PhysicsServer2D" setter="" getter="">
+			The [PhysicsServer2D] singleton.
 		</member>
-		<member name="PhysicsServer" type="PhysicsServer" setter="" getter="">
-			The [PhysicsServer] singleton.
+		<member name="PhysicsServer3D" type="PhysicsServer3D" setter="" getter="">
+			The [PhysicsServer3D] singleton.
 		</member>
 		<member name="ProjectSettings" type="ProjectSettings" setter="" getter="">
 			The [ProjectSettings] singleton.
+		</member>
+		<member name="RenderingServer" type="RenderingServer" setter="" getter="">
+			The [RenderingServer] singleton.
 		</member>
 		<member name="ResourceLoader" type="ResourceLoader" setter="" getter="">
 			The [ResourceLoader] singleton.
@@ -91,9 +94,6 @@
 		</member>
 		<member name="VisualScriptEditor" type="VisualScriptEditor" setter="" getter="">
 			The [VisualScriptEditor] singleton.
-		</member>
-		<member name="VisualServer" type="VisualServer" setter="" getter="">
-			The [VisualServer] singleton.
 		</member>
 	</members>
 	<constants>

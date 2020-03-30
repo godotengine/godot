@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventScreenDrag" inherits="InputEvent" version="4.0">
+<class name="InputEventScreenDrag" inherits="InputEventFromWindow" version="4.0">
 	<brief_description>
 		Input event type for screen drag events. Only available on mobile devices.
 	</brief_description>

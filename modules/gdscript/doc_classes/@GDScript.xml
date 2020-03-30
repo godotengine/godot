@@ -1216,7 +1216,7 @@
 			<description>
 				Returns whether the given class exists in [ClassDB].
 				[codeblock]
-				type_exists("Sprite") # Returns true
+				type_exists("Sprite2D") # Returns true
 				type_exists("Variant") # Returns false
 				[/codeblock]
 			</description>

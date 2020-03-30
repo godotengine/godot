@@ -5919,8 +5919,8 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<SpringArmNode3DGizmoPlugin>(memnew(SpringArmNode3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<VehicleWheelNode3DGizmoPlugin>(memnew(VehicleWheelNode3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<VisibilityNotifierGizmoPlugin>(memnew(VisibilityNotifierGizmoPlugin)));
-	add_gizmo_plugin(Ref<ParticlesGizmoPlugin>(memnew(ParticlesGizmoPlugin)));
-	add_gizmo_plugin(Ref<CPUParticlesGizmoPlugin>(memnew(CPUParticlesGizmoPlugin)));
+	add_gizmo_plugin(Ref<GPUParticles3DGizmoPlugin>(memnew(GPUParticles3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<CPUParticles3DGizmoPlugin>(memnew(CPUParticles3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<ReflectionProbeGizmoPlugin>(memnew(ReflectionProbeGizmoPlugin)));
 	add_gizmo_plugin(Ref<GIProbeGizmoPlugin>(memnew(GIProbeGizmoPlugin)));
 	//	add_gizmo_plugin(Ref<BakedIndirectLightGizmoPlugin>(memnew(BakedIndirectLightGizmoPlugin)));

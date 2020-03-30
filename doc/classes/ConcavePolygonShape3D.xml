@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ConcavePolygonShape3D" inherits="Shape3D" version="4.0">
+	<brief_description>
+		Concave polygon shape.
+	</brief_description>
+	<description>
+		Concave polygon shape resource, which can be set into a [PhysicsBody3D] or area. This shape is created by feeding a list of triangles.
+		Note: when used for collision, [ConcavePolygonShape3D] is intended to work with static [PhysicsBody3D] nodes like [StaticBody3D] and will not work with [KinematicBody3D] or [RigidBody3D] with a mode other than Static.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_faces" qualifiers="const">
+			<return type="PackedVector3Array">
+			</return>
+			<description>
+				Returns the faces (an array of triangles).
+			</description>
+		</method>
+		<method name="set_faces">
+			<return type="void">
+			</return>
+			<argument index="0" name="faces" type="PackedVector3Array">
+			</argument>
+			<description>
+				Sets the faces (an array of triangles).
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

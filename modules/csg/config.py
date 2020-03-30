@@ -8,15 +8,15 @@ def configure(env):
 
 def get_doc_classes():
     return [
-        "CSGBox",
-        "CSGCombiner",
-        "CSGCylinder",
-        "CSGMesh",
-        "CSGPolygon",
-        "CSGPrimitive",
-        "CSGShape",
-        "CSGSphere",
-        "CSGTorus",
+        "CSGBox3D",
+        "CSGCombiner3D",
+        "CSGCylinder3D",
+        "CSGMesh3D",
+        "CSGPolygon3D",
+        "CSGPrimitive3D",
+        "CSGShape3D",
+        "CSGSphere3D",
+        "CSGTorus3D",
     ]
 
 

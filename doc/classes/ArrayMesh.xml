@@ -18,10 +18,10 @@
 		arrays[ArrayMesh.ARRAY_VERTEX] = vertices
 		# Create the Mesh.
 		arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-		var m = MeshInstance.new()
+		var m = MeshInstance3D.new()
 		m.mesh = arr_mesh
 		[/codeblock]
-		The [MeshInstance] is ready to be added to the [SceneTree] to be shown.
+		The [MeshInstance3D] is ready to be added to the [SceneTree] to be shown.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/content/procedural_geometry/arraymesh.html</link>

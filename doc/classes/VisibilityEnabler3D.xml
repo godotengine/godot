@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisibilityEnabler3D" inherits="VisibilityNotifier3D" version="4.0">
+	<brief_description>
+		Enables certain nodes only when visible.
+	</brief_description>
+	<description>
+		The VisibilityEnabler3D will disable [RigidBody3D] and [AnimationPlayer] nodes when they are not visible. It will only affect other nodes within the same scene as the VisibilityEnabler3D itself.
+		Note that VisibilityEnabler3D will not affect nodes added after scene initialization.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="is_enabler_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="enabler" type="int" enum="VisibilityEnabler3D.Enabler">
+			</argument>
+			<description>
+				Returns whether the enabler identified by given [enum Enabler] constant is active.
+			</description>
+		</method>
+		<method name="set_enabler">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabler" type="int" enum="VisibilityEnabler3D.Enabler">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+				Sets active state of the enabler identified by given [enum Enabler] constant.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="freeze_bodies" type="bool" setter="set_enabler" getter="is_enabler_enabled" default="true">
+			If [code]true[/code], [RigidBody3D] nodes will be paused.
+		</member>
+		<member name="pause_animations" type="bool" setter="set_enabler" getter="is_enabler_enabled" default="true">
+			If [code]true[/code], [AnimationPlayer] nodes will be paused.
+		</member>
+	</members>
+	<constants>
+		<constant name="ENABLER_PAUSE_ANIMATIONS" value="0" enum="Enabler">
+			This enabler will pause [AnimationPlayer] nodes.
+		</constant>
+		<constant name="ENABLER_FREEZE_BODIES" value="1" enum="Enabler">
+			This enabler will freeze [RigidBody3D] nodes.
+		</constant>
+		<constant name="ENABLER_MAX" value="2" enum="Enabler">
+			Represents the size of the [enum Enabler] enum.
+		</constant>
+	</constants>
+</class>

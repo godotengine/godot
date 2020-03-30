@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventWithModifiers" inherits="InputEvent" version="4.0">
+<class name="InputEventWithModifiers" inherits="InputEventFromWindow" version="4.0">
 	<brief_description>
 		Base class for keys events with modifiers.
 	</brief_description>

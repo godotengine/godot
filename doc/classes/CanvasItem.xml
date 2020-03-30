@@ -426,7 +426,7 @@
 			<return type="RID">
 			</return>
 			<description>
-				Returns the canvas item RID used by [VisualServer] for this item.
+				Returns the canvas item RID used by [RenderingServer] for this item.
 			</description>
 		</method>
 		<method name="get_canvas_transform" qualifiers="const">

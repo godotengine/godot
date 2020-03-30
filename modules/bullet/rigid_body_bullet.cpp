@@ -48,141 +48,141 @@
 	@author AndreaCatania
 */
 
-BulletPhysicsDirectBodyState *BulletPhysicsDirectBodyState::singleton = NULL;
+BulletPhysicsDirectBodyState3D *BulletPhysicsDirectBodyState3D::singleton = NULL;
 
-Vector3 BulletPhysicsDirectBodyState::get_total_gravity() const {
+Vector3 BulletPhysicsDirectBodyState3D::get_total_gravity() const {
 	Vector3 gVec;
 	B_TO_G(body->btBody->getGravity(), gVec);
 	return gVec;
 }
 
-float BulletPhysicsDirectBodyState::get_total_angular_damp() const {
+float BulletPhysicsDirectBodyState3D::get_total_angular_damp() const {
 	return body->btBody->getAngularDamping();
 }
 
-float BulletPhysicsDirectBodyState::get_total_linear_damp() const {
+float BulletPhysicsDirectBodyState3D::get_total_linear_damp() const {
 	return body->btBody->getLinearDamping();
 }
 
-Vector3 BulletPhysicsDirectBodyState::get_center_of_mass() const {
+Vector3 BulletPhysicsDirectBodyState3D::get_center_of_mass() const {
 	Vector3 gVec;
 	B_TO_G(body->btBody->getCenterOfMassPosition(), gVec);
 	return gVec;
 }
 
-Basis BulletPhysicsDirectBodyState::get_principal_inertia_axes() const {
+Basis BulletPhysicsDirectBodyState3D::get_principal_inertia_axes() const {
 	return Basis();
 }
 
-float BulletPhysicsDirectBodyState::get_inverse_mass() const {
+float BulletPhysicsDirectBodyState3D::get_inverse_mass() const {
 	return body->btBody->getInvMass();
 }
 
-Vector3 BulletPhysicsDirectBodyState::get_inverse_inertia() const {
+Vector3 BulletPhysicsDirectBodyState3D::get_inverse_inertia() const {
 	Vector3 gVec;
 	B_TO_G(body->btBody->getInvInertiaDiagLocal(), gVec);
 	return gVec;
 }
 
-Basis BulletPhysicsDirectBodyState::get_inverse_inertia_tensor() const {
+Basis BulletPhysicsDirectBodyState3D::get_inverse_inertia_tensor() const {
 	Basis gInertia;
 	B_TO_G(body->btBody->getInvInertiaTensorWorld(), gInertia);
 	return gInertia;
 }
 
-void BulletPhysicsDirectBodyState::set_linear_velocity(const Vector3 &p_velocity) {
+void BulletPhysicsDirectBodyState3D::set_linear_velocity(const Vector3 &p_velocity) {
 	body->set_linear_velocity(p_velocity);
 }
 
-Vector3 BulletPhysicsDirectBodyState::get_linear_velocity() const {
+Vector3 BulletPhysicsDirectBodyState3D::get_linear_velocity() const {
 	return body->get_linear_velocity();
 }
 
-void BulletPhysicsDirectBodyState::set_angular_velocity(const Vector3 &p_velocity) {
+void BulletPhysicsDirectBodyState3D::set_angular_velocity(const Vector3 &p_velocity) {
 	body->set_angular_velocity(p_velocity);
 }
 
-Vector3 BulletPhysicsDirectBodyState::get_angular_velocity() const {
+Vector3 BulletPhysicsDirectBodyState3D::get_angular_velocity() const {
 	return body->get_angular_velocity();
 }
 
-void BulletPhysicsDirectBodyState::set_transform(const Transform &p_transform) {
+void BulletPhysicsDirectBodyState3D::set_transform(const Transform &p_transform) {
 	body->set_transform(p_transform);
 }
 
-Transform BulletPhysicsDirectBodyState::get_transform() const {
+Transform BulletPhysicsDirectBodyState3D::get_transform() const {
 	return body->get_transform();
 }
 
-void BulletPhysicsDirectBodyState::add_central_force(const Vector3 &p_force) {
+void BulletPhysicsDirectBodyState3D::add_central_force(const Vector3 &p_force) {
 	body->apply_central_force(p_force);
 }
 
-void BulletPhysicsDirectBodyState::add_force(const Vector3 &p_force, const Vector3 &p_pos) {
+void BulletPhysicsDirectBodyState3D::add_force(const Vector3 &p_force, const Vector3 &p_pos) {
 	body->apply_force(p_force, p_pos);
 }
 
-void BulletPhysicsDirectBodyState::add_torque(const Vector3 &p_torque) {
+void BulletPhysicsDirectBodyState3D::add_torque(const Vector3 &p_torque) {
 	body->apply_torque(p_torque);
 }
 
-void BulletPhysicsDirectBodyState::apply_central_impulse(const Vector3 &p_impulse) {
+void BulletPhysicsDirectBodyState3D::apply_central_impulse(const Vector3 &p_impulse) {
 	body->apply_central_impulse(p_impulse);
 }
 
-void BulletPhysicsDirectBodyState::apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse) {
+void BulletPhysicsDirectBodyState3D::apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse) {
 	body->apply_impulse(p_pos, p_impulse);
 }
 
-void BulletPhysicsDirectBodyState::apply_torque_impulse(const Vector3 &p_impulse) {
+void BulletPhysicsDirectBodyState3D::apply_torque_impulse(const Vector3 &p_impulse) {
 	body->apply_torque_impulse(p_impulse);
 }
 
-void BulletPhysicsDirectBodyState::set_sleep_state(bool p_enable) {
+void BulletPhysicsDirectBodyState3D::set_sleep_state(bool p_enable) {
 	body->set_activation_state(p_enable);
 }
 
-bool BulletPhysicsDirectBodyState::is_sleeping() const {
+bool BulletPhysicsDirectBodyState3D::is_sleeping() const {
 	return !body->is_active();
 }
 
-int BulletPhysicsDirectBodyState::get_contact_count() const {
+int BulletPhysicsDirectBodyState3D::get_contact_count() const {
 	return body->collisionsCount;
 }
 
-Vector3 BulletPhysicsDirectBodyState::get_contact_local_position(int p_contact_idx) const {
+Vector3 BulletPhysicsDirectBodyState3D::get_contact_local_position(int p_contact_idx) const {
 	return body->collisions[p_contact_idx].hitLocalLocation;
 }
 
-Vector3 BulletPhysicsDirectBodyState::get_contact_local_normal(int p_contact_idx) const {
+Vector3 BulletPhysicsDirectBodyState3D::get_contact_local_normal(int p_contact_idx) const {
 	return body->collisions[p_contact_idx].hitNormal;
 }
 
-float BulletPhysicsDirectBodyState::get_contact_impulse(int p_contact_idx) const {
+float BulletPhysicsDirectBodyState3D::get_contact_impulse(int p_contact_idx) const {
 	return body->collisions[p_contact_idx].appliedImpulse;
 }
 
-int BulletPhysicsDirectBodyState::get_contact_local_shape(int p_contact_idx) const {
+int BulletPhysicsDirectBodyState3D::get_contact_local_shape(int p_contact_idx) const {
 	return body->collisions[p_contact_idx].local_shape;
 }
 
-RID BulletPhysicsDirectBodyState::get_contact_collider(int p_contact_idx) const {
+RID BulletPhysicsDirectBodyState3D::get_contact_collider(int p_contact_idx) const {
 	return body->collisions[p_contact_idx].otherObject->get_self();
 }
 
-Vector3 BulletPhysicsDirectBodyState::get_contact_collider_position(int p_contact_idx) const {
+Vector3 BulletPhysicsDirectBodyState3D::get_contact_collider_position(int p_contact_idx) const {
 	return body->collisions[p_contact_idx].hitWorldLocation;
 }
 
-ObjectID BulletPhysicsDirectBodyState::get_contact_collider_id(int p_contact_idx) const {
+ObjectID BulletPhysicsDirectBodyState3D::get_contact_collider_id(int p_contact_idx) const {
 	return body->collisions[p_contact_idx].otherObject->get_instance_id();
 }
 
-int BulletPhysicsDirectBodyState::get_contact_collider_shape(int p_contact_idx) const {
+int BulletPhysicsDirectBodyState3D::get_contact_collider_shape(int p_contact_idx) const {
 	return body->collisions[p_contact_idx].other_object_shape;
 }
 
-Vector3 BulletPhysicsDirectBodyState::get_contact_collider_velocity_at_position(int p_contact_idx) const {
+Vector3 BulletPhysicsDirectBodyState3D::get_contact_collider_velocity_at_position(int p_contact_idx) const {
 	RigidBodyBullet::CollisionData &colDat = body->collisions.write[p_contact_idx];
 
 	btVector3 hitLocation;
@@ -194,7 +194,7 @@ Vector3 BulletPhysicsDirectBodyState::get_contact_collider_velocity_at_position(
 	return velocityAtPoint;
 }
 
-PhysicsDirectSpaceState3D *BulletPhysicsDirectBodyState::get_space_state() {
+PhysicsDirectSpaceState3D *BulletPhysicsDirectBodyState3D::get_space_state() {
 	return body->get_space()->get_direct_state();
 }
 
@@ -359,7 +359,7 @@ void RigidBodyBullet::dispatch_callbacks() {
 		if (omit_forces_integration)
 			btBody->clearForces();
 
-		BulletPhysicsDirectBodyState *bodyDirect = BulletPhysicsDirectBodyState::get_singleton(this);
+		BulletPhysicsDirectBodyState3D *bodyDirect = BulletPhysicsDirectBodyState3D::get_singleton(this);
 
 		Variant variantBodyDirect = bodyDirect;
 

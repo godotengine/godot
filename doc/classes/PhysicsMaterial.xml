@@ -4,7 +4,7 @@
 		A material for physics properties.
 	</brief_description>
 	<description>
-		Provides a means of modifying the collision properties of a [PhysicsBody].
+		Provides a means of modifying the collision properties of a [PhysicsBody3D].
 	</description>
 	<tutorials>
 	</tutorials>

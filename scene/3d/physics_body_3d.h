@@ -156,7 +156,7 @@ protected:
 			tagged = false;
 		}
 	};
-	struct RigidBody_RemoveAction {
+	struct RigidBody3D_RemoveAction {
 
 		ObjectID body_id;
 		ShapePair pair;

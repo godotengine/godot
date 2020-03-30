@@ -228,7 +228,7 @@ String CPUParticles3D::get_configuration_warning() const {
 										get_param_curve(PARAM_ANIM_SPEED).is_valid() || get_param_curve(PARAM_ANIM_OFFSET).is_valid())) {
 		if (warnings != String())
 			warnings += "\n";
-		warnings += "- " + TTR("CPUParticles animation requires the usage of a StandardMaterial3D whose Billboard Mode is set to \"Particle Billboard\".");
+		warnings += "- " + TTR("CPUParticles3D animation requires the usage of a StandardMaterial3D whose Billboard Mode is set to \"Particle Billboard\".");
 	}
 
 	return warnings;
@@ -1206,7 +1206,7 @@ void CPUParticles3D::_notification(int p_what) {
 void CPUParticles3D::convert_from_particles(Node *p_particles) {
 
 	GPUParticles3D *particles = Object::cast_to<GPUParticles3D>(p_particles);
-	ERR_FAIL_COND_MSG(!particles, "Only Particles nodes can be converted to CPUParticles.");
+	ERR_FAIL_COND_MSG(!particles, "Only GPUParticles3D nodes can be converted to CPUParticles3D.");
 
 	set_emitting(particles->is_emitting());
 	set_amount(particles->get_amount());

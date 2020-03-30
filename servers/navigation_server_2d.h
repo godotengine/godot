@@ -39,7 +39,7 @@
 #include "core/rid.h"
 #include "scene/2d/navigation_region_2d.h"
 
-// This server exposes the 3D `NavigationServer` features in the 2D world.
+// This server exposes the `NavigationServer3D` features in the 2D world.
 class NavigationServer2D : public Object {
 	GDCLASS(NavigationServer2D, Object);
 

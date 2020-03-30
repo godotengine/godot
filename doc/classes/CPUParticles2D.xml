@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		CPU-based 2D particle node used to create a variety of particle systems and effects.
-		See also [Particles2D], which provides the same functionality with hardware acceleration, but may not run on older devices.
+		See also [GPUParticles2D], which provides the same functionality with hardware acceleration, but may not run on older devices.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/2d/particle_systems_2d.html</link>
@@ -17,7 +17,7 @@
 			<argument index="0" name="particles" type="Node">
 			</argument>
 			<description>
-				Sets this node's properties to match a given [Particles2D] node with an assigned [ParticlesMaterial].
+				Sets this node's properties to match a given [GPUParticles2D] node with an assigned [ParticlesMaterial].
 			</description>
 		</method>
 		<method name="get_param" qualifiers="const">

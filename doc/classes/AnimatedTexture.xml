@@ -4,7 +4,7 @@
 		Proxy texture for simple frame-based animations.
 	</brief_description>
 	<description>
-		[AnimatedTexture] is a resource format for frame-based animations, where multiple textures can be chained automatically with a predefined delay for each frame. Unlike [AnimationPlayer] or [AnimatedSprite], it isn't a [Node], but has the advantage of being usable anywhere a [Texture2D] resource can be used, e.g. in a [TileSet].
+		[AnimatedTexture] is a resource format for frame-based animations, where multiple textures can be chained automatically with a predefined delay for each frame. Unlike [AnimationPlayer] or [AnimatedSprite2D], it isn't a [Node], but has the advantage of being usable anywhere a [Texture2D] resource can be used, e.g. in a [TileSet].
 		The playback of the animation is controlled by the [member fps] property as well as each frame's optional delay (see [method set_frame_delay]). The animation loops, i.e. it will restart at frame 0 automatically after playing the last frame.
 		[AnimatedTexture] currently requires all frame textures to have the same size, otherwise the bigger ones will be cropped to match the smallest one. Also, it doesn't support [AtlasTexture]. Each frame needs to be separate image.
 	</description>
@@ -71,7 +71,7 @@
 	</members>
 	<constants>
 		<constant name="MAX_FRAMES" value="256">
-			The maximum number of frames supported by [AnimatedTexture]. If you need more frames in your animation, use [AnimationPlayer] or [AnimatedSprite].
+			The maximum number of frames supported by [AnimatedTexture]. If you need more frames in your animation, use [AnimationPlayer] or [AnimatedSprite2D].
 		</constant>
 	</constants>
 </class>

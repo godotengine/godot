@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ImmediateGeometry3D" inherits="GeometryInstance3D" version="4.0">
+	<brief_description>
+		Draws simple geometry from code.
+	</brief_description>
+	<description>
+		Draws simple geometry from code. Uses a drawing mode similar to OpenGL 1.x.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_sphere">
+			<return type="void">
+			</return>
+			<argument index="0" name="lats" type="int">
+			</argument>
+			<argument index="1" name="lons" type="int">
+			</argument>
+			<argument index="2" name="radius" type="float">
+			</argument>
+			<argument index="3" name="add_uv" type="bool" default="true">
+			</argument>
+			<description>
+				Simple helper to draw an UV sphere with given latitude, longitude and radius.
+			</description>
+		</method>
+		<method name="add_vertex">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="Vector3">
+			</argument>
+			<description>
+				Adds a vertex in local coordinate space with the currently set color/uv/etc.
+			</description>
+		</method>
+		<method name="begin">
+			<return type="void">
+			</return>
+			<argument index="0" name="primitive" type="int" enum="Mesh.PrimitiveType">
+			</argument>
+			<argument index="1" name="texture" type="Texture2D" default="null">
+			</argument>
+			<description>
+				Begin drawing (and optionally pass a texture override). When done call [method end]. For more information on how this works, search for [code]glBegin()[/code] and [code]glEnd()[/code] references.
+				For the type of primitive, see the [enum Mesh.PrimitiveType] enum.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<description>
+				Clears everything that was drawn using begin/end.
+			</description>
+		</method>
+		<method name="end">
+			<return type="void">
+			</return>
+			<description>
+				Ends a drawing context and displays the results.
+			</description>
+		</method>
+		<method name="set_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+				The current drawing color.
+			</description>
+		</method>
+		<method name="set_normal">
+			<return type="void">
+			</return>
+			<argument index="0" name="normal" type="Vector3">
+			</argument>
+			<description>
+				The next vertex's normal.
+			</description>
+		</method>
+		<method name="set_tangent">
+			<return type="void">
+			</return>
+			<argument index="0" name="tangent" type="Plane">
+			</argument>
+			<description>
+				The next vertex's tangent (and binormal facing).
+			</description>
+		</method>
+		<method name="set_uv">
+			<return type="void">
+			</return>
+			<argument index="0" name="uv" type="Vector2">
+			</argument>
+			<description>
+				The next vertex's UV.
+			</description>
+		</method>
+		<method name="set_uv2">
+			<return type="void">
+			</return>
+			<argument index="0" name="uv" type="Vector2">
+			</argument>
+			<description>
+				The next vertex's second layer UV.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

@@ -236,8 +236,8 @@ public:
 	VisibilityNotifierGizmoPlugin();
 };
 
-class CPUParticlesGizmoPlugin : public EditorNode3DGizmoPlugin {
-	GDCLASS(CPUParticlesGizmoPlugin, EditorNode3DGizmoPlugin);
+class CPUParticles3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(CPUParticles3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial);
@@ -245,12 +245,12 @@ public:
 	int get_priority() const;
 	bool is_selectable_when_hidden() const;
 	void redraw(EditorNode3DGizmo *p_gizmo);
-	CPUParticlesGizmoPlugin();
+	CPUParticles3DGizmoPlugin();
 };
 
-class ParticlesGizmoPlugin : public EditorNode3DGizmoPlugin {
+class GPUParticles3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(ParticlesGizmoPlugin, EditorNode3DGizmoPlugin);
+	GDCLASS(GPUParticles3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial);
@@ -264,7 +264,7 @@ public:
 	void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point);
 	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
 
-	ParticlesGizmoPlugin();
+	GPUParticles3DGizmoPlugin();
 };
 
 class ReflectionProbeGizmoPlugin : public EditorNode3DGizmoPlugin {

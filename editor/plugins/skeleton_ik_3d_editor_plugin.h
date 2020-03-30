@@ -51,7 +51,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_name() const { return "SkeletonIK"; }
+	virtual String get_name() const { return "SkeletonIK3D"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_object);
 	virtual bool handles(Object *p_object) const;

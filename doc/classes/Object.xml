@@ -314,7 +314,7 @@
 		<method name="has_signal" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="signal" type="String">
+			<argument index="0" name="signal" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if the given [code]signal[/code] exists.
