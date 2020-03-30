@@ -158,8 +158,8 @@ static Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer) {
 	const uint8_t *ptr = r;
 	int size = p_buffer.size();
 
-	basist::transcoder_texture_format format;
-	Image::Format imgfmt;
+	basist::transcoder_texture_format format = basist::transcoder_texture_format::cTFTotalTextureFormats;
+	Image::Format imgfmt = Image::FORMAT_MAX;
 
 	switch (*(uint32_t *)(ptr)) {
 		case BASIS_DECOMPRESS_RG: {

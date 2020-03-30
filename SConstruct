@@ -126,7 +126,7 @@ opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
 opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", False))
 opts.Add(BoolVariable("progress", "Show a progress indicator during compilation", True))
 opts.Add(EnumVariable("warnings", "Level of compilation warnings", "all", ("extra", "all", "moderate", "no")))
-opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", False))
+opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", True))
 opts.Add(BoolVariable("dev", "If yes, alias for verbose=yes warnings=extra werror=yes", False))
 opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all generated binary files", "")
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
@@ -448,6 +448,8 @@ if selected_platform in platform_list:
             # FIXME: Temporary workaround after the Vulkan merge, remove once warnings are fixed.
             if methods.using_gcc(env):
                 env.Append(CXXFLAGS=["-Wno-error=cpp"])
+                if cc_version_major == 7:  # Bogus warning fixed in 8+.
+                    env.Append(CCFLAGS=["-Wno-error=strict-overflow"])
             else:
                 env.Append(CXXFLAGS=["-Wno-error=#warnings"])
         else:  # always enable those errors
