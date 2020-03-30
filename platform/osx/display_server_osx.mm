@@ -278,13 +278,17 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 }
 
 - (BOOL)windowShouldClose:(id)sender {
-	ERR_FAIL_COND_V(!DS_OSX->windows.has(window_id), YES);
+	if (!DS_OSX || !DS_OSX->windows.has(window_id)) {
+		return YES;
+	}
 	DS_OSX->_send_window_event(DS_OSX->windows[window_id], DisplayServerOSX::WINDOW_EVENT_CLOSE_REQUEST);
 	return NO;
 }
 
 - (void)windowWillClose:(NSNotification *)notification {
-	ERR_FAIL_COND(!DS_OSX->windows.has(window_id));
+	if (!DS_OSX || !DS_OSX->windows.has(window_id)) {
+		return;
+	}
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
 	while (wd.transient_children.size()) {
@@ -310,7 +314,9 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification *)notification {
-	ERR_FAIL_COND(!DS_OSX->windows.has(window_id));
+	if (!DS_OSX || !DS_OSX->windows.has(window_id)) {
+		return;
+	}
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
 	wd.fullscreen = true;
@@ -320,8 +326,9 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 }
 
 - (void)windowDidExitFullScreen:(NSNotification *)notification {
-	if (!DS_OSX || !DS_OSX->windows.has(window_id))
+	if (!DS_OSX || !DS_OSX->windows.has(window_id)) {
 		return;
+	}
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
 	wd.fullscreen = false;
@@ -383,8 +390,9 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 }
 
 - (void)windowDidResize:(NSNotification *)notification {
-	if (!DS_OSX || !DS_OSX->windows.has(window_id))
+	if (!DS_OSX || !DS_OSX->windows.has(window_id)) {
 		return;
+	}
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
 #if defined(OPENGL_ENABLED)
@@ -425,11 +433,26 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 }
 
 - (void)windowDidMove:(NSNotification *)notification {
+	if (!DS_OSX || !DS_OSX->windows.has(window_id)) {
+		return;
+	}
+	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
+
 	DS_OSX->_release_pressed_events();
+
+	if (!wd.rect_changed_callback.is_null()) {
+		Variant size = Rect2i(DS_OSX->window_get_position(window_id), DS_OSX->window_get_size(window_id));
+		Variant *sizep = &size;
+		Variant ret;
+		Callable::CallError ce;
+		wd.rect_changed_callback.call((const Variant **)&sizep, 1, ret, ce);
+	}
 }
 
 - (void)windowDidBecomeKey:(NSNotification *)notification {
-	ERR_FAIL_COND(!DS_OSX->windows.has(window_id));
+	if (!DS_OSX || !DS_OSX->windows.has(window_id)) {
+		return;
+	}
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
 	const CGFloat backingScaleFactor = (OS::get_singleton()->is_hidpi_allowed()) ? [wd.window_view backingScaleFactor] : 1.0;
@@ -441,7 +464,9 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 }
 
 - (void)windowDidResignKey:(NSNotification *)notification {
-	ERR_FAIL_COND(!DS_OSX->windows.has(window_id));
+	if (!DS_OSX || !DS_OSX->windows.has(window_id)) {
+		return;
+	}
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
 	DS_OSX->window_focused = false;
@@ -451,7 +476,9 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 }
 
 - (void)windowDidMiniaturize:(NSNotification *)notification {
-	ERR_FAIL_COND(!DS_OSX->windows.has(window_id));
+	if (!DS_OSX || !DS_OSX->windows.has(window_id)) {
+		return;
+	}
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
 	DS_OSX->window_focused = false;
@@ -461,7 +488,9 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 }
 
 - (void)windowDidDeminiaturize:(NSNotification *)notification {
-	ERR_FAIL_COND(!DS_OSX->windows.has(window_id));
+	if (!DS_OSX || !DS_OSX->windows.has(window_id)) {
+		return;
+	}
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
 	DS_OSX->window_focused = true;
@@ -2148,7 +2177,7 @@ Rect2i DisplayServerOSX::screen_get_usable_rect(int p_screen) const {
 
 		Point2i position = Point2i(nsrect.origin.x, nsrect.origin.y + nsrect.size.height) * displayScale - _get_screens_origin();
 		position.y *= -1;
-		Size2i size = Size2i(nsrect.size.width, nsrect.size.height) / displayScale;
+		Size2i size = Size2i(nsrect.size.width, nsrect.size.height) * displayScale;
 
 		return Rect2i(position, size);
 	}
