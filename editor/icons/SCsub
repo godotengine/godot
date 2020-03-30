@@ -1,21 +1,21 @@
 #!/usr/bin/env python
 
-Import('env')
+Import("env")
 
 from platform_methods import run_in_subprocess
 import editor_icons_builders
 
-make_editor_icons_builder = Builder(action=run_in_subprocess(editor_icons_builders.make_editor_icons_action),
-                                    suffix='.h',
-                                    src_suffix='.svg')
+make_editor_icons_builder = Builder(
+    action=run_in_subprocess(editor_icons_builders.make_editor_icons_action), suffix=".h", src_suffix=".svg"
+)
 
-env['BUILDERS']['MakeEditorIconsBuilder'] = make_editor_icons_builder
+env["BUILDERS"]["MakeEditorIconsBuilder"] = make_editor_icons_builder
 
 # Editor's own icons
 icon_sources = Glob("*.svg")
 
 # Module icons
 for module_icons in env.module_icons_paths:
-    icon_sources += Glob('#' + module_icons + "/*.svg")
+    icon_sources += Glob("#" + module_icons + "/*.svg")
 
-env.Alias('editor_icons', [env.MakeEditorIconsBuilder('#editor/editor_icons.gen.h', icon_sources)])
+env.Alias("editor_icons", [env.MakeEditorIconsBuilder("#editor/editor_icons.gen.h", icon_sources)])

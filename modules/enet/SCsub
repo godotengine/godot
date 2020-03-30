@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-Import('env')
-Import('env_modules')
+Import("env")
+Import("env_modules")
 
 env_enet = env_modules.Clone()
 
 # Thirdparty source files
 
-if env['builtin_enet']:
+if env["builtin_enet"]:
     thirdparty_dir = "#thirdparty/enet/"
     thirdparty_sources = [
         "godot.cpp",

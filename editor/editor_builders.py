@@ -25,6 +25,7 @@ def make_doc_header(target, source, env):
     buf = (docbegin + buf + docend).encode("utf-8")
     decomp_size = len(buf)
     import zlib
+
     buf = zlib.compress(buf)
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
@@ -55,7 +56,7 @@ def make_fonts_header(target, source, env):
     # saving uncompressed, since freetype will reference from memory pointer
     xl_names = []
     for i in range(len(source)):
-        with open(source[i], "rb")as f:
+        with open(source[i], "rb") as f:
             buf = f.read()
 
         name = os.path.splitext(os.path.basename(source[i]))[0]
@@ -111,7 +112,9 @@ def make_translations_header(target, source, env, category):
     g.write("};\n\n")
     g.write("static {}TranslationList _{}_translations[] = {{\n".format(category.capitalize(), category))
     for x in xl_names:
-        g.write("\t{{ \"{}\", {}, {}, _{}_translation_{}_compressed }},\n".format(x[0], str(x[1]), str(x[2]), category, x[0]))
+        g.write(
+            '\t{{ "{}", {}, {}, _{}_translation_{}_compressed }},\n'.format(x[0], str(x[1]), str(x[2]), category, x[0])
+        )
     g.write("\t{NULL, 0, 0, NULL}\n")
     g.write("};\n")
 
@@ -128,5 +131,5 @@ def make_doc_translations_header(target, source, env):
     make_translations_header(target, source, env, "doc")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     subprocess_main(globals())

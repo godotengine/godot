@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-Import('env')
-Import('env_modules')
+Import("env")
+Import("env_modules")
 
 env_camera = env_modules.Clone()
 
@@ -10,7 +10,7 @@ if env["platform"] == "iphone":
     modules_sources = []
     env_camera.add_source_files(modules_sources, "register_types.cpp")
     env_camera.add_source_files(modules_sources, "camera_ios.mm")
-    mod_lib = env_modules.add_library('#bin/libgodot_camera_module' + env['LIBSUFFIX'], modules_sources)
+    mod_lib = env_modules.add_library("#bin/libgodot_camera_module" + env["LIBSUFFIX"], modules_sources)
 
 elif env["platform"] == "windows":
     env_camera.add_source_files(env.modules_sources, "register_types.cpp")
@@ -19,4 +19,3 @@ elif env["platform"] == "windows":
 elif env["platform"] == "osx":
     env_camera.add_source_files(env.modules_sources, "register_types.cpp")
     env_camera.add_source_files(env.modules_sources, "camera_osx.mm")
-

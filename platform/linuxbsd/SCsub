@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-Import('env')
+Import("env")
 
 from platform_methods import run_in_subprocess
 import platform_linuxbsd_builders
@@ -14,10 +14,9 @@ common_x11 = [
     "display_server_x11.cpp",
     "vulkan_context_x11.cpp",
     "key_mapping_x11.cpp",
-
 ]
 
-prog = env.add_program('#bin/godot', ['godot_linuxbsd.cpp'] + common_x11)
+prog = env.add_program("#bin/godot", ["godot_linuxbsd.cpp"] + common_x11)
 
 if (env["debug_symbols"] == "full" or env["debug_symbols"] == "yes") and env["separate_debug_symbols"]:
     env.AddPostAction(prog, run_in_subprocess(platform_linuxbsd_builders.make_debug_linuxbsd))

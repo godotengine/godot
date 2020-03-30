@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-Import('env')
-Import('env_modules')
+Import("env")
+Import("env_modules")
 
 env_vhacd = env_modules.Clone()
 
@@ -19,7 +19,7 @@ thirdparty_sources = [
     "src/btAlignedAllocator.cpp",
     "src/vhacdRaycastMesh.cpp",
     "src/VHACD.cpp",
-    "src/btConvexHullComputer.cpp"
+    "src/btConvexHullComputer.cpp",
 ]
 
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]

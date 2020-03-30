@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-Import('env')
-Import('env_modules')
+Import("env")
+Import("env_modules")
 
 env_arkit = env_modules.Clone()
 
@@ -9,4 +9,4 @@ env_arkit = env_modules.Clone()
 modules_sources = []
 env_arkit.add_source_files(modules_sources, "*.cpp")
 env_arkit.add_source_files(modules_sources, "*.mm")
-mod_lib = env_modules.add_library('#bin/libgodot_arkit_module' + env['LIBSUFFIX'], modules_sources)
+mod_lib = env_modules.add_library("#bin/libgodot_arkit_module" + env["LIBSUFFIX"], modules_sources)
