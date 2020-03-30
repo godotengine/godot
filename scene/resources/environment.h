@@ -146,7 +146,6 @@ private:
 	float glow_hdr_bleed_threshold;
 	float glow_hdr_bleed_scale;
 	float glow_hdr_luminance_cap;
-	bool glow_bicubic_upscale;
 
 	bool fog_enabled;
 	Color fog_color;
@@ -317,9 +316,6 @@ public:
 
 	void set_glow_hdr_bleed_scale(float p_scale);
 	float get_glow_hdr_bleed_scale() const;
-
-	void set_glow_bicubic_upscale(bool p_enable);
-	bool is_glow_bicubic_upscale_enabled() const;
 
 	void set_fog_enabled(bool p_enabled);
 	bool is_fog_enabled() const;
