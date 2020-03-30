@@ -6,14 +6,14 @@ import os
 
 env_modules = env.Clone()
 
-Export('env_modules')
+Export("env_modules")
 
 env.modules_sources = []
 
 env_modules.add_source_files(env.modules_sources, "register_module_types.gen.cpp")
 
 for name, path in env.module_list.items():
-    if (name in env.disabled_modules):
+    if name in env.disabled_modules:
         continue
 
     env_modules.Append(CPPDEFINES=["MODULE_" + name.upper() + "_ENABLED"])
@@ -22,8 +22,8 @@ for name, path in env.module_list.items():
     else:
         SConscript(path + "/SCsub")  # Custom.
 
-if env['split_libmodules']:
-    env.split_lib("modules", env_lib = env_modules)
+if env["split_libmodules"]:
+    env.split_lib("modules", env_lib=env_modules)
 else:
     lib = env_modules.add_library("modules", env.modules_sources)
 

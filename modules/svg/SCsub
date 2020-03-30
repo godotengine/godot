@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 
-Import('env')
-Import('env_modules')
+Import("env")
+Import("env_modules")
 
 env_svg = env_modules.Clone()
 
 # Thirdparty source files
 thirdparty_dir = "#thirdparty/nanosvg/"
-thirdparty_sources = [
-		"nanosvg.cc"
-]
+thirdparty_sources = ["nanosvg.cc"]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
 env_svg.Prepend(CPPPATH=[thirdparty_dir])
