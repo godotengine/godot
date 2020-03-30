@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-Import('env')
+Import("env")
 
 import modules_builders
 
 env_modules = env.Clone()
 
-Export('env_modules')
+Export("env_modules")
 
 # Header with MODULE_*_ENABLED defines.
 env.CommandNoCache("modules_enabled.gen.h", Value(env.module_list), modules_builders.generate_modules_enabled)
