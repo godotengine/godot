@@ -1311,6 +1311,7 @@ Error _File::open_encrypted(const String &p_path, ModeFlags p_mode_flags, const 
 		return err;
 	}
 	f = fae;
+	mode_flags = p_mode_flags;
 	return OK;
 }
 
@@ -1329,6 +1330,7 @@ Error _File::open_encrypted_pass(const String &p_path, ModeFlags p_mode_flags, c
 	}
 
 	f = fae;
+	mode_flags = p_mode_flags;
 	return OK;
 }
 
@@ -1346,6 +1348,7 @@ Error _File::open_compressed(const String &p_path, ModeFlags p_mode_flags, Compr
 	}
 
 	f = fac;
+	mode_flags = p_mode_flags;
 	return OK;
 }
 
@@ -1354,6 +1357,7 @@ Error _File::open(const String &p_path, ModeFlags p_mode_flags) {
 	close();
 	Error err;
 	f = FileAccess::open(p_path, p_mode_flags, &err);
+	mode_flags = p_mode_flags;
 	if (f)
 		f->set_endian_swap(eswap);
 	return err;
@@ -1412,37 +1416,44 @@ bool _File::eof_reached() const {
 uint8_t _File::get_8() const {
 
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!(mode_flags & READ), 0, "Unsupported file mode to read.");
 	return f->get_8();
 }
 uint16_t _File::get_16() const {
 
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!(mode_flags & READ), 0, "Unsupported file mode to read.");
 	return f->get_16();
 }
 uint32_t _File::get_32() const {
 
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!(mode_flags & READ), 0, "Unsupported file mode to read.");
 	return f->get_32();
 }
 uint64_t _File::get_64() const {
 
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!(mode_flags & READ), 0, "Unsupported file mode to read.");
 	return f->get_64();
 }
 
 float _File::get_float() const {
 
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!(mode_flags & READ), 0, "Unsupported file mode to read.");
 	return f->get_float();
 }
 double _File::get_double() const {
 
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!(mode_flags & READ), 0, "Unsupported file mode to read.");
 	return f->get_double();
 }
 real_t _File::get_real() const {
 
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!(mode_flags & READ), 0, "Unsupported file mode to read.");
 	return f->get_real();
 }
 
@@ -1450,6 +1461,7 @@ Vector<uint8_t> _File::get_buffer(int p_length) const {
 
 	Vector<uint8_t> data;
 	ERR_FAIL_COND_V_MSG(!f, data, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!(mode_flags & READ), data, "Unsupported file mode to read.");
 
 	ERR_FAIL_COND_V_MSG(p_length < 0, data, "Length of buffer cannot be smaller than 0.");
 	if (p_length == 0)
@@ -1471,6 +1483,7 @@ Vector<uint8_t> _File::get_buffer(int p_length) const {
 String _File::get_as_text() const {
 
 	ERR_FAIL_COND_V_MSG(!f, String(), "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!(mode_flags & READ), String(), "Unsupported file mode to read.");
 
 	String text;
 	size_t original_pos = f->get_position();
@@ -1501,11 +1514,13 @@ String _File::get_sha256(const String &p_path) const {
 String _File::get_line() const {
 
 	ERR_FAIL_COND_V_MSG(!f, String(), "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!(mode_flags & READ), String(), "Unsupported file mode to read.");
 	return f->get_line();
 }
 
 Vector<String> _File::get_csv_line(const String &p_delim) const {
 	ERR_FAIL_COND_V_MSG(!f, Vector<String>(), "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!(mode_flags & READ), Vector<String>(), "Unsupported file mode to read.");
 	return f->get_csv_line(p_delim);
 }
 
@@ -1535,24 +1550,28 @@ Error _File::get_error() const {
 void _File::store_8(uint8_t p_dest) {
 
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!(mode_flags & WRITE), "Unsupported file mode to write.");
 
 	f->store_8(p_dest);
 }
 void _File::store_16(uint16_t p_dest) {
 
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!(mode_flags & WRITE), "Unsupported file mode to write.");
 
 	f->store_16(p_dest);
 }
 void _File::store_32(uint32_t p_dest) {
 
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!(mode_flags & WRITE), "Unsupported file mode to write.");
 
 	f->store_32(p_dest);
 }
 void _File::store_64(uint64_t p_dest) {
 
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!(mode_flags & WRITE), "Unsupported file mode to write.");
 
 	f->store_64(p_dest);
 }
@@ -1560,18 +1579,21 @@ void _File::store_64(uint64_t p_dest) {
 void _File::store_float(float p_dest) {
 
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!(mode_flags & WRITE), "Unsupported file mode to write.");
 
 	f->store_float(p_dest);
 }
 void _File::store_double(double p_dest) {
 
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!(mode_flags & WRITE), "Unsupported file mode to write.");
 
 	f->store_double(p_dest);
 }
 void _File::store_real(real_t p_real) {
 
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!(mode_flags & WRITE), "Unsupported file mode to write.");
 
 	f->store_real(p_real);
 }
@@ -1579,6 +1601,7 @@ void _File::store_real(real_t p_real) {
 void _File::store_string(const String &p_string) {
 
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!(mode_flags & WRITE), "Unsupported file mode to write.");
 
 	f->store_string(p_string);
 }
@@ -1586,6 +1609,7 @@ void _File::store_string(const String &p_string) {
 void _File::store_pascal_string(const String &p_string) {
 
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!(mode_flags & WRITE), "Unsupported file mode to write.");
 
 	f->store_pascal_string(p_string);
 };
@@ -1593,6 +1617,7 @@ void _File::store_pascal_string(const String &p_string) {
 String _File::get_pascal_string() {
 
 	ERR_FAIL_COND_V_MSG(!f, "", "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!(mode_flags & READ), "", "Unsupported file mode to read.");
 
 	return f->get_pascal_string();
 };
@@ -1600,17 +1625,20 @@ String _File::get_pascal_string() {
 void _File::store_line(const String &p_string) {
 
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!(mode_flags & WRITE), "Unsupported file mode to write.");
 	f->store_line(p_string);
 }
 
 void _File::store_csv_line(const Vector<String> &p_values, const String &p_delim) {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!(mode_flags & WRITE), "Unsupported file mode to write.");
 	f->store_csv_line(p_values, p_delim);
 }
 
 void _File::store_buffer(const Vector<uint8_t> &p_buffer) {
 
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!(mode_flags & WRITE), "Unsupported file mode to write.");
 
 	int len = p_buffer.size();
 	if (len == 0)
@@ -1629,6 +1657,7 @@ bool _File::file_exists(const String &p_name) const {
 void _File::store_var(const Variant &p_var, bool p_full_objects) {
 
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!(mode_flags & WRITE), "Unsupported file mode to write.");
 	int len;
 	Error err = encode_variant(p_var, NULL, len, p_full_objects);
 	ERR_FAIL_COND_MSG(err != OK, "Error when trying to encode Variant.");
@@ -1647,6 +1676,7 @@ void _File::store_var(const Variant &p_var, bool p_full_objects) {
 Variant _File::get_var(bool p_allow_objects) const {
 
 	ERR_FAIL_COND_V_MSG(!f, Variant(), "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!(mode_flags & READ), Variant(), "Unsupported file mode to read.");
 	uint32_t len = get_32();
 	Vector<uint8_t> buff = get_buffer(len);
 	ERR_FAIL_COND_V((uint32_t)buff.size() != len, Variant());
@@ -1734,6 +1764,7 @@ void _File::_bind_methods() {
 _File::_File() {
 
 	f = NULL;
+	mode_flags = 0;
 	eswap = false;
 }
 
