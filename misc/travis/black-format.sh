@@ -1,6 +1,7 @@
 #!/bin/sh
 
-CLANG_FORMAT=clang-format-8
+BLACK=black
+BLACK_OPTIONS="-l 120"
 
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     # Travis only clones the PR branch and uses its HEAD commit as detached HEAD,
@@ -19,30 +20,29 @@ else
     RANGE=HEAD
 fi
 
-FILES=$(git diff-tree --no-commit-id --name-only -r $RANGE | grep -v thirdparty/ | grep -v platform/android/java/lib/src/com/ | grep -E "\.(c|h|cpp|hpp|cc|hh|cxx|m|mm|inc|java|glsl)$")
+FILES=$(git diff-tree --no-commit-id --name-only -r $RANGE | grep -v thirdparty/| grep -E "(SConstruct|SCsub|\.py)$")
 echo "Checking files:\n$FILES"
 
 # create a random filename to store our generated patch
-prefix="static-check-clang-format"
+prefix="static-check-black"
 suffix="$(date +%s)"
 patch="/tmp/$prefix-$suffix.patch"
 
 for file in $FILES; do
-    "$CLANG_FORMAT" -style=file "$file" | \
-        diff -u "$file" - | \
-        sed -e "1s|--- |--- a/|" -e "2s|+++ -|+++ b/$file|" >> "$patch"
+    "$BLACK" "$BLACK_OPTIONS" --diff "$file" | \
+        sed -e "1s|--- |--- a/|" -e "2s|+++ |+++ b/|" >> "$patch"
 done
 
 # if no patch has been generated all is ok, clean up the file stub and exit
 if [ ! -s "$patch" ] ; then
-    printf "Files in this commit comply with the clang-format rules.\n"
+    printf "Files in this commit comply with the black formatting rules.\n"
     rm -f "$patch"
     exit 0
 fi
 
 # a patch has been created, notify the user and exit
 printf "\n*** The following differences were found between the code to commit "
-printf "and the clang-format rules:\n\n"
+printf "and the black formatting rules:\n\n"
 pygmentize -l diff "$patch"
 printf "\n*** Aborting, please fix your commit(s) with 'git commit --amend' or 'git rebase -i <hash>'\n"
 exit 1
