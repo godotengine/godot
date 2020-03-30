@@ -31,6 +31,23 @@
 				Adds a frame to the given animation.
 			</description>
 		</method>
+		<method name="add_spritesheet_animation">
+			<return type="void">
+			</return>
+			<argument index="0" name="anim" type="StringName">
+			</argument>
+			<argument index="1" name="texture" type="Texture2D">
+			</argument>
+			<argument index="2" name="hframe" type="int">
+			</argument>
+			<argument index="3" name="vframe" type="int">
+			</argument>
+			<argument index="4" name="selected_frames" type="Array">
+			</argument>
+			<description>
+				Adds an animation by spliting the texture (hframe * vframe), and adds all selected frames to the animation.
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void">
 			</return>

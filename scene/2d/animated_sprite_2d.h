@@ -85,6 +85,7 @@ public:
 	bool get_animation_loop(const StringName &p_anim) const;
 
 	void add_frame(const StringName &p_anim, const Ref<Texture2D> &p_frame, int p_at_pos = -1);
+	void add_spritesheet_animation(const StringName &p_anim, const Ref<Texture2D> &p_texture, int p_hframe, int p_vframe, const Array &p_selected_frames);
 	int get_frame_count(const StringName &p_anim) const;
 	_FORCE_INLINE_ Ref<Texture2D> get_frame(const StringName &p_anim, int p_idx) const {
 

@@ -115,6 +115,29 @@ void SpriteFrames::add_frame(const StringName &p_anim, const Ref<Texture2D> &p_f
 	emit_changed();
 }
 
+void SpriteFrames::add_spritesheet_animation(const StringName &p_anim, const Ref<Texture2D> &p_texture, int p_hframe, int p_vframe, const Array &p_selected_frames) {
+
+	add_animation(p_anim);
+
+	for (int i = 0; i < p_selected_frames.size(); i++) {
+
+		int idx = p_selected_frames[i];
+		int width = p_texture.ptr()->get_size().width / p_hframe;
+		int height = p_texture.ptr()->get_size().height / p_vframe;
+		int xp = idx % p_hframe;
+		int yp = (idx - xp) / p_hframe;
+		int x = xp * width;
+		int y = yp * height;
+
+		Ref<AtlasTexture> at;
+		at.instance();
+		at->set_atlas(p_texture);
+		at->set_region(Rect2(x, y, width, height));
+
+		add_frame(p_anim, at, -1);
+	}
+}
+
 int SpriteFrames::get_frame_count(const StringName &p_anim) const {
 	const Map<StringName, Anim>::Element *E = animations.find(p_anim);
 	ERR_FAIL_COND_V_MSG(!E, 0, "Animation '" + String(p_anim) + "' doesn't exist.");
@@ -305,6 +328,7 @@ void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_animation_loop", "anim"), &SpriteFrames::get_animation_loop);
 
 	ClassDB::bind_method(D_METHOD("add_frame", "anim", "frame", "at_position"), &SpriteFrames::add_frame, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("add_spritesheet_animation", "anim", "texture", "hframe", "vframe", "selected_frames"), &SpriteFrames::add_spritesheet_animation);
 	ClassDB::bind_method(D_METHOD("get_frame_count", "anim"), &SpriteFrames::get_frame_count);
 	ClassDB::bind_method(D_METHOD("get_frame", "anim", "idx"), &SpriteFrames::get_frame);
 	ClassDB::bind_method(D_METHOD("set_frame", "anim", "idx", "txt"), &SpriteFrames::set_frame);
