@@ -141,15 +141,15 @@ void main() {
 	vec4 quarter_res_color = vec4(1.0);
 
 #ifdef USE_CUBEMAP_PASS
-	float using_cubemap = 1.0;
+	vec3 inverted_cube_normal = cube_normal;
+	inverted_cube_normal.z *= -1.0;
 #ifdef USES_HALF_RES_COLOR
-	half_res_color = texture(samplerCube(half_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), cube_normal);
+	half_res_color = texture(samplerCube(half_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), inverted_cube_normal);
 #endif
 #ifdef USES_QUARTER_RES_COLOR
-	quarter_res_color = texture(samplerCube(quarter_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), cube_normal);
+	quarter_res_color = texture(samplerCube(quarter_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), inverted_cube_normal);
 #endif
 #else
-	float using_cubemap = 0.0;
 #ifdef USES_HALF_RES_COLOR
 	half_res_color = textureLod(sampler2D(half_res, material_samplers[SAMPLER_LINEAR_CLAMP]), uv, 0.0);
 #endif
