@@ -18,7 +18,7 @@ def make_splash(target, source, env):
         g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
         g.write("#ifndef BOOT_SPLASH_H\n")
         g.write("#define BOOT_SPLASH_H\n")
-        g.write('static const Color boot_splash_bg_color = Color(0.14, 0.14, 0.14);\n')
+        g.write("static const Color boot_splash_bg_color = Color(0.14, 0.14, 0.14);\n")
         g.write("static const unsigned char boot_splash_png[] = {\n")
         for i in range(len(buf)):
             g.write(str(buf[i]) + ",\n")
@@ -37,7 +37,7 @@ def make_splash_editor(target, source, env):
         g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
         g.write("#ifndef BOOT_SPLASH_EDITOR_H\n")
         g.write("#define BOOT_SPLASH_EDITOR_H\n")
-        g.write('static const Color boot_splash_editor_bg_color = Color(0.14, 0.14, 0.14);\n')
+        g.write("static const Color boot_splash_editor_bg_color = Color(0.14, 0.14, 0.14);\n")
         g.write("static const unsigned char boot_splash_editor_png[] = {\n")
         for i in range(len(buf)):
             g.write(str(buf[i]) + ",\n")
@@ -63,5 +63,5 @@ def make_app_icon(target, source, env):
         g.write("#endif")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     subprocess_main(globals())
