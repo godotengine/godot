@@ -341,7 +341,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
     class_name = class_def.name
 
     if dry_run:
-        f = open(os.devnull, "w")
+        f = open(os.devnull, "w", encoding="utf-8")
     else:
         f = open(os.path.join(output_dir, "class_" + class_name.lower() + '.rst'), 'w', encoding='utf-8')
 
