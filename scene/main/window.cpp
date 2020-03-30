@@ -1024,6 +1024,15 @@ void Window::popup(const Rect2i &p_screen_rect) {
 		set_size(adjust.size);
 	}
 
+	int scr = DisplayServer::get_singleton()->get_screen_count();
+	for (int i = 0; i < scr; i++) {
+		Rect2i r = DisplayServer::get_singleton()->screen_get_usable_rect(i);
+		if (r.has_point(position)) {
+			current_screen = i;
+			break;
+		}
+	}
+
 	set_transient(true);
 	set_visible(true);
 	_post_popup();
