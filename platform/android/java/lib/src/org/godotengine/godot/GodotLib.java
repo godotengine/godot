@@ -92,22 +92,22 @@ public class GodotLib {
 	/**
 	 * Forward touch events from the main thread to the GL thread.
 	 */
-	public static native void touch(int buttonState, int eventType, int pointerIndex, int pointersCount, int[] pointersInfo);
+	public static native void touch(int buttonState, int eventType, int pointerIndex, int pointersCount, int[] pointersInfo, float[] pointersPosition);
 
 	/**
 	 * Forward hover events from the main thread to the GL thread.
 	 */
-	public static native void hover(int toolType, int eventType, int x, int y);
+	public static native void hover(int toolType, int eventType, float x, float y);
 
 	/**
 	 * Forward double_tap events from the main thread to the GL thread.
 	 */
-	public static native void doubleTap(int toolType, int buttonState, int x, int y);
+	public static native void doubleTap(int toolType, int buttonState, float x, float y);
 
 	/**
 	 * Forward scroll events from the main thread to the GL thread.
 	 */
-	public static native void scroll(int toolType, int startX, int startY, int endX, int endY, float xScroll, float yScroll);
+	public static native void scroll(int toolType, float startX, float startY, float endX, float endY, float xScroll, float yScroll);
 
 	/**
 	 * Forward accelerometer sensor events from the main thread to the GL thread.

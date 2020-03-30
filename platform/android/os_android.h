@@ -49,20 +49,37 @@ public:
 	enum {
 		// Must match org.godotengine.godot.input.GodotInputHandler#POINTER_INFO_ID_OFFSET
 		TOUCH_POINTER_INFO_ID_OFFSET = 0,
-		// Must match org.godotengine.godot.input.GodotInputHandler#POINTER_INFO_X_OFFSET
-		TOUCH_POINTER_INFO_X_OFFSET = 1,
-		// Must match org.godotengine.godot.input.GodotInputHandler#POINTER_INFO_Y_OFFSET
-		TOUCH_POINTER_INFO_Y_OFFSET = 2,
 		// Must match org.godotengine.godot.input.GodotInputHandler#POINTER_INFO_TOOL_TYPE_OFFSET
-		TOUCH_POINTER_INFO_TOOL_TYPE_OFFSET = 3,
+		TOUCH_POINTER_INFO_TOOL_TYPE_OFFSET = 1,
 		// Must match org.godotengine.godot.input.GodotInputHandler#POINTER_INFO_SIZE
-		TOUCH_POINTER_INFO_SIZE = 4
+		TOUCH_POINTER_INFO_SIZE = 2
+	};
+
+	// Android MotionEvent's TOOL_TYPE_* constants.
+	enum {
+	  TOOL_TYPE_UNKNOWN = 0,
+	  TOOL_TYPE_FINGER = 1,
+	  TOOL_TYPE_STYLUS = 2,
+	  TOOL_TYPE_MOUSE = 3,
+	  TOOL_TYPE_ERASER = 4
+	};
+
+	// Android MotionEvent's BUTTON_* constants.
+	enum {
+	  BUTTON_PRIMARY = 1,
+	  BUTTON_SECONDARY = 2,
+	  BUTTON_TERTIARY = 4,
+	  BUTTON_BACK = 8,
+	  BUTTON_FORWARD = 16,
+	  BUTTON_STYLUS_PRIMARY = 32,
+	  BUTTON_STYLUS_SECONDARY = 64
 	};
 
 	struct TouchPos {
 		int id;
 		Point2 pos;
 		int tool_type;
+		int button_state;
 	};
 
 	enum {
@@ -83,8 +100,9 @@ public:
 
 private:
 	Vector<TouchPos> touch;
-	Point2 hover_prev_pos; // needed to calculate the relative position on hover events
-	Point2 scroll_prev_pos; // needed to calculate the relative position on scroll events
+	Point2 hover_prev_pos = Point2(); // needed to calculate the relative position on hover events
+	int last_mouse_buttons_state = 0;
+	Point2 last_mouse_position = Point2();
 
 	bool use_gl2;
 	bool use_apk_expansion;
@@ -198,10 +216,10 @@ public:
 	void process_gravity(const Vector3 &p_gravity);
 	void process_magnetometer(const Vector3 &p_magnetometer);
 	void process_gyroscope(const Vector3 &p_gyroscope);
-	void process_touch(int p_what, int p_pointer, const Vector<TouchPos> &p_points);
-	void process_hover(int p_type, Point2 p_pos);
-	void process_double_tap(Point2 p_pos);
-	void process_scroll(Point2 p_pos);
+	void process_touch(int event_type, int p_pointer, const Vector<TouchPos> &p_points);
+	void process_hover(int tool_type, int p_type, Point2 p_pos);
+	void process_double_tap(int tool_type, int button_state, Point2 p_pos);
+	void process_scroll(int tool_type, Point2 start, Point2 end, Vector2 scroll_delta);
 	void process_joy_event(JoypadEvent p_event);
 	void process_event(Ref<InputEvent> p_event);
 	void init_video_mode(int p_video_width, int p_video_height);

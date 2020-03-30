@@ -52,33 +52,29 @@ public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener
 	}
 
 	@Override
-	public boolean onDoubleTap(MotionEvent event) {
-		final int x = Math.round(event.getX());
-		final int y = Math.round(event.getY());
+	public boolean onDoubleTap(final MotionEvent event) {
 		final int toolType = event.getToolType(0);
 		final int buttonState = event.getButtonState();
 		queueEvent(new Runnable() {
 			@Override
 			public void run() {
-				GodotLib.doubleTap(toolType, buttonState, x, y);
+				GodotLib.doubleTap(toolType, buttonState, event.getX(), event.getY());
 			}
 		});
 		return true;
 	}
 
 	@Override
-	public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+	public boolean onScroll(MotionEvent e1, MotionEvent e2, final float distanceX, final float distanceY) {
 		final int toolType = e1.getToolType(0);
-		final int startX = Math.round(e1.getX());
-		final int startY = Math.round(e1.getY());
-		final int endX = Math.round(e2.getX());
-		final int endY = Math.round(e2.getY());
-		final int xScroll = Math.round(distanceX);
-		final int yScroll = Math.round(distanceY);
+		final float startX = e1.getX();
+		final float startY = e1.getY();
+		final float endX = e2.getX();
+		final float endY = e2.getY();
 		queueEvent(new Runnable() {
 			@Override
 			public void run() {
-				GodotLib.scroll(toolType, startX, startY, endX, endY, xScroll, yScroll);
+				GodotLib.scroll(toolType, startX, startY, endX, endY, distanceX, distanceY);
 			}
 		});
 		return true;
