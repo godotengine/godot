@@ -305,6 +305,23 @@ Ref<Material> MeshInstance3D::get_surface_material(int p_surface) const {
 	return materials[p_surface];
 }
 
+Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
+
+	if (get_material_override() != Ref<Material>()) {
+		return get_material_override();
+	} else if (p_surface < materials.size()) {
+		return materials[p_surface];
+	} else {
+		Ref<Mesh> mesh = get_mesh();
+
+		if (mesh.is_null() || p_surface >= mesh->get_surface_count()) {
+			return Ref<Material>();
+		}
+
+		return mesh->surface_get_material(p_surface);
+	}
+}
+
 void MeshInstance3D::_mesh_changed() {
 
 	materials.resize(mesh->get_surface_count());
@@ -397,6 +414,7 @@ void MeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_surface_material_count"), &MeshInstance3D::get_surface_material_count);
 	ClassDB::bind_method(D_METHOD("set_surface_material", "surface", "material"), &MeshInstance3D::set_surface_material);
 	ClassDB::bind_method(D_METHOD("get_surface_material", "surface"), &MeshInstance3D::get_surface_material);
+	ClassDB::bind_method(D_METHOD("get_active_material", "surface"), &MeshInstance3D::get_active_material);
 
 	ClassDB::bind_method(D_METHOD("create_trimesh_collision"), &MeshInstance3D::create_trimesh_collision);
 	ClassDB::set_method_flags("MeshInstance3D", "create_trimesh_collision", METHOD_FLAGS_DEFAULT);
