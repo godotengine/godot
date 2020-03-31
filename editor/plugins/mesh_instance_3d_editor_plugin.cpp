@@ -337,18 +337,15 @@ void MeshInstance3DEditor::_create_uv_lines(int p_layer) {
 		const Vector2 *r = uv.ptr();
 
 		Vector<int> indices = a[Mesh::ARRAY_INDEX];
-		const int *ri;
+		const int *ri = NULL;
 
 		int ic;
-		bool use_indices;
 
 		if (indices.size()) {
 			ic = indices.size();
 			ri = indices.ptr();
-			use_indices = true;
 		} else {
 			ic = uv.size();
-			use_indices = false;
 		}
 
 		for (int j = 0; j < ic; j += 3) {
@@ -356,7 +353,7 @@ void MeshInstance3DEditor::_create_uv_lines(int p_layer) {
 			for (int k = 0; k < 3; k++) {
 
 				MeshInstance3DEditorEdgeSort edge;
-				if (use_indices) {
+				if (ri) {
 					edge.a = r[ri[j + k]];
 					edge.b = r[ri[j + ((k + 1) % 3)]];
 				} else {

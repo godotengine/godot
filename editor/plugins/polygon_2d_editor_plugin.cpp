@@ -1031,7 +1031,7 @@ void Polygon2DEditor::_uv_draw() {
 		uvs = node->get_polygon();
 	}
 
-	const float *weight_r;
+	const float *weight_r = NULL;
 
 	if (uv_edit_mode[3]->is_pressed()) {
 		int bone_selected = -1;
@@ -1044,7 +1044,6 @@ void Polygon2DEditor::_uv_draw() {
 		}
 
 		if (bone_selected != -1 && node->get_bone_weights(bone_selected).size() == uvs.size()) {
-
 			weight_r = node->get_bone_weights(bone_selected).ptr();
 		}
 	}
