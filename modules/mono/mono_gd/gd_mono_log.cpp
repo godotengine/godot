@@ -48,7 +48,7 @@ static CharString get_default_log_level() {
 
 GDMonoLog *GDMonoLog::singleton = NULL;
 
-#if !defined(JAVASCRIPT_ENABLED)
+#ifdef GD_MONO_LOG_ENABLED
 
 static int get_log_level_id(const char *p_log_level) {
 

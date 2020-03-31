@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gd_mono_android.cpp                                                  */
+/*  android_support.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "gd_mono_android.h"
+#include "android_support.h"
 
 #if defined(ANDROID_ENABLED)
 
@@ -49,14 +49,16 @@
 #include "platform/android/os_android.h"
 #include "platform/android/thread_jandroid.h"
 
-#include "../utils/path_utils.h"
-#include "../utils/string_utils.h"
-#include "gd_mono_cache.h"
-#include "gd_mono_marshal.h"
+#include "../../utils/path_utils.h"
+#include "../../utils/string_utils.h"
+#include "../gd_mono_cache.h"
+#include "../gd_mono_marshal.h"
 
 // Warning: JNI boilerplate ahead... continue at your own risk
 
-namespace GDMonoAndroid {
+namespace gdmono {
+namespace android {
+namespace support {
 
 template <typename T>
 struct ScopedLocalRef {
@@ -150,11 +152,11 @@ int gd_mono_convert_dl_flags(int flags) {
 	return lflags;
 }
 
-#ifndef GD_MONO_ANDROID_SO_NAME
-#define GD_MONO_ANDROID_SO_NAME "libmonosgen-2.0.so"
+#ifndef GD_MONO_SO_NAME
+#define GD_MONO_SO_NAME "libmonosgen-2.0.so"
 #endif
 
-const char *mono_so_name = GD_MONO_ANDROID_SO_NAME;
+const char *mono_so_name = GD_MONO_SO_NAME;
 const char *godot_so_name = "libgodot_android.so";
 
 void *mono_dl_handle = NULL;
@@ -352,6 +354,11 @@ MonoArray *_gd_mono_android_cert_store_lookup(MonoString *p_alias) {
 	return encoded_ret;
 }
 
+void register_internal_calls() {
+	mono_add_internal_call("Android.Runtime.AndroidEnvironment::_gd_mono_init_cert_store", (void *)_gd_mono_init_cert_store);
+	mono_add_internal_call("Android.Runtime.AndroidEnvironment::_gd_mono_android_cert_store_lookup", (void *)_gd_mono_android_cert_store_lookup);
+}
+
 void initialize() {
 	// We need to set this environment variable to make the monodroid BCL use btls instead of legacy as the default provider
 	OS::get_singleton()->set_environment("XA_TLS_PROVIDER", "btls");
@@ -362,11 +369,6 @@ void initialize() {
 	String so_path = path::join(app_native_lib_dir, godot_so_name);
 
 	godot_dl_handle = try_dlopen(so_path, gd_mono_convert_dl_flags(MONO_DL_LAZY));
-}
-
-void register_internal_calls() {
-	mono_add_internal_call("Android.Runtime.AndroidEnvironment::_gd_mono_init_cert_store", (void *)_gd_mono_init_cert_store);
-	mono_add_internal_call("Android.Runtime.AndroidEnvironment::_gd_mono_android_cert_store_lookup", (void *)_gd_mono_android_cert_store_lookup);
 }
 
 void cleanup() {
@@ -386,9 +388,11 @@ void cleanup() {
 	}
 }
 
-} // namespace GDMonoAndroid
+} // namespace support
+} // namespace android
+} // namespace gdmono
 
-using namespace GDMonoAndroid;
+using namespace gdmono::android::support;
 
 // The following are P/Invoke functions required by the monodroid profile of the BCL.
 // These are P/Invoke functions and not internal calls, hence why they use

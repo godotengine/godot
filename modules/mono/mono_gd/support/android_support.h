@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gd_mono_android.h                                                    */
+/*  android_support.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,25 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GD_MONO_ANDROID_H
-#define GD_MONO_ANDROID_H
+#ifndef ANDROID_SUPPORT_H
+#define ANDROID_SUPPORT_H
 
 #if defined(ANDROID_ENABLED)
 
 #include "core/ustring.h"
 
-namespace GDMonoAndroid {
+namespace gdmono {
+namespace android {
+namespace support {
 
 String get_app_native_lib_dir();
 
 void initialize();
+void cleanup();
 
 void register_internal_calls();
 
-void cleanup();
-
-} // namespace GDMonoAndroid
+} // namespace support
+} // namespace android
+} // namespace gdmono
 
 #endif // ANDROID_ENABLED
 
-#endif // GD_MONO_ANDROID_H
+#endif // ANDROID_SUPPORT_H

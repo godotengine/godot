@@ -25,25 +25,42 @@ def get_android_out_dir(env):
     )
 
 
-def find_file_in_dir(directory, files, prefix="", extension=""):
-    if not extension.startswith("."):
-        extension = "." + extension
-    for curfile in files:
-        if os.path.isfile(os.path.join(directory, prefix + curfile + extension)):
-            return curfile
+def find_name_in_dir_files(directory, names, prefixes=[""], extensions=[""]):
+    for extension in extensions:
+        if extension and not extension.startswith("."):
+            extension = "." + extension
+        for prefix in prefixes:
+            for curname in names:
+                if os.path.isfile(os.path.join(directory, prefix + curname + extension)):
+                    return curname
     return ""
 
 
-def copy_file(src_dir, dst_dir, name):
+def find_file_in_dir(directory, names, prefixes=[""], extensions=[""]):
+    for extension in extensions:
+        if extension and not extension.startswith("."):
+            extension = "." + extension
+        for prefix in prefixes:
+            for curname in names:
+                filename = prefix + curname + extension
+                if os.path.isfile(os.path.join(directory, filename)):
+                    return filename
+    return ""
+
+
+def copy_file(src_dir, dst_dir, src_name, dst_name=""):
     from shutil import copy
 
-    src_path = os.path.join(Dir(src_dir).abspath, name)
+    src_path = os.path.join(Dir(src_dir).abspath, src_name)
     dst_dir = Dir(dst_dir).abspath
 
     if not os.path.isdir(dst_dir):
         os.makedirs(dst_dir)
 
-    copy(src_path, dst_dir)
+    if dst_name:
+        copy(src_path, os.path.join(dst_dir, dst_name))
+    else:
+        copy(src_path, dst_dir)
 
 
 def is_desktop(platform):
@@ -51,11 +68,11 @@ def is_desktop(platform):
 
 
 def is_unix_like(platform):
-    return platform in ["osx", "linuxbsd", "server", "android", "haiku"]
+    return platform in ["osx", "linuxbsd", "server", "android", "haiku", "iphone"]
 
 
 def module_supports_tools_on(platform):
-    return platform not in ["android", "javascript"]
+    return platform not in ["android", "javascript", "iphone"]
 
 
 def find_wasm_src_dir(mono_root):
@@ -73,6 +90,8 @@ def configure(env, env_mono):
     bits = env["bits"]
     is_android = env["platform"] == "android"
     is_javascript = env["platform"] == "javascript"
+    is_ios = env["platform"] == "iphone"
+    is_ios_sim = is_ios and env["arch"] in ["x86", "x86_64"]
 
     tools_enabled = env["tools"]
     mono_static = env["mono_static"]
@@ -97,16 +116,31 @@ def configure(env, env_mono):
         raise RuntimeError("This module does not currently support building for this platform with tools enabled")
 
     if is_android and mono_static:
-        # Android: When static linking and doing something that requires libmono-native, we get a dlopen error as libmono-native seems to depend on libmonosgen-2.0
-        raise RuntimeError("Statically linking Mono is not currently supported on this platform")
+        # FIXME: When static linking and doing something that requires libmono-native, we get a dlopen error as 'libmono-native'
+        # seems to depend on 'libmonosgen-2.0'. Could be fixed by re-directing to '__Internal' with a dllmap or in the dlopen hook.
+        raise RuntimeError("Statically linking Mono is not currently supported for this platform")
 
-    if is_javascript:
-        mono_static = True
+    if not mono_static and (is_javascript or is_ios):
+        raise RuntimeError("Dynamically linking Mono is not currently supported for this platform")
 
     if not mono_prefix and (os.getenv("MONO32_PREFIX") or os.getenv("MONO64_PREFIX")):
         print(
             "WARNING: The environment variables 'MONO32_PREFIX' and 'MONO64_PREFIX' are deprecated; use the 'mono_prefix' SCons parameter instead"
         )
+
+    # Although we don't support building with tools for any platform where we currently use static AOT,
+    # if these are supported in the future, we won't be using static AOT for them as that would be
+    # too restrictive for the editor. These builds would probably be made to only use the interpreter.
+    mono_aot_static = (is_ios and not is_ios_sim) and not env["tools"]
+
+    # Static AOT is only supported on the root domain
+    mono_single_appdomain = mono_aot_static
+
+    if mono_single_appdomain:
+        env_mono.Append(CPPDEFINES=["GD_MONO_SINGLE_APPDOMAIN"])
+
+    if (env["tools"] or env["target"] != "release") and not mono_single_appdomain:
+        env_mono.Append(CPPDEFINES=["GD_MONO_HOT_RELOAD"])
 
     if env["platform"] == "windows":
         mono_root = mono_prefix
@@ -126,7 +160,11 @@ def configure(env, env_mono):
         env.Append(LIBPATH=mono_lib_path)
         env_mono.Prepend(CPPPATH=os.path.join(mono_root, "include", "mono-2.0"))
 
-        lib_suffix = Environment()["LIBSUFFIX"]
+        lib_suffixes = [".lib"]
+
+        if not env.msvc:
+            # MingW supports both '.a' and '.lib'
+            lib_suffixes.insert(0, ".a")
 
         if mono_static:
             if env.msvc:
@@ -134,55 +172,61 @@ def configure(env, env_mono):
             else:
                 mono_static_lib_name = "libmonosgen-2.0"
 
-            if not os.path.isfile(os.path.join(mono_lib_path, mono_static_lib_name + lib_suffix)):
+            mono_static_lib_file = find_file_in_dir(mono_lib_path, [mono_static_lib_name], extensions=lib_suffixes)
+
+            if not mono_static_lib_file:
                 raise RuntimeError("Could not find static mono library in: " + mono_lib_path)
 
             if env.msvc:
-                env.Append(LINKFLAGS=mono_static_lib_name + lib_suffix)
+                env.Append(LINKFLAGS=mono_static_lib_file)
 
-                env.Append(LINKFLAGS="Mincore" + lib_suffix)
-                env.Append(LINKFLAGS="msvcrt" + lib_suffix)
-                env.Append(LINKFLAGS="LIBCMT" + lib_suffix)
-                env.Append(LINKFLAGS="Psapi" + lib_suffix)
+                env.Append(LINKFLAGS="Mincore.lib")
+                env.Append(LINKFLAGS="msvcrt.lib")
+                env.Append(LINKFLAGS="LIBCMT.lib")
+                env.Append(LINKFLAGS="Psapi.lib")
             else:
-                env.Append(LINKFLAGS=os.path.join(mono_lib_path, mono_static_lib_name + lib_suffix))
+                mono_static_lib_file_path = os.path.join(mono_lib_path, mono_static_lib_file)
+                env.Append(LINKFLAGS=["-Wl,-whole-archive", mono_static_lib_file_path, "-Wl,-no-whole-archive"])
 
                 env.Append(LIBS=["psapi"])
                 env.Append(LIBS=["version"])
         else:
-            mono_lib_name = find_file_in_dir(mono_lib_path, mono_lib_names, extension=lib_suffix)
+            mono_lib_name = find_name_in_dir_files(
+                mono_lib_path, mono_lib_names, prefixes=["", "lib"], extensions=lib_suffixes
+            )
 
             if not mono_lib_name:
                 raise RuntimeError("Could not find mono library in: " + mono_lib_path)
 
             if env.msvc:
-                env.Append(LINKFLAGS=mono_lib_name + lib_suffix)
+                env.Append(LINKFLAGS=mono_lib_name + ".lib")
             else:
                 env.Append(LIBS=[mono_lib_name])
 
             mono_bin_path = os.path.join(mono_root, "bin")
 
-            mono_dll_name = find_file_in_dir(mono_bin_path, mono_lib_names, extension=".dll")
+            mono_dll_file = find_file_in_dir(mono_bin_path, mono_lib_names, prefixes=["", "lib"], extensions=[".dll"])
 
-            if not mono_dll_name:
+            if not mono_dll_file:
                 raise RuntimeError("Could not find mono shared library in: " + mono_bin_path)
 
-            copy_file(mono_bin_path, "#bin", mono_dll_name + ".dll")
+            copy_file(mono_bin_path, "#bin", mono_dll_file)
     else:
         is_apple = env["platform"] in ["osx", "iphone"]
+        is_macos = is_apple and not is_ios
 
         sharedlib_ext = ".dylib" if is_apple else ".so"
 
         mono_root = mono_prefix
         mono_lib_path = ""
-        mono_so_name = ""
+        mono_so_file = ""
 
-        if not mono_root and (is_android or is_javascript):
+        if not mono_root and (is_android or is_javascript or is_ios):
             raise RuntimeError(
                 "Mono installation directory not found; specify one manually with the 'mono_prefix' SCons parameter"
             )
 
-        if not mono_root and is_apple:
+        if not mono_root and is_macos:
             # Try with some known directories under OSX
             hint_dirs = ["/Library/Frameworks/Mono.framework/Versions/Current", "/usr/local/var/homebrew/linked/mono"]
             for hint_dir in hint_dirs:
@@ -200,6 +244,9 @@ def configure(env, env_mono):
                     + "specify one manually with the 'mono_prefix' SCons parameter"
                 )
 
+        if is_ios and not is_ios_sim:
+            env_mono.Append(CPPDEFINES=["IOS_DEVICE"])
+
         if mono_root:
             print("Found Mono root directory: " + mono_root)
 
@@ -208,7 +255,7 @@ def configure(env, env_mono):
             env.Append(LIBPATH=[mono_lib_path])
             env_mono.Prepend(CPPPATH=os.path.join(mono_root, "include", "mono-2.0"))
 
-            mono_lib = find_file_in_dir(mono_lib_path, mono_lib_names, prefix="lib", extension=".a")
+            mono_lib = find_name_in_dir_files(mono_lib_path, mono_lib_names, prefixes=["lib"], extensions=[".a"])
 
             if not mono_lib:
                 raise RuntimeError("Could not find mono library in: " + mono_lib_path)
@@ -221,7 +268,26 @@ def configure(env, env_mono):
                 mono_lib_file = os.path.join(mono_lib_path, "lib" + mono_lib + ".a")
 
                 if is_apple:
-                    env.Append(LINKFLAGS=["-Wl,-force_load," + mono_lib_file])
+                    if is_macos:
+                        env.Append(LINKFLAGS=["-Wl,-force_load," + mono_lib_file])
+                    else:
+                        arch = env["arch"]
+
+                        def copy_mono_lib(libname_wo_ext):
+                            copy_file(
+                                mono_lib_path, "#bin", libname_wo_ext + ".a", "%s.iphone.%s.a" % (libname_wo_ext, arch)
+                            )
+
+                        # Copy Mono libraries to the output folder. These are meant to be bundled with
+                        # the export templates and added to the Xcode project when exporting a game.
+                        copy_mono_lib("lib" + mono_lib)
+                        copy_mono_lib("libmono-native")
+                        copy_mono_lib("libmono-profiler-log")
+
+                        if not is_ios_sim:
+                            copy_mono_lib("libmono-ee-interp")
+                            copy_mono_lib("libmono-icall-table")
+                            copy_mono_lib("libmono-ilgen")
                 else:
                     assert is_desktop(env["platform"]) or is_android or is_javascript
                     env.Append(LINKFLAGS=["-Wl,-whole-archive", mono_lib_file, "-Wl,-no-whole-archive"])
@@ -258,22 +324,24 @@ def configure(env, env_mono):
             else:
                 env.Append(LIBS=[mono_lib])
 
-            if is_apple:
+            if is_macos:
                 env.Append(LIBS=["iconv", "pthread"])
             elif is_android:
                 pass  # Nothing
+            elif is_ios:
+                pass  # Nothing, linking is delegated to the exported Xcode project
             elif is_javascript:
                 env.Append(LIBS=["m", "rt", "dl", "pthread"])
             else:
                 env.Append(LIBS=["m", "rt", "dl", "pthread"])
 
             if not mono_static:
-                mono_so_name = find_file_in_dir(mono_lib_path, mono_lib_names, prefix="lib", extension=sharedlib_ext)
+                mono_so_file = find_file_in_dir(
+                    mono_lib_path, mono_lib_names, prefixes=["lib"], extensions=[sharedlib_ext]
+                )
 
-                if not mono_so_name:
+                if not mono_so_file:
                     raise RuntimeError("Could not find mono shared library in: " + mono_lib_path)
-
-                copy_file(mono_lib_path, "#bin", "lib" + mono_so_name + sharedlib_ext)
         else:
             assert not mono_static
 
@@ -288,18 +356,18 @@ def configure(env, env_mono):
             tmpenv.ParseConfig("pkg-config monosgen-2 --libs-only-L")
 
             for hint_dir in tmpenv["LIBPATH"]:
-                name_found = find_file_in_dir(hint_dir, mono_lib_names, prefix="lib", extension=sharedlib_ext)
-                if name_found:
+                file_found = find_file_in_dir(hint_dir, mono_lib_names, prefixes=["lib"], extensions=[sharedlib_ext])
+                if file_found:
                     mono_lib_path = hint_dir
-                    mono_so_name = name_found
+                    mono_so_file = file_found
                     break
 
-            if not mono_so_name:
+            if not mono_so_file:
                 raise RuntimeError("Could not find mono shared library in: " + str(tmpenv["LIBPATH"]))
 
         if not mono_static:
             libs_output_dir = get_android_out_dir(env) if is_android else "#bin"
-            copy_file(mono_lib_path, libs_output_dir, "lib" + mono_so_name + sharedlib_ext)
+            copy_file(mono_lib_path, libs_output_dir, mono_so_file)
 
     if not tools_enabled:
         if is_desktop(env["platform"]):
@@ -320,6 +388,8 @@ def configure(env, env_mono):
             # Copy the required shared libraries
             copy_mono_shared_libs(env, mono_root, None)
         elif is_javascript:
+            pass  # No data directory for this platform
+        elif is_ios:
             pass  # No data directory for this platform
 
     if copy_mono_root:
@@ -454,11 +524,11 @@ def copy_mono_shared_libs(env, mono_root, target_mono_root_dir):
         if not os.path.isdir(target_mono_bin_dir):
             os.makedirs(target_mono_bin_dir)
 
-        mono_posix_helper_name = find_file_in_dir(
-            src_mono_bin_dir, ["MonoPosixHelper", "libMonoPosixHelper"], extension=".dll"
+        mono_posix_helper_file = find_file_in_dir(
+            src_mono_bin_dir, ["MonoPosixHelper"], prefixes=["", "lib"], extensions=[".dll"]
         )
         copy(
-            os.path.join(src_mono_bin_dir, mono_posix_helper_name + ".dll"),
+            os.path.join(src_mono_bin_dir, mono_posix_helper_file),
             os.path.join(target_mono_bin_dir, "MonoPosixHelper.dll"),
         )
 
@@ -504,7 +574,7 @@ def pkgconfig_try_find_mono_root(mono_lib_names, sharedlib_ext):
     tmpenv.AppendENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
     tmpenv.ParseConfig("pkg-config monosgen-2 --libs-only-L")
     for hint_dir in tmpenv["LIBPATH"]:
-        name_found = find_file_in_dir(hint_dir, mono_lib_names, prefix="lib", extension=sharedlib_ext)
+        name_found = find_name_in_dir_files(hint_dir, mono_lib_names, prefixes=["lib"], extensions=[sharedlib_ext])
         if name_found and os.path.isdir(os.path.join(hint_dir, "..", "include", "mono-2.0")):
             return os.path.join(hint_dir, "..")
     return ""
