@@ -430,6 +430,8 @@ void GDScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const
 		mi.name = "assert";
 		mi.return_val.type = Variant::NIL;
 		mi.arguments.push_back(PropertyInfo(Variant::BOOL, "condition"));
+		mi.arguments.push_back(PropertyInfo(Variant::STRING, "message"));
+		mi.default_arguments.push_back(String());
 		p_functions->push_back(mi);
 	}
 }
