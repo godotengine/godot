@@ -235,7 +235,7 @@ Point2 OS_Android::get_mouse_position() const {
 
 int OS_Android::get_mouse_button_state() const {
 
-	return last_mouse_buttons_state;
+	return last_mouse_buttons_mask;
 }
 
 void OS_Android::set_window_title(const String &p_title) {
@@ -342,43 +342,124 @@ void OS_Android::process_event(Ref<InputEvent> p_event) {
 	input->parse_input_event(p_event);
 }
 
-void OS_Android::process_touch(int event_type, int p_pointer, const Vector<TouchPos> &p_points) {
+int OS_Android::get_mouse_button_index(int android_motion_event_button_state) {
+	if ((android_motion_event_button_state & BUTTON_PRIMARY) != 0) {
+		return BUTTON_LEFT;
+	}
+	if ((android_motion_event_button_state & BUTTON_SECONDARY) != 0) {
+		return BUTTON_RIGHT;
+	}
+	if ((android_motion_event_button_state & BUTTON_TERTIARY) != 0) {
+		return BUTTON_MIDDLE;
+	}
+	if ((android_motion_event_button_state & BUTTON_FORWARD) != 0) {
+		return BUTTON_XBUTTON1;
+	}
+	if ((android_motion_event_button_state & BUTTON_BACK) != 0) {
+		return BUTTON_XBUTTON2;
+	}
 
-	switch (event_type) {
-		case 0: { //gesture begin
+	return 0;
+}
 
-			if (touch.size()) {
-				//end all if exist
-				for (int i = 0; i < touch.size(); i++) {
+bool OS_Android::is_mouse_pointer(OS_Android::TouchPos touch_pos) const {
+	return is_mouse_pointer(touch_pos.tool_type);
+}
 
-					Ref<InputEventScreenTouch> ev;
-					ev.instance();
-					ev->set_index(touch[i].id);
-					ev->set_pressed(false);
-					ev->set_position(touch[i].pos);
-					input->parse_input_event(ev);
-				}
-			}
+bool OS_Android::is_mouse_pointer(int tool_type) const {
+	return tool_type == TOOL_TYPE_MOUSE;
+}
+
+void OS_Android::send_touch_event(OS_Android::TouchPos touch_pos, int android_motion_event_action_button) {
+	if (is_mouse_pointer(touch_pos)) {
+		int button_index = get_mouse_button_index(android_motion_event_action_button);
+		last_mouse_buttons_mask |= button_index;
+		last_mouse_position = touch_pos.pos;
+
+		Ref<InputEventMouseButton> ev;
+		ev.instance();
+		ev->set_pressed(true);
+		ev->set_position(touch_pos.pos);
+		ev->set_global_position(touch_pos.pos);
+		ev->set_button_index(button_index);
+		ev->set_button_mask(last_mouse_buttons_mask);
+		input->parse_input_event(ev);
+	} else {
+		Ref<InputEventScreenTouch> ev;
+		ev.instance();
+		ev->set_index(touch_pos.id);
+		ev->set_pressed(true);
+		ev->set_position(touch_pos.pos);
+		input->parse_input_event(ev);
+	}
+}
+
+void OS_Android::release_touch_event(TouchPos touch_pos, int android_motion_event_action_button, bool update_last_mouse_buttons_mask) {
+	if (is_mouse_pointer(touch_pos)) {
+
+		int button_index = get_mouse_button_index(android_motion_event_action_button);
+		last_mouse_position = touch_pos.pos;
+		if (update_last_mouse_buttons_mask) {
+			last_mouse_buttons_mask &= ~button_index;
+		}
+
+		Ref<InputEventMouseButton> ev;
+		ev.instance();
+		ev->set_pressed(false);
+		ev->set_position(touch_pos.pos);
+		ev->set_global_position(touch_pos.pos);
+		ev->set_button_index(button_index);
+		ev->set_button_mask(last_mouse_buttons_mask);
+		input->parse_input_event(ev);
+
+	} else {
+		Ref<InputEventScreenTouch> ev;
+		ev.instance();
+		ev->set_index(touch_pos.id);
+		ev->set_pressed(false);
+		ev->set_position(touch_pos.pos);
+		input->parse_input_event(ev);
+	}
+}
+
+void OS_Android::release_touches(int android_motion_event_action_button, bool update_last_mouse_buttons_mask) {
+	if (touch.size()) {
+		//end all if exist
+		for (int i = 0; i < touch.size(); i++) {
+
+			TouchPos touch_pos = touch[i];
+			release_touch_event(touch_pos, android_motion_event_action_button, update_last_mouse_buttons_mask);
+		}
+		touch.clear();
+	}
+}
+
+void OS_Android::process_touch(int motion_event_action, int motion_event_action_button, int p_pointer, const Vector<TouchPos> &p_points) {
+
+	switch (motion_event_action) {
+		case ACTION_DOWN:
+		case ACTION_BUTTON_PRESS: { // gesture begin
+
+			// end all if exist
+			release_touches(motion_event_action_button);
 
 			touch.resize(p_points.size());
 			for (int i = 0; i < p_points.size(); i++) {
 				touch.write[i].id = p_points[i].id;
 				touch.write[i].pos = p_points[i].pos;
+				touch.write[i].tool_type = p_points[i].tool_type;
 			}
 
 			//send touch
 			for (int i = 0; i < touch.size(); i++) {
 
-				Ref<InputEventScreenTouch> ev;
-				ev.instance();
-				ev->set_index(touch[i].id);
-				ev->set_pressed(true);
-				ev->set_position(touch[i].pos);
-				input->parse_input_event(ev);
+				TouchPos touch_pos = touch[i];
+				send_touch_event(touch_pos, motion_event_action_button);
 			}
 
 		} break;
-		case 1: { //motion
+
+		case ACTION_MOVE: { // motion
 
 			ERR_FAIL_COND(touch.size() != p_points.size());
 
@@ -398,62 +479,65 @@ void OS_Android::process_touch(int event_type, int p_pointer, const Vector<Touch
 				if (touch[i].pos == p_points[idx].pos)
 					continue; //no move unncesearily
 
-				Ref<InputEventScreenDrag> ev;
-				ev.instance();
-				ev->set_index(touch[i].id);
-				ev->set_position(p_points[idx].pos);
-				ev->set_relative(p_points[idx].pos - touch[i].pos);
-				input->parse_input_event(ev);
-				touch.write[i].pos = p_points[idx].pos;
-			}
-
-		} break;
-		case 2: { //release
-
-			if (touch.size()) {
-				//end all if exist
-				for (int i = 0; i < touch.size(); i++) {
-
-					Ref<InputEventScreenTouch> ev;
+				TouchPos touch_pos = p_points[idx];
+				if (is_mouse_pointer(touch_pos)) {
+					Ref<InputEventMouseMotion> ev;
+					ev.instance();
+					ev->set_position(touch_pos.pos);
+					ev->set_global_position(touch_pos.pos);
+					ev->set_relative(touch_pos.pos - touch[i].pos);
+					ev->set_button_mask(last_mouse_buttons_mask);
+					input->parse_input_event(ev);
+				} else {
+					Ref<InputEventScreenDrag> ev;
 					ev.instance();
 					ev->set_index(touch[i].id);
-					ev->set_pressed(false);
-					ev->set_position(touch[i].pos);
+					ev->set_position(p_points[idx].pos);
+					ev->set_relative(p_points[idx].pos - touch[i].pos);
 					input->parse_input_event(ev);
 				}
-				touch.clear();
+				touch.write[i].pos = p_points[idx].pos;
+				touch.write[i].tool_type = p_points[idx].tool_type;
+			}
+
+		} break;
+
+		case ACTION_UP:
+		case ACTION_BUTTON_RELEASE: {
+			release_touches(motion_event_action_button, true);
+		} break;
+
+		case ACTION_CANCEL: {
+			release_touches(motion_event_action_button);
+			// Reset the `last_mouse_buttons_mask` if the tool type is TOOL_TYPE_MOUSE or TOOL_TYPE_STYLUS.
+			for (int i = 0; i < p_points.size(); i++) {
+				if (is_mouse_pointer(p_points[i])) {
+					last_mouse_buttons_mask = 0;
+					break;
+				}
 			}
 		} break;
-		case 3: { // add touch
+
+		case ACTION_POINTER_DOWN: { // add touch
 
 			for (int i = 0; i < p_points.size(); i++) {
 				if (p_points[i].id == p_pointer) {
 					TouchPos tp = p_points[i];
 					touch.push_back(tp);
 
-					Ref<InputEventScreenTouch> ev;
-					ev.instance();
-
-					ev->set_index(tp.id);
-					ev->set_pressed(true);
-					ev->set_position(tp.pos);
-					input->parse_input_event(ev);
+					send_touch_event(tp, motion_event_action_button);
 
 					break;
 				}
 			}
 		} break;
-		case 4: { // remove touch
+
+		case ACTION_POINTER_UP: { // remove touch
 
 			for (int i = 0; i < touch.size(); i++) {
 				if (touch[i].id == p_pointer) {
 
-					Ref<InputEventScreenTouch> ev;
-					ev.instance();
-					ev->set_index(touch[i].id);
-					ev->set_pressed(false);
-					ev->set_position(touch[i].pos);
-					input->parse_input_event(ev);
+					release_touch_event(touch[i], motion_event_action_button, true);
 					touch.remove(i);
 
 					break;
@@ -474,8 +558,8 @@ void OS_Android::process_hover(int tool_type, int p_type, Point2 p_pos) {
 			ev->set_position(p_pos);
 			ev->set_global_position(p_pos);
 			ev->set_relative(p_pos - hover_prev_pos);
-			if (tool_type == TOOL_TYPE_MOUSE) {
-				ev->set_button_mask(last_mouse_buttons_state);
+			if (is_mouse_pointer(tool_type)) {
+				ev->set_button_mask(last_mouse_buttons_mask);
 				last_mouse_position = p_pos;
 			}
 			input->parse_input_event(ev);
@@ -484,7 +568,7 @@ void OS_Android::process_hover(int tool_type, int p_type, Point2 p_pos) {
 	}
 }
 
-void OS_Android::process_double_tap(int tool_type, int button_state, Point2 p_pos) {
+void OS_Android::process_double_tap(int tool_type, int android_motion_event_button_state, Point2 p_pos) {
 	Ref<InputEventMouseButton> ev;
 	ev.instance();
 	ev->set_position(p_pos);
@@ -492,38 +576,19 @@ void OS_Android::process_double_tap(int tool_type, int button_state, Point2 p_po
 	ev->set_doubleclick(true);
 	ev->set_pressed(false);
 
-	switch(tool_type) {
-		case TOOL_TYPE_MOUSE:
-			// Since this is a double tap, only one of the mouse button was active.
-			int button_index;
-			if ((button_state & BUTTON_PRIMARY) != 0) {
-				button_index = BUTTON_LEFT;
-			} else if ((button_state & BUTTON_SECONDARY) != 0) {
-				button_index = BUTTON_RIGHT;
-			} else if ((button_state & BUTTON_TERTIARY) != 0) {
-				button_index = BUTTON_MIDDLE;
-			} else if ((button_state & BUTTON_FORWARD) != 0) {
-				button_index = BUTTON_XBUTTON1;
-			} else if ((button_state & BUTTON_BACK) != 0) {
-				button_index = BUTTON_XBUTTON2;
-			} else {
-				// Unsupported mouse button.
-				button_index = 0;
-			}
-			ev->set_button_index(button_index);
-			ev->set_button_mask(last_mouse_buttons_state);
-			last_mouse_position = p_pos;
-			break;
-
-		default:
-			break;
+	if (is_mouse_pointer(tool_type)) {
+		// Since this is a double tap, only one of the mouse button was active.
+		int button_index = get_mouse_button_index(android_motion_event_button_state);
+		ev->set_button_index(button_index);
+		ev->set_button_mask(last_mouse_buttons_mask);
+		last_mouse_position = p_pos;
 	}
 
 	input->parse_input_event(ev);
 }
 
 void OS_Android::process_scroll(int tool_type, Point2 start, Point2 end, Vector2 scroll_delta) {
-	if (tool_type == TOOL_TYPE_MOUSE) {
+	if (is_mouse_pointer(tool_type)) {
 		// For a mouse scroll, `start` and `end` are the same.
 		Point2 event_position = start;
 
@@ -548,12 +613,12 @@ void OS_Android::process_scroll(int tool_type, Point2 start, Point2 end, Vector2
 		ev->set_button_index(button_index);
 		ev->set_factor(scroll_factor);
 		ev->set_pressed(true);
-		ev->set_button_mask(last_mouse_buttons_state | button_index);
+		ev->set_button_mask(last_mouse_buttons_mask | button_index);
 		input->parse_input_event(ev);
 
 		// Send release event
 		ev->set_pressed(false);
-		ev->set_button_mask(last_mouse_buttons_state & ~button_index);
+		ev->set_button_mask(last_mouse_buttons_mask & ~button_index);
 		input->parse_input_event(ev);
 
 		last_mouse_position = event_position;
