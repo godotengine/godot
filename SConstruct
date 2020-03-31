@@ -258,6 +258,7 @@ if selected_platform in ["linux", "bsd", "x11"]:
         print('Platform "x11" has been renamed to "linuxbsd" in Godot 4.0. Building for platform "linuxbsd".')
     # Alias for convenience.
     selected_platform = "linuxbsd"
+    env_base["platform"] = selected_platform
 
 if selected_platform in platform_list:
     tmppath = "./platform/" + selected_platform
