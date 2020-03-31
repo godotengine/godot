@@ -98,7 +98,7 @@ static Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::
 		params.m_mip_gen = false; //sorry, please some day support provided mipmaps.
 		params.m_source_images.push_back(buimg);
 
-		BasisDecompressFormat decompress_format;
+		BasisDecompressFormat decompress_format = BASIS_DECOMPRESS_RG;
 		params.m_check_for_alpha = false;
 
 		switch (p_channels) {
