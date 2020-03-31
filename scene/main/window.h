@@ -43,7 +43,7 @@ public:
 		MODE_WINDOWED = DisplayServer::WINDOW_MODE_WINDOWED,
 		MODE_MINIMIZED = DisplayServer::WINDOW_MODE_MINIMIZED,
 		MODE_MAXIMIZED = DisplayServer::WINDOW_MODE_MAXIMIZED,
-		MODE_FULLSCREEN = DisplayServer::WINDOW_MODE_FULLSCREEN
+		MODE_FULLSCREEN = DisplayServer::WINDOW_MODE_FULLSCREEN,
 	};
 
 	enum Flags {
@@ -59,7 +59,6 @@ public:
 		CONTENT_SCALE_MODE_DISABLED,
 		CONTENT_SCALE_MODE_OBJECTS,
 		CONTENT_SCALE_MODE_PIXELS,
-
 	};
 
 	enum ContentScaleAspect {
@@ -68,10 +67,10 @@ public:
 		CONTENT_SCALE_ASPECT_KEEP_WIDTH,
 		CONTENT_SCALE_ASPECT_KEEP_HEIGHT,
 		CONTENT_SCALE_ASPECT_EXPAND,
-
 	};
+
 	enum {
-		DEFAULT_WINDOW_SIZE = 100
+		DEFAULT_WINDOW_SIZE = 100,
 	};
 
 private:
@@ -258,8 +257,8 @@ public:
 	~Window();
 };
 
-VARIANT_ENUM_CAST(Window::Window::Mode);
-VARIANT_ENUM_CAST(Window::Window::Flags);
+VARIANT_ENUM_CAST(Window::Mode);
+VARIANT_ENUM_CAST(Window::Flags);
 VARIANT_ENUM_CAST(Window::ContentScaleMode);
 VARIANT_ENUM_CAST(Window::ContentScaleAspect);
 
