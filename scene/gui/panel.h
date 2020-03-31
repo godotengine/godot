@@ -40,7 +40,7 @@ class Panel : public Control {
 public:
 	enum Mode {
 		MODE_BACKGROUND,
-		MODE_FOREGROUND
+		MODE_FOREGROUND,
 	};
 
 private:
@@ -59,4 +59,5 @@ public:
 };
 
 VARIANT_ENUM_CAST(Panel::Mode)
-#endif
+
+#endif // PANEL_H
