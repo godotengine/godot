@@ -202,7 +202,7 @@
 			Icon used for the project, set when project loads. Exporters will also use this icon when possible.
 		</member>
 		<member name="application/config/macos_native_icon" type="String" setter="" getter="" default="&quot;&quot;">
-			Icon set in [code].icns[/code] format used on macOS to set the game's icon. This is done automatically on start by calling [method OS.set_native_icon].
+			Icon set in [code].icns[/code] format used on macOS to set the game's icon. This is done automatically on start by calling [method DisplayServer.set_native_icon].
 		</member>
 		<member name="application/config/name" type="String" setter="" getter="" default="&quot;&quot;">
 			The project's name. It is used both by the Project Manager and by exporters. The project name can be translated by translating its value in localization files.
@@ -215,7 +215,7 @@
 			If [code]true[/code], the project will save user data to its own user directory (see [member application/config/custom_user_dir_name]). This setting is only effective on desktop platforms. A name must be set in the [member application/config/custom_user_dir_name] setting for this to take effect. If [code]false[/code], the project will save user data to [code](OS user data directory)/Godot/app_userdata/(project name)[/code].
 		</member>
 		<member name="application/config/windows_native_icon" type="String" setter="" getter="" default="&quot;&quot;">
-			Icon set in [code].ico[/code] format used on Windows to set the game's icon. This is done automatically on start by calling [method OS.set_native_icon].
+			Icon set in [code].ico[/code] format used on Windows to set the game's icon. This is done automatically on start by calling [method DisplayServer.set_native_icon].
 		</member>
 		<member name="application/run/disable_stderr" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], disables printing to standard error in an exported build.
@@ -425,12 +425,6 @@
 		</member>
 		<member name="display/window/ios/hide_home_indicator" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the home indicator is hidden automatically. This only affects iOS devices without a physical home button.
-		</member>
-		<member name="display/window/per_pixel_transparency/allowed" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], allows per-pixel transparency in a desktop window. This affects performance, so leave it on [code]false[/code] unless you need it.
-		</member>
-		<member name="display/window/per_pixel_transparency/enabled" type="bool" setter="" getter="" default="false">
-			Sets the window background to transparent when it starts.
 		</member>
 		<member name="display/window/size/always_on_top" type="bool" setter="" getter="" default="false">
 			Force the window to be always on top.
@@ -1002,7 +996,9 @@
 		</member>
 		<member name="rendering/quality/driver/driver_name" type="String" setter="" getter="" default="&quot;Vulkan&quot;">
 			The video driver to use ("GLES2" or "Vulkan").
-			[b]Note:[/b] The backend in use can be overridden at runtime via the [code]--video-driver[/code] command line argument. In such cases, this property is not updated, so use [method OS.get_current_video_driver] to query it at run-time.
+			[b]Note:[/b] The backend in use can be overridden at runtime via the [code]--rendering-driver[/code] command line argument.
+			[b]FIXME:[/b] No longer valid after DisplayServer split:
+			In such cases, this property is not updated, so use [code]OS.get_current_video_driver[/code] to query it at run-time.
 		</member>
 		<member name="rendering/quality/filters/depth_of_field_bokeh_quality" type="int" setter="" getter="" default="2">
 		</member>
@@ -1026,6 +1022,10 @@
 		<member name="rendering/quality/gi_probes/anisotropic" type="bool" setter="" getter="" default="false">
 		</member>
 		<member name="rendering/quality/gi_probes/quality" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="rendering/quality/glow/upscale_mode" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="rendering/quality/glow/upscale_mode.mobile" type="int" setter="" getter="" default="0">
 		</member>
 		<member name="rendering/quality/intended_usage/framebuffer_allocation" type="int" setter="" getter="" default="2">
 			Strategy used for framebuffer allocation. The simpler it is, the less resources it uses (but the less features it supports). If set to "2D Without Sampling" or "3D Without Effects", sample buffers will not be allocated. This means [code]SCREEN_TEXTURE[/code] and [code]DEPTH_TEXTURE[/code] will not be available in shaders and post-processing effects will not be available in the [Environment].

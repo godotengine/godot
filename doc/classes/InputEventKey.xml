@@ -43,7 +43,7 @@
 			If [code]true[/code], the key's state is pressed. If [code]false[/code], the key's state is released.
 		</member>
 		<member name="unicode" type="int" setter="set_unicode" getter="get_unicode" default="0">
-			The key Unicode identifier (when relevant). Unicode identifiers for the composite characters and complex scripts may not be available unless IME input mode is active. See [method OS.set_ime_active] for more information.
+			The key Unicode identifier (when relevant). Unicode identifiers for the composite characters and complex scripts may not be available unless IME input mode is active. See [method Window.set_ime_active] for more information.
 		</member>
 	</members>
 	<constants>

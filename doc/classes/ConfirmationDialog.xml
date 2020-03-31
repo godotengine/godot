@@ -22,8 +22,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="rect_min_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" override="true" default="Vector2( 200, 70 )" />
-		<member name="window_title" type="String" setter="set_title" getter="get_title" override="true" default="&quot;Please Confirm...&quot;" />
+		<member name="min_size" type="Vector2i" setter="set_min_size" getter="get_min_size" override="true" default="Vector2i( 200, 70 )" />
+		<member name="size" type="Vector2i" setter="set_size" getter="get_size" override="true" default="Vector2i( 200, 100 )" />
+		<member name="title" type="String" setter="set_title" getter="get_title" override="true" default="&quot;Please Confirm...&quot;" />
 	</members>
 	<constants>
 	</constants>

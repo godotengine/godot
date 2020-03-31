@@ -763,8 +763,6 @@
 			</argument>
 			<argument index="10" name="hdr_luminance_cap" type="float">
 			</argument>
-			<argument index="11" name="bicubic_upscale" type="bool">
-			</argument>
 			<description>
 			</description>
 		</method>
@@ -2812,7 +2810,7 @@
 			<argument index="2" name="screen" type="int" default="0">
 			</argument>
 			<description>
-				Copies viewport to a region of the screen specified by [code]rect[/code]. If [member Viewport.render_direct_to_screen] is [code]true[/code], then viewport does not use a framebuffer and the contents of the viewport are rendered directly to screen. However, note that the root viewport is drawn last, therefore it will draw over the screen. Accordingly, you must set the root viewport to an area that does not cover the area that you have attached this viewport to.
+				Copies the viewport to a region of the screen specified by [code]rect[/code]. If [method viewport_set_render_direct_to_screen] is [code]true[/code], then the viewport does not use a framebuffer and the contents of the viewport are rendered directly to screen. However, note that the root viewport is drawn last, therefore it will draw over the screen. Accordingly, you must set the root viewport to an area that does not cover the area that you have attached this viewport to.
 				For example, you can set the root viewport to not render at all with the following code:
 				[codeblock]
 				func _ready():
@@ -2828,15 +2826,6 @@
 			<description>
 				Creates an empty viewport and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]viewport_*[/code] RenderingServer functions.
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
-			</description>
-		</method>
-		<method name="viewport_detach">
-			<return type="void">
-			</return>
-			<argument index="0" name="viewport" type="RID">
-			</argument>
-			<description>
-				Detaches the viewport from the screen.
 			</description>
 		</method>
 		<method name="viewport_get_render_info">
@@ -3378,7 +3367,9 @@
 		<constant name="VIEWPORT_UPDATE_WHEN_VISIBLE" value="2" enum="ViewportUpdateMode">
 			Update the viewport whenever it is visible.
 		</constant>
-		<constant name="VIEWPORT_UPDATE_ALWAYS" value="3" enum="ViewportUpdateMode">
+		<constant name="VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE" value="3" enum="ViewportUpdateMode">
+		</constant>
+		<constant name="VIEWPORT_UPDATE_ALWAYS" value="4" enum="ViewportUpdateMode">
 			Always update the viewport.
 		</constant>
 		<constant name="VIEWPORT_CLEAR_ALWAYS" value="0" enum="ViewportClearMode">

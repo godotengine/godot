@@ -38,9 +38,9 @@
 		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" override="true" default="true" />
 	</members>
 	<signals>
-		<signal name="about_to_show">
+		<signal name="about_to_popup">
 			<description>
-				Emitted when [PopupMenu] of this MenuButton is about to show.
+				Emitted when the [PopupMenu] of this MenuButton is about to show.
 			</description>
 		</signal>
 	</signals>

@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "panel.h"
+
 #include "core/print_string.h"
 
 void Panel::_notification(int p_what) {
@@ -54,7 +55,11 @@ void Panel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_mode"), &Panel::get_mode);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Background,Foreground"), "set_mode", "get_mode");
+
+	BIND_ENUM_CONSTANT(MODE_BACKGROUND);
+	BIND_ENUM_CONSTANT(MODE_FOREGROUND);
 }
+
 Panel::Panel() {
 	// Has visible stylebox, so stop by default.
 	set_mouse_filter(MOUSE_FILTER_STOP);

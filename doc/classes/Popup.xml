@@ -1,81 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Popup" inherits="Control" version="4.0">
+<class name="Popup" inherits="Window" version="4.0">
 	<brief_description>
 		Base container control for popups and dialogs.
 	</brief_description>
 	<description>
-		Popup is a base [Control] used to show dialogs and popups. It's a subwindow and modal by default (see [Control]) and has helpers for custom popup behavior. All popup methods ensure correct placement within the viewport.
+		Popup is a base [Control] used to show dialogs and popups. It's a subwindow and modal by default (see [Control]) and has helpers for custom popup behavior.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="popup">
-			<return type="void">
-			</return>
-			<argument index="0" name="bounds" type="Rect2" default="Rect2( 0, 0, 0, 0 )">
-			</argument>
-			<description>
-				Popup (show the control in modal form).
-			</description>
-		</method>
-		<method name="popup_centered">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="Vector2" default="Vector2( 0, 0 )">
-			</argument>
-			<description>
-				Popup (show the control in modal form) in the center of the screen relative to its current canvas transform, at the current size, or at a size determined by [code]size[/code].
-			</description>
-		</method>
-		<method name="popup_centered_clamped">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="Vector2" default="Vector2( 0, 0 )">
-			</argument>
-			<argument index="1" name="fallback_ratio" type="float" default="0.75">
-			</argument>
-			<description>
-				Popup (show the control in modal form) in the center of the screen relative to the current canvas transform, clamping the size to [code]size[/code], then ensuring the popup is no larger than the viewport size multiplied by [code]fallback_ratio[/code].
-			</description>
-		</method>
-		<method name="popup_centered_minsize">
-			<return type="void">
-			</return>
-			<argument index="0" name="minsize" type="Vector2" default="Vector2( 0, 0 )">
-			</argument>
-			<description>
-				Popup (show the control in modal form) in the center of the screen relative to the current canvas transform, ensuring the size is never smaller than [code]minsize[/code].
-			</description>
-		</method>
-		<method name="popup_centered_ratio">
-			<return type="void">
-			</return>
-			<argument index="0" name="ratio" type="float" default="0.75">
-			</argument>
-			<description>
-				Popup (show the control in modal form) in the center of the screen relative to the current canvas transform, scaled at a ratio of size of the screen.
-			</description>
-		</method>
-		<method name="set_as_minsize">
-			<return type="void">
-			</return>
-			<description>
-				Shrink popup to keep to the minimum size of content.
-			</description>
-		</method>
 	</methods>
 	<members>
-		<member name="popup_exclusive" type="bool" setter="set_exclusive" getter="is_exclusive" default="false">
-			If [code]true[/code], the popup will not be hidden when a click event occurs outside of it, or when it receives the [code]ui_cancel[/code] action event.
-		</member>
+		<member name="borderless" type="bool" setter="set_flag" getter="get_flag" override="true" default="true" />
+		<member name="transient" type="bool" setter="set_transient" getter="is_transient" override="true" default="true" />
+		<member name="unresizable" type="bool" setter="set_flag" getter="get_flag" override="true" default="true" />
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible" override="true" default="false" />
+		<member name="wrap_controls" type="bool" setter="set_wrap_controls" getter="is_wrapping_controls" override="true" default="true" />
 	</members>
 	<signals>
-		<signal name="about_to_show">
-			<description>
-				Emitted when a popup is about to be shown. This is often used in [PopupMenu] to clear the list of options then create a new one according to the current context.
-			</description>
-		</signal>
 		<signal name="popup_hide">
 			<description>
 				Emitted when a popup is hidden.
@@ -83,11 +25,5 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="NOTIFICATION_POST_POPUP" value="80">
-			Notification sent right after the popup is shown.
-		</constant>
-		<constant name="NOTIFICATION_POPUP_HIDE" value="81">
-			Notification sent right after the popup is hidden.
-		</constant>
 	</constants>
 </class>

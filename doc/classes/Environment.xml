@@ -137,10 +137,6 @@
 		<member name="fog_transmit_enabled" type="bool" setter="set_fog_transmit_enabled" getter="is_fog_transmit_enabled" default="false">
 			Enables fog's light transmission effect. If [code]true[/code], light will be more visible in the fog to simulate light scattering as in real life.
 		</member>
-		<member name="glow_bicubic_upscale" type="bool" setter="set_glow_bicubic_upscale" getter="is_glow_bicubic_upscale_enabled" default="false">
-			Smooths out the blockiness created by sampling higher levels, at the cost of performance.
-			[b]Note:[/b] When using the GLES2 renderer, this is only available if the GPU supports the [code]GL_EXT_gpu_shader4[/code] extension.
-		</member>
 		<member name="glow_blend_mode" type="int" setter="set_glow_blend_mode" getter="get_glow_blend_mode" enum="Environment.GlowBlendMode" default="2">
 			The glow blending mode.
 		</member>
