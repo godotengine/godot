@@ -18,6 +18,7 @@ local.properties
 .idea
 .gradletasknamecache
 project.properties
+platform/android/java/lib/.cxx/
 platform/android/java/libs/*
 platform/android/java/app/libs/*
 

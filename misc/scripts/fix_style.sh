@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
 # Command line arguments
+run_black=false
 run_clang_format=false
 run_fix_headers=false
-usage="Invalid argument. Usage:\n$0 <option>\n\t--clang-format|-c\n\t--headers|-h\n\t--all|-a"
+usage="Invalid argument. Usage:\n$0 <option>\n\t--black|-b\n\t--clang-format|-c\n\t--headers|-h\n\t--all|-a"
 
 if [ -z "$1" ]; then
   echo -e $usage
@@ -12,6 +13,9 @@ fi
 
 while [ $# -gt 0 ]; do
   case "$1" in
+    --black|-b)
+      run_black=true
+      ;;
     --clang-format|-c)
       run_clang_format=true
       ;;
@@ -19,6 +23,7 @@ while [ $# -gt 0 ]; do
       run_fix_headers=true
       ;;
     --all|-a)
+      run_black=true
       run_clang_format=true
       run_fix_headers=true
       ;;
@@ -31,6 +36,19 @@ done
 
 echo "Removing generated files, some have binary data and make clang-format freeze."
 find -name "*.gen.*" -delete
+
+# Apply black
+if $run_black; then
+  echo -e "Formatting Python files..."
+  PY_FILES=$(find \( -path "./.git" \
+                  -o -path "./thirdparty" \
+                  \) -prune \
+                  -o \( -name "SConstruct" \
+                     -o -name "SCsub" \
+                     -o -name "*.py" \
+                     \) -print)
+  black -l 120 $PY_FILES
+fi
 
 # Apply clang-format
 if $run_clang_format; then
