@@ -41,13 +41,13 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/material.h"
 
-class ViewportContainer;
+class SubViewportContainer;
 
 class MaterialEditor : public Control {
 
 	GDCLASS(MaterialEditor, Control);
 
-	ViewportContainer *vc;
+	SubViewportContainer *vc;
 	SubViewport *viewport;
 	MeshInstance3D *sphere_instance;
 	MeshInstance3D *box_instance;

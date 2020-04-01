@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SubViewportContainer" inherits="Container" version="4.0">
+	<brief_description>
+		Control for holding [SubViewport]s.
+	</brief_description>
+	<description>
+		A [Container] node that holds a [SubViewport], automatically setting its size.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="stretch" type="bool" setter="set_stretch" getter="is_stretch_enabled" default="false">
+			If [code]true[/code], the sub-viewport will be scaled to the control's size.
+		</member>
+		<member name="stretch_shrink" type="int" setter="set_stretch_shrink" getter="get_stretch_shrink" default="1">
+			Divides the sub-viewport's effective resolution by this value while preserving its scale. This can be used to speed up rendering.
+			For example, a 1280×720 sub-viewport with [member stretch_shrink] set to [code]2[/code] will be rendered at 640×360 while occupying the same size in the container.
+			[b]Note:[/b] [member stretch] must be [code]true[/code] for this property to work.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -43,7 +43,7 @@ class Camera3D;
 class Node3DEditor;
 class EditorNode3DGizmoPlugin;
 class Node3DEditorViewport;
-class ViewportContainer;
+class SubViewportContainer;
 
 class EditorNode3DGizmo : public Node3DGizmo {
 
@@ -256,7 +256,7 @@ private:
 	UndoRedo *undo_redo;
 
 	CheckBox *preview_camera;
-	ViewportContainer *viewport_container;
+	SubViewportContainer *subviewport_container;
 
 	MenuButton *view_menu;
 	PopupMenu *display_submenu;

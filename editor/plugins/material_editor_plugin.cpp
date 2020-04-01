@@ -31,7 +31,7 @@
 #include "material_editor_plugin.h"
 
 #include "editor/editor_scale.h"
-#include "scene/gui/viewport_container.h"
+#include "scene/gui/subviewport_container.h"
 #include "scene/resources/particles_material.h"
 #include "scene/resources/sky_material.h"
 
@@ -110,7 +110,7 @@ void MaterialEditor::_bind_methods() {
 
 MaterialEditor::MaterialEditor() {
 
-	vc = memnew(ViewportContainer);
+	vc = memnew(SubViewportContainer);
 	vc->set_stretch(true);
 	add_child(vc);
 	vc->set_anchors_and_margins_preset(PRESET_WIDE);

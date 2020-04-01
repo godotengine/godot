@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  viewport_container.cpp                                               */
+/*  subviewport_container.cpp                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "viewport_container.h"
+#include "subviewport_container.h"
 
 #include "core/engine.h"
 #include "scene/main/viewport.h"
 
-Size2 ViewportContainer::get_minimum_size() const {
+Size2 SubViewportContainer::get_minimum_size() const {
 
 	if (stretch)
 		return Size2();
@@ -52,19 +52,19 @@ Size2 ViewportContainer::get_minimum_size() const {
 	return ms;
 }
 
-void ViewportContainer::set_stretch(bool p_enable) {
+void SubViewportContainer::set_stretch(bool p_enable) {
 
 	stretch = p_enable;
 	queue_sort();
 	update();
 }
 
-bool ViewportContainer::is_stretch_enabled() const {
+bool SubViewportContainer::is_stretch_enabled() const {
 
 	return stretch;
 }
 
-void ViewportContainer::set_stretch_shrink(int p_shrink) {
+void SubViewportContainer::set_stretch_shrink(int p_shrink) {
 
 	ERR_FAIL_COND(p_shrink < 1);
 	if (shrink == p_shrink)
@@ -87,12 +87,12 @@ void ViewportContainer::set_stretch_shrink(int p_shrink) {
 	update();
 }
 
-int ViewportContainer::get_stretch_shrink() const {
+int SubViewportContainer::get_stretch_shrink() const {
 
 	return shrink;
 }
 
-void ViewportContainer::_notification(int p_what) {
+void SubViewportContainer::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_RESIZED) {
 
@@ -142,7 +142,7 @@ void ViewportContainer::_notification(int p_what) {
 	}
 }
 
-void ViewportContainer::_input(const Ref<InputEvent> &p_event) {
+void SubViewportContainer::_input(const Ref<InputEvent> &p_event) {
 
 	if (Engine::get_singleton()->is_editor_hint())
 		return;
@@ -167,7 +167,7 @@ void ViewportContainer::_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void ViewportContainer::_unhandled_input(const Ref<InputEvent> &p_event) {
+void SubViewportContainer::_unhandled_input(const Ref<InputEvent> &p_event) {
 
 	if (Engine::get_singleton()->is_editor_hint())
 		return;
@@ -192,21 +192,21 @@ void ViewportContainer::_unhandled_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void ViewportContainer::_bind_methods() {
+void SubViewportContainer::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_unhandled_input", "event"), &ViewportContainer::_unhandled_input);
-	ClassDB::bind_method(D_METHOD("_input", "event"), &ViewportContainer::_input);
-	ClassDB::bind_method(D_METHOD("set_stretch", "enable"), &ViewportContainer::set_stretch);
-	ClassDB::bind_method(D_METHOD("is_stretch_enabled"), &ViewportContainer::is_stretch_enabled);
+	ClassDB::bind_method(D_METHOD("_unhandled_input", "event"), &SubViewportContainer::_unhandled_input);
+	ClassDB::bind_method(D_METHOD("_input", "event"), &SubViewportContainer::_input);
+	ClassDB::bind_method(D_METHOD("set_stretch", "enable"), &SubViewportContainer::set_stretch);
+	ClassDB::bind_method(D_METHOD("is_stretch_enabled"), &SubViewportContainer::is_stretch_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_stretch_shrink", "amount"), &ViewportContainer::set_stretch_shrink);
-	ClassDB::bind_method(D_METHOD("get_stretch_shrink"), &ViewportContainer::get_stretch_shrink);
+	ClassDB::bind_method(D_METHOD("set_stretch_shrink", "amount"), &SubViewportContainer::set_stretch_shrink);
+	ClassDB::bind_method(D_METHOD("get_stretch_shrink"), &SubViewportContainer::get_stretch_shrink);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stretch"), "set_stretch", "is_stretch_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_shrink"), "set_stretch_shrink", "get_stretch_shrink");
 }
 
-ViewportContainer::ViewportContainer() {
+SubViewportContainer::SubViewportContainer() {
 
 	stretch = false;
 	shrink = 1;
