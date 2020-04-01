@@ -117,7 +117,7 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 
 	errno_t errcode = _wfopen_s(&f, path.c_str(), mode_string);
 
-	if (f == NULL) {
+	if (f == nullptr) {
 		switch (errcode) {
 			case ENOENT: {
 				last_error = ERR_FILE_NOT_FOUND;
@@ -140,7 +140,7 @@ void FileAccessWindows::close() {
 		return;
 
 	fclose(f);
-	f = NULL;
+	f = nullptr;
 
 	if (save_path != "") {
 
@@ -164,7 +164,7 @@ void FileAccessWindows::close() {
 				rename_error = _wrename((save_path + ".tmp").c_str(), save_path.c_str()) != 0;
 			} else {
 				//atomic replace for existing file
-				rename_error = !ReplaceFileW(save_path.c_str(), (save_path + ".tmp").c_str(), NULL, 2 | 4, NULL, NULL);
+				rename_error = !ReplaceFileW(save_path.c_str(), (save_path + ".tmp").c_str(), nullptr, 2 | 4, nullptr, nullptr);
 			}
 			if (rename_error) {
 				attempts--;
@@ -196,7 +196,7 @@ String FileAccessWindows::get_path_absolute() const {
 
 bool FileAccessWindows::is_open() const {
 
-	return (f != NULL);
+	return (f != nullptr);
 }
 void FileAccessWindows::seek(size_t p_position) {
 
@@ -318,7 +318,7 @@ bool FileAccessWindows::file_exists(const String &p_name) {
 	//printf("opening file %s\n", p_fname.c_str());
 	String filename = fix_path(p_name);
 	_wfopen_s(&g, filename.c_str(), L"rb");
-	if (g == NULL) {
+	if (g == nullptr) {
 
 		return false;
 	} else {
@@ -354,7 +354,7 @@ Error FileAccessWindows::_set_unix_permissions(const String &p_file, uint32_t p_
 }
 
 FileAccessWindows::FileAccessWindows() :
-		f(NULL),
+		f(nullptr),
 		flags(0),
 		prev_op(0),
 		last_error(OK) {

@@ -503,7 +503,7 @@ Object *CanvasItemEditor::_get_editor_data(Object *p_what) {
 
 	CanvasItem *ci = Object::cast_to<CanvasItem>(p_what);
 	if (!ci)
-		return NULL;
+		return nullptr;
 
 	return memnew(CanvasItemEditorSelectedItem);
 }
@@ -667,7 +667,7 @@ void CanvasItemEditor::_get_bones_at_pos(const Point2 &p_pos, Vector<_SelectResu
 		Node2D *from_node = Object::cast_to<Node2D>(ObjectDB::get_instance(E->key().from));
 
 		Vector<Vector2> bone_shape;
-		if (!_get_bone_shape(&bone_shape, NULL, E))
+		if (!_get_bone_shape(&bone_shape, nullptr, E))
 			continue;
 
 		// Check if the point is inside the Polygon2D
@@ -1343,7 +1343,7 @@ bool CanvasItemEditor::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 				if (drag_selection.size() == 1) {
 					new_pos = snap_point(drag_from, SNAP_NODE_SIDES | SNAP_NODE_CENTER | SNAP_NODE_ANCHORS | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, drag_selection[0]);
 				} else {
-					new_pos = snap_point(drag_from, SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, NULL, drag_selection);
+					new_pos = snap_point(drag_from, SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, nullptr, drag_selection);
 				}
 				for (List<CanvasItem *>::Element *E = drag_selection.front(); E; E = E->next()) {
 					CanvasItem *canvas_item = E->get();
@@ -2031,7 +2031,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 			Vector<List<Dictionary>> all_bones_ik_states;
 			for (List<CanvasItem *>::Element *E = drag_selection.front(); E; E = E->next()) {
 				List<Dictionary> bones_ik_states;
-				_save_canvas_item_ik_chain(E->get(), NULL, &bones_ik_states);
+				_save_canvas_item_ik_chain(E->get(), nullptr, &bones_ik_states);
 				all_bones_ik_states.push_back(bones_ik_states);
 			}
 
@@ -2046,7 +2046,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 				previous_pos = _get_encompassing_rect_from_list(drag_selection).position;
 			}
 
-			Point2 new_pos = snap_point(previous_pos + (drag_to - drag_from), SNAP_GRID | SNAP_GUIDES | SNAP_PIXEL | SNAP_NODE_PARENT | SNAP_NODE_ANCHORS | SNAP_OTHER_NODES, 0, NULL, drag_selection);
+			Point2 new_pos = snap_point(previous_pos + (drag_to - drag_from), SNAP_GRID | SNAP_GUIDES | SNAP_PIXEL | SNAP_NODE_PARENT | SNAP_NODE_ANCHORS | SNAP_OTHER_NODES, 0, nullptr, drag_selection);
 
 			if (drag_type == DRAG_MOVE_X) {
 				new_pos.y = previous_pos.y;
@@ -2133,7 +2133,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 			Vector<List<Dictionary>> all_bones_ik_states;
 			for (List<CanvasItem *>::Element *E = drag_selection.front(); E; E = E->next()) {
 				List<Dictionary> bones_ik_states;
-				_save_canvas_item_ik_chain(E->get(), NULL, &bones_ik_states);
+				_save_canvas_item_ik_chain(E->get(), nullptr, &bones_ik_states);
 				all_bones_ik_states.push_back(bones_ik_states);
 			}
 
@@ -2299,7 +2299,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 				return true;
 
 			// Find the item to select
-			CanvasItem *canvas_item = NULL;
+			CanvasItem *canvas_item = nullptr;
 
 			// Retrieve the bones
 			Vector<_SelectResult> selection = Vector<_SelectResult>();
@@ -5800,7 +5800,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	call_deferred("set_state", get_state());
 }
 
-CanvasItemEditor *CanvasItemEditor::singleton = NULL;
+CanvasItemEditor *CanvasItemEditor::singleton = nullptr;
 
 void CanvasItemEditorPlugin::edit(Object *p_object) {
 
@@ -5886,8 +5886,8 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 		ERR_FAIL_COND(res.is_null());
 		Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(*res));
 		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
-		if (texture != NULL || scene != NULL) {
-			if (texture != NULL) {
+		if (texture != nullptr || scene != nullptr) {
+			if (texture != nullptr) {
 				Sprite2D *sprite = memnew(Sprite2D);
 				sprite->set_texture(texture);
 				sprite->set_modulate(Color(1, 1, 1, 0.7f));
@@ -5953,7 +5953,7 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 		editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", child);
 		editor_data->get_undo_redo().add_do_method(child, "set_owner", editor->get_edited_scene());
 		editor_data->get_undo_redo().add_do_reference(child);
-		editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", (Object *)NULL);
+		editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", (Object *)nullptr);
 	}
 
 	if (parent) {
@@ -6064,7 +6064,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 			continue;
 		}
 		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
-		if (scene != NULL && scene.is_valid()) {
+		if (scene != nullptr && scene.is_valid()) {
 			if (!target_node) {
 				// Without root node act the same as "Load Inherited Scene"
 				Error err = EditorNode::get_singleton()->load_scene(path, false, true);
@@ -6079,7 +6079,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 			}
 		} else {
 			Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(*res));
-			if (texture != NULL && texture.is_valid()) {
+			if (texture != nullptr && texture.is_valid()) {
 				Node *child;
 				if (default_type == "Light2D")
 					child = memnew(Light2D);
@@ -6209,7 +6209,7 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 			list.push_back(root_node);
 		} else {
 			drop_pos = p_point;
-			target_node = NULL;
+			target_node = nullptr;
 		}
 	}
 
@@ -6258,7 +6258,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 	types.push_back("TextureRect");
 	types.push_back("NinePatchRect");
 
-	target_node = NULL;
+	target_node = nullptr;
 	editor = p_node;
 	editor_data = editor->get_scene_tree_dock()->get_editor_data();
 	canvas_item_editor = p_canvas_item_editor;

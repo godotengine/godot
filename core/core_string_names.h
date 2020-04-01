@@ -41,7 +41,7 @@ class CoreStringNames {
 	static void create() { singleton = memnew(CoreStringNames); }
 	static void free() {
 		memdelete(singleton);
-		singleton = NULL;
+		singleton = nullptr;
 	}
 
 	CoreStringNames();

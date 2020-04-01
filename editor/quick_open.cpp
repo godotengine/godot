@@ -241,7 +241,7 @@ void EditorQuickOpen::_update_search() {
 		ti->set_as_cursor(0);
 	}
 
-	get_ok()->set_disabled(root->get_children() == NULL);
+	get_ok()->set_disabled(root->get_children() == nullptr);
 }
 
 void EditorQuickOpen::_confirmed() {

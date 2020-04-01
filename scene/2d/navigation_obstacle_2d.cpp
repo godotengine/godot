@@ -49,12 +49,12 @@ void NavigationObstacle2D::_notification(int p_what) {
 
 			// Search the navigation node and set it
 			{
-				Navigation2D *nav = NULL;
+				Navigation2D *nav = nullptr;
 				Node *p = get_parent();
-				while (p != NULL) {
+				while (p != nullptr) {
 					nav = Object::cast_to<Navigation2D>(p);
-					if (nav != NULL)
-						p = NULL;
+					if (nav != nullptr)
+						p = nullptr;
 					else
 						p = p->get_parent();
 				}
@@ -65,7 +65,7 @@ void NavigationObstacle2D::_notification(int p_what) {
 			set_physics_process_internal(true);
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			set_navigation(NULL);
+			set_navigation(nullptr);
 			set_physics_process_internal(false);
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
@@ -79,7 +79,7 @@ void NavigationObstacle2D::_notification(int p_what) {
 }
 
 NavigationObstacle2D::NavigationObstacle2D() :
-		navigation(NULL),
+		navigation(nullptr),
 		agent(RID()) {
 	agent = NavigationServer2D::get_singleton()->agent_create();
 }
@@ -94,12 +94,12 @@ void NavigationObstacle2D::set_navigation(Navigation2D *p_nav) {
 		return; // Pointless
 
 	navigation = p_nav;
-	NavigationServer2D::get_singleton()->agent_set_map(agent, navigation == NULL ? RID() : navigation->get_rid());
+	NavigationServer2D::get_singleton()->agent_set_map(agent, navigation == nullptr ? RID() : navigation->get_rid());
 }
 
 void NavigationObstacle2D::set_navigation_node(Node *p_nav) {
 	Navigation2D *nav = Object::cast_to<Navigation2D>(p_nav);
-	ERR_FAIL_COND(nav == NULL);
+	ERR_FAIL_COND(nav == nullptr);
 	set_navigation(nav);
 }
 

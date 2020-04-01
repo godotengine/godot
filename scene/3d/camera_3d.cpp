@@ -138,7 +138,7 @@ void Camera3D::_notification(int p_what) {
 
 			if (viewport) {
 				viewport->_camera_remove(this);
-				viewport = NULL;
+				viewport = nullptr;
 			}
 
 		} break;
@@ -241,7 +241,7 @@ void Camera3D::clear_current(bool p_enable_next) {
 		return;
 
 	if (get_viewport()->get_camera() == this) {
-		get_viewport()->_camera_set(NULL);
+		get_viewport()->_camera_set(nullptr);
 
 		if (p_enable_next) {
 			get_viewport()->_camera_make_next_current(this);
@@ -703,7 +703,7 @@ Camera3D::Camera3D() {
 	near = 0;
 	far = 0;
 	current = false;
-	viewport = NULL;
+	viewport = nullptr;
 	force_change = false;
 	mode = PROJECTION_PERSPECTIVE;
 	set_perspective(70.0, 0.05, 100.0);

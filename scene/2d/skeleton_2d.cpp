@@ -35,7 +35,7 @@ void Bone2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		Node *parent = get_parent();
 		parent_bone = Object::cast_to<Bone2D>(parent);
-		skeleton = NULL;
+		skeleton = nullptr;
 		while (parent) {
 			skeleton = Object::cast_to<Skeleton2D>(parent);
 			if (skeleton)
@@ -73,9 +73,9 @@ void Bone2D::_notification(int p_what) {
 				}
 			}
 			skeleton->_make_bone_setup_dirty();
-			skeleton = NULL;
+			skeleton = nullptr;
 		}
-		parent_bone = NULL;
+		parent_bone = nullptr;
 	}
 }
 void Bone2D::_bind_methods() {
@@ -157,8 +157,8 @@ String Bone2D::get_configuration_warning() const {
 }
 
 Bone2D::Bone2D() {
-	skeleton = NULL;
-	parent_bone = NULL;
+	skeleton = nullptr;
+	parent_bone = nullptr;
 	skeleton_index = -1;
 	default_length = 16;
 	set_notify_local_transform(true);
@@ -257,8 +257,8 @@ int Skeleton2D::get_bone_count() const {
 
 Bone2D *Skeleton2D::get_bone(int p_idx) {
 
-	ERR_FAIL_COND_V(!is_inside_tree(), NULL);
-	ERR_FAIL_INDEX_V(p_idx, bones.size(), NULL);
+	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
+	ERR_FAIL_INDEX_V(p_idx, bones.size(), nullptr);
 
 	return bones[p_idx].bone;
 }

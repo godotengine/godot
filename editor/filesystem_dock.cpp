@@ -843,7 +843,7 @@ void FileSystemDock::_tree_activate_file() {
 	if (selected) {
 		String path = selected->get_metadata(0);
 		TreeItem *parent = selected->get_parent();
-		bool is_favorite = parent != NULL && parent->get_metadata(0) == "Favorites";
+		bool is_favorite = parent != nullptr && parent->get_metadata(0) == "Favorites";
 
 		if ((!is_favorite && path.ends_with("/")) || path == "Favorites") {
 			bool collapsed = selected->is_collapsed();
@@ -955,7 +955,7 @@ void FileSystemDock::_push_to_history() {
 }
 
 void FileSystemDock::_get_all_items_in_dir(EditorFileSystemDirectory *efsd, Vector<String> &files, Vector<String> &folders) const {
-	if (efsd == NULL)
+	if (efsd == nullptr)
 		return;
 
 	for (int i = 0; i < efsd->get_subdir_count(); i++) {
@@ -1871,7 +1871,7 @@ Variant FileSystemDock::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 				return Variant();
 			}
 
-			bool is_favorite = selected->get_parent() != NULL && tree->get_root()->get_children() == selected->get_parent();
+			bool is_favorite = selected->get_parent() != nullptr && tree->get_root()->get_children() == selected->get_parent();
 			all_favorites &= is_favorite;
 			all_not_favorites &= !is_favorite;
 			selected = tree->get_next_selected(selected);

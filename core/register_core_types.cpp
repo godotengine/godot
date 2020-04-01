@@ -78,17 +78,17 @@ static Ref<TranslationLoaderPO> resource_format_po;
 static Ref<ResourceFormatSaverCrypto> resource_format_saver_crypto;
 static Ref<ResourceFormatLoaderCrypto> resource_format_loader_crypto;
 
-static _ResourceLoader *_resource_loader = NULL;
-static _ResourceSaver *_resource_saver = NULL;
-static _OS *_os = NULL;
-static _Engine *_engine = NULL;
-static _ClassDB *_classdb = NULL;
-static _Marshalls *_marshalls = NULL;
-static _JSON *_json = NULL;
+static _ResourceLoader *_resource_loader = nullptr;
+static _ResourceSaver *_resource_saver = nullptr;
+static _OS *_os = nullptr;
+static _Engine *_engine = nullptr;
+static _ClassDB *_classdb = nullptr;
+static _Marshalls *_marshalls = nullptr;
+static _JSON *_json = nullptr;
 
-static IP *ip = NULL;
+static IP *ip = nullptr;
 
-static _Geometry *_geometry = NULL;
+static _Geometry *_geometry = nullptr;
 
 extern Mutex _global_mutex;
 

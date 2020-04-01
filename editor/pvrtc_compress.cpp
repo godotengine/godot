@@ -38,8 +38,8 @@
 #include "editor_settings.h"
 #include "scene/resources/texture.h"
 
-static void (*_base_image_compress_pvrtc2_func)(Image *) = NULL;
-static void (*_base_image_compress_pvrtc4_func)(Image *) = NULL;
+static void (*_base_image_compress_pvrtc2_func)(Image *) = nullptr;
+static void (*_base_image_compress_pvrtc4_func)(Image *) = nullptr;
 
 static void _compress_image(Image::CompressMode p_mode, Image *p_image) {
 

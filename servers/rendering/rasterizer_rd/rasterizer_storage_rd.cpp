@@ -862,7 +862,7 @@ Size2 RasterizerStorageRD::texture_size_with_proxy(RID p_proxy) {
 RID RasterizerStorageRD::shader_create() {
 
 	Shader shader;
-	shader.data = NULL;
+	shader.data = nullptr;
 	shader.type = SHADER_TYPE_MAX;
 
 	return shader_owner.make_rid(shader);
@@ -890,7 +890,7 @@ void RasterizerStorageRD::shader_set_code(RID p_shader, const String &p_code) {
 	if (new_type != shader->type) {
 		if (shader->data) {
 			memdelete(shader->data);
-			shader->data = NULL;
+			shader->data = nullptr;
 		}
 
 		for (Set<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
@@ -899,7 +899,7 @@ void RasterizerStorageRD::shader_set_code(RID p_shader, const String &p_code) {
 			material->shader_type = new_type;
 			if (material->data) {
 				memdelete(material->data);
-				material->data = NULL;
+				material->data = nullptr;
 			}
 		}
 
@@ -991,10 +991,10 @@ void RasterizerStorageRD::shader_set_data_request_function(ShaderType p_shader_t
 RID RasterizerStorageRD::material_create() {
 
 	Material material;
-	material.data = NULL;
-	material.shader = NULL;
+	material.data = nullptr;
+	material.shader = nullptr;
 	material.shader_type = SHADER_TYPE_MAX;
-	material.update_next = NULL;
+	material.update_next = nullptr;
 	material.update_requested = false;
 	material.uniform_dirty = false;
 	material.texture_dirty = false;
@@ -1026,12 +1026,12 @@ void RasterizerStorageRD::material_set_shader(RID p_material, RID p_shader) {
 
 	if (material->data) {
 		memdelete(material->data);
-		material->data = NULL;
+		material->data = nullptr;
 	}
 
 	if (material->shader) {
 		material->shader->owners.erase(material);
-		material->shader = NULL;
+		material->shader = nullptr;
 		material->shader_type = SHADER_TYPE_MAX;
 	}
 
@@ -1050,7 +1050,7 @@ void RasterizerStorageRD::material_set_shader(RID p_material, RID p_shader) {
 		return;
 	}
 
-	ERR_FAIL_COND(shader->data == NULL);
+	ERR_FAIL_COND(shader->data == nullptr);
 
 	material->data = material_data_request_func[shader->type](shader->data);
 	material->data->set_next_pass(material->next_pass);
@@ -1770,10 +1770,10 @@ void RasterizerStorageRD::_update_queued_materials() {
 		material->update_requested = false;
 		material->texture_dirty = false;
 		material->uniform_dirty = false;
-		material->update_next = NULL;
+		material->update_next = nullptr;
 		material = next;
 	}
-	material_update_list = NULL;
+	material_update_list = nullptr;
 }
 /* MESH API */
 
@@ -4453,10 +4453,10 @@ String RasterizerStorageRD::get_captured_timestamp_name(uint32_t p_index) const 
 RasterizerStorageRD::RasterizerStorageRD() {
 
 	for (int i = 0; i < SHADER_TYPE_MAX; i++) {
-		shader_data_request_func[i] = NULL;
+		shader_data_request_func[i] = nullptr;
 	}
 
-	material_update_list = NULL;
+	material_update_list = nullptr;
 	{ //create default textures
 
 		RD::TextureFormat tformat;

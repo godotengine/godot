@@ -48,7 +48,7 @@
 	@author AndreaCatania
 */
 
-BulletPhysicsDirectBodyState3D *BulletPhysicsDirectBodyState3D::singleton = NULL;
+BulletPhysicsDirectBodyState3D *BulletPhysicsDirectBodyState3D::singleton = nullptr;
 
 Vector3 BulletPhysicsDirectBodyState3D::get_total_gravity() const {
 	Vector3 gVec;
@@ -241,7 +241,7 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 			} break;
 			default:
 				WARN_PRINT("This shape is not supported for kinematic collision.");
-				shapes.write[i].shape = NULL;
+				shapes.write[i].shape = nullptr;
 		}
 	}
 }
@@ -257,7 +257,7 @@ void RigidBodyBullet::KinematicUtilities::just_delete_shapes(int new_size) {
 
 RigidBodyBullet::RigidBodyBullet() :
 		RigidCollisionObjectBullet(CollisionObjectBullet::TYPE_RIGID_BODY),
-		kinematic_utilities(NULL),
+		kinematic_utilities(nullptr),
 		locked_axis(0),
 		mass(1),
 		gravity_scale(1),
@@ -274,13 +274,13 @@ RigidBodyBullet::RigidBodyBullet() :
 		countGravityPointSpaces(0),
 		isScratchedSpaceOverrideModificator(false),
 		previousActiveState(true),
-		force_integration_callback(NULL) {
+		force_integration_callback(nullptr) {
 
 	godotMotionState = bulletnew(GodotMotionState(this));
 
 	// Initial properties
 	const btVector3 localInertia(0, 0, 0);
-	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, godotMotionState, NULL, localInertia);
+	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, godotMotionState, nullptr, localInertia);
 
 	btBody = bulletnew(btRigidBody(cInfo));
 	reload_shapes();
@@ -291,7 +291,7 @@ RigidBodyBullet::RigidBodyBullet() :
 
 	areasWhereIam.resize(maxAreasWhereIam);
 	for (int i = areasWhereIam.size() - 1; 0 <= i; --i) {
-		areasWhereIam.write[i] = NULL;
+		areasWhereIam.write[i] = nullptr;
 	}
 	btBody->setSleepingThresholds(0.2, 0.2);
 
@@ -315,7 +315,7 @@ void RigidBodyBullet::init_kinematic_utilities() {
 void RigidBodyBullet::destroy_kinematic_utilities() {
 	if (kinematic_utilities) {
 		memdelete(kinematic_utilities);
-		kinematic_utilities = NULL;
+		kinematic_utilities = nullptr;
 	}
 }
 
@@ -392,7 +392,7 @@ void RigidBodyBullet::set_force_integration_callback(ObjectID p_id, const String
 
 	if (force_integration_callback) {
 		memdelete(force_integration_callback);
-		force_integration_callback = NULL;
+		force_integration_callback = nullptr;
 	}
 
 	if (p_id.is_valid()) {
@@ -847,7 +847,7 @@ void RigidBodyBullet::on_enter_area(AreaBullet *p_area) {
 	}
 	for (int i = 0; i < areaWhereIamCount; ++i) {
 
-		if (NULL == areasWhereIam[i]) {
+		if (nullptr == areasWhereIam[i]) {
 			// This area has the highest priority
 			areasWhereIam.write[i] = p_area;
 			break;
@@ -894,7 +894,7 @@ void RigidBodyBullet::on_exit_area(AreaBullet *p_area) {
 		}
 
 		--areaWhereIamCount;
-		areasWhereIam.write[areaWhereIamCount] = NULL; // Even if this is not required, I clear the last element to be safe
+		areasWhereIam.write[areaWhereIamCount] = nullptr; // Even if this is not required, I clear the last element to be safe
 		if (PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED != p_area->get_spOv_mode()) {
 			scratch_space_override_modificator();
 		}

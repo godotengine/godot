@@ -58,9 +58,9 @@ void GDMonoMethod::_update_signature(MonoMethodSignature *p_method_sig) {
 		}
 	}
 
-	void *iter = NULL;
+	void *iter = nullptr;
 	MonoType *param_raw_type;
-	while ((param_raw_type = mono_signature_get_params(p_method_sig, &iter)) != NULL) {
+	while ((param_raw_type = mono_signature_get_params(p_method_sig, &iter)) != nullptr) {
 		ManagedType param_type;
 
 		param_type.type_encoding = mono_type_get_type(param_raw_type);
@@ -81,11 +81,11 @@ GDMonoClass *GDMonoMethod::get_enclosing_class() const {
 }
 
 bool GDMonoMethod::is_static() {
-	return mono_method_get_flags(mono_method, NULL) & MONO_METHOD_ATTR_STATIC;
+	return mono_method_get_flags(mono_method, nullptr) & MONO_METHOD_ATTR_STATIC;
 }
 
 IMonoClassMember::Visibility GDMonoMethod::get_visibility() {
-	switch (mono_method_get_flags(mono_method, NULL) & MONO_METHOD_ATTR_ACCESS_MASK) {
+	switch (mono_method_get_flags(mono_method, nullptr) & MONO_METHOD_ATTR_ACCESS_MASK) {
 		case MONO_METHOD_ATTR_PRIVATE:
 			return IMonoClassMember::PRIVATE;
 		case MONO_METHOD_ATTR_FAM_AND_ASSEM:
@@ -102,7 +102,7 @@ IMonoClassMember::Visibility GDMonoMethod::get_visibility() {
 }
 
 MonoObject *GDMonoMethod::invoke(MonoObject *p_object, const Variant **p_params, MonoException **r_exc) const {
-	MonoException *exc = NULL;
+	MonoException *exc = nullptr;
 	MonoObject *ret;
 
 	if (params_count > 0) {
@@ -115,11 +115,11 @@ MonoObject *GDMonoMethod::invoke(MonoObject *p_object, const Variant **p_params,
 
 		ret = GDMonoUtils::runtime_invoke_array(mono_method, p_object, params, &exc);
 	} else {
-		ret = GDMonoUtils::runtime_invoke(mono_method, p_object, NULL, &exc);
+		ret = GDMonoUtils::runtime_invoke(mono_method, p_object, nullptr, &exc);
 	}
 
 	if (exc) {
-		ret = NULL;
+		ret = nullptr;
 		if (r_exc) {
 			*r_exc = exc;
 		} else {
@@ -131,16 +131,16 @@ MonoObject *GDMonoMethod::invoke(MonoObject *p_object, const Variant **p_params,
 }
 
 MonoObject *GDMonoMethod::invoke(MonoObject *p_object, MonoException **r_exc) const {
-	ERR_FAIL_COND_V(get_parameters_count() > 0, NULL);
-	return invoke_raw(p_object, NULL, r_exc);
+	ERR_FAIL_COND_V(get_parameters_count() > 0, nullptr);
+	return invoke_raw(p_object, nullptr, r_exc);
 }
 
 MonoObject *GDMonoMethod::invoke_raw(MonoObject *p_object, void **p_params, MonoException **r_exc) const {
-	MonoException *exc = NULL;
+	MonoException *exc = nullptr;
 	MonoObject *ret = GDMonoUtils::runtime_invoke(mono_method, p_object, p_params, &exc);
 
 	if (exc) {
-		ret = NULL;
+		ret = nullptr;
 		if (r_exc) {
 			*r_exc = exc;
 		} else {
@@ -164,19 +164,19 @@ bool GDMonoMethod::has_attribute(GDMonoClass *p_attr_class) {
 }
 
 MonoObject *GDMonoMethod::get_attribute(GDMonoClass *p_attr_class) {
-	ERR_FAIL_NULL_V(p_attr_class, NULL);
+	ERR_FAIL_NULL_V(p_attr_class, nullptr);
 
 	if (!attrs_fetched)
 		fetch_attributes();
 
 	if (!attributes)
-		return NULL;
+		return nullptr;
 
 	return mono_custom_attrs_get_attr(attributes, p_attr_class->get_mono_ptr());
 }
 
 void GDMonoMethod::fetch_attributes() {
-	ERR_FAIL_COND(attributes != NULL);
+	ERR_FAIL_COND(attributes != nullptr);
 	attributes = mono_custom_attrs_from_method(mono_method);
 	attrs_fetched = true;
 }
@@ -281,7 +281,7 @@ GDMonoMethod::GDMonoMethod(StringName p_name, MonoMethod *p_method) {
 	method_info_fetched = false;
 
 	attrs_fetched = false;
-	attributes = NULL;
+	attributes = nullptr;
 
 	_update_signature();
 }

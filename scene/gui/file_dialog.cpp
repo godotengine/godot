@@ -34,11 +34,11 @@
 #include "core/print_string.h"
 #include "scene/gui/label.h"
 
-FileDialog::GetIconFunc FileDialog::get_icon_func = NULL;
-FileDialog::GetIconFunc FileDialog::get_large_icon_func = NULL;
+FileDialog::GetIconFunc FileDialog::get_icon_func = nullptr;
+FileDialog::GetIconFunc FileDialog::get_large_icon_func = nullptr;
 
-FileDialog::RegisterFunc FileDialog::register_func = NULL;
-FileDialog::RegisterFunc FileDialog::unregister_func = NULL;
+FileDialog::RegisterFunc FileDialog::register_func = nullptr;
+FileDialog::RegisterFunc FileDialog::unregister_func = nullptr;
 
 VBoxContainer *FileDialog::get_vbox() {
 	return vbox;
@@ -195,7 +195,7 @@ void FileDialog::_action_pressed() {
 
 	if (mode == FILE_MODE_OPEN_FILES) {
 
-		TreeItem *ti = tree->get_next_selected(NULL);
+		TreeItem *ti = tree->get_next_selected(nullptr);
 		String fbase = dir_access->get_current_dir();
 
 		Vector<String> files;
@@ -543,7 +543,7 @@ void FileDialog::update_file_list() {
 		files.pop_front();
 	}
 
-	if (tree->get_root() && tree->get_root()->get_children() && tree->get_selected() == NULL)
+	if (tree->get_root() && tree->get_root()->get_children() && tree->get_selected() == nullptr)
 		tree->get_root()->get_children()->select(0);
 }
 

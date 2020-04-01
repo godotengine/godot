@@ -53,7 +53,7 @@
 
 // PRIVATE METHODS
 
-Ref<EditorSettings> EditorSettings::singleton = NULL;
+Ref<EditorSettings> EditorSettings::singleton = nullptr;
 
 // Properties
 
@@ -177,7 +177,7 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	_THREAD_SAFE_METHOD_
 
-	const String *k = NULL;
+	const String *k = nullptr;
 	Set<_EVCSort> vclist;
 
 	while ((k = props.next(k))) {
@@ -778,7 +778,7 @@ void EditorSettings::create() {
 	if (singleton.ptr())
 		return; //pointless
 
-	DirAccess *dir = NULL;
+	DirAccess *dir = nullptr;
 
 	String data_path;
 	String data_dir;
@@ -1524,7 +1524,7 @@ void EditorSettings::get_shortcut_list(List<String> *r_shortcuts) {
 Ref<ShortCut> ED_GET_SHORTCUT(const String &p_path) {
 
 	if (!EditorSettings::get_singleton()) {
-		return NULL;
+		return nullptr;
 	}
 
 	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);

@@ -208,13 +208,13 @@ String CPUParticles3D::get_configuration_warning() const {
 	if (get_mesh().is_valid()) {
 		mesh_found = true;
 		for (int j = 0; j < get_mesh()->get_surface_count(); j++) {
-			anim_material_found = Object::cast_to<ShaderMaterial>(get_mesh()->surface_get_material(j).ptr()) != NULL;
+			anim_material_found = Object::cast_to<ShaderMaterial>(get_mesh()->surface_get_material(j).ptr()) != nullptr;
 			StandardMaterial3D *spat = Object::cast_to<StandardMaterial3D>(get_mesh()->surface_get_material(j).ptr());
 			anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == StandardMaterial3D::BILLBOARD_PARTICLES);
 		}
 	}
 
-	anim_material_found = anim_material_found || Object::cast_to<ShaderMaterial>(get_material_override().ptr()) != NULL;
+	anim_material_found = anim_material_found || Object::cast_to<ShaderMaterial>(get_material_override().ptr()) != nullptr;
 	StandardMaterial3D *spat = Object::cast_to<StandardMaterial3D>(get_material_override().ptr());
 	anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == StandardMaterial3D::BILLBOARD_PARTICLES);
 
@@ -1022,7 +1022,7 @@ void CPUParticles3D::_update_particle_data_buffer() {
 	int pc = particles.size();
 
 	int *ow;
-	int *order = NULL;
+	int *order = nullptr;
 
 	float *w = particle_data.ptrw();
 	const Particle *r = particles.ptr();

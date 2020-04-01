@@ -80,7 +80,7 @@ Dictionary RegExMatch::get_names() const {
 
 	Dictionary result;
 
-	for (const Map<String, int>::Element *i = names.front(); i != NULL; i = i->next()) {
+	for (const Map<String, int>::Element *i = names.front(); i != nullptr; i = i->next()) {
 		result[i->key()] = i->value();
 	}
 
@@ -180,14 +180,14 @@ void RegEx::clear() {
 
 		if (code) {
 			pcre2_code_free_16((pcre2_code_16 *)code);
-			code = NULL;
+			code = nullptr;
 		}
 
 	} else {
 
 		if (code) {
 			pcre2_code_free_32((pcre2_code_32 *)code);
-			code = NULL;
+			code = nullptr;
 		}
 	}
 }
@@ -242,7 +242,7 @@ Error RegEx::compile(const String &p_pattern) {
 
 Ref<RegExMatch> RegEx::search(const String &p_subject, int p_offset, int p_end) const {
 
-	ERR_FAIL_COND_V(!is_valid(), NULL);
+	ERR_FAIL_COND_V(!is_valid(), nullptr);
 
 	Ref<RegExMatch> result = memnew(RegExMatch);
 
@@ -263,7 +263,7 @@ Ref<RegExMatch> RegEx::search(const String &p_subject, int p_offset, int p_end) 
 
 		if (res < 0) {
 			pcre2_match_data_free_16(match);
-			return NULL;
+			return nullptr;
 		}
 
 		uint32_t size = pcre2_get_ovector_count_16(match);
@@ -295,7 +295,7 @@ Ref<RegExMatch> RegEx::search(const String &p_subject, int p_offset, int p_end) 
 			pcre2_match_data_free_32(match);
 			pcre2_match_context_free_32(mctx);
 
-			return NULL;
+			return nullptr;
 		}
 
 		uint32_t size = pcre2_get_ovector_count_32(match);
@@ -431,7 +431,7 @@ String RegEx::sub(const String &p_subject, const String &p_replacement, bool p_a
 
 bool RegEx::is_valid() const {
 
-	return (code != NULL);
+	return (code != nullptr);
 }
 
 String RegEx::get_pattern() const {
@@ -479,26 +479,26 @@ RegEx::RegEx() {
 
 	if (sizeof(CharType) == 2) {
 
-		general_ctx = pcre2_general_context_create_16(&_regex_malloc, &_regex_free, NULL);
+		general_ctx = pcre2_general_context_create_16(&_regex_malloc, &_regex_free, nullptr);
 
 	} else {
 
-		general_ctx = pcre2_general_context_create_32(&_regex_malloc, &_regex_free, NULL);
+		general_ctx = pcre2_general_context_create_32(&_regex_malloc, &_regex_free, nullptr);
 	}
-	code = NULL;
+	code = nullptr;
 }
 
 RegEx::RegEx(const String &p_pattern) {
 
 	if (sizeof(CharType) == 2) {
 
-		general_ctx = pcre2_general_context_create_16(&_regex_malloc, &_regex_free, NULL);
+		general_ctx = pcre2_general_context_create_16(&_regex_malloc, &_regex_free, nullptr);
 
 	} else {
 
-		general_ctx = pcre2_general_context_create_32(&_regex_malloc, &_regex_free, NULL);
+		general_ctx = pcre2_general_context_create_32(&_regex_malloc, &_regex_free, nullptr);
 	}
-	code = NULL;
+	code = nullptr;
 	compile(p_pattern);
 }
 

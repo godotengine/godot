@@ -45,7 +45,7 @@
 
 RID PhysicsServer3DSW::shape_create(ShapeType p_shape) {
 
-	Shape3DSW *shape = NULL;
+	Shape3DSW *shape = nullptr;
 	switch (p_shape) {
 
 		case SHAPE_PLANE: {
@@ -195,8 +195,8 @@ real_t PhysicsServer3DSW::space_get_param(RID p_space, SpaceParameter p_param) c
 PhysicsDirectSpaceState3D *PhysicsServer3DSW::space_get_direct_state(RID p_space) {
 
 	Space3DSW *space = space_owner.getornull(p_space);
-	ERR_FAIL_COND_V(!space, NULL);
-	ERR_FAIL_COND_V_MSG(!doing_sync || space->is_locked(), NULL, "Space state is inaccessible right now, wait for iteration or physics process notification.");
+	ERR_FAIL_COND_V(!space, nullptr);
+	ERR_FAIL_COND_V_MSG(!doing_sync || space->is_locked(), nullptr, "Space state is inaccessible right now, wait for iteration or physics process notification.");
 
 	return space->get_direct_state();
 }
@@ -235,7 +235,7 @@ void PhysicsServer3DSW::area_set_space(RID p_area, RID p_space) {
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 
-	Space3DSW *space = NULL;
+	Space3DSW *space = nullptr;
 	if (p_space.is_valid()) {
 		space = space_owner.getornull(p_space);
 		ERR_FAIL_COND(!space);
@@ -492,7 +492,7 @@ void PhysicsServer3DSW::body_set_space(RID p_body, RID p_space) {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
-	Space3DSW *space = NULL;
+	Space3DSW *space = nullptr;
 	if (p_space.is_valid()) {
 		space = space_owner.getornull(p_space);
 		ERR_FAIL_COND(!space);
@@ -978,8 +978,8 @@ int PhysicsServer3DSW::body_test_ray_separation(RID p_body, const Transform &p_t
 PhysicsDirectBodyState3D *PhysicsServer3DSW::body_get_direct_state(RID p_body) {
 
 	Body3DSW *body = body_owner.getornull(p_body);
-	ERR_FAIL_COND_V(!body, NULL);
-	ERR_FAIL_COND_V_MSG(!doing_sync || body->get_space()->is_locked(), NULL, "Body state is inaccessible right now, wait for iteration or physics process notification.");
+	ERR_FAIL_COND_V(!body, nullptr);
+	ERR_FAIL_COND_V_MSG(!doing_sync || body->get_space()->is_locked(), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
 	direct_state->body = body;
 	return direct_state;
@@ -1341,7 +1341,7 @@ void PhysicsServer3DSW::free(RID p_rid) {
 			_clear_query(body->get_direct_state_query());
 		*/
 
-		body->set_space(NULL);
+		body->set_space(nullptr);
 
 		while (body->get_shape_count()) {
 
@@ -1360,7 +1360,7 @@ void PhysicsServer3DSW::free(RID p_rid) {
 			_clear_query(area->get_monitor_query());
 		*/
 
-		area->set_space(NULL);
+		area->set_space(nullptr);
 
 		while (area->get_shape_count()) {
 
@@ -1375,7 +1375,7 @@ void PhysicsServer3DSW::free(RID p_rid) {
 
 		while (space->get_objects().size()) {
 			CollisionObject3DSW *co = (CollisionObject3DSW *)space->get_objects().front()->get();
-			co->set_space(NULL);
+			co->set_space(nullptr);
 		}
 
 		active_spaces.erase(space);
@@ -1572,7 +1572,7 @@ void PhysicsServer3DSW::_shape_col_cbk(const Vector3 &p_point_A, const Vector3 &
 	}
 }
 
-PhysicsServer3DSW *PhysicsServer3DSW::singleton = NULL;
+PhysicsServer3DSW *PhysicsServer3DSW::singleton = nullptr;
 PhysicsServer3DSW::PhysicsServer3DSW() {
 	singleton = this;
 	BroadPhase3DSW::create_func = BroadPhaseOctree::_create;

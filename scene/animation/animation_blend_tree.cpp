@@ -41,7 +41,7 @@ StringName AnimationNodeAnimation::get_animation() const {
 	return animation;
 }
 
-Vector<String> (*AnimationNodeAnimation::get_editable_animation_list)() = NULL;
+Vector<String> (*AnimationNodeAnimation::get_editable_animation_list)() = nullptr;
 
 void AnimationNodeAnimation::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", 0));

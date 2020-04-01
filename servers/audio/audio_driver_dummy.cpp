@@ -38,7 +38,7 @@ Error AudioDriverDummy::init() {
 	active = false;
 	thread_exited = false;
 	exit_thread = false;
-	samples_in = NULL;
+	samples_in = nullptr;
 
 	mix_rate = DEFAULT_MIX_RATE;
 	speaker_mode = SPEAKER_MODE_STEREO;
@@ -119,12 +119,12 @@ void AudioDriverDummy::finish() {
 	};
 
 	memdelete(thread);
-	thread = NULL;
+	thread = nullptr;
 };
 
 AudioDriverDummy::AudioDriverDummy() {
 
-	thread = NULL;
+	thread = nullptr;
 };
 
 AudioDriverDummy::~AudioDriverDummy(){

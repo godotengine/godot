@@ -57,7 +57,7 @@ void RenderPipelineVertexFormatCacheRD::_clear() {
 		}
 		version_count = 0;
 		memfree(versions);
-		versions = NULL;
+		versions = nullptr;
 	}
 }
 
@@ -88,7 +88,7 @@ void RenderPipelineVertexFormatCacheRD::clear() {
 
 RenderPipelineVertexFormatCacheRD::RenderPipelineVertexFormatCacheRD() {
 	version_count = 0;
-	versions = NULL;
+	versions = nullptr;
 	input_mask = 0;
 }
 

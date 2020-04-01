@@ -50,7 +50,7 @@ public:
 	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel = false);
 
 	virtual void redraw();
-	PathNode3DGizmo(Path3D *p_path = NULL);
+	PathNode3DGizmo(Path3D *p_path = nullptr);
 };
 
 class PathNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {

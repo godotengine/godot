@@ -49,7 +49,7 @@ void draw_margin_line(Control *edit_draw, Vector2 from, Vector2 to) {
 }
 
 void TextureRegionEditor::_region_draw() {
-	Ref<Texture2D> base_tex = NULL;
+	Ref<Texture2D> base_tex = nullptr;
 	if (node_sprite)
 		base_tex = node_sprite->get_texture();
 	else if (node_sprite_3d)
@@ -672,7 +672,7 @@ void TextureRegionEditor::_update_autoslice() {
 	autoslice_is_dirty = false;
 	autoslice_cache.clear();
 
-	Ref<Texture2D> texture = NULL;
+	Ref<Texture2D> texture = nullptr;
 	if (node_sprite)
 		texture = node_sprite->get_texture();
 	else if (node_sprite_3d)
@@ -767,11 +767,11 @@ void TextureRegionEditor::_notification(int p_what) {
 
 void TextureRegionEditor::_node_removed(Object *p_obj) {
 	if (p_obj == node_sprite || p_obj == node_sprite_3d || p_obj == node_ninepatch || p_obj == obj_styleBox.ptr() || p_obj == atlas_tex.ptr()) {
-		node_sprite = NULL;
-		node_sprite_3d = NULL;
-		node_ninepatch = NULL;
-		obj_styleBox = Ref<StyleBox>(NULL);
-		atlas_tex = Ref<AtlasTexture>(NULL);
+		node_sprite = nullptr;
+		node_sprite_3d = nullptr;
+		node_ninepatch = nullptr;
+		obj_styleBox = Ref<StyleBox>(nullptr);
+		atlas_tex = Ref<AtlasTexture>(nullptr);
 		hide();
 	}
 }
@@ -793,7 +793,7 @@ bool TextureRegionEditor::is_atlas_texture() {
 }
 
 bool TextureRegionEditor::is_ninepatch() {
-	return node_ninepatch != NULL;
+	return node_ninepatch != nullptr;
 }
 
 Sprite3D *TextureRegionEditor::get_sprite_3d() {
@@ -826,11 +826,11 @@ void TextureRegionEditor::edit(Object *p_obj) {
 		p_obj->add_change_receptor(this);
 		_edit_region();
 	} else {
-		node_sprite = NULL;
-		node_sprite_3d = NULL;
-		node_ninepatch = NULL;
-		obj_styleBox = Ref<StyleBoxTexture>(NULL);
-		atlas_tex = Ref<AtlasTexture>(NULL);
+		node_sprite = nullptr;
+		node_sprite_3d = nullptr;
+		node_ninepatch = nullptr;
+		obj_styleBox = Ref<StyleBoxTexture>(nullptr);
+		atlas_tex = Ref<AtlasTexture>(nullptr);
 	}
 	edit_draw->update();
 	if ((node_sprite && !node_sprite->is_region()) || (node_sprite_3d && !node_sprite_3d->is_region())) {
@@ -850,7 +850,7 @@ void TextureRegionEditor::_changed_callback(Object *p_changed, const char *p_pro
 }
 
 void TextureRegionEditor::_edit_region() {
-	Ref<Texture2D> texture = NULL;
+	Ref<Texture2D> texture = nullptr;
 	if (node_sprite)
 		texture = node_sprite->get_texture();
 	else if (node_sprite_3d)
@@ -896,11 +896,11 @@ Vector2 TextureRegionEditor::snap_point(Vector2 p_target) const {
 }
 
 TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
-	node_sprite = NULL;
-	node_sprite_3d = NULL;
-	node_ninepatch = NULL;
-	obj_styleBox = Ref<StyleBoxTexture>(NULL);
-	atlas_tex = Ref<AtlasTexture>(NULL);
+	node_sprite = nullptr;
+	node_sprite_3d = nullptr;
+	node_ninepatch = nullptr;
+	obj_styleBox = Ref<StyleBoxTexture>(nullptr);
+	atlas_tex = Ref<AtlasTexture>(nullptr);
 	editor = p_editor;
 	undo_redo = editor->get_undo_redo();
 
@@ -1057,7 +1057,7 @@ void TextureRegionEditorPlugin::make_visible(bool p_visible) {
 			manually_hidden = false;
 		}
 		texture_region_button->hide();
-		region_editor->edit(NULL);
+		region_editor->edit(nullptr);
 	}
 }
 

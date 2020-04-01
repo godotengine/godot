@@ -53,7 +53,7 @@ RichTextLabel::Item *RichTextLabel::_get_next_item(Item *p_item, bool p_free) {
 
 			return p_item->subitems.front()->get();
 		} else if (!p_item->parent) {
-			return NULL;
+			return nullptr;
 		} else if (p_item->E->next()) {
 
 			return p_item->E->next()->get();
@@ -66,7 +66,7 @@ RichTextLabel::Item *RichTextLabel::_get_next_item(Item *p_item, bool p_free) {
 			if (p_item->parent)
 				return p_item->E->next()->get();
 			else
-				return NULL;
+				return nullptr;
 		}
 
 	} else {
@@ -74,7 +74,7 @@ RichTextLabel::Item *RichTextLabel::_get_next_item(Item *p_item, bool p_free) {
 
 			return p_item->subitems.front()->get();
 		} else if (p_item->type == ITEM_FRAME) {
-			return NULL;
+			return nullptr;
 		} else if (p_item->E->next()) {
 
 			return p_item->E->next()->get();
@@ -87,11 +87,11 @@ RichTextLabel::Item *RichTextLabel::_get_next_item(Item *p_item, bool p_free) {
 			if (p_item->type != ITEM_FRAME)
 				return p_item->E->next()->get();
 			else
-				return NULL;
+				return nullptr;
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 RichTextLabel::Item *RichTextLabel::_get_prev_item(Item *p_item, bool p_free) {
@@ -101,7 +101,7 @@ RichTextLabel::Item *RichTextLabel::_get_prev_item(Item *p_item, bool p_free) {
 
 			return p_item->subitems.back()->get();
 		} else if (!p_item->parent) {
-			return NULL;
+			return nullptr;
 		} else if (p_item->E->prev()) {
 
 			return p_item->E->prev()->get();
@@ -114,7 +114,7 @@ RichTextLabel::Item *RichTextLabel::_get_prev_item(Item *p_item, bool p_free) {
 			if (p_item->parent)
 				return p_item->E->prev()->get();
 			else
-				return NULL;
+				return nullptr;
 		}
 
 	} else {
@@ -122,7 +122,7 @@ RichTextLabel::Item *RichTextLabel::_get_prev_item(Item *p_item, bool p_free) {
 
 			return p_item->subitems.back()->get();
 		} else if (p_item->type == ITEM_FRAME) {
-			return NULL;
+			return nullptr;
 		} else if (p_item->E->prev()) {
 
 			return p_item->E->prev()->get();
@@ -135,11 +135,11 @@ RichTextLabel::Item *RichTextLabel::_get_prev_item(Item *p_item, bool p_free) {
 			if (p_item->type != ITEM_FRAME)
 				return p_item->E->prev()->get();
 			else
-				return NULL;
+				return nullptr;
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 Rect2 RichTextLabel::_get_text_rect() {
@@ -158,7 +158,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 		ci = get_canvas_item();
 
 		if (r_click_item)
-			*r_click_item = NULL;
+			*r_click_item = nullptr;
 	}
 	Line &l = p_frame->lines.write[p_line];
 	Item *it = l.from;
@@ -356,7 +356,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 				Color font_color_shadow;
 				bool underline = false;
 				bool strikethrough = false;
-				ItemFade *fade = NULL;
+				ItemFade *fade = nullptr;
 				int it_char_start = p_char_count;
 
 				Vector<ItemFX *> fx_stack = Vector<ItemFX *>();
@@ -915,7 +915,7 @@ void RichTextLabel::_update_scroll() {
 void RichTextLabel::_update_fx(RichTextLabel::ItemFrame *p_frame, float p_delta_time) {
 	Item *it = p_frame;
 	while (it) {
-		ItemFX *ifx = NULL;
+		ItemFX *ifx = nullptr;
 
 		if (it->type == ITEM_CUSTOMFX || it->type == ITEM_SHAKE || it->type == ITEM_WAVE || it->type == ITEM_TORNADO || it->type == ITEM_RAINBOW) {
 			ifx = static_cast<ItemFX *>(it);
@@ -928,7 +928,7 @@ void RichTextLabel::_update_fx(RichTextLabel::ItemFrame *p_frame, float p_delta_
 
 		ifx->elapsed_time += p_delta_time;
 
-		ItemShake *shake = NULL;
+		ItemShake *shake = nullptr;
 
 		if (it->type == ITEM_SHAKE) {
 			shake = static_cast<ItemShake *>(it);
@@ -952,7 +952,7 @@ void RichTextLabel::_notification(int p_what) {
 
 		case NOTIFICATION_MOUSE_EXIT: {
 			if (meta_hovering) {
-				meta_hovering = NULL;
+				meta_hovering = nullptr;
 				emit_signal("meta_hover_ended", current_meta);
 				current_meta = false;
 				update();
@@ -1022,7 +1022,7 @@ void RichTextLabel::_notification(int p_what) {
 			visible_line_count = 0;
 			while (y < size.height && from_line < main->lines.size()) {
 
-				visible_line_count += _process_line(main, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, from_line, PROCESS_DRAW, base_font, base_color, font_color_shadow, use_outline, shadow_ofs, Point2i(), NULL, NULL, NULL, total_chars);
+				visible_line_count += _process_line(main, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, from_line, PROCESS_DRAW, base_font, base_color, font_color_shadow, use_outline, shadow_ofs, Point2i(), nullptr, nullptr, nullptr, total_chars);
 				total_chars += main->lines[from_line].char_count;
 
 				from_line++;
@@ -1040,7 +1040,7 @@ void RichTextLabel::_notification(int p_what) {
 void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item **r_click_item, int *r_click_char, bool *r_outside) {
 
 	if (r_click_item)
-		*r_click_item = NULL;
+		*r_click_item = nullptr;
 
 	Rect2 text_rect = _get_text_rect();
 	int ofs = vscroll->get_value();
@@ -1086,11 +1086,11 @@ Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const 
 		return CURSOR_ARROW; //invalid
 
 	int line = 0;
-	Item *item = NULL;
+	Item *item = nullptr;
 	bool outside;
 	((RichTextLabel *)(this))->_find_click(main, p_pos, &item, &line, &outside);
 
-	if (item && !outside && ((RichTextLabel *)(this))->_find_meta(item, NULL))
+	if (item && !outside && ((RichTextLabel *)(this))->_find_meta(item, nullptr))
 		return CURSOR_POINTING_HAND;
 
 	return CURSOR_ARROW;
@@ -1108,7 +1108,7 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 			if (b->is_pressed() && !b->is_doubleclick()) {
 				scroll_updated = false;
 				int line = 0;
-				Item *item = NULL;
+				Item *item = nullptr;
 
 				bool outside;
 				_find_click(main, b->get_position(), &item, &line, &outside);
@@ -1122,9 +1122,9 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 
 						// Erase previous selection.
 						if (selection.active) {
-							selection.from = NULL;
+							selection.from = nullptr;
 							selection.from_char = '\0';
-							selection.to = NULL;
+							selection.to = nullptr;
 							selection.to_char = '\0';
 							selection.active = false;
 
@@ -1136,7 +1136,7 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 
 				//doubleclick: select word
 				int line = 0;
-				Item *item = NULL;
+				Item *item = nullptr;
 				bool outside;
 
 				_find_click(main, b->get_position(), &item, &line, &outside);
@@ -1163,11 +1163,11 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 				}
 			} else if (!b->is_pressed()) {
 
-				selection.click = NULL;
+				selection.click = nullptr;
 
 				if (!b->is_doubleclick() && !scroll_updated) {
 					int line = 0;
-					Item *item = NULL;
+					Item *item = nullptr;
 
 					bool outside;
 					_find_click(main, b->get_position(), &item, &line, &outside);
@@ -1276,7 +1276,7 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 			return;
 
 		int line = 0;
-		Item *item = NULL;
+		Item *item = nullptr;
 		bool outside;
 		_find_click(main, m->get_position(), &item, &line, &outside);
 
@@ -1325,7 +1325,7 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 				emit_signal("meta_hover_started", meta);
 			}
 		} else if (meta_hovering) {
-			meta_hovering = NULL;
+			meta_hovering = nullptr;
 			emit_signal("meta_hover_ended", current_meta);
 			current_meta = false;
 		}
@@ -1641,7 +1641,7 @@ void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline)
 		}
 	}
 
-	if (current_frame->lines[current_frame->lines.size() - 1].from == NULL) {
+	if (current_frame->lines[current_frame->lines.size() - 1].from == nullptr) {
 		current_frame->lines.write[current_frame->lines.size() - 1].from = p_item;
 	}
 	p_item->line = current_frame->lines.size() - 1;
@@ -1938,7 +1938,7 @@ void RichTextLabel::push_cell() {
 	item->cell = true;
 	item->parent_line = item->parent_frame->lines.size() - 1;
 	item->lines.resize(1);
-	item->lines.write[0].from = NULL;
+	item->lines.write[0].from = nullptr;
 	item->first_invalid_line = 0;
 }
 
@@ -1969,7 +1969,7 @@ void RichTextLabel::clear() {
 	main->lines.resize(1);
 	main->first_invalid_line = 0;
 	update();
-	selection.click = NULL;
+	selection.click = nullptr;
 	selection.active = false;
 	current_idx = 1;
 
@@ -2953,7 +2953,7 @@ RichTextLabel::RichTextLabel() {
 	tab_size = 4;
 	default_align = ALIGN_LEFT;
 	underline_meta = true;
-	meta_hovering = NULL;
+	meta_hovering = nullptr;
 	override_selected_font_color = false;
 
 	scroll_visible = false;
@@ -2977,7 +2977,7 @@ RichTextLabel::RichTextLabel() {
 	current_idx = 1;
 	use_bbcode = false;
 
-	selection.click = NULL;
+	selection.click = nullptr;
 	selection.active = false;
 	selection.enabled = false;
 

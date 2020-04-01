@@ -787,7 +787,7 @@ Ref<EditorFeatureProfile> EditorFeatureProfileManager::get_current_profile() {
 	return current;
 }
 
-EditorFeatureProfileManager *EditorFeatureProfileManager::singleton = NULL;
+EditorFeatureProfileManager *EditorFeatureProfileManager::singleton = nullptr;
 
 void EditorFeatureProfileManager::_bind_methods() {
 

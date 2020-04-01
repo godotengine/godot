@@ -63,7 +63,7 @@ public:
 		ERR_FAIL_COND_V(p_info && _packets.space_left() < 1, ERR_OUT_OF_MEMORY);
 #endif
 
-		// If p_info is NULL, only the payload is written
+		// If p_info is nullptr, only the payload is written
 		if (p_info) {
 			_Packet p;
 			p.size = p_size;
@@ -71,7 +71,7 @@ public:
 			_packets.write(p);
 		}
 
-		// If p_payload is NULL, only the packet information is written.
+		// If p_payload is nullptr, only the packet information is written.
 		if (p_payload) {
 			_payload.write((const uint8_t *)p_payload, p_size);
 		}

@@ -83,7 +83,7 @@ int PhysicsDirectSpaceState3DSW::intersect_point(const Vector3 &p_point, ShapeRe
 		if (r_results[cc].collider_id.is_valid())
 			r_results[cc].collider = ObjectDB::get_instance(r_results[cc].collider_id);
 		else
-			r_results[cc].collider = NULL;
+			r_results[cc].collider = nullptr;
 		r_results[cc].rid = col_obj->get_self();
 		r_results[cc].shape = shape_idx;
 
@@ -162,7 +162,7 @@ bool PhysicsDirectSpaceState3DSW::intersect_ray(const Vector3 &p_from, const Vec
 	if (r_result.collider_id.is_valid())
 		r_result.collider = ObjectDB::get_instance(r_result.collider_id);
 	else
-		r_result.collider = NULL;
+		r_result.collider = nullptr;
 	r_result.normal = res_normal;
 	r_result.position = res_point;
 	r_result.rid = res_obj->get_self();
@@ -203,7 +203,7 @@ int PhysicsDirectSpaceState3DSW::intersect_shape(const RID &p_shape, const Trans
 		const CollisionObject3DSW *col_obj = space->intersection_query_results[i];
 		int shape_idx = space->intersection_query_subindex_results[i];
 
-		if (!CollisionSolver3DSW::solve_static(shape, p_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), NULL, NULL, NULL, p_margin, 0))
+		if (!CollisionSolver3DSW::solve_static(shape, p_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), nullptr, nullptr, nullptr, p_margin, 0))
 			continue;
 
 		if (r_results) {
@@ -211,7 +211,7 @@ int PhysicsDirectSpaceState3DSW::intersect_shape(const RID &p_shape, const Trans
 			if (r_results[cc].collider_id.is_valid())
 				r_results[cc].collider = ObjectDB::get_instance(r_results[cc].collider_id);
 			else
-				r_results[cc].collider = NULL;
+				r_results[cc].collider = nullptr;
 			r_results[cc].rid = col_obj->get_self();
 			r_results[cc].shape = shape_idx;
 		}
@@ -364,7 +364,7 @@ bool PhysicsDirectSpaceState3DSW::collide_shape(RID p_shape, const Transform &p_
 			continue;
 		}
 
-		if (CollisionSolver3DSW::solve_static(shape, p_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), cbkres, cbkptr, NULL, p_margin)) {
+		if (CollisionSolver3DSW::solve_static(shape, p_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), cbkres, cbkptr, nullptr, p_margin)) {
 			collided = true;
 		}
 	}
@@ -415,7 +415,7 @@ bool PhysicsDirectSpaceState3DSW::rest_info(RID p_shape, const Transform &p_shap
 
 	_RestCallbackData rcd;
 	rcd.best_len = 0;
-	rcd.best_object = NULL;
+	rcd.best_object = nullptr;
 	rcd.best_shape = 0;
 	rcd.min_allowed_depth = space->test_motion_min_contact_depth;
 
@@ -432,7 +432,7 @@ bool PhysicsDirectSpaceState3DSW::rest_info(RID p_shape, const Transform &p_shap
 
 		rcd.object = col_obj;
 		rcd.shape = shape_idx;
-		bool sc = CollisionSolver3DSW::solve_static(shape, p_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), _rest_cbk_result, &rcd, NULL, p_margin);
+		bool sc = CollisionSolver3DSW::solve_static(shape, p_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), _rest_cbk_result, &rcd, nullptr, p_margin);
 		if (!sc)
 			continue;
 	}
@@ -501,7 +501,7 @@ Vector3 PhysicsDirectSpaceState3DSW::get_closest_point_to_object_volume(RID p_ob
 
 PhysicsDirectSpaceState3DSW::PhysicsDirectSpaceState3DSW() {
 
-	space = NULL;
+	space = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -621,7 +621,7 @@ int Space3DSW::test_body_ray_separation(Body3DSW *p_body, const Transform &p_tra
 					}
 
 					Shape3DSW *against_shape = col_obj->get_shape(shape_idx);
-					if (CollisionSolver3DSW::solve_static(body_shape, body_shape_xform, against_shape, col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), cbkres, cbkptr, NULL, p_margin)) {
+					if (CollisionSolver3DSW::solve_static(body_shape, body_shape_xform, against_shape, col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), cbkres, cbkptr, nullptr, p_margin)) {
 						if (cbk.amount > 0) {
 							collided = true;
 						}
@@ -775,7 +775,7 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 					const CollisionObject3DSW *col_obj = intersection_query_results[i];
 					int shape_idx = intersection_query_subindex_results[i];
 
-					if (CollisionSolver3DSW::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), cbkres, cbkptr, NULL, p_margin)) {
+					if (CollisionSolver3DSW::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), cbkres, cbkptr, nullptr, p_margin)) {
 						collided = cbk.amount > 0;
 					}
 				}
@@ -935,7 +935,7 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 
 		_RestCallbackData rcd;
 		rcd.best_len = 0;
-		rcd.best_object = NULL;
+		rcd.best_object = nullptr;
 		rcd.best_shape = 0;
 		rcd.min_allowed_depth = test_motion_min_contact_depth;
 
@@ -953,7 +953,7 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 
 			rcd.object = col_obj;
 			rcd.shape = shape_idx;
-			bool sc = CollisionSolver3DSW::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), _rest_cbk_result, &rcd, NULL, p_margin);
+			bool sc = CollisionSolver3DSW::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), _rest_cbk_result, &rcd, nullptr, p_margin);
 			if (!sc)
 				continue;
 		}
@@ -1030,7 +1030,7 @@ void *Space3DSW::_broadphase_pair(CollisionObject3DSW *A, int p_subindex_A, Coll
 		return b;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void Space3DSW::_broadphase_unpair(CollisionObject3DSW *A, int p_subindex_A, CollisionObject3DSW *B, int p_subindex_B, void *p_data, void *p_self) {
@@ -1226,7 +1226,7 @@ Space3DSW::Space3DSW() {
 	broadphase = BroadPhase3DSW::create_func();
 	broadphase->set_pair_callback(_broadphase_pair, this);
 	broadphase->set_unpair_callback(_broadphase_unpair, this);
-	area = NULL;
+	area = nullptr;
 
 	direct_access = memnew(PhysicsDirectSpaceState3DSW);
 	direct_access->space = this;

@@ -1108,13 +1108,13 @@ void Window::remove_child_notify(Node *p_child) {
 	Control *child_c = Object::cast_to<Control>(p_child);
 
 	if (child_c && (child_c->data.theme_owner || child_c->data.theme_owner_window) && child_c->data.theme.is_null()) {
-		Control::_propagate_theme_changed(child_c, NULL, NULL);
+		Control::_propagate_theme_changed(child_c, nullptr, nullptr);
 	}
 
 	Window *child_w = Object::cast_to<Window>(p_child);
 
 	if (child_w && (child_w->theme_owner || child_w->theme_owner_window) && child_w->theme.is_null()) {
-		Control::_propagate_theme_changed(child_w, NULL, NULL);
+		Control::_propagate_theme_changed(child_w, nullptr, nullptr);
 	}
 
 	if (is_inside_tree() && wrap_controls) {

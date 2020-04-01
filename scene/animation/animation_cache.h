@@ -50,12 +50,12 @@ class AnimationCache : public Object {
 		Vector<StringName> subpath;
 		bool valid;
 		Path() {
-			object = NULL;
-			skeleton = NULL;
-			node = NULL;
+			object = nullptr;
+			skeleton = nullptr;
+			node = nullptr;
 			bone_idx = -1;
 			valid = false;
-			spatial = NULL;
+			spatial = nullptr;
 		}
 	};
 

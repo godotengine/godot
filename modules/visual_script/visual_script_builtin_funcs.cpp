@@ -1231,7 +1231,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			PackedByteArray barr;
 			int len;
 			bool full_objects = *p_inputs[1];
-			Error err = encode_variant(*p_inputs[0], NULL, len, full_objects);
+			Error err = encode_variant(*p_inputs[0], nullptr, len, full_objects);
 			if (err) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
@@ -1267,7 +1267,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			Variant ret;
 			{
 				const uint8_t *r = varr.ptr();
-				Error err = decode_variant(ret, r, varr.size(), NULL, allow_objects);
+				Error err = decode_variant(ret, r, varr.size(), nullptr, allow_objects);
 				if (err != OK) {
 					r_error_str = RTR("Not enough bytes for decoding bytes, or invalid format.");
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;

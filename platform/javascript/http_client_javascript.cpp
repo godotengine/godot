@@ -88,8 +88,8 @@ Error HTTPClient::prepare_request(Method p_method, const String &p_url, const Ve
 	String url = (use_tls ? "https://" : "http://") + host + ":" + itos(port) + p_url;
 	godot_xhr_reset(xhr_id);
 	godot_xhr_open(xhr_id, _methods[p_method], url.utf8().get_data(),
-			username.empty() ? NULL : username.utf8().get_data(),
-			password.empty() ? NULL : password.utf8().get_data());
+			username.empty() ? nullptr : username.utf8().get_data(),
+			password.empty() ? nullptr : password.utf8().get_data());
 
 	for (int i = 0; i < p_headers.size(); i++) {
 		int header_separator = p_headers[i].find(": ");

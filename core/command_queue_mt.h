@@ -360,7 +360,7 @@ class CommandQueueMT {
 				if (dealloc_one()) {
 					goto tryagain;
 				}
-				return NULL;
+				return nullptr;
 			}
 		} else {
 			// ahead of dealloc_ptr, check that there is room
@@ -374,11 +374,11 @@ class CommandQueueMT {
 					if (dealloc_one()) {
 						goto tryagain;
 					}
-					return NULL;
+					return nullptr;
 				}
 
 				// if this happens, it's a bug
-				ERR_FAIL_COND_V((COMMAND_MEM_SIZE - write_ptr) < 8, NULL);
+				ERR_FAIL_COND_V((COMMAND_MEM_SIZE - write_ptr) < 8, nullptr);
 				// zero means, wrap to beginning
 
 				uint32_t *p = (uint32_t *)&command_mem[write_ptr];
@@ -406,7 +406,7 @@ class CommandQueueMT {
 		lock();
 		T *ret;
 
-		while ((ret = allocate<T>()) == NULL) {
+		while ((ret = allocate<T>()) == nullptr) {
 
 			unlock();
 			// sleep a little until fetch happened and some room is made

@@ -708,7 +708,7 @@ void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin
 	TreeItem *file_item;
 	Map<String, TreeItem *>::Element *E = _file_items.find(fpath);
 
-	if (E == NULL) {
+	if (E == nullptr) {
 		file_item = _results_display->create_item();
 		file_item->set_text(0, fpath);
 		file_item->set_metadata(0, fpath);
@@ -813,7 +813,7 @@ void FindInFilesPanel::_on_result_selected() {
 	TreeItem *item = _results_display->get_selected();
 	Map<TreeItem *, Result>::Element *E = _result_items.find(item);
 
-	if (E == NULL)
+	if (E == nullptr)
 		return;
 	Result r = E->value();
 
@@ -845,7 +845,7 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 				continue;
 
 			Map<TreeItem *, Result>::Element *F = _result_items.find(item);
-			ERR_FAIL_COND(F == NULL);
+			ERR_FAIL_COND(F == nullptr);
 			locations.push_back(F->value());
 		}
 

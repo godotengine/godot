@@ -74,7 +74,7 @@ Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int 
 
 	args = OS::get_singleton()->get_cmdline_args();
 	current_videomode = p_desired;
-	main_loop = NULL;
+	main_loop = nullptr;
 
 	RasterizerDummy::make_current();
 
@@ -99,7 +99,7 @@ void OS_Server::finalize() {
 
 	if (main_loop)
 		memdelete(main_loop);
-	main_loop = NULL;
+	main_loop = nullptr;
 
 	rendering_server->finish();
 	memdelete(rendering_server);
@@ -163,7 +163,7 @@ void OS_Server::delete_main_loop() {
 
 	if (main_loop)
 		memdelete(main_loop);
-	main_loop = NULL;
+	main_loop = nullptr;
 }
 
 void OS_Server::set_main_loop(MainLoop *p_main_loop) {
@@ -289,7 +289,7 @@ String OS_Server::get_system_dir(SystemDir p_dir) const {
 	String pipe;
 	List<String> arg;
 	arg.push_back(xdgparam);
-	Error err = const_cast<OS_Server *>(this)->execute("xdg-user-dir", arg, true, NULL, &pipe);
+	Error err = const_cast<OS_Server *>(this)->execute("xdg-user-dir", arg, true, nullptr, &pipe);
 	if (err != OK)
 		return ".";
 	return pipe.strip_edges();

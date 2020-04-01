@@ -402,7 +402,7 @@ LocalDebugger::LocalDebugger() {
 			[](void *p_user, bool p_enable, const Array &p_opts) {
 				((ScriptsProfiler *)p_user)->toggle(p_enable, p_opts);
 			},
-			NULL,
+			nullptr,
 			[](void *p_user, float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
 				((ScriptsProfiler *)p_user)->tick(p_frame_time, p_idle_time, p_physics_time, p_physics_frame_time);
 			});

@@ -40,7 +40,7 @@ struct jvalret {
 
 	jobject obj;
 	jvalue val;
-	jvalret() { obj = NULL; }
+	jvalret() { obj = nullptr; }
 };
 
 jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_arg, bool force_jobject = false);
@@ -106,7 +106,7 @@ public:
 			}
 		}
 
-		jvalue *v = NULL;
+		jvalue *v = nullptr;
 
 		if (p_argcount) {
 
@@ -201,7 +201,7 @@ public:
 			} break;
 			default: {
 
-				env->PopLocalFrame(NULL);
+				env->PopLocalFrame(nullptr);
 				ERR_FAIL_V(Variant());
 			} break;
 		}
@@ -211,7 +211,7 @@ public:
 			to_erase.pop_front();
 		}
 
-		env->PopLocalFrame(NULL);
+		env->PopLocalFrame(nullptr);
 
 		return ret;
 	}
@@ -235,7 +235,7 @@ public:
 	}
 
 	JNISingleton() {
-		instance = NULL;
+		instance = nullptr;
 	}
 };
 

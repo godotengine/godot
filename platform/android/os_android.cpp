@@ -71,7 +71,7 @@ const char *OS_Android::get_video_driver_name(int p_driver) const {
 		case VIDEO_DRIVER_GLES2:
 			return "GLES2";
 	}
-	ERR_FAIL_V_MSG(NULL, "Invalid video driver index: " + itos(p_driver) + ".");
+	ERR_FAIL_V_MSG(nullptr, "Invalid video driver index: " + itos(p_driver) + ".");
 }
 int OS_Android::get_audio_driver_count() const {
 
@@ -754,12 +754,12 @@ OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_god
 	default_videomode.fullscreen = true;
 	default_videomode.resizable = false;
 
-	main_loop = NULL;
-	gl_extensions = NULL;
-	//rasterizer = NULL;
+	main_loop = nullptr;
+	gl_extensions = nullptr;
+	//rasterizer = nullptr;
 	use_gl2 = false;
 
-	rendering_server = NULL;
+	rendering_server = nullptr;
 
 	godot_java = p_godot_java;
 	godot_io_java = p_godot_io_java;

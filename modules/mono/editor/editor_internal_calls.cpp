@@ -95,7 +95,7 @@ MonoString *godot_icall_GodotSharpDirs_MonoSolutionsDir() {
 #ifdef TOOLS_ENABLED
 	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_mono_solutions_dir());
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -103,7 +103,7 @@ MonoString *godot_icall_GodotSharpDirs_BuildLogsDirs() {
 #ifdef TOOLS_ENABLED
 	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_build_logs_dir());
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -111,7 +111,7 @@ MonoString *godot_icall_GodotSharpDirs_ProjectSlnPath() {
 #ifdef TOOLS_ENABLED
 	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_project_sln_path());
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -119,7 +119,7 @@ MonoString *godot_icall_GodotSharpDirs_ProjectCsProjPath() {
 #ifdef TOOLS_ENABLED
 	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_project_csproj_path());
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -127,7 +127,7 @@ MonoString *godot_icall_GodotSharpDirs_DataEditorToolsDir() {
 #ifdef TOOLS_ENABLED
 	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_data_editor_tools_dir());
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -135,7 +135,7 @@ MonoString *godot_icall_GodotSharpDirs_DataEditorPrebuiltApiDir() {
 #ifdef TOOLS_ENABLED
 	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_data_editor_prebuilt_api_dir());
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -151,7 +151,7 @@ MonoString *godot_icall_GodotSharpDirs_DataMonoBinDir() {
 #ifdef WINDOWS_ENABLED
 	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_data_mono_bin_dir());
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -202,7 +202,7 @@ uint32_t godot_icall_BindingsGenerator_CsGlueVersion() {
 }
 
 int32_t godot_icall_ScriptClassParser_ParseFile(MonoString *p_filepath, MonoObject *p_classes, MonoString **r_error_str) {
-	*r_error_str = NULL;
+	*r_error_str = nullptr;
 
 	String filepath = GDMonoMarshal::mono_string_to_godot(p_filepath);
 
@@ -335,7 +335,7 @@ MonoString *godot_icall_Internal_MonoWindowsInstallRoot() {
 	String install_root_dir = GDMono::get_singleton()->get_mono_reg_info().install_root_dir;
 	return GDMonoMarshal::mono_string_from_godot(install_root_dir);
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 

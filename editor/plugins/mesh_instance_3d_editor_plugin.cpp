@@ -40,7 +40,7 @@
 void MeshInstance3DEditor::_node_removed(Node *p_node) {
 
 	if (p_node == node) {
-		node = NULL;
+		node = nullptr;
 		options->hide();
 	}
 }
@@ -337,7 +337,7 @@ void MeshInstance3DEditor::_create_uv_lines(int p_layer) {
 		const Vector2 *r = uv.ptr();
 
 		Vector<int> indices = a[Mesh::ARRAY_INDEX];
-		const int *ri = NULL;
+		const int *ri = nullptr;
 
 		int ic;
 
@@ -511,7 +511,7 @@ void MeshInstance3DEditorPlugin::make_visible(bool p_visible) {
 	} else {
 
 		mesh_editor->options->hide();
-		mesh_editor->edit(NULL);
+		mesh_editor->edit(nullptr);
 	}
 }
 

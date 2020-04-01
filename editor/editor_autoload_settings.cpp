@@ -240,7 +240,7 @@ void EditorAutoloadSettings::_autoload_button_pressed(Object *p_item, int p_colu
 		case BUTTON_MOVE_UP:
 		case BUTTON_MOVE_DOWN: {
 
-			TreeItem *swap = NULL;
+			TreeItem *swap = nullptr;
 
 			if (p_button == BUTTON_MOVE_UP) {
 				swap = ti->get_prev();
@@ -326,7 +326,7 @@ void EditorAutoloadSettings::_autoload_file_callback(const String &p_path) {
 
 void EditorAutoloadSettings::_autoload_text_entered(const String p_name) {
 
-	if (autoload_add_path->get_line_edit()->get_text() != "" && _autoload_name_is_valid(p_name, NULL)) {
+	if (autoload_add_path->get_line_edit()->get_text() != "" && _autoload_name_is_valid(p_name, nullptr)) {
 		_autoload_add();
 	}
 }
@@ -334,19 +334,19 @@ void EditorAutoloadSettings::_autoload_text_entered(const String p_name) {
 void EditorAutoloadSettings::_autoload_path_text_changed(const String p_path) {
 
 	add_autoload->set_disabled(
-			p_path == "" || !_autoload_name_is_valid(autoload_add_name->get_text(), NULL));
+			p_path == "" || !_autoload_name_is_valid(autoload_add_name->get_text(), nullptr));
 }
 
 void EditorAutoloadSettings::_autoload_text_changed(const String p_name) {
 
 	add_autoload->set_disabled(
-			autoload_add_path->get_line_edit()->get_text() == "" || !_autoload_name_is_valid(p_name, NULL));
+			autoload_add_path->get_line_edit()->get_text() == "" || !_autoload_name_is_valid(p_name, nullptr));
 }
 
 Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 	RES res = ResourceLoader::load(p_path);
-	ERR_FAIL_COND_V_MSG(res.is_null(), NULL, "Can't autoload: " + p_path + ".");
-	Node *n = NULL;
+	ERR_FAIL_COND_V_MSG(res.is_null(), nullptr, "Can't autoload: " + p_path + ".");
+	Node *n = nullptr;
 	if (res->is_class("PackedScene")) {
 		Ref<PackedScene> ps = res;
 		n = ps->instance();
@@ -354,17 +354,17 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 		Ref<Script> s = res;
 		StringName ibt = s->get_instance_base_type();
 		bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-		ERR_FAIL_COND_V_MSG(!valid_type, NULL, "Script does not inherit a Node: " + p_path + ".");
+		ERR_FAIL_COND_V_MSG(!valid_type, nullptr, "Script does not inherit a Node: " + p_path + ".");
 
 		Object *obj = ClassDB::instance(ibt);
 
-		ERR_FAIL_COND_V_MSG(obj == NULL, NULL, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt) + ".");
+		ERR_FAIL_COND_V_MSG(obj == nullptr, nullptr, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt) + ".");
 
 		n = Object::cast_to<Node>(obj);
 		n->set_script(s);
 	}
 
-	ERR_FAIL_COND_V_MSG(!n, NULL, "Path in autoload not a node or script: " + p_path + ".");
+	ERR_FAIL_COND_V_MSG(!n, nullptr, "Path in autoload not a node or script: " + p_path + ".");
 
 	return n;
 }
@@ -429,7 +429,7 @@ void EditorAutoloadSettings::update_autoload() {
 						to_remove.erase(name);
 						need_to_add = false;
 					} else {
-						info.node = NULL;
+						info.node = nullptr;
 					}
 				}
 			}
@@ -474,7 +474,7 @@ void EditorAutoloadSettings::update_autoload() {
 
 		if (info.node) {
 			info.node->queue_delete();
-			info.node = NULL;
+			info.node = nullptr;
 		}
 	}
 
@@ -505,7 +505,7 @@ void EditorAutoloadSettings::update_autoload() {
 		if (!info->in_editor && !info->is_singleton) {
 			// No reason to keep this node
 			memdelete(info->node);
-			info->node = NULL;
+			info->node = nullptr;
 		}
 	}
 
@@ -523,7 +523,7 @@ Variant EditorAutoloadSettings::get_drag_data_fw(const Point2 &p_point, Control 
 
 	PackedStringArray autoloads;
 
-	TreeItem *next = tree->get_next_selected(NULL);
+	TreeItem *next = tree->get_next_selected(nullptr);
 
 	while (next) {
 		autoloads.push_back(next->get_text(0));
@@ -604,7 +604,7 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 	int order = ProjectSettings::get_singleton()->get_order("autoload/" + name);
 
 	AutoLoadInfo aux;
-	List<AutoLoadInfo>::Element *E = NULL;
+	List<AutoLoadInfo>::Element *E = nullptr;
 
 	if (!move_to_back) {
 		aux.order = order;
@@ -805,9 +805,9 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 			}
 		}
 
-		if (!info.is_singleton && !info.in_editor && info.node != NULL) {
+		if (!info.is_singleton && !info.in_editor && info.node != nullptr) {
 			memdelete(info.node);
-			info.node = NULL;
+			info.node = nullptr;
 		}
 	}
 

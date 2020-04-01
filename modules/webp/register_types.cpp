@@ -32,7 +32,7 @@
 
 #include "image_loader_webp.h"
 
-static ImageLoaderWEBP *image_loader_webp = NULL;
+static ImageLoaderWEBP *image_loader_webp = nullptr;
 
 void register_webp_types() {
 

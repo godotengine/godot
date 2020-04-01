@@ -366,10 +366,10 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool *p_pressed
 		match = get_keycode() == key->get_keycode() && (!key->is_pressed() || (code & event_code) == code);
 	}
 	if (match) {
-		if (p_pressed != NULL)
+		if (p_pressed != nullptr)
 			*p_pressed = key->is_pressed();
-		if (p_strength != NULL)
-			*p_strength = (p_pressed != NULL && *p_pressed) ? 1.0f : 0.0f;
+		if (p_strength != nullptr)
+			*p_strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
 	}
 	return match;
 }
@@ -541,10 +541,10 @@ bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event, bool *p
 
 	bool match = mb->button_index == button_index;
 	if (match) {
-		if (p_pressed != NULL)
+		if (p_pressed != nullptr)
 			*p_pressed = mb->is_pressed();
-		if (p_strength != NULL)
-			*p_strength = (p_pressed != NULL && *p_pressed) ? 1.0f : 0.0f;
+		if (p_strength != nullptr)
+			*p_strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
 	}
 
 	return match;
@@ -815,9 +815,9 @@ bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool *
 	if (match) {
 		bool same_direction = (((axis_value < 0) == (jm->axis_value < 0)) || jm->axis_value == 0);
 		bool pressed = same_direction ? Math::abs(jm->get_axis_value()) >= p_deadzone : false;
-		if (p_pressed != NULL)
+		if (p_pressed != nullptr)
 			*p_pressed = pressed;
-		if (p_strength != NULL) {
+		if (p_strength != nullptr) {
 			if (pressed) {
 				if (p_deadzone == 1.0f) {
 					*p_strength = 1.0f;
@@ -892,10 +892,10 @@ bool InputEventJoypadButton::action_match(const Ref<InputEvent> &p_event, bool *
 
 	bool match = button_index == jb->button_index;
 	if (match) {
-		if (p_pressed != NULL)
+		if (p_pressed != nullptr)
 			*p_pressed = jb->is_pressed();
-		if (p_strength != NULL)
-			*p_strength = (p_pressed != NULL && *p_pressed) ? 1.0f : 0.0f;
+		if (p_strength != nullptr)
+			*p_strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
 	}
 
 	return match;
@@ -1140,10 +1140,10 @@ bool InputEventAction::action_match(const Ref<InputEvent> &p_event, bool *p_pres
 
 	bool match = action == act->action;
 	if (match) {
-		if (p_pressed != NULL)
+		if (p_pressed != nullptr)
 			*p_pressed = act->pressed;
-		if (p_strength != NULL)
-			*p_strength = (p_pressed != NULL && *p_pressed) ? 1.0f : 0.0f;
+		if (p_strength != nullptr)
+			*p_strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
 	}
 	return match;
 }

@@ -141,7 +141,7 @@ RID GdNavigationServer::map_create() const {
 
 COMMAND_2(map_set_active, RID, p_map, bool, p_active) {
 	NavMap *map = map_owner.getornull(p_map);
-	ERR_FAIL_COND(map == NULL);
+	ERR_FAIL_COND(map == nullptr);
 
 	if (p_active) {
 		if (!map_is_active(p_map)) {
@@ -154,84 +154,84 @@ COMMAND_2(map_set_active, RID, p_map, bool, p_active) {
 
 bool GdNavigationServer::map_is_active(RID p_map) const {
 	NavMap *map = map_owner.getornull(p_map);
-	ERR_FAIL_COND_V(map == NULL, false);
+	ERR_FAIL_COND_V(map == nullptr, false);
 
 	return active_maps.find(map) >= 0;
 }
 
 COMMAND_2(map_set_up, RID, p_map, Vector3, p_up) {
 	NavMap *map = map_owner.getornull(p_map);
-	ERR_FAIL_COND(map == NULL);
+	ERR_FAIL_COND(map == nullptr);
 
 	map->set_up(p_up);
 }
 
 Vector3 GdNavigationServer::map_get_up(RID p_map) const {
 	const NavMap *map = map_owner.getornull(p_map);
-	ERR_FAIL_COND_V(map == NULL, Vector3());
+	ERR_FAIL_COND_V(map == nullptr, Vector3());
 
 	return map->get_up();
 }
 
 COMMAND_2(map_set_cell_size, RID, p_map, real_t, p_cell_size) {
 	NavMap *map = map_owner.getornull(p_map);
-	ERR_FAIL_COND(map == NULL);
+	ERR_FAIL_COND(map == nullptr);
 
 	map->set_cell_size(p_cell_size);
 }
 
 real_t GdNavigationServer::map_get_cell_size(RID p_map) const {
 	const NavMap *map = map_owner.getornull(p_map);
-	ERR_FAIL_COND_V(map == NULL, 0);
+	ERR_FAIL_COND_V(map == nullptr, 0);
 
 	return map->get_cell_size();
 }
 
 COMMAND_2(map_set_edge_connection_margin, RID, p_map, real_t, p_connection_margin) {
 	NavMap *map = map_owner.getornull(p_map);
-	ERR_FAIL_COND(map == NULL);
+	ERR_FAIL_COND(map == nullptr);
 
 	map->set_edge_connection_margin(p_connection_margin);
 }
 
 real_t GdNavigationServer::map_get_edge_connection_margin(RID p_map) const {
 	const NavMap *map = map_owner.getornull(p_map);
-	ERR_FAIL_COND_V(map == NULL, 0);
+	ERR_FAIL_COND_V(map == nullptr, 0);
 
 	return map->get_edge_connection_margin();
 }
 
 Vector<Vector3> GdNavigationServer::map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize) const {
 	const NavMap *map = map_owner.getornull(p_map);
-	ERR_FAIL_COND_V(map == NULL, Vector<Vector3>());
+	ERR_FAIL_COND_V(map == nullptr, Vector<Vector3>());
 
 	return map->get_path(p_origin, p_destination, p_optimize);
 }
 
 Vector3 GdNavigationServer::map_get_closest_point_to_segment(RID p_map, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const {
 	const NavMap *map = map_owner.getornull(p_map);
-	ERR_FAIL_COND_V(map == NULL, Vector3());
+	ERR_FAIL_COND_V(map == nullptr, Vector3());
 
 	return map->get_closest_point_to_segment(p_from, p_to, p_use_collision);
 }
 
 Vector3 GdNavigationServer::map_get_closest_point(RID p_map, const Vector3 &p_point) const {
 	const NavMap *map = map_owner.getornull(p_map);
-	ERR_FAIL_COND_V(map == NULL, Vector3());
+	ERR_FAIL_COND_V(map == nullptr, Vector3());
 
 	return map->get_closest_point(p_point);
 }
 
 Vector3 GdNavigationServer::map_get_closest_point_normal(RID p_map, const Vector3 &p_point) const {
 	const NavMap *map = map_owner.getornull(p_map);
-	ERR_FAIL_COND_V(map == NULL, Vector3());
+	ERR_FAIL_COND_V(map == nullptr, Vector3());
 
 	return map->get_closest_point_normal(p_point);
 }
 
 RID GdNavigationServer::map_get_closest_point_owner(RID p_map, const Vector3 &p_point) const {
 	const NavMap *map = map_owner.getornull(p_map);
-	ERR_FAIL_COND_V(map == NULL, RID());
+	ERR_FAIL_COND_V(map == nullptr, RID());
 
 	return map->get_closest_point_owner(p_point);
 }
@@ -247,20 +247,20 @@ RID GdNavigationServer::region_create() const {
 
 COMMAND_2(region_set_map, RID, p_region, RID, p_map) {
 	NavRegion *region = region_owner.getornull(p_region);
-	ERR_FAIL_COND(region == NULL);
+	ERR_FAIL_COND(region == nullptr);
 
-	if (region->get_map() != NULL) {
+	if (region->get_map() != nullptr) {
 
 		if (region->get_map()->get_self() == p_map)
 			return; // Pointless
 
 		region->get_map()->remove_region(region);
-		region->set_map(NULL);
+		region->set_map(nullptr);
 	}
 
 	if (p_map.is_valid()) {
 		NavMap *map = map_owner.getornull(p_map);
-		ERR_FAIL_COND(map == NULL);
+		ERR_FAIL_COND(map == nullptr);
 
 		map->add_region(region);
 		region->set_map(map);
@@ -269,21 +269,21 @@ COMMAND_2(region_set_map, RID, p_region, RID, p_map) {
 
 COMMAND_2(region_set_transform, RID, p_region, Transform, p_transform) {
 	NavRegion *region = region_owner.getornull(p_region);
-	ERR_FAIL_COND(region == NULL);
+	ERR_FAIL_COND(region == nullptr);
 
 	region->set_transform(p_transform);
 }
 
 COMMAND_2(region_set_navmesh, RID, p_region, Ref<NavigationMesh>, p_nav_mesh) {
 	NavRegion *region = region_owner.getornull(p_region);
-	ERR_FAIL_COND(region == NULL);
+	ERR_FAIL_COND(region == nullptr);
 
 	region->set_mesh(p_nav_mesh);
 }
 
 void GdNavigationServer::region_bake_navmesh(Ref<NavigationMesh> r_mesh, Node *p_node) const {
 	ERR_FAIL_COND(r_mesh.is_null());
-	ERR_FAIL_COND(p_node == NULL);
+	ERR_FAIL_COND(p_node == nullptr);
 
 #ifndef _3D_DISABLED
 	NavigationMeshGenerator::get_singleton()->clear(r_mesh);
@@ -302,7 +302,7 @@ RID GdNavigationServer::agent_create() const {
 
 COMMAND_2(agent_set_map, RID, p_agent, RID, p_map) {
 	RvoAgent *agent = agent_owner.getornull(p_agent);
-	ERR_FAIL_COND(agent == NULL);
+	ERR_FAIL_COND(agent == nullptr);
 
 	if (agent->get_map()) {
 		if (agent->get_map()->get_self() == p_map)
@@ -311,11 +311,11 @@ COMMAND_2(agent_set_map, RID, p_agent, RID, p_map) {
 		agent->get_map()->remove_agent(agent);
 	}
 
-	agent->set_map(NULL);
+	agent->set_map(nullptr);
 
 	if (p_map.is_valid()) {
 		NavMap *map = map_owner.getornull(p_map);
-		ERR_FAIL_COND(map == NULL);
+		ERR_FAIL_COND(map == nullptr);
 
 		agent->set_map(map);
 		map->add_agent(agent);
@@ -328,82 +328,82 @@ COMMAND_2(agent_set_map, RID, p_agent, RID, p_map) {
 
 COMMAND_2(agent_set_neighbor_dist, RID, p_agent, real_t, p_dist) {
 	RvoAgent *agent = agent_owner.getornull(p_agent);
-	ERR_FAIL_COND(agent == NULL);
+	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->neighborDist_ = p_dist;
 }
 
 COMMAND_2(agent_set_max_neighbors, RID, p_agent, int, p_count) {
 	RvoAgent *agent = agent_owner.getornull(p_agent);
-	ERR_FAIL_COND(agent == NULL);
+	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->maxNeighbors_ = p_count;
 }
 
 COMMAND_2(agent_set_time_horizon, RID, p_agent, real_t, p_time) {
 	RvoAgent *agent = agent_owner.getornull(p_agent);
-	ERR_FAIL_COND(agent == NULL);
+	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->timeHorizon_ = p_time;
 }
 
 COMMAND_2(agent_set_radius, RID, p_agent, real_t, p_radius) {
 	RvoAgent *agent = agent_owner.getornull(p_agent);
-	ERR_FAIL_COND(agent == NULL);
+	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->radius_ = p_radius;
 }
 
 COMMAND_2(agent_set_max_speed, RID, p_agent, real_t, p_max_speed) {
 	RvoAgent *agent = agent_owner.getornull(p_agent);
-	ERR_FAIL_COND(agent == NULL);
+	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->maxSpeed_ = p_max_speed;
 }
 
 COMMAND_2(agent_set_velocity, RID, p_agent, Vector3, p_velocity) {
 	RvoAgent *agent = agent_owner.getornull(p_agent);
-	ERR_FAIL_COND(agent == NULL);
+	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->velocity_ = RVO::Vector3(p_velocity.x, p_velocity.y, p_velocity.z);
 }
 
 COMMAND_2(agent_set_target_velocity, RID, p_agent, Vector3, p_velocity) {
 	RvoAgent *agent = agent_owner.getornull(p_agent);
-	ERR_FAIL_COND(agent == NULL);
+	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->prefVelocity_ = RVO::Vector3(p_velocity.x, p_velocity.y, p_velocity.z);
 }
 
 COMMAND_2(agent_set_position, RID, p_agent, Vector3, p_position) {
 	RvoAgent *agent = agent_owner.getornull(p_agent);
-	ERR_FAIL_COND(agent == NULL);
+	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->position_ = RVO::Vector3(p_position.x, p_position.y, p_position.z);
 }
 
 COMMAND_2(agent_set_ignore_y, RID, p_agent, bool, p_ignore) {
 	RvoAgent *agent = agent_owner.getornull(p_agent);
-	ERR_FAIL_COND(agent == NULL);
+	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->ignore_y_ = p_ignore;
 }
 
 bool GdNavigationServer::agent_is_map_changed(RID p_agent) const {
 	RvoAgent *agent = agent_owner.getornull(p_agent);
-	ERR_FAIL_COND_V(agent == NULL, false);
+	ERR_FAIL_COND_V(agent == nullptr, false);
 
 	return agent->is_map_changed();
 }
 
 COMMAND_4(agent_set_callback, RID, p_agent, Object *, p_receiver, StringName, p_method, Variant, p_udata) {
 	RvoAgent *agent = agent_owner.getornull(p_agent);
-	ERR_FAIL_COND(agent == NULL);
+	ERR_FAIL_COND(agent == nullptr);
 
-	agent->set_callback(p_receiver == NULL ? ObjectID() : p_receiver->get_instance_id(), p_method, p_udata);
+	agent->set_callback(p_receiver == nullptr ? ObjectID() : p_receiver->get_instance_id(), p_method, p_udata);
 
 	if (agent->get_map()) {
-		if (p_receiver == NULL) {
+		if (p_receiver == nullptr) {
 			agent->get_map()->remove_agent_as_controlled(agent);
 		} else {
 			agent->get_map()->set_agent_as_controlled(agent);
@@ -419,14 +419,14 @@ COMMAND_1(free, RID, p_object) {
 		std::vector<NavRegion *> regions = map->get_regions();
 		for (size_t i(0); i < regions.size(); i++) {
 			map->remove_region(regions[i]);
-			regions[i]->set_map(NULL);
+			regions[i]->set_map(nullptr);
 		}
 
 		// Remove any assigned agent
 		std::vector<RvoAgent *> agents = map->get_agents();
 		for (size_t i(0); i < agents.size(); i++) {
 			map->remove_agent(agents[i]);
-			agents[i]->set_map(NULL);
+			agents[i]->set_map(nullptr);
 		}
 
 		active_maps.erase(map);
@@ -437,9 +437,9 @@ COMMAND_1(free, RID, p_object) {
 		NavRegion *region = region_owner.getornull(p_object);
 
 		// Removes this region from the map if assigned
-		if (region->get_map() != NULL) {
+		if (region->get_map() != nullptr) {
 			region->get_map()->remove_region(region);
-			region->set_map(NULL);
+			region->set_map(nullptr);
 		}
 
 		region_owner.free(p_object);
@@ -449,9 +449,9 @@ COMMAND_1(free, RID, p_object) {
 		RvoAgent *agent = agent_owner.getornull(p_object);
 
 		// Removes this agent from the map if assigned
-		if (agent->get_map() != NULL) {
+		if (agent->get_map() != nullptr) {
 			agent->get_map()->remove_agent(agent);
-			agent->set_map(NULL);
+			agent->set_map(nullptr);
 		}
 
 		agent_owner.free(p_object);

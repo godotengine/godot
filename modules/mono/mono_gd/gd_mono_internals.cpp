@@ -61,7 +61,7 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 
 	GDMonoClass *native = GDMonoUtils::get_class_native_base(klass);
 
-	CRASH_COND(native == NULL);
+	CRASH_COND(native == nullptr);
 
 	if (native == klass) {
 		// If it's just a wrapper Godot class and not a custom inheriting class, then attach a
@@ -119,7 +119,7 @@ void unhandled_exception(MonoException *p_exc) {
 
 	if (GDMono::get_singleton()->get_unhandled_exception_policy() == GDMono::POLICY_TERMINATE_APP) {
 		// Too bad 'mono_invoke_unhandled_exception_hook' is not exposed to embedders
-		GDMono::unhandled_exception_hook((MonoObject *)p_exc, NULL);
+		GDMono::unhandled_exception_hook((MonoObject *)p_exc, nullptr);
 		GD_UNREACHABLE();
 	} else {
 #ifdef DEBUG_ENABLED

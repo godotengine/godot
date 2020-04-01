@@ -103,7 +103,7 @@ void Polygon2D::_notification(int p_what) {
 			if (polygon.size() < 3)
 				return;
 
-			Skeleton2D *skeleton_node = NULL;
+			Skeleton2D *skeleton_node = nullptr;
 			if (has_node(skeleton)) {
 				skeleton_node = Object::cast_to<Skeleton2D>(get_node(skeleton));
 			}

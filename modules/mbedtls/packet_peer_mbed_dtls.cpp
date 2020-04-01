@@ -36,11 +36,11 @@
 
 int PacketPeerMbedDTLS::bio_send(void *ctx, const unsigned char *buf, size_t len) {
 
-	if (buf == NULL || len <= 0) return 0;
+	if (buf == nullptr || len <= 0) return 0;
 
 	PacketPeerMbedDTLS *sp = (PacketPeerMbedDTLS *)ctx;
 
-	ERR_FAIL_COND_V(sp == NULL, 0);
+	ERR_FAIL_COND_V(sp == nullptr, 0);
 
 	Error err = sp->base->put_packet((const uint8_t *)buf, len);
 	if (err == ERR_BUSY) {
@@ -53,11 +53,11 @@ int PacketPeerMbedDTLS::bio_send(void *ctx, const unsigned char *buf, size_t len
 
 int PacketPeerMbedDTLS::bio_recv(void *ctx, unsigned char *buf, size_t len) {
 
-	if (buf == NULL || len <= 0) return 0;
+	if (buf == nullptr || len <= 0) return 0;
 
 	PacketPeerMbedDTLS *sp = (PacketPeerMbedDTLS *)ctx;
 
-	ERR_FAIL_COND_V(sp == NULL, 0);
+	ERR_FAIL_COND_V(sp == nullptr, 0);
 
 	int pc = sp->base->get_available_packet_count();
 	if (pc == 0) {
@@ -125,7 +125,7 @@ Error PacketPeerMbedDTLS::connect_to_peer(Ref<PacketPeerUDP> p_base, bool p_vali
 	ERR_FAIL_COND_V(err != OK, err);
 
 	mbedtls_ssl_set_hostname(ssl_ctx->get_context(), p_for_hostname.utf8().get_data());
-	mbedtls_ssl_set_bio(ssl_ctx->get_context(), this, bio_send, bio_recv, NULL);
+	mbedtls_ssl_set_bio(ssl_ctx->get_context(), this, bio_send, bio_recv, nullptr);
 	mbedtls_ssl_set_timer_cb(ssl_ctx->get_context(), &timer, mbedtls_timing_set_delay, mbedtls_timing_get_delay);
 
 	status = STATUS_HANDSHAKING;
@@ -154,7 +154,7 @@ Error PacketPeerMbedDTLS::accept_peer(Ref<PacketPeerUDP> p_base, Ref<CryptoKey> 
 		ERR_FAIL_V_MSG(FAILED, "Error setting DTLS client cookie");
 	}
 
-	mbedtls_ssl_set_bio(ssl_ctx->get_context(), this, bio_send, bio_recv, NULL);
+	mbedtls_ssl_set_bio(ssl_ctx->get_context(), this, bio_send, bio_recv, nullptr);
 	mbedtls_ssl_set_timer_cb(ssl_ctx->get_context(), &timer, mbedtls_timing_set_delay, mbedtls_timing_get_delay);
 
 	status = STATUS_HANDSHAKING;
@@ -223,7 +223,7 @@ void PacketPeerMbedDTLS::poll() {
 
 	ERR_FAIL_COND(!base.is_valid());
 
-	int ret = mbedtls_ssl_read(ssl_ctx->get_context(), NULL, 0);
+	int ret = mbedtls_ssl_read(ssl_ctx->get_context(), nullptr, 0);
 
 	if (ret < 0 && ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
 		if (ret == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY) {
@@ -292,6 +292,6 @@ void PacketPeerMbedDTLS::initialize_dtls() {
 }
 
 void PacketPeerMbedDTLS::finalize_dtls() {
-	_create = NULL;
+	_create = nullptr;
 	available = false;
 }

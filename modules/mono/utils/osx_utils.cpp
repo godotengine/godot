@@ -39,9 +39,9 @@
 
 bool osx_is_app_bundle_installed(const String &p_bundle_id) {
 
-	CFURLRef app_url = NULL;
-	CFStringRef bundle_id = CFStringCreateWithCString(NULL, p_bundle_id.utf8(), kCFStringEncodingUTF8);
-	OSStatus result = LSFindApplicationForInfo(kLSUnknownCreator, bundle_id, NULL, NULL, &app_url);
+	CFURLRef app_url = nullptr;
+	CFStringRef bundle_id = CFStringCreateWithCString(nullptr, p_bundle_id.utf8(), kCFStringEncodingUTF8);
+	OSStatus result = LSFindApplicationForInfo(kLSUnknownCreator, bundle_id, nullptr, nullptr, &app_url);
 	CFRelease(bundle_id);
 
 	if (app_url)

@@ -66,7 +66,7 @@ void *ThreadAndroid::thread_callback(void *userdata) {
 	pthread_setspecific(thread_id_key, (void *)memnew(ID(t->id)));
 	t->callback(t->user);
 	ScriptServer::thread_exit();
-	return NULL;
+	return nullptr;
 }
 
 Thread *ThreadAndroid::create_func_jandroid(ThreadCreateCallback p_callback, void *p_user, const Settings &) {
@@ -100,7 +100,7 @@ void ThreadAndroid::wait_to_finish_func_jandroid(Thread *p_thread) {
 	ERR_FAIL_COND(!tp);
 	ERR_FAIL_COND(tp->pthread == 0);
 
-	pthread_join(tp->pthread, NULL);
+	pthread_join(tp->pthread, nullptr);
 	tp->pthread = 0;
 }
 
@@ -108,21 +108,21 @@ void ThreadAndroid::_thread_destroyed(void *value) {
 
 	/* The thread is being destroyed, detach it from the Java VM and set the mThreadKey value to NULL as required */
 	JNIEnv *env = (JNIEnv *)value;
-	if (env != NULL) {
+	if (env != nullptr) {
 		java_vm->DetachCurrentThread();
-		pthread_setspecific(jvm_key, NULL);
+		pthread_setspecific(jvm_key, nullptr);
 	}
 }
 
 pthread_key_t ThreadAndroid::jvm_key;
-JavaVM *ThreadAndroid::java_vm = NULL;
+JavaVM *ThreadAndroid::java_vm = nullptr;
 
 void ThreadAndroid::setup_thread() {
 
 	if (pthread_getspecific(jvm_key))
 		return; //already setup
 	JNIEnv *env;
-	java_vm->AttachCurrentThread(&env, NULL);
+	java_vm->AttachCurrentThread(&env, nullptr);
 	pthread_setspecific(jvm_key, (void *)env);
 }
 
@@ -142,8 +142,8 @@ JNIEnv *ThreadAndroid::get_env() {
 		setup_thread();
 	}
 
-	JNIEnv *env = NULL;
-	java_vm->AttachCurrentThread(&env, NULL);
+	JNIEnv *env = nullptr;
+	java_vm->AttachCurrentThread(&env, nullptr);
 	return env;
 }
 

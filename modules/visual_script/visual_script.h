@@ -420,7 +420,7 @@ public:
 	virtual bool set(const StringName &p_name, const Variant &p_value);
 	virtual bool get(const StringName &p_name, Variant &r_ret) const;
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const;
-	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = NULL) const;
+	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const;
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const;
 	virtual bool has_method(const StringName &p_method) const;
@@ -596,7 +596,7 @@ public:
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const;
 	virtual bool is_using_templates();
 	virtual void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script);
-	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = NULL, List<ScriptLanguage::Warning> *r_warnings = NULL, Set<int> *r_safe_lines = NULL) const;
+	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const;
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
 	virtual bool supports_builtin_mode() const;

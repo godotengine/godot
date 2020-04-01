@@ -33,7 +33,7 @@
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 
-InputMap *InputMap::singleton = NULL;
+InputMap *InputMap::singleton = nullptr;
 
 int InputMap::ALL_DEVICES = -1;
 
@@ -116,7 +116,7 @@ List<Ref<InputEvent>>::Element *InputMap::_find_event(Action &p_action, const Re
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 bool InputMap::has_action(const StringName &p_action) const {
@@ -144,7 +144,7 @@ void InputMap::action_add_event(const StringName &p_action, const Ref<InputEvent
 bool InputMap::action_has_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
 
 	ERR_FAIL_COND_V_MSG(!input_map.has(p_action), false, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
-	return (_find_event(input_map[p_action], p_event) != NULL);
+	return (_find_event(input_map[p_action], p_event) != nullptr);
 }
 
 void InputMap::action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
@@ -181,7 +181,7 @@ const List<Ref<InputEvent>> *InputMap::get_action_list(const StringName &p_actio
 
 	const Map<StringName, Action>::Element *E = input_map.find(p_action);
 	if (!E)
-		return NULL;
+		return nullptr;
 
 	return &E->get().inputs;
 }
@@ -196,20 +196,20 @@ bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const Str
 
 	Ref<InputEventAction> input_event_action = p_event;
 	if (input_event_action.is_valid()) {
-		if (p_pressed != NULL)
+		if (p_pressed != nullptr)
 			*p_pressed = input_event_action->is_pressed();
-		if (p_strength != NULL)
-			*p_strength = (p_pressed != NULL && *p_pressed) ? input_event_action->get_strength() : 0.0f;
+		if (p_strength != nullptr)
+			*p_strength = (p_pressed != nullptr && *p_pressed) ? input_event_action->get_strength() : 0.0f;
 		return input_event_action->get_action() == p_action;
 	}
 
 	bool pressed;
 	float strength;
 	List<Ref<InputEvent>>::Element *event = _find_event(E->get(), p_event, &pressed, &strength);
-	if (event != NULL) {
-		if (p_pressed != NULL)
+	if (event != nullptr) {
+		if (p_pressed != nullptr)
 			*p_pressed = pressed;
-		if (p_strength != NULL)
+		if (p_strength != nullptr)
 			*p_strength = strength;
 		return true;
 	} else {

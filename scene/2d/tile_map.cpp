@@ -103,8 +103,8 @@ void TileMap::_notification(int p_what) {
 				q.occluder_instances.clear();
 			}
 
-			collision_parent = NULL;
-			navigation = NULL;
+			collision_parent = nullptr;
+			navigation = nullptr;
 
 		} break;
 
@@ -314,7 +314,7 @@ void TileMap::_add_shape(int &shape_idx, const Quadrant &p_q, const Ref<Shape2D>
 		int real_index = collision_parent->shape_owner_get_shape_index(p_q.shape_owner_id, shape_idx);
 		RID rid = collision_parent->get_rid();
 
-		if (Object::cast_to<Area2D>(collision_parent) != NULL) {
+		if (Object::cast_to<Area2D>(collision_parent) != nullptr) {
 			ps->area_set_shape_transform(rid, real_index, get_transform() * xform);
 		} else {
 			ps->body_set_shape_transform(rid, real_index, get_transform() * xform);
@@ -921,7 +921,7 @@ void TileMap::make_bitmask_area_dirty(const Vector2 &p_pos) {
 	for (int x = p_pos.x - 1; x <= p_pos.x + 1; x++) {
 		for (int y = p_pos.y - 1; y <= p_pos.y + 1; y++) {
 			PosKey p(x, y);
-			if (dirty_bitmask.find(p) == NULL) {
+			if (dirty_bitmask.find(p) == nullptr) {
 				dirty_bitmask.push_back(p);
 			}
 		}
@@ -962,7 +962,7 @@ void TileMap::update_cell_bitmask(int p_x, int p_y) {
 	ERR_FAIL_COND_MSG(tile_set.is_null(), "Cannot update cell bitmask if Tileset is not open.");
 	PosKey p(p_x, p_y);
 	Map<PosKey, Cell>::Element *E = tile_map.find(p);
-	if (E != NULL) {
+	if (E != nullptr) {
 		int id = get_cell(p_x, p_y);
 		if (tile_set->tile_get_tile_mode(id) == TileSet::AUTO_TILE) {
 			uint16_t mask = 0;
@@ -1368,7 +1368,7 @@ void TileMap::set_collision_use_parent(bool p_use_parent) {
 	if (use_parent && is_inside_tree()) {
 		collision_parent = Object::cast_to<CollisionObject2D>(get_parent());
 	} else {
-		collision_parent = NULL;
+		collision_parent = nullptr;
 	}
 
 	_recreate_quadrants();
@@ -1959,9 +1959,9 @@ TileMap::TileMap() {
 	mode = MODE_SQUARE;
 	half_offset = HALF_OFFSET_DISABLED;
 	use_parent = false;
-	collision_parent = NULL;
+	collision_parent = nullptr;
 	use_kinematic = false;
-	navigation = NULL;
+	navigation = nullptr;
 	y_sort_mode = false;
 	compatibility_mode = false;
 	centered_textures = false;

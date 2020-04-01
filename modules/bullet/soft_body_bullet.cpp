@@ -37,7 +37,7 @@
 
 SoftBodyBullet::SoftBodyBullet() :
 		CollisionObjectBullet(CollisionObjectBullet::TYPE_SOFT_BODY),
-		bt_soft_body(NULL),
+		bt_soft_body(nullptr),
 		isScratched(false),
 		simulation_precision(5),
 		total_mass(1.),
@@ -144,7 +144,7 @@ void SoftBodyBullet::destroy_soft_body() {
 	}
 
 	destroyBulletCollisionObject();
-	bt_soft_body = NULL;
+	bt_soft_body = nullptr;
 }
 
 void SoftBodyBullet::set_soft_transform(const Transform &p_transform) {
@@ -404,7 +404,7 @@ void SoftBodyBullet::setup_soft_body() {
 
 	// Soft body setup
 	setupBulletCollisionObject(bt_soft_body);
-	bt_soft_body->m_worldInfo = NULL; // Remove fake world info
+	bt_soft_body->m_worldInfo = nullptr; // Remove fake world info
 	bt_soft_body->getCollisionShape()->setMargin(0.01);
 	bt_soft_body->setCollisionFlags(bt_soft_body->getCollisionFlags() & (~(btCollisionObject::CF_KINEMATIC_OBJECT | btCollisionObject::CF_STATIC_OBJECT)));
 

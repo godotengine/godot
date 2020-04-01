@@ -2186,7 +2186,7 @@ Vector2i TextEdit::_get_cursor_pixel_pos() {
 	int x = cache.style_normal->get_margin(MARGIN_LEFT) + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width - cursor.x_ofs;
 	int ix = 0;
 	while (ix < rows2[0].size() && ix < cursor.column) {
-		if (cache.font != NULL) {
+		if (cache.font != nullptr) {
 			x += cache.font->get_char_size(rows2[0].get(ix)).width;
 		}
 		ix++;
@@ -3990,7 +3990,7 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 
 		text.set_breakpoint(p_line, false);
 		text.set_hidden(p_line, false);
-		text.set_info_icon(p_line, NULL, "");
+		text.set_info_icon(p_line, nullptr, "");
 	}
 
 	text.set_line_wrap_amount(p_line, -1);
@@ -6087,7 +6087,7 @@ void TextEdit::_do_text_op(const TextOperation &p_op, bool p_reverse) {
 
 void TextEdit::_clear_redo() {
 
-	if (undo_stack_pos == NULL)
+	if (undo_stack_pos == nullptr)
 		return; // Nothing to clear.
 
 	_push_current_op();
@@ -6103,7 +6103,7 @@ void TextEdit::undo() {
 
 	_push_current_op();
 
-	if (undo_stack_pos == NULL) {
+	if (undo_stack_pos == nullptr) {
 
 		if (!undo_stack.size())
 			return; // Nothing to undo.
@@ -6152,7 +6152,7 @@ void TextEdit::redo() {
 
 	_push_current_op();
 
-	if (undo_stack_pos == NULL)
+	if (undo_stack_pos == nullptr)
 		return; // Nothing to do.
 
 	deselect();
@@ -6184,7 +6184,7 @@ void TextEdit::clear_undo_history() {
 
 	saved_version = 0;
 	current_op.type = TextOperation::TYPE_NONE;
-	undo_stack_pos = NULL;
+	undo_stack_pos = nullptr;
 	undo_stack.clear();
 }
 
@@ -6633,8 +6633,8 @@ void TextEdit::_update_completion_candidates() {
 			const CharType *tgt = &option.display[0];
 			const CharType *tgt_lower = &display_lower[0];
 
-			const CharType *ssq_last_tgt = NULL;
-			const CharType *ssq_lower_last_tgt = NULL;
+			const CharType *ssq_last_tgt = nullptr;
+			const CharType *ssq_lower_last_tgt = nullptr;
 
 			for (; *tgt; tgt++, tgt_lower++) {
 				if (*ssq == *tgt) {
@@ -6701,7 +6701,7 @@ void TextEdit::query_code_comple() {
 	bool ignored = completion_active && !completion_options.empty();
 	if (ignored) {
 		ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_PLAIN_TEXT;
-		const ScriptCodeCompletionOption *previous_option = NULL;
+		const ScriptCodeCompletionOption *previous_option = nullptr;
 		for (int i = 0; i < completion_options.size(); i++) {
 			const ScriptCodeCompletionOption &current_option = completion_options[i];
 			if (!previous_option) {
@@ -7259,7 +7259,7 @@ TextEdit::TextEdit() {
 	wrap_at = 0;
 	wrap_right_offset = 10;
 	set_focus_mode(FOCUS_ALL);
-	syntax_highlighter = NULL;
+	syntax_highlighter = nullptr;
 	_update_caches();
 	cache.row_height = 1;
 	cache.line_spacing = 1;
@@ -7323,7 +7323,7 @@ TextEdit::TextEdit() {
 
 	current_op.type = TextOperation::TYPE_NONE;
 	undo_enabled = true;
-	undo_stack_pos = NULL;
+	undo_stack_pos = nullptr;
 	setting_text = false;
 	last_dblclk = 0;
 	current_op.version = 0;
@@ -7333,7 +7333,7 @@ TextEdit::TextEdit() {
 	completion_enabled = false;
 	completion_active = false;
 	completion_line_ofs = 0;
-	tooltip_obj = NULL;
+	tooltip_obj = nullptr;
 	line_numbers = false;
 	line_numbers_zero_padded = false;
 	line_length_guidelines = false;
@@ -7394,7 +7394,7 @@ Map<int, TextEdit::HighlighterInfo> TextEdit::_get_line_syntax_highlighting(int 
 		return syntax_highlighting_cache[p_line];
 	}
 
-	if (syntax_highlighter != NULL) {
+	if (syntax_highlighter != nullptr) {
 		Map<int, HighlighterInfo> color_map = syntax_highlighter->_get_line_syntax_highlighting(p_line);
 		syntax_highlighting_cache[p_line] = color_map;
 		return color_map;
@@ -7508,7 +7508,7 @@ Map<int, TextEdit::HighlighterInfo> TextEdit::_get_line_syntax_highlighting(int 
 				if (col) {
 					for (int k = j - 1; k >= 0; k--) {
 						if (str[k] == '.') {
-							col = NULL; // Member indexing not allowed.
+							col = nullptr; // Member indexing not allowed.
 							break;
 						} else if (str[k] > 32) {
 							break;

@@ -101,7 +101,7 @@ public:
 	Array _get_filters() const;
 	void _set_filters(const Array &p_filters);
 	friend class AnimationNodeBlendTree;
-	float _blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true, float *r_max = NULL);
+	float _blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true, float *r_max = nullptr);
 
 protected:
 	void blend_animation(const StringName &p_animation, float p_time, float p_delta, bool p_seeked, float p_blend);
@@ -186,7 +186,7 @@ private:
 			root_motion = false;
 			setup_pass = 0;
 			process_pass = 0;
-			object = NULL;
+			object = nullptr;
 		}
 		virtual ~TrackCache() {}
 	};
@@ -202,9 +202,9 @@ private:
 
 		TrackCacheTransform() {
 			type = Animation::TYPE_TRANSFORM;
-			spatial = NULL;
+			spatial = nullptr;
 			bone_idx = -1;
-			skeleton = NULL;
+			skeleton = nullptr;
 		}
 	};
 

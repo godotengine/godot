@@ -40,14 +40,14 @@ void ARVRCamera::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			// need to find our ARVROrigin parent and let it know we're its camera!
 			ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
-			if (origin != NULL) {
+			if (origin != nullptr) {
 				origin->set_tracked_camera(this);
 			}
 		}; break;
 		case NOTIFICATION_EXIT_TREE: {
 			// need to find our ARVROrigin parent and let it know we're no longer its camera!
 			ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
-			if (origin != NULL) {
+			if (origin != nullptr) {
 				origin->clear_tracked_camera_if(this);
 			}
 		}; break;
@@ -60,7 +60,7 @@ String ARVRCamera::get_configuration_warning() const {
 
 	// must be child node of ARVROrigin!
 	ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
-	if (origin == NULL) {
+	if (origin == nullptr) {
 		return TTR("ARVRCamera must have an ARVROrigin node as its parent.");
 	};
 
@@ -192,7 +192,7 @@ void ARVRController::_notification(int p_what) {
 
 			// find the tracker for our controller
 			ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
-			if (tracker == NULL) {
+			if (tracker == nullptr) {
 				// this controller is currently turned off
 				is_active = false;
 				button_states = 0;
@@ -279,7 +279,7 @@ String ARVRController::get_controller_name(void) const {
 	ERR_FAIL_NULL_V(arvr_server, String());
 
 	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
-	if (tracker == NULL) {
+	if (tracker == nullptr) {
 		return String("Not connected");
 	};
 
@@ -292,7 +292,7 @@ int ARVRController::get_joystick_id() const {
 	ERR_FAIL_NULL_V(arvr_server, 0);
 
 	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
-	if (tracker == NULL) {
+	if (tracker == nullptr) {
 		// No tracker? no joystick id... (0 is our first joystick)
 		return -1;
 	};
@@ -324,7 +324,7 @@ real_t ARVRController::get_rumble() const {
 	ERR_FAIL_NULL_V(arvr_server, 0.0);
 
 	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
-	if (tracker == NULL) {
+	if (tracker == nullptr) {
 		return 0.0;
 	};
 
@@ -337,7 +337,7 @@ void ARVRController::set_rumble(real_t p_rumble) {
 	ERR_FAIL_NULL(arvr_server);
 
 	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
-	if (tracker != NULL) {
+	if (tracker != nullptr) {
 		tracker->set_rumble(p_rumble);
 	};
 };
@@ -356,7 +356,7 @@ ARVRPositionalTracker::TrackerHand ARVRController::get_hand() const {
 	ERR_FAIL_NULL_V(arvr_server, ARVRPositionalTracker::TRACKER_HAND_UNKNOWN);
 
 	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
-	if (tracker == NULL) {
+	if (tracker == nullptr) {
 		return ARVRPositionalTracker::TRACKER_HAND_UNKNOWN;
 	};
 
@@ -369,7 +369,7 @@ String ARVRController::get_configuration_warning() const {
 
 	// must be child node of ARVROrigin!
 	ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
-	if (origin == NULL) {
+	if (origin == nullptr) {
 		return TTR("ARVRController must have an ARVROrigin node as its parent.");
 	};
 
@@ -407,7 +407,7 @@ void ARVRAnchor::_notification(int p_what) {
 
 			// find the tracker for our anchor
 			ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_ANCHOR, anchor_id);
-			if (tracker == NULL) {
+			if (tracker == nullptr) {
 				// this anchor is currently not available
 				is_active = false;
 			} else {
@@ -479,7 +479,7 @@ String ARVRAnchor::get_anchor_name(void) const {
 	ERR_FAIL_NULL_V(arvr_server, String());
 
 	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_ANCHOR, anchor_id);
-	if (tracker == NULL) {
+	if (tracker == nullptr) {
 		return String("Not connected");
 	};
 
@@ -496,7 +496,7 @@ String ARVRAnchor::get_configuration_warning() const {
 
 	// must be child node of ARVROrigin!
 	ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
-	if (origin == NULL) {
+	if (origin == nullptr) {
 		return TTR("ARVRAnchor must have an ARVROrigin node as its parent.");
 	};
 
@@ -535,7 +535,7 @@ String ARVROrigin::get_configuration_warning() const {
 	if (!is_visible() || !is_inside_tree())
 		return String();
 
-	if (tracked_camera == NULL)
+	if (tracked_camera == nullptr)
 		return TTR("ARVROrigin requires an ARVRCamera child node.");
 
 	return String();
@@ -553,7 +553,7 @@ void ARVROrigin::set_tracked_camera(ARVRCamera *p_tracked_camera) {
 
 void ARVROrigin::clear_tracked_camera_if(ARVRCamera *p_tracked_camera) {
 	if (tracked_camera == p_tracked_camera) {
-		tracked_camera = NULL;
+		tracked_camera = nullptr;
 	};
 };
 
@@ -591,7 +591,7 @@ void ARVROrigin::_notification(int p_what) {
 
 			// check if we have a primary interface
 			Ref<ARVRInterface> arvr_interface = arvr_server->get_primary_interface();
-			if (arvr_interface.is_valid() && tracked_camera != NULL) {
+			if (arvr_interface.is_valid() && tracked_camera != nullptr) {
 				// get our positioning transform for our headset
 				Transform t = arvr_interface->get_transform_for_eye(ARVRInterface::EYE_MONO, Transform());
 
@@ -613,7 +613,7 @@ void ARVROrigin::_notification(int p_what) {
 };
 
 ARVROrigin::ARVROrigin() {
-	tracked_camera = NULL;
+	tracked_camera = nullptr;
 };
 
 ARVROrigin::~ARVROrigin(){

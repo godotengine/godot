@@ -465,12 +465,12 @@ void RasterizerSceneRD::_draw_sky(bool p_can_continue, RID p_fb, RID p_environme
 
 	RID sky_material = sky_get_material(environment_get_sky(p_environment));
 
-	SkyMaterialData *material = NULL;
+	SkyMaterialData *material = nullptr;
 
 	if (sky_material.is_valid()) {
 		material = (SkyMaterialData *)storage->material_get_data(sky_material, RasterizerStorageRD::SHADER_TYPE_SKY);
 		if (!material || !material->shader_data->valid) {
-			material = NULL;
+			material = nullptr;
 		}
 	}
 
@@ -551,12 +551,12 @@ void RasterizerSceneRD::_setup_sky(RID p_environment, const Vector3 &p_position,
 
 	RID sky_material = sky_get_material(environment_get_sky(p_environment));
 
-	SkyMaterialData *material = NULL;
+	SkyMaterialData *material = nullptr;
 
 	if (sky_material.is_valid()) {
 		material = (SkyMaterialData *)storage->material_get_data(sky_material, RasterizerStorageRD::SHADER_TYPE_SKY);
 		if (!material || !material->shader_data->valid) {
-			material = NULL;
+			material = nullptr;
 		}
 	}
 
@@ -688,12 +688,12 @@ void RasterizerSceneRD::_update_sky(RID p_environment, const CameraMatrix &p_pro
 
 	RID sky_material = sky_get_material(environment_get_sky(p_environment));
 
-	SkyMaterialData *material = NULL;
+	SkyMaterialData *material = nullptr;
 
 	if (sky_material.is_valid()) {
 		material = (SkyMaterialData *)storage->material_get_data(sky_material, RasterizerStorageRD::SHADER_TYPE_SKY);
 		if (!material || !material->shader_data->valid) {
-			material = NULL;
+			material = nullptr;
 		}
 	}
 
@@ -3469,7 +3469,7 @@ bool RasterizerSceneRD::is_using_radiance_cubemap_array() const {
 
 RasterizerSceneRD::RenderBufferData *RasterizerSceneRD::render_buffers_get_data(RID p_render_buffers) {
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
-	ERR_FAIL_COND_V(!rb, NULL);
+	ERR_FAIL_COND_V(!rb, nullptr);
 	return rb->data;
 }
 
@@ -3798,7 +3798,7 @@ float RasterizerSceneRD::screen_space_roughness_limiter_get_curve() const {
 	return screen_space_roughness_limiter_curve;
 }
 
-RasterizerSceneRD *RasterizerSceneRD::singleton = NULL;
+RasterizerSceneRD *RasterizerSceneRD::singleton = nullptr;
 
 RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 	storage = p_storage;

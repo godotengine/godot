@@ -237,7 +237,7 @@ AudioFilterSW::AudioFilterSW() {
 
 AudioFilterSW::Processor::Processor() {
 
-	set_filter(NULL);
+	set_filter(nullptr);
 }
 
 void AudioFilterSW::Processor::set_filter(AudioFilterSW *p_filter, bool p_clear_history) {

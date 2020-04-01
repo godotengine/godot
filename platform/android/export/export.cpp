@@ -194,7 +194,7 @@ static const char *android_perms[] = {
 	"WRITE_SOCIAL_STREAM",
 	"WRITE_SYNC_SETTINGS",
 	"WRITE_USER_DICTIONARY",
-	NULL
+	nullptr
 };
 
 struct LauncherIcon {
@@ -274,7 +274,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 				List<String> args;
 				args.push_back("devices");
 				int ec;
-				OS::get_singleton()->execute(adb, args, true, NULL, &devices, &ec);
+				OS::get_singleton()->execute(adb, args, true, nullptr, &devices, &ec);
 
 				Vector<String> ds = devices.split("\n");
 				Vector<String> ldevices;
@@ -332,7 +332,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							int ec2;
 							String dp;
 
-							OS::get_singleton()->execute(adb, args, true, NULL, &dp, &ec2);
+							OS::get_singleton()->execute(adb, args, true, nullptr, &dp, &ec2);
 
 							Vector<String> props = dp.split("\n");
 							String vendor;
@@ -447,7 +447,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		return pname;
 	}
 
-	bool is_package_name_valid(const String &p_package, String *r_error = NULL) const {
+	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const {
 
 		String pname = p_package;
 
@@ -537,7 +537,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			".scn", // Binary scenes are usually already compressed
 			".stex", // Streamable textures are usually already compressed
 			// Trailer for easier processing
-			NULL
+			nullptr
 		};
 
 		for (const char **ext = unconditional_compress_ext; *ext; ++ext) {
@@ -591,11 +591,11 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		zipOpenNewFileInZip(ed->apk,
 				p_path.utf8().get_data(),
 				&zipfi,
-				NULL,
+				nullptr,
 				0,
-				NULL,
+				nullptr,
 				0,
-				NULL,
+				nullptr,
 				compression_method,
 				Z_DEFAULT_COMPRESSION);
 
@@ -1530,7 +1530,7 @@ public:
 			args.push_back("uninstall");
 			args.push_back(get_package_name(package_name));
 
-			err = OS::get_singleton()->execute(adb, args, true, NULL, NULL, &rv);
+			err = OS::get_singleton()->execute(adb, args, true, nullptr, nullptr, &rv);
 		}
 
 		print_line("Installing to device (please wait...): " + devices[p_device].name);
@@ -1545,7 +1545,7 @@ public:
 		args.push_back("-r");
 		args.push_back(tmp_export_path);
 
-		err = OS::get_singleton()->execute(adb, args, true, NULL, NULL, &rv);
+		err = OS::get_singleton()->execute(adb, args, true, nullptr, nullptr, &rv);
 		if (err || rv != 0) {
 			EditorNode::add_io_error("Could not install to device.");
 			CLEANUP_AND_RETURN(ERR_CANT_CREATE);
@@ -1563,7 +1563,7 @@ public:
 				args.push_back(devices[p_device].id);
 				args.push_back("reverse");
 				args.push_back("--remove-all");
-				OS::get_singleton()->execute(adb, args, true, NULL, NULL, &rv);
+				OS::get_singleton()->execute(adb, args, true, nullptr, nullptr, &rv);
 
 				if (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG) {
 
@@ -1575,7 +1575,7 @@ public:
 					args.push_back("tcp:" + itos(dbg_port));
 					args.push_back("tcp:" + itos(dbg_port));
 
-					OS::get_singleton()->execute(adb, args, true, NULL, NULL, &rv);
+					OS::get_singleton()->execute(adb, args, true, nullptr, nullptr, &rv);
 					print_line("Reverse result: " + itos(rv));
 				}
 
@@ -1590,7 +1590,7 @@ public:
 					args.push_back("tcp:" + itos(fs_port));
 					args.push_back("tcp:" + itos(fs_port));
 
-					err = OS::get_singleton()->execute(adb, args, true, NULL, NULL, &rv);
+					err = OS::get_singleton()->execute(adb, args, true, nullptr, nullptr, &rv);
 					print_line("Reverse result2: " + itos(rv));
 				}
 			} else {
@@ -1619,7 +1619,7 @@ public:
 		args.push_back("-n");
 		args.push_back(get_package_name(package_name) + "/com.godot.game.GodotApp");
 
-		err = OS::get_singleton()->execute(adb, args, true, NULL, NULL, &rv);
+		err = OS::get_singleton()->execute(adb, args, true, nullptr, nullptr, &rv);
 		if (err || rv != 0) {
 			EditorNode::add_io_error("Could not execute on device.");
 			CLEANUP_AND_RETURN(ERR_CANT_CREATE);
@@ -1806,7 +1806,7 @@ public:
 			/*{ used for debug
 				int ec;
 				String pipe;
-				OS::get_singleton()->execute(build_command, cmdline, true, NULL, NULL, &ec);
+				OS::get_singleton()->execute(build_command, cmdline, true, nullptr, nullptr, &ec);
 				print_line("exit code: " + itos(ec));
 			}
 			*/
@@ -1851,7 +1851,7 @@ public:
 			return ERR_FILE_BAD_PATH;
 		}
 
-		FileAccess *src_f = NULL;
+		FileAccess *src_f = nullptr;
 		zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
 		if (ep.step("Creating APK...", 0)) {
@@ -1868,7 +1868,7 @@ public:
 		int ret = unzGoToFirstFile(pkg);
 
 		zlib_filefunc_def io2 = io;
-		FileAccess *dst_f = NULL;
+		FileAccess *dst_f = nullptr;
 		io2.opaque = &dst_f;
 
 		String tmp_unaligned_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpexport-unaligned.apk");
@@ -1879,7 +1879,7 @@ public:
 		return m_err;                                        \
 	}
 
-		zipFile unaligned_apk = zipOpen2(tmp_unaligned_path.utf8().get_data(), APPEND_STATUS_CREATE, NULL, &io2);
+		zipFile unaligned_apk = zipOpen2(tmp_unaligned_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io2);
 
 		bool use_32_fb = p_preset->get("graphics/32_bits_framebuffer");
 		bool immersive = p_preset->get("screen/immersive_mode");
@@ -1937,7 +1937,7 @@ public:
 			//get filename
 			unz_file_info info;
 			char fname[16384];
-			ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
+			ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
 			bool skip = false;
 
@@ -2001,11 +2001,11 @@ public:
 				zipOpenNewFileInZip(unaligned_apk,
 						file.utf8().get_data(),
 						&zipfi,
-						NULL,
+						nullptr,
 						0,
-						NULL,
+						nullptr,
 						0,
-						NULL,
+						nullptr,
 						uncompressed ? 0 : Z_DEFLATED,
 						Z_DEFAULT_COMPRESSION);
 
@@ -2108,11 +2108,11 @@ public:
 			zipOpenNewFileInZip(unaligned_apk,
 					"assets/_cl_",
 					&zipfi,
-					NULL,
+					nullptr,
 					0,
-					NULL,
+					nullptr,
 					0,
-					NULL,
+					nullptr,
 					0, // No compress (little size gain and potentially slower startup)
 					Z_DEFAULT_COMPRESSION);
 
@@ -2120,7 +2120,7 @@ public:
 			zipCloseFileInZip(unaligned_apk);
 		}
 
-		zipClose(unaligned_apk, NULL);
+		zipClose(unaligned_apk, nullptr);
 		unzClose(pkg);
 
 		if (err != OK) {
@@ -2188,7 +2188,7 @@ public:
 			args.push_back(tmp_unaligned_path);
 			args.push_back(user);
 			int retval;
-			OS::get_singleton()->execute(jarsigner, args, true, NULL, NULL, &retval);
+			OS::get_singleton()->execute(jarsigner, args, true, nullptr, nullptr, &retval);
 			if (retval) {
 				EditorNode::add_io_error("'jarsigner' returned with error #" + itos(retval));
 				CLEANUP_AND_RETURN(ERR_CANT_CREATE);
@@ -2205,7 +2205,7 @@ public:
 			args.push_back(tmp_unaligned_path);
 			args.push_back("-verbose");
 
-			OS::get_singleton()->execute(jarsigner, args, true, NULL, NULL, &retval);
+			OS::get_singleton()->execute(jarsigner, args, true, nullptr, nullptr, &retval);
 			if (retval) {
 				EditorNode::add_io_error("'jarsigner' verification of APK failed. Make sure to use a jarsigner from OpenJDK 8.");
 				CLEANUP_AND_RETURN(ERR_CANT_CREATE);
@@ -2230,9 +2230,9 @@ public:
 		ret = unzGoToFirstFile(tmp_unaligned);
 
 		io2 = io;
-		dst_f = NULL;
+		dst_f = nullptr;
 		io2.opaque = &dst_f;
-		zipFile final_apk = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, NULL, &io2);
+		zipFile final_apk = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io2);
 
 		// Take files from the unaligned APK and write them out to the aligned one
 		// in raw mode, i.e. not uncompressing and recompressing, aligning them as needed,
@@ -2245,7 +2245,7 @@ public:
 
 			char fname[16384];
 			char extra[16384];
-			ret = unzGetCurrentFileInfo(tmp_unaligned, &info, fname, 16384, extra, 16384 - ZIP_ALIGNMENT, NULL, 0);
+			ret = unzGetCurrentFileInfo(tmp_unaligned, &info, fname, 16384, extra, 16384 - ZIP_ALIGNMENT, nullptr, 0);
 
 			String file = fname;
 
@@ -2277,9 +2277,9 @@ public:
 					&zipfi,
 					extra,
 					info.size_file_extra + padding,
-					NULL,
+					nullptr,
 					0,
-					NULL,
+					nullptr,
 					method,
 					level,
 					1); // raw write
@@ -2291,7 +2291,7 @@ public:
 			ret = unzGoToNextFile(tmp_unaligned);
 		}
 
-		zipClose(final_apk, NULL);
+		zipClose(final_apk, nullptr);
 		unzClose(tmp_unaligned);
 
 		CLEANUP_AND_RETURN(OK);

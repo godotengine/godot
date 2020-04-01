@@ -976,7 +976,7 @@ void CPUParticles2D::_update_particle_data_buffer() {
 	int pc = particles.size();
 
 	int *ow;
-	int *order = NULL;
+	int *order = nullptr;
 
 	float *w = particle_data.ptrw();
 	const Particle *r = particles.ptr();

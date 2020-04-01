@@ -265,7 +265,7 @@ public:
 	template <class T>
 	T *get_node_editor_data(Node *p_node) {
 		if (!selection.has(p_node))
-			return NULL;
+			return nullptr;
 		return Object::cast_to<T>(selection[p_node]);
 	}
 

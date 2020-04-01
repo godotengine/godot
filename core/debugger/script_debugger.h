@@ -47,7 +47,7 @@ class ScriptDebugger {
 
 	Map<int, Set<StringName>> breakpoints;
 
-	ScriptLanguage *break_lang = NULL;
+	ScriptLanguage *break_lang = nullptr;
 	Vector<StackInfo> error_stack_info;
 
 public:

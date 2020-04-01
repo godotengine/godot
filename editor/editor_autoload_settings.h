@@ -63,7 +63,7 @@ class EditorAutoloadSettings : public VBoxContainer {
 		AutoLoadInfo() {
 			is_singleton = false;
 			in_editor = false;
-			node = NULL;
+			node = nullptr;
 		}
 	};
 
@@ -78,7 +78,7 @@ class EditorAutoloadSettings : public VBoxContainer {
 	LineEdit *autoload_add_name;
 	Button *add_autoload;
 
-	bool _autoload_name_is_valid(const String &p_name, String *r_error = NULL);
+	bool _autoload_name_is_valid(const String &p_name, String *r_error = nullptr);
 
 	void _autoload_add();
 	void _autoload_selected();

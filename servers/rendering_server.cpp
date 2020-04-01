@@ -33,8 +33,8 @@
 #include "core/method_bind_ext.gen.inc"
 #include "core/project_settings.h"
 
-RenderingServer *RenderingServer::singleton = NULL;
-RenderingServer *(*RenderingServer::create_func)() = NULL;
+RenderingServer *RenderingServer::singleton = nullptr;
+RenderingServer *(*RenderingServer::create_func)() = nullptr;
 
 RenderingServer *RenderingServer::get_singleton() {
 
@@ -43,12 +43,12 @@ RenderingServer *RenderingServer::get_singleton() {
 
 RenderingServer *RenderingServer::create() {
 
-	ERR_FAIL_COND_V(singleton, NULL);
+	ERR_FAIL_COND_V(singleton, nullptr);
 
 	if (create_func)
 		return create_func();
 
-	return NULL;
+	return nullptr;
 }
 
 Array RenderingServer::_texture_debug_usage_bind() {
@@ -333,7 +333,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 	uint8_t *vw = r_vertex_array.ptrw();
 
-	uint8_t *iw = NULL;
+	uint8_t *iw = nullptr;
 	if (r_index_array.size()) {
 		iw = r_index_array.ptrw();
 	}
@@ -2363,5 +2363,5 @@ RenderingServer::RenderingServer() {
 
 RenderingServer::~RenderingServer() {
 
-	singleton = NULL;
+	singleton = nullptr;
 }

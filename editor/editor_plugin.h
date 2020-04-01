@@ -268,7 +268,7 @@ class EditorPlugins {
 public:
 	static int get_plugin_count() { return creation_func_count; }
 	static EditorPlugin *create(int p_idx, EditorNode *p_editor) {
-		ERR_FAIL_INDEX_V(p_idx, creation_func_count, NULL);
+		ERR_FAIL_INDEX_V(p_idx, creation_func_count, nullptr);
 		return creation_funcs[p_idx](p_editor);
 	}
 

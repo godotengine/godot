@@ -121,7 +121,7 @@ private:
 			id = 0;
 			vert_id = 0;
 			frag_id = 0;
-			uniform_location = NULL;
+			uniform_location = nullptr;
 			code_version = 0;
 			ok = false;
 		}

@@ -165,8 +165,8 @@ EditorPropertyMultilineText::EditorPropertyMultilineText() {
 	open_big_text = memnew(ToolButton);
 	open_big_text->connect("pressed", callable_mp(this, &EditorPropertyMultilineText::_open_big_text));
 	hb->add_child(open_big_text);
-	big_text_dialog = NULL;
-	big_text = NULL;
+	big_text_dialog = nullptr;
+	big_text = nullptr;
 }
 
 ///////////////////// TEXT ENUM /////////////////////////
@@ -303,7 +303,7 @@ EditorPropertyPath::EditorPropertyPath() {
 	path_edit->set_clip_text(true);
 	path_hb->add_child(path_edit);
 	add_focusable(path);
-	dialog = NULL;
+	dialog = nullptr;
 	path_edit->connect("pressed", callable_mp(this, &EditorPropertyPath::_path_pressed));
 	folder = false;
 	global = false;
@@ -448,7 +448,7 @@ void EditorPropertyMember::_bind_methods() {
 }
 
 EditorPropertyMember::EditorPropertyMember() {
-	selector = NULL;
+	selector = nullptr;
 	property = memnew(Button);
 	property->set_clip_text(true);
 	add_child(property);
@@ -1882,7 +1882,7 @@ EditorPropertyColor::EditorPropertyColor() {
 void EditorPropertyNodePath::_node_selected(const NodePath &p_path) {
 
 	NodePath path = p_path;
-	Node *base_node = NULL;
+	Node *base_node = nullptr;
 
 	if (!use_path_from_scene_root) {
 		base_node = Object::cast_to<Node>(get_edited_object());
@@ -1945,7 +1945,7 @@ void EditorPropertyNodePath::update_property() {
 	}
 	assign->set_flat(true);
 
-	Node *base_node = NULL;
+	Node *base_node = nullptr;
 	if (base_hint != NodePath()) {
 		if (get_tree()->get_root()->has_node(base_hint)) {
 			base_node = get_tree()->get_root()->get_node(base_hint);
@@ -2008,7 +2008,7 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	hbc->add_child(clear);
 	use_path_from_scene_root = false;
 
-	scene_tree = NULL; //do not allocate unnecessarily
+	scene_tree = nullptr; //do not allocate unnecessarily
 }
 
 ///////////////////// RID /////////////////////////
@@ -2248,7 +2248,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 				return;
 			}
 
-			Object *obj = NULL;
+			Object *obj = nullptr;
 
 			if (ScriptServer::is_global_class(intype)) {
 				obj = ClassDB::instance(ScriptServer::get_global_class_native_base(intype));
@@ -2598,10 +2598,10 @@ void EditorPropertyResource::update_property() {
 			sub_inspector->refresh();
 		} else {
 			if (sub_inspector) {
-				set_bottom_editor(NULL);
+				set_bottom_editor(nullptr);
 				memdelete(sub_inspector_vbox);
-				sub_inspector = NULL;
-				sub_inspector_vbox = NULL;
+				sub_inspector = nullptr;
+				sub_inspector_vbox = nullptr;
 				if (opened_editor) {
 					EditorNode::get_singleton()->hide_top_editors();
 					opened_editor = false;
@@ -2823,8 +2823,8 @@ void EditorPropertyResource::_bind_methods() {
 EditorPropertyResource::EditorPropertyResource() {
 
 	opened_editor = false;
-	sub_inspector = NULL;
-	sub_inspector_vbox = NULL;
+	sub_inspector = nullptr;
+	sub_inspector_vbox = nullptr;
 	use_sub_inspector = bool(EDITOR_GET("interface/inspector/open_resources_in_current_inspector"));
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
@@ -2860,8 +2860,8 @@ EditorPropertyResource::EditorPropertyResource() {
 	edit->connect("gui_input", callable_mp(this, &EditorPropertyResource::_button_input));
 	add_focusable(edit);
 
-	file = NULL;
-	scene_tree = NULL;
+	file = nullptr;
+	scene_tree = nullptr;
 	dropping = false;
 
 	add_to_group("_editor_resource_properties");

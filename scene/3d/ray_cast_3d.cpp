@@ -81,7 +81,7 @@ bool RayCast3D::is_colliding() const {
 Object *RayCast3D::get_collider() const {
 
 	if (against.is_null())
-		return NULL;
+		return nullptr;
 
 	return ObjectDB::get_instance(against);
 }
@@ -387,7 +387,7 @@ void RayCast3D::_clear_debug_shape() {
 	else
 		memdelete(mi);
 
-	debug_shape = NULL;
+	debug_shape = nullptr;
 }
 
 RayCast3D::RayCast3D() {
@@ -398,7 +398,7 @@ RayCast3D::RayCast3D() {
 	against_shape = 0;
 	collision_mask = 1;
 	cast_to = Vector3(0, -1, 0);
-	debug_shape = NULL;
+	debug_shape = nullptr;
 	exclude_parent_body = true;
 	collide_with_areas = false;
 	collide_with_bodies = true;
