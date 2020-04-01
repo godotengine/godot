@@ -352,6 +352,39 @@ ScriptCodeCompletionCache::ScriptCodeCompletionCache() {
 	singleton = this;
 }
 
+void ScriptLanguage::get_core_type_words(List<String> *p_core_type_words) const {
+	p_core_type_words->push_back("String");
+	p_core_type_words->push_back("Vector2");
+	p_core_type_words->push_back("Vector2i");
+	p_core_type_words->push_back("Rect2");
+	p_core_type_words->push_back("Rect2i");
+	p_core_type_words->push_back("Vector3");
+	p_core_type_words->push_back("Vector3i");
+	p_core_type_words->push_back("Transform2D");
+	p_core_type_words->push_back("Plane");
+	p_core_type_words->push_back("Quat");
+	p_core_type_words->push_back("AABB");
+	p_core_type_words->push_back("Basis");
+	p_core_type_words->push_back("Transform");
+	p_core_type_words->push_back("Color");
+	p_core_type_words->push_back("StringName");
+	p_core_type_words->push_back("NodePath");
+	p_core_type_words->push_back("RID");
+	p_core_type_words->push_back("Callable");
+	p_core_type_words->push_back("Signal");
+	p_core_type_words->push_back("Dictionary");
+	p_core_type_words->push_back("Array");
+	p_core_type_words->push_back("PackedByteArray");
+	p_core_type_words->push_back("PackedInt32Array");
+	p_core_type_words->push_back("PackedInt64Array");
+	p_core_type_words->push_back("PackedFloat32Array");
+	p_core_type_words->push_back("PackedFloat64Array");
+	p_core_type_words->push_back("PackedStringArray");
+	p_core_type_words->push_back("PackedVector2Array");
+	p_core_type_words->push_back("PackedVector3Array");
+	p_core_type_words->push_back("PackedColorArray");
+}
+
 void ScriptLanguage::frame() {
 }
 
