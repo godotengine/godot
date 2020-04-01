@@ -18,8 +18,10 @@
 			</argument>
 			<argument index="2" name="dst" type="Vector2">
 			</argument>
+			<argument index="3" name="accurate_alpha" type="bool">
+			</argument>
 			<description>
-				Alpha-blends [code]src_rect[/code] from [code]src[/code] image to this image at coordinates [code]dest[/code].
+				Alpha-blends [code]src_rect[/code] from [code]src[/code] image to this image at coordinates [code]dest[/code]. If [code]accurate_alpha[/code] is [code]true[/code], each color will get divided by resulting alpha calue to prevent darkening of regions with transparency, in exchange of performance.
 			</description>
 		</method>
 		<method name="blend_rect_mask">
@@ -33,8 +35,10 @@
 			</argument>
 			<argument index="3" name="dst" type="Vector2">
 			</argument>
+			<argument index="4" name="accurate_alpha" type="bool">
+                        </argument>
 			<description>
-				Alpha-blends [code]src_rect[/code] from [code]src[/code] image to this image using [code]mask[/code] image at coordinates [code]dst[/code]. Alpha channels are required for both [code]src[/code] and [code]mask[/code]. [code]dst[/code] pixels and [code]src[/code] pixels will blend if the corresponding mask pixel's alpha value is not 0. [code]src[/code] image and [code]mask[/code] image [b]must[/b] have the same size (width and height) but they can have different formats.
+				Alpha-blends [code]src_rect[/code] from [code]src[/code] image to this image using [code]mask[/code] image at coordinates [code]dst[/code]. Alpha channels are required for both [code]src[/code] and [code]mask[/code]. [code]dst[/code] pixels and [code]src[/code] pixels will blend if the corresponding mask pixel's alpha value is not 0. [code]src[/code] image and [code]mask[/code] image [b]must[/b] have the same size (width and height) but they can have different formats. If [code]accurate_alpha[/code] is [code]true[/code], each color will get divided by resulting alpha calue to prevent darkening of regions with transparency, in exchange of performance.
 			</description>
 		</method>
 		<method name="blit_rect">
