@@ -2288,7 +2288,7 @@ void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos) {
 		tree_popup->clear();
 		tree_popup->set_size(Size2(1, 1));
 		_file_and_folders_fill_popup(tree_popup, paths);
-		tree_popup->set_position(tree->get_global_position() + p_pos);
+		tree_popup->set_position(tree->get_screen_position() + p_pos);
 		tree_popup->popup();
 	}
 }
@@ -2302,7 +2302,7 @@ void FileSystemDock::_tree_rmb_empty(const Vector2 &p_pos) {
 	tree_popup->add_icon_item(get_theme_icon("PackedScene", "EditorIcons"), TTR("New Scene..."), FILE_NEW_SCENE);
 	tree_popup->add_icon_item(get_theme_icon("Script", "EditorIcons"), TTR("New Script..."), FILE_NEW_SCRIPT);
 	tree_popup->add_icon_item(get_theme_icon("Object", "EditorIcons"), TTR("New Resource..."), FILE_NEW_RESOURCE);
-	tree_popup->set_position(tree->get_global_position() + p_pos);
+	tree_popup->set_position(tree->get_screen_position() + p_pos);
 	tree_popup->popup();
 }
 
@@ -2329,7 +2329,7 @@ void FileSystemDock::_file_list_rmb_select(int p_item, const Vector2 &p_pos) {
 		file_list_popup->clear();
 		file_list_popup->set_size(Size2(1, 1));
 		_file_and_folders_fill_popup(file_list_popup, paths, searched_string.length() == 0);
-		file_list_popup->set_position(files->get_global_position() + p_pos);
+		file_list_popup->set_position(files->get_screen_position() + p_pos);
 		file_list_popup->popup();
 	}
 }
@@ -2349,7 +2349,7 @@ void FileSystemDock::_file_list_rmb_pressed(const Vector2 &p_pos) {
 	file_list_popup->add_icon_item(get_theme_icon("Object", "EditorIcons"), TTR("New Resource..."), FILE_NEW_RESOURCE);
 	file_list_popup->add_separator();
 	file_list_popup->add_icon_item(get_theme_icon("Filesystem", "EditorIcons"), TTR("Open in File Manager"), FILE_SHOW_IN_EXPLORER);
-	file_list_popup->set_position(files->get_global_position() + p_pos);
+	file_list_popup->set_position(files->get_screen_position() + p_pos);
 	file_list_popup->popup();
 }
 

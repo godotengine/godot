@@ -262,7 +262,7 @@ void DependencyEditorOwners::_list_rmb_select(int p_item, const Vector2 &p_pos) 
 		file_options->add_item(TTR("Open"), FILE_OPEN);
 	}
 
-	file_options->set_position(owners->get_global_position() + p_pos);
+	file_options->set_position(owners->get_screen_position() + p_pos);
 	file_options->popup();
 }
 

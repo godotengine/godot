@@ -51,7 +51,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 	if (b.is_valid()) {
 		if (b->is_pressed() && b->get_button_index() == BUTTON_RIGHT && context_menu_enabled) {
-			menu->set_position(get_global_transform().xform(get_local_mouse_position()));
+			menu->set_position(get_screen_transform().xform(get_local_mouse_position()));
 			menu->set_size(Vector2(1, 1));
 			//menu->set_scale(get_global_transform().get_scale());
 			menu->popup();
@@ -546,7 +546,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				case KEY_MENU: {
 					if (context_menu_enabled) {
 						Point2 pos = Point2(get_cursor_pixel_pos(), (get_size().y + get_theme_font("font")->get_height()) / 2);
-						menu->set_position(get_global_transform().xform(pos));
+						menu->set_position(get_screen_transform().xform(pos));
 						menu->set_size(Vector2(1, 1));
 						//						menu->set_scale(get_global_transform().get_scale());
 						menu->popup();

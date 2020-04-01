@@ -432,7 +432,7 @@ void AnimationNodeBlendTreeEditor::_delete_nodes_request() {
 void AnimationNodeBlendTreeEditor::_popup_request(const Vector2 &p_position) {
 	_update_options_menu();
 	use_popup_menu_position = true;
-	popup_menu_position = graph->get_local_mouse_position();
+	popup_menu_position = get_screen_transform().xform(graph->get_local_mouse_position());
 	add_node->get_popup()->set_position(p_position);
 	add_node->get_popup()->popup();
 }

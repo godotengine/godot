@@ -622,7 +622,7 @@ void ProjectSettingsEditor::_action_button_pressed(Object *p_obj, int p_column, 
 
 	if (p_id == 1) {
 		// Add action event
-		Point2 ofs = input_editor->get_global_position();
+		Point2 ofs = input_editor->get_screen_position();
 		Rect2 ir = input_editor->get_item_rect(ti);
 		ir.position.y -= input_editor->get_scroll().y;
 		ofs += ir.position + ir.size;

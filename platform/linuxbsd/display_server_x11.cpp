@@ -798,8 +798,8 @@ int DisplayServerX11::window_get_current_screen(WindowID p_window) const {
 	const WindowData &wd = windows[p_window];
 
 	int x, y;
-	Window child;
-	XTranslateCoordinates(x11_display, wd.x11_window, DefaultRootWindow(x11_display), 0, 0, &x, &y, &child);
+	x = wd.position.x;
+	y = wd.position.y;
 
 	int count = get_screen_count();
 	for (int i = 0; i < count; i++) {
@@ -816,7 +816,6 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
-	WindowData &wd = windows[p_window];
 
 	int count = get_screen_count();
 	if (p_screen >= count) {
@@ -827,11 +826,16 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 		Point2i position = screen_get_position(p_screen);
 		Size2i size = screen_get_size(p_screen);
 
+		WindowData &wd = windows[p_window];
 		XMoveResizeWindow(x11_display, wd.x11_window, position.x, position.y, size.x, size.y);
 	} else {
-		if (p_screen != window_get_current_screen(p_window)) {
-			Point2i position = screen_get_position(p_screen);
-			XMoveWindow(x11_display, wd.x11_window, position.x, position.y);
+		int current_screen = window_get_current_screen(p_window);
+		if (p_screen != current_screen) {
+			Point2i to_screen_pos = screen_get_position(p_screen);
+			Point2i from_window_pos = window_get_position(p_window) - screen_get_position(current_screen);
+
+			Point2i to_move_to = from_window_pos + to_screen_pos;
+			window_set_position(to_move_to, p_window);
 		}
 	}
 }
@@ -908,7 +912,10 @@ void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p
 			}
 		}
 	}
+
 	XMoveWindow(x11_display, wd.x11_window, p_position.x - x, p_position.y - y);
+	XSync(x11_display, False);
+
 	_update_real_mouse_position(wd);
 }
 
@@ -1256,10 +1263,16 @@ void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled) {
 		XFree(xsh);
 
 		// put back or remove decorations according to the last set borderless state
+		bool borderless_state = window_get_flag(WINDOW_FLAG_BORDERLESS, p_window) ? 0 : 1;
+
+		// restore borders always for main window
+		// it has become borderless before entering fullscreen
+		borderless_state = (p_window == MAIN_WINDOW_ID) ? 1 : borderless_state;
+
 		Hints hints;
 		Atom property;
 		hints.flags = 2;
-		hints.decorations = window_get_flag(WINDOW_FLAG_BORDERLESS, p_window) ? 0 : 1;
+		hints.decorations = borderless_state;
 		property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
 		XChangeProperty(x11_display, wd.x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
 	}
@@ -3304,7 +3317,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 			my_hints.height = p_rect.size.height;
 
 			XSetNormalHints(x11_display, wd.x11_window, &my_hints);
-			XMoveWindow(x11_display, wd.x11_window, p_rect.position.x, p_rect.position.y);
+			XMoveResizeWindow(x11_display, wd.x11_window, p_rect.position.x, p_rect.position.y, p_rect.size.width, p_rect.size.height);
 		}
 
 #if defined(VULKAN_ENABLED)
@@ -3334,8 +3347,9 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 		XSync(x11_display, False);
 		XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
 
-		wd.position.x = xwa.x;
-		wd.position.y = xwa.y;
+		wd.position.x = p_rect.position.x;
+		wd.position.y = p_rect.position.y;
+
 		wd.size.width = xwa.width;
 		wd.size.height = xwa.height;
 

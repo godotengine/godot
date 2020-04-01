@@ -2381,8 +2381,9 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			menu->add_icon_shortcut(get_theme_icon("Instance", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/instance_scene"), TOOL_INSTANCE);
 		}
 
+		Vector2 screen_menu_pos = get_screen_transform().xform(p_menu_pos);
 		menu->set_size(Size2(1, 1));
-		menu->set_position(p_menu_pos);
+		menu->set_position(screen_menu_pos);
 		menu->popup();
 		return;
 	}

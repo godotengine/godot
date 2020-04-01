@@ -160,7 +160,7 @@ void PopupMenu::_activate_submenu(int over) {
 	Point2 pos = p + Point2(get_size().width, items[over]._ofs_cache - style->get_offset().y);
 	Size2 size = pm->get_size();
 	// fix pos
-	if (pos.x + size.width > get_parent_rect().size.width) {
+	if (pos.x + size.width > get_parent_rect().position.x + get_parent_rect().size.width) {
 		pos.x = p.x - size.width;
 	}
 

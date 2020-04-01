@@ -487,7 +487,7 @@ void EditorAudioBus::_effect_edited() {
 	if (effect->get_metadata(0) == Variant()) {
 		Rect2 area = effects->get_item_rect(effect);
 
-		effect_options->set_position(effects->get_global_position() + area.position + Vector2(0, area.size.y));
+		effect_options->set_position(effects->get_screen_position() + area.position + Vector2(0, area.size.y));
 		effect_options->popup();
 		//add effect
 	} else {
@@ -540,7 +540,7 @@ void EditorAudioBus::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->get_button_index() == 2 && mb->is_pressed()) {
 		Vector2 pos = Vector2(mb->get_position().x, mb->get_position().y);
-		bus_popup->set_position(get_global_position() + pos);
+		bus_popup->set_position(get_screen_position() + pos);
 		bus_popup->popup();
 	}
 }
@@ -730,7 +730,7 @@ void EditorAudioBus::_effect_rmb(const Vector2 &p_pos) {
 		return;
 	}
 
-	delete_effect_popup->set_position(get_global_mouse_position());
+	delete_effect_popup->set_position(get_screen_transform().xform(get_local_mouse_position()));
 	delete_effect_popup->popup();
 }
 
