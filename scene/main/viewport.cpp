@@ -879,13 +879,14 @@ void Viewport::update_canvas_items() {
 	_update_canvas_items(this);
 }
 
-void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_override, const Rect2i &p_to_screen_rect, const Transform2D &p_stretch_transform, bool p_allocated) {
+void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override, const Rect2i &p_to_screen_rect, const Transform2D &p_stretch_transform, bool p_allocated) {
 
-	if (size == p_size && size_allocated == p_allocated && stretch_transform == p_stretch_transform && p_size_override == size_override && to_screen_rect != p_to_screen_rect)
+	if (size == p_size && size_allocated == p_allocated && stretch_transform == p_stretch_transform && p_size_2d_override == size_2d_override && to_screen_rect != p_to_screen_rect)
 		return;
+
 	size = p_size;
 	size_allocated = p_allocated;
-	size_override = p_size_override;
+	size_2d_override = p_size_2d_override;
 	stretch_transform = p_stretch_transform;
 	to_screen_rect = p_to_screen_rect;
 
@@ -904,6 +905,9 @@ void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_override, co
 Size2i Viewport::_get_size() const {
 	return size;
 }
+Size2i Viewport::_get_size_2d_override() const {
+	return size_2d_override;
+}
 bool Viewport::_is_size_allocated() const {
 	return size_allocated;
 }
@@ -918,8 +922,8 @@ Rect2 Viewport::get_visible_rect() const {
 		r = Rect2(Point2(), size);
 	}
 
-	if (size_override != Size2i()) {
-		r.size = size_override;
+	if (size_2d_override != Size2i()) {
+		r.size = size_2d_override;
 	}
 
 	return r;
@@ -3614,16 +3618,38 @@ void SubViewport::set_use_arvr(bool p_use_arvr) {
 
 	RS::get_singleton()->viewport_set_use_arvr(get_viewport_rid(), arvr);
 }
-
 bool SubViewport::is_using_arvr() {
 	return arvr;
 }
 
 void SubViewport::set_size(const Size2i &p_size) {
-	_set_size(p_size, Size2i(), Rect2i(), Transform2D(), true);
+	_set_size(p_size, _get_size_2d_override(), Rect2i(), _stretch_transform(), true);
 }
 Size2i SubViewport::get_size() const {
 	return _get_size();
+}
+
+void SubViewport::set_size_2d_override(const Size2i &p_size) {
+
+	_set_size(_get_size(), p_size, Rect2i(), _stretch_transform(), true);
+}
+Size2i SubViewport::get_size_2d_override() const {
+
+	return _get_size_2d_override();
+}
+
+void SubViewport::set_size_2d_override_stretch(bool p_enable) {
+
+	if (p_enable == size_2d_override_stretch) {
+		return;
+	}
+
+	size_2d_override_stretch = p_enable;
+	_set_size(_get_size(), _get_size_2d_override(), Rect2i(), _stretch_transform(), true);
+}
+bool SubViewport::is_size_2d_override_stretch_enabled() const {
+
+	return size_2d_override_stretch;
 }
 
 void SubViewport::set_update_mode(UpdateMode p_mode) {
@@ -3641,7 +3667,6 @@ void SubViewport::set_clear_mode(ClearMode p_mode) {
 	clear_mode = p_mode;
 	RS::get_singleton()->viewport_set_clear_mode(get_viewport_rid(), RS::ViewportClearMode(p_mode));
 }
-
 SubViewport::ClearMode SubViewport::get_clear_mode() const {
 
 	return clear_mode;
@@ -3649,6 +3674,18 @@ SubViewport::ClearMode SubViewport::get_clear_mode() const {
 
 DisplayServer::WindowID SubViewport::get_window_id() const {
 	return DisplayServer::INVALID_WINDOW_ID;
+}
+
+Transform2D SubViewport::_stretch_transform() {
+
+	Transform2D transform = Transform2D();
+	Size2i view_size_2d_override = _get_size_2d_override();
+	if (size_2d_override_stretch && view_size_2d_override.width > 0 && view_size_2d_override.height > 0) {
+		Size2 scale = _get_size() / view_size_2d_override;
+		transform.scale(scale);
+	}
+
+	return transform;
 }
 
 void SubViewport::_notification(int p_what) {
@@ -3668,6 +3705,12 @@ void SubViewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &SubViewport::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &SubViewport::get_size);
 
+	ClassDB::bind_method(D_METHOD("set_size_2d_override", "size"), &SubViewport::set_size_2d_override);
+	ClassDB::bind_method(D_METHOD("get_size_2d_override"), &SubViewport::get_size_2d_override);
+
+	ClassDB::bind_method(D_METHOD("set_size_2d_override_stretch", "enable"), &SubViewport::set_size_2d_override_stretch);
+	ClassDB::bind_method(D_METHOD("is_size_2d_override_stretch_enabled"), &SubViewport::is_size_2d_override_stretch_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_update_mode", "mode"), &SubViewport::set_update_mode);
 	ClassDB::bind_method(D_METHOD("get_update_mode"), &SubViewport::get_update_mode);
 
@@ -3675,6 +3718,9 @@ void SubViewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_clear_mode"), &SubViewport::get_clear_mode);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "arvr"), "set_use_arvr", "is_using_arvr");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size_2d_override"), "set_size_2d_override", "get_size_2d_override");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "size_2d_override_stretch"), "set_size_2d_override_stretch", "is_size_2d_override_stretch_enabled");
 	ADD_GROUP("Render Target", "render_target_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_clear_mode", PROPERTY_HINT_ENUM, "Always,Never,Next Frame"), "set_clear_mode", "get_clear_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_update_mode", PROPERTY_HINT_ENUM, "Disabled,Once,When Visible,Always"), "set_update_mode", "get_update_mode");
@@ -3692,6 +3738,7 @@ void SubViewport::_bind_methods() {
 
 SubViewport::SubViewport() {
 	arvr = false;
+	size_2d_override_stretch = false;
 	update_mode = UPDATE_WHEN_VISIBLE;
 	clear_mode = CLEAR_MODE_ALWAYS;
 }
