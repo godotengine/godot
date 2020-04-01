@@ -75,7 +75,7 @@ void *ThreadPosix::thread_callback(void *userdata) {
 
 	ScriptServer::thread_exit();
 
-	return NULL;
+	return nullptr;
 }
 
 Thread *ThreadPosix::create_func_posix(ThreadCreateCallback p_callback, void *p_user, const Settings &) {
@@ -108,7 +108,7 @@ void ThreadPosix::wait_to_finish_func_posix(Thread *p_thread) {
 	ERR_FAIL_COND(!tp);
 	ERR_FAIL_COND(tp->pthread == 0);
 
-	pthread_join(tp->pthread, NULL);
+	pthread_join(tp->pthread, nullptr);
 	tp->pthread = 0;
 }
 

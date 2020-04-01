@@ -283,7 +283,7 @@ Error ImageLoaderTGA::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 		uint8_t *uncompressed_buffer_w = uncompressed_buffer.ptrw();
 		const uint8_t *uncompressed_buffer_r;
 
-		const uint8_t *buffer = NULL;
+		const uint8_t *buffer = nullptr;
 
 		if (is_encoded) {
 

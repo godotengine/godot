@@ -42,7 +42,7 @@ bool PolygonPathFinder::_is_point_inside(const Vector2 &p_point) const {
 		Vector2 a = points[e.points[0]].pos;
 		Vector2 b = points[e.points[1]].pos;
 
-		if (Geometry::segment_intersects_segment_2d(a, b, p_point, outside_point, NULL)) {
+		if (Geometry::segment_intersects_segment_2d(a, b, p_point, outside_point, nullptr)) {
 			crosses++;
 		}
 	}
@@ -119,7 +119,7 @@ void PolygonPathFinder::setup(const Vector<Vector2> &p_points, const Vector<int>
 				Vector2 a = points[e.points[0]].pos;
 				Vector2 b = points[e.points[1]].pos;
 
-				if (Geometry::segment_intersects_segment_2d(a, b, from, to, NULL)) {
+				if (Geometry::segment_intersects_segment_2d(a, b, from, to, nullptr)) {
 					valid = false;
 					break;
 				}
@@ -209,7 +209,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 			Vector2 a = points[e.points[0]].pos;
 			Vector2 b = points[e.points[1]].pos;
 
-			if (Geometry::segment_intersects_segment_2d(a, b, from, to, NULL)) {
+			if (Geometry::segment_intersects_segment_2d(a, b, from, to, nullptr)) {
 				can_see_eachother = false;
 				break;
 			}
@@ -268,7 +268,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 						e.points[0] != ignore_from_edge.points[0] &&
 						e.points[1] != ignore_from_edge.points[0]) {
 
-					if (Geometry::segment_intersects_segment_2d(a, b, from, points[i].pos, NULL)) {
+					if (Geometry::segment_intersects_segment_2d(a, b, from, points[i].pos, nullptr)) {
 						valid_a = false;
 					}
 				}
@@ -281,7 +281,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 						e.points[0] != ignore_to_edge.points[0] &&
 						e.points[1] != ignore_to_edge.points[0]) {
 
-					if (Geometry::segment_intersects_segment_2d(a, b, to, points[i].pos, NULL)) {
+					if (Geometry::segment_intersects_segment_2d(a, b, to, points[i].pos, nullptr)) {
 						valid_b = false;
 					}
 				}

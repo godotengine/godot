@@ -79,7 +79,7 @@ bool RayCast2D::is_colliding() const {
 Object *RayCast2D::get_collider() const {
 
 	if (against.is_null())
-		return NULL;
+		return nullptr;
 
 	return ObjectDB::get_instance(against);
 }

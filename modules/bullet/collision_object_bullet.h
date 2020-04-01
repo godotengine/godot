@@ -76,20 +76,20 @@ public:
 		bool active;
 
 		ShapeWrapper() :
-				shape(NULL),
-				bt_shape(NULL),
+				shape(nullptr),
+				bt_shape(nullptr),
 				active(true) {}
 
 		ShapeWrapper(ShapeBullet *p_shape, const btTransform &p_transform, bool p_active) :
 				shape(p_shape),
-				bt_shape(NULL),
+				bt_shape(nullptr),
 				active(p_active) {
 			set_transform(p_transform);
 		}
 
 		ShapeWrapper(ShapeBullet *p_shape, const Transform &p_transform, bool p_active) :
 				shape(p_shape),
-				bt_shape(NULL),
+				bt_shape(nullptr),
 				active(p_active) {
 			set_transform(p_transform);
 		}

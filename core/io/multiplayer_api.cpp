@@ -207,7 +207,7 @@ int get_packet_len(uint32_t p_node_target, int p_packet_len) {
 
 void MultiplayerAPI::_process_packet(int p_from, const uint8_t *p_packet, int p_packet_len) {
 
-	ERR_FAIL_COND_MSG(root_node == NULL, "Multiplayer root node was not initialized. If you are using custom multiplayer, remember to set the root node via MultiplayerAPI.set_root_node before using it.");
+	ERR_FAIL_COND_MSG(root_node == nullptr, "Multiplayer root node was not initialized. If you are using custom multiplayer, remember to set the root node via MultiplayerAPI.set_root_node before using it.");
 	ERR_FAIL_COND_MSG(p_packet_len < 1, "Invalid packet received. Size too small.");
 
 #ifdef DEBUG_ENABLED
@@ -285,7 +285,7 @@ void MultiplayerAPI::_process_packet(int p_from, const uint8_t *p_packet, int p_
 			}
 
 			Node *node = _process_get_node(p_from, p_packet, node_target, p_packet_len);
-			ERR_FAIL_COND_MSG(node == NULL, "Invalid packet received. Requested node was not found.");
+			ERR_FAIL_COND_MSG(node == nullptr, "Invalid packet received. Requested node was not found.");
 
 			uint16_t name_id = 0;
 			switch (name_id_compression) {
@@ -321,14 +321,14 @@ void MultiplayerAPI::_process_packet(int p_from, const uint8_t *p_packet, int p_
 
 Node *MultiplayerAPI::_process_get_node(int p_from, const uint8_t *p_packet, uint32_t p_node_target, int p_packet_len) {
 
-	Node *node = NULL;
+	Node *node = nullptr;
 
 	if (p_node_target & 0x80000000) {
 		// Use full path (not cached yet).
 
 		int ofs = p_node_target & 0x7FFFFFFF;
 
-		ERR_FAIL_COND_V_MSG(ofs >= p_packet_len, NULL, "Invalid packet received. Size smaller than declared.");
+		ERR_FAIL_COND_V_MSG(ofs >= p_packet_len, nullptr, "Invalid packet received. Size smaller than declared.");
 
 		String paths;
 		paths.parse_utf8((const char *)&p_packet[ofs], p_packet_len - ofs);
@@ -344,10 +344,10 @@ Node *MultiplayerAPI::_process_get_node(int p_from, const uint8_t *p_packet, uin
 		int id = p_node_target;
 
 		Map<int, PathGetCache>::Element *E = path_get_cache.find(p_from);
-		ERR_FAIL_COND_V_MSG(!E, NULL, "Invalid packet received. Requests invalid peer cache.");
+		ERR_FAIL_COND_V_MSG(!E, nullptr, "Invalid packet received. Requests invalid peer cache.");
 
 		Map<int, PathGetCache::NodeInfo>::Element *F = E->get().nodes.find(id);
-		ERR_FAIL_COND_V_MSG(!F, NULL, "Invalid packet received. Unabled to find requested cached node.");
+		ERR_FAIL_COND_V_MSG(!F, nullptr, "Invalid packet received. Unabled to find requested cached node.");
 
 		PathGetCache::NodeInfo *ni = &F->get();
 		// Do proper caching later.
@@ -456,7 +456,7 @@ void MultiplayerAPI::_process_rset(Node *p_node, const uint16_t p_rpc_property_i
 #endif
 
 	Variant value;
-	Error err = _decode_and_decompress_variant(value, &p_packet[p_offset], p_packet_len - p_offset, NULL);
+	Error err = _decode_and_decompress_variant(value, &p_packet[p_offset], p_packet_len - p_offset, nullptr);
 
 	ERR_FAIL_COND_MSG(err != OK, "Invalid packet received. Unable to decode RSET value.");
 
@@ -491,7 +491,7 @@ void MultiplayerAPI::_process_simplify_path(int p_from, const uint8_t *p_packet,
 	}
 
 	Node *node = root_node->get_node(path);
-	ERR_FAIL_COND(node == NULL);
+	ERR_FAIL_COND(node == nullptr);
 	const bool valid_rpc_checksum = node->get_rpc_md5() == methods_md5;
 	if (valid_rpc_checksum == false) {
 		ERR_PRINT("The rpc node checksum failed. Make sure to have the same methods on both nodes. Node path: " + path);
@@ -504,7 +504,7 @@ void MultiplayerAPI::_process_simplify_path(int p_from, const uint8_t *p_packet,
 
 	// Encode path to send ack.
 	CharString pname = String(path).utf8();
-	int len = encode_cstring(pname.get_data(), NULL);
+	int len = encode_cstring(pname.get_data(), nullptr);
 
 	Vector<uint8_t> packet;
 
@@ -572,7 +572,7 @@ bool MultiplayerAPI::_send_confirm_path(Node *p_node, NodePath p_path, PathSentC
 
 		// Encode function name.
 		const CharString path = String(p_path).utf8();
-		const int path_len = encode_cstring(path.get_data(), NULL);
+		const int path_len = encode_cstring(path.get_data(), nullptr);
 
 		// Extract MD5 from rpc methods list.
 		const String methods_md5 = p_node->get_rpc_md5();
@@ -862,7 +862,7 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 
 		// Set argument.
 		int len(0);
-		Error err = _encode_and_compress_variant(*p_arg[0], NULL, len);
+		Error err = _encode_and_compress_variant(*p_arg[0], nullptr, len);
 		ERR_FAIL_COND_MSG(err != OK, "Unable to encode RSET value. THIS IS LIKELY A BUG IN THE ENGINE!");
 		MAKE_ROOM(ofs + len);
 		_encode_and_compress_variant(*p_arg[0], &(packet_cache.write[ofs]), len);
@@ -907,7 +907,7 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 			ofs += 1;
 			for (int i = 0; i < p_argcount; i++) {
 				int len(0);
-				Error err = _encode_and_compress_variant(*p_arg[i], NULL, len);
+				Error err = _encode_and_compress_variant(*p_arg[i], nullptr, len);
 				ERR_FAIL_COND_MSG(err != OK, "Unable to encode RPC argument. THIS IS LIKELY A BUG IN THE ENGINE!");
 				MAKE_ROOM(ofs + len);
 				_encode_and_compress_variant(*p_arg[i], &(packet_cache.write[ofs]), len);
@@ -943,7 +943,7 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 
 		// Append path at the end, since we will need it for some packets.
 		CharString pname = String(from_path).utf8();
-		int path_len = encode_cstring(pname.get_data(), NULL);
+		int path_len = encode_cstring(pname.get_data(), nullptr);
 		MAKE_ROOM(ofs + path_len);
 		encode_cstring(pname.get_data(), &(packet_cache.write[ofs]));
 
@@ -1262,7 +1262,7 @@ void MultiplayerAPI::_bind_methods() {
 MultiplayerAPI::MultiplayerAPI() :
 		allow_object_decoding(false) {
 	rpc_sender_id = 0;
-	root_node = NULL;
+	root_node = nullptr;
 	clear();
 }
 

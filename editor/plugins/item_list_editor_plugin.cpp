@@ -163,7 +163,7 @@ void ItemListOptionButtonPlugin::erase(int p_idx) {
 
 ItemListOptionButtonPlugin::ItemListOptionButtonPlugin() {
 
-	ob = NULL;
+	ob = nullptr;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -205,7 +205,7 @@ void ItemListPopupMenuPlugin::erase(int p_idx) {
 
 ItemListPopupMenuPlugin::ItemListPopupMenuPlugin() {
 
-	pp = NULL;
+	pp = nullptr;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -244,7 +244,7 @@ void ItemListItemListPlugin::erase(int p_idx) {
 
 ItemListItemListPlugin::ItemListItemListPlugin() {
 
-	pp = NULL;
+	pp = nullptr;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -254,7 +254,7 @@ ItemListItemListPlugin::ItemListItemListPlugin() {
 void ItemListEditor::_node_removed(Node *p_node) {
 
 	if (p_node == item_list) {
-		item_list = NULL;
+		item_list = nullptr;
 		hide();
 		dialog->hide();
 	}
@@ -311,7 +311,7 @@ void ItemListEditor::edit(Node *p_item_list) {
 
 	if (!item_list) {
 		selected_idx = -1;
-		property_editor->edit(NULL);
+		property_editor->edit(nullptr);
 		return;
 	}
 
@@ -329,7 +329,7 @@ void ItemListEditor::edit(Node *p_item_list) {
 	}
 
 	selected_idx = -1;
-	property_editor->edit(NULL);
+	property_editor->edit(nullptr);
 }
 
 bool ItemListEditor::handles(Object *p_object) const {
@@ -349,7 +349,7 @@ void ItemListEditor::_bind_methods() {
 ItemListEditor::ItemListEditor() {
 
 	selected_idx = -1;
-	item_list = NULL;
+	item_list = nullptr;
 
 	toolbar_button = memnew(ToolButton);
 	toolbar_button->set_text(TTR("Items"));
@@ -408,7 +408,7 @@ void ItemListEditorPlugin::make_visible(bool p_visible) {
 	} else {
 
 		item_list_editor->hide();
-		item_list_editor->edit(NULL);
+		item_list_editor->edit(nullptr);
 	}
 }
 

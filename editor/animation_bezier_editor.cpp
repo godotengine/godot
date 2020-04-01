@@ -277,7 +277,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 		{
 			NodePath path = animation->track_get_path(track);
 
-			Node *node = NULL;
+			Node *node = nullptr;
 
 			if (root && root->has_node(path)) {
 				node = root->get_node(path);
@@ -1162,11 +1162,11 @@ void AnimationBezierTrackEdit::_bind_methods() {
 }
 
 AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
-	undo_redo = NULL;
-	timeline = NULL;
-	root = NULL;
-	menu = NULL;
-	block_animation_update_ptr = NULL;
+	undo_redo = nullptr;
+	timeline = nullptr;
+	root = nullptr;
+	menu = nullptr;
+	block_animation_update_ptr = nullptr;
 
 	moving_selection_attempt = false;
 	moving_selection = false;

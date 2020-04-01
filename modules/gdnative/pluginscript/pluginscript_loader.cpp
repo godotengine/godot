@@ -109,5 +109,5 @@ void ResourceFormatSaverPluginScript::get_recognized_extensions(const RES &p_res
 
 bool ResourceFormatSaverPluginScript::recognize(const RES &p_resource) const {
 
-	return Object::cast_to<PluginScript>(*p_resource) != NULL;
+	return Object::cast_to<PluginScript>(*p_resource) != nullptr;
 }

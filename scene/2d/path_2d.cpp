@@ -241,7 +241,7 @@ void PathFollow2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
-			path = NULL;
+			path = nullptr;
 		} break;
 	}
 }
@@ -420,7 +420,7 @@ PathFollow2D::PathFollow2D() {
 	offset = 0;
 	h_offset = 0;
 	v_offset = 0;
-	path = NULL;
+	path = nullptr;
 	rotate = true;
 	cubic = true;
 	loop = true;

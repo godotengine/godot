@@ -810,7 +810,7 @@ void AnimationNodeBlendSpace2DEditor::_open_editor() {
 }
 
 void AnimationNodeBlendSpace2DEditor::_removed_from_graph() {
-	EditorNode::get_singleton()->edit_item(NULL);
+	EditorNode::get_singleton()->edit_item(nullptr);
 }
 
 void AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled() {
@@ -833,7 +833,7 @@ void AnimationNodeBlendSpace2DEditor::_bind_methods() {
 	ClassDB::bind_method("_removed_from_graph", &AnimationNodeBlendSpace2DEditor::_removed_from_graph);
 }
 
-AnimationNodeBlendSpace2DEditor *AnimationNodeBlendSpace2DEditor::singleton = NULL;
+AnimationNodeBlendSpace2DEditor *AnimationNodeBlendSpace2DEditor::singleton = nullptr;
 
 AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 

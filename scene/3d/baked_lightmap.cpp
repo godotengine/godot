@@ -193,9 +193,9 @@ BakedLightmapData::~BakedLightmapData() {
 
 ///////////////////////////
 
-BakedLightmap::BakeBeginFunc BakedLightmap::bake_begin_function = NULL;
-BakedLightmap::BakeStepFunc BakedLightmap::bake_step_function = NULL;
-BakedLightmap::BakeEndFunc BakedLightmap::bake_end_function = NULL;
+BakedLightmap::BakeBeginFunc BakedLightmap::bake_begin_function = nullptr;
+BakedLightmap::BakeStepFunc BakedLightmap::bake_step_function = nullptr;
+BakedLightmap::BakeEndFunc BakedLightmap::bake_end_function = nullptr;
 
 void BakedLightmap::set_bake_cell_size(float p_cell_size) {
 	bake_cell_size = p_cell_size;

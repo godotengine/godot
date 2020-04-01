@@ -40,7 +40,7 @@
 
 void Material::set_next_pass(const Ref<Material> &p_pass) {
 
-	for (Ref<Material> pass_child = p_pass; pass_child != NULL; pass_child = pass_child->get_next_pass()) {
+	for (Ref<Material> pass_child = p_pass; pass_child != nullptr; pass_child = pass_child->get_next_pass()) {
 		ERR_FAIL_COND_MSG(pass_child == this, "Can't set as next_pass one of its parents to prevent crashes due to recursive loop.");
 	}
 
@@ -290,9 +290,9 @@ ShaderMaterial::~ShaderMaterial() {
 /////////////////////////////////
 
 Mutex BaseMaterial3D::material_mutex;
-SelfList<BaseMaterial3D>::List *BaseMaterial3D::dirty_materials = NULL;
+SelfList<BaseMaterial3D>::List *BaseMaterial3D::dirty_materials = nullptr;
 Map<BaseMaterial3D::MaterialKey, BaseMaterial3D::ShaderData> BaseMaterial3D::shader_map;
-BaseMaterial3D::ShaderNames *BaseMaterial3D::shader_names = NULL;
+BaseMaterial3D::ShaderNames *BaseMaterial3D::shader_names = nullptr;
 
 void BaseMaterial3D::init_shaders() {
 
@@ -375,7 +375,7 @@ void BaseMaterial3D::finish_shaders() {
 	}
 
 	memdelete(dirty_materials);
-	dirty_materials = NULL;
+	dirty_materials = nullptr;
 
 	memdelete(shader_names);
 }
@@ -2641,7 +2641,7 @@ bool StandardMaterial3D::_set(const StringName &p_name, const Variant &p_value) 
 			{ "depth_flip_binormal", "heightmap_flip_binormal" },
 			{ "depth_texture", "heightmap_texture" },
 
-			{ NULL, NULL },
+			{ nullptr, nullptr },
 		};
 
 		int idx = 0;

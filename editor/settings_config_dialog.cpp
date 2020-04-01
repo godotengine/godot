@@ -125,8 +125,8 @@ void EditorSettingsDialog::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_READY: {
-			undo_redo->set_method_notify_callback(EditorDebuggerNode::_method_changeds, NULL);
-			undo_redo->set_property_notify_callback(EditorDebuggerNode::_property_changeds, NULL);
+			undo_redo->set_method_notify_callback(EditorDebuggerNode::_method_changeds, nullptr);
+			undo_redo->set_property_notify_callback(EditorDebuggerNode::_property_changeds, nullptr);
 			undo_redo->set_commit_notify_callback(_undo_redo_callback, this);
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
@@ -263,7 +263,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 	// remove sections with no shortcuts
 	for (Map<String, TreeItem *>::Element *E = sections.front(); E; E = E->next()) {
 		TreeItem *section = E->get();
-		if (section->get_children() == NULL) {
+		if (section->get_children() == nullptr) {
 			root->remove_child(section);
 		}
 	}
@@ -362,7 +362,7 @@ void EditorSettingsDialog::_tabs_tab_changed(int p_tab) {
 void EditorSettingsDialog::_focus_current_search_box() {
 
 	Control *tab = tabs->get_current_tab_control();
-	LineEdit *current_search_box = NULL;
+	LineEdit *current_search_box = nullptr;
 	if (tab == tab_general)
 		current_search_box = search_box;
 	else if (tab == tab_shortcuts)

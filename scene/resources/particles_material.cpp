@@ -31,9 +31,9 @@
 #include "particles_material.h"
 
 Mutex ParticlesMaterial::material_mutex;
-SelfList<ParticlesMaterial>::List *ParticlesMaterial::dirty_materials = NULL;
+SelfList<ParticlesMaterial>::List *ParticlesMaterial::dirty_materials = nullptr;
 Map<ParticlesMaterial::MaterialKey, ParticlesMaterial::ShaderData> ParticlesMaterial::shader_map;
-ParticlesMaterial::ShaderNames *ParticlesMaterial::shader_names = NULL;
+ParticlesMaterial::ShaderNames *ParticlesMaterial::shader_names = nullptr;
 
 void ParticlesMaterial::init_shaders() {
 
@@ -104,7 +104,7 @@ void ParticlesMaterial::init_shaders() {
 void ParticlesMaterial::finish_shaders() {
 
 	memdelete(dirty_materials);
-	dirty_materials = NULL;
+	dirty_materials = nullptr;
 
 	memdelete(shader_names);
 }

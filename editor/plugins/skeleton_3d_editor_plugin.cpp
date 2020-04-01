@@ -144,7 +144,7 @@ void Skeleton3DEditor::_notification(int p_what) {
 void Skeleton3DEditor::_node_removed(Node *p_node) {
 
 	if (p_node == skeleton) {
-		skeleton = NULL;
+		skeleton = nullptr;
 		options->hide();
 	}
 }
@@ -153,7 +153,7 @@ void Skeleton3DEditor::_bind_methods() {
 }
 
 Skeleton3DEditor::Skeleton3DEditor() {
-	skeleton = NULL;
+	skeleton = nullptr;
 	options = memnew(MenuButton);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 
@@ -182,7 +182,7 @@ void Skeleton3DEditorPlugin::make_visible(bool p_visible) {
 	} else {
 
 		skeleton_editor->options->hide();
-		skeleton_editor->edit(NULL);
+		skeleton_editor->edit(nullptr);
 	}
 }
 

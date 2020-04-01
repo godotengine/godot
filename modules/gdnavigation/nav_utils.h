@@ -90,7 +90,7 @@ struct Edge {
 
 	Edge() {
 		this_edge = -1;
-		other_polygon = NULL;
+		other_polygon = nullptr;
 		other_edge = -1;
 	}
 };
@@ -119,8 +119,8 @@ struct Connection {
 	int B_edge;
 
 	Connection() {
-		A = NULL;
-		B = NULL;
+		A = nullptr;
+		B = nullptr;
 		A_edge = -1;
 		B_edge = -1;
 	}

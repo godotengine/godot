@@ -38,7 +38,7 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 
 	Error err = OK;
 
-	if (p_buffer == NULL)
+	if (p_buffer == nullptr)
 		err = FAILED;
 
 	if (err == OK) {
@@ -151,7 +151,7 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 			line -= line_width;
 		}
 
-		if (p_color_buffer == NULL || color_table_size == 0) { // regular pixels
+		if (p_color_buffer == nullptr || color_table_size == 0) { // regular pixels
 
 			p_image->create(width, height, 0, Image::FORMAT_RGBA8, data);
 

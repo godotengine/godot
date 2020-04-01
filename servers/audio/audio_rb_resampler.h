@@ -69,7 +69,7 @@ public:
 	}
 
 	_FORCE_INLINE_ bool is_ready() const {
-		return rb != NULL;
+		return rb != nullptr;
 	}
 
 	_FORCE_INLINE_ int get_total() const {

@@ -719,7 +719,7 @@ public:
 	float lightmap_capture_get_energy(RID p_capture) const { return 0.0; }
 	const Vector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const {
 		const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
-		ERR_FAIL_COND_V(!capture, NULL);
+		ERR_FAIL_COND_V(!capture, nullptr);
 		return &capture->octree;
 	}
 

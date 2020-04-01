@@ -360,7 +360,7 @@ void GPUParticles2DEditorPlugin::_bind_methods() {
 
 GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin(EditorNode *p_node) {
 
-	particles = NULL;
+	particles = nullptr;
 	editor = p_node;
 	undo_redo = editor->get_undo_redo();
 

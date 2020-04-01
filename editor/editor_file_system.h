@@ -129,9 +129,9 @@ class EditorFileSystem : public Node {
 
 		ItemAction() {
 			action = ACTION_NONE;
-			dir = NULL;
-			new_dir = NULL;
-			new_file = NULL;
+			dir = nullptr;
+			new_dir = nullptr;
+			new_file = nullptr;
 		}
 	};
 

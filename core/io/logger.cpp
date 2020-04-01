@@ -108,7 +108,7 @@ Logger::~Logger() {}
 void RotatedFileLogger::close_file() {
 	if (file) {
 		memdelete(file);
-		file = NULL;
+		file = nullptr;
 	}
 }
 
@@ -182,7 +182,7 @@ void RotatedFileLogger::rotate_file() {
 RotatedFileLogger::RotatedFileLogger(const String &p_base_path, int p_max_files) :
 		base_path(p_base_path.simplify_path()),
 		max_files(p_max_files > 0 ? p_max_files : 1),
-		file(NULL) {
+		file(nullptr) {
 	rotate_file();
 }
 

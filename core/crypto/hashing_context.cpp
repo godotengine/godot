@@ -33,9 +33,9 @@
 #include "core/crypto/crypto_core.h"
 
 Error HashingContext::start(HashType p_type) {
-	ERR_FAIL_COND_V(ctx != NULL, ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V(ctx != nullptr, ERR_ALREADY_IN_USE);
 	_create_ctx(p_type);
-	ERR_FAIL_COND_V(ctx == NULL, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(ctx == nullptr, ERR_UNAVAILABLE);
 	switch (type) {
 		case HASH_MD5:
 			return ((CryptoCore::MD5Context *)ctx)->start();
@@ -48,7 +48,7 @@ Error HashingContext::start(HashType p_type) {
 }
 
 Error HashingContext::update(PackedByteArray p_chunk) {
-	ERR_FAIL_COND_V(ctx == NULL, ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(ctx == nullptr, ERR_UNCONFIGURED);
 	size_t len = p_chunk.size();
 	ERR_FAIL_COND_V(len == 0, FAILED);
 	const uint8_t *r = p_chunk.ptr();
@@ -64,7 +64,7 @@ Error HashingContext::update(PackedByteArray p_chunk) {
 }
 
 PackedByteArray HashingContext::finish() {
-	ERR_FAIL_COND_V(ctx == NULL, PackedByteArray());
+	ERR_FAIL_COND_V(ctx == nullptr, PackedByteArray());
 	PackedByteArray out;
 	Error err = FAILED;
 	switch (type) {
@@ -99,7 +99,7 @@ void HashingContext::_create_ctx(HashType p_type) {
 			ctx = memnew(CryptoCore::SHA256Context);
 			break;
 		default:
-			ctx = NULL;
+			ctx = nullptr;
 	}
 }
 
@@ -116,7 +116,7 @@ void HashingContext::_delete_ctx() {
 			memdelete((CryptoCore::SHA256Context *)ctx);
 			break;
 	}
-	ctx = NULL;
+	ctx = nullptr;
 }
 
 void HashingContext::_bind_methods() {
@@ -129,10 +129,10 @@ void HashingContext::_bind_methods() {
 }
 
 HashingContext::HashingContext() {
-	ctx = NULL;
+	ctx = nullptr;
 }
 
 HashingContext::~HashingContext() {
-	if (ctx != NULL)
+	if (ctx != nullptr)
 		_delete_ctx();
 }

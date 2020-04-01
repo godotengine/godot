@@ -56,7 +56,7 @@ class CollisionObject3D : public Node3D {
 
 		ShapeData() {
 			disabled = false;
-			owner = NULL;
+			owner = nullptr;
 		}
 	};
 

@@ -410,7 +410,7 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 
 		case MONO_TYPE_STRING: {
 			if (p_var->get_type() == Variant::NIL)
-				return NULL; // Otherwise, Variant -> String would return the string "Null"
+				return nullptr; // Otherwise, Variant -> String would return the string "Null"
 			return (MonoObject *)mono_string_from_godot(p_var->operator String());
 		} break;
 
@@ -537,7 +537,7 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 						return BOX_ENUM(enum_baseclass, val);
 					}
 					default: {
-						ERR_FAIL_V_MSG(NULL, "Attempted to convert Variant to a managed enum value of unmarshallable base type.");
+						ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to a managed enum value of unmarshallable base type.");
 					}
 				}
 			}
@@ -577,7 +577,7 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 			if (array_type->eklass == CACHED_CLASS_RAW(Color))
 				return (MonoObject *)PackedColorArray_to_mono_array(p_var->operator PackedColorArray());
 
-			ERR_FAIL_V_MSG(NULL, "Attempted to convert Variant to a managed array of unmarshallable element type.");
+			ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to a managed array of unmarshallable element type.");
 		} break;
 
 		case MONO_TYPE_CLASS: {
@@ -749,7 +749,7 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 				case Variant::PACKED_COLOR_ARRAY:
 					return (MonoObject *)PackedColorArray_to_mono_array(p_var->operator PackedColorArray());
 				default:
-					return NULL;
+					return nullptr;
 			}
 			break;
 			case MONO_TYPE_GENERICINST: {
@@ -792,8 +792,8 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 		} break;
 	}
 
-	ERR_FAIL_V_MSG(NULL, "Attempted to convert Variant to an unmarshallable managed type. Name: '" +
-								 p_type.type_class->get_name() + "' Encoding: " + itos(p_type.type_encoding) + ".");
+	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to an unmarshallable managed type. Name: '" +
+									p_type.type_class->get_name() + "' Encoding: " + itos(p_type.type_encoding) + ".");
 }
 
 Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type, bool p_fail_with_err = true) {
@@ -831,7 +831,7 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 			return unbox<double>(p_obj);
 
 		case MONO_TYPE_STRING: {
-			if (p_obj == NULL)
+			if (p_obj == nullptr)
 				return Variant(); // NIL
 			return mono_string_to_godot_not_null((MonoString *)p_obj);
 		} break;
@@ -935,7 +935,7 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 			// GodotObject
 			if (CACHED_CLASS(GodotObject)->is_assignable_from(type_class)) {
 				Object *ptr = unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(p_obj));
-				if (ptr != NULL) {
+				if (ptr != nullptr) {
 					Reference *ref = Object::cast_to<Reference>(ptr);
 					return ref ? Variant(Ref<Reference>(ref)) : Variant(ptr);
 				}
@@ -958,14 +958,14 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 			}
 
 			if (CACHED_CLASS(Array) == type_class) {
-				MonoException *exc = NULL;
+				MonoException *exc = nullptr;
 				Array *ptr = CACHED_METHOD_THUNK(Array, GetPtr).invoke(p_obj, &exc);
 				UNHANDLED_EXCEPTION(exc);
 				return ptr ? Variant(*ptr) : Variant();
 			}
 
 			if (CACHED_CLASS(Dictionary) == type_class) {
-				MonoException *exc = NULL;
+				MonoException *exc = nullptr;
 				Dictionary *ptr = CACHED_METHOD_THUNK(Dictionary, GetPtr).invoke(p_obj, &exc);
 				UNHANDLED_EXCEPTION(exc);
 				return ptr ? Variant(*ptr) : Variant();
@@ -996,14 +996,14 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 			MonoReflectionType *reftype = mono_type_get_object(mono_domain_get(), p_type.type_class->get_mono_type());
 
 			if (GDMonoUtils::Marshal::type_is_generic_dictionary(reftype)) {
-				MonoException *exc = NULL;
+				MonoException *exc = nullptr;
 				MonoObject *ret = p_type.type_class->get_method("GetPtr")->invoke(p_obj, &exc);
 				UNHANDLED_EXCEPTION(exc);
 				return *unbox<Dictionary *>(ret);
 			}
 
 			if (GDMonoUtils::Marshal::type_is_generic_array(reftype)) {
-				MonoException *exc = NULL;
+				MonoException *exc = nullptr;
 				MonoObject *ret = p_type.type_class->get_method("GetPtr")->invoke(p_obj, &exc);
 				UNHANDLED_EXCEPTION(exc);
 				return *unbox<Array *>(ret);
@@ -1064,9 +1064,9 @@ String mono_object_to_variant_string(MonoObject *p_obj, MonoException **r_exc) {
 	ManagedType type = ManagedType::from_class(mono_object_get_class(p_obj));
 	Variant var = GDMonoMarshal::mono_object_to_variant_no_err(p_obj, type);
 
-	if (var.get_type() == Variant::NIL && p_obj != NULL) {
+	if (var.get_type() == Variant::NIL && p_obj != nullptr) {
 		// Cannot convert MonoObject* to Variant; fallback to 'ToString()'.
-		MonoException *exc = NULL;
+		MonoException *exc = nullptr;
 		MonoString *mono_str = GDMonoUtils::object_to_string(p_obj, &exc);
 
 		if (exc) {
@@ -1393,7 +1393,7 @@ Callable managed_to_callable(const M_Callable &p_managed_callable) {
 	} else {
 		Object *target = p_managed_callable.target ?
 								 unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(p_managed_callable.target)) :
-								 NULL;
+								 nullptr;
 		StringName *method_ptr = unbox<StringName *>(CACHED_FIELD(StringName, ptr)->get_value(p_managed_callable.method_string_name));
 		StringName method = method_ptr ? *method_ptr : StringName();
 		return Callable(target, method);
@@ -1408,7 +1408,7 @@ M_Callable callable_to_managed(const Callable &p_callable) {
 		if (compare_equal_func == ManagedCallable::compare_equal_func_ptr) {
 			ManagedCallable *managed_callable = static_cast<ManagedCallable *>(custom);
 			return {
-				NULL, NULL,
+				nullptr, nullptr,
 				managed_callable->get_delegate()
 			};
 		} else if (compare_equal_func == SignalAwaiterCallable::compare_equal_func_ptr) {
@@ -1416,30 +1416,30 @@ M_Callable callable_to_managed(const Callable &p_callable) {
 			return {
 				GDMonoUtils::unmanaged_get_managed(ObjectDB::get_instance(signal_awaiter_callable->get_object())),
 				GDMonoUtils::create_managed_from(signal_awaiter_callable->get_signal()),
-				NULL
+				nullptr
 			};
 		} else if (compare_equal_func == EventSignalCallable::compare_equal_func_ptr) {
 			EventSignalCallable *event_signal_callable = static_cast<EventSignalCallable *>(custom);
 			return {
 				GDMonoUtils::unmanaged_get_managed(ObjectDB::get_instance(event_signal_callable->get_object())),
 				GDMonoUtils::create_managed_from(event_signal_callable->get_signal()),
-				NULL
+				nullptr
 			};
 		}
 
 		// Some other CallableCustom. We only support ManagedCallable.
-		return { NULL, NULL, NULL };
+		return { nullptr, nullptr, nullptr };
 	} else {
 		MonoObject *target_managed = GDMonoUtils::unmanaged_get_managed(p_callable.get_object());
 		MonoObject *method_string_name_managed = GDMonoUtils::create_managed_from(p_callable.get_method());
-		return { target_managed, method_string_name_managed, NULL };
+		return { target_managed, method_string_name_managed, nullptr };
 	}
 }
 
 Signal managed_to_signal_info(const M_SignalInfo &p_managed_signal) {
 	Object *owner = p_managed_signal.owner ?
 							unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(p_managed_signal.owner)) :
-							NULL;
+							nullptr;
 	StringName *name_ptr = unbox<StringName *>(CACHED_FIELD(StringName, ptr)->get_value(p_managed_signal.name_string_name));
 	StringName name = name_ptr ? *name_ptr : StringName();
 	return Signal(owner, name);

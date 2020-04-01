@@ -56,7 +56,7 @@ Node *EditorScript::get_scene() {
 
 	if (!editor) {
 		EditorNode::add_io_error("EditorScript::get_scene: " + TTR("Write your logic in the _run() method."));
-		return NULL;
+		return nullptr;
 	}
 
 	return editor->get_edited_scene();
@@ -73,7 +73,7 @@ void EditorScript::_run() {
 
 	Callable::CallError ce;
 	ce.error = Callable::CallError::CALL_OK;
-	get_script_instance()->call("_run", NULL, 0, ce);
+	get_script_instance()->call("_run", nullptr, 0, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
 
 		EditorNode::add_io_error(TTR("Couldn't run script:") + "\n " + s->get_path() + "\n" + TTR("Did you forget the '_run' method?"));
@@ -95,5 +95,5 @@ void EditorScript::_bind_methods() {
 
 EditorScript::EditorScript() {
 
-	editor = NULL;
+	editor = nullptr;
 }

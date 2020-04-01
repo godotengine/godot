@@ -59,7 +59,7 @@ Error get_assembly_dependencies(GDMonoAssembly *p_assembly, const Vector<String>
 		if (r_dependencies.has(ref_name))
 			continue;
 
-		GDMonoAssembly *ref_assembly = NULL;
+		GDMonoAssembly *ref_assembly = nullptr;
 		String path;
 		bool has_extension = ref_name.ends_with(".dll") || ref_name.ends_with(".exe");
 
@@ -70,21 +70,21 @@ Error get_assembly_dependencies(GDMonoAssembly *p_assembly, const Vector<String>
 				path = search_dir.plus_file(ref_name);
 				if (FileAccess::exists(path)) {
 					GDMono::get_singleton()->load_assembly_from(ref_name.get_basename(), path, &ref_assembly, true);
-					if (ref_assembly != NULL)
+					if (ref_assembly != nullptr)
 						break;
 				}
 			} else {
 				path = search_dir.plus_file(ref_name + ".dll");
 				if (FileAccess::exists(path)) {
 					GDMono::get_singleton()->load_assembly_from(ref_name, path, &ref_assembly, true);
-					if (ref_assembly != NULL)
+					if (ref_assembly != nullptr)
 						break;
 				}
 
 				path = search_dir.plus_file(ref_name + ".exe");
 				if (FileAccess::exists(path)) {
 					GDMono::get_singleton()->load_assembly_from(ref_name, path, &ref_assembly, true);
-					if (ref_assembly != NULL)
+					if (ref_assembly != nullptr)
 						break;
 				}
 			}
@@ -117,7 +117,7 @@ Error get_exported_assembly_dependencies(const Dictionary &p_initial_dependencie
 		String assembly_name = *key;
 		String assembly_path = p_initial_dependencies[*key];
 
-		GDMonoAssembly *assembly = NULL;
+		GDMonoAssembly *assembly = nullptr;
 		bool load_success = GDMono::get_singleton()->load_assembly_from(assembly_name, assembly_path, &assembly, /* refonly: */ true);
 
 		ERR_FAIL_COND_V_MSG(!load_success, ERR_CANT_RESOLVE, "Cannot load assembly (refonly): '" + assembly_name + "'.");

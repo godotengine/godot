@@ -224,7 +224,7 @@ public:
 	/**
 	 * returns true if the value was found, false otherwise.
 	 *
-	 * if r_data is not NULL then the value will be written to the object
+	 * if r_data is not nullptr  then the value will be written to the object
 	 * it points to.
 	 */
 	bool lookup(const TKey &p_key, TValue &r_data) const {
@@ -243,7 +243,7 @@ public:
 	/**
 	 * returns true if the value was found, false otherwise.
 	 *
-	 * if r_data is not NULL then the value will be written to the object
+	 * if r_data is not nullptr  then the value will be written to the object
 	 * it points to.
 	 */
 	TValue *lookup_ptr(const TKey &p_key) const {
@@ -253,7 +253,7 @@ public:
 		if (exists) {
 			return &values[pos];
 		}
-		return NULL;
+		return nullptr;
 	}
 
 	_FORCE_INLINE_ bool has(const TKey &p_key) const {
@@ -325,8 +325,8 @@ public:
 		Iterator it;
 		it.valid = false;
 		it.pos = p_iter.pos;
-		it.key = NULL;
-		it.value = NULL;
+		it.key = nullptr;
+		it.value = nullptr;
 
 		for (uint32_t i = it.pos; i < capacity; i++) {
 			it.pos = i + 1;

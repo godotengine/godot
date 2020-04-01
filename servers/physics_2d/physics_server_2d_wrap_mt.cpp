@@ -126,7 +126,7 @@ void PhysicsServer2DWrapMT::finish() {
 		Thread::wait_to_finish(thread);
 		memdelete(thread);
 
-		thread = NULL;
+		thread = nullptr;
 	} else {
 		physics_2d_server->finish();
 	}
@@ -150,7 +150,7 @@ PhysicsServer2DWrapMT::PhysicsServer2DWrapMT(PhysicsServer2D *p_contained, bool 
 
 	physics_2d_server = p_contained;
 	create_thread = p_create_thread;
-	thread = NULL;
+	thread = nullptr;
 	step_pending = 0;
 	step_thread_up = false;
 

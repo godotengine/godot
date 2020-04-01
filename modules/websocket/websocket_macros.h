@@ -56,13 +56,13 @@ public:\
 	static CNAME *create() {\
 \
 		if (!_create)\
-			return NULL;\
+			return nullptr;\
 		return _create();\
 	}\
 protected:\
 
 #define GDCINULL(CNAME) \
-CNAME *(*CNAME::_create)() = NULL;
+CNAME *(*CNAME::_create)() = nullptr;
 
 #define GDCIIMPL(IMPNAME, CNAME) \
 public:\

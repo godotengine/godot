@@ -515,14 +515,14 @@ struct	GJK
 		{
 			sFace*		root;
 			U			count;
-			sList() : root(0),count(0)	{}
+			sList() : root(nullptr),count(0)	{}
 		};
 		struct	sHorizon
 		{
 			sFace*		cf;
 			sFace*		ff;
 			U			nf;
-			sHorizon() : cf(0),ff(0),nf(0)	{}
+			sHorizon() : cf(nullptr),ff(nullptr),nf(0)	{}
 		};
 		struct	eStatus { enum _ {
 			Valid,
@@ -559,7 +559,7 @@ struct	GJK
 			}
 			static inline void		append(sList& list,sFace* face)
 			{
-				face->l[0]	=	0;
+				face->l[0]	=	nullptr;
 				face->l[1]	=	list.root;
 				if(list.root) list.root->l[0]=face;
 				list.root	=	face;
@@ -720,13 +720,13 @@ struct	GJK
 					} else m_status=eStatus::Degenerated;
 					remove(m_hull,face);
 					append(m_stock,face);
-					return(0);
+					return(nullptr);
 				}
 				// -- GODOT start --
 				//m_status=m_stock.root?eStatus::OutOfVertices:eStatus::OutOfFaces;
 				m_status=eStatus::OutOfFaces;
 				// -- GODOT end --
-				return(0);
+				return(nullptr);
 			}
 			sFace*				findbest()
 			{

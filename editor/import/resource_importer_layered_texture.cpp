@@ -259,7 +259,7 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 
 	Ref<Image> image;
 	image.instance();
-	Error err = ImageLoader::load_image(p_source_file, image, NULL, false, 1.0);
+	Error err = ImageLoader::load_image(p_source_file, image, nullptr, false, 1.0);
 	if (err != OK)
 		return err;
 
@@ -383,7 +383,7 @@ const char *ResourceImporterLayeredTexture::compression_formats[] = {
 	"etc",
 	"etc2",
 	"pvrtc",
-	NULL
+	nullptr
 };
 String ResourceImporterLayeredTexture::get_import_settings_string() const {
 
@@ -438,7 +438,7 @@ bool ResourceImporterLayeredTexture::are_import_settings_valid(const String &p_p
 	return valid;
 }
 
-ResourceImporterLayeredTexture *ResourceImporterLayeredTexture::singleton = NULL;
+ResourceImporterLayeredTexture *ResourceImporterLayeredTexture::singleton = nullptr;
 
 ResourceImporterLayeredTexture::ResourceImporterLayeredTexture() {
 

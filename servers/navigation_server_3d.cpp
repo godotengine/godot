@@ -34,7 +34,7 @@
 
 #include "navigation_server_3d.h"
 
-NavigationServer3D *NavigationServer3D::singleton = NULL;
+NavigationServer3D *NavigationServer3D::singleton = nullptr;
 
 void NavigationServer3D::_bind_methods() {
 
@@ -87,21 +87,21 @@ NavigationServer3D *NavigationServer3D::get_singleton_mut() {
 }
 
 NavigationServer3D::NavigationServer3D() {
-	ERR_FAIL_COND(singleton != NULL);
+	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 }
 
 NavigationServer3D::~NavigationServer3D() {
-	singleton = NULL;
+	singleton = nullptr;
 }
 
-NavigationServer3DCallback NavigationServer3DManager::create_callback = NULL;
+NavigationServer3DCallback NavigationServer3DManager::create_callback = nullptr;
 
 void NavigationServer3DManager::set_default_server(NavigationServer3DCallback p_callback) {
 	create_callback = p_callback;
 }
 
 NavigationServer3D *NavigationServer3DManager::new_default_server() {
-	ERR_FAIL_COND_V(create_callback == NULL, NULL);
+	ERR_FAIL_COND_V(create_callback == nullptr, nullptr);
 	return create_callback();
 }

@@ -41,9 +41,9 @@
 #include "visual_script_nodes.h"
 #include "visual_script_yield_nodes.h"
 
-VisualScriptLanguage *visual_script_language = NULL;
+VisualScriptLanguage *visual_script_language = nullptr;
 #ifdef TOOLS_ENABLED
-static _VisualScriptEditor *vs_editor_singleton = NULL;
+static _VisualScriptEditor *vs_editor_singleton = nullptr;
 #endif
 
 void register_visual_script_types() {

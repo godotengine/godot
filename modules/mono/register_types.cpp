@@ -34,11 +34,11 @@
 
 #include "csharp_script.h"
 
-CSharpLanguage *script_language_cs = NULL;
+CSharpLanguage *script_language_cs = nullptr;
 Ref<ResourceFormatLoaderCSharpScript> resource_loader_cs;
 Ref<ResourceFormatSaverCSharpScript> resource_saver_cs;
 
-_GodotSharp *_godotsharp = NULL;
+_GodotSharp *_godotsharp = nullptr;
 
 void register_mono_types() {
 	ClassDB::register_class<CSharpScript>();

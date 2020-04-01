@@ -43,9 +43,9 @@
 #include "servers/rendering_server.h"
 
 Mutex CanvasItemMaterial::material_mutex;
-SelfList<CanvasItemMaterial>::List *CanvasItemMaterial::dirty_materials = NULL;
+SelfList<CanvasItemMaterial>::List *CanvasItemMaterial::dirty_materials = nullptr;
 Map<CanvasItemMaterial::MaterialKey, CanvasItemMaterial::ShaderData> CanvasItemMaterial::shader_map;
-CanvasItemMaterial::ShaderNames *CanvasItemMaterial::shader_names = NULL;
+CanvasItemMaterial::ShaderNames *CanvasItemMaterial::shader_names = nullptr;
 
 void CanvasItemMaterial::init_shaders() {
 
@@ -62,7 +62,7 @@ void CanvasItemMaterial::finish_shaders() {
 
 	memdelete(dirty_materials);
 	memdelete(shader_names);
-	dirty_materials = NULL;
+	dirty_materials = nullptr;
 }
 
 void CanvasItemMaterial::_update_shader() {
@@ -411,7 +411,7 @@ void CanvasItem::hide() {
 	_change_notify("visible");
 }
 
-CanvasItem *CanvasItem::current_item_drawn = NULL;
+CanvasItem *CanvasItem::current_item_drawn = nullptr;
 CanvasItem *CanvasItem::get_current_item_drawn() {
 	return current_item_drawn;
 }
@@ -435,9 +435,9 @@ void CanvasItem::_update_callback() {
 		notification(NOTIFICATION_DRAW);
 		emit_signal(SceneStringNames::get_singleton()->draw);
 		if (get_script_instance()) {
-			get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_draw, NULL, 0);
+			get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_draw, nullptr, 0);
 		}
-		current_item_drawn = NULL;
+		current_item_drawn = nullptr;
 		drawing = false;
 	}
 	//todo updating = false
@@ -504,7 +504,7 @@ void CanvasItem::_enter_canvas() {
 
 		Node *n = this;
 
-		canvas_layer = NULL;
+		canvas_layer = nullptr;
 
 		while (n) {
 
@@ -554,7 +554,7 @@ void CanvasItem::_exit_canvas() {
 
 	notification(NOTIFICATION_EXIT_CANVAS, true); //reverse the notification
 	RenderingServer::get_singleton()->canvas_item_set_parent(canvas_item, RID());
-	canvas_layer = NULL;
+	canvas_layer = nullptr;
 	group = "";
 }
 
@@ -617,7 +617,7 @@ void CanvasItem::_notification(int p_what) {
 			_exit_canvas();
 			if (C) {
 				Object::cast_to<CanvasItem>(get_parent())->children_items.erase(C);
-				C = NULL;
+				C = nullptr;
 			}
 			if (window) {
 				window->disconnect(SceneStringNames::get_singleton()->visibility_changed, callable_mp(this, &CanvasItem::_window_visibility_changed));
@@ -703,7 +703,7 @@ bool CanvasItem::is_set_as_toplevel() const {
 CanvasItem *CanvasItem::get_parent_item() const {
 
 	if (toplevel)
-		return NULL;
+		return nullptr;
 
 	return Object::cast_to<CanvasItem>(get_parent());
 }
@@ -1470,7 +1470,7 @@ CanvasItem::CanvasItem() :
 	behind = false;
 	block_transform_notify = false;
 	//viewport=NULL;
-	canvas_layer = NULL;
+	canvas_layer = nullptr;
 	use_parent_material = false;
 	global_invalid = true;
 	notify_local_transform = false;
@@ -1481,7 +1481,7 @@ CanvasItem::CanvasItem() :
 	texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
 	texture_repeat_cache = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 
-	C = NULL;
+	C = nullptr;
 }
 
 CanvasItem::~CanvasItem() {

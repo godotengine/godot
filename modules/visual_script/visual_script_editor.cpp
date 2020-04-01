@@ -182,7 +182,7 @@ public:
 		_change_notify();
 	}
 
-	VisualScriptEditorSignalEdit() { undo_redo = NULL; }
+	VisualScriptEditorSignalEdit() { undo_redo = nullptr; }
 };
 
 class VisualScriptEditorVariableEdit : public Object {
@@ -335,7 +335,7 @@ public:
 		_change_notify();
 	}
 
-	VisualScriptEditorVariableEdit() { undo_redo = NULL; }
+	VisualScriptEditorVariableEdit() { undo_redo = nullptr; }
 };
 
 static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
@@ -1932,7 +1932,7 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const Ref<Script> &script) {
 
 	if (p_edited_scene != p_current_node && p_current_node->get_owner() != p_edited_scene)
-		return NULL;
+		return nullptr;
 
 	Ref<Script> scr = p_current_node->get_script();
 
@@ -1945,7 +1945,7 @@ static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const
 			return n;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
@@ -3447,7 +3447,7 @@ void VisualScriptEditor::connect_data(Ref<VisualScriptNode> vnode_old, Ref<Visua
 
 	undo_redo->create_action(TTR("Connect Node Data"));
 	VisualScriptReturn *vnode_return = Object::cast_to<VisualScriptReturn>(vnode.ptr());
-	if (vnode_return != NULL && vnode_old->get_output_value_port_count() > 0) {
+	if (vnode_return != nullptr && vnode_old->get_output_value_port_count() > 0) {
 		vnode_return->set_enable_return_value(true);
 	}
 	if (vnode_old->get_output_value_port_count() <= 0) {
@@ -3713,11 +3713,11 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 void VisualScriptEditor::connect_seq(Ref<VisualScriptNode> vnode_old, Ref<VisualScriptNode> vnode_new, int new_id) {
 
 	VisualScriptOperator *vnode_operator = Object::cast_to<VisualScriptOperator>(vnode_new.ptr());
-	if (vnode_operator != NULL && !vnode_operator->has_input_sequence_port()) {
+	if (vnode_operator != nullptr && !vnode_operator->has_input_sequence_port()) {
 		return;
 	}
 	VisualScriptConstructor *vnode_constructor = Object::cast_to<VisualScriptConstructor>(vnode_new.ptr());
-	if (vnode_constructor != NULL) {
+	if (vnode_constructor != nullptr) {
 		return;
 	}
 	if (vnode_old->get_output_sequence_port_count() <= 0) {
@@ -3889,7 +3889,7 @@ void VisualScriptEditor::_default_value_edited(Node *p_button, int p_id, int p_i
 		}
 	}
 
-	if (default_value_edit->edit(NULL, pinfo.name, pinfo.type, existing, pinfo.hint, pinfo.hint_string)) {
+	if (default_value_edit->edit(nullptr, pinfo.name, pinfo.type, existing, pinfo.hint, pinfo.hint_string)) {
 		if (pinfo.hint == PROPERTY_HINT_MULTILINE_TEXT)
 			default_value_edit->popup_centered_ratio();
 		else
@@ -4878,10 +4878,10 @@ static ScriptEditorBase *create_editor(const RES &p_resource) {
 		return memnew(VisualScriptEditor);
 	}
 
-	return NULL;
+	return nullptr;
 }
 
-VisualScriptEditor::Clipboard *VisualScriptEditor::clipboard = NULL;
+VisualScriptEditor::Clipboard *VisualScriptEditor::clipboard = nullptr;
 
 void VisualScriptEditor::free_clipboard() {
 	if (clipboard)
@@ -4917,7 +4917,7 @@ Ref<VisualScriptNode> _VisualScriptEditor::create_node_custom(const String &p_na
 	return node;
 }
 
-_VisualScriptEditor *_VisualScriptEditor::singleton = NULL;
+_VisualScriptEditor *_VisualScriptEditor::singleton = nullptr;
 Map<String, REF> _VisualScriptEditor::custom_nodes;
 
 _VisualScriptEditor::_VisualScriptEditor() {

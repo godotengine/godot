@@ -128,8 +128,8 @@ float AnimationNode::_pre_process(const StringName &p_base_path, AnimationNode *
 
 	float t = process(p_time, p_seek);
 
-	state = NULL;
-	parent = NULL;
+	state = nullptr;
+	parent = nullptr;
 	base_path = StringName();
 	connections.clear();
 
@@ -164,7 +164,7 @@ float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p
 
 	//inputs.write[p_input].last_pass = state->last_pass;
 	float activity = 0;
-	float ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), NULL, node, p_time, p_seek, p_blend, p_filter, p_optimize, &activity);
+	float ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), nullptr, node, p_time, p_seek, p_blend, p_filter, p_optimize, &activity);
 
 	Vector<AnimationTree::Activity> *activity_ptr = state->tree->input_activity_map.getptr(base_path);
 
@@ -202,7 +202,7 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 			blendw[i] = 0.0; //all to zero by default
 		}
 
-		const NodePath *K = NULL;
+		const NodePath *K = nullptr;
 		while ((K = filter.next(K))) {
 			if (!state->track_map.has(*K)) {
 				continue;
@@ -316,7 +316,7 @@ String AnimationNode::get_caption() const {
 
 void AnimationNode::add_input(const String &p_name) {
 	//root nodes can't add inputs
-	ERR_FAIL_COND(Object::cast_to<AnimationRootNode>(this) != NULL);
+	ERR_FAIL_COND(Object::cast_to<AnimationRootNode>(this) != nullptr);
 	Input input;
 	ERR_FAIL_COND(p_name.find(".") != -1 || p_name.find("/") != -1);
 	input.name = p_name;
@@ -374,7 +374,7 @@ Array AnimationNode::_get_filters() const {
 
 	Array paths;
 
-	const NodePath *K = NULL;
+	const NodePath *K = nullptr;
 	while ((K = filter.next(K))) {
 		paths.push_back(String(*K)); //use strings, so sorting is possible
 	}
@@ -453,8 +453,8 @@ void AnimationNode::_bind_methods() {
 
 AnimationNode::AnimationNode() {
 
-	state = NULL;
-	parent = NULL;
+	state = nullptr;
+	parent = nullptr;
 	filter_enabled = false;
 }
 
@@ -558,17 +558,17 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 			NodePath path = anim->track_get_path(i);
 			Animation::TrackType track_type = anim->track_get_type(i);
 
-			TrackCache *track = NULL;
+			TrackCache *track = nullptr;
 			if (track_cache.has(path)) {
 				track = track_cache.get(path);
 			}
 
 			//if not valid, delete track
-			if (track && (track->type != track_type || ObjectDB::get_instance(track->object_id) == NULL)) {
+			if (track && (track->type != track_type || ObjectDB::get_instance(track->object_id) == nullptr)) {
 				playing_caches.erase(track);
 				memdelete(track);
 				track_cache.erase(path);
-				track = NULL;
+				track = nullptr;
 			}
 
 			if (!track) {
@@ -615,7 +615,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 						TrackCacheTransform *track_xform = memnew(TrackCacheTransform);
 
 						track_xform->spatial = spatial;
-						track_xform->skeleton = NULL;
+						track_xform->skeleton = nullptr;
 						track_xform->bone_idx = -1;
 
 						if (path.get_subname_count() == 1 && Object::cast_to<Skeleton3D>(spatial)) {
@@ -700,7 +700,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 
 	List<NodePath> to_delete;
 
-	const NodePath *K = NULL;
+	const NodePath *K = nullptr;
 	while ((K = track_cache.next(K))) {
 		TrackCache *tc = track_cache[*K];
 		if (tc->setup_pass != setup_pass) {
@@ -717,7 +717,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 
 	state.track_map.clear();
 
-	K = NULL;
+	K = nullptr;
 	int idx = 0;
 	while ((K = track_cache.next(K))) {
 		state.track_map[*K] = idx;
@@ -733,7 +733,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 
 void AnimationTree::_clear_caches() {
 
-	const NodePath *K = NULL;
+	const NodePath *K = nullptr;
 	while ((K = track_cache.next(K))) {
 		memdelete(track_cache[*K]);
 	}
@@ -829,11 +829,11 @@ void AnimationTree::_process_graph(float p_delta) {
 
 		if (started) {
 			//if started, seek
-			root->_pre_process(SceneStringNames::get_singleton()->parameters_base_path, NULL, &state, 0, true, Vector<StringName>());
+			root->_pre_process(SceneStringNames::get_singleton()->parameters_base_path, nullptr, &state, 0, true, Vector<StringName>());
 			started = false;
 		}
 
-		root->_pre_process(SceneStringNames::get_singleton()->parameters_base_path, NULL, &state, p_delta, false, Vector<StringName>());
+		root->_pre_process(SceneStringNames::get_singleton()->parameters_base_path, nullptr, &state, p_delta, false, Vector<StringName>());
 	}
 
 	if (!state.valid) {
@@ -1224,7 +1224,7 @@ void AnimationTree::_process_graph(float p_delta) {
 
 	{
 		// finally, set the tracks
-		const NodePath *K = NULL;
+		const NodePath *K = nullptr;
 		while ((K = track_cache.next(K))) {
 			TrackCache *track = track_cache[*K];
 			if (track->process_pass != process_pass)

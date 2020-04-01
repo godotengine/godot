@@ -135,7 +135,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 	// Nodes are in a flatten list, depth first. Use a stack of parents, avoid recursion.
 	List<Pair<TreeItem *, int>> parents;
 	for (int i = 0; i < p_tree->nodes.size(); i++) {
-		TreeItem *parent = NULL;
+		TreeItem *parent = nullptr;
 		if (parents.size()) { // Find last parent.
 			Pair<TreeItem *, int> &p = parents[0];
 			parent = p.first;
@@ -191,7 +191,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 				// Check if parent expects more children.
 				for (int j = 0; j < parents.size(); j++) {
 					if (parents[j].first == item) {
-						parent = NULL;
+						parent = nullptr;
 						break; // Might have more children.
 					}
 				}
@@ -211,7 +211,7 @@ String EditorDebuggerTree::get_selected_path() {
 String EditorDebuggerTree::_get_path(TreeItem *p_item) {
 	ERR_FAIL_COND_V(!p_item, "");
 
-	if (p_item->get_parent() == NULL) {
+	if (p_item->get_parent() == nullptr) {
 		return "/root";
 	}
 	String text = p_item->get_text(0);

@@ -314,7 +314,7 @@ void CreateDialog::_update_search() {
 		root->set_icon(0, search_options->get_theme_icon(base_type, "EditorIcons"));
 	}
 
-	TreeItem *to_select = search_box->get_text() == base_type ? root : NULL;
+	TreeItem *to_select = search_box->get_text() == base_type ? root : nullptr;
 
 	for (List<StringName>::Element *I = type_list.front(); I; I = I->next()) {
 
@@ -417,7 +417,7 @@ void CreateDialog::_update_search() {
 		favorite->set_pressed(favorite_list.find(to_select->get_text(0)) != -1);
 	}
 
-	get_ok()->set_disabled(root->get_children() == NULL);
+	get_ok()->set_disabled(root->get_children() == nullptr);
 }
 
 void CreateDialog::_confirmed() {
@@ -538,7 +538,7 @@ Object *CreateDialog::instance_selected() {
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void CreateDialog::_item_selected() {

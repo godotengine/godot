@@ -438,7 +438,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_EQUAL, NIL) {
 				if (p_b.type == NIL) _RETURN(true);
 				if (p_b.type == OBJECT)
-					_RETURN(p_b._get_obj().obj == NULL);
+					_RETURN(p_b._get_obj().obj == nullptr);
 
 				_RETURN(false);
 			}
@@ -457,7 +457,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				if (p_b.type == OBJECT)
 					_RETURN((p_a._get_obj().obj == p_b._get_obj().obj));
 				if (p_b.type == NIL)
-					_RETURN(p_a._get_obj().obj == NULL);
+					_RETURN(p_a._get_obj().obj == nullptr);
 
 				_RETURN_FAIL;
 			}
@@ -534,7 +534,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_NOT_EQUAL, NIL) {
 				if (p_b.type == NIL) _RETURN(false);
 				if (p_b.type == OBJECT)
-					_RETURN(p_b._get_obj().obj != NULL);
+					_RETURN(p_b._get_obj().obj != nullptr);
 
 				_RETURN(true);
 			}
@@ -554,7 +554,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				if (p_b.type == OBJECT)
 					_RETURN((p_a._get_obj().obj != p_b._get_obj().obj));
 				if (p_b.type == NIL)
-					_RETURN(p_a._get_obj().obj != NULL);
+					_RETURN(p_a._get_obj().obj != nullptr);
 
 				_RETURN_FAIL;
 			}
@@ -3527,7 +3527,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			if (dic->empty())
 				return false;
 
-			const Variant *next = dic->next(NULL);
+			const Variant *next = dic->next(nullptr);
 			r_iter = *next;
 			return true;
 

@@ -112,7 +112,7 @@ void LightOccluder2DEditor::_create_resource() {
 LightOccluder2DEditor::LightOccluder2DEditor(EditorNode *p_editor) :
 		AbstractPolygon2DEditor(p_editor) {
 
-	node = NULL;
+	node = nullptr;
 }
 
 LightOccluder2DEditorPlugin::LightOccluder2DEditorPlugin(EditorNode *p_node) :

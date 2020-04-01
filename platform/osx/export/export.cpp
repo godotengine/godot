@@ -402,7 +402,7 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 	args.push_back(p_path);
 
 	String str;
-	Error err = OS::get_singleton()->execute("codesign", args, true, NULL, &str, NULL, true);
+	Error err = OS::get_singleton()->execute("codesign", args, true, nullptr, &str, nullptr, true);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	print_line("codesign (" + p_path + "): " + str);
@@ -435,7 +435,7 @@ Error EditorExportPlatformOSX::_create_dmg(const String &p_dmg_path, const Strin
 	args.push_back(p_app_path_name);
 
 	String str;
-	Error err = OS::get_singleton()->execute("hdiutil", args, true, NULL, &str, NULL, true);
+	Error err = OS::get_singleton()->execute("hdiutil", args, true, nullptr, &str, nullptr, true);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	print_line("hdiutil returned: " + str);
@@ -476,7 +476,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		return ERR_FILE_BAD_PATH;
 	}
 
-	FileAccess *src_f = NULL;
+	FileAccess *src_f = nullptr;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
 	if (ep.step("Creating app", 0)) {
@@ -507,11 +507,11 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	Error err = OK;
 	String tmp_app_path_name = "";
 	zlib_filefunc_def io2 = io;
-	FileAccess *dst_f = NULL;
+	FileAccess *dst_f = nullptr;
 	io2.opaque = &dst_f;
-	zipFile dst_pkg_zip = NULL;
+	zipFile dst_pkg_zip = nullptr;
 
-	DirAccess *tmp_app_path = NULL;
+	DirAccess *tmp_app_path = nullptr;
 	String export_format = use_dmg() && p_path.ends_with("dmg") ? "dmg" : "zip";
 	if (export_format == "dmg") {
 		// We're on OSX so we can export to DMG, but first we create our application bundle
@@ -539,7 +539,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		}
 	} else {
 		// Open our destination zip file
-		dst_pkg_zip = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, NULL, &io2);
+		dst_pkg_zip = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io2);
 		if (!dst_pkg_zip) {
 			err = ERR_CANT_CREATE;
 		}
@@ -555,7 +555,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		//get filename
 		unz_file_info info;
 		char fname[16384];
-		ret = unzGetCurrentFileInfo(src_pkg_zip, &info, fname, 16384, NULL, 0, NULL, 0);
+		ret = unzGetCurrentFileInfo(src_pkg_zip, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
 		String file = fname;
 
@@ -672,11 +672,11 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				zipOpenNewFileInZip(dst_pkg_zip,
 						file.utf8().get_data(),
 						&fi,
-						NULL,
+						nullptr,
 						0,
-						NULL,
+						nullptr,
 						0,
-						NULL,
+						nullptr,
 						Z_DEFLATED,
 						Z_DEFAULT_COMPRESSION);
 
@@ -754,12 +754,12 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			if (err == OK) {
 				zipOpenNewFileInZip(dst_pkg_zip,
 						(pkg_name + ".app/Contents/Resources/" + pkg_name + ".pck").utf8().get_data(),
-						NULL,
-						NULL,
+						nullptr,
+						nullptr,
 						0,
-						NULL,
+						nullptr,
 						0,
-						NULL,
+						nullptr,
 						Z_DEFLATED,
 						Z_DEFAULT_COMPRESSION);
 
@@ -791,12 +791,12 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 					zipOpenNewFileInZip(dst_pkg_zip,
 							(pkg_name + ".app/Contents/Frameworks/").plus_file(shared_objects[i].path.get_file()).utf8().get_data(),
-							NULL,
-							NULL,
+							nullptr,
+							nullptr,
 							0,
-							NULL,
+							nullptr,
 							0,
-							NULL,
+							nullptr,
 							Z_DEFLATED,
 							Z_DEFAULT_COMPRESSION);
 
@@ -811,7 +811,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	}
 
 	if (dst_pkg_zip) {
-		zipClose(dst_pkg_zip, NULL);
+		zipClose(dst_pkg_zip, nullptr);
 	}
 
 	return err;

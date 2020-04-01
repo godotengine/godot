@@ -154,7 +154,7 @@ Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_por
 				p_in_bandwidth /* limit incoming bandwidth if > 0 */,
 				p_out_bandwidth /* limit outgoing bandwidth if > 0 */);
 	} else {
-		host = enet_host_create(NULL /* create a client host */,
+		host = enet_host_create(nullptr /* create a client host */,
 				1 /* only allow 1 outgoing connection */,
 				channel_count /* allow up to channel_count to be used */,
 				p_in_bandwidth /* limit incoming bandwidth if > 0 */,
@@ -197,7 +197,7 @@ Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_por
 	// Initiate connection, allocating enough channels
 	ENetPeer *peer = enet_host_connect(host, &address, channel_count, unique_id);
 
-	if (peer == NULL) {
+	if (peer == nullptr) {
 		enet_host_destroy(host);
 		ERR_FAIL_COND_V_MSG(!peer, ERR_CANT_CREATE, "Couldn't connect to the ENet multiplayer server.");
 	}
@@ -276,12 +276,12 @@ void NetworkedMultiplayerENet::poll() {
 						if (E->key() == *new_id)
 							continue;
 						// Send existing peers to new peer
-						ENetPacket *packet = enet_packet_create(NULL, 8, ENET_PACKET_FLAG_RELIABLE);
+						ENetPacket *packet = enet_packet_create(nullptr, 8, ENET_PACKET_FLAG_RELIABLE);
 						encode_uint32(SYSMSG_ADD_PEER, &packet->data[0]);
 						encode_uint32(E->key(), &packet->data[4]);
 						enet_peer_send(event.peer, SYSCH_CONFIG, packet);
 						// Send the new peer to existing peers
-						packet = enet_packet_create(NULL, 8, ENET_PACKET_FLAG_RELIABLE);
+						packet = enet_packet_create(nullptr, 8, ENET_PACKET_FLAG_RELIABLE);
 						encode_uint32(SYSMSG_ADD_PEER, &packet->data[0]);
 						encode_uint32(*new_id, &packet->data[4]);
 						enet_peer_send(E->get(), SYSCH_CONFIG, packet);
@@ -320,7 +320,7 @@ void NetworkedMultiplayerENet::poll() {
 						if (E->key() == *id)
 							continue;
 
-						ENetPacket *packet = enet_packet_create(NULL, 8, ENET_PACKET_FLAG_RELIABLE);
+						ENetPacket *packet = enet_packet_create(nullptr, 8, ENET_PACKET_FLAG_RELIABLE);
 						encode_uint32(SYSMSG_REMOVE_PEER, &packet->data[0]);
 						encode_uint32(*id, &packet->data[4]);
 						enet_peer_send(E->get(), SYSCH_CONFIG, packet);
@@ -346,7 +346,7 @@ void NetworkedMultiplayerENet::poll() {
 					switch (msg) {
 						case SYSMSG_ADD_PEER: {
 
-							peer_map[id] = NULL;
+							peer_map[id] = nullptr;
 							emit_signal("peer_connected", id);
 
 						} break;
@@ -502,7 +502,7 @@ void NetworkedMultiplayerENet::disconnect_peer(int p_peer, bool now) {
 					continue;
 				}
 
-				ENetPacket *packet = enet_packet_create(NULL, 8, ENET_PACKET_FLAG_RELIABLE);
+				ENetPacket *packet = enet_packet_create(nullptr, 8, ENET_PACKET_FLAG_RELIABLE);
 				encode_uint32(SYSMSG_REMOVE_PEER, &packet->data[0]);
 				encode_uint32(p_peer, &packet->data[4]);
 				enet_peer_send(E->get(), SYSCH_CONFIG, packet);
@@ -568,7 +568,7 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 	if (transfer_channel > SYSCH_CONFIG)
 		channel = transfer_channel;
 
-	Map<int, ENetPeer *>::Element *E = NULL;
+	Map<int, ENetPeer *>::Element *E = nullptr;
 
 	if (target_peer != 0) {
 
@@ -576,7 +576,7 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 		ERR_FAIL_COND_V_MSG(!E, ERR_INVALID_PARAMETER, vformat("Invalid target peer: %d", target_peer));
 	}
 
-	ENetPacket *packet = enet_packet_create(NULL, p_buffer_size + 8, packet_flags);
+	ENetPacket *packet = enet_packet_create(nullptr, p_buffer_size + 8, packet_flags);
 	encode_uint32(unique_id, &packet->data[0]); // Source ID
 	encode_uint32(target_peer, &packet->data[4]); // Dest ID
 	copymem(&packet->data[8], p_buffer, p_buffer_size);
@@ -625,7 +625,7 @@ void NetworkedMultiplayerENet::_pop_current_packet() {
 
 	if (current_packet.packet) {
 		enet_packet_destroy(current_packet.packet);
-		current_packet.packet = NULL;
+		current_packet.packet = nullptr;
 		current_packet.from = 0;
 		current_packet.channel = -1;
 	}
@@ -771,7 +771,7 @@ void NetworkedMultiplayerENet::_setup_compressor() {
 
 		case COMPRESS_NONE: {
 
-			enet_host_compress(host, NULL);
+			enet_host_compress(host, nullptr);
 		} break;
 		case COMPRESS_RANGE_CODER: {
 			enet_host_compress_with_range_coder(host);
@@ -794,7 +794,7 @@ IP_Address NetworkedMultiplayerENet::get_peer_address(int p_peer_id) const {
 
 	ERR_FAIL_COND_V_MSG(!peer_map.has(p_peer_id), IP_Address(), vformat("Peer ID %d not found in the list of peers.", p_peer_id));
 	ERR_FAIL_COND_V_MSG(!is_server() && p_peer_id != 1, IP_Address(), "Can't get the address of peers other than the server (ID -1) when acting as a client.");
-	ERR_FAIL_COND_V_MSG(peer_map[p_peer_id] == NULL, IP_Address(), vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
+	ERR_FAIL_COND_V_MSG(peer_map[p_peer_id] == nullptr, IP_Address(), vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
 
 	IP_Address out;
 #ifdef GODOT_ENET
@@ -810,7 +810,7 @@ int NetworkedMultiplayerENet::get_peer_port(int p_peer_id) const {
 
 	ERR_FAIL_COND_V_MSG(!peer_map.has(p_peer_id), 0, vformat("Peer ID %d not found in the list of peers.", p_peer_id));
 	ERR_FAIL_COND_V_MSG(!is_server() && p_peer_id != 1, 0, "Can't get the address of peers other than the server (ID -1) when acting as a client.");
-	ERR_FAIL_COND_V_MSG(peer_map[p_peer_id] == NULL, 0, vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
+	ERR_FAIL_COND_V_MSG(peer_map[p_peer_id] == nullptr, 0, vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
 #ifdef GODOT_ENET
 	return peer_map[p_peer_id]->address.port;
 #else
@@ -910,7 +910,7 @@ NetworkedMultiplayerENet::NetworkedMultiplayerENet() {
 	server_relay = true;
 	unique_id = 0;
 	target_peer = 0;
-	current_packet.packet = NULL;
+	current_packet.packet = nullptr;
 	transfer_mode = TRANSFER_MODE_RELIABLE;
 	channel_count = SYSCH_MAX;
 	transfer_channel = -1;

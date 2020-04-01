@@ -236,7 +236,7 @@ public:
 	Ref<JavaClass> wrap(const String &p_class);
 
 #ifdef ANDROID_ENABLED
-	JavaClassWrapper(jobject p_activity = NULL);
+	JavaClassWrapper(jobject p_activity = nullptr);
 #else
 	JavaClassWrapper();
 #endif

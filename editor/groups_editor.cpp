@@ -68,7 +68,7 @@ void GroupDialog::_load_nodes(Node *p_current) {
 		keep = false;
 	}
 
-	TreeItem *node = NULL;
+	TreeItem *node = nullptr;
 	NodePath path = scene_tree->get_edited_scene_root()->get_path_to(p_current);
 	if (keep && p_current->is_in_group(selected_group)) {
 		if (remove_filter->get_text().is_subsequence_ofi(String(p_current->get_name()))) {
@@ -122,7 +122,7 @@ bool GroupDialog::_can_edit(Node *p_node, String p_group) {
 }
 
 void GroupDialog::_add_pressed() {
-	TreeItem *selected = nodes_to_add->get_next_selected(NULL);
+	TreeItem *selected = nodes_to_add->get_next_selected(nullptr);
 
 	if (!selected) {
 		return;
@@ -151,7 +151,7 @@ void GroupDialog::_add_pressed() {
 }
 
 void GroupDialog::_removed_pressed() {
-	TreeItem *selected = nodes_to_remove->get_next_selected(NULL);
+	TreeItem *selected = nodes_to_remove->get_next_selected(nullptr);
 
 	if (!selected) {
 		return;
@@ -662,7 +662,7 @@ void GroupsEditor::_bind_methods() {
 
 GroupsEditor::GroupsEditor() {
 
-	node = NULL;
+	node = nullptr;
 
 	VBoxContainer *vbc = this;
 

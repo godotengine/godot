@@ -1009,7 +1009,7 @@ String ResourceLoaderBinary::recognize(FileAccess *p_f) {
 ResourceLoaderBinary::ResourceLoaderBinary() :
 		translation_remapped(false),
 		ver_format(0),
-		f(NULL),
+		f(nullptr),
 		importmd_ofs(0),
 		error(OK) {
 
@@ -1107,7 +1107,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot open file '" + p_path + "'.");
 
-	FileAccess *fw = NULL; //=FileAccess::open(p_path+".depren");
+	FileAccess *fw = nullptr; //=FileAccess::open(p_path+".depren");
 
 	String local_path = p_path.get_base_dir();
 
@@ -2095,7 +2095,7 @@ void ResourceFormatSaverBinary::get_recognized_extensions(const RES &p_resource,
 		p_extensions->push_back("res");
 }
 
-ResourceFormatSaverBinary *ResourceFormatSaverBinary::singleton = NULL;
+ResourceFormatSaverBinary *ResourceFormatSaverBinary::singleton = nullptr;
 
 ResourceFormatSaverBinary::ResourceFormatSaverBinary() {
 

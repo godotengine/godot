@@ -281,7 +281,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 
 			for (int l = 0; l < olsize2; l++) {
 
-				if (Geometry::segment_intersects_segment_2d(r[0], outside_point, r2[l], r2[(l + 1) % olsize2], NULL)) {
+				if (Geometry::segment_intersects_segment_2d(r[0], outside_point, r2[l], r2[(l + 1) % olsize2], nullptr)) {
 					interscount++;
 				}
 			}
@@ -449,7 +449,7 @@ void NavigationRegion2D::_notification(int p_what) {
 
 				NavigationServer2D::get_singleton()->region_set_map(region, RID());
 			}
-			navigation = NULL;
+			navigation = nullptr;
 		} break;
 		case NOTIFICATION_DRAW: {
 
@@ -574,7 +574,7 @@ NavigationRegion2D::NavigationRegion2D() {
 	set_notify_transform(true);
 	region = NavigationServer2D::get_singleton()->region_create();
 
-	navigation = NULL;
+	navigation = nullptr;
 }
 
 NavigationRegion2D::~NavigationRegion2D() {

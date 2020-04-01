@@ -43,7 +43,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL, bool p_use_sub_threads = false, float *r_progress = nullptr);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr);
 	virtual bool exists(const String &p_path) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
@@ -93,7 +93,7 @@ private:
 	static HashMap<String, Vector<String>> translation_remaps;
 	static HashMap<String, String> path_remaps;
 
-	static String _path_remap(const String &p_path, bool *r_translation_remapped = NULL);
+	static String _path_remap(const String &p_path, bool *r_translation_remapped = nullptr);
 	friend class Resource;
 
 	static SelfList<Resource>::List remapped_list;
@@ -140,9 +140,9 @@ private:
 public:
 	static Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, const String &p_source_resource = String());
 	static ThreadLoadStatus load_threaded_get_status(const String &p_path, float *r_progress = nullptr);
-	static RES load_threaded_get(const String &p_path, Error *r_error = NULL);
+	static RES load_threaded_get(const String &p_path, Error *r_error = nullptr);
 
-	static RES load(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false, Error *r_error = NULL);
+	static RES load(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false, Error *r_error = nullptr);
 	static bool exists(const String &p_path, const String &p_type_hint = "");
 
 	static void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions);

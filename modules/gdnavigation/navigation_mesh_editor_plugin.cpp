@@ -40,7 +40,7 @@
 void NavigationMeshEditor::_node_removed(Node *p_node) {
 
 	if (p_node == node) {
-		node = NULL;
+		node = nullptr;
 
 		hide();
 	}
@@ -86,7 +86,7 @@ void NavigationMeshEditor::_clear_pressed() {
 
 void NavigationMeshEditor::edit(NavigationRegion3D *p_nav_region) {
 
-	if (p_nav_region == NULL || node == p_nav_region) {
+	if (p_nav_region == nullptr || node == p_nav_region) {
 		return;
 	}
 
@@ -117,7 +117,7 @@ NavigationMeshEditor::NavigationMeshEditor() {
 
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);
-	node = NULL;
+	node = nullptr;
 }
 
 NavigationMeshEditor::~NavigationMeshEditor() {
@@ -142,7 +142,7 @@ void NavigationMeshEditorPlugin::make_visible(bool p_visible) {
 
 		navigation_mesh_editor->hide();
 		navigation_mesh_editor->bake_hbox->hide();
-		navigation_mesh_editor->edit(NULL);
+		navigation_mesh_editor->edit(nullptr);
 	}
 }
 

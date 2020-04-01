@@ -196,7 +196,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		name->set_editable(false);
 		export_path->hide();
 		runnable->set_disabled(true);
-		parameters->edit(NULL);
+		parameters->edit(nullptr);
 		presets->unselect_all();
 		duplicate_preset->set_disabled(true);
 		delete_preset->set_disabled(true);
@@ -1244,7 +1244,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	delete_preset->set_disabled(true);
 	script_key_error->hide();
 	sections->hide();
-	parameters->edit(NULL);
+	parameters->edit(nullptr);
 
 	// Deletion dialog.
 

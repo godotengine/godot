@@ -191,7 +191,7 @@ private:
 			if (valid_path != "" && !d->file_exists("project.godot")) {
 
 				if (valid_path.ends_with(".zip")) {
-					FileAccess *src_f = NULL;
+					FileAccess *src_f = nullptr;
 					zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
 					unzFile pkg = unzOpen2(valid_path.utf8().get_data(), &io);
@@ -208,7 +208,7 @@ private:
 					while (ret == UNZ_OK) {
 						unz_file_info info;
 						char fname[16384];
-						ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
+						ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
 						if (String(fname).ends_with("project.godot")) {
 							break;
@@ -522,7 +522,7 @@ private:
 						zip_path = project_path->get_text();
 					}
 
-					FileAccess *src_f = NULL;
+					FileAccess *src_f = nullptr;
 					zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
 					unzFile pkg = unzOpen2(zip_path.utf8().get_data(), &io);
@@ -543,7 +543,7 @@ private:
 						//get filename
 						unz_file_info info;
 						char fname[16384];
-						ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
+						ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
 						String path = fname;
 
@@ -955,8 +955,8 @@ public:
 	bool hover;
 
 	ProjectListItemControl() {
-		favorite_button = NULL;
-		icon = NULL;
+		favorite_button = nullptr;
+		icon = nullptr;
 		icon_needs_reload = true;
 		hover = false;
 	}
@@ -1036,7 +1036,7 @@ public:
 			grayed = p_grayed;
 			missing = p_missing;
 			version = p_version;
-			control = NULL;
+			control = nullptr;
 		}
 
 		_FORCE_INLINE_ bool operator==(const Item &l) const {
@@ -1236,7 +1236,7 @@ void ProjectList::load_projects() {
 	// Clear whole list
 	for (int i = 0; i < _projects.size(); ++i) {
 		Item &project = _projects.write[i];
-		CRASH_COND(project.control == NULL);
+		CRASH_COND(project.control == nullptr);
 		memdelete(project.control); // Why not queue_free()?
 	}
 	_projects.clear();
@@ -1346,7 +1346,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	ERR_FAIL_COND(p_index != _scroll_children->get_child_count());
 
 	Item &item = _projects.write[p_index];
-	ERR_FAIL_COND(item.control != NULL); // Already created
+	ERR_FAIL_COND(item.control != nullptr); // Already created
 
 	Ref<Texture2D> favorite_icon = get_theme_icon("Favorites", "EditorIcons");
 	Color font_color = get_theme_color("font_color", "Tree");

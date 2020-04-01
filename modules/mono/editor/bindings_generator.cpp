@@ -411,7 +411,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 						xml_output.append("\"/>");
 					} else {
 						// Try to find as global enum constant
-						const EnumInterface *target_ienum = NULL;
+						const EnumInterface *target_ienum = nullptr;
 
 						for (const List<EnumInterface>::Element *E = global_enums.front(); E; E = E->next()) {
 							target_ienum = &E->get();
@@ -449,7 +449,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 						xml_output.append("\"/>");
 					} else {
 						// Try to find as enum constant in the current class
-						const EnumInterface *target_ienum = NULL;
+						const EnumInterface *target_ienum = nullptr;
 
 						for (const List<EnumInterface>::Element *E = target_itype->enums.front(); E; E = E->next()) {
 							target_ienum = &E->get();
@@ -782,7 +782,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 		const ConstantInterface &iconstant = E->get();
 
 		if (iconstant.const_doc && iconstant.const_doc->description.size()) {
-			String xml_summary = bbcode_to_xml(fix_doc_description(iconstant.const_doc->description), NULL);
+			String xml_summary = bbcode_to_xml(fix_doc_description(iconstant.const_doc->description), nullptr);
 			Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
 			if (summary_lines.size()) {
@@ -843,7 +843,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 			const ConstantInterface &iconstant = F->get();
 
 			if (iconstant.const_doc && iconstant.const_doc->description.size()) {
-				String xml_summary = bbcode_to_xml(fix_doc_description(iconstant.const_doc->description), NULL);
+				String xml_summary = bbcode_to_xml(fix_doc_description(iconstant.const_doc->description), nullptr);
 				Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
 				if (summary_lines.size()) {
@@ -1494,7 +1494,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 			if (idx_arg.type.cname != name_cache.type_int) {
 				// Assume the index parameter is an enum
 				const TypeInterface *idx_arg_type = _get_type_or_null(idx_arg.type);
-				CRASH_COND(idx_arg_type == NULL);
+				CRASH_COND(idx_arg_type == nullptr);
 				p_output.append("(" + idx_arg_type->proxy_name + ")" + itos(p_iprop.index));
 			} else {
 				p_output.append(itos(p_iprop.index));
@@ -1522,7 +1522,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 			if (idx_arg.type.cname != name_cache.type_int) {
 				// Assume the index parameter is an enum
 				const TypeInterface *idx_arg_type = _get_type_or_null(idx_arg.type);
-				CRASH_COND(idx_arg_type == NULL);
+				CRASH_COND(idx_arg_type == nullptr);
 				p_output.append("(" + idx_arg_type->proxy_name + ")" + itos(p_iprop.index) + ", ");
 			} else {
 				p_output.append(itos(p_iprop.index) + ", ");
@@ -2121,7 +2121,7 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 
 			if (return_type->is_object_type) {
 				ptrcall_return_type = return_type->is_reference ? "Ref<Reference>" : return_type->c_type;
-				initialization = return_type->is_reference ? "" : " = NULL";
+				initialization = return_type->is_reference ? "" : " = nullptr";
 			} else {
 				ptrcall_return_type = return_type->c_type;
 			}
@@ -2130,10 +2130,10 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 			p_output.append(" " C_LOCAL_RET);
 			p_output.append(initialization + ";\n");
 
-			String fail_ret = return_type->c_type_out.ends_with("*") && !return_type->ret_as_byref_arg ? "NULL" : return_type->c_type_out + "()";
+			String fail_ret = return_type->c_type_out.ends_with("*") && !return_type->ret_as_byref_arg ? "nullptr" : return_type->c_type_out + "()";
 
 			if (return_type->ret_as_byref_arg) {
-				p_output.append("\tif (" CS_PARAM_INSTANCE " == NULL) { *arg_ret = ");
+				p_output.append("\tif (" CS_PARAM_INSTANCE " == nullptr) { *arg_ret = ");
 				p_output.append(fail_ret);
 				p_output.append("; ERR_FAIL_MSG(\"Parameter ' arg_ret ' is null.\"); }\n");
 			} else {
@@ -2198,8 +2198,8 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 			}
 		} else {
 			p_output.append("\t" CS_PARAM_METHODBIND "->ptrcall(" CS_PARAM_INSTANCE ", ");
-			p_output.append(p_imethod.arguments.size() ? C_LOCAL_PTRCALL_ARGS ", " : "NULL, ");
-			p_output.append(!ret_void ? "&" C_LOCAL_RET ");\n" : "NULL);\n");
+			p_output.append(p_imethod.arguments.size() ? C_LOCAL_PTRCALL_ARGS ", " : "nullptr, ");
+			p_output.append(!ret_void ? "&" C_LOCAL_RET ");\n" : "nullptr);\n");
 		}
 
 		if (!ret_void) {
@@ -2241,11 +2241,11 @@ const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_or_null(con
 
 		// Enum not found. Most likely because none of its constants were bound, so it's empty. That's fine. Use int instead.
 		const Map<StringName, TypeInterface>::Element *int_match = builtin_types.find(name_cache.type_int);
-		ERR_FAIL_NULL_V(int_match, NULL);
+		ERR_FAIL_NULL_V(int_match, nullptr);
 		return &int_match->get();
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_or_placeholder(const TypeReference &p_typeref) {
@@ -2412,7 +2412,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			iprop.proxy_name = iprop.proxy_name.replace("/", "__"); // Some members have a slash...
 
-			iprop.prop_doc = NULL;
+			iprop.prop_doc = nullptr;
 
 			for (int i = 0; i < itype.class_doc->properties.size(); i++) {
 				const DocData::PropertyDoc &prop_doc = itype.class_doc->properties[i];
@@ -2457,7 +2457,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			PropertyInfo return_info = method_info.return_val;
 
-			MethodBind *m = imethod.is_virtual ? NULL : ClassDB::get_method(type_cname, method_info.name);
+			MethodBind *m = imethod.is_virtual ? nullptr : ClassDB::get_method(type_cname, method_info.name);
 
 			imethod.is_vararg = m && m->is_vararg();
 
@@ -2603,7 +2603,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		// Populate signals
 
 		const HashMap<StringName, MethodInfo> &signal_map = class_info->signal_map;
-		const StringName *k = NULL;
+		const StringName *k = nullptr;
 
 		while ((k = signal_map.next(k))) {
 			SignalInterface isignal;
@@ -2685,7 +2685,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		ClassDB::get_integer_constant_list(type_cname, &constants, true);
 
 		const HashMap<StringName, List<StringName>> &enum_map = class_info->enum_map;
-		k = NULL;
+		k = nullptr;
 
 		while ((k = enum_map.next(k))) {
 			StringName enum_proxy_cname = *k;
@@ -2707,7 +2707,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 				ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), *value);
 
-				iconstant.const_doc = NULL;
+				iconstant.const_doc = nullptr;
 				for (int i = 0; i < itype.class_doc->constants.size(); i++) {
 					const DocData::ConstantDoc &const_doc = itype.class_doc->constants[i];
 
@@ -2742,7 +2742,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), *value);
 
-			iconstant.const_doc = NULL;
+			iconstant.const_doc = nullptr;
 			for (int i = 0; i < itype.class_doc->constants.size(); i++) {
 				const DocData::ConstantDoc &const_doc = itype.class_doc->constants[i];
 
@@ -3262,7 +3262,7 @@ void BindingsGenerator::_populate_global_constants() {
 
 			String constant_name = GlobalConstants::get_global_constant_name(i);
 
-			const DocData::ConstantDoc *const_doc = NULL;
+			const DocData::ConstantDoc *const_doc = nullptr;
 			for (int j = 0; j < global_scope_doc.constants.size(); j++) {
 				const DocData::ConstantDoc &curr_const_doc = global_scope_doc.constants[j];
 

@@ -289,7 +289,7 @@ public:
 		void *detect_normal_ud;
 
 		Texture() :
-				proxy(NULL),
+				proxy(nullptr),
 				flags(0),
 				width(0),
 				height(0),
@@ -307,14 +307,14 @@ public:
 				active(false),
 				tex_id(0),
 				stored_cube_sides(0),
-				render_target(NULL),
+				render_target(nullptr),
 				redraw_if_visible(false),
-				detect_3d(NULL),
-				detect_3d_ud(NULL),
-				detect_srgb(NULL),
-				detect_srgb_ud(NULL),
-				detect_normal(NULL),
-				detect_normal_ud(NULL) {
+				detect_3d(nullptr),
+				detect_3d_ud(nullptr),
+				detect_srgb(nullptr),
+				detect_srgb_ud(nullptr),
+				detect_normal(nullptr),
+				detect_normal_ud(nullptr) {
 		}
 
 		_ALWAYS_INLINE_ Texture *get_ptr() {
@@ -331,7 +331,7 @@ public:
 			}
 
 			for (Set<Texture *>::Element *E = proxy_owners.front(); E; E = E->next()) {
-				E->get()->proxy = NULL;
+				E->get()->proxy = nullptr;
 			}
 
 			if (proxy) {
@@ -508,7 +508,7 @@ public:
 		Shader() :
 				dirty_list(this) {
 
-			shader = NULL;
+			shader = nullptr;
 			valid = false;
 			custom_code_id = 0;
 			version = 1;
@@ -561,7 +561,7 @@ public:
 				dirty_list(this) {
 			can_cast_shadow_cache = false;
 			is_animated_cache = false;
-			shader = NULL;
+			shader = nullptr;
 			line_width = 1.0;
 			last_pass = 0;
 			render_priority = 0;
@@ -655,7 +655,7 @@ public:
 		int total_data_size;
 
 		Surface() :
-				mesh(NULL),
+				mesh(nullptr),
 				array_len(0),
 				index_array_len(0),
 				array_byte_size(0),

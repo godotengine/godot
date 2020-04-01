@@ -30,7 +30,7 @@
 
 #include "webrtc_peer_connection.h"
 
-WebRTCPeerConnection *(*WebRTCPeerConnection::_create)() = NULL;
+WebRTCPeerConnection *(*WebRTCPeerConnection::_create)() = nullptr;
 
 Ref<WebRTCPeerConnection> WebRTCPeerConnection::create_ref() {
 
@@ -40,7 +40,7 @@ Ref<WebRTCPeerConnection> WebRTCPeerConnection::create_ref() {
 WebRTCPeerConnection *WebRTCPeerConnection::create() {
 
 	if (!_create)
-		return NULL;
+		return nullptr;
 	return _create();
 }
 

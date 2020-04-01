@@ -128,7 +128,7 @@ Vector<int> BitmapFont::_get_chars() const {
 
 	Vector<int> chars;
 
-	const CharType *key = NULL;
+	const CharType *key = nullptr;
 
 	while ((key = char_map.next(key))) {
 
@@ -382,7 +382,7 @@ Vector<CharType> BitmapFont::get_char_keys() const {
 
 	Vector<CharType> chars;
 	chars.resize(char_map.size());
-	const CharType *ct = NULL;
+	const CharType *ct = nullptr;
 	int count = 0;
 	while ((ct = char_map.next(ct))) {
 
@@ -528,7 +528,7 @@ Size2 Font::get_wordwrap_string_size(const String &p_string, float p_width) cons
 
 void BitmapFont::set_fallback(const Ref<BitmapFont> &p_fallback) {
 
-	for (Ref<BitmapFont> fallback_child = p_fallback; fallback_child != NULL; fallback_child = fallback_child->get_fallback()) {
+	for (Ref<BitmapFont> fallback_child = p_fallback; fallback_child != nullptr; fallback_child = fallback_child->get_fallback()) {
 		ERR_FAIL_COND_MSG(fallback_child == this, "Can't set as fallback one of its parents to prevent crashes due to recursive loop.");
 	}
 

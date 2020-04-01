@@ -52,7 +52,7 @@ struct ContextGL_X11_Private {
 
 void ContextGL_X11::release_current() {
 
-	glXMakeCurrent(x11_display, None, NULL);
+	glXMakeCurrent(x11_display, None, nullptr);
 }
 
 void ContextGL_X11::make_current() {
@@ -117,7 +117,7 @@ Error ContextGL_X11::initialize() {
 
 	int fbcount;
 	GLXFBConfig fbconfig = 0;
-	XVisualInfo *vi = NULL;
+	XVisualInfo *vi = nullptr;
 
 	XSetWindowAttributes swa;
 	swa.event_mask = StructureNotifyMask;
@@ -136,7 +136,7 @@ Error ContextGL_X11::initialize() {
 			XRenderPictFormat *pict_format = XRenderFindVisualFormat(x11_display, vi->visual);
 			if (!pict_format) {
 				XFree(vi);
-				vi = NULL;
+				vi = nullptr;
 				continue;
 			}
 
@@ -208,9 +208,9 @@ int ContextGL_X11::get_window_height() {
 
 void ContextGL_X11::set_use_vsync(bool p_use) {
 	static bool setup = false;
-	static PFNGLXSWAPINTERVALEXTPROC glXSwapIntervalEXT = NULL;
-	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalMESA = NULL;
-	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalSGI = NULL;
+	static PFNGLXSWAPINTERVALEXTPROC glXSwapIntervalEXT = nullptr;
+	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalMESA = nullptr;
+	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalSGI = nullptr;
 
 	if (!setup) {
 		setup = true;

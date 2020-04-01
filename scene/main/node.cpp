@@ -82,7 +82,7 @@ void Node::_notification(int p_notification) {
 				if (data.parent)
 					data.pause_owner = data.parent->data.pause_owner;
 				else
-					data.pause_owner = NULL;
+					data.pause_owner = nullptr;
 			} else {
 				data.pause_owner = this;
 			}
@@ -112,17 +112,17 @@ void Node::_notification(int p_notification) {
 			if (data.unhandled_key_input)
 				remove_from_group("_vp_unhandled_key_input" + itos(get_viewport()->get_instance_id()));
 
-			data.pause_owner = NULL;
+			data.pause_owner = nullptr;
 			if (data.path_cache) {
 				memdelete(data.path_cache);
-				data.path_cache = NULL;
+				data.path_cache = nullptr;
 			}
 		} break;
 		case NOTIFICATION_PATH_CHANGED: {
 
 			if (data.path_cache) {
 				memdelete(data.path_cache);
-				data.path_cache = NULL;
+				data.path_cache = nullptr;
 			}
 		} break;
 		case NOTIFICATION_READY: {
@@ -149,7 +149,7 @@ void Node::_notification(int p_notification) {
 					set_physics_process(true);
 				}
 
-				get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_ready, NULL, 0);
+				get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_ready, nullptr, 0);
 			}
 
 		} break;
@@ -158,11 +158,11 @@ void Node::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_PREDELETE: {
 
-			set_owner(NULL);
+			set_owner(nullptr);
 
 			while (data.owned.size()) {
 
-				data.owned.front()->get()->set_owner(NULL);
+				data.owned.front()->get()->set_owner(nullptr);
 			}
 
 			if (data.parent) {
@@ -226,7 +226,7 @@ void Node::_propagate_enter_tree() {
 
 	if (get_script_instance()) {
 
-		get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_enter_tree, NULL, 0);
+		get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_enter_tree, nullptr, 0);
 	}
 
 	emit_signal(SceneStringNames::get_singleton()->tree_entered);
@@ -278,7 +278,7 @@ void Node::_propagate_exit_tree() {
 
 	if (get_script_instance()) {
 
-		get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_exit_tree, NULL, 0);
+		get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_exit_tree, nullptr, 0);
 	}
 	emit_signal(SceneStringNames::get_singleton()->tree_exiting);
 
@@ -290,17 +290,17 @@ void Node::_propagate_exit_tree() {
 
 	for (Map<StringName, GroupData>::Element *E = data.grouped.front(); E; E = E->next()) {
 		data.tree->remove_from_group(E->key(), this);
-		E->get().group = NULL;
+		E->get().group = nullptr;
 	}
 
-	data.viewport = NULL;
+	data.viewport = nullptr;
 
 	if (data.tree)
 		data.tree->tree_changed();
 
 	data.inside_tree = false;
 	data.ready_notified = false;
-	data.tree = NULL;
+	data.tree = nullptr;
 	data.depth = -1;
 }
 
@@ -423,7 +423,7 @@ void Node::set_pause_mode(PauseMode p_mode) {
 	if ((data.pause_mode == PAUSE_MODE_INHERIT) == prev_inherits)
 		return; ///nothing changed
 
-	Node *owner = NULL;
+	Node *owner = nullptr;
 
 	if (data.pause_mode == PAUSE_MODE_INHERIT) {
 
@@ -914,7 +914,7 @@ void Node::set_process_priority(int p_priority) {
 	data.process_priority = p_priority;
 
 	// Make sure we are in SceneTree.
-	if (data.tree == NULL) {
+	if (data.tree == nullptr) {
 		return;
 	}
 
@@ -1295,7 +1295,7 @@ void Node::_propagate_validate_owner() {
 		if (!found) {
 
 			data.owner->data.owned.erase(data.OW);
-			data.owner = NULL;
+			data.owner = nullptr;
 		}
 	}
 
@@ -1336,7 +1336,7 @@ void Node::remove_child(Node *p_child) {
 
 	//if (data.scene) { does not matter
 
-	p_child->_set_tree(NULL);
+	p_child->_set_tree(nullptr);
 	//}
 
 	remove_child_notify(p_child);
@@ -1354,7 +1354,7 @@ void Node::remove_child(Node *p_child) {
 		children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
 	}
 
-	p_child->data.parent = NULL;
+	p_child->data.parent = nullptr;
 	p_child->data.pos = -1;
 
 	// validate owner
@@ -1371,7 +1371,7 @@ int Node::get_child_count() const {
 }
 Node *Node::get_child(int p_index) const {
 
-	ERR_FAIL_INDEX_V(p_index, data.children.size(), NULL);
+	ERR_FAIL_INDEX_V(p_index, data.children.size(), nullptr);
 
 	return data.children[p_index];
 }
@@ -1386,19 +1386,19 @@ Node *Node::_get_child_by_name(const StringName &p_name) const {
 			return cd[i];
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 Node *Node::get_node_or_null(const NodePath &p_path) const {
 
 	if (p_path.is_empty()) {
-		return NULL;
+		return nullptr;
 	}
 
-	ERR_FAIL_COND_V_MSG(!data.inside_tree && p_path.is_absolute(), NULL, "Can't use get_node() with absolute paths from outside the active scene tree.");
+	ERR_FAIL_COND_V_MSG(!data.inside_tree && p_path.is_absolute(), nullptr, "Can't use get_node() with absolute paths from outside the active scene tree.");
 
-	Node *current = NULL;
-	Node *root = NULL;
+	Node *current = nullptr;
+	Node *root = nullptr;
 
 	if (!p_path.is_absolute()) {
 		current = const_cast<Node *>(this); //start from this
@@ -1412,7 +1412,7 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 	for (int i = 0; i < p_path.get_name_count(); i++) {
 
 		StringName name = p_path.get_name(i);
-		Node *next = NULL;
+		Node *next = nullptr;
 
 		if (name == SceneStringNames::get_singleton()->dot) { // .
 
@@ -1420,18 +1420,18 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 
 		} else if (name == SceneStringNames::get_singleton()->doubledot) { // ..
 
-			if (current == NULL || !current->data.parent)
-				return NULL;
+			if (current == nullptr || !current->data.parent)
+				return nullptr;
 
 			next = current->data.parent;
-		} else if (current == NULL) {
+		} else if (current == nullptr) {
 
 			if (name == root->get_name())
 				next = root;
 
 		} else {
 
-			next = NULL;
+			next = nullptr;
 
 			for (int j = 0; j < current->data.children.size(); j++) {
 
@@ -1443,8 +1443,8 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 					break;
 				}
 			}
-			if (next == NULL) {
-				return NULL;
+			if (next == nullptr) {
+				return nullptr;
 			};
 		}
 		current = next;
@@ -1456,13 +1456,13 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 Node *Node::get_node(const NodePath &p_path) const {
 
 	Node *node = get_node_or_null(p_path);
-	ERR_FAIL_COND_V_MSG(!node, NULL, "Node not found: " + p_path + ".");
+	ERR_FAIL_COND_V_MSG(!node, nullptr, "Node not found: " + p_path + ".");
 	return node;
 }
 
 bool Node::has_node(const NodePath &p_path) const {
 
-	return get_node_or_null(p_path) != NULL;
+	return get_node_or_null(p_path) != nullptr;
 }
 
 Node *Node::find_node(const String &p_mask, bool p_recursive, bool p_owned) const {
@@ -1482,7 +1482,7 @@ Node *Node::find_node(const String &p_mask, bool p_recursive, bool p_owned) cons
 		if (ret)
 			return ret;
 	}
-	return NULL;
+	return nullptr;
 }
 
 Node *Node::get_parent() const {
@@ -1500,7 +1500,7 @@ Node *Node::find_parent(const String &p_mask) const {
 		p = p->data.parent;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 bool Node::is_a_parent_of(const Node *p_node) const {
@@ -1607,8 +1607,8 @@ void Node::set_owner(Node *p_owner) {
 	if (data.owner) {
 
 		data.owner->data.owned.erase(data.OW);
-		data.OW = NULL;
-		data.owner = NULL;
+		data.OW = nullptr;
+		data.owner = nullptr;
 	}
 
 	ERR_FAIL_COND(p_owner == this);
@@ -1663,7 +1663,7 @@ Node *Node::find_common_parent_with(const Node *p_node) const {
 	}
 
 	if (!common_parent)
-		return NULL;
+		return nullptr;
 
 	return const_cast<Node *>(common_parent);
 }
@@ -1762,7 +1762,7 @@ void Node::add_to_group(const StringName &p_identifier, bool p_persistent) {
 	if (data.tree) {
 		gd.group = data.tree->add_to_group(p_identifier, this);
 	} else {
-		gd.group = NULL;
+		gd.group = nullptr;
 	}
 
 	gd.persistent = p_persistent;
@@ -1935,7 +1935,7 @@ void Node::remove_and_skip() {
 				continue;
 
 			remove_child(c_node);
-			c_node->_propagate_replace_owner(this, NULL);
+			c_node->_propagate_replace_owner(this, nullptr);
 			children.push_back(c_node);
 			clear = false;
 			break;
@@ -1949,7 +1949,7 @@ void Node::remove_and_skip() {
 
 		Node *c_node = children.front()->get();
 		data.parent->add_child(c_node);
-		c_node->_propagate_replace_owner(NULL, new_owner);
+		c_node->_propagate_replace_owner(nullptr, new_owner);
 		children.pop_front();
 	}
 
@@ -2049,7 +2049,7 @@ int Node::get_position_in_parent() const {
 
 Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const {
 
-	Node *node = NULL;
+	Node *node = nullptr;
 
 	bool instanced = false;
 
@@ -2063,25 +2063,25 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 	} else if ((p_flags & DUPLICATE_USE_INSTANCING) && get_filename() != String()) {
 
 		Ref<PackedScene> res = ResourceLoader::load(get_filename());
-		ERR_FAIL_COND_V(res.is_null(), NULL);
+		ERR_FAIL_COND_V(res.is_null(), nullptr);
 		PackedScene::GenEditState ges = PackedScene::GEN_EDIT_STATE_DISABLED;
 #ifdef TOOLS_ENABLED
 		if (p_flags & DUPLICATE_FROM_EDITOR)
 			ges = PackedScene::GEN_EDIT_STATE_INSTANCE;
 #endif
 		node = res->instance(ges);
-		ERR_FAIL_COND_V(!node, NULL);
+		ERR_FAIL_COND_V(!node, nullptr);
 
 		instanced = true;
 
 	} else {
 
 		Object *obj = ClassDB::instance(get_class());
-		ERR_FAIL_COND_V(!obj, NULL);
+		ERR_FAIL_COND_V(!obj, nullptr);
 		node = Object::cast_to<Node>(obj);
 		if (!node)
 			memdelete(obj);
-		ERR_FAIL_COND_V(!node, NULL);
+		ERR_FAIL_COND_V(!node, nullptr);
 	}
 
 	if (get_filename() != "") { //an instance
@@ -2189,7 +2189,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 		if (!dup) {
 
 			memdelete(node);
-			return NULL;
+			return nullptr;
 		}
 
 		node->add_child(dup);
@@ -2204,14 +2204,14 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 		if (!parent) {
 
 			memdelete(node);
-			return NULL;
+			return nullptr;
 		}
 
 		Node *dup = E->get()->_duplicate(p_flags, r_duplimap);
 		if (!dup) {
 
 			memdelete(node);
-			return NULL;
+			return nullptr;
 		}
 
 		parent->add_child(dup);
@@ -2256,7 +2256,7 @@ void Node::_duplicate_and_reown(Node *p_new_parent, const Map<Node *, Node *> &p
 	if (get_owner() != get_parent()->get_owner())
 		return;
 
-	Node *node = NULL;
+	Node *node = nullptr;
 
 	if (get_filename() != "") {
 
@@ -2369,15 +2369,15 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 
 Node *Node::duplicate_and_reown(const Map<Node *, Node *> &p_reown_map) const {
 
-	ERR_FAIL_COND_V(get_filename() != "", NULL);
+	ERR_FAIL_COND_V(get_filename() != "", nullptr);
 
 	Object *obj = ClassDB::instance(get_class());
-	ERR_FAIL_COND_V_MSG(!obj, NULL, "Node: Could not duplicate: " + String(get_class()) + ".");
+	ERR_FAIL_COND_V_MSG(!obj, nullptr, "Node: Could not duplicate: " + String(get_class()) + ".");
 
 	Node *node = Object::cast_to<Node>(obj);
 	if (!node) {
 		memdelete(obj);
-		ERR_FAIL_V_MSG(NULL, "Node: Could not duplicate: " + String(get_class()) + ".");
+		ERR_FAIL_V_MSG(nullptr, "Node: Could not duplicate: " + String(get_class()) + ".");
 	}
 	node->set_name(get_name());
 
@@ -2591,7 +2591,7 @@ Node *Node::get_node_and_resource(const NodePath &p_path, RES &r_res, Vector<Str
 	r_res = RES();
 	r_leftover_subpath = Vector<StringName>();
 	if (!node)
-		return NULL;
+		return nullptr;
 
 	if (p_path.get_subname_count()) {
 
@@ -2601,7 +2601,7 @@ Node *Node::get_node_and_resource(const NodePath &p_path, RES &r_res, Vector<Str
 			Variant new_res_v = j == 0 ? node->get(p_path.get_subname(j)) : r_res->get(p_path.get_subname(j));
 
 			if (new_res_v.get_type() == Variant::NIL) { // Found nothing on that path
-				return NULL;
+				return nullptr;
 			}
 
 			RES new_res = new_res_v;
@@ -2623,8 +2623,8 @@ Node *Node::get_node_and_resource(const NodePath &p_path, RES &r_res, Vector<Str
 
 void Node::_set_tree(SceneTree *p_tree) {
 
-	SceneTree *tree_changed_a = NULL;
-	SceneTree *tree_changed_b = NULL;
+	SceneTree *tree_changed_a = nullptr;
+	SceneTree *tree_changed_b = nullptr;
 
 	//ERR_FAIL_COND(p_scene && data.parent && !data.parent->data.scene); //nobug if both are null
 
@@ -3012,8 +3012,8 @@ Node::Node() {
 	data.pos = -1;
 	data.depth = -1;
 	data.blocked = 0;
-	data.parent = NULL;
-	data.tree = NULL;
+	data.parent = nullptr;
+	data.tree = nullptr;
 	data.physics_process = false;
 	data.idle_process = false;
 	data.process_priority = 0;
@@ -3022,18 +3022,18 @@ Node::Node() {
 	data.inside_tree = false;
 	data.ready_notified = false;
 
-	data.owner = NULL;
-	data.OW = NULL;
+	data.owner = nullptr;
+	data.OW = nullptr;
 	data.input = false;
 	data.unhandled_input = false;
 	data.unhandled_key_input = false;
 	data.pause_mode = PAUSE_MODE_INHERIT;
-	data.pause_owner = NULL;
+	data.pause_owner = nullptr;
 	data.network_master = 1; //server by default
-	data.path_cache = NULL;
+	data.path_cache = nullptr;
 	data.parent_owned = false;
 	data.in_constructor = true;
-	data.viewport = NULL;
+	data.viewport = nullptr;
 	data.use_placeholder = false;
 	data.display_folded = false;
 	data.ready_first = true;

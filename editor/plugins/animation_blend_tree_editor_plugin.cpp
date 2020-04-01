@@ -579,7 +579,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 	for (Set<String>::Element *E = paths.front(); E; E = E->next()) {
 
 		NodePath path = E->get();
-		TreeItem *ti = NULL;
+		TreeItem *ti = nullptr;
 		String accum;
 		for (int i = 0; i < path.get_name_count(); i++) {
 			String name = path.get_name(i);
@@ -608,7 +608,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 			}
 		}
 
-		Node *node = NULL;
+		Node *node = nullptr;
 		if (base->has_node(accum)) {
 			node = base->get_node(accum);
 		}
@@ -710,7 +710,7 @@ void AnimationNodeBlendTreeEditor::_edit_filters(const String &p_which) {
 
 void AnimationNodeBlendTreeEditor::_removed_from_graph() {
 	if (is_visible()) {
-		EditorNode::get_singleton()->edit_item(NULL);
+		EditorNode::get_singleton()->edit_item(nullptr);
 	}
 }
 
@@ -756,7 +756,7 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 		}
 
 		AnimationTree *graph_player = AnimationTreeEditor::get_singleton()->get_tree();
-		AnimationPlayer *player = NULL;
+		AnimationPlayer *player = nullptr;
 		if (graph_player->has_node(graph_player->get_animation_player())) {
 			player = Object::cast_to<AnimationPlayer>(graph_player->get_node(graph_player->get_animation_player()));
 		}
@@ -802,7 +802,7 @@ void AnimationNodeBlendTreeEditor::_bind_methods() {
 	ClassDB::bind_method("_update_filters", &AnimationNodeBlendTreeEditor::_update_filters);
 }
 
-AnimationNodeBlendTreeEditor *AnimationNodeBlendTreeEditor::singleton = NULL;
+AnimationNodeBlendTreeEditor *AnimationNodeBlendTreeEditor::singleton = nullptr;
 
 void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<AnimationNode> p_node) {
 

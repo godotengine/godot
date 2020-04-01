@@ -45,7 +45,7 @@
 MonoObject *godot_icall_GD_bytes2var(MonoArray *p_bytes, MonoBoolean p_allow_objects) {
 	Variant ret;
 	PackedByteArray varr = GDMonoMarshal::mono_array_to_PackedByteArray(p_bytes);
-	Error err = decode_variant(ret, varr.ptr(), varr.size(), NULL, p_allow_objects);
+	Error err = decode_variant(ret, varr.ptr(), varr.size(), nullptr, p_allow_objects);
 	if (err != OK) {
 		ret = RTR("Not enough bytes for decoding bytes, or invalid format.");
 	}
@@ -57,7 +57,7 @@ MonoObject *godot_icall_GD_convert(MonoObject *p_what, int32_t p_type) {
 	const Variant *args[1] = { &what };
 	Callable::CallError ce;
 	Variant ret = Variant::construct(Variant::Type(p_type), args, 1, ce);
-	ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, NULL);
+	ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, nullptr);
 	return GDMonoMarshal::variant_to_mono_object(ret);
 }
 
@@ -76,7 +76,7 @@ void godot_icall_GD_print(MonoArray *p_what) {
 	for (int i = 0; i < length; i++) {
 		MonoObject *elem = mono_array_get(p_what, MonoObject *, i);
 
-		MonoException *exc = NULL;
+		MonoException *exc = nullptr;
 		String elem_str = GDMonoMarshal::mono_object_to_variant_string(elem, &exc);
 
 		if (exc) {
@@ -98,7 +98,7 @@ void godot_icall_GD_printerr(MonoArray *p_what) {
 	for (int i = 0; i < length; i++) {
 		MonoObject *elem = mono_array_get(p_what, MonoObject *, i);
 
-		MonoException *exc = NULL;
+		MonoException *exc = nullptr;
 		String elem_str = GDMonoMarshal::mono_object_to_variant_string(elem, &exc);
 
 		if (exc) {
@@ -119,7 +119,7 @@ void godot_icall_GD_printraw(MonoArray *p_what) {
 	for (int i = 0; i < length; i++) {
 		MonoObject *elem = mono_array_get(p_what, MonoObject *, i);
 
-		MonoException *exc = NULL;
+		MonoException *exc = nullptr;
 		String elem_str = GDMonoMarshal::mono_object_to_variant_string(elem, &exc);
 
 		if (exc) {
@@ -140,7 +140,7 @@ void godot_icall_GD_prints(MonoArray *p_what) {
 	for (int i = 0; i < length; i++) {
 		MonoObject *elem = mono_array_get(p_what, MonoObject *, i);
 
-		MonoException *exc = NULL;
+		MonoException *exc = nullptr;
 		String elem_str = GDMonoMarshal::mono_object_to_variant_string(elem, &exc);
 
 		if (exc) {
@@ -164,7 +164,7 @@ void godot_icall_GD_printt(MonoArray *p_what) {
 	for (int i = 0; i < length; i++) {
 		MonoObject *elem = mono_array_get(p_what, MonoObject *, i);
 
-		MonoException *exc = NULL;
+		MonoException *exc = nullptr;
 		String elem_str = GDMonoMarshal::mono_object_to_variant_string(elem, &exc);
 
 		if (exc) {
@@ -259,8 +259,8 @@ MonoArray *godot_icall_GD_var2bytes(MonoObject *p_var, MonoBoolean p_full_object
 
 	PackedByteArray barr;
 	int len;
-	Error err = encode_variant(var, NULL, len, p_full_objects);
-	ERR_FAIL_COND_V_MSG(err != OK, NULL, "Unexpected error encoding variable to bytes, likely unserializable type found (Object or RID).");
+	Error err = encode_variant(var, nullptr, len, p_full_objects);
+	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "Unexpected error encoding variable to bytes, likely unserializable type found (Object or RID).");
 
 	barr.resize(len);
 	encode_variant(var, barr.ptrw(), len, p_full_objects);

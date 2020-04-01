@@ -589,7 +589,7 @@ void AnimationNodeBlendSpace1DEditor::edit(const Ref<AnimationNode> &p_node) {
 	}
 }
 
-AnimationNodeBlendSpace1DEditor *AnimationNodeBlendSpace1DEditor::singleton = NULL;
+AnimationNodeBlendSpace1DEditor *AnimationNodeBlendSpace1DEditor::singleton = nullptr;
 
 AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	singleton = this;

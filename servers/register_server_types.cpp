@@ -68,7 +68,7 @@
 #include "rendering_server.h"
 #include "servers/rendering/shader_types.h"
 
-ShaderTypes *shader_types = NULL;
+ShaderTypes *shader_types = nullptr;
 
 PhysicsServer3D *_createGodotPhysics3DCallback() {
 	return memnew(PhysicsServer3DSW);

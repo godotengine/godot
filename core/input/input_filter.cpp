@@ -39,7 +39,7 @@
 #include "editor/editor_settings.h"
 #endif
 
-InputFilter *InputFilter::singleton = NULL;
+InputFilter *InputFilter::singleton = nullptr;
 
 void (*InputFilter::set_mouse_mode_func)(InputFilter::MouseMode) = nullptr;
 InputFilter::MouseMode (*InputFilter::get_mouse_mode_func)() = nullptr;
@@ -1028,9 +1028,9 @@ void InputFilter::_axis_event(int p_device, int p_axis, float p_value) {
 InputFilter::JoyEvent InputFilter::_find_to_event(String p_to) {
 
 	// string names of the SDL buttons in the same order as input_event.h godot buttons
-	static const char *buttons[] = { "a", "b", "x", "y", "leftshoulder", "rightshoulder", "lefttrigger", "righttrigger", "leftstick", "rightstick", "back", "start", "dpup", "dpdown", "dpleft", "dpright", "guide", NULL };
+	static const char *buttons[] = { "a", "b", "x", "y", "leftshoulder", "rightshoulder", "lefttrigger", "righttrigger", "leftstick", "rightstick", "back", "start", "dpup", "dpdown", "dpleft", "dpright", "guide", nullptr };
 
-	static const char *axis[] = { "leftx", "lefty", "rightx", "righty", NULL };
+	static const char *axis[] = { "leftx", "lefty", "rightx", "righty", nullptr };
 
 	JoyEvent ret;
 	ret.type = -1;

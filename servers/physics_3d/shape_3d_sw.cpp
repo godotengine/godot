@@ -1385,8 +1385,8 @@ _VolumeSW_BVH *_volume_sw_build_bvh(_VolumeSW_BVH_Element *p_elements, int p_siz
 	if (p_size == 1) {
 		//leaf
 		bvh->aabb = p_elements[0].aabb;
-		bvh->left = NULL;
-		bvh->right = NULL;
+		bvh->left = nullptr;
+		bvh->right = nullptr;
 		bvh->face_index = p_elements->face_index;
 		count++;
 		return bvh;

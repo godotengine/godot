@@ -38,7 +38,7 @@ Ref<ResourceFormatSaver> ResourceSaver::saver[MAX_SAVERS];
 
 int ResourceSaver::saver_count = 0;
 bool ResourceSaver::timestamp_on_save = false;
-ResourceSavedCallback ResourceSaver::save_callback = 0;
+ResourceSavedCallback ResourceSaver::save_callback = nullptr;
 
 Error ResourceFormatSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
 
@@ -218,7 +218,7 @@ bool ResourceSaver::add_custom_resource_format_saver(String script_path) {
 
 	Object *obj = ClassDB::instance(ibt);
 
-	ERR_FAIL_COND_V_MSG(obj == NULL, false, "Cannot instance script as custom resource saver, expected 'ResourceFormatSaver' inheritance, got: " + String(ibt) + ".");
+	ERR_FAIL_COND_V_MSG(obj == nullptr, false, "Cannot instance script as custom resource saver, expected 'ResourceFormatSaver' inheritance, got: " + String(ibt) + ".");
 
 	ResourceFormatSaver *crl = Object::cast_to<ResourceFormatSaver>(obj);
 	crl->set_script(s);

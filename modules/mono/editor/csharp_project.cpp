@@ -57,8 +57,8 @@ void add_item(const String &p_project_path, const String &p_item_type, const Str
 	Variant item_type = p_item_type;
 	Variant include = p_include;
 	const Variant *args[3] = { &project_path, &item_type, &include };
-	MonoException *exc = NULL;
-	klass->get_method("AddItemToProjectChecked", 3)->invoke(NULL, args, &exc);
+	MonoException *exc = nullptr;
+	klass->get_method("AddItemToProjectChecked", 3)->invoke(nullptr, args, &exc);
 
 	if (exc) {
 		GDMonoUtils::debug_print_unhandled_exception(exc);

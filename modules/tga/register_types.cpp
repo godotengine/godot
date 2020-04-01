@@ -32,7 +32,7 @@
 
 #include "image_loader_tga.h"
 
-static ImageLoaderTGA *image_loader_tga = NULL;
+static ImageLoaderTGA *image_loader_tga = nullptr;
 
 void register_tga_types() {
 

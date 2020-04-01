@@ -54,7 +54,7 @@ static const char *uwp_capabilities[] = {
 	"internetClient",
 	"internetClientServer",
 	"privateNetworkClientServer",
-	NULL
+	nullptr
 };
 static const char *uwp_uap_capabilities[] = {
 	"appointments",
@@ -71,7 +71,7 @@ static const char *uwp_uap_capabilities[] = {
 	"userAccountInformation",
 	"videosLibrary",
 	"voipCall",
-	NULL
+	nullptr
 };
 static const char *uwp_device_capabilities[] = {
 	"bluetooth",
@@ -79,7 +79,7 @@ static const char *uwp_device_capabilities[] = {
 	"microphone",
 	"proximity",
 	"webcam",
-	NULL
+	nullptr
 };
 
 class AppxPackager {
@@ -478,7 +478,7 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 
 	// Data for compression
 	z_stream strm;
-	FileAccess *strm_f = NULL;
+	FileAccess *strm_f = nullptr;
 	Vector<uint8_t> strm_in;
 	strm_in.resize(BLOCK_SIZE);
 	Vector<uint8_t> strm_out;
@@ -641,7 +641,7 @@ void AppxPackager::finish() {
 
 	package->close();
 	memdelete(package);
-	package = NULL;
+	package = nullptr;
 }
 
 AppxPackager::AppxPackager() {}
@@ -670,7 +670,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		static const char *invalid_names[] = {
 			"CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7",
 			"COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
-			NULL
+			nullptr
 		};
 
 		const char **t = invalid_names;
@@ -726,7 +726,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 			"snow", "springGreen", "steelBlue", "tan", "teal", "thistle",
 			"tomato", "transparent", "turquoise", "violet", "wheat", "white",
 			"whiteSmoke", "yellow", "yellowGreen",
-			NULL
+			nullptr
 		};
 
 		const char **color = valid_colors;
@@ -876,22 +876,22 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 	Vector<uint8_t> _get_image_data(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
 
 		Vector<uint8_t> data;
-		StreamTexture *image = NULL;
+		StreamTexture *image = nullptr;
 
 		if (p_path.find("StoreLogo") != -1) {
-			image = p_preset->get("images/store_logo").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/store_logo")));
+			image = p_preset->get("images/store_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/store_logo")));
 		} else if (p_path.find("Square44x44Logo") != -1) {
-			image = p_preset->get("images/square44x44_logo").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/square44x44_logo")));
+			image = p_preset->get("images/square44x44_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/square44x44_logo")));
 		} else if (p_path.find("Square71x71Logo") != -1) {
-			image = p_preset->get("images/square71x71_logo").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/square71x71_logo")));
+			image = p_preset->get("images/square71x71_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/square71x71_logo")));
 		} else if (p_path.find("Square150x150Logo") != -1) {
-			image = p_preset->get("images/square150x150_logo").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/square150x150_logo")));
+			image = p_preset->get("images/square150x150_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/square150x150_logo")));
 		} else if (p_path.find("Square310x310Logo") != -1) {
-			image = p_preset->get("images/square310x310_logo").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/square310x310_logo")));
+			image = p_preset->get("images/square310x310_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/square310x310_logo")));
 		} else if (p_path.find("Wide310x150Logo") != -1) {
-			image = p_preset->get("images/wide310x150_logo").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/wide310x150_logo")));
+			image = p_preset->get("images/wide310x150_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/wide310x150_logo")));
 		} else if (p_path.find("SplashScreen") != -1) {
-			image = p_preset->get("images/splash_screen").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/splash_screen")));
+			image = p_preset->get("images/splash_screen").is_zero() ? nullptr : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/splash_screen")));
 		} else {
 			ERR_PRINT("Unable to load logo");
 		}
@@ -961,7 +961,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 			".scn", // Binary scenes are usually already compressed
 			".stex", // Streamable textures are usually already compressed
 			// Trailer for easier processing
-			NULL
+			nullptr
 		};
 
 		for (const char **ext = unconditional_compress_ext; *ext; ++ext) {
@@ -1251,7 +1251,7 @@ public:
 		AppxPackager packager;
 		packager.init(fa_pack);
 
-		FileAccess *src_f = NULL;
+		FileAccess *src_f = nullptr;
 		zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
 		if (ep.step("Creating package...", 0)) {
@@ -1283,7 +1283,7 @@ public:
 			// get file name
 			unz_file_info info;
 			char fname[16834];
-			ret = unzGetCurrentFileInfo(pkg, &info, fname, 16834, NULL, 0, NULL, 0);
+			ret = unzGetCurrentFileInfo(pkg, &info, fname, 16834, nullptr, 0, nullptr, 0);
 
 			String path = fname;
 

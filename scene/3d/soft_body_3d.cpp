@@ -99,7 +99,7 @@ void SoftBodyRenderingServerHandler::set_aabb(const AABB &p_aabb) {
 
 SoftBody3D::PinnedPoint::PinnedPoint() :
 		point_index(-1),
-		spatial_attachment(NULL) {
+		spatial_attachment(nullptr) {
 }
 
 SoftBody3D::PinnedPoint::PinnedPoint(const PinnedPoint &obj_tocopy) {
@@ -454,7 +454,7 @@ void SoftBody3D::prepare_physics_server() {
 		if (get_mesh().is_valid())
 			PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
 		else
-			PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, NULL);
+			PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, nullptr);
 
 		return;
 	}
@@ -466,7 +466,7 @@ void SoftBody3D::prepare_physics_server() {
 		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &SoftBody3D::_draw_soft_mesh));
 	} else {
 
-		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, NULL);
+		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, nullptr);
 		if (RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &SoftBody3D::_draw_soft_mesh))) {
 			RS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &SoftBody3D::_draw_soft_mesh));
 		}
@@ -808,7 +808,7 @@ void SoftBody3D::_remove_pinned_point(int p_point_index) {
 int SoftBody3D::_get_pinned_point(int p_point_index, SoftBody3D::PinnedPoint *&r_point) const {
 	const int id = _has_pinned_point(p_point_index);
 	if (-1 == id) {
-		r_point = NULL;
+		r_point = nullptr;
 		return -1;
 	} else {
 		r_point = const_cast<SoftBody3D::PinnedPoint *>(&pinned_points.ptr()[id]);

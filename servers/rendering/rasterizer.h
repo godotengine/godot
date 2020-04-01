@@ -219,7 +219,7 @@ public:
 			baked_light = false;
 			dynamic_gi = false;
 			redraw_if_visible = false;
-			lightmap_capture = NULL;
+			lightmap_capture = nullptr;
 		}
 
 		virtual ~InstanceBase() {
@@ -751,10 +751,10 @@ public:
 			energy = 1.0;
 			item_shadow_mask = -1;
 			mode = RS::CANVAS_LIGHT_MODE_ADD;
-			//			texture_cache = NULL;
-			next_ptr = NULL;
-			mask_next_ptr = NULL;
-			filter_next_ptr = NULL;
+			//			texture_cache = nullptr;
+			next_ptr = nullptr;
+			mask_next_ptr = nullptr;
+			filter_next_ptr = nullptr;
 			use_shadow = false;
 			shadow_buffer_size = 2048;
 			shadow_filter = RS::CANVAS_LIGHT_FILTER_NONE;
@@ -1005,7 +1005,7 @@ public:
 
 			//must update rect
 
-			if (commands == NULL) {
+			if (commands == nullptr) {
 
 				rect = Rect2();
 				rect_dirty = false;
@@ -1115,12 +1115,12 @@ public:
 		template <class T>
 		T *alloc_command() {
 			T *command;
-			if (commands == NULL) {
+			if (commands == nullptr) {
 				// As the most common use case of canvas items is to
 				// use only one command, the first is done with it's
 				// own allocation. The rest of them use blocks.
 				command = memnew(T);
-				command->next = NULL;
+				command->next = nullptr;
 				commands = command;
 				last_command = command;
 			} else {
@@ -1147,7 +1147,7 @@ public:
 					//allocate block and add to the linked list
 					void *memory = c->memory + c->usage;
 					command = memnew_placement(memory, T);
-					command->next = NULL;
+					command->next = nullptr;
 					last_command->next = command;
 					last_command = command;
 					c->usage += sizeof(T);
@@ -1172,7 +1172,7 @@ public:
 				Command *n = c->next;
 				if (c == commands) {
 					memdelete(commands);
-					commands = NULL;
+					commands = nullptr;
 				} else {
 					c->~Command();
 				}
@@ -1186,36 +1186,36 @@ public:
 				}
 			}
 
-			last_command = NULL;
-			commands = NULL;
+			last_command = nullptr;
+			commands = nullptr;
 			current_block = 0;
 			clip = false;
 			rect_dirty = true;
-			final_clip_owner = NULL;
-			material_owner = NULL;
+			final_clip_owner = nullptr;
+			material_owner = nullptr;
 			light_masked = false;
 		}
 		Item() {
-			commands = NULL;
-			last_command = NULL;
+			commands = nullptr;
+			last_command = nullptr;
 			current_block = 0;
 			light_mask = 1;
-			vp_render = NULL;
-			next = NULL;
-			final_clip_owner = NULL;
+			vp_render = nullptr;
+			next = nullptr;
+			final_clip_owner = nullptr;
 			clip = false;
 			final_modulate = Color(1, 1, 1, 1);
 			visible = true;
 			rect_dirty = true;
 			custom_rect = false;
 			behind = false;
-			material_owner = NULL;
-			copy_back_buffer = NULL;
+			material_owner = nullptr;
+			copy_back_buffer = nullptr;
 			distance_field = false;
 			light_masked = false;
 			update_when_visible = false;
 			z_final = 0;
-			custom_data = NULL;
+			custom_data = nullptr;
 		}
 		virtual ~Item() {
 			clear();
@@ -1248,7 +1248,7 @@ public:
 
 		LightOccluderInstance() {
 			enabled = true;
-			next = NULL;
+			next = nullptr;
 			light_mask = 1;
 			cull_cache = RS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED;
 		}

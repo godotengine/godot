@@ -891,7 +891,7 @@ public:
 		for (int i = 0; i < c; i++) {
 			const Vector2 &v1 = p[i];
 			const Vector2 &v2 = p[(i + 1) % c];
-			if (segment_intersects_segment_2d(v1, v2, p_point, further_away, NULL)) {
+			if (segment_intersects_segment_2d(v1, v2, p_point, further_away, nullptr)) {
 				intersections++;
 			}
 		}
@@ -902,7 +902,7 @@ public:
 	static Vector<Vector<Face3>> separate_objects(Vector<Face3> p_array);
 
 	// Create a "wrap" that encloses the given geometry.
-	static Vector<Face3> wrap_geometry(Vector<Face3> p_array, real_t *p_error = NULL);
+	static Vector<Face3> wrap_geometry(Vector<Face3> p_array, real_t *p_error = nullptr);
 
 	struct MeshData {
 

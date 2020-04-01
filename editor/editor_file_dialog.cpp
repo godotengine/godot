@@ -44,11 +44,11 @@
 #include "scene/gui/margin_container.h"
 #include "servers/display_server.h"
 
-EditorFileDialog::GetIconFunc EditorFileDialog::get_icon_func = NULL;
-EditorFileDialog::GetIconFunc EditorFileDialog::get_large_icon_func = NULL;
+EditorFileDialog::GetIconFunc EditorFileDialog::get_icon_func = nullptr;
+EditorFileDialog::GetIconFunc EditorFileDialog::get_large_icon_func = nullptr;
 
-EditorFileDialog::RegisterFunc EditorFileDialog::register_func = NULL;
-EditorFileDialog::RegisterFunc EditorFileDialog::unregister_func = NULL;
+EditorFileDialog::RegisterFunc EditorFileDialog::register_func = nullptr;
+EditorFileDialog::RegisterFunc EditorFileDialog::unregister_func = nullptr;
 
 VBoxContainer *EditorFileDialog::get_vbox() {
 	return vbox;

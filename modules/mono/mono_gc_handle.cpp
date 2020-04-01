@@ -34,7 +34,7 @@
 
 void MonoGCHandleData::release() {
 #ifdef DEBUG_ENABLED
-	CRASH_COND(handle && GDMono::get_singleton() == NULL);
+	CRASH_COND(handle && GDMono::get_singleton() == nullptr);
 #endif
 
 	if (handle && GDMono::get_singleton()->is_runtime_initialized()) {

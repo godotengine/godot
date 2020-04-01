@@ -102,7 +102,7 @@ public:
 				infer_type(false),
 				may_yield(false),
 				builtin_type(Variant::NIL),
-				class_type(NULL) {}
+				class_type(nullptr) {}
 	};
 
 	struct Node {
@@ -201,7 +201,7 @@ public:
 			extends_used = false;
 			classname_used = false;
 			end_line = -1;
-			owner = NULL;
+			owner = nullptr;
 		}
 	};
 
@@ -248,11 +248,11 @@ public:
 		List<BlockNode *> sub_blocks;
 		int end_line;
 		BlockNode() {
-			if_condition = NULL;
+			if_condition = nullptr;
 			type = TYPE_BLOCK;
 			end_line = -1;
-			parent_block = NULL;
-			parent_class = NULL;
+			parent_block = nullptr;
+			parent_class = nullptr;
 			has_return = false;
 		}
 	};
@@ -276,7 +276,7 @@ public:
 		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
 		IdentifierNode() {
 			type = TYPE_IDENTIFIER;
-			declared_block = NULL;
+			declared_block = nullptr;
 		}
 	};
 
@@ -292,8 +292,8 @@ public:
 		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
 		LocalVarNode() {
 			type = TYPE_LOCAL_VAR;
-			assign = NULL;
-			assign_op = NULL;
+			assign = nullptr;
+			assign_op = nullptr;
 			assignments = 0;
 			usages = 0;
 		}
@@ -465,8 +465,8 @@ public:
 		ControlFlowNode() {
 			type = TYPE_CONTROL_FLOW;
 			cf_type = CF_IF;
-			body = NULL;
-			body_else = NULL;
+			body = nullptr;
+			body_else = nullptr;
 		}
 	};
 
@@ -608,7 +608,7 @@ private:
 	bool _recover_from_completion();
 
 	bool _parse_arguments(Node *p_parent, Vector<Node *> &p_args, bool p_static, bool p_can_codecomplete = false, bool p_parsing_constant = false);
-	bool _enter_indent_block(BlockNode *p_block = NULL);
+	bool _enter_indent_block(BlockNode *p_block = nullptr);
 	bool _parse_newline();
 	Node *_parse_expression(Node *p_parent, bool p_static, bool p_allow_assign = false, bool p_parsing_constant = false);
 	Node *_reduce_expression(Node *p_node, bool p_to_const = false);
@@ -665,7 +665,7 @@ public:
 #ifdef DEBUG_ENABLED
 	const List<GDScriptWarning> &get_warnings() const { return warnings; }
 #endif // DEBUG_ENABLED
-	Error parse(const String &p_code, const String &p_base_path = "", bool p_just_validate = false, const String &p_self_path = "", bool p_for_completion = false, Set<int> *r_safe_lines = NULL, bool p_dependencies_only = false);
+	Error parse(const String &p_code, const String &p_base_path = "", bool p_just_validate = false, const String &p_self_path = "", bool p_for_completion = false, Set<int> *r_safe_lines = nullptr, bool p_dependencies_only = false);
 	Error parse_bytecode(const Vector<uint8_t> &p_bytecode, const String &p_base_path = "", const String &p_self_path = "");
 
 	bool is_tool_script() const;

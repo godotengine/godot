@@ -69,7 +69,7 @@ struct ScopedLocalRef {
 	_FORCE_INLINE_ operator T() const { return local_ref; }
 	_FORCE_INLINE_ operator jvalue() const { return (jvalue)local_ref; }
 
-	_FORCE_INLINE_ operator bool() const { return local_ref != NULL; }
+	_FORCE_INLINE_ operator bool() const { return local_ref != nullptr; }
 
 	_FORCE_INLINE_ bool operator==(std::nullptr_t) const {
 		return local_ref == nullptr;
@@ -124,7 +124,7 @@ String determine_app_native_lib_dir() {
 
 	String result;
 
-	const char *const nativeLibraryDirUtf8 = env->GetStringUTFChars(nativeLibraryDir, NULL);
+	const char *const nativeLibraryDirUtf8 = env->GetStringUTFChars(nativeLibraryDir, nullptr);
 	if (nativeLibraryDirUtf8) {
 		result.parse_utf8(nativeLibraryDirUtf8);
 		env->ReleaseStringUTFChars(nativeLibraryDir, nativeLibraryDirUtf8);
@@ -159,14 +159,14 @@ int gd_mono_convert_dl_flags(int flags) {
 const char *mono_so_name = GD_MONO_SO_NAME;
 const char *godot_so_name = "libgodot_android.so";
 
-void *mono_dl_handle = NULL;
-void *godot_dl_handle = NULL;
+void *mono_dl_handle = nullptr;
+void *godot_dl_handle = nullptr;
 
 void *try_dlopen(const String &p_so_path, int p_flags) {
 	if (!FileAccess::exists(p_so_path)) {
 		if (OS::get_singleton()->is_stdout_verbose())
 			OS::get_singleton()->print("Cannot find shared library: '%s'\n", p_so_path.utf8().get_data());
-		return NULL;
+		return nullptr;
 	}
 
 	int lflags = gd_mono_convert_dl_flags(p_flags);
@@ -176,7 +176,7 @@ void *try_dlopen(const String &p_so_path, int p_flags) {
 	if (!handle) {
 		if (OS::get_singleton()->is_stdout_verbose())
 			OS::get_singleton()->print("Failed to open shared library: '%s'. Error: '%s'\n", p_so_path.utf8().get_data(), dlerror());
-		return NULL;
+		return nullptr;
 	}
 
 	if (OS::get_singleton()->is_stdout_verbose())
@@ -186,7 +186,7 @@ void *try_dlopen(const String &p_so_path, int p_flags) {
 }
 
 void *gd_mono_android_dlopen(const char *p_name, int p_flags, char **r_err, void *p_user_data) {
-	if (p_name == NULL) {
+	if (p_name == nullptr) {
 		// __Internal
 
 		if (!mono_dl_handle) {
@@ -211,7 +211,7 @@ void *gd_mono_android_dlopen(const char *p_name, int p_flags, char **r_err, void
 		return try_dlopen(so_path, p_flags);
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void *gd_mono_android_dlsym(void *p_handle, const char *p_name, char **r_err, void *p_user_data) {
@@ -232,7 +232,7 @@ void *gd_mono_android_dlsym(void *p_handle, const char *p_name, char **r_err, vo
 	if (r_err)
 		*r_err = str_format_new("%s\n", dlerror());
 
-	return NULL;
+	return nullptr;
 }
 
 void *gd_mono_android_dlclose(void *p_handle, void *p_user_data) {
@@ -240,9 +240,9 @@ void *gd_mono_android_dlclose(void *p_handle, void *p_user_data) {
 
 	// Not sure if this ever happens. Does Mono close the handle for the main module?
 	if (p_handle == mono_dl_handle)
-		mono_dl_handle = NULL;
+		mono_dl_handle = nullptr;
 
-	return NULL;
+	return nullptr;
 }
 
 int32_t build_version_sdk_int = 0;
@@ -267,7 +267,7 @@ int32_t get_build_version_sdk_int() {
 	return build_version_sdk_int;
 }
 
-jobject certStore = NULL; // KeyStore
+jobject certStore = nullptr; // KeyStore
 
 MonoBoolean _gd_mono_init_cert_store() {
 	// The JNI code is the equivalent of:
@@ -295,7 +295,7 @@ MonoBoolean _gd_mono_init_cert_store() {
 	if (jni_exception_check(env))
 		return 0;
 
-	env->CallVoidMethod(certStoreLocal, load, NULL);
+	env->CallVoidMethod(certStoreLocal, load, nullptr);
 
 	if (jni_exception_check(env))
 		return 0;
@@ -319,7 +319,7 @@ MonoArray *_gd_mono_android_cert_store_lookup(MonoString *p_alias) {
 	if (!mono_error_ok(&mono_error)) {
 		ERR_PRINT(String() + "Failed to convert MonoString* to UTF-8: '" + mono_error_get_message(&mono_error) + "'.");
 		mono_error_cleanup(&mono_error);
-		return NULL;
+		return nullptr;
 	}
 
 	JNIEnv *env = ThreadAndroid::get_env();
@@ -328,20 +328,20 @@ MonoArray *_gd_mono_android_cert_store_lookup(MonoString *p_alias) {
 	mono_free(alias_utf8);
 
 	ScopedLocalRef<jclass> keyStoreClass(env, env->FindClass("java/security/KeyStore"));
-	ERR_FAIL_NULL_V(keyStoreClass, NULL);
+	ERR_FAIL_NULL_V(keyStoreClass, nullptr);
 	ScopedLocalRef<jclass> certificateClass(env, env->FindClass("java/security/cert/Certificate"));
-	ERR_FAIL_NULL_V(certificateClass, NULL);
+	ERR_FAIL_NULL_V(certificateClass, nullptr);
 
 	jmethodID getCertificate = env->GetMethodID(keyStoreClass, "getCertificate", "(Ljava/lang/String;)Ljava/security/cert/Certificate;");
-	ERR_FAIL_NULL_V(getCertificate, NULL);
+	ERR_FAIL_NULL_V(getCertificate, nullptr);
 
 	jmethodID getEncoded = env->GetMethodID(certificateClass, "getEncoded", "()[B");
-	ERR_FAIL_NULL_V(getEncoded, NULL);
+	ERR_FAIL_NULL_V(getEncoded, nullptr);
 
 	ScopedLocalRef<jobject> certificate(env, env->CallObjectMethod(certStore, getCertificate, js_alias.get()));
 
 	if (!certificate)
-		return NULL;
+		return nullptr;
 
 	ScopedLocalRef<jbyteArray> encoded(env, (jbyteArray)env->CallObjectMethod(certificate, getEncoded));
 	jsize encodedLength = env->GetArrayLength(encoded);
@@ -363,7 +363,7 @@ void initialize() {
 	// We need to set this environment variable to make the monodroid BCL use btls instead of legacy as the default provider
 	OS::get_singleton()->set_environment("XA_TLS_PROVIDER", "btls");
 
-	mono_dl_fallback_register(gd_mono_android_dlopen, gd_mono_android_dlsym, gd_mono_android_dlclose, NULL);
+	mono_dl_fallback_register(gd_mono_android_dlopen, gd_mono_android_dlsym, gd_mono_android_dlclose, nullptr);
 
 	String app_native_lib_dir = get_app_native_lib_dir();
 	String so_path = path::join(app_native_lib_dir, godot_so_name);
@@ -375,16 +375,16 @@ void cleanup() {
 	// This is called after shutting down the Mono runtime
 
 	if (mono_dl_handle)
-		gd_mono_android_dlclose(mono_dl_handle, NULL);
+		gd_mono_android_dlclose(mono_dl_handle, nullptr);
 
 	if (godot_dl_handle)
-		gd_mono_android_dlclose(godot_dl_handle, NULL);
+		gd_mono_android_dlclose(godot_dl_handle, nullptr);
 
 	JNIEnv *env = ThreadAndroid::get_env();
 
 	if (certStore) {
 		env->DeleteGlobalRef(certStore);
-		certStore = NULL;
+		certStore = nullptr;
 	}
 }
 
@@ -421,7 +421,7 @@ GD_PINVOKE_EXPORT int32_t monodroid_get_system_property(const char *p_name, char
 			memcpy(*r_value, prop_value_str, len);
 			(*r_value)[len] = '\0';
 		} else {
-			*r_value = NULL;
+			*r_value = nullptr;
 		}
 	}
 
@@ -608,7 +608,7 @@ GD_PINVOKE_EXPORT int32_t _monodroid_get_dns_servers(void **r_dns_servers_array)
 	if (!r_dns_servers_array)
 		return -1;
 
-	*r_dns_servers_array = NULL;
+	*r_dns_servers_array = nullptr;
 
 	char *dns_servers[dns_servers_len];
 	int dns_servers_count = 0;
@@ -652,23 +652,23 @@ GD_PINVOKE_EXPORT const char *_monodroid_timezone_get_default_id() {
 	JNIEnv *env = ThreadAndroid::get_env();
 
 	ScopedLocalRef<jclass> timeZoneClass(env, env->FindClass("java/util/TimeZone"));
-	ERR_FAIL_NULL_V(timeZoneClass, NULL);
+	ERR_FAIL_NULL_V(timeZoneClass, nullptr);
 
 	jmethodID getDefault = env->GetStaticMethodID(timeZoneClass, "getDefault", "()Ljava/util/TimeZone;");
-	ERR_FAIL_NULL_V(getDefault, NULL);
+	ERR_FAIL_NULL_V(getDefault, nullptr);
 
 	jmethodID getID = env->GetMethodID(timeZoneClass, "getID", "()Ljava/lang/String;");
-	ERR_FAIL_NULL_V(getID, NULL);
+	ERR_FAIL_NULL_V(getID, nullptr);
 
 	ScopedLocalRef<jobject> defaultTimeZone(env, env->CallStaticObjectMethod(timeZoneClass, getDefault));
 
 	if (!defaultTimeZone)
-		return NULL;
+		return nullptr;
 
 	ScopedLocalRef<jstring> defaultTimeZoneID(env, (jstring)env->CallObjectMethod(defaultTimeZone, getID));
 
 	if (!defaultTimeZoneID)
-		return NULL;
+		return nullptr;
 
 	const char *default_time_zone_id = env->GetStringUTFChars(defaultTimeZoneID, 0);
 

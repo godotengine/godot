@@ -43,9 +43,9 @@
 #ifdef DEBUG_ENABLED
 static String format_error_message(DWORD id) {
 
-	LPWSTR messageBuffer = NULL;
+	LPWSTR messageBuffer = nullptr;
 	size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL, id, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&messageBuffer, 0, NULL);
+			nullptr, id, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&messageBuffer, 0, nullptr);
 
 	String msg = "Error " + itos(id) + ": " + String(messageBuffer, size);
 
@@ -83,7 +83,7 @@ String DisplayServerWindows::get_name() const {
 }
 
 void DisplayServerWindows::alert(const String &p_alert, const String &p_title) {
-	MessageBoxW(NULL, p_alert.c_str(), p_title.c_str(), MB_OK | MB_ICONEXCLAMATION | MB_TASKMODAL);
+	MessageBoxW(nullptr, p_alert.c_str(), p_title.c_str(), MB_OK | MB_ICONEXCLAMATION | MB_TASKMODAL);
 }
 
 void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
@@ -106,11 +106,11 @@ void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 		}
 	} else {
 		ReleaseCapture();
-		ClipCursor(NULL);
+		ClipCursor(nullptr);
 	}
 
 	if (p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_HIDDEN) {
-		hCursor = SetCursor(NULL);
+		hCursor = SetCursor(nullptr);
 	} else {
 		CursorShape c = cursor_shape;
 		cursor_shape = CURSOR_MAX;
@@ -182,7 +182,7 @@ void DisplayServerWindows::clipboard_set(const String &p_text) {
 	EmptyClipboard();
 
 	HGLOBAL mem = GlobalAlloc(GMEM_MOVEABLE, (text.length() + 1) * sizeof(CharType));
-	ERR_FAIL_COND_MSG(mem == NULL, "Unable to allocate memory for clipboard contents.");
+	ERR_FAIL_COND_MSG(mem == nullptr, "Unable to allocate memory for clipboard contents.");
 
 	LPWSTR lptstrCopy = (LPWSTR)GlobalLock(mem);
 	memcpy(lptstrCopy, text.c_str(), (text.length() + 1) * sizeof(CharType));
@@ -193,7 +193,7 @@ void DisplayServerWindows::clipboard_set(const String &p_text) {
 	// set the CF_TEXT version (not needed?)
 	CharString utf8 = text.utf8();
 	mem = GlobalAlloc(GMEM_MOVEABLE, utf8.length() + 1);
-	ERR_FAIL_COND_MSG(mem == NULL, "Unable to allocate memory for clipboard contents.");
+	ERR_FAIL_COND_MSG(mem == nullptr, "Unable to allocate memory for clipboard contents.");
 
 	LPTSTR ptr = (LPTSTR)GlobalLock(mem);
 	memcpy(ptr, utf8.get_data(), utf8.length());
@@ -220,10 +220,10 @@ String DisplayServerWindows::clipboard_get() const {
 	if (IsClipboardFormatAvailable(CF_UNICODETEXT)) {
 
 		HGLOBAL mem = GetClipboardData(CF_UNICODETEXT);
-		if (mem != NULL) {
+		if (mem != nullptr) {
 
 			LPWSTR ptr = (LPWSTR)GlobalLock(mem);
-			if (ptr != NULL) {
+			if (ptr != nullptr) {
 
 				ret = String((CharType *)ptr);
 				GlobalUnlock(mem);
@@ -233,10 +233,10 @@ String DisplayServerWindows::clipboard_get() const {
 	} else if (IsClipboardFormatAvailable(CF_TEXT)) {
 
 		HGLOBAL mem = GetClipboardData(CF_UNICODETEXT);
-		if (mem != NULL) {
+		if (mem != nullptr) {
 
 			LPTSTR ptr = (LPTSTR)GlobalLock(mem);
-			if (ptr != NULL) {
+			if (ptr != nullptr) {
 
 				ret.parse_utf8((const char *)ptr);
 				GlobalUnlock(mem);
@@ -277,7 +277,7 @@ int DisplayServerWindows::get_screen_count() const {
 	_THREAD_SAFE_METHOD_
 
 	int data = 0;
-	EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcCount, (LPARAM)&data);
+	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcCount, (LPARAM)&data);
 	return data;
 }
 
@@ -303,7 +303,7 @@ Point2i DisplayServerWindows::screen_get_position(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	EnumPosData data = { 0, p_screen == SCREEN_OF_MAIN_WINDOW ? window_get_current_screen() : p_screen, Point2() };
-	EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcPos, (LPARAM)&data);
+	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcPos, (LPARAM)&data);
 	return data.pos;
 }
 
@@ -336,7 +336,7 @@ Size2i DisplayServerWindows::screen_get_size(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	EnumSizeData data = { 0, p_screen == SCREEN_OF_MAIN_WINDOW ? window_get_current_screen() : p_screen, Size2() };
-	EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcSize, (LPARAM)&data);
+	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcSize, (LPARAM)&data);
 	return data.size;
 }
 
@@ -364,7 +364,7 @@ Rect2i DisplayServerWindows::screen_get_usable_rect(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	EnumRectData data = { 0, p_screen == SCREEN_OF_MAIN_WINDOW ? window_get_current_screen() : p_screen, Rect2i() };
-	EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcUsableSize, (LPARAM)&data);
+	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcUsableSize, (LPARAM)&data);
 	return data.rect;
 }
 
@@ -385,15 +385,15 @@ static int QueryDpiForMonitor(HMONITOR hmon, _MonitorDpiType dpiType = MDT_Defau
 
 	int dpiX = 96, dpiY = 96;
 
-	static HMODULE Shcore = NULL;
+	static HMODULE Shcore = nullptr;
 	typedef HRESULT(WINAPI * GetDPIForMonitor_t)(HMONITOR hmonitor, _MonitorDpiType dpiType, UINT * dpiX, UINT * dpiY);
-	static GetDPIForMonitor_t getDPIForMonitor = NULL;
+	static GetDPIForMonitor_t getDPIForMonitor = nullptr;
 
-	if (Shcore == NULL) {
+	if (Shcore == nullptr) {
 		Shcore = LoadLibraryW(L"Shcore.dll");
-		getDPIForMonitor = Shcore ? (GetDPIForMonitor_t)GetProcAddress(Shcore, "GetDpiForMonitor") : NULL;
+		getDPIForMonitor = Shcore ? (GetDPIForMonitor_t)GetProcAddress(Shcore, "GetDpiForMonitor") : nullptr;
 
-		if ((Shcore == NULL) || (getDPIForMonitor == NULL)) {
+		if ((Shcore == nullptr) || (getDPIForMonitor == nullptr)) {
 			if (Shcore)
 				FreeLibrary(Shcore);
 			Shcore = (HMODULE)INVALID_HANDLE_VALUE;
@@ -412,11 +412,11 @@ static int QueryDpiForMonitor(HMONITOR hmon, _MonitorDpiType dpiType = MDT_Defau
 	} else {
 		static int overallX = 0, overallY = 0;
 		if (overallX <= 0 || overallY <= 0) {
-			HDC hdc = GetDC(NULL);
+			HDC hdc = GetDC(nullptr);
 			if (hdc) {
 				overallX = GetDeviceCaps(hdc, LOGPIXELSX);
 				overallY = GetDeviceCaps(hdc, LOGPIXELSY);
-				ReleaseDC(NULL, hdc);
+				ReleaseDC(nullptr, hdc);
 			}
 		}
 		if (overallX > 0 && overallY > 0) {
@@ -443,7 +443,7 @@ int DisplayServerWindows::screen_get_dpi(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	EnumDpiData data = { 0, p_screen == SCREEN_OF_MAIN_WINDOW ? window_get_current_screen() : p_screen, 72 };
-	EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcDpi, (LPARAM)&data);
+	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcDpi, (LPARAM)&data);
 	return data.dpi;
 }
 bool DisplayServerWindows::screen_is_touchscreen(int p_screen) const {
@@ -618,7 +618,7 @@ int DisplayServerWindows::window_get_current_screen(WindowID p_window) const {
 	ERR_FAIL_COND_V(!windows.has(p_window), -1);
 
 	EnumScreenData data = { 0, 0, MonitorFromWindow(windows[p_window].hWnd, MONITOR_DEFAULTTONEAREST) };
-	EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcScreen, (LPARAM)&data);
+	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcScreen, (LPARAM)&data);
 	return data.screen;
 }
 void DisplayServerWindows::window_set_current_screen(int p_screen, WindowID p_window) {
@@ -734,7 +734,7 @@ void DisplayServerWindows::window_set_transient(WindowID p_window, WindowID p_pa
 		wd_window.transient_parent = INVALID_WINDOW_ID;
 		wd_parent.transient_children.erase(p_window);
 
-		SetWindowLongPtr(wd_window.hWnd, GWLP_HWNDPARENT, NULL);
+		SetWindowLongPtr(wd_window.hWnd, GWLP_HWNDPARENT, 0L);
 	} else {
 		ERR_FAIL_COND(!windows.has(p_parent));
 		ERR_FAIL_COND_MSG(wd_window.transient_parent != INVALID_WINDOW_ID, "Window already has a transient parent");
@@ -1224,7 +1224,7 @@ void DisplayServerWindows::cursor_set_shape(CursorShape p_shape) {
 		IDC_HELP
 	};
 
-	if (cursors[p_shape] != NULL) {
+	if (cursors[p_shape] != nullptr) {
 		SetCursor(cursors[p_shape]);
 	} else {
 		SetCursor(LoadCursor(hInstance, win_cursors[p_shape]));
@@ -1239,7 +1239,7 @@ DisplayServer::CursorShape DisplayServerWindows::cursor_get_shape() const {
 void DisplayServerWindows::GetMaskBitmaps(HBITMAP hSourceBitmap, COLORREF clrTransparent, OUT HBITMAP &hAndMaskBitmap, OUT HBITMAP &hXorMaskBitmap) {
 
 	// Get the system display DC
-	HDC hDC = GetDC(NULL);
+	HDC hDC = GetDC(nullptr);
 
 	// Create helper DC
 	HDC hMainDC = CreateCompatibleDC(hDC);
@@ -1255,7 +1255,7 @@ void DisplayServerWindows::GetMaskBitmaps(HBITMAP hSourceBitmap, COLORREF clrTra
 	hXorMaskBitmap = CreateCompatibleBitmap(hDC, bm.bmWidth, bm.bmHeight); // color
 
 	// Release the system display DC
-	ReleaseDC(NULL, hDC);
+	ReleaseDC(nullptr, hDC);
 
 	// Select the bitmaps to helper DC
 	HBITMAP hOldMainBitmap = (HBITMAP)SelectObject(hMainDC, hSourceBitmap);
@@ -1359,12 +1359,12 @@ void DisplayServerWindows::cursor_set_custom_image(const RES &p_cursor, CursorSh
 		COLORREF clrTransparent = -1;
 
 		// Create the AND and XOR masks for the bitmap
-		HBITMAP hAndMask = NULL;
-		HBITMAP hXorMask = NULL;
+		HBITMAP hAndMask = nullptr;
+		HBITMAP hXorMask = nullptr;
 
 		GetMaskBitmaps(bitmap, clrTransparent, hAndMask, hXorMask);
 
-		if (NULL == hAndMask || NULL == hXorMask) {
+		if (NULL == hAndMask || nullptr == hXorMask) {
 			memfree(buffer);
 			DeleteObject(bitmap);
 			return;
@@ -1394,11 +1394,11 @@ void DisplayServerWindows::cursor_set_custom_image(const RES &p_cursor, CursorSh
 			}
 		}
 
-		if (hAndMask != NULL) {
+		if (hAndMask != nullptr) {
 			DeleteObject(hAndMask);
 		}
 
-		if (hXorMask != NULL) {
+		if (hXorMask != nullptr) {
 			DeleteObject(hXorMask);
 		}
 
@@ -1408,7 +1408,7 @@ void DisplayServerWindows::cursor_set_custom_image(const RES &p_cursor, CursorSh
 		// Reset to default system cursor
 		if (cursors[p_shape]) {
 			DestroyIcon(cursors[p_shape]);
-			cursors[p_shape] = NULL;
+			cursors[p_shape] = nullptr;
 		}
 
 		CursorShape c = cursor_shape;
@@ -1470,7 +1470,7 @@ DisplayServer::LatinKeyboardVariant DisplayServerWindows::get_latin_keyboard_var
 	name[0] = 0;
 	GetKeyboardLayoutNameA(name);
 
-	unsigned long hex = strtoul(name, NULL, 16);
+	unsigned long hex = strtoul(name, nullptr, 16);
 
 	int i = 0;
 	while (azerty[i] != 0) {
@@ -1503,7 +1503,7 @@ void DisplayServerWindows::process_events() {
 		joypad->process_joypads();
 	}
 
-	while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
+	while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
 
 		TranslateMessage(&msg);
 		DispatchMessageW(&msg);
@@ -1909,9 +1909,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			UINT dwSize;
 
-			GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER));
+			GetRawInputData((HRAWINPUT)lParam, RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER));
 			LPBYTE lpb = new BYTE[dwSize];
-			if (lpb == NULL) {
+			if (lpb == nullptr) {
 				return 0;
 			}
 
@@ -2434,7 +2434,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				bmi.bmiHeader.biBitCount = 32;
 				bmi.bmiHeader.biCompression = BI_RGB;
 				bmi.bmiHeader.biSizeImage = dib_size.x * dib_size.y * 4;
-				hBitmap = CreateDIBSection(hDC_dib, &bmi, DIB_RGB_COLORS, (void **)&dib_data, NULL, 0x0);
+				hBitmap = CreateDIBSection(hDC_dib, &bmi, DIB_RGB_COLORS, (void **)&dib_data, nullptr, 0x0);
 				SelectObject(hDC_dib, hBitmap);
 
 				ZeroMemory(dib_data, dib_size.x * dib_size.y * 4);
@@ -2560,16 +2560,16 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if (LOWORD(lParam) == HTCLIENT) {
 				if (windows[window_id].window_has_focus && (mouse_mode == MOUSE_MODE_HIDDEN || mouse_mode == MOUSE_MODE_CAPTURED)) {
 					//Hide the cursor
-					if (hCursor == NULL)
-						hCursor = SetCursor(NULL);
+					if (hCursor == nullptr)
+						hCursor = SetCursor(nullptr);
 					else
-						SetCursor(NULL);
+						SetCursor(nullptr);
 				} else {
-					if (hCursor != NULL) {
+					if (hCursor != nullptr) {
 						CursorShape c = cursor_shape;
 						cursor_shape = CURSOR_MAX;
 						cursor_set_shape(c);
-						hCursor = NULL;
+						hCursor = nullptr;
 					}
 				}
 			}
@@ -2581,7 +2581,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			const int buffsize = 4096;
 			wchar_t buf[buffsize];
 
-			int fcount = DragQueryFileW(hDropInfo, 0xFFFFFFFF, NULL, 0);
+			int fcount = DragQueryFileW(hDropInfo, 0xFFFFFFFF, nullptr, 0);
 
 			Vector<String> files;
 
@@ -2732,9 +2732,9 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 				WindowRect.top,
 				WindowRect.right - WindowRect.left,
 				WindowRect.bottom - WindowRect.top,
-				NULL, NULL, hInstance, NULL);
+				nullptr, nullptr, hInstance, nullptr);
 		if (!wd.hWnd) {
-			MessageBoxW(NULL, L"Window Creation Error.", L"ERROR", MB_OK | MB_ICONEXCLAMATION);
+			MessageBoxW(nullptr, L"Window Creation Error.", L"ERROR", MB_OK | MB_ICONEXCLAMATION);
 			return INVALID_WINDOW_ID;
 		}
 #ifdef VULKAN_ENABLED
@@ -2742,7 +2742,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		if (rendering_driver == "vulkan") {
 			if (context_vulkan->window_create(id, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top) == -1) {
 				memdelete(context_vulkan);
-				context_vulkan = NULL;
+				context_vulkan = nullptr;
 				ERR_FAIL_V(INVALID_WINDOW_ID);
 			}
 		}
@@ -2814,7 +2814,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	if (OS::get_singleton()->is_hidpi_allowed()) {
 		HMODULE Shcore = LoadLibraryW(L"Shcore.dll");
 
-		if (Shcore != NULL) {
+		if (Shcore != nullptr) {
 			typedef HRESULT(WINAPI * SetProcessDpiAwareness_t)(SHC_PROCESS_DPI_AWARENESS);
 
 			SetProcessDpiAwareness_t SetProcessDpiAwareness = (SetProcessDpiAwareness_t)GetProcAddress(Shcore, "SetProcessDpiAwareness");
@@ -2832,15 +2832,15 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
 	//wc.hInstance = hInstance;
-	wc.hInstance = hInstance ? hInstance : GetModuleHandle(NULL);
-	wc.hIcon = LoadIcon(NULL, IDI_WINLOGO);
-	wc.hCursor = NULL; //LoadCursor(NULL, IDC_ARROW);
-	wc.hbrBackground = NULL;
-	wc.lpszMenuName = NULL;
+	wc.hInstance = hInstance ? hInstance : GetModuleHandle(nullptr);
+	wc.hIcon = LoadIcon(nullptr, IDI_WINLOGO);
+	wc.hCursor = nullptr; //LoadCursor(nullptr, IDC_ARROW);
+	wc.hbrBackground = nullptr;
+	wc.lpszMenuName = nullptr;
 	wc.lpszClassName = L"Engine";
 
 	if (!RegisterClassExW(&wc)) {
-		MessageBox(NULL, "Failed To Register The Window Class.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
+		MessageBox(nullptr, "Failed To Register The Window Class.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
 		r_error = ERR_UNAVAILABLE;
 		return;
 	}
@@ -2867,7 +2867,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		context_vulkan = memnew(VulkanContextWindows);
 		if (context_vulkan->initialize() != OK) {
 			memdelete(context_vulkan);
-			context_vulkan = NULL;
+			context_vulkan = nullptr;
 			r_error = ERR_UNAVAILABLE;
 			return;
 		}
@@ -2880,7 +2880,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 		if (context_gles2->initialize() != OK) {
 			memdelete(context_gles2);
-			context_gles2 = NULL;
+			context_gles2 = nullptr;
 			ERR_FAIL_V(ERR_UNAVAILABLE);
 		}
 
@@ -2892,7 +2892,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			RasterizerGLES2::make_current();
 		} else {
 			memdelete(context_gles2);
-			context_gles2 = NULL;
+			context_gles2 = nullptr;
 			ERR_FAIL_V(ERR_UNAVAILABLE);
 		}
 	}

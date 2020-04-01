@@ -383,7 +383,7 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 
 			for (int i = 0; i < DEFAULT_MAX_LIGHTS_PER_ITEM; i++) {
 				light_cache[i].light_version = 0;
-				light_cache[i].light = NULL;
+				light_cache[i].light = nullptr;
 			}
 			light_cache_count = 0xFFFFFFFF;
 		}

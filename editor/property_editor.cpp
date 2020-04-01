@@ -1194,7 +1194,7 @@ void CustomPropertyEditor::_node_path_selected(NodePath p_path) {
 
 	} else if (owner) {
 
-		Node *node = NULL;
+		Node *node = nullptr;
 
 		if (owner->is_class("Node"))
 			node = Object::cast_to<Node>(owner);
@@ -1541,7 +1541,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 				v = value_editor[0]->get_text().to_int();
 				return;
 			} else {
-				v = expr->execute(Array(), NULL, false);
+				v = expr->execute(Array(), nullptr, false);
 			}
 			emit_signal("variant_changed");
 
@@ -1713,7 +1713,7 @@ real_t CustomPropertyEditor::_parse_real_expression(String text) {
 	if (err != OK) {
 		out = value_editor[0]->get_text().to_double();
 	} else {
-		out = expr->execute(Array(), NULL, false);
+		out = expr->execute(Array(), nullptr, false);
 	}
 	return out;
 }
@@ -1924,7 +1924,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 		action_buttons[i]->set_flat(true);
 	}
 
-	color_picker = NULL;
+	color_picker = nullptr;
 
 	file = memnew(EditorFileDialog);
 	add_child(file);
@@ -1963,7 +1963,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	add_child(menu);
 	menu->connect("id_pressed", callable_mp(this, &CustomPropertyEditor::_menu_option));
 
-	evaluator = NULL;
+	evaluator = nullptr;
 
 	spinbox = memnew(SpinBox);
 	add_child(spinbox);
@@ -1975,6 +1975,6 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	slider->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 5);
 	slider->connect("value_changed", callable_mp(this, &CustomPropertyEditor::_range_modified));
 
-	create_dialog = NULL;
-	property_select = NULL;
+	create_dialog = nullptr;
+	property_select = nullptr;
 }

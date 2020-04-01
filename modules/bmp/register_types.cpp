@@ -32,7 +32,7 @@
 
 #include "image_loader_bmp.h"
 
-static ImageLoaderBMP *image_loader_bmp = NULL;
+static ImageLoaderBMP *image_loader_bmp = nullptr;
 
 void register_bmp_types() {
 	image_loader_bmp = memnew(ImageLoaderBMP);

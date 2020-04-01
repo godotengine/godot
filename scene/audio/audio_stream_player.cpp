@@ -36,7 +36,7 @@ void AudioStreamPlayer::_mix_to_bus(const AudioFrame *p_frames, int p_amount) {
 
 	int bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus);
 
-	AudioFrame *targets[4] = { NULL, NULL, NULL, NULL };
+	AudioFrame *targets[4] = { nullptr, nullptr, nullptr, nullptr };
 
 	if (AudioServer::get_singleton()->get_speaker_mode() == AudioServer::SPEAKER_MODE_STEREO) {
 		targets[0] = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 0);

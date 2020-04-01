@@ -34,7 +34,7 @@
 #include "core/print_string.h"
 #include "core/project_settings.h"
 
-PhysicsServer3D *PhysicsServer3D::singleton = NULL;
+PhysicsServer3D *PhysicsServer3D::singleton = nullptr;
 
 void PhysicsDirectBodyState3D::integrate_forces() {
 
@@ -725,13 +725,13 @@ void PhysicsServer3D::_bind_methods() {
 
 PhysicsServer3D::PhysicsServer3D() {
 
-	ERR_FAIL_COND(singleton != NULL);
+	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 }
 
 PhysicsServer3D::~PhysicsServer3D() {
 
-	singleton = NULL;
+	singleton = nullptr;
 }
 
 Vector<PhysicsServer3DManager::ClassInfo> PhysicsServer3DManager::physics_servers;
@@ -786,14 +786,14 @@ String PhysicsServer3DManager::get_server_name(int p_id) {
 }
 
 PhysicsServer3D *PhysicsServer3DManager::new_default_server() {
-	ERR_FAIL_COND_V(default_server_id == -1, NULL);
+	ERR_FAIL_COND_V(default_server_id == -1, nullptr);
 	return physics_servers[default_server_id].create_callback();
 }
 
 PhysicsServer3D *PhysicsServer3DManager::new_server(const String &p_name) {
 	int id = find_server_id(p_name);
 	if (id == -1) {
-		return NULL;
+		return nullptr;
 	} else {
 		return physics_servers[id].create_callback();
 	}

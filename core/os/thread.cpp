@@ -30,10 +30,10 @@
 
 #include "thread.h"
 
-Thread *(*Thread::create_func)(ThreadCreateCallback, void *, const Settings &) = NULL;
-Thread::ID (*Thread::get_thread_id_func)() = NULL;
-void (*Thread::wait_to_finish_func)(Thread *) = NULL;
-Error (*Thread::set_name_func)(const String &) = NULL;
+Thread *(*Thread::create_func)(ThreadCreateCallback, void *, const Settings &) = nullptr;
+Thread::ID (*Thread::get_thread_id_func)() = nullptr;
+void (*Thread::wait_to_finish_func)(Thread *) = nullptr;
+Error (*Thread::set_name_func)(const String &) = nullptr;
 
 Thread::ID Thread::_main_thread_id = 0;
 
@@ -50,7 +50,7 @@ Thread *Thread::create(ThreadCreateCallback p_callback, void *p_user, const Sett
 
 		return create_func(p_callback, p_user, p_settings);
 	}
-	return NULL;
+	return nullptr;
 }
 
 void Thread::wait_to_finish(Thread *p_thread) {

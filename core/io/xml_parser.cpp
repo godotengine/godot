@@ -165,7 +165,7 @@ bool XMLParser::_parse_cdata() {
 		return true;
 
 	char *cDataBegin = P;
-	char *cDataEnd = 0;
+	char *cDataEnd = nullptr;
 
 	// find end of CDATA
 	while (*P && !cDataEnd) {
@@ -529,9 +529,9 @@ void XMLParser::close() {
 
 	if (data)
 		memdelete_arr(data);
-	data = NULL;
+	data = nullptr;
 	length = 0;
-	P = NULL;
+	P = nullptr;
 	node_empty = false;
 	node_type = NODE_NONE;
 	node_offset = 0;
@@ -544,7 +544,7 @@ int XMLParser::get_current_line() const {
 
 XMLParser::XMLParser() {
 
-	data = NULL;
+	data = nullptr;
 	close();
 	special_characters.push_back("&amp;");
 	special_characters.push_back("<lt;");

@@ -902,7 +902,7 @@ void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p
 			int format;
 			unsigned long len;
 			unsigned long remaining;
-			unsigned char *data = NULL;
+			unsigned char *data = nullptr;
 			if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, 4, False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
 				if (format == 32 && len == 4 && data) {
 					long *extents = (long *)data;
@@ -1091,7 +1091,7 @@ Size2i DisplayServerX11::window_get_real_size(WindowID p_window) const {
 		int format;
 		unsigned long len;
 		unsigned long remaining;
-		unsigned char *data = NULL;
+		unsigned char *data = nullptr;
 		if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, 4, False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
 			if (format == 32 && len == 4 && data) {
 				long *extents = (long *)data;
@@ -1116,7 +1116,7 @@ bool DisplayServerX11::window_is_maximize_allowed(WindowID p_window) const {
 	int format;
 	unsigned long len;
 	unsigned long remaining;
-	unsigned char *data = NULL;
+	unsigned char *data = nullptr;
 
 	int result = XGetWindowProperty(
 			x11_display,
@@ -1402,7 +1402,7 @@ DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) c
 		int format;
 		unsigned long len;
 		unsigned long remaining;
-		unsigned char *data = NULL;
+		unsigned char *data = nullptr;
 		bool retval = false;
 
 		int result = XGetWindowProperty(
@@ -1453,7 +1453,7 @@ DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) c
 		int format;
 		unsigned long len;
 		unsigned long remaining;
-		unsigned char *data = NULL;
+		unsigned char *data = nullptr;
 
 		int result = XGetWindowProperty(
 				x11_display,
@@ -1592,7 +1592,7 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 				int format;
 				unsigned long len;
 				unsigned long remaining;
-				unsigned char *data = NULL;
+				unsigned char *data = nullptr;
 				if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, sizeof(Hints), False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
 					if (data && (format == 32) && (len >= 5)) {
 						borderless = !((Hints *)data)->decorations;
@@ -1719,8 +1719,8 @@ void DisplayServerX11::window_set_ime_position(const Point2i &p_pos, WindowID p_
 	::XPoint spot;
 	spot.x = short(p_pos.x);
 	spot.y = short(p_pos.y);
-	XVaNestedList preedit_attr = XVaCreateNestedList(0, XNSpotLocation, &spot, NULL);
-	XSetICValues(wd.xic, XNPreeditAttributes, preedit_attr, NULL);
+	XVaNestedList preedit_attr = XVaCreateNestedList(0, XNSpotLocation, &spot, nullptr);
+	XSetICValues(wd.xic, XNPreeditAttributes, preedit_attr, nullptr);
 	XFree(preedit_attr);
 }
 
@@ -1827,7 +1827,7 @@ void DisplayServerX11::cursor_set_custom_image(const RES &p_cursor, CursorShape 
 			*(cursor_image->pixels + index) = image->get_pixel(column_index, row_index).to_argb32();
 		}
 
-		ERR_FAIL_COND(cursor_image->pixels == NULL);
+		ERR_FAIL_COND(cursor_image->pixels == nullptr);
 
 		// Save it for a further usage
 		cursors[p_shape] = XcursorImageLoadCursor(x11_display, cursor_image);
@@ -1900,14 +1900,14 @@ DisplayServerX11::Property DisplayServerX11::_read_property(Display *p_display, 
 	int actual_format;
 	unsigned long nitems;
 	unsigned long bytes_after;
-	unsigned char *ret = 0;
+	unsigned char *ret = nullptr;
 
 	int read_bytes = 1024;
 
 	//Keep trying to read the property until there are no
 	//bytes unread.
 	do {
-		if (ret != 0)
+		if (ret != nullptr)
 			XFree(ret);
 
 		XGetWindowProperty(p_display, p_window, p_property, 0, read_bytes, False, AnyPropertyType,
@@ -2006,8 +2006,8 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	XKeyEvent xkeyevent_no_mod = *xkeyevent;
 	xkeyevent_no_mod.state &= ~ShiftMask;
 	xkeyevent_no_mod.state &= ~ControlMask;
-	XLookupString(xkeyevent, str, 256, &keysym_unicode, NULL);
-	XLookupString(&xkeyevent_no_mod, NULL, 0, &keysym_keycode, NULL);
+	XLookupString(xkeyevent, str, 256, &keysym_unicode, nullptr);
+	XLookupString(&xkeyevent_no_mod, nullptr, 0, &keysym_keycode, nullptr);
 
 	// Meanwhile, XLookupString returns keysyms useful for unicode.
 
@@ -2170,7 +2170,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 #undef ABSDIFF
 			if (peek_event.type == KeyPress && threshold < 5) {
 				KeySym rk;
-				XLookupString((XKeyEvent *)&peek_event, str, 256, &rk, NULL);
+				XLookupString((XKeyEvent *)&peek_event, str, 256, &rk, nullptr);
 				if (rk == keysym_keycode) {
 					XEvent event;
 					XNextEvent(x11_display, &event); //erase next event
@@ -2232,10 +2232,10 @@ void DisplayServerX11::_xim_destroy_callback(::XIM im, ::XPointer client_data,
 
 	WARN_PRINT("Input method stopped");
 	DisplayServerX11 *ds = reinterpret_cast<DisplayServerX11 *>(client_data);
-	ds->xim = NULL;
+	ds->xim = nullptr;
 
 	for (Map<WindowID, WindowData>::Element *E = ds->windows.front(); E; E = E->next()) {
-		E->get().xic = NULL;
+		E->get().xic = nullptr;
 	}
 }
 
@@ -3222,11 +3222,11 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 
 		if (xim && xim_style) {
 
-			wd.xic = XCreateIC(xim, XNInputStyle, xim_style, XNClientWindow, wd.x11_window, XNFocusWindow, wd.x11_window, (char *)NULL);
-			if (XGetICValues(wd.xic, XNFilterEvents, &im_event_mask, NULL) != NULL) {
+			wd.xic = XCreateIC(xim, XNInputStyle, xim_style, XNClientWindow, wd.x11_window, XNFocusWindow, wd.x11_window, (char *)nullptr);
+			if (XGetICValues(wd.xic, XNFilterEvents, &im_event_mask, nullptr) != nullptr) {
 				WARN_PRINT("XGetICValues couldn't obtain XNFilterEvents value");
 				XDestroyIC(wd.xic);
-				wd.xic = NULL;
+				wd.xic = nullptr;
 			}
 			if (wd.xic) {
 				XUnsetICFocus(wd.xic);
@@ -3235,7 +3235,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 			}
 		} else {
 
-			wd.xic = NULL;
+			wd.xic = nullptr;
 			WARN_PRINT("XCreateIC couldn't create wd.xic");
 		}
 
@@ -3380,12 +3380,12 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	for (int i = 0; i < CURSOR_MAX; i++) {
 
 		cursors[i] = None;
-		img[i] = NULL;
+		img[i] = nullptr;
 	}
 
 	last_button_state = 0;
 
-	xmbstring = NULL;
+	xmbstring = nullptr;
 
 	last_click_ms = 0;
 	last_click_button_index = -1;
@@ -3398,7 +3398,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	XInitThreads(); //always use threads
 
 	/** XLIB INITIALIZATION **/
-	x11_display = XOpenDisplay(NULL);
+	x11_display = XOpenDisplay(nullptr);
 
 	if (!x11_display) {
 		ERR_PRINT("X11 Display is not available");
@@ -3406,10 +3406,10 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		return;
 	}
 
-	char *modifiers = NULL;
+	char *modifiers = nullptr;
 	Bool xkb_dar = False;
 	XAutoRepeatOn(x11_display);
-	xkb_dar = XkbSetDetectableAutoRepeat(x11_display, True, NULL);
+	xkb_dar = XkbSetDetectableAutoRepeat(x11_display, True, nullptr);
 
 	// Try to support IME if detectable auto-repeat is supported
 	if (xkb_dar == True) {
@@ -3421,7 +3421,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 #endif
 	}
 
-	if (modifiers == NULL) {
+	if (modifiers == nullptr) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			WARN_PRINT("IME is disabled");
 		}
@@ -3430,8 +3430,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 
 	const char *err;
-	xrr_get_monitors = NULL;
-	xrr_free_monitors = NULL;
+	xrr_get_monitors = nullptr;
+	xrr_free_monitors = nullptr;
 	int xrandr_major = 0;
 	int xrandr_minor = 0;
 	int event_base, error_base;
@@ -3452,7 +3452,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 				if (!xrr_free_monitors) {
 					err = dlerror();
 					fprintf(stderr, "could not find XRRFreeMonitors\nError: %s\n", err);
-					xrr_get_monitors = NULL;
+					xrr_get_monitors = nullptr;
 				}
 			}
 		}
@@ -3466,9 +3466,9 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		return;
 	}
 
-	xim = XOpenIM(x11_display, NULL, NULL, NULL);
+	xim = XOpenIM(x11_display, nullptr, nullptr, nullptr);
 
-	if (xim == NULL) {
+	if (xim == nullptr) {
 		WARN_PRINT("XOpenIM failed");
 		xim_style = 0L;
 	} else {
@@ -3476,14 +3476,14 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		im_destroy_callback.client_data = (::XPointer)(this);
 		im_destroy_callback.callback = (::XIMProc)(_xim_destroy_callback);
 		if (XSetIMValues(xim, XNDestroyCallback, &im_destroy_callback,
-					NULL) != NULL) {
+					nullptr) != nullptr) {
 			WARN_PRINT("Error setting XIM destroy callback");
 		}
 
-		::XIMStyles *xim_styles = NULL;
+		::XIMStyles *xim_styles = nullptr;
 		xim_style = 0L;
-		char *imvalret = XGetIMValues(xim, XNQueryInputStyle, &xim_styles, NULL);
-		if (imvalret != NULL || xim_styles == NULL) {
+		char *imvalret = XGetIMValues(xim, XNQueryInputStyle, &xim_styles, nullptr);
+		if (imvalret != nullptr || xim_styles == nullptr) {
 			fprintf(stderr, "Input method doesn't support any styles\n");
 		}
 
@@ -3532,7 +3532,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		context_vulkan = memnew(VulkanContextX11);
 		if (context_vulkan->initialize() != OK) {
 			memdelete(context_vulkan);
-			context_vulkan = NULL;
+			context_vulkan = nullptr;
 			r_error = ERR_CANT_CREATE;
 			ERR_FAIL_MSG("Could not initialize Vulkan");
 		}
@@ -3541,7 +3541,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	// Init context and rendering device
 #if defined(OPENGL_ENABLED)
 	if (rendering_driver == "opengl_es") {
-		if (getenv("DRI_PRIME") == NULL) {
+		if (getenv("DRI_PRIME") == nullptr) {
 			int use_prime = -1;
 
 			if (getenv("PRIMUS_DISPLAY") ||
@@ -3587,7 +3587,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 		if (context_gles2->initialize() != OK) {
 			memdelete(context_gles2);
-			context_gles2 = NULL;
+			context_gles2 = nullptr;
 			ERR_FAIL_V(ERR_UNAVAILABLE);
 		}
 
@@ -3598,7 +3598,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			RasterizerGLES2::make_current();
 		} else {
 			memdelete(context_gles2);
-			context_gles2 = NULL;
+			context_gles2 = nullptr;
 			ERR_FAIL_V(ERR_UNAVAILABLE);
 		}
 	}
@@ -3683,7 +3683,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 		img[i] = XcursorLibraryLoadImage(cursor_file[i], cursor_theme, cursor_size);
 		if (!img[i]) {
-			const char *fallback = NULL;
+			const char *fallback = nullptr;
 
 			switch (i) {
 				case CURSOR_POINTING_HAND:
@@ -3732,7 +3732,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 					fallback = "help";
 					break;
 			}
-			if (fallback != NULL) {
+			if (fallback != nullptr) {
 				img[i] = XcursorLibraryLoadImage(fallback, cursor_theme, cursor_size);
 			}
 		}
@@ -3832,7 +3832,7 @@ DisplayServerX11::~DisplayServerX11() {
 	for (int i = 0; i < CURSOR_MAX; i++) {
 		if (cursors[i] != None)
 			XFreeCursor(x11_display, cursors[i]);
-		if (img[i] != NULL)
+		if (img[i] != nullptr)
 			XcursorImageDestroy(img[i]);
 	};
 

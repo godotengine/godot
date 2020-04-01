@@ -53,7 +53,7 @@ Error CookieContextMbedTLS::setup() {
 	mbedtls_ssl_cookie_init(&cookie_ctx);
 	inited = true;
 
-	int ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, NULL, 0);
+	int ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, nullptr, 0);
 	if (ret != 0) {
 		clear(); // Never leave unusable resources around.
 		ERR_FAIL_V_MSG(FAILED, "mbedtls_ctr_drbg_seed returned an error " + itos(ret));
@@ -94,7 +94,7 @@ Error SSLContextMbedTLS::_setup(int p_endpoint, int p_transport, int p_authmode)
 	mbedtls_entropy_init(&entropy);
 	inited = true;
 
-	int ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, NULL, 0);
+	int ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, nullptr, 0);
 	if (ret != 0) {
 		clear(); // Never leave unusable resources around.
 		ERR_FAIL_V_MSG(FAILED, "mbedtls_ctr_drbg_seed returned an error " + itos(ret));
@@ -134,7 +134,7 @@ Error SSLContextMbedTLS::init_server(int p_transport, int p_authmode, Ref<Crypto
 	}
 	// Adding CA chain if available.
 	if (certs->cert.next) {
-		mbedtls_ssl_conf_ca_chain(&conf, certs->cert.next, NULL);
+		mbedtls_ssl_conf_ca_chain(&conf, certs->cert.next, nullptr);
 	}
 	// DTLS Cookies
 	if (p_transport == MBEDTLS_SSL_TRANSPORT_DATAGRAM) {
@@ -153,7 +153,7 @@ Error SSLContextMbedTLS::init_client(int p_transport, int p_authmode, Ref<X509Ce
 	Error err = _setup(MBEDTLS_SSL_IS_CLIENT, p_transport, p_authmode);
 	ERR_FAIL_COND_V(err != OK, err);
 
-	X509CertificateMbedTLS *cas = NULL;
+	X509CertificateMbedTLS *cas = nullptr;
 
 	if (p_valid_cas.is_valid()) {
 		// Locking CA certificates
@@ -163,14 +163,14 @@ Error SSLContextMbedTLS::init_client(int p_transport, int p_authmode, Ref<X509Ce
 	} else {
 		// Fall back to default certificates (no need to lock those).
 		cas = CryptoMbedTLS::get_default_certificates();
-		if (cas == NULL) {
+		if (cas == nullptr) {
 			clear();
 			ERR_FAIL_V_MSG(ERR_UNCONFIGURED, "SSL module failed to initialize!");
 		}
 	}
 
 	// Set valid CAs
-	mbedtls_ssl_conf_ca_chain(&conf, &(cas->cert), NULL);
+	mbedtls_ssl_conf_ca_chain(&conf, &(cas->cert), nullptr);
 	mbedtls_ssl_setup(&ssl, &conf);
 	return OK;
 }
@@ -195,7 +195,7 @@ void SSLContextMbedTLS::clear() {
 }
 
 mbedtls_ssl_context *SSLContextMbedTLS::get_context() {
-	ERR_FAIL_COND_V(!inited, NULL);
+	ERR_FAIL_COND_V(!inited, nullptr);
 	return &ssl;
 }
 

@@ -407,7 +407,7 @@ static const char *locale_list[] = {
 	"zh_SG", //  Chinese (Singapore)
 	"zh_TW", //  Chinese (Taiwan)
 	"zu_ZA", //  Zulu (South Africa)
-	0
+	nullptr
 };
 
 static const char *locale_names[] = {
@@ -775,7 +775,7 @@ static const char *locale_names[] = {
 	"Chinese (Singapore)",
 	"Chinese (Taiwan)",
 	"Zulu (South Africa)",
-	0
+	nullptr
 };
 
 // Windows has some weird locale identifiers which do not honor the ISO 639-1
@@ -789,7 +789,7 @@ static const char *locale_renames[][2] = {
 	{ "in", "id" }, //  Indonesian
 	{ "iw", "he" }, //  Hebrew
 	{ "no", "nb" }, //  Norwegian Bokmål
-	{ NULL, NULL }
+	{ nullptr, nullptr }
 };
 
 ///////////////////////////////////////////////
@@ -929,7 +929,7 @@ String TranslationServer::standardize_locale(const String &p_locale) {
 
 	// Handles known non-ISO locale names used e.g. on Windows
 	int idx = 0;
-	while (locale_renames[idx][0] != NULL) {
+	while (locale_renames[idx][0] != nullptr) {
 		if (locale_renames[idx][0] == univ_locale) {
 			univ_locale = locale_renames[idx][1];
 			break;
@@ -1141,7 +1141,7 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 	return res;
 }
 
-TranslationServer *TranslationServer::singleton = NULL;
+TranslationServer *TranslationServer::singleton = nullptr;
 
 bool TranslationServer::_load_translations(const String &p_from) {
 

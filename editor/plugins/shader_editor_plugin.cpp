@@ -716,7 +716,7 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 bool ShaderEditorPlugin::handles(Object *p_object) const {
 
 	Shader *shader = Object::cast_to<Shader>(p_object);
-	return shader != NULL && shader->is_text_shader();
+	return shader != nullptr && shader->is_text_shader();
 }
 
 void ShaderEditorPlugin::make_visible(bool p_visible) {

@@ -287,7 +287,7 @@ void AnimationCache::set_all(float p_time, float p_delta) {
 
 					if (!args.size()) {
 
-						call_track(i, name, NULL, 0, err);
+						call_track(i, name, nullptr, 0, err);
 					} else {
 
 						Vector<const Variant *> argptrs;
@@ -332,7 +332,7 @@ void AnimationCache::set_root(Node *p_root) {
 
 AnimationCache::AnimationCache() {
 
-	root = NULL;
+	root = nullptr;
 	cache_dirty = true;
 	cache_valid = false;
 }

@@ -155,7 +155,7 @@ Error ContextEGL_UWP::initialize() {
 			throw Exception::CreateException(E_FAIL, L"Failed to initialize EGL");
 		}
 
-		if (eglGetConfigs(display, NULL, 0, &numConfigs) == EGL_FALSE) {
+		if (eglGetConfigs(display, nullptr, 0, &numConfigs) == EGL_FALSE) {
 			throw Exception::CreateException(E_FAIL, L"Failed to get EGLConfig count");
 		}
 

@@ -87,7 +87,7 @@ void OS_LinuxBSD::finalize() {
 
 	if (main_loop)
 		memdelete(main_loop);
-	main_loop = NULL;
+	main_loop = nullptr;
 
 #ifdef ALSAMIDI_ENABLED
 	driver_alsamidi.close();
@@ -107,7 +107,7 @@ void OS_LinuxBSD::delete_main_loop() {
 
 	if (main_loop)
 		memdelete(main_loop);
-	main_loop = NULL;
+	main_loop = nullptr;
 }
 
 void OS_LinuxBSD::set_main_loop(MainLoop *p_main_loop) {
@@ -230,7 +230,7 @@ String OS_LinuxBSD::get_system_dir(SystemDir p_dir) const {
 	String pipe;
 	List<String> arg;
 	arg.push_back(xdgparam);
-	Error err = const_cast<OS_LinuxBSD *>(this)->execute("xdg-user-dir", arg, true, NULL, &pipe);
+	Error err = const_cast<OS_LinuxBSD *>(this)->execute("xdg-user-dir", arg, true, nullptr, &pipe);
 	if (err != OK)
 		return ".";
 	return pipe.strip_edges();
@@ -351,7 +351,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	mv_args.push_back(p_path);
 	mv_args.push_back(trash_can);
 	int retval;
-	err = execute("mv", mv_args, true, NULL, NULL, &retval);
+	err = execute("mv", mv_args, true, nullptr, nullptr, &retval);
 
 	// Issue an error if "mv" failed to move the given resource to the trash can.
 	if (err != OK || retval != 0) {
@@ -364,7 +364,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 
 OS_LinuxBSD::OS_LinuxBSD() {
 
-	main_loop = NULL;
+	main_loop = nullptr;
 	force_quit = false;
 
 #ifdef PULSEAUDIO_ENABLED

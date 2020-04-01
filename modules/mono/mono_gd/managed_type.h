@@ -46,7 +46,7 @@ struct ManagedType {
 
 	ManagedType() :
 			type_encoding(0),
-			type_class(NULL) {
+			type_class(nullptr) {
 	}
 
 	ManagedType(int p_type_encoding, GDMonoClass *p_type_class) :

@@ -1220,7 +1220,7 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 					glVertexAttribPointer(10, 4, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(sizeof(float) * 4 * 5));
 					glVertexAttribDivisor(10, 1);
 					glEnableVertexAttribArray(11); //color
-					glVertexAttribPointer(11, 4, GL_FLOAT, GL_FALSE, stride, NULL);
+					glVertexAttribPointer(11, 4, GL_FLOAT, GL_FALSE, stride, nullptr);
 					glVertexAttribDivisor(11, 1);
 					glEnableVertexAttribArray(12); //custom
 					glVertexAttribPointer(12, 4, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(sizeof(float) * 4 * 2));
@@ -1262,7 +1262,7 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 						glVertexAttribPointer(10, 4, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(sizeof(float) * 4 * 5));
 						glVertexAttribDivisor(10, 1);
 						glEnableVertexAttribArray(11); //color
-						glVertexAttribPointer(11, 4, GL_FLOAT, GL_FALSE, stride, NULL);
+						glVertexAttribPointer(11, 4, GL_FLOAT, GL_FALSE, stride, nullptr);
 						glVertexAttribDivisor(11, 1);
 						glEnableVertexAttribArray(12); //custom
 						glVertexAttribPointer(12, 4, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(sizeof(float) * 4 * 2));
@@ -1314,13 +1314,13 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 
 	if (current_clip && reclip) {
 		//will make it re-enable clipping if needed afterwards
-		current_clip = NULL;
+		current_clip = nullptr;
 	}
 }
 
 void RasterizerCanvasRD::_render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, RID p_screen_uniform_set) {
 
-	Item *current_clip = NULL;
+	Item *current_clip = nullptr;
 
 	Transform2D canvas_transform_inverse = p_canvas_transform_inverse;
 
@@ -1369,7 +1369,7 @@ void RasterizerCanvasRD::_render_items(RID p_to_render_target, int p_item_count,
 
 		if (ci->material != prev_material) {
 
-			MaterialData *material_data = NULL;
+			MaterialData *material_data = nullptr;
 			if (ci->material.is_valid()) {
 				material_data = (MaterialData *)storage->material_get_data(ci->material, RasterizerStorageRD::SHADER_TYPE_2D);
 			}
@@ -2532,7 +2532,7 @@ RasterizerCanvasRD::~RasterizerCanvasRD() {
 		//anything remains?
 		if (bindings.texture_bindings.size()) {
 			ERR_PRINT("Some texture bindings were not properly freed (leaked canvasitems?");
-			const TextureBindingID *key = NULL;
+			const TextureBindingID *key = nullptr;
 			while ((key = bindings.texture_bindings.next(key))) {
 				TextureBinding *tb = bindings.texture_bindings[*key];
 				tb->reference_count = 1;

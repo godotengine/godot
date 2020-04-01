@@ -32,7 +32,7 @@
 
 #include "image_loader_jpegd.h"
 
-static ImageLoaderJPG *image_loader_jpg = NULL;
+static ImageLoaderJPG *image_loader_jpg = nullptr;
 
 void register_jpg_types() {
 

@@ -37,7 +37,7 @@
 */
 
 NavRegion::NavRegion() :
-		map(NULL),
+		map(nullptr),
 		polygons_dirty(true) {
 }
 
@@ -71,7 +71,7 @@ void NavRegion::update_polygons() {
 	polygons.clear();
 	polygons_dirty = false;
 
-	if (map == NULL) {
+	if (map == nullptr) {
 		return;
 	}
 

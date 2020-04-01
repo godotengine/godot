@@ -56,7 +56,7 @@ void Path2DEditor::_notification(int p_what) {
 void Path2DEditor::_node_removed(Node *p_node) {
 
 	if (p_node == node) {
-		node = NULL;
+		node = nullptr;
 		hide();
 	}
 }
@@ -288,7 +288,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			Vector2 gpoint = mm->get_position();
 
 			Ref<Curve2D> curve = node->get_curve();
-			if (curve == NULL) return true;
+			if (curve == nullptr) return true;
 			if (curve->get_point_count() < 2) return true;
 
 			// Find edge
@@ -449,7 +449,7 @@ void Path2DEditor::edit(Node *p_path2d) {
 		// node may have been deleted at this point
 		if (node && node->is_connected("visibility_changed", callable_mp(this, &Path2DEditor::_node_visibility_changed)))
 			node->disconnect("visibility_changed", callable_mp(this, &Path2DEditor::_node_visibility_changed));
-		node = NULL;
+		node = nullptr;
 	}
 }
 
@@ -532,7 +532,7 @@ void Path2DEditor::_handle_option_pressed(int p_option) {
 
 Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 
-	canvas_item_editor = NULL;
+	canvas_item_editor = nullptr;
 	editor = p_editor;
 	undo_redo = editor->get_undo_redo();
 	mirror_handle_angle = true;
@@ -620,7 +620,7 @@ void Path2DEditorPlugin::make_visible(bool p_visible) {
 
 		path2d_editor->hide();
 		path2d_editor->base_hb->hide();
-		path2d_editor->edit(NULL);
+		path2d_editor->edit(nullptr);
 	}
 }
 

@@ -34,7 +34,7 @@
 #include "core/project_settings.h"
 #include "thread_jandroid.h"
 
-AudioDriverAndroid *AudioDriverAndroid::s_ad = NULL;
+AudioDriverAndroid *AudioDriverAndroid::s_ad = nullptr;
 
 jobject AudioDriverAndroid::io;
 jmethodID AudioDriverAndroid::_init_audio;
@@ -46,10 +46,10 @@ jclass AudioDriverAndroid::cls;
 int AudioDriverAndroid::audioBufferFrames = 0;
 int AudioDriverAndroid::mix_rate = 44100;
 bool AudioDriverAndroid::quit = false;
-jobject AudioDriverAndroid::audioBuffer = NULL;
-void *AudioDriverAndroid::audioBufferPinned = NULL;
+jobject AudioDriverAndroid::audioBuffer = nullptr;
+void *AudioDriverAndroid::audioBufferPinned = nullptr;
 Mutex AudioDriverAndroid::mutex;
-int32_t *AudioDriverAndroid::audioBuffer32 = NULL;
+int32_t *AudioDriverAndroid::audioBuffer32 = nullptr;
 
 const char *AudioDriverAndroid::get_name() const {
 
@@ -83,7 +83,7 @@ Error AudioDriverAndroid::init() {
 
 	audioBuffer = env->CallObjectMethod(io, _init_audio, mix_rate, buffer_size);
 
-	ERR_FAIL_COND_V(audioBuffer == NULL, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(audioBuffer == nullptr, ERR_INVALID_PARAMETER);
 
 	audioBuffer = env->NewGlobalRef(audioBuffer);
 
@@ -181,8 +181,8 @@ void AudioDriverAndroid::finish() {
 
 	if (audioBuffer) {
 		env->DeleteGlobalRef(audioBuffer);
-		audioBuffer = NULL;
-		audioBufferPinned = NULL;
+		audioBuffer = nullptr;
+		audioBufferPinned = nullptr;
 	}
 
 	active = false;

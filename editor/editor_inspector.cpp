@@ -71,7 +71,7 @@ Size2 EditorProperty::get_minimum_size() const {
 		ms.width += check->get_width() + get_theme_constant("hseparation", "CheckBox") + get_theme_constant("hseparator", "Tree");
 	}
 
-	if (bottom_editor != NULL && bottom_editor->is_visible()) {
+	if (bottom_editor != nullptr && bottom_editor->is_visible()) {
 		ms.height += get_theme_constant("vseparation", "Tree");
 		Size2 bems = bottom_editor->get_combined_minimum_size();
 		//bems.width += get_constant("item_margin", "Tree");
@@ -856,7 +856,7 @@ void EditorProperty::_bind_methods() {
 EditorProperty::EditorProperty() {
 
 	draw_top_bg = true;
-	object = NULL;
+	object = nullptr;
 	split_ratio = 0.5;
 	selectable = true;
 	text_size = 0;
@@ -873,8 +873,8 @@ EditorProperty::EditorProperty() {
 	property_usage = 0;
 	selected = false;
 	selected_focusable = -1;
-	label_reference = NULL;
-	bottom_editor = NULL;
+	label_reference = nullptr;
+	bottom_editor = nullptr;
 }
 ////////////////////////////////////////////////
 ////////////////////////////////////////////////
@@ -888,7 +888,7 @@ void EditorInspectorPlugin::add_custom_control(Control *control) {
 
 void EditorInspectorPlugin::add_property_editor(const String &p_for_property, Control *p_prop) {
 
-	ERR_FAIL_COND(Object::cast_to<EditorProperty>(p_prop) == NULL);
+	ERR_FAIL_COND(Object::cast_to<EditorProperty>(p_prop) == nullptr);
 
 	AddedEditor ae;
 	ae.properties.push_back(p_for_property);
@@ -1257,7 +1257,7 @@ void EditorInspectorSection::_bind_methods() {
 }
 
 EditorInspectorSection::EditorInspectorSection() {
-	object = NULL;
+	object = nullptr;
 	foldable = false;
 	vbox = memnew(VBoxContainer);
 	vbox_added = false;
@@ -1297,7 +1297,7 @@ EditorProperty *EditorInspector::instantiate_property_editor(Object *p_object, V
 			}
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 void EditorInspector::add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
@@ -1473,12 +1473,12 @@ void EditorInspector::update_tree() {
 		}
 	}
 
-	//	TreeItem *current_category = NULL;
+	//	TreeItem *current_category = nullptr;
 
 	String filter = search_box ? search_box->get_text() : "";
 	String group;
 	String group_base;
-	VBoxContainer *category_vbox = NULL;
+	VBoxContainer *category_vbox = nullptr;
 
 	List<PropertyInfo>
 			plist;
@@ -1535,7 +1535,7 @@ void EditorInspector::update_tree() {
 
 			EditorInspectorCategory *category = memnew(EditorInspectorCategory);
 			main_vbox->add_child(category);
-			category_vbox = NULL; //reset
+			category_vbox = nullptr; //reset
 
 			String type = p.name;
 			category->icon = EditorNode::get_singleton()->get_class_icon(type, "Object");
@@ -1621,7 +1621,7 @@ void EditorInspector::update_tree() {
 				continue;
 		}
 
-		if (category_vbox == NULL) {
+		if (category_vbox == nullptr) {
 			category_vbox = memnew(VBoxContainer);
 			main_vbox->add_child(category_vbox);
 		}
@@ -1659,7 +1659,7 @@ void EditorInspector::update_tree() {
 
 			if (current_vbox == main_vbox) {
 				//do not add directly to the main vbox, given it has no spacing
-				if (category_vbox == NULL) {
+				if (category_vbox == nullptr) {
 					category_vbox = memnew(VBoxContainer);
 				}
 				current_vbox = category_vbox;
@@ -2143,7 +2143,7 @@ void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
 			for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 				if (E->get().name == p_path) {
 					Callable::CallError ce;
-					to_create = Variant::construct(E->get().type, NULL, 0, ce);
+					to_create = Variant::construct(E->get().type, nullptr, 0, ce);
 					break;
 				}
 			}
@@ -2191,7 +2191,7 @@ void EditorInspector::_resource_selected(const String &p_path, RES p_resource) {
 void EditorInspector::_node_removed(Node *p_node) {
 
 	if (p_node == object) {
-		edit(NULL);
+		edit(nullptr);
 	}
 }
 
@@ -2211,14 +2211,14 @@ void EditorInspector::_notification(int p_what) {
 		}
 	}
 	if (p_what == NOTIFICATION_PREDELETE) {
-		edit(NULL); //just in case
+		edit(nullptr); //just in case
 	}
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 
 		if (!sub_inspector) {
 			get_tree()->disconnect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
 		}
-		edit(NULL);
+		edit(nullptr);
 	}
 
 	if (p_what == NOTIFICATION_PROCESS) {
@@ -2328,8 +2328,8 @@ void EditorInspector::_bind_methods() {
 }
 
 EditorInspector::EditorInspector() {
-	object = NULL;
-	undo_redo = NULL;
+	object = nullptr;
+	undo_redo = nullptr;
 	main_vbox = memnew(VBoxContainer);
 	main_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 	main_vbox->add_theme_constant_override("separation", 0);
@@ -2349,7 +2349,7 @@ EditorInspector::EditorInspector() {
 	update_tree_pending = false;
 	refresh_countdown = 0;
 	read_only = false;
-	search_box = NULL;
+	search_box = nullptr;
 	keying = false;
 	_prop_edited = "property_edited";
 	set_process(true);

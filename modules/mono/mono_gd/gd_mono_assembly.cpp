@@ -144,7 +144,7 @@ MonoAssembly *GDMonoAssembly::_search_hook(MonoAssemblyName *aname, void *user_d
 	if (loaded_asm)
 		return loaded_asm->get_assembly();
 
-	return NULL;
+	return nullptr;
 }
 
 MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **, void *user_data, bool refonly) {
@@ -157,7 +157,7 @@ MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **, vo
 
 MonoAssembly *GDMonoAssembly::_load_assembly_search(const String &p_name, const Vector<String> &p_search_dirs, bool p_refonly) {
 
-	MonoAssembly *res = NULL;
+	MonoAssembly *res = nullptr;
 	String path;
 
 	bool has_extension = p_name.ends_with(".dll") || p_name.ends_with(".exe");
@@ -169,27 +169,27 @@ MonoAssembly *GDMonoAssembly::_load_assembly_search(const String &p_name, const 
 			path = search_dir.plus_file(p_name);
 			if (FileAccess::exists(path)) {
 				res = _real_load_assembly_from(path, p_refonly);
-				if (res != NULL)
+				if (res != nullptr)
 					return res;
 			}
 		} else {
 			path = search_dir.plus_file(p_name + ".dll");
 			if (FileAccess::exists(path)) {
 				res = _real_load_assembly_from(path, p_refonly);
-				if (res != NULL)
+				if (res != nullptr)
 					return res;
 			}
 
 			path = search_dir.plus_file(p_name + ".exe");
 			if (FileAccess::exists(path)) {
 				res = _real_load_assembly_from(path, p_refonly);
-				if (res != NULL)
+				if (res != nullptr)
 					return res;
 			}
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 String GDMonoAssembly::find_assembly(const String &p_name) {
@@ -223,17 +223,17 @@ void GDMonoAssembly::initialize() {
 
 	fill_search_dirs(search_dirs);
 
-	mono_install_assembly_search_hook(&assembly_search_hook, NULL);
-	mono_install_assembly_refonly_search_hook(&assembly_refonly_search_hook, NULL);
-	mono_install_assembly_preload_hook(&assembly_preload_hook, NULL);
-	mono_install_assembly_refonly_preload_hook(&assembly_refonly_preload_hook, NULL);
-	mono_install_assembly_load_hook(&assembly_load_hook, NULL);
+	mono_install_assembly_search_hook(&assembly_search_hook, nullptr);
+	mono_install_assembly_refonly_search_hook(&assembly_refonly_search_hook, nullptr);
+	mono_install_assembly_preload_hook(&assembly_preload_hook, nullptr);
+	mono_install_assembly_refonly_preload_hook(&assembly_refonly_preload_hook, nullptr);
+	mono_install_assembly_load_hook(&assembly_load_hook, nullptr);
 }
 
 MonoAssembly *GDMonoAssembly::_real_load_assembly_from(const String &p_path, bool p_refonly) {
 
 	Vector<uint8_t> data = FileAccess::get_file_as_array(p_path);
-	ERR_FAIL_COND_V_MSG(data.empty(), NULL, "Could read the assembly in the specified location");
+	ERR_FAIL_COND_V_MSG(data.empty(), nullptr, "Could read the assembly in the specified location");
 
 	String image_filename;
 
@@ -255,7 +255,7 @@ MonoAssembly *GDMonoAssembly::_real_load_assembly_from(const String &p_path, boo
 			true, &status, p_refonly,
 			image_filename.utf8());
 
-	ERR_FAIL_COND_V_MSG(status != MONO_IMAGE_OK || !image, NULL, "Failed to open assembly image from the loaded data");
+	ERR_FAIL_COND_V_MSG(status != MONO_IMAGE_OK || !image, nullptr, "Failed to open assembly image from the loaded data");
 
 #ifdef DEBUG_ENABLED
 	Vector<uint8_t> pdb_data;
@@ -281,7 +281,7 @@ no_pdb:
 
 	MonoAssembly *assembly = mono_assembly_load_from_full(image, image_filename.utf8().get_data(), &status, p_refonly);
 
-	ERR_FAIL_COND_V_MSG(status != MONO_IMAGE_OK || !assembly, NULL, "Failed to load assembly for image");
+	ERR_FAIL_COND_V_MSG(status != MONO_IMAGE_OK || !assembly, nullptr, "Failed to load assembly for image");
 
 	// Decrement refcount which was previously incremented by mono_image_open_from_data_with_name
 	mono_image_close(image);
@@ -300,8 +300,8 @@ void GDMonoAssembly::unload() {
 	cached_classes.clear();
 	cached_raw.clear();
 
-	assembly = NULL;
-	image = NULL;
+	assembly = nullptr;
+	image = nullptr;
 }
 
 String GDMonoAssembly::get_path() const {
@@ -310,7 +310,7 @@ String GDMonoAssembly::get_path() const {
 
 GDMonoClass *GDMonoAssembly::get_class(const StringName &p_namespace, const StringName &p_name) {
 
-	ERR_FAIL_NULL_V(image, NULL);
+	ERR_FAIL_NULL_V(image, nullptr);
 
 	ClassKey key(p_namespace, p_name);
 
@@ -322,7 +322,7 @@ GDMonoClass *GDMonoAssembly::get_class(const StringName &p_namespace, const Stri
 	MonoClass *mono_class = mono_class_from_name(image, String(p_namespace).utf8(), String(p_name).utf8());
 
 	if (!mono_class)
-		return NULL;
+		return nullptr;
 
 	GDMonoClass *wrapped_class = memnew(GDMonoClass(p_namespace, p_name, mono_class, this));
 
@@ -334,7 +334,7 @@ GDMonoClass *GDMonoAssembly::get_class(const StringName &p_namespace, const Stri
 
 GDMonoClass *GDMonoAssembly::get_class(MonoClass *p_mono_class) {
 
-	ERR_FAIL_NULL_V(image, NULL);
+	ERR_FAIL_NULL_V(image, nullptr);
 
 	Map<MonoClass *, GDMonoClass *>::Element *match = cached_raw.find(p_mono_class);
 
@@ -354,7 +354,7 @@ GDMonoClass *GDMonoAssembly::get_class(MonoClass *p_mono_class) {
 
 GDMonoClass *GDMonoAssembly::get_object_derived_class(const StringName &p_class) {
 
-	GDMonoClass *match = NULL;
+	GDMonoClass *match = nullptr;
 
 	if (gdobject_class_cache_updated) {
 		Map<StringName, GDMonoClass *>::Element *result = gdobject_class_cache.find(p_class);
@@ -386,7 +386,7 @@ GDMonoClass *GDMonoAssembly::get_object_derived_class(const StringName &p_class)
 				GDMonoClass *current_nested = nested_classes.front()->get();
 				nested_classes.pop_back();
 
-				void *iter = NULL;
+				void *iter = nullptr;
 
 				while (true) {
 					MonoClass *raw_nested = mono_class_get_nested_types(current_nested->get_mono_ptr(), &iter);
@@ -425,11 +425,11 @@ GDMonoAssembly *GDMonoAssembly::load_from(const String &p_name, const String &p_
 
 	if (!assembly) {
 		assembly = _real_load_assembly_from(p_path, p_refonly);
-		ERR_FAIL_NULL_V(assembly, NULL);
+		ERR_FAIL_NULL_V(assembly, nullptr);
 	}
 
 	GDMonoAssembly *loaded_asm = GDMono::get_singleton()->get_loaded_assembly(p_name);
-	ERR_FAIL_NULL_V_MSG(loaded_asm, NULL, "Loaded assembly missing from table. Did we not receive the load hook?");
+	ERR_FAIL_NULL_V_MSG(loaded_asm, nullptr, "Loaded assembly missing from table. Did we not receive the load hook?");
 
 	return loaded_asm;
 }

@@ -192,7 +192,7 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 			src_rgba_f[j] = Etc::ColorFloatRGBA::ConvertFromRGBA8(src[si], src[si + 1], src[si + 2], src[si + 3]);
 		}
 
-		unsigned char *etc_data = NULL;
+		unsigned char *etc_data = nullptr;
 		unsigned int etc_data_len = 0;
 		unsigned int extended_width = 0, extended_height = 0;
 		Etc::Encode((float *)src_rgba_f, mipmap_w, mipmap_h, etc2comp_etc_format, error_metric, effort, num_cpus, num_cpus, &etc_data, &etc_data_len, &extended_width, &extended_height, &encoding_time);

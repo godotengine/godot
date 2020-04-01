@@ -280,19 +280,19 @@ void IP::_bind_methods() {
 	BIND_ENUM_CONSTANT(TYPE_ANY);
 }
 
-IP *IP::singleton = NULL;
+IP *IP::singleton = nullptr;
 
 IP *IP::get_singleton() {
 
 	return singleton;
 }
 
-IP *(*IP::_create)() = NULL;
+IP *(*IP::_create)() = nullptr;
 
 IP *IP::create() {
 
-	ERR_FAIL_COND_V_MSG(singleton, NULL, "IP singleton already exist.");
-	ERR_FAIL_COND_V(!_create, NULL);
+	ERR_FAIL_COND_V_MSG(singleton, nullptr, "IP singleton already exist.");
+	ERR_FAIL_COND_V(!_create, nullptr);
 	return _create();
 }
 
@@ -307,7 +307,7 @@ IP::IP() {
 
 	resolver->thread = Thread::create(_IP_ResolverPrivate::_thread_function, resolver);
 #else
-	resolver->thread = NULL;
+	resolver->thread = nullptr;
 #endif
 }
 

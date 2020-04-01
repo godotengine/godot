@@ -99,7 +99,7 @@ void ManagedCallable::call(const Variant **p_arguments, int p_argcount, Variant 
 
 	MonoObject *delegate = delegate_handle.get_target();
 
-	MonoException *exc = NULL;
+	MonoException *exc = nullptr;
 	MonoObject *ret = delegate_invoke->invoke(delegate, p_arguments, &exc);
 
 	if (exc) {
@@ -119,7 +119,7 @@ void ManagedCallable::set_delegate(MonoDelegate *p_delegate) {
 
 ManagedCallable::ManagedCallable(MonoDelegate *p_delegate) {
 #ifdef DEBUG_ENABLED
-	CRASH_COND(p_delegate == NULL);
+	CRASH_COND(p_delegate == nullptr);
 #endif
 
 	set_delegate(p_delegate);

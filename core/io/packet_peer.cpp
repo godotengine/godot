@@ -90,13 +90,13 @@ Error PacketPeer::get_var(Variant &r_variant, bool p_allow_objects) {
 	if (err)
 		return err;
 
-	return decode_variant(r_variant, buffer, buffer_size, NULL, p_allow_objects);
+	return decode_variant(r_variant, buffer, buffer_size, nullptr, p_allow_objects);
 }
 
 Error PacketPeer::put_var(const Variant &p_packet, bool p_full_objects) {
 
 	int len;
-	Error err = encode_variant(p_packet, NULL, len, p_full_objects); // compute len first
+	Error err = encode_variant(p_packet, nullptr, len, p_full_objects); // compute len first
 	if (err)
 		return err;
 

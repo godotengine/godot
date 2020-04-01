@@ -105,7 +105,7 @@ void TextureBasisU::set_basisu_data(const Vector<uint8_t>& p_data) {
 		imgfmt = Image::FORMAT_ETC2_RGBA8;
 	};
 
-	basist::basisu_transcoder tr(NULL);
+	basist::basisu_transcoder tr(nullptr);
 
 	ERR_FAIL_COND(!tr.validate_header(ptr, size));
 

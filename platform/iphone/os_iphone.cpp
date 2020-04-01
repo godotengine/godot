@@ -68,7 +68,7 @@ const char *OSIPhone::get_video_driver_name(int p_driver) const {
 		case VIDEO_DRIVER_GLES2:
 			return "GLES2";
 	}
-	ERR_FAIL_V_MSG(NULL, "Invalid video driver index: " + itos(p_driver) + ".");
+	ERR_FAIL_V_MSG(nullptr, "Invalid video driver index: " + itos(p_driver) + ".");
 };
 
 OSIPhone *OSIPhone::get_singleton() {
@@ -339,7 +339,7 @@ void OSIPhone::delete_main_loop() {
 		memdelete(main_loop);
 	};
 
-	main_loop = NULL;
+	main_loop = nullptr;
 };
 
 void OSIPhone::finalize() {
@@ -608,7 +608,7 @@ bool OSIPhone::_check_internal_feature_support(const String &p_feature) {
 // so we use this as a hack to ensure certain code is called before
 // everything else, but after all units are initialized.
 typedef void (*init_callback)();
-static init_callback *ios_init_callbacks = NULL;
+static init_callback *ios_init_callbacks = nullptr;
 static int ios_init_callbacks_count = 0;
 static int ios_init_callbacks_capacity = 0;
 
@@ -631,12 +631,12 @@ OSIPhone::OSIPhone(int width, int height, String p_data_dir) {
 		ios_init_callbacks[i]();
 	}
 	free(ios_init_callbacks);
-	ios_init_callbacks = NULL;
+	ios_init_callbacks = nullptr;
 	ios_init_callbacks_count = 0;
 	ios_init_callbacks_capacity = 0;
 
-	main_loop = NULL;
-	rendering_server = NULL;
+	main_loop = nullptr;
+	rendering_server = nullptr;
 
 	VideoMode vm;
 	vm.fullscreen = true;

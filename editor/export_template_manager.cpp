@@ -184,7 +184,7 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 
 	// unzClose() will take care of closing the file stored in the unzFile,
 	// so we don't need to `memdelete(fa)` in this method.
-	FileAccess *fa = NULL;
+	FileAccess *fa = nullptr;
 	zlib_filefunc_def io = zipio_create_io_from_file(&fa);
 
 	unzFile pkg = unzOpen2(p_file.utf8().get_data(), &io);
@@ -203,7 +203,7 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 
 		unz_file_info info;
 		char fname[16384];
-		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
+		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
 		String file = fname;
 
@@ -258,7 +258,7 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 
 	ret = unzGoToFirstFile(pkg);
 
-	EditorProgress *p = NULL;
+	EditorProgress *p = nullptr;
 	if (p_use_progress) {
 		p = memnew(EditorProgress("ltask", TTR("Extracting Export Templates"), fc));
 	}
@@ -270,7 +270,7 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 		//get filename
 		unz_file_info info;
 		char fname[16384];
-		unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
+		unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
 		String file_path(String(fname).simplify_path());
 
@@ -587,7 +587,7 @@ Error ExportTemplateManager::install_android_template() {
 	const String &source_zip = templates_path.plus_file("android_source.zip");
 	ERR_FAIL_COND_V(!FileAccess::exists(source_zip), ERR_CANT_OPEN);
 
-	FileAccess *src_f = NULL;
+	FileAccess *src_f = nullptr;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
 	unzFile pkg = unzOpen2(source_zip.utf8().get_data(), &io);
@@ -611,7 +611,7 @@ Error ExportTemplateManager::install_android_template() {
 		// Get file path.
 		unz_file_info info;
 		char fpath[16384];
-		ret = unzGetCurrentFileInfo(pkg, &info, fpath, 16384, NULL, 0, NULL, 0);
+		ret = unzGetCurrentFileInfo(pkg, &info, fpath, 16384, nullptr, 0, nullptr, 0);
 
 		String path = fpath;
 		String base_dir = path.get_base_dir();

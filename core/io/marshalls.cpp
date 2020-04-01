@@ -439,7 +439,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 					(*r_len) += 8;
 
 				if (val.is_null()) {
-					r_variant = (Object *)NULL;
+					r_variant = (Object *)nullptr;
 				} else {
 					Ref<EncodedObjectAsID> obj_as_id;
 					obj_as_id.instance();
@@ -457,7 +457,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 					return err;
 
 				if (str == String()) {
-					r_variant = (Object *)NULL;
+					r_variant = (Object *)nullptr;
 				} else {
 
 					Object *obj = ClassDB::instance(str);
@@ -917,7 +917,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			// Test for potential wrong values sent by the debugger when it breaks.
 			Object *obj = p_variant.get_validated_object();
 			if (!obj) {
-				// Object is invalid, send a NULL instead.
+				// Object is invalid, send a nullptr  instead.
 				if (buf) {
 					encode_uint32(Variant::NIL, buf);
 				}

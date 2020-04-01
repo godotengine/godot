@@ -502,7 +502,7 @@ public:
 	String base64_to_utf8(const String &p_str);
 
 	_Marshalls() { singleton = this; }
-	~_Marshalls() { singleton = NULL; }
+	~_Marshalls() { singleton = nullptr; }
 };
 
 class _Mutex : public Reference {

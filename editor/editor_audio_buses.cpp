@@ -1007,7 +1007,7 @@ void EditorAudioBuses::_update_buses() {
 		memdelete(bus_hb->get_child(0));
 	}
 
-	drop_end = NULL;
+	drop_end = nullptr;
 
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 
@@ -1045,7 +1045,7 @@ void EditorAudioBuses::_notification(int p_what) {
 
 			if (drop_end) {
 				drop_end->queue_delete();
-				drop_end = NULL;
+				drop_end = nullptr;
 			}
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -1296,7 +1296,7 @@ void EditorAudioBuses::_bind_methods() {
 
 EditorAudioBuses::EditorAudioBuses() {
 
-	drop_end = NULL;
+	drop_end = nullptr;
 	top_hb = memnew(HBoxContainer);
 	add_child(top_hb);
 
@@ -1402,7 +1402,7 @@ void AudioBusesEditorPlugin::edit(Object *p_node) {
 
 bool AudioBusesEditorPlugin::handles(Object *p_node) const {
 
-	return (Object::cast_to<AudioBusLayout>(p_node) != NULL);
+	return (Object::cast_to<AudioBusLayout>(p_node) != nullptr);
 }
 
 void AudioBusesEditorPlugin::make_visible(bool p_visible) {

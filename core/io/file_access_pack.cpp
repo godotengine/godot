@@ -98,18 +98,18 @@ void PackedData::add_path(const String &pkg_path, const String &path, uint64_t o
 
 void PackedData::add_pack_source(PackSource *p_source) {
 
-	if (p_source != NULL) {
+	if (p_source != nullptr) {
 		sources.push_back(p_source);
 	}
 };
 
-PackedData *PackedData::singleton = NULL;
+PackedData *PackedData::singleton = nullptr;
 
 PackedData::PackedData() {
 
 	singleton = this;
 	root = memnew(PackedDir);
-	root->parent = NULL;
+	root->parent = nullptr;
 	disabled = false;
 
 	add_pack_source(memnew(PackedSourcePCK));

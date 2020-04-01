@@ -42,7 +42,7 @@
 
 Node *SceneTreeEditor::get_scene_node() {
 
-	ERR_FAIL_COND_V(!is_inside_tree(), NULL);
+	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
 
 	return get_tree()->get_edited_scene_root();
 }
@@ -78,7 +78,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		undo_redo->create_action(TTR("Toggle Visible"));
 		_toggle_visible(n);
 		List<Node *> selection = editor_selection->get_selected_node_list();
-		if (selection.size() > 1 && selection.find(n) != NULL) {
+		if (selection.size() > 1 && selection.find(n) != nullptr) {
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 				Node *nv = E->get();
 				ERR_FAIL_COND(!nv);
@@ -504,7 +504,7 @@ void SceneTreeEditor::_node_removed(Node *p_node) {
 	}
 
 	if (p_node == selected) {
-		selected = NULL;
+		selected = nullptr;
 		emit_signal("node_selected");
 	}
 }
@@ -529,7 +529,7 @@ void SceneTreeEditor::_update_tree() {
 	updating_tree = true;
 	tree->clear();
 	if (get_scene_node()) {
-		_add_nodes(get_scene_node(), NULL);
+		_add_nodes(get_scene_node(), nullptr);
 		last_hash = hash_djb2_one_64(0);
 		_compute_hash(get_scene_node(), last_hash);
 	}
@@ -667,7 +667,7 @@ void SceneTreeEditor::_notification(int p_what) {
 TreeItem *SceneTreeEditor::_find(TreeItem *p_node, const NodePath &p_path) {
 
 	if (!p_node)
-		return NULL;
+		return nullptr;
 
 	NodePath np = p_node->get_metadata(0);
 	if (np == p_path)
@@ -682,7 +682,7 @@ TreeItem *SceneTreeEditor::_find(TreeItem *p_node, const NodePath &p_path) {
 		children = children->get_next();
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
@@ -697,7 +697,7 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 	if (selected == p_node)
 		return;
 
-	TreeItem *item = p_node ? _find(tree->get_root(), p_node->get_path()) : NULL;
+	TreeItem *item = p_node ? _find(tree->get_root(), p_node->get_path()) : nullptr;
 
 	if (item) {
 		// make visible when it's collapsed
@@ -713,7 +713,7 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 
 	} else {
 		if (!p_node)
-			selected = NULL;
+			selected = nullptr;
 		_update_tree();
 		selected = p_node;
 	}
@@ -906,7 +906,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 
 	Vector<Node *> selected;
 	Vector<Ref<Texture2D>> icons;
-	TreeItem *next = tree->get_next_selected(NULL);
+	TreeItem *next = tree->get_next_selected(nullptr);
 	while (next) {
 
 		NodePath np = next->get_metadata(0);
@@ -1117,16 +1117,16 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 
 	connect_to_script_mode = false;
 	connecting_signal = false;
-	undo_redo = NULL;
+	undo_redo = nullptr;
 	tree_dirty = true;
-	selected = NULL;
+	selected = nullptr;
 
 	marked_selectable = false;
 	marked_children_selectable = false;
 	can_rename = p_can_rename;
 	can_open_instance = p_can_open_instance;
 	display_foreign = false;
-	editor_selection = NULL;
+	editor_selection = nullptr;
 
 	if (p_label) {
 		Label *label = memnew(Label);

@@ -57,10 +57,10 @@ JoypadWindows::JoypadWindows(HWND *hwnd) {
 	input = InputFilter::get_singleton();
 	hWnd = hwnd;
 	joypad_count = 0;
-	dinput = NULL;
-	xinput_dll = NULL;
-	xinput_get_state = NULL;
-	xinput_set_state = NULL;
+	dinput = nullptr;
+	xinput_dll = nullptr;
+	xinput_get_state = nullptr;
+	xinput_set_state = nullptr;
 
 	load_xinput();
 
@@ -68,7 +68,7 @@ JoypadWindows::JoypadWindows(HWND *hwnd) {
 		attached_joypads[i] = false;
 
 	HRESULT result;
-	result = DirectInput8Create(GetModuleHandle(NULL), DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&dinput, NULL);
+	result = DirectInput8Create(GetModuleHandle(nullptr), DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&dinput, nullptr);
 	if (FAILED(result)) {
 		printf("failed init DINPUT: %ld\n", result);
 	}
@@ -105,10 +105,10 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 	if (p_guid == &IID_ValveStreamingGamepad || p_guid == &IID_X360WiredGamepad || p_guid == &IID_X360WirelessGamepad)
 		return true;
 
-	PRAWINPUTDEVICELIST dev_list = NULL;
+	PRAWINPUTDEVICELIST dev_list = nullptr;
 	unsigned int dev_list_count = 0;
 
-	if (GetRawInputDeviceList(NULL, &dev_list_count, sizeof(RAWINPUTDEVICELIST)) == (UINT)-1) {
+	if (GetRawInputDeviceList(nullptr, &dev_list_count, sizeof(RAWINPUTDEVICELIST)) == (UINT)-1) {
 		return false;
 	}
 	dev_list = (PRAWINPUTDEVICELIST)malloc(sizeof(RAWINPUTDEVICELIST) * dev_list_count);
@@ -130,7 +130,7 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 				(GetRawInputDeviceInfoA(dev_list[i].hDevice, RIDI_DEVICEINFO, &rdi, &rdiSize) != (UINT)-1) &&
 				(MAKELONG(rdi.hid.dwVendorId, rdi.hid.dwProductId) == (LONG)p_guid->Data1) &&
 				(GetRawInputDeviceInfoA(dev_list[i].hDevice, RIDI_DEVICENAME, &dev_name, &nameSize) != (UINT)-1) &&
-				(strstr(dev_name, "IG_") != NULL)) {
+				(strstr(dev_name, "IG_") != nullptr)) {
 
 			free(dev_list);
 			return true;
@@ -157,7 +157,7 @@ bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
 		return false;
 	}
 
-	hr = dinput->CreateDevice(instance->guidInstance, &joy->di_joy, NULL);
+	hr = dinput->CreateDevice(instance->guidInstance, &joy->di_joy, nullptr);
 
 	if (FAILED(hr)) {
 		return false;

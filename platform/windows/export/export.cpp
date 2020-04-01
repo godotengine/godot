@@ -315,7 +315,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 #endif
 
 	String str;
-	Error err = OS::get_singleton()->execute(signtool_path, args, true, NULL, &str, NULL, true);
+	Error err = OS::get_singleton()->execute(signtool_path, args, true, nullptr, &str, nullptr, true);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	print_line("codesign (" + p_path + "): " + str);

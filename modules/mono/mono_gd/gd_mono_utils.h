@@ -41,7 +41,7 @@
 #include "core/reference.h"
 
 #define UNHANDLED_EXCEPTION(m_exc)                     \
-	if (unlikely(m_exc != NULL)) {                     \
+	if (unlikely(m_exc != nullptr)) {                  \
 		GDMonoUtils::debug_unhandled_exception(m_exc); \
 		GD_UNREACHABLE();                              \
 	}
@@ -77,7 +77,7 @@ _FORCE_INLINE_ void hash_combine(uint32_t &p_hash, const uint32_t &p_with_hash) 
 /**
  * If the object has a csharp script, returns the target of the gchandle stored in the script instance
  * Otherwise returns a newly constructed MonoObject* which is attached to the object
- * Returns NULL on error
+ * Returns nullptr on error
  */
 MonoObject *unmanaged_get_managed(Object *unmanaged);
 
@@ -89,7 +89,7 @@ MonoThread *get_current_thread();
 bool is_thread_attached();
 
 _FORCE_INLINE_ bool is_main_thread() {
-	return mono_domain_get() != NULL && mono_thread_get_main() == mono_thread_current();
+	return mono_domain_get() != nullptr && mono_thread_get_main() == mono_thread_current();
 }
 
 uint32_t new_strong_gchandle(MonoObject *p_object);
@@ -97,7 +97,7 @@ uint32_t new_strong_gchandle_pinned(MonoObject *p_object);
 uint32_t new_weak_gchandle(MonoObject *p_object);
 void free_gchandle(uint32_t p_gchandle);
 
-void runtime_object_init(MonoObject *p_this_obj, GDMonoClass *p_class, MonoException **r_exc = NULL);
+void runtime_object_init(MonoObject *p_this_obj, GDMonoClass *p_class, MonoException **r_exc = nullptr);
 
 bool mono_delegate_equal(MonoDelegate *p_a, MonoDelegate *p_b);
 

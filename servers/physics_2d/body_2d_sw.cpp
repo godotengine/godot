@@ -538,8 +538,8 @@ void Body2DSW::integrate_forces(real_t p_step) {
 		_update_shapes_with_motion(motion);
 	}
 
-	// damp_area=NULL; // clear the area, so it is set in the next frame
-	def_area = NULL; // clear the area, so it is set in the next frame
+	// damp_area=nullptr; // clear the area, so it is set in the next frame
+	def_area = nullptr; // clear the area, so it is set in the next frame
 	contact_count = 0;
 }
 
@@ -650,7 +650,7 @@ void Body2DSW::set_force_integration_callback(ObjectID p_id, const StringName &p
 	if (fi_callback) {
 
 		memdelete(fi_callback);
-		fi_callback = NULL;
+		fi_callback = nullptr;
 	}
 
 	if (p_id.is_valid()) {
@@ -682,8 +682,8 @@ Body2DSW::Body2DSW() :
 	omit_force_integration = false;
 	applied_torque = 0;
 	island_step = 0;
-	island_next = NULL;
-	island_list_next = NULL;
+	island_next = nullptr;
+	island_list_next = nullptr;
 	_set_static(false);
 	first_time_kinematic = false;
 	linear_damp = -1;
@@ -697,7 +697,7 @@ Body2DSW::Body2DSW() :
 	still_time = 0;
 	continuous_cd_mode = PhysicsServer2D::CCD_MODE_DISABLED;
 	can_sleep = true;
-	fi_callback = NULL;
+	fi_callback = nullptr;
 }
 
 Body2DSW::~Body2DSW() {
@@ -706,7 +706,7 @@ Body2DSW::~Body2DSW() {
 		memdelete(fi_callback);
 }
 
-PhysicsDirectBodyState2DSW *PhysicsDirectBodyState2DSW::singleton = NULL;
+PhysicsDirectBodyState2DSW *PhysicsDirectBodyState2DSW::singleton = nullptr;
 
 PhysicsDirectSpaceState2D *PhysicsDirectBodyState2DSW::get_space_state() {
 

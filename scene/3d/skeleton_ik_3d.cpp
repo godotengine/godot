@@ -42,7 +42,7 @@ FabrikInverseKinematic::ChainItem *FabrikInverseKinematic::ChainItem::find_child
 			return &children.write[i];
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 FabrikInverseKinematic::ChainItem *FabrikInverseKinematic::ChainItem::add_child(const BoneId p_bone_id) {
@@ -65,7 +65,7 @@ bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 	chain.chain_root.initial_transform = p_task->skeleton->get_bone_global_pose(chain.chain_root.bone);
 	chain.chain_root.current_pos = chain.chain_root.initial_transform.origin;
 	chain.chain_root.pb = p_task->skeleton->get_physical_bone(chain.chain_root.bone);
-	chain.middle_chain_item = NULL;
+	chain.middle_chain_item = nullptr;
 
 	// Holds all IDs that are composing a single chain in reverse order
 	Vector<BoneId> chain_ids;
@@ -119,7 +119,7 @@ bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 		}
 
 		if (!middle_chain_item_id)
-			chain.middle_chain_item = NULL;
+			chain.middle_chain_item = nullptr;
 
 		// Initialize current tip
 		chain.tips.write[x].chain_item = sub_chain;
@@ -226,14 +226,14 @@ void FabrikInverseKinematic::solve_simple_forwards(Chain &r_chain, bool p_solve_
 
 			if (p_solve_magnet && sub_chain_root == r_chain.middle_chain_item) {
 				// In case of magnet solving this is the tip
-				sub_chain_root = NULL;
+				sub_chain_root = nullptr;
 			} else {
 				sub_chain_root = &child;
 			}
 		} else {
 
 			// Is tip
-			sub_chain_root = NULL;
+			sub_chain_root = nullptr;
 		}
 	}
 }
@@ -251,7 +251,7 @@ FabrikInverseKinematic::Task *FabrikInverseKinematic::create_simple_task(Skeleto
 
 	if (!build_chain(task)) {
 		free_task(task);
-		return NULL;
+		return nullptr;
 	}
 
 	return task;
@@ -328,7 +328,7 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 		if (!ci->children.empty())
 			ci = &ci->children.write[0];
 		else
-			ci = NULL;
+			ci = nullptr;
 	}
 }
 
@@ -432,14 +432,14 @@ SkeletonIK3D::SkeletonIK3D() :
 		use_magnet(false),
 		min_distance(0.01),
 		max_iterations(10),
-		skeleton(NULL),
-		target_node_override(NULL),
-		task(NULL) {
+		skeleton(nullptr),
+		target_node_override(nullptr),
+		task(nullptr) {
 }
 
 SkeletonIK3D::~SkeletonIK3D() {
 	FabrikInverseKinematic::free_task(task);
-	task = NULL;
+	task = nullptr;
 }
 
 void SkeletonIK3D::set_root_bone(const StringName &p_root_bone) {
@@ -479,7 +479,7 @@ const Transform &SkeletonIK3D::get_target_transform() const {
 
 void SkeletonIK3D::set_target_node(const NodePath &p_node) {
 	target_node_path_override = p_node;
-	target_node_override = NULL;
+	target_node_override = nullptr;
 	reload_goal();
 }
 
@@ -550,7 +550,7 @@ Transform SkeletonIK3D::_get_target_transform() {
 void SkeletonIK3D::reload_chain() {
 
 	FabrikInverseKinematic::free_task(task);
-	task = NULL;
+	task = nullptr;
 
 	if (!skeleton)
 		return;

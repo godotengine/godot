@@ -42,7 +42,7 @@
 #define CONTRIBUTE2_URL "https://github.com/godotengine/godot-docs"
 #define REQUEST_URL "https://github.com/godotengine/godot-docs/issues/new"
 
-DocData *EditorHelp::doc = NULL;
+DocData *EditorHelp::doc = nullptr;
 
 void EditorHelp::_init_colors() {
 
@@ -109,7 +109,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		String link = p_select.substr(tag_end + 1, p_select.length()).lstrip(" ");
 
 		String topic;
-		Map<String, int> *table = NULL;
+		Map<String, int> *table = nullptr;
 
 		if (tag == "method") {
 			topic = "class_method";

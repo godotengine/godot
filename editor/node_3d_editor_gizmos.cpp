@@ -773,17 +773,17 @@ EditorNode3DGizmo::EditorNode3DGizmo() {
 	valid = false;
 	billboard_handle = false;
 	hidden = false;
-	base = NULL;
+	base = nullptr;
 	selected = false;
 	instanced = false;
-	spatial_node = NULL;
-	gizmo_plugin = NULL;
+	spatial_node = nullptr;
+	gizmo_plugin = nullptr;
 	selectable_icon_size = -1.0f;
 }
 
 EditorNode3DGizmo::~EditorNode3DGizmo() {
 
-	if (gizmo_plugin != NULL) gizmo_plugin->unregister_gizmo(this);
+	if (gizmo_plugin != nullptr) gizmo_plugin->unregister_gizmo(this);
 	clear();
 }
 
@@ -812,7 +812,7 @@ LightNode3DGizmoPlugin::LightNode3DGizmoPlugin() {
 }
 
 bool LightNode3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<Light3D>(p_spatial) != NULL;
+	return Object::cast_to<Light3D>(p_spatial) != nullptr;
 }
 
 String LightNode3DGizmoPlugin::get_name() const {
@@ -1097,7 +1097,7 @@ AudioStreamPlayer3DNode3DGizmoPlugin::AudioStreamPlayer3DNode3DGizmoPlugin() {
 }
 
 bool AudioStreamPlayer3DNode3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<AudioStreamPlayer3D>(p_spatial) != NULL;
+	return Object::cast_to<AudioStreamPlayer3D>(p_spatial) != nullptr;
 }
 
 String AudioStreamPlayer3DNode3DGizmoPlugin::get_name() const {
@@ -1242,7 +1242,7 @@ CameraNode3DGizmoPlugin::CameraNode3DGizmoPlugin() {
 }
 
 bool CameraNode3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<Camera3D>(p_spatial) != NULL;
+	return Object::cast_to<Camera3D>(p_spatial) != nullptr;
 }
 
 String CameraNode3DGizmoPlugin::get_name() const {
@@ -1493,7 +1493,7 @@ MeshInstanceNode3DGizmoPlugin::MeshInstanceNode3DGizmoPlugin() {
 }
 
 bool MeshInstanceNode3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<MeshInstance3D>(p_spatial) != NULL && Object::cast_to<SoftBody3D>(p_spatial) == NULL;
+	return Object::cast_to<MeshInstance3D>(p_spatial) != nullptr && Object::cast_to<SoftBody3D>(p_spatial) == nullptr;
 }
 
 String MeshInstanceNode3DGizmoPlugin::get_name() const {
@@ -1530,7 +1530,7 @@ Sprite3DNode3DGizmoPlugin::Sprite3DNode3DGizmoPlugin() {
 }
 
 bool Sprite3DNode3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<Sprite3D>(p_spatial) != NULL;
+	return Object::cast_to<Sprite3D>(p_spatial) != nullptr;
 }
 
 String Sprite3DNode3DGizmoPlugin::get_name() const {
@@ -1593,7 +1593,7 @@ Position3DNode3DGizmoPlugin::Position3DNode3DGizmoPlugin() {
 }
 
 bool Position3DNode3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<Position3D>(p_spatial) != NULL;
+	return Object::cast_to<Position3D>(p_spatial) != nullptr;
 }
 
 String Position3DNode3DGizmoPlugin::get_name() const {
@@ -1620,7 +1620,7 @@ SkeletonNode3DGizmoPlugin::SkeletonNode3DGizmoPlugin() {
 }
 
 bool SkeletonNode3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<Skeleton3D>(p_spatial) != NULL;
+	return Object::cast_to<Skeleton3D>(p_spatial) != nullptr;
 }
 
 String SkeletonNode3DGizmoPlugin::get_name() const {
@@ -1827,7 +1827,7 @@ PhysicalBoneNode3DGizmoPlugin::PhysicalBoneNode3DGizmoPlugin() {
 }
 
 bool PhysicalBoneNode3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<PhysicalBone3D>(p_spatial) != NULL;
+	return Object::cast_to<PhysicalBone3D>(p_spatial) != nullptr;
 }
 
 String PhysicalBoneNode3DGizmoPlugin::get_name() const {
@@ -1967,7 +1967,7 @@ RayCastNode3DGizmoPlugin::RayCastNode3DGizmoPlugin() {
 }
 
 bool RayCastNode3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<RayCast3D>(p_spatial) != NULL;
+	return Object::cast_to<RayCast3D>(p_spatial) != nullptr;
 }
 
 String RayCastNode3DGizmoPlugin::get_name() const {
@@ -2021,7 +2021,7 @@ SpringArmNode3DGizmoPlugin::SpringArmNode3DGizmoPlugin() {
 }
 
 bool SpringArmNode3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<SpringArm3D>(p_spatial) != NULL;
+	return Object::cast_to<SpringArm3D>(p_spatial) != nullptr;
 }
 
 String SpringArmNode3DGizmoPlugin::get_name() const {
@@ -2041,7 +2041,7 @@ VehicleWheelNode3DGizmoPlugin::VehicleWheelNode3DGizmoPlugin() {
 }
 
 bool VehicleWheelNode3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<VehicleWheel3D>(p_spatial) != NULL;
+	return Object::cast_to<VehicleWheel3D>(p_spatial) != nullptr;
 }
 
 String VehicleWheelNode3DGizmoPlugin::get_name() const {
@@ -2115,7 +2115,7 @@ SoftBodyNode3DGizmoPlugin::SoftBodyNode3DGizmoPlugin() {
 }
 
 bool SoftBodyNode3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<SoftBody3D>(p_spatial) != NULL;
+	return Object::cast_to<SoftBody3D>(p_spatial) != nullptr;
 }
 
 String SoftBodyNode3DGizmoPlugin::get_name() const {
@@ -2191,7 +2191,7 @@ VisibilityNotifierGizmoPlugin::VisibilityNotifierGizmoPlugin() {
 }
 
 bool VisibilityNotifierGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<VisibilityNotifier3D>(p_spatial) != NULL;
+	return Object::cast_to<VisibilityNotifier3D>(p_spatial) != nullptr;
 }
 
 String VisibilityNotifierGizmoPlugin::get_name() const {
@@ -2347,7 +2347,7 @@ CPUParticles3DGizmoPlugin::CPUParticles3DGizmoPlugin() {
 }
 
 bool CPUParticles3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<CPUParticles3D>(p_spatial) != NULL;
+	return Object::cast_to<CPUParticles3D>(p_spatial) != nullptr;
 }
 
 String CPUParticles3DGizmoPlugin::get_name() const {
@@ -2379,7 +2379,7 @@ GPUParticles3DGizmoPlugin::GPUParticles3DGizmoPlugin() {
 }
 
 bool GPUParticles3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<GPUParticles3D>(p_spatial) != NULL;
+	return Object::cast_to<GPUParticles3D>(p_spatial) != nullptr;
 }
 
 String GPUParticles3DGizmoPlugin::get_name() const {
@@ -2548,7 +2548,7 @@ ReflectionProbeGizmoPlugin::ReflectionProbeGizmoPlugin() {
 }
 
 bool ReflectionProbeGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<ReflectionProbe>(p_spatial) != NULL;
+	return Object::cast_to<ReflectionProbe>(p_spatial) != nullptr;
 }
 
 String ReflectionProbeGizmoPlugin::get_name() const {
@@ -2736,7 +2736,7 @@ GIProbeGizmoPlugin::GIProbeGizmoPlugin() {
 }
 
 bool GIProbeGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<GIProbe>(p_spatial) != NULL;
+	return Object::cast_to<GIProbe>(p_spatial) != nullptr;
 }
 
 String GIProbeGizmoPlugin::get_name() const {
@@ -2980,7 +2980,7 @@ void BakedIndirectLightGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, in
 }
 
 bool BakedIndirectLightGizmoPlugin::has_gizmo(Spatial *p_spatial) {
-	return Object::cast_to<BakedLightmap>(p_spatial) != NULL;
+	return Object::cast_to<BakedLightmap>(p_spatial) != nullptr;
 }
 
 String BakedIndirectLightGizmoPlugin::get_name() const {
@@ -3044,7 +3044,7 @@ CollisionShapeNode3DGizmoPlugin::CollisionShapeNode3DGizmoPlugin() {
 }
 
 bool CollisionShapeNode3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<CollisionShape3D>(p_spatial) != NULL;
+	return Object::cast_to<CollisionShape3D>(p_spatial) != nullptr;
 }
 
 String CollisionShapeNode3DGizmoPlugin::get_name() const {
@@ -3672,7 +3672,7 @@ CollisionPolygonNode3DGizmoPlugin::CollisionPolygonNode3DGizmoPlugin() {
 }
 
 bool CollisionPolygonNode3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<CollisionPolygon3D>(p_spatial) != NULL;
+	return Object::cast_to<CollisionPolygon3D>(p_spatial) != nullptr;
 }
 
 String CollisionPolygonNode3DGizmoPlugin::get_name() const {
@@ -3721,7 +3721,7 @@ NavigationMeshNode3DGizmoPlugin::NavigationMeshNode3DGizmoPlugin() {
 }
 
 bool NavigationMeshNode3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<NavigationRegion3D>(p_spatial) != NULL;
+	return Object::cast_to<NavigationRegion3D>(p_spatial) != nullptr;
 }
 
 String NavigationMeshNode3DGizmoPlugin::get_name() const {
@@ -4085,7 +4085,7 @@ JointNode3DGizmoPlugin::JointNode3DGizmoPlugin() {
 }
 
 bool JointNode3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<Joint3D>(p_spatial) != NULL;
+	return Object::cast_to<Joint3D>(p_spatial) != nullptr;
 }
 
 String JointNode3DGizmoPlugin::get_name() const {
@@ -4101,12 +4101,12 @@ void JointNode3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	p_gizmo->clear();
 
-	Node3D *node_body_a = NULL;
+	Node3D *node_body_a = nullptr;
 	if (!joint->get_node_a().is_empty()) {
 		node_body_a = Object::cast_to<Node3D>(joint->get_node(joint->get_node_a()));
 	}
 
-	Node3D *node_body_b = NULL;
+	Node3D *node_body_b = nullptr;
 	if (!joint->get_node_b().is_empty()) {
 		node_body_b = Object::cast_to<Node3D>(joint->get_node(joint->get_node_b()));
 	}
@@ -4141,8 +4141,8 @@ void JointNode3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				hinge->get_param(HingeJoint3D::PARAM_LIMIT_UPPER),
 				hinge->get_flag(HingeJoint3D::FLAG_USE_LIMIT),
 				points,
-				node_body_a ? &body_a_points : NULL,
-				node_body_b ? &body_b_points : NULL);
+				node_body_a ? &body_a_points : nullptr,
+				node_body_b ? &body_b_points : nullptr);
 
 		p_gizmo->add_collision_segments(points);
 		p_gizmo->add_collision_segments(body_a_points);
@@ -4166,8 +4166,8 @@ void JointNode3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				slider->get_param(SliderJoint3D::PARAM_LINEAR_LIMIT_LOWER),
 				slider->get_param(SliderJoint3D::PARAM_LINEAR_LIMIT_UPPER),
 				points,
-				node_body_a ? &body_a_points : NULL,
-				node_body_b ? &body_b_points : NULL);
+				node_body_a ? &body_a_points : nullptr,
+				node_body_b ? &body_b_points : nullptr);
 
 		p_gizmo->add_collision_segments(points);
 		p_gizmo->add_collision_segments(body_a_points);
@@ -4188,8 +4188,8 @@ void JointNode3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				node_body_b ? node_body_b->get_global_transform() : Transform(),
 				cone->get_param(ConeTwistJoint3D::PARAM_SWING_SPAN),
 				cone->get_param(ConeTwistJoint3D::PARAM_TWIST_SPAN),
-				node_body_a ? &body_a_points : NULL,
-				node_body_b ? &body_b_points : NULL);
+				node_body_a ? &body_a_points : nullptr,
+				node_body_b ? &body_b_points : nullptr);
 
 		p_gizmo->add_collision_segments(body_a_points);
 		p_gizmo->add_collision_segments(body_b_points);
@@ -4229,8 +4229,8 @@ void JointNode3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				gen->get_flag_z(Generic6DOFJoint3D::FLAG_ENABLE_LINEAR_LIMIT),
 
 				points,
-				node_body_a ? &body_a_points : NULL,
-				node_body_a ? &body_b_points : NULL);
+				node_body_a ? &body_a_points : nullptr,
+				node_body_a ? &body_b_points : nullptr);
 
 		p_gizmo->add_collision_segments(points);
 		p_gizmo->add_collision_segments(body_a_points);

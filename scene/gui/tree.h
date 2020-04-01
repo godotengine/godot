@@ -383,7 +383,7 @@ private:
 	//void draw_item_text(String p_text,const Ref<Texture2D>& p_icon,int p_icon_max_w,bool p_tool,Rect2i p_rect,const Color& p_color);
 	void draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color);
 	int draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item);
-	void select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev = NULL, bool *r_in_range = NULL, bool p_force_deselect = false);
+	void select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev = nullptr, bool *r_in_range = nullptr, bool p_force_deselect = false);
 	int propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool p_doubleclick, TreeItem *p_item, int p_button, const Ref<InputEventWithModifiers> &p_mod);
 	void _text_editor_enter(String p_text);
 	void _text_editor_modal_close();
@@ -584,7 +584,7 @@ public:
 	bool edit_selected();
 
 	// First item that starts with the text, from the current focused item down and wraps around.
-	TreeItem *search_item_text(const String &p_find, int *r_col = NULL, bool p_selectable = false);
+	TreeItem *search_item_text(const String &p_find, int *r_col = nullptr, bool p_selectable = false);
 	// First item that matches the whole text, from the first item down.
 	TreeItem *get_item_with_text(const String &p_find) const;
 

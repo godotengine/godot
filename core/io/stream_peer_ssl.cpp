@@ -32,13 +32,13 @@
 
 #include "core/engine.h"
 
-StreamPeerSSL *(*StreamPeerSSL::_create)() = NULL;
+StreamPeerSSL *(*StreamPeerSSL::_create)() = nullptr;
 
 StreamPeerSSL *StreamPeerSSL::create() {
 
 	if (_create)
 		return _create();
-	return NULL;
+	return nullptr;
 }
 
 bool StreamPeerSSL::available = false;

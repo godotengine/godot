@@ -45,7 +45,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 
 	scene_tree_editor = p_scene_tree_editor;
 	undo_redo = p_undo_redo;
-	preview_node = NULL;
+	preview_node = nullptr;
 
 	set_title(TTR("Batch Rename"));
 
@@ -369,7 +369,7 @@ void RenameDialog::_update_substitute() {
 void RenameDialog::_post_popup() {
 
 	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
-	preview_node = NULL;
+	preview_node = nullptr;
 
 	Array selected_node_list = editor_selection->get_selected_nodes();
 	ERR_FAIL_COND(selected_node_list.size() == 0);
@@ -386,7 +386,7 @@ void RenameDialog::_update_preview_int(int new_value) {
 
 void RenameDialog::_update_preview(String new_text) {
 
-	if (lock_preview_update || preview_node == NULL)
+	if (lock_preview_update || preview_node == nullptr)
 		return;
 
 	has_errors = false;

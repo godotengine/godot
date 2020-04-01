@@ -51,7 +51,7 @@ Array EditorInterface::_make_mesh_previews(const Array &p_meshes, int p_preview_
 		meshes.push_back(p_meshes[i]);
 	}
 
-	Vector<Ref<Texture2D>> textures = make_mesh_previews(meshes, NULL, p_preview_size);
+	Vector<Ref<Texture2D>> textures = make_mesh_previews(meshes, nullptr, p_preview_size);
 	Array ret;
 	for (int i = 0; i < textures.size(); i++) {
 		ret.push_back(textures[i]);
@@ -97,7 +97,7 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 		}
 
 		Transform mesh_xform;
-		if (p_transforms != NULL) {
+		if (p_transforms != nullptr) {
 			mesh_xform = (*p_transforms)[i];
 		}
 
@@ -194,7 +194,7 @@ Array EditorInterface::get_open_scenes() const {
 
 	int scns_amount = scenes.size();
 	for (int idx_scn = 0; idx_scn < scns_amount; idx_scn++) {
-		if (scenes[idx_scn].root == NULL)
+		if (scenes[idx_scn].root == nullptr)
 			continue;
 		ret.push_back(scenes[idx_scn].root->get_filename());
 	}
@@ -278,7 +278,7 @@ void EditorInterface::set_distraction_free_mode(bool p_enter) {
 	EditorNode::get_singleton()->set_distraction_free_mode(p_enter);
 }
 
-EditorInterface *EditorInterface::singleton = NULL;
+EditorInterface *EditorInterface::singleton = nullptr;
 
 void EditorInterface::_bind_methods() {
 
@@ -337,7 +337,7 @@ void EditorPlugin::remove_autoload_singleton(const String &p_name) {
 }
 
 ToolButton *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const String &p_title) {
-	ERR_FAIL_NULL_V(p_control, NULL);
+	ERR_FAIL_NULL_V(p_control, nullptr);
 	return EditorNode::get_singleton()->add_bottom_panel_item(p_title, p_control);
 }
 
@@ -914,7 +914,7 @@ void EditorPlugin::_bind_methods() {
 }
 
 EditorPlugin::EditorPlugin() :
-		undo_redo(NULL),
+		undo_redo(nullptr),
 		input_event_forwarding_always_enabled(false),
 		force_draw_over_forwarding_enabled(false),
 		last_main_screen_name("") {

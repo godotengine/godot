@@ -229,7 +229,7 @@ static Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer) {
 	ptr += 4;
 	size -= 4;
 
-	basist::basisu_transcoder tr(NULL);
+	basist::basisu_transcoder tr(nullptr);
 
 	ERR_FAIL_COND_V(!tr.validate_header(ptr, size), image);
 
@@ -282,7 +282,7 @@ void unregister_basis_universal_types() {
 
 #ifdef TOOLS_ENABLED
 	delete sel_codebook;
-	Image::basis_universal_packer = NULL;
+	Image::basis_universal_packer = nullptr;
 #endif
-	Image::basis_universal_unpacker = NULL;
+	Image::basis_universal_unpacker = nullptr;
 }

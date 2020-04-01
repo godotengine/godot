@@ -42,7 +42,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 	List<StringName> names;
 
-	const StringName *k = NULL;
+	const StringName *k = nullptr;
 
 	while ((k = ClassDB::classes.next(k))) {
 
@@ -67,7 +67,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			k = NULL;
+			k = nullptr;
 
 			while ((k = t->method_map.next(k))) {
 
@@ -132,7 +132,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			k = NULL;
+			k = nullptr;
 
 			while ((k = t->constant_map.next(k))) {
 
@@ -160,7 +160,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			k = NULL;
+			k = nullptr;
 
 			while ((k = t->signal_map.next(k))) {
 
@@ -196,7 +196,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			k = NULL;
+			k = nullptr;
 
 			while ((k = t->property_setget.next(k))) {
 

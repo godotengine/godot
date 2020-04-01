@@ -56,7 +56,7 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 	EXRVersion exr_version;
 	EXRImage exr_image;
 	EXRHeader exr_header;
-	const char *err = NULL;
+	const char *err = nullptr;
 
 	InitEXRHeader(&exr_header);
 
@@ -194,7 +194,7 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 			const float *r_channel_start = reinterpret_cast<const float *>(tile.images[idxR]);
 			const float *g_channel_start = reinterpret_cast<const float *>(tile.images[idxG]);
 			const float *b_channel_start = reinterpret_cast<const float *>(tile.images[idxB]);
-			const float *a_channel_start = NULL;
+			const float *a_channel_start = nullptr;
 
 			if (idxA != -1) {
 				a_channel_start = reinterpret_cast<const float *>(tile.images[idxA]);
@@ -206,7 +206,7 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 				const float *r_channel = r_channel_start + y * tile_width;
 				const float *g_channel = g_channel_start + y * tile_width;
 				const float *b_channel = b_channel_start + y * tile_width;
-				const float *a_channel = NULL;
+				const float *a_channel = nullptr;
 
 				if (a_channel_start) {
 					a_channel = a_channel_start + y * tile_width;

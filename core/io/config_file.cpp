@@ -290,7 +290,7 @@ Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream) 
 		next_tag.fields.clear();
 		next_tag.name = String();
 
-		Error err = VariantParser::parse_tag_assign_eof(p_stream, lines, error_text, next_tag, assign, value, NULL, true);
+		Error err = VariantParser::parse_tag_assign_eof(p_stream, lines, error_text, next_tag, assign, value, nullptr, true);
 		if (err == ERR_FILE_EOF) {
 			return OK;
 		} else if (err != OK) {

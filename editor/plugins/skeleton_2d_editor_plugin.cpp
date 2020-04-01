@@ -38,7 +38,7 @@
 void Skeleton2DEditor::_node_removed(Node *p_node) {
 
 	if (p_node == node) {
-		node = NULL;
+		node = nullptr;
 		options->hide();
 	}
 }
@@ -131,7 +131,7 @@ void Skeleton2DEditorPlugin::make_visible(bool p_visible) {
 	} else {
 
 		sprite_editor->options->hide();
-		sprite_editor->edit(NULL);
+		sprite_editor->edit(nullptr);
 	}
 }
 

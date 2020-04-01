@@ -42,7 +42,7 @@
 void Sprite2DEditor::_node_removed(Node *p_node) {
 
 	if (p_node == node) {
-		node = NULL;
+		node = nullptr;
 		options->hide();
 	}
 }
@@ -593,7 +593,7 @@ void Sprite2DEditorPlugin::make_visible(bool p_visible) {
 	} else {
 
 		sprite_editor->options->hide();
-		sprite_editor->edit(NULL);
+		sprite_editor->edit(nullptr);
 	}
 }
 

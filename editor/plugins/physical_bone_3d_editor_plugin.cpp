@@ -49,7 +49,7 @@ void PhysicalBone3DEditor::_set_move_joint() {
 
 PhysicalBone3DEditor::PhysicalBone3DEditor(EditorNode *p_editor) :
 		editor(p_editor),
-		selected(NULL) {
+		selected(nullptr) {
 
 	spatial_editor_hb = memnew(HBoxContainer);
 	spatial_editor_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -90,7 +90,7 @@ void PhysicalBone3DEditor::show() {
 
 PhysicalBone3DEditorPlugin::PhysicalBone3DEditorPlugin(EditorNode *p_editor) :
 		editor(p_editor),
-		selected(NULL),
+		selected(nullptr),
 		physical_bone_editor(editor) {}
 
 void PhysicalBone3DEditorPlugin::make_visible(bool p_visible) {
@@ -100,8 +100,8 @@ void PhysicalBone3DEditorPlugin::make_visible(bool p_visible) {
 	} else {
 
 		physical_bone_editor.hide();
-		physical_bone_editor.set_selected(NULL);
-		selected = NULL;
+		physical_bone_editor.set_selected(nullptr);
+		selected = nullptr;
 	}
 }
 

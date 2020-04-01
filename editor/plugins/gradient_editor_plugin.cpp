@@ -79,7 +79,7 @@ GradientEditor::GradientEditor() {
 
 bool EditorInspectorPluginGradient::can_handle(Object *p_object) {
 
-	return Object::cast_to<Gradient>(p_object) != NULL;
+	return Object::cast_to<Gradient>(p_object) != nullptr;
 }
 
 void EditorInspectorPluginGradient::parse_begin(Object *p_object) {

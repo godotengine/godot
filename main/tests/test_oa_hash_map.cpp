@@ -152,6 +152,6 @@ MainLoop *test() {
 		map.set(5, 1);
 	}
 
-	return NULL;
+	return nullptr;
 }
 } // namespace TestOAHashMap

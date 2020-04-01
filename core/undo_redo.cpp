@@ -108,7 +108,7 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
 void UndoRedo::add_do_method(Object *p_object, const StringName &p_method, VARIANT_ARG_DECLARE) {
 
 	VARIANT_ARGPTRS
-	ERR_FAIL_COND(p_object == NULL);
+	ERR_FAIL_COND(p_object == nullptr);
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 	Operation do_op;
@@ -128,7 +128,7 @@ void UndoRedo::add_do_method(Object *p_object, const StringName &p_method, VARIA
 void UndoRedo::add_undo_method(Object *p_object, const StringName &p_method, VARIANT_ARG_DECLARE) {
 
 	VARIANT_ARGPTRS
-	ERR_FAIL_COND(p_object == NULL);
+	ERR_FAIL_COND(p_object == nullptr);
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 
@@ -151,7 +151,7 @@ void UndoRedo::add_undo_method(Object *p_object, const StringName &p_method, VAR
 }
 void UndoRedo::add_do_property(Object *p_object, const StringName &p_property, const Variant &p_value) {
 
-	ERR_FAIL_COND(p_object == NULL);
+	ERR_FAIL_COND(p_object == nullptr);
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 	Operation do_op;
@@ -166,7 +166,7 @@ void UndoRedo::add_do_property(Object *p_object, const StringName &p_property, c
 }
 void UndoRedo::add_undo_property(Object *p_object, const StringName &p_property, const Variant &p_value) {
 
-	ERR_FAIL_COND(p_object == NULL);
+	ERR_FAIL_COND(p_object == nullptr);
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 
@@ -186,7 +186,7 @@ void UndoRedo::add_undo_property(Object *p_object, const StringName &p_property,
 }
 void UndoRedo::add_do_reference(Object *p_object) {
 
-	ERR_FAIL_COND(p_object == NULL);
+	ERR_FAIL_COND(p_object == nullptr);
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 	Operation do_op;
@@ -199,7 +199,7 @@ void UndoRedo::add_do_reference(Object *p_object) {
 }
 void UndoRedo::add_undo_reference(Object *p_object) {
 
-	ERR_FAIL_COND(p_object == NULL);
+	ERR_FAIL_COND(p_object == nullptr);
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 
@@ -417,13 +417,13 @@ UndoRedo::UndoRedo() {
 	current_action = -1;
 	merge_mode = MERGE_DISABLE;
 	merging = false;
-	callback = NULL;
-	callback_ud = NULL;
+	callback = nullptr;
+	callback_ud = nullptr;
 
-	method_callbck_ud = NULL;
-	prop_callback_ud = NULL;
-	method_callback = NULL;
-	property_callback = NULL;
+	method_callbck_ud = nullptr;
+	prop_callback_ud = nullptr;
+	method_callback = nullptr;
+	property_callback = nullptr;
 }
 
 UndoRedo::~UndoRedo() {

@@ -373,7 +373,7 @@ struct RemoteDebugger::VisualProfiler {
 
 struct RemoteDebugger::PerformanceProfiler {
 
-	Object *performance = NULL;
+	Object *performance = nullptr;
 	int last_perf_time = 0;
 
 	void toggle(bool p_enable, const Array &p_opts) {}
@@ -867,7 +867,7 @@ RemoteDebugger *RemoteDebugger::create_for_uri(const String &p_uri) {
 	Ref<RemoteDebuggerPeer> peer = RemoteDebuggerPeer::create_from_uri(p_uri);
 	if (peer.is_valid())
 		return memnew(RemoteDebugger(peer));
-	return NULL;
+	return nullptr;
 }
 
 RemoteDebugger::RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer) {

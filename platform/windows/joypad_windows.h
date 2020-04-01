@@ -39,9 +39,9 @@
 
 #ifndef SAFE_RELEASE // when Windows Media Device M? is not present
 #define SAFE_RELEASE(x) \
-	if (x != NULL) {    \
+	if (x != nullptr) { \
 		x->Release();   \
-		x = NULL;       \
+		x = nullptr;    \
 	}
 #endif
 

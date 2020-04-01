@@ -19,7 +19,7 @@ def _make_doc_data_class_path(to_path):
     g.write("static const _DocDataClassPath _doc_data_class_paths[" + str(len(env.doc_class_path) + 1) + "] = {\n")
     for c in sorted(env.doc_class_path):
         g.write('\t{"' + c + '", "' + env.doc_class_path[c] + '"},\n')
-    g.write("\t{NULL, NULL}\n")
+    g.write("\t{nullptr, nullptr}\n")
     g.write("};\n")
 
     g.close()

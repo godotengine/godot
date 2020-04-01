@@ -95,9 +95,9 @@ static inline Vector2 interpolate(const Rect2 &r, const Vector2 &v) {
 LineBuilder::LineBuilder() {
 	joint_mode = Line2D::LINE_JOINT_SHARP;
 	width = 10;
-	curve = NULL;
+	curve = nullptr;
 	default_color = Color(0.4, 0.5, 1);
-	gradient = NULL;
+	gradient = nullptr;
 	sharp_limit = 2.f;
 	round_precision = 8;
 	begin_cap_mode = Line2D::LINE_CAP_NONE;
@@ -147,8 +147,8 @@ void LineBuilder::build() {
 	float current_distance1 = 0.f;
 	float total_distance = 0.f;
 	float width_factor = 1.f;
-	_interpolate_color = gradient != NULL;
-	bool retrieve_curve = curve != NULL;
+	_interpolate_color = gradient != nullptr;
+	bool retrieve_curve = curve != nullptr;
 	bool distance_required = _interpolate_color ||
 							 retrieve_curve ||
 							 texture_mode == Line2D::LINE_TEXTURE_TILE ||

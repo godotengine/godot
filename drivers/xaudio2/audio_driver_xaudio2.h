@@ -50,7 +50,7 @@ class AudioDriverXAudio2 : public AudioDriver {
 
 		HANDLE buffer_end_event;
 		XAudio2DriverVoiceCallback() :
-				buffer_end_event(CreateEvent(NULL, FALSE, FALSE, NULL)) {}
+				buffer_end_event(CreateEvent(nullptr, FALSE, FALSE, nullptr)) {}
 		void STDMETHODCALLTYPE OnBufferEnd(void *pBufferContext) {
 			SetEvent(buffer_end_event);
 		}

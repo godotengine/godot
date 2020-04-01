@@ -85,7 +85,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 	package_path = p_path;
 	Set<String> files_sorted;
 
-	FileAccess *src_f = NULL;
+	FileAccess *src_f = nullptr;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
 	unzFile pkg = unzOpen2(p_path.utf8().get_data(), &io);
@@ -102,7 +102,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		//get filename
 		unz_file_info info;
 		char fname[16384];
-		unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
+		unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
 		String name = fname;
 		files_sorted.insert(name);
@@ -212,7 +212,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 
 void EditorAssetInstaller::ok_pressed() {
 
-	FileAccess *src_f = NULL;
+	FileAccess *src_f = nullptr;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
 	unzFile pkg = unzOpen2(package_path.utf8().get_data(), &io);
@@ -234,7 +234,7 @@ void EditorAssetInstaller::ok_pressed() {
 		//get filename
 		unz_file_info info;
 		char fname[16384];
-		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
+		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
 		String name = fname;
 
@@ -297,10 +297,10 @@ void EditorAssetInstaller::ok_pressed() {
 			}
 			msg += failed_files[i];
 		}
-		if (EditorNode::get_singleton() != NULL)
+		if (EditorNode::get_singleton() != nullptr)
 			EditorNode::get_singleton()->show_warning(msg);
 	} else {
-		if (EditorNode::get_singleton() != NULL)
+		if (EditorNode::get_singleton() != nullptr)
 			EditorNode::get_singleton()->show_warning(TTR("Package installed successfully!"), TTR("Success!"));
 	}
 	EditorFileSystem::get_singleton()->scan_changes();

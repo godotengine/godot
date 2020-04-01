@@ -97,7 +97,7 @@ void VisualScriptPropertySelector::_update_search() {
 	for (List<StringName>::Element *E = base_list.front(); E; E = E->next()) {
 		List<MethodInfo> methods;
 		List<PropertyInfo> props;
-		TreeItem *category = NULL;
+		TreeItem *category = nullptr;
 		Ref<Texture2D> type_icons[Variant::VARIANT_MAX] = {
 			vbc->get_theme_icon("Variant", "EditorIcons"),
 			vbc->get_theme_icon("bool", "EditorIcons"),
@@ -196,7 +196,7 @@ void VisualScriptPropertySelector::_update_search() {
 			if (type != Variant::NIL) {
 				Variant v;
 				Callable::CallError ce;
-				v = Variant::construct(type, NULL, 0, ce);
+				v = Variant::construct(type, nullptr, 0, ce);
 				v.get_method_list(&methods);
 			} else {
 
@@ -264,7 +264,7 @@ void VisualScriptPropertySelector::_update_search() {
 			item->set_metadata(2, connecting);
 		}
 
-		if (category && category->get_children() == NULL) {
+		if (category && category->get_children() == nullptr) {
 			memdelete(category); //old category was unused
 		}
 	}
@@ -304,12 +304,12 @@ void VisualScriptPropertySelector::_update_search() {
 	}
 
 	TreeItem *selected_item = search_options->search_item_text(search_box->get_text());
-	if (!found && selected_item != NULL) {
+	if (!found && selected_item != nullptr) {
 		selected_item->select(0);
 		found = true;
 	}
 
-	get_ok()->set_disabled(root->get_children() == NULL);
+	get_ok()->set_disabled(root->get_children() == nullptr);
 }
 
 void VisualScriptPropertySelector::create_visualscript_item(const String &name, TreeItem *const root, const String &search_input, const String &text) {
@@ -481,7 +481,7 @@ void VisualScriptPropertySelector::_item_selected() {
 
 	List<String> *names = memnew(List<String>);
 	VisualScriptLanguage::singleton->get_registered_node_names(names);
-	if (names->find(name) != NULL) {
+	if (names->find(name) != nullptr) {
 		Ref<VisualScriptOperator> operator_node = VisualScriptLanguage::singleton->create_node_from_name(name);
 		if (operator_node.is_valid()) {
 			Map<String, DocData::ClassDoc>::Element *F = dd->class_list.find(operator_node->get_class_name());
@@ -536,7 +536,7 @@ void VisualScriptPropertySelector::select_method_from_base_type(const String &p_
 	selected = p_current;
 	type = Variant::NIL;
 	properties = false;
-	instance = NULL;
+	instance = nullptr;
 	virtuals_only = p_virtuals_only;
 
 	show_window(.5f);
@@ -561,7 +561,7 @@ void VisualScriptPropertySelector::select_from_base_type(const String &p_base, c
 	type = Variant::NIL;
 	properties = true;
 	visual_script_generic = false;
-	instance = NULL;
+	instance = nullptr;
 	virtuals_only = p_virtuals_only;
 
 	show_window(.5f);
@@ -585,7 +585,7 @@ void VisualScriptPropertySelector::select_from_script(const Ref<Script> &p_scrip
 	script = p_script->get_instance_id();
 	properties = true;
 	visual_script_generic = false;
-	instance = NULL;
+	instance = nullptr;
 	virtuals_only = false;
 
 	show_window(.5f);
@@ -607,7 +607,7 @@ void VisualScriptPropertySelector::select_from_basic_type(Variant::Type p_type, 
 	type = p_type;
 	properties = true;
 	visual_script_generic = false;
-	instance = NULL;
+	instance = nullptr;
 	virtuals_only = false;
 
 	show_window(.5f);
@@ -628,7 +628,7 @@ void VisualScriptPropertySelector::select_from_action(const String &p_type, cons
 	type = Variant::NIL;
 	properties = false;
 	visual_script_generic = false;
-	instance = NULL;
+	instance = nullptr;
 	virtuals_only = false;
 
 	show_window(.5f);
@@ -670,7 +670,7 @@ void VisualScriptPropertySelector::select_from_visual_script(const String &p_bas
 	type = Variant::NIL;
 	properties = true;
 	visual_script_generic = true;
-	instance = NULL;
+	instance = nullptr;
 	virtuals_only = false;
 	show_window(.5f);
 	if (clear_text)

@@ -39,7 +39,7 @@
 #include "servers/physics_server_3d.h"
 #include "servers/rendering_server.h"
 
-Performance *Performance::singleton = NULL;
+Performance *Performance::singleton = nullptr;
 
 void Performance::_bind_methods() {
 

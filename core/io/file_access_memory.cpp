@@ -35,7 +35,7 @@
 #include "core/os/dir_access.h"
 #include "core/project_settings.h"
 
-static Map<String, Vector<uint8_t>> *files = NULL;
+static Map<String, Vector<uint8_t>> *files = nullptr;
 
 void FileAccessMemory::register_file(String p_name, Vector<uint8_t> p_data) {
 
@@ -71,7 +71,7 @@ bool FileAccessMemory::file_exists(const String &p_name) {
 	String name = fix_path(p_name);
 	//name = DirAccess::normalize_path(name);
 
-	return files && (files->find(name) != NULL);
+	return files && (files->find(name) != nullptr);
 }
 
 Error FileAccessMemory::open_custom(const uint8_t *p_data, int p_len) {
@@ -101,12 +101,12 @@ Error FileAccessMemory::_open(const String &p_path, int p_mode_flags) {
 
 void FileAccessMemory::close() {
 
-	data = NULL;
+	data = nullptr;
 }
 
 bool FileAccessMemory::is_open() const {
 
-	return data != NULL;
+	return data != nullptr;
 }
 
 void FileAccessMemory::seek(size_t p_position) {
@@ -196,5 +196,5 @@ void FileAccessMemory::store_buffer(const uint8_t *p_src, int p_length) {
 
 FileAccessMemory::FileAccessMemory() {
 
-	data = NULL;
+	data = nullptr;
 }

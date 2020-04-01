@@ -35,8 +35,8 @@
 #include "core/debugger/script_debugger.h"
 #include "core/os/os.h"
 
-EngineDebugger *EngineDebugger::singleton = NULL;
-ScriptDebugger *EngineDebugger::script_debugger = NULL;
+EngineDebugger *EngineDebugger::singleton = nullptr;
+ScriptDebugger *EngineDebugger::script_debugger = nullptr;
 
 Map<StringName, EngineDebugger::Profiler> EngineDebugger::profilers;
 Map<StringName, EngineDebugger::Capture> EngineDebugger::captures;
@@ -173,7 +173,7 @@ void EngineDebugger::deinitialize() {
 	singleton->poll_events(false);
 
 	memdelete(singleton);
-	singleton = NULL;
+	singleton = nullptr;
 	profilers.clear();
 	captures.clear();
 }
@@ -181,6 +181,6 @@ void EngineDebugger::deinitialize() {
 EngineDebugger::~EngineDebugger() {
 	if (script_debugger)
 		memdelete(script_debugger);
-	script_debugger = NULL;
-	singleton = NULL;
+	script_debugger = nullptr;
+	singleton = nullptr;
 }

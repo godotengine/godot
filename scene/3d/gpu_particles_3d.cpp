@@ -253,7 +253,7 @@ String GPUParticles3D::get_configuration_warning() const {
 		if (draw_passes[i].is_valid()) {
 			meshes_found = true;
 			for (int j = 0; j < draw_passes[i]->get_surface_count(); j++) {
-				anim_material_found = Object::cast_to<ShaderMaterial>(draw_passes[i]->surface_get_material(j).ptr()) != NULL;
+				anim_material_found = Object::cast_to<ShaderMaterial>(draw_passes[i]->surface_get_material(j).ptr()) != nullptr;
 				StandardMaterial3D *spat = Object::cast_to<StandardMaterial3D>(draw_passes[i]->surface_get_material(j).ptr());
 				anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == StandardMaterial3D::BILLBOARD_PARTICLES);
 			}
@@ -261,7 +261,7 @@ String GPUParticles3D::get_configuration_warning() const {
 		}
 	}
 
-	anim_material_found = anim_material_found || Object::cast_to<ShaderMaterial>(get_material_override().ptr()) != NULL;
+	anim_material_found = anim_material_found || Object::cast_to<ShaderMaterial>(get_material_override().ptr()) != nullptr;
 	StandardMaterial3D *spat = Object::cast_to<StandardMaterial3D>(get_material_override().ptr());
 	anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == StandardMaterial3D::BILLBOARD_PARTICLES);
 

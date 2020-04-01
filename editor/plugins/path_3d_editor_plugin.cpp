@@ -460,7 +460,7 @@ void Path3DEditorPlugin::edit(Object *p_object) {
 		}
 	} else {
 		Path3D *pre = path;
-		path = NULL;
+		path = nullptr;
 		if (pre) {
 			pre->get_curve()->emit_signal("changed");
 		}
@@ -494,7 +494,7 @@ void Path3DEditorPlugin::make_visible(bool p_visible) {
 
 		{
 			Path3D *pre = path;
-			path = NULL;
+			path = nullptr;
 			if (pre && pre->get_curve().is_valid()) {
 				pre->get_curve()->emit_signal("changed");
 			}
@@ -553,11 +553,11 @@ void Path3DEditorPlugin::_notification(int p_what) {
 void Path3DEditorPlugin::_bind_methods() {
 }
 
-Path3DEditorPlugin *Path3DEditorPlugin::singleton = NULL;
+Path3DEditorPlugin *Path3DEditorPlugin::singleton = nullptr;
 
 Path3DEditorPlugin::Path3DEditorPlugin(EditorNode *p_node) {
 
-	path = NULL;
+	path = nullptr;
 	editor = p_node;
 	singleton = this;
 	mirror_handle_angle = true;

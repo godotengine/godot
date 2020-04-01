@@ -63,7 +63,7 @@ const char **tests_get_names() {
 		"gd_bytecode",
 		"ordered_hash_map",
 		"astar",
-		NULL
+		nullptr
 	};
 
 	return test_names;
@@ -144,7 +144,7 @@ MainLoop *test_main(String p_test, const List<String> &p_args) {
 	}
 
 	print_line("Unknown test: " + p_test);
-	return NULL;
+	return nullptr;
 }
 
 #else
@@ -152,7 +152,7 @@ MainLoop *test_main(String p_test, const List<String> &p_args) {
 const char **tests_get_names() {
 
 	static const char *test_names[] = {
-		NULL
+		nullptr
 	};
 
 	return test_names;
@@ -160,7 +160,7 @@ const char **tests_get_names() {
 
 MainLoop *test_main(String p_test, const List<String> &p_args) {
 
-	return NULL;
+	return nullptr;
 }
 
 #endif

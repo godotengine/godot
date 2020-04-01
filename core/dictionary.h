@@ -75,7 +75,7 @@ public:
 	uint32_t hash() const;
 	void operator=(const Dictionary &p_dictionary);
 
-	const Variant *next(const Variant *p_key = NULL) const;
+	const Variant *next(const Variant *p_key = nullptr) const;
 
 	Array keys() const;
 	Array values() const;

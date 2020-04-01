@@ -498,7 +498,7 @@ BaseButton *ButtonGroup::get_pressed_button() {
 			return E->get();
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void ButtonGroup::_bind_methods() {

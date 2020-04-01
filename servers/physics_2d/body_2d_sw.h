@@ -419,7 +419,7 @@ public:
 	virtual real_t get_step() const { return step; }
 	PhysicsDirectBodyState2DSW() {
 		singleton = this;
-		body = NULL;
+		body = nullptr;
 	}
 };
 

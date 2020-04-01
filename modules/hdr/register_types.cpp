@@ -32,7 +32,7 @@
 
 #include "image_loader_hdr.h"
 
-static ImageLoaderHDR *image_loader_hdr = NULL;
+static ImageLoaderHDR *image_loader_hdr = nullptr;
 
 void register_hdr_types() {
 

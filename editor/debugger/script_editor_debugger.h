@@ -107,7 +107,7 @@ private:
 	Button *docontinue;
 	// Reference to "Remote" tab in scene tree. Needed by _live_edit_set and buttons state.
 	// Each debugger should have it's tree in the future I guess.
-	const Tree *editor_remote_tree = NULL;
+	const Tree *editor_remote_tree = nullptr;
 
 	List<Vector<float>> perf_history;
 	Vector<float> perf_max;
@@ -255,7 +255,7 @@ public:
 	bool is_skip_breakpoints();
 
 	virtual Size2 get_minimum_size() const;
-	ScriptEditorDebugger(EditorNode *p_editor = NULL);
+	ScriptEditorDebugger(EditorNode *p_editor = nullptr);
 	~ScriptEditorDebugger();
 };
 

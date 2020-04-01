@@ -110,7 +110,7 @@ Error png_to_image(const uint8_t *p_source, size_t p_size, Ref<Image> p_image) {
 	uint8_t *writer = buffer.ptrw();
 
 	// read image data to buffer and release libpng resources
-	success = png_image_finish_read(&png_img, NULL, writer, stride, NULL);
+	success = png_image_finish_read(&png_img, nullptr, writer, stride, nullptr);
 	ERR_FAIL_COND_V_MSG(check_error(png_img), ERR_FILE_CORRUPT, png_img.message);
 	ERR_FAIL_COND_V(!success, ERR_FILE_CORRUPT);
 
@@ -175,7 +175,7 @@ Error image_to_png(const Ref<Image> &p_image, Vector<uint8_t> &p_buffer) {
 
 		uint8_t *writer = p_buffer.ptrw();
 		success = png_image_write_to_memory(&png_img, &writer[buffer_offset],
-				&compressed_size, 0, reader, 0, NULL);
+				&compressed_size, 0, reader, 0, nullptr);
 		ERR_FAIL_COND_V_MSG(check_error(png_img), FAILED, png_img.message);
 	}
 	if (!success) {
@@ -189,7 +189,7 @@ Error image_to_png(const Ref<Image> &p_image, Vector<uint8_t> &p_buffer) {
 
 		uint8_t *writer = p_buffer.ptrw();
 		success = png_image_write_to_memory(&png_img, &writer[buffer_offset],
-				&compressed_size, 0, reader, 0, NULL);
+				&compressed_size, 0, reader, 0, nullptr);
 		ERR_FAIL_COND_V_MSG(check_error(png_img), FAILED, png_img.message);
 		ERR_FAIL_COND_V(!success, FAILED);
 	}

@@ -135,7 +135,7 @@ void BackgroundProgress::end_task(const String &p_task) {
 
 ////////////////////////////////////////////////
 
-ProgressDialog *ProgressDialog::singleton = NULL;
+ProgressDialog *ProgressDialog::singleton = nullptr;
 
 void ProgressDialog::_notification(int p_what) {
 }

@@ -233,7 +233,7 @@ public:
 	static Transform _get_global_assimp_node_transform(const aiNode *p_current_node) {
 		aiNode const *current_node = p_current_node;
 		Transform xform;
-		while (current_node != NULL) {
+		while (current_node != nullptr) {
 			xform = assimp_matrix_transform(current_node->mTransformation) * xform;
 			current_node = current_node->mParent;
 		}
@@ -319,7 +319,7 @@ public:
 	  */
 	static void set_texture_mapping_mode(aiTextureMapMode *map_mode, Ref<ImageTexture> texture) {
 		ERR_FAIL_COND(texture.is_null());
-		ERR_FAIL_COND(map_mode == NULL);
+		ERR_FAIL_COND(map_mode == nullptr);
 		// FIXME: Commented out during Vulkan port.
 		/*
 		aiTextureMapMode tex_mode = map_mode[0];
@@ -358,13 +358,13 @@ public:
 			print_verbose("Open Asset Import: Loading embedded texture " + filename);
 			if (tex->mHeight == 0) {
 				if (tex->CheckFormat("png")) {
-					ERR_FAIL_COND_V(Image::_png_mem_loader_func == NULL, Ref<Image>());
+					ERR_FAIL_COND_V(Image::_png_mem_loader_func == nullptr, Ref<Image>());
 					Ref<Image> img = Image::_png_mem_loader_func((uint8_t *)tex->pcData, tex->mWidth);
 					ERR_FAIL_COND_V(img.is_null(), Ref<Image>());
 					state.path_to_image_cache.insert(p_path, img);
 					return img;
 				} else if (tex->CheckFormat("jpg")) {
-					ERR_FAIL_COND_V(Image::_jpg_mem_loader_func == NULL, Ref<Image>());
+					ERR_FAIL_COND_V(Image::_jpg_mem_loader_func == nullptr, Ref<Image>());
 					Ref<Image> img = Image::_jpg_mem_loader_func((uint8_t *)tex->pcData, tex->mWidth);
 					ERR_FAIL_COND_V(img.is_null(), Ref<Image>());
 					state.path_to_image_cache.insert(p_path, img);
@@ -440,7 +440,7 @@ public:
 			String &path,
 			AssimpImageData &image_state) {
 		aiString ai_filename = aiString();
-		if (AI_SUCCESS == ai_material->GetTexture(texture_type, 0, &ai_filename, NULL, NULL, NULL, NULL, image_state.map_mode)) {
+		if (AI_SUCCESS == ai_material->GetTexture(texture_type, 0, &ai_filename, nullptr, nullptr, nullptr, nullptr, image_state.map_mode)) {
 			return CreateAssimpTexture(state, ai_filename, filename, path, image_state);
 		}
 

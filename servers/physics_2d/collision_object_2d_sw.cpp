@@ -266,7 +266,7 @@ CollisionObject2DSW::CollisionObject2DSW(Type p_type) :
 
 	_static = true;
 	type = p_type;
-	space = NULL;
+	space = nullptr;
 	collision_mask = 1;
 	collision_layer = 1;
 	pickable = true;

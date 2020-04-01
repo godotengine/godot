@@ -1483,7 +1483,7 @@ void VisualScriptConstant::set_constant_type(Variant::Type p_type) {
 
 	type = p_type;
 	Callable::CallError ce;
-	value = Variant::construct(type, NULL, 0, ce);
+	value = Variant::construct(type, nullptr, 0, ce);
 	ports_changed_notify();
 	_change_notify();
 }
@@ -2548,7 +2548,7 @@ VisualScriptNodeInstance *VisualScriptSceneNode::instance(VisualScriptInstance *
 static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const Ref<Script> &script) {
 
 	if (p_edited_scene != p_current_node && p_current_node->get_owner() != p_edited_scene)
-		return NULL;
+		return nullptr;
 
 	Ref<Script> scr = p_current_node->get_script();
 
@@ -2561,7 +2561,7 @@ static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const
 			return n;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 #endif
@@ -4006,7 +4006,7 @@ void VisualScriptDeconstruct::_update_elements() {
 	elements.clear();
 	Variant v;
 	Callable::CallError ce;
-	v = Variant::construct(type, NULL, 0, ce);
+	v = Variant::construct(type, nullptr, 0, ce);
 
 	List<PropertyInfo> pinfo;
 	v.get_property_list(&pinfo);

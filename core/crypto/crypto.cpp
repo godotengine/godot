@@ -36,11 +36,11 @@
 
 /// Resources
 
-CryptoKey *(*CryptoKey::_create)() = NULL;
+CryptoKey *(*CryptoKey::_create)() = nullptr;
 CryptoKey *CryptoKey::create() {
 	if (_create)
 		return _create();
-	return NULL;
+	return nullptr;
 }
 
 void CryptoKey::_bind_methods() {
@@ -48,11 +48,11 @@ void CryptoKey::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load", "path"), &CryptoKey::load);
 }
 
-X509Certificate *(*X509Certificate::_create)() = NULL;
+X509Certificate *(*X509Certificate::_create)() = nullptr;
 X509Certificate *X509Certificate::create() {
 	if (_create)
 		return _create();
-	return NULL;
+	return nullptr;
 }
 
 void X509Certificate::_bind_methods() {
@@ -62,8 +62,8 @@ void X509Certificate::_bind_methods() {
 
 /// Crypto
 
-void (*Crypto::_load_default_certificates)(String p_path) = NULL;
-Crypto *(*Crypto::_create)() = NULL;
+void (*Crypto::_load_default_certificates)(String p_path) = nullptr;
+Crypto *(*Crypto::_create)() = nullptr;
 Crypto *Crypto::create() {
 	if (_create)
 		return _create();
@@ -87,11 +87,11 @@ PackedByteArray Crypto::generate_random_bytes(int p_bytes) {
 }
 
 Ref<CryptoKey> Crypto::generate_rsa(int p_bytes) {
-	ERR_FAIL_V_MSG(NULL, "generate_rsa is not available when mbedtls module is disabled.");
+	ERR_FAIL_V_MSG(nullptr, "generate_rsa is not available when mbedtls module is disabled.");
 }
 
 Ref<X509Certificate> Crypto::generate_self_signed_certificate(Ref<CryptoKey> p_key, String p_issuer_name, String p_not_before, String p_not_after) {
-	ERR_FAIL_V_MSG(NULL, "generate_self_signed_certificate is not available when mbedtls module is disabled.");
+	ERR_FAIL_V_MSG(nullptr, "generate_self_signed_certificate is not available when mbedtls module is disabled.");
 }
 
 Crypto::Crypto() {
@@ -113,7 +113,7 @@ RES ResourceFormatLoaderCrypto::load(const String &p_path, const String &p_origi
 			key->load(p_path);
 		return key;
 	}
-	return NULL;
+	return nullptr;
 }
 
 void ResourceFormatLoaderCrypto::get_recognized_extensions(List<String> *p_extensions) const {

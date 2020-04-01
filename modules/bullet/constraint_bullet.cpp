@@ -38,8 +38,8 @@
 */
 
 ConstraintBullet::ConstraintBullet() :
-		space(NULL),
-		constraint(NULL),
+		space(nullptr),
+		constraint(nullptr),
 		disabled_collisions_between_bodies(true) {}
 
 void ConstraintBullet::setup(btTypedConstraint *p_constraint) {

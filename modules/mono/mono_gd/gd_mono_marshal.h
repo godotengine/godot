@@ -63,7 +63,7 @@ T *unbox_addr(MonoObject *p_obj) {
 #define BOX_PTR(x) mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(IntPtr), x)
 #define BOX_ENUM(m_enum_class, x) mono_value_box(mono_domain_get(), m_enum_class, &x)
 
-Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_variant = NULL);
+Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_variant = nullptr);
 
 bool try_get_array_element_type(const ManagedType &p_array_type, ManagedType &r_elem_type);
 bool try_get_dictionary_key_value_types(const ManagedType &p_dictionary_type, ManagedType &r_key_type, ManagedType &r_value_type);
@@ -81,7 +81,7 @@ _FORCE_INLINE_ String mono_string_to_godot_not_null(MonoString *p_mono_string) {
 }
 
 _FORCE_INLINE_ String mono_string_to_godot(MonoString *p_mono_string) {
-	if (p_mono_string == NULL)
+	if (p_mono_string == nullptr)
 		return String();
 
 	return mono_string_to_godot_not_null(p_mono_string);

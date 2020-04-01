@@ -77,8 +77,8 @@ public:
 	};
 
 	struct EventSignal {
-		GDMonoField *field = NULL;
-		GDMonoMethod *invoke_method = NULL;
+		GDMonoField *field = nullptr;
+		GDMonoMethod *invoke_method = nullptr;
 		Vector<SignalParameter> parameters;
 	};
 
@@ -331,8 +331,8 @@ struct CSharpScriptBinding {
 
 	CSharpScriptBinding() :
 			inited(false),
-			wrapper_class(NULL),
-			owner(NULL) {
+			wrapper_class(nullptr),
+			owner(nullptr) {
 	}
 };
 

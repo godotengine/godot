@@ -399,7 +399,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 			ERR_CONTINUE(!F);
 			List<Geometry::MeshData::Face>::Element *O = F->get().left == E ? F->get().right : F->get().left;
 			ERR_CONTINUE(O == E);
-			ERR_CONTINUE(O == NULL);
+			ERR_CONTINUE(O == nullptr);
 
 			if (O->get().plane.is_equal_approx(f.plane)) {
 				//merge and delete edge and contiguous face, while repointing edges (uuugh!)
@@ -440,10 +440,10 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 				// remove all edge connections to this face
 				for (Map<Edge, RetFaceConnect>::Element *G = ret_edges.front(); G; G = G->next()) {
 					if (G->get().left == O)
-						G->get().left = NULL;
+						G->get().left = nullptr;
 
 					if (G->get().right == O)
-						G->get().right = NULL;
+						G->get().right = nullptr;
 				}
 
 				ret_edges.erase(F); //remove the edge

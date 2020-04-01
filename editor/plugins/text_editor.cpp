@@ -41,7 +41,7 @@ void TextEditor::add_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
 void TextEditor::set_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
 	TextEdit *te = code_editor->get_text_edit();
 	te->_set_syntax_highlighting(p_highlighter);
-	if (p_highlighter != NULL) {
+	if (p_highlighter != nullptr) {
 		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(p_highlighter->get_name()), true);
 	} else {
 		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text("Standard"), true);
@@ -49,7 +49,7 @@ void TextEditor::set_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
 
 	// little work around. GDScript highlighter goes through text_edit for colours,
 	// so to remove all colours we need to set and unset them here.
-	if (p_highlighter == NULL) { // standard
+	if (p_highlighter == nullptr) { // standard
 		TextEdit *text_edit = code_editor->get_text_edit();
 		text_edit->add_theme_color_override("number_color", colors_cache.font_color);
 		text_edit->add_theme_color_override("function_color", colors_cache.font_color);
@@ -62,7 +62,7 @@ void TextEditor::set_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
 
 void TextEditor::_change_syntax_highlighter(int p_idx) {
 	Map<String, SyntaxHighlighter *>::Element *el = highlighters.front();
-	while (el != NULL) {
+	while (el != nullptr) {
 		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(el->key()), false);
 		el = el->next();
 	}
@@ -533,7 +533,7 @@ static ScriptEditorBase *create_editor(const RES &p_resource) {
 	if (Object::cast_to<TextFile>(*p_resource)) {
 		return memnew(TextEditor);
 	}
-	return NULL;
+	return nullptr;
 }
 
 void TextEditor::register_editor() {
@@ -694,7 +694,7 @@ TextEditor::TextEditor() {
 	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize")), EDIT_CAPITALIZE);
 	convert_case->connect("id_pressed", callable_mp(this, &TextEditor::_edit_option));
 
-	highlighters["Standard"] = NULL;
+	highlighters["Standard"] = nullptr;
 	highlighter_menu = memnew(PopupMenu);
 	highlighter_menu->set_name("highlighter_menu");
 	edit_menu->get_popup()->add_child(highlighter_menu);
@@ -727,7 +727,7 @@ TextEditor::TextEditor() {
 
 TextEditor::~TextEditor() {
 	for (const Map<String, SyntaxHighlighter *>::Element *E = highlighters.front(); E; E = E->next()) {
-		if (E->get() != NULL) {
+		if (E->get() != nullptr) {
 			memdelete(E->get());
 		}
 	}

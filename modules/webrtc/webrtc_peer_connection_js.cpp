@@ -279,7 +279,7 @@ Ref<WebRTCDataChannel> WebRTCPeerConnectionJS::create_data_channel(String p_chan
 		}
 	}, _js_id, p_channel.utf8().get_data(), config.utf8().get_data());
 	/* clang-format on */
-	ERR_FAIL_COND_V(id == 0, NULL);
+	ERR_FAIL_COND_V(id == 0, nullptr);
 	return memnew(WebRTCDataChannelJS(id));
 }
 

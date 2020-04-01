@@ -66,7 +66,7 @@ Error CryptoKeyMbedTLS::load(String p_path) {
 	}
 	memdelete(f);
 
-	int ret = mbedtls_pk_parse_key(&pkey, out.ptr(), out.size(), NULL, 0);
+	int ret = mbedtls_pk_parse_key(&pkey, out.ptr(), out.size(), nullptr, 0);
 	// We MUST zeroize the memory for safety!
 	mbedtls_platform_zeroize(out.ptrw(), out.size());
 	ERR_FAIL_COND_V_MSG(ret, FAILED, "Error parsing private key '" + itos(ret) + "'.");
@@ -167,11 +167,11 @@ void CryptoMbedTLS::initialize_crypto() {
 }
 
 void CryptoMbedTLS::finalize_crypto() {
-	Crypto::_create = NULL;
-	Crypto::_load_default_certificates = NULL;
+	Crypto::_create = nullptr;
+	Crypto::_load_default_certificates = nullptr;
 	if (default_certs) {
 		memdelete(default_certs);
-		default_certs = NULL;
+		default_certs = nullptr;
 	}
 	X509CertificateMbedTLS::finalize();
 	CryptoKeyMbedTLS::finalize();
@@ -180,7 +180,7 @@ void CryptoMbedTLS::finalize_crypto() {
 CryptoMbedTLS::CryptoMbedTLS() {
 	mbedtls_ctr_drbg_init(&ctr_drbg);
 	mbedtls_entropy_init(&entropy);
-	int ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, NULL, 0);
+	int ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, nullptr, 0);
 	if (ret != 0) {
 		ERR_PRINT(" failed\n  ! mbedtls_ctr_drbg_seed returned an error" + itos(ret));
 	}
@@ -191,17 +191,17 @@ CryptoMbedTLS::~CryptoMbedTLS() {
 	mbedtls_entropy_free(&entropy);
 }
 
-X509CertificateMbedTLS *CryptoMbedTLS::default_certs = NULL;
+X509CertificateMbedTLS *CryptoMbedTLS::default_certs = nullptr;
 
 X509CertificateMbedTLS *CryptoMbedTLS::get_default_certificates() {
 	return default_certs;
 }
 
 void CryptoMbedTLS::load_default_certificates(String p_path) {
-	ERR_FAIL_COND(default_certs != NULL);
+	ERR_FAIL_COND(default_certs != nullptr);
 
 	default_certs = memnew(X509CertificateMbedTLS);
-	ERR_FAIL_COND(default_certs == NULL);
+	ERR_FAIL_COND(default_certs == nullptr);
 
 	if (p_path != "") {
 		// Use certs defined in project settings.
@@ -227,15 +227,15 @@ Ref<CryptoKey> CryptoMbedTLS::generate_rsa(int p_bytes) {
 	Ref<CryptoKeyMbedTLS> out;
 	out.instance();
 	int ret = mbedtls_pk_setup(&(out->pkey), mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
-	ERR_FAIL_COND_V(ret != 0, NULL);
+	ERR_FAIL_COND_V(ret != 0, nullptr);
 	ret = mbedtls_rsa_gen_key(mbedtls_pk_rsa(out->pkey), mbedtls_ctr_drbg_random, &ctr_drbg, p_bytes, 65537);
-	ERR_FAIL_COND_V(ret != 0, NULL);
+	ERR_FAIL_COND_V(ret != 0, nullptr);
 	return out;
 }
 
 Ref<X509Certificate> CryptoMbedTLS::generate_self_signed_certificate(Ref<CryptoKey> p_key, String p_issuer_name, String p_not_before, String p_not_after) {
 	Ref<CryptoKeyMbedTLS> key = static_cast<Ref<CryptoKeyMbedTLS>>(p_key);
-	ERR_FAIL_COND_V_MSG(key.is_null(), NULL, "Invalid private key argument.");
+	ERR_FAIL_COND_V_MSG(key.is_null(), nullptr, "Invalid private key argument.");
 	mbedtls_x509write_cert crt;
 	mbedtls_x509write_crt_init(&crt);
 
@@ -250,7 +250,7 @@ Ref<X509Certificate> CryptoMbedTLS::generate_self_signed_certificate(Ref<CryptoK
 	mbedtls_mpi_init(&serial);
 	uint8_t rand_serial[20];
 	mbedtls_ctr_drbg_random(&ctr_drbg, rand_serial, 20);
-	ERR_FAIL_COND_V(mbedtls_mpi_read_binary(&serial, rand_serial, 20), NULL);
+	ERR_FAIL_COND_V(mbedtls_mpi_read_binary(&serial, rand_serial, 20), nullptr);
 	mbedtls_x509write_crt_set_serial(&crt, &serial);
 
 	mbedtls_x509write_crt_set_validity(&crt, p_not_before.utf8().get_data(), p_not_after.utf8().get_data());
@@ -268,7 +268,7 @@ Ref<X509Certificate> CryptoMbedTLS::generate_self_signed_certificate(Ref<CryptoK
 		mbedtls_mpi_free(&serial);
 		mbedtls_x509write_crt_free(&crt);
 		ERR_PRINT("Generated invalid certificate: " + itos(err));
-		return NULL;
+		return nullptr;
 	}
 
 	mbedtls_mpi_free(&serial);

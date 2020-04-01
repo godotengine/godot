@@ -35,7 +35,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 
-VersionControlEditorPlugin *VersionControlEditorPlugin::singleton = NULL;
+VersionControlEditorPlugin *VersionControlEditorPlugin::singleton = nullptr;
 
 void VersionControlEditorPlugin::_bind_methods() {
 
@@ -171,7 +171,7 @@ void VersionControlEditorPlugin::_refresh_stage_area() {
 		for (int i = 0; i < modified_file_paths.size(); i++) {
 
 			file_path = modified_file_paths.get_key_at_index(i);
-			TreeItem *found = stage_files->search_item_text(file_path, 0, true);
+			TreeItem *found = stage_files->search_item_text(file_path, nullptr, true);
 			if (!found) {
 
 				ChangeType change_index = (ChangeType)(int)modified_file_paths.get_value_at_index(i);
@@ -385,7 +385,7 @@ void VersionControlEditorPlugin::shut_down() {
 		}
 		EditorVCSInterface::get_singleton()->shut_down();
 		memdelete(EditorVCSInterface::get_singleton());
-		EditorVCSInterface::set_singleton(NULL);
+		EditorVCSInterface::set_singleton(nullptr);
 
 		EditorNode::get_singleton()->remove_control_from_dock(version_commit_dock);
 		EditorNode::get_singleton()->remove_bottom_panel_item(version_control_dock);
@@ -438,7 +438,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_choice->connect("item_selected", callable_mp(this, &VersionControlEditorPlugin::_selected_a_vcs));
 	set_up_hbc->add_child(set_up_choice);
 
-	set_up_init_settings = NULL;
+	set_up_init_settings = nullptr;
 
 	set_up_init_button = memnew(Button);
 	set_up_init_button->set_text(TTR("Initialize"));

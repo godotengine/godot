@@ -82,7 +82,7 @@ GotoLineDialog::GotoLineDialog() {
 	line = memnew(LineEdit);
 	vbc->add_child(line);
 	register_text_enter(line);
-	text_editor = NULL;
+	text_editor = nullptr;
 
 	set_hide_on_ok(false);
 }
@@ -1656,7 +1656,7 @@ void CodeTextEditor::update_toggle_scripts_button() {
 
 CodeTextEditor::CodeTextEditor() {
 
-	code_complete_func = NULL;
+	code_complete_func = nullptr;
 	ED_SHORTCUT("script_editor/zoom_in", TTR("Zoom In"), KEY_MASK_CMD | KEY_EQUAL);
 	ED_SHORTCUT("script_editor/zoom_out", TTR("Zoom Out"), KEY_MASK_CMD | KEY_MINUS);
 	ED_SHORTCUT("script_editor/reset_zoom", TTR("Reset Zoom"), KEY_MASK_CMD | KEY_0);

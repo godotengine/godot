@@ -130,7 +130,7 @@ Ref<AudioStreamPlayback> AudioStreamOGGVorbis::instance_playback() {
 
 	Ref<AudioStreamPlaybackOGGVorbis> ovs;
 
-	ERR_FAIL_COND_V(data == NULL, ovs);
+	ERR_FAIL_COND_V(data == nullptr, ovs);
 
 	ovs.instance();
 	ovs->vorbis_stream = Ref<AudioStreamOGGVorbis>(this);
@@ -144,7 +144,7 @@ Ref<AudioStreamPlayback> AudioStreamOGGVorbis::instance_playback() {
 	if (!ovs->ogg_stream) {
 
 		memfree(ovs->ogg_alloc.alloc_buffer);
-		ovs->ogg_alloc.alloc_buffer = NULL;
+		ovs->ogg_alloc.alloc_buffer = nullptr;
 		ERR_FAIL_COND_V(!ovs->ogg_stream, Ref<AudioStreamPlaybackOGGVorbis>());
 	}
 
@@ -159,7 +159,7 @@ String AudioStreamOGGVorbis::get_stream_name() const {
 void AudioStreamOGGVorbis::clear_data() {
 	if (data) {
 		memfree(data);
-		data = NULL;
+		data = nullptr;
 		data_len = 0;
 	}
 }
@@ -172,7 +172,7 @@ void AudioStreamOGGVorbis::set_data(const Vector<uint8_t> &p_data) {
 	uint32_t alloc_try = 1024;
 	Vector<char> alloc_mem;
 	char *w;
-	stb_vorbis *ogg_stream = NULL;
+	stb_vorbis *ogg_stream = nullptr;
 	stb_vorbis_alloc ogg_alloc;
 
 	while (alloc_try < MAX_TEST_MEM) {
@@ -194,7 +194,7 @@ void AudioStreamOGGVorbis::set_data(const Vector<uint8_t> &p_data) {
 		} else {
 
 			ERR_FAIL_COND(alloc_try == MAX_TEST_MEM);
-			ERR_FAIL_COND(ogg_stream == NULL);
+			ERR_FAIL_COND(ogg_stream == nullptr);
 
 			stb_vorbis_info info = stb_vorbis_get_info(ogg_stream);
 
@@ -274,7 +274,7 @@ void AudioStreamOGGVorbis::_bind_methods() {
 
 AudioStreamOGGVorbis::AudioStreamOGGVorbis() {
 
-	data = NULL;
+	data = nullptr;
 	data_len = 0;
 	length = 0;
 	sample_rate = 1;

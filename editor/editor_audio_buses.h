@@ -133,7 +133,7 @@ public:
 	void update_bus();
 	void update_send();
 
-	EditorAudioBus(EditorAudioBuses *p_buses = NULL, bool p_is_master = false);
+	EditorAudioBus(EditorAudioBuses *p_buses = nullptr, bool p_is_master = false);
 };
 
 class EditorAudioBusDrop : public Control {

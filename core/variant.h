@@ -435,16 +435,16 @@ public:
 	bool has_method(const StringName &p_method) const;
 	static Vector<Variant::Type> get_method_argument_types(Variant::Type p_type, const StringName &p_method);
 	static Vector<Variant> get_method_default_arguments(Variant::Type p_type, const StringName &p_method);
-	static Variant::Type get_method_return_type(Variant::Type p_type, const StringName &p_method, bool *r_has_return = NULL);
+	static Variant::Type get_method_return_type(Variant::Type p_type, const StringName &p_method, bool *r_has_return = nullptr);
 	static Vector<StringName> get_method_argument_names(Variant::Type p_type, const StringName &p_method);
 	static bool is_method_const(Variant::Type p_type, const StringName &p_method);
 
-	void set_named(const StringName &p_index, const Variant &p_value, bool *r_valid = NULL);
-	Variant get_named(const StringName &p_index, bool *r_valid = NULL) const;
+	void set_named(const StringName &p_index, const Variant &p_value, bool *r_valid = nullptr);
+	Variant get_named(const StringName &p_index, bool *r_valid = nullptr) const;
 
-	void set(const Variant &p_index, const Variant &p_value, bool *r_valid = NULL);
-	Variant get(const Variant &p_index, bool *r_valid = NULL) const;
-	bool in(const Variant &p_index, bool *r_valid = NULL) const;
+	void set(const Variant &p_index, const Variant &p_value, bool *r_valid = nullptr);
+	Variant get(const Variant &p_index, bool *r_valid = nullptr) const;
+	bool in(const Variant &p_index, bool *r_valid = nullptr) const;
 
 	bool iter_init(Variant &r_iter, bool &r_valid) const;
 	bool iter_next(Variant &r_iter, bool &r_valid) const;
@@ -467,13 +467,13 @@ public:
 	static void get_constructor_list(Variant::Type p_type, List<MethodInfo> *p_list);
 	static void get_constants_for_type(Variant::Type p_type, List<StringName> *p_constants);
 	static bool has_constant(Variant::Type p_type, const StringName &p_value);
-	static Variant get_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid = NULL);
+	static Variant get_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid = nullptr);
 
 	typedef String (*ObjectDeConstruct)(const Variant &p_object, void *ud);
 	typedef void (*ObjectConstruct)(const String &p_text, void *ud, Variant &r_value);
 
 	String get_construct_string() const;
-	static void construct_from_string(const String &p_string, Variant &r_value, ObjectConstruct p_obj_construct = NULL, void *p_construct_ud = NULL);
+	static void construct_from_string(const String &p_string, Variant &r_value, ObjectConstruct p_obj_construct = nullptr, void *p_construct_ud = nullptr);
 
 	void operator=(const Variant &p_variant); // only this is enough for all the other types
 	Variant(const Variant &p_variant);

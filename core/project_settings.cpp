@@ -43,7 +43,7 @@
 
 #include <zlib.h>
 
-ProjectSettings *ProjectSettings::singleton = NULL;
+ProjectSettings *ProjectSettings::singleton = nullptr;
 
 ProjectSettings *ProjectSettings::get_singleton() {
 
@@ -532,7 +532,7 @@ Error ProjectSettings::_load_settings_binary(const String &p_path) {
 		d.resize(vlen);
 		f->get_buffer(d.ptrw(), vlen);
 		Variant value;
-		err = decode_variant(value, d.ptr(), d.size(), NULL, true);
+		err = decode_variant(value, d.ptr(), d.size(), nullptr, true);
 		ERR_CONTINUE_MSG(err != OK, "Error decoding property: " + key + ".");
 		set(key, value);
 	}
@@ -571,7 +571,7 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 		next_tag.fields.clear();
 		next_tag.name = String();
 
-		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, NULL, true);
+		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true);
 		if (err == ERR_FILE_EOF) {
 			memdelete(f);
 			// If we're loading a project.godot from source code, we can operate some
@@ -679,7 +679,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 		file->store_string(key);
 
 		int len;
-		err = encode_variant(p_custom_features, NULL, len, false);
+		err = encode_variant(p_custom_features, nullptr, len, false);
 		if (err != OK) {
 			memdelete(file);
 			ERR_FAIL_V(err);
@@ -717,7 +717,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 			file->store_string(key);
 
 			int len;
-			err = encode_variant(value, NULL, len, true);
+			err = encode_variant(value, nullptr, len, true);
 			if (err != OK)
 				memdelete(file);
 			ERR_FAIL_COND_V_MSG(err != OK, ERR_INVALID_DATA, "Error when trying to encode Variant.");
@@ -1220,5 +1220,5 @@ ProjectSettings::ProjectSettings() {
 
 ProjectSettings::~ProjectSettings() {
 
-	singleton = NULL;
+	singleton = nullptr;
 }

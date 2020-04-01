@@ -73,13 +73,13 @@ LONG _RegKeyQueryString(HKEY hKey, const String &p_value_name, String &r_value) 
 	buffer.resize(512);
 	DWORD dwBufferSize = buffer.size();
 
-	LONG res = RegQueryValueExW(hKey, p_value_name.c_str(), 0, NULL, (LPBYTE)buffer.ptr(), &dwBufferSize);
+	LONG res = RegQueryValueExW(hKey, p_value_name.c_str(), 0, nullptr, (LPBYTE)buffer.ptr(), &dwBufferSize);
 
 	if (res == ERROR_MORE_DATA) {
 		// dwBufferSize now contains the actual size
 		Vector<WCHAR> buffer;
 		buffer.resize(dwBufferSize);
-		res = RegQueryValueExW(hKey, p_value_name.c_str(), 0, NULL, (LPBYTE)buffer.ptr(), &dwBufferSize);
+		res = RegQueryValueExW(hKey, p_value_name.c_str(), 0, nullptr, (LPBYTE)buffer.ptr(), &dwBufferSize);
 	}
 
 	if (res == ERROR_SUCCESS) {
@@ -180,7 +180,7 @@ String find_msbuild_tools_path() {
 
 	String output;
 	int exit_code;
-	OS::get_singleton()->execute(vswhere_path, vswhere_args, true, NULL, &output, &exit_code);
+	OS::get_singleton()->execute(vswhere_path, vswhere_args, true, nullptr, &output, &exit_code);
 
 	if (exit_code == 0) {
 		Vector<String> lines = output.split("\n");

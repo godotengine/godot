@@ -64,7 +64,7 @@ void Line2DEditor::_action_set_polygon(int p_idx, const Variant &p_previous, con
 
 Line2DEditor::Line2DEditor(EditorNode *p_editor) :
 		AbstractPolygon2DEditor(p_editor) {
-	node = NULL;
+	node = nullptr;
 }
 
 Line2DEditorPlugin::Line2DEditorPlugin(EditorNode *p_node) :

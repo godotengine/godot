@@ -138,7 +138,7 @@ btScaledBvhTriangleMeshShape *ShapeBullet::create_shape_concave(btBvhTriangleMes
 	if (p_mesh_shape) {
 		return bulletnew(btScaledBvhTriangleMeshShape(p_mesh_shape, p_local_scaling));
 	} else {
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -362,7 +362,7 @@ btCollisionShape *ConvexPolygonShapeBullet::create_bt_shape(const btVector3 &p_i
 
 ConcavePolygonShapeBullet::ConcavePolygonShapeBullet() :
 		ShapeBullet(),
-		meshShape(NULL) {}
+		meshShape(nullptr) {}
 
 ConcavePolygonShapeBullet::~ConcavePolygonShapeBullet() {
 	if (meshShape) {
@@ -425,7 +425,7 @@ void ConcavePolygonShapeBullet::setup(Vector<Vector3> p_faces) {
 			btGenerateInternalEdgeInfo(meshShape, triangleInfoMap);
 		}
 	} else {
-		meshShape = NULL;
+		meshShape = nullptr;
 		ERR_PRINT("The faces count are 0, the mesh shape cannot be created");
 	}
 	notifyShapeChanged();
@@ -434,7 +434,7 @@ void ConcavePolygonShapeBullet::setup(Vector<Vector3> p_faces) {
 btCollisionShape *ConcavePolygonShapeBullet::create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge) {
 	btCollisionShape *cs = ShapeBullet::create_shape_concave(meshShape);
 	if (!cs)
-		// This is necessary since if 0 faces the creation of concave return NULL
+		// This is necessary since if 0 faces the creation of concave return null
 		cs = ShapeBullet::create_shape_empty();
 	cs->setLocalScaling(p_implicit_scale);
 	prepare(cs);

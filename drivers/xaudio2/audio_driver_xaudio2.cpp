@@ -43,7 +43,7 @@ Error AudioDriverXAudio2::init() {
 	thread_exited = false;
 	exit_thread = false;
 	pcm_open = false;
-	samples_in = NULL;
+	samples_in = nullptr;
 
 	mix_rate = GLOBAL_DEF_RST("audio/mix_rate", DEFAULT_MIX_RATE);
 	// FIXME: speaker_mode seems unused in the Xaudio2 driver so far
@@ -193,11 +193,11 @@ void AudioDriverXAudio2::finish() {
 	mastering_voice->DestroyVoice();
 
 	memdelete(thread);
-	thread = NULL;
+	thread = nullptr;
 }
 
 AudioDriverXAudio2::AudioDriverXAudio2() :
-		thread(NULL),
+		thread(nullptr),
 		current_buffer(0) {
 	wave_format = { 0 };
 	for (int i = 0; i < AUDIO_BUFFERS; i++) {

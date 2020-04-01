@@ -100,7 +100,7 @@ ImageFormatLoader *ImageLoader::recognize(const String &p_extension) {
 			return loader[i];
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 Vector<ImageFormatLoader *> ImageLoader::loader;

@@ -105,7 +105,7 @@ void CollisionShape3D::_notification(int p_what) {
 				parent->remove_shape_owner(owner_id);
 			}
 			owner_id = 0;
-			parent = NULL;
+			parent = nullptr;
 		} break;
 	}
 }
@@ -200,8 +200,8 @@ CollisionShape3D::CollisionShape3D() {
 
 	//indicator = RenderingServer::get_singleton()->mesh_create();
 	disabled = false;
-	debug_shape = NULL;
-	parent = NULL;
+	debug_shape = nullptr;
+	parent = nullptr;
 	owner_id = 0;
 	set_notify_local_transform(true);
 }
@@ -217,7 +217,7 @@ void CollisionShape3D::_update_debug_shape() {
 
 	if (debug_shape) {
 		debug_shape->queue_delete();
-		debug_shape = NULL;
+		debug_shape = nullptr;
 	}
 
 	Ref<Shape3D> s = get_shape();

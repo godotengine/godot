@@ -80,7 +80,7 @@ String find_executable(const String &p_name) {
 
 String cwd() {
 #ifdef WINDOWS_ENABLED
-	const DWORD expected_size = ::GetCurrentDirectoryW(0, NULL);
+	const DWORD expected_size = ::GetCurrentDirectoryW(0, nullptr);
 
 	String buffer;
 	buffer.resize((int)expected_size);
@@ -90,7 +90,7 @@ String cwd() {
 	return buffer.simplify_path();
 #else
 	char buffer[PATH_MAX];
-	if (::getcwd(buffer, sizeof(buffer)) == NULL)
+	if (::getcwd(buffer, sizeof(buffer)) == nullptr)
 		return ".";
 
 	String result;
@@ -114,12 +114,12 @@ String realpath(const String &p_path) {
 	// Open file without read/write access
 	HANDLE hFile = ::CreateFileW(p_path.c_str(), 0,
 			FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-			NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+			nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
 	if (hFile == INVALID_HANDLE_VALUE)
 		return p_path;
 
-	const DWORD expected_size = ::GetFinalPathNameByHandleW(hFile, NULL, 0, FILE_NAME_NORMALIZED);
+	const DWORD expected_size = ::GetFinalPathNameByHandleW(hFile, nullptr, 0, FILE_NAME_NORMALIZED);
 
 	if (expected_size == 0) {
 		::CloseHandle(hFile);
@@ -133,7 +133,7 @@ String realpath(const String &p_path) {
 	::CloseHandle(hFile);
 	return buffer.simplify_path();
 #elif UNIX_ENABLED
-	char *resolved_path = ::realpath(p_path.utf8().get_data(), NULL);
+	char *resolved_path = ::realpath(p_path.utf8().get_data(), nullptr);
 
 	if (!resolved_path)
 		return p_path;

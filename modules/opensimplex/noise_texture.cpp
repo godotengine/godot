@@ -34,7 +34,7 @@
 
 NoiseTexture::NoiseTexture() {
 	update_queued = false;
-	noise_thread = NULL;
+	noise_thread = nullptr;
 	regen_queued = false;
 	first_time = true;
 
@@ -114,7 +114,7 @@ void NoiseTexture::_thread_done(const Ref<Image> &p_image) {
 	_set_texture_data(p_image);
 	Thread::wait_to_finish(noise_thread);
 	memdelete(noise_thread);
-	noise_thread = NULL;
+	noise_thread = nullptr;
 	if (regen_queued) {
 		noise_thread = Thread::create(_thread_function, this);
 		regen_queued = false;

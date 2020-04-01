@@ -119,7 +119,7 @@ void GDNativeLibraryEditor::_update_tree() {
 		new_arch->set_expand_right(0, true);
 		new_arch->set_metadata(1, E->key());
 
-		platform->set_collapsed(collapsed_items.find(E->get().name) != NULL);
+		platform->set_collapsed(collapsed_items.find(E->get().name) != nullptr);
 	}
 	filter->set_text(text);
 }

@@ -525,9 +525,9 @@ void StreamTexture::_requested_normal(void *p_ud) {
 	request_normal_callback(stex);
 }
 
-StreamTexture::TextureFormatRequestCallback StreamTexture::request_3d_callback = NULL;
-StreamTexture::TextureFormatRoughnessRequestCallback StreamTexture::request_roughness_callback = NULL;
-StreamTexture::TextureFormatRequestCallback StreamTexture::request_normal_callback = NULL;
+StreamTexture::TextureFormatRequestCallback StreamTexture::request_3d_callback = nullptr;
+StreamTexture::TextureFormatRoughnessRequestCallback StreamTexture::request_roughness_callback = nullptr;
+StreamTexture::TextureFormatRequestCallback StreamTexture::request_normal_callback = nullptr;
 
 Image::Format StreamTexture::get_format() const {
 
@@ -637,7 +637,7 @@ Error StreamTexture::load(const String &p_path) {
 		RS::get_singleton()->texture_set_detect_3d_callback(texture, _requested_3d, this);
 	} else {
 		//print_line("not requesting detect 3D at " + p_path);
-		RS::get_singleton()->texture_set_detect_3d_callback(texture, NULL, NULL);
+		RS::get_singleton()->texture_set_detect_3d_callback(texture, nullptr, nullptr);
 	}
 
 	if (request_roughness) {
@@ -645,7 +645,7 @@ Error StreamTexture::load(const String &p_path) {
 		RS::get_singleton()->texture_set_detect_roughness_callback(texture, _requested_roughness, this);
 	} else {
 		//print_line("not requesting detect srgb at " + p_path);
-		RS::get_singleton()->texture_set_detect_roughness_callback(texture, NULL, NULL);
+		RS::get_singleton()->texture_set_detect_roughness_callback(texture, nullptr, nullptr);
 	}
 
 	if (request_normal) {
@@ -653,7 +653,7 @@ Error StreamTexture::load(const String &p_path) {
 		RS::get_singleton()->texture_set_detect_normal_callback(texture, _requested_normal, this);
 	} else {
 		//print_line("not requesting detect normal at " + p_path);
-		RS::get_singleton()->texture_set_detect_normal_callback(texture, NULL, NULL);
+		RS::get_singleton()->texture_set_detect_normal_callback(texture, nullptr, nullptr);
 	}
 
 #endif
@@ -1869,7 +1869,7 @@ AnimatedTexture::AnimatedTexture() {
 #ifndef NO_THREADS
 	rw_lock = RWLock::create();
 #else
-	rw_lock = NULL;
+	rw_lock = nullptr;
 #endif
 }
 

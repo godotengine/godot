@@ -77,7 +77,7 @@ void GDAPI godot_nativescript_register_class(void *p_gdnative_handle, const char
 		}
 
 	} else {
-		desc.base_data = NULL;
+		desc.base_data = nullptr;
 		desc.base_native_type = p_base;
 	}
 
@@ -111,7 +111,7 @@ void GDAPI godot_nativescript_register_tool_class(void *p_gdnative_handle, const
 		}
 
 	} else {
-		desc.base_data = NULL;
+		desc.base_data = nullptr;
 		desc.base_native_type = p_base;
 	}
 
@@ -210,11 +210,11 @@ void GDAPI godot_nativescript_register_signal(void *p_gdnative_handle, const cha
 void GDAPI *godot_nativescript_get_userdata(godot_object *p_instance) {
 	Object *instance = (Object *)p_instance;
 	if (!instance)
-		return NULL;
+		return nullptr;
 	if (instance->get_script_instance() && instance->get_script_instance()->get_language() == NativeScriptLanguage::get_singleton()) {
 		return ((NativeScriptInstance *)instance->get_script_instance())->userdata;
 	}
-	return NULL;
+	return nullptr;
 }
 
 /*
@@ -319,18 +319,18 @@ const void GDAPI *godot_nativescript_get_type_tag(const godot_object *p_object) 
 	const Object *o = (Object *)p_object;
 
 	if (!o->get_script_instance()) {
-		return NULL;
+		return nullptr;
 	} else {
 		NativeScript *script = Object::cast_to<NativeScript>(o->get_script_instance()->get_script().ptr());
 		if (!script) {
-			return NULL;
+			return nullptr;
 		}
 
 		if (script->get_script_desc())
 			return script->get_script_desc()->type_tag;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 int GDAPI godot_nativescript_register_instance_binding_data_functions(godot_instance_binding_functions p_binding_functions) {

@@ -130,7 +130,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 			env->CallVoidMethodA(jdict, set_keys, &val);
 			env->DeleteLocalRef(jkeys);
 
-			jobjectArray jvalues = env->NewObjectArray(keys.size(), env->FindClass("java/lang/Object"), NULL);
+			jobjectArray jvalues = env->NewObjectArray(keys.size(), env->FindClass("java/lang/Object"), nullptr);
 
 			for (int j = 0; j < keys.size(); j++) {
 				Variant var = dict[keys[j]];
@@ -211,7 +211,7 @@ String _get_class_name(JNIEnv *env, jclass cls, bool *array) {
 
 Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 
-	if (obj == NULL) {
+	if (obj == nullptr) {
 		return Variant();
 	}
 
@@ -384,7 +384,7 @@ Variant::Type get_jni_type(const String &p_type) {
 		{ "[F", Variant::PACKED_FLOAT32_ARRAY },
 		{ "[Ljava.lang.String;", Variant::PACKED_STRING_ARRAY },
 		{ "org.godotengine.godot.Dictionary", Variant::DICTIONARY },
-		{ NULL, Variant::NIL }
+		{ nullptr, Variant::NIL }
 	};
 
 	int idx = 0;
@@ -417,7 +417,7 @@ const char *get_jni_sig(const String &p_type) {
 		{ "[B", "[B" },
 		{ "[F", "[F" },
 		{ "[Ljava.lang.String;", "[Ljava/lang/String;" },
-		{ NULL, "V" }
+		{ nullptr, "V" }
 	};
 
 	int idx = 0;

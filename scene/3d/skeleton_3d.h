@@ -112,8 +112,8 @@ private:
 			global_pose_override_amount = 0;
 			global_pose_override_reset = false;
 #ifndef _3D_DISABLED
-			physical_bone = NULL;
-			cache_parent_physical_bone = NULL;
+			physical_bone = nullptr;
+			cache_parent_physical_bone = nullptr;
 #endif // _3D_DISABLED
 		}
 	};
