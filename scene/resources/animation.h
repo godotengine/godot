@@ -84,7 +84,10 @@ private:
 
 		float transition;
 		float time; // time in secs
-		Key() { transition = 1; }
+		Key() {
+			transition = 1;
+			time = 0;
+		}
 	};
 
 	// transform key holds either Vector3 or Quaternion
