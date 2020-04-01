@@ -33,6 +33,7 @@
 
 #include "core/io/marshalls.h"
 #include "core/os/file_access.h"
+#include "core/os/mutex.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
 #include "editor/import/resource_importer_wav.h"
@@ -53,6 +54,7 @@ class AudioEffectRecordInstance : public AudioEffectInstance {
 
 	Vector<AudioFrame> ring_buffer;
 	Vector<float> recording_data;
+	mutable Mutex *recording_data_mutex;
 
 	unsigned int ring_buffer_pos;
 	unsigned int ring_buffer_mask;
@@ -72,7 +74,9 @@ public:
 	virtual bool process_silence() const;
 
 	AudioEffectRecordInstance() :
-			thread_active(false) {}
+			thread_active(false),
+			recording_data_mutex(Mutex::create(false)) {
+	}
 	~AudioEffectRecordInstance();
 };
 
