@@ -209,8 +209,15 @@ String DirAccessWindows::get_current_dir() {
 String DirAccessWindows::get_current_dir_without_drive() {
 
 	String dir = get_current_dir();
-	int p = current_dir.find(":");
-	return p != -1 ? dir.right(p + 1) : dir;
+
+	if (_get_root_string() == "") {
+		int p = current_dir.find(":");
+		if (p != -1) {
+			dir = dir.right(p + 1);
+		}
+	}
+
+	return dir;
 }
 
 bool DirAccessWindows::file_exists(String p_file) {
