@@ -218,7 +218,7 @@ private:
 	struct Mesh {
 
 		struct Surface {
-			RS::PrimitiveType primitive;
+			RS::PrimitiveType primitive = RS::PRIMITIVE_POINTS;
 			uint32_t format = 0;
 
 			RID vertex_buffer;
@@ -232,8 +232,8 @@ private:
 			// cache-efficient structure.
 
 			struct Version {
-				uint32_t input_mask;
-				RD::VertexFormatID vertex_format;
+				uint32_t input_mask = 0;
+				RD::VertexFormatID vertex_format = 0;
 				RID vertex_array;
 			};
 
@@ -246,7 +246,7 @@ private:
 			uint32_t index_count = 0;
 
 			struct LOD {
-				float edge_length;
+				float edge_length = 0.0;
 				RID index_buffer;
 				RID index_array;
 			};
@@ -456,9 +456,9 @@ private:
 		RID color;
 
 		//used for retrieving from CPU
-		RD::DataFormat color_format;
-		RD::DataFormat color_format_srgb;
-		Image::Format image_format;
+		RD::DataFormat color_format = RD::DATA_FORMAT_R4G4_UNORM_PACK8;
+		RD::DataFormat color_format_srgb = RD::DATA_FORMAT_R4G4_UNORM_PACK8;
+		Image::Format image_format = Image::FORMAT_L8;
 
 		bool flags[RENDER_TARGET_FLAG_MAX];
 

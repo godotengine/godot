@@ -3374,6 +3374,15 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 	r_error = OK;
 
+	current_cursor = CURSOR_ARROW;
+	mouse_mode = MOUSE_MODE_VISIBLE;
+
+	for (int i = 0; i < CURSOR_MAX; i++) {
+
+		cursors[i] = None;
+		img[i] = NULL;
+	}
+
 	last_button_state = 0;
 
 	xmbstring = NULL;
@@ -3649,14 +3658,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		print_verbose("XcursorGetTheme could not get cursor theme");
 		cursor_theme = "default";
 	}
-
-	for (int i = 0; i < CURSOR_MAX; i++) {
-
-		cursors[i] = None;
-		img[i] = NULL;
-	}
-
-	current_cursor = CURSOR_ARROW;
 
 	for (int i = 0; i < CURSOR_MAX; i++) {
 

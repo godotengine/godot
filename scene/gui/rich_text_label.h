@@ -122,6 +122,8 @@ private:
 			parent = NULL;
 			E = NULL;
 			line = 0;
+			index = 0;
+			type = ITEM_FRAME;
 		}
 		virtual ~Item() { _clear_children(); }
 	};

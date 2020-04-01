@@ -363,4 +363,7 @@ AudioEffectPitchShift::AudioEffectPitchShift() {
 	pitch_scale = 1.0;
 	oversampling = 4;
 	fft_size = FFT_SIZE_2048;
+	wet = 0.0;
+	dry = 0.0;
+	filter = false;
 }

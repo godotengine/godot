@@ -371,6 +371,7 @@ WebRTCMultiplayer::WebRTCMultiplayer() {
 	unique_id = 0;
 	next_packet_peer = 0;
 	target_peer = 0;
+	client_count = 0;
 	transfer_mode = TRANSFER_MODE_RELIABLE;
 	refuse_connections = false;
 	connection_status = CONNECTION_DISCONNECTED;

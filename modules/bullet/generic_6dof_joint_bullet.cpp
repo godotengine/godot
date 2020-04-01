@@ -43,6 +43,12 @@
 Generic6DOFJointBullet::Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB) :
 		JointBullet() {
 
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < PhysicsServer3D::G6DOF_JOINT_FLAG_MAX; j++) {
+			flags[i][j] = false;
+		}
+	}
+
 	Transform scaled_AFrame(frameInA.scaled(rbA->get_body_scale()));
 
 	scaled_AFrame.basis.rotref_posscale_decomposition(scaled_AFrame.basis);

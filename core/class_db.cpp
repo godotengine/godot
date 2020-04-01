@@ -261,6 +261,7 @@ HashMap<StringName, StringName> ClassDB::compat_classes;
 ClassDB::ClassInfo::ClassInfo() {
 
 	api = API_NONE;
+	class_ptr = nullptr;
 	creation_func = NULL;
 	inherits_ptr = NULL;
 	disabled = false;
