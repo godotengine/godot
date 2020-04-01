@@ -200,6 +200,10 @@ public:
 		WINDOW_FLAG_TRANSPARENT,
 		WINDOW_FLAG_NO_FOCUS,
 		WINDOW_FLAG_MAX,
+	};
+
+	// Separate enum otherwise we get warnings in switches not handling all values.
+	enum WindowFlagsBit {
 		WINDOW_FLAG_RESIZE_DISABLED_BIT = (1 << WINDOW_FLAG_RESIZE_DISABLED),
 		WINDOW_FLAG_BORDERLESS_BIT = (1 << WINDOW_FLAG_BORDERLESS),
 		WINDOW_FLAG_ALWAYS_ON_TOP_BIT = (1 << WINDOW_FLAG_ALWAYS_ON_TOP),

@@ -574,6 +574,8 @@ Files extracted from upstream source:
 
 `vk_enum_string_helper.h` is taken from the matching `Vulkan-ValidationLayers`
 SDK release: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/layers/generated/vk_enum_string_helper.h
+Includes custom change to disable MSVC pragma, might be upstreamed via:
+https://github.com/KhronosGroup/Vulkan-ValidationLayers/pull/1666
 
 `vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
 Version: 2.3.0

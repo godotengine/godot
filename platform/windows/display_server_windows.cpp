@@ -1019,7 +1019,8 @@ bool DisplayServerWindows::window_is_maximize_allowed(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
-	const WindowData &wd = windows[p_window];
+
+	// FIXME: Implement this, or confirm that it should always be true.
 
 	return true; //no idea
 }
@@ -1049,14 +1050,17 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
 
+			// FIXME: Implement.
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 
 			wd.no_focus = p_enabled;
 			_update_window_style(p_window);
 		} break;
+		case WINDOW_FLAG_MAX: break;
 	}
 }
+
 bool DisplayServerWindows::window_get_flag(WindowFlags p_flag, WindowID p_window) const {
 
 	_THREAD_SAFE_METHOD_
@@ -1078,7 +1082,13 @@ bool DisplayServerWindows::window_get_flag(WindowFlags p_flag, WindowID p_window
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
 
+			// FIXME: Implement.
 		} break;
+		case WINDOW_FLAG_NO_FOCUS: {
+
+			return wd.no_focus;
+		} break;
+		case WINDOW_FLAG_MAX: break;
 	}
 
 	return false;
@@ -1882,7 +1892,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			_send_window_event(windows[window_id], WINDOW_EVENT_CLOSE_REQUEST);
 
-			//force_quit=true;
 			return 0; // Jump Back
 		}
 		case WM_MOUSELEAVE: {
