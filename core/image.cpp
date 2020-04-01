@@ -2223,12 +2223,11 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const P
 			int dst_y = dest_rect.position.y + i;
 
 			Color sc = img->get_pixel(src_x, src_y);
-			Color dc = get_pixel(dst_x, dst_y);
-			dc.r = (double)(sc.a * sc.r + dc.a * (1.0 - sc.a) * dc.r);
-			dc.g = (double)(sc.a * sc.g + dc.a * (1.0 - sc.a) * dc.g);
-			dc.b = (double)(sc.a * sc.b + dc.a * (1.0 - sc.a) * dc.b);
-			dc.a = (double)(sc.a + dc.a * (1.0 - sc.a));
-			set_pixel(dst_x, dst_y, dc);
+			if (sc.a != 0) {
+				Color dc = get_pixel(dst_x, dst_y);
+				dc = dc.blend(sc);
+				set_pixel(dst_x, dst_y, dc);
+			}
 		}
 	}
 
@@ -2285,12 +2284,11 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 				int dst_y = dest_rect.position.y + i;
 
 				Color sc = img->get_pixel(src_x, src_y);
-				Color dc = get_pixel(dst_x, dst_y);
-				dc.r = (double)(sc.a * sc.r + dc.a * (1.0 - sc.a) * dc.r);
-				dc.g = (double)(sc.a * sc.g + dc.a * (1.0 - sc.a) * dc.g);
-				dc.b = (double)(sc.a * sc.b + dc.a * (1.0 - sc.a) * dc.b);
-				dc.a = (double)(sc.a + dc.a * (1.0 - sc.a));
-				set_pixel(dst_x, dst_y, dc);
+				if (sc.a != 0) {
+					Color dc = get_pixel(dst_x, dst_y);
+					dc = dc.blend(sc);
+					set_pixel(dst_x, dst_y, dc);
+				}
 			}
 		}
 	}
