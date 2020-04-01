@@ -2440,18 +2440,27 @@ void Node::replace_by(Node *p_node, bool p_keep_data) {
 	List<_NodeReplaceByPair> replace_data;
 
 	if (p_keep_data) {
-
+		Node *default_oldnode = Object::cast_to<Node>(ClassDB::instance(get_class()));
 		List<PropertyInfo> plist;
 		get_property_list(&plist);
 
 		for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-
 			_NodeReplaceByPair rd;
 			if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
 				continue;
+
 			rd.name = E->get().name;
+			if (rd.name == "__meta__" || rd.name == "script")
+				continue;
+
 			rd.value = get(rd.name);
+			if (default_oldnode->get(rd.name) == rd.value)
+				continue;
+
+			replace_data.push_back(rd);
 		}
+
+		memdelete(default_oldnode);
 
 		List<GroupInfo> groups;
 		get_groups(&groups);
