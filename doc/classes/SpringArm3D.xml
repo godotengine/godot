@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SpringArm3D" inherits="Node3D" version="4.0">
+	<brief_description>
+		A helper node, mostly used in 3rd person cameras.
+	</brief_description>
+	<description>
+		The SpringArm3D node is a node that casts a ray (or collision shape) along its z axis and moves all its direct children to the collision point, minus a margin.
+		The most common use case for this is to make a 3rd person camera that reacts to collisions in the environment.
+		The SpringArm3D will either cast a ray, or if a shape is given, it will cast the shape in the direction of its z axis.
+		If you use the SpringArm3D as a camera controller for your player, you might need to exclude the player's collider from the SpringArm3D's collision check.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_excluded_object">
+			<return type="void">
+			</return>
+			<argument index="0" name="RID" type="RID">
+			</argument>
+			<description>
+				Adds the [PhysicsBody3D] object with the given [RID] to the list of [PhysicsBody3D] objects excluded from the collision check.
+			</description>
+		</method>
+		<method name="clear_excluded_objects">
+			<return type="void">
+			</return>
+			<description>
+				Clears the list of [PhysicsBody3D] objects excluded from the collision check.
+			</description>
+		</method>
+		<method name="get_hit_length">
+			<return type="float">
+			</return>
+			<description>
+				Returns the proportion between the current arm length (after checking for collisions) and the [member spring_length]. Ranges from 0 to 1.
+			</description>
+		</method>
+		<method name="remove_excluded_object">
+			<return type="bool">
+			</return>
+			<argument index="0" name="RID" type="RID">
+			</argument>
+			<description>
+				Removes the given [RID] from the list of [PhysicsBody3D] objects excluded from the collision check.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
+			The layers against which the collision check shall be done.
+		</member>
+		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.01">
+			When the collision check is made, a candidate length for the SpringArm3D is given.
+			The margin is then subtracted to this length and the translation is applied to the child objects of the SpringArm3D.
+			This margin is useful for when the SpringArm3D has a [Camera3D] as a child node: without the margin, the [Camera3D] would be placed on the exact point of collision, while with the margin the [Camera3D] would be placed close to the point of collision.
+		</member>
+		<member name="shape" type="Shape3D" setter="set_shape" getter="get_shape">
+			The [Shape3D] to use for the SpringArm3D.
+			When the shape is set, the SpringArm3D will cast the [Shape3D] on its z axis instead of performing a ray cast.
+		</member>
+		<member name="spring_length" type="float" setter="set_length" getter="get_length" default="1.0">
+			The maximum extent of the SpringArm3D. This is used as a length for both the ray and the shape cast used internally to calculate the desired position of the SpringArm3D's child nodes.
+			To know more about how to perform a shape cast or a ray cast, please consult the [PhysicsDirectSpaceState3D] documentation.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

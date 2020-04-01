@@ -108,7 +108,7 @@
 			If [code]true[/code], the depth fog effect is enabled. When enabled, fog will appear in the distance (relative to the camera).
 		</member>
 		<member name="fog_depth_end" type="float" setter="set_fog_depth_end" getter="get_fog_depth_end" default="100.0">
-			The fog's depth end distance from the camera. If this value is set to 0, it will be equal to the current camera's [member Camera.far] value.
+			The fog's depth end distance from the camera. If this value is set to 0, it will be equal to the current camera's [member Camera3D.far] value.
 		</member>
 		<member name="fog_enabled" type="bool" setter="set_fog_enabled" getter="is_fog_enabled" default="false">
 			If [code]true[/code], fog effects are enabled. [member fog_height_enabled] and/or [member fog_depth_enabled] must be set to [code]true[/code] to actually display fog.
@@ -126,7 +126,7 @@
 			The Y coordinate where the height fog will be the least intense. If this value is greater than [member fog_height_max], fog will be displayed from top to bottom. Otherwise, it will be displayed from bottom to top.
 		</member>
 		<member name="fog_sun_amount" type="float" setter="set_fog_sun_amount" getter="get_fog_sun_amount" default="0.0">
-			The intensity of the depth fog color transition when looking towards the sun. The sun's direction is determined automatically using the DirectionalLight node in the scene.
+			The intensity of the depth fog color transition when looking towards the sun. The sun's direction is determined automatically using the DirectionalLight3D node in the scene.
 		</member>
 		<member name="fog_sun_color" type="Color" setter="set_fog_sun_color" getter="get_fog_sun_color" default="Color( 1, 0.9, 0.7, 1 )">
 			The depth fog's [Color] when looking towards the sun.
@@ -136,10 +136,6 @@
 		</member>
 		<member name="fog_transmit_enabled" type="bool" setter="set_fog_transmit_enabled" getter="is_fog_transmit_enabled" default="false">
 			Enables fog's light transmission effect. If [code]true[/code], light will be more visible in the fog to simulate light scattering as in real life.
-		</member>
-		<member name="glow_bicubic_upscale" type="bool" setter="set_glow_bicubic_upscale" getter="is_glow_bicubic_upscale_enabled" default="false">
-			Smooths out the blockiness created by sampling higher levels, at the cost of performance.
-			[b]Note:[/b] When using the GLES2 renderer, this is only available if the GPU supports the [code]GL_EXT_gpu_shader4[/code] extension.
 		</member>
 		<member name="glow_blend_mode" type="int" setter="set_glow_blend_mode" getter="get_glow_blend_mode" enum="Environment.GlowBlendMode" default="2">
 			The glow blending mode.

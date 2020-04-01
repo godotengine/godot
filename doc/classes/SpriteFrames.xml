@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SpriteFrames" inherits="Resource" version="4.0">
 	<brief_description>
-		Sprite frame library for AnimatedSprite.
+		Sprite frame library for AnimatedSprite2D.
 	</brief_description>
 	<description>
-		Sprite frame library for [AnimatedSprite]. Contains frames and animation data for playback.
+		Sprite frame library for [AnimatedSprite2D]. Contains frames and animation data for playback.
 	</description>
 	<tutorials>
 	</tutorials>

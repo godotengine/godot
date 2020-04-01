@@ -16,7 +16,7 @@
 		<method name="_integrate_forces" qualifiers="virtual">
 			<return type="void">
 			</return>
-			<argument index="0" name="state" type="Physics2DDirectBodyState">
+			<argument index="0" name="state" type="PhysicsDirectBodyState2D">
 			</argument>
 			<description>
 				Allows you to read and safely modify the simulation state for the object. Use this instead of [method Node._physics_process] if you need to directly change the body's [code]position[/code] or other physics properties. By default, it works in addition to the usual physics behavior, but [member custom_integrator] allows you to disable the default behavior and write custom force integration for a body.
@@ -106,10 +106,10 @@
 			</argument>
 			<argument index="2" name="margin" type="float" default="0.08">
 			</argument>
-			<argument index="3" name="result" type="Physics2DTestMotionResult" default="null">
+			<argument index="3" name="result" type="PhysicsTestMotionResult2D" default="null">
 			</argument>
 			<description>
-				Returns [code]true[/code] if a collision would result from moving in the given vector. [code]margin[/code] increases the size of the shapes involved in the collision detection, and [code]result[/code] is an object of type [Physics2DTestMotionResult], which contains additional information about the collision (should there be one).
+				Returns [code]true[/code] if a collision would result from moving in the given vector. [code]margin[/code] increases the size of the shapes involved in the collision detection, and [code]result[/code] is an object of type [PhysicsTestMotionResult2D], which contains additional information about the collision (should there be one).
 			</description>
 		</method>
 	</methods>

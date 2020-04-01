@@ -316,7 +316,8 @@ void CSharpLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 
 	p_delimiters->push_back("' '"); // character literal
 	p_delimiters->push_back("\" \""); // regular string literal
-	p_delimiters->push_back("@\" \""); // verbatim string literal
+	// Verbatim string literals (`@" "`) don't render correctly, so don't highlight them.
+	// Generic string highlighting suffices as a workaround for now.
 }
 
 static String get_base_class_name(const String &p_base_class_name, const String p_class_name) {
@@ -763,7 +764,7 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 	if (proj_assembly) {
 		String proj_asm_path = proj_assembly->get_path();
 
-		if (!FileAccess::exists(proj_assembly->get_path())) {
+		if (!FileAccess::exists(proj_asm_path)) {
 			// Maybe it wasn't loaded from the default path, so check this as well
 			proj_asm_path = GodotSharpDirs::get_res_temp_assemblies_dir().plus_file(appname_safe);
 			if (!FileAccess::exists(proj_asm_path))

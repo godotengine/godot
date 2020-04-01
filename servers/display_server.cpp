@@ -434,7 +434,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("native_video_unpause"), &DisplayServer::native_video_unpause);
 
 	ClassDB::bind_method(D_METHOD("dialog_show", "title", "description", "buttons", "callback"), &DisplayServer::dialog_show);
-	ClassDB::bind_method(D_METHOD("dialog_input_text", "title", "description", "existing_text", "callback"), &DisplayServer::dialog_show);
+	ClassDB::bind_method(D_METHOD("dialog_input_text", "title", "description", "existing_text", "callback"), &DisplayServer::dialog_input_text);
 
 	ClassDB::bind_method(D_METHOD("get_latin_keyboard_variant"), &DisplayServer::get_latin_keyboard_variant);
 

@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-Import('env')
-Import('env_modules')
+Import("env")
+Import("env_modules")
 
 env_upnp = env_modules.Clone()
 
 # Thirdparty source files
 
-if env['builtin_miniupnpc']:
+if env["builtin_miniupnpc"]:
     thirdparty_dir = "#thirdparty/miniupnpc/"
     thirdparty_sources = [
         "miniupnpc.c",

@@ -96,7 +96,7 @@ real_t HingeJointBullet::get_hinge_angle() {
 void HingeJointBullet::set_param(PhysicsServer3D::HingeJointParam p_param, real_t p_value) {
 	switch (p_param) {
 		case PhysicsServer3D::HINGE_JOINT_BIAS:
-			WARN_DEPRECATED_MSG("The HingeJoint parameter \"bias\" is deprecated.");
+			WARN_DEPRECATED_MSG("The HingeJoint3D parameter \"bias\" is deprecated.");
 			break;
 		case PhysicsServer3D::HINGE_JOINT_LIMIT_UPPER:
 			hingeConstraint->setLimit(hingeConstraint->getLowerLimit(), p_value, hingeConstraint->getLimitSoftness(), hingeConstraint->getLimitBiasFactor(), hingeConstraint->getLimitRelaxationFactor());
@@ -128,7 +128,7 @@ void HingeJointBullet::set_param(PhysicsServer3D::HingeJointParam p_param, real_
 real_t HingeJointBullet::get_param(PhysicsServer3D::HingeJointParam p_param) const {
 	switch (p_param) {
 		case PhysicsServer3D::HINGE_JOINT_BIAS:
-			WARN_DEPRECATED_MSG("The HingeJoint parameter \"bias\" is deprecated.");
+			WARN_DEPRECATED_MSG("The HingeJoint3D parameter \"bias\" is deprecated.");
 			return 0;
 		case PhysicsServer3D::HINGE_JOINT_LIMIT_UPPER:
 			return hingeConstraint->getUpperLimit();

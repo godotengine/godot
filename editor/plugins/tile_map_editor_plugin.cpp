@@ -38,6 +38,13 @@
 #include "editor/editor_settings.h"
 #include "scene/gui/split_container.h"
 
+void TileMapEditor::_node_removed(Node *p_node) {
+
+	if (p_node == node) {
+		node = NULL;
+	}
+}
+
 void TileMapEditor::_notification(int p_what) {
 
 	switch (p_what) {
@@ -60,6 +67,7 @@ void TileMapEditor::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
+			get_tree()->connect("node_removed", callable_mp(this, &TileMapEditor::_node_removed));
 			paint_button->set_icon(get_theme_icon("Edit", "EditorIcons"));
 			bucket_fill_button->set_icon(get_theme_icon("Bucket", "EditorIcons"));
 			picker_button->set_icon(get_theme_icon("ColorPick", "EditorIcons"));
@@ -79,6 +87,10 @@ void TileMapEditor::_notification(int p_what) {
 			p->set_item_icon(p->get_item_index(OPTION_COPY), get_theme_icon("Duplicate", "EditorIcons"));
 			p->set_item_icon(p->get_item_index(OPTION_ERASE_SELECTION), get_theme_icon("Remove", "EditorIcons"));
 
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			get_tree()->disconnect("node_removed", callable_mp(this, &TileMapEditor::_node_removed));
 		} break;
 	}
 }

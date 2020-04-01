@@ -4,7 +4,7 @@
 		Creates a sub-view into the screen.
 	</brief_description>
 	<description>
-		A Viewport creates a different view into the screen, or a sub-view inside another viewport. Children 2D Nodes will display on it, and children Camera 3D nodes will render on it too.
+		A Viewport creates a different view into the screen, or a sub-view inside another viewport. Children 2D Nodes will display on it, and children Camera3D 3D nodes will render on it too.
 		Optionally, a viewport can have its own 2D or 3D world, so they don't share what they draw with other viewports.
 		If a viewport is a child of a [ViewportContainer], it will automatically take up its size, otherwise it must be set manually.
 		Viewports can also choose to be audio listeners, so they generate positional audio depending on a 2D or 3D camera child of it.
@@ -17,7 +17,7 @@
 	</tutorials>
 	<methods>
 		<method name="find_world" qualifiers="const">
-			<return type="World">
+			<return type="World3D">
 			</return>
 			<description>
 				Returns the 3D world of the viewport, or if none the world of the parent viewport.
@@ -31,7 +31,7 @@
 			</description>
 		</method>
 		<method name="get_camera" qualifiers="const">
-			<return type="Camera">
+			<return type="Camera3D">
 			</return>
 			<description>
 				Returns the active 3D camera.
@@ -42,13 +42,6 @@
 			</return>
 			<description>
 				Returns the total transform of the viewport.
-			</description>
-		</method>
-		<method name="get_modal_stack_top" qualifiers="const">
-			<return type="Control">
-			</return>
-			<description>
-				Returns the topmost modal in the stack.
 			</description>
 		</method>
 		<method name="get_mouse_position" qualifiers="const">
@@ -76,13 +69,6 @@
 				Returns the [enum ShadowAtlasQuadrantSubdiv] of the specified quadrant.
 			</description>
 		</method>
-		<method name="get_size_override" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Returns the size override set with [method set_size_override].
-			</description>
-		</method>
 		<method name="get_texture" qualifiers="const">
 			<return type="ViewportTexture">
 			</return>
@@ -99,7 +85,7 @@
 			<return type="RID">
 			</return>
 			<description>
-				Returns the viewport's RID from the [VisualServer].
+				Returns the viewport's RID from the [RenderingServer].
 			</description>
 		</method>
 		<method name="get_visible_rect" qualifiers="const">
@@ -116,13 +102,6 @@
 				Returns the drag data from the GUI, that was previously returned by [method Control.get_drag_data].
 			</description>
 		</method>
-		<method name="gui_has_modal_stack" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if there are visible modals on-screen.
-			</description>
-		</method>
 		<method name="gui_is_dragging" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -133,8 +112,24 @@
 		<method name="input">
 			<return type="void">
 			</return>
-			<argument index="0" name="local_event" type="InputEvent">
+			<argument index="0" name="event" type="InputEvent">
 			</argument>
+			<argument index="1" name="in_local_coords" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="input_text">
+			<return type="void">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_embedding_subwindows" qualifiers="const">
+			<return type="bool">
+			</return>
 			<description>
 			</description>
 		</method>
@@ -142,22 +137,6 @@
 			<return type="bool">
 			</return>
 			<description>
-			</description>
-		</method>
-		<method name="is_size_override_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the size override is enabled. See [method set_size_override].
-			</description>
-		</method>
-		<method name="set_attach_to_screen_rect">
-			<return type="void">
-			</return>
-			<argument index="0" name="rect" type="Rect2">
-			</argument>
-			<description>
-				Attaches this [Viewport] to the root [Viewport] with the specified rectangle. This bypasses the need for another node to display this [Viewport] but makes you responsible for updating the position of this [Viewport] manually.
 			</description>
 		</method>
 		<method name="set_input_as_handled">
@@ -178,23 +157,12 @@
 				Sets the number of subdivisions to use in the specified quadrant. A higher number of subdivisions allows you to have more shadows in the scene at once, but reduces the quality of the shadows. A good practice is to have quadrants with a varying number of subdivisions and to have as few subdivisions as possible.
 			</description>
 		</method>
-		<method name="set_size_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<argument index="1" name="size" type="Vector2" default="Vector2( -1, -1 )">
-			</argument>
-			<argument index="2" name="margin" type="Vector2" default="Vector2( 0, 0 )">
-			</argument>
-			<description>
-				Sets the size override of the viewport. If the [code]enable[/code] parameter is [code]true[/code] the override is used, otherwise it uses the default size. If the size parameter is [code](-1, -1)[/code], it won't update the size.
-			</description>
-		</method>
 		<method name="unhandled_input">
 			<return type="void">
 			</return>
-			<argument index="0" name="local_event" type="InputEvent">
+			<argument index="0" name="event" type="InputEvent">
+			</argument>
+			<argument index="1" name="in_local_coords" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -217,9 +185,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="arvr" type="bool" setter="set_use_arvr" getter="use_arvr" default="false">
-			If [code]true[/code], the viewport will be used in AR/VR process.
-		</member>
 		<member name="audio_listener_enable_2d" type="bool" setter="set_as_audio_listener_2d" getter="is_audio_listener_2d" default="false">
 			If [code]true[/code], the viewport will process 2D audio streams.
 		</member>
@@ -242,6 +207,8 @@
 		<member name="gui_disable_input" type="bool" setter="set_disable_input" getter="is_input_disabled" default="false">
 			If [code]true[/code], the viewport will not receive input event.
 		</member>
+		<member name="gui_embed_subwindows" type="bool" setter="set_embed_subwindows_hint" getter="get_embed_subwindows_hint" default="false">
+		</member>
 		<member name="gui_snap_controls_to_pixels" type="bool" setter="set_snap_controls_to_pixels" getter="is_snap_controls_to_pixels_enabled" default="true">
 			If [code]true[/code], the GUI controls on the viewport will lay pixel perfectly.
 		</member>
@@ -251,19 +218,10 @@
 			The multisample anti-aliasing mode. A higher number results in smoother edges at the cost of significantly worse performance. A value of 4 is best unless targeting very high-end systems.
 		</member>
 		<member name="own_world" type="bool" setter="set_use_own_world" getter="is_using_own_world" default="false">
-			If [code]true[/code], the viewport will use [World] defined in [code]world[/code] property.
+			If [code]true[/code], the viewport will use [World3D] defined in [code]world[/code] property.
 		</member>
 		<member name="physics_object_picking" type="bool" setter="set_physics_object_picking" getter="get_physics_object_picking" default="false">
 			If [code]true[/code], the objects rendered by viewport become subjects of mouse picking process.
-		</member>
-		<member name="render_direct_to_screen" type="bool" setter="set_use_render_direct_to_screen" getter="is_using_render_direct_to_screen" default="false">
-			If [code]true[/code], renders the Viewport directly to the screen instead of to the root viewport. Only available in GLES2. This is a low-level optimization and should not be used in most cases. If used, reading from the Viewport or from [code]SCREEN_TEXTURE[/code] becomes unavailable. For more information see [method VisualServer.viewport_set_render_direct_to_screen].
-		</member>
-		<member name="render_target_clear_mode" type="int" setter="set_clear_mode" getter="get_clear_mode" enum="Viewport.ClearMode" default="0">
-			The clear mode when viewport used as a render target.
-		</member>
-		<member name="render_target_update_mode" type="int" setter="set_update_mode" getter="get_update_mode" enum="Viewport.UpdateMode" default="2">
-			The update mode when viewport used as a render target.
 		</member>
 		<member name="shadow_atlas_quad_0" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="2">
 			The subdivision amount of the first quadrant on the shadow atlas.
@@ -281,17 +239,11 @@
 			The shadow atlas' resolution (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
 			[b]Note:[/b] If this is set to 0, shadows won't be visible. Since user-created viewports default to a value of 0, this value must be set above 0 manually.
 		</member>
-		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 0, 0 )">
-			The width and height of viewport.
-		</member>
-		<member name="size_override_stretch" type="bool" setter="set_size_override_stretch" getter="is_size_override_stretch_enabled" default="false">
-			If [code]true[/code], the size override affects stretch as well.
-		</member>
 		<member name="transparent_bg" type="bool" setter="set_transparent_background" getter="has_transparent_background" default="false">
 			If [code]true[/code], the viewport should render its background as transparent.
 		</member>
-		<member name="world" type="World" setter="set_world" getter="get_world">
-			The custom [World] which can be used as 3D environment source.
+		<member name="world" type="World3D" setter="set_world" getter="get_world">
+			The custom [World3D] which can be used as 3D environment source.
 		</member>
 		<member name="world_2d" type="World2D" setter="set_world_2d" getter="get_world_2d">
 			The custom [World2D] which can be used as 2D environment source.
@@ -307,23 +259,11 @@
 		</signal>
 		<signal name="size_changed">
 			<description>
-				Emitted when the size of the viewport is changed, whether by [method set_size_override], resize of window, or some other means.
+				Emitted when the size of the viewport is changed, whether by resizing of window, or some other means.
 			</description>
 		</signal>
 	</signals>
 	<constants>
-		<constant name="UPDATE_DISABLED" value="0" enum="UpdateMode">
-			Do not update the render target.
-		</constant>
-		<constant name="UPDATE_ONCE" value="1" enum="UpdateMode">
-			Update the render target once, then switch to [constant UPDATE_DISABLED].
-		</constant>
-		<constant name="UPDATE_WHEN_VISIBLE" value="2" enum="UpdateMode">
-			Update the render target only when it is visible. This is the default value.
-		</constant>
-		<constant name="UPDATE_ALWAYS" value="3" enum="UpdateMode">
-			Always update the render target.
-		</constant>
 		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED" value="0" enum="ShadowAtlasQuadrantSubdiv">
 			This quadrant will not be used.
 		</constant>
@@ -409,15 +349,6 @@
 		</constant>
 		<constant name="MSAA_16X" value="4" enum="MSAA">
 			Use 16x Multisample Antialiasing. Likely unsupported on medium and low-end hardware.
-		</constant>
-		<constant name="CLEAR_MODE_ALWAYS" value="0" enum="ClearMode">
-			Always clear the render target before drawing.
-		</constant>
-		<constant name="CLEAR_MODE_NEVER" value="1" enum="ClearMode">
-			Never clear the render target.
-		</constant>
-		<constant name="CLEAR_MODE_ONLY_NEXT_FRAME" value="2" enum="ClearMode">
-			Clear the render target next frame, then switch to [constant CLEAR_MODE_NEVER].
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="0" enum="DefaultCanvasItemTextureFilter">
 		</constant>

@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "rasterizer_storage_rd.h"
+
 #include "core/engine.h"
 #include "core/project_settings.h"
 #include "servers/rendering/shader_language.h"
@@ -1664,7 +1665,7 @@ void RasterizerStorageRD::MaterialData::update_textures(const Map<StringName, Va
 	RasterizerStorageRD *singleton = (RasterizerStorageRD *)RasterizerStorage::base_singleton;
 #ifdef TOOLS_ENABLED
 	Texture *roughness_detect_texture = nullptr;
-	RS::TextureDetectRoughnessChannel roughness_channel;
+	RS::TextureDetectRoughnessChannel roughness_channel = RS::TEXTURE_DETECT_ROUGNHESS_R;
 	Texture *normal_detect_texture = nullptr;
 #endif
 

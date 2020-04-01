@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "navigation_region_3d.h"
+
 #include "core/os/thread.h"
 #include "mesh_instance_3d.h"
 #include "navigation_3d.h"
@@ -214,7 +215,7 @@ String NavigationRegion3D::get_configuration_warning() const {
 		c = Object::cast_to<Node3D>(c->get_parent());
 	}
 
-	return TTR("NavigationRegion must be a child or grandchild to a Navigation node. It only provides navigation data.");
+	return TTR("NavigationRegion3D must be a child or grandchild to a Navigation3D node. It only provides navigation data.");
 }
 
 void NavigationRegion3D::_bind_methods() {

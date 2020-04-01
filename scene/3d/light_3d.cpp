@@ -336,7 +336,7 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 Light3D::Light3D() {
 
 	type = RenderingServer::LIGHT_DIRECTIONAL;
-	ERR_PRINT("Light should not be instanced directly; use the DirectionalLight, OmniLight or SpotLight subtypes instead.");
+	ERR_PRINT("Light3D should not be instanced directly; use the DirectionalLight3D, OmniLight3D or SpotLight3D subtypes instead.");
 }
 
 Light3D::~Light3D() {
@@ -464,7 +464,7 @@ String SpotLight3D::get_configuration_warning() const {
 			warning += "\n\n";
 		}
 
-		warning += TTR("A SpotLight with an angle wider than 90 degrees cannot cast shadows.");
+		warning += TTR("A SpotLight3D with an angle wider than 90 degrees cannot cast shadows.");
 	}
 
 	return warning;

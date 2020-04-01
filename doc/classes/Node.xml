@@ -53,7 +53,7 @@
 			<description>
 				Called when there is an input event. The input event propagates up through the node tree until a node consumes it.
 				It is only called if input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_input].
-				To consume the input event and stop it propagating further to other nodes, [method SceneTree.set_input_as_handled] can be called.
+				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
 				For gameplay input, [method _unhandled_input] and [method _unhandled_key_input] are usually a better fit as they allow the GUI to intercept the events first.
 			</description>
 		</method>
@@ -97,7 +97,7 @@
 			<description>
 				Called when an [InputEvent] hasn't been consumed by [method _input] or any GUI. The input event propagates up through the node tree until a node consumes it.
 				It is only called if unhandled input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_input].
-				To consume the input event and stop it propagating further to other nodes, [method SceneTree.set_input_as_handled] can be called.
+				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
 				For gameplay input, this and [method _unhandled_key_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
 			</description>
 		</method>
@@ -109,7 +109,7 @@
 			<description>
 				Called when an [InputEventKey] hasn't been consumed by [method _input] or any GUI. The input event propagates up through the node tree until a node consumes it.
 				It is only called if unhandled key input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_key_input].
-				To consume the input event and stop it propagating further to other nodes, [method SceneTree.set_input_as_handled] can be called.
+				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
 				For gameplay input, this and [method _unhandled_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
 			</description>
 		</method>
@@ -938,42 +938,40 @@
 			Notification received from the OS when the game window is unfocused.
 			Implemented on all platforms.
 		</constant>
-		<constant name="NOTIFICATION_WM_QUIT_REQUEST" value="1006">
-			Notification received from the OS when a quit request is sent (e.g. closing the window with a "Close" button or Alt+F4).
+		<constant name="NOTIFICATION_WM_CLOSE_REQUEST" value="1006">
+			Notification received from the OS when a close request is sent (e.g. closing the window with a "Close" button or Alt+F4).
 			Implemented on desktop platforms.
 		</constant>
 		<constant name="NOTIFICATION_WM_GO_BACK_REQUEST" value="1007">
 			Notification received from the OS when a go back request is sent (e.g. pressing the "Back" button on Android).
 			Specific to the Android platform.
 		</constant>
-		<constant name="NOTIFICATION_WM_UNFOCUS_REQUEST" value="1008">
-			Notification received from the OS when an unfocus request is sent (e.g. another OS window wants to take the focus).
-			No supported platforms currently send this notification.
+		<constant name="NOTIFICATION_WM_SIZE_CHANGED" value="1008">
 		</constant>
-		<constant name="NOTIFICATION_OS_MEMORY_WARNING" value="1009">
+		<constant name="NOTIFICATION_OS_MEMORY_WARNING" value="2009">
 			Notification received from the OS when the application is exceeding its allocated memory.
 			Specific to the iOS platform.
 		</constant>
-		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="1010">
+		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="2010">
 			Notification received when translations may have changed. Can be triggered by the user changing the locale. Can be used to respond to language changes, for example to change the UI strings on the fly. Useful when working with the built-in translation support, like [method Object.tr].
 		</constant>
-		<constant name="NOTIFICATION_WM_ABOUT" value="1011">
+		<constant name="NOTIFICATION_WM_ABOUT" value="2011">
 			Notification received from the OS when a request for "About" information is sent.
 			Specific to the macOS platform.
 		</constant>
-		<constant name="NOTIFICATION_CRASH" value="1012">
+		<constant name="NOTIFICATION_CRASH" value="2012">
 			Notification received from Godot's crash handler when the engine is about to crash.
 			Implemented on desktop platforms if the crash handler is enabled.
 		</constant>
-		<constant name="NOTIFICATION_OS_IME_UPDATE" value="1013">
+		<constant name="NOTIFICATION_OS_IME_UPDATE" value="2013">
 			Notification received from the OS when an update of the Input Method Engine occurs (e.g. change of IME cursor position or composition string).
 			Specific to the macOS platform.
 		</constant>
-		<constant name="NOTIFICATION_APP_RESUMED" value="1014">
+		<constant name="NOTIFICATION_APP_RESUMED" value="2014">
 			Notification received from the OS when the app is resumed.
 			Specific to the Android platform.
 		</constant>
-		<constant name="NOTIFICATION_APP_PAUSED" value="1015">
+		<constant name="NOTIFICATION_APP_PAUSED" value="2015">
 			Notification received from the OS when the app is paused.
 			Specific to the Android platform.
 		</constant>

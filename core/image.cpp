@@ -2407,7 +2407,7 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 	}
 }
 
-void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest) {
+void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest, bool accurate_alpha) {
 
 	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
@@ -2442,17 +2442,26 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const P
 			int dst_y = dest_rect.position.y + i;
 
 			Color sc = img->get_pixel(src_x, src_y);
-			Color dc = get_pixel(dst_x, dst_y);
-			dc.r = (double)(sc.a * sc.r + dc.a * (1.0 - sc.a) * dc.r);
-			dc.g = (double)(sc.a * sc.g + dc.a * (1.0 - sc.a) * dc.g);
-			dc.b = (double)(sc.a * sc.b + dc.a * (1.0 - sc.a) * dc.b);
-			dc.a = (double)(sc.a + dc.a * (1.0 - sc.a));
-			set_pixel(dst_x, dst_y, dc);
+			if (sc.a != 0) {
+				Color dc = get_pixel(dst_x, dst_y);
+				dc.r = (double)(sc.a * sc.r + dc.a * (1.0 - sc.a) * dc.r);
+				dc.g = (double)(sc.a * sc.g + dc.a * (1.0 - sc.a) * dc.g);
+				dc.b = (double)(sc.a * sc.b + dc.a * (1.0 - sc.a) * dc.b);
+				dc.a = (double)(sc.a + dc.a * (1.0 - sc.a));
+
+				if (accurate_alpha) {
+					dc.r /= dc.a;
+					dc.g /= dc.a;
+					dc.b /= dc.a;
+				}
+
+				set_pixel(dst_x, dst_y, dc);
+			}
 		}
 	}
 }
 
-void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest) {
+void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest, bool accurate_alpha) {
 
 	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
 	ERR_FAIL_COND_MSG(p_mask.is_null(), "It's not a reference to a valid Image object.");
@@ -2498,12 +2507,21 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 				int dst_y = dest_rect.position.y + i;
 
 				Color sc = img->get_pixel(src_x, src_y);
-				Color dc = get_pixel(dst_x, dst_y);
-				dc.r = (double)(sc.a * sc.r + dc.a * (1.0 - sc.a) * dc.r);
-				dc.g = (double)(sc.a * sc.g + dc.a * (1.0 - sc.a) * dc.g);
-				dc.b = (double)(sc.a * sc.b + dc.a * (1.0 - sc.a) * dc.b);
-				dc.a = (double)(sc.a + dc.a * (1.0 - sc.a));
-				set_pixel(dst_x, dst_y, dc);
+				if (sc.a != 0) {
+					Color dc = get_pixel(dst_x, dst_y);
+					dc.r = (double)(sc.a * sc.r + dc.a * (1.0 - sc.a) * dc.r);
+					dc.g = (double)(sc.a * sc.g + dc.a * (1.0 - sc.a) * dc.g);
+					dc.b = (double)(sc.a * sc.b + dc.a * (1.0 - sc.a) * dc.b);
+					dc.a = (double)(sc.a + dc.a * (1.0 - sc.a));
+
+					if (accurate_alpha) {
+						dc.r /= dc.a;
+						dc.g /= dc.a;
+						dc.b /= dc.a;
+					}
+
+					set_pixel(dst_x, dst_y, dc);
+				}
 			}
 		}
 	}
@@ -2945,7 +2963,7 @@ void Image::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("detect_used_channels", "source"), &Image::detect_used_channels, DEFVAL(COMPRESS_SOURCE_GENERIC));
 	ClassDB::bind_method(D_METHOD("compress", "mode", "source", "lossy_quality"), &Image::compress, DEFVAL(COMPRESS_SOURCE_GENERIC), DEFVAL(0.7));
-	ClassDB::bind_method(D_METHOD("compress_from_channels", "mode", "channels", "lossy_quality"), &Image::compress, DEFVAL(0.7));
+	ClassDB::bind_method(D_METHOD("compress_from_channels", "mode", "channels", "lossy_quality"), &Image::compress_from_channels, DEFVAL(0.7));
 	ClassDB::bind_method(D_METHOD("decompress"), &Image::decompress);
 	ClassDB::bind_method(D_METHOD("is_compressed"), &Image::is_compressed);
 
@@ -2958,8 +2976,8 @@ void Image::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("blit_rect", "src", "src_rect", "dst"), &Image::blit_rect);
 	ClassDB::bind_method(D_METHOD("blit_rect_mask", "src", "mask", "src_rect", "dst"), &Image::blit_rect_mask);
-	ClassDB::bind_method(D_METHOD("blend_rect", "src", "src_rect", "dst"), &Image::blend_rect);
-	ClassDB::bind_method(D_METHOD("blend_rect_mask", "src", "mask", "src_rect", "dst"), &Image::blend_rect_mask);
+	ClassDB::bind_method(D_METHOD("blend_rect", "src", "src_rect", "dst", "accurate_alpha"), &Image::blend_rect, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("blend_rect_mask", "src", "mask", "src_rect", "dst", "accurate_alpha"), &Image::blend_rect_mask, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("fill", "color"), &Image::fill);
 
 	ClassDB::bind_method(D_METHOD("get_used_rect"), &Image::get_used_rect);

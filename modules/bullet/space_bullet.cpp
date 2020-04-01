@@ -885,8 +885,8 @@ void SpaceBullet::update_gravity() {
 
 #include "scene/3d/immediate_geometry.h"
 
-static ImmediateGeometry *motionVec(NULL);
-static ImmediateGeometry *normalLine(NULL);
+static ImmediateGeometry3D *motionVec(NULL);
+static ImmediateGeometry3D *normalLine(NULL);
 static Ref<StandardMaterial3D> red_mat;
 static Ref<StandardMaterial3D> blue_mat;
 #endif
@@ -897,8 +897,8 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 	/// Yes I know this is not good, but I've used it as fast debugging hack.
 	/// I'm leaving it here just for speedup the other eventual debugs
 	if (!normalLine) {
-		motionVec = memnew(ImmediateGeometry);
-		normalLine = memnew(ImmediateGeometry);
+		motionVec = memnew(ImmediateGeometry3D);
+		normalLine = memnew(ImmediateGeometry3D);
 		SceneTree::get_singleton()->get_current_scene()->add_child(motionVec);
 		SceneTree::get_singleton()->get_current_scene()->add_child(normalLine);
 

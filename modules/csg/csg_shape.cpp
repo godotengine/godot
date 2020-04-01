@@ -742,18 +742,14 @@ CSGBrush *CSGMesh3D::_build_brush() {
 
 		Vector<Vector3> anormals = arrays[Mesh::ARRAY_NORMAL];
 		const Vector3 *nr = NULL;
-		bool nr_used = false;
 		if (anormals.size()) {
 			nr = anormals.ptr();
-			nr_used = true;
 		}
 
 		Vector<Vector2> auvs = arrays[Mesh::ARRAY_TEX_UV];
 		const Vector2 *uvr = NULL;
-		bool uvr_used = false;
 		if (auvs.size()) {
 			uvr = auvs.ptr();
-			uvr_used = true;
 		}
 
 		Ref<Material> mat;
@@ -789,10 +785,10 @@ CSGBrush *CSGMesh3D::_build_brush() {
 				for (int k = 0; k < 3; k++) {
 					int idx = ir[j + k];
 					vertex[k] = vr[idx];
-					if (nr_used) {
+					if (nr) {
 						normal[k] = nr[idx];
 					}
-					if (uvr_used) {
+					if (uvr) {
 						uv[k] = uvr[idx];
 					}
 				}
@@ -832,10 +828,10 @@ CSGBrush *CSGMesh3D::_build_brush() {
 
 				for (int k = 0; k < 3; k++) {
 					vertex[k] = vr[j + k];
-					if (nr_used) {
+					if (nr) {
 						normal[k] = nr[j + k];
 					}
-					if (uvr_used) {
+					if (uvr) {
 						uv[k] = uvr[j + k];
 					}
 				}

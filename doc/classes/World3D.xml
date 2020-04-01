@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="World3D" inherits="Resource" version="4.0">
+	<brief_description>
+		Class that has everything pertaining to a world.
+	</brief_description>
+	<description>
+		Class that has everything pertaining to a world. A physics space, a visual scenario and a sound space. Node3D nodes register their resources into the current world.
+	</description>
+	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/physics/ray-casting.html</link>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="camera_effects" type="CameraEffects" setter="set_camera_effects" getter="get_camera_effects">
+		</member>
+		<member name="direct_space_state" type="PhysicsDirectSpaceState3D" setter="" getter="get_direct_space_state">
+			The World3D's physics direct space state, used for making various queries. Might be used only during [code]_physics_process[/code].
+		</member>
+		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
+			The World3D's [Environment].
+		</member>
+		<member name="fallback_environment" type="Environment" setter="set_fallback_environment" getter="get_fallback_environment">
+			The World3D's fallback_environment will be used if the World3D's [Environment] fails or is missing.
+		</member>
+		<member name="scenario" type="RID" setter="" getter="get_scenario">
+			The World3D's visual scenario.
+		</member>
+		<member name="space" type="RID" setter="" getter="get_space">
+			The World3D's physics space.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

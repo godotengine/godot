@@ -270,6 +270,7 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<InstancePlaceholder>();
 
 	ClassDB::register_virtual_class<Viewport>();
+	ClassDB::register_class<SubViewport>();
 	ClassDB::register_class<ViewportTexture>();
 	ClassDB::register_class<HTTPRequest>();
 	ClassDB::register_class<Timer>();
@@ -754,6 +755,8 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("Area", "Area3D");
 	ClassDB::add_compatibility_class("BoneAttachment", "BoneAttachment3D");
 	ClassDB::add_compatibility_class("BoxShape", "BoxShape3D");
+	ClassDB::add_compatibility_class("BulletPhysicsDirectBodyState", "BulletPhysicsDirectBodyState3D");
+	ClassDB::add_compatibility_class("BulletPhysicsServer", "BulletPhysicsServer3D");
 	ClassDB::add_compatibility_class("Camera", "Camera3D");
 	ClassDB::add_compatibility_class("CapsuleShape", "CapsuleShape3D");
 	ClassDB::add_compatibility_class("ClippedCamera", "ClippedCamera3D");
@@ -764,8 +767,19 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("ConeTwistJoint", "ConeTwistJoint3D");
 	ClassDB::add_compatibility_class("ConvexPolygonShape", "ConvexPolygonShape3D");
 	ClassDB::add_compatibility_class("CPUParticles", "CPUParticles3D");
+	ClassDB::add_compatibility_class("CSGBox", "CSGBox3D");
+	ClassDB::add_compatibility_class("CSGCombiner", "CSGCombiner3D");
+	ClassDB::add_compatibility_class("CSGCylinder", "CSGCylinder3D");
+	ClassDB::add_compatibility_class("CSGMesh", "CSGMesh3D");
+	ClassDB::add_compatibility_class("CSGPolygon", "CSGPolygon3D");
+	ClassDB::add_compatibility_class("CSGPrimitive", "CSGPrimitive3D");
+	ClassDB::add_compatibility_class("CSGShape", "CSGShape3D");
+	ClassDB::add_compatibility_class("CSGSphere", "CSGSphere3D");
+	ClassDB::add_compatibility_class("CSGTorus", "CSGTorus3D");
 	ClassDB::add_compatibility_class("CylinderShape", "CylinderShape3D");
 	ClassDB::add_compatibility_class("DirectionalLight", "DirectionalLight3D");
+	ClassDB::add_compatibility_class("EditorSpatialGizmo", "EditorNode3DGizmo");
+	ClassDB::add_compatibility_class("EditorSpatialGizmoPlugin", "EditorNode3DGizmoPlugin");
 	ClassDB::add_compatibility_class("Generic6DOFJoint", "Generic6DOFJoint3D");
 	ClassDB::add_compatibility_class("HeightMapShape", "HeightMapShape3D");
 	ClassDB::add_compatibility_class("HingeJoint", "HingeJoint3D");
@@ -783,6 +797,8 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("NavigationObstacle", "NavigationObstacle3D");
 	ClassDB::add_compatibility_class("NavigationPolygonInstance", "NavigationRegion2D");
 	ClassDB::add_compatibility_class("NavigationRegion", "NavigationRegion3D");
+	ClassDB::add_compatibility_class("Navigation2DServer", "NavigationServer2D");
+	ClassDB::add_compatibility_class("NavigationServer", "NavigationServer3D");
 	ClassDB::add_compatibility_class("OmniLight", "OmniLight3D");
 	ClassDB::add_compatibility_class("Particles", "GPUParticles3D");
 	ClassDB::add_compatibility_class("Particles2D", "GPUParticles2D");
@@ -816,6 +832,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("SliderJoint", "SliderJoint3D");
 	ClassDB::add_compatibility_class("SoftBody", "SoftBody3D");
 	ClassDB::add_compatibility_class("Spatial", "Node3D");
+	ClassDB::add_compatibility_class("SpatialGizmo", "Node3DGizmo");
 	ClassDB::add_compatibility_class("SpatialMaterial", "StandardMaterial3D");
 	ClassDB::add_compatibility_class("SpatialVelocityTracker", "VelocityTracker3D");
 	ClassDB::add_compatibility_class("SphereShape", "SphereShape3D");

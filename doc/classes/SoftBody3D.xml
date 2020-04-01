@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SoftBody3D" inherits="MeshInstance3D" version="4.0">
+	<brief_description>
+		A soft mesh physics body.
+	</brief_description>
+	<description>
+		A deformable physics body. Used to create elastic or deformable objects such as cloth, rubber, or other flexible materials.
+	</description>
+	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/physics/soft_body.html</link>
+	</tutorials>
+	<methods>
+		<method name="add_collision_exception_with">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="Node">
+			</argument>
+			<description>
+				Adds a body to the list of bodies that this body can't collide with.
+			</description>
+		</method>
+		<method name="get_collision_exceptions">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an array of nodes that were added as collision exceptions for this body.
+			</description>
+		</method>
+		<method name="get_collision_layer_bit" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<description>
+				Returns an individual bit on the collision mask.
+			</description>
+		</method>
+		<method name="get_collision_mask_bit" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<description>
+				Returns an individual bit on the collision mask.
+			</description>
+		</method>
+		<method name="remove_collision_exception_with">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="Node">
+			</argument>
+			<description>
+				Removes a body from the list of bodies that this body can't collide with.
+			</description>
+		</method>
+		<method name="set_collision_layer_bit">
+			<return type="void">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<argument index="1" name="value" type="bool">
+			</argument>
+			<description>
+				Sets individual bits on the layer mask. Use this if you only need to change one layer's value.
+			</description>
+		</method>
+		<method name="set_collision_mask_bit">
+			<return type="void">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<argument index="1" name="value" type="bool">
+			</argument>
+			<description>
+				Sets individual bits on the collision mask. Use this if you only need to change one layer's value.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="areaAngular_stiffness" type="float" setter="set_areaAngular_stiffness" getter="get_areaAngular_stiffness" default="0.5">
+		</member>
+		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
+			The physics layers this SoftBody3D is in.
+			Collidable objects can exist in any of 32 different layers. These layers work like a tagging system, and are not visual. A collidable can use these layers to select with which objects it can collide, using the collision_mask property.
+			A contact is detected if object A is in any of the layers that object B scans, or object B is in any layer scanned by object A.
+		</member>
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
+			The physics layers this SoftBody3D scans for collisions.
+		</member>
+		<member name="damping_coefficient" type="float" setter="set_damping_coefficient" getter="get_damping_coefficient" default="0.01">
+		</member>
+		<member name="drag_coefficient" type="float" setter="set_drag_coefficient" getter="get_drag_coefficient" default="0.0">
+		</member>
+		<member name="linear_stiffness" type="float" setter="set_linear_stiffness" getter="get_linear_stiffness" default="0.5">
+		</member>
+		<member name="parent_collision_ignore" type="NodePath" setter="set_parent_collision_ignore" getter="get_parent_collision_ignore" default="NodePath(&quot;&quot;)">
+			[NodePath] to a [CollisionObject3D] this SoftBody3D should avoid clipping.
+		</member>
+		<member name="pose_matching_coefficient" type="float" setter="set_pose_matching_coefficient" getter="get_pose_matching_coefficient" default="0.0">
+		</member>
+		<member name="pressure_coefficient" type="float" setter="set_pressure_coefficient" getter="get_pressure_coefficient" default="0.0">
+		</member>
+		<member name="ray_pickable" type="bool" setter="set_ray_pickable" getter="is_ray_pickable" default="true">
+			If [code]true[/code], the [SoftBody3D] will respond to [RayCast3D]s.
+		</member>
+		<member name="simulation_precision" type="int" setter="set_simulation_precision" getter="get_simulation_precision" default="5">
+			Increasing this value will improve the resulting simulation, but can affect performance. Use with care.
+		</member>
+		<member name="total_mass" type="float" setter="set_total_mass" getter="get_total_mass" default="1.0">
+			The SoftBody3D's mass.
+		</member>
+		<member name="volume_stiffness" type="float" setter="set_volume_stiffness" getter="get_volume_stiffness" default="0.5">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

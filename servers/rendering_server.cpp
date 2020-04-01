@@ -1802,7 +1802,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_bg_energy", "env", "energy"), &RenderingServer::environment_set_bg_energy);
 	ClassDB::bind_method(D_METHOD("environment_set_canvas_max_layer", "env", "max_layer"), &RenderingServer::environment_set_canvas_max_layer);
 	ClassDB::bind_method(D_METHOD("environment_set_ambient_light", "env", "color", "ambient", "energy", "sky_contibution", "reflection_source", "ao_color"), &RenderingServer::environment_set_ambient_light, DEFVAL(RS::ENV_AMBIENT_SOURCE_BG), DEFVAL(1.0), DEFVAL(0.0), DEFVAL(RS::ENV_REFLECTION_SOURCE_BG), DEFVAL(Color()));
-	ClassDB::bind_method(D_METHOD("environment_set_glow", "env", "enable", "level_flags", "intensity", "strength", "mix", "bloom_threshold", "blend_mode", "hdr_bleed_threshold", "hdr_bleed_scale", "hdr_luminance_cap", "bicubic_upscale"), &RenderingServer::environment_set_glow);
+	ClassDB::bind_method(D_METHOD("environment_set_glow", "env", "enable", "level_flags", "intensity", "strength", "mix", "bloom_threshold", "blend_mode", "hdr_bleed_threshold", "hdr_bleed_scale", "hdr_luminance_cap"), &RenderingServer::environment_set_glow);
 	ClassDB::bind_method(D_METHOD("environment_set_tonemap", "env", "tone_mapper", "exposure", "white", "auto_exposure", "min_luminance", "max_luminance", "auto_exp_speed", "auto_exp_grey"), &RenderingServer::environment_set_tonemap);
 	ClassDB::bind_method(D_METHOD("environment_set_adjustment", "env", "enable", "brightness", "contrast", "saturation", "ramp"), &RenderingServer::environment_set_adjustment);
 	ClassDB::bind_method(D_METHOD("environment_set_ssr", "env", "enable", "max_steps", "fade_in", "fade_out", "depth_tolerance", "roughness"), &RenderingServer::environment_set_ssr);
@@ -2355,6 +2355,10 @@ RenderingServer::RenderingServer() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/screen_space_roughness_limiter", PropertyInfo(Variant::INT, "rendering/quality/filters/screen_space_roughness_limiter", PROPERTY_HINT_ENUM, "Disabled,Enabled (Small Cost)"));
 	GLOBAL_DEF("rendering/quality/filters/screen_space_roughness_limiter_curve", 1.0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/screen_space_roughness_limiter_curve", PropertyInfo(Variant::FLOAT, "rendering/quality/filters/screen_space_roughness_limiter_curve", PROPERTY_HINT_EXP_EASING, "0.01,8,0.01"));
+
+	GLOBAL_DEF("rendering/quality/glow/upscale_mode", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/glow/upscale_mode", PropertyInfo(Variant::INT, "rendering/quality/glow/upscale_mode", PROPERTY_HINT_ENUM, "Linear (Fast),Bicubic (Slower)"));
+	GLOBAL_DEF("rendering/quality/glow/upscale_mode.mobile", 0);
 }
 
 RenderingServer::~RenderingServer() {
