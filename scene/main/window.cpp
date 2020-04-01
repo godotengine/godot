@@ -1285,7 +1285,7 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_exclusive", "exclusive"), &Window::set_exclusive);
 	ClassDB::bind_method(D_METHOD("is_exclusive"), &Window::is_exclusive);
 
-	ClassDB::bind_method(D_METHOD("can_draw"), &Window::is_transient);
+	ClassDB::bind_method(D_METHOD("can_draw"), &Window::can_draw);
 	ClassDB::bind_method(D_METHOD("has_focus"), &Window::has_focus);
 	ClassDB::bind_method(D_METHOD("grab_focus"), &Window::grab_focus);
 
