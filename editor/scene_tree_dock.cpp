@@ -2086,7 +2086,7 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node, bool p_keep_prop
 		for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 			if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
 				continue;
-			if (E->get().name == "__meta__")
+			if (E->get().name == "__meta__" || E->get().name == "script")
 				continue;
 			if (default_oldnode->get(E->get().name) != n->get(E->get().name)) {
 				newnode->set(E->get().name, n->get(E->get().name));
@@ -2124,7 +2124,11 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node, bool p_keep_prop
 			to_erase.push_back(n->get_child(i));
 		}
 	}
-	n->replace_by(newnode, true);
+
+	//for better or worse, the contents of Node::replace_by's "p_keep_data" parameter are replicated in the code above...
+	//the above appears to be a workaround for the scene replacing things that it has made subtle edits to (for example meta and script types)
+	//this also preserves across undo correctly
+	n->replace_by(newnode, false);
 
 	if (n == edited_scene) {
 		edited_scene = newnode;
