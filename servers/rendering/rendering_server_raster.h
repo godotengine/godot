@@ -523,7 +523,9 @@ public:
 #if 0
 	BIND2(environment_set_camera_feed_id, RID, int)
 #endif
-	BIND7(environment_set_ssr, RID, bool, int, float, float, float, bool)
+	BIND6(environment_set_ssr, RID, bool, int, float, float, float)
+	BIND1(environment_set_ssr_roughness_quality, EnvironmentSSRRoughnessQuality)
+
 	BIND9(environment_set_ssao, RID, bool, float, float, float, float, float, EnvironmentSSAOBlur, float)
 	BIND2(environment_set_ssao_quality, EnvironmentSSAOQuality, bool)
 

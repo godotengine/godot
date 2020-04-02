@@ -437,7 +437,9 @@ public:
 #if 0
 	FUNC2(environment_set_camera_feed_id, RID, int)
 #endif
-	FUNC7(environment_set_ssr, RID, bool, int, float, float, float, bool)
+	FUNC6(environment_set_ssr, RID, bool, int, float, float, float)
+	FUNC1(environment_set_ssr_roughness_quality, EnvironmentSSRRoughnessQuality)
+
 	FUNC9(environment_set_ssao, RID, bool, float, float, float, float, float, EnvironmentSSAOBlur, float)
 
 	FUNC2(environment_set_ssao_quality, EnvironmentSSAOQuality, bool)

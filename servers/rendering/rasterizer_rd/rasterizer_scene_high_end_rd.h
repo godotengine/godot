@@ -207,6 +207,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		RID depth_normal_roughness_fb;
 		RID color_fb;
 		RID color_specular_fb;
+		RID specular_only_fb;
 		int width, height;
 
 		void ensure_specular();

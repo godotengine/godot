@@ -456,7 +456,7 @@ RID RasterizerSceneRD::sky_get_material(RID p_sky) const {
 	return sky->material;
 }
 
-void RasterizerSceneRD::_draw_sky(bool p_can_continue, RID p_fb, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform) {
+void RasterizerSceneRD::_draw_sky(bool p_can_continue_color, bool p_can_continue_depth, RID p_fb, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform) {
 
 	ERR_FAIL_COND(!is_environment(p_environment));
 
@@ -537,7 +537,7 @@ void RasterizerSceneRD::_draw_sky(bool p_can_continue, RID p_fb, RID p_environme
 
 	RID texture_uniform_set = _get_sky_textures(sky, SKY_TEXTURE_SET_BACKGROUND);
 
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_fb, RD::INITIAL_ACTION_CONTINUE, p_can_continue ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, p_can_continue ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_fb, RD::INITIAL_ACTION_CONTINUE, p_can_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, p_can_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ);
 	storage->get_effects()->render_sky(draw_list, time, p_fb, sky_scene_state.sampler_uniform_set, sky_scene_state.light_uniform_set, pipeline, material->uniform_set, texture_uniform_set, camera, sky_transform, multiplier, p_transform.origin);
 	RD::get_singleton()->draw_list_end();
 }
@@ -1231,6 +1231,26 @@ void RasterizerSceneRD::environment_glow_set_use_bicubic_upscale(bool p_enable) 
 	glow_bicubic_upscale = p_enable;
 }
 
+void RasterizerSceneRD::environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance) {
+
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+
+	env->ssr_enabled = p_enable;
+	env->ssr_max_steps = p_max_steps;
+	env->ssr_fade_in = p_fade_int;
+	env->ssr_fade_out = p_fade_out;
+	env->ssr_depth_tolerance = p_depth_tolerance;
+}
+
+void RasterizerSceneRD::environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) {
+	ssr_roughness_quality = p_quality;
+}
+
+RS::EnvironmentSSRRoughnessQuality RasterizerSceneRD::environment_get_ssr_roughness_quality() const {
+	return ssr_roughness_quality;
+}
+
 void RasterizerSceneRD::environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_bias, float p_light_affect, float p_ao_channel_affect, RS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) {
 
 	Environent *env = environment_owner.getornull(p_env);
@@ -1272,7 +1292,7 @@ bool RasterizerSceneRD::environment_is_ssr_enabled(RID p_env) const {
 
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND_V(!env, false);
-	return false;
+	return env->ssr_enabled;
 }
 
 bool RasterizerSceneRD::is_environment(RID p_env) const {
@@ -3167,6 +3187,74 @@ void RasterizerSceneRD::_free_render_buffer_data(RenderBuffers *rb) {
 		rb->ssao.ao_full = RID();
 		rb->ssao.depth_slices.clear();
 	}
+
+	if (rb->ssr.blur_radius[0].is_valid()) {
+		RD::get_singleton()->free(rb->ssr.blur_radius[0]);
+		RD::get_singleton()->free(rb->ssr.blur_radius[1]);
+		rb->ssr.blur_radius[0] = RID();
+		rb->ssr.blur_radius[1] = RID();
+	}
+
+	if (rb->ssr.depth_scaled.is_valid()) {
+		RD::get_singleton()->free(rb->ssr.depth_scaled);
+		rb->ssr.depth_scaled = RID();
+		RD::get_singleton()->free(rb->ssr.normal_scaled);
+		rb->ssr.normal_scaled = RID();
+	}
+}
+
+void RasterizerSceneRD::_process_ssr(RID p_render_buffers, RID p_dest_framebuffer, RID p_normal_buffer, RID p_roughness_buffer, RID p_specular_buffer, RID p_metallic, const Color &p_metallic_mask, RID p_environment, const CameraMatrix &p_projection, bool p_use_additive) {
+
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND(!rb);
+
+	bool can_use_effects = rb->width >= 8 && rb->height >= 8;
+
+	if (!can_use_effects) {
+		//just copy
+		storage->get_effects()->merge_specular(p_dest_framebuffer, p_specular_buffer, p_use_additive ? RID() : rb->texture, RID());
+		return;
+	}
+
+	Environent *env = environment_owner.getornull(p_environment);
+	ERR_FAIL_COND(!env);
+
+	ERR_FAIL_COND(!env->ssr_enabled);
+
+	if (rb->ssr.depth_scaled.is_null()) {
+		RD::TextureFormat tf;
+		tf.format = RD::DATA_FORMAT_R32_SFLOAT;
+		tf.width = rb->width / 2;
+		tf.height = rb->height / 2;
+		tf.type = RD::TEXTURE_TYPE_2D;
+		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT;
+
+		rb->ssr.depth_scaled = RD::get_singleton()->texture_create(tf, RD::TextureView());
+
+		tf.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+
+		rb->ssr.normal_scaled = RD::get_singleton()->texture_create(tf, RD::TextureView());
+	}
+
+	if (ssr_roughness_quality != RS::ENV_SSR_ROUGNESS_QUALITY_DISABLED && !rb->ssr.blur_radius[0].is_valid()) {
+		RD::TextureFormat tf;
+		tf.format = RD::DATA_FORMAT_R8_UNORM;
+		tf.width = rb->width / 2;
+		tf.height = rb->height / 2;
+		tf.type = RD::TEXTURE_TYPE_2D;
+		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
+
+		rb->ssr.blur_radius[0] = RD::get_singleton()->texture_create(tf, RD::TextureView());
+		rb->ssr.blur_radius[1] = RD::get_singleton()->texture_create(tf, RD::TextureView());
+	}
+
+	if (rb->blur[0].texture.is_null()) {
+		_allocate_blur_textures(rb);
+		_render_buffers_uniform_set_changed(p_render_buffers);
+	}
+
+	storage->get_effects()->screen_space_reflection(rb->texture, p_normal_buffer, ssr_roughness_quality, p_roughness_buffer, rb->ssr.blur_radius[0], rb->ssr.blur_radius[1], p_metallic, p_metallic_mask, rb->depth_texture, rb->ssr.depth_scaled, rb->ssr.normal_scaled, rb->blur[0].mipmaps[1].texture, rb->blur[1].mipmaps[0].texture, Size2i(rb->width / 2, rb->height / 2), env->ssr_max_steps, env->ssr_fade_in, env->ssr_fade_out, env->ssr_depth_tolerance, p_projection);
+	storage->get_effects()->merge_specular(p_dest_framebuffer, p_specular_buffer, p_use_additive ? RID() : rb->texture, rb->blur[0].mipmaps[1].texture);
 }
 
 void RasterizerSceneRD::_process_ssao(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const CameraMatrix &p_projection) {
@@ -4012,6 +4100,7 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 	screen_space_roughness_limiter = GLOBAL_GET("rendering/quality/filters/screen_space_roughness_limiter");
 	screen_space_roughness_limiter_curve = GLOBAL_GET("rendering/quality/filters/screen_space_roughness_limiter_curve");
 	glow_bicubic_upscale = int(GLOBAL_GET("rendering/quality/glow/upscale_mode")) > 0;
+	ssr_roughness_quality = RS::EnvironmentSSRRoughnessQuality(int(GLOBAL_GET("rendering/quality/screen_space_reflection/roughness_quality")));
 }
 
 RasterizerSceneRD::~RasterizerSceneRD() {

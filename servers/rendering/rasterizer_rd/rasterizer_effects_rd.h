@@ -41,6 +41,10 @@
 #include "servers/rendering/rasterizer_rd/shaders/cubemap_roughness.glsl.gen.h"
 #include "servers/rendering/rasterizer_rd/shaders/luminance_reduce.glsl.gen.h"
 #include "servers/rendering/rasterizer_rd/shaders/roughness_limiter.glsl.gen.h"
+#include "servers/rendering/rasterizer_rd/shaders/screen_space_reflection.glsl.gen.h"
+#include "servers/rendering/rasterizer_rd/shaders/screen_space_reflection_filter.glsl.gen.h"
+#include "servers/rendering/rasterizer_rd/shaders/screen_space_reflection_scale.glsl.gen.h"
+#include "servers/rendering/rasterizer_rd/shaders/specular_merge.glsl.gen.h"
 #include "servers/rendering/rasterizer_rd/shaders/ssao.glsl.gen.h"
 #include "servers/rendering/rasterizer_rd/shaders/ssao_blur.glsl.gen.h"
 #include "servers/rendering/rasterizer_rd/shaders/ssao_minify.glsl.gen.h"
@@ -378,6 +382,104 @@ class RasterizerEffectsRD {
 		float pad[3];
 	};
 
+	enum SpecularMergeMode {
+		SPECULAR_MERGE_ADD,
+		SPECULAR_MERGE_SSR,
+		SPECULAR_MERGE_ADDITIVE_ADD,
+		SPECULAR_MERGE_ADDITIVE_SSR,
+		SPECULAR_MERGE_MAX
+	};
+
+	struct SpecularMerge {
+
+		SpecularMergeShaderRD shader;
+		RID shader_version;
+		RenderPipelineVertexFormatCacheRD pipelines[SPECULAR_MERGE_MAX];
+
+	} specular_merge;
+
+	enum ScreenSpaceReflectionMode {
+		SCREEN_SPACE_REFLECTION_NORMAL,
+		SCREEN_SPACE_REFLECTION_ROUGH,
+		SCREEN_SPACE_REFLECTION_MAX,
+	};
+
+	struct ScreenSpaceReflectionPushConstant {
+
+		float proj_info[4];
+
+		int32_t screen_size[2];
+		float camera_z_near;
+		float camera_z_far;
+
+		int32_t num_steps;
+		float depth_tolerance;
+		float distance_fade;
+		float curve_fade_in;
+
+		uint32_t orthogonal;
+		float filter_mipmap_levels;
+		uint32_t use_half_res;
+		uint8_t metallic_mask[4];
+
+		float projection[16];
+	};
+
+	struct ScreenSpaceReflection {
+
+		ScreenSpaceReflectionPushConstant push_constant;
+		ScreenSpaceReflectionShaderRD shader;
+		RID shader_version;
+		RID pipelines[SCREEN_SPACE_REFLECTION_MAX];
+
+	} ssr;
+
+	struct ScreenSpaceReflectionFilterPushConstant {
+
+		float proj_info[4];
+
+		uint32_t orthogonal;
+		float edge_tolerance;
+		int32_t increment;
+		uint32_t pad;
+
+		int32_t screen_size[2];
+		uint32_t vertical;
+		uint32_t steps;
+	};
+	enum {
+		SCREEN_SPACE_REFLECTION_FILTER_HORIZONTAL,
+		SCREEN_SPACE_REFLECTION_FILTER_VERTICAL,
+		SCREEN_SPACE_REFLECTION_FILTER_MAX,
+	};
+
+	struct ScreenSpaceReflectionFilter {
+
+		ScreenSpaceReflectionFilterPushConstant push_constant;
+		ScreenSpaceReflectionFilterShaderRD shader;
+		RID shader_version;
+		RID pipelines[SCREEN_SPACE_REFLECTION_FILTER_MAX];
+	} ssr_filter;
+
+	struct ScreenSpaceReflectionScalePushConstant {
+
+		int32_t screen_size[2];
+		float camera_z_near;
+		float camera_z_far;
+
+		uint32_t orthogonal;
+		uint32_t filter;
+		uint32_t pad[2];
+	};
+
+	struct ScreenSpaceReflectionScale {
+
+		ScreenSpaceReflectionScalePushConstant push_constant;
+		ScreenSpaceReflectionScaleShaderRD shader;
+		RID shader_version;
+		RID pipeline;
+	} ssr_scale;
+
 	RID default_sampler;
 	RID default_mipmap_sampler;
 	RID index_buffer;
@@ -386,11 +488,28 @@ class RasterizerEffectsRD {
 	Map<RID, RID> texture_to_uniform_set_cache;
 
 	Map<RID, RID> image_to_uniform_set_cache;
+
+	struct TexturePair {
+		RID texture1;
+		RID texture2;
+		_FORCE_INLINE_ bool operator<(const TexturePair &p_pair) const {
+			if (texture1 == p_pair.texture1) {
+				return texture2 < p_pair.texture2;
+			} else {
+				return texture1 < p_pair.texture1;
+			}
+		}
+	};
+
 	Map<RID, RID> texture_to_compute_uniform_set_cache;
+	Map<TexturePair, RID> texture_pair_to_compute_uniform_set_cache;
+	Map<TexturePair, RID> image_pair_to_compute_uniform_set_cache;
 
 	RID _get_uniform_set_from_image(RID p_texture);
 	RID _get_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps = false);
 	RID _get_compute_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps = false);
+	RID _get_compute_uniform_set_from_texture_pair(RID p_texture, RID p_texture2, bool p_use_mipmaps = false);
+	RID _get_compute_uniform_set_from_image_pair(RID p_texture, RID p_texture2);
 
 public:
 	//TODO must re-do most of the shaders in compute
@@ -449,6 +568,9 @@ public:
 	void cubemap_downsample(RID p_source_cubemap, RID p_dest_cubemap, const Size2i &p_size);
 	void cubemap_filter(RID p_source_cubemap, Vector<RID> p_dest_cubemap, bool p_use_array);
 	void render_sky(RD::DrawListID p_list, float p_time, RID p_fb, RID p_samplers, RID p_lights, RenderPipelineVertexFormatCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const CameraMatrix &p_camera, const Basis &p_orientation, float p_multiplier, const Vector3 &p_position);
+
+	void screen_space_reflection(RID p_diffuse, RID p_normal, RS::EnvironmentSSRRoughnessQuality p_roughness_quality, RID p_roughness, RID p_blur_radius, RID p_blur_radius2, RID p_metallic, const Color &p_metallic_mask, RID p_depth, RID p_scale_depth, RID p_scale_normal, RID p_output, RID p_output_blur, const Size2i &p_screen_size, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const CameraMatrix &p_camera);
+	void merge_specular(RID p_dest_framebuffer, RID p_specular, RID p_base, RID p_reflection);
 
 	RasterizerEffectsRD();
 	~RasterizerEffectsRD();

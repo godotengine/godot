@@ -92,10 +92,11 @@ protected:
 	virtual RID _render_buffers_get_normal_texture(RID p_render_buffers) = 0;
 
 	void _process_ssao(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const CameraMatrix &p_projection);
+	void _process_ssr(RID p_render_buffers, RID p_dest_framebuffer, RID p_normal_buffer, RID p_roughness_buffer, RID p_specular_buffer, RID p_metallic, const Color &p_metallic_mask, RID p_environment, const CameraMatrix &p_projection, bool p_use_additive);
 
 	void _setup_sky(RID p_environment, const Vector3 &p_position, const Size2i p_screen_size);
 	void _update_sky(RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform);
-	void _draw_sky(bool p_can_continue, RID p_fb, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform);
+	void _draw_sky(bool p_can_continue_color, bool p_can_continue_depth, RID p_fb, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform);
 
 private:
 	RS::ViewportDebugDraw debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
@@ -657,11 +658,20 @@ private:
 		float ssao_ao_channel_affect = 0.0;
 		float ssao_blur_edge_sharpness = 4.0;
 		RS::EnvironmentSSAOBlur ssao_blur = RS::ENV_SSAO_BLUR_3x3;
+
+		/// SSR
+		///
+		bool ssr_enabled = false;
+		int ssr_max_steps = 64;
+		float ssr_fade_in = 0.15;
+		float ssr_fade_out = 2.0;
+		float ssr_depth_tolerance = 0.2;
 	};
 
 	RS::EnvironmentSSAOQuality ssao_quality = RS::ENV_SSAO_QUALITY_MEDIUM;
 	bool ssao_half_size = false;
 	bool glow_bicubic_upscale = false;
+	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::ENV_SSR_ROUGNESS_QUALITY_LOW;
 
 	static uint64_t auto_exposure_counter;
 
@@ -733,6 +743,12 @@ private:
 			RID ao[2];
 			RID ao_full; //when using half-size
 		} ssao;
+
+		struct SSR {
+			RID normal_scaled;
+			RID depth_scaled;
+			RID blur_radius[2];
+		} ssr;
 	};
 
 	bool screen_space_roughness_limiter = false;
@@ -832,13 +848,16 @@ public:
 
 	void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) {}
 
-	void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance, bool p_roughness) {}
+	void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance);
 	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_bias, float p_light_affect, float p_ao_channel_affect, RS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness);
 	void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size);
 	bool environment_is_ssao_enabled(RID p_env) const;
 	float environment_get_ssao_ao_affect(RID p_env) const;
 	float environment_get_ssao_light_affect(RID p_env) const;
 	bool environment_is_ssr_enabled(RID p_env) const;
+
+	void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality);
+	RS::EnvironmentSSRRoughnessQuality environment_get_ssr_roughness_quality() const;
 
 	void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale);
 	void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, RID p_ramp) {}
