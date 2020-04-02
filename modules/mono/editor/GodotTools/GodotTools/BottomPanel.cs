@@ -205,9 +205,9 @@ namespace GodotTools
             if (what == EditorSettings.NotificationEditorSettingsChanged)
             {
                 var editorBaseControl = editorInterface.GetBaseControl();
-                panelTabs.AddStyleboxOverride("panel", editorBaseControl.GetStylebox("DebuggerPanel", "EditorStyles"));
-                panelTabs.AddStyleboxOverride("tab_fg", editorBaseControl.GetStylebox("DebuggerTabFG", "EditorStyles"));
-                panelTabs.AddStyleboxOverride("tab_bg", editorBaseControl.GetStylebox("DebuggerTabBG", "EditorStyles"));
+                panelTabs.AddThemeStyleboxOverride("panel", editorBaseControl.GetThemeStylebox("DebuggerPanel", "EditorStyles"));
+                panelTabs.AddThemeStyleboxOverride("tab_fg", editorBaseControl.GetThemeStylebox("DebuggerTabFG", "EditorStyles"));
+                panelTabs.AddThemeStyleboxOverride("tab_bg", editorBaseControl.GetThemeStylebox("DebuggerTabBG", "EditorStyles"));
             }
         }
 
@@ -258,9 +258,9 @@ namespace GodotTools
                 RectMinSize = new Vector2(0, 228) * EditorScale,
                 SizeFlagsVertical = (int)SizeFlags.ExpandFill
             };
-            panelTabs.AddStyleboxOverride("panel", editorBaseControl.GetStylebox("DebuggerPanel", "EditorStyles"));
-            panelTabs.AddStyleboxOverride("tab_fg", editorBaseControl.GetStylebox("DebuggerTabFG", "EditorStyles"));
-            panelTabs.AddStyleboxOverride("tab_bg", editorBaseControl.GetStylebox("DebuggerTabBG", "EditorStyles"));
+            panelTabs.AddThemeStyleboxOverride("panel", editorBaseControl.GetThemeStylebox("DebuggerPanel", "EditorStyles"));
+            panelTabs.AddThemeStyleboxOverride("tab_fg", editorBaseControl.GetThemeStylebox("DebuggerTabFG", "EditorStyles"));
+            panelTabs.AddThemeStyleboxOverride("tab_bg", editorBaseControl.GetThemeStylebox("DebuggerTabBG", "EditorStyles"));
             AddChild(panelTabs);
 
             {
