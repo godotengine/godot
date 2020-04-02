@@ -850,6 +850,9 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarOp", "VisualShaderNodeFloatOp");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarUniform", "VisualShaderNodeFloatUniform");
 	ClassDB::add_compatibility_class("World", "World3D");
+	ClassDB::add_compatibility_class("ProceduralSky", "Sky");
+	ClassDB::add_compatibility_class("PanoramaSky", "Sky");
+
 #endif
 
 	OS::get_singleton()->yield(); //may take time to init
