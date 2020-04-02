@@ -734,7 +734,7 @@ void DisplayServerWindows::window_set_transient(WindowID p_window, WindowID p_pa
 		wd_window.transient_parent = INVALID_WINDOW_ID;
 		wd_parent.transient_children.erase(p_window);
 
-		SetWindowLongPtr(wd_window.hWnd, GWLP_HWNDPARENT, 0L);
+		SetWindowLongPtr(wd_window.hWnd, GWLP_HWNDPARENT, (LONG_PTR) nullptr);
 	} else {
 		ERR_FAIL_COND(!windows.has(p_parent));
 		ERR_FAIL_COND_MSG(wd_window.transient_parent != INVALID_WINDOW_ID, "Window already has a transient parent");
