@@ -747,7 +747,16 @@ public:
 	virtual void environment_set_tonemap(RID p_env, EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_grey) = 0;
 	virtual void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, RID p_ramp) = 0;
 
-	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance, bool p_roughness) = 0;
+	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance) = 0;
+
+	enum EnvironmentSSRRoughnessQuality {
+		ENV_SSR_ROUGNESS_QUALITY_DISABLED,
+		ENV_SSR_ROUGNESS_QUALITY_LOW,
+		ENV_SSR_ROUGNESS_QUALITY_MEDIUM,
+		ENV_SSR_ROUGNESS_QUALITY_HIGH,
+	};
+
+	virtual void environment_set_ssr_roughness_quality(EnvironmentSSRRoughnessQuality p_quality) = 0;
 
 	enum EnvironmentSSAOBlur {
 		ENV_SSAO_BLUR_DISABLED,

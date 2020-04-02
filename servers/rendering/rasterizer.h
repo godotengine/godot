@@ -79,7 +79,9 @@ public:
 	virtual void environment_glow_set_use_bicubic_upscale(bool p_enable) = 0;
 	virtual void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) = 0;
 
-	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance, bool p_roughness) = 0;
+	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance) = 0;
+	virtual void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) = 0;
+
 	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_bias, float p_light_affect, float p_ao_channel_affect, RS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) = 0;
 
 	virtual void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size) = 0;
@@ -107,7 +109,6 @@ public:
 	struct InstanceBase;
 
 	struct InstanceDependency {
-
 		void instance_notify_changed(bool p_aabb, bool p_dependencies);
 		void instance_notify_deleted(RID p_deleted);
 
@@ -119,7 +120,6 @@ public:
 	};
 
 	struct InstanceBase {
-
 		RS::InstanceType base_type;
 		RID base;
 
@@ -231,7 +231,9 @@ public:
 	virtual void light_instance_set_transform(RID p_light_instance, const Transform &p_transform) = 0;
 	virtual void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_bias_scale = 1.0) = 0;
 	virtual void light_instance_mark_visible(RID p_light_instance) = 0;
-	virtual bool light_instances_can_render_shadow_cube() const { return true; }
+	virtual bool light_instances_can_render_shadow_cube() const {
+		return true;
+	}
 
 	virtual RID reflection_atlas_create() = 0;
 	virtual void reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count) = 0;

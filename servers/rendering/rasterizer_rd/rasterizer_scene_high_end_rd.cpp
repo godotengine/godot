@@ -321,7 +321,7 @@ void RasterizerSceneHighEndRD::ShaderData::set_code(const String &p_code) {
 					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL) {
 						blend_state = blend_state_depth_normal;
 					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS) {
-						blend_state = blend_state_depth_normal;
+						blend_state = blend_state_depth_normal_roughness;
 					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL) {
 						blend_state = RD::PipelineColorBlendState::create_disabled(5); //writes to normal and roughness in opaque way
 
@@ -537,12 +537,20 @@ void RasterizerSceneHighEndRD::RenderBufferDataHighEnd::ensure_specular() {
 
 		specular = RD::get_singleton()->texture_create(tf, RD::TextureView());
 
-		Vector<RID> fb;
-		fb.push_back(color);
-		fb.push_back(specular);
-		fb.push_back(depth);
+		{
+			Vector<RID> fb;
+			fb.push_back(color);
+			fb.push_back(specular);
+			fb.push_back(depth);
 
-		color_specular_fb = RD::get_singleton()->framebuffer_create(fb);
+			color_specular_fb = RD::get_singleton()->framebuffer_create(fb);
+		}
+		{
+			Vector<RID> fb;
+			fb.push_back(specular);
+
+			specular_only_fb = RD::get_singleton()->framebuffer_create(fb);
+		}
 	}
 }
 
@@ -554,6 +562,7 @@ void RasterizerSceneHighEndRD::RenderBufferDataHighEnd::clear() {
 	}
 
 	color_specular_fb = RID();
+	specular_only_fb = RID();
 	color_fb = RID();
 
 	if (normal_buffer.is_valid()) {
@@ -1699,11 +1708,14 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 	Size2 screen_pixel_size;
 	Size2i screen_size;
 	RID opaque_framebuffer;
+	RID opaque_specular_framebuffer;
 	RID depth_framebuffer;
 	RID alpha_framebuffer;
 
 	PassMode depth_pass_mode = PASS_MODE_DEPTH;
 	Vector<Color> depth_pass_clear;
+	bool using_separate_specular = false;
+	bool using_ssr = false;
 
 	if (render_buffer) {
 		screen_pixel_size.width = 1.0 / render_buffer->width;
@@ -1715,6 +1727,10 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 
 		if (p_environment.is_valid() && environment_is_ssr_enabled(p_environment)) {
 			depth_pass_mode = PASS_MODE_DEPTH_NORMAL_ROUGHNESS;
+			render_buffer->ensure_specular();
+			using_separate_specular = true;
+			using_ssr = true;
+			opaque_specular_framebuffer = render_buffer->color_specular_fb;
 		} else if (screen_space_roughness_limiter_is_active()) {
 			depth_pass_mode = PASS_MODE_DEPTH_NORMAL;
 			//we need to allocate both these, if not allocated
@@ -1845,22 +1861,22 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 
 	_fill_instances(render_list.elements, render_list.element_count, false);
 
-	bool can_continue = true; //unless the middle buffers are needed
 	bool debug_giprobes = get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_ALBEDO || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION;
-	bool using_separate_specular = false;
 
 	bool depth_pre_pass = depth_framebuffer.is_valid();
 	RID render_buffers_uniform_set;
 
+	bool using_ssao = depth_pre_pass && p_render_buffer.is_valid() && p_environment.is_valid() && environment_is_ssao_enabled(p_environment);
+
 	if (depth_pre_pass) { //depth pre pass
 		RENDER_TIMESTAMP("Render Depth Pre-Pass");
 
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(depth_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_CONTINUE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_CONTINUE, depth_pass_clear);
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(depth_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, using_ssao ? RD::FINAL_ACTION_READ : RD::FINAL_ACTION_CONTINUE, depth_pass_clear);
 		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(depth_framebuffer), render_list.elements, render_list.element_count, false, depth_pass_mode, render_buffer == nullptr, radiance_uniform_set, RID());
 		RD::get_singleton()->draw_list_end();
 	}
 
-	if (p_render_buffer.is_valid() && p_environment.is_valid() && environment_is_ssao_enabled(p_environment)) {
+	if (using_ssao) {
 		_process_ssao(p_render_buffer, p_environment, render_buffer->normal_buffer, p_cam_projection);
 	}
 
@@ -1878,23 +1894,41 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 
 	RENDER_TIMESTAMP("Render Opaque Pass");
 
+	bool can_continue_color = !scene_state.used_screen_texture && !using_ssr && !scene_state.used_sss;
+	bool can_continue_depth = !scene_state.used_depth_texture && !using_ssr;
+
 	{
-		bool will_continue = (can_continue || draw_sky || debug_giprobes);
+
+		bool will_continue_color = (can_continue_color || draw_sky || debug_giprobes);
+		bool will_continue_depth = (can_continue_depth || draw_sky || debug_giprobes);
+
 		//regular forward for now
 		Vector<Color> c;
 		c.push_back(clear_color.to_linear());
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(opaque_framebuffer, keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, will_continue ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, depth_pre_pass ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_CLEAR, will_continue ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0);
-		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(opaque_framebuffer), render_list.elements, render_list.element_count, false, PASS_MODE_COLOR, render_buffer == nullptr, radiance_uniform_set, render_buffers_uniform_set);
+		if (using_separate_specular) {
+			c.push_back(Color(0, 0, 0, 0));
+		}
+		RID framebuffer = using_separate_specular ? opaque_specular_framebuffer : opaque_framebuffer;
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, will_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, depth_pre_pass ? (using_ssao ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CONTINUE) : RD::INITIAL_ACTION_CLEAR, will_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0);
+		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(framebuffer), render_list.elements, render_list.element_count, false, using_separate_specular ? PASS_MODE_COLOR_SPECULAR : PASS_MODE_COLOR, render_buffer == nullptr, radiance_uniform_set, render_buffers_uniform_set);
 		RD::get_singleton()->draw_list_end();
+
+		if (will_continue_color && using_separate_specular) {
+			// close the specular framebuffer, as it's no longer used
+			draw_list = RD::get_singleton()->draw_list_begin(render_buffer->specular_only_fb, RD::INITIAL_ACTION_CONTINUE, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, RD::FINAL_ACTION_CONTINUE);
+			RD::get_singleton()->draw_list_end();
+		}
 	}
 
 	if (debug_giprobes) {
 		//debug giprobes
-		bool will_continue = (can_continue || draw_sky);
+		bool will_continue_color = (can_continue_color || draw_sky);
+		bool will_continue_depth = (can_continue_depth || draw_sky);
+
 		CameraMatrix dc;
 		dc.set_depth_correction(true);
 		CameraMatrix cm = (dc * p_cam_projection) * CameraMatrix(p_cam_transform.affine_inverse());
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(opaque_framebuffer, RD::INITIAL_ACTION_CONTINUE, will_continue ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, will_continue ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ);
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(opaque_framebuffer, RD::INITIAL_ACTION_CONTINUE, will_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, will_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ);
 		for (int i = 0; i < p_gi_probe_cull_count; i++) {
 			_debug_giprobe(p_gi_probe_cull_result[i], draw_list, opaque_framebuffer, cm, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION, 1.0);
 		}
@@ -1911,12 +1945,24 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 			projection = correction * p_cam_projection;
 		}
 
-		_draw_sky(can_continue, opaque_framebuffer, p_environment, projection, p_cam_transform);
+		_draw_sky(can_continue_color, can_continue_depth, opaque_framebuffer, p_environment, projection, p_cam_transform);
+	}
 
-		if (using_separate_specular && !can_continue) {
-			//can't continue, so close the buffers
-			//RD::get_singleton()->draw_list_begin(render_buffer->color_specular_fb, RD::INITIAL_ACTION_CONTINUE, RD::FINAL_ACTION_READ_COLOR_AND_DEPTH, c);
-			//RD::get_singleton()->draw_list_end();
+	if (using_separate_specular) {
+
+		if (scene_state.used_sss) {
+			RENDER_TIMESTAMP("Sub Surface Scattering");
+
+			//_process_sss()
+		}
+
+		if (using_ssr) {
+			RENDER_TIMESTAMP("Screen Space Reflection");
+			_process_ssr(p_render_buffer, render_buffer->color_fb, render_buffer->normal_buffer, render_buffer->roughness_buffer, render_buffer->specular, render_buffer->specular, Color(0, 0, 0, 1), p_environment, p_cam_projection, true);
+		} else {
+			//just mix specular back
+			RENDER_TIMESTAMP("Merge Specular");
+			storage->get_effects()->merge_specular(render_buffer->color_fb, render_buffer->specular, RID(), RID());
 		}
 	}
 
@@ -1929,7 +1975,7 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 	_fill_instances(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, false);
 
 	{
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(alpha_framebuffer, can_continue ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, can_continue ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ);
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(alpha_framebuffer, can_continue_color ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, can_continue_depth ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ);
 		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(alpha_framebuffer), &render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, false, PASS_MODE_COLOR, render_buffer == nullptr, radiance_uniform_set, render_buffers_uniform_set);
 		RD::get_singleton()->draw_list_end();
 	}

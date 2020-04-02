@@ -2359,6 +2359,9 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/quality/glow/upscale_mode", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/glow/upscale_mode", PropertyInfo(Variant::INT, "rendering/quality/glow/upscale_mode", PROPERTY_HINT_ENUM, "Linear (Fast),Bicubic (Slower)"));
 	GLOBAL_DEF("rendering/quality/glow/upscale_mode.mobile", 0);
+
+	GLOBAL_DEF("rendering/quality/screen_space_reflection/roughness_quality", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/screen_space_reflection/roughness_quality", PropertyInfo(Variant::INT, "rendering/quality/screen_space_reflection/roughness_quality", PROPERTY_HINT_ENUM, "Disabled (Fastest),Low, Medium, High (Slowest)"));
 }
 
 RenderingServer::~RenderingServer() {

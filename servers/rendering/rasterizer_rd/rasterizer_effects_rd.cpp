@@ -50,6 +50,16 @@ static _FORCE_INLINE_ void store_transform_3x3(const Basis &p_basis, float *p_ar
 	p_array[11] = 0;
 }
 
+static _FORCE_INLINE_ void store_camera(const CameraMatrix &p_mtx, float *p_array) {
+
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+
+			p_array[i * 4 + j] = p_mtx.matrix[i][j];
+		}
+	}
+}
+
 RID RasterizerEffectsRD::_get_uniform_set_from_image(RID p_image) {
 
 	if (image_to_uniform_set_cache.has(p_image)) {
@@ -116,6 +126,80 @@ RID RasterizerEffectsRD::_get_compute_uniform_set_from_texture(RID p_texture, bo
 	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, luminance_reduce.shader.version_get_shader(luminance_reduce.shader_version, 0), 0);
 
 	texture_to_compute_uniform_set_cache[p_texture] = uniform_set;
+
+	return uniform_set;
+}
+
+RID RasterizerEffectsRD::_get_compute_uniform_set_from_texture_pair(RID p_texture1, RID p_texture2, bool p_use_mipmaps) {
+
+	TexturePair tp;
+	tp.texture1 = p_texture1;
+	tp.texture2 = p_texture2;
+
+	if (texture_pair_to_compute_uniform_set_cache.has(tp)) {
+		RID uniform_set = texture_pair_to_compute_uniform_set_cache[tp];
+		if (RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+			return uniform_set;
+		}
+	}
+
+	Vector<RD::Uniform> uniforms;
+	{
+		RD::Uniform u;
+		u.type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+		u.binding = 0;
+		u.ids.push_back(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
+		u.ids.push_back(p_texture1);
+		uniforms.push_back(u);
+	}
+	{
+		RD::Uniform u;
+		u.type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+		u.binding = 1;
+		u.ids.push_back(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
+		u.ids.push_back(p_texture2);
+		uniforms.push_back(u);
+	}
+	//any thing with the same configuration (one texture in binding 0 for set 0), is good
+	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, ssr_scale.shader.version_get_shader(ssr_scale.shader_version, 0), 1);
+
+	texture_pair_to_compute_uniform_set_cache[tp] = uniform_set;
+
+	return uniform_set;
+}
+
+RID RasterizerEffectsRD::_get_compute_uniform_set_from_image_pair(RID p_texture1, RID p_texture2) {
+
+	TexturePair tp;
+	tp.texture1 = p_texture1;
+	tp.texture2 = p_texture2;
+
+	if (image_pair_to_compute_uniform_set_cache.has(tp)) {
+		RID uniform_set = image_pair_to_compute_uniform_set_cache[tp];
+		if (RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+			return uniform_set;
+		}
+	}
+
+	Vector<RD::Uniform> uniforms;
+	{
+		RD::Uniform u;
+		u.type = RD::UNIFORM_TYPE_IMAGE;
+		u.binding = 0;
+		u.ids.push_back(p_texture1);
+		uniforms.push_back(u);
+	}
+	{
+		RD::Uniform u;
+		u.type = RD::UNIFORM_TYPE_IMAGE;
+		u.binding = 1;
+		u.ids.push_back(p_texture2);
+		uniforms.push_back(u);
+	}
+	//any thing with the same configuration (one texture in binding 0 for set 0), is good
+	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, ssr_scale.shader.version_get_shader(ssr_scale.shader_version, 0), 3);
+
+	image_pair_to_compute_uniform_set_cache[tp] = uniform_set;
 
 	return uniform_set;
 }
@@ -218,6 +302,7 @@ void RasterizerEffectsRD::gaussian_glow(RID p_source_rd_texture, RID p_framebuff
 	blur.push_constant.glow_exposure = p_exposure;
 	blur.push_constant.glow_white = 0; //actually unused
 	blur.push_constant.glow_luminance_cap = p_luminance_cap;
+
 	blur.push_constant.glow_auto_exposure_grey = p_auto_exposure_grey; //unused also
 
 	//HORIZONTAL
@@ -246,6 +331,165 @@ void RasterizerEffectsRD::gaussian_glow(RID p_source_rd_texture, RID p_framebuff
 	blur.push_constant.flags = base_flags;
 	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur.push_constant, sizeof(BlurPushConstant));
 
+	RD::get_singleton()->draw_list_draw(draw_list, true);
+	RD::get_singleton()->draw_list_end();
+}
+
+void RasterizerEffectsRD::screen_space_reflection(RID p_diffuse, RID p_normal, RenderingServer::EnvironmentSSRRoughnessQuality p_roughness_quality, RID p_roughness, RID p_blur_radius, RID p_blur_radius2, RID p_metallic, const Color &p_metallic_mask, RID p_depth, RID p_scale_depth, RID p_scale_normal, RID p_output, RID p_output_blur, const Size2i &p_screen_size, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const CameraMatrix &p_camera) {
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+
+	int32_t x_groups = (p_screen_size.width - 1) / 8 + 1;
+	int32_t y_groups = (p_screen_size.height - 1) / 8 + 1;
+
+	{ //scale color and depth to half
+		ssr_scale.push_constant.camera_z_far = p_camera.get_z_far();
+		ssr_scale.push_constant.camera_z_near = p_camera.get_z_near();
+		ssr_scale.push_constant.orthogonal = p_camera.is_orthogonal();
+		ssr_scale.push_constant.filter = false; //enabling causes arctifacts
+		ssr_scale.push_constant.screen_size[0] = p_screen_size.x;
+		ssr_scale.push_constant.screen_size[1] = p_screen_size.y;
+
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssr_scale.pipeline);
+
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_diffuse), 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture_pair(p_depth, p_normal), 1);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_output_blur), 2);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_image_pair(p_scale_depth, p_scale_normal), 3);
+
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssr_scale.push_constant, sizeof(ScreenSpaceReflectionScalePushConstant));
+
+		RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
+
+		RD::get_singleton()->compute_list_add_barrier(compute_list);
+	}
+
+	{
+
+		ssr.push_constant.camera_z_far = p_camera.get_z_far();
+		ssr.push_constant.camera_z_near = p_camera.get_z_near();
+		ssr.push_constant.orthogonal = p_camera.is_orthogonal();
+		ssr.push_constant.screen_size[0] = p_screen_size.x;
+		ssr.push_constant.screen_size[1] = p_screen_size.y;
+		ssr.push_constant.curve_fade_in = p_fade_in;
+		ssr.push_constant.distance_fade = p_fade_out;
+		ssr.push_constant.num_steps = p_max_steps;
+		ssr.push_constant.depth_tolerance = p_tolerance;
+		ssr.push_constant.use_half_res = true;
+		ssr.push_constant.proj_info[0] = -2.0f / (p_screen_size.width * p_camera.matrix[0][0]);
+		ssr.push_constant.proj_info[1] = -2.0f / (p_screen_size.height * p_camera.matrix[1][1]);
+		ssr.push_constant.proj_info[2] = (1.0f - p_camera.matrix[0][2]) / p_camera.matrix[0][0];
+		ssr.push_constant.proj_info[3] = (1.0f + p_camera.matrix[1][2]) / p_camera.matrix[1][1];
+		ssr.push_constant.metallic_mask[0] = CLAMP(p_metallic_mask.r * 255.0, 0, 255);
+		ssr.push_constant.metallic_mask[1] = CLAMP(p_metallic_mask.g * 255.0, 0, 255);
+		ssr.push_constant.metallic_mask[2] = CLAMP(p_metallic_mask.b * 255.0, 0, 255);
+		ssr.push_constant.metallic_mask[3] = CLAMP(p_metallic_mask.a * 255.0, 0, 255);
+		store_camera(p_camera, ssr.push_constant.projection);
+
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssr.pipelines[(p_roughness_quality != RS::ENV_SSR_ROUGNESS_QUALITY_DISABLED) ? SCREEN_SPACE_REFLECTION_ROUGH : SCREEN_SPACE_REFLECTION_NORMAL]);
+
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssr.push_constant, sizeof(ScreenSpaceReflectionPushConstant));
+
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_image_pair(p_output_blur, p_scale_depth), 0);
+
+		if (p_roughness_quality != RS::ENV_SSR_ROUGNESS_QUALITY_DISABLED) {
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_image_pair(p_output, p_blur_radius), 1);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture_pair(p_metallic, p_roughness), 3);
+		} else {
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_output), 1);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_metallic), 3);
+		}
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_scale_normal), 2);
+
+		RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
+	}
+
+	if (p_roughness_quality != RS::ENV_SSR_ROUGNESS_QUALITY_DISABLED) {
+
+		//blurr
+
+		RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+		ssr_filter.push_constant.orthogonal = p_camera.is_orthogonal();
+		ssr_filter.push_constant.edge_tolerance = Math::sin(Math::deg2rad(15.0));
+		ssr_filter.push_constant.proj_info[0] = -2.0f / (p_screen_size.width * p_camera.matrix[0][0]);
+		ssr_filter.push_constant.proj_info[1] = -2.0f / (p_screen_size.height * p_camera.matrix[1][1]);
+		ssr_filter.push_constant.proj_info[2] = (1.0f - p_camera.matrix[0][2]) / p_camera.matrix[0][0];
+		ssr_filter.push_constant.proj_info[3] = (1.0f + p_camera.matrix[1][2]) / p_camera.matrix[1][1];
+		ssr_filter.push_constant.vertical = 0;
+		if (p_roughness_quality == RS::ENV_SSR_ROUGNESS_QUALITY_LOW) {
+			ssr_filter.push_constant.steps = p_max_steps / 3;
+			ssr_filter.push_constant.increment = 3;
+		} else if (p_roughness_quality == RS::ENV_SSR_ROUGNESS_QUALITY_MEDIUM) {
+			ssr_filter.push_constant.steps = p_max_steps / 2;
+			ssr_filter.push_constant.increment = 2;
+		} else {
+			ssr_filter.push_constant.steps = p_max_steps;
+			ssr_filter.push_constant.increment = 1;
+		}
+
+		ssr_filter.push_constant.screen_size[0] = p_screen_size.width;
+		ssr_filter.push_constant.screen_size[1] = p_screen_size.height;
+
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssr_filter.pipelines[SCREEN_SPACE_REFLECTION_FILTER_HORIZONTAL]);
+
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_image_pair(p_output, p_blur_radius), 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_scale_normal), 1);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_image_pair(p_output_blur, p_blur_radius2), 2);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_scale_depth), 3);
+
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssr_filter.push_constant, sizeof(ScreenSpaceReflectionFilterPushConstant));
+
+		RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
+
+		RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssr_filter.pipelines[SCREEN_SPACE_REFLECTION_FILTER_VERTICAL]);
+
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_image_pair(p_output_blur, p_blur_radius2), 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_scale_normal), 1);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_output), 2);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_scale_depth), 3);
+
+		ssr_filter.push_constant.vertical = 1;
+
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssr_filter.push_constant, sizeof(ScreenSpaceReflectionFilterPushConstant));
+
+		RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
+	}
+
+	RD::get_singleton()->compute_list_end();
+}
+
+void RasterizerEffectsRD::merge_specular(RID p_dest_framebuffer, RID p_specular, RID p_base, RID p_reflection) {
+
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, Vector<Color>());
+
+	if (p_reflection.is_valid()) {
+
+		if (p_base.is_valid()) {
+			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, specular_merge.pipelines[SPECULAR_MERGE_SSR].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_base), 2);
+		} else {
+			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, specular_merge.pipelines[SPECULAR_MERGE_ADDITIVE_SSR].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+		}
+
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_specular), 0);
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_reflection), 1);
+
+	} else {
+
+		if (p_base.is_valid()) {
+			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, specular_merge.pipelines[SPECULAR_MERGE_ADD].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_base), 2);
+		} else {
+			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, specular_merge.pipelines[SPECULAR_MERGE_ADDITIVE_ADD].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+		}
+
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_specular), 0);
+	}
+
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
 	RD::get_singleton()->draw_list_draw(draw_list, true);
 	RD::get_singleton()->draw_list_end();
 }
@@ -970,6 +1214,7 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 
 			for (int i = SSAO_BLUR_PASS; i <= SSAO_BLUR_UPSCALE; i++) {
 				ssao.pipelines[pipeline] = RD::get_singleton()->compute_pipeline_create(ssao.blur_shader.version_get_shader(ssao.blur_shader_version, i - SSAO_BLUR_PASS));
+
 				pipeline++;
 			}
 		}
@@ -1033,6 +1278,82 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 			uniforms.push_back(u);
 		}
 		filter.uniform_set = RD::get_singleton()->uniform_set_create(uniforms, filter.shader.version_get_shader(filter.shader_version, filter.use_high_quality ? 0 : 1), 1);
+	}
+
+	{
+		Vector<String> specular_modes;
+		specular_modes.push_back("\n#define MODE_MERGE\n");
+		specular_modes.push_back("\n#define MODE_MERGE\n#define MODE_SSR\n");
+		specular_modes.push_back("\n");
+		specular_modes.push_back("\n#define MODE_SSR\n");
+
+		specular_merge.shader.initialize(specular_modes);
+
+		specular_merge.shader_version = specular_merge.shader.version_create();
+
+		//use additive
+
+		RD::PipelineColorBlendState::Attachment ba;
+		ba.enable_blend = true;
+		ba.src_color_blend_factor = RD::BLEND_FACTOR_ONE;
+		ba.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
+		ba.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+		ba.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+		ba.color_blend_op = RD::BLEND_OP_ADD;
+		ba.alpha_blend_op = RD::BLEND_OP_ADD;
+
+		RD::PipelineColorBlendState blend_additive;
+		blend_additive.attachments.push_back(ba);
+
+		for (int i = 0; i < SPECULAR_MERGE_MAX; i++) {
+
+			RD::PipelineColorBlendState blend_state;
+			if (i == SPECULAR_MERGE_ADDITIVE_ADD || i == SPECULAR_MERGE_ADDITIVE_SSR) {
+				blend_state = blend_additive;
+			} else {
+				blend_state = RD::PipelineColorBlendState::create_disabled();
+			}
+			specular_merge.pipelines[i].setup(specular_merge.shader.version_get_shader(specular_merge.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
+		}
+	}
+
+	{
+		Vector<String> ssr_modes;
+		ssr_modes.push_back("\n");
+		ssr_modes.push_back("\n#define MODE_ROUGH\n");
+
+		ssr.shader.initialize(ssr_modes);
+
+		ssr.shader_version = ssr.shader.version_create();
+
+		for (int i = 0; i < SCREEN_SPACE_REFLECTION_MAX; i++) {
+			ssr.pipelines[i] = RD::get_singleton()->compute_pipeline_create(ssr.shader.version_get_shader(ssr.shader_version, i));
+		}
+	}
+
+	{
+		Vector<String> ssr_filter_modes;
+		ssr_filter_modes.push_back("\n");
+		ssr_filter_modes.push_back("\n#define VERTICAL_PASS\n");
+
+		ssr_filter.shader.initialize(ssr_filter_modes);
+
+		ssr_filter.shader_version = ssr_filter.shader.version_create();
+
+		for (int i = 0; i < SCREEN_SPACE_REFLECTION_FILTER_MAX; i++) {
+			ssr_filter.pipelines[i] = RD::get_singleton()->compute_pipeline_create(ssr_filter.shader.version_get_shader(ssr_filter.shader_version, i));
+		}
+	}
+
+	{
+		Vector<String> ssr_scale_modes;
+		ssr_scale_modes.push_back("\n");
+
+		ssr_scale.shader.initialize(ssr_scale_modes);
+
+		ssr_scale.shader_version = ssr_scale.shader.version_create();
+
+		ssr_scale.pipeline = RD::get_singleton()->compute_pipeline_create(ssr_scale.shader.version_get_shader(ssr_scale.shader_version, 0));
 	}
 
 	RD::SamplerState sampler;
