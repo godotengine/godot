@@ -194,7 +194,7 @@ public:
 	virtual void set_audio_track(int p_track);
 	virtual Ref<VideoStreamPlayback> instance_playback();
 
-	VideoStreamGDNative() {}
+	VideoStreamGDNative() { audio_track = 0; }
 };
 
 class ResourceFormatLoaderVideoStreamGDNative : public ResourceFormatLoader {

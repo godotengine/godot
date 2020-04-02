@@ -1514,6 +1514,7 @@ PopupMenu::PopupMenu() {
 	submenu_over = -1;
 	initial_button_mask = 0;
 	during_grabbed_click = false;
+	invalidated_click = false;
 
 	allow_search = false;
 	search_time_msec = 0;

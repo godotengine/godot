@@ -571,7 +571,7 @@ private:
 			Rect2 atlas_rect;
 		};
 
-		RS::LightType light_type;
+		RS::LightType light_type = RS::LIGHT_DIRECTIONAL;
 
 		ShadowTransform shadow_transform[4];
 
@@ -581,7 +581,7 @@ private:
 
 		Vector3 light_vector;
 		Vector3 spot_vector;
-		float linear_att;
+		float linear_att = 0.0;
 
 		uint64_t shadow_pass = 0;
 		uint64_t last_scene_pass = 0;
@@ -590,7 +590,7 @@ private:
 		uint32_t light_index = 0;
 		uint32_t light_directional_index = 0;
 
-		uint32_t current_shadow_atlas_key;
+		uint32_t current_shadow_atlas_key = 0;
 
 		Vector2 dp;
 

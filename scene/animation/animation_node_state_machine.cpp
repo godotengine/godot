@@ -516,6 +516,11 @@ AnimationNodeStateMachinePlayback::AnimationNodeStateMachinePlayback() {
 	len_current = 0;
 	fading_time = 0;
 	stop_request = false;
+	len_total = 0.0;
+	pos_current = 0.0;
+	loops_current = 0;
+	fading_pos = 0.0;
+	start_request_travel = false;
 }
 
 ///////////////////////////////////////////////////////

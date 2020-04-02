@@ -293,6 +293,7 @@ GIProbeData::GIProbeData() {
 	propagation = 0.7;
 	anisotropy_strength = 0.5;
 	interior = false;
+	use_two_bounces = false;
 
 	probe = RS::get_singleton()->gi_probe_create();
 }
