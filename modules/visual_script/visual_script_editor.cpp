@@ -350,8 +350,11 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 			case Variant::STRING: color = Color(0.42, 0.65, 0.93); break;
 
 			case Variant::VECTOR2: color = Color(0.74, 0.57, 0.95); break;
+			case Variant::VECTOR2I: color = Color(0.74, 0.57, 0.95); break;
 			case Variant::RECT2: color = Color(0.95, 0.57, 0.65); break;
+			case Variant::RECT2I: color = Color(0.95, 0.57, 0.65); break;
 			case Variant::VECTOR3: color = Color(0.84, 0.49, 0.93); break;
+			case Variant::VECTOR3I: color = Color(0.84, 0.49, 0.93); break;
 			case Variant::TRANSFORM2D: color = Color(0.77, 0.93, 0.41); break;
 			case Variant::PLANE: color = Color(0.97, 0.44, 0.44); break;
 			case Variant::QUAT: color = Color(0.93, 0.41, 0.64); break;
@@ -389,8 +392,11 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 			case Variant::STRING: color = Color(0.27, 0.56, 0.91); break;
 
 			case Variant::VECTOR2: color = Color(0.68, 0.46, 0.93); break;
+			case Variant::VECTOR2I: color = Color(0.68, 0.46, 0.93); break;
 			case Variant::RECT2: color = Color(0.93, 0.46, 0.56); break;
+			case Variant::RECT2I: color = Color(0.93, 0.46, 0.56); break;
 			case Variant::VECTOR3: color = Color(0.86, 0.42, 0.93); break;
+			case Variant::VECTOR3I: color = Color(0.86, 0.42, 0.93); break;
 			case Variant::TRANSFORM2D: color = Color(0.59, 0.81, 0.1); break;
 			case Variant::PLANE: color = Color(0.97, 0.44, 0.44); break;
 			case Variant::QUAT: color = Color(0.93, 0.41, 0.64); break;
@@ -510,8 +516,11 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		Control::get_theme_icon("float", "EditorIcons"),
 		Control::get_theme_icon("String", "EditorIcons"),
 		Control::get_theme_icon("Vector2", "EditorIcons"),
+		Control::get_theme_icon("Vector2i", "EditorIcons"),
 		Control::get_theme_icon("Rect2", "EditorIcons"),
+		Control::get_theme_icon("Rect2i", "EditorIcons"),
 		Control::get_theme_icon("Vector3", "EditorIcons"),
+		Control::get_theme_icon("Vector3i", "EditorIcons"),
 		Control::get_theme_icon("Transform2D", "EditorIcons"),
 		Control::get_theme_icon("Plane", "EditorIcons"),
 		Control::get_theme_icon("Quat", "EditorIcons"),
@@ -522,6 +531,8 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		Control::get_theme_icon("NodePath", "EditorIcons"),
 		Control::get_theme_icon("RID", "EditorIcons"),
 		Control::get_theme_icon("MiniObject", "EditorIcons"),
+		Control::get_theme_icon("Callable", "EditorIcons"),
+		Control::get_theme_icon("Signal", "EditorIcons"),
 		Control::get_theme_icon("Dictionary", "EditorIcons"),
 		Control::get_theme_icon("Array", "EditorIcons"),
 		Control::get_theme_icon("PackedByteArray", "EditorIcons"),
@@ -974,8 +985,11 @@ void VisualScriptEditor::_update_members() {
 		Control::get_theme_icon("float", "EditorIcons"),
 		Control::get_theme_icon("String", "EditorIcons"),
 		Control::get_theme_icon("Vector2", "EditorIcons"),
+		Control::get_theme_icon("Vector2i", "EditorIcons"),
 		Control::get_theme_icon("Rect2", "EditorIcons"),
+		Control::get_theme_icon("Rect2i", "EditorIcons"),
 		Control::get_theme_icon("Vector3", "EditorIcons"),
+		Control::get_theme_icon("Vector3i", "EditorIcons"),
 		Control::get_theme_icon("Transform2D", "EditorIcons"),
 		Control::get_theme_icon("Plane", "EditorIcons"),
 		Control::get_theme_icon("Quat", "EditorIcons"),
@@ -986,6 +1000,8 @@ void VisualScriptEditor::_update_members() {
 		Control::get_theme_icon("NodePath", "EditorIcons"),
 		Control::get_theme_icon("RID", "EditorIcons"),
 		Control::get_theme_icon("MiniObject", "EditorIcons"),
+		Control::get_theme_icon("Callable", "EditorIcons"),
+		Control::get_theme_icon("Signal", "EditorIcons"),
 		Control::get_theme_icon("Dictionary", "EditorIcons"),
 		Control::get_theme_icon("Array", "EditorIcons"),
 		Control::get_theme_icon("PackedByteArray", "EditorIcons"),
