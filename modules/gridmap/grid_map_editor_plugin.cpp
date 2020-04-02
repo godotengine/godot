@@ -42,7 +42,7 @@
 void GridMapEditor::_node_removed(Node *p_node) {
 
 	if (p_node == node)
-		node = NULL;
+		node = nullptr;
 }
 
 void GridMapEditor::_configure() {
@@ -896,7 +896,7 @@ void GridMapEditor::update_palette() {
 	Ref<MeshLibrary> mesh_library = node->get_mesh_library();
 
 	if (mesh_library.is_null()) {
-		last_mesh_library = NULL;
+		last_mesh_library = nullptr;
 		search_box->set_text("");
 		search_box->set_editable(false);
 		info_message->show();
@@ -1548,7 +1548,7 @@ void GridMapEditorPlugin::make_visible(bool p_visible) {
 
 		grid_map_editor->spatial_editor_hb->hide();
 		grid_map_editor->hide();
-		grid_map_editor->edit(NULL);
+		grid_map_editor->edit(nullptr);
 		grid_map_editor->set_process(false);
 	}
 }

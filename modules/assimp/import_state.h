@@ -118,12 +118,12 @@ struct RecursiveState {
 			bone(_bone) {}
 
 	Transform node_transform;
-	Skeleton3D *skeleton = NULL;
-	Node3D *new_node = NULL;
+	Skeleton3D *skeleton = nullptr;
+	Node3D *new_node = nullptr;
 	String node_name;
-	aiNode *assimp_node = NULL;
-	Node *parent_node = NULL;
-	aiBone *bone = NULL;
+	aiNode *assimp_node = nullptr;
+	Node *parent_node = nullptr;
+	aiBone *bone = nullptr;
 };
 } // namespace AssimpImporter
 

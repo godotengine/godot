@@ -82,7 +82,7 @@ private:
 
 		Output() {
 			filter_gain = 0;
-			viewport = NULL;
+			viewport = nullptr;
 			reverb_bus_index = -1;
 			bus_index = -1;
 		}

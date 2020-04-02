@@ -71,8 +71,8 @@ public:
 	const NSMenu *_get_menu_root(const String &p_menu_root) const;
 	NSMenu *_get_menu_root(const String &p_menu_root);
 
-	NSMenu *apple_menu = NULL;
-	NSMenu *dock_menu = NULL;
+	NSMenu *apple_menu = nullptr;
+	NSMenu *dock_menu = nullptr;
 	Map<String, NSMenu *> submenu;
 
 	struct KeyEvent {
@@ -95,7 +95,7 @@ public:
 		id window_view;
 
 #if defined(OPENGL_ENABLED)
-		ContextGL_OSX *context_gles2 = NULL;
+		ContextGL_OSX *context_gles2 = nullptr;
 #endif
 		Point2i mouse_pos;
 

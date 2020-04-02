@@ -1266,7 +1266,7 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 		}
 
 		Vector<uint8_t> data;
-		const uint8_t *data_ptr = NULL;
+		const uint8_t *data_ptr = nullptr;
 		int data_size = 0;
 
 		if (d.has("uri")) {
@@ -1307,7 +1307,7 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 
 		if (mimetype.findn("png") != -1) {
 			//is a png
-			ERR_FAIL_COND_V(Image::_png_mem_loader_func == NULL, ERR_UNAVAILABLE);
+			ERR_FAIL_COND_V(Image::_png_mem_loader_func == nullptr, ERR_UNAVAILABLE);
 
 			const Ref<Image> img = Image::_png_mem_loader_func(data_ptr, data_size);
 
@@ -1323,7 +1323,7 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 
 		if (mimetype.findn("jpeg") != -1) {
 			//is a jpg
-			ERR_FAIL_COND_V(Image::_jpg_mem_loader_func == NULL, ERR_UNAVAILABLE);
+			ERR_FAIL_COND_V(Image::_jpg_mem_loader_func == nullptr, ERR_UNAVAILABLE);
 
 			const Ref<Image> img = Image::_jpg_mem_loader_func(data_ptr, data_size);
 
@@ -2985,19 +2985,19 @@ Node *EditorSceneImporterGLTF::import_scene(const String &p_path, uint32_t p_fla
 		//text file
 		Error err = _parse_glb(p_path, state);
 		if (err)
-			return NULL;
+			return nullptr;
 	} else {
 		//text file
 		Error err = _parse_json(p_path, state);
 		if (err)
-			return NULL;
+			return nullptr;
 	}
 
-	ERR_FAIL_COND_V(!state.json.has("asset"), NULL);
+	ERR_FAIL_COND_V(!state.json.has("asset"), nullptr);
 
 	Dictionary asset = state.json["asset"];
 
-	ERR_FAIL_COND_V(!asset.has("version"), NULL);
+	ERR_FAIL_COND_V(!asset.has("version"), nullptr);
 
 	String version = asset["version"];
 
@@ -3008,77 +3008,77 @@ Node *EditorSceneImporterGLTF::import_scene(const String &p_path, uint32_t p_fla
 	/* STEP 0 PARSE SCENE */
 	Error err = _parse_scenes(state);
 	if (err != OK)
-		return NULL;
+		return nullptr;
 
 	/* STEP 1 PARSE NODES */
 	err = _parse_nodes(state);
 	if (err != OK)
-		return NULL;
+		return nullptr;
 
 	/* STEP 2 PARSE BUFFERS */
 	err = _parse_buffers(state, p_path.get_base_dir());
 	if (err != OK)
-		return NULL;
+		return nullptr;
 
 	/* STEP 3 PARSE BUFFER VIEWS */
 	err = _parse_buffer_views(state);
 	if (err != OK)
-		return NULL;
+		return nullptr;
 
 	/* STEP 4 PARSE ACCESSORS */
 	err = _parse_accessors(state);
 	if (err != OK)
-		return NULL;
+		return nullptr;
 
 	/* STEP 5 PARSE IMAGES */
 	err = _parse_images(state, p_path.get_base_dir());
 	if (err != OK)
-		return NULL;
+		return nullptr;
 
 	/* STEP 6 PARSE TEXTURES */
 	err = _parse_textures(state);
 	if (err != OK)
-		return NULL;
+		return nullptr;
 
 	/* STEP 7 PARSE TEXTURES */
 	err = _parse_materials(state);
 	if (err != OK)
-		return NULL;
+		return nullptr;
 
 	/* STEP 9 PARSE SKINS */
 	err = _parse_skins(state);
 	if (err != OK)
-		return NULL;
+		return nullptr;
 
 	/* STEP 10 DETERMINE SKELETONS */
 	err = _determine_skeletons(state);
 	if (err != OK)
-		return NULL;
+		return nullptr;
 
 	/* STEP 11 CREATE SKELETONS */
 	err = _create_skeletons(state);
 	if (err != OK)
-		return NULL;
+		return nullptr;
 
 	/* STEP 12 CREATE SKINS */
 	err = _create_skins(state);
 	if (err != OK)
-		return NULL;
+		return nullptr;
 
 	/* STEP 13 PARSE MESHES (we have enough info now) */
 	err = _parse_meshes(state);
 	if (err != OK)
-		return NULL;
+		return nullptr;
 
 	/* STEP 14 PARSE CAMERAS */
 	err = _parse_cameras(state);
 	if (err != OK)
-		return NULL;
+		return nullptr;
 
 	/* STEP 15 PARSE ANIMATIONS */
 	err = _parse_animations(state);
 	if (err != OK)
-		return NULL;
+		return nullptr;
 
 	/* STEP 16 ASSIGN SCENE NAMES */
 	_assign_scene_names(state);

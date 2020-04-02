@@ -34,7 +34,7 @@
 
 BroadPhase3DSW::ID BroadPhase3DBasic::create(CollisionObject3DSW *p_object, int p_subindex) {
 
-	ERR_FAIL_COND_V(p_object == NULL, 0);
+	ERR_FAIL_COND_V(p_object == nullptr, 0);
 
 	current++;
 
@@ -88,7 +88,7 @@ void BroadPhase3DBasic::remove(ID p_id) {
 CollisionObject3DSW *BroadPhase3DBasic::get_object(ID p_id) const {
 
 	const Map<ID, Element>::Element *E = element_map.find(p_id);
-	ERR_FAIL_COND_V(!E, NULL);
+	ERR_FAIL_COND_V(!E, nullptr);
 	return E->get().owner;
 }
 bool BroadPhase3DBasic::is_static(ID p_id) const {
@@ -201,7 +201,7 @@ void BroadPhase3DBasic::update() {
 
 			if (pair_ok && !E) {
 
-				void *data = NULL;
+				void *data = nullptr;
 				if (pair_callback)
 					data = pair_callback(elem_A->owner, elem_A->subindex, elem_B->owner, elem_B->subindex, unpair_userdata);
 				pair_map.insert(key, data);
@@ -218,8 +218,8 @@ BroadPhase3DSW *BroadPhase3DBasic::_create() {
 BroadPhase3DBasic::BroadPhase3DBasic() {
 
 	current = 1;
-	unpair_callback = NULL;
-	unpair_userdata = NULL;
-	pair_callback = NULL;
-	pair_userdata = NULL;
+	unpair_callback = nullptr;
+	unpair_userdata = nullptr;
+	pair_callback = nullptr;
+	pair_userdata = nullptr;
 }

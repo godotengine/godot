@@ -47,7 +47,7 @@
 */
 
 #ifndef _3D_DISABLED
-NavigationMeshGenerator *_nav_mesh_generator = NULL;
+NavigationMeshGenerator *_nav_mesh_generator = nullptr;
 #endif
 
 NavigationServer3D *new_server() {

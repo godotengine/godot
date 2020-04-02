@@ -1074,12 +1074,12 @@ void RasterizerSceneHighEndRD::_add_geometry(InstanceBase *p_instance, uint32_t 
 		}
 	}
 
-	MaterialData *material = NULL;
+	MaterialData *material = nullptr;
 
 	if (m_src.is_valid()) {
 		material = (MaterialData *)storage->material_get_data(m_src, RasterizerStorageRD::SHADER_TYPE_3D);
 		if (!material || !material->shader_data->valid) {
-			material = NULL;
+			material = nullptr;
 		}
 	}
 
@@ -1203,7 +1203,7 @@ void RasterizerSceneHighEndRD::_fill_render_list(InstanceBase **p_cull_result, i
 
 			case RS::INSTANCE_MESH: {
 
-				const RID *materials = NULL;
+				const RID *materials = nullptr;
 				uint32_t surface_count;
 
 				materials = storage->mesh_get_surface_count_and_materials(inst->base, surface_count);
@@ -1237,7 +1237,7 @@ void RasterizerSceneHighEndRD::_fill_render_list(InstanceBase **p_cull_result, i
 					continue;
 				}
 
-				const RID *materials = NULL;
+				const RID *materials = nullptr;
 				uint32_t surface_count;
 
 				materials = storage->mesh_get_surface_count_and_materials(mesh, surface_count);
@@ -1258,7 +1258,7 @@ void RasterizerSceneHighEndRD::_fill_render_list(InstanceBase **p_cull_result, i
 				RasterizerStorageGLES3::Immediate *immediate = storage->immediate_owner.getornull(inst->base);
 				ERR_CONTINUE(!immediate);
 
-				_add_geometry(immediate, inst, NULL, -1, p_depth_pass, p_shadow_pass);
+				_add_geometry(immediate, inst, nullptr, -1, p_depth_pass, p_shadow_pass);
 
 			} break;
 			case RS::INSTANCE_PARTICLES: {
@@ -1637,7 +1637,7 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 
 void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color) {
 
-	RenderBufferDataHighEnd *render_buffer = NULL;
+	RenderBufferDataHighEnd *render_buffer = nullptr;
 	if (p_render_buffer.is_valid()) {
 		render_buffer = (RenderBufferDataHighEnd *)render_buffers_get_data(p_render_buffer);
 	}
@@ -1937,13 +1937,13 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 	//_render_list
 #if 0
 	if (state.directional_light_count == 0) {
-		directional_light = NULL;
-		_render_list(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, p_cam_transform, p_cam_projection, env_radiance_tex, false, true, false, false, shadow_atlas != NULL);
+		directional_light = nullptr;
+		_render_list(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, p_cam_transform, p_cam_projection, env_radiance_tex, false, true, false, false, shadow_atlas != nullptr);
 	} else {
 		for (int i = 0; i < state.directional_light_count; i++) {
 			directional_light = directional_lights[i];
-			_setup_directional_light(i, p_cam_transform.affine_inverse(), shadow_atlas != NULL && shadow_atlas->size > 0);
-			_render_list(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, p_cam_transform, p_cam_projection, env_radiance_tex, false, true, false, i > 0, shadow_atlas != NULL);
+			_setup_directional_light(i, p_cam_transform.affine_inverse(), shadow_atlas != nullptr && shadow_atlas->size > 0);
+			_render_list(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, p_cam_transform, p_cam_projection, env_radiance_tex, false, true, false, i > 0, shadow_atlas != nullptr);
 		}
 	}
 #endif
@@ -2366,7 +2366,7 @@ void RasterizerSceneHighEndRD::_update_render_buffers_uniform_set(RID p_render_b
 	}
 }
 
-RasterizerSceneHighEndRD *RasterizerSceneHighEndRD::singleton = NULL;
+RasterizerSceneHighEndRD *RasterizerSceneHighEndRD::singleton = nullptr;
 
 void RasterizerSceneHighEndRD::set_time(double p_time, double p_step) {
 	time = p_time;

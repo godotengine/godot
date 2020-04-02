@@ -64,7 +64,7 @@ Error FileAccessCompressed::open_after_magic(FileAccess *p_base) {
 	cmode = (Compression::Mode)f->get_32();
 	block_size = f->get_32();
 	if (block_size == 0) {
-		f = NULL; // Let the caller to handle the FileAccess object if failed to open as compressed file.
+		f = nullptr; // Let the caller to handle the FileAccess object if failed to open as compressed file.
 		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Can't open compressed file '" + p_base->get_path() + "' with block size 0, it is corrupted.");
 	}
 	read_total = f->get_32();
@@ -109,7 +109,7 @@ Error FileAccessCompressed::_open(const String &p_path, int p_mode_flags) {
 	if (err != OK) {
 		//not openable
 
-		f = NULL;
+		f = nullptr;
 		return err;
 	}
 
@@ -131,7 +131,7 @@ Error FileAccessCompressed::_open(const String &p_path, int p_mode_flags) {
 		rmagic[4] = 0;
 		if (magic != rmagic || open_after_magic(f) != OK) {
 			memdelete(f);
-			f = NULL;
+			f = nullptr;
 			return ERR_FILE_UNRECOGNIZED;
 		}
 	}
@@ -187,12 +187,12 @@ void FileAccessCompressed::close() {
 	}
 
 	memdelete(f);
-	f = NULL;
+	f = nullptr;
 }
 
 bool FileAccessCompressed::is_open() const {
 
-	return f != NULL;
+	return f != nullptr;
 }
 
 void FileAccessCompressed::seek(size_t p_position) {
@@ -392,20 +392,20 @@ Error FileAccessCompressed::_set_unix_permissions(const String &p_file, uint32_t
 FileAccessCompressed::FileAccessCompressed() :
 		cmode(Compression::MODE_ZSTD),
 		writing(false),
-		write_ptr(0),
+		write_ptr(nullptr),
 		write_buffer_size(0),
 		write_max(0),
 		block_size(0),
 		read_eof(false),
 		at_end(false),
-		read_ptr(NULL),
+		read_ptr(nullptr),
 		read_block(0),
 		read_block_count(0),
 		read_block_size(0),
 		read_pos(0),
 		read_total(0),
 		magic("GCMP"),
-		f(NULL) {
+		f(nullptr) {
 }
 
 FileAccessCompressed::~FileAccessCompressed() {

@@ -50,7 +50,7 @@ JNIEnv *GDAPI godot_android_get_env() {
 #ifdef __ANDROID__
 	return ThreadAndroid::get_env();
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -59,7 +59,7 @@ jobject GDAPI godot_android_get_activity() {
 	OS_Android *os_android = (OS_Android *)OS::get_singleton();
 	return os_android->get_godot_java()->get_activity();
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -68,7 +68,7 @@ jobject GDAPI godot_android_get_surface() {
 	OS_Android *os_android = (OS_Android *)OS::get_singleton();
 	return os_android->get_godot_java()->get_surface();
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 

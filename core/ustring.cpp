@@ -205,7 +205,7 @@ void String::copy_from(const CharType *p_cstr, const int p_clip_to) {
 }
 
 // assumes the following have already been validated:
-// p_char != NULL
+// p_char != nullptr
 // p_length > 0
 // p_length <= p_char strlen
 void String::copy_from_unchecked(const CharType *p_char, const int p_length) {
@@ -1640,7 +1640,7 @@ CharString String::utf8() const {
 /*
 String::String(CharType p_char) {
 
-	shared=NULL;
+	shared=nullptr;
 	copy_from(p_char);
 }
 */
@@ -1913,7 +1913,7 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 				 * necessary unless F is present. The "E" may
 				 * actually be an "e". E and X may both be
 				 * omitted (but not just one). */
-		C **endPtr = NULL) /* If non-NULL, store terminating Cacter's
+		C **endPtr = nullptr) /* If non-nullptr, store terminating Cacter's
 				 * address here. */
 {
 
@@ -2101,7 +2101,7 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 	}
 
 done:
-	if (endPtr != NULL) {
+	if (endPtr != nullptr) {
 		*endPtr = (C *)p;
 	}
 
@@ -2202,7 +2202,7 @@ double String::to_double() const {
 		return 0;
 #ifndef NO_USE_STDLIB
 	return built_in_strtod<CharType>(c_str());
-//return wcstod(c_str(),NULL); DOES NOT WORK ON ANDROID :(
+//return wcstod(c_str(),nullptr ); DOES NOT WORK ON ANDROID :(
 #else
 	return built_in_strtod<CharType>(c_str());
 #endif
@@ -3449,7 +3449,7 @@ String String::http_unescape() const {
 				CharType ord2 = ord_at(i + 2);
 				if ((ord2 >= '0' && ord2 <= '9') || (ord2 >= 'A' && ord2 <= 'Z')) {
 					char bytes[3] = { (char)ord1, (char)ord2, 0 };
-					res += (char)strtol(bytes, NULL, 16);
+					res += (char)strtol(bytes, nullptr, 16);
 					i += 2;
 				}
 			} else {
@@ -3633,7 +3633,7 @@ String String::xml_unescape() const {
 
 	String str;
 	int l = length();
-	int len = _xml_unescape(c_str(), l, NULL);
+	int len = _xml_unescape(c_str(), l, nullptr);
 	if (len == 0)
 		return String();
 	str.resize(len + 1);

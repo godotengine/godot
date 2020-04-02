@@ -65,7 +65,7 @@ public:
 		OverlapState state;
 
 		OverlappingObjectData() :
-				object(NULL),
+				object(nullptr),
 				state(OVERLAP_STATE_ENTER) {}
 		OverlappingObjectData(CollisionObjectBullet *p_object, OverlapState p_state) :
 				object(p_object),

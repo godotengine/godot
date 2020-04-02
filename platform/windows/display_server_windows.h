@@ -273,7 +273,7 @@ class DisplayServerWindows : public DisplayServer {
 
 	WNDCLASSEXW wc;
 
-	HCURSOR cursors[CURSOR_MAX] = { NULL };
+	HCURSOR cursors[CURSOR_MAX] = { nullptr };
 	CursorShape cursor_shape;
 	Map<CursorShape, Vector<Variant>> cursors_cache;
 

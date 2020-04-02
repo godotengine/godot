@@ -47,7 +47,7 @@ void _for_all(TabContainer *p_node, const Func &p_func) {
 	}
 }
 
-EditorDebuggerNode *EditorDebuggerNode::singleton = NULL;
+EditorDebuggerNode *EditorDebuggerNode::singleton = nullptr;
 
 EditorDebuggerNode::EditorDebuggerNode() {
 	if (!singleton)
@@ -291,13 +291,13 @@ void EditorDebuggerNode::_notification(int p_what) {
 
 	// Take connections.
 	if (server->is_connection_available()) {
-		ScriptEditorDebugger *debugger = NULL;
+		ScriptEditorDebugger *debugger = nullptr;
 		_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 			if (debugger || dbg->is_session_active())
 				return;
 			debugger = dbg;
 		});
-		if (debugger == NULL) {
+		if (debugger == nullptr) {
 			if (tabs->get_tab_count() <= 4) { // Max 4 debugging sessions active.
 				debugger = _add_debugger();
 			} else {
@@ -356,7 +356,7 @@ void EditorDebuggerNode::_debugger_changed(int p_tab) {
 	if (get_inspected_remote_object()) {
 		// Clear inspected object, you can only inspect objects in selected debugger.
 		// Hopefully, in the future, we will have one inspector per debugger.
-		EditorNode::get_singleton()->push_item(NULL);
+		EditorNode::get_singleton()->push_item(nullptr);
 	}
 	if (remote_scene_tree->is_visible_in_tree()) {
 		get_current_debugger()->request_remote_tree();

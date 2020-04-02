@@ -66,7 +66,7 @@ void AStar::add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale) {
 		pt->id = p_id;
 		pt->pos = p_pos;
 		pt->weight_scale = p_weight_scale;
-		pt->prev_point = NULL;
+		pt->prev_point = nullptr;
 		pt->open_pass = 0;
 		pt->closed_pass = 0;
 		pt->enabled = true;
@@ -167,7 +167,7 @@ void AStar::connect_points(int p_id, int p_with_id, bool bidirectional) {
 	if (bidirectional) s.direction = Segment::BIDIRECTIONAL;
 
 	Set<Segment>::Element *element = segments.find(s);
-	if (element != NULL) {
+	if (element != nullptr) {
 		s.direction |= element->get().direction;
 		if (s.direction == Segment::BIDIRECTIONAL) {
 			// Both are neighbours of each other now
@@ -194,7 +194,7 @@ void AStar::disconnect_points(int p_id, int p_with_id, bool bidirectional) {
 	int remove_direction = bidirectional ? (int)Segment::BIDIRECTIONAL : s.direction;
 
 	Set<Segment>::Element *element = segments.find(s);
-	if (element != NULL) {
+	if (element != nullptr) {
 		// s is the new segment
 		// Erase the directions to be removed
 		s.direction = (element->get().direction & ~remove_direction);
@@ -255,7 +255,7 @@ bool AStar::are_points_connected(int p_id, int p_with_id, bool bidirectional) co
 	Segment s(p_id, p_with_id);
 	const Set<Segment>::Element *element = segments.find(s);
 
-	return element != NULL &&
+	return element != nullptr &&
 		   (bidirectional || (element->get().direction & s.direction) == s.direction);
 }
 

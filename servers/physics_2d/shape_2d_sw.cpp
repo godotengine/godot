@@ -643,7 +643,7 @@ void ConvexPolygonShape2DSW::set_data(const Variant &p_data) {
 
 	if (points)
 		memdelete_arr(points);
-	points = NULL;
+	points = nullptr;
 	point_count = 0;
 
 	if (p_data.get_type() == Variant::PACKED_VECTOR2_ARRAY) {
@@ -706,7 +706,7 @@ Variant ConvexPolygonShape2DSW::get_data() const {
 
 ConvexPolygonShape2DSW::ConvexPolygonShape2DSW() {
 
-	points = NULL;
+	points = nullptr;
 	point_count = 0;
 }
 

@@ -334,7 +334,7 @@ WebRTCDataChannelJS::WebRTCDataChannelJS(int js_id) {
 		stringToUTF8(str, ptr, len+1);
 		return ptr;
 	}, js_id);
-	if(str != NULL) {
+	if(str != nullptr) {
 		_label.parse_utf8(str);
 		EM_ASM({ _free($0) }, str);
 	}
@@ -347,7 +347,7 @@ WebRTCDataChannelJS::WebRTCDataChannelJS(int js_id) {
 		stringToUTF8(str, ptr, len+1);
 		return ptr;
 	}, js_id);
-	if(str != NULL) {
+	if(str != nullptr) {
 		_protocol.parse_utf8(str);
 		EM_ASM({ _free($0) }, str);
 	}

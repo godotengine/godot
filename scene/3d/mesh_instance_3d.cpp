@@ -217,11 +217,11 @@ Vector<Face3> MeshInstance3D::get_faces(uint32_t p_usage_flags) const {
 Node *MeshInstance3D::create_trimesh_collision_node() {
 
 	if (mesh.is_null())
-		return NULL;
+		return nullptr;
 
 	Ref<Shape3D> shape = mesh->create_trimesh_shape();
 	if (shape.is_null())
-		return NULL;
+		return nullptr;
 
 	StaticBody3D *static_body = memnew(StaticBody3D);
 	CollisionShape3D *cshape = memnew(CollisionShape3D);
@@ -247,11 +247,11 @@ void MeshInstance3D::create_trimesh_collision() {
 Node *MeshInstance3D::create_convex_collision_node() {
 
 	if (mesh.is_null())
-		return NULL;
+		return nullptr;
 
 	Ref<Shape3D> shape = mesh->create_convex_shape();
 	if (shape.is_null())
-		return NULL;
+		return nullptr;
 
 	StaticBody3D *static_body = memnew(StaticBody3D);
 	CollisionShape3D *cshape = memnew(CollisionShape3D);

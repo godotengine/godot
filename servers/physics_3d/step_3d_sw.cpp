@@ -88,7 +88,7 @@ void Step3DSW::_solve_island(Constraint3DSW *p_island, int p_iterations, real_t 
 
 		{
 			Constraint3DSW *ci = p_island;
-			Constraint3DSW *prev = NULL;
+			Constraint3DSW *prev = nullptr;
 			while (ci) {
 				if (ci->get_priority() < at_priority) {
 					if (prev) {
@@ -177,8 +177,8 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 
 	/* GENERATE CONSTRAINT ISLANDS */
 
-	Body3DSW *island_list = NULL;
-	Constraint3DSW *constraint_island_list = NULL;
+	Body3DSW *island_list = nullptr;
+	Constraint3DSW *constraint_island_list = nullptr;
 	b = body_list->first();
 
 	int island_count = 0;
@@ -188,8 +188,8 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 
 		if (body->get_island_step() != _step) {
 
-			Body3DSW *island = NULL;
-			Constraint3DSW *constraint_island = NULL;
+			Body3DSW *island = nullptr;
+			Constraint3DSW *constraint_island = nullptr;
 			_populate_island(body, &island, &constraint_island);
 
 			island->set_island_list_next(island_list);
@@ -215,7 +215,7 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 			if (c->get_island_step() == _step)
 				continue;
 			c->set_island_step(_step);
-			c->set_island_next(NULL);
+			c->set_island_next(nullptr);
 			c->set_island_list_next(constraint_island_list);
 			constraint_island_list = c;
 		}

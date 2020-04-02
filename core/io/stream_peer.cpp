@@ -224,7 +224,7 @@ void StreamPeer::put_var(const Variant &p_variant, bool p_full_objects) {
 
 	int len = 0;
 	Vector<uint8_t> buf;
-	encode_variant(p_variant, NULL, len, p_full_objects);
+	encode_variant(p_variant, nullptr, len, p_full_objects);
 	buf.resize(len);
 	put_32(len);
 	encode_variant(p_variant, buf.ptrw(), len, p_full_objects);
@@ -368,7 +368,7 @@ Variant StreamPeer::get_var(bool p_allow_objects) {
 	ERR_FAIL_COND_V(err != OK, Variant());
 
 	Variant ret;
-	err = decode_variant(ret, var.ptr(), len, NULL, p_allow_objects);
+	err = decode_variant(ret, var.ptr(), len, nullptr, p_allow_objects);
 	ERR_FAIL_COND_V_MSG(err != OK, Variant(), "Error when trying to decode Variant.");
 
 	return ret;

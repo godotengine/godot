@@ -301,8 +301,8 @@ void Area3D::set_monitoring(bool p_enable) {
 		PhysicsServer3D::get_singleton()->area_set_monitor_callback(get_rid(), this, SceneStringNames::get_singleton()->_body_inout);
 		PhysicsServer3D::get_singleton()->area_set_area_monitor_callback(get_rid(), this, SceneStringNames::get_singleton()->_area_inout);
 	} else {
-		PhysicsServer3D::get_singleton()->area_set_monitor_callback(get_rid(), NULL, StringName());
-		PhysicsServer3D::get_singleton()->area_set_area_monitor_callback(get_rid(), NULL, StringName());
+		PhysicsServer3D::get_singleton()->area_set_monitor_callback(get_rid(), nullptr, StringName());
+		PhysicsServer3D::get_singleton()->area_set_area_monitor_callback(get_rid(), nullptr, StringName());
 		_clear_monitoring();
 	}
 }

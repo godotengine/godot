@@ -394,7 +394,7 @@ void BroadPhase2DHashGrid::remove(ID p_id) {
 CollisionObject2DSW *BroadPhase2DHashGrid::get_object(ID p_id) const {
 
 	const Map<ID, Element>::Element *E = element_map.find(p_id);
-	ERR_FAIL_COND_V(!E, NULL);
+	ERR_FAIL_COND_V(!E, nullptr);
 	return E->get().owner;
 }
 bool BroadPhase2DHashGrid::is_static(ID p_id) const {
@@ -646,7 +646,7 @@ BroadPhase2DHashGrid::BroadPhase2DHashGrid() {
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/large_object_surface_threshold_in_cells", PropertyInfo(Variant::INT, "physics/2d/large_object_surface_threshold_in_cells", PROPERTY_HINT_RANGE, "0,1024,1,or_greater"));
 
 	for (uint32_t i = 0; i < hash_table_size; i++)
-		hash_table[i] = NULL;
+		hash_table[i] = nullptr;
 	pass = 1;
 
 	current = 0;

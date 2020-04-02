@@ -77,15 +77,15 @@ private:
 	struct FaceConnect {
 		List<Face>::Element *left, *right;
 		FaceConnect() {
-			left = NULL;
-			right = NULL;
+			left = nullptr;
+			right = nullptr;
 		}
 	};
 	struct RetFaceConnect {
 		List<Geometry::MeshData::Face>::Element *left, *right;
 		RetFaceConnect() {
-			left = NULL;
-			right = NULL;
+			left = nullptr;
+			right = nullptr;
 		}
 	};
 

@@ -55,7 +55,7 @@
 
 #endif
 
-ShaderGLES2 *ShaderGLES2::active = NULL;
+ShaderGLES2 *ShaderGLES2::active = nullptr;
 
 //#define DEBUG_SHADER
 
@@ -103,10 +103,10 @@ bool ShaderGLES2::bind() {
 }
 
 void ShaderGLES2::unbind() {
-	version = NULL;
+	version = nullptr;
 	glUseProgram(0);
 	uniforms_dirty = true;
-	active = NULL;
+	active = nullptr;
 }
 
 static void _display_error_with_code(const String &p_error, const Vector<const char *> &p_code) {
@@ -196,19 +196,19 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 	CharString code_string2;
 	CharString code_globals;
 
-	CustomCode *cc = NULL;
+	CustomCode *cc = nullptr;
 
 	if (conditional_version.code_version > 0) {
 		cc = custom_code_map.getptr(conditional_version.code_version);
 
-		ERR_FAIL_COND_V(!cc, NULL);
+		ERR_FAIL_COND_V(!cc, nullptr);
 		v.code_version = cc->version;
 	}
 
 	// program
 
 	v.id = glCreateProgram();
-	ERR_FAIL_COND_V(v.id == 0, NULL);
+	ERR_FAIL_COND_V(v.id == 0, nullptr);
 
 	if (cc) {
 		for (int i = 0; i < cc->custom_defines.size(); i++) {
@@ -244,7 +244,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 #endif
 
 	v.vert_id = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(v.vert_id, strings.size(), &strings[0], NULL);
+	glShaderSource(v.vert_id, strings.size(), &strings[0], nullptr);
 	glCompileShader(v.vert_id);
 
 	GLint status;
@@ -281,7 +281,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 			v.id = 0;
 		}
 
-		ERR_FAIL_V(NULL);
+		ERR_FAIL_V(nullptr);
 	}
 
 	strings.resize(string_base_size);
@@ -320,7 +320,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 #endif
 
 	v.frag_id = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(v.frag_id, strings.size(), &strings[0], NULL);
+	glShaderSource(v.frag_id, strings.size(), &strings[0], nullptr);
 	glCompileShader(v.frag_id);
 
 	glGetShaderiv(v.frag_id, GL_COMPILE_STATUS, &status);
@@ -357,7 +357,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 			v.id = 0;
 		}
 
-		ERR_FAIL_V(NULL);
+		ERR_FAIL_V(nullptr);
 	}
 
 	glAttachShader(v.id, v.frag_id);
@@ -384,7 +384,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 			v.id = 0;
 
 			ERR_PRINT("No OpenGL program link log. What the frick?");
-			ERR_FAIL_V(NULL);
+			ERR_FAIL_V(nullptr);
 		}
 
 		if (iloglen == 0) {
@@ -407,7 +407,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 		glDeleteProgram(v.id);
 		v.id = 0;
 
-		ERR_FAIL_V(NULL);
+		ERR_FAIL_V(nullptr);
 	}
 
 	// get uniform locations
@@ -553,7 +553,7 @@ void ShaderGLES2::setup(
 }
 
 void ShaderGLES2::finish() {
-	const VersionKey *V = NULL;
+	const VersionKey *V = nullptr;
 
 	while ((V = version_map.next(V))) {
 		Version &v = version_map[*V];
@@ -565,7 +565,7 @@ void ShaderGLES2::finish() {
 }
 
 void ShaderGLES2::clear_caches() {
-	const VersionKey *V = NULL;
+	const VersionKey *V = nullptr;
 
 	while ((V = version_map.next(V))) {
 		Version &v = version_map[*V];
@@ -578,7 +578,7 @@ void ShaderGLES2::clear_caches() {
 	version_map.clear();
 
 	custom_code_map.clear();
-	version = NULL;
+	version = nullptr;
 	last_custom_code = 1;
 	uniforms_dirty = true;
 }
@@ -1093,7 +1093,7 @@ void ShaderGLES2::use_material(void *p_material) {
 }
 
 ShaderGLES2::ShaderGLES2() {
-	version = NULL;
+	version = nullptr;
 	last_custom_code = 1;
 	uniforms_dirty = true;
 }

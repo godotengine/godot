@@ -317,7 +317,7 @@ bool EditorHelpSearch::Runner::_phase_match_classes_init() {
 
 	iterator_doc = EditorHelp::get_doc_data()->class_list.front();
 	matches.clear();
-	matched_item = NULL;
+	matched_item = nullptr;
 
 	return true;
 }

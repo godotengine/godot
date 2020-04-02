@@ -635,7 +635,7 @@ void EditorAssetLibrary::_install_asset() {
 		EditorAssetLibraryItemDownload *d = Object::cast_to<EditorAssetLibraryItemDownload>(downloads_hb->get_child(i));
 		if (d && d->get_asset_id() == description->get_asset_id()) {
 
-			if (EditorNode::get_singleton() != NULL)
+			if (EditorNode::get_singleton() != nullptr)
 				EditorNode::get_singleton()->show_warning(TTR("Download for this asset is already in progress!"));
 			return;
 		}
@@ -1305,7 +1305,7 @@ void EditorAssetLibrary::_asset_file_selected(const String &p_file) {
 
 	if (asset_installer) {
 		memdelete(asset_installer);
-		asset_installer = NULL;
+		asset_installer = nullptr;
 	}
 
 	asset_installer = memnew(EditorAssetInstaller);
@@ -1500,7 +1500,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	error_tr->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	error_hb->add_child(error_tr);
 
-	description = NULL;
+	description = nullptr;
 
 	set_process(true);
 	set_process_unhandled_input(true);
@@ -1520,7 +1520,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	add_child(asset_open);
 	asset_open->connect("file_selected", callable_mp(this, &EditorAssetLibrary::_asset_file_selected));
 
-	asset_installer = NULL;
+	asset_installer = nullptr;
 }
 
 ///////

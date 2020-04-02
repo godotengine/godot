@@ -248,7 +248,7 @@ void GDNativeLibrary::_bind_methods() {
 }
 
 GDNative::GDNative() {
-	native_handle = NULL;
+	native_handle = nullptr;
 	initialized = false;
 }
 
@@ -338,7 +338,7 @@ bool GDNative::initialize() {
 
 	if (err || !library_init) {
 		OS::get_singleton()->close_dynamic_library(native_handle);
-		native_handle = NULL;
+		native_handle = nullptr;
 		ERR_PRINT("Failed to obtain " + library->get_symbol_prefix() + "gdnative_init symbol");
 		return false;
 	}
@@ -408,7 +408,7 @@ bool GDNative::terminate() {
 	Error error = get_symbol(library->get_symbol_prefix() + terminate_symbol, library_terminate);
 	if (error || !library_terminate) {
 		OS::get_singleton()->close_dynamic_library(native_handle);
-		native_handle = NULL;
+		native_handle = nullptr;
 		initialized = false;
 		return true;
 	}
@@ -426,7 +426,7 @@ bool GDNative::terminate() {
 	// GDNativeScriptLanguage::get_singleton()->initialized_libraries.erase(p_native_lib->path);
 
 	OS::get_singleton()->close_dynamic_library(native_handle);
-	native_handle = NULL;
+	native_handle = nullptr;
 
 	return true;
 }
@@ -466,7 +466,7 @@ Variant GDNative::call_native(StringName p_native_call_type, StringName p_proced
 			p_procedure_name,
 			procedure_handle);
 
-	if (err != OK || procedure_handle == NULL) {
+	if (err != OK || procedure_handle == nullptr) {
 		return Variant();
 	}
 
@@ -544,11 +544,11 @@ Error GDNativeLibraryResourceSaver::save(const String &p_path, const RES &p_reso
 }
 
 bool GDNativeLibraryResourceSaver::recognize(const RES &p_resource) const {
-	return Object::cast_to<GDNativeLibrary>(*p_resource) != NULL;
+	return Object::cast_to<GDNativeLibrary>(*p_resource) != nullptr;
 }
 
 void GDNativeLibraryResourceSaver::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
-	if (Object::cast_to<GDNativeLibrary>(*p_resource) != NULL) {
+	if (Object::cast_to<GDNativeLibrary>(*p_resource) != nullptr) {
 		p_extensions->push_back("gdnlib");
 	}
 }

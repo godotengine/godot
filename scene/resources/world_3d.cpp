@@ -365,7 +365,7 @@ World3D::World3D() {
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/default_angular_damp", PropertyInfo(Variant::FLOAT, "physics/3d/default_angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"));
 
 #ifdef _3D_DISABLED
-	indexer = NULL;
+	indexer = nullptr;
 #else
 	indexer = memnew(SpatialIndexer);
 #endif

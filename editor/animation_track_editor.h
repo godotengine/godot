@@ -379,7 +379,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _root_removed(Node *p_root);
 
-	PropertyInfo _find_hint_for_track(int p_idx, NodePath &r_base_path, Variant *r_current_val = NULL);
+	PropertyInfo _find_hint_for_track(int p_idx, NodePath &r_base_path, Variant *r_current_val = nullptr);
 
 	void _timeline_value_changed(double);
 

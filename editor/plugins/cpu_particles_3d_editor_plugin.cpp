@@ -35,7 +35,7 @@
 void CPUParticles3DEditor::_node_removed(Node *p_node) {
 
 	if (p_node == node) {
-		node = NULL;
+		node = nullptr;
 		hide();
 	}
 }
@@ -128,7 +128,7 @@ void CPUParticles3DEditorPlugin::make_visible(bool p_visible) {
 	} else {
 		particles_editor->particles_editor_hb->hide();
 		particles_editor->hide();
-		particles_editor->edit(NULL);
+		particles_editor->edit(nullptr);
 	}
 }
 

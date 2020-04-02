@@ -407,8 +407,8 @@ void Area2D::set_monitoring(bool p_enable) {
 		PhysicsServer2D::get_singleton()->area_set_area_monitor_callback(get_rid(), this, SceneStringNames::get_singleton()->_area_inout);
 
 	} else {
-		PhysicsServer2D::get_singleton()->area_set_monitor_callback(get_rid(), NULL, StringName());
-		PhysicsServer2D::get_singleton()->area_set_area_monitor_callback(get_rid(), NULL, StringName());
+		PhysicsServer2D::get_singleton()->area_set_monitor_callback(get_rid(), nullptr, StringName());
+		PhysicsServer2D::get_singleton()->area_set_area_monitor_callback(get_rid(), nullptr, StringName());
 		_clear_monitoring();
 	}
 }

@@ -112,7 +112,7 @@ void CollisionPolygon3D::_notification(int p_what) {
 				parent->remove_shape_owner(owner_id);
 			}
 			owner_id = 0;
-			parent = NULL;
+			parent = nullptr;
 		} break;
 	}
 }
@@ -201,7 +201,7 @@ CollisionPolygon3D::CollisionPolygon3D() {
 	aabb = AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 	depth = 1.0;
 	set_notify_local_transform(true);
-	parent = NULL;
+	parent = nullptr;
 	owner_id = 0;
 	disabled = false;
 }

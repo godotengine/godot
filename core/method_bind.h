@@ -382,7 +382,7 @@ public:
 	virtual bool is_vararg() const { return true; }
 
 	MethodBindVarArg() {
-		call_method = NULL;
+		call_method = nullptr;
 		_set_returns(true);
 	}
 };

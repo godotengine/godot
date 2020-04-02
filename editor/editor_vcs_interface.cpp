@@ -30,7 +30,7 @@
 
 #include "editor_vcs_interface.h"
 
-EditorVCSInterface *EditorVCSInterface::singleton = NULL;
+EditorVCSInterface *EditorVCSInterface::singleton = nullptr;
 
 void EditorVCSInterface::_bind_methods() {
 

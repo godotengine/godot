@@ -193,7 +193,7 @@ void ScriptEditorQuickOpen::_update_search() {
 		}
 	}
 
-	get_ok()->set_disabled(root->get_children() == NULL);
+	get_ok()->set_disabled(root->get_children() == nullptr);
 }
 
 void ScriptEditorQuickOpen::_confirmed() {
@@ -252,7 +252,7 @@ ScriptEditorQuickOpen::ScriptEditorQuickOpen() {
 
 /////////////////////////////////
 
-ScriptEditor *ScriptEditor::script_editor = NULL;
+ScriptEditor *ScriptEditor::script_editor = nullptr;
 
 /*** SCRIPT EDITOR ******/
 
@@ -321,7 +321,7 @@ void ScriptEditor::_set_execution(REF p_script, int p_line) {
 			if (!se)
 				continue;
 
-			if ((script != NULL && se->get_edited_resource() == p_script) || se->get_edited_resource()->get_path() == script->get_path()) {
+			if ((script != nullptr && se->get_edited_resource() == p_script) || se->get_edited_resource()->get_path() == script->get_path()) {
 				se->set_executing_line(p_line);
 			}
 		}
@@ -337,7 +337,7 @@ void ScriptEditor::_clear_execution(REF p_script) {
 			if (!se)
 				continue;
 
-			if ((script != NULL && se->get_edited_resource() == p_script) || se->get_edited_resource()->get_path() == script->get_path()) {
+			if ((script != nullptr && se->get_edited_resource() == p_script) || se->get_edited_resource()->get_path() == script->get_path()) {
 				se->clear_executing_line();
 			}
 		}
@@ -348,7 +348,7 @@ ScriptEditorBase *ScriptEditor::_get_current_editor() const {
 
 	int selected = tab_container->get_current_tab();
 	if (selected < 0 || selected >= tab_container->get_child_count())
-		return NULL;
+		return nullptr;
 
 	return Object::cast_to<ScriptEditorBase>(tab_container->get_child(selected));
 }
@@ -434,7 +434,7 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 			Object::cast_to<ScriptEditorBase>(c)->ensure_focus();
 
 		Ref<Script> script = Object::cast_to<ScriptEditorBase>(c)->get_edited_resource();
-		if (script != NULL) {
+		if (script != nullptr) {
 			notify_script_changed(script);
 		}
 
@@ -575,7 +575,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		}
 
 		Ref<Script> script = current->get_edited_resource();
-		if (script != NULL) {
+		if (script != nullptr) {
 			previous_scripts.push_back(script->get_path());
 			notify_script_close(script);
 		}
@@ -737,7 +737,7 @@ void ScriptEditor::_resave_scripts(const String &p_str) {
 		}
 
 		Ref<TextFile> text_file = script;
-		if (text_file != NULL) {
+		if (text_file != nullptr) {
 			se->apply_code();
 			_save_text_file(text_file, text_file->get_path());
 			break;
@@ -775,7 +775,7 @@ void ScriptEditor::_reload_scripts() {
 		}
 
 		Ref<Script> script = edited_res;
-		if (script != NULL) {
+		if (script != nullptr) {
 			Ref<Script> rel_script = ResourceLoader::load(script->get_path(), script->get_class(), true);
 			ERR_CONTINUE(!rel_script.is_valid());
 			script->set_source_code(rel_script->get_source_code());
@@ -784,7 +784,7 @@ void ScriptEditor::_reload_scripts() {
 		}
 
 		Ref<TextFile> text_file = edited_res;
-		if (text_file != NULL) {
+		if (text_file != nullptr) {
 			Error err;
 			Ref<TextFile> rel_text_file = _load_text_file(text_file->get_path(), &err);
 			ERR_CONTINUE(!rel_text_file.is_valid());
@@ -961,9 +961,9 @@ Ref<Script> ScriptEditor::_get_current_script() {
 
 	if (current) {
 		Ref<Script> script = current->get_edited_resource();
-		return script != NULL ? script : NULL;
+		return script != nullptr ? script : nullptr;
 	} else {
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -1145,7 +1145,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				}
 
 				Ref<TextFile> text_file = current->get_edited_resource();
-				if (text_file != NULL) {
+				if (text_file != nullptr) {
 					current->apply_code();
 					_save_text_file(text_file, text_file->get_path());
 					break;
@@ -1169,7 +1169,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				}
 
 				Ref<TextFile> text_file = current->get_edited_resource();
-				if (text_file != NULL) {
+				if (text_file != nullptr) {
 					file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 					file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 					file_dialog_option = FILE_SAVE_AS;
@@ -1198,7 +1198,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			case FILE_RUN: {
 
 				Ref<Script> scr = current->get_edited_resource();
-				if (scr == NULL || scr.is_null()) {
+				if (scr == nullptr || scr.is_null()) {
 					EditorNode::get_singleton()->show_warning(TTR("Can't obtain the script for running."));
 					break;
 				}
@@ -1467,7 +1467,7 @@ void ScriptEditor::close_builtin_scripts_from_scene(const String &p_scene) {
 		if (se) {
 
 			Ref<Script> script = se->get_edited_resource();
-			if (script == NULL || !script.is_valid())
+			if (script == nullptr || !script.is_valid())
 				continue;
 
 			if (script->get_path().find("::") != -1 && script->get_path().begins_with(p_scene)) { //is an internal script and belongs to scene being closed
@@ -1500,7 +1500,7 @@ void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
 			continue;
 
 		Ref<Script> script = se->get_edited_resource();
-		if (script == NULL) {
+		if (script == nullptr) {
 			continue;
 		}
 
@@ -1992,7 +1992,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 
 	const bool should_open = open_dominant || !EditorNode::get_singleton()->is_changing_scene();
 
-	if (script != NULL && script->get_language()->overrides_external_editor()) {
+	if (script != nullptr && script->get_language()->overrides_external_editor()) {
 		if (should_open) {
 			Error err = script->get_language()->open_in_external_editor(script, p_line >= 0 ? p_line : 0, p_col);
 			if (err != OK)
@@ -2070,7 +2070,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 		if (!se)
 			continue;
 
-		if ((script != NULL && se->get_edited_resource() == p_resource) || se->get_edited_resource()->get_path() == p_resource->get_path()) {
+		if ((script != nullptr && se->get_edited_resource() == p_resource) || se->get_edited_resource()->get_path() == p_resource->get_path()) {
 
 			if (should_open) {
 				if (tab_container->get_current_tab() != i) {
@@ -2092,7 +2092,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 
 	// doesn't have it, make a new one
 
-	ScriptEditorBase *se = NULL;
+	ScriptEditorBase *se = nullptr;
 
 	for (int i = script_editor_func_count - 1; i >= 0; i--) {
 		se = script_editor_funcs[i](p_resource);
@@ -2107,7 +2107,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 			SyntaxHighlighter *highlighter = syntax_highlighters_funcs[i]();
 			se->add_syntax_highlighter(highlighter);
 
-			if (script != NULL && !highlighter_set) {
+			if (script != nullptr && !highlighter_set) {
 				List<String> languages = highlighter->get_supported_languages();
 				if (languages.find(script->get_language()->get_name())) {
 					se->set_syntax_highlighter(highlighter);
@@ -2188,7 +2188,7 @@ void ScriptEditor::save_all_scripts() {
 
 		if (edited_res->get_path() != "" && edited_res->get_path().find("local://") == -1 && edited_res->get_path().find("::") == -1) {
 			Ref<TextFile> text_file = edited_res;
-			if (text_file != NULL) {
+			if (text_file != nullptr) {
 				_save_text_file(text_file, text_file->get_path());
 				continue;
 			}
@@ -2574,7 +2574,7 @@ void ScriptEditor::_make_script_list_context_menu() {
 	context_menu->add_separator();
 	if (se) {
 		Ref<Script> scr = se->get_edited_resource();
-		if (scr != NULL) {
+		if (scr != nullptr) {
 			context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/reload_script_soft"), FILE_TOOL_RELOAD_SOFT);
 			if (!scr.is_null() && scr->is_tool()) {
 				context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/run_file"), FILE_RUN);
@@ -2831,7 +2831,7 @@ void ScriptEditor::_update_history_pos(int p_new_pos) {
 		Object::cast_to<ScriptEditorBase>(n)->ensure_focus();
 
 		Ref<Script> script = Object::cast_to<ScriptEditorBase>(n)->get_edited_resource();
-		if (script != NULL) {
+		if (script != nullptr) {
 			notify_script_changed(script);
 		}
 	}
@@ -2872,7 +2872,7 @@ Vector<Ref<Script>> ScriptEditor::get_open_scripts() const {
 			continue;
 
 		Ref<Script> script = se->get_edited_resource();
-		if (script != NULL) {
+		if (script != nullptr) {
 			out_scripts.push_back(script);
 		}
 	}

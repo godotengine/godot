@@ -194,7 +194,7 @@ void *RenderingServerScene::_instance_pair(void *p_self, OctreeElementID, Instan
 		return gi_probe->lights.insert(A);
 	}
 
-	return NULL;
+	return nullptr;
 }
 void RenderingServerScene::_instance_unpair(void *p_self, OctreeElementID, Instance *p_A, int, OctreeElementID, Instance *p_B, int, void *udata) {
 
@@ -375,7 +375,7 @@ void RenderingServerScene::instance_set_base(RID p_instance, RID p_base) {
 #endif
 				if (instance->scenario && light->D) {
 					instance->scenario->directional_lights.erase(light->D);
-					light->D = NULL;
+					light->D = nullptr;
 				}
 				RSG::scene_render->free(light->instance);
 			} break;
@@ -416,7 +416,7 @@ void RenderingServerScene::instance_set_base(RID p_instance, RID p_base) {
 					Instance *capture = (Instance *)instance->lightmap_capture;
 					InstanceLightmapCaptureData *lightmap_capture = static_cast<InstanceLightmapCaptureData *>(capture->base_data);
 					lightmap_capture->users.erase(instance);
-					instance->lightmap_capture = NULL;
+					instance->lightmap_capture = nullptr;
 					instance->lightmap = RID();
 				}
 
@@ -429,7 +429,7 @@ void RenderingServerScene::instance_set_base(RID p_instance, RID p_base) {
 
 		if (instance->base_data) {
 			memdelete(instance->base_data);
-			instance->base_data = NULL;
+			instance->base_data = nullptr;
 		}
 
 		instance->blend_values.clear();
@@ -533,7 +533,7 @@ void RenderingServerScene::instance_set_scenario(RID p_instance, RID p_scenario)
 #endif
 				if (light->D) {
 					instance->scenario->directional_lights.erase(light->D);
-					light->D = NULL;
+					light->D = nullptr;
 				}
 			} break;
 			case RS::INSTANCE_REFLECTION_PROBE: {
@@ -564,7 +564,7 @@ void RenderingServerScene::instance_set_scenario(RID p_instance, RID p_scenario)
 			}
 		}
 
-		instance->scenario = NULL;
+		instance->scenario = nullptr;
 	}
 
 	if (p_scenario.is_valid()) {
@@ -720,7 +720,7 @@ void RenderingServerScene::instance_set_use_lightmap(RID p_instance, RID p_light
 		InstanceLightmapCaptureData *lightmap_capture = static_cast<InstanceLightmapCaptureData *>(((Instance *)instance->lightmap_capture)->base_data);
 		lightmap_capture->users.erase(instance);
 		instance->lightmap = RID();
-		instance->lightmap_capture = NULL;
+		instance->lightmap_capture = nullptr;
 	}
 
 	if (p_lightmap_instance.is_valid()) {
@@ -744,16 +744,16 @@ void RenderingServerScene::instance_set_custom_aabb(RID p_instance, AABB p_aabb)
 	if (p_aabb != AABB()) {
 
 		// Set custom AABB
-		if (instance->custom_aabb == NULL)
+		if (instance->custom_aabb == nullptr)
 			instance->custom_aabb = memnew(AABB);
 		*instance->custom_aabb = p_aabb;
 
 	} else {
 
 		// Clear custom AABB
-		if (instance->custom_aabb != NULL) {
+		if (instance->custom_aabb != nullptr) {
 			memdelete(instance->custom_aabb);
-			instance->custom_aabb = NULL;
+			instance->custom_aabb = nullptr;
 		}
 	}
 
@@ -2259,7 +2259,7 @@ void RenderingServerScene::render_empty_scene(RID p_render_buffers, RID p_scenar
 	else
 		environment = scenario->fallback_environment;
 	RENDER_TIMESTAMP("Render Empty Scene ");
-	RSG::scene_render->render_scene(p_render_buffers, Transform(), CameraMatrix(), true, NULL, 0, NULL, 0, NULL, 0, NULL, 0, environment, RID(), p_shadow_atlas, scenario->reflection_atlas, RID(), 0);
+	RSG::scene_render->render_scene(p_render_buffers, Transform(), CameraMatrix(), true, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, 0, environment, RID(), p_shadow_atlas, scenario->reflection_atlas, RID(), 0);
 #endif
 }
 
@@ -2827,7 +2827,7 @@ bool RenderingServerScene::free(RID p_rid) {
 	return true;
 }
 
-RenderingServerScene *RenderingServerScene::singleton = NULL;
+RenderingServerScene *RenderingServerScene::singleton = nullptr;
 
 RenderingServerScene::RenderingServerScene() {
 

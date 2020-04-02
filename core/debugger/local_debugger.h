@@ -40,7 +40,7 @@ class LocalDebugger : public EngineDebugger {
 private:
 	struct ScriptsProfiler;
 
-	ScriptsProfiler *scripts_profiler = NULL;
+	ScriptsProfiler *scripts_profiler = nullptr;
 
 	String target_function;
 	Map<String, String> options;

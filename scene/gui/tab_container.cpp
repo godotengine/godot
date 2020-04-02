@@ -602,7 +602,7 @@ Control *TabContainer::get_tab_control(int p_idx) const {
 	if (p_idx >= 0 && p_idx < tabs.size())
 		return tabs[p_idx];
 	else
-		return NULL;
+		return nullptr;
 }
 
 Control *TabContainer::get_current_tab_control() const {
@@ -611,7 +611,7 @@ Control *TabContainer::get_current_tab_control() const {
 	if (current >= 0 && current < tabs.size())
 		return tabs[current];
 	else
-		return NULL;
+		return nullptr;
 }
 
 void TabContainer::remove_child_notify(Node *p_child) {
@@ -1041,7 +1041,7 @@ TabContainer::TabContainer() {
 	previous = 0;
 	align = ALIGN_CENTER;
 	tabs_visible = true;
-	popup = NULL;
+	popup = nullptr;
 	drag_to_rearrange_enabled = false;
 	tabs_rearrange_group = -1;
 	use_hidden_tabs_for_min_size = false;

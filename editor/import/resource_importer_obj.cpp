@@ -428,7 +428,7 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, in
 		if (r_err) {
 			*r_err = err;
 		}
-		return NULL;
+		return nullptr;
 	}
 
 	Node3D *scene = memnew(Node3D);
@@ -502,7 +502,7 @@ Error ResourceImporterOBJ::import(const String &p_source_file, const String &p_s
 
 	List<Ref<Mesh>> meshes;
 
-	Error err = _parse_obj(p_source_file, meshes, true, p_options["generate_tangents"], p_options["optimize_mesh"], p_options["scale_mesh"], p_options["offset_mesh"], NULL);
+	Error err = _parse_obj(p_source_file, meshes, true, p_options["generate_tangents"], p_options["optimize_mesh"], p_options["scale_mesh"], p_options["offset_mesh"], nullptr);
 
 	ERR_FAIL_COND_V(err != OK, err);
 	ERR_FAIL_COND_V(meshes.size() != 1, ERR_BUG);

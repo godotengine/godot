@@ -327,7 +327,7 @@ bool MobileVRInterface::initialize() {
 void MobileVRInterface::uninitialize() {
 	if (initialized) {
 		ARVRServer *arvr_server = ARVRServer::get_singleton();
-		if (arvr_server != NULL) {
+		if (arvr_server != nullptr) {
 			// no longer our primary interface
 			arvr_server->clear_primary_interface_if(this);
 		}

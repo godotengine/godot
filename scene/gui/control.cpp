@@ -455,13 +455,13 @@ void Control::remove_child_notify(Node *p_child) {
 	Control *child_c = Object::cast_to<Control>(p_child);
 
 	if (child_c && (child_c->data.theme_owner || child_c->data.theme_owner_window) && child_c->data.theme.is_null()) {
-		_propagate_theme_changed(child_c, NULL, NULL);
+		_propagate_theme_changed(child_c, nullptr, nullptr);
 	}
 
 	Window *child_w = Object::cast_to<Window>(p_child);
 
 	if (child_w && (child_w->theme_owner || child_w->theme_owner_window) && child_w->theme.is_null()) {
-		_propagate_theme_changed(child_w, NULL, NULL);
+		_propagate_theme_changed(child_w, nullptr, nullptr);
 	}
 }
 
@@ -495,7 +495,7 @@ void Control::_notification(int p_notification) {
 			data.parent = Object::cast_to<Control>(get_parent());
 
 			Node *parent = this; //meh
-			Control *parent_control = NULL;
+			Control *parent_control = nullptr;
 			bool subwindow = false;
 
 			while (parent) {
@@ -548,7 +548,7 @@ void Control::_notification(int p_notification) {
 			if (data.parent_canvas_item) {
 
 				data.parent_canvas_item->disconnect("item_rect_changed", callable_mp(this, &Control::_size_changed));
-				data.parent_canvas_item = NULL;
+				data.parent_canvas_item = nullptr;
 			} else if (!is_set_as_toplevel()) {
 				//disconnect viewport
 				get_viewport()->disconnect("size_changed", callable_mp(this, &Control::_size_changed));
@@ -556,11 +556,11 @@ void Control::_notification(int p_notification) {
 
 			if (data.RI) {
 				get_viewport()->_gui_remove_root_control(data.RI);
-				data.RI = NULL;
+				data.RI = nullptr;
 			}
 
-			data.parent = NULL;
-			data.parent_canvas_item = NULL;
+			data.parent = nullptr;
+			data.parent_canvas_item = nullptr;
 			/*
 			if (data.theme_owner && data.theme.is_null()) {
 				data.theme_owner=NULL;
@@ -621,7 +621,7 @@ void Control::_notification(int p_notification) {
 
 			if (!is_visible_in_tree()) {
 
-				if (get_viewport() != NULL)
+				if (get_viewport() != nullptr)
 					get_viewport()->_gui_hid_control(this);
 
 				//remove key focus
@@ -753,7 +753,7 @@ Size2 Control::get_minimum_size() const {
 	if (si) {
 
 		Callable::CallError ce;
-		Variant s = si->call(SceneStringNames::get_singleton()->_get_minimum_size, NULL, 0, ce);
+		Variant s = si->call(SceneStringNames::get_singleton()->_get_minimum_size, nullptr, 0, ce);
 		if (ce.error == Callable::CallError::CALL_OK)
 			return s;
 	}
@@ -799,8 +799,8 @@ bool Control::_find_theme_item(Control *p_theme_owner, Window *p_theme_owner_win
 				theme_owner_window = parent_w->theme_owner_window;
 			} else {
 
-				theme_owner = NULL;
-				theme_owner_window = NULL;
+				theme_owner = nullptr;
+				theme_owner_window = nullptr;
 			}
 		}
 	}
@@ -843,8 +843,8 @@ bool Control::_has_theme_item(Control *p_theme_owner, Window *p_theme_owner_wind
 				theme_owner_window = parent_w->theme_owner_window;
 			} else {
 
-				theme_owner = NULL;
-				theme_owner_window = NULL;
+				theme_owner = nullptr;
+				theme_owner_window = nullptr;
 			}
 		}
 	}
@@ -1034,37 +1034,37 @@ int Control::get_constants(Control *p_theme_owner, Window *p_theme_owner_window,
 bool Control::has_theme_icon_override(const StringName &p_name) const {
 
 	const Ref<Texture2D> *tex = data.icon_override.getptr(p_name);
-	return tex != NULL;
+	return tex != nullptr;
 }
 
 bool Control::has_theme_shader_override(const StringName &p_name) const {
 
 	const Ref<Shader> *sdr = data.shader_override.getptr(p_name);
-	return sdr != NULL;
+	return sdr != nullptr;
 }
 
 bool Control::has_theme_stylebox_override(const StringName &p_name) const {
 
 	const Ref<StyleBox> *style = data.style_override.getptr(p_name);
-	return style != NULL;
+	return style != nullptr;
 }
 
 bool Control::has_theme_font_override(const StringName &p_name) const {
 
 	const Ref<Font> *font = data.font_override.getptr(p_name);
-	return font != NULL;
+	return font != nullptr;
 }
 
 bool Control::has_theme_color_override(const StringName &p_name) const {
 
 	const Color *color = data.color_override.getptr(p_name);
-	return color != NULL;
+	return color != nullptr;
 }
 
 bool Control::has_theme_constant_override(const StringName &p_name) const {
 
 	const int *constant = data.constant_override.getptr(p_name);
-	return constant != NULL;
+	return constant != nullptr;
 }
 
 bool Control::has_theme_icon(const StringName &p_name, const StringName &p_type) const {
@@ -1890,17 +1890,17 @@ void Control::set_focus_mode(FocusMode p_focus_mode) {
 static Control *_next_control(Control *p_from) {
 
 	if (p_from->is_set_as_toplevel())
-		return NULL; // can't go above
+		return nullptr; // can't go above
 
 	Control *parent = Object::cast_to<Control>(p_from->get_parent());
 
 	if (!parent) {
 
-		return NULL;
+		return nullptr;
 	}
 
 	int next = p_from->get_position_in_parent();
-	ERR_FAIL_INDEX_V(next, parent->get_child_count(), NULL);
+	ERR_FAIL_INDEX_V(next, parent->get_child_count(), nullptr);
 	for (int i = (next + 1); i < parent->get_child_count(); i++) {
 
 		Control *c = Object::cast_to<Control>(parent->get_child(i));
@@ -1927,9 +1927,9 @@ Control *Control::find_next_valid_focus() const {
 			Control *c;
 			if (n) {
 				c = Object::cast_to<Control>(n);
-				ERR_FAIL_COND_V_MSG(!c, NULL, "Next focus node is not a control: " + n->get_name() + ".");
+				ERR_FAIL_COND_V_MSG(!c, nullptr, "Next focus node is not a control: " + n->get_name() + ".");
 			} else {
-				return NULL;
+				return nullptr;
 			}
 			if (c->is_visible() && c->get_focus_mode() != FOCUS_NONE)
 				return c;
@@ -1937,7 +1937,7 @@ Control *Control::find_next_valid_focus() const {
 
 		// find next child
 
-		Control *next_child = NULL;
+		Control *next_child = nullptr;
 
 		for (int i = 0; i < from->get_child_count(); i++) {
 
@@ -1974,7 +1974,7 @@ Control *Control::find_next_valid_focus() const {
 		}
 
 		if (next_child == this) // no next control->
-			return (get_focus_mode() == FOCUS_ALL) ? next_child : NULL;
+			return (get_focus_mode() == FOCUS_ALL) ? next_child : nullptr;
 		if (next_child) {
 			if (next_child->get_focus_mode() == FOCUS_ALL)
 				return next_child;
@@ -1983,12 +1983,12 @@ Control *Control::find_next_valid_focus() const {
 			break;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 static Control *_prev_control(Control *p_from) {
 
-	Control *child = NULL;
+	Control *child = nullptr;
 	for (int i = p_from->get_child_count() - 1; i >= 0; i--) {
 
 		Control *c = Object::cast_to<Control>(p_from->get_child(i));
@@ -2018,9 +2018,9 @@ Control *Control::find_prev_valid_focus() const {
 			Control *c;
 			if (n) {
 				c = Object::cast_to<Control>(n);
-				ERR_FAIL_COND_V_MSG(!c, NULL, "Previous focus node is not a control: " + n->get_name() + ".");
+				ERR_FAIL_COND_V_MSG(!c, nullptr, "Previous focus node is not a control: " + n->get_name() + ".");
 			} else {
-				return NULL;
+				return nullptr;
 			}
 			if (c->is_visible() && c->get_focus_mode() != FOCUS_NONE)
 				return c;
@@ -2028,7 +2028,7 @@ Control *Control::find_prev_valid_focus() const {
 
 		// find prev child
 
-		Control *prev_child = NULL;
+		Control *prev_child = nullptr;
 
 		if (from->is_set_as_toplevel() || !Object::cast_to<Control>(from->get_parent())) {
 
@@ -2060,7 +2060,7 @@ Control *Control::find_prev_valid_focus() const {
 		}
 
 		if (prev_child == this) // no prev control->
-			return (get_focus_mode() == FOCUS_ALL) ? prev_child : NULL;
+			return (get_focus_mode() == FOCUS_ALL) ? prev_child : nullptr;
 
 		if (prev_child->get_focus_mode() == FOCUS_ALL)
 			return prev_child;
@@ -2068,7 +2068,7 @@ Control *Control::find_prev_valid_focus() const {
 		from = prev_child;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 Control::FocusMode Control::get_focus_mode() const {
@@ -2221,7 +2221,7 @@ Control *Control::make_custom_tooltip(const String &p_text) const {
 	if (get_script_instance()) {
 		return const_cast<Control *>(this)->call("_make_custom_tooltip", p_text);
 	}
-	return NULL;
+	return nullptr;
 }
 
 void Control::set_default_cursor_shape(CursorShape p_shape) {
@@ -2288,19 +2288,19 @@ NodePath Control::get_focus_previous() const {
 
 Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
 
-	ERR_FAIL_INDEX_V((int)p_margin, 4, NULL);
+	ERR_FAIL_INDEX_V((int)p_margin, 4, nullptr);
 
 	if (p_count >= MAX_NEIGHBOUR_SEARCH_COUNT)
-		return NULL;
+		return nullptr;
 	if (!data.focus_neighbour[p_margin].is_empty()) {
 
-		Control *c = NULL;
+		Control *c = nullptr;
 		Node *n = get_node(data.focus_neighbour[p_margin]);
 		if (n) {
 			c = Object::cast_to<Control>(n);
-			ERR_FAIL_COND_V_MSG(!c, NULL, "Neighbor focus node is not a control: " + n->get_name() + ".");
+			ERR_FAIL_COND_V_MSG(!c, nullptr, "Neighbor focus node is not a control: " + n->get_name() + ".");
 		} else {
-			return NULL;
+			return nullptr;
 		}
 		bool valid = true;
 		if (!c->is_visible())
@@ -2315,7 +2315,7 @@ Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
 	}
 
 	float dist = 1e7;
-	Control *result = NULL;
+	Control *result = nullptr;
 
 	Point2 points[4];
 
@@ -2357,7 +2357,7 @@ Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
 	}
 
 	if (!base)
-		return NULL;
+		return nullptr;
 
 	_window_find_focus_neighbour(vdir, base, points, maxd, dist, &result);
 
@@ -2515,7 +2515,7 @@ Control::MouseFilter Control::get_mouse_filter() const {
 
 Control *Control::get_focus_owner() const {
 
-	ERR_FAIL_COND_V(!is_inside_tree(), NULL);
+	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
 	return get_viewport()->_gui_get_focus_owner();
 }
 
@@ -2991,19 +2991,19 @@ void Control::_bind_methods() {
 }
 Control::Control() {
 
-	data.parent = NULL;
+	data.parent = nullptr;
 
 	data.mouse_filter = MOUSE_FILTER_STOP;
 
-	data.RI = NULL;
-	data.theme_owner = NULL;
-	data.theme_owner_window = NULL;
+	data.RI = nullptr;
+	data.theme_owner = nullptr;
+	data.theme_owner_window = nullptr;
 	data.default_cursor = CURSOR_ARROW;
 	data.h_size_flags = SIZE_FILL;
 	data.v_size_flags = SIZE_FILL;
 	data.expand = 1;
 	data.rotation = 0;
-	data.parent_canvas_item = NULL;
+	data.parent_canvas_item = nullptr;
 	data.scale = Vector2(1, 1);
 
 	data.block_minimum_size_adjust = false;

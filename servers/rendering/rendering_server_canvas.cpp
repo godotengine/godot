@@ -43,14 +43,14 @@ void RenderingServerCanvas::_render_canvas_item_tree(RID p_to_render_target, Can
 	memset(z_last_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
 
 	for (int i = 0; i < p_child_item_count; i++) {
-		_cull_canvas_item(p_child_items[i].item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, NULL, NULL);
+		_cull_canvas_item(p_child_items[i].item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, nullptr, nullptr);
 	}
 	if (p_canvas_item) {
-		_cull_canvas_item(p_canvas_item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, NULL, NULL);
+		_cull_canvas_item(p_canvas_item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, nullptr, nullptr);
 	}
 
-	RasterizerCanvas::Item *list = NULL;
-	RasterizerCanvas::Item *list_end = NULL;
+	RasterizerCanvas::Item *list = nullptr;
+	RasterizerCanvas::Item *list_end = nullptr;
 
 	for (int i = 0; i < z_range; i++) {
 		if (!z_list[i])
@@ -78,7 +78,7 @@ void _collect_ysort_children(RenderingServerCanvas::Item *p_canvas_item, Transfo
 				r_items[r_index] = child_items[i];
 				child_items[i]->ysort_xform = p_transform;
 				child_items[i]->ysort_pos = p_transform.xform(child_items[i]->xform.elements[2]);
-				child_items[i]->material_owner = child_items[i]->use_parent_material ? p_material_owner : NULL;
+				child_items[i]->material_owner = child_items[i]->use_parent_material ? p_material_owner : nullptr;
 			}
 
 			r_index++;
@@ -92,7 +92,7 @@ void _collect_ysort_children(RenderingServerCanvas::Item *p_canvas_item, Transfo
 void _mark_ysort_dirty(RenderingServerCanvas::Item *ysort_owner, RID_PtrOwner<RenderingServerCanvas::Item> &canvas_item_owner) {
 	do {
 		ysort_owner->ysort_children_count = -1;
-		ysort_owner = canvas_item_owner.owns(ysort_owner->parent) ? canvas_item_owner.getornull(ysort_owner->parent) : NULL;
+		ysort_owner = canvas_item_owner.owns(ysort_owner->parent) ? canvas_item_owner.getornull(ysort_owner->parent) : nullptr;
 	} while (ysort_owner && ysort_owner->sort_y);
 }
 
@@ -118,7 +118,7 @@ void RenderingServerCanvas::_cull_canvas_item(Item *p_canvas_item, const Transfo
 		ci->material_owner = p_material_owner;
 	else {
 		p_material_owner = ci;
-		ci->material_owner = NULL;
+		ci->material_owner = nullptr;
 	}
 
 	Color modulate(ci->modulate.r * p_modulate.r, ci->modulate.g * p_modulate.g, ci->modulate.b * p_modulate.b, ci->modulate.a * p_modulate.a);
@@ -130,7 +130,7 @@ void RenderingServerCanvas::_cull_canvas_item(Item *p_canvas_item, const Transfo
 	Item **child_items = ci->child_items.ptrw();
 
 	if (ci->clip) {
-		if (p_canvas_clip != NULL) {
+		if (p_canvas_clip != nullptr) {
 			ci->final_clip_rect = p_canvas_clip->final_clip_rect.clip(global_rect);
 		} else {
 			ci->final_clip_rect = global_rect;
@@ -145,7 +145,7 @@ void RenderingServerCanvas::_cull_canvas_item(Item *p_canvas_item, const Transfo
 
 		if (ci->ysort_children_count == -1) {
 			ci->ysort_children_count = 0;
-			_collect_ysort_children(ci, Transform2D(), p_material_owner, NULL, ci->ysort_children_count);
+			_collect_ysort_children(ci, Transform2D(), p_material_owner, nullptr, ci->ysort_children_count);
 		}
 
 		child_item_count = ci->ysort_children_count;
@@ -183,7 +183,7 @@ void RenderingServerCanvas::_cull_canvas_item(Item *p_canvas_item, const Transfo
 		RenderingServerRaster::redraw_request();
 	}
 
-	if ((ci->commands != NULL && p_clip_rect.intersects(global_rect, true)) || ci->vp_render || ci->copy_back_buffer) {
+	if ((ci->commands != nullptr && p_clip_rect.intersects(global_rect, true)) || ci->vp_render || ci->copy_back_buffer) {
 		//something to draw?
 		ci->final_transform = xform;
 		ci->final_modulate = Color(modulate.r * ci->self_modulate.r, modulate.g * ci->self_modulate.g, modulate.b * ci->self_modulate.b, modulate.a * ci->self_modulate.a);
@@ -204,7 +204,7 @@ void RenderingServerCanvas::_cull_canvas_item(Item *p_canvas_item, const Transfo
 
 		ci->z_final = p_z;
 
-		ci->next = NULL;
+		ci->next = nullptr;
 	}
 
 	for (int i = 0; i < child_item_count; i++) {
@@ -265,30 +265,30 @@ void RenderingServerCanvas::render_canvas(RID p_render_target, Canvas *p_canvas,
 
 	if (!has_mirror) {
 
-		_render_canvas_item_tree(p_render_target, ci, l, NULL, p_transform, p_clip_rect, p_canvas->modulate, p_lights);
+		_render_canvas_item_tree(p_render_target, ci, l, nullptr, p_transform, p_clip_rect, p_canvas->modulate, p_lights);
 
 	} else {
 		//used for parallaxlayer mirroring
 		for (int i = 0; i < l; i++) {
 
 			const Canvas::ChildItem &ci2 = p_canvas->child_items[i];
-			_render_canvas_item_tree(p_render_target, NULL, 0, ci2.item, p_transform, p_clip_rect, p_canvas->modulate, p_lights);
+			_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, p_transform, p_clip_rect, p_canvas->modulate, p_lights);
 
 			//mirroring (useful for scrolling backgrounds)
 			if (ci2.mirror.x != 0) {
 
 				Transform2D xform2 = p_transform * Transform2D(0, Vector2(ci2.mirror.x, 0));
-				_render_canvas_item_tree(p_render_target, NULL, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
+				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
 			}
 			if (ci2.mirror.y != 0) {
 
 				Transform2D xform2 = p_transform * Transform2D(0, Vector2(0, ci2.mirror.y));
-				_render_canvas_item_tree(p_render_target, NULL, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
+				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
 			}
 			if (ci2.mirror.y != 0 && ci2.mirror.x != 0) {
 
 				Transform2D xform2 = p_transform * Transform2D(0, ci2.mirror);
-				_render_canvas_item_tree(p_render_target, NULL, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
+				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
 			}
 		}
 	}
@@ -946,12 +946,12 @@ void RenderingServerCanvas::canvas_item_set_copy_to_backbuffer(RID p_item, bool 
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
-	if (bool(canvas_item->copy_back_buffer != NULL) != p_enable) {
+	if (bool(canvas_item->copy_back_buffer != nullptr) != p_enable) {
 		if (p_enable) {
 			canvas_item->copy_back_buffer = memnew(RasterizerCanvas::Item::CopyBackBuffer);
 		} else {
 			memdelete(canvas_item->copy_back_buffer);
-			canvas_item->copy_back_buffer = NULL;
+			canvas_item->copy_back_buffer = nullptr;
 		}
 	}
 

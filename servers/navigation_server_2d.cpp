@@ -37,7 +37,7 @@
 	@author AndreaCatania
 */
 
-NavigationServer2D *NavigationServer2D::singleton = NULL;
+NavigationServer2D *NavigationServer2D::singleton = nullptr;
 
 #define FORWARD_0_C(FUNC_NAME)                                   \
 	NavigationServer2D::FUNC_NAME()                              \
@@ -167,7 +167,7 @@ NavigationServer2D::NavigationServer2D() {
 }
 
 NavigationServer2D::~NavigationServer2D() {
-	singleton = NULL;
+	singleton = nullptr;
 }
 
 RID FORWARD_0_C(map_create);

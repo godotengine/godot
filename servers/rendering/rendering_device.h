@@ -563,7 +563,7 @@ public:
 	/**** SHADER ****/
 	/****************/
 
-	virtual Vector<uint8_t> shader_compile_from_source(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language = SHADER_LANGUAGE_GLSL, String *r_error = NULL, bool p_allow_cache = true);
+	virtual Vector<uint8_t> shader_compile_from_source(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language = SHADER_LANGUAGE_GLSL, String *r_error = nullptr, bool p_allow_cache = true);
 
 	static void shader_set_compile_function(ShaderCompileFunction p_function);
 	static void shader_set_cache_function(ShaderCacheFunction p_function);

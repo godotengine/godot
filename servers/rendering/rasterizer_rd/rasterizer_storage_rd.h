@@ -604,7 +604,7 @@ public:
 	_FORCE_INLINE_ MaterialData *material_get_data(RID p_material, ShaderType p_shader_type) {
 		Material *material = material_owner.getornull(p_material);
 		if (!material || material->shader_type != p_shader_type) {
-			return NULL;
+			return nullptr;
 		} else {
 			return material->data;
 		}
@@ -640,10 +640,10 @@ public:
 
 	_FORCE_INLINE_ const RID *mesh_get_surface_count_and_materials(RID p_mesh, uint32_t &r_surface_count) {
 		Mesh *mesh = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!mesh, NULL);
+		ERR_FAIL_COND_V(!mesh, nullptr);
 		r_surface_count = mesh->surface_count;
 		if (r_surface_count == 0) {
-			return NULL;
+			return nullptr;
 		}
 		if (mesh->material_cache.empty()) {
 			mesh->material_cache.resize(mesh->surface_count);
@@ -1037,7 +1037,7 @@ public:
 	void lightmap_capture_set_energy(RID p_capture, float p_energy) {}
 	float lightmap_capture_get_energy(RID p_capture) const { return 0.0; }
 	const Vector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const {
-		return NULL;
+		return nullptr;
 	}
 
 	/* PARTICLES */

@@ -178,7 +178,7 @@ static const _bit _type_list[] = {
 	{ Variant::PACKED_VECTOR2_ARRAY, "PackedVector2Array" },
 	{ Variant::PACKED_VECTOR3_ARRAY, "PackedVector3Array" },
 	{ Variant::PACKED_COLOR_ARRAY, "PackedColorArray" },
-	{ Variant::VARIANT_MAX, NULL },
+	{ Variant::VARIANT_MAX, nullptr },
 };
 
 struct _kws {
@@ -236,7 +236,7 @@ static const _kws _keyword_list[] = {
 	{ GDScriptTokenizer::TK_WILDCARD, "_" },
 	{ GDScriptTokenizer::TK_CONST_INF, "INF" },
 	{ GDScriptTokenizer::TK_CONST_NAN, "NAN" },
-	{ GDScriptTokenizer::TK_ERROR, NULL }
+	{ GDScriptTokenizer::TK_ERROR, nullptr }
 };
 
 const char *GDScriptTokenizer::get_token_name(Token p_token) {
@@ -1075,7 +1075,7 @@ void GDScriptTokenizerText::set_code(const String &p_code) {
 	if (len) {
 		_code = &code[0];
 	} else {
-		_code = NULL;
+		_code = nullptr;
 	}
 	code_pos = 0;
 	line = 1; //it is stand-ar-ized that lines begin in 1 in code..
@@ -1358,7 +1358,7 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code)
 	}
 
 	Map<int, Variant> rev_constant_map;
-	const Variant *K = NULL;
+	const Variant *K = nullptr;
 	while ((K = constant_map.next(K))) {
 		rev_constant_map[constant_map[*K]] = *K;
 	}
@@ -1407,7 +1407,7 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code)
 
 		int len;
 		// Objects cannot be constant, never encode objects
-		Error err = encode_variant(E->get(), NULL, len, false);
+		Error err = encode_variant(E->get(), nullptr, len, false);
 		ERR_FAIL_COND_V_MSG(err != OK, Vector<uint8_t>(), "Error when trying to encode Variant.");
 		int pos = buf.size();
 		buf.resize(pos + len);

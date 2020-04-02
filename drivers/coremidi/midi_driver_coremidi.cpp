@@ -47,8 +47,8 @@ void MIDIDriverCoreMidi::read(const MIDIPacketList *packet_list, void *read_proc
 
 Error MIDIDriverCoreMidi::open() {
 
-	CFStringRef name = CFStringCreateWithCString(NULL, "Godot", kCFStringEncodingASCII);
-	OSStatus result = MIDIClientCreate(name, NULL, NULL, &client);
+	CFStringRef name = CFStringCreateWithCString(nullptr, "Godot", kCFStringEncodingASCII);
+	OSStatus result = MIDIClientCreate(name, nullptr, nullptr, &client);
 	CFRelease(name);
 	if (result != noErr) {
 		ERR_PRINT("MIDIClientCreate failed, code: " + itos(result));
@@ -99,7 +99,7 @@ PackedStringArray MIDIDriverCoreMidi::get_connected_inputs() {
 
 	for (int i = 0; i < connected_sources.size(); i++) {
 		MIDIEndpointRef source = connected_sources[i];
-		CFStringRef ref = NULL;
+		CFStringRef ref = nullptr;
 		char name[256];
 
 		MIDIObjectGetStringProperty(source, kMIDIPropertyDisplayName, &ref);

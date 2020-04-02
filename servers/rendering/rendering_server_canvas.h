@@ -59,7 +59,7 @@ public:
 
 		Item() {
 			children_order_dirty = true;
-			E = NULL;
+			E = nullptr;
 			z_index = 0;
 			modulate = Color(1, 1, 1, 1);
 			self_modulate = Color(1, 1, 1, 1);

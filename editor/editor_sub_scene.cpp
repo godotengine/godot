@@ -46,7 +46,7 @@ void EditorSubScene::_path_changed(const String &p_path) {
 
 	if (scene) {
 		memdelete(scene);
-		scene = NULL;
+		scene = nullptr;
 	}
 
 	if (p_path == "")
@@ -61,7 +61,7 @@ void EditorSubScene::_path_changed(const String &p_path) {
 	if (!scene)
 		return;
 
-	_fill_tree(scene, NULL);
+	_fill_tree(scene, nullptr);
 }
 
 void EditorSubScene::_path_browse() {
@@ -72,7 +72,7 @@ void EditorSubScene::_path_browse() {
 void EditorSubScene::_notification(int p_what) {
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 
-		if (is_visible() && scene == NULL) {
+		if (is_visible() && scene == nullptr) {
 			_path_browse();
 		}
 	}
@@ -209,7 +209,7 @@ void EditorSubScene::move(Node *p_new_parent, Node *p_new_owner) {
 	if (!is_root) {
 		memdelete(scene);
 	}
-	scene = NULL;
+	scene = nullptr;
 	//return selnode;
 }
 
@@ -226,7 +226,7 @@ void EditorSubScene::_bind_methods() {
 
 EditorSubScene::EditorSubScene() {
 
-	scene = NULL;
+	scene = nullptr;
 	is_root = false;
 
 	set_title(TTR("Select Node(s) to Import"));

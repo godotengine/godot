@@ -45,7 +45,7 @@ class ResourceFormatImporter : public ResourceFormatLoader {
 		Variant metadata;
 	};
 
-	Error _get_path_and_type(const String &p_path, PathAndType &r_path_and_type, bool *r_valid = NULL) const;
+	Error _get_path_and_type(const String &p_path, PathAndType &r_path_and_type, bool *r_valid = nullptr) const;
 
 	static ResourceFormatImporter *singleton;
 
@@ -58,7 +58,7 @@ class ResourceFormatImporter : public ResourceFormatLoader {
 
 public:
 	static ResourceFormatImporter *get_singleton() { return singleton; }
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL, bool p_use_sub_threads = false, float *r_progress = nullptr);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
 	virtual bool recognize_path(const String &p_path, const String &p_for_type = String()) const;
@@ -123,7 +123,7 @@ public:
 	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const = 0;
 	virtual String get_option_group_file() const { return String(); }
 
-	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL, Variant *r_metadata = NULL) = 0;
+	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) = 0;
 
 	virtual Error import_group_file(const String &p_group_file, const Map<String, Map<StringName, Variant>> &p_source_file_options, const Map<String, String> &p_base_paths) { return ERR_UNAVAILABLE; }
 	virtual bool are_import_settings_valid(const String &p_path) const { return true; }

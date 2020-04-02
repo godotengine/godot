@@ -138,7 +138,7 @@ void ScriptEditorDebugger::update_tabs() {
 }
 
 void ScriptEditorDebugger::clear_style() {
-	tabs->add_theme_style_override("panel", NULL);
+	tabs->add_theme_style_override("panel", nullptr);
 }
 
 void ScriptEditorDebugger::save_node(ObjectID p_id, const String &p_file) {
@@ -923,7 +923,7 @@ void ScriptEditorDebugger::stop() {
 	res_path_cache.clear();
 	profiler_signature.clear();
 
-	inspector->edit(NULL);
+	inspector->edit(nullptr);
 	_update_buttons_state();
 }
 
@@ -973,7 +973,7 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 		msg.push_back(frame);
 		_put_msg("get_stack_frame_vars", msg);
 	} else {
-		inspector->edit(NULL);
+		inspector->edit(nullptr);
 	}
 }
 

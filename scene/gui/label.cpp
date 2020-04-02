@@ -282,7 +282,7 @@ void Label::_notification(int p_what) {
 				from = from->next;
 			}
 
-			wc = to ? to->next : 0;
+			wc = to ? to->next : nullptr;
 			line++;
 		}
 	}
@@ -404,7 +404,7 @@ void Label::regenerate_word_cache() {
 	line_count = 1;
 	total_char_cache = 0;
 
-	WordCache *last = NULL;
+	WordCache *last = nullptr;
 
 	for (int i = 0; i <= xl_text.length(); i++) {
 
@@ -447,7 +447,7 @@ void Label::regenerate_word_cache() {
 			}
 
 			if (i < xl_text.length() && xl_text[i] == ' ') {
-				if (line_width > 0 || last == NULL || last->char_pos != WordCache::CHAR_WRAPLINE) {
+				if (line_width > 0 || last == nullptr || last->char_pos != WordCache::CHAR_WRAPLINE) {
 					space_count++;
 					line_width += space_width;
 				} else {
@@ -697,7 +697,7 @@ Label::Label(const String &p_text) {
 	align = ALIGN_LEFT;
 	valign = VALIGN_TOP;
 	xl_text = "";
-	word_cache = NULL;
+	word_cache = nullptr;
 	word_cache_dirty = true;
 	autowrap = false;
 	line_count = 0;
