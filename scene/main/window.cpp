@@ -1039,6 +1039,10 @@ void Window::popup_centered_ratio(float p_ratio) {
 void Window::popup(const Rect2i &p_screen_rect) {
 	emit_signal("about_to_popup");
 
+	if (!is_embedded()) {
+		current_screen = DisplayServer::get_singleton()->window_get_current_screen(get_parent_visible_window()->get_window_id());
+	}
+
 	if (p_screen_rect != Rect2i()) {
 		set_position(p_screen_rect.position);
 		set_size(p_screen_rect.size);
@@ -1048,15 +1052,6 @@ void Window::popup(const Rect2i &p_screen_rect) {
 	if (adjust != Rect2i()) {
 		set_position(adjust.position);
 		set_size(adjust.size);
-	}
-
-	int scr = DisplayServer::get_singleton()->get_screen_count();
-	for (int i = 0; i < scr; i++) {
-		Rect2i r = DisplayServer::get_singleton()->screen_get_usable_rect(i);
-		if (r.has_point(position)) {
-			current_screen = i;
-			break;
-		}
 	}
 
 	set_transient(true);
