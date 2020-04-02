@@ -176,7 +176,7 @@ int _main() {
 
 	wc_argv = CommandLineToArgvW(GetCommandLineW(), &argc);
 
-	if (NULL == wc_argv) {
+	if (nullptr == wc_argv) {
 		wprintf(L"CommandLineToArgvW failed\n");
 		return 0;
 	}

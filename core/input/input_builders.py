@@ -73,7 +73,7 @@ def make_default_controller_mappings(target, source, env):
             g.write('\t"{}",\n'.format(mapping))
         g.write("#endif\n")
 
-    g.write("\tNULL\n};\n")
+    g.write("\tnullptr\n};\n")
     g.close()
 
 

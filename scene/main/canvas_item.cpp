@@ -1469,7 +1469,6 @@ CanvasItem::CanvasItem() :
 	drawing = false;
 	behind = false;
 	block_transform_notify = false;
-	//viewport=NULL;
 	canvas_layer = nullptr;
 	use_parent_material = false;
 	global_invalid = true;

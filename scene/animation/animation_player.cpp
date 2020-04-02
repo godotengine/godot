@@ -1242,19 +1242,6 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 bool AnimationPlayer::is_playing() const {
 
 	return playing;
-	/*
-	if (playback.current.from==NULL)
-		return false;
-
-	float len=playback.current.from->animation->get_length();
-	float pos = playback.current.pos;
-	bool loop=playback.current.from->animation->has_loop();
-	if (!loop && pos >= len) {
-		return false;
-	};
-
-	return true;
-	*/
 }
 
 void AnimationPlayer::set_current_animation(const String &p_anim) {

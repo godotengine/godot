@@ -115,7 +115,7 @@ def make_translations_header(target, source, env, category):
         g.write(
             '\t{{ "{}", {}, {}, _{}_translation_{}_compressed }},\n'.format(x[0], str(x[1]), str(x[2]), category, x[0])
         )
-    g.write("\t{NULL, 0, 0, NULL}\n")
+    g.write("\t{nullptr, 0, 0, nullptr}\n")
     g.write("};\n")
 
     g.write("#endif")

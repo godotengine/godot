@@ -561,12 +561,6 @@ void Control::_notification(int p_notification) {
 
 			data.parent = nullptr;
 			data.parent_canvas_item = nullptr;
-			/*
-			if (data.theme_owner && data.theme.is_null()) {
-				data.theme_owner=NULL;
-				notification(NOTIFICATION_THEME_CHANGED);
-			}
-			*/
 
 		} break;
 		case NOTIFICATION_MOVED_IN_PARENT: {
