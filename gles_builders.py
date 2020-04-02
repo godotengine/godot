@@ -395,7 +395,7 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
                 enum_vals.append(c)
                 enum_constants.append(x[i])
 
-            strs += "NULL}"
+            strs += "nullptr}"
 
             fd.write(
                 "\t\t\t{(uint64_t(1<<" + str(bits) + ")-1)<<" + str(bitofs) + "," + str(bitofs) + "," + strs + "},\n"
@@ -422,7 +422,7 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
                 conditionals_found.append(x)
         fd.write("\t\t};\n\n")
     else:
-        fd.write("\t\tstatic const char **_conditional_strings=NULL;\n")
+        fd.write("\t\tstatic const char **_conditional_strings=nullptr;\n")
 
     if header_data.uniforms:
 
@@ -432,7 +432,7 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
                 fd.write('\t\t\t"' + x + '",\n')
         fd.write("\t\t};\n\n")
     else:
-        fd.write("\t\tstatic const char **_uniform_strings=NULL;\n")
+        fd.write("\t\tstatic const char **_uniform_strings=nullptr;\n")
 
     if output_attribs:
         if header_data.attributes:
@@ -442,7 +442,7 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
                 fd.write('\t\t\t{"' + x[0] + '",' + x[1] + "},\n")
             fd.write("\t\t};\n\n")
         else:
-            fd.write("\t\tstatic AttributePair *_attribute_pairs=NULL;\n")
+            fd.write("\t\tstatic AttributePair *_attribute_pairs=nullptr;\n")
 
     feedback_count = 0
 
@@ -464,7 +464,7 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
         if gles2:
             pass
         else:
-            fd.write("\t\tstatic const Feedback* _feedbacks=NULL;\n")
+            fd.write("\t\tstatic const Feedback* _feedbacks=nullptr;\n")
 
     if header_data.texunits:
         fd.write("\t\tstatic TexUnitPair _texunit_pairs[]={\n")
@@ -472,7 +472,7 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
             fd.write('\t\t\t{"' + x[0] + '",' + x[1] + "},\n")
         fd.write("\t\t};\n\n")
     else:
-        fd.write("\t\tstatic TexUnitPair *_texunit_pairs=NULL;\n")
+        fd.write("\t\tstatic TexUnitPair *_texunit_pairs=nullptr;\n")
 
     if not gles2 and header_data.ubos:
         fd.write("\t\tstatic UBOPair _ubo_pairs[]={\n")
@@ -483,7 +483,7 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
         if gles2:
             pass
         else:
-            fd.write("\t\tstatic UBOPair *_ubo_pairs=NULL;\n")
+            fd.write("\t\tstatic UBOPair *_ubo_pairs=nullptr;\n")
 
     fd.write("\t\tstatic const char _vertex_code[]={\n")
     for x in header_data.vertex_lines:

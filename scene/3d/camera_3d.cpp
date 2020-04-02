@@ -413,23 +413,6 @@ Vector3 Camera3D::project_position(const Point2 &p_point, float p_z_depth) const
 	return get_camera_transform().xform(p);
 }
 
-/*
-void Camera::_camera_make_current(Node *p_camera) {
-
-
-	if (p_camera==this) {
-		RenderingServer::get_singleton()->viewport_attach_camera(viewport_id,camera);
-		active=true;
-	} else {
-		if (active && p_camera==NULL) {
-			//detech camera because no one else will claim it
-			RenderingServer::get_singleton()->viewport_attach_camera(viewport_id,RID());
-		}
-		active=false;
-	}
-}
-*/
-
 void Camera3D::set_environment(const Ref<Environment> &p_environment) {
 
 	environment = p_environment;
