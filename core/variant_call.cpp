@@ -1764,7 +1764,7 @@ void register_variant_methods() {
 	ADDFUNC0NC(DICTIONARY, NIL, Dictionary, clear, varray());
 	ADDFUNC1R(DICTIONARY, BOOL, Dictionary, has, NIL, "key", varray());
 	ADDFUNC1R(DICTIONARY, BOOL, Dictionary, has_all, ARRAY, "keys", varray());
-	ADDFUNC1R(DICTIONARY, BOOL, Dictionary, erase, NIL, "key", varray());
+	ADDFUNC1RNC(DICTIONARY, BOOL, Dictionary, erase, NIL, "key", varray());
 	ADDFUNC0R(DICTIONARY, INT, Dictionary, hash, varray());
 	ADDFUNC0R(DICTIONARY, ARRAY, Dictionary, keys, varray());
 	ADDFUNC0R(DICTIONARY, ARRAY, Dictionary, values, varray());
