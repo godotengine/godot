@@ -55,6 +55,10 @@
 #include "platform/linuxbsd/vulkan_context_x11.h"
 #endif
 
+#if defined(DBUS_ENABLED)
+#include "freedesktop_screensaver.h"
+#endif
+
 #include <X11/Xcursor/Xcursor.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/XInput2.h>
@@ -101,6 +105,11 @@ class DisplayServerX11 : public DisplayServer {
 #if defined(VULKAN_ENABLED)
 	VulkanContextX11 *context_vulkan;
 	RenderingDeviceVulkan *rendering_device_vulkan;
+#endif
+
+#if defined(DBUS_ENABLED)
+	FreeDesktopScreenSaver *screensaver;
+	bool keep_screen_on = false;
 #endif
 
 	struct WindowData {
@@ -290,6 +299,11 @@ public:
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
+
+#if defined(DBUS_ENABLED)
+	virtual void screen_set_keep_on(bool p_enable);
+	virtual bool screen_is_kept_on() const;
+#endif
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const;
 
