@@ -163,7 +163,7 @@ def _build_gdnative_api_struct_source(api):
             "\t{" + str(ext["version"]["major"]) + ", " + str(ext["version"]["minor"]) + "},",
             "\t"
             + (
-                "NULL"
+                "nullptr"
                 if not ext["next"]
                 else ("(const godot_gdnative_api_struct *)&" + get_extension_struct_instance_name(name, ext["next"]))
             )
@@ -191,7 +191,7 @@ def _build_gdnative_api_struct_source(api):
             "\t{" + str(core["version"]["major"]) + ", " + str(core["version"]["minor"]) + "},",
             "\t"
             + (
-                "NULL"
+                "nullptr"
                 if not core["next"]
                 else (
                     "(const godot_gdnative_api_struct *)& api_{0}_{1}".format(

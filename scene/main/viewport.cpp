@@ -2506,16 +2506,6 @@ void Viewport::_gui_hid_control(Control *p_control) {
 		_drop_mouse_focus();
 	}
 
-	/* ???
-	if (data.window==p_control) {
-		window->drag_data=Variant();
-		if (window->drag_preview) {
-			memdelete( window->drag_preview);
-			window->drag_preview=NULL;
-		}
-	}
-	*/
-
 	if (gui.key_focus == p_control)
 		_gui_remove_focus();
 	if (gui.mouse_over == p_control)
