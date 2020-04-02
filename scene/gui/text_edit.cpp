@@ -5126,9 +5126,29 @@ int TextEdit::_is_line_in_region(int p_line) {
 				if (!cri.end) {
 					in_region = cri.region;
 				}
-			} else if (in_region == cri.region && !_get_color_region(cri.region).line_only) {
-				if (cri.end || _get_color_region(cri.region).eq) {
-					in_region = -1;
+			} else {
+				ColorRegion in_color_region = _get_color_region(in_region);
+
+				if (!color_regions[in_region].line_only) {
+					ColorRegion cri_color_region = _get_color_region(cri.region);
+
+					if (in_region == cri.region) {
+						// Captured delimiter region is the same as the current region.
+						// If it's the end delimiter (`cri.end` is true), exit the region.
+						// If both delimiters are the same (as is for string literals `" "`),
+						// `cri.end` is always false, so we have a special case for that.
+						if (cri.end || cri_color_region.eq) {
+							in_region = -1;
+						}
+					} else {
+						// Captured delimiter region is not the same as the current region, so we ignore it.
+						// However, this may also happen if there are multiple regions that use the same delimiter
+						// (as is for string literals `" "` and C#'s verbatim string literals `@" "`).
+						if ((!cri.end && cri_color_region.begin_key == in_color_region.end_key) ||
+								(cri.end && cri_color_region.end_key == in_color_region.end_key)) {
+							in_region = -1;
+						}
+					}
 				}
 			}
 		}
@@ -7480,9 +7500,29 @@ Map<int, TextEdit::HighlighterInfo> TextEdit::_get_line_syntax_highlighting(int 
 				if (!cri.end) {
 					in_region = cri.region;
 				}
-			} else if (in_region == cri.region && !color_regions[cri.region].line_only) { // Ignore otherwise.
-				if (cri.end || color_regions[cri.region].eq) {
-					deregion = color_regions[cri.region].eq ? color_regions[cri.region].begin_key.length() : color_regions[cri.region].end_key.length();
+			} else {
+				const ColorRegion &in_color_region = color_regions[in_region];
+
+				if (!color_regions[in_region].line_only) {
+					const ColorRegion &cri_color_region = color_regions[cri.region];
+
+					if (in_region == cri.region) {
+						// Captured delimiter region is the same as the current region.
+						// If it's the end delimiter (`cri.end` is true), exit the region.
+						// If both delimiters are the same (as is for string literals `" "`),
+						// `cri.end` is always false, so we have a special case for that.
+						if (cri.end || cri_color_region.eq) {
+							deregion = cri_color_region.end_key.length();
+						}
+					} else {
+						// Captured delimiter region is not the same as the current region, so we ignore it.
+						// However, this may also happen if there are multiple regions that use the same delimiter
+						// (as is for string literals `" "` and C#'s verbatim string literals `@" "`).
+						if ((!cri.end && cri_color_region.begin_key == in_color_region.end_key) ||
+								(cri.end && cri_color_region.end_key == in_color_region.end_key)) {
+							deregion = in_color_region.end_key.length();
+						}
+					}
 				}
 			}
 		}

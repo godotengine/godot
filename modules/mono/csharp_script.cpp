@@ -316,8 +316,7 @@ void CSharpLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 
 	p_delimiters->push_back("' '"); // character literal
 	p_delimiters->push_back("\" \""); // regular string literal
-	// Verbatim string literals (`@" "`) don't render correctly, so don't highlight them.
-	// Generic string highlighting suffices as a workaround for now.
+	p_delimiters->push_back("@\" \""); // verbatim string literal
 }
 
 static String get_base_class_name(const String &p_base_class_name, const String p_class_name) {
