@@ -92,7 +92,7 @@
 			</argument>
 			<argument index="1" name="description" type="String">
 			</argument>
-			<argument index="2" name="existing_text" type="PackedStringArray">
+			<argument index="2" name="existing_text" type="String">
 			</argument>
 			<argument index="3" name="callback" type="Callable">
 			</argument>
@@ -1016,16 +1016,6 @@
 		<constant name="WINDOW_FLAG_NO_FOCUS" value="4" enum="WindowFlags">
 		</constant>
 		<constant name="WINDOW_FLAG_MAX" value="5" enum="WindowFlags">
-		</constant>
-		<constant name="WINDOW_FLAG_RESIZE_DISABLED_BIT" value="1" enum="WindowFlags">
-		</constant>
-		<constant name="WINDOW_FLAG_BORDERLESS_BIT" value="2" enum="WindowFlags">
-		</constant>
-		<constant name="WINDOW_FLAG_ALWAYS_ON_TOP_BIT" value="4" enum="WindowFlags">
-		</constant>
-		<constant name="WINDOW_FLAG_TRANSPARENT_BIT" value="8" enum="WindowFlags">
-		</constant>
-		<constant name="WINDOW_FLAG_NO_FOCUS_BIT" value="16" enum="WindowFlags">
 		</constant>
 		<constant name="LATIN_KEYBOARD_QWERTY" value="0" enum="LatinKeyboardVariant">
 		</constant>

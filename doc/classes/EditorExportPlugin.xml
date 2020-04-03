@@ -94,6 +94,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="add_ios_project_static_lib">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="add_shared_object">
 			<return type="void">
 			</return>
