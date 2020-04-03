@@ -203,7 +203,7 @@ private:
 	Transform2D stretch_transform;
 
 	Size2i size;
-	Size2i size_override;
+	Size2i size_2d_override;
 	bool size_allocated;
 
 	RID contact_2d_debug;
@@ -434,9 +434,10 @@ private:
 	SubWindowResize _sub_window_get_resize_margin(Window *p_subwindow, const Point2 &p_point);
 
 protected:
-	void _set_size(const Size2i &p_size, const Size2i &p_size_override, const Rect2i &p_to_screen_rect, const Transform2D &p_stretch_transform, bool p_allocated);
+	void _set_size(const Size2i &p_size, const Size2i &p_size_2d_override, const Rect2i &p_to_screen_rect, const Transform2D &p_stretch_transform, bool p_allocated);
 
 	Size2i _get_size() const;
+	Size2i _get_size_2d_override() const;
 	bool _is_size_allocated() const;
 
 	void _notification(int p_what);
@@ -589,18 +590,26 @@ private:
 	UpdateMode update_mode;
 	ClearMode clear_mode;
 	bool arvr;
+	bool size_2d_override_stretch;
 
 protected:
 	static void _bind_methods();
 	virtual DisplayServer::WindowID get_window_id() const;
+	Transform2D _stretch_transform();
 	void _notification(int p_what);
 
 public:
 	void set_size(const Size2i &p_size);
 	Size2i get_size() const;
 
+	void set_size_2d_override(const Size2i &p_size);
+	Size2i get_size_2d_override() const;
+
 	void set_use_arvr(bool p_use_arvr);
 	bool is_using_arvr();
+
+	void set_size_2d_override_stretch(bool p_enable);
+	bool is_size_2d_override_stretch_enabled() const;
 
 	void set_update_mode(UpdateMode p_mode);
 	UpdateMode get_update_mode() const;
