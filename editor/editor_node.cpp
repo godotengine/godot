@@ -3973,8 +3973,9 @@ void EditorNode::_dock_make_float() {
 	Control *dock = dock_slot[dock_popup_selected]->get_current_tab_control();
 	ERR_FAIL_COND(!dock);
 
-	Size2 dock_size = dock->get_size(); //remember size
-	Point2 dock_screen_pos = dock->get_global_position() + get_tree()->get_root()->get_position();
+	const Size2i borders = Size2i(4, 4) * EDSCALE;
+	Size2 dock_size = dock->get_size() + borders * 2; //remember size
+	Point2 dock_screen_pos = dock->get_global_position() + get_tree()->get_root()->get_position() - borders;
 
 	print_line("dock pos: " + dock->get_global_position() + " window pos: " + get_tree()->get_root()->get_position());
 	int dock_index = dock->get_index();
@@ -3988,10 +3989,10 @@ void EditorNode::_dock_make_float() {
 	window->add_child(p);
 	MarginContainer *margin = memnew(MarginContainer);
 	margin->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	margin->add_theme_constant_override("margin_right", 4 * EDSCALE);
-	margin->add_theme_constant_override("margin_top", 4 * EDSCALE);
-	margin->add_theme_constant_override("margin_left", 4 * EDSCALE);
-	margin->add_theme_constant_override("margin_bottom", 4 * EDSCALE);
+	margin->add_theme_constant_override("margin_right", borders.width);
+	margin->add_theme_constant_override("margin_top", borders.height);
+	margin->add_theme_constant_override("margin_left", borders.width);
+	margin->add_theme_constant_override("margin_bottom", borders.height);
 	window->add_child(margin);
 	dock->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	margin->add_child(dock);
