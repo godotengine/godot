@@ -223,11 +223,11 @@ public:
 		return value;
 	}
 
-	static _ALWAYS_INLINE_ double deg2rad(double p_y) { return p_y * Math_PI / 180.0; }
-	static _ALWAYS_INLINE_ float deg2rad(float p_y) { return p_y * Math_PI / 180.0; }
+	static _ALWAYS_INLINE_ double deg2rad(double p_y) { return p_y * (Math_PI / 180.0); }
+	static _ALWAYS_INLINE_ float deg2rad(float p_y) { return p_y * (Math_PI / 180.0); }
 
-	static _ALWAYS_INLINE_ double rad2deg(double p_y) { return p_y * 180.0 / Math_PI; }
-	static _ALWAYS_INLINE_ float rad2deg(float p_y) { return p_y * 180.0 / Math_PI; }
+	static _ALWAYS_INLINE_ double rad2deg(double p_y) { return p_y * (180.0 / Math_PI); }
+	static _ALWAYS_INLINE_ float rad2deg(float p_y) { return p_y * (180.0 / Math_PI); }
 
 	static _ALWAYS_INLINE_ double lerp(double p_from, double p_to, double p_weight) { return p_from + (p_to - p_from) * p_weight; }
 	static _ALWAYS_INLINE_ float lerp(float p_from, float p_to, float p_weight) { return p_from + (p_to - p_from) * p_weight; }

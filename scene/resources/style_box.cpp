@@ -576,8 +576,8 @@ inline void draw_ring(Vector<Vector2> &verts, Vector<int> &indices, Vector<Color
 					color = outer_color;
 					corner_point = outer_points[corner_index];
 				}
-				float x = radius * (float)cos((double)corner_index * Math_PI / 2.0 + (double)detail / (double)adapted_corner_detail * Math_PI / 2.0 + Math_PI) + corner_point.x;
-				float y = radius * (float)sin((double)corner_index * Math_PI / 2.0 + (double)detail / (double)adapted_corner_detail * Math_PI / 2.0 + Math_PI) + corner_point.y;
+				real_t x = radius * (real_t)cos((corner_index + detail / (double)adapted_corner_detail) * (Math_TAU / 4.0) + Math_PI) + corner_point.x;
+				real_t y = radius * (real_t)sin((corner_index + detail / (double)adapted_corner_detail) * (Math_TAU / 4.0) + Math_PI) + corner_point.y;
 				verts.push_back(Vector2(x, y));
 				colors.push_back(color);
 			}

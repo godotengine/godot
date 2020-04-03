@@ -5358,9 +5358,10 @@ void Node3DEditor::_init_indicators() {
 
 				int arrow_sides = 16;
 
+				const real_t arrow_sides_step = Math_TAU / arrow_sides;
 				for (int k = 0; k < arrow_sides; k++) {
-					Basis ma(ivec, Math_PI * 2 * float(k) / arrow_sides);
-					Basis mb(ivec, Math_PI * 2 * float(k + 1) / arrow_sides);
+					Basis ma(ivec, k * arrow_sides_step);
+					Basis mb(ivec, (k + 1) * arrow_sides_step);
 
 					for (int j = 0; j < arrow_points - 1; j++) {
 						Vector3 points[4] = {
@@ -5435,13 +5436,14 @@ void Node3DEditor::_init_indicators() {
 				int n = 128; // number of circle segments
 				int m = 6; // number of thickness segments
 
+				real_t step = Math_TAU / n;
 				for (int j = 0; j < n; ++j) {
-					Basis basis = Basis(ivec, (Math_PI * 2.0f * j) / n);
+					Basis basis = Basis(ivec, j * step);
 
 					Vector3 vertex = basis.xform(ivec2 * GIZMO_CIRCLE_SIZE);
 
 					for (int k = 0; k < m; ++k) {
-						Vector2 ofs = Vector2(Math::cos((Math_PI * 2.0 * k) / m), Math::sin((Math_PI * 2.0 * k) / m));
+						Vector2 ofs = Vector2(Math::cos((Math_TAU * k) / m), Math::sin((Math_TAU * k) / m));
 						Vector3 normal = ivec * ofs.x + ivec2 * ofs.y;
 
 						surftool->set_normal(basis.xform(normal));
@@ -5568,9 +5570,10 @@ void Node3DEditor::_init_indicators() {
 
 				int arrow_sides = 4;
 
+				const real_t arrow_sides_step = Math_TAU / arrow_sides;
 				for (int k = 0; k < 4; k++) {
-					Basis ma(ivec, Math_PI * 2 * float(k) / arrow_sides);
-					Basis mb(ivec, Math_PI * 2 * float(k + 1) / arrow_sides);
+					Basis ma(ivec, k * arrow_sides_step);
+					Basis mb(ivec, (k + 1) * arrow_sides_step);
 
 					for (int j = 0; j < arrow_points - 1; j++) {
 						Vector3 points[4] = {

@@ -71,8 +71,9 @@ real_t CircleShape2D::get_enclosing_radius() const {
 
 void CircleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	Vector<Vector2> points;
+	const real_t turn_step = Math_TAU / 24.0;
 	for (int i = 0; i < 24; i++) {
-		points.push_back(Vector2(Math::cos(i * Math_PI * 2 / 24.0), Math::sin(i * Math_PI * 2 / 24.0)) * get_radius());
+		points.push_back(Vector2(Math::cos(i * turn_step), Math::sin(i * turn_step)) * get_radius());
 	}
 
 	Vector<Color> col;

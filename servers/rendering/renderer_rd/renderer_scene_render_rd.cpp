@@ -4929,7 +4929,7 @@ void RendererSceneRenderRD::_debug_sdfgi_probes(RID p_render_buffers, RD::DrawLi
 	push_constant.band_power = 4;
 	push_constant.sections_in_band = ((band_points / 2) - 1);
 	push_constant.band_mask = band_points - 2;
-	push_constant.section_arc = (Math_PI * 2.0) / float(push_constant.sections_in_band);
+	push_constant.section_arc = Math_TAU / float(push_constant.sections_in_band);
 	push_constant.y_mult = rb->sdfgi->y_mult;
 
 	uint32_t total_points = push_constant.sections_in_band * band_points;

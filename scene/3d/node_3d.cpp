@@ -330,7 +330,7 @@ void Node3D::set_rotation(const Vector3 &p_euler_rad) {
 }
 
 void Node3D::set_rotation_degrees(const Vector3 &p_euler_deg) {
-	set_rotation(p_euler_deg * Math_PI / 180.0);
+	set_rotation(p_euler_deg * (Math_PI / 180.0));
 }
 
 void Node3D::set_scale(const Vector3 &p_scale) {
@@ -364,7 +364,7 @@ Vector3 Node3D::get_rotation() const {
 }
 
 Vector3 Node3D::get_rotation_degrees() const {
-	return get_rotation() * 180.0 / Math_PI;
+	return get_rotation() * (180.0 / Math_PI);
 }
 
 Vector3 Node3D::get_scale() const {

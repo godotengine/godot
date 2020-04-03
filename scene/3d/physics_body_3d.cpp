@@ -2389,11 +2389,11 @@ Vector3 PhysicalBone3D::get_joint_rotation() const {
 }
 
 void PhysicalBone3D::set_joint_rotation_degrees(const Vector3 &p_euler_deg) {
-	set_joint_rotation(p_euler_deg * Math_PI / 180.0);
+	set_joint_rotation(p_euler_deg * (Math_PI / 180.0));
 }
 
 Vector3 PhysicalBone3D::get_joint_rotation_degrees() const {
-	return get_joint_rotation() * 180.0 / Math_PI;
+	return get_joint_rotation() * (180.0 / Math_PI);
 }
 
 const Transform &PhysicalBone3D::get_body_offset() const {

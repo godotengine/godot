@@ -676,13 +676,13 @@ void CPUParticles3D::_particles_process(float p_delta) {
 			p.anim_offset_rand = Math::randf();
 
 			if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
-				float angle1_rad = Math::atan2(direction.y, direction.x) + (Math::randf() * 2.0 - 1.0) * Math_PI * spread / 180.0;
+				float angle1_rad = Math::atan2(direction.y, direction.x) + Math::deg2rad((Math::randf() * 2.0 - 1.0) * spread);
 				Vector3 rot = Vector3(Math::cos(angle1_rad), Math::sin(angle1_rad), 0.0);
 				p.velocity = rot * parameters[PARAM_INITIAL_LINEAR_VELOCITY] * Math::lerp(1.0f, float(Math::randf()), randomness[PARAM_INITIAL_LINEAR_VELOCITY]);
 			} else {
 				//initiate velocity spread in 3D
-				float angle1_rad = Math::atan2(direction.x, direction.z) + (Math::randf() * 2.0 - 1.0) * Math_PI * spread / 180.0;
-				float angle2_rad = Math::atan2(direction.y, Math::abs(direction.z)) + (Math::randf() * 2.0 - 1.0) * (1.0 - flatness) * Math_PI * spread / 180.0;
+				float angle1_rad = Math::atan2(direction.x, direction.z) + Math::deg2rad((Math::randf() * 2.0 - 1.0) * spread);
+				float angle2_rad = Math::atan2(direction.y, Math::abs(direction.z)) + Math::deg2rad((Math::randf() * 2.0 - 1.0) * (1.0 - flatness) * spread);
 
 				Vector3 direction_xz = Vector3(Math::sin(angle1_rad), 0, Math::cos(angle1_rad));
 				Vector3 direction_yz = Vector3(0, Math::sin(angle2_rad), Math::cos(angle2_rad));
@@ -706,8 +706,9 @@ void CPUParticles3D::_particles_process(float p_delta) {
 					//do none
 				} break;
 				case EMISSION_SHAPE_SPHERE: {
-					float s = 2.0 * Math::randf() - 1.0, t = 2.0 * Math_PI * Math::randf();
-					float radius = emission_sphere_radius * Math::sqrt(1.0 - s * s);
+					real_t s = 2.0 * Math::randf() - 1.0;
+					real_t t = Math_TAU * Math::randf();
+					real_t radius = emission_sphere_radius * Math::sqrt(1.0 - s * s);
 					p.transform.origin = Vector3(radius * Math::cos(t), radius * Math::sin(t), emission_sphere_radius * s);
 				} break;
 				case EMISSION_SHAPE_BOX: {
@@ -855,7 +856,7 @@ void CPUParticles3D::_particles_process(float p_delta) {
 			if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 				float orbit_amount = (parameters[PARAM_ORBIT_VELOCITY] + tex_orbit_velocity) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_ORBIT_VELOCITY]);
 				if (orbit_amount != 0.0) {
-					float ang = orbit_amount * local_delta * Math_PI * 2.0;
+					float ang = orbit_amount * local_delta * Math_TAU;
 					// Not sure why the ParticlesMaterial code uses a clockwise rotation matrix,
 					// but we use -ang here to reproduce its behavior.
 					Transform2D rot = Transform2D(-ang, Vector2());
@@ -895,7 +896,7 @@ void CPUParticles3D::_particles_process(float p_delta) {
 			tex_hue_variation = curve_parameters[PARAM_HUE_VARIATION]->interpolate(p.custom[1]);
 		}
 
-		float hue_rot_angle = (parameters[PARAM_HUE_VARIATION] + tex_hue_variation) * Math_PI * 2.0 * Math::lerp(1.0f, p.hue_rot_rand * 2.0f - 1.0f, randomness[PARAM_HUE_VARIATION]);
+		float hue_rot_angle = (parameters[PARAM_HUE_VARIATION] + tex_hue_variation) * Math_TAU * Math::lerp(1.0f, p.hue_rot_rand * 2.0f - 1.0f, randomness[PARAM_HUE_VARIATION]);
 		float hue_rot_c = Math::cos(hue_rot_angle);
 		float hue_rot_s = Math::sin(hue_rot_angle);
 

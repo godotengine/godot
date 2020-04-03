@@ -777,10 +777,11 @@ Vector<Plane> Geometry3D::build_box_planes(const Vector3 &p_extents) {
 Vector<Plane> Geometry3D::build_cylinder_planes(real_t p_radius, real_t p_height, int p_sides, Vector3::Axis p_axis) {
 	Vector<Plane> planes;
 
+	const double sides_step = Math_TAU / p_sides;
 	for (int i = 0; i < p_sides; i++) {
 		Vector3 normal;
-		normal[(p_axis + 1) % 3] = Math::cos(i * (2.0 * Math_PI) / p_sides);
-		normal[(p_axis + 2) % 3] = Math::sin(i * (2.0 * Math_PI) / p_sides);
+		normal[(p_axis + 1) % 3] = Math::cos(i * sides_step);
+		normal[(p_axis + 2) % 3] = Math::sin(i * sides_step);
 
 		planes.push_back(Plane(normal, p_radius));
 	}
@@ -805,10 +806,11 @@ Vector<Plane> Geometry3D::build_sphere_planes(real_t p_radius, int p_lats, int p
 	axis_neg[(p_axis + 2) % 3] = 1.0;
 	axis_neg[p_axis] = -1.0;
 
+	const double lon_step = Math_TAU / p_lons;
 	for (int i = 0; i < p_lons; i++) {
 		Vector3 normal;
-		normal[(p_axis + 1) % 3] = Math::cos(i * (2.0 * Math_PI) / p_lons);
-		normal[(p_axis + 2) % 3] = Math::sin(i * (2.0 * Math_PI) / p_lons);
+		normal[(p_axis + 1) % 3] = Math::cos(i * lon_step);
+		normal[(p_axis + 2) % 3] = Math::sin(i * lon_step);
 
 		planes.push_back(Plane(normal, p_radius));
 
@@ -835,10 +837,11 @@ Vector<Plane> Geometry3D::build_capsule_planes(real_t p_radius, real_t p_height,
 	axis_neg[(p_axis + 2) % 3] = 1.0;
 	axis_neg[p_axis] = -1.0;
 
+	const double sides_step = Math_TAU / p_sides;
 	for (int i = 0; i < p_sides; i++) {
 		Vector3 normal;
-		normal[(p_axis + 1) % 3] = Math::cos(i * (2.0 * Math_PI) / p_sides);
-		normal[(p_axis + 2) % 3] = Math::sin(i * (2.0 * Math_PI) / p_sides);
+		normal[(p_axis + 1) % 3] = Math::cos(i * sides_step);
+		normal[(p_axis + 2) % 3] = Math::sin(i * sides_step);
 
 		planes.push_back(Plane(normal, p_radius));
 

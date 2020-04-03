@@ -87,21 +87,24 @@ Vector<Face3> ImmediateGeometry3D::get_faces(uint32_t p_usage_flags) const {
 }
 
 void ImmediateGeometry3D::add_sphere(int p_lats, int p_lons, float p_radius, bool p_add_uv) {
+	const double lat_step = Math_TAU / p_lats;
+	const double lon_step = Math_TAU / p_lons;
+
 	for (int i = 1; i <= p_lats; i++) {
-		double lat0 = Math_PI * (-0.5 + (double)(i - 1) / p_lats);
+		double lat0 = lat_step * (i - 1) - Math_TAU / 4;
 		double z0 = Math::sin(lat0);
 		double zr0 = Math::cos(lat0);
 
-		double lat1 = Math_PI * (-0.5 + (double)i / p_lats);
+		double lat1 = lat_step * i - Math_TAU / 4;
 		double z1 = Math::sin(lat1);
 		double zr1 = Math::cos(lat1);
 
 		for (int j = p_lons; j >= 1; j--) {
-			double lng0 = 2 * Math_PI * (double)(j - 1) / p_lons;
+			double lng0 = lon_step * (j - 1);
 			double x0 = Math::cos(lng0);
 			double y0 = Math::sin(lng0);
 
-			double lng1 = 2 * Math_PI * (double)(j) / p_lons;
+			double lng1 = lon_step * j;
 			double x1 = Math::cos(lng1);
 			double y1 = Math::sin(lng1);
 

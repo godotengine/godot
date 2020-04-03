@@ -700,7 +700,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 			p.hue_rot_rand = Math::randf();
 			p.anim_offset_rand = Math::randf();
 
-			float angle1_rad = Math::atan2(direction.y, direction.x) + (Math::randf() * 2.0 - 1.0) * Math_PI * spread / 180.0;
+			float angle1_rad = Math::atan2(direction.y, direction.x) + Math::deg2rad((Math::randf() * 2.0 - 1.0) * spread);
 			Vector2 rot = Vector2(Math::cos(angle1_rad), Math::sin(angle1_rad));
 			p.velocity = rot * parameters[PARAM_INITIAL_LINEAR_VELOCITY] * Math::lerp(1.0f, float(Math::randf()), randomness[PARAM_INITIAL_LINEAR_VELOCITY]);
 
@@ -721,7 +721,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 					//do none
 				} break;
 				case EMISSION_SHAPE_SPHERE: {
-					float s = Math::randf(), t = 2.0 * Math_PI * Math::randf();
+					float s = Math::randf(), t = Math_TAU * Math::randf();
 					float radius = emission_sphere_radius * Math::sqrt(1.0 - s * s);
 					p.transform[2] = Vector2(Math::cos(t), Math::sin(t)) * radius;
 				} break;
@@ -837,7 +837,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 			//orbit velocity
 			float orbit_amount = (parameters[PARAM_ORBIT_VELOCITY] + tex_orbit_velocity) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_ORBIT_VELOCITY]);
 			if (orbit_amount != 0.0) {
-				float ang = orbit_amount * local_delta * Math_PI * 2.0;
+				float ang = orbit_amount * local_delta * Math_TAU;
 				// Not sure why the ParticlesMaterial code uses a clockwise rotation matrix,
 				// but we use -ang here to reproduce its behavior.
 				Transform2D rot = Transform2D(-ang, Vector2());
@@ -877,7 +877,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 			tex_hue_variation = curve_parameters[PARAM_HUE_VARIATION]->interpolate(p.custom[1]);
 		}
 
-		float hue_rot_angle = (parameters[PARAM_HUE_VARIATION] + tex_hue_variation) * Math_PI * 2.0 * Math::lerp(1.0f, p.hue_rot_rand * 2.0f - 1.0f, randomness[PARAM_HUE_VARIATION]);
+		float hue_rot_angle = (parameters[PARAM_HUE_VARIATION] + tex_hue_variation) * Math_TAU * Math::lerp(1.0f, p.hue_rot_rand * 2.0f - 1.0f, randomness[PARAM_HUE_VARIATION]);
 		float hue_rot_c = Math::cos(hue_rot_angle);
 		float hue_rot_s = Math::sin(hue_rot_angle);
 
