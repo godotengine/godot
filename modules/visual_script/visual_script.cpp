@@ -727,6 +727,26 @@ void VisualScript::rename_variable(const StringName &p_name, const StringName &p
 
 	variables[p_new_name] = variables[p_name];
 	variables.erase(p_name);
+
+	List<StringName> funcs;
+	get_function_list(&funcs);
+	for (List<StringName>::Element *F = funcs.front(); F; F = F->next()) { // loop through all the functions
+		List<int> ids;
+		get_node_list(F->get(), &ids);
+		for (List<int>::Element *E = ids.front(); E; E = E->next()) {
+			Ref<VisualScriptVariableGet> nodeget = get_node(F->get(), E->get());
+			if (nodeget.is_valid()) {
+				if (nodeget->get_variable() == p_name)
+					nodeget->set_variable(p_new_name);
+			} else {
+				Ref<VisualScriptVariableSet> nodeset = get_node(F->get(), E->get());
+				if (nodeset.is_valid()) {
+					if (nodeset->get_variable() == p_name)
+						nodeset->set_variable(p_new_name);
+				}
+			}
+		}
+	}
 }
 
 void VisualScript::add_custom_signal(const StringName &p_name) {
