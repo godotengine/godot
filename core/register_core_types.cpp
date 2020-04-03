@@ -138,6 +138,7 @@ void register_core_types() {
 
 	ClassDB::register_virtual_class<InputEvent>();
 	ClassDB::register_virtual_class<InputEventWithModifiers>();
+	ClassDB::register_virtual_class<InputEventFromWindow>();
 	ClassDB::register_class<InputEventKey>();
 	ClassDB::register_virtual_class<InputEventMouse>();
 	ClassDB::register_class<InputEventMouseButton>();

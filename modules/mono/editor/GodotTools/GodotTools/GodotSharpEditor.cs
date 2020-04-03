@@ -128,7 +128,7 @@ namespace GodotTools
         {
             bool showOnStart = (bool)editorSettings.GetSetting("mono/editor/show_info_on_start");
             aboutDialogCheckBox.Pressed = showOnStart;
-            aboutDialog.PopupCenteredMinsize();
+            aboutDialog.PopupCentered();
         }
 
         private void _MenuOptionPressed(int id)
@@ -166,10 +166,10 @@ namespace GodotTools
                 bool showInfoDialog = (bool)editorSettings.GetSetting("mono/editor/show_info_on_start");
                 if (showInfoDialog)
                 {
-                    aboutDialog.PopupExclusive = true;
+                    aboutDialog.Exclusive = true;
                     _ShowAboutDialog();
                     // Once shown a first time, it can be seen again via the Mono menu - it doesn't have to be exclusive from that time on.
-                    aboutDialog.PopupExclusive = false;
+                    aboutDialog.Exclusive = false;
                 }
 
                 var fileSystemDock = GetEditorInterface().GetFileSystemDock();
@@ -212,9 +212,9 @@ namespace GodotTools
 
         public void ShowErrorDialog(string message, string title = "Error")
         {
-            errorDialog.WindowTitle = title;
+            errorDialog.Title = title;
             errorDialog.DialogText = message;
-            errorDialog.PopupCenteredMinsize();
+            errorDialog.PopupCentered();
         }
 
         private static string _vsCodePath = string.Empty;
@@ -383,7 +383,6 @@ namespace GodotTools
 
             menuPopup = new PopupMenu();
             menuPopup.Hide();
-            menuPopup.SetAsToplevel(true);
 
             AddToolSubmenuItem("Mono", menuPopup);
 
@@ -392,7 +391,7 @@ namespace GodotTools
                 menuPopup.AddItem("About C# support".TTR(), (int)MenuOptions.AboutCSharp);
                 aboutDialog = new AcceptDialog();
                 editorBaseControl.AddChild(aboutDialog);
-                aboutDialog.WindowTitle = "Important: C# support is not feature-complete";
+                aboutDialog.Title = "Important: C# support is not feature-complete";
 
                 // We don't use DialogText as the default AcceptDialog Label doesn't play well with the TextureRect and CheckBox
                 // we'll add. Instead we add containers and a new autowrapped Label inside.
@@ -406,7 +405,7 @@ namespace GodotTools
                 aboutVBox.AddChild(aboutHBox);
 
                 var aboutIcon = new TextureRect();
-                aboutIcon.Texture = aboutIcon.GetIcon("NodeWarning", "EditorIcons");
+                aboutIcon.Texture = aboutIcon.GetThemeIcon("NodeWarning", "EditorIcons");
                 aboutHBox.AddChild(aboutIcon);
 
                 var aboutLabel = new Label();
