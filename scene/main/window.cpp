@@ -1040,6 +1040,7 @@ void Window::popup(const Rect2i &p_screen_rect) {
 		set_size(p_screen_rect.size);
 	}
 
+	_update_window_size();
 	Rect2i adjust = _popup_adjust_rect();
 	if (adjust != Rect2i()) {
 		set_position(adjust.position);
