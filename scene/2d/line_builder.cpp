@@ -554,7 +554,7 @@ void LineBuilder::new_arc(Vector2 center, Vector2 vbegin, float angle_delta, Col
 	float t = Vector2(1, 0).angle_to(vbegin);
 	float end_angle = t + angle_delta;
 	Vector2 rpos(0, 0);
-	float tt_begin = -Math_PI / 2.f;
+	float tt_begin = -Math_PI / 2.0f;
 	float tt = tt_begin;
 
 	// Center vertice
