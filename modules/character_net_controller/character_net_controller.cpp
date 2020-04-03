@@ -32,7 +32,6 @@
 
 #include "core/engine.h"
 #include "core/io/marshalls.h"
-#include "scene/3d/spatial.h"
 #include <stdint.h>
 #include <algorithm>
 

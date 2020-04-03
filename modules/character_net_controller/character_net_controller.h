@@ -41,7 +41,6 @@
 #define CHARACTER_NET_CONTROLLER_H
 
 struct Controller;
-class Spatial;
 
 class CharacterNetController : public Node {
 	GDCLASS(CharacterNetController, Node);

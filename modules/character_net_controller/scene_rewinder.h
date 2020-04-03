@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  scene_rewinder.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,17 +28,36 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#include "scene/main/node.h"
 
-#include "character_net_controller.h"
-#include "scene_rewinder.h"
+#ifndef SCENE_REWINDER_H
+#define SCENE_REWINDER_H
 
-void register_character_net_controller_types() {
+class SceneRewinder : public Node {
+	GDCLASS(SceneRewinder, Node);
 
-	ClassDB::register_class<PlayerInputsReference>();
-	ClassDB::register_class<CharacterNetController>();
-	ClassDB::register_class<SceneRewinder>();
-}
+public:
+	static void _bind_methods();
 
-void unregister_character_net_controller_types() {
-}
+	virtual void _notification(int p_what);
+
+public:
+	SceneRewinder();
+
+	void register_sync_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify_to = StringName());
+	void unregister_sync_variable(Node *p_node, StringName p_variable);
+
+	StringName get_changed_event_name(StringName p_variable);
+
+	void track_variable_changes(Node *p_node, StringName p_variable, StringName p_method);
+	void untrack_variable_changes(Node *p_node, StringName p_variable, StringName p_method);
+
+	void register_sync_action(Node *p_node, StringName p_action);
+	void unregister_sync_action(Node *p_node, StringName p_action);
+	void trigger_action(Node *p_node, StringName p_action);
+
+	void register_sync_process(Node *p_node, StringName p_func_name);
+	void unregister_sync_process(Node *p_node, StringName p_func_name);
+};
+
+#endif
