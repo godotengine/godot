@@ -110,6 +110,7 @@
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
+#include "scene/gui/subviewport_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tabs.h"
 #include "scene/gui/text_edit.h"
@@ -119,7 +120,6 @@
 #include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/video_player.h"
-#include "scene/gui/viewport_container.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/http_request.h"
@@ -357,7 +357,7 @@ void register_scene_types() {
 	ClassDB::register_class<ConfirmationDialog>();
 
 	ClassDB::register_class<MarginContainer>();
-	ClassDB::register_class<ViewportContainer>();
+	ClassDB::register_class<SubViewportContainer>();
 	ClassDB::register_virtual_class<SplitContainer>();
 	ClassDB::register_class<HSplitContainer>();
 	ClassDB::register_class<VSplitContainer>();
@@ -842,6 +842,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("StaticBody", "StaticBody3D");
 	ClassDB::add_compatibility_class("VehicleBody", "VehicleBody3D");
 	ClassDB::add_compatibility_class("VehicleWheel", "VehicleWheel3D");
+	ClassDB::add_compatibility_class("ViewportContainer", "SubViewportContainer");
 	ClassDB::add_compatibility_class("VisibilityEnabler", "VisibilityEnabler3D");
 	ClassDB::add_compatibility_class("VisibilityNotifier", "VisibilityNotifier3D");
 	ClassDB::add_compatibility_class("VisualServer", "RenderingServer");

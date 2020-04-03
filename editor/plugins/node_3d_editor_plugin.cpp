@@ -48,7 +48,7 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/3d/visual_instance_3d.h"
-#include "scene/gui/viewport_container.h"
+#include "scene/gui/subviewport_container.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/surface_tool.h"
 #include "servers/display_server.h"
@@ -418,12 +418,12 @@ Vector3 Node3DEditorViewport::_get_camera_position() const {
 
 Point2 Node3DEditorViewport::_point_to_screen(const Vector3 &p_point) {
 
-	return camera->unproject_position(p_point) * viewport_container->get_stretch_shrink();
+	return camera->unproject_position(p_point) * subviewport_container->get_stretch_shrink();
 }
 
 Vector3 Node3DEditorViewport::_get_ray_pos(const Vector2 &p_pos) const {
 
-	return camera->project_ray_origin(p_pos / viewport_container->get_stretch_shrink());
+	return camera->project_ray_origin(p_pos / subviewport_container->get_stretch_shrink());
 }
 
 Vector3 Node3DEditorViewport::_get_camera_normal() const {
@@ -433,7 +433,7 @@ Vector3 Node3DEditorViewport::_get_camera_normal() const {
 
 Vector3 Node3DEditorViewport::_get_ray(const Vector2 &p_pos) const {
 
-	return camera->project_ray_normal(p_pos / viewport_container->get_stretch_shrink());
+	return camera->project_ray_normal(p_pos / subviewport_container->get_stretch_shrink());
 }
 
 void Node3DEditorViewport::_clear_selected() {
@@ -494,7 +494,7 @@ ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, b
 
 	Vector3 ray = _get_ray(p_pos);
 	Vector3 pos = _get_ray_pos(p_pos);
-	Vector2 shrinked_pos = p_pos / viewport_container->get_stretch_shrink();
+	Vector2 shrinked_pos = p_pos / subviewport_container->get_stretch_shrink();
 
 	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_ray(pos, ray, get_tree()->get_root()->get_world()->get_scenario());
 	Set<Ref<EditorNode3DGizmo>> found_gizmos;
@@ -2472,8 +2472,8 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 		bool shrink = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION));
 
-		if (shrink != (viewport_container->get_stretch_shrink() > 1)) {
-			viewport_container->set_stretch_shrink(shrink ? 2 : 1);
+		if (shrink != (subviewport_container->get_stretch_shrink() > 1)) {
+			subviewport_container->set_stretch_shrink(shrink ? 2 : 1);
 		}
 
 		//update msaa if changed
@@ -3237,8 +3237,8 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	const int viewport_base_height = 400 * MAX(1, EDSCALE);
 	gizmo_scale =
 			(gizmo_size / Math::abs(dd)) * MAX(1, EDSCALE) *
-			MIN(viewport_base_height, viewport_container->get_size().height) / viewport_base_height /
-			viewport_container->get_stretch_shrink();
+			MIN(viewport_base_height, subviewport_container->get_size().height) / viewport_base_height /
+			subviewport_container->get_stretch_shrink();
 	Vector3 scale = Vector3(1, 1, 1) * gizmo_scale;
 
 	xform.basis.scale(scale);
@@ -3398,7 +3398,7 @@ Dictionary Node3DEditorViewport::get_state() const {
 	d["gizmos"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_GIZMOS));
 	d["information"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_INFORMATION));
 	d["fps"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_FPS));
-	d["half_res"] = viewport_container->get_stretch_shrink() > 1;
+	d["half_res"] = subviewport_container->get_stretch_shrink() > 1;
 	d["cinematic_preview"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW));
 	if (previewing)
 		d["previewing"] = EditorNode::get_singleton()->get_edited_scene()->get_path_to(previewing);
@@ -3829,8 +3829,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	zoom_indicator_delay = 0.0;
 
 	spatial_editor = p_spatial_editor;
-	ViewportContainer *c = memnew(ViewportContainer);
-	viewport_container = c;
+	SubViewportContainer *c = memnew(SubViewportContainer);
+	subviewport_container = c;
 	c->set_stretch(true);
 	add_child(c);
 	c->set_anchors_and_margins_preset(Control::PRESET_WIDE);
