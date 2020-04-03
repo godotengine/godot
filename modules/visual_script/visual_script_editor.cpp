@@ -1155,6 +1155,8 @@ void VisualScriptEditor::_member_edited() {
 		undo_redo->add_undo_method(script.ptr(), "rename_variable", new_name, name);
 		undo_redo->add_do_method(this, "_update_members");
 		undo_redo->add_undo_method(this, "_update_members");
+		undo_redo->add_do_method(this, "_update_graph");
+		undo_redo->add_undo_method(this, "_update_graph");
 		undo_redo->add_do_method(this, "emit_signal", "edited_script_changed");
 		undo_redo->add_undo_method(this, "emit_signal", "edited_script_changed");
 		undo_redo->commit_action();
@@ -3917,7 +3919,9 @@ void VisualScriptEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			variable_editor->connect("changed", callable_mp(this, &VisualScriptEditor::_update_members));
+			variable_editor->connect("changed", callable_mp(this, &VisualScriptEditor::_update_graph), varray(-1), CONNECT_DEFERRED);
 			signal_editor->connect("changed", callable_mp(this, &VisualScriptEditor::_update_members));
+			signal_editor->connect("changed", callable_mp(this, &VisualScriptEditor::_update_graph), varray(-1), CONNECT_DEFERRED);
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
@@ -4629,6 +4633,7 @@ void VisualScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_input", &VisualScriptEditor::_input);
 
 	ClassDB::bind_method("_update_graph_connections", &VisualScriptEditor::_update_graph_connections);
+	ClassDB::bind_method("_update_members", &VisualScriptEditor::_update_members);
 
 	ClassDB::bind_method("_generic_search", &VisualScriptEditor::_generic_search);
 }
