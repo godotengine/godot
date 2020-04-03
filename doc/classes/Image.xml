@@ -99,7 +99,7 @@
 			</return>
 			<argument index="0" name="mode" type="int" enum="Image.CompressMode">
 			</argument>
-			<argument index="1" name="channels" type="int" enum="Image.CompressSource">
+			<argument index="1" name="channels" type="int" enum="Image.UsedChannels">
 			</argument>
 			<argument index="2" name="lossy_quality" type="float" default="0.7">
 			</argument>
