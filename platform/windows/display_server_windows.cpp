@@ -1804,6 +1804,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		}
 	}
 
+	if (window_id == INVALID_WINDOW_ID)
+		return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+
 	switch (uMsg) // Check For Windows Messages
 	{
 		case WM_SETFOCUS: {
@@ -3006,5 +3009,6 @@ DisplayServerWindows::~DisplayServerWindows() {
 #endif
 
 		DestroyWindow(windows[MAIN_WINDOW_ID].hWnd);
+		windows.erase(MAIN_WINDOW_ID);
 	}
 }
