@@ -860,42 +860,42 @@ struct _VariantCall {
 	VCALL_PTR1R(Transform2D, is_equal_approx);
 
 	static void _call_Transform2D_xform(Variant &r_ret, Variant &p_self, const Variant **p_args) {
-
 		switch (p_args[0]->type) {
-
 			case Variant::VECTOR2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform(p_args[0]->operator Vector2()); return;
 			case Variant::RECT2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform(p_args[0]->operator Rect2()); return;
 			case Variant::PACKED_VECTOR2_ARRAY: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform(p_args[0]->operator PackedVector2Array()); return;
-			default: r_ret = Variant();
+			default:
+				r_ret = Variant();
+				ERR_PRINT("Invalid type in function 'xform' in base 'Transform2D'. Valid types are Vector2, Rect2, and PackedVector2Array.");
 		}
 	}
 
 	static void _call_Transform2D_xform_inv(Variant &r_ret, Variant &p_self, const Variant **p_args) {
-
 		switch (p_args[0]->type) {
-
 			case Variant::VECTOR2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Vector2()); return;
 			case Variant::RECT2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Rect2()); return;
 			case Variant::PACKED_VECTOR2_ARRAY: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform_inv(p_args[0]->operator PackedVector2Array()); return;
-			default: r_ret = Variant();
+			default:
+				r_ret = Variant();
+				ERR_PRINT("Invalid type in function 'xform_inv' in base 'Transform2D'. Valid types are Vector2, Rect2, and PackedVector2Array.");
 		}
 	}
 
 	static void _call_Transform2D_basis_xform(Variant &r_ret, Variant &p_self, const Variant **p_args) {
-
 		switch (p_args[0]->type) {
-
 			case Variant::VECTOR2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->basis_xform(p_args[0]->operator Vector2()); return;
-			default: r_ret = Variant();
+			default:
+				r_ret = Variant();
+				ERR_PRINT("Invalid type in function 'basis_xform' in base 'Transform2D'. Only Vector2 is valid.");
 		}
 	}
 
 	static void _call_Transform2D_basis_xform_inv(Variant &r_ret, Variant &p_self, const Variant **p_args) {
-
 		switch (p_args[0]->type) {
-
 			case Variant::VECTOR2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->basis_xform_inv(p_args[0]->operator Vector2()); return;
-			default: r_ret = Variant();
+			default:
+				r_ret = Variant();
+				ERR_PRINT("Invalid type in function 'basis_xform_inv' in base 'Transform2D'. Only Vector2 is valid.");
 		}
 	}
 
@@ -928,36 +928,28 @@ struct _VariantCall {
 	VCALL_PTR1R(Transform, is_equal_approx);
 
 	static void _call_Transform_xform(Variant &r_ret, Variant &p_self, const Variant **p_args) {
-
 		switch (p_args[0]->type) {
-
 			case Variant::VECTOR3: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator Vector3()); return;
 			case Variant::PLANE: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator Plane()); return;
 			case Variant::AABB: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator ::AABB()); return;
 			case Variant::PACKED_VECTOR3_ARRAY: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator ::PackedVector3Array()); return;
-			default: r_ret = Variant();
+			default:
+				r_ret = Variant();
+				ERR_PRINT("Invalid type in function 'xform' in base 'Transform'. Valid types are Vector3, Plane, AABB, and PackedVector3Array.");
 		}
 	}
 
 	static void _call_Transform_xform_inv(Variant &r_ret, Variant &p_self, const Variant **p_args) {
-
 		switch (p_args[0]->type) {
-
 			case Variant::VECTOR3: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Vector3()); return;
 			case Variant::PLANE: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Plane()); return;
 			case Variant::AABB: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator ::AABB()); return;
 			case Variant::PACKED_VECTOR3_ARRAY: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator ::PackedVector3Array()); return;
-			default: r_ret = Variant();
+			default:
+				r_ret = Variant();
+				ERR_PRINT("Invalid type in function 'xform_inv' in base 'Transform'. Valid types are Vector3, Plane, AABB, and PackedVector3Array.");
 		}
 	}
-
-	/*
-	VCALL_PTR0( Transform, invert );
-	VCALL_PTR0( Transform, affine_invert );
-	VCALL_PTR2( Transform, rotate );
-	VCALL_PTR1( Transform, scale );
-	VCALL_PTR1( Transform, translate );
-	VCALL_PTR0( Transform, orthonormalize ); */
 
 	struct ConstructData {
 
