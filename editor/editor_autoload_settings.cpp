@@ -48,8 +48,6 @@ void EditorAutoloadSettings::_notification(int p_what) {
 		ResourceLoader::get_recognized_extensions_for_type("Script", &afn);
 		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &afn);
 
-		EditorFileDialog *file_dialog = autoload_add_path->get_file_dialog();
-
 		for (List<String>::Element *E = afn.front(); E; E = E->next()) {
 
 			file_dialog->add_filter("*." + E->get());
@@ -61,6 +59,9 @@ void EditorAutoloadSettings::_notification(int p_what) {
 				get_tree()->get_root()->call_deferred("add_child", info.node);
 			}
 		}
+		browse_button->set_icon(get_theme_icon("Folder", "EditorIcons"));
+	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
+		browse_button->set_icon(get_theme_icon("Folder", "EditorIcons"));
 	}
 }
 
@@ -116,8 +117,8 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 
 void EditorAutoloadSettings::_autoload_add() {
 
-	if (autoload_add(autoload_add_name->get_text(), autoload_add_path->get_line_edit()->get_text()))
-		autoload_add_path->get_line_edit()->set_text("");
+	if (autoload_add(autoload_add_name->get_text(), autoload_add_path->get_text()))
+		autoload_add_path->set_text("");
 
 	autoload_add_name->set_text("");
 	add_autoload->set_disabled(true);
@@ -326,7 +327,7 @@ void EditorAutoloadSettings::_autoload_file_callback(const String &p_path) {
 
 void EditorAutoloadSettings::_autoload_text_entered(const String p_name) {
 
-	if (autoload_add_path->get_line_edit()->get_text() != "" && _autoload_name_is_valid(p_name, nullptr)) {
+	if (autoload_add_path->get_text() != "" && _autoload_name_is_valid(p_name, nullptr)) {
 		_autoload_add();
 	}
 }
@@ -340,7 +341,7 @@ void EditorAutoloadSettings::_autoload_path_text_changed(const String p_path) {
 void EditorAutoloadSettings::_autoload_text_changed(const String p_name) {
 
 	add_autoload->set_disabled(
-			autoload_add_path->get_line_edit()->get_text() == "" || !_autoload_name_is_valid(p_name, nullptr));
+			autoload_add_path->get_text() == "" || !_autoload_name_is_valid(p_name, nullptr));
 }
 
 Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
@@ -823,13 +824,24 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	l->set_text(TTR("Path:"));
 	hbc->add_child(l);
 
-	autoload_add_path = memnew(EditorLineEditFileChooser);
-	autoload_add_path->set_h_size_flags(SIZE_EXPAND_FILL);
-	autoload_add_path->get_file_dialog()->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-	autoload_add_path->get_file_dialog()->connect("file_selected", callable_mp(this, &EditorAutoloadSettings::_autoload_file_callback));
-	autoload_add_path->get_line_edit()->connect("text_changed", callable_mp(this, &EditorAutoloadSettings::_autoload_path_text_changed));
-
+	autoload_add_path = memnew(LineEdit);
 	hbc->add_child(autoload_add_path);
+	autoload_add_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	autoload_add_path->connect("text_changed", callable_mp(this, &EditorAutoloadSettings::_autoload_path_text_changed));
+
+	browse_button = memnew(Button);
+	hbc->add_child(browse_button);
+	browse_button->connect("pressed", callable_mp(this, &EditorAutoloadSettings::_browse_autoload_add_path));
+
+	file_dialog = memnew(EditorFileDialog);
+	hbc->add_child(file_dialog);
+	file_dialog->connect("file_selected", callable_mp(this, &EditorAutoloadSettings::_set_autoload_add_path));
+	file_dialog->connect("dir_selected", callable_mp(this, &EditorAutoloadSettings::_set_autoload_add_path));
+	file_dialog->connect("files_selected", callable_mp(this, &EditorAutoloadSettings::_set_autoload_add_path));
+
+	hbc->set_h_size_flags(SIZE_EXPAND_FILL);
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+	file_dialog->connect("file_selected", callable_mp(this, &EditorAutoloadSettings::_autoload_file_callback));
 
 	l = memnew(Label);
 	l->set_text(TTR("Node Name:"));
@@ -889,4 +901,15 @@ EditorAutoloadSettings::~EditorAutoloadSettings() {
 			memdelete(info.node);
 		}
 	}
+}
+
+void EditorAutoloadSettings::_set_autoload_add_path(const String &p_text) {
+
+	autoload_add_path->set_text(p_text);
+	autoload_add_path->emit_signal("text_entered", p_text);
+}
+
+void EditorAutoloadSettings::_browse_autoload_add_path() {
+
+	file_dialog->popup_centered_ratio();
 }
