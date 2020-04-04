@@ -48,6 +48,7 @@
 #include "servers/rendering/rasterizer_rd/shaders/ssao.glsl.gen.h"
 #include "servers/rendering/rasterizer_rd/shaders/ssao_blur.glsl.gen.h"
 #include "servers/rendering/rasterizer_rd/shaders/ssao_minify.glsl.gen.h"
+#include "servers/rendering/rasterizer_rd/shaders/subsurface_scattering.glsl.gen.h"
 #include "servers/rendering/rasterizer_rd/shaders/tonemap.glsl.gen.h"
 
 #include "servers/rendering_server.h"
@@ -480,6 +481,29 @@ class RasterizerEffectsRD {
 		RID pipeline;
 	} ssr_scale;
 
+	struct SubSurfaceScatteringPushConstant {
+
+		int32_t screen_size[2];
+		float camera_z_far;
+		float camera_z_near;
+
+		uint32_t vertical;
+		uint32_t orthogonal;
+		float unit_size;
+		float scale;
+
+		float depth_scale;
+		uint32_t pad[3];
+	};
+
+	struct SubSurfaceScattering {
+
+		SubSurfaceScatteringPushConstant push_constant;
+		SubsurfaceScatteringShaderRD shader;
+		RID shader_version;
+		RID pipelines[3]; //3 quality levels
+	} sss;
+
 	RID default_sampler;
 	RID default_mipmap_sampler;
 	RID index_buffer;
@@ -571,6 +595,7 @@ public:
 
 	void screen_space_reflection(RID p_diffuse, RID p_normal, RS::EnvironmentSSRRoughnessQuality p_roughness_quality, RID p_roughness, RID p_blur_radius, RID p_blur_radius2, RID p_metallic, const Color &p_metallic_mask, RID p_depth, RID p_scale_depth, RID p_scale_normal, RID p_output, RID p_output_blur, const Size2i &p_screen_size, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const CameraMatrix &p_camera);
 	void merge_specular(RID p_dest_framebuffer, RID p_specular, RID p_base, RID p_reflection);
+	void sub_surface_scattering(RID p_diffuse, RID p_diffuse2, RID p_depth, const CameraMatrix &p_camera, const Size2i &p_screen_size, float p_scale, float p_depth_scale, RS::SubSurfaceScatteringQuality p_quality);
 
 	RasterizerEffectsRD();
 	~RasterizerEffectsRD();

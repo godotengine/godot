@@ -369,6 +369,11 @@ void EditorNode::_notification(int p_what) {
 				RS::get_singleton()->environment_glow_set_use_bicubic_upscale(glow_bicubic);
 				RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::EnvironmentSSRRoughnessQuality(int(GLOBAL_GET("rendering/quality/screen_space_reflection/roughness_quality")));
 				RS::get_singleton()->environment_set_ssr_roughness_quality(ssr_roughness_quality);
+				RS::SubSurfaceScatteringQuality sss_quality = RS::SubSurfaceScatteringQuality(int(GLOBAL_GET("rendering/quality/subsurface_scattering/subsurface_scattering_quality")));
+				RS::get_singleton()->sub_surface_scattering_set_quality(sss_quality);
+				float sss_scale = GLOBAL_GET("rendering/quality/subsurface_scattering/subsurface_scattering_scale");
+				float sss_depth_scale = GLOBAL_GET("rendering/quality/subsurface_scattering/subsurface_scattering_depth_scale");
+				RS::get_singleton()->sub_surface_scattering_set_scale(sss_scale, sss_depth_scale);
 			}
 
 			ResourceImporterTexture::get_singleton()->update_imports();

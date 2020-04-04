@@ -1795,6 +1795,14 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 	render_list.clear();
 	_fill_render_list(p_cull_result, p_cull_count, PASS_MODE_COLOR, render_buffer == nullptr);
 
+	bool using_sss = render_buffer && scene_state.used_sss && sub_surface_scattering_get_quality() != RS::SUB_SURFACE_SCATTERING_QUALITY_DISABLED;
+
+	if (using_sss) {
+		using_separate_specular = true;
+		render_buffer->ensure_specular();
+		using_separate_specular = true;
+		opaque_specular_framebuffer = render_buffer->color_specular_fb;
+	}
 	RID radiance_uniform_set;
 	bool draw_sky = false;
 
@@ -1894,8 +1902,8 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 
 	RENDER_TIMESTAMP("Render Opaque Pass");
 
-	bool can_continue_color = !scene_state.used_screen_texture && !using_ssr && !scene_state.used_sss;
-	bool can_continue_depth = !scene_state.used_depth_texture && !using_ssr;
+	bool can_continue_color = !scene_state.used_screen_texture && !using_ssr && !using_sss;
+	bool can_continue_depth = !scene_state.used_depth_texture && !using_ssr && !using_sss;
 
 	{
 
@@ -1904,10 +1912,15 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 
 		//regular forward for now
 		Vector<Color> c;
-		c.push_back(clear_color.to_linear());
 		if (using_separate_specular) {
+			Color cc = clear_color.to_linear();
+			cc.a = 0; //subsurf scatter must be 0
+			c.push_back(cc);
 			c.push_back(Color(0, 0, 0, 0));
+		} else {
+			c.push_back(clear_color.to_linear());
 		}
+
 		RID framebuffer = using_separate_specular ? opaque_specular_framebuffer : opaque_framebuffer;
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, will_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, depth_pre_pass ? (using_ssao ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CONTINUE) : RD::INITIAL_ACTION_CLEAR, will_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0);
 		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(framebuffer), render_list.elements, render_list.element_count, false, using_separate_specular ? PASS_MODE_COLOR_SPECULAR : PASS_MODE_COLOR, render_buffer == nullptr, radiance_uniform_set, render_buffers_uniform_set);
@@ -1950,10 +1963,9 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 
 	if (using_separate_specular) {
 
-		if (scene_state.used_sss) {
+		if (using_sss) {
 			RENDER_TIMESTAMP("Sub Surface Scattering");
-
-			//_process_sss()
+			_process_sss(p_render_buffer, p_cam_projection);
 		}
 
 		if (using_ssr) {
@@ -2619,6 +2631,8 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 		actions.render_mode_defines["diffuse_oren_nayar"] = "#define DIFFUSE_OREN_NAYAR\n";
 		actions.render_mode_defines["diffuse_lambert_wrap"] = "#define DIFFUSE_LAMBERT_WRAP\n";
 		actions.render_mode_defines["diffuse_toon"] = "#define DIFFUSE_TOON\n";
+
+		actions.render_mode_defines["sss_mode_skin"] = "#define SSS_MODE_SKIN\n";
 
 		bool force_blinn = GLOBAL_GET("rendering/quality/shading/force_blinn_over_ggx");
 
