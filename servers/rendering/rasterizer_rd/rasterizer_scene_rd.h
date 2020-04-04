@@ -93,6 +93,7 @@ protected:
 
 	void _process_ssao(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const CameraMatrix &p_projection);
 	void _process_ssr(RID p_render_buffers, RID p_dest_framebuffer, RID p_normal_buffer, RID p_roughness_buffer, RID p_specular_buffer, RID p_metallic, const Color &p_metallic_mask, RID p_environment, const CameraMatrix &p_projection, bool p_use_additive);
+	void _process_sss(RID p_render_buffers, const CameraMatrix &p_camera);
 
 	void _setup_sky(RID p_environment, const Vector3 &p_position, const Size2i p_screen_size);
 	void _update_sky(RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform);
@@ -698,6 +699,9 @@ private:
 	RS::DOFBlurQuality dof_blur_quality = RS::DOF_BLUR_QUALITY_MEDIUM;
 	RS::DOFBokehShape dof_blur_bokeh_shape = RS::DOF_BOKEH_HEXAGON;
 	bool dof_blur_use_jitter = false;
+	RS::SubSurfaceScatteringQuality sss_quality = RS::SUB_SURFACE_SCATTERING_QUALITY_MEDIUM;
+	float sss_scale = 0.05;
+	float sss_depth_scale = 0.01;
 
 	mutable RID_Owner<CameraEffects> camera_effects_owner;
 
@@ -1109,6 +1113,10 @@ public:
 	virtual void screen_space_roughness_limiter_set_active(bool p_enable, float p_curve);
 	virtual bool screen_space_roughness_limiter_is_active() const;
 	virtual float screen_space_roughness_limiter_get_curve() const;
+
+	virtual void sub_surface_scattering_set_quality(RS::SubSurfaceScatteringQuality p_quality);
+	RS::SubSurfaceScatteringQuality sub_surface_scattering_get_quality() const;
+	virtual void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale);
 
 	int get_roughness_layers() const;
 	bool is_using_radiance_cubemap_array() const;

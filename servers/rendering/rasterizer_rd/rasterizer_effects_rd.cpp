@@ -461,6 +461,53 @@ void RasterizerEffectsRD::screen_space_reflection(RID p_diffuse, RID p_normal, R
 	RD::get_singleton()->compute_list_end();
 }
 
+void RasterizerEffectsRD::sub_surface_scattering(RID p_diffuse, RID p_diffuse2, RID p_depth, const CameraMatrix &p_camera, const Size2i &p_screen_size, float p_scale, float p_depth_scale, RenderingServer::SubSurfaceScatteringQuality p_quality) {
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+
+	int32_t x_groups = (p_screen_size.width - 1) / 8 + 1;
+	int32_t y_groups = (p_screen_size.height - 1) / 8 + 1;
+
+	Plane p = p_camera.xform4(Plane(1, 0, -1, 1));
+	p.normal /= p.d;
+	float unit_size = p.normal.x;
+
+	{ //scale color and depth to half
+		sss.push_constant.camera_z_far = p_camera.get_z_far();
+		sss.push_constant.camera_z_near = p_camera.get_z_near();
+		sss.push_constant.orthogonal = p_camera.is_orthogonal();
+		sss.push_constant.unit_size = unit_size;
+		sss.push_constant.screen_size[0] = p_screen_size.x;
+		sss.push_constant.screen_size[1] = p_screen_size.y;
+		sss.push_constant.vertical = false;
+		sss.push_constant.scale = p_scale;
+		sss.push_constant.depth_scale = p_depth_scale;
+
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sss.pipelines[p_quality - 1]);
+
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_diffuse), 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_diffuse2), 1);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_depth), 2);
+
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &sss.push_constant, sizeof(SubSurfaceScatteringPushConstant));
+
+		RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
+
+		RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_diffuse2), 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_diffuse), 1);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_depth), 2);
+
+		sss.push_constant.vertical = true;
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &sss.push_constant, sizeof(SubSurfaceScatteringPushConstant));
+
+		RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
+
+		RD::get_singleton()->compute_list_end();
+	}
+}
+
 void RasterizerEffectsRD::merge_specular(RID p_dest_framebuffer, RID p_specular, RID p_base, RID p_reflection) {
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, Vector<Color>());
@@ -1063,8 +1110,7 @@ void RasterizerEffectsRD::render_sky(RD::DrawListID p_list, float p_time, RID p_
 
 RasterizerEffectsRD::RasterizerEffectsRD() {
 
-	{
-		// Initialize blur
+	{ // Initialize blur
 		Vector<String> blur_modes;
 		blur_modes.push_back("\n#define MODE_GAUSSIAN_BLUR\n");
 		blur_modes.push_back("\n#define MODE_GAUSSIAN_GLOW\n");
@@ -1356,6 +1402,21 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 		ssr_scale.pipeline = RD::get_singleton()->compute_pipeline_create(ssr_scale.shader.version_get_shader(ssr_scale.shader_version, 0));
 	}
 
+	{
+		Vector<String> sss_modes;
+		sss_modes.push_back("\n#define USE_11_SAMPLES\n");
+		sss_modes.push_back("\n#define USE_17_SAMPLES\n");
+		sss_modes.push_back("\n#define USE_25_SAMPLES\n");
+
+		sss.shader.initialize(sss_modes);
+
+		sss.shader_version = sss.shader.version_create();
+
+		for (int i = 0; i < sss_modes.size(); i++) {
+			sss.pipelines[i] = RD::get_singleton()->compute_pipeline_create(sss.shader.version_get_shader(sss.shader_version, i));
+		}
+	}
+
 	RD::SamplerState sampler;
 	sampler.mag_filter = RD::SAMPLER_FILTER_LINEAR;
 	sampler.min_filter = RD::SAMPLER_FILTER_LINEAR;
@@ -1412,4 +1473,8 @@ RasterizerEffectsRD::~RasterizerEffectsRD() {
 	roughness_limiter.shader.version_free(roughness_limiter.shader_version);
 	cubemap_downsampler.shader.version_free(cubemap_downsampler.shader_version);
 	filter.shader.version_free(filter.shader_version);
+	ssr.shader.version_free(ssr.shader_version);
+	ssr_scale.shader.version_free(ssr_scale.shader_version);
+	ssr_filter.shader.version_free(ssr_filter.shader_version);
+	sss.shader.version_free(sss.shader_version);
 }

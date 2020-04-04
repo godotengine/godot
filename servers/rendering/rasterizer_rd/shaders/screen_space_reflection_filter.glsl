@@ -69,8 +69,6 @@ float gauss_weight(float p_val) {
 	return mix(gauss_table[idx], gauss_table[idx + 1], c);
 }
 
-#define GAUSS_WEIGHT(m_val) gauss_table[clamp(int(m_val * float(GAUSS_TABLE_SIZE - 1)), 0, GAUSS_TABLE_SIZE - 1)]
-
 #define M_PI 3.14159265359
 
 vec3 reconstructCSPosition(vec2 S, float z) {
@@ -105,17 +103,14 @@ void do_filter(inout vec4 accum, inout float accum_radius, inout float divisor, 
 			break;
 		}
 
-		float contrib = 0.0;
 		if (d < radius) {
-			contrib += gauss_weight(d / radius);
-		}
 
-		if (contrib > 0.0) {
-			accum += imageLoad(source_ssr, tc) * contrib;
+			float w = gauss_weight(d / radius);
+			accum += imageLoad(source_ssr, tc) * w;
 #ifndef VERTICAL_PASS
-			accum_radius += r * contrib;
+			accum_radius += r * w;
 #endif
-			divisor += contrib;
+			divisor += w;
 		}
 	}
 }

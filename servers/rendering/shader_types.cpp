@@ -168,6 +168,8 @@ ShaderTypes::ShaderTypes() {
 
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("depth_test_disabled");
 
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back("sss_mode_skin");
+
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("cull_back");
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("cull_front");
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("cull_disabled");

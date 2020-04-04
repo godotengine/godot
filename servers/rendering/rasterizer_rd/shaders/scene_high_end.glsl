@@ -1697,6 +1697,9 @@ FRAGMENT_SHADER_CODE
 
 #else
 
+#ifdef SSS_MODE_SKIN
+	sss_strength = -sss_strength;
+#endif
 	diffuse_buffer = vec4(emission + diffuse_light + ambient_light, sss_strength);
 	specular_buffer = vec4(specular_light, metallic);
 

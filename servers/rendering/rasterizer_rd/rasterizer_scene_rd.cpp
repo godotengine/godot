@@ -3203,6 +3203,26 @@ void RasterizerSceneRD::_free_render_buffer_data(RenderBuffers *rb) {
 	}
 }
 
+void RasterizerSceneRD::_process_sss(RID p_render_buffers, const CameraMatrix &p_camera) {
+
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND(!rb);
+
+	bool can_use_effects = rb->width >= 8 && rb->height >= 8;
+
+	if (!can_use_effects) {
+		//just copy
+		return;
+	}
+
+	if (rb->blur[0].texture.is_null()) {
+		_allocate_blur_textures(rb);
+		_render_buffers_uniform_set_changed(p_render_buffers);
+	}
+
+	storage->get_effects()->sub_surface_scattering(rb->texture, rb->blur[0].mipmaps[0].texture, rb->depth_texture, p_camera, Size2i(rb->width, rb->height), sss_scale, sss_depth_scale, sss_quality);
+}
+
 void RasterizerSceneRD::_process_ssr(RID p_render_buffers, RID p_dest_framebuffer, RID p_normal_buffer, RID p_roughness_buffer, RID p_specular_buffer, RID p_metallic, const Color &p_metallic_mask, RID p_environment, const CameraMatrix &p_projection, bool p_use_additive) {
 
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
@@ -3545,6 +3565,19 @@ void RasterizerSceneRD::render_buffers_configure(RID p_render_buffers, RID p_ren
 
 	rb->data->configure(rb->texture, rb->depth_texture, p_width, p_height, p_msaa);
 	_render_buffers_uniform_set_changed(p_render_buffers);
+}
+
+void RasterizerSceneRD::sub_surface_scattering_set_quality(RS::SubSurfaceScatteringQuality p_quality) {
+	sss_quality = p_quality;
+}
+
+RS::SubSurfaceScatteringQuality RasterizerSceneRD::sub_surface_scattering_get_quality() const {
+	return sss_quality;
+}
+
+void RasterizerSceneRD::sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) {
+	sss_scale = p_scale;
+	sss_depth_scale = p_depth_scale;
 }
 
 int RasterizerSceneRD::get_roughness_layers() const {
@@ -4101,6 +4134,9 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 	screen_space_roughness_limiter_curve = GLOBAL_GET("rendering/quality/filters/screen_space_roughness_limiter_curve");
 	glow_bicubic_upscale = int(GLOBAL_GET("rendering/quality/glow/upscale_mode")) > 0;
 	ssr_roughness_quality = RS::EnvironmentSSRRoughnessQuality(int(GLOBAL_GET("rendering/quality/screen_space_reflection/roughness_quality")));
+	sss_quality = RS::SubSurfaceScatteringQuality(int(GLOBAL_GET("rendering/quality/subsurface_scattering/subsurface_scattering_quality")));
+	sss_scale = GLOBAL_GET("rendering/quality/subsurface_scattering/subsurface_scattering_scale");
+	sss_depth_scale = GLOBAL_GET("rendering/quality/subsurface_scattering/subsurface_scattering_depth_scale");
 }
 
 RasterizerSceneRD::~RasterizerSceneRD() {
