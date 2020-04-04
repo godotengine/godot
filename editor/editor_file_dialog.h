@@ -245,28 +245,6 @@ public:
 	~EditorFileDialog();
 };
 
-class EditorLineEditFileChooser : public HBoxContainer {
-
-	GDCLASS(EditorLineEditFileChooser, HBoxContainer);
-	Button *button;
-	LineEdit *line_edit;
-	EditorFileDialog *dialog;
-
-	void _chosen(const String &p_text);
-	void _browse();
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	Button *get_button() { return button; }
-	LineEdit *get_line_edit() { return line_edit; }
-	EditorFileDialog *get_file_dialog() { return dialog; }
-
-	EditorLineEditFileChooser();
-};
-
 VARIANT_ENUM_CAST(EditorFileDialog::FileMode);
 VARIANT_ENUM_CAST(EditorFileDialog::Access);
 VARIANT_ENUM_CAST(EditorFileDialog::DisplayMode);
