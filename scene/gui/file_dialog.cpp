@@ -73,9 +73,9 @@ void FileDialog::_notification(int p_what) {
 	}
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		dir_up->set_icon(vbox->get_theme_icon("parent_folder"));
-		refresh->set_icon(vbox->get_theme_icon("reload"));
-		show_hidden->set_icon(vbox->get_theme_icon("toggle_hidden"));
+		dir_up->set_icon(vbox->get_theme_icon("parent_folder", "FileDialog"));
+		refresh->set_icon(vbox->get_theme_icon("reload", "FileDialog"));
+		show_hidden->set_icon(vbox->get_theme_icon("toggle_hidden", "FileDialog"));
 		_theme_changed();
 	}
 }
@@ -429,8 +429,8 @@ void FileDialog::update_file_list() {
 	dir_access->list_dir_begin();
 
 	TreeItem *root = tree->create_item();
-	Ref<Texture2D> folder = vbox->get_theme_icon("folder");
-	const Color folder_color = vbox->get_theme_color("folder_icon_modulate");
+	Ref<Texture2D> folder = vbox->get_theme_icon("folder", "FileDialog");
+	const Color folder_color = vbox->get_theme_color("folder_icon_modulate", "FileDialog");
 	List<String> files;
 	List<String> dirs;
 
@@ -528,7 +528,7 @@ void FileDialog::update_file_list() {
 			}
 
 			if (mode == FILE_MODE_OPEN_DIR) {
-				ti->set_custom_color(0, vbox->get_theme_color("files_disabled"));
+				ti->set_custom_color(0, vbox->get_theme_color("files_disabled", "FileDialog"));
 				ti->set_selectable(0, false);
 			}
 			Dictionary d;
