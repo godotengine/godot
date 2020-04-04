@@ -406,7 +406,7 @@ void AudioServer::_mix_step() {
 
 			AudioFrame *buf = bus->channels.write[k].buffer.ptrw();
 
-			AudioFrame peak = AudioFrame(0, 0);
+			AudioFrame peak = AudioFrame(-200, -200);
 
 			float volume = Math::db2linear(bus->volume_db);
 
