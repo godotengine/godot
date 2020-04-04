@@ -456,6 +456,8 @@ public:
 	FUNC5(environment_set_fog_height, RID, bool, float, float, float)
 
 	FUNC2(screen_space_roughness_limiter_set_active, bool, float)
+	FUNC1(sub_surface_scattering_set_quality, SubSurfaceScatteringQuality)
+	FUNC2(sub_surface_scattering_set_scale, float, float)
 
 	FUNCRID(camera_effects)
 

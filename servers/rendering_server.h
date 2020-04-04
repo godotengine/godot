@@ -782,6 +782,16 @@ public:
 
 	virtual void screen_space_roughness_limiter_set_active(bool p_enable, float p_curve) = 0;
 
+	enum SubSurfaceScatteringQuality {
+		SUB_SURFACE_SCATTERING_QUALITY_DISABLED,
+		SUB_SURFACE_SCATTERING_QUALITY_LOW,
+		SUB_SURFACE_SCATTERING_QUALITY_MEDIUM,
+		SUB_SURFACE_SCATTERING_QUALITY_HIGH,
+	};
+
+	virtual void sub_surface_scattering_set_quality(SubSurfaceScatteringQuality p_quality) = 0;
+	virtual void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) = 0;
+
 	/* CAMERA EFFECTS */
 
 	virtual RID camera_effects_create() = 0;

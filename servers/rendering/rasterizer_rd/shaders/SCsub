@@ -25,4 +25,5 @@ if "RD_GLSL" in env["BUILDERS"]:
     env.RD_GLSL("screen_space_reflection.glsl")
     env.RD_GLSL("screen_space_reflection_filter.glsl")
     env.RD_GLSL("screen_space_reflection_scale.glsl")
+    env.RD_GLSL("subsurface_scattering.glsl")
     env.RD_GLSL("specular_merge.glsl")

@@ -444,6 +444,9 @@ void BaseMaterial3D::_update_shader() {
 		case DEPTH_DRAW_DISABLED: code += ",depth_draw_never"; break;
 	}
 
+	if (features[FEATURE_SUBSURACE_SCATTERING] && flags[FLAG_SUBSURFACE_MODE_SKIN]) {
+		code += ",sss_mode_skin";
+	}
 	if (transparency == TRANSPARENCY_ALPHA_DEPTH_PRE_PASS) {
 		code += ",depth_prepass_alpha";
 	}
@@ -2284,6 +2287,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_GROUP("Subsurf Scatter", "subsurf_scatter_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "subsurf_scatter_enabled"), "set_feature", "get_feature", FEATURE_SUBSURACE_SCATTERING);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "subsurf_scatter_strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_subsurface_scattering_strength", "get_subsurface_scattering_strength");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "subsurf_scatter_skin_mode"), "set_flag", "get_flag", FLAG_SUBSURFACE_MODE_SKIN);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "subsurf_scatter_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_SUBSURFACE_SCATTERING);
 
 	ADD_GROUP("Transmission", "transmission_");
@@ -2436,6 +2440,7 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_USE_SHADOW_TO_OPACITY);
 	BIND_ENUM_CONSTANT(FLAG_USE_TEXTURE_REPEAT);
 	BIND_ENUM_CONSTANT(FLAG_INVERT_HEIGHTMAP);
+	BIND_ENUM_CONSTANT(FLAG_SUBSURFACE_MODE_SKIN);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(DIFFUSE_BURLEY);

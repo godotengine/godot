@@ -541,6 +541,8 @@ public:
 	BIND5(environment_set_fog_height, RID, bool, float, float, float)
 
 	BIND2(screen_space_roughness_limiter_set_active, bool, float)
+	BIND1(sub_surface_scattering_set_quality, SubSurfaceScatteringQuality)
+	BIND2(sub_surface_scattering_set_scale, float, float)
 
 	/* CAMERA EFFECTS */
 
