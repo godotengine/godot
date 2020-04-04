@@ -48,8 +48,6 @@ for x in sorted(glob.glob("platform/*")):
     sys.path.remove(tmppath)
     sys.modules.pop('detect')
 
-module_list = methods.detect_modules()
-
 methods.save_active_platforms(active_platforms, active_platform_ids)
 
 custom_tools = ['default']
@@ -121,6 +119,7 @@ opts.Add(BoolVariable('deprecated', "Enable deprecated features", True))
 opts.Add(BoolVariable('gdscript', "Enable GDScript support", True))
 opts.Add(BoolVariable('minizip', "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable('xaudio2', "Enable the XAudio2 audio driver", False))
+opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 
 # Advanced options
 opts.Add(BoolVariable('verbose', "Enable verbose output for the compilation", False))
@@ -177,17 +176,41 @@ for k in platform_opts.keys():
     for o in opt_list:
         opts.Add(o)
 
-for x in module_list:
-    module_enabled = True
-    tmppath = "./modules/" + x
-    sys.path.insert(0, tmppath)
+# Detect modules.
+modules_detected = {}
+module_search_paths = ["modules"]  # Built-in path.
+
+if ARGUMENTS.get("custom_modules"):
+    paths = ARGUMENTS.get("custom_modules").split(",")
+    for p in paths:
+        try:
+            module_search_paths.append(methods.convert_custom_modules_path(p))
+        except ValueError as e:
+            print(e)
+            sys.exit(255)
+
+for path in module_search_paths:
+    # Note: custom modules can override built-in ones.
+    modules_detected.update(methods.detect_modules(path))
+    include_path = os.path.dirname(path)
+    if include_path:
+        env_base.Prepend(CPPPATH=[include_path])
+
+# Add module options
+for name, path in modules_detected.items():
+    enabled = True
+    sys.path.insert(0, path)
     import config
-    enabled_attr = getattr(config, "is_enabled", None)
-    if (callable(enabled_attr) and not config.is_enabled()):
-        module_enabled = False
-    sys.path.remove(tmppath)
-    sys.modules.pop('config')
-    opts.Add(BoolVariable('module_' + x + '_enabled', "Enable module '%s'" % (x, ), module_enabled))
+
+    try:
+        enabled = config.is_enabled()
+    except AttributeError:
+        pass
+    sys.path.remove(path)
+    sys.modules.pop("config")
+    opts.Add(BoolVariable("module_" + name + "_enabled", "Enable module '%s'" % (name,), enabled))
+
+methods.write_modules(modules_detected)
 
 opts.Update(env_base)  # update environment
 Help(opts.GenerateHelpText(env_base))  # generate help
@@ -427,16 +450,15 @@ if selected_platform in platform_list:
     sys.path.remove(tmppath)
     sys.modules.pop('detect')
 
-    env.module_list = []
+    modules_enabled = {}
     env.module_icons_paths = []
     env.doc_class_path = {}
 
-    for x in module_list:
-        if not env['module_' + x + '_enabled']:
+    for name, path in sorted(modules_detected.items()):
+        if not env["module_" + name + "_enabled"]:
             continue
-        tmppath = "./modules/" + x
-        sys.path.insert(0, tmppath)
-        env.current_module = x
+        sys.path.insert(0, path)
+        env.current_module = name
         import config
         # can_build changed number of arguments between 3.0 (1) and 3.1 (2),
         # so try both to preserve compatibility for 3.0 modules
@@ -450,26 +472,27 @@ if selected_platform in platform_list:
             can_build = config.can_build(selected_platform)
         if (can_build):
             config.configure(env)
-            env.module_list.append(x)
-
             # Get doc classes paths (if present)
             try:
                 doc_classes = config.get_doc_classes()
                 doc_path = config.get_doc_path()
                 for c in doc_classes:
-                    env.doc_class_path[c] = "modules/" + x + "/" + doc_path
+                    env.doc_class_path[c] = path + "/" + doc_path
             except:
                 pass
             # Get icon paths (if present)
             try:
                 icons_path = config.get_icons_path()
-                env.module_icons_paths.append("modules/" + x + "/" + icons_path)
+                env.module_icons_paths.append(path + "/" + icons_path)
             except:
                 # Default path for module icons
-                env.module_icons_paths.append("modules/" + x + "/" + "icons")
+                env.module_icons_paths.append(path + "/" + "icons")
+            modules_enabled[name] = path
 
-        sys.path.remove(tmppath)
-        sys.modules.pop('config')
+        sys.path.remove(path)
+        sys.modules.pop("config")
+
+    env.module_list = modules_enabled
 
     methods.update_version(env.module_version_string)
 
