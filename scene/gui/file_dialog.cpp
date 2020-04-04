@@ -46,9 +46,9 @@ VBoxContainer *FileDialog::get_vbox() {
 
 void FileDialog::_theme_changed() {
 
-	Color font_color = vbc->get_theme_color("font_color", "ToolButton");
-	Color font_color_hover = vbc->get_theme_color("font_color_hover", "ToolButton");
-	Color font_color_pressed = vbc->get_theme_color("font_color_pressed", "ToolButton");
+	Color font_color = vbox->get_theme_color("font_color", "ToolButton");
+	Color font_color_hover = vbox->get_theme_color("font_color_hover", "ToolButton");
+	Color font_color_pressed = vbox->get_theme_color("font_color_pressed", "ToolButton");
 
 	dir_up->add_theme_color_override("icon_color_normal", font_color);
 	dir_up->add_theme_color_override("icon_color_hover", font_color_hover);
@@ -73,9 +73,9 @@ void FileDialog::_notification(int p_what) {
 	}
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		dir_up->set_icon(vbc->get_theme_icon("parent_folder"));
-		refresh->set_icon(vbc->get_theme_icon("reload"));
-		show_hidden->set_icon(vbc->get_theme_icon("toggle_hidden"));
+		dir_up->set_icon(vbox->get_theme_icon("parent_folder"));
+		refresh->set_icon(vbox->get_theme_icon("reload"));
+		show_hidden->set_icon(vbox->get_theme_icon("toggle_hidden"));
 		_theme_changed();
 	}
 }
@@ -429,8 +429,8 @@ void FileDialog::update_file_list() {
 	dir_access->list_dir_begin();
 
 	TreeItem *root = tree->create_item();
-	Ref<Texture2D> folder = vbc->get_theme_icon("folder");
-	const Color folder_color = vbc->get_theme_color("folder_icon_modulate");
+	Ref<Texture2D> folder = vbox->get_theme_icon("folder");
+	const Color folder_color = vbox->get_theme_color("folder_icon_modulate");
 	List<String> files;
 	List<String> dirs;
 
@@ -528,7 +528,7 @@ void FileDialog::update_file_list() {
 			}
 
 			if (mode == FILE_MODE_OPEN_DIR) {
-				ti->set_custom_color(0, vbc->get_theme_color("files_disabled"));
+				ti->set_custom_color(0, vbox->get_theme_color("files_disabled"));
 				ti->set_selectable(0, false);
 			}
 			Dictionary d;
@@ -888,9 +888,9 @@ FileDialog::FileDialog() {
 
 	mode_overrides_title = true;
 
-	vbc = memnew(VBoxContainer);
-	add_child(vbc);
-	vbc->connect("theme_changed", callable_mp(this, &FileDialog::_theme_changed));
+	vbox = memnew(VBoxContainer);
+	add_child(vbox);
+	vbox->connect("theme_changed", callable_mp(this, &FileDialog::_theme_changed));
 
 	mode = FILE_MODE_SAVE_FILE;
 	set_title(RTR("Save a File"));
@@ -933,11 +933,11 @@ FileDialog::FileDialog() {
 	makedir->set_text(RTR("Create Folder"));
 	makedir->connect("pressed", callable_mp(this, &FileDialog::_make_dir));
 	hbc->add_child(makedir);
-	vbc->add_child(hbc);
+	vbox->add_child(hbc);
 
 	tree = memnew(Tree);
 	tree->set_hide_root(true);
-	vbc->add_margin_child(RTR("Directories & Files:"), tree, true);
+	vbox->add_margin_child(RTR("Directories & Files:"), tree, true);
 
 	file_box = memnew(HBoxContainer);
 	file_box->add_child(memnew(Label(RTR("File:"))));
@@ -950,7 +950,7 @@ FileDialog::FileDialog() {
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	filter->set_clip_text(true); // too many extensions overflows it
 	file_box->add_child(filter);
-	vbc->add_child(file_box);
+	vbox->add_child(file_box);
 
 	dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	access = ACCESS_RESOURCES;
@@ -993,7 +993,6 @@ FileDialog::FileDialog() {
 	update_dir();
 
 	set_hide_on_ok(false);
-	vbox = vbc;
 
 	invalidated = true;
 	if (register_func)

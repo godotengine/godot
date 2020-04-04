@@ -70,7 +70,6 @@ private:
 	ConfirmationDialog *makedialog;
 	LineEdit *makedirname;
 
-	VBoxContainer *vbc;
 	Button *makedir;
 	Access access;
 	//Button *action;
