@@ -647,13 +647,13 @@ String String::camelcase_to_underscore(bool lowercase) const {
 }
 
 String String::get_with_code_lines() const {
-	Vector<String> lines = split("\n");
+	const Vector<String> lines = split("\n");
 	String ret;
 	for (int i = 0; i < lines.size(); i++) {
 		if (i > 0) {
 			ret += "\n";
 		}
-		ret += itos(i + 1) + " " + lines[i];
+		ret += vformat("%4d | %s", i + 1, lines[i]);
 	}
 	return ret;
 }
