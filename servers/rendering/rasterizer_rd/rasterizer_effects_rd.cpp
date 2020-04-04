@@ -1461,20 +1461,22 @@ RasterizerEffectsRD::~RasterizerEffectsRD() {
 	RD::get_singleton()->free(default_mipmap_sampler);
 	RD::get_singleton()->free(index_buffer); //array gets freed as dependency
 	RD::get_singleton()->free(filter.coefficient_buffer);
+
 	blur.shader.version_free(blur.shader_version);
-	roughness.shader.version_free(roughness.shader_version);
-	tonemap.shader.version_free(tonemap.shader_version);
-	luminance_reduce.shader.version_free(luminance_reduce.shader_version);
-	copy.shader.version_free(copy.shader_version);
 	bokeh.shader.version_free(bokeh.shader_version);
-	ssao.minify_shader.version_free(ssao.minify_shader_version);
-	ssao.gather_shader.version_free(ssao.gather_shader_version);
-	ssao.blur_shader.version_free(ssao.blur_shader_version);
-	roughness_limiter.shader.version_free(roughness_limiter.shader_version);
+	copy.shader.version_free(copy.shader_version);
 	cubemap_downsampler.shader.version_free(cubemap_downsampler.shader_version);
 	filter.shader.version_free(filter.shader_version);
+	luminance_reduce.shader.version_free(luminance_reduce.shader_version);
+	roughness.shader.version_free(roughness.shader_version);
+	roughness_limiter.shader.version_free(roughness_limiter.shader_version);
+	specular_merge.shader.version_free(specular_merge.shader_version);
+	ssao.blur_shader.version_free(ssao.blur_shader_version);
+	ssao.gather_shader.version_free(ssao.gather_shader_version);
+	ssao.minify_shader.version_free(ssao.minify_shader_version);
 	ssr.shader.version_free(ssr.shader_version);
-	ssr_scale.shader.version_free(ssr_scale.shader_version);
 	ssr_filter.shader.version_free(ssr_filter.shader_version);
+	ssr_scale.shader.version_free(ssr_scale.shader_version);
 	sss.shader.version_free(sss.shader_version);
+	tonemap.shader.version_free(tonemap.shader_version);
 }
