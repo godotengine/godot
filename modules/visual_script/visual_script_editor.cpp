@@ -1262,7 +1262,7 @@ void VisualScriptEditor::_add_func_input() {
 	}
 
 	func_input_vbox->add_child(hbox);
-	hbox->set_meta("id", hbox->get_position_in_parent());
+	hbox->set_meta("id", hbox->get_index());
 
 	delete_button->connect("pressed", callable_mp(this, &VisualScriptEditor::_remove_func_input), varray(hbox));
 
