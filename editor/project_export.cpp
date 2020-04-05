@@ -1221,12 +1221,9 @@ ProjectExportDialog::ProjectExportDialog() {
 	custom_features = memnew(LineEdit);
 	custom_features->connect("text_changed", this, "_custom_features_changed");
 	feature_vb->add_margin_child(TTR("Custom (comma-separated):"), custom_features);
-	Panel *features_panel = memnew(Panel);
 	custom_feature_display = memnew(RichTextLabel);
-	features_panel->add_child(custom_feature_display);
-	custom_feature_display->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 10 * EDSCALE);
-	custom_feature_display->set_v_size_flags(SIZE_EXPAND_FILL);
-	feature_vb->add_margin_child(TTR("Feature List:"), features_panel, true);
+	custom_feature_display->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	feature_vb->add_margin_child(TTR("Feature List:"), custom_feature_display, true);
 	sections->add_child(feature_vb);
 
 	// Script export parameters.
