@@ -2729,6 +2729,7 @@ void GDScriptParser::_transform_match_statment(MatchNode *p_match_statement) {
 
 			IdentifierNode *id2 = alloc_node<IdentifierNode>();
 			id2->name = local_var->name;
+			id2->datatype = local_var->datatype;
 			id2->declared_block = branch->body;
 			id2->set_datatype(local_var->assign->get_datatype());
 
@@ -4964,6 +4965,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 					IdentifierNode *id = alloc_node<IdentifierNode>();
 					id->name = member.identifier;
+					id->datatype = member.data_type;
 
 					OperatorNode *op = alloc_node<OperatorNode>();
 					op->op = OperatorNode::OP_INIT_ASSIGN;
@@ -5006,6 +5008,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 					IdentifierNode *id = alloc_node<IdentifierNode>();
 					id->name = member.identifier;
+					id->datatype = member.data_type;
 
 					OperatorNode *op = alloc_node<OperatorNode>();
 					op->op = OperatorNode::OP_INIT_ASSIGN;
@@ -6649,6 +6652,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 
 							IdentifierNode *id = alloc_node<IdentifierNode>();
 							id->name = cn->value.operator StringName();
+							id->datatype = cn->datatype;
 
 							op->op = OperatorNode::OP_INDEX_NAMED;
 							op->arguments.write[1] = id;
