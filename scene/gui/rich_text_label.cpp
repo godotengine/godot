@@ -2093,6 +2093,8 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 		}
 
 		String tag = p_bbcode.substr(brk_pos + 1, brk_end - brk_pos - 1);
+		Vector<String> split_tag_block = tag.split(" ", false);
+		String bbcode = !split_tag_block.empty() ? split_tag_block[0] : "";
 		if (tag.begins_with("/") && tag_stack.size()) {
 
 			bool tag_ok = tag_stack.size() && tag_stack.front()->get() == tag.substr(1, tag.length());
@@ -2325,15 +2327,14 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 			pos = brk_end + 1;
 			tag_stack.push_front("font");
 
-		} else if (tag.begins_with("fade")) {
-			Vector<String> tags = tag.split(" ", false);
+		} else if (bbcode == "fade") {
 			int startIndex = 0;
 			int length = 10;
 
-			if (tags.size() > 1) {
-				tags.remove(0);
-				for (int i = 0; i < tags.size(); i++) {
-					String expr = tags[i];
+			if (split_tag_block.size() > 1) {
+				split_tag_block.remove(0);
+				for (int i = 0; i < split_tag_block.size(); i++) {
+					String expr = split_tag_block[i];
 					if (expr.begins_with("start=")) {
 						String start_str = expr.substr(6, expr.length());
 						startIndex = start_str.to_int();
@@ -2347,15 +2348,14 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 			push_fade(startIndex, length);
 			pos = brk_end + 1;
 			tag_stack.push_front("fade");
-		} else if (tag.begins_with("shake")) {
-			Vector<String> tags = tag.split(" ", false);
+		} else if (bbcode == "shake") {
 			int strength = 5;
 			float rate = 20.0f;
 
-			if (tags.size() > 1) {
-				tags.remove(0);
-				for (int i = 0; i < tags.size(); i++) {
-					String expr = tags[i];
+			if (split_tag_block.size() > 1) {
+				split_tag_block.remove(0);
+				for (int i = 0; i < split_tag_block.size(); i++) {
+					String expr = split_tag_block[i];
 					if (expr.begins_with("level=")) {
 						String str_str = expr.substr(6, expr.length());
 						strength = str_str.to_int();
@@ -2370,15 +2370,14 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 			pos = brk_end + 1;
 			tag_stack.push_front("shake");
 			set_process_internal(true);
-		} else if (tag.begins_with("wave")) {
-			Vector<String> tags = tag.split(" ", false);
+		} else if (bbcode == "wave") {
 			float amplitude = 20.0f;
 			float period = 5.0f;
 
-			if (tags.size() > 1) {
-				tags.remove(0);
-				for (int i = 0; i < tags.size(); i++) {
-					String expr = tags[i];
+			if (split_tag_block.size() > 1) {
+				split_tag_block.remove(0);
+				for (int i = 0; i < split_tag_block.size(); i++) {
+					String expr = split_tag_block[i];
 					if (expr.begins_with("amp=")) {
 						String amp_str = expr.substr(4, expr.length());
 						amplitude = amp_str.to_float();
@@ -2393,15 +2392,14 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 			pos = brk_end + 1;
 			tag_stack.push_front("wave");
 			set_process_internal(true);
-		} else if (tag.begins_with("tornado")) {
-			Vector<String> tags = tag.split(" ", false);
+		} else if (bbcode == "tornado") {
 			float radius = 10.0f;
 			float frequency = 1.0f;
 
-			if (tags.size() > 1) {
-				tags.remove(0);
-				for (int i = 0; i < tags.size(); i++) {
-					String expr = tags[i];
+			if (split_tag_block.size() > 1) {
+				split_tag_block.remove(0);
+				for (int i = 0; i < split_tag_block.size(); i++) {
+					String expr = split_tag_block[i];
 					if (expr.begins_with("radius=")) {
 						String amp_str = expr.substr(7, expr.length());
 						radius = amp_str.to_float();
@@ -2416,16 +2414,15 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 			pos = brk_end + 1;
 			tag_stack.push_front("tornado");
 			set_process_internal(true);
-		} else if (tag.begins_with("rainbow")) {
-			Vector<String> tags = tag.split(" ", false);
+		} else if (bbcode == "rainbow") {
 			float saturation = 0.8f;
 			float value = 0.8f;
 			float frequency = 1.0f;
 
-			if (tags.size() > 1) {
-				tags.remove(0);
-				for (int i = 0; i < tags.size(); i++) {
-					String expr = tags[i];
+			if (split_tag_block.size() > 1) {
+				split_tag_block.remove(0);
+				for (int i = 0; i < split_tag_block.size(); i++) {
+					String expr = split_tag_block[i];
 					if (expr.begins_with("sat=")) {
 						String sat_str = expr.substr(4, expr.length());
 						saturation = sat_str.to_float();
@@ -2444,7 +2441,7 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 			tag_stack.push_front("rainbow");
 			set_process_internal(true);
 		} else {
-			Vector<String> expr = tag.split(" ", false);
+			Vector<String> &expr = split_tag_block;
 			if (expr.size() < 1) {
 				add_text("[");
 				pos = brk_pos + 1;
