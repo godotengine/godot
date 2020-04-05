@@ -479,12 +479,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 				}
 				return false;
 			}
-			if (first && (c >= '0' && c <= '9')) {
-				if (r_error) {
-					*r_error = TTR("A digit cannot be the first character in a package segment.");
-				}
-				return false;
-			}
 			if (first && c == '_') {
 				if (r_error) {
 					*r_error = vformat(TTR("The character '%s' cannot be the first character in a package segment."), String::chr(c));
