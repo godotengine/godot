@@ -450,8 +450,8 @@ void ImportDock::_reimport() {
 
 		String importer_name = params->importer->get_importer_name();
 
-		if (params->checking) {
-			//update only what edited (checkboxes)
+		if (params->checking && config->get_value("remap", "importer") == params->importer->get_importer_name()) {
+			//update only what is edited (checkboxes) if the importer is the same
 			for (List<PropertyInfo>::Element *E = params->properties.front(); E; E = E->next()) {
 				if (params->checked.has(E->get().name)) {
 					config->set_value("params", E->get().name, params->values[E->get().name]);
@@ -563,7 +563,7 @@ ImportDock::ImportDock() {
 	hb->add_spacer();
 
 	reimport_confirm = memnew(ConfirmationDialog);
-	reimport_confirm->get_ok()->set_text(TTR("Save scenes, re-import and restart"));
+	reimport_confirm->get_ok()->set_text(TTR("Save Scenes, Re-Import, and Restart"));
 	add_child(reimport_confirm);
 	reimport_confirm->connect("confirmed", this, "_reimport_and_restart");
 
