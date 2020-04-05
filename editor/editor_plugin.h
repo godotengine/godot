@@ -73,6 +73,13 @@ public:
 	void open_scene_from_path(const String &scene_path);
 	void reload_scene_from_path(const String &scene_path);
 
+	void play_main_scene();
+	void play_current_scene();
+	void play_custom_scene(const String &scene_path);
+	void stop_playing_scene();
+	bool is_playing_scene() const;
+	String get_playing_scene() const;
+
 	Node *get_edited_scene_root();
 	Array get_open_scenes() const;
 	ScriptEditor *get_script_editor();
