@@ -38,6 +38,10 @@ EditorRun::Status EditorRun::get_status() const {
 	return status;
 }
 
+String EditorRun::get_running_scene() const {
+	return running_scene;
+}
+
 Error EditorRun::run(const String &p_scene, const String &p_custom_args, const List<String> &p_breakpoints, const bool &p_skip_breakpoints) {
 
 	List<String> args;
@@ -192,6 +196,9 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 	ERR_FAIL_COND_V(err, err);
 
 	status = STATUS_PLAY;
+	if (p_scene != "") {
+		running_scene = p_scene;
+	}
 
 	return OK;
 }
@@ -204,6 +211,7 @@ void EditorRun::stop() {
 	}
 
 	status = STATUS_STOP;
+	running_scene = "";
 }
 
 void EditorRun::set_debug_collisions(bool p_debug) {
@@ -229,6 +237,7 @@ bool EditorRun::get_debug_navigation() const {
 EditorRun::EditorRun() {
 
 	status = STATUS_STOP;
+	running_scene = "";
 	debug_collisions = false;
 	debug_navigation = false;
 }

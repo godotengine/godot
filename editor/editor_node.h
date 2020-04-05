@@ -862,7 +862,11 @@ public:
 	bool ensure_main_scene(bool p_from_native);
 
 	void run_play();
+	void run_play_current();
+	void run_play_custom(const String &p_custom);
 	void run_stop();
+	bool is_run_playing() const;
+	String get_run_playing_scene() const;
 };
 
 struct EditorProgress {
