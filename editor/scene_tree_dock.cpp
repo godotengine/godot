@@ -1535,7 +1535,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 		if (p_nodes[ni] == p_new_parent)
 			return; // Attempt to reparent to itself.
 
-		if (p_nodes[ni]->get_parent() != p_new_parent || p_position_in_parent + ni != p_nodes[ni]->get_position_in_parent())
+		if (p_nodes[ni]->get_parent() != p_new_parent || p_position_in_parent + ni != p_nodes[ni]->get_index())
 			no_change = false;
 	}
 
@@ -1644,7 +1644,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			owners.push_back(E->get());
 		}
 
-		int child_pos = node->get_position_in_parent();
+		int child_pos = node->get_index();
 
 		editor_data->get_undo_redo().add_undo_method(node->get_parent(), "add_child", node);
 		editor_data->get_undo_redo().add_undo_method(node->get_parent(), "move_child", node, child_pos);
@@ -1918,7 +1918,7 @@ Node *SceneTreeDock::_get_selection_group_tail(Node *p_node, List<Node *> p_list
 	Node *tail = p_node;
 	Node *parent = tail->get_parent();
 
-	for (int i = p_node->get_position_in_parent(); i < parent->get_child_count(); i++) {
+	for (int i = p_node->get_index(); i < parent->get_child_count(); i++) {
 		Node *sibling = parent->get_child(i);
 
 		if (p_list.find(sibling))

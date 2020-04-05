@@ -238,7 +238,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the node's index, i.e. its position among the siblings of its parent.
+				Returns the node's order in the scene tree branch. For example, if called on the first child node the position is [code]0[/code].
 			</description>
 		</method>
 		<method name="get_network_master" qualifiers="const">
@@ -329,13 +329,6 @@
 			</return>
 			<description>
 				Returns the time elapsed since the last physics-bound frame (see [method _physics_process]). This is always a constant value in physics processing unless the frames per second is changed via [member Engine.iterations_per_second].
-			</description>
-		</method>
-		<method name="get_position_in_parent" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the node's order in the scene tree branch. For example, if called on the first child node the position is [code]0[/code].
 			</description>
 		</method>
 		<method name="get_process_delta_time" qualifiers="const">

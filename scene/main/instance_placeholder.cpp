@@ -95,7 +95,7 @@ Node *InstancePlaceholder::create_instance(bool p_replace, const Ref<PackedScene
 	if (!scene)
 		return nullptr;
 	scene->set_name(get_name());
-	int pos = get_position_in_parent();
+	int pos = get_index();
 
 	for (List<PropSet>::Element *E = stored_values.front(); E; E = E->next()) {
 		scene->set(E->get().name, E->get().value);
