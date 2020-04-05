@@ -1402,7 +1402,7 @@ void AnimationTimelineEdit::_zoom_changed(double) {
 
 float AnimationTimelineEdit::get_zoom_scale() const {
 
-	float zv = zoom->get_value();
+	float zv = zoom->get_max() - zoom->get_value();
 	if (zv < 1) {
 		zv = 1.0 - zv;
 		return Math::pow(1.0f + zv, 8.0f) * 100;
