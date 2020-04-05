@@ -233,6 +233,8 @@ void SectionedInspector::update_category_list() {
 	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 
 		PropertyInfo pi = E->get();
+		String property_prefix = pi.name.substr(0, pi.name.find_last("/"));
+		String settings_name = pi.name.substr(pi.name.find_last("/") + 1);
 
 		if (pi.usage & PROPERTY_USAGE_CATEGORY)
 			continue;
@@ -242,7 +244,7 @@ void SectionedInspector::update_category_list() {
 		if (pi.name.find(":") != -1 || pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path" || pi.name == "resource_local_to_scene" || pi.name.begins_with("_global_script"))
 			continue;
 
-		if (!filter.empty() && !filter.is_subsequence_ofi(pi.name) && !filter.is_subsequence_ofi(pi.name.replace("/", " ").capitalize()))
+		if (!filter.empty() && !filter.is_subsequence_ofi(property_prefix) && !filter.is_subsequence_ofi(settings_name) && !filter.is_subsequence_ofi(property_prefix.replace("/", " ").capitalize()) && !filter.is_subsequence_ofi(settings_name.replace("/", " ").capitalize())) 
 			continue;
 
 		int sp = pi.name.find("/");
@@ -281,6 +283,7 @@ void SectionedInspector::update_category_list() {
 	}
 
 	if (section_map.has(selected_category)) {
+		print_line(selected_category);
 		section_map[selected_category]->select(0);
 	}
 
