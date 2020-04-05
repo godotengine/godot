@@ -993,6 +993,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// LinkButton
 	theme->set_stylebox("focus", "LinkButton", style_empty);
 	theme->set_color("font_color", "LinkButton", font_color);
+	theme->set_color("font_color_hover", "LinkButton", font_color_hl);
+	theme->set_color("font_color_pressed", "LinkButton", accent_color);
+	theme->set_color("font_color_disabled", "LinkButton", font_color_disabled);
 
 	// TooltipPanel
 	Ref<StyleBoxFlat> style_tooltip = style_popup->duplicate();
