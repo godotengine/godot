@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "rendering_device_vulkan.h"
+
 #include "core/hashfuncs.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
@@ -1265,7 +1266,7 @@ Error RenderingDeviceVulkan::_buffer_free(Buffer *p_buffer) {
 	ERR_FAIL_COND_V(p_buffer->size == 0, ERR_INVALID_PARAMETER);
 
 	vmaDestroyBuffer(allocator, p_buffer->buffer, p_buffer->allocation);
-	p_buffer->buffer = nullptr;
+	p_buffer->buffer = VK_NULL_HANDLE;
 	p_buffer->allocation = nullptr;
 	p_buffer->size = 0;
 
@@ -4250,7 +4251,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 		VkWriteDescriptorSet write; //common header
 		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		write.pNext = nullptr;
-		write.dstSet = nullptr; //will assign afterwards when everything is valid
+		write.dstSet = VK_NULL_HANDLE; //will assign afterwards when everything is valid
 		write.dstBinding = set_uniform.binding;
 		uint32_t type_size = 1;
 
@@ -4363,7 +4364,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 							"Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs the TEXTURE_USAGE_SAMPLING_BIT usage flag set in order to be used as uniform.");
 
 					VkDescriptorImageInfo img_info;
-					img_info.sampler = nullptr;
+					img_info.sampler = VK_NULL_HANDLE;
 					img_info.imageView = texture->view;
 
 					if (texture->usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT)) {
@@ -4416,7 +4417,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 							"Image (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs the TEXTURE_USAGE_STORAGE_BIT usage flag set in order to be used as uniform.");
 
 					VkDescriptorImageInfo img_info;
-					img_info.sampler = nullptr;
+					img_info.sampler = VK_NULL_HANDLE;
 					img_info.imageView = texture->view;
 
 					if (texture->owner.is_valid()) {
@@ -5048,11 +5049,11 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	graphics_pipeline_create_info.renderPass = fb_format.render_pass;
 
 	graphics_pipeline_create_info.subpass = 0;
-	graphics_pipeline_create_info.basePipelineHandle = nullptr;
+	graphics_pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
 	graphics_pipeline_create_info.basePipelineIndex = 0;
 
 	RenderPipeline pipeline;
-	VkResult err = vkCreateGraphicsPipelines(device, nullptr, 1, &graphics_pipeline_create_info, nullptr, &pipeline.pipeline);
+	VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphics_pipeline_create_info, nullptr, &pipeline.pipeline);
 	ERR_FAIL_COND_V_MSG(err, RID(), "vkCreateGraphicsPipelines failed with error " + itos(err) + ".");
 
 	pipeline.set_formats = shader->set_formats;
@@ -5121,11 +5122,11 @@ RID RenderingDeviceVulkan::compute_pipeline_create(RID p_shader) {
 
 	compute_pipeline_create_info.stage = shader->pipeline_stages[0];
 	compute_pipeline_create_info.layout = shader->pipeline_layout;
-	compute_pipeline_create_info.basePipelineHandle = nullptr;
+	compute_pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
 	compute_pipeline_create_info.basePipelineIndex = 0;
 
 	ComputePipeline pipeline;
-	VkResult err = vkCreateComputePipelines(device, nullptr, 1, &compute_pipeline_create_info, nullptr, &pipeline.pipeline);
+	VkResult err = vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &compute_pipeline_create_info, nullptr, &pipeline.pipeline);
 	ERR_FAIL_COND_V_MSG(err, RID(), "vkCreateComputePipelines failed with error " + itos(err) + ".");
 
 	pipeline.set_formats = shader->set_formats;
