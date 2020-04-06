@@ -207,7 +207,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		VkDescriptorBufferInfo buffer_info; //used for binding
 		Buffer() {
 			size = 0;
-			buffer = nullptr;
+			buffer = VK_NULL_HANDLE;
 			allocation = nullptr;
 		}
 	};
