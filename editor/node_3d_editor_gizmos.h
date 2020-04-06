@@ -36,27 +36,9 @@
 
 class Camera3D;
 
-class LightNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+class Light3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(LightNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
-
-public:
-	bool has_gizmo(Node3D *p_spatial);
-	String get_name() const;
-	int get_priority() const;
-
-	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const;
-	Variant get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const;
-	void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point);
-	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
-	void redraw(EditorNode3DGizmo *p_gizmo);
-
-	LightNode3DGizmoPlugin();
-};
-
-class AudioStreamPlayer3DNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-
-	GDCLASS(AudioStreamPlayer3DNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
+	GDCLASS(Light3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial);
@@ -69,12 +51,12 @@ public:
 	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
 	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	AudioStreamPlayer3DNode3DGizmoPlugin();
+	Light3DGizmoPlugin();
 };
 
-class CameraNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+class AudioStreamPlayer3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(CameraNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
+	GDCLASS(AudioStreamPlayer3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial);
@@ -87,12 +69,30 @@ public:
 	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
 	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	CameraNode3DGizmoPlugin();
+	AudioStreamPlayer3DGizmoPlugin();
 };
 
-class MeshInstanceNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+class Camera3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(MeshInstanceNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
+	GDCLASS(Camera3DGizmoPlugin, EditorNode3DGizmoPlugin);
+
+public:
+	bool has_gizmo(Node3D *p_spatial);
+	String get_name() const;
+	int get_priority() const;
+
+	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	Variant get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point);
+	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
+	void redraw(EditorNode3DGizmo *p_gizmo);
+
+	Camera3DGizmoPlugin();
+};
+
+class MeshInstance3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+
+	GDCLASS(MeshInstance3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial);
@@ -101,12 +101,12 @@ public:
 	bool can_be_hidden() const;
 	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	MeshInstanceNode3DGizmoPlugin();
+	MeshInstance3DGizmoPlugin();
 };
 
-class Sprite3DNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+class Sprite3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(Sprite3DNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
+	GDCLASS(Sprite3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial);
@@ -115,12 +115,12 @@ public:
 	bool can_be_hidden() const;
 	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	Sprite3DNode3DGizmoPlugin();
+	Sprite3DGizmoPlugin();
 };
 
-class Position3DNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+class Position3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(Position3DNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
+	GDCLASS(Position3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 	Ref<ArrayMesh> pos3d_mesh;
 	Vector<Vector3> cursor_points;
@@ -131,12 +131,12 @@ public:
 	int get_priority() const;
 	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	Position3DNode3DGizmoPlugin();
+	Position3DGizmoPlugin();
 };
 
-class SkeletonNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+class Skeleton3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(SkeletonNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
+	GDCLASS(Skeleton3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial);
@@ -144,12 +144,12 @@ public:
 	int get_priority() const;
 	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	SkeletonNode3DGizmoPlugin();
+	Skeleton3DGizmoPlugin();
 };
 
-class PhysicalBoneNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+class PhysicalBone3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(PhysicalBoneNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
+	GDCLASS(PhysicalBone3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial);
@@ -157,12 +157,12 @@ public:
 	int get_priority() const;
 	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	PhysicalBoneNode3DGizmoPlugin();
+	PhysicalBone3DGizmoPlugin();
 };
 
-class RayCastNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+class RayCast3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(RayCastNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
+	GDCLASS(RayCast3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial);
@@ -170,12 +170,12 @@ public:
 	int get_priority() const;
 	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	RayCastNode3DGizmoPlugin();
+	RayCast3DGizmoPlugin();
 };
 
-class SpringArmNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+class SpringArm3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(SpringArmNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
+	GDCLASS(SpringArm3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial);
@@ -183,12 +183,12 @@ public:
 	int get_priority() const;
 	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	SpringArmNode3DGizmoPlugin();
+	SpringArm3DGizmoPlugin();
 };
 
-class VehicleWheelNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+class VehicleWheel3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(VehicleWheelNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
+	GDCLASS(VehicleWheel3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial);
@@ -196,12 +196,12 @@ public:
 	int get_priority() const;
 	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	VehicleWheelNode3DGizmoPlugin();
+	VehicleWheel3DGizmoPlugin();
 };
 
-class SoftBodyNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+class SoftBody3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(SoftBodyNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
+	GDCLASS(SoftBody3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial);
@@ -215,12 +215,12 @@ public:
 	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel);
 	bool is_handle_highlighted(const EditorNode3DGizmo *p_gizmo, int idx) const;
 
-	SoftBodyNode3DGizmoPlugin();
+	SoftBody3DGizmoPlugin();
 };
 
-class VisibilityNotifierGizmoPlugin : public EditorNode3DGizmoPlugin {
+class VisibilityNotifier3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(VisibilityNotifierGizmoPlugin, EditorNode3DGizmoPlugin);
+	GDCLASS(VisibilityNotifier3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial);
@@ -233,7 +233,7 @@ public:
 	void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point);
 	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
 
-	VisibilityNotifierGizmoPlugin();
+	VisibilityNotifier3DGizmoPlugin();
 };
 
 class CPUParticles3DGizmoPlugin : public EditorNode3DGizmoPlugin {
@@ -322,9 +322,9 @@ public:
 	BakedIndirectLightGizmoPlugin();
 };
 #endif
-class CollisionShapeNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+class CollisionShape3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(CollisionShapeNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
+	GDCLASS(CollisionShape3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial);
@@ -337,23 +337,23 @@ public:
 	void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point);
 	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
 
-	CollisionShapeNode3DGizmoPlugin();
+	CollisionShape3DGizmoPlugin();
 };
 
-class CollisionPolygonNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-	GDCLASS(CollisionPolygonNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
+class CollisionPolygon3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(CollisionPolygon3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial);
 	String get_name() const;
 	int get_priority() const;
 	void redraw(EditorNode3DGizmo *p_gizmo);
-	CollisionPolygonNode3DGizmoPlugin();
+	CollisionPolygon3DGizmoPlugin();
 };
 
-class NavigationMeshNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+class NavigationRegion3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(NavigationMeshNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
+	GDCLASS(NavigationRegion3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 	struct _EdgeKey {
 
@@ -369,7 +369,7 @@ public:
 	int get_priority() const;
 	void redraw(EditorNode3DGizmo *p_gizmo);
 
-	NavigationMeshNode3DGizmoPlugin();
+	NavigationRegion3DGizmoPlugin();
 };
 
 class JointGizmosDrawer {
@@ -387,9 +387,9 @@ public:
 	static void draw_cone(const Transform &p_offset, const Basis &p_base, real_t p_swing, real_t p_twist, Vector<Vector3> &r_points);
 };
 
-class JointNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+class Joint3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(JointNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
+	GDCLASS(Joint3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial);
@@ -428,7 +428,7 @@ public:
 			Vector<Vector3> *r_body_a_points,
 			Vector<Vector3> *r_body_b_points);
 
-	JointNode3DGizmoPlugin();
+	Joint3DGizmoPlugin();
 };
 
 #endif // SPATIAL_EDITOR_GIZMOS_H
