@@ -556,6 +556,17 @@ void VisualShaderEditor::_update_graph() {
 			uniform_name->connect("text_entered", callable_mp(this, &VisualShaderEditor::_line_edit_changed), varray(uniform_name, nodes[n_i]));
 			uniform_name->connect("focus_exited", callable_mp(this, &VisualShaderEditor::_line_edit_focus_out), varray(uniform_name, nodes[n_i]));
 
+			String error = vsnode->get_warning(visual_shader->get_mode(), type);
+			if (error != String()) {
+				offset = memnew(Control);
+				offset->set_custom_minimum_size(Size2(0, 4 * EDSCALE));
+				node->add_child(offset);
+				Label *error_label = memnew(Label);
+				error_label->add_theme_color_override("font_color", get_theme_color("error_color", "Editor"));
+				error_label->set_text(error);
+				node->add_child(error_label);
+			}
+
 			if (vsnode->get_input_port_count() == 0 && vsnode->get_output_port_count() == 1 && vsnode->get_output_port_name(0) == "") {
 				//shortcut
 				VisualShaderNode::PortType port_right = vsnode->get_output_port_type(0);
