@@ -2164,6 +2164,17 @@ void VisualShaderNodeUniform::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "uniform_name"), "set_uniform_name", "get_uniform_name");
 }
 
+String VisualShaderNodeUniform::get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const {
+
+	List<String> keyword_list;
+	ShaderLanguage::get_keyword_list(&keyword_list);
+	if (keyword_list.find(uniform_name)) {
+		return TTR("Uniform name cannot be equal to a shader keyword. Choose another name.");
+	}
+
+	return String();
+}
+
 VisualShaderNodeUniform::VisualShaderNodeUniform() {
 }
 
