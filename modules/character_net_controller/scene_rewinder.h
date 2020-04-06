@@ -30,11 +30,17 @@
 
 #include "scene/main/node.h"
 
+#include "core/hash_map.h"
+
 #ifndef SCENE_REWINDER_H
 #define SCENE_REWINDER_H
 
+struct VarData;
+
 class SceneRewinder : public Node {
 	GDCLASS(SceneRewinder, Node);
+
+	HashMap<ObjectID, Vector<VarData>> variables;
 
 public:
 	static void _bind_methods();
@@ -44,20 +50,27 @@ public:
 public:
 	SceneRewinder();
 
-	void register_sync_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify_to = StringName());
-	void unregister_sync_variable(Node *p_node, StringName p_variable);
+	void register_variable(Node *p_object, StringName p_variable, StringName p_on_change_notify_to = StringName());
+	void unregister_variable(Node *p_object, StringName p_variable);
 
-	StringName get_changed_event_name(StringName p_variable);
+	String get_changed_event_name(StringName p_variable);
 
-	void track_variable_changes(Node *p_node, StringName p_variable, StringName p_method);
-	void untrack_variable_changes(Node *p_node, StringName p_variable, StringName p_method);
+	void track_variable_changes(Node *p_object, StringName p_variable, StringName p_method);
+	void untrack_variable_changes(Node *p_object, StringName p_variable, StringName p_method);
 
-	void register_sync_action(Node *p_node, StringName p_action);
-	void unregister_sync_action(Node *p_node, StringName p_action);
-	void trigger_action(Node *p_node, StringName p_action);
+private:
+	void process();
+};
 
-	void register_sync_process(Node *p_node, StringName p_func_name);
-	void unregister_sync_process(Node *p_node, StringName p_func_name);
+struct VarData {
+	StringName name;
+	Variant old_val;
+
+	VarData();
+	VarData(StringName p_name);
+	VarData(StringName p_name, Variant p_val);
+
+	bool operator==(const VarData &p_other) const;
 };
 
 #endif
