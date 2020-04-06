@@ -1030,6 +1030,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	hscroll->connect("value_changed", callable_mp(this, &TextureRegionEditor::_scroll_changed));
 
 	updating_scroll = false;
+	autoslice_is_dirty = true;
 }
 
 void TextureRegionEditorPlugin::edit(Object *p_object) {
