@@ -602,7 +602,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						} else if (strikethrough) {
 							Color uc = color;
 							uc.a *= 0.5;
-							int uy = y + lh / 2 - line_descent + 2;
+							int uy = y + lh - (line_ascent + line_descent) / 2;
 							float strikethrough_width = 1.0;
 #ifdef TOOLS_ENABLED
 							strikethrough_width *= EDSCALE;
