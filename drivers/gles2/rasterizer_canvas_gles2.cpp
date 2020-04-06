@@ -224,6 +224,12 @@ bool RasterizerCanvasGLES2::prefill_joined_item(FillState &r_fill_state, int &r_
 
 	Vector2 texpixel_size = r_fill_state.texpixel_size;
 
+	// checking the color for not being white makes it 92/90 times faster in the case where it is white
+	bool multiply_final_modulate = false;
+	if (!r_fill_state.use_hardware_transform && (r_fill_state.final_modulate != Color(1, 1, 1, 1))) {
+		multiply_final_modulate = true;
+	}
+
 	// start batch is a dummy batch (tex id -1) .. could be made more efficient
 	if (!r_fill_state.curr_batch) {
 		r_fill_state.curr_batch = _batch_request_new();
@@ -259,7 +265,10 @@ bool RasterizerCanvasGLES2::prefill_joined_item(FillState &r_fill_state, int &r_
 
 				Item::CommandRect *rect = static_cast<Item::CommandRect *>(command);
 
-				const Color &col = rect->modulate;
+				Color col = rect->modulate;
+				if (multiply_final_modulate) {
+					col *= r_fill_state.final_modulate;
+				}
 
 				// instead of doing all the texture preparation for EVERY rect,
 				// we build a list of texture combinations and do this once off.
@@ -1421,7 +1430,9 @@ void RasterizerCanvasGLES2::render_joined_item_commands(const BItemJoined &p_bij
 	fill_state.use_hardware_transform = p_bij.use_hardware_transform();
 
 	for (unsigned int i = 0; i < p_bij.num_item_refs; i++) {
-		item = bdata.item_refs[p_bij.first_item_ref + i].item;
+		const BItemRef &ref = bdata.item_refs[p_bij.first_item_ref + i];
+		item = ref.item;
+		fill_state.final_modulate = ref.final_modulate;
 
 		int command_count = item->commands.size();
 		int command_start = 0;
@@ -1453,7 +1464,9 @@ void RasterizerCanvasGLES2::flush_render_batches(Item *p_first_item, Item *p_cur
 
 	// only check whether to convert if there are quads (prevent divide by zero)
 	if (bdata.total_quads) {
-		float ratio = (float)bdata.total_color_changes / (float)bdata.total_quads;
+		// minus 1 to prevent single primitives (ratio 1.0) always being converted to colored..
+		// in that case it is slightly cheaper to just have the color as part of the batch
+		float ratio = (float)(bdata.total_color_changes - 1) / (float)bdata.total_quads;
 
 		// use bigger than or equal so that 0.0 threshold can force always using colored verts
 		if (ratio >= bdata.settings_colored_vertex_format_threshold) {
@@ -1534,6 +1547,11 @@ void RasterizerCanvasGLES2::join_items(Item *p_item_list, int p_z, const Color &
 			// add the reference
 			BItemRef *r = bdata.item_refs.request_with_grow();
 			r->item = ci;
+			// we are storing final_modulate in advance per item reference
+			// for baking into vertex colors.
+			// this may not be ideal... as we are increasing the size of item reference,
+			// but it is stupidly complex to calculate later, which would probably be slower.
+			r->final_modulate = render_item_state.final_modulate;
 		} else {
 			CRASH_COND(j == 0);
 			j->num_item_refs += 1;
@@ -1541,6 +1559,7 @@ void RasterizerCanvasGLES2::join_items(Item *p_item_list, int p_z, const Color &
 
 			BItemRef *r = bdata.item_refs.request_with_grow();
 			r->item = ci;
+			r->final_modulate = render_item_state.final_modulate;
 		}
 
 		p_item_list = p_item_list->next;
@@ -1628,10 +1647,12 @@ bool RasterizerCanvasGLES2::try_join_item(Item *p_ci, RenderItemState &r_ris, bo
 
 	// light_masked may possibly need state checking here. Check for regressions!
 
-	if (p_ci->final_modulate != r_ris.final_modulate) {
-		join = false;
-		r_ris.final_modulate = p_ci->final_modulate;
-	}
+	// we will now allow joining even if final modulate is different
+	// we will instead bake the final modulate into the vertex colors
+	//	if (p_ci->final_modulate != r_ris.final_modulate) {
+	//		join = false;
+	//		r_ris.final_modulate = p_ci->final_modulate;
+	//	}
 
 	if (r_ris.current_clip != p_ci->final_clip_owner) {
 		r_ris.current_clip = p_ci->final_clip_owner;
@@ -1706,6 +1727,11 @@ bool RasterizerCanvasGLES2::try_join_item(Item *p_ci, RenderItemState &r_ris, bo
 	int blend_mode = r_ris.shader_cache ? r_ris.shader_cache->canvas_item.blend_mode : RasterizerStorageGLES2::Shader::CanvasItem::BLEND_MODE_MIX;
 	bool unshaded = r_ris.shader_cache && (r_ris.shader_cache->canvas_item.light_mode == RasterizerStorageGLES2::Shader::CanvasItem::LIGHT_MODE_UNSHADED || (blend_mode != RasterizerStorageGLES2::Shader::CanvasItem::BLEND_MODE_MIX && blend_mode != RasterizerStorageGLES2::Shader::CanvasItem::BLEND_MODE_PMALPHA));
 	bool reclip = false;
+
+	// we are precalculating the final_modulate ahead of time because we need this for baking of final modulate into vertex colors
+	// (only in software transform mode)
+	// This maybe inefficient storing it...
+	r_ris.final_modulate = unshaded ? p_ci->final_modulate : (p_ci->final_modulate * r_ris.item_group_modulate);
 
 	if (r_ris.last_blend_mode != blend_mode) {
 		join = false;
@@ -2370,12 +2396,16 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 		}
 	}
 
-	state.uniforms.final_modulate = unshaded ? ci->final_modulate : Color(ci->final_modulate.r * r_ris.item_group_modulate.r, ci->final_modulate.g * r_ris.item_group_modulate.g, ci->final_modulate.b * r_ris.item_group_modulate.b, ci->final_modulate.a * r_ris.item_group_modulate.a);
-
-	if (!p_bij.use_hardware_transform())
+	// using software transform
+	if (!p_bij.use_hardware_transform()) {
 		state.uniforms.modelview_matrix = Transform2D();
-	else
+		// final_modulate will be baked per item ref and multiplied by a NULL final modulate in the shader
+		state.uniforms.final_modulate = Color(1, 1, 1, 1);
+	} else {
 		state.uniforms.modelview_matrix = ci->final_transform;
+		// could use the stored version of final_modulate in item ref? Test which is faster NYI
+		state.uniforms.final_modulate = unshaded ? ci->final_modulate : (ci->final_modulate * r_ris.item_group_modulate);
+	}
 	state.uniforms.extra_matrix = Transform2D();
 
 	_set_uniforms();

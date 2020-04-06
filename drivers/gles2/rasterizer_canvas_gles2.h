@@ -124,6 +124,7 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 
 	struct BItemRef {
 		Item *item;
+		Color final_modulate;
 	};
 
 	struct BatchData {
@@ -207,6 +208,7 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 		int batch_tex_id;
 		bool use_hardware_transform;
 		Vector2 texpixel_size;
+		Color final_modulate;
 	};
 
 public:
