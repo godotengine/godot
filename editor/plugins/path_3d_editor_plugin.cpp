@@ -34,7 +34,7 @@
 #include "node_3d_editor_plugin.h"
 #include "scene/resources/curve.h"
 
-String PathNode3DGizmo::get_handle_name(int p_idx) const {
+String Path3DGizmo::get_handle_name(int p_idx) const {
 
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null())
@@ -57,7 +57,7 @@ String PathNode3DGizmo::get_handle_name(int p_idx) const {
 
 	return n;
 }
-Variant PathNode3DGizmo::get_handle_value(int p_idx) {
+Variant Path3DGizmo::get_handle_value(int p_idx) {
 
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null())
@@ -84,7 +84,7 @@ Variant PathNode3DGizmo::get_handle_value(int p_idx) {
 
 	return ofs;
 }
-void PathNode3DGizmo::set_handle(int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+void Path3DGizmo::set_handle(int p_idx, Camera3D *p_camera, const Point2 &p_point) {
 
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null())
@@ -154,7 +154,7 @@ void PathNode3DGizmo::set_handle(int p_idx, Camera3D *p_camera, const Point2 &p_
 	}
 }
 
-void PathNode3DGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_cancel) {
+void Path3DGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_cancel) {
 
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null())
@@ -217,7 +217,7 @@ void PathNode3DGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_
 	}
 }
 
-void PathNode3DGizmo::redraw() {
+void Path3DGizmo::redraw() {
 
 	clear();
 
@@ -286,7 +286,7 @@ void PathNode3DGizmo::redraw() {
 	}
 }
 
-PathNode3DGizmo::PathNode3DGizmo(Path3D *p_path) {
+Path3DGizmo::Path3DGizmo(Path3D *p_path) {
 
 	path = p_path;
 	set_spatial_node(p_path);
@@ -563,7 +563,7 @@ Path3DEditorPlugin::Path3DEditorPlugin(EditorNode *p_node) {
 	mirror_handle_angle = true;
 	mirror_handle_length = true;
 
-	Ref<PathNode3DGizmoPlugin> gizmo_plugin;
+	Ref<Path3DGizmoPlugin> gizmo_plugin;
 	gizmo_plugin.instance();
 	Node3DEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);
 
@@ -627,24 +627,24 @@ Path3DEditorPlugin::Path3DEditorPlugin(EditorNode *p_node) {
 Path3DEditorPlugin::~Path3DEditorPlugin() {
 }
 
-Ref<EditorNode3DGizmo> PathNode3DGizmoPlugin::create_gizmo(Node3D *p_spatial) {
-	Ref<PathNode3DGizmo> ref;
+Ref<EditorNode3DGizmo> Path3DGizmoPlugin::create_gizmo(Node3D *p_spatial) {
+	Ref<Path3DGizmo> ref;
 
 	Path3D *path = Object::cast_to<Path3D>(p_spatial);
-	if (path) ref = Ref<PathNode3DGizmo>(memnew(PathNode3DGizmo(path)));
+	if (path) ref = Ref<Path3DGizmo>(memnew(Path3DGizmo(path)));
 
 	return ref;
 }
 
-String PathNode3DGizmoPlugin::get_name() const {
+String Path3DGizmoPlugin::get_name() const {
 	return "Path3D";
 }
 
-int PathNode3DGizmoPlugin::get_priority() const {
+int Path3DGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-PathNode3DGizmoPlugin::PathNode3DGizmoPlugin() {
+Path3DGizmoPlugin::Path3DGizmoPlugin() {
 
 	Color path_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/path", Color(0.5, 0.5, 1.0, 0.8));
 	create_material("path_material", path_color);

@@ -35,9 +35,9 @@
 #include "editor/editor_plugin.h"
 #include "editor/node_3d_editor_gizmos.h"
 
-class CSGShapeNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+class CSGShape3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(CSGShapeNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
+	GDCLASS(CSGShape3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial);
@@ -51,7 +51,7 @@ public:
 	void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point);
 	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel);
 
-	CSGShapeNode3DGizmoPlugin();
+	CSGShape3DGizmoPlugin();
 };
 
 class EditorPluginCSG : public EditorPlugin {

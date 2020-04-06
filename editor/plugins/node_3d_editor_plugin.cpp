@@ -5907,28 +5907,28 @@ void Node3DEditor::_node_removed(Node *p_node) {
 }
 
 void Node3DEditor::_register_all_gizmos() {
-	add_gizmo_plugin(Ref<CameraNode3DGizmoPlugin>(memnew(CameraNode3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<LightNode3DGizmoPlugin>(memnew(LightNode3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<AudioStreamPlayer3DNode3DGizmoPlugin>(memnew(AudioStreamPlayer3DNode3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<MeshInstanceNode3DGizmoPlugin>(memnew(MeshInstanceNode3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<SoftBodyNode3DGizmoPlugin>(memnew(SoftBodyNode3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<Sprite3DNode3DGizmoPlugin>(memnew(Sprite3DNode3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<SkeletonNode3DGizmoPlugin>(memnew(SkeletonNode3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<Position3DNode3DGizmoPlugin>(memnew(Position3DNode3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<RayCastNode3DGizmoPlugin>(memnew(RayCastNode3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<SpringArmNode3DGizmoPlugin>(memnew(SpringArmNode3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<VehicleWheelNode3DGizmoPlugin>(memnew(VehicleWheelNode3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<VisibilityNotifierGizmoPlugin>(memnew(VisibilityNotifierGizmoPlugin)));
+	add_gizmo_plugin(Ref<Camera3DGizmoPlugin>(memnew(Camera3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<Light3DGizmoPlugin>(memnew(Light3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<AudioStreamPlayer3DGizmoPlugin>(memnew(AudioStreamPlayer3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<MeshInstance3DGizmoPlugin>(memnew(MeshInstance3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<SoftBody3DGizmoPlugin>(memnew(SoftBody3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<Sprite3DGizmoPlugin>(memnew(Sprite3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<Skeleton3DGizmoPlugin>(memnew(Skeleton3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<Position3DGizmoPlugin>(memnew(Position3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<RayCast3DGizmoPlugin>(memnew(RayCast3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<SpringArm3DGizmoPlugin>(memnew(SpringArm3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<VehicleWheel3DGizmoPlugin>(memnew(VehicleWheel3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<VisibilityNotifier3DGizmoPlugin>(memnew(VisibilityNotifier3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<GPUParticles3DGizmoPlugin>(memnew(GPUParticles3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<CPUParticles3DGizmoPlugin>(memnew(CPUParticles3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<ReflectionProbeGizmoPlugin>(memnew(ReflectionProbeGizmoPlugin)));
 	add_gizmo_plugin(Ref<GIProbeGizmoPlugin>(memnew(GIProbeGizmoPlugin)));
 	//	add_gizmo_plugin(Ref<BakedIndirectLightGizmoPlugin>(memnew(BakedIndirectLightGizmoPlugin)));
-	add_gizmo_plugin(Ref<CollisionShapeNode3DGizmoPlugin>(memnew(CollisionShapeNode3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<CollisionPolygonNode3DGizmoPlugin>(memnew(CollisionPolygonNode3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<NavigationMeshNode3DGizmoPlugin>(memnew(NavigationMeshNode3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<JointNode3DGizmoPlugin>(memnew(JointNode3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<PhysicalBoneNode3DGizmoPlugin>(memnew(PhysicalBoneNode3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<CollisionShape3DGizmoPlugin>(memnew(CollisionShape3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<CollisionPolygon3DGizmoPlugin>(memnew(CollisionPolygon3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<NavigationRegion3DGizmoPlugin>(memnew(NavigationRegion3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<Joint3DGizmoPlugin>(memnew(Joint3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<PhysicalBone3DGizmoPlugin>(memnew(PhysicalBone3DGizmoPlugin)));
 }
 
 void Node3DEditor::_bind_methods() {
