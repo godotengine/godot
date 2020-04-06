@@ -322,7 +322,6 @@ AcceptDialog::AcceptDialog() {
 	label->set_end(Point2(-margin, -button_margin - 10));
 	add_child(label);
 
-	hbc = memnew(HBoxContainer);
 	add_child(hbc);
 
 	hbc->add_spacer();

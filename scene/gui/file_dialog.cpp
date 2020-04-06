@@ -909,6 +909,7 @@ FileDialog::FileDialog() {
 
 	drives = memnew(OptionButton);
 	drives->connect("item_selected", callable_mp(this, &FileDialog::_select_drive));
+	hbc->add_child(drives);
 
 	dir = memnew(LineEdit);
 	hbc->add_child(dir);
