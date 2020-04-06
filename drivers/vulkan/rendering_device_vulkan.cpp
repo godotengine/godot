@@ -7054,6 +7054,13 @@ void RenderingDeviceVulkan::finalize() {
 	}
 	vmaDestroyAllocator(allocator);
 
+	while (vertex_formats.size()) {
+		Map<VertexFormatID, VertexDescriptionCache>::Element *temp = vertex_formats.front();
+		memdelete_arr(temp->get().bindings);
+		memdelete_arr(temp->get().attributes);
+		vertex_formats.erase(temp);
+	}
+
 	//all these should be clear at this point
 	ERR_FAIL_COND(descriptor_pools.size());
 	ERR_FAIL_COND(dependency_map.size());
