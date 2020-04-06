@@ -937,7 +937,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 		/*compositeAlpha*/ compositeAlpha,
 		/*presentMode*/ swapchainPresentMode,
 		/*clipped*/ true,
-		/*oldSwapchain*/ nullptr,
+		/*oldSwapchain*/ VK_NULL_HANDLE,
 	};
 
 	err = fpCreateSwapchainKHR(device, &swapchain_ci, nullptr, &window->swapchain);
