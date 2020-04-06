@@ -1579,6 +1579,7 @@ EditorFileDialog::EditorFileDialog() {
 
 	drives = memnew(OptionButton);
 	drives->connect("item_selected", callable_mp(this, &EditorFileDialog::_select_drive));
+	pathhb->add_child(drives);
 
 	makedir = memnew(Button);
 	makedir->set_text(TTR("Create Folder"));
