@@ -760,8 +760,13 @@ void EditorFileDialog::update_file_list() {
 
 	while ((item = dir_access->get_next()) != "") {
 
-		if (item == "." || item == "..")
+		if (item == "." || item == "..") {
 			continue;
+		}
+
+		if (cdir == "res://" && item == ".import") {
+			continue;
+		}
 
 		if (show_hidden_files || !dir_access->current_is_hidden()) {
 			if (!dir_access->current_is_dir())
