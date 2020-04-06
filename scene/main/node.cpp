@@ -1268,7 +1268,7 @@ void Node::add_child_below_node(Node *p_node, Node *p_child, bool p_legible_uniq
 	add_child(p_child, p_legible_unique_name);
 
 	if (is_a_parent_of(p_node)) {
-		move_child(p_child, p_node->get_position_in_parent() + 1);
+		move_child(p_child, p_node->get_index() + 1);
 	} else {
 		WARN_PRINT("Cannot move under node " + p_node->get_name() + " as " + p_child->get_name() + " does not share a parent.");
 	}
@@ -1918,6 +1918,7 @@ int Node::get_index() const {
 
 	return data.pos;
 }
+
 void Node::remove_and_skip() {
 
 	ERR_FAIL_COND(!data.parent);
@@ -2040,11 +2041,6 @@ void Node::set_scene_instance_load_placeholder(bool p_enable) {
 bool Node::get_scene_instance_load_placeholder() const {
 
 	return data.use_placeholder;
-}
-
-int Node::get_position_in_parent() const {
-
-	return data.pos;
 }
 
 Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const {
@@ -2215,7 +2211,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 		}
 
 		parent->add_child(dup);
-		int pos = E->get()->get_position_in_parent();
+		int pos = E->get()->get_index();
 
 		if (pos < parent->get_child_count() - 1) {
 
@@ -2860,7 +2856,6 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pause_mode"), &Node::get_pause_mode);
 	ClassDB::bind_method(D_METHOD("can_process"), &Node::can_process);
 	ClassDB::bind_method(D_METHOD("print_stray_nodes"), &Node::_print_stray_nodes);
-	ClassDB::bind_method(D_METHOD("get_position_in_parent"), &Node::get_position_in_parent);
 
 	ClassDB::bind_method(D_METHOD("set_display_folded", "fold"), &Node::set_display_folded);
 	ClassDB::bind_method(D_METHOD("is_displayed_folded"), &Node::is_displayed_folded);

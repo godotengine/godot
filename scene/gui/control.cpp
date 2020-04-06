@@ -1893,7 +1893,7 @@ static Control *_next_control(Control *p_from) {
 		return nullptr;
 	}
 
-	int next = p_from->get_position_in_parent();
+	int next = p_from->get_index();
 	ERR_FAIL_INDEX_V(next, parent->get_child_count(), nullptr);
 	for (int i = (next + 1); i < parent->get_child_count(); i++) {
 
@@ -2032,7 +2032,7 @@ Control *Control::find_prev_valid_focus() const {
 
 		} else {
 
-			for (int i = (from->get_position_in_parent() - 1); i >= 0; i--) {
+			for (int i = (from->get_index() - 1); i >= 0; i--) {
 
 				Control *c = Object::cast_to<Control>(from->get_parent()->get_child(i));
 

@@ -35,7 +35,7 @@ void CanvasLayer::set_layer(int p_xform) {
 
 	layer = p_xform;
 	if (viewport.is_valid())
-		RenderingServer::get_singleton()->viewport_set_canvas_stacking(viewport, canvas, layer, get_position_in_parent());
+		RenderingServer::get_singleton()->viewport_set_canvas_stacking(viewport, canvas, layer, get_index());
 }
 
 int CanvasLayer::get_layer() const {
@@ -151,7 +151,7 @@ void CanvasLayer::_notification(int p_what) {
 			viewport = vp->get_viewport_rid();
 
 			RenderingServer::get_singleton()->viewport_attach_canvas(viewport, canvas);
-			RenderingServer::get_singleton()->viewport_set_canvas_stacking(viewport, canvas, layer, get_position_in_parent());
+			RenderingServer::get_singleton()->viewport_set_canvas_stacking(viewport, canvas, layer, get_index());
 			RenderingServer::get_singleton()->viewport_set_canvas_transform(viewport, canvas, transform);
 			_update_follow_viewport();
 
@@ -167,7 +167,7 @@ void CanvasLayer::_notification(int p_what) {
 		case NOTIFICATION_MOVED_IN_PARENT: {
 
 			if (is_inside_tree())
-				RenderingServer::get_singleton()->viewport_set_canvas_stacking(viewport, canvas, layer, get_position_in_parent());
+				RenderingServer::get_singleton()->viewport_set_canvas_stacking(viewport, canvas, layer, get_index());
 
 		} break;
 	}
@@ -214,7 +214,7 @@ void CanvasLayer::set_custom_viewport(Node *p_viewport) {
 		viewport = vp->get_viewport_rid();
 
 		RenderingServer::get_singleton()->viewport_attach_canvas(viewport, canvas);
-		RenderingServer::get_singleton()->viewport_set_canvas_stacking(viewport, canvas, layer, get_position_in_parent());
+		RenderingServer::get_singleton()->viewport_set_canvas_stacking(viewport, canvas, layer, get_index());
 		RenderingServer::get_singleton()->viewport_set_canvas_transform(viewport, canvas, transform);
 	}
 }

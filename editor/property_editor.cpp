@@ -257,7 +257,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 					file_system_dock->navigate_to_path(r->get_path());
 					// Ensure that the FileSystem dock is visible.
 					TabContainer *tab_container = (TabContainer *)file_system_dock->get_parent_control();
-					tab_container->set_current_tab(file_system_dock->get_position_in_parent());
+					tab_container->set_current_tab(file_system_dock->get_index());
 				} break;
 				default: {
 
