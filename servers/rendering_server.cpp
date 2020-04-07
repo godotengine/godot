@@ -2312,7 +2312,7 @@ RenderingServer::RenderingServer() {
 
 	GLOBAL_DEF("rendering/quality/shadows/filter_mode", 1);
 	GLOBAL_DEF("rendering/quality/shadows/filter_mode.mobile", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadows/filter_mode", PropertyInfo(Variant::INT, "rendering/quality/shadows/filter_mode", PROPERTY_HINT_ENUM, "Disabled (Fastest),PCF5,PCF13 (Slowest)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadows/filter_mode", PropertyInfo(Variant::INT, "rendering/quality/shadows/filter_mode", PROPERTY_HINT_ENUM, "Disabled (Fast),PCF5 (Average),PCF13 (Slow)"));
 
 	GLOBAL_DEF("rendering/quality/reflections/roughness_layers", 8);
 	GLOBAL_DEF("rendering/quality/reflections/texture_array_reflections", true);
@@ -2326,7 +2326,7 @@ RenderingServer::RenderingServer() {
 
 	GLOBAL_DEF("rendering/quality/gi_probes/anisotropic", false);
 	GLOBAL_DEF("rendering/quality/gi_probes/quality", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/gi_probes/quality", PropertyInfo(Variant::INT, "rendering/quality/gi_probes/quality", PROPERTY_HINT_ENUM, "Ultra-Low (1 cone - fastest),Medium (4 cones), High (6 cones - slowest)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/gi_probes/quality", PropertyInfo(Variant::INT, "rendering/quality/gi_probes/quality", PROPERTY_HINT_ENUM, "Lowest (1 Cone - Fast),Medium (4 Cones - Average),High (6 Cones - Slow)"));
 
 	GLOBAL_DEF("rendering/quality/shading/force_vertex_shading", false);
 	GLOBAL_DEF("rendering/quality/shading/force_vertex_shading.mobile", true);
@@ -2342,29 +2342,29 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/quality/filters/max_anisotropy", 4);
 
 	GLOBAL_DEF("rendering/quality/filters/depth_of_field_bokeh_shape", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/depth_of_field_bokeh_shape", PropertyInfo(Variant::INT, "rendering/quality/filters/depth_of_field_bokeh_shape", PROPERTY_HINT_ENUM, "Box (Fastest),Hexagon,Circle (Slowest)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/depth_of_field_bokeh_shape", PropertyInfo(Variant::INT, "rendering/quality/filters/depth_of_field_bokeh_shape", PROPERTY_HINT_ENUM, "Box (Fast),Hexagon (Average),Circle (Slow)"));
 	GLOBAL_DEF("rendering/quality/filters/depth_of_field_bokeh_quality", 2);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/depth_of_field_bokeh_quality", PropertyInfo(Variant::INT, "rendering/quality/filters/depth_of_field_bokeh_quality", PROPERTY_HINT_ENUM, "Very Low (Fast),Low,Medium,High (Slow)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/depth_of_field_bokeh_quality", PropertyInfo(Variant::INT, "rendering/quality/filters/depth_of_field_bokeh_quality", PROPERTY_HINT_ENUM, "Very Low (Fastest),Low (Fast),Medium (Average),High (Slow)"));
 	GLOBAL_DEF("rendering/quality/filters/depth_of_field_use_jitter", false);
 
 	GLOBAL_DEF("rendering/quality/ssao/quality", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/quality", PropertyInfo(Variant::INT, "rendering/quality/ssao/quality", PROPERTY_HINT_ENUM, "Low (Fast),Medium,High (Slow),Ultra (Very Slow)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/quality", PropertyInfo(Variant::INT, "rendering/quality/ssao/quality", PROPERTY_HINT_ENUM, "Low (Fast),Medium (Average),High (Slow),Ultra (Slower)"));
 	GLOBAL_DEF("rendering/quality/ssao/half_size", false);
 
 	GLOBAL_DEF("rendering/quality/filters/screen_space_roughness_limiter", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/screen_space_roughness_limiter", PropertyInfo(Variant::INT, "rendering/quality/filters/screen_space_roughness_limiter", PROPERTY_HINT_ENUM, "Disabled,Enabled (Small Cost)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/screen_space_roughness_limiter", PropertyInfo(Variant::INT, "rendering/quality/filters/screen_space_roughness_limiter", PROPERTY_HINT_ENUM, "Disabled (Fast),Enabled (Average)"));
 	GLOBAL_DEF("rendering/quality/filters/screen_space_roughness_limiter_curve", 1.0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/screen_space_roughness_limiter_curve", PropertyInfo(Variant::FLOAT, "rendering/quality/filters/screen_space_roughness_limiter_curve", PROPERTY_HINT_EXP_EASING, "0.01,8,0.01"));
 
 	GLOBAL_DEF("rendering/quality/glow/upscale_mode", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/glow/upscale_mode", PropertyInfo(Variant::INT, "rendering/quality/glow/upscale_mode", PROPERTY_HINT_ENUM, "Linear (Fast),Bicubic (Slower)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/glow/upscale_mode", PropertyInfo(Variant::INT, "rendering/quality/glow/upscale_mode", PROPERTY_HINT_ENUM, "Linear (Fast),Bicubic (Slow)"));
 	GLOBAL_DEF("rendering/quality/glow/upscale_mode.mobile", 0);
 
 	GLOBAL_DEF("rendering/quality/screen_space_reflection/roughness_quality", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/screen_space_reflection/roughness_quality", PropertyInfo(Variant::INT, "rendering/quality/screen_space_reflection/roughness_quality", PROPERTY_HINT_ENUM, "Disabled (Fastest),Low, Medium, High (Slowest)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/screen_space_reflection/roughness_quality", PropertyInfo(Variant::INT, "rendering/quality/screen_space_reflection/roughness_quality", PROPERTY_HINT_ENUM, "Disabled (Fastest),Low (Fast),Medium (Average),High (Slow)"));
 
 	GLOBAL_DEF("rendering/quality/subsurface_scattering/subsurface_scattering_quality", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/subsurface_scattering/subsurface_scattering_quality", PropertyInfo(Variant::INT, "rendering/quality/subsurface_scattering/subsurface_scattering_quality", PROPERTY_HINT_ENUM, "Disabled, Low (Fastest),Medium, High (Slowest)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/subsurface_scattering/subsurface_scattering_quality", PropertyInfo(Variant::INT, "rendering/quality/subsurface_scattering/subsurface_scattering_quality", PROPERTY_HINT_ENUM, "Disabled (Fastest),Low (Fast),Medium (Average),High (Slow)"));
 	GLOBAL_DEF("rendering/quality/subsurface_scattering/subsurface_scattering_scale", 0.05);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/subsurface_scattering/subsurface_scattering_scale", PropertyInfo(Variant::FLOAT, "rendering/quality/subsurface_scattering/subsurface_scattering_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001"));
 	GLOBAL_DEF("rendering/quality/subsurface_scattering/subsurface_scattering_depth_scale", 0.01);
