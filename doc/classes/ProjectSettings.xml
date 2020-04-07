@@ -426,9 +426,6 @@
 		<member name="display/window/ios/hide_home_indicator" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the home indicator is hidden automatically. This only affects iOS devices without a physical home button.
 		</member>
-		<member name="display/window/subwindows/embed_subwindows" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], uses subwindows (windows rendered entirely by engine) instead of OS-specific windows.
-		</member>
 		<member name="display/window/size/always_on_top" type="bool" setter="" getter="" default="false">
 			Force the window to be always on top.
 		</member>
@@ -1110,6 +1107,12 @@
 		<member name="rendering/quality/ssao/half_size" type="bool" setter="" getter="" default="false">
 		</member>
 		<member name="rendering/quality/ssao/quality" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="rendering/quality/subsurface_scattering/subsurface_scattering_depth_scale" type="float" setter="" getter="" default="0.01">
+		</member>
+		<member name="rendering/quality/subsurface_scattering/subsurface_scattering_quality" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="rendering/quality/subsurface_scattering/subsurface_scattering_scale" type="float" setter="" getter="" default="0.05">
 		</member>
 		<member name="rendering/threads/thread_model" type="int" setter="" getter="" default="1">
 			Thread model for rendering. Rendering on a thread can vastly improve performance, but synchronizing to the main thread can cause a bit more jitter.
