@@ -1,62 +1,68 @@
-# LANGUAGE translation of the Godot Engine class reference.
+# French translation of the Godot Engine class reference.
 # Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 #
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Rémi Verschelde <remi@godotengine.org>, 2020.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8-bit\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: Rémi Verschelde <remi@godotengine.org>\n"
+"Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
+"godot-classes/fr/>\n"
+"Language: fr\n"
+"X-Generator: Poedit 2.3\n"
 
 #: doc/tools/makerst.py
 msgid "Description"
-msgstr ""
+msgstr "Description"
 
 #: doc/tools/makerst.py
 msgid "Tutorials"
-msgstr ""
+msgstr "Tutoriels"
 
 #: doc/tools/makerst.py
 msgid "Properties"
-msgstr ""
+msgstr "Propriétés"
 
 #: doc/tools/makerst.py
 msgid "Methods"
-msgstr ""
+msgstr "Méthodes"
 
 #: doc/tools/makerst.py
 msgid "Theme Properties"
-msgstr ""
+msgstr "Propriétés de thème"
 
 #: doc/tools/makerst.py
 msgid "Signals"
-msgstr ""
+msgstr "Signaux"
 
 #: doc/tools/makerst.py
 msgid "Enumerations"
-msgstr ""
+msgstr "Énumérations"
 
 #: doc/tools/makerst.py
 msgid "Constants"
-msgstr ""
+msgstr "Constantes"
 
 #: doc/tools/makerst.py
 msgid "Property Descriptions"
-msgstr ""
+msgstr "Description des propriétés"
 
 #: doc/tools/makerst.py
 msgid "Method Descriptions"
-msgstr ""
+msgstr "Description des méthodes"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:4
 msgid "Built-in GDScript functions."
-msgstr ""
+msgstr "Fonctions intégrées à GDScript."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:7
 msgid ""
@@ -64,6 +70,10 @@ msgid ""
 "utilities. Everything else is provided by objects. (Keywords: builtin, built "
 "in, global functions.)"
 msgstr ""
+"Liste de fonctions de base intégrées à GDScript. Fonctions mathématiques et "
+"autres fonctions utilitaires. Toutes les autres fonctionalités sont fournies "
+"directement par les objets. (Mots-clés : builtin, built-in, intégré, "
+"intégrées, fonctions de base, fonctions globales.)"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:24
 msgid ""

@@ -306,6 +306,8 @@
 		<member name="subsurf_scatter_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], subsurface scattering is enabled. Emulates light that penetrates an object's surface, is scattered, and then emerges.
 		</member>
+		<member name="subsurf_scatter_skin_mode" type="bool" setter="set_flag" getter="get_flag">
+		</member>
 		<member name="subsurf_scatter_strength" type="float" setter="set_subsurface_scattering_strength" getter="get_subsurface_scattering_strength">
 			The strength of the subsurface scattering effect.
 		</member>
@@ -591,7 +593,9 @@
 		<constant name="FLAG_INVERT_HEIGHTMAP" value="17" enum="Flags">
 			Invert values read from a depth texture to convert them to height values (heightmap).
 		</constant>
-		<constant name="FLAG_MAX" value="18" enum="Flags">
+		<constant name="FLAG_SUBSURFACE_MODE_SKIN" value="18" enum="Flags">
+		</constant>
+		<constant name="FLAG_MAX" value="19" enum="Flags">
 			Represents the size of the [enum Flags] enum.
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">
