@@ -126,17 +126,6 @@ void RenderingServerWrapMT::init() {
 
 void RenderingServerWrapMT::finish() {
 
-	if (thread) {
-
-		command_queue.push(this, &RenderingServerWrapMT::thread_exit);
-		Thread::wait_to_finish(thread);
-		memdelete(thread);
-
-		thread = nullptr;
-	} else {
-		rendering_server->finish();
-	}
-
 	sky_free_cached_ids();
 	shader_free_cached_ids();
 	material_free_cached_ids();
@@ -161,6 +150,17 @@ void RenderingServerWrapMT::finish() {
 	canvas_item_free_cached_ids();
 	canvas_light_occluder_free_cached_ids();
 	canvas_occluder_polygon_free_cached_ids();
+
+	if (thread) {
+
+		command_queue.push(this, &RenderingServerWrapMT::thread_exit);
+		Thread::wait_to_finish(thread);
+		memdelete(thread);
+
+		thread = nullptr;
+	} else {
+		rendering_server->finish();
+	}
 }
 
 void RenderingServerWrapMT::set_use_vsync_callback(bool p_enable) {
