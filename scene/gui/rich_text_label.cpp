@@ -411,7 +411,6 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 							break; //don't allow lines longer than assigned width
 						}
 
-						w += cw;
 						fw += cw;
 
 						end++;
@@ -552,8 +551,10 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 									}
 								}
 
-								if (visible)
+								if (visible) {
 									line_is_blank = false;
+									w += font->get_char_size(c[i], c[i + 1]).x;
+								}
 
 								if (c[i] == '\t')
 									visible = false;
