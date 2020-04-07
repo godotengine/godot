@@ -7049,6 +7049,7 @@ void RenderingDeviceVulkan::finalize() {
 	for (int i = 0; i < staging_buffer_blocks.size(); i++) {
 		vmaDestroyBuffer(allocator, staging_buffer_blocks[i].buffer, staging_buffer_blocks[i].allocation);
 	}
+	vmaDestroyAllocator(allocator);
 
 	while (vertex_formats.size()) {
 		Map<VertexFormatID, VertexDescriptionCache>::Element *temp = vertex_formats.front();
