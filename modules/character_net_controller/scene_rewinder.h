@@ -35,12 +35,24 @@
 #ifndef SCENE_REWINDER_H
 #define SCENE_REWINDER_H
 
+struct NodeData;
 struct VarData;
+struct PeerData;
+
+class Rewinder;
 
 class SceneRewinder : public Node {
 	GDCLASS(SceneRewinder, Node);
 
-	HashMap<ObjectID, Vector<VarData>> variables;
+	friend class Rewinder;
+	friend class ServerRewinder;
+	friend class ClientRewinder;
+	friend class NoNetRewinder;
+
+	Rewinder *rewinder;
+
+	uint32_t node_id;
+	HashMap<ObjectID, NodeData> data;
 
 public:
 	static void _bind_methods();
@@ -49,28 +61,94 @@ public:
 
 public:
 	SceneRewinder();
+	~SceneRewinder();
 
-	void register_variable(Node *p_object, StringName p_variable, StringName p_on_change_notify_to = StringName());
-	void unregister_variable(Node *p_object, StringName p_variable);
+	void register_variable(Object *p_object, StringName p_variable, StringName p_on_change_notify_to = StringName());
+	void unregister_variable(Object *p_object, StringName p_variable);
 
 	String get_changed_event_name(StringName p_variable);
 
-	void track_variable_changes(Node *p_object, StringName p_variable, StringName p_method);
-	void untrack_variable_changes(Node *p_object, StringName p_variable, StringName p_method);
+	void track_variable_changes(Object *p_object, StringName p_variable, StringName p_method);
+	void untrack_variable_changes(Object *p_object, StringName p_variable, StringName p_method);
+
+	/// Remove anything.
+	void reset();
 
 private:
 	void process();
+
+	void on_peer_connected(int p_peer_id);
+	void on_peer_disconnected(int p_peer_id);
+};
+
+struct NodeData {
+	uint32_t id;
+	ObjectID instance_id;
+	Vector<VarData> vars;
+
+	NodeData();
+	NodeData(uint32_t p_id, ObjectID p_instance_id);
 };
 
 struct VarData {
+	uint32_t id;
 	StringName name;
 	Variant old_val;
+	bool enabled;
 
 	VarData();
 	VarData(StringName p_name);
-	VarData(StringName p_name, Variant p_val);
+	VarData(uint32_t p_id, StringName p_name, Variant p_val, bool p_enabled);
 
 	bool operator==(const VarData &p_other) const;
+};
+
+struct PeerData {
+	int peer;
+	// List of nodes which the server sent the variable information.
+	Vector<uint32_t> nodes_know_variables;
+
+	PeerData();
+	PeerData(int p_peer);
+
+	bool operator==(const PeerData &p_other) const;
+};
+
+class Rewinder {
+	SceneRewinder *node;
+
+public:
+	Rewinder(SceneRewinder *p_node);
+
+	virtual void process(real_t p_delta) = 0;
+};
+
+class NoNetRewinder : public Rewinder {
+public:
+	NoNetRewinder(SceneRewinder *p_node);
+
+	virtual void process(real_t p_delta);
+};
+
+class ServerRewinder : public Rewinder {
+	Vector<PeerData> peers_data;
+
+public:
+	ServerRewinder(SceneRewinder *p_node);
+
+	void on_peer_connected(int p_peer_id);
+	void on_peer_disconnected(int p_peer_id);
+
+	Variant generate_snapshot(int p_peer_index);
+
+	virtual void process(real_t p_delta);
+};
+
+class ClientRewinder : public Rewinder {
+public:
+	ClientRewinder(SceneRewinder *p_node);
+
+	virtual void process(real_t p_delta);
 };
 
 #endif
