@@ -2451,16 +2451,16 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 		RasterizerStorageGLES2::Skeleton *skeleton = storage->skeleton_owner.getornull(e->instance->skeleton);
 
 		if (skeleton != prev_skeleton) {
-
-			if (skeleton) {
-				state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON, true);
-				state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON_SOFTWARE, storage->config.use_skeleton_software);
-			} else {
-				state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON, false);
-				state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON_SOFTWARE, false);
+			if ((prev_skeleton == NULL) != (skeleton == NULL)) {
+				if (skeleton) {
+					state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON, true);
+					state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON_SOFTWARE, storage->config.use_skeleton_software);
+				} else {
+					state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON, false);
+					state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON_SOFTWARE, false);
+				}
+				rebind = true;
 			}
-
-			rebind = true;
 		}
 
 		if (e->owner != prev_owner || e->geometry != prev_geometry || skeleton != prev_skeleton) {
