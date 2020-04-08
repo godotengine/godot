@@ -170,17 +170,15 @@ public:
 				_add_item(aabb, ITEM_TYPE_OMNI_LIGHT, light_count);
 			} break;
 			case LIGHT_TYPE_SPOT: {
-				Vector3 v(0, 0, -1);
-				v.rotated(Vector3(0, 1, 0), Math::deg2rad(ld.spot_aperture)); //rotate in x-z
-				v.normalize();
-				v *= ld.radius;
-				v.y = v.x;
+
+				float r = ld.radius;
+				real_t len = Math::tan(Math::deg2rad(ld.spot_aperture)) * r;
 
 				aabb.position = xform.origin;
-				aabb.expand_to(xform.xform(v));
-				aabb.expand_to(xform.xform(Vector3(-v.x, v.y, v.z)));
-				aabb.expand_to(xform.xform(Vector3(-v.x, -v.y, v.z)));
-				aabb.expand_to(xform.xform(Vector3(v.x, -v.y, v.z)));
+				aabb.expand_to(xform.xform(Vector3(len, len, -r)));
+				aabb.expand_to(xform.xform(Vector3(-len, len, -r)));
+				aabb.expand_to(xform.xform(Vector3(-len, -len, -r)));
+				aabb.expand_to(xform.xform(Vector3(len, -len, -r)));
 				_add_item(aabb, ITEM_TYPE_SPOT_LIGHT, light_count);
 			} break;
 		}

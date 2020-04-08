@@ -22,6 +22,10 @@ draw_call;
 #define SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT 10
 #define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT 11
 
+#define SHADOW_MODE_NO_FILTER 0
+#define SHADOW_MODE_PCF5 1
+#define SHADOW_MODE_PCF13 2
+
 layout(set = 0, binding = 1) uniform sampler material_samplers[12];
 
 layout(set = 0, binding = 2) uniform sampler shadow_sampler;
@@ -37,12 +41,11 @@ layout(set = 0, binding = 3, std140) uniform SceneData {
 	vec2 viewport_size;
 	vec2 screen_pixel_size;
 
-	//used for shadow mapping only
-	float z_offset;
-	float z_slope_scale;
-
 	float time;
 	float reflection_multiplier; // one normally, zero when rendering reflections
+
+	bool pancake_shadows;
+	uint shadow_filter_mode;
 
 	vec4 ambient_light_color_energy;
 
@@ -134,7 +137,7 @@ layout(set = 0, binding = 4, std430) buffer Instances {
 }
 instances;
 
-struct LightData { //this structure needs to be 128 bits
+struct LightData { //this structure needs to be as packed as possible
 	vec3 position;
 	float inv_radius;
 	vec3 direction;
@@ -143,12 +146,16 @@ struct LightData { //this structure needs to be 128 bits
 	uint cone_attenuation_angle; // attenuation and angle, (16bit float)
 	uint mask;
 	uint shadow_color_enabled; //shadow rgb color, a>0.5 enabled (8bit unorm)
-	vec4 atlas_rect; //used for shadow atlas uv on omni, and for projection atlas on spot
+	vec4 atlas_rect; // used for spot
 	mat4 shadow_matrix;
+	float shadow_bias;
+	float shadow_normal_bias;
+	float transmittance_bias;
+	uint pad;
 };
 
-layout(set = 0, binding = 5, std140) uniform Lights {
-	LightData data[MAX_LIGHT_DATA_STRUCTS];
+layout(set = 0, binding = 5, std430) buffer Lights {
+	LightData data[];
 }
 lights;
 
@@ -174,17 +181,27 @@ struct DirectionalLightData {
 	float energy;
 	vec3 color;
 	float specular;
-	vec3 shadow_color;
 	uint mask;
+	uint pad0;
+	uint pad1;
+	uint pad2;
 	bool blend_splits;
 	bool shadow_enabled;
 	float fade_from;
 	float fade_to;
+	vec4 shadow_bias;
+	vec4 shadow_normal_bias;
+	vec4 shadow_transmittance_bias;
+	vec4 shadow_transmittance_z_scale;
 	vec4 shadow_split_offsets;
 	mat4 shadow_matrix1;
 	mat4 shadow_matrix2;
 	mat4 shadow_matrix3;
 	mat4 shadow_matrix4;
+	vec4 shadow_color1;
+	vec4 shadow_color2;
+	vec4 shadow_color3;
+	vec4 shadow_color4;
 };
 
 layout(set = 0, binding = 7, std140) uniform DirectionalLights {

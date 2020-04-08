@@ -374,6 +374,8 @@ void EditorNode::_notification(int p_what) {
 				float sss_scale = GLOBAL_GET("rendering/quality/subsurface_scattering/subsurface_scattering_scale");
 				float sss_depth_scale = GLOBAL_GET("rendering/quality/subsurface_scattering/subsurface_scattering_depth_scale");
 				RS::get_singleton()->sub_surface_scattering_set_scale(sss_scale, sss_depth_scale);
+				RS::ShadowFilter shadow_filter = RS::ShadowFilter(int(GLOBAL_GET("rendering/quality/shadows/filter_mode")));
+				RS::get_singleton()->shadow_filter_set(shadow_filter);
 			}
 
 			ResourceImporterTexture::get_singleton()->update_imports();

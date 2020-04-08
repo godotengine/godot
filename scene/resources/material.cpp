@@ -314,7 +314,7 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->anisotropy = "anisotropy_ratio";
 	shader_names->heightmap_scale = "heightmap_scale";
 	shader_names->subsurface_scattering_strength = "subsurface_scattering_strength";
-	shader_names->transmission = "transmission";
+	shader_names->backlight = "backlight";
 	shader_names->refraction = "refraction";
 	shader_names->point_size = "point_size";
 	shader_names->uv1_scale = "uv1_scale";
@@ -347,6 +347,11 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->refraction_texture_channel = "refraction_texture_channel";
 	shader_names->alpha_scissor_threshold = "alpha_scissor_threshold";
 
+	shader_names->transmittance_color = "transmittance_color";
+	shader_names->transmittance_curve = "transmittance_curve";
+	shader_names->transmittance_depth = "transmittance_depth";
+	shader_names->transmittance_boost = "transmittance_boost";
+
 	shader_names->texture_names[TEXTURE_ALBEDO] = "texture_albedo";
 	shader_names->texture_names[TEXTURE_METALLIC] = "texture_metallic";
 	shader_names->texture_names[TEXTURE_ROUGHNESS] = "texture_roughness";
@@ -358,7 +363,8 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->texture_names[TEXTURE_AMBIENT_OCCLUSION] = "texture_ambient_occlusion";
 	shader_names->texture_names[TEXTURE_HEIGHTMAP] = "texture_heightmap";
 	shader_names->texture_names[TEXTURE_SUBSURFACE_SCATTERING] = "texture_subsurface_scattering";
-	shader_names->texture_names[TEXTURE_TRANSMISSION] = "texture_transmission";
+	shader_names->texture_names[TEXTURE_SUBSURFACE_TRANSMITTANCE] = "texture_subsurface_transmittance";
+	shader_names->texture_names[TEXTURE_BACKLIGHT] = "texture_backlight";
 	shader_names->texture_names[TEXTURE_REFRACTION] = "texture_refraction";
 	shader_names->texture_names[TEXTURE_DETAIL_MASK] = "texture_detail_mask";
 	shader_names->texture_names[TEXTURE_DETAIL_ALBEDO] = "texture_detail_albedo";
@@ -385,7 +391,7 @@ void BaseMaterial3D::_update_shader() {
 	dirty_materials->remove(&element);
 
 	MaterialKey mk = _compute_key();
-	if (mk.key == current_key.key)
+	if (mk == current_key)
 		return; //no update required in the end
 
 	if (shader_map.has(current_key)) {
@@ -444,9 +450,6 @@ void BaseMaterial3D::_update_shader() {
 		case DEPTH_DRAW_DISABLED: code += ",depth_draw_never"; break;
 	}
 
-	if (features[FEATURE_SUBSURACE_SCATTERING] && flags[FLAG_SUBSURFACE_MODE_SKIN]) {
-		code += ",sss_mode_skin";
-	}
 	if (transparency == TRANSPARENCY_ALPHA_DEPTH_PRE_PASS) {
 		code += ",depth_prepass_alpha";
 	}
@@ -469,6 +472,9 @@ void BaseMaterial3D::_update_shader() {
 		case SPECULAR_PHONG: code += ",specular_phong"; break;
 		case SPECULAR_TOON: code += ",specular_toon"; break;
 		case SPECULAR_DISABLED: code += ",specular_disabled"; break;
+	}
+	if (features[FEATURE_SUBSURFACE_SCATTERING] && flags[FLAG_SUBSURFACE_MODE_SKIN]) {
+		code += ",sss_mode_skin";
 	}
 
 	if (shading_mode == SHADING_MODE_UNSHADED) {
@@ -589,16 +595,25 @@ void BaseMaterial3D::_update_shader() {
 		code += "uniform sampler2D texture_detail_mask : hint_white," + texfilter_str + ";\n";
 	}
 
-	if (features[FEATURE_SUBSURACE_SCATTERING]) {
+	if (features[FEATURE_SUBSURFACE_SCATTERING]) {
 
 		code += "uniform float subsurface_scattering_strength : hint_range(0,1);\n";
 		code += "uniform sampler2D texture_subsurface_scattering : hint_white," + texfilter_str + ";\n";
 	}
 
-	if (features[FEATURE_TRANSMISSION]) {
+	if (features[FEATURE_SUBSURFACE_TRANSMITTANCE]) {
 
-		code += "uniform vec4 transmission : hint_color;\n";
-		code += "uniform sampler2D texture_transmission : hint_black," + texfilter_str + ";\n";
+		code += "uniform vec4 transmittance_color : hint_color;\n";
+		code += "uniform float transmittance_depth;\n";
+		code += "uniform sampler2D texture_subsurface_transmittance : hint_white," + texfilter_str + ";\n";
+		code += "uniform float transmittance_curve;\n";
+		code += "uniform float transmittance_boost;\n";
+	}
+
+	if (features[FEATURE_BACKLIGHT]) {
+
+		code += "uniform vec4 backlight : hint_color;\n";
+		code += "uniform sampler2D texture_backlight : hint_black," + texfilter_str + ";\n";
 	}
 
 	if (features[FEATURE_HEIGHT_MAPPING]) {
@@ -1051,7 +1066,7 @@ void BaseMaterial3D::_update_shader() {
 		code += "\tAO_LIGHT_AFFECT = ao_light_affect;\n";
 	}
 
-	if (features[FEATURE_SUBSURACE_SCATTERING]) {
+	if (features[FEATURE_SUBSURFACE_SCATTERING]) {
 
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
 			code += "\tfloat sss_tex = triplanar_texture(texture_subsurface_scattering,uv1_power_normal,uv1_triplanar_pos).r;\n";
@@ -1061,13 +1076,27 @@ void BaseMaterial3D::_update_shader() {
 		code += "\tSSS_STRENGTH=subsurface_scattering_strength*sss_tex;\n";
 	}
 
-	if (features[FEATURE_TRANSMISSION]) {
+	if (features[FEATURE_SUBSURFACE_TRANSMITTANCE]) {
+
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "\tvec3 transmission_tex = triplanar_texture(texture_transmission,uv1_power_normal,uv1_triplanar_pos).rgb;\n";
+			code += "\tvec4 trans_color_tex = triplanar_texture(texture_subsurface_transmittance,uv1_power_normal,uv1_triplanar_pos);\n";
 		} else {
-			code += "\tvec3 transmission_tex = texture(texture_transmission,base_uv).rgb;\n";
+			code += "\tvec4 trans_color_tex = texture(texture_subsurface_transmittance,base_uv);\n";
 		}
-		code += "\tTRANSMISSION = (transmission.rgb+transmission_tex);\n";
+		code += "\tSSS_TRANSMITTANCE_COLOR=transmittance_color*trans_color_tex;\n";
+
+		code += "\tSSS_TRANSMITTANCE_DEPTH=transmittance_depth;\n";
+		code += "\tSSS_TRANSMITTANCE_CURVE=transmittance_curve;\n";
+		code += "\tSSS_TRANSMITTANCE_BOOST=transmittance_boost;\n";
+	}
+
+	if (features[FEATURE_BACKLIGHT]) {
+		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+			code += "\tvec3 backlight_tex = triplanar_texture(texture_backlight,uv1_power_normal,uv1_triplanar_pos).rgb;\n";
+		} else {
+			code += "\tvec3 backlight_tex = texture(texture_backlight,base_uv).rgb;\n";
+		}
+		code += "\tBACKLIGHT = (backlight.rgb+backlight_tex);\n";
 	}
 
 	if (features[FEATURE_DETAIL]) {
@@ -1309,15 +1338,48 @@ float BaseMaterial3D::get_subsurface_scattering_strength() const {
 	return subsurface_scattering_strength;
 }
 
-void BaseMaterial3D::set_transmission(const Color &p_transmission) {
-
-	transmission = p_transmission;
-	RS::get_singleton()->material_set_param(_get_material(), shader_names->transmission, transmission);
+void BaseMaterial3D::set_transmittance_color(const Color &p_color) {
+	transmittance_color = p_color;
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->transmittance_color, p_color);
 }
 
-Color BaseMaterial3D::get_transmission() const {
+Color BaseMaterial3D::get_transmittance_color() const {
+	return transmittance_color;
+}
 
-	return transmission;
+void BaseMaterial3D::set_transmittance_depth(float p_depth) {
+	transmittance_depth = p_depth;
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->transmittance_depth, p_depth);
+}
+float BaseMaterial3D::get_transmittance_depth() const {
+	return transmittance_depth;
+}
+
+void BaseMaterial3D::set_transmittance_curve(float p_curve) {
+	transmittance_curve = p_curve;
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->transmittance_curve, p_curve);
+}
+float BaseMaterial3D::get_transmittance_curve() const {
+	return transmittance_curve;
+}
+
+void BaseMaterial3D::set_transmittance_boost(float p_boost) {
+	transmittance_boost = p_boost;
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->transmittance_boost, p_boost);
+}
+float BaseMaterial3D::get_transmittance_boost() const {
+	return transmittance_boost;
+}
+
+void BaseMaterial3D::set_backlight(const Color &p_backlight) {
+
+	backlight = p_backlight;
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->backlight, backlight);
+}
+
+Color BaseMaterial3D::get_backlight() const {
+
+	return backlight;
 }
 
 void BaseMaterial3D::set_refraction(float p_refraction) {
@@ -1457,7 +1519,7 @@ void BaseMaterial3D::set_flag(Flags p_flag, bool p_enabled) {
 		return;
 
 	flags[p_flag] = p_enabled;
-	if ((p_flag == FLAG_USE_SHADOW_TO_OPACITY) || (p_flag == FLAG_USE_TEXTURE_REPEAT)) {
+	if (p_flag == FLAG_USE_SHADOW_TO_OPACITY || p_flag == FLAG_USE_TEXTURE_REPEAT || p_flag == FLAG_SUBSURFACE_MODE_SKIN) {
 		_change_notify();
 	}
 	_queue_shader_change();
@@ -1540,8 +1602,8 @@ void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
 	_validate_feature("anisotropy", FEATURE_ANISOTROPY, property);
 	_validate_feature("ao", FEATURE_AMBIENT_OCCLUSION, property);
 	_validate_feature("heightmap", FEATURE_HEIGHT_MAPPING, property);
-	_validate_feature("subsurf_scatter", FEATURE_SUBSURACE_SCATTERING, property);
-	_validate_feature("transmission", FEATURE_TRANSMISSION, property);
+	_validate_feature("subsurf_scatter", FEATURE_SUBSURFACE_SCATTERING, property);
+	_validate_feature("backlight", FEATURE_BACKLIGHT, property);
 	_validate_feature("refraction", FEATURE_REFRACTION, property);
 	_validate_feature("detail", FEATURE_DETAIL, property);
 
@@ -1572,6 +1634,10 @@ void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
 	}
 
 	if ((property.name == "heightmap_min_layers" || property.name == "heightmap_max_layers") && !deep_parallax) {
+		property.usage = 0;
+	}
+
+	if (flags[FLAG_SUBSURFACE_MODE_SKIN] && (property.name == "subsurf_scatter_transmittance_color" || property.name == "subsurf_scatter_transmittance_texture" || property.name == "subsurf_scatter_transmittance_curve")) {
 		property.usage = 0;
 	}
 
@@ -1631,7 +1697,11 @@ void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
 			property.usage = 0;
 		}
 
-		if (property.name.begins_with("transmission")) {
+		if (property.name.begins_with("backlight")) {
+			property.usage = 0;
+		}
+
+		if (property.name.begins_with("transmittance")) {
 			property.usage = 0;
 		}
 	}
@@ -2070,8 +2140,20 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_subsurface_scattering_strength", "strength"), &BaseMaterial3D::set_subsurface_scattering_strength);
 	ClassDB::bind_method(D_METHOD("get_subsurface_scattering_strength"), &BaseMaterial3D::get_subsurface_scattering_strength);
 
-	ClassDB::bind_method(D_METHOD("set_transmission", "transmission"), &BaseMaterial3D::set_transmission);
-	ClassDB::bind_method(D_METHOD("get_transmission"), &BaseMaterial3D::get_transmission);
+	ClassDB::bind_method(D_METHOD("set_transmittance_color", "color"), &BaseMaterial3D::set_transmittance_color);
+	ClassDB::bind_method(D_METHOD("get_transmittance_color"), &BaseMaterial3D::get_transmittance_color);
+
+	ClassDB::bind_method(D_METHOD("set_transmittance_depth", "depth"), &BaseMaterial3D::set_transmittance_depth);
+	ClassDB::bind_method(D_METHOD("get_transmittance_depth"), &BaseMaterial3D::get_transmittance_depth);
+
+	ClassDB::bind_method(D_METHOD("set_transmittance_curve", "curve"), &BaseMaterial3D::set_transmittance_curve);
+	ClassDB::bind_method(D_METHOD("get_transmittance_curve"), &BaseMaterial3D::get_transmittance_curve);
+
+	ClassDB::bind_method(D_METHOD("set_transmittance_boost", "boost"), &BaseMaterial3D::set_transmittance_boost);
+	ClassDB::bind_method(D_METHOD("get_transmittance_boost"), &BaseMaterial3D::get_transmittance_boost);
+
+	ClassDB::bind_method(D_METHOD("set_backlight", "backlight"), &BaseMaterial3D::set_backlight);
+	ClassDB::bind_method(D_METHOD("get_backlight"), &BaseMaterial3D::get_backlight);
 
 	ClassDB::bind_method(D_METHOD("set_refraction", "refraction"), &BaseMaterial3D::set_refraction);
 	ClassDB::bind_method(D_METHOD("get_refraction"), &BaseMaterial3D::get_refraction);
@@ -2285,15 +2367,23 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "heightmap_flip_texture"), "set_flag", "get_flag", FLAG_INVERT_HEIGHTMAP);
 
 	ADD_GROUP("Subsurf Scatter", "subsurf_scatter_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "subsurf_scatter_enabled"), "set_feature", "get_feature", FEATURE_SUBSURACE_SCATTERING);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "subsurf_scatter_enabled"), "set_feature", "get_feature", FEATURE_SUBSURFACE_SCATTERING);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "subsurf_scatter_strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_subsurface_scattering_strength", "get_subsurface_scattering_strength");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "subsurf_scatter_skin_mode"), "set_flag", "get_flag", FLAG_SUBSURFACE_MODE_SKIN);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "subsurf_scatter_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_SUBSURFACE_SCATTERING);
 
-	ADD_GROUP("Transmission", "transmission_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transmission_enabled"), "set_feature", "get_feature", FEATURE_TRANSMISSION);
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "transmission", PROPERTY_HINT_COLOR_NO_ALPHA), "set_transmission", "get_transmission");
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "transmission_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_TRANSMISSION);
+	ADD_SUBGROUP("Transmittance", "subsurf_scatter_transmittance_");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "subsurf_scatter_transmittance_enabled"), "set_feature", "get_feature", FEATURE_SUBSURFACE_TRANSMITTANCE);
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "subsurf_scatter_transmittance_color"), "set_transmittance_color", "get_transmittance_color");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "subsurf_scatter_transmittance_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_SUBSURFACE_TRANSMITTANCE);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "subsurf_scatter_transmittance_depth", PROPERTY_HINT_RANGE, "0.001,8,0.001,or_greater"), "set_transmittance_depth", "get_transmittance_depth");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "subsurf_scatter_transmittance_curve", PROPERTY_HINT_EXP_EASING, "0.01,16,0.01"), "set_transmittance_curve", "get_transmittance_curve");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "subsurf_scatter_transmittance_boost", PROPERTY_HINT_RANGE, "0.00,1.0,0.01"), "set_transmittance_boost", "get_transmittance_boost");
+
+	ADD_GROUP("Back Lighting", "backlight_");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "backlight_enabled"), "set_feature", "get_feature", FEATURE_BACKLIGHT);
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "backlight", PROPERTY_HINT_COLOR_NO_ALPHA), "set_backlight", "get_backlight");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "backlight_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_BACKLIGHT);
 
 	ADD_GROUP("Refraction", "refraction_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "refraction_enabled"), "set_feature", "get_feature", FEATURE_REFRACTION);
@@ -2366,7 +2456,8 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(TEXTURE_AMBIENT_OCCLUSION);
 	BIND_ENUM_CONSTANT(TEXTURE_HEIGHTMAP);
 	BIND_ENUM_CONSTANT(TEXTURE_SUBSURFACE_SCATTERING);
-	BIND_ENUM_CONSTANT(TEXTURE_TRANSMISSION);
+	BIND_ENUM_CONSTANT(TEXTURE_SUBSURFACE_TRANSMITTANCE);
+	BIND_ENUM_CONSTANT(TEXTURE_BACKLIGHT);
 	BIND_ENUM_CONSTANT(TEXTURE_REFRACTION);
 	BIND_ENUM_CONSTANT(TEXTURE_DETAIL_MASK);
 	BIND_ENUM_CONSTANT(TEXTURE_DETAIL_ALBEDO);
@@ -2403,8 +2494,9 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_ANISOTROPY);
 	BIND_ENUM_CONSTANT(FEATURE_AMBIENT_OCCLUSION);
 	BIND_ENUM_CONSTANT(FEATURE_HEIGHT_MAPPING);
-	BIND_ENUM_CONSTANT(FEATURE_SUBSURACE_SCATTERING);
-	BIND_ENUM_CONSTANT(FEATURE_TRANSMISSION);
+	BIND_ENUM_CONSTANT(FEATURE_SUBSURFACE_SCATTERING);
+	BIND_ENUM_CONSTANT(FEATURE_SUBSURFACE_TRANSMITTANCE);
+	BIND_ENUM_CONSTANT(FEATURE_BACKLIGHT);
 	BIND_ENUM_CONSTANT(FEATURE_REFRACTION);
 	BIND_ENUM_CONSTANT(FEATURE_DETAIL);
 	BIND_ENUM_CONSTANT(FEATURE_MAX);
@@ -2496,7 +2588,11 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	set_anisotropy(0);
 	set_heightmap_scale(0.05);
 	set_subsurface_scattering_strength(0);
-	set_transmission(Color(0, 0, 0));
+	set_backlight(Color(0, 0, 0));
+	set_transmittance_color(Color(1, 1, 1, 1));
+	set_transmittance_depth(0.1);
+	set_transmittance_curve(1.0);
+	set_transmittance_boost(0.0);
 	set_refraction(0.05);
 	set_point_size(1);
 	set_uv1_offset(Vector3(0, 0, 0));
@@ -2552,7 +2648,8 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 		features[i] = false;
 	}
 
-	current_key.key = 0;
+	current_key.key0 = 0;
+	current_key.key1 = 0;
 	current_key.invalid_key = 1;
 	texture_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
 	_queue_shader_change();

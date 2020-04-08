@@ -1478,6 +1478,8 @@ void EditorInspector::update_tree() {
 	String filter = search_box ? search_box->get_text() : "";
 	String group;
 	String group_base;
+	String subgroup;
+	String subgroup_base;
 	VBoxContainer *category_vbox = nullptr;
 
 	List<PropertyInfo>
@@ -1503,10 +1505,19 @@ void EditorInspector::update_tree() {
 
 		//make sure the property can be edited
 
-		if (p.usage & PROPERTY_USAGE_GROUP) {
+		if (p.usage & PROPERTY_USAGE_SUBGROUP) {
+
+			subgroup = p.name;
+			subgroup_base = p.hint_string;
+
+			continue;
+
+		} else if (p.usage & PROPERTY_USAGE_GROUP) {
 
 			group = p.name;
 			group_base = p.hint_string;
+			subgroup = "";
+			subgroup_base = "";
 
 			continue;
 
@@ -1514,6 +1525,8 @@ void EditorInspector::update_tree() {
 
 			group = "";
 			group_base = "";
+			subgroup = "";
+			subgroup_base = "";
 
 			if (!show_categories)
 				continue;
@@ -1577,18 +1590,33 @@ void EditorInspector::update_tree() {
 		}
 
 		String basename = p.name;
+
+		if (subgroup != "") {
+			if (subgroup_base != "") {
+				if (basename.begins_with(subgroup_base)) {
+					basename = basename.replace_first(subgroup_base, "");
+				} else if (subgroup_base.begins_with(basename)) {
+					//keep it, this is used pretty often
+				} else {
+					subgroup = ""; //no longer using subgroup base, clear
+				}
+			}
+		}
 		if (group != "") {
-			if (group_base != "") {
+			if (group_base != "" && subgroup == "") {
 				if (basename.begins_with(group_base)) {
 					basename = basename.replace_first(group_base, "");
 				} else if (group_base.begins_with(basename)) {
 					//keep it, this is used pretty often
 				} else {
 					group = ""; //no longer using group base, clear
+					subgroup = "";
 				}
 			}
 		}
-
+		if (subgroup != "") {
+			basename = subgroup + "/" + basename;
+		}
 		if (group != "") {
 			basename = group + "/" + basename;
 		}

@@ -71,6 +71,7 @@ class RasterizerEffectsRD {
 		BLUR_MODE_SSAO_MERGE,
 		BLUR_MODE_SIMPLY_COPY,
 		BLUR_MODE_MIPMAP,
+		BLUR_MODE_LINEARIZE_DEPTH,
 		BLUR_MODE_MAX,
 
 	};
@@ -540,6 +541,7 @@ public:
 
 	void region_copy(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_region);
 	void copy_to_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_rect, bool p_flip_y = false, bool p_force_luminance = false);
+	void copy_to_rect_and_linearize(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_rect, bool p_flip_y, float p_z_near, float p_z_far);
 	void gaussian_blur(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, const Rect2 &p_region);
 	void gaussian_glow(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, float p_strength = 1.0, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_treshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_grey = 1.0);
 

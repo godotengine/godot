@@ -3105,14 +3105,15 @@ RID RasterizerStorageRD::light_create(RS::LightType p_type) {
 	light.param[RS::LIGHT_PARAM_SPECULAR] = 0.5;
 	light.param[RS::LIGHT_PARAM_RANGE] = 1.0;
 	light.param[RS::LIGHT_PARAM_SPOT_ANGLE] = 45;
-	light.param[RS::LIGHT_PARAM_CONTACT_SHADOW_SIZE] = 45;
 	light.param[RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE] = 0;
 	light.param[RS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET] = 0.1;
 	light.param[RS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET] = 0.3;
 	light.param[RS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET] = 0.6;
 	light.param[RS::LIGHT_PARAM_SHADOW_FADE_START] = 0.8;
-	light.param[RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] = 0.1;
-	light.param[RS::LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE] = 0.1;
+	light.param[RS::LIGHT_PARAM_SHADOW_BIAS] = 0.02;
+	light.param[RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] = 1.0;
+	light.param[RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE] = 20.0;
+	light.param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] = 0.05;
 
 	return light_owner.make_rid(light);
 }
@@ -3138,6 +3139,7 @@ void RasterizerStorageRD::light_set_param(RID p_light, RS::LightParam p_param, f
 		case RS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET:
 		case RS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET:
 		case RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS:
+		case RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE:
 		case RS::LIGHT_PARAM_SHADOW_BIAS: {
 
 			light->version++;

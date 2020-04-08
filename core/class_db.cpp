@@ -930,6 +930,15 @@ void ClassDB::add_property_group(StringName p_class, const String &p_name, const
 	type->property_list.push_back(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, p_prefix, PROPERTY_USAGE_GROUP));
 }
 
+void ClassDB::add_property_subgroup(StringName p_class, const String &p_name, const String &p_prefix) {
+
+	OBJTYPE_WLOCK;
+	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_COND(!type);
+
+	type->property_list.push_back(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, p_prefix, PROPERTY_USAGE_SUBGROUP));
+}
+
 void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index) {
 
 	lock->read_lock();

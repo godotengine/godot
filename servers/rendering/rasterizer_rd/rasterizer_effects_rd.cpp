@@ -204,6 +204,25 @@ RID RasterizerEffectsRD::_get_compute_uniform_set_from_image_pair(RID p_texture1
 	return uniform_set;
 }
 
+void RasterizerEffectsRD::copy_to_rect_and_linearize(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_rect, bool p_flip_y, float p_z_near, float p_z_far) {
+
+	zeromem(&blur.push_constant, sizeof(BlurPushConstant));
+	if (p_flip_y) {
+		blur.push_constant.flags |= BLUR_FLAG_FLIP_Y;
+	}
+
+	blur.push_constant.camera_z_near = p_z_near;
+	blur.push_constant.camera_z_far = p_z_far;
+
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 1.0, 0, p_rect);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur.pipelines[BLUR_MODE_LINEARIZE_DEPTH].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_rd_texture), 0);
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur.push_constant, sizeof(BlurPushConstant));
+	RD::get_singleton()->draw_list_draw(draw_list, true);
+	RD::get_singleton()->draw_list_end();
+}
+
 void RasterizerEffectsRD::copy_to_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_rect, bool p_flip_y, bool p_force_luminance) {
 
 	zeromem(&blur.push_constant, sizeof(BlurPushConstant));
@@ -1127,6 +1146,7 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 		blur_modes.push_back("\n#define MODE_SSAO_MERGE\n");
 		blur_modes.push_back("\n#define MODE_SIMPLE_COPY\n");
 		blur_modes.push_back("\n#define MODE_MIPMAP\n");
+		blur_modes.push_back("\n#define MODE_LINEARIZE_DEPTH_COPY\n");
 
 		blur.shader.initialize(blur_modes);
 		zeromem(&blur.push_constant, sizeof(BlurPushConstant));

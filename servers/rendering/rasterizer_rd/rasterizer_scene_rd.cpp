@@ -2032,7 +2032,7 @@ void RasterizerSceneRD::light_instance_set_transform(RID p_light_instance, const
 	light_instance->transform = p_transform;
 }
 
-void RasterizerSceneRD::light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_bias_scale) {
+void RasterizerSceneRD::light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale) {
 
 	LightInstance *light_instance = light_instance_owner.getornull(p_light_instance);
 	ERR_FAIL_COND(!light_instance);
@@ -2048,6 +2048,7 @@ void RasterizerSceneRD::light_instance_set_shadow_transform(RID p_light_instance
 	light_instance->shadow_transform[p_pass].farplane = p_far;
 	light_instance->shadow_transform[p_pass].split = p_split;
 	light_instance->shadow_transform[p_pass].bias_scale = p_bias_scale;
+	light_instance->shadow_transform[p_pass].shadow_texel_size = p_shadow_texel_size;
 }
 
 void RasterizerSceneRD::light_instance_mark_visible(RID p_light_instance) {
@@ -3580,6 +3581,10 @@ void RasterizerSceneRD::sub_surface_scattering_set_scale(float p_scale, float p_
 	sss_depth_scale = p_depth_scale;
 }
 
+void RasterizerSceneRD::shadow_filter_set(RS::ShadowFilter p_filter) {
+	shadow_filter = p_filter;
+}
+
 int RasterizerSceneRD::get_roughness_layers() const {
 	return roughness_layers;
 }
@@ -3625,12 +3630,15 @@ void RasterizerSceneRD::render_shadow(RID p_light, RID p_shadow_atlas, int p_pas
 
 	bool using_dual_paraboloid = false;
 	bool using_dual_paraboloid_flip = false;
+	float znear = 0;
 	float zfar = 0;
 	RID render_fb;
 	RID render_texture;
 	float bias = 0;
 	float normal_bias = 0;
 
+	bool use_pancake = false;
+	bool use_linear_depth = false;
 	bool render_cubemap = false;
 	bool finalize_cubemap = false;
 
@@ -3645,6 +3653,7 @@ void RasterizerSceneRD::render_shadow(RID p_light, RID p_shadow_atlas, int p_pas
 			light_instance->last_scene_shadow_pass = scene_pass;
 		}
 
+		use_pancake = storage->light_get_param(light_instance->light, RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE) > 0;
 		light_projection = light_instance->shadow_transform[p_pass].camera;
 		light_transform = light_instance->shadow_transform[p_pass].transform;
 
@@ -3683,7 +3692,7 @@ void RasterizerSceneRD::render_shadow(RID p_light, RID p_shadow_atlas, int p_pas
 		light_instance->shadow_transform[p_pass].atlas_rect.position /= directional_shadow.size;
 		light_instance->shadow_transform[p_pass].atlas_rect.size /= directional_shadow.size;
 
-		float bias_mult = Math::lerp(1.0f, light_instance->shadow_transform[p_pass].bias_scale, storage->light_get_param(light_instance->light, RS::LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE));
+		float bias_mult = light_instance->shadow_transform[p_pass].bias_scale;
 		zfar = storage->light_get_param(light_instance->light, RS::LIGHT_PARAM_RANGE);
 		bias = storage->light_get_param(light_instance->light, RS::LIGHT_PARAM_SHADOW_BIAS) * bias_mult;
 		normal_bias = storage->light_get_param(light_instance->light, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * bias_mult;
@@ -3762,26 +3771,33 @@ void RasterizerSceneRD::render_shadow(RID p_light, RID p_shadow_atlas, int p_pas
 			ShadowMap *shadow_map = _get_shadow_map(atlas_rect.size);
 			render_fb = shadow_map->fb;
 			render_texture = shadow_map->depth;
+
+			znear = light_instance->shadow_transform[0].camera.get_z_near();
+			use_linear_depth = true;
 		}
 	}
 
 	if (render_cubemap) {
 		//rendering to cubemap
-		_render_shadow(render_fb, p_cull_result, p_cull_count, light_projection, light_transform, zfar, 0, 0, false, false);
+		_render_shadow(render_fb, p_cull_result, p_cull_count, light_projection, light_transform, zfar, 0, 0, false, false, use_pancake);
 		if (finalize_cubemap) {
 			//reblit
 			atlas_rect.size.height /= 2;
-			storage->get_effects()->copy_cubemap_to_dp(render_texture, atlas_fb, atlas_rect, light_projection.get_z_near(), light_projection.get_z_far(), bias, false);
+			storage->get_effects()->copy_cubemap_to_dp(render_texture, atlas_fb, atlas_rect, light_projection.get_z_near(), light_projection.get_z_far(), 0.0, false);
 			atlas_rect.position.y += atlas_rect.size.height;
-			storage->get_effects()->copy_cubemap_to_dp(render_texture, atlas_fb, atlas_rect, light_projection.get_z_near(), light_projection.get_z_far(), bias, true);
+			storage->get_effects()->copy_cubemap_to_dp(render_texture, atlas_fb, atlas_rect, light_projection.get_z_near(), light_projection.get_z_far(), 0.0, true);
 		}
 	} else {
 		//render shadow
 
-		_render_shadow(render_fb, p_cull_result, p_cull_count, light_projection, light_transform, zfar, bias, normal_bias, using_dual_paraboloid, using_dual_paraboloid_flip);
+		_render_shadow(render_fb, p_cull_result, p_cull_count, light_projection, light_transform, zfar, bias, normal_bias, using_dual_paraboloid, using_dual_paraboloid_flip, use_pancake);
 
 		//copy to atlas
-		storage->get_effects()->copy_to_rect(render_texture, atlas_fb, atlas_rect, true);
+		if (use_linear_depth) {
+			storage->get_effects()->copy_to_rect_and_linearize(render_texture, atlas_fb, atlas_rect, true, znear, zfar);
+		} else {
+			storage->get_effects()->copy_to_rect(render_texture, atlas_fb, atlas_rect, true);
+		}
 
 		//does not work from depth to color
 		//RD::get_singleton()->texture_copy(render_texture, atlas_texture, Vector3(0, 0, 0), Vector3(atlas_rect.position.x, atlas_rect.position.y, 0), Vector3(atlas_rect.size.x, atlas_rect.size.y, 1), 0, 0, 0, 0, true);
@@ -4137,6 +4153,7 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 	sss_quality = RS::SubSurfaceScatteringQuality(int(GLOBAL_GET("rendering/quality/subsurface_scattering/subsurface_scattering_quality")));
 	sss_scale = GLOBAL_GET("rendering/quality/subsurface_scattering/subsurface_scattering_scale");
 	sss_depth_scale = GLOBAL_GET("rendering/quality/subsurface_scattering/subsurface_scattering_depth_scale");
+	shadow_filter = RS::ShadowFilter(int(GLOBAL_GET("rendering/quality/shadows/filter_mode")));
 }
 
 RasterizerSceneRD::~RasterizerSceneRD() {
