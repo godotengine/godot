@@ -757,10 +757,10 @@ void EditorPropertyLayers::_button_pressed() {
 }
 
 void EditorPropertyLayers::_menu_pressed(int p_menu) {
-	if (grid->value & (1 << p_menu)) {
-		grid->value &= ~(1 << p_menu);
+	if (grid->value & (1u << p_menu)) {
+		grid->value &= ~(1u << p_menu);
 	} else {
-		grid->value |= (1 << p_menu);
+		grid->value |= (1u << p_menu);
 	}
 	grid->update();
 	layers->set_item_checked(layers->get_item_index(p_menu), grid->value & (1 << p_menu));

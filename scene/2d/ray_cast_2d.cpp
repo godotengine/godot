@@ -61,15 +61,15 @@ void RayCast2D::set_collision_mask_bit(int p_bit, bool p_value) {
 
 	uint32_t mask = get_collision_mask();
 	if (p_value)
-		mask |= 1 << p_bit;
+		mask |= 1u << p_bit;
 	else
-		mask &= ~(1 << p_bit);
+		mask &= ~(1u << p_bit);
 	set_collision_mask(mask);
 }
 
 bool RayCast2D::get_collision_mask_bit(int p_bit) const {
 
-	return get_collision_mask() & (1 << p_bit);
+	return get_collision_mask() & (1u << p_bit);
 }
 
 bool RayCast2D::is_colliding() const {

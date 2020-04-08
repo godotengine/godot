@@ -623,15 +623,15 @@ uint32_t Camera3D::get_cull_mask() const {
 void Camera3D::set_cull_mask_bit(int p_layer, bool p_enable) {
 	ERR_FAIL_INDEX(p_layer, 32);
 	if (p_enable) {
-		set_cull_mask(layers | (1 << p_layer));
+		set_cull_mask(layers | (1u << p_layer));
 	} else {
-		set_cull_mask(layers & (~(1 << p_layer)));
+		set_cull_mask(layers & (~(1u << p_layer)));
 	}
 }
 
 bool Camera3D::get_cull_mask_bit(int p_layer) const {
 	ERR_FAIL_INDEX_V(p_layer, 32, false);
-	return (layers & (1 << p_layer));
+	return (layers & (1u << p_layer));
 }
 
 Vector<Plane> Camera3D::get_frustum() const {
@@ -810,15 +810,15 @@ void ClippedCamera3D::set_collision_mask_bit(int p_bit, bool p_value) {
 
 	uint32_t mask = get_collision_mask();
 	if (p_value)
-		mask |= 1 << p_bit;
+		mask |= 1u << p_bit;
 	else
-		mask &= ~(1 << p_bit);
+		mask &= ~(1u << p_bit);
 	set_collision_mask(mask);
 }
 
 bool ClippedCamera3D::get_collision_mask_bit(int p_bit) const {
 
-	return get_collision_mask() & (1 << p_bit);
+	return get_collision_mask() & (1u << p_bit);
 }
 
 void ClippedCamera3D::add_exception_rid(const RID &p_rid) {

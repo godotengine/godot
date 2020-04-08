@@ -80,7 +80,7 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 		uint8_t *write_buffer = data_w;
 
 		const uint32_t width_bytes = width * bits_per_pixel / 8;
-		const uint32_t line_width = (width_bytes + 3) & ~3;
+		const uint32_t line_width = (width_bytes + 3) & ~3u;
 
 		// The actual data traversal is determined by
 		// the data width in case of 8/4/1 bit images

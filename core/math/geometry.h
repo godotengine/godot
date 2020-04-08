@@ -958,7 +958,7 @@ public:
 			else
 				ret |= (1 << (p_idx + 1));
 
-			int mask = ret | (1 << p_idx);
+			int mask = ret | (1u << p_idx);
 			if (p_idx < 8)
 				ret |= 24;
 			else

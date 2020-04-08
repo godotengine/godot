@@ -183,7 +183,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 #endif
 
 	for (int j = 0; j < conditional_count; j++) {
-		bool enable = (conditional_version.version & (1 << j)) > 0;
+		bool enable = (conditional_version.version & (1u << j)) > 0;
 
 		if (enable) {
 			strings.push_back(conditional_defines[j]);

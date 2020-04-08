@@ -910,9 +910,9 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 				Variant arr = p_arrays[0];
 				if (arr.get_type() == Variant::PACKED_VECTOR2_ARRAY) {
 					elem_size = 2;
-					p_compress_format |= ARRAY_FLAG_USE_2D_VERTICES;
+					p_compress_format |= (unsigned int)ARRAY_FLAG_USE_2D_VERTICES;
 				} else if (arr.get_type() == Variant::PACKED_VECTOR3_ARRAY) {
-					p_compress_format &= ~ARRAY_FLAG_USE_2D_VERTICES;
+					p_compress_format &= ~(unsigned int)ARRAY_FLAG_USE_2D_VERTICES;
 					elem_size = 3;
 				} else {
 					elem_size = (p_compress_format & ARRAY_FLAG_USE_2D_VERTICES) ? 2 : 3;

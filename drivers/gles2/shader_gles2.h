@@ -262,9 +262,9 @@ void ShaderGLES2::_set_conditional(int p_which, bool p_value) {
 
 	ERR_FAIL_INDEX(p_which, conditional_count);
 	if (p_value)
-		new_conditional_version.version |= (1 << p_which);
+		new_conditional_version.version |= (1u << p_which);
 	else
-		new_conditional_version.version &= ~(1 << p_which);
+		new_conditional_version.version &= ~(1u << p_which);
 }
 
 #endif

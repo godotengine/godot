@@ -1236,9 +1236,9 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 
 				uint32_t f = v;
 				if (checks20[p_which]->is_pressed())
-					f |= (1 << p_which);
+					f |= (1u << p_which);
 				else
-					f &= ~(1 << p_which);
+					f &= ~(1u << p_which);
 
 				v = f;
 				emit_signal("variant_changed");

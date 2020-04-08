@@ -105,29 +105,29 @@ void PhysicsBody2D::set_collision_mask_bit(int p_bit, bool p_value) {
 
 	uint32_t mask = get_collision_mask();
 	if (p_value)
-		mask |= 1 << p_bit;
+		mask |= 1u << p_bit;
 	else
-		mask &= ~(1 << p_bit);
+		mask &= ~(1u << p_bit);
 	set_collision_mask(mask);
 }
 bool PhysicsBody2D::get_collision_mask_bit(int p_bit) const {
 
-	return get_collision_mask() & (1 << p_bit);
+	return get_collision_mask() & (1u << p_bit);
 }
 
 void PhysicsBody2D::set_collision_layer_bit(int p_bit, bool p_value) {
 
 	uint32_t collision_layer = get_collision_layer();
 	if (p_value)
-		collision_layer |= 1 << p_bit;
+		collision_layer |= 1u << p_bit;
 	else
-		collision_layer &= ~(1 << p_bit);
+		collision_layer &= ~(1u << p_bit);
 	set_collision_layer(collision_layer);
 }
 
 bool PhysicsBody2D::get_collision_layer_bit(int p_bit) const {
 
-	return get_collision_layer() & (1 << p_bit);
+	return get_collision_layer() & (1u << p_bit);
 }
 
 PhysicsBody2D::PhysicsBody2D(PhysicsServer2D::BodyMode p_mode) :

@@ -37,7 +37,7 @@ void EMWSPeer::set_sock(int p_sock, unsigned int p_in_buf_size, unsigned int p_i
 
 	peer_sock = p_sock;
 	_in_buffer.resize(p_in_pkt_size, p_in_buf_size);
-	_packet_buffer.resize((1 << p_in_buf_size));
+	_packet_buffer.resize((1u << p_in_buf_size));
 }
 
 void EMWSPeer::set_write_mode(WriteMode p_mode) {

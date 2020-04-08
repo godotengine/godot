@@ -95,15 +95,15 @@ void NavigationMesh::set_collision_mask_bit(int p_bit, bool p_value) {
 
 	uint32_t mask = get_collision_mask();
 	if (p_value)
-		mask |= 1 << p_bit;
+		mask |= 1u << p_bit;
 	else
-		mask &= ~(1 << p_bit);
+		mask &= ~(1u << p_bit);
 	set_collision_mask(mask);
 }
 
 bool NavigationMesh::get_collision_mask_bit(int p_bit) const {
 
-	return get_collision_mask() & (1 << p_bit);
+	return get_collision_mask() & (1u << p_bit);
 }
 
 void NavigationMesh::set_source_geometry_mode(int p_geometry_mode) {

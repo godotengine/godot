@@ -458,7 +458,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 			for (List<StringName>::Element *F = snames.front(); F; F = F->next()) {
 
 				hash = hash_djb2_one_64(F->get().hash(), hash);
-				hash = hash_djb2_one_64(t->constant_map[F->get()], hash);
+				hash = hash_djb2_one_64((unsigned int)(t->constant_map[F->get()]), hash);
 			}
 		}
 

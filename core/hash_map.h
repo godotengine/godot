@@ -232,7 +232,7 @@ private:
 		hash_table_power = p_t.hash_table_power;
 		elements = p_t.elements;
 
-		for (int i = 0; i < (1 << p_t.hash_table_power); i++) {
+		for (unsigned int i = 0; i < (1u << p_t.hash_table_power); i++) {
 
 			hash_table[i] = nullptr;
 

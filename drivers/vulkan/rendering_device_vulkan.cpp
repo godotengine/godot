@@ -3540,7 +3540,7 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 
 				//just append stage mask and return
 				bindings.write[set].write[i].stageFlags |= shader_stage_masks[p_stage];
-				uniform_infos.write[set].write[i].stages |= 1 << p_stage;
+				uniform_infos.write[set].write[i].stages |= 1u << p_stage;
 				return true;
 			}
 		}

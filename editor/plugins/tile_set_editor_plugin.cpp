@@ -1445,14 +1445,14 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 								uint32_t old_mask = tileset->autotile_get_bitmask(get_current_tile(), coord);
 								uint32_t new_mask = old_mask;
 								if (alternative) {
-									new_mask &= ~bit;
+									new_mask &= ~(unsigned int)bit;
 									new_mask |= (bit << 16);
 								} else if (erasing) {
-									new_mask &= ~bit;
-									new_mask &= ~(bit << 16);
+									new_mask &= ~(unsigned int)bit;
+									new_mask &= ~(unsigned int)(bit << 16);
 								} else {
 									new_mask |= bit;
-									new_mask &= ~(bit << 16);
+									new_mask &= ~(unsigned int)(bit << 16);
 								}
 
 								if (old_mask != new_mask) {
@@ -1523,14 +1523,14 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 							uint32_t old_mask = tileset->autotile_get_bitmask(get_current_tile(), coord);
 							uint32_t new_mask = old_mask;
 							if (alternative) {
-								new_mask &= ~bit;
+								new_mask &= ~(unsigned int)bit;
 								new_mask |= (bit << 16);
 							} else if (erasing) {
-								new_mask &= ~bit;
-								new_mask &= ~(bit << 16);
+								new_mask &= ~(unsigned int)bit;
+								new_mask &= ~(unsigned int)(bit << 16);
 							} else {
 								new_mask |= bit;
-								new_mask &= ~(bit << 16);
+								new_mask &= ~(unsigned int)(bit << 16);
 							}
 							if (old_mask != new_mask) {
 								undo_redo->create_action(TTR("Edit Tile Bitmask"));

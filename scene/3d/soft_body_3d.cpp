@@ -527,27 +527,27 @@ uint32_t SoftBody3D::get_collision_layer() const {
 void SoftBody3D::set_collision_mask_bit(int p_bit, bool p_value) {
 	uint32_t mask = get_collision_mask();
 	if (p_value)
-		mask |= 1 << p_bit;
+		mask |= 1u << p_bit;
 	else
-		mask &= ~(1 << p_bit);
+		mask &= ~(1u << p_bit);
 	set_collision_mask(mask);
 }
 
 bool SoftBody3D::get_collision_mask_bit(int p_bit) const {
-	return get_collision_mask() & (1 << p_bit);
+	return get_collision_mask() & (1u << p_bit);
 }
 
 void SoftBody3D::set_collision_layer_bit(int p_bit, bool p_value) {
 	uint32_t layer = get_collision_layer();
 	if (p_value)
-		layer |= 1 << p_bit;
+		layer |= 1u << p_bit;
 	else
-		layer &= ~(1 << p_bit);
+		layer &= ~(1u << p_bit);
 	set_collision_layer(layer);
 }
 
 bool SoftBody3D::get_collision_layer_bit(int p_bit) const {
-	return get_collision_layer() & (1 << p_bit);
+	return get_collision_layer() & (1u << p_bit);
 }
 
 void SoftBody3D::set_parent_collision_ignore(const NodePath &p_parent_collision_ignore) {

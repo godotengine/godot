@@ -108,15 +108,15 @@ uint32_t VisualInstance3D::get_layer_mask() const {
 void VisualInstance3D::set_layer_mask_bit(int p_layer, bool p_enable) {
 	ERR_FAIL_INDEX(p_layer, 32);
 	if (p_enable) {
-		set_layer_mask(layers | (1 << p_layer));
+		set_layer_mask(layers | (1u << p_layer));
 	} else {
-		set_layer_mask(layers & (~(1 << p_layer)));
+		set_layer_mask(layers & (~(1u << p_layer)));
 	}
 }
 
 bool VisualInstance3D::get_layer_mask_bit(int p_layer) const {
 	ERR_FAIL_INDEX_V(p_layer, 32, false);
-	return (layers & (1 << p_layer));
+	return (layers & (1u << p_layer));
 }
 
 void VisualInstance3D::_bind_methods() {

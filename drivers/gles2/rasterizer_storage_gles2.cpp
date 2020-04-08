@@ -557,7 +557,7 @@ void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_
 	bool compressed = false;
 
 	if (p_flags & RS::TEXTURE_FLAG_USED_FOR_STREAMING) {
-		p_flags &= ~RS::TEXTURE_FLAG_MIPMAPS; // no mipies for video
+		p_flags &= ~((unsigned int)RS::TEXTURE_FLAG_MIPMAPS); // no mipies for video
 	}
 
 	Texture *texture = texture_owner.getornull(p_texture);
@@ -616,7 +616,7 @@ void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_
 			if (p_flags & RS::TEXTURE_FLAG_USED_FOR_STREAMING) {
 				//not supported
 				ERR_PRINT("Streaming texture for non power of 2 or has mipmaps on this hardware: " + texture->path + "'. Mipmaps and repeat disabled.");
-				texture->flags &= ~(RS::TEXTURE_FLAG_REPEAT | RS::TEXTURE_FLAG_MIPMAPS);
+				texture->flags &= ~(unsigned int)(RS::TEXTURE_FLAG_REPEAT | RS::TEXTURE_FLAG_MIPMAPS);
 			} else {
 				texture->alloc_height = po2_height;
 				texture->alloc_width = po2_width;
@@ -852,7 +852,7 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 
 	// printf("texture: %i x %i - size: %i - total: %i\n", texture->width, texture->height, tsize, info.texture_mem);
 
-	texture->stored_cube_sides |= (1 << p_layer);
+	texture->stored_cube_sides |= (1u << p_layer);
 
 	if ((texture->flags & RS::TEXTURE_FLAG_MIPMAPS) && mipmaps == 1 && !texture->ignore_mipmaps && (texture->type != RS::TEXTURE_TYPE_CUBEMAP || texture->stored_cube_sides == (1 << 6) - 1)) {
 		//generate mipmaps if they were requested and the image does not contain them
@@ -2119,7 +2119,7 @@ static Vector<uint8_t> _unpack_half_floats(const Vector<uint8_t> &array, uint32_
 						to_convert[i] = 3;
 					}
 
-					format &= ~RS::ARRAY_COMPRESS_VERTEX;
+					format &= ~(unsigned int)RS::ARRAY_COMPRESS_VERTEX;
 				} else {
 
 					if (p_format & RS::ARRAY_FLAG_USE_2D_VERTICES) {
@@ -2170,7 +2170,7 @@ static Vector<uint8_t> _unpack_half_floats(const Vector<uint8_t> &array, uint32_
 				if (p_format & RS::ARRAY_COMPRESS_TEX_UV) {
 					src_size[i] = 4;
 					to_convert[i] = 2;
-					format &= ~RS::ARRAY_COMPRESS_TEX_UV;
+					format &= ~(unsigned int)RS::ARRAY_COMPRESS_TEX_UV;
 				} else {
 					src_size[i] = 8;
 				}
@@ -2183,7 +2183,7 @@ static Vector<uint8_t> _unpack_half_floats(const Vector<uint8_t> &array, uint32_
 				if (p_format & RS::ARRAY_COMPRESS_TEX_UV2) {
 					src_size[i] = 4;
 					to_convert[i] = 2;
-					format &= ~RS::ARRAY_COMPRESS_TEX_UV2;
+					format &= ~(unsigned int)RS::ARRAY_COMPRESS_TEX_UV2;
 				} else {
 					src_size[i] = 8;
 				}

@@ -996,7 +996,7 @@ void RenderingServerScene::_update_instance(Instance *p_instance) {
 
 	if (p_instance->octree_id == 0) {
 
-		uint32_t base_type = 1 << p_instance->base_type;
+		uint32_t base_type = 1u << p_instance->base_type;
 		uint32_t pairable_mask = 0;
 		bool pairable = false;
 

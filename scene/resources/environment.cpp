@@ -550,9 +550,9 @@ void Environment::set_glow_level(int p_level, bool p_enabled) {
 	ERR_FAIL_INDEX(p_level, RS::MAX_GLOW_LEVELS);
 
 	if (p_enabled)
-		glow_levels |= (1 << p_level);
+		glow_levels |= (1u << p_level);
 	else
-		glow_levels &= ~(1 << p_level);
+		glow_levels &= ~(1u << p_level);
 
 	RS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_mix, glow_bloom, RS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_threshold, glow_hdr_luminance_cap);
 }
@@ -560,7 +560,7 @@ bool Environment::is_glow_level_enabled(int p_level) const {
 
 	ERR_FAIL_INDEX_V(p_level, RS::MAX_GLOW_LEVELS, false);
 
-	return glow_levels & (1 << p_level);
+	return glow_levels & (1u << p_level);
 }
 
 void Environment::set_glow_intensity(float p_intensity) {
