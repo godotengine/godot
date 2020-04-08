@@ -158,7 +158,7 @@ StringName ARKitInterface::get_name() const {
 }
 
 int ARKitInterface::get_capabilities() const {
-	return ARKitInterface::ARVR_MONO + ARKitInterface::ARVR_AR;
+	return ARKitInterface::XR_MONO + ARKitInterface::XR_AR;
 }
 
 Array ARKitInterface::raycast(Vector2 p_screen_coord) {
@@ -218,8 +218,8 @@ bool ARKitInterface::is_initialized() const {
 }
 
 bool ARKitInterface::initialize() {
-	ARVRServer *arvr_server = ARVRServer::get_singleton();
-	ERR_FAIL_NULL_V(arvr_server, false);
+	XRServer *xr_server = XRServer::get_singleton();
+	ERR_FAIL_NULL_V(xr_server, false);
 
 	if (!initialized) {
 		print_line("initializing ARKit");
@@ -244,7 +244,7 @@ bool ARKitInterface::initialize() {
 		transform = Transform();
 
 		// make this our primary interface
-		arvr_server->set_primary_interface(this);
+		xr_server->set_primary_interface(this);
 
 		// make sure we have our feed setup
 		if (feed.is_null()) {
@@ -270,10 +270,10 @@ bool ARKitInterface::initialize() {
 
 void ARKitInterface::uninitialize() {
 	if (initialized) {
-		ARVRServer *arvr_server = ARVRServer::get_singleton();
-		if (arvr_server != NULL) {
+		XRServer *xr_server = XRServer::get_singleton();
+		if (xr_server != NULL) {
 			// no longer our primary interface
-			arvr_server->clear_primary_interface_if(this);
+			xr_server->clear_primary_interface_if(this);
 		}
 
 		if (feed.is_valid()) {
@@ -303,22 +303,22 @@ Size2 ARKitInterface::get_render_targetsize() {
 	return target_size;
 }
 
-Transform ARKitInterface::get_transform_for_eye(ARVRInterface::Eyes p_eye, const Transform &p_cam_transform) {
+Transform ARKitInterface::get_transform_for_eye(XRInterface::Eyes p_eye, const Transform &p_cam_transform) {
 	_THREAD_SAFE_METHOD_
 
 	Transform transform_for_eye;
 
-	ARVRServer *arvr_server = ARVRServer::get_singleton();
-	ERR_FAIL_NULL_V(arvr_server, transform_for_eye);
+	XRServer *xr_server = XRServer::get_singleton();
+	ERR_FAIL_NULL_V(xr_server, transform_for_eye);
 
 	if (initialized) {
-		float world_scale = arvr_server->get_world_scale();
+		float world_scale = xr_server->get_world_scale();
 
 		// just scale our origin point of our transform, note that we really shouldn't be using world_scale in ARKit but....
 		transform_for_eye = transform;
 		transform_for_eye.origin *= world_scale;
 
-		transform_for_eye = p_cam_transform * arvr_server->get_reference_frame() * transform_for_eye;
+		transform_for_eye = p_cam_transform * xr_server->get_reference_frame() * transform_for_eye;
 	} else {
 		// huh? well just return what we got....
 		transform_for_eye = p_cam_transform;
@@ -327,7 +327,7 @@ Transform ARKitInterface::get_transform_for_eye(ARVRInterface::Eyes p_eye, const
 	return transform_for_eye;
 }
 
-CameraMatrix ARKitInterface::get_projection_for_eye(ARVRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far) {
+CameraMatrix ARKitInterface::get_projection_for_eye(XRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far) {
 	// Remember our near and far, it will be used in process when we obtain our projection from our ARKit session.
 	z_near = p_z_near;
 	z_far = p_z_far;
@@ -335,7 +335,7 @@ CameraMatrix ARKitInterface::get_projection_for_eye(ARVRInterface::Eyes p_eye, r
 	return projection;
 }
 
-void ARKitInterface::commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) {
+void ARKitInterface::commit_for_eye(XRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) {
 	_THREAD_SAFE_METHOD_
 
 	// We must have a valid render target
@@ -356,7 +356,7 @@ void ARKitInterface::commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_targ
 	VSG::rasterizer->blit_render_target_to_screen(p_render_target, screen_rect, 0);
 }
 
-ARVRPositionalTracker *ARKitInterface::get_anchor_for_uuid(const unsigned char *p_uuid) {
+XRPositionalTracker *ARKitInterface::get_anchor_for_uuid(const unsigned char *p_uuid) {
 	if (anchors == NULL) {
 		num_anchors = 0;
 		max_anchors = 10;
@@ -377,8 +377,8 @@ ARVRPositionalTracker *ARKitInterface::get_anchor_for_uuid(const unsigned char *
 		ERR_FAIL_NULL_V(anchors, NULL);
 	}
 
-	ARVRPositionalTracker *new_tracker = memnew(ARVRPositionalTracker);
-	new_tracker->set_type(ARVRServer::TRACKER_ANCHOR);
+	XRPositionalTracker *new_tracker = memnew(XRPositionalTracker);
+	new_tracker->set_type(XRServer::TRACKER_ANCHOR);
 
 	char tracker_name[256];
 	sprintf(tracker_name, "Anchor %02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x", p_uuid[0], p_uuid[1], p_uuid[2], p_uuid[3], p_uuid[4], p_uuid[5], p_uuid[6], p_uuid[7], p_uuid[8], p_uuid[9], p_uuid[10], p_uuid[11], p_uuid[12], p_uuid[13], p_uuid[14], p_uuid[15]);
@@ -388,7 +388,7 @@ ARVRPositionalTracker *ARKitInterface::get_anchor_for_uuid(const unsigned char *
 	new_tracker->set_name(name);
 
 	// add our tracker
-	ARVRServer::get_singleton()->add_tracker(new_tracker);
+	XRServer::get_singleton()->add_tracker(new_tracker);
 	anchors[num_anchors].tracker = new_tracker;
 	memcpy(anchors[num_anchors].uuid, p_uuid, 16);
 	num_anchors++;
@@ -401,7 +401,7 @@ void ARKitInterface::remove_anchor_for_uuid(const unsigned char *p_uuid) {
 		for (unsigned int i = 0; i < num_anchors; i++) {
 			if (memcmp(anchors[i].uuid, p_uuid, 16) == 0) {
 				// remove our tracker
-				ARVRServer::get_singleton()->remove_tracker(anchors[i].tracker);
+				XRServer::get_singleton()->remove_tracker(anchors[i].tracker);
 				memdelete(anchors[i].tracker);
 
 				// bring remaining forward
@@ -421,7 +421,7 @@ void ARKitInterface::remove_all_anchors() {
 	if (anchors != NULL) {
 		for (unsigned int i = 0; i < num_anchors; i++) {
 			// remove our tracker
-			ARVRServer::get_singleton()->remove_tracker(anchors[i].tracker);
+			XRServer::get_singleton()->remove_tracker(anchors[i].tracker);
 			memdelete(anchors[i].tracker);
 		};
 
@@ -582,16 +582,16 @@ void ARKitInterface::process() {
 				// strangely enough we have to states, rolling them up into one
 				if (camera.trackingState == ARTrackingStateNotAvailable) {
 					// no tracking, would be good if we black out the screen or something...
-					tracking_state = ARVRInterface::ARVR_NOT_TRACKING;
+					tracking_state = XRInterface::XR_NOT_TRACKING;
 				} else {
 					if (camera.trackingState == ARTrackingStateNormal) {
-						tracking_state = ARVRInterface::ARVR_NORMAL_TRACKING;
+						tracking_state = XRInterface::XR_NORMAL_TRACKING;
 					} else if (camera.trackingStateReason == ARTrackingStateReasonExcessiveMotion) {
-						tracking_state = ARVRInterface::ARVR_EXCESSIVE_MOTION;
+						tracking_state = XRInterface::XR_EXCESSIVE_MOTION;
 					} else if (camera.trackingStateReason == ARTrackingStateReasonInsufficientFeatures) {
-						tracking_state = ARVRInterface::ARVR_INSUFFICIENT_FEATURES;
+						tracking_state = XRInterface::XR_INSUFFICIENT_FEATURES;
 					} else {
-						tracking_state = ARVRInterface::ARVR_UNKNOWN_TRACKING;
+						tracking_state = XRInterface::XR_UNKNOWN_TRACKING;
 					}
 
 					// copy our current frame transform
@@ -665,7 +665,7 @@ void ARKitInterface::_add_or_update_anchor(void *p_anchor) {
 	unsigned char uuid[16];
 	[anchor.identifier getUUIDBytes:uuid];
 
-	ARVRPositionalTracker *tracker = get_anchor_for_uuid(uuid);
+	XRPositionalTracker *tracker = get_anchor_for_uuid(uuid);
 	if (tracker != NULL) {
 		// lets update our mesh! (using Arjens code as is for now)
 		// we should also probably limit how often we do this...
@@ -695,7 +695,7 @@ void ARKitInterface::_add_or_update_anchor(void *p_anchor) {
 		}
 
 		// Note, this also contains a scale factor which gives us an idea of the size of the anchor
-		// We may extract that in our ARVRAnchor class
+		// We may extract that in our XRAnchor class
 		Basis b;
 		matrix_float4x4 m44 = anchor.transform;
 		b.elements[0].x = m44.columns[0][0];

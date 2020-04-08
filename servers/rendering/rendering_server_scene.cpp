@@ -1883,7 +1883,7 @@ void RenderingServerScene::render_camera(RID p_render_buffers, RID p_camera, RID
 #endif
 }
 
-void RenderingServerScene::render_camera(RID p_render_buffers, Ref<ARVRInterface> &p_interface, ARVRInterface::Eyes p_eye, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas) {
+void RenderingServerScene::render_camera(RID p_render_buffers, Ref<XRInterface> &p_interface, XRInterface::Eyes p_eye, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas) {
 	// render for AR/VR interface
 
 	Camera *camera = camera_owner.getornull(p_camera);
@@ -1895,16 +1895,14 @@ void RenderingServerScene::render_camera(RID p_render_buffers, Ref<ARVRInterface
 
 	// We also ignore our camera position, it will have been positioned with a slightly old tracking position.
 	// Instead we take our origin point and have our ar/vr interface add fresh tracking data! Whoohoo!
-	Transform world_origin = ARVRServer::get_singleton()->get_world_origin();
+	Transform world_origin = XRServer::get_singleton()->get_world_origin();
 	Transform cam_transform = p_interface->get_transform_for_eye(p_eye, world_origin);
 
 	// For stereo render we only prepare for our left eye and then reuse the outcome for our right eye
-	if (p_eye == ARVRInterface::EYE_LEFT) {
-		///@TODO possibly move responsibility for this into our ARVRServer or ARVRInterface?
-
+	if (p_eye == XRInterface::EYE_LEFT) {
 		// Center our transform, we assume basis is equal.
 		Transform mono_transform = cam_transform;
-		Transform right_transform = p_interface->get_transform_for_eye(ARVRInterface::EYE_RIGHT, world_origin);
+		Transform right_transform = p_interface->get_transform_for_eye(XRInterface::EYE_RIGHT, world_origin);
 		mono_transform.origin += right_transform.origin;
 		mono_transform.origin *= 0.5;
 
@@ -1958,7 +1956,7 @@ void RenderingServerScene::render_camera(RID p_render_buffers, Ref<ARVRInterface
 
 		// now prepare our scene with our adjusted transform projection matrix
 		_prepare_scene(mono_transform, combined_matrix, false, false, camera->env, camera->effects, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
-	} else if (p_eye == ARVRInterface::EYE_MONO) {
+	} else if (p_eye == XRInterface::EYE_MONO) {
 		// For mono render, prepare as per usual
 		_prepare_scene(cam_transform, camera_matrix, false, false, camera->env, camera->effects, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
 	}

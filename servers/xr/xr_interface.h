@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  arvr_interface.h                                                     */
+/*  xr_interface.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ARVR_INTERFACE_H
-#define ARVR_INTERFACE_H
+#ifndef XR_INTERFACE_H
+#define XR_INTERFACE_H
 
 #include "core/math/camera_matrix.h"
 #include "core/os/thread_safe.h"
 #include "scene/main/window.h"
-#include "servers/arvr_server.h"
+#include "servers/xr_server.h"
 
 /**
 	@author Bastiaan Olij <mux213@gmail.com>
 
-	The ARVR interface is a template class ontop of which we build interface to different AR, VR and tracking SDKs.
+	The XR interface is a template class ontop of which we build interface to different AR, VR and tracking SDKs.
 	The idea is that we subclass this class, implement the logic, and then instantiate a singleton of each interface
 	when Godot starts. These instances do not initialize themselves but register themselves with the AR/VR server.
 
@@ -48,16 +48,16 @@
 	Note that we may make this into a fully instantiable class for GDNative support.
 */
 
-class ARVRInterface : public Reference {
-	GDCLASS(ARVRInterface, Reference);
+class XRInterface : public Reference {
+	GDCLASS(XRInterface, Reference);
 
 public:
 	enum Capabilities { /* purely meta data, provides some info about what this interface supports */
-		ARVR_NONE = 0, /* no capabilities */
-		ARVR_MONO = 1, /* can be used with mono output */
-		ARVR_STEREO = 2, /* can be used with stereo output */
-		ARVR_AR = 4, /* offers a camera feed for AR */
-		ARVR_EXTERNAL = 8 /* renders to external device */
+		XR_NONE = 0, /* no capabilities */
+		XR_MONO = 1, /* can be used with mono output */
+		XR_STEREO = 2, /* can be used with stereo output */
+		XR_AR = 4, /* offers a camera feed for AR */
+		XR_EXTERNAL = 8 /* renders to external device */
 	};
 
 	enum Eyes {
@@ -67,11 +67,11 @@ public:
 	};
 
 	enum Tracking_status { /* tracking status currently based on AR but we can start doing more with this for VR as well */
-		ARVR_NORMAL_TRACKING,
-		ARVR_EXCESSIVE_MOTION,
-		ARVR_INSUFFICIENT_FEATURES,
-		ARVR_UNKNOWN_TRACKING,
-		ARVR_NOT_TRACKING
+		XR_NORMAL_TRACKING,
+		XR_EXCESSIVE_MOTION,
+		XR_INSUFFICIENT_FEATURES,
+		XR_UNKNOWN_TRACKING,
+		XR_NOT_TRACKING
 	};
 
 protected:
@@ -107,20 +107,20 @@ public:
 
 	virtual Size2 get_render_targetsize() = 0; /* returns the recommended render target size per eye for this device */
 	virtual bool is_stereo() = 0; /* returns true if this interface requires stereo rendering (for VR HMDs) or mono rendering (for mobile AR) */
-	virtual Transform get_transform_for_eye(ARVRInterface::Eyes p_eye, const Transform &p_cam_transform) = 0; /* get each eyes camera transform, also implement EYE_MONO */
-	virtual CameraMatrix get_projection_for_eye(ARVRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far) = 0; /* get each eyes projection matrix */
-	virtual unsigned int get_external_texture_for_eye(ARVRInterface::Eyes p_eye); /* if applicable return external texture to render to */
-	virtual void commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) = 0; /* output the left or right eye */
+	virtual Transform get_transform_for_eye(XRInterface::Eyes p_eye, const Transform &p_cam_transform) = 0; /* get each eyes camera transform, also implement EYE_MONO */
+	virtual CameraMatrix get_projection_for_eye(XRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far) = 0; /* get each eyes projection matrix */
+	virtual unsigned int get_external_texture_for_eye(XRInterface::Eyes p_eye); /* if applicable return external texture to render to */
+	virtual void commit_for_eye(XRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) = 0; /* output the left or right eye */
 
 	virtual void process() = 0;
 	virtual void notification(int p_what) = 0;
 
-	ARVRInterface();
-	~ARVRInterface();
+	XRInterface();
+	~XRInterface();
 };
 
-VARIANT_ENUM_CAST(ARVRInterface::Capabilities);
-VARIANT_ENUM_CAST(ARVRInterface::Eyes);
-VARIANT_ENUM_CAST(ARVRInterface::Tracking_status);
+VARIANT_ENUM_CAST(XRInterface::Capabilities);
+VARIANT_ENUM_CAST(XRInterface::Eyes);
+VARIANT_ENUM_CAST(XRInterface::Tracking_status);
 
 #endif
