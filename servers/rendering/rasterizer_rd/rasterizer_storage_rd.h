@@ -926,6 +926,14 @@ public:
 		return light->negative;
 	}
 
+	_FORCE_INLINE_ float light_get_transmittance_bias(RID p_light) const {
+
+		const Light *light = light_owner.getornull(p_light);
+		ERR_FAIL_COND_V(!light, 0.0);
+
+		return light->param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS];
+	}
+
 	bool light_get_use_gi(RID p_light);
 	uint64_t light_get_version(RID p_light) const;
 

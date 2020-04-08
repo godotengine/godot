@@ -385,7 +385,6 @@ public:
 		LIGHT_PARAM_ATTENUATION,
 		LIGHT_PARAM_SPOT_ANGLE,
 		LIGHT_PARAM_SPOT_ATTENUATION,
-		LIGHT_PARAM_CONTACT_SHADOW_SIZE,
 		LIGHT_PARAM_SHADOW_MAX_DISTANCE,
 		LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET,
 		LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET,
@@ -393,7 +392,8 @@ public:
 		LIGHT_PARAM_SHADOW_FADE_START,
 		LIGHT_PARAM_SHADOW_NORMAL_BIAS,
 		LIGHT_PARAM_SHADOW_BIAS,
-		LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE,
+		LIGHT_PARAM_SHADOW_PANCAKE_SIZE,
+		LIGHT_PARAM_TRANSMITTANCE_BIAS,
 		LIGHT_PARAM_MAX
 	};
 
@@ -666,6 +666,7 @@ public:
 		VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE,
 		VIEWPORT_DEBUG_DRAW_SSAO,
 		VIEWPORT_DEBUG_DRAW_ROUGHNESS_LIMITER,
+		VIEWPORT_DEBUG_DRAW_PSSM_SPLITS,
 
 	};
 
@@ -815,6 +816,15 @@ public:
 
 	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) = 0;
 	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) = 0;
+
+	enum ShadowFilter {
+		SHADOW_FILTER_NONE,
+		SHADOW_FILTER_PCF5,
+		SHADOW_FILTER_PCF13,
+		SHADOW_FILTER_MAX
+	};
+
+	virtual void shadow_filter_set(ShadowFilter p_filter) = 0;
 
 	/* SCENARIO API */
 

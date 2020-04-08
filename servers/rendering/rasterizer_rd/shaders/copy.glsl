@@ -57,6 +57,7 @@ void main() {
 	}
 
 	float depth = texture(source_cube, normal).r;
+	depth_buffer = depth;
 
 	// absolute values for direction cosines, bigger value equals closer to basis axis
 	vec3 unorm = abs(normal);
@@ -80,7 +81,7 @@ void main() {
 
 	depth = 2.0 * depth - 1.0;
 	float linear_depth = 2.0 * params.z_near * params.z_far / (params.z_far + params.z_near - depth * (params.z_far - params.z_near));
-	depth_buffer = (linear_depth * depth_fix + params.bias) / params.z_far;
+	depth_buffer = (linear_depth * depth_fix) / params.z_far;
 
 #endif
 }
