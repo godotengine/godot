@@ -179,7 +179,6 @@
 
 #ifndef _3D_DISABLED
 #include "scene/3d/area_3d.h"
-#include "scene/3d/arvr_nodes.h"
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/baked_lightmap.h"
 #include "scene/3d/bone_attachment_3d.h"
@@ -213,6 +212,7 @@
 #include "scene/3d/vehicle_body_3d.h"
 #include "scene/3d/visibility_notifier_3d.h"
 #include "scene/3d/world_environment.h"
+#include "scene/3d/xr_nodes.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/mesh_library.h"
 #endif
@@ -410,10 +410,10 @@ void register_scene_types() {
 	ClassDB::register_class<Camera3D>();
 	ClassDB::register_class<ClippedCamera3D>();
 	ClassDB::register_class<Listener3D>();
-	ClassDB::register_class<ARVRCamera>();
-	ClassDB::register_class<ARVRController>();
-	ClassDB::register_class<ARVRAnchor>();
-	ClassDB::register_class<ARVROrigin>();
+	ClassDB::register_class<XRCamera3D>();
+	ClassDB::register_class<XRController3D>();
+	ClassDB::register_class<XRAnchor3D>();
+	ClassDB::register_class<XROrigin3D>();
 	ClassDB::register_class<MeshInstance3D>();
 	ClassDB::register_class<ImmediateGeometry3D>();
 	ClassDB::register_virtual_class<SpriteBase3D>();
@@ -853,6 +853,10 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("World", "World3D");
 	ClassDB::add_compatibility_class("ProceduralSky", "Sky");
 	ClassDB::add_compatibility_class("PanoramaSky", "Sky");
+	ClassDB::add_compatibility_class("ARVRCamera", "XRCamera3D");
+	ClassDB::add_compatibility_class("ARVROrigin", "XROrigin3D");
+	ClassDB::add_compatibility_class("ARVRController", "XRController3D");
+	ClassDB::add_compatibility_class("ARVRAnchor", "XRAnchor3D");
 
 #endif
 

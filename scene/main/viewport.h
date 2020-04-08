@@ -590,7 +590,7 @@ public:
 private:
 	UpdateMode update_mode;
 	ClearMode clear_mode;
-	bool arvr;
+	bool xr;
 	bool size_2d_override_stretch;
 
 protected:
@@ -606,8 +606,8 @@ public:
 	void set_size_2d_override(const Size2i &p_size);
 	Size2i get_size_2d_override() const;
 
-	void set_use_arvr(bool p_use_arvr);
-	bool is_using_arvr();
+	void set_use_xr(bool p_use_xr);
+	bool is_using_xr();
 
 	void set_size_2d_override_stretch(bool p_enable);
 	bool is_size_2d_override_stretch_enabled() const;

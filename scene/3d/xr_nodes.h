@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  arvr_nodes.h                                                         */
+/*  xr_nodes.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,24 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ARVR_NODES_H
-#define ARVR_NODES_H
+#ifndef XR_NODES_H
+#define XR_NODES_H
 
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/resources/mesh.h"
-#include "servers/arvr/arvr_positional_tracker.h"
+#include "servers/xr/xr_positional_tracker.h"
 
 /**
 	@author Bastiaan Olij <mux213@gmail.com>
 **/
 
 /*
-	ARVRCamera is a subclass of camera which will register itself with its parent ARVROrigin and as a result is automatically positioned
+	XRCamera is a subclass of camera which will register itself with its parent XROrigin and as a result is automatically positioned
 */
-class ARVRCamera : public Camera3D {
+class XRCamera3D : public Camera3D {
 
-	GDCLASS(ARVRCamera, Camera3D);
+	GDCLASS(XRCamera3D, Camera3D);
 
 protected:
 	void _notification(int p_what);
@@ -58,19 +58,19 @@ public:
 	virtual Vector3 project_position(const Point2 &p_point, float p_z_depth) const;
 	virtual Vector<Plane> get_frustum() const;
 
-	ARVRCamera();
-	~ARVRCamera();
+	XRCamera3D();
+	~XRCamera3D();
 };
 
 /*
-	ARVRController is a helper node that automatically updates its position based on tracker data.
+	XRController3D is a helper node that automatically updates its position based on tracker data.
 
-	It must be a child node of our ARVROrigin node
+	It must be a child node of our XROrigin node
 */
 
-class ARVRController : public Node3D {
+class XRController3D : public Node3D {
 
-	GDCLASS(ARVRController, Node3D);
+	GDCLASS(XRController3D, Node3D);
 
 private:
 	int controller_id;
@@ -95,23 +95,23 @@ public:
 	void set_rumble(real_t p_rumble);
 
 	bool get_is_active() const;
-	ARVRPositionalTracker::TrackerHand get_hand() const;
+	XRPositionalTracker::TrackerHand get_hand() const;
 
 	Ref<Mesh> get_mesh(void) const;
 
 	String get_configuration_warning() const;
 
-	ARVRController();
-	~ARVRController();
+	XRController3D();
+	~XRController3D();
 };
 
 /*
-	ARVRAnchor is a helper node that automatically updates its position based on anchor data, it represents a real world location.
-	It must be a child node of our ARVROrigin node
+	XRAnchor3D is a helper node that automatically updates its position based on anchor data, it represents a real world location.
+	It must be a child node of our XROrigin3D node
 */
 
-class ARVRAnchor : public Node3D {
-	GDCLASS(ARVRAnchor, Node3D);
+class XRAnchor3D : public Node3D {
+	GDCLASS(XRAnchor3D, Node3D);
 
 private:
 	int anchor_id;
@@ -137,24 +137,24 @@ public:
 
 	String get_configuration_warning() const;
 
-	ARVRAnchor();
-	~ARVRAnchor();
+	XRAnchor3D();
+	~XRAnchor3D();
 };
 
 /*
-	ARVROrigin is special spatial node that acts as our origin point mapping our real world center of our tracking volume into our virtual world.
+	XROrigin3D is special spatial node that acts as our origin point mapping our real world center of our tracking volume into our virtual world.
 
 	It is this point that you will move around the world as the player 'moves while standing still', i.e. the player moves through teleporting or controller inputs as opposed to physically moving.
 
 	Our camera and controllers will always be child nodes and thus place relative to this origin point.
-	This node will automatically locate any camera child nodes and update its position while our ARVRController node will handle tracked controllers.
+	This node will automatically locate any camera child nodes and update its position while our XRController3D node will handle tracked controllers.
 */
-class ARVROrigin : public Node3D {
+class XROrigin3D : public Node3D {
 
-	GDCLASS(ARVROrigin, Node3D);
+	GDCLASS(XROrigin3D, Node3D);
 
 private:
-	ARVRCamera *tracked_camera;
+	XRCamera3D *tracked_camera;
 
 protected:
 	void _notification(int p_what);
@@ -163,14 +163,14 @@ protected:
 public:
 	String get_configuration_warning() const;
 
-	void set_tracked_camera(ARVRCamera *p_tracked_camera);
-	void clear_tracked_camera_if(ARVRCamera *p_tracked_camera);
+	void set_tracked_camera(XRCamera3D *p_tracked_camera);
+	void clear_tracked_camera_if(XRCamera3D *p_tracked_camera);
 
 	float get_world_scale() const;
 	void set_world_scale(float p_world_scale);
 
-	ARVROrigin();
-	~ARVROrigin();
+	XROrigin3D();
+	~XROrigin3D();
 };
 
-#endif /* ARVR_NODES_H */
+#endif /* XR_NODES_H */

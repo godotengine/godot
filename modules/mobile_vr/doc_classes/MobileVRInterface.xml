@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MobileVRInterface" inherits="ARVRInterface" version="4.0">
+<class name="MobileVRInterface" inherits="XRInterface" version="4.0">
 	<brief_description>
 		Generic mobile VR implementation.
 	</brief_description>
@@ -8,9 +8,9 @@
 		Note that even though there is no positional tracking, the camera will assume the headset is at a height of 1.85 meters. You can change this by setting [member eye_height].
 		You can initialise this interface as follows:
 		[codeblock]
-		var interface = ARVRServer.find_interface("Native mobile")
+		var interface = XRServer.find_interface("Native mobile")
 		if interface and interface.initialize():
-		    get_viewport().arvr = true
+		    get_viewport().xr = true
 		[/codeblock]
 	</description>
 	<tutorials>
@@ -25,7 +25,7 @@
 			The width of the display in centimeters.
 		</member>
 		<member name="eye_height" type="float" setter="set_eye_height" getter="get_eye_height" default="1.85">
-			The height at which the camera is placed in relation to the ground (i.e. [ARVROrigin] node).
+			The height at which the camera is placed in relation to the ground (i.e. [XROrigin3D] node).
 		</member>
 		<member name="iod" type="float" setter="set_iod" getter="get_iod" default="6.0">
 			The interocular distance, also known as the interpupillary distance. The distance between the pupils of the left and right eye.

@@ -3615,13 +3615,14 @@ Viewport::~Viewport() {
 
 /////////////////////////////////
 
-void SubViewport::set_use_arvr(bool p_use_arvr) {
-	arvr = p_use_arvr;
+void SubViewport::set_use_xr(bool p_use_xr) {
+	xr = p_use_xr;
 
-	RS::get_singleton()->viewport_set_use_arvr(get_viewport_rid(), arvr);
+	RS::get_singleton()->viewport_set_use_xr(get_viewport_rid(), xr);
 }
-bool SubViewport::is_using_arvr() {
-	return arvr;
+
+bool SubViewport::is_using_xr() {
+	return xr;
 }
 
 void SubViewport::set_size(const Size2i &p_size) {
@@ -3701,8 +3702,8 @@ void SubViewport::_notification(int p_what) {
 }
 
 void SubViewport::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_use_arvr", "use"), &SubViewport::set_use_arvr);
-	ClassDB::bind_method(D_METHOD("is_using_arvr"), &SubViewport::is_using_arvr);
+	ClassDB::bind_method(D_METHOD("set_use_xr", "use"), &SubViewport::set_use_xr);
+	ClassDB::bind_method(D_METHOD("is_using_xr"), &SubViewport::is_using_xr);
 
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &SubViewport::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &SubViewport::get_size);
@@ -3719,7 +3720,7 @@ void SubViewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_clear_mode", "mode"), &SubViewport::set_clear_mode);
 	ClassDB::bind_method(D_METHOD("get_clear_mode"), &SubViewport::get_clear_mode);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "arvr"), "set_use_arvr", "is_using_arvr");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "xr"), "set_use_xr", "is_using_xr");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size_2d_override"), "set_size_2d_override", "get_size_2d_override");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "size_2d_override_stretch"), "set_size_2d_override_stretch", "is_size_2d_override_stretch_enabled");
@@ -3739,7 +3740,7 @@ void SubViewport::_bind_methods() {
 }
 
 SubViewport::SubViewport() {
-	arvr = false;
+	xr = false;
 	size_2d_override_stretch = false;
 	update_mode = UPDATE_WHEN_VISIBLE;
 	clear_mode = CLEAR_MODE_ALWAYS;
