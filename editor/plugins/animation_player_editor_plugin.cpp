@@ -433,7 +433,9 @@ void AnimationPlayerEditor::_animation_remove() {
 	if (animation->get_item_count() == 0)
 		return;
 
-	delete_dialog->set_text(TTR("Delete Animation?"));
+	String current = animation->get_item_text(animation->get_selected());
+
+	delete_dialog->set_text(TTR("Delete Animation '" + current + "'?"));
 	delete_dialog->popup_centered();
 }
 
@@ -1135,7 +1137,9 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 		case TOOL_DUPLICATE_ANIM: {
 
 			_animation_duplicate();
-		} break;
+
+			[[fallthrough]]; // Allow immediate rename after animation is duplicated
+		}
 		case TOOL_RENAME_ANIM: {
 
 			_animation_rename();
