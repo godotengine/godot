@@ -187,6 +187,7 @@ Error EditorDebuggerNode::start() {
 		return err;
 	}
 	set_process(true);
+	EditorNode::get_log()->set_scroll_follow(true);
 	EditorNode::get_log()->add_message("--- Debugging process started ---", EditorLog::MSG_TYPE_EDITOR);
 	return OK;
 }

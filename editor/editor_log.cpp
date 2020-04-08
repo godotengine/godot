@@ -191,5 +191,9 @@ void EditorLog::deinit() {
 	remove_error_handler(&eh);
 }
 
+void EditorLog::set_scroll_follow(bool p_follow) {
+	log->set_scroll_follow(p_follow);
+}
+
 EditorLog::~EditorLog() {
 }
